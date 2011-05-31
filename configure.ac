@@ -120,10 +120,12 @@ fi
 
 AC_CONFIG_FILES([Makefile
                 src/Makefile
+                tests/Makefile
+                tests/unittest/Makefile
+                apps/Makefile
+                doc/Makefile
                 ] )
-#                tests/Makefile
-#                tests/unittest/Makefile
-#                apps/Makefile
+
 #                apps/bert/Makefile
 #                apps/em1d/Makefile
 #                apps/fit/Makefile
