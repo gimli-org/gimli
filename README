@@ -1,0 +1,50 @@
+GIMLi - Geophysical Inversion and Modelling Library
+        an open-source multi-method library for solving inverse and forward tasks
+-----------------------------------------------
+BUILD (for posix systems):
+
+For the first time after initial svn checkout:
+
+./autogen.sh
+make
+
+If you install from source-package
+./configure
+make
+
+After further svn update:
+make 
+
+
+OPTIONAL EXTERNALS:
+
+for the testsuite
+cppunit (http://sourceforge.net/projects/cppunit)
+
+support for light-weight linear solver:
+amd (http://www.cise.ufl.edu/research/sparse/amd/)
+ldl (http://www.cise.ufl.edu/research/sparse/ldl/)
+
+support for advanced linear solver:
+blas                    
+lapack                  
+colamd                  
+camd                    
+cholmod                 
+(http://www.cise.ufl.edu/research/sparse/SuiteSparse/)
+
+support for 2d mesh-generation:
+triangle                
+
+----------------------------------------------------------------
+Windows toolchain:
+
+mingw-4.5.0 & msys-1.0.15
+    automatic installer: http://sourceforge.net/projects/mingw/files/
+    testet: mingw-get-inst-20100909.exe
+    
+codeblocks
+    from: http://www.codeblocks.org/downloads/26
+    testet: codeblocks-10.05-setup.exe
+    change codeblocks toolchain (setting/Compiler & Debugger../) to c:/mingw
+
