@@ -103,8 +103,13 @@ libgimli_la_SOURCES = \
 			exitcodes.h \
 			gimli.h \
 			gimli.cpp \
-			platform.h 
+			platform.h \
+			platform.cpp
 
+libgimli_la_LDFLAGS= \
+	-no-undefined -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-release $(LT_RELEASE)
+ 
 # libgimli_la_LIBADD = ../externals/lib/libamd.a \
 # 			../externals/lib/libcamd.a \
 # 			../externals/lib/libccolamd.a \

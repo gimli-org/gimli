@@ -243,9 +243,11 @@ DLLEXPORT size_t countColumnsInFile( const std::string & fname );
 DLLEXPORT size_t countRowsInFile( const std::string & fname );
 DLLEXPORT size_t fileLength( std::fstream & file );
 DLLEXPORT std::vector < std::string > getRowSubstrings( std::fstream & file, char comment = '#' );
+
 inline std::vector < std::string > getRow( std::fstream & file, char comment = '#' ){
     return getRowSubstrings( file, comment );
 }
+
 DLLEXPORT std::vector < std::string > getNonEmptyRow( std::fstream & file, char comment = '#' );
 DLLEXPORT std::vector < std::string > getCommentLine( std::fstream & file, char comment = '#' );
 
