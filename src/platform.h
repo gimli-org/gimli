@@ -21,10 +21,10 @@
 #ifndef _GIMLI_PLATFORM__H
 #define _GIMLI_PLATFORM__H
 
-#ifdef MINGW
+#if defined(WINDOWS) || defined(_WIN32)
 #define PATHSEPARATOR "\\"
 
-#ifdef BUILDING_DLL
+#ifdef DLL_EXPORT
 #define DLLEXPORT __declspec(dllexport)
 #else /* NO BUILDING_DLL */
 #define DLLEXPORT __declspec(dllimport)
@@ -53,10 +53,10 @@ inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */
 
 inline bool isnan( double x ) { return x != x; }
 
-#else /* ELSE NO MINGW */
+#else /* ELSE NO WINDOWS */
 #define PATHSEPARATOR "/"
 #define DLLEXPORT
-#endif /* NO MINGW */
+#endif /* NO WINDOWS */
 
 #if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) )
 // #include <ieeefp.h>

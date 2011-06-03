@@ -4,15 +4,42 @@ AC_PREREQ(2.61)
 define([SVNVERSION], esyscmd([sh -c "svnversion -n"]))
 AC_DEFINE(SVN_REVISION, "SVNVERSION", [SVN Revision])
 
-AC_INIT( [gimli], [0.7.0-SVNVERSION], [carsten@resistivity.net] )
-AM_INIT_AUTOMAKE( gimli, 0.7.0 )
+GIMLI_MAJOR_VERSION=0
+GIMLI_MINOR_VERSION=7
+GIMLI_MICRO_VERSION=0
+GIMLI_INTERFACE_AGE=0
+GIMLI_BINARY_AGE=0
+AC_SUBST(GIMLI_MINOR_VERSION)
+
+GIMLI_VERSION=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION.$GIMLI_MICRO_VERSION-$SVNVERSION
+AC_INIT( [gimli], 0.7.0-SVNVERSION, [carsten@resistivity.net] )
+AM_INIT_AUTOMAKE( gimli, $GIMLI_VERSION )
+
+# libtool versioning
+#LT_RELEASE=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION
+#LT_CURRENT=`expr $GIMLI_MICRO_VERSION - $GIMLI_INTERFACE_AGE`
+#LT_CURRENT=`expr $GIMLI_MICRO_VERSION - 0`
+#LT_REVISION=$GIMLI_INTERFACE_AGE
+#LT_AGE=`expr $GIMLI_BINARY_AGE - $GIMLI_INTERFACE_AGE`
+LT_RELEASE=0
+LT_CURRENT=7
+LT_REVISION=0
+LT_AGE=0
+AC_SUBST(LT_RELEASE)
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
+AC_SUBST(LT_AGE)
 
 # init magic libtool
 # -all-static
 LT_PREREQ([2.2])
 LT_INIT([dlopen,win32-dll])
 
-AC_CONFIG_SRCDIR([config.h.in])
+#BB_ENABLE_DOXYGEN
+
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_SRCDIR([Makefile.am]) 
+#AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
 AC_PREFIX_DEFAULT(`pwd`)
@@ -20,14 +47,16 @@ AC_PREFIX_DEFAULT(`pwd`)
 # Checks for programs.
 AC_PROG_CXX
 
-AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -fPIC -ansi -pedantic"])
+# check wyh this doesnt work
+#AS_COMPILER_FLAGS( GLOBAL_CFLAGS, "-Wall -ansi -pedantic" )
 
+AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic"])
+#AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic -Wl,-noinhibit-exec"])
+
+#AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -fPIC -ansi -pedantic"])
 #CXXFLAGS="$CXXFLAGS -O2 -g -Wall -fPIC -ansi -pedantic #-D svn-\`svnversion -n\` "
 #CXXFLAGS="$CXXFLAGS -O2 -g -Wall -fPIC -ansi -pedantic -D ${PACKAGE_VERSION}"
 #AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -Wall"])
-
-# Checks for system.
-#AC_MINGW32
 
 # Checks for libraries.
 AC_CHECK_LIB(m, sqrt )
@@ -44,10 +73,23 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_STRUCT_TM
+AC_CHECK_TYPE( uint )
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([strerror])
+	
+# Checks for packages.
+#PKG_CHECK_MODULES( CHECK, [ check >= 0.8.0 ] ) 
+
+AM_PATH_CPPUNIT(,[have_unittest="yes"],
+  AC_MSG_WARN([cppunit not found; cannot run unit tests!])
+  [have_unittest="no"])
+AM_CONDITIONAL(HAVE_UNITTEST, test x"$have_unittest" = "xyes")
+if test x"$have_unittest" = "xyes"; then
+	AC_DEFINE( [HAVE_UNITTEST], [1], [Define and we can use unittest])  
+fi
+
 
 #AC_CHECK_LIB( [boost_thread], [main])
 
@@ -197,6 +239,16 @@ C++ compiler:           ${CXX}-${CXXVERSION}
 OSTYPE:                 ${OSTYPE}
 CXXFLAGS:               ${CXXFLAGS}
 Libraries:              ${LDFLAGS} ${LIBS}  )
+
+AC_MSG_RESULT()
+
+if test x"$have_unittest" = "xyes"; then
+	AC_MSG_RESULT( cppunit 		[unittest INSTALLED])
+else
+	AC_MSG_RESULT( cppunit 		[unittest Not INSTALLED])
+fi
+
+
 
 AC_MSG_RESULT()
 AC_MSG_RESULT([Configuration successful! Now type 'make' to build the library, tests, applications and examples])

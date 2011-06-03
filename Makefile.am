@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS=-I m4
+
 EXTRA_DIST = configure
 SUBDIRS = src tests doc apps
 
