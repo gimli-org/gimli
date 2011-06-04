@@ -6,9 +6,9 @@
 	#include <cppunit/ui/text/TestRunner.h>
 
 	#include "testGIMLiMisc.h"
-	// #include "testVector.h"
-	// #include "testShape.h"
-	// #include "testGeometry.h"
+	#include "testVector.h"
+	//#include "testShape.h"
+	//#include "testGeometry.h"
 	// #include "testFEM.h"
 #endif // HAVE_UNITTEST
 
