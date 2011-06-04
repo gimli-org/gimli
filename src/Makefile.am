@@ -2,17 +2,6 @@ lib_LTLIBRARIES = libgimli.la
 
 include_HEADERS = gimli.h
 
-# 			kdtree++/AUTHORS \
-# 			kdtree++/COPYING \
-# 			kdtree++/NEWS \
-# 			kdtree++/README \
-# 			kdtree++/allocator.hpp \
-# 			kdtree++/function.hpp \
-# 			kdtree++/iterator.hpp \
-# 			kdtree++/kdtree.hpp \
-# 			kdtree++/node.hpp \
-# 			kdtree++/region.hpp \
-# 			baseentity.h \
 # 			bert.h \
 # 			bertJacobian.h \
 # 			bertJacobian.cpp \
@@ -40,7 +29,6 @@ include_HEADERS = gimli.h
 # 			electrode.cpp \
 # 			elementmatrix.h \
 # 			elementmatrix.cpp \
-# 			expressions.h \
 # 			interpolate.h \
 # 			interpolate.cpp \
 # 			inversion.h \
@@ -49,41 +37,24 @@ include_HEADERS = gimli.h
 # 			inversionRollalong.h \
 # 			ipcClient.h\
 # 			ipcClient.cpp\
-# 			kdtreeWrapper.h \
-# 			kdtreeWrapper.cpp \
 # 			ldlWrapper.h \
 # 			ldlWrapper.cpp \
-# 			line.h \
-# 			line.cpp \
 # 			linSolver.h \
 # 			linSolver.cpp \
 # 			longoptions.h \
 # 			longoptions.cpp \
-# 			matrix.h \
 # 			matrixTemplates.h \
 # 			mesh.h \
 # 			mesh.cpp \
 # 			mesh_io.cpp \
-# 			meshEntities.h \
-# 			meshEntities.cpp \
 # 			meshgenerators.h \
 # 			meshgenerators.cpp \
 # 			modellingbase.h \
 # 			modellingbase.cpp \
-# 			node.h \
-# 			node.cpp \
-# 			numericbase.h \
-# 			numericbase.cpp \
-# 			plane.h \
-# 			plane.cpp \
-# 			pos.h \
-# 			pos.cpp \
 # 			quaternion.h \
 # 			quaternion.cpp \
 # 			regionManager.h \
 # 			regionManager.cpp \
-# 			shape.h \
-# 			shape.cpp \
 # 			solver.h \
 # 			solverWrapper.h \
 # 			solverWrapper.cpp \
@@ -95,16 +66,46 @@ include_HEADERS = gimli.h
 # 			stopwatch.cpp \
 # 			trans.h \
 # 			trianglewrapper.h \
-# 			trianglewrapper.cpp \
-# 			vector.h \
-# 			vectortemplates.h
+# 			trianglewrapper.cpp 
 
 libgimli_la_SOURCES = \
+			kdtree++/AUTHORS \
+			kdtree++/COPYING \
+			kdtree++/NEWS \
+			kdtree++/README \
+			kdtree++/VERSION \
+			kdtree++/allocator.hpp \
+			kdtree++/function.hpp \
+			kdtree++/iterator.hpp \
+			kdtree++/kdtree.hpp \
+			kdtree++/node.hpp \
+			kdtree++/region.hpp \
+			baseentity.h \
 			exitcodes.h \
+			expressions.h \
 			gimli.h \
 			gimli.cpp \
+			kdtreeWrapper.h \
+			kdtreeWrapper.cpp \
+			line.h \
+			line.cpp \
+			matrix.h \
+			meshEntities.h \
+			meshEntities.cpp \
+			node.h \
+			node.cpp \
+			numericbase.h \
+			numericbase.cpp \
+			plane.h \
+			plane.cpp \
 			platform.h \
-			platform.cpp
+			platform.cpp \
+			pos.h \
+			pos.cpp \
+			shape.h \
+			shape.cpp \
+			vector.h \
+			vectortemplates.h
 
 libgimli_la_LDFLAGS= \
 	-no-undefined -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \

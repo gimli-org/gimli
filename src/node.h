@@ -1,0 +1,148 @@
+/***************************************************************************
+ *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Carsten Rücker carsten@resistivity.net                                *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ ***************************************************************************/
+
+#ifndef _GIMLI_NODE__H
+#define _GIMLI_NODE__H
+
+#include "gimli.h"
+
+#include "baseentity.h"
+#include "pos.h"
+
+#include <set>
+
+namespace GIMLI{
+
+class Cell;
+class Boundary;
+
+//! 3D Node
+/*! Node is a basic entity of a mesh at a 3D position x/y/z, which owns a marker, an id, and information about connected boundarys and cells. For a 2D node ignore $z$ or let $z$-koord = 0.0.*/
+class DLLEXPORT Node : public BaseEntity {
+
+public:
+    /*! Construct node with non valid position and marker = 0 */
+    Node(){
+        init_();
+        marker_ = 0;
+    }
+
+    /*! Construct node from koordinates $x,y,[z]$ with marker = 0 */
+    Node( double x, double y, double z = 0.0 ) : pos_( RVector3( x, y, z ) ) {
+        init_();
+    }
+
+    /*! Construct node from RVector3 */
+    Node( const RVector3 & pos ) : pos_( pos ) {
+        init_();
+    }
+
+    /*! Construct node from RVector3 with marker and optional id */
+    Node( const RVector3 & pos, int marker, int id = -1 ) : pos_( pos ) {
+        init_();
+        setMarker( marker );
+        setId( id );
+    }
+
+    /*! Copy constructor */
+    Node( const Node & node ){
+        copy_( node );
+    }
+
+    /*! Assignement operator */
+    Node & operator = ( const Node & node ){
+        if ( this != &node ){
+            copy_( node );
+        }
+        return *this;
+    }
+
+    /*! Destruct the node and all containing informations */
+    ~Node(){
+    }
+
+    inline uint rtti() const { return MESH_NODE_RTTI; }
+
+    inline void setPos( const RVector3 & pos ) { pos_ = pos; }
+
+    inline const RVector3 & pos() const { return pos_; }
+
+    inline RVector3 & pos() { return pos_; }
+
+    inline void insertBoundary( Boundary & bound ){ boundSet_.insert( &bound ); }
+
+    inline void eraseBoundary( Boundary & bound ){ boundSet_.erase( &bound ); }
+
+    inline void insertCell( Cell & cell ){ cellSet_.insert( &cell ); }
+
+    inline void eraseCell( Cell & cell ){ cellSet_.erase( &cell ); }
+
+    const std::set < Boundary * > & boundSet() const { return boundSet_; }
+
+    std::set < Boundary * > & boundSet() { return boundSet_; }
+
+    const std::set < Cell * > & cellSet() const { return cellSet_; }
+
+    std::set < Cell * > & cellSet() { return cellSet_; }
+
+    inline void scale( const RVector3 & s ) { pos_.scale( s ); }
+
+    inline void translate( const RVector3 & t ) { pos_.translate( t ); }
+
+    inline void rotate( const RVector3 & r ) { pos_.rotate( r ); }
+
+    inline double x() const { return pos_[ 0 ]; }
+
+    inline double y() const { return pos_[ 1 ]; }
+
+    inline double z() const { return pos_[ 2 ]; }
+
+    inline double dist( const Node & n ) const { return pos_.dist( n.pos() ); }
+
+    void smooth( uint function );
+
+    friend std::ostream & operator << ( std::ostream & str, const GIMLI::Node & node );
+
+protected:
+
+    void copy_( const Node & node ){
+        pos_    = node.pos();
+        marker_ = node.marker();
+        setId( node.id() );
+    }
+
+    void init_(){
+        setId( -1 );
+    }
+
+    RVector3 pos_;
+
+    std::set < Boundary * > boundSet_;
+    std::set < Cell * >     cellSet_;
+
+}; // class Node
+
+std::ostream & operator << ( std::ostream & str, const GIMLI::Node & node );
+
+inline bool operator == ( const Node & n1, const Node & n2 ) { return n1.pos() == n2.pos(); }
+
+} // namespace GIMLI
+
+#endif // _GIMLI_NODE__H

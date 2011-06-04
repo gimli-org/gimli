@@ -11,11 +11,11 @@ INCLUDES = \
 gimliUnitTest_SOURCES = \
 	unittest.sh \
 	unitTest.cpp \
-	testGIMLiMisc.h 
+	testGIMLiMisc.h \
+	testVector.h 
 
 # 	testOptionMap.h \
 # 	testShape.h \
-# 	testVector.h \
 # 	testGeometry.h \
 # 	testFEM.h 
 
