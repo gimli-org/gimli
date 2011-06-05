@@ -7,36 +7,19 @@ include_HEADERS = gimli.h
 # 			bertJacobian.cpp \
 # 			bertMisc.h \
 # 			bertMisc.cpp \
-# 			cholmodWrapper.h \
-# 			cholmodWrapper.cpp \
-# 			curvefitting.h \
-# 			curvefitting.cpp \
 # 			datamap.h \
 # 			datamap.cpp \
-# 			dc1dmodelling.h \
-# 			dc1dmodelling.cpp \
 # 			dcfemmodelling.h \
 # 			dcfemmodelling.cpp \
-# 			em1dmodelling.h \
-# 			em1dmodelling.cpp \
+#			dc1dmodelling.h \
+#			dc1dmodelling.cpp \
 # 			ttdijkstramodelling.h \
 # 			ttdijkstramodelling.cpp \
 # 			eameshwrapper.h \
 # 			eameshwrapper.cpp \
 # 			electrode.h \
 # 			electrode.cpp \
-# 			interpolate.h \
-# 			interpolate.cpp \
 # 			inversionRollalong.h \
-# 			ldlWrapper.h \
-# 			ldlWrapper.cpp \
-# 			linSolver.h \
-# 			linSolver.cpp \
-# 			matrixTemplates.h \
-# 			quaternion.h \
-# 			quaternion.cpp \
-# 			spline.h \
-# 			spline.cpp \
 # 			stlvector.h 
 
 libgimli_la_SOURCES = \
@@ -52,24 +35,38 @@ libgimli_la_SOURCES = \
 			kdtree++/node.hpp \
 			kdtree++/region.hpp \
 			baseentity.h \
+			cholmodWrapper.h \
+			cholmodWrapper.cpp \
+			curvefitting.h \
+			curvefitting.cpp \
 			datacontainer.h \
 			datacontainer.cpp \
 			elementmatrix.h \
 			elementmatrix.cpp \
+			em1dmodelling.h \
+			em1dmodelling.cpp \
 			exitcodes.h \
 			expressions.h \
 			gimli.h \
 			gimli.cpp \
+			interpolate.h \
+			interpolate.cpp \
 			inversion.h \
 			inversion.cpp \
 			inversionBase.h \
+			inversionFramework.h \
 			ipcClient.h\
 			ipcClient.cpp\
 			kdtreeWrapper.h \
 			kdtreeWrapper.cpp \
+			ldlWrapper.h \
+			ldlWrapper.cpp \
 			line.h \
 			line.cpp \
+			linSolver.h \
+			linSolver.cpp \
 			matrix.h \
+			matrixTemplates.h \
 			mesh.h \
 			mesh.cpp \
 			mesh_io.cpp \
@@ -91,6 +88,8 @@ libgimli_la_SOURCES = \
 			platform.cpp \
 			pos.h \
 			pos.cpp \
+			quaternion.h \
+			quaternion.cpp \
 			regionManager.h \
 			regionManager.cpp \
 			shape.h \
@@ -99,6 +98,8 @@ libgimli_la_SOURCES = \
 			solverWrapper.h \
 			solverWrapper.cpp \
 			sparsematrix.h \
+			spline.h \
+			spline.cpp \
 			stopwatch.h \
 			stopwatch.cpp \
 			trans.h \
