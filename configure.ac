@@ -165,12 +165,13 @@ AC_CONFIG_FILES([Makefile
                 tests/Makefile
                 tests/unittest/Makefile
                 apps/Makefile
+                apps/fit/Makefile
                 doc/Makefile
                 ] )
 
 #                apps/bert/Makefile
 #                apps/em1d/Makefile
-#                apps/fit/Makefile
+
 #                apps/jointinv/Makefile
 #                apps/misc/Makefile
 #                apps/traveltime/Makefile

@@ -4,7 +4,7 @@
 #include <node.h>
 #include <shape.h>
 #include <pos.h>
-#include <meshEntities.h>
+#include <meshentities.h>
 #include <mesh.h>
 #include <meshgenerators.h>
 

@@ -18,28 +18,55 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "node.h"
-#include "meshentities.h"
+#include "stopwatch.h"
+
+#include <iostream>
 
 namespace GIMLI{
-        
-    std::ostream & operator << ( std::ostream & str, const GIMLI::Node & n ){
-    str << "Node: "<< &n << " id: " << n.id() << "\t" << n.pos();
-    str << " marker: " << n.marker();
-    return str;
+
+Stopwatch::Stopwatch( bool start ) {
+    state = undefined;
+    if ( start ) this->start();
 }
 
-void Node::smooth( uint function ){
-    std::set< Node * > common( commonNodes( this->boundSet() ) );
-    //** Achtung konkave gebiete koennen entstehen wenn zu festen knoten benachbarte gesmooth werden
-    //** aufzeichen -> pruefen -> fixen.
-    //** was passiert bei node at interface or boundary
-    RVector3 c( 0.0, 0.0, 0.0 );
-    for ( std::set< Node * >::iterator it = common.begin(); it != common.end(); it ++){
-        c += (*it)->pos();
-    }
-    this->setPos( c / (double)common.size() );
+Stopwatch::~Stopwatch() {
 }
 
-} // namespace GIMLI{
+void Stopwatch::start(){
+    ftime( & starttime );
+    state = running;
+    cCounter_.tic();
+}
 
+void Stopwatch::stop( bool verbose ){
+    ftime( & stoptime );
+    state = halted;
+    if ( verbose ) std::cout << "time: " << duration() << "s" << std::endl;
+}
+
+void Stopwatch::restart(){
+    stop();
+    start();
+}
+
+void Stopwatch::reset(){
+    restart();
+}
+
+double Stopwatch::duration( bool res ){
+    if ( state == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
+    if ( state == running ) ftime( &stoptime );
+    double t = ( stoptime.time - starttime.time ) + double( stoptime.millitm - starttime.millitm ) / 1000.0;
+    if ( res ) restart();
+    return t;
+}
+
+unsigned long Stopwatch::cycles( bool res ){
+    if ( state == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
+    unsigned long t = 0;
+    if ( state == running ) t = cCounter_.toc();
+    if ( res ) restart();
+    return t;
+}
+
+} // namespace GIMLI

@@ -18,28 +18,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "node.h"
-#include "meshentities.h"
+#include "solverWrapper.h"
+#include "sparsematrix.h"
 
 namespace GIMLI{
-        
-    std::ostream & operator << ( std::ostream & str, const GIMLI::Node & n ){
-    str << "Node: "<< &n << " id: " << n.id() << "\t" << n.pos();
-    str << " marker: " << n.marker();
-    return str;
+
+SolverWrapper::SolverWrapper( ){ dummy_ = true; }
+
+SolverWrapper::SolverWrapper( const DSparseMatrix & S, bool verbose ) : verbose_( verbose ) {
+    dummy_ = true; 
+    dim_ = S.size(); 
+    nVals_ = S.nVals();
+    tolerance_ = 1e-12;
+    dropTol_ = 0.0;
 }
 
-void Node::smooth( uint function ){
-    std::set< Node * > common( commonNodes( this->boundSet() ) );
-    //** Achtung konkave gebiete koennen entstehen wenn zu festen knoten benachbarte gesmooth werden
-    //** aufzeichen -> pruefen -> fixen.
-    //** was passiert bei node at interface or boundary
-    RVector3 c( 0.0, 0.0, 0.0 );
-    for ( std::set< Node * >::iterator it = common.begin(); it != common.end(); it ++){
-        c += (*it)->pos();
-    }
-    this->setPos( c / (double)common.size() );
-}
+SolverWrapper::~SolverWrapper( ){ }
 
-} // namespace GIMLI{
-
+} //namespace GIMLI;
