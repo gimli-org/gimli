@@ -50,3 +50,7 @@ codeblocks
     testet: codeblocks-10.05-setup.exe
     change codeblocks toolchain (setting/Compiler & Debugger../) to c:/mingw
 
+------------------------------------------------------------------
+Add boost include path to the build:
+
+CPPFLAGS='-I /c/home/boost/include' ./configure

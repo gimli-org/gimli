@@ -171,6 +171,8 @@ typedef Matrix < double > RMatrix;
 // typedef std::vector < RVector > RMatrix;
 // typedef std::vector < CVector > CMatrix;
 
+template < class ValueType > class ElementMatrix;
+
 template < class Vec > class Trans;
 
 //** end forward declaration

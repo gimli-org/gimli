@@ -32,6 +32,8 @@
 
 namespace GIMLI{
 
+DLLEXPORT std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & pos );
+
 class DLLEXPORT IntegrationRules{
 public:
     IntegrationRules();
@@ -248,8 +250,6 @@ public:
     ElementMatrix < T > & ux2( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
     ElementMatrix < T > & ux2uy2( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
     ElementMatrix < T > & ux2uy2uz2( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
-
-    friend std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & pos );
 
 protected:
     RMatrix mat_;
