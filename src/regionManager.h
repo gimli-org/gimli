@@ -33,6 +33,7 @@ namespace GIMLI{
 
 class PosFunctor{
 public:
+    virtual ~PosFunctor(){}
     virtual const double operator()( const RVector3 & pos ) const = 0;
 };
 

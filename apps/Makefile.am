@@ -1,1 +1,1 @@
-SUBDIRS = fit
+SUBDIRS = fit em1d
