@@ -300,14 +300,14 @@ void IntegrationRules::initQua_(){
 void IntegrationRules::initHex_(){
 }
 
-DLLEXPORT std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & e ){
-    for ( uint i = 0; i < e.idx_.size(); i ++ )str << e.idx_[ i ] << " " ;
+std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & e ){
+    for ( uint i = 0; i < e.idx().size(); i ++ ) str << e.idx(i) << " " ;
 
     str << std::endl;
     for ( uint i = 0; i < e.size(); i ++ ){
-        str << e.idx_[ i ] << "\t: ";
+        str << e.idx( i ) << "\t: ";
         for ( uint j = 0; j < e.size(); j ++ ){
-            str << e.mat_[ i ][ j ] << " ";
+            str << e.getVal( i , j ) << " ";
         }
         str << std::endl;
     }

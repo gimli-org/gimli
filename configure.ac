@@ -19,6 +19,8 @@ AC_SUBST(GIMLI_BINARY_AGE)
 GIMLI_VERSION=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION.$GIMLI_MICRO_VERSION-$SVNVERSION
 AC_SUBST(GIMLI_VERSION)
 AM_INIT_AUTOMAKE( gimli, $GIMLI_VERSION )
+AM_SILENT_RULES([yes])
+
 
 # libtool versioning
 LT_RELEASE=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION
@@ -63,6 +65,7 @@ AC_CHECK_LIB(m, sqrt )
 
 # Checks for header files.
 AC_CHECK_HEADERS([sys/timeb.h])
+AC_CHECK_HEADERS([boost/bind.hpp])
 AC_FUNC_ALLOCA
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
@@ -240,6 +243,7 @@ Installation directory: ${prefix}
 C++ compiler:           ${CXX}-${CXXVERSION}
 OSTYPE:                 ${OSTYPE}
 CXXFLAGS:               ${CXXFLAGS}
+CPPFLAGS:               ${CPPFLAGS}
 Libraries:              ${LDFLAGS} ${LIBS}  )
 
 AC_MSG_RESULT()

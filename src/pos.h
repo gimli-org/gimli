@@ -274,7 +274,6 @@ protected:
 // template < class ValueType > const RVector3 RVector3::NEGATIVE_UNIT_Z(  0.0,  0.0, -1.0 );
 // template < class ValueType > const RVector3 RVector3::UNIT_SCALE( 1.0, 1.0, 1.0 );
 
-
 inline bool operator == ( const RVector3 & a , const RVector3 & b ){
     if ( a.valid() != b.valid() ) return false;
     if ( a.distSquared( b ) < TOLERANCE ) return true; else return false;

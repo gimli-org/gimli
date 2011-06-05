@@ -123,7 +123,7 @@ void swapXY( std::vector < RVector3 > & rv ){ for ( uint i = 0, imax = rv.size()
 void swapXZ( std::vector < RVector3 > & rv ){ for ( uint i = 0, imax = rv.size(); i < imax; i ++ ) swap( rv[ i ][ 0 ], rv[ i ][ 2 ] ); }
 void swapYZ( std::vector < RVector3 > & rv ){ for ( uint i = 0, imax = rv.size(); i < imax; i ++ ) swap( rv[ i ][ 1 ], rv[ i ][ 2 ] ); }
 
-template <> DLLEXPORT RVector3 RVector3::cross( const RVector3 & p ) const{
+template <> RVector3 RVector3::cross( const RVector3 & p ) const{
 //     r[ 0 ] = ( a2 * b3 - a3 * b2 );
 //     r[ 1 ] = ( a3 * b1 - a1 * b3 );
 //     r[ 2 ] = ( a1 * b2 - a2 * b1 );
@@ -132,14 +132,14 @@ template <> DLLEXPORT RVector3 RVector3::cross( const RVector3 & p ) const{
 		     (*this)[ 0 ] * p[ 1 ] - (*this)[ 1 ] * p[ 0 ] ) );
 }
 
-template <> DLLEXPORT RVector3 RVector3::norm( const RVector3 & p1, const RVector3 & p2 ) const {
+template <> RVector3 RVector3::norm( const RVector3 & p1, const RVector3 & p2 ) const {
   RVector3 a( p1 - (*this) );
   RVector3 b( p2 - (*this) );
   RVector3 r( a.cross( b ) );
   return r / r.abs();
 }
 
-template <> DLLEXPORT RVector3 RVector3::normXY( const RVector3 & p ) const {
+template <> RVector3 RVector3::normXY( const RVector3 & p ) const {
   RVector3 result = ( *this + p ) / 2.0;
   result.setZ( 1.0 );
   result = result.norm( *this, p );
