@@ -2,25 +2,12 @@ lib_LTLIBRARIES = libgimli.la
 
 include_HEADERS = gimli.h
 
-# 			bert.h \
-# 			bertJacobian.h \
-# 			bertJacobian.cpp \
-# 			bertMisc.h \
-# 			bertMisc.cpp \
-# 			datamap.h \
-# 			datamap.cpp \
-# 			dcfemmodelling.h \
-# 			dcfemmodelling.cpp \
+#			ttdijkstramodelling.h \
+#			ttdijkstramodelling.cpp \
 #			dc1dmodelling.h \
 #			dc1dmodelling.cpp \
-# 			ttdijkstramodelling.h \
-# 			ttdijkstramodelling.cpp \
 # 			eameshwrapper.h \
-# 			eameshwrapper.cpp \
-# 			electrode.h \
-# 			electrode.cpp \
-# 			inversionRollalong.h \
-# 			stlvector.h 
+# 			eameshwrapper.cpp 
 
 libgimli_la_SOURCES = \
 			kdtree++/AUTHORS \
