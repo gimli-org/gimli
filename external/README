@@ -1,0 +1,24 @@
+Libraries that are needed to use the power of external solvers.
+
+libamd.a
+libldl.a
+libcamd.a
+libcolamd.a
+libcholmod.a
+
+and if SuiteSparse is build against METIS:
+
+libmetis.a
+libccolamd.a
+
+These Libraries are part of SuiteSparse
+http://www.cise.ufl.edu/research/sparse/SuiteSparse/
+
+Either install systemwide or copy the libraries into the lib/ path.
+
+########################################################
+you can download and install them by using the Makefile
+just call 
+
+make
+

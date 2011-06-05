@@ -15,7 +15,7 @@ make
 After further svn update:
 make 
 
-
+-----------------------------------------------------------------
 OPTIONAL EXTERNALS:
 
 for the testsuite
@@ -35,6 +35,8 @@ cholmod
 
 support for 2d mesh-generation:
 triangle                
+
+You can build triangle and suitesparse by calling the Makefile in the external directory
 
 ----------------------------------------------------------------
 Windows toolchain:
