@@ -18,28 +18,33 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "node.h"
-#include "meshentities.h"
+#ifndef _GIMLI_SOLVERWRAPPER__H
+#define _GIMLI_SOLVERWRAPPER__H
+
+#include "gimli.h"
 
 namespace GIMLI{
-        
-    std::ostream & operator << ( std::ostream & str, const GIMLI::Node & n ){
-    str << "Node: "<< &n << " id: " << n.id() << "\t" << n.pos();
-    str << " marker: " << n.marker();
-    return str;
-}
 
-void Node::smooth( uint function ){
-    std::set< Node * > common( commonNodes( this->boundSet() ) );
-    //** Achtung konkave gebiete koennen entstehen wenn zu festen knoten benachbarte gesmooth werden
-    //** aufzeichen -> pruefen -> fixen.
-    //** was passiert bei node at interface or boundary
-    RVector3 c( 0.0, 0.0, 0.0 );
-    for ( std::set< Node * >::iterator it = common.begin(); it != common.end(); it ++){
-        c += (*it)->pos();
-    }
-    this->setPos( c / (double)common.size() );
-}
+class DLLEXPORT SolverWrapper{
+public:
+  SolverWrapper( );
 
-} // namespace GIMLI{
+  SolverWrapper( const DSparseMatrix & S, bool verbose = false );
 
+  virtual ~SolverWrapper( );
+
+  virtual int solve( const RVector & rhs, RVector & solution ) = 0;
+
+protected:
+  bool dummy_;
+  bool verbose_;
+  uint dim_;
+  long nVals_;
+  double dropTol_;
+  double tolerance_;
+  double maxiter_;
+};
+
+} //namespace GIMLI;
+
+#endif // _GIMLI_SOLVERWRAPPER__H

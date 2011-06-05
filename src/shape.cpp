@@ -23,7 +23,7 @@
 #include "line.h"
 #include "plane.h"
 
-#include "meshEntities.h"
+#include "meshentities.h"
 
 namespace GIMLI{
 

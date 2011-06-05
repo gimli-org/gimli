@@ -5,22 +5,23 @@ check_PROGRAMS=\
 	gimliUnitTest
 
 INCLUDES = \
-        -I $(top_srcdir)/src \
-		$(CPPUNIT_CFLAGS)
+	-I $(top_srcdir)/src \
+	$(CPPUNIT_CFLAGS)
  
 gimliUnitTest_SOURCES = \
 	unittest.sh \
 	unitTest.cpp \
 	testGIMLiMisc.h \
-	testVector.h 
+	testVector.h \
+	testShape.h \
+	testGeometry.h \
+	testFEM.h 
 
-# 	testOptionMap.h \
-# 	testShape.h \
-# 	testGeometry.h \
-# 	testFEM.h 
+# 	testOptionMap.h 
 
 if HAVE_UNITTEST
-gimliUnitTest_LDADD = $(top_srcdir)/src/.libs/libgimli.la $(CPPUNIT_LIBS)
+#gimliUnitTest_LDADD = $(top_srcdir)/src/.libs/libgimli.la $(CPPUNIT_LIBS)
+gimliUnitTest_LDADD = ../../src/.libs/libgimli.la $(CPPUNIT_LIBS)
 else
 gimliUnitTest_LDADD = 
 endif

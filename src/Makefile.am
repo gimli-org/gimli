@@ -11,8 +11,6 @@ include_HEADERS = gimli.h
 # 			cholmodWrapper.cpp \
 # 			curvefitting.h \
 # 			curvefitting.cpp \
-# 			datacontainer.h \
-# 			datacontainer.cpp \
 # 			datamap.h \
 # 			datamap.cpp \
 # 			dc1dmodelling.h \
@@ -27,46 +25,19 @@ include_HEADERS = gimli.h
 # 			eameshwrapper.cpp \
 # 			electrode.h \
 # 			electrode.cpp \
-# 			elementmatrix.h \
-# 			elementmatrix.cpp \
 # 			interpolate.h \
 # 			interpolate.cpp \
-# 			inversion.h \
-# 			inversion.cpp \
-# 			inversionBase.h \
 # 			inversionRollalong.h \
-# 			ipcClient.h\
-# 			ipcClient.cpp\
 # 			ldlWrapper.h \
 # 			ldlWrapper.cpp \
 # 			linSolver.h \
 # 			linSolver.cpp \
-# 			longoptions.h \
-# 			longoptions.cpp \
 # 			matrixTemplates.h \
-# 			mesh.h \
-# 			mesh.cpp \
-# 			mesh_io.cpp \
-# 			meshgenerators.h \
-# 			meshgenerators.cpp \
-# 			modellingbase.h \
-# 			modellingbase.cpp \
 # 			quaternion.h \
 # 			quaternion.cpp \
-# 			regionManager.h \
-# 			regionManager.cpp \
-# 			solver.h \
-# 			solverWrapper.h \
-# 			solverWrapper.cpp \
-# 			sparsematrix.h \
 # 			spline.h \
 # 			spline.cpp \
-# 			stlvector.h \
-# 			stopwatch.h \
-# 			stopwatch.cpp \
-# 			trans.h \
-# 			trianglewrapper.h \
-# 			trianglewrapper.cpp 
+# 			stlvector.h 
 
 libgimli_la_SOURCES = \
 			kdtree++/AUTHORS \
@@ -81,29 +52,58 @@ libgimli_la_SOURCES = \
 			kdtree++/node.hpp \
 			kdtree++/region.hpp \
 			baseentity.h \
+			datacontainer.h \
+			datacontainer.cpp \
+			elementmatrix.h \
+			elementmatrix.cpp \
 			exitcodes.h \
 			expressions.h \
 			gimli.h \
 			gimli.cpp \
+			inversion.h \
+			inversion.cpp \
+			inversionBase.h \
+			ipcClient.h\
+			ipcClient.cpp\
 			kdtreeWrapper.h \
 			kdtreeWrapper.cpp \
 			line.h \
 			line.cpp \
 			matrix.h \
-			meshEntities.h \
-			meshEntities.cpp \
+			mesh.h \
+			mesh.cpp \
+			mesh_io.cpp \
+			meshentities.h \
+			meshentities.cpp \
+			meshgenerators.h \
+			meshgenerators.cpp \
+			modellingbase.h \
+			modellingbase.cpp \
 			node.h \
 			node.cpp \
 			numericbase.h \
 			numericbase.cpp \
+			optionmap.h \
+			optionmap.cpp \
 			plane.h \
 			plane.cpp \
 			platform.h \
 			platform.cpp \
 			pos.h \
 			pos.cpp \
+			regionManager.h \
+			regionManager.cpp \
 			shape.h \
 			shape.cpp \
+			solver.h \
+			solverWrapper.h \
+			solverWrapper.cpp \
+			sparsematrix.h \
+			stopwatch.h \
+			stopwatch.cpp \
+			trans.h \
+			triangleWrapper.h \
+			triangleWrapper.cpp \
 			vector.h \
 			vectortemplates.h
 
