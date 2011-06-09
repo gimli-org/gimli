@@ -21,6 +21,10 @@
 #ifndef _GIMLI_GIMLI__H
 #define _GIMLI_GIMLI__H
 
+// we don't want the Old compatibility names for C types: typedef unsigned int uint
+#undef __USE_MISC
+
+
 #ifdef HAVE_CONFIG_H
     #include <config.h>
 #else
@@ -158,10 +162,11 @@ typedef SparseMapMatrix< double, size_t >  DSparseMapMatrix;
 template < class ValueType > class Vector;
 //template <> class Vector< double >;
 
-typedef Vector< double > RVector;
 typedef std::complex < double > Complex;
+typedef Vector< double > RVector;
 typedef Vector< Complex > CVector;
 typedef Vector< int > BVector;
+typedef Vector< long > LVector;
 //#typedef Vector< unsigned char > BVector;
 
 template < class ValueType > class Matrix;

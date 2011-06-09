@@ -3,6 +3,20 @@ AC_PREREQ(2.61)
 
 define([SVNVERSION], esyscmd([sh -c "svnversion -n"]))
 AC_DEFINE(SVN_REVISION, "SVNVERSION", [SVN Revision])
+
+#AC_INIT(package, version, bug-report-address)
+#     information on the package
+#     checks for programs
+#     checks for libraries
+#     checks for header files
+#     checks for types
+#     checks for structures
+#     checks for compiler characteristics
+#     checks for library functions
+#     checks for system services
+#     AC_CONFIG_FILES([file...])
+#     AC_OUTPUT
+
 AC_INIT( [gimli], 0.7.0-SVNVERSION, [carsten@resistivity.net] )
 
 GIMLI_MAJOR_VERSION=0
@@ -46,10 +60,13 @@ AC_CONFIG_HEADER([config.h])
 
 AC_PREFIX_DEFAULT(`pwd`)
 
+#
 # Checks for programs.
+#
 AC_PROG_CXX
+AC_LANG([C++])
 
-# check wyh this doesnt work
+# check why this doesn't work
 #AS_COMPILER_FLAGS( GLOBAL_CFLAGS, "-Wall -ansi -pedantic" )
 
 AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic"])
@@ -60,29 +77,42 @@ AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic"])
 #CXXFLAGS="$CXXFLAGS -O2 -g -Wall -fPIC -ansi -pedantic -D ${PACKAGE_VERSION}"
 #AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -Wall"])
 
+#
 # Checks for libraries.
+#
 AC_CHECK_LIB(m, sqrt )
 
+#
 # Checks for header files.
-AC_CHECK_HEADERS([sys/timeb.h])
-AC_CHECK_HEADERS([boost/bind.hpp])
+#
 AC_FUNC_ALLOCA
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-
-# Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
-AC_C_CONST
-AC_C_INLINE
-AC_TYPE_SIZE_T
-AC_STRUCT_TM
-AC_CHECK_TYPE( uint )
 
+AC_CHECK_HEADER([sys/timeb.h])
+AC_CHECK_HEADER([boost/bind.hpp],
+                    [AC_DEFINE([HAVE_BOOST_BIND_HPP], 1, [Define to 1 if you have <boost/bind.hpp>.])],
+                    [AC_MSG_ERROR([Sorry, boost/bind.hpp is requried.
+                    You can add your boost installation path to the configure call, e.g.,
+                    CPPFLAGS='-I /c/home/boost/include' ./configure ])] )
+#
+# Checks for typedefs, structures, and compiler characteristics.
+#
+
+#AC_C_CONST
+#AC_C_INLINE
+AC_TYPE_SIZE_T
+
+#
 # Checks for library functions.
+#
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([strerror])
-	
+
+#	
 # Checks for packages.
+#
 #PKG_CHECK_MODULES( CHECK, [ check >= 0.8.0 ] ) 
 
 AM_PATH_CPPUNIT(,[have_unittest="yes"],
@@ -236,7 +266,7 @@ AC_MSG_RESULT()
 
 AC_MSG_RESULT( 
 
- GIMLi configuration complete for ${host}
+GIMLi configuration complete for ${host}
 
 Source directory:       ${srcdir} 
 Installation directory: ${prefix}

@@ -53,6 +53,7 @@ DataContainer & DataContainer::operator = ( const DataContainer & data ){
 
 void DataContainer::init(){
     dataMap_["valid"] = RVector( 0 );
+    sensorIndexOnFileFromOne_ = false;
     initTokenTranslator();
 }
 
@@ -90,6 +91,31 @@ void DataContainer::copy_( const DataContainer & data ){
     inputFormatString_ = data.inputFormatString();
 
     dataMap_ = data.dataMap();
+}
+
+long DataContainer::createSensor( const RVector3 & pos, double tolerance ){
+
+    long ret = -1;
+    for ( uint i = 0; i < sensorPoints_.size(); i ++ ){
+        if ( pos.distance( sensorPoints_[ i ] ) < tolerance ){
+            ret = i;
+        }
+    }
+
+    if ( ret == -1 ){
+        ret = sensorPoints_.size();
+        sensorPoints_.push_back( pos );
+    }
+    return ret;
+}
+
+void DataContainer::registerSensorIndex( const std::string & token ) { 
+    dataSensorIdx_.insert( token );
+    this->set( token, RVector( this->size(), -1.0 ) );
+}
+
+bool DataContainer::isSensorIndex( const std::string & token ) const {
+    return dataSensorIdx_.find( token ) != dataSensorIdx_.end();
 }
 
 int DataContainer::load( const std::string & fileName ){
@@ -237,7 +263,7 @@ int DataContainer::load( const std::string & fileName ){
 //                  translateAlias( it->first ) == "b" ||
 //                  translateAlias( it->first ) == "m" ||
 //                  translateAlias( it->first ) == "n" ){
-//                 offset = -1.0;
+//                 offset = - sensorIndexOnFileFromOne_;
 //             }
 // 
 // 
@@ -325,85 +351,108 @@ int DataContainer::load( const std::string & fileName ){
     return 1;
 }
 
-int DataContainer::save( const std::string & fileName, const std::string & formatVals,
-                        const std::string & formatElecs, bool verbose ) const {
-    THROW_TO_IMPL
-//     std::fstream file; if ( !openOutFile( fileName, & file ) ) return 0;
-// 
-//     file.precision( 14 );
-// 
-//     file << electrodes_.size() << std::endl;
-//     std::string elecString( formatElecs );
-//     file << "# " << elecString << std::endl;
-// 
-//     std::vector < std::string > format( getSubstrings( elecString ) );
-//     for ( uint i = 0, imax = electrodes_.size(); i < imax; i ++ ){
-// 	for ( uint j = 0; j < format.size(); j ++ ){
-// 	    if ( format[ j ] == "x" || format[ j ] == "X" ) file << electrodes_[ i ]->pos().x();
-// 	    if ( format[ j ] == "y" || format[ j ] == "Y" ) file << electrodes_[ i ]->pos().y();
-// 	    if ( format[ j ] == "z" || format[ j ] == "Z" ) file << electrodes_[ i ]->pos().z();
-// 	    if ( j < format.size() -1 ) file << "\t";
-// 	}
-// 	file << std::endl;
-//     }
-// 
-//     int count = sum( get("valid") == 1 );
-// 
-//     file << count << std::endl;
-//     std::string formatString( formatVals );
-//     file << "# " << formatString << std::endl;
-// 
-//     std::vector < std::string > token( getSubstrings( formatString ) );
-// 
-//     std::vector < const RVector * > outVec;
-//     std::vector < bool > outInt;
-//     for ( uint i = 0; i < token.size(); i ++ ){
-//         //	std::cout << token[ i ] << std::endl;
-// 
-//         std::string valName;
-//         if ( haveTranslationForAlias( token[ i ] ) ){
-//             valName = translateAlias( token[ i ] );
-//         } else {
-//             valName = token[ i ];
-//         }
-//     //	std::cout << token[ i ] << "  "<< valName << std::endl;
-//         if ( dataMap_.count( valName ) ){
-//             outVec.push_back( &dataMap_.find( valName )->second );
-// 
-//             if ( valName == "a" || valName == "b" || valName == "m"|| valName == "n" ){
-//                 outInt.push_back( true );
-//             } else {
-//                 outInt.push_back( false );
-//             }
-//         } else {
-//             throwError( 1, WHERE_AM_I + " no such data: " + valName );
-//         }
-//     }
-// 
-//     for ( int i = 0, imax = this->size(); i < imax; i ++ ){
-//         if ( ! get("valid")[ i ] ) continue;
-// 
-//         file.setf( std::ios::scientific, std::ios::floatfield );
-//         file.precision( 14 );
-// 
-//         for ( uint j = 0; j < token.size(); j ++ ){
-// 
-// 	    if ( outInt[ j ] ){
-// 		file << int( (*outVec[ j ])[ i ] ) +1;
-// 	    } else {
-// 		file << (*outVec[ j ])[ i ];
-// 	    }
-//             if ( j < token.size() -1 ) file << "\t";
-//         }
-//         file << std::endl;
-//   }
-//   file.close();
-// 
-//   if ( verbose ){
-//     std::cout << "Wrote: " << fileName << " with " << electrodes_.size()
-// 	          << " electrodes and " << count << " data." <<  std::endl;
-//   }
-  return 1;
+int DataContainer::save( const std::string & fileName, const std::string & formatData,
+                         const std::string & formatSensor, bool verbose ) const {
+    
+    std::fstream file; if ( !openOutFile( fileName, & file ) ) return 0;
+
+    file.precision( 14 );
+    
+    //** START write sensor data
+    file << sensorPoints_.size() << std::endl;
+    std::string sensorsString( formatSensor );
+    file << "# " << sensorsString << std::endl;
+
+    std::vector < std::string > format( getSubstrings( sensorsString ) );
+    for ( uint i = 0, imax = sensorPoints_.size(); i < imax; i ++ ){
+        for ( uint j = 0; j < format.size(); j ++ ){
+            if ( format[ j ] == "x" || format[ j ] == "X" ) file << sensorPoints_[ i ].x();
+            if ( format[ j ] == "y" || format[ j ] == "Y" ) file << sensorPoints_[ i ].y();
+            if ( format[ j ] == "z" || format[ j ] == "Z" ) file << sensorPoints_[ i ].z();
+            if ( j < format.size() -1 ) file << "\t";
+        }
+        file << std::endl;
+    }
+
+    //** START write data map
+    std::vector < const RVector * > outVec;
+    std::vector < bool > outInt;
+    
+    std::vector< uint > toSaveIdx;
+    std::string formatString;
+    
+    if ( lower( formatData ) == "all" ){
+        toSaveIdx = find( get("valid") > -1 );
+        formatString = this->tokenList();
+    } else {
+        toSaveIdx = find( get("valid") == 1 );
+        formatString = formatData;
+    }
+    
+    int count = toSaveIdx.size();
+    file << count << std::endl;
+    file << "# " << formatString << std::endl;
+
+    std::vector < std::string > token( getSubstrings( formatString ) );
+    
+    for ( uint i = 0; i < token.size(); i ++ ){
+        //  std::cout << token[ i ] << std::endl;
+
+        std::string valName;
+        if ( haveTranslationForAlias( token[ i ] ) ){
+            valName = translateAlias( token[ i ] );
+        } else {
+            valName = token[ i ];
+        }
+    //  std::cout << token[ i ] << "  "<< valName << std::endl;
+        if ( dataMap_.count( valName ) ){
+            outVec.push_back( &dataMap_.find( valName )->second  );
+
+            if ( isSensorIndex( valName ) ){
+                outInt.push_back( true );
+            } else {
+                outInt.push_back( false );
+            }
+        } else {
+            throwError( 1, WHERE_AM_I + " no such data: " + valName );
+        }
+    }
+
+    for ( uint i = 0; i < toSaveIdx.size(); i ++ ){
+        file.setf( std::ios::scientific, std::ios::floatfield );
+        file.precision( 14 );
+
+        for ( uint j = 0; j < token.size(); j ++ ){
+
+            if ( outInt[ j ] ){
+                file << int( ( *outVec[ j ] )[ toSaveIdx[ i ] ] ) + sensorIndexOnFileFromOne_;
+            } else {
+                 if ( token[ j ] == "valid" ){
+                    file << int( ( *outVec[ j ] )[ toSaveIdx[ i ] ] );
+                 } else {
+                    file << ( *outVec[ j ] )[ toSaveIdx[ i ] ];
+                 }
+            }
+            if ( j < token.size() -1 ) file << "\t";
+        }
+        file << std::endl;
+    }
+    
+    //** START write additional points
+    file << topoPoints_.size() << std::endl;
+    for ( uint i = 0; i < topoPoints_.size(); i ++ ){
+        std::cout   << topoPoints_[ i ].x() << "\t" 
+                    << topoPoints_[ i ].y() << "\t" 
+                    << topoPoints_[ i ].z() << std::endl;
+    }
+        
+    file.close();
+
+    if ( verbose ){
+        std::cout << "Wrote: " << fileName << " with " << sensorPoints_.size()
+                << " sensors and " << count << " data." <<  std::endl;
+    }
+    return 1;
 }
 
 std::string DataContainer::tokenList() const {
@@ -424,7 +473,7 @@ void DataContainer::showInfos() const {
 }
 
 void DataContainer::add( const std::string & token, const RVector & data, const std::string & description ){
-    set( token, data );
+    this->set( token, data );
     this->setDataDescription( token, description );
 //     if ( data.size() == this->size() ) {
 //         dataMap_.insert( make_pair( token, data ) );
@@ -451,6 +500,15 @@ const RVector & DataContainer::get( const std::string & token ) const {
     return *new RVector( 0 );
 }
 
+RVector * DataContainer::ref( const std::string & token ){
+    if ( dataMap_.count( token ) ) {
+        return &dataMap_.find( token )->second;
+    }
+
+    throwError( 1, WHERE_AM_I + " unknown token data for ref: " + token + " available are: " + tokenList()  );
+    return NULL;
+}
+
 void DataContainer::setDataDescription( const std::string & token, const std::string & description ){
     std::cout << "( this->exists( token ) ) " << this->exists( token ) << std::endl;
     if ( this->exists( token ) ){
@@ -465,15 +523,6 @@ std::string DataContainer::dataDescription( const std::string & token ) const {
     return "";
 }
 
-RVector * DataContainer::ref( const std::string & token ){
-    if ( dataMap_.count( token ) ) {
-        return &dataMap_.find( token )->second;
-    }
-
-    throwError( 1, WHERE_AM_I + " unknown token data for ref: " + token + " available are: " + tokenList()  );
-    return NULL;
-}
-
 void DataContainer::removeInvalid(){
     std::vector< size_t > validIdx( find( get("valid") == 1 ) );
 
@@ -485,7 +534,15 @@ void DataContainer::removeInvalid(){
 void DataContainer::resize( uint size ) {
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin();
             it!= dataMap_.end(); it ++ ){
-        it->second.resize( size, 0.0 );
+        
+        if ( isSensorIndex( it->first ) ){
+            // if the data field represent a sensorIDX fill with -1
+            it->second.resize( size, -1.0 );
+        } else {
+            // else pure data, fill with 0.0
+            it->second.resize( size, 0.0 );
+        }
+        
     }
 }
 

@@ -15,7 +15,7 @@ $(TRIANGLE):
 	unzip -d triangle $(TRIANGLE)
 
 triangle: prep $(TRIANGLE)
-	echo "building triangle "
+	echo "building triangle for ", ${OSTYPE}
  
 	if [ $(OSTYPE) == "msys" ]; then \
 		sed -i -e 's/-DLINUX/-DCPU86/g' triangle/makefile && \
@@ -33,6 +33,9 @@ $(SUITESPARSE):
 	tar -xzvf $(SUITESPARSE)
 
 suitesparse: prep $(SUITESPARSE)
+
+	echo "building suitesparse for ", $(OSTYPE)
+
 	ln -fs SuiteSparse/LDL
 	ln -fs SuiteSparse/AMD
 	ln -fs SuiteSparse/CAMD
@@ -46,7 +49,7 @@ suitesparse: prep $(SUITESPARSE)
 		sed -i -e 's/CC = cc/CC = gcc -fPIC/g' SuiteSparse/UFconfig/UFconfig.mk; \
 	fi
 
-	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/UFconfig/UFconfig.mk; \
+	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/UFconfig/UFconfig.mk; 
 
 	for i in AMD CAMD COLAMD CCOLAMD LDL CHOLMOD; do \
 		$(MAKE) -C $$i/Lib clean; \

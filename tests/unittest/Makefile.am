@@ -12,6 +12,7 @@ gimliUnitTest_SOURCES = \
 	unittest.sh \
 	unitTest.cpp \
 	testGIMLiMisc.h \
+	testDataContainer.h \
 	testVector.h \
 	testShape.h \
 	testGeometry.h \
