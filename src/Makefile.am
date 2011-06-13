@@ -99,10 +99,13 @@ libgimli_la_LDFLAGS= \
 	-no-undefined -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-release $(LT_RELEASE)
  
-# libgimli_la_LIBADD = ../externals/lib/libamd.a \
-# 			../externals/lib/libcamd.a \
-# 			../externals/lib/libccolamd.a \
-# 			../externals/lib/libcholmod.a \
-# 			../externals/lib/libcolamd.a \
-# 			../externals/lib/libldl.a \
-# 			../externals/lib/libtriangle.a
+#libgimli_la_LIBADD = ../external/lib/libtriangle.lib
+#libgimli_la_LIBADD = -Wl,-ltriangle
+
+#libgimli_la_LIBADD = ../external/lib/libamd.a \
+# 			../external/lib/libcamd.a \
+# 			../external/lib/libccolamd.a \
+# 			../external/lib/libcholmod.a \
+# 			../external/lib/libcolamd.a \
+# 			../external/lib/libldl.a \
+# 			../external/lib/libtriangle.a

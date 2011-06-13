@@ -91,17 +91,24 @@ AC_HEADER_SYS_WAIT
 AC_HEADER_STDBOOL
 
 AC_CHECK_HEADER([sys/timeb.h])
-AC_CHECK_HEADER([boost/bind.hpp],
-                    [AC_DEFINE([HAVE_BOOST_BIND_HPP], 1, [Define to 1 if you have <boost/bind.hpp>.])],
-                    [AC_MSG_ERROR([Sorry, boost/bind.hpp is requried.
+#
+# CHECK for boost/bind.hpp
+#
+BOOST_REQUIRE([1.41],[AC_MSG_ERROR([Sorry, boost is requried.
                     You can add your boost installation path to the configure call, e.g.,
-                    CPPFLAGS='-I /c/home/boost/include' ./configure ])] )
+                    BOOST_ROOT=/c/home/boost/ ./autogen.sh
+					or
+					./configure --with-boost=/c/home/boost])])
+BOOST_FIND_HEADER([boost/bind.hpp])
+
+AC_SUBST([CPPFLAGS], ["${CPPFLAGS} ${BOOST_CPPFLAGS}"])
+
 #
 # Checks for typedefs, structures, and compiler characteristics.
 #
 
-#AC_C_CONST
-#AC_C_INLINE
+AC_C_CONST
+AC_C_INLINE
 AC_TYPE_SIZE_T
 
 #
@@ -155,9 +162,8 @@ AC_CHECK_LIB( [cholmod], [main])
 #AC_SUBST([CXXFLAGS], [$CXXFLAGS "-pthread"])
 
 # for mkl only
-#AC_CHECK_LIB( pthread, [ _pthread_atfork], [], [], [ -lgfortran ]  )
+#AC_CHECK_LIB( pthread, [_pthread_atfork], [], [], [ -lgfortran ]  )
 #AC_CHECK_LIB( gfortran, [_gfortran_free] )
-
 
 AC_MSG_RESULT()
 
@@ -167,9 +173,13 @@ dnl ############################################################################
 
 GIMLI_PATH=`pwd`
 GIMLI_EXTERNAL_LIBS_PATH=$GIMLI_PATH/external/lib
-LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH"
+#LDFLAGS_OLD="$LDFLAGS"
+#LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH"
 
-AC_CHECK_LIB( [triangle], [triangulate])
+#AC_CHECK_LIB( [triangle], [triangulate], [], [], [-lm] )
+#$LDFLAGS="$LDFLAGS_OLD"
+AC_DEFINE( [HAVE_LIBTRIANGLE], [1], [Define and we can use unittest])  
+LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH -Wl,-ltriangle,-lcrtdll,-lmingwex,-lkernel32,-lgcc"
 
 if test "$ac_cv_lib_ldl_main" == "no"; then
     AC_CHECK_LIB( [ldl],          [ldl_symbolic])
@@ -204,8 +214,6 @@ AC_CONFIG_FILES([Makefile
                 ] )
 
 #                apps/bert/Makefile
-
-
 #                apps/jointinv/Makefile
 #                apps/misc/Makefile
 #                apps/traveltime/Makefile

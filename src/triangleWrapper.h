@@ -47,7 +47,7 @@ public:
     /*! Return the triangle switches. */
     inline const std::string & switches( ) const { return switches_; }
 
-    /*! Generator the mesh and store in outMesh. */
+    /*! Generate the mesh and store in mesh. */
     void generate( Mesh & mesh );
 
     void addRegionMarkerTmp( int marker, const RVector3 & pos, double area );
