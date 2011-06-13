@@ -111,12 +111,16 @@ void TriangleWrapper::generate( Mesh & mesh ){
     if ( inMesh_->nodeCount() < 3 ){
         throwError( 1, WHERE_AM_I + " input mesh must have at least 3 nodes " );
     }
+	std::cout << "1" << std::endl;
     if ( mesh_output_->pointlist ) {
         freeMemory_();
         allocateOutMemory_();
     }
+	std::cout << "2" << std::endl;
     transformMeshToTriangle_( *inMesh_, * mesh_input_ );
+	std::cout << "3" << switches_ << " " << switches_.c_str() << std::endl;
     triangulate( (char *)switches_.c_str(), mesh_input_, mesh_output_, mesh_voronoi_output_ );
+	std::cout << "4" << std::endl;
     transformTriangleToMesh_( *mesh_output_, mesh );
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;

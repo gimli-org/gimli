@@ -6,11 +6,12 @@
     #include <cppunit/ui/text/TestRunner.h>
 
     //#include "testGIMLiMisc.h"
-    #include "testDataContainer.h"
+    //#include "testDataContainer.h"
 //     #include "testVector.h"
 //     #include "testShape.h"
 //     #include "testGeometry.h"
 //     #include "testFEM.h"
+	#include "testExternals.h"
 #endif // HAVE_UNITTEST
 
 #include <cstdlib>
