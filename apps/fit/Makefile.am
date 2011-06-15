@@ -1,7 +1,6 @@
 bin_PROGRAMS = \
-	polyfit
-	
-#harmfit
+	polyfit \
+	harmfit
 
 INCLUDES = -I $(top_srcdir)/src
 
