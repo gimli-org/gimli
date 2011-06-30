@@ -1,25 +1,29 @@
-bin_PROGRAMS = 
-# 	dc1dinv 
+bin_PROGRAMS = \
+ 	mt1dinv \
+ 	mt1dsmooth \
+ 	mrs1dsmooth \
+ 	mrs1dblock
+# 	dc1dinv \
 # 	dc1dlong \
-# 	dc1dsmooth \
-# 	mt1dinv \
-# 	mrs1dsmooth \
-# 	mrs1dblock
+# 	dc1dsmooth
 
 INCLUDES = \
 	-I $(top_srcdir)/src
 
-dc1dinv_SOURCES = dc1dinv.cpp
-dc1dinv_LDADD = ../../src/.libs/libgimli.la
+#dc1dinv_SOURCES = dc1dinv.cpp
+#dc1dinv_LDADD = ../../src/.libs/libgimli.la
 
-dc1dlong_SOURCES = dc1dlong.cpp
-dc1dlong_LDADD = ../../src/.libs/libgimli.la
+#dc1dlong_SOURCES = dc1dlong.cpp
+#dc1dlong_LDADD = ../../src/.libs/libgimli.la
 
-dc1dsmooth_SOURCES = dc1dsmooth.cpp
-dc1dsmooth_LDADD = ../../src/.libs/libgimli.la
+#dc1dsmooth_SOURCES = dc1dsmooth.cpp
+#dc1dsmooth_LDADD = ../../src/.libs/libgimli.la
 
 mt1dinv_SOURCES = mt1dinv.cpp
 mt1dinv_LDADD = ../../src/.libs/libgimli.la
+
+mt1dsmooth_SOURCES = mt1dsmooth.cpp
+mt1dsmooth_LDADD = ../../src/.libs/libgimli.la
 
 mrs1dsmooth_SOURCES = mrs1dsmooth.cpp
 mrs1dsmooth_LDADD = ../../src/.libs/libgimli.la

@@ -26,8 +26,6 @@
 #include "pos.h"
 #include "mesh.h"
 #include "datacontainer.h"
-//#include "datamap.h"
-//#include "electrode.h"
 #include "regionManager.h"
 
 #include <vector>
@@ -157,9 +155,11 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness( ) const {
     RVector apparentSlowness ( nData );
 
     for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-        s = (*dataContainer_)( dataIdx ).aIdx();
-        g = (*dataContainer_)( dataIdx ).mIdx();
-        edgeLength = dataContainer_->electrode( s ).pos().distance( dataContainer_->electrode( g ).pos() ) ;
+//        s = (*dataContainer_)( dataIdx ).aIdx();
+//        g = (*dataContainer_)( dataIdx ).mIdx();
+        s = (*dataContainer_)( "s" )[dataIdx ];
+        g = (*dataContainer_)( "g" )[dataIdx ];
+        edgeLength = dataContainer_->sensorPosition( s ).distance( dataContainer_->sensorPosition( g ) ) ;
         apparentSlowness[ dataIdx ] = dataContainer_->get( "t" )[ dataIdx ] / edgeLength;
     }
     return apparentSlowness;
@@ -168,7 +168,7 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness( ) const {
 RVector TravelTimeDijkstraModelling::calculate( ) {
     dijkstra_.setGraph( createGraph() );
 
-    std::vector < uint > sources( mesh_->findNodesIdxByMarker( MARKER_NODE_ELECTRODE ) );
+    std::vector < uint > sources( mesh_->findNodesIdxByMarker( -99 ) ); //hack!!!
     int nShots = sources.size();
 
     std::vector < RVector > dMap( nShots, RVector( nShots ) );
@@ -185,8 +185,8 @@ RVector TravelTimeDijkstraModelling::calculate( ) {
     int s = 0, g = 0;
     RVector resp( nData );
     for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-        s = (*dataContainer_)( dataIdx ).aIdx();
-        g = (*dataContainer_)( dataIdx ).mIdx();
+        s = (*dataContainer_)( "s" )[ dataIdx ];
+        g = (*dataContainer_)( "g" )[ dataIdx ];
 
         resp[ dataIdx ] = dMap[ s ][ g ];
     }
@@ -203,7 +203,7 @@ RVector TravelTimeDijkstraModelling::response( const RVector & slowness ) {
     this->mapModel( slowness, background_ );
     dijkstra_.setGraph( createGraph() );
 
-    std::vector < uint > sources( mesh_->findNodesIdxByMarker( MARKER_NODE_ELECTRODE ) );
+    std::vector < uint > sources( mesh_->findNodesIdxByMarker( -99 ) ); //hack!!!
     int nShots = sources.size();
 
     std::vector < RVector > dMap( nShots, RVector( nShots ) );
@@ -222,8 +222,8 @@ RVector TravelTimeDijkstraModelling::response( const RVector & slowness ) {
     RVector resp( nData );
 
     for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-        s = (*dataContainer_)( dataIdx ).aIdx();
-        g = (*dataContainer_)( dataIdx ).mIdx();
+        s = (*dataContainer_)( "s" )[dataIdx];
+        g = (*dataContainer_)( "g" )[dataIdx];
 
         resp[ dataIdx ] = dMap[ s ][ g ];
     }
@@ -245,7 +245,7 @@ void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, c
         // und dann weiter wie vorher nur ohne die -2
     dijkstra_.setGraph( createGraph() );
 
-    std::vector < uint > sources( mesh_->findNodesIdxByMarker( MARKER_NODE_ELECTRODE ) );
+    std::vector < uint > sources( mesh_->findNodesIdxByMarker( -99 ) ); //hack!!!
     if ( sources.size() < 1 ) {
         //** was passiert hier bei free-elecs oder CEM
         //** (schnellste) Zelle suchen in der Knoten ist und Laufzeit in Zellknoten ausrechnen. Damit weiter dijkstra
@@ -278,8 +278,8 @@ void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, c
         if ( verbose_ ) openOutFile( "jacobian.way", &file );
 
         for ( uint dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-            int s = (*dataContainer_)( dataIdx ).aIdx();
-            int g = (*dataContainer_)( dataIdx ).mIdx();
+            int s = (*dataContainer_)( "s" )[ dataIdx ];
+            int g = (*dataContainer_)( "g" )[ dataIdx ];
             std::set < Cell * > neighborCells;
 
             for ( uint i = 0; i < wayMatrix[ s ][ g ].size()-1; i ++ ) {

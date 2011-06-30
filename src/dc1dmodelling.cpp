@@ -20,12 +20,14 @@
  ***************************************************************************/
 
 #include "gimli.h"
+#include "datacontainer.h"
 #include "dc1dmodelling.h"
 #include "meshgenerators.h"
 
 namespace GIMLI {
 
-void calculateDC1D( DataContainer & data, const std::string & modelFile, const std::string & outfile ) {
+void calculateDC1D( DataContainer & data, const std::string & modelFile, const std::string & outfile,
+                   RVector & geomFactor ) {
     std::fstream file;
     if ( !openInFile( modelFile, &file, true ) ) return ;
 
@@ -50,9 +52,9 @@ void calculateDC1D( DataContainer & data, const std::string & modelFile, const s
 
     Mesh mesh;
     DC1dModelling mod( mesh, data, nLayers, false );
-    data.set("rhoa", mod.response( model ) );
-    data.set( "k", geometricFactor( data ) );
-    data.save( outfile );
+//    data.set("rhoa", mod.response( model ) );
+//    data.set( "k", geometricFactor() );
+//    data.save( outfile );
 }
 
 DC1dModelling::DC1dModelling( Mesh & mesh, DataContainer & data, size_t nlayers, bool verbose )
@@ -117,15 +119,18 @@ void DC1dModelling::postprocess_(){
     an_ = RVector( dataContainer_->size(), MAX_DOUBLE );
     bn_ = RVector( dataContainer_->size(), MAX_DOUBLE );
     tmp_ = RVector( dataContainer_->size() );
+    std::vector< RVector3 > pos( dataContainer_->sensorPositions() );
 
     for ( size_t i = 0 ; i < dataContainer_->size() ; i++ ) {
-        am_[ i ] = ( *dataContainer_ )( i ).eA( )->pos().distance( ( *dataContainer_ )( i ).eM( )->pos() );
-        if ( ( *dataContainer_ )( i ).eN() )
-            an_[ i ] = ( *dataContainer_ )( i ).eA( )->pos().distance( ( *dataContainer_ )( i ).eN( )->pos() );
-        if ( ( *dataContainer_ )( i ).eB() )
-            bm_[ i ] = ( *dataContainer_ )( i ).eB( )->pos().distance( ( *dataContainer_ )( i ).eM( )->pos() );
-        if ( ( *dataContainer_ )( i ).eN() && ( *dataContainer_ )( i ).eB() )
-            bn_[ i ] = ( *dataContainer_ )( i ).eB( )->pos().distance( ( *dataContainer_ )( i ).eN( )->pos() );
+//        am_[ i ] = ( *dataContainer_ )( i ).eA( )->pos().distance( ( *dataContainer_ )( i ).eM( )->pos() );
+        int ia = int( ( *dataContainer_ )("a")[ i ] );
+        int ib = int( ( *dataContainer_ )("b")[ i ] );
+        int im = int( dataContainer_->get("m")[ i ] );
+        int in = int( dataContainer_->get("n")[ i ] );
+        if ( ia > -1 && im > -1 ) am_[ i ] = pos[ia].distance(pos[im]);
+        if ( ia > -1 && in > -1 ) an_[ i ] = pos[ia].distance(pos[in]);
+        if ( ib > -1 && im > -1 ) bm_[ i ] = pos[ib].distance(pos[im]);
+        if ( ib > -1 && in > -1 ) bn_[ i ] = pos[ib].distance(pos[in]);
     }
     k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ );
 }
