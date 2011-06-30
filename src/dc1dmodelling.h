@@ -23,9 +23,10 @@
 #define _GIMLI_DC1DMODELLING__H
 
 #include "gimli.h"
-#include "stlvector.h"
-#include "bert.h"
+#include "mesh.h"
 #include "meshgenerators.h"
+#include "modellingbase.h"
+#include "vectortemplates.h"
 
 namespace GIMLI{
 /*! DC (direct current) 1D modelling */
@@ -86,6 +87,7 @@ public:
         for ( size_t i = 0; i < nlayers_ -1; i++ ) mod[ i ] = std::pow( 2.0, 1.0 + i );
         return mod;
     }
+    
 
 protected:
 

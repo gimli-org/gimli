@@ -14,11 +14,22 @@ libccolamd.a
 These Libraries are part of SuiteSparse
 http://www.cise.ufl.edu/research/sparse/SuiteSparse/
 
-Either install systemwide or copy the libraries into the lib/ path.
+Also needed is the triangle library
 
+libtriangle.a
+
+Either install systemwide or copy the libraries into the lib/ path.
 ########################################################
 you can download and install them by using the Makefile
 just call 
 
 make
 
+To check your operating system you might to call before
+
+export OSTYPE
+
+If wget does not work copy the zip/tar.gz files here.
+Note that wget for Windows/msys can be installed using
+mingw-get install wget
+Proxy settings can be done in .wgetrc file.
