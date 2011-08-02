@@ -174,12 +174,12 @@ dnl ############################################################################
 GIMLI_PATH=`pwd`
 GIMLI_EXTERNAL_LIBS_PATH=$GIMLI_PATH/external/lib
 #LDFLAGS_OLD="$LDFLAGS"
-#LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH"
+LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH"
 
-#AC_CHECK_LIB( [triangle], [triangulate], [], [], [-lm] )
+AC_CHECK_LIB( [triangle], [triangulate], [], [], [-lm] )
 #$LDFLAGS="$LDFLAGS_OLD"
-AC_DEFINE( [HAVE_LIBTRIANGLE], [1], [Define and we can use unittest])  
-LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH -Wl,-ltriangle,-lcrtdll,-lmingwex,-lkernel32,-lgcc"
+#AC_DEFINE( [HAVE_LIBTRIANGLE], [1], [Define and we can use unittest])  
+#LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH -Wl,-ltriangle,-lcrtdll,-lmingwex,-lkernel32,-lgcc"
 
 if test "$ac_cv_lib_ldl_main" == "no"; then
     AC_CHECK_LIB( [ldl],          [ldl_symbolic])

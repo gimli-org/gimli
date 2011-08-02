@@ -10,8 +10,9 @@ prep:
 	mkdir -p lib
 
 $(TRIANGLE): wget unzip
-	#wget -nc -nd $(TRIANGLE_URL)
-	#unzip -o -d triangle $(TRIANGLE)
+	wget -nc -nd $(TRIANGLE_URL)
+#	rm -rf triangle
+#	unzip -o -d triangle $(TRIANGLE)
 
 triangle: prep $(TRIANGLE)
 	echo "building triangle for ", ${OSTYPE}
@@ -25,20 +26,13 @@ triangle: prep $(TRIANGLE)
 	rm -f lib/libtriangle.a
 	ar cqs lib/libtriangle.a triangle/triangle.o
 
-$(SUITESPARSE):
+$(SUITESPARSE): wget unzip
 	wget -nc -nd $(SUITESPARSE_URL)
 	tar -xzvf $(SUITESPARSE)
 
 suitesparse: prep $(SUITESPARSE)
 
 	echo "building suitesparse for ", $(OSTYPE)
-
-	ln -fs SuiteSparse/LDL
-	ln -fs SuiteSparse/AMD
-	ln -fs SuiteSparse/CAMD
-	ln -fs SuiteSparse/COLAMD
-	ln -fs SuiteSparse/CCOLAMD
-	ln -fs SuiteSparse/CHOLMOD
 
 	if [ $(OSTYPE) == "msys" ]; then \
 		sed -i -e 's/CC = cc/CC = gcc /g' SuiteSparse/UFconfig/UFconfig.mk; \
@@ -48,11 +42,15 @@ suitesparse: prep $(SUITESPARSE)
 
 	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/UFconfig/UFconfig.mk; 
 
-	for i in AMD CAMD COLAMD CCOLAMD LDL CHOLMOD; do \
-		$(MAKE) -C $$i/Lib clean; \
-		$(MAKE) -C $$i/Lib; \
+	for i in AMD CAMD COLAMD CCOLAMD LDL; do \
+		$(MAKE) -C SuiteSparse/$$i clean; \
+		$(MAKE) -C SuiteSparse/$$i; \
 		cp SuiteSparse/$$i/Lib/*.a lib/; \
 	done
+
+	$(MAKE) -C SuiteSparse/CHOLMOD/Lib clean
+	$(MAKE) -C SuiteSparse/CHOLMOD/Lib 
+	cp SuiteSparse/CHOLMOD/Lib/*.a lib/; \
 
 wget:
 	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ] ; then \
