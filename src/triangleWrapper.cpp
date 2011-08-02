@@ -94,7 +94,7 @@ TriangleWrapper::~TriangleWrapper(){
 }
 
 void TriangleWrapper::init_( ){
-    switches_ = "-pz";
+    switches_ = "-pze";
 #ifdef HAVE_LIBTRIANGLE
     mesh_input_           = new struct triangulateio;
     mesh_output_          = new struct triangulateio;
@@ -111,17 +111,13 @@ void TriangleWrapper::generate( Mesh & mesh ){
     if ( inMesh_->nodeCount() < 3 ){
         throwError( 1, WHERE_AM_I + " input mesh must have at least 3 nodes " );
     }
-	std::cout << "1" << std::endl;
     if ( mesh_output_->pointlist ) {
         freeMemory_();
         allocateOutMemory_();
     }
-	std::cout << "2" << std::endl;
     transformMeshToTriangle_( *inMesh_, * mesh_input_ );
-	std::cout << "3" << switches_ << " " << switches_.c_str() << std::endl;
     triangulate( (char *)switches_.c_str(), mesh_input_, mesh_output_, mesh_voronoi_output_ );
-	std::cout << "4" << std::endl;
-    transformTriangleToMesh_( *mesh_output_, mesh );
+    transformTriangleToMesh_( * mesh_output_, mesh );
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
 #endif
@@ -142,6 +138,7 @@ void TriangleWrapper::allocateOutMemory_(){
 
     mesh_output_->edgelist              = (int *) NULL;
     mesh_output_->edgemarkerlist        = (int *) NULL;
+    mesh_output_->normlist              = (REAL *) NULL;
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
 #endif
@@ -161,7 +158,8 @@ void TriangleWrapper::freeMemory_(){
 
     if ( mesh_output_->edgelist != (int*)NULL )             free( mesh_output_->edgelist );
     if ( mesh_output_->edgemarkerlist != (int*)NULL )       free( mesh_output_->edgemarkerlist );
-
+    if ( mesh_output_->normlist != (REAL *) NULL )          free( mesh_output_->normlist );
+        
     delete [] mesh_input_->pointlist;
     delete [] mesh_input_->pointmarkerlist;
     delete [] mesh_input_->segmentlist;
@@ -191,9 +189,13 @@ void TriangleWrapper::transformTriangleToMesh_( const triangulateio & trimesh, M
             mesh.createEdge( mesh.node( trimesh.segmentlist[ i * 2 ] ), mesh.node(trimesh.segmentlist[ i * 2 + 1 ] ), marker );
         }
     } else {
-        for ( int i = 0; i < trimesh.numberofedges; i ++ ){
-            if ( trimesh.edgemarkerlist != (int*)NULL ) marker = trimesh.edgemarkerlist[ i ];
-            mesh.createEdge( mesh.node( trimesh.edgelist[ i * 2 ] ), mesh.node( trimesh.edgelist[ i * 2 + 1 ] ), marker );
+        if ( trimesh.edgelist != NULL ){
+            for ( int i = 0; i < trimesh.numberofedges; i ++ ){
+                if ( trimesh.edgemarkerlist != (int*)NULL ) marker = trimesh.edgemarkerlist[ i ];
+                mesh.createEdge( mesh.node( trimesh.edgelist[ i * 2 ] ), mesh.node( trimesh.edgelist[ i * 2 + 1 ] ), marker );
+            }
+        } else {
+            std::cout << "Warning! " << WHERE_AM_I << " edges are not exported. Append -e flag to the triangle command." << std::endl;
         }
     }
 

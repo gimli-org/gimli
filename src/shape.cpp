@@ -174,15 +174,15 @@ bool EdgeShape::touch1( const RVector3 & pos, bool verbose, int & pFunIdx ) cons
     //** fun < 0 outside; fun == 0 obBound; fun > 0 inside; max(fun ) = barycenter (1/5 for Edge)
     //** sum of N1,N2,N3 is probably 1.0 if its inside
     double fun = std::min( N1, N2 );
-    if ( ( N1 - fun ) < TOLERANCE ) pFunIdx = 0;
-    else if ( ( N2 - fun ) < TOLERANCE ) pFunIdx = 1;
+    if ( ( N1 - fun ) < TOUCH_TOLERANCE ) pFunIdx = 0;
+    else if ( ( N2 - fun ) < TOUCH_TOLERANCE ) pFunIdx = 1;
 
     if ( verbose ){
         std::cout << "r: " << r << " Edg: pFunIdx: " << pFunIdx<< std::endl;
         std::cout << " fun: " << fun << ": " << N1 << " " << N2 << std::endl;
     }
 
-    if ( std::fabs( fun ) < TOLERANCE  ) return true; //** on boundary
+    if ( std::fabs( fun ) < TOUCH_TOLERANCE  ) return true; //** on boundary
     if ( fun > 0.0 ) return true; //** inside
     //** outside
     return false;
@@ -293,7 +293,7 @@ bool TriangleShape::touch1( const RVector3 & pos, bool verbose, int & pFunIdx ) 
         std::cout << "fun: " << fun << ": " << N1 << " " << N2 << " "<< N3 << std::endl;
     }
 
-    if ( std::fabs( fun ) < TOLERANCE  ) return true; //** on boundary
+    if ( std::fabs( fun ) < TOUCH_TOLERANCE  ) return true; //** on boundary
     if ( fun > 0.0 ) return true; //** inside
     //** outside
 
@@ -472,7 +472,7 @@ bool QuadrangleShape::touch1( const RVector3 & pos, bool verbose, int & pFunIdx 
     else if ( N3 == fun ) pFunIdx = 2;
     else if ( N4 == fun ) pFunIdx = 3;
 
-    if ( std::fabs( fun ) < TOLERANCE  ) return true; //** on boundary
+    if ( std::fabs( fun ) < TOUCH_TOLERANCE  ) return true; //** on boundary
     if ( fun > 0.0 ) return true; //** inside
     //** outside
 
@@ -702,7 +702,7 @@ bool TetrahedronShape::touch1( const RVector3 & pos, bool verbose, int & pFunIdx
         std::cout << " fun: " << fun << ": " << N1 << " " << N2 << " "<< N3 << " " << N4 << std::endl;
     }
 
-    if ( std::fabs( fun ) < max( TOLERANCE, TOLERANCE * pos.abs() ) ) return true; //** on boundary
+    if ( std::fabs( fun ) < max( TOUCH_TOLERANCE, TOUCH_TOLERANCE * pos.abs() ) ) return true; //** on boundary
     if ( fun > 0.0 ) return true; //** inside
     //** outside
     return false;

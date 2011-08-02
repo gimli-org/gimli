@@ -78,6 +78,7 @@ typedef int64_t int64;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
 
 #define TOLERANCE 1e-12
+#define TOUCH_TOLERANCE 1e-12
 #define MAX_DOUBLE std::numeric_limits<double>::max()
 #define MAX_INT std::numeric_limits< int >::max()
 
