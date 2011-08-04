@@ -119,7 +119,6 @@ protected:
     size_t nfr_;
     RVector freeAirSolution_;
 };
-
 //class MaxMinModelling:FDEMModelling
 //110,220,440,880,1760,3520,7040,14080,28160,56320
 

@@ -81,18 +81,87 @@ RVector MT1dModelling::rhoa( const RVector & rho, const RVector & thk ) { // aft
     return rhoa;
 }
 
-
-
 void FDEMModelling::calcFreeAirSolution( ){ 
     double zp = ze_ + zs_;    
     RVector rpq = coilspacing_ * coilspacing_ + zp * zp;
     freeAirSolution_ = ( rpq - zp * zp * 3 ) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
 }
 
-RVector FDEMModelling::response( const RVector & model ){ 
-    RVector re( nfr_ ), im( nfr_ );
-    return cat( RVector( re / freeAirSolution_ ), RVector( im / freeAirSolution_ ) ) * 100.0 - 100.0;
+Complex btp( Complex u, double f, RVector rho, RVector d){
+    size_t nl = rho.size();
+    double mu0 = 4e-7 * PI;
+    Complex c(0.0, mu0 * 2 * PI * f);
+    Complex b=sqrt( u*u + c / rho[nl] );
+    if( nl > 1 ) {
+        for( size_t nn=nl-2; nn>0 ; nn-- ){
+            Complex alpha=sqrt( u*u + c/rho[ nn ] );
+            Complex cth=exp( -2*d[nn]*alpha);
+            cth=( 1.0 - cth )/( 1.0 + cth );
+            b=(b+alpha*cth)/(1.0+cth*b/alpha);
+        }
+    }
+    return b;
 }
+
+RVector FDEMModelling::response( const RVector & model ){ 
+    double hankelJ0[100]={
+        2.89878288E-07,3.64935144E-07,4.59426126E-07,5.78383226E-07,
+        7.28141338E-07,9.16675639E-07,1.15402625E-06,1.45283298E-06,
+        1.82900834E-06,2.30258511E-06,2.89878286E-06,3.64935148E-06,
+        4.59426119E-06,5.78383236E-06,7.28141322E-06,9.16675664E-06,
+        1.15402621E-05,1.45283305E-05,1.82900824E-05,2.30258527E-05,
+        2.89878259E-05,3.64935186E-05,4.59426051E-05,5.78383329E-05,
+        7.28141144E-05,9.16675882E-05,1.15402573E-04,1.45283354E-04,
+        1.82900694E-04,2.30258630E-04,2.89877891E-04,3.64935362E-04,
+        4.59424960E-04,5.78383437E-04,7.28137738E-04,9.16674828E-04,
+        1.15401453E-03,1.45282561E-03,1.82896826E-03,2.30254535E-03,
+        2.89863979E-03,3.64916703E-03,4.59373308E-03,5.78303238E-03,
+        7.27941497E-03,9.16340705E-03,1.15325691E-02,1.45145832E-02,
+        1.82601199E-02,2.29701042E-02,2.88702619E-02,3.62691810E-02,
+        4.54794031E-02,5.69408192E-02,7.09873072E-02,8.80995426E-02,
+        1.08223889E-01,1.31250483E-01,1.55055715E-01,1.76371506E-01,
+        1.85627738E-01,1.69778044E-01,1.03405245E-01,-3.02583233E-02,
+        -2.27574393E-01,-3.62173217E-01,-2.05500446E-01,3.37394873E-01,
+        3.17689897E-01,-5.13762160E-01,3.09130264E-01,-1.26757592E-01,
+        4.61967890E-02,-1.80968674E-02,8.35426050E-03,-4.47368304E-03,
+        2.61974783E-03,-1.60171357E-03,9.97717882E-04,-6.26275815E-04,
+        3.94338818E-04,-2.48606354E-04,1.56808604E-04,-9.89266288E-05,
+        6.24152398E-05,-3.93805393E-05,2.48472358E-05,-1.56774945E-05,
+        9.89181741E-06,-6.24131160E-06,3.93800058E-06,-2.48471018E-06,
+        1.56774609E-06,-9.89180896E-07,6.24130948E-07,-3.93800005E-07,
+        2.48471005E-07,-1.56774605E-07,9.89180888E-08,-6.24130946E-08};
+    //** extract resistivity and thickness
+    RVector rho( model, 0, nlay_ );
+    RVector thk( model, nlay_, nlay_ * 2 - 1 );
+    //** vector for inphase and quadrature components
+    RVector inph( nfr_ ), outph( nfr_ );
+    double zp = ze_ + zs_;    
+    size_t nc = 100, nc0 = 60; // number of coefficients
+    CVector bt( nc ), u( nc );
+    double q=0.1*std::log(10.0);
+    for ( size_t i = 0 ; i < nfr_ ; i++ ) {
+        RVector rpq = coilspacing_[ i ] * coilspacing_[ i ] + zp * zp;    
+        // Admittanzen an Halbraumgrenze fuer alle Wellenzahlen u
+        for ( size_t ii=0 ; i < nc ; i++) {
+            u[ii]=std::exp(q * (nc-ii-nc0) ) / coilspacing_[i];
+            bt[ii]=btp(u[ii],freq_[i],rho,thk);
+        }
+        CVector delta( ( bt-u ) / ( bt+u ) * exp( u*ze_ ) *exp( u*zs_ ) );
+        Complex aux(0.0,0.0);
+        //n=1 => nu=nn
+        for ( size_t nn=0 ; nn < nc; nn++ ) {
+            Complex uu = std::exp( q * ( nc - nn - nc0 ) ) / coilspacing_[ i ];
+            aux += delta[nn] * uu * uu * hankelJ0[nc-nn-1];;
+        }
+        aux = aux / coilspacing_[ i ] / PI / 4.0;
+        // normalize by free air solution in per cent
+        inph[ i ]  = real( aux ) / freeAirSolution_[ i ] * 100.0;
+        outph[ i ] = imag( aux ) / freeAirSolution_[ i ] * 100.0;
+    }
+    //** paste together both components and 
+    return cat( inph, outph );
+}
+
 
 RVector MRSModelling::response( const RVector & model ) { 
     RVector outreal( *KR_ * model );
@@ -139,32 +208,5 @@ RVector MRS1dBlockModelling::response( const RVector & model ){
         return MRSModelling::response( wcvec );
     }
     
-    double hankelJ0[100]={
-        2.89878288E-07,3.64935144E-07,4.59426126E-07,5.78383226E-07,
-        7.28141338E-07,9.16675639E-07,1.15402625E-06,1.45283298E-06,
-        1.82900834E-06,2.30258511E-06,2.89878286E-06,3.64935148E-06,
-        4.59426119E-06,5.78383236E-06,7.28141322E-06,9.16675664E-06,
-        1.15402621E-05,1.45283305E-05,1.82900824E-05,2.30258527E-05,
-        2.89878259E-05,3.64935186E-05,4.59426051E-05,5.78383329E-05,
-        7.28141144E-05,9.16675882E-05,1.15402573E-04,1.45283354E-04,
-        1.82900694E-04,2.30258630E-04,2.89877891E-04,3.64935362E-04,
-        4.59424960E-04,5.78383437E-04,7.28137738E-04,9.16674828E-04,
-        1.15401453E-03,1.45282561E-03,1.82896826E-03,2.30254535E-03,
-        2.89863979E-03,3.64916703E-03,4.59373308E-03,5.78303238E-03,
-        7.27941497E-03,9.16340705E-03,1.15325691E-02,1.45145832E-02,
-        1.82601199E-02,2.29701042E-02,2.88702619E-02,3.62691810E-02,
-        4.54794031E-02,5.69408192E-02,7.09873072E-02,8.80995426E-02,
-        1.08223889E-01,1.31250483E-01,1.55055715E-01,1.76371506E-01,
-        1.85627738E-01,1.69778044E-01,1.03405245E-01,-3.02583233E-02,
-        -2.27574393E-01,-3.62173217E-01,-2.05500446E-01,3.37394873E-01,
-        3.17689897E-01,-5.13762160E-01,3.09130264E-01,-1.26757592E-01,
-        4.61967890E-02,-1.80968674E-02,8.35426050E-03,-4.47368304E-03,
-        2.61974783E-03,-1.60171357E-03,9.97717882E-04,-6.26275815E-04,
-        3.94338818E-04,-2.48606354E-04,1.56808604E-04,-9.89266288E-05,
-        6.24152398E-05,-3.93805393E-05,2.48472358E-05,-1.56774945E-05,
-        9.89181741E-06,-6.24131160E-06,3.93800058E-06,-2.48471018E-06,
-        1.56774609E-06,-9.89180896E-07,6.24130948E-07,-3.93800005E-07,
-        2.48471005E-07,-1.56774605E-07,9.89180888E-08,-6.24130946E-08};
-
     
 } // namespace GIMLI{
