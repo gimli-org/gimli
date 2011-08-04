@@ -11,8 +11,8 @@ prep:
 
 $(TRIANGLE): wget unzip
 	wget -nc -nd $(TRIANGLE_URL)
-#	rm -rf triangle
-#	unzip -o -d triangle $(TRIANGLE)
+	rm -rf triangle
+	unzip -o -d triangle $(TRIANGLE)
 
 triangle: prep $(TRIANGLE)
 	echo "building triangle for ", ${OSTYPE}
