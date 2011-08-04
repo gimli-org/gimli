@@ -82,6 +82,46 @@ protected:
     RVector thk_;
 };
 
+/*! Frequency domain electromagnetic (FDEM) sounding */
+/*! using a block discretization */
+class DLLEXPORT FDEMModelling : public ModellingBase {
+public:
+    //! default constructor creating a block model
+    FDEMModelling( uint nlay, const RVector & freq, const RVector & coilspacing, double z, bool verbose = false )
+        : ModellingBase( verbose), freq_( freq ), nlay_( nlay ), 
+          coilspacing_( coilspacing ), ze_( - std::abs( z ) ), zs_( -std::abs( z ) ) {
+        setMesh( createMesh1DBlock( nlay ) );
+        nfr_ = freq.size();
+    }
+    FDEMModelling( uint nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false )
+        : ModellingBase( verbose), freq_( freq ), nlay_( nlay ), 
+          coilspacing_( coilspacing ), ze_( 0.0 ), zs_( 0.0 ) {
+        setMesh( createMesh1DBlock( nlay ) );
+        nfr_ = freq.size();
+    }
+    FDEMModelling( uint nlay, const RVector & freq, double coilspacing, bool verbose = false )
+        : ModellingBase( verbose), freq_( freq ), nlay_( nlay ), coilspacing_( coilspacing, nlay ) {
+        setMesh( createMesh1DBlock( nlay ) );
+    }
+    
+    virtual ~FDEMModelling() { }
+    
+    void calcFreeAirSolution();
+    RVector freeAirSolution() { return freeAirSolution_; }
+    
+    virtual RVector response( const RVector & model );
+
+protected:
+    RVector freq_;
+    RVector coilspacing_;
+    RVector freeAirSolution_;
+    uint nlay_, nfr_;
+    double zs_, ze_; // transmitter&receiver heights (minus)
+};
+
+//class MaxMinModelling:FDEMModelling
+//110,220,440,880,1760,3520,7040,14080,28160,56320
+
 /*! Magnetic Resonance Sounding (MRS) modelling */
 /*! classical variant using a fixed parameterization */
 class DLLEXPORT MRSModelling : public ModellingBase {
