@@ -71,6 +71,7 @@ int main( int argc, char *argv [] ) {
     RVector model;
     double medrhoa = median( TRP[ 1 ] );
     std::cout << "medrhoa " << medrhoa << std::endl;
+    
     /*! Transformations: log for app. resisivity and thickness, logLU for resistivity */
     TransLogLU< RVector > transThk( 0.1, 1e5 );
     TransLogLU< RVector > transRho( lbound, ubound );
@@ -79,6 +80,7 @@ int main( int argc, char *argv [] ) {
     CumulativeTrans< RVector > transData; //! combination of two trans functions
     transData.push_back( transRhoa, nperiods );
     transData.push_back( transPhi, nperiods );
+    
     RVector error( cat( RVector( TRP[ 1 ] * errPerc / 100.0 ), RVector( nperiods, errPhase ) ) );
     save( error, "error.vec" );
     RVector skindep( sqrt( TRP[ 0 ] * medrhoa ) * 500 );
@@ -91,6 +93,7 @@ int main( int argc, char *argv [] ) {
     save( thk, "thk.vec" );
     model = RVector( nlay, medrhoa );
     mesh = createMesh1D( nlay );
+    
     MT1dRhoModelling f( mesh, TRP[ 0 ], thk, debug );
     f.setStartModel( model );
     f.region( 0 )->setTransModel( transRho );
@@ -128,6 +131,6 @@ int main( int argc, char *argv [] ) {
         save( resMDiag, "resMDiag.vec" );
         save( resM,     "resM" );
     }
-
+    
     return EXIT_SUCCESS;
 }
