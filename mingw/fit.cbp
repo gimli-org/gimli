@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="fit" />
+		<Option pch_mode="0" />
+		<Option default_target="polyfit" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="polyfit">
+				<Option output="polyfit.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="..\..\mingw\libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="y_2.1x+1.1.dat" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
+			<Target title="harmfit">
+				<Option output="harmfit.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="..\..\mingw\libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-n3 harmfit.tx" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
+			<Target title="mrsfit">
+				<Option output="mrsfit.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="..\..\mingw\libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="synth.dat" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="polyfit;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-O2" />
+			<Add option="-DMINGW" />
+			<Add directory="../src" />
+		</Compiler>
+		<Linker>
+			<Add library="libgimli" />
+			<Add directory="." />
+		</Linker>
+		<Unit filename="harmfit.cpp">
+			<Option target="harmfit" />
+		</Unit>
+		<Unit filename="mrsfit.cpp">
+			<Option target="mrsfit" />
+		</Unit>
+		<Unit filename="polyfit.cpp">
+			<Option target="polyfit" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

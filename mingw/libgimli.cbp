@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="GIMLi" />
+		<Option pch_mode="0" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="default">
+				<Option output="libgimli.dll" prefix_auto="0" extension_auto="0" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add directory="..\external" />
+					<Add directory="..\src" />
+					<Add directory="..\..\..\boost\include" />
+				</Compiler>
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="default;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-Os" />
+			<Add option="-O2" />
+			<Add option="-pedantic" />
+			<Add option="-Wall" />
+			<Add option="-DBUILDING_DLL=1" />
+			<Add option="-DMINGW" />
+			<Add option="-DDLL_EXPORT" />
+			<Add option="-DHAVE_LIBTRIANGLE" />
+		</Compiler>
+		<Linker>
+			<Add option="-s" />
+			<Add option="--add-stdcall-alias" />
+			<Add option="--export-all-symbols" />
+			<Add option="--enable-auto-import" />
+			<Add library="libtriangle.a" />
+			<Add library="blas_win32" />
+			<Add library="lapack_win32" />
+			<Add directory="..\external\lib" />
+		</Linker>
+		<Unit filename="..\src\baseentity.h" />
+		<Unit filename="..\src\cholmodWrapper.cpp" />
+		<Unit filename="..\src\cholmodWrapper.h" />
+		<Unit filename="..\src\curvefitting.cpp" />
+		<Unit filename="..\src\curvefitting.h" />
+		<Unit filename="..\src\datacontainer.cpp" />
+		<Unit filename="..\src\datacontainer.h" />
+		<Unit filename="..\src\elementmatrix.cpp" />
+		<Unit filename="..\src\elementmatrix.h" />
+		<Unit filename="..\src\em1dmodelling.cpp" />
+		<Unit filename="..\src\em1dmodelling.h" />
+		<Unit filename="..\src\exitcodes.h" />
+		<Unit filename="..\src\expressions.h" />
+		<Unit filename="..\src\gimli.cpp" />
+		<Unit filename="..\src\gimli.h" />
+		<Unit filename="..\src\interpolate.cpp" />
+		<Unit filename="..\src\interpolate.h" />
+		<Unit filename="..\src\inversion.cpp" />
+		<Unit filename="..\src\inversion.h" />
+		<Unit filename="..\src\inversionBase.h" />
+		<Unit filename="..\src\inversionFramework.h" />
+		<Unit filename="..\src\ipcClient.cpp" />
+		<Unit filename="..\src\ipcClient.h" />
+		<Unit filename="..\src\kdtree++\allocator.hpp" />
+		<Unit filename="..\src\kdtree++\function.hpp" />
+		<Unit filename="..\src\kdtree++\iterator.hpp" />
+		<Unit filename="..\src\kdtree++\kdtree.hpp" />
+		<Unit filename="..\src\kdtree++\node.hpp" />
+		<Unit filename="..\src\kdtree++\region.hpp" />
+		<Unit filename="..\src\kdtreeWrapper.cpp" />
+		<Unit filename="..\src\kdtreeWrapper.h" />
+		<Unit filename="..\src\ldlWrapper.cpp" />
+		<Unit filename="..\src\ldlWrapper.h" />
+		<Unit filename="..\src\linSolver.cpp" />
+		<Unit filename="..\src\linSolver.h" />
+		<Unit filename="..\src\line.cpp" />
+		<Unit filename="..\src\line.h" />
+		<Unit filename="..\src\matrix.h" />
+		<Unit filename="..\src\mesh.cpp" />
+		<Unit filename="..\src\mesh.h" />
+		<Unit filename="..\src\mesh_io.cpp" />
+		<Unit filename="..\src\meshentities.cpp" />
+		<Unit filename="..\src\meshentities.h" />
+		<Unit filename="..\src\meshgenerators.cpp" />
+		<Unit filename="..\src\meshgenerators.h" />
+		<Unit filename="..\src\modellingbase.cpp" />
+		<Unit filename="..\src\modellingbase.h" />
+		<Unit filename="..\src\node.cpp" />
+		<Unit filename="..\src\node.h" />
+		<Unit filename="..\src\numericbase.cpp" />
+		<Unit filename="..\src\numericbase.h" />
+		<Unit filename="..\src\optionmap.cpp" />
+		<Unit filename="..\src\optionmap.h" />
+		<Unit filename="..\src\plane.cpp" />
+		<Unit filename="..\src\plane.h" />
+		<Unit filename="..\src\platform.h" />
+		<Unit filename="..\src\pos.cpp" />
+		<Unit filename="..\src\pos.h" />
+		<Unit filename="..\src\quaternion.cpp" />
+		<Unit filename="..\src\quaternion.h" />
+		<Unit filename="..\src\regionManager.cpp" />
+		<Unit filename="..\src\regionManager.h" />
+		<Unit filename="..\src\shape.cpp" />
+		<Unit filename="..\src\shape.h" />
+		<Unit filename="..\src\solver.h" />
+		<Unit filename="..\src\solverWrapper.cpp" />
+		<Unit filename="..\src\solverWrapper.h" />
+		<Unit filename="..\src\sparsematrix.h" />
+		<Unit filename="..\src\spline.cpp" />
+		<Unit filename="..\src\spline.h" />
+		<Unit filename="..\src\stlvector.h" />
+		<Unit filename="..\src\stopwatch.cpp" />
+		<Unit filename="..\src\stopwatch.h" />
+		<Unit filename="..\src\trans.h" />
+		<Unit filename="..\src\triangleWrapper.cpp" />
+		<Unit filename="..\src\triangleWrapper.h" />
+		<Unit filename="..\src\vector.h" />
+		<Unit filename="..\src\vectortemplates.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<wxsmith version="1">
+				<gui name="wxWidgets" src="" main="" init_handlers="necessary" language="CPP" />
+			</wxsmith>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
