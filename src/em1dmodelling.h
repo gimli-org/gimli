@@ -87,20 +87,20 @@ protected:
 class DLLEXPORT FDEMModelling : public ModellingBase {
 public:
     //! default constructor creating a block model
-    FDEMModelling( uint nlay, const RVector & freq, const RVector & coilspacing, double z, bool verbose = false )
-        : ModellingBase( verbose), freq_( freq ), nlay_( nlay ), 
-          coilspacing_( coilspacing ), ze_( - std::abs( z ) ), zs_( -std::abs( z ) ) {
+    FDEMModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, double z, bool verbose = false )
+        : ModellingBase( verbose), nlay_( nlay ), freq_( freq ),
+          coilspacing_( coilspacing ), zs_( - std::abs( z ) ), ze_( -std::abs( z ) ) {
         setMesh( createMesh1DBlock( nlay ) );
         nfr_ = freq.size();
     }
-    FDEMModelling( uint nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false )
-        : ModellingBase( verbose), freq_( freq ), nlay_( nlay ), 
-          coilspacing_( coilspacing ), ze_( 0.0 ), zs_( 0.0 ) {
+    FDEMModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false )
+        : ModellingBase( verbose), nlay_( nlay ), freq_( freq ), 
+          coilspacing_( coilspacing ), zs_( 0.0 ), ze_( 0.0 ) {
         setMesh( createMesh1DBlock( nlay ) );
         nfr_ = freq.size();
     }
-    FDEMModelling( uint nlay, const RVector & freq, double coilspacing, bool verbose = false )
-        : ModellingBase( verbose), freq_( freq ), nlay_( nlay ), coilspacing_( coilspacing, nlay ) {
+    FDEMModelling( size_t nlay, const RVector & freq, double coilspacing, bool verbose = false )
+        : ModellingBase( verbose), nlay_( nlay ), freq_( freq ), coilspacing_( coilspacing, nlay ) {
         setMesh( createMesh1DBlock( nlay ) );
     }
     
@@ -112,11 +112,12 @@ public:
     virtual RVector response( const RVector & model );
 
 protected:
+    size_t nlay_;
     RVector freq_;
     RVector coilspacing_;
-    RVector freeAirSolution_;
-    uint nlay_, nfr_;
     double zs_, ze_; // transmitter&receiver heights (minus)
+    size_t nfr_;
+    RVector freeAirSolution_;
 };
 
 //class MaxMinModelling:FDEMModelling
