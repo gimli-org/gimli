@@ -53,7 +53,7 @@ Region::Region( const Region & region ){
 }
 
 Region::~Region( ){
-   if ( tM_ ) delete tM_;
+   if ( tM_ && ownsTrans_ ) delete tM_;
 }
 
 Region & Region::operator = ( const Region & region ){
@@ -73,6 +73,7 @@ void Region::init_() {
     upperBound_     = 0.0;
     mcDefault_      = 1.0;
     startDefault_   = 1.0;
+    ownsTrans_ = true;
 
     transString_    = "Lin";
     tM_ = new Trans < RVector >;
@@ -349,13 +350,16 @@ void Region::fillBoundarySize( RVector & vec, uint boundStart ){
 
 
 void Region::setTransModel( Trans< RVector > & tM ){
+    if ( tM_ && ownsTrans_ ) delete tM_;
     tM_ = & tM;
     parent_->setLocalTransFlag( true );
+    ownsTrans_ = false;
 }
 
 void Region::setModelTransStr_( const std::string & val ){
     transString_ = val;
     delete tM_; tM_ = NULL;
+    
     if ( val == "lin" || val == "Lin" ){
         tM_ = new Trans< RVector >( );
     } else if ( val == "log" || val == "Log" ){
@@ -366,6 +370,7 @@ void Region::setModelTransStr_( const std::string & val ){
         throwLengthError( 1, WHERE_AM_I + " : " + val + ". Available are: lin, log, cot." );
     }
     parent_->setLocalTransFlag( true );
+    ownsTrans_ = true;
 }
 
 void Region::setLowerBound( double lb ){
