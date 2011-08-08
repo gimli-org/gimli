@@ -102,7 +102,7 @@ int main( int argc, char *argv [] )
     inv.setOptimizeLambda( lambdaOpt );
     inv.setMaxIter( maxIter );
     inv.setAbsoluteError( error );              //! error model
-    inv.setModel( model );       //! starting model
+    inv.setModel( model );        //! starting model
     inv.setDeltaPhiAbortPercent( 0.5 );
 
     /*! actual computation: run the inversion */
@@ -113,6 +113,7 @@ int main( int argc, char *argv [] )
     save( res, "resistivity.vec" );
     save( thk, "thickness.vec" );
     save( inv.response(), "response.vec" );
+    save( inv.cWeight(), "cweight_end.vec" );
     
     if ( verbose ) {
         RVector cumz( thk );
