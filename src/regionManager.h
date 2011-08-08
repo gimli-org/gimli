@@ -226,7 +226,7 @@ protected:
     double upperBound_;
 
     Trans< RVector >        * tM_;
-    bool ownsTrans_; // smart ptr. would be nice here.
+    bool ownsTrans_;        // smart ptr. would be nice here.
     std::string transString_;
 };
 
