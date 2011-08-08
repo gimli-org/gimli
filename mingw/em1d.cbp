@@ -6,6 +6,14 @@
 		<Option pch_mode="0" />
 		<Option compiler="gcc" />
 		<Build>
+			<Target title="fdem1dinv">
+				<Option output="fdem1dinv.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-vv cux1-nord.fdem" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
 			<Target title="dc1dinv">
 				<Option output="dc1dinv.exe" prefix_auto="0" extension_auto="0" />
 				<Option external_deps="libgimli.dll;" />
@@ -70,6 +78,9 @@
 		</Unit>
 		<Unit filename="..\apps\em1d\dc1dsmooth.cpp">
 			<Option target="dc1dsmooth" />
+		</Unit>
+		<Unit filename="..\apps\em1d\fdem1dinv.cpp">
+			<Option target="fdem1dinv" />
 		</Unit>
 		<Unit filename="..\apps\em1d\mrs1dblock.cpp">
 			<Option target="mrs1dblock" />

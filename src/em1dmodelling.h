@@ -84,27 +84,31 @@ protected:
 
 /*! Frequency domain electromagnetic (FDEM) sounding */
 /*! using a block discretization */
-class DLLEXPORT FDEMModelling : public ModellingBase {
+class DLLEXPORT FDEM1dModelling : public ModellingBase {
 public:
     //! default constructor creating a block model
-    FDEMModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, double z, bool verbose = false )
-        : ModellingBase( verbose), nlay_( nlay ), freq_( freq ),
-          coilspacing_( coilspacing ), zs_( - std::abs( z ) ), ze_( -std::abs( z ) ) {
+    FDEM1dModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, double z = 0.0, bool verbose = false )
+        : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ),
+          coilspacing_( coilspacing ), zs_( - std::fabs( z ) ), ze_( - std::fabs( z ) ) {
         setMesh( createMesh1DBlock( nlay ) );
         nfr_ = freq.size();
     }
-    FDEMModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false )
-        : ModellingBase( verbose), nlay_( nlay ), freq_( freq ), 
-          coilspacing_( coilspacing ), zs_( 0.0 ), ze_( 0.0 ) {
+    FDEM1dModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false ) {
+        FDEM1dModelling( nlay, freq, coilspacing, 0.0, verbose );
+    }
+    FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false ) {
+        FDEM1dModelling( nlay, freq, RVector( freq.size(), coilspacing ), z, verbose );
+        coilspacing_ = RVector( freq.size(), coilspacing );
+        zs_ = -std::fabs( z );
+        ze_ = zs_;
         setMesh( createMesh1DBlock( nlay ) );
         nfr_ = freq.size();
     }
-    FDEMModelling( size_t nlay, const RVector & freq, double coilspacing, bool verbose = false )
-        : ModellingBase( verbose), nlay_( nlay ), freq_( freq ), coilspacing_( coilspacing, nlay ) {
-        setMesh( createMesh1DBlock( nlay ) );
+    FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, bool verbose = false ) {
+        FDEM1dModelling( nlay, freq, RVector( freq.size(), coilspacing ), verbose );
     }
     
-    virtual ~FDEMModelling() { }
+    virtual ~FDEM1dModelling() { }
     
     void calcFreeAirSolution();
     RVector freeAirSolution() { return freeAirSolution_; }
