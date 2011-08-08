@@ -35,7 +35,7 @@ using namespace GIMLI;
 int main( int argc, char *argv [] )
 {
     bool lambdaOpt = false, doResolution = false, useTan = false, optimizeChi1 = false, delinhigh = true;
-    double lambda = 10.0, lbound = 0.0, ubound = 0.0, errPerc = 5.0, coilspacing = 50.0;
+    double lambda = 10.0, lbound = 0.0, ubound = 0.0, errPerc = 3.0, coilspacing = 50.0;
     int maxIter = 10, nlay = 3, verboseCount = 0, linCount = 0;
     std::string modelFile( NOT_DEFINED ), dataFileName;
 

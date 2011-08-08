@@ -102,9 +102,8 @@ public:
         setMesh( createMesh1DBlock( nlay ) );
         nfr_ = freq.size();
     }
-    FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, bool verbose = false ) {
-        FDEM1dModelling( nlay, freq, RVector( freq.size(), coilspacing ), verbose );
-    }
+    FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, bool verbose = false )
+        : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ), zs_( 0.0 ), ze_( 0.0 ) { }
     
     virtual ~FDEM1dModelling() { }
     
