@@ -93,7 +93,7 @@ public:
 
 
     /*! Set the constrainst-type for this region available( 0, 1 ) */
-    inline void setConstraintType( uint type ) { constraintType_ = type; }
+    inline void setConstraintType( uint type );
     
     /*! Return constrainst-type for this region. */
     inline uint constraintType() const { return constraintType_; }

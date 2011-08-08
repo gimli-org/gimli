@@ -137,6 +137,7 @@ void Region::resize( const Mesh & mesh ){
     if ( zWeight_ < 1.0 || zPower_ > 0.0 ){
         fillConstraintsWeightWithFlatWeight();
     } else {
+//         std::cout << "Region::resize( const Mesh & mesh )" <<  parameterCount_ << " " << constraintType_ << " " << this->constraintCount() << std::endl;
         constraintsWeight_.resize( constraintCount(), 1.0 );
     }
 }
@@ -287,13 +288,21 @@ void Region::fillConstraints( DSparseMapMatrix & C, uint startConstraintsID ){
     }
 }
 
+void Region::setConstraintType( uint type ) { 
+    constraintType_ = type; 
+    constraintsWeight_.resize( this->constraintCount(), 1 );
+}
+    
+    
 void Region::setConstraintsWeight( double val ){
     setBackground( false );
+    //std::cout << "Region::setConstraintsWeight( double val ) " << val << " " <<  this->constraintCount() << std::endl;
     constraintsWeight_.resize( this->constraintCount() );
     constraintsWeight_.fill( val );
 }
 
 void Region::setConstraintsWeight( const RVector & sw ){
+    //std::cout << "Region::setConstraintsWeight( const RVector & sw ) " << sw.size() << " " <<  this->constraintCount() << std::endl;
     setBackground( false );
     if ( sw.size() == this->constraintCount() ){
         constraintsWeight_ = sw;
@@ -306,6 +315,7 @@ void Region::fillConstraintsWeight( RVector & vec, uint constraintStart ){
     if ( isBackground_ ) return;
 
     for ( uint i = 0, imax = constraintCount(); i < imax; i ++ ) {
+        //std::cout << i << " " << constraintsWeight_[ i ] << std::endl;
         vec[ constraintStart + i ] = constraintsWeight_[ i ];
     }
 }
