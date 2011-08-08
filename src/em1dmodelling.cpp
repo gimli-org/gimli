@@ -81,10 +81,12 @@ RVector MT1dModelling::rhoa( const RVector & rho, const RVector & thk ) { // aft
     return rhoa;
 }
 
-void FDEMModelling::calcFreeAirSolution( ){ 
+void FDEM1dModelling::calcFreeAirSolution( ){ 
     double zp = ze_ + zs_;    
     RVector rpq = coilspacing_ * coilspacing_ + zp * zp;
     freeAirSolution_ = ( rpq - zp * zp * 3 ) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
+//    std::cout << "cs=" << coilspacing_[0] << " zp=" << zp <<
+//                 " rpq=" << rpq[0] << " fas=" << freeAirSolution_[0] << std::endl;
 }
 
 Complex btp( Complex u, double f, RVector rho, RVector d){
@@ -103,7 +105,7 @@ Complex btp( Complex u, double f, RVector rho, RVector d){
     return b;
 }
 
-RVector FDEMModelling::response( const RVector & model ){ 
+RVector FDEM1dModelling::response( const RVector & model ){ 
     double hankelJ0[100]={
         2.89878288E-07,3.64935144E-07,4.59426126E-07,5.78383226E-07,
         7.28141338E-07,9.16675639E-07,1.15402625E-06,1.45283298E-06,
@@ -143,15 +145,15 @@ RVector FDEMModelling::response( const RVector & model ){
         RVector rpq = coilspacing_[ i ] * coilspacing_[ i ] + zp * zp;    
         // Admittanzen an Halbraumgrenze fuer alle Wellenzahlen u
         for ( size_t ii=0 ; i < nc ; i++) {
-            u[ii]=std::exp(q * (nc-ii-nc0) ) / coilspacing_[i];
-            bt[ii]=btp(u[ii],freq_[i],rho,thk);
+            u[ii]=std::exp( q * ( nc - ii - nc0 ) ) / coilspacing_[ i ];
+            bt[ii]=btp( u[ii], freq_[i], rho, thk);
         }
-        CVector delta( ( bt-u ) / ( bt+u ) * exp( u*ze_ ) *exp( u*zs_ ) );
-        Complex aux(0.0,0.0);
+        CVector delta( ( bt - u ) / ( bt + u ) * exp( u * ze_ ) * exp( u * zs_ ) );
+        Complex aux( 0.0, 0.0 );
         //n=1 => nu=nn
         for ( size_t nn=0 ; nn < nc; nn++ ) {
             Complex uu = std::exp( q * ( nc - nn - nc0 ) ) / coilspacing_[ i ];
-            aux += delta[nn] * uu * uu * hankelJ0[nc-nn-1];;
+            aux += delta[nn] * uu * uu * hankelJ0[ nc - nn - 1 ];
         }
         aux = aux / coilspacing_[ i ] / PI / 4.0;
         // normalize by free air solution in per cent

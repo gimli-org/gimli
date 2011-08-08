@@ -3,12 +3,16 @@ bin_PROGRAMS = \
  	mt1dsmooth \
  	mrs1dsmooth \
  	mrs1dblock
+ 	fdem1dinv \
 # 	dc1dinv \
 # 	dc1dlong \
 # 	dc1dsmooth
 
 INCLUDES = \
 	-I $(top_srcdir)/src
+
+fdem1dinv_SOURCES = fdem1dinv.cpp
+fdem1dinv_LDADD = ../../src/.libs/libgimli.la
 
 #dc1dinv_SOURCES = dc1dinv.cpp
 #dc1dinv_LDADD = ../../src/.libs/libgimli.la
