@@ -23,6 +23,7 @@
 #include "em1dmodelling.h"
 #include "meshgenerators.h"
 
+#include <math.h>
 namespace GIMLI {
 
 RVector MT1dModelling::rhoaphi( const RVector & rho, const RVector & thk ) { // after mtmod.c by R.-U. Börner
@@ -89,13 +90,13 @@ void FDEM1dModelling::calcFreeAirSolution( ){
 //                 " rpq=" << rpq[0] << " fas=" << freeAirSolution_[0] << std::endl;
 }
 
-Complex btp( Complex u, double f, RVector rho, RVector d){
+Complex btp( double u, double f, RVector rho, RVector d){
     size_t nl = rho.size();
     double mu0 = 4e-7 * PI;
     Complex c(0.0, mu0 * 2 * PI * f);
-    Complex b=sqrt( u*u + c / rho[nl] );
+    Complex b=sqrt( u*u + c / rho[nl-1] );
     if( nl > 1 ) {
-        for( size_t nn=nl-2; nn>0 ; nn-- ){
+        for( int nn=nl-2; nn>=0 ; nn-- ){
             Complex alpha=sqrt( u*u + c/rho[ nn ] );
             Complex cth=exp( -2*d[nn]*alpha);
             cth=( 1.0 - cth )/( 1.0 + cth );
@@ -133,29 +134,20 @@ RVector FDEM1dModelling::response( const RVector & model ){
         1.56774609E-06,-9.89180896E-07,6.24130948E-07,-3.93800005E-07,
         2.48471005E-07,-1.56774605E-07,9.89180888E-08,-6.24130946E-08};
     //** extract resistivity and thickness
-    RVector rho( model, 0, nlay_ );
-    RVector thk( model, nlay_, nlay_ * 2 - 1 );
-    //** vector for inphase and quadrature components
-    RVector inph( nfr_ ), outph( nfr_ );
-    double zp = ze_ + zs_;    
-    size_t nc = 100, nc0 = 60; // number of coefficients
-    CVector bt( nc ), u( nc );
+    RVector thk( model, 0, nlay_ - 1 ), rho( model, nlay_ - 1, 2 * nlay_ - 1 );
+    RVector inph( nfr_ ), outph( nfr_ );//** inphase and quadrature components
+    int nc = 100, nc0 = 60; // number of coefficients
     double q=0.1*std::log(10.0);
     for ( size_t i = 0 ; i < nfr_ ; i++ ) {
-        RVector rpq = coilspacing_[ i ] * coilspacing_[ i ] + zp * zp;    
-        // Admittanzen an Halbraumgrenze fuer alle Wellenzahlen u
-        for ( size_t ii=0 ; i < nc ; i++) {
-            u[ii]=std::exp( q * ( nc - ii - nc0 ) ) / coilspacing_[ i ];
-            bt[ii]=btp( u[ii], freq_[i], rho, thk);
-        }
-        CVector delta( ( bt - u ) / ( bt + u ) * exp( u * ze_ ) * exp( u * zs_ ) );
         Complex aux( 0.0, 0.0 );
-        //n=1 => nu=nn
-        for ( size_t nn=0 ; nn < nc; nn++ ) {
-            Complex uu = std::exp( q * ( nc - nn - nc0 ) ) / coilspacing_[ i ];
-            aux += delta[nn] * uu * uu * hankelJ0[ nc - nn - 1 ];
+        for ( int ii = 0 ; ii < nc ; ii++) {
+            double ui=std::exp( q * ( nc - ii - nc0 ) ) / coilspacing_[ i ];
+            Complex bti=btp( ui, freq_[i], rho, thk);
+            Complex delta( ( bti - ui ) / ( bti + ui ) * std::exp( ui * ze_ ) * std::exp( ui * zs_ ) );
+            aux += delta * ui * ui * hankelJ0[ nc - ii - 1 ];
         }
-        aux = aux / coilspacing_[ i ] / PI / 4.0;
+        
+        aux /= PI * 4.0 *coilspacing_[ i ];
         // normalize by free air solution in per cent
         inph[ i ]  = real( aux ) / freeAirSolution_[ i ] * 100.0;
         outph[ i ] = imag( aux ) / freeAirSolution_[ i ] * 100.0;
