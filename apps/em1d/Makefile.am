@@ -2,8 +2,8 @@ bin_PROGRAMS = \
  	mt1dinv \
  	mt1dsmooth \
  	mrs1dsmooth \
- 	mrs1dblock
- 	fdem1dinv \
+ 	mrs1dblock \
+ 	fdem1dinv
 # 	dc1dinv \
 # 	dc1dlong \
 # 	dc1dsmooth

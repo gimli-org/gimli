@@ -34,9 +34,8 @@ using namespace GIMLI;
 
 int main( int argc, char *argv [] )
 {
-    bool lambdaOpt = false, doResolution = false, useTan = false, optimizeChi1 = false;
-    double lambda = 10.0, lambdaIP = 1.0, lbound = 0.0, ubound = 0.0, errPerc = 5.0;
-    double coilspacing = 50.0;
+    bool lambdaOpt = false, doResolution = false, useTan = false, optimizeChi1 = false, delinhigh = true;
+    double lambda = 10.0, lbound = 0.0, ubound = 0.0, errPerc = 5.0, coilspacing = 50.0;
     int maxIter = 10, nlay = 3, verboseCount = 0, linCount = 0;
     std::string modelFile( NOT_DEFINED ), dataFileName;
 
@@ -51,7 +50,6 @@ int main( int argc, char *argv [] )
     oMap.add( linCount,     "L" , "dataLin", "Use linear trafo for data, 2x also for model." );
     oMap.add( maxIter,      "i:", "maxIter", "Maximum iteration number." );
     oMap.add( lambda,       "l:", "lambda", "Regularization strength lambda." );
-    oMap.add( lambdaIP,     "r:", "lambdaIP", "Regularization strength lambda for IP." );
     oMap.add( coilspacing,  "c:", "coilSpacing", "Coil spacing in m." );
     oMap.add( errPerc,      "e:", "error", "Error in percent." );
     oMap.add( nlay,         "n:", "nlay", "Number of layers." );
@@ -66,8 +64,8 @@ int main( int argc, char *argv [] )
     RMatrix DATA;
     loadMatrixCol( DATA, dataFileName );
     RVector freq( DATA[0] );
-    size_t ndata = freq.size();
-    RVector data( cat(DATA[1],DATA[2]) );
+    size_t nfreq = freq.size(), ndata = nfreq * 2;
+    RVector data( cat(DATA[1], DATA[2]) ); //** inphase and quadrature
 
     size_t nModel( 2 * nlay - 1 );
     Mesh mesh( createMesh1DBlock( nlay ) );
@@ -77,23 +75,25 @@ int main( int argc, char *argv [] )
     f.calcFreeAirSolution();
     DEBUG save( f.freeAirSolution(), "freeairsolution.vec" );
     
-
     /*! Error estimation */
-    RVector error( ndata * 2, errPerc );
+    RVector error( ndata, errPerc );
+    if ( delinhigh ) error[ nfreq - 1 ] = errPerc * 10.0;   //** strange reading for highest f inphase
 
     /*! Transformations: log for app. resisivity and thickness, logLU for resistivity */
-    TransLogLU< RVector > transThk( 0.1, 1e5 );
-    TransLogLU< RVector > transRho( lbound, ubound );    
+//    RTransLogLU transThk( 0.1, 1e2 );
+    RTransLog transThk;
+    RTransLogLU transRho( lbound, ubound );    
+//    RTransLog transRho;
     f.region( 0 )->setTransModel( transThk );
     f.region( 1 )->setTransModel( transRho );
+    f.region( 0 )->setStartValue( 10.0 );
+    f.region( 1 )->setStartValue( 10.0 );
 
-    f.region( 0 )->setStartValue( 5.0 );
-    f.region( 1 )->setStartValue( 100.0 );
-
-    RVector model;//( f.createDefaultStartModel() );
+    RVector model, response;
     model = f.createStartVector();
     DEBUG save( model, "startModel.vec" );
-    DEBUG save( f(model), "startResponse.vec" );    
+    response = f(model);
+    DEBUG save( response, "startResponse.vec" );
 
     /*! Set up inversion with full matrix, data and forward operator */
     RInversion inv( data, f, verbose, dosave );    
