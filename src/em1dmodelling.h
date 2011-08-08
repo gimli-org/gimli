@@ -93,18 +93,14 @@ public:
         setMesh( createMesh1DBlock( nlay ) );
         nfr_ = freq.size();
     }
-    FDEM1dModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false ) {
-        FDEM1dModelling( nlay, freq, coilspacing, 0.0, verbose );
-    }
-    FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false ) {
-        FDEM1dModelling( nlay, freq, RVector( freq.size(), coilspacing ), z, verbose );
-        freq_ = freq;
+    FDEM1dModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false )
+        : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ), coilspacing_( coilspacing ), 
+        zs_( 0.0 ), ze_( 0.0 ) { }
+    FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false )
+        : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ), zs_( -std::fabs( z ) ), ze_( -std::fabs( z ) ) {
         coilspacing_ = RVector( freq.size(), coilspacing );
-        zs_ = -std::fabs( z );
-        ze_ = zs_;
         setMesh( createMesh1DBlock( nlay ) );
         nfr_ = freq.size();
-        nlay_ = nlay;
     }
     FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, bool verbose = false ) {
         FDEM1dModelling( nlay, freq, RVector( freq.size(), coilspacing ), verbose );
