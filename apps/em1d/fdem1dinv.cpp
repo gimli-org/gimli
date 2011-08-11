@@ -72,7 +72,6 @@ int main( int argc, char *argv [] )
     if ( debug ) mesh.showInfos();
     
     FDEM1dModelling f( nlay, freq, coilspacing, 1.0, false );
-    f.calcFreeAirSolution();
     DEBUG save( f.freeAirSolution(), "freeairsolution.vec" );
     
     /*! Error estimation */

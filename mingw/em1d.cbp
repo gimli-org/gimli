@@ -11,7 +11,7 @@
 				<Option external_deps="libgimli.dll;" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-vv -b0.1 -u 1e4 -l300 cux1-nord.fdem" />
+				<Option parameters="-v -n5  -l 100 cux1-nord.fdem" />
 				<Option projectResourceIncludeDirsRelation="1" />
 			</Target>
 			<Target title="dc1dinv">
