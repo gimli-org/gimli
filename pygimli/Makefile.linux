@@ -1,0 +1,33 @@
+BOOSTDIR=/usr/include/boost
+BOOSTLIB=/usr/lib64 -l boost_python-mt
+PYTHONDIR=/usr/include/python2.7
+
+GIMLILIB=$(HOME)/lib -lgimli 
+GIMLIINC=../src
+TARGET=_pygimli_
+COPT=-fPIC -O2 -g -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES
+
+CPPCFILES = $(wildcard generated/*.cpp)
+OBJECTS = $(patsubst %.cpp,%.o,$(CPPCFILES))
+
+default: $(TARGET)
+
+.cpp.o:
+	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR) -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
+
+$(TARGET): $(OBJECTS)
+	g++ -o $(TARGET).so --strip-all -shared $(OBJECTS) -L. \
+		-L $(BOOSTLIB) \
+		-L $(GIMLILIB) -lcolamd 
+	mv $(TARGET).so ./pygimli/
+
+clean:
+	rm -rf generated/*
+	rm -f *.cache
+	rm -f *~
+	rm -f *.pyc
+
+cleanobj:
+	rm -rf generated/*.o
+
+short: cleanobj default
