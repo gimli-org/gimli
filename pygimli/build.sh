@@ -15,7 +15,7 @@ fi
 #	make -f $MAKEFILE clean
 
 if [ $# -lt 1 ]; then 
-	python generate_code.py 
+	python generate_pygimli_code.py
 
 #	[ -f generated/__call_policies.pypp.hpp ] || cp tmp/__call_policies.pypp.hpp generated/
 	make -f $MAKEFILE $MAKEOPTS 
