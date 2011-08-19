@@ -30,14 +30,21 @@
 			<Add option="-DBUILDING_DLL=1" />
 			<Add option="-DMINGW" />
 			<Add option="-DDLL_EXPORT" />
+			<Add option="-DHAVE_LIBLDL" />
+			<Add option="-DHAVE_LIBAMD" />
 			<Add option="-DHAVE_LIBTRIANGLE" />
+			<Add option="-DHAVE_LIBCHOLMOD" />
 		</Compiler>
 		<Linker>
 			<Add option="-s" />
 			<Add option="--add-stdcall-alias" />
 			<Add option="--export-all-symbols" />
 			<Add option="--enable-auto-import" />
+			<Add library="libldl.a" />
+			<Add library="libamd.a" />
 			<Add library="libtriangle.a" />
+			<Add library="libcholmod.a" />
+			<Add library="libcolamd.a" />
 			<Add library="blas_win32" />
 			<Add library="lapack_win32" />
 			<Add directory="..\external\lib" />
@@ -49,6 +56,8 @@
 		<Unit filename="..\src\curvefitting.h" />
 		<Unit filename="..\src\datacontainer.cpp" />
 		<Unit filename="..\src\datacontainer.h" />
+		<Unit filename="..\src\dc1dmodelling.cpp" />
+		<Unit filename="..\src\dc1dmodelling.h" />
 		<Unit filename="..\src\elementmatrix.cpp" />
 		<Unit filename="..\src\elementmatrix.h" />
 		<Unit filename="..\src\em1dmodelling.cpp" />
@@ -75,16 +84,16 @@
 		<Unit filename="..\src\kdtreeWrapper.h" />
 		<Unit filename="..\src\ldlWrapper.cpp" />
 		<Unit filename="..\src\ldlWrapper.h" />
-		<Unit filename="..\src\linSolver.cpp" />
-		<Unit filename="..\src\linSolver.h" />
 		<Unit filename="..\src\line.cpp" />
 		<Unit filename="..\src\line.h" />
+		<Unit filename="..\src\linSolver.cpp" />
+		<Unit filename="..\src\linSolver.h" />
 		<Unit filename="..\src\matrix.h" />
 		<Unit filename="..\src\mesh.cpp" />
 		<Unit filename="..\src\mesh.h" />
-		<Unit filename="..\src\mesh_io.cpp" />
 		<Unit filename="..\src\meshentities.cpp" />
 		<Unit filename="..\src\meshentities.h" />
+		<Unit filename="..\src\mesh_io.cpp" />
 		<Unit filename="..\src\meshgenerators.cpp" />
 		<Unit filename="..\src\meshgenerators.h" />
 		<Unit filename="..\src\modellingbase.cpp" />

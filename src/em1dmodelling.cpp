@@ -82,12 +82,12 @@ RVector MT1dModelling::rhoa( const RVector & rho, const RVector & thk ) { // aft
     return rhoa;
 }
 
-void FDEM1dModelling::calcFreeAirSolution( ){ 
+void FDEM1dModelling::init( ){
+    setMesh( createMesh1DBlock( nlay_ ) );
+    nfr_ = freq_.size(); 
     double zp = ze_ + zs_;    
     RVector rpq = coilspacing_ * coilspacing_ + zp * zp;
     freeAirSolution_ = ( rpq - zp * zp * 3 ) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
-//    std::cout << "cs=" << coilspacing_[0] << " zp=" << zp <<
-//                 " rpq=" << rpq[0] << " fas=" << freeAirSolution_[0] << std::endl;
 }
 
 Complex btp( double u, double f, RVector rho, RVector d){
