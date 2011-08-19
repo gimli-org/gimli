@@ -88,26 +88,19 @@ class DLLEXPORT FDEM1dModelling : public ModellingBase {
 public:
     //! default constructor creating a block model
     FDEM1dModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, double z = 0.0, bool verbose = false )
-        : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ),
-          coilspacing_( coilspacing ), zs_( - std::fabs( z ) ), ze_( - std::fabs( z ) ) {
-        setMesh( createMesh1DBlock( nlay ) );
-        nfr_ = freq.size();
-    }
-    FDEM1dModelling( size_t nlay, const RVector & freq, const RVector & coilspacing, bool verbose = false )
         : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ), coilspacing_( coilspacing ), 
-        zs_( 0.0 ), ze_( 0.0 ) { }
+          zs_( - std::fabs( z ) ), ze_( - std::fabs( z ) ) {
+        init();
+    }
     FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false )
         : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ), zs_( -std::fabs( z ) ), ze_( -std::fabs( z ) ) {
         coilspacing_ = RVector( freq.size(), coilspacing );
-        setMesh( createMesh1DBlock( nlay ) );
-        nfr_ = freq.size();
+        init();
     }
-    FDEM1dModelling( size_t nlay, const RVector & freq, double coilspacing, bool verbose = false )
-        : ModellingBase( verbose ), nlay_( nlay ), freq_( freq ), zs_( 0.0 ), ze_( 0.0 ) { }
     
     virtual ~FDEM1dModelling() { }
     
-    void calcFreeAirSolution();
+    void init();
     RVector freeAirSolution() { return freeAirSolution_; }
     
     virtual RVector response( const RVector & model );
