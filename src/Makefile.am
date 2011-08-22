@@ -4,8 +4,6 @@ include_HEADERS = gimli.h
 
 #			ttdijkstramodelling.h \
 #			ttdijkstramodelling.cpp \
-#			dc1dmodelling.h \
-#			dc1dmodelling.cpp \
 # 			eameshwrapper.h \
 # 			eameshwrapper.cpp 
 
@@ -28,6 +26,8 @@ libgimli_la_SOURCES = \
 			curvefitting.cpp \
 			datacontainer.h \
 			datacontainer.cpp \
+			dc1dmodelling.h \
+			dc1dmodelling.cpp \
 			elementmatrix.h \
 			elementmatrix.cpp \
 			em1dmodelling.h \

@@ -15,19 +15,18 @@ fi
 #	make -f $MAKEFILE clean
 
 if [ $# -lt 1 ]; then 
-	python generate_pygimli_code.py
-
-#	[ -f generated/__call_policies.pypp.hpp ] || cp tmp/__call_policies.pypp.hpp generated/
-	make -f $MAKEFILE $MAKEOPTS 
+    python generate_pygimli_code.py
+    make -f $MAKEFILE $MAKEOPTS 
 elif [ $# -gt 0 ]; then
-        if [ "$1" = "test" ]; then
-		echo "build testsuite"
-		python generate_pygimli_code.py test
-#		cp tmp/__call_policies.pypp.hpp generated/
-		DEFINES='-D PYTEST' make -f $MAKEFILE $MAKEOPTS
-		exit
-	else
-		echo "unknown command" $1	
-	fi
+    if [ "$1" = "test" ]; then
+        echo "build testsuite"
+        python generate_pygimli_code.py test
+        DEFINES='-D PYTEST' make -f $MAKEFILE $MAKEOPTS
+        exit
+    elif [ "$1" = "clean" ]; then
+        make -f $MAKEFILE clean
+    else
+        echo "unknown command" $1	
+    fi
 fi
 

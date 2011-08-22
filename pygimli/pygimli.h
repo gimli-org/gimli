@@ -10,6 +10,12 @@
 #include <list>
 #include <map>
 
+#ifndef PACKAGE_NAME
+        #define PACKAGE_NAME "gimli (python build)"
+        #define PACKAGE_VERSION "0.7.0"
+        #define PACKAGE_BUGREPORT "carsten@resistivity.net"
+#endif // PACKAGE_NAME
+
 #ifdef PYTEST
 
 #include "stopwatch.h"
@@ -81,33 +87,24 @@ namespace pyplusplus{ namespace aliases{
 #else // if not PYTEST
 
 #include "baseentity.h"
-#include "bert.h"
-#include "bertMisc.h"
-#include "bertJacobian.h"
 #include "curvefitting.h"
 #include "cholmodWrapper.h"
 #include "datacontainer.h"
-#include "datamap.h"
 #include "gimli.h"
-#include "dcfemmodelling.h"
 #include "dc1dmodelling.h"
-#include "eameshwrapper.h"
-#include "electrode.h"
 #include "elementmatrix.h"
 #include "em1dmodelling.h"
 #include "exitcodes.h"
 #include "expressions.h"
 #include "interpolate.h"
 #include "inversion.h"
-#include "inversionRollalong.h"
 #include "ipcClient.h"
 #include "ldlWrapper.h"
 #include "line.h"
 #include "linSolver.h"
 #include "matrix.h"
-#include "matrixTemplates.h"
 #include "mesh.h"
-#include "meshEntities.h"
+#include "meshentities.h"
 #include "meshgenerators.h"
 #include "modellingbase.h"
 #include "node.h"
@@ -121,13 +118,23 @@ namespace pyplusplus{ namespace aliases{
 #include "solverWrapper.h"
 #include "sparsematrix.h"
 #include "spline.h"
-#include "stlvector.h"
 #include "stopwatch.h"
 #include "trans.h"
-#include "trianglewrapper.h"
-#include "ttdijkstramodelling.h"
+#include "triangleWrapper.h"
 #include "vector.h"
 #include "vectortemplates.h"
+
+//#include "ttdijkstramodelling.h"
+// #include "datamap.h"
+// #include "bert.h"
+// #include "bertMisc.h"
+// #include "bertJacobian.h"
+// #include "electrode.h"
+// #include "inversionRollalong.h"
+// #include "eameshwrapper.h"
+// #include "dcfemmodelling.h"
+// #include "matrixTemplates.h"
+// #include "stlvector.h"
 
 namespace GIMLI{
 #define DEFINE_PY_VEC_OPERATOR__( OP )                      \
@@ -190,7 +197,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template class Quaternion< double >;
 
     template class Inversion< double, RMatrix >;
-    template class RollalongInSpace< double >;
+//     template class RollalongInSpace< double >;
 
     template class Trans< RVector >;
     template class TransLinear< RVector >;
@@ -346,7 +353,7 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Quaternion< double >                  RQuaternion;
 
     typedef GIMLI::Inversion< double, RMatrix >          RInversion;
-    typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
+//     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
 
     typedef GIMLI::ElementMatrix< double >                   DElementMatrix;
     typedef GIMLI::SparseMapMatrix< int, unsigned long >     ISparseMapMatrix;
@@ -370,9 +377,9 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::Boundary * >         stdVectorBounds;
     typedef std::vector< GIMLI::Cell * >             stdVectorCells;
     typedef std::vector< GIMLI::Node * >             stdVectorNodes;
-    typedef std::vector< GIMLI::ElectrodeShape * >   stdVectorElectrodeShape;
-    typedef std::vector< GIMLI::Electrode >          stdVectorElectrode;
-    typedef std::vector< GIMLI::Electrode  * >       stdVectorpElectrode;
+//     typedef std::vector< GIMLI::ElectrodeShape * >   stdVectorElectrodeShape;
+//     typedef std::vector< GIMLI::Electrode >          stdVectorElectrode;
+//     typedef std::vector< GIMLI::Electrode  * >       stdVectorpElectrode;
     typedef std::vector< GIMLI::MeshEntity * >       stdVectorMeshEntity;
     typedef std::vector< GIMLI::CubicFunct >         stdVectorCubicFunct;
 
