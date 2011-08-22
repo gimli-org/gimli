@@ -190,6 +190,7 @@ inline void savePythonGIL( bool s ){
     __SAVE_PYTHON_GIL__ = s;
 }
 
+
 class PythonGILSave {
 public:
     PythonGILSave( ): saved_( false ) { save(); }

@@ -29,10 +29,15 @@
 #include "vectortemplates.h"
 
 namespace GIMLI{
-/*! DC (direct current) 1D modelling */
-/*! Classical DC 1D forward operator for given resistivities and thicknesses */
-/*! DC1dModelling( mesh, dataContainer, nlayers, verbose )*/
-/*! DC1dModelling( dataContainer, nlayers, verbose )*/
+
+/*! Syntactic suger for calculating the response of a model file and output to file. Better in bert Misc /Tools?, pygimli??*/
+//DLLEXPORT void calculateDC1D( DataContainer & data, const std::string & modelFile, const std::string & outfile );
+
+
+//! DC (direct current) 1D modelling 
+/*! Classical DC 1D forward operator for given resistivities and thicknesses 
+    DC1dModelling( mesh, dataContainer, nlayers, verbose )
+    DC1dModelling( dataContainer, nlayers, verbose ) */
 class DLLEXPORT DC1dModelling : public ModellingBase {
 public:
 //    /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) deactivated (DataContainer) */
@@ -48,13 +53,16 @@ public:
 
     /*! Returns an RVector of the 1dc response for model = [thickness_ 0, ..., thickness_(n-1), rho_0 .. rho_n]. For n = nlayers. */
     RVector response( const RVector & model );
+    
     RVector rhoa( const RVector & rho, const RVector & thk );
+    
     RVector kern1d( const RVector & lam, const RVector & rho, const RVector & h );
+    
     RVector pot1d( const RVector & R, const RVector & rho, const RVector & thk );
 
     template < class Vec > Vec rhoaT( const Vec & rho, const RVector & thk ){
         Vec tmp;
-        tmp = pot1dT<Vec>( am_, rho, thk );
+        tmp  = pot1dT<Vec>( am_, rho, thk );
         tmp -= pot1dT<Vec>( an_, rho, thk );
         tmp -= pot1dT<Vec>( bm_, rho, thk );
         tmp += pot1dT<Vec>( bn_, rho, thk );
@@ -155,17 +163,14 @@ public:
             }
     virtual ~DC1dRhoModelling() { }
 
-    RVector response( const RVector & rho ) {
-        return rhoa( rho, thk_ ); }
-    RVector createDefaultStartModel( ) {
-        return RVector( thk_.size() + 1, meanrhoa_ ); }
+    RVector response( const RVector & rho ) {  return rhoa( rho, thk_ ); }
+    
+    RVector createDefaultStartModel( ) {  return RVector( thk_.size() + 1, meanrhoa_ ); }
+    
 protected:
     RVector thk_;
     Mesh mesh_;
 };
-
-/*! pure function for calculating the response of a model file and output to file */
-DLLEXPORT void calculateDC1D( DataContainer & data, const std::string & modelFile, const std::string & outfile );
 
 } // namespace GIMLI{
 

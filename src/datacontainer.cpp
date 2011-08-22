@@ -559,5 +559,11 @@ DataContainer DataContainer::filter( const std::vector < size_t > & idx ) const 
     return data;
 }
 
+void DataContainer::removeUnusedSensors(){
+}
+
+void DataContainer::markInvalidSensorIndices(){
+}
+
 } // namespace GIMLI{
 

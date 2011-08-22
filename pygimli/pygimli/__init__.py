@@ -65,9 +65,6 @@ def Mesh_str( self ):
 def Data_str( self ):
     return "Data: Electrodes: " + str( self.electrodeCount() ) + " data: " + str( self.size() )
 
-def FourPoint_str( self ):
-    return "Data: " + str( self.a() ) + " " + str( self.b() ) + " " + str( self.m() ) + " " + str( self.n() )
-
 _pygimli_.RVector3.__str__ = RVector3_str
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
@@ -75,7 +72,6 @@ _pygimli_.RMatrix.__str__ = RMatrix_str
 _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
-_pygimli_.FourPointData.__str__ = FourPoint_str
 _pygimli_.stdVectorUL.size = _pygimli_.stdVectorUL.__len__
 _pygimli_.stdVectorUL.__str__ = RVector_str
 

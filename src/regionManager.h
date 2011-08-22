@@ -91,7 +91,6 @@ public:
     /*! Returns the last parameter id by means of a global count, defined in countParameter called from RegionManager */
     inline uint endParameter() const { return endParameter_; }
 
-
     /*! Set the constrainst-type for this region available( 0, 1 ) */
     void setConstraintType( uint type );
     

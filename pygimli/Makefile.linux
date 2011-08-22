@@ -2,7 +2,7 @@ BOOSTDIR=/usr/include/boost
 BOOSTLIB=/usr/lib64 -l boost_python-mt
 PYTHONDIR=/usr/include/python2.7
 
-GIMLILIB=$(HOME)/lib -lgimli 
+GIMLILIB=../src/.libs/ -lgimli 
 GIMLIINC=../src
 TARGET=_pygimli_
 COPT=-fPIC -O2 -g -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES
