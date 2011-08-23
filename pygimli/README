@@ -1,0 +1,25 @@
+To build pygimli run 
+
+sh build.sh
+
+
+If something goes wrong (probably):
+
+check for: 
+	- valid gimli library
+	- gccxml, pygccxml, py++ installation
+		There is an installation script in buildScripts/buildTollChain.sh. 
+		If you want to install gccxml, please delete old installations and sources.
+		Best way seems calling the beformentioned script with prefix path as of the same order as your gimli path 
+		e.g.:
+		sh buildScripts/buildToolChain.sh ../../../
+	- boost: as needed for gimli too	 
+
+
+------------------------------------------------------------
+------------------------------------------------------------
+FAQ:
+------------------------------------------------------------
+--------------------
+    
+    
