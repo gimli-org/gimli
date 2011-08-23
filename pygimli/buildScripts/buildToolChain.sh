@@ -1,81 +1,99 @@
 #!/usr/bin/env bash
 
-prefix=`pwd`
+if [ $# -eq 0 ]; then
+	prefix=`pwd`
+else 
+	prefix=`readlink -m $1`
+fi
 
+echo "Installing at " $prefix
+
+GCCXML_BIN_ROOT=$prefix/gccxml-bin
+
+echo "looking for gcc ..."
 if ( (gcc --version) );then
-	echo "looking for gcc ... found, good"
 	echo "... found, good"
 else
 	echo "need a working gcc installation"
 	exit
 fi
-
+echo ""
+echo "looking for python ..."
 if ( (python --version) );then
-	echo "looking for python ... found, good"
+	echo "... found, good"
 else
 	echo "need python2.6 installation"
 	echo "get one from http://www.python.org/"
 	echo "if allready ensure python26 installation directory is in your PATH"
 	exit
 fi
-
+echo ""
+echo "looking for cmake ..."
 if ( (cmake --version) );then
-	echo "looking for cmake ... found, good"
+	echo "... found, good"
 else
 	echo "need cmake"
 	echo "get one from http://www.cmake.org/cmake/resources/software.html"
 	echo "if allready ensure cmake installation directory is in your PATH"
 	exit
 fi
-
+echo ""
+echo "looking for svn ..."
 if ( (svn --version --quiet) );then
-	echo "lookcing for svn ... found, good"
+	echo "... found, good"
 else
 	echo "need svn client"
 	echo "get one from http://www.sliksvn.com/en/download"
 	echo "if allready ensure svn installation directory is in your PATH"
 	exit
 fi
-
+echo ""
 echo "Installing sources at" $prefix
 
 installGCCXML(){
     echo "install gccxml"
-    oldpwd=`pwd`
-    cd $prefix
-    cvs -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co gccxml/
-    cd gccxml
-    cmake ./ -G 'MSYS Makefiles'
-    make
-    make install
-
-    cd $oldpwd
+    pushd $prefix
+		cvs -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co gccxml/
+		mkdir -p gccxml-build
+		mkdir -p $GCCXML_BIN_ROOT
+		pushd gccxml-build
+			cmake ../gccxml -G 'MSYS Makefiles' 
+			make
+			make install DESTDIR=$GCCXML_BIN_ROOT
+		popd
+	popd
 }
 
 fixGCCXML(){
-    oldpwd=`pwd`
-    cd $prefix
-    echo "#include <string>" > test.h
-    if [ !$(/c/programme/gccxml/bin/gccxml --debug test.h >.test.log) ]; then
-        echo "gccxml test fail"
-        COMPILER=`grep "GCCXML_COMPILER" /c/programme/gccxml/share/gccxml-0.9/gccxml_config | cut -f2 -d'=' | cut -f2 -d':'`
-        
-        echo $COMPILER
-        echo ${COMPILER%'"'}
-        grep "isystemc:" .test.log
-    else
-        echo "gccxml seems to work"
-    fi
-    
-    cd $oldpwd
+	GCCXML_BIN=$GCCXML_BIN_ROOT/Program\ Files\ \(x86\)/gccxml
+	GCCXML_CFG=$GCCXML_BIN/share/gccxml-0.9/gccxml_config
+	pushd $prefix
+		echo "#include <string>" > test.h
+		("$GCCXML_BIN/bin/gccxml" --debug test.h > .test.log)
+
+		if [ $? -gt 0 ]; then
+			echo "gccxml test fail"
+			USER_FLAGS=''
+			for i in `grep "isystemc:" .test.log | sed -e 's/isystemc:mingwbin../isystemc:\/mingw\/bin\/../' | tr -s '"' '\ '`; do
+				USER_FLAGS=$USER_FLAGS' '$i
+			done
+			echo -e 'GCCXML_USER_FLAGS="'$USER_FLAGS'"' >> "$GCCXML_CFG"
+			echo "I will now try to fix this gccxml installation ... "
+			echo "You may rerun this test. If this error occur please contact me. Carsten."
+		else
+			echo "gccxml seems to work"
+		fi
+		rm -rf test.h .test.log
+    popd
 }
+WORKING_PYGCC_REV=1842
 
 installPYGCCXML(){
     echo "install pygccxml"
     oldpwd=`pwd`
     cd $prefix
 	
-	svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r 1842 pygccxml
+	svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r $WORKING_PYGCC_REV pygccxml
     cd pygccxml
     python setup.py install
     cd $oldpwd   
@@ -85,14 +103,15 @@ installPYPLUSPLUS(){
     echo "install pyplusplus"
     oldpwd=`pwd`
     cd $prefix
-	svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r 1842 pyplusplus
+	svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r $WORKING_PYGCC_REV pyplusplus
     cd pyplusplus
     python setup.py install
     cd $oldpwd   
 }
 
-#installGCCXML
-#installPYGCCXML
-#installPYPLUSPLUS
-
+installGCCXML
 fixGCCXML
+installPYGCCXML
+installPYPLUSPLUS
+
+

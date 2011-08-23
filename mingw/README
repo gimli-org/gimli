@@ -1,0 +1,24 @@
+To build open Code::Block (testet with: 10.05 )
+
+- File/Open ... libgimli.cbp
+- Build/Build (CTRL-F9)
+
+------------------------------------------------------------
+------------------------------------------------------------
+FAQ:
+------------------------------------------------------------
+--------------------
+
+Code::Blocks failed with:
+    cannot find -llapack_win32.dll
+    cannot find -lblas_win32.dll
+
+Copy the blas_win32.dll and lapack_win32.dll into the mingw path or to ../external/lib
+You can optain a copy of these files from:
+
+http://www.netlib.org/lapack/archives/
+or
+http://www.fi.muni.cz/~xsvobod2/misc/lapack
+--------------------
+    
+    
