@@ -57,19 +57,18 @@ installGCCXML(){
 		mkdir -p gccxml-build
 		mkdir -p $GCCXML_BIN_ROOT
 		pushd gccxml-build
-			cmake ../gccxml -G 'MSYS Makefiles' 
+			cmake -D CMAKE_INSTALL_PREFIX=$GCCXML_BIN_ROOT ../gccxml -G 'MSYS Makefiles' 
 			make
-			make install DESTDIR=$GCCXML_BIN_ROOT
+			make install
 		popd
 	popd
 }
 
 fixGCCXML(){
-	GCCXML_BIN=$GCCXML_BIN_ROOT/Program\ Files\ \(x86\)/gccxml
-	GCCXML_CFG=$GCCXML_BIN/share/gccxml-0.9/gccxml_config
+	GCCXML_CFG=$GCCXML_BIN_ROOT/share/gccxml-0.9/gccxml_config
 	pushd $prefix
 		echo "#include <string>" > test.h
-		("$GCCXML_BIN/bin/gccxml" --debug test.h > .test.log)
+		("$GCCXML_BIN_ROOT/bin/gccxml" --debug test.h > .test.log)
 
 		if [ $? -gt 0 ]; then
 			echo "gccxml test fail"
@@ -90,28 +89,29 @@ WORKING_PYGCC_REV=1842
 
 installPYGCCXML(){
     echo "install pygccxml"
-    oldpwd=`pwd`
-    cd $prefix
-	
-	svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r $WORKING_PYGCC_REV pygccxml
-    cd pygccxml
-    python setup.py install
-    cd $oldpwd   
+    pushd $prefix
+        echo "getting sources ..."
+        svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r $WORKING_PYGCC_REV pygccxml
+        pushd pygccxml
+            python setup.py install
+        popd
+    popd
 }
 
 installPYPLUSPLUS(){
     echo "install pyplusplus"
-    oldpwd=`pwd`
-    cd $prefix
-	svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r $WORKING_PYGCC_REV pyplusplus
-    cd pyplusplus
-    python setup.py install
-    cd $oldpwd   
+    pushd $prefix
+        echo "getting sources ..."
+        svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r $WORKING_PYGCC_REV pyplusplus
+        pushd pyplusplus
+            python setup.py install
+        popd
+    popd
 }
 
-installGCCXML
-fixGCCXML
-installPYGCCXML
+#installGCCXML
+#fixGCCXML
+#installPYGCCXML
 installPYPLUSPLUS
 
 

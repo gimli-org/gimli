@@ -48,6 +48,7 @@
 			<Add library="blas_win32" />
 			<Add library="lapack_win32" />
 			<Add directory="..\external\lib" />
+			<Add directory="..\mingw" />
 		</Linker>
 		<Unit filename="..\src\baseentity.h" />
 		<Unit filename="..\src\cholmodWrapper.cpp" />
@@ -84,16 +85,16 @@
 		<Unit filename="..\src\kdtreeWrapper.h" />
 		<Unit filename="..\src\ldlWrapper.cpp" />
 		<Unit filename="..\src\ldlWrapper.h" />
-		<Unit filename="..\src\line.cpp" />
-		<Unit filename="..\src\line.h" />
 		<Unit filename="..\src\linSolver.cpp" />
 		<Unit filename="..\src\linSolver.h" />
+		<Unit filename="..\src\line.cpp" />
+		<Unit filename="..\src\line.h" />
 		<Unit filename="..\src\matrix.h" />
 		<Unit filename="..\src\mesh.cpp" />
 		<Unit filename="..\src\mesh.h" />
+		<Unit filename="..\src\mesh_io.cpp" />
 		<Unit filename="..\src\meshentities.cpp" />
 		<Unit filename="..\src\meshentities.h" />
-		<Unit filename="..\src\mesh_io.cpp" />
 		<Unit filename="..\src\meshgenerators.cpp" />
 		<Unit filename="..\src\meshgenerators.h" />
 		<Unit filename="..\src\modellingbase.cpp" />

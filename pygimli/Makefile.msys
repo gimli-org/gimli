@@ -1,6 +1,6 @@
-BOOSTDIR=/usr/include/boost
-BOOSTLIB=/usr/lib64 -l boost_python-mt
-PYTHONDIR=/usr/include/python2.7
+BOOSTDIR=../../../boost
+BOOSTLIB=BOOSTDIR/lib -l boost_python-mt
+PYTHONDIR=`which python | sed -e 's/python.exe/include/'`
 
 GIMLILIB=../src/.libs/ -lgimli 
 GIMLIINC=../src
@@ -13,12 +13,12 @@ OBJECTS = $(patsubst %.cpp,%.o,$(CPPCFILES))
 default: $(TARGET)
 
 .cpp.o:
-	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR) -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
+	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR)/include -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
 
 $(TARGET): $(OBJECTS)
 	g++ -o $(TARGET).so --strip-all -shared $(OBJECTS) -L. \
 		-L $(BOOSTLIB) \
-		-L $(GIMLILIB) -lcolamd 
+		-L $(GIMLILIB) 
 	mv $(TARGET).so ./pygimli/
 
 clean:
