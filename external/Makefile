@@ -1,9 +1,18 @@
 TRIANGLE=triangle.zip
 TRIANGLE_URL=http://www.netlib.org/voronoi/$(TRIANGLE)
 
+BLAS=lib/blas.dll
+BLAS_SRC=blas.tgz
+BLAS_URL=http://www.netlib.org/blas/$(BLAS_SRC)
+
+LAPACK_SRC=lapack.tgz
+LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
+
 SUITESPARSE=SuiteSparse-3.6.1.tar.gz
 SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
 
+
+#default: prep triangle blas lapack suitesparse
 default: prep triangle suitesparse
 
 prep:
@@ -26,10 +35,32 @@ triangle: prep $(TRIANGLE)
 	rm -f lib/libtriangle.a
 	ar cqs lib/libtriangle.a triangle/triangle.o
 
+$(LAPACK_SRC): wget
+	wget -nc -nd $(LAPACK_URL)
+#	rm -rf lapack-*
+#	tar -xzvf $(LAPACK_SRC)
+
+BLASFILES = $(wildcard lapack-*/BLAS/SRC/*.f)
+BLASOBJECTS = $(patsubst %.f,%.o,$(BLASFILES))
+
+LAPACKFILES = $(wildcard lapack-*/src/*.f)
+LAPACKOBJECTS = $(patsubst %.f,%.o,$(LAPACKFILES))
+
+.f.o:
+	gfortran -O3 -c -o $(patsubst %.f,%.o, $<) $<	
+	
+$(BLAS): prep $(LAPACK_SRC) $(BLASOBJECTS)
+	echo "building blas for ", $(OSTYPE)
+	gfortran -o $(BLAS) --strip-all -shared $(BLASOBJECTS)
+
+lapack: prep $(LAPACK_SRC) $(BLAS) $(LAPACKOBJECTS)
+	echo "building lapack for ", $(OSTYPE)
+	gfortran -o $(LAPACK) --strip-all -shared $(LAPACKOBJECTS)
+	
 $(SUITESPARSE): wget unzip
 	wget -nc -nd $(SUITESPARSE_URL)
 	tar -xzvf $(SUITESPARSE)
-
+		
 suitesparse: prep $(SUITESPARSE)
 
 	echo "building suitesparse for ", $(OSTYPE)
