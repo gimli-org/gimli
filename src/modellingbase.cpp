@@ -90,6 +90,8 @@ RVector ModellingBase::startModel( ) {
 }
 
 void ModellingBase::createRefinedForwardMesh( bool refine, bool pRefine ){
+	this->initRegionManager();
+
     if ( !mesh_ ) {
         mesh_ = new Mesh();
     } else {

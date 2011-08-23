@@ -1,3 +1,8 @@
+Check for valid boost installation
+		sh pygimli/buildScripts/buildBoostWin32.sh ../../
+		
+		
+		
 To build open Code::Block (testet with: 10.05 )
 
 - File/Open ... libgimli.cbp
