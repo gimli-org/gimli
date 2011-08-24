@@ -27,6 +27,10 @@ $(TARGET): $(OBJECTS)
      
 	mv $(TARGET).pyd ./pygimli/
 	cp ../mingw/libgimli.dll ./pygimli
+	cp ../mingw/blas_win32.dll ./pygimli
+	cp ../mingw/lapack_win32.dll ./pygimli
+	cp ../../../boost/lib/libboost_thread-mt.dll ./pygimli
+	cp ../../../boost/lib/libboost_python-mt.dll ./pygimli
 
 clean:
 	rm -rf generated/*
