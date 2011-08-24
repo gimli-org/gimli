@@ -1,8 +1,12 @@
 BOOSTDIR=../../../boost
-BOOSTLIB=BOOSTDIR/lib -l boost_python-mt
-PYTHONDIR=`which python | sed -e 's/python.exe/include/'`
+BOOSTLIB=$(BOOSTDIR)/lib -l boost_python-mt
 
-GIMLILIB=../src/.libs/ -lgimli 
+PYTHONDIR=`which python | sed -e 's/python.exe/include/'`
+PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython26
+
+#-L ../../trunk/mingw -l libgimli \
+#-Wl,-Bstatic  -Wl,-Bdynamic -lpython26 -Wl,--end-group -g -mthreads
+GIMLILIB=../mingw/ -lgimli 
 GIMLIINC=../src
 TARGET=_pygimli_
 COPT=-fPIC -O2 -g -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES
@@ -16,10 +20,13 @@ default: $(TARGET)
 	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR)/include -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
 
 $(TARGET): $(OBJECTS)
-	g++ -o $(TARGET).so --strip-all -shared $(OBJECTS) -L. \
+	g++ -o $(TARGET).pyd --strip-all -shared $(OBJECTS) -L. \
 		-L $(BOOSTLIB) \
-		-L $(GIMLILIB) 
-	mv $(TARGET).so ./pygimli/
+        -L $(PYTHONLIB) \
+		-L $(GIMLILIB)          
+     
+	mv $(TARGET).pyd ./pygimli/
+    cp ../mingw/libgimli.dll ./pygimli
 
 clean:
 	rm -rf generated/*
