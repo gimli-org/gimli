@@ -26,7 +26,7 @@ $(TARGET): $(OBJECTS)
 		-L $(GIMLILIB)          
      
 	mv $(TARGET).pyd ./pygimli/
-    cp ../mingw/libgimli.dll ./pygimli
+	cp ../mingw/libgimli.dll ./pygimli
 
 clean:
 	rm -rf generated/*
