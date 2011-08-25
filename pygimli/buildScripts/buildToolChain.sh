@@ -54,6 +54,7 @@ installGCCXML(){
     echo "install gccxml"
     pushd $prefix
 		cvs -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co gccxml/
+		rm -rf gccxml-build gccxml-bin
 		mkdir -p gccxml-build
 		mkdir -p $GCCXML_BIN_ROOT
 		pushd gccxml-build
@@ -67,13 +68,18 @@ installGCCXML(){
 fixGCCXML(){
 	GCCXML_CFG=$GCCXML_BIN_ROOT/share/gccxml-0.9/gccxml_config
 	pushd $prefix
+		rm -rf *.gch
 		echo "#include <string>" > test.h
 		("$GCCXML_BIN_ROOT/bin/gccxml" --debug test.h > .test.log)
 
+		
 		if [ $? -gt 0 ]; then
 			echo "gccxml test fail"
 			USER_FLAGS=''
-			for i in `grep "isystemc:" .test.log | sed -e 's/isystemc:mingwbin../isystemc:\/mingw\/bin\/../' | tr -s '"' '\ '`; do
+			#-isystemc:mingw_w64bin
+			for i in `grep "isystemc:" .test.log | sed -e 's/isystemc:mingw/isystemc:\/mingw/' | sed -e 's/bin../\/bin\/../' | tr -s '"' '\ '`; do
+			#for i in `grep "isystemc:" .test.log | sed -e 's/isystemc:mingwbin../isystemc:\/mingw\/bin\/../' | tr -s '"' '\ '`; do
+				echo $i
 				USER_FLAGS=$USER_FLAGS' '$i
 			done
 			echo -e 'GCCXML_USER_FLAGS="'$USER_FLAGS'"' >> "$GCCXML_CFG"
@@ -82,10 +88,11 @@ fixGCCXML(){
 		else
 			echo "gccxml seems to work"
 		fi
-		rm -rf test.h .test.log
+		#rm -rf test.h .test.log
     popd
 }
-WORKING_PYGCC_REV=1842
+#WORKING_PYGCC_REV=1842
+WORKING_PYGCC_REV=1856
 
 installPYGCCXML(){
     echo "install pygccxml"
@@ -110,8 +117,7 @@ installPYPLUSPLUS(){
 }
 
 installGCCXML
-fixGCCXML
 installPYGCCXML
 installPYPLUSPLUS
 fixGCCXML
-
+fixGCCXML

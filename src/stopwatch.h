@@ -25,16 +25,16 @@
 #include <sys/timeb.h>
 
 #if defined(__i386__)
-static __inline__ unsigned long rdtsc__( void ){
-    unsigned long int x;
+static __inline__ size_t rdtsc__( void ){
+    size_t x;
     __asm__ volatile (".byte 0x0f, 0x31" : "=A" ( x ));
     return x;
 }
 #elif defined(__x86_64__)
-static __inline__ unsigned long rdtsc__( void ){
+static __inline__ size_t rdtsc__( void ){
     unsigned hi, lo;
     __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-    return ( (unsigned long)lo)|( ((unsigned long)hi)<<32 );
+    return ( (size_t )lo)|( ((size_t )hi)<<32 );
 }
 #endif
 
@@ -48,11 +48,11 @@ public:
 
     inline void tic( ){ var_ = rdtsc__(); }
 
-    inline unsigned long toc( ) const { return ( rdtsc__() - var_ ); }
+    inline size_t toc( ) const { return ( rdtsc__() - var_ ); }
 
 protected:
 
-    unsigned long var_;
+    size_t var_;
 };
 
 class DLLEXPORT Stopwatch {
@@ -75,13 +75,13 @@ public:
     double duration( bool restart = false );
 
     /*! Returns the cpu cycles. Optional you can restart the stopwatch.*/
-    unsigned long cycles( bool restart = false );
+    size_t cycles( bool restart = false );
 
     const CycleCounter & cycleCounter() const { return cCounter_; }
 
 protected:
     timeb starttime, stoptime;
-    enum watchstate {undefined,halted,running} state;
+    enum watchstate {undefined,halted,running} state_;
     CycleCounter cCounter_;
 };
 

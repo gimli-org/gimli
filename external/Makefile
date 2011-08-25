@@ -1,16 +1,14 @@
 TRIANGLE=triangle.zip
 TRIANGLE_URL=http://www.netlib.org/voronoi/$(TRIANGLE)
 
-BLAS=lib/blas.dll
-BLAS_SRC=blas.tgz
-BLAS_URL=http://www.netlib.org/blas/$(BLAS_SRC)
+BLAS=lib/libblas.dll
 
+LAPACK=lib/liblapack.dll
 LAPACK_SRC=lapack.tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
 SUITESPARSE=SuiteSparse-3.6.1.tar.gz
 SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
-
 
 #default: prep triangle blas lapack suitesparse
 default: prep triangle suitesparse
@@ -24,12 +22,14 @@ $(TRIANGLE): wget unzip
 	unzip -o -d triangle $(TRIANGLE)
 
 triangle: prep $(TRIANGLE)
-	echo "building triangle for ", ${OSTYPE}
+	echo "building triangle for ", ${OSTYPE}, $(MSYSTEM)
  
 	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ] ; then \
 		sed -i -e 's/-DLINUX/-DCPU86/g' triangle/makefile ; \
 	fi
 	sed -i -e 's/CC = cc/CC = gcc -fPIC/g' triangle/makefile; \
+	
+	patch triangle/triangle.c -i patches/triangle-mingw-win64.patch
 	
 	make -C triangle/ trilibrary
 	rm -f lib/libtriangle.a
@@ -37,25 +37,18 @@ triangle: prep $(TRIANGLE)
 
 $(LAPACK_SRC): wget
 	wget -nc -nd $(LAPACK_URL)
-#	rm -rf lapack-*
-#	tar -xzvf $(LAPACK_SRC)
+	rm -rf lapack-*
+	tar -xzvf $(LAPACK_SRC)
 
-BLASFILES = $(wildcard lapack-*/BLAS/SRC/*.f)
-BLASOBJECTS = $(patsubst %.f,%.o,$(BLASFILES))
-
-LAPACKFILES = $(wildcard lapack-*/src/*.f)
-LAPACKOBJECTS = $(patsubst %.f,%.o,$(LAPACKFILES))
-
-.f.o:
-	gfortran -O3 -c -o $(patsubst %.f,%.o, $<) $<	
-	
-$(BLAS): prep $(LAPACK_SRC) $(BLASOBJECTS)
-	echo "building blas for ", $(OSTYPE)
-	gfortran -o $(BLAS) --strip-all -shared $(BLASOBJECTS)
-
-lapack: prep $(LAPACK_SRC) $(BLAS) $(LAPACKOBJECTS)
+lapack: prep $(LAPACK_SRC)
 	echo "building lapack for ", $(OSTYPE)
-	gfortran -o $(LAPACK) --strip-all -shared $(LAPACKOBJECTS)
+	mkdir -p lapack-build
+	pushd lapack-build; \
+		cmake -D BUILD_SHARED_LIBS=ON ../lapack-3* -G 'MSYS Makefiles'; \
+		make; \
+	popd
+	cp lapack-build/bin/liblapack.dll $(LAPACK)
+	cp lapack-build/bin/libblas.dll $(BLAS)
 	
 $(SUITESPARSE): wget unzip
 	wget -nc -nd $(SUITESPARSE_URL)
@@ -105,6 +98,6 @@ unzip:
 
 clean:
 	echo "Cleaning ..."
-	rm -rf lib triangle AMD CAMD COLAMD CCOLAMD LDL CHOLMOD SuiteSparse *~
+	rm -rf lib triangle AMD CAMD COLAMD CCOLAMD LDL CHOLMOD SuiteSparse lapack-* *~
 
 	
