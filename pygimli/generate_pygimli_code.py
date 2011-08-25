@@ -121,18 +121,17 @@ def generate( defined_symbols ):
 #        )
 
 
-    xml_cached_fc = parser.create_cached_source_fc( os.path.join( r"pygimli.h" ),
-                                                    settings.module_name + '.cache' )
-
+    xml_cached_fc = parser.create_cached_source_fc( os.path.join( r"pygimli.h" ), settings.module_name + '.cache' )
+	
     defines = ['__DUMMY__']
     
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:
             defines.append( define )
-        
 
     mb = module_builder.module_builder_t( [xml_cached_fc]
-                                        , gccxml_path   = settings.gccxml_path
+                                        #, gccxml_path   = settings.gccxml_path
+										, gccxml_path   =  'c:\\\\Users\\\\carsten\\\\src\\\\gccxml-bin\\\\bin\\\\gccxml.exe'
                                         , working_directory = settings.gimli_path
                                         , include_paths = [settings.gimli_path]
                                         , define_symbols = defines

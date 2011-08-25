@@ -295,6 +295,9 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
         sizeof( long unsigned int * );
         sizeof( long unsigned int & );
         sizeof( long unsigned int  );
+		sizeof( size_t * );
+        sizeof( size_t & );
+        sizeof( size_t );
         sizeof( double * );
         sizeof( double );
         sizeof( double & );
@@ -356,8 +359,8 @@ namespace pyplusplus{ namespace aliases{
 //     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
 
     typedef GIMLI::ElementMatrix< double >                   DElementMatrix;
-    typedef GIMLI::SparseMapMatrix< int, unsigned long >     ISparseMapMatrix;
-    typedef GIMLI::SparseMapMatrix< double, unsigned long >  DSparseMapMatrix;
+    typedef GIMLI::SparseMapMatrix< int, size_t >     ISparseMapMatrix;
+    typedef GIMLI::SparseMapMatrix< double, size_t >  DSparseMapMatrix;
     typedef GIMLI::SparseMatrix< int >                       ISparseMatrix;
     typedef GIMLI::SparseMatrix< double >                    DSparseMatrix;
 
@@ -400,7 +403,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< size_t >                       stdVectorUL;
     typedef std::vector< double >                       stdVectorR;
     typedef std::vector< std::complex < double > >      stdVectorC;
-    typedef std::vector< std::pair< unsigned long, unsigned long > > stdVectorPairLongLong;
+    typedef std::vector< std::pair< size_t, size_t > > stdVectorPairLongLong;
     typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
 
     typedef std::vector< GIMLI::Trans < GIMLI::Vector < double > > * > stdVectorTrans;

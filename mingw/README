@@ -22,8 +22,16 @@ Copy the blas_win32.dll and lapack_win32.dll into the mingw path or to ../extern
 You can optain a copy of these files from:
 
 http://www.netlib.org/lapack/archives/
+
 or
+ 
 http://www.fi.muni.cz/~xsvobod2/misc/lapack
+
+or 
+
+run in externals
+
+make lapack
 --------------------
     
     

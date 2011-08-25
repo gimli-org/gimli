@@ -2,7 +2,7 @@ BOOSTDIR=../../../boost
 BOOSTLIB=$(BOOSTDIR)/lib -l boost_python-mt
 
 PYTHONDIR=`which python | sed -e 's/python.exe/include/'`
-PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython26
+PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython*.a
 
 #-L ../../trunk/mingw -l libgimli \
 #-Wl,-Bstatic  -Wl,-Bdynamic -lpython26 -Wl,--end-group -g -mthreads

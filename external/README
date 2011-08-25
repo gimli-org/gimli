@@ -25,11 +25,9 @@ just call
 
 make
 
-To check your operating system you might to call before
+#################
+Blas/Lapack
+#################
+to install your local copy of blas/lapack just run 
 
-export OSTYPE
-
-If wget does not work copy the zip/tar.gz files here.
-Note that wget for Windows/msys can be installed using
-mingw-get install wget
-Proxy settings can be done in .wgetrc file.
+make lapack

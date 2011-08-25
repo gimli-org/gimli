@@ -25,7 +25,7 @@
 namespace GIMLI{
 
 Stopwatch::Stopwatch( bool start ) {
-    state = undefined;
+    state_ = undefined;
     if ( start ) this->start();
 }
 
@@ -34,13 +34,13 @@ Stopwatch::~Stopwatch() {
 
 void Stopwatch::start(){
     ftime( & starttime );
-    state = running;
+    state_ = running;
     cCounter_.tic();
 }
 
 void Stopwatch::stop( bool verbose ){
     ftime( & stoptime );
-    state = halted;
+    state_ = halted;
     if ( verbose ) std::cout << "time: " << duration() << "s" << std::endl;
 }
 
@@ -54,17 +54,17 @@ void Stopwatch::reset(){
 }
 
 double Stopwatch::duration( bool res ){
-    if ( state == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
-    if ( state == running ) ftime( &stoptime );
+    if ( state_ == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
+    if ( state_ == running ) ftime( &stoptime );
     double t = ( stoptime.time - starttime.time ) + double( stoptime.millitm - starttime.millitm ) / 1000.0;
     if ( res ) restart();
     return t;
 }
 
-unsigned long Stopwatch::cycles( bool res ){
-    if ( state == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
-    unsigned long t = 0;
-    if ( state == running ) t = cCounter_.toc();
+size_t Stopwatch::cycles( bool res ){
+    if ( state_ == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
+    size_t t = 0;
+    if ( state_ == running ) t = cCounter_.toc();
     if ( res ) restart();
     return t;
 }

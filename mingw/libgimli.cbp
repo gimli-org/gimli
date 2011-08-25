@@ -45,8 +45,8 @@
 			<Add library="libtriangle.a" />
 			<Add library="libcholmod.a" />
 			<Add library="libcolamd.a" />
-			<Add library="blas_win32" />
-			<Add library="lapack_win32" />
+			<Add library="..\external\lib\libblas.dll" />
+			<Add library="..\external\lib\liblapack.dll" />
 			<Add directory="..\external\lib" />
 			<Add directory="..\mingw" />
 		</Linker>
