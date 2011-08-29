@@ -65,81 +65,106 @@ template < class ValueType, class A > class __VectorExpr;
 
 template < class ValueType > class VectorIterator {
 public:
-  VectorIterator( ) : val_( NULL ), maxSize_( 0 ){ }
+    VectorIterator( ) : val_( NULL ), maxSize_( 0 ){ }
 
-  VectorIterator( const VectorIterator & iter ) : val_( iter.val_ ), maxSize_( iter.maxSize_ ){ }
+    VectorIterator( const VectorIterator & iter ) : val_( iter.val_ ), maxSize_( iter.maxSize_ ){ }
 
-  VectorIterator < ValueType > & operator = ( const VectorIterator < ValueType > & iter ){
-    if ( this != & iter ){
-      val_ = iter.val_;
-      maxSize_ = iter.maxSize_ ;
+    VectorIterator < ValueType > & operator = ( const VectorIterator < ValueType > & iter ){
+        if ( this != & iter ){
+            val_ = iter.val_;
+            maxSize_ = iter.maxSize_ ;
+        }
+        return *this;
     }
-    return *this;
-  }
 
-  inline const ValueType & operator * () const { return * val_; }
-  inline ValueType & operator * () { return * val_; }
+    inline const ValueType & operator * () const { return * val_; }
+    inline ValueType & operator * () { return * val_; }
 
-  inline const ValueType & operator [] ( const size_t i ) const { return val_[ i ]; }
-  inline ValueType & operator [] ( const size_t i ) { return val_[ i ]; }
+    inline const ValueType & operator [] ( const size_t i ) const { return val_[ i ]; }
+    inline ValueType & operator [] ( const size_t i ) { return val_[ i ]; }
 
-  inline VectorIterator & operator ++ () { ++val_; return *this; }
-  inline VectorIterator & operator -- () { --val_; return *this; }
+    inline VectorIterator & operator ++ () { ++val_; return *this; }
+    inline VectorIterator & operator -- () { --val_; return *this; }
 
-  inline bool operator == ( const VectorIterator< ValueType > & a ){ return val_ == a.val_; }
-  inline bool operator != ( const VectorIterator< ValueType > & a ){ return val_ != a.val_; }
+    inline bool operator == ( const VectorIterator< ValueType > & a ){ return val_ == a.val_; }
+    inline bool operator != ( const VectorIterator< ValueType > & a ){ return val_ != a.val_; }
 
-  inline size_t size() const { return maxSize_; }
+    inline size_t size() const { return maxSize_; }
 
-  inline ValueType * ptr() const { return val_; }
-  inline ValueType * ptr() { return val_; }
+    inline ValueType * ptr() const { return val_; }
+    inline ValueType * ptr() { return val_; }
 
-  ValueType * val_;
-  size_t maxSize_;
+    ValueType * val_;
+    size_t maxSize_;
 };
 
+//! One dimensional array aka Vector of limited size.
+/*!
+One dimensional array aka Vector of limited size. Size limit depends on platform (32bit system maxsize = 2^32, 64bit system, maxsize=2^64)
+*/
 template< class ValueType > class Vector {
 public:
+    /*!
+     * Construct one-dimensional array of size n. The vector is cleaned (filled with zero)
+     */
     Vector( size_t n = 0 ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( n );
         clean();
     }
 
+    /*!
+     * Construct one-dimensional array of size n, and fill it with val
+     */
     Vector( size_t n, const ValueType & val ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( n );
         fill( val );
     }
 
+    /*! 
+     * Construct vector from file. Shortcut for Vector::load 
+     */
+    Vector( const std::string & filename, IOFormat format = Ascii )
+        : size_( 0 ), data_( NULL ), begin_( NULL ), end_( NULL ) {
+        this->load( filename, format );
+    }
+    
+    /*!
+     * Copy constructor. Create new vector as a deep copy of v.
+     */
     Vector( const Vector< ValueType > & v ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( v.size() );
         copy_( v );
     }
 
-    Vector( const Vector< ValueType > & v, uint start, uint end )
+    /*!
+     * Copy constructor. Create new vector as a deep copy of the slice v[start, end )
+     */
+    Vector( const Vector< ValueType > & v, size_t start, size_t end )
         : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( end - start );
         std::copy( &v[ start ], &v[ end ], data_ );
     }
 
-    Vector( const std::vector< ValueType > & v ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
-        allocate_( v.size() );
-        //THROW_TO_IMPL
-        std::copy( &v[ 0 ], &v[ v.size() ], data_ );
-    }
-
-    /*! Construct vector from file */
-    Vector( const std::string & filename, IOFormat format = Ascii )
-        : size_( 0 ), data_( NULL ), begin_( NULL ), end_( NULL ) {
-        load( *this, filename, format );
-    }
-
+    /*!
+     * Copy constructor. Create new vector from expression
+     */
     template < class A > Vector( const __VectorExpr< ValueType, A > & v ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( v.size() );
         assign_( v );
     }
 
+    /*!
+     * Copy constructor. Create new vector as a deep copy of std::vector( Valuetype )
+     */
+    Vector( const std::vector< ValueType > & v ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
+        allocate_( v.size() );
+        std::copy( &v[ 0 ], &v[ v.size() ], data_ );
+    }
+
+    /*! Default destructor. */
     ~Vector() { free_(); }
 
+    /*! Assignment operator. Creates a new vector as copy of v */
     Vector< ValueType > & operator = ( const Vector< ValueType > & v ) {
         if ( this != &v ) {
             resize( v.size() );
@@ -148,11 +173,13 @@ public:
         return *this;
     }
 
+    /*! Assignment operator. Creates a new vector as from expression. */
     template < class A > Vector< ValueType > & operator = ( const __VectorExpr< ValueType, A > & v ) {
         assign_( v );
         return *this;
     }
 
+    /*! Assignment operator. Fill the existing vector with val. Shortcut for fill. */
     Vector< ValueType > & operator = ( const ValueType & val ) {
         fill( val );
         return *this;
@@ -167,6 +194,7 @@ public:
         this->fill( val );
         return *this;
     }
+    
     /*! Set a value at index i. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal( const ValueType & val, size_t i ) {
         if ( i >= 0 && i < this->size() ) {
@@ -179,7 +207,7 @@ public:
 
     /*! Set a value at slice index [start, end). Throws out of range exception if index check fails.
         end will set to this->size() if larger or -1. */
-    inline Vector< ValueType > & setVal( const ValueType & val, size_t start, long end ) {
+    inline Vector< ValueType > & setVal( const ValueType & val, size_t start, ssize_t end ) {
         size_t e = (size_t)end;
         if ( end == -1 ) e = this->size();
         else if ( e > this->size() ) e = this->size();
@@ -195,14 +223,14 @@ public:
     }
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
-    inline Vector< ValueType > & setVal( const ValueType & val, const std::vector < uint > & idx ) {
+    inline Vector< ValueType > & setVal( const ValueType & val, const std::vector < size_t > & idx ) {
         for ( size_t i = 0; i < idx.size(); i ++ ) setVal( val, idx[ i ] );
         return *this;
     }
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal( const Vector < ValueType > & vals,
-                                            const std::vector < uint > & idx ) {
+                                            const std::vector < size_t > & idx ) {
         if ( idx.size() != vals.size() ){
             throwLengthError( 1, WHERE_AM_I + " idx.size() != vals.size() " +
                                 toStr( idx.size() ) + " " + toStr( vals.size() ) );
@@ -264,11 +292,13 @@ public:
 
     /*! Return a new vector that match the slice [start, end).  end == -1 or larger size() sets end = size.
         Throws exception on violating boundaries. */
-    Vector < ValueType > operator () ( size_t start, long end ) const {
-        if ( end == -1 && end > (long)size_ ) end = (long)size_;
+    Vector < ValueType > operator () ( size_t start, ssize_t end ) const {
+        size_t e = (size_t) end;
+        if ( end == -1 && end > (ssize_t)size_ ) e = size_;
+        
         Vector < ValueType > v( end-start );
-        if ( start >= 0 && start < (size_t)end && (size_t)end <= size_ ){
-            std::copy( & data_[ start ], & data_[ (size_t)end ], &v[ 0 ] );
+        if ( start >= 0 && start < e && e <= size_ ){
+            std::copy( & data_[ start ], & data_[ e ], &v[ 0 ] );
         } else {
             throwLengthError( 1, WHERE_AM_I + " bounds out of range " +
                                 toStr( start ) + " " + toStr( end ) + " " + toStr( size_ ) );
@@ -278,13 +308,13 @@ public:
 
     /*! Return a new vector that based on indieces.
      Throws exception if indicies are out of bound */
-    Vector < ValueType > operator () ( const std::vector < uint > & idx ) const {
+    Vector < ValueType > operator () ( const std::vector < size_t > & idx ) const {
         Vector < ValueType > v( idx.size() );
         size_t id;
         for ( size_t i = 0; i < idx.size(); i ++ ){
            id = idx[ i ];
            if ( id >= 0 && id < size_ ){
-                v[ i ] = data_[ (size_t)id ];
+                v[ i ] = data_[ id ];
            } else {
                 throwLengthError( 1, WHERE_AM_I + " idx out of range " +
                                      str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
@@ -292,21 +322,21 @@ public:
         }
         return v;
     }
-
-    Vector < ValueType > operator () ( const std::vector < int > & idx ) const {
-        Vector < ValueType > v( idx.size() );
-        size_t id;
-        for ( size_t i = 0; i < idx.size(); i ++ ){
-           id = idx[ i ];
-           if ( id >= 0 && id < size_ ){
-                v[ i ] = data_[ (size_t)id ];
-           } else {
-                throwLengthError( 1, WHERE_AM_I + " idx out of range " +
-                                     str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
-           }
-        }
-        return v;
-    }
+//CR is this really needed?
+//     Vector < ValueType > operator () ( const std::vector < int > & idx ) const {
+//         Vector < ValueType > v( idx.size() );
+//         size_t id;
+//         for ( size_t i = 0; i < idx.size(); i ++ ){
+//            id = idx[ i ];
+//            if ( id >= 0 && id < size_ ){
+//                 v[ i ] = data_[ (size_t)id ];
+//            } else {
+//                 throwLengthError( 1, WHERE_AM_I + " idx out of range " +
+//                                      str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
+//            }
+//         }
+//         return v;
+//     }
 
 #ifdef PYGIMLI
 //    needed for: /usr/include/boost/python/def_visitor.hpp
@@ -318,7 +348,7 @@ public:
 		throwLengthError( 1, WHERE_AM_I + " array size unequal" +
                                 toStr( this->size() ) + " != " + toStr( v.size() ) );
 	    }
-	for ( uint i = 0; i < v.size(); i ++ ) ret[ i ] = isLesser( data_[ i ], v[ i ] );
+	for ( size_t i = 0; i < v.size(); i ++ ) ret[ i ] = isLesser( data_[ i ], v[ i ] );
 	return ret;
     }
 #endif
@@ -330,7 +360,7 @@ public:
             throwLengthError( 1, WHERE_AM_I + " array size unequal " + \
                                 toStr( this->size() ) + " != " + toStr( v.size() ) ); \
         } \
-        for ( uint i = 0; i < v.size(); i ++ ) ret[ i ] = FUNCT( data_[ i ], v[ i ] ); \
+        for ( size_t i = 0; i < v.size(); i ++ ) ret[ i ] = FUNCT( data_[ i ], v[ i ] ); \
         return ret; \
     } \
 
@@ -343,7 +373,7 @@ DEFINE_COMPARE_OPERATOR_VEC__( >, isGreater )
 #define DEFINE_COMPARE_OPERATOR__( OP, FUNCT ) \
     inline BVector operator OP ( const ValueType & v ) const { \
         BVector ret( this->size(), 0 ); \
-        for ( uint i = 0; i < this->size(); i ++ ){ \
+        for ( size_t i = 0; i < this->size(); i ++ ){ \
             ret[ i ] = FUNCT( data_[ i ], v ); \
         } \
         return ret;\
@@ -385,10 +415,13 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
         }
     }
 
+    /*! Fill the whole vector from the pointer of val. CAUTION!! There is no boundary check. val must be properly ( [val, val+this->size() ) )assigned.  */
     void fill( ValueType * val ) { std::copy( val, val + size_, data_ ); }
 
+    /*! Fill the whole vector with val. */
     void fill( const ValueType & val ) { std::fill( data_, data_ + size_, val ); }
 
+    /*! Fill the whole vector with function expr( i ) */
     template< class Ex > void fill( Expr< Ex > expr ){
         for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] = expr( (ValueType)i );
     }
@@ -398,8 +431,6 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
     /*! Empty the vector. Frees memory and resize to 0.*/
     void clear( ){ free_(); }
-
-
 
 //   ValueType min()
 
@@ -420,19 +451,125 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     inline size_t singleCalcCount() const { return singleCalcCount_; }
 
     ValueType * data() { return data_; }
+    
+    /*! Save the object to file. Returns true on success and in case of trouble an exception is thrown.
+     * The IOFormat flag will be overwritten if the filename have a proper file suffix. Ascii format is forced if \ref VECTORASCSUFFIX is given. 
+     * Binary format is forced if \ref VECTORBINSUFFIX is set. If no suffix is provided \ref VECTORASCSUFFIX or \ref VECTORBINSUFFIX will be append. \n\n
+    Binary format is: \n
+    Unsigned int64 [8Byte] - length of the Array [0.. length) \n
+    ValueType [sizeof(ValueType)] - 0th value \n
+    ... \n
+    ValueType [sizeof(ValueType)] - length -1 value \n\n
+    Ascii format is a simple list of the values \n\n
+    \param filename string of the file name 
+    \param IOFormat enum, either Ascii for human readable format, or Binary for fast save and load.
+    */
+    bool save( const std::string & filename, IOFormat format = Ascii ) const {
+
+        if ( filename.rfind( VECTORASCSUFFIX ) != std::string::npos ) format = Ascii;
+        else if ( filename.rfind( VECTORBINSUFFIX ) != std::string::npos ) format = Binary;
+        std::string fname( filename );
+
+        if ( format == Ascii ){
+            if ( fname.rfind( "." ) == std::string::npos ) fname += VECTORASCSUFFIX;
+
+            std::ofstream file; file.open( fname.c_str() );
+            if ( !file ) {
+                throwError( 1, filename + ": " + strerror( errno ) );
+            }
+
+            file.setf( std::ios::scientific, std::ios::floatfield );
+            file.precision( 14 );
+
+            for ( size_t i = 0, imax = size_; i < imax; i ++ ) file << data_[ i ] << std::endl;
+            file.close();
+        } else {
+            if ( fname.rfind( "." ) == std::string::npos ) fname += VECTORBINSUFFIX;
+        // so haett ich das gern //
+    //     std::ofstream file( filename.c_str(), std::ofstream::binary );
+    //     std::copy( &a[ 0 ], &a[ a.size()-1 ], ostream_iterator< double >( &file ) );
+    //     file.close();
+            FILE *file; file = fopen( fname.c_str(), "w+b" );
+            if ( !file ) {
+                throwError( 1, filename + ": " + strerror( errno ) );
+            }
+
+            int64 count = (int64)size_;
+            size_t ret = 0; ret = fwrite( (char*)&count, sizeof( int64 ), 1, file );
+            for ( size_t i = 0; i < size_; i++ ) ret = fwrite( (char*)&data_[ i ], sizeof( ValueType ), 1, file );
+            fclose( file );
+        }
+        return true;
+    }
+
+    /*!
+     * Load the object from file. Returns true on success and in case of trouble an exception is thrown.
+     * The IOFormat flag will be overwritten if the filename have a proper file suffix. Ascii format is forced if \ref VECTORASCSUFFIX is given. 
+     * Binary format is forced if \ref VECTORBINSUFFIX is set.
+     * See Vector< ValueType >::save for file format. 
+     */
+    bool load( const std::string & filename, IOFormat format = Ascii ){
+
+        if ( filename.rfind( VECTORASCSUFFIX ) != std::string::npos ) format = Ascii;
+        else if ( filename.rfind( VECTORBINSUFFIX ) != std::string::npos ) format = Binary;
+
+        if ( !fileExist( filename ) ){
+            if ( fileExist( filename + VECTORBINSUFFIX ) )
+                return this->load( filename + VECTORBINSUFFIX, Binary );
+            if ( fileExist( filename + VECTORASCSUFFIX ) )
+                return this->load( filename + VECTORASCSUFFIX, Ascii );
+        }
+
+        if ( format == Ascii ){
+            std::vector < ValueType > tmp;
+
+            std::fstream file; openInFile( filename.c_str(), &file );
+            ValueType val; while( file >> val ) {
+            // check !!! if ( isinfnan( val ) ) throwLengthError(
+                tmp.push_back( val );
+            }
+
+    //so haett ich das gern
+//     std::ifstream file( filename.c_str() );
+//     std::copy(  std::istream_iterator<double>( file ),
+//                 std::istream_iterator<double>(),
+//                 std::back_inserter( tmp ) );
+
+//std::back_inserter< double > (tmp) );
+    //std::copy( file.begin(), file.end(), back_inserter< double >( & tmp[ 0 ] ) );
+
+            this->resize( tmp.size() );
+            std::copy( tmp.begin(), tmp.end(), &data_[ 0 ] );
+            file.close();
+
+        } else {
+            FILE *file;
+            file = fopen( filename.c_str(), "r+b" );
+            if ( !file ) {
+                throwError( 1, filename +  ": " + strerror( errno ) );
+            }
+            size_t ret = 0;
+            int64 size; ret = fread( &size, sizeof( int64 ), 1, file );
+            this->resize( size );
+            ret = fread( &data_[ 0 ], sizeof( ValueType ), size, file );
+            fclose( file );
+        }
+        return true;
+    }
 
 protected:
-  void free_( ){
-    //    std::cout << "free: " << begin_ << std::endl;
-    size_ = 0;
-    if ( data_ )  delete [] data_;
-    if ( begin_ ) delete begin_;
-    if ( end_ )   delete end_;
+    
+    void free_( ){
+        //    std::cout << "free: " << begin_ << std::endl;
+        size_ = 0;
+        if ( data_ )  delete [] data_;
+        if ( begin_ ) delete begin_;
+        if ( end_ )   delete end_;
 
-    begin_ = NULL;
-    end_   = NULL;
-    data_  = NULL;
-  }
+        begin_ = NULL;
+        end_   = NULL;
+        data_  = NULL;
+    }
 
     void allocate_( size_t n ){
         size_  = n;
@@ -462,16 +599,16 @@ protected:
         }
     }
 
-  size_t size_;
-  ValueType * data_;
+    size_t size_;
+    ValueType * data_;
 
-  VectorIterator< ValueType > * begin_;
-  VectorIterator< ValueType > * end_;
+    VectorIterator< ValueType > * begin_;
+    VectorIterator< ValueType > * end_;
 
-  static const size_t minSizePerThread = 10000;
-  static const int maxThreads = 8;
-  int nThreads_;
-  size_t singleCalcCount_;
+    static const size_t minSizePerThread = 10000;
+    static const int maxThreads = 8;
+    int nThreads_;
+    size_t singleCalcCount_;
 };
 
 // inline bool operator < (const GIMLI::Vector<double>&a, const GIMLI::Vector<double> &b) {
@@ -783,8 +920,8 @@ DEFINE_EXPR_OPERATOR__( /, DIVID )
 //** define some utility functions
 
 /*! Find function. Return index vector of true values */
-inline std::vector < uint > find( const BVector & v ){
-    std::vector < uint > idx;
+inline std::vector < size_t > find( const BVector & v ){
+    std::vector < size_t > idx;
     idx.reserve( v.size() );
     for ( size_t i = 0; i < v.size(); i ++ ){
         if ( v[ i ] ) idx.push_back( i );
@@ -918,7 +1055,7 @@ template < class T > Vector< T > unique( const Vector < T > & a ){
 }
 
 template < class T > std::ostream & operator << ( std::ostream & str, const Vector < T > & vec ){
-    for ( uint i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
+    for ( size_t i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
     return str;
 }
 
@@ -951,7 +1088,7 @@ template < class ValueType >
 Vector < std::complex < ValueType > > toComplex( const Vector < ValueType > & re,
                                                  const Vector < ValueType > & im ){
     Vector < std::complex < ValueType > > cv( re.size() );
-    for ( uint i = 0; i < cv.size(); i ++ ) cv[ i ] = std::complex < ValueType >( re[ i ], im[ i ] );
+    for ( size_t i = 0; i < cv.size(); i ++ ) cv[ i ] = std::complex < ValueType >( re[ i ], im[ i ] );
     return cv;
 }
 
@@ -989,7 +1126,7 @@ Vector < ValueType > real( const __VectorExpr< std::complex< ValueType >, A > & 
 template < class ValueType >
 Vector < ValueType > real( const Vector < std::complex< ValueType > > & cv ){
     Vector < ValueType > v( cv.size() );
-    for ( uint i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].real();
+    for ( size_t i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].real();
     return v;
 }
 
@@ -1001,7 +1138,7 @@ Vector < ValueType > imag( const __VectorExpr< std::complex< ValueType >, A > & 
 template < class ValueType >
 Vector < ValueType > imag( const Vector < std::complex< ValueType > > & cv ){
     Vector < ValueType > v( cv.size() );
-    for ( uint i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].imag();
+    for ( size_t i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].imag();
     return v;
 }
 
@@ -1033,7 +1170,7 @@ Vector < std::complex< ValueType > > conj( const __VectorExpr< std::complex< Val
 template < class ValueType >
 Vector < std::complex< ValueType > > conj( const Vector < std::complex< ValueType > > & cv ){
     Vector < std::complex< ValueType > > v( cv.size() );
-    for ( uint i = 0; i < cv.size(); i ++ ) v[ i ] = Complex( cv[ i ].real(), -cv[ i ].imag() );
+    for ( size_t i = 0; i < cv.size(); i ++ ) v[ i ] = Complex( cv[ i ].real(), -cv[ i ].imag() );
     return v;
 }
 
@@ -1048,104 +1185,19 @@ bool load( Vector< ValueType > & a, const std::string & filename, IOFormat forma
     return loadVec( a, filename, format, verbose );
 }
 
+/*!
+ Save vector to file. See Vector< ValueType >::save.
+*/
 template < class ValueType >
-bool saveVec( const Vector< ValueType > & a, const std::string & filename,
-                                     IOFormat format, bool verbose = true ){
-
-    if ( filename.rfind( VECTORASCSUFFIX ) != std::string::npos ) format = Ascii;
-    else if ( filename.rfind( VECTORBINSUFFIX ) != std::string::npos ) format = Binary;
-    std::string fname( filename );
-
-    if ( format == Ascii ){
-        if ( fname.rfind( "." ) == std::string::npos ) fname += VECTORASCSUFFIX;
-
-        std::ofstream file; file.open( fname.c_str() );
-        if ( !file ) {
-            std::cerr << filename << ": " << strerror( errno ) << " " << errno << std::endl;
-            return false;
-        }
-
-        file.setf( std::ios::scientific, std::ios::floatfield );
-        file.precision( 14 );
-
-        for ( uint i = 0, imax = a.size(); i < imax; i ++ ) file << a[ i ] << std::endl;
-        file.close();
-    } else {
-        if ( fname.rfind( "." ) == std::string::npos ) fname += VECTORBINSUFFIX;
-    // so haett ich das gern //
-//     std::ofstream file( filename.c_str(), std::ofstream::binary );
-//     std::copy( &a[ 0 ], &a[ a.size()-1 ], ostream_iterator< double >( &file ) );
-//     file.close();
-        FILE *file; file = fopen( fname.c_str(), "w+b" );
-        if ( !file ) {
-            if ( verbose ) std::cerr << filename << ": " << strerror( errno ) << " " << errno << std::endl;
-            return false;
-        }
-
-        int count = a.size();
-        uint ret = 0; ret = fwrite( (char*)&count, sizeof( int ), 1, file );
-        for ( uint i = 0; i < a.size(); i++ ) ret = fwrite( (char*)&a[ i ], sizeof( ValueType ), 1, file );
-        fclose( file );
-    }
-    return true;
-}
-
+    bool saveVec( const Vector< ValueType > & a, const std::string & filename, IOFormat format = Ascii ){ return a.save( filename, format ); }
+    
+/*!
+ Load vector from file. See Vector< ValueType >::load.
+*/
 template < class ValueType >
-bool loadVec( Vector < ValueType > & a, const std::string & filename,
-                                     IOFormat format, bool verbose = true ){
+    bool loadVec( Vector < ValueType > & a, const std::string & filename, IOFormat format = Ascii ){ return a.load( filename, format ); }
 
-    if ( filename.rfind( VECTORASCSUFFIX ) != std::string::npos ) format = Ascii;
-    else if ( filename.rfind( VECTORBINSUFFIX ) != std::string::npos ) format = Binary;
-
-    if ( !fileExist( filename ) ){
-        if ( fileExist( filename + VECTORBINSUFFIX ) )
-            return loadVec( a, filename + VECTORBINSUFFIX, Binary );
-        if ( fileExist( filename + VECTORASCSUFFIX ) )
-            return loadVec( a, filename + VECTORASCSUFFIX, Ascii );
-    }
-
-    if ( format == Ascii ){
-        std::vector < ValueType > tmp;
-
-        std::fstream file; openInFile( filename.c_str(), &file );
-        ValueType val; while( file >> val ) {
-            // check !!! if ( isinfnan( val ) ) throwLengthError(
-            tmp.push_back( val );
-        }
-
-    //so haett ich das gern
-//     std::ifstream file( filename.c_str() );
-//     std::copy(  std::istream_iterator<double>( file ),
-//                 std::istream_iterator<double>(),
-//                 std::back_inserter( tmp ) );
-
-//std::back_inserter< double > (tmp) );
-    //std::copy( file.begin(), file.end(), back_inserter< double >( & tmp[ 0 ] ) );
-
-        a.resize( tmp.size() );
-        std::copy( tmp.begin(), tmp.end(), &a[ 0 ] );
-        file.close();
-
-  } else {
-    FILE *file;
-    file = fopen( filename.c_str(), "r+b" );
-    if ( !file ) {
-        if ( verbose ) std::cerr << filename << ": " << strerror( errno ) << " " << errno << std::endl;
-        return false;
-    }
-    uint ret = 0;
-    int size; ret = fread( &size, sizeof( int ), 1, file );
-    a.resize( size );
-    ret = fread( &a[ 0 ], sizeof( ValueType ), size, file );
-    fclose( file );
-  }
-  return true;
-}
-//inline bool operator == ( const Vector< double > & a , const Vector< double > & b ){
-//  if ( a.size() != b.size() ) return false;
-//  CERR_TO_IMPL
-//  return false;
-//}
+  
 
 } // namespace GIMLI
 

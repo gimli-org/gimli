@@ -21,7 +21,7 @@
 #ifndef _GIMLI_EXITCODES__H
 #define _GIMLI_EXITCODES__H
 
-// http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00625.html
+// http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00653.html
 // here we will define some std::exception instead if exit codes
 #include <stdexcept>
 
