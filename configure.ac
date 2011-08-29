@@ -95,7 +95,7 @@ AC_CHECK_HEADER([sys/timeb.h])
 # CHECK for boost/bind.hpp
 #
 BOOST_REQUIRE([1.41],[AC_MSG_ERROR([Sorry, boost is requried.
-                    You can add your boost installation path to the configure call, e.g.,
+                    You can add your boost installation path (absolute) to the configure call, e.g.,
                     BOOST_ROOT=/c/home/boost/ ./autogen.sh
 					or
 					./configure --with-boost=/c/home/boost])])
