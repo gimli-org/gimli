@@ -523,14 +523,6 @@ std::string DataContainer::dataDescription( const std::string & token ) const {
     return "";
 }
 
-void DataContainer::removeInvalid(){
-    std::vector< size_t > validIdx( find( get("valid") == 1 ) );
-
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
-        dataMap_[ it->first ] = it->second( validIdx );
-    }
-}
-
 void DataContainer::resize( uint size ) {
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin();
             it!= dataMap_.end(); it ++ ){
@@ -546,12 +538,20 @@ void DataContainer::resize( uint size ) {
     }
 }
 
-void DataContainer::remove( const std::vector < size_t > & idx ){
+void DataContainer::removeInvalid(){
+    std::vector< size_t > validIdx( find( get("valid") == 1 ) );
+
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        dataMap_[ it->first ] = it->second( validIdx );
+    }
+}
+
+void DataContainer::remove( const IndexArray & idx ){
     this->markValid( idx, false );
     this->removeInvalid();
 }
 
-DataContainer DataContainer::filter( const std::vector < size_t > & idx ) const {
+DataContainer DataContainer::filter( const IndexArray & idx ) const {
     DataContainer data( *this );
     data.markValid( find( data("valid") > -1 ), false );
     data.markValid( idx, true );
@@ -559,11 +559,67 @@ DataContainer DataContainer::filter( const std::vector < size_t > & idx ) const 
     return data;
 }
 
+// START Sensor related section
+void DataContainer::removeSensorIdx( uint idx ){
+    IndexArray i(1, idx );
+    this->removeSensorIdx( i );
+}
+    
+void DataContainer::removeSensorIdx( const IndexArray & idx ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        if ( isSensorIndex( it->first ) ){
+            for ( IndexArray::const_iterator id = idx.begin(); id != idx.end(); id ++ ){
+                this->markValid( find( it->second == *id ), false );
+            }
+        }
+    }
+    this->removeInvalid();
+    this->removeUnusedSensors();
+}
+    
 void DataContainer::removeUnusedSensors(){
+    
+    BVector activeSensors( this->sensorCount(), false );
+    
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        if ( isSensorIndex( it->first ) ){
+            for ( uint i = 0; i < it->second.size(); i ++ ){
+                ssize_t id = it->second[ i ];
+                if ( id > -1 && id < (ssize_t)this->sensorCount() ) activeSensors[ id ] = true;
+            }
+        }
+    }
+    
+    IndexArray perm( this->sensorCount(), 0 );
+
+    std::vector < RVector3 > tmp( sensorPoints_ );
+    sensorPoints_.clear();
+
+    for ( size_t i = 0; i < activeSensors.size(); i ++ ) {
+        if ( activeSensors[ i ] ){
+            sensorPoints_.push_back( tmp[ i ] );
+        }
+        perm[ i ] = sensorPoints_.size() -1;
+    }
+
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        if ( isSensorIndex( it->first ) ){
+            for ( uint i = 0; i < it->second.size(); i ++ ){
+                ssize_t id = it->second[ i ];
+                if ( id > -1 && id < (ssize_t)perm.size() ) it->second[ i ] = perm[ id ];
+            }
+        }
+    }    
 }
 
 void DataContainer::markInvalidSensorIndices(){
+     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        if ( isSensorIndex( it->first ) ){
+            this->markValid( find( it->second >= this->sensorCount() ), false );
+        }
+    }
 }
+// END Sensor related section
 
 } // namespace GIMLI{
 

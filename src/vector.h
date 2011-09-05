@@ -59,6 +59,8 @@
 // #include <boost/thread.hpp>
 // #endif
 
+typedef std::vector < size_t > IndexArray;
+
 namespace GIMLI{
 
 template < class ValueType, class A > class __VectorExpr;
@@ -306,8 +308,9 @@ public:
         return v;
     }
 
-    /*! Return a new vector that based on indieces.
-     Throws exception if indicies are out of bound */
+    /*! 
+     * Return a new vector that based on indices's. Throws exception if indices's are out of bound 
+     */
     Vector < ValueType > operator () ( const std::vector < size_t > & idx ) const {
         Vector < ValueType > v( idx.size() );
         size_t id;
@@ -611,29 +614,6 @@ protected:
     size_t singleCalcCount_;
 };
 
-// inline bool operator < (const GIMLI::Vector<double>&a, const GIMLI::Vector<double> &b) {
-//     return false;
-// }
-
-template < class ValueType >
-bool operator == ( const Vector< ValueType > & v1, const Vector< ValueType > & v2 ){
-    if ( v1.size() != v2.size() ) return false;
-    for ( size_t i = 0; i < v1.size(); i ++ ){
-        if ( !isEqual( v1[ i ], v2[ i ] ) ) return false;
-    }
-    return true;
-}
-
-template < class ValueType, class A > bool operator == ( const Vector< ValueType > & v1, const __VectorExpr< ValueType, A > & v2 ){
-    return v1 == Vector< ValueType >( v2 );
-}
-
-
-template < class ValueType >
-bool operator != ( const Vector< ValueType > & v1, const Vector< ValueType > & v2 ){
-    return !(v1==v2);
-}
-
 template< class ValueType, class Iter > class AssignResult{
 public:
     AssignResult( Vector< ValueType > & a, const Iter & result, size_t start, size_t end ) :
@@ -919,9 +899,33 @@ DEFINE_EXPR_OPERATOR__( /, DIVID )
 //********************************************************************************
 //** define some utility functions
 
+// inline bool operator < (const GIMLI::Vector<double>&a, const GIMLI::Vector<double> &b) {
+//     return false;
+// }
+
+template < class ValueType >
+bool operator == ( const Vector< ValueType > & v1, const Vector< ValueType > & v2 ){
+    if ( v1.size() != v2.size() ) return false;
+    for ( size_t i = 0; i < v1.size(); i ++ ){
+        if ( !isEqual( v1[ i ], v2[ i ] ) ) return false;
+    }
+    return true;
+}
+
+template < class ValueType, class A > bool 
+operator == ( const Vector< ValueType > & v1, const __VectorExpr< ValueType, A > & v2 ){
+    return v1 == Vector< ValueType >( v2 );
+}
+
+
+template < class ValueType >
+bool operator != ( const Vector< ValueType > & v1, const Vector< ValueType > & v2 ){
+    return !(v1==v2);
+}
+
 /*! Find function. Return index vector of true values */
-inline std::vector < size_t > find( const BVector & v ){
-    std::vector < size_t > idx;
+inline IndexArray find( const BVector & v ){
+    IndexArray idx;
     idx.reserve( v.size() );
     for ( size_t i = 0; i < v.size(); i ++ ){
         if ( v[ i ] ) idx.push_back( i );
@@ -1044,7 +1048,7 @@ template < class T > Vector< T > sort( const Vector < T > & a ){
 //     return t;
 }
 
-/*! Returning a copy of the vector and replacing all consecutive occurences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1 ]. To remove all double values from the vector use an additionally sorting. e.g. unique( sort( v ) ) gets you [ 0 1 2 ]. */
+/*! Returning a copy of the vector and replacing all consecutive occurrences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1 ]. To remove all double values from the vector use an additionally sorting. e.g. unique( sort( v ) ) gets you [ 0 1 2 ]. */
 template < class T > Vector< T > unique( const Vector < T > & a ){
     std::vector < T > tmp( a.size() ), u;
     for ( size_t i = 0; i < a.size(); i ++ ) tmp[ i ] = a[ i ];
@@ -1054,7 +1058,14 @@ template < class T > Vector< T > unique( const Vector < T > & a ){
     return ret;
 }
 
-template < class T > std::ostream & operator << ( std::ostream & str, const Vector < T > & vec ){
+// template < template < class T > class Vec, class T >
+// std::ostream & operator << ( std::ostream & str, const Vec < T > & vec ){
+//     for ( size_t i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
+//     return str;
+// }
+
+template < class T >
+std::ostream & operator << ( std::ostream & str, const std::vector < T > & vec ){
     for ( size_t i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
     return str;
 }
