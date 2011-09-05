@@ -24,7 +24,6 @@
 // we don't want the Old compatibility names for C types: typedef unsigned int uint
 #undef __USE_MISC
 
-
 #ifdef HAVE_CONFIG_H
     #include <config.h>
 #else
