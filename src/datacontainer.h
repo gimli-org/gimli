@@ -57,6 +57,12 @@ public:
     /*! Assign a copy of data and return a reference to this DataContainer */
     DataContainer & operator = ( const DataContainer & data );
 
+    /*! Return read only reference to the RVector at the data map that is associated to the token */
+    inline const RVector & operator() ( const std::string & token ) const { return get( token ); }
+
+    /*! Return reference to the RVector at the data map that is assiciated to the token */
+    inline RVector & operator() ( const std::string & token ) { return *ref( token ); }
+    
     /*! Init the datacontainer for dc-electrical needs. (int a, b ,m ,b and valid ) */
     virtual void init();
 
@@ -78,18 +84,13 @@ public:
     /*! Clear the container, remove all sensor locations and data. */
     virtual void clear();
 
-    /*! Return read only reference to the RVector at the data map that is associated to the token */
-    inline const RVector & operator() ( const std::string & token ) const { return get( token ); }
-
-    /*! Return reference to the RVector at the data map that is assiciated to the token */
-    inline RVector & operator() ( const std::string & token ) { return *ref( token ); }
-
     /*! Return the size of the data map */
     inline size_t size( ) const { return dataMap_.find( "valid" )->second.size(); }
 
     /*! Return the complete data map as read-only map */
     inline const std::map< std::string, RVector > & dataMap() const { return dataMap_; }
     
+    // START Sensor related section
     /*! Return the complete sensor positions as read-only */
     inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
 
@@ -117,6 +118,18 @@ public:
         
     /*! Mark all data invalid that use a sensor index greater than sensor count. */
     void markInvalidSensorIndices(); 
+    
+    /*! Remove all data that contains the sensor and the sensor itself. 
+    *\param idx uint idx single index for a sensor regarding sensorPoints_
+    */
+    void removeSensorIdx( uint idx );
+    
+    /*! Remove all data that contains the sensor and the sensor itself. *
+     *\param idx IndexArray array of indices regarding sensorPoints_
+     */
+    void removeSensorIdx( const IndexArray & idx );
+    
+    // END Sensor related section
     
     /*! Return the additional points */
     inline const std::vector < RVector3 > & additionalPoints() const { return topoPoints_; }
