@@ -1070,6 +1070,12 @@ std::ostream & operator << ( std::ostream & str, const std::vector < T > & vec )
     return str;
 }
 
+template < class T >
+std::ostream & operator << ( std::ostream & str, const Vector < T > & vec ){
+    for ( size_t i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
+    return str;
+}
+
 /*!
 Return a RVector with increasing values of size(n+1) filled with : 0, first, ... ,last
 */

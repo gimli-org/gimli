@@ -23,6 +23,7 @@
 
 #include "gimli.h"
 #include "baseentity.h"
+#include "pos.h"
 #include "vector.h"
 
 #include <vector>
