@@ -59,7 +59,6 @@ ModellingBase::~ModellingBase( ) {
     if ( dataContainer_ ) delete dataContainer_;
 }
 
-
 void ModellingBase::init_() {
     regionManager_      = new RegionManager( verbose_ );
     mesh_               = NULL;

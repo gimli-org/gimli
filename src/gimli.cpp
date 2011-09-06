@@ -135,13 +135,13 @@ std::vector < std::string > getSubstrings( const std::string & str ){
 
 std::vector < std::string > split( const std::string & str, char delimiter ){
     std::vector < std::string > subStrings;
-    uint pos = 0;
-    uint lastPos = 0;
+    size_t pos = 0;
+    size_t lastPos = 0;
     //std::cout << str << std::endl;
     while ( ( pos = str.find( delimiter, lastPos) ) != std::string::npos ){
-	//std::cout << pos << " " << lastPos << " " << str.substr( lastPos, pos -lastPos) << std::endl;
-	subStrings.push_back( str.substr( lastPos, pos - lastPos ) );
-	lastPos = pos + 1;
+        //std::cout << pos << " " << lastPos << " " << str.substr( lastPos, pos -lastPos) << std::endl;
+        subStrings.push_back( str.substr( lastPos, pos - lastPos ) );
+        lastPos = pos + 1;
     }
     //std::cout << pos << " " << lastPos << " " << str.substr( lastPos, pos -lastPos) << std::endl;
     subStrings.push_back( str.substr( lastPos) );

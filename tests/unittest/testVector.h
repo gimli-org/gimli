@@ -10,8 +10,6 @@
 #include <stdexcept>
 
 using namespace GIMLI;
-Placeholder x__;
-
 
 class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( VectorTest );

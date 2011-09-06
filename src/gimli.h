@@ -21,9 +21,6 @@
 #ifndef _GIMLI_GIMLI__H
 #define _GIMLI_GIMLI__H
 
-// we don't want the Old compatibility names for C types: typedef unsigned int uint
-#undef __USE_MISC
-
 #ifdef HAVE_CONFIG_H
     #include <config.h>
 #else
@@ -38,15 +35,14 @@
 #include "platform.h"
 
 #include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 #include <map>
-#include <iostream>
 #include <sstream>
 #include <cstdlib>
 #include <stdint.h>
 #include <complex>
-#include <limits>
 #include <algorithm>
 
 #include "exitcodes.h"
@@ -54,7 +50,10 @@
 //! GIMLi main namespace for the Geophyiscal Inversion and Modelling Library
 namespace GIMLI{
 
-typedef size_t  uint;
+#if not defined __USE_MISC
+typedef unsigned int uint;
+#endif
+
 typedef uint8_t  uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
@@ -92,7 +91,6 @@ static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
 static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;
 static const int MARKER_BOUND_DIRICHLET = -4;
-static const int MARKER_BOUND_ELECTRODE = -10000;
 static const int MARKER_CELL_PARAMETER = 2;
 
 static const uint8 MESH_BASEENTITY_RTTI      = 000;
@@ -284,7 +282,7 @@ template< typename T > inline std::string toStr( const T & value ){
 
 inline std::string strReplaceBlankWithUnderscore( const std::string & str ) {
     std::string res( str );
-    for ( uint i = 0; i < res.length(); i ++ ) if ( res[ i ] == ' ' ) res[ i ] = '_';
+    for ( size_t i = 0; i < res.length(); i ++ ) if ( res[ i ] == ' ' ) res[ i ] = '_';
     return res;
 }
 
@@ -349,7 +347,7 @@ template < typename Set > inline void intersectionSet( Set & dest, const Set & a
 template < typename Set > inline void intersectionSet( Set & dest, const std::vector < Set > & a ){
     if ( a.size() > 1 ) {
         intersectionSet( dest, a[ 0 ], a[ 1 ] );
-        for ( uint i = 2; i < a.size(); i ++ ){
+        for ( size_t i = 2; i < a.size(); i ++ ){
             Set tmp( dest );
             dest.clear();
             set_intersection( tmp.begin(), tmp.end(), a[ i ].begin(), a[ i ].end(),

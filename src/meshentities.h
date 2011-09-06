@@ -102,12 +102,12 @@ public:
     RVector3 grad( const RVector3 & pos, const RVector & data ) const;
 
     /*! Return shapefunctions N_i < i, N > i=nodeId() for cartesion coordinates at entity pos(x,y,z) */
-    std::pair< std::vector< uint >, RVector > shapeFunctions( const RVector3 & pos ) const;
+    std::pair< IndexArray, RVector > shapeFunctions( const RVector3 & pos ) const;
 
     /*! CHANGE dNdCartesian( pos )
     Return derived shapefunctions for cartesion coordinates dN(L_i)/dxyz at pos
     */
-    std::pair< std::vector< uint >, std::vector < RVector3 > > shapeFunctionsDerive( const RVector3 & pos ) const;
+    std::pair< IndexArray, std::vector < RVector3 > > shapeFunctionsDerive( const RVector3 & pos ) const;
 
     /*!
         Interface for shapefunctions in natural coordinates N(L_i).
@@ -146,9 +146,9 @@ protected:
 
     void deRegisterNodes_();
 
-    double interpolate_( const std::pair< std::vector< uint >, RVector > & sF, const RVector & data ) const;
+    double interpolate_( const std::pair< IndexArray, RVector > & sF, const RVector & data ) const;
 
-    RVector3 grad_( const std::pair< std::vector< uint >, std::vector < RVector3 > > & sF, const RVector & data ) const;
+    RVector3 grad_( const std::pair< IndexArray, std::vector < RVector3 > > & sF, const RVector & data ) const;
 
     Shape * shape_;
 

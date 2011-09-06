@@ -8,10 +8,10 @@
 class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( GIMLIMiscTest );
     CPPUNIT_TEST( testGimliMisc );
-	CPPUNIT_TEST( testBooleanLogic );
+    CPPUNIT_TEST( testBooleanLogic );
     CPPUNIT_TEST( testFunctorTemplates );
     CPPUNIT_TEST( testStringFunctions );
-    CPPUNIT_TEST( testRotationByQuaternion );
+//     CPPUNIT_TEST( testRotationByQuaternion );
     
 	//CPPUNIT_TEST_EXCEPTION( funct, exception );
     CPPUNIT_TEST_SUITE_END();
@@ -57,12 +57,11 @@ public:
     }
     
     void testStringFunctions(){
-        std::string t1( "a:bb:ccc:ddd");
+        std::string t1( "a:bb:ccc:ddd" );
         GIMLI::split( t1, ':' );
-        //CPPUNIT_ASSERT( GIMLI::split( t1, ':' ).size() == 4 );
-	
-        //CPPUNIT_ASSERT( GIMLI::split( t1, ':' )[ 0 ] == "a" );
-        //CPPUNIT_ASSERT( GIMLI::split( t1, ':' )[ 3 ] == "ddd" );
+        CPPUNIT_ASSERT( GIMLI::split( t1, ':' ).size() == 4 );
+        CPPUNIT_ASSERT( GIMLI::split( t1, ':' )[ 0 ] == "a" );
+        CPPUNIT_ASSERT( GIMLI::split( t1, ':' )[ 3 ] == "ddd" );
     }
     
     void testRotationByQuaternion(){

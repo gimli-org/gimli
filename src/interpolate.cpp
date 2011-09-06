@@ -35,7 +35,7 @@ void interpolate( const Mesh & mesh, const RMatrix & vData,
     }
 
     std::vector < Cell * > cells( pos.size() );
-    uint count = 0;
+    size_t count = 0;
     for ( uint i = 0; i < pos.size(); i ++ ) {
         cells[ i ] = mesh.findCell( pos[ i ], count, false );
         if ( verbose ) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
