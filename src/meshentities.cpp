@@ -236,17 +236,17 @@ void MeshEntity::setNodes_( std::vector < Node * > & nodes ){
 void MeshEntity::deRegisterNodes_(){
 }
 
-std::pair< std::vector< uint >, RVector > MeshEntity::shapeFunctions( const RVector3 & pos ) const {
+std::pair< IndexArray, RVector > MeshEntity::shapeFunctions( const RVector3 & pos ) const {
     RVector f;
     shapeFunctionsL( shape().coordinates( pos ), f );
-    std::vector < uint > idVec( nodeCount() );
+    IndexArray idVec( nodeCount() );
     RVector sF( nodeCount() );
 
     for ( uint i = 0; i < nodeCount(); i ++ ) {
         idVec[ i ] = node( i ).id();
         sF[ i ] = f[ i ];
     }
-    return std::pair< std::vector< uint >, RVector >( idVec, sF );
+    return std::pair< IndexArray, RVector >( idVec, sF );
 }
 
 void MeshEntity::shapeFunctionsDeriveL( const RVector3 & coord, uint dim, RVector & funct ) const {
@@ -275,10 +275,10 @@ void MeshEntity::shapeFunctionsDeriveL( const RVector3 & coord, uint dim, RVecto
 }
 
 
-std::pair< std::vector< uint >, std::vector < RVector3 > > MeshEntity::shapeFunctionsDerive( const RVector3 & pos ) const {
+std::pair< IndexArray, std::vector < RVector3 > > MeshEntity::shapeFunctionsDerive( const RVector3 & pos ) const {
     RVector3 coords = shape().coordinates( pos );
 
-    std::vector < uint > idVec( nodeCount() );
+    IndexArray idVec( nodeCount() );
     for ( uint i = 0; i < nodeCount(); i ++ ) idVec[ i ] = node( i ).id();
 
     std::vector< RVector3 > dSF( nodeCount(), RVector3( 0.0, 0.0 ) );
@@ -292,14 +292,14 @@ std::pair< std::vector< uint >, std::vector < RVector3 > > MeshEntity::shapeFunc
         }
     }
 
-    return std::pair< std::vector< uint >, std::vector < RVector3 > >( idVec, dSF );
+    return std::pair< IndexArray, std::vector < RVector3 > >( idVec, dSF );
 }
 
 double MeshEntity::interpolate( const RVector3 & pos, const RVector & data ) const {
    return interpolate_( shapeFunctions( pos ), data );
 }
 
-double MeshEntity::interpolate_( const std::pair< std::vector< uint >, RVector > & sF, const RVector & data ) const {
+double MeshEntity::interpolate_( const std::pair< IndexArray, RVector > & sF, const RVector & data ) const {
     return sum( data( sF.first ) * sF.second );
 }
 
@@ -307,7 +307,7 @@ RVector3 MeshEntity::grad( const RVector3 & pos, const RVector & data ) const {
    return grad_( shapeFunctionsDerive( pos ), data );
 }
 
-RVector3 MeshEntity::grad_( const std::pair< std::vector< uint >, std::vector < RVector3 > > & sF, const RVector & data ) const {
+RVector3 MeshEntity::grad_( const std::pair< IndexArray, std::vector < RVector3 > > & sF, const RVector & data ) const {
     RVector3 res(0.0, 0.0, 0.0);
     for ( uint i = 0; i < 3; i ++ ){
         //std::cout << i << std::endl;;

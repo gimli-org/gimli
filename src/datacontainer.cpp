@@ -26,21 +26,21 @@
 namespace GIMLI{
 
 DataContainer::DataContainer( ){
-    init();
+    initDefaults();
 }
 
 DataContainer::DataContainer( const std::string & fileName ){
-    init();
+    initDefaults();
     this->load( fileName );
 }
 
 DataContainer::~DataContainer( ){
-    init();
+    initDefaults();
     clear();
 }
 
 DataContainer::DataContainer( const DataContainer & data ){
-    init();
+    initDefaults();
     this->copy_( data );
 }
 
@@ -51,10 +51,15 @@ DataContainer & DataContainer::operator = ( const DataContainer & data ){
     return * this;
 }
 
-void DataContainer::init(){
-    dataMap_["valid"] = RVector( 0 );
+void DataContainer::initDefaults(){
+    dataMap_["valid"] = RVector( 0 );    
     sensorIndexOnFileFromOne_ = false;
+    init();
     initTokenTranslator();
+}
+
+void DataContainer::init(){
+    
 }
 
 void DataContainer::initTokenTranslator(){
@@ -378,7 +383,7 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
     std::vector < const RVector * > outVec;
     std::vector < bool > outInt;
     
-    std::vector< uint > toSaveIdx;
+    IndexArray toSaveIdx;
     std::string formatString;
     
     if ( lower( formatData ) == "all" ){

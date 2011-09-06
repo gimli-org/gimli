@@ -5,13 +5,16 @@
 #ifdef HAVE_UNITTEST
     #include <cppunit/ui/text/TestRunner.h>
 
-    //#include "testGIMLiMisc.h"
+    #include <vector.h>
+    GIMLI::Placeholder x__;
+
+    #include "testGIMLiMisc.h"
     #include "testDataContainer.h"
-//     #include "testVector.h"
-//     #include "testShape.h"
-//     #include "testGeometry.h"
-//     #include "testFEM.h"
-//     #include "testExternals.h"
+    #include "testVector.h"
+    #include "testShape.h"
+    #include "testGeometry.h"
+    #include "testFEM.h"
+    #include "testExternals.h"
 #endif // HAVE_UNITTEST
 
 #include <cstdlib>

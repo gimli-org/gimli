@@ -7,7 +7,6 @@
 #include <stdexcept>
 
 using namespace GIMLI;
-Placeholder x__;
 
 class DataContainerTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( DataContainerTest );

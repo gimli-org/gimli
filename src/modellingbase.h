@@ -48,15 +48,9 @@ public:
 
     virtual RVector createDefaultStartModel( ) { return RVector( 0 ); }
 
-    /*! DEPRECATED use setData instead*/
-    void setDataContainer( const DataContainer & data ){
-        std::cout << WHERE_AM_I << " Deprecated. use setData" << std::endl;
-        setData( data );
-    }
-
     /*! Change the associated data container */
     void setData( const DataContainer & data );
-
+    
     /*! */
     virtual RVector startModel( );
 

@@ -64,7 +64,14 @@ public:
     /*! Return reference to the RVector at the data map that is assiciated to the token */
     inline RVector & operator() ( const std::string & token ) { return *ref( token ); }
     
-    /*! Init the datacontainer for dc-electrical needs. (int a, b ,m ,b and valid ) */
+    /*! 
+     *  Init default data fields 'valid' and call virtual init method
+     */
+    void initDefaults();
+    
+    /*! Specify the datacontainer for your needs. 
+     *  TODO Write example if someone use this
+     */
     virtual void init();
 
     /*! Init a token translator map. store a map ['alias'] = 'token'.
@@ -73,7 +80,9 @@ public:
         translateToken( 'power' ) -> return 'u'
         translateToken( 'Power' ) -> return 'u'
         translateToken( 'u' ) -> return 'u'
-        translateToken( 'U' ) -> return 'u' */
+        translateToken( 'U' ) -> return 'u' 
+        TODO Write example if someone use this
+    */
     virtual void initTokenTranslator();
 
     /*! Return true if there is a valid translation for the token */

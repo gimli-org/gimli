@@ -39,7 +39,6 @@
 //#define EXPRVEC_USE_STD_ALGORITHM
 #define EXPRVEC_USE_INDIRECTION
 
-
 #include "gimli.h"
 #include "expressions.h"
 
@@ -52,6 +51,7 @@
 #include <cstring>
 #include <fstream>
 #include <cerrno>
+
 //#include <function> inherit std::multiplies
 
 // #ifdef HAVE_LIBBOOST_THREAD
@@ -59,9 +59,10 @@
 // #include <boost/thread.hpp>
 // #endif
 
-typedef std::vector < size_t > IndexArray;
-
 namespace GIMLI{
+
+typedef size_t Index;
+typedef std::vector < Index > IndexArray;
 
 template < class ValueType, class A > class __VectorExpr;
 
