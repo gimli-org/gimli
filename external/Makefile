@@ -4,7 +4,8 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/$(TRIANGLE)
 BLAS=lib/libblas.dll
 
 LAPACK=lib/liblapack.dll
-LAPACK_SRC=lapack.tgz
+LAPACK_VER=3.3.1
+LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
 SUITESPARSE=SuiteSparse-3.6.1.tar.gz
@@ -37,14 +38,17 @@ triangle: prep $(TRIANGLE)
 
 $(LAPACK_SRC): wget
 	wget -nc -nd $(LAPACK_URL)
-	rm -rf lapack-*
+	rm -rf lapack-$(LAPACK_VER)
+	rm -rf lapack-build
 	tar -xzvf $(LAPACK_SRC)
 
 lapack: prep $(LAPACK_SRC)
 	echo "building lapack for ", $(OSTYPE)
 	mkdir -p lapack-build
 	pushd lapack-build; \
-		cmake -D BUILD_SHARED_LIBS=ON ../lapack-3* -G 'MSYS Makefiles'; \
+		cmake ../lapack-$(LAPACK_VER) -G 'MSYS Makefiles'; \
+		make; \
+		cmake -D BUILD_SHARED_LIBS=ON ../lapack-$(LAPACK_VER) -G 'MSYS Makefiles'; \
 		make; \
 	popd
 	cp lapack-build/bin/liblapack.dll $(LAPACK)

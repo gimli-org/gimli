@@ -26,25 +26,25 @@ GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f3`
 
 pushd $BOOST_SRC_DIR
 
-DISTDIR=$BOOST_SRC_DIR/boost_$BOOST_VERSION-$GCCVER
+	DISTDIR=$BOOST_SRC_DIR/boost_$BOOST_VERSION-$GCCVER
 
-echo calling from $OLDDIR
-echo Installing at $DISTDIR
+	echo calling from $OLDDIR
+	echo Installing at $DISTDIR
 
-if [ ! -f ./bjam.exe ]; then
-	./bootstrap.sh --with-toolset=mingw 
-fi
+	if [ ! -f ./bjam.exe ]; then
+		./bootstrap.sh --with-toolset=mingw 
+	fi
 
-# if you experience bjam complains something like founding no python
-# edit ./tools/v2/build/tools/python.jam:486
-# edit ./tools/build/v2/tools/python.jam:486
-# and remove quotes to python-cmd = $(python-cmd) ;
-# i.e., python-cmd = \"$(python-cmd)\" ;    -->  python-cmd = $(python-cmd) ;
+	# if you experience bjam complains something like founding no python
+	# edit ./tools/v2/build/tools/python.jam:486
+	# edit ./tools/build/v2/tools/python.jam:486
+	# and remove quotes to python-cmd = $(python-cmd) ;
+	# i.e., python-cmd = \"$(python-cmd)\" ;    -->  python-cmd = $(python-cmd) ;
 
-./bootstrap.sh --prefix=$DISTDIR --with-bjam=./bjam.exe --with-toolset=gcc \
+	./bootstrap.sh --prefix=$DISTDIR --with-bjam=./bjam.exe --with-toolset=gcc \
 		--with-python-root=$PYTHON_ROOT --with-libraries=python,system,thread,regex
 	
-./b2 --prefix=$DISTDIR --layout=tagged --build-type=complete --variant=release install
+	./b2 --prefix=$DISTDIR --layout=tagged --build-type=complete --variant=release install
 
-cp -r $DISTDIR ../boost
+	cp -r $DISTDIR ../boost
 popd
