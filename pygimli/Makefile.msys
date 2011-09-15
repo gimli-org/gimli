@@ -2,14 +2,14 @@ BOOSTDIR=../../../boost
 BOOSTLIB=$(BOOSTDIR)/lib -l boost_python-mt
 
 PYTHONDIR=`which python | sed -e 's/python.exe/include/'`
-PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython*.a
+PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython27
 
 #-L ../../trunk/mingw -l libgimli \
 #-Wl,-Bstatic  -Wl,-Bdynamic -lpython26 -Wl,--end-group -g -mthreads
 GIMLILIB=../mingw/ -lgimli 
 GIMLIINC=../src
 TARGET=_pygimli_
-COPT=-fPIC -O2 -g -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES
+COPT= -O2 -Os -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES -DMINGW
 
 CPPCFILES = $(wildcard generated/*.cpp)
 OBJECTS = $(patsubst %.cpp,%.o,$(CPPCFILES))
@@ -27,8 +27,8 @@ $(TARGET): $(OBJECTS)
      
 	mv $(TARGET).pyd ./pygimli/
 	cp ../mingw/libgimli.dll ./pygimli
-	cp ../mingw/blas_win32.dll ./pygimli
-	cp ../mingw/lapack_win32.dll ./pygimli
+	cp ../external/lib/libblas.dll ./pygimli
+	cp ../external/lib/liblapack.dll ./pygimli
 	cp ../../../boost/lib/libboost_thread-mt.dll ./pygimli
 	cp ../../../boost/lib/libboost_python-mt.dll ./pygimli
 

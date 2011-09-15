@@ -35,9 +35,7 @@ elif sys.platform == 'win32':
     settings.gimli_defines      = 'MINGW'
     #settings.pygccxml_path     = 'c:/python26/Lib/site-packages/'
     settings.python_libs_path   = distutils.sysconfig.get_python_lib(standard_lib=True)
-    #settings.gccxml_path        = os.path.abspath('../../../gccxml-bin/bin')
-    settings.gccxml_path        = os.path.abspath('/Users/carsten/src/gccxml-bin/bin')
-	#'/c/Users/carsten/src/gccxml-bin/bin'
+    settings.gccxml_path        = os.path.abspath('../../../gccxml-bin/bin')
 
 else:
     raise RuntimeError( 'There is no configuration for "%s" platform.' % sys.platform )

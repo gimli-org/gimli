@@ -139,7 +139,7 @@ protected:
 
 }; // class Node
 
-std::ostream & operator << ( std::ostream & str, const GIMLI::Node & node );
+DLLEXPORT std::ostream & operator << ( std::ostream & str, const GIMLI::Node & node );
 
 inline bool operator == ( const Node & n1, const Node & n2 ) { return n1.pos() == n2.pos(); }
 

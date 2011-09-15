@@ -22,8 +22,8 @@
 #include "meshentities.h"
 
 namespace GIMLI{
-        
-    std::ostream & operator << ( std::ostream & str, const GIMLI::Node & n ){
+
+std::ostream & operator << ( std::ostream & str, const GIMLI::Node & n ){
     str << "Node: "<< &n << " id: " << n.id() << "\t" << n.pos();
     str << " marker: " << n.marker();
     return str;
