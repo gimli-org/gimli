@@ -3,7 +3,7 @@ rm -rf autom4te.cache
 #autoreconf -i -s -f &&
 #echo "- libtoolize"; libtoolize --force --copy &&
 echo "- autoreconf"; autoreconf --force --install &&
-./configure
+./configure $@
 
 
 # Fire up autotools

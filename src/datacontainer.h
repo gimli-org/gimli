@@ -101,8 +101,14 @@ public:
     inline const std::map< std::string, RVector > & dataMap() const { return dataMap_; }
     
     // START Sensor related section
+    /*! Set the positions for all sensors. */
+    inline void setSensorPositions( const std::vector< RVector3 > & sensors ) { sensorPoints_ = sensors; }
+    
     /*! Return the complete sensor positions as read-only */
     inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
+
+    /*! Set the position for the i-th sensor. */
+    inline void setSensorPosition( uint i, const RVector3 & pos  ) { sensorPoints_[ i ] = pos; }
 
     /*! Return a single sensor position */
     inline const RVector3 & sensorPosition( uint i ) const { return sensorPoints_[i]; }
@@ -123,6 +129,9 @@ public:
     /*! Return true if the field entry is of type sensor index. */
     bool isSensorIndex( const std::string & token ) const ;
 
+    /*! Return the names of all sensor idx data field */
+    const std::set< std::string > sensorIdx() const { return dataSensorIdx_; }
+
     /*! Return true if the sensor indices on a loaded/saved file starting 1. Internally the indices stored from 0. */
     bool sensorIndexOnFileFromOne() const { return sensorIndexOnFileFromOne_ ;}
         
@@ -138,6 +147,11 @@ public:
      *\param idx IndexArray array of indices regarding sensorPoints_
      */
     void removeSensorIdx( const IndexArray & idx );
+
+    /*!
+     * Return the input format string for the sensors 
+     */
+    inline const std::string & formatStringSensors( ) const { return inputFormatStringSensors_; }
     
     // END Sensor related section
     
@@ -237,11 +251,29 @@ public:
     inline void markValid( const std::vector < size_t > & idx, bool valid = true ){
         dataMap_[ "valid" ].setVal( valid, idx );
     }
-    
+
     /*! Mark single data valid. this->ref("valid")->setVal( idx, valid ). */
     inline void markValid( size_t idx, bool valid = true ){
         dataMap_[ "valid" ].setVal( valid, idx );
     }
+
+    /*! Mark data invalid by index vector. */
+    inline void markInvalid( const std::vector < size_t > & idx ){ markValid( idx, false ); }
+
+    /*! Mark data invalid by index. */
+    inline void markInvalid( size_t idx ){ markValid( idx, false ); }
+
+    /*!
+     * Mark data as invalid if they contain nan or inf.
+     * Call the virtual method checkData.
+     * If remove is set, invalid data will be removed.
+     */
+    void checkDataValidity( bool remove = true);
+
+    /*!
+     * Virtual method that some data validity rules. Wrong data should be marked invalid here.
+     */
+    virtual void checkDataValidityLocal(){}
 
     /*! Remove all data[valid] == 0. Sensors are preserved.*/
     void removeInvalid();
@@ -251,6 +283,8 @@ public:
 
 protected:
     virtual void copy_( const DataContainer & data );
+
+    std::string inputFormatStringSensors_;
 
     std::string inputFormatString_;
 

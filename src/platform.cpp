@@ -20,5 +20,54 @@
 
 #include "platform.h"
 
+#if defined(WINDOWS) || defined(_WIN32)
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
+
+#include <iostream>
+#include <cerrno>
+#include <cstring>
+#include <fstream>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+
 namespace GIMLI{
+
+int numberOfCPU(){
+
+    long nprocs = -1;
+    long nprocs_max = -1;
+#if defined(WINDOWS) || defined(_WIN32)
+    #ifndef _SC_NPROCESSORS_ONLN
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+    #define sysconf(a) info.dwNumberOfProcessors
+    #define _SC_NPROCESSORS_ONLN
+    #endif
+#endif // no windows
+    
+#ifdef _SC_NPROCESSORS_ONLN
+    nprocs = sysconf(_SC_NPROCESSORS_ONLN);
+
+    if ( nprocs < 1 ) {
+        std::cerr << "Could not determine number of CPUs online:" << std::strerror(errno) << std::endl;
+    } else {
+        nprocs = 1;
+    }
+    nprocs_max = sysconf(_SC_NPROCESSORS_CONF);
+
+    if ( nprocs_max < 1 ) {
+        std::cerr << "Could not determine number of CPUs configured:" << strerror (errno) << std::endl;
+    }
+#else
+    std::cerr << "Could not determine number of CPUs (!_SC_NPROCESSORS_ONLN)" << std::endl;
+    nprocs = 1;
+#endif
+    return nprocs_max;
 }
+
+} // namespace GIMLI{

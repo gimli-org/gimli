@@ -283,12 +283,27 @@ public:
 	// x = [1, 2, 5, 5, 5, 6, 7, 8, 9, 10]
         CPPUNIT_ASSERT( ( x == 5 ).size() == 10 );
         CPPUNIT_ASSERT( find( x == 5 ).size() == 3 );
+        CPPUNIT_ASSERT( find( ~(x == 5) ).size() == 7 );
         CPPUNIT_ASSERT( find( x == 5 )[ 0 ] == 2 );
         CPPUNIT_ASSERT( find( x <= 5 ).size() == 5 );
         CPPUNIT_ASSERT( find( x > 5 ).size() == 5 );
         CPPUNIT_ASSERT( find( x < 5 ).size() == 2 );
         CPPUNIT_ASSERT( find( (x > 5) & (x < 5) ).size() == 0 );
         CPPUNIT_ASSERT( find( (x > 5) | (x < 5) ).size() == 7 );
+        CPPUNIT_ASSERT( find( x+x == 4. ).size() == 1 );
+        CPPUNIT_ASSERT( find( x+x >= 4. ).size() == 9 );
+        CPPUNIT_ASSERT( find( x+x > 4. ).size() == 8 );
+        CPPUNIT_ASSERT( find( abs(x+x) > 4. ).size() == 8 );
+        CPPUNIT_ASSERT( find( ~( abs(x+x) > 4. ) ).size() == 2 );
+        x[0] = ::log(0);
+        std::cout << x <<std::endl;
+        CPPUNIT_ASSERT( find( isInf(x) ).size() == 1 );
+        CPPUNIT_ASSERT( find( isInf(x+x) ).size() == 1 );
+        x[1] += ::sqrt(-1) ;
+        std::cout << x <<std::endl;
+        CPPUNIT_ASSERT( find( isNaN(x) ).size() == 1 );
+        CPPUNIT_ASSERT( find( isInfNaN(x) ).size() == 2 );
+        //CPPUNIT_ASSERT( find( isnan(x+x) ).size() == 0 );
     }
     
     void testMatrix(){

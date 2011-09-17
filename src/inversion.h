@@ -208,7 +208,7 @@ public:
         if ( verbose_ ) std::cout << "min/max(dweight) = " << min( dataWeight_ ) << "/"
                                   << max( dataWeight_ ) << std::endl;
 
-        if ( isinfnan( dataWeight_ ) ){
+        if ( haveInfNaN( dataWeight_ ) ){
             DOSAVE save( dataWeight_,          "Nan_dataWeight_dweight" );
             DOSAVE save( error_,               "Nan_dataWeight_error" );
             DOSAVE save( data_,                 "Nan_dataWeight_data" );
@@ -1036,7 +1036,7 @@ int Inversion< Vec, SensMat>::oneStep( ) {
 template < class ModelValType, class SensMat >
 Vector < ModelValType > Inversion< ModelValType, SensMat>::optLambda( const Vector < ModelValType > & deltaData, const Vector < ModelValType > & deltaModel0 ) {
 ALLOW_PYTHON_THREADS
-
+    THROW_TO_IMPL
     std::vector< double > phiM, phiD;
     double ys = 0.0, yss = 0.0, curv = 0.0, oldcurv = -1e10;
     Vec oldDModel( model_.size() );
