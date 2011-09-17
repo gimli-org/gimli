@@ -34,11 +34,11 @@ public:
 
     ModellingBase( bool verbose = false ) ;
 
-    ModellingBase( const DataContainer & dataContainer, bool verbose = false );
+    ModellingBase( DataContainer & dataContainer, bool verbose = false );
 
     ModellingBase( Mesh & mesh, bool verbose = false );
 
-    ModellingBase( Mesh & mesh, const DataContainer & dataContainer, bool verbose = false );
+    ModellingBase( Mesh & mesh, DataContainer & dataContainer, bool verbose = false );
 
     virtual ~ModellingBase( );
 
@@ -49,7 +49,7 @@ public:
     virtual RVector createDefaultStartModel( ) { return RVector( 0 ); }
 
     /*! Change the associated data container */
-    void setData( const DataContainer & data );
+    void setData( DataContainer & data );
     
     /*! */
     virtual RVector startModel( );

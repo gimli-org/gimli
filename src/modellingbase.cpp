@@ -34,7 +34,7 @@ ModellingBase::ModellingBase( bool verbose )
     init_();
 }
 
-ModellingBase::ModellingBase( const DataContainer & data, bool verbose )
+ModellingBase::ModellingBase( DataContainer & data, bool verbose )
     : dataContainer_( NULL ), verbose_( verbose ){
     init_();
     setData( data );
@@ -46,7 +46,7 @@ ModellingBase::ModellingBase( Mesh & mesh, bool verbose )
     setMesh( mesh );
 }
 
-ModellingBase::ModellingBase( Mesh & mesh, const DataContainer & data, bool verbose )
+ModellingBase::ModellingBase( Mesh & mesh, DataContainer & data, bool verbose )
     : dataContainer_( NULL ), verbose_( verbose ){
     init_();
     setData( data );
@@ -56,7 +56,6 @@ ModellingBase::ModellingBase( Mesh & mesh, const DataContainer & data, bool verb
 ModellingBase::~ModellingBase( ) {
     delete regionManager_;
     if ( mesh_ ) delete mesh_;
-    if ( dataContainer_ ) delete dataContainer_;
 }
 
 void ModellingBase::init_() {
@@ -65,12 +64,12 @@ void ModellingBase::init_() {
     regionManagerInUse_  = false;
 }
 
-void ModellingBase::setData( const DataContainer & data ){
-    if ( dataContainer_ ) {
-        *dataContainer_ = data;
-    } else {
-        dataContainer_ = new DataContainer( data );
-    }
+void ModellingBase::setData( DataContainer & data ){
+    //if ( dataContainer_ ) {
+    dataContainer_ = &data;
+//     } else {
+//         dataContainer_ = new DataContainer( data );
+//     }
     updateDataDependency_();
 }
 

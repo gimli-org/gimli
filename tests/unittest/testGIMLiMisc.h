@@ -20,6 +20,7 @@ public:
 	void testGimliMisc(){
 		std::cout << "Hello, this is: " << GIMLI::versionStr() << std::endl;
 		CPPUNIT_ASSERT( GIMLI::fileExist( "unittest.sh" ) == true );
+        std::cout << "number of CPU: " << GIMLI::numberOfCPU() << std::endl;
 	}
 
     void testBooleanLogic(){

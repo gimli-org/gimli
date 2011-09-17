@@ -51,12 +51,21 @@ inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */
     return TRUE;
 }
 
-inline bool isnan( double x ) { return x != x; }
+//inline bool isnan( double x ) { return x != x; }
 
 #else /* ELSE NO WINDOWS */
 #define PATHSEPARATOR "/"
 #define DLLEXPORT
 #endif /* NO WINDOWS */
+
+/*!
+ * Return the numbers of virtual CPUS on this system
+ */
+
+namespace GIMLI{
+    int numberOfCPU();
+}
+//DLLEXPORT int numberOfCPU();
 
 #if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) )
 // #include <ieeefp.h>

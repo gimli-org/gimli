@@ -62,6 +62,7 @@
 namespace GIMLI{
 
 typedef size_t Index;
+typedef ssize_t SIndex;
 typedef std::vector < Index > IndexArray;
 
 template < class ValueType, class A > class __VectorExpr;
@@ -295,7 +296,7 @@ public:
 
     /*! Return a new vector that match the slice [start, end).  end == -1 or larger size() sets end = size.
         Throws exception on violating boundaries. */
-    Vector < ValueType > operator () ( size_t start, ssize_t end ) const {
+    Vector < ValueType > operator () ( Index start, SIndex end ) const {
         size_t e = (size_t) end;
         if ( end == -1 && end > (ssize_t)size_ ) e = size_;
         
@@ -312,7 +313,7 @@ public:
     /*! 
      * Return a new vector that based on indices's. Throws exception if indices's are out of bound 
      */
-    Vector < ValueType > operator () ( const std::vector < size_t > & idx ) const {
+    Vector < ValueType > operator () ( const IndexArray & idx ) const {
         Vector < ValueType > v( idx.size() );
         size_t id;
         for ( size_t i = 0; i < idx.size(); i ++ ){
@@ -326,21 +327,21 @@ public:
         }
         return v;
     }
-//CR is this really needed?
-//     Vector < ValueType > operator () ( const std::vector < int > & idx ) const {
-//         Vector < ValueType > v( idx.size() );
-//         size_t id;
-//         for ( size_t i = 0; i < idx.size(); i ++ ){
-//            id = idx[ i ];
-//            if ( id >= 0 && id < size_ ){
-//                 v[ i ] = data_[ (size_t)id ];
-//            } else {
-//                 throwLengthError( 1, WHERE_AM_I + " idx out of range " +
-//                                      str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
-//            }
-//         }
-//         return v;
-//     }
+
+    Vector < ValueType > operator () ( const std::vector < int > & idx ) const {
+        Vector < ValueType > v( idx.size() );
+        size_t id;
+        for ( size_t i = 0; i < idx.size(); i ++ ){
+           id = idx[ i ];
+           if ( id >= 0 && id < size_ ){
+                v[ i ] = data_[ (size_t)id ];
+           } else {
+                throwLengthError( 1, WHERE_AM_I + " idx out of range " +
+                                     str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
+           }
+        }
+        return v;
+    }
 
 #ifdef PYGIMLI
 //    needed for: /usr/include/boost/python/def_visitor.hpp
@@ -955,6 +956,49 @@ inline BVector operator | ( const BVector & a, const BVector & b ){
     return ret;
 }
 
+// /*! Refactor for speed */
+// template < class ValueType, class A > BVector
+// operator == ( const __VectorExpr< ValueType, A > & vec, const ValueType & v ){
+//     return Vector< ValueType >( vec ) == v;
+// }
+
+#define DEFINE_COMPARE_OPERATOR__( OP ) \
+template < class ValueType, class A > BVector \
+operator OP ( const __VectorExpr< ValueType, A > & vec, const ValueType & v ){ \
+    BVector ret( vec.size(), 0 ); \
+    for ( size_t i = 0; i < ret.size(); i ++ ) ret[ i ] = vec[ i ] OP v; \
+    return ret;\
+} \
+
+DEFINE_COMPARE_OPERATOR__( < )
+DEFINE_COMPARE_OPERATOR__( <= )
+DEFINE_COMPARE_OPERATOR__( >= )
+DEFINE_COMPARE_OPERATOR__( == )
+DEFINE_COMPARE_OPERATOR__( != )
+DEFINE_COMPARE_OPERATOR__( > )
+
+#undef DEFINE_COMPARE_OPERATOR__
+
+#define DEFINE_UNARY_COMPARE_OPERATOR__( OP, FUNCT ) \
+template < class ValueType, class A > \
+BVector OP( const __VectorExpr< ValueType, A > & vec ){ \
+    BVector ret( vec.size(), 0 ); \
+    for ( size_t i = 0; i < ret.size(); i ++ ) ret[ i ] = FUNCT()( vec[ i ] ); \
+    return ret; \
+}\
+template < class ValueType > \
+BVector OP ( const Vector< ValueType > & vec ){ \
+    BVector ret( vec.size(), 0 ); \
+    std::transform( vec.begin().ptr(), vec.end().ptr(), ret.begin().ptr(), FUNCT() ); \
+    return ret; \
+} \
+
+DEFINE_UNARY_COMPARE_OPERATOR__( isInf, ISINF)
+DEFINE_UNARY_COMPARE_OPERATOR__( isNaN, ISNAN)
+DEFINE_UNARY_COMPARE_OPERATOR__( isInfNaN, ISINFNAN)
+
+#undef DEFINE_UNARY_COMPARE_OPERATOR__
+
 template < class T > Vector < T > cat( const Vector< T > & a, const Vector< T > & b ){
     Vector < T > c ( a.size() + b.size() );
     std::copy( &a[ 0 ], &a[ a.size() ], &c[ 0 ] );
@@ -1005,9 +1049,9 @@ template < class T > T max( const Vector < T > & v ){
     return *std::max_element( &v[ 0 ], &v[ 0 ] + v.size() );
 }
 
-template < class ValueType > bool isinfnan( const Vector < ValueType > & v ){
+template < class ValueType > bool haveInfNaN( const Vector < ValueType > & v ){
     for ( VectorIterator < ValueType > it = v.begin(); it != v.end(); ++it ){
-        if ( std::isinf( *it ) || std::isnan( *it ) ) return true;
+        if ( isInfNaN( *it ) ) return true;
     }
     return false;
 }

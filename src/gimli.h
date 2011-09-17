@@ -32,8 +32,6 @@
 #endif
 
 #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
-#include "platform.h"
-
 #include <iostream>
 #include <limits>
 #include <string>
@@ -44,6 +42,8 @@
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
+
+#include "platform.h"
 
 #include "exitcodes.h"
 
@@ -130,7 +130,6 @@ enum IOFormat{ Ascii, Binary };
 class Boundary;
 class Cell;
 class DataContainer;
-class DataMap;
 class Line;
 class Mesh;
 class MeshEntity;
@@ -144,10 +143,6 @@ class Shape;
 template < class ValueType > class Pos;
 typedef Pos< int >          IntPos;
 typedef Pos< double >       RVector3;
-
-// DEPRECATED ??
-// template < class ValueType > class STLMatrix;
-// typedef STLMatrix< double > RSTLMatrix;
 
 template < class ValueType >        class SparseMatrix;
 typedef SparseMatrix< int >         ISparseMatrix;

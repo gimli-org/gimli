@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ(2.61)
+AC_PREREQ([2.61])
 
 define([SVNVERSION], esyscmd([sh -c "svnversion -n"]))
 AC_DEFINE(SVN_REVISION, "SVNVERSION", [SVN Revision])
@@ -32,6 +32,7 @@ AC_SUBST(GIMLI_BINARY_AGE)
 
 GIMLI_VERSION=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION.$GIMLI_MICRO_VERSION-$SVNVERSION
 AC_SUBST(GIMLI_VERSION)
+
 AM_INIT_AUTOMAKE( gimli, $GIMLI_VERSION )
 AM_SILENT_RULES([yes])
 

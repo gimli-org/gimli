@@ -117,6 +117,8 @@ template < class T > bool isGreater( const T & a, const T & b ) { return a > b; 
 template < class T > bool isLesserEqual( const T & a, const T & b ) { return a < b || isEqual( a, b ); }
 template < class T > bool isGreaterEqual( const T & a, const T & b ) { return a > b || isEqual( a, b ); }
 
+template < class T > bool isInfNaN( const T & a ){ return ( std::isinf( a ) || std::isnan( a ) ); }
+
 inline bool operator < ( const Complex & a, const Complex & b ) { return false; }
 inline bool operator > ( const Complex & a, const Complex & b ) { return false; }
 
@@ -130,7 +132,7 @@ inline double exp10( const double & a ) { return std::pow( 10.0, a ); }
 // template < class T > inline T cot( const T & a ) { return 1.0 / std::tan( a ); }
 // template < class T > inline T acot( const T & a ) { return PI / 2.0 * std::atan( a ); }
 #define DEFINE_UNARY_OPERATOR__( OP, FUNCT ) \
-struct OP { template < class T > inline T operator()( const T & a ) const { return FUNCT( a ); } };\
+struct OP { template < class T > T operator()( const T & a ) const { return FUNCT( a ); } };\
 
 DEFINE_UNARY_OPERATOR__( ACOT, acot )
 DEFINE_UNARY_OPERATOR__( ABS_, std::fabs )
@@ -149,6 +151,15 @@ DEFINE_UNARY_OPERATOR__( SIGN, sign )
 DEFINE_UNARY_OPERATOR__( SQR,  square )
 
 #undef DEFINE_UNARY_OPERATOR__
+
+#define DEFINE_UNARY_IF_FUNCTION__( OP, FUNCT ) \
+struct OP { template < class T > bool operator()( const T & a ) const { return FUNCT( a ); } }; \
+
+DEFINE_UNARY_IF_FUNCTION__( ISINF, std::isinf )
+DEFINE_UNARY_IF_FUNCTION__( ISNAN, std::isnan )
+DEFINE_UNARY_IF_FUNCTION__( ISINFNAN, isInfNaN )
+
+#undef DEFINE_UNARY_IF_FUNCTION__
 
 /*! Expr is a wrapper class which contains a more interesting expression type,
 such as ExprIdentity, ExprLiteral, unary (UnaryExprOp) or  binaray expression operator (BinaryExprOp). */

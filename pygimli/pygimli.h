@@ -110,6 +110,7 @@ namespace pyplusplus{ namespace aliases{
 #include "node.h"
 #include "numericbase.h"
 #include "plane.h"
+#include "platform.h"
 #include "pos.h"
 #include "quaternion.h"
 #include "regionManager.h"
