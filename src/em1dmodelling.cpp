@@ -29,17 +29,18 @@ namespace GIMLI {
 RVector MT1dModelling::rhoaphi( const RVector & rho, const RVector & thk ) { // after mtmod.c by R.-U. Börner
     size_t nperiods = periods_.size();
     RVector rhoa( nperiods ), phi( nperiods );
-    static double my0 = PI * 4e-7;
+    
+    RVector::ValType my0 = PI * 4e-7;
     Complex i_unit( 0.0 , 1.0 ), adm, alpha, tanalpha;
     CVector z( nlay_ );
     for ( size_t i = 0 ; i < nperiods ; i++ ) {
-        double omega = 2.0 * PI / periods_[ i ];
+        RVector::ValType omega = 2.0 * PI / periods_[ i ];
         z[ nlay_ - 1 ] = sqrt( i_unit * omega * rho[ nlay_ - 1 ] / my0 );
         for ( int k = nlay_ - 2 ; k >= 0 ; k-- ) {
             adm = sqrt( my0 / ( rho[ k ] * i_unit * omega ) );
             alpha = thk[ k ] * sqrt( i_unit * my0 * omega / rho[k] );
             tanalpha = sinh( alpha ) / cosh( alpha );
-            z[ k ] = ( adm * z[ k + 1 ] + tanalpha ) / ( adm * z[ k + 1 ] * tanalpha + 1.0 );
+            z[ k ] = ( adm * z[ k + 1 ] + tanalpha ) / ( adm * z[ k + 1 ] * tanalpha + (RVector::ValType)1.0 );
             z[ k ] /= adm;
         }
         rhoa[i] = abs( z[ 0 ] ) * abs( z[ 0 ] ) * my0 / omega;
@@ -63,23 +64,25 @@ RVector MT1dModelling::response( const RVector & model ) {
 
 RVector MT1dModelling::rhoa( const RVector & rho, const RVector & thk ) { // after mtmod.c by R.-U. Börner
     size_t nperiods = periods_.size();
-    RVector rhoa( nperiods );
-    static double my0 = PI * 4e-7;
-    Complex i_unit( 0.0 , 1.0 ), adm, alpha, tanalpha;
-    CVector z( nlay_ );
-    for ( size_t i = 0 ; i < nperiods ; i++ ) {
-        double omega = 2.0 * PI / periods_[ i ];
-        z[ nlay_ - 1 ] = sqrt( i_unit * omega * rho[ nlay_ - 1 ] / my0 );
-        for ( int k = nlay_ - 2 ; k >= 0 ; k-- ) {
-            adm = sqrt( my0 / ( rho[ k ] * i_unit * omega ) );
-            alpha = thk[ k ] * sqrt( i_unit * my0 * omega / rho[k] );
-            tanalpha = sinh( alpha ) / cosh( alpha );
-            z[ k ] = ( adm * z[ k + 1 ] + tanalpha ) / ( adm * z[ k + 1 ] * tanalpha + 1.0 );
-            z[ k ] /= adm;
-        }
-        rhoa[i] = abs( z[ 0 ] ) * abs( z[ 0 ] ) * my0 / omega;
-    }
-    return rhoa;
+    return rhoaphi( rho, thk )(0,nperiods);
+    //CR not needed?
+//     RVector rhoa( nperiods );
+//     static double my0 = PI * 4e-7;
+//     Complex i_unit( 0.0 , 1.0 ), adm, alpha, tanalpha;
+//     CVector z( nlay_ );
+//     for ( size_t i = 0 ; i < nperiods ; i++ ) {
+//         double omega = 2.0 * PI / periods_[ i ];
+//         z[ nlay_ - 1 ] = sqrt( i_unit * omega * rho[ nlay_ - 1 ] / my0 );
+//         for ( int k = nlay_ - 2 ; k >= 0 ; k-- ) {
+//             adm = sqrt( my0 / ( rho[ k ] * i_unit * omega ) );
+//             alpha = thk[ k ] * sqrt( i_unit * my0 * omega / rho[k] );
+//             tanalpha = sinh( alpha ) / cosh( alpha );
+//             z[ k ] = ( adm * z[ k + 1 ] + tanalpha ) / ( adm * z[ k + 1 ] * tanalpha + 1.0 );
+//             z[ k ] /= adm;
+//         }
+//         rhoa[i] = abs( z[ 0 ] ) * abs( z[ 0 ] ) * my0 / omega;
+//     }
+//     return rhoa;
 }
 
 void FDEM1dModelling::init( ){
@@ -87,20 +90,21 @@ void FDEM1dModelling::init( ){
     nfr_ = freq_.size(); 
     double zp = ze_ + zs_;    
     RVector rpq = coilspacing_ * coilspacing_ + zp * zp;
-    freeAirSolution_ = ( rpq - zp * zp * 3 ) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
+    freeAirSolution_ = ( rpq - zp * zp * 3. ) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
 }
 
 Complex btp( double u, double f, RVector rho, RVector d){
     size_t nl = rho.size();
     double mu0 = 4e-7 * PI;
-    Complex c(0.0, mu0 * 2 * PI * f);
-    Complex b=sqrt( u*u + c / rho[nl-1] );
+    Complex c(0.0, mu0 * 2. * PI * f);
+
+    Complex b( std::sqrt( c / rho[nl-1] + u*u) );
     if( nl > 1 ) {
         for( int nn=nl-2; nn>=0 ; nn-- ){
-            Complex alpha=sqrt( u*u + c/rho[ nn ] );
-            Complex cth=exp( -2*d[nn]*alpha);
-            cth=( 1.0 - cth )/( 1.0 + cth );
-            b=(b+alpha*cth)/(1.0+cth*b/alpha);
+            Complex alpha( std::sqrt( c/rho[ nn ] + u*u ) );
+            Complex cth( std::exp( alpha * ( d[ nn ] * 2.0 ) ) );
+            cth=( Complex( 1.0 ) - cth )/( cth + 1.0 );
+            b=( b + alpha * cth )/( cth * b / alpha + 1.0 );
         }
     }
     return b;
@@ -137,12 +141,12 @@ RVector FDEM1dModelling::response( const RVector & model ){
     RVector thk( model, 0, nlay_ - 1 ), rho( model, nlay_ - 1, 2 * nlay_ - 1 );
     RVector inph( nfr_ ), outph( nfr_ );//** inphase and quadrature components
     int nc = 100, nc0 = 60; // number of coefficients
-    double q=0.1*std::log(10.0);
+    RVector::ValType q=0.1*std::log(10.0);
     for ( size_t i = 0 ; i < nfr_ ; i++ ) {
         Complex aux( 0.0, 0.0 );
         for ( int ii = 0 ; ii < nc ; ii++) {
-            double ui=std::exp( q * ( nc - ii - nc0 ) ) / coilspacing_[ i ];
-            Complex bti=btp( ui, freq_[i], rho, thk);
+            RVector::ValType ui=std::exp( q * ( nc - ii - nc0 ) ) / coilspacing_[ i ];
+            Complex bti( btp( ui, freq_[i], rho, thk) );
             Complex delta( ( bti - ui ) / ( bti + ui ) * std::exp( ui * ze_ ) * std::exp( ui * zs_ ) );
             aux += delta * ui * ui * hankelJ0[ nc - ii - 1 ];
         }

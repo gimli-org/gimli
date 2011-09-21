@@ -74,6 +74,7 @@ typedef int64_t int64;
                          throwToImplement( str.str() ); }
 #define CERR_TO_IMPL std::cerr << WHERE_AM_I << " not yet implemented\n " << GIMLI::versionStr() << "\nPlease send the messages above, the commandline and all necessary data to the author." << std::endl;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
+#define COUTMARKER std::cerr << WHERE_AM_I << std::endl;
 
 #define TOLERANCE 1e-12
 #define TOUCH_TOLERANCE 1e-12
@@ -152,22 +153,29 @@ template< class ValueType, class IndexType > class SparseMapMatrix;
 typedef SparseMapMatrix< int, size_t >     ISparseMapMatrix;
 typedef SparseMapMatrix< double, size_t >  DSparseMapMatrix;
 
+template < class ValueType > class Matrix;
 template < class ValueType > class Vector;
 //template <> class Vector< double >;
 
 typedef std::complex < double > Complex;
-typedef Vector< double > RVector;
+typedef Vector < double > RVector;
+typedef Matrix < double > RMatrix;
+
 typedef Vector< Complex > CVector;
+//typedef Matrix < Complex > CMatrix;
+
 typedef Vector< int > BVector;
 typedef Vector< long > LVector;
 //#typedef Vector< unsigned char > BVector;
 
-template < class ValueType > class Matrix;
-
-typedef Matrix < double > RMatrix;
-//typedef Matrix < Complex > CMatrix;
 // typedef std::vector < RVector > RMatrix;
 // typedef std::vector < CVector > CMatrix;
+
+template < class ModelValType, class SensMat > class Inversion;
+
+/*! standard classes for easier use: inversion with full and sparse jacobian */
+typedef GIMLI::Inversion< double, GIMLI::RMatrix > RInversion;
+typedef GIMLI::Inversion< double, GIMLI::DSparseMapMatrix > RInversionSparse;
 
 template < class ValueType > class ElementMatrix;
 
@@ -222,8 +230,8 @@ inline std::string versionStr(){
 
 DLLEXPORT std::string authors();
 
-template < class T > inline T min( const T & a, const T & b ){ return std::min( a, b ); }
-template < class T > inline T max( const T & a, const T & b ){ return std::max( a, b ); }
+template < class T, class U > inline T min( const T & a, const U & b ){ return std::min( a, T(b) ); }
+template < class T, class U > inline T max( const T & a, const U & b ){ return std::max( a, T(b) ); }
 
 DLLEXPORT int openFile( const std::string & fname, std::fstream * file,
                         std::_Ios_Openmode farg, bool terminate );

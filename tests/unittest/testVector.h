@@ -66,8 +66,8 @@ public:
     }
      
     void testUnaryOperations(){
-        testUnaryOperations_< RVector, double > ( 3.1415 );
-        testUnaryOperations_< CVector, Complex > ( Complex( 3.1415, 1.0 ) );
+        testUnaryOperations_< double > ( 3.1415 );
+        testUnaryOperations_< Complex > ( Complex( 3.1415, 1.0 ) );
         RVector v( 10, 42.42 );
         RVector v1( sign( square( v ) ) ); CPPUNIT_ASSERT( sum( v1 ) == 10 );    
         randn( v );
@@ -75,26 +75,28 @@ public:
         CPPUNIT_ASSERT( RVector( abs( v + 1e-6 ) ) == RVector( exp( log( abs( v + 1e-6 ) ) ) ) );
         CPPUNIT_ASSERT( RVector( abs( v + 1e-6 ) ) != RVector( exp10( log( abs( v + 1e-6 ) ) ) ) );   
     }
-    template < class Vec, class Val > void testUnaryOperations_( const Val & fac ){
+    template < class ValueType > void testUnaryOperations_( const ValueType & fac ){
+        typedef Vector < ValueType > Vec;
         Vec v1 = Vec( 10 );
         Vec v( v1 ), v2( v1 );     
         v.fill( fac ); 
         v2.fill( fac );     
-        v += fac; CPPUNIT_ASSERT( v == Vec( v1.size(), 2.0 * fac ) );
+        v += fac; CPPUNIT_ASSERT( v == Vec( v1.size(), fac * 2.0 ) );
         v -= fac; CPPUNIT_ASSERT( v == Vec( v1.size(), fac ) );
         v *= fac; CPPUNIT_ASSERT( v == Vec( v1.size(), fac * fac ) );
         v /= fac; CPPUNIT_ASSERT( v == Vec( v1.size(), fac ) );    
-        v += v2;  CPPUNIT_ASSERT( v == Vec( v1.size(), 2.0 * fac ) );
+        v += v2;  CPPUNIT_ASSERT( v == Vec( v1.size(), fac * 2.0 ) );
         v -= v2;  CPPUNIT_ASSERT( v == Vec( v1.size(), fac ) );
         v *= v2;  CPPUNIT_ASSERT( v == Vec( v1.size(), fac * fac ) );
         v /= v2;  CPPUNIT_ASSERT( v == Vec( v1.size(), fac ) );
         v = -v2;  CPPUNIT_ASSERT( v == v2 * -1. );   
     }
     void testSetVal(){
-        RVector v1( 10 );
+        typedef Vector < double > Vec;
+        Vec v1( 10 );
         v1.fill( x__ + 1.0 );
-        RVector v2( 10, 1.0 );
-        RVector v3( 10 );
+        Vec v2( 10, 1.0 );
+        Vec v3( 10 );
 
         CPPUNIT_ASSERT( sum( v3.setVal( v1, 0, 10 ) ) == 55 );
         CPPUNIT_ASSERT( sum( v3.addVal( v2, 5, 10 ) ) == 60 );
@@ -134,7 +136,9 @@ public:
     }
     
     void testFunctions(){
-        RVector v( *v1_ );
+        typedef Vector < double > Vec;
+         
+        Vec v( *v1_ );
         v.fill( x__ + 1.0 );
         CPPUNIT_ASSERT( sum( v ) == ( v[ 0 ] + v[ v1_->size() -1 ] ) * 
                                                 ( ::floor( v1_->size() / 2.0 ) + 
@@ -211,7 +215,10 @@ public:
         //real, imag, angle, conj, abs
     }
     
-    template < class Mat > void testMatrix_(){
+    template < class ValueType > void testMatrix_(){
+        typedef Matrix < ValueType > Mat;
+        typedef Vector < ValueType > Vec;
+        
         Mat A( 5, 5 );
         try{ A.row( 11 ); CPPUNIT_ASSERT( 0 ); } catch( ... ){}
         try{ A.row( -1 ); CPPUNIT_ASSERT( 0 ); } catch( ... ){}
@@ -254,8 +261,8 @@ public:
         A += 1.0;
         CPPUNIT_ASSERT( sum( A[ 0 ] ) == A.cols() );
         
-        RVector a( A.rows() ); a.fill( x__ * 2.5 );
-        RVector b( A.cols() ); b.fill( ( x__ + 1.0 ) * 4.2 );
+        Vec a( A.rows() ); a.fill( x__ * 2.5 );
+        Vec b( A.cols() ); b.fill( ( x__ + 1.0 ) * 4.2 );
         
         B = A;
         Mat C( B );
@@ -266,8 +273,9 @@ public:
     }
     
     void testFind(){
-        RVector x( 10 ); x.fill( x__ + 1.0 );
-        RVector y( 10 ); y.fill( x__ + 2.0 );
+        typedef Vector < double > Vec;
+        Vec x( 10 ); x.fill( x__ + 1.0 );
+        Vec y( 10 ); y.fill( x__ + 2.0 );
         
         x[5] = 10.0;
         
@@ -307,7 +315,8 @@ public:
     }
     
     void testMatrix(){
-        testMatrix_< Matrix< double > >();    
+        testMatrix_< double >();
+//        testMatrix_< float >();
     }
     
     void testIO(){
