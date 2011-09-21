@@ -77,7 +77,7 @@ public:
         for ( int i = nr - 2; i >= 0; i-- ) {
             p = ( z - rho[ i ] ) / ( z + rho[ i ] );
             th = tanh( lam * h[ i ] );
-            z = rho[ i ] * ( z + toComplex( th ) * rho[ i ] ) / ( z * th + rho[ i ] );
+            z = ( z + toComplex( th ) * rho[ i ] ) / ( z * th + rho[ i ] ) * rho[ i ];
         }
 
         Vec ehl( p * RVector( exp( -2.0 * lam * h[ 0 ] ) ) );
@@ -85,10 +85,11 @@ public:
     }
     template < class Vec > Vec pot1dT( const RVector & R, const Vec & rho, const RVector & thk ){
         Vec z0( R.size() );
-        double rabs;
+        //double rabs;
+        RVector rabs( abs(R) );
         for ( size_t i = 0; i < R.size(); i++ ) {
-            rabs = std::fabs( R[ i ] );
-            z0[ i ] = sum( myw_ * kern1dT<Vec>( myx_ / rabs, rho, thk ) * 2.0 ) / rabs;
+            //rabs = std::fabs( R[ i ] );
+            z0[ i ] = sum( myw_ * kern1dT<Vec>( myx_ / rabs[i], rho, thk ) * 2.0 ) / rabs[i];
         }
         return z0;
     }

@@ -233,7 +233,7 @@ public:
 
     inline uint idx( uint i ) const { return idx_[ i ]; }
     inline uint size() const { return mat_.rows(); }
-    const T & getVal( uint i, uint j ) const { return mat_[ i ][ j ]; }
+    const T getVal( uint i, uint j ) const { return mat_[ i ][ j ]; }
 
     const RVector & row( uint i ) const { return mat_[ i ]; }
     const RMatrix & mat() const { return mat_; }

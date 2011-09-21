@@ -103,7 +103,8 @@ int LDLWrapper::initialize_( DSparseMatrix & S ){
 #ifdef HAVE_LIBLDL
     colPtr_ = reinterpret_cast< int * >(S.colPtr());
     rowIdx_ = reinterpret_cast< int * >(S.rowIdx());
-    vals_   = S.vals();
+      THROW_TO_IMPL
+     //vals_   = S.vals();
 
     if ( preordering_ ){
         P_ = new int[ dim_ ];
@@ -181,18 +182,19 @@ int LDLWrapper::solve( const RVector & rhs, RVector & solution ){
   if ( rhs.size() == dim_ ){
     RVector b( rhs );
 
-    if ( preordering_ ){
-      RVector bP( dim_ );
-      ldl_perm ( dim_, &bP[ 0 ], &b[ 0 ], P_ );			/* y = Pb */
-      ldl_lsolve( dim_, &bP[ 0 ], Lp_, Li_, Lx_ );
-      ldl_dsolve( dim_, &bP[ 0 ], D_ ) ;
-      ldl_ltsolve( dim_, &bP[ 0 ], Lp_, Li_, Lx_ );
-      ldl_permt ( dim_, &solution[ 0 ], &bP[ 0 ], P_ );		/* x = P'y */
-    } else {
-      ldl_lsolve( dim_, &b[ 0 ], Lp_, Li_, Lx_ ) ;
-      ldl_dsolve( dim_, &b[ 0 ], D_ ) ;
-      ldl_ltsolve( dim_, &solution[ 0 ], Lp_, Li_, Lx_ ) ;
-    }
+    THROW_TO_IMPL
+//     if ( preordering_ ){
+//       RVector bP( dim_ );
+//       ldl_perm ( dim_, &bP[ 0 ], &b[ 0 ], P_ );			/* y = Pb */
+//       ldl_lsolve( dim_, &bP[ 0 ], Lp_, Li_, Lx_ );
+//       ldl_dsolve( dim_, &bP[ 0 ], D_ ) ;
+//       ldl_ltsolve( dim_, &bP[ 0 ], Lp_, Li_, Lx_ );
+//       ldl_permt ( dim_, &solution[ 0 ], &bP[ 0 ], P_ );		/* x = P'y */
+//     } else {
+//       ldl_lsolve( dim_, &b[ 0 ], Lp_, Li_, Lx_ ) ;
+//       ldl_dsolve( dim_, &b[ 0 ], D_ ) ;
+//       ldl_ltsolve( dim_, &solution[ 0 ], Lp_, Li_, Lx_ ) ;
+//     }
   } else {
     std::cerr << WHERE_AM_I << " rhs is not defined" << std::endl;
   }

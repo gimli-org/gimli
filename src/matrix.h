@@ -97,6 +97,15 @@ public:
         return mat_[ i ];
     }
 
+    /*!
+    Implicite type converter
+     */
+    template < class T > operator Matrix< T >( ){
+        Matrix< T > f( this->rows() );
+        for ( uint i = 0; i < this->rows(); i ++ ){ f[i] = Vector < T >( mat_[ i ] ); }
+        return f;
+    }
+    
     /*! Resize the matrix to rows x cols */
     inline void resize( size_t rows, size_t cols ){ allocate_( rows, cols ); }
 

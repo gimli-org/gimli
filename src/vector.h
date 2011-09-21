@@ -108,10 +108,12 @@ One dimensional array aka Vector of limited size. Size limit depends on platform
 */
 template< class ValueType > class Vector {
 public:
+    typedef ValueType ValType;
     /*!
      * Construct one-dimensional array of size n. The vector is cleaned (filled with zero)
      */
     Vector( size_t n = 0 ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
+    // explicit Vector( size_t n = 0 ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( n );
         clean();
     }
@@ -160,9 +162,10 @@ public:
     /*!
      * Copy constructor. Create new vector as a deep copy of std::vector( Valuetype )
      */
-    Vector( const std::vector< ValueType > & v ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
+    template < class U > Vector( const std::vector< U > & v ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( v.size() );
-        std::copy( &v[ 0 ], &v[ v.size() ], data_ );
+        for ( Index i = 0; i < v.size(); i ++ ) data_[ i ] = ValueType( v[ i ] ); 
+        //std::copy( &v[ 0 ], &v[ v.size() ], data_ );
     }
 
     /*! Default destructor. */
@@ -192,6 +195,16 @@ public:
     inline const ValueType & operator[]( const size_t i ) const { return data_[ i ]; }
 
     inline ValueType & operator[]( const size_t i ) { return data_[ i ]; }
+
+    /*!
+    Implicite type converter 
+     */
+    template < class T > operator Vector< T >( ){
+        COUTMARKER
+        Vector< T > f( this->size() );
+        for ( uint i = 0; i < this->size(); i ++ ){ f[i] = T( data_[ i ] ); }
+        return f;
+    }
 
     /*! Set a value. Same as fill(val) */
     inline Vector< ValueType > & setVal( const ValueType & val ) {
@@ -421,7 +434,10 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     }
 
     /*! Fill the whole vector from the pointer of val. CAUTION!! There is no boundary check. val must be properly ( [val, val+this->size() ) )assigned.  */
-    void fill( ValueType * val ) { std::copy( val, val + size_, data_ ); }
+    template< class V > void fill( V * val ) {
+        for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] = ValueType(val[i]);
+        //std::copy( val, val + size_, data_ );
+    }
 
     /*! Fill the whole vector with val. */
     void fill( const ValueType & val ) { std::fill( data_, data_ + size_, val ); }
@@ -430,6 +446,11 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     template< class Ex > void fill( Expr< Ex > expr ){
         for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] = expr( (ValueType)i );
     }
+
+//     /*! Fill the whole vector with function expr( i ) */
+//     template< class V > void fill( const V & val ){
+//         for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] = ValueType( val );
+//     }
 
     /*! Fill Vector with 0.0. Don't change size.*/
     void clean( ){ std::memset( data_, '\0', sizeof( ValueType ) * size_ ); }
@@ -1235,6 +1256,20 @@ Vector < std::complex< ValueType > > conj( const Vector < std::complex< ValueTyp
     for ( size_t i = 0; i < cv.size(); i ++ ) v[ i ] = Complex( cv[ i ].real(), -cv[ i ].imag() );
     return v;
 }
+
+#define DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR( OP ) \
+template <class T, class U > \
+inline std::complex< T > operator OP ( const std::complex< T > & lhs, const U & rhs ) { \
+    std::complex< T > ret; \
+    return ret OP##= rhs; \
+} \
+
+DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR( * )
+DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR( / )
+DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR( - )
+DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR( + )
+
+#undef DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR
 
 template < class ValueType >
 bool save( const Vector< ValueType > & a, const std::string & filename, IOFormat format = Ascii ){

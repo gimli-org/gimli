@@ -34,6 +34,7 @@ namespace GIMLI{
 that means it do nothing. Just for prototyping f(a). */
 template< class Vec > class Trans {
 public:
+//         
     /*! Default constructur. */
     Trans( ) { }
 
@@ -168,7 +169,7 @@ public:
                       << " <=" << lowerbound_ << " lowerbound" << std::endl;
             Vec tmp( a );
             for ( uint i = 0; i < a.size(); i ++ ){
-                tmp[ i ] = std::max( a[ i ], lb1  );
+                tmp[ i ] = max( a[ i ], lb1  );
             }
             return log( tmp - lowerbound_ );
         }
@@ -184,7 +185,7 @@ public:
                       << " <=" << lowerbound_ << " lowerbound" << std::endl;
             Vec tmp( a );
             for ( uint i = 0; i < a.size(); i ++ ){
-                tmp[ i ] = std::max( a[ i ], lb1  );
+                tmp[ i ] = max( a[ i ], lb1  );
             }
             return 1.0 / ( tmp - lowerbound_ ); 
         }
@@ -261,8 +262,10 @@ protected:
 /*! Cotangens barrier method, e.g. for water content (NMR) */
 template< class Vec > class TransCotLU : public Trans < Vec > {
 public:
+
     TransCotLU( double lowerbound = 0.0, double upperbound = 0.0 )
         : lowerbound_( lowerbound ), upperbound_( upperbound ) { }
+        
     virtual ~TransCotLU( ) { }
 
     virtual Vec trans( const Vec & a ) const {
