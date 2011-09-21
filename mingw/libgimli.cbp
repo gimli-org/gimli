@@ -40,15 +40,15 @@
 			<Add option="--add-stdcall-alias" />
 			<Add option="--export-all-symbols" />
 			<Add option="--enable-auto-import" />
+			<Add directory="..\external\lib" />
+			<Add directory="." />
 			<Add library="libldl.a" />
-			<Add library="libamd.a" />
 			<Add library="libtriangle.a" />
 			<Add library="libcholmod.a" />
 			<Add library="libcolamd.a" />
+			<Add library="libamd.a" />
 			<Add library="..\external\lib\libblas.dll" />
 			<Add library="..\external\lib\liblapack.dll" />
-			<Add directory="..\external\lib" />
-			<Add directory="..\mingw" />
 		</Linker>
 		<Unit filename="..\src\baseentity.h" />
 		<Unit filename="..\src\cholmodWrapper.cpp" />

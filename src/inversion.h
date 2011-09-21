@@ -1036,7 +1036,7 @@ int Inversion< Vec, SensMat>::oneStep( ) {
 template < class ModelValType, class SensMat >
 Vector < ModelValType > Inversion< ModelValType, SensMat>::optLambda( const Vector < ModelValType > & deltaData, const Vector < ModelValType > & deltaModel0 ) {
 ALLOW_PYTHON_THREADS
-    THROW_TO_IMPL
+
     std::vector< double > phiM, phiD;
     double ys = 0.0, yss = 0.0, curv = 0.0, oldcurv = -1e10;
     Vec oldDModel( model_.size() );
@@ -1044,12 +1044,32 @@ ALLOW_PYTHON_THREADS
     Vec deltaModel( model_.size() );
     Vec tModel( tM_->trans( model_ ) );
     Vec tResponse( tM_->trans( response_ ) );
+    Vec roughness( constraintsH_.size() );
 
-    solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
+    if ( !localRegularization_ ) {
+        DOSAVE echoMinMax( model_, "model: " );
+        roughness = C_ * Vec( tM_->trans( model_ ) * modelWeight_ ) * constraintsWeight_;
+        if ( haveReferenceModel_ ) {
+            if ( verbose_ ) echoMinMax( modelRef_,  "reference model" );
+            roughness = roughness - constraintsH_;
+        }
+    } else {
+        if ( verbose_ ) std::cout << "use local regularization" << std::endl;
+    }
+
+    DOSAVE echoMinMax( modelWeight_,  "mW" );
+    DOSAVE echoMinMax( constraintsH_, "constraintsH" );
+    DOSAVE save( constraintsH_, "constraintsH");
+
+//    solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
+//                        modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
+//                        lambda_, deltaModel0, maxCGLSIter_, verbose_ );
+    solveCGLSCDWWhtrans( *J_, C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
                         modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
-                        lambda_, deltaModel0, maxCGLSIter_, verbose_ );
+                        lambda_, roughness, maxCGLSIter_, verbose_ );
 
     Vec appModelStart( tM_->invTrans( tModel + deltaModel ) );
+    DOSAVE save( appModelStart, "appModel" );
     double phiMNorm = ( getPhiM( appModelStart ) );
     double phiDNorm = ( getPhiD( ) );
 
@@ -1057,57 +1077,60 @@ ALLOW_PYTHON_THREADS
 //    phiM.push_back( getPhiM( ) / phiMNorm );
 //    phiD.push_back( 1.0 );
     //* override normalization
-    phiM.push_back( std::log( getPhiM() ) ); phiMNorm = 1.0;
+    phiM.push_back( std::log( getPhiM( appModelStart ) ) ); phiMNorm = 1.0;
     phiD.push_back( std::log( getPhiD() ) ); phiDNorm = 1.0;
     if( verbose_ ) std::cout << "lambda( 0 ) = inf" << " PhiD = " << phiD.back() << " PhiM = " << phiM.back()  << std::endl;
 
     int lambdaIter = 0;
     while ( lambdaIter < 30 ) {
-      lambdaIter++;
-      if( verbose_ ) std::cout << lambdaIter << "lambda = " << lambda_ << std::endl;
-      solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
-                          modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
-                          lambda_, deltaModel0, maxCGLSIter_, verbose_ );
+        lambdaIter++;
+        if( verbose_ ) std::cout << lambdaIter << "lambda = " << lambda_ << std::endl;
+//        solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
+//                          modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
+//                          lambda_, deltaModel0, maxCGLSIter_, verbose_ );
+        solveCGLSCDWWhtrans( *J_, C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
+                        modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
+                        lambda_, roughness, maxCGLSIter_, verbose_ );
 
-      Vec appModel( tM_->invTrans( tModel + deltaModel ) );
-      Vec appResponse( tD_->invTrans( tResponse + *J_ * deltaModel ) );
+        Vec appModel( tM_->invTrans( tModel + deltaModel ) );
+        Vec appResponse( tD_->invTrans( tResponse + *J_ * deltaModel ) );
 
-      if ( lambdaIter == 1 ) { //* normalize on 1st iteration
+        if ( lambdaIter == 1 ) { //* normalize on 1st iteration
 //      	 phiMNorm = getPhiM( appModel );
 //      	 phiDNorm = getPhiD( appResponse );
-      }
-
-      phiM.push_back( std::log(getPhiM( appModel )) / phiMNorm );
-      phiD.push_back( std::log(getPhiD( appResponse )) / phiDNorm );
-
-      if ( lambdaIter > 1 ) {
-        ys = ( phiD[ lambdaIter ] - phiD[ lambdaIter - 2 ] ) / ( phiM[ lambdaIter ] - phiM[ lambdaIter - 2 ] );
-        yss = ( (phiD[ lambdaIter ] - phiD[ lambdaIter - 1 ] ) / ( phiM[ lambdaIter ] - phiM[ lambdaIter - 1] ) -
-          ( phiD[ lambdaIter - 1 ] - phiD[ lambdaIter - 2 ] ) / ( phiM[ lambdaIter - 1 ] - phiM[ lambdaIter - 2 ] ) ) /
-          ( phiM[ lambdaIter ] - phiM[ lambdaIter - 2 ] ) * 2.0;
-        curv = yss / std::pow( 1 + ys * ys, 1.5);
-
-        if( verbose_ ) std::cout << " lambda( " << lambdaIter << " ) = " << lambda_ << " PhiD = "
-                                 << phiD.back() << " PhiM = " << phiM.back() << " curv = " << curv << std::endl;
-        if ( ( curv < oldcurv ) && ( lambdaIter > 4 ) ) {
-          deltaModel = uroldDModel;
-          lambda_ /= ( 0.8 * 0.8 );
-          if ( verbose_ ) std::cout << lambdaIter << ": lambdaIter -- " << "Curvature decreasing, choosing lambda = " << lambda_ << std::endl;
-          break;
         }
-      oldcurv = curv;
-      } else {
-        if( verbose_ ) std::cout << "lambda( " << lambdaIter << " ) = " << lambda_
-                                 << " PhiD = " << phiD.back() << " PhiM = " << phiM.back()  << std::endl;
-      }
-      uroldDModel = oldDModel;
-      oldDModel = deltaModel;
-      lambda_ *= 0.8;
+
+        phiM.push_back( std::log(getPhiM( appModel )) / phiMNorm );
+        phiD.push_back( std::log(getPhiD( appResponse )) / phiDNorm );
+
+        if ( lambdaIter > 1 ) {
+            ys = ( phiD[ lambdaIter ] - phiD[ lambdaIter - 2 ] ) / ( phiM[ lambdaIter ] - phiM[ lambdaIter - 2 ] );
+            yss = ( (phiD[ lambdaIter ] - phiD[ lambdaIter - 1 ] ) / ( phiM[ lambdaIter ] - phiM[ lambdaIter - 1] ) -
+              ( phiD[ lambdaIter - 1 ] - phiD[ lambdaIter - 2 ] ) / ( phiM[ lambdaIter - 1 ] - phiM[ lambdaIter - 2 ] ) ) /
+              ( phiM[ lambdaIter ] - phiM[ lambdaIter - 2 ] ) * 2.0;
+            curv = yss / std::pow( 1 + ys * ys, 1.5);
+
+            if( verbose_ ) std::cout << " lambda( " << lambdaIter << " ) = " << lambda_ << " PhiD = "
+                                     << phiD.back() << " PhiM = " << phiM.back() << " curv = " << curv << std::endl;
+            if ( ( curv < oldcurv ) && ( lambdaIter > 4 ) ) {
+                deltaModel = uroldDModel;
+                lambda_ /= ( 0.8 * 0.8 );
+                if ( verbose_ ) std::cout << lambdaIter << ": lambdaIter -- " << "Curvature decreasing, choosing lambda = " << lambda_ << std::endl;
+                break;
+            }
+        oldcurv = curv;
+        } else { //** lambdaIter > 1
+            if( verbose_ ) std::cout << "lambda( " << lambdaIter << " ) = " << lambda_
+                                     << " PhiD = " << phiD.back() << " PhiM = " << phiM.back()  << std::endl;
+        }
+        uroldDModel = oldDModel;
+        oldDModel = deltaModel;
+        lambda_ *= 0.8;
     }  //** while loop;
     DOSAVE save( phiM, "phiM");
     DOSAVE save( phiD, "phiD");
 
-return deltaModel;
+    return deltaModel;
 }
 
 /*! standard classes for easier use: inversion with full and sparse jacobian */
