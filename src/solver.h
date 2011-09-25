@@ -32,9 +32,9 @@ int solveCGLSCDWWhtrans( const Mat & S, const CMatrix & C, const Vec & dWeight,
 		  const Vec & b, Vec & x, const Vec & wc, const Vec & wm, const Vec & tm, const Vec & td,
 		  double lambda, const Vec & roughness, int maxIter = 200, bool verbose = false ){ //ALLOW_PYTHON_THREADS
 
-  uint nData = b.size();
-  uint nModel = x.size();
-  uint nConst = C.rows();
+    uint nData = b.size();
+    uint nModel = x.size();
+    uint nConst = C.rows();
 
   if ( S.rows() != nData )  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
   if ( S.cols() != nModel ) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
@@ -46,6 +46,9 @@ int solveCGLSCDWWhtrans( const Mat & S, const CMatrix & C, const Vec & dWeight,
   if ( td.size() != nData ) std::cerr << "td.size() != nData " << td.size() << " / " << nData << std::endl;
   if ( roughness.size() != nConst ) std::cerr << "roughness.size != nConst " << roughness.size() << " / " << nConst << std::endl;
 
+    
+
+  
 //Ch  Vec cdx( transMult( C, Vec( wc * wc * ( C * Vec( wm * deltaX ) ) ) ) * wm * lambda ); // nModel
   Vec cdx( transMult( C, Vec( wc * roughness ) ) * wm * lambda ); // nModel
   Vec z( ( b - S * Vec( x / tm ) * td ) * dWeight); // nData

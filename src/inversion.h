@@ -584,10 +584,10 @@ public:
     inline double chi2() const { return phiD_ / data_.size(); }
 
     /*! Return last absolute RMS misfit */
-  inline double absrms() const { return rms( data_, response_); }
+    inline double absrms() const { return rms( data_, response_); }
 
     /*! Return last relative RMS misfit */
-  inline double relrms() const { return rrms( data_, response_) * 100.; }
+    inline double relrms() const { return rrms( data_, response_) * 100.; }
 
     /*! Start with linear interpolation, followed by quadratic fit if linesearch parameter tau is lower than 0.03. Tries to return values between 0.03 and 1 */
     double linesearch( const Vec & modelNew, const Vec & responseNew ) const {

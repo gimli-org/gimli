@@ -75,7 +75,7 @@ void Region::init_() {
     startDefault_   = 1.0;
     ownsTrans_ = true;
 
-    transString_    = "Lin";
+    transString_    = "Log";
     tM_ = new Trans < RVector >;
 }
 
