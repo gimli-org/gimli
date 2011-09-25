@@ -481,32 +481,49 @@ public:
     virtual ~CumulativeTrans( ) { }
 
     virtual Vec trans( const Vec & a ) const {
-        Vec tmp;
-        //std::cout << "CumulativeTrans::Trans" << std::endl;
+//         Vec tmp;
+//         //std::cout << "CumulativeTrans::Trans" << std::endl;
+//         for ( uint i = 0; i < transVec_.size(); i ++ ){
+//             Vec ap( a, bounds_[ i ].first, bounds_[ i ].second );
+//             //std::cout << i << " " << bounds_[ i ].first << ": " << bounds_[ i ].second << std::endl;
+// //              std::cout << tmp << std::endl;
+//             tmp = cat( tmp, transVec_[ i ]->trans( ap ) );
+//           //  std::cout << tmp << std::endl;
+//         }
+//         return tmp;
+        Vec tmp( a.size() );
         for ( uint i = 0; i < transVec_.size(); i ++ ){
-            Vec ap( a, bounds_[ i ].first, bounds_[ i ].second );
-            //std::cout << i << " " << bounds_[ i ].first << ": " << bounds_[ i ].second << std::endl;
-//              std::cout << tmp << std::endl;
-            tmp = cat( tmp, transVec_[ i ]->trans( ap ) );
-          //  std::cout << tmp << std::endl;
+            tmp.setVal( transVec_[ i ]->trans( a(bounds_[ i ].first, bounds_[ i ].second) ),
+                        bounds_[ i ].first, bounds_[ i ].second );
         }
         return tmp;
     }
 
     virtual Vec invTrans( const Vec & a ) const {
-        Vec tmp;
+        Vec tmp( a.size() );
         for ( uint i = 0; i < transVec_.size(); i ++ ){
-            Vec ap( a, bounds_[ i ].first, bounds_[ i ].second );
-            tmp = cat( tmp, transVec_[ i ]->invTrans( ap ) );
+            tmp.setVal( transVec_[ i ]->invTrans( a(bounds_[ i ].first, bounds_[ i ].second) ),
+                        bounds_[ i ].first, bounds_[ i ].second );
         }
         return tmp;
+//         Vec tmp;
+//         for ( uint i = 0; i < transVec_.size(); i ++ ){
+//             Vec ap( a, bounds_[ i ].first, bounds_[ i ].second );
+//             tmp = cat( tmp, transVec_[ i ]->invTrans( ap ) );
+//         }
+//         return tmp;
     }
 
     virtual Vec deriv( const Vec & a ) const {
-        Vec tmp;
+//         Vec tmp;
+//         for ( uint i = 0; i < transVec_.size(); i ++ ){
+//             Vec ap( a, bounds_[ i ].first, bounds_[ i ].second );
+//             tmp = cat( tmp, transVec_[ i ]->deriv( ap ) );
+//         }
+        Vec tmp( a.size() );
         for ( uint i = 0; i < transVec_.size(); i ++ ){
-            Vec ap( a, bounds_[ i ].first, bounds_[ i ].second );
-            tmp = cat( tmp, transVec_[ i ]->deriv( ap ) );
+            tmp.setVal( transVec_[ i ]->deriv( a(bounds_[ i ].first, bounds_[ i ].second) ),
+                        bounds_[ i ].first, bounds_[ i ].second );
         }
         return tmp;
     }
