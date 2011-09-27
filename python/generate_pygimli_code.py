@@ -135,7 +135,7 @@ def generate( defined_symbols ):
         os.name = 'mingw'
         gccxmlpath = settings.gccxml_path.replace('\\', '\\\\') + '\\\\gccxml.exe'
     else:
-        gccxmlpath = settings.gccxml_paths
+        gccxmlpath = settings.gccxml_path
         
     mb = module_builder.module_builder_t( [xml_cached_fc]
                                         , gccxml_path   = gccxmlpath
