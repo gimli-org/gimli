@@ -1,16 +1,25 @@
+In this directory all Python related things are located, i.e.:
+- the pygimli library (python bindings of libgimli) itself in pygimli
+- python tools directly linked to pygimli and therefore located in subdirectories of pygimli
+- tests for pygimli located in tests
+- ready python-based applications located in apps
+- build scripts for building the needed tools (gccxml,pygccxml,pyplusplus,boost) in buildScripts
+
+This directory should be added to the PYTHONPATH variable to call it from anywhere.
+
 To build pygimli run 
 
 sh build.sh
 
-
 If something goes wrong (probably):
 
 check for: 
-	- valid gimli library
+	- valid gimli library in mingw (Win) or src/.libs (Linux)
 	- gccxml, pygccxml, py++ installation
 		There is an installation script in buildScripts/buildTollChain.sh. 
 		If you want to install gccxml, please delete old installations and sources.
-		Best way seems calling the beformentioned script with prefix path as of the same order as your gimli path 
+		Best way seems calling the aforementioned script with the prefix path
+		as the same directory level as your gimli path 
 		e.g.:
 		sh buildScripts/buildToolChain.sh ../../../
 	- boost: as needed for gimli too	 
