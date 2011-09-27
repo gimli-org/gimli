@@ -63,7 +63,7 @@ def Mesh_str( self ):
     return "Mesh: Nodes: " + str( self.nodeCount() ) + " Cells: " + str( self.cellCount() ) + " Boundaries: " + str( self.boundaryCount() )
 
 def Data_str( self ):
-    return "Data: Electrodes: " + str( self.electrodeCount() ) + " data: " + str( self.size() )
+    return "Data: Sensors: " + str( self.sensorCount() ) + " data: " + str( self.size() )
 
 _pygimli_.RVector3.__str__ = RVector3_str
 _pygimli_.RVector.__str__ = RVector_str

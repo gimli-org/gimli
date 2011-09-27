@@ -12,7 +12,7 @@
 
 #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "gimli (python build)"
-        #define PACKAGE_VERSION "0.7.0"
+        #define PACKAGE_VERSION "0.8.0"
         #define PACKAGE_BUGREPORT "carsten@resistivity.net"
 #endif // PACKAGE_NAME
 
@@ -107,14 +107,8 @@ namespace pyplusplus{ namespace aliases{
 #include "vectortemplates.h"
 
 //#include "ttdijkstramodelling.h"
-// #include "datamap.h"
-// #include "bert.h"
-// #include "bertMisc.h"
-// #include "bertJacobian.h"
-// #include "electrode.h"
 // #include "inversionRollalong.h"
 // #include "eameshwrapper.h"
-// #include "dcfemmodelling.h"
 // #include "matrixTemplates.h"
 // #include "stlvector.h"
 
