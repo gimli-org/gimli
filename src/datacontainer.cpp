@@ -27,11 +27,19 @@ namespace GIMLI{
 
 DataContainer::DataContainer( ){
     initDefaults();
+    //std::cout << "DataContainer( ){" << std::endl;
 }
 
 DataContainer::DataContainer( const std::string & fileName ){
     initDefaults();
     this->load( fileName );
+    //std::cout << "DataContainer( const std::string & fileName ){" << std::endl;
+}
+
+DataContainer::DataContainer( const DataContainer & data ){
+    initDefaults();
+    this->copy_( data );
+    //std::cout << "DataContainer( const DataContainer & data ){" << std::endl;
 }
 
 DataContainer::~DataContainer( ){
@@ -39,15 +47,11 @@ DataContainer::~DataContainer( ){
     clear();
 }
 
-DataContainer::DataContainer( const DataContainer & data ){
-    initDefaults();
-    this->copy_( data );
-}
-
 DataContainer & DataContainer::operator = ( const DataContainer & data ){
     if ( this != & data ){
         this->copy_( data );
     }
+    //std::cout << "DataContainer = " << std::endl;
     return * this;
 }
 
@@ -88,6 +92,8 @@ void DataContainer::copy_( const DataContainer & data ){
     clear();
 
     topoPoints_ = data.additionalPoints();
+    
+    sensorPoints_= data.sensorPositions();
 
     uint nData = data.size();
 
@@ -159,7 +165,7 @@ int DataContainer::load( const std::string & fileName ){
     inputFormatStringSensors_.clear();
     for ( uint i = 0; i < format.size(); i ++ ) inputFormatStringSensors_ += format[ i ] + " ";
 
-    //** read electrodes
+    //** read sensor
     for ( int i = 0; i < nSensors; i ++ ){
         row = getNonEmptyRow( file );
         if ( row.empty() ) {
@@ -266,10 +272,10 @@ int DataContainer::load( const std::string & fileName ){
  
 // 	    std::cout << min( it->second ) <<  " " << max( it->second ) << std::endl;
 
-	    //std::cout << "Insert translated:-" << tT_[ it->first ] << "-" << it->second.size() << std::endl;
+//std::cout << "Insert translated:-" << tT_[ it->first ] << "-" << it->second.size() << std::endl;
             dataMap_[ translateAlias( it->first ) ] = it->second * scale;
         } else {
-            //std::cout << "Insert:-" <<  it->first << "-" << it->second.size() << std::endl;
+//std::cout << "Insert:-" <<  it->first << "-" << it->second.size() << std::endl;
             dataMap_[ it->first ] = it->second;
         }
     }
