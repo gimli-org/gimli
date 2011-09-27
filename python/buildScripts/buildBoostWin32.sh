@@ -36,10 +36,8 @@ pushd $BOOST_SRC_DIR
 	fi
 
 	# if you experience bjam complains something like founding no python
-	# edit ./tools/v2/build/tools/python.jam:486
-	# edit ./tools/build/v2/tools/python.jam:486
-	# and remove quotes to python-cmd = $(python-cmd) ;
-	# i.e., python-cmd = \"$(python-cmd)\" ;    -->  python-cmd = $(python-cmd) ;
+	# edit ./tools/build/v2/tools/python.jam:486 (comment out line to disable quotation adding)
+	# edit ./tools/build/v2/tools/python-config.jam:12 (add 2.7 2.6 2.5) but not necessary
 
 	./bootstrap.sh --prefix=$DISTDIR --with-bjam=./bjam.exe --with-toolset=gcc \
 		--with-python-root=$PYTHON_ROOT --with-libraries=python,system,thread,regex
