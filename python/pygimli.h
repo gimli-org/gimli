@@ -23,34 +23,9 @@
 
 namespace GIMLI{
 
-#define DEFINE_PY_VEC_OPERATOR__( OP )                      \
-    inline RVector operator OP ( const RVector & a, const RVector & b ){ \
-			RVector c( a );	c OP##=b; return c; } 				\
-    inline RVector operator OP ( const RVector & a, double v ){ \
-			RVector b( a );	b OP##=v; return b; } 				\
-    inline RVector operator OP ( double v, const RVector & a ){ \
-			RVector b( a );						\
-    for ( uint i = 0; i < b.size(); i ++ ) b[ i ] = v OP b[i]; return b; } \
-
-//DEFINE_PY_VEC_OPERATOR__( + )
-//DEFINE_PY_VEC_OPERATOR__( - )
-//DEFINE_PY_VEC_OPERATOR__( * )
-//DEFINE_PY_VEC_OPERATOR__( / )
-#undef DEFINE_PY_VEC_OPERATOR__
-
-//** Explicit instantiation
-//    template class Vector< double >;
-    //template class Pos< double >;
-   // template class Matrix<  double >;
-
- //   template double sum( const RVector & v );
-  //  template double min( const RVector & v );
-  //  template double max( const RVector & v );
-
-    //inline double sum_GILsave__( const RVector & v ){
-     //   std::cout << "�berladenes sum " << std::endl;
-      //  return sum( v );
-   // }
+	template class Vector< double >;
+    template class Vector< Complex >;
+    template class Vector< int >;
 
     inline void ___instantiation___(){
         sizeof( int * );
@@ -59,6 +34,12 @@ namespace GIMLI{
         sizeof( long unsigned int * );
         sizeof( long unsigned int & );
         sizeof( long unsigned int  );
+		sizeof( long long unsigned int * );
+        sizeof( long long unsigned int & );
+        sizeof( long long unsigned int  );
+		sizeof( long long int * );
+        sizeof( long long int & );
+        sizeof( long long int  );
         sizeof( double * );
         sizeof( double );
         sizeof( double & );
@@ -76,7 +57,7 @@ namespace pyplusplus{ namespace aliases{
 //    typedef GIMLI::Matrix< double >                 RMatrix;
 
     //typedef std::vector< double >                   stdVectorR;
-    //typedef std::vector< int >                      stdVectorI;
+    typedef std::vector< int >                        stdVectorI;
     //typedef std::vector< std::complex< double > >   stdVectorC;
 
     //typedef std::vector< std::string > stdVectorString;
