@@ -61,7 +61,7 @@ int numberOfCPU(){
     nprocs_max = sysconf(_SC_NPROCESSORS_CONF);
 
     if ( nprocs_max < 1 ) {
-        std::cerr << "Could not determine number of CPUs configured:" << strerror (errno) << std::endl;
+        std::cerr << "Could not determine number of CPUs configured:" << std::strerror (errno) << std::endl;
     }
 #else
     std::cerr << "Could not determine number of CPUs (!_SC_NPROCESSORS_ONLN)" << std::endl;

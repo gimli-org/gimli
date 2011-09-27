@@ -1,3 +1,5 @@
+Installation directory for Windows systems using MinGW compiler
+
 Check for valid boost installation
 		sh pygimli/buildScripts/buildBoostWin32.sh ../../
 		
@@ -5,8 +7,11 @@ Check for valid boost installation
 		
 To build open Code::Block (testet with: 10.05 )
 
-- File/Open ... libgimli.cbp
-- Build/Build (CTRL-F9)
+- File/Open ... libgimli.cbp (codeblock project)
+- Build/Build (CTRL-F9) builds the library (libgimli) itself
+
+There are other codeblock projects for the individual applications
+and several of these can be summarized in a workspace.
 
 ------------------------------------------------------------
 ------------------------------------------------------------
