@@ -1,0 +1,103 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+This program is part of pygimli
+Visit http://www.resistivity.net for further information or the latest version.
+"""
+
+import sys
+
+# for system call
+from os import system, path
+
+try:
+    import pygimli as g
+    import pygimli.mplviewer
+    from pygimli.viewer import *
+
+except ImportError:
+    sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
+    sys.exit( 1 )
+
+def main( argv ):
+    from optparse import OptionParser
+
+    parser = OptionParser( "usage: %prog [options] mesh" )
+    parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
+                            , help="be verbose", default=False )
+    parser.add_option("-o", "--output", dest="outFileName",
+                            help="filename for the resulting mesh", metavar="File" )
+    parser.add_option("-p", "--paramesh", dest="paraMesh",
+                            help="name for reference parameter mesh", metavar="File", default='' )
+    (options, args) = parser.parse_args()
+
+    if options.verbose:
+        print options, args
+
+    if len( args ) == 0:
+        parser.print_help()
+        print "Please add a mesh or model name."
+        sys.exit( 2 )
+    else:
+        meshname = args[ 0 ];
+
+    mesh = g.Mesh( meshname )
+    
+    if options.verbose:
+        print "input mesh:", mesh
+        print "nModel(input):",
+        for m in g.unique( g.sort( mesh.cellMarker() ) ):
+            print m
+
+    if len( options.paraMesh ) == 0:
+        print "no reference mesh given"
+        sys.exit(0)
+
+    refParaIn = g.Mesh( options.paraMesh )
+    refPara = g.Mesh()
+    refPara.createH2Mesh( refParaIn )
+    refModel = g.unique( g.sort( refPara.cellMarker() ) )
+    if options.verbose:
+        print "reference mesh:", refPara
+        print "nModel(ref):", len( refModel ), refModel[ 0] , refModel[1], refModel[2], '...', refModel[-1]
+    
+    swatch = g.Stopwatch( True )
+    lastTime = 0
+    for c in mesh.cells():
+        cell = refPara.findCell( c.center(), False )
+        
+        if swatch.duration() - lastTime > 1:
+            print "\r", c.id()
+            lastTime = swatch.duration()
+        
+        if cell is not None:
+            c.setMarker( cell.marker() )
+        else:
+            # set background
+            c.setMarker( -1 )
+
+    newModel = g.unique( g.sort( mesh.cellMarker() ) )
+    
+    if options.verbose:
+        print "convert:", swatch.duration()
+        print "nModel(out):", len( newModel ), newModel[ 0 ], newModel[ 1 ], newModel[ 2 ], ' ... ' , newModel[ -1 ]
+        print "diff should be 1(background)", len( newModel ) -len( refModel )
+
+    missing = g.stdVectorI()
+    missingMesh = g.Mesh()
+    for i in refModel:
+        if i-1 not in newModel:
+            for c in refPara.findCellByMarker( i-1 ):
+                missing.append( c.id() )
+    print len( missing ), missing
+    
+    missingMesh.createMeshByCellIdx( refPara, missing );
+    missingMesh.exportVTK( 'missing' )
+    
+    if options.outFileName:
+        mesh.save( options.outFileName )
+        if options.verbose:
+            print "wrote: ", options.outFileName
+
+if __name__ == "__main__":
+    main( sys.argv[ 1: ] )
