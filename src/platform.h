@@ -63,9 +63,8 @@ inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */
  */
 
 namespace GIMLI{
-    int numberOfCPU();
+    DLLEXPORT int numberOfCPU();
 }
-//DLLEXPORT int numberOfCPU();
 
 #if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) )
 // #include <ieeefp.h>
