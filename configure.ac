@@ -17,7 +17,7 @@ AC_DEFINE(SVN_REVISION, "SVNVERSION", [SVN Revision])
 #     AC_CONFIG_FILES([file...])
 #     AC_OUTPUT
 
-AC_INIT( [gimli], 0.7.0-SVNVERSION, [carsten@resistivity.net] )
+AC_INIT( [gimli], 0.8.0-SVNVERSION, [carsten@resistivity.net] )
 
 GIMLI_MAJOR_VERSION=0
 GIMLI_MINOR_VERSION=7
