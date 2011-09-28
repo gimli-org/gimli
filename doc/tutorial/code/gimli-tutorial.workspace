@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="GIMLI Tutorial">
+		<Project filename="dc1d\dc1d.cbp" active="1" />
+		<Project filename="polyfit\polyfit.cbp" />
+		<Project filename="enhanced\enhanced.cbp" />
+		<Project filename="joint\jointinv.cbp" />
+	</Workspace>
+</CodeBlocks_workspace_file>
