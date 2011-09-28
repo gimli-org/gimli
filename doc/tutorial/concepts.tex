@@ -1,6 +1,6 @@
 \section{General concepts using 1D DC resistivity inversion}\label{sec:dc1d}
 \subsection{Smooth inversion}\label{sec:dc1dsmooth}
-{\em Example file dc1dsmooth.cpp in the directory doc/tutorial/code/dc1d.}\\
+{\em Example file \file{dc1dsmooth.cpp} in the directory \file{doc/tutorial/code/dc1d}.}\\
 Part of the GIMLi library are several electromagnetic 1d forward operators.
 For direct current resistivity there is a semi-analytical solution using infinite sums that are approximated by Ghosh filters. 
 The resulting function calculates the apparent resistivity of any array for a given resistivity and thickness vector.
@@ -16,11 +16,10 @@ For the first we first define a thickness vector and create a mesh using the fun
 The the forward operator is initialized with the data.
 
 \begin{lstlisting}[language=C++]
-    DataContainer data( dataFile ); //! read data file    
-    double maxDep = DCParaDepth( data ); //! max. depth from 1d sensitivity
-    RVector thk( nlay - 1, maxDep / ( nlay - 1 ) ); //! equidist. thickness
-    Mesh mesh( createMesh1D( nlay ) );   //! create 1d mesh
-    DC1dRhoModelling f( mesh, data, thk ); //! initialise forward operator
+    RMatrix abmnr; loadMatrixCol( abmnr, dataFile ); //! read data
+    RVector ab2 = abmnr[0], mn2 = abmnr[1], rhoa = abmnr[2]; //! 3 columns
+    RVector thk( nlay-1, max(ab2) / 2 / ( nlay - 1 ) ); //! const. thickn.
+    DC1dRhoModelling f( thk, ab2, mn2 ); //! initialise forward operator
 \end{lstlisting}
 
 Note that the mesh generation can also be done automatically using another constructor.
@@ -79,12 +78,11 @@ However, if we apply the $\chi^2$-optimization we obtain a value of $\lambda=15.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Block inversion}\label{sec:dc1dblock}
-{\em Example file dc1dblock.cpp in the directory doc/tutorial/code/dc1d.}\\
+{\em Example file \file{dc1dblock.cpp} in the directory \file{doc/tutorial/code/dc1d}.}\\
 Alternatively, we might invert for a block model with unknown layer thickness and resistivity.
 We change the mesh generation accordingly and use the forward operator \lstinline|DC1dModelling|:
 \begin{lstlisting}[language=C++]
-    Mesh mesh( createMesh1DBlock( nlay ) );
-    DC1dModelling f( mesh, data, nlay, false );
+    DC1dModelling f( nlay, ab2, mn2 );
 \end{lstlisting}
 
 \lstinline|createMesh1DBlock| creates a block model with two regions\footnote{With a second argument \lstinline|createMesh1DBlock| can create a block model with thickness and several parameters for a multi-parameter block inversion.}.
@@ -99,21 +97,31 @@ We first define different transformation functions for thickness and resistivity
     f.region( 1 )->setTransModel( transRho );
 \end{lstlisting}
 
-Both regions are a 1d meshes.
-By default, the constraint type for 1/2/3 dimensional meshes is smoothness, e.g. neighboring model cells are assumed to show small changes.
-In order to apply a Marquardt type inversion, we set the constraint type to zero, i.e. minimum length (0th order smoothness). Furthermore a local regularisation scheme is forced\footnote{A local regularisation scheme disabled the reference model and makes the line search only depending on $\Phi_d$.}.
+For block discretisations, the starting model can have a great influence on the results.
+We choose the median of the apparent resistivities and a constant thickness derived from the current spread as starting values.
 \begin{lstlisting}[language=C++]
-    f.region( 0 )->setConstraintType( 0 );
-    f.region( 1 )->setConstraintType( 0 );
-    inv.setLocalRegularization( true ); //! Marquardt method
+    double paraDepth = max( ab2 ) / 3;		
+    f.region( 0 )->setStartValue( paraDepth / nlay / 2.0 );
+    f.region( 1 )->setStartValue( median( rhoa ) );
 \end{lstlisting}
 
-The choice of appropriate regularisation parameters is somewhat more complicated since the result strongly depends on the starting model and the preceding models \citep{guentherdiss}.
-Very often a cooling scheme is used, i.e. the regularisation parameter is decreased successively.
+For block inversion a scheme after \cite{marquardt}, i.e. a local damping of the changing without interaction of the model parameters and a decreasing regularisation strength is favourable.
+\begin{lstlisting}[language=C++]
+    inv.setMarquardtScheme( 0.9 ); //! local damping with decreasing lambda
+\end{lstlisting}
+
+The latter could also be achieved by \begin{enumerate}
+	\item setting the constraint type to zero (damping) by \lstinline|inv.setConstraintType(0)|
+	\item switching to local regularization by \lstinline|inv.setLocalRecularization(true)|
+	\item defining the lambda decreasing factor by \lstinline|inv.setLambdaDecrease(0.9)|
+\end{enumerate}
+
+%The choice of appropriate regularisation parameters is somewhat more complicated since the result strongly depends on the starting model and the preceding models \citep{guentherdiss}.
 %The latter can be done by \lstinline|inv.setLambdaDecrease( factor );|
 
-With the default value we obtain a data fit slightly below the error estimate.
-The model resulting from the default $\lambda=20$ (shown in Figure~\ref{fig:dc1dblock-resres}a) clearly shows the four layers. Some parameters are overestimated and some are underestimated.
+With the default regularization strength $\lambda=20$ we obtain a data fit slightly below the error estimate.
+The model (Fig.~\ref{fig:dc1dblock-resres}a) clearly shows the four layers (blue) close to the synthetic model (red).
+%Some parameters are overestimated and some are underestimated.
 
 \begin{figure}[htbp]
 \centering\includegraphics[width=0.7\textwidth]{dc1dblock-resres}\\[-3ex]
@@ -158,7 +166,7 @@ Similarly, we can obtain the resolution kernels also for the smooth inversion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Structural information}\label{sec:dc1dstruct}
-{\em Example file dc1dsmooth-struct.cpp in the directory doc/tutorial/code/dc1d.}\\
+{\em Example file \file{dc1dsmooth-struct.cpp} in the directory \file{doc/tutorial/code/dc1d}.}\\
 Assume we know the ground water table at 4\,m from a well.
 Although we know nothing about the parameters, this structural information should be incorporated into the model.
 We create a thickness vector of constant 0.5\,m. 
@@ -166,9 +174,7 @@ The first 8 model cells are located above the water table, so the 8th boundary c
 Therefore we set a marker different from zero (default) after creating the mesh
 \begin{lstlisting}
     //! variant 1: set mesh (region) marker
-    RVector thk( nlay - 1, 0.5 );
-    Mesh mesh( createMesh1D( nlay ) );
-    mesh.boundary( 8 ).setMarker( 1 );
+    f.mesh()->boundary( 8 ).setMarker( 1 );
 \end{lstlisting}
 This causes the boundary between layer 8 and 9 being disregarded, the corresponding $w^c_8$ is zero and allows for arbitrary jumps in the otherwise smoothed model.
 Figure~\ref{fig:dc1dsmooth-struct} shows the result, at 4\,m the resistivity jumps from a few hundreds down to almost 10.
@@ -182,25 +188,25 @@ Figure~\ref{fig:dc1dsmooth-struct} shows the result, at 4\,m the resistivity jum
 
 Note that we can set the weight to zero also directly, either as a property of the inversion
 \begin{lstlisting}
-    //! variant 2: application a boundary control vector to inversion
-    RVector bc( mesh.boundaryCount(), 1.0 );
+    //! variant 2: application of a constraint weight vector to inversion
+    RVector bc( inv.constraintsCount(), 1.0 );
     bc[ 6 ] = 0.0;
-    inv.setCWeight( bc );
+    inv.setCWeight( bc ); 
 \end{lstlisting}
 or the (only existing) region.
 \begin{lstlisting}
-    //! variant 3: application of boundary control vector to region
-    RVector bc( f.regionManager().boundaryCount(), 1.0 );
+    //! variant 3: application of a boundary control vector to region
+    RVector bc( f.regionManager().constraintCount(), 1.0 );
     bc[ 7 ] = 0.0;
-    f.region( 0 )->setBoundaryControl( bc );
+    f.region( 0 )->setConstraintsWeight( bc );
 \end{lstlisting}
-Finally, in 2d/3d inverse problems we do not set the weight by hand.
+Of course, in 2d/3d inverse problems we do not set the weight by hand.
 Instead, we put an additional polygon (2d) or surface (3d) with a marker $\neq 0$ into the PLC before the mesh generation.
 By doing so, arbitrary boundaries can be incorporated as known boundaries.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Regions}\label{sec:dc1dregion}
-{\em Example file dc1dsmooth-region.cpp in the directory doc/tutorial/code/dc1d.}\\
+{\em Example file \file{dc1dsmooth-region.cpp} in the directory \file{doc/tutorial/code/dc1d}.}\\
 In the latter sections we already used regions, a default mesh contains a region 0 and a block mesh contains a region 0 for the thicknesses and a region 1 for the parameters.
 However, even one mesh can contain several regions, e.g. for different geological units.
 
@@ -209,10 +215,14 @@ In 2d or 3d we would, similar to the constraints above, just put a region marker
 
 Here we set the markers of the cells $\geq8$ to the region marker 1.
 \begin{lstlisting}
-    for( size_t i=8; i<mesh.cellCount(); i++ ) mesh.cell(i).setMarker(1);
+    Mesh * mesh = f.mesh();
+    mesh->boundary( 8 ).setMarker( 1 );
+    for ( size_t i = 8; i < mesh->cellCount(); i++ ) 
+        mesh->cell( i ).setMarker( 1 );
 \end{lstlisting}
 
-Now we have two decoupled regions. The inversion result is identical to the one in Figure~\ref{fig:dc1dsmooth-struct}.
+Now we have two regions that are decoupled automatically.
+The inversion result is identical to the one in Figure~\ref{fig:dc1dsmooth-struct}.
 However we can now define the properties of each region individually.
 For instance, we might know the resistivities to lie between 80 and 800\,$\Omega$m above and between 10 and 100\,$\Omega$m below.
 Consequently we define two transformations and apply it to the regions.
