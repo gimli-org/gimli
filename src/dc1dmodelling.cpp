@@ -67,7 +67,7 @@ namespace GIMLI {
 DC1dModelling::DC1dModelling( size_t nlayers, RVector & ab2, RVector & mn2, bool verbose )
     : ModellingBase( verbose ), nlayers_( nlayers ){
     init_();
-    setMesh( createMesh1D( nlayers, 1 ) );
+    setMesh( createMesh1DBlock( nlayers ) );
     am_ = ab2 - mn2;
     an_ = ab2 + mn2;
     bm_ = ab2 + mn2;
@@ -79,7 +79,7 @@ DC1dModelling::DC1dModelling( size_t nlayers, RVector & ab2, RVector & mn2, bool
 DC1dModelling::DC1dModelling( size_t nlayers, RVector & am, RVector & bm, RVector & an, RVector & bn, bool verbose )
     : ModellingBase( verbose ), nlayers_( nlayers ), am_( am ), an_( an ), bm_( bm ), bn_( bn ){
     init_();
-    setMesh( createMesh1D( nlayers, 1 ) );
+    setMesh( createMesh1DBlock( nlayers ) );
     k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ );        
     meanrhoa_ = 100.0; //*** hack   
 }
