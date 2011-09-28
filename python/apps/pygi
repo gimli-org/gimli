@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+'''
+pygimli -- graphical interface to BERT @ GIMLi
+Copyright (C) 2009-2011 Carsten Rücker <carsten@resistivty.net>
+Copyright (C) 2009-2011 Thomas Günther <thomas@resistivty.net>
+
+License - noch nicht entschieden -
+'''
+
+import sys, os
+
+class WorkSpace:
+    activeResource = None;
+    def __init__(self):
+        None
+
+if not hasattr(sys, "frozen"):
+    # These checks are only necessary in a non-frozen environment, i.e. we
+    # skip these checks when run from a py2exe-fied application
+    try:
+        import wxversion
+        wxversion.ensureMinimal("2.8-unicode", optionsRequired = False )
+    except:
+        pass
+    try:
+        import pybertlib
+    except ImportError:
+        sys.stderr.write('''ERROR: cannot import the library 'pybertlib'.''')
+        sys.exit( 1 )
+
+def start():
+    from pybertlib import main
+    from optparse import OptionParser
+    parser = OptionParser()
+    #parser.add_option( "-f", "--file", dest="filename",
+                       #help="write report to FILE", metavar="FILE")
+    #parser.add_option("-q", "--quiet",
+                        #action="store_false", dest="verbose", default=True,
+                        #help="don't print status messages to stdout")
+
+    (options, args) = parser.parse_args()
+#    print options, args
+    #options, args = config.ApplicationOptionParser().parse_args()
+    #app = application.Application(options, args)
+    #if options.profile:
+    #    import cProfile
+    #    cProfile.runctx('app.start()', globals(), locals(), filename='.profile')
+    #else:
+    global ws
+    ws = WorkSpace()
+
+    app = main.PyBERTApp( options, args, ws )
+    app.start()
+    
+if __name__ == '__main__':
+    start()
