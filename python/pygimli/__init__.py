@@ -100,13 +100,13 @@ _pygimli_.stdVectorUL.__add__ = __ADD
 def __getVal( self, idx ):
     if type( idx ) is slice:
         if idx.step is None:
-            return self( idx.start, idx.stop )
+            return self( long( idx.start ), long( idx.stop ) )
         else:
             "not yet implemented"
 
     if idx == -1: idx = len( self )-1
     
-    return self.getVal( idx )
+    return self.getVal( long( idx ) )
 # def __getVal( ... )
     
 def __setVal( self, idx, val ):

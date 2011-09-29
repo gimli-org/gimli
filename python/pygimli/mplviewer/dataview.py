@@ -219,7 +219,7 @@ def createPseudoPosition( data, pseudotype = Pseudotype.unknown, scaleX = False 
         Create pseudo x position and separation for the dataset
         ScaleX: scales the x positions regarding the real electrode positions
     '''
-    nElecs = data.electrodeCount()
+    nElecs = data.sensorCount()
     
     if pseudotype == Pseudotype.DipoleDipole or \
        pseudotype == Pseudotype.WennerBeta:
@@ -272,15 +272,15 @@ def createPseudoPosition( data, pseudotype = Pseudotype.unknown, scaleX = False 
 # def createPseudoPosition( ... )
 
 def createDataMatrix( data, values, pseudotype = Pseudotype.unknown ):
-    nElecs = data.electrodeCount();
+    nElecs = data.sensorCount();
     nData  = data.size();
 
     x, sep = createPseudoPosition( data, pseudotype )
 
-    Sidx = asarray( g.unique( g.sort( sep ) ) )
+    Sidx = g.unique( g.sort( sep ) )
     #print Sidx
     ux = g.unique( g.sort( x ) )
-    Xidx = asarray( ux )
+    Xidx = ux
 
     #print Sidx
     #print ux
@@ -308,9 +308,9 @@ def createDataMatrix( data, values, pseudotype = Pseudotype.unknown ):
     #mat = mat.reshape( len( Sidx ), xLength )
 
     for i in range( 0, nData ):
-        mat[ Sidx.index( sep[ i ] ), Xidx.index( x[ i ] ) + xOffset ] = values[ i ]
+        mat[ g.find( Sidx == sep[ i ] ), g.find( Xidx == x[ i ] ) + xOffset ] = values[ i ]
         for j in range( 1, dataWidthInMatrix ):
-            mat[ Sidx.index( sep[ i ] ), Xidx.index( x[ i ] ) + xOffset + j ] = values[ i ]
+            mat[ g.find( Sidx == sep[ i ] ), g.find( Xidx == x[ i ] ) + xOffset + j ] = values[ i ]
 
     print "datasize:", data.size(), "shown: ", len( mat[~mat.mask] ) / dataWidthInMatrix
     notShown = ( data.size() - len( mat[~mat.mask] ) / dataWidthInMatrix )
@@ -399,6 +399,10 @@ def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = N
 
             def levelName( l ):
                 suff = ""
+                print l
+                print matSidx
+                print matSidx[ 0 ]
+                print matSidx[ l ]
                 if matSidx[ l ] < 0:
                     suff = "'"
                 return 'dd $' + str( int( abs( matSidx[ l ] ) ) - 1 ) + suff +'$'
