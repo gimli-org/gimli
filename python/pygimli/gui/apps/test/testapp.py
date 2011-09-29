@@ -2,24 +2,21 @@
 
 import wx
 
-from pybertlib.base import AppResource
+from pygimli.gui.base import AppResource
 
 try:
-    from pybertlib.wxmpl import AppResourceWxMPL
+    from pygimli.gui.wxmpl import AppResourceWxMPL
 except Exception as e:
 	print 'Import of wxmpl failed: ', e
 
 try:
-    from pybertlib.wxvtk import vtk, AppResourceWxVTK
+    from pygimli.gui.wxvtk import vtk, AppResourceWxVTK
 except:
     pass
 
-try:
-    from pybertlib.wxpg import wxpg, HAVE_PROPGRID, wxPropGridWrapper
-except:
-    pass
+from pygimli.gui.resources import loadIcon, MakeDisabledBitmap
 
-from pybertlib.resources import loadIcon, MakeDisabledBitmap
+HAVE_PROPGRID = False
 
 class TestVTKApp( AppResourceWxVTK ):
     """

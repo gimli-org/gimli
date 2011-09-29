@@ -26,8 +26,8 @@ except ImportError:
 except Exception as e:
     print e
     
-from pybertlib.resources import loadIcon
-from pybertlib.controls import ResourceTree
+from pygimli.gui.resources import loadIcon
+from pygimli.gui.controls import ResourceTree
 
 def err( name ):
     raise Exception( name )
@@ -178,7 +178,7 @@ class CustomStatusBar( wx.StatusBar ):
         self.statusCounter_ = counter;
 
 
-class PyBERTMainFrame( wx.Frame ):
+class PyGIMLIMainFrame( wx.Frame ):
 
     def __init__( self, ws ):
 
@@ -192,7 +192,7 @@ class PyBERTMainFrame( wx.Frame ):
         self.onIdleCmdQueue_ = list()
 
         self.xrc = xrc.EmptyXmlResource()
-        xrcfile= 'pybertMainFrame.xrc'
+        xrcfile= 'pygimliMainFrame.xrc'
 
         if hasattr( sys, "frozen"):
             # frozen indicate windows.exe run??
@@ -207,7 +207,7 @@ class PyBERTMainFrame( wx.Frame ):
 
         self.xrc.Load( mainXRCFile )
 
-        self.PostCreate( self.xrc.LoadFrame( None, 'PyBERTMainFrame' ) )
+        self.PostCreate( self.xrc.LoadFrame( None, 'PyGIMLIMainFrame' ) )
         
         self.idleProzessPanel = self.xrc.LoadFrame( None, 'IdleProzessPanel' )
         self.SetMinSize( ( 800, 600 ) )
@@ -534,11 +534,11 @@ class PyBERTMainFrame( wx.Frame ):
 
     def onAbout( self, event ):
         '''
-            Show informations about pybert
+            Show informations about pygimli
         '''
         from wx.lib.wordwrap import wordwrap
         info = wx.AboutDialogInfo()
-        info.Name = "PyBert"
+        info.Name = "PyGI"
         info.Version = "0.9.0"
         info.Copyright = unicode("(C) 2011 Carsten Rücker and Thomas Günther", 'utf8')
         print wx.PlatformInfo[1:]
@@ -582,7 +582,7 @@ class PyBERTMainFrame( wx.Frame ):
                 #print p, "is not a plugin"
                 continue
 
-            pluginName = "pybertlib.apps." + p
+            pluginName = "pygimli.gui.apps." + p
             print "installing: ", pluginName
             importCmd = "import " + pluginName + " as plugin"
 
@@ -673,7 +673,7 @@ class PyBERTMainFrame( wx.Frame ):
 from pygimli.utils import IPCServer, IPCThreadedTCPRequestHandler
 import threading
 
-class PyBERTApp( wx.App ):
+class PyGIMLIApp( wx.App ):
     def __init__( self, options, args, ws ):
         print options, args
         self.options = options
@@ -687,9 +687,9 @@ class PyBERTApp( wx.App ):
         #print globPath
         #print os.path.abspath( globPath )
 
-        logFile = 'pybert.log'
+        logFile = 'pygi.log'
 
-        self.mainFrame = PyBERTMainFrame( ws )
+        self.mainFrame = PyGIMLIMainFrame( ws )
         #self.mainFrame.redirectOutput( logFile )
 
         self.SetTopWindow( self.mainFrame )

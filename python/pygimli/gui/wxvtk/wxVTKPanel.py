@@ -36,7 +36,7 @@ class wxVTKPanel( wxVTKRenderWindowInteractor ):
         else:
             return handle
 
-from pybertlib.base import AppResource 
+from pygimli.gui.base import AppResource 
 
 class AppResourceWxVTK( AppResource, wxVTKPanel ):
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):

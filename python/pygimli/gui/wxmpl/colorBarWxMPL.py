@@ -3,8 +3,8 @@
 import wx
 import pygimli as g
 
-from pybertlib.resources import loadXRC
-from pybertlib.base import ManagedProperties
+from pygimli.gui.resources import loadXRC
+from pygimli.gui.base import ManagedProperties
 
 import matplotlib as mpl
 from matplotlib.colors import Colormap
@@ -17,7 +17,7 @@ class ColorBarWxMPL( ManagedProperties ):
         self.active = False
         
     def createPropertyPanel( self, panel = None ):
-        xml = loadXRC( 'pybertlib' )
+        xml = loadXRC( 'pygimli' )
         propertyPanel = None
         if panel:
             propertyPanel = xml.LoadPanel( panel, 'piColorBarWxMPL' )
