@@ -310,6 +310,16 @@ template < class ValueType > std::ostream & operator << ( std::ostream & str, co
   return str;
 }
 
+inline bool posLesserX( const RVector3 & a, const RVector3 & b ){ 
+    if ( a[0] == b[0] ) {
+        if ( a[1] == b[1] ) {
+            return a[2] < b[2];
+        } else {
+            return a[1] < b[1];
+        }
+    } else return a[0] < b[0]; 
+}
+
 } // namespace GIMLI;
 
 #endif // _GIMLI_POS__H

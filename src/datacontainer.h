@@ -100,6 +100,9 @@ public:
     /*! Return the complete data map as read-only map */
     inline const std::map< std::string, RVector > & dataMap() const { return dataMap_; }
     
+    /*! Return the complete data descriptions map */
+    inline const std::map< std::string, std::string > & dataDescription() const { return dataDescription_; }
+    
     // START Sensor related section
     /*! Set the positions for all sensors. */
     inline void setSensorPositions( const std::vector< RVector3 > & sensors ) { sensorPoints_ = sensors; }
@@ -153,6 +156,11 @@ public:
      */
     inline const std::string & formatStringSensors( ) const { return inputFormatStringSensors_; }
     
+    /*!
+     * Sort all sensors regarding their x-coordinate
+     */
+    void sortSensorsX();
+    
     // END Sensor related section
     
     /*! Return the additional points */
@@ -177,7 +185,7 @@ public:
     inline const std::string & inputFormatString() const { return inputFormatString_; }
 
     /*! Return reference to the token translator map. */
-    inline std::map< std::string, std::string > & tokenTranslator() { return tT_; }
+    inline const std::map< std::string, std::string > & tokenTranslator() const { return tT_; }
 
     /*! Loads the data from a file. See save for details on the fileformat.*/
     virtual int load( const std::string & fileName );

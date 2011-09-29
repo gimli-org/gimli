@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-pygimli -- graphical interface to BERT @ GIMLi
+pygi -- graphical interface to GIMLi
 Copyright (C) 2009-2011 Carsten Rücker <carsten@resistivty.net>
 Copyright (C) 2009-2011 Thomas Günther <thomas@resistivty.net>
 
@@ -25,13 +25,13 @@ if not hasattr(sys, "frozen"):
     except:
         pass
     try:
-        import pybertlib
+        import pygimli
     except ImportError:
-        sys.stderr.write('''ERROR: cannot import the library 'pybertlib'.''')
+        sys.stderr.write('''ERROR: cannot import the library 'pygimli'.''')
         sys.exit( 1 )
 
 def start():
-    from pybertlib import main
+    from pygimli.gui import main
     from optparse import OptionParser
     parser = OptionParser()
     #parser.add_option( "-f", "--file", dest="filename",
