@@ -73,6 +73,7 @@
 									<object class="wxStaticText" name="m_staticText5">
 										<size>50,-1</size>
 										<label>nTicks</label>
+										<wrap>-1</wrap>
 									</object>
 								</object>
 								<object class="sizeritem">
@@ -92,6 +93,7 @@
 									<object class="wxStaticText" name="m_staticText2412">
 										<size>60,-1</size>
 										<label>nColors</label>
+										<wrap>-1</wrap>
 									</object>
 								</object>
 							</object>
@@ -119,6 +121,7 @@
 									<object class="wxStaticText" name="m_staticText2413">
 										<size>60,-1</size>
 										<label>Col. min</label>
+										<wrap>-1</wrap>
 									</object>
 								</object>
 								<object class="sizeritem">
@@ -138,6 +141,7 @@
 									<object class="wxStaticText" name="m_staticText24111">
 										<size>60,-1</size>
 										<label>Col. max</label>
+										<wrap>-1</wrap>
 									</object>
 								</object>
 							</object>
@@ -181,6 +185,7 @@
 									<border>5</border>
 									<object class="wxStaticText" name="m_staticText4">
 										<label>Label</label>
+										<wrap>-1</wrap>
 									</object>
 								</object>
 								<object class="sizeritem">
