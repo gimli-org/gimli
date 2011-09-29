@@ -92,16 +92,21 @@ void DataContainer::copy_( const DataContainer & data ){
     clear();
 
     topoPoints_ = data.additionalPoints();
-    
     sensorPoints_= data.sensorPositions();
 
-    uint nData = data.size();
-
-    this->resize( nData );
+    this->resize( data.size() );
 
     inputFormatString_ = data.inputFormatString();
-
+    inputFormatStringSensors_ = data.formatStringSensors( );
+    dataSensorIdx_  = sensorIdx(); 
+    
     dataMap_ = data.dataMap();
+   
+    dataDescription_ = data.dataDescription();  
+    
+    tT_ = data.tokenTranslator();
+    
+    sensorIndexOnFileFromOne_ = sensorIndexOnFileFromOne();
 }
 
 long DataContainer::createSensor( const RVector3 & pos, double tolerance ){
@@ -474,8 +479,16 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
 std::string DataContainer::tokenList() const {
     std::string tokenList;
     for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
-        tokenList += it->first;
-        tokenList += " ";
+        if ( isSensorIndex( it->first ) ){
+            tokenList += it->first;
+            tokenList += " ";
+        }
+    }
+    for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        if ( !isSensorIndex( it->first ) ){
+            tokenList += it->first;
+            tokenList += " ";
+        }
     }
     return tokenList;
 }
@@ -626,6 +639,32 @@ void DataContainer::removeUnusedSensors(){
             }
         }
     }    
+}
+
+bool idPosLesserX( const std::pair < RVector3, Index > & a, const std::pair < RVector3, Index > & b ){
+    return posLesserX( a.first, b.first );
+}
+    
+void DataContainer::sortSensorsX(){
+    std::vector < std::pair < RVector3, Index > > permSens( sensorCount() );
+    for ( uint i = 0; i < sensorCount(); i ++ ) permSens[ i ] = std::pair< RVector3, Index >( sensorPoints_[ i ], i );
+            
+    std::sort( permSens.begin(), permSens.end(), idPosLesserX );
+    
+    IndexArray perm( sensorCount() );
+    for ( uint i = 0; i < perm.size(); i ++ ){
+        sensorPoints_[ i ] = permSens[ i ].first;
+        perm[ permSens[ i ].second ] = i;
+    }
+    
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        if ( isSensorIndex( it->first ) ){
+            for ( uint i = 0; i < it->second.size(); i ++ ){
+                ssize_t id = it->second[ i ];
+                if ( id > -1 && id < (ssize_t)perm.size() ) it->second[ i ] = perm[ id ];
+            }
+        }
+    }   
 }
 
 void DataContainer::markInvalidSensorIndices(){
