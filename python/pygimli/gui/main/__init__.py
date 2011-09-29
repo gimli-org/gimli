@@ -3,4 +3,4 @@
 	main gui application
 '''
 
-from pybertMainFrame import PyBERTApp
+from pygimliMainFrame import PyGIMLIApp

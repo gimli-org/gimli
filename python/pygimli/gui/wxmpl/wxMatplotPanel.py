@@ -14,12 +14,12 @@ matplotlib.use( 'WXAgg' )
 #from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NaviToolBar2
 #from matplotlib.backend_bases import NavigationToolbar2
 
-from pybertlib.resources import loadIcon
-from pybertlib.resources import MakeDisabledBitmap
-from pybertlib.patches import PatchedAuiToolBar
-from pybertlib.controls import ListCtrlComboPopupControl
-from pybertlib.base import AppResource
-from pybertlib.base import AppResource
+from pygimli.gui.resources import loadIcon
+from pygimli.gui.resources import MakeDisabledBitmap
+from pygimli.gui.patches import PatchedAuiToolBar
+from pygimli.gui.controls import ListCtrlComboPopupControl
+from pygimli.gui.base import AppResource
+from pygimli.gui.base import AppResource
 
 from pygimli import Stopwatch
 

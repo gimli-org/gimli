@@ -51,7 +51,7 @@ def start():
     global ws
     ws = WorkSpace()
 
-    app = main.PyBERTApp( options, args, ws )
+    app = main.PyGIMLIApp( options, args, ws )
     app.start()
     
 if __name__ == '__main__':
