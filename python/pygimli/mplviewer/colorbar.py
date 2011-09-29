@@ -25,12 +25,14 @@ blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap',cdict,256)
 
 
 def findAndMaskBestClim( dataIn, cMin = None, cMax = None, dropColLimitsPerc = 5, logScale = True ):
-    if type( dataIn ) == g.RVector:
-        data = asarray( dataIn )
-    elif type( dataIn ) == list:
-        data = array( dataIn )
-    else:
-        data = array( dataIn )
+    data = np.asarray( dataIn )
+    
+    #if type( dataIn ) == g.RVector:
+        #data = np.asarray( dataIn )
+    #elif type( dataIn ) == list:
+        #data = np.array( dataIn )
+    #else:
+        #data = array( dataIn )
 
     if ( min( data ) < 0 ):
         logScale = False;
