@@ -95,6 +95,21 @@ public:
         this->setForwardOperator( forward );
     }
 
+    /*! Intermediate constructor including transforms and data transformation function */
+    Inversion( const Vec & data, ModellingBase & forward,
+                Trans< Vec > & transData, bool verbose = true, bool dosave = false )
+    : InversionBase< ModelValType >(), verbose_( verbose ), dosave_( dosave ), saveModelHistory_( dosave ) {
+        //** set: default values
+        this->init_();
+        //** set: paraDomain init: modelWeight_, constraintsWeight_, ConstraintMatrix
+        //** init: data_
+        this->setData( data );
+        //** init: model_, modelRef, response_
+        this->setForwardOperator( forward );
+
+        this->setTransData( transData );
+    }
+
     /*! Full constructor including transforms. transData -- data transformation function; transModel -- model transformation function */
     Inversion( const Vec & data, ModellingBase & forward,
                 Trans< Vec > & transData, Trans< Vec > & transModel,

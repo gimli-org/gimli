@@ -62,15 +62,17 @@ protected:
     size_t nlay_;
 };
 
+/*! Magnetotellurics (MT) 1D modelling */
 /*! variant with fixed thickness vector (for smooth (Occam) inversion) */
+/*! MT1dRhoModelling( RVector periods, thk [, verbose] ) */
 class DLLEXPORT MT1dRhoModelling : public MT1dModelling {
 public:
     MT1dRhoModelling( Mesh & mesh, const RVector & periods, const RVector & thk, bool verbose = false )
         : MT1dModelling( mesh, periods, thk.size(), verbose ), thk_( thk ) {
     }
 
-//    MT1dRhoModelling( RVector & periods, RVector & thk, bool verbose = false )
-//        : MT1dModelling( createMesh1D( thk.size() + 1 ), periods, thk.size(), verbose ), thk_( thk ) { }
+    MT1dRhoModelling( RVector & periods, RVector & thk, bool verbose = false )
+        : MT1dModelling( periods, thk.size(), verbose ), thk_( thk ) { }
 
     virtual ~MT1dRhoModelling() { }
 
@@ -82,8 +84,8 @@ protected:
     RVector thk_;
 };
 
-/*! Frequency domain electromagnetic (FDEM) sounding */
-/*! using a block discretization */
+/*! Frequency domain electromagnetic (FDEM) sounding using a block discretization */
+/*! FDEM1dModelling( nlay, RVector freq, coilspacing [, elevation, verbose ] ) */
 class DLLEXPORT FDEM1dModelling : public ModellingBase {
 public:
     //! default constructor creating a block model
@@ -103,6 +105,7 @@ public:
     void init();
     RVector freeAirSolution() { return freeAirSolution_; }
     
+    RVector calc( const RVector & rho, const RVector & thk );
     virtual RVector response( const RVector & model );
 
 protected:
@@ -116,8 +119,27 @@ protected:
 //class MaxMinModelling:FDEMModelling
 //110,220,440,880,1760,3520,7040,14080,28160,56320
 
+/*! Frequency Domain EM 1d modelling with predefined thickness vector */
+/*! FDEM1dThoModelling( RVector thk, freq, coilspacing[, double elevation, verbose] ) */
+/*! FDEM1dThoModelling( RVector thk, freq, double coilspacing[, elevation, verbose] ) */
+class DLLEXPORT FDEM1dRhoModelling : public FDEM1dModelling {
+    //! default constructor creating a block model
+    FDEM1dRhoModelling( RVector & thk, const RVector & freq, const RVector & coilspacing, double z = 0.0, bool verbose = false )
+        : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { }
+    FDEM1dRhoModelling( RVector & thk, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false )
+        : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { }
+    
+    virtual ~FDEM1dRhoModelling() { }
+    
+    RVector response( const RVector & model ){ return calc( model, thk_ ); }
+
+protected:
+    RVector & thk_;
+};
+
 /*! Magnetic Resonance Sounding (MRS) modelling */
 /*! classical variant using a fixed parameterization */
+/*! MRSModelling( [mesh,] RMatrix KR, KI [, verbose] ) */
 class DLLEXPORT MRSModelling : public ModellingBase {
 public:
     //! constructor using a predefined mesh and real/imag matrix
@@ -139,6 +161,7 @@ protected:
 
 /*! Magnetic Resonance Sounding (MRS) modelling */
 /*! non-classical variant using a block model using mapping to classical varian */
+/*! MRS1dBlockModelling( int nlay, RMatrix KR, KI, RVector zvec [, verbose] ) */
 class DLLEXPORT MRS1dBlockModelling : public MRSModelling{
 public:
     //! constructor using mesh, real/imag matrix and zvector;
