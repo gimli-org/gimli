@@ -98,19 +98,19 @@ Complex btp( double u, double f, RVector rho, RVector d){
     double mu0 = 4e-7 * PI;
     Complex c(0.0, mu0 * 2. * PI * f);
 
-    Complex b( std::sqrt( c / rho[nl-1] + u*u) );
+    Complex b( std::sqrt( c / rho[nl-1] + u*u ) );
     if( nl > 1 ) {
         for( int nn=nl-2; nn>=0 ; nn-- ){
             Complex alpha( std::sqrt( c/rho[ nn ] + u*u ) );
-            Complex cth( std::exp( alpha * ( d[ nn ] * 2.0 ) ) );
-            cth=( Complex( 1.0 ) - cth )/( cth + 1.0 );
-            b=( b + alpha * cth )/( cth * b / alpha + 1.0 );
+            Complex cth( std::exp( alpha * d[ nn ] * -2.0 ) );
+            cth=( Complex( 1.0 ) - cth ) / ( cth + 1.0 );
+            b=( alpha * cth + b ) / ( cth * b / alpha + 1.0 );
         }
     }
     return b;
 }
 
-RVector FDEM1dModelling::response( const RVector & model ){ 
+RVector FDEM1dModelling::calc( const RVector & rho, const RVector & thk ){ 
     double hankelJ0[100]={
         2.89878288E-07,3.64935144E-07,4.59426126E-07,5.78383226E-07,
         7.28141338E-07,9.16675639E-07,1.15402625E-06,1.45283298E-06,
@@ -138,7 +138,6 @@ RVector FDEM1dModelling::response( const RVector & model ){
         1.56774609E-06,-9.89180896E-07,6.24130948E-07,-3.93800005E-07,
         2.48471005E-07,-1.56774605E-07,9.89180888E-08,-6.24130946E-08};
     //** extract resistivity and thickness
-    RVector thk( model, 0, nlay_ - 1 ), rho( model, nlay_ - 1, 2 * nlay_ - 1 );
     RVector inph( nfr_ ), outph( nfr_ );//** inphase and quadrature components
     int nc = 100, nc0 = 60; // number of coefficients
     RVector::ValType q=0.1*std::log(10.0);
@@ -160,6 +159,10 @@ RVector FDEM1dModelling::response( const RVector & model ){
     return cat( inph, outph );
 }
 
+RVector FDEM1dModelling::response( const RVector & model ){ 
+    RVector thk( model, 0, nlay_ - 1 ), rho( model, nlay_ - 1, 2 * nlay_ - 1 );
+    return calc( rho, thk );
+}
 
 RVector MRSModelling::response( const RVector & model ) { 
     RVector outreal( *KR_ * model );

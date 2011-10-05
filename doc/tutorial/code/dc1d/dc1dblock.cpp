@@ -7,8 +7,6 @@
 
 #include <gimli.h>
 #include <dc1dmodelling.h>
-#include <meshgenerators.h>
-#include <mesh.h>
 #include <inversion.h>
 #include <optionmap.h>
 #include <modellingbase.h>
@@ -46,8 +44,6 @@ int main( int argc, char *argv [] )
     RVector mn2(  abmnr[ 1 ] );        //! second column
     RVector rhoa( abmnr[ 2 ] );        //! third column
 
-    size_t nModel( 2 * nlay - 1 );
-    Mesh mesh( createMesh1DBlock( nlay ) );
     DC1dModelling f( nlay, ab2, mn2 );
 
     /*! Transformations: log for app. resisivity and thickness, logLU for resistivity */
@@ -88,6 +84,7 @@ int main( int argc, char *argv [] )
     save( model, "model.vec" );
 
     if ( doResolution ) {
+        size_t nModel( 2 * nlay - 1 );
         RVector resolution( nModel );
         RVector resMDiag ( nModel );
         RMatrix resM;
