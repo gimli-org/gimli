@@ -647,7 +647,11 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
     bool binary = false;
     file.precision( 14 );
     file << "# vtk DataFile Version 3.0" << std::endl;
-    file << "created by " << WHERE_AM_I << std::endl;
+    if ( commentString_.size() > 0 ) {
+        file << commentString_ << std::endl;
+    } else {
+        file << "created by " << WHERE_AM_I << std::endl;
+    }
     if ( binary ){
         file << "BINARY" << std::endl;
     } else {
@@ -852,6 +856,8 @@ void Mesh::importVTK( const std::string & fbody ) {
     std::fstream file; openInFile( fbody.substr( 0, fbody.rfind( ".vtk") ) + ".vtk", &file );
 
     std::vector < std::string > row ;
+    getline( file, commentString_ ); //** vtk version line
+    getline( file, commentString_ ); //** comment line
     while ( !file.eof() ){
         row = getRowSubstrings( file );
       //  std::cout << row.size() << std::endl;

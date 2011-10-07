@@ -381,6 +381,10 @@ public:
     void setExportDataMap( const std::map< std::string, RVector > & eMap ) { exportDataMap_ = eMap; }
 
     void clearExportData( );
+    
+    void setCommentString( std::string & commentString ) { commentString_ = commentString; }
+    
+    std::string & commentString( ){ return commentString_; }
 
     //** probably deprecated
     void mapCellAttributes( const std::map < float, float > & aMap );
@@ -478,6 +482,8 @@ protected:
     mutable KDTreeWrapper * tree_;
 
     bool oldTet10NumberingStyle_;
+    
+    std::string commentString_;
 
 }; // class Mesh
 

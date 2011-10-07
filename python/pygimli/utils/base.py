@@ -77,17 +77,18 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True):
             pz[2*i+2] = z[i+1]
 
 #    P.cla()
+    li = []
     if islog:
-        P.semilogx( px, pz )
+        li = P.semilogx( px, pz )
     else:        
-        P.plot( px, pz )
+        li = P.plot( px, pz )
     P.grid(which='both')
     P.xlim( ( N.min(x) * 0.9, N.max(x) * 1.1 ) )
     P.ylim( ( max(z1) * 1.15 , 0. ) )
     P.xlabel(xlab)
     P.ylabel(zlab)
     P.show()
-    return
+    return li
 
 def showStitchedModels(models, x=None, cmin=None, cmax=None,
                        islog=True, title=None):

@@ -15,40 +15,65 @@ except ImportError:
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
     sys.exit( 1 )
 
-from pybertlib.importer import importData
+#from pybertlib.importer import importData
+
+def merge2data( Data1, Data2, sensorTokens = ['a','b','m','n','s','g'] ):
+    ''' merge two data containers '''
+    # check if sensors are identical,
+    # if not build unified sensor list and remap sensor indices
+    senseq = ( Data1.sensorCount() == Data2.sensorCount() )
+    #    if senseq:
+        
+    if not senseq:
+        return None
+    
+    # now the sensors are the same and we just have to paste the data vectors
+    Data = g.DataContainer( )
+    for tok in sensorTokens:
+        if Data1.dataMap().has_key( tok ):
+            Data.registerSensorIndex( tok )
+        
+    Data.setSensorPositions( Data1.sensorPositions() )
+    Data.resize( Data1.size() + Data2.size() )
+    
+    for key in Data1.dataMap().keys():
+        if Data2.dataMap().has_key( key ):
+            Data.set( key, g.cat( Data1.get( key ), Data2.get( key ) ) )
+                    
+    return Data
 
 def merge( N1, N2, snap = 0.1 ):
     '''
-        Merge two datacontainer into one, by copying the electrode positions and datapoints from N2 into N1.\n
-        Double electrode positions will be reused and snaped to a grid with gridsize snap
+        Merge two datacontainer into one, by copying the sensor positions and datapoints from N2 into N1.\n
+        Double sensor positions will be reused and snapped to a grid with gridsize snap
     '''
     data = g.DataContainer( N1 );
     data.resize( N1.size() + N2.size() )
 
-    newElecs = range( N2.electrodeCount() )
+    newSensors = range( N2.sensorCount() )
     
     for e in N2.electrodes():
-        newElecs[ e.id() ] = data.createElectrode( e.pos(), snap ).id();
+        newSensors[ e.id() ] = data.createSensor( e.pos(), snap ).id();
         #print e.id(), newElecs[ e.id() ]
             
     for i in range( 0, N2.size() ):
         if N2( i ).a() > -1:
-            eaID = newElecs[ N2( i ).a() ]
+            eaID = newSensors[ N2( i ).a() ]
         else:
             eaID = -1
 
         if N2( i ).b() > -1:
-            ebID = newElecs[ N2( i ).b() ]
+            ebID = newSensors[ N2( i ).b() ]
         else:
             ebID = -1;
 
         if N2( i ).m() > -1:
-            emID = newElecs[ N2( i ).m() ]
+            emID = newSensors[ N2( i ).m() ]
         else:
             emID = -1;
 
         if N2( i ).n() > -1:
-            enID = newElecs[ N2( i ).n() ]
+            enID = newSensors[ N2( i ).n() ]
         else:
             enID = -1
 

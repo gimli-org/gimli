@@ -539,7 +539,7 @@ RVector * DataContainer::ref( const std::string & token ){
 }
 
 void DataContainer::setDataDescription( const std::string & token, const std::string & description ){
-    std::cout << "( this->exists( token ) ) " << this->exists( token ) << std::endl;
+//    std::cout << "( this->exists( token ) ) " << this->exists( token ) << std::endl;
     if ( this->exists( token ) ){
         dataDescription_[ token ] = description;
     }
