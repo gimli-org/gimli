@@ -164,7 +164,13 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
         if coverage:
             cov = g.RVector()
             try:
-                g.load( cov, coverage )
+                if coverage in mesh.exportDataMap().keys():
+                    cov = mesh.exportData( coverage )
+#                    if coverage.find( 'log10' ) > 0:
+#                        cov = g.exp10( cov )
+                else:
+                    g.load( cov, coverage )
+                print "coverage min/max:", min(cov), max(cov)
             except Exception as e:
                 print e
                 "coverage not found, ignoring"
@@ -482,7 +488,7 @@ def main( argv ):
         #axes = fig.add_axes([0.023, 0.25, 0.967, 0.1])
 
         #Horizontal
-        axes = fig.add_axes([0.035, 0.6, 0.93, 0.15]); orientation='horizontal'
+        axes = fig.add_axes([0.035, 0.6, 0.93, 0.05]); orientation='horizontal'
 
         # Vertical
         # axes = fig.add_axes([0.30, 0.02, 0.22, 0.96]); orientation='vertical'
