@@ -295,7 +295,7 @@ class PyGIMLIMainFrame( wx.Frame ):
                                         #| aui.AUI_TB_OVERFLOW)
 
         self.toolBar_.SetToolBitmapSize( wx.Size( 22, 22 ) )
-        tbquit = self.toolBar_.AddSimpleTool( wx.NewId(), "Quit", loadIcon( "application-exit.png" )
+        tbquit = self.toolBar_.AddSimpleTool( wx.NewId(), "Quit", loadIcon( "application-exit-16.png" )
                                             , "Quit application"
                                              )
         wx.EVT_TOOL( self, tbquit.GetId(), self.onMainQuit )

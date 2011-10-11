@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+
 import pygimli as g
+import pybert as b
 import pygimli.utils
 
 from numpy import arange, ndarray, array, ma
@@ -58,12 +60,12 @@ class DataShemeBase():
         self.nElectrodes_ = 0
         
     def createElectrodes( self, nElectrodes = 24, electrodeSpacing = 1 ):
-        self.data_ = g.DataContainer()
+        self.data_ = b.DataContainerERT()
 
         for i in range( nElectrodes ):
-            self.data_.createElectrode( g.RVector3( float( i ) * electrodeSpacing, 0.0 ) )
+            self.data_.createSensor( g.RVector3( float( i ) * electrodeSpacing, 0.0 ) )
 
-        self.nElectrodes_ = self.data_.electrodeCount()
+        self.nElectrodes_ = self.data_.sensorCount()
          
     def setInverse( self, inverse = False ):
         self.inverse_ = inverse
