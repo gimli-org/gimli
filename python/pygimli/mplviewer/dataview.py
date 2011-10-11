@@ -263,8 +263,8 @@ def createPseudoPosition( data, pseudotype = Pseudotype.unknown, scaleX = False 
     sep = g.RVector( sep )
         
     if scaleX:
-        x += data.electrodePositions()[ 0 ][ 0 ]
-        x *= data.electrodePositions()[ 0 ].distance( data.electrodePositions()[ 1 ] )
+        x += data.sensorPositions()[ 0 ][ 0 ]
+        x *= data.sensorPositions()[ 0 ].distance( data.sensorPositions()[ 1 ] )
         sep -= 1.
         sep *= -1.
             
@@ -447,9 +447,9 @@ def drawElectrodesAsMarker( ax, data ):
     elecsX = []
     elecsY = []
     
-    for i in range( len( data.electrodes() ) ):
-        elecsX.append( data.electrodes()[i].pos()[ 0 ] )
-        elecsY.append( data.electrodes()[i].pos()[ 1 ] )
+    for i in range( len( data.sensorPositions() ) ):
+        elecsX.append( data.sensorPositions()[i][ 0 ] )
+        elecsY.append( data.sensorPositions()[i][ 1 ] )
     
     ### strange crash here in my wirusXP vbox
     # for i, e in enumerate( data.electrodes() ):
@@ -469,7 +469,7 @@ def drawElectrodesAsMarker( ax, data ):
     # print "Mops"
     electrodeMarker, =  ax.plot( elecsX, elecsY, 'x', color = 'black', picker = 5. )
     
-    ax.set_xlim( [ data.electrodes()[0].pos()[0]-1., data.electrodes()[ len( data.electrodes() ) -1].pos()[0] + 1. ] )
+    ax.set_xlim( [ data.sensorPositions()[0][0]-1., data.sensorPositions()[ data.sensorCount() -1][0] + 1. ] )
     #print electrodeMarker
     return electrodeMarker
 # END def drawElectrodesAsMarker( ... )

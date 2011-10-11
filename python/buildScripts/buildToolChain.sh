@@ -22,7 +22,7 @@ echo "looking for python ..."
 if ( (python --version) );then
 	echo "... found, good"
 else
-	echo "need python2.6 installation"
+	echo "need python2.7 installation"
 	echo "get one from http://www.python.org/"
 	echo "if allready ensure python26 installation directory is in your PATH"
 	exit
@@ -91,7 +91,7 @@ fixGCCXML(){
 		#rm -rf test.h .test.log
     popd
 }
-#WORKING_PYGCC_REV=1842
+
 WORKING_PYGCC_REV=1856
 
 installPYGCCXML(){
@@ -116,8 +116,8 @@ installPYPLUSPLUS(){
     popd
 }
 
-installGCCXML
+#installGCCXML
 installPYGCCXML
 installPYPLUSPLUS
-fixGCCXML
-fixGCCXML
+#fixGCCXML
+#fixGCCXML
