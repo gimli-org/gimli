@@ -255,17 +255,16 @@ def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showC
             cols = patches.get_facecolor( )
             
             C = np.asarray( cov )
-            if ( max( cov ) > 1. ) | ( min( cov ) < 0. ): # not already (0,1) scaled
-                ( nn, hh ) = np.histogram( C, 50 )
-                nnn = nn.cumsum( axis = 0 ) / float( len( C ) )
-                print "min-max nnn ", min(nnn), max(nnn)
-                #mi = hh[ min( np.where( nnn > 0.02 )[0] ) ]
-                #ma = hh[ max( np.where( nnn < 0.4 )[0] ) ]
-                mi = hh[ min( np.where( nnn > 0.2 )[0] ) ]
-                ma = hh[ max( np.where( nnn < 0.7 )[0] ) ]
-                C = ( C - mi ) / ( ma - mi )
-                C[ np.where( C < 0 ) ] = 0.0
-                C[ np.where( C > 1 ) ] = 1.0
+            ( nn, hh ) = np.histogram( C, 50 )
+            nnn = nn.cumsum( axis = 0 ) / float( len( C ) )
+            print "min-max nnn ", min(nnn), max(nnn)
+            mi = hh[ min( np.where( nnn > 0.02 )[0] ) ]
+            ma = hh[ max( np.where( nnn < 0.4 )[0] ) ]
+            #mi = hh[ min( np.where( nnn > 0.2 )[0] ) ]
+            #ma = hh[ max( np.where( nnn < 0.7 )[0] ) ]
+            C = ( C - mi ) / ( ma - mi )
+            C[ np.where( C < 0 ) ] = 0.0
+            C[ np.where( C > 1 ) ] = 1.0
 
             # add alpha value to the color values
             cols[:,3 ] = C

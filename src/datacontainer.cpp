@@ -109,6 +109,37 @@ void DataContainer::copy_( const DataContainer & data ){
     sensorIndexOnFileFromOne_ = sensorIndexOnFileFromOne();
 }
 
+void DataContainer::add( const DataContainer & data, double snap ){
+    
+    Index start = this->size();
+    this->resize( this->size() + data.size() );
+
+    IndexArray perm( data.sensorCount(), 0 );
+    
+    //** merge sensor data
+    for ( uint i = 0; i < data.sensorCount(); i ++ ){
+        perm[ i ] = this->createSensor( data.sensorPositions()[ i ], snap );
+    }
+
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        //** permutate sensorindices
+        if ( isSensorIndex( it->first ) ){
+            RVector tmp( data.get( it->first ) );
+            for ( uint i = 0; i < tmp.size(); i ++ ){
+                ssize_t id = tmp[ i ];
+                if ( id > -1 && id < (ssize_t)perm.size() ) {
+                    it->second[ start + i ] = perm[ id ];
+                } else {
+                    it->second[ start + i ] = -1;
+                }
+            }
+        } else {
+        //** merge data fields
+            it->second.setVal( data.get( it->first ), start, -1);
+        }
+    }   
+}
+
 long DataContainer::createSensor( const RVector3 & pos, double tolerance ){
 
     long ret = -1;

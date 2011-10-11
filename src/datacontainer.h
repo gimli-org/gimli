@@ -98,6 +98,12 @@ public:
     /*! Return the complete data descriptions map */
     inline const std::map< std::string, std::string > & dataDescription() const { return dataDescription_; }
     
+    
+    /*!
+     * Add data to this DataContainer and snap new sensor positions by tolerance snap. Data fields from this data are preserved.
+     */
+    void add( const DataContainer & data, double snap = 1e-3 );
+    
     // START Sensor related section
     /*! Set the positions for all sensors. */
     inline void setSensorPositions( const std::vector< RVector3 > & sensors ) { sensorPoints_ = sensors; }
