@@ -17,74 +17,13 @@ except ImportError:
 
 #from pybertlib.importer import importData
 
-def merge2data( Data1, Data2, sensorTokens = ['a','b','m','n','s','g'] ):
-    ''' merge two data containers '''
-    # check if sensors are identical,
-    # if not build unified sensor list and remap sensor indices
-    senseq = ( Data1.sensorCount() == Data2.sensorCount() )
-    #    if senseq:
-        
-    if not senseq:
-        return None
-    
-    # now the sensors are the same and we just have to paste the data vectors
-    Data = g.DataContainer( )
-    for tok in sensorTokens:
-        if Data1.dataMap().has_key( tok ):
-            Data.registerSensorIndex( tok )
-        
-    Data.setSensorPositions( Data1.sensorPositions() )
-    Data.resize( Data1.size() + Data2.size() )
-    
-    for key in Data1.dataMap().keys():
-        if Data2.dataMap().has_key( key ):
-            Data.set( key, g.cat( Data1.get( key ), Data2.get( key ) ) )
-                    
-    return Data
-
 def merge( N1, N2, snap = 0.1 ):
     '''
         Merge two datacontainer into one, by copying the sensor positions and datapoints from N2 into N1.\n
         Double sensor positions will be reused and snapped to a grid with gridsize snap
     '''
     data = g.DataContainer( N1 );
-    data.resize( N1.size() + N2.size() )
-
-    newSensors = range( N2.sensorCount() )
-    
-    for e in N2.electrodes():
-        newSensors[ e.id() ] = data.createSensor( e.pos(), snap ).id();
-        #print e.id(), newElecs[ e.id() ]
-            
-    for i in range( 0, N2.size() ):
-        if N2( i ).a() > -1:
-            eaID = newSensors[ N2( i ).a() ]
-        else:
-            eaID = -1
-
-        if N2( i ).b() > -1:
-            ebID = newSensors[ N2( i ).b() ]
-        else:
-            ebID = -1;
-
-        if N2( i ).m() > -1:
-            emID = newSensors[ N2( i ).m() ]
-        else:
-            emID = -1;
-
-        if N2( i ).n() > -1:
-            enID = newSensors[ N2( i ).n() ]
-        else:
-            enID = -1
-
-        newid = N1.size() + i
-
-        data.createFourPointData( newid, eaID, ebID, emID, enID );
-
-    for key, val in N1.dataMap():
-        if key is not 'a' and key is not 'b' and key is not 'm' and key is not 'n':
-            data.set( key,    g.cat( N1( key ),    N2( key ) ) )
-
+    data.add( N2 )
     return data
 # def merge( ... )
     

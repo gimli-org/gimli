@@ -68,6 +68,19 @@ public:
         
         data.save( "test0.dat" );        
         
+        DataContainer data2( data );
+        data.add( data2 );
+        CPPUNIT_ASSERT( data.sensorCount() == data2.sensorCount() );
+        CPPUNIT_ASSERT( data.size()        == data2.size()*2 );
+        
+        DataContainer data3( data2 );
+        data3.setSensorPosition(0, RVector3( 0.5, .0, .0 ) );
+        data.add( data3 );
+        CPPUNIT_ASSERT( data.sensorCount() == data2.sensorCount()+1 );
+        CPPUNIT_ASSERT( data.size()        == data2.size()*3 );
+        
+        data.save( "test1.dat" );        
+        
     }   
     
     void testIO(){
