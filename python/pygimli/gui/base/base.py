@@ -513,10 +513,11 @@ class AppResource( ManagedProperties ):
                 if nb.GetSelection() != parentRendererPanel and parentRendererPanel > -1:
                     nb.SetSelection( parentRendererPanel )
 
-        self.activatePropertyPanel( active )
         if hasattr( self, 'getToolBar' ):
             self.activateToolBar_( self.getToolBar( self.parent ), active )
-
+            
+        self.activatePropertyPanel( active )
+        
         if self.active and self.dependencyChanged_:
             print "process due to activate", self
             self.process()
