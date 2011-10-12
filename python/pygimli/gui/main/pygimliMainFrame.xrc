@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
-	<object class="wxFrame" name="PyBERTMainFrame">
+	<object class="wxFrame" name="PyGIMLIMainFrame">
 		<style>wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL</style>
 		<size>1024,768</size>
-		<title>pyBERT</title>
+		<title>pyGI</title>
 		<object class="wxMenuBar" name="m_menubar1">
 			<label>MyMenuBar</label>
 			<object class="wxMenu" name="mbFile">
