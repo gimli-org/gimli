@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# taken from http://www.scipy.org/Matplotlib_figure_in_a_wx_panel
+# taken and modified from http://www.scipy.org/Matplotlib_figure_in_a_wx_panel
 
 import sys, os
 
@@ -11,8 +11,7 @@ import matplotlib
 #matplotlib.interactive( False )
 matplotlib.use( 'WXAgg' )
 
-#from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NaviToolBar2
-#from matplotlib.backend_bases import NavigationToolbar2
+import matplotlib.cbook as cbook
 
 from pygimli.gui.resources import loadIcon
 from pygimli.gui.resources import MakeDisabledBitmap
@@ -308,6 +307,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
 
     def __init__(self, panel, canvas, auiTarget = None):
         self.panel = panel
+        
         if not auiTarget:
             auiTarget = panel
 
@@ -379,8 +379,10 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
             #self.ToggleTool( self.CUSTOM_ASPECT_AUTO_ID, True )
 
 
-        self.AddSimpleTool( self.CUSTOM_PAGE_ZOOM_ID, 'Zoom axes', loadIcon( "page-zoom.png" )
+        self.AddSimpleTool( self.CUSTOM_PAGE_ZOOM_ID, 'Zoom axes', loadIcon( "zoom-select.png" )
                            , ' Left mouse button to select rectangle zoom area\n Middle mouse button to pan axes\n Right click to zoom out.', wx.ITEM_CHECK )
+        self.AddSimpleTool( self.CUSTOM_HOME_ID, 'Home', loadIcon( "zoom-original.png" )
+                           , 'Restore the original view, i.e., reset zoom to fit image' )
 
         self.AddSeparator()
         self.AddSimpleTool( self.CUSTOM_SAVE_IMAGE_ID, 'Save image', loadIcon( "my-image-save.png" )
@@ -388,7 +390,6 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
         #self.AddTool( self.CUSTOM_SAVE_IMAGE_ID, "Save image", loadIcon( "my-image-save.png" ), wx.NullBitmap
                         #, wx.ITEM_NORMAL, "Save image", "Save plot contents to file", None)
 
-       # wx.EVT_TOOL( self, self.CUSTOM_HOME_ID, self.onHome )
         #wx.EVT_TOOL( self, self.CUSTOM_PAN_LEFT_ID, self.onCustomPanLeft )
         #wx.EVT_TOOL( self, self.CUSTOM_PAN_RIGHT_ID, self.onCustomPanRight )
         wx.EVT_TOOL( self, self.CUSTOM_INC_CANVAS_WIDTH_ID, self.onIncCanvasWidth )
@@ -397,6 +398,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
         wx.EVT_TOOL( self, self.CUSTOM_ASPECT_AUTO_ID, self.onAspectAuto )
         wx.EVT_TOOL( self, self.CUSTOM_SAVE_IMAGE_ID, self.save )
         wx.EVT_TOOL( self, self.CUSTOM_PAGE_ZOOM_ID, self.onZoomButton )
+        wx.EVT_TOOL( self, self.CUSTOM_HOME_ID, self.onHome )
         #self.Bind( wx.EVT_TEXT, self.onCanvasWidthCombo, id=self.CUSTOM_CANVAS_WIDTH_COMBO_ID )
         #self.canvasComboBox.Bind( wx.EVT_TEXT, self.onCanvasWidthCombo )
 
@@ -405,30 +407,71 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
         self.mouseReleaseID_ = None
         self.buttonPressed_ = None
         self.rubberBander_ = MPLRubberBander( self.canvas )
+        
+        self.views_ = cbook.Stack()
+        self.positions_ = cbook.Stack()
 
     def onZoomButton( self, event ):
+        ''
+        'Zoom button is pressed'
+        ''
         if event.Checked():
             self.rubberBander_.start( zoomCallback = self.zoom, panCallback = self.pan )
         else:
             self.rubberBander_.stop( )
 
+    def onHome( self, event ):
+        ''
+        ' Home button is pressed '
+        ''
+        lims = self.views_.home()
+        if lims is not None:
+            for i, a in enumerate( self.canvas.figure.get_axes() ):
+                a.set_xlim( lims[ i ][ 0 ], lims[ i ][ 1 ] )
+                a.set_ylim( lims[ i ][ 2 ], lims[ i ][ 3 ] )
+                                
+        self.panel.onZoomChanged( )
+        self.panel.updateDrawOnIdle( )
+
     def zoom( self, selection ):
+        ''
+        ' zoom the current view'
+        ''
         # selection = "coordPixel(left,right), coordAxes(left,right), axes
+        
+        # push the current view to define home if stack is empty
+        if self.views_.empty(): self.push_current()
+        
         leX = selection[ 1 ][ 0 ]
         riX = selection[ 1 ][ 2 ]
         leY = selection[ 1 ][ 1 ]
         riY = selection[ 1 ][ 3 ]
         selection[ 2 ].set_xlim( ( min( leX, riX ), max( leX, riX  ) ) )
         selection[ 2 ].set_ylim( ( min( leY, riY ), max( leY, riY  ) ) )
+        
+        # store new view sizes
+        self.push_current()
+        
         self.panel.onZoomChanged( )
         self.panel.updateDrawOnIdle( )
 
     def pan( self, pan ):
+        ''
+        ' pan the current view'
+        ''
         # pan = "coordAxes(dx,dy), axes
+        
+        # push the current view to define home if stack is empty
+        if self.views_.empty(): self.push_current()
+        
         xlim = pan[ 1 ].get_xlim()
         ylim = pan[ 1 ].get_ylim()
         pan[ 1 ].set_xlim( ( xlim[ 0 ] - pan[0][0], xlim[ 1 ] - pan[0][0] ) );
         pan[ 1 ].set_ylim( ( ylim[ 0 ] - pan[0][1], ylim[ 1 ] - pan[0][1] ) );
+        
+        # store new view sizes
+        self.push_current()
+        
         self.panel.updateDrawOnIdle( )
 
     def onIncCanvasWidth( self, event ):
@@ -482,7 +525,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
         self.onCanvasWidthCombo()
 
     def setAspectAuto( self, val = True ):
-        print "setAspectAuto", val, self.aspectTool.GetState()
+        ' Set auto aspect '
         if val:
             #if self.aspectTool.GetState() is not aui.AUI_BUTTON_STATE_CHECKED:
             self.aspectTool.SetState( aui.AUI_BUTTON_STATE_CHECKED )
@@ -499,6 +542,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
         self.panel.updateDrawOnIdle()
 
     def onAspectAuto( self, event = None ):
+        ' on auto aspect clicked '
         axis  = self.panel.figure.get_axes()
         for a in axis:
             if event.Checked():
@@ -509,7 +553,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
         self.panel.updateDrawOnIdle()
 
     def save(self, evt):
-        # Fetch the required filename and file type.
+        ' Fetch the required filename and file type. '
         filetypes, exts, filter_index = self.canvas._get_imagesave_wildcards()
         print "filter_index", filter_index, filetypes
         default_file = "image"
@@ -536,6 +580,24 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
                 self.canvas.print_figure( os.path.join( dirname, basename + '.' + format), format=format)
             except Exception, e:
                 error_msg_wx(str(e))
+                
+    def push_current(self):
+        ''
+        '    Push the current view limits and position onto the stack'
+        ''
+        lims = []; pos = []
+        for a in self.canvas.figure.get_axes():
+            xmin, xmax = a.get_xlim()
+            ymin, ymax = a.get_ylim()
+            lims.append( (xmin, xmax, ymin, ymax) )
+            # Store both the original and modified positions
+            pos.append( (
+                    a.get_position(True).frozen(),
+                    a.get_position().frozen() ) )
+        self.views_.push(lims)
+        self.positions_.push(pos)
+        #self.set_history_buttons()
+    # def push_current(...)
 
 class wxMatplotPanelSimple( wx.Panel ):
     def __init__( self, renderPanel, color=None, dpi=None, **kwargs ):
