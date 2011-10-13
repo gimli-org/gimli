@@ -173,12 +173,12 @@ public:
         cols_ = S.cols();
         rows_ = S.rows();
 
-        std::vector< int > colPtr( S.vecColPtr() );
-        std::vector< int > rowIdx( S.vecRowIdx() );
+        IndexArray colPtr( S.vecColPtr() );
+        IndexArray rowIdx( S.vecRowIdx() );
         Vector < ValueType > vals( S.vecVals() );
 
-        for ( uint i = 0; i < S.size(); i++ ){
-            for ( int j = colPtr[ i ]; j < colPtr[ i + 1 ]; j ++ ){
+        for ( Index i = 0; i < S.size(); i++ ){
+            for ( Index j = colPtr[ i ]; j < colPtr[ i + 1 ]; j ++ ){
                 (*this)[ i ][ rowIdx[ j ] ] = vals[ j ];
             }
         }
@@ -207,22 +207,22 @@ public:
     inline const_iterator begin() const { return C_.begin(); }
     inline const_iterator end()   const { return C_.end(); }
 
-    void addToCol( uint id, const ElementMatrix < double > & A ){
-        for ( uint i = 0, imax = A.size(); i < imax; i++ ){
+    void addToCol( Index id, const ElementMatrix < double > & A ){
+        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
             (*this)[ A.idx( i ) ][ id ] += (ValueType) A.getVal( 0, i );
         }
     }
 
-    void addToRow( uint id, const ElementMatrix < double > & A ){
-        for ( uint i = 0, imax = A.size(); i < imax; i++ ){
+    void addToRow( Index id, const ElementMatrix < double > & A ){
+        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
             (*this)[ id ][ A.idx( i ) ] += (ValueType)A.getVal( 0, i );
         }
     }
 
     //SparseMatrix< T > & operator += ( const ElementMatrix < T > & A ){
     void operator += ( const ElementMatrix < double >& A ){
-        for ( uint i = 0, imax = A.size(); i < imax; i++ ){
-            for ( uint j = 0, jmax = A.size(); j < jmax; j++ ){
+        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
+            for ( Index j = 0, jmax = A.size(); j < jmax; j++ ){
                 (*this)[ A.idx( i ) ][ A.idx( j ) ] += (ValueType)A.getVal( i, j );
             }
         }
@@ -265,9 +265,9 @@ public:
 
     inline ValueType & val( const iterator & I ) { return (*I).second;  }
 
-    inline ValueType getVal( size_t i, size_t j ) { return (*this)[ i ][ j ]; }
+    inline ValueType getVal( IndexType i, IndexType j ) { return (*this)[ i ][ j ]; }
 
-    inline void setVal( size_t i, size_t j, const ValueType & val ) {
+    inline void setVal( IndexType i, IndexType j, const ValueType & val ) {
         if ( ( i >= 0 && i < rows_ ) && ( j >=0 && j < cols_ ) ) {
             (*this)[ i ][ j ] = val;
         } else {
@@ -278,7 +278,7 @@ public:
                               );
         }
     }
-    inline void addVal( size_t i, size_t j, const ValueType & val ) {
+    inline void addVal( IndexType i, IndexType j, const ValueType & val ) {
         if ( ( i >= 0 && i < rows_ ) && ( j >=0 && j < cols_ ) ) {
             (*this)[ i ][ j ] += val;
         } else {
@@ -316,7 +316,7 @@ public:
         setRows( (IndexType)max( vi ) + 1 );
         setCols( (IndexType)max( vj ) + 1 );
 
-        for ( uint i = 0; i < vi.size(); i ++ ){
+        for ( Index i = 0; i < vi.size(); i ++ ){
             (*this)[ vi[ i ] ][ vj[ i ] ] = vval[ i ];
         }
         return 1;
@@ -341,7 +341,7 @@ int load( SparseMapMatrix< ValueType, IndexType > & S, const std::string & fname
 
 /*! Scales a matrix A from left and right vectors such that A -> diag(l) * A * diag(r) */
 template< class Vec >
-void scaleMatrix ( SparseMapMatrix< double, uint > & S, const Vec & l, const Vec & r ) {
+void scaleMatrix ( SparseMapMatrix< double, Index > & S, const Vec & l, const Vec & r ) {
 
     if ( S.cols() != r.size() )
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.cols() )
@@ -350,7 +350,7 @@ void scaleMatrix ( SparseMapMatrix< double, uint > & S, const Vec & l, const Vec
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.rows() )
                                             + " != " + toStr( l.size() ) );
 
-    for ( SparseMapMatrix< double, uint >::iterator it = S.begin(); it != S.end(); it ++ ){
+    for ( SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++ ){
                 S.val( it ) *= l[ S.idx1( it ) ] * r[ S.idx2( it ) ];
 //       int i = S.idx1( it );
 //     int j = S.idx2( it );
@@ -361,7 +361,7 @@ void scaleMatrix ( SparseMapMatrix< double, uint > & S, const Vec & l, const Vec
 
 /*! Performs a rank 1 update of a matrix such that A -> A + u * v^T */
 template< class Vec >
-void rank1Update ( SparseMapMatrix< double, uint > & S, const Vec & u, const Vec & v ) {
+void rank1Update ( SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v ) {
 
     if ( S.cols() != v.size() )
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.cols() )
@@ -370,7 +370,7 @@ void rank1Update ( SparseMapMatrix< double, uint > & S, const Vec & u, const Vec
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.rows() )
                                 + " != " + toStr( u.size() ) );
 
-    for ( SparseMapMatrix< double, uint >::iterator it = S.begin(); it != S.end(); it ++ ){
+    for ( SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++ ){
         S.val( it ) += u[ S.idx1( it ) ] * v[ S.idx2( it ) ];
     }
     return;
@@ -457,7 +457,7 @@ public:
     }
 
     /*! Create Sparsematrix from c-arrays. Cant check for valid ranges, so please be carefull. */
-    SparseMatrix( uint dim, uint * colPtr, uint nVals, uint * rowIdx, ValueType * vals ){
+    SparseMatrix( uint dim, Index * colPtr, Index nVals, Index * rowIdx, ValueType * vals ){
         colPtr_.reserve( dim + 1);
         colPtr_.resize( dim + 1);
 
@@ -494,9 +494,9 @@ public:
     }
 
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__( OP, FUNCT ) \
-        void FUNCT( int i, int j, ValueType val ){ \
+        void FUNCT( Index i, Index j, ValueType val ){ \
             if ( ::fabs( val ) > TOLERANCE ){ \
-                for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){ \
+                for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){ \
                     if ( rowIdx_[ k ] == j ) { \
                         vals_[ k ] OP##= val; return; \
                     } \
@@ -523,15 +523,15 @@ public:
 
     SparseMatrix< ValueType > & operator += ( const ElementMatrix< double > & A ){
         if ( !valid_ ) SPARSE_NOT_VALID;
-        for ( int i = 0, imax = A.size(); i < imax; i++ ){
-            for ( int j = 0, jmax = A.size(); j < jmax; j++ ){
+        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
+            for ( Index j = 0, jmax = A.size(); j < jmax; j++ ){
                 addVal( A.idx( i ), A.idx( j ), A.getVal( i, j ) );
             }
         }
         return *this;
     }
 
-    void clean(){ for ( int i = 0, imax = nVals(); i < imax; i++ ) vals_[ i ] = (ValueType)( 0 ); }
+    void clean(){ for ( Index i = 0, imax = nVals(); i < imax; i++ ) vals_[ i ] = (ValueType)( 0 ); }
 
     void clear(){
         colPtr_.clear();
@@ -540,9 +540,9 @@ public:
         valid_ = false;
     }
 
-    void setVal( int i, int j, ValueType val ){
+    void setVal( Index i, Index j, ValueType val ){
         if ( ::fabs( val ) > TOLERANCE ){
-            for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+            for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
                 if ( rowIdx_[ k ] == j ) {
                     vals_[ k ] = val; return;
                 }
@@ -551,8 +551,8 @@ public:
         }
     }
 
-    ValueType getVal( int i, int j ){
-        for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+    ValueType getVal( Index i, Index j ){
+        for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
             if ( rowIdx_[ k ] == j ) {
                 return vals_[ k ];
             }
@@ -562,15 +562,15 @@ public:
         return (ValueType)-1.0;
     }
 
-    void cleanRow( int i ){
-         for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+    void cleanRow( Index i ){
+         for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
             vals_[ k ] = (ValueType)0.0;
          }
     }
 
-    void cleanCol( int i ){
-        for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
-            for ( int j = colPtr_[ rowIdx_[ k ] ]; j < colPtr_[ rowIdx_[ k ] + 1 ]; j ++ ){
+    void cleanCol( Index i ){
+        for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+            for ( Index j = colPtr_[ rowIdx_[ k ] ]; j < colPtr_[ rowIdx_[ k ] + 1 ]; j ++ ){
                 if ( rowIdx_[ j ] == i ) {
                     vals_[ j ] = ValueType(0);
                 }
@@ -584,16 +584,16 @@ public:
 
     void copy_( const DSparseMapMatrix & S ){
         this->clear();
-        int col = 0, row = 0;
+        Index col = 0, row = 0;
         double val;
 
-        std::vector < std::map < size_t, double > > idxMap( S.cols() );
+        std::vector < std::map < Index, double > > idxMap( S.cols() );
 
         for ( DSparseMapMatrix::const_iterator it = S.begin(); it != S.end(); it ++ ){
             col = S.idx1( it );
             row = S.idx2( it );
             val = S.val( it );
-            idxMap[ col ].insert( std::pair< uint, ValueType >( row, val ) );
+            idxMap[ col ].insert( std::pair< Index, ValueType >( row, val ) );
         }
 
         colPtr_.reserve( S.cols() + 1);
@@ -606,9 +606,9 @@ public:
 
         colPtr_[ 0 ] = 0;
 
-        int colCounter = 0, rowCounter = 0;
-        for ( std::vector < std::map < size_t, double > >::iterator it = idxMap.begin(); it != idxMap.end(); it++ ){
-            for ( std::map < size_t, double >::iterator itR = (*it).begin(); itR != (*it).end(); itR++ ){
+        Index colCounter = 0, rowCounter = 0;
+        for ( std::vector < std::map < Index, double > >::iterator it = idxMap.begin(); it != idxMap.end(); it++ ){
+            for ( std::map < Index, double >::iterator itR = (*it).begin(); itR != (*it).end(); itR++ ){
                 rowIdx_[ rowCounter ] = itR->first;
                 vals_[ rowCounter ] = (ValueType)itR->second;
                 rowCounter ++;
@@ -622,9 +622,9 @@ public:
     void buildSparsityPattern( const Mesh & mesh ){
         colPtr_.resize( mesh.nodeCount() + 1 );
 
-        int col = 0, row = 0;
-        std::vector < std::set < uint > > idxMap( mesh.nodeCount() );
-        std::set < uint > tmp;
+        Index col = 0, row = 0;
+        std::vector < std::set < Index > > idxMap( mesh.nodeCount() );
+        std::set < Index > tmp;
 
         for ( uint c = 0; c < mesh.cellCount(); c ++ ){
             for ( uint i = 0; i < mesh.cell( c ).nodeCount(); i ++ ){
@@ -637,7 +637,7 @@ public:
         }
 
         int nVals = 0;
-        for ( std::vector < std::set < uint > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
+        for ( std::vector < std::set < Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
             nVals += (*mIt).size();
         }
 
@@ -646,10 +646,10 @@ public:
         vals_.resize( nVals );
 
         colPtr_[ 0 ] = 0;
-        int k = 0;
+        Index k = 0;
         row = 0;
-        for ( std::vector < std::set < uint > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
-            for ( std::set< uint >::iterator sIt = (*mIt).begin(); sIt != (*mIt).end(); sIt++ ){
+        for ( std::vector < std::set < Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
+            for ( std::set< Index >::iterator sIt = (*mIt).begin(); sIt != (*mIt).end(); sIt++ ){
                 rowIdx_[ k ] = (*sIt);
                 vals_[ k ] = (ValueType)0.0;
                 k++;
@@ -660,22 +660,22 @@ public:
         valid_ = true;
     }
 
-    inline int * colPtr() { if ( valid_ ) return &colPtr_[ 0 ]; else SPARSE_NOT_VALID;  return 0; }
-    inline const int & colPtr() const { if ( valid_ ) return colPtr_[ 0 ]; else SPARSE_NOT_VALID; return colPtr_[ 0 ]; }
-    inline const std::vector< int > & vecColPtr() const { return colPtr_; }
+    inline Index * colPtr() { if ( valid_ ) return &colPtr_[ 0 ]; else SPARSE_NOT_VALID;  return 0; }
+    inline const Index & colPtr() const { if ( valid_ ) return colPtr_[ 0 ]; else SPARSE_NOT_VALID; return colPtr_[ 0 ]; }
+    inline const IndexArray & vecColPtr() const { return colPtr_; }
 
-    inline int * rowIdx() { if ( valid_ ) return &rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
-    inline const int & rowIdx() const { if ( valid_ ) return rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return rowIdx_[ 0 ]; }
-    inline const std::vector< int > & vecRowIdx() const { return rowIdx_; }
+    inline Index * rowIdx() { if ( valid_ ) return &rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
+    inline const Index & rowIdx() const { if ( valid_ ) return rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return rowIdx_[ 0 ]; }
+    inline const IndexArray & vecRowIdx() const { return rowIdx_; }
 
     inline ValueType * vals() { if ( valid_ ) return &vals_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
     inline const ValueType & vals() const { if ( valid_ ) return vals_[ 0 ]; else SPARSE_NOT_VALID; return vals_[ 0 ]; }
     inline const Vector < ValueType > & vecVals() const { return vals_; }
 
-    inline uint size() const { return colPtr_.size() - 1; }
-    inline uint nVals() const { return vals_.size(); }
-    inline uint cols() const { return size(); }
-    inline uint rows() const { return size(); }
+    inline Index size() const { return colPtr_.size() - 1; }
+    inline Index nVals() const { return vals_.size(); }
+    inline Index cols() const { return size(); }
+    inline Index rows() const { return size(); }
 
     int save( const std::string & fileName ){
         if ( !valid_ ) SPARSE_NOT_VALID;
@@ -685,7 +685,7 @@ public:
         file.precision( 14 );
 
         for ( uint i = 0; i < size(); i++ ){
-            for ( int j = colPtr_[ i ]; j < colPtr_[ i + 1 ]; j ++ ){
+            for ( Index j = colPtr_[ i ]; j < colPtr_[ i + 1 ]; j ++ ){
                 file << i << "\t" << rowIdx_[ j ] << "\t" << vals_[ j ] << std::endl;
             }
         }
@@ -696,8 +696,8 @@ public:
     bool valid() const { return valid_; }
 
 protected:
-    std::vector < int > colPtr_;
-    std::vector < int > rowIdx_;
+    IndexArray colPtr_;
+    IndexArray rowIdx_;
     Vector < ValueType > vals_;
 
     bool valid_;
@@ -710,14 +710,14 @@ template < class ValueType > SparseMatrix< ValueType > operator + ( const Sparse
 
 template < class ValueType > Vector < ValueType > operator * ( const SparseMatrix < ValueType > & A
                                                              , const Vector < ValueType >& a ){
-     
+
     if ( a.size() < A.size() ){
         throwLengthError( 1, WHERE_AM_I + " SparseMatrix size(): " + toStr( A.size() ) + " a.size(): " +
                                 toStr( a.size() ) ) ;
     }
     Vector < ValueType > b( a.size() );
-    for ( uint i = 0; i < A.size(); i++ ){
-        for ( int j = A.vecColPtr()[ i ]; j < A.vecColPtr()[ i + 1 ]; j ++ ){
+    for ( Index i = 0; i < A.size(); i++ ){
+        for ( Index j = A.vecColPtr()[ i ]; j < A.vecColPtr()[ i + 1 ]; j ++ ){
             b[ i ] += a[ A.vecRowIdx()[ j ] ] * A.vecVals()[ j ];
         }
     }

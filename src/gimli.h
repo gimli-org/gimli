@@ -64,6 +64,17 @@ typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
 
+#ifdef _WIN64
+// for some magic reasons gccxml ignores the size_t = __int64 typedef under win64, so this helps let the python bindings through
+typedef unsigned __int64 Index;
+typedef __int64 SIndex;
+#else
+typedef size_t Index;
+typedef ssize_t SIndex;
+#endif
+
+
+
 #ifndef __ASSERT_FUNCTION
 #define __ASSERT_FUNCTION "__ASSERT_FUNCTION"
 #endif
@@ -150,8 +161,8 @@ typedef SparseMatrix< int >         ISparseMatrix;
 typedef SparseMatrix< double >      DSparseMatrix;
 
 template< class ValueType, class IndexType > class SparseMapMatrix;
-typedef SparseMapMatrix< int, size_t >     ISparseMapMatrix;
-typedef SparseMapMatrix< double, size_t >  DSparseMapMatrix;
+typedef SparseMapMatrix< int, Index >     ISparseMapMatrix;
+typedef SparseMapMatrix< double, Index >  DSparseMapMatrix;
 
 template < class ValueType > class Matrix;
 template < class ValueType > class Vector;
@@ -247,10 +258,10 @@ inline int openOutFile( const std::string & fname, std::fstream * file, bool ter
 }
 
 DLLEXPORT bool fileExist( const std::string & filename );
-DLLEXPORT size_t countColumnsInFile( const std::string & fname, size_t & columnCount );
-DLLEXPORT size_t countColumnsInFile( const std::string & fname );
-DLLEXPORT size_t countRowsInFile( const std::string & fname );
-DLLEXPORT size_t fileLength( std::fstream & file );
+DLLEXPORT uint countColumnsInFile( const std::string & fname, uint & columnCount );
+DLLEXPORT uint countColumnsInFile( const std::string & fname );
+DLLEXPORT uint countRowsInFile( const std::string & fname );
+DLLEXPORT uint64 fileLength( std::fstream & file );
 DLLEXPORT std::vector < std::string > getRowSubstrings( std::fstream & file, char comment = '#' );
 
 inline std::vector < std::string > getRow( std::fstream & file, char comment = '#' ){
@@ -339,7 +350,7 @@ template < typename Set > inline void intersectionSet( Set & dest, const Set & a
     dest.clear();
     set_intersection( a.begin(), a.end(), b.begin(), b.end(), std::inserter( dest, dest.begin() ) );
 }
-template < typename Set > inline void intersectionSet( Set & dest, const Set & a, const Set & b,                                                                   
+template < typename Set > inline void intersectionSet( Set & dest, const Set & a, const Set & b,
                                                        const Set & c ){
     dest.clear();
     set_intersection( a.begin(), a.end(), b.begin(), b.end(), std::inserter( dest, dest.begin() ) );

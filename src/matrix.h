@@ -42,7 +42,7 @@ namespace GIMLI{
 template < class ValueType > class Matrix  {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols Content of the matrix is zero*/
-    Matrix( size_t rows = 0, size_t cols = 0 ){
+    Matrix( Index rows = 0, Index cols = 0 ){
         resize( rows, cols );
     }
 
@@ -67,9 +67,9 @@ public:
 
     #define DEFINE_UNARY_MOD_OPERATOR__( OP, NAME ) \
     inline Matrix < ValueType > & operator OP##= ( const Matrix < ValueType > & A ) { \
-        for ( register size_t i = 0; i < mat_.size(); i ++ ) mat_[ i ] OP##= A[ i ]; return *this; } \
+        for ( register Index i = 0; i < mat_.size(); i ++ ) mat_[ i ] OP##= A[ i ]; return *this; } \
     inline Matrix < ValueType > & operator OP##= ( const ValueType & val ) { \
-        for ( register size_t i = 0; i < mat_.size(); i ++ ) mat_[ i ] OP##= val; return *this; } \
+        for ( register Index i = 0; i < mat_.size(); i ++ ) mat_[ i ] OP##= val; return *this; } \
 
     DEFINE_UNARY_MOD_OPERATOR__( +, PLUS )
     DEFINE_UNARY_MOD_OPERATOR__( -, MINUS )
@@ -78,18 +78,18 @@ public:
 
     #undef DEFINE_UNARY_MOD_OPERATOR__
 
-//     size_t col = cols();
-//         for ( register size_t i = 0; i < mat_.size(); i ++ ) {
+//     Index col = cols();
+//         for ( register Index i = 0; i < mat_.size(); i ++ ) {
 //             ValueType * Aj = &mat_[ i ][ 0 ];
 //             ValueType * Aje = &mat_[ i ][ col ];
 //             for ( ; Aj != Aje; ) *Aj++ OP##= val;
 //         }   return *this; }
 
     /*! Readonly C style index operator, with boundary check.*/
-    const Vector< ValueType > & operator [] ( size_t i ) const { return getVal( i ); }
+    const Vector< ValueType > & operator [] ( Index i ) const { return getVal( i ); }
 
     /*!*/
-    Vector< ValueType > & operator [] ( size_t i ) {
+    Vector< ValueType > & operator [] ( Index i ) {
         if ( i < 0 || i > this->rows()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
@@ -105,21 +105,21 @@ public:
         for ( uint i = 0; i < this->rows(); i ++ ){ f[i] = Vector < T >( mat_[ i ] ); }
         return f;
     }
-    
+
     /*! Resize the matrix to rows x cols */
-    inline void resize( size_t rows, size_t cols ){ allocate_( rows, cols ); }
+    inline void resize( Index rows, Index cols ){ allocate_( rows, cols ); }
 
     /*! Clear the matrix */
     inline void clear() { mat_.clear(); }
 
     /*! Return number of rows */
-    inline size_t rows() const { return mat_.size(); }
+    inline Index rows() const { return mat_.size(); }
 
     /*! Return number of cols */
-    inline size_t cols() const { if ( mat_.size() > 0 ) return mat_[ 0 ].size(); return 0; }
+    inline Index cols() const { if ( mat_.size() > 0 ) return mat_[ 0 ].size(); return 0; }
 
     /*! Set a value. Throws out of range exception if index check fails. */
-    inline void setVal( const Vector < ValueType > & val, size_t i ) {
+    inline void setVal( const Vector < ValueType > & val, Index i ) {
         if ( i >= 0 && i < this->rows() ) {
             mat_[ i ] = val;
         } else {
@@ -128,7 +128,7 @@ public:
     }
 
     /*! Readonly getter. */
-    inline const Vector < ValueType > & getVal( size_t i ) const {
+    inline const Vector < ValueType > & getVal( Index i ) const {
         if ( i < 0 || i > this->rows()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
@@ -137,7 +137,7 @@ public:
     }
 
     /*! Return reference to row. Used for pygimli. */
-    inline Vector < ValueType > & rowR( size_t i ) {
+    inline Vector < ValueType > & rowR( Index i ) {
         if ( i < 0 || i > this->rows()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
@@ -146,16 +146,16 @@ public:
     }
 
     /*! Readonly row of matrix, with boundary check.*/
-    const Vector< ValueType > & row( size_t i ) const { return getVal( i ); }
+    const Vector< ValueType > & row( Index i ) const { return getVal( i ); }
 
     /*! Readonly col of matrix, with boundary check. Probably slow.*/
-    Vector< ValueType > col( size_t i ) const {
+    Vector< ValueType > col( Index i ) const {
         if ( i < 0 || i > this->cols()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " col bounds out of range " +
                                 toStr( i ) + " " + toStr( this->cols() ) ) ;
         }
         Vector < ValueType > col( this->rows() );
-        for ( size_t j = 0, jmax = rows(); j < jmax; j ++ ) col[ j ] = mat_[ j ][ i ];
+        for ( Index j = 0, jmax = rows(); j < jmax; j ++ ) col[ j ] = mat_[ j ][ i ];
         return col;
     }
 
@@ -183,15 +183,15 @@ public:
 
 protected:
 
-    void allocate_( size_t rows, size_t cols ){
+    void allocate_( Index rows, Index cols ){
         if ( mat_.size() != rows ) mat_.resize( rows );
-        for ( size_t i = 0; i < mat_.size(); i ++ ) mat_[ i ].resize( cols );
+        for ( Index i = 0; i < mat_.size(); i ++ ) mat_[ i ].resize( cols );
         rowFlag_.resize( rows );
     }
 
     void copy_( const Matrix < ValueType > & mat ){
         allocate_( mat.rows(), mat.cols() );
-        for ( size_t i = 0; i < mat.rows(); i ++ ) mat_[ i ] = mat[ i ];
+        for ( Index i = 0; i < mat.rows(); i ++ ) mat_[ i ] = mat[ i ];
     }
 
     std::vector < Vector< ValueType > > mat_;
@@ -220,19 +220,19 @@ DEFINE_BINARY_OPERATOR__( *, MULT )
 template < class ValueType >
 Vector < ValueType > operator * ( const Matrix < ValueType > & A, const Vector < ValueType > & b ){
 
-    size_t cols = A.cols();
-    size_t rows = A.rows();
+    Index cols = A.cols();
+    Index rows = A.rows();
 
     Vector < ValueType > ret( rows );
 
     register ValueType tmpval = 0;
     if ( b.size() == cols ){
-        for ( register size_t i = 0; i < rows; ++i ){
+        for ( register Index i = 0; i < rows; ++i ){
             tmpval = 0;
-            for ( register size_t j = 0; j < cols; ++j ) tmpval += A[ i ][ j ] * b[ j ];
+            for ( register Index j = 0; j < cols; ++j ) tmpval += A[ i ][ j ] * b[ j ];
             ret[ i ] = tmpval;
         }
-//     for ( register size_t i = 0; i < rows; ++i ){
+//     for ( register Index i = 0; i < rows; ++i ){
 //       ret[ i ] = sum< T >( A[ i ] * v );
 //     }
     } else {
@@ -243,37 +243,37 @@ Vector < ValueType > operator * ( const Matrix < ValueType > & A, const Vector <
 
 template< class ValueType > class Mult{
 public:
-    Mult( Vector< ValueType > & x, const Vector< ValueType > & b, const Matrix < ValueType > & A, size_t start, size_t end ) :
+    Mult( Vector< ValueType > & x, const Vector< ValueType > & b, const Matrix < ValueType > & A, Index start, Index end ) :
         x_( &x ), b_( &b ), A_( &A), start_( start ), end_( end ){
     }
     void operator( )() {
-        for ( register size_t i = start_; i < end_; i++ ) (*x_)[ i ] = sum( (*A_)[ i ] * *b_);
+        for ( register Index i = start_; i < end_; i++ ) (*x_)[ i ] = sum( (*A_)[ i ] * *b_);
     }
 
     Vector< ValueType > * x_;
     const Vector< ValueType > * b_;
     const Matrix< ValueType > * A_;
-    size_t start_;
-    size_t end_;
+    Index start_;
+    Index end_;
 };
 
 template < class ValueType >
 Vector < ValueType > multMT( const Matrix < ValueType > & A, const Vector < ValueType > & b ){
 #ifdef USE_THREADS
-    size_t cols = A.cols();
-    size_t rows = A.rows();
+    Index cols = A.cols();
+    Index rows = A.rows();
 
     Vector < ValueType > ret( rows );
     boost::thread_group threads;
-    size_t nThreads = 2;
-    size_t singleCalcCount = size_t( ceil( (double)rows / (double)nThreads ) );
+    Index nThreads = 2;
+    Index singleCalcCount = Index( ceil( (double)rows / (double)nThreads ) );
  //   CycleCounter cc;
 
-    for ( size_t i = 0; i < nThreads; i ++ ){
+    for ( Index i = 0; i < nThreads; i ++ ){
 // 	Vector < ValueType > *start = &A[ singleCalcCount * i ];
 //         Vector < ValueType > *end   = &A[ singleCalcCount * ( i + 1 ) ];
-        size_t start = singleCalcCount * i;
-        size_t end   = singleCalcCount * ( i + 1 );
+        Index start = singleCalcCount * i;
+        Index end   = singleCalcCount * ( i + 1 );
 	if ( i == nThreads -1 ) end = A.rows();
 //	cc.tic();
         threads.create_thread( Mult< ValueType >( ret, b, A, start, end ) );
@@ -288,14 +288,14 @@ Vector < ValueType > multMT( const Matrix < ValueType > & A, const Vector < Valu
 template < class ValueType >
 Vector < ValueType > mult( const Matrix < ValueType > & A, const Vector < ValueType > & b ){
 
-    size_t cols = A.cols();
-    size_t rows = A.rows();
+    Index cols = A.cols();
+    Index rows = A.rows();
 
     Vector < ValueType > ret( rows, 0.0 );
 
     register ValueType tmpval = 0;
     if ( b.size() == cols ){
-//         for ( size_t i = 0; i < rows; ++i ){
+//         for ( Index i = 0; i < rows; ++i ){
 //             tmpval = 0.0;
 //             const ValueType * Aj = &A[i][0];
 //             const ValueType * bj = &b[0];
@@ -309,7 +309,7 @@ Vector < ValueType > mult( const Matrix < ValueType > & A, const Vector < ValueT
 //           for (; __first != __last; ++__first)
 // 	__init = __init + *__first;
 //       return __init;
-        for ( register size_t i = 0; i < rows; ++i ){
+        for ( register Index i = 0; i < rows; ++i ){
             ret[ i ] = sum( A[ i ] * b );
          }
     } else {
@@ -321,7 +321,7 @@ Vector < ValueType > mult( const Matrix < ValueType > & A, const Vector < ValueT
 template < class ValueType >
 bool operator == ( const Matrix< ValueType > & A, const Matrix< ValueType > & B ){
     if ( A.rows() != B.rows() || A.cols() != B.cols() ) return false;
-    for ( size_t i = 0; i < A.rows(); i ++ ){
+    for ( Index i = 0; i < A.rows(); i ++ ){
         if ( A[ i ] != B[ i ] ) return false;
     }
     return true;
@@ -330,8 +330,8 @@ bool operator == ( const Matrix< ValueType > & A, const Matrix< ValueType > & B 
 template < class ValueType >
 void scaleMatrix( Matrix < ValueType >& A,
                   const Vector < ValueType > & l, const Vector < ValueType > & r ){
-    size_t rows = A.rows();
-    size_t cols = A.cols();
+    Index rows = A.rows();
+    Index cols = A.cols();
     if ( rows != l.size() ){
         throwLengthError( 1, WHERE_AM_I + " " + toStr( rows ) + " != " + toStr( l.size() ) );
     };
@@ -339,8 +339,8 @@ void scaleMatrix( Matrix < ValueType >& A,
         throwLengthError( 1, WHERE_AM_I + " " + toStr( cols ) + " != " + toStr( r.size() ) );
     }
 
-    for ( size_t i = 0 ; i < rows ; i++ ) {
-        //for ( size_t j = 0 ; j < cols ; j++ ) A[ i ][ j ] *= ( l[ i ] * r[ j ] );
+    for ( Index i = 0 ; i < rows ; i++ ) {
+        //for ( Index j = 0 ; j < cols ; j++ ) A[ i ][ j ] *= ( l[ i ] * r[ j ] );
         A[ i ] *= r * l[ i ];
     }
 }
@@ -348,8 +348,8 @@ void scaleMatrix( Matrix < ValueType >& A,
 template < class ValueType >
 void rank1Update( Matrix < ValueType > & A,
                   const Vector < ValueType > & u, const Vector < ValueType > & v ) {
-    size_t rows = A.rows();
-    size_t cols = A.cols();
+    Index rows = A.rows();
+    Index cols = A.cols();
     if ( rows != u.size() ){
         throwLengthError( 1, WHERE_AM_I + " " + toStr( rows ) + " != " + toStr( u.size() ) );
     };
@@ -358,8 +358,8 @@ void rank1Update( Matrix < ValueType > & A,
         throwLengthError( 1, WHERE_AM_I + " " + toStr( cols ) + " != " + toStr( v.size() ) );
     }
 
-    for ( size_t i = 0 ; i < rows ; i++ ) {
-        //for ( size_t j = 0 ; j < ncols ; j++ ) A[ i ][ j ] += ( u[ i ] * v[ j ] );
+    for ( Index i = 0 ; i < rows ; i++ ) {
+        //for ( Index j = 0 ; j < ncols ; j++ ) A[ i ][ j ] += ( u[ i ] * v[ j ] );
         A[ i ] += v * u[ i ];
     }
     return;
@@ -368,7 +368,7 @@ void rank1Update( Matrix < ValueType > & A,
 template < class ValueType >
 Matrix < ValueType > fliplr( const Matrix< ValueType > & m ){
     Matrix < ValueType > n;
-    for ( size_t i = 0; i < m.rows(); i ++ ) n.push_back( fliplr( m[ i ] ) );
+    for ( Index i = 0; i < m.rows(); i ++ ) n.push_back( fliplr( m[ i ] ) );
     return n;
 }
 
@@ -533,12 +533,12 @@ template < class ValueType >
 bool loadMatrixCol( Matrix < ValueType > & A, const std::string & filename,
                     std::vector < std::string > & comments ){
 
-    size_t commentCount = 0;
-    size_t cols = countColumnsInFile( filename, commentCount );
-//     size_t rows = countRowsInFile( filename );
+    uint commentCount = 0;
+    uint cols = countColumnsInFile( filename, commentCount );
+//     Index rows = countRowsInFile( filename );
 //     // get length of file:
 //     std::fstream file; openInFile( filename, & file, true );
-//     size_t length = fileLength( file );
+//     Index length = fileLength( file );
 //
 //     // allocate memory:
 //     char * buffer = new char[ length ];
@@ -561,7 +561,7 @@ bool loadMatrixCol( Matrix < ValueType > & A, const std::string & filename,
     while( file >> val ) tmp.push_back( val );
 
     file.close();
-    size_t rows = tmp.size() / cols ;
+    Index rows = tmp.size() / cols ;
     A.resize( cols, rows );
 
     for ( uint i = 0; i < rows; i ++ ){
@@ -611,8 +611,8 @@ bool loadMatrixRow( Matrix < ValueType > & A,
                     const std::string & filename,
                     std::vector < std::string > & comments ){
 
-    size_t commentCount = 0;
-    size_t cols = countColumnsInFile( filename, commentCount );
+    uint commentCount = 0;
+    uint cols = countColumnsInFile( filename, commentCount );
 
     Vector < ValueType > row( cols );
     std::fstream file; openInFile( filename, & file, true );
@@ -627,7 +627,7 @@ bool loadMatrixRow( Matrix < ValueType > & A,
     while( file >> val ) tmp.push_back( val );
 
     file.close();
-    size_t rows = tmp.size() / cols ;
+    Index rows = tmp.size() / cols ;
     A.resize( rows, cols );
 
     for ( uint i = 0; i < rows; i ++ ){
@@ -661,7 +661,7 @@ template < class Matrix > double det( const Matrix & A ){
   }
   return det;
 }
-    
+
 } //namespace GIMLI
 
 #endif // _GIMLI_MATRIX__H

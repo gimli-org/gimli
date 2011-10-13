@@ -6,7 +6,7 @@ mkdir -p generated
 
 if [ $OSTYPE = "msys" ]; then
 	MAKEFILE=Makefile.msys
-	MAKEOPTS=-j2
+	MAKEOPTS=-j1
 	echo "build for mingw"
 else
 	MAKEFILE=Makefile.linux

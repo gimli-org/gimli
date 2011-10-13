@@ -122,21 +122,27 @@ def generate( defined_symbols ):
 
 
     xml_cached_fc = parser.create_cached_source_fc( os.path.join( r"pygimli.h" ), settings.module_name + '.cache' )
+
+    import platform
     
     defines = ['__DUMMY__']
-    
+
+    if platform.architecture()[0] == '64bit':
+        defines.append( '_WIN64' )
+        print 'Marking win64 for gccxml'
+
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:
             defines.append( define )
 
-    
+
     if sys.platform == 'win32':
         # os.name == 'nt' (default on my mingw) results in wrong commandline for gccxml
         os.name = 'mingw'
         gccxmlpath = settings.gccxml_path.replace('\\', '\\\\') + '\\\\gccxml.exe'
     else:
         gccxmlpath = settings.gccxml_path
-        
+
     mb = module_builder.module_builder_t( [xml_cached_fc]
                                         , gccxml_path   = gccxmlpath
                                         , working_directory = settings.gimli_path
@@ -146,7 +152,7 @@ def generate( defined_symbols ):
 
     mb.classes().always_expose_using_scope = True
     mb.calldefs().create_with_signature = True
-    
+
     # maybe we will use this later for fast rvector <-> np.array conversion, maybe not.
     # hand_made_wrappers.apply( mb )
 
@@ -219,7 +225,8 @@ def generate( defined_symbols ):
                                         #, call_policies.reference_existing_object )
 
 
-    setMemberFunctionCallPolicieByReturn( mb, ['::std::string *', 'float *', 'double *', 'int *' ]
+    setMemberFunctionCallPolicieByReturn( mb, ['::std::string *', 'float *', 'double *', 'int *', 'long *', 'long long int *', 'unsigned long long int *' 
+												, '::GIMLI::Index *']
                                             , call_policies.return_pointee_value )
 
     #setMemberFunctionCallPolicieByReturn( mb, ['::GIMLI::VectorIterator<double> &']

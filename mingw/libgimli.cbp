@@ -25,7 +25,7 @@
 		<Compiler>
 			<Add option="-Os" />
 			<Add option="-O2" />
-			<Add option="-pedantic" />
+			<Add option="-std=c++0x" />
 			<Add option="-Wall" />
 			<Add option="-DBUILDING_DLL=1" />
 			<Add option="-DMINGW" />
