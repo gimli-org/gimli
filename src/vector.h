@@ -61,11 +61,7 @@
 
 namespace GIMLI{
 
-typedef size_t Index;
-typedef ssize_t SIndex;
-typedef std::vector < Index > IndexArray;
-
-template < class ValueType, class A > class __VectorExpr;
+typedef std::vector < Index > IndexArray;template < class ValueType, class A > class __VectorExpr;
 
 template < class ValueType > class VectorIterator {
 public:
@@ -84,8 +80,8 @@ public:
     inline const ValueType & operator * () const { return * val_; }
     inline ValueType & operator * () { return * val_; }
 
-    inline const ValueType & operator [] ( const size_t i ) const { return val_[ i ]; }
-    inline ValueType & operator [] ( const size_t i ) { return val_[ i ]; }
+    inline const ValueType & operator [] ( const Index i ) const { return val_[ i ]; }
+    inline ValueType & operator [] ( const Index i ) { return val_[ i ]; }
 
     inline VectorIterator & operator ++ () { ++val_; return *this; }
     inline VectorIterator & operator -- () { --val_; return *this; }
@@ -93,13 +89,13 @@ public:
     inline bool operator == ( const VectorIterator< ValueType > & a ){ return val_ == a.val_; }
     inline bool operator != ( const VectorIterator< ValueType > & a ){ return val_ != a.val_; }
 
-    inline size_t size() const { return maxSize_; }
+    inline Index size() const { return maxSize_; }
 
     inline ValueType * ptr() const { return val_; }
     inline ValueType * ptr() { return val_; }
 
     ValueType * val_;
-    size_t maxSize_;
+    Index maxSize_;
 };
 
 //! One dimensional array aka Vector of limited size.
@@ -112,8 +108,8 @@ public:
     /*!
      * Construct one-dimensional array of size n. The vector is cleaned (filled with zero)
      */
-    Vector( size_t n = 0 ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
-    // explicit Vector( size_t n = 0 ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
+    Vector( Index n = 0 ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
+    // explicit Vector( Index n = 0 ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( n );
         clean();
     }
@@ -121,19 +117,19 @@ public:
     /*!
      * Construct one-dimensional array of size n, and fill it with val
      */
-    Vector( size_t n, const ValueType & val ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
+    Vector( Index n, const ValueType & val ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( n );
         fill( val );
     }
 
-    /*! 
-     * Construct vector from file. Shortcut for Vector::load 
+    /*!
+     * Construct vector from file. Shortcut for Vector::load
      */
     Vector( const std::string & filename, IOFormat format = Ascii )
         : size_( 0 ), data_( NULL ), begin_( NULL ), end_( NULL ) {
         this->load( filename, format );
     }
-    
+
     /*!
      * Copy constructor. Create new vector as a deep copy of v.
      */
@@ -145,7 +141,7 @@ public:
     /*!
      * Copy constructor. Create new vector as a deep copy of the slice v[start, end )
      */
-    Vector( const Vector< ValueType > & v, size_t start, size_t end )
+    Vector( const Vector< ValueType > & v, Index start, Index end )
         : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( end - start );
         std::copy( &v[ start ], &v[ end ], data_ );
@@ -164,7 +160,7 @@ public:
      */
     template < class U > Vector( const std::vector< U > & v ) : data_( NULL ), begin_( NULL ), end_( NULL ) {
         allocate_( v.size() );
-        for ( Index i = 0; i < v.size(); i ++ ) data_[ i ] = ValueType( v[ i ] ); 
+        for ( Index i = 0; i < v.size(); i ++ ) data_[ i ] = ValueType( v[ i ] );
         //std::copy( &v[ 0 ], &v[ v.size() ], data_ );
     }
 
@@ -192,12 +188,12 @@ public:
         return *this;
     }
 
-    inline const ValueType & operator[]( const size_t i ) const { return data_[ i ]; }
+    inline const ValueType & operator[]( const Index i ) const { return data_[ i ]; }
 
-    inline ValueType & operator[]( const size_t i ) { return data_[ i ]; }
+    inline ValueType & operator[]( const Index i ) { return data_[ i ]; }
 
     /*!
-    Implicite type converter 
+    Implicite type converter
      */
     template < class T > operator Vector< T >( ){
         COUTMARKER
@@ -211,9 +207,9 @@ public:
         this->fill( val );
         return *this;
     }
-    
+
     /*! Set a value at index i. Throws out of range exception if index check fails. */
-    inline Vector< ValueType > & setVal( const ValueType & val, size_t i ) {
+    inline Vector< ValueType > & setVal( const ValueType & val, Index i ) {
         if ( i >= 0 && i < this->size() ) {
             data_[ i ] = val;
         } else {
@@ -224,8 +220,8 @@ public:
 
     /*! Set a value at slice index [start, end). Throws out of range exception if index check fails.
         end will set to this->size() if larger or -1. */
-    inline Vector< ValueType > & setVal( const ValueType & val, size_t start, ssize_t end ) {
-        size_t e = (size_t)end;
+    inline Vector< ValueType > & setVal( const ValueType & val, Index start, SIndex end ) {
+        Index e = (Index)end;
         if ( end == -1 ) e = this->size();
         else if ( e > this->size() ) e = this->size();
 
@@ -240,19 +236,19 @@ public:
     }
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
-    inline Vector< ValueType > & setVal( const ValueType & val, const std::vector < size_t > & idx ) {
-        for ( size_t i = 0; i < idx.size(); i ++ ) setVal( val, idx[ i ] );
+    inline Vector< ValueType > & setVal( const ValueType & val, const std::vector < Index > & idx ) {
+        for ( Index i = 0; i < idx.size(); i ++ ) setVal( val, idx[ i ] );
         return *this;
     }
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal( const Vector < ValueType > & vals,
-                                            const std::vector < size_t > & idx ) {
+                                            const std::vector < Index > & idx ) {
         if ( idx.size() != vals.size() ){
             throwLengthError( 1, WHERE_AM_I + " idx.size() != vals.size() " +
                                 toStr( idx.size() ) + " " + toStr( vals.size() ) );
         }
-        for ( size_t i = 0; i < idx.size(); i ++ ){
+        for ( Index i = 0; i < idx.size(); i ++ ){
             setVal( vals[ i ], idx[ i ] );
         }
         return *this;
@@ -261,7 +257,7 @@ public:
     /*! Set values from slice. If vals.size() == this.size() copy vals[start, end) -> this[start, end) else
         assume vals is a slice itsself, so copy vals[0, end-start] -> this[start, end)
          if end larger than this size() sets end = size. Throws exception on violating boundaries. */
-    inline Vector< ValueType > & setVal( const Vector < ValueType > & vals, size_t start, size_t end ) {
+    inline Vector< ValueType > & setVal( const Vector < ValueType > & vals, Index start, Index end ) {
         if ( end > this->size() ) end = this->size();
         if ( start > end ) start = end;
 
@@ -279,7 +275,7 @@ public:
     }
 
     /*! Like setVal( vals, start, end ) instead copy use += */
-    inline Vector< ValueType > & addVal( const Vector < ValueType > & vals, size_t start, size_t end ) {
+    inline Vector< ValueType > & addVal( const Vector < ValueType > & vals, Index start, Index end ) {
         if ( end > this->size() ) end = this->size();
         if ( start > end ) start = end;
 
@@ -289,16 +285,16 @@ public:
         }
 
         if ( this->size() == vals.size() ){
-            for ( size_t i = start; i < end; i ++ ) data_[ i ] += vals[ i ];
+            for ( Index i = start; i < end; i ++ ) data_[ i ] += vals[ i ];
         } else {
-            for ( size_t i = start; i < end; i ++ ) data_[ i ] += vals[ i - start ];
+            for ( Index i = start; i < end; i ++ ) data_[ i ] += vals[ i - start ];
         }
 
         return *this;
     }
 
     /*! Get a value. Throws out of range exception if index check fails. */
-    inline const ValueType & getVal( size_t i ) const {
+    inline const ValueType & getVal( Index i ) const {
         if ( i >= 0 && i < this->size() ) {
             return data_[ i ];
         } else {
@@ -310,9 +306,9 @@ public:
     /*! Return a new vector that match the slice [start, end).  end == -1 or larger size() sets end = size.
         Throws exception on violating boundaries. */
     Vector < ValueType > operator () ( Index start, SIndex end ) const {
-        size_t e = (size_t) end;
-        if ( end == -1 && end > (ssize_t)size_ ) e = size_;
-        
+        Index e = (Index) end;
+        if ( end == -1 && end > (SIndex)size_ ) e = size_;
+
         Vector < ValueType > v( end-start );
         if ( start >= 0 && start < e && e <= size_ ){
             std::copy( & data_[ start ], & data_[ e ], &v[ 0 ] );
@@ -323,13 +319,13 @@ public:
         return v;
     }
 
-    /*! 
-     * Return a new vector that based on indices's. Throws exception if indices's are out of bound 
+    /*!
+     * Return a new vector that based on indices's. Throws exception if indices's are out of bound
      */
     Vector < ValueType > operator () ( const IndexArray & idx ) const {
         Vector < ValueType > v( idx.size() );
-        size_t id;
-        for ( size_t i = 0; i < idx.size(); i ++ ){
+        Index id;
+        for ( Index i = 0; i < idx.size(); i ++ ){
            id = idx[ i ];
            if ( id >= 0 && id < size_ ){
                 v[ i ] = data_[ id ];
@@ -343,11 +339,11 @@ public:
 
     Vector < ValueType > operator () ( const std::vector < int > & idx ) const {
         Vector < ValueType > v( idx.size() );
-        size_t id;
-        for ( size_t i = 0; i < idx.size(); i ++ ){
+        Index id;
+        for ( Index i = 0; i < idx.size(); i ++ ){
            id = idx[ i ];
            if ( id >= 0 && id < size_ ){
-                v[ i ] = data_[ (size_t)id ];
+                v[ i ] = data_[ (Index)id ];
            } else {
                 throwLengthError( 1, WHERE_AM_I + " idx out of range " +
                                      str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
@@ -366,7 +362,7 @@ public:
 		throwLengthError( 1, WHERE_AM_I + " array size unequal" +
                                 toStr( this->size() ) + " != " + toStr( v.size() ) );
 	    }
-	for ( size_t i = 0; i < v.size(); i ++ ) ret[ i ] = isLesser( data_[ i ], v[ i ] );
+	for ( Index i = 0; i < v.size(); i ++ ) ret[ i ] = isLesser( data_[ i ], v[ i ] );
 	return ret;
     }
 #endif
@@ -378,7 +374,7 @@ public:
             throwLengthError( 1, WHERE_AM_I + " array size unequal " + \
                                 toStr( this->size() ) + " != " + toStr( v.size() ) ); \
         } \
-        for ( size_t i = 0; i < v.size(); i ++ ) ret[ i ] = FUNCT( data_[ i ], v[ i ] ); \
+        for ( Index i = 0; i < v.size(); i ++ ) ret[ i ] = FUNCT( data_[ i ], v[ i ] ); \
         return ret; \
     } \
 
@@ -391,7 +387,7 @@ DEFINE_COMPARE_OPERATOR_VEC__( >, isGreater )
 #define DEFINE_COMPARE_OPERATOR__( OP, FUNCT ) \
     inline BVector operator OP ( const ValueType & v ) const { \
         BVector ret( this->size(), 0 ); \
-        for ( size_t i = 0; i < this->size(); i ++ ){ \
+        for ( Index i = 0; i < this->size(); i ++ ){ \
             ret[ i ] = FUNCT( data_[ i ], v ); \
         } \
         return ret;\
@@ -410,7 +406,7 @@ DEFINE_COMPARE_OPERATOR__( >, isGreater )
   inline Vector< ValueType > & operator OP##= ( const Vector < ValueType > & v ) { \
         std::transform( data_, data_ + size_, &v[ 0 ], data_, FUNCT() ); return *this; } \
   inline Vector< ValueType > & operator OP##= ( const ValueType & val ) { \
-        for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] OP##= val; return *this; } \
+        for ( register Index i = 0; i < size_; i ++ ) data_[ i ] OP##= val; return *this; } \
 
 DEFINE_UNARY_MOD_OPERATOR__( +, PLUS )
 DEFINE_UNARY_MOD_OPERATOR__( -, MINUS )
@@ -423,7 +419,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     inline Vector < ValueType > operator - () const { return *this * -1.0; }
 
     /*! Resize if n differs size() and fill new with val. Old data are preserved. */
-    void resize( size_t n, ValueType val = 0 ){
+    void resize( Index n, ValueType val = 0 ){
         if ( n != size_ ) {
             Vector < ValueType > tmp( *this );
             free_();
@@ -435,7 +431,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
     /*! Fill the whole vector from the pointer of val. CAUTION!! There is no boundary check. val must be properly ( [val, val+this->size() ) )assigned.  */
     template< class V > void fill( V * val ) {
-        for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] = ValueType(val[i]);
+        for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = ValueType(val[i]);
         //std::copy( val, val + size_, data_ );
     }
 
@@ -444,12 +440,12 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
     /*! Fill the whole vector with function expr( i ) */
     template< class Ex > void fill( Expr< Ex > expr ){
-        for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] = expr( (ValueType)i );
+        for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = expr( (ValueType)i );
     }
 
 //     /*! Fill the whole vector with function expr( i ) */
 //     template< class V > void fill( const V & val ){
-//         for ( register size_t i = 0; i < size_; i ++ ) data_[ i ] = ValueType( val );
+//         for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = ValueType( val );
 //     }
 
     /*! Fill Vector with 0.0. Don't change size.*/
@@ -470,16 +466,16 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
     inline bool empty() const { return size() == 0; }
 
-    inline size_t size() const { return size_; }
+    inline Index size() const { return size_; }
 
-    inline size_t nThreads() const { return nThreads_; }
+    inline Index nThreads() const { return nThreads_; }
 
-    inline size_t singleCalcCount() const { return singleCalcCount_; }
+    inline Index singleCalcCount() const { return singleCalcCount_; }
 
     ValueType * data() { return data_; }
-    
+
     /*! Save the object to file. Returns true on success and in case of trouble an exception is thrown.
-     * The IOFormat flag will be overwritten if the filename have a proper file suffix. Ascii format is forced if \ref VECTORASCSUFFIX is given. 
+     * The IOFormat flag will be overwritten if the filename have a proper file suffix. Ascii format is forced if \ref VECTORASCSUFFIX is given.
      * Binary format is forced if \ref VECTORBINSUFFIX is set. If no suffix is provided \ref VECTORASCSUFFIX or \ref VECTORBINSUFFIX will be append. \n\n
     Binary format is: \n
     Unsigned int64 [8Byte] - length of the Array [0.. length) \n
@@ -487,7 +483,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     ... \n
     ValueType [sizeof(ValueType)] - length -1 value \n\n
     Ascii format is a simple list of the values \n\n
-    \param filename string of the file name 
+    \param filename string of the file name
     \param IOFormat enum, either Ascii for human readable format, or Binary for fast save and load.
     */
     bool save( const std::string & filename, IOFormat format = Ascii ) const {
@@ -507,7 +503,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
             file.setf( std::ios::scientific, std::ios::floatfield );
             file.precision( 14 );
 
-            for ( size_t i = 0, imax = size_; i < imax; i ++ ) file << data_[ i ] << std::endl;
+            for ( Index i = 0, imax = size_; i < imax; i ++ ) file << data_[ i ] << std::endl;
             file.close();
         } else {
             if ( fname.rfind( "." ) == std::string::npos ) fname += VECTORBINSUFFIX;
@@ -521,8 +517,8 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
             }
 
             int64 count = (int64)size_;
-            size_t ret = 0; ret = fwrite( (char*)&count, sizeof( int64 ), 1, file );
-            for ( size_t i = 0; i < size_; i++ ) ret = fwrite( (char*)&data_[ i ], sizeof( ValueType ), 1, file );
+            Index ret = 0; ret = fwrite( (char*)&count, sizeof( int64 ), 1, file );
+            for ( Index i = 0; i < size_; i++ ) ret = fwrite( (char*)&data_[ i ], sizeof( ValueType ), 1, file );
             fclose( file );
         }
         return true;
@@ -530,9 +526,9 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
     /*!
      * Load the object from file. Returns true on success and in case of trouble an exception is thrown.
-     * The IOFormat flag will be overwritten if the filename have a proper file suffix. Ascii format is forced if \ref VECTORASCSUFFIX is given. 
+     * The IOFormat flag will be overwritten if the filename have a proper file suffix. Ascii format is forced if \ref VECTORASCSUFFIX is given.
      * Binary format is forced if \ref VECTORBINSUFFIX is set.
-     * See Vector< ValueType >::save for file format. 
+     * See Vector< ValueType >::save for file format.
      */
     bool load( const std::string & filename, IOFormat format = Ascii ){
 
@@ -574,7 +570,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
             if ( !file ) {
                 throwError( 1, filename +  ": " + strerror( errno ) );
             }
-            size_t ret = 0;
+            Index ret = 0;
             int64 size; ret = fread( &size, sizeof( int64 ), 1, file );
             this->resize( size );
             ret = fread( &data_[ 0 ], sizeof( ValueType ), size, file );
@@ -584,7 +580,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     }
 
 protected:
-    
+
     void free_( ){
         //    std::cout << "free: " << begin_ << std::endl;
         size_ = 0;
@@ -597,7 +593,7 @@ protected:
         data_  = NULL;
     }
 
-    void allocate_( size_t n ){
+    void allocate_( Index n ){
         size_  = n;
         data_  = new ValueType[ size_ ];
         begin_ = new VectorIterator< ValueType >;
@@ -606,7 +602,7 @@ protected:
         begin_->maxSize_ = size_;
         end_->val_ = data_ + size_;
         nThreads_ = std::min( (int)ceil( (float)size_ / (float)minSizePerThread ), (int)maxThreads );
-        singleCalcCount_ = (size_t)ceil( (double)size_ / (double)nThreads_ );
+        singleCalcCount_ = (Index)ceil( (double)size_ / (double)nThreads_ );
         //std::cout << "alloc: " << begin_ << std::endl;
     }
 
@@ -625,33 +621,33 @@ protected:
         }
     }
 
-    size_t size_;
+    Index size_;
     ValueType * data_;
 
     VectorIterator< ValueType > * begin_;
     VectorIterator< ValueType > * end_;
 
-    static const size_t minSizePerThread = 10000;
+    static const Index minSizePerThread = 10000;
     static const int maxThreads = 8;
     int nThreads_;
-    size_t singleCalcCount_;
+    Index singleCalcCount_;
 };
 
 template< class ValueType, class Iter > class AssignResult{
 public:
-    AssignResult( Vector< ValueType > & a, const Iter & result, size_t start, size_t end ) :
+    AssignResult( Vector< ValueType > & a, const Iter & result, Index start, Index end ) :
         a_( &a ), iter_( result ), start_( start ), end_( end ){
     }
     void operator()() {
         ValueType * iter = a_->begin().ptr();
         //std::cout << start_ << " " << end_ << std::endl;
-        for ( register size_t i = start_; i < end_; i++ ) iter[ i ] = iter_[ i ];
+        for ( register Index i = start_; i < end_; i++ ) iter[ i ] = iter_[ i ];
     }
 
     Vector< ValueType > * a_;
     Iter iter_;
-    size_t start_;
-    size_t end_;
+    Index start_;
+    Index end_;
 };
 
 struct BINASSIGN { template < class T > inline T operator()( const T & a, const T & b ) const { return b; } };
@@ -672,9 +668,9 @@ template< class ValueType, class Iter > void assignResult( Vector< ValueType > &
       AssignResult< ValueType, Iter >( v, result, 0, v.size() )();
     } else {
       boost::thread_group threads;
-      for ( size_t i = 0; i < v.nThreads(); i ++ ){
-	size_t start = v.singleCalcCount() * i;
-	size_t end   = v.singleCalcCount() * ( i + 1 );
+      for ( Index i = 0; i < v.nThreads(); i ++ ){
+	Index start = v.singleCalcCount() * i;
+	Index end   = v.singleCalcCount() * ( i + 1 );
 	if ( i == v.nThreads() -1 ) end = v.size();
 	threads.create_thread( AssignResult< ValueType, Iter >( v, result, start, end ) );
       }
@@ -690,7 +686,7 @@ template< class ValueType, class Iter > void assignResult( Vector< ValueType > &
     ValueType * iter = v.begin().ptr();
 
     // Inlined expression
-    for ( register size_t i = v.size(); i--; ) iter[ i ] = result2[ i ];
+    for ( register Index i = v.size(); i--; ) iter[ i ] = result2[ i ];
 #else
     ValueType * iter = v.begin().ptr();
     ValueType * end  = v.end().ptr();
@@ -708,7 +704,7 @@ template< class ValueType, class A > class __VectorExpr {
 public:
     __VectorExpr( const A & a ) : iter_( a ) { }
 
-    inline ValueType operator [] ( size_t i ) const { return iter_[ i ]; }
+    inline ValueType operator [] ( Index i ) const { return iter_[ i ]; }
 
     inline ValueType operator * () const { return *iter_; }
 
@@ -716,7 +712,7 @@ public:
 
     void assign( Vector< ValueType > & x ) const { assignResult( x, *this ); }
 
-    inline size_t size() const { return iter_.size(); }
+    inline Index size() const { return iter_.size(); }
 
     A * begin() { return iter_.begin(); }
     A * end() { return iter_.end(); }
@@ -729,13 +725,13 @@ template< class ValueType, class A, class Op > class __VectorUnaryExprOp {
 public:
     __VectorUnaryExprOp( const A & a ) : iter_( a ) { }
 
-    inline ValueType operator [] ( size_t i ) const { return Op()( iter_[ i ] ); }
+    inline ValueType operator [] ( Index i ) const { return Op()( iter_[ i ] ); }
 
     inline ValueType operator * () const { return Op()( *iter_ ); }
 
     inline void operator ++ () { ++iter_;  }
 
-    inline size_t size() const { return iter_.size(); }
+    inline Index size() const { return iter_.size(); }
 
 private:
     A iter_;
@@ -745,13 +741,13 @@ template< class ValueType, class A, class B, class Op > class __VectorBinaryExpr
 public:
   __VectorBinaryExprOp( const A & a, const B & b) : iter1_( a ), iter2_( b ) { }
 
-  inline ValueType operator [] ( size_t i ) const { return Op()( iter1_[ i ], iter2_[ i ] ); }
+  inline ValueType operator [] ( Index i ) const { return Op()( iter1_[ i ], iter2_[ i ] ); }
 
   inline ValueType operator * () const { return Op()( *iter1_, *iter2_ ); }
 
   inline void operator ++ () { ++iter1_; ++iter2_; }
 
-  inline size_t size() const { return iter2_.size(); }
+  inline Index size() const { return iter2_.size(); }
 
 private:
   A iter1_;
@@ -762,13 +758,13 @@ template< class ValueType, class A, class Op > class __VectorValExprOp {
 public:
   __VectorValExprOp( const A & a, const ValueType & val ) : iter_( a ), val_( val ) { }
 
-  inline ValueType operator [] ( size_t i ) const { return Op()( iter_[ i ], val_ ); }
+  inline ValueType operator [] ( Index i ) const { return Op()( iter_[ i ], val_ ); }
 
   inline ValueType operator * () const { return Op()( *iter_, val_ ); }
 
   inline void operator ++ () { ++iter_; }
 
-  inline size_t size() const { return iter_.size(); }
+  inline Index size() const { return iter_.size(); }
 
 private:
   A iter_;
@@ -779,13 +775,13 @@ template< class ValueType, class A, class Op > class __ValVectorExprOp {
 public:
   __ValVectorExprOp( const ValueType & val, const A & a ) : iter_( a ), val_( val ) { }
 
-  inline ValueType operator [] ( size_t i ) const { return Op()( val_, iter_[ i ] ); }
+  inline ValueType operator [] ( Index i ) const { return Op()( val_, iter_[ i ] ); }
 
   inline ValueType operator * () const { return Op()( val_, *iter_ ); }
 
   inline void operator ++ () { ++iter_; }
 
-  inline size_t size() const { return iter_.size(); }
+  inline Index size() const { return iter_.size(); }
 
 private:
   A iter_;
@@ -929,13 +925,13 @@ DEFINE_EXPR_OPERATOR__( /, DIVID )
 template < class ValueType >
 bool operator == ( const Vector< ValueType > & v1, const Vector< ValueType > & v2 ){
     if ( v1.size() != v2.size() ) return false;
-    for ( size_t i = 0; i < v1.size(); i ++ ){
+    for ( Index i = 0; i < v1.size(); i ++ ){
         if ( !isEqual( v1[ i ], v2[ i ] ) ) return false;
     }
     return true;
 }
 
-template < class ValueType, class A > bool 
+template < class ValueType, class A > bool
 operator == ( const Vector< ValueType > & v1, const __VectorExpr< ValueType, A > & v2 ){
     return v1 == Vector< ValueType >( v2 );
 }
@@ -950,7 +946,7 @@ bool operator != ( const Vector< ValueType > & v1, const Vector< ValueType > & v
 inline IndexArray find( const BVector & v ){
     IndexArray idx;
     idx.reserve( v.size() );
-    for ( size_t i = 0; i < v.size(); i ++ ){
+    for ( Index i = 0; i < v.size(); i ++ ){
         if ( v[ i ] ) idx.push_back( i );
     }
     return idx;
@@ -959,21 +955,21 @@ inline IndexArray find( const BVector & v ){
 /*! Refactor with expression templates */
 inline BVector operator ~ ( const BVector & a ){
     BVector ret( a.size() );
-    for ( size_t i = 0; i < ret.size(); i ++ ) ret[ i ] = !a[ i ];
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = !a[ i ];
     return ret;
 }
 
 /*! Refactor with expression templates */
 inline BVector operator & ( const BVector & a, const BVector & b ){
     BVector ret( a.size() );
-    for ( size_t i = 0; i < ret.size(); i ++ ) ret[ i ] = a[ i ] && b[ i ];
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = a[ i ] && b[ i ];
     return ret;
 }
 
 /*! Refactor with expression templates */
 inline BVector operator | ( const BVector & a, const BVector & b ){
     BVector ret( a.size() );
-    for ( size_t i = 0; i < ret.size(); i ++ ) ret[ i ] = a[ i ] || b[ i ];
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = a[ i ] || b[ i ];
     return ret;
 }
 
@@ -987,7 +983,7 @@ inline BVector operator | ( const BVector & a, const BVector & b ){
 template < class ValueType, class A > BVector \
 operator OP ( const __VectorExpr< ValueType, A > & vec, const ValueType & v ){ \
     BVector ret( vec.size(), 0 ); \
-    for ( size_t i = 0; i < ret.size(); i ++ ) ret[ i ] = vec[ i ] OP v; \
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = vec[ i ] OP v; \
     return ret;\
 } \
 
@@ -1004,7 +1000,7 @@ DEFINE_COMPARE_OPERATOR__( > )
 template < class ValueType, class A > \
 BVector OP( const __VectorExpr< ValueType, A > & vec ){ \
     BVector ret( vec.size(), 0 ); \
-    for ( size_t i = 0; i < ret.size(); i ++ ) ret[ i ] = FUNCT()( vec[ i ] ); \
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = FUNCT()( vec[ i ] ); \
     return ret; \
 }\
 template < class ValueType > \
@@ -1030,12 +1026,12 @@ template < class T > Vector < T > cat( const Vector< T > & a, const Vector< T > 
 template < class T, class A > T sum( const __VectorExpr< T, A > & a ){
     //std::cout << "sum(vectorExpr)" << std::endl;
     T tmp( 0.0 );
-    for ( register size_t i = 0, imax = a.size(); i < imax; i++ ) tmp += a[ i ];
+    for ( register Index i = 0, imax = a.size(); i < imax; i++ ) tmp += a[ i ];
     return tmp;
 
 //     T tmp( 0.0 );
 //     __VectorExpr< T, A > al = a;
-//     for ( register size_t i = 0; i < a.size(); i++, ++al ) {
+//     for ( register Index i = 0; i < a.size(); i++, ++al ) {
 //         tmp += *al;
 //     }
 //     return tmp;
@@ -1088,7 +1084,7 @@ template < class ValueType > Vector < ValueType > fixZero( const Vector < ValueT
 template < class T >
 Vector < T > fliplr( const Vector < T > & v ){
     Vector < T > n( v.size() );
-    for ( size_t i = 0; i < v.size(); i ++ ) n[ i ] = v[ v.size() - 1 - i ];
+    for ( Index i = 0; i < v.size(); i ++ ) n[ i ] = v[ v.size() - 1 - i ];
     return n;
 }
 
@@ -1098,13 +1094,13 @@ template < class T, class A, class T2 > Vector < T > pow( const __VectorExpr< T,
 
 template < class T, class T2 > Vector < T > pow( const Vector < T > & v, T2 npower ){
     Vector < T > r( v.size() );
-    for ( size_t i = 0; i < v.size(); i ++ ) r[ i ] = std::pow( v[ i ], T( npower ) );
+    for ( Index i = 0; i < v.size(); i ++ ) r[ i ] = std::pow( v[ i ], T( npower ) );
     return r;
 }
 
 template < class T > Vector< T > sort( const Vector < T > & a ){
     std::vector < T > tmp( a.size(), 0.0 ) ;
-    for ( size_t i = 0; i < a.size(); i ++ ) tmp[ i ] = a[ i ];
+    for ( Index i = 0; i < a.size(); i ++ ) tmp[ i ] = a[ i ];
     std::sort( tmp.begin(), tmp.end() );
 
     Vector < T > ret( tmp  );
@@ -1117,7 +1113,7 @@ template < class T > Vector< T > sort( const Vector < T > & a ){
 /*! Returning a copy of the vector and replacing all consecutive occurrences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1 ]. To remove all double values from the vector use an additionally sorting. e.g. unique( sort( v ) ) gets you [ 0 1 2 ]. */
 template < class T > Vector< T > unique( const Vector < T > & a ){
     std::vector < T > tmp( a.size() ), u;
-    for ( size_t i = 0; i < a.size(); i ++ ) tmp[ i ] = a[ i ];
+    for ( Index i = 0; i < a.size(); i ++ ) tmp[ i ] = a[ i ];
     std::unique_copy( tmp.begin(), tmp.end(), back_inserter( u ) );
 
     Vector < T > ret( u  );
@@ -1126,19 +1122,19 @@ template < class T > Vector< T > unique( const Vector < T > & a ){
 
 // template < template < class T > class Vec, class T >
 // std::ostream & operator << ( std::ostream & str, const Vec < T > & vec ){
-//     for ( size_t i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
+//     for ( Index i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
 //     return str;
 // }
 
 template < class T >
 std::ostream & operator << ( std::ostream & str, const std::vector < T > & vec ){
-    for ( size_t i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
+    for ( Index i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
     return str;
 }
 
 template < class T >
 std::ostream & operator << ( std::ostream & str, const Vector < T > & vec ){
-    for ( size_t i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
+    for ( Index i = 0; i < vec.size(); i ++ ) str << vec[ i ] << " ";
     return str;
 }
 
@@ -1146,7 +1142,7 @@ std::ostream & operator << ( std::ostream & str, const Vector < T > & vec ){
 Return a RVector with increasing values of size(n+1) filled with : 0, first, ... ,last
 */
 template < class ValueType >
-Vector< ValueType > increasingRange( const ValueType & first, const ValueType & last, size_t n ){
+Vector< ValueType > increasingRange( const ValueType & first, const ValueType & last, Index n ){
     Placeholder x__;
     RVector y( n + 1 ); y.fill( x__ );
 
@@ -1158,7 +1154,7 @@ Vector< ValueType > increasingRange( const ValueType & first, const ValueType & 
     }
 
     ValueType yval = 0.0;
-    for ( size_t i = 0; i < n; i ++ ){
+    for ( Index i = 0; i < n; i ++ ){
         yval = yval + first + dy * i;
         y[ i + 1 ] = yval;
     }
@@ -1171,7 +1167,7 @@ template < class ValueType >
 Vector < std::complex < ValueType > > toComplex( const Vector < ValueType > & re,
                                                  const Vector < ValueType > & im ){
     Vector < std::complex < ValueType > > cv( re.size() );
-    for ( size_t i = 0; i < cv.size(); i ++ ) cv[ i ] = std::complex < ValueType >( re[ i ], im[ i ] );
+    for ( Index i = 0; i < cv.size(); i ++ ) cv[ i ] = std::complex < ValueType >( re[ i ], im[ i ] );
     return cv;
 }
 
@@ -1209,7 +1205,7 @@ Vector < ValueType > real( const __VectorExpr< std::complex< ValueType >, A > & 
 template < class ValueType >
 Vector < ValueType > real( const Vector < std::complex< ValueType > > & cv ){
     Vector < ValueType > v( cv.size() );
-    for ( size_t i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].real();
+    for ( Index i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].real();
     return v;
 }
 
@@ -1221,7 +1217,7 @@ Vector < ValueType > imag( const __VectorExpr< std::complex< ValueType >, A > & 
 template < class ValueType >
 Vector < ValueType > imag( const Vector < std::complex< ValueType > > & cv ){
     Vector < ValueType > v( cv.size() );
-    for ( size_t i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].imag();
+    for ( Index i = 0; i < cv.size(); i ++ ) v[ i ] = cv[ i ].imag();
     return v;
 }
 
@@ -1253,7 +1249,7 @@ Vector < std::complex< ValueType > > conj( const __VectorExpr< std::complex< Val
 template < class ValueType >
 Vector < std::complex< ValueType > > conj( const Vector < std::complex< ValueType > > & cv ){
     Vector < std::complex< ValueType > > v( cv.size() );
-    for ( size_t i = 0; i < cv.size(); i ++ ) v[ i ] = Complex( cv[ i ].real(), -cv[ i ].imag() );
+    for ( Index i = 0; i < cv.size(); i ++ ) v[ i ] = Complex( cv[ i ].real(), -cv[ i ].imag() );
     return v;
 }
 
@@ -1287,14 +1283,14 @@ bool load( Vector< ValueType > & a, const std::string & filename, IOFormat forma
 */
 template < class ValueType >
     bool saveVec( const Vector< ValueType > & a, const std::string & filename, IOFormat format = Ascii ){ return a.save( filename, format ); }
-    
+
 /*!
  Load vector from file. See Vector< ValueType >::load.
 */
 template < class ValueType >
     bool loadVec( Vector < ValueType > & a, const std::string & filename, IOFormat format = Ascii ){ return a.load( filename, format ); }
 
-  
+
 
 } // namespace GIMLI
 

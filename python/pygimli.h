@@ -28,7 +28,13 @@ namespace GIMLI{
     template class Vector< int >;
 
     inline void ___instantiation___(){
-        sizeof( int * );
+        sizeof( ::GIMLI::Index * );
+		sizeof( ::GIMLI::Index & );
+		sizeof( ::GIMLI::Index );
+		sizeof( ::GIMLI::IndexArray * );
+		sizeof( ::GIMLI::IndexArray & );
+		sizeof( ::GIMLI::IndexArray );
+		sizeof( int * );
         sizeof( int & );
         sizeof( int  );
         sizeof( long unsigned int * );
@@ -167,7 +173,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template std::vector < int > sort( const std::vector < int > & a );
     template RVector fliplr( const RVector & a );
 
-    template RVector increasingRange( const double & first, const double & last, size_t n );
+    template RVector increasingRange( const double & first, const double & last, Index n );
 
     template class Pos< double >;
     template class Quaternion< double >;
@@ -271,15 +277,21 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
         sizeof( long unsigned int * );
         sizeof( long unsigned int & );
         sizeof( long unsigned int  );
-		sizeof( size_t * );
-        sizeof( size_t & );
-        sizeof( size_t );
+		sizeof( long long unsigned int * );
+		sizeof( long long unsigned int & );
+		sizeof( long long unsigned int  );
         sizeof( double * );
         sizeof( double );
         sizeof( double & );
         sizeof( GIMLI::SparseMatrix<double> & );
         sizeof( GIMLI::SparseMatrix<double> * );
         sizeof( GIMLI::SparseMatrix<double>  );
+		sizeof( ::GIMLI::Index * );
+		sizeof( ::GIMLI::Index & );
+		sizeof( ::GIMLI::Index );
+		sizeof( ::GIMLI::IndexArray * );
+		sizeof( ::GIMLI::IndexArray & );
+		sizeof( ::GIMLI::IndexArray );
     }
 
     /*! Temporary workaound until there is as solution for
@@ -335,8 +347,8 @@ namespace pyplusplus{ namespace aliases{
 //     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
 
     typedef GIMLI::ElementMatrix< double >                   DElementMatrix;
-    typedef GIMLI::SparseMapMatrix< int, size_t >     ISparseMapMatrix;
-    typedef GIMLI::SparseMapMatrix< double, size_t >  DSparseMapMatrix;
+    typedef GIMLI::SparseMapMatrix< int, GIMLI::Index >      ISparseMapMatrix;
+    typedef GIMLI::SparseMapMatrix< double, GIMLI::Index >   DSparseMapMatrix;
     typedef GIMLI::SparseMatrix< int >                       ISparseMatrix;
     typedef GIMLI::SparseMatrix< double >                    DSparseMatrix;
 
@@ -376,10 +388,10 @@ namespace pyplusplus{ namespace aliases{
 
     typedef std::vector< std::string >                  stdVectorString;
     typedef std::vector< int >                          stdVectorI;
-    typedef std::vector< size_t >                       stdVectorUL;
+    typedef std::vector< GIMLI::Index >                       stdVectorUL;
     typedef std::vector< double >                       stdVectorR;
     typedef std::vector< std::complex < double > >      stdVectorC;
-    typedef std::vector< std::pair< size_t, size_t > > stdVectorPairLongLong;
+    typedef std::vector< std::pair< GIMLI::Index, GIMLI::Index > > stdVectorPairLongLong;
     typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
 
     typedef std::vector< GIMLI::Trans < GIMLI::Vector < double > > * > stdVectorTrans;

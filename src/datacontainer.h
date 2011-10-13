@@ -32,11 +32,11 @@
 
 namespace GIMLI{
 
-/*! DataContainer to store, load and save data in the GIMLi unified data format. 
+/*! DataContainer to store, load and save data in the GIMLi unified data format.
  The DataContainer contains a data map that holds the data itself. Each map entry can be identified by tokens.
  By default there is a data field with the token 'valid' to mark the validity of the data.
- There is also a vector of unique sensor positions that holds sensor locations and a set of additional points, e.g., topographic positions. 
- A vector of indices to the sensor positions can be defined for each datum. e.g., Store an index-vector 'a' to the first current electrode 'A' of a ERT measurement. 
+ There is also a vector of unique sensor positions that holds sensor locations and a set of additional points, e.g., topographic positions.
+ A vector of indices to the sensor positions can be defined for each datum. e.g., Store an index-vector 'a' to the first current electrode 'A' of a ERT measurement.
  If you need a special DataContainer you should derive a child and specify a token translator and sensor index entries.
  There is also a unit test for the DataContainer that may help to understand what is it good for. */
 class DLLEXPORT DataContainer{
@@ -62,10 +62,10 @@ public:
 
     /*! Return reference to the RVector at the data map associated to the token. */
     inline RVector & operator() ( const std::string & token ) { return *ref( token ); }
-    
+
     /*! Init default data fields 'valid' and call virtual init method. */
     void initDefaults();
-    
+
     /*! Specify the datacontainer for your needs. TODO Write example if someone wants to use this. */
     virtual void init();
 
@@ -75,7 +75,7 @@ public:
         translateToken( 'power' ) -> return 'u'
         translateToken( 'Power' ) -> return 'u'
         translateToken( 'u' ) -> return 'u'
-        translateToken( 'U' ) -> return 'u' 
+        translateToken( 'U' ) -> return 'u'
         TODO Write example if someone use this
     */
     virtual void initTokenTranslator();
@@ -90,24 +90,24 @@ public:
     virtual void clear();
 
     /*! Return the size of the data map. */
-    inline size_t size( ) const { return dataMap_.find( "valid" )->second.size(); }
+    inline Index size( ) const { return dataMap_.find( "valid" )->second.size(); }
 
     /*! Return the complete data map as read-only map */
     inline const std::map< std::string, RVector > & dataMap() const { return dataMap_; }
-    
+
     /*! Return the complete data descriptions map */
     inline const std::map< std::string, std::string > & dataDescription() const { return dataDescription_; }
-    
-    
+
+
     /*!
      * Add data to this DataContainer and snap new sensor positions by tolerance snap. Data fields from this data are preserved.
      */
     void add( const DataContainer & data, double snap = 1e-3 );
-    
+
     // START Sensor related section
     /*! Set the positions for all sensors. */
     inline void setSensorPositions( const std::vector< RVector3 > & sensors ) { sensorPoints_ = sensors; }
-    
+
     /*! Return the complete sensor positions as read-only. */
     inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
 
@@ -117,19 +117,19 @@ public:
     /*! Return a single sensor position. */
     inline const RVector3 & sensorPosition( uint i ) const { return sensorPoints_[i]; }
 
-    /*! Create a valid sensor at a given position and returns the id of the sensor. 
-        Is there already a sensor at the given position NO new sensor will be created. 
+    /*! Create a valid sensor at a given position and returns the id of the sensor.
+        Is there already a sensor at the given position NO new sensor will be created.
         Atm. brute force search with a snapping distance of tolerance is done.
         \param pos RVector3 of the sensor position
         \param tolerance Double of the snapping tolerance */
     long createSensor( const RVector3 & pos, double tolerance = 1e-3 );
-    
+
     /*! Return the number of sensors. */
     uint sensorCount(  ) const { return sensorPoints_.size(); }
- 
+
     /*! Mark the data field entry as sensor index. */
     void registerSensorIndex( const std::string & token );
-    
+
     /*! Return true if the field entry is of type sensor index. */
     bool isSensorIndex( const std::string & token ) const ;
 
@@ -138,15 +138,15 @@ public:
 
     /*! Return true if the sensor indices on a loaded/saved file starting 1. Internally the indices stored from 0. */
     bool sensorIndexOnFileFromOne() const { return sensorIndexOnFileFromOne_ ;}
-        
+
     /*! Mark all data invalid that use a sensor index greater than sensor count. */
-    void markInvalidSensorIndices(); 
-    
-    /*! Remove all data that contains the sensor and the sensor itself. 
+    void markInvalidSensorIndices();
+
+    /*! Remove all data that contains the sensor and the sensor itself.
     *\param idx uint idx single index for a sensor regarding sensorPoints_
     */
     void removeSensorIdx( uint idx );
-    
+
     /*! Remove all data that contains the sensor and the sensor itself. *
      *\param idx IndexArray array of indices regarding sensorPoints_
      */
@@ -154,15 +154,15 @@ public:
 
     /*! Return the input format string for the sensors. */
     inline const std::string & formatStringSensors( ) const { return inputFormatStringSensors_; }
-    
+
     /*! Sort all sensors regarding their x-coordinate. */
     void sortSensorsX();
-    
+
     // END Sensor related section
-    
+
     /*! Return the additional points. */
     inline const std::vector < RVector3 > & additionalPoints() const { return topoPoints_; }
-    
+
     /*! Return true if token data exist and all elements != 0.0. */
     inline bool nonZero( const std::string & token ) const {
         if ( exists( token ) ) return ( min( abs( dataMap_.find( token )->second ) ) > TOLERANCE );
@@ -196,9 +196,9 @@ public:
      * Data[token 1] Data [token n]\n
      * Number of additional points\n
      * Additional points\n
-     * 
+     *
      * http://www.resistivity.net/?unidata\n
-        \param fileName String of the file name 
+        \param fileName String of the file name
         \param formatData String to specify the tokens of the data map to be save. If formatData == "all", all datafields will be saved inclusive invalid data.
         \param formatSensor String to specify the tokens of the sensor format to be save */
     virtual int save( const std::string & fileName, const std::string & formatData, const std::string & formatSensor, bool verbose = false ) const;
@@ -222,7 +222,7 @@ public:
         \param description String that describe the data */
     void add( const std::string & token, const RVector & data, const std::string & description = "" );
 
-    /*! Set the data for a given token. If there is no such data, new data will be added. 
+    /*! Set the data for a given token. If there is no such data, new data will be added.
      * Throws an exception if the data field size is not the same size of the \ref DataContainer.
         \param token String to identify the data
         \param data \ref RVector of the data */
@@ -240,32 +240,32 @@ public:
         \param token String that identify the data to be described
         \param description String that describe the data */
     void setDataDescription( const std::string & token, const std::string & description );
-    
+
     /*! Returns a copy of the description string for the specified data field. Return empty string if the data doesn't exist.
         \param token String that identify the data. */
     std::string dataDescription( const std::string & token ) const;
-    
+
     /*! Inplace remove data from index vector. Remove all data that are covered by idx. Sensors are preserved.*/
-    virtual void remove( const std::vector < size_t > & idx );
+    virtual void remove( const IndexArray & idx );
 
     /*! Create new DataContainer that only contains the values that are covered by idx. Sensors are preserved.*/
-    virtual DataContainer filter( const std::vector < size_t > & idx ) const ;
-    
+    virtual DataContainer filter( const IndexArray & idx ) const ;
+
     /*! Mark data valid by index vector. Shortcut for this->ref("valid")->setVal( idx, valid ). */
-    inline void markValid( const std::vector < size_t > & idx, bool valid = true ){
+    inline void markValid( const IndexArray & idx, bool valid = true ){
         dataMap_[ "valid" ].setVal( valid, idx );
     }
 
     /*! Mark single data valid. this->ref("valid")->setVal( idx, valid ). */
-    inline void markValid( size_t idx, bool valid = true ){
+    inline void markValid( Index idx, bool valid = true ){
         dataMap_[ "valid" ].setVal( valid, idx );
     }
 
     /*! Mark data invalid by index vector. */
-    inline void markInvalid( const std::vector < size_t > & idx ){ markValid( idx, false ); }
+    inline void markInvalid( const IndexArray & idx ){ markValid( idx, false ); }
 
     /*! Mark data invalid by index. */
-    inline void markInvalid( size_t idx ){ markValid( idx, false ); }
+    inline void markInvalid( Index idx ){ markValid( idx, false ); }
 
     /*!
      * Mark data as invalid if they contain nan or inf.
@@ -292,26 +292,26 @@ protected:
 
     //! Data map
     /*! Stores the data map < token, data >. All data map entries have the same size. */
-    std::map< std::string, RVector > dataMap_; 
-    
+    std::map< std::string, RVector > dataMap_;
+
     //! Sensor positions
     /*! Stores the sensor positions. */
-    std::vector < RVector3 > sensorPoints_; 
+    std::vector < RVector3 > sensorPoints_;
 
     //! Data field that is sensor index
     /*! Stores the field token that represent sensor indices */
-    std::set< std::string > dataSensorIdx_; 
-    
+    std::set< std::string > dataSensorIdx_;
+
     //! Description for the data map entries
     /*! Stores an optional description for the associated data field < token, description >. \warning Description will not yet be saved. */
-    std::map< std::string, std::string > dataDescription_;  
-    
+    std::map< std::string, std::string > dataDescription_;
+
     /*! Store additionally points */
     std::vector < RVector3 > topoPoints_;
 
     /*! tokenTranslator for renaming formats to known cases */
     std::map< std::string, std::string > tT_;
-    
+
     /*! Determine if the sensor indices should start from 0 or 1 */
     bool sensorIndexOnFileFromOne_;
 

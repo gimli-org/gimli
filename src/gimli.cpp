@@ -67,12 +67,12 @@ size_t fileLength( std::fstream & file ){
     return length;
 }
 
-size_t countColumnsInFile( const std::string & fname){
-    size_t columnsCount = 0;
+uint countColumnsInFile( const std::string & fname){
+    uint columnsCount = 0;
     return countColumnsInFile( fname, columnsCount );
 }
 
-size_t countColumnsInFile( const std::string & fname, size_t & columnsCount ){
+uint countColumnsInFile( const std::string & fname, uint & columnsCount ){
     columnsCount = 0;
     std::fstream file; if ( !openInFile( fname, & file, false ) ) { return 0; }
 
@@ -93,7 +93,7 @@ size_t countColumnsInFile( const std::string & fname, size_t & columnsCount ){
     return 0;
 }
 
-size_t countRowsInFile( const std::string & fname ){
+uint countRowsInFile( const std::string & fname ){
     std::fstream file; openInFile( fname, & file );
     CERR_TO_IMPL;
     file.close();
