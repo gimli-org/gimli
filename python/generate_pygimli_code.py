@@ -127,7 +127,8 @@ def generate( defined_symbols ):
     
     defines = ['__DUMMY__']
 
-    if platform.architecture()[0] == '64bit':
+    print platform.architecture()
+    if platform.architecture()[0] == '64bit' and platform.architecture()[1] != 'ELF':
         defines.append( '_WIN64' )
         print 'Marking win64 for gccxml'
 
