@@ -59,10 +59,10 @@ bool fileExist( const std::string & filename ){
     return result;
 }
 
-size_t fileLength( std::fstream & file ){
-    size_t oldPos = file.tellg();
+uint fileLength( std::fstream & file ){
+    uint oldPos = file.tellg();
     file.seekg( 0, std::ios::end );
-    size_t length = file.tellg();
+    uint length = file.tellg();
     file.seekg( oldPos );
     return length;
 }

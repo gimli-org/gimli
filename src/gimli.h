@@ -69,6 +69,7 @@ typedef int64_t int64;
 typedef unsigned __int64 Index;
 typedef __int64 SIndex;
 #else
+#include <sys/types.h>
 typedef size_t Index;
 typedef ssize_t SIndex;
 #endif
@@ -261,7 +262,7 @@ DLLEXPORT bool fileExist( const std::string & filename );
 DLLEXPORT uint countColumnsInFile( const std::string & fname, uint & columnCount );
 DLLEXPORT uint countColumnsInFile( const std::string & fname );
 DLLEXPORT uint countRowsInFile( const std::string & fname );
-DLLEXPORT uint64 fileLength( std::fstream & file );
+DLLEXPORT uint fileLength( std::fstream & file );
 DLLEXPORT std::vector < std::string > getRowSubstrings( std::fstream & file, char comment = '#' );
 
 inline std::vector < std::string > getRow( std::fstream & file, char comment = '#' ){

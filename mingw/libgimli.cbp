@@ -123,7 +123,6 @@
 		<Unit filename="..\src\sparsematrix.h" />
 		<Unit filename="..\src\spline.cpp" />
 		<Unit filename="..\src\spline.h" />
-		<Unit filename="..\src\stlvector.h" />
 		<Unit filename="..\src\stopwatch.cpp" />
 		<Unit filename="..\src\stopwatch.h" />
 		<Unit filename="..\src\trans.h" />
