@@ -7,8 +7,10 @@ import pygimli as g
 from base import rndig
 import string
 
-def astausgleich( ab2, mn2, rhoa ):
+def astausgleich( ab2org, mn2org, rhoa ):
     """shifts the branches of a dc sounding to generate a matching curve"""
+    ab2 = N.asarray( ab2org )
+    mn2 = N.asarray( mn2org )
     um = N.unique(mn2)
     for i in range( len(um) - 1 ):
         r0 = []
@@ -25,15 +27,28 @@ def astausgleich( ab2, mn2, rhoa ):
                 
     return rhoa
 
-def loadSIPallData(filename):
+def loadSIPallData(filename,outnumpy=False):
     """load SIP data with the columns ab/2,mn/2,rhoa and PHI
     with the corresponding frequencies in the first row"""
-    A = N.loadtxt(filename)
-    fr = A[0, 3:]
-    ab2 = A[1:, 0]
-    mn2 = A[1:, 1]
-    rhoa = A[1:, 2]
-    PHI = A[1:, 3:]
+    if outnumpy:
+        A = N.loadtxt(filename)
+        fr = A[0, 3:]
+        ab2 = A[1:, 0]
+        mn2 = A[1:, 1]
+        rhoa = A[1:, 2]
+        PHI = A[1:, 3:]
+    else:
+        A = g.RMatrix()
+        g.loadMatrixCol( A, 'sch/dc.ves' )
+        ndata = A.cols()
+        ab2 = A[0](1,ndata)
+        mn2 = A[1](1,ndata)
+        rhoa = A[2](1,ndata)
+        PHI=g.RMatrix()
+        fr = []
+        for i in range(3,A.rows()):
+            fr.append( A[i][0] )
+            PHI.push_back( A[i]( 1, ndata ) )
     return ab2, mn2, rhoa, PHI, fr
 
 def makeSlmData(ab2, mn2, rhoa=None, filename=None):
@@ -81,14 +96,15 @@ def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
         xlab = r'$\rho_a$ in $\Omega$m'
 
     ab2a = N.asarray(ab2)
-    if mn2 == None:
+    rhoa = N.asarray(rhoa)
+    if mn2 is None:
         if islog: 
             l1 = P.loglog( rhoa, ab2, 'rx-', label='observed' )
         else: 
             l1 = P.semilogy( rhoa, ab2, 'rx-', label='observed' )
             
         P.hold(True)
-        if resp != None: 
+        if resp is not None: 
             if islog: 
                 l2 = P.loglog(resp, ab2, 'bo-', label='simulated')
             else: 
@@ -112,14 +128,19 @@ def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
 
     P.axis('tight')
     P.ylim( ( max(ab2), min(ab2) ) )
-    locs = P.yticks()
-    locs[0] = max( locs[0], min(ab2) )
-    locs[-1] = min( locs[-1], max(ab2) )
+    locs = P.yticks()[0]
+    if len( locs ) < 2:
+        locs = N.hstack( ( min(ab2), locs, max( ab2 ) ) )
+    else:
+        locs[0] = max( locs[0], min(ab2) )
+        locs[-1] = min( locs[-1], max(ab2) )
+    
     a = []
     for l in locs: 
         a.append( '%g' % rndig(l) )
 
     P.yticks( locs, a )
+
     P.grid( which='both' )
     P.xlabel( xlab )
     P.ylabel( 'AB/2 in m' )

@@ -36,8 +36,9 @@ namespace GIMLI{
 
 //! DC (direct current) 1D modelling 
 /*! Classical DC 1D forward operator for given resistivities and thicknesses 
-    DC1dModelling( mesh, dataContainer, nlayers, verbose )
-    DC1dModelling( dataContainer, nlayers, verbose ) */
+    DC1dModelling( nlayers, ab2, mn2, verbose )
+    DC1dModelling( nlayers, am, an, bm, bn, verbose )
+    DC1dModelling( nlayers, dataContainer, verbose ) */
 class DLLEXPORT DC1dModelling : public ModellingBase {
 public:
 //    /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) deactivated (DataContainer) */
@@ -48,6 +49,9 @@ public:
 
     /*! general constructor using AM, AN, BM, BN distances */
     DC1dModelling( size_t nlayers, RVector & am, RVector & an, RVector & bm, RVector & bn, bool verbose = false );
+    
+    /*! constructor using a data container */
+//    DC1dModelling( size_t nlayers, DataContainer & data, bool verbose = false );
 
     virtual ~DC1dModelling() { }
 
@@ -130,7 +134,9 @@ public:
 
     /*! constructor for classical Schlumberger sounding */
     DC1dModellingC( size_t nlayers, RVector & ab2, RVector & mn2, bool verbose = false ) :
-        DC1dModelling( nlayers, ab2, mn2, verbose ){}
+        DC1dModelling( nlayers, ab2, mn2, verbose ){
+            setMesh( createMesh1DBlock( nlayers, 2 ) );
+        }
 
     /*! general constructor using AM, AN, BM, BN distances */
     DC1dModellingC( size_t nlayers, RVector & am, RVector & an, RVector & bm, RVector & bn, bool verbose = false ) :
@@ -154,13 +160,11 @@ public:
 //            }
     DC1dRhoModelling( RVector & thk, RVector & am, RVector & an, RVector & bm, RVector & bn, bool verbose = false )
             : DC1dModelling( thk.size(), am, bm, am, an, verbose ), thk_( thk ) {
-                mesh_ = createMesh1D( thk.size() + 1, 1 );
-                setMesh( mesh_ );            
+                setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
     DC1dRhoModelling( RVector & thk, RVector & ab2, RVector & mn2, bool verbose = false )
             : DC1dModelling( thk.size(), ab2, mn2, verbose ), thk_( thk ) { 
-                mesh_ = createMesh1D( thk.size() + 1, 1 );
-                setMesh( mesh_ );
+                setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
     virtual ~DC1dRhoModelling() { }
 
@@ -170,7 +174,6 @@ public:
     
 protected:
     RVector thk_;
-    Mesh mesh_;
 };
 
 } // namespace GIMLI{

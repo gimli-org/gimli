@@ -23,8 +23,10 @@ def numpy2gmat(nmat):
 
 def rndig(a, ndig=3):
     """round float using a number of counting digits."""
-    b = N.around( a, ndig - N.ceil( N.log10( a ) ) )
-    return b
+    if N.abs( a ) < 1e-4:
+        return a
+    else:
+        return N.around( a, ndig - int( N.ceil( N.log10( N.abs( a ) + 1e-4 ) ) ) )
 
 def jetmap(m=64):
     """ jet color map """
@@ -54,7 +56,7 @@ def showmymatrix(A,x,y,dx=2,dy=1,xlab=None,ylab=None,cbar=None):
     if cbar is not None: P.colorbar(orientation=cbar)
     return
     
-def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True):
+def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14):
     """draw 1d block model defined by value and thickness vectors."""
     if xlab is None: 
         xlab = "$\\rho$ in $\\Omega$m"
@@ -82,11 +84,26 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True):
         li = P.semilogx( px, pz )
     else:        
         li = P.plot( px, pz )
+        
+    locs = P.xticks()[0]
+    if len( locs ) < 2:
+        locs = N.hstack( ( min(x), locs, max( x ) ) )
+    elif len( locs ) < 5:
+        locs[0] = max( locs[0], min(x) )
+        locs[-1] = min( locs[-1], max(x) )
+    
+    a = []
+    for l in locs:
+        a.append( '%g' % rndig(l) )
+
+    P.xticks( locs, a, fontsize=fs )
+    P.yticks(fontsize = fs)
+
     P.grid(which='both')
     P.xlim( ( N.min(x) * 0.9, N.max(x) * 1.1 ) )
     P.ylim( ( max(z1) * 1.15 , 0. ) )
-    P.xlabel(xlab)
-    P.ylabel(zlab)
+    P.xlabel(xlab,fontsize=fs)
+    P.ylabel(zlab,fontsize=fs)
     P.show()
     return li
 
