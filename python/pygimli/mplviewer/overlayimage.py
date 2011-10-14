@@ -61,4 +61,50 @@ class OverlayImageMPL( ):
                 self.imAxes.set_xticks( [] )
                 self.imAxes.set_yticks( [] )
             
-        
+
+def underlayGoogleMaps( axes, proj ):
+    '''
+        Get map image from googlemaps and underlay the current axes
+        The image is proxied on disk
+        axes must contain coordinates based on a valid projection
+    '''   
+    from PIL import Image
+    import urllib
+    import numpy as np
+    
+    upperleft = proj( axes.get_xlim( )[0], axes.get_ylim( )[1], inverse = True )
+    lowerright= proj( axes.get_xlim( )[1], axes.get_ylim( )[0], inverse = True )
+
+    imagename = 'size=640x640&sensor=false'
+    imagename += "&markers="
+    imagename += str(upperleft[1])+ "," + str(upperleft[0])
+    imagename += "|"
+    imagename += str(lowerright[1])+ "," + str(lowerright[0])
+            
+    image = None
+    try:
+        print "Read image from disk"
+        image = Image.open( imagename + ".png" )
+    except:
+        print "Get map from google maps"
+        googlemap="http://maps.google.com/maps/api/staticmap?"+imagename
+        print googlemap
+        filehandle = urllib.urlopen(googlemap, proxies={})
+        data = filehandle.read()
+        filehandle.close()
+        fi = open( imagename + ".png", 'w')
+        fi.write( data )
+        image = Image.open( imagename + ".png" )
+        fi.close()
+
+    extent = np.asarray( [axes.get_xlim( )[0], axes.get_xlim( )[1], axes.get_ylim( )[0], axes.get_ylim( )[1] ] )
+    x= extent[1]-extent[0]
+    y= extent[3]-extent[2]
+    scale = 0.1
+    extent += np.asarray( [ -x*scale, x*scale, -y*scale, y*scale ] )
+    print extent
+    axes.imshow( image, origin='lower'
+                , extent = extent )
+    
+# def underlayGoogleMaps( axes, proj )            
+
