@@ -3,4 +3,4 @@
 	main gui application
 '''
 
-from pygimliMainFrame import PyGIMLIApp
+from pygimliMainFrame import PyGIMLIApp, PyGIMLIMainFrame
