@@ -2,7 +2,7 @@
 MAKEOPTS=-j7
 mkdir -p generated
 
-[ -f pygimli.cache ] && rm pygimli.cache
+[ -f _pygimli_.cache ] && rm pygimli.cache
 
 if [ $OSTYPE = "msys" ]; then
 	MAKEFILE=Makefile.msys

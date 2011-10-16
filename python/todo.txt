@@ -1,0 +1,19 @@
+pygimli:
+
+spooky problems:
+
+---------------------------------------------
+this fails:
+
+for regEntry in self.fop.regionManager().regions():
+    print regEntry.key
+    print regEntry.value
+
+< print regEntry.value
+< TypeError: No to_python (by-value) converter found for C++ type: GIMLI::Region*
+
+workaround:
+for regEntry in self.fop.regionManager().regions():
+    print self.fop.regionManager().region( regEntry.key )
+    
+---------------------------------------------
