@@ -527,6 +527,7 @@ Region * RegionManager::createRegion( int marker, const Mesh & mesh ){
         region->resize( mesh );
         //std::cerr << WHERE_AM_I << " Region with marker " << marker << " already exists." << std::endl;
     }
+    recountParaMarker_(); //** make sure the counter is right
     return region;
 }
 

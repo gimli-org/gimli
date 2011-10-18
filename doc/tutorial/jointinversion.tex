@@ -16,6 +16,7 @@ In the common response function the two vectors are combined.
 We create a new modelling class that derives from the DC1d modelling class\footnote{In order to use the classes, dc1dmodelling.h and em1dmodelling.h have to be included.} and has a member of the MT1d modelling class type.
 
 \begin{lstlisting}[language=C++,morekeywords={RVector,RMatrix}]
+MT IS TO BE REPLACED BY FDEM
 class DC_MT_Modelling : public DC1dModelling {
 public:
     DCMTModelling(Mesh & mesh,DataContainer & data,RVector & T,size_t nlay)
