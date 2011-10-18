@@ -62,7 +62,7 @@ class OverlayImageMPL( ):
                 self.imAxes.set_yticks( [] )
             
 
-def underlayGoogleMaps( axes, proj ):
+def underlayGoogleMaps( axes, proj, proxies = {} ):
     '''
         Get map image from googlemaps and underlay the current axes
         The image is proxied on disk
@@ -89,12 +89,13 @@ def underlayGoogleMaps( axes, proj ):
         print "Get map from google maps"
         googlemap="http://maps.google.com/maps/api/staticmap?"+imagename
         print googlemap
-        filehandle = urllib.urlopen(googlemap, proxies={})
+        filehandle = urllib.urlopen(googlemap, proxies=proxies)
         data = filehandle.read()
         filehandle.close()
-        fi = open( imagename + ".png", 'w')
+        imagename1 = "bla"
+        fi = open( imagename1 + ".png", 'w')
         fi.write( data )
-        image = Image.open( imagename + ".png" )
+        image = Image.open( imagename1 + ".png" )
         fi.close()
 
     extent = np.asarray( [axes.get_xlim( )[0], axes.get_xlim( )[1], axes.get_ylim( )[0], axes.get_ylim( )[1] ] )
