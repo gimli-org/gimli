@@ -160,10 +160,14 @@ typedef Pos< double >       RVector3;
 template < class ValueType >        class SparseMatrix;
 typedef SparseMatrix< int >         ISparseMatrix;
 typedef SparseMatrix< double >      DSparseMatrix;
+typedef SparseMatrix< double >      RSparseMatrix; //** fits to RVector/RMatrix
+typedef SparseMatrix< float >       FSparseMatrix;
 
 template< class ValueType, class IndexType > class SparseMapMatrix;
 typedef SparseMapMatrix< int, Index >     ISparseMapMatrix;
 typedef SparseMapMatrix< double, Index >  DSparseMapMatrix;
+typedef SparseMapMatrix< double, Index >  RSparseMapMatrix; //** fits to RVector/RMatrix
+typedef SparseMapMatrix< float, Index >   FSparseMapMatrix;
 
 template < class ValueType > class Matrix;
 template < class ValueType > class Vector;
@@ -172,6 +176,8 @@ template < class ValueType > class Vector;
 typedef std::complex < double > Complex;
 typedef Vector < double > RVector;
 typedef Matrix < double > RMatrix;
+typedef Vector < float >  FVector;
+typedef Matrix < float > FMatrix;
 
 typedef Vector< Complex > CVector;
 //typedef Matrix < Complex > CMatrix;

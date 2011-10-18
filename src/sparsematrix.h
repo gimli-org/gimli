@@ -444,7 +444,7 @@ Vector < V2 > transMult( const SparseMapMatrix< ValueType, IndexType > & S,
 //     return tmp;
 // }
 
-//! Sparse matrix in compressed column form CCS
+//! Sparse matrix in compressed column storage (CCS) form
 template < class ValueType > class SparseMatrix {
 public:
 

@@ -23,6 +23,7 @@
 
 #include "gimli.h"
 #include "matrix.h"
+#include "blockmatrix.h"
 
 namespace GIMLI{
     
@@ -69,7 +70,7 @@ public:
 
     virtual void createJacobian( DSparseMapMatrix & jacobian, const RVector & model );
 
-//     virtual void createJacobian( H2SparseMapMatrix & jacobian, const RVector & model ){}
+    virtual void createJacobian( H2SparseMapMatrix & jacobian, const RVector & model );
 
     const RMatrix & solution() const { return solutions_; }
 

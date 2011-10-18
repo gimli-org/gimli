@@ -174,6 +174,10 @@ void ModellingBase::createJacobian( DSparseMapMatrix & jacobian, const RVector &
     CERR_TO_IMPL
 }
 
+void ModellingBase::createJacobian( H2SparseMapMatrix & jacobian, const RVector & model ){
+    CERR_TO_IMPL
+}
+
 void ModellingBase::mapModel( const RVector & model, double background ){
     int marker = -1;
     std::vector< Cell * > emptyList;
