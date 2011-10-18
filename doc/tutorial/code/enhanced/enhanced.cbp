@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Tutorial:Enhanced" />
+		<Option pch_mode="0" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="mt1dinv0">
+				<Option output="mt1dinv0.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-l100 -D 1000_100_1000_n5_1.dat" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
+			<Target title="ttinvoffset">
+				<Option output="ttinvoffset.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="mt1dinv0;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-O3" />
+			<Add option="-DMINGW" />
+			<Add directory="..\..\..\..\src" />
+		</Compiler>
+		<Linker>
+			<Add library="libgimli" />
+			<Add directory="..\..\..\..\mingw" />
+		</Linker>
+		<Unit filename="mt1dinv0.cpp">
+ 			<Option target="mt1dinv0"/>
+		</Unit>
+		<Unit filename="ttinvoffset.cpp">
+ 			<Option target="ttinvoffset"/>
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

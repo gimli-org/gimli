@@ -261,7 +261,7 @@ Note that there are predefined types based on real (double) vectors beginning wi
 
 \lstinline|template< class ValueType > class Vector|
 
-\lstinline|RVector| 
+\lstinline|RVector|,\lstinline|FVector|, \lstinline|BVector|,\lstinline|IVector|
 
 \lstinline|load/save|
 
@@ -269,12 +269,40 @@ complex values using Complex = \lstinline|std::complex<double>| as a vector \lst
 
 \lstinline|template < class ValueType > class Matrix|
 
-\lstinline|RMatrix|
+\lstinline|RMatrix|, \lstinline|FMatrix|
 
 \lstinline|load/saveMatrixCol|
 
 \lstinline|template< class ValueType, class IndexType > class SparseMapMatrix|
 
-DSparseMapMatrix for double and unsigned int
+\lstinline|RSparseMapMatrix| for double and unsigned int
 
-modelling SparseMatrix
+modelling column-compressed sparse matrix \lstinline|SparseMatrix|
+
+\subsectin{Block-Matrices}
+Large matrices for Jacobian (J) and constraint matrix (C)
+
+holding individual matrices by stacking matrices saves space and makes allocation easier
+
+Horizontal stacking (H types): individual models (or model parts)
+
+Vertical stacking (V types): individual data (J) or constraints (C)
+
+2 matrices (2) of arbitrary type, N matrices (N) of identical type, repetition (R) of identical matrices
+
+\lstinline|H2Matrix< Matrix1, Matrix2 >|
+example: 2 data sets for 1 model
+
+\lstinline|V2Matrix< Matrix1, Matrix2 >| example: 1 model, 2 data sets
+
+\lstinline|D2Matrix< Matrix1, Matrix2 >| example: 2 models, 2 data sets
+
+\lstinline|HNMatrix< Matrix >| example: LCI 
+
+\lstinline|VNMatrix< Matrix >| (N vertical identical matrices)
+
+\lstinline|DNMatrix< Matrix >| (diagonal matrices, Block-Jacobi)
+example: LCI (identical models with individual Jacobians)
+
+\lstinline|DRMatrix< Matrix >| (
+example: 

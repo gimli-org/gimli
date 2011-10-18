@@ -4,7 +4,7 @@ File \file{doc/tutorial/code/enhanced/mt1dinv0.cpp}\\
 In magnetotelluric (MT) inversion for every period an amplitude $\rho^a$ and a phase $\phi$ is computed from the electric and magnetic registrations. The file \file{1000\_100\_1000\_n5\_1.dat} contains a synthetic three layer case of 1000$\Omega$m-100$\Omega$m-1000$\Omega$m with 5\,\% Gaussian noise on the $\rho^a$ and 1 degree on the phases.
 The three columns $T$, $\rho^a$ and $\phi$ are read extracted as vectors by
 \begin{lstlisting}
-    RMatrix TRP; //! real matrix TRP with period(T), Resistivity and Phase
+    RMatrix TRP; //! real matrix with period(T), resistivity(R) & phase(P)
     loadMatrixCol( TRP, dataFileName ); //! read column-based file
     size_t nP = TRP.rows(); //! number of data
     RVector T( TRP[0] ), rhoa( TRP[1] ), phi( TRP[2] ); //! columns
@@ -33,10 +33,9 @@ Similarly, the assumed relative error of the $\rho^a$ and $\phi$ are combined us
 Similar to DC resistivity inversion, we create a 1d block mesh, initialise the forward operator and set up options for the two regions (0-thicknesses,1-resistivities).
 Starting values for the $\rho_i$ and $d_i$ are computed by the mean apparent resistivity and an associated skin depth.
 \begin{lstlisting}
-    Mesh mesh = createMesh1DBlock( nlay );
-    MT1dModelling f( mesh, T, nlay, false );
+    MT1dModelling f( T, nlay, false );
     double medrhoa = median( rhoa ); //! median apparent resistivity
-    double medskindepth = sqrt( median( T ) *  ) * 503.0; //! skin depth
+    double medskindepth = sqrt( median( T ) * medrhoa ) * 503.0; //!skin d.
     f.region( 0 )->setTransModel( transThk ); //! transform
     f.region( 1 )->setTransModel( transRho );
     f.region( 0 )->setConstraintType( 0 ); //! min. length

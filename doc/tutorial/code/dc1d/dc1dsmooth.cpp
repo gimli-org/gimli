@@ -33,14 +33,14 @@ int main( int argc, char *argv [] )
     RVector mn2(  abmnr[ 1 ] );        //! second column
     RVector rhoa( abmnr[ 2 ] );        //! third column
 
-    /*! Model (resistivities) and mesh (1d mesh) */
+    /*! Define discretization according to AB/2 */
     double maxDep = max( ab2 ) / 2;   //! rule of thumb
     std::cout << "Maximum depth estimated to " << maxDep << std::endl;
     RVector thk( nlay - 1, maxDep / ( nlay - 1 ) );
     thk *= ( maxDep / sum( thk ) / 3 );
 
     /*! Transformations: log for app. resisivity and thickness, logLU for resistivity */
-//    TransLogLU< RVector > transRho( lbound, ubound );
+//    RTransLogLU transRho( lbound, ubound ); // alternative
     RTransLog transRho;
     RTransLog transRhoa;
 
@@ -50,8 +50,6 @@ int main( int argc, char *argv [] )
 
     /*! Set up inversion with full matrix, data and forward operator */
     RInversion inv( rhoa, f, verbose );
-    RVector model( nlay, median( rhoa ) );
-    inv.setModel( model );
     inv.setTransData( transRhoa );
     inv.setTransModel( transRho );
     inv.setRelativeError( errPerc / 100.0 );
@@ -59,6 +57,8 @@ int main( int argc, char *argv [] )
     inv.setOptimizeLambda( lambdaOpt );
     inv.setBlockyModel( isBlocky );
     inv.stopAtChi1( false );
+    RVector model( nlay, median( rhoa ) );
+    inv.setModel( model );
 
     if ( optimizeChi1 ) {
         model = inv.runChi1( 0.1 );

@@ -160,16 +160,17 @@ To build the binaries, the GNU build system (Autotools) is used: first, the scri
 The configuration tries to detect the necessary libraries, i.e. 
 \begin{itemize}
 	\item LAPACK (Linear algebra package) and BLAS (basic linear algebra subprograms), see \url{www.netlib.org}
-	\item Boost C++ libraries (we use multithreading and python, see \url{boost.org}
-	\item SuiteSparse for solving sparse matrix systems (\url{http://www.cise.ufl.edu/research/sparse/SuiteSparse/})
+	\item Boost C++ libraries (\url{boost.org}), we use multithreading and python bindings 
+	\item SuiteSparse for solving sparse matrix systems (\url{http://www.cise.ufl.edu/research/sparse/SuiteSparse/}), we use Cholmod for symmetric matrices
 \end{itemize}
 Whereas LAPACK/BLAS and Boost can be made system-wide available on Linux systems using a package manager, SuiteSparse must be downloaded and built by hand. 
 In the folder \file{external} there is a Makefile that tries to download and build LAPACK, BLAS and SuiteSparse.
 All libraries should be located in \file{external/lib}, 
-
 On Windows systems, you can use ready-compiled dll files.
-To use the GNU compilers, MinGW (Minimalistic GNU for Windows, \url{www.mingw.org} should be installed first).
-For Windows we recommend to use CodeBlocks as compiler IDE with the predefined project files (\file{**.cbp}) in the folder \file{mingw}.
+
+For reasons of platform-compatibility, our codes are adapted to the GNU compilers but should be working with any compiler suite.
+Whereas the GNU compiler collection is installed on any Linux or Mac system, on Windows MinGW (Minimalistic GNU for Windows, \url{www.mingw.org}) should be installed first.
+For Windows we also recommend to use CodeBlocks as compiler IDE for which we prepared project files (\file{**.cbp}) in the folder \file{mingw}.
 
 \subsubsection*{PyGIMLi}
 Python (\url{www.python.org}) is a very powerful and easy-to-use programming language.

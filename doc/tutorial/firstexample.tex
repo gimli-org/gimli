@@ -1,5 +1,5 @@
 \section{A very simple example - polynomial curve fitting}\label{sec:simple}
-\subsection{The first program}
+\subsection{The first program in C++}
 {\em Example file polyfit0.cpp in the directory doc/tutorial/code/polyfit.}\\
 Let us start with the very simple inverse problem of fitting a polynomial curve of degree $P$
 \[ f(x) = p_0 +p_1 x + \ldots + p_P x^P= \sum\limits_{i=0}^{P} p_i x^i \]
@@ -13,14 +13,6 @@ The vectorized function for a vector $\bf x=[x_1,\ldots,x_N]^T$ can be written a
 
 We set up the modelling operator, i.e. to return $\f(\x)$ for given $p_i$, as a class derived from the modelling base class. The latter holds the main mimic of generating jacobian, gradients by brute force. The only function to overwrite is \cw{response()}.
 
-\lstloadlanguages{[Visual]C++,[ISO]C++}
-\lstset{language=[ISO]C++}
-%\lstdefinelanguage{C++}{morekeywords={RVector,ModellingBase}}
-%\lstset{numbers=left,numberstyle=\tiny}
-%\lstset{basicstyle=\small,keywordstyle=\color{red}}
-\lstset{basicstyle=\small,keywordstyle=\bfseries}
-\lstset{frame=shadowbox,commentstyle=\color{blue}}
-%\lstset{morekeywords={RVector,ModellingBase}}
 \begin{lstlisting}[language=C++,morekeywords={RVector,ModellingBase}]
 class FunctionModelling : public ModellingBase {
 public:
@@ -70,11 +62,11 @@ int main( int argc, char *argv [] ){
 \end{lstlisting}
 
 The data in the two-column data file is read into a real matrix (\lstinline|RMatrix xy;|) whose columns can be assessed by \lstinline|xy[i]|. We initialise the forward class as defined and the inversion by specifying data and forward operator.
-The any options of the inversion can be set, such as the regularization parameter being zero.
+Then any options of the inversion can be set, such as the regularization parameter being zero.
 
 Instead of using a fixed polynomial degree and a pre-defined file name we might specify this by the command line in order to have a user-friendly tool.
 For this, an option map is applied reading the last argument and the optionally defined -n switch.
-\begin{lstlisting}[language=C++]
+\begin{lstlisting}[language=C++,morekeywords={OptionMap,RMatrix,loadMatrixCol}]
     int np = 1;
     std::string datafile;
     OptionMap oMap;
@@ -89,33 +81,7 @@ For this, an option map is applied reading the last argument and the optionally 
 The provided datafile \verb|y_2.1x+1.1.dat| holds synthetic noisified data for a linear function.
 A call \verb|curvefit -n1 y_2.1x+1.1.dat| yields values close to the synthetic ones.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{An own Jacobian}
-{\em Example file polyfit1.cpp in the directory doc/tutorial/code/polyfit.}\\
-The underlying Gauss-Newton inversion creates a Jacobian matrix by brute force.
-If we want to apply an own algorithm we overwrite the function createJacobian() in the modelling class by using the matrix $\A$ from (\ref{eq:yAx}):
-\begin{lstlisting}[language=C++]
-    void createJacobian( RMatrix & jacobian, const RVector & model ) {
-        jacobian.resize( x_.size(), nc_ );
-        for ( size_t i = 0 ; i < nc_ ; i++ )
-            for ( size_t j = 0 ; j < x_.size() ; j++ )
-                jacobian[ j ][ i ] = pow( x_[ j ], i );
-    }
-\end{lstlisting}
-
-The result of the inversion is of course the same as before.
-Note that the resize function checks for the right size and allocates space if necessary.
-
-Alternatively we might to use other minimisation methods even though it is not necessary for this example.
-\sperre (Steepest descent, NLCG, Quasi-Newton)
-
-Note that \lstinline|RInversion| is an instance of the template class \lstinline|Inversion< ValueType, MatrixType >| with the value type \lstinline|double| and the matrix type \lstinline|RMatrix|\footnote{RMatrix is a full matrix of real (double) values.}.
-One can, of course, use other types, e.g. the complex vector/matrix \lstinline|CVector/CMatrix|. 
-For many problems the jacobian matrix has only few entries or can be approximated by a sparse matrix.
-Therefore the matrix type \lstinline|DSparseMapMatrix| exists, which is itself an instance of a template type with longint index and double values. % m�sste die nicht besser RSparseMatrix hei�en?
-The corresponding inversion is called \lstinline|RInversionSparse|.
-
-\subsection{Using Python}
+\subsection{A first Python program}
 {\em Example file polyfit.py in the directory doc/tutorial/code/polyfit.}\\
 Python is a very flexible language for programming and scripting and has many packages for numerical computing and graphical visualization.
 For this reason, we built Python bindings and compiled the library pygimli.
@@ -124,8 +90,9 @@ This makes the use of GIMLi very easy for non-programmers.
 All existing modelling classes can be used, but it is also easy to create new modelling classes.
 
 We exemplify this by the preceding example.
-First, the library must be imported using \lstinline|import pygimli as g|.
-As a result, all gimli objects (classes and types) can be referred to with g.Classname, e.g. \lstinline|g.RVector| is the real vector \lstinline|RVector|.
+First, the library must be imported.
+To avoid name clashes with other libraries we suggest to import it to an easy name, e.g. by using \lstinline|import pygimli as g|.
+As a result, all gimli objects (classes and functions) can be referred to with a preceding \lstinline|g.|, e.g. \lstinline|g.RVector| is the real vector \lstinline|RVector|.
 Next, the modelling class is derived from ModellingBase, a constructor is defined and the response function is defined.
 \begin{lstlisting}[language=python]
 import pygimli as g
@@ -189,4 +156,30 @@ The output is illustrated for two a synthetic function $y=2.1x+1.1$ noisified wi
 \label{fig:polyfit}%
 \end{figure}
 
-In the following we continue with C++ but all could be done with Python.
+In the following we continue the description with C++ but all are provided as well in Python without significant code changes.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{An own Jacobian}
+{\em Example file polyfit1.cpp in the directory doc/tutorial/code/polyfit.}\\
+For the latter example, the underlying Gauss-Newton scheme creates a Jacobian matrix by brute force (perturbation).
+If we want to apply an own algorithm we overwrite the function createJacobian() in the modelling class by using the matrix $\A$ from (\ref{eq:yAx}):
+\begin{lstlisting}[language=C++,morekeywords={RMatrix,RVector,size_t}]
+    void createJacobian( RMatrix & jacobian, const RVector & model ) {
+        jacobian.resize( x_.size(), nc_ );
+        for ( size_t i = 0 ; i < nc_ ; i++ )
+            for ( size_t j = 0 ; j < x_.size() ; j++ )
+                jacobian[ j ][ i ] = pow( x_[ j ], i );
+    }
+\end{lstlisting}
+
+The result of the inversion is of course the same as before.
+Note that the resize function checks for the right size and allocates space if necessary.
+
+Alternatively we might to use other minimisation methods even though it is not necessary for this example.
+\sperre (Steepest descent, NLCG, Quasi-Newton)
+
+Note that \lstinline|RInversion| is an instance of the template class \lstinline|Inversion< ValueType, MatrixType >| with the value type \lstinline|double| and the matrix type \lstinline|RMatrix|\footnote{RMatrix is a full matrix of real (double) values.}.
+One can, of course, use other types, e.g. the complex vector/matrix \lstinline|CVector/CMatrix|. 
+For many problems the jacobian matrix has only few entries and can be approximated by a sparse matrix.
+Therefore the matrix type \lstinline|RSparseMapMatrix| exists, which is itself an instance of a template type with \lstinline|long int| index and double values. 
+The corresponding inversion is called \lstinline|RInversionSparse|.
