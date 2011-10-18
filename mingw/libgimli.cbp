@@ -51,6 +51,7 @@
 			<Add directory="." />
 		</Linker>
 		<Unit filename="..\src\baseentity.h" />
+		<Unit filename="..\src\blockmatrix.h" />
 		<Unit filename="..\src\cholmodWrapper.cpp" />
 		<Unit filename="..\src\cholmodWrapper.h" />
 		<Unit filename="..\src\curvefitting.cpp" />
@@ -128,6 +129,8 @@
 		<Unit filename="..\src\trans.h" />
 		<Unit filename="..\src\triangleWrapper.cpp" />
 		<Unit filename="..\src\triangleWrapper.h" />
+		<Unit filename="..\src\ttdijkstramodelling.cpp" />
+		<Unit filename="..\src\ttdijkstramodelling.h" />
 		<Unit filename="..\src\vector.h" />
 		<Unit filename="..\src\vectortemplates.h" />
 		<Extensions>

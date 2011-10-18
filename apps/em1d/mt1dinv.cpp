@@ -78,9 +78,7 @@ int main( int argc, char *argv [] ) {
     RVector error( cat( RVector( TRP[ 1 ] * errPerc / 100.0 ), RVector( nperiods, errPhase ) ) );
     save( error, "error.vec" );
     nModel = 2 * nlay - 1;
-    mesh = createMesh1DBlock( nlay );
-    if ( debug ) mesh.showInfos();
-    MT1dModelling f( mesh, TRP[ 0 ], nlay, debug );
+    MT1dModelling f( TRP[ 0 ], nlay, debug );
     double medskindepth = sqrt( median( TRP[ 0 ] ) * medrhoa ) *503.0;
     model = cat( RVector( nlay - 1, medskindepth / nlay ), RVector( nlay, medrhoa ) );
     model[ nlay ] = model[ nlay - 1 ] * 2; // inhomogeneous model

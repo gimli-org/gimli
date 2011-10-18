@@ -24,6 +24,7 @@
 #include <ttdijkstramodelling.h>
 #include <datacontainer.h>
 #include <mesh.h>
+#include <meshgenerators.h>
 #include <inversion.h>
 #include <modellingbase.h>
 #include <complex.h>
@@ -37,51 +38,56 @@ using namespace GIMLI;
 #define dcout if ( debug ) std::cout
 #define DEBUG if ( debug )
 #define TTMod TravelTimeDijkstraModelling
+#define NEWREGION 33333
 
-//void ModellingBase::createJacobian< H2SparseMatrix >( H2SparseMatrix & jacobian, const & RVector model){}
-
-
-/*! New Class definition */
+/*! New Class derived from standard travel time modelling */
 class TTOffsetModelling: public TravelTimeDijkstraModelling{
 public:
     TTOffsetModelling( Mesh & mesh, DataContainer & dataContainer, bool verbose) :
         TravelTimeDijkstraModelling( mesh, dataContainer, verbose ) {
-        // find shots and extend mesh with another region
-        for ( size_t i = 0; i < dataContainer.sensorCount(); i ++ ){
-            offsetMesh_.createCell( 3 );
-        }        
-        regionManager_->createRegion( 3, offsetMesh_ );
-        mesh_->createNeighbourInfos();
+        //! find occuring shots, and maps them to indices starting from zero
+        shots_ = unique( sort( dataContainer.get("s") ) );
+        std::cout << "found " << shots_.size() << " shots." << std::endl;
+        for ( size_t i = 0 ; i < shots_.size() ; i++ ) {
+            shotMap_.insert( std::pair< int, int >( shots_[ i ], i ) );
+        }
+        //! create new region containing offsets and extend forward operator with it
+        offsetMesh_ = createMesh1D( shots_.size() );
+        regionManager().createRegion( NEWREGION, offsetMesh_ );
     }
 
     virtual ~TTOffsetModelling() { }
 
-//    RVector TTOffsetModelling::createDefaultStartModel() { }
+    RVector createDefaultStartModel() { 
+        return cat( TravelTimeDijkstraModelling::createDefaultStartModel(), RVector( shots_.size() ) );
+    }
+    
     RVector response( const RVector & model ) {
-        RVector slowness( model, 0, model.size() - nShots_ );
-        RVector offsets( model, model.size() - nShots_, model.size() ); 
-        RVector resp = TravelTimeDijkstraModelling::response( slowness );
-        RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
+        RVector slowness( model, 0, model.size() - shots_.size() );
+        RVector offsets( model, model.size() - shots_.size(), model.size() ); 
+        RVector resp = TravelTimeDijkstraModelling::response( slowness ); //! normal response
+        RVector shotpos = dataContainer_->get( "s" );
         for ( size_t i = 0; i < resp.size() ; i++ ){
-            resp[ i ] += offsets[ shotpos[ i ] ];
+            resp[ i ] += offsets[ shotMap_[ shotpos[ i ] ] ];
         }
         return resp;
     }
 
     void createJacobian( H2SparseMapMatrix & jacobian, const RVector & model ) { 
-        RVector slowness( model, 0, model.size() - nShots_ );
-        RVector offsets( model, model.size() - nShots_, model.size() );         
+        RVector slowness( model, 0, model.size() - shots_.size() );
+        RVector offsets( model, model.size() - shots_.size(), model.size() );         
         TravelTimeDijkstraModelling::createJacobian( jacobian.H1(), slowness );
         jacobian.H2().setRows( dataContainer_->size() );
         jacobian.H2().setCols( offsets.size() );
-        // set 1 entries for used shots
+        //** set 1 entries for the used shot
         RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
         for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
-            jacobian.H2().setVal( i, shotpos[ i ], 1.0 ); 
+            jacobian.H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
         }
     }
 protected:
-    size_t nShots_;
+    RVector shots_;
+    std::map< int, int > shotMap_;
     Mesh offsetMesh_;
 };
 
@@ -111,8 +117,8 @@ int main( int argc, char *argv [] ) {
 
     f.regionManager().regions()->begin()->second->setConstraintType( 1 ); //! smoothness
     f.regionManager().regions()->begin()->second->setStartValue( median( appSlowness ) );
-    f.region( 3 )->setConstraintType( 0 ); //! minimum length (no smoothing)
-    f.region( 3 )->setStartValue( 0.0 );
+    f.region( NEWREGION )->setConstraintType( 0 ); //! minimum length (no smoothing)
+    f.region( NEWREGION )->setStartValue( 0.0 );
 
     /*! Set up inversion with full matrix, data and forward operator */
     Inversion< double, H2SparseMapMatrix > inv( dataIn.get( "t" ), f, verbose );
