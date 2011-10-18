@@ -65,31 +65,23 @@ int main( int argc, char *argv [] )
     bool verbose = ( verboseCount > 0 ), debug = ( verboseCount > 1 ), dosave = ( verboseCount > 2 );
     bool dataLin = ( linCount > 0 ), modelLin = ( linCount > 1 );
     
-    DataContainer data( dataFileName ); //! read data
-    if ( verbose ) data.showInfos();
+    /*! Data: read data file from column file */
+    RMatrix abmnr; 
+    loadMatrixCol( abmnr, dataFileName ); //! read data
+    RVector ab2(  abmnr[ 0 ] );        //! first column
+    RVector mn2(  abmnr[ 1 ] );        //! second column
+    RVector rhoa( abmnr[ 2 ] );        //! third column
 
-    if ( modelFile != NOT_DEFINED ) { //! pure forward modeling
-        calculateDC1D( data, modelFile, dataFileName + ".sim" );
-        return EXIT_SUCCESS;
-    }
-
-    if ( data.nonZero( "rhoa" ) ) {
-        data.set( "rhoa", data("r") * geometricFactor( data ) );
-    }
-
-    size_t nModel( 2 * nlay - 1 );
-    Mesh mesh( createMesh1DBlock( nlay ) );
-    if ( debug ) mesh.showInfos();
-
-    DC1dModelling f( mesh, data, nlay, false );
+    /*! Define discretization according to AB/2 */
+    double maxDep = max( ab2 ) / 2;   //! rule of thumb
+    std::cout << "Maximum depth estimated to " << maxDep << std::endl;
+    
+    DC1dModelling f( nlay, ab2, mn2, debug );
 
     /*! Error estimation */
-    RVector error( data( "err" ) );
-        if ( std::fabs( min( error ) ) < TOLERANCE ) {
-        double current = 0.1, errVolt = 0;//1e-4;
-        RVector voltage( data( "rhoa" ) / data( "k" ) * current );
-        error = errVolt / voltage + errPerc / 100.0;
-    }
+    double current = 0.1, errVolt = 0;//1e-4;
+    RVector voltage( rhoa * f( RVector( 3, 1.0 ) ) * current );
+    RVector error = errVolt / voltage + errPerc / 100.0;
     vcout << "error min/max = " << min( error ) << "/" << max( error ) << std::endl;
 
     /*! Transformations: log for app. resisivity and thickness, logLU for resistivity */
@@ -117,10 +109,10 @@ int main( int argc, char *argv [] )
     f.region( 0 )->setTransModel( *transThk );
     f.region( 1 )->setTransModel( *transRho );
 
-    double paraDepth = DCParaDepth( data );
+    double paraDepth = max( ab2 ) / 3;
     vcout << "Paradepth = " << paraDepth << std::endl;
-    f.region( 0 )->setStartValue( paraDepth / nlay / 4.0 );
-    f.region( 1 )->setStartValue( median( data( "rhoa" ) ) );
+    f.region( 0 )->setStartValue( paraDepth / nlay / 2.0 );
+    f.region( 1 )->setStartValue( median( rhoa ) );
 
     RVector model;//( f.createDefaultStartModel() );
     model = f.createStartVector();
@@ -128,13 +120,13 @@ int main( int argc, char *argv [] )
     DEBUG save( model, "start.vec" );
 
     /*! Set up inversion with full matrix, data and forward operator */
-    Inversion< double, RMatrix > inv( data( "rhoa" ), f, verbose, dosave );    
+    RInversion inv( rhoa, f, verbose, dosave );    
     inv.setTransData( *transRhoa );
     inv.setMarquardtScheme( 0.8 ); //! 0th order local decreasing regularization
     inv.setLambda( lambda );
     inv.setOptimizeLambda( lambdaOpt );
     inv.setMaxIter( maxIter );
-    inv.setError( error );              //! error model
+    inv.setRelativeError( error );              //! error model
     inv.setModel( model );       //! starting model
     inv.setDeltaPhiAbortPercent( 0.5 );
 
@@ -162,21 +154,17 @@ int main( int argc, char *argv [] )
         std::cout << "  z =  " << cumz << std::endl;
     }
 
-    if ( data.nonZero( "ip" ) ) {
+    if ( abmnr.cols() > 3 ) { //** IP present
 //        if ( verbose ) std::cout << "Found ip values, doing ip inversion" << std::endl;
         //! imaginary apparent resistivity
-        RVector rhoai( data( "rhoa" ) * sin( data( "ip" ) / 1000 ) );
+        RVector rhoai( rhoa * sin( abmnr[ 3 ] / 1000. ) );
         //! modelling operator from fixed layer 
         Mesh ipMesh( createMesh1D( nlay ) );
-        DC1dRhoModelling fIP( ipMesh, data, thk, verbose );
+        DC1dRhoModelling fIP( thk, ab2, mn2, verbose );
         fIP.region( 0 )->setTransModel( *transRho );
         //! IP (imaginary resistivity) inversion using fIP
         RInversion invIP( rhoai, fIP, verbose );
-        if ( min( data.get( "iperr" ) ) > 0.0 ) { //! phase error present
-            invIP.setRelativeError( data.get( "iperr" ) / data( "ip" ) );
-        } else { //! default: 1 mrad
-            invIP.setAbsoluteError( rhoai / data( "ip" ) * 1.0 );
-        }
+        invIP.setAbsoluteError( rhoai / abmnr[ 3 ] * 1.0 );
         //! take jacobian from real valued problems
         invIP.setModel( res );
         invIP.checkJacobian(); //! force jacobian calculation
@@ -189,14 +177,15 @@ int main( int argc, char *argv [] )
         RVector ipModel( nlay, median( rhoai ) );
         invIP.setModel( ipModel );
         ipModel = invIP.run();
-        RVector phase = atan( ipModel / res ) * 1000;
+        RVector phase = atan( ipModel / res ) * 1000.;
         save( phase, "phase.vec" );
-        RVector aphase = atan( invIP.response() / data( "rhoa" ) ) * 1000;
+        RVector aphase = atan( invIP.response() / rhoa ) * 1000.;
         save( aphase, "aphase.vec" );         
         std::cout << " ip =  " << phase << std::endl;
     }
     
     if ( doResolution ) {
+        size_t nModel( 2 * nlay - 1 );
         RVector resolution( nModel );
         RVector resMDiag ( nModel );
         RMatrix resM;

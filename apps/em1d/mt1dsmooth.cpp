@@ -94,7 +94,7 @@ int main( int argc, char *argv [] ) {
     model = RVector( nlay, medrhoa );
     mesh = createMesh1D( nlay );
     
-    MT1dRhoModelling f( mesh, TRP[ 0 ], thk, debug );
+    MT1dRhoModelling f( TRP[ 0 ], thk, debug );
     f.setStartModel( model );
     f.region( 0 )->setTransModel( transRho );
 
