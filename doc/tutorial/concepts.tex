@@ -1,6 +1,7 @@
 \section{General concepts using 1D DC resistivity inversion}\label{sec:dc1d}
+{\em See cpp/py files in the directory \file{doc/tutorial/code/dc1d}.}
 \subsection{Smooth inversion}\label{sec:dc1dsmooth}
-{\em Example file \file{dc1dsmooth.cpp} in the directory \file{doc/tutorial/code/dc1d}.}\\
+{\em Example file \file{dc1dsmooth.cpp}.}\\
 Part of the GIMLi library are several electromagnetic 1d forward operators.
 For direct current resistivity there is a semi-analytical solution using infinite sums that are approximated by Ghosh filters. 
 The resulting function calculates the apparent resistivity of any array for a given resistivity and thickness vector.
@@ -38,17 +39,21 @@ Alternatively, we could set lower/upper bounds for the resistivity using
 \end{lstlisting}
 Appendix \ref{app:trans} gives an overview on available transformation functions.
 
-Next, a constant starting model is defined and the inversion is initialized and a few options are set
+Next, the inversion is initialized and a few options are set
 \begin{lstlisting}[language=C++]
-    RVector model( nlay, median( data.rhoa() ) ); //! constant vector
     RInversion inv( data.rhoa(), f, verbose );
     inv.setTransData( transRhoa );           //! data transform
     inv.setTransModel( transRho );           //! model transform
     inv.setRelativeError( errPerc / 100.0 ); //! constant relative error
-    inv.setModel( model );                   //! starting model
 \end{lstlisting}
 
-Finally the inversion is called again using \lstinline|model = inv.run();|
+A starting model of constant values (median apparent resistivity) is defined
+\begin{lstlisting}[language=C++]
+    RVector model( nlay, median( data.rhoa() ) ); //! constant vector
+    inv.setModel( model );                        //! starting model
+\end{lstlisting}
+
+Finally, the inversion is called and the model is retrieved using \lstinline|model = inv.run();|
 
 A very important parameter is the regularisation parameter $\lambda$ that controls the strength of the smoothness constraints (which are the default constraint for any 1d/2d/3d mesh).
 Whereas $w^c$ and $w^m$ are dimensionless and 1 by default, $\lambda$ has, after eq. (\ref{eq:min}), the reciprocal and squared unit of $m$ and can thus have completely different values for different problems\footnote{The regularisation parameter has therefore to be treated logarithmically.}.
@@ -161,8 +166,7 @@ The first resistivity is resolved nearly perfect, whereas the other parameters s
 $\rho_2$ is positively connected with $d_2$, i.e. an increase of resistivity can be compensated by an increased resistivity.
 For $\rho_3$ and $d_3$ the correlation is negative.
 These are the well known H- and T-equivalences of thin resistors or conductors, respectively, and show the equivalence of possible models that are able to fit the data within noise.
-
-Similarly, we can obtain the resolution kernels also for the smooth inversion.
+%Similarly, we can obtain the resolution kernels also for smooth inversion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Structural information}\label{sec:dc1dstruct}
@@ -207,10 +211,12 @@ By doing so, arbitrary boundaries can be incorporated as known boundaries.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Regions}\label{sec:dc1dregion}
 {\em Example file \file{dc1dsmooth-region.cpp} in the directory \file{doc/tutorial/code/dc1d}.}\\
-In the latter sections we already used regions, a default mesh contains a region 0 and a block mesh contains a region 0 for the thicknesses and a region 1 for the parameters.
-However, even one mesh can contain several regions, e.g. for different geological units.
+In the latter sections we already used regions.
+A default mesh contains a region with number 0.
+A block mesh contains a region 0 for the thickness values and regions counting up from 1 for the individual parameters.
+Higher dimensional meshes can be created automatically by using region markers, e.g. for specifying different geological units.
 
-In our case we can divide a part above and a part below water level.
+In our case we can divide part above and a part below water level.
 In 2d or 3d we would, similar to the constraints above, just put a region marker $\neq 0$ into the PLC and the mesh generator will automatically associate this attribute to all cells in the region.
 
 Here we set the markers of the cells $\geq8$ to the region marker 1.
@@ -241,8 +247,9 @@ We decrease the model control (strength of smoothness) in the lower region by a 
 
 The result is shown in Figure~\ref{fig:dc1dsmooth-region}.
 The resistivity values are much better due to adding information about the valid ranges.
-Furthermore the transition zone in the lower region is much clearer.
+Furthermore the transition zone in the lower region is clear.
 \begin{figure}[htbp]
 \centering\includegraphics[width=0.45\textwidth]{sond1-100-region.pdf}
-\caption{Inversion result using two regions of individual range constraint transformations and model control.}\label{fig:dc1dsmooth-region}
+\caption{Inversion result using two regions of individual range constraint transformations and regularization strength (model control).}%
+\label{fig:dc1dsmooth-region}
 \end{figure}
