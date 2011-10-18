@@ -1,5 +1,6 @@
 GIMLIINC=-I ../../../../src
-GIMLILIB=-L$(HOME)/lib -lgimli
+GIMLILIB=-L ../../../src/.libs -lgimli
+#GIMLILIB=-L$(HOME)/lib -lgimli
 
 default: mt1dinv0 ttinvoffset
 
