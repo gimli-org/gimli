@@ -45,14 +45,15 @@ class TTOffsetModelling: public TravelTimeDijkstraModelling{
 public:
     TTOffsetModelling( Mesh & mesh, DataContainer & dataContainer, bool verbose) :
         TravelTimeDijkstraModelling( mesh, dataContainer, verbose ) {
-        //! find occuring shots, and maps them to indices starting from zero
+        //! find occuring shots, and map them to indices starting from zero
         shots_ = unique( sort( dataContainer.get("s") ) );
         std::cout << "found " << shots_.size() << " shots." << std::endl;
         for ( size_t i = 0 ; i < shots_.size() ; i++ ) {
             shotMap_.insert( std::pair< int, int >( shots_[ i ], i ) );
         }
-        //! create new region containing offsets and extend forward operator with it
+        //! create new region containing offsets with special marker
         offsetMesh_ = createMesh1D( shots_.size() );
+        for ( size_t i = 0 ; i < offsetMesh_.cellCount() ; i++ ) offsetMesh_.cell( i ).setMarker( NEWREGION );
         regionManager().createRegion( NEWREGION, offsetMesh_ );
     }
 
@@ -63,6 +64,7 @@ public:
     }
     
     RVector response( const RVector & model ) {
+        //! extract slowness from model and call old function
         RVector slowness( model, 0, model.size() - shots_.size() );
         RVector offsets( model, model.size() - shots_.size(), model.size() ); 
         RVector resp = TravelTimeDijkstraModelling::response( slowness ); //! normal response
@@ -74,17 +76,20 @@ public:
     }
 
     void createJacobian( H2SparseMapMatrix & jacobian, const RVector & model ) { 
+        //! extract slowness from model and call old function
         RVector slowness( model, 0, model.size() - shots_.size() );
         RVector offsets( model, model.size() - shots_.size(), model.size() );         
         TravelTimeDijkstraModelling::createJacobian( jacobian.H1(), slowness );
         jacobian.H2().setRows( dataContainer_->size() );
         jacobian.H2().setCols( offsets.size() );
-        //** set 1 entries for the used shot
+        //! set 1 entries for the used shot
         RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
         for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
             jacobian.H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
         }
     }
+    
+    size_t nShots(){ return shots_.size(); }
 protected:
     RVector shots_;
     std::map< int, int > shotMap_;
@@ -93,6 +98,7 @@ protected:
 
 int main( int argc, char *argv [] ) {
     bool verbose = true, createGradientModel = false;
+    double errTime = 0.001;
     std::string dataFileName( NOT_DEFINED ), paraMeshFilename( "mesh.bms" );
 
     OptionMap oMap;
@@ -115,21 +121,25 @@ int main( int argc, char *argv [] ) {
     TTOffsetModelling f( paraMesh, dataIn, false );
     RVector appSlowness ( f.getApparentSlowness() );
 
-    f.regionManager().regions()->begin()->second->setConstraintType( 1 ); //! smoothness
-    f.regionManager().regions()->begin()->second->setStartValue( median( appSlowness ) );
+    RTransLog transSlo;
+    Region * mainRegion = f.regionManager().regions()->begin()->second;
+    mainRegion->setConstraintType( 1 ); //! smoothness
+    mainRegion->setStartValue( median( appSlowness ) );
+    mainRegion->setTransModel( transSlo );
     f.region( NEWREGION )->setConstraintType( 0 ); //! minimum length (no smoothing)
     f.region( NEWREGION )->setStartValue( 0.0 );
+    RVector model;
 
     /*! Set up inversion with full matrix, data and forward operator */
     Inversion< double, H2SparseMapMatrix > inv( dataIn.get( "t" ), f, verbose );
+    inv.setAbsoluteError( errTime );
 
     /*! actual computation: run the inversion */
-    RVector model = inv.run();
-    size_t nShots; //fehlt noch!
-    RVector slowness( model, 0, model.size() - nShots );
+    model = inv.run();
+    RVector slowness( model, 0, model.size() - f.nShots() );
     RVector velocity( 1 / slowness );
     save( velocity, "velocity.vec" );
-    RVector offsets( model, model.size() - nShots, model.size() ); 
+    RVector offsets( model, model.size() - f.nShots(), model.size() ); 
     save( offsets, "offsets.vec" );
     
     vcout << "min/max( velocity ) = " << 1 / max( slowness ) << "/" << 1 / min( slowness ) << std::endl;

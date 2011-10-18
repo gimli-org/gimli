@@ -24,7 +24,7 @@
 			</Target>
 		</Build>
 		<VirtualTargets>
-			<Add alias="All" targets="mt1dinv0;" />
+			<Add alias="All" targets="mt1dinv0;ttinvoffset" />
 		</VirtualTargets>
 		<Compiler>
 			<Add option="-O3" />

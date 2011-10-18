@@ -68,29 +68,27 @@ Assume the zero point (shot) of the traces is not exactly known. This might be d
 Aim is to include an unknown delay for each shot position into the inversion\footnote{A similar problem is the issue of static shift in MT inversion caused by local conductivity inhomogeneity, which shifts the apparent resistivity curves.}.
 
 First, we derive a new forward modelling class \cw{TTOffsetModelling}  from the existing \cw{TTDijkstraModelling} (abbreviated by \cw{TTMod}) since we want to use their functionality.
-Additionally to the existing class we need the number of shot positions and a zeroth order mesh holding the offset values for them added to the original mesh.
+Additionally to the existing class we need the number of shot positions and a simple 0d/1d mesh holding the offset values for them added to the original mesh.
 \begin{lstlisting}
 class TTOffsetModelling : public TTMod {
 public:
     TTOffsetModelling( Mesh & mesh, DataContainer & data )
       : TTMod( mesh, data ) {
-        std::vector < size_t > sources( mesh_->findNodesIdxByMarker(-99) );
-        int nShots_ = sources.size();
-        for ( size_t i = 0; i < dataContainer.electrodeCount(); i ++ ){
-            offsetMesh_.createCell( 3 );
-        }
-        regionManager_->createRegion( 3, offsetMesh_ );			 
+        //! find occuring shots, and map them to indices starting from zero
+        shots_ = unique( sort( dataContainer.get("s") ) );
+        std::cout << "found " << shots_.size() << " shots." << std::endl;
+        for ( size_t i = 0 ; i < shots_.size() ; i++ )
+            shotMap_.insert( std::pair< int, int >( shots_[ i ], i ) );
+        //! create new region containing offsets with special marker
+        offsetMesh_ = createMesh1D( shots_.size() );
+        for ( size_t i = 0 ; i < offsetMesh_.cellCount() ; i++ )
+            offsetMesh_.cell( i ).setMarker( NEWREGION );
+        regionManager().createRegion( NEWREGION, offsetMesh_ );
     }
-    virtual ~TTOffsetModelling(){ }
-    RVector response( const RVector & model );
-    void createJacobian( H2Matrix & jacobian, const RVector & model );
-protected:
-    int nShots_;
-    Mesh offsetMesh_;
-}
+...
 \end{lstlisting}
 
-The two functions \cw{response} and \cw{createJacobian} need to be overwritten.
+The two functions \lstinline|response| and \lstinline|createJacobian| need to be overwritten.
 However we want to expand the original functions by the changes needed.
 This is straight forward for the response vector.
 First part of the model is the slowness vector whose response is calculated calling the original function.
@@ -98,36 +96,40 @@ First part of the model is the slowness vector whose response is calculated call
 \begin{lstlisting}
     RVector TTOffsetModelling::response( const RVector & model ){
         //! extract slowness from model and call old function
-        RVector slowness( model, 0, model.size() - nShots_ );
-        RVector resp = TTMod::response( slowness );
-        //! extract offsets from model and add to reponse
-        RVector offsets( model, model.size() - nShots_, model.size() );
-        for( int i = 0; i < DataContainer.size(); i++ ){
-           resp[ i ] += offsets[ DataContainer.a( i ) ];
+        RVector slowness( model, 0, model.size() - shots_.size() );
+        RVector offsets( model, model.size() - shots_.size(), model.size()); 
+        RVector resp = TTMod::response( slowness ); //! normal response
+        RVector shotpos = dataContainer_->get( "s" );
+        for ( size_t i = 0; i < resp.size() ; i++ ){
+            resp[ i ] += offsets[ shotMap_[ shotpos[ i ] ] ];
         }
         return resp;
     }
 \end{lstlisting}
 
 For the Jacobian the case is a bit more complicated.
-Instead of increasing the size of the matrix a-posteriori, we define a new matrix type \cw{H2Matrix} consisting of two horizontally concatenated matrices.
+Instead of increasing the size of the matrix a-posteriori, we use a block matrix type \lstinline|H2SparseMapMatrix| consisting of two horizontally concatenated matrices called by \lstinline|H1()| and \lstinline|H2()| \footnote{See appendix on matrices \ref{app:matrix} for existing matrix types.}.
 The first is the normal way matrix holding the path lengths.
-Second is a matrix with a value of one in the position of the shot number and 0 elsewhere.
+The second is a matrix with a value of 1 in the position of the shot number and 0 elsewhere.
 
 \begin{lstlisting}
     RVector TTOffsetModelling::createJacobian( H2Matrix & jacobian, 
                                           const RVector & model ){
-        //! extract slowness from model
-        RVector slowness( model, 0, model.size() - nShots_ );
-        RVector resp = TTMod::createJacobian( jacobian.H1(), slowness );
-        //! 
-        for( int i = 0; i < nShots_; i++ ){
-            //! set specific values to 1
+        //! extract slowness from model and call old function
+        RVector slowness( model, 0, model.size() - shots_.size() );
+        RVector offsets( model, model.size() - shots_.size(), model.size());
+        TTMod::createJacobian( jacobian.H1(), slowness );
+        jacobian.H2().setRows( dataContainer_->size() );
+        jacobian.H2().setCols( offsets.size() );
+        //! set 1 entries for the used shot
+        RVector shotpos = dataContainer_->get( "s" );
+        for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
+            jacobian.H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
         }
     }
 \end{lstlisting}
 
-See appendix on matrices \ref{app:matrix} for existing matrix types.
+As a result the model vector holds both slowness values and the offsets, which can be sliced out of the vector for individual post-processing.
 
 %%%%%%%%%%%%%%%%%%%%%%%
 \subsection{What else?}
