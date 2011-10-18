@@ -36,7 +36,7 @@ int main( int argc, char *argv [] )
 {
     bool lambdaOpt = false, doResolution = false, useTan = false, optimizeChi1 = false, delinhigh = true;
     double lambda = 10.0, lbound = 0.0, ubound = 0.0, errPerc = 3.0, coilspacing = 50.0;
-    int maxIter = 10, nlay = 3, verboseCount = 0, linCount = 0;
+    int maxIter = 10, nlay = 3, verboseCount = 0;
     std::string modelFile( NOT_DEFINED ), dataFileName;
 
     OptionMap oMap;
@@ -47,7 +47,6 @@ int main( int argc, char *argv [] )
     oMap.add( doResolution, "D" , "doResolution", "Do resolution analysis." );
     oMap.add( optimizeChi1, "C" , "OptimizeChi1", "Optimize lambda subject to chi^2=1." );
     oMap.add( useTan,       "T" , "useTan", "Use (co-)Tan instead of Log for LU." );
-    oMap.add( linCount,     "L" , "dataLin", "Use linear trafo for data, 2x also for model." );
     oMap.add( maxIter,      "i:", "maxIter", "Maximum iteration number." );
     oMap.add( lambda,       "l:", "lambda", "Regularization strength lambda." );
     oMap.add( coilspacing,  "c:", "coilSpacing", "Coil spacing in m." );
@@ -59,7 +58,6 @@ int main( int argc, char *argv [] )
     oMap.parse( argc, argv );
 
     bool verbose = ( verboseCount > 0 ), debug = ( verboseCount > 1 ), dosave = ( verboseCount > 2 );
-    bool dataLin = ( linCount > 0 ), modelLin = ( linCount > 1 );
     
     RMatrix DATA;
     loadMatrixCol( DATA, dataFileName );

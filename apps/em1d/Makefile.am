@@ -3,11 +3,10 @@ bin_PROGRAMS = \
  	mt1dsmooth \
  	mrs1dsmooth \
  	mrs1dblock \
- 	fdem1dinv
-
-# 	dc1dinv \
-# 	dc1dlong \
-# 	dc1dsmooth
+ 	fdem1dinv \
+ 	dc1dinv \
+ 	dc1dsmooth
+# 	dc1dlong
 
 INCLUDES = \
 	-I $(top_srcdir)/src
