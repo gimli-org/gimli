@@ -38,6 +38,14 @@
 				<Option parameters="-vv -l100 -n20 -F 1000_100_1000_n5_1.dat" />
 				<Option projectResourceIncludeDirsRelation="1" />
 			</Target>
+			<Target title="mt1dsmooth">
+				<Option output="mt1dsmooth.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-vv -l100 -n20 -F 1000_100_1000_n5_1.dat" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
 			<Target title="mrs1dsmooth">
 				<Option output="mrs1dsmooth.exe" prefix_auto="0" extension_auto="0" />
 				<Option external_deps="libgimli.dll;" />
@@ -61,7 +69,7 @@
 			</Target>
 		</Build>
 		<VirtualTargets>
-			<Add alias="All" targets="mt1dinv;mrs1dsmooth;mrs1dblock;" />
+			<Add alias="All" targets="mt1dinv;mt1dsmooth;dc1dinv;dc1dsmooth;mrs1dsmooth;mrs1dblock;" />
 		</VirtualTargets>
 		<Compiler>
 			<Add option="-O2" />
@@ -93,6 +101,9 @@
 		</Unit>
 		<Unit filename="..\apps\em1d\mt1dinv.cpp">
 			<Option target="mt1dinv" />
+		</Unit>
+		<Unit filename="..\apps\em1d\mt1dsmooth.cpp">
+			<Option target="mt1dsmooth" />
 		</Unit>
 		<Extensions>
 			<code_completion />

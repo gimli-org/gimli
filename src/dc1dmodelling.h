@@ -151,21 +151,22 @@ public:
 /*! DC1dRhoModelling( mesh, dataContainer, thicknesses, verbose ) */
 class DLLEXPORT DC1dRhoModelling : public DC1dModelling {
 public:
-//    DC1dRhoModelling( Mesh & mesh, DataContainer & data, RVector & thk, bool verbose = false )
-//            : DC1dModelling( mesh, data, thk.size(), verbose ), thk_( thk ) {}
 //    DC1dRhoModelling( DataContainer & data, RVector & thk, bool verbose = false )
 //            : DC1dModelling( data, thk.size(), verbose ), thk_( thk ) { 
 //                mesh_ = createMesh1D( thk.size() + 1, 1 );
 //                setMesh( mesh_ );
-//            }
+//            } //NOT YET IMPLEMENTED
+
     DC1dRhoModelling( RVector & thk, RVector & am, RVector & an, RVector & bm, RVector & bn, bool verbose = false )
             : DC1dModelling( thk.size(), am, bm, am, an, verbose ), thk_( thk ) {
                 setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
+            
     DC1dRhoModelling( RVector & thk, RVector & ab2, RVector & mn2, bool verbose = false )
             : DC1dModelling( thk.size(), ab2, mn2, verbose ), thk_( thk ) { 
                 setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
+            
     virtual ~DC1dRhoModelling() { }
 
     RVector response( const RVector & rho ) {  return rhoa( rho, thk_ ); }
