@@ -15,14 +15,14 @@ INCLUDES = \
 fdem1dinv_SOURCES = fdem1dinv.cpp
 fdem1dinv_LDADD = ../../src/.libs/libgimli.la
 
-#dc1dinv_SOURCES = dc1dinv.cpp
-#dc1dinv_LDADD = ../../src/.libs/libgimli.la
+dc1dinv_SOURCES = dc1dinv.cpp
+dc1dinv_LDADD = ../../src/.libs/libgimli.la
 
 #dc1dlong_SOURCES = dc1dlong.cpp
 #dc1dlong_LDADD = ../../src/.libs/libgimli.la
 
-#dc1dsmooth_SOURCES = dc1dsmooth.cpp
-#dc1dsmooth_LDADD = ../../src/.libs/libgimli.la
+dc1dsmooth_SOURCES = dc1dsmooth.cpp
+dc1dsmooth_LDADD = ../../src/.libs/libgimli.la
 
 mt1dinv_SOURCES = mt1dinv.cpp
 mt1dinv_LDADD = ../../src/.libs/libgimli.la
