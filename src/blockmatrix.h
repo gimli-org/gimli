@@ -62,11 +62,11 @@ inline bool save( const H2SparseMapMatrix & A, const std::string & filename, IOF
     return false;
 }
   
-RVector operator * ( const H2SparseMapMatrix & A, const RVector & x ){
+inline RVector operator * ( const H2SparseMapMatrix & A, const RVector & x ){
     return A.H1() * x + A.H2() * x;
 }
 
-RVector transMult( const H2SparseMapMatrix & A, const RVector & b ){
+inline RVector transMult( const H2SparseMapMatrix & A, const RVector & b ){
     return cat( transMult( A.H1(), b ), transMult( A.H2(), b ) );
 }
 
