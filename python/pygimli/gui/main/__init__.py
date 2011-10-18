@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 '''
-	main gui application
+    main gui application
 '''
 
-from pygimliMainFrame import PyGIMLIApp, PyGIMLIMainFrame
+from pygimliMainFrame import PyGIMLIApp, PyGIMLIMainFrame, WorkSpace

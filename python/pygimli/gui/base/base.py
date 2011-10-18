@@ -400,19 +400,22 @@ class AppResource( ManagedProperties ):
     def getRendererPanel( self ) : return self.rendererPanel_
 
     def onRendererTabSwitch( self, event ):
-        '''
-            What is this?
-        '''
+        ''
+        '  What happens if a tab from the renderview is switched '
+        ''
         newTab = self.renderer_.GetPage( event.GetSelection() )
 
         if newTab == self.rendererPanel_:
             newTab = self
 
         #print "onRendererTabSwitch", newTab
+        
+        # change the selected tree item 
         self.parent.resourceTree.selectItem( newTab )
 
         event.Skip()
-
+    # def onRendererTabSwitch( ... )
+    
     def activatePropertyPanel( self, active ):
         '''
             What is this?
@@ -449,9 +452,9 @@ class AppResource( ManagedProperties ):
         self.parent.auiMgr.Update()
 
     def activateApplication( self, active ):
-        '''
-            What is this?
-        '''
+        ''
+        ' What is this? '
+        ''
         if hasattr( self, "getRenderer" ):
             r = self.getRenderer( self.rendererSlot_ )
             if active:
@@ -487,10 +490,11 @@ class AppResource( ManagedProperties ):
                     self.parent.GetMenuBar().Remove( pos )
 
     def activate( self, active ):
-        '''
-            What is this?
-        '''
-        #print "activate( self, active ):", self, self.active, active
+        ''
+        ' What is this? '
+        ''
+        print "activate( self, active ):", self, self.active, active
+        
         if self.active == active:
             return
 
@@ -521,6 +525,9 @@ class AppResource( ManagedProperties ):
         if self.active and self.dependencyChanged_:
             print "process due to activate", self
             self.process()
+            
+        self.parent.resourceTree.selectItem( self )
+        
 
         self.parent.auiMgr.Update()
 
@@ -529,6 +536,7 @@ class AppResource( ManagedProperties ):
             What is this?
         '''
         r = self.getRenderer( self.rendererSlot_ )
+        
         if isinstance( r , aui.AuiNotebook ):
             panel = classname( self.parent, r, self.propertyInspectorSlot_ );
             if panel.xrc is None:

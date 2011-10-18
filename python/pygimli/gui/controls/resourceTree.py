@@ -16,6 +16,9 @@ class ResourceTree( wx.TreeCtrl ):
         self.Bind( wx.EVT_KEY_DOWN, self.onKeyDown )
         
     def selectItem( self, data ):
+        ''
+        ''
+        ''
         item  = None
         if hasattr( data, 'treeItem' ):
             item = data.treeItem
@@ -24,9 +27,8 @@ class ResourceTree( wx.TreeCtrl ):
 
         #print "selectItem", item
         if item:
-	    if item is not self.GetSelection():
-		#print "select tree item", item, self.GetSelection()
-		self.SelectItem( item )
+            if item is not self.GetSelection():
+                self.SelectItem( item )
         
     def addItem( self, data, name, parentNode = None ):
         if not parentNode:
@@ -55,7 +57,7 @@ class ResourceTree( wx.TreeCtrl ):
         if itemData is None or itemData is self.lastActiveItemData :
             return
 
-	#print "onSelectTreeObject", itemData
+        #print "onSelectTreeObject", itemData
         oldApplication = None
         newApplication = None
         
@@ -82,12 +84,11 @@ class ResourceTree( wx.TreeCtrl ):
             if newApplication is not None:
                 newApplication.activateApplication( True )
                 
-                
-                
         self.lastActiveItemData = itemData
         #print "itemData.activate( True )", itemData
         itemData.activate( True )
 
+        # store active resource in Workspace
         self.parent.ws.activeResource = itemData
         
         if itemData.parentResource is None:

@@ -68,8 +68,9 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
 
 
 def drawField( axes, mesh, data = None, filled = False, *args, **kwargs ):
-    '''
-    '''
+    ''
+    ''
+    ''
     print kwargs
     import matplotlib.tri as tri
 
@@ -129,8 +130,10 @@ def drawStreamLinear( a, mesh, u, start, end, nLines = 50, step = 0.01, showStar
 
 #def drawStreamLinear( ... )
 
-
-def drawElectrodes( axes, elecs, diam = None ):
+def drawSensors( axes, elecs, diam = None ):
+    ''
+    ''
+    ''
     eCircles = []
     eSpacing = elecs[ 0 ].distance( elecs[ 1 ] )
     if diam is None:
@@ -141,6 +144,8 @@ def drawElectrodes( axes, elecs, diam = None ):
 
     p = mpl.collections.PatchCollection( eCircles, color=(0.0, 0.0, 0.0) )
     axes.add_collection( p )
+# def drawSensors( ... )
+
 
 def createParameterContraintsLines( mesh, cMat, cWeight = None ):
     C = g.RMatrix()
