@@ -106,7 +106,7 @@ int main( int argc, char *argv [] ){
     if ( verbose ) mesh.showInfos();
 
     //! the forward operator
-    MRSModelling f( mesh, KR, KI, verbose );
+    MRSModelling f( mesh, KR, KI, debug );
     //f.region( 0 )->setConstraintType( ctype );
     if ( zWeight > 0.0 ) f.regionManager().setZWeight( zWeight );
     //! apparent water content
