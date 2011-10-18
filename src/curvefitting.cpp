@@ -85,7 +85,7 @@ HarmonicModelling::HarmonicModelling( size_t nh, const RVector & tvec, bool verb
 : ModellingBase( verbose ),
     t_( tvec ), tMin_( min( tvec ) ), tMax_( max( tvec ) ), nh_( nh ), np_( 2 * nh + 2 ) {
 
-    regionManager_->setParameterCount( np_ );
+    regionManager().setParameterCount( np_ );
     A_.clear();
     nt_ = tvec.size();
 

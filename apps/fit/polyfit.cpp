@@ -29,7 +29,9 @@ class PolynominalModelling : public ModellingBase {
 public:
     /*! Constructor, nc: number of coefficients, xvec: abscissa, */
     PolynominalModelling( size_t nc, const RVector & xvec, bool verbose = false  )
-        : ModellingBase( verbose ), x_( xvec ), nc_( nc ){ regionManager_->setParameterCount( nc ); }
+        : ModellingBase( verbose ), x_( xvec ), nc_( nc ){ 
+        regionManager().setParameterCount( nc ); 
+    }
 
     /*! The main thing - the forward operator: return f(x) */
     RVector response( const RVector & par ){

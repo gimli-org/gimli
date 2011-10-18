@@ -119,12 +119,15 @@ protected:
     //region std::vector < int >        cellMapIndex_;
     RMatrix                    solutions_;
 
-    RegionManager            * regionManager_;
     bool                       regionManagerInUse_;
 
     RVector                    startModel_;
     
     uint nThreads_;
+    
+private:
+    RegionManager            * regionManager_;
+
 };
 
 //! Simple linear modelling class

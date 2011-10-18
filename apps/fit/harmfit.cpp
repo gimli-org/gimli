@@ -30,7 +30,7 @@ public:
     /*! constructor, nh: number of coefficients, xvec: abscissa, */
     HarmonicModelling( size_t nh, const RVector & tvec, bool verbose = false  )
         : ModellingBase( verbose ), t_( tvec ), nh_( nh ), np_( 2 * nh + 2 ), tMin_( min( tvec ) ), tMax_( max( tvec ) ){
-            regionManager_->setParameterCount( np_ );
+            regionManager().setParameterCount( np_ );
 //            A_.resize( tvec.size(), nh * 2 + 2 );
             A_.clear();
             nt_ = tvec.size();

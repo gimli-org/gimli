@@ -102,8 +102,6 @@ void Mesh::clear(){
     neighboursKnown_ = false;
 }
 
-
-
 Node * Mesh::createNode_( const RVector3 & pos, int marker, int id ){
     if ( id == -1 ) id = nodeCount();
     nodeVector_.push_back( new Node( pos ) );
