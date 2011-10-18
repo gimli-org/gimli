@@ -2,8 +2,8 @@ lib_LTLIBRARIES = libgimli.la
 
 include_HEADERS = gimli.h
 
-#			ttdijkstramodelling.h \
-#			ttdijkstramodelling.cpp \
+			ttdijkstramodelling.h \
+			ttdijkstramodelling.cpp \
 # 			eameshwrapper.h \
 # 			eameshwrapper.cpp 
 

@@ -39,9 +39,9 @@ public:
         setMesh( createMesh1DBlock( nlay ) );
     }
 
-    MT1dModelling( Mesh & mesh, const RVector & periods, size_t nlay, bool verbose = false )
-        : ModellingBase( mesh, verbose ), periods_( periods ), nlay_( nlay ) {
-    }
+//    MT1dModelling( Mesh & mesh, const RVector & periods, size_t nlay, bool verbose = false )
+//        : ModellingBase( mesh, verbose ), periods_( periods ), nlay_( nlay ) {
+//    }
 
     virtual ~MT1dModelling() { }
 
@@ -67,9 +67,9 @@ protected:
 /*! MT1dRhoModelling( RVector periods, thk [, verbose] ) */
 class DLLEXPORT MT1dRhoModelling : public MT1dModelling {
 public:
-    MT1dRhoModelling( Mesh & mesh, const RVector & periods, const RVector & thk, bool verbose = false )
-        : MT1dModelling( mesh, periods, thk.size(), verbose ), thk_( thk ) {
-    }
+//    MT1dRhoModelling( Mesh & mesh, const RVector & periods, const RVector & thk, bool verbose = false )
+//        : MT1dModelling( mesh, periods, thk.size(), verbose ), thk_( thk ) {
+//    }
 
     MT1dRhoModelling( RVector & periods, RVector & thk, bool verbose = false )
         : MT1dModelling( periods, thk.size(), verbose ), thk_( thk ) { }

@@ -157,9 +157,9 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness( ) const {
     for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
 //        s = (*dataContainer_)( dataIdx ).aIdx();
 //        g = (*dataContainer_)( dataIdx ).mIdx();
-        s = (*dataContainer_)( "s" )[dataIdx ];
-        g = (*dataContainer_)( "g" )[dataIdx ];
-        edgeLength = dataContainer_->sensorPosition( s ).distance( dataContainer_->sensorPosition( g ) ) ;
+        s = (*dataContainer_)( "s" )[ dataIdx ];
+        g = (*dataContainer_)( "g" )[ dataIdx ];
+        edgeLength = dataContainer_->sensorPosition( s ).distance( dataContainer_->sensorPosition( g ) );
         apparentSlowness[ dataIdx ] = dataContainer_->get( "t" )[ dataIdx ] / edgeLength;
     }
     return apparentSlowness;
