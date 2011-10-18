@@ -2,8 +2,6 @@ lib_LTLIBRARIES = libgimli.la
 
 include_HEADERS = gimli.h
 
-			ttdijkstramodelling.h \
-			ttdijkstramodelling.cpp \
 # 			eameshwrapper.h \
 # 			eameshwrapper.cpp 
 
@@ -92,6 +90,8 @@ libgimli_la_SOURCES = \
 			trans.h \
 			triangleWrapper.h \
 			triangleWrapper.cpp \
+			ttdijkstramodelling.h \
+			ttdijkstramodelling.cpp \
 			vector.h \
 			vectortemplates.h
 

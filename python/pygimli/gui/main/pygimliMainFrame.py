@@ -29,6 +29,10 @@ except Exception as e:
 from pygimli.gui.resources import loadIcon
 from pygimli.gui.controls import ResourceTree
 
+class WorkSpace:
+    def __init__( self ):
+        self.activeResource = None;
+
 def err( name ):
     raise Exception( name )
 
@@ -675,10 +679,12 @@ import threading
 
 class PyGIMLIApp( wx.App ):
     def __init__( self, options, args, ws ):
+        wx.App.__init__( self, redirect = False )
+        
         print options, args
         self.options = options
         self.args = args
-        wx.App.__init__( self, redirect = False )
+        
         #self.init(**kwargs)
 
         #globPath = os.path.dirname( sys.argv[ 0 ] )

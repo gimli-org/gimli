@@ -17,3 +17,7 @@ for regEntry in self.fop.regionManager().regions():
     print self.fop.regionManager().region( regEntry.key )
     
 ---------------------------------------------
+
+pygimli.gui
+
+active state manager (tab, tree, toolbar, pi -- activation management)
