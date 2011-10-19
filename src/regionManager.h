@@ -245,10 +245,11 @@ public:
 
     //inline Mesh * mesh(  ) { return mesh_; }
 
-    Region * createRegion( int marker, const Mesh & mesh );
-
-    Region * createSingleRegion( int marker, const std::vector < Cell * > & cells );
-
+    /*!
+     * Add a external region to the RegionManager. 
+     */
+    Region * addRegion( int marker, const Mesh & mesh );
+    
     const std::map < int, Region * > & regions() const { return regionMap_; }
 
     std::map < int, Region * >  * regions() { return &regionMap_; }
@@ -326,6 +327,17 @@ protected:
 
     /*! Fill \ref interRegionInterfaceMap_ */
     void findInterRegionInterfaces_();
+
+    /*!
+     * Internal method to create a region. The method is called from \ref setMesh()
+     */
+    Region * createRegion_( int marker, const Mesh & mesh );
+    
+    /*!
+     * Internal method to create a single parameter region. The method is called from \ref setMesh()
+     */
+    Region * createSingleRegion_( int marker, const std::vector < Cell * > & cells );
+
 
     std::vector < int > allRegionMarker_( bool exludeBoundary = false ){
         std::vector < int > tmp;

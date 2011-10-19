@@ -42,7 +42,7 @@ Region::Region( int marker, RegionManager * parent, bool single )
 
 Region::Region( int marker, const Mesh & mesh, RegionManager * parent )
     : marker_( marker ), parent_( parent )
-        ,isBackground_( false ), isSingle_( false )
+        , isBackground_( false ), isSingle_( false )
         , parameterCount_( 0 ), tM_( NULL ) {
     init_();
     this->resize( mesh );
@@ -169,7 +169,7 @@ void Region::countParameter( uint start){
     endParameter_ = start + parameterCount_;
     modelControl_.resize( parameterCount_, mcDefault_ );
     startVector_.resize( parameterCount_, startDefault_ );
-    //std::cout << WHERE_AM_I << " " << marker_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
+    //std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
 }
 
 
@@ -393,9 +393,6 @@ void Region::setUpperBound( double ub ){
     setModelTransStr_( transString_ );
 }
 
-
-
-
 RegionManager::RegionManager( bool verbose ) : verbose_( verbose ), mesh_( NULL ){
     paraDomain_ = new Mesh();
     parameterCount_ = 0;
@@ -487,9 +484,9 @@ void RegionManager::setMesh( const Mesh & mesh, bool holdRegionInfos ){
 
     for ( uint i = 0; i < regions.size(); i ++ ){
         if ( singleOnly ){
-            createSingleRegion( regions[ i ], markerCellVectorMap[ regions[ i ] ] );
+            createSingleRegion_( regions[ i ], markerCellVectorMap[ regions[ i ] ] );
         } else {
-            createRegion( regions[ i ], *mesh_);
+            createRegion_( regions[ i ], *mesh_);
         }
     }
     //** looking for and create region interfaces
@@ -501,7 +498,7 @@ void RegionManager::setMesh( const Mesh & mesh, bool holdRegionInfos ){
     this->createParaDomain_();
 }
 
-Region * RegionManager::createSingleRegion( int marker, const std::vector < Cell * > & cells ){
+Region * RegionManager::createSingleRegion_( int marker, const std::vector < Cell * > & cells ){
     Stopwatch swatch( true );
     Region * region = NULL;
     if ( regionMap_.count( marker ) == 0 ){
@@ -516,7 +513,7 @@ Region * RegionManager::createSingleRegion( int marker, const std::vector < Cell
     return region;
 }
 
-Region * RegionManager::createRegion( int marker, const Mesh & mesh ){
+Region * RegionManager::createRegion_( int marker, const Mesh & mesh ){
     Region * region = NULL;
 
     if ( regionMap_.count( marker ) == 0 ){
@@ -527,6 +524,11 @@ Region * RegionManager::createRegion( int marker, const Mesh & mesh ){
         region->resize( mesh );
         //std::cerr << WHERE_AM_I << " Region with marker " << marker << " already exists." << std::endl;
     }
+    return region;
+}
+
+Region * RegionManager::addRegion( int marker, const Mesh & mesh ){
+    Region * region = createRegion_( marker, mesh );
     recountParaMarker_(); //** make sure the counter is right
     return region;
 }

@@ -54,7 +54,7 @@ public:
         //! create new region containing offsets with special marker
         offsetMesh_ = createMesh1D( shots_.size() );
         for ( size_t i = 0 ; i < offsetMesh_.cellCount() ; i++ ) offsetMesh_.cell( i ).setMarker( NEWREGION );
-        regionManager().createRegion( NEWREGION, offsetMesh_ );
+        regionManager().addRegion( NEWREGION, offsetMesh_ );
     }
 
     virtual ~TTOffsetModelling() { }
