@@ -173,12 +173,12 @@ public:
         cols_ = S.cols();
         rows_ = S.rows();
 
-        IndexArray colPtr( S.vecColPtr() );
-        IndexArray rowIdx( S.vecRowIdx() );
+        std::vector < int > colPtr( S.vecColPtr() );
+        std::vector < int > rowIdx( S.vecRowIdx() );
         Vector < ValueType > vals( S.vecVals() );
 
         for ( Index i = 0; i < S.size(); i++ ){
-            for ( Index j = colPtr[ i ]; j < colPtr[ i + 1 ]; j ++ ){
+            for ( int j = colPtr[ i ]; j < colPtr[ i + 1 ]; j ++ ){
                 (*this)[ i ][ rowIdx[ j ] ] = vals[ j ];
             }
         }
@@ -494,9 +494,9 @@ public:
     }
 
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__( OP, FUNCT ) \
-        void FUNCT( Index i, Index j, ValueType val ){ \
+        void FUNCT( int i, int j, ValueType val ){ \
             if ( ::fabs( val ) > TOLERANCE ){ \
-                for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){ \
+                for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){ \
                     if ( rowIdx_[ k ] == j ) { \
                         vals_[ k ] OP##= val; return; \
                     } \
@@ -540,9 +540,9 @@ public:
         valid_ = false;
     }
 
-    void setVal( Index i, Index j, ValueType val ){
+    void setVal( int i, int j, ValueType val ){
         if ( ::fabs( val ) > TOLERANCE ){
-            for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+            for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
                 if ( rowIdx_[ k ] == j ) {
                     vals_[ k ] = val; return;
                 }
@@ -551,8 +551,8 @@ public:
         }
     }
 
-    ValueType getVal( Index i, Index j ){
-        for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+    ValueType getVal( int i, int j ){
+        for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
             if ( rowIdx_[ k ] == j ) {
                 return vals_[ k ];
             }
@@ -562,15 +562,15 @@ public:
         return (ValueType)-1.0;
     }
 
-    void cleanRow( Index i ){
-         for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+    void cleanRow( int i ){
+         for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
             vals_[ k ] = (ValueType)0.0;
          }
     }
 
-    void cleanCol( Index i ){
-        for ( Index k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
-            for ( Index j = colPtr_[ rowIdx_[ k ] ]; j < colPtr_[ rowIdx_[ k ] + 1 ]; j ++ ){
+    void cleanCol( int i ){
+        for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
+            for ( int j = colPtr_[ rowIdx_[ k ] ]; j < colPtr_[ rowIdx_[ k ] + 1 ]; j ++ ){
                 if ( rowIdx_[ j ] == i ) {
                     vals_[ j ] = ValueType(0);
                 }
@@ -660,13 +660,13 @@ public:
         valid_ = true;
     }
 
-    inline Index * colPtr() { if ( valid_ ) return &colPtr_[ 0 ]; else SPARSE_NOT_VALID;  return 0; }
-    inline const Index & colPtr() const { if ( valid_ ) return colPtr_[ 0 ]; else SPARSE_NOT_VALID; return colPtr_[ 0 ]; }
-    inline const IndexArray & vecColPtr() const { return colPtr_; }
+    inline int * colPtr() { if ( valid_ ) return &colPtr_[ 0 ]; else SPARSE_NOT_VALID;  return 0; }
+    inline const int & colPtr() const { if ( valid_ ) return colPtr_[ 0 ]; else SPARSE_NOT_VALID; return colPtr_[ 0 ]; }
+    inline const std::vector < int > & vecColPtr() const { return colPtr_; }
 
-    inline Index * rowIdx() { if ( valid_ ) return &rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
-    inline const Index & rowIdx() const { if ( valid_ ) return rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return rowIdx_[ 0 ]; }
-    inline const IndexArray & vecRowIdx() const { return rowIdx_; }
+    inline int * rowIdx() { if ( valid_ ) return &rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
+    inline const int & rowIdx() const { if ( valid_ ) return rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return rowIdx_[ 0 ]; }
+    inline const std::vector < int > & vecRowIdx() const { return rowIdx_; }
 
     inline ValueType * vals() { if ( valid_ ) return &vals_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
     inline const ValueType & vals() const { if ( valid_ ) return vals_[ 0 ]; else SPARSE_NOT_VALID; return vals_[ 0 ]; }
@@ -696,8 +696,10 @@ public:
     bool valid() const { return valid_; }
 
 protected:
-    IndexArray colPtr_;
-    IndexArray rowIdx_;
+
+    // int to be cholmod compatible
+    std::vector < int > colPtr_;
+    std::vector < int > rowIdx_;
     Vector < ValueType > vals_;
 
     bool valid_;
@@ -717,7 +719,7 @@ template < class ValueType > Vector < ValueType > operator * ( const SparseMatri
     }
     Vector < ValueType > b( a.size() );
     for ( Index i = 0; i < A.size(); i++ ){
-        for ( Index j = A.vecColPtr()[ i ]; j < A.vecColPtr()[ i + 1 ]; j ++ ){
+        for ( int j = A.vecColPtr()[ i ]; j < A.vecColPtr()[ i + 1 ]; j ++ ){
             b[ i ] += a[ A.vecRowIdx()[ j ] ] * A.vecVals()[ j ];
         }
     }

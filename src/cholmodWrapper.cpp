@@ -252,23 +252,23 @@ int CHOLMODWrapper::initialize_( DSparseMatrix & S ){
   //** We do not allocate the matrix since we use the allocated space from DSparsemarix
 //    A_ = cholmod_allocate_sparse( dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_ ) ;
 
-     A_ = new cholmod_sparse;
-     A_->nrow  = dim_;         /* number of rows */
-     A_->ncol  = dim_;	       /* number of columns */
-     A_->nzmax = nVals_;       /* maximum number of entries */
-     A_->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
-     A_->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
-     A_->x     = S.vals();     /* numerical values, size nzmax */
+    A_ = new cholmod_sparse;
+    A_->nrow  = dim_;         /* number of rows */
+    A_->ncol  = dim_;	       /* number of columns */
+    A_->nzmax = nVals_;       /* maximum number of entries */
+    A_->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
+    A_->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
+    A_->x     = S.vals();     /* numerical values, size nzmax */
     
      //std::cout << "CHOLMODWrapper::initialize: " << nVals_ << std::endl;
      
-     A_->stype  = 1; 
+    A_->stype  = 1; 
 
-     A_->itype = CHOLMOD_INT;
-     A_->xtype = CHOLMOD_REAL;
-     A_->dtype = CHOLMOD_DOUBLE;
-     A_->packed = true;
-     A_->sorted = true; // testen, scheint schneller, aber hab ich das immer?
+    A_->itype = CHOLMOD_INT;
+    A_->xtype = CHOLMOD_REAL;
+    A_->dtype = CHOLMOD_DOUBLE;
+    A_->packed = true;
+    A_->sorted = true; // testen, scheint schneller, aber hab ich das immer?
     return 1;
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
