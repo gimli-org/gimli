@@ -74,7 +74,7 @@ typedef size_t Index;
 typedef ssize_t SIndex;
 #endif
 
-
+typedef std::vector < Index > IndexArray;
 
 #ifndef __ASSERT_FUNCTION
 #define __ASSERT_FUNCTION "__ASSERT_FUNCTION"

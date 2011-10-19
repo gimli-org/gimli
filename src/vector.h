@@ -61,7 +61,7 @@
 
 namespace GIMLI{
 
-typedef std::vector < Index > IndexArray;template < class ValueType, class A > class __VectorExpr;
+template < class ValueType, class A > class __VectorExpr;
 
 template < class ValueType > class VectorIterator {
 public:
