@@ -50,15 +50,17 @@ def loadProjectFile( projectfile, verbose = False ):
         if row[ 0 ] != '#' :
             if len( row ) == 1:
                 ### filename only
-                d = importData( row[0] )
+                #d = importData( row[0] )
+                d = g.DataContainer( row[0] )
             elif len( row ) == 5:
                 ### filename xstart ystart xend yend
-                d = importData( row[0] )
+                #d = importData( row[0] )
+                d = g.DataContainer( row[0] )
                 start = g.RVector3( float( row[1] ), float( row[2] ) )
                 end   = g.RVector3( float( row[3] ), float( row[4] ) ) 
                 
-                for i in range( d.electrodeCount() ):
-                    d.setPosition( i, start + float(i)*(end-start)/(d.electrodeCount()-1.) )
+                for i in range( d.sensorCount() ):
+                    d.setSensorPosition( i, start + float(i)*(end-start)/(d.sensorCount() - 1.) )
             else:
                 print "cannot interprete project format: len(row) = ", len( row )
                 return dataList
@@ -67,7 +69,7 @@ def loadProjectFile( projectfile, verbose = False ):
             
             if verbose: 
                 print "append: ", d
-                print "from:" , d.electrodePositions()[ 0 ], "to:", d.electrodePositions()[ -1 ]
+                print "from:" , d.sensorPositions()[ 0 ], "to:", d.sensorPositions()[ -1 ]
             
     return dataList
 
@@ -84,7 +86,7 @@ def main( argv ):
     parser = OptionParser( "usage: %prog [options] project file"
                             , version="%prog: " + g.versionStr() 
                             , description = loadProjectFile.__doc__ + 
-                            '                                            The import data function provide the following data formats:                  ' + importData.__doc__
+                            '                                            The import data function provide the following data formats:                  ' #+ importData.__doc__
                             )
     parser.add_option("-v", "--verbose", dest="verbose", action = "store_true", default = False
                             , help="Be verbose." )
@@ -92,6 +94,8 @@ def main( argv ):
                             , help = "Filename for the resulting data file." )
     parser.add_option("-s", "--snap", dest = "snap", type = "float", default = 0.1 
                             , help = "Snap coordinates to gridsize" )
+    parser.add_option("-B", "--bert", dest = "bert", action = "store_true", default = False
+                            , help = "Use BERT sensor indices (a b m n)" )
                             
     (options, args) = parser.parse_args()
 
@@ -116,7 +120,13 @@ def main( argv ):
 
     dataList = loadProjectFile( projectFileName, verbose = options.verbose )
 
-    outdata  = g.DataContainer()
+    outdata  = dataList[ 0 ]
+    
+    if options.bert:
+        outdata.registerSensorIndex( 'a' )
+        outdata.registerSensorIndex( 'b' )
+        outdata.registerSensorIndex( 'm' )
+        outdata.registerSensorIndex( 'n' )
 
     for d in dataList:
         outdata = merge( outdata, d, options.snap )
@@ -126,7 +136,9 @@ def main( argv ):
     if options.verbose:
         print "outdata:", options.outFileName
         
-    outdata.save( options.outFileName, 'a b m n r rhoa err ip' )
+    print outdata.
+        
+    outdata.save( options.outFileName )
 
 if __name__ == "__main__":
     main( sys.argv[ 1: ] )
