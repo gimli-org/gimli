@@ -39,7 +39,7 @@
 			<Add option="-s" />
 			<Add option="--add-stdcall-alias" />
 			<Add option="--export-all-symbols" />
-			<Add option="--enable-auto-import" />
+			<Add option="-Wl,--enable-auto-import" />
 			<Add library="libldl.a" />
 			<Add library="libtriangle.a" />
 			<Add library="libcholmod.a" />

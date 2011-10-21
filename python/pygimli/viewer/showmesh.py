@@ -42,9 +42,12 @@ def drawMesh( axes, mesh ):
     axes.set_ylim( mesh.ymin(), mesh.ymax() )
 
 def drawModel( axes, mesh, data = None, cMin = None, cMax = None
-               , showCbar = True , linear = False, label = "" ):
+               , showCbar = True , linear = False, label = ""
+               , nLevs = 5, orientation = 'horizontal', xlab=None, ylab=None ):
     gci = g.mplviewer.createMeshPatches( axes, mesh, alpha = 1.0 )
     axes.set_aspect( 'equal')
+    if xlab is not None: axes.set_xlabel( xlab )
+    if ylab is not None: axes.set_ylabel( ylab )
 
     gci.set_antialiased( True )
     gci.set_linewidth( None )
@@ -63,7 +66,8 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
     g.mplviewer.setMappableData( gci, viewdata, cMin = cMin, cMax = cMax, logScale = not(linear)  )
 
     if showCbar and (cMin is not cMax):
-        g.mplviewer.createColorbar( gci, cMin = cMin, cMax = cMax, nLevs = 5, label = label )
+        g.mplviewer.createColorbar( gci, cMin = cMin, cMax = cMax, 
+            nLevs = nLevs, label = label, orientation = orientation )
     return gci
 
 
