@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="misc" />
+		<Option pch_mode="0" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="invlinearmat">
+				<Option output="invlinearmat.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-v -ADC -i4 -l100 -b0 -u0 b.vec" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
+			<Target title="bms2vtk">
+				<Option output="bms2vtk.exe" prefix_auto="0" extension_auto="0" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="invlinearmat;bms2vtk;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-O2" />
+			<Add option="-DMINGW" />
+			<Add directory="..\src" />
+		</Compiler>
+		<Linker>
+			<Add library="libgimli" />
+			<Add directory="." />
+		</Linker>
+		<Unit filename="..\apps\misc\bms2vtk.cpp">
+			<Option target="bms2vtk" />
+		</Unit>
+		<Unit filename="..\apps\misc\invlinearmat.cpp">
+			<Option target="invlinearmat" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
