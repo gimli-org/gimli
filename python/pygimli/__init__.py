@@ -181,7 +181,12 @@ _pygimli_.RVector.isArray = RVector_ArrayInit
 # Construct RVector from numpy array , opposite to asarray( RVector ) 
 #
 def asvector( arr ):
-    return _pygimli_.ListToRVector( list( arr.flat ) )
+    r = _pygimli_.RVector( len( arr ) )
+    
+    for i, v in enumerate( arr ):
+        r[ i ] = v
+
+    return r
     
 
 ###########################
