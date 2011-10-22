@@ -44,7 +44,7 @@ def grange( start, end, dx = 0, n = 0, log = False ):
         if end > start and dx < 0:
             print "grange: increasing range but decreasing dx, swap dx sign"
             d = -d
-        ret = g.ListToRVector( range( int( round( abs( ( e - s ) / d ) ) + 1 ) ) )
+        ret = g.asvector( range( int( round( abs( ( e - s ) / d ) ) + 1 ) ) )
         ret *= d
         ret += s
         return ret;
@@ -58,26 +58,6 @@ def grange( start, end, dx = 0, n = 0, log = False ):
     else:
         raise Exception( 'Either dx or nSteps have to be given.' )
     
-def increasingRange( first, last, n ):
-    '''
-        Return an increasing g.RVector with size(n+1) filled with : 0, first, ... ,last
-    '''
-    y = g.ListToRVector( range( 0, n + 1  ) );
-
-    dy = ( last - first * n ) / ( g.sum( y ) - float( n ) )
-
-    if dy < 0.0:
-        print "decreasing number of layers: ", n, dy
-        return increasingRange( first, last, n-1)
-
-    yval = 0.0
-    for i in range( 0, n ):
-        yval = yval + first + dy * i
-        y[ i + 1 ] = yval
-
-    y = g.fliplr( y ) * -1.0 #+ g.max( y )
-    return y
-
 def diff( v ):
     ''' 
         Return RVector as approximate derivative from v as r[v_1-v_0, v2-v_1,...]
