@@ -27,7 +27,8 @@
 
 // #include <boost/asio.hpp>
 // #include <boost/bind.hpp>
-#ifdef USE_IPC
+#ifdef HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
+#define USE_IPC
 #include <boost/interprocess/managed_shared_memory.hpp>
 using namespace boost::interprocess;
 #endif
@@ -109,7 +110,10 @@ public:
     inline double getDouble( const std::string &name ){ return get< double >( name ); }
 
     void info(){
-        if ( !initialized_ ) return;
+        if ( !initialized_ ) {
+            std::cout << "IPC(shared_memory) not initialized or supported" << std::endl;
+            return;
+        }
 #ifdef USE_IPC
 
         std::cout << "name: " << segment_.get_size() << std::endl;
@@ -172,7 +176,7 @@ protected:
 
     std::string name_;
 #ifdef USE_IPC
-   managed_shared_memory segment_;
+    managed_shared_memory segment_;
 #endif
 };
 

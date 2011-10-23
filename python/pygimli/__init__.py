@@ -79,7 +79,8 @@ _pygimli_.stdVectorUL.__str__ = RVector_str
 # compatibility stuff
 ############################
 def nonzero_test( self ):
-    raise "Warning! there is no 'and' for BVector and RVector use '&' instead"
+    raise "Warning! there is no 'and' for BVector and RVector use '&' instead" + \
+             "If you looking for the nonzero test, use len( v ) > 0"
 
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.BVector.__nonzero__ = nonzero_test
