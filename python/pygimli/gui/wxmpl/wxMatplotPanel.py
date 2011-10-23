@@ -710,14 +710,17 @@ class wxMatplotPanel( scrolled.ScrolledPanel  ):
 
     def _onIdle( self, evt ):
         if self.IsShownOnScreen():
+
             if self.needDrawing:
                 self.redraw()
 
             if self._refresh:
                 self.refresh()
                 self._refresh = False
+                
             if self._updateDraw:
                 swatch = Stopwatch( True )
+
                 self.canvas.draw()
                 if self.needUpdateHack_:
                     self.needUpdateHack()
@@ -726,7 +729,7 @@ class wxMatplotPanel( scrolled.ScrolledPanel  ):
 
                 if self.canvasZoomWidth == 1.0:
                     self.SetupScrolling( False, False )
-               # print "draw: ",  swatch.duration()
+                print "draw: ",  swatch.duration()
 
     def updateDrawOnIdle( self ):
         self._updateDraw = True
@@ -824,10 +827,14 @@ class AppResourceWxMPL( AppResource, wxMatplotPanel ):
     def draw( self ):
         if self.IsShownOnScreen():
             wx.BeginBusyCursor( wx.StockCursor( wx.CURSOR_WAIT ) )
+
             self.needDrawing = False
+            
             for a in self.figure.axes:
                 a.cla()
+                
             self.drawData_()
+            
             wx.EndBusyCursor( )
             self.updateDrawOnIdle()
         else:

@@ -188,8 +188,8 @@ void ModellingBase::mapModel( const RVector & model, double background ){
         if ( marker >= 0 ) {
             if ( (size_t)marker >= model.size() ){
                 mesh_->exportVTK( "mapModelfail" );
-                throwLengthError( 1, WHERE_AM_I + " marker greater= then model.size()" + toStr( marker )
-                       + " != " + toStr( model.size() ) );
+                throwLengthError( 1, WHERE_AM_I + " marker greater = then model.size() " + toStr( marker )
+                       + " >= " + toStr( model.size() ) );
             }
             if ( model[ marker ] < TOLERANCE ){
                 emptyList.push_back( &mesh_->cell( i ) );

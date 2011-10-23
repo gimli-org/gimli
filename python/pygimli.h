@@ -109,14 +109,13 @@ namespace pyplusplus{ namespace aliases{
 #include "stopwatch.h"
 #include "trans.h"
 #include "triangleWrapper.h"
+#include "ttdijkstramodelling.h"
 #include "vector.h"
 #include "vectortemplates.h"
 
-//#include "ttdijkstramodelling.h"
 // #include "inversionRollalong.h"
 // #include "eameshwrapper.h"
 // #include "matrixTemplates.h"
-// #include "stlvector.h"
 
 namespace GIMLI{
 #define DEFINE_PY_VEC_OPERATOR__( OP )                      \
@@ -169,17 +168,10 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template RVector pow( const RVector & a, double power );
     template RVector pow( const RVector & a, int power );
 
-    template std::vector < int > unique( const std::vector < int > & a );
-    template std::vector < int > sort( const std::vector < int > & a );
-    template RVector fliplr( const RVector & a );
-
-    template RVector increasingRange( const double & first, const double & last, Index n );
-
     template class Pos< double >;
     template class Quaternion< double >;
 
     template class Inversion< double, RMatrix >;
-//     template class RollalongInSpace< double >;
 
     template class Trans< RVector >;
     template class TransLinear< RVector >;
@@ -187,6 +179,12 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template class TransLog< RVector >;
     template class TransLogLU< RVector >;
     template class TransCotLU< RVector >;
+
+    template std::vector < int > unique( const std::vector < int > & a );
+    template std::vector < int > sort( const std::vector < int > & a );
+    template RVector fliplr( const RVector & a );
+
+    template RVector increasingRange( const double & first, const double & last, Index n );
 
     template Mesh & Mesh::transform( const Matrix < double > & mat );
     template Pos< double > & Pos< double >::transform( const Matrix < double > & mat );
@@ -197,20 +195,12 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
 
     template class ElementMatrix< double >;
 
+    template RVector cat( const RVector & a, const RVector & b );
+
     template double sum( const RVector & v );
     template double min( const RVector & v );
     template double max( const RVector & v );
     //template Complex sum( const CVector & v );
-
-    template RVector cat( const RVector & a, const RVector & b );
-
-    template double mean( const RVector & a );
-
-    template double stdDev( const RVector & v );
-    template double arithmeticMean( const RVector & v );
-    template double geometricMean( const RVector & v );
-    template double harmonicMean( const RVector & a );
-
     template double rms( const RVector & a );
     template double rms( const RVector & a, const RVector & b );
     template double rrms( const RVector & a, const RVector & b );
@@ -220,6 +210,13 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template double norml2( const RVector & a );
     template double normlInfinity( const RVector & a );
     template double euclideanNorm( const RVector & a );
+    template double stdDev( const RVector & v );
+    template double median( const RVector & a );
+    template double mean( const RVector & a );
+    template double arithmeticMean( const RVector & v );
+    template double geometricMean( const RVector & v );
+    template double harmonicMean( const RVector & a );
+
     template void rand( RVector & vec, double min = 0.0, double max = 1.0 );
     template void randn( RVector & vec );
 
