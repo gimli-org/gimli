@@ -5,8 +5,8 @@ PYTHONDIR=/usr/include/python2.7
 GIMLILIB=../src/.libs/ -lgimli 
 GIMLIINC=../src
 TARGET=_pygimli_
-COPT=-fPIC -O2 -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES 
-	#-D HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
+COPT=-fPIC -O2 -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES \
+	-D USE_IPC
 
 CPPCFILES = $(wildcard generated/*.cpp)
 OBJECTS = $(patsubst %.cpp,%.o,$(CPPCFILES))
