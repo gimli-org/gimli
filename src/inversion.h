@@ -134,6 +134,13 @@ public:
         delete transModelDefault_;
     }
 
+private:
+    /*! Copyconstructor */
+    Inversion( const Inversion< ModelValType, SensMat > & inv ){
+        THROW_TO_IMPL
+    }
+
+
 protected:
     /*! Internal initialization function, which is called from constructor. Set default paramater and allocate required memory */
     void init_(){

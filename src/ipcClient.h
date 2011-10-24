@@ -27,8 +27,10 @@
 
 // #include <boost/asio.hpp>
 // #include <boost/bind.hpp>
-#ifdef HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
-#define USE_IPC
+#if defined( HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP ) || defined( USE_IPC )
+#ifndef USE_IPC
+    #define USE_IPC
+#endif
 #include <boost/interprocess/managed_shared_memory.hpp>
 using namespace boost::interprocess;
 #endif
@@ -43,6 +45,13 @@ public:
         : verbose_( verbose ), initialized_( false ) {
     }
 
+private:
+    /*! Copyconstructor */
+    IPCClientSHM( const IPCClientSHM & ipc ){
+        THROW_TO_IMPL
+    }
+
+public:
     void setSegmentName( const std::string & segmentName ){
         name_ = segmentName;
 #ifdef USE_IPC
