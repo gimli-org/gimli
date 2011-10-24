@@ -14,6 +14,14 @@
 				<Option parameters="-v -n5  -l 100 cux1-nord.fdem" />
 				<Option projectResourceIncludeDirsRelation="1" />
 			</Target>
+			<Target title="fdem1dsmooth">
+				<Option output="fdem1dsmooth.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="libgimli.dll;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-v -l 100 cux1-nord.fdem" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
 			<Target title="dc1dinv">
 				<Option output="dc1dinv.exe" prefix_auto="0" extension_auto="0" />
 				<Option external_deps="libgimli.dll;" />
@@ -69,7 +77,7 @@
 			</Target>
 		</Build>
 		<VirtualTargets>
-			<Add alias="All" targets="mt1dinv;mt1dsmooth;dc1dinv;dc1dsmooth;mrs1dsmooth;mrs1dblock;" />
+			<Add alias="All" targets="mt1dinv;mt1dsmooth;dc1dinv;dc1dsmooth;mrs1dsmooth;mrs1dblock;fdem1dinv;fdem1dsmooth" />
 		</VirtualTargets>
 		<Compiler>
 			<Add option="-O2" />
@@ -77,7 +85,7 @@
 			<Add directory="..\src" />
 		</Compiler>
 		<Linker>
-			<Add option="--enable-auto-import" />
+			<Add option="-Wl,--enable-auto-import" />
 			<Add library="gimli" />
 			<Add directory="." />
 		</Linker>
@@ -89,6 +97,9 @@
 		</Unit>
 		<Unit filename="..\apps\em1d\fdem1dinv.cpp">
 			<Option target="fdem1dinv" />
+		</Unit>
+		<Unit filename="..\apps\em1d\fdem1dsmooth.cpp">
+			<Option target="fdem1dsmooth" />
 		</Unit>
 		<Unit filename="..\apps\em1d\mrs1dblock.cpp">
 			<Option target="mrs1dblock" />

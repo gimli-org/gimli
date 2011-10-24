@@ -18,7 +18,7 @@ def numpy2gmat(nmat):
     """convert numpy.array into pygimli RMatrix."""
     gmat = g.RMatrix()
     for arr in nmat:
-        gmat.push_back( g.ListToRVector( list( arr ) ) )
+        gmat.push_back( g.asvector( arr ) )
     return gmat
 
 def rndig(a, ndig=3):

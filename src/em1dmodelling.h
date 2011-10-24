@@ -123,6 +123,7 @@ protected:
 /*! FDEM1dThoModelling( RVector thk, freq, coilspacing[, double elevation, verbose] ) */
 /*! FDEM1dThoModelling( RVector thk, freq, double coilspacing[, elevation, verbose] ) */
 class DLLEXPORT FDEM1dRhoModelling : public FDEM1dModelling {
+public:
     //! default constructor creating a block model
     FDEM1dRhoModelling( RVector & thk, const RVector & freq, const RVector & coilspacing, double z = 0.0, bool verbose = false )
         : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { }
