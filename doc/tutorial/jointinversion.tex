@@ -4,37 +4,56 @@ We can classify different types according to the relation of the associated para
 \begin{enumerate}
 	\item Identical parameters is historical the classical joint inversion, e.g. both DC and EM aim at $\rho$.
 	\item Parameters are indirectly connected by petrophysical relations, e.g. ERT and GPR both aiming at water content.
-	\item The parameters are independent. In this case only the structures can be linked to each other. For simple models this can involve the inversion of the geometry. For fixed models structural information is exchanged\footnote{Note that this type is formally a structurally coupled cooperative inversion.}.
+	\item Independent parameters. In this case only the structures can be linked to each other. For simple models this can involve the inversion of the geometry. For fixed models structural information is exchanged\footnote{Note that this type is formally a structurally coupled cooperative inversion.}.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Classical joint inversion of DC and EM soundings}\label{sec:jointdcem}
-File \file{doc/tutorial/code/joint/dc\_mt\_joint1d.cpp}\\
-First, let us consider to jointly invert different electromagnetic methods, e.g. direct current and MT\footnote{Of course AMT is usually done differently, however the use of MT data shows how it works.} data.
-Both previously used methods are based on the same model (block model or smooth model) and yield an apparent resistivity vector.
-In the common response function the two vectors are combined.
-We create a new modelling class that derives from the DC1d modelling class\footnote{In order to use the classes, dc1dmodelling.h and em1dmodelling.h have to be included.} and has a member of the MT1d modelling class type.
+File \file{doc/tutorial/code/joint/dcem1dinv.cpp}\\
+First, let us consider to jointly invert different electromagnetic methods, e.g. direct current (DC) and Frequency Domain Electromagnetic (FDEM).
+For the latter we assume a two-coil system in horizontal coplanar model with 10 frequencies between 110\,Hz and 56\,kHz.
+Whereas DC resistivity yields apparent resistivities, the FDEM data are expressed as ratio between secondary and primary field in per cent.
+
+The two ready methods \lstinline|DC1dModelling| and \lstinline|FDEM1dModelling| are very easily combined since they use the same block model.
+In the response function the two vectors are combined.
+We create a new modelling class that derives from the base modelling class\footnote{In order to use the classes, dc1dmodelling.h and em1dmodelling.h have to be included.} and has two members of the individual classes, which must be initialized in the constructor.
+Alternatively we could derive from one of the two classes and use only a member of the other.
 
 \begin{lstlisting}[language=C++,morekeywords={RVector,RMatrix}]
-MT IS TO BE REPLACED BY FDEM
-class DC_MT_Modelling : public DC1dModelling {
+class DCEM1dModelling : public ModellingBase {
 public:
-    DCMTModelling(Mesh & mesh,DataContainer & data,RVector & T,size_t nlay)
-    : DC1dModelling( mesh, data, nlay, verbose ) { 
-            fMT_ = new MT1dModelling( mesh, T, nlay, verbose );
+    DCEM1dModelling( size_t nlay, RVector & ab2, RVector & mn2, 
+                     RVector & freq, double coilspacing, bool verbose ) : 
+    	ModellingBase( verbose ), // base constructor
+    	fDC_( nlay, ab2, mn2, verbose ), // FDEM constructor
+    	fEM_( nlay, freq, coilspacing, verbose ) { // DC constructor 
+          setMesh( createMesh1DBlock( nlay ) ); // create mesh
     }
-    virtual ~DC_MT_Modelling(){ delete fMT_; } //~fMT_(); }
-    RVector response( const RVector & model ){
-       return cat( DC1dModelling::response( model ), fMT_->rhoa( model ) );
+    RVector response( const RVector & model ){ // paste together responses
+        return cat( fDC_.response( model ), fEM_.response( model ) ); 
     }
+    RVector startModel( ){ return fDC_.startModel(); } // return any one
 protected:
-    MT1dModelling *fMT_;
+    DC1dModelling fDC_;
+    FDEM1dModelling fEM_;
 };
 \end{lstlisting}
 
-The constructor initializes the parent class and the member class as used before.
 In the response function both response functions are called and combined using the cat command.
-That's it! The inversion is initialized with the combined apparent resistivities and runs as usual.
+We set the usual transformation (log for apparent resistivity and logLU for the resistivity) and inversion (Marquardt scheme) options as above.
+In case of identical responses (e.g. apparent resistivities) this would be the whole thing.
+Here we have to care about the different data types (cf. section \ref{sec:mt1d}), i.e. always positive, log-distributed $\rho_a$ from DC and possibly negative, linearly distributed, relative magnetic fields.
+The transformations are again combined using \lstinline|CumulativeTrans|
+\begin{lstlisting}[language=C++,morekeywords={RVector,RMatrix}]
+    RTransLog transRhoa;
+    RTrans transEM;
+    CumulativeTrans< RVector > transData;
+    transData.push_back( transRhoa, ab2.size() );
+    transData.push_back( transEM, freq.size() * 2 );
+\end{lstlisting}
+
+In the code we create a synthetic model, calculate the forward response and noisify it by given noise levels.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Block joint inversion of DC/MRS data}\label{sec:blockjoint}
