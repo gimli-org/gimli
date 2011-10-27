@@ -16,7 +16,7 @@ class FunctionModelling : public ModellingBase {
 public:
     /*! constructor, nc: number of coefficients, xvec: abscissa, */
     FunctionModelling( size_t nc, const RVector & xvec, bool verbose = false  )
-        : ModellingBase( verbose ), x_( xvec ), nc_( nc ){ regionManager_->setParameterCount( nc ); }
+        : ModellingBase( verbose ), x_( xvec ), nc_( nc ){ this->regionManager().setParameterCount( nc ); }
 
     /*! the main thing - the forward operator: return f(x) */
     RVector response( const RVector & par ){

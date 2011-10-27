@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Tutorial:Joint" />
+		<Option pch_mode="0" />
+		<Option default_target="dcem1dinv" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="dcem1dinv">
+				<Option output="dcem1dinv.exe" prefix_auto="0" extension_auto="0" />
+				<Option external_deps="..\..\..\mingw\libgimli.dll;" />
+				<Option type="1" />
+				<Option projectResourceIncludeDirsRelation="1" />
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="dcem1dinv;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-O3" />
+			<Add option="-DMINGW" />
+			<Add directory="..\..\..\..\src" />
+		</Compiler>
+		<Linker>
+			<Add library="libgimli" />
+			<Add directory="..\..\..\..\mingw" />
+		</Linker>
+		<Unit filename="dcem1dinv.cpp">
+ 			<Option target="dcem1dinv"/>
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

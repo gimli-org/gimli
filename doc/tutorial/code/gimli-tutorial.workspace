@@ -4,6 +4,6 @@
 		<Project filename="dc1d\dc1d.cbp" active="1" />
 		<Project filename="polyfit\polyfit.cbp" />
 		<Project filename="enhanced\enhanced.cbp" />
-		<Project filename="joint\jointinv.cbp" />
+		<Project filename="joint\joint.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>
