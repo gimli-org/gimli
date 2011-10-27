@@ -23,7 +23,7 @@ gimliUnitTest_SOURCES = \
 
 if HAVE_UNITTEST
 #gimliUnitTest_LDADD = $(top_srcdir)/src/.libs/libgimli.la $(CPPUNIT_LIBS)
-gimliUnitTest_LDADD = ../../src/.libs/libgimli.la $(CPPUNIT_LIBS) 
+gimliUnitTest_LDADD = ../../src/.libs/libgimli.la $(CPPUNIT_LIBS) -lrt
 else
 gimliUnitTest_LDADD = 
 endif

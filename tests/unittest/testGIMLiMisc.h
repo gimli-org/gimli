@@ -4,6 +4,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <gimli.h>
+#include <ipcClient.h>
 
 class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( GIMLIMiscTest );
@@ -11,6 +12,7 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST( testBooleanLogic );
     CPPUNIT_TEST( testFunctorTemplates );
     CPPUNIT_TEST( testStringFunctions );
+    CPPUNIT_TEST( testIPCSHM );
 //     CPPUNIT_TEST( testRotationByQuaternion );
     
 	//CPPUNIT_TEST_EXCEPTION( funct, exception );
@@ -21,7 +23,11 @@ public:
 		std::cout << "Hello, this is: " << GIMLI::versionStr() << std::endl;
 		CPPUNIT_ASSERT( GIMLI::fileExist( "unittest.sh" ) == true );
         std::cout << "number of CPU: " << GIMLI::numberOfCPU() << std::endl;
-	}
+        std::cout << "sizes: int" << " " << sizeof( int ) 
+                  << " long" << " " << sizeof( long )
+                  << " size_t" << " " << sizeof( size_t )
+                  << " ptr"<< " " << sizeof( void *)<< std::endl;
+    }
 
     void testBooleanLogic(){
        
@@ -67,6 +73,29 @@ public:
     
     void testRotationByQuaternion(){
         
+    }
+
+    void testIPCSHM(){
+        
+        // Init shared memory
+        GIMLI::IPCClientSHM ipc;
+
+        // Init shared memory
+        ipc.setSegmentName( "unittest" );
+        ipc.setInt( "testInt", 1 );
+        ipc.setBool( "testBool", false );
+        ipc.setDouble( "testDouble", 3.14 );
+        
+        // this can by done by any other process or program on the same machine
+        GIMLI::IPCClientSHM ipc2;
+        ipc2.setSegmentName( "unittest" );
+        ipc2.info();
+        CPPUNIT_ASSERT( ipc2.getInt("testInt" ) == 1 );
+        CPPUNIT_ASSERT( ipc2.getBool("testBool" ) == false );
+        CPPUNIT_ASSERT( ipc2.getDouble("testDouble" ) == 3.14 );
+        
+        // free the shared memory
+        ipc.free( "unittest" );
     }
 
 };

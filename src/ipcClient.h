@@ -37,9 +37,13 @@ using namespace boost::interprocess;
 
 namespace GIMLI{
 
+//! Inter process communication via shared memory.
+/*! Inter process communication via shared memory. 
+ * For sample usage see: unittest/testGIMLiMisc.h:testIPCSHM()
+ */
 class IPCClientSHM{
 public:
-    enum TypeID { BOOL, INT, DOUBLE };
+    enum TypeID { BOOL, INT, DOUBLE, ARRAY };
 
     IPCClientSHM( bool verbose = false )
         : verbose_( verbose ), initialized_( false ) {
@@ -63,7 +67,7 @@ public:
     template < class ValueType > void set( const std::string & name, ValueType val, TypeID type ){
         if ( !initialized_ ) return;
 #ifdef USE_IPC
-        segment_.find_or_construct< TypeID >( (name+"-T").c_str() )( type );
+        segment_.find_or_construct< TypeID >( (name+"-Type").c_str() )( type );
 
         switch ( type ){
             case BOOL:{
@@ -78,6 +82,10 @@ public:
                 double * v = segment_.find_or_construct< double >( name.c_str() )( );
                 *v = (double)val;
             } break;
+            case ARRAY:{
+//                  double * v = segment_.find_or_construct< double * >( name.c_str() )[ val.size() ]( );
+// //                 *v = (double)val;
+            } break;
         }
 #endif
     }
@@ -86,7 +94,7 @@ public:
        if ( !initialized_ ) return ValueType(0);
 #ifdef USE_IPC
 
-        TypeID * t = segment_.find< TypeID >( (name + "-T" ).c_str() ).first;
+        TypeID * t = segment_.find< TypeID >( (name + "-Type" ).c_str() ).first;
         if ( !t ){
             throwError(1, WHERE_AM_I + " no ipc value registered for name: " + name );
         }
@@ -104,6 +112,9 @@ public:
                 double * v = segment_.find< double >( name.c_str() ).first;
                 return ValueType( *v );
             } break;
+            case ARRAY:{
+                
+            }break;
         }
 #endif
         return ValueType(0);
