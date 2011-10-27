@@ -1,7 +1,11 @@
 GIMLi - Geophysical Inversion and Modelling Library
         an open-source multi-method library for solving inverse and forward tasks
 -----------------------------------------------
-BUILD (for posix systems):
+BUILD (Windows systems)
+
+Please look into the directory mingw and the README file therein
+
+BUILD (for posix systems such as Linux, Unix, MacOS):
 
 For the first time after initial svn checkout:
 
@@ -48,7 +52,8 @@ mingw-4.5.0 & msys-1.0.15
 codeblocks
     from: http://www.codeblocks.org/downloads/26
     testet: codeblocks-10.05-setup.exe
-    change codeblocks toolchain (setting/Compiler & Debugger../) to c:/mingw
+    change codeblocks toolchain (setting/Compiler & Debugger../) 
+        to c:/mingw or MinGW64 base directory
 
 ------------------------------------------------------------------
 Add boost include path to the build:

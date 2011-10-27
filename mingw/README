@@ -1,5 +1,28 @@
 Installation directory for Windows systems using MinGW compiler
 
+What you need:
+    A) A MinGW compiler suite
+        download the automated installer (mingw-get-inst-*.exe) from 
+        http://sourceforge.net/projects/mingw/files/
+      on Windows 7 download also the MinGW64 from 
+        http://mingw-w64.sourceforge.net
+        and copy all binaries in x86_64.../bin into MinGW64/bin
+    B) The platform-independent IDE Code::Blocks 
+        download and install (release or nightly build) from 
+        http://www.codeblocks.org/downloads/
+        set the executable toolchain to MinGW (Win32) or MinGW64 (Win64)
+        
+1. Install externals (Lapack,SuiteSparse and triangle)
+    Open MinGW shell (Msys) and go to external directory
+    call make (will download, unpack and build installation)
+    In case of download errors:
+        - check if wget command exists or install by calling
+            mingw-get install wget
+        - for problems with proxy server create file $HOME/.wgetrc
+            http_proxy = http://<proxyserver>:<proxyport>
+            proxy_user = <username>
+            proxy_password = <password>
+        
 Check for valid boost installation
 		sh pygimli/buildScripts/buildBoostWin32.sh ../../
 		
@@ -7,8 +30,9 @@ Check for valid boost installation
 		
 To build open Code::Block (testet with: 10.05 )
 
-- File/Open ... libgimli.cbp (codeblock project)
+- File/Open or double-click on libgimli.cbp (codeblock project)
 - Build/Build (CTRL-F9) builds the library (libgimli) itself
+- do the same with the application cbp files or use workspace.
 
 There are other codeblock projects for the individual applications
 and several of these can be summarized in a workspace.
