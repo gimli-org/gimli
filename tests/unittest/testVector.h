@@ -304,11 +304,9 @@ public:
         CPPUNIT_ASSERT( find( abs(x+x) > 4. ).size() == 8 );
         CPPUNIT_ASSERT( find( ~( abs(x+x) > 4. ) ).size() == 2 );
         x[0] = ::log(0);
-        std::cout << x <<std::endl;
         CPPUNIT_ASSERT( find( isInf(x) ).size() == 1 );
         CPPUNIT_ASSERT( find( isInf(x+x) ).size() == 1 );
         x[1] += ::sqrt(-1) ;
-        std::cout << x <<std::endl;
         CPPUNIT_ASSERT( find( isNaN(x) ).size() == 1 );
         CPPUNIT_ASSERT( find( isInfNaN(x) ).size() == 2 );
         //CPPUNIT_ASSERT( find( isnan(x+x) ).size() == 0 );

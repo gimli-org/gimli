@@ -23,6 +23,7 @@ public:
         poly.createEdge( *n2, *n3 );
         poly.createEdge( *n3, *n1 );
         GIMLI::TriangleWrapper tri( poly );
+        tri.setSwitches("-pzeQ");
         GIMLI::Mesh outMesh(2);
         tri.generate( outMesh );
         CPPUNIT_ASSERT( outMesh.cellCount() == 1 );
