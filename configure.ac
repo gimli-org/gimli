@@ -101,7 +101,10 @@ BOOST_REQUIRE([1.41],[AC_MSG_ERROR([Sorry, boost is requried.
 					or
 					./configure --with-boost=/c/home/boost])])
 BOOST_FIND_HEADER([boost/bind.hpp])
-BOOST_FIND_HEADER([boost/interprocess/managed_shared_memory.hpp])
+BOOST_FIND_HEADER([boost/interprocess/managed_shared_memory.hpp],
+                  [AC_MSG_WARN("*******************************************"
+                               "does not found or non-working boost/interprocess/managed_shared_memory.hpp"
+                               "*******************************************")] )
 
 AC_SUBST([CPPFLAGS], ["${CPPFLAGS} ${BOOST_CPPFLAGS}"])
 
