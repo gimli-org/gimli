@@ -7,6 +7,12 @@ Please look into the directory mingw and the README file therein
 
 BUILD (for posix systems such as Linux, Unix, MacOS):
 
+Prerequisites:
+You will need at least (incomplete for now):
+	>=automake-1.11
+	>=gcc-4.0
+	...
+
 For the first time after initial svn checkout:
 
 ./autogen.sh
