@@ -10,7 +10,7 @@ BUILD (for posix systems such as Linux, Unix, MacOS):
 Prerequisites:
 You will need at least (incomplete for now):
 	>=automake-1.11
-	>=gcc-4.0
+	>=gcc-4.4.5 (just for some boost stuff that uses long long)
 	...
 
 For the first time after initial svn checkout:

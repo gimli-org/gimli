@@ -3,7 +3,15 @@
 ##except ImportError, exc:
 ##    raise SystemExit("PIL must be installed to run this example")
 
+import urllib
+import math
+import pylab as P
+import numpy as np
+
 class OverlayImageMPL( ):
+        ''
+        ' What is this? '
+        ''
    
         def __init__( self, imageFileName, axes ):
             self.axes = axes
@@ -60,52 +68,101 @@ class OverlayImageMPL( ):
                 self.imAxes.imshow( self.image, origin='lower' )
                 self.imAxes.set_xticks( [] )
                 self.imAxes.set_yticks( [] )
-            
 
-def underlayGoogleMaps( axes, proj, proxies = {} ):
-    '''
-        Get map image from googlemaps and underlay the current axes
-        The image is proxied on disk
-        axes must contain coordinates based on a valid projection
-    '''   
-    from PIL import Image
-    import urllib
-    import numpy as np
+
+def deg2MapTile(lon_deg, lat_deg, zoom):
+    ''
+    ''
+    ''
+    lat_rad = math.radians(lat_deg)
+    n = 2.0 ** zoom
+    xtile = int((lon_deg + 180.0) / 360.0 * n)
+    ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
+    return (xtile, ytile)
+
+
+def mapTile2deg(xtile, ytile, zoom):
+    ''
+    ' This returns the NW-corner of the square. Use the function with xtile+1 and/or ytile+1 to get the other corners.'
+    '    With xtile+0.5  ytile+0.5 it will return the center of the tile.'
+    ''
+    n = 2.0 ** zoom
+    lon_deg = xtile / n * 360.0 - 180.0
+    lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
+    lat_deg = math.degrees(lat_rad)
+    return (lon_deg, lat_deg)
     
-    upperleft = proj( axes.get_xlim( )[0], axes.get_ylim( )[1], inverse = True )
-    lowerright= proj( axes.get_xlim( )[1], axes.get_ylim( )[0], inverse = True )
 
-    imagename = 'size=640x640&sensor=false'
-    imagename += "&markers="
-    imagename += str(upperleft[1])+ "," + str(upperleft[0])
-    imagename += "|"
-    imagename += str(lowerright[1])+ "," + str(lowerright[0])
-            
-    image = None
+def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
+    ''
+    ' vendor = OSM for Open Street Map'
+    ''
+
+    def filenameProxi( fname ): return vendor + '-' + fname.replace('/', '_' )
+
+    if vendor != 'OSM': raise "Vendor: "+ vendor + " not supported (currently only OSM (Open Street Map) )"
+    
+    server = 'http://tile.openstreetmap.org/'
+
+    imagename = str(zoom) + '/' + str( xtile )+ '/' + str( ytile )
+    url = server + imagename + '.png'
+
     try:
-        print "Read image from disk"
-        image = Image.open( imagename + ".png" )
+        if verbose: print "Read image from disk"
+        
+        image = P.imread( filenameProxi( imagename ) + ".png" )
     except:
-        print "Get map from google maps"
-        googlemap="http://maps.google.com/maps/api/staticmap?"+imagename
-        print googlemap
-        filehandle = urllib.urlopen(googlemap, proxies=proxies)
+        if verbose: print "Get map from url maps", url
+        
+        filehandle = urllib.urlopen( url, proxies = {} )
         data = filehandle.read()
         filehandle.close()
-        imagename1 = "bla"
-        fi = open( imagename1 + ".png", 'w')
-        fi.write( data )
-        image = Image.open( imagename1 + ".png" )
-        fi.close()
 
-    extent = np.asarray( [axes.get_xlim( )[0], axes.get_xlim( )[1], axes.get_ylim( )[0], axes.get_ylim( )[1] ] )
-    x= extent[1]-extent[0]
-    y= extent[3]-extent[2]
-    scale = 0.1
-    extent += np.asarray( [ -x*scale, x*scale, -y*scale, y*scale ] )
-    print extent
-    axes.imshow( image, origin='lower'
-                , extent = extent )
+        if verbose: print imagename
+        
+        fi = open( filenameProxi( imagename ) + ".png", 'w')
+        fi.write( data )
+        fi.close()
+        image = P.imread( filenameProxi( imagename ) + ".png" )
+
+    return image
+            
+def underlayMap( axes, proj, vendor = 'OSM-', zoom = -1, verbose = False ):
+    ''
+    ' vendor = OSM for Open Street Map'
+    ''
+    if zoom == -1:
+        raise "automatically zoom not yet supported"
     
-# def underlayGoogleMaps( axes, proj )            
+    ul = proj( axes.get_xlim( )[0], axes.get_ylim( )[1], inverse = True )
+    lr = proj( axes.get_xlim( )[1], axes.get_ylim( )[0], inverse = True )
+
+    startTile = deg2MapTile( ul[ 0 ], ul[ 1 ], zoom )
+    endTile   = deg2MapTile( lr[ 0 ], lr[ 1 ], zoom )
+
+    nXtiles = ( endTile[0] - startTile[0] ) + 1
+    nYtiles = ( endTile[1] - startTile[1] ) + 1
+
+    image = np.zeros( shape = (256 * nYtiles, 256 * nXtiles, 3) )
+
+    print "Mapimage size:", image.shape
+
+
+    for i in range( nXtiles ):
+        for j in range( nYtiles ):
+            im = getMapTile( startTile[0] + i, startTile[1] + j, zoom, vendor, verbose = verbose )
+
+            image[ ( j * 256 ) : ( ( j + 1 ) * 256 ),
+                   ( i * 256 ) : ( ( i + 1 ) * 256 ) ] = im
+
+    lonLatStart = mapTile2deg( startTile[0], startTile[1], zoom)
+    lonLatEnd = mapTile2deg( endTile[0] + 1, endTile[1] + 1, zoom)
+
+    imUL = proj( lonLatStart[0], lonLatStart[1] )
+    imLR = proj( lonLatEnd[0], lonLatEnd[1] )
+    
+    extent = np.asarray( [imUL[0], imLR[0], imLR[1], imUL[1] ])
+
+    axes.imshow( image, extent = extent )
+#def underlayMap(  )
 
