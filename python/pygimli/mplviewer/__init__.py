@@ -10,6 +10,9 @@ import pylab as P
 goldenMean = 1.618 #( 1.0 + math.sqrt(5.0) ) / 2.0
 
 def setOutputStyle( dim = 'w', paperMargin = 5, xScale = 1.0, yScale = 1.0, fontsize = 9, scale = 1, usetex = True ):
+    ''
+    ''
+    ''
     if dim == 'w':
         dim = 0
     else:
