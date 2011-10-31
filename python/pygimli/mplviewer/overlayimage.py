@@ -3,7 +3,9 @@
 ##except ImportError, exc:
 ##    raise SystemExit("PIL must be installed to run this example")
 
-import urllib
+import sys,os
+
+import urllib2
 import math
 import pylab as P
 import numpy as np
@@ -93,40 +95,64 @@ def mapTile2deg(xtile, ytile, zoom):
     return (lon_deg, lat_deg)
     
 
-def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
+def filenameProxi( fullname, vendor ): 
     ''
-    ' vendor = OSM for Open Street Map'
     ''
-
-    def filenameProxi( fname ): return vendor + '-' + fname.replace('/', '_' )
-
-    if vendor != 'OSM': raise "Vendor: "+ vendor + " not supported (currently only OSM (Open Street Map) )"
+    ''
+    (dirName, fileName) = os.path.split( fullname )
     
-    server = 'http://tile.openstreetmap.org/'
-
-    imagename = str(zoom) + '/' + str( xtile )+ '/' + str( ytile )
-    url = server + imagename + '.png'
+    path = './' + vendor + '/' + dirName
 
     try:
-        if verbose: print "Read image from disk"
-        
-        image = P.imread( filenameProxi( imagename ) + ".png" )
-    except:
+        os.makedirs( path )
+    except OSError:
+        pass
+ 
+    return path + '/' + fileName
+    
+
+def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
+    ''
+    ' vendor = OSM for Open Street Map (tile.openstreetmap.org)'
+    ' vendor = GM for GoogleMaps (mt.google.com)'
+    ''
+
+    imagename = str(zoom) + '/' + str( xtile )+ '/' + str( ytile )
+    
+    if vendor == 'OSM':
+        #http://[abc].tile.openstreetmap.org
+        serverName = 'tile.openstreetmap.org'
+        url = 'http://c.' + serverName + '/' + imagename + '.png' 
+    elif vendor == 'GM':
+        #http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
+        #http://mt.google.com/vt/x=70389&s=&y=43016&z
+        serverName = 'mt.google.com'
+        url='http://mt.google.com/vt/x='+str(xtile)+'&y='+str( ytile )+'&z='+str(zoom)
+    else:
+        raise "Vendor: " + vendor + " not supported (currently only OSM (Open Street Map) )"
+    
+    filename = filenameProxi( imagename, serverName ) + ".png" 
+    
+    if os.path.exists( filename ):
+        if verbose: print "Read image from disk", filename
+        image = P.imread( filename )
+    else:
         if verbose: print "Get map from url maps", url
         
-        filehandle = urllib.urlopen( url, proxies = {} )
+        opener1 = urllib2.build_opener()
+        filehandle = opener1.open( url  )
         data = filehandle.read()
-        filehandle.close()
-
+ 
         if verbose: print imagename
         
-        fi = open( filenameProxi( imagename ) + ".png", 'w')
+        fi = open( filename, 'w')
         fi.write( data )
         fi.close()
-        image = P.imread( filenameProxi( imagename ) + ".png" )
+        image = P.imread( filename )
 
     return image
-            
+# def getMapTile( ... )
+ 
 def underlayMap( axes, proj, vendor = 'OSM-', zoom = -1, verbose = False ):
     ''
     ' vendor = OSM for Open Street Map'
@@ -145,8 +171,8 @@ def underlayMap( axes, proj, vendor = 'OSM-', zoom = -1, verbose = False ):
 
     image = np.zeros( shape = (256 * nYtiles, 256 * nXtiles, 3) )
 
-    print "Mapimage size:", image.shape
-
+    if verbose: 
+        print "Mapimage size:", image.shape
 
     for i in range( nXtiles ):
         for j in range( nYtiles ):

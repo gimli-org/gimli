@@ -17,7 +17,7 @@ default: prep triangle suitesparse
 prep:
 	mkdir -p lib
 
-$(TRIANGLE): wget unzip
+$(TRIANGLE): wget unzip patch
 	wget -nc -nd $(TRIANGLE_URL)
 	rm -rf triangle
 	unzip -o -d triangle $(TRIANGLE)
@@ -90,6 +90,16 @@ wget:
 		fi; \
 	fi
 	
+patch:
+	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ] ; then \
+		if ( patch --version ); then \
+			echo "########### patch found: ok" ; \
+		else \
+			echo "########### Installing patch" ; \
+			mingw-get.exe install msys-patch ; \
+		fi; \
+	fi
+
 unzip:
 	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ] ; then \
 		if ( unzip -v ); then \
