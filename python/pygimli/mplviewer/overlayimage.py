@@ -113,17 +113,17 @@ def filenameProxi( fullname, vendor ):
 
 def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
     ''
-    ' vendor = OSM for Open Street Map (tile.openstreetmap.org)'
-    ' vendor = GM for GoogleMaps (mt.google.com)'
+    ' vendor = OSM or Open Street Map (tile.openstreetmap.org)'
+    ' vendor = GM or Google Maps (mt.google.com)'
     ''
 
     imagename = str(zoom) + '/' + str( xtile )+ '/' + str( ytile )
     
-    if vendor == 'OSM':
+    if vendor == 'OSM' or vendor == 'Open Street Map':
         #http://[abc].tile.openstreetmap.org
         serverName = 'tile.openstreetmap.org'
         url = 'http://c.' + serverName + '/' + imagename + '.png' 
-    elif vendor == 'GM':
+    elif vendor == 'GM' or vendor == 'Google Maps':
         #http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
         #http://mt.google.com/vt/x=70389&s=&y=43016&z
         serverName = 'mt.google.com'
@@ -152,17 +152,34 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
 
     return image
 # def getMapTile( ... )
- 
-def underlayMap( axes, proj, vendor = 'OSM-', zoom = -1, verbose = False ):
+
+def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024], verbose = False ):
     ''
-    ' vendor = OSM for Open Street Map'
+    ' vendor = OSM or Open Street Map'
+    ' vendor = GM or Google Maps'
+    ' if zoom is set to -1, the pixel size of the resulting image is lower than pixelLimit'
     ''
-    if zoom == -1:
-        raise "automatically zoom not yet supported"
     
     ul = proj( axes.get_xlim( )[0], axes.get_ylim( )[1], inverse = True )
     lr = proj( axes.get_xlim( )[1], axes.get_ylim( )[0], inverse = True )
 
+    if zoom == -1:
+        
+        nXtiles = 10
+        nYtiles = 10
+        zoom = 19
+               
+        while ( (nYtiles * 256) > pixelLimit[0] or ( nXtiles * 256 ) > pixelLimit[1] ):
+            zoom = zoom -1
+            startTile = deg2MapTile( ul[ 0 ], ul[ 1 ], zoom )
+            endTile   = deg2MapTile( lr[ 0 ], lr[ 1 ], zoom )
+
+            nXtiles = ( endTile[0] - startTile[0] ) + 1
+            nYtiles = ( endTile[1] - startTile[1] ) + 1
+            print "tiles: ", nYtiles, nXtiles
+            
+        print "zoom set to ", zoom
+            
     startTile = deg2MapTile( ul[ 0 ], ul[ 1 ], zoom )
     endTile   = deg2MapTile( lr[ 0 ], lr[ 1 ], zoom )
 

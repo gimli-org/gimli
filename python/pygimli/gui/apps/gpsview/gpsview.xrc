@@ -40,6 +40,29 @@
 					</object>
 				</object>
 			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxRadioBox" name="gpsViewerVendorRadioBox">
+							<style>wxRA_SPECIFY_COLS</style>
+							<label>Map Vendor</label>
+							<selection>0</selection>
+							<content>
+								<item>Open Street Map</item>
+								<item>Google Maps</item>
+							</content>
+							<dimension>2</dimension>
+						</object>
+					</object>
+				</object>
+			</object>
 		</object>
 	</object>
 </resource>

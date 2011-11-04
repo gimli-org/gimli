@@ -804,6 +804,9 @@ class AppResourceWxMPL( AppResource, wxMatplotPanel ):
         self.initAxes()
 
     def getRendererPanel( self ) : return self
+    
+    def createRendererPanel( self, parent): return self
+    
 
     def initAxes( self ):
         #if not hasattr( self, 'axes' ):
