@@ -385,6 +385,7 @@ class AppResource( ManagedProperties ):
         '''
             What is this?
         '''
+        
         if not self.renderer_ and slot is not None:
             self.renderer_ = aui.AuiNotebook( slot
                                             , style = aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_TAB_MOVE | aui.AUI_NB_SCROLL_BUTTONS )
@@ -394,7 +395,10 @@ class AppResource( ManagedProperties ):
                 self.renderer_.AddPage( self.rendererPanel_, self.rendererPanel_.GetName(), False)
 
             self.renderer_.Bind( aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onRendererTabSwitch )
+        else:
+            print "def getRenderer( self, slot = None):"
 
+        print self.renderer_, slot
         return self.renderer_
 
     def getRendererPanel( self ) : return self.rendererPanel_
@@ -455,10 +459,12 @@ class AppResource( ManagedProperties ):
         ''
         ' What is this? '
         ''
+        print "activateApplication( self, active ):", self, active
+        
         if hasattr( self, "getRenderer" ):
             r = self.getRenderer( self.rendererSlot_ )
             if active:
-                #print "activate parent: ", r
+                print "activate parent: ", r
                 self.rendererSlot_.GetSizer().Add( r, 1, wx.EXPAND, 0  )
                 self.rendererSlot_.GetSizer().Layout()
                 r.Show()
@@ -473,6 +479,7 @@ class AppResource( ManagedProperties ):
             #self.parentResource.activatePropertyPanel( False )
             #if self.parentResource.active != active:
                 #return
+        
         if hasattr( self, 'getApplicationToolBar' ):
             self.activateToolBar_( self.getApplicationToolBar( self.parent ), active, pos = 1 )
 
@@ -505,10 +512,10 @@ class AppResource( ManagedProperties ):
             nb = None
 
             if isinstance( self.rendererSlot_, aui.AuiNotebook ):
-                # self is child renderpanel (AppResourceWx*)
+                print "# self is child renderpanel (AppResourceWx*)"
                 nb = self.rendererSlot_
             elif isinstance( self.getRenderer( ), aui.AuiNotebook ):
-                # self is parent (AppResource)
+                print "# self is parent (AppResource)"
                 nb = self.getRenderer( )
 
             if nb is not None:
@@ -553,32 +560,6 @@ class AppResource( ManagedProperties ):
             return panel
         else:
             raise Exception( "createSubPanel only defined for application with notebook renderer" )
-
-        #def parentActivate( self, active ):
-        #if active == self.parentActive:
-            #return
-
-        #self.parentActive = active
-
-        #r = self.getRendererTab( self.rendererSlot )
-        #if active:
-            ##print "activate: ", self.titleTextProp()
-            #self.rendererSlot.GetSizer().Add( r, 1, wx.EXPAND, 0  )
-            #self.rendererSlot.GetSizer().Layout()
-            #r.Show()
-        #else:
-            ##print "deactivate: ", self.titleTextProp()
-            #r.Hide()
-            #self.rendererSlot.GetSizer().Detach( r )
-            #self.rendererSlot.GetSizer().Layout()
-
-        #if active:
-            #self.parent.GetMenuBar().Insert( 1, self.mbProfileMenu, "&Profile" )
-        #else:
-            #self.parent.GetMenuBar().Remove( 1 )
-
-        #self.activateToolBar( active )
-        #self.parent.auiMgr.Update()
 
     def propertyChanged( self ):
         '''

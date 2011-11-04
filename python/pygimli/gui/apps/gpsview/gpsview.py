@@ -3,16 +3,12 @@
 import wx
 
 from pygimli.gui.base import AppResource
-
-try:
-    from pygimli.gui.wxmpl import AppResourceWxMPL
-except Exception as e:
-	print 'Import of wxmpl failed: ', e
-
+from pygimli.gui.wxmpl import AppResourceWxMPL
 from pygimli.gui.resources import loadIcon, MakeDisabledBitmap
-from pygimli.importexport import reaGPX
 
-HAVE_PROPGRID = False
+import pyproj
+from pygimli.importexport import readGPX
+from pygimli.mplviewer import underlayMap
 
 class GPSViewerApp( AppResourceWxMPL ):
     ''
@@ -46,20 +42,11 @@ class GPSViewerApp( AppResourceWxMPL ):
         ## the application has some properties that can be altered by the property inspector (PI), loaded and saved
         #self.titleTextProp = self.appendProperty( "Title", default = 'unknown', valType = str )
                 
-        # do some stuff after this app has been created and registered to the resourceTree
-        # the given method will be called when the app is in idle state
-        # this ensures that all widgets has been created and shown before this method is called.
-        self.parent.addCommandToOnIdleQueue( self.postCreate )
-
-
+        self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Open Street Map' )
+        
         # define local data after your needs
         self.gpsWPTs = None
     
-    def postCreate( self ):
-        # do nothing here in this application
-        #self.createSubPanel( TestMPLApp, "wxMPL" )
-        #self.createSubPanel( TestVTKApp, "wxVTK" )
-        
     def createPropertyPanel( self, parent ):
         ''
         ' Define and return panel that is shown in the property-inspector (PI) '
@@ -69,6 +56,10 @@ class GPSViewerApp( AppResourceWxMPL ):
         # create a Notebook for the PI and add the content for the panel with the name piGPSViewerApp defined in gpsview.xrc
         panel = self.createPropertyInspectorNoteBookPanel( parent, 'piGPSViewerApp', title = 'GPS Viewer' )
             
+        self.vendorProp.setCtrl( ctrl = wx.xrc.XRCCTRL( panel, 'gpsViewerVendorRadioBox' )
+                                        , ctrlEvent = wx.EVT_RADIOBOX
+                                        , targetFunct = self.setMapVendor )
+                                       
         # define property behaviour
         #self.titleTextProp.setCtrl( ctrl = wx.xrc.XRCCTRL( panel,  'TitleTextCtrl' ) # name of the control in xrc
                                         #, ctrlEvent = wx.EVT_TEXT                        # the event that should observed
@@ -76,12 +67,38 @@ class GPSViewerApp( AppResourceWxMPL ):
         
         return panel
         
+    def drawData_( self ):
+        ''
+        ' Define what we have to be drawn (needed from base class) is called while a draw event is fired '
+        ''
+        
+        proj = self.getProjection()
+
+        for p in self.gpsWPTs:
+            x,y = proj( p[0], p[1] )
+            self.axes.plot( x, y, '.', markersize = 18 )
+
+        underlayMap( self.axes, proj, vendor = self.vendorProp(), zoom = -1, verbose = True )
+    
+        self.axes.grid()
+        
+    def setMapVendor( self, value = None ):
+        print self.vendorProp()
+        self.draw()
+        
+    def getProjection( self ):
+        ''
+        ' Create and return the current projection'
+        ''
+        #return pyproj.Proj( proj = 'utm', zone=29, ellps = 'WGS84' )
+        return pyproj.Proj( proj = 'utm', zone = 32, ellps = 'WGS84' )
+        
     def openFile( self, files = None ):
         ''
         ' Load data here'
         ''
         self.gpsWPTs = readGPX( files )
-        print self.gpsWPTs
+        self.draw()
     
     def exportUTM( self ):
         ''

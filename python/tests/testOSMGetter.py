@@ -9,12 +9,13 @@ import pyproj
 
 import pylab as P
 
-pnts = readGPX( 'rieseltag.gpx' )
+#pnts = readGPX( 'rieseltag.gpx' ); zone = 32
+pnts = readGPX( 'gps.gpx' ); zone = 29
 
 print pnts
-zoom = 12
+zoom = -1
 
-proj = pyproj.Proj( proj = 'utm', zone = 32, ellps = 'WGS84' )
+proj = pyproj.Proj( proj = 'utm', zone = zone, ellps = 'WGS84' )
 
 #pnts = [ ( 7.34737639312, 51.5834143599 ),
 #           ( 7.43579248219, 51.5306718274 ) ]
@@ -25,7 +26,7 @@ for p in pnts:
 
 axes = P.gca()
 
-underlayMap( axes, proj, vendor = 'OSM', zoom = zoom, verbose = True )
+underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [2048,2048], verbose = True )
     
 axes.grid()
 
