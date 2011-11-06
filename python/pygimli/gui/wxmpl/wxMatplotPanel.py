@@ -471,7 +471,8 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
         
         # store new view sizes
         self.push_current()
-        
+
+        self.panel.onPanChanged( )
         self.panel.updateDrawOnIdle( )
 
     def onIncCanvasWidth( self, event ):
@@ -689,6 +690,8 @@ class wxMatplotPanel( scrolled.ScrolledPanel  ):
     
     def onZoomChanged( self ): pass
 
+    def onPanChanged( self ): pass
+
     def getToolBar( self, parent = None ):
         if not self.toolBar_:
             self.toolBar_ = wxAUIMatplotPanelToolbar( self, self.canvas, parent )
@@ -807,7 +810,6 @@ class AppResourceWxMPL( AppResource, wxMatplotPanel ):
     
     def createRendererPanel( self, parent): return self
     
-
     def initAxes( self ):
         #if not hasattr( self, 'axes' ):
             #self.axes = None
@@ -828,6 +830,9 @@ class AppResourceWxMPL( AppResource, wxMatplotPanel ):
         self.draw()
 
     def draw( self ):
+        ''
+        ''
+        ''
         if self.IsShownOnScreen():
             wx.BeginBusyCursor( wx.StockCursor( wx.CURSOR_WAIT ) )
 

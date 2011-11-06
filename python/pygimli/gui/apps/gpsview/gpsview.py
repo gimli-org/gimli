@@ -46,6 +46,8 @@ class GPSViewerApp( AppResourceWxMPL ):
         
         # define local data after your needs
         self.gpsWPTs = None
+        self.newXLimits = None
+        self.newYLimits = None
     
     def createPropertyPanel( self, parent ):
         ''
@@ -66,6 +68,16 @@ class GPSViewerApp( AppResourceWxMPL ):
                                         #, targetFunct = self.setTitle )                  # the callback when the event is called
         
         return panel
+
+    def onZoomChanged( self ):
+        self.newXLimits = self.axes.get_xlim()
+        self.newYLimits = self.axes.get_ylim()
+        self.draw()
+
+    def onPanChanged( self ):
+        self.newXLimits = self.axes.get_xlim()
+        self.newYLimits = self.axes.get_ylim()
+        self.draw()
         
     def drawData_( self ):
         ''
@@ -78,12 +90,15 @@ class GPSViewerApp( AppResourceWxMPL ):
             x,y = proj( p[0], p[1] )
             self.axes.plot( x, y, '.', markersize = 18 )
 
+        if self.newXLimits is not None:
+            self.axes.set_xlim( self.newXLimits )
+            self.axes.set_ylim( self.newYLimits )
+
         underlayMap( self.axes, proj, vendor = self.vendorProp(), zoom = -1, verbose = True )
     
         self.axes.grid()
         
     def setMapVendor( self, value = None ):
-        print self.vendorProp()
         self.draw()
         
     def getProjection( self ):

@@ -140,9 +140,9 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
         if verbose: print "Get map from url maps", url
         
         opener1 = urllib2.build_opener()
-        filehandle = opener1.open( url  )
+        filehandle = opener1.open( url, timeout=5 )
         data = filehandle.read()
- 
+         
         if verbose: print imagename
         
         fi = open( filename, 'w')
@@ -159,6 +159,9 @@ def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024
     ' vendor = GM or Google Maps'
     ' if zoom is set to -1, the pixel size of the resulting image is lower than pixelLimit'
     ''
+
+    origXLimits = axes.get_xlim()
+    origYLimits = axes.get_ylim()
     
     ul = proj( axes.get_xlim( )[0], axes.get_ylim( )[1], inverse = True )
     lr = proj( axes.get_xlim( )[1], axes.get_ylim( )[0], inverse = True )
@@ -207,5 +210,9 @@ def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024
     extent = np.asarray( [imUL[0], imLR[0], imLR[1], imUL[1] ])
 
     axes.imshow( image, extent = extent )
+
+    axes.set_xlim( origXLimits )
+    axes.set_ylim( origYLimits )
+    
 #def underlayMap(  )
 
