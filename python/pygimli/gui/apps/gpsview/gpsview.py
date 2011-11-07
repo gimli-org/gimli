@@ -10,6 +10,21 @@ import pyproj
 from pygimli.importexport import readGPX
 from pygimli.mplviewer import underlayMap
 
+def findUTMZone( lon, lat ):
+    ''
+    ' find utm zone for lon and lat values. Return str(zone)+hemisphere'
+    ' lon -180 -- -174 -> 1 ... 174 -- 180 -> 60 '
+    ' lat < 0 hemisphere = S, > 0 hemisphere = N '
+    ''
+    zone = ( int( lon ) + 180 ) / 6 + 1
+    if lat > 0:
+        return str( zone ) + 'N'
+    else:
+        return str( zone ) + 'S'
+    
+# def findUTMZone( ... )
+
+
 class GPSViewerApp( AppResourceWxMPL ):
     ''
     ' Main Class for GPS Viewer App. Default render window is a wxmpl panel'
@@ -43,6 +58,7 @@ class GPSViewerApp( AppResourceWxMPL ):
         #self.titleTextProp = self.appendProperty( "Title", default = 'unknown', valType = str )
                 
         self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Open Street Map' )
+        self.utmZone = self.appendProperty( "UTMZone", valType = str, default = '' )
         
         # define local data after your needs
         self.gpsWPTs = None
@@ -84,7 +100,7 @@ class GPSViewerApp( AppResourceWxMPL ):
         ' Define what we have to be drawn (needed from base class) is called while a draw event is fired '
         ''
         
-        proj = self.getProjection()
+        proj = self.getProjection( )
 
         for p in self.gpsWPTs:
             x,y = proj( p[0], p[1] )
@@ -105,14 +121,23 @@ class GPSViewerApp( AppResourceWxMPL ):
         ''
         ' Create and return the current projection'
         ''
-        #return pyproj.Proj( proj = 'utm', zone=29, ellps = 'WGS84' )
-        return pyproj.Proj( proj = 'utm', zone = 32, ellps = 'WGS84' )
+        if self.utmZone().find('S'):
+            hemisphere='south'
+            false_easting=0
+            false_northing=10000000
+        else:
+            hemisphere='north'
+            false_easting=500000
+            false_northing=0
+                
+        return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = 'WGS84' )
         
     def openFile( self, files = None ):
         ''
         ' Load data here'
         ''
         self.gpsWPTs = readGPX( files )
+        self.utmZone.setVal( findUTMZone( self.gpsWPTs[0][0], self.gpsWPTs[0][1] ) )
         self.draw()
     
     def exportUTM( self ):
