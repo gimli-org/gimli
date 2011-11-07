@@ -77,6 +77,10 @@ class GPSViewerApp( AppResourceWxMPL ):
         self.vendorProp.setCtrl( ctrl = wx.xrc.XRCCTRL( panel, 'gpsViewerVendorRadioBox' )
                                         , ctrlEvent = wx.EVT_RADIOBOX
                                         , targetFunct = self.setMapVendor )
+                                        
+        self.utmZone.setCtrl( ctrl = wx.xrc.XRCCTRL( panel, 'gpsViewerUTMZone' )
+                                        , ctrlEvent = wx.EVT_KILL_FOCUS
+                                        , targetFunct = self.draw )
                                        
         # define property behaviour
         #self.titleTextProp.setCtrl( ctrl = wx.xrc.XRCCTRL( panel,  'TitleTextCtrl' ) # name of the control in xrc

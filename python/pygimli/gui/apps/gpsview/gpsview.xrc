@@ -7,15 +7,6 @@
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
 				<option>0</option>
-				<flag>wxALL</flag>
-				<border>5</border>
-				<object class="wxStaticText" name="m_staticText2">
-					<label>TestApplication</label>
-					<wrap>-1</wrap>
-				</object>
-			</object>
-			<object class="sizeritem">
-				<option>0</option>
 				<flag>wxEXPAND</flag>
 				<border>5</border>
 				<object class="wxBoxSizer">
@@ -25,15 +16,15 @@
 						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
 						<object class="wxStaticText">
-							<label>Title</label>
+							<label>UTM zone</label>
 							<wrap>-1</wrap>
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>1</option>
+						<option>0</option>
 						<flag>wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND</flag>
 						<border>5</border>
-						<object class="wxTextCtrl" name="TitleTextCtrl">
+						<object class="wxTextCtrl" name="gpsViewerUTMZone">
 							<value></value>
 							<maxlength>0</maxlength>
 						</object>
