@@ -23,6 +23,7 @@ class DCEM1dModelling : public ModellingBase {
 public:
     DCEM1dModelling( size_t nlay, RVector & ab2, RVector & mn2, RVector & freq, double coilspacing, bool verbose )
     : ModellingBase( verbose ), fDC_( nlay, ab2, mn2, verbose ), fEM_( nlay, freq, coilspacing, verbose ) { 
+        fDC_.initRegionManager();
         setMesh( createMesh1DBlock( nlay ) );
     }
     RVector response( const RVector & model ){ 
@@ -39,7 +40,7 @@ int main( int argc, char *argv [] )
     std::string dataFile( NOT_DEFINED );
     double errDC = 3.0, errEM = 1.0, lambda = 20.0, lbound = 0.0, ubound = 0.0, coilspacing = 50.0;
     size_t nlay = 3;
-    bool verbose = false, optimizeChi1 = false, doResolution = false;
+    bool verbose = true, optimizeChi1 = false, doResolution = false;
 
     /*! DC data Schlumberger sounding */
     RVector ab2( 20, 1.0 );
@@ -50,6 +51,7 @@ int main( int argc, char *argv [] )
     for ( size_t i = 1; i < freq.size(); i++ ) freq[ i ] = freq[ i - 1 ] * 2.0;
     /*! initialize forward operator */
     DCEM1dModelling f( nlay, ab2, mn2, freq, coilspacing, verbose );
+   
     f.regionManager().setConstraintType( 0 ); //! minimum length (no smoothing) for all
     
     /*! synthetic data */
@@ -57,9 +59,9 @@ int main( int argc, char *argv [] )
     synthModel[ nlay - 1 ] = 200.;
     synthModel[ nlay ] = 10.;
     synthModel[ nlay + 1 ] = 50.;
-    std::cout << synthModel << std::endl;
+    std::cout << "synthModel: " << synthModel << std::endl;
     RVector synthData( f( synthModel ) );
-    std::cout << synthData << std::endl;
+    std::cout << "synthData: " << synthData << std::endl;
     
     /*! error */
     RVector errorDC = synthData( 0, ab2.size() ) * errDC / 100.0;
@@ -84,10 +86,11 @@ int main( int argc, char *argv [] )
     /*! Starting model */
     RVector model = f.createStartVector();
     model[ nlay ] *= 1.5;
-    std::cout << model << std::endl;
+    std::cout << "model: " << model << std::endl;
 
     /*! Set up inversion with full matrix, data and forward operator */
     RInversion inv( synthData, f, transData, verbose );
+    
     inv.setLambda( lambda );
     inv.setAbsoluteError( errorAbs );      //! error model
     inv.setModel( model );       //! starting model
