@@ -32,7 +32,6 @@ public:
     RVector response( const RVector & model ){ // paste together responses
         return cat( fDC_.response( model ), fEM_.response( model ) ); 
     }
-    RVector startModel( ){ return fDC_.startModel(); } // return any one
 protected:
     DC1dModelling fDC_;
     FDEM1dModelling fEM_;
@@ -52,8 +51,38 @@ The transformations are again combined using \lstinline|CumulativeTrans|
     transData.push_back( transEM, freq.size() * 2 );
 \end{lstlisting}
 
-In the code we create a synthetic model, calculate the forward response and noisify it by given noise levels.
+In the code we create a synthetic model \lstinline|synthModel|, calculate the forward response and noisify it by given noise levels.
 
+\begin{lstlisting}[language=C++,morekeywords={RVector,RMatrix}]
+    /*! compute synthetic model (created before) by calling f */
+    RVector synthData( f( synthModel ) );   
+    /*! error models: relative percentage for DC, absolute for EM */
+    RVector errorDC = synthData( 0, ab2.size() ) * errDC / 100.0;
+    RVector errorEM( freq.size() * 2, errEM );
+    RVector errorAbs( cat( errorDC, errorEM ) );    
+    /*! noisify synthetic data using the determined error model */
+    RVector rand( synthData.size() );
+    randn( rand );
+    synthData = synthData + rand * errorAbs;
+\end{lstlisting}
+
+The inversion is converging to a $\chi^2$ value of about 1, i.e. we fit the data within error bounds.
+Finally a resolution analysis is done to determine how well the individual parameters (2 thicknesses and 3 resistivities) are determined.
+We can compare it with single inversions by drastically increasing the error level for one of the methods by a factor of 10.
+\ref{tab:dcemresolution} shows the resulting diagonal values of the resolution matrix for a three-layer model.
+The first layer is well resolved in all variants except the first layer resistivity for EM.
+Considering the values for the other resistivities we can clearly see that EM is detecting the good conductor and DC describes the resistor as expected from the theory.
+
+\begin{table}[h]%
+\centering
+\begin{tabular}{r|ccccc}
+Method & $d_1$=20\,m & $d_2$=20\,m & $\rho_1$=200\,$\Omega$m & $\rho_2$=10\,$\Omega$m & $\rho_3$=50\,$\Omega$m \\ \hline
+Joint inversion: & 0.98 & 0.46 & 0.98 & 0.67 & 0.57 \\
+EM dominated:    & 0.97 & 0.36 & 0.71 & 0.66 & 0.20 \\
+DC dominated:    & 0.96 & 0.21 & 0.97 & 0.32 & 0.62  
+\end{tabular}
+\caption{Resolution measures for Joint inversion and quasi-single inversions using an error model increased by a factor of 10.}\label{tab:dcemresolution}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Block joint inversion of DC/MRS data}\label{sec:blockjoint}
