@@ -213,10 +213,10 @@
                         <object class="sizeritem" expanded="1">
                             <property name="border">5</property>
                             <property name="flag">wxALL|wxEXPAND</property>
-                            <property name="proportion">0</property>
+                            <property name="proportion">1</property>
                             <object class="wxRadioBox" expanded="1">
                                 <property name="bg"></property>
-                                <property name="choices">&quot;Open Street Map&quot; &quot;Google Maps&quot;</property>
+                                <property name="choices">&quot;Open Street Map&quot; &quot;Google Maps&quot; &quot;Google Maps Satellite&quot;</property>
                                 <property name="context_help"></property>
                                 <property name="context_menu">1</property>
                                 <property name="enabled">1</property>
@@ -225,7 +225,7 @@
                                 <property name="hidden">0</property>
                                 <property name="id">wxID_ANY</property>
                                 <property name="label">Map Vendor</property>
-                                <property name="majorDimension">2</property>
+                                <property name="majorDimension">3</property>
                                 <property name="maximum_size"></property>
                                 <property name="minimum_size"></property>
                                 <property name="name">gpsViewerVendorRadioBox</property>

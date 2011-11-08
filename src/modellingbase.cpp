@@ -40,13 +40,13 @@ ModellingBase::ModellingBase( DataContainer & data, bool verbose )
     setData( data );
 }
 
-ModellingBase::ModellingBase( Mesh & mesh, bool verbose )
+ModellingBase::ModellingBase( const Mesh & mesh, bool verbose )
     : dataContainer_( NULL ), verbose_( verbose ){
     init_();
     setMesh( mesh );
 }
 
-ModellingBase::ModellingBase( Mesh & mesh, DataContainer & data, bool verbose )
+ModellingBase::ModellingBase( const Mesh & mesh, DataContainer & data, bool verbose )
     : dataContainer_( NULL ), verbose_( verbose ){
     init_();
     setData( data );

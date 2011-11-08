@@ -37,9 +37,9 @@ public:
 
     ModellingBase( DataContainer & dataContainer, bool verbose = false );
 
-    ModellingBase( Mesh & mesh, bool verbose = false );
+    ModellingBase( const Mesh & mesh, bool verbose = false );
 
-    ModellingBase( Mesh & mesh, DataContainer & dataContainer, bool verbose = false );
+    ModellingBase( const Mesh & mesh, DataContainer & dataContainer, bool verbose = false );
 
     virtual ~ModellingBase( );
 

@@ -358,14 +358,19 @@ class AppResource( ManagedProperties ):
         return menu
 
     def createMenuItem( self, menu, name = "", help = "", function = None, bitmap = None ):
-        '''
-            What is this?
-        '''
+        """ 
+            What is this? 
+            If help is set to 'auto', the docstring of function is used. please ensure this docstring is a one-liner
+        """
+        if help == 'auto':
+            help = function.__doc__
         item = wx.MenuItem( menu, wx.NewId(), name, help )
+        
         if bitmap is not None:
             item.SetBitmap( bitmap )
+            
         menu.AppendItem( item )
-        print "create createMenuItem", name 
+        
         self.parent.Bind( wx.EVT_MENU, function, id = item.GetId() )
         return item
 
