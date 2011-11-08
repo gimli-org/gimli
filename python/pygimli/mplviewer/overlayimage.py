@@ -123,15 +123,22 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
         #http://[abc].tile.openstreetmap.org
         serverName = 'tile.openstreetmap.org'
         url = 'http://c.' + serverName + '/' + imagename + '.png' 
+        imFormat = '.png'
     elif vendor == 'GM' or vendor == 'Google Maps':
         #http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
         #http://mt.google.com/vt/x=70389&s=&y=43016&z
         serverName = 'mt.google.com'
         url='http://mt.google.com/vt/x='+str(xtile)+'&y='+str( ytile )+'&z='+str(zoom)
+        imFormat = '.png'
+    elif vendor == 'GMS' or vendor == 'Google Maps Satellite':
+        serverName = 'khm.google.com'
+        url='http://khm0.google.com/kh/v=60&x='+str(xtile)+'&y='+str( ytile )+'&z='+str(zoom)
+        imFormat = '.jpeg'
+#        http://khm0.google.com/kh/v=60&x=2197&y=1346&z=12
     else:
         raise "Vendor: " + vendor + " not supported (currently only OSM (Open Street Map) )"
     
-    filename = filenameProxi( imagename, serverName ) + ".png" 
+    filename = filenameProxi( imagename, serverName ) + imFormat
     
     if os.path.exists( filename ):
         if verbose: print "Read image from disk", filename
@@ -150,15 +157,17 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
         fi.close()
         image = P.imread( filename )
 
+    if imFormat == '.jpeg': image = image[::-1,...] / 256.
     return image
 # def getMapTile( ... )
 
-def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024], verbose = False ):
-    ''
-    ' vendor = OSM or Open Street Map'
-    ' vendor = GM or Google Maps'
-    ' if zoom is set to -1, the pixel size of the resulting image is lower than pixelLimit'
-    ''
+def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024], verbose = False, fitMap = False ):
+    """
+     vendor = OSM or Open Street Map
+     vendor = GM or Google Maps
+     if zoom is set to -1, the pixel size of the resulting image is lower than pixelLimit
+     fitMap - the axes is resized to fit the whole map
+    """
 
     origXLimits = axes.get_xlim()
     origYLimits = axes.get_ylim()
@@ -168,8 +177,8 @@ def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024
 
     if zoom == -1:
         
-        nXtiles = 10
-        nYtiles = 10
+        nXtiles = 1e99
+        nYtiles = 1e99
         zoom = 19
                
         while ( (nYtiles * 256) > pixelLimit[0] or ( nXtiles * 256 ) > pixelLimit[1] ):
@@ -179,7 +188,8 @@ def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024
 
             nXtiles = ( endTile[0] - startTile[0] ) + 1
             nYtiles = ( endTile[1] - startTile[1] ) + 1
-            print "tiles: ", nYtiles, nXtiles
+            print "tiles: ", zoom, nYtiles, nXtiles
+            if nXtiles == 1 and nYtiles == 1: break
             
         print "zoom set to ", zoom
             
@@ -211,8 +221,9 @@ def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024
 
     axes.imshow( image, extent = extent )
 
-    axes.set_xlim( origXLimits )
-    axes.set_ylim( origYLimits )
+    if not fitMap:
+        axes.set_xlim( origXLimits )
+        axes.set_ylim( origYLimits )
     
 #def underlayMap(  )
 

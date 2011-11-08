@@ -22,7 +22,7 @@ using namespace GIMLI;
 class DCEM1dModelling : public ModellingBase {
 public:
     DCEM1dModelling( size_t nlay, RVector & ab2, RVector & mn2, RVector & freq, double coilspacing, bool verbose )
-    : ModellingBase( verbose ), fDC_( nlay, ab2, mn2, verbose ), fEM_( nlay, freq, coilspacing, verbose ) { 
+    : ModellingBase( createMesh1DBlock( nlay ), verbose ), fDC_( nlay, ab2, mn2, verbose ), fEM_( nlay, freq, coilspacing, verbose ) { 
         fDC_.initRegionManager();
         setMesh( createMesh1DBlock( nlay ) );
     }

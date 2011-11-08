@@ -9,8 +9,8 @@ import pyproj
 
 import pylab as P
 
-#pnts = readGPX( 'rieseltag.gpx' ); zone = 32
-pnts = readGPX( 'gps.gpx' ); zone = 29
+pnts = readGPX( 'rieseltag.gpx' ); zone = 32
+#pnts = readGPX( 'gps.gpx' ); zone = 29
 
 print pnts
 zoom = -1
@@ -26,7 +26,7 @@ for p in pnts:
 
 axes = P.gca()
 
-underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [2048,2048], verbose = True )
+underlayMap( axes, proj, vendor = 'GMS', zoom = 17, pixelLimit = [1024,1024], verbose = True, fitMap = True )
     
 axes.grid()
 

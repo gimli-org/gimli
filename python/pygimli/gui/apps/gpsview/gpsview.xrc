@@ -38,7 +38,7 @@
 				<object class="wxBoxSizer">
 					<orient>wxHORIZONTAL</orient>
 					<object class="sizeritem">
-						<option>0</option>
+						<option>1</option>
 						<flag>wxALL|wxEXPAND</flag>
 						<border>5</border>
 						<object class="wxRadioBox" name="gpsViewerVendorRadioBox">
@@ -48,8 +48,9 @@
 							<content>
 								<item>Open Street Map</item>
 								<item>Google Maps</item>
+								<item>Google Maps Satellite</item>
 							</content>
-							<dimension>2</dimension>
+							<dimension>3</dimension>
 						</object>
 					</object>
 				</object>

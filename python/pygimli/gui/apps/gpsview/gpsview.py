@@ -11,11 +11,11 @@ from pygimli.importexport import readGPX
 from pygimli.mplviewer import underlayMap
 
 def findUTMZone( lon, lat ):
-    ''
-    ' find utm zone for lon and lat values. Return str(zone)+hemisphere'
-    ' lon -180 -- -174 -> 1 ... 174 -- 180 -> 60 '
-    ' lat < 0 hemisphere = S, > 0 hemisphere = N '
-    ''
+    """
+     find utm zone for lon and lat values. Return str(zone)+hemisphere
+     lon -180 -- -174 -> 1 ... 174 -- 180 -> 60 
+     lat < 0 hemisphere = S, > 0 hemisphere = N 
+    """
     zone = ( int( lon ) + 180 ) / 6 + 1
     if lat > 0:
         return str( zone ) + 'N'
@@ -26,9 +26,8 @@ def findUTMZone( lon, lat ):
 
 
 class GPSViewerApp( AppResourceWxMPL ):
-    ''
-    ' Main Class for GPS Viewer App. Default render window is a wxmpl panel'
-    ''
+    """ Main Class for GPS Viewer App. Default render window is a wxmpl panel """
+    
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
         AppResourceWxMPL.__init__( self, parent, rendererSlot, propertyInspectorSlot )
         
@@ -66,27 +65,23 @@ class GPSViewerApp( AppResourceWxMPL ):
         self.newYLimits = None
     
     def createPropertyPanel( self, parent ):
-        ''
-        ' Define and return panel that is shown in the property-inspector (PI) '
-        ' The panel will post created at the first call '
-        ''
+        """
+         Define and return panel that is shown in the property-inspector (PI) 
+         The panel will post created at the first call '
+        """
 
         # create a Notebook for the PI and add the content for the panel with the name piGPSViewerApp defined in gpsview.xrc
         panel = self.createPropertyInspectorNoteBookPanel( parent, 'piGPSViewerApp', title = 'GPS Viewer' )
             
+        # bind properties on controls and targetfunctions
         self.vendorProp.setCtrl( ctrl = wx.xrc.XRCCTRL( panel, 'gpsViewerVendorRadioBox' )
                                         , ctrlEvent = wx.EVT_RADIOBOX
-                                        , targetFunct = self.setMapVendor )
+                                        , targetFunct = self.draw )
                                         
         self.utmZone.setCtrl( ctrl = wx.xrc.XRCCTRL( panel, 'gpsViewerUTMZone' )
                                         , ctrlEvent = wx.EVT_KILL_FOCUS
                                         , targetFunct = self.draw )
                                        
-        # define property behaviour
-        #self.titleTextProp.setCtrl( ctrl = wx.xrc.XRCCTRL( panel,  'TitleTextCtrl' ) # name of the control in xrc
-                                        #, ctrlEvent = wx.EVT_TEXT                        # the event that should observed
-                                        #, targetFunct = self.setTitle )                  # the callback when the event is called
-        
         return panel
 
     def onZoomChanged( self ):
@@ -100,9 +95,7 @@ class GPSViewerApp( AppResourceWxMPL ):
         self.draw()
         
     def drawData_( self ):
-        ''
-        ' Define what we have to be drawn (needed from base class) is called while a draw event is fired '
-        ''
+        """ Define what we have to be drawn (needed from base class) is called while a draw event is fired """
         
         proj = self.getProjection( )
 
@@ -114,17 +107,13 @@ class GPSViewerApp( AppResourceWxMPL ):
             self.axes.set_xlim( self.newXLimits )
             self.axes.set_ylim( self.newYLimits )
 
-        underlayMap( self.axes, proj, vendor = self.vendorProp(), zoom = -1, verbose = True )
+        underlayMap( self.axes, proj, vendor = self.vendorProp(), zoom = -1, pixelLimit = [1500, 1024], verbose = True )
     
         self.axes.grid()
         
-    def setMapVendor( self, value = None ):
-        self.draw()
-        
     def getProjection( self ):
-        ''
-        ' Create and return the current projection'
-        ''
+        """ Create and return the current projection """
+        
         if self.utmZone().find('S'):
             hemisphere='south'
             false_easting=0
@@ -137,21 +126,15 @@ class GPSViewerApp( AppResourceWxMPL ):
         return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = 'WGS84' )
         
     def openFile( self, files = None ):
-        ''
-        ' Load data here'
-        ''
+        """ Load data here """
         self.gpsWPTs = readGPX( files )
         self.utmZone.setVal( findUTMZone( self.gpsWPTs[0][0], self.gpsWPTs[0][1] ) )
         self.draw()
     
     def exportUTM( self ):
-        ''
-        'Export coordinates in UTM format'
-        ''
+        """Export coordinates in UTM format"""
         pass
 
     def exportAscii( self ):
-        ''
-        'Export LonLat coordinates in ASCII format'
-        ''
+        """Export LonLat coordinates in simple column separated list"""
         pass
