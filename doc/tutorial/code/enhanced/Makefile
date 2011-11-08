@@ -11,4 +11,4 @@ ttinvoffset: ttinvoffset.cpp
 	g++ -g -O3 ttinvoffset.cpp -o ttinvoffset $(GIMLIINC) $(GIMLILIB)
 
 clean:
-	rm -rf *~ mt1dinv0
+	rm -rf *~ mt1dinv0 ttinvoffset
