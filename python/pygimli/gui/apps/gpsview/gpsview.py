@@ -101,7 +101,7 @@ class GPSViewerApp( AppResourceWxMPL ):
 
         for p in self.gpsWPTs:
             x,y = proj( p[0], p[1] )
-            self.axes.plot( x, y, '.', markersize = 18 )
+            self.axes.plot( x, y, 'x', markersize = 12, color = 'blue' )
 
         if self.newXLimits is not None:
             self.axes.set_xlim( self.newXLimits )
