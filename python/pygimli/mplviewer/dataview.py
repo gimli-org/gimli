@@ -505,7 +505,7 @@ def createDataPatches( ax, data, shemetype = Pseudotype.unknown, **kwarg ):
     
     ax.set_ylim( [ min( sep )-1, 1 ] )
 
-    dx2 = (x[1]-x[0])/2.
+    dx2 = (x[1]-x[0])/4.
     dSep2 = 0.5
     
     polys = []

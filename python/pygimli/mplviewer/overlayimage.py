@@ -6,7 +6,7 @@
 import sys,os
 
 import urllib2
-import math
+import math, random
 import pylab as P
 import numpy as np
 
@@ -94,7 +94,6 @@ def mapTile2deg(xtile, ytile, zoom):
     lat_deg = math.degrees(lat_rad)
     return (lon_deg, lat_deg)
     
-
 def filenameProxi( fullname, vendor ): 
     ''
     ''
@@ -128,11 +127,13 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
         #http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
         #http://mt.google.com/vt/x=70389&s=&y=43016&z
         serverName = 'mt.google.com'
-        url='http://mt.google.com/vt/x='+str(xtile)+'&y='+str( ytile )+'&z='+str(zoom)
+        nr = random.randint(0,3)
+        url='http://mt' + str(nr) + '.google.com/vt/x='+str(xtile)+'&y='+str( ytile )+'&z='+str(zoom)
         imFormat = '.png'
     elif vendor == 'GMS' or vendor == 'Google Maps Satellite':
         serverName = 'khm.google.com'
-        url='http://khm0.google.com/kh/v=60&x='+str(xtile)+'&y='+str( ytile )+'&z='+str(zoom)
+        nr = random.randint(0,3)
+        url='http://khm' + str(nr) + '.google.com/kh/v=60&x='+str(xtile)+'&y='+str( ytile )+'&z='+str(zoom)
         imFormat = '.jpeg'
 #        http://khm0.google.com/kh/v=60&x=2197&y=1346&z=12
     else:
@@ -147,9 +148,10 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
         if verbose: print "Get map from url maps", url
         
         opener1 = urllib2.build_opener()
-        filehandle = opener1.open( url, timeout=5 )
+        filehandle = opener1.open( url, timeout = 15 )
         data = filehandle.read()
-         
+        opener1.close()
+        
         if verbose: print imagename
         
         fi = open( filename, 'w')

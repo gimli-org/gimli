@@ -3,10 +3,7 @@
 from xml.dom.minidom import parse
 
 def handleWPTS( wpts ):
-    ''
-    ' Handler for Waypoints in gpx xml-dom'
-    ''
-
+    """ Handler for Waypoints in gpx xml-dom """
     w = []
 
     for wpt in wpts:
@@ -29,11 +26,26 @@ def handleWPTS( wpts ):
 #def findWPTS( ... )
 
 def readGPX( filename ):
-    ''
-    ' Extract GPS Waypoint from GPS Exchange Format (GPX). Currently only simple waypoint extraction is supported. '
-    ''
+    """ Extract GPS Waypoint from GPS Exchange Format (GPX). Currently only simple waypoint extraction is supported. """
+    
     dom = parse( filename )
     wpts = dom.getElementsByTagName("wpt")
 
     return handleWPTS( wpts )
 # def readGPX( ... )
+
+
+def readSimpleLatLon( filename ):
+    """ """
+    w = []
+    
+    with open( filename, 'r') as fi:
+        content = fi.readlines( )
+    fi.close()
+    
+    for line in content:
+        vals = line.split()
+        w.append( (float(vals[2]), float(vals[1]), vals[0], 'time')  )
+    
+    return w
+    

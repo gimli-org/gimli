@@ -29,6 +29,24 @@
 							<maxlength>0</maxlength>
 						</object>
 					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxStaticText" name="m_staticText2">
+							<label>Ellipsoid</label>
+							<wrap>-1</wrap>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxTextCtrl" name="gpsViewerEllipsoid">
+							<value>WGS84</value>
+							<maxlength>0</maxlength>
+						</object>
+					</object>
 				</object>
 			</object>
 			<object class="sizeritem">
