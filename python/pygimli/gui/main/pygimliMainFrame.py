@@ -485,7 +485,7 @@ class PyGIMLIMainFrame( wx.Frame ):
                 if err.ShowModal() == wx.ID_OK:
                     self.busyCursorWarning = False
 
-    def onOpenFileDialog( self, event ):
+    def onOpenFileDialog( self, event = None ):
         wildcard = str()
         for suffix in self.fileSuffixes.keys():
             wildcard += self.fileSuffixes[ suffix ][0] + "|*" + suffix + "|"

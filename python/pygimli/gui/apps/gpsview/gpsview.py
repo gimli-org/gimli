@@ -7,9 +7,10 @@ from pygimli.gui.wxmpl import AppResourceWxMPL
 from pygimli.gui.resources import loadIcon, MakeDisabledBitmap
 
 import pyproj
-from pygimli.importexport import readGPX
+from pygimli.importexport import readGPX,readSimpleLatLon
 from pygimli.mplviewer import underlayMap
-
+    
+    
 def findUTMZone( lon, lat ):
     """
      find utm zone for lon and lat values. Return str(zone)+hemisphere
@@ -17,6 +18,7 @@ def findUTMZone( lon, lat ):
      lat < 0 hemisphere = S, > 0 hemisphere = N 
     """
     zone = ( int( lon ) + 180 ) / 6 + 1
+    
     if lat > 0:
         return str( zone ) + 'N'
     else:
@@ -44,20 +46,26 @@ class GPSViewerApp( AppResourceWxMPL ):
         
         ## create an item to the Coordinates menu
         self.createMenuItem( self.mbCoordinatesMenu
+                                    , name = "Import File"
+                                    , help = 'auto'
+                                    , function = self.onImportFile )
+                                    
+        self.createMenuItem( self.mbCoordinatesMenu
                                     , name = "Export ASCII"
                                     , help = 'auto'
-                                    , function = self.exportAscii )
+                                    , function = self.onExportAscii )
         ## create another item to the Coordinates menu
         self.createMenuItem( self.mbCoordinatesMenu
                                     , name = "Export UTM"
                                     , help = 'auto'
-                                    , function = self.exportUTM )
+                                    , function = self.onExportUTM )
                                     
         ## the application has some properties that can be altered by the property inspector (PI), loaded and saved
         #self.titleTextProp = self.appendProperty( "Title", default = 'unknown', valType = str )
                 
         self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Open Street Map' )
         self.utmZone = self.appendProperty( "UTMZone", valType = str, default = '' )
+        self.ellipsoid = self.appendProperty( "Ellipsoid", valType = str, default = 'WGS84' )
         
         # define local data after your needs
         self.gpsWPTs = None
@@ -79,6 +87,9 @@ class GPSViewerApp( AppResourceWxMPL ):
                                         , targetFunct = self.draw )
                                         
         self.utmZone.setCtrl( ctrl = wx.xrc.XRCCTRL( panel, 'gpsViewerUTMZone' )
+                                        , ctrlEvent = wx.EVT_KILL_FOCUS
+                                        , targetFunct = self.draw )
+        self.ellipsoid.setCtrl( ctrl = wx.xrc.XRCCTRL( panel, 'gpsViewerEllipsoid' )
                                         , ctrlEvent = wx.EVT_KILL_FOCUS
                                         , targetFunct = self.draw )
                                        
@@ -123,18 +134,39 @@ class GPSViewerApp( AppResourceWxMPL ):
             false_easting=500000
             false_northing=0
                 
-        return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = 'WGS84' )
+        #return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = 'WGS84' )
+        #Ell: GRS80, clrk66
+        print "ell:" , self.ellipsoid()
+        return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = self.ellipsoid() )
         
     def openFile( self, files = None ):
         """ Load data here """
-        self.gpsWPTs = readGPX( files )
+        
+        print files.find('.gpx')
+        if files.find('.gpx') != -1:
+            self.gpsWPTs = readGPX( files )
+        else:
+            self.gpsWPTs = readSimpleLatLon( files )
+        
+        print "reading ", len( self.gpsWPTs ), " points"
+                
         self.utmZone.setVal( findUTMZone( self.gpsWPTs[0][0], self.gpsWPTs[0][1] ) )
         self.draw()
     
-    def exportUTM( self ):
-        """Export coordinates in UTM format"""
+    def onImportFile( self, event = None ):
+        """ Import coordinates in Lon Lat format """
+        self.parent.onOpenFileDialog()
+    
+    def onExportUTM( self, event = None ):
+        """ Export coordinates in UTM format """
         pass
 
-    def exportAscii( self ):
-        """Export LonLat coordinates in simple column separated list"""
-        pass
+    def onExportAscii( self, event = None ):
+        """ Export LonLat coordinates in simple column separated list """
+        
+        fi = open( "latlon.lanlot", 'w' )
+        for pnt in self.gpsWPTs:
+            fi.write("%s\t%.8f\t%.8f\n" % ( pnt[2], pnt[1], pnt[0]) )
+            
+        fi.close()
+        
