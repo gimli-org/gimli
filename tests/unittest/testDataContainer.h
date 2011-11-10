@@ -1,3 +1,6 @@
+#ifndef _GIMLI_TESTDATACONTAINER__H
+#define _GIMLI_TESTDATACONTAINER__H
+
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <gimli.h>
@@ -80,6 +83,10 @@ public:
         CPPUNIT_ASSERT( data.size()        == data2.size()*3 );
         
         data.save( "test1.dat" );        
+        data.sortSensorsIndex( );
+        data.save( "test2.dat" );        
+        
+        CPPUNIT_ASSERT( max( data("S1") ) == data("S1")[ data.size()-1 ] );
         
     }   
     
@@ -99,3 +106,4 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DataContainerTest );
+#endif

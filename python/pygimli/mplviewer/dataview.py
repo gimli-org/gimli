@@ -20,6 +20,8 @@ class Pseudotype:
     WennerAlpha=7
     WennerBeta=8
     Gradient=9
+    PoleDipole=10
+    HalfWenner=11
     Test=99
     
 class DataShemeManager():
@@ -29,10 +31,13 @@ class DataShemeManager():
         '''
         '''
         self.shemes_ = dict()
-        self.addSheme( DataShemeDipoleDipole() )
+        self.addSheme( DataShemeBase() )
         self.addSheme( DataShemeWennerAlpha() )
         self.addSheme( DataShemeWennerBeta() )
+        self.addSheme( DataShemeDipoleDipole() )
         self.addSheme( DataShemeSchlumberger() )
+        self.addSheme( DataShemePoleDipole( ) )
+        self.addSheme( DataShemeHalfWenner( ) )
 
     def addSheme( self, sheme ):
         '''
@@ -42,22 +47,30 @@ class DataShemeManager():
     def sheme( self, name ):
         '''
         '''
+        if type( name ) == int :
+            for s in self.shemes_.values():
+                if s.typ == name:
+                    return self.shemes_[ s.name ]
+            name = 'unknown'
+
         return self.shemes_[ name ]
 
     def shemes( self ):
         '''
         '''
         return self.shemes_.keys()
-
+        
 class DataShemeBase():
     '''
     '''
     def __init__( self ):
         self.name = "unknown"
         self.prefix = "uk"
+        self.typ = Pseudotype.unknown
         self.data_ = None
         self.inverse_ = False
         self.nElectrodes_ = 0
+        self.maxSeparation = 1e99
         
     def createElectrodes( self, nElectrodes = 24, electrodeSpacing = 1 ):
         self.data_ = b.DataContainerERT()
@@ -69,6 +82,12 @@ class DataShemeBase():
          
     def setInverse( self, inverse = False ):
         self.inverse_ = inverse
+        
+    def setMaxSeparation( self, maxSep ):
+        if maxSep > 0.0:
+            self.maxSeparation = maxSep
+        else:
+            self.maxSeparation = 1e99
      
     def createDatum_( self, a, b, m, n, count ):
         if a < self.nElectrodes_ and b < self.nElectrodes_ and m < self.nElectrodes_ and n < self.nElectrodes_:
@@ -94,15 +113,17 @@ class DataShemeDipoleDipole( DataShemeBase ):
         self.createElectrodes( nElectrodes, electrodeSpacing )
 
         maxSep = nElectrodes - 2
+        if self.maxSeparation < maxSep:
+            maxSep = self.maxSeparation
 
         ### reserve a couple more than nesseccary
-        self.data_.resize( ( nElectrodes - 3 ) * ( maxSep ))
+        self.data_.resize( nElectrodes * nElectrodes )
 
         count = 0
         space = 0
-        enlargeEverySep = 5
+        enlargeEverySep = 0
         
-        for sep in range( 1, maxSep ):
+        for sep in range( 1, maxSep + 1):
             
             if enlargeEverySep > 0:
                 if (sep-1)%enlargeEverySep == 0:
@@ -120,6 +141,90 @@ class DataShemeDipoleDipole( DataShemeBase ):
         self.data_.removeInvalid()
         return self.data_
 
+class DataShemePoleDipole( DataShemeBase ):
+    '''
+    '''
+    def __init__( self ):
+        DataShemeBase.__init__( self )
+        self.name = "Pol Dipole (C-PP)"
+        self.prefix = "pd"
+        self.typ = Pseudotype.PoleDipole
+
+    def create( self, nElectrodes = 24, electrodeSpacing = 1 ):
+        '''
+        '''
+        self.createElectrodes( nElectrodes, electrodeSpacing )
+
+        ### reserve a couple more than nesseccary
+        self.data_.resize( ( nElectrodes ) * ( nElectrodes ) )
+        
+        count = 0
+        enlargeEverySep = 0
+        
+        b = -1
+        for a in range( 0, nElectrodes ):
+            
+            for m in range( a + 1, nElectrodes -1 ):
+                n = m + 1
+                
+                if m - a > self.maxSeparation:
+                    break
+                    
+                count = self.createDatum_( a, b, m, n, count )
+                    
+        self.data_.removeInvalid()
+        return self.data_
+
+class DataShemeHalfWenner( DataShemeBase ):
+    """Pole-Dipole like Wenner Beta with increasing dipole distance"""
+    def __init__( self ):
+        DataShemeBase.__init__( self )
+        self.name = "Half Wenner (C-P-P)"
+        self.prefix = "hw"
+        self.typ = Pseudotype.HalfWenner
+
+    def create( self, nElectrodes = 24, electrodeSpacing = 1 ):
+        """"""
+        
+        self.createElectrodes( nElectrodes, electrodeSpacing )
+
+        ### reserve a couple more than nesseccary
+        self.data_.resize( ( nElectrodes ) * ( nElectrodes ) )
+
+        print "create", self.maxSeparation
+
+        count = 0
+        space = 0
+        enlargeEverySep = 0
+        
+        b = -1
+        for a in range( 0, nElectrodes ):
+            inc = 1
+            while True:
+                m = a - inc
+                n = m - inc
+                
+                if m < 0 or n < 0 or inc > self.maxSeparation:
+                    break
+                   
+                count = self.createDatum_( a, b, m, n, count )
+                inc = inc + 1
+                
+            inc = 1
+            while True:
+                m = a + inc
+                n = m + inc
+                
+                if m > nElectrodes or n > nElectrodes or inc > self.maxSeparation:
+                    break
+                   
+                count = self.createDatum_( a, b, m, n, count )
+                inc = inc + 1
+                    
+        self.data_.removeInvalid()
+        self.data_.sortSensorsIndex( )
+        return self.data_
+
 class DataShemeWennerAlpha( DataShemeBase ):
     '''
     '''
@@ -135,12 +240,15 @@ class DataShemeWennerAlpha( DataShemeBase ):
         self.createElectrodes( nElectrodes, electrodeSpacing )
 
         maxSep = nElectrodes - 2
+        if self.maxSeparation < maxSep:
+            maxSep = self.maxSeparation
 
-        self.data_.resize( ( nElectrodes - 3) * (maxSep -1))
+        ### reserve a couple more than nesseccary
+        self.data_.resize( nElectrodes * nElectrodes )
 
         count = 0
 
-        for sep in range( 1, maxSep ):
+        for sep in range( 1, maxSep + 1):
             for i in range( ( nElectrodes - 2 ) - sep ):
                 a = i
                 m = a + sep
@@ -166,12 +274,15 @@ class DataShemeWennerBeta( DataShemeBase ):
         self.createElectrodes(  nElectrodes, electrodeSpacing  )
 
         maxSep = nElectrodes - 2
+        if self.maxSeparation < maxSep:
+            maxSep = self.maxSeparation
 
-        self.data_.resize( ( nElectrodes - 3) * (maxSep -1))
+        ### reserve a couple more than nesseccary
+        self.data_.resize( ( nElectrodes *nElectrodes ) )
 
         count = 0
 
-        for sep in range( 1, maxSep ):
+        for sep in range( 1, maxSep + 1):
             for i in range( ( nElectrodes - 2 ) - sep ):
                 a = i
                 b = a + sep
@@ -199,12 +310,14 @@ class DataShemeSchlumberger( DataShemeBase ):
         self.createElectrodes(  nElectrodes, electrodeSpacing  )
 
         maxSep = nElectrodes - 2
+        if self.maxSeparation < maxSep:
+            maxSep = self.maxSeparation
 
-        self.data_.resize( ( nElectrodes - 3) * (maxSep -1))
+        self.data_.resize( nElectrodes * nElectrodes )
 
         count = 0
 
-        for sep in range( 1, maxSep ):
+        for sep in range( 1, maxSep + 1 ):
             for i in range( ( nElectrodes - 2 ) - sep ):
                 a = i
                 m = a + sep
@@ -223,15 +336,33 @@ def createPseudoPosition( data, pseudotype = Pseudotype.unknown, scaleX = False 
     '''
     nElecs = data.sensorCount()
     
-    if pseudotype == Pseudotype.DipoleDipole or \
-       pseudotype == Pseudotype.WennerBeta:
+    if pseudotype == Pseudotype.DipoleDipole:
         x = ( data( 'a' ) + data( 'b' ) + data( 'm' ) + data( 'n' ) ) / 4.0;
         sep = g.abs( ( data( 'n' ) + data( 'm' ) ) / 2.0 - ( data( 'b' ) + data( 'a' ) ) / 2.0 )
+        
+    elif pseudotype == Pseudotype.WennerBeta:
+        x = ( data( 'a' ) + data( 'b' ) + data( 'm' ) + data( 'n' ) ) / 4.0;
+        sep = g.abs( ( data( 'n' ) + data( 'm' ) ) / 2.0 - ( data( 'b' ) + data( 'a' ) ) / 2.0 ) / 2.0
+        sep = sep + 1.
 
-    elif pseudotype == Pseudotype.WennerAlpha or \
-         pseudotype == Pseudotype.Schlumberger:
+    elif pseudotype == Pseudotype.WennerAlpha:
+        x = ( data( 'a' ) + data( 'b' ) + data( 'm' ) + data( 'n' ) ) / 4.0;
+        sep = g.abs( ( data( 'b' ) - data( 'a' ) ) / 2.0 + ( data( 'n' ) - data( 'm' ) ) / 2.0 ) / 2.0
+        sep = sep + 1.
+        
+    elif pseudotype == Pseudotype.Schlumberger:
         x = ( data( 'a' ) + data( 'b' ) + data( 'm' ) + data( 'n' ) ) / 4.0;
         sep = g.abs( ( data( 'b' ) - data( 'a' ) ) / 2.0 + ( data( 'n' ) - data( 'm' ) ) / 2.0 )
+        
+    elif pseudotype == Pseudotype.PoleDipole:
+        x = data( 'm' )
+        sep = g.abs( data( 'a' ) - data( 'm' ) ) 
+        sep = sep + 1.
+    
+    elif pseudotype == Pseudotype.HalfWenner:
+        x = data( 'm' )
+        sep = data( 'a' ) - data( 'm' ) 
+        sep = sep + 1.
         
     elif pseudotype == Pseudotype.Gradient:
         x = ( data( 'm' ) + data( 'n' ) ) / 2.0;
@@ -263,7 +394,7 @@ def createPseudoPosition( data, pseudotype = Pseudotype.unknown, scaleX = False 
     ### need a copy here , so we do not change the original data
     x = g.RVector( x )
     sep = g.RVector( sep )
-        
+
     if scaleX:
         x += data.sensorPositions()[ 0 ][ 0 ]
         x *= data.sensorPositions()[ 0 ].distance( data.sensorPositions()[ 1 ] )
@@ -385,58 +516,57 @@ def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = N
 
     image.get_cmap().set_bad( [1.0, 1.0, 1.0, 0.0 ] )
 
-    if pseudotype > 2:
-        ax.xaxis.tick_top()
-        #offset = data.electrode( 0 ).pos()[ 0 ]
-        #spacing = data.electrode( 1 ).pos()[ 0 ]- data.electrode( 0 ).pos()[ 0 ]
-        #print ax.xaxis.get_ticklocs()
-        #print map(lambda l: l - 1.0/matSpacing, ax.xaxis.get_ticklocs() )
-        if matSpacing is not None:
-            #ax.set_xlim( ax.get_xlim()[0] + 1.0 / matSpacing, ax.get_xlim()[-1])
-            ax.xaxis.set_ticks( map(lambda l: l - 1.0/matSpacing, ax.xaxis.get_ticklocs() ) )
-            ax.xaxis.set_ticklabels( map(lambda l: '$'+str( (l +1.0/ matSpacing )/matSpacing)+'$', ax.xaxis.get_ticklocs() ) )
+    #if pseudotype > 2:
+        #ax.xaxis.tick_top()
+        ##offset = data.electrode( 0 ).pos()[ 0 ]
+        ##spacing = data.electrode( 1 ).pos()[ 0 ]- data.electrode( 0 ).pos()[ 0 ]
+        ##print ax.xaxis.get_ticklocs()
+        ##print map(lambda l: l - 1.0/matSpacing, ax.xaxis.get_ticklocs() )
+        #if matSpacing is not None:
+            ##ax.set_xlim( ax.get_xlim()[0] + 1.0 / matSpacing, ax.get_xlim()[-1])
+            #ax.xaxis.set_ticks( map(lambda l: l - 1.0/matSpacing, ax.xaxis.get_ticklocs() ) )
+            #ax.xaxis.set_ticklabels( map(lambda l: '$'+str( (l +1.0/ matSpacing )/matSpacing)+'$', ax.xaxis.get_ticklocs() ) )
 
-            ax.yaxis.set_ticks( map(lambda l: l, range( 0, len( matSidx )
-                                                , max(1, int( len( matSidx ) / 6.0 ) ) ) ))
+            #ax.yaxis.set_ticks( map(lambda l: l, range( 0, len( matSidx )
+                                                #, max(1, int( len( matSidx ) / 6.0 ) ) ) ))
 
-            def levelName( l ):
-                suff = ""
-                print l
-                print matSidx
-                print matSidx[ 0 ]
-                print matSidx[ l ]
-                if matSidx[ l ] < 0:
-                    suff = "'"
-                return 'dd $' + str( int( abs( matSidx[ l ] ) ) - 1 ) + suff +'$'
+            ##def levelName( l ):
+                ##suff = ""
+                ##print l
+                ##print matSidx
+                ##print matSidx[ 0 ]
+                ##print matSidx[ l ]
+                ##if matSidx[ l ] < 0:
+                    ##suff = "'"
+                ##return 'dd $' + str( int( abs( matSidx[ l ] ) ) - 1 ) + suff +'$'
 
-            ax.yaxis.set_ticklabels( map(lambda l: levelName( l ), ax.yaxis.get_ticklocs() ) )
-            ax.set_ylim( len( matSidx ) + 0.5, -0.5 )
+            ##ax.yaxis.set_ticklabels( map(lambda l: levelName( l ), ax.yaxis.get_ticklocs() ) )
+            ##ax.set_ylim( len( matSidx ) + 0.5, -0.5 )
 
-
-        #ax.yaxis.set_ticklabels( map(lambda l: str( (l +1.0/ matSpacing )), ax.yaxis.get_ticklocs() ) )
-
-        #ax.set_ylim( ax.get_ylim()[0], ax.get_ylim()[-1] + 0.5)
-        #ax.xaxis.set_ticks( map(lambda l: l - 1.0/matSpacing, ax.xaxis.get_ticklocs() ) )
+    annotateSeparationAxis( ax, pseudotype, grid = True )
 
     return image
 # END def drawDataAsMatrix( ... )
 
-def annotateSeparationAxis( ax, shemetype, grid = False ):
+def annotateSeparationAxis( ax, shemeID, grid = False ):
     '''
         Draw y-axes tick labels corresponding to the separation
     '''
+    prefix = DataShemeManager().sheme( shemeID ).prefix
+    
     def sepName( l ):
-        if l > -1:
-            return ''
-        prefix = 'dd'
+        print "sepname ", l
         suffix = ""
-        #if matSidx[ l ] < 0:
-            #suff = "'"
         
+        if l == 0:
+            return ''
+        elif l > 0:
+            suffix = "'"
+                
         if grid:
             ax.plot( ax.get_xlim(), [l,l], color = 'black', linewidth = 1, linestyle='dotted')
         
-        return prefix + '$' + str( int( l ) ) + suffix +'$'
+        return prefix + ' $' + str( abs(int( l )) ) + suffix +'$'
 
     ax.yaxis.set_ticklabels( map( lambda l: sepName( l ), ax.yaxis.get_ticklocs() ) )
     
@@ -453,22 +583,6 @@ def drawElectrodesAsMarker( ax, data ):
         elecsX.append( data.sensorPositions()[i][ 0 ] )
         elecsY.append( data.sensorPositions()[i][ 1 ] )
     
-    ### strange crash here in my wirusXP vbox
-    # for i, e in enumerate( data.electrodes() ):
-        # print i, len( data.electrodes() ), e
-        # print e.pos()[ 0 ], e.pos()[ 1 ]
-        # elecsX.append( e.pos()[ 0 ] )
-        # elecsY.append( e.pos()[ 1 ] )
-        # print elecsX
-        # print elecsY
-        # print i, len( data.electrodes() ), e
-    
-    # print "Mops"
-    # for i in elecsX:
-        # print i
-    # print "Mops"
-    # print elecsX, elecsY
-    # print "Mops"
     electrodeMarker, =  ax.plot( elecsX, elecsY, 'x', color = 'black', picker = 5. )
     
     ax.set_xlim( [ data.sensorPositions()[0][0]-1., data.sensorPositions()[ data.sensorCount() -1][0] + 1. ] )
@@ -487,7 +601,9 @@ def drawDataAsMarker( ax, data, shemetype = Pseudotype.unknown ):
     # now draw the data Marker
     x, sep = createPseudoPosition( data, shemetype, scaleX = True  )
     
-    ax.set_ylim( [ min( sep )-1, 1 ] )
+    maxSepView = max( sep ) + 2
+    if max( sep ) > 0: maxSepView = maxSepView - 1
+    ax.set_ylim( [ min( sep ) - 1, maxSepView ] )
     
     dataMarker, = ax.plot( x, sep, '.', color='black', picker = 5. )
     
@@ -503,7 +619,7 @@ def createDataPatches( ax, data, shemetype = Pseudotype.unknown, **kwarg ):
     swatch = g.Stopwatch( True )
     x, sep = createPseudoPosition( data, shemetype, scaleX = True )
     
-    ax.set_ylim( [ min( sep )-1, 1 ] )
+    ax.set_ylim( [ min( sep )-1, max( sep )+1 ] )
 
     dx2 = (x[1]-x[0])/4.
     dSep2 = 0.5
