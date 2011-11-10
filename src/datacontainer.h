@@ -157,9 +157,11 @@ public:
 
     /*! Sort all sensors regarding their x-coordinate. */
     void sortSensorsX();
-
     // END Sensor related section
 
+    /*! Sort all data regarding their sensor indices and sensorIdxNames. */
+    void sortSensorsIndex( );
+    
     /*! Return the additional points. */
     inline const std::vector < RVector3 > & additionalPoints() const { return topoPoints_; }
 

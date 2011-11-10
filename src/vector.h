@@ -307,7 +307,7 @@ public:
         Throws exception on violating boundaries. */
     Vector < ValueType > operator () ( Index start, SIndex end ) const {
         Index e = (Index) end;
-        if ( end == -1 && end > (SIndex)size_ ) e = size_;
+        if ( end == -1 || end > (SIndex)size_ ) e = size_;
 
         Vector < ValueType > v( end-start );
         if ( start >= 0 && start < e && e <= size_ ){

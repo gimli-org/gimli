@@ -698,6 +698,37 @@ void DataContainer::sortSensorsX(){
     }   
 }
 
+bool ididLesser( const std::pair < Index, Index > & a, const std::pair < Index, Index > & b ){
+    return a.first < b.first;
+}
+
+void DataContainer::sortSensorsIndex( ){
+    
+    std::vector < std::pair < Index, Index > > permSens( this->size() );
+    int nSensorsIdx = dataSensorIdx_.size();
+    
+    for ( uint i = 0; i < this->size(); i ++ ) {
+        Index sensorUniqueID = 0;
+        int count = nSensorsIdx; 
+        for ( std::set< std::string >::iterator it = dataSensorIdx_.begin(); it!= dataSensorIdx_.end(); it ++ ){
+            count --;
+            sensorUniqueID += (dataMap_[ *it ][ i ]+1) * std::pow( this->sensorCount(), count );
+        }
+        permSens[ i ] = std::pair< Index, Index >( sensorUniqueID, i );
+    }
+            
+    std::sort( permSens.begin(), permSens.end(), ididLesser );
+    
+    IndexArray perm( this->size() );
+    for ( uint i = 0; i < perm.size(); i ++ ){
+        perm[ i ] = permSens[ i ].second ;
+    }
+    
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        it->second = it->second( perm );
+    }   
+}
+
 void DataContainer::markInvalidSensorIndices(){
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
