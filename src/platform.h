@@ -30,6 +30,12 @@
 #define DLLEXPORT __declspec(dllimport)
 #endif /* NO BUILDING_DLL */
 
+// Don't let win32api windef.h define min and max as macros
+// if included after c++config.h.
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <windows.h>
 #undef near
 #undef far
@@ -64,6 +70,23 @@ inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */
 
 namespace GIMLI{
     DLLEXPORT int numberOfCPU();
+
+// Microsoft Visual C++ 10 does not provide some C99 functions
+#ifdef _MSC_VER
+
+template < class T > T rint( T x ){ return std::floor(x + 0.5); }
+
+template<typename T> inline bool isinf(T value) {
+    return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
+}
+
+template< typename T > inline bool isnan( T value ) {
+    return (x) != (x);
+}
+
+
+#endif
+
 }
 
 #if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) )
@@ -89,7 +112,7 @@ namespace GIMLI{
 //   int val;
 // };
 // #else
-                              
+
 #endif
 
 #endif // _GIMLI_PLATFORM__H

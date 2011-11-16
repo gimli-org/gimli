@@ -29,8 +29,8 @@ namespace GIMLI{
 
 std::ostream & operator << ( std::ostream & str, const Shape & c ){
     str << c.name() << " " << std::endl;
-    for ( uint i = 0; i < c.nodeVector_.size(); i ++ ) {
-        str << c.nodeVector_[ i ]->pos() << " ";
+    for ( uint i = 0; i < c.nodes().size(); i ++ ) {
+        str << c.nodes()[ i ]->pos() << " ";
     }
     return str;
 }

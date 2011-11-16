@@ -56,7 +56,7 @@ DataContainer & DataContainer::operator = ( const DataContainer & data ){
 }
 
 void DataContainer::initDefaults(){
-    dataMap_["valid"] = RVector( 0 );    
+    dataMap_["valid"] = RVector( 0 );
     sensorIndexOnFileFromOne_ = false;
     init();
     initTokenTranslator();
@@ -98,24 +98,24 @@ void DataContainer::copy_( const DataContainer & data ){
 
     inputFormatString_ = data.inputFormatString();
     inputFormatStringSensors_ = data.formatStringSensors( );
-    dataSensorIdx_  = sensorIdx(); 
-    
+    dataSensorIdx_  = sensorIdx();
+
     dataMap_ = data.dataMap();
-   
-    dataDescription_ = data.dataDescription();  
-    
+
+    dataDescription_ = data.dataDescription();
+
     tT_ = data.tokenTranslator();
-    
+
     sensorIndexOnFileFromOne_ = sensorIndexOnFileFromOne();
 }
 
 void DataContainer::add( const DataContainer & data, double snap ){
-    
+
     Index start = this->size();
     this->resize( this->size() + data.size() );
 
     IndexArray perm( data.sensorCount(), 0 );
-    
+
     //** merge sensor data
     for ( uint i = 0; i < data.sensorCount(); i ++ ){
         perm[ i ] = this->createSensor( data.sensorPositions()[ i ], snap );
@@ -126,8 +126,8 @@ void DataContainer::add( const DataContainer & data, double snap ){
         if ( isSensorIndex( it->first ) ){
             RVector tmp( data.get( it->first ) );
             for ( uint i = 0; i < tmp.size(); i ++ ){
-                ssize_t id = tmp[ i ];
-                if ( id > -1 && id < (ssize_t)perm.size() ) {
+                SIndex id = tmp[ i ];
+                if ( id > -1 && id < (SIndex)perm.size() ) {
                     it->second[ start + i ] = perm[ id ];
                 } else {
                     it->second[ start + i ] = -1;
@@ -137,7 +137,7 @@ void DataContainer::add( const DataContainer & data, double snap ){
         //** merge data fields
             it->second.setVal( data.get( it->first ), start, -1);
         }
-    }   
+    }
 }
 
 long DataContainer::createSensor( const RVector3 & pos, double tolerance ){
@@ -156,7 +156,7 @@ long DataContainer::createSensor( const RVector3 & pos, double tolerance ){
     return ret;
 }
 
-void DataContainer::registerSensorIndex( const std::string & token ) { 
+void DataContainer::registerSensorIndex( const std::string & token ) {
     dataSensorIdx_.insert( token );
     this->set( token, RVector( this->size(), -1.0 ) );
 }
@@ -167,7 +167,7 @@ bool DataContainer::isSensorIndex( const std::string & token ) const {
 
 int DataContainer::load( const std::string & fileName ){
     std::fstream file; if ( !openInFile( fileName, & file, true ) );
- 
+
     std::vector < std::string > row; row = getNonEmptyRow( file );
     if ( row.size() != 1 ) {
         std::stringstream str;
@@ -232,7 +232,7 @@ int DataContainer::load( const std::string & fileName ){
     for ( int i = 0; i < nSensors; i ++ ) {
         createSensor( RVector3( x[ i ], y[ i ], z[ i ] ).round( 1e-12 ) );
     }
-    
+
     //****************************** Start read the data;
     row = getNonEmptyRow( file );
     if ( row.size() != 1 ) {
@@ -305,7 +305,7 @@ int DataContainer::load( const std::string & fileName ){
                 it->first.rfind( "ms" ) != std::string::npos ){
                 scale = 1.0 / 1000.0;
             }
- 
+
 // 	    std::cout << min( it->second ) <<  " " << max( it->second ) << std::endl;
 
 //std::cout << "Insert translated:-" << tT_[ it->first ] << "-" << it->second.size() << std::endl;
@@ -323,13 +323,13 @@ int DataContainer::load( const std::string & fileName ){
             }
         }
     }
-    
-    
+
+
     dataMap_[ "valid" ] = 1;
 
     // validity check should only used in speccialication
     this->checkDataValidity( );
-    
+
     //** start read topo;
     row = getNonEmptyRow( file );
     if ( row.size() == 1 ) {
@@ -390,7 +390,7 @@ void DataContainer::checkDataValidity( bool remove ){
             it!= dataMap_.end(); it ++ ){
         this->markInvalid( find( isInfNaN( it->second ) ) );
     }
-    
+
     //** call local specialization if any
     checkDataValidityLocal();
 
@@ -405,11 +405,11 @@ void DataContainer::checkDataValidity( bool remove ){
 
 int DataContainer::save( const std::string & fileName, const std::string & formatData,
                          const std::string & formatSensor, bool verbose ) const {
-    
+
     std::fstream file; if ( !openOutFile( fileName, & file ) ) return 0;
 
     file.precision( 14 );
-    
+
     //** START write sensor data
     file << sensorPoints_.size() << std::endl;
     std::string sensorsString( formatSensor );
@@ -429,10 +429,10 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
     //** START write data map
     std::vector < const RVector * > outVec;
     std::vector < bool > outInt;
-    
+
     IndexArray toSaveIdx;
     std::string formatString;
-    
+
     if ( lower( formatData ) == "all" ){
         toSaveIdx = find( get("valid") > -1 );
         formatString = this->tokenList();
@@ -440,7 +440,7 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
         toSaveIdx = find( get("valid") == 1 );
         formatString = formatData;
     }
-    
+
     int count = toSaveIdx.size();
     file << count << std::endl;
     file << "# " << formatString << std::endl;
@@ -489,15 +489,15 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
         }
         file << std::endl;
     }
-    
+
     //** START write additional points
     file << topoPoints_.size() << std::endl;
     for ( uint i = 0; i < topoPoints_.size(); i ++ ){
-        std::cout   << topoPoints_[ i ].x() << "\t" 
-                    << topoPoints_[ i ].y() << "\t" 
+        std::cout   << topoPoints_[ i ].x() << "\t"
+                    << topoPoints_[ i ].y() << "\t"
                     << topoPoints_[ i ].z() << std::endl;
     }
-        
+
     file.close();
 
     if ( verbose ){
@@ -586,7 +586,7 @@ std::string DataContainer::dataDescription( const std::string & token ) const {
 void DataContainer::resize( uint size ) {
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin();
             it!= dataMap_.end(); it ++ ){
-        
+
         if ( isSensorIndex( it->first ) ){
             // if the data field represent a sensorIDX fill with -1
             it->second.resize( size, -1.0 );
@@ -594,7 +594,7 @@ void DataContainer::resize( uint size ) {
             // else pure data, fill with 0.0
             it->second.resize( size, 0.0 );
         }
-        
+
     }
 }
 
@@ -624,7 +624,7 @@ void DataContainer::removeSensorIdx( uint idx ){
     IndexArray i(1, idx );
     this->removeSensorIdx( i );
 }
-    
+
 void DataContainer::removeSensorIdx( const IndexArray & idx ){
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
@@ -636,20 +636,20 @@ void DataContainer::removeSensorIdx( const IndexArray & idx ){
     this->removeInvalid();
     this->removeUnusedSensors();
 }
-    
+
 void DataContainer::removeUnusedSensors(){
-    
+
     BVector activeSensors( this->sensorCount(), false );
-    
+
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
             for ( uint i = 0; i < it->second.size(); i ++ ){
-                ssize_t id = it->second[ i ];
-                if ( id > -1 && id < (ssize_t)this->sensorCount() ) activeSensors[ id ] = true;
+                SIndex id = it->second[ i ];
+                if ( id > -1 && id < (SIndex)this->sensorCount() ) activeSensors[ id ] = true;
             }
         }
     }
-    
+
     IndexArray perm( this->sensorCount(), 0 );
 
     std::vector < RVector3 > tmp( sensorPoints_ );
@@ -665,37 +665,37 @@ void DataContainer::removeUnusedSensors(){
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
             for ( uint i = 0; i < it->second.size(); i ++ ){
-                ssize_t id = it->second[ i ];
-                if ( id > -1 && id < (ssize_t)perm.size() ) it->second[ i ] = perm[ id ];
+                SIndex id = it->second[ i ];
+                if ( id > -1 && id < (SIndex)perm.size() ) it->second[ i ] = perm[ id ];
             }
         }
-    }    
+    }
 }
 
 bool idPosLesserX( const std::pair < RVector3, Index > & a, const std::pair < RVector3, Index > & b ){
     return posLesserX( a.first, b.first );
 }
-    
+
 void DataContainer::sortSensorsX(){
     std::vector < std::pair < RVector3, Index > > permSens( sensorCount() );
     for ( uint i = 0; i < sensorCount(); i ++ ) permSens[ i ] = std::pair< RVector3, Index >( sensorPoints_[ i ], i );
-            
+
     std::sort( permSens.begin(), permSens.end(), idPosLesserX );
-    
+
     IndexArray perm( sensorCount() );
     for ( uint i = 0; i < perm.size(); i ++ ){
         sensorPoints_[ i ] = permSens[ i ].first;
         perm[ permSens[ i ].second ] = i;
     }
-    
+
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
             for ( uint i = 0; i < it->second.size(); i ++ ){
-                ssize_t id = it->second[ i ];
-                if ( id > -1 && id < (ssize_t)perm.size() ) it->second[ i ] = perm[ id ];
+                SIndex id = it->second[ i ];
+                if ( id > -1 && id < (SIndex)perm.size() ) it->second[ i ] = perm[ id ];
             }
         }
-    }   
+    }
 }
 
 bool ididLesser( const std::pair < Index, Index > & a, const std::pair < Index, Index > & b ){

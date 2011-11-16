@@ -530,11 +530,11 @@ void Mesh::loadBinaryV2( const std::string & fbody ) {
 
     //** read nodes
     uint32 nVerts; readFromFile( file, nVerts );
-    
+
     if ( nVerts > 1e9 ){
         throwError( 1, WHERE_AM_I + " probably something wrong: nVerts > 1e9 " + toStr( nVerts ) );
     }
-    
+
     double * coord = new double[ 3 * nVerts ]; readFromFile( file, coord[ 0 ], 3 * nVerts );
     int32 * marker = new int32[ nVerts ]; readFromFile( file, marker[ 0 ], nVerts );
 
@@ -824,7 +824,7 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
             file << std::endl;
         } // if ( boundaryCount() > 0 )
         RVector tmp( boundaryCount() );
-        std::transform( boundaryVector_.begin(), boundaryVector_.end(), 
+        std::transform( boundaryVector_.begin(), boundaryVector_.end(),
                         &tmp[0], std::mem_fun( &Boundary::marker ) );
         if ( !data.count( "_Marker" ) ) data.insert( std::make_pair( "_Marker",  tmp ) );
          //** write boundary data
@@ -1180,8 +1180,8 @@ int Mesh::exportMidCellValue( const std::string & fileName,
 void Mesh::exportAsTetgenPolyFile( const std::string & filename ){
     std::fstream file; openOutFile( filename.substr( 0, filename.rfind( ".poly" ) ) + ".poly", & file );
 
-    int nverts = nodeCount();
-    int nfacets = boundaryCount();
+    uint nverts = nodeCount();
+    uint nfacets = boundaryCount();
 
     //  file << "# nverties dimension nattrib boolbndrymarker" << endl;
     file << nverts << "\t3\t0\t1" << std::endl;

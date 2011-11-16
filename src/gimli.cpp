@@ -36,7 +36,7 @@ std::string authors(){
   return a;
 }
 
-int openFile( const std::string & fname, std::fstream * file, std::_Ios_Openmode farg, bool terminate ){
+int openFile( const std::string & fname, std::fstream * file, std::ios_base::openmode farg, bool terminate ){
     file->open( fname.c_str(), farg );
     if ( !*file ){
         if ( terminate ) {

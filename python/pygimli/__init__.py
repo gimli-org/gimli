@@ -14,14 +14,20 @@ or
 from pygimli import *
 """
 
-import sys,os
+import sys, os
 if sys.platform == 'win32':
     os.environ['PATH'] =  __path__[0] +';' + os.environ['PATH']
 
+
+print sys.path
+print sys.platform
 try:
     from _pygimli_ import *
 except ImportError as e:
     print e
+    import traceback
+    
+    traceback.print_exc(file=sys.stdout)
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
 import locale

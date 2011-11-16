@@ -213,7 +213,7 @@ private:
 template< class A, class B, class Op > class BinaryExprOp {
 public:
     BinaryExprOp( const A & a, const B & b ) : a_( a ), b_( b ){ }
-    
+
     template < class ValueType > ValueType operator( ) ( const ValueType & x ) const {
         return Op()( a_( x ), b_( x ) );
     }
