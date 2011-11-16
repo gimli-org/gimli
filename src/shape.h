@@ -79,8 +79,6 @@ public:
     /*! Returns the normvector if possible otherwise returns nonValid Vector3 */
     virtual RVector3 norm() const;
 
-    friend std::ostream & operator << ( std::ostream & str, const Shape & c );
-
 protected:
     /*! Virtual method to calculate the jacobian determinant of the shapes */
     virtual double jacobianDeterminant_() const { return 0.0; }

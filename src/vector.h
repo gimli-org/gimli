@@ -51,6 +51,7 @@
 #include <cstring>
 #include <fstream>
 #include <cerrno>
+#include <iterator>
 
 //#include <function> inherit std::multiplies
 
@@ -61,7 +62,7 @@
 
 namespace GIMLI{
 
-template < class ValueType, class A > class __VectorExpr;
+typedef std::vector < Index > IndexArray;template < class ValueType, class A > class __VectorExpr;
 
 template < class ValueType > class VectorIterator {
 public:
@@ -307,7 +308,7 @@ public:
         Throws exception on violating boundaries. */
     Vector < ValueType > operator () ( Index start, SIndex end ) const {
         Index e = (Index) end;
-        if ( end == -1 || end > (SIndex)size_ ) e = size_;
+        if ( end == -1 && end > (SIndex)size_ ) e = size_;
 
         Vector < ValueType > v( end-start );
         if ( start >= 0 && start < e && e <= size_ ){
@@ -1098,9 +1099,6 @@ template < class T, class T2 > Vector < T > pow( const Vector < T > & v, T2 npow
     return r;
 }
 
-/*!
- * Return a copy of Vector a, that is sorted in ascending order. e.g., [2 1 0] -> [0 1 2] 
- */ 
 template < class T > Vector< T > sort( const Vector < T > & a ){
     std::vector < T > tmp( a.size(), 0.0 ) ;
     for ( Index i = 0; i < a.size(); i ++ ) tmp[ i ] = a[ i ];
@@ -1113,9 +1111,7 @@ template < class T > Vector< T > sort( const Vector < T > & a ){
 //     return t;
 }
 
-/*! 
- * Return a copy of the vector and replacing all consecutive occurrences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1 ]. To remove all double values from the vector use an additionally sorting. e.g. unique( sort( v ) ) gets you [ 0 1 2 ]. 
- */
+/*! Returning a copy of the vector and replacing all consecutive occurrences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1 ]. To remove all double values from the vector use an additionally sorting. e.g. unique( sort( v ) ) gets you [ 0 1 2 ]. */
 template < class T > Vector< T > unique( const Vector < T > & a ){
     std::vector < T > tmp( a.size() ), u;
     for ( Index i = 0; i < a.size(); i ++ ) tmp[ i ] = a[ i ];

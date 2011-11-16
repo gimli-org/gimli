@@ -50,7 +50,7 @@
 //! GIMLi main namespace for the Geophyiscal Inversion and Modelling Library
 namespace GIMLI{
 
-#if not defined __USE_MISC
+#ifndef __USE_MISC
 typedef unsigned int uint;
 #endif
 
@@ -73,8 +73,6 @@ typedef __int64 SIndex;
 typedef size_t Index;
 typedef ssize_t SIndex;
 #endif
-
-typedef std::vector < Index > IndexArray;
 
 #ifndef __ASSERT_FUNCTION
 #define __ASSERT_FUNCTION "__ASSERT_FUNCTION"
@@ -160,14 +158,10 @@ typedef Pos< double >       RVector3;
 template < class ValueType >        class SparseMatrix;
 typedef SparseMatrix< int >         ISparseMatrix;
 typedef SparseMatrix< double >      DSparseMatrix;
-typedef SparseMatrix< double >      RSparseMatrix; //** fits to RVector/RMatrix
-typedef SparseMatrix< float >       FSparseMatrix;
 
 template< class ValueType, class IndexType > class SparseMapMatrix;
 typedef SparseMapMatrix< int, Index >     ISparseMapMatrix;
 typedef SparseMapMatrix< double, Index >  DSparseMapMatrix;
-typedef SparseMapMatrix< double, Index >  RSparseMapMatrix; //** fits to RVector/RMatrix
-typedef SparseMapMatrix< float, Index >   FSparseMapMatrix;
 
 template < class ValueType > class Matrix;
 template < class ValueType > class Vector;
@@ -176,8 +170,6 @@ template < class ValueType > class Vector;
 typedef std::complex < double > Complex;
 typedef Vector < double > RVector;
 typedef Matrix < double > RMatrix;
-typedef Vector < float >  FVector;
-typedef Matrix < float > FMatrix;
 
 typedef Vector< Complex > CVector;
 //typedef Matrix < Complex > CMatrix;
@@ -248,11 +240,11 @@ inline std::string versionStr(){
 
 DLLEXPORT std::string authors();
 
-template < class T, class U > inline T min( const T & a, const U & b ){ return std::min( a, T(b) ); }
-template < class T, class U > inline T max( const T & a, const U & b ){ return std::max( a, T(b) ); }
+template < class T, class U > T min( const T & a, const U & b ){ return std::min( a, T(b) ); }
+template < class T, class U > T max( const T & a, const U & b ){ return std::max( a, T(b) ); }
 
 DLLEXPORT int openFile( const std::string & fname, std::fstream * file,
-                        std::_Ios_Openmode farg, bool terminate );
+                        std::ios_base::openmode farg, bool terminate );
 
 inline int openInFileTerm( const std::string & fname, std::fstream * file ){
     return openFile( fname, file, std::ios::in, true);
@@ -285,9 +277,9 @@ DLLEXPORT std::vector < std::string > split( const std::string & str, char delim
 DLLEXPORT std::map < float, float > loadFloatMap( const std::string & filename );
 DLLEXPORT std::map < int, int > loadIntMap( const std::string & filename );
 
-inline int       toInt( const std::string & str ){ return atoi( str.c_str() ); }
-inline float   toFloat( const std::string & str ){ return strtof( str.c_str(), NULL ); }
-inline double toDouble( const std::string & str ){ return strtod( str.c_str(), NULL ); }
+inline int       toInt( const std::string & str ){ return std::atoi( str.c_str() ); }
+inline float   toFloat( const std::string & str ){ return std::atof( str.c_str() ); }
+inline double toDouble( const std::string & str ){ return std::strtod( str.c_str(), NULL ); }
 
 //! General template for conversion to string, shoul supersede all sprintf etc.
 template< typename T > inline std::string str( const T & value ){

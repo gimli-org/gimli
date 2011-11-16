@@ -101,7 +101,7 @@ public:
     inline bool valid() const { return valid_; }
 
     inline void assign( const ValueType & x, const ValueType & y, const ValueType & z ) {
-        mat_[ 0 ] = x; mat_[ 1 ] = y; mat_[ 2 ] = z; 
+        mat_[ 0 ] = x; mat_[ 1 ] = y; mat_[ 2 ] = z;
         x_ = x; y_ = y; z_ = z;
     }
 
@@ -143,24 +143,24 @@ public:
                    ( mat_[ 1 ] - p[ 1 ] ) * ( mat_[ 1 ] - p[ 1 ] ) +
                    ( mat_[ 2 ] - p[ 2 ] ) * ( mat_[ 2 ] - p[ 2 ] ) );
     }
-    
+
     inline double dist( const Pos < ValueType > & p ) const { return std::sqrt( distSquared( p ) ); }
-    
+
     inline double distance( const Pos < ValueType > & p ) const { return dist( p ); }
-    
-    /*! Test if this is faster than dist() */ 
-    inline double distT( const Pos < ValueType > & p ) const { 
-        return std::sqrt(   ( x_ - p.x_ ) * ( x_ - p.x_ ) + 
-                            ( y_ - p.y_ ) * ( y_ - p.y_ ) + 
-                            ( z_ - p.z_ ) * ( z_ - p.z_ ) ); 
+
+    /*! Test if this is faster than dist() */
+    inline double distT( const Pos < ValueType > & p ) const {
+        return std::sqrt(   ( x_ - p.x_ ) * ( x_ - p.x_ ) +
+                            ( y_ - p.y_ ) * ( y_ - p.y_ ) +
+                            ( z_ - p.z_ ) * ( z_ - p.z_ ) );
     }
 
     inline double abs( ) const { return length(); }
-    
+
     inline double distSquared( ) const {
         return  mat_[ 0 ] * mat_[ 0 ] + mat_[ 1 ] * mat_[ 1 ] + mat_[ 2 ] * mat_[ 2 ];
     }
-    
+
     inline double length( ) const { return std::sqrt( distSquared() ); }
 
     double angle( const Pos < ValueType > & p ) const {
@@ -262,7 +262,7 @@ protected:
     bool valid_;
 
     ValueType mat_[ 3 ];
-    
+
 };
 
 // template < class ValueType > const RVector3 RVector3::ZERO( 0.0, 0.0, 0.0 );
@@ -310,14 +310,14 @@ template < class ValueType > std::ostream & operator << ( std::ostream & str, co
   return str;
 }
 
-inline bool posLesserX( const RVector3 & a, const RVector3 & b ){ 
+inline bool posLesserX( const RVector3 & a, const RVector3 & b ){
     if ( a[0] == b[0] ) {
         if ( a[1] == b[1] ) {
             return a[2] < b[2];
         } else {
             return a[1] < b[1];
         }
-    } else return a[0] < b[0]; 
+    } else return a[0] < b[0];
 }
 
 } // namespace GIMLI;

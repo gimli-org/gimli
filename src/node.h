@@ -118,8 +118,6 @@ public:
 
     void smooth( uint function );
 
-    friend std::ostream & operator << ( std::ostream & str, const GIMLI::Node & node );
-
 protected:
 
     void copy_( const Node & node ){

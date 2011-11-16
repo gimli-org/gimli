@@ -36,6 +36,10 @@ static __inline__ size_t rdtsc__( void ){
     __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
     return ( (size_t )lo)|( ((size_t )hi)<<32 );
 }
+#else
+static inline size_t rdtsc__( void ){
+    return 0;
+}
 #endif
 
 namespace GIMLI{
