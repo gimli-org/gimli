@@ -52,7 +52,7 @@ class MRS1dBlockQTModelling( g.ModellingBase ):
             for ii, a in enumerate(A): 
                 a += N.exp( -self.t_ / t2[i] ) * amps[ii]
                 
-        return g.ListToRVector( list( N.abs(A).ravel() ) )
+        return g.asvector( N.abs(A).ravel() )
 
 def loadmrsproject(mydir):
     ''' load mrs project from given directory (zkernel.ve)

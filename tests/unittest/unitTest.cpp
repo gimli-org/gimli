@@ -8,7 +8,7 @@
     #include <vector.h>
     GIMLI::Placeholder x__;
 
-    #include "testGIMLiMisc.h"
+    #include "testGIMLiMisc.h" // not working on Win32 despite USE_IPC
     #include "testDataContainer.h"
     #include "testVector.h"
     #include "testShape.h"

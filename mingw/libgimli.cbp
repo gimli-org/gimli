@@ -34,6 +34,7 @@
 			<Add option="-DHAVE_LIBAMD" />
 			<Add option="-DHAVE_LIBTRIANGLE" />
 			<Add option="-DHAVE_LIBCHOLMOD" />
+			<Add option="-DUSE_IPC" />
 		</Compiler>
 		<Linker>
 			<Add option="-s" />

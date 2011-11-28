@@ -250,7 +250,8 @@ void Region::fillModelControl( RVector & vec ){
 uint Region::constraintCount() const {
     if ( isSingle_ && constraintType_ == 1 ) return 0;
     
-    if ( constraintType_ == 0 ) return parameterCount();
+    if ( constraintType_ == 0 || constraintType_ == 2 || constraintType_ == 20 ) return parameterCount();
+    if ( constraintType_ == 10 ) return bounds_.size() + parameterCount();
     return bounds_.size();
 }
     
@@ -259,17 +260,37 @@ void Region::fillConstraints( DSparseMapMatrix & C, uint startConstraintsID ){
 
     if ( isSingle_ && constraintType_ == 1 ) return;
 
-    if ( constraintType_ == 0 ){
+    double cMixRatio = 1.0; // for mixing 1st or 2nd order with 0th order (constraintTypes 10 and 20)
+    if ( constraintType_ == 10 || constraintType_ == 20 ) cMixRatio = 1.0; //**retrieve from properties!!!
+    if ( constraintType_ == 0 || constraintType_ == 20 ){ //purely 0th or mixed 2nd+0th
         for ( size_t i = 0; i < parameterCount_; i++) {
-            C[ startConstraintsID + i ][ startParameter_ + i ] = 1;
+            C[ startConstraintsID + i ][ startParameter_ + i ] = cMixRatio;
+        }
+        if ( constraintType_ == 0 ) return;
+    }
+    
+    int leftParaId = -1, rightParaId = -1;
+    if ( constraintType_ == 2 || constraintType_ == 20 ) { //** 2nd order constraints (opt. mixed with 0th)
+        for ( std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
+            it != itmax; it ++ ){
+            leftParaId = -1;
+            rightParaId = -1;
+            if ( (*it)->leftCell()  ) leftParaId  = (*it)->leftCell()->marker();
+            if ( (*it)->rightCell() ) rightParaId = (*it)->rightCell()->marker();
+            if ( leftParaId >= (int)startParameter_ && leftParaId < (int)endParameter_ &&
+                 rightParaId >= (int)startParameter_ && rightParaId < (int)endParameter_ &&
+                    leftParaId != rightParaId ){
+                C[ leftParaId ][ rightParaId ] = -1;
+                C[ rightParaId ][ leftParaId ] = -1;
+                C[ leftParaId ][ leftParaId ] += 1;
+                C[ rightParaId ][ rightParaId ] += 1;
+            }
         }
         return;
     }
-
-     int leftParaId = -1, rightParaId = -1;
-     uint cID = startConstraintsID;
-     
-     for ( std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
+    //** 1st order constraints (opt. combined with 0th order)
+    uint cID = startConstraintsID;
+         for ( std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
         it != itmax; it ++ ){
 
         leftParaId = -1;
@@ -285,6 +306,13 @@ void Region::fillConstraints( DSparseMapMatrix & C, uint startConstraintsID ){
             C[ cID ][ rightParaId ] = -1;
         }
         cID ++;
+    }
+    if ( constraintType_ == 10 ) { //** combination with 0th order
+        for ( size_t i = 0; i < parameterCount_; i++) {
+            C[ cID ][ startParameter_ + i ] = cMixRatio;
+            cID++;
+        }
+        
     }
 }
 
@@ -321,7 +349,7 @@ void Region::fillConstraintsWeight( RVector & vec, uint constraintStart ){
 }
 
 void Region::fillConstraintsWeightWithFlatWeight(){
-    if ( isBackground_ || isSingle_ || ( constraintType() == 0 ) ) return;
+    if ( isBackground_ || isSingle_ || ( constraintType() == 0 ) || ( constraintType() == 2 ) ) return;
     constraintsWeight_.resize( constraintCount(), 1.0 );
 
     for ( uint i = 0, imax = bounds_.size(); i < imax; i ++ ) {
