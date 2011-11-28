@@ -7,25 +7,26 @@ import pygimli as g
 from base import rndig
 import string
 
-def astausgleich( ab2org, mn2org, rhoa ):
+def astausgleich( ab2org, mn2org, rhoaorg ):
     """shifts the branches of a dc sounding to generate a matching curve"""
-    ab2 = N.asarray( ab2org )
-    mn2 = N.asarray( mn2org )
-    um = N.unique(mn2)
+    ab2 = P.asarray( ab2org )
+    mn2 = P.asarray( mn2org )
+    rhoa = P.asarray( rhoaorg )    
+    um = P.unique(mn2)
     for i in range( len(um) - 1 ):
-        r0 = []
-        r1 = []
-        ac = N.intersect1d( ab2[ mn2 == um[i] ], ab2[ mn2 == um[ i + 1 ] ] )
+        r0, r1 = [], []
+        ac = P.intersect1d( ab2[ mn2 == um[i] ], ab2[ mn2 == um[ i + 1 ] ] )
         for a in ac:
             r0.append( rhoa[ (ab2 == a) * (mn2 == um[i]) ][0] )
             r1.append( rhoa[ (ab2 == a) * (mn2 == um[i+1]) ][0] )
         
         if len(r0) > 0:
-            fak = N.mean( N.array(r0) / N.array(r1) )
-            if N.isfinite(fak) and fak>0.: 
+            fak = P.mean( P.array(r0) / P.array(r1) )
+            print fak
+            if P.isfinite(fak) and fak>0.: 
                 rhoa[ mn2 == um[ i + 1 ] ] *= fak
                 
-    return rhoa
+    return g.asvector( rhoa )
 
 def loadSIPallData(filename,outnumpy=False):
     """load SIP data with the columns ab/2,mn/2,rhoa and PHI
@@ -140,6 +141,14 @@ def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
         a.append( '%g' % rndig(l) )
 
     P.yticks( locs, a )
+
+    locs = P.xticks()[0]
+    
+    a = []
+    for l in locs: 
+        a.append( '%g' % rndig(l) )
+
+    P.xticks( locs, a )
 
     P.grid( which='both' )
     P.xlabel( xlab )

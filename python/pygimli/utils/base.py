@@ -28,6 +28,12 @@ def rndig(a, ndig=3):
     else:
         return N.around( a, ndig - int( N.ceil( N.log10( N.abs( a ) + 1e-4 ) ) ) )
 
+def num2str(a):
+    s=[]
+    for ai in a:
+        s.append( '%g' % rndig(ai) )
+    return s
+
 def jetmap(m=64):
     """ jet color map """
     n = int( P.ceil(m/4) )
@@ -56,10 +62,10 @@ def showmymatrix(A,x,y,dx=2,dy=1,xlab=None,ylab=None,cbar=None):
     if cbar is not None: P.colorbar(orientation=cbar)
     return
     
-def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14):
+def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, **kwargs):
     """draw 1d block model defined by value and thickness vectors."""
-    if xlab is None: 
-        xlab = "$\\rho$ in $\\Omega$m"
+#    if xlab is None: 
+#        xlab = "$\\rho$ in $\\Omega$m"
 
     if thk is None: #gimli blockmodel (thk+x together) given
         nl = int( N.floor( ( len(x) - 1 ) / 2. ) ) + 1
@@ -81,10 +87,12 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14):
 #    P.cla()
     li = []
     if islog:
-        li = P.semilogx( px, pz )
+        li = P.semilogx( px, pz, **kwargs )
     else:        
-        li = P.plot( px, pz )
+        li = P.plot( px, pz, **kwargs )
         
+    P.gca().xaxis.set_label_position('top')
+
     locs = P.xticks()[0]
     if len( locs ) < 2:
         locs = N.hstack( ( min(x), locs, max( x ) ) )
@@ -99,11 +107,11 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14):
     P.xticks( locs, a, fontsize=fs )
     P.yticks(fontsize = fs)
 
-    P.grid(which='both')
     P.xlim( ( N.min(x) * 0.9, N.max(x) * 1.1 ) )
     P.ylim( ( max(z1) * 1.15 , 0. ) )
     P.xlabel(xlab,fontsize=fs)
     P.ylabel(zlab,fontsize=fs)
+    P.grid(which='both')
     P.show()
     return li
 

@@ -17,12 +17,13 @@ def drawMesh( axes, mesh ):
 # def drawMesh( ... )
 
 def drawModel( axes, mesh, data = None, cMin = None, cMax = None
-               , showCbar = True , linear = False, label = ""
+               , showCbar = True , linear = False, label = "", cmap=None
                , nLevs = 5, orientation = 'horizontal', xlab=None, ylab=None ):
     ''
     ' Draw a 2d mesh and color the cell by the data '
     ''
     gci = g.mplviewer.createMeshPatches( axes, mesh, alpha = 1.0 )
+    if cmap is not None: eval('mpl.pyplot.'+cmap+'()')
     axes.set_aspect( 'equal')
     if xlab is not None: axes.set_xlabel( xlab )
     if ylab is not None: axes.set_ylabel( ylab )

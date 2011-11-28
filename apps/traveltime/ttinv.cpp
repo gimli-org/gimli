@@ -45,7 +45,7 @@ int main( int argc, char *argv [] ) {
     int nSegments = 6;
     double relativeInnerMaxEdgeLength = 0.01;
     bool lambdaOpt = false, isBlocky = false, isRobust = false, createGradientModel = false;
-    bool useAppPar = false, isBertMesh = false;//, useWater = false;
+    bool useAppPar = false, isBertMesh = false, isVelocity = false;//, useWater = false;
     double errTime = 0.001, errPerc = 0.1, lbound = 0.0, ubound = 0.0;
     double lambda = 100.0, zWeight = 1.0;
     int maxIter = 20, verboseCount = 0;
@@ -62,6 +62,7 @@ int main( int argc, char *argv [] ) {
     oMap.add( createGradientModel,"G" , "gradientModel", "Gradient starting model." );
     oMap.add( isRobust,           "R" , "RobustData", "Robust (L1) data weighting." );
     oMap.add( lambdaOpt,          "O" , "OptimizeLambda", "Optimize model smoothness using L-curve." );
+    oMap.add( isVelocity,         "V" , "isVelocity", "boundaries are velocities (not slowness)." );
     oMap.add( lambda,             "l:", "lambda", "Regularization parameter lambda." );
     oMap.add( maxIter,            "i:", "iterations", "Maximum iteration number." );
     oMap.add( errPerc,            "e:", "errorPerc", "Percentage error part." );
@@ -76,11 +77,17 @@ int main( int argc, char *argv [] ) {
     bool verbose = ( verboseCount > 0 ), debug = ( verboseCount > 1 );
     if ( verbose ) setbuf(stdout, NULL);
 
-    if ( ( lbound > ubound ) && ( ubound > 0 ) ) {
+    if ( ( ubound > 0. ) && ( lbound > ubound ) ) isVelocity = true; // apparently velocities are meant
+    if ( isVelocity ) { // velocity specified instead of slowness
         double dummy = lbound;
-        lbound = 1.0 / ubound;
-        ubound = 1.0 / dummy;
+        if ( ubound > 0.0 ) { // both bounds are given
+            lbound = 1.0 / ubound;
+            ubound = 1.0 / dummy;
+        } else if ( lbound > 0.0 ) {
+            lbound = 1.0 / dummy;
+        }
     }
+    vcout << "Lower/upper slowness bound = " << lbound << "/" << ubound << std::endl;
 
     //!** load data file
     DataContainer dataIn( dataFileName );
@@ -162,19 +169,12 @@ int main( int argc, char *argv [] ) {
 
     vcout << "Start model size=" << startModel.size() << " min/max=" << min(startModel) << "/" << max(startModel) << endl;
 
-    Trans < RVector > * transData;
-    Trans < RVector > * transModel = new TransLogLU< RVector >( lbound, ubound );
-    if ( useAppPar ) {
-        transData = new TransNest< RVector >( *new TransLogLU< RVector >( lbound, ubound ),
-                                              *new TransLinear< RVector >( RVector( appSlowness / dataIn( "t" ) ) ) );
-    } else {
-        transData = new Trans< RVector >( );
-    }
+    RTransLogLU transModel( lbound, ubound );
+    RTrans transData;
 
     //!** Model transformation: log slowness with lower and upper bound
-    Inversion < double, DSparseMapMatrix > inv( dataIn( "t" ), f, *transData, *transModel, verbose, debug ); 
+    Inversion < double, DSparseMapMatrix > inv( dataIn( "t" ), f, transData, transModel, verbose, debug ); 
     inv.setModel( startModel );
-//    inv.setReferenceModel( RVector( nModel, sloRef ) ); // not necessary anymore (default without reference)
     inv.setLambda( lambda );
     inv.setMaxIter( maxIter );
     inv.setError( dataIn( "err" ) );
@@ -182,11 +182,12 @@ int main( int argc, char *argv [] ) {
     inv.setRobustData( isRobust );
     inv.setBlockyModel( isBlocky );
 
+    vcout << "setting z weight...";
     f.regionManager().setZWeight( zWeight );
-
+    vcout << "ready. Start inversion." << std::endl;
     //!** Start Inversion
     RVector model( inv.run() );
-    
+    vcout << "inversion ready." << std::endl;
     //!** Save velocity, model response and coverage
     RVector velocity( 1.0 / ( model + TOLERANCE ) );
     save( velocity, "velocity.vector" );
@@ -194,16 +195,18 @@ int main( int argc, char *argv [] ) {
     RVector one( dataIn.size(), 1.0 );
     RVector coverage( transMult( *inv.jacobian(), one ) );
     save( coverage, "coverage.vector" );
+    RVector scoverage( transMult( inv.constraintMatrix(), inv.constraintMatrix() * coverage ) );
+    for ( Index i ; i < scoverage.size() ; i++ ) scoverage[ i ] = sign( std::abs( scoverage[ i ] ) );
+    save( scoverage, "scoverage.vector" );
     
     //!** Save VTK file with the vectors
     std::map< std::string, RVector > resultsToShow;
     resultsToShow.insert( make_pair( "slowness" , model ) );
     resultsToShow.insert( make_pair( "velocity" , velocity ) );
     resultsToShow.insert( make_pair( "coverage" , coverage ) );
+    resultsToShow.insert( make_pair( "scoverage" , scoverage ) );
     paraDomain.exportVTK( "ttinv.result", resultsToShow );
 
     //!** Cleanup and exit
-    delete transData;
-    delete transModel;
     return EXIT_SUCCESS;
 }
