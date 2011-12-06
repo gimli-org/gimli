@@ -84,7 +84,7 @@ protected:
 };
 
 //! Modelling class for travel time problems using the Dijkstra algorithm
-/*! Modelling class for travel time problems using the Dijkstra algorithm */
+/*! TravelTimeDijkstraModelling( mesh, datacontainer ) */
 class DLLEXPORT TravelTimeDijkstraModelling : public ModellingBase {
 public:
     TravelTimeDijkstraModelling( Mesh & mesh, DataContainer & dataContainer, bool verbose = false )

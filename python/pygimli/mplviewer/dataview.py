@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import pygimli as g
-import pybert as b
 import pygimli.utils
 
 from numpy import arange, ndarray, array, ma
@@ -73,7 +72,7 @@ class DataShemeBase():
         self.maxSeparation = 1e99
         
     def createElectrodes( self, nElectrodes = 24, electrodeSpacing = 1 ):
-        self.data_ = b.DataContainerERT()
+        self.data_ = b.DataContainer()
 
         for i in range( nElectrodes ):
             self.data_.createSensor( g.RVector3( float( i ) * electrodeSpacing, 0.0 ) )

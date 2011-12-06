@@ -90,7 +90,10 @@ int main( int argc, char *argv [] ) {
     vcout << "Lower/upper slowness bound = " << lbound << "/" << ubound << std::endl;
 
     //!** load data file
-    DataContainer dataIn( dataFileName );
+    DataContainer dataIn;
+    dataIn.registerSensorIndex( "s" );
+    dataIn.registerSensorIndex( "g" );
+    dataIn.load( dataFileName, true );
     if ( verbose ) dataIn.showInfos();
 
     //!** apply error model if not defined;

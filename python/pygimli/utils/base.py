@@ -109,8 +109,8 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, **kwar
 
     P.xlim( ( N.min(x) * 0.9, N.max(x) * 1.1 ) )
     P.ylim( ( max(z1) * 1.15 , 0. ) )
-    P.xlabel(xlab,fontsize=fs)
-    P.ylabel(zlab,fontsize=fs)
+    if xlab is not None: P.xlabel(xlab,fontsize=fs)
+    if zlab is not None: P.ylabel(zlab,fontsize=fs)
     P.grid(which='both')
     P.show()
     return li
