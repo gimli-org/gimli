@@ -46,7 +46,7 @@ public:
 
     /*! Constructor, builds a data container and fills the data from a file. See \ref load.
       \param fileName String of the file name */
-    DataContainer( const std::string & fileName );
+    DataContainer( const std::string & fileName, bool sensorIndicesFromOne = true );
 
     /*! Copy Constructor */
     DataContainer( const DataContainer & data );
@@ -136,7 +136,10 @@ public:
     /*! Return the names of all sensor index data fields. */
     const std::set< std::string > sensorIdx() const { return dataSensorIdx_; }
 
-    /*! Return true if the sensor indices on a loaded/saved file starting 1. Internally the indices stored from 0. */
+    /*! Define whether the sensor indices on a loaded/saved file start with 1. Internally the indices are stored from 0. */
+    void setSensorIndexOnFileFromOne( bool indexFromOne ) { sensorIndexOnFileFromOne_ = indexFromOne; }
+
+    /*! Return true if the sensor indices on a loaded/saved file start with 1. Internally the indices are stored from 0. */
     bool sensorIndexOnFileFromOne() const { return sensorIndexOnFileFromOne_ ;}
 
     /*! Mark all data invalid that use a sensor index greater than sensor count. */
@@ -187,7 +190,7 @@ public:
     inline const std::map< std::string, std::string > & tokenTranslator() const { return tT_; }
 
     /*! Loads the data from a file. See save for details on the fileformat.*/
-    virtual int load( const std::string & fileName );
+    virtual int load( const std::string & fileName, bool sensorIndicesFromOne = true );
 
     /*! Save the data to a file. Saves only valid data(except formatData == "all"). File format is\n\n
      * Number of Sensors\n

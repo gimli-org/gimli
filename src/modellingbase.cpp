@@ -203,7 +203,7 @@ void ModellingBase::mapModel( const RVector & model, double background ){
     }
 
     if ( emptyList.size() == mesh_->cellCount() ){
-        throwLengthError( 1, WHERE_AM_I + " to many empty cells" + toStr( emptyList.size() )
+        throwLengthError( 1, WHERE_AM_I + " too many empty cells" + toStr( emptyList.size() )
                        + " == " + toStr( mesh_->cellCount() ) );
     }
 

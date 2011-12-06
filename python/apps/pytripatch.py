@@ -439,7 +439,7 @@ def main( argv ):
     parser.add_option("", "--coverage", dest="coverage",
                             help="coverage vector", metavar="File" )
     parser.add_option("", "--cWeight", dest="cWeight",
-                            help="coverage weight vector", metavar="File" )
+                            help="constraint weight vector", metavar="File" )
     parser.add_option("", "--no-cbar", dest="showCbar", default =True
                             , help="show colorbar", action="store_false" )
     parser.add_option("", "--cbar-only", dest="cbarOnly", default =False
@@ -462,6 +462,8 @@ def main( argv ):
                             , help="set z-coordinate offset for first electrode [0.0] " )
     parser.add_option("", "--outSize", dest="outSize", default = None, type = "string"
                             , help="set the x:y pixel for the resulting figure file" )
+    parser.add_option("", "--dpi", dest="dpi", default = 600, type = "float"
+                            , help="set the dpi for pixel output or preview" )
     parser.add_option("", "--publish", dest="publish", default = None, type = "string"
                             , help="set output style for publishing " +
                              " dominant-dim:paperSize:margin:wScale:hScale:Fontsize:scale" +
@@ -667,7 +669,7 @@ def main( argv ):
         elif ( fileExtension == '.pdf' ):
             pylab.savefig( options.outFileName, bbox_inches='tight' )
         elif ( fileExtension == '.png' ):
-            pylab.savefig( options.outFileName, dpi=1200, bbox_inches='tight' )
+            pylab.savefig( options.outFileName, dpi=options.dpi, bbox_inches='tight' )
         elif ( fileExtension == '.ps' ):
             pylab.savefig( options.outFileName, dpi=(600) )
         elif ( fileExtension == '.eps' ):

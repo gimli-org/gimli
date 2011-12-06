@@ -30,9 +30,9 @@ DataContainer::DataContainer( ){
     //std::cout << "DataContainer( ){" << std::endl;
 }
 
-DataContainer::DataContainer( const std::string & fileName ){
+DataContainer::DataContainer( const std::string & fileName, bool sensorIndicesFromOne ){
     initDefaults();
-    this->load( fileName );
+    this->load( fileName, sensorIndicesFromOne );
     //std::cout << "DataContainer( const std::string & fileName ){" << std::endl;
 }
 
@@ -57,7 +57,7 @@ DataContainer & DataContainer::operator = ( const DataContainer & data ){
 
 void DataContainer::initDefaults(){
     dataMap_["valid"] = RVector( 0 );
-    sensorIndexOnFileFromOne_ = false;
+    sensorIndexOnFileFromOne_ = true;
     init();
     initTokenTranslator();
 }
@@ -165,7 +165,8 @@ bool DataContainer::isSensorIndex( const std::string & token ) const {
     return dataSensorIdx_.find( token ) != dataSensorIdx_.end();
 }
 
-int DataContainer::load( const std::string & fileName ){
+int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne ){
+    setSensorIndexOnFileFromOne( sensorIndicesFromOne );    
     std::fstream file; if ( !openInFile( fileName, & file, true ) );
 
     std::vector < std::string > row; row = getNonEmptyRow( file );
