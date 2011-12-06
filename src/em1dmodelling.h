@@ -120,8 +120,8 @@ protected:
 //110,220,440,880,1760,3520,7040,14080,28160,56320
 
 /*! Frequency Domain EM 1d modelling with predefined thickness vector */
-/*! FDEM1dThoModelling( RVector thk, freq, coilspacing[, double elevation, verbose] ) */
-/*! FDEM1dThoModelling( RVector thk, freq, double coilspacing[, elevation, verbose] ) */
+/*! FDEM1dRhoModelling( RVector thk, freq, coilspacing[, double elevation, verbose] ) */
+/*! FDEM1dRhoModelling( RVector thk, freq, double coilspacing[, elevation, verbose] ) */
 class DLLEXPORT FDEM1dRhoModelling : public FDEM1dModelling {
 public:
     //! default constructor creating a block model

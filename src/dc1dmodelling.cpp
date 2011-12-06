@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by the resistivity.net development team            *
+ *   Copyright (C) 2009-2011 by the resistivity.net development team       *
  *   Thomas Günther thomas@resistivity.net                                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -26,45 +26,15 @@
 
 namespace GIMLI {
 
-//void calculateDC1D( DataContainer & data, const std::string & modelFile, const std::string & outfile,
-//                   RVector & geomFactor ) {
-//    std::fstream file;
-//    if ( !openInFile( modelFile, &file, true ) ) return ;
-//
-//    std::vector < std::string > row;
-//
-//    std::vector < double > thk;
-//    std::vector < double > rho;
-//    while ( !file.eof() ) {
-//        row = getNonEmptyRow( file );
-//        if ( row.size() == 2 ) {
-//            thk.push_back( toDouble( row[ 0 ] ) );
-//            rho.push_back( toDouble( row[ 1 ] ) );
-//        } else if ( row.size() == 1 ) {
-//            rho.push_back( toDouble( row[ 0 ] ) );
-//        }
-//    }
-//    file.close();
-//    size_t nLayers = rho.size();
-//    RVector model( nLayers + thk.size() );
-//    for ( size_t i = 0; i < thk.size(); i++ ) model[ i ] = thk[ i ];
-//    for ( size_t i = 0; i < rho.size(); i++ ) model[ i + nLayers -1 ] = rho[ i ];
-//
-//    Mesh mesh;
-//    DC1dModelling mod( mesh, data, nLayers, false );
-////    data.set("rhoa", mod.response( model ) );
-////    data.set( "k", geometricFactor() );
-////    data.save( outfile );
-//}
+DC1dModelling::DC1dModelling( size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn, bool verbose )
+    : ModellingBase( verbose ), nlayers_( nlayers ), am_( am ), an_( an ), bm_( bm ), bn_( bn ){
+    init_();
+    setMesh( createMesh1DBlock( nlayers ) );
+    k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ );        
+    meanrhoa_ = 100.0; //*** hack   
+}
 
-//DC1dModelling::DC1dModelling( size_t nlayers, DataContainer & data, bool verbose )
-//    : ModellingBase( data, verbose ), nlayers_( nlayers ){
-//    init_();
-//    setMesh( createMesh1D( nlayers, 1 ) );
-//    postprocess_();
-//}
-
-DC1dModelling::DC1dModelling( size_t nlayers, RVector & ab2, RVector & mn2, bool verbose )
+DC1dModelling::DC1dModelling( size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose )
     : ModellingBase( verbose ), nlayers_( nlayers ){
     init_();
     setMesh( createMesh1DBlock( nlayers ) );
@@ -76,14 +46,28 @@ DC1dModelling::DC1dModelling( size_t nlayers, RVector & ab2, RVector & mn2, bool
     meanrhoa_ = 100.0; //*** hack   
 }
 
-DC1dModelling::DC1dModelling( size_t nlayers, RVector & am, RVector & bm, RVector & an, RVector & bn, bool verbose )
-    : ModellingBase( verbose ), nlayers_( nlayers ), am_( am ), an_( an ), bm_( bm ), bn_( bn ){
+DC1dModelling::DC1dModelling( size_t nlayers, DataContainer & data, bool verbose ) 
+    : ModellingBase( verbose ), nlayers_ ( nlayers ),
+        am_( data.size(), 9e9 ), an_( data.size(), 9e9 ), bm_( data.size(), 9e9 ), bn_( data.size(), 9e9 ){
     init_();
     setMesh( createMesh1DBlock( nlayers ) );
-    k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ );        
+    setData( data );
+    std::vector< RVector3 > spos = data.sensorPositions();
+    for ( Index i = 0 ; i < data.size() ; i++ ){
+        int ia = (int) data("a")[i];
+        int ib = (int) data("b")[i];
+        int im = (int) data("m")[i];
+        int in = (int) data("n")[i];
+        if ( ia >= 0 && im >= 0 ) am_[ i ] = spos[ ia ].distance( spos[ im ] );
+        if ( ia >= 0 && in >= 0 ) an_[ i ] = spos[ ia ].distance( spos[ in ] );
+        if ( ib >= 0 && im >= 0 ) bm_[ i ] = spos[ ib ].distance( spos[ im ] );
+        if ( ib >= 0 && in >= 0 ) bn_[ i ] = spos[ ib ].distance( spos[ in ] );
+    }
+    k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ ); 
     meanrhoa_ = 100.0; //*** hack   
+    if ( data.nonZero( "rhoa" ) ) meanrhoa_ = mean( data("rhoa") );
 }
-
+    
 RVector DC1dModelling::response( const RVector & model ) {
     RVector rho( nlayers_ );
     RVector thk( nlayers_ - 1 );
@@ -126,29 +110,6 @@ RVector DC1dModelling::pot1d( const RVector & R, const RVector & rho, const RVec
     return z0;
 }
 
-//void DC1dModelling::postprocess_(){
-//    meanrhoa_ = mean( dataContainer_->get( "rhoa" ) );
-//    am_ = RVector( dataContainer_->size(), MAX_DOUBLE );
-//    bm_ = RVector( dataContainer_->size(), MAX_DOUBLE );
-//    an_ = RVector( dataContainer_->size(), MAX_DOUBLE );
-//    bn_ = RVector( dataContainer_->size(), MAX_DOUBLE );
-//    tmp_ = RVector( dataContainer_->size() );
-//    std::vector< RVector3 > pos( dataContainer_->sensorPositions() );
-//
-//    for ( size_t i = 0 ; i < dataContainer_->size() ; i++ ) {
-////        am_[ i ] = ( *dataContainer_ )( i ).eA( )->pos().distance( ( *dataContainer_ )( i ).eM( )->pos() );
-//        int ia = int( ( *dataContainer_ )("a")[ i ] );
-//        int ib = int( ( *dataContainer_ )("b")[ i ] );
-//        int im = int( dataContainer_->get("m")[ i ] );
-//        int in = int( dataContainer_->get("n")[ i ] );
-//        if ( ia > -1 && im > -1 ) am_[ i ] = pos[ia].distance(pos[im]);
-//        if ( ia > -1 && in > -1 ) an_[ i ] = pos[ia].distance(pos[in]);
-//        if ( ib > -1 && im > -1 ) bm_[ i ] = pos[ib].distance(pos[im]);
-//        if ( ib > -1 && in > -1 ) bn_[ i ] = pos[ib].distance(pos[in]);
-//    }
-//    k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ );
-//}
-//
 void DC1dModelling::init_() {
 
     double myx[801] = { 8.917099801327442e-14, 9.854919374005225e-14,

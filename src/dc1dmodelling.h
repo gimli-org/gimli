@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by the resistivity.net development team            *
+ *   Copyright (C) 2009-2011 by the resistivity.net development team       *
  *   Thomas Günther thomas@resistivity.net                                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -30,10 +30,6 @@
 
 namespace GIMLI{
 
-/*! Syntactic suger for calculating the response of a model file and output to file. Better in bert Misc /Tools?, pygimli??*/
-//DLLEXPORT void calculateDC1D( DataContainer & data, const std::string & modelFile, const std::string & outfile );
-
-
 //! DC (direct current) 1D modelling 
 /*! Classical DC 1D forward operator for given resistivities and thicknesses 
     DC1dModelling( nlayers, ab2, mn2, verbose )
@@ -41,17 +37,14 @@ namespace GIMLI{
     DC1dModelling( nlayers, dataContainer, verbose ) */
 class DLLEXPORT DC1dModelling : public ModellingBase {
 public:
-//    /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) deactivated (DataContainer) */
-//    DC1dModelling( size_t nlayers, DataContainer & data, bool verbose = false );
+    /*! general constructor using AM, AN, BM, BN distances (as stored internally) */
+    DC1dModelling( size_t nlayers, const RVector & am, const RVector & an, const RVector & bm, const RVector & bn, bool verbose = false );
     
     /*! constructor for classical Schlumberger sounding */
-    DC1dModelling( size_t nlayers, RVector & ab2, RVector & mn2, bool verbose = false );
+    DC1dModelling( size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose = false );
 
-    /*! general constructor using AM, AN, BM, BN distances */
-    DC1dModelling( size_t nlayers, RVector & am, RVector & an, RVector & bm, RVector & bn, bool verbose = false );
-    
     /*! constructor using a data container */
-//    DC1dModelling( size_t nlayers, DataContainer & data, bool verbose = false );
+    DC1dModelling( size_t nlayers, DataContainer & data, bool verbose = false );
 
     virtual ~DC1dModelling() { }
 
@@ -63,6 +56,9 @@ public:
     RVector kern1d( const RVector & lam, const RVector & rho, const RVector & h );
     
     RVector pot1d( const RVector & R, const RVector & rho, const RVector & thk );
+    
+    inline RVector getK() { return k_; }
+    inline RVector geometricFactor() { return k_; }
 
     template < class Vec > Vec rhoaT( const Vec & rho, const RVector & thk ){
         Vec tmp;
@@ -128,18 +124,18 @@ protected:
 /*! DC (direct current) 1D modelling for complex resistivity */
 class DLLEXPORT DC1dModellingC : public DC1dModelling {
 public:    
-//    /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) */
-//    DC1dModellingC( size_t nlayers, DataContainer & data, bool verbose = false ) :
-//        DC1dModelling( nlayers, data, verbose ){}
+    /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) */
+    DC1dModellingC( size_t nlayers, DataContainer & data, bool verbose = false ) :
+        DC1dModelling( nlayers, data, verbose ){}
 
     /*! constructor for classical Schlumberger sounding */
-    DC1dModellingC( size_t nlayers, RVector & ab2, RVector & mn2, bool verbose = false ) :
+    DC1dModellingC( size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose = false ) :
         DC1dModelling( nlayers, ab2, mn2, verbose ){
             setMesh( createMesh1DBlock( nlayers, 2 ) );
         }
 
     /*! general constructor using AM, AN, BM, BN distances */
-    DC1dModellingC( size_t nlayers, RVector & am, RVector & an, RVector & bm, RVector & bn, bool verbose = false ) :
+    DC1dModellingC( size_t nlayers, const RVector & am, const RVector & an, const RVector & bm, const RVector & bn, bool verbose = false ) :
         DC1dModelling( nlayers, am, an, bm, bn, verbose ){}
 
     virtual ~DC1dModellingC() { }
@@ -151,22 +147,21 @@ public:
 /*! DC1dRhoModelling( mesh, dataContainer, thicknesses, verbose ) */
 class DLLEXPORT DC1dRhoModelling : public DC1dModelling {
 public:
-//    DC1dRhoModelling( DataContainer & data, RVector & thk, bool verbose = false )
-//            : DC1dModelling( data, thk.size(), verbose ), thk_( thk ) { 
-//                mesh_ = createMesh1D( thk.size() + 1, 1 );
-//                setMesh( mesh_ );
-//            } //NOT YET IMPLEMENTED
-
-    DC1dRhoModelling( RVector & thk, RVector & am, RVector & an, RVector & bm, RVector & bn, bool verbose = false )
-            : DC1dModelling( thk.size(), am, bm, am, an, verbose ), thk_( thk ) {
+    DC1dRhoModelling( const RVector & thk, const RVector & am, const RVector & an, const RVector & bm, const RVector & bn, bool verbose = false )
+            : DC1dModelling( thk.size(), am, an, bm, bn, verbose ), thk_( thk ) {
                 setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
             
-    DC1dRhoModelling( RVector & thk, RVector & ab2, RVector & mn2, bool verbose = false )
+    DC1dRhoModelling( const RVector & thk, const RVector & ab2, const RVector & mn2, bool verbose = false )
             : DC1dModelling( thk.size(), ab2, mn2, verbose ), thk_( thk ) { 
                 setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
             
+    DC1dRhoModelling( const RVector & thk, DataContainer & data, bool verbose = false )
+            : DC1dModelling( thk.size(), data, verbose ), thk_( thk ) { 
+                setMesh( createMesh1D( thk.size() + 1, 1 ) );
+            }
+
     virtual ~DC1dRhoModelling() { }
 
     RVector response( const RVector & rho ) {  return rhoa( rho, thk_ ); }
