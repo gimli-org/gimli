@@ -238,10 +238,12 @@ Similar can be obtained by a cotangens function.
 Different transformations can be combined by either\\
 {\bf TransNest}($y^1$,$y^2$): $y(x)=y^1(y^2(x))$\\
 {\bf TransAdd}($y^1$,$y^2$): $y(x)=y^1(x)+y^2(x)$\\
-Since for the latter the inverse cannot be combined by the two inverses, it is derived from transNewton.
-There is a cumulative transformation CumulativeTrans, which applies a vector of transformations for different part of the model.
+Since for the latter the inverse cannot be combined by the two inverses, it is derived from \lstinline|transNewton|, a base class whose inverse is achieved by a Newton iteration.
+So any not-so-easily-invertible function can be derived from \lstinline|transNewton| and does not require to define \lstinline|invTrans|.
+
+There is a cumulative transformation \lstinline|CumulativeTrans|, which applies a vector of transformations for different part of the model.
 This meta-transformation is applied in the region technique but can also be defined for one region.
-More often it is used to combine different data types, see sections \ref{sec:mt1d} and \ref{sec:jointdcem} for examples.
+More often it is used to combine different data or model types, see sections \ref{sec:mt1d}, \ref{sec:ttoffset} and \ref{sec:jointdcem} for examples.
 
 \subsection*{Special transformations}
 Some geophysically relevant transformations have been already defined:

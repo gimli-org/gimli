@@ -156,7 +156,7 @@ As usual the code contains a current development (trunk), experimental changes o
 
 The main code is located under \file{src} and applications in different sub-folders under \file{apps}.
 Under \file{doc} you will find Doxygen documentation and this tutorial including its code examples.
-To build the binaries, the GNU build system (Autotools) is used: first, the script \cw{autogen.sh} runs the autotools and start the configuration \cw{configure} and \cw{make} runs the compilation.
+To build the binaries, the GNU build system (Autotools) is used: first, the script \cw{autogen.sh} runs the GNU autotools including \cw{configure} and \cw{make} runs the compilation.
 The configuration tries to detect the necessary libraries, i.e. 
 \begin{itemize}
 	\item LAPACK (Linear algebra package) and BLAS (basic linear algebra subprograms), see \url{www.netlib.org}
@@ -173,9 +173,10 @@ Whereas the GNU compiler collection is installed on any Linux or Mac system, on 
 For Windows we also recommend to use CodeBlocks as compiler IDE for which we prepared project files (\file{**.cbp}) in the folder \file{mingw}.
 
 \subsubsection*{PyGIMLi}
-Python (\url{www.python.org}) is a very powerful and easy-to-use programming language.
-The Python bindings located in the folder \file{python} make it very comfortable to write GIMLi applications without loss of performance.
-In the folder \file{python} you find several functions
+Python (\url{www.python.org}) is a very powerful and easy-to-use programming language that combines the performance of numerical computation with high-end graphical output and user-interfaces.
+We recommend PythonXY (\url{www.pythonxy.com}), a distribution coming along with a lot of modules for scientific computing and development environments such as Spyder.
+The Python bindings for GIMLi, PyGIMLi, are located in the subfolder \file{python} make it very comfortable to write GIMLi applications.
+In the folder \file{python} you find a build script \cw{build.sh} to build the binaries\footnote{The packages gccxml, pygccxml and pyplusplus are needen, but can also be retrieved using \cw{buildToolChain.sh} in the folder \file{buildScripts.sh}} as well as numerous other functions that can be used from python.
 
 \subsubsection*{Installation}
 Independent whether you use pre-compiled or self-build binaries the path to the executables, libraries and python modules must be known using the variables PATH, LD\_LIBRARY\_PATH\footnote{Under windows there is no differentiation and PATH is for both.} and PYTHONPATH.
