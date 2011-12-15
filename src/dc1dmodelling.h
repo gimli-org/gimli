@@ -37,7 +37,7 @@ namespace GIMLI{
     DC1dModelling( nlayers, dataContainer, verbose ) */
 class DLLEXPORT DC1dModelling : public ModellingBase {
 public:
-    /*! general constructor using AM, AN, BM, BN distances (as stored internally) */
+    /*! general constructor using AM, AN, BM, BN, distances (as stored internally) */
     DC1dModelling( size_t nlayers, const RVector & am, const RVector & an, const RVector & bm, const RVector & bn, bool verbose = false );
     
     /*! constructor for classical Schlumberger sounding */

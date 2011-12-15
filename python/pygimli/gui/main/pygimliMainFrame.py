@@ -665,15 +665,6 @@ class PyGIMLIMainFrame( wx.Frame ):
         else:
             err( "createApplication found no object to an application" )
 
-#class wxApp(wx.App):
-    #def OnInit(self):
-        #self.Bind(wx.EVT_QUERY_END_SESSION, self.onQueryEndSession)
-        #return True
-
-    #def onQueryEndSession(self, event):
-        ## This makes sure we don't block shutdown on Windows
-        #pass
-
 from pygimli.utils import IPCServer, IPCThreadedTCPRequestHandler
 import threading
 

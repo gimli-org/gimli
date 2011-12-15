@@ -105,6 +105,10 @@ class DataShemeDipoleDipole( DataShemeBase ):
         self.name = "Dipole Dipole (CC-PP)"
         self.prefix = "dd"
         self.typ = Pseudotype.DipoleDipole
+        self.enlargeEverySep = 0
+
+    def increase( self, l ):
+        self.enlargeEverySep = l
 
     def create( self, nElectrodes = 24, electrodeSpacing = 1 ):
         '''
@@ -120,12 +124,11 @@ class DataShemeDipoleDipole( DataShemeBase ):
 
         count = 0
         space = 0
-        enlargeEverySep = 0
         
         for sep in range( 1, maxSep + 1):
             
-            if enlargeEverySep > 0:
-                if (sep-1)%enlargeEverySep == 0:
+            if self.enlargeEverySep > 0:
+                if (sep-1)%self.enlargeEverySep == 0:
                     space +=1
             else:
                 space = 1

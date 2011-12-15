@@ -26,8 +26,9 @@
 
 namespace GIMLI {
 
-DC1dModelling::DC1dModelling( size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn, bool verbose )
-    : ModellingBase( verbose ), nlayers_( nlayers ), am_( am ), an_( an ), bm_( bm ), bn_( bn ){
+DC1dModelling::DC1dModelling( size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn, 
+                              bool verbose )
+: ModellingBase( verbose ), nlayers_( nlayers ), am_( am ), an_( an ), bm_( bm ), bn_( bn ){
     init_();
     setMesh( createMesh1DBlock( nlayers ) );
     k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ );        
@@ -35,7 +36,7 @@ DC1dModelling::DC1dModelling( size_t nlayers, const RVector & am, const RVector 
 }
 
 DC1dModelling::DC1dModelling( size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose )
-    : ModellingBase( verbose ), nlayers_( nlayers ){
+: ModellingBase( verbose ), nlayers_( nlayers ){
     init_();
     setMesh( createMesh1DBlock( nlayers ) );
     am_ = ab2 - mn2;
@@ -47,8 +48,9 @@ DC1dModelling::DC1dModelling( size_t nlayers, const RVector & ab2, const RVector
 }
 
 DC1dModelling::DC1dModelling( size_t nlayers, DataContainer & data, bool verbose ) 
-    : ModellingBase( verbose ), nlayers_ ( nlayers ),
-        am_( data.size(), 9e9 ), an_( data.size(), 9e9 ), bm_( data.size(), 9e9 ), bn_( data.size(), 9e9 ){
+: ModellingBase( verbose ), nlayers_ ( nlayers ),
+am_( RVector( data.size(), 9e9 ) ), an_( RVector( data.size(), 9e9 ) ), 
+bm_( RVector( data.size(), 9e9 ) ), bn_( RVector( data.size(), 9e9 ) ){
     init_();
     setMesh( createMesh1DBlock( nlayers ) );
     setData( data );
@@ -65,6 +67,7 @@ DC1dModelling::DC1dModelling( size_t nlayers, DataContainer & data, bool verbose
     }
     k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ ); 
     meanrhoa_ = 100.0; //*** hack   
+
     if ( data.nonZero( "rhoa" ) ) meanrhoa_ = mean( data("rhoa") );
 }
     

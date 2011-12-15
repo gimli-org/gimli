@@ -1189,7 +1189,7 @@ void Mesh::exportAsTetgenPolyFile( const std::string & filename ){
     //file << "#    pointNr. x y z marker" << endl;
     file.setf( std::ios::scientific, std::ios::floatfield );
     file.precision( 12 );
-    for ( int i = 0; i < nverts; i++ ){
+    for ( uint i = 0; i < nverts; i++ ){
         file << i << "\t" << node( i ).x( )
                 << "\t" << node( i ).y( )
                 << "\t" << node( i ).z( )

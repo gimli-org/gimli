@@ -18,16 +18,17 @@ def drawMesh( axes, mesh ):
 
 def drawModel( axes, mesh, data = None, cMin = None, cMax = None
                , showCbar = True , linear = False, label = "", cmap=None
-               , nLevs = 5, orientation = 'horizontal', xlab=None, ylab=None ):
+               , nLevs = 5, orientation = 'horizontal', xlab=None, ylab=None):
     ''
     ' Draw a 2d mesh and color the cell by the data '
     ''
+        
     gci = g.mplviewer.createMeshPatches( axes, mesh, alpha = 1.0 )
-    if cmap is not None: eval('mpl.pyplot.'+cmap+'()')
-    axes.set_aspect( 'equal')
-    if xlab is not None: axes.set_xlabel( xlab )
-    if ylab is not None: axes.set_ylabel( ylab )
 
+    if cmap is not None: eval('mpl.pyplot.'+cmap+'()')
+
+    axes.set_aspect( 'equal')
+    
     gci.set_antialiased( True )
     gci.set_linewidth( None )
 
@@ -44,9 +45,14 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
 
     g.mplviewer.setMappableData( gci, viewdata, cMin = cMin, cMax = cMax, logScale = not(linear)  )
 
-    if showCbar and (cMin is not cMax):
-        g.mplviewer.createColorbar( gci, cMin = cMin, cMax = cMax,
-            nLevs = nLevs, label = label, orientation = orientation )
+    if showCbar:
+        
+        patches = g.mplviewer.createColorbar( gci, cMin = cMin, cMax = cMax,
+                                    nLevs = nLevs, label = label, orientation = orientation 
+                                    )
+    if xlab is not None: axes.set_xlabel( xlab )
+    if ylab is not None: axes.set_ylabel( ylab )
+    
     return gci
 # def drawModel( ... )
 
@@ -135,7 +141,7 @@ def drawMeshBoundaries( axes, mesh, fitView = True):
 
 def createMeshPatches( axes, mesh, **kwarg ):
     ''
-    ' Utility function to create 2d mesh patches int a axes'
+    ' Utility function to create 2d mesh patches in a axes'
     ''
     if not mesh:
         print "drawMeshBoundaries( axes, mesh ): invalid mesh"
@@ -168,7 +174,7 @@ def createMeshPatches( axes, mesh, **kwarg ):
 
     #patches.set_edgecolor( None )
     patches.set_edgecolor( 'face' )
-    #patches.set_linewidth( 0.001 )
+    #patches.set_linewidth( 1.001 )
     axes.add_collection( patches )
 
     print "plotting time = ", swatch.duration( True )
@@ -313,10 +319,10 @@ def drawSensors( axes, sensors, diam = None ):
     eSpacing = sensors[ 0 ].distance( sensors[ 1 ] )
     
     if diam is None:
-        diam = eSpacing / 10.0
+        diam = eSpacing / 5.0
 
     for e in sensors:
-        eCircles.append( mpl.patches.Circle( (e[0], e[1]), diam ) )
+        eCircles.append( mpl.patches.Circle( (e[0], e[2]), diam ) )
 
     p = mpl.collections.PatchCollection( eCircles, color=(0.0, 0.0, 0.0) )
     axes.add_collection( p )

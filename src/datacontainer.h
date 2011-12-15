@@ -160,8 +160,15 @@ public:
 
     /*! Sort all sensors regarding their x-coordinate. */
     void sortSensorsX();
+    
+    /*! Translate all sensor positions by trans. */
+    void translate( const RVector3 & trans );
+    
+    /*! Scale all sensor positions by scale. */
+    void scale( const RVector3 & scale );
     // END Sensor related section
 
+   
     /*! Sort all data regarding their sensor indices and sensorIdxNames. */
     void sortSensorsIndex( );
     

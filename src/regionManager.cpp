@@ -963,14 +963,15 @@ void RegionManager::loadMap( const std::string & fname ){
     std::vector < std::string > token;
     std::vector < std::string > row;
 
-    //! Set default , region with smalles marker is set to background
+    //! Set default , region with smaller marker is set to background
     //! can be overridden bei region control file (VERY DANGEROUS)
     //if ( regionCount() > 1 ) {
     //    regions()->begin()->second->markBackground( true );
     //}
 
+    int count = 0;
     while ( !file.eof() ){
-
+        count ++;
         char c; file.get( c );
         if ( c == '#' ) {
             token = getRowSubstrings( file );
@@ -981,8 +982,8 @@ void RegionManager::loadMap( const std::string & fname ){
              std::cerr << WHERE_AM_I << " not a valid region file. looking for leading #" << fname << std::endl;
              file.close();
              return;
-
         }
+                
         // interpret the following lines as region informations
         if ( lower( token[ 0 ] ) == "no" ){
             row = getRow( file ); if ( row.empty() ) continue;
