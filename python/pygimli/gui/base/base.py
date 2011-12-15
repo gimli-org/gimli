@@ -246,12 +246,16 @@ class AppResource( ManagedProperties ):
         self.subPanels          = []
 
         self.mainMenus          = dict()
+        
+        # store all local menus here
+        self.menuSections       = []
 
         self.dependencyChanged_ = True
 
-
     def setName( self, name ) : self.name_ = name;
+    
     def getName( self ) : return self.name_;
+    
     def getResourceTree( self ): return self.parent.resourceTree
 
     def loadXRC( self, xrcfile, localfile ):
@@ -344,35 +348,6 @@ class AppResource( ManagedProperties ):
             To be overridden by child. Return True if something was done, that the listener should know, else return False
         '''
         return False;
-
-    def createMainMenu( self, name, pos = 3 ):
-        '''
-            What is this?
-        '''
-        menu = wx.Menu( )
-        print "create createMainMenu", name 
-        #inserted by activateApplication
-        self.parent.GetMenuBar().Insert( pos, menu, name )
-        menu.SetTitle( name.replace( '&', '' ) )
-        self.mainMenus[ menu ] = name
-        return menu
-
-    def createMenuItem( self, menu, name = "", help = "", function = None, bitmap = None ):
-        """ 
-            What is this? 
-            If help is set to 'auto', the docstring of function is used. please ensure this docstring is a one-liner
-        """
-        if help == 'auto':
-            help = function.__doc__
-        item = wx.MenuItem( menu, wx.NewId(), name, help )
-        
-        if bitmap is not None:
-            item.SetBitmap( bitmap )
-            
-        menu.AppendItem( item )
-        
-        self.parent.Bind( wx.EVT_MENU, function, id = item.GetId() )
-        return item
 
     def getPropertyPanel( self, slot ):
         '''
@@ -534,6 +509,10 @@ class AppResource( ManagedProperties ):
             
         self.activatePropertyPanel( active )
         
+        # show/hide Local menusection
+        for sec in self.menuSections:
+            sec.activate( active )
+        
         if self.active and self.dependencyChanged_:
             print "process due to activate", self
             self.process()
@@ -597,5 +576,165 @@ class AppResource( ManagedProperties ):
         if tab is not None:
             panel.AddPage( tab, self.piCaption, True )
         return panel
-# END class AppResource
+        
+    def setStatusMessage( self, msg ):
+        """
+            Helper function for manageing status messages
+        """
+        self.parent.statusBar.setStatusMessage( msg )
+    #def setStatusMessage( ... )
+
+#    
+#START Menu related stuff    
+#
+    def findMainMenu( self, name ):
+        """ Find the main menu entry with a given name. If none exist create one. """
+        self.mainMenus          = dict()
+        pos = self.parent.GetMenuBar().FindMenu( name )
+        if pos > -1:
+            return self.parent.GetMenuBar().GetMenu( pos )
+        else:
+            return self.createMainMenu( name )
+    # def findMainMenu( ... ):
+    
+    def createMainMenu( self, name, pos = 3 ):
+        """ Create new main menu entry """
+        menu = wx.Menu( )
+        self.parent.GetMenuBar().Insert( pos, menu, name )
+        menu.SetTitle( name.replace( '&', '' ) )
+        self.mainMenus[ menu ] = name
+        
+        return menu
+        
+    def createLocalMenuSection( self, menu ):
+        sec = MenuSection( menu )
+        self.menuSections.append( sec )
+        return sec
+
+    def createMenuItem( self, menu, name = "", help = "auto", function = None, bitmap = None ):
+        """ 
+            What is this? 
+            If help is set to 'auto', the docstring of function is used. please ensure this docstring is a one-liner
+        """
+        if help == 'auto':
+            help = function.__doc__
+        item = wx.MenuItem( menu, wx.NewId(), name, help )
+        
+        if bitmap is not None:
+            item.SetBitmap( bitmap )
+            
+        menu.AppendItem( item )
+        
+        self.parent.Bind( wx.EVT_MENU, function, id = item.GetId() )
+        return item
+        
+    def getExportFileNameWithDialog( self, defaultFile, wildcard, message = "Choose file"
+                                   , defaultDir = os.getcwd()
+                                   , style = wx.SAVE|wx.OVERWRITE_PROMPT|wx.CHANGE_DIR ):
+
+        dlg = wx.FileDialog( self.parent
+                            , message = message
+                            , defaultDir = defaultDir
+                            , defaultFile = defaultFile
+                            , wildcard = wildcard
+                            , style = style )
+                            
+        #dlg.SetFilterIndex(filter_index)
+        if dlg.ShowModal() == wx.ID_OK:
+            paths       = dlg.GetPaths()
+            dirname     = dlg.GetDirectory()
+            filenames    = dlg.GetFilenames()
+            
+            print "getExportFileNameWithDialog", paths, dirname, filenames
+            
+            if style & wx.FD_MULTIPLE:
+                return map( lambda f_: unicodeToAscii( f_ ), paths )
+            else:
+                return unicodeToAscii( paths[ 0 ] )
+
+        return None
+
+#    
+#END Menu related stuff    
+#
+
+# END class AppResourceWx
+
+class MenuSection:
+    """This is a helper class to manage local menu groups, that can be shown/hidden by calling activate"""
+    def __init__( self, menu ):
+        self.menu = menu
+        self.items = []
+        self.names = []
+        self.targetFunctions = []
+        
+    def addItem( self, name = "", help = "auto", function = None, bitmap = None ):
+        """"""
+        if help == 'auto':
+            help = function.__doc__
+            
+        item = wx.MenuItem( self.menu, wx.NewId(), name, help )
+        self.items.append( item )
+        self.names.append( name )
+        self.targetFunctions.append( function )
+        
+        if bitmap is not None:
+            item.SetBitmap( bitmap )
+
+        self.menu.Bind( wx.EVT_MENU, function, id = item.GetId() )
+    #def addItem( ... )
+            
+    def isItemInMenu( self, item, menu ):
+        #print "############################################################"
+        #print item
+        #print item.GetLabel()
+        #print "############################################################"
+        for i in range( menu.GetMenuItemCount() ):
+            #testItem = menu.FindItemByPosition( i )
+            #print "test:", item.GetLabel(), " vs. ", testItem.GetLabel()
+            
+        
+            #print "item:", item, id( item ), item.Id
+            #print "find:", menu.FindItemByPosition( i ), id(menu.FindItemByPosition( i )), menu.FindItemByPosition( i ).Id
+            #print item is menu.FindItemByPosition( i )
+            #print item == menu.FindItemByPosition( i )
+            #print item.Id == menu.FindItemByPosition( i ).Id
+            if item.Id == menu.FindItemByPosition( i ).Id: return True
+                
+        return False
+
+    def activate( self, activate ):
+        if activate:
+            # add two seps (leeding and trailing); remove the trailing later, while .AppendItem segfaults (see below)
+            self.menu.AppendSeparator( )
+            self.menu.AppendSeparator( )
+            
+            # dämlicher Check weil wx keine gescheite funktion anbietet
+            for item in self.items:
+                if not self.isItemInMenu( item, self.menu ):
+                    #print "Activate: 1 ", item, self.menu.GetMenuItemCount()
+                    self.menu.InsertItem( self.menu.GetMenuItemCount()-1, item )
+                    
+                    # append function segfaults here within this testing context, so we need a evil hack
+                    #print "Activate: 1 ", item, self.menu.GetMenuItemCount()
+                    #self.menu.AppendItem( item ) # fails
+                    #print "Activate: 2 ", item, self.menu.GetMenuItemCount()
+                    #self.menu.RemoveItem( item )
+                    #print "Activate: 3 ", item, self.menu.GetMenuItemCount()
+                    #self.menu.AppendItem( item ) # fails
+                    #print "Activate: 4 ", item, self.menu.GetMenuItemCount()
+
+            #remove trailing here
+            self.menu.RemoveItem( self.menu.FindItemByPosition( self.menu.GetMenuItemCount() -1 ) )
+        else:
+            for item in self.items:
+                if self.isItemInMenu( item, self.menu ):
+                    #print "Activate: remove", item
+                    self.menu.RemoveItem( item )
+                    #print "Activate: removed", item
+                    
+            #remove leeding sep here
+            self.menu.RemoveItem( self.menu.FindItemByPosition( self.menu.GetMenuItemCount() -1 ) )
+
+#end class MenuSection
 

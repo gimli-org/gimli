@@ -67,7 +67,7 @@ public:
     template < class ValueType > void set( const std::string & name, ValueType val, TypeID type ){
         if ( !initialized_ ) return;
 #ifdef USE_IPC
-        segment_.find_or_construct< TypeID >( (name+"-Type").c_str() )( type );
+        segment_.find_or_construct< TypeID >( (name + "-TypeID").c_str() )( type );
 
         switch ( type ){
             case BOOL:{
@@ -94,9 +94,9 @@ public:
        if ( !initialized_ ) return ValueType(0);
 #ifdef USE_IPC
 
-        TypeID * t = segment_.find< TypeID >( (name + "-Type" ).c_str() ).first;
+        TypeID * t = segment_.find< TypeID >( (name + "-TypeID" ).c_str() ).first;
         if ( !t ){
-            throwError(1, WHERE_AM_I + " no ipc value registered for name: " + name );
+            throwError(1, WHERE_AM_I + " No ipc value registered for name: " + name + "-TypeID" );
         }
 
         switch ( *t ){

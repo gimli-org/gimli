@@ -37,9 +37,25 @@
 
 namespace GIMLI{
 
+class MatrixBase{
+public:
+    MatrixBase(){}
+    
+    virtual ~MatrixBase(){}
+    
+    /*! Return number of cols */
+    virtual Index rows() const = 0;
+
+    /*! Return number of cols */
+    virtual Index cols() const = 0;
+    
+protected:
+};
+    
+    
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
-template < class ValueType > class Matrix  {
+template < class ValueType > class Matrix {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols Content of the matrix is zero*/
     Matrix( Index rows = 0, Index cols = 0 ){

@@ -225,23 +225,18 @@ def showDC2DInvResMod( modfile, contour, cMin = None, cMax = None, label = ""):
 def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showCbar = True, 
                    label = "", linear = False, nLevs = 5, orientation = 'horizontal' ):
 
-    patches = g.mplviewer.createMeshPatches( axis, mesh, alpha = 1.0 )#, color=colors )
-    patches.set_antialiased( False )
-    patches.set_linewidth( None )
+    patches = pygimli.mplviewer.drawModel( axis, mesh, data, cMin = cMin, cMax = cMax
+               , showCbar = showCbar, linear = linear, label = label
+               , nLevs = nLevs, orientation = orientation )
     
-    if len( data ) != mesh.cellCount():
-        if __verbose__:
-            print "mapping data ", len( data), len( g.unique(g.sort( mesh.cellMarker() ) ) )
-        viewdata = data( mesh.cellMarker() )
-    else:
-        viewdata = data
-
-    g.mplviewer.setMappableData( patches, viewdata, cMin = cMin, cMax = cMax, logScale = not(linear)  )
-
-    if showCbar:
-        g.mplviewer.createColorbar( patches, cMin = cMin, cMax = cMax, 
-                                   nLevs = nLevs, label = label, orientation = orientation )
-
+    from pygimli.mplviewer import colorbar
+    cmap = colorbar.blueRedCMap
+    patches.set_cmap( cmap )
+    
+    patches.set_edgecolor( 'face' )
+    patches.set_antialiased( False )
+    patches.set_linewidth( 0.001 )
+    
     alphaPatch = True
 
     if cov is not None:
@@ -570,30 +565,12 @@ def main( argv ):
             exit(2)
 
         if options.electrodes:
-            elPos = None
             try:
                 d = g.DataContainer( options.electrodes )
                 elPos = d.sensorPositions()
-            except:
-                raise("Cannot determine electrode informations from file:" + str( options.electrodes ) )
-
-            from matplotlib.patches import Circle
-            from matplotlib.collections import PatchCollection
-
-            depthCoord = 1
-
-            if g.zVari( elPos ):
-                depthCoord = 2;
-
-            if len ( elPos ):
-                spacing = elPos[0].distance( elPos[1])
-                eCircles = []
-
-                for e in elPos:
-                    eCircles.append( Circle( ( e[0], e[depthCoord] ), spacing * 0.1 ) )
-
-                p = PatchCollection( eCircles, color=(0.0, 0.0, 0.0) )
-                axes.add_collection( p )
+                pygimli.mplviewer.drawSensors( axes, elPos, diam = None )
+            except Exception as e:
+                print ( e + "Cannot determine electrode informations from file:" + str( options.electrodes ) )
 
             axes.figure.canvas.draw()
 

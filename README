@@ -1,7 +1,14 @@
 GIMLi - Geophysical Inversion and Modelling Library
         an open-source multi-method library for solving inverse and forward tasks
 -----------------------------------------------
-BUILD (Windows systems)
+Tested with:
+    gentoo x86_64 gcc-4.4.5
+    gentoo x86_64 gcc-4.5.3
+    mingw win32 gcc-4??
+    mingw win64 gcc-4.5.4 (without python bindings)
+
+
+BUILD (for Windows systems)
 
 Please look into the directory mingw and the README file therein
 

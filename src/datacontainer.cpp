@@ -397,6 +397,7 @@ void DataContainer::checkDataValidity( bool remove ){
 
     if ( find( get("valid") < 1 ).size() > 0 ){
         std::cout << "Data validity check: found " << find( get("valid") < 1 ).size() << " invalid data. " << std::endl;
+        saveVec( RVector( find( get("valid") < 1 ) ), "invalid.data" );
         if ( remove ) {
             std::cout << "Data validity check: remove invalid data." << std::endl;
             this->removeInvalid();
@@ -737,6 +738,19 @@ void DataContainer::markInvalidSensorIndices(){
         }
     }
 }
+
+void DataContainer::translate( const RVector3 & trans ){
+    for ( uint i = 0; i < sensorPoints_.size(); i ++ ) {
+        sensorPoints_[ i ].translate( trans );
+    }
+}
+    
+void DataContainer::scale( const RVector3 & scale ){
+    for ( uint i = 0; i < sensorPoints_.size(); i ++ ) {
+        sensorPoints_[ i ].scale( scale );
+    }
+}
+    
 // END Sensor related section
 
 } // namespace GIMLI{

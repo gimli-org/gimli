@@ -45,8 +45,9 @@ def readSimpleLatLon( filename ):
     
     for line in content:
         vals = line.split()
-        if len( vals ) > 0:
+        if len( vals ) > 1:
             w.append( (float(vals[1]), float(vals[0]), '', 'time')  )
+            print w
         #w.append( (float(vals[2]), float(vals[1]), vals[0], 'time')  )
     
     return w

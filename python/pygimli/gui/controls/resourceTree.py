@@ -97,6 +97,7 @@ class ResourceTree( wx.TreeCtrl ):
         event.Skip()
         
     def onPopupMenu( self, evt ):
+        
         menu = wx.Menu()
                 
         self.popupDelete = wx.NewId()
@@ -105,10 +106,22 @@ class ResourceTree( wx.TreeCtrl ):
         menu.AppendItem( wx.MenuItem(menu, self.popupDelete, "&Delete\tCTRL+D" ) )
         self.Bind(wx.EVT_MENU, self.onDeleteSelectedItem, id=self.popupDelete )
         
-        #menu.AppendItem( wx.MenuItem(menu, self.popupReRead,"Reread\tCTRL+R") )
-        #item = wx.MenuItem(menu, self.popupReRead,"Reread\tCTRL+R")
-        #self.treeCTRL.Bind(wx.EVT_MENU, self.OnReRead, id=self.popupReRead )
-
+        # get local menus from application to add into popup menu
+        app = self.GetPyData( self.GetSelection( ) )
+        
+        if app:
+            if hasattr( app, 'menuSections' ):
+                for i in range( len( app.menuSections ) ):
+                    menuSection = app.menuSections[ i ]
+                    menu.AppendSeparator(  )
+                    for j in range( len( menuSection.items ) ):
+                        name = menuSection.names[ j ]
+                        func = menuSection.targetFunctions[ j ]
+                        
+                        item = wx.MenuItem( menu, wx.NewId(), name )
+                        menu.AppendItem( item )
+                        self.Bind( wx.EVT_MENU, func, id = item.GetId() )
+            
         # Popup the menu.  If an item is selected then its handler
         # will be called before PopupMenu returns.
         self.PopupMenu( menu )
@@ -124,10 +137,12 @@ class ResourceTree( wx.TreeCtrl ):
         
     def onDeleteSelectedItem( self, event = None ):
         item = self.GetPyData( self.GetSelection( ) )
+        
         if not item:
             return
             
         try:
+            # pls check the app will destroyed after deselect
             item.destroy( )
             prev = self.GetPrevSibling( self.GetSelection( ) )
             self.Delete( self.GetSelection( ) )
