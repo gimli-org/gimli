@@ -637,6 +637,12 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
     if ( size() != dim ) resize( dim );
     for ( uint i = 0; i < dim; i ++ ) idx_[ i ] = cell.node( i ).id();
 
+
+//     if ( cell.uxCache().rows() > 0 ){
+//         mat_ = cell.uxCache();
+//         return *this;
+//     }
+    
 //     double J = cell.jacobianDeterminant();
 //     if ( J <= 0 ) std::cerr << WHERE_AM_I << " JacobianDeterminant < 0 (" << J << ") " << cell << std::endl;
 //      std::cout << J << std::endl;
@@ -644,7 +650,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
     switch ( cell.rtti() ) {
     case MESH_EDGE_CELL_RTTI:
     case MESH_EDGE3_CELL_RTTI:
-        return ux2( cell, intRules_.edgWeights( 2 ), intRules_.edgAbscissa( 2 ), false );
+        ux2( cell, intRules_.edgWeights( 2 ), intRules_.edgAbscissa( 2 ), false ); break;
     case MESH_TRIANGLE_RTTI: {
     ////////////////////////////////////////////////////////////////////
 /*        double dN1dx = cell.shape().deriveCoordinates( 0, 0 );
@@ -686,7 +692,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
         mat_[ 1 ][ 2 ] = mat_[ 2 ][ 1 ];
 
         std::cout << "2" << *this << std::endl;*/
-        return ux2uy2( cell, intRules_.triWeights( 1 ), intRules_.triAbscissa( 1 ), false );
+        ux2uy2( cell, intRules_.triWeights( 1 ), intRules_.triAbscissa( 1 ), false );
     } break;
     case MESH_TRIANGLE6_RTTI: {
 ///////////////////////////////////////////////////////////////////////////////////
@@ -764,12 +770,12 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
 //             }
 //         }
 //         std::cout << "2" << *this << std::endl;
-        return ux2uy2( cell, intRules_.triWeights( 2 ), intRules_.triAbscissa( 2 ), false ); //ch
+        ux2uy2( cell, intRules_.triWeights( 2 ), intRules_.triAbscissa( 2 ), false ); //ch
     } break;
     case MESH_QUADRANGLE_RTTI:
-        return ux2uy2( cell, intRules_.quaWeights( 2 ), intRules_.quaAbscissa( 2 ), false );
+        ux2uy2( cell, intRules_.quaWeights( 2 ), intRules_.quaAbscissa( 2 ), false ); break;
     case MESH_QUADRANGLE8_RTTI:
-        return ux2uy2( cell, intRules_.quaWeights( 3 ), intRules_.quaAbscissa( 3 ), false );
+        ux2uy2( cell, intRules_.quaWeights( 3 ), intRules_.quaAbscissa( 3 ), false ); break;
     case MESH_TETRAHEDRON_RTTI:
     //{
 //         double x_xi = cell.shape().partDerivationRealToUnity( 0, 1 );
@@ -849,7 +855,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
 //     }
 //     std::cout << "0 " << *this << std::endl;
 //} break;
-        return ux2uy2uz2( cell, intRules_.tetWeights( 1 ), intRules_.tetAbscissa( 1 ), false ); //ch
+        ux2uy2uz2( cell, intRules_.tetWeights( 1 ), intRules_.tetAbscissa( 1 ), false ); //ch
+        break;
     case MESH_TETRAHEDRON10_RTTI:
 //     {
 // ////////////////////////////////////////////////////////////////////
@@ -900,12 +907,15 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
 //
 //     break;
 //   }
-  return ux2uy2uz2( cell, intRules_.tetWeights( 2 ), intRules_.tetAbscissa( 2 ), false );
+      ux2uy2uz2( cell, intRules_.tetWeights( 2 ), intRules_.tetAbscissa( 2 ), false );   break;
   default:
     std::cerr << cell.rtti() << std::endl;
     THROW_TO_IMPL
     break;
   }
+
+
+  
   return *this;
 }
 
