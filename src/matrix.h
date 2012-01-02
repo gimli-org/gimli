@@ -55,7 +55,7 @@ protected:
     
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
-template < class ValueType > class Matrix {
+template < class ValueType > class Matrix : public MatrixBase {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols Content of the matrix is zero*/
     Matrix( Index rows = 0, Index cols = 0 ){
@@ -79,7 +79,7 @@ public:
     }
 
     /*! Destruct matrix and free memory. */
-    ~Matrix(){}
+    virtual ~Matrix(){}
 
     #define DEFINE_UNARY_MOD_OPERATOR__( OP, NAME ) \
     inline Matrix < ValueType > & operator OP##= ( const Matrix < ValueType > & A ) { \
@@ -101,12 +101,12 @@ public:
 //             for ( ; Aj != Aje; ) *Aj++ OP##= val;
 //         }   return *this; }
 
-    /*! Readonly C style index operator, with boundary check.*/
-    const Vector< ValueType > & operator [] ( Index i ) const { return getVal( i ); }
+    /*! Readonly C style index operator, without boundary check.*/
+    const Vector< ValueType > & operator [] ( Index i ) const { return mat_[ i ]; }
 
     /*!*/
     Vector< ValueType > & operator [] ( Index i ) {
-        if ( i < 0 || i > this->rows()-1 ) {
+        if ( i < 0 || i > mat_.size()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
         }
@@ -136,7 +136,7 @@ public:
 
     /*! Set a value. Throws out of range exception if index check fails. */
     inline void setVal( const Vector < ValueType > & val, Index i ) {
-        if ( i >= 0 && i < this->rows() ) {
+        if ( i >= 0 && i < mat_.size() ) {
             mat_[ i ] = val;
         } else {
             throwRangeError( 1, WHERE_AM_I, i, 0, this->rows() );
@@ -145,7 +145,7 @@ public:
 
     /*! Readonly getter. */
     inline const Vector < ValueType > & getVal( Index i ) const {
-        if ( i < 0 || i > this->rows()-1 ) {
+        if ( i < 0 || i > mat_.size()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
         }
@@ -154,7 +154,7 @@ public:
 
     /*! Return reference to row. Used for pygimli. */
     inline Vector < ValueType > & rowR( Index i ) {
-        if ( i < 0 || i > this->rows()-1 ) {
+        if ( i < 0 || i > mat_.size()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
         }
@@ -207,7 +207,7 @@ protected:
 
     void copy_( const Matrix < ValueType > & mat ){
         allocate_( mat.rows(), mat.cols() );
-        for ( Index i = 0; i < mat.rows(); i ++ ) mat_[ i ] = mat[ i ];
+        for ( Index i = 0; i < mat_.size(); i ++ ) mat_[ i ] = mat[ i ];
     }
 
     std::vector < Vector< ValueType > > mat_;

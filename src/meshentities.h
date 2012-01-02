@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,6 +23,7 @@
 
 #include "gimli.h"
 #include "vector.h"
+#include "matrix.h"
 #include "baseentity.h"
 
 #include <vector>
@@ -139,6 +140,8 @@ public:
 
 //     std::valarray < std::valarray < T > > & mat() { return mat_; }
 
+    const RMatrix & uxCache() const { return uxCache_; }
+
 protected:
     void fillShape_();
 
@@ -153,6 +156,9 @@ protected:
     Shape * shape_;
 
     std::vector < Node * > nodeVector_;
+
+    /*! Cache for derivation matrixes */
+    RMatrix uxCache_;
 
 //     std::valarray < std::valarray < T > > mat_;
 };
@@ -643,7 +649,7 @@ Neighbour Nr, on Boundary a-b-c-d
     4           4-5-6-7
     5           0-3-2-1
 
-T.~Apel and N.~Düvelmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
+T.~Apel and N.~D velmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
 Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, Pages   293-304
 5-Tet-split: type 6(2) 1-4-5-6, 3-7-6-4, 1-4-0-3, 1-2-3-6, 1-6-4-3
 6-Tet-split: type 1    0-1-2-6, 0-2-3-6, 0-1-6-5, 0-4-5-6, 0-3-7-6, 0-4-6-7

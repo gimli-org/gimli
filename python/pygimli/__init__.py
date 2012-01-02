@@ -18,9 +18,6 @@ import sys, os
 if sys.platform == 'win32':
     os.environ['PATH'] =  __path__[0] +';' + os.environ['PATH']
 
-
-print sys.path
-print sys.platform
 try:
     from _pygimli_ import *
 except ImportError as e:
@@ -169,10 +166,15 @@ _pygimli_.RVector3.__iter__ = __VectorIterCall__
 _pygimli_.RMatrix.__iter__  = __VectorIterCall__
 
 ############################
-# non automatic exposed functoions
+# non automatic exposed functions
 ############################
 def abs( v ):
     return fabs( v )
+
+
+############################
+# usefull stuff
+############################
 
 
 ############################

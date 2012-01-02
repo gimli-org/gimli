@@ -78,28 +78,9 @@ protected:
     std::vector < RVector > hexWeights_;
 };
 
-//   static double Triangle6_S4[ 6 ][ 6 ] = {
-//     {  6.0, -1.0, -1.0,  0.0, -4.0,  0.0 },
-//     { -1.0,  6.0, -1.0,  0.0,  0.0, -4.0 },
-//     { -1.0, -1.0,  6.0, -4.0,  0.0,  0.0 },
-//     {  0.0,  0.0, -4.0, 32.0, 16.0, 16.0 },
-//     { -4.0,  0.0,  0.0, 16.0, 32.0, 16.0 },
-//     {  0.0, -4.0,  0.0, 16.0, 16.0, 32.0 }
-//   };
-//  static double Edge3_Me[ 3 ][ 3 ] = { // Me = edge.length / 30.0 * Edge3_Me
-//     {  4.0,  2.0, -1.0 },
-//     {  2.0, 16.0,  2.0 },
-//     { -1.0,  2.0,  4.0 }
-//   };
-//   static double Edge3_Se[ 3 ][ 3 ] = { // Se = 1 / ( 3.0 * edge.length ) * Edge3_Se
-//     {  7.0, -8.0,  1.0 },
-//     { -8.0, 16.0, -8.0 },
-//     {  1.0, -8.0,  7.0 }
-//   };
-
 template < class T > class DLLEXPORT ElementMatrix {
 public:
-    ElementMatrix( ) { initBaseMatricies(); }
+    ElementMatrix( ) { }
 
     ElementMatrix( const ElementMatrix < T > & E ) {
         std::cout << "ElementMatrix( const ElementMatrix < T > & E ) " << std::endl;
@@ -120,88 +101,9 @@ public:
         } return *this;
     }
 
-  ~ElementMatrix() {
-/*    delete Tri6_u_xi2;
-    delete Tri6_u_eta2;
-    delete Tri6_u_xi_u_eta;
-    delete Tri6_u2;
-
-    delete Tet4_u_xi2;
-    delete Tet4_u_eta2;
-    delete Tet4_u_zeta2;
-    delete Tet4_u_xi_u_eta;
-    delete Tet4_u_xi_u_zeta;
-    delete Tet4_u_eta_u_zeta;
-    delete Tet4_u2;
-
-    delete Tet10_u_xi2;
-    delete Tet10_u_eta2;
-    delete Tet10_u_zeta2;
-    delete Tet10_u_xi_u_eta;
-    delete Tet10_u_xi_u_zeta;
-    delete Tet10_u_eta_u_zeta;
-    delete Tet10_u2;*/
-  }
+    ~ElementMatrix() {}
 
     inline const RVector & operator[]( uint row ) const { return mat_[ row ]; }
-
-   void initBaseMatricies(){
-//     Tri6_u_xi2 = new RSTLMatrix( 6, 6 );
-//     Tri6_u_eta2 = new RSTLMatrix( 6, 6 );
-//     Tri6_u_xi_u_eta = new RSTLMatrix( 6, 6 );
-//     Tri6_u2 = new RSTLMatrix( 6, 6 );
-//
-//     Tet4_u_xi2 = new RSTLMatrix( 4, 4 );
-//     Tet4_u_eta2 = new RSTLMatrix( 4, 4 );
-//     Tet4_u_zeta2 = new RSTLMatrix( 4, 4 );
-//     Tet4_u_xi_u_eta = new RSTLMatrix( 4, 4 );
-//     Tet4_u_xi_u_zeta = new RSTLMatrix( 4, 4 );
-//     Tet4_u_eta_u_zeta = new RSTLMatrix( 4, 4 );
-//     Tet4_u2= new RSTLMatrix( 4, 4 );
-//
-//     Tet10_u_xi2 = new RSTLMatrix( 10, 10 );
-//     Tet10_u_eta2 = new RSTLMatrix( 10, 10 );
-//     Tet10_u_zeta2 = new RSTLMatrix( 10, 10 );
-//     Tet10_u_xi_u_eta = new RSTLMatrix( 10, 10 );
-//     Tet10_u_xi_u_zeta = new RSTLMatrix( 10, 10 );
-//     Tet10_u_eta_u_zeta = new RSTLMatrix( 10, 10 );
-//     Tet10_u2= new RSTLMatrix( 10, 10 );
-//
-//     *Tri6_u_xi2 = transpose( TriangleQuadA() )
-//           * createMatrix( 6, intQuadTriangle_u_xi2() ) * TriangleQuadA();
-//     *Tri6_u_eta2 = transpose( TriangleQuadA() )
-//         * createMatrix( 6, intQuadTriangle_u_eta2() ) * TriangleQuadA();
-//     *Tri6_u_xi_u_eta = transpose( TriangleQuadA() )
-//         * createMatrix( 6, intQuadTriangle_u_xi_u_eta() ) * TriangleQuadA();
-//     *Tri6_u2 = transpose( TriangleQuadA() )
-//         * createMatrix( 6, intQuadTriangle_u2() ) * TriangleQuadA();
-//
-//     *Tet4_u_xi2 = transpose( TetrahedronLinearA() )
-//         * createMatrix( 4, intLinTetrahedron_u_xi2() ) * TetrahedronLinearA();
-//     *Tet4_u_eta2 = transpose( TetrahedronLinearA() )
-//         * createMatrix( 4, intLinTetrahedron_u_eta2() ) * TetrahedronLinearA();
-//     *Tet4_u_zeta2 = transpose( TetrahedronLinearA() )
-//         * createMatrix( 4, intLinTetrahedron_u_zeta2() ) * TetrahedronLinearA();
-//     *Tet4_u_xi_u_eta = transpose( TetrahedronLinearA() )
-//         * createMatrix( 4, intLinTetrahedron_u_xi_u_eta() ) * TetrahedronLinearA();
-//     *Tet4_u_xi_u_zeta = transpose( TetrahedronLinearA() )
-//         * createMatrix( 4, intLinTetrahedron_u_xi_u_zeta() ) * TetrahedronLinearA();
-//     *Tet4_u_eta_u_zeta = transpose( TetrahedronLinearA() )
-//         * createMatrix( 4, intLinTetrahedron_u_eta_u_zeta() ) * TetrahedronLinearA();
-//
-//     *Tet10_u_xi2 = transpose( TetrahedronQuadA() )
-//         * createMatrix( 10, intQuadTetrahedron_u_xi2() ) * TetrahedronQuadA();
-//     *Tet10_u_eta2 = transpose( TetrahedronQuadA() )
-//         * createMatrix( 10, intQuadTetrahedron_u_eta2() ) * TetrahedronQuadA();
-//     *Tet10_u_zeta2 = transpose( TetrahedronQuadA() )
-//         * createMatrix( 10, intQuadTetrahedron_u_zeta2() ) * TetrahedronQuadA();
-//     *Tet10_u_xi_u_eta = transpose( TetrahedronQuadA() )
-//         * createMatrix( 10, intQuadTetrahedron_u_xi_u_eta() ) * TetrahedronQuadA();
-//     *Tet10_u_xi_u_zeta = transpose( TetrahedronQuadA() )
-//         * createMatrix( 10, intQuadTetrahedron_u_xi_u_zeta() ) * TetrahedronQuadA();
-//     *Tet10_u_eta_u_zeta = transpose( TetrahedronQuadA() )
-//         * createMatrix( 10, intQuadTetrahedron_u_eta_u_zeta() ) * TetrahedronQuadA();
-   }
 
     void resize( uint newSize ) {
         idx_.resize( newSize );
@@ -233,15 +135,15 @@ public:
 
     inline uint idx( uint i ) const { return idx_[ i ]; }
     inline uint size() const { return mat_.rows(); }
-    const T getVal( uint i, uint j ) const { return mat_[ i ][ j ]; }
+    inline const T getVal( uint i, uint j ) const { return mat_[ i ][ j ]; }
 
-    const RVector & row( uint i ) const { return mat_[ i ]; }
-    const RMatrix & mat() const { return mat_; }
-    const std::vector < uint > & idx() const { return idx_; }
+    inline const RVector & row( uint i ) const { return mat_[ i ]; }
+    inline const RMatrix & mat() const { return mat_; }
+    inline const std::vector < uint > & idx() const { return idx_; }
 
-    ElementMatrix < T> & u( const MeshEntity & ent );
+    ElementMatrix < T > & u( const MeshEntity & ent );
 
-    ElementMatrix < T> & u2( const MeshEntity & ent );
+    ElementMatrix < T > & u2( const MeshEntity & ent );
 
     ElementMatrix < T > & ux2uy2uz2( const Cell & cell );
 
@@ -261,38 +163,12 @@ protected:
 
     std::map< uint, RVector > uCache_;
     std::map< uint, RMatrix > u2Cache_;
+    
     RMatrix dNdr_;
     RMatrix dNds_;
     RMatrix dNdt_;
 
     IntegrationRules intRules_;
-
-
-//     RSTLMatrix *Tri3_u_xi2;
-//   RSTLMatrix *Tri3_u_eta2;
-//   RSTLMatrix *Tri3_u_xi_u_eta;
-//   RSTLMatrix *Tri3_u2;
-//
-//   RSTLMatrix *Tri6_u_xi2;
-//   RSTLMatrix *Tri6_u_eta2;
-//   RSTLMatrix *Tri6_u_xi_u_eta;
-//   RSTLMatrix *Tri6_u2;
-//
-//   RSTLMatrix *Tet4_u_xi2;
-//   RSTLMatrix *Tet4_u_eta2;
-//   RSTLMatrix *Tet4_u_zeta2;
-//   RSTLMatrix *Tet4_u_xi_u_eta;
-//   RSTLMatrix *Tet4_u_xi_u_zeta;
-//   RSTLMatrix *Tet4_u_eta_u_zeta;
-//   RSTLMatrix *Tet4_u2;
-//
-//   RSTLMatrix *Tet10_u_xi2;
-//   RSTLMatrix *Tet10_u_eta2;
-//   RSTLMatrix *Tet10_u_zeta2;
-//   RSTLMatrix *Tet10_u_xi_u_eta;
-//   RSTLMatrix *Tet10_u_xi_u_zeta;
-//   RSTLMatrix *Tet10_u_eta_u_zeta;
-//   RSTLMatrix *Tet10_u2;
 };
 
 } // namespace GIMLI{
