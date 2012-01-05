@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -22,7 +22,9 @@
 
 #include "mesh.h"
 #include "node.h"
+#include "shape.h"
 #include "sparsematrix.h"
+#include "stopwatch.h"
 #include "trans.h"
 #include "vectortemplates.h"
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -22,12 +22,7 @@
 #define _GIMLI_ELEMENTMATRIX__H
 
 #include "gimli.h"
-#include "mesh.h"
-#include "shape.h"
-#include "node.h"
-#include "vectortemplates.h"
-#include "numericbase.h"
-#include "stopwatch.h"
+#include "vector.h"
 #include "matrix.h"
 
 namespace GIMLI{

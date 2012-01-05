@@ -70,7 +70,7 @@ AC_LANG([C++])
 # check why this doesn't work
 #AS_COMPILER_FLAGS( GLOBAL_CFLAGS, "-Wall -ansi -pedantic" )
 
-AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic"])
+AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic -pipe"])
 #AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic -Wl,-noinhibit-exec"])
 
 #AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -fPIC -ansi -pedantic"])

@@ -19,33 +19,12 @@
  ***************************************************************************/
 
 #include "elementmatrix.h"
+#include "shape.h"
+#include "meshentities.h"
+#include "node.h"
+#include "pos.h"
 
 namespace GIMLI{
-
-// static double Triangle6_S1[ 6 ][ 6 ] = {
-//     {  3.0,  1.0, 0.0, -4.0,  0.0,  0.0 },
-//     {  1.0,  3.0, 0.0, -4.0,  0.0,  0.0 },
-//     {  0.0,  0.0, 0.0,  0.0,  0.0,  0.0 },
-//     { -4.0, -4.0, 0.0,  8.0,  0.0,  0.0 },
-//     {  0.0,  0.0, 0.0,  0.0,  8.0, -8.0 },
-//     {  0.0,  0.0, 0.0,  0.0, -8.0,  8.0 }
-//   };
-//   static double Triangle6_S2[ 6 ][ 6 ] = {
-//     {  6.0,  1.0,  1.0, -4.0,  0.0, -4.0 },
-//     {  1.0,  0.0, -1.0, -4.0,  4.0,  0.0 },
-//     {  1.0, -1.0,  0.0,  0.0,  4.0, -4.0 },
-//     { -4.0, -4.0,  0.0,  8.0, -8.0,  8.0 },
-//     {  0.0,  4.0,  4.0, -8.0,  8.0, -8.0 },
-//     { -4.0,  0.0, -4.0,  8.0, -8.0,  8.0 }
-//   };
-//   static double Triangle6_S3[ 6 ][ 6 ] = {
-//     {  3.0,  0.0,  1.0,  0.0,  0.0, -4.0 },
-//     {  0.0,  0.0,  0.0,  0.0,  0.0,  0.0 },
-//     {  1.0,  0.0,  3.0,  0.0,  0.0, -4.0 },
-//     {  0.0,  0.0,  0.0,  8.0, -8.0,  0.0 },
-//     {  0.0,  0.0,  0.0, -8.0,  8.0,  0.0 },
-//     { -4.0,  0.0, -4.0,  0.0,  0.0,  8.0 }
-//   };
 
 IntegrationRules::IntegrationRules(){
     initGau_();
@@ -530,6 +509,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u( const MeshE
 template < > ElementMatrix < double > & ElementMatrix < double >::u2( const MeshEntity & ent ){
     uint nVerts = ent.nodeCount();
     if ( size() != nVerts ) resize( nVerts );
+    
     for ( uint i = 0; i < nVerts; i ++ ) idx_[ i ] = ent.node( i ).id();
 
     switch( ent.rtti() ){
@@ -552,7 +532,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 //         std::cout << "2 " << *this << std::endl;
 /*}
     break;*/
-        return u2( ent, intRules_.edgWeights( 2 ), intRules_.edgAbscissa( 2 ), false ); //ch
+        u2( ent, intRules_.edgWeights( 2 ), intRules_.edgAbscissa( 2 ), false );
+        break;
     case MESH_EDGE3_CELL_RTTI:
     case MESH_EDGE3_RTTI:
     //{
@@ -573,7 +554,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 //         mat_[ 2 ][ 2 ] =   J / 30.0 * 16.0;
 //          std::cout << "2 " << *this << std::endl;
     //} break;
-        return u2( ent, intRules_.edgWeights( 3 ), intRules_.edgAbscissa( 3 ), false ); //ch
+        u2( ent, intRules_.edgWeights( 3 ), intRules_.edgAbscissa( 3 ), false );
+        break;
     case MESH_TRIANGLE_RTTI:
     case MESH_TRIANGLEFACE_RTTI:
     //{
@@ -595,13 +577,16 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 //         mat_[ 2 ][ 2 ] = Jl * 2.0;
 //         std::cout << "2 " << *this << std::endl;
 //}break;
-        return u2( ent, intRules_.triWeights( 2 ), intRules_.triAbscissa( 2 ), false ); //ch
+        u2( ent, intRules_.triWeights( 2 ), intRules_.triAbscissa( 2 ), false );
+        break;
     case MESH_QUADRANGLE_RTTI:
     case MESH_QUADRANGLEFACE_RTTI:
-        return u2( ent, intRules_.quaWeights( 2 ), intRules_.quaAbscissa( 2 ), false );
+        u2( ent, intRules_.quaWeights( 2 ), intRules_.quaAbscissa( 2 ), false );
+        break;
     case MESH_QUADRANGLE8_RTTI:
     case MESH_QUADRANGLEFACE8_RTTI:
-        return u2( ent, intRules_.quaWeights( 3 ), intRules_.quaAbscissa( 3 ), false );
+        u2( ent, intRules_.quaWeights( 3 ), intRules_.quaAbscissa( 3 ), false );
+        break;
     case MESH_TRIANGLE6_RTTI:
     case MESH_TRIANGLEFACE6_RTTI:
     //{
@@ -637,11 +622,10 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
     if ( size() != dim ) resize( dim );
     for ( uint i = 0; i < dim; i ++ ) idx_[ i ] = cell.node( i ).id();
 
-
-//     if ( cell.uxCache().rows() > 0 ){
-//         mat_ = cell.uxCache();
-//         return *this;
-//     }
+    if ( cell.uxCache().rows() > 0 ){
+        mat_ = cell.uxCache();
+        return *this;
+    }
     
 //     double J = cell.jacobianDeterminant();
 //     if ( J <= 0 ) std::cerr << WHERE_AM_I << " JacobianDeterminant < 0 (" << J << ") " << cell << std::endl;
@@ -914,7 +898,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
     break;
   }
 
-
+  cell.setUxCache( mat_ );
   
   return *this;
 }

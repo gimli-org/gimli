@@ -44,7 +44,7 @@ def RVector_str( self ):
     else:
         s += " ["
 
-    if len( self ) < 51:
+    if len( self ) < 101:
         for i in range( 0, len( self )-1 ):
             s = s + str( self[ i ] ) + ", "
 

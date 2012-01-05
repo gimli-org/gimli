@@ -229,9 +229,9 @@ def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showC
                , showCbar = showCbar, linear = linear, label = label
                , nLevs = nLevs, orientation = orientation )
     
-    from pygimli.mplviewer import colorbar
-    cmap = colorbar.blueRedCMap
-    patches.set_cmap( cmap )
+    #from pygimli.mplviewer import colorbar
+    #cmap = colorbar.blueRedCMap
+    #patches.set_cmap( cmap )
     
     patches.set_edgecolor( 'face' )
     patches.set_antialiased( False )
