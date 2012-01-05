@@ -6,7 +6,7 @@ PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython27
 
 #-L ../../trunk/mingw -l libgimli \
 #-Wl,-Bstatic  -Wl,-Bdynamic -lpython27 -Wl,--end-group -g -mthreads
-GIMLILIB=../mingw/ -lgimli 
+GIMLILIB=../mingw/ -lgimli -lgcc 
 GIMLIINC=../src
 TARGET=_pygimli_
 COPT= -O2 -Os -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES -DMINGW
@@ -14,21 +14,23 @@ COPT= -O2 -Os -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES -DMINGW
 CPPCFILES = $(wildcard generated/*.cpp)
 OBJECTS = $(patsubst %.cpp,%.o,$(CPPCFILES))
 
+#--add-stdcall-alias --export-all-symbols -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -Wl,--exclude-libs,libgcc_eh.a
+# --strip-all
 default: $(TARGET)
 
 .cpp.o:
 	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR)/include -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
 
 $(TARGET): $(OBJECTS)
-	g++ -o $(TARGET).pyd --strip-all -shared $(OBJECTS) -L. \
+	g++ -o $(TARGET).pyd -shared -static-libgcc -static-libstdc++ $(OBJECTS) -L. \
 		-L $(BOOSTLIB) \
         -L $(PYTHONLIB) \
-		-L $(GIMLILIB)          
+		-L $(GIMLILIB) 
      
 	mv $(TARGET).pyd ./pygimli/
 	cp ../mingw/libgimli.dll ./pygimli
-	cp ../external/lib/libblas.dll ./pygimli
-	cp ../external/lib/liblapack.dll ./pygimli
+	cp ../mingw/libblas.dll ./pygimli
+	cp ../mingw/liblapack.dll ./pygimli
 	cp ../../../boost/lib/libboost_thread-mt.dll ./pygimli
 	cp ../../../boost/lib/libboost_python-mt.dll ./pygimli
 

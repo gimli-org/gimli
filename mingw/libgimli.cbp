@@ -12,20 +12,13 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
-				<Compiler>
-					<Add directory="..\external" />
-					<Add directory="..\src" />
-					<Add directory="..\..\..\boost\include" />
-				</Compiler>
 			</Target>
 		</Build>
 		<VirtualTargets>
 			<Add alias="All" targets="default;" />
 		</VirtualTargets>
 		<Compiler>
-			<Add option="-Os" />
 			<Add option="-O2" />
-			<Add option="-std=c++0x" />
 			<Add option="-Wall" />
 			<Add option="-DBUILDING_DLL=1" />
 			<Add option="-DMINGW" />
@@ -35,14 +28,21 @@
 			<Add option="-DHAVE_LIBTRIANGLE" />
 			<Add option="-DHAVE_LIBCHOLMOD" />
 			<Add option="-DUSE_IPC" />
+			<Add directory="..\external" />
+			<Add directory="..\src" />
+			<Add directory="..\..\..\boost\include" />
 		</Compiler>
 		<Linker>
 			<Add option="-s" />
 			<Add option="--add-stdcall-alias" />
 			<Add option="--export-all-symbols" />
 			<Add option="-Wl,--enable-auto-import" />
-			<Add library="libldl.a" />
+			<Add option="-static-libgfortran" />
+			<Add option="-static-libgcc" />
+			<Add option="-static-libstdc++" />
+			<Add option="-Wl,--exclude-libs,libgcc_eh.a" />
 			<Add library="libtriangle.a" />
+			<Add library="libldl.a" />
 			<Add library="libcholmod.a" />
 			<Add library="libcolamd.a" />
 			<Add library="libamd.a" />

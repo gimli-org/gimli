@@ -5,6 +5,7 @@ BLAS=lib/libblas.dll
 
 LAPACK=lib/liblapack.dll
 LAPACK_VER=3.3.1
+#LAPACK_VER=3.4.0 # maybe buggy cmake
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
@@ -46,10 +47,8 @@ lapack: prep $(LAPACK_SRC)
 	echo "building lapack for ", $(OSTYPE)
 	mkdir -p lapack-build
 	pushd lapack-build; \
-		cmake ../lapack-$(LAPACK_VER) -G 'MSYS Makefiles'; \
-		make; \
-		cmake -D BUILD_SHARED_LIBS=ON ../lapack-$(LAPACK_VER) -G 'MSYS Makefiles'; \
-		make; \
+		LDFLAGS="-static-libgfortran -static-libgcc" cmake -D BUILD_SHARED_LIBS=ON -G 'MSYS Makefiles' ../lapack-$(LAPACK_VER); \
+		make blas lapack ; \
 	popd
 	cp lapack-build/bin/liblapack.dll $(LAPACK)
 	cp lapack-build/bin/libblas.dll $(BLAS)
