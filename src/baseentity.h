@@ -29,14 +29,17 @@ namespace GIMLI{
   /*! The is a base entity which holds some basic informations. An identification number for the object, a validation status flag and a runtime type information (RTTI). This information will be inherited in many objects i.e. the mesh and data entitys. */
 class BaseEntity{
     public:
-    BaseEntity() : id_( -1 ), valid_( false ){ }
+    BaseEntity() : id_( -1 ), valid_( false ), marker_( 0 ) { }
 
-    BaseEntity( const BaseEntity & ent ): id_( ent.id() ), valid_( ent.valid() ){ }
+    BaseEntity( const BaseEntity & ent ) 
+        : id_( ent.id() ), valid_( ent.valid() ), marker_( ent.marker() ){ 
+    }
 
     BaseEntity & operator = ( const BaseEntity & ent ){
         if ( this != &ent ){
-        id_ = ent.id();
-        valid_ = ent.valid();
+            id_ = ent.id();
+            valid_ = ent.valid();
+            marker_ = ent.marker();
         } return * this;
     }
   

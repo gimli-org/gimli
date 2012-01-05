@@ -24,6 +24,7 @@
 #include "gimli.h"
 #include "vector.h"
 #include "matrix.h"
+#include "elementmatrix.h"
 #include "baseentity.h"
 
 #include <vector>
@@ -138,8 +139,12 @@ public:
 //
 //   inline std::vector < Node * >::iterator * end() { return nodeVector_.end(); }
 
-//     std::valarray < std::valarray < T > > & mat() { return mat_; }
-
+//    void setUxCache( const ElementMatrix < double >  & mat ) const { uxCache_ = mat; }
+ 
+ //   const ElementMatrix < double > & uxCache() const { return uxCache_; }
+     
+    void setUxCache( const RMatrix & mat ) const { uxCache_ = mat; }
+   
     const RMatrix & uxCache() const { return uxCache_; }
 
 protected:
@@ -158,9 +163,21 @@ protected:
     std::vector < Node * > nodeVector_;
 
     /*! Cache for derivation matrixes */
-    RMatrix uxCache_;
-
-//     std::valarray < std::valarray < T > > mat_;
+    //mutable ElementMatrix < double > uxCache_; // to expensive maybe, lightweight baseclass here
+    mutable RMatrix uxCache_;
+    
+private:
+    /*! do not copy a mesh entity at all */
+    MeshEntity( const MeshEntity & ent ){
+        THROW_TO_IMPL
+    }
+    
+    /*! do not assign a mesh entity at all */
+    MeshEntity & operator = ( const MeshEntity & ent ){
+         if ( this != & ent ){
+             THROW_TO_IMPL
+         } return *this;
+    }
 };
 
 class DLLEXPORT Cell : public MeshEntity {

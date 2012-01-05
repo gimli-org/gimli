@@ -625,12 +625,15 @@ public:
         Index col = 0, row = 0;
         std::vector < std::set < Index > > idxMap( mesh.nodeCount() );
         std::set < Index > tmp;
-
+        Cell *cell;
+        uint nc;
         for ( uint c = 0; c < mesh.cellCount(); c ++ ){
-            for ( uint i = 0; i < mesh.cell( c ).nodeCount(); i ++ ){
-                for ( uint j = 0; j < mesh.cell( c ).nodeCount(); j ++ ){
-                    row = mesh.cell( c ).node( i ).id();
-                    col = mesh.cell( c ).node( j ).id();
+            cell = &mesh.cell( c );
+            nc = cell->nodeCount();
+            for ( uint i = 0; i < nc; i ++ ){
+                for ( uint j = 0; j < nc; j ++ ){
+                    row = cell->node( i ).id();
+                    col = cell->node( j ).id();
                     idxMap[ col ].insert( row );
                 }
             }
