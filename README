@@ -68,6 +68,8 @@ codeblocks
     change codeblocks toolchain (setting/Compiler & Debugger../) 
         to c:/mingw or MinGW64 base directory
 
+cmake >=2.8.7		
+		
 ------------------------------------------------------------------
 Add boost include path to the build:
 

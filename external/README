@@ -21,11 +21,17 @@ libtriangle.a
 Either install systemwide or copy the libraries into the lib/ path.
 ########################################################
 
-You can install it by using the Makefile
+But you can install them all by using the Makefile
+just type:
+
+make
 
 #################
 Blas/Lapack
 #################
+Need:
+>=cmake-1.8.7
+
 to install your local copy of blas/lapack just run 
 
 make lapack

@@ -20,7 +20,7 @@
 		<Compiler>
 			<Add option="-O2" />
 			<Add option="-Wall" />
-			<Add option="-DBUILDING_DLL=1" />
+			<Add option="-g" />
 			<Add option="-DMINGW" />
 			<Add option="-DDLL_EXPORT" />
 			<Add option="-DHAVE_LIBLDL" />
@@ -28,14 +28,13 @@
 			<Add option="-DHAVE_LIBTRIANGLE" />
 			<Add option="-DHAVE_LIBCHOLMOD" />
 			<Add option="-DUSE_IPC" />
+			<Add option="-DBOOST_USE_WINDOWS_H" />
 			<Add directory="..\external" />
 			<Add directory="..\src" />
 			<Add directory="..\..\..\boost\include" />
 		</Compiler>
 		<Linker>
 			<Add option="-s" />
-			<Add option="--add-stdcall-alias" />
-			<Add option="--export-all-symbols" />
 			<Add option="-Wl,--enable-auto-import" />
 			<Add option="-static-libgfortran" />
 			<Add option="-static-libgcc" />
@@ -46,8 +45,8 @@
 			<Add library="libcholmod.a" />
 			<Add library="libcolamd.a" />
 			<Add library="libamd.a" />
-			<Add library="..\external\lib\libblas.dll" />
-			<Add library="..\external\lib\liblapack.dll" />
+			<Add library="blas" />
+			<Add library="lapack" />
 			<Add directory="..\external\lib" />
 			<Add directory="." />
 		</Linker>

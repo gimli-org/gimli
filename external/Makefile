@@ -4,14 +4,14 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/$(TRIANGLE)
 BLAS=lib/libblas.dll
 
 LAPACK=lib/liblapack.dll
-LAPACK_VER=3.3.1
-#LAPACK_VER=3.4.0 # maybe buggy cmake
+LAPACK_VER=3.4.0
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
-SUITESPARSE=SuiteSparse-3.6.1.tar.gz
+SUITESPARSE=SuiteSparse-3.7.0.tar.gz
 SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
 
+#LDFLAGS="-static-libgfortran -static-libgcc"
 #default: prep triangle blas lapack suitesparse
 default: prep triangle suitesparse
 
@@ -37,7 +37,7 @@ triangle: prep $(TRIANGLE)
 	rm -f lib/libtriangle.a
 	ar cqs lib/libtriangle.a triangle/triangle.o
 
-$(LAPACK_SRC): wget
+$(LAPACK_SRC): wget cmake
 	wget -nc -nd $(LAPACK_URL)
 	rm -rf lapack-$(LAPACK_VER)
 	rm -rf lapack-build
@@ -47,8 +47,8 @@ lapack: prep $(LAPACK_SRC)
 	echo "building lapack for ", $(OSTYPE)
 	mkdir -p lapack-build
 	pushd lapack-build; \
-		LDFLAGS="-static-libgfortran -static-libgcc" cmake -D BUILD_SHARED_LIBS=ON -G 'MSYS Makefiles' ../lapack-$(LAPACK_VER); \
-		make blas lapack ; \
+		cmake -D BUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -G 'MSYS Makefiles' ../lapack-$(LAPACK_VER); \
+		make blas lapack VERBOSE=1; \
 	popd
 	cp lapack-build/bin/liblapack.dll $(LAPACK)
 	cp lapack-build/bin/libblas.dll $(BLAS)
@@ -62,9 +62,9 @@ suitesparse: prep $(SUITESPARSE)
 	echo "building suitesparse for ", $(OSTYPE)
 
 	if [ $(OSTYPE) == "msys" ]; then \
-		sed -i -e 's/CC = cc/CC = gcc /g' SuiteSparse/UFconfig/UFconfig.mk; \
+		echo "CC = gcc" >> SuiteSparse/UFconfig/UFconfig.mk; \
 	else \
-		sed -i -e 's/CC = cc/CC = gcc -fPIC/g' SuiteSparse/UFconfig/UFconfig.mk; \
+		echo "CC = gcc -fPIC" >> SuiteSparse/UFconfig/UFconfig.mk; \
 	fi
 
 	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/UFconfig/UFconfig.mk; 
@@ -109,6 +109,20 @@ unzip:
 		fi; \
 	fi
 
+cmake:
+	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ] ; then \
+		if ( cmake --version ); then \
+			minor=$(cmake --version | cut -d ' ' -f 3 | cut -d '.' -f 2); \
+			minor=(cmake --version); \
+			echo $(minor); \
+			age=`cmake --version | cut -d ' ' -f 3 | cut -d'.' -f 3`; \
+			echo "########### cmake found $(minor) $(age): ok" ; \
+		else \
+			echo "########### need cmake with version 2.8.7 or higher, please install from:" ; \
+			echo "http://cmake.org/cmake/resources/software.html"; \
+		fi; \
+	fi
+	
 clean:
 	echo "Cleaning ..."
 	rm -rf lib triangle AMD CAMD COLAMD CCOLAMD LDL CHOLMOD SuiteSparse lapack-* *~

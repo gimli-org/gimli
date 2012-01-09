@@ -1,4 +1,4 @@
-BOOST_VERSION=1_47_0
+BOOST_VERSION=1_48_0
 
 if [ $# -eq 0 ]; then
 	prefix=`pwd`
