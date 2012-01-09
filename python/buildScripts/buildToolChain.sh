@@ -116,8 +116,8 @@ installPYPLUSPLUS(){
     popd
 }
 
-#installGCCXML
+installGCCXML
 installPYGCCXML
 installPYPLUSPLUS
-#fixGCCXML
-#fixGCCXML
+fixGCCXML
+fixGCCXML
