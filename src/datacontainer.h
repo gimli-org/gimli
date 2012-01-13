@@ -293,8 +293,8 @@ public:
     void removeInvalid();
 
     /*! Remove all unused sensors from this DataContainer and recount data sensor index entries. */
-    void removeUnusedSensors();
-
+    void removeUnusedSensors( bool verbose = false );
+    
 protected:
     virtual void copy_( const DataContainer & data );
 

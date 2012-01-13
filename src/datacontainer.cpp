@@ -639,7 +639,9 @@ void DataContainer::removeSensorIdx( const IndexArray & idx ){
     this->removeUnusedSensors();
 }
 
-void DataContainer::removeUnusedSensors(){
+void DataContainer::removeUnusedSensors( bool verbose ){
+
+    uint oldSensorCount = this->sensorCount();
 
     BVector activeSensors( this->sensorCount(), false );
 
@@ -671,6 +673,10 @@ void DataContainer::removeUnusedSensors(){
                 if ( id > -1 && id < (SIndex)perm.size() ) it->second[ i ] = perm[ id ];
             }
         }
+    }
+    
+    if ( verbose ){
+        std::cout << "Removed " << oldSensorCount - this->sensorCount() << " sensors." << std::endl;
     }
 }
 

@@ -932,8 +932,8 @@ bool operator == ( const Vector< ValueType > & v1, const Vector< ValueType > & v
     return true;
 }
 
-template < class ValueType, class A > bool
-operator == ( const Vector< ValueType > & v1, const __VectorExpr< ValueType, A > & v2 ){
+template < class ValueType, class A > 
+bool operator == ( const Vector< ValueType > & v1, const __VectorExpr< ValueType, A > & v2 ){
     return v1 == Vector< ValueType >( v2 );
 }
 
@@ -971,6 +971,18 @@ inline BVector operator & ( const BVector & a, const BVector & b ){
 inline BVector operator | ( const BVector & a, const BVector & b ){
     BVector ret( a.size() );
     for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = a[ i ] || b[ i ];
+    return ret;
+}
+
+inline RVector operator * ( const BVector & a, const RVector & b ){
+    RVector ret( a.size() );
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = a[ i ] * b[ i ];
+    return ret;
+}
+
+inline RVector operator * ( const RVector & a, const BVector & b ){
+    RVector ret( a.size() );
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = a[ i ] * b[ i ];
     return ret;
 }
 
