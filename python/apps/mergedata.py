@@ -17,17 +17,17 @@ except ImportError:
 
 #from pybertlib.importer import importData
 
-def merge( N1, N2, snap = 0.1 ):
+def merge( N1, N2, ContainerTyp, snap = 0.1 ):
     '''
         Merge two datacontainer into one, by copying the sensor positions and datapoints from N2 into N1.\n
         Double sensor positions will be reused and snapped to a grid with gridsize snap
     '''
-    data = g.DataContainer( N1 );
+    data = ContainerTyp( N1 );
     data.add( N2 )
     return data
 # def merge( ... )
     
-def loadProjectFile( projectfile, verbose = False ):
+def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
     '''
         A project file defines how multiple data files are imported and merged.
         The currently supported formats are:                                                
@@ -51,11 +51,11 @@ def loadProjectFile( projectfile, verbose = False ):
             if len( row ) == 1:
                 ### filename only
                 #d = importData( row[0] )
-                d = g.DataContainer( row[0] )
+                d = ContainerTyp( row[0] )
             elif len( row ) == 5:
                 ### filename xstart ystart xend yend
                 #d = importData( row[0] )
-                d = g.DataContainer( row[0] )
+                d = ContainerTyp( row[0] )
                 start = g.RVector3( float( row[1] ), float( row[2] ) )
                 end   = g.RVector3( float( row[3] ), float( row[4] ) ) 
                 
@@ -118,26 +118,23 @@ def main( argv ):
         print "output =", options.outFileName
         print "snap =", options.snap
 
-    dataList = loadProjectFile( projectFileName, verbose = options.verbose )
+    ContainerTyp = g.DataContainer
+    if options.bert:
+        import pybert as b
+        ContainerTyp = b.DataContainerERT
+        
+    dataList = loadProjectFile( projectFileName, ContainerTyp, verbose = options.verbose )
 
     outdata  = dataList[ 0 ]
-    
-    if options.bert:
-        outdata.registerSensorIndex( 'a' )
-        outdata.registerSensorIndex( 'b' )
-        outdata.registerSensorIndex( 'm' )
-        outdata.registerSensorIndex( 'n' )
-
+            
     for d in dataList:
-        outdata = merge( outdata, d, options.snap )
+        outdata = merge( outdata, d, ContainerTyp, options.snap )
         if options.verbose:
             print outdata
 
     if options.verbose:
         print "outdata:", options.outFileName
-        
-    print outdata.
-        
+                
     outdata.save( options.outFileName )
 
 if __name__ == "__main__":
