@@ -29,6 +29,7 @@
 #include "numericbase.h"
 #include "regionManager.h"
 #include "solver.h"
+#include "stopwatch.h"
 #include "sparsematrix.h"
 #include "trans.h"
 #include "vector.h"

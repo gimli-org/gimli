@@ -24,8 +24,8 @@
 
 #include "gimli.h"
 #include "modellingbase.h"
-#include "regionmanager.h"
-#include "dataContainer.h"
+#include "regionManager.h"
+#include "datacontainer.h"
 #include "blockmatrix.h"
 #include "meshgenerators.h"
 #define NEWREGION 33333
@@ -157,17 +157,17 @@ public:
         return resp;
     }
 
-    void createJacobian( H2SparseMapMatrix1 & jacobian, const RVector & model ) { 
+    void createJacobian( H2SparseMapMatrix & jacobian, const RVector & model ) { 
         //! extract slowness from model and call old function
         RVector slowness( model, 0, model.size() - shots_.size() );
         RVector offsets( model, model.size() - shots_.size(), model.size() );         
-        TravelTimeDijkstraModelling::createJacobian( *jacobian.H1(), slowness );
-        jacobian.H2()->setRows( dataContainer_->size() );
-        jacobian.H2()->setCols( offsets.size() );
+        TravelTimeDijkstraModelling::createJacobian( jacobian.H1(), slowness );
+        jacobian.H2().setRows( dataContainer_->size() );
+        jacobian.H2().setCols( offsets.size() );
         //! set 1 entries for the used shot
         RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
         for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
-            jacobian.H2()->setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
+            jacobian.H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
         }
     }
     
