@@ -400,7 +400,10 @@ public:
                         << "(" << data_.size() << "x" << model_.size()  << ") "  << std::endl;
             std::cout << "jacobian size invalid, forced recalc" << std::endl;
         }
+        Stopwatch swatch( true );
+        if ( verbose_ ) std::cout << "calculating sensitivity matrix ...";
         forward_->createJacobian( *J_, model_ );
+        if ( verbose_ ) std::cout << swatch.duration( true ) << " s" << std::endl;
     }
 
     /*! Define and find out whether Jacobian is recalculated in each iteration */
@@ -601,6 +604,9 @@ public:
 
     /*! Return the chi-squared data misfit */
     inline double getChi2() const { return getPhiD( ) / data_.size(); }
+
+    /*! Return the chi-squared data misfit for given forward response */
+    inline double getChi2( const Vec & response ) const { return getPhiD( response ) / data_.size(); }
 
     /*! Return last chi-squared data misfit */
     inline double chi2() const { return phiD_ / data_.size(); }
@@ -946,8 +952,10 @@ int Inversion< Vec, SensMat>::oneStep( ) {
     Vec roughness( constraintsH_.size() );
 
     if ( recalcJacobian_ && iter_ > 1 ) {
+        Stopwatch swatch( true );
         if ( verbose_ ) std::cout << "recalculating sensitivity matrix ...";
         forward_->createJacobian( *J_, model_ );
+        if ( verbose_ ) std::cout << swatch.duration( true ) << " s" << std::endl;
     }
 
     if ( !localRegularization_ ) {
@@ -957,7 +965,7 @@ int Inversion< Vec, SensMat>::oneStep( ) {
 
         roughness = C_ * Vec( tM_->trans( model_ ) * modelWeight_ ) * constraintsWeight_;
         if ( haveReferenceModel_ ) {
-            if ( verbose_ ) echoMinMax( modelRef_,  "reference model" );
+            DOSAVE echoMinMax( modelRef_,  "reference model" );
 //            deltaModel0 -= tM_->trans( modelRef_ );
             roughness = roughness - constraintsH_;
         }
