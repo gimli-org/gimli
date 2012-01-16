@@ -34,6 +34,25 @@ def num2str(a):
         s.append( '%g' % rndig(ai) )
     return s
 
+def inthist( a, vals, bins=None, islog=False ):
+    if bins is None:
+        bins = N.min( ( N.round( len(a) / 20 ) , 10 ) )
+
+    if islog:
+        hists, edges = N.histogram( N.log( a ), bins=bins )
+    else:        
+        hists, edges = N.histogram( a, bins=bins )
+
+    cums = N.cumsum( N.hstack( (0., hists) ) ) / N.sum( hists ) * 100.
+    out = N.interp( vals, cums, edges )
+    if islog:
+        return N.exp( out )
+    else:    
+        return out
+
+def interperc( a, trimval=3.0, islog=False, bins=None ):
+    return inthist( a, N.array( [ trimval, 100. - trimval ] ), bins=bins, islog=islog )
+
 def jetmap(m=64):
     """ jet color map """
     n = int( P.ceil(m/4) )
@@ -112,7 +131,21 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, **kwar
     if xlab is not None: P.xlabel(xlab,fontsize=fs)
     if zlab is not None: P.ylabel(zlab,fontsize=fs)
     P.grid(which='both')
-    P.show()
+    #P.show()
+    return li
+
+def draw1dmodelLU( x, xL, xU, thk=None, **kwargs ):
+    """ draw 1d model with lower and upper bounds """
+    draw1dmodel(x,thk,color='red',**kwargs)
+    for i in range( len(x) ):
+        x1 = x.copy()
+        x1[i] = xL[i]
+        draw1dmodel(x1,thk,color='blue')
+        x1[i] = xU[i]
+        draw1dmodel(x1,thk,color='blue')
+
+    li = draw1dmodel(x,thk,color='red',**kwargs)
+    P.xlim( ( min( xL ) * 0.9, max( xU ) * 1.1 ) )
     return li
 
 def showStitchedModels(models, x=None, cmin=None, cmax=None,
