@@ -5,7 +5,7 @@ This program is part of pygimli
 Visit http://www.resistivity.net for further information or the latest version.
 """
 
-import sys, math
+import sys, math, os
 
 __verbose__ = False
 
@@ -424,7 +424,7 @@ def main( argv ):
     parser.add_option("-E", "--drawEdges", dest="drawEdges",action="store_true"
                             , help="Force drawing all edges independent on marker", default=False)
     parser.add_option("-i", "--interperc", dest="interperc",
-                            help="interpecentile", type = "float", default = "2.0" )
+                            help="interpecentile", type = "float", default = "0.0" )
     parser.add_option("-d", "--data", dest="datafile",
                             help="data file", metavar="File" )
     parser.add_option("-o", "--output", dest="outFileName",
@@ -478,11 +478,14 @@ def main( argv ):
         print "matplotlib-", mpl.__version__
         print options, args
 
-    if options.cMin is None and options.cMax is None:
+    if options.interperc > 0.0 and options.cMin is None and options.cMax is None:
         if options.datafile is not None:
-            a = np.loadtxt( options.datafile )
-            
-        options.cMin, options.cMax = interperc( a, options.interperc )
+            if os.path.exists( options.datafile ):
+                a = np.loadtxt( options.datafile )
+                options.cMin, options.cMax = interperc( a, options.interperc )
+            if options.datafile in mesh.exportDataMap().keys():
+                a = mesh.exportData( options.datafile )
+                options.cMin, options.cMax = interperc( a, options.interperc )
         
     wOffset = 0.05
     hOffset = 0.05
