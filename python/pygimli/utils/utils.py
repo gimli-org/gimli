@@ -2,7 +2,7 @@
 
 import pygimli as g
 
-from math import sqrt, floor, ceil
+from math import sqrt, floor, ceil, round
 
 def unicodeToAscii( text ):
     if type( text ) == unicode:
@@ -44,7 +44,7 @@ def grange( start, end, dx = 0, n = 0, log = False ):
         if end > start and dx < 0:
             print "grange: increasing range but decreasing dx, swap dx sign"
             d = -d
-        ret = g.asvector( range( int( round( abs( ( e - s ) / d ) ) + 1 ) ) )
+        ret = g.asvector( range( int( floor( abs( ( e - s ) / d ) ) + 1 ) ) )
         ret *= d
         ret += s
         return ret;

@@ -32,6 +32,7 @@ import matplotlib
 import matplotlib as mpl
 from matplotlib import colors, ticker
 from matplotlib import pyplot as pylab
+from pygimli.utils.base import interperc
 import pylab
 
 import numpy as np
@@ -116,7 +117,7 @@ class MyLinearSegmentedColormapAlpha( mpl.colors.LinearSegmentedColormap ):
         self._set_extremes()
 
 def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWeight = None, cMin = None, drawEdges = False,
-                    cMax = None, coverage = None, showCbar = True, label = "", linear = False , offset = g.RVector3( 0.0, 0.0 ) ):
+                    cMax = None, coverage = None, showCbar = True, label = "", linear = False , offset = g.RVector3( 0.0, 0.0 ), b2r = False ):
     mesh = g.Mesh( )
     if ( meshname.rfind( '.vtk' ) != -1 ):
         mesh.importVTK(meshname)
@@ -179,7 +180,7 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
         if ( contour ):
             showMeshInterpolated( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear )
         else:
-            showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, label = label, linear = linear )
+            showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, label = label, linear = linear, b2r = b2r )
     else:
         g.mplviewer.drawMeshBoundaries( axis, mesh )
         pass
@@ -223,15 +224,16 @@ def showDC2DInvResMod( modfile, contour, cMin = None, cMax = None, label = ""):
     return axis
 
 def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showCbar = True, 
-                   label = "", linear = False, nLevs = 5, orientation = 'horizontal' ):
+                   label = "", linear = False, nLevs = 5, orientation = 'horizontal', b2r = False ):
 
     patches = pygimli.mplviewer.drawModel( axis, mesh, data, cMin = cMin, cMax = cMax
                , showCbar = showCbar, linear = linear, label = label
                , nLevs = nLevs, orientation = orientation )
     
-    #from pygimli.mplviewer import colorbar
-    #cmap = colorbar.blueRedCMap
-    #patches.set_cmap( cmap )
+    from pygimli.mplviewer import colorbar
+    if b2r:
+        cmap = colorbar.blueRedCMap
+        patches.set_cmap( cmap )
     
     patches.set_edgecolor( 'face' )
     patches.set_antialiased( False )
@@ -417,8 +419,12 @@ def main( argv ):
                             , help="set linear color scale", default=False)
     parser.add_option("-C", "--contour", dest="contourplot",action="store_true"
                             , help="Create contourplot instead of simple patch", default=False)
+    parser.add_option("-B", "--b2r", dest="b2r",action="store_true"
+                            , help="Use blue-white-red color scale", default=False)
     parser.add_option("-E", "--drawEdges", dest="drawEdges",action="store_true"
                             , help="Force drawing all edges independent on marker", default=False)
+    parser.add_option("-i", "--interperc", dest="interperc",
+                            help="interpecentile", type = "float", default = "2.0" )
     parser.add_option("-d", "--data", dest="datafile",
                             help="data file", metavar="File" )
     parser.add_option("-o", "--output", dest="outFileName",
@@ -472,6 +478,12 @@ def main( argv ):
         print "matplotlib-", mpl.__version__
         print options, args
 
+    if options.cMin is None and options.cMax is None:
+        if options.datafile is not None:
+            a = np.loadtxt( options.datafile )
+            
+        options.cMin, options.cMax = interperc( a, options.interperc )
+        
     wOffset = 0.05
     hOffset = 0.05
     if options.publish:
@@ -508,7 +520,8 @@ def main( argv ):
         cmap.set_bad( [1.0, 1.0, 1.0, 0.0 ] )
 
         #from pygimli.mplviewer import colorbar
-        #cmap = colorbar.blueRedCMap
+        if options.b2r:
+            cmap = colorbar.blueRedCMap
 
         cbar = mpl.colorbar.ColorbarBase(axes, norm = norm, cmap = cmap
                                         ,orientation = orientation
@@ -539,6 +552,7 @@ def main( argv ):
             print "coverage =", options.coverage
             print "cMin =", options.cMin, type( options.cMin )
             print "cMax =", options.cMax
+            print "b2r=", options.b2r
 
         axes = None
         try:
@@ -555,6 +569,7 @@ def main( argv ):
                         , linear = options.linear
                         , drawEdges = options.drawEdges
                         , offset = g.RVector3( options.xoffset, options.zoffset )
+                        , b2r = options.b2r
                         )
             else:
                 print "Cannot determine format for input mesh. Available are *.bms, *.mod"
