@@ -8,6 +8,7 @@ Visit http://www.resistivity.net for further information or the latest version.
 import sys, os
 
 import pygimli as g
+import numpy as np
 
 def strToRVector3( s ):
     vals = s.split(',')
@@ -45,11 +46,29 @@ def parseDataStr( s ):
         else:
             return vals[1], modificator( data )
 
+def applyInterpolation( filename, mesh ):
+    '''
+        need to be moved into libgimli
+        needs to be documented
+    '''
+    
+    tn = [ n.pos()[ 0 ] for n in mesh.nodes() ]
+    zn = [ n.pos()[ 1 ] for n in mesh.nodes() ]
+
+    A = np.loadtxt( filename ).T
+
+    xn = np.interp( tn, A[0], A[1] )
+    yn = np.interp( tn, A[0], A[2] )
+
+    for i,n in enumerate( mesh.nodes() ):
+        n.setPos( g.RVector3( xn[ i ], yn[ i ], zn[ i ] ) )
+    
+# def applyInterpolation( ... )
 
 def main( argv ):
     from optparse import OptionParser
 
-    parser = OptionParser( "usage: %prog [options] mesh|mod"
+    parser = OptionParser( "usage: %prog [options] mesh|mod|vtk"
                             , version = "%prog: " + g.versionStr() )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False )
@@ -80,7 +99,10 @@ def main( argv ):
     parser.add_option("-t", "--translate", dest="translate",
                             help="translate the mesh. "'"x,y,z"'" " )
 
-
+    parser.add_option("", "--interpolateCoords", dest="interpolateCoords", metavar="File",
+                            help = " Interpolate a 2D mesh into 3D Coordinates. File is a 3-column-ascii-file (dx x y)" )
+                            
+                            
     (options, args) = parser.parse_args()
 
     if options.verbose:
@@ -93,21 +115,14 @@ def main( argv ):
     else:
         meshname = args[ 0 ];
 
-    outfileBody = None
-
-    if options.outFileName is not None:
-        (outfileBody, fileExtension) = os.path.splitext( options.outFileName )
-        if fileExtension == '.bms':
-            options.outBMS = True
-        elif fileExtension == '.vtk':
-            options.outVTK = True
-    else:
-        (outfileBody, fileExtension) = os.path.splitext( meshname )
-
     mesh = g.Mesh( meshname )
+
     if options.verbose:
         print meshname, mesh
-
+        
+    if options.interpolateCoords is not None:
+        applyInterpolation( options.interpolateCoords, mesh )
+       
     if options.rotate is not None:
         rot = strToRVector3( options.rotate )
         if options.verbose:
@@ -134,6 +149,19 @@ def main( argv ):
                 print dataStr, data[0], data[1]
 
             mesh.addExportData( data[0], data[1] )
+
+
+    # prepare output starts here
+    outfileBody = None
+
+    if options.outFileName is not None:
+        (outfileBody, fileExtension) = os.path.splitext( options.outFileName )
+        if fileExtension == '.bms':
+            options.outBMS = True
+        elif fileExtension == '.vtk':
+            options.outVTK = True
+    else:
+        (outfileBody, fileExtension) = os.path.splitext( meshname )
 
     if options.outMidCell:
         if options.verbose:
