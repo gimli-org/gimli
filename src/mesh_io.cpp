@@ -28,6 +28,31 @@
 
 namespace GIMLI{
 
+void Mesh::load( const std::string & fbody, IOFormat format ){
+    
+    if ( fbody.find( ".mod" ) != std::string::npos ){
+        importMod( fbody );
+    } else if ( fbody.find( ".vtk" ) != std::string::npos ){
+        importVTK( fbody );
+    } else if ( fbody.find( ".vtu" ) != std::string::npos ){
+        importVTU( fbody );
+    } else if ( format == Binary || fbody.find( MESHBINSUFFIX ) != std::string::npos ) {
+        try {
+             return loadBinary( fbody );
+        } catch( std::exception & e ){
+            std::cout << "Failed to loadBinary " << e.what() << std::endl;
+            std::cout << "try load bms.v2" << std::endl;
+            loadBinaryV2( fbody );
+        }
+    } else {
+        loadAscii( fbody );
+    }
+}
+
+void Mesh::loadAscii( const std::string & fbody ){
+    THROW_TO_IMPL
+}
+
 int Mesh::save( const std::string & fbody, IOFormat format ) const {
   if ( format == Binary || fbody.find( MESHBINSUFFIX ) != std::string::npos ) {
     return saveBinary( fbody );
@@ -220,25 +245,7 @@ int Mesh::saveBinary( const std::string & fbody ) const {
   return 1;
 }
 
-int Mesh::load( const std::string & fbody, IOFormat format ){
-    if ( format == Binary || fbody.find( MESHBINSUFFIX ) != std::string::npos ) {
-        try {
-             return loadBinary( fbody );
-        } catch( std::exception & e ){
-            std::cout << "Failed to loadBinary " << e.what() << std::endl;
-            std::cout << "try load bms.v2" << std::endl;
-            loadBinaryV2( fbody );
-            return 1;
-        }
-    } else return loadAscii( fbody );
-}
-
-int Mesh::loadAscii( const std::string & fbody ){
-CERR_TO_IMPL
-  return 0;
-}
-
-int Mesh::loadBinary( const std::string & fbody ){
+void Mesh::loadBinary( const std::string & fbody ){
 //   sizeof( int ) = 4 byte
 //   int[ 1 ] dimension
 //   int[ 127 ] dummy vertices information
@@ -300,26 +307,29 @@ int Mesh::loadBinary( const std::string & fbody ){
   int * left = new int[ nBounds ]; ret = fread( left, sizeof( int ), nBounds, file );
   int * right = new int[ nBounds ]; ret = fread( right, sizeof( int ), nBounds, file );
 
-  //** create Nodes;
-  nodeVector_.reserve( nVerts );
-  for ( int i = 0; i < nVerts; i ++ ){
-    createNode( RVector3( 0.0, 0.0, 0.0 ) );
-    for ( uint j = 0; j < dimension_; j ++ ){
-      node( i ).pos()[ j ] = koords[ i * dimension_ + j ];
+    //** create Nodes;
+    nodeVector_.reserve( nVerts );
+    for ( int i = 0; i < nVerts; i ++ ){
+        createNode( RVector3( 0.0, 0.0, 0.0 ) );
+        for ( uint j = 0; j < dimension_; j ++ ){
+            node( i ).pos()[ j ] = koords[ i * dimension_ + j ];
+        }
+        node( i ).setMarker( nodeMarker[ i ] );
     }
-    node( i ).setMarker( nodeMarker[ i ] );
-  }
-  //** create Cells;
-  int count = 0;
-  std::vector < Node * > pNodeVector;
+    
+    //** create Cells;
+    int count = 0;
+    std::vector < Node * > pNodeVector;
 
-  cellVector_.reserve( nCells );
-  for ( int i = 0; i < nCells; i ++ ){
-    std::vector < Node * > nodes( cellVerts[ i ] );
-    for ( uint j = 0; j < nodes.size(); j ++ ) nodes[ j ] = & node( cellIdx[ count + j ] );
-    createCell( nodes );
-    count += cellVerts[ i ];
-  }
+    cellVector_.reserve( nCells );
+    for ( int i = 0; i < nCells; i ++ ){
+        std::vector < Node * > nodes( cellVerts[ i ] );
+        for ( uint j = 0; j < nodes.size(); j ++ ) {
+            nodes[ j ] = & node( cellIdx[ count + j ] );
+        }
+        createCell( nodes );
+        count += cellVerts[ i ];
+    }
 
     for ( int i = 0; i < nCells; i ++ ) {
         cell( i ).setMarker( (int)rint(attribute[ i ]) );
@@ -358,7 +368,7 @@ int Mesh::loadBinary( const std::string & fbody ){
     delete [] right;
 
     fclose( file );
-    return 1;
+    
 }
 
 template < class ValueType > void writeToFile( FILE * file, const ValueType & v, int count = 1){
@@ -1145,7 +1155,7 @@ void Mesh::addVTUPiece_( std::fstream & file, const Mesh & mesh,
     file << "</Piece>" << std::endl;
 }
 
-int Mesh::importMod( const std::string & filename ){
+void Mesh::importMod( const std::string & filename ){
     RMatrix mat;
     std::vector < std::string > comments;
     loadMatrixCol( mat, filename, comments );
@@ -1158,7 +1168,6 @@ int Mesh::importMod( const std::string & filename ){
     create2DGrid( x, y );
     if ( comments.size() > 4 && mat.cols() > 4 ) addExportData( comments[ 4 ], mat[ 4 ] );
     if ( comments.size() > 5 && mat.cols() > 5 ) addExportData( comments[ 5 ], mat[ 5 ] );
-    return 1;
 }
 
 int Mesh::exportMidCellValue( const std::string & fileName,

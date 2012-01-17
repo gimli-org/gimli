@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -46,9 +46,7 @@ Mesh::Mesh( uint dim )
 Mesh::Mesh( const std::string & filename )
 : rangesKnown_( false ), neighboursKnown_( false ), tree_( NULL ){
     oldTet10NumberingStyle_ = true;
-    if ( !load( filename ) ){
-        throwError( 0, "cannot load mesh: " + filename );
-    }
+    load( filename );
 }
 
 Mesh::Mesh( const Mesh & mesh )

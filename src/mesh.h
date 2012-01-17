@@ -315,13 +315,21 @@ public:
   We have to replace and test it with uint32 or uint16 */
     int saveBinary( const std::string & fileName ) const;
 
-    int load( const std::string & fileName, IOFormat format = Binary );
-    int importMod( const std::string & fileName );
-    int loadAscii( const std::string & fileName );
+    /*! Load Mesh from file and try to import fileformat regarding file suffix.*/
+    void load( const std::string & fileName, IOFormat format = Binary );
+    
+    void loadAscii( const std::string & fileName );
+    
+    void importMod( const std::string & fileName );
+    
+    void importVTK( const std::string & fbody );
+    
+    void importVTU( const std::string & fbody );
+    
 
     /*! Be carefull with interchanging binary meshs between 32-64bit architecture. Atm we save fixed int for counter and idx.
     We have to replace and test it with uint32 or uint16 */
-    int loadBinary( const std::string & fileName );
+    void loadBinary( const std::string & fileName );
 
     /*! Save mesh in binary format v.2.0. should be possible to interchange on all little endian platforms. Contains all export data, marker an attribute.
         If something goes wrong while writing, an exception is thrown.
@@ -346,12 +354,9 @@ public:
     void exportVTK( const std::string & fbody, const std::map< std::string, RVector > & data ) const;
     void exportVTK( const std::string & fbody ) const;
 
-    void importVTK( const std::string & fbody );
     void readVTKPoints_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKCells_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKScalars_( std::fstream & file, const std::vector < std::string > & row );
-
-    void importVTU( const std::string & filename );
 
     /*! Export the mesh in filename using vtu format:
     Visualization Toolkit Unstructured Points Data (http://www.vtk.org)

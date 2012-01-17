@@ -1,0 +1,5 @@
+2012-01-17
+    meshconvert.py 
+        - add input support for *.mod(dc2dinvres), *.vtk, *.vtu(untested)
+        - add interpolation into external coordinates to apply a 2D->3D transformation.
+            --interpolateCoords=(file) file is a 3-column-ascii-file (dxy x y) to interpolate a 2D-mesh into 3D coordinates

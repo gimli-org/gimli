@@ -2,7 +2,7 @@
 
 import pygimli as g
 
-from math import sqrt, floor, ceil, round
+from math import sqrt, floor, ceil
 
 def unicodeToAscii( text ):
     if type( text ) == unicode:
