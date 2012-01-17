@@ -387,9 +387,25 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
 
 void DataContainer::checkDataValidity( bool remove ){
     //** mark inf and nans as invalid
+    int nInvalid0 = find( get("valid") < 1 ).size();
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin();
             it!= dataMap_.end(); it ++ ){
         this->markInvalid( find( isInfNaN( it->second ) ) );
+    }
+    int nInvalidNaN = find( get("valid") < 1 ).size() - nInvalid0;
+    if ( nInvalidNaN > 0 ) {
+        std::cout << "Warning: removed " << nInvalidNaN << " values due to NaN/Inf!" << std::endl;
+    }
+    
+    //** check sensor indices < -1 and >= sensorCount()
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        if ( isSensorIndex( it->first ) ){
+            this->markInvalid( find( ( it->second < -1 ) | ( it->second >= sensorCount() ) ) );
+        }
+    }
+    int nInvalidIdx = find( get("valid") < 1 ).size() - nInvalidNaN - nInvalid0;
+    if ( nInvalidIdx > 0 ) {
+        std::cout << "Warning: removed " << nInvalidIdx << " values due to sensor index out of bounds!" << std::endl;
     }
 
     //** call local specialization if any
