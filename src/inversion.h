@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -73,7 +73,7 @@ template < class Vec > Vec getIRLSWeightsP( const Vec & a, int p, double locut =
     Inversion(bool verbose, bool dosave   
     Inversion(RVector data, FOP f, bool verbose, bool dosave   
     Inversion(RVector data, FOP f, transData, transModel, bool verbose, bool dosave */
-template < class ModelValType, class SensMat > class Inversion : public InversionBase< ModelValType > {
+template < class ModelValType > class Inversion : public InversionBase< ModelValType > {
 public:
     typedef Vector < ModelValType > Vec;
     typedef Vector < ModelValType > ModelVector;
@@ -130,14 +130,13 @@ public:
 
     /*! Destructor. Frees allocated memory */
     virtual ~Inversion(){
-        if ( J_ && ownedJ_ ) { delete J_; J_ = NULL; }
         delete transDataDefault_;
         delete transModelDefault_;
     }
 
 private:
     /*! Copyconstructor */
-    Inversion( const Inversion< ModelValType, SensMat > & inv ){
+    Inversion( const Inversion< ModelValType > & inv ){
         THROW_TO_IMPL
     }
 
@@ -145,8 +144,6 @@ private:
 protected:
     /*! Internal initialization function, which is called from constructor. Set default paramater and allocate required memory */
     void init_(){
-            J_              = NULL;
-            ownedJ_         = false;
         transDataDefault_   = new Trans< Vec >;
         transModelDefault_  = new Trans< Vec >;
         tD_                 = transDataDefault_;
@@ -247,7 +244,6 @@ public:
     /*! Set the forward operator and the model-transform-function derived from fop-regionManager if not set before. */
     inline void setForwardOperator( ModellingBase & forward ) {
         forward_   = & forward;
-        clearJacobian();
         clearConstraints();
 
         //! Always use a region manager
@@ -374,36 +370,20 @@ public:
         }
     }
 
-    /*! Set the Jacobian matrix */
-    inline void setJacobian( SensMat & J ){ J_ = &J; }
-
-    /*! Return a pointer to the Jacobion matrix */
-    inline SensMat * jacobian( ){ return J_; }
-
-    /*! Return read only const reference to the Jacobion matrix */
-    inline const SensMat & jacobian( ) const { return *J_; }
-
-    /*! Clear Jacobian matrix */
-    inline void clearJacobian(){ if ( J_ ) J_->clear(); }
-
     /*! Check size of Jacobian matrix against data and model number */
     void checkJacobian( ) {
-        if ( !J_ ){
-            J_ = new SensMat();
-            ownedJ_ = true;
-        }
+        if ( forward_->jacobian()->rows() == data_.size() && 
+             forward_->jacobian()->cols() == model_.size() ) return;
 
-        if ( J_->rows() == data_.size() && J_->cols() == model_.size() ) return;
-
-        if ( verbose_ && J_->rows() + J_->cols() > 0 ){
+        if ( verbose_ && forward_->jacobian()->rows() + forward_->jacobian()->cols() > 0 ){
             std::cout << "check Jacobian: wrong dimensions: "
-                        << "(" << J_->rows()  << "x" << J_->cols() << ") == "
+                        << "(" << forward_->jacobian()->rows()  << "x" << forward_->jacobian()->cols() << ") == "
                         << "(" << data_.size() << "x" << model_.size()  << ") "  << std::endl;
             std::cout << "jacobian size invalid, forced recalc" << std::endl;
         }
         Stopwatch swatch( true );
         if ( verbose_ ) std::cout << "calculating sensitivity matrix ...";
-        forward_->createJacobian( *J_, model_ );
+        forward_->createJacobian( model_ );
         if ( verbose_ ) std::cout << swatch.duration( true ) << " s" << std::endl;
     }
 
@@ -419,8 +399,9 @@ public:
         doBroydenUpdate_ = broydenUpdate;
         if ( doBroydenUpdate_ ) recalcJacobian_ = false;
         //** puts transformation functions into jacobian since it is not changed anymore;
-        if ( broydenUpdate && J_ ) {
-            scaleMatrix( *J_, tD_->deriv( response_ ), Vec( 1.0 / tM_->deriv( model_ ) ) );
+        if ( broydenUpdate ) {
+            THROW_TO_IMPL
+            //scaleMatrix( *J_, tD_->deriv( response_ ), Vec( 1.0 / tM_->deriv( model_ ) ) );
         }
     }
     inline bool broydenUpdate( ) const { return doBroydenUpdate_; }
@@ -510,18 +491,20 @@ public:
 
     /*! Compute model cell resolution (specific column of resolution matrix) by an LSCG solver */
     Vec modelCellResolution( int iModel ) {
+        // did not yet reflect moving jacobian into modellingbase
+        THROW_TO_IMPL
         Vec resolution( model_.size() );
-        Vec sensCol( data_.size() );
-        RVector mDeriv( tM_->deriv( model_ ) );
-        RVector dDeriv( tD_->deriv( response_ ) );
-
-        for ( uint i = 0; i < data_.size(); i++ ) sensCol[ i ] = (*J_)[ i ][ iModel ];
-
-        sensCol *= dDeriv;
-        sensCol /= mDeriv[ iModel ];
-        Vec deltaModel0( model_.size() );// !!! h variante
-        solveCGLSCDWWtrans( *J_, C_, dataWeight_, sensCol, resolution, constraintsWeight_, modelWeight_,
-                            tM_->deriv( model_ ), tD_->deriv( response_ ), lambda_, deltaModel0, maxCGLSIter_, false );
+//         Vec sensCol( data_.size() );
+//         RVector mDeriv( tM_->deriv( model_ ) );
+//         RVector dDeriv( tD_->deriv( response_ ) );
+// 
+//         for ( uint i = 0; i < data_.size(); i++ ) sensCol[ i ] = (*J_)[ i ][ iModel ];
+// 
+//         sensCol *= dDeriv;
+//         sensCol /= mDeriv[ iModel ];
+//         Vec deltaModel0( model_.size() );// !!! h variante
+//         solveCGLSCDWWtrans( *J_, C_, dataWeight_, sensCol, resolution, constraintsWeight_, modelWeight_,
+//                             tM_->deriv( model_ ), tD_->deriv( response_ ), lambda_, deltaModel0, maxCGLSIter_, false );
 
         return resolution;
     }
@@ -702,7 +685,7 @@ public:
     Vec invSubStep( const Vec & rhs ) {
         Vec deltaModel0( model_.size() );//!!! h-variante
         Vec solution( model_.size() );
-        solveCGLSCDWWtrans( *J_, C_, dataWeight_, rhs, solution, constraintsWeight_, modelWeight_,
+        solveCGLSCDWWtrans( *forward_->jacobian(), C_, dataWeight_, rhs, solution, constraintsWeight_, modelWeight_,
                             tM_->deriv( model_ ), tD_->deriv( response_ ),
                             lambda_, deltaModel0, maxCGLSIter_, verbose_ );
         return solution;
@@ -758,9 +741,6 @@ protected:
     Vec                   data_;
     ModellingBase       * forward_;
 
-    SensMat             * J_; // Jacobian matrix
-    bool                  ownedJ_;
-
     DSparseMapMatrix      C_;
 
     Trans< Vec >        * tD_;
@@ -814,8 +794,8 @@ protected:
     IPCClientSHM ipc_;
 };
 
-template < class ModelValType, class SensMat >
-const Vector < ModelValType > & Inversion< ModelValType, SensMat>::run( ){ ALLOW_PYTHON_THREADS
+template < class ModelValType >
+const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_THREADS
 
     abort_ = false;
     ipc_.setBool( "abort", false );
@@ -869,7 +849,7 @@ const Vector < ModelValType > & Inversion< ModelValType, SensMat>::run( ){ ALLOW
     DOSAVE C_.save( "constraint.matrix" );
     DOSAVE save( constraintsWeight_, "cweight_0" );
     DOSAVE save( modelWeight_, "mweight_0" );
-    DOSAVE save( *J_, "sens" );
+    DOSAVE save( *forward_->jacobian(), "sens.mat" );
 
     DOSAVE std::cout << "C size: " << C_.cols() << " x " << C_.rows() << std::endl;
 
@@ -906,7 +886,7 @@ const Vector < ModelValType > & Inversion< ModelValType, SensMat>::run( ){ ALLOW
         if ( ipc_.getBool( "abort" ) ) break;
 
         oneStep();
-        DOSAVE save( *J_ * model_, "dataJac_"  + toStr( iter_ ) PLUS_TMP_VECSUFFIX );
+        DOSAVE save( *forward_->jacobian() * model_, "dataJac_"  + toStr( iter_ ) PLUS_TMP_VECSUFFIX );
         DOSAVE save( response_,    "response_" + toStr( iter_ ) PLUS_TMP_VECSUFFIX );
 
         modelHist_.push_back( model_ );
@@ -937,8 +917,7 @@ const Vector < ModelValType > & Inversion< ModelValType, SensMat>::run( ){ ALLOW
     return model_;
 } //** run
 
-template < class Vec, class SensMat >
-int Inversion< Vec, SensMat>::oneStep( ) {
+template < class Vec > int Inversion< Vec>::oneStep( ) {
     iter_++;
     ipc_.setInt( "Iter", iter_ );
     if ( verbose_ ) std::cout << "Iter: " << iter_ << std::endl;
@@ -955,7 +934,7 @@ int Inversion< Vec, SensMat>::oneStep( ) {
     if ( recalcJacobian_ && iter_ > 1 ) {
         Stopwatch swatch( true );
         if ( verbose_ ) std::cout << "recalculating sensitivity matrix ...";
-        forward_->createJacobian( *J_, model_ );
+        forward_->createJacobian( model_ );
         if ( verbose_ ) std::cout << swatch.duration( true ) << " s" << std::endl;
     }
 
@@ -1004,7 +983,9 @@ int Inversion< Vec, SensMat>::oneStep( ) {
 //             solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
 //                                  modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
 //                                lambda_, deltaModel0, maxCGLSIter_, verbose_ );
-             solveCGLSCDWWhtrans( *J_, C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
+            
+            //save( forward_->jacobian(), "S"+ toStr(iter_) + ".mat", Ascii );
+            solveCGLSCDWWhtrans( *forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
                                   modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
                                   lambda_, roughness, maxCGLSIter_, verbose_ );
         } // else no broyden
@@ -1046,10 +1027,12 @@ int Inversion< Vec, SensMat>::oneStep( ) {
     ipc_.setDouble( "Chi2", getPhiD( ) / data_.size() );
 
     if ( doBroydenUpdate_ ) { //** perform Broyden update;
-        if ( verbose_ ) std::cout << "perform Broyden update" << std::endl;
-        Vec u( tD_->trans( response_ ) - tD_->trans( responseLast ) - ( *J_ * deltaModelIter_ ) );
-        Vec v( deltaModelIter_ / dot( deltaModelIter_, deltaModelIter_ ) );
-        rank1Update( *J_, u, v );
+    // did not yet reflect moving jacobian into modellingbase
+    THROW_TO_IMPL
+//         if ( verbose_ ) std::cout << "perform Broyden update" << std::endl;
+//         Vec u( tD_->trans( response_ ) - tD_->trans( responseLast ) - ( *J_ * deltaModelIter_ ) );
+//         Vec v( deltaModelIter_ / dot( deltaModelIter_, deltaModelIter_ ) );
+//         rank1Update( *J_, u, v );
     }
 
     //!** temporary stuff
@@ -1064,8 +1047,8 @@ int Inversion< Vec, SensMat>::oneStep( ) {
     return iter_;
 }
 
-template < class ModelValType, class SensMat >
-Vector < ModelValType > Inversion< ModelValType, SensMat>::optLambda( const Vector < ModelValType > & deltaData, const Vector < ModelValType > & deltaModel0 ) {
+template < class ModelValType >
+Vector < ModelValType > Inversion< ModelValType >::optLambda( const Vector < ModelValType > & deltaData, const Vector < ModelValType > & deltaModel0 ) {
 ALLOW_PYTHON_THREADS
 
     std::vector< double > phiM, phiD;
@@ -1095,7 +1078,7 @@ ALLOW_PYTHON_THREADS
 //    solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
 //                        modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
 //                        lambda_, deltaModel0, maxCGLSIter_, verbose_ );
-    solveCGLSCDWWhtrans( *J_, C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
+    solveCGLSCDWWhtrans( *forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
                         modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
                         lambda_, roughness, maxCGLSIter_, verbose_ );
 
@@ -1119,12 +1102,12 @@ ALLOW_PYTHON_THREADS
 //        solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
 //                          modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
 //                          lambda_, deltaModel0, maxCGLSIter_, verbose_ );
-        solveCGLSCDWWhtrans( *J_, C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
+        solveCGLSCDWWhtrans( *forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
                         modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
                         lambda_, roughness, maxCGLSIter_, verbose_ );
 
         Vec appModel( tM_->invTrans( tModel + deltaModel ) );
-        Vec appResponse( tD_->invTrans( tResponse + *J_ * deltaModel ) );
+        Vec appResponse( tD_->invTrans( tResponse + *forward_->jacobian() * deltaModel ) );
 
         if ( lambdaIter == 1 ) { //* normalize on 1st iteration
 //      	 phiMNorm = getPhiM( appModel );
@@ -1163,10 +1146,6 @@ ALLOW_PYTHON_THREADS
 
     return deltaModel;
 }
-
-/*! standard classes for easier use: inversion with full and sparse jacobian */
-typedef Inversion< double, RMatrix > RInversion;
-typedef Inversion< double, DSparseMapMatrix > RInversionSparse;
 
 } // namespace GIMLI
 

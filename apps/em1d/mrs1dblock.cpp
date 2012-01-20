@@ -133,7 +133,7 @@ int main( int argc, char *argv [] ){
     
 
     //! the inversion class
-    Inversion< double, RMatrix > inv( data, f, verbose, dosave );
+    RInversion inv( data, f, verbose, dosave );
     inv.setTransData( transData );
     inv.setMarquardtScheme( 0.8 ); //! 0th order local decreasing regularization
     inv.setLambda( lambda );

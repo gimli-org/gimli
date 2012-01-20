@@ -23,81 +23,79 @@
 #define _GIMLI_SOLVER__H
 
 #include "gimli.h"
+#include "matrix.h"
 #include "vectortemplates.h"
 
 namespace GIMLI{
 
-template < class Mat, class CMatrix, class Vec >
-int solveCGLSCDWWhtrans( const Mat & S, const CMatrix & C, const Vec & dWeight,
-		  const Vec & b, Vec & x, const Vec & wc, const Vec & wm, const Vec & tm, const Vec & td,
-		  double lambda, const Vec & roughness, int maxIter = 200, bool verbose = false ){ //ALLOW_PYTHON_THREADS
+template < class CMatrix, class Vec >
+int solveCGLSCDWWhtrans( const MatrixBase & S, const CMatrix & C, const Vec & dWeight,
+                        const Vec & b, Vec & x, const Vec & wc, const Vec & wm, const Vec & tm, const Vec & td,
+                        double lambda, const Vec & roughness, int maxIter = 200, bool verbose = false ){ //ALLOW_PYTHON_THREADS
 
     uint nData = b.size();
     uint nModel = x.size();
     uint nConst = C.rows();
 
-  if ( S.rows() != nData )  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
-  if ( S.cols() != nModel ) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
-  if ( C.cols() != nModel ) std::cerr << "C.cols != nModel " << C.cols() << " / " << nModel << std::endl;
-  if ( dWeight.size() != nData ) std::cerr << "dWeight.size() != nData" << dWeight.size() << " != " << nData << std::endl;
-  if ( wc.size() != nConst ) std::cerr << "wc.size() != nConst " << wc.size() << " / " << nConst << std::endl;
-  if ( wm.size() != nModel ) std::cerr << "wm.size() != nModel" << wm.size() << " / " << nModel << std::endl;
-  if ( tm.size() != nModel ) std::cerr << "tm.size() != nModel " << tm.size() << " / " << nModel << std::endl;
-  if ( td.size() != nData ) std::cerr << "td.size() != nData " << td.size() << " / " << nData << std::endl;
-  if ( roughness.size() != nConst ) std::cerr << "roughness.size != nConst " << roughness.size() << " / " << nConst << std::endl;
-
-    
-
+    if ( S.rows() != nData )  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
+    if ( S.cols() != nModel ) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
+    if ( C.cols() != nModel ) std::cerr << "C.cols != nModel " << C.cols() << " / " << nModel << std::endl;
+    if ( dWeight.size() != nData ) std::cerr << "dWeight.size() != nData" << dWeight.size() << " != " << nData << std::endl;
+    if ( wc.size() != nConst ) std::cerr << "wc.size() != nConst " << wc.size() << " / " << nConst << std::endl;
+    if ( wm.size() != nModel ) std::cerr << "wm.size() != nModel" << wm.size() << " / " << nModel << std::endl;
+    if ( tm.size() != nModel ) std::cerr << "tm.size() != nModel " << tm.size() << " / " << nModel << std::endl;
+    if ( td.size() != nData ) std::cerr << "td.size() != nData " << td.size() << " / " << nData << std::endl;
+    if ( roughness.size() != nConst ) std::cerr << "roughness.size != nConst " << roughness.size() << " / " << nConst << std::endl;
   
 //Ch  Vec cdx( transMult( C, Vec( wc * wc * ( C * Vec( wm * deltaX ) ) ) ) * wm * lambda ); // nModel
-  Vec cdx( transMult( C, Vec( wc * roughness ) ) * wm * lambda ); // nModel
-  Vec z( ( b - S * Vec( x / tm ) * td ) * dWeight); // nData
-  Vec p( transMult( S, Vec( z * dWeight * td ) ) / tm - cdx - transMult( C, Vec( wc * wc * ( C * Vec( wm * x ) ) ) ) * wm * lambda );// nModel
-  Vec r( transMult( S, Vec( b * dWeight * dWeight * td ) ) / tm - cdx ); // nModel
+    Vec cdx( transMult( C, Vec( wc * roughness ) ) * wm * lambda ); // nModel
+    Vec z( ( b - S * Vec( x / tm ) * td ) * dWeight); // nData
+    Vec p( transMult( S, Vec( z * dWeight * td ) ) / tm - cdx - transMult( C, Vec( wc * wc * ( C * Vec( wm * x ) ) ) ) * wm * lambda );// nModel
+    Vec r( transMult( S, Vec( b * dWeight * dWeight * td ) ) / tm - cdx ); // nModel
 
-  double accuracy = 1e-08 * dot( r, r );
-  r = p;
+    double accuracy = max( TOLERANCE, 1e-08 * dot( r, r ) );
+    r = p;
 
-  double normR2 = dot( r, r ), normR2old = 0.0;
-  double alpha = 0.0, beta = 0.0;
+    double normR2 = dot( r, r ), normR2old = 0.0;
+    double alpha = 0.0, beta = 0.0;
 
-  int count = 0;
+    int count = 0;
 
-  Vec q( nData );
-  Vec wcp( nConst ); // nBounds
+    Vec q( nData );
+    Vec wcp( nConst ); // nBounds
 
-  while ( count < maxIter && normR2 > accuracy ){
+    while ( count < maxIter && normR2 > accuracy ){
 
-    count ++;
-    q = S * Vec( p / tm ) * dWeight * td;
-    wcp = wc * ( C * Vec( p * wm ) );
+        count ++;
+        q = S * Vec( p / tm ) * dWeight * td;
+        wcp = wc * ( C * Vec( p * wm ) );
 
-    alpha = normR2 / ( dot( q, q ) + lambda * dot( wcp, wcp ) );
-    x += p * alpha;
-    if( (count % 10) == -1 ) { // TOM
-      z = b - S * Vec( x / tm ) * td; // z exakt durch extra Mult.
-      z *= dWeight;
-    } else {
-      z -= q * alpha;
+        alpha = normR2 / ( dot( q, q ) + lambda * dot( wcp, wcp ) );
+        x += p * alpha;
+        if( (count % 10) == -1 ) { // TOM
+            z = b - S * Vec( x / tm ) * td; // z exakt durch extra Mult.
+            z *= dWeight;
+        } else {
+            z -= q * alpha;
+        }
+        r = transMult( S, Vec(z * dWeight * td ) ) / tm - transMult( C, Vec( wc * wc * ( C * Vec( wm * x ) ) ) ) * wm * lambda - cdx;
+
+        normR2old = normR2;
+        normR2 = dot( r, r );
+        beta = normR2 / normR2old;
+        p = r + p * beta;
+#ifndef MINGW
+        if ( verbose ) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
+#endif
     }
-    r = transMult( S, Vec(z * dWeight * td ) ) / tm - transMult( C, Vec( wc * wc * ( C * Vec( wm * x ) ) ) ) * wm * lambda - cdx;
-
-    normR2old = normR2;
-    normR2 = dot( r, r );
-    beta = normR2 / normR2old;
-    p = r + p * beta;
-    #ifndef MINGW
-    if ( verbose ) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
-    #endif
-  }
-  #ifdef MINGW
-  if ( verbose ) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
-  #endif
-  return 1;
+#ifdef MINGW
+    if ( verbose ) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
+#endif
+    return 1;
 }
 
-template < class Mat, class CMatrix, class Vec >
-int solveCGLSCDWWtrans( const Mat & S, const CMatrix & C, const Vec & dWeight,
+template < class CMatrix, class Vec >
+int solveCGLSCDWWtrans( const MatrixBase & S, const CMatrix & C, const Vec & dWeight,
 		  const Vec & b, Vec & x, const Vec & wc, const Vec & mc, const Vec & tm, const Vec & td,
 		  double lambda, const Vec & deltaX, int maxIter = 200, bool verbose = false ){ //ALLOW_PYTHON_THREADS
 
@@ -120,7 +118,7 @@ int solveCGLSCDWWtrans( const Mat & S, const CMatrix & C, const Vec & dWeight,
   Vec p( transMult( S, Vec( z * dWeight * td ) ) / tm - cdx - transMult( C, Vec( wc * wc * ( C * Vec( mc * x ) ) ) ) * mc * lambda );// nModel
   Vec r( transMult( S, Vec( b * dWeight * dWeight * td ) ) / tm - cdx ); // nModel
 
-  double accuracy = 1e-08 * dot( r, r );
+  double accuracy = max( TOLERANCE, 1e-08 * dot( r, r ) );
   r = p;
 
   double normR2 = dot( r, r ), normR2old = 0.0;

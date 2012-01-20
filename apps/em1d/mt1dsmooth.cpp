@@ -99,7 +99,7 @@ int main( int argc, char *argv [] ) {
     f.region( 0 )->setTransModel( transRho );
 
     /*! Set up inversion with full matrix, data and forward operator */
-    Inversion< double, RMatrix > inv( cat( TRP[ 1 ], TRP[ 2 ] ), f, verbose, dosave ); //! only rhoa
+    RInversion inv( cat( TRP[ 1 ], TRP[ 2 ] ), f, verbose, dosave ); //! only rhoa
     inv.setTransData( transRhoa );
     inv.setLambda( lambda );
     inv.setOptimizeLambda( lambdaOpt );

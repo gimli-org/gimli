@@ -170,15 +170,16 @@ RVector MRSModelling::response( const RVector & model ) {
     return RVector( sqrt( outreal * outreal + outimag * outimag ) ); 
 }
     
-void MRSModelling::createJacobian( RMatrix & jacobian, const RVector & model ) {
+void MRSModelling::createJacobian( const RVector & model ) {
     RVector ddr( *KR_ * model );
     RVector ddi( *KI_ * model );
     RVector dda( sqrt( ddr * ddr + ddi * ddi ) );
     
-    jacobian.resize( dda.size(), model.size() );
+    RMatrix * jacobian = dynamic_cast < RMatrix * >( jacobian_ );
+    jacobian->resize( dda.size(), model.size() );
     
     for ( size_t i = 0 ; i < KR_->rows() ; i++ ) {
-        jacobian[ i ] = ( (*KR_)[ i ] * ddr[i] + (*KI_)[ i ] * ddi[i] ) / dda[i];         
+        (*jacobian)[ i ] = ( (*KR_)[ i ] * ddr[i] + (*KI_)[ i ] * ddi[i] ) / dda[i];         
     }
 }
 

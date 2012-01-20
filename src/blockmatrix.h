@@ -23,6 +23,7 @@
 #define GIMLI_BLOCKMATRIX__H
 
 #include "gimli.h"
+#include "matrix.h"
 #include "sparsematrix.h"
 
 //! block matrices for easier inversion, see appendix E in GIMLi tutorial
@@ -30,10 +31,28 @@ namespace GIMLI{
     
 /*! simple example for tutorial purposes */
 /*! Sparse Block Matrix consisting of two horizontally pasted matrices */
-class DLLEXPORT H2SparseMapMatrix {
+class DLLEXPORT H2SparseMapMatrix : public MatrixBase{
 public:
+    
     H2SparseMapMatrix(){}
-    ~H2SparseMapMatrix(){}
+    
+    virtual ~H2SparseMapMatrix(){}
+    
+    virtual Index rows() const { return H1_.rows(); }
+    
+    virtual Index cols() const { return H1_.cols() + H2_.cols(); }
+    
+    virtual void clear() { H1_.clear(); H2_.clear(); }
+    
+    /*! Return this * a  */
+    virtual RVector mult( const RVector & a ) const {
+        return H1_ * a( 0, H1_.cols() ) + H2_ * a( H1_.cols(), cols() );
+    }
+    
+    /*! Return this.T * a */
+    virtual RVector transMult( const RVector & a ) const {
+        return cat( H1_.transMult( a ), H2_.transMult( a ) );
+    }
     
     inline const DSparseMapMatrix & H1() const { return H1_; }
     inline const DSparseMapMatrix & H2() const { return H2_; }
@@ -41,15 +60,9 @@ public:
     inline DSparseMapMatrix & H1() { return H1_; }
     inline DSparseMapMatrix & H2() { return H2_; }
 
-    inline size_t rows() const { return H1_.rows(); }
-    inline size_t cols() const { return H1_.cols() + H2_.cols(); }
-    
-    inline void clear() { H1_.clear(); H2_.clear(); }
-//    inline size_t size() const { return H1_.rows(); }
-//    inline size_t size() { return H1_.size(); }
-//    RVector operator[]( size_t n ){ return RVector( 0 ); }
 protected:
-    DSparseMapMatrix H1_, H2_; // create inplace (or better hold references of it?)
+    //! create inplace (or better hold references of it?)
+    DSparseMapMatrix H1_, H2_; 
 }; // class H2SparseMapMatrix
 
 inline void rank1Update( H2SparseMapMatrix & A, const RVector & u, const RVector & v ) {

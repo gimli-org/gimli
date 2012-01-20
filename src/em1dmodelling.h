@@ -127,6 +127,7 @@ public:
     //! default constructor creating a block model
     FDEM1dRhoModelling( RVector & thk, const RVector & freq, const RVector & coilspacing, double z = 0.0, bool verbose = false )
         : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { }
+        
     FDEM1dRhoModelling( RVector & thk, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false )
         : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { }
     
@@ -151,37 +152,40 @@ public:
             ModellingBase( verbose ), KR_( &KR ), KI_( &KI ) { }
     //! destructor
     virtual ~MRSModelling() { }
-    //! return response voltage for a given water content vector
+    
+    /*! return response voltage for a given water content vector */
     RVector response( const RVector & model );
-    //! create jacobian matrix (AmplitudeJacobian)
-    void createJacobian( RMatrix & jacobian, const RVector & model );
+    
+    /*! create jacobian matrix (AmplitudeJacobian) */
+    void createJacobian( const RVector & model );
         
 protected:
     RMatrix *KR_, *KI_;
 };
 
-/*! Magnetic Resonance Sounding (MRS) modelling */
-/*! non-classical variant using a block model using mapping to classical varian */
-/*! MRS1dBlockModelling( int nlay, RMatrix KR, KI, RVector zvec [, verbose] ) */
+/*! Magnetic Resonance Sounding (MRS) modelling 
+    non-classical variant using a block model using mapping to classical varian 
+    MRS1dBlockModelling( int nlay, RMatrix KR, KI, RVector zvec [, verbose] ) */
 class DLLEXPORT MRS1dBlockModelling : public MRSModelling{
 public:
-    //! constructor using mesh, real/imag matrix and zvector;
+    /*! constructor using mesh, real/imag matrix and zvector */
     MRS1dBlockModelling( Mesh & mesh, RMatrix & KR, RMatrix & KI, RVector & zvec, bool verbose = false ) 
         : MRSModelling( mesh, KR, KI, verbose ), nlay_( ( mesh.cellCount() + 1 ) / 2 ),     
                         nvec_( KR.cols() ),zvec_( zvec ) { 
     }
-    //! constructor using real/imag matrix and zvector;
+    /*! constructor using real/imag matrix and zvector */
     MRS1dBlockModelling( int nlay, RMatrix & KR, RMatrix & KI, RVector & zvec, bool verbose = false ) 
         : MRSModelling( KR, KI, verbose ), nlay_( nlay ), nvec_( KR.cols() ), zvec_( zvec ) { 
             setMesh( createMesh1DBlock( nlay ) ); 
         }
     
     virtual ~MRS1dBlockModelling() { }
-    //! return voltage for a given block model vector;
+    /*! return voltage for a given block model vector */
     RVector response( const RVector & model );
-    //! use default (brute-force) jacobian generator (override the smooth one);
-    void createJacobian( RMatrix & jacobian, const RVector & model ){
-        ModellingBase::createJacobian( jacobian, model );
+    
+    /*! use default (brute-force) jacobian generator (override the smooth one) */
+    void createJacobian( const RVector & model ){
+        ModellingBase::createJacobian( model );
     }
 
 protected:

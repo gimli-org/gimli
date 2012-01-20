@@ -181,11 +181,10 @@ typedef Vector< long > LVector;
 // typedef std::vector < RVector > RMatrix;
 // typedef std::vector < CVector > CMatrix;
 
-template < class ModelValType, class SensMat > class Inversion;
+template < class ModelValType > class Inversion;
 
 /*! standard classes for easier use: inversion with full and sparse jacobian */
-typedef GIMLI::Inversion< double, GIMLI::RMatrix > RInversion;
-typedef GIMLI::Inversion< double, GIMLI::DSparseMapMatrix > RInversionSparse;
+typedef GIMLI::Inversion< double > RInversion;
 
 template < class ValueType > class ElementMatrix;
 

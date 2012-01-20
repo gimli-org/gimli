@@ -139,7 +139,7 @@ int main( int argc, char *argv [] ){
     }
     
     //! the inversion class
-    Inversion< double, RMatrix > inv( data, f, *transData, *transModel, verbose, dosave );
+    RInversion inv( data, f, *transData, *transModel, verbose, dosave );
     inv.setLambda( lambda );
     inv.setOptimizeLambda( lambdaOpt );
     inv.setRobustData( isRobust );

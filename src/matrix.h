@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -37,21 +37,58 @@
 
 namespace GIMLI{
 
+//! Interface class for matrices.
+/*! Pure virtual interface class for matrices. 
+ * If you want your own Jacobian matrix to be used in \ref Inversion or \ref ModellingBase
+ you have to derive your matrix from this class and implement all their members. */
 class MatrixBase{
 public:
+    
+    /*! Default constructor. */
     MatrixBase(){}
     
+    /*! Default destructor. */
     virtual ~MatrixBase(){}
     
     /*! Return number of cols */
-    virtual Index rows() const = 0;
+    virtual Index rows() const {
+       THROW_TO_IMPL
+       return 0;
+    }
 
     /*! Return number of cols */
-    virtual Index cols() const = 0;
+    virtual Index cols() const {
+        THROW_TO_IMPL
+        return 0;
+    }
+    
+//     /*! Resize this matrix to rows, cols */
+//     virtual void resize( Index rows, Index cols ) = 0;
+    
+    /*! Clear the data, set size to zero and frees memory*/
+    virtual void clear() {
+        THROW_TO_IMPL
+    }
+    
+    /*! Return this * a  */
+    virtual RVector mult( const RVector & a ) const {
+       THROW_TO_IMPL
+       return RVector( rows() );
+    }
+    
+    /*! Return this.T * a */
+    virtual RVector transMult( const RVector & a ) const {
+        THROW_TO_IMPL
+        return RVector( cols() );
+    }
+    
+    /*! Save this matrix into the file filename */
+    virtual void save( const std::string & filename ) const {
+        THROW_TO_IMPL
+    }
     
 protected:
 };
-    
     
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
@@ -104,12 +141,12 @@ public:
     /*! Readonly C style index operator, without boundary check.*/
     const Vector< ValueType > & operator [] ( Index i ) const { return mat_[ i ]; }
 
-    /*!*/
+    /*! Index operator for write operations without boundary check*/
     Vector< ValueType > & operator [] ( Index i ) {
-        if ( i < 0 || i > mat_.size()-1 ) {
-            throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
-                                toStr( i ) + " " + toStr( this->rows() ) ) ;
-        }
+//         if ( i < 0 || i > mat_.size()-1 ) {
+//             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
+//                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
+//         }
         return mat_[ i ];
     }
 
@@ -123,7 +160,7 @@ public:
     }
 
     /*! Resize the matrix to rows x cols */
-    inline void resize( Index rows, Index cols ){ allocate_( rows, cols ); }
+    virtual void resize( Index rows, Index cols ){ allocate_( rows, cols ); }
 
     /*! Clear the matrix */
     inline void clear() { mat_.clear(); }
@@ -197,6 +234,47 @@ public:
     /*! Return reference to row flag vector. Maybee you can check if the rows are valid. Size is set automatic to the amount of rows. */
     BVector & rowFlag(){ return rowFlag_; }
 
+    Vector < ValueType > mult( const Vector < ValueType > & b ) const {
+        Index cols = this->cols();
+        Index rows = this->rows();
+
+        Vector < ValueType > ret( rows, 0.0 );
+
+        //register ValueType tmpval = 0;
+        if ( b.size() == cols ){
+            for ( register Index i = 0; i < rows; ++i ){
+                ret[ i ] = sum( (*this)[ i ] * b );
+            }
+        } else {
+            throwLengthError( 1, WHERE_AM_I + " " + toStr( cols ) + " != " + toStr( b.size() ) );
+        }
+        return ret;
+    }
+    
+    Vector< ValueType > transMult( const Vector < ValueType > & b ) const {
+        Index cols = this->cols();
+        Index rows = this->rows();
+
+        Vector < ValueType > ret( cols, 0.0 );
+
+        //register ValueType tmpval = 0;
+
+        if ( b.size() == rows ){
+            for( Index i = 0; i < rows; i++ ){
+                for( Index j = 0; j < cols; j++ ){
+                    ret[ j ] +=  (*this)[ i ][ j ] * b[ i ];
+                }
+            }
+        } else {
+            throwLengthError( 1, WHERE_AM_I + " " + toStr( rows ) + " != " + toStr( b.size() ) );
+        }
+        return ret;
+    }
+    
+    virtual void save( const std::string & filename ) const {
+        saveMatrix( *this, filename );
+    }
+    
 protected:
 
     void allocate_( Index rows, Index cols ){
@@ -232,30 +310,6 @@ DEFINE_BINARY_OPERATOR__( /, DIVID )
 DEFINE_BINARY_OPERATOR__( *, MULT )
 
 #undef DEFINE_BINARY_OPERATOR__
-
-template < class ValueType >
-Vector < ValueType > operator * ( const Matrix < ValueType > & A, const Vector < ValueType > & b ){
-
-    Index cols = A.cols();
-    Index rows = A.rows();
-
-    Vector < ValueType > ret( rows );
-
-    register ValueType tmpval = 0;
-    if ( b.size() == cols ){
-        for ( register Index i = 0; i < rows; ++i ){
-            tmpval = 0;
-            for ( register Index j = 0; j < cols; ++j ) tmpval += A[ i ][ j ] * b[ j ];
-            ret[ i ] = tmpval;
-        }
-//     for ( register Index i = 0; i < rows; ++i ){
-//       ret[ i ] = sum< T >( A[ i ] * v );
-//     }
-    } else {
-        throwLengthError( 1, WHERE_AM_I + " " + toStr( cols ) + " != " + toStr( b.size() ) );
-    }
-    return ret;
-}
 
 template< class ValueType > class Mult{
 public:
@@ -301,38 +355,6 @@ Vector < ValueType > multMT( const Matrix < ValueType > & A, const Vector < Valu
 #endif
 }
 
-template < class ValueType >
-Vector < ValueType > mult( const Matrix < ValueType > & A, const Vector < ValueType > & b ){
-
-    Index cols = A.cols();
-    Index rows = A.rows();
-
-    Vector < ValueType > ret( rows, 0.0 );
-
-    register ValueType tmpval = 0;
-    if ( b.size() == cols ){
-//         for ( Index i = 0; i < rows; ++i ){
-//             tmpval = 0.0;
-//             const ValueType * Aj = &A[i][0];
-//             const ValueType * bj = &b[0];
-//             const ValueType * bje = &b[ cols];
-//            for ( ; bj != bje; ++ bj, ++ Aj) tmpval += *Aj * *bj;
-//
-//            //while (bj != bje) tmpval += *Aj++ * *bj++;
-//
-//             ret[ i ] = tmpval;
-//         }
-//           for (; __first != __last; ++__first)
-// 	__init = __init + *__first;
-//       return __init;
-        for ( register Index i = 0; i < rows; ++i ){
-            ret[ i ] = sum( A[ i ] * b );
-         }
-    } else {
-        throwLengthError( 1, WHERE_AM_I + " " + toStr( cols ) + " != " + toStr( b.size() ) );
-    }
-    return ret;
-}
 
 template < class ValueType >
 bool operator == ( const Matrix< ValueType > & A, const Matrix< ValueType > & B ){
@@ -396,7 +418,7 @@ Matrix < ValueType > fliplr( const Matrix< ValueType > & m ){
     If IOFormat == Ascii matrix will be saved in Ascii format, See: \ref saveMatrixRow
 */
 template < class ValueType >
-bool save( const Matrix < ValueType > & A, const std::string & filename, IOFormat format = Binary ){
+bool saveMatrix( const Matrix < ValueType > & A, const std::string & filename, IOFormat format = Binary ){
     if ( format == Ascii ) return saveMatrixRow( A, filename );
     std::string fname( filename );
     if ( fname.rfind( '.' ) == std::string::npos ) fname += MATRIXBINSUFFIX;
@@ -677,6 +699,31 @@ template < class Matrix > double det( const Matrix & A ){
   }
   return det;
 }
+
+inline void save( const MatrixBase & A, const std::string & filename ){
+    A.save( filename );
+}
+
+inline void save( MatrixBase & A, const std::string & filename ){
+    A.save( filename );
+}
+
+inline RVector operator * ( const MatrixBase & A, const RVector & b ){
+    return A.mult( b );
+}
+
+inline RVector transMult( const MatrixBase & A, const RVector & b ){
+    return A.transMult( b );
+}
+
+inline RVector operator * ( const RMatrix & A, const RVector & b ){
+    return A.mult( b );
+}
+
+DLLEXPORT inline RVector transMult( const RMatrix & A, const RVector & b ){
+    return A.transMult( b );
+}
+
 
 } //namespace GIMLI
 

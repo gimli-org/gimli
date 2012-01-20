@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2009-2012 by the resistivity.net development team       *
  *   Thomas Günther thomas@resistivity.net                                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -40,12 +40,14 @@ public:
         return y;
     }
 
-    /*! optional: generation of jacobian matrix, uncomment for default behaviour (brute force) */
-    void createJacobian( RMatrix & jacobian, const RVector & model ) {
-        if ( jacobian.rows() != x_.size() || jacobian.cols() != nc_ ) jacobian.resize( x_.size(), nc_ );
+    /*! Optional: generation of jacobian matrix, uncomment for default behaviour (brute force) */
+    void createJacobian( const RVector & model ) {
+        RMatrix *J = dynamic_cast < RMatrix * >( jacobian_ );
+        if ( jacobian_->rows() != x_.size() || jacobian_->cols() != nc_ ) J->resize( x_.size(), nc_ );
+        
         for ( size_t i = 0 ; i < nc_ ; i++ )
             for ( size_t j = 0 ; j < x_.size() ; j++ )
-                jacobian[ j ][ i ] = pow( x_[ j ], (double)i );
+                (*J)[ j ][ i ] = pow( x_[ j ], (double)i );
     }
 
     /*! define the startmodel */
@@ -61,6 +63,7 @@ int main( int argc, char *argv [] ){
     std::string datafile;
     int np = 1;
     double lambda = 0.0;
+    bool verbose = true;
     /*! Parse option map using longoption map */
     OptionMap oMap;
     oMap.setDescription("Fits data in datafile with polynominals.");
@@ -76,7 +79,7 @@ int main( int argc, char *argv [] ){
     PolynominalModelling f( np + 1, xy[ 0 ] ); //! two coefficients and x-vector (first data column)
 
     /*! initialize inversion with data and forward operator and set options */
-    RInversion inv( xy[ 1 ], f );
+    RInversion inv( xy[ 1 ], f, verbose, false );
 
     /*! maximum iterations to 1 due to linear problem (not necessary) */
     //inv.setMaxIter( 1 );

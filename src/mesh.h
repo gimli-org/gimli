@@ -459,7 +459,7 @@ protected:
         return cellVector_.back();
     }
 
-    Node * createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, int > & nodeMatrix );
+    Node * createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, Index > & nodeMatrix );
 
     int createRefined2D_( const Mesh & mesh, const std::vector < int > & cellIdx );
 

@@ -127,14 +127,16 @@ RVector HarmonicModelling::response( const RVector & par, const RVector tvec ){
     return ret;
 }
 
-void HarmonicModelling::createJacobian( RMatrix & jacobian, const RVector & model ) {
+void HarmonicModelling::createJacobian( const RVector & model ) {
     //!! jacobian = transpose( A );
-    if ( jacobian.rows() != nt_ || jacobian.cols() != np_ ) {
-        jacobian.resize( nt_, np_ );
+    RMatrix * jacobian = dynamic_cast < RMatrix * > ( jacobian_ );
+    
+    if ( jacobian->rows() != nt_ || jacobian->cols() != np_ ) {
+        jacobian->resize( nt_, np_ );
 
         for ( size_t i = 0 ; i < np_ ; i++ ){
             for ( size_t j = 0 ; j < nt_ ; j++ ){
-                jacobian[ j ][ i ] = A_[ i ][ j ];
+                (*jacobian)[ j ][ i ] = A_[ i ][ j ];
             }
         }
     }

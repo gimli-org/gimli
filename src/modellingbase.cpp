@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2005-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -56,12 +56,19 @@ ModellingBase::ModellingBase( const Mesh & mesh, DataContainer & data, bool verb
 ModellingBase::~ModellingBase( ) {
     delete regionManager_;
     if ( mesh_ ) delete mesh_;
+    if ( jacobian_ && ownJacobian_ ) delete jacobian_;
 }
 
 void ModellingBase::init_() {
     regionManager_      = new RegionManager( verbose_ );
+    regionManagerInUse_ = false;
+    
     mesh_               = NULL;
-    regionManagerInUse_  = false;
+    jacobian_           = NULL;
+
+    ownJacobian_        = false;
+    
+    initJacobian();
 }
 
 void ModellingBase::setData( DataContainer & data ){
@@ -147,13 +154,35 @@ void ModellingBase::setMesh_( const Mesh & mesh ){
     (*mesh_) = mesh;
 }
 
-/*! create Jacobian matrix using brute force approach */
-void ModellingBase::createJacobian( RMatrix & jacobian, const RVector & model ){
+void ModellingBase::initJacobian( ){
+    if ( !jacobian_ ){
+        jacobian_ = new RMatrix();
+        ownJacobian_ = true;
+    }
+}
+
+void ModellingBase::setJacobian( MatrixBase * J ){
+    if ( !jacobian_ && ownJacobian_ ){
+        delete jacobian_;
+    }
+    jacobian_ = J;
+    ownJacobian_ = false;
+}
+
+void ModellingBase::createJacobian( const RVector & model ){
     if ( verbose_ ) std::cout << "Create Jacobian matrix (brute force) ...";
 
     Stopwatch swatch( true );
     RVector resp( response( model ) );
-    if ( jacobian.rows() != resp.size() ){ jacobian.resize( resp.size(), model.size() ); }
+
+    if ( !jacobian_ ){
+        this->initJacobian();
+    }
+    
+
+    RMatrix *J = dynamic_cast< RMatrix * >( jacobian_ );
+    
+    if ( J->rows() != resp.size() ){ J->resize( resp.size(), model.size() ); }
 
     double fak = 1.05;
     for ( size_t i = 0; i < model.size(); i++ ) {
@@ -162,22 +191,14 @@ void ModellingBase::createJacobian( RMatrix & jacobian, const RVector & model ){
         RVector respChange( response( modelChange ) );
 
         for ( size_t j = 0; j < resp.size(); j++ ){
-            jacobian[ j ][ i ] = ( respChange[ j ] - resp[ j ] ) / ( modelChange[ i ] - model[ i ] );
+            (*J)[ j ][ i ] = ( respChange[ j ] - resp[ j ] ) / ( modelChange[ i ] - model[ i ] );
         }
     }
 
     swatch.stop();
     if ( verbose_ ) std::cout << " ... " << swatch.duration() << " s." << std::endl;
 }
-
-void ModellingBase::createJacobian( DSparseMapMatrix & jacobian, const RVector & model ){
-    CERR_TO_IMPL
-}
-
-void ModellingBase::createJacobian( H2SparseMapMatrix & jacobian, const RVector & model ){
-    CERR_TO_IMPL
-}
-
+    
 void ModellingBase::mapModel( const RVector & model, double background ){
     int marker = -1;
     std::vector< Cell * > emptyList;
@@ -238,8 +259,8 @@ RVector ModellingBase::createStartVector( ) {
 }
 
 
-LinearModelling::LinearModelling( const RMatrix * A, bool verbose )
-    : ModellingBase( verbose ), A_( A ) {
+LinearModelling::LinearModelling( const MatrixBase & A, bool verbose )
+    : ModellingBase( verbose ), A_( & A ) {
     this->regionManager().setParameterCount( A_->cols() );
 }
 

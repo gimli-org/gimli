@@ -89,7 +89,7 @@ int main( int argc, char *argv [] ) {
     f.region( 1 )->setTransModel( transRho );
 
     /*! Set up inversion with full matrix, data and forward operator */
-    Inversion< double, RMatrix > inv( cat( TRP[ 1 ], TRP[ 2 ] ), f, verbose, dosave ); //! only rhoa
+    Inversion< double > inv( cat( TRP[ 1 ], TRP[ 2 ] ), f, verbose, dosave ); //! only rhoa
     inv.setTransData( transRhoa );
     inv.setMarquardtScheme( 0.8 ); //! Marquardt method
     inv.setLambda( lambda );

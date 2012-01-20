@@ -1,5 +1,5 @@
 #!/bin/bash
-MAKEOPTS=-j7
+MAKEOPTS=-j5
 mkdir -p generated
 
 [ -f _pygimli_.cache ] && rm _pygimli_.cache

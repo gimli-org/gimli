@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2005-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -62,16 +62,33 @@ public:
 
     inline Mesh * mesh() { return mesh_; }
 
-#ifndef PYGIMLI
-    // temporary exclusion hack for python bindings, think about abstract base class for matrices
-    template < class Matrix > void createJacobian( Matrix & jacobian, const RVector & model );
-#endif
-    virtual void createJacobian( RMatrix & jacobian, const RVector & model );
-
-    virtual void createJacobian( DSparseMapMatrix & jacobian, const RVector & model );
-
-    virtual void createJacobian( H2SparseMapMatrix & jacobian, const RVector & model );
-
+    /*! Set external jacobian */
+    virtual void setJacobian( MatrixBase * J );
+    
+    /*! Create and fill the Jacobian matrix with a given model vector. */
+    virtual void createJacobian( const RVector & model );
+    
+    /*! Here you should initialize your Jacobian matrix. Default is RMatrix()*/
+    virtual void initJacobian( );
+    
+    /*! Return the pointer to the Jacobian matrix associated with this forward operator. */
+    virtual MatrixBase * jacobian( ) { return jacobian_; }
+    
+    /*! Return the pointer to the Jacobian matrix associated with this forward operator. */
+    virtual MatrixBase * jacobian( ) const { return jacobian_; }
+    
+    /*! Return the Jacobian Matrix (read only) associated with this forward operator. 
+     *  Throws an exception if the jacobian is not initialized. Cannot yet be overloaded py pyplusplus (Warning 1049). */
+    virtual RMatrix & jacobianRef( ) const { 
+        if ( ! jacobian_ ) {
+            throwError( 1, WHERE_AM_I + " Jacobian matrix is not initialized." );
+        }
+        return *dynamic_cast< RMatrix * >( jacobian_ ); 
+    }
+    
+    /*! Clear Jacobian matrix. */
+    virtual void clearJacobian( ){ jacobian_->clear(); }
+    
     const RMatrix & solution() const { return solutions_; }
 
     void createRefinedForwardMesh( bool refine = true, bool pRefine = false );
@@ -100,6 +117,8 @@ public:
     uint threadCount( ) const { return nThreads_; }
 
 protected:
+    virtual void init_();
+    
     virtual void deleteMeshDependency_(){}
 
     virtual void updateMeshDependency_(){}
@@ -107,21 +126,22 @@ protected:
     virtual void updateDataDependency_(){}
 
     void setMesh_( const Mesh & mesh );
+    
+    Mesh                    * mesh_;
 
-    virtual void init_();
+    DataContainer           * dataContainer_;
 
-    Mesh                     * mesh_;
+    MatrixBase              * jacobian_;
+    
+    bool                    ownJacobian_;
+    
+    RMatrix                     solutions_;
 
-    DataContainer            * dataContainer_;
-
+    RVector                 startModel_;
+    
     bool                       verbose_;
-
-    //region std::vector < int >        cellMapIndex_;
-    RMatrix                    solutions_;
-
+    
     bool                       regionManagerInUse_;
-
-    RVector                    startModel_;
     
     uint nThreads_;
     
@@ -136,13 +156,13 @@ private:
 */
 class DLLEXPORT LinearModelling : public ModellingBase {
 public:
-    LinearModelling( Mesh & mesh, const RMatrix & A, bool verbose = false )
+    LinearModelling( Mesh & mesh, const MatrixBase & A, bool verbose = false )
         : ModellingBase( mesh, verbose ), A_( &A ) { }
 
-    LinearModelling( Mesh & mesh, const RMatrix * A, bool verbose = false )
+    LinearModelling( Mesh & mesh, const MatrixBase * A, bool verbose = false )
         : ModellingBase( mesh, verbose ), A_( A ) { }
 
-    LinearModelling( const RMatrix * A, bool verbose = false );
+    LinearModelling( const MatrixBase & A, bool verbose = false );
 
     virtual ~LinearModelling() { }
 
@@ -151,10 +171,9 @@ public:
 
     RVector createDefaultStartModel( );
 
-    //void createJacobian( RMatrix & jacobian, const RVector & model ) { return *A_; }
 protected:
 
-    const RMatrix * A_;
+    const MatrixBase * A_;
 };
 
 
