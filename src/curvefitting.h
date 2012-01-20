@@ -99,7 +99,7 @@ public:
     virtual RVector response( const RVector & par, const RVector tvec );
 
     /*! optional: generation of jacobian matrix, uncomment for default behaviour (brute force) */
-    virtual void createJacobian( RMatrix & jacobian, const RVector & model );
+    virtual void createJacobian( const RVector & model );
 
     /*! Define the startmodel */
     inline virtual RVector startModel( ){ return RVector( np_, 0.0 ); }

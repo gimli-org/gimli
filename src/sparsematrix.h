@@ -25,6 +25,7 @@
 #include "elementmatrix.h"
 #include "vector.h"
 #include "vectortemplates.h"
+#include "matrix.h"
 #include "mesh.h"
 #include "node.h"
 #include "meshentities.h"
@@ -145,7 +146,7 @@ private:
 
 
 //! based on: Ulrich Breymann, Addison Wesley Longman 2000 , revised edition ISBN 0-201-67488-2, Designing Components with the C++ STL
-template< class ValueType, class IndexType > class SparseMapMatrix {
+template< class ValueType, class IndexType > class SparseMapMatrix : public MatrixBase {
 public:
     typedef std::pair< IndexType, IndexType > IndexPair;
     typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;
@@ -184,7 +185,7 @@ public:
         }
     }
 
-    inline void clear() {
+    virtual void clear() {
         C_.clear();
         cols_ = 0; rows_ = 0;
     }
@@ -290,7 +291,36 @@ public:
         }
     }
 
-    int save( const std::string & filename ) const {
+    
+    /*! Return this * a  */
+    virtual RVector mult( const RVector & a ) const {
+        RVector ret( this->rows(), 0.0 );
+        THROW_TO_IMPL
+        return ret;
+    }
+    
+    /*! Return this.T * a */
+    virtual RVector transMult( const RVector & a ) const {
+        RVector ret( this->cols(), 0.0 );
+        THROW_TO_IMPL
+        return ret;
+    }
+    
+//     /*! Return this * a  */
+//     virtual Vector < ValueType > mult( const Vector < ValueType > & a ) const {
+//         Vector < ValueType > ret( this->rows(), 0.0 );
+//         THROW_TO_IMPL
+//         return ret;
+//     }
+//     
+//     /*! Return this.T * a */
+//     virtual Vector < ValueType > transMult( const Vector < ValueType > & a ) const {
+//         Vector < ValueType > ret( this->cols(), 0.0 );
+//         THROW_TO_IMPL
+//         return ret;
+//     }
+    
+    void save( const std::string & filename ) const {
         std::fstream file; openOutFile( filename, &file );
 
         for ( const_iterator it = begin(); it != end(); it ++ ){
@@ -298,10 +328,9 @@ public:
         }
 
         file.close();
-        return 1;
     }
 
-    int load( const std::string & filename ){
+    void load( const std::string & filename ){
         std::fstream file; openInFile( filename, &file );
         std::vector < IndexType > vi, vj;
         std::vector < ValueType > vval;
@@ -319,7 +348,6 @@ public:
         for ( Index i = 0; i < vi.size(); i ++ ){
             (*this)[ vi[ i ] ][ vj[ i ] ] = vval[ i ];
         }
-        return 1;
     }
 
 protected:

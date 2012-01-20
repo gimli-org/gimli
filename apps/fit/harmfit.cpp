@@ -67,11 +67,13 @@ public:
     }
 
     /*! optional: generation of jacobian matrix, uncomment for default behaviour (brute force) */
-    void createJacobian( RMatrix & jacobian, const RVector & model ) {
-        if ( jacobian.rows() != nt_ || jacobian.cols() != np_ ) jacobian.resize( nt_, np_ );
+    void createJacobian( const RVector & model ) {
+        RMatrix * J = dynamic_cast < RMatrix * > ( jacobian_ );
+        
+        if ( J->rows() != nt_ || J->cols() != np_ ) J->resize( nt_, np_ );
         for ( size_t i = 0 ; i < np_ ; i++ )
             for ( size_t j = 0 ; j < nt_ ; j++ )
-                jacobian[ j ][ i ] = A_[ i ][ j ];
+                (*J)[ j ][ i ] = A_[ i ][ j ];
     }
 
     /*! define the startmodel */

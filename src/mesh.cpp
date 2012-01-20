@@ -700,7 +700,7 @@ int Mesh::createRefined2D_( const Mesh & mesh, const std::vector < int > & cellI
 
   Node *n0 = NULL, *n1 = NULL, *n2 = NULL, *n3 = NULL, *n4 = NULL; Node *n5 = NULL;
 
-  SparseMapMatrix < Node *, int > nodeMatrix( nodeCount(), nodeCount() );
+  SparseMapMatrix < Node *, Index > nodeMatrix( nodeCount(), nodeCount() );
 
   //** create nodes for all for refinement selected cell;
   for ( int i = 0, imax = cellIdx.size(); i < imax; i ++ ){
@@ -816,7 +816,7 @@ int Mesh::createRefined2D_( const Mesh & mesh, const std::vector < int > & cellI
 return 1;
 }
 
-Node * Mesh::createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, int > & nodeMatrix ){
+Node * Mesh::createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, Index > & nodeMatrix ){
     Node * n = NULL;
     if ( ( n = nodeMatrix[ n0->id() ][ n1->id() ] ) == NULL ){
         n = this->createNode( ( n0->pos() + n1->pos() ) / 2.0, markerT( n0, n1 ) );
@@ -831,7 +831,7 @@ void Mesh::createP2Mesh( const Mesh & mesh ){
 
     for ( uint i = 0, imax = mesh.nodeCount(); i < imax; i ++ ) this->createNode( mesh.node( i ) );
 
-    SparseMapMatrix < Node *, int > nodeMatrix( nodeCount(), nodeCount() );
+    SparseMapMatrix < Node *, Index > nodeMatrix( nodeCount(), nodeCount() );
     std::vector < Node * > n;
 
     if ( dimension_ == 1 ){
@@ -941,7 +941,7 @@ int Mesh::createRefined3D_( const Mesh & mesh, const std::vector < int > & cellI
   Node *n5 = NULL, *n6 = NULL, *n7 = NULL, *n8 = NULL, *n9 = NULL;
   Boundary * face = NULL;
 
-  SparseMapMatrix < Node *, int > nodeMatrix( nodeCount(), nodeCount() );
+  SparseMapMatrix < Node *, Index > nodeMatrix( nodeCount(), nodeCount() );
 
   for ( int i = 0, imax = cellIdx.size(); i < imax; i ++ ){
     //        std::cout << "boundcount: " << cellIdx.size() << " " << this->boundaryCount() << " " << mesh.boundaryCount()<< std::endl;

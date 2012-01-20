@@ -34,11 +34,11 @@
 
 namespace GIMLI{
 
-template < class Vec > bool save( const Vec & a, const std::string & filename, IOFormat format = Ascii ){
+template < class ValueType > bool save( std::vector < ValueType > & a, const std::string & filename, IOFormat format = Ascii ){
     return saveVec( a, filename, format );
 }
 
-template < class Vec > bool load( Vec & a, const std::string & filename, IOFormat format = Ascii,
+template < class ValueType > bool load( std::vector < ValueType > & a, const std::string & filename, IOFormat format = Ascii,
                                   bool verbose = true ){
     return loadVec( a, filename, format, verbose );
 }
@@ -185,7 +185,7 @@ template < class T, class Iter, template < class T, class Iter > class Vec > T s
 template < class Vec > void echoMinMax( const Vec & vec, const std::string & name ){
     if ( vec.size() > 0 ){
         std::cout << "min " << name << " = " << min( vec )
-              << " max " << name << " = " << max( vec ) << std::endl;
+              << " max " << name << " = " << max( vec ) << " (" << vec.size() << ")" << std::endl;
     } else {
         std::cout << "min " << name << " = ndef."
               << " max " << name << " = ndef." << std::endl;
@@ -297,38 +297,6 @@ void randn( Vector< ValueType > & vec ){
     }
 }
     
-// static uint counter__;
-//   counter__ ++;
-//   std::cout << "mat*vec: << " << counter__ << std::endl;
-// template < class ValueType >
-// Vector < ValueType > operator * ( const std::vector < Vector < ValueType > > & A,
-//                                   const Vector < ValueType > & v ){
-//   Vector < ValueType > tmp( A.size() );
-//
-//   register double tmp0 = 0.0;
-//
-//   for( int i = 0, imax = A.size(); i < imax; i++ ){
-//     tmp0 = 0.0;
-//     for( int j = 0, jmax = v.size(); j < jmax; j++ ){
-//       tmp0 += A[ i ][ j ] * v[ j ];
-//     }
-//     tmp[ i ] = tmp0;
-//   }
-//   return tmp;
-// }
-
-template <class Matrix, class Vec> Vec transMult( const Matrix & A, const Vec & v ){
-  Vec tmp( A[ 0 ].size() );
-
-  for( int i = 0, imax = v.size(); i < imax; i++ ){
-    //    cout << i << " " << A[ i ].size() << endl;
-    for( int j = 0, jmax = A[ 0 ].size(); j < jmax; j++ ){
-      tmp[ j ] +=  A[ i ][ j ] * v[ i ];
-    }
-  }
-  return tmp;
-}
-
 } // namespace GIMLI{
 
 #endif // _GIMLI_VECTORTEMPLATES__H

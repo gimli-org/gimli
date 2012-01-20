@@ -20,13 +20,20 @@
 
 #include "ttdijkstramodelling.h"
 
-#include "numericbase.h"
+#define NEWREGION 33333
+
+#include "blockmatrix.h"
+#include "datacontainer.h"
 #include "elementmatrix.h"
-#include "sparsematrix.h"
 #include "pos.h"
 #include "mesh.h"
-#include "datacontainer.h"
+#include "meshgenerators.h"
+#include "numericbase.h"
 #include "regionManager.h"
+#include "sparsematrix.h"
+
+
+
 
 #include <vector>
 #include <queue>
@@ -99,6 +106,14 @@ std::vector < int > Dijkstra::shortestPathTo( int node ) const {
 //        return response( slowness, background );
 //    }
 
+TravelTimeDijkstraModelling::TravelTimeDijkstraModelling( Mesh & mesh, DataContainer & dataContainer, bool verbose )
+: ModellingBase( dataContainer, verbose ), background_( 1e16 ) {
+
+    this->setMesh( mesh );
+        
+    this->initJacobian();
+}
+    
 RVector TravelTimeDijkstraModelling::createDefaultStartModel( ) {
     RVector vec( this->regionManager().parameterCount(), findMedianSlowness() );
     return vec;
@@ -107,9 +122,9 @@ RVector TravelTimeDijkstraModelling::createDefaultStartModel( ) {
 Graph TravelTimeDijkstraModelling::createGraph( ) {
     Graph meshGraph;
 
-        double dist, oldTime, newTime;
-        for ( uint i = 0; i < mesh_->cellCount(); i ++ ) {
-            for ( uint j = 0; j < mesh_->cell( i ).nodeCount(); j ++ ) {
+    double dist, oldTime, newTime;
+    for ( uint i = 0; i < mesh_->cellCount(); i ++ ) {
+        for ( uint j = 0; j < mesh_->cell( i ).nodeCount(); j ++ ) {
                 Node *na = &mesh_->cell( i ).node( j );
                 Node *nb = &mesh_->cell( i ).node( ( j + 1 )%mesh_->cell( i ).nodeCount() );
                 dist = na->pos().distance( nb->pos() );
@@ -121,11 +136,12 @@ Graph TravelTimeDijkstraModelling::createGraph( ) {
                 }
                 meshGraph[ na->id() ][ nb->id() ] = newTime;
                 meshGraph[ nb->id() ][ na->id() ] = newTime;
-            }
-            if ( mesh_->cell( i ).rtti() == MESH_TETRAHEDRON_RTTI ||
-                    mesh_->cell( i ).rtti() == MESH_TETRAHEDRON10_RTTI ) {
-                Node *na = &mesh_->cell( i ).node( 0 );
-                Node *nb = &mesh_->cell( i ).node( 2 );
+        }
+        if ( mesh_->cell( i ).rtti() == MESH_TETRAHEDRON_RTTI ||
+             mesh_->cell( i ).rtti() == MESH_TETRAHEDRON10_RTTI ) {
+             
+            Node *na = &mesh_->cell( i ).node( 0 );
+            Node *nb = &mesh_->cell( i ).node( 2 );
                 dist = na->pos().distance( nb->pos() );
                 oldTime = meshGraph[ na->id() ][ nb->id() ];
                 newTime = dist * mesh_->cell( i ).attribute();
@@ -139,8 +155,8 @@ Graph TravelTimeDijkstraModelling::createGraph( ) {
                 newTime = dist * mesh_->cell( i ).attribute();
                 meshGraph[ na->id() ][ nb->id() ] = newTime;
                 meshGraph[ nb->id() ][ na->id() ] = newTime;
-            }
         }
+    }
     return meshGraph;
 }
 
@@ -231,6 +247,20 @@ RVector TravelTimeDijkstraModelling::response( const RVector & slowness ) {
     return  resp;
 }
 
+void TravelTimeDijkstraModelling::initJacobian( ){
+    if ( jacobian_ && ownJacobian_ ){
+        delete jacobian_;
+    }
+    jacobian_ = new DSparseMapMatrix();
+    ownJacobian_ = true;
+}
+
+
+void TravelTimeDijkstraModelling::createJacobian( const RVector & slowness ) {
+    DSparseMapMatrix * jacobian = dynamic_cast < DSparseMapMatrix * > ( jacobian_ );
+    this->createJacobian( *jacobian, slowness );
+}
+    
 void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, const RVector & slowness ) {
     if ( background_ < TOLERANCE ) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
@@ -328,15 +358,75 @@ void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, c
     if ( verbose_ ) file.close( );
 }
 
-/*
-    RVector TravelTimeDijkstraModellingOffset::response( const RVector & slowness, double background ) {
-        RVector tmp = TravelTimeDijkstraModelling::response( slowness, background );
-        for ( size_t dataIdx = 0; dataIdx < dataContainer_->size(); dataIdx ++ ) {
-            tmp[ dataIdx ] += offsets_[ (*dataContainer_)( dataIdx ).aIdx() ];
-        }
-        return tmp;
+TTModellingWithOffset::TTModellingWithOffset( Mesh & mesh, DataContainer & dataContainer, bool verbose ) 
+: TravelTimeDijkstraModelling( mesh, dataContainer, verbose ) {
+    
+    //! find occuring shots, and map them to indices starting from zero
+    shots_ = unique( sort( dataContainer.get("s") ) );
+    std::cout << "found " << shots_.size() << " shots." << std::endl;
+    for ( size_t i = 0 ; i < shots_.size() ; i++ ) {
+        shotMap_.insert( std::pair< int, int >( shots_[ i ], i ) );
+    }
+    
+    //! create new region containing offsets with special marker
+    
+    offsetMesh_ = createMesh1D( shots_.size() );
+    for ( size_t i = 0 ; i < offsetMesh_.cellCount() ; i++ ) {
+        offsetMesh_.cell( i ).setMarker( NEWREGION );
+    }
+    
+    regionManager().addRegion( NEWREGION, offsetMesh_ );
+    
+    this->initJacobian( );
+}
+
+TTModellingWithOffset::~TTModellingWithOffset() { }
+
+RVector TTModellingWithOffset::createDefaultStartModel() { 
+    return cat( TravelTimeDijkstraModelling::createDefaultStartModel(), RVector( shots_.size() ) );
+}
+    
+RVector TTModellingWithOffset::response( const RVector & model ) {
+    //! extract slowness from model and call old function
+        
+    RVector slowness( model, 0, model.size() - shots_.size() );
+    RVector offsets( model, model.size() - shots_.size(), model.size() ); 
+    RVector resp = TravelTimeDijkstraModelling::response( slowness ); //! normal response
+    RVector shotpos = dataContainer_->get( "s" );
+
+    for ( size_t i = 0; i < resp.size() ; i++ ){
+        resp[ i ] += offsets[ shotMap_[ shotpos[ i ] ] ];
+    }
+        
+    return resp;
+}
+    
+void TTModellingWithOffset::initJacobian( ){
+    if ( jacobian_ && ownJacobian_ ){
+        delete jacobian_;
+    }
+    jacobian_ = new H2SparseMapMatrix();
+    ownJacobian_ = true;
+}
+
+void TTModellingWithOffset::createJacobian( const RVector & model ){
+    
+    H2SparseMapMatrix *jacobian = dynamic_cast < H2SparseMapMatrix* > ( jacobian_ );
+    //! extract slowness from model and call old function
+    
+    RVector slowness( model, 0, model.size() - shots_.size() );
+    RVector offsets( model, model.size() - shots_.size(), model.size() );  
+        
+    TravelTimeDijkstraModelling::createJacobian( jacobian->H1(), slowness );
+    jacobian->H2().setRows( dataContainer_->size() );
+    jacobian->H2().setCols( offsets.size() );
+    
+    //! set 1 entries for the used shot
+    RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
+
+    for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
+        jacobian->H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
     }
 }
-*/
 
 } // namespace GIMLI{

@@ -171,7 +171,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template class Pos< double >;
     template class Quaternion< double >;
 
-    template class Inversion< double, RMatrix >;
+    template class Inversion< double >;
 
     template class Trans< RVector >;
     template class TransLinear< RVector >;
@@ -340,7 +340,7 @@ namespace pyplusplus{ namespace aliases{
 
     typedef GIMLI::Quaternion< double >                  RQuaternion;
 
-    typedef GIMLI::Inversion< double, RMatrix >          RInversion;
+    typedef GIMLI::Inversion< double >                   RInversion;
 //     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
 
     typedef GIMLI::ElementMatrix< double >                   DElementMatrix;

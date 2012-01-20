@@ -21,3 +21,16 @@ for regEntry in self.fop.regionManager().regions():
 pygimli.gui
 
 active state manager (tab, tree, toolbar, pi -- activation management)
+
+---------------------------------------------
+c++ -> python converter:
+
+virtual void foo1( )            // works
+virtual void foo2( ) const      // works
+virtual RMatrix foo3( )         // works
+virtual RMatrix foo4( ) const   // works
+virtual RMatrix & foo5( ) const // works but cannot be overwriten in python
+virtual RMatrix & foo6( )       // works but cannot be overwriten in python
+virtual RMatrix * foo7( ) const // works
+virtual RMatrix * foo8( )       // works
+        

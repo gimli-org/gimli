@@ -66,8 +66,6 @@ public:
 
     virtual void setForwardOperator( ModellingBase & fop ) = 0;
 
-    virtual void clearJacobian( ) = 0;
-
     virtual void clearConstraints() = 0;
 
     virtual const ModelVector & cWeight( ) const = 0;
