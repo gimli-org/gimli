@@ -35,15 +35,13 @@ class TestModelling( g.ModellingBase ):
         res = g.RVector( 1, 1.0)
         return res
     
-    def pJacobian( self ):
+    def jacobian( self ):
         print "TestModelling::jacobian()"
         return self.mat
     
     def createJacobian( self, model ):
         print "TestModelling::createJacobian"
             
-
-    
 F = TestModelling( )
 
 dat = g.RVector( 1, 1)

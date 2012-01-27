@@ -86,6 +86,13 @@ public:
         return *dynamic_cast< RMatrix * >( jacobian_ ); 
     }
     
+    virtual RMatrix & jacobianRef( ) { 
+        if ( ! jacobian_ ) {
+            throwError( 1, WHERE_AM_I + " Jacobian matrix is not initialized." );
+        }
+        return *dynamic_cast< RMatrix * >( jacobian_ ); 
+    }
+    
     /*! Clear Jacobian matrix. */
     virtual void clearJacobian( ){ jacobian_->clear(); }
     
