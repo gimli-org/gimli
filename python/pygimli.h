@@ -230,7 +230,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template bool load( RVector &v, const std::string & fname, IOFormat format = Ascii,
                         bool verbose = true );
 
-    template bool save( const RMatrix & A, const std::string & filename, IOFormat format = Binary );
+  //  template bool save( const RMatrix & A, const std::string & filename, IOFormat format = Binary );
     template bool load( RMatrix & A, const std::string & filename );
 
     template bool loadMatrixSingleBin( RMatrix & A, const std::string & filename );
