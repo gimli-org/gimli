@@ -131,7 +131,7 @@ int main( int argc, char *argv [] ) {
     RVector model;
 
     /*! Set up inversion with full matrix, data and forward operator */
-    Inversion< double, H2SparseMapMatrix > inv( dataIn.get( "t" ), f, verbose );
+    RInversion inv( dataIn.get( "t" ), f, verbose );
     inv.setAbsoluteError( errTime );
 
     /*! actual computation: run the inversion */

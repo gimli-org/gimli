@@ -16,7 +16,7 @@ Whereas DC resistivity yields apparent resistivities, the FDEM data are expresse
 
 The two ready methods \lstinline|DC1dModelling| and \lstinline|FDEM1dModelling| are very easily combined since they use the same block model.
 In the response function the two vectors are combined.
-We create a new modelling class that derives from the base modelling class\footnote{In order to use the classes, dc1dmodelling.h and em1dmodelling.h have to be included.} and has two members of the individual classes, which must be initialized in the constructor.
+We create a new modelling class that derives from the base modelling class\footnote{In order to use the classes, \file{dc1dmodelling.h} and \file{em1dmodelling.h} have to be included.} and has two members of the individual classes, which must be initialized in the constructor.
 Alternatively we could derive from one of the two classes and use only a member of the other.
 
 \begin{lstlisting}[language=C++,morekeywords={RVector,RMatrix}]
@@ -67,7 +67,7 @@ In the code we create a synthetic model \lstinline|synthModel|, calculate the fo
 \end{lstlisting}
 
 The inversion is converging to a $\chi^2$ value of about 1, i.e. we fit the data within error bounds.
-Finally a resolution analysis is done to determine how well the individual parameters (2 thicknesses and 3 resistivities) are determined.
+Finally a resolution analysis is done to determine how well the individual parameters (2 thickness and 3 resistivitiy values) are determined.
 We can compare it with single inversions by drastically increasing the error level for one of the methods by a factor of 10.
 Table \ref{tab:dcemresolution} shows the resulting diagonal values of the resolution matrix for a three-layer model.
 The first layer is well resolved in all variants except the first layer resistivity for EM.
@@ -171,7 +171,7 @@ On smooth model discretizations of any dimension the exchange of geometrical inf
 Main idea is to decrease the weight for the roughness operator of one method depending on the partial derivative of the other.
 A large roughness as a possible interface should enable the interface on the other side by a low weight.
 There are different possible functions for doing so.
-Originally, a iteratively reweighted least squares scheme was proposed that incorporates the whole distribution.
+Originally, a iteratively re-weighted least squares scheme was proposed that incorporates the whole distribution.
 Here we use a simple function
 \begin{equation}
     w_c(r) = \frac{a}{|r|+a}+a

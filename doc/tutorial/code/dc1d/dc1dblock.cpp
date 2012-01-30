@@ -64,7 +64,7 @@ int main( int argc, char *argv [] )
     model[ nlay ] *= 1.5;
 
     /*! Set up inversion with full matrix, data and forward operator */
-    Inversion< double, RMatrix > inv( rhoa, f, verbose );
+    RInversion inv( rhoa, f, verbose );
     inv.setTransData( transRhoa );
     inv.setLambda( lambda );
     inv.setRelativeError( errPerc / 100 );      //! error model

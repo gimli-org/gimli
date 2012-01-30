@@ -36,7 +36,7 @@ As soon they meet the requirements, the inversion can be setup and run with 2 li
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Minimisation and regularization methods}\label{sec:mini}
 Assume we have a discrete number of data $d_i$ assembled in a data vector $\d=[d_1,\ldots,d_D]^T$.
-We want to find a parameter distribution represented by a discrete model vector $\m=[m_1,\ldots,m_M]^T$ such that the forwad response $\f(\m)$ approximates $\d$.
+We want to find a parameter distribution represented by a discrete model vector $\m=[m_1,\ldots,m_M]^T$ such that the forward response $\f(\m)$ approximates $\d$.
 To each datum a variance $\delta d_i$ is associated.
 By weighting the individual misfit $f_i-d_i$ with $\delta d_i$ we obtain a unit-less misfit vector, such that different data are combined easily.
 
@@ -56,7 +56,7 @@ We concentrate on explicit and global regularization (CITE) and use a generalize
 
 $\m^R$ represents a reference model.
 The matrix $\C$ is a derivative matrix or an identity matrix or a mixture of it.
-In the first neighboring relations are taken into account (smoothness constraints), whereas in the latter (zeroth order smoothness) they are not.
+In the first neighbouring relations are taken into account (smoothness constraints), whereas in the latter (zeroth order smoothness) they are not.
 The assumption of a smooth model is often the only choice to cope with ill-posedness and limited resolution.
 However the degree of smoothness can be controlled flexibly with the mostly diagonal weighting matrices $\W^b=\diag(w^b_i)$ and $\W^m=\diag(w^m_i)$.
 A derivative matrix consists of $C$ rows or constraint equations constraining the $M$ model cells corresponding to the rows.
@@ -96,8 +96,8 @@ Otherwise it can be computed by the perturbation method as well.
 The easiest method is the steepest descent method where the model update is sought in the negative gradient.
 A more sophisticated and faster converging method is called nonlinear conjugate gradients (NLCG), where the preceding gradients are taken into account.
 A hybrid method between gradient and Gauss-Newton method is the quasi-Newton method.
-It successively stores the projections of the gradient directions and approximates the jacobian step-wise.
-Thus it starts with the linear convergence of gradient methods but ends up with quadratic Gauss-Newton convergence without storage of the jacobian matrix.
+It successively stores the projections of the gradient directions and approximates the Jacobian step-wise.
+Thus it starts with the linear convergence of gradient methods but ends up with quadratic Gauss-Newton convergence without storage of the Jacobian matrix.
 This method is particularly interesting for higher-dimensional problems \citep{haber05}.
 
 For all methods, an update $\Delta\m^{k+1}$ of the current model $\m^k$ is obtained.
@@ -110,6 +110,10 @@ A forward operator is defined by a C++ class object derived from a base forward 
 The only necessary function is called \cw{response}, and it returns a forward response vector for a given model vector.
 Once an instance f of class has been defined, the forward response for the model vector model is called by f.response( model ) or, more briefly, f( model ).
 
+Additionally, the forward modelling class is responsible for the calculation of the Jacobian matrix, or the Fréchet derivatives.
+This matrix can be of different classes, e.g. dense or sparsely populated matrices, all being derived from a base matrix \cw{MatrixBase}.
+In the modelling base class, a brute-force calculation of the Jacobian is implemented, i.e. all parameters are varied individually and multiple forward runs are called.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Transformation functions}\label{sec:introtrans}
 The forward problem is usually posed based on some intrinsic properties and measurements, e.g. the measured voltage is based on  conductivity.
@@ -118,15 +122,15 @@ Motivation for that may be a better-posed system, additional constraints such as
 
 In any GIMLi application we can choose arbitrary transformation functions in any stage of the inversion.
 The inversion itself is using template classes such that the transformations are carried out on the fly.
-The choice affects model and data vector, but also data weighting and of course the gradient and jacobian.
-However the jacobian or gradient of the transformed inverse problem are never explicit formed, instead they are incorporated into the inverse sub-problem by using derivatives.
+The choice affects model and data vector, but also data weighting and of course the gradient and Jacobian.
+However the Jacobian or gradient of the transformed inverse problem are never explicit formed, instead they are incorporated into the inverse sub-problem by using derivatives.
 
 A transformation $\hat m(m)$ needs three things: the transformation from $m$ to $\hat m$ and back, and the derivative of $\hat m$ with respect to $m$. A number of useful transformation is already available. Others can be easily created or derived by combination of existing ones. See appendix \ref{app:trans} for details.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Parameterisation and the region technique}\label{sec:parameter}
 The discrete model parameters $m_i$ can be freely defined (without spatial association - 0d) or be coefficients for a given model parameterisation (1d, 2d, 3d or 4d) or a mixture of it.
-A spatial parameterisaton is represented by a mesh containing the neighboring relations.
+A spatial parameterisaton is represented by a mesh containing the neighbouring relations.
 Figure~\ref{fig:para} shows different basic parameterisations.
 This can be structured (e.g. a finite difference discretisaton) or unstructured arranged by triangles or tetrahedra.
 There are various functions for mesh generation, export and import, see appendix~\ref{app:meshes}.
@@ -156,35 +160,35 @@ As usual the code contains a current development (trunk), experimental changes o
 
 The main code is located under \file{src} and applications in different sub-folders under \file{apps}.
 Under \file{doc} you will find Doxygen documentation and this tutorial including its code examples.
-To build the binaries, the GNU build system (Autotools) is used: first, the script \cw{autogen.sh} runs the GNU autotools including \cw{configure} and \cw{make} runs the compilation.
+To build the binaries, the GNU build system (Autotools) is used: first, the script \cw{autogen.sh} runs the GNU autotools including \cw{configure}, and \cw{make} runs the actual compilation.
 The configuration tries to detect the necessary libraries, i.e. 
 \begin{itemize}
 	\item LAPACK (Linear algebra package) and BLAS (basic linear algebra subprograms), see \url{www.netlib.org}
-	\item Boost C++ libraries (\url{boost.org}), we use multithreading and python bindings 
-	\item SuiteSparse for solving sparse matrix systems (\url{http://www.cise.ufl.edu/research/sparse/SuiteSparse/}), we use Cholmod for symmetric matrices
+	\item Boost C++ libraries (\url{boost.org}), we use multi-threading and python bindings 
+	\item SuiteSparse for solving sparse matrix systems (\url{http://www.cise.ufl.edu/research/sparse/SuiteSparse/}), i.e. we recommend Cholmod for sparse symmetric matrices
 \end{itemize}
 Whereas LAPACK/BLAS and Boost can be made system-wide available on Linux systems using a package manager, SuiteSparse must be downloaded and built by hand. 
-In the folder \file{external} there is a Makefile that tries to download and build LAPACK, BLAS and SuiteSparse.
-All libraries should be located in \file{external/lib}, 
+However, in the folder \file{external} there is a Makefile that tries to download and build LAPACK, BLAS and SuiteSparse.
+After building the externals, all libraries should be located in (or linked to) the folder \file{external/lib} except boost. 
 On Windows systems, you can use ready-compiled dll files.
 
 For reasons of platform-compatibility, our codes are adapted to the GNU compilers but should be working with any compiler suite.
-Whereas the GNU compiler collection is installed on any Linux or Mac system, on Windows MinGW (Minimalistic GNU for Windows, \url{www.mingw.org}) should be installed first.
+Whereas the GNU compiler collection is installed on any Linux or Mac system, on Windows MinGW (Minimalistic GNU for Windows, \url{www.mingw.org}) should be installed first (download mingw-get-install.exe and run).
 For Windows we also recommend to use CodeBlocks as compiler IDE for which we prepared project files (\file{**.cbp}) in the folder \file{mingw}.
 
 \subsubsection*{PyGIMLi}
 Python (\url{www.python.org}) is a very powerful and easy-to-use programming language that combines the performance of numerical computation with high-end graphical output and user-interfaces.
 We recommend PythonXY (\url{www.pythonxy.com}), a distribution coming along with a lot of modules for scientific computing and development environments such as Spyder.
 The Python bindings for GIMLi, PyGIMLi, are located in the subfolder \file{python} make it very comfortable to write GIMLi applications.
-In the folder \file{python} you find a build script \cw{build.sh} to build the binaries\footnote{The packages gccxml, pygccxml and pyplusplus are needen, but can also be retrieved using \cw{buildToolChain.sh} in the folder \file{buildScripts.sh}} as well as numerous other functions that can be used from python.
+In the folder \file{python} you find a build script \cw{build.sh} to build the binaries\footnote{The packages gccxml, pygccxml and pyplusplus are needed, but can also be retrieved using \cw{buildToolChain.sh} in the folder \file{buildScripts.sh}} as well as numerous other functions that can be used from python.
 
 \subsubsection*{Installation}
-Independent whether you use pre-compiled or self-build binaries the path to the executables, libraries and python modules must be known using the variables PATH, LD\_LIBRARY\_PATH\footnote{Under windows there is no differentiation and PATH is for both.} and PYTHONPATH.
+Independent whether you use pre-compiled or self-build binaries the path to the executables, libraries and python modules must be known using the variables PATH, LD\_LIBRARY\_PATH\footnote{Under windows there is no differentiation between PATH and LD\_LIBRARY\_PATH, i.e. PATH is for both.} and PYTHONPATH.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Outline of the document}\label{sec:overview}
 In the following chapters we like to document how to work with the library using different examples.
-A very simple example will illustrate how to setup a forward class and make the first inversion - polynomial curve fitting.
+A very simple example will illustrate how to set up a forward class and make the first inversion - polynomial curve fitting.
 Then, some basic geophysical examples explain how parameterisations are used and options are set.
 Three different joint inversion techniques are explained in the section \ref{sec:joint}.
 The last section deals with the subject time-lapse inversion.
