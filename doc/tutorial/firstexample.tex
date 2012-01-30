@@ -114,7 +114,7 @@ class FunctionModelling( g.ModellingBase ):
         return g.RVector( self.nc_, 0.5 )
 \end{lstlisting}
 
-The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators) can be used by g.classname, e.g. g.RVector is the already known vector of real values.
+The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators) can be used by g.classname, e.g. g.RVector is the already known vector of real (double) values.
 
 The main program is very easy then and the code is very similar to C++.
 Data are loaded, both forward operator and inversion are created.
@@ -138,7 +138,7 @@ That's it.
 \end{lstlisting}
 
 As a main advantage of Python, the actual computations can be easily combined with post-processing or visualization, even building graphical user-interfaces. 
-In this code example we use matplotlib, a plotting library inside of pylab, which is comparable to MatLab.
+In this code example we use matplotlib, a plotting library inside of pylab, a compound of different routines for numerics and plotting, very much comparable to MatLab.
 
 \begin{lstlisting}[language=python]
 import pylab as P
@@ -157,6 +157,9 @@ The output is illustrated for two a synthetic function $y=2.1x+1.1$ noisified wi
 \end{figure}
 
 In the following we continue the description with C++ but all are provided as well in Python without significant code changes.
+Main exception is the non-existence of declarations, e.g. the C++ declaration \lstinline|GIMLi::RTransLogLU mytrans( lower, upper );| in Python would be written \lstinline|mytrans = g.RTransLogLU( lower, upper)|.
+Whereas it is common to work in name spaces in C++, in python function conflicts easily appear due to lack of declaration.
+To avoid that, we recommend importing modules as such, e.g. \lstinline|import pylab as P| and \lstinline|import pygimli as g|.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{An own Jacobian}
@@ -178,8 +181,11 @@ Note that the resize function checks for the right size and allocates space if n
 Alternatively we might to use other minimisation methods even though it is not necessary for this example.
 \sperre (Steepest descent, NLCG, Quasi-Newton)
 
-Note that \lstinline|RInversion| is an instance of the template class \lstinline|Inversion< ValueType, MatrixType >| with the value type \lstinline|double| and the matrix type \lstinline|RMatrix|\footnote{RMatrix is a full matrix of real (double) values.}.
-One can, of course, use other types, e.g. the complex vector/matrix \lstinline|CVector/CMatrix|. 
-For many problems the jacobian matrix has only few entries and can be approximated by a sparse matrix.
-Therefore the matrix type \lstinline|RSparseMapMatrix| exists, which is itself an instance of a template type with \lstinline|long int| index and double values. 
-The corresponding inversion is called \lstinline|RInversionSparse|.
+Note that \lstinline|RInversion| is an instance of the template class \lstinline|Inversion< ValueType >| with the value type \lstinline|double| and the matrix type \lstinline|RMatrix|\footnote{RMatrix is a full matrix of real (double) values.}.
+One can, of course, use other types, e.g. float-precision or a complex vector \lstinline|CVector|.
+In the latter case, the appropriate matrix type \lstinline|CMatrix| should be used in the forward class. 
+For other problems sparse Jacobian matrices or block matrices are more efficient.
+See also the appendix \ref{app:matrix} for matrix types.
+%For other problems the Jacobian matrix has only few entries and can be approximated by a sparse matrix.
+%Therefore the matrix type \lstinline|RSparseMapMatrix| exists, which is itself an instance of a template type with \lstinline|long int| index and double values. 
+%See also the appendix \ref{app:matrix} for matrix types.

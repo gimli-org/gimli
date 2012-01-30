@@ -80,6 +80,14 @@ There are several cases
 \item[Time-lapse inversion:] Although there are several approaches for efficient inversion along the time axis, they are method-independent and can be formulated generally.
 \end{description}
 
+\subsection{Laterally constrained inversion}
+This type is used when several 1d soundings along a line needed to be inverted together.
+The forward modelling just combines the results of several soundings in a long vector.
+They are individually connected to local 1d models, i.e. columns of a 2d model, which is regularized like a 2d model to achieve similarity between neighbouring models.
+Accordingly, the Jacobian matrices are blocks in a block-diagonal matrix, for which an own matrix type is used.
+
+\sperre{TO BE IMPLEMENTED}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Roll-along inversion}
 \sperre{BLA}
@@ -90,6 +98,7 @@ Assume we have inversions invA, invB and invC, which (or parts of which) are to 
 
 \subsubsection*{Block inversion}
 Block inversion: mesh1d containing thickness and several parameters.
+
 \sperre{TO BE IMPLEMENTED}
 
 \subsubsection*{Structural coupling}
