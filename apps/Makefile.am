@@ -1,1 +1,1 @@
-SUBDIRS = fit em1d
+SUBDIRS = fit em1d traveltime

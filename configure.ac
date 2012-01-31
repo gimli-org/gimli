@@ -17,10 +17,10 @@ AC_DEFINE(SVN_REVISION, "SVNVERSION", [SVN Revision])
 #     AC_CONFIG_FILES([file...])
 #     AC_OUTPUT
 
-AC_INIT( [gimli], 0.8.0-SVNVERSION, [carsten@resistivity.net] )
+AC_INIT( [gimli], 0.9.0-SVNVERSION, [carsten@resistivity.net] )
 
 GIMLI_MAJOR_VERSION=0
-GIMLI_MINOR_VERSION=7
+GIMLI_MINOR_VERSION=9
 GIMLI_MICRO_VERSION=0
 GIMLI_INTERFACE_AGE=0
 GIMLI_BINARY_AGE=0
@@ -35,7 +35,6 @@ AC_SUBST(GIMLI_VERSION)
 
 AM_INIT_AUTOMAKE( gimli, $GIMLI_VERSION )
 AM_SILENT_RULES([yes])
-
 
 # libtool versioning
 LT_RELEASE=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION
@@ -215,13 +214,14 @@ AC_CONFIG_FILES([Makefile
                 apps/Makefile
                 apps/fit/Makefile
                 apps/em1d/Makefile
+                apps/traveltime/Makefile
                 doc/Makefile
                 ] )
 
 #                apps/bert/Makefile
 #                apps/jointinv/Makefile
 #                apps/misc/Makefile
-#                apps/traveltime/Makefile
+
 
 AC_OUTPUT
 

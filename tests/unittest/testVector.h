@@ -35,6 +35,7 @@ public:
         testEquality_< RVector > ();
         testEquality_< CVector > ();
     }
+ 
     template < class Vec > void testEquality_(){
         Vec v1 = Vec( 10 );
         
@@ -50,8 +51,7 @@ public:
         v = v1 + 1.0;   CPPUNIT_ASSERT( v1 != v );
         v = v1 + 1.0;   CPPUNIT_ASSERT( v == v1 + 1.0 );
     }
-   
-    
+     
     void testFill(){
         double vec[5]={0.0, 1.0, 2.0, 3.0, 4.0};
         

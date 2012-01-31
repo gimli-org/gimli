@@ -102,6 +102,16 @@ _pygimli_.stdVectorUL.__add__ = __ADD
 # Indexing operator for RVector, RVector3, RMatrix
 ############################
 def __getVal( self, idx ):
+    
+    if type( idx ) is list:
+        idxL = _pygimli_.stdVectorUL( )
+        for ix in idx:
+            idxL.append( ix )
+        return self( idxL )
+        
+    if type( idx ) is stdVectorUL:
+        return self( idx )
+        
     if type( idx ) is slice:
         if idx.step is None:
             return self( long( idx.start ), long( idx.stop ) )

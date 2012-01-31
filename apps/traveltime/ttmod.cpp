@@ -34,8 +34,6 @@ using namespace GIMLI;
 #define dcout if ( debug ) cout
 #define DEBUG if ( debug )
 
-typedef SparseMapMatrix < double, size_t > SensMatType; // sparse map matrix
-
 #include <ttdijkstramodelling.h>
 
 //** MAIN
