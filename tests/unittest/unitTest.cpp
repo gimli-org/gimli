@@ -11,6 +11,7 @@
     #include "testGIMLiMisc.h" // not working on Win32 despite USE_IPC
     #include "testDataContainer.h"
     #include "testVector.h"
+    #include "testMesh.h"
     #include "testShape.h"
     #include "testGeometry.h"
     #include "testFEM.h"

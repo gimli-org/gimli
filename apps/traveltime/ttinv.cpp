@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2010 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Thomas Günther thomas@resistivity.net                                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -24,19 +24,17 @@
 #include <mesh.h>
 #include <datacontainer.h>
 #include <node.h>
-
 #include <inversion.h>
-#include <modellingbase.h>
-
-#include <string>
-using namespace std;
-using namespace GIMLI;
-
-#define vcout if ( verbose ) cout
-#define dcout if ( debug ) cout
-#define DEBUG if ( debug )
 
 #include <ttdijkstramodelling.h>
+
+using namespace GIMLI;
+
+#include <string>
+
+#define vcout if ( verbose ) std::cout
+#define dcout if ( debug ) std::cout
+#define DEBUG if ( debug )
 
 //** MAIN
 int main( int argc, char *argv [] ) {
@@ -49,7 +47,7 @@ int main( int argc, char *argv [] ) {
     double errTime = 0.001, errPerc = 0.1, lbound = 0.0, ubound = 0.0;
     double lambda = 100.0, zWeight = 1.0;
     int maxIter = 20, verboseCount = 0;
-    string paraMeshFilename = NOT_DEFINED, startModelFilename = NOT_DEFINED, dataFileName;
+    std::string paraMeshFilename = NOT_DEFINED, startModelFilename = NOT_DEFINED, dataFileName;
 
     //! Parse command line
     OptionMap oMap;
@@ -98,17 +96,18 @@ int main( int argc, char *argv [] ) {
 
     //!** apply error model if not defined;
     if ( !dataIn.nonZero( "err" ) ) {
-        vcout << "Estimate error: " << errPerc << "% + " << errTime << "s" << endl;
+        vcout << "Estimate error: " << errPerc << "% + " << errTime << "s" << std::endl;
         dataIn.set( "err", errTime / dataIn( "t" ) + errPerc / 100.0 ); // always relative error
     }
-    vcout << "Data error:" << " min = " << min( dataIn( "err" ) ) * 100 << "%" 	<< " max = " << max( dataIn( "err" ) ) * 100 << "%" << endl;
+    vcout << "Data error:" << " min = " << min( dataIn( "err" ) ) * 100 << "%" 	<< " max = " << max( dataIn( "err" ) ) * 100 << "%" << std::endl;
 
     //!** Load mesh
     Mesh paraMesh;
     if ( paraMeshFilename != NOT_DEFINED ) {
         paraMesh.load( paraMeshFilename );
     } else {
-        cerr << " no para mesh given. Creating one. ..."  << endl;
+        std::cout << "do we really need this here???????????? "  << std::endl;
+        std::cerr << "No para mesh given. Creating one. ..."  << std::endl;
         paraMesh.createClosedGeometryParaMesh( dataIn.sensorPositions(), //** better not
                                                nSegments, relativeInnerMaxEdgeLength,
                                                dataIn.additionalPoints() );
@@ -120,7 +119,7 @@ int main( int argc, char *argv [] ) {
     //!** set up TT modeling class;
     TravelTimeDijkstraModelling f( paraMesh, dataIn, false ); //**better with sec?
     RVector appSlowness ( f.getApparentSlowness() );
-    vcout << "min/max apparent velocity = " << 1.0 / max( appSlowness ) << "/" << 1.0 / min( appSlowness ) << "m/s" << endl;
+    vcout << "min/max apparent velocity = " << 1.0 / max( appSlowness ) << "/" << 1.0 / min( appSlowness ) << "m/s" << std::endl;
 
     //!** get mesh from region manager (BERT convention: first/smallest region is background
     if ( isBertMesh && f.regionManager().regionCount() > 1 ) f.regionManager().regions()->begin()->second->setBackground( true );
@@ -136,11 +135,18 @@ int main( int argc, char *argv [] ) {
     //DEBUG f->mesh()->exportVTK( "meshSec" );
 
     size_t nModel = f.regionManager().parameterCount();
-    vcout << "model size = " << nModel << endl;
+    vcout << "model size = " << nModel << std::endl;
     RVector startModel( nModel );
 
+    if ( startModelFilename != NOT_DEFINED ) {
+        load( startModel, startModelFilename );
+    } else {
+        vcout << "No starting model given." << std::endl;
+        createGradientModel = true;
+    }
+    
     if ( createGradientModel ) { // auslagern in ttdijkstramodel
-        vcout << "Creating Gradient model ..." << endl;
+        vcout << "Creating Gradient model ..." << std::endl;
         double smi = min( appSlowness ) / 2.0;
         if ( smi < lbound ) smi = lbound * 1.1;
         double sma = max( appSlowness ) / 2.0;
@@ -157,26 +163,25 @@ int main( int argc, char *argv [] ) {
         double zmi = min( zmid );
         double zma = max( zmid );
         for ( size_t i = 0; i < startModel.size(); i++ ) {
-            startModel[i] = smi * std::exp( ( zmid[ i ] - zmi ) / ( zma - zmi ) * std::log( sma / smi) );
+            startModel[ i ] = smi * std::exp( ( zmid[ i ] - zmi ) / ( zma - zmi ) * std::log( sma / smi) );
         }
         DEBUG save( startModel, "startModel.vector" );
     }
-    if ( startModelFilename != NOT_DEFINED ) {
-        load( startModel, startModelFilename );
-    }
+    
     f.setStartModel( startModel );
+    
     double sloRef = max( appSlowness );
     if ( sloRef < lbound || ( ubound > 0.0 && sloRef > ubound ) ) {
         sloRef = std::max( std::sqrt( lbound * ubound ), ( lbound + ubound ) / 2 );
     }
 
-    vcout << "Start model size=" << startModel.size() << " min/max=" << min(startModel) << "/" << max(startModel) << endl;
+    vcout << "Start model size = " << startModel.size() << " min/max = " << min(startModel) << "/" << max(startModel) << std::endl;
 
     RTransLogLU transModel( lbound, ubound );
     RTrans transData;
 
     //!** Model transformation: log slowness with lower and upper bound
-    Inversion < double, DSparseMapMatrix > inv( dataIn( "t" ), f, transData, transModel, verbose, debug ); 
+    Inversion < double > inv( dataIn( "t" ), f, transData, transModel, verbose, debug ); 
     inv.setModel( startModel );
     inv.setLambda( lambda );
     inv.setMaxIter( maxIter );
@@ -188,27 +193,32 @@ int main( int argc, char *argv [] ) {
     vcout << "setting z weight...";
     f.regionManager().setZWeight( zWeight );
     vcout << "ready. Start inversion." << std::endl;
+    
     //!** Start Inversion
     RVector model( inv.run() );
     vcout << "inversion ready." << std::endl;
+    
     //!** Save velocity, model response and coverage
     RVector velocity( 1.0 / ( model + TOLERANCE ) );
     save( velocity, "velocity.vector" );
     save( inv.response(), "response.vector" );
+   
     RVector one( dataIn.size(), 1.0 );
-    RVector coverage( transMult( *inv.jacobian(), one ) );
+    RVector coverage( transMult( *f.jacobian(), one ) );
     save( coverage, "coverage.vector" );
+    
     RVector scoverage( transMult( inv.constraintMatrix(), inv.constraintMatrix() * coverage ) );
-    for ( Index i ; i < scoverage.size() ; i++ ) scoverage[ i ] = sign( std::abs( scoverage[ i ] ) );
+    for ( Index i = 0 ; i < scoverage.size() ; i++ ){
+        scoverage[ i ] = sign( std::abs( scoverage[ i ] ) );
+    }
     save( scoverage, "scoverage.vector" );
     
     //!** Save VTK file with the vectors
-    std::map< std::string, RVector > resultsToShow;
-    resultsToShow.insert( make_pair( "slowness" , model ) );
-    resultsToShow.insert( make_pair( "velocity" , velocity ) );
-    resultsToShow.insert( make_pair( "coverage" , coverage ) );
-    resultsToShow.insert( make_pair( "scoverage" , scoverage ) );
-    paraDomain.exportVTK( "ttinv.result", resultsToShow );
+    paraDomain.addExportData( "slowness" , model );
+    paraDomain.addExportData( "velocity" , velocity );    
+    paraDomain.addExportData( "coverage" , coverage );
+    paraDomain.addExportData( "scoverage" , scoverage );
+    paraDomain.exportVTK( "ttinv.result" );
 
     //!** Cleanup and exit
     return EXIT_SUCCESS;

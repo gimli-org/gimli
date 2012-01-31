@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2007-2012 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -720,7 +720,7 @@ inline RVector operator * ( const RMatrix & A, const RVector & b ){
     return A.mult( b );
 }
 
-DLLEXPORT inline RVector transMult( const RMatrix & A, const RVector & b ){
+inline RVector transMult( const RMatrix & A, const RVector & b ){
     return A.transMult( b );
 }
 

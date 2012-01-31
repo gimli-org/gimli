@@ -295,15 +295,68 @@ public:
     /*! Return this * a  */
     virtual RVector mult( const RVector & a ) const {
         RVector ret( this->rows(), 0.0 );
-        THROW_TO_IMPL
+        
+        for ( const_iterator it = this->begin(); it != this->end(); it ++ ){
+            ret[ it->first.first ] += a[ it->first.second ] * it->second;
+        }
+     //      THROW_TO_IMPL
         return ret;
+
+// template < class ValueType, class IndexType, class V2 >
+// Vector < V2 > operator * ( const SparseMapMatrix< ValueType, IndexType > & S,
+//                            const Vector< V2 > & a ) {
+// 
+//     typedef std::pair< IndexType, IndexType > IndexPair;
+//     typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;
+//     typedef typename ContainerType::iterator          iterator;
+//     typedef typename ContainerType::const_iterator    const_iterator;
+// 
+//     if ( S.cols() != a.size() ){
+//         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " S.cols() " + toStr( S.cols() ) + " != a.size() " + toStr( a.size() ) );
+//     }
+//     Vector < V2 > ret( S.rows() );
+// 
+//     for ( const_iterator it = S.begin(); it != S.end(); it ++ ){
+//         //tmp[ S.idx1( it ) ] += S.val( it ) * a[ S.idx2( it ) ];
+//         ret[ it->first.first ] += a[ it->first.second ] * it->second;
+//     }
+//     return ret;
+// }
+
     }
     
     /*! Return this.T * a */
     virtual RVector transMult( const RVector & a ) const {
         RVector ret( this->cols(), 0.0 );
-        THROW_TO_IMPL
+
+        for ( const_iterator it = this->begin(); it != this->end(); it ++ ){
+            ret[ it->first.second ] += a[ it->first.first ] * it->second;
+        }
+      //  THROW_TO_IMPL
+        
         return ret;
+// template < class ValueType, class IndexType, class V2 >
+// Vector < V2 > transMult( const SparseMapMatrix< ValueType, IndexType > & S,
+//                          const Vector < V2 > & a ){
+// 
+//     typedef std::pair< IndexType, IndexType > IndexPair;
+//     typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;
+//     typedef typename ContainerType::iterator          iterator;
+//     typedef typename ContainerType::const_iterator    const_iterator;
+// 
+//     if ( S.rows() != a.size() ){
+//         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.rows() ) + " != " + toStr( a.size() ) );
+//     }
+//     Vector < V2 > tmp( S.cols(), 0.0 );
+// 
+//     for ( const_iterator it = S.begin(); it != S.end(); it ++ ){
+// //         tmp[ S.idx2( it ) ] += S.val( it ) * a[ S.idx1( it ) ];
+//         tmp[ it->first.second ] += a[ it->first.first ] * it->second;
+// 
+//     }
+//     return tmp;
+// }
+    
     }
     
 //     /*! Return this * a  */
@@ -367,6 +420,16 @@ int load( SparseMapMatrix< ValueType, IndexType > & S, const std::string & fname
     return S.load( fname );
 }
 
+inline RVector operator * ( const DSparseMapMatrix & A, const RVector & b ){
+    return A.mult( b );
+}
+
+inline RVector transMult( const DSparseMapMatrix & A, const RVector & b ){
+    return A.transMult( b );
+}
+
+
+
 /*! Scales a matrix A from left and right vectors such that A -> diag(l) * A * diag(r) */
 template< class Vec >
 void scaleMatrix ( SparseMapMatrix< double, Index > & S, const Vec & l, const Vec & r ) {
@@ -410,67 +473,7 @@ void rank1Update ( SparseMapMatrix< double, Index > & S, const Vec & u, const Ve
 //     return S * Vector< V2 >( a );
 // }
 
-template < class ValueType, class IndexType, class V2 >
-Vector < V2 > operator * ( const SparseMapMatrix< ValueType, IndexType > & S,
-                           const Vector< V2 > & a ) {
 
-    typedef std::pair< IndexType, IndexType > IndexPair;
-    typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;
-    typedef typename ContainerType::iterator          iterator;
-    typedef typename ContainerType::const_iterator    const_iterator;
-
-    if ( S.cols() != a.size() ){
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " S.cols() " + toStr( S.cols() ) + " != a.size() " + toStr( a.size() ) );
-    }
-    Vector < V2 > ret( S.rows() );
-
-    for ( const_iterator it = S.begin(); it != S.end(); it ++ ){
-        //tmp[ S.idx1( it ) ] += S.val( it ) * a[ S.idx2( it ) ];
-        ret[ it->first.first ] += a[ it->first.second ] * it->second;
-    }
-    return ret;
-}
-
-// template < class ValueType, class IndexType, class V2, class T, class A >
-// Vector < V2 > transMult( const SparseMapMatrix< ValueType, IndexType > & S,
-//                            const VectorExpr< T, A > & a ) {
-//     return transMult(S, Vector< V2 >( a ) );
-// }
-
-template < class ValueType, class IndexType, class V2 >
-Vector < V2 > transMult( const SparseMapMatrix< ValueType, IndexType > & S,
-                         const Vector < V2 > & a ){
-
-    typedef std::pair< IndexType, IndexType > IndexPair;
-    typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;
-    typedef typename ContainerType::iterator          iterator;
-    typedef typename ContainerType::const_iterator    const_iterator;
-
-    if ( S.rows() != a.size() ){
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.rows() ) + " != " + toStr( a.size() ) );
-    }
-    Vector < V2 > tmp( S.cols(), 0.0 );
-
-    for ( const_iterator it = S.begin(); it != S.end(); it ++ ){
-//         tmp[ S.idx2( it ) ] += S.val( it ) * a[ S.idx1( it ) ];
-        tmp[ it->first.second ] += a[ it->first.first ] * it->second;
-
-    }
-    return tmp;
-}
-
-// template < class Vec > Vec transMult( const SparseMapMatrix< double, uint > & S, const Vec & a ){
-//     if ( S.rows() != a.size() ){
-//         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.cols() )
-//                 + " != " + toStr( a.size() ) );
-//     }
-//     Vec tmp( S.cols() );
-//
-//     for ( SparseMapMatrix< double, uint >::const_iterator it = S.begin(); it != S.end(); it ++ ){
-//         tmp[ S.idx2( it ) ] += S.val( it ) * a[ S.idx1( it ) ];
-//     }
-//     return tmp;
-// }
 
 //! Sparse matrix in compressed column storage (CCS) form
 template < class ValueType > class SparseMatrix {

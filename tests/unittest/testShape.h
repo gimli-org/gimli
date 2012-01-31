@@ -112,6 +112,7 @@ public:
     }
 
     void testSplit(){
+        
         double testSum = 0.0;
         for ( size_t j = 0; j < 5; j ++ ){
             GIMLI::Tetrahedron tet( hex1_->node( GIMLI::HexahedronSplit5TetID[ j ][ 0 ] ),
@@ -180,6 +181,7 @@ public:
         for ( size_t i = 0; i < mesh.cellCount(); i ++ ){
             CPPUNIT_ASSERT( mesh.cell( i ).jacobianDeterminant() > 1e-12 );
         }
+        
         RVector x1( 2 ); x1[0]=-1; x1[1]=1;
         RVector y1( 2 ); y1[0]=-2; y1[1]=-1;
         Mesh mesh1( createMesh2D( x1, y1 ) );

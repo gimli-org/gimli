@@ -23,8 +23,8 @@
 #define GIMLI_BLOCKMATRIX__H
 
 #include "gimli.h"
-#include "matrix.h"
 #include "sparsematrix.h"
+#include "matrix.h"
 
 //! block matrices for easier inversion, see appendix E in GIMLi tutorial
 namespace GIMLI{

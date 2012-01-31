@@ -459,8 +459,9 @@ protected:
         return cellVector_.back();
     }
 
-    Node * createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, Index > & nodeMatrix );
-
+//    Node * createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, Index > & nodeMatrix );
+    Node * createRefinementNode_( Node * n0, Node * n1, std::map< std::pair < Index, Index >, Node * > & nodeMatrix );
+    
     int createRefined2D_( const Mesh & mesh, const std::vector < int > & cellIdx );
 
     int createRefined3D_( const Mesh & mesh, const std::vector < int > & cellIdx );
