@@ -32,9 +32,6 @@
 #include "regionManager.h"
 #include "sparsematrix.h"
 
-
-
-
 #include <vector>
 #include <queue>
 #include <map>
@@ -110,10 +107,10 @@ TravelTimeDijkstraModelling::TravelTimeDijkstraModelling( Mesh & mesh, DataConta
 : ModellingBase( dataContainer, verbose ), background_( 1e16 ) {
 
     this->setMesh( mesh );
-        
+
     this->initJacobian();
 }
-    
+
 RVector TravelTimeDijkstraModelling::createDefaultStartModel( ) {
     RVector vec( this->regionManager().parameterCount(), findMedianSlowness() );
     return vec;
@@ -139,7 +136,7 @@ Graph TravelTimeDijkstraModelling::createGraph( ) {
         }
         if ( mesh_->cell( i ).rtti() == MESH_TETRAHEDRON_RTTI ||
              mesh_->cell( i ).rtti() == MESH_TETRAHEDRON10_RTTI ) {
-             
+
             Node *na = &mesh_->cell( i ).node( 0 );
             Node *nb = &mesh_->cell( i ).node( 2 );
                 dist = na->pos().distance( nb->pos() );
@@ -260,7 +257,7 @@ void TravelTimeDijkstraModelling::createJacobian( const RVector & slowness ) {
     DSparseMapMatrix * jacobian = dynamic_cast < DSparseMapMatrix * > ( jacobian_ );
     this->createJacobian( *jacobian, slowness );
 }
-    
+
 void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, const RVector & slowness ) {
     if ( background_ < TOLERANCE ) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
@@ -358,49 +355,49 @@ void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, c
     if ( verbose_ ) file.close( );
 }
 
-TTModellingWithOffset::TTModellingWithOffset( Mesh & mesh, DataContainer & dataContainer, bool verbose ) 
+TTModellingWithOffset::TTModellingWithOffset( Mesh & mesh, DataContainer & dataContainer, bool verbose )
 : TravelTimeDijkstraModelling( mesh, dataContainer, verbose ) {
-    
+
     //! find occuring shots, and map them to indices starting from zero
     shots_ = unique( sort( dataContainer.get("s") ) );
     std::cout << "found " << shots_.size() << " shots." << std::endl;
     for ( size_t i = 0 ; i < shots_.size() ; i++ ) {
         shotMap_.insert( std::pair< int, int >( shots_[ i ], i ) );
     }
-    
+
     //! create new region containing offsets with special marker
-    
+
     offsetMesh_ = createMesh1D( shots_.size() );
     for ( size_t i = 0 ; i < offsetMesh_.cellCount() ; i++ ) {
         offsetMesh_.cell( i ).setMarker( NEWREGION );
     }
-    
+
     regionManager().addRegion( NEWREGION, offsetMesh_ );
-    
+
     this->initJacobian( );
 }
 
 TTModellingWithOffset::~TTModellingWithOffset() { }
 
-RVector TTModellingWithOffset::createDefaultStartModel() { 
+RVector TTModellingWithOffset::createDefaultStartModel() {
     return cat( TravelTimeDijkstraModelling::createDefaultStartModel(), RVector( shots_.size() ) );
 }
-    
+
 RVector TTModellingWithOffset::response( const RVector & model ) {
     //! extract slowness from model and call old function
-        
+
     RVector slowness( model, 0, model.size() - shots_.size() );
-    RVector offsets( model, model.size() - shots_.size(), model.size() ); 
+    RVector offsets( model, model.size() - shots_.size(), model.size() );
     RVector resp = TravelTimeDijkstraModelling::response( slowness ); //! normal response
     RVector shotpos = dataContainer_->get( "s" );
 
     for ( size_t i = 0; i < resp.size() ; i++ ){
         resp[ i ] += offsets[ shotMap_[ shotpos[ i ] ] ];
     }
-        
+
     return resp;
 }
-    
+
 void TTModellingWithOffset::initJacobian( ){
     if ( jacobian_ && ownJacobian_ ){
         delete jacobian_;
@@ -410,22 +407,22 @@ void TTModellingWithOffset::initJacobian( ){
 }
 
 void TTModellingWithOffset::createJacobian( const RVector & model ){
-    
+
     H2SparseMapMatrix *jacobian = dynamic_cast < H2SparseMapMatrix* > ( jacobian_ );
     //! extract slowness from model and call old function
-    
+
     RVector slowness( model, 0, model.size() - shots_.size() );
-    RVector offsets( model, model.size() - shots_.size(), model.size() );  
-        
+    RVector offsets( model, model.size() - shots_.size(), model.size() );
+
     TravelTimeDijkstraModelling::createJacobian( jacobian->H1(), slowness );
     jacobian->H2().setRows( dataContainer_->size() );
     jacobian->H2().setCols( offsets.size() );
-    
+
     //! set 1 entries for the used shot
     RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
 
     for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
-        jacobian->H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
+        jacobian->H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 );
     }
 }
 

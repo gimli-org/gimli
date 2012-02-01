@@ -86,7 +86,7 @@ protected:
 class DLLEXPORT TravelTimeDijkstraModelling : public ModellingBase {
 public:
     TravelTimeDijkstraModelling( Mesh & mesh, DataContainer & dataContainer, bool verbose = false );
-    
+
     virtual ~TravelTimeDijkstraModelling() { }
 
     RVector createDefaultStartModel( );
@@ -96,10 +96,10 @@ public:
 
     /*! Interface. */
     virtual void createJacobian( const RVector & slowness );
-    
+
     /*! Interface. */
     virtual void initJacobian( );
-    
+
     Graph createGraph( );
 
     RVector calculate( );
@@ -116,22 +116,22 @@ protected:
 };
 
 /*! New Class derived from standard travel time modelling */
-class TTModellingWithOffset: public TravelTimeDijkstraModelling{
+class DLLEXPORT TTModellingWithOffset: public TravelTimeDijkstraModelling{
 public:
     TTModellingWithOffset( Mesh & mesh, DataContainer & dataContainer, bool verbose );
-        
+
     virtual ~TTModellingWithOffset();
 
     virtual RVector createDefaultStartModel();
-    
+
     virtual RVector response( const RVector & model );
-            
+
     void initJacobian( );
-        
+
     virtual void createJacobian( const RVector & slowness );
 
     size_t nShots(){ return shots_.size(); }
-    
+
 protected:
     RVector                 shots_;
     std::map< int, int >    shotMap_;
