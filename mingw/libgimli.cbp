@@ -32,6 +32,7 @@
 			<Add directory="..\external" />
 			<Add directory="..\src" />
 			<Add directory="..\..\..\boost\include" />
+			<Add directory="..\..\boost\include" />
 		</Compiler>
 		<Linker>
 			<Add option="-s" />

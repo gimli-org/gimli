@@ -1,4 +1,5 @@
 BOOST_VERSION=1_48_0
+#wget -nc -nd http://sourceforge.net/projects/boost/files/boost/1.48.0/boost_1_48_0.tar.gz
 
 if [ $# -eq 0 ]; then
 	prefix=`pwd`
@@ -33,7 +34,7 @@ fi
 #fi
 
 BOOST_SRC_DIR=$BOOST_SRC/boost_$BOOST_VERSION
-GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f3`
+GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f2`
 
 arch=`python -c 'import platform; print platform.architecture()[0]'`
 if [ "$arch" == "64bit" ]; then
@@ -63,7 +64,6 @@ pushd $BOOST_SRC_DIR
 	LDFLAGS='-static-libgcc -static-libstdc++' ./b2 install -d+2 --prefix=$DISTDIR --layout=tagged \
 			address-model=$ADRESSMODEL variant=release link=shared \
 			threading=multi
-			
 
 	mkdir -p ../boost
 	cp -r $DISTDIR/include ../boost

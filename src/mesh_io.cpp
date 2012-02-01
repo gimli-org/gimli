@@ -29,7 +29,7 @@
 namespace GIMLI{
 
 void Mesh::load( const std::string & fbody, IOFormat format ){
-    
+
     if ( fbody.find( ".mod" ) != std::string::npos ){
         importMod( fbody );
     } else if ( fbody.find( ".vtk" ) != std::string::npos ){
@@ -276,7 +276,7 @@ void Mesh::loadBinary( const std::string & fbody ){
     int dim = 0;
     uint ret = fread( &dim, sizeof( int ), 1, file );
 
-    if ( dim !=2 && dim !=3 ){
+    if ( ( dim !=2 && dim !=3 ) || ( ret == 0 ) ){
         throwError( 1, WHERE_AM_I + " cannot determine dimension " + toStr( dim ) );
     }
     this->setDimension( dim );
@@ -316,7 +316,7 @@ void Mesh::loadBinary( const std::string & fbody ){
         }
         node( i ).setMarker( nodeMarker[ i ] );
     }
-    
+
     //** create Cells;
     int count = 0;
     std::vector < Node * > pNodeVector;
@@ -368,7 +368,7 @@ void Mesh::loadBinary( const std::string & fbody ){
     delete [] right;
 
     fclose( file );
-    
+
 }
 
 template < class ValueType > void writeToFile( FILE * file, const ValueType & v, int count = 1){

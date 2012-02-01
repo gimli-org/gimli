@@ -519,6 +519,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
             int64 count = (int64)size_;
             Index ret = 0; ret = fwrite( (char*)&count, sizeof( int64 ), 1, file );
+            if ( ret == 0) return false;
             for ( Index i = 0; i < size_; i++ ) ret = fwrite( (char*)&data_[ i ], sizeof( ValueType ), 1, file );
             fclose( file );
         }
@@ -932,7 +933,7 @@ bool operator == ( const Vector< ValueType > & v1, const Vector< ValueType > & v
     return true;
 }
 
-template < class ValueType, class A > 
+template < class ValueType, class A >
 bool operator == ( const Vector< ValueType > & v1, const __VectorExpr< ValueType, A > & v2 ){
     return v1 == Vector< ValueType >( v2 );
 }
