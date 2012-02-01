@@ -166,7 +166,7 @@ bool DataContainer::isSensorIndex( const std::string & token ) const {
 }
 
 int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne ){
-    setSensorIndexOnFileFromOne( sensorIndicesFromOne );    
+    setSensorIndexOnFileFromOne( sensorIndicesFromOne );
     std::fstream file; if ( !openInFile( fileName, & file, true ) );
 
     std::vector < std::string > row; row = getNonEmptyRow( file );
@@ -245,7 +245,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
     int nData = toInt( row[ 0 ] );
 
     //bool fromOne    = true;
-    bool schemeOnly = false;
+    //bool schemeOnly = false;
 
     if ( nData > 0 ){
         this->resize( nData );
@@ -259,7 +259,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
                 str << WHERE_AM_I << "Can not determine data format." << std::endl;
                 throwError( EXIT_DATACONTAINER_NO_DATAFORMAT, str.str() );
             }
-            if ( format.size() == 4 ) schemeOnly = true;
+//            if ( format.size() == 4 ) schemeOnly = true;
         }
         file.unget();
 
@@ -396,7 +396,7 @@ void DataContainer::checkDataValidity( bool remove ){
     if ( nInvalidNaN > 0 ) {
         std::cout << "Warning: removed " << nInvalidNaN << " values due to NaN/Inf!" << std::endl;
     }
-    
+
     //** check sensor indices < -1 and >= sensorCount()
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
@@ -690,7 +690,7 @@ void DataContainer::removeUnusedSensors( bool verbose ){
             }
         }
     }
-    
+
     if ( verbose ){
         std::cout << "Removed " << oldSensorCount - this->sensorCount() << " sensors." << std::endl;
     }
@@ -727,30 +727,30 @@ bool ididLesser( const std::pair < Index, Index > & a, const std::pair < Index, 
 }
 
 void DataContainer::sortSensorsIndex( ){
-    
+
     std::vector < std::pair < Index, Index > > permSens( this->size() );
     int nSensorsIdx = dataSensorIdx_.size();
-    
+
     for ( uint i = 0; i < this->size(); i ++ ) {
         Index sensorUniqueID = 0;
-        int count = nSensorsIdx; 
+        int count = nSensorsIdx;
         for ( std::set< std::string >::iterator it = dataSensorIdx_.begin(); it!= dataSensorIdx_.end(); it ++ ){
             count --;
             sensorUniqueID += (dataMap_[ *it ][ i ]+1) * std::pow( this->sensorCount(), count );
         }
         permSens[ i ] = std::pair< Index, Index >( sensorUniqueID, i );
     }
-            
+
     std::sort( permSens.begin(), permSens.end(), ididLesser );
-    
+
     IndexArray perm( this->size() );
     for ( uint i = 0; i < perm.size(); i ++ ){
         perm[ i ] = permSens[ i ].second ;
     }
-    
+
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         it->second = it->second( perm );
-    }   
+    }
 }
 
 void DataContainer::markInvalidSensorIndices(){
@@ -766,13 +766,13 @@ void DataContainer::translate( const RVector3 & trans ){
         sensorPoints_[ i ].translate( trans );
     }
 }
-    
+
 void DataContainer::scale( const RVector3 & scale ){
     for ( uint i = 0; i < sensorPoints_.size(); i ++ ) {
         sensorPoints_[ i ].scale( scale );
     }
 }
-    
+
 // END Sensor related section
 
 } // namespace GIMLI{

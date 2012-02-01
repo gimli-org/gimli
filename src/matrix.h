@@ -38,18 +38,18 @@
 namespace GIMLI{
 
 //! Interface class for matrices.
-/*! Pure virtual interface class for matrices. 
+/*! Pure virtual interface class for matrices.
  * If you want your own Jacobian matrix to be used in \ref Inversion or \ref ModellingBase
  you have to derive your matrix from this class and implement all their members. */
 class MatrixBase{
 public:
-    
+
     /*! Default constructor. */
     MatrixBase(){}
-    
+
     /*! Default destructor. */
     virtual ~MatrixBase(){}
-    
+
     /*! Return number of cols */
     virtual Index rows() const {
        THROW_TO_IMPL
@@ -61,35 +61,35 @@ public:
         THROW_TO_IMPL
         return 0;
     }
-    
+
 //     /*! Resize this matrix to rows, cols */
 //     virtual void resize( Index rows, Index cols ) = 0;
-    
+
     /*! Clear the data, set size to zero and frees memory*/
     virtual void clear() {
         THROW_TO_IMPL
     }
-    
+
     /*! Return this * a  */
     virtual RVector mult( const RVector & a ) const {
        THROW_TO_IMPL
        return RVector( rows() );
     }
-    
+
     /*! Return this.T * a */
     virtual RVector transMult( const RVector & a ) const {
         THROW_TO_IMPL
         return RVector( cols() );
     }
-    
+
     /*! Save this matrix into the file filename */
     virtual void save( const std::string & filename ) const {
         THROW_TO_IMPL
     }
-    
+
 protected:
 };
-    
+
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
 template < class ValueType > class Matrix : public MatrixBase {
@@ -250,7 +250,7 @@ public:
         }
         return ret;
     }
-    
+
     Vector< ValueType > transMult( const Vector < ValueType > & b ) const {
         Index cols = this->cols();
         Index rows = this->rows();
@@ -270,11 +270,11 @@ public:
         }
         return ret;
     }
-    
+
     virtual void save( const std::string & filename ) const {
         saveMatrix( *this, filename );
     }
-    
+
 protected:
 
     void allocate_( Index rows, Index cols ){
@@ -431,6 +431,7 @@ bool saveMatrix( const Matrix < ValueType > & A, const std::string & filename, I
 
     uint32 rows = A.rows();
     uint ret = fwrite( & rows, sizeof(uint32), 1, file );
+    if ( ret == 0) return false;
     uint32 cols = A.cols();
     ret = fwrite( & cols, sizeof(uint32), 1, file );
 

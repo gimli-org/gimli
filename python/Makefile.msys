@@ -1,5 +1,5 @@
-BOOSTDIR=../../../boost
-BOOSTLIB=$(BOOSTDIR)/lib -lboost_python-mt
+BOOSTDIR=../../boost
+BOOSTLIB=$(BOOSTDIR)/lib -L ../$(BOOSTDIR)/lib -lboost_python-mt
 
 PYTHONDIR=`which python | sed -e 's/python.exe/include/'`
 PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython27
@@ -9,7 +9,7 @@ PYTHONLIB=`which python | sed -e 's/python.exe/libs/'` -lpython27
 GIMLILIB=../mingw/ -lgimli -lgcc 
 GIMLIINC=../src
 TARGET=_pygimli_
-COPT= -O2 -Os -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES -DMINGW
+COPT= -O2 -Os -pipe -D PYGIMLI -D BOOST_PYTHON_NO_PY_SIGNATURES -DMINGW -D BOOST_USE_WINDOWS_H -Wno-attributes
 
 CPPCFILES = $(wildcard generated/*.cpp)
 OBJECTS = $(patsubst %.cpp,%.o,$(CPPCFILES))
@@ -19,7 +19,7 @@ OBJECTS = $(patsubst %.cpp,%.o,$(CPPCFILES))
 default: $(TARGET)
 
 .cpp.o:
-	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR)/include -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
+	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR)/include -I ../$(BOOSTDIR)/include -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
 
 $(TARGET): $(OBJECTS)
 	g++ -o $(TARGET).pyd -shared -static-libgcc -static-libstdc++ $(OBJECTS) -L. \
