@@ -31,8 +31,8 @@ $(TARGET): $(OBJECTS)
 	cp ../mingw/libgimli.dll ./pygimli
 	cp ../mingw/libblas.dll ./pygimli
 	cp ../mingw/liblapack.dll ./pygimli
-	cp ../../../boost/lib/libboost_thread-mt.dll ./pygimli
-	cp ../../../boost/lib/libboost_python-mt.dll ./pygimli
+	cp ../mingw/libboost_thread-mt.dll ./pygimli
+	cp ../mingw/libboost_python-mt.dll ./pygimli
 
 clean:
 	rm -rf generated/*
