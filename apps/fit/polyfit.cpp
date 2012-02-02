@@ -62,7 +62,7 @@ int main( int argc, char *argv [] ){
     /*! parse command line: data file and number of coefficents */
     std::string datafile;
     int np = 1;
-    double lambda = 0.0;
+    double lambda = 0.001;
     bool verbose = true;
     /*! Parse option map using longoption map */
     OptionMap oMap;
@@ -85,7 +85,7 @@ int main( int argc, char *argv [] ){
     //inv.setMaxIter( 1 );
 
     /*! constant absolute error of 0.01 (not necessary, only for chi^2) */
-    inv.setAbsoluteError( 0.01 );
+    inv.setAbsoluteError( 0.4 );
 
      /*! the problem is well-posed and does not need regularization */
     inv.setLambda( lambda );

@@ -489,22 +489,16 @@ public:
                             << "*" << lambda_ << "=" << getPhi( model, response ) << std::endl;
     }
 
-    /*! Compute model cell resolution (specific column of resolution matrix) by an LSCG solver */
+    /*! Compute model cell resolution (specific column of resolution matrix) by an LSCG solver (Günther, 2004) */
     Vec modelCellResolution( int iModel ) {
-        // did not yet reflect moving jacobian into modellingbase
-        THROW_TO_IMPL
-        Vec resolution( model_.size() );
-//         Vec sensCol( data_.size() );
-//         RVector mDeriv( tM_->deriv( model_ ) );
-//         RVector dDeriv( tD_->deriv( response_ ) );
-// 
-//         for ( uint i = 0; i < data_.size(); i++ ) sensCol[ i ] = (*J_)[ i ][ iModel ];
-// 
-//         sensCol *= dDeriv;
-//         sensCol /= mDeriv[ iModel ];
-//         Vec deltaModel0( model_.size() );// !!! h variante
-//         solveCGLSCDWWtrans( *J_, C_, dataWeight_, sensCol, resolution, constraintsWeight_, modelWeight_,
-//                             tM_->deriv( model_ ), tD_->deriv( response_ ), lambda_, deltaModel0, maxCGLSIter_, false );
+        Vec resolution( model_.size(), 0.0 );
+        resolution[ iModel ] = 1.0; //** both for retrieving solumn and as starting model for resolution
+        //** retrieve one colomn from the jacobian matrix and scale according to data/model transformation
+        Vec sensCol = (*forward_->jacobian()) * resolution * tD_->deriv( response_ ) / tM_->deriv( model_ )[ iModel ];
+        //** call inverse substep with sensCol on right hand side (see Günther, 2004)
+        Vec deltaModel0( model_.size() );// !!! h variante
+        solveCGLSCDWWtrans( *forward_->jacobian(), C_, dataWeight_, sensCol, resolution, constraintsWeight_, modelWeight_,
+                         tM_->deriv( model_ ), tD_->deriv( response_ ), lambda_, deltaModel0, maxCGLSIter_, false );
 
         return resolution;
     }
