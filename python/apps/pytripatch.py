@@ -258,7 +258,11 @@ def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showC
                 nnn = nn.cumsum( axis = 0 ) / float( len( C ) )
                 print "min-max nnn ", min(nnn), max(nnn)
                 mi = hh[ min( np.where( nnn > 0.02 )[0] ) ]
-                ma = hh[ max( np.where( nnn < 0.4 )[0] ) ]
+                if min(nnn)>0.4:
+                    ma = max( C )
+                else:
+                    ma = hh[ max( np.where( nnn < 0.4 )[0] ) ]
+
                 #mi = hh[ min( np.where( nnn > 0.2 )[0] ) ]
                 #ma = hh[ max( np.where( nnn < 0.7 )[0] ) ]
                 C = ( C - mi ) / ( ma - mi )
@@ -483,9 +487,11 @@ def main( argv ):
             if os.path.exists( options.datafile ):
                 a = np.loadtxt( options.datafile )
                 options.cMin, options.cMax = interperc( a, options.interperc )
-            if options.datafile in mesh.exportDataMap().keys():
-                a = mesh.exportData( options.datafile )
-                options.cMin, options.cMax = interperc( a, options.interperc )
+            # else:
+                # mesh = g.Mesh(
+                # if options.datafile in mesh.exportDataMap().keys():
+                    # a = mesh.exportData( options.datafile )
+                    # options.cMin, options.cMax = interperc( a, options.interperc )
         
     wOffset = 0.05
     hOffset = 0.05
@@ -660,11 +666,11 @@ def main( argv ):
 	(fileBaseName, fileExtension) = path.splitext( options.outFileName )
 
 	if ( fileExtension == '.svg' ):
-            pylab.savefig( options.outFileName )
+            pylab.savefig( options.outFileName, transparent=True )
         elif ( fileExtension == '.pdf' ):
             pylab.savefig( options.outFileName, bbox_inches='tight' )
         elif ( fileExtension == '.png' ):
-            pylab.savefig( options.outFileName, dpi=options.dpi, bbox_inches='tight' )
+            pylab.savefig( options.outFileName, dpi=options.dpi, bbox_inches='tight', transparent=True )
         elif ( fileExtension == '.ps' ):
             pylab.savefig( options.outFileName, dpi=(600) )
         elif ( fileExtension == '.eps' ):
