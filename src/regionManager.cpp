@@ -423,6 +423,19 @@ void Region::setUpperBound( double ub ){
     setModelTransStr_( transString_ );
 }
 
+void Region::setParameters( double start, double lb, double ub ){
+    if ( lb < ub ) {
+        if ( ( start <= lb ) | ( start >= ub ) ) {
+            std::cout << "WARNING! starting model not within bounds! readjusting" << std::endl;
+            setStartValue( std::sqrt( lb * ub ) );
+        } else setStartValue( start );
+        setLowerBound( lb );
+        setUpperBound( ub );
+    } else {
+        throwError( EXIT_FAILURE, WHERE_AM_I + " bounds not matching: " + toStr( lb ) + ">=" + toStr( ub ) );    
+    }
+}
+
 RegionManager::RegionManager( bool verbose ) : verbose_( verbose ), mesh_( NULL ){
     paraDomain_ = new Mesh();
     parameterCount_ = 0;

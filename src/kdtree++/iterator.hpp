@@ -123,7 +123,7 @@ namespace KDTree
       typedef _Iterator<_Val, _Ref, _Ptr> _Self;
       typedef _Node<_Val> const* _Link_const_type;
       typedef std::bidirectional_iterator_tag iterator_category;
-      typedef ptrdiff_t difference_type;
+      typedef std::ptrdiff_t difference_type;
 
       inline _Iterator()
         : _Base_iterator() {}

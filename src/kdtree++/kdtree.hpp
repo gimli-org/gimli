@@ -120,7 +120,7 @@ namespace KDTree
       typedef typename _Acc::result_type subvalue_type;
       typedef typename _Dist::distance_type distance_type;
       typedef size_t size_type;
-      typedef ptrdiff_t difference_type;
+      typedef std::ptrdiff_t difference_type;
 
       KDTree(_Acc const& __acc = _Acc(), _Dist const& __dist = _Dist(),
 	     _Cmp const& __cmp = _Cmp(), const allocator_type& __a = allocator_type())
