@@ -175,8 +175,13 @@ public:
         Return NULL if no region is defined. */
     Trans< RVector > * transModel() { return tM_; }
 
+    /*! set lower parameter bound for region */
     void setLowerBound( double lb );
+    /*! set lower parameter bound for region */
     void setUpperBound( double ub );
+    
+    /*! set start and upper/lower bounds for region */
+    void setParameters( double start, double lb, double ub);
 
     void setModelTransStr_( const std::string & val );
 
@@ -263,8 +268,10 @@ public:
 
     void setInterRegionConstraint( int a, int b, double c );
 
+    /*! load region parameters from region control file */
     void loadMap( const std::string & fname );
 
+    /*! save region parameters to region control file */
     void saveMap( const std::string & fname );
 
     /*! Set the amount of parameter, will be override if regions are defined */
