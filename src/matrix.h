@@ -90,6 +90,36 @@ public:
 protected:
 };
 
+//! Identity matrix: derived from matrixBase or better be matrix base itself?
+class IdentityMatrix : public MatrixBase {
+public:
+    /*! Default constructor. */
+    IdentityMatrix( ) : nrows_( 0 ), ncols_( 0 ), val_( 0.0 ){}
+
+    /*! Default constructor. */
+    IdentityMatrix( Index nrows, Index ncols, double val = 0.0 ) : nrows_( nrows ), ncols_( ncols ), val_( val ){}
+
+    /*! Default destructor. */
+    virtual ~IdentityMatrix(){}
+
+    /*! Return number of cols */
+    virtual Index rows() const { return nrows_; }
+
+    /*! Return number of cols */
+    virtual Index cols() const { return ncols_; }
+
+    /*! Return this * a  */
+    virtual RVector mult( const RVector & a ) const { return a; }
+
+    /*! Return this.T * a */
+    virtual RVector transMult( const RVector & a ) const { return a; }
+
+protected:
+    Index nrows_;
+    Index ncols_;
+    double val_;
+};
+
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
 template < class ValueType > class Matrix : public MatrixBase {
