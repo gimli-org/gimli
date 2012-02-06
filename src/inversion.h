@@ -489,13 +489,13 @@ public:
                             << "*" << lambda_ << "=" << getPhi( model, response ) << std::endl;
     }
 
-    /*! Compute model cell resolution (specific column of resolution matrix) by an LSCG solver (Günther, 2004) */
+    /*! Compute model cell resolution (specific column of resolution matrix) by an LSCG solver (Guenther, 2004) */
     Vec modelCellResolution( int iModel ) {
         Vec resolution( model_.size(), 0.0 );
         resolution[ iModel ] = 1.0; //** both for retrieving solumn and as starting model for resolution
         //** retrieve one colomn from the jacobian matrix and scale according to data/model transformation
         Vec sensCol = (*forward_->jacobian()) * resolution * tD_->deriv( response_ ) / tM_->deriv( model_ )[ iModel ];
-        //** call inverse substep with sensCol on right hand side (see Günther, 2004)
+        //** call inverse substep with sensCol on right hand side (see Gnther, 2004)
         Vec deltaModel0( model_.size() );// !!! h variante
         solveCGLSCDWWtrans( *forward_->jacobian(), C_, dataWeight_, sensCol, resolution, constraintsWeight_, modelWeight_,
                          tM_->deriv( model_ ), tD_->deriv( response_ ), lambda_, deltaModel0, maxCGLSIter_, false );
