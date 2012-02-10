@@ -173,7 +173,7 @@ public:
 
     /*! Index operator for write operations without boundary check*/
     Vector< ValueType > & operator [] ( Index i ) {
-//         if ( i < 0 || i > mat_.size()-1 ) {
+// //         if ( i < 0 || i > mat_.size()-1 ) {
 //             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
 //                                 toStr( i ) + " " + toStr( this->rows() ) ) ;
 //         }
@@ -192,7 +192,7 @@ public:
     /*! Resize the matrix to rows x cols */
     virtual void resize( Index rows, Index cols ){ allocate_( rows, cols ); }
 
-    /*! Clear the matrix */
+    /*! Clear the matrix, frees memory */
     inline void clear() { mat_.clear(); }
 
     /*! Return number of rows */
@@ -305,6 +305,10 @@ public:
         saveMatrix( *this, filename );
     }
 
+    void round( ValueType tolerance ){
+        THROW_TO_IMPL
+    }
+    
 protected:
 
     void allocate_( Index rows, Index cols ){

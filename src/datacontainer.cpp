@@ -328,36 +328,37 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
 
     dataMap_[ "valid" ] = 1;
 
-    // validity check should only used in speccialication
+    // validity check should only used in specialization
     this->checkDataValidity( );
 
-    //** start read topo;
+    //** start read topography;
     row = getNonEmptyRow( file );
+    
     if ( row.size() == 1 ) {
-        //** we found topo
+        //** we found topography
         nSensors = toInt( row[ 0 ] );
         RVector xt( nSensors ), yt( nSensors ), zt( nSensors );
 
-//** if no electrodes format is given (no x after comment symbol) take defaults;
-//     format = getSubstrings( elecsFormatDefault );
+        std::string topoFormatDefault( "x y z" );
+        
+        file.get( c );
+        if ( c == '#' ) {
+            format = getRowSubstrings( file );
+            if ( format[ 0 ] != "x" && format[ 0 ] != "X" ){
+                //** if no electrodes format is given (no x after comment symbol) take defaults;
+                format = getSubstrings( topoFormatDefault );
+            }
+        }
+        file.unget();
 
-//     file.get( c );
-//     if ( c == '#' ) {
-//       format = getRowSubstrings( file );
-//       if ( format[ 0 ] != "x" && format[ 0 ] != "X" ){
-// 	format = getSubstrings( elecsFormatDefault );
-//       }
-//     }
-//     file.unget();
-
-    //** read topopoints;
+        //** read topography points;
         for ( int i = 0; i < nSensors; i ++ ){
             row = getNonEmptyRow( file );
 
             if ( row.empty() ) {
                 std::stringstream str;
                 str << WHERE_AM_I << "To few topo data. " << nSensors
-                        << " Topopoints expected and " << i << " found." << std::endl;
+                                  << " Topopoints expected and " << i << " found." << std::endl;
                 throwError( EXIT_DATACONTAINER_NTOPO, str.str() );
             }
 
@@ -370,7 +371,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
                 else {
                     std::stringstream str;
                     str << " Warning! format description unknown: topo electrode format[ "
-                        << j << " ] = " << format[ j ] << ". column ignored." << std::endl;
+                        << j << " ] = " << format[ j ] << " column ignored." << std::endl;
                     throwError( EXIT_DATACONTAINER_ELECS_TOKEN, str.str() );
                 }
             }

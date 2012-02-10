@@ -1,4 +1,4 @@
-#! python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 This program is part of pygimli
@@ -54,7 +54,11 @@ def main( argv ):
     print mesh
     if options.verbose:
         print "write bms: ", outfileBody + ".bms" 
-    mesh.saveBinaryV2( outfileBody )
+
+    if outfileBody.find( '.vtk' ):
+        mesh.exportVTK( outfileBody )
+    else:
+        mesh.saveBinaryV2( outfileBody )
     
 
 if __name__ == "__main__":

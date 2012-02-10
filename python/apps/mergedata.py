@@ -9,6 +9,8 @@ import sys, traceback
 import getopt
 from os import system
 
+import numpy as np
+
 try:
     import pygimli as g
 except ImportError:
@@ -33,10 +35,12 @@ def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
         The currently supported formats are:                                                
         A list of multiple row entries with the following formats:                                                  
                        
-        fileName1                                                                                                               
-        fileName2 startx starty endx endy                                                                   
+        fileName
+        fileName interpolationfile
+        fileName startx starty endx endy                                                                   
                                                                                                                                                                                           
         You can comment out a row by adding '#'.
+        interpolationfile is a 3-column-ascii-file (dx x y)
     '''
     dataList = []
 
@@ -50,12 +54,26 @@ def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
         if row[ 0 ] != '#' :
             if len( row ) == 1:
                 ### filename only
-                #d = importData( row[0] )
                 d = ContainerTyp( row[0] )
+            elif len( row ) == 2:
+                d = ContainerTyp( row[0] )
+                
+                xn = g.x( d.sensorPositions() )
+                zn = g.z( d.sensorPositions() )
+                
+                A = np.loadtxt( row[1] ).T
+
+                x3n = np.interp( xn, A[0], A[1] )
+                y3n = np.interp( xn, A[0], A[2] )
+
+                for i in range( d.sensorCount() ):
+                    d.setSensorPosition( i, g.RVector3( x3n[i], y3n[i], zn[i] ) )
+                    
             elif len( row ) == 5:
                 ### filename xstart ystart xend yend
                 #d = importData( row[0] )
                 d = ContainerTyp( row[0] )
+
                 start = g.RVector3( float( row[1] ), float( row[2] ) )
                 end   = g.RVector3( float( row[3] ), float( row[4] ) ) 
                 
