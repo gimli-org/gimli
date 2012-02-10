@@ -444,6 +444,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
         for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = expr( (ValueType)i );
     }
 
+    
 //     /*! Fill the whole vector with function expr( i ) */
 //     template< class V > void fill( const V & val ){
 //         for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = ValueType( val );
@@ -455,6 +456,14 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     /*! Empty the vector. Frees memory and resize to 0.*/
     void clear( ){ free_(); }
 
+    void round( ValueType tolerance ){
+        THROW_TO_IMPL
+        //for ( Index i = 0; i < a.size(); i ++ ) tmp[ i ] = rint( a[ i ] / tol ) * tol;    
+    }
+        
+    
+
+    
 //   ValueType min()
 
     const VectorIterator< ValueType > & begin() const { return *begin_; }

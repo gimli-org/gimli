@@ -411,7 +411,12 @@ Cell * Mesh::findCell( const RVector3 & pos, size_t & count, bool extensive ) co
         count = 0;
         fillKDTree_();
         Node * refNode = tree_->nearest( pos );
-//         std::cout << "Node: " << *refNode << std::endl;
+        
+        if ( refNode->cellSet().empty() ){
+            std::cout << "Node: " << *refNode << std::endl;
+            throwError( 1, WHERE_AM_I + " no cells for this node. This is a corrupt mesh" ); 
+        }
+            //std::cout << "Node: " << *refNode << std::endl;
 //         for ( std::set< Cell * >::iterator it = refNode->cellSet().begin(); it != refNode->cellSet().end(); it ++ ){
 //             std::cout << (*it)->id() << std::endl;
 //         }

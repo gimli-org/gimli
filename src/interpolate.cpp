@@ -37,8 +37,10 @@ void interpolate( const Mesh & mesh, const RMatrix & vData,
     std::vector < Cell * > cells( pos.size() );
     size_t count = 0;
     for ( uint i = 0; i < pos.size(); i ++ ) {
+
         cells[ i ] = mesh.findCell( pos[ i ], count, false );
-        if ( verbose ) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
+
+            if ( verbose ) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
 //                                 << "\t searched: " << count << std::endl;
     }
     if ( verbose ) std::cout << std::endl;
@@ -88,9 +90,15 @@ void interpolate( const Mesh & mesh, const RMatrix & vData,
 
 void interpolate( const Mesh & mesh, const RVector & data, const Mesh & pos, RVector & iData,
                   bool verbose ){
+                    
+    std::cout << "Mops1" << std::endl;
+                  
     RMatrix vData; vData.push_back( data );
+    std::cout << "Mops2" << std::endl;
     RMatrix viData;
+    std::cout << "Mops3" << std::endl;
     interpolate( mesh, vData, pos.positions(), viData, verbose );
+    std::cout << "Mops4" << std::endl;
     iData = viData[ 0 ];
 }
 

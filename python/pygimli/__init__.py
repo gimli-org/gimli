@@ -132,7 +132,26 @@ _pygimli_.RVector.__getitem__ = __getVal
 _pygimli_.RVector3.__setitem__ = __setVal
 
 def __getValMatrix( self, idx ):
+
+    if type( idx ) is slice:
+        if idx.step is None:
+            
+            start = idx.start
+            if idx.start is None:
+                start = 0
+                
+            stop = idx.stop
+            if idx.stop is None:
+                stop = len( self )
+                
+            return [ self.rowR( i ) for i in range( start, stop ) ]
+            
+            #return self( long( idx.start ), long( idx.stop ) )
+        else:
+            "not yet implemented"
+            
     if idx == -1: idx = len( self )-1
+    
     return self.rowR( idx )
 
 _pygimli_.RMatrix.__getitem__ = __getValMatrix
