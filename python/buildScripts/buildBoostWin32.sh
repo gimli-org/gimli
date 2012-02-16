@@ -1,5 +1,4 @@
 BOOST_VERSION=1_48_0
-#wget -nc -nd http://sourceforge.net/projects/boost/files/boost/1.48.0/boost_1_48_0.tar.gz
 
 if [ $# -eq 0 ]; then
 	prefix=`pwd`
@@ -35,6 +34,9 @@ fi
 
 BOOST_SRC_DIR=$BOOST_SRC/boost_$BOOST_VERSION
 GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f2`
+if [ "$GCCVER" = "mingw-version" ]; then
+    GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f3`
+fi
 
 arch=`python -c 'import platform; print platform.architecture()[0]'`
 if [ "$arch" == "64bit" ]; then
@@ -43,9 +45,20 @@ else
 	ADRESSMODEL=32
 fi
 
-pushd $BOOST_SRC_DIR
+if [ ! -d $BOOST_SRC_DIR ]; then
+     wget -nc -nd http://sourceforge.net/projects/boost/files/boost/1.48.0/boost_1_48_0.tar.gz
+     tar -xzvf boost_1_48_0.tar.gz 
+fi
 
-	DISTDIR=$BOOST_SRC_DIR/boost_$BOOST_VERSION-$GCCVER-$ADRESSMODEL
+pushd $BOOST_SRC_DIR
+	
+    # ./tools/build/v2/tools/python.jam:486 (comment out line to disable quotation adding)
+    sed -i 's/python-cmd = \\"\$(python-cmd)\\" ;/# python-cmd = \\"\$(python-cmd)\\" ;/' ./tools/build/v2/tools/python.jam
+
+    # is this still necessary ??
+    # edit ./tools/build/v2/tools/python-config.jam:12 (add 2.7 2.6 2.5) but not necessary
+    
+    DISTDIR=$BOOST_SRC_DIR/boost_$BOOST_VERSION-$GCCVER-$ADRESSMODEL
 
 	echo Calling from $OLDDIR
 	echo Installing at $DISTDIR
@@ -54,10 +67,6 @@ pushd $BOOST_SRC_DIR
 		./bootstrap.sh --with-toolset=mingw 
 	fi
 
-	# if you experience bjam complains something like founding no python
-	# edit ./tools/build/v2/tools/python.jam:486 (comment out line to disable quotation adding)
-	# edit ./tools/build/v2/tools/python-config.jam:12 (add 2.7 2.6 2.5) but not necessary
-
 	LDFLAGS='-static-libgcc -static-libstdc++' ./bootstrap.sh --prefix=$DISTDIR --with-bjam=./bjam.exe --with-toolset=gcc \
 		--with-python-root=$PYTHON_ROOT --with-libraries=python,system,thread,regex
 		
@@ -65,6 +74,7 @@ pushd $BOOST_SRC_DIR
 			address-model=$ADRESSMODEL variant=release link=shared \
 			threading=multi
 
+    echo "copying into new boost dir", ../boost
 	mkdir -p ../boost
 	cp -r $DISTDIR/include ../boost
 	cp -r $DISTDIR/lib ../boost
