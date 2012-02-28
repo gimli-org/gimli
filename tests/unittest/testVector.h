@@ -150,6 +150,15 @@ public:
         vs[ 1 ] = 1; vs[ 2 ] = 1; vs[ 3 ] = 2; vs[ 4 ] = 2; vs[ 7 ] = 1;
         CPPUNIT_ASSERT( unique( vs ).size() == 6 ); // 0 1 2 0 1 0
         CPPUNIT_ASSERT( unique( sort( vs ) ).size() == 3 ); // 0 1 2
+        
+        vs.fill( x__ + 1.0 );
+        vs *= 1.111;
+        vs.round( 0.01 );
+        CPPUNIT_ASSERT( ::fabs( vs[0] - 1.11 ) < TOLERANCE );
+        CPPUNIT_ASSERT( ::fabs( vs[4] - 5.56 ) < TOLERANCE );
+        CPPUNIT_ASSERT( ::fabs( vs[6] - 7.78 ) < TOLERANCE );
+        CPPUNIT_ASSERT( ::fabs( vs[9] - 11.11 ) < TOLERANCE );
+        
     }
         
     void testStdVectorTemplates(){
@@ -270,6 +279,11 @@ public:
         rank1Update( C, a, b );
         CPPUNIT_ASSERT( (C-B) == A );
         CPPUNIT_ASSERT( ::fabs( sum( A * b ) - sum( b ) * A.rows() ) < TOLERANCE );
+        
+        A *= 1.11;
+        A.round( 0.1 );
+        CPPUNIT_ASSERT( ::fabs( A[0][0] -1.1 ) < TOLERANCE );
+        
     }
     
     void testFind(){

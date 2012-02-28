@@ -78,11 +78,6 @@ AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic -pipe"])
 #AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -Wall"])
 
 #
-# Checks for libraries.
-#
-AC_CHECK_LIB(m, sqrt )
-
-#
 # Checks for header files.
 #
 AC_FUNC_ALLOCA
@@ -91,6 +86,18 @@ AC_HEADER_SYS_WAIT
 AC_HEADER_STDBOOL
 
 AC_CHECK_HEADER([sys/timeb.h])
+AC_CHECK_HEADER([proc/readproc.h])
+if test x"$ac_cv_header_proc_readproc_h" = "xyes"; then
+    AC_DEFINE( [HAVE_PROC_READPROC], [1], [Define and we can use memwatch])  
+fi
+
+
+#
+# Checks for libraries.
+#
+AC_CHECK_LIB( m, sqrt )
+AC_CHECK_LIB( proc, look_up_our_self )
+
 #
 # CHECK for boost/bind.hpp
 #
@@ -100,12 +107,14 @@ BOOST_REQUIRE([1.41],[AC_MSG_ERROR([Sorry, boost is requried.
 					or
 					./configure --with-boost=/c/home/boost])])
 BOOST_FIND_HEADER([boost/bind.hpp])
+BOOST_FIND_HEADER([boost/thread.hpp])
 BOOST_FIND_HEADER([boost/interprocess/managed_shared_memory.hpp],
                   [AC_MSG_WARN("*******************************************"
                                "does not found or non-working boost/interprocess/managed_shared_memory.hpp"
                                "*******************************************")] )
-
 AC_SUBST([CPPFLAGS], ["${CPPFLAGS} ${BOOST_CPPFLAGS}"])
+AC_CHECK_LIB( [boost_thread], [main])
+
 
 #
 # Checks for typedefs, structures, and compiler characteristics.
@@ -129,13 +138,11 @@ AC_CHECK_FUNCS([strerror])
 AM_PATH_CPPUNIT(,[have_unittest="yes"],
   AC_MSG_WARN([cppunit not found; cannot run unit tests!])
   [have_unittest="no"])
+
 AM_CONDITIONAL(HAVE_UNITTEST, test x"$have_unittest" = "xyes")
 if test x"$have_unittest" = "xyes"; then
 	AC_DEFINE( [HAVE_UNITTEST], [1], [Define and we can use unittest])  
 fi
-
-
-#AC_CHECK_LIB( [boost_thread], [main])
 
 dnl ############################################################################################
 dnl # define arguments for configure command line

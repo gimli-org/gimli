@@ -40,7 +40,7 @@ namespace GIMLI{
 //! Interface class for matrices.
 /*! Pure virtual interface class for matrices.
  * If you want your own Jacobian matrix to be used in \ref Inversion or \ref ModellingBase
- you have to derive your matrix from this class and implement all their members. */
+ you have to derive your matrix from this class and implement all necessary members. */
 class MatrixBase{
 public:
 
@@ -50,6 +50,9 @@ public:
     /*! Default destructor. */
     virtual ~MatrixBase(){}
 
+    /*! Return entity rtti value. */
+    virtual uint rtti() const { return GIMLI_MATRIXBASE_RTTI; }
+    
     /*! Return number of cols */
     virtual Index rows() const {
        THROW_TO_IMPL
@@ -88,6 +91,8 @@ public:
     }
 
 protected:
+    
+    
 };
 
 //! Identity matrix: derived from matrixBase or better be matrix base itself?
@@ -148,6 +153,9 @@ public:
     /*! Destruct matrix and free memory. */
     virtual ~Matrix(){}
 
+    /*! Return entity rtti value. */
+    virtual uint rtti() const { return GIMLI_MATRIX_RTTI; }
+    
     #define DEFINE_UNARY_MOD_OPERATOR__( OP, NAME ) \
     inline Matrix < ValueType > & operator OP##= ( const Matrix < ValueType > & A ) { \
         for ( register Index i = 0; i < mat_.size(); i ++ ) mat_[ i ] OP##= A[ i ]; return *this; } \
@@ -305,8 +313,10 @@ public:
         saveMatrix( *this, filename );
     }
 
-    void round( ValueType tolerance ){
-        THROW_TO_IMPL
+    /*! Round each matrix element to a given tolerance. */
+    void round( const ValueType & tolerance ){
+        for ( Index i = 0; i < mat_.size(); i ++ ) mat_[ i ].round( tolerance );
+        // ??? std::for_each( mat_.begin, mat_.end, boost::bind( &Vector< ValueType >::round, tolerance ) );
     }
     
 protected:

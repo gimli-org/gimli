@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -58,6 +58,11 @@
 // #ifdef HAVE_LIBBOOST_THREAD
 // #define EXPRVEC_USE_LIBBOOST_THREAD
 // #include <boost/thread.hpp>
+// #endif
+
+// #ifdef HAVE_LIBBOOST_THREAD
+// #define EXPRVEC_USE_LIBBOOST_THREAD
+#include <boost/bind.hpp>
 // #endif
 
 namespace GIMLI{
@@ -308,10 +313,10 @@ public:
         Throws exception on violating boundaries. */
     Vector < ValueType > operator () ( Index start, SIndex end ) const {
         Index e = (Index) end;
-        if ( end == -1 && end > (SIndex)size_ ) e = size_;
+        if ( end == -1 || end > (SIndex)size_ ) e = size_;
 
         Vector < ValueType > v( end-start );
-        if ( start >= 0 && start < e && e <= size_ ){
+        if ( start >= 0 && start < e ){
             std::copy( & data_[ start ], & data_[ e ], &v[ 0 ] );
         } else {
             throwLengthError( 1, WHERE_AM_I + " bounds out of range " +
@@ -384,13 +389,11 @@ DEFINE_COMPARE_OPERATOR_VEC__( >=, isGreaterEqual )
 DEFINE_COMPARE_OPERATOR_VEC__( >, isGreater )
 
 #undef DEFINE_COMPARE_OPERATOR_VEC__
-
+   
 #define DEFINE_COMPARE_OPERATOR__( OP, FUNCT ) \
     inline BVector operator OP ( const ValueType & v ) const { \
         BVector ret( this->size(), 0 ); \
-        for ( Index i = 0; i < this->size(); i ++ ){ \
-            ret[ i ] = FUNCT( data_[ i ], v ); \
-        } \
+        for ( Index i = 0; i < this->size(); i ++ ){ ret[ i ] = FUNCT( data_[ i ], v ); } \
         return ret;\
     } \
 
@@ -402,6 +405,13 @@ DEFINE_COMPARE_OPERATOR__( !=, isNonEqual )
 DEFINE_COMPARE_OPERATOR__( >, isGreater )
 
 #undef DEFINE_COMPARE_OPERATOR__
+
+//     inline BVector operator > ( const ValueType & v ) const { 
+//         BVector ret( this->size(), 0 ); 
+//         std::transform( data_, data_ + size_, &ret[ 0 ], boost::bind( isGreater< ValueType >, _1, v ) );
+//         return ret;
+//     } 
+
 
 #define DEFINE_UNARY_MOD_OPERATOR__( OP, FUNCT ) \
   inline Vector< ValueType > & operator OP##= ( const Vector < ValueType > & v ) { \
@@ -456,9 +466,10 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     /*! Empty the vector. Frees memory and resize to 0.*/
     void clear( ){ free_(); }
 
-    void round( ValueType tolerance ){
-        THROW_TO_IMPL
-        //for ( Index i = 0; i < a.size(); i ++ ) tmp[ i ] = rint( a[ i ] / tol ) * tol;    
+    /*! Round all values of this array to a given tolerance. */
+    void round( const ValueType & tolerance ){
+        //for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = roundTo( data_[ i ], tolerance );
+        std::transform( data_, data_ + size_, data_, boost::bind( roundTo< ValueType >, _1, tolerance ) );
     }
         
     

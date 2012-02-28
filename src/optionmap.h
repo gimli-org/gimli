@@ -33,19 +33,6 @@
 
 namespace GIMLI{
 
-inline void convert( bool          & var, char * opt ) { var = true; }
-inline void convert( int           & var, char * opt ) { if ( !opt ) var ++;    else var = atoi( opt ); }
-inline void convert( float         & var, char * opt ) { if ( !opt ) var = 0.0; else var = atof( opt ); }
-inline void convert( double        & var, char * opt ) { if ( !opt ) var = 0.0; else var = atof( opt ); }
-inline void convert( std::string   & var, char * opt ) { if ( !opt ) var = "";  else var = opt ; }
-inline void convert( std::vector < std::string >  & var, char * opt ) { if ( opt ) var.push_back( opt ); }
-inline std::string type( bool          & var ) { return "bool"; }
-inline std::string type( int           & var ) { return "int"; }
-inline std::string type( float         & var ) { return "float"; }
-inline std::string type( double        & var ) { return "double"; }
-inline std::string type( std::string   & var ) { return "string"; }
-inline std::string type( std::vector < std::string >  & var ) { return "string"; }
-
 class DLLEXPORT OptionBase{
 public:
     virtual ~OptionBase(){}

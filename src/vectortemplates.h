@@ -231,8 +231,8 @@ template < class Vec > double harmonicMean( const Vec & a ) {
   return 1.0 / result;
 }
 
-template < class Vec > double rms( const Vec & a ) { return std::sqrt( mean( square( a ) ) );
-}
+template < class Vec > double rms( const Vec & a ) { return std::sqrt( mean( square( a ) ) ); }
+
 template < class Vec > double rms( const Vec & a, const Vec & b) { return rms( a - b ); }
 
 template < class Vec > double rrms( const Vec & a, const Vec & b) { return rms( ( a - b ) / a ); }
@@ -240,10 +240,12 @@ template < class Vec > double rrms( const Vec & a, const Vec & b) { return rms( 
 template < class Vec > double normlp( const Vec & a, int p ) {
   return std::pow( sum( pow( abs( a ), p) ), 1.0/(double)p );
 }
+
 template < class Vec > double norml1( const Vec & a ) {
   //http://mathworld.wolfram.com/L1-Norm.html
   return normlp( a, 1 );
 }
+
 template < class Vec > double norml2( const Vec & a ) {
   // vector norm \ell^2 nicht L^2
   return normlp( a, 2 );

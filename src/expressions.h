@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -118,6 +118,11 @@ template < class T > bool isLesserEqual( const T & a, const T & b ) { return a <
 template < class T > bool isGreaterEqual( const T & a, const T & b ) { return a > b || isEqual( a, b ); }
 
 template < class T > bool isInfNaN( const T & a ){ return ( std::isinf( a ) || std::isnan( a ) ); }
+
+inline Complex RINT( const Complex & a ) { THROW_TO_IMPL; return Complex( 0 ); }
+inline double RINT( const double & a ) { return rint( a ); }
+
+template < class T > T roundTo( const T & a, const T & tol ){ return RINT( a / tol ) * tol; }
 
 inline bool operator < ( const Complex & a, const Complex & b ) { return false; }
 inline bool operator > ( const Complex & a, const Complex & b ) { return false; }
