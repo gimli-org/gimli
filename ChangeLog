@@ -1,3 +1,12 @@
+2012-02-28
+    libgimli
+        add default --debug option to the optionmap that enables global --debug mode for all gimli.
+        Currently spams a lot of memwatch messages, if available
+
+2012-02-22
+    libgimli
+        add singleton class memwatch (linux only)
+
 2012-01-27
     version bump -> 0.9.0
     internal change of jacobian storage. 

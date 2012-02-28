@@ -48,7 +48,7 @@ def parseDataStr( s ):
 
 def applyInterpolation( filename, mesh ):
     '''
-        need to be moved into libgimli
+        needs to be moved into libgimli
         needs to be documented
     '''
     

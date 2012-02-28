@@ -31,8 +31,9 @@ OptionMap::OptionMap( const std::string & description )
     bool help;
     showVersion_ = false;
     
-    add( help,    "h" , "help", "This help" );
-    add( showVersion_,      "" , "version"             , "Show library version and exit programm." );
+    add( help,              "h" , "help"    , "Show this help." );
+    add( showVersion_,      ""  , "version" , "Show library version and exit programm." );
+    add( GIMLI::__GIMLI_DEBUG__,   ""  , "debug"   , "Enable global debug mode." );
 }
 
 OptionMap::~OptionMap(){

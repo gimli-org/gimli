@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -82,7 +82,7 @@ typedef ssize_t SIndex;
 #define WHERE_AM_I std::string( WHERE + "\t" + std::string( __ASSERT_FUNCTION ) + " " )
 #define THROW_TO_IMPL { std::stringstream str; str << WHERE_AM_I << " not yet implemented\n " << GIMLI::versionStr() << "\nPlease send the messages above, the commandline and all necessary data to the author." << std::endl;\
                          throwToImplement( str.str() ); }
-#define CERR_TO_IMPL std::cerr << WHERE_AM_I << " not yet implemented\n " << GIMLI::versionStr() << "\nPlease send the messages above, the commandline and all necessary data to the author." << std::endl;
+#define CERR_TO_IMPL std::cerr << "Warning! " << WHERE_AM_I << " not yet implemented\n " << GIMLI::versionStr() << "\nPlease send the messages above, the commandline and all necessary data to the author." << std::endl;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
 #define COUTMARKER std::cerr << WHERE_AM_I << std::endl;
 
@@ -134,6 +134,10 @@ static const uint8 MESH_SHAPE_QUADRANGLE_RTTI  = 222;
 static const uint8 MESH_SHAPE_TETRAHEDRON_RTTI = 231;
 static const uint8 MESH_SHAPE_HEXAHEDRON_RTTI  = 232;
 
+static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
+static const uint8 GIMLI_MATRIX_RTTI            = 1;
+static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
+
 /*! Flag load/save Ascii or binary */
 enum IOFormat{ Ascii, Binary };
 
@@ -142,6 +146,7 @@ class Boundary;
 class Cell;
 class DataContainer;
 class Line;
+class MatrixBase;
 class Mesh;
 class MeshEntity;
 class ModellingBase;
@@ -150,6 +155,7 @@ class Plane;
 class Region;
 class RegionManager;
 class Shape;
+class Stopwatch;
 
 template < class ValueType > class Pos;
 typedef Pos< int >          IntPos;
@@ -162,6 +168,7 @@ typedef SparseMatrix< double >      DSparseMatrix;
 template< class ValueType, class IndexType > class SparseMapMatrix;
 typedef SparseMapMatrix< int, Index >     ISparseMapMatrix;
 typedef SparseMapMatrix< double, Index >  DSparseMapMatrix;
+typedef SparseMapMatrix< double, Index >  RSparseMapMatrix;
 
 template < class ValueType > class Matrix;
 template < class ValueType > class Vector;
@@ -193,6 +200,7 @@ template < class Vec > class Trans;
 //** end forward declaration
 
 DLLEXPORT extern bool __SAVE_PYTHON_GIL__;
+DLLEXPORT extern bool __GIMLI_DEBUG__;
 
 /*! */
 inline void savePythonGIL( bool s ){
@@ -276,9 +284,38 @@ DLLEXPORT std::vector < std::string > split( const std::string & str, char delim
 DLLEXPORT std::map < float, float > loadFloatMap( const std::string & filename );
 DLLEXPORT std::map < int, int > loadIntMap( const std::string & filename );
 
+
+inline void convert( bool          & var, char * opt ) { var = true; }
+inline void convert( int           & var, char * opt ) { if ( !opt ) var ++;    else var = atoi( opt ); }
+inline void convert( uint          & var, char * opt ) { if ( !opt ) var ++;    else var = atoi( opt ); }
+inline void convert( float         & var, char * opt ) { if ( !opt ) var = 0.0; else var = atof( opt ); }
+inline void convert( double        & var, char * opt ) { if ( !opt ) var = 0.0; else var = atof( opt ); }
+inline void convert( std::string   & var, char * opt ) { if ( !opt ) var = "";  else var = opt ; }
+inline void convert( std::vector < std::string >  & var, char * opt ) { if ( opt ) var.push_back( opt ); }
+inline std::string type( bool          & var ) { return "bool"; }
+inline std::string type( int           & var ) { return "int"; }
+inline std::string type( float         & var ) { return "float"; }
+inline std::string type( double        & var ) { return "double"; }
+inline std::string type( std::string   & var ) { return "string"; }
+inline std::string type( std::vector < std::string >  & var ) { return "string"; }
+
 inline int       toInt( const std::string & str ){ return std::atoi( str.c_str() ); }
 inline float   toFloat( const std::string & str ){ return std::atof( str.c_str() ); }
 inline double toDouble( const std::string & str ){ return std::strtod( str.c_str(), NULL ); }
+
+/*! Read value from environment variable. Return default value if environment not set. 
+ Environment var can be set in sh via: export name=val, or simple passing name=val in front of executable.*/
+template < typename ValueType > ValueType getEnvironment( const std::string & name, ValueType def, bool verbose = false){
+    ValueType var = def;
+    
+    char * cVar = getenv( name.c_str() );
+    if ( cVar != NULL ){
+        convert( var, cVar );
+        if ( verbose ) std::cout << "Found: export " << name << "=" << cVar << std::endl;
+    }
+    return var;
+}
+
 
 //! General template for conversion to string, shoul supersede all sprintf etc.
 template< typename T > inline std::string str( const T & value ){

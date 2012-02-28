@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -27,8 +27,9 @@
 #include "vectortemplates.h"
 #include "matrix.h"
 #include "mesh.h"
-#include "node.h"
 #include "meshentities.h"
+#include "node.h"
+#include "stopwatch.h"
 
 #include <map>
 #include <set>
@@ -169,6 +170,11 @@ public:
         return *this;
     }
 
+    virtual ~SparseMapMatrix( ) {}    
+    
+    /*! Return entity rtti value. */
+    virtual uint rtti() const { return GIMLI_SPARSEMAPMATRIX_RTTI; }
+    
     void copy( const SparseMatrix< ValueType > & S ){
         clear();
         cols_ = S.cols();
@@ -191,12 +197,10 @@ public:
     }
 
     inline void setRows( IndexType r ) { rows_ = r ; }
-    inline IndexType rows()     const { return rows_; }
+    virtual IndexType rows()     const { return rows_; }
 
     inline void setCols( IndexType c ) { cols_ = c ; }
-    inline IndexType cols()     const { return cols_; }
-
-    inline IndexType columns()  const { return cols_; }
+    virtual IndexType cols()     const { return cols_; }
 
     inline IndexType size()     const { return C_.size(); }
     inline IndexType max_size() const { return C_.max_size(); }
@@ -253,7 +257,7 @@ public:
                               WHERE_AM_I + " idx = " + toStr( r ) + " maxrow = "
                               + toStr( rows_ ) );
         }
-        return Aux( r, columns(), C_ );
+        return Aux( r, cols(), C_ );
     }
 
     inline IndexType idx1( const const_iterator & I ) const { return ( *I ).first.first; }
@@ -290,7 +294,6 @@ public:
                               );
         }
     }
-
     
     /*! Return this * a  */
     virtual RVector mult( const RVector & a ) const {
@@ -401,6 +404,30 @@ public:
         for ( Index i = 0; i < vi.size(); i ++ ){
             (*this)[ vi[ i ] ][ vj[ i ] ] = vval[ i ];
         }
+    }
+    
+    /*! Import columnwise from bmat starting at offset */
+    void importCol( const std::string & filename, double dropTol = 1e-3, Index colOffset = 0 ){
+    //std::cout << "rows: " << Jcluster.rows() << " cols: " << Jcluster.cols()<< std::endl;
+        
+        FILE *file;  file = fopen( filename.c_str(), "r+b" );
+        if ( !file ) {
+            throwError( EXIT_OPEN_FILE, WHERE_AM_I + " " + filename + ": " + strerror( errno ) );
+        }
+
+        uint ret = 0;
+        uint32 rows = 0; ret = fread( &rows, sizeof(uint32), 1, file );
+        uint32 cols = 0; ret = fread( &cols, sizeof(uint32), 1, file );
+        double val;
+        for ( uint i = 0; i < rows; i ++ ){
+            for ( uint j = 0; j < cols; j ++ ){
+                ret = fread( &val, sizeof(double), 1, file );
+                
+                if ( ::fabs( val ) > dropTol ) this->setVal( i, j + colOffset, val );
+            }
+        }
+        
+        fclose( file );
     }
 
 protected:
@@ -651,13 +678,27 @@ public:
     }
 
     void buildSparsityPattern( const Mesh & mesh ){
+        Stopwatch swatch( true );
+        
         colPtr_.resize( mesh.nodeCount() + 1 );
 
+        //*** much to slow
+        //DSparseMapMatrix S( mesh.nodeCount(), mesh.nodeCount() );
+        
         Index col = 0, row = 0;
-        std::vector < std::set < Index > > idxMap( mesh.nodeCount() );
-        std::set < Index > tmp;
+
+        // need unique(sort) maybee to slow
+//        std::vector < std::vector< Index > > idxMap( mesh.nodeCount() );
+//         for ( std::vector < std::vector< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
+//             (*mIt).reserve(100);
+//         }
+
+// using set is by a factor of approx 5 more expensive
+        std::vector < std::set< Index > > idxMap( mesh.nodeCount() );
+        
         Cell *cell;
         uint nc;
+        
         for ( uint c = 0; c < mesh.cellCount(); c ++ ){
             cell = &mesh.cell( c );
             nc = cell->nodeCount();
@@ -665,15 +706,21 @@ public:
                 for ( uint j = 0; j < nc; j ++ ){
                     row = cell->node( i ).id();
                     col = cell->node( j ).id();
+                    //idxMap[ col ].push_back( row );
                     idxMap[ col ].insert( row );
+                    //S[col][row] = 1;
                 }
             }
         }
 
         int nVals = 0;
-        for ( std::vector < std::set < Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
+        for ( std::vector < std::set< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
+            //std::sort( (*mIt).begin(), (*mIt).end() );
             nVals += (*mIt).size();
         }
+
+//         std::cout << "timwe: " << swatch.duration(  true ) << std::endl;
+//         exit(0);
 
         rowIdx_.reserve( nVals );
         rowIdx_.resize( nVals );
@@ -682,7 +729,7 @@ public:
         colPtr_[ 0 ] = 0;
         Index k = 0;
         row = 0;
-        for ( std::vector < std::set < Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
+        for ( std::vector < std::set< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
             for ( std::set< Index >::iterator sIt = (*mIt).begin(); sIt != (*mIt).end(); sIt++ ){
                 rowIdx_[ k ] = (*sIt);
                 vals_[ k ] = (ValueType)0.0;
@@ -692,6 +739,7 @@ public:
             colPtr_[ row ] = k;
         }
         valid_ = true;
+        //** freeing idxMap ist expensive
     }
 
     inline int * colPtr() { if ( valid_ ) return &colPtr_[ 0 ]; else SPARSE_NOT_VALID;  return 0; }

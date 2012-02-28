@@ -59,6 +59,8 @@ libgimli_la_SOURCES = \
 			meshentities.cpp \
 			meshgenerators.h \
 			meshgenerators.cpp \
+			memwatch.h \
+			memwatch.cpp \
 			modellingbase.h \
 			modellingbase.cpp \
 			node.h \

@@ -78,7 +78,7 @@ public:
     virtual MatrixBase * jacobian( ) const { return jacobian_; }
     
     /*! Return the Jacobian Matrix (read only) associated with this forward operator. 
-     *  Throws an exception if the jacobian is not initialized. Cannot yet be overloaded py pyplusplus (Warning 1049). */
+     *  Throws an exception if the jacobian is not initialized. Cannot yet be overloaded py pyplusplus (return virtual reference)(Warning 1049). */
     virtual RMatrix & jacobianRef( ) const { 
         if ( ! jacobian_ ) {
             throwError( 1, WHERE_AM_I + " Jacobian matrix is not initialized." );
@@ -142,11 +142,11 @@ protected:
     
     bool                    ownJacobian_;
     
-    RMatrix                     solutions_;
+    RMatrix                 solutions_;
 
     RVector                 startModel_;
     
-    bool                       verbose_;
+    bool                    verbose_;
     
     bool                       regionManagerInUse_;
     

@@ -37,7 +37,7 @@ if locale.localeconv()['decimal_point'] == ',':
 # print function for gimli stuff
 ############################
 def RVector_str( self ):
-    s = str( type( self ) ) + " "  + str( self.size() );
+    s = str( type( self ) ) + " " + str( self.size() );
 
     if len( self ) == 0:
         return s

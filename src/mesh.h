@@ -99,7 +99,6 @@ template < class ValueType > std::ostream & operator << ( std::ostream & str, co
     return str;
 }
 
-class Mesh;
 DLLEXPORT std::ostream & operator << ( std::ostream & str, const Mesh & mesh );
 
 class DLLEXPORT Mesh {

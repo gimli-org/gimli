@@ -175,9 +175,10 @@ def generate( defined_symbols ):
     ,"::GIMLI::__VectorExpr< double, GIMLI::__VectorUnaryExprOp< double, GIMLI::VectorIterator< double >, GIMLI::ABS_ > >"
                                                       ],
                                         name = [ 'strReplaceBlankWithUnderscore'
-                                                 ,'toStr', 'toInt', 'toFloat', 'toDouble', 'str'
-                                                 ,'getRowSubstrings', 'getNonEmptyRow', 'getSubstrings'
-                                                 ,'abs'
+                                                 , 'toStr', 'toInt', 'toFloat', 'toDouble', 'str'
+                                                 , 'getRowSubstrings', 'getNonEmptyRow', 'getSubstrings'
+                                                 , 'abs'
+                                                 , 'type'
                                                 ] )
 
     exclude( main_ns.free_operators,    name = [''],

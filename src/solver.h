@@ -63,9 +63,11 @@ int solveCGLSCDWWhtrans( const MatrixBase & S, const CMatrix & C, const Vec & dW
 
     Vec q( nData );
     Vec wcp( nConst ); // nBounds
-
+    
+//     std::cout.precision( 14 );
+//     std::cout << 0 << "  " << accuracy << std::endl;
+    
     while ( count < maxIter && normR2 > accuracy ){
-
         count ++;
         q = S * Vec( p / tm ) * dWeight * td;
         wcp = wc * ( C * Vec( p * wm ) );
@@ -84,6 +86,11 @@ int solveCGLSCDWWhtrans( const MatrixBase & S, const CMatrix & C, const Vec & dW
         normR2 = dot( r, r );
         beta = normR2 / normR2old;
         p = r + p * beta;
+        
+//         if( (count < 200 ) ) { 
+//             std::cout << count << "  " << normR2 << std::endl;
+//         }
+
 #ifndef MINGW
         if ( verbose ) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
 #endif
