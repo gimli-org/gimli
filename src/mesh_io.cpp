@@ -882,19 +882,31 @@ void Mesh::importVTK( const std::string & fbody ) {
     }
     row = getRowSubstrings( file );
     //std::cout << row.size() << std::endl;
-    if ( row.back() != "UNSTRUCTURED_GRID" ){
-        THROW_TO_IMPL
-    }
-    //** End reading header
+    if ( row.back() == "UNSTRUCTURED_GRID" ){
+        
+        //** End reading header
 
-    while ( !file.eof() ){
-        row = getRowSubstrings( file );
-        if ( row.size() ){
-            if ( row[ 0 ] == "POINTS" ) readVTKPoints_( file, row );
-            else if ( row[ 0 ] == "CELLS" ) readVTKCells_( file, row );
-            else if ( row[ 0 ] == "SCALARS" ) readVTKScalars_( file, row );
-        }
+        while ( !file.eof() ){
+            row = getRowSubstrings( file );
+            if ( row.size() ){
+                if ( row[ 0 ] == "POINTS" ) readVTKPoints_( file, row );
+                else if ( row[ 0 ] == "CELLS" ) readVTKCells_( file, row );
+                else if ( row[ 0 ] == "SCALARS" ) readVTKScalars_( file, row );
+            }
+        } 
+        
+    } else if ( row.back() == "POLYDATA" ){
+        while ( !file.eof() ){
+            row = getRowSubstrings( file );
+            if ( row.size() ){
+                if ( row[ 0 ] == "POINTS" ) readVTKPoints_( file, row );
+                else if ( row[ 0 ] == "POLYGONS" ) readVTKPolygons_( file, row );
+            }
+        } 
+    } else {
+            THROW_TO_IMPL
     }
+    
     this->showInfos();
     file.close();
 }
@@ -923,6 +935,22 @@ void Mesh::readVTKCells_( std::fstream & file, const std::vector < std::string >
             nodes[ j ] = &this->node( id );
         }
         this->createCell( nodes );
+    }
+}
+
+void Mesh::readVTKPolygons_( std::fstream & file, const std::vector < std::string > & row ){
+    uint nPoly = toInt( row[ 1 ] );
+    uint nNodes = 0;
+    uint id;
+    std::vector < Node * > nodes;
+    for ( uint i = 0; i < nPoly; i ++ ) {
+        file >> nNodes;
+        nodes.resize( nNodes );
+        for ( uint j = 0; j < nNodes; j ++ ) {
+            file >> id;
+            nodes[ j ] = &this->node( id );
+        }
+        this->createBoundary( nodes );
     }
 }
 

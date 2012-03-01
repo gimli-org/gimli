@@ -356,7 +356,8 @@ public:
     void readVTKPoints_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKCells_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKScalars_( std::fstream & file, const std::vector < std::string > & row );
-
+    void readVTKPolygons_( std::fstream & file, const std::vector < std::string > & row );
+    
     /*! Export the mesh in filename using vtu format:
     Visualization Toolkit Unstructured Points Data (http://www.vtk.org)
     Set binary to true writes the data content in binary format.

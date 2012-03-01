@@ -5,6 +5,8 @@
 
 #include <gimli.h>
 #include <ipcClient.h>
+#include <memwatch.h>
+#include <matrix.h>
 
 class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( GIMLIMiscTest );
@@ -13,6 +15,7 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST( testFunctorTemplates );
     CPPUNIT_TEST( testStringFunctions );
     CPPUNIT_TEST( testIPCSHM );
+    CPPUNIT_TEST( testMemWatch );
 //     CPPUNIT_TEST( testRotationByQuaternion );
     
 	//CPPUNIT_TEST_EXCEPTION( funct, exception );
@@ -96,6 +99,19 @@ public:
         
         // free the shared memory
         ipc.free( "unittest" );
+    }
+    
+    void testMemWatch(){
+        GIMLI::__GIMLI_DEBUG__ = true;
+        GIMLI::MemWatch::singleton().info( WHERE );
+        double * mat2 = new double[ 10000 * 10000 ];
+        GIMLI::MemWatch::singleton().info( WHERE );
+        delete [] mat2;
+        GIMLI::MemWatch::singleton().info( WHERE );
+        GIMLI::RMatrix mat( 10000, 10000 );
+        GIMLI::MemWatch::singleton().info( WHERE );
+        mat.clear();
+        GIMLI::MemWatch::singleton().info( WHERE );
     }
 
 };
