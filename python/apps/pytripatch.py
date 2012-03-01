@@ -593,6 +593,7 @@ def main( argv ):
                 d = g.DataContainer( options.electrodes )
                 elPos = d.sensorPositions()
                 pygimli.mplviewer.drawSensors( axes, elPos, diam = None )
+                #pygimli.mplviewer.drawSensors( axes, elPos, diam = None )
             except Exception as e:
                 print ( e + "Cannot determine electrode informations from file:" + str( options.electrodes ) )
 

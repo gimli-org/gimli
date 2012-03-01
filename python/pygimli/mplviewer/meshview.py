@@ -319,7 +319,7 @@ def drawSensors( axes, sensors, diam = None ):
     eSpacing = sensors[ 0 ].distance( sensors[ 1 ] )
     
     if diam is None:
-        diam = eSpacing / 5.0
+        diam = eSpacing / 8.0
 
     for e in sensors:
         eCircles.append( mpl.patches.Circle( (e[0], e[2]), diam ) )
