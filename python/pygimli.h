@@ -78,6 +78,7 @@ namespace pyplusplus{ namespace aliases{
 #include "cholmodWrapper.h"
 #include "datacontainer.h"
 #include "gimli.h"
+#include "gravimetry.h"
 #include "dc1dmodelling.h"
 #include "elementmatrix.h"
 #include "em1dmodelling.h"

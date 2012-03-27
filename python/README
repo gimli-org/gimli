@@ -33,4 +33,13 @@ A: Call mkcache.sh, python generate_python_code.py and make -f Makefile.msys by 
 ------------------------------------------------------------
 --------------------
     
-    
+-----------------------
+pygi plugins ideas
+-----------------------
+colormap scanner -- take a foto/scan/screenshot of your colored map/contour/model
+-- adjust colorbar by  picking some colors -> reconstruct datamatrix 
+
+2d pygigrav - interactive polygone editor and gravimetric modelling tool
+
+-----------------------
+

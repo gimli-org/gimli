@@ -62,8 +62,9 @@
 
 // #ifdef HAVE_LIBBOOST_THREAD
 // #define EXPRVEC_USE_LIBBOOST_THREAD
+#ifdef HAVE_BOOST_BIND_HPP
 #include <boost/bind.hpp>
-// #endif
+#endif
 
 namespace GIMLI{
 
@@ -468,13 +469,13 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
     /*! Round all values of this array to a given tolerance. */
     void round( const ValueType & tolerance ){
-        //for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = roundTo( data_[ i ], tolerance );
+#ifdef HAVE_BOOST_BIND_HPP
         std::transform( data_, data_ + size_, data_, boost::bind( roundTo< ValueType >, _1, tolerance ) );
+#else
+        for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = roundTo( data_[ i ], tolerance );
+#endif
     }
         
-    
-
-    
 //   ValueType min()
 
     const VectorIterator< ValueType > & begin() const { return *begin_; }

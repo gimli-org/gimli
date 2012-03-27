@@ -34,6 +34,8 @@ libgimli_la_SOURCES = \
 			expressions.h \
 			gimli.h \
 			gimli.cpp \
+			gravimetry.h \
+			gravimetry.cpp \
 			interpolate.h \
 			interpolate.cpp \
 			inversion.h \
