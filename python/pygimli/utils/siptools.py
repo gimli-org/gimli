@@ -88,7 +88,7 @@ def makeSlmData(ab2, mn2, rhoa=None, filename=None):
     if filename is not None:
         f.close()
 
-    data.set( 'rhoa', g.ListToRVector( list(rhoa) ) )
+    data.set( 'rhoa', g.asvector( rhoa) )
     return data
 
 def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
@@ -286,7 +286,7 @@ class DebyeModelling( g.ModellingBase ):
             mesh.cell(0).setMarker(-1)
             mesh.cell(len(tvec)-1).setMarker(1)
         g.ModellingBase.__init__( self, mesh, verbose )
-        self.f_ = g.ListToRVector( list( fvec) )
+        self.f_ = g.asvector( fvec )
         self.t_ = tvec
         self.zero_ = zero
 
@@ -336,7 +336,7 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False,
     else:
         f.regionManager().setConstraintType( 1 ) # smoothness    
 
-    inv = g.RInversion( g.ListToRVector( list( phi1 * 1e-3 ) ), f, verbose )
+    inv = g.RInversion( g.asvector( phi1 * 1e-3 ), f, verbose )
     inv.setAbsoluteError( g.RVector( len(fr1), err ) )
     inv.setLambda( lam )
     inv.setModel( start )
@@ -410,7 +410,7 @@ def read1resfile(filename, readsecond=False, dellast=True):
         drhoa.pop(0)
         dphi.pop(0)
 
-    return fr, rhoa, g.ListToRVector(phi), drhoa, g.ListToRVector(dphi)
+    return fr, rhoa, g.asvector(phi), drhoa, g.asvector(dphi)
     
 def ReadAndRemoveEM( filename, readsecond=False, doplot=False,
                     dellast=True, ePhi=0.5, ePerc=1., lam=2000. ):
@@ -420,7 +420,7 @@ def ReadAndRemoveEM( filename, readsecond=False, doplot=False,
                                               dellast=dellast)
     # forward problem
     mesh = g.createMesh1D( 1, 6 ) # 6 independent parameters
-    f = DoubleColeColeModelling(mesh, g.ListToRVector(fr) , phi[2]/abs(phi[2]))
+    f = DoubleColeColeModelling(mesh, g.asvector(fr) , phi[2]/abs(phi[2]))
     f.regionManager().loadMap( "region.control" )
     model = f.createStartVector()
     # inversion
@@ -435,8 +435,9 @@ def ReadAndRemoveEM( filename, readsecond=False, doplot=False,
     inv.echoStatus()    
     chi2 = inv.chi2()
     mod0 = g.RVector( erg )
-    mod0[ 0 ] = 0.0
-    resid = ( phi - f(mod0) ) * 1000.
+    mod0[ 0 ] = 0.0 # set IP term to zero to obtain pure EM term
+    emphi = f(mod0)
+    resid = ( phi - emphi ) * 1000.
     if doplot:
         s = "IP: m= " + str(rndig(erg[0])) + " t=" + str(rndig(erg[1]))  +  \
         " c =" + str(rndig(erg[2]))
@@ -459,5 +460,4 @@ def ReadAndRemoveEM( filename, readsecond=False, doplot=False,
         P.legend(loc=2)#('measured','2-cole-cole','residual'))
         fig.show()        
 
-    rr = g.ListToRVector( rhoa )
-    return N.array( fr ), N.array( rhoa ), N.array( resid ), N.array(phi), dphi, chi2
+    return N.array( fr ), N.array( rhoa ), N.array( resid ), N.array(phi)*1e3, dphi, chi2, N.array( emphi )*1e3

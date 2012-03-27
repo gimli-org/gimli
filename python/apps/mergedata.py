@@ -19,13 +19,13 @@ except ImportError:
 
 #from pybertlib.importer import importData
 
-def merge( N1, N2, ContainerTyp, snap = 0.1 ):
+def merge( data1, data2, ContainerTyp, snap = 0.001 ):
     '''
-        Merge two datacontainer into one, by copying the sensor positions and datapoints from N2 into N1.\n
+        Merge two datacontainer into one, by copying the sensor positions and datapoints from data2 into data1.\n
         Double sensor positions will be reused and snapped to a grid with gridsize snap
     '''
     data = ContainerTyp( N1 );
-    data.add( N2 )
+    data.add( N2, snap )
     return data
 # def merge( ... )
     

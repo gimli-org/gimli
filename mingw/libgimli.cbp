@@ -69,6 +69,8 @@
 		<Unit filename="..\src\expressions.h" />
 		<Unit filename="..\src\gimli.cpp" />
 		<Unit filename="..\src\gimli.h" />
+		<Unit filename="..\src\gravimetry.cpp" />
+		<Unit filename="..\src\gravimetry.h" />
 		<Unit filename="..\src\interpolate.cpp" />
 		<Unit filename="..\src\interpolate.h" />
 		<Unit filename="..\src\inversion.cpp" />
@@ -92,6 +94,8 @@
 		<Unit filename="..\src\line.cpp" />
 		<Unit filename="..\src\line.h" />
 		<Unit filename="..\src\matrix.h" />
+		<Unit filename="..\src\memwatch.cpp" />
+		<Unit filename="..\src\memwatch.h" />
 		<Unit filename="..\src\mesh.cpp" />
 		<Unit filename="..\src\mesh.h" />
 		<Unit filename="..\src\mesh_io.cpp" />
