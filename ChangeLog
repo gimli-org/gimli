@@ -1,3 +1,12 @@
+2012-03-26
+    libgimli
+        fixed bug in Mesh::createNeighbourInfos(). 
+        Sometimes it could happen that a boundary got the wrong left or right cell. 
+        Unsure if this played any role before. The correct right or left cell for each boundary is essential for gravimetric calculation using integration over boundaries.
+    gravimetric:
+        add very basic 2d gravimetric modelling based on cell or boundary integration.
+        Boundary based is faster then cell based.
+
 2012-02-28
     libgimli
         add default --debug option to the optionmap that enables global --debug mode for all gimli.

@@ -1073,18 +1073,18 @@ void Mesh::createNeighbourInfos( bool force ){
         this->cleanNeighbourInfos();
 
         for ( uint i = 0; i < cellCount(); i ++ ){
-            Cell *e = & cell( i );
+            Cell *c = & cell( i );
 
-            uint nBounds = e->neighbourCellCount();
+            uint nBounds = c->neighbourCellCount();
 
             for ( uint j = 0; j < nBounds; j++ ){
                 Boundary * bound = NULL;
-                e->findNeighbourCell( j );
+                c->findNeighbourCell( j );
 
-                switch ( e->rtti() ){
+                switch ( c->rtti() ){
                 case MESH_EDGE_CELL_RTTI:
-                    bound = findBoundary( e->node( j ) );
-                    if ( bound == NULL ) bound = createNodeBoundary( e->node( j ) );
+                    bound = findBoundary( c->node( j ) );
+                    if ( bound == NULL ) bound = createNodeBoundary( c->node( j ) );
                 break;
                 case MESH_TRIANGLE_RTTI:
                      //** er baut hier nur ein Edge2 da allerdings der marker == 0 ist wird es nie zum
@@ -1092,43 +1092,53 @@ void Mesh::createNeighbourInfos( bool force ){
                 case MESH_TRIANGLE6_RTTI:
                 case MESH_QUADRANGLE_RTTI:
                 case MESH_QUADRANGLE8_RTTI:
-                    bound = findBoundary( e->node( j ), e->node( ( j + 1 )%nBounds ) );
-                    if ( bound == NULL ) bound = createEdge( e->node( j ), e->node( ( j + 1 )%nBounds ) );
+                    bound = findBoundary( c->node( j ), c->node( ( j + 1 )%nBounds ) );
+                    if ( bound == NULL ) {
+                        bound = createEdge( c->node( j ), c->node( ( j + 1 )%nBounds ) );
+                    } 
                 break;
                 case MESH_TETRAHEDRON_RTTI:
                      //** er baut hier nur ein triangle3Face da allerdings der marker == 0 ist wird es
                      //** nie zum rechnen genutzt, aber für neighbour related infos, also ist das erstmal
                      //** ok, muss ich aufräumen wenn die Knotennummerierung der Tet10 eindeutig ist
                 case MESH_TETRAHEDRON10_RTTI:
-                    bound = findBoundary( e->node( j ),
-                                            e->node( ( j + 1 )%nBounds ),
-                                            e->node( ( j + 2 )%nBounds ) );
+                    bound = findBoundary( c->node( j ),
+                                          c->node( ( j + 1 )%nBounds ),
+                                          c->node( ( j + 2 )%nBounds ) );
                     if ( bound == NULL ) {
-                        bound = createTriangleFace( e->node( j ),
-                                               e->node( ( j + 1 )%nBounds ),
-                                               e->node( ( j + 2 )%nBounds ) );
-                    }
+                        bound = createTriangleFace( c->node( j ),
+                                                    c->node( ( j + 1 )%nBounds ),
+                                                    c->node( ( j + 2 )%nBounds ) );
+                    } 
                     break;
                 case MESH_HEXAHEDRON_RTTI:{
-                    std::vector < Node * > boundNodes( e->boundaryNodes( j ) );
+                    std::vector < Node * > boundNodes( c->boundaryNodes( j ) );
                     bound = findBoundary( boundNodes );
                     if ( bound == NULL ) {
                         bound = this->createBoundary( boundNodes );
-                    }
+                    } 
                 } break;
                 default:
-                      std::cerr << WHERE_AM_I << e->rtti() << std::endl;
+                      std::cerr << WHERE_AM_I << c->rtti() << std::endl;
                 }
 
-                if ( bound->leftCell() == NULL ) {
-                    bound->setLeftCell( e );
+                // pls check if this works on hexahedron to
+                bool cellIsLeft = ( c->node( j ).id() == bound->node( 0 ).id() );
+                
+                if ( bound->leftCell() == NULL && cellIsLeft ) {
+                    bound->setLeftCell( c );
                 } else if ( bound->rightCell() == NULL ) {
-                    bound->setRightCell( e );
+                    bound->setRightCell( c );
+                } else {
+                    std::cerr << *c << std::endl;
+                    std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
+                    std::cerr << *bound << std::endl;
+                    std::cerr << WHERE << " Ooops, this should not happen." << std::endl;
                 }
 
             //** cross check;
-                if ( ( bound->leftCell() != e ) && ( bound->rightCell() != e ) ){
-                    std::cerr << *e << std::endl;
+                if ( ( bound->leftCell() != c ) && ( bound->rightCell() != c ) ){
+                    std::cerr << *c << std::endl;
                     std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
                     std::cerr << *bound << std::endl;
                     std::cerr << WHERE << " Ooops, this should not happen." << std::endl;
