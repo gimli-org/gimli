@@ -6,6 +6,60 @@ from pygimli.mplviewer import drawMesh, drawModel,drawSelectedMeshBoundaries
 import pylab as P
 import numpy as np
 
+def getaxes():
+    fig = P.figure()
+    left, width = 0.1, 0.6
+
+    rect1 = [left, 0.75, width, 0.15]
+    rect2 = [left, 0.05, width, 0.69]
+
+    ax1 = fig.add_axes(rect1)
+    ax2 = fig.add_axes(rect2,sharex=ax1) 
+    return ax1,ax2
+    
+def analyticalCircle2D( spnts, radius, pos, dDensity ):
+    '''
+        calculate horizontal component of gravimetric field in mGal
+        sphere radius = radius in [Meter]
+        sphere center at pos at (x, -depth) 
+        dDensity in [kg/m^3]
+    '''
+    depth = -pos[ 1 ] 
+    G = 6.67384e-11
+    
+    gz = g.RVector( len(spnts), 0.0 )
+    for i, p in enumerate( spnts ):
+        gz[ i ] = G * 2. * P.pi * radius ** 2. * dDensity * depth / ( (p[0]-pos[0])**2.  + depth**2. ) * 1e5
+        
+    return gz
+#def analyticalSphere(  ):
+
+def analyticalSphere( spnts, radius , pos, dDensity ):
+    '''
+        calculate horizontal component of gravimetric field in mGal
+        sphere radius = radius in [Meter]
+        sphere center location at (0.0, 0.0, -depth) 
+        dDensity in [kg/m^3]
+    '''
+    depth = -pos[ 2 ] 
+    G = 6.67384e-11
+    V = 4./3. * np.pi * radius ** 3.
+    M = V * dDensity
+    
+    k = 1e5 * G * M * depth
+    
+    gz = g.RVector( len(spnts), 0.0 )
+    for i, p in enumerate( spnts ):
+        #r = (p-pos).abs()
+        #gdr = G * M / ( r **2.) * 1e5
+        #gdz = gdr * depth / r
+        #gz[ i ] = G * V * dDensity * depth / ( r**3.) * 1e5
+        gz[ i ] = k / ( (p[0]-pos[0])**2. + depth**2. )**(3./2.)
+       
+    return gz
+#def analyticalSphere(  ):
+    
+    
 def lineIntegralZ( p1, p2 ):
     '''
         WonBevis1987
@@ -106,103 +160,260 @@ def calcGCells( pos, mesh, rho ):
     
     return G * rho * 2.0 * 6.67384e-11 * 1e5, G
 
-mesh = g.Mesh( 'mesh/world2d.bms' )
-print mesh
-
-xMin = mesh.boundingBox( ).min()[0]
-yMax = mesh.boundingBox( ).max()[0]
-x = P.arange( xMin, yMax, 1. );
-
-mesh.createNeighbourInfos()
-rho = g.RVector( len( mesh.cellAttributes() ), 1. ) * 2000.0 
-rho.setVal( 0.0, g.find( mesh.cellAttributes() == 1.0 ) )
-
-swatch = g.Stopwatch( True )
-pnts = []
-spnts = g.stdVectorRVector3()
-for i in x:
-    pnts.append( g.RVector3( i, 0.0001 ) )
-    spnts.append( g.RVector3( i, 0.0001 ) )
     
-#gzC, GC = calcGCells( pnts, mesh, rho )
-gzC = g.calcGCells( spnts , mesh, rho )
-print "calcGCells",  swatch.duration( True )
-#gzB, GB = calcGBounds( pnts, mesh, rho )
-gzB = g.calcGBounds( spnts , mesh, rho )
-print "calcGBounds", swatch.duration( True )
+def test2d():    
+    mesh = g.Mesh( 'mesh/world2d.bms' )
+    print mesh
 
-gZ_Mesh = gzB
+    xMin = mesh.boundingBox( ).min()[0]
+    yMax = mesh.boundingBox( ).max()[0]
+    x = P.arange( xMin, yMax, 1. );
 
-fig = P.figure()
-left, width = 0.1, 0.6
+    mesh.createNeighbourInfos()
+    rho = g.RVector( len( mesh.cellAttributes() ), 1. ) * 2000.0 
+    rho.setVal( 0.0, g.find( mesh.cellAttributes() == 1.0 ) )
 
-rect1 = [left, 0.75, width, 0.15]
-rect2 = [left, 0.05, width, 0.69]
+    swatch = g.Stopwatch( True )
+    pnts = []
+    spnts = g.stdVectorRVector3()
+    
+    for i in x:
+        pnts.append( g.RVector3( i, 0.0001 ) )
+        spnts.append( g.RVector3( i, 0.0001 ) )
+    
+    #gzC, GC = calcGCells( pnts, mesh, rho )
+    gzC = g.calcGCells( spnts , mesh, rho )
+    print "calcGCells",  swatch.duration( True )
+    #gzB, GB = calcGBounds( pnts, mesh, rho )
+    gzB = g.calcGBounds( spnts , mesh, rho )
+    print "calcGBounds", swatch.duration( True )
 
-ax1 = fig.add_axes(rect1)
-ax2 = fig.add_axes(rect2,sharex=ax1) 
+    gZ_Mesh = gzB
 
+    
+    ax1, ax2 = getaxes()
 
-# sphere analytical solution
-radius = 2.0
-dDensity = 2000.0
-depth = 5.0 
-G = 6.67384e-11
-gAna = G * 2. * P.pi * radius **2. * dDensity * depth / ( x**2.  + depth**2. )
-gAna2 = G * 2. * P.pi * radius **2. * dDensity * depth / ( (x-5.)**2.  + depth**2. )
-gAna = gAna+ gAna2
-gAna *= 1e5 # mGal
+    # sphere analytical solution
+    gAna  = analyticalCircle2D( spnts, radius = 2.0, pos = g.RVector3( 0.0, -5.0 ), dDensity = 2000 )
+    gAna2 = analyticalCircle2D( spnts, radius = 2.0, pos = g.RVector3( 5.0, -5.0 ), dDensity = 2000 )
+    
+    gAna = gAna + gAna2
 
-ax1.plot( x, gAna, '-x', label= 'Analytisch' )
-ax1.plot( x, gZ_Mesh, label= 'WonBevis1987-mesh' )
+    ax1.plot( x, gAna, '-x', label= 'Analytisch' )
+    ax1.plot( x, gZ_Mesh, label= 'WonBevis1987-mesh' )
 
-print gAna / gZ_Mesh
+    print gAna / gZ_Mesh
 
-#rho=GB[0]/mesh.cellSizes()
+    #rho=GB[0]/mesh.cellSizes()
 
-gci = drawModel( ax2, mesh, rho )
+    gci = drawModel( ax2, mesh, rho )
 
-drawSelectedMeshBoundaries( ax2, mesh.findBoundaryByMarker( 0 )
+    drawSelectedMeshBoundaries( ax2, mesh.findBoundaryByMarker( 0 )
                                 , color = ( 1.0, 1.0, 1.0, 1.0 )
                                 , linewidth = 0.3 )
-drawSelectedMeshBoundaries( ax2, mesh.findBoundaryByMarker( 1 )
+    drawSelectedMeshBoundaries( ax2, mesh.findBoundaryByMarker( 1 )
                                 , color = ( 1.0, 1.0, 1.0, 1.0 )
                                 , linewidth = 0.3 )
        
-# sphere polygone
-poly1 = g.stdVectorRVector3()
-poly2 = g.stdVectorRVector3()
-nSegment=124
-for i in range( nSegment ):
-    xp = np.sin( (i+1) * ( 2. * np.pi ) / nSegment )
-    yp = np.cos( (i+1) * ( 2. * np.pi ) / nSegment )
-    poly1.append( g.RVector3( xp * radius, yp * radius - depth ) )
-    poly2.append( g.RVector3( xp * radius + 5., yp * radius - depth ) )
+    # sphere polygone
+    radius = 2.
+    depth = 5.
+    poly1 = g.stdVectorRVector3()
+    poly2 = g.stdVectorRVector3()
+    nSegment=124
+    for i in range( nSegment ):
+        xp = np.sin( (i+1) * ( 2. * np.pi ) / nSegment )
+        yp = np.cos( (i+1) * ( 2. * np.pi ) / nSegment )
+        poly1.append( g.RVector3( xp * radius, yp * radius - depth ) )
+        poly2.append( g.RVector3( xp * radius + 5., yp * radius - depth ) )
 
-gZ_Poly  = calcPolydgdz( spnts, poly1, 2000 )
-gZ_Poly += calcPolydgdz( spnts, poly2, 2000 )
+    gZ_Poly  = calcPolydgdz( spnts, poly1, 2000 )
+    gZ_Poly += calcPolydgdz( spnts, poly2, 2000 )
 
-ax1.plot( x, gZ_Poly, label= 'WonBevis1987-Poly' )
-ax2.plot( g.x( poly1 ), g.y( poly1 ), color = 'red' )
-ax2.plot( g.x( poly2 ), g.y( poly2 ), color = 'red' )
+    ax1.plot( x, gZ_Poly, label= 'WonBevis1987-Poly' )
+    ax2.plot( g.x( poly1 ), g.y( poly1 ), color = 'red' )
+    ax2.plot( g.x( poly2 ), g.y( poly2 ), color = 'red' )
 
-ax2.plot( g.x( spnts ), g.y( spnts ), marker = 'x', color = 'black' )
+    ax2.plot( g.x( spnts ), g.y( spnts ), marker = 'x', color = 'black' )
 
-# test some special case
-for i, p in enumerate( poly1 ):
-    poly1[i] = g.RVector3( poly1[i] - g.RVector3( 5.0, -6. ) )
-ax2.plot( g.x( poly1 ), g.y( poly1 ), color = 'green' )
+    # test some special case
+    for i, p in enumerate( poly1 ):
+        poly1[i] = g.RVector3( poly1[i] - g.RVector3( 5.0, -6. ) )
+    
+    ax2.plot( g.x( poly1 ), g.y( poly1 ), color = 'green' )
 
-gz  = calcPolydgdz( spnts, poly1, 2000 )
-ax1.plot( x, gz, label= 'Special Case', color = 'green' )
-ax1.set_ylabel( 'dg/dz [mGal]' )
-ax2.set_ylabel( 'Tiefe [m]' )
+    gz  = calcPolydgdz( spnts, poly1, 2000 )
+    ax1.plot( x, gz, label= 'Special Case', color = 'green' )
+    ax1.set_ylabel( 'dg/dz [mGal]' )
+    ax2.set_ylabel( 'Tiefe [m]' )
 
-ax1.legend()
-ax2.set_xlim( [ x[0], x[-1] ] )
-ax2.grid()
+    ax1.legend()
+    ax2.set_xlim( [ x[0], x[-1] ] )
+    ax2.grid()
+
+#def test2d
+
+
+def lineIntegralZ3D( p1, p2, n ):
+    '''
+        Holstein1999
+    '''
+    
+    t = ( p2 - p1 ) / ( p2 - p1 ).abs()
+    v = p1.dot( n )
+    
+    h = p1.dot( t.cross( n ) ) 
+    
+    r0 = np.sqrt( v**2 + h**2 )
+    l1 = p1.dot( t )
+    l2 = p2.dot( t )
+    
+    r1  = np.sqrt( v**2 + h**2 + l1**2 )
+    r2  = np.sqrt( v**2 + h**2 + l2**2 )
+    
+    L = l2 - l1 # edgelength
+    
+    # vertex method
+    ch = h * np.sign( l1 + l2 ) * np.log( ( r2 + abs( l2 ) ) / ( r1 + abs( l1 ) ) )  #(51)
+    atanLambda = np.arctan2( 2.0 * h * L, ( r1 + r2 + L ) * ( r1 + r2 - L ) + 2.* abs(v) * ( r2 + r1 ) ) #(39)
+    
+    # line method
+    #A = abs( L ) / ( r2 + r1 ) # (46)
+    #S = 0.5 * ( r1 + r2 - abs( L ) * A ) # (47)
+    
+    #atanLambda = np.arctan2(  ( h * A ), ( abs(v) * S ) ) #(48)
+    #ch = 2. * h * arctanh( L ) # (55)
+        
+    return ch - 2. * abs( v ) * atanLambda # (50)
+
+    
+def createHolstein1999Model( ):
+    mesh = g.Mesh( 3 )
+    
+    mesh.createNode( g.RVector3(  0,  0, 0 ) ) # dummy
+    mesh.createNode( g.RVector3(  10,  10, -12 ) )
+    mesh.createNode( g.RVector3(  10, -10, -12 ) )
+    mesh.createNode( g.RVector3( -10, -10, -12 ) )
+    mesh.createNode( g.RVector3( -10,  10, -12 ) )
+    mesh.createNode( g.RVector3( -20,  30, -12 ) )
+    mesh.createNode( g.RVector3(  30,  30, -12 ) )
+    mesh.createNode( g.RVector3(  20,  20, -22 ) )
+    mesh.createNode( g.RVector3(  20, -30, -22 ) )
+    mesh.createNode( g.RVector3( -20, -30, -22 ) )
+    mesh.createNode( g.RVector3( -20,  20, -22 ) )
+
+    facets = [ [1, 6, 5, 4, 3, 2],
+              [1, 2, 8, 7],
+              [2, 3, 9, 8],
+              [3, 4, 10, 9],
+              [4, 5, 10],
+              [5, 6, 7, 10],
+              [1, 7, 6],
+              [7, 8, 9, 10] ]
+              
+    return mesh, facets
+# def createHolstein1999Model( ... )
+    
+def test3d():
+    '''
+    '''
+    
+    # test1. 
+    mesh = g.Mesh( 3 )
+    mesh.importSTL( 'sphere.stl' )
+    mesh.scale( g.RVector3( 4.0, 4.0, 4.0 ) )
+    mesh.translate( g.RVector3( 0.0, 0.0, -5.0 ) )
+    print mesh
+    mesh.exportVTK('sphere.vtk' )
+    
+    alpha = 24
+    v = 8.2
+    epsilon = 1e-12
+    gamma = ( 100 * epsilon )** 1./v
+    d = alpha / ( gamma * np.sqrt( 2 ) )
+    d = 0
+    p = g.RVector3( d, d, 0.0 )
+    
+    x = P.arange( -15, 15, 1. );
+    spnts = g.stdVectorRVector3()
+    
+    for i in x:
+        spnts.append( g.RVector3( i, 0.000 ) )
+        
+    gz = g.RVector( len(x), 0.0 )
+    for i, p in enumerate( spnts ):   
+        
+        for face in mesh.boundaries():
+            Z = 0
+            norm = face.norm()
+            # cos( n, z )
+                
+            for j in range( face.nodeCount( ) ):
+                A = face.node( j )
+                B = face.node( (j+1)%face.nodeCount( ) )
+                Z += lineIntegralZ3D( A.pos() -p , B.pos() -p, norm )
+          
+            gz[ i ] += Z
+    
+        
+    gz = gz * 2000 * 6.67384e-11 * 1e5
+    
+    gAna = analyticalSphere( spnts, radius = 2.0, pos = g.RVector3( 0.0, 0.0, -5.0 ), dDensity = 2000 )
+    
+    ax1, ax2 = getaxes()
+    ax1.plot( x, gAna, '-x', label = 'Analytical Sphere' )
+    
+    ax1.plot( x, gz, label = 'polyhedral' )
+    
+    ax1.legend()
+    ax2.set_xlim( [ x[0], x[-1] ] )
+    ax2.grid()
+    
+    
+# def test3d()
+
+
+def functor( pos, P ):
+    '''
+        
+    '''
+    r = pos.dist( P );
+    return 1. / (r)
+# def rz( pos, P )
+
+P = g.RVector3( 0.0, 0.0, 0.0 )
+
+#A = g.Node( g.RVector3( -1., -1 ) )
+#B = g.Node( g.RVector3(  1., -1 ) )
+
+mesh = g.Mesh(2)
+A = mesh.createNode( g.RVector3( -1., 0 ) )
+B = mesh.createNode( g.RVector3( -2., 0 ) )
+C = mesh.createNode( g.RVector3( -1.5, -1. ) )
+
+print lineIntegralZ( A.pos() - P, B.pos() -P ) + lineIntegralZ( B.pos() - P, C.pos() -P ) + lineIntegralZ( C.pos() - P, A.pos() -P )
+# unfinished
+exit()
+
+#E = g.Edge( A, B )
+E = mesh.createTriangle( A, B, C)
+rules = g.IntegrationRules()
+
+print E.node(0).pos(), E.node(1).pos(), E.node(2).pos()
+S=0
+nInt = 3
+
+for i, t in enumerate( rules.triAbscissa( nInt ) ):
+    w = rules.triWeights( nInt )[i]
+    print t, w, E.shape().xyz( t ), functor( E.shape().xyz( t ), P )
+    S += w * functor( E.shape().xyz( t ), P )
+
+print S
+print "closing app"
 
 
 
-P.show()
+#test2d()
+#test3d()
 
+#P.show()

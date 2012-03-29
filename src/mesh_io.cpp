@@ -1198,6 +1198,85 @@ void Mesh::importMod( const std::string & filename ){
     if ( comments.size() > 5 && mat.cols() > 5 ) addExportData( comments[ 5 ], mat[ 5 ] );
 }
 
+void Mesh::importSTL( const std::string & fileName, bool isBinary  ){
+    double tolerance = 1e-3;
+    
+    std::vector < RVector3 > allVerts;
+    
+    if ( !isBinary ){ // try import ascii
+        std::fstream file; openInFile( fileName, & file );
+
+        std::vector < std::string > row;
+
+        row = getNonEmptyRow( file );
+        if ( row[ 0 ] != "solid" ) {
+            file.close();
+            importSTL( fileName, true );
+        }
+        
+        bool finish = false;
+        while ( !finish ){
+            row = getNonEmptyRow( file );
+            if ( row[ 0 ] == "facet" && row[ 1 ] == "normal" ){ //** facet normal  0.0  0.0  0.0
+                row = getNonEmptyRow( file );  //** outer loop
+                row = getNonEmptyRow( file ); //** vertex x y z;
+                allVerts.push_back( RVector3( toDouble( row[ 1 ] ), toDouble( row[ 2 ] ), toDouble( row[ 3 ] ) ) );
+                row = getNonEmptyRow( file ); //** vertex x y z
+                allVerts.push_back( RVector3( toDouble( row[ 1 ] ), toDouble( row[ 2 ] ), toDouble( row[ 3 ] ) ) );
+                row = getNonEmptyRow( file ); //** vertex x y z
+                allVerts.push_back( RVector3( toDouble( row[ 1 ] ), toDouble( row[ 2 ] ), toDouble( row[ 3 ] ) ) );
+                row = getNonEmptyRow( file );  //** endloop
+            row = getNonEmptyRow( file );  //** endfacet;
+            } else finish = true;
+        }
+        file.close();
+    } else { // import Binary Format
+        UNTESTED
+        
+        FILE * file; file = fopen( fileName.c_str(), "r+b" );
+
+        char header[ 80 ];
+        Index ret = 0; 
+        ret = fread( &header, 1, 80, file );
+        if ( ret == 0 ) throwError( 1, WHERE_AM_I + " Oops" );
+        
+        int nFaces = 0;
+        ret = fread( &nFaces, 4, 1, file );
+        if ( ret == 0 ) throwError( 1, WHERE_AM_I + " Oops" );
+
+        std::vector < RVector3 > allVerts;
+
+        float rd[ 48 ];
+        char padding[ 2 ];
+        for ( int i = 0; i < nFaces; i ++ ){
+            ret = fread( &rd, 4, 12, file );
+            if ( ret == 0 ) throwError( 1, WHERE_AM_I + " Oops" );
+            
+            allVerts.push_back( RVector3( rd[ 3 ], rd[ 4 ],  rd[ 5 ] ).round( tolerance * 0.01 ) );
+            allVerts.push_back( RVector3( rd[ 6 ], rd[ 7 ],  rd[ 8 ] ).round( tolerance * 0.01 ) );
+            allVerts.push_back( RVector3( rd[ 9 ], rd[ 10 ], rd[ 11 ] ).round( tolerance * 0.01 ) );
+
+            ret = fread( &padding, 1, 2, file );
+            if ( ret == 0 ) throwError( 1, WHERE_AM_I + " Oops" );
+        }
+      
+        fclose( file );
+    } // end import binary STL format
+    
+    Node *n1, *n2, *n3;
+    if ( allVerts.size() % 3 == 0 && allVerts.size() > 0 ){
+        for ( uint i = 0; i < allVerts.size() / 3; i ++ ){
+            n1 = createNodeWithCheck( allVerts[ i * 3 ], tolerance );
+            n2 = createNodeWithCheck( allVerts[ i * 3 + 1 ], tolerance );
+            n3 = createNodeWithCheck( allVerts[ i * 3 + 2 ], tolerance );
+            this->createTriangleFace( *n1, *n2, *n3, 0);
+        }
+    } else {
+        throwError(1,  WHERE_AM_I + " there is something wrong in ascii-stl-format "
+                + toStr( allVerts.size() ) + " " + toStr( allVerts.size() % 3 ) );
+    }
+}
+
 int Mesh::exportMidCellValue( const std::string & fileName,
                               const RVector & data1, const RVector & data2 ) const {
 

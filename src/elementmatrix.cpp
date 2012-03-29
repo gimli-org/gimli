@@ -100,6 +100,23 @@ void IntegrationRules::initGau_(){
     gauWeights_.back()[ 3 ] = 0.360761573048139;
     gauWeights_.back()[ 4 ] = 0.171324492379170;
     gauWeights_.back()[ 5 ] = 0.171324492379170;
+
+    //** 7.Order, n=7
+    gauAbscissa_.back()[ 0 ] = RVector3( 0.949107912342759, 0.0 );
+    gauAbscissa_.back()[ 1 ] = RVector3( 0.741531185599394, 0.0 );
+    gauAbscissa_.back()[ 2 ] = RVector3( 0.405845151377397, 0.0 );
+    gauAbscissa_.back()[ 3 ] = RVector3( 0.000000000000000, 0.0 );
+    gauAbscissa_.back()[ 4 ] = RVector3( -0.405845151377397, 0.0 );
+    gauAbscissa_.back()[ 5 ] = RVector3( -0.741531185599394, 0.0 );
+    gauAbscissa_.back()[ 6 ] = RVector3( -0.949107912342759, 0.0 );
+
+    gauWeights_.back()[ 0 ] = 0.129484966168870;
+    gauWeights_.back()[ 1 ] = 0.279705391489277;
+    gauWeights_.back()[ 2 ] = 0.381830050505119;
+    gauWeights_.back()[ 3 ] = 0.417959183673469;
+    gauWeights_.back()[ 4 ] = 0.381830050505119;
+    gauWeights_.back()[ 5 ] = 0.279705391489277;
+    gauWeights_.back()[ 6 ] = 0.129484966168870;
 }
 
 void IntegrationRules::initEdg_(){

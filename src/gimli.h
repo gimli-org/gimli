@@ -85,6 +85,7 @@ typedef ssize_t SIndex;
 #define CERR_TO_IMPL std::cerr << "Warning! " << WHERE_AM_I << " not yet implemented\n " << GIMLI::versionStr() << "\nPlease send the messages above, the commandline and all necessary data to the author." << std::endl;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
 #define COUTMARKER std::cerr << WHERE_AM_I << std::endl;
+#define UNTESTED std::cerr << "WARNING!" << WHERE_AM_I << " " << "this function is untested" << std::endl;
 
 #define TOLERANCE 1e-12
 #define TOUCH_TOLERANCE 1e-12

@@ -325,6 +325,8 @@ public:
     
     void importVTU( const std::string & fbody );
     
+    /*! Import Ascii STL, and save triangles as \ref Boundary(ies). */
+    void importSTL( const std::string & fileName, bool isBinary = false );
 
     /*! Be carefull with interchanging binary meshs between 32-64bit architecture. Atm we save fixed int for counter and idx.
     We have to replace and test it with uint32 or uint16 */

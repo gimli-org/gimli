@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2006-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -42,8 +42,15 @@ public:
     /*! Get the jacobian determinant of the shapes domain. */
     double jacobianDeterminant() const;
 
+    /*! Return element coordinates for pos regarding this shape i.e. return (s,t,r) for (x,y,z) */
     virtual RVector3 coordinates( const RVector3 & pos ) const;
 
+    /*! Return real coordinates for locale coordinates. */
+    virtual RVector3 xyz( const RVector3 & rst ) const;
+    
+    /*! Return local coordinates for real coordinates. */
+    virtual RVector3 rst( const RVector3 & xyz ) const;
+    
     /*! Pure virtual methode for detecting collisions of a pos and the shape */
     virtual bool touch( const RVector3 & pos, bool verbose = false ) const ;
 
@@ -127,6 +134,9 @@ public:
 
     virtual RVector3 coordinates( const RVector3 & pos ) const;
 
+    /*! Return n0 + (n1-n0)*rst. */
+    virtual RVector3 xyz( const RVector3 & rst ) const;
+    
     /*! Returns the partial derivative of the natural coordinates \f$L_i, i=0..1\f$ with respect to the cartesian coordinates
     \ref RVector3 pos \f$ (x) \f$:
         \f$ \frac{ \partial L_i(x) }{ \partial x } \f$ \n
@@ -178,6 +188,8 @@ public:
     */
     virtual RVector3 coordinates( const RVector3 & pos ) const;
 
+    virtual RVector3 xyz( const RVector3 & rst ) const;
+    
     /*! Returns the partial derivative of the natural coordinates \f$L_i, i=0..2\f$ with respect to the cartesian coordinates
     \ref RVector3 pos \f$ (x,y) \f$:
         \f$ \frac{ \partial L_i(x,y) }{ \partial coord } \f$ \n

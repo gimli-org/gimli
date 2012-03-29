@@ -89,6 +89,16 @@ RVector3 Shape::coordinates( const RVector3 & pos ) const {
     return RVector3( 0.0, 0.0, 0.0 );
 }
 
+RVector3 Shape::xyz( const RVector3 & rst ) const {
+    std::cout << "shape " << rtti() << std::endl;
+    THROW_TO_IMPL
+    return RVector3( 0.0, 0.0, 0.0 );
+}
+
+RVector3 Shape::rst( const RVector3 & xyz ) const { 
+    return coordinates( xyz ); 
+}
+
 bool Shape::touch( const RVector3 & pos, bool verbose ) const {
     int tmp; return touch1( pos, verbose, tmp );
 }
@@ -143,6 +153,12 @@ RVector3 EdgeShape::coordinates( const RVector3 & pos ) const {
     RVector3 coords;
     coords[ 0 ] = xp1 / x21;
     return coords;
+}
+
+RVector3 EdgeShape::xyz( const RVector3 & rst ) const {
+//** Coordinate transformation
+//** xp = x1 + (x2 - x1) * r
+    return nodeVector_[ 0 ]->pos() + ( nodeVector_[ 1 ]->pos() - nodeVector_[ 0 ]->pos() ) * rst[ 0 ];
 }
 
 double EdgeShape::deriveCoordinates( uint i, uint coord ) const {
@@ -249,6 +265,20 @@ RVector3 TriangleShape::coordinates( const RVector3 & pos ) const {
     coords[ 1 ] = ( x21 * yp1 - y21 * xp1 ) / J; // s
     return coords;
 }
+
+RVector3 TriangleShape::xyz( const RVector3 & rst ) const {
+//** Coordinate transformation
+//** xp = x1 + (x2 - x1) * r + (x3 - x1) * s
+//** yp = y1 + (y2 - y1) * r + (y3 - y1) * s
+    double x21 = nodeVector_[ 1 ]->pos()[ 0 ] - nodeVector_[ 0 ]->pos()[ 0 ];
+    double x31 = nodeVector_[ 2 ]->pos()[ 0 ] - nodeVector_[ 0 ]->pos()[ 0 ];
+    double y21 = nodeVector_[ 1 ]->pos()[ 1 ] - nodeVector_[ 0 ]->pos()[ 1 ];
+    double y31 = nodeVector_[ 2 ]->pos()[ 1 ] - nodeVector_[ 0 ]->pos()[ 1 ];
+    
+    return RVector3( nodeVector_[ 0 ]->pos()[ 0 ] + x21 * rst[ 0 ] + x31 * rst[ 1 ],
+                       nodeVector_[ 0 ]->pos()[ 1 ] + y21 * rst[ 0 ] + y31 * rst[ 1 ] );
+}
+
 
 double TriangleShape::deriveCoordinates( uint coord, uint dim ) const{
 // return d coord / d dim
