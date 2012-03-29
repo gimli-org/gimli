@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -140,20 +140,20 @@ Cell * findCommonCell( const std::vector < Node * > & n, bool warn ) {
 }
 
 std::ostream & operator << ( std::ostream & str, const MeshEntity & e ){
-  str << "MeshEntity " << &e << " rtti: " << e.rtti() << " id: " << e.id() << " rtti: " << e.rtti() << "\tN: " ;
-  for ( uint i = 0; i < e.nodeCount(); i ++ ) str << e.node( i ).id() << " " ;
-  return str;
+    str << "MeshEntity " << &e << " rtti: " << e.rtti() << " id: " << e.id() << " rtti: " << e.rtti() << "\tN: " ;
+    for ( uint i = 0; i < e.nodeCount(); i ++ ) str << e.node( i ).id() << " " ;
+    return str;
 }
 
 std::ostream & operator << ( std::ostream & str, const Boundary & e ){
-  str << "Boundary " << &e << " rtti: " << e.rtti() << " id: " << e.id() << "\tN: " ;
-  for ( uint i = 0; i < e.nodeCount(); i ++ ) str << e.node( i ).id() << " " ;
-  str << " marker: " << e.marker();
-  return str;
+    str << "Boundary " << &e << " rtti: " << e.rtti() << " id: " << e.id() << "\tN: " ;
+    for ( uint i = 0; i < e.nodeCount(); i ++ ) str << e.node( i ).id() << " " ;
+    str << " marker: " << e.marker();
+    return str;
 }
 
 std::ostream & operator << ( std::ostream & str, const Edge & e ){
-  str << "Edge " << &e << " id: " << e.id() << "\t"
+    str << "Edge " << &e << " id: " << e.id() << "\t"
       << e.node(0).id() << " " << e.node(1).id()
       << " marker: " << e.marker();
   return str;
@@ -413,7 +413,7 @@ Edge::Edge( Node & n1, Node & n2 ){
 }
 
 Edge::~Edge(){
-  delete shape_;
+    delete shape_;
 }
 
 void Edge::setNodes( Node & n1, Node & n2, bool changed ){

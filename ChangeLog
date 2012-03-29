@@ -1,3 +1,7 @@
+2012-03-28
+    libgimli
+        add mesh.importSTL, stl-ascii seams to work, stl-binary need tests
+
 2012-03-26
     libgimli
         fixed bug in Mesh::createNeighbourInfos(). 
