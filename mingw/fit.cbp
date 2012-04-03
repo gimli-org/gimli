@@ -41,6 +41,7 @@
 			<Add directory="../src" />
 		</Compiler>
 		<Linker>
+			<Add option="-Wl,--enable-auto-import" />
 			<Add library="libgimli" />
 			<Add directory="." />
 		</Linker>
