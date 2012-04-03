@@ -1,3 +1,14 @@
+2012-04-03
+    libgimli
+        fixed bug in Mesh::createNeighbourInfos().
+            -fix from 2012-03-26 worked only for 2d.
+            -3d case rolled back to working version
+        refactor integration rules in integration.h/integration.cpp
+            -fixed wrong trianlge integration abscissa for order 6
+            -add new quadrature weights/abs for generic triangle (not yet tested for fem)
+            -convert integration rules to singleton class
+        add singleton template class
+                    
 2012-03-28
     libgimli
         add mesh.importSTL, stl-ascii seams to work, stl-binary need tests

@@ -36,15 +36,14 @@ inline double kByte( long byte ){ return double( byte / 1024.0 ); }
 inline double mByte( long byte ){ return double( byte / ( 1024.0 * 1024.0 ) ); }
 
 //! Memory watch.
-/*! Class that might help debugging memory usage. Informations are taken from /proc system, so only available for linux systems. This is a singleton class to ensure a single instance. To call it use e.g.: MemWatch::singleton().info( WHERE );*/
-class DLLEXPORT MemWatch {
+/*! Class that might help debugging memory usage.
+ * Informations are taken from /proc system, so only available for linux systems.
+ * This is a singleton class to ensure a single instance.
+ * To call it use e.g.: MemWatch::instance().info( WHERE );*/
+class DLLEXPORT MemWatch  : public Singleton< MemWatch > {
 public:
-    /*! This call create one instance of the class and return a pointer to it. */
-    static MemWatch * pSingleton();
-    
-    /*! This call create one instance of the class and return a reference to it. */
-    static MemWatch & singleton();
-    
+    friend class Singleton< MemWatch >;
+
     /*! Return the current memory usage of the process. Values are in MByte. */
     double inUse( );
         
@@ -58,16 +57,14 @@ protected:
     double last_;
     
 private:
-    /*! Private so that it can  not be called */
+    /*! Private so that it can not be called */
     MemWatch( ); 
-    /*! Private so that it can  not be called */
-    ~MemWatch( ); 
+    /*! Private so that it can not be called */
+    virtual ~MemWatch( ); 
     /*! Copy constructor is private, so don't use it */
     MemWatch( const MemWatch & ){}; 
     /*! Assignment operator is private, so don't use it */
     void operator = ( const MemWatch & ){ };
-    
-    static MemWatch * pInstance_;
 
     Stopwatch * swatchAll_;
     Stopwatch * swatchDur_;
@@ -76,7 +73,6 @@ private:
     #ifdef HAVE_BOOST_THREAD_HPP
     boost::mutex mutex_;
     #endif
-    
 };
 
    

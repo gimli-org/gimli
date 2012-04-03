@@ -140,27 +140,40 @@ def calcGBounds( pos, mesh, rho ):
    
     return G * rho * 2.0 * 6.67384e-11 * 1e5, G
 
-def calcGCells( pos, mesh, rho ):
+def calcGCells( pos, mesh, rho, nInt = 0 ):
     '''
     '''
     G = g.RMatrix( len( pos ), mesh.cellCount() )
+    rules = g.IntegrationRules()
     
     for i, p in enumerate( pos ):
         for cId, c in enumerate( mesh.cells() ):
-            Z = 0
-            for j in range( c.nodeCount() ):
-                
-                A = c.node( j )
-                B = c.node( (j+1)%c.nodeCount() )
-                Z += g.lineIntegraldGdz( A.pos() - p , B.pos() - p )
-                #Z += lineIntegralZ( A.pos() - p , B.pos() - p )
-                
-            # negative Z because all cells are numbered counterclockwise
-            G[ i ][ c.id() ] = -Z
-    
-    return G * rho * 2.0 * 6.67384e-11 * 1e5, G
+            Z = 0.
 
+            if nInt == 0:
+                for j in range( c.nodeCount() ):
+                
+                    A = c.node( j )
+                    B = c.node( (j+1)%c.nodeCount() )
+                    # negative Z because all cells are numbered counterclockwise
+                    Z -= 2.0 * g.lineIntegraldGdz( A.pos() - p , B.pos() - p )
+                    #Z += lineIntegralZ( A.pos() - p , B.pos() - p )
+            else:
+
+                for j, t in enumerate( rules.abscissa( c, nInt ) ):
+                    w = rules.weights( c, nInt )[ j ]
+                    Z += 2.0 * w * functor( c.shape().xyz( t ), p )
+                #for j, t in enumerate( rules.quaAbscissa( nInt ) ):
+                    #w = rules.quaWeights( nInt )[ j ]
+                    #Z += 2.0 * w * functor( c.shape().xyz( t ), p )
+
+                Z *= c.jacobianDeterminant()
+
+            # negative Z because all cells are numbered counterclockwise
+            G[ i ][ c.id() ] = Z
     
+    return G * rho * 6.67384e-11 * 1e5, G
+
 def test2d():    
     mesh = g.Mesh( 'mesh/world2d.bms' )
     print mesh
@@ -181,14 +194,14 @@ def test2d():
         pnts.append( g.RVector3( i, 0.0001 ) )
         spnts.append( g.RVector3( i, 0.0001 ) )
     
-    #gzC, GC = calcGCells( pnts, mesh, rho )
-    gzC = g.calcGCells( spnts , mesh, rho )
+    gzC, GC = calcGCells( pnts, mesh, rho, 1 )
+    #gzC = g.calcGCells( spnts , mesh, rho, 1 )
     print "calcGCells",  swatch.duration( True )
     #gzB, GB = calcGBounds( pnts, mesh, rho )
     gzB = g.calcGBounds( spnts , mesh, rho )
     print "calcGBounds", swatch.duration( True )
 
-    gZ_Mesh = gzB
+    gZ_Mesh = gzC
 
     
     ax1, ax2 = getaxes()
@@ -373,47 +386,56 @@ def test3d():
 # def test3d()
 
 
-def functor( pos, P ):
+def functor( x, p ):
     '''
         
     '''
-    r = pos.dist( P );
-    return 1. / (r)
+    
+    r = x.dist( p )
+    
+    return (p[1]-x[1]) / (r**2.)
 # def rz( pos, P )
 
-P = g.RVector3( 0.0, 0.0, 0.0 )
-
-#A = g.Node( g.RVector3( -1., -1 ) )
-#B = g.Node( g.RVector3(  1., -1 ) )
-
 mesh = g.Mesh(2)
-A = mesh.createNode( g.RVector3( -1., 0 ) )
-B = mesh.createNode( g.RVector3( -2., 0 ) )
-C = mesh.createNode( g.RVector3( -1.5, -1. ) )
+#mesh.load('mesh/world2d.bms')
+A = mesh.createNode( g.RVector3( -1., -1. ) )
+B = mesh.createNode( g.RVector3( -2., -1. ) )
+C = mesh.createNode( g.RVector3( -2., -2. ) )
+D = mesh.createNode( g.RVector3( -1., -2. ) )
 
-print lineIntegralZ( A.pos() - P, B.pos() -P ) + lineIntegralZ( B.pos() - P, C.pos() -P ) + lineIntegralZ( C.pos() - P, A.pos() -P )
-# unfinished
-exit()
+mesh.createTriangle( A, B, C)
+#mesh.createQuadrangle( A, B, C, D)
+mesh.scale( g.RVector3( 3., 3. ) )
+#mesh.createTriangle( A, B, D)
 
-#E = g.Edge( A, B )
-E = mesh.createTriangle( A, B, C)
-rules = g.IntegrationRules()
+print mesh.cellSizes()
 
-print E.node(0).pos(), E.node(1).pos(), E.node(2).pos()
-S=0
-nInt = 3
+x = np.arange( -10, 10, 1. );
+rho = g.RVector( len( mesh.cellAttributes() ), 1. ) * 2000.0
+print rho
+pnts = g.stdVectorRVector3()
 
-for i, t in enumerate( rules.triAbscissa( nInt ) ):
-    w = rules.triWeights( nInt )[i]
-    print t, w, E.shape().xyz( t ), functor( E.shape().xyz( t ), P )
-    S += w * functor( E.shape().xyz( t ), P )
+for i in x:
+    pnts.append( g.RVector3( i, 0.0001 ) )
 
-print S
-print "closing app"
+gzNum = []
+gzNum.append( calcGCells( pnts, mesh, rho, 0 )[0] )
+
+#P.plot(x, gzNum[0], label = str(0) )
+
+for i in range( 1, 10 ):
+    gzNum.append( calcGCells( pnts, mesh, rho, i )[0] )
+
+    err = g.abs(gzNum[i]/gzNum[0]-1.)*100.
+    P.semilogy(x, err, label = str(i) )
+    
+    P.plot(x, gzNum[i], label = str(i) )
+
+P.legend()
+#P.plot(x, p1 )
 
 
-
-#test2d()
+test2d()
 #test3d()
 
-#P.show()
+P.show()

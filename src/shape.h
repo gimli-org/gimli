@@ -97,6 +97,7 @@ protected:
 
     mutable double domSize_;
     mutable bool hasDomSize_;
+    
     std::vector < Node * > nodeVector_;
 };
 
@@ -234,6 +235,8 @@ public:
 
     virtual RVector3 coordinates( const RVector3 & pos ) const;
 
+    virtual RVector3 xyz( const RVector3 & rst ) const;
+        
     virtual double deriveCoordinates( uint i, uint coord ) const;
 
     virtual bool touch1( const RVector3 & pos, bool verbose, int & pFunIdx  ) const;

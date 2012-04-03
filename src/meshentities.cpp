@@ -655,6 +655,7 @@ Triangle::Triangle( Node & n1, Node & n2, Node & n3 ): Cell(){
 }
 
 Triangle::~Triangle(){
+//     std::cout << " delete Triangle shape_ " << std::endl;
     delete shape_;
 }
 

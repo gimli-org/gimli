@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,277 +24,9 @@
 #include "node.h"
 #include "pos.h"
 
+#include "integration.h"
+
 namespace GIMLI{
-
-IntegrationRules::IntegrationRules(){
-    initGau_();
-    initEdg_();
-    initTri_();
-    initTet_();
-    initQua_();
-    initHex_();
-}
-
-void IntegrationRules::initGau_(){
-    //** 0.Order, n=1 -- just placeholder
-    gauAbscissa_.push_back( std::vector < RVector3 > ( 0 ) );
-    gauWeights_.push_back( RVector( 0, 0.0 ) );
-
-    //** 1.Order, n=1
-    gauAbscissa_.push_back( std::vector < RVector3 > ( 1 ) );
-    gauAbscissa_.back()[ 0 ] = RVector3(  0.0,0.0);
-    gauWeights_.push_back( RVector( 1, 2.0 ) );
-
-    //** 2.Order, n=2
-    gauAbscissa_.push_back( std::vector < RVector3 > ( 2 ) );
-    gauAbscissa_.back()[ 0 ] = RVector3( -0.577350269189626,0.0 );
-    gauAbscissa_.back()[ 1 ] = RVector3( 0.577350269189626,0.0 );
-    gauWeights_.push_back( RVector( 2, 1.0 ) );
-
-    //** 3.Order, n=3
-    gauAbscissa_.push_back( std::vector < RVector3 > ( 3 ) );
-    gauAbscissa_.back()[ 0 ] = RVector3(  0.0,0.0 );
-    gauAbscissa_.back()[ 1 ] = RVector3( -0.774596669241483,0.0 );
-    gauAbscissa_.back()[ 2 ] = RVector3(  0.774596669241483,0.0 );
-    gauWeights_.push_back( RVector( 3, 0.555555555555556 ) );
-    gauWeights_.back()[ 0 ] = 0.888888888888889;
-
-    //** 4.Order, n=4
-    gauAbscissa_.push_back( std::vector < RVector3 > ( 4 ) );
-    gauAbscissa_.back()[ 0 ] = RVector3(  0.339981043584856,0.0 );
-    gauAbscissa_.back()[ 1 ] = RVector3( -0.339981043584856,0.0 );
-    gauAbscissa_.back()[ 2 ] = RVector3(  0.861136311594053,0.0 );
-    gauAbscissa_.back()[ 3 ] = RVector3( -0.861136311594053,0.0 );
-    gauWeights_.push_back( RVector( 4, 0.0 ) );
-    gauWeights_.back()[ 0 ] = 0.652145154862546;
-    gauWeights_.back()[ 1 ] = 0.652145154862546;
-    gauWeights_.back()[ 2 ] = 0.347854845137454;
-    gauWeights_.back()[ 3 ] = 0.347854845137454;
-
-    //** 5.Order, n=5
-    gauAbscissa_.push_back( std::vector < RVector3 > ( 5 ) );
-    gauAbscissa_.back()[ 0 ] = RVector3(  0.000000000000000,0.0 );
-    gauAbscissa_.back()[ 1 ] = RVector3( -0.538469310105683,0.0 );
-    gauAbscissa_.back()[ 2 ] = RVector3(  0.538469310105683,0.0 );
-    gauAbscissa_.back()[ 3 ] = RVector3( -0.906179845938664,0.0 );
-    gauAbscissa_.back()[ 4 ] = RVector3(  0.906179845938664,0.0 );
-    gauWeights_.push_back( RVector( 5, 0.0 ) );
-    gauWeights_.back()[ 0 ] = 0.568888888888889;
-    gauWeights_.back()[ 1 ] = 0.478628670499366;
-    gauWeights_.back()[ 2 ] = 0.478628670499366;
-    gauWeights_.back()[ 3 ] = 0.236926885056189;
-    gauWeights_.back()[ 4 ] = 0.236926885056189;
-
-    //** 6.Order, n=6
-    gauAbscissa_.push_back( std::vector < RVector3 > ( 6 ) );
-    gauAbscissa_.back()[ 0 ] = RVector3(  0.238619186083197,0.0 );
-    gauAbscissa_.back()[ 1 ] = RVector3( -0.238619186083197,0.0 );
-    gauAbscissa_.back()[ 2 ] = RVector3(  0.661209386466265,0.0 );
-    gauAbscissa_.back()[ 3 ] = RVector3( -0.661209386466265,0.0 );
-    gauAbscissa_.back()[ 4 ] = RVector3(  0.932469514203152,0.0 );
-    gauAbscissa_.back()[ 5 ] = RVector3( -0.932469514203152,0.0 );
-    gauWeights_.push_back( RVector( 6, 0.0 ) );
-    gauWeights_.back()[ 0 ] = 0.467913934572691;
-    gauWeights_.back()[ 1 ] = 0.467913934572691;
-    gauWeights_.back()[ 2 ] = 0.360761573048139;
-    gauWeights_.back()[ 3 ] = 0.360761573048139;
-    gauWeights_.back()[ 4 ] = 0.171324492379170;
-    gauWeights_.back()[ 5 ] = 0.171324492379170;
-
-    //** 7.Order, n=7
-    gauAbscissa_.back()[ 0 ] = RVector3( 0.949107912342759, 0.0 );
-    gauAbscissa_.back()[ 1 ] = RVector3( 0.741531185599394, 0.0 );
-    gauAbscissa_.back()[ 2 ] = RVector3( 0.405845151377397, 0.0 );
-    gauAbscissa_.back()[ 3 ] = RVector3( 0.000000000000000, 0.0 );
-    gauAbscissa_.back()[ 4 ] = RVector3( -0.405845151377397, 0.0 );
-    gauAbscissa_.back()[ 5 ] = RVector3( -0.741531185599394, 0.0 );
-    gauAbscissa_.back()[ 6 ] = RVector3( -0.949107912342759, 0.0 );
-
-    gauWeights_.back()[ 0 ] = 0.129484966168870;
-    gauWeights_.back()[ 1 ] = 0.279705391489277;
-    gauWeights_.back()[ 2 ] = 0.381830050505119;
-    gauWeights_.back()[ 3 ] = 0.417959183673469;
-    gauWeights_.back()[ 4 ] = 0.381830050505119;
-    gauWeights_.back()[ 5 ] = 0.279705391489277;
-    gauWeights_.back()[ 6 ] = 0.129484966168870;
-}
-
-void IntegrationRules::initEdg_(){
-    /* just transform \int_1^� to \int_0� */
-    edgAbscissa_.push_back( std::vector < RVector3 > ( 0 ) );
-    edgWeights_.push_back( RVector( 0, 0.0 ) );
-
-    for ( uint i = 1; i < gauAbscissa_.size(); i ++ ){
-        edgAbscissa_.push_back( std::vector < RVector3 > ( gauAbscissa_[ i ].size() ) );
-        edgWeights_.push_back( 0.5 * gauWeights_[ i ] );
-
-        for ( uint j = 0; j < gauAbscissa_[ i ].size(); j ++ ){
-            edgAbscissa_[ i ][ j ] = gauAbscissa_[ i ][ j ] / 2.0 + RVector3( 0.5,0.0 );
-        }
-    }
-}
-
-void IntegrationRules::initTri_(){
-    //** 0.Order, n=1, Error: O(h�) -- just placeholder
-    triAbscissa_.push_back( std::vector< RVector3 >( 0 ) );
-    triWeights_.push_back( RVector( 0, 0.0 ) );
-
-    //** 1.Order, n=1, Error: O(h�)
-    triAbscissa_.push_back( std::vector< RVector3 >( 1 ) );
-    triAbscissa_.back()[ 0 ] = RVector3( 1.0/3.0, 1.0/3.0  );
-    triWeights_.push_back( RVector( 1, 1.0 ) );
-
-    //** 2.Order, n=3, Error: O(h�)
-    triAbscissa_.push_back( std::vector< RVector3 >( 3 ) );
-    triAbscissa_.back()[ 0 ] = RVector3( 0.5, 0.0 );
-    triAbscissa_.back()[ 1 ] = RVector3( 0.5, 0.5 );
-    triAbscissa_.back()[ 2 ] = RVector3( 0.0, 0.5 );
-    triWeights_.push_back( RVector( 3, 1.0/3.0 ) );
-
-    //** 3.Order, n=4, Error: O(h4)
-    triAbscissa_.push_back( std::vector< RVector3 >( 4 ) );
-    triAbscissa_.back()[ 0 ] = RVector3( 1.0/3.0, 1.0/3.0 ) ;
-    triAbscissa_.back()[ 1 ] = RVector3( 0.2, 0.2 );
-    triAbscissa_.back()[ 2 ] = RVector3( 0.6, 0.2 );
-    triAbscissa_.back()[ 3 ] = RVector3( 0.2, 0.6 );
-    triWeights_.push_back( RVector( 4, 25.0 / 48.0 ) );
-    triWeights_.back()[ 0 ] = -27.0/48.0;
-
-    //** 4.Order, n=6, Error: O(h?)
-    //**    Joseph E. Flaherty -- Finite Element Analysis CSCI-6860 / MATH-6860
-    triAbscissa_.push_back( std::vector< RVector3 >( 6 ) );
-    double a = 0.816847572980459, b = 0.091576213509771;
-    triAbscissa_.back()[ 0 ] = RVector3( b, b );
-    triAbscissa_.back()[ 1 ] = RVector3( a, b );
-    triAbscissa_.back()[ 2 ] = RVector3( b, a );
-    a = 0.108103018168070, b = 0.445948490915965;
-    triAbscissa_.back()[ 3 ] = RVector3( b, b );
-    triAbscissa_.back()[ 4 ] = RVector3( a, b );
-    triAbscissa_.back()[ 5 ] = RVector3( b, a );
-    triWeights_.push_back( RVector( 6, 0.109951743655322 ) );
-    triWeights_.back()[ 3 ] = triWeights_.back()[ 4 ] = triWeights_.back()[ 5 ] = 0.223381589678011;
-
-    //** 5.Order, n=7, Error: O(h6)
-    triAbscissa_.push_back( std::vector< RVector3 >( 7 ) );
-    double sqrt15 = std::sqrt( 15.0 );
-    triAbscissa_.back()[ 0 ] = RVector3( 1.0/3.0, 1.0/3.0 );
-    b = 2.0 / 7.0 + sqrt15 / 21.0, a = 1.0 - 2.0 * b;
-    triAbscissa_.back()[ 1 ] = RVector3( b, b );
-    triAbscissa_.back()[ 2 ] = RVector3( a, b );
-    triAbscissa_.back()[ 3 ] = RVector3( b, a );
-    b = 2.0 / 7.0 + sqrt15 / 21.0, a = 1.0 - 2.0 * b;
-    triAbscissa_.back()[ 4 ] = RVector3( b, b );
-    triAbscissa_.back()[ 5 ] = RVector3( a, b );
-    triAbscissa_.back()[ 6 ] = RVector3( b, a );
-
-    triWeights_.push_back( RVector( 7, 270.0 ) );
-    triWeights_.back()[ 1 ] = triWeights_.back()[ 2 ] = triWeights_.back()[ 3 ] = 155.0 + sqrt15;
-    triWeights_.back()[ 4 ] = triWeights_.back()[ 5 ] = triWeights_.back()[ 6 ] = 155.0 - sqrt15;
-    triWeights_.back() /= 1200.0;
-}
-
-void IntegrationRules::initTet_(){
-    //**    Joseph E. Flaherty -- Finite Element Analysis CSCI-6860 / MATH-6860
-    //** 0.Order, n=1, Error: O(h0) -- just placeholder
-    tetAbscissa_.push_back( std::vector< RVector3 >( 0 ) );
-    tetWeights_.push_back( RVector( 0, 0.0 ) );
-
-    //** 1.Order, n=1, Error: O(h2)
-    tetAbscissa_.push_back( std::vector< RVector3 >( 1 ) );
-    tetAbscissa_.back()[ 0 ] = RVector3( 0.25, 0.25, 0.25 );
-    tetWeights_.push_back( RVector( 1, 1.0 ) );
-
-    //** 2.Order, n=4, Error: O(h3)
-    tetAbscissa_.push_back( std::vector< RVector3 >( 4 ) );
-    double a = 0.585410196624969, b = 0.138196601125011;
-    tetAbscissa_.back()[ 0 ] = RVector3( b, b, b );
-    tetAbscissa_.back()[ 1 ] = RVector3( a, b, b );
-    tetAbscissa_.back()[ 2 ] = RVector3( b, a, b );
-    tetAbscissa_.back()[ 3 ] = RVector3( b, b, a );
-    tetWeights_.push_back( RVector( 4, 0.25 ) );
-
-    //** 3.Order, n=5, Error: O(h4)
-    tetAbscissa_.push_back( std::vector< RVector3 >( 5 ) );
-    tetAbscissa_.back()[ 0 ] = RVector3( 0.25, 0.25, 0.25 );
-    a = 0.5, b = 1.0 / 6.0;
-    tetAbscissa_.back()[ 1 ] = RVector3( b, b, b );
-    tetAbscissa_.back()[ 2 ] = RVector3( a, b, b );
-    tetAbscissa_.back()[ 3 ] = RVector3( b, a, b );
-    tetAbscissa_.back()[ 4 ] = RVector3( b, b, a );
-    tetWeights_.push_back( RVector( 5, 9.0 / 20.0 ) );
-    tetWeights_.back( )[ 0 ] = -4.0 / 5.0;
-
-    //** 4.Order, n=11, Error: O(h?)
-    tetAbscissa_.push_back( std::vector< RVector3 >( 11 ) );
-    tetAbscissa_.back()[ 0 ] = RVector3( 0.25, 0.25, 0.25 );
-    a = 0.785714285714286; b = 0.071428571428571;
-    tetAbscissa_.back()[ 1 ] = RVector3( b, b, b );
-    tetAbscissa_.back()[ 2 ] = RVector3( a, b, b );
-    tetAbscissa_.back()[ 3 ] = RVector3( b, a, b );
-    tetAbscissa_.back()[ 4 ] = RVector3( b, b, a );
-    a = 0.399403576166799; b = 0.100596423833201;
-    tetAbscissa_.back()[ 5 ] = RVector3( a, b, b );
-    tetAbscissa_.back()[ 6 ] = RVector3( b, b, a );
-    tetAbscissa_.back()[ 7 ] = RVector3( b, a, a );
-    tetAbscissa_.back()[ 8 ] = RVector3( a, a, b );
-    tetAbscissa_.back()[ 9 ] = RVector3( b, a, b );
-    tetAbscissa_.back()[10 ] = RVector3( a, b, a );
-
-    tetWeights_.push_back( RVector( 11, -0.01315555555555555555555556 ) );
-    for ( uint i = 1; i < 5; i ++ ) tetWeights_.back( )[ i ] = 0.007622222222222222222;
-    for ( uint i = 5; i < 11; i ++ ) tetWeights_.back( )[ i ] = 0.02488888888888888888888;
-    tetWeights_.back() *= 6.0;
-
-    //** 5.Order, n=15, Error: O(h?)
-    tetAbscissa_.push_back( std::vector< RVector3 >( 15 ) );
-    tetAbscissa_.back()[ 0 ] = RVector3( 0.25, 0.25, 0.25 );
-    a = 0.0; b = 1.0 / 3.0;
-    tetAbscissa_.back()[ 1 ] = RVector3( b, b, b );
-    tetAbscissa_.back()[ 2 ] = RVector3( a, b, b );
-    tetAbscissa_.back()[ 3 ] = RVector3( b, a, b );
-    tetAbscissa_.back()[ 4 ] = RVector3( b, b, a );
-    a = 0.7272727272727272727; b = 0.090909090909090909;
-    tetAbscissa_.back()[ 5 ] = RVector3( b, b, b );
-    tetAbscissa_.back()[ 6 ] = RVector3( a, b, b );
-    tetAbscissa_.back()[ 7 ] = RVector3( b, a, b );
-    tetAbscissa_.back()[ 8 ] = RVector3( b, b, a );
-    a = 0.066550153573664; b = 0.433449846426336;
-    tetAbscissa_.back()[ 9 ] = RVector3( a, b, b );
-    tetAbscissa_.back()[10 ] = RVector3( b, b, a );
-    tetAbscissa_.back()[11 ] = RVector3( b, a, a );
-    tetAbscissa_.back()[12 ] = RVector3( a, a, b );
-    tetAbscissa_.back()[13 ] = RVector3( b, a, b );
-    tetAbscissa_.back()[14 ] = RVector3( a, b, a );
-
-    tetWeights_.push_back( RVector( 15, 0.030283678097089 ) );
-    for ( uint i = 1; i < 5; i ++ ) tetWeights_.back( )[ i ] = 0.006026785714286;
-    for ( uint i = 5; i < 9; i ++ ) tetWeights_.back( )[ i ] = 0.011645249086029;
-    for ( uint i = 9; i < 15; i ++ ) tetWeights_.back( )[ i ] = 0.010949141561386;
-    tetWeights_.back() *= 6.0;
-}
-
-void IntegrationRules::initQua_(){
-
-    quaAbscissa_.push_back( std::vector < RVector3 > ( 0 ) );
-    quaWeights_.push_back( RVector( 0, 0.0 ) );
-
-    for ( uint order = 1; order < gauAbscissa_.size(); order ++ ){
-        uint nK = gauAbscissa_[ order ].size();
-        quaAbscissa_.push_back( std::vector < RVector3 > ( nK * nK ) );
-        quaWeights_.push_back( RVector( gauAbscissa_[ order ].size() * gauAbscissa_[ order ].size() ) );
-
-        for ( uint i = 0; i < nK; i ++ ){
-            for ( uint j = 0; j < nK; j ++ ){
-                uint k = i * nK + j;
-                quaAbscissa_[ order ][ k ] = RVector3( edgAbscissa_[ order ][ i ][ 0 ], edgAbscissa_[ order ][ j ][ 0 ] );
-                quaWeights_[ order ][ k ] = edgWeights_[ order ][ i ] * edgWeights_[ order ][ j ];
-            }
-        }
-    }
-}
-
-void IntegrationRules::initHex_(){
-}
 
 std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & e ){
     for ( uint i = 0; i < e.idx().size(); i ++ ) str << e.idx(i) << " " ;
@@ -505,18 +237,18 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u( const MeshE
         case MESH_EDGE_RTTI:
         case MESH_EDGE3_CELL_RTTI:
         case MESH_EDGE3_RTTI:
-            return u( ent, intRules_.edgWeights( 2 ), intRules_.edgAbscissa( 2 ), false ); //ch
+            return u( ent, IntegrationRules::instance().edgWeights( 2 ), IntegrationRules::instance().edgAbscissa( 2 ), false ); //ch
         case MESH_TRIANGLE_RTTI:
         case MESH_TRIANGLEFACE_RTTI:
         case MESH_TRIANGLE6_RTTI:
         case MESH_TRIANGLEFACE6_RTTI:
-            return u( ent, intRules_.triWeights( 2 ), intRules_.triAbscissa( 2 ), false ); //ch
+            return u( ent, IntegrationRules::instance().triWeights( 2 ), IntegrationRules::instance().triAbscissa( 2 ), false ); //ch
         case MESH_QUADRANGLE_RTTI:
         case MESH_QUADRANGLE8_RTTI:
-            return u( ent, intRules_.quaWeights( 2 ), intRules_.quaAbscissa( 2 ), false ); //ch
+            return u( ent, IntegrationRules::instance().quaWeights( 2 ), IntegrationRules::instance().quaAbscissa( 2 ), false ); //ch
         case MESH_TETRAHEDRON_RTTI:
         case MESH_TETRAHEDRON10_RTTI:
-            return u( ent, intRules_.tetWeights( 2 ), intRules_.tetAbscissa( 2 ), false );
+            return u( ent, IntegrationRules::instance().tetWeights( 2 ), IntegrationRules::instance().tetAbscissa( 2 ), false );
 
         default: std::cerr << WHERE_AM_I << " celltype not spezified " << ent.rtti() << std::endl;
     }
@@ -549,7 +281,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 //         std::cout << "2 " << *this << std::endl;
 /*}
     break;*/
-        u2( ent, intRules_.edgWeights( 2 ), intRules_.edgAbscissa( 2 ), false );
+        u2( ent, IntegrationRules::instance().edgWeights( 2 ), IntegrationRules::instance().edgAbscissa( 2 ), false );
         break;
     case MESH_EDGE3_CELL_RTTI:
     case MESH_EDGE3_RTTI:
@@ -571,7 +303,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 //         mat_[ 2 ][ 2 ] =   J / 30.0 * 16.0;
 //          std::cout << "2 " << *this << std::endl;
     //} break;
-        u2( ent, intRules_.edgWeights( 3 ), intRules_.edgAbscissa( 3 ), false );
+        u2( ent, IntegrationRules::instance().edgWeights( 3 ), IntegrationRules::instance().edgAbscissa( 3 ), false );
         break;
     case MESH_TRIANGLE_RTTI:
     case MESH_TRIANGLEFACE_RTTI:
@@ -594,15 +326,15 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 //         mat_[ 2 ][ 2 ] = Jl * 2.0;
 //         std::cout << "2 " << *this << std::endl;
 //}break;
-        u2( ent, intRules_.triWeights( 2 ), intRules_.triAbscissa( 2 ), false );
+        u2( ent, IntegrationRules::instance().triWeights( 2 ), IntegrationRules::instance().triAbscissa( 2 ), false );
         break;
     case MESH_QUADRANGLE_RTTI:
     case MESH_QUADRANGLEFACE_RTTI:
-        u2( ent, intRules_.quaWeights( 2 ), intRules_.quaAbscissa( 2 ), false );
+        u2( ent, IntegrationRules::instance().quaWeights( 2 ), IntegrationRules::instance().quaAbscissa( 2 ), false );
         break;
     case MESH_QUADRANGLE8_RTTI:
     case MESH_QUADRANGLEFACE8_RTTI:
-        u2( ent, intRules_.quaWeights( 3 ), intRules_.quaAbscissa( 3 ), false );
+        u2( ent, IntegrationRules::instance().quaWeights( 3 ), IntegrationRules::instance().quaAbscissa( 3 ), false );
         break;
     case MESH_TRIANGLE6_RTTI:
     case MESH_TRIANGLEFACE6_RTTI:
@@ -620,11 +352,11 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 //         }
 //         std::cout << "2 " << *this << std::endl;
     //} break;
-        return u2( ent, intRules_.triWeights( 4 ), intRules_.triAbscissa( 4 ), false ); //ch
+        return u2( ent, IntegrationRules::instance().triWeights( 4 ), IntegrationRules::instance().triAbscissa( 4 ), false ); //ch
     case MESH_TETRAHEDRON_RTTI:
-        return u2( ent, intRules_.tetWeights( 2 ), intRules_.tetAbscissa( 2 ), false );
+        return u2( ent, IntegrationRules::instance().tetWeights( 2 ), IntegrationRules::instance().tetAbscissa( 2 ), false );
     case MESH_TETRAHEDRON10_RTTI:
-        return u2( ent, intRules_.tetWeights( 4 ), intRules_.tetAbscissa( 4 ), false );
+        return u2( ent, IntegrationRules::instance().tetWeights( 4 ), IntegrationRules::instance().tetAbscissa( 4 ), false );
     default:
       std::cerr << ent.rtti() << std::endl;
       THROW_TO_IMPL
@@ -651,7 +383,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
     switch ( cell.rtti() ) {
     case MESH_EDGE_CELL_RTTI:
     case MESH_EDGE3_CELL_RTTI:
-        ux2( cell, intRules_.edgWeights( 2 ), intRules_.edgAbscissa( 2 ), false ); break;
+        ux2( cell, IntegrationRules::instance().edgWeights( 2 ), IntegrationRules::instance().edgAbscissa( 2 ), false ); break;
     case MESH_TRIANGLE_RTTI: {
     ////////////////////////////////////////////////////////////////////
 /*        double dN1dx = cell.shape().deriveCoordinates( 0, 0 );
@@ -693,7 +425,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
         mat_[ 1 ][ 2 ] = mat_[ 2 ][ 1 ];
 
         std::cout << "2" << *this << std::endl;*/
-        ux2uy2( cell, intRules_.triWeights( 1 ), intRules_.triAbscissa( 1 ), false );
+        ux2uy2( cell, IntegrationRules::instance().triWeights( 1 ), IntegrationRules::instance().triAbscissa( 1 ), false );
     } break;
     case MESH_TRIANGLE6_RTTI: {
 ///////////////////////////////////////////////////////////////////////////////////
@@ -771,12 +503,12 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
 //             }
 //         }
 //         std::cout << "2" << *this << std::endl;
-        ux2uy2( cell, intRules_.triWeights( 2 ), intRules_.triAbscissa( 2 ), false ); //ch
+        ux2uy2( cell, IntegrationRules::instance().triWeights( 2 ), IntegrationRules::instance().triAbscissa( 2 ), false ); //ch
     } break;
     case MESH_QUADRANGLE_RTTI:
-        ux2uy2( cell, intRules_.quaWeights( 2 ), intRules_.quaAbscissa( 2 ), false ); break;
+        ux2uy2( cell, IntegrationRules::instance().quaWeights( 2 ), IntegrationRules::instance().quaAbscissa( 2 ), false ); break;
     case MESH_QUADRANGLE8_RTTI:
-        ux2uy2( cell, intRules_.quaWeights( 3 ), intRules_.quaAbscissa( 3 ), false ); break;
+        ux2uy2( cell, IntegrationRules::instance().quaWeights( 3 ), IntegrationRules::instance().quaAbscissa( 3 ), false ); break;
     case MESH_TETRAHEDRON_RTTI:
     //{
 //         double x_xi = cell.shape().partDerivationRealToUnity( 0, 1 );
@@ -856,7 +588,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
 //     }
 //     std::cout << "0 " << *this << std::endl;
 //} break;
-        ux2uy2uz2( cell, intRules_.tetWeights( 1 ), intRules_.tetAbscissa( 1 ), false ); //ch
+        ux2uy2uz2( cell, IntegrationRules::instance().tetWeights( 1 ), IntegrationRules::instance().tetAbscissa( 1 ), false ); //ch
         break;
     case MESH_TETRAHEDRON10_RTTI:
 //     {
@@ -908,7 +640,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
 //
 //     break;
 //   }
-      ux2uy2uz2( cell, intRules_.tetWeights( 2 ), intRules_.tetAbscissa( 2 ), false );   break;
+      ux2uy2uz2( cell, IntegrationRules::instance().tetWeights( 2 ), IntegrationRules::instance().tetAbscissa( 2 ), false );   break;
   default:
     std::cerr << cell.rtti() << std::endl;
     THROW_TO_IMPL

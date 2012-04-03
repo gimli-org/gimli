@@ -29,50 +29,6 @@ namespace GIMLI{
 
 DLLEXPORT std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & pos );
 
-class DLLEXPORT IntegrationRules{
-public:
-    IntegrationRules();
-
-    inline const std::vector < RVector3 > & gauAbscissa( uint order ) const { return gauAbscissa_[ order ]; }
-    inline const RVector & gauWeights( uint order ) const { return gauWeights_[ order ]; }
-
-    inline const std::vector < RVector3 > & edgAbscissa( uint order ) const { return edgAbscissa_[ order ]; }
-    inline const RVector & edgWeights( uint order ) const { return edgWeights_[ order ]; }
-
-    inline const std::vector < RVector3 > & triAbscissa( uint order ) const { return triAbscissa_[ order ]; }
-    inline const RVector & triWeights( uint order ) const { return triWeights_[ order ]; }
-
-    inline const std::vector < RVector3 > & tetAbscissa( uint order ) const { return tetAbscissa_[ order ]; }
-    inline const RVector & tetWeights( uint order ) const { return tetWeights_[ order ]; }
-
-    inline const std::vector < RVector3 > & quaAbscissa( uint order ) const { return quaAbscissa_[ order ]; }
-    inline const RVector & quaWeights( uint order ) const { return quaWeights_[ order ]; }
-
-    inline const std::vector < RVector3 > & hexAbscissa( uint order ) const { return hexAbscissa_[ order ]; }
-    inline const RVector & hexWeights( uint order ) const { return hexWeights_[ order ]; }
-
-protected:
-    void initGau_();
-    void initEdg_();
-    void initTri_();
-    void initTet_();
-    void initQua_();
-    void initHex_();
-
-    std::vector < std::vector < RVector3 > > gauAbscissa_;
-    std::vector < RVector > gauWeights_;
-    std::vector < std::vector < RVector3 > > edgAbscissa_;
-    std::vector < RVector > edgWeights_;
-    std::vector < std::vector < RVector3 > > triAbscissa_;
-    std::vector < RVector > triWeights_;
-    std::vector < std::vector < RVector3 > > tetAbscissa_;
-    std::vector < RVector > tetWeights_;
-    std::vector < std::vector < RVector3 > > quaAbscissa_;
-    std::vector < RVector > quaWeights_;
-    std::vector < std::vector < RVector3 > > hexAbscissa_;
-    std::vector < RVector > hexWeights_;
-};
-
 template < class T > class DLLEXPORT ElementMatrix {
 public:
     ElementMatrix( ) { }
@@ -163,7 +119,6 @@ protected:
     RMatrix dNds_;
     RMatrix dNdt_;
 
-    IntegrationRules intRules_;
 };
 
 } // namespace GIMLI{

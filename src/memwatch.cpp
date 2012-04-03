@@ -30,7 +30,7 @@
 namespace GIMLI { 
 
 // Global static pointer used to ensure a single instance of the class.
-MemWatch * MemWatch::pInstance_ = NULL;  
+template <typename MemWatch> MemWatch* Singleton < MemWatch>::pInstance_ = NULL;
 
 MemWatch::MemWatch( ){ 
     last_ = inUse(); 
@@ -41,17 +41,8 @@ MemWatch::MemWatch( ){
 MemWatch::~MemWatch( ){ 
     delete swatchAll_; swatchAll_ = NULL;
     delete swatchDur_; swatchDur_ = NULL;
-    delete pInstance_; pInstance_ = NULL;
 } 
      
-MemWatch * MemWatch::pSingleton(){
-    return pInstance_ ? pInstance_ : ( pInstance_ = new MemWatch );
-}
-     
-MemWatch & MemWatch::singleton() {
-    return *pSingleton();
-}
-         
 double MemWatch::current( ){
     double ret = inUse() - last_;
     last_ = inUse();
