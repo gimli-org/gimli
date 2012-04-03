@@ -15,12 +15,18 @@ for regEntry in self.fop.regionManager().regions():
 workaround:
 for regEntry in self.fop.regionManager().regions():
     print self.fop.regionManager().region( regEntry.key )
-    
+
+
 ---------------------------------------------
 
 pygimli.gui
 
 active state manager (tab, tree, toolbar, pi -- activation management)
+
+---------------------------------------------
+Force the creation for meshentities to factory(mesh) only.
+    - never create a cell/node/boundary without a mesh, this will lead to segfault on script shutdown.
+
 
 ---------------------------------------------
 c++ -> python converter:

@@ -9,13 +9,23 @@ using namespace GIMLI;
 
 class MeshTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( MeshTest );
+    CPPUNIT_TEST( testSimple );
     CPPUNIT_TEST( testRefine2d );
     CPPUNIT_TEST( testRefine3d );
         
     //CPPUNIT_TEST_EXCEPTION( funct, exception );
     CPPUNIT_TEST_SUITE_END();
     
-public:    
+public:
+
+    void testSimple(){
+        Node n0( RVector3( 0.0, 0.0, 0.0 ) );
+        Node n1( RVector3( 1.0, 0.0, 0.0 ) );
+        Node n2( RVector3( 0.0, 1.0, 0.0 ) );
+
+        Triangle *tri = new Triangle ( n0, n1, n2 );
+        delete tri;
+    }
     
     void testRefine2d(){
                 

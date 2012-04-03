@@ -33,6 +33,9 @@ if locale.localeconv()['decimal_point'] == ',':
     locale.localeconv()['decimal_point']
     locale.setlocale( locale.LC_NUMERIC, 'C' )
 
+print locale.localeconv()['decimal_point']
+
+    
 ############################
 # print function for gimli stuff
 ############################

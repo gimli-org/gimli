@@ -85,6 +85,7 @@ namespace pyplusplus{ namespace aliases{
 #include "exitcodes.h"
 #include "expressions.h"
 #include "interpolate.h"
+#include "integration.h"
 #include "inversion.h"
 #include "ipcClient.h"
 #include "ldlWrapper.h"

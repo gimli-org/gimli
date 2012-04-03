@@ -6,9 +6,13 @@
 #include <pos.h>
 #include <meshentities.h>
 #include <elementmatrix.h>
+#include <integration.h>
 
 class FEMTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( FEMTest );
+
+    CPPUNIT_TEST( testFEMBasics );
+
     CPPUNIT_TEST( testFEM1D );
     CPPUNIT_TEST( testFEM2D );
     CPPUNIT_TEST( testFEM3D );
@@ -17,6 +21,23 @@ class FEMTest : public CppUnit::TestFixture  {
 
 public:
 
+    void testFEMBasics(){
+        for ( uint i = 1; i < 10; i ++ ){
+            std::cout << "n = " << i << " " << sum( IntegrationRules::instance().gauWeights( i ) )
+                      << " " << sum( IntegrationRules::instance().edgWeights( i ) )
+                      << " " << sum( IntegrationRules::instance().triGLWeights( i ) )
+                      << " " << sum( IntegrationRules::instance().quaWeights( i ) ) << std::endl;
+
+            CPPUNIT_ASSERT( ::fabs( sum( IntegrationRules::instance().gauWeights( i ) ) - 2.0 ) <  TOLERANCE );
+
+//             for ( uint j = 0; j < rules.triGLAbscissa( i ).size(); j ++ ){
+//                 std::cout << rules.triGLAbscissa( i )[ j ] << " " <<  rules.triGLWeights( i )[ j ] << std::endl;
+//             }
+
+            
+        }
+    }
+    
     void testFEM1D(){
         resetNodes( );
         testStiffness1D();

@@ -416,6 +416,36 @@ private:
     T value_;
 };
 
+/*! Template class for singleton instances */
+template < typename Classname > class Singleton {
+public:
+
+    virtual ~Singleton() { delete pInstance_; pInstance_ = NULL; }
+
+    /*! This call create one instance of the class and return a pointer to it. */
+    static Classname * pInstance() {
+        return pInstance_ ? pInstance_ : ( pInstance_ = new Classname() );
+    }
+
+    /*! This call create one instance of the class and return a reference to it. */
+    static Classname & instance() {
+        return * pInstance();
+    }
+
+protected:
+    /*! Protected so it can only be called from derived classes */
+    Singleton(){ }
+
+private:
+    /*! Private so that it can not be called */
+
+    /*! Copy constructor is private, so don't use it */
+    Singleton( const Singleton & ){};
+
+    static Classname * pInstance_;
+};
+
+
 } // namespace GIMLI
 
 #endif // _GIMLI_GIMLI__H

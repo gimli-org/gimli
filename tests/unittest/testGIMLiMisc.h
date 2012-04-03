@@ -103,19 +103,17 @@ public:
     
     void testMemWatch(){
         GIMLI::__GIMLI_DEBUG__ = true;
-        GIMLI::MemWatch::singleton().info( WHERE );
+        GIMLI::MemWatch::instance().info( WHERE );
         double * mat2 = new double[ 10000 * 10000 ];
-        GIMLI::MemWatch::singleton().info( WHERE );
+        GIMLI::MemWatch::instance().info( WHERE );
         delete [] mat2;
-        GIMLI::MemWatch::singleton().info( WHERE );
+        GIMLI::MemWatch::instance().info( WHERE );
         GIMLI::RMatrix mat( 10000, 10000 );
-        GIMLI::MemWatch::singleton().info( WHERE );
+        GIMLI::MemWatch::pInstance()->info( WHERE );
         mat.clear();
-        GIMLI::MemWatch::singleton().info( WHERE );
+        GIMLI::MemWatch::pInstance()->info( WHERE );
     }
-
 };
-
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GIMLIMiscTest );
 
