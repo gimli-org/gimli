@@ -25,7 +25,7 @@
 
 namespace GIMLI{
 
-template <typename IntegrationRules> IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
+template <> DLLEXPORT IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
 
 IntegrationRules::IntegrationRules(){
     initGau_();
@@ -93,11 +93,11 @@ void IntegrationRules::initGau_(){
     gauAbscissa_.push_back( std::vector < RVector3 > ( 4 ) );
     gauAbscissa_.back()[ 0 ] = RVector3( -::sqrt( 3.0 / 7.0 + 2.0 / 7.0 * ::sqrt( 6.0 / 5.0 ) ), 0.0 ); // -0.861136311594053
     gauAbscissa_.back()[ 1 ] = RVector3( -::sqrt( 3.0 / 7.0 - 2.0 / 7.0 * ::sqrt( 6.0 / 5.0 ) ), 0.0 ); // -0.339981043584856
-    
+
     gauWeights_.push_back( RVector( 4, 0.0 ) );
     gauWeights_.back()[ 0 ] = ( 18.0 - ::sqrt( 30.0 ) ) / 36.0; // 0.347854845137454;
     gauWeights_.back()[ 1 ] = ( 18.0 + ::sqrt( 30.0 ) ) / 36.0; // 0.652145154862546;
-    
+
     //** 5.Order, n=5
     gauAbscissa_.push_back( std::vector < RVector3 > ( 5 ) );
     gauAbscissa_.back()[ 0 ] = RVector3( -1.0 / 3.0 * ::sqrt( 5.0 + 2.0 * ::sqrt( 10.0 / 7.0 ) ), 0.0 ); // -0.906179845938664
@@ -141,7 +141,7 @@ void IntegrationRules::initGau_(){
     gauWeights_.back()[ 1 ] = 0.2223810344533744705443560;
     gauWeights_.back()[ 2 ] = 0.3137066458778872873379622;
     gauWeights_.back()[ 3 ] = 0.3626837833783619829651504;
-    
+
     //** 9.Order, n=9
     gauAbscissa_.push_back( std::vector < RVector3 > ( 9 ) );
     gauAbscissa_.back()[ 0 ] = RVector3( -0.9681602395076260898355762, 0.0 );
@@ -185,7 +185,7 @@ void IntegrationRules::initEdg_(){
 }
 
 void IntegrationRules::initTriGL_(){
-    
+
     //** 0.Order, n=1, Error: O(h1) -- just placeholder
     triGLAbscissa_.push_back( std::vector< RVector3 >( 0 ) );
     triGLWeights_.push_back( RVector( 0, 0.0 ) );
@@ -194,7 +194,7 @@ void IntegrationRules::initTriGL_(){
 //         std::cout << "i" << i << std::endl;
         triGLAbscissa_.push_back( std::vector< RVector3 >( i*i ) );
          triGLWeights_.push_back( RVector( i*i, 0.0 ) );
-        
+
         for ( uint j = 0; j < i; j ++ ){
             for ( uint k = 0; k < i; k ++ ){
                 double w = ( ( 1.0 - gauAbscissa_[ i ][ j ][ 0 ] ) / 8.0 ) * gauWeights_[ i ][ j ] * gauWeights_[ i ][ k ];
@@ -207,7 +207,7 @@ void IntegrationRules::initTriGL_(){
         }
     }
 }
-    
+
 void IntegrationRules::initTri_(){
     //** 0.Order, n=1, Error: O(h1) -- just placeholder
     triAbscissa_.push_back( std::vector< RVector3 >( 0 ) );
@@ -267,7 +267,7 @@ void IntegrationRules::initTri_(){
     triWeights_.back()[ 4 ] = triWeights_.back()[ 5 ] = triWeights_.back()[ 6 ] = 155.0 - sqrt15;
     triWeights_.back() /= 1200.0;
 
-   
+
 }
 
 void IntegrationRules::initTet_(){

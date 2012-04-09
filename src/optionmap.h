@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2009-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -78,6 +78,7 @@ public:
     virtual void assign_( char * opt = NULL ){ convert( *(T*)(var_), opt ); }
 
     virtual std::string typname( ){ return type( *(T*)(var_) ); }
+
     T value() { return *(T*)(var_); }
 
     virtual std::string defautToString( ) {
@@ -85,6 +86,7 @@ public:
         streamOut << defaultVar_;
         return streamOut.str();
     }
+
     T defaultVar_;
 };
 

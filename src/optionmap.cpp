@@ -30,7 +30,7 @@ OptionMap::OptionMap( const std::string & description )
     lastOption_     = NULL;
     bool help;
     showVersion_ = false;
-    
+
     add( help,              "h" , "help"    , "Show this help." );
     add( showVersion_,      ""  , "version" , "Show library version and exit programm." );
     add( GIMLI::__GIMLI_DEBUG__,   ""  , "debug"   , "Enable global debug mode." );
@@ -63,6 +63,8 @@ void OptionMap::parse( int argc, char * argv[] ){
                     exit( EXIT_SUCCESS );
                 }
                 it->second->assign( optarg );
+              // std::cout << "long: "<< it->second->name_ << " = "
+               //           <<  GIMLI::__GIMLI_DEBUG__<< std::endl;
             } else {
                 //std::cout << "\t not in longmap" << std::endl;
                 printHelp( argv[ 0 ] );
@@ -70,7 +72,8 @@ void OptionMap::parse( int argc, char * argv[] ){
         } else {
             CharOptionMap::iterator it = cMap_.find( (char)option_char );
             if ( it != cMap_.end() ){
-                it->second->assign( optarg );
+            //std::cout << "short: "<< it->second->name_ << " = "<<  0<< std::endl;
+               it->second->assign( optarg );
             } else {
                 //std::cout << "\t not in charmap" << std::endl;
                 printHelp( argv[ 0 ] );
@@ -82,7 +85,7 @@ void OptionMap::parse( int argc, char * argv[] ){
         std::cout << versionStr() << std::endl;
         exit( EXIT_SUCCESS );
     }
-    
+
     std::string lastString;
     for ( int index = optind; index < argc; index++ ){
         lastString += std::string( argv[ index ] );
@@ -93,6 +96,7 @@ void OptionMap::parse( int argc, char * argv[] ){
             printHelp( argv[ 0 ] );
             exit( EXIT_SUCCESS );
         } else {
+      //      std::cout << "lastoption"<< lastOption_->name_ << " = "<< std::endl;
             lastOption_->assign( &lastString[ 0 ] );
         }
     } else {
