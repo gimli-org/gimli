@@ -20,9 +20,8 @@
 
 #include "platform.h"
 
-#if defined(WINDOWS) || defined(_WIN32)
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
+#ifdef WIN32_LEAN_AND_MEAN
+
 #else
     #include <unistd.h>
 #endif
@@ -49,7 +48,7 @@ int numberOfCPU(){
     #define _SC_NPROCESSORS_ONLN
     #endif
 #endif // no windows
-    
+
 #ifdef _SC_NPROCESSORS_ONLN
     nprocs = sysconf(_SC_NPROCESSORS_ONLN);
 

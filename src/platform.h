@@ -24,6 +24,8 @@
 #if defined(WINDOWS) || defined(_WIN32)
 #define PATHSEPARATOR "\\"
 
+#define WIN32_LEAN_AND_MEAN
+
 #ifdef DLL_EXPORT
 #define DLLEXPORT __declspec(dllexport)
 #else /* NO BUILDING_DLL */

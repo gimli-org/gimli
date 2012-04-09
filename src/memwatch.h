@@ -27,6 +27,8 @@
     #include <boost/thread.hpp>
 #endif
 
+#define MEMINFO GIMLI::MemWatch::instance().info( WHERE );
+
 namespace GIMLI{
 
 /*! Convert byte into KByte. */
@@ -46,36 +48,36 @@ public:
 
     /*! Return the current memory usage of the process. Values are in MByte. */
     double inUse( );
-        
+
     /*! Return the current memory usage relative to the last call of this method. Values are in MByte. */
     double current( );
-            
+
     /*! Shows the current and the relative memory usage. */
     void info( const std::string & str = "" );
-         
+
 protected:
     double last_;
-    
+
 private:
     /*! Private so that it can not be called */
-    MemWatch( ); 
+    MemWatch( );
     /*! Private so that it can not be called */
-    virtual ~MemWatch( ); 
+    virtual ~MemWatch( );
     /*! Copy constructor is private, so don't use it */
-    MemWatch( const MemWatch & ){}; 
+    MemWatch( const MemWatch & ){};
     /*! Assignment operator is private, so don't use it */
     void operator = ( const MemWatch & ){ };
 
     Stopwatch * swatchAll_;
     Stopwatch * swatchDur_;
-    
+
     /*! Lock proc reading to be thread safe */
     #ifdef HAVE_BOOST_THREAD_HPP
     boost::mutex mutex_;
     #endif
 };
 
-   
+
 } // namespace GIMLI
 
 #endif

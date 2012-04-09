@@ -139,6 +139,9 @@ static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
 static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
 
+extern bool __SAVE_PYTHON_GIL__ ;
+extern bool __GIMLI_DEBUG__;
+
 /*! Flag load/save Ascii or binary */
 enum IOFormat{ Ascii, Binary };
 
@@ -199,9 +202,6 @@ template < class ValueType > class ElementMatrix;
 template < class Vec > class Trans;
 
 //** end forward declaration
-
-DLLEXPORT extern bool __SAVE_PYTHON_GIL__;
-DLLEXPORT extern bool __GIMLI_DEBUG__;
 
 /*! */
 inline void savePythonGIL( bool s ){
@@ -304,11 +304,11 @@ inline int       toInt( const std::string & str ){ return std::atoi( str.c_str()
 inline float   toFloat( const std::string & str ){ return std::atof( str.c_str() ); }
 inline double toDouble( const std::string & str ){ return std::strtod( str.c_str(), NULL ); }
 
-/*! Read value from environment variable. Return default value if environment not set. 
+/*! Read value from environment variable. Return default value if environment not set.
  Environment var can be set in sh via: export name=val, or simple passing name=val in front of executable.*/
 template < typename ValueType > ValueType getEnvironment( const std::string & name, ValueType def, bool verbose = false){
     ValueType var = def;
-    
+
     char * cVar = getenv( name.c_str() );
     if ( cVar != NULL ){
         convert( var, cVar );

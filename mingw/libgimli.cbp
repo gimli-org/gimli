@@ -71,6 +71,7 @@
 		<Unit filename="..\src\gimli.h" />
 		<Unit filename="..\src\gravimetry.cpp" />
 		<Unit filename="..\src\gravimetry.h" />
+		<Unit filename="..\src\integration.cpp" />
 		<Unit filename="..\src\interpolate.cpp" />
 		<Unit filename="..\src\interpolate.h" />
 		<Unit filename="..\src\inversion.cpp" />

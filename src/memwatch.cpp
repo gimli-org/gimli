@@ -23,53 +23,69 @@
 
 #include <iostream>
 
-#ifdef HAVE_PROC_READPROC
-    #include <proc/readproc.h>
+#ifdef WIN32_LEAN_AND_MEAN
+    #include <psapi.h>
+#else
+    #ifdef HAVE_PROC_READPROC
+        #include <proc/readproc.h>
+    #endif
 #endif
 
-namespace GIMLI { 
+namespace GIMLI {
 
 // Global static pointer used to ensure a single instance of the class.
-template <typename MemWatch> MemWatch* Singleton < MemWatch>::pInstance_ = NULL;
+template < > DLLEXPORT MemWatch* Singleton < MemWatch>::pInstance_ = NULL;
 
-MemWatch::MemWatch( ){ 
-    last_ = inUse(); 
+MemWatch::MemWatch( ){
+    last_ = inUse();
     swatchAll_ = new Stopwatch( true );
     swatchDur_ = new Stopwatch( true );
-} 
-     
-MemWatch::~MemWatch( ){ 
+}
+
+MemWatch::~MemWatch( ){
     delete swatchAll_; swatchAll_ = NULL;
     delete swatchDur_; swatchDur_ = NULL;
-} 
-     
+}
+
 double MemWatch::current( ){
     double ret = inUse() - last_;
     last_ = inUse();
     return ret;
 }
-    
+
 double MemWatch::inUse( ) {
-#ifdef HAVE_PROC_READPROC
-    #ifdef HAVE_BOOST_THREAD_HPP
+#ifdef HAVE_BOOST_THREAD_HPP
     boost::mutex::scoped_lock lock( mutex_ ); // slows down alot
-    #endif
-    
+#endif
+
+#ifdef WIN32_LEAN_AND_MEAN
+
+    PROCESS_MEMORY_COUNTERS pmc;
+
+    if ( GetProcessMemoryInfo( GetCurrentProcess(), &pmc, sizeof(pmc) ) ){
+        double ret = mByte( pmc.WorkingSetSize );
+        return ret;
+    } else { return 0; }
+
+#else
+    #ifdef HAVE_PROC_READPROC
     struct proc_t usage;
     look_up_our_self( & usage );
     double ret = mByte( usage.vsize );
     return ret;
-#else
+    #else // no windows and no libproc
+
+    #endif // no libproc
+#endif // no windows
     return 0;
-#endif
 }
-    
+
 void MemWatch::info( const std::string & str ) {
-    #ifdef HAVE_PROC_READPROC
+    #if defined( WIN32_LEAN_AND_MEAN ) || defined(  HAVE_PROC_READPROC )
     if ( __GIMLI_DEBUG__ ){
-    
-        std::cout << "\t" << str << " Memory in use: abs: " << inUse() << " rel: " 
-                    << current() << " MByte. t = " 
+
+        std::cout << "\t" << str << " Memory in use: abs: " << inUse() << " rel: "
+                    << current() << " MByte. t = "
                     << swatchAll_->duration() << "/" << swatchDur_->duration( true ) << " s " <<  std::endl;
     }
     #endif
