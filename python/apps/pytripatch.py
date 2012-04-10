@@ -21,6 +21,7 @@ except ImportError:
     sys.exit( 1 )
 
 import pygimli.mplviewer
+from pygimli.mplviewer.colorbar import cmapFromName
 from pygimli.viewer import *
 
 import matplotlib
@@ -117,7 +118,8 @@ class MyLinearSegmentedColormapAlpha( mpl.colors.LinearSegmentedColormap ):
         self._set_extremes()
 
 def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWeight = None, cMin = None, drawEdges = False,
-                    cMax = None, coverage = None, showCbar = True, label = "", linear = False , offset = g.RVector3( 0.0, 0.0 ), b2r = False ):
+                    cMax = None, coverage = None, showCbar = True, label = "", linear = False , offset = g.RVector3( 0.0, 0.0 ),
+                    cmapname = None ):
     mesh = g.Mesh( )
     if ( meshname.rfind( '.vtk' ) != -1 ):
         mesh.importVTK(meshname)
@@ -180,7 +182,8 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
         if ( contour ):
             showMeshInterpolated( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear )
         else:
-            showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, label = label, linear = linear, b2r = b2r )
+            showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, 
+            label = label, linear = linear, cmapname = cmapname )
     else:
         g.mplviewer.drawMeshBoundaries( axis, mesh )
         pass
@@ -205,7 +208,7 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
 
     return axis
 
-def showDC2DInvResMod( modfile, contour, cMin = None, cMax = None, label = ""):
+def showDC2DInvResMod( modfile, contour, cMin = None, cMax = None, label = "", cmapname = None ):
     mesh = g.Mesh();
     mesh.importMod( modfile );
     mesh.showInfos();
@@ -219,20 +222,19 @@ def showDC2DInvResMod( modfile, contour, cMin = None, cMax = None, label = ""):
     if ( contour ):
         showMeshInterpolated( axis, mesh, data, cov = cov )
     else:
-        showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, label = label)
+        showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, label = label, cmapname = cmapname )
 
     return axis
 
 def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showCbar = True, 
-                   label = "", linear = False, nLevs = 5, orientation = 'horizontal', b2r = False ):
+                   label = "", linear = False, nLevs = 5, orientation = 'horizontal', cmapname = None ):
 
     patches = pygimli.mplviewer.drawModel( axis, mesh, data, cMin = cMin, cMax = cMax
                , showCbar = showCbar, linear = linear, label = label
                , nLevs = nLevs, orientation = orientation )
     
-    from pygimli.mplviewer import colorbar
-    if b2r:
-        cmap = colorbar.blueRedCMap
+    if cmapname is not None:
+        cmap = cmapFromName( cmapname )
         patches.set_cmap( cmap )
     
     patches.set_edgecolor( 'face' )
@@ -281,6 +283,8 @@ def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showC
             addCoverageImageOverlay( axis, mesh, cov )
             
     axis.set_aspect('equal')
+#    axis.set_xlabel('x [m]')
+#    axis.set_ylabel('z [m]')
 
 
 def addCoverageImageOverlay( axis, mesh, cov ):
@@ -429,6 +433,8 @@ def main( argv ):
                             , help="Force drawing all edges independent on marker", default=False)
     parser.add_option("-i", "--interperc", dest="interperc",
                             help="interpecentile", type = "float", default = "0.0" )
+    parser.add_option("-m", "--cmap", dest="cmapname",
+                            help="color map name", metavar="File" )
     parser.add_option("-d", "--data", dest="datafile",
                             help="data file", metavar="File" )
     parser.add_option("-o", "--output", dest="outFileName",
@@ -525,12 +531,7 @@ def main( argv ):
         else:
             norm = mpl.colors.NoNorm( vmin = cmin, vmax = cmax)
 
-        cmap = mpl.cm.get_cmap( 'jet', 256 )
-        cmap.set_bad( [1.0, 1.0, 1.0, 0.0 ] )
-
-        #from pygimli.mplviewer import colorbar
-        if options.b2r:
-            cmap = colorbar.blueRedCMap
+        cmap = cmapFromName( options.cmapname )
 
         cbar = mpl.colorbar.ColorbarBase(axes, norm = norm, cmap = cmap
                                         ,orientation = orientation
@@ -561,9 +562,10 @@ def main( argv ):
             print "coverage =", options.coverage
             print "cMin =", options.cMin, type( options.cMin )
             print "cMax =", options.cMax
-            print "b2r=", options.b2r
+            print "cmapname =", options.cmapname
 
         axes = None
+        
         try:
             if ( meshname.rfind( '.mod' ) != -1 ):
                 axes = showDC2DInvResMod( meshname, options.contourplot, cMin = options.cMin, cMax = options.cMax
@@ -578,7 +580,7 @@ def main( argv ):
                         , linear = options.linear
                         , drawEdges = options.drawEdges
                         , offset = g.RVector3( options.xoffset, options.zoffset )
-                        , b2r = options.b2r
+                        , cmapname = options.cmapname
                         )
             else:
                 print "Cannot determine format for input mesh. Available are *.bms, *.mod"
