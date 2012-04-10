@@ -21,8 +21,21 @@ cdict = { 'red': ((0.0, 0.0, 0.0),
                   (0.5, 1.0, 1.0),
                   (1.0, 0.0, 0.0))}
 
-blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap',cdict,256)
+blueRedCMap = mpl.colors.LinearSegmentedColormap( 'my_colormap', cdict, 256 )
 
+def cmapFromName( cmapname, ncols = 256 ):
+    cmap = mpl.cm.get_cmap( 'jet', ncols )
+    if cmapname is not None:
+        if cmapname == 'b2r':
+            cmap = mpl.colors.LinearSegmentedColormap( 'my_colormap', cdict, ncols )
+        else:
+            try:
+                cmap = mpl.cm.get_cmap( cmapname, ncols )
+            except:
+                print "could not retrieve colormap ", cmapname
+        
+    cmap.set_bad( [1.0, 1.0, 1.0, 0.0 ] )
+    return cmap
 
 def findAndMaskBestClim( dataIn, cMin = None, cMax = None, dropColLimitsPerc = 5, logScale = True ):
     data = np.asarray( dataIn )

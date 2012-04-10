@@ -48,6 +48,7 @@
 			<Add library="libamd.a" />
 			<Add library="blas" />
 			<Add library="lapack" />
+			<Add library="psapi" />
 			<Add directory="..\external\lib" />
 			<Add directory="." />
 		</Linker>
@@ -72,6 +73,7 @@
 		<Unit filename="..\src\gravimetry.cpp" />
 		<Unit filename="..\src\gravimetry.h" />
 		<Unit filename="..\src\integration.cpp" />
+		<Unit filename="..\src\integration.h" />
 		<Unit filename="..\src\interpolate.cpp" />
 		<Unit filename="..\src\interpolate.h" />
 		<Unit filename="..\src\inversion.cpp" />
