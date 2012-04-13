@@ -222,7 +222,6 @@ AC_CONFIG_FILES([Makefile
                 apps/fit/Makefile
                 apps/em1d/Makefile
                 apps/traveltime/Makefile
-                doc/Makefile
                 ] )
 
 #                apps/bert/Makefile
