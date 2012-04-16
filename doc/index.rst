@@ -17,14 +17,12 @@ Contents:
 
 .. toctree::
 
-    introduction.rst
+    gimli.rst
     tutorial/tutorial.rst
     ../examples/readme.rst
-    credits.rst
-    publist.rst
 
 .. toctree::
-    :hiden:
+    :hidden:
 
     rst_basics.rst
 

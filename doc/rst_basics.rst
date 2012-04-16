@@ -79,7 +79,7 @@ Bibliography:
 
 .. .. bibmissing:: libgimli.bib
 ..      :sort:
-
+..      :encoding: utf-8
 
 
 
