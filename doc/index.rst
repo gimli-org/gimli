@@ -8,14 +8,26 @@ Welcome to GIMLi's documentation!
 
 Contents:
 
+.. only:: html
+
+    .. note::
+
+        Restructured Text (reST) and Sphinx CheatSheet 
+        http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html
+
 .. toctree::
+
     introduction.rst
+    tutorial/tutorial.rst
+    ../examples/readme.rst
     credits.rst
     publist.rst
 
 .. toctree::
-   :hidden:
-    
+    :hiden:
+
+    rst_basics.rst
+
 
 Indices and tables
 ==================

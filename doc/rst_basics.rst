@@ -1,5 +1,8 @@
-Section How to document with reStructuredText
-=============================================
+reStructuredText Cockbock
+=========================
+
+.. this is a comment
+    comment comment comment
 
 .. only:: latex
 
@@ -8,10 +11,26 @@ Section How to document with reStructuredText
 This is the common version for how to document :term:`GIMLi`. 
 Can we uses cites [RueckerGueSpi2006]_, [GuentherRueSpi2006]_, [RueckerGuen2011]_.
 
+SomeDefaults
+............
+
+Terms, e.g., :term:`GIMLi` are defined in glossery.rst
+
+References, e.g., :ref:`Matplotlib` are defined in glossery.rst
+
+Modules, e.g., :mod:`Matplotlib` are defined in glossery.rst
+
+SubSubSection
+.............
+
+automatic show api documentation
+
+.. autofunction:: pygimli.randN
+
 reStructuredText is a plaintext markup syntax that is interpreted by sphinx to generate this html or pdf document
 
 * http://docutils.sourceforge.net/rst.html
-*`bibstuff.sphinxext.bibref`
+* bibstuff.sphinxext.bibref
 
 this may be `a link to sphinx`_
 
@@ -26,14 +45,6 @@ backquotes: ``text`` for code samples.
 
 SubSection 
 ----------
-
-SubSubSection
-.............
-
-
-
-.. this is a comment
-    comment comment comment
 
 ...please read :ref:`INSTALLATION`, :ref:`USAGE` and :ref:`FAQ`, as well
 
@@ -56,18 +67,18 @@ or a
    to indicate something that could cause serious problems.
 
 
-manually reference:
+Bibliography:
 
 .. [GuentherRueSpi2006] T. Günther, C. Rücker and K. Spitzer. Three-dimensional modelling and inversion of dc resistivity data incorporating topography -- I. Modelling. Geophys. J. Int. 166, 495--505 
 
-.. [RueckerGueSpi2006] C. Rücker, T. Günther and K. Spitzer. Three-dimensional modelling and inversion of dc resistivity data incorporating topography -- I. Modelling. Geophys. J. Int. 166, 495--505 
+.. [RueckerGueSpi2006] C. Rücker, T. Günther and K. Spitzer. Three-dimensional modelling and inversion of dc resistivity data incorporating topography -- I. Modelling. Geophys. J. Int. 166, 495--505
 
 
 .. warning::
     automatic reference by bibtex using `bibstuff.sphinxext.bibref` does not support utf8 so far
 
-.. bibmissing:: libgimli.bib
-    :sort:
+.. .. bibmissing:: libgimli.bib
+..      :sort:
 
 
 

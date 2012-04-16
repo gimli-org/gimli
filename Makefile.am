@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS=-I m4
 
 EXTRA_DIST = configure
-SUBDIRS = src tests doc apps
+SUBDIRS = src tests apps
 
 mrproper: maintainer-clean
 	rm -f *~

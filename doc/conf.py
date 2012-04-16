@@ -22,7 +22,7 @@ sys.path.append( os.path.abspath('./_sphinx-ext'))
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.1'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -35,9 +35,8 @@ extensions = [ 'sphinx.ext.autodoc'
              #'matplotlib.sphinxext.mathmpl'
              #, 'myexec_directive'
              #, 'myplot_directive'
-             #, 'mypngmath'
-           #, 'sphinx.ext.pngmath'
-             , 'bibstuff.sphinxext.bibref' # buggy until simpleparse dependency
+             , 'sphinx.ext.pngmath'
+             #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency
            ]  
 
 # Add any paths that contain templates here, relative to this directory.
@@ -47,10 +46,10 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The encoding of source files.
-#source_encoding = 'utf-8-sig'
+source_encoding = 'utf-8'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'doc/index'
 
 # General information about the project.
 project = u'GIMLi'
@@ -106,7 +105,21 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+#agogo
+
+html_theme = 'sphinxdoc'
+
+html_theme_options = {
+    #"nosidebar": "false",
+    #"sidebarwidth": "230"
+}
+
+#html_theme = 'default'
+
+#html_theme_options = {
+    #"rightsidebar": "true",
+    #"relbarbgcolor": "black"
+#}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -121,16 +134,16 @@ html_theme = 'default'
 #html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+#html_short_title = "GIMLi"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+# html_logo = '_static/resisnet.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = '_static/G.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -153,22 +166,26 @@ html_static_path = ['_static']
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-#html_domain_indices = True
+html_domain_indices = True
+
+html_index = 'index.html'
 
 # If false, no index is generated.
-#html_use_index = True
+html_use_index = True
+
+html_use_modindex = True
 
 # If true, the index is split into individual pages for each letter.
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#html_show_sphinx = True
+html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -180,13 +197,19 @@ html_static_path = ['_static']
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'gimlidoc'
-
+html_additional_pages = {'index': 'index.html'}
 
 # -- Options for LaTeX output --------------------------------------------------
-
+from os import environ
+#extradir = path.join(self.builder.outdir, '_static')
+extradir = '/home/carsten/src/libgimli/trunk/doc/_static'
+print environ['TEXINPUTS']
+environ['TEXINPUTS'] = environ['TEXINPUTS'] +':'+ extradir
+print environ['TEXINPUTS']
+  
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+'papersize': 'a4paper',
 
 # The font size ('10pt', '11pt' or '12pt').
 #'pointsize': '10pt',
@@ -200,11 +223,16 @@ latex_elements = {
 \\usepackage{pslatex}'
 }
 
+pngmath_latex_preamble = '\\usepackage{mylatex-commands}\
+\\usepackage{amsfonts}\
+\\usepackage{amssymb}\
+\\usepackage{bm}\
+\\usepackage{pslatex}'
+
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'gimli.tex', u'GIMLi Documentation',
-   u'Carsten Rücker and Thomas Günther', 'manual'),
+    ('doc/index', 'gimli.tex', u'GIMLi Documentation', u'Carsten Rücker and Thomas Günther', 'manual'),
 ]
 
 latex_additional_files = ['./_static/mylatex-commands.sty' ]
@@ -235,8 +263,7 @@ latex_additional_files = ['./_static/mylatex-commands.sty' ]
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'GIMLi', u'GIMLi Documentation',
-     [u'Carsten Rücker and Thomas Günther'], 1)
+    ('index', 'GIMLi', u'GIMLi Documentation', [u'Carsten Rücker and Thomas Günther'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -261,4 +288,4 @@ texinfo_documents = [
 #texinfo_domain_indices = True
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
-#texinfo_show_urls = 'footnote
+texinfo_show_urls = 'footnote'
