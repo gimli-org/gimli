@@ -1631,4 +1631,4 @@ void Mesh::fillKDTree_() const {
     }
 }
 
-} // namespace GIMLI{
+} // namespace GIMLI

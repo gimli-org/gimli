@@ -1,5 +1,9 @@
-GIMLi - Geophysical Inversion and Modelling Library
-        an open-source multi-method library for solving inverse and forward tasks
+========
+Overview
+========
+
+    :ref:`GIMLi` - Geophysical Inversion and Modelling Library
+    is an open-source multi-method library for solving inverse and forward tasks.
 
 Tested with:
     gentoo x86_64 gcc-4.4.5
@@ -16,9 +20,9 @@ BUILD (for posix systems such as Linux, Unix, MacOS):
 
 Prerequisites:
 You will need at least (incomplete for now):
-	>=automake-1.11
-	>=gcc-4.4.5 (just for some boost stuff that uses long long)
-	...
+>=automake-1.11
+>=gcc-4.4.5 (just for some boost stuff that uses long long)
+
 
 For the first time after initial svn checkout:
 
@@ -66,7 +70,7 @@ codeblocks
     from: http://www.codeblocks.org/downloads/26
     testet: codeblocks-10.05-setup.exe
     change codeblocks toolchain (setting/Compiler & Debugger../) 
-        to c:/mingw or MinGW64 base directory
+    to c:/mingw or MinGW64 base directory
 
 cmake >=2.8.7		
 
@@ -85,7 +89,8 @@ install:
 	python-2.7.2 (python binding, boost)
 	codeblocks-10.05-setup
 	http://www.sliksvn.com/en/download (cmd-line tool for pygccxml)
---- reboot ---
+
+reboot
 
 adjust ~/.profile:
 
