@@ -78,7 +78,7 @@ release = g.versionStr()
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', '_sphinx-ext']
+exclude_patterns = ['doc/_build', 'doc/_sphinx-ext']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -200,13 +200,7 @@ htmlhelp_basename = 'gimlidoc'
 html_additional_pages = {'index': 'index.html'}
 
 # -- Options for LaTeX output --------------------------------------------------
-from os import environ
-#extradir = path.join(self.builder.outdir, '_static')
-extradir = '/home/carsten/src/libgimli/trunk/doc/_static'
-print environ['TEXINPUTS']
-environ['TEXINPUTS'] = environ['TEXINPUTS'] +':'+ extradir
-print environ['TEXINPUTS']
-  
+ 
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 'papersize': 'a4paper',
@@ -222,6 +216,21 @@ latex_elements = {
 \\usepackage{bm}\
 \\usepackage{pslatex}'
 }
+
+from os import environ, path
+
+extradir = path.abspath( '_static' ) 
+
+if not 'TEXINPUTS' in environ:
+    environ['TEXINPUTS'] = ''
+
+    #try:
+    #print environ['TEXINPUTS']
+#except:
+    #environ['TEXINPUTS'] = ''
+    
+environ['TEXINPUTS'] = environ['TEXINPUTS'] +':'+ extradir
+#print environ['TEXINPUTS']
 
 pngmath_latex_preamble = '\\usepackage{mylatex-commands}\
 \\usepackage{amsfonts}\
