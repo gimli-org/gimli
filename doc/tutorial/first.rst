@@ -1,6 +1,9 @@
 My first inversion
 ------------------
 
+*This introductory sentence should state the intent and goal of the tutorial. Keep it brief.
+This next block should state any assumptions that you the writer are making. Present them in list form.*
+
 Let us start with the very simple inverse problem of fitting a polynomial curve of degree :math:`P`
 
 .. math::
@@ -32,34 +35,33 @@ All existing modelling classes can be used, but it is also easy to create new mo
 
 We exemplify this by the preceding example.
 First, the library must be imported.
-To avoid name clashes with other libraries we suggest to import it to an easy name, e.g. by using
+To avoid name clashes with other libraries we suggest to import `pygimli` and alias it to an easy name, e.g. by using
 
->> import pygimli as g
+.. exec::
 
-As a result, all gimli objects (classes and functions) can be referred to with a preceding **g.**, e.g.,
+    import pygimli as g
+    print g.versionStr()
+
+.. plot:: doc/tutorial/first.py
+    :include-source:
+
+.. .. only:: doc/tutorial/first.py
+
+`################################################################################`
+
+.. include:: first.py
+    :literal:
+    :start-after: import numpy as np
+
+As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `g.`, e.g.,
+printing the version string for gimli.
+
+    >>> import pygimli as g
+    >>> print g.versionStr()
+
 g.RVector is the real vector RVector.
 
-Next, the modelling class is derived from ModellingBase, a constructor is defined and the response function is defined.
-
-\begin{lstlisting}[language=python]
-import pygimli as g
-class FunctionModelling( g.ModellingBase ):
-    # constructor
-    def __init__( self, nc, xvec, verbose = False  ):
-        g.ModellingBase.__init__( self, verbose )
-        self.x_ = xvec
-        self.nc_ = nc
-        self.regionManager().setParameterCount( nc )
-    # response function
-    def response( self, par ):
-        y = g.RVector( self.x_.size(), par[ 0 ] )
-        for i in range( 1, self.nc_ + 1 ):
-            y += g.pow( self.x_, i ) * par[ i ];
-        return y;
-    # start model
-    def startModel( self ):
-        return g.RVector( self.nc_, 0.5 )
-\end{lstlisting}
+Next, the modelling class is derived from ModellingBase, a constructor is defined and the response function is defined.::
 
 The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators) can be used by g.classname, e.g. g.RVector is the already known vector of real (double) values.
 
@@ -67,22 +69,6 @@ The main program is very easy then and the code is very similar to C++.
 Data are loaded, both forward operator and inversion are created.
 Inversion options are set and it the result of run is save to a file.
 That's it.
-
-\begin{lstlisting}[language=python]
-    xy = g.RMatrix()
-    g.loadMatrixCol( xy, datafile );
-    # two coefficients and x-vector (first data column)
-    f = FunctionModelling( options.np + 1, xy[ 0 ] )
-    # initialize inversion with data and forward operator and set options
-    inv = g.RInversion( xy[ 1 ], f );
-    # constant absolute error of 0.01 (not necessary, only for chi^2)
-    inv.setAbsoluteError( 0.01 );
-    # the problem is well-posed and does not need regularization
-    inv.setLambda( 0 );
-    # actual inversion run yielding coefficient model
-    coeff = inv.run();
-    g.save( coeff, "out.vec" );
-\end{lstlisting}
 
 As a main advantage of Python, the actual computations can be easily combined with post-processing or visualization, even building graphical user-interfaces.
 In this code example we use matplotlib, a plotting library inside of pylab, a compound of different routines for numerics and plotting, very much comparable to MatLab.
@@ -95,13 +81,6 @@ P.show()
 
 Similar to C++, command line options can be parsed using the class OptionParser, see the code file.
 The output is illustrated for two a synthetic function :math:`y=2.1x+1.1` noisified with Gaussian noise for two different orders in Figure \ref{fig:polyfit}.
-
-\begin{figure}[hbt]%
-\includegraphics[width=0.5\columnwidth]{polyfit-n1}\hfill
-\includegraphics[width=0.5\columnwidth]{polyfit-n3}%
-\caption{Polynomial fit for noisified synthetic data using first order (left) and third order (right) polynomials.}%
-\label{fig:polyfit}%
-\end{figure}
 
 In the following we continue the description with C++ but all are provided as well in Python without significant code changes.
 Main exception is the non-existence of declarations, e.g. the C++ declaration \lstinline|GIMLi::RTransLogLU mytrans( lower, upper );| in Python would be written \lstinline|mytrans = g.RTransLogLU( lower, upper)|.

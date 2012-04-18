@@ -1,6 +1,13 @@
 Installation
 ============
 
+Posix system
+------------
+
+A long an version here
+:file:`INSTALL`
+
+
 
 Tested with:
     gentoo x86_64 gcc-4.4.5
