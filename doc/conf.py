@@ -31,8 +31,8 @@ extensions = [ 'sphinx.ext.autodoc'
              , 'sphinx.ext.doctest'
              , 'sphinx.ext.viewcode'
              , 'sphinx.ext.autosummary'
-             ,'matplotlib.sphinxext.plot_directive'
-             ,'matplotlib.sphinxext.only_directives'
+             , 'matplotlib.sphinxext.plot_directive'
+             , 'matplotlib.sphinxext.only_directives'
              #'matplotlib.sphinxext.mathmpl'
              , 'myexec_directive'
              #, 'myplot_directive'
@@ -47,7 +47,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The encoding of source files.
-source_encoding = 'utf-8'
+#source_encoding = 'utf-8'
 
 # The master toctree document.
 master_doc = 'doc/index'
@@ -202,6 +202,10 @@ html_additional_pages = {'index': 'index.html'}
 
 # -- Options for LaTeX output --------------------------------------------------
  
+from os import environ, path
+
+extradir = path.abspath( '_static' ) 
+
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 'papersize': 'a4paper',
@@ -211,33 +215,19 @@ latex_elements = {
 
 # Additional stuff for the LaTeX preamble.
 'preamble':
-'\\usepackage{mylatex-commands}\
-\\usepackage{amsfonts}\
+'\\usepackage{amsfonts}\
 \\usepackage{amssymb}\
 \\usepackage{bm}\
-\\usepackage{pslatex}'
+\\usepackage{pslatex} \
+\\input{' + extradir+ '/mylatex-commands.tex}'
 }
 
-from os import environ, path
-
-extradir = path.abspath( '_static' ) 
-
-if not 'TEXINPUTS' in environ:
-    environ['TEXINPUTS'] = ''
-
-    #try:
-    #print environ['TEXINPUTS']
-#except:
-    #environ['TEXINPUTS'] = ''
-    
-environ['TEXINPUTS'] = environ['TEXINPUTS'] +':'+ extradir
-#print environ['TEXINPUTS']
-
-pngmath_latex_preamble = '\\usepackage{mylatex-commands}\
+pngmath_latex_preamble = '\
 \\usepackage{amsfonts}\
 \\usepackage{amssymb}\
 \\usepackage{bm}\
-\\usepackage{pslatex}'
+\\usepackage{pslatex}\
+\\input{' + extradir+ '/mylatex-commands.tex}'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
