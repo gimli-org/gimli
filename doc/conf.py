@@ -22,7 +22,7 @@ sys.path.append( os.path.abspath('./_sphinx-ext'))
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.1'
+needs_sphinx = '1.0'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -30,10 +30,11 @@ extensions = [ 'sphinx.ext.autodoc'
              , 'sphinx.ext.todo'
              , 'sphinx.ext.doctest'
              , 'sphinx.ext.viewcode'
-            #,'matplotlib.sphinxext.plot_directive'
+             , 'sphinx.ext.autosummary'
+             ,'matplotlib.sphinxext.plot_directive'
              ,'matplotlib.sphinxext.only_directives'
              #'matplotlib.sphinxext.mathmpl'
-             #, 'myexec_directive'
+             , 'myexec_directive'
              #, 'myplot_directive'
              , 'sphinx.ext.pngmath'
              #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency

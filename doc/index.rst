@@ -12,14 +12,19 @@ Contents:
 
     .. note::
 
-        Restructured Text (reST) and Sphinx CheatSheet 
+        Restructured Text (reST) and Sphinx CheatSheets:
+ 
+        http://docs.geoserver.org/trunk/en/docguide/sphinx.html
+
         http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html
+        
+        http://packages.python.org/an_example_pypi_project/sphinx.html
 
 .. toctree::
 
     gimli.rst
     tutorial/tutorial.rst
-    ../examples/readme.rst
+    ../examples/examples.rst
 
 .. toctree::
     :hidden:
