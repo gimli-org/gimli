@@ -1,14 +1,8 @@
-
-\NeedsTeXFormat{LaTeX2e}[1995/12/01]
-\ProvidesPackage{mylatex-commands}[]
-\RequirePackage{trfsigns}
-\RequirePackage{amsmath}
-
 \newcommand{\arr}[1]{\ensuremath{\textbf{#1}}}
 \newcommand{\transpose}[1]{\ensuremath{{#1}^{\text{T}}}}
 
 \renewcommand{\d}{\ensuremath{\,\operatorname{d}}}
-\renewcommand{\e}{\ensuremath{\operatorname{e}}}
+\newcommand{\e}{\ensuremath{\operatorname{e}}}
 \renewcommand{\i}{\ensuremath{\operatorname{i}}}
 
 \newcommand{\m}{\arr{m}}
@@ -16,11 +10,5 @@
 \newcommand{\x}{\arr{x}}
 \newcommand{\A}{\arr{A}}
 
-
 \newcommand{\fourierT}{\ensuremath{\multimap}}
 \newcommand{\ifourierT}{\ensuremath{\multimap_{\text{I}}}}
-
-\makeatletter
-\let\ilimits@\displaylimits
-\let\slimits@\displaylimits
-\makeatother
