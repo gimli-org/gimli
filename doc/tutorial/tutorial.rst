@@ -5,8 +5,8 @@ Tutorial
 ********
 
 .. toctree::
-
     first.rst
+    firstMPLPlotContext.rst
     
 .. autosummary::
     :toctree: generated
