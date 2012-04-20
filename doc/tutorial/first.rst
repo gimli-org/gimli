@@ -1,6 +1,20 @@
 My first inversion
 ------------------
 
+.. .. plot:: doc/tutorial/first.py
+
+.. .. literate:: doc/tutorial/first.py
+
+.. plot::
+    a = 1
+    print a
+
+
+`################################################################################`
+`################################################################################`
+`################################################################################`
+`################################################################################`
+
 *This introductory sentence should state the intent and goal of the tutorial. Keep it brief.
 This next block should state any assumptions that you the writer are making. Present them in list form.*
 
@@ -52,16 +66,6 @@ To avoid name clashes with other libraries we suggest to import `pygimli` and al
 .. include:: first.py
     :literal:
     :start-after: import numpy as np
-
-`################################################################################`
-
-.. include:: first.py
-    :literal:
-`################################################################################`
-
-
-
-
 
 As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `g.`, e.g.,
 printing the version string for gimli.

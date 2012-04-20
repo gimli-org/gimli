@@ -35,7 +35,7 @@ extensions = [ 'sphinx.ext.autodoc'
              , 'matplotlib.sphinxext.only_directives'
              #'matplotlib.sphinxext.mathmpl'
              , 'myexec_directive'
-             #, 'myplot_directive'
+             #, 'myliterate_directive'
              , 'sphinx.ext.pngmath'
              #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency
            ]  
