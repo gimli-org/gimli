@@ -401,6 +401,8 @@ void DataContainer::checkDataValidity( bool remove ){
     //** check sensor indices < -1 and >= sensorCount()
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
+//             std::cout << it->first << " "<< sensorCount()<< " " << find( ( it->second < -1 ) | ( it->second >= sensorCount() ) ) << std::endl;
+//             
             this->markInvalid( find( ( it->second < -1 ) | ( it->second >= sensorCount() ) ) );
         }
     }

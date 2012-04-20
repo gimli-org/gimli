@@ -34,9 +34,9 @@ class FunctionModelling( g.ModellingBase ):
     def startModel( self ): 
         return g.RVector( self.nc_, 0.5 )
 
-'''
-this is doku within
-'''
+
+#!this is doku within
+
 
 # evaluate f(x) = 1.1 + 2.1 * x
 x = g.asvector( np.arange( 0., 10., 1 ) )
