@@ -53,6 +53,16 @@ To avoid name clashes with other libraries we suggest to import `pygimli` and al
     :literal:
     :start-after: import numpy as np
 
+`################################################################################`
+
+.. include:: first.py
+    :literal:
+`################################################################################`
+
+
+
+
+
 As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `g.`, e.g.,
 printing the version string for gimli.
 

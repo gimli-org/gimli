@@ -47,7 +47,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The encoding of source files.
-#source_encoding = 'utf-8'
+source_encoding = 'utf-8-sig'
 
 # The master toctree document.
 master_doc = 'doc/index'
@@ -204,8 +204,7 @@ html_additional_pages = {'index': 'index.html'}
  
 from os import environ, path
 
-extradir = path.abspath( '_static' ) 
-
+extradir = path.abspath( '_static' ).replace('\\','/')
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 'papersize': 'a4paper',
@@ -228,6 +227,8 @@ pngmath_latex_preamble = '\
 \\usepackage{bm}\
 \\usepackage{pslatex}\
 \\input{' + extradir+ '/mylatex-commands.tex}'
+
+_mathpng_tempdir = './mathtmp'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
