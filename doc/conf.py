@@ -35,11 +35,12 @@ extensions = [ 'sphinx.ext.autodoc'
              , 'matplotlib.sphinxext.only_directives'
              #'matplotlib.sphinxext.mathmpl'
              , 'myexec_directive'
-             #, 'myliterate_directive'
+             , 'myliterate_directive'
              , 'sphinx.ext.pngmath'
              #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency
            ]  
 
+           
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -205,6 +206,7 @@ html_additional_pages = {'index': 'index.html'}
 from os import environ, path
 
 extradir = path.abspath( '_static' ).replace('\\','/')
+
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 'papersize': 'a4paper',
@@ -218,7 +220,7 @@ latex_elements = {
 \\usepackage{amssymb}\
 \\usepackage{bm}\
 \\usepackage{pslatex} \
-\\input{' + extradir+ '/mylatex-commands.tex}'
+\\input{mylatex-commands.tex}'
 }
 
 pngmath_latex_preamble = '\
@@ -236,7 +238,7 @@ latex_documents = [
     ('doc/index', 'gimli.tex', u'GIMLi Documentation', u'Carsten Rücker and Thomas Günther', 'manual'),
 ]
 
-latex_additional_files = ['./_static/mylatex-commands.sty' ]
+latex_additional_files = ['./_static/mylatex-commands.tex' ]
                           
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
