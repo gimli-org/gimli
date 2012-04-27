@@ -255,6 +255,9 @@ public:
     Cell * findCell( const RVector3 & pos, bool extensive = true ) const {
         size_t counter; return findCell( pos, counter, extensive ); }
 
+    /*! Return the index to the node of this mesh with the smallest distance to pos. */
+    uint findNearestNode( const RVector3 & pos );
+    
     /*! Returns vector of cell ptrs with marker match the range [from .. to). \n
         For single marker match to is set to 0, for open end set to = -1 */
     std::vector < Cell * > findCellByMarker( int from, int to = 0 ) const;

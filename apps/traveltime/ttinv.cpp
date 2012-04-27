@@ -113,23 +113,26 @@ int main( int argc, char *argv [] ) {
                                                dataIn.additionalPoints() );
         DEBUG paraMesh.save( "meshPara.bms" );
     }
-    vcout << "Paramesh: ";
-    paraMesh.showInfos( );
+    vcout << "Paramesh: " << paraMesh << std::endl;
 
     //!** set up TT modeling class;
-    TravelTimeDijkstraModelling f( paraMesh, dataIn, false ); //**better with sec?
-    RVector appSlowness ( f.getApparentSlowness() );
-    vcout << "min/max apparent velocity = " << 1.0 / max( appSlowness ) << "/" << 1.0 / min( appSlowness ) << "m/s" << std::endl;
+    TravelTimeDijkstraModelling f( paraMesh, dataIn, verbose );
+    RVector appSlowness( f.getApparentSlowness() );
+    vcout << "min/max apparent velocity = " << 1.0 / max( appSlowness ) << " / " << 1.0 / min( appSlowness ) << " m/s" << std::endl;
 
     //!** get mesh from region manager (BERT convention: first/smallest region is background
-    if ( isBertMesh && f.regionManager().regionCount() > 1 ) f.regionManager().regions()->begin()->second->setBackground( true );
+    if ( isBertMesh && f.regionManager().regionCount() > 1 ) {
+        f.regionManager().regions()->begin()->second->setBackground( true );
+    }
+    
     Mesh paraDomain( f.regionManager().paraDomain() );
-    vcout << "ParaDomain:\t";
-    paraDomain.showInfos( );
+    vcout << "ParaDomain:\t"<< paraDomain << std::endl;
     DEBUG paraDomain.save( "meshParaDomain.bms" );
     DEBUG paraDomain.exportVTK( "meshParaDomain" );
 
-    //f.createRefinedForwardMesh();
+    //!** necessary step to reflect changes due to possible region changes
+    f.createRefinedForwardMesh( false, false);
+    
     //vcout << "Secmesh:\t"; f->mesh()->showInfos( );
     //DEBUG f->mesh()->save( "meshSec.bms" );
     //DEBUG f->mesh()->exportVTK( "meshSec" );

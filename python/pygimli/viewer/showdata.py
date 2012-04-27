@@ -12,7 +12,7 @@ import pylab
 def showData( data ):
     fig = pylab.figure()
     a = fig.add_subplot( 111 )
-    g.mplviewer.drawMeshBoundaries( a, mesh )
+    drawData( a, data, data('rhoa') )
     a.set_aspect( 'equal')
     pylab.show()
     return a

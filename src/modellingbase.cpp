@@ -209,6 +209,10 @@ void ModellingBase::mapModel( const RVector & model, double background ){
         if ( marker >= 0 ) {
             if ( (size_t)marker >= model.size() ){
                 mesh_->exportVTK( "mapModelfail" );
+                std::cerr << WHERE_AM_I << std::endl
+                          << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
+                          << *mesh_ << std::endl
+                          << "mesh contains " << unique( sort( mesh_->cellMarker() ) ).size() << " unique marker. " << std::endl;
                 throwLengthError( 1, WHERE_AM_I + " marker greater = then model.size() " + toStr( marker )
                        + " >= " + toStr( model.size() ) );
             }

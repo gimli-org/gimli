@@ -669,3 +669,45 @@ def drawDataAsPatches( ax, data, values, shemetype = Pseudotype.unknown, writeVa
     return gci
 # END def drawDataAsPatches( ... )
     
+def drawTravelTimeData( a, data ):
+    '''
+        Draw first arrival traveltime data into mpl axes a. 
+        data of type \ref DataContainer must contain sensorIdx 's' and 'g' and thus numbered internal from [0..n)
+    '''
+
+    x = g.x( data.sensorPositions() )
+    z = g.z( data.sensorPositions() )
+
+    shots = g.unique( g.sort( data('s') ) )
+    geoph = g.unique( g.sort( data('g') ) )
+
+    startOffsetIDX = 0
+
+    if min( min( shots ), min( geoph ) == 1 ): 
+        startOffsetIDX = 1
+    
+    a.set_xlim( [ min(x), max(x) ] )
+    a.set_ylim( [ max( data('t') ), -0.002 ] )
+    a.figure.show()
+    
+    for shot in shots:
+        gIdx = g.find( data('s') == shot )
+        sensorIdx = map( lambda i__: int( i__ - startOffsetIDX ), data('g')[ gIdx ] )
+        a.plot( x[ sensorIdx ], data('t')[ gIdx ], 'x-')
+            
+    yPixel = a.transData.inverted().transform_point( (1, 1) )[1]-a.transData.inverted().transform_point( (0, 0) )[1]
+    xPixel = a.transData.inverted().transform_point( (1, 1) )[0]-a.transData.inverted().transform_point( (0, 0) )[0]
+
+    # draw shot points
+    a.plot( x[ map( lambda i__: int( i__ - startOffsetIDX), shots ) ], np.zeros( len( shots ) ) + 8.*yPixel, 'gv', markersize = 8 )    
+
+    # draw geophone points
+    a.plot( x[ map( lambda i__: int( i__ - startOffsetIDX), geoph ) ], np.zeros( len( geoph ) ) + 3.*yPixel, 'r^', markersize = 8 )    
+
+    a.grid( )    
+    a.set_ylim( [ max( data('t') ), +16.*yPixel] )
+    a.set_xlim( [ min(x)-5.*xPixel, max(x)+5.*xPixel ] )
+
+    a.set_xlabel('x-Coordinate [m]')
+    a.set_ylabel('Traveltime [ms]')
+# def drawTravelTimeData( ... )

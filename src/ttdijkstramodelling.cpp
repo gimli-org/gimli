@@ -1,6 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -47,7 +48,7 @@ void Dijkstra::setGraph( const Graph & graph ) {
     pathMatrix_.resize( graph.size() );
 }
 
-void Dijkstra::setStartNode( int startNode ) {
+void Dijkstra::setStartNode( uint startNode ) {
     distances_.clear();
     root_ = startNode;
     std::priority_queue< distancePair_, std::vector< distancePair_ >, comparePairsClass_< distancePair_ > > priQueue;
@@ -79,8 +80,8 @@ void Dijkstra::setStartNode( int startNode ) {
     }
 }
 
-std::vector < int > Dijkstra::shortestPathTo( int node ) const {
-    std::vector < int > way;
+std::vector < uint > Dijkstra::shortestPathTo( uint node ) const {
+    std::vector < uint > way;
 
     int parentNode = -1, endNode = node;
 
@@ -92,7 +93,7 @@ std::vector < int > Dijkstra::shortestPathTo( int node ) const {
 
     way.push_back( root_ );
 
-    std::vector < int > rway( way.size() );
+    std::vector < uint > rway( way.size() );
     for ( uint i = 0; i < way.size(); i ++ ) rway[ i ] = way[ way.size() - i - 1 ];
 
     return rway;
@@ -162,14 +163,12 @@ double TravelTimeDijkstraModelling::findMedianSlowness( ) const {
 }
 
 RVector TravelTimeDijkstraModelling::getApparentSlowness( ) const {
-    int nData = dataContainer_->size();
-    int s = 0, g = 0;
+    uint nData = dataContainer_->size();
+    uint s = 0, g = 0;
     double edgeLength = 0.0;
-    RVector apparentSlowness ( nData );
+    RVector apparentSlowness( nData );
 
-    for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-//        s = (*dataContainer_)( dataIdx ).aIdx();
-//        g = (*dataContainer_)( dataIdx ).mIdx();
+    for ( uint dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
         s = (*dataContainer_)( "s" )[ dataIdx ];
         g = (*dataContainer_)( "g" )[ dataIdx ];
         edgeLength = dataContainer_->sensorPosition( s ).distance( dataContainer_->sensorPosition( g ) );
@@ -178,54 +177,47 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness( ) const {
     return apparentSlowness;
 }
 
-RVector TravelTimeDijkstraModelling::calculate( ) {
-    dijkstra_.setGraph( createGraph() );
-
-    std::vector < uint > sources( mesh_->findNodesIdxByMarker( -99 ) ); //hack!!!
-    int nShots = sources.size();
-
-    std::vector < RVector > dMap( nShots, RVector( nShots ) );
-
-    for ( int shot = 0; shot < nShots; shot ++ ) {
-        dijkstra_.setStartNode( sources[ shot ] );
-
-        for ( int i = 0; i < nShots; i ++ ) {
-            dMap[ shot ][ i ] = dijkstra_.distance( sources[ i ] );
-        }
+void TravelTimeDijkstraModelling::updateMeshDependency_(){
+    if ( verbose_ ) std::cout << "... looking for shot and receiver positions." << std::endl;
+    RVector shots( unique( sort( (*dataContainer_)( "s" ) ) ) );
+    
+    shotNodeId_.resize( shots.size() ) ;
+    shotsInv_.clear();
+    
+    for ( uint i = 0; i < shots.size(); i ++ ){
+        shotNodeId_[ i ] = mesh_->findNearestNode( dataContainer_->sensorPosition( shots[ i ] ) );
+        shotsInv_[ uint( shots[ i ] ) ] = i;
     }
+     
+    RVector receiver( unique( sort( (*dataContainer_)( "g" ) ) ) );
 
-    int nData = dataContainer_->size();
-    int s = 0, g = 0;
-    RVector resp( nData );
-    for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-        s = (*dataContainer_)( "s" )[ dataIdx ];
-        g = (*dataContainer_)( "g" )[ dataIdx ];
-
-        resp[ dataIdx ] = dMap[ s ][ g ];
+    receNodeId_.resize( receiver.size() ) ;
+    receiInv_.clear();
+    
+    for ( uint i = 0; i < receiver.size(); i ++ ){
+        receNodeId_[ i ] = mesh_->findNearestNode( dataContainer_->sensorPosition( receiver[ i ] ) );
+        receiInv_[ uint( receiver[ i ] ) ] = i;
     }
-
-    return  resp;
 }
-
+   
 RVector TravelTimeDijkstraModelling::response( const RVector & slowness ) {
     if ( background_ < TOLERANCE ) {
-        std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
+        std::cout << "Background: " << background_ << "->" << 1e16 << std::endl;
         background_ = 1e16;
     }
 
     this->mapModel( slowness, background_ );
     dijkstra_.setGraph( createGraph() );
 
-    std::vector < uint > sources( mesh_->findNodesIdxByMarker( -99 ) ); //hack!!!
-    int nShots = sources.size();
+    uint nShots = shotNodeId_.size();
+    uint nRecei = receNodeId_.size();
+    RMatrix dMap( nShots, nRecei );
 
-    std::vector < RVector > dMap( nShots, RVector( nShots ) );
+    for ( uint shot = 0; shot < nShots; shot ++ ) {
+        dijkstra_.setStartNode( shotNodeId_[ shot ] );
 
-    for ( int shot = 0; shot < nShots; shot ++ ) {
-        dijkstra_.setStartNode( sources[ shot ] );
-
-        for ( int i = 0; i < nShots; i ++ ) {
-            dMap[ shot ][ i ] = dijkstra_.distance( sources[ i ] );
+        for ( uint i = 0; i < nRecei; i ++ ) {
+            dMap[ shot ][ i ] = dijkstra_.distance( receNodeId_[ i ] );
         }
     }
 
@@ -235,9 +227,10 @@ RVector TravelTimeDijkstraModelling::response( const RVector & slowness ) {
     RVector resp( nData );
 
     for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-        s = (*dataContainer_)( "s" )[dataIdx];
-        g = (*dataContainer_)( "g" )[dataIdx];
-
+        s = shotsInv_[ (*dataContainer_)( "s" )[dataIdx] ];
+        g = receiInv_[ (*dataContainer_)( "g" )[dataIdx] ];
+//         std::cout << s << " " << (*dataContainer_)( "s" )[dataIdx] << " " 
+//                   << g << " " << (*dataContainer_)( "g" )[dataIdx] << std::endl;
         resp[ dataIdx ] = dMap[ s ][ g ];
     }
 
@@ -265,24 +258,10 @@ void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, c
     }
 
     this->mapModel( slowness, background_ );
-        // oder
-        // RVector number( slowness.size() );
-        // number.fill( x__ );
-        // this->mapModel( number, 0.0 );
-        // und dann weiter wie vorher nur ohne die -2
     dijkstra_.setGraph( createGraph() );
 
-    std::vector < uint > sources( mesh_->findNodesIdxByMarker( -99 ) ); //hack!!!
-    if ( sources.size() < 1 ) {
-        //** was passiert hier bei free-elecs oder CEM
-        //** (schnellste) Zelle suchen in der Knoten ist und Laufzeit in Zellknoten ausrechnen. Damit weiter dijkstra
-        //** oder Hilfsknoten einführen und edges einführen
-        THROW_TO_IMPL
-    }
-
-    int nShots = sources.size();
-    if ( verbose_ ) std::cout << "Found " << nShots << " sources." << std::endl;
-
+    uint nShots = shotNodeId_.size();
+    uint nRecei = receNodeId_.size();
     uint nData = dataContainer_->size();
     uint nModel = slowness.size();
 
@@ -291,27 +270,27 @@ void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, c
     jacobian.setCols( nModel );
 
     //** for each shot: vector<  way( shot->geoph ) >;
-    std::vector < std::vector < std::vector < int > > > wayMatrix( nShots );
+    std::vector < std::vector < std::vector < uint > > > wayMatrix( nShots );
 
-    for ( int shot = 0; shot < nShots; shot ++ ) {
-        dijkstra_.setStartNode( sources[ shot ] );
+    for ( uint shot = 0; shot < nShots; shot ++ ) {
+        dijkstra_.setStartNode( shotNodeId_[ shot ] );
 
-        for ( int i = 0; i < nShots; i ++ ) {
-            wayMatrix[ shot ].push_back( dijkstra_.shortestPathTo( sources[ i ] ) );
+        for ( uint i = 0; i < nRecei; i ++ ) {
+            wayMatrix[ shot ].push_back( dijkstra_.shortestPathTo( receNodeId_[ i ] ) );
         }
-    }
-
+    }    
+    
     std::fstream file;
         if ( verbose_ ) openOutFile( "jacobian.way", &file );
 
         for ( uint dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-            int s = (*dataContainer_)( "s" )[ dataIdx ];
-            int g = (*dataContainer_)( "g" )[ dataIdx ];
+            uint s = shotsInv_[ (*dataContainer_)( "s" )[dataIdx] ];
+            uint g = receiInv_[ (*dataContainer_)( "g" )[dataIdx] ];
             std::set < Cell * > neighborCells;
 
             for ( uint i = 0; i < wayMatrix[ s ][ g ].size()-1; i ++ ) {
-                int aId = wayMatrix[ s ][ g ][ i ];
-                int bId = wayMatrix[ s ][ g ][ i + 1 ];
+                uint aId = wayMatrix[ s ][ g ][ i ];
+                uint bId = wayMatrix[ s ][ g ][ i + 1 ];
                 double edgeLength = mesh_->node( aId ).pos().distance( mesh_->node( bId ).pos() );
                 double slo = 0.0;
 

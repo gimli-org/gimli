@@ -1,7 +1,6 @@
 My first inversion 2nd. try
 ---------------------------
 
-
 *This introductory sentence should state the intent and goal of the tutorial. Keep it brief.
 This next block should state any assumptions that you the writer are making. Present them in list form.*
 

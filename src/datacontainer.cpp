@@ -173,6 +173,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
     if ( row.size() != 1 ) {
         std::stringstream str;
         str << WHERE_AM_I << " cannot determine data format. " << row.size() << std::endl;
+        std::cerr << row << std::endl;
         throwError( EXIT_DATACONTAINER_NELECS, str.str() );
     }
 

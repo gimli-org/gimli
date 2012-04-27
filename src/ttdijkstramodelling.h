@@ -1,7 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -43,9 +43,9 @@ public:
 
     void setGraph( const Graph & graph );
 
-    void setStartNode( int startNode );
+    void setStartNode( uint startNode );
 
-    std::vector < int > shortestPathTo( int node ) const;
+    std::vector < uint > shortestPathTo( uint node ) const;
 
     inline double distance( int node ) { return distances_[ node ]; }
 
@@ -102,7 +102,7 @@ public:
 
     Graph createGraph( );
 
-    RVector calculate( );
+//     RVector calculate( );
 
     double findMedianSlowness( ) const;
 
@@ -111,8 +111,25 @@ public:
     void createJacobian( DSparseMapMatrix & jacobian, const RVector & slowness );
 
 protected:
+
+    /*! Automatically looking for shot and receiver points if the mesh is changed. */
+    virtual void updateMeshDependency_();
+    
     Dijkstra dijkstra_;
     double background_;
+    
+    /*! Nearest nodes for the current mesh for all shot points.*/
+    std::vector < uint > shotNodeId_;
+    
+    /*! Map shot id to sequential shot node number of shotNodeId_ */
+    std::map< uint, uint > shotsInv_;
+    
+    /*! Nearest nodes for the current mesh for all receiver points.*/
+    std::vector < uint > receNodeId_;
+    
+    /*! Map receiver id to sequential receiver node number of receNodeId_ */
+    std::map< uint, uint > receiInv_;
+    
 };
 
 /*! New Class derived from standard travel time modelling */

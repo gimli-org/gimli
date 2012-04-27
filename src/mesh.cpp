@@ -338,6 +338,11 @@ void Mesh::createHull( const Mesh & mesh ){
     }
 }
 
+uint Mesh::findNearestNode( const RVector3 & pos ){
+    fillKDTree_();
+    return tree_->nearest( pos )->id();    
+}
+    
 std::vector < int > cellIDX__;
 
 Cell * Mesh::findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t & count, bool tagging ) const {
