@@ -843,7 +843,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
     DOSAVE C_.save( "constraint.matrix" );
     DOSAVE save( constraintsWeight_, "cweight_0" );
     DOSAVE save( modelWeight_, "mweight_0" );
-    DOSAVE save( *forward_->jacobian(), "sens.mat" );
+    DOSAVE save( *forward_->jacobian(), "sens.bmat" );
 
     DOSAVE std::cout << "C size: " << C_.cols() << " x " << C_.rows() << std::endl;
 
