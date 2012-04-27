@@ -22,7 +22,7 @@ default: $(TARGET)
 	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR)/include -I ../$(BOOSTDIR)/include -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
 
 $(TARGET): $(OBJECTS)
-	g++ -o $(TARGET).pyd -shared -static-libgcc -static-libstdc++ $(OBJECTS) -L. \
+	g++ -o $(TARGET).pyd -shared -static-libstdc++ -Wl,--enable-auto-import $(OBJECTS) -L. \
 		-L $(BOOSTLIB) \
         -L $(PYTHONLIB) \
 		-L $(GIMLILIB) 
