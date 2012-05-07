@@ -103,8 +103,8 @@ int main( int argc, char *argv [] ) {
         RVector coverage( model.size() );
         coverage = transMult( W, RVector( data.size(), 1.0 ) );
         save( coverage, "coverage.vec", Ascii );
-    } else {
-        traveltime = f.calculate( );
+//    } else {
+//        traveltime = f.response( );
     }
     cout << "min/max traveltime = " << min( traveltime ) << "/" << max( traveltime ) << "s" << endl;
     data.set( "t", traveltime );

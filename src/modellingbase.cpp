@@ -263,21 +263,22 @@ RVector ModellingBase::createStartVector( ) {
 }
 
 
-LinearModelling::LinearModelling( const MatrixBase & A, bool verbose )
-    : ModellingBase( verbose ), A_( & A ) {
-    this->regionManager().setParameterCount( A_->cols() );
+LinearModelling::LinearModelling( MatrixBase & A, bool verbose )
+    : ModellingBase( verbose ){//, A_( & A ) {
+        setJacobian( &A );
+        this->regionManager().setParameterCount( A.cols() );
 }
 
 RVector LinearModelling::response( const RVector & model ) {
-    if ( A_->cols() != model.size() ){
+    if ( jacobian_->cols() != model.size() ){
         throwLengthError( 1, WHERE_AM_I + " Jacobian col size != model.size()"
-                                + toStr( A_->cols() ) + " != " + toStr( model.size() ) );
+                                + toStr( jacobian_->cols() ) + " != " + toStr( model.size() ) );
     }
-    return *A_ * model;
+    return *jacobian_ * model;
 }
 
 RVector LinearModelling::createDefaultStartModel( ) {
-    return RVector( A_->cols(), 1.0 );
+    return RVector( jacobian_->cols(), 1.0 );
 }
 
 } // namespace GIMLI
