@@ -163,13 +163,17 @@ private:
 */
 class DLLEXPORT LinearModelling : public ModellingBase {
 public:
-    LinearModelling( Mesh & mesh, const MatrixBase & A, bool verbose = false )
-        : ModellingBase( mesh, verbose ), A_( &A ) { }
+    LinearModelling( Mesh & mesh, MatrixBase & A, bool verbose = false )
+        : ModellingBase( mesh, verbose ){//, A_( &A ) { }
+            setJacobian( &A );
+        }
 
-    LinearModelling( Mesh & mesh, const MatrixBase * A, bool verbose = false )
-        : ModellingBase( mesh, verbose ), A_( A ) { }
+    LinearModelling( Mesh & mesh, MatrixBase * A, bool verbose = false )
+        : ModellingBase( mesh, verbose ){//, A_( A ) { }
+            setJacobian( A );
+        }
 
-    LinearModelling( const MatrixBase & A, bool verbose = false );
+    LinearModelling( MatrixBase & A, bool verbose = false );
 
     virtual ~LinearModelling() { }
 
@@ -180,7 +184,7 @@ public:
 
 protected:
 
-    const MatrixBase * A_;
+//    const MatrixBase * A_; //!! obsolete since f holds jacobian = forward matrix
 };
 
 
