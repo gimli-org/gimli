@@ -19,7 +19,7 @@ node(:,2:size(Poly.node,2)+1)=Poly.node;
 if isfield(Poly,'nodemarker'), node(:,5)=Poly.nodemarker; end
 fprintf(fid,'%d\t%5f\t%5f\t%5f\t%d\n',node');
 fprintf(fid,'%d\t%d\n',length(Poly.face),1);
-facemarker=zeros(length(Poly.face));
+facemarker=zeros(length(Poly.face),1);
 if isfield(Poly,'facemarker')&&(length(Poly.facemarker)==length(facemarker)),
     facemarker=Poly.facemarker; end
 for i=1:length(Poly.face),

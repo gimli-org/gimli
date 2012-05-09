@@ -101,12 +101,10 @@ int main( int argc, char *argv [] ){
         transData = new Trans< RVector >( );
         transModel = new Trans< RVector >( );
     }
-
-    f.setJacobian( &A );
-
+    /*! set up inversion */
     RInversion inv( b, f, *transData, *transModel, verbose, dosave );
 
-    inv.setRecalcJacobian( false );
+    inv.setRecalcJacobian( false ); //! no need since it is linear
     inv.setLambda( lambda );
     inv.setOptimizeLambda( lambdaOpt );
     inv.setRobustData( isRobust );

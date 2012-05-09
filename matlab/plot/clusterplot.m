@@ -15,7 +15,7 @@ else % do the clustering
     param.c=ncluster;
     result=fcmcluster([log10(para1(:)) log10(para2(:))],param);
 end
-cc=10.^result.cluster.v;
+%cc=10.^result.cluster.v;
 col=cols{min(result.param.c,length(cols))};
 ncols=length(col);
 for i=1:result.param.c,
@@ -24,9 +24,13 @@ for i=1:result.param.c,
     loglog(para1(fi),para2(fi),[coli marker],'MarkerSize',5);
     hold on
 end
-hold off
 xlim(minmax(para1));
 ylim(minmax(para2));
+if isstruct(result)&&isfield(result,'param')&&isfield(result.param,'log'),
+    if result.param.log(1)==0, set(gca,'XScale','linear'); end
+    if result.param.log(min(2,length(result.param.log)))==0, set(gca,'YScale','linear'); end
+end
+hold off
 grid on
 xlabel(names{1});
 ylabel(names{2});

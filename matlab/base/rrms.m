@@ -1,4 +1,4 @@
-function res = rms(soll,ist,lolo)
+function res = rrms(a,b)
 
 % RRMS - Relative Root Mean Square (in %)
 % result = rrms(a,b)
