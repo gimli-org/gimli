@@ -91,14 +91,9 @@ void interpolate( const Mesh & mesh, const RMatrix & vData,
 void interpolate( const Mesh & mesh, const RVector & data, const Mesh & pos, RVector & iData,
                   bool verbose ){
                     
-    std::cout << "Mops1" << std::endl;
-                  
     RMatrix vData; vData.push_back( data );
-    std::cout << "Mops2" << std::endl;
     RMatrix viData;
-    std::cout << "Mops3" << std::endl;
     interpolate( mesh, vData, pos.positions(), viData, verbose );
-    std::cout << "Mops4" << std::endl;
     iData = viData[ 0 ];
 }
 

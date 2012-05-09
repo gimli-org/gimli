@@ -36,6 +36,14 @@ DataContainer::DataContainer( const std::string & fileName, bool sensorIndicesFr
     //std::cout << "DataContainer( const std::string & fileName ){" << std::endl;
 }
 
+DataContainer::DataContainer( const std::string & fileName, const std::string & sensorTokens, bool sensorIndicesFromOne ){
+    initDefaults();
+    std::vector < std::string > tokenList = getSubstrings( sensorTokens );
+    for( Index i=0 ; i < tokenList.size() ; i++ ) registerSensorIndex( tokenList[i] );
+    this->load( fileName, sensorIndicesFromOne );
+    //std::cout << "DataContainer( const std::string & fileName ){" << std::endl;
+}
+
 DataContainer::DataContainer( const DataContainer & data ){
     initDefaults();
     this->copy_( data );

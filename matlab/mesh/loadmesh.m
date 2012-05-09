@@ -65,10 +65,12 @@ fprintf('%dD Mesh loaded (%d nodes, %d cells)\n',Mesh.dim,Mesh.nnodes,Mesh.ncell
 if dobound==0, return; end
 if ~isfield(Mesh,'bound'),
     if Mesh.dim==3,
-        Mesh.nbounds=Mesh.ncells*6;
-        Mesh.bound=zeros(Mesh.nbounds,2);
+        Mesh.nbounds=Mesh.ncells*4;
+        Mesh.bound=zeros(Mesh.nbounds,3);
         for i=1:Mesh.ncells,
-            Mesh.bound((i-1)*6+(1:6),:)=[Mesh.cell(i,[1 1 1 2 2 3])' Mesh.cell(i,[2 3 4 3 4 4])'];
+            Mesh.bound((i-1)*4+(1:4),:)=[Mesh.cell(i,[1 1 1 2])'...
+                                         Mesh.cell(i,[2 2 3 3])'...
+                                         Mesh.cell(i,[3 4 4 4])'];
         end
     end
     if Mesh.dim==2,
@@ -102,18 +104,18 @@ if (Mesh.dim==3), % edges for 3d mesh (Dijkstra algorithm
 %     Mesh.bound=mm;Mesh.boundneigh=Mesh.boundneigh(ii,:);
 %     Mesh.nbounds=length(ii);
 end
-if (Mesh.dim==2),
-    if(~isfield(Mesh,'boundleft'))||(max(Mesh.boundleft)<=0), % find left/right elements to edges
-        for i=1:Mesh.nbounds,
-            bb=Mesh.bound(i,:); % edge nodes
-            [fi,jj]=find(Mesh.cell==bb(1));
-            for j=2:length(bb),
-                [ii,jj]=find(Mesh.cell==bb(j)); 
-                fi=intersect(fi,ii);
-            end
-            Mesh.boundleft(i)=fi(1);
-            if length(fi)>1, Mesh.boundright(i)=fi(2); end
-        end    
+if(~isfield(Mesh,'boundleft'))||(max(Mesh.boundleft)<=0), % find left/right elements to edges
+    Mesh.boundleft=zeros(Mesh.nbounds,1);
+    Mesh.boundright=zeros(Mesh.nbounds,1);
+    for i=1:Mesh.nbounds,
+        bb=Mesh.bound(i,:); % edge nodes
+        [fi,jj]=find(Mesh.cell==bb(1));
+        for j=2:length(bb),
+            [ii,jj]=find(Mesh.cell==bb(j));
+            fi=intersect(fi,ii);
+        end
+        Mesh.boundleft(i)=fi(1);
+        if length(fi)>1, Mesh.boundright(i)=fi(2); end
     end
 end
 return
