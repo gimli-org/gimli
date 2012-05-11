@@ -63,6 +63,7 @@ def tetgen( filename, quality = 1.2, preserveBoundary = False, verbose = False )
         
 
 def polyAddVIP( filename, pos, marker = 0, isRegionMarker = False, isHoleMarker = False
+                , maxArea = 0
                 , verbose = False ):
     '''
         out of core wrapper for dcfemlib::polytools::polyAddVIP
@@ -78,6 +79,9 @@ def polyAddVIP( filename, pos, marker = 0, isRegionMarker = False, isHoleMarker 
         
     if isRegionMarker:
         syscal += " -R "
+        
+    if maxArea > 0:
+        syscal += " -a " + str( maxArea ) 
         
     syscal += " " + filename 
                         
@@ -117,7 +121,7 @@ def polyAddRectangle( filename, rect, marker = 0, depth = 0, clean = True ):
 #def polyAddRectangle
 
 
-def polyCreateWorld( filename, x = None, depth = None, y = None, marker = 0
+def polyCreateWorld( filename, x = None, depth = None, y = None, marker = 0, maxArea = 0
                     , verbose = True ):
     '''
         out of core wrapper for dcfemlib::polytools::polyCreateWorld
@@ -141,7 +145,12 @@ def polyCreateWorld( filename, x = None, depth = None, y = None, marker = 0
                                 + ' -y ' + str( y ) \
                                 + ' -z ' + str( z ) \
                                 + ' -m ' + str( marker ) \
-                                + ' ' + filename
+                                
+    if maxArea > 0:
+        syscal += " -a " + str( maxArea ) 
+
+    syscal = syscal + ' ' + filename
+    
     if verbose:
         print syscal
         

@@ -164,12 +164,12 @@ private:
 class DLLEXPORT LinearModelling : public ModellingBase {
 public:
     LinearModelling( Mesh & mesh, MatrixBase & A, bool verbose = false )
-        : ModellingBase( mesh, verbose ){//, A_( &A ) { }
+        : ModellingBase( mesh, verbose ){
             setJacobian( &A );
         }
 
     LinearModelling( Mesh & mesh, MatrixBase * A, bool verbose = false )
-        : ModellingBase( mesh, verbose ){//, A_( A ) { }
+        : ModellingBase( mesh, verbose ){
             setJacobian( A );
         }
 
@@ -184,7 +184,6 @@ public:
 
 protected:
 
-//    const MatrixBase * A_; //!! obsolete since f holds jacobian = forward matrix
 };
 
 

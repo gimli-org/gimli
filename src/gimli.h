@@ -208,6 +208,11 @@ inline void savePythonGIL( bool s ){
     __SAVE_PYTHON_GIL__ = s;
 }
 
+/*! set global gimli debug flag on or off */
+inline void setGimliDebug( bool s ){
+    __GIMLI_DEBUG__ = s;
+}
+
 
 class PythonGILSave {
 public:
