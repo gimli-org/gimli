@@ -100,20 +100,14 @@ def harmfit( y, x = None, error = None, nCoefficients = 42, resample = None
         coefficients .. coefficients for harmic functions that fit y
     '''    
     if x is None:
-        x = g.ListToRVector( range( len( y ) ) )
+        x = g.asvector( np.arange( len( y ) ) )
     else:
         if not isinstance( x, g.RVector ):
-            if isinstance( x, numpy.ndarray ):
-                x = g.asvector( x )
-            else:
-                x = g.ListToRVector( x )
+            x = g.asvector( x )
 
     if not isinstance( y, g.RVector ):
-        if isinstance( y, numpy.ndarray ):
-            y = g.asvector( y )
-        else:
-            y = g.ListToRVector( y )
-
+        y = g.asvector( y )
+        
     xToFit = None
     yToFit = None
     
@@ -135,7 +129,7 @@ def harmfit( y, x = None, error = None, nCoefficients = 42, resample = None
     inv = g.RInversion( yToFit, fop, verbose, dosave );
     if error is not None:
         if not isinstance( error, g.RVector ):
-            error = g.ListToRVector( error )
+            error = g.asvector( error )
         
         inv.setRelativeError( error )
     else:
@@ -152,7 +146,7 @@ def harmfit( y, x = None, error = None, nCoefficients = 42, resample = None
     
     if resample is not None:
         if not isinstance( resample, g.RVector ):
-            resample = g.ListToRVector( resample )
+            resample = g.asvector( resample )
             
         ret = fop.response( coeff, resample )
         
