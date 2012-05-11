@@ -578,6 +578,19 @@ void Mesh::createClosedGeometryParaMesh( const std::vector < RVector3 > & vPos, 
 //   for ( uint i = 0; i < cellCount(); i ++ ) cell( i ).setMarker( i );
 }
 
+Mesh Mesh::createH2Mesh( ) const {
+    Mesh ret; 
+    ret.createH2Mesh( *this );
+    ret.setCellAttributes( ret.cellMarker() );
+    return ret;
+}
+    
+Mesh Mesh::createP2Mesh( ) const {
+    Mesh ret; 
+    ret.createP2Mesh( *this );
+    return ret;
+}
+
 void Mesh::createH2Mesh( const Mesh & mesh ){
     std::vector < int > cellsToRefine( mesh.cellCount() );
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2009 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -106,15 +106,15 @@ int main( int argc, char *argv [] )
     save( thk, "thickness.vec" );
     save( inv.response(), "response.vec" );
     
-    const RMatrix * RJac = &f.jacobianRef();
-    std::cout << RJac->rows() << "x" << RJac->cols() << std::endl;
+//     RMatrix * RJac = &f.jacobianRef();
+//     std::cout << RJac->rows() << "x" << RJac->cols() << std::endl;
     if ( abmnr.cols() > 3 ) {
         if ( verbose ) std::cout << "Found ip values, doing ip inversion" << std::endl;
         //! imaginary apparent resistivity
         RVector rhoai( rhoa * sin( abmnr[ 3 ] / 1000 ) );
         //! linear modelling operator using the amplitude jacobian
         Mesh mesh( createMesh1D( thk.size() ) );
-        LinearModelling fIP( mesh, RJac, verbose );
+        LinearModelling fIP( mesh, f.jacobian(), verbose );
         fIP.setJacobian( f.jacobian() );
         fIP.region( 0 )->setTransModel( transRho );
         //! IP (imaginary resistivity) inversion using fIP

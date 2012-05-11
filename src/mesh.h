@@ -178,6 +178,12 @@ public:
     void createClosedGeometryParaMesh( const std::vector < RVector3 > & vPos, int nSegments, double dxInner,
                                         const std::vector < RVector3 > & addit );
 
+    /*! Create and copy global H2 mesh of this mesh.*/
+    Mesh createH2Mesh( ) const;
+    
+    /*! Create and copy global P2 mesh of this mesh.*/
+    Mesh createP2Mesh( ) const;
+    
     void createH2Mesh( const Mesh & mesh );
 
     void createP2Mesh( const Mesh & mesh );
