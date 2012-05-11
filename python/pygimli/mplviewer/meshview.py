@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pygimli as g
+from pygimli.misc import streamline
 
-from numpy import arange, array, ma
 import matplotlib as mpl
 
 from colorbar import *
@@ -196,9 +196,9 @@ def drawMeshPotential( ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
     X,Y = np.meshgrid( xg, yg )
     
     uI = g.interpolate( mesh, u
-                    , g.ListToRVector( list( X.flat ) )
+                    , g.asvector( list( X.flat ) )
                     , g.RVector( len( Y.flat ), 0.0 )
-                    , g.ListToRVector( list( Y.flat ) ), verbose )
+                    , g.asvector( list( Y.flat ) ), verbose )
     
     if ( verbose ):
         print "interpolation:", swatch.duration( True )
@@ -216,7 +216,7 @@ def drawMeshPotential( ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
         print potLevs
         potLevs = np.hstack( ( potLevs, potLevs[::-1] * -1. ) )
     else:
-        potLevs = np.linespace( 0, maxZ, nLevs )
+        potLevs = np.linspace( 0, maxZ, nLevs )
         
     print potLevs
     linestyles = ['solid'] * len( potLevs )
