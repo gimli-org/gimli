@@ -10,7 +10,7 @@ Contents:
 
 .. only:: html
 
-    .. note::
+    .. seealso::
 
         Restructured Text (reST) and Sphinx CheatSheets:
  
