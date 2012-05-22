@@ -265,10 +265,15 @@ public:
         assume vals is a slice itsself, so copy vals[0, end-start] -> this[start, end)
          if end larger than this size() sets end = size. Throws exception on violating boundaries. */
     inline Vector< ValueType > & setVal( const Vector < ValueType > & vals, Index start, Index end ) {
+        if ( start > this->size() ){
+            throwLengthError( 1, WHERE_AM_I + " vals.size() < start " +
+                                toStr( vals.size() ) + " " + toStr( start ) + " " + toStr( end ) ) ;
+        }
+        
         if ( end > this->size() ) end = this->size();
         if ( start > end ) start = end;
 
-        if ( vals.size() < end - start){
+        if ( vals.size() < ( end - start ) ){
             throwLengthError( 1, WHERE_AM_I + " vals.size() < ( end-start ) " +
                                 toStr( vals.size() ) + " " + toStr( start ) + " " + toStr( end ) ) ;
         }
