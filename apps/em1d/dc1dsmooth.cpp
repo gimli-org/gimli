@@ -106,8 +106,6 @@ int main( int argc, char *argv [] )
     save( thk, "thickness.vec" );
     save( inv.response(), "response.vec" );
     
-//     RMatrix * RJac = &f.jacobianRef();
-//     std::cout << RJac->rows() << "x" << RJac->cols() << std::endl;
     if ( abmnr.cols() > 3 ) {
         if ( verbose ) std::cout << "Found ip values, doing ip inversion" << std::endl;
         //! imaginary apparent resistivity
@@ -115,7 +113,6 @@ int main( int argc, char *argv [] )
         //! linear modelling operator using the amplitude jacobian
         Mesh mesh( createMesh1D( thk.size() ) );
         LinearModelling fIP( mesh, f.jacobian(), verbose );
-        fIP.setJacobian( f.jacobian() );
         fIP.region( 0 )->setTransModel( transRho );
         //! IP (imaginary resistivity) inversion using fIP
         RInversion invIP( rhoai, fIP, verbose );

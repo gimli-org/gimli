@@ -36,7 +36,6 @@
 		</Compiler>
 		<Linker>
 			<Add option="-s" />
-			<Add option="-Wl,--enable-auto-import" />
 			<Add option="-static-libgfortran" />
 			<Add option="-static-libgcc" />
 			<Add option="-static-libstdc++" />
