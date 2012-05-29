@@ -81,7 +81,7 @@ def showmymatrix(A,x,y,dx=2,dy=1,xlab=None,ylab=None,cbar=None):
     if cbar is not None: P.colorbar(orientation=cbar)
     return
     
-def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, **kwargs):
+def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, z0=0, **kwargs):
     """draw 1d block model defined by value and thickness vectors."""
 #    if xlab is None: 
 #        xlab = "$\\rho$ in $\\Omega$m"
@@ -91,7 +91,7 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, **kwar
         thk = N.asarray(x)[:nl-1]
         x = N.asarray(x)[nl-1:nl*2-1]
 
-    z1 = N.concatenate( ( [0], N.cumsum( thk ) ) )
+    z1 = N.concatenate( ( [0], N.cumsum( thk ) ) ) + z0
     z = N.concatenate( ( z1, [z1[-1] * 1.2] ) )
     nl = len(x) #x.size()
     px = N.zeros( ( nl * 2, 1 ) )

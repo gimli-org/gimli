@@ -120,7 +120,7 @@ int main( int argc, char *argv [] )
         RVector resolution( nlay );
         RVector resMDiag ( nlay );
         RMatrix resM;
-        for ( size_t iModel = 0; iModel < nlay; iModel++ ) {
+        for ( int iModel = 0; iModel < nlay; iModel++ ) {
             resolution = inv.modelCellResolution( iModel );
             resM.push_back( resolution );
             resMDiag[ iModel ] = resolution[ iModel ];
