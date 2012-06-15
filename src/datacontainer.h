@@ -299,6 +299,9 @@ public:
     /*! Remove all unused sensors from this DataContainer and recount data sensor index entries. */
     void removeUnusedSensors( bool verbose = false );
     
+    /*! Set input format string (e.g. for import routines) */
+    inline void setInputFormatString( std::string inputFormatString ){ inputFormatString_ = inputFormatString; }
+    
 protected:
     virtual void copy_( const DataContainer & data );
 

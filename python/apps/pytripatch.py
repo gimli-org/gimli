@@ -297,8 +297,8 @@ def addCoverageImageOverlay( axis, mesh, cov ):
 #           print "interpolate prep t = ", swatch.duration( True )
 
     c = arange( 0, Nx * Ny ); c[ : ] = 0.0
-    c = g.interpolate( mesh, cov, g.ListToRVector( X.flat[:].tolist() )
-                                  , g.ListToRVector( Y.flat[:].tolist() )
+    c = g.interpolate( mesh, cov, g.asvector( X.flat[:] )
+                                  , g.asvector( Y.flat[:] )
                                   , g.RVector( len( Y.flat[:] ), 0.0 ) )
     c = asarray( c )
 
@@ -367,8 +367,8 @@ def showMeshInterpolated( axis, mesh, data, cov = None, cMin = None, cMax = None
     z = arange( 0, Nx * Ny )
 
     if ( data.size() > 0 ):
-        z = g.interpolate( mesh, data, g.ListToRVector( X.flat[:].tolist() )
-                                       , g.ListToRVector( Y.flat[:].tolist() )
+        z = g.interpolate( mesh, data, g.asvector( X.flat[:] )
+                                       , g.asvector( Y.flat[:] )
                                        , g.RVector( len( Y.flat ), 0.0 )
                         )
         z = asarray ( z )

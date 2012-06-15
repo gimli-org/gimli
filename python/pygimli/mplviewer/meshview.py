@@ -25,7 +25,11 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
         
     gci = g.mplviewer.createMeshPatches( axes, mesh, alpha = 1.0 )
 
-    if cmap is not None: eval('mpl.pyplot.'+cmap+'()')
+    if cmap is not None: 
+        if cmap == 'b2r':
+            mpl.set_cmap( cmapFromName( 'b2r' ) )
+        else:
+            eval('mpl.pyplot.'+cmap+'()')
 
     axes.set_aspect( 'equal')
     

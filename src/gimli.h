@@ -26,7 +26,7 @@
 #else
     #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "gimli"
-        #define PACKAGE_VERSION "0.7.0-win"
+        #define PACKAGE_VERSION "0.9.0-win"
         #define PACKAGE_BUGREPORT "carsten@resistivity.net"
     #endif // PACKAGE_NAME
 #endif
