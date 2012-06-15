@@ -73,10 +73,10 @@ int main( int argc, char *argv [] ) {
     std::cout << "medrhoa " << medrhoa << std::endl;
     
     /*! Transformations: log for app. resisivity and thickness, logLU for resistivity */
-    TransLogLU< RVector > transThk( 0.1, 1e5 );
-    TransLogLU< RVector > transRho( lbound, ubound );
-    TransLog< RVector > transRhoa; //! log apparent resistivity
-    Trans< RVector > transPhi; //! linear phases
+    RTransLogLU transThk( 0.1, 1e5 );
+    RTransLogLU transRho( lbound, ubound );
+    RTransLog transRhoa; //! log apparent resistivity
+    RTrans transPhi; //! linear phases
     CumulativeTrans< RVector > transData; //! combination of two trans functions
     transData.push_back( transRhoa, nperiods );
     transData.push_back( transPhi, nperiods );
@@ -95,12 +95,12 @@ int main( int argc, char *argv [] ) {
     mesh = createMesh1D( nlay );
     
     MT1dRhoModelling f( TRP[ 0 ], thk, debug );
-    f.setStartModel( model );
-    f.region( 0 )->setTransModel( transRho );
+    //f.setStartModel( model );
+    //f.region( 0 )->setTransModel( transRho );
 
     /*! Set up inversion with full matrix, data and forward operator */
-    RInversion inv( cat( TRP[ 1 ], TRP[ 2 ] ), f, verbose, dosave ); //! only rhoa
-    inv.setTransData( transRhoa );
+    RInversion inv( cat( TRP[ 1 ], TRP[ 2 ] ), f, transRhoa, transRho, verbose, dosave ); //! only rhoa
+    //inv.setTransData( transRhoa );
     inv.setLambda( lambda );
     inv.setOptimizeLambda( lambdaOpt );
     inv.setRobustData( isRobust );

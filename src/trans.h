@@ -544,6 +544,7 @@ typedef TransPower < RVector > RTransPower;
 typedef TransLog < RVector > RTransLog;
 typedef TransLogLU < RVector > RTransLogLU;
 typedef TransCotLU < RVector > RTransCotLU;
+typedef CumulativeTrans< RVector > RCumulativeTrans;
 } // namespace GIMLI
 
 

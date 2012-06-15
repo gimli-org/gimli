@@ -72,7 +72,9 @@ public:
 //    }
 
     MT1dRhoModelling( RVector & periods, RVector & thk, bool verbose = false )
-        : MT1dModelling( periods, thk.size(), verbose ), thk_( thk ) { }
+        : MT1dModelling( periods, thk.size(), verbose ), thk_( thk ) { 
+            setMesh( createMesh1D( thk.size() + 1, 1 ) );
+        }
 
     virtual ~MT1dRhoModelling() { }
 
@@ -126,10 +128,14 @@ class DLLEXPORT FDEM1dRhoModelling : public FDEM1dModelling {
 public:
     //! default constructor creating a block model
     FDEM1dRhoModelling( RVector & thk, const RVector & freq, const RVector & coilspacing, double z = 0.0, bool verbose = false )
-        : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { }
+        : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { 
+            setMesh( createMesh1D( thk.size() + 1, 1 ) );
+        }
         
     FDEM1dRhoModelling( RVector & thk, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false )
-        : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { }
+        : FDEM1dModelling( thk.size(), freq, coilspacing, z, verbose ), thk_( thk ) { 
+            setMesh( createMesh1D( thk.size() + 1, 1 ) );
+        }
     
     virtual ~FDEM1dRhoModelling() { }
     
