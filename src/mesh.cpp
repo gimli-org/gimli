@@ -579,14 +579,14 @@ void Mesh::createClosedGeometryParaMesh( const std::vector < RVector3 > & vPos, 
 }
 
 Mesh Mesh::createH2Mesh( ) const {
-    Mesh ret; 
+    Mesh ret( this->dimension() ); 
     ret.createH2Mesh( *this );
     ret.setCellAttributes( ret.cellMarker() );
     return ret;
 }
     
 Mesh Mesh::createP2Mesh( ) const {
-    Mesh ret; 
+    Mesh ret( this->dimension() ); 
     ret.createP2Mesh( *this );
     return ret;
 }
@@ -932,7 +932,7 @@ void Mesh::createP2Mesh( const Mesh & mesh ){
         }
     } else { // if dimension == 2
         // dimension == 3
-        oldTet10NumberingStyle_ = false;
+        oldTet10NumberingStyle_ = true;
 
         n.resize( 10 );
         for ( int i = 0, imax = mesh.cellCount(); i < imax; i ++ ){
@@ -942,15 +942,23 @@ void Mesh::createP2Mesh( const Mesh & mesh ){
             n[ 2 ] = &node( mesh.cell( i ).node( 2 ).id() );
             n[ 3 ] = &node( mesh.cell( i ).node( 3 ).id() );
 
-            //0-1-2-3, 4(0-1), 5(1-2), 6(2-0), 7(0-3), 8(1-3), 9(2-3)* //
-
-            n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
-            n[ 5 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
-            n[ 6 ] = createRefinementNode_( n[ 2 ], n[ 0 ], nodeMatrix );
-            n[ 7 ] = createRefinementNode_( n[ 0 ], n[ 3 ], nodeMatrix );
-            n[ 8 ] = createRefinementNode_( n[ 1 ], n[ 3 ], nodeMatrix );
-            n[ 9 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
-
+            if ( oldTet10NumberingStyle_ ){
+                //** old style (Zienkiewitz)
+                n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
+                n[ 5 ] = createRefinementNode_( n[ 0 ], n[ 2 ], nodeMatrix );
+                n[ 6 ] = createRefinementNode_( n[ 0 ], n[ 3 ], nodeMatrix );
+                n[ 7 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
+                n[ 8 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
+                n[ 9 ] = createRefinementNode_( n[ 3 ], n[ 1 ], nodeMatrix );
+            } else {
+                //0-1-2-3, 4(0-1), 5(1-2), 6(2-0), 7(0-3), 8(1-3), 9(2-3)* //
+                n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
+                n[ 5 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
+                n[ 6 ] = createRefinementNode_( n[ 2 ], n[ 0 ], nodeMatrix );
+                n[ 7 ] = createRefinementNode_( n[ 0 ], n[ 3 ], nodeMatrix );
+                n[ 8 ] = createRefinementNode_( n[ 1 ], n[ 3 ], nodeMatrix );
+                n[ 9 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
+            }
             createCell( n, mesh.cell( i ).marker() );
         }
 
