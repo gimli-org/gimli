@@ -59,7 +59,7 @@ public:
        return 0;
     }
 
-    /*! Return number of cols */
+    /*! Return number of colums */
     virtual Index cols() const {
         THROW_TO_IMPL
         return 0;
@@ -68,7 +68,7 @@ public:
 //     /*! Resize this matrix to rows, cols */
 //     virtual void resize( Index rows, Index cols ) = 0;
 
-    /*! Clear the data, set size to zero and frees memory*/
+    /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {
         THROW_TO_IMPL
     }
@@ -85,7 +85,7 @@ public:
         return RVector( cols() );
     }
 
-    /*! Save this matrix into the file filename */
+    /*! Save this matrix into the file filename given. */
     virtual void save( const std::string & filename ) const {
         THROW_TO_IMPL
     }
@@ -95,14 +95,14 @@ protected:
     
 };
 
-//! Identity matrix: derived from matrixBase or better be matrix base itself?
+//! Identity matrix: derived from matrixBase
 class IdentityMatrix : public MatrixBase {
 public:
-    /*! Default constructor. */
-    IdentityMatrix( ) : nrows_( 0 ), ncols_( 0 ), val_( 0.0 ){}
+    /*! Default constructor (empty matrix). */
+    IdentityMatrix( ) : nrows_( 0 ), val_( 0.0 ){}
 
-    /*! Default constructor. */
-    IdentityMatrix( Index nrows, Index ncols, double val = 0.0 ) : nrows_( nrows ), ncols_( ncols ), val_( val ){}
+    /*! Constructor with number of rows/colums. */
+    IdentityMatrix( Index nrows, double val = 1.0 ) : nrows_( nrows ), val_( val ){}
 
     /*! Default destructor. */
     virtual ~IdentityMatrix(){}
@@ -111,17 +111,28 @@ public:
     virtual Index rows() const { return nrows_; }
 
     /*! Return number of cols */
-    virtual Index cols() const { return ncols_; }
+    virtual Index cols() const { return nrows_; }
 
     /*! Return this * a  */
-    virtual RVector mult( const RVector & a ) const { return a; }
+    virtual RVector mult( const RVector & a ) const { 
+        if ( a.size() != nrows_ ) { 
+            throwLengthError( 1, WHERE_AM_I + " vector/matrix lengths do not match " +
+                                  toStr( nrows_ ) + " " + toStr( a.size() ) );
+        }
+        return a * val_;
+    }
 
     /*! Return this.T * a */
-    virtual RVector transMult( const RVector & a ) const { return a; }
+    virtual RVector transMult( const RVector & a ) const { 
+        if ( a.size() != nrows_ ) {
+            throwLengthError( 1, WHERE_AM_I + " matrix/vector lengths do not match " +
+                                 toStr( a.size() ) + " " + toStr( nrows_ ) );
+        }
+        return a * val_;
+    }
 
 protected:
     Index nrows_;
-    Index ncols_;
     double val_;
 };
 
@@ -129,12 +140,12 @@ protected:
 /*! Simple row-based dense matrix based on \ref Vector */
 template < class ValueType > class Matrix : public MatrixBase {
 public:
-    /*! Constructs an empty matrix with the dimension rows x cols Content of the matrix is zero*/
+    /*! Constructs an empty matrix with the dimension rows x cols. Content of the matrix is zero. */
     Matrix( Index rows = 0, Index cols = 0 ){
         resize( rows, cols );
     }
 
-    /*! Copyconstructor */
+    /*! Copy constructor */
     Matrix( const std::vector < Vector< ValueType > > & mat ){ copy_( mat ); }
 
     /*! Constructor, read matrix from file see \ref load( Matrix < ValueType > & A, const std::string & filename ). */
@@ -176,10 +187,10 @@ public:
 //             for ( ; Aj != Aje; ) *Aj++ OP##= val;
 //         }   return *this; }
 
-    /*! Readonly C style index operator, without boundary check.*/
+    /*! Readonly C style index operator, without boundary check. */
     const Vector< ValueType > & operator [] ( Index i ) const { return mat_[ i ]; }
 
-    /*! Index operator for write operations without boundary check*/
+    /*! Index operator for write operations without boundary check. */
     Vector< ValueType > & operator [] ( Index i ) {
 // //         if ( i < 0 || i > mat_.size()-1 ) {
 //             throwLengthError( 1, WHERE_AM_I + " row bounds out of range " +
@@ -188,25 +199,23 @@ public:
         return mat_[ i ];
     }
 
-    /*!
-    Implicite type converter
-     */
+    /*! Implicite type converter. */
     template < class T > operator Matrix< T >( ){
         Matrix< T > f( this->rows() );
         for ( uint i = 0; i < this->rows(); i ++ ){ f[i] = Vector < T >( mat_[ i ] ); }
         return f;
     }
 
-    /*! Resize the matrix to rows x cols */
+    /*! Resize the matrix to rows x cols. */
     virtual void resize( Index rows, Index cols ){ allocate_( rows, cols ); }
 
-    /*! Clear the matrix, frees memory */
+    /*! Clear the matrix and free memory. */
     inline void clear() { mat_.clear(); }
 
-    /*! Return number of rows */
+    /*! Return number of rows. */
     inline Index rows() const { return mat_.size(); }
 
-    /*! Return number of cols */
+    /*! Return number of colums. */
     inline Index cols() const { if ( mat_.size() > 0 ) return mat_[ 0 ].size(); return 0; }
 
     /*! Set a value. Throws out of range exception if index check fails. */
@@ -250,13 +259,17 @@ public:
         return col;
     }
 
+    /*! Add another row vector add the end. */
     inline void push_back( const Vector < ValueType > & vec ) {
+        //**!!! length check necessary
         mat_.push_back( vec );
         rowFlag_.resize( rowFlag_.size() + 1 );
     }
 
+    /*! Return last row vector. */
     inline Vector< ValueType > & back() { return mat_.back(); }
 
+    /*! Set one specific column */
     inline void setCol( uint col, const Vector < ValueType > & v ){
         if ( col < 0 || col > this->cols()-1 ) {
             throwLengthError( 1, WHERE_AM_I + " col bounds out of range " +
@@ -272,6 +285,7 @@ public:
     /*! Return reference to row flag vector. Maybee you can check if the rows are valid. Size is set automatic to the amount of rows. */
     BVector & rowFlag(){ return rowFlag_; }
 
+    /*! Multiplication (A*b) with a vector of the same value type. */
     Vector < ValueType > mult( const Vector < ValueType > & b ) const {
         Index cols = this->cols();
         Index rows = this->rows();
@@ -289,6 +303,25 @@ public:
         return ret;
     }
 
+    /*! Multiplication (A*b) with a part of a vector between two defined indices. */
+    Vector < ValueType > mult( const Vector < ValueType > & b, Index startI, Index endI ) const {
+        Index cols = this->cols();
+        Index rows = this->rows();
+        Index bsize = Index( endI - startI );
+
+        if ( bsize != cols ) {
+            throwLengthError( 1, WHERE_AM_I + " " + toStr( cols ) + " < " + toStr( endI ) + "-" + toStr( startI ) );
+        }
+        Vector < ValueType > ret( rows, 0.0 );
+        for ( register Index i = 0; i < rows; ++i ){
+            for ( register Index j = startI; j < endI; j++ ) {
+                ret[ i ] += (*this)[ i ][ j ] * b[ j ];
+            }
+        }
+        return ret;
+    }
+
+    /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
     Vector< ValueType > transMult( const Vector < ValueType > & b ) const {
         Index cols = this->cols();
         Index rows = this->rows();
@@ -309,6 +342,7 @@ public:
         return ret;
     }
 
+    /*! Save matrix to file. */
     virtual void save( const std::string & filename ) const {
         saveMatrix( *this, filename );
     }
@@ -579,13 +613,13 @@ bool loadMatrixVectorsBin( Matrix < ValueType > & A,
     return true;
 }
 
-/*! Save Matrix into Ascii File (column based) */
+/*! Save Matrix into Ascii File (column based). */
 template < class ValueType >
 bool saveMatrixCol( const Matrix < ValueType > & A, const std::string & filename ){
     return saveMatrixCol( A, filename, "" );
 }
 
-/*! Save Matrix into Ascii File (column based)  with optional comments header line*/
+/*! Save Matrix into Ascii File (column based)  with optional comments header line. */
 template < class ValueType >
 bool saveMatrixCol( const Matrix < ValueType > & A, const std::string & filename,
                     const std::string & comments ){
@@ -604,7 +638,7 @@ bool saveMatrixCol( const Matrix < ValueType > & A, const std::string & filename
     return true;
 }
 
-/*! Load Matrix from Ascii File (column based) */
+/*! Load Matrix from Ascii File (column based). */
 template < class ValueType >
 bool loadMatrixCol( Matrix < ValueType > & A, const std::string & filename ){
     std::vector < std::string > comments;
@@ -655,13 +689,13 @@ bool loadMatrixCol( Matrix < ValueType > & A, const std::string & filename,
     return true;
 }
 
-/*! Save Matrix into Ascii File (row based) */
+/*! Save Matrix into Ascii File (row based). */
 template < class ValueType >
 bool saveMatrixRow( const Matrix < ValueType > & A, const std::string & filename ){
     return saveMatrixRow( A, filename, "" );
 }
 
-/*! Save Matrix into Ascii File (row based)  with optional comments header line*/
+/*! Save Matrix into Ascii File (row based)  with optional comments header line. */
 template < class ValueType >
 bool saveMatrixRow( const Matrix < ValueType > & A, const std::string & filename,
                     const std::string & comments ){
@@ -680,7 +714,7 @@ bool saveMatrixRow( const Matrix < ValueType > & A, const std::string & filename
     return true;
 }
 
-/*! Load Matrix from Ascii File (row based) */
+/*! Load Matrix from Ascii File (row based). */
 template < class ValueType >
 bool loadMatrixRow( Matrix < ValueType > & A, const std::string & filename ){
 
@@ -721,12 +755,12 @@ bool loadMatrixRow( Matrix < ValueType > & A,
     return true;
 }
 
-/*! Return determinant for Matrix(2 x 2)*/
+/*! Return determinant for Matrix(2 x 2). */
 template < class T > inline T det( const T & a, const T & b, const T & c, const T & d ){
     return a * d - b * c;
 }
 
-/*! Return determinant for Matrix A. This function is a stub. Only Matrix dimension of 2 and 3 are considered. */
+/*! Return determinant for Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > double det( const Matrix & A ){
   //** das geht viel schoener, aber nicht mehr heute.;
   double det = 0.0;
