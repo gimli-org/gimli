@@ -194,8 +194,8 @@ def test2d():
         pnts.append( g.RVector3( i, 0.0001 ) )
         spnts.append( g.RVector3( i, 0.0001 ) )
     
-    gzC, GC = calcGCells( pnts, mesh, rho, 1 )
-    #gzC = g.calcGCells( spnts , mesh, rho, 1 )
+    #gzC, GC = calcGCells( pnts, mesh, rho, 1 )
+    gzC = g.calcGCells( spnts , mesh, rho, 1 )
     print "calcGCells",  swatch.duration( True )
     #gzB, GB = calcGBounds( pnts, mesh, rho )
     gzB = g.calcGBounds( spnts , mesh, rho )
@@ -419,12 +419,12 @@ for i in x:
     pnts.append( g.RVector3( i, 0.0001 ) )
 
 gzNum = []
-gzNum.append( calcGCells( pnts, mesh, rho, 0 )[0] )
+gzNum.append( g.calcGCells( pnts, mesh, rho, 0 )[0] )
 
 #P.plot(x, gzNum[0], label = str(0) )
 
 for i in range( 1, 10 ):
-    gzNum.append( calcGCells( pnts, mesh, rho, i )[0] )
+    gzNum.append( g.calcGCells( pnts, mesh, rho, i )[0] )
 
     err = g.abs(gzNum[i]/gzNum[0]-1.)*100.
     P.semilogy(x, err, label = str(i) )

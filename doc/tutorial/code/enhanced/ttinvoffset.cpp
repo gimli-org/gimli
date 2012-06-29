@@ -55,6 +55,8 @@ public:
         offsetMesh_ = createMesh1D( shots_.size() );
         for ( size_t i = 0 ; i < offsetMesh_.cellCount() ; i++ ) offsetMesh_.cell( i ).setMarker( NEWREGION );
         regionManager().addRegion( NEWREGION, offsetMesh_ );
+        
+        this->initJacobian();
     }
 
     virtual ~TTOffsetModelling() { }
@@ -75,21 +77,33 @@ public:
         return resp;
     }
 
-    void createJacobian( H2SparseMapMatrix & jacobian, const RVector & model ) { 
-        //! extract slowness from model and call old function
+    void initJacobian( ) { 
+        if ( jacobian_ && ownJacobian_ ){
+            delete jacobian_;
+        }
+        jacobian_ = new H2SparseMapMatrix();
+        ownJacobian_ = true; 
+    }
+    
+    void createJacobian( const RVector & model ) { 
+        
         RVector slowness( model, 0, model.size() - shots_.size() );
         RVector offsets( model, model.size() - shots_.size(), model.size() );         
-        TravelTimeDijkstraModelling::createJacobian( jacobian.H1(), slowness );
-        jacobian.H2().setRows( dataContainer_->size() );
-        jacobian.H2().setCols( offsets.size() );
+
+        H2SparseMapMatrix * jacobian = dynamic_cast < H2SparseMapMatrix * > ( jacobian_ );
+        TravelTimeDijkstraModelling::createJacobian( jacobian->H1(), slowness );
+                
+        jacobian->H2().setRows( dataContainer_->size() );
+        jacobian->H2().setCols( offsets.size() );
         //! set 1 entries for the used shot
         RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
         for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
-            jacobian.H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
+            jacobian->H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 ); 
         }
     }
     
     size_t nShots(){ return shots_.size(); }
+
 protected:
     RVector shots_;
     std::map< int, int > shotMap_;

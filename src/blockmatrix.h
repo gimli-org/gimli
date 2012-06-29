@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2007-2011 by the resistivity.net development team       *
- *   Thomas Günther  thomas@resistivity.net                                *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther  thomas@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -75,14 +75,14 @@ inline bool save( const H2SparseMapMatrix & A, const std::string & filename, IOF
     return false;
 }
 
-/*! Do we have to do this for every matrix type?? */  
-inline RVector operator * ( const H2SparseMapMatrix & A, const RVector & x ){
-    return A.H1() * x( 0, A.H1().cols() ) + A.H2() * x( A.H1().cols(), A.cols() );
-}
-
-inline RVector transMult( const H2SparseMapMatrix & A, const RVector & b ){
-    return cat( transMult( A.H1(), b ), transMult( A.H2(), b ) );
-}
+// /*! Do we have to do this for every matrix type?? */  
+// inline RVector operator * ( const H2SparseMapMatrix & A, const RVector & x ){
+//     return A.H1() * x( 0, A.H1().cols() ) + A.H2() * x( A.H1().cols(), A.cols() );
+// }
+// 
+// inline RVector transMult( const H2SparseMapMatrix & A, const RVector & b ){
+//     return cat( transMult( A.H1(), b ), transMult( A.H2(), b ) );
+// }
 
 /*! Block matrix with 2 arbitrary matrices pasted horizontally. */
 template< class Matrix1, class Matrix2 > class H2Matrix{ 

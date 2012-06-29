@@ -24,8 +24,8 @@ def merge( data1, data2, ContainerTyp, snap = 0.001 ):
         Merge two datacontainer into one, by copying the sensor positions and datapoints from data2 into data1.\n
         Double sensor positions will be reused and snapped to a grid with gridsize snap
     '''
-    data = ContainerTyp( N1 );
-    data.add( N2, snap )
+    data = ContainerTyp( data1 );
+    data.add( data2, snap )
     return data
 # def merge( ... )
     
@@ -51,11 +51,13 @@ def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
     for c in content:
         row = c.split( '\n' )[0].split()
         d = None
-        if row[ 0 ] != '#' :
+        
+        if len( row ) > 0 and row[ 0 ] != '#' :
             if len( row ) == 1:
                 ### filename only
                 d = ContainerTyp( row[0] )
             elif len( row ) == 2:
+                ### Thomas?? ist das von dir?? was macht das 
                 d = ContainerTyp( row[0] )
                 
                 xn = g.x( d.sensorPositions() )
@@ -68,10 +70,18 @@ def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
 
                 for i in range( d.sensorCount() ):
                     d.setSensorPosition( i, g.RVector3( x3n[i], y3n[i], zn[i] ) )
+            elif len( row ) == 3:
+                ### filename xstart xend
+                d = ContainerTyp( row[0] )
+
+                start = g.RVector3( float( row[1] ), 0.0 )
+                end   = g.RVector3( float( row[2] ), 0.0 ) 
+                
+                for i in range( d.sensorCount() ):
+                    d.setSensorPosition( i, start + float(i)*(end-start)/(d.sensorCount() - 1.) )                   
                     
             elif len( row ) == 5:
                 ### filename xstart ystart xend yend
-                #d = importData( row[0] )
                 d = ContainerTyp( row[0] )
 
                 start = g.RVector3( float( row[1] ), float( row[2] ) )
@@ -101,7 +111,7 @@ def main( argv ):
     # OptionParser is deprecated since python 2.7, use argparse 
     from optparse import OptionParser
 
-    parser = OptionParser( "usage: %prog [options] project file"
+    parser = OptionParser( "usage: %prog [options] project-file"
                             , version="%prog: " + g.versionStr() 
                             , description = loadProjectFile.__doc__ + 
                             '                                            The import data function provide the following data formats:                  ' #+ importData.__doc__

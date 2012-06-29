@@ -44,13 +44,17 @@ DLLEXPORT Mesh createMesh2D( const RVector & x, const RVector & y, int markerTyp
 /*! Generate simple three dimensional mesh with nx x nx x nz cells with each length = 1.0 */
 DLLEXPORT Mesh createMesh3D( uint xDim, uint yDim, uint zDim, int markerType = 0 );
 
-/*! Generate simple two dimensional mesh with nodes at position in RVector x and y. */
+/*! Generate simple three dimensional mesh with nodes at position in RVector x and y. */
 DLLEXPORT Mesh createMesh3D( const RVector & x, const RVector & y, const RVector & z, int markerType = 0 );
 
 /*! Add triangle boundary to the mesh. Return false on failors. */
 DLLEXPORT bool addTriangleBoundary( Mesh & mesh, 
                                     double xBoundary, double yBoundary, int cellMarker, bool save = false );
 
+/*! Generate a simple three dimensional mesh by extruding a two dimensional triangle mesh into RVector z using triangle prism */
+DLLEXPORT Mesh createMesh3D( const Mesh mesh, const RVector & z, int markerType = 0 );
+
+    
 } // namespace GIMLI
 
 #endif // GIMLI_MESHGENERATORS__H

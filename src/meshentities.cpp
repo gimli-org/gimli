@@ -210,6 +210,14 @@ std::ostream & operator << ( std::ostream & str, const Hexahedron & t ){
     return str;
 }
 
+std::ostream & operator << ( std::ostream & str, const TriPrism & t ){
+    str << "TrianglePrism" << &t << " id: " << t.id() << "\t"
+        << t.node( 0 ).id() << " " << t.node( 1 ).id() << " " << t.node( 2 ).id() << " "
+        << t.node( 3 ).id() << " " << t.node( 4 ).id() << " " << t.node( 5 ).id() << " "
+        << " attribute: " << t.attribute();
+    return str;
+}
+
 RVector3 MeshEntity::center() const {
     return shape_->center();
 }
@@ -219,7 +227,7 @@ void MeshEntity::fillShape_( ){
         if ( shape_->nodeCount() > this->nodeCount() ){
             std::cerr << WHERE_AM_I << " not enough nodes to fill shape: " << shape_->rtti()
                         << " " << this->rtti() << " " << shape_->nodeCount()
-                        << " " <<  this->nodeCount() << std::endl;
+                        << " " << this->nodeCount() << std::endl;
         } else {
             for ( uint i = 0; i < shape_->nodeCount(); i ++ ) shape_->setNode( i, node( i ) );
         }
@@ -230,6 +238,8 @@ void MeshEntity::setNodes_( std::vector < Node * > & nodes ){
     if ( nodes.size() > 0 ){
         if ( nodeVector_.size() != nodes.size() ) nodeVector_.resize( nodes.size() );
         std::copy( nodes.begin(), nodes.end(), &nodeVector_[ 0 ] );
+    } else {
+        std::cerr << WHERE_AM_I << " not enough nodes to fill meshEntity " << std::endl;
     }
 }
 
@@ -348,6 +358,23 @@ void Cell::cleanNeighbourInfos( ){
     for ( uint i = 0; i < this->neighbourCellCount(); i ++ ){
         neighbourCells_[ i ] = NULL;
     }
+}
+
+void Cell::findNeighbourCell( uint i ){
+    std::vector < Node * > n( boundaryNodes( i ) );
+
+    std::set < Cell *> common;
+    std::set < Cell *> commonTmp;
+
+    if ( n.size() > 1 ) intersectionSet( common, n[ 0 ]->cellSet(), n[ 1 ]->cellSet() );
+    
+    for ( uint j = 2; j < n.size(); j ++ ){
+        commonTmp = common;
+        intersectionSet( common, commonTmp, n[ j ]->cellSet() );
+    }
+
+    common.erase( this );
+    if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
 }
 
 void Cell::registerNodes_( ){
@@ -1156,21 +1183,22 @@ Hexahedron::~Hexahedron(){
     delete shape_;
 }
 
-void Hexahedron::findNeighbourCell( uint i ){
-    std::vector < Node * > n( boundaryNodes( i ) );
-
-    std::set < Cell *> common;
-    std::set < Cell *> commonTmp;
-
-    if ( n.size() > 1 ) intersectionSet( common, n[ 0 ]->cellSet(), n[ 1 ]->cellSet() );
-    for ( uint j = 2; j < n.size(); j ++ ){
-        commonTmp = common;
-        intersectionSet( common, commonTmp, n[ j ]->cellSet() );
-    }
-
-    common.erase( this );
-    if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
-}
+// void Hexahedron::findNeighbourCell( uint i ){
+//     std::vector < Node * > n( boundaryNodes( i ) );
+// 
+//     std::set < Cell *> common;
+//     std::set < Cell *> commonTmp;
+// 
+//     if ( n.size() > 1 ) intersectionSet( common, n[ 0 ]->cellSet(), n[ 1 ]->cellSet() );
+//     
+//     for ( uint j = 2; j < n.size(); j ++ ){
+//         commonTmp = common;
+//         intersectionSet( common, commonTmp, n[ j ]->cellSet() );
+//     }
+// 
+//     common.erase( this );
+//     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
+// }
 
 void Hexahedron::shapeFunctionsL( const RVector3 & L, RVector & funct ) const{
     funct.resize( nodeCount() );
@@ -1189,6 +1217,38 @@ std::vector < Node * > Hexahedron::boundaryNodes( uint i ){
     nodes[ 1 ] = nodeVector_[ HexahedronFacesID[ i ][ 1 ] ];
     nodes[ 2 ] = nodeVector_[ HexahedronFacesID[ i ][ 2 ] ];
     nodes[ 3 ] = nodeVector_[ HexahedronFacesID[ i ][ 3 ] ];
+    return nodes;
+}
+
+
+TriPrism::TriPrism( std::vector < Node * > & nodes ) : Cell( nodes ){
+    shape_ = new TriPrismShape();
+    fillShape_( );
+    neighbourCells_.resize( this->neighbourCellCount(), NULL );
+}
+
+TriPrism::~TriPrism(){
+    delete shape_;
+}
+
+void TriPrism::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
+    funct.resize( nodeCount() );
+    THROW_TO_IMPL
+}
+
+RVector TriPrism::deriveNdL( const RVector3 & coord, uint dim ) const {
+    RVector f(nodeCount() );
+    THROW_TO_IMPL
+    return f;
+}
+
+std::vector < Node * > TriPrism::boundaryNodes( uint i ){
+    std::vector < Node * > nodes;
+    for ( uint j = 0; j < 3; j ++ ){
+        nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ j ] ] );
+    }    
+    if ( TriPrismFacesID[ i ][ 3 ] != -1 ) nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ 3 ] ] );
+    
     return nodes;
 }
 

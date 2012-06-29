@@ -16,8 +16,6 @@ def handleWPTS( wpts ):
         else:
             continue
 
-        
-
         name = wpt.getElementsByTagName( 'name' )[0].childNodes[0].data
         time = wpt.getElementsByTagName( 'time' )[0].childNodes[0].data
 
@@ -44,10 +42,12 @@ def readSimpleLatLon( filename ):
     fi.close()
     
     for line in content:
+        if line[0] == '#': continue
+        
         vals = line.split()
         if len( vals ) > 1:
             w.append( (float(vals[1]), float(vals[0]), '', 'time')  )
-            print w
+            print w[-1]
         #w.append( (float(vals[2]), float(vals[1]), vals[0], 'time')  )
     
     return w

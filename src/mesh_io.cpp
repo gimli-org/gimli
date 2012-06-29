@@ -739,9 +739,11 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
                     case MESH_QUADRANGLE8_RTTI: file   << "23 "; break;
                     case MESH_TETRAHEDRON_RTTI: file   << "10 "; break;
                     case MESH_TETRAHEDRON10_RTTI: file << "24 "; break;
+                    case MESH_TRIPRISM_RTTI: file      << "13 "; break;
+                    case MESH_TRIPRISM14_RTTI: file    << "13 "; break;
                     case MESH_HEXAHEDRON_RTTI: file    << "12 "; break;
                     case MESH_HEXAHEDRON20_RTTI: file  << "25 "; break;
-                    default: std::cerr << WHERE_AM_I << " nothing know about." << cell(i).rtti()
+                    default: std::cerr << WHERE_AM_I << " nothing known about." << cell(i).rtti()
                             << std::endl;
                 }
             }

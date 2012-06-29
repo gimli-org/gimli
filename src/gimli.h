@@ -127,6 +127,8 @@ static const uint8 MESH_TETRAHEDRON_RTTI     = 041;
 static const uint8 MESH_TETRAHEDRON10_RTTI   = 042;
 static const uint8 MESH_HEXAHEDRON_RTTI      = 043;
 static const uint8 MESH_HEXAHEDRON20_RTTI    = 044;
+static const uint8 MESH_TRIPRISM_RTTI        = 045;
+static const uint8 MESH_TRIPRISM14_RTTI      = 046;
 
 static const uint8 MESH_SHAPE_NODE_RTTI        = 210;
 static const uint8 MESH_SHAPE_EDGE_RTTI        = 211;
@@ -134,6 +136,7 @@ static const uint8 MESH_SHAPE_TRIANGLE_RTTI    = 221;
 static const uint8 MESH_SHAPE_QUADRANGLE_RTTI  = 222;
 static const uint8 MESH_SHAPE_TETRAHEDRON_RTTI = 231;
 static const uint8 MESH_SHAPE_HEXAHEDRON_RTTI  = 232;
+static const uint8 MESH_SHAPE_TRIPRISM_RTTI    = 233;
 
 static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;

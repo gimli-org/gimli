@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import wx
 
@@ -63,7 +63,8 @@ class GPSViewerApp( AppResourceWxMPL ):
         ## the application has some properties that can be altered by the property inspector (PI), loaded and saved
         #self.titleTextProp = self.appendProperty( "Title", default = 'unknown', valType = str )
                 
-        self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Open Street Map' )
+        self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Google Maps' )
+        #self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Open Street Map' )
         self.utmZone = self.appendProperty( "UTMZone", valType = str, default = '' )
         self.ellipsoid = self.appendProperty( "Ellipsoid", valType = str, default = 'WGS84' )
         

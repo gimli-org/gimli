@@ -979,6 +979,13 @@ template < class Vec > int Inversion< Vec>::oneStep( ) {
 //                                lambda_, deltaModel0, maxCGLSIter_, verbose_ );
             
             //save( forward_->jacobian(), "S"+ toStr(iter_) + ".mat", Ascii );
+            
+            // wannebee
+//             DoubleWeightedMatrix scaledJacobian ( forward_->jacobian(), tM_->deriv( model_ ), tD_->deriv( response_ ) );
+//             DoubleWeightedMatrix weightedConstraints( C_, constraintsWeight_, modelWeight_ );
+//             solveCGLSCDWWhtransWB( scaledJacobian, weightedConstraints, dataWeight_, deltaDataIter_, deltaModelIter_, 
+//                                    lambda_, roughness, maxCGLSIter_, verbose_ );
+            
             solveCGLSCDWWhtrans( *forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
                                   modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
                                   lambda_, roughness, maxCGLSIter_, verbose_ );
