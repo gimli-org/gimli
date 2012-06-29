@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -311,6 +311,20 @@ protected:
     inline virtual double domainSize_() const { return volume(); }
 };
 
+//! A Hexahedron
+/*! A Hexahedron
+
+Node direction:
+
+  7------6  \n
+ /|     /|  \n
+4------5 |  \n
+| 3----|-2  \n
+|/     |/   \n
+0------1    \n
+
+*/
+
 class DLLEXPORT HexahedronShape : public Shape {
 public:
     HexahedronShape(){ resizeNodeSize( 8 ); }
@@ -332,6 +346,42 @@ protected:
 
     inline virtual double domainSize_() const { return volume(); }
 };
+
+//! Triangular prism
+/*! 
+ * A Triangular prism is a three-sided prism. Equivalently, it is a pentahedron of which two faces are parallel.
+ * Node direction:
+
+  5    \n
+ /|\   \n
+3---4  \n
+| 2 |  \n
+|/ \|  \n
+0---1  \n
+
+ */
+class DLLEXPORT TriPrismShape : public Shape {
+public:
+    TriPrismShape(){ resizeNodeSize( 6 ); }
+
+    virtual ~TriPrismShape(){ }
+
+    inline virtual int rtti() const { return MESH_SHAPE_TRIPRISM_RTTI; }
+
+    inline virtual std::string name() const { return "TriagonalPrismShape"; }
+
+    double volume() const;
+
+    virtual RVector3 coordinates( const RVector3 & pos ) const;
+
+    virtual bool touch1( const RVector3 & pos, bool verbose, int & pFunIdx ) const ;
+
+protected:
+    virtual double jacobianDeterminant_() const;
+
+    inline virtual double domainSize_() const { return volume(); }
+};
+
 
 } // namespace GIMLI
 

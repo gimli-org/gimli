@@ -67,6 +67,8 @@ libgimli_la_SOURCES = \
 			memwatch.cpp \
 			modellingbase.h \
 			modellingbase.cpp \
+			multimatrix.h \
+			multimatrix.cpp \
 			node.h \
 			node.cpp \
 			numericbase.h \

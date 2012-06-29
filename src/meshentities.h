@@ -198,10 +198,13 @@ public:
 
     void cleanNeighbourInfos( );
 
-    /*! Return the direct neighbour cell corresponding to local node i. The cell will be searched and stored by the virtual method \ref findNeighbourCell_. All neighbouring relationships have to be initialized ones by calling \ref Mesh.createNeighborInfos( ).
+    /*! Return the direct neighbour cell corresponding to local node i. The cell will be searched and stored by the virtual method \ref findNeighbourCell. All neighbouring relationships have to be initialized ones by calling \ref Mesh.createNeighborInfos( ).
      If no cell can be found NULL is returned. */
     inline Cell * neighbourCell( uint i ){ return neighbourCells_[ i ]; }
 
+    /*! Find neighbour cell regarding to the i-th Boundary and store them in neighbourCells_. */
+    virtual void findNeighbourCell( uint i );
+    
     inline double attribute() const { return attribute_; }
 
     inline void setAttribute( double attr ) { attribute_ = attr; }
@@ -227,12 +230,7 @@ public:
     /*! Return true if the cell is tagged */
     inline bool tagged() const { return tagged_; }
 
-    virtual void findNeighbourCell( uint i ){
-        CERR_TO_IMPL
-        std::cout << rtti() << std::endl;
-    }
-
-    /*! experimental */
+    /*! Experimental */
     virtual std::vector < Node * > boundaryNodes( uint i ){
         CERR_TO_IMPL
         std::cout << rtti() << std::endl;
@@ -245,6 +243,8 @@ protected:
 
     void deRegisterNodes_( );
 
+    
+    
     std::vector < Cell * > neighbourCells_;
 
     double attribute_;
@@ -711,7 +711,51 @@ public:
 
     inline virtual uint neighbourCellCount() const { return 6; }
 
-    virtual void findNeighbourCell( uint i );
+    friend std::ostream & operator << ( std::ostream & str, const Hexahedron & t );
+
+    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
+
+    virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
+
+    /*! Experimental */
+    virtual std::vector < Node * > boundaryNodes( uint i );
+
+protected:
+};
+
+//! Triangular prism
+/*! 
+ * A Triangular prism is a three-sided prism. Equivalently, it is a pentahedron of which two faces are parallel.
+ * Node direction:
+
+ 5    \n
+ /|\   \n
+3---4  \n
+| 2 |  \n
+|/ \|  \n
+0---1  \n
+
+*/
+
+static const uint8 TriPrismFacesID[ 5 ][ 4 ] = {
+    {1, 2, 5, 4},
+    {0, 2, 5, 3},
+    {0, 1, 4, 3},
+    {3, 4, 5, -1},
+    {0, 2, 1, -1},
+};
+
+class DLLEXPORT TriPrism : public Cell {
+public:
+    TriPrism( std::vector < Node * > & nodes );
+
+    virtual ~TriPrism();
+
+    inline virtual uint dimension() const { return 3; }
+
+    virtual uint rtti() const { return MESH_TRIPRISM_RTTI; }
+
+    inline virtual uint neighbourCellCount() const { return 5; }
 
     friend std::ostream & operator << ( std::ostream & str, const Hexahedron & t );
 
@@ -719,7 +763,7 @@ public:
 
     virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
 
-    /*! experimantal */
+    /*! Experimental */
     virtual std::vector < Node * > boundaryNodes( uint i );
 
 protected:

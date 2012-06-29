@@ -1,5 +1,14 @@
 Installation directory for Windows systems using MinGW compiler
 
+Prerequisites:
+    for libglimli externals:
+        cmake-2.8.7 (tested: 2.8.7)
+        boost-1.48  (automatically installation via script (see below), tested: 1.47, 1.48, 1.49)
+
+    for python bindings:
+        python-2.7.2 (tested: )
+
+
 What you need:
     A) A MinGW compiler suite
         download the automated installer (mingw-get-inst-*.exe) from 
@@ -23,8 +32,18 @@ What you need:
             proxy_user = <username>
             proxy_password = <password>
         
-Check for valid boost installation
-		sh pygimli/buildScripts/buildBoostWin32.sh ../../
+Build Toolchain:
+
+    sh libgimli/trunk/python/buildScripts/buildToolChain.sh
+
+    check for: "gccxml seems to work" otherwise .... contact me. (carsten)
+
+    Build necessary boost_librarys:
+    
+    sh libgimli/trunk/python/buildScripts/buildBoostWin32.sh
+
+    or 
+	sh pygimli/buildScripts/buildBoostWin32.sh ../../
 		
 		
 		

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2012 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -436,7 +436,7 @@ RVector3 QuadrangleShape::xyz( const RVector3 & rst ) const {
             
 }
 
-double QuadrangleShape::deriveCoordinates( uint coord, uint dim ) const{
+double QuadrangleShape::deriveCoordinates( uint coord, uint dim ) const {
 // return d L_coord/d dim
     double b = nodeVector_[ 1 ]->pos()[ 0 ] - nodeVector_[ 0 ]->pos()[ 0 ];
     double c = nodeVector_[ 3 ]->pos()[ 0 ] - nodeVector_[ 0 ]->pos()[ 0 ];
@@ -475,7 +475,7 @@ double QuadrangleShape::deriveCoordinates( uint coord, uint dim ) const{
 }
 
 double QuadrangleShape::area() const {
-  //** Gau sche Trapezformel
+  //** Gaußsche Trapezformel
   double x13 = nodeVector_[ 0 ]->pos()[ 0 ]- nodeVector_[ 2 ]->pos()[ 0 ];
   double x42 = nodeVector_[ 3 ]->pos()[ 0 ]- nodeVector_[ 1 ]->pos()[ 0 ];
 
@@ -776,6 +776,11 @@ double HexahedronShape::volume() const {
     return sum;
 }
 
+double HexahedronShape::jacobianDeterminant_() const {
+    THROW_TO_IMPL
+    return -1;
+}
+
 RVector3 HexahedronShape::coordinates( const RVector3 & pos ) const {
     THROW_TO_IMPL
     return RVector3();
@@ -786,10 +791,89 @@ bool HexahedronShape::touch1( const RVector3 & pos, bool verbose, int & pFunIdx 
     return false;
 }
 
-double HexahedronShape::jacobianDeterminant_() const {
+   
+double TriPrismShape::volume() const{
     THROW_TO_IMPL
     return -1;
 }
+
+double TriPrismShape::jacobianDeterminant_() const{
+    THROW_TO_IMPL
+    return -1;
+}
+
+RVector3 TriPrismShape::coordinates( const RVector3 & pos ) const{
+    ///###TriangleShape
+    double x21 = nodeVector_[ 1 ]->pos()[ 0 ] - nodeVector_[ 0 ]->pos()[ 0 ];
+    double x31 = nodeVector_[ 2 ]->pos()[ 0 ] - nodeVector_[ 0 ]->pos()[ 0 ];
+    double y21 = nodeVector_[ 1 ]->pos()[ 1 ] - nodeVector_[ 0 ]->pos()[ 1 ];
+    double y31 = nodeVector_[ 2 ]->pos()[ 1 ] - nodeVector_[ 0 ]->pos()[ 1 ];
+    double xp1 = pos[ 0 ] - nodeVector_[ 0 ]->pos()[ 0 ];
+    double yp1 = pos[ 1 ] - nodeVector_[ 0 ]->pos()[ 1 ];
+
+    //** use here the local J instead of jacobianDeterminant_( ), while they use the area-hack
+    double J = x21 * y31 - x31 * y21;
+
+    RVector3 coords;
+    coords[ 0 ] = ( y31 * xp1 - x31 * yp1 ) / J; // r
+    coords[ 1 ] = ( x21 * yp1 - y21 * xp1 ) / J; // s
+    
+    ///###EdgeShape
+    double z41 = nodeVector_[ 3 ]->pos()[ 2 ] - nodeVector_[ 0 ]->pos()[ 2 ];
+    double zp1 = pos[ 2 ] - nodeVector_[ 0 ]->pos()[ 2 ];
+
+    //** find pos in isoparametric koordinates
+    //** shape functions N1 = 1-r-s; N2 = r; N3 = s;
+    //** if max( N1, N2, N3 ) == 1 pos match the respective node
+    coords[ 2 ] = zp1 / z41; // t
+    return coords;
+}
+
+bool TriPrismShape::touch1( const RVector3 & pos, bool verbose, int & pFunIdx ) const{
+    RVector3 coords = coordinates( pos );
+    double r = coords[ 0 ];
+    double s = coords[ 1 ];
+    double t = coords[ 2 ];
+
+    // Edge Shapefunctions
+    double N1E = 1.0 - t;
+    double N2E = t;
+    
+    // Triangle Shapefunctions
+    double N1T = 1.0 - r - s;
+    double N2T = r;
+    double N3T = s;
+
+    double N1 = N1T * N1E;
+    double N2 = N2T * N1E;
+    double N3 = N3T * N1E;
+    double N4 = N1T * N2E;
+//     double N5 = N2T * N2E;
+//     double N6 = N3T * N2E;
+    
+    //** fun < 0 outside; fun == 0 bound; fun > 0 inside; max(fun ) =barycenter (1/4 for tetrahedron)
+    double fun = std::min( std::min( std::min( N1, N2 ), N3 ), N4 );
+    if ( N1 == fun ) pFunIdx = 0;
+    else if ( N2 == fun ) pFunIdx = 1;
+    else if ( N3 == fun ) pFunIdx = 2;
+    else if ( N4 == fun ) pFunIdx = 3;
+
+    if ( verbose ){
+        std::cout << "Jac: " << jacobianDeterminant() << " ";
+        std::cout << "Tet: pFunIdx: " << pFunIdx<< std::endl;
+        std::cout << " fun: " << fun << ": " << N1 << " " << N2 << " "<< N3 << " " << N4 << std::endl;
+    }
+
+    if ( std::fabs( fun ) < max( TOUCH_TOLERANCE, TOUCH_TOLERANCE * pos.abs() ) ) return true; //** on boundary
+    if ( fun > 0.0 ) return true; //** inside
+    //** outside
+    return false;
+    
+    return false;
+}
+
+
+
 
 
 } // namespace GIMLI

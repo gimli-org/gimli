@@ -221,7 +221,12 @@ Cell * Mesh::createCell( std::vector < Node * > & nodes, int marker ){
                 case 3: return createCell_< Tetrahedron >( nodes, marker, cellCount() ); break;
             }
             break;
-        case 6: return createCell_< Triangle6 >( nodes, marker, cellCount() ); break;
+        case 6: 
+            switch ( dimension_ ){
+                case 2: return createCell_< Triangle6 >( nodes, marker, cellCount() ); break;
+                case 3: return createCell_< TriPrism >( nodes, marker, cellCount() ); break;
+            }
+            break;
         case 8:
             switch ( dimension_ ){
                 case 2: return createCell_< Quadrangle8 >( nodes, marker, cellCount() ); break;
