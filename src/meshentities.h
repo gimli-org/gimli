@@ -666,7 +666,7 @@ Neighbour Nr, on Boundary a-b-c-d
     4           4-5-6-7
     5           0-3-2-1
 
-T.~Apel and N.~D velmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
+T.~Apel and N.~Düvelmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
 Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, Pages   293-304
 5-Tet-split: type 6(2) 1-4-5-6, 3-7-6-4, 1-4-0-3, 1-2-3-6, 1-6-4-3
 6-Tet-split: type 1    0-1-2-6, 0-2-3-6, 0-1-6-5, 0-4-5-6, 0-3-7-6, 0-4-6-7
@@ -741,8 +741,8 @@ static const uint8 TriPrismFacesID[ 5 ][ 4 ] = {
     {1, 2, 5, 4},
     {0, 2, 5, 3},
     {0, 1, 4, 3},
-    {3, 4, 5, -1},
-    {0, 2, 1, -1},
+    {3, 4, 5, 255},
+    {0, 2, 1, 255},
 };
 
 class DLLEXPORT TriPrism : public Cell {
