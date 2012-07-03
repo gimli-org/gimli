@@ -1247,7 +1247,7 @@ std::vector < Node * > TriPrism::boundaryNodes( uint i ){
     for ( uint j = 0; j < 3; j ++ ){
         nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ j ] ] );
     }    
-    if ( TriPrismFacesID[ i ][ 3 ] != -1 ) nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ 3 ] ] );
+    if ( TriPrismFacesID[ i ][ 3 ] != 255 ) nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ 3 ] ] );
     
     return nodes;
 }
