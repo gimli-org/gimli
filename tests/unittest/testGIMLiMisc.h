@@ -6,7 +6,11 @@
 #include <gimli.h>
 #include <ipcClient.h>
 #include <memwatch.h>
+
 #include <matrix.h>
+
+#include <polynomial.h>
+#include <pos.h>
 
 class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( GIMLIMiscTest );
@@ -16,6 +20,7 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST( testStringFunctions );
     CPPUNIT_TEST( testIPCSHM );
     CPPUNIT_TEST( testMemWatch );
+    CPPUNIT_TEST( testPolynomialFunction );
 //     CPPUNIT_TEST( testRotationByQuaternion );
     
 	//CPPUNIT_TEST_EXCEPTION( funct, exception );
@@ -113,6 +118,65 @@ public:
         mat.clear();
         GIMLI::MemWatch::pInstance()->info( WHERE );
     }
+    
+    void testPolynomialFunction(){
+        CPPUNIT_ASSERT( GIMLI::PolynomialFunction< double > ( GIMLI::RVector( 0.0 ) )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        
+        GIMLI::RVector ax( 3, 0 ); ax[ 1 ] = 1.0;
+        GIMLI::RVector ay( 3, 0 ); ay[ 1 ] = 2.0;
+        GIMLI::RVector az( 3, 0 ); az[ 1 ] = 3.0;
+        
+        GIMLI::PolynomialFunction< double > f( ax );
+        CPPUNIT_ASSERT( f( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == ax[ 1 ] * 3.14 );
+        CPPUNIT_ASSERT( f.derive( 0 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == ax[ 1 ] );
+        CPPUNIT_ASSERT( f.derive( 1 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        CPPUNIT_ASSERT( f.derive( 2 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        
+        GIMLI::PolynomialFunction< double > g( GIMLI::RVector(0), ay );
+        CPPUNIT_ASSERT( g( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        CPPUNIT_ASSERT( g( GIMLI::RVector3( 0.0, 3.14, 0.0 ) ) == ay[ 1 ] * 3.14 );
+        CPPUNIT_ASSERT( g( GIMLI::RVector3( 0.0, 0.0, 3.14 ) ) == 0.0 );
+        CPPUNIT_ASSERT( g.derive( 0 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        CPPUNIT_ASSERT( g.derive( 1 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == ay[ 1 ] );
+        CPPUNIT_ASSERT( g.derive( 2 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        
+        GIMLI::PolynomialFunction< double > h( GIMLI::RVector(0), GIMLI::RVector(0), az );
+        CPPUNIT_ASSERT( h( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        CPPUNIT_ASSERT( h( GIMLI::RVector3( 0.0, 3.14, 0.0 ) ) == 0.0 );
+        CPPUNIT_ASSERT( h( GIMLI::RVector3( 0.0, 0.0, 3.14 ) ) == az[ 1 ] * 3.14 );
+        CPPUNIT_ASSERT( h.derive( 0 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        CPPUNIT_ASSERT( h.derive( 1 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == 0.0 );
+        CPPUNIT_ASSERT( h.derive( 2 )( GIMLI::RVector3( 3.14, 0.0, 0.0 ) ) == az[ 1 ] );
+        
+//        std::cout << f << std::endl;
+//         std::cout << g << std::endl;
+//         std::cout << h << std::endl;
+        ax[ 1 ] = -1;
+        ay[ 2 ] = 0;
+        f = GIMLI::PolynomialFunction< double >( ax );
+        g = GIMLI::PolynomialFunction< double >( GIMLI::RVector(0), ay );
+        
+
+        GIMLI::PolynomialFunction< double > t( 2 );
+        GIMLI::RVector tmp( GIMLI::powInt( 2, 3 ), 0.0 );
+        tmp[ 3 ] = 1.0; t.fill( tmp );//t= +1xy
+        CPPUNIT_ASSERT( t( GIMLI::RVector3( 3.0, 3.0, 0.0 ) ) == 3.0*3.0 );
+        CPPUNIT_ASSERT( t.derive(0)( GIMLI::RVector3( 3.0, 3.0, 0.0 ) ) == 3.0 );
+        CPPUNIT_ASSERT( t.derive(1)( GIMLI::RVector3( 3.0, 3.0, 0.0 ) ) == 3.0 );
+        CPPUNIT_ASSERT( t.derive(2)( GIMLI::RVector3( 3.0, 3.0, 0.0 ) ) == 0.0 );
+        
+//         std::cout << t << std::endl;
+//         std::cout << t.derive(0) << std::endl;
+//         std::cout << t.derive(1) << std::endl;
+//         std::cout << t.derive(2) << std::endl;
+// 
+//         exit(0);
+        //         
+//         std::cout << f * g << std::endl;
+//         std::cout << (f * g).derive( 0 ) << std::endl;
+        
+    }
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GIMLIMiscTest );

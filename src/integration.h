@@ -25,19 +25,14 @@
 
 namespace GIMLI{
 
-/*! TODO Transform into singleton class. Create Singleton template(-or base) class for all Singleton classes. */
+/*! */
 class DLLEXPORT IntegrationRules : public Singleton< IntegrationRules >{
 public:
     friend class Singleton< IntegrationRules >;
     
-    /*! Default constructor */
-    IntegrationRules();
-
-    /*! Default destructor */
-    ~IntegrationRules();
-
     /*! Return Gauss-Legendre quadrature point upto order <10. */
     inline const std::vector < RVector3 > & gauAbscissa( uint order ) const { return gauAbscissa_[ order ]; }
+    
     /*! Return Gauss-Legendre quadrature weights upto order <10. */
     inline const RVector & gauWeights( uint order ) const { return gauWeights_[ order ]; }
 
@@ -78,8 +73,15 @@ public:
      */
     const RVector & weights( const Shape & shape, uint order ) const;
 
-protected:
+private:    
+    /*! Default constructor */
+    IntegrationRules();
 
+    /*! Default destructor */
+    ~IntegrationRules();
+
+protected:
+    
     void initGau_();
     void initTriGL_();
 
@@ -107,6 +109,7 @@ protected:
     std::vector < RVector > quaWeights_;
     std::vector < std::vector < RVector3 > > hexAbscissa_;
     std::vector < RVector > hexWeights_;
+    
 };
 
 } // namespace GIMLI{

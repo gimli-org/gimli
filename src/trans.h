@@ -59,6 +59,7 @@ public:
     /*! Error of f(a) calculated by a and relative error da/a: df = | da * df/da | \n
     intrinsic function that could be overloaded */
     Vec error( const Vec & a, const Vec & daBya ) const {
+        if ( daBya == Vec( a.size(), 0.0 ) ) return Vec( a.size(), 1.0 );
         return abs( Vec( a * daBya * deriv( a ) ) );
     }
 

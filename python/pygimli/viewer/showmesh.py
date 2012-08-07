@@ -9,7 +9,7 @@ except ImportError:
 
 import pylab as P
 
-def showMesh( mesh, data = None, *args, **kwargs):
+def showMesh( mesh, data = None, showLater = False, *args, **kwargs):
     ''
     ' Syntactic sugar, short-cut to create axes and plot node or cell values '
     ''
@@ -24,7 +24,8 @@ def showMesh( mesh, data = None, *args, **kwargs):
         elif len( data ) == mesh.nodeCount():
             drawField( a, mesh, data, *args, **kwargs )
 
-    P.show()
+    if not showLater:
+        P.show()
 
     #fig.show()
     #fig.canvas.draw()

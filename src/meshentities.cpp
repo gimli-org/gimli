@@ -27,49 +27,6 @@
 
 namespace GIMLI{
 
-void Edge_shapeFunctionsL( const RVector3 & L, RVector & funct ) {
-    funct.resize( 2 );
-    funct[ 0 ] = 1.0 - L[ 0 ];
-    funct[ 1 ] = L[ 0 ];
-}
-
-void Edge3_shapeFunctionsL( const RVector3 & L, RVector & funct ) {
-    funct.resize( 3 );
-    double L1 = 1.0 - L[ 0 ];
-    double L2 = L[ 0 ];
-    funct[ 0 ] = L1 * ( L1 - L2 );
-    funct[ 1 ] = L2 * ( L2 - L1 );
-    funct[ 2 ] = 4.0 * L1 * L2;
-}
-
-void Triangle_shapeFunctionsL( const RVector3 & L, RVector & funct ) {
-    funct.resize( 3 );
-    funct[ 0 ] = 1.0 - L[ 0 ] - L[ 1 ];
-    funct[ 1 ] = L[ 0 ];
-    funct[ 2 ] = L[ 1 ];
-}
-
-void Triangle6_shapeFunctionsL( const RVector3 & L, RVector & funct ) {
-    funct.resize( 6 );
-    double L1 = 1.0 - L[ 0 ] - L[ 1 ];
-    double L2 = L[ 0 ];
-    double L3 = L[ 1 ];
-    funct[ 0 ] = L1 * ( 2.0 * L1 - 1.0 );
-    funct[ 1 ] = L2 * ( 2.0 * L2 - 1.0 );
-    funct[ 2 ] = L3 * ( 2.0 * L3 - 1.0 );
-    funct[ 3 ] = 4.0 * L1 * L2;
-    funct[ 4 ] = 4.0 * L2 * L3;
-    funct[ 5 ] = 4.0 * L3 * L1;
-}
-
-void Tetrangle_shapeFunctionsL( const RVector3 & L, RVector & funct ) {
-    funct.resize( 4 );
-    funct[ 0 ] = 1.0 - L[ 0 ] - L[ 1 ] - L[ 2 ];
-    funct[ 1 ] = L[ 0 ];
-    funct[ 2 ] = L[ 1 ];
-    funct[ 3 ] = L[ 2 ];
-}
-
 Boundary * findBoundary_( const std::set < Boundary *> & common ){
     if ( common.size() == 1 ) {
         return *common.begin();
@@ -217,11 +174,23 @@ std::ostream & operator << ( std::ostream & str, const TriPrism & t ){
         << " attribute: " << t.attribute();
     return str;
 }
-
-RVector3 MeshEntity::center() const {
-    return shape_->center();
+    
+MeshEntity::MeshEntity( ){
+    marker_ = 0;
 }
 
+MeshEntity::MeshEntity( std::vector < Node * > & nodes ){
+    marker_ = 0;
+    setNodes_( nodes );
+}
+
+MeshEntity::~MeshEntity(){
+}
+
+RVector3 MeshEntity::center() const { 
+    return shape_->center(); 
+}
+    
 void MeshEntity::fillShape_( ){
     if ( shape_ ){
         if ( shape_->nodeCount() > this->nodeCount() ){
@@ -230,6 +199,9 @@ void MeshEntity::fillShape_( ){
                         << " " << this->nodeCount() << std::endl;
         } else {
             for ( uint i = 0; i < shape_->nodeCount(); i ++ ) shape_->setNode( i, node( i ) );
+            
+            //* create Shape function and cache them to avoid multithreading problems ... 
+            ShapeFunctionCache::instance().shapeFunctions( *shape_ );
         }
     }
 }
@@ -246,92 +218,148 @@ void MeshEntity::setNodes_( std::vector < Node * > & nodes ){
 void MeshEntity::deRegisterNodes_(){
 }
 
-std::pair< IndexArray, RVector > MeshEntity::shapeFunctions( const RVector3 & pos ) const {
-    RVector f;
-    shapeFunctionsL( shape().coordinates( pos ), f );
+IndexArray MeshEntity::ids() const {
     IndexArray idVec( nodeCount() );
-    RVector sF( nodeCount() );
-
+    
     for ( uint i = 0; i < nodeCount(); i ++ ) {
         idVec[ i ] = node( i ).id();
-        sF[ i ] = f[ i ];
     }
-    return std::pair< IndexArray, RVector >( idVec, sF );
+    return idVec;
 }
 
-void MeshEntity::shapeFunctionsDeriveL( const RVector3 & coord, uint dim, RVector & funct ) const {
-    funct.resize( nodeCount() );
-    switch ( dimension() ){
-        case 1:
-        {
-            double drd = shape_->deriveCoordinates( 0, dim );
-            funct = drd * deriveNdL( coord, 0 );
-        } break;
-        case 2:
-        {
-            double drd = shape_->deriveCoordinates( 0, dim );
-            double dsd = shape_->deriveCoordinates( 1, dim );
-            funct = drd * deriveNdL( coord, 0 ) + dsd * deriveNdL( coord, 1 );
-        } break;
-        case 3:
-        {
-            double drd = shape_->deriveCoordinates( 0, dim );
-            double dsd = shape_->deriveCoordinates( 1, dim );
-            double dtd = shape_->deriveCoordinates( 2, dim );
-            funct = drd * deriveNdL( coord, 0 ) + dsd * deriveNdL( coord, 1 ) + dtd * deriveNdL( coord, 2 );
-        } break;
-    };
-
+RVector3 MeshEntity::rst( uint i ) const {
+    return shape_->rst( node( i ).pos() ).round( TOLERANCE );
 }
 
-
-std::pair< IndexArray, std::vector < RVector3 > > MeshEntity::shapeFunctionsDerive( const RVector3 & pos ) const {
-    RVector3 coords = shape().coordinates( pos );
-
-    IndexArray idVec( nodeCount() );
-    for ( uint i = 0; i < nodeCount(); i ++ ) idVec[ i ] = node( i ).id();
-
-    std::vector< RVector3 > dSF( nodeCount(), RVector3( 0.0, 0.0 ) );
-    RVector funct( nodeCount() );
-
-    for ( uint dim = 0; dim < dimension(); dim ++ ){
-        shapeFunctionsDeriveL( coords, dim, funct );
-
-        for ( uint i = 0; i < nodeCount(); i ++ ) {
-            dSF[ i ][ dim ] = funct[ i ];
-        }
+std::vector < PolynomialFunction < double > > MeshEntity::createShapeFunctions( ) const{
+    std::cerr << "need shape function implementation for meshEntity " << rtti() << std::endl;
+    THROW_TO_IMPL
+    return std::vector < PolynomialFunction < double > > ();
+}
+ 
+RVector MeshEntity::N( const RVector3 & rst ) const {
+    RVector n( nodeCount(), 0.0 );
+    this->N( rst, n );
+    return n;
+}
+    
+void MeshEntity::N( const RVector3 & rst, RVector & n ) const {
+    const std::vector< PolynomialFunction < double > > &N = ShapeFunctionCache::instance().shapeFunctions( *this );
+    
+    for ( Index i = 0; i < N.size(); i ++ ) {
+        n[ i ] = N[ i ]( rst );
     }
-
-    return std::pair< IndexArray, std::vector < RVector3 > >( idVec, dSF );
 }
 
-double MeshEntity::interpolate( const RVector3 & pos, const RVector & data ) const {
-   return interpolate_( shapeFunctions( pos ), data );
-}
-
-double MeshEntity::interpolate_( const std::pair< IndexArray, RVector > & sF, const RVector & data ) const {
-    return sum( data( sF.first ) * sF.second );
-}
-
-RVector3 MeshEntity::grad( const RVector3 & pos, const RVector & data ) const {
-   return grad_( shapeFunctionsDerive( pos ), data );
-}
-
-RVector3 MeshEntity::grad_( const std::pair< IndexArray, std::vector < RVector3 > > & sF, const RVector & data ) const {
-    RVector3 res(0.0, 0.0, 0.0);
-    for ( uint i = 0; i < 3; i ++ ){
-        //std::cout << i << std::endl;;
-        //for ( std::map< uint, double >::const_iterator it = sF[ i ].begin(); it != sF[ i ].end(); it ++  ){
-          //  std::cout << "   " << it->first << "=" << data[ it->first ] << " " << it->second<< std::endl;;
-        for ( uint j = 0; j < nodeCount(); j ++ ){
-            res[ i ] += data[ sF.first[ j ] ] * sF.second[ j ][ i ];
-        }
+RVector MeshEntity::dNdL( const RVector3 & rst, uint i ) const {
+        
+    const std::vector< PolynomialFunction < double > > &dNL = ShapeFunctionCache::instance().deriveShapeFunctions( *this, i );
+    
+    RVector ret( dNL.size() );
+    
+    for ( Index i = 0; i < dNL.size(); i ++ ) {
+         ret[ i ] = dNL[ i ]( rst );
     }
-    //std::cout << res << std::endl;
-    return res;
+    
+    return ret;
+}
+    
+    
+double MeshEntity::pot( const RVector3 & xyz, const RVector & u ) const {
+    return sum( u( this->ids() ) * this->N( shape().rst( xyz ) ) );
 }
 
+RVector3 MeshEntity::grad( const RVector3 & xyz, const RVector & u ) const {
+  
+    RVector3 rst( shape_->rst( xyz ) );
+        
+    RMatrix MdNdL;
+    MdNdL.push_back( dNdL( rst, 0 ) );
+    MdNdL.push_back( dNdL( rst, 1 ) );
+    MdNdL.push_back( dNdL( rst, 2 ) );
+        
+    RVector up( u( this->ids() ) );
+    RVector3 gr( 3 );
+    gr[0] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 0 ) ) );
+    gr[1] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 1 ) ) );
+    gr[2] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 2 ) ) );
+    
+    return gr;
+    //return grad_( shapeFunctionsDerive( xyz ), u );
+}
 
+// RVector3 MeshEntity::grad_( const std::pair< IndexArray, std::vector < RVector3 > > & dN, const RVector & u ) const {
+//     
+//     RVector3 res(0.0, 0.0, 0.0);
+//     for ( uint i = 0; i < 3; i ++ ){
+//         //std::cout << i << std::endl;;
+//         //for ( std::map< uint, double >::const_iterator it = sF[ i ].begin(); it != sF[ i ].end(); it ++  ){
+//           //  std::cout << "   " << it->first << "=" << data[ it->first ] << " " << it->second<< std::endl;;
+// 
+//         for ( uint j = 0; j < nodeCount(); j ++ ){
+//             res[ i ] += u[ dN.first[ j ] ] * dN.second[ j ][ i ];
+//         }
+//     }
+//     //std::cout << res << std::endl;
+//     return res;
+// }
+
+// void MeshEntity::shapeFunctionsDeriveL( const RVector3 & coord, uint d, RVector & funct ) const {
+//     funct.resize( nodeCount() );
+//     switch ( this->dim() ){
+//         case 1:
+//         {
+//             double drd = shape_->deriveCoordinates( 0, d );
+//             funct = drd * dNdL( coord, 0 );
+//         } break;
+//         case 2:
+//         {
+//             double drd = shape_->deriveCoordinates( 0, d );
+//             double dsd = shape_->deriveCoordinates( 1, d );
+//             funct = drd * dNdL( coord, 0 ) + dsd * dNdL( coord, 1 );
+//         } break;
+//         case 3:
+//         {
+//             double drd = shape_->deriveCoordinates( 0, d );
+//             double dsd = shape_->deriveCoordinates( 1, d );
+//             double dtd = shape_->deriveCoordinates( 2, d );
+//             funct = drd * dNdL( coord, 0 ) + dsd * dNdL( coord, 1 ) + dtd * dNdL( coord, 2 );
+//         } break;
+//     };
+// 
+// }
+
+// // std::pair< IndexArray, std::vector < RVector3 > > MeshEntity::shapeFunctionsDerive( const RVector3 & xyz ) const {
+// //     RVector3 coords = shape().rst( xyz );
+// // 
+// //     std::vector< RVector3 > dSF( nodeCount(), RVector3( 0.0, 0.0 ) );
+// //     RVector funct( nodeCount() );
+// // 
+// //     for ( uint d = 0; d < dim(); d ++ ){
+// //         shapeFunctionsDeriveL( coords, d, funct );
+// // 
+// //         for ( uint i = 0; i < nodeCount(); i ++ ) {
+// //             dSF[ i ][ d ] = funct[ i ];
+// //         }
+// //     }
+// // 
+// //     return std::pair< IndexArray, std::vector < RVector3 > >( this->ids(), dSF );
+// // }
+
+//############### Cell ##################
+
+Cell::Cell(  ) : MeshEntity( ), attribute_( ), tagged_( false ) {
+}
+    
+Cell::Cell( std::vector < Node * > & nodes ) : MeshEntity( nodes ), attribute_( 0.0 ), tagged_( false ) {
+    registerNodes_( );
+}
+
+Cell::~Cell(){
+    deRegisterNodes_();
+}
+
+    
 Node * Cell::oppositeTo( const Boundary & bound ){
     THROW_TO_IMPL
     //** maybee obsolete pls check
@@ -348,10 +376,6 @@ Node * Cell::oppositeTo( const Boundary & bound ){
 //         std::cerr << WHERE_AM_I << " this triangle does not contain the edge" << std::endl;
 //     }
      return NULL;
-}
-
-double Cell::jacobianDeterminant() const {
-    return shape_->jacobianDeterminant();
 }
 
 void Cell::cleanNeighbourInfos( ){
@@ -403,6 +427,13 @@ void Boundary::deRegisterNodes_(){
 
 RVector3 Boundary::norm( ) const {
     return shape_->norm();
+}
+
+RVector3 Boundary::rst( uint i ) const {
+    if ( this->nodeCount() == shape_->nodeCount() ) return shape_->rst( i );
+    std::cerr << "need local coordinate function implementation for meshEntity " << rtti() << std::endl;
+    THROW_TO_IMPL
+    return RVector3( 0.0, 0.0, 0.0 );
 }
 
 NodeBoundary::NodeBoundary( std::vector < Node * > & nodes ) : Boundary( nodes ){
@@ -457,6 +488,11 @@ void Edge::setNodes( Node & n1, Node & n2, bool changed ){
   fillShape_( );
 }
 
+
+std::vector < PolynomialFunction < double > > Edge::createShapeFunctions( ) const {
+     return createPolynomialShapeFunctions( *this, 2, true, false );
+}
+
 int Edge::swap(){
   if ( (marker_ != 0 ) || ( leftCell_ == NULL ) || ( rightCell_ == NULL ) ) {
     //    cout<< WHERE_AM_I << " " << marker_ << " " << leftCell_  << " " << rightCell_ << std::endl;
@@ -509,17 +545,8 @@ int Edge::swap(){
   return 0;
 }
 
-void Edge::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    return Edge_shapeFunctionsL( L, funct );
-}
-
-// double Edge::interpolate( const RVector3 & queryPos, const RVector & data ) const {
-//   double radius = node( 0 ).pos().distance( node( 1 ).pos() );
-//   double rmin = node( 0 ).pos().distance( queryPos );
-//
-//   double v0 = data[ node( 0 ).id() ];
-//   double v1 = data[ node( 1 ).id() ];
-//   return v0 + ( ( v1 - v0 ) / radius ) * rmin;
+// RVector Edge::N( const RVector3 & L ) const {
+//     return shape_->N( L );
 // }
 
 Edge3::Edge3( std::vector < Node * > & nodes ) : Edge( nodes ){
@@ -528,50 +555,62 @@ Edge3::Edge3( std::vector < Node * > & nodes ) : Edge( nodes ){
 Edge3::~Edge3(){
 }
 
-void Edge3::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    return Edge3_shapeFunctionsL( L, funct );
+RVector3 Edge3::rst( uint i ) const {
+    if ( i == 2 ) return RVector3( 0.5, 0.0, 0.0 );
+    return shape_->rst( i );
+}
+
+std::vector < PolynomialFunction < double > > Edge3::createShapeFunctions( ) const {
+    return createPolynomialShapeFunctions( *this, 3, true, false );
 }
 
 TriangleFace::TriangleFace( std::vector < Node * > & nodes ) : Boundary( nodes ){
-  shape_ = new TriangleShape();
-  fillShape_( );
+    shape_ = new TriangleShape();
+    fillShape_( );
 }
 
 TriangleFace::TriangleFace( Node & n1, Node & n2, Node & n3 ){
-  shape_ = new TriangleShape();
-  setNodes( n1, n2, n3, false  );
+    shape_ = new TriangleShape();
+    setNodes( n1, n2, n3, false  );
 }
 
 TriangleFace::~TriangleFace(){
-  delete shape_;
+    delete shape_;
+}
+
+std::vector < PolynomialFunction < double > > TriangleFace::createShapeFunctions( ) const {
+    return createPolynomialShapeFunctions( *this, 2, true, false );
 }
 
 void TriangleFace::setNodes( Node & n1, Node & n2, Node & n3, bool changed  ){
-  if ( (&n1 == &n2) || (&n1 == &n3) || (&n2 == &n3)){
-    std::cerr << WHERE << " TriangleFace nodes not valid " << n1 << " " << n2 << " " <<  n3 << std::endl;
-    exit( EXIT_MESH_NO_ELEMENT );
-  }
-  if ( changed ) deRegisterNodes_( );
+    if ( (&n1 == &n2) || (&n1 == &n3) || (&n2 == &n3)){
+        std::cerr << WHERE << " TriangleFace nodes not valid " << n1 << " " << n2 << " " <<  n3 << std::endl;
+        exit( EXIT_MESH_NO_ELEMENT );
+    }
+    if ( changed ) deRegisterNodes_( );
 
-  std::vector < Node * > nodes;
-  nodes.push_back( &n1 ); nodes.push_back( &n2 ); nodes.push_back( &n3 );
-  setNodes_( nodes );
-  registerNodes_( );
-  fillShape_( );
+    std::vector < Node * > nodes;
+    nodes.push_back( &n1 ); nodes.push_back( &n2 ); nodes.push_back( &n3 );
+    setNodes_( nodes );
+    registerNodes_( );
+    fillShape_( );
 }
 
-void TriangleFace::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    return Triangle_shapeFunctionsL( L, funct );
+Triangle6Face::Triangle6Face( std::vector < Node * > & nodes ) : TriangleFace( nodes ){
 }
 
-TriangleFace6::TriangleFace6( std::vector < Node * > & nodes ) : TriangleFace( nodes ){
+Triangle6Face::~Triangle6Face(){
 }
 
-TriangleFace6::~TriangleFace6(){
+RVector3 Triangle6Face::rst( uint i ) const {
+    if ( i == 3 ) return RVector3( ( shape_->rst( 0 ) + shape_->rst( 1 ) ) / 2 );
+    if ( i == 4 ) return RVector3( ( shape_->rst( 1 ) + shape_->rst( 2 ) ) / 2 );
+    if ( i == 5 ) return RVector3( ( shape_->rst( 2 ) + shape_->rst( 0 ) ) / 2 );
+    return shape_->rst( i );
 }
 
-void TriangleFace6::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    return Triangle6_shapeFunctionsL( L, funct );
+std::vector < PolynomialFunction < double > > Triangle6Face::createShapeFunctions( ) const {
+    return createPolynomialShapeFunctions( *this, 3, true, false );
 }
 
 QuadrangleFace::QuadrangleFace( std::vector < Node * > & nodes ) : Boundary( nodes ){
@@ -603,6 +642,29 @@ void QuadrangleFace::setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool 
   registerNodes_( );
   fillShape_( );
 }
+
+std::vector < PolynomialFunction < double > > QuadrangleFace::createShapeFunctions( ) const {
+    return createPolynomialShapeFunctions( *this, 2, true, true );
+}
+
+Quadrangle8Face::Quadrangle8Face( std::vector < Node * > & nodes ) : QuadrangleFace( nodes ){
+}
+
+Quadrangle8Face::~Quadrangle8Face(){
+}
+
+RVector3 Quadrangle8Face::rst( uint i ) const {
+    if ( i == 4 ) return RVector3( ( shape_->rst( 0 ) + shape_->rst( 1 ) ) / 2 );
+    if ( i == 5 ) return RVector3( ( shape_->rst( 1 ) + shape_->rst( 2 ) ) / 2 );
+    if ( i == 6 ) return RVector3( ( shape_->rst( 2 ) + shape_->rst( 3 ) ) / 2 );
+    if ( i == 7 ) return RVector3( ( shape_->rst( 3 ) + shape_->rst( 0 ) ) / 2 );
+    return shape_->rst( i );
+}
+
+std::vector < PolynomialFunction < double > > Quadrangle8Face::createShapeFunctions( ) const {
+    return createPolynomialShapeFunctions( *this, 3, true, true );
+}
+
 
 EdgeCell::EdgeCell( std::vector < Node * > & nodes ) : Cell( nodes ){
     shape_ = new EdgeShape();
@@ -639,16 +701,20 @@ void EdgeCell::findNeighbourCell( uint id ){
     if ( common.size() == 1 ) neighbourCells_[ id ] = *common.begin(); else neighbourCells_[ id ] = NULL;
 }
 
-void EdgeCell::shapeFunctionsL( const RVector3 & L, RVector & funct ) const{
-    return Edge_shapeFunctionsL( L, funct );
+std::vector < PolynomialFunction < double > > EdgeCell::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 2, true, false );
 }
 
-RVector EdgeCell::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-    f[ 0 ] = - 1.0;
-    f[ 1 ] =   1.0;
-    return f;
-}
+// RVector EdgeCell::N( const RVector3 & L ) const{
+//     return shape_->N( L );
+// }
+// 
+// RVector EdgeCell::dNdL( const RVector3 & coord, uint dim ) const {
+//     RVector dN( nodeCount() );
+//     dN[ 0 ] = - 1.0;
+//     dN[ 1 ] =   1.0;
+//     return dN;
+// }
 
 Edge3Cell::Edge3Cell( std::vector < Node * > & nodes ) : EdgeCell( nodes ){
 }
@@ -656,18 +722,24 @@ Edge3Cell::Edge3Cell( std::vector < Node * > & nodes ) : EdgeCell( nodes ){
 Edge3Cell::~Edge3Cell(){
 }
 
-void Edge3Cell::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    return Edge3_shapeFunctionsL( L, funct );
+std::vector < PolynomialFunction < double > > Edge3Cell::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 3, true, false );
 }
 
-RVector Edge3Cell::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-    double r = coord[ 0 ];
-    f[ 0 ] = 4.0 * r - 3.0;
-    f[ 1 ] = 4.0 * r - 1.0;
-    f[ 2 ] = 4.0 - 8.0 * r;
-    return f;
-}
+// RVector Edge3Cell::N( const RVector3 & rst ) const{
+//     RVector n( 3 );
+//     Edge3_shapeFunctions( rst[ 0 ], n );
+//     return n;
+// }
+// 
+// RVector Edge3Cell::dNdL( const RVector3 & coord, uint dim ) const {
+//     RVector f( nodeCount() );
+//     double r = coord[ 0 ];
+//     f[ 0 ] = 4.0 * r - 3.0;
+//     f[ 1 ] = 4.0 * r - 1.0;
+//     f[ 2 ] = 4.0 - 8.0 * r;
+//     return f;
+// }
 
 Triangle::Triangle( std::vector < Node * > & nodes ) : Cell( nodes ){
     shape_ = new TriangleShape();
@@ -730,28 +802,32 @@ void Triangle::findNeighbourCell( uint i ){
     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
 }
 
-void Triangle::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    return Triangle_shapeFunctionsL( L, funct );
+std::vector < PolynomialFunction < double > > Triangle::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 2, true, false );
 }
 
-// dNdL( Nr, pos ), return for each N
-RVector Triangle::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-    switch ( dim ){
-        case 0: // dNdr
-            f[ 0 ] = - 1.0;
-            f[ 1 ] =   1.0;
-            f[ 2 ] =   0.0;
-            return f;
-        case 1:// dNds
-            f[ 0 ] = - 1.0;
-            f[ 1 ] =   0.0;
-            f[ 2 ] =   1.0;
-            return f;
-    }
-    throwLengthError( 1, WHERE_AM_I + " undefined values " + toStr( coord ) + " " + toStr( dim ) );
-    return f;
-}
+
+// RVector Triangle::N( const RVector3 & L ) const {
+//     return shape_->N( L );
+// }
+
+// // dNdL( Nr, pos ), return for each N
+// RVector Triangle::dNdL( const RVector3 & coord, uint dim ) const {
+//     RVector f( nodeCount(), 0.0 );
+//     switch ( dim ){
+//         case 0: // dNdr
+//             f[ 0 ] = - 1.0;
+//             f[ 1 ] =   1.0;
+//             f[ 2 ] =   0.0;
+//             return f;
+//         case 1:// dNds
+//             f[ 0 ] = - 1.0;
+//             f[ 1 ] =   0.0;
+//             f[ 2 ] =   1.0;
+//             return f;
+//     }
+//     return f;
+// }
 
 Triangle6::Triangle6( std::vector < Node * > & nodes ) : Triangle( nodes ){
 }
@@ -759,9 +835,16 @@ Triangle6::Triangle6( std::vector < Node * > & nodes ) : Triangle( nodes ){
 Triangle6::~Triangle6(){
 }
 
-void Triangle6::shapeFunctionsL( const RVector3 & coord, RVector & funct ) const {
-    return Triangle6_shapeFunctionsL( coord, funct );
+std::vector < PolynomialFunction < double > > Triangle6::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 3, true, false );
 }
+
+// RVector Triangle6::N( const RVector3 & rst ) const{
+//     RVector n( 6 );
+//     Triangle6_shapeFunctions( rst[ 0 ], rst[ 1 ], n );
+//     return n;
+// }
+
 
 // void Triangle6::shapeFunctionsDeriveL( const RVector3 & L, uint coord, RVector & funct ) const {
 //     funct.resize( nodeCount() );
@@ -778,36 +861,35 @@ void Triangle6::shapeFunctionsL( const RVector3 & coord, RVector & funct ) const
 //     funct[ 5 ] = dL3d * (- 8.0 * L3 - 4.0 * L2 + 4.0 ) + dL2d * -4.0 * L3;
 //
 //     return;
-//     funct = dL3d * deriveNdL( L, 0 ) + dL2d * deriveNdL( L, 1 );
+//     funct = dL3d * dNdL( L, 0 ) + dL2d * dNdL( L, 1 );
 // }
 
-RVector Triangle6::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-
-    double r = coord[ 0 ];
-    double s = coord[ 1 ];
-    switch ( dim ){
-        case 0: //dNdr
-            f[ 0 ] =  4.0 * r + 4.0 * s - 3.0;
-            f[ 1 ] =  4.0 * r - 1.0;
-            f[ 2 ] =  0.0;
-            f[ 3 ] = -4.0 * s - 8.0 * r + 4.0;
-            f[ 4 ] =  4.0 * s;
-            f[ 5 ] = -4.0 * s;
-            return f;
-        break;
-        case 1://dNds
-            f[ 0 ] =  4.0 * s + 4.0 * r - 3.0;
-            f[ 1 ] =  0.0;
-            f[ 2 ] =  4.0 * s - 1.0;
-            f[ 3 ] = -4.0 * r;
-            f[ 4 ] =  4.0 * r;
-            f[ 5 ] = -8.0 * s - 4.0 * r + 4.0;
-            return f;
-    }
-    throwLengthError( 1, WHERE_AM_I + " undefined values " + toStr( coord ) + " " + toStr( dim ) );
-    return f;
-}
+// RVector Triangle6::dNdL( const RVector3 & rst, uint dim ) const {
+//     RVector f( nodeCount(), 0.0 );
+// 
+//     double r = rst[ 0 ];
+//     double s = rst[ 1 ];
+//     switch ( dim ){
+//         case 0: //dNdr
+//             f[ 0 ] =  4.0 * r + 4.0 * s - 3.0;
+//             f[ 1 ] =  4.0 * r - 1.0;
+//             f[ 2 ] =  0.0;
+//             f[ 3 ] = -4.0 * s - 8.0 * r + 4.0;
+//             f[ 4 ] =  4.0 * s;
+//             f[ 5 ] = -4.0 * s;
+//             return f;
+//         break;
+//         case 1://dNds
+//             f[ 0 ] =  4.0 * s + 4.0 * r - 3.0;
+//             f[ 1 ] =  0.0;
+//             f[ 2 ] =  4.0 * s - 1.0;
+//             f[ 3 ] = -4.0 * r;
+//             f[ 4 ] =  4.0 * r;
+//             f[ 5 ] = -8.0 * s - 4.0 * r + 4.0;
+//             return f;
+//     }
+//     return f;
+// }
 
 Quadrangle::Quadrangle( std::vector < Node * > & nodes ) : Cell( nodes ){
   shape_ = new QuadrangleShape();
@@ -869,52 +951,8 @@ void Quadrangle::findNeighbourCell( uint id ){
 //     }
 }
 
-void Quadrangle::shapeFunctionsL( const RVector3 & L, RVector & funct ) const{
-    funct.resize( nodeCount() );
-    double r = L[ 0 ];
-    double s = L[ 1 ];
-    funct[ 0 ] = ( 1.0 - r ) * ( 1.0 - s );
-    funct[ 1 ] = r * ( 1.0 - s );
-    funct[ 2 ] = r * s;
-    funct[ 3 ] = ( 1.0 - r ) * s;
-}
-
-//     funct.resize( nodeCount() );
-//     double drd = shape_->deriveCoordinates( 0, coord );
-//     double dsd = shape_->deriveCoordinates( 1, coord );
-//     double r = L[ 0 ];
-//     double s = L[ 1 ];
-//   //  std::cout << "dLdxy: " << r << " "<< s << " " << drd << " "<< dsd << std::endl;
-// //     r = 0.5;
-// //     s = 0.5;
-//
-//     funct[ 0 ] =  drd * ( s - 1.0 ) + dsd * ( r - 1.0 );
-//     funct[ 1 ] =  drd * ( 1.0 - s ) - dsd * r;
-//     funct[ 2 ] =  drd * s           + dsd * r;
-//     funct[ 3 ] = -drd * s           + dsd * ( 1.0 - r );
-//}
-
-RVector Quadrangle::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-    double r = coord[ 0 ];
-    double s = coord[ 1 ];
-    switch ( dim ){
-        case 0: //dNdr
-            f[ 0 ] =  s - 1.0;
-            f[ 1 ] =  1.0 - s;
-            f[ 2 ] =  s;
-            f[ 3 ] = -s;
-            return f;
-        break;
-        case 1://dNds
-            f[ 0 ] =  r - 1.0;
-            f[ 1 ] = -r;
-            f[ 2 ] =  r;
-            f[ 3 ] =  1.0 - r;
-            return f;
-    }
-    throwLengthError( 1, WHERE_AM_I + " undefined values " + toStr( coord ) + " " + toStr( dim ) );
-    return f;
+std::vector < PolynomialFunction < double > > Quadrangle::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 2, true, true );
 }
 
 Quadrangle8::Quadrangle8( std::vector < Node * > & nodes ) : Quadrangle( nodes ){
@@ -923,89 +961,25 @@ Quadrangle8::Quadrangle8( std::vector < Node * > & nodes ) : Quadrangle( nodes )
 Quadrangle8::~Quadrangle8(){
 }
 
-void Quadrangle8::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    funct.resize( nodeCount() );
-    double r = L[ 0 ];
-    double s = L[ 1 ];
-
-    funct[ 0 ] = ( 1.0 - r ) * ( 1.0 - s ) * ( 1.0 - 2.0 * r - 2.0 * s );
-    funct[ 1 ] = -r * ( 1.0 - s )* ( 1.0 - 2.0 * r + 2.0 * s );
-    funct[ 2 ] = -r * s * ( 3.0 - 2.0 * r - 2.0 * s );
-    funct[ 3 ] = -s * ( 1.0 - r ) * ( 1.0 + 2.0 * r - 2.0 * s );
-    funct[ 4 ] = 4.0 * r * ( 1.0 - r ) * ( 1.0 - s );
-    funct[ 5 ] = 4.0 * r * s * ( 1.0 - s );
-    funct[ 6 ] = 4.0 * r * s * ( 1.0 - r );
-    funct[ 7 ] = 4.0 * s * ( 1.0 - r ) * ( 1.0 - s );
-}
-
-// void Quadrangle8::shapeFunctionsDeriveL( const RVector3 & L, uint coord, RVector & funct ) const{
-//     double drd = shape_->deriveCoordinates( 0, coord );
-//     double dsd = shape_->deriveCoordinates( 1, coord );
-//     double r = L[ 0 ];
-//     double s = L[ 1 ];
-//
-//     funct[ 0 ] = drd * ( - 2.0 * s * s  + ( 5.0 - 4.0 * r ) * s + 4.0 * r - 3.0 ) +
-//                  dsd * ( ( 4.0 - 4.0 * r ) * s - 2.0 * r * r  + 5.0 * r - 3.0 );
-//     funct[ 1 ] = drd * ( 2.0 * s * s + (- 4.0 * r - 1.0 ) * s + 4.0 * r - 1.0 ) +
-//                  dsd * ( 4.0 * r * s - 2.0 * r * r - r);
-//     funct[ 2 ] = drd * ( 2.0 * s * s + ( 4.0 * r - 3.0 ) * s ) +
-//                  dsd * ( 4.0 * r * s + 2.0 * r * r - 3.0 * r );
-//     funct[ 3 ] = drd * ( ( 4.0 * r - 1.0 ) * s - 2.0 * s * s ) +
-//                  dsd * ( ( 4.0 - 4.0 * r ) * s + 2.0 * r * r - r - 1.0 );
-//     funct[ 4 ] = drd * ( ( 8.0 * r - 4.0 ) * s - 8.0 * r + 4.0 ) +
-//                  dsd * ( 4.0 * r * r - 4.0 * r );
-//     funct[ 5 ] = drd * ( 4.0 * s - 4.0 * s * s ) +
-//                  dsd * ( 4.0 * r - 8.0 * r * s );
-//     funct[ 6 ] = drd * ( 4.0 - 8.0 * r ) * s +
-//                  dsd * ( 4.0 * r - 4.0 * r * r );
-//     funct[ 7 ] = drd * ( 4.0 * s * s - 4.0 * s ) +
-//                  dsd * ( ( 8.0 * r - 8.0 ) * s - 4.0 * r + 4.0 );
-// }
-
-RVector Quadrangle8::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-    double r = coord[ 0 ];
-    double s = coord[ 1 ];
-    switch ( dim ){
-        case 0: //dNdr
-            f[ 0 ] = ( - 2.0 * s * s  + ( 5.0 - 4.0 * r ) * s + 4.0 * r - 3.0 );
-            f[ 1 ] = ( 2.0 * s * s + (- 4.0 * r - 1.0 ) * s + 4.0 * r - 1.0 );
-            f[ 2 ] = 2.0 * s * s + ( 4.0 * r - 3.0 ) * s;
-            f[ 3 ] = ( 4.0 * r - 1.0 ) * s - 2.0 * s * s;
-            f[ 4 ] = ( 8.0 * r - 4.0 ) * s - 8.0 * r + 4.0;
-            f[ 5 ] = 4.0 * s - 4.0 * s * s;
-            f[ 6 ] = ( 4.0 - 8.0 * r ) * s;
-            f[ 7 ] = 4.0 * s * s - 4.0 * s;
-            return f;
-        case 1://dNds
-            f[ 0 ] = ( 4.0 - 4.0 * r ) * s - 2.0 * r * r  + 5.0 * r - 3.0 ;
-            f[ 1 ] = 4.0 * r * s - 2.0 * r * r - r;
-            f[ 2 ] = 4.0 * r * s + 2.0 * r * r - 3.0 * r;
-            f[ 3 ] = ( 4.0 - 4.0 * r ) * s + 2.0 * r * r - r - 1.0;
-            f[ 4 ] = 4.0 * r * r - 4.0 * r;
-            f[ 5 ] = 4.0 * r - 8.0 * r * s;
-            f[ 6 ] = 4.0 * r - 4.0 * r * r;
-            f[ 7 ] = ( 8.0 * r - 8.0 ) * s - 4.0 * r + 4.0 ;
-            return f;
-    }
-    throwLengthError( 1, WHERE_AM_I + " undefined values " + toStr( coord ) + " " + toStr( dim ) );
-    return f;
+std::vector < PolynomialFunction < double > > Quadrangle8::createShapeFunctions( ) const{
+//     return createPolynomialShapeFunctions( *this, 3, false, false );
+    return createPolynomialShapeFunctions( *this, 3, true, true );
 }
 
 Tetrahedron::Tetrahedron( std::vector < Node * > & nodes ) : Cell( nodes ){
-  shape_ = new TetrahedronShape();
-  fillShape_( );
-  neighbourCells_.resize( this->neighbourCellCount(), NULL );
+    shape_ = new TetrahedronShape();
+    fillShape_( );
+    neighbourCells_.resize( this->neighbourCellCount(), NULL );
 }
 
 Tetrahedron::Tetrahedron( Node & n1, Node & n2, Node & n3, Node & n4 ) : Cell() {
-  shape_ = new TetrahedronShape();
-  setNodes( n1, n2, n3, n4, false  );
-  neighbourCells_.resize( this->neighbourCellCount(), NULL );
+    shape_ = new TetrahedronShape();
+    setNodes( n1, n2, n3, n4, false  );
+    neighbourCells_.resize( this->neighbourCellCount(), NULL );
 }
 
 Tetrahedron::~Tetrahedron(){
-  delete shape_;
+    delete shape_;
 }
 
 void Tetrahedron::setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool changed ){
@@ -1028,34 +1002,8 @@ void Tetrahedron::findNeighbourCell( uint i ){
     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
 }
 
-void Tetrahedron::shapeFunctionsL( const RVector3 & L, RVector & funct ) const{
-    return Tetrangle_shapeFunctionsL( L, funct );
-}
-
-RVector Tetrahedron::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-    switch ( dim ){
-        case 0: // dNdr
-            f[ 0 ] = - 1.0;
-            f[ 1 ] =   1.0;
-            f[ 2 ] =   0.0;
-            f[ 3 ] =   0.0;
-            return f;
-        case 1:// dNds
-            f[ 0 ] = - 1.0;
-            f[ 1 ] =   0.0;
-            f[ 2 ] =   1.0;
-            f[ 3 ] =   0.0;
-            return f;
-        case 2:// dNdt
-            f[ 0 ] = - 1.0;
-            f[ 1 ] =   0.0;
-            f[ 2 ] =   0.0;
-            f[ 3 ] =   1.0;
-            return f;
-    }
-    throwLengthError( 1, WHERE_AM_I + " undefined values " + toStr( coord ) + " " + toStr( dim ) );
-    return f;
+std::vector < PolynomialFunction < double > > Tetrahedron::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 2, true, false );
 }
 
 Tetrahedron10::Tetrahedron10( std::vector < Node * > & nodes ) : Tetrahedron( nodes ){
@@ -1064,113 +1012,8 @@ Tetrahedron10::Tetrahedron10( std::vector < Node * > & nodes ) : Tetrahedron( no
 Tetrahedron10::~Tetrahedron10(){
 }
 
-void Tetrahedron10::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    funct.resize( nodeCount() );
-    double L1 = 1.0 - L[ 0 ] - L[ 1 ] - L[ 2 ];
-    double L2 = L[ 0 ];
-    double L3 = L[ 1 ];
-    double L4 = L[ 2 ];
-    funct[ 0 ] = L1 * ( 2.0 * L1 - 1.0 );
-    funct[ 1 ] = L2 * ( 2.0 * L2 - 1.0 );
-    funct[ 2 ] = L3 * ( 2.0 * L3 - 1.0 );
-    funct[ 3 ] = L4 * ( 2.0 * L4 - 1.0 );
-
-    //*zienkiewitz numbering dcfemlib(meshconvert -p)
-    funct[ 4 ] = 4.0 * L1 * L2;
-    funct[ 5 ] = 4.0 * L1 * L3;
-    funct[ 6 ] = 4.0 * L1 * L4;
-    funct[ 7 ] = 4.0 * L2 * L3;
-    funct[ 8 ] = 4.0 * L3 * L4;
-    funct[ 9 ] = 4.0 * L4 * L2;
-
-    //*lokal numbering
-//     sF[ node( 4 ).id() ] = 4.0 * z1 * z2;
-//     sF[ node( 5 ).id() ] = 4.0 * z2 * z3;
-//     sF[ node( 6 ).id() ] = 4.0 * z3 * z1;
-//     sF[ node( 7 ).id() ] = 4.0 * z1 * z4;
-//     sF[ node( 8 ).id() ] = 4.0 * z2 * z4;
-//     sF[ node( 9 ).id() ] = 4.0 * z3 * z4;
-}
-
-// void Tetrahedron10::shapeFunctionsDeriveL( const RVector3 & L, uint coord, RVector & funct ) const {
-//     funct.resize( nodeCount() );
-//
-//     double dL2 = shape_->deriveCoordinates( 1, coord );
-//     double dL3 = shape_->deriveCoordinates( 2, coord );
-//     double dL4 = shape_->deriveCoordinates( 3, coord );
-//     double dL1 = 1- dL2-dL3-dL4;
-//     double L1 = 1.0 - L[ 0 ] - L[ 1 ] - L[ 2 ];
-//     double L2 = L[ 0 ];
-//     double L3 = L[ 1 ];
-//     double L4 = L[ 2 ];
-//
-//     funct[ 0 ] = dL1 * ( 4.0 * L1 -1.0 );
-//     funct[ 1 ] = dL2 * ( 4.0 * L2 -1.0 );
-//     funct[ 2 ] = dL3 * ( 4.0 * L3 -1.0 );
-//     funct[ 3 ] = dL4 * ( 4.0 * L4 -1.0 );
-//
-//     //*zienkiewitz numbering dcfemlib(meshconvert -p)
-//     funct[ 4 ] = ( dL1 * L2 + dL2 * L1 ) * 4.0;
-//     funct[ 5 ] = ( dL1 * L3 + dL3 * L1 ) * 4.0;
-//     funct[ 6 ] = ( dL1 * L4 + dL4 * L1 ) * 4.0;
-//     funct[ 7 ] = ( dL2 * L3 + dL3 * L2 ) * 4.0;
-//     funct[ 8 ] = ( dL3 * L4 + dL4 * L3 ) * 4.0;
-//     funct[ 9 ] = ( dL4 * L2 + dL2 * L4 ) * 4.0;
-// //         ret.back()[ node( 4 ).id() ] = ( dL1 * L2 + dL2 * L1 ) * 4.0;
-// //         ret.back()[ node( 5 ).id() ] = ( dL2 * L3 + dL3 * L2 ) * 4.0;
-// //         ret.back()[ node( 6 ).id() ] = ( dL3 * L1 + dL1 * L3 ) * 4.0;
-// //         ret.back()[ node( 7 ).id() ] = ( dL1 * L4 + dL4 * L1 ) * 4.0;
-// //         ret.back()[ node( 8 ).id() ] = ( dL2 * L4 + dL4 * L2 ) * 4.0;
-// //         ret.back()[ node( 9 ).id() ] = ( dL3 * L4 + dL4 * L3 ) * 4.0;
-//
-// }
-
-RVector Tetrahedron10::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f( nodeCount() );
-    double r = coord[ 0 ];
-    double s = coord[ 1 ];
-    double t = coord[ 2 ];
-
-    switch ( dim ){
-        case 0: // dNdr
-            f[ 0 ] =  4.0 * r + 4.0 * s + 4.0 * t - 3.0;
-            f[ 1 ] =  4.0 * r - 1.0;
-            f[ 2 ] =  0.0;
-            f[ 3 ] =  0.0;
-            f[ 4 ] = -8.0 * r - 4.0 * s - 4.0 * t + 4.0;
-            f[ 5 ] = -4.0 * s;
-            f[ 6 ] = -4.0 * t;
-            f[ 7 ] =  4.0 * s;
-            f[ 8 ] =  0.0;
-            f[ 9 ] =  4.0 * t;
-            return f;
-        case 1:// dNds
-            f[ 0 ] =  4.0 * r + 4.0 * s + 4.0 * t - 3.0;
-            f[ 1 ] =  0.0;
-            f[ 2 ] =  4.0 * s - 1.0;
-            f[ 3 ] =  0.0;
-            f[ 4 ] = -4.0 * r;
-            f[ 5 ] = -4.0 * r - 8.0 * s - 4.0 * t + 4.0;
-            f[ 6 ] = -4.0 * t;
-            f[ 7 ] =  4.0 * r;
-            f[ 8 ] =  4.0 * t;
-            f[ 9 ] =  0.0;
-            return f;
-        case 2:// dNdt
-            f[ 0 ] =  4.0 * r + 4.0 * s + 4.0 * t - 3.0;
-            f[ 1 ] =  0.0;
-            f[ 2 ] =  0.0;
-            f[ 3 ] =  4.0 * t - 1.0;
-            f[ 4 ] = -4.0 * r;
-            f[ 5 ] = -4.0 * s;
-            f[ 6 ] = -4.0 * r - 4.0 * s - 8.0 * t + 4.0;
-            f[ 7 ] =  0.0;
-            f[ 8 ] =  4.0 * s;
-            f[ 9 ] =  4.0 * r;
-            return f;
-    }
-    throwLengthError( 1, WHERE_AM_I + " undefined values " + toStr( coord ) + " " + toStr( dim ) );
-    return f;
+std::vector < PolynomialFunction < double > > Tetrahedron10::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 3, true, false );
 }
 
 Hexahedron::Hexahedron( std::vector < Node * > & nodes ) : Cell( nodes ) {
@@ -1181,6 +1024,10 @@ Hexahedron::Hexahedron( std::vector < Node * > & nodes ) : Cell( nodes ) {
 
 Hexahedron::~Hexahedron(){
     delete shape_;
+}
+
+std::vector < PolynomialFunction < double > > Hexahedron::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 2, true, true );
 }
 
 // void Hexahedron::findNeighbourCell( uint i ){
@@ -1200,17 +1047,6 @@ Hexahedron::~Hexahedron(){
 //     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
 // }
 
-void Hexahedron::shapeFunctionsL( const RVector3 & L, RVector & funct ) const{
-    funct.resize( nodeCount() );
-    THROW_TO_IMPL
-}
-
-RVector Hexahedron::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f(nodeCount() );
-    THROW_TO_IMPL
-    return f;
-}
-
 std::vector < Node * > Hexahedron::boundaryNodes( uint i ){
     std::vector < Node * > nodes( 4 );
     nodes[ 0 ] = nodeVector_[ HexahedronFacesID[ i ][ 0 ] ];
@@ -1218,6 +1054,18 @@ std::vector < Node * > Hexahedron::boundaryNodes( uint i ){
     nodes[ 2 ] = nodeVector_[ HexahedronFacesID[ i ][ 2 ] ];
     nodes[ 3 ] = nodeVector_[ HexahedronFacesID[ i ][ 3 ] ];
     return nodes;
+}
+
+Hexahedron20::Hexahedron20( std::vector < Node * > & nodes ) : Hexahedron( nodes ) {
+}
+
+Hexahedron20::~Hexahedron20(){
+    
+}
+
+std::vector < PolynomialFunction < double > > Hexahedron20::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 3, false, false);
+    //return createPolynomialShapeFunctions( *this, 3, true, true );
 }
 
 
@@ -1231,15 +1079,8 @@ TriPrism::~TriPrism(){
     delete shape_;
 }
 
-void TriPrism::shapeFunctionsL( const RVector3 & L, RVector & funct ) const {
-    funct.resize( nodeCount() );
-    THROW_TO_IMPL
-}
-
-RVector TriPrism::deriveNdL( const RVector3 & coord, uint dim ) const {
-    RVector f(nodeCount() );
-    THROW_TO_IMPL
-    return f;
+std::vector < PolynomialFunction < double > > TriPrism::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 2, true, true);
 }
 
 std::vector < Node * > TriPrism::boundaryNodes( uint i ){
@@ -1252,4 +1093,46 @@ std::vector < Node * > TriPrism::boundaryNodes( uint i ){
     return nodes;
 }
 
+TriPrism15::TriPrism15( std::vector < Node * > & nodes ) : TriPrism( nodes ){
+}
+
+TriPrism15::~TriPrism15(){
+}
+
+std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions( ) const{
+    return createPolynomialShapeFunctions( *this, 3, true, true);
+}
+
+Pyramid::Pyramid( std::vector < Node * > & nodes ): Cell( nodes ){
+    shape_ = new PyramidShape();
+    fillShape_( );
+    neighbourCells_.resize( this->neighbourCellCount(), NULL );
+}
+
+Pyramid::~Pyramid(){
+}
+
+std::vector < PolynomialFunction < double > > Pyramid::createShapeFunctions( ) const{
+    THROW_TO_IMPL
+    return std::vector < PolynomialFunction < double > >();
+}
+ 
+std::vector < Node * > Pyramid::boundaryNodes( uint i ){
+THROW_TO_IMPL
+    return std::vector < Node * > ();
+}
+
+Pyramid13::Pyramid13( std::vector < Node * > & nodes ): Pyramid( nodes ){
+}
+
+Pyramid13::~Pyramid13(){
+}
+
+std::vector < PolynomialFunction < double > > Pyramid13::createShapeFunctions( ) const{
+THROW_TO_IMPL
+    return std::vector < PolynomialFunction < double > >();
+}
+
+
+    
 } // namespace GIMLI{

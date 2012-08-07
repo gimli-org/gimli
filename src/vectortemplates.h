@@ -153,16 +153,6 @@ template < class Vec > Vec abs( const Vec & v ) {
   return tmp;
 }
 
-template < class Vec > Vec round( const Vec & a ) {
-  return round( abs( a ) / a, 1e-12 );
-}
-
-template < class Vec > Vec round( const Vec & a, double tol ) {
-  Vec tmp( a.size() );
-  for ( int i = 0; i < a.size(); i ++ ) tmp[ i ] = rint( a[ i ] / tol ) * tol;
-  return tmp;
-}
-
 template < class Vec > void clear( Vec & a ) {
     for ( int i = 0; i < (int)a.size(); i ++ ) a[ i ] = 0.0;
 }

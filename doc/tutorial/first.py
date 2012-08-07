@@ -114,16 +114,16 @@ nP = 3
 fop = FunctionModelling( nP, x )
 
 # initialize inversion with data and forward operator and set options
-inv = g.RInversion( y, fop );
+inv = g.RInversion( y, fop )
 
 # constant absolute error of 0.01 (not necessary, only for chi^2)
-inv.setAbsoluteError( 0.01 );
+inv.setAbsoluteError( 0.01 )
 
 # the problem is well-posed and does not need regularization
-inv.setLambda( 0 );
+inv.setLambda( 0 )
 
 # actual inversion run yielding coefficient model
-coeff = inv.run();
+coeff = inv.run()
 
 import pylab as P
 P.plot( x, y, 'rx', x, inv.response(), 'b-' )

@@ -31,7 +31,7 @@ namespace GIMLI{
 template < class CMatrix, class Vec >
 int solveCGLSCDWWhtrans( const MatrixBase & S, const CMatrix & C, const Vec & dWeight,
                         const Vec & b, Vec & x, const Vec & wc, const Vec & wm, const Vec & tm, const Vec & td,
-                        double lambda, const Vec & roughness, int maxIter = 200, bool verbose = false ){ //ALLOW_PYTHON_THREADS
+                        double lambda, const Vec & roughness, int maxIter = 200, double tol = -1.0, bool verbose = false ){ //ALLOW_PYTHON_THREADS
 
     uint nData = b.size();
     uint nModel = x.size();
@@ -53,7 +53,8 @@ int solveCGLSCDWWhtrans( const MatrixBase & S, const CMatrix & C, const Vec & dW
     Vec p( transMult( S, Vec( z * dWeight * td ) ) / tm - cdx - transMult( C, Vec( wc * wc * ( C * Vec( wm * x ) ) ) ) * wm * lambda );// nModel
     Vec r( transMult( S, Vec( b * dWeight * dWeight * td ) ) / tm - cdx ); // nModel
 
-    double accuracy = max( TOLERANCE, 1e-08 * dot( r, r ) );
+    double accuracy = tol;
+    if ( accuracy < 0.0 ) accuracy = max( TOLERANCE, 1e-08 * dot( r, r ) );
     r = p;
 
     double normR2 = dot( r, r ), normR2old = 0.0;

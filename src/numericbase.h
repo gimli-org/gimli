@@ -32,11 +32,25 @@ namespace GIMLI{
     #define PI_2 1.5707963267948967384626433682795028841971193993751058209749445923
 #endif
 
+template < class ValueType > ValueType round( const ValueType & v, ValueType tol ){ return ::rint( v / tol ) * tol; }
+
 /*! Converts a degree value to radian.*/
 template < class ValueType > ValueType degToRad( const ValueType & deg ){ return deg * (2.0 * PI) / 360.0; }
 
 /*! Converts a radian value to degree.*/
 template < class ValueType > ValueType radToDeg( const ValueType & rad ){ return rad * 360.0 / (2.0 * PI); }
+
+template < class T > T powInt( const T & a, uint dim ){ 
+    switch ( dim ){
+        case 0 : return 1.0;
+        case 1 : return a;
+        case 2 : return a*a;
+        case 3 : return a*a*a;
+        case 4 : return a*a*a*a; 
+        default: return std::pow( a, dim );
+    }
+}
+
 
 /*!  Given the lower and upper limits of integration x1 and x2 and given n,
   this routine returns vector x(0..n-1) and w(0..n-1) of length n,

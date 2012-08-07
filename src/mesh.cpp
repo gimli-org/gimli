@@ -162,7 +162,8 @@ Boundary * Mesh::createBoundary( std::vector < Node * > & nodes, int marker ){
             return createBoundary_< Edge3 >( nodes, marker, boundaryCount() );
         return createBoundary_< TriangleFace >( nodes, marker, boundaryCount() ); } break;
       case 4: return createBoundary_< QuadrangleFace >( nodes, marker, boundaryCount() ); break;
-      case 6: return createBoundary_< TriangleFace6 >( nodes, marker, boundaryCount() ); break;
+      case 6: return createBoundary_< Triangle6Face >( nodes, marker, boundaryCount() ); break;
+      case 8: return createBoundary_< Quadrangle8Face >( nodes, marker, boundaryCount() ); break;
     }
     std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine boundary for nodes: " << nodes.size() << std::endl;
     return NULL;
@@ -221,6 +222,7 @@ Cell * Mesh::createCell( std::vector < Node * > & nodes, int marker ){
                 case 3: return createCell_< Tetrahedron >( nodes, marker, cellCount() ); break;
             }
             break;
+        case 5: return createCell_< Pyramid >( nodes, marker, cellCount() ); break;
         case 6: 
             switch ( dimension_ ){
                 case 2: return createCell_< Triangle6 >( nodes, marker, cellCount() ); break;
@@ -234,6 +236,10 @@ Cell * Mesh::createCell( std::vector < Node * > & nodes, int marker ){
             }
             break;
         case 10: return createCell_< Tetrahedron10 >( nodes, marker, cellCount() ); break;
+        case 13: return createCell_< Pyramid13 >( nodes, marker, cellCount() ); break;
+        case 15: return createCell_< TriPrism15 >( nodes, marker, cellCount() ); break;
+        case 20: return createCell_< Hexahedron20 >( nodes, marker, cellCount() ); break;
+        
     }
     std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine cell for nodes: " << nodes.size() << std::endl;
     return NULL;
@@ -366,7 +372,7 @@ Cell * Mesh::findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t 
 //                 std::cout << cell->node( i )<< std::endl;
 //             }
 
-            if ( cell->shape().touch1( pos, false, pFunIdx ) ) {
+            if ( cell->shape().isInside( pos, pFunIdx, false ) ) {
                 return cell;
             } else {
                 if ( !neighboursKnown_ ){
@@ -410,7 +416,7 @@ Cell * Mesh::findCell( const RVector3 & pos, size_t & count, bool extensive ) co
     if ( bruteForce ){
         for ( uint i = 0; i < this->cellCount(); i ++ ) {
             count++;
-            if ( cellVector_[ i ]->shape().touch( pos ) ){
+            if ( cellVector_[ i ]->shape().isInside( pos ) ){
                 cell = cellVector_[ i ];
                 break;
             }
@@ -590,12 +596,6 @@ Mesh Mesh::createH2Mesh( ) const {
     return ret;
 }
     
-Mesh Mesh::createP2Mesh( ) const {
-    Mesh ret( this->dimension() ); 
-    ret.createP2Mesh( *this );
-    return ret;
-}
-
 void Mesh::createH2Mesh( const Mesh & mesh ){
     std::vector < int > cellsToRefine( mesh.cellCount() );
 
@@ -724,23 +724,18 @@ int Mesh::createRefined( const Mesh & mesh, const std::vector < int > & cellIdx 
     return 0;
 }
 
-// Node * Mesh::createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, Index > & nodeMatrix ){
-//     Node * n = NULL;
-//     if ( ( n = nodeMatrix[ n0->id() ][ n1->id() ] ) == NULL ){
-//         n = this->createNode( ( n0->pos() + n1->pos() ) / 2.0, markerT( n0, n1 ) );
-//         nodeMatrix[ n0->id() ][ n1->id() ] = n;
-//         nodeMatrix[ n1->id() ][ n0->id() ] = n;
-//     }
-//     return n;
-// }
-
 Node * Mesh::createRefinementNode_( Node * n0, Node * n1, std::map< std::pair < Index, Index >, Node * > & nodeMatrix ){
     Node * n = nodeMatrix[ std::make_pair( n0->id(), n1->id() ) ];
     
     if ( !n ){
-        n = this->createNode( ( n0->pos() + n1->pos() ) / 2.0, markerT( n0, n1 ) );
-        nodeMatrix[ std::make_pair( n0->id(), n1->id() ) ] = n;
-        nodeMatrix[ std::make_pair( n1->id(), n0->id() ) ] = n;
+        if ( n0 == n1 ){
+            n = this->createNode( n0->pos(), n0->marker() ) ;
+            nodeMatrix[ std::make_pair( n0->id(), n0->id() ) ] = n;
+        } else {
+            n = this->createNode( ( n0->pos() + n1->pos() ) / 2.0, markerT( n0, n1 ) );
+            nodeMatrix[ std::make_pair( n0->id(), n1->id() ) ] = n;
+            nodeMatrix[ std::make_pair( n1->id(), n0->id() ) ] = n;
+        }
     }
     return n;
 }
@@ -868,124 +863,132 @@ int Mesh::createRefined2D_( const Mesh & mesh, const std::vector < int > & cellI
     return 1;
 }
 
+Mesh Mesh::createP2Mesh( ) const {
+    Mesh ret( this->dimension() ); 
+    ret.createP2Mesh( *this );
+    return ret;
+}
+
 void Mesh::createP2Mesh( const Mesh & mesh ){
     this->clear();
 
-    for ( uint i = 0, imax = mesh.nodeCount(); i < imax; i ++ ) this->createNode( mesh.node( i ) );
-
-    //SparseMapMatrix < Node *, Index > nodeMatrix( nodeCount(), nodeCount() );
     std::map< std::pair < Index, Index >, Node * > nodeMatrix;
     
+    for ( Index i = 0, imax = mesh.nodeCount(); i < imax; i ++ ) {
+        this->createRefinementNode_( &mesh.node( i ), &mesh.node( i ), nodeMatrix );
+    }
+    
     std::vector < Node * > n;
-
-    if ( dimension_ == 1 ){
-        CERR_TO_IMPL
-        *this = mesh;
-        return;
-    } else if ( dimension_ == 2 ){
-
-        for ( int i = 0, imax = mesh.cellCount(); i < imax; i ++ ){
-            switch ( mesh.cell( i ).rtti() ){
-                case MESH_TRIANGLE_RTTI:
-                    n.resize( 6 );
-                    n[ 0 ] = &node( mesh.cell( i ).node( 0 ).id() );
-                    n[ 1 ] = &node( mesh.cell( i ).node( 1 ).id() );
-                    n[ 2 ] = &node( mesh.cell( i ).node( 2 ).id() );
-
-                    n[ 3 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
-                    n[ 4 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
-                    n[ 5 ] = createRefinementNode_( n[ 2 ], n[ 0 ], nodeMatrix );
-
-                    createCell( n, mesh.cell( i ).marker() );
-                    break;
-                case MESH_QUADRANGLE_RTTI:
-                    n.resize( 8 );
-                    n[ 0 ] = &node( mesh.cell( i ).node( 0 ).id() );
-                    n[ 1 ] = &node( mesh.cell( i ).node( 1 ).id() );
-                    n[ 2 ] = &node( mesh.cell( i ).node( 2 ).id() );
-                    n[ 3 ] = &node( mesh.cell( i ).node( 3 ).id() );
-
-                    n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
-                    n[ 5 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
-                    n[ 6 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
-                    n[ 7 ] = createRefinementNode_( n[ 3 ], n[ 0 ], nodeMatrix );
-
-                    createCell( n, mesh.cell( i ).marker() );
-                    break;
-                default:
-                    THROW_TO_IMPL
-                break;
-            }
-        }
-
-        n.resize( 3 );
-        for ( uint i = 0; i < mesh.boundaryCount(); i++ ){
-            Boundary * edge = findBoundary( mesh.boundary( i ).node( 0 ), mesh.boundary( i ).node( 1 ) );
-
-            if ( edge != NULL ){
-                n[ 0 ] = &node( mesh.boundary( i ).node( 0 ).id() );
-                n[ 1 ] = &node( mesh.boundary( i ).node( 1 ).id() );
-                n[ 2 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
-                //n[ 2 ] = nodeMatrix[ mesh.boundary( i ).node( 0 ).id() ][ mesh.boundary( i ).node( 1 ).id() ];
-
-                if ( n[ 2 ] != NULL ){
-                    createBoundary( n, edge->marker() );
-                } else {
-                    CERR_TO_IMPL
-                }
-            }
-        }
-    } else { // if dimension == 2
-        // dimension == 3
-        oldTet10NumberingStyle_ = true;
-
-        n.resize( 10 );
-        for ( int i = 0, imax = mesh.cellCount(); i < imax; i ++ ){
-
-            n[ 0 ] = &node( mesh.cell( i ).node( 0 ).id() );
-            n[ 1 ] = &node( mesh.cell( i ).node( 1 ).id() );
-            n[ 2 ] = &node( mesh.cell( i ).node( 2 ).id() );
-            n[ 3 ] = &node( mesh.cell( i ).node( 3 ).id() );
-
-            if ( oldTet10NumberingStyle_ ){
-                //** old style (Zienkiewitz)
-                n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
-                n[ 5 ] = createRefinementNode_( n[ 0 ], n[ 2 ], nodeMatrix );
-                n[ 6 ] = createRefinementNode_( n[ 0 ], n[ 3 ], nodeMatrix );
-                n[ 7 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
-                n[ 8 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
-                n[ 9 ] = createRefinementNode_( n[ 3 ], n[ 1 ], nodeMatrix );
-            } else {
-                //0-1-2-3, 4(0-1), 5(1-2), 6(2-0), 7(0-3), 8(1-3), 9(2-3)* //
-                n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
-                n[ 5 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
-                n[ 6 ] = createRefinementNode_( n[ 2 ], n[ 0 ], nodeMatrix );
-                n[ 7 ] = createRefinementNode_( n[ 0 ], n[ 3 ], nodeMatrix );
-                n[ 8 ] = createRefinementNode_( n[ 1 ], n[ 3 ], nodeMatrix );
-                n[ 9 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
-            }
-            createCell( n, mesh.cell( i ).marker() );
-        }
-
-        n.resize( 6 );
-        for ( uint i = 0; i < mesh.boundaryCount(); i++ ){
-            Boundary * tri = findBoundary( mesh.boundary( i ).node( 0 ), mesh.boundary( i ).node( 1 ), mesh.boundary( i ).node( 2 ) );
-            if ( tri ){
-                n[ 0 ] = &node( mesh.boundary( i ).node( 0 ).id() );
-                n[ 1 ] = &node( mesh.boundary( i ).node( 1 ).id() );
-                n[ 2 ] = &node( mesh.boundary( i ).node( 2 ).id() );
+    for ( Index i = 0, imax = mesh.cellCount(); i < imax; i ++ ){
+        const Cell & c = mesh.cell( i );
+        
+        switch ( c.rtti() ){
+            case MESH_TRIANGLE_RTTI:
+                n.resize( 6 );
+                n[ 0 ] = &node( mesh.cell( i ).node( 0 ).id() );
+                n[ 1 ] = &node( mesh.cell( i ).node( 1 ).id() );
+                n[ 2 ] = &node( mesh.cell( i ).node( 2 ).id() );
 
                 n[ 3 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
                 n[ 4 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
                 n[ 5 ] = createRefinementNode_( n[ 2 ], n[ 0 ], nodeMatrix );
-//                 n[ 3 ] = nodeMatrix[ mesh.boundary( i ).node( 0 ).id() ][ mesh.boundary( i ).node( 1 ).id() ];
-//                 n[ 4 ] = nodeMatrix[ mesh.boundary( i ).node( 1 ).id() ][ mesh.boundary( i ).node( 2 ).id() ];
-//                 n[ 5 ] = nodeMatrix[ mesh.boundary( i ).node( 2 ).id() ][ mesh.boundary( i ).node( 0 ).id() ];
+                break;
+            case MESH_QUADRANGLE_RTTI:
+                n.resize( 8 );
+                n[ 0 ] = &node( mesh.cell( i ).node( 0 ).id() );
+                n[ 1 ] = &node( mesh.cell( i ).node( 1 ).id() );
+                n[ 2 ] = &node( mesh.cell( i ).node( 2 ).id() );
+                n[ 3 ] = &node( mesh.cell( i ).node( 3 ).id() );
 
-                createBoundary( n, tri->marker() );
-            }
+                n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
+                n[ 5 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
+                n[ 6 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
+                n[ 7 ] = createRefinementNode_( n[ 3 ], n[ 0 ], nodeMatrix );
+
+                break;
+            case MESH_TETRAHEDRON_RTTI:
+                n.resize( 10 );
+                for ( Index j = 0; j < n.size(); j ++ ) {
+                    if ( oldTet10NumberingStyle_ ){
+                        n[ j ] = createRefinementNode_( & this->node( c.node( Tet10NodeSplitZienk[ j ][ 0 ] ).id() ),
+                                                        & this->node( c.node( Tet10NodeSplitZienk[ j ][ 1 ] ).id() ), 
+                                                        nodeMatrix );
+                    } else {
+                        n[ j ] = createRefinementNode_( & this->node( c.node( Tet10NodeSplit[ j ][ 0 ] ).id() ),
+                                                        & this->node( c.node( Tet10NodeSplit[ j ][ 1 ] ).id() ), 
+                                                        nodeMatrix );
+                    }
+                } 
+                break;
+            case MESH_HEXAHEDRON_RTTI:
+                n.resize( 20 );
+                for ( Index j = 0; j < n.size(); j ++ ) {
+                    n[ j ] = createRefinementNode_( & this->node( c.node( Hex20NodeSplit[ j ][ 0 ] ).id() ),
+                                                    & this->node( c.node( Hex20NodeSplit[ j ][ 1 ] ).id() ), 
+                                                    nodeMatrix );
+                }  
+                break;
+            case MESH_TRIPRISM_RTTI:
+                n.resize( 15 );
+                for ( Index j = 0; j < n.size(); j ++ ) {
+                    n[ j ] = createRefinementNode_( & this->node( c.node( Prism15NodeSplit[ j ][ 0 ] ).id() ),
+                                                    & this->node( c.node( Prism15NodeSplit[ j ][ 1 ] ).id() ), 
+                                                    nodeMatrix );
+                }
+                break;
+            case MESH_PYRAMID_RTTI:
+                n.resize( 13 );
+                for ( Index j = 0; j < n.size(); j ++ ) {
+                    n[ j ] = createRefinementNode_( & this->node( c.node( Pyramid13NodeSplit[ j ][ 0 ] ).id() ),
+                                                    & this->node( c.node( Pyramid13NodeSplit[ j ][ 1 ] ).id() ), 
+                                                    nodeMatrix );
+                }
+                break;
+            default: std::cerr << c.rtti() <<" " << std::endl; THROW_TO_IMPL  break;
         }
-    }
+            
+        createCell( n, c.marker() );
+        
+    } // for_each cell
+
+    for ( Index i = 0; i < mesh.boundaryCount(); i++ ){
+
+        const Boundary & b = mesh.boundary( i );
+        
+        switch ( b.rtti() ){
+            case MESH_EDGE_RTTI:
+                n.resize( 3 );
+                n[ 0 ] = &node( b.node( 0 ).id() );
+                n[ 1 ] = &node( b.node( 1 ).id() );
+                n[ 2 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
+                break;
+            case MESH_TRIANGLEFACE_RTTI:
+                n.resize( 6 );
+                n[ 0 ] = &node( b.node( 0 ).id() );
+                n[ 1 ] = &node( b.node( 1 ).id() );
+                n[ 2 ] = &node( b.node( 2 ).id() );
+
+                n[ 3 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
+                n[ 4 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
+                n[ 5 ] = createRefinementNode_( n[ 2 ], n[ 0 ], nodeMatrix );
+                break;
+            case MESH_QUADRANGLEFACE_RTTI:
+                n.resize( 8 );
+                n[ 0 ] = &node( b.node( 0 ).id() );
+                n[ 1 ] = &node( b.node( 1 ).id() );
+                n[ 2 ] = &node( b.node( 2 ).id() );
+                n[ 3 ] = &node( b.node( 3 ).id() );
+
+                n[ 4 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
+                n[ 5 ] = createRefinementNode_( n[ 1 ], n[ 2 ], nodeMatrix );
+                n[ 6 ] = createRefinementNode_( n[ 2 ], n[ 3 ], nodeMatrix );
+                n[ 7 ] = createRefinementNode_( n[ 3 ], n[ 0 ], nodeMatrix );
+                break;
+            default: std::cerr << b.rtti() <<" " << std::endl; THROW_TO_IMPL  break;
+        }    
+            
+        createBoundary( n, b.marker() );
+    } // for_each boundary
 }
 
 int Mesh::createRefined3D_( const Mesh & mesh, const std::vector < int > & cellIdx ){

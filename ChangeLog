@@ -1,10 +1,51 @@
+2012-08-07
+    gimli
+        - FEM-kernel generalization rebuild (need performance optimizations for simplexes)
+        - add 3d-polynomial functor and modelling-class (allow symbolic polynomial expressions and derivations)
+        - add shape function cache singleton
+        - add generic shape function generator
+        - support for hex8, hex20, prism6 prism15
+
+    libgimli::mesh()
+        - new createP2 method to support all mesh entity types (need tests)
+
+    libgimli::shape()
+        - add generic isInside function
+        - renamed touch -> isInside
+        - add generic rst2xyz and xyz2rst functions for coordinate transformation between shape coordinates and Cartesian coordinates
+        - renamed coordinates() -> rst()
+        - add: support for arbitrary valid quadrangles ... we are not longer limited to parallelograms
+        - dim()
+        - removed jacobianDeterminant() not longer needed
+        - add createJacobian()
+        - add inverseJacobian()
+        - add N, dNdL, dNdrst
+        - removed all stuff called 'Shapefunctions' and 'deriveShapeFunctions' and so on
+        - add triangular prism
+        - add pyramid( unfinished & untested )
+
+    libgimli::meshEntities()
+        - renamed dimension() -> dim()
+        - removed all stuff called 'Shapefunctions' and 'deriveShapeFunctions'  and so on
+        - add N, dNdL
+        
+    tests/basics:
+        - add script showShapeFunctions3D.py (create vtk-files for all 3d shapefunctions
+        - add script testShapePoly.py (play around with shape function generation)
+
+    
+
+2012-07-10
+    libgimli
+        mesh_io add vector support for export VTK .. just add std::vector< RVector> to the mesh.exportVTK()
+
 2012-04-03
     libgimli
         fixed bug in Mesh::createNeighbourInfos().
             -fix from 2012-03-26 worked only for 2d.
             -3d case rolled back to working version
         refactor integration rules in integration.h/integration.cpp
-            -fixed wrong trianlge integration abscissa for order 6
+            -fixed wrong triangle integration abscissa for order 6
             -add new quadrature weights/abs for generic triangle (not yet tested for fem)
             -convert integration rules to singleton class
         add singleton template class

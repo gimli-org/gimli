@@ -255,6 +255,7 @@ def drawMeshPotential( ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
 def drawField( axes, mesh, data = None, filled = False, *args, **kwargs ):
     ''
     ' What is this? '
+    ' only for triangle meshes currently '
     ''
     print kwargs
     import matplotlib.tri as tri
@@ -263,25 +264,21 @@ def drawField( axes, mesh, data = None, filled = False, *args, **kwargs ):
     y = np.zeros( mesh.nodeCount() )
 
     for i, p in enumerate( mesh.positions() ):
-        x[i] = p[0]
-        y[i] = p[1]
+        x[ i ] = p[ 0 ]
+        y[ i ] = p[ 1 ]
 
     triangles = np.zeros( (mesh.cellCount(), 3 ) )
+    
     for i, c in enumerate( mesh.cells() ):
+        
         triangles[ i, 0 ] = c.node(0).id()
         triangles[ i, 1 ] = c.node(1).id()
         triangles[ i, 2 ] = c.node(2).id()
-
-    #triang = tri.Triangulation(x, y)
-
-    #mask = np.where( data == 0, 1, 0)
-    #triang.set_mask(mask)
-
-    #axes.tricontour( triang, z )
+        
     if filled:
-        axes.tricontourf(x, y, triangles, data, *args, **kwargs)
+        axes.tricontourf( x, y, triangles, data, *args, **kwargs )
     else:
-        axes.tricontour(x, y, triangles, data, *args, **kwargs)
+        axes.tricontour( x, y, triangles, data, *args, **kwargs )
 
 # def drawField(...)
 

@@ -21,8 +21,9 @@
 #include "gravimetry.h"
 
 #include "integration.h"
-
-#include <shape.h>
+#include "mesh.h"
+#include "pos.h"
+#include "shape.h"
 
 #include <cmath>
 

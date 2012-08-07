@@ -98,11 +98,16 @@ public:
 
     ElementMatrix < T > & ux2uy2uz2( const Cell & cell );
 
-    ElementMatrix < T > & u( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
-    ElementMatrix < T > & u2( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
-    ElementMatrix < T > & ux2( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
-    ElementMatrix < T > & ux2uy2( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
-    ElementMatrix < T > & ux2uy2uz2( const MeshEntity & ent, const RVector & w, const std::vector < RVector3 > & x, bool verbose = false );
+    ElementMatrix < T > & u( const MeshEntity & ent, 
+                             const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose = false );
+    ElementMatrix < T > & u2( const MeshEntity & ent, const RVector & w, 
+                              const std::vector < RVector3 > & integrationPnts, bool verbose = false );
+    ElementMatrix < T > & ux2( const MeshEntity & ent, const RVector & w, 
+                               const std::vector < RVector3 > & integrationPnts, bool verbose = false );
+    ElementMatrix < T > & ux2uy2( const MeshEntity & ent, const RVector & w, 
+                                  const std::vector < RVector3 > & integrationPnts, bool verbose = false );
+    ElementMatrix < T > & ux2uy2uz2( const MeshEntity & ent, const RVector & w, 
+                                     const std::vector < RVector3 > & integrationPnts, bool verbose = false );
 
 protected:
     RMatrix mat_;

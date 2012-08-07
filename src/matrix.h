@@ -187,9 +187,6 @@ public:
 //             for ( ; Aj != Aje; ) *Aj++ OP##= val;
 //         }   return *this; }
 
-    /*! Readonly C style index operator, without boundary check. */
-    const Vector< ValueType > & operator [] ( Index i ) const { return mat_[ i ]; }
-
     /*! Index operator for write operations without boundary check. */
     Vector< ValueType > & operator [] ( Index i ) {
 // //         if ( i < 0 || i > mat_.size()-1 ) {
@@ -198,6 +195,9 @@ public:
 //         }
         return mat_[ i ];
     }
+
+    /*! Read only C style index operator, without boundary check. */
+    const Vector< ValueType > & operator [] ( Index i ) const { return mat_[ i ]; }
 
     /*! Implicite type converter. */
     template < class T > operator Matrix< T >( ){
@@ -762,21 +762,51 @@ template < class T > inline T det( const T & a, const T & b, const T & c, const 
 
 /*! Return determinant for Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > double det( const Matrix & A ){
-  //** das geht viel schoener, aber nicht mehr heute.;
-  double det = 0.0;
-  switch ( A.rows() ){
-  case 2: det = A[ 0 ][ 0 ] * A[ 1 ][ 1 ] - A[ 0 ][ 1 ] * A[ 1 ][ 0 ];
-    break;
-  case 3:
-    det = A[ 0 ][ 0 ] * ( A[ 1 ][ 1 ] * A[ 2 ][ 2 ] - A[ 1 ][ 2 ] * A[ 2 ][ 1 ] ) -
-      A[ 0 ][ 1 ] * ( A[ 1 ][ 0 ] * A[ 2 ][ 2 ] - A[ 1 ][ 2 ] * A[ 2 ][ 0 ] ) +
-      A[ 0 ][ 2 ] * ( A[ 1 ][ 0 ] * A[ 2 ][ 1 ] - A[ 1 ][ 1 ] * A[ 2 ][ 0 ] );
-    break;
-  default:
-    std::cerr << WHERE_AM_I << " matrix determinant of dim not yet implemented -- dim: " << A.rows() << std::endl;
-    break;
-  }
-  return det;
+    //** das geht viel schoener, aber nicht mehr heute.;
+    double det = 0.0;
+    switch ( A.rows() ){
+        case 2: det = A[ 0 ][ 0 ] * A[ 1 ][ 1 ] - A[ 0 ][ 1 ] * A[ 1 ][ 0 ];
+            break;
+        case 3:
+            det = A[ 0 ][ 0 ] * ( A[ 1 ][ 1 ] * A[ 2 ][ 2 ] - A[ 1 ][ 2 ] * A[ 2 ][ 1 ] ) -
+                  A[ 0 ][ 1 ] * ( A[ 1 ][ 0 ] * A[ 2 ][ 2 ] - A[ 1 ][ 2 ] * A[ 2 ][ 0 ] ) +
+                  A[ 0 ][ 2 ] * ( A[ 1 ][ 0 ] * A[ 2 ][ 1 ] - A[ 1 ][ 1 ] * A[ 2 ][ 0 ] );
+            break;
+        default:
+            std::cerr << WHERE_AM_I << " matrix determinant of dim not yet implemented -- dim: " << A.rows() << std::endl;
+            break;
+    }
+    return det;
+}
+
+/*! Return the inverse of Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
+template < class Matrix > Matrix inv( const Matrix & A ){
+    //** das geht viel schoener, aber nicht mehr heute.;
+    Matrix I( A );
+
+    switch ( I.rows() ){
+        case 2: 
+            I[ 0 ][ 0 ] =  A[ 1 ][ 1 ];
+            I[ 1 ][ 0 ] = -A[ 1 ][ 0 ];
+            I[ 0 ][ 1 ] = -A[ 0 ][ 1 ];
+            I[ 1 ][ 1 ] =  A[ 0 ][ 0 ];            
+            break;
+        case 3:
+            I[ 0 ][ 0 ] =  ( A[ 1 ][ 1 ] * A[ 2 ][ 2 ] - A[ 1 ][ 2 ] * A[ 2 ][ 1 ] );
+            I[ 1 ][ 0 ] = -( A[ 1 ][ 0 ] * A[ 2 ][ 2 ] - A[ 1 ][ 2 ] * A[ 2 ][ 0 ] );
+            I[ 2 ][ 0 ] =  ( A[ 1 ][ 0 ] * A[ 2 ][ 1 ] - A[ 1 ][ 1 ] * A[ 2 ][ 0 ] );
+            I[ 0 ][ 1 ] = -( A[ 0 ][ 1 ] * A[ 2 ][ 2 ] - A[ 0 ][ 2 ] * A[ 2 ][ 1 ] );
+            I[ 1 ][ 1 ] =  ( A[ 0 ][ 0 ] * A[ 2 ][ 2 ] - A[ 0 ][ 2 ] * A[ 2 ][ 0 ] );
+            I[ 2 ][ 1 ] = -( A[ 0 ][ 0 ] * A[ 2 ][ 1 ] - A[ 0 ][ 1 ] * A[ 2 ][ 0 ] );
+            I[ 0 ][ 2 ] =  ( A[ 0 ][ 1 ] * A[ 1 ][ 2 ] - A[ 0 ][ 2 ] * A[ 1 ][ 1 ] );
+            I[ 1 ][ 2 ] = -( A[ 0 ][ 0 ] * A[ 1 ][ 2 ] - A[ 0 ][ 2 ] * A[ 1 ][ 0 ] );
+            I[ 2 ][ 2 ] =  ( A[ 0 ][ 0 ] * A[ 1 ][ 1 ] - A[ 0 ][ 1 ] * A[ 1 ][ 0 ] );
+            break;
+        default:
+            std::cerr << WHERE_AM_I << " matrix determinant of dim not yet implemented -- dim: " << A.rows() << std::endl;
+            break;
+    }
+    return I / det( A );
 }
 
 inline void save( const MatrixBase & A, const std::string & filename ){

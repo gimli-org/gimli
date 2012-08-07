@@ -101,6 +101,7 @@ namespace pyplusplus{ namespace aliases{
 #include "plane.h"
 #include "platform.h"
 #include "pos.h"
+#include "polynomial.h"
 #include "quaternion.h"
 #include "regionManager.h"
 #include "shape.h"
@@ -164,7 +165,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
 
     template class Matrix<  double >;
    // template class Matrix< Complex >;
-
+    
     template RVector unique( const RVector & a );
     template RVector sort( const RVector & a );
     template RVector pow( const RVector & a, double power );
@@ -172,7 +173,24 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
 
     template class Pos< double >;
     template class Quaternion< double >;
-
+    
+    template class PolynomialElement< double >;
+    template class PolynomialFunction< double >;
+    template std::ostream & operator << ( std::ostream & str, const PolynomialFunction < double > & p );
+    template PolynomialFunction < double > operator - ( const PolynomialFunction < double > & f );
+    template PolynomialFunction < double > operator - ( const PolynomialFunction < double > & f, const PolynomialFunction < double > & g );
+    template PolynomialFunction < double > operator + ( const PolynomialFunction < double > & f, const PolynomialFunction < double > & g );
+    template PolynomialFunction < double > operator * ( const PolynomialFunction < double > & f, const PolynomialFunction < double > & g );
+    template PolynomialFunction < double > operator * ( const PolynomialFunction < double > & f, const double & val );
+    template PolynomialFunction < double > operator * ( const double & val, const PolynomialFunction < double > & f );
+    template PolynomialFunction < double > operator + ( const PolynomialFunction < double > & f, const double & val );
+    template PolynomialFunction < double > operator + ( const double & val, const PolynomialFunction < double > & f );
+    
+    template std::vector < PolynomialFunction < double > > 
+        createPolynomialShapeFunctions( const Shape & ent, uint nCoeff, bool pascale, bool serendipity );
+    template std::vector < PolynomialFunction < double > > 
+        createPolynomialShapeFunctions( const MeshEntity & ent, uint nCoeff, bool pascale, bool serendipity );
+        
     template class Inversion< double >;
 
     template class Trans< RVector >;
@@ -341,6 +359,9 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Pos< double >                         RVector3;
 
     typedef GIMLI::Quaternion< double >                  RQuaternion;
+    
+    typedef GIMLI::PolynomialFunction< double >          RPolynomialFunction;
+    typedef GIMLI::PolynomialElement< double >           RPolynomialElement;
 
     typedef GIMLI::Inversion< double >                   RInversion;
 //     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;

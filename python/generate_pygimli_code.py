@@ -125,7 +125,7 @@ def generate( defined_symbols ):
 
     import platform
     
-    defines = ['__DUMMY__']
+    defines = ['PYGIMLI_GCCXML']
 
     print platform.architecture()
     if platform.architecture()[0] == '64bit' and platform.architecture()[1] != 'ELF':
@@ -165,6 +165,11 @@ def generate( defined_symbols ):
     exclude( main_ns.variables, name = [ 'Triangle6_S1', 'Triangle6_S2', 'Triangle6_S3'
                                         ,'HexahedronFacesID', 'HexahedronSplit5TetID', 'HexahedronSplit6TetID'
                                         ,'TriPrismFacesID'
+                                        , 'NodeCoordinates','EdgeCoordinates' 
+                                        , 'TriCoordinates', 'QuadCoordinates' 
+                                        , 'TetCoordinates', 'HexCoordinates', 'PrismCoordinates', 'PyramidCoordinates' 
+                                        , 'Tet10NodeSplit', 'Tet10NodeSplitZienk'  
+                                        , 'Hex20NodeSplit', 'Prism15NodeSplit', 'Pyramid13NodeSplit'
                                         ] )
 
     for f in main_ns.declarations:
@@ -228,7 +233,8 @@ def generate( defined_symbols ):
                                         #, call_policies.reference_existing_object )
 
 
-    setMemberFunctionCallPolicieByReturn( mb, ['::std::string *', 'float *', 'double *', 'int *', 'long *', 'long long int *', 'unsigned long long int *' 
+    setMemberFunctionCallPolicieByReturn( mb, [    '::std::string *', 'float *', 'double *', 'int *', 'long *' 
+                                                , 'long long int *', 'unsigned long long int *' 
 												, '::GIMLI::Index *']
                                             , call_policies.return_pointee_value )
 

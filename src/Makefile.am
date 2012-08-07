@@ -79,6 +79,7 @@ libgimli_la_SOURCES = \
 			plane.cpp \
 			platform.h \
 			platform.cpp \
+			polynomial.h \
 			pos.h \
 			pos.cpp \
 			quaternion.h \

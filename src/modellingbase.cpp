@@ -178,8 +178,7 @@ void ModellingBase::createJacobian( const RVector & model ){
     if ( !jacobian_ ){
         this->initJacobian();
     }
-    
-
+ 
     RMatrix *J = dynamic_cast< RMatrix * >( jacobian_ );
     
     if ( J->rows() != resp.size() ){ J->resize( resp.size(), model.size() ); }
@@ -191,7 +190,11 @@ void ModellingBase::createJacobian( const RVector & model ){
         RVector respChange( response( modelChange ) );
 
         for ( size_t j = 0; j < resp.size(); j++ ){
-            (*J)[ j ][ i ] = ( respChange[ j ] - resp[ j ] ) / ( modelChange[ i ] - model[ i ] );
+            if ( ::fabs( modelChange[ i ] - model[ i ] ) > TOLERANCE ){
+                (*J)[ j ][ i ] = ( respChange[ j ] - resp[ j ] ) / ( modelChange[ i ] - model[ i ] );
+            } else {
+                (*J)[ j ][ i ] = 0.0;
+            }
         }
     }
 

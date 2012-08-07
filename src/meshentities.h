@@ -27,6 +27,8 @@
 #include "elementmatrix.h"
 #include "baseentity.h"
 
+#include "polynomial.h"
+
 #include <vector>
 #include <set>
 
@@ -49,8 +51,8 @@ class CollectNodeFunctor{
 public:
     CollectNodeFunctor( std::set< Node * > & c ):c_( & c ){}
 
-    template < class E > void operator( )( const E * e ){
-        for ( uint i = 0; i < e->nodeCount( ); i++ ) c_->insert( &e->node( i ) );
+    template < class E > void operator( )( E * e ){
+        for ( Index i = 0; i < e->nodeCount( ); i++ ) c_->insert( & e->node( i ) );
     }
     std::set< Node * > * c_;
 };
@@ -66,28 +68,30 @@ template < class ContainerOfMeshEntities > std::set< Node * > commonNodes( const
 
 class DLLEXPORT MeshEntity : public BaseEntity {
 public:
-    MeshEntity( ){
-        marker_ = 0;
-    }
 
-    MeshEntity( std::vector < Node * > & nodes ){
-        marker_ = 0;
-        setNodes_( nodes );
-    }
+    /*! Default constructor.*/
+    MeshEntity( );
+    
+    /*! Construct the entity from the given nodes.*/
+    MeshEntity( std::vector < Node * > & nodes );
+        
+    /*! Default destructor.*/
+    virtual ~MeshEntity();
 
-    virtual ~MeshEntity(){};
+    /*! Return the dimension for this MeshEntity. */
+    virtual uint dim() const { return 0; }
 
+    /*! Return the runtime identification for this MeshEntity. */
+    virtual uint rtti() const { return MESH_MESHENTITY_RTTI; }
+    
+    /*! To separate between major MeshEntity families e.g. Cell and Boundary. */
+    virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
+    
     inline Node & node( uint i ) { return *nodeVector_[ i ]; }
 
     inline Node & node( uint i ) const { return *nodeVector_[ i ]; }
 
     inline uint nodeCount() const { return nodeVector_.size(); }
-
-    virtual uint dimension() const { return 0; }
-
-    virtual uint rtti() const { return MESH_MESHENTITY_RTTI; }
-
-    virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
 
     inline Shape & shape() { return *shape_; }
 
@@ -95,42 +99,38 @@ public:
 
     inline Shape * pShape() { return shape_; }
 
+    /*! See Shape::rst */
+    RVector3 rst( uint i ) const;
+    
+    /*! Return the center coordinates of this MeshEntity. */
     RVector3 center() const;
 
     virtual double attribute() const { return -1.0; }
 
-    double interpolate( const RVector3 & queryPos, const RVector & sol ) const;
+    /*! Return IndexArray of all node ids. */
+    IndexArray ids() const ;
 
-    RVector3 grad( const RVector3 & pos, const RVector & data ) const;
-
-    /*! Return shapefunctions N_i < i, N > i=nodeId() for cartesion coordinates at entity pos(x,y,z) */
-    std::pair< IndexArray, RVector > shapeFunctions( const RVector3 & pos ) const;
-
-    /*! CHANGE dNdCartesian( pos )
-    Return derived shapefunctions for cartesion coordinates dN(L_i)/dxyz at pos
-    */
-    std::pair< IndexArray, std::vector < RVector3 > > shapeFunctionsDerive( const RVector3 & pos ) const;
-
-    /*!
-        Interface for shapefunctions in natural coordinates N(L_i).
-        L need to contain L( L_i+1, ... ) cause the relation 1 = \sum L_i*/
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const{
-        std::cout << "mesh entity shapeFunctions " << rtti() << std::endl;
-        THROW_TO_IMPL
-    }
-
-    /*! CHANGE dNdC( Pos L, coord c, RVec( nN)  )
-        Interface for derived shapefunctions dN(L_i)/dL_coord.
-        L need to contain L(L_i+1,...) cause the relation 1 = \sum L_i*/
-    virtual void shapeFunctionsDeriveL( const RVector3 & L, uint coord, RVector & funct ) const;
-
-
-    /*! CHANGE to dNdL( No, L ) */
-    virtual RVector deriveNdL( const RVector3 & L, uint No ) const{
-        std::cout << "mesh entity deriveNdL" << rtti() << std::endl;
-        THROW_TO_IMPL
-        return RVector(0);
-    }
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
+    /*! Return a \ref RVector for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions \f$ N_n(L_1,L_2,L_3)\f$ for the local coordinate \f$ (L_1,L_2,L_3)\f$ */     
+    virtual RVector N( const RVector3 & rst ) const;
+    
+    virtual void N( const RVector3 & rst, RVector & n ) const;
+    
+    /*! Return a \ref RVector of the derivation for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions \f$ N_n(L_1,L_2,L_3)\f$ for the local coordinate \f$ (L_1,L_2,L_3)\f$
+     *   regarding to the local coordinates \f$ L_i \f$ \n
+     * \f$ \frac{\partial N_n(L_1,L_2,L_3)}{\partial L_i} \f$ with may be \f$ i = 0,1,2 \f$*/
+    virtual RVector dNdL( const RVector3 & rst, uint i ) const;
+           
+    /*! Interpolate a scalar field at position p for the scalar field u regarding to the shape functions of the entity. 
+     * \param p Cartesian coordinates (x,y,z) need to be inside, or on the boundary, of the entity.
+     * \param u The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.  */
+    double pot( const RVector3 & p, const RVector & u ) const;
+         
+    /*! Return gradient at position pos for field u regarding to the shape functions of the entity. 
+    * The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.
+    * The position pos, in Cartesian coordinates (x,y,z), need to be inside, or on the boundary, of the entity.  */
+    RVector3 grad( const RVector3 & p, const RVector & u ) const;
 
     friend std::ostream & operator << ( std::ostream & str, const MeshEntity & c );
 
@@ -154,10 +154,6 @@ protected:
 
     void deRegisterNodes_();
 
-    double interpolate_( const std::pair< IndexArray, RVector > & sF, const RVector & data ) const;
-
-    RVector3 grad_( const std::pair< IndexArray, std::vector < RVector3 > > & sF, const RVector & data ) const;
-
     Shape * shape_;
 
     std::vector < Node * > nodeVector_;
@@ -180,21 +176,22 @@ private:
     }
 };
 
+//! A abstract cell
+/*! Interface class for all cells. */
 class DLLEXPORT Cell : public MeshEntity {
 public:
-    Cell() : MeshEntity( ), attribute_( 0.0 ), tagged_( false ) { }
+    /*! Default constructor. */
+    Cell( );
+    
+    /*! Construct cell from vector of nodes. */
+    Cell( std::vector < Node * > & nodes );
 
-    Cell( std::vector < Node * > & nodes ) : MeshEntity( nodes ), attribute_( 0.0 ), tagged_( false ) {
-        registerNodes_( );
-    }
+    /*! Default destructor. */
+    ~Cell();
 
-    ~Cell(){
-        deRegisterNodes_();
-    }
-
-    inline virtual uint rtti() const { return MESH_CELL_RTTI; }
-    inline virtual uint parentType() const { return MESH_CELL_RTTI; }
-    inline virtual uint neighbourCellCount() const { return 0; }
+    virtual uint rtti() const { return MESH_CELL_RTTI; }
+    virtual uint parentType() const { return MESH_CELL_RTTI; }
+    virtual uint neighbourCellCount() const { return 0; }
 
     void cleanNeighbourInfos( );
 
@@ -209,8 +206,6 @@ public:
 
     inline void setAttribute( double attr ) { attribute_ = attr; }
 
-    virtual double jacobianDeterminant() const;
-
     /*! DEPRECATED????
       Find the node of this cell which is in opposite position to the given boundary. Returns a pointer to the node. The boundary must be part of the cell otherwise, a NULL pointer returns. Works for triangle/edge and tetrahedron/triangleFace*/
     Node * oppositeTo( const Boundary & bound );
@@ -223,10 +218,13 @@ public:
 
     /*! Mark the cell. Don't use the tag when you use some cell search. */
     inline void setTagged( bool tagged ){ tagged_ = tagged; }
+    
     /*! Untag the cell */
     inline void untag() { setTagged( false ); }
+    
     /*! Tag the cell */
     inline void tag() { setTagged( true ); }
+    
     /*! Return true if the cell is tagged */
     inline bool tagged() const { return tagged_; }
 
@@ -242,8 +240,6 @@ protected:
     void registerNodes_( );
 
     void deRegisterNodes_( );
-
-    
     
     std::vector < Cell * > neighbourCells_;
 
@@ -272,9 +268,12 @@ public:
         deRegisterNodes_();
     }
 
-    inline virtual uint rtti() const { return MESH_BOUNDARY_RTTI; }
-    inline virtual uint parentType() const { return MESH_BOUNDARY_RTTI; }
+    virtual uint rtti() const { return MESH_BOUNDARY_RTTI; }
+    virtual uint parentType() const { return MESH_BOUNDARY_RTTI; }
 
+    /*! return these coordinates manual until boundary coordinate transformation is done. */
+    virtual RVector3 rst( uint i ) const;
+    
     inline const Cell & leftCell() const { return *leftCell_; }
     inline Cell * leftCell() { return leftCell_; }
 
@@ -311,11 +310,9 @@ public:
 
     virtual ~NodeBoundary();
 
-    inline virtual double jacobianDeterminant() const { return 0.0; }
+    virtual uint dim() const { return 1; }
 
-    inline virtual uint dimension() const { return 1; }
-
-    inline virtual uint rtti() const { return MESH_BOUNDARY_NODE_RTTI; }
+    virtual uint rtti() const { return MESH_BOUNDARY_NODE_RTTI; }
 
     void setNodes( Node & n1, bool changed = true );
 
@@ -332,16 +329,21 @@ public:
 
     virtual ~Edge();
 
-    inline virtual uint dimension() const { return 2; }
+    virtual uint dim() const { return 1; }
 
-    inline virtual uint rtti() const { return MESH_EDGE_RTTI; }
+    virtual uint rtti() const { return MESH_EDGE_RTTI; }
+
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
 
     void setNodes( Node & n1, Node & n2, bool changed = true  );
 
     /*! Swap edge between two triangular neighbor cells. Only defined if both neighbors are triangles. */
     int swap();
 
-    void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
+//     /*! See ref MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+    
+//     void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
 
     friend std::ostream & operator << ( std::ostream & str, const Edge & e );
 
@@ -355,9 +357,17 @@ public:
 
     virtual ~Edge3();
 
-    inline virtual uint rtti() const { return MESH_EDGE3_RTTI; }
+    virtual uint rtti() const { return MESH_EDGE3_RTTI; }
 
-    void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
+    /*! return these coordinates manual until boundary coordinate transformation is done. */
+    virtual RVector3 rst( uint i ) const;
+    
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+        
+//     /*! See MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+    /*
+    void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;*/
 
 // friend std::ostream & operator << ( std::ostream & str, const Edge & e );
 
@@ -373,58 +383,83 @@ public:
 
     virtual ~TriangleFace();
 
-    inline virtual uint dimension() const { return 3; }
+    virtual uint dim() const { return 2; }
 
-    inline virtual uint rtti() const { return MESH_TRIANGLEFACE_RTTI; }
+    virtual uint rtti() const { return MESH_TRIANGLEFACE_RTTI; }
 
     void setNodes( Node & n1, Node & n2, Node & n3, bool changed = true  );
-
+    
     friend std::ostream & operator << ( std::ostream & str, const TriangleFace & e );
 
-    void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-//   virtual double interpolate( const RVector3 & queryPos, const RVector & sol ) const;
-
+    /*! hate this method need refactoring */
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
 protected:
 };
 
-class DLLEXPORT TriangleFace6 : public TriangleFace{
+class DLLEXPORT Triangle6Face : public TriangleFace{
 public:
-    TriangleFace6( std::vector < Node * > & nodes );
+    Triangle6Face( std::vector < Node * > & nodes );
 
-    ~TriangleFace6();
+    ~Triangle6Face();
 
     virtual uint rtti() const { return MESH_TRIANGLEFACE6_RTTI; }
-
-    void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
+    
+    /*! hate this method need refactoring */
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
+    /*! hate this method need refactoring */
+    virtual RVector3 rst( uint i ) const;
 
 protected:
 };
 
 class DLLEXPORT QuadrangleFace : public Boundary{
 public:
-  QuadrangleFace( Node & n1, Node & n2, Node & n3, Node & n4 );
+    QuadrangleFace( Node & n1, Node & n2, Node & n3, Node & n4 );
 
-  QuadrangleFace( std::vector < Node * > & nodes );
+    QuadrangleFace( std::vector < Node * > & nodes );
 
-  virtual ~QuadrangleFace();
+    virtual ~QuadrangleFace();
 
-  inline virtual uint dimension() const { return 3; }
+    virtual uint dim() const { return 2; }
 
-  inline virtual uint rtti() const { return MESH_QUADRANGLEFACE_RTTI; }
+    virtual uint rtti() const { return MESH_QUADRANGLEFACE_RTTI; }
+    
+    /*! hate this method need refactoring */
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
+    void setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true  );
 
-  void setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true  );
-
-  friend std::ostream & operator << ( std::ostream & str, const TriangleFace & e );
-
-//   virtual double interpolate( const RVector3 & queryPos, const RVector & sol ) const;
+    friend std::ostream & operator << ( std::ostream & str, const TriangleFace & e );
 
 protected:
+    
 private:
     QuadrangleFace( const QuadrangleFace & quad ){
         std::cerr << "QuadrangleFace( const QuadrangleFace & quad )" << std::endl;
     }
+};
 
+class DLLEXPORT Quadrangle8Face : public QuadrangleFace{
+public:
+    
+    Quadrangle8Face( std::vector < Node * > & nodes );
+
+    virtual ~Quadrangle8Face();
+
+    virtual uint rtti() const { return MESH_QUADRANGLEFACE8_RTTI; }
+    
+    /*! hate this method need refactoring */
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
+    /*! hate this method need refactoring */
+    virtual RVector3 rst( uint i ) const;
+
+protected:
+    
+private:
+    
 };
 
 class DLLEXPORT EdgeCell : public Cell {
@@ -435,20 +470,23 @@ public:
 
     virtual ~EdgeCell();
 
-    inline virtual uint dimension() const { return 1; }
+    virtual uint dim() const { return 1; }
 
-    inline virtual uint rtti() const { return MESH_EDGE_CELL_RTTI; }
+    virtual uint rtti() const { return MESH_EDGE_CELL_RTTI; }
 
-    inline virtual uint neighbourCellCount() const { return 2; }
+    virtual uint neighbourCellCount() const { return 2; }
 
     virtual void findNeighbourCell( uint id );
 
     void setNodes( Node & n1, Node & n2, bool changed = true  );
-
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    /* Return dN d zeta_No( coord ) */
-    virtual RVector deriveNdL( const RVector3 & coord, uint No ) const;
+    
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+     
+//     /*! See ref MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+//     
+//     /*! See MeshEntity::dNdL */
+//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
 
     friend std::ostream & operator << ( std::ostream & str, const EdgeCell & t );
 
@@ -463,11 +501,15 @@ public:
 
     virtual ~Edge3Cell();
 
-    inline virtual uint rtti() const { return MESH_EDGE3_CELL_RTTI; }
+    virtual uint rtti() const { return MESH_EDGE3_CELL_RTTI; }
 
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint No ) const;
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+     
+//     /*! See ref MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+// 
+//     /*! See MeshEntity::dNdL */
+//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
 
 protected:
 };
@@ -480,20 +522,24 @@ public:
 
     virtual ~Triangle();
 
-    inline virtual uint dimension() const { return 2; }
+    virtual uint dim() const { return 2; }
 
-    inline virtual uint rtti() const { return MESH_TRIANGLE_RTTI; }
+    virtual uint rtti() const { return MESH_TRIANGLE_RTTI; }
 
-    inline virtual uint neighbourCellCount() const { return 3; }
+    virtual uint neighbourCellCount() const { return 3; }
 
     virtual void findNeighbourCell( uint i );
 
     void setNodes( Node & n1, Node & n2, Node & n3, bool changed = true  );
 
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint No ) const;
-
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+     
+//     /*! See ref MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+// 
+//     /*! See MeshEntity::dNdL */
+//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
+//     
     friend std::ostream & operator << ( std::ostream & str, const Triangle & t );
 
 protected:
@@ -505,12 +551,15 @@ public:
 
     virtual ~Triangle6();
 
-    inline virtual uint rtti() const { return MESH_TRIANGLE6_RTTI; }
+    virtual uint rtti() const { return MESH_TRIANGLE6_RTTI; }
 
-    virtual void shapeFunctionsL( const RVector3 & coord, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint No ) const;
-
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+//     /*! See ref MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+// 
+//     /*! See MeshEntity::dNdL */
+//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
+    
 protected:
 };
 
@@ -539,35 +588,40 @@ public:
 
     virtual ~Quadrangle();
 
-    inline virtual uint dimension() const { return 2; }
+    virtual uint dim() const { return 2; }
 
     virtual uint rtti() const { return MESH_QUADRANGLE_RTTI; }
 
     void setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true  );
 
-    inline virtual uint neighbourCellCount() const { return 4; }
+    virtual uint neighbourCellCount() const { return 4; }
 
     virtual void findNeighbourCell( uint i );
 
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+        
+//     /*! See ref MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+// 
+//     /*! See MeshEntity::dNdL */
+//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
 
     friend std::ostream & operator << ( std::ostream & str, const Quadrangle & t );
 
 protected:
 };
 
-//! Quadrangle8 serendipity class
-/*! Quadrangle with 8 nodes for quadratic shapefunctions
-
-Node direction:
-   3-----2
-  /     /
- /     /
-0-----1
-
-count: 0-1-2-3, 4(0-1), 5(1-2), 6(2-3), 7(3-0)
+//! Quadrangle8 for serendipity type
+/*! Quadrangle serendipity type with 8 nodes for quadratic shape functions
+ * 
+ * Node direction: \n
+ *     3---6---2  \n
+ *    /       /   \n
+ *   7       5    \n
+ *  /       /     \n
+ * 0---4---1      \n
+ * 
+ * count: 0-1-2-3, 4(0-1), 5(1-2), 6(2-3), 7(3-0)
 */
 class DLLEXPORT Quadrangle8 : public Quadrangle {
 public:
@@ -577,9 +631,13 @@ public:
 
     virtual uint rtti() const { return MESH_QUADRANGLE8_RTTI; }
 
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
+//     /*! See MeshEntity::N() */
+//     virtual RVector N( const RVector3 & L ) const;
+// 
+//     /*! See MeshEntity::dNdL() */
+//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
 
 protected:
 };
@@ -607,27 +665,37 @@ public:
 
     virtual ~Tetrahedron();
 
-    inline virtual uint dimension() const { return 3; }
+    virtual uint dim() const { return 3; }
 
     virtual uint rtti() const { return MESH_TETRAHEDRON_RTTI; }
 
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
     void setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true  );
 
-    inline virtual uint neighbourCellCount() const { return 4; }
+    virtual uint neighbourCellCount() const { return 4; }
 
     virtual void findNeighbourCell( uint i );
-
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
 
     friend std::ostream & operator << ( std::ostream & str, const Tetrahedron & t );
 
 protected:
 };
 
-//*! Zienkiewicz count: 1-2-3-4, 5(1-2), 6(1-3), 7(1-4), 8(2-3), 9(3-4), 10(4-2)* //
 //*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
+static const uint8 Tet10NodeSplit[ 10 ][ 2 ] = {
+    {0,0},{1,1},{2,2},{3,3},
+    {0,1},{1,2},{2,0},
+    {0,3},{1,3},{2,3}
+};
+
+//*! Zienkiewicz count: 1-2-3-4, 5(1-2), 6(1-3), 7(1-4), 8(2-3), 9(3-4), 10(4-2)* //
+static const uint8 Tet10NodeSplitZienk[ 10 ][ 2 ] = {
+    {0,0},{1,1},{2,2},{3,3},
+    {0,1},{0,2},{0,3},
+    {1,2},{2,3},{3,1}
+};
+
 class DLLEXPORT Tetrahedron10 : public Tetrahedron {
 public:
     Tetrahedron10( std::vector < Node * > & nodes );
@@ -636,11 +704,8 @@ public:
 
     virtual uint rtti() const { return MESH_TETRAHEDRON10_RTTI; }
 
-//    void shapeFunctionsDeriveL( const RVector3 & L, uint coord, RVector & funct ) const;
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
-
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+     
 protected:
 };
 
@@ -705,20 +770,59 @@ public:
 
     virtual ~Hexahedron();
 
-    inline virtual uint dimension() const { return 3; }
+    virtual uint dim() const { return 3; }
 
     virtual uint rtti() const { return MESH_HEXAHEDRON_RTTI; }
 
-    inline virtual uint neighbourCellCount() const { return 6; }
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+    
+    virtual uint neighbourCellCount() const { return 6; }
 
     friend std::ostream & operator << ( std::ostream & str, const Hexahedron & t );
 
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
-
-    virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
-
     /*! Experimental */
     virtual std::vector < Node * > boundaryNodes( uint i );
+
+protected:
+};
+
+static const uint8 Hex20NodeSplit[ 20 ][ 2 ] = {
+    {0,0},{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},
+    {0,1},{1,2},{2,3},{3,0},
+    {4,5},{5,6},{6,7},{7,4},
+    {0,4},{1,5},{2,6},{3,7}
+};
+
+//! A Hexahedron with 20 nodes
+/*! A Hexahedron with 20 nodes for quadratic base functions in serendipity style
+
+Node direction:
+
+          7-----14------6  \n      
+         /|            /|  \n
+    t   / |    s      / |  \n
+    | 15 19   /     13 18  \n
+    | /   |  /      /   |  \n
+    |/    | /      /    |  \n
+    4-----12------5     |  \n
+    |     3-----10|-----2  \n
+    |    /        |    /   \n
+   16   /         17  /    \n
+    | 11          |  9     \n 
+    | /           | /      \n
+    |/            |/       \n
+    0------8-----1-------r \n
+
+*/
+class DLLEXPORT Hexahedron20: public Hexahedron {
+public:
+    Hexahedron20( std::vector < Node * > & nodes );
+
+    virtual ~Hexahedron20();
+
+    virtual uint rtti() const { return MESH_HEXAHEDRON20_RTTI; }
+    
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
 
 protected:
 };
@@ -728,7 +832,7 @@ protected:
  * A Triangular prism is a three-sided prism. Equivalently, it is a pentahedron of which two faces are parallel.
  * Node direction:
 
- 5    \n
+  5    \n
  /|\   \n
 3---4  \n
 | 2 |  \n
@@ -745,26 +849,137 @@ static const uint8 TriPrismFacesID[ 5 ][ 4 ] = {
     {0, 2, 1, 255},
 };
 
+
 class DLLEXPORT TriPrism : public Cell {
 public:
     TriPrism( std::vector < Node * > & nodes );
 
     virtual ~TriPrism();
 
-    inline virtual uint dimension() const { return 3; }
+    virtual uint dim() const { return 3; }
 
     virtual uint rtti() const { return MESH_TRIPRISM_RTTI; }
+    
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
 
-    inline virtual uint neighbourCellCount() const { return 5; }
+    virtual uint neighbourCellCount() const { return 5; }
 
     friend std::ostream & operator << ( std::ostream & str, const Hexahedron & t );
 
-    virtual void shapeFunctionsL( const RVector3 & L, RVector & funct ) const;
+    /*! Experimental */
+    virtual std::vector < Node * > boundaryNodes( uint i );
 
-    virtual RVector deriveNdL( const RVector3 & coord, uint dim ) const;
+protected:
+};
+
+static const uint8 Prism15NodeSplit[ 15 ][ 2 ] = {
+    {0,0},{1,1},{2,2},{3,3},{4,4},{5,5},
+    {0,1},{1,2},{2,0},
+    {3,4},{4,5},{5,3},
+    {0,3},{1,4},{2,5}
+};
+
+//! Triangular15 prism
+/*! 
+ * A Triangular prism with 15 Nodes is a three-sided prism for quadratic base functions.
+ 
+        5      \n
+       / \     \n 
+     11 14 10  \n
+     /  |  \   \n
+    3---9---4  \n
+    |   2   |  \n
+    |  / \  |  \n
+   12 8   7 13 \n
+    |/     \|  \n
+    0---6---1  \n
+
+*/
+
+class DLLEXPORT TriPrism15 : public TriPrism {
+public:
+    TriPrism15( std::vector < Node * > & nodes );
+
+    virtual ~TriPrism15();
+
+    virtual uint rtti() const { return MESH_TRIPRISM15_RTTI; }
+    
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+
+protected:
+};
+
+//! A Pyramid
+/*! A Pyramid cell
+
+Node direction:
+
+          
+    t      3------------2  \n
+    |     /            /   \n
+    |    /            /    \n
+    |   /            /     \n
+    |  /      5     /      \n 
+    | /            /       \n
+    |/            /        \n
+    0------------1-------r \n
+
+*/
+
+class DLLEXPORT Pyramid : public Cell {
+public:
+    Pyramid( std::vector < Node * > & nodes );
+
+    virtual ~Pyramid();
+
+    virtual uint dim() const { return 3; }
+
+    virtual uint rtti() const { return MESH_PYRAMID_RTTI; }
+    
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
+
+    virtual uint neighbourCellCount() const { return 5; }
 
     /*! Experimental */
     virtual std::vector < Node * > boundaryNodes( uint i );
+
+protected:
+};
+
+//*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
+static const uint8 Pyramid13NodeSplit[ 13 ][ 2 ] = {
+    {0,0},{1,1},{2,2},{3,3},{4,4},
+    {0,1},{1,2},{2,3},{3,0},
+    {0,4},{1,4},{2,4},{3,4}
+};
+
+//! A Pyramid
+/*! A Pyramid cell with 13 nodes for quadratic base functions
+
+Node direction:
+
+          
+    t       3-----7------2  \n
+    |      /            /    \n
+    |     /  12    11  /     \n
+    |    /            /      \n
+    |   8     4      6       \n
+    |  /            /        \n 
+    | /  9      10 /         \n
+    |/            /          \n
+    0------5-----1-------r   \n
+
+*/
+
+class DLLEXPORT Pyramid13 : public Pyramid {
+public:
+    Pyramid13( std::vector < Node * > & nodes );
+
+    virtual ~Pyramid13();
+
+    virtual uint rtti() const { return MESH_PYRAMID13_RTTI; }
+    
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
 
 protected:
 };
