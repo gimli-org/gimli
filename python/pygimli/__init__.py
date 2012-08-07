@@ -39,8 +39,11 @@ print locale.localeconv()['decimal_point']
 ############################
 # print function for gimli stuff
 ############################
-def RVector_str( self ):
-    s = str( type( self ) ) + " " + str( self.size() );
+def RVector_str( self, valsOnly = False ):
+    s = str()
+    
+    if not valsOnly:
+        s = str( type( self ) ) + " " + str( self.size() );
 
     if len( self ) == 0:
         return s
@@ -60,7 +63,13 @@ def RVector3_str( self ):
     return "RVector3: (" + str( self.x() ) + ", " + str( self.y() ) + ", " + str( self.z() ) + ")"
 
 def RMatrix_str( self ):
-    return "RMatrix: " + str( self.rows() ) + " x " + str( self.cols() )
+    s = "RMatrix: " + str( self.rows() ) + " x " + str( self.cols() )
+    
+    if ( self.rows() < 6 ):
+        s +='\n'
+        for v in range( self.rows() ):
+            s += self[ v ].__str__( True ) + '\n'
+    return s
 
 def Line_str( self ):
     return "Line: " + str( self.p0() ) + "  " + str( self.p1() )
@@ -91,6 +100,7 @@ def nonzero_test( self ):
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.BVector.__nonzero__ = nonzero_test
 
+
 ############################
 # allow:
 ############################
@@ -100,6 +110,7 @@ def __ADD( self, val ):
     return ret
 
 _pygimli_.stdVectorUL.__add__ = __ADD
+
 
 ############################
 # Indexing operator for RVector, RVector3, RMatrix
@@ -127,7 +138,17 @@ def __getVal( self, idx ):
 # def __getVal( ... )
     
 def __setVal( self, idx, val ):
+    
+    if type( idx ) is slice:
+        if idx.step is None:
+            self.setVal( float(val), long( idx.start ), long( idx.stop ) )
+            return
+        else:
+            "not yet implemented"
+            
     self.setVal( val, idx )
+    
+    
 
 _pygimli_.RVector.__setitem__ = __setVal
 _pygimli_.RVector.__getitem__ = __getVal
@@ -157,6 +178,7 @@ def __getValMatrix( self, idx ):
     
     return self.rowR( idx )
 
+    
 _pygimli_.RMatrix.__getitem__ = __getValMatrix
 _pygimli_.RMatrix.__setitem__ = __setVal
 

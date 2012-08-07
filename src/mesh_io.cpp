@@ -634,11 +634,20 @@ int Mesh::exportSimple( const std::string & fbody, const RVector & data ) const 
   return 1;
 }
 
-void Mesh::exportVTK( const std::string & fbody ) const {
-    return exportVTK( fbody, exportDataMap_ );
+void Mesh::exportVTK( const std::string & fbody  ) const {
+    return exportVTK( fbody, exportDataMap_, std::vector < RVector3 >( 0 ) );
+}
+
+void Mesh::exportVTK( const std::string & fbody, const std::vector < RVector3 > & vec  ) const {
+    return exportVTK( fbody, exportDataMap_, vec );
 }
 
 void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RVector > & dataMap ) const {
+    return exportVTK( fbody, dataMap, std::vector < RVector3 >( 0 ) );
+}
+                        
+void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RVector > & dataMap, 
+                      const std::vector < RVector3 > & vec ) const {
     bool verbose = false;
     if ( verbose ){
         std::cout << "Write vtk " << fbody + ".vtk" << std::endl;
@@ -740,7 +749,9 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
                     case MESH_TETRAHEDRON_RTTI: file   << "10 "; break;
                     case MESH_TETRAHEDRON10_RTTI: file << "24 "; break;
                     case MESH_TRIPRISM_RTTI: file      << "13 "; break;
-                    case MESH_TRIPRISM14_RTTI: file    << "13 "; break;
+                    case MESH_TRIPRISM15_RTTI: file    << "13 "; break;
+                    case MESH_PYRAMID_RTTI: file       << "14 "; break;
+                    case MESH_PYRAMID13_RTTI: file     << "14 "; break;
                     case MESH_HEXAHEDRON_RTTI: file    << "12 "; break;
                     case MESH_HEXAHEDRON20_RTTI: file  << "25 "; break;
                     default: std::cerr << WHERE_AM_I << " nothing known about." << cell(i).rtti()
@@ -764,7 +775,16 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
                 file << std::endl;
             }
         }
-
+        
+        //** write point vector data
+        if ( vec.size() == nodeCount() ){
+            file << "VECTORS vec double" << std::endl;
+            
+            for ( uint i = 0; i < vec.size(); i ++ ){
+                file << vec[i][0] << " " << vec[i][1] << " "<< vec[i][2] << " " << std::endl;
+            }
+        }
+        
         //** write cell data
         file << "CELL_DATA " << cellCount() << std::endl;
         for ( std::map < std::string, RVector >::iterator it = data.begin(); it != data.end(); it ++ ){

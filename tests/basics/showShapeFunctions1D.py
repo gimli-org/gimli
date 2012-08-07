@@ -6,30 +6,29 @@ from pygimli.mplviewer import drawMeshBoundaries
 import numpy as np
 import pylab as P
 
-def drawShapes( axes, edge, u ):
-    axes.set_aspect( 'equal' )
+def drawShapes( ax, edge, u ):
+    Nx = 41
+    X = np.linspace( -2, 2, Nx )
+    
+    uc = g.RVector( len( X.flat ) )
+    
+    for i, x in enumerate( X ):
+        p = edge.shape().xyz( g.RVector3( X.flat[ i ], 0.0) )
+        
+        X.flat[ i ] = p[ 0 ]
+        
+        if not edge.shape().isInside( p ): 
+            uc[ i ] = -99.0
+            continue
 
-    Nx = 20
-
-    tix = np.linspace( edge.node(0).pos()[0], edge.node(1).pos()[0], Nx )
-
-    z = []
-    for x in tix:
-        z.append( edge.interpolate( g.RVector3( x,0.0 ), u ) )
-
-    axes.plot( tix, z )
-
-    tixG = np.linspace( 0, 1.0, 10 )
-
-    for i, x in enumerate( tixG ):
-        p = g.RVector3( tixG[ i ], 0.0 )
-        gr = edge.grad( p,u )
-        ##print gr
-        ux=gr[0]; uy=gr[1]
-        ##ux,uy = grad( mesh, p, u )
-        axes.quiver( p[0], 0.5, ux, uy )
-
-    axes.set_aspect('equal')
+        gr = edge.grad( p, u )
+        uc[ i ] = edge.pot( p, u )
+        ax.quiver( p[0], uc[i], gr[0], 0 )
+        
+        
+    Z = np.ma.masked_where( uc == -99., uc )
+    ax.plot( X, Z )
+    ax.set_aspect('equal')
     #axes.set_xlim( mesh.xmin(), mesh.xmax() );
 
 fig = P.figure()

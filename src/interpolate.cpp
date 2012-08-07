@@ -36,11 +36,12 @@ void interpolate( const Mesh & mesh, const RMatrix & vData,
 
     std::vector < Cell * > cells( pos.size() );
     size_t count = 0;
+    
     for ( uint i = 0; i < pos.size(); i ++ ) {
 
         cells[ i ] = mesh.findCell( pos[ i ], count, false );
 
-            if ( verbose ) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
+        if ( verbose ) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
 //                                 << "\t searched: " << count << std::endl;
     }
     if ( verbose ) std::cout << std::endl;
@@ -63,11 +64,14 @@ void interpolate( const Mesh & mesh, const RMatrix & vData,
 
             for ( uint j = 0; j < pos.size(); j ++ ) {
                 if ( cells[ j ] ){
-                    if ( cells[ j ]->shape( ).touch( pos[ j ] ) ){
-                        iData[ i ][ j ] = cells[ j ]->interpolate( pos[ j ], data );
-                    } else {
-                        std::cout << WHERE_AM_I << " here is somethng wrong" << std::endl;
-                    }
+                    iData[ i ][ j ] = cells[ j ]->pot( pos[ j ], data );
+                    
+//              this check is obsolete if the findCell (from above) is working properly                     
+//                     if ( cells[ j ]->shape( ).isInside( pos[ j ] ) ){
+//                         iData[ i ][ j ] = cells[ j ]->pot( pos[ j ], data );
+//                     } else {
+//                         std::cout << WHERE_AM_I << " here is somethng wrong" << std::endl;
+//                     }
 
 //                    std::cout << j << " " << iData[ i ][ j ] << std::endl;
                     //** return cell data
@@ -76,7 +80,7 @@ void interpolate( const Mesh & mesh, const RMatrix & vData,
                     iData[ i ][ j ] = 0.0;
                     //std::cout << "Cant find cell for " << pos[ j ]<< std::endl;
 //                     for ( uint i = 0; i < mesh.cellCount(); i ++ ){
-//                     	if ( mesh.cell( i ).shape().touch( pos[ j ], true ) ){
+//                     	if ( mesh.cell( i ).shape().isInside( pos[ j ], true ) ){
 //                         	std::cout << mesh.cell( i ) << std::endl;
 //                         }
 //                     }

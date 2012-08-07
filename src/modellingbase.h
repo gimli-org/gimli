@@ -23,7 +23,7 @@
 
 #include "gimli.h"
 #include "matrix.h"
-#include "blockmatrix.h"
+//#include "blockmatrix.h"
 
 namespace GIMLI{
     
@@ -57,7 +57,7 @@ public:
 
     virtual void setStartModel( const RVector & startModel ){ startModel_ = startModel; }
 
-/*! Set new mesh to the forward operator, optionaly hold region parameter for the new mesh (i.e. for rollalong)*/
+    /*! Set new mesh to the forward operator, optionally hold region parameter for the new mesh (i.e. for roll a long)*/
     void setMesh( const Mesh & mesh, bool holdRegionInfos = false );
 
     inline Mesh * mesh() { return mesh_; }

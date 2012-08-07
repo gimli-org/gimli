@@ -199,6 +199,59 @@ public:
 
     inline ValueType & operator[]( const Index i ) { return data_[ i ]; }
 
+    inline const Vector < ValueType > operator[]( const IndexArray & i ) const { return (*this)( i ); }
+    
+    inline Vector < ValueType > operator[]( const IndexArray & i ) { return (*this)( i ); }
+
+     /*! Return a new vector that match the slice [start, end).  end == -1 or larger size() sets end = size.
+        Throws exception on violating boundaries. */
+    Vector < ValueType > operator () ( Index start, SIndex end ) const {
+        Index e = (Index) end;
+        if ( end == -1 || end > (SIndex)size_ ) e = size_;
+
+        Vector < ValueType > v( end-start );
+        if ( start >= 0 && start < e ){
+            std::copy( & data_[ start ], & data_[ e ], &v[ 0 ] );
+        } else {
+            throwLengthError( 1, WHERE_AM_I + " bounds out of range " +
+                                toStr( start ) + " " + toStr( end ) + " " + toStr( size_ ) );
+        }
+        return v;
+    }
+
+    /*!
+     * Return a new vector that based on indices's. Throws exception if indices's are out of bound
+     */
+    Vector < ValueType > operator () ( const IndexArray & idx ) const {
+        Vector < ValueType > v( idx.size() );
+        Index id;
+        for ( Index i = 0; i < idx.size(); i ++ ){
+           id = idx[ i ];
+           if ( id >= 0 && id < size_ ){
+                v[ i ] = data_[ id ];
+           } else {
+                throwLengthError( 1, WHERE_AM_I + " idx out of range " +
+                                     str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
+           }
+        }
+        return v;
+    }
+
+    Vector < ValueType > operator () ( const std::vector < int > & idx ) const {
+        Vector < ValueType > v( idx.size() );
+        Index id;
+        for ( Index i = 0; i < idx.size(); i ++ ){
+           id = idx[ i ];
+           if ( id >= 0 && id < size_ ){
+                v[ i ] = data_[ (Index)id ];
+           } else {
+                throwLengthError( 1, WHERE_AM_I + " idx out of range " +
+                                     str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
+           }
+        }
+        return v;
+    }
+    
     /*!
     Implicite type converter
      */
@@ -315,55 +368,6 @@ public:
         return data_[ 0 ];
     }
 
-    /*! Return a new vector that match the slice [start, end).  end == -1 or larger size() sets end = size.
-        Throws exception on violating boundaries. */
-    Vector < ValueType > operator () ( Index start, SIndex end ) const {
-        Index e = (Index) end;
-        if ( end == -1 || end > (SIndex)size_ ) e = size_;
-
-        Vector < ValueType > v( end-start );
-        if ( start >= 0 && start < e ){
-            std::copy( & data_[ start ], & data_[ e ], &v[ 0 ] );
-        } else {
-            throwLengthError( 1, WHERE_AM_I + " bounds out of range " +
-                                toStr( start ) + " " + toStr( end ) + " " + toStr( size_ ) );
-        }
-        return v;
-    }
-
-    /*!
-     * Return a new vector that based on indices's. Throws exception if indices's are out of bound
-     */
-    Vector < ValueType > operator () ( const IndexArray & idx ) const {
-        Vector < ValueType > v( idx.size() );
-        Index id;
-        for ( Index i = 0; i < idx.size(); i ++ ){
-           id = idx[ i ];
-           if ( id >= 0 && id < size_ ){
-                v[ i ] = data_[ id ];
-           } else {
-                throwLengthError( 1, WHERE_AM_I + " idx out of range " +
-                                     str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
-           }
-        }
-        return v;
-    }
-
-    Vector < ValueType > operator () ( const std::vector < int > & idx ) const {
-        Vector < ValueType > v( idx.size() );
-        Index id;
-        for ( Index i = 0; i < idx.size(); i ++ ){
-           id = idx[ i ];
-           if ( id >= 0 && id < size_ ){
-                v[ i ] = data_[ (Index)id ];
-           } else {
-                throwLengthError( 1, WHERE_AM_I + " idx out of range " +
-                                     str( id ) + " [" + str( 0 ) + " " + str( size_ ) + ")" );
-           }
-        }
-        return v;
-    }
-
 #ifdef PYGIMLI
 //    needed for: /usr/include/boost/python/def_visitor.hpp
     bool operator < ( const Vector< ValueType > & v ) const { return false; }
@@ -447,17 +451,19 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     }
 
     /*! Fill the whole vector from the pointer of val. CAUTION!! There is no boundary check. val must be properly ( [val, val+this->size() ) )assigned.  */
-    template< class V > void fill( V * val ) {
+    template< class V > Vector< ValueType > & fill( V * val ) {
         for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = ValueType(val[i]);
         //std::copy( val, val + size_, data_ );
+        return *this;
     }
 
     /*! Fill the whole vector with val. */
-    void fill( const ValueType & val ) { std::fill( data_, data_ + size_, val ); }
+    Vector< ValueType > & fill( const ValueType & val ) { std::fill( data_, data_ + size_, val ); return *this; }
 
     /*! Fill the whole vector with function expr( i ) */
-    template< class Ex > void fill( Expr< Ex > expr ){
+    template< class Ex > Vector< ValueType > & fill( Expr< Ex > expr ){
         for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = expr( (ValueType)i );
+        return *this;
     }
 
     
@@ -473,12 +479,13 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
     void clear( ){ free_(); }
 
     /*! Round all values of this array to a given tolerance. */
-    void round( const ValueType & tolerance ){
+    Vector< ValueType > & round( const ValueType & tolerance ){
 #ifdef HAVE_BOOST_BIND_HPP
         std::transform( data_, data_ + size_, data_, boost::bind( roundTo< ValueType >, _1, tolerance ) );
 #else
         for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = roundTo( data_[ i ], tolerance );
 #endif
+        return *this;
     }
         
 //   ValueType min()
@@ -1119,6 +1126,10 @@ template < class ValueType > Vector < ValueType > fixZero( const Vector < ValueT
         if ( ::fabs( *it ) < TOLERANCE ) *it = tol;
     }
     return ret;
+}
+ 
+template < class ValueType > Vector < ValueType > round( const Vector < ValueType > & v, ValueType tol ){
+    return Vector< ValueType >( v ).round( tol );
 }
 
 template < class T >

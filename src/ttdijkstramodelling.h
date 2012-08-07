@@ -24,6 +24,7 @@
 
 #include "gimli.h"
 #include "modellingbase.h"
+#include "mesh.h"
 
 namespace GIMLI {
 

@@ -47,7 +47,7 @@ template < class Vec > Vec getIRLSWeights( const Vec & a, double locut = 0.0, do
     double suabs = sum( abs( a ) );
     double suabsq = dot( a, a );
 
-    Vec tmp( suabsq / suabs / ( abs( a ) + 1e-8 ) );
+    Vec tmp( suabsq / suabs / ( abs( a ) + TOLERANCE ) );
     for( uint i = 0; i < a.size(); i++ ) {
         if( ( locut > 0.0 ) && ( tmp[ i ] < locut ) ) tmp[ i ] = locut;
         if( ( hicut > 0.0 ) && ( tmp[ i ] > hicut ) ) tmp[ i ] = hicut;
@@ -159,6 +159,7 @@ protected:
         stopAtChi1_         = true;
         haveReferenceModel_ = false;
         isRunning_          = false;
+        fixError_           = true;
         activateFillConstraintsWeight_ = true; //jointinv hack!!!
 
         iter_               = 0;
@@ -168,6 +169,8 @@ protected:
         lambdaFactor_       = 1.0;
         dPhiAbortPercent_   = 2.0;
         phiD_               = 0.0;
+        
+        CGLStol_            = -1.0; //** -1 means automatic scaled
     }
 
 public:
@@ -184,22 +187,23 @@ public:
     /*! Set the relative data error to the vector err. */
     void setRelativeError( const Vec & e ){
         error_ = e;
-        checkError();
+        checkError( );
     }
 
-    /*! Set relative data error to scalar error value relerr */
+    /*! Set relative data error to scalar error value relerr. If you force relerr == 0 here. Data will not corrected or weighted. */
     inline void setRelativeError( double relerr ) {
+        if ( relerr == 0.0 ) fixError_ = false;
         setRelativeError( RVector( data_.size(), relerr ) );
     }
 
     /*! Set the absolute data error to the vector abserr */
     inline void setAbsoluteError( const Vec & abserr ) {
-        setRelativeError( abs( abserr ) / abs( fixZero( data_, 1e-8 ) ) );
+        setRelativeError( abs( abserr ) / abs( fixZero( data_, TOLERANCE ) ) );
     }
 
     /*! Set absolute data error to the scalar value abserr */
     inline void setAbsoluteError( double abserr ) {
-        setRelativeError( std::fabs( abserr ) / abs( fixZero( data_, 1e-8 ) ) );
+        setRelativeError( std::fabs( abserr ) / abs( fixZero( data_, TOLERANCE ) ) );
     }
 
     /*! Old vector error setter still fixed to relative error, should not be used due to ambiguity */
@@ -213,17 +217,18 @@ public:
 
     /*! Validate the data error. This check will be called at every new run or change of the error;
         Check size and content unequal to zero. If problems found, warn and set the data error to errorDefault_()  */
-    void checkError(){
+    void checkError( ){
         if ( error_.size() != data_.size() ) {
             std::cerr << WHERE_AM_I << " Warning error has the wrong size, reset to default. "
                       << error_.size() << " != " << data_.size() << std::endl;
             error_ = errorDefault_();
-        } else if ( min( abs( error_ ) ) < 1e-40 ) {
+        } else if ( min( abs( error_ ) ) < TOLERANCE && fixError_ ) {
             std::cerr << WHERE_AM_I << " Warning error contains zero values, reset to default. " << std::endl;
             error_ = errorDefault_();
         }
 
-        dataWeight_ = 1.0 / tD_->error( fixZero( data_, 1e-8 ), error_ );
+        
+        dataWeight_ = 1.0 / tD_->error( fixZero( data_, TOLERANCE ), error_ );
 
         if ( verbose_ ) std::cout << "min/max(dweight) = " << min( dataWeight_ ) << "/"
                                   << max( dataWeight_ ) << std::endl;
@@ -310,6 +315,10 @@ public:
     inline void setMaxCGLSIter( int iter ){ maxCGLSIter_ = iter; }
     inline int maxCGLSIter( ) const { return maxCGLSIter_; }
 
+    /*! Set and get abort tolerance for cgls solver. -1 means default scaling [default] */
+    inline void setCGLSTolerance( double tol ){ CGLStol_ = tol; }
+    inline double maxCGLSTolerance( ) const { return CGLStol_; }
+    
     /*! Return curent iteration number */
     inline uint iter() const { return iter_; }
 
@@ -457,7 +466,7 @@ public:
         //** reweight errors according to IRLS scheme
         // cr: error wird nur noch von getPhiD genutzt und dataweight wird im Laufe der Inversion nicht mehr aktualisiert, soll das so sein? DRY?
         // tg: checkerror ist doch genau das richtige oder?
-        error_ /= ( getIRLSWeights( deltaData, 0.0, 1.0 ) + 1e-8 );
+        error_ /= ( getIRLSWeights( deltaData, 0.0, 1.0 ) + TOLERANCE );
         checkError(); //** macht implizit:
         // dataWeight_ = ( 1.0 / tD_->error( data_, error_ ) );
         // tg: maybe better just reweight dweight and hold error constant
@@ -528,9 +537,9 @@ public:
 
     /*! Return data objective function (sum of squared data-weighted misfit) */
     double getPhiD( const Vec & response ) const {
-        // cr: warum steht hier tD_->error( fixZero( data_, 1e-8 ), error_ ) und nicht dweight? DRY?
+        // cr: warum steht hier tD_->error( fixZero( data_, TOLERANCE ), error_ ) und nicht dweight? DRY?
         // tg: weil dWeight von der dataTrans abh�ngig ist (und damit tempor�r), error aber nicht
-        Vec deltaData( ( tD_->trans( data_ ) - tD_->trans( response ) ) / tD_->error( fixZero( data_, 1e-8 ), error_ ) ) ;
+        Vec deltaData( ( tD_->trans( data_ ) - tD_->trans( response ) ) / tD_->error( fixZero( data_, TOLERANCE ), error_ ) ) ;
 
         double ret = dot( deltaData, deltaData );
         if ( std::isnan( ret ) || std::isinf( ret ) ){
@@ -688,8 +697,8 @@ public:
     /*! Optimization of regularization parameter by L-curve */
     Vec optLambda( const Vec & deltaData, const Vec & deltaModel0 ); //!!! h-variante
 
-    /*! One iteration step */
-    int oneStep( );
+    /*! One iteration step. Return true if the step can be calculated successfully else false is returned. */
+    bool oneStep( );
 
     /*! Start the inversion procedure and return the final model vector.*/
     const Vec & run( );
@@ -768,6 +777,7 @@ protected:
     double lambdaFactor_;
     double dPhiAbortPercent_;
     double phiD_;
+    double CGLStol_;
 
     bool isBlocky_;
     bool isRobust_;
@@ -781,6 +791,9 @@ protected:
     bool haveReferenceModel_;
     bool recalcJacobian_;
     bool activateFillConstraintsWeight_; //jointinv hack!!!
+    
+    /*! Set this to zero if u want to use absolute errors == zero*/
+    bool fixError_;
 
     /*! Hold old models, for debuging */
     std::vector < RVector > modelHist_;
@@ -879,13 +892,19 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
     while ( iter_ < maxiter_ && !abort_ ){
         if ( ipc_.getBool( "abort" ) ) break;
 
-        oneStep();
+        if ( !oneStep() ) break;
+        
         DOSAVE save( *forward_->jacobian() * model_, "dataJac_"  + toStr( iter_ ) PLUS_TMP_VECSUFFIX );
         DOSAVE save( response_,    "response_" + toStr( iter_ ) PLUS_TMP_VECSUFFIX );
 
         modelHist_.push_back( model_ );
 
         phiD_ = getPhiD();
+
+        if ( stopAtChi1_ && ( phiD_ < data_.size() ) ) {
+            if ( verbose_ ) std::cout << "Reached data fit criteria (chi^2 <= 1). Stop." << std::endl;
+            break;
+        }
 
         if ( stopAtChi1_ && ( phiD_ < data_.size() ) ) {
             if ( verbose_ ) std::cout << "Reached data fit criteria (chi^2 <= 1). Stop." << std::endl;
@@ -911,15 +930,20 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
     return model_;
 } //** run
 
-template < class Vec > int Inversion< Vec>::oneStep( ) {
+template < class Vec > bool Inversion< Vec>::oneStep( ) {
     iter_++;
     ipc_.setInt( "Iter", iter_ );
+    
     if ( verbose_ ) std::cout << "Iter: " << iter_ << std::endl;
 
     deltaModelIter_.resize( model_.size() );
     deltaModelIter_ *= 0.0;
     deltaDataIter_ = ( tD_->trans( data_ ) - tD_->trans( response_ ) );
 
+    if ( sum( abs( deltaDataIter_ ) ) < TOLERANCE ) {
+        if ( verbose_ ) std::cout << "sum( abs( deltaDataIter_ ) ) == Zero" << std::endl;
+        return false;
+    }
 //    Vec deltaModel0( model_.size() );
     Vec modelNew(    model_.size() );
     Vec responseNew(  data_.size() );
@@ -988,7 +1012,7 @@ template < class Vec > int Inversion< Vec>::oneStep( ) {
             
             solveCGLSCDWWhtrans( *forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
                                   modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
-                                  lambda_, roughness, maxCGLSIter_, verbose_ );
+                                  lambda_, roughness, maxCGLSIter_, CGLStol_, verbose_ );
         } // else no broyden
     } // else no optimization
 
@@ -1045,7 +1069,7 @@ template < class Vec > int Inversion< Vec>::oneStep( ) {
         DOSAVE forward_->mesh()->clearExportData();
     }
 
-    return iter_;
+    return true;
 }
 
 template < class ModelValType >

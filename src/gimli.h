@@ -105,30 +105,33 @@ static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;
 static const int MARKER_BOUND_DIRICHLET = -4;
 static const int MARKER_CELL_PARAMETER = 2;
 
-static const uint8 MESH_BASEENTITY_RTTI      = 000;
-static const uint8 MESH_MESHENTITY_RTTI      = 001;
-static const uint8 MESH_NODE_RTTI            = 010;
-static const uint8 MESH_BOUNDARY_RTTI        = 020;
-static const uint8 MESH_BOUNDARY_NODE_RTTI   = 021;
-static const uint8 MESH_EDGE_RTTI            = 022;
-static const uint8 MESH_EDGE3_RTTI           = 023;
-static const uint8 MESH_TRIANGLEFACE_RTTI    = 024;
-static const uint8 MESH_TRIANGLEFACE6_RTTI   = 025;
-static const uint8 MESH_QUADRANGLEFACE_RTTI  = 026;
-static const uint8 MESH_QUADRANGLEFACE8_RTTI = 027;
-static const uint8 MESH_CELL_RTTI            = 030;
-static const uint8 MESH_EDGE_CELL_RTTI       = 031;
-static const uint8 MESH_EDGE3_CELL_RTTI      = 032;
-static const uint8 MESH_TRIANGLE_RTTI        = 033;
-static const uint8 MESH_TRIANGLE6_RTTI       = 034;
-static const uint8 MESH_QUADRANGLE_RTTI      = 035;
-static const uint8 MESH_QUADRANGLE8_RTTI     = 036;
-static const uint8 MESH_TETRAHEDRON_RTTI     = 041;
-static const uint8 MESH_TETRAHEDRON10_RTTI   = 042;
-static const uint8 MESH_HEXAHEDRON_RTTI      = 043;
-static const uint8 MESH_HEXAHEDRON20_RTTI    = 044;
-static const uint8 MESH_TRIPRISM_RTTI        = 045;
-static const uint8 MESH_TRIPRISM14_RTTI      = 046;
+static const uint8 MESH_BASEENTITY_RTTI      = 00;
+static const uint8 MESH_MESHENTITY_RTTI      = 01;
+static const uint8 MESH_NODE_RTTI            = 10;
+static const uint8 MESH_BOUNDARY_RTTI        = 20;
+static const uint8 MESH_BOUNDARY_NODE_RTTI   = 21;
+static const uint8 MESH_EDGE_RTTI            = 22;
+static const uint8 MESH_EDGE3_RTTI           = 23;
+static const uint8 MESH_TRIANGLEFACE_RTTI    = 24;
+static const uint8 MESH_TRIANGLEFACE6_RTTI   = 25;
+static const uint8 MESH_QUADRANGLEFACE_RTTI  = 26;
+static const uint8 MESH_QUADRANGLEFACE8_RTTI = 27;
+static const uint8 MESH_CELL_RTTI            = 30;
+static const uint8 MESH_EDGE_CELL_RTTI       = 31;
+static const uint8 MESH_EDGE3_CELL_RTTI      = 32;
+static const uint8 MESH_TRIANGLE_RTTI        = 33;
+static const uint8 MESH_TRIANGLE6_RTTI       = 34;
+static const uint8 MESH_QUADRANGLE_RTTI      = 35;
+static const uint8 MESH_QUADRANGLE8_RTTI     = 36;
+static const uint8 MESH_QUADRANGLE9_RTTI     = 37;
+static const uint8 MESH_TETRAHEDRON_RTTI     = 41;
+static const uint8 MESH_TETRAHEDRON10_RTTI   = 42;
+static const uint8 MESH_HEXAHEDRON_RTTI      = 43;
+static const uint8 MESH_HEXAHEDRON20_RTTI    = 44;
+static const uint8 MESH_TRIPRISM_RTTI        = 45;
+static const uint8 MESH_TRIPRISM15_RTTI      = 46;
+static const uint8 MESH_PYRAMID_RTTI         = 47;
+static const uint8 MESH_PYRAMID13_RTTI       = 48;
 
 static const uint8 MESH_SHAPE_NODE_RTTI        = 210;
 static const uint8 MESH_SHAPE_EDGE_RTTI        = 211;
@@ -137,6 +140,7 @@ static const uint8 MESH_SHAPE_QUADRANGLE_RTTI  = 222;
 static const uint8 MESH_SHAPE_TETRAHEDRON_RTTI = 231;
 static const uint8 MESH_SHAPE_HEXAHEDRON_RTTI  = 232;
 static const uint8 MESH_SHAPE_TRIPRISM_RTTI    = 233;
+static const uint8 MESH_SHAPE_PYRAMID_RTTI     = 234;
 
 static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
@@ -194,6 +198,9 @@ typedef Vector< long > LVector;
 
 // typedef std::vector < RVector > RMatrix;
 // typedef std::vector < CVector > CMatrix;
+
+template < class ValueType > class PolynomialFunction;
+typedef PolynomialFunction< double > RPolynomialFunction;
 
 template < class ModelValType > class Inversion;
 

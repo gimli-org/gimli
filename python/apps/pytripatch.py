@@ -471,6 +471,8 @@ def main( argv ):
                             , help="set x-coordinate offset for first electrode [0.0] " )
     parser.add_option("", "--zOffset", dest="zoffset" , default = 0.0, type = "float"
                             , help="set z-coordinate offset for first electrode [0.0] " )
+    parser.add_option("", "--maxDepth", dest="maxDepth" , default = 0.0, type = "float"
+                            , help="limit z-coordinate to maximum depth" )
     parser.add_option("", "--outSize", dest="outSize", default = None, type = "string"
                             , help="set the x:y pixel for the resulting figure file" )
     parser.add_option("", "--dpi", dest="dpi", default = 600, type = "float"
@@ -610,6 +612,17 @@ def main( argv ):
         if options.xlabel:
             axes.set_xlabel( options.xlabel )
 
+        if options.maxDepth:
+            yl = axes.get_ylim( )
+            
+            if options.verbose:
+                print "old ylims", yl
+                
+            axes.set_ylim( [ -options.maxDepth, yl[1] ] )
+            
+            if options.verbose:
+                print "new ylims", axes.get_ylim( )
+            
         if options.ylabel:
             axes.set_ylabel( options.ylabel )
 
@@ -624,6 +637,7 @@ def main( argv ):
                 axes.set_yticklabels( tickLabels )
                 print tickLabels
 
+        
         
     # else not cbar only
 

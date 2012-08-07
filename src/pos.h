@@ -77,8 +77,22 @@ public:
 
     Pos( const Pos< ValueType > & pos ) { copy_( pos ); }
 
+    /*! Assignment operator */
     Pos < ValueType > & operator = ( const Pos < ValueType > & pos ){
         if ( this != & pos ){ copy_( pos ); } return *this; }
+        
+    /*! Assignment operator */
+    Pos < ValueType > & operator = ( const Vector < ValueType > & v ){
+        if ( v.size() > 2 ) {
+            mat_[ 0 ] = v[ 0 ]; 
+            mat_[ 1 ] = v[ 1 ]; 
+            mat_[ 2 ] = v[ 2 ];
+        } else {
+            throwLengthError( 1, WHERE_AM_I + " v.size() < 2 " + toStr( v.size() ) );
+        }
+        return *this; 
+        
+    }
 
     inline ValueType & operator [] ( uint i ) { return mat_[ i ]; }
 
@@ -102,7 +116,7 @@ public:
 
     inline void assign( const ValueType & x, const ValueType & y, const ValueType & z ) {
         mat_[ 0 ] = x; mat_[ 1 ] = y; mat_[ 2 ] = z;
-        x_ = x; y_ = y; z_ = z;
+      //  x_ = x; y_ = y; z_ = z;
     }
 
     inline const ValueType & x() const { return mat_[ 0 ]; }
@@ -148,12 +162,12 @@ public:
 
     inline double distance( const Pos < ValueType > & p ) const { return dist( p ); }
 
-    /*! Test if this is faster than dist() */
-    inline double distT( const Pos < ValueType > & p ) const {
-        return std::sqrt(   ( x_ - p.x_ ) * ( x_ - p.x_ ) +
-                            ( y_ - p.y_ ) * ( y_ - p.y_ ) +
-                            ( z_ - p.z_ ) * ( z_ - p.z_ ) );
-    }
+//     /*! Test if this is faster than dist() */
+//     inline double distT( const Pos < ValueType > & p ) const {
+//         return std::sqrt(   ( x_ - p.x_ ) * ( x_ - p.x_ ) +
+//                             ( y_ - p.y_ ) * ( y_ - p.y_ ) +
+//                             ( z_ - p.z_ ) * ( z_ - p.z_ ) );
+//     }
 
     inline double abs( ) const { return length(); }
 
@@ -177,14 +191,6 @@ public:
         return ( a ).angle( b );
     }
 
-    Pos< ValueType > norm( const Pos< ValueType > & p1, const Pos< ValueType > & p2 ) const;
-
-    Pos< ValueType > norm( ) const {
-        double t = this->abs();
-        if ( t > TOLERANCE ) return *this / t;
-        return RVector3( 0.0, 0.0, 0.0 );
-    }
-
     inline ValueType dot( const Pos < ValueType > & p ) const {
         return mat_[ 0 ] * p[ 0 ] + mat_[ 1 ] * p[ 1 ] + mat_[ 2 ] * p[ 2 ];
     }
@@ -192,11 +198,21 @@ public:
     inline ValueType sum( ) const {
         return mat_[ 0 ] + mat_[ 1 ] + mat_[ 2 ];
     }
+    
+    Pos< ValueType > norm( const Pos< ValueType > & p1, const Pos< ValueType > & p2 ) const;
 
-    double normalise( ){
+    /*! Return normalised copy of this Pos. */
+    Pos< ValueType > norm( ) const {
+        double t = this->abs();
+        if ( t > TOLERANCE ) return *this / t;
+        return RVector3( 0.0, 0.0, 0.0 );
+    }
+
+    /*! Normalise this Pos and return itself. */
+    Pos< ValueType > & normalise( ){
         double t = this->abs();
         if ( t > TOLERANCE ) *this /= t;
-        return t;
+        return *this;
     }
 
     Pos< ValueType > cross( const Pos< ValueType > & p ) const;
@@ -251,7 +267,7 @@ public:
         return tmp;
     }
 
-    ValueType x_, y_, z_;
+//     ValueType x_, y_, z_;
 
 protected:
 

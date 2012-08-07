@@ -1,7 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2009-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Copyright (C) 2009-2012 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,7 +23,8 @@
 #define _GIMLI_CURVEFITTING__H
 
 #include "gimli.h"
-#include "modellingbase.h"
+
+#include "polynomial.h"
 
 namespace GIMLI{
 
@@ -98,10 +99,10 @@ public:
     /*! an additional forward operator for another time basis */
     virtual RVector response( const RVector & par, const RVector tvec );
 
-    /*! optional: generation of jacobian matrix, uncomment for default behaviour (brute force) */
+    /*! optional: generation of Jacobian matrix, uncomment for default behavior (brute force) */
     virtual void createJacobian( const RVector & model );
 
-    /*! Define the startmodel */
+    /*! Define the start model */
     inline virtual RVector startModel( ){ return RVector( np_, 0.0 ); }
     
 protected:
@@ -113,6 +114,42 @@ protected:
     size_t nh_, nt_, np_;
 };
 
+//! Multidimensional polynomial modelling class.
+/*! Multidimensional polynomial modelling class. 1, 2 or 3 dimensional polynomial modelling operator based on \ref PolynomialFunction */
+class PolynomialModelling : public ModellingBase {
+public:
+    
+    PolynomialModelling( uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints );
+            
+    virtual RVector response( const RVector & par );
+    
+    /*! Create starting model. The dimension is recognized here \n
+        * one-dimensional:         p[0][0][*] = 1 \n
+        * two-dimensional:         p[0][*][*] = 1 \n 
+        * three-dimensional:       p[*][*][*] = 1 \n
+    */
+    virtual RVector startModel( );
+    
+    /*! Return read only reference to the Polynomial Functor. */
+    const PolynomialFunction< double > & polynomialFunction() const { return f_; }
+    
+    /*! Constrain to polynomial function based on Pascal's triangle, i.e., forbid x^iy^jz^k with (i +j +k ) > size */
+    void setPascalsStyle( bool is ) { pascalTriangle_ = is; }
+    
+    /*! Constrain the polynomial function serendipity style Pascal's triangle, i.e., forbid x^iy^jz^k with (i +j +k ) > size+1.
+     *  Just work if setPascalsStyle is set.
+     */
+    void setSerendipityStyle( bool is ) { serendipityStyle_ = is; }
+    
+protected:
+    uint dim_;
+    std::vector < RVector3 > referencePoints_;
+    
+    PolynomialFunction< double > f_;
+    
+    bool pascalTriangle_;
+    bool serendipityStyle_;
+};
 
 } // namespace GIMLI{
 

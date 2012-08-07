@@ -43,7 +43,7 @@ std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > &
 }
 
 template < > ElementMatrix < double > & ElementMatrix < double >::u( const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & x, bool verbose ){
+                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose ){
 
     uint nVerts = ent.nodeCount();
     std::map< uint, RVector >::const_iterator it = uCache_.find( ent.rtti() );
@@ -56,7 +56,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u( const MeshE
 
         RVector tmp;
         for ( uint i = 0; i < nRules; i ++ ){
-            ent.shapeFunctionsL( x[ i ], tmp );
+            tmp = ent.N( integrationPnts[ i ] );
             N.setCol( i, tmp );
         }
         for ( uint i = 0; i < nVerts; i ++ ){
@@ -76,7 +76,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u( const MeshE
 }
 
 template < > ElementMatrix < double > & ElementMatrix < double >::u2( const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & x, bool verbose ){
+                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose ){
 
     uint nVerts = ent.nodeCount();
     std::map< uint, RMatrix>::const_iterator it = u2Cache_.find( ent.rtti() );
@@ -89,7 +89,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 
         RVector tmp;
         for ( uint i = 0; i < nRules; i ++ ){
-            ent.shapeFunctionsL( x[ i ], tmp );
+            tmp = ent.N( integrationPnts[ i ] );
             N.setCol( i, tmp );
         }
         for ( uint i = 0; i < nVerts; i ++ ){
@@ -117,18 +117,18 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
 }
 
 template < > ElementMatrix < double > & ElementMatrix < double >::ux2( const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & x, bool verbose ){
+                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose ){
                                  uint nVerts = ent.nodeCount();
     uint nRules = w.size();
 
     if ( dNdr_.rows() != nVerts ){
         dNdr_.resize( nVerts, nRules );
         for ( uint i = 0; i < nRules; i ++ ){
-            dNdr_.setCol( i, ent.deriveNdL( x[ i ], 0 ) );
+            dNdr_.setCol( i, ent.dNdL( integrationPnts[ i ], 0 ) );
         }
     }
 
-    double drdx = ent.shape().deriveCoordinates( 1, 0 );
+    double drdx = ent.shape().invJacobian()[ 0 ][ 0 ];
 
     double A = ent.shape().domainSize();
     for ( uint i = 0; i < nVerts; i ++ ){
@@ -142,7 +142,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2( const Mes
 }
 
 template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2( const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & x, bool verbose ){
+                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose ){
 
     uint nVerts = ent.nodeCount();
     uint nRules = w.size();
@@ -152,15 +152,15 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2( const 
         dNds_.resize( nVerts, nRules );
 
         for ( uint i = 0; i < nRules; i ++ ){
-            dNdr_.setCol( i, ent.deriveNdL( x[ i ], 0 ) );
-            dNds_.setCol( i, ent.deriveNdL( x[ i ], 1 ) );
+            dNdr_.setCol( i, ent.dNdL( integrationPnts[ i ], 0 ) );
+            dNds_.setCol( i, ent.dNdL( integrationPnts[ i ], 1 ) );
         }
     }
 
-    double drdx = ent.shape().deriveCoordinates( 0, 0 );
-    double dsdx = ent.shape().deriveCoordinates( 1, 0 );
-    double drdy = ent.shape().deriveCoordinates( 0, 1 );
-    double dsdy = ent.shape().deriveCoordinates( 1, 1 );
+    double drdx = ent.shape().invJacobian()[ 0 ][ 0 ];
+    double dsdx = ent.shape().invJacobian()[ 1 ][ 0 ];
+    double drdy = ent.shape().invJacobian()[ 0 ][ 1 ];
+    double dsdy = ent.shape().invJacobian()[ 1 ][ 1 ];
 
     double A = ent.shape().domainSize();
     for ( uint i = 0; i < nVerts; i ++ ){
@@ -175,7 +175,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2( const 
 }
 
 template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & x, bool verbose ){
+                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose ){
 
     uint nVerts = ent.nodeCount();
     uint nRules = w.size();
@@ -186,22 +186,22 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
         dNdt_.resize( nVerts, nRules );
 
         for ( uint i = 0; i < nRules; i ++ ){
-            dNdr_.setCol( i, ent.deriveNdL( x[ i ], 0 ) );
-            dNds_.setCol( i, ent.deriveNdL( x[ i ], 1 ) );
-            dNdt_.setCol( i, ent.deriveNdL( x[ i ], 2 ) );
+            dNdr_.setCol( i, ent.dNdL( integrationPnts[ i ], 0 ) );
+            dNds_.setCol( i, ent.dNdL( integrationPnts[ i ], 1 ) );
+            dNdt_.setCol( i, ent.dNdL( integrationPnts[ i ], 2 ) );
         }
     }
 
-    double drdx = ent.shape().deriveCoordinates( 0, 0 );
-    double dsdx = ent.shape().deriveCoordinates( 1, 0 );
-    double dtdx = ent.shape().deriveCoordinates( 2, 0 );
-    double drdy = ent.shape().deriveCoordinates( 0, 1 );
-    double dsdy = ent.shape().deriveCoordinates( 1, 1 );
-    double dtdy = ent.shape().deriveCoordinates( 2, 1 );
-    double drdz = ent.shape().deriveCoordinates( 0, 2 );
-    double dsdz = ent.shape().deriveCoordinates( 1, 2 );
-    double dtdz = ent.shape().deriveCoordinates( 2, 2 );
-
+    double drdx = ent.shape().invJacobian()[ 0 ][ 0 ];
+    double dsdx = ent.shape().invJacobian()[ 1 ][ 0 ];
+    double dtdx = ent.shape().invJacobian()[ 2 ][ 0 ];
+    double drdy = ent.shape().invJacobian()[ 0 ][ 1 ];
+    double dsdy = ent.shape().invJacobian()[ 1 ][ 1 ];
+    double dtdy = ent.shape().invJacobian()[ 2 ][ 1 ];
+    double drdz = ent.shape().invJacobian()[ 0 ][ 2 ];
+    double dsdz = ent.shape().invJacobian()[ 1 ][ 2 ];
+    double dtdz = ent.shape().invJacobian()[ 2 ][ 2 ];
+    
     double A = ent.shape().domainSize();
     for ( uint i = 0; i < nVerts; i ++ ){
         for ( uint j = i; j < nVerts; j ++ ){

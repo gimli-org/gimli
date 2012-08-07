@@ -1,7 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2009-2011 by the resistivity.net development team       *
- *   Thomas Günther thomas@resistivity.net                                 *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2009-2012 by the resistivity.net development team       *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "curvefitting.h"
+
+#include "pos.h"
 
 #include "regionManager.h"
 #include "vectortemplates.h"
@@ -142,4 +144,38 @@ void HarmonicModelling::createJacobian( const RVector & model ) {
     }
 }
 
+PolynomialModelling::PolynomialModelling( uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints )
+    : dim_( dim ), referencePoints_( referencePoints ), f_( PolynomialFunction < double >( nCoeffizient ) ) {
+    pascalTriangle_ = false;
+    serendipityStyle_ = false;
+    
+    this->regionManager().setParameterCount( powInt( nCoeffizient, 3 ) );
+}
+    
+RVector PolynomialModelling::response( const RVector & par ){ 
+    //std::cout << "response: " <<par << std::endl;
+    return f_.fill( round( par, TOLERANCE ) )( referencePoints_ ); 
+}
+    
+RVector PolynomialModelling::startModel( ){
+    
+    RVector p( powInt( f_.size(), 3 ), 0.0 );
+    f_.clear();
+        
+    p.setVal( 1.0, 0, (SIndex)( powInt( f_.size(), dim_ ) ) ); 
+
+    if ( pascalTriangle_ ){
+        for ( Index k = 0; k < f_.size(); k ++ ){
+            for ( Index j = 0; j < f_.size(); j ++ ){
+                for ( Index i = 0; i < f_.size(); i ++ ){
+                    //**  remove elements outside of the Pascal's triangle
+                    if ( ( i + j + k ) >= ( f_.size() + serendipityStyle_ * ( dim_-1) ) ) p[ k*( f_.size() * f_.size() ) + j * f_.size() + i ] = 0.0;
+                }
+            }
+        }
+    }
+    
+    return p;
+}
+    
 } // namespace GIMLI{
