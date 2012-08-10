@@ -51,8 +51,18 @@ DLLEXPORT Mesh createMesh3D( const RVector & x, const RVector & y, const RVector
 DLLEXPORT bool addTriangleBoundary( Mesh & mesh, 
                                     double xBoundary, double yBoundary, int cellMarker, bool save = false );
 
-/*! Generate a simple three dimensional mesh by extruding a two dimensional triangle mesh into RVector z using triangle prism */
-DLLEXPORT Mesh createMesh3D( const Mesh mesh, const RVector & z, int markerType = 0 );
+/*! Generate a simple three dimensional mesh by extruding a two dimensional mesh into RVector z using triangle prism or hexahedrons or both.
+ * 3D cell marker are set from 2D cell marker. 
+ * The boundary marker for the side boundaries are set from edge marker in mesh. 
+ * Top and bottomLayer boundary marker are set from parameter topLayer and bottomLayer. */
+DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z, int topLayer = 0, int bottomLayer = 0);
+
+// /*! Shortcut */
+// DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z, int topLayer);
+// 
+// /*! Shortcut */
+// DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z );
+
 
     
 } // namespace GIMLI

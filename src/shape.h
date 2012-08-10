@@ -33,15 +33,17 @@
 namespace GIMLI{
 
 DLLEXPORT std::vector < PolynomialFunction < double > > 
-    createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff, bool pascale, bool serendipity );
+    createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff, 
+                                    bool pascale, bool serendipity, const RVector & startVector = RVector( 0 ) );
     
 template < class Ent > DLLEXPORT std::vector < PolynomialFunction < double > > 
-    createPolynomialShapeFunctions( const Ent & ent, uint nCoeff, bool pascale, bool serendipity ) {
+    createPolynomialShapeFunctions( const Ent & ent, uint nCoeff, 
+                                    bool pascale, bool serendipity, const RVector & startVector = RVector( 0 ) ) {
         
     std::vector < RVector3 > pnts;
     for ( Index i = 0; i < ent.nodeCount(); i ++ ){ pnts.push_back( ent.rst( i ) ); }
     
-    return createPolynomialShapeFunctions( pnts, ent.dim(), nCoeff, pascale, serendipity );
+    return createPolynomialShapeFunctions( pnts, ent.dim(), nCoeff, pascale, serendipity, startVector );
 }
     
 class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {
@@ -253,15 +255,15 @@ public:
     /*! Returns the norm vector if possible otherwise returns non valid Vector3 */
     virtual RVector3 norm() const;
 
+    /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */
+    void changed();
+    
 protected:
     
     inline void resizeNodeSize_( uint n ) { nodeVector_.resize( n, NULL );  }
     
     /*! Virtual method to calculate the domain size i.e length, area, volume of the shapes */
     virtual double domainSize_() const { return 0.0; }
-
-    mutable double jacDeterminant_;
-    mutable bool hasJacDeterminant_;
 
     mutable double domSize_;
     mutable bool hasDomSize_;
@@ -379,47 +381,13 @@ public:
     /*! See Shape::xyz2rst. this is a specialized override for speedup. */
     virtual void xyz2rst( const RVector3 & pos, RVector3 & rst  ) const;
     
-//     /*! See Shape::N. */
-//     virtual void N( const RVector3 & L, RVector & n ) const;
-//     
-//     /*! See Shape::dNdrst. */
-//     virtual RMatrix dNdrst( const RVector3 & rst ) const;
-    
-//     /*! Returns the unique natural coordinates \ref RVector3 (\f$ s(x,y),t(x,y),0) \f$
-//         for a cartesian \ref RVector3 pos \f$ (x,y) \f$ inside this \ref TriangleShape . \n
-//         m: matrix( [x21,x31], [y21,y31], [z21,z31] )$ \n
-//         b: matrix( [x-x1],[y-y1] )$ \n
-//         ls : linsolve_by_lu( m, b )$ \n
-//         L : ratsimp( first(ls) );
-//     */
-//     virtual RVector3 coordinates( const RVector3 & pos ) const;
-
-//     virtual RVector3 xyz( const RVector3 & rst ) const;
-    
-//     /*! Returns the partial derivative of the natural coordinates \f$L_i, i=0..2\f$ with respect to the cartesian coordinates
-//     \ref RVector3 pos \f$ (x,y) \f$:
-//         \f$ \frac{ \partial L_i(x,y) }{ \partial coord } \f$ \n
-//         m: matrix( [x21,x31], [y21,y31] )$ \n
-//         b: matrix( [x-x1],[y-y1] )$ \n
-//         ls : linsolve_by_lu( m, b )$ \n
-//         L : ratsimp( first(ls) ); \n
-//         diff( L, x ); \n
-//         diff( L, y ); \n
-//     */
-//     virtual double deriveCoordinates( uint i, uint coord ) const;
-
-//     virtual bool touch1( const RVector3 & pos, bool verbose, int & pFunIdx ) const;
-
+    void setNodes( Node * n0, Node * n1, Node * n2 );
+        
     double area() const;
 
     virtual RVector3 norm() const;
 
 protected:
-//     /*! Calculate jacobian determinant
-//         m: matrix( [x21,x31], [y21,y31], [z21,z31] )$
-//         ratsimp( determinant( m ) );
-//     */
-//     virtual double jacobianDeterminant_() const;
 
     /*! Interface to get the size i.e. area of this \ref TriangleShape */
     virtual double domainSize_() const { return area(); }
@@ -477,7 +445,6 @@ protected:
     virtual double domainSize_() const { return area(); }
 };
 
-
 static const double TetCoordinates[ 4 ][ 3 ] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
@@ -520,6 +487,23 @@ public:
 protected:
 
     virtual double domainSize_() const { return volume(); }
+};
+
+static const uint8 HexahedronSplit5TetID[5][4] = {
+    {1, 4, 5, 6},
+    {3, 6, 7, 4},
+    {1, 0, 4, 3},
+    {1, 2, 3, 6},
+    {1, 4, 6, 3}
+};
+
+static const uint8 HexahedronSplit6TetID[6][4] = {
+    {0, 1, 2, 6},
+    {0, 2, 3, 6},
+    {0, 1, 6, 5},
+    {0, 4, 5, 6},
+    {0, 3, 7, 6},
+    {0, 4, 6, 7}
 };
 
 static const double HexCoordinates[ 8 ][ 3 ] = {
@@ -575,6 +559,12 @@ protected:
     virtual double domainSize_() const { return volume(); }
 };
 
+static const uint8 TriPrimSplit3TetID[ 3 ][ 4 ] = {
+    {0, 5, 1, 2},
+    {3, 1, 5, 4},
+    {3, 5, 1, 0}
+};
+
 static const double PrismCoordinates[ 6 ][ 3 ] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
@@ -625,7 +615,7 @@ static const double PyramidCoordinates[ 5 ][ 3 ] = {
     {1.0, 0.0, 0.0},
     {1.0, 1.0, 0.0},
     {0.0, 1.0, 0.0},
-    {0.5, 0.5, 1.0}
+    {0.0, 0.0, 0.1}
 };
 
 //! Pyramid

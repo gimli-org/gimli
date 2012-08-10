@@ -144,21 +144,24 @@ void HarmonicModelling::createJacobian( const RVector & model ) {
     }
 }
 
-PolynomialModelling::PolynomialModelling( uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints )
+PolynomialModelling::PolynomialModelling( uint dim, uint nCoeffizient, 
+                                          const std::vector < RVector3 > & referencePoints, const RVector & startModel )
     : dim_( dim ), referencePoints_( referencePoints ), f_( PolynomialFunction < double >( nCoeffizient ) ) {
     pascalTriangle_ = false;
     serendipityStyle_ = false;
+    startModel_ = startModel;
+    powCombination_ = 0;
     
     this->regionManager().setParameterCount( powInt( nCoeffizient, 3 ) );
 }
     
 RVector PolynomialModelling::response( const RVector & par ){ 
-    //std::cout << "response: " <<par << std::endl;
     return f_.fill( round( par, TOLERANCE ) )( referencePoints_ ); 
 }
     
 RVector PolynomialModelling::startModel( ){
-    
+    if ( startModel_.size() == powInt( f_.size(), 3 ) ) return startModel_;
+        
     RVector p( powInt( f_.size(), 3 ), 0.0 );
     f_.clear();
         
@@ -169,7 +172,11 @@ RVector PolynomialModelling::startModel( ){
             for ( Index j = 0; j < f_.size(); j ++ ){
                 for ( Index i = 0; i < f_.size(); i ++ ){
                     //**  remove elements outside of the Pascal's triangle
-                    if ( ( i + j + k ) >= ( f_.size() + serendipityStyle_ * ( dim_-1) ) ) p[ k*( f_.size() * f_.size() ) + j * f_.size() + i ] = 0.0;
+                    if ( powCombination_ > 0 ) {
+                        if ( ( i + j + k ) > powCombination_ ) p[ k*( f_.size() * f_.size() ) + j * f_.size() + i ] = 0.0;
+                    } else {
+                        if ( ( i + j + k ) >= ( f_.size() + serendipityStyle_ * ( dim_ -1) ) ) p[ k*( f_.size() * f_.size() ) + j * f_.size() + i ] = 0.0;
+                    }
                 }
             }
         }

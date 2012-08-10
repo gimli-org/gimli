@@ -302,8 +302,7 @@ void TriangleWrapper::addRegionMarkerTmp( int marker, const RVector3 & pos, doub
     
     if ( area == -1.0 ) {
         holeMarker_.push_back( pos );
-    }
-    else {
+    } else {
         regionMarker_[ marker ] = std::pair< RVector3, double > ( pos, area );
     }
 }

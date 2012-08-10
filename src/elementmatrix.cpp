@@ -28,20 +28,6 @@
 
 namespace GIMLI{
 
-std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & e ){
-    for ( uint i = 0; i < e.idx().size(); i ++ ) str << e.idx(i) << " " ;
-
-    str << std::endl;
-    for ( uint i = 0; i < e.size(); i ++ ){
-        str << e.idx( i ) << "\t: ";
-        for ( uint j = 0; j < e.size(); j ++ ){
-            str << e.getVal( i , j ) << " ";
-        }
-        str << std::endl;
-    }
-    return str;
-}
-
 template < > ElementMatrix < double > & ElementMatrix < double >::u( const MeshEntity & ent,
                                 const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose ){
 
@@ -245,11 +231,19 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u( const MeshE
             return u( ent, IntegrationRules::instance().triWeights( 2 ), IntegrationRules::instance().triAbscissa( 2 ), false ); //ch
         case MESH_QUADRANGLE_RTTI:
         case MESH_QUADRANGLE8_RTTI:
+        case MESH_QUADRANGLEFACE_RTTI:
+        case MESH_QUADRANGLEFACE8_RTTI:
             return u( ent, IntegrationRules::instance().quaWeights( 2 ), IntegrationRules::instance().quaAbscissa( 2 ), false ); //ch
         case MESH_TETRAHEDRON_RTTI:
         case MESH_TETRAHEDRON10_RTTI:
             return u( ent, IntegrationRules::instance().tetWeights( 2 ), IntegrationRules::instance().tetAbscissa( 2 ), false );
-
+        case MESH_HEXAHEDRON_RTTI:
+        case MESH_HEXAHEDRON20_RTTI:
+            return u( ent, IntegrationRules::instance().hexWeights( 2 ), IntegrationRules::instance().hexAbscissa( 2 ), false );
+        case MESH_TRIPRISM_RTTI:
+        case MESH_TRIPRISM15_RTTI:
+            return u( ent, IntegrationRules::instance().priWeights( 2 ), IntegrationRules::instance().priAbscissa( 2 ), false );
+            
         default: std::cerr << WHERE_AM_I << " celltype not spezified " << ent.rtti() << std::endl;
     }
     return *this;
@@ -357,6 +351,14 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2( const Mesh
         return u2( ent, IntegrationRules::instance().tetWeights( 2 ), IntegrationRules::instance().tetAbscissa( 2 ), false );
     case MESH_TETRAHEDRON10_RTTI:
         return u2( ent, IntegrationRules::instance().tetWeights( 4 ), IntegrationRules::instance().tetAbscissa( 4 ), false );
+    case MESH_HEXAHEDRON_RTTI:
+        return u2( ent, IntegrationRules::instance().hexWeights( 2 ), IntegrationRules::instance().hexAbscissa( 2 ), false );
+    case MESH_HEXAHEDRON20_RTTI:
+        return u2( ent, IntegrationRules::instance().hexWeights( 4 ), IntegrationRules::instance().hexAbscissa( 4 ), false );
+    case MESH_TRIPRISM_RTTI:
+        return u2( ent, IntegrationRules::instance().priWeights( 2 ), IntegrationRules::instance().priAbscissa( 2 ), false );
+    case MESH_TRIPRISM15_RTTI:
+        return u2( ent, IntegrationRules::instance().priWeights( 4 ), IntegrationRules::instance().priAbscissa( 4 ), false );
     default:
       std::cerr << ent.rtti() << std::endl;
       THROW_TO_IMPL
@@ -640,7 +642,16 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2( con
 //
 //     break;
 //   }
-      ux2uy2uz2( cell, IntegrationRules::instance().tetWeights( 2 ), IntegrationRules::instance().tetAbscissa( 2 ), false );   break;
+        ux2uy2uz2( cell, IntegrationRules::instance().tetWeights( 2 ), IntegrationRules::instance().tetAbscissa( 2 ), false );   break;
+    case MESH_HEXAHEDRON_RTTI:
+        ux2uy2uz2( cell, IntegrationRules::instance().hexWeights( 2 ), IntegrationRules::instance().hexAbscissa( 2 ), false );   break;
+    case MESH_HEXAHEDRON20_RTTI:
+        ux2uy2uz2( cell, IntegrationRules::instance().hexWeights( 4 ), IntegrationRules::instance().hexAbscissa( 4 ), false );   break;
+    case MESH_TRIPRISM_RTTI:
+        ux2uy2uz2( cell, IntegrationRules::instance().priWeights( 2 ), IntegrationRules::instance().priAbscissa( 2 ), false );   break;
+    case MESH_TRIPRISM15_RTTI:
+        ux2uy2uz2( cell, IntegrationRules::instance().priWeights( 4 ), IntegrationRules::instance().priAbscissa( 4 ), false );   break;
+           
   default:
     std::cerr << cell.rtti() << std::endl;
     THROW_TO_IMPL

@@ -649,6 +649,7 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
 void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RVector > & dataMap, 
                       const std::vector < RVector3 > & vec ) const {
     bool verbose = false;
+    
     if ( verbose ){
         std::cout << "Write vtk " << fbody + ".vtk" << std::endl;
     }
@@ -847,7 +848,7 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
                         case MESH_TRIANGLEFACE_RTTI: file      << "5 "; break;
                         case MESH_TRIANGLEFACE6_RTTI: file     << "22 "; break;
                         case MESH_QUADRANGLEFACE_RTTI: file    << "9 "; break;
-        //           case MESH_QUADRANGLEFACE8_RTTI: file   << "23 "; break;
+                        case MESH_QUADRANGLEFACE8_RTTI: file   << "23 "; break;
                     default: std::cerr << WHERE_AM_I << " nothing know about." << boundary( i ).rtti()
                             << std::endl;
                     }
@@ -858,8 +859,10 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
         RVector tmp( boundaryCount() );
         std::transform( boundaryVector_.begin(), boundaryVector_.end(),
                         &tmp[0], std::mem_fun( &Boundary::marker ) );
+        
         if ( !data.count( "_Marker" ) ) data.insert( std::make_pair( "_Marker",  tmp ) );
-         //** write boundary data
+        
+        //** write boundary data
         file << "CELL_DATA " << boundaryCount() << std::endl;
         for ( std::map < std::string, RVector >::iterator it = data.begin(); it != data.end(); it ++ ){
             if ( verbose ){

@@ -179,14 +179,14 @@ public:
                                         const std::vector < RVector3 > & addit );
 
     /*! Create and copy global H2 mesh of this mesh.*/
-    Mesh createH2Mesh( ) const;
+    Mesh createH2( ) const;
     
     /*! Create and copy global P2 mesh of this mesh.*/
-    Mesh createP2Mesh( ) const;
+    Mesh createP2( ) const;
     
-    void createH2Mesh( const Mesh & mesh );
+    void createH2( const Mesh & mesh );
 
-    void createP2Mesh( const Mesh & mesh );
+    void createP2( const Mesh & mesh );
 
     int createRefined( const Mesh & mesh, const std::vector < int > & cellIdx );
 
@@ -225,7 +225,7 @@ public:
     std::vector < RVector3 > positions( ) const;
 
     /*! Returns a vector of node positions for an index vector */
-    std::vector < RVector3 > positions( const std::vector < uint > & idx ) const;
+    std::vector < RVector3 > positions( const IndexArray & idx ) const;
 
     /*! Returns a vector of all cell center positions*/
     std::vector < RVector3 > cellCenter( ) const;
@@ -239,11 +239,14 @@ public:
     /*! Returns a vector of all cell marker */
     std::vector < int > cellMarker() const;
 
+    /*! Returns a vector of all node marker */
+    std::vector < int > nodeMarker() const;
+    
     /*! Returns an index vector of all nodes that match the marker */
-    std::vector < uint > findNodesIdxByMarker( int marker ) const;
+    IndexArray findNodesIdxByMarker( int marker ) const;
 
-    /*! Returns an index list of all nodes that match the marker */
-    std::list < uint > findListNodesIdxByMarker( int marker ) const;
+//     /*! Returns an index list of all nodes that match the marker */
+//     std::list < uint > findListNodesIdxByMarker( int marker ) const;
 
     /*! Returns a vector of boundary ptrs with the boundary marker equal marker.*/
     std::vector < Boundary * > findBoundaryByMarker( int marker ) const;
@@ -370,9 +373,7 @@ public:
     
     /*! Export mesh and whole exportData map and vector data in vec*/
     void exportVTK( const std::string & fbody, const std::vector < RVector3 > & vec ) const;
-    
-    
-
+ 
     void readVTKPoints_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKCells_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKScalars_( std::fstream & file, const std::vector < std::string > & row );
@@ -395,8 +396,7 @@ public:
     void exportAsTetgenPolyFile( const std::string & filename );
     //** end I/O stuff
 
-
-
+    
     void addExportData( const std::string & name, const RVector & data );
 
     RVector exportData( const std::string & name ) const;

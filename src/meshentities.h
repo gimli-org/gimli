@@ -482,12 +482,6 @@ public:
     
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
      
-//     /*! See ref MeshEntity::N() */
-//     virtual RVector N( const RVector3 & L ) const;
-//     
-//     /*! See MeshEntity::dNdL */
-//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
-
     friend std::ostream & operator << ( std::ostream & str, const EdgeCell & t );
 
 protected:
@@ -505,12 +499,6 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
      
-//     /*! See ref MeshEntity::N() */
-//     virtual RVector N( const RVector3 & L ) const;
-// 
-//     /*! See MeshEntity::dNdL */
-//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
-
 protected:
 };
 
@@ -534,12 +522,6 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
      
-//     /*! See ref MeshEntity::N() */
-//     virtual RVector N( const RVector3 & L ) const;
-// 
-//     /*! See MeshEntity::dNdL */
-//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
-//     
     friend std::ostream & operator << ( std::ostream & str, const Triangle & t );
 
 protected:
@@ -554,11 +536,6 @@ public:
     virtual uint rtti() const { return MESH_TRIANGLE6_RTTI; }
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
-//     /*! See ref MeshEntity::N() */
-//     virtual RVector N( const RVector3 & L ) const;
-// 
-//     /*! See MeshEntity::dNdL */
-//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
     
 protected:
 };
@@ -599,12 +576,6 @@ public:
     virtual void findNeighbourCell( uint i );
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
-        
-//     /*! See ref MeshEntity::N() */
-//     virtual RVector N( const RVector3 & L ) const;
-// 
-//     /*! See MeshEntity::dNdL */
-//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
 
     friend std::ostream & operator << ( std::ostream & str, const Quadrangle & t );
 
@@ -633,12 +604,6 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
     
-//     /*! See MeshEntity::N() */
-//     virtual RVector N( const RVector3 & L ) const;
-// 
-//     /*! See MeshEntity::dNdL() */
-//     virtual RVector dNdL( const RVector3 & L, uint i ) const;
-
 protected:
 };
 
@@ -745,23 +710,6 @@ static const uint8 HexahedronFacesID[ 6 ][ 4 ] = {
     {0, 1, 5, 4},
     {4, 5, 6, 7},
     {0, 3, 2, 1}
-};
-
-static const uint8 HexahedronSplit5TetID[5][4] = {
-    {1, 4, 5, 6},
-    {3, 6, 7, 4},
-    {1, 0, 4, 3},
-    {1, 2, 3, 6},
-    {1, 4, 6, 3}
-};
-
-static const uint8 HexahedronSplit6TetID[6][4] = {
-    {0, 1, 2, 6},
-    {0, 2, 3, 6},
-    {0, 1, 6, 5},
-    {0, 4, 5, 6},
-    {0, 3, 7, 6},
-    {0, 4, 6, 7}
 };
 
 class DLLEXPORT Hexahedron: public Cell {

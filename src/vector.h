@@ -1033,6 +1033,12 @@ operator OP ( const __VectorExpr< ValueType, A > & vec, const ValueType & v ){ \
     for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = vec[ i ] OP v; \
     return ret;\
 } \
+template < class ValueType > BVector \
+operator OP ( const std::vector < ValueType > & vec, const ValueType & v ){ \
+    BVector ret( vec.size(), 0 ); \
+    for ( Index i = 0; i < ret.size(); i ++ ) ret[ i ] = vec[ i ] OP v; \
+    return ret;\
+} \
 
 DEFINE_COMPARE_OPERATOR__( < )
 DEFINE_COMPARE_OPERATOR__( <= )

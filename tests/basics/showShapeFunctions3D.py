@@ -102,7 +102,7 @@ def tetrahedron( p2 ):
     mesh.rotate( g.RVector3( 10.0, 34.0, 45 ) )
     mesh.scale( g.RVector3( 0.9, 0.8, 0.7 ) )
 
-    if p2: mesh = mesh.createP2Mesh()
+    if p2: mesh = mesh.createP2()
     
     show( mesh )
 
@@ -112,10 +112,13 @@ def hexahedron( p2 ):
                            g.asvector( np.linspace( 0, 1, 2 ) ), 
                            g.asvector( np.linspace( 0, 1, 2 ) ) )
 
-    mesh.rotate( g.RVector3( 10.0, 34.0, 45 ) )
-    mesh.scale( g.RVector3( 0.9, 0.8, 0.7 ) )
+    #mesh.rotate( g.RVector3( 10.0, 34.0, 45 ) )
+    #mesh.scale( g.RVector3( 0.9, 0.8, 0.7 ) )
 
-    if p2: mesh = mesh.createP2Mesh()
+    #mesh.rotate( g.RVector3( 10.0, 34.0, 45 ) )
+    mesh.scale( g.RVector3( 1.0, 1.0, 5.0 ) )
+
+    if p2: mesh = mesh.createP2()
 
     show( mesh )
 
@@ -138,7 +141,7 @@ def prism( p2 ):
     mesh.scale( g.RVector3( 0.9, 0.8, 0.7 ) )
     
     if p2: 
-        mesh = mesh.createP2Mesh()
+        mesh = mesh.createP2()
         mesh.exportVTK( "prism15" )
     else:
         mesh.exportVTK( "prism6" )
@@ -148,7 +151,7 @@ def prism( p2 ):
     
 #tetrahedron( p2 = False )
 #tetrahedron( p2 = True )
-#hexahedron( p2 = False )
+hexahedron( p2 = False )
 #hexahedron( p2 = True )
 #prism( p2 = False )
 prism( p2 = True )

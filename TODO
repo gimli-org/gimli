@@ -1,3 +1,9 @@
+libgimli:
+
+    PolynomialFunction :: refactor (only use list), clean TODO
+    entknote das modellingbase::startModel, createStartModel, createDefaultStartModel, createStartVector kuddelmuddel
+
+
 we want to use sourceforce tracker for this task
 http://sourceforge.net/tracker/?group_id=542831
 

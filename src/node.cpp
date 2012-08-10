@@ -19,7 +19,9 @@
  ***************************************************************************/
 
 #include "node.h"
+
 #include "meshentities.h"
+#include "shape.h"
 
 namespace GIMLI{
 
@@ -64,6 +66,15 @@ Node & Node::operator = ( const Node & node ){
 
 Node::~Node(){
     //std::cout << " delete Node " << pos_ << " " << id_ << " at " << this << std::endl;
+}
+
+void Node::changed_( ){
+    for ( std::set < Boundary * >::iterator it = boundSet_.begin(); it!= boundSet_.end(); it ++ ){
+        (*it)->shape().changed();        
+    }
+    for ( std::set < Cell * >::iterator it = cellSet_.begin(); it!= cellSet_.end(); it ++ ){
+        (*it)->shape().changed();        
+    }
 }
 
 void Node::copy_( const Node & node ){
