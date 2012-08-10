@@ -47,9 +47,6 @@ public:
         CPPUNIT_ASSERT( q1_->shape().createShapeFunctions()[ 1 ] == Q4_2 );
         CPPUNIT_ASSERT( q1_->shape().createShapeFunctions()[ 2 ] == Q4_3 );
         CPPUNIT_ASSERT( q1_->shape().createShapeFunctions()[ 3 ] == Q4_4 );
-        
-        
-        
     }
     
     void testRSTXYZ(){
@@ -72,6 +69,7 @@ public:
         CPPUNIT_ASSERT( tet2_->shape().domainSize() == 1.0 / 6.0 );
         CPPUNIT_ASSERT( tet3_->shape().domainSize() == 1.0 / 6.0 );
         CPPUNIT_ASSERT( hex1_->shape().domainSize() == 1.0 );
+        CPPUNIT_ASSERT( pri1_->shape().domainSize() == 0.5 );
     }
     void testJacobiDeterminat(){
         //std::cout << "testJacobiDeterminat(): " << det( inv( t1_->shape().createJacobian() ) ) << std::endl;
@@ -212,6 +210,10 @@ public:
         GIMLI::Node *nodes[]={ n1_, n2_, n3_, n4_, n5_, n6_, n7_, n8_ };
         std::vector < GIMLI::Node* > n(8); std::copy( &nodes[0], &nodes[8], &n[0] );
         hex1_ = new GIMLI::Hexahedron( n );
+        
+        GIMLI::Node *nnpri[]={ n1_, n2_, n4_, n5_, n6_, n8_ };
+        n.resize( 6 ); std::copy( &nnpri[0], &nnpri[6], &n[0] );
+        pri1_ = new GIMLI::TriPrism( n );
     }
 
     void testGridGen(){
@@ -238,6 +240,8 @@ public:
 
         delete hex1_;
         delete q1_;
+        
+        delete pri1_;
 
         delete e1_;
         
@@ -265,6 +269,8 @@ private:
     
     GIMLI::Tetrahedron  * tet1_, * tet2_, * tet3_ ;
     GIMLI::Hexahedron   * hex1_;
+    
+    GIMLI::TriPrism     * pri1_;
 
 };
 

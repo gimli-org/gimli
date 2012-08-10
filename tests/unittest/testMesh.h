@@ -46,7 +46,7 @@ public:
         mesh.showInfos();
         
         Mesh tmp;
-        tmp.createH2Mesh( mesh );
+        tmp.createH2( mesh );
 //         tmp.save("tmph2.bms");
 //         tmp.showInfos();
         
@@ -55,7 +55,7 @@ public:
         CPPUNIT_ASSERT( tmp.nodeCount() == 12 );
         CPPUNIT_ASSERT( tmp.boundaryCount() == 23 );
                  
-        tmp.createP2Mesh( mesh );
+        tmp.createP2( mesh );
         
 //         tmp.save("tmpp2.bms");
 //         tmp.showInfos();
@@ -78,14 +78,14 @@ public:
         mesh.createNeighbourInfos();
         
         Mesh tmp;
-        tmp.createH2Mesh( mesh );
+        tmp.createH2( mesh );
        
         CPPUNIT_ASSERT( tmp.cellCount() == 8 );
         CPPUNIT_ASSERT( tmp.nodeCount() == 10 );
         // boundaries with marker 0 will not yet refined
         CPPUNIT_ASSERT( tmp.boundaryCount() == 0 );
                  
-        tmp.createP2Mesh( mesh );
+        tmp.createP2( mesh );
         CPPUNIT_ASSERT( tmp.cellCount() == 1 );
         CPPUNIT_ASSERT( tmp.nodeCount() == 10 );
         CPPUNIT_ASSERT( tmp.boundaryCount() == 4 );

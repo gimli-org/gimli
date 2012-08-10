@@ -119,7 +119,8 @@ protected:
 class PolynomialModelling : public ModellingBase {
 public:
     
-    PolynomialModelling( uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints );
+    PolynomialModelling( uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints,
+                        const RVector & startModel = RVector( 0 ) );
             
     virtual RVector response( const RVector & par );
     
@@ -141,6 +142,8 @@ public:
      */
     void setSerendipityStyle( bool is ) { serendipityStyle_ = is; }
     
+    void setPowCombinationTmp( int i ) { powCombination_ = i; }
+    
 protected:
     uint dim_;
     std::vector < RVector3 > referencePoints_;
@@ -149,6 +152,7 @@ protected:
     
     bool pascalTriangle_;
     bool serendipityStyle_;
+    int powCombination_;
 };
 
 } // namespace GIMLI{

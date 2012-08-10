@@ -155,15 +155,15 @@ void Mesh::findRange_() const{
 
 Boundary * Mesh::createBoundary( std::vector < Node * > & nodes, int marker ){
     switch ( nodes.size() ){
-      case 1: return createBoundary_< NodeBoundary >( nodes, marker, boundaryCount() ); break;
-      case 2: return createBoundary_< Edge >( nodes, marker, boundaryCount() ); break;
+      case 1: return createBoundaryChecked_< NodeBoundary >( nodes, marker ); break;
+      case 2: return createBoundaryChecked_< Edge >( nodes, marker ); break;
       case 3: {
         if ( dimension_ == 2 )
-            return createBoundary_< Edge3 >( nodes, marker, boundaryCount() );
-        return createBoundary_< TriangleFace >( nodes, marker, boundaryCount() ); } break;
-      case 4: return createBoundary_< QuadrangleFace >( nodes, marker, boundaryCount() ); break;
-      case 6: return createBoundary_< Triangle6Face >( nodes, marker, boundaryCount() ); break;
-      case 8: return createBoundary_< Quadrangle8Face >( nodes, marker, boundaryCount() ); break;
+            return createBoundaryChecked_< Edge3 >( nodes, marker );
+        return createBoundaryChecked_< TriangleFace >( nodes, marker ); } break;
+      case 4: return createBoundaryChecked_< QuadrangleFace >( nodes, marker ); break;
+      case 6: return createBoundaryChecked_< Triangle6Face >( nodes, marker ); break;
+      case 8: return createBoundaryChecked_< Quadrangle8Face >( nodes, marker ); break;
     }
     std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine boundary for nodes: " << nodes.size() << std::endl;
     return NULL;
@@ -506,29 +506,30 @@ std::vector < Cell * > Mesh::findCellByAttribute( double from, double to ) const
     return vCell;
 }
 
-std::vector < uint > Mesh::findNodesIdxByMarker( int marker ) const {
-    std::vector < uint > idx; idx.reserve( nodeCount() );
-    for ( uint i = 0; i < nodeCount(); i ++ ) {
-        if ( node( i ).marker() == marker ) idx.push_back( i );
-    }
-    return idx;
+IndexArray Mesh::findNodesIdxByMarker( int marker ) const {
+    return find( this->nodeMarker() == marker );
+//     std::vector < uint > idx; idx.reserve( nodeCount() );
+//     for ( uint i = 0; i < nodeCount(); i ++ ) {
+//         if ( node( i ).marker() == marker ) idx.push_back( i );
+//     }
+//     return idx;
 }
 
-std::list < uint > Mesh::findListNodesIdxByMarker( int marker ) const {
-    std::list < uint > idx;
-    for ( uint i = 0; i < nodeCount(); i ++ ) {
-        if ( node( i ).marker() == marker ) idx.push_back( i );
-    }
-    return idx;
-}
+// std::list < uint > Mesh::findListNodesIdxByMarker( int marker ) const {
+//     std::list < uint > idx;
+//     for ( uint i = 0; i < nodeCount(); i ++ ) {
+//         if ( node( i ).marker() == marker ) idx.push_back( i );
+//     }
+//     return idx;
+// }
 
 std::vector < RVector3 > Mesh::positions( ) const {
-    std::vector < uint > idx( this->nodeCount() );
+    IndexArray idx( this->nodeCount() );
     std::generate( idx.begin(), idx.end(), IncrementSequence< uint >( 0 ) );
     return this->positions( idx );
 }
 
-std::vector < RVector3 > Mesh::positions( const std::vector < uint > & idx ) const {
+std::vector < RVector3 > Mesh::positions( const IndexArray & idx ) const {
     std::vector < RVector3 > pos; pos.reserve( idx.size() );
     for ( uint i = 0; i < idx.size(); i ++ ) {
         pos.push_back( node( idx[ i ] ).pos() );
@@ -589,14 +590,14 @@ void Mesh::createClosedGeometryParaMesh( const std::vector < RVector3 > & vPos, 
 //   for ( uint i = 0; i < cellCount(); i ++ ) cell( i ).setMarker( i );
 }
 
-Mesh Mesh::createH2Mesh( ) const {
+Mesh Mesh::createH2( ) const {
     Mesh ret( this->dimension() ); 
-    ret.createH2Mesh( *this );
+    ret.createH2( *this );
     ret.setCellAttributes( ret.cellMarker() );
     return ret;
 }
     
-void Mesh::createH2Mesh( const Mesh & mesh ){
+void Mesh::createH2( const Mesh & mesh ){
     std::vector < int > cellsToRefine( mesh.cellCount() );
 
     for ( uint i = 0, imax = mesh.cellCount(); i < imax; i ++ ) cellsToRefine[ i ] = i;
@@ -863,13 +864,13 @@ int Mesh::createRefined2D_( const Mesh & mesh, const std::vector < int > & cellI
     return 1;
 }
 
-Mesh Mesh::createP2Mesh( ) const {
+Mesh Mesh::createP2( ) const {
     Mesh ret( this->dimension() ); 
-    ret.createP2Mesh( *this );
+    ret.createP2( *this );
     return ret;
 }
 
-void Mesh::createP2Mesh( const Mesh & mesh ){
+void Mesh::createP2( const Mesh & mesh ){
     this->clear();
 
     std::map< std::pair < Index, Index >, Node * > nodeMatrix;
@@ -1434,6 +1435,12 @@ void Mesh::clearExportData(){
     exportDataMap_.clear();
 }
 
+std::vector < int > Mesh::nodeMarker() const {
+    std::vector < int > tmp( nodeCount() );
+    std::transform( nodeVector_.begin(), nodeVector_.end(), tmp.begin(), std::mem_fun( & Node::marker ) );
+    return tmp;
+}
+    
 std::vector < int > Mesh::boundaryMarker() const {
     std::vector < int > tmp( boundaryCount() );
     std::transform( boundaryVector_.begin(), boundaryVector_.end(), tmp.begin(),

@@ -198,7 +198,7 @@ void MeshEntity::fillShape_( ){
                         << " " << this->rtti() << " " << shape_->nodeCount()
                         << " " << this->nodeCount() << std::endl;
         } else {
-            for ( uint i = 0; i < shape_->nodeCount(); i ++ ) shape_->setNode( i, node( i ) );
+            for ( Index i = 0; i < shape_->nodeCount(); i ++ ) shape_->setNode( i, node( i ) );
             
             //* create Shape function and cache them to avoid multithreading problems ... 
             ShapeFunctionCache::instance().shapeFunctions( *shape_ );
@@ -614,17 +614,17 @@ std::vector < PolynomialFunction < double > > Triangle6Face::createShapeFunction
 }
 
 QuadrangleFace::QuadrangleFace( std::vector < Node * > & nodes ) : Boundary( nodes ){
-  shape_ = new QuadrangleShape();
-  fillShape_( );
+    shape_ = new QuadrangleShape();
+    fillShape_( );
 }
 
 QuadrangleFace::QuadrangleFace( Node & n1, Node & n2, Node & n3, Node & n4 ){
-  shape_ = new QuadrangleShape();
-  setNodes( n1, n2, n3, n4, false  );
+    shape_ = new QuadrangleShape();
+    setNodes( n1, n2, n3, n4, false  );
 }
 
 QuadrangleFace::~QuadrangleFace(){
-  delete shape_;
+    delete shape_;
 }
 
 void QuadrangleFace::setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool changed  ){
@@ -839,58 +839,6 @@ std::vector < PolynomialFunction < double > > Triangle6::createShapeFunctions( )
     return createPolynomialShapeFunctions( *this, 3, true, false );
 }
 
-// RVector Triangle6::N( const RVector3 & rst ) const{
-//     RVector n( 6 );
-//     Triangle6_shapeFunctions( rst[ 0 ], rst[ 1 ], n );
-//     return n;
-// }
-
-
-// void Triangle6::shapeFunctionsDeriveL( const RVector3 & L, uint coord, RVector & funct ) const {
-//     funct.resize( nodeCount() );
-//     double dL2d = shape_->deriveCoordinates( 1, coord );
-//     double dL3d = shape_->deriveCoordinates( 2, coord );
-//
-//     double L2 = L[ 0 ];
-//     double L3 = L[ 1 ];
-//     funct[ 0 ] = dL3d * ( 4.0 * L3 + 4.0 * L2 - 3.0)   + dL2d * ( 4.0 * L3 + 4.0 * L2 - 3.0 );
-//     funct[ 1 ] =                                         dL2d * ( 4.0 * L2 - 1.0 );
-//     funct[ 2 ] = dL3d * ( 4.0 * L3 - 1.0 );
-//     funct[ 3 ] = dL3d * -4.0 * L2                      + dL2d * ( -4.0 * L3 - 8.0 * L2 + 4.0 );
-//     funct[ 4 ] = dL3d *  4.0 * L2                      + dL2d *  4.0 * L3;
-//     funct[ 5 ] = dL3d * (- 8.0 * L3 - 4.0 * L2 + 4.0 ) + dL2d * -4.0 * L3;
-//
-//     return;
-//     funct = dL3d * dNdL( L, 0 ) + dL2d * dNdL( L, 1 );
-// }
-
-// RVector Triangle6::dNdL( const RVector3 & rst, uint dim ) const {
-//     RVector f( nodeCount(), 0.0 );
-// 
-//     double r = rst[ 0 ];
-//     double s = rst[ 1 ];
-//     switch ( dim ){
-//         case 0: //dNdr
-//             f[ 0 ] =  4.0 * r + 4.0 * s - 3.0;
-//             f[ 1 ] =  4.0 * r - 1.0;
-//             f[ 2 ] =  0.0;
-//             f[ 3 ] = -4.0 * s - 8.0 * r + 4.0;
-//             f[ 4 ] =  4.0 * s;
-//             f[ 5 ] = -4.0 * s;
-//             return f;
-//         break;
-//         case 1://dNds
-//             f[ 0 ] =  4.0 * s + 4.0 * r - 3.0;
-//             f[ 1 ] =  0.0;
-//             f[ 2 ] =  4.0 * s - 1.0;
-//             f[ 3 ] = -4.0 * r;
-//             f[ 4 ] =  4.0 * r;
-//             f[ 5 ] = -8.0 * s - 4.0 * r + 4.0;
-//             return f;
-//     }
-//     return f;
-// }
-
 Quadrangle::Quadrangle( std::vector < Node * > & nodes ) : Cell( nodes ){
   shape_ = new QuadrangleShape();
   fillShape_( );
@@ -1027,6 +975,8 @@ Hexahedron::~Hexahedron(){
 }
 
 std::vector < PolynomialFunction < double > > Hexahedron::createShapeFunctions( ) const{
+//     std::cout << "return createPolynomialShapeFunctions( *this, 2, false, false );" << std::endl;
+//     return createPolynomialShapeFunctions( *this, 2, false, false );
     return createPolynomialShapeFunctions( *this, 2, true, true );
 }
 
@@ -1064,8 +1014,8 @@ Hexahedron20::~Hexahedron20(){
 }
 
 std::vector < PolynomialFunction < double > > Hexahedron20::createShapeFunctions( ) const{
-    return createPolynomialShapeFunctions( *this, 3, false, false);
-    //return createPolynomialShapeFunctions( *this, 3, true, true );
+//     return createPolynomialShapeFunctions( *this, 3, false, false);
+    return createPolynomialShapeFunctions( *this, 3, true, true );
 }
 
 
@@ -1080,7 +1030,25 @@ TriPrism::~TriPrism(){
 }
 
 std::vector < PolynomialFunction < double > > TriPrism::createShapeFunctions( ) const{
-    return createPolynomialShapeFunctions( *this, 2, true, true);
+    //return createPolynomialShapeFunctions( *this, 2, true, true);
+    RVector e2( 2 ); e2[ 0 ] = 0; e2[ 1 ] =  1; // x
+
+    RPolynomialFunction T3_2( e2, RVector( 0 ) );
+    RPolynomialFunction T3_3( RVector( 0 ), e2 );
+    RPolynomialFunction T3_1 = -( -1.0 + T3_2 + T3_3 );
+        
+    RPolynomialFunction E2_2T( RVector( 0 ), RVector( 0 ), e2 );
+    RPolynomialFunction E2_1T = -( -1.0 + E2_2T );
+    std::vector < PolynomialFunction < double > > ret;
+    
+    ret.push_back( T3_1 * E2_1T );
+    ret.push_back( T3_2 * E2_1T );
+    ret.push_back( T3_3 * E2_1T );
+    ret.push_back( T3_1 * E2_2T );
+    ret.push_back( T3_2 * E2_2T );
+    ret.push_back( T3_3 * E2_2T );
+    return ret;
+    
 }
 
 std::vector < Node * > TriPrism::boundaryNodes( uint i ){
@@ -1100,7 +1068,31 @@ TriPrism15::~TriPrism15(){
 }
 
 std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions( ) const{
-    return createPolynomialShapeFunctions( *this, 3, true, true);
+    //return createPolynomialShapeFunctions( *this, 3, false, false);
+    
+    RVector xy( 9, 0.0 );
+    xy[ 0 ] = 1.;  // 1
+    xy[ 1 ] = 1.;  // x
+    xy[ 2 ] = 1.;  // x^2
+    xy[ 3 ] = 1.;  // y
+    xy[ 4 ] = 1.;  // yx
+    xy[ 5 ] = 0.;  // yx^2
+    xy[ 6 ] = 1.;  // y^2
+    xy[ 7 ] = 0.;  // y^2x
+    xy[ 8 ] = 0.;  // y^2x^2
+    
+    RVector start( 27 );
+    start.setVal( xy, 0, 9 );
+    start.setVal( xy, 9, 18 );
+    start.setVal( xy, 18, 27 );
+    start[ 18 + 2 ] = 0.; // z^2x^2
+    start[ 18 + 4 ] = 0.; // z^2xy
+    start[ 18 + 6 ] = 0.; // z^2y^2
+    
+    return createPolynomialShapeFunctions( *this, 3, false, false, start);
+    
+    
+    //#return createPolynomialShapeFunctions( *this, 3, true, true);
 }
 
 Pyramid::Pyramid( std::vector < Node * > & nodes ): Cell( nodes ){

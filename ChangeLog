@@ -1,3 +1,8 @@
+2012-08-10
+    gimli
+        - hex, hex20, prism and prism15 and corresponding p2-refinement are seems to be work now
+        - add some more FEM-kernel unittests
+
 2012-08-07
     gimli
         - FEM-kernel generalization rebuild (need performance optimizations for simplexes)

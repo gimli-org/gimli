@@ -134,7 +134,7 @@ public:
      @param dim = 1 \f$ \frac{\partial f(x,y,z)}{\partial y}\f$ 
      @param dim = 2 \f$ \frac{\partial f(x,y,z)}{\partial z}\f$ 
      */
-    PolynomialFunction <  ValueType > derive( uint dim ) const {
+    PolynomialFunction < ValueType > derive( uint dim ) const {
 
         PolynomialFunction< ValueType > ret( RVector( this->size(), 0.0 ) );
         
@@ -233,6 +233,20 @@ public:
         return *this;
     }
     
+    /*! Return all coefficients. */
+    RVector coeff(  ) const { 
+        RVector c( powInt( mat_.size(), 3 ) );
+
+        for ( Index k = 0; k < mat_.size(); k ++ ){ // z
+            for ( Index j = 0; j < mat_[ k ].rows(); j ++ ){ // y
+                for ( Index i = 0; i < mat_[ k ][ j ].size(); i ++ ){ // x
+                    c[ k*( size() * size() )+ j * size() + i ] = mat_[ k ][ i ][ j ];
+                }
+            }
+        }
+        return c;
+    }
+        
 protected:
 
     void init_( const Vector < ValueType > & ax, const Vector < ValueType > & ay, const Vector < ValueType > & az ){
@@ -269,7 +283,9 @@ template < class ValueType > bool operator == ( const PolynomialFunction < Value
     return true;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > operator - ( const PolynomialFunction < ValueType > & f ){
+template < class ValueType > PolynomialFunction < ValueType > 
+operator - ( const PolynomialFunction < ValueType > & f ){
+    
     PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
@@ -283,7 +299,9 @@ template < class ValueType > PolynomialFunction < ValueType > operator - ( const
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > operator * ( const ValueType & val, const PolynomialFunction < ValueType > & f ){
+template < class ValueType > PolynomialFunction < ValueType > 
+operator * ( const ValueType & val, const PolynomialFunction < ValueType > & f ){
+    
     PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
@@ -297,7 +315,9 @@ template < class ValueType > PolynomialFunction < ValueType > operator * ( const
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > operator * ( const PolynomialFunction < ValueType > & f, const ValueType & val){
+template < class ValueType > PolynomialFunction < ValueType > 
+operator * ( const PolynomialFunction < ValueType > & f, const ValueType & val){
+    
     PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
@@ -390,8 +410,11 @@ operator - ( const PolynomialFunction < ValueType > & f, const PolynomialFunctio
 }
 
 /*! Create new polynomial function for f(x,y,z) * g(x,y,z).  pls refactor with expressions */
-template < class ValueType > PolynomialFunction < ValueType > operator * ( const PolynomialFunction < ValueType > & f, const PolynomialFunction < ValueType > & g ){
+template < class ValueType > PolynomialFunction < ValueType > 
+operator * ( const PolynomialFunction < ValueType > & f, const PolynomialFunction < ValueType > & g ){
     
+    
+    //TODO & TEST das muss besser werden weil es nicht immer f.size() + g.size() aufspannt. bsp. x*y statt x*x 
     PolynomialFunction < ValueType > h( RVector( f.size() + g.size(), 0 ) );
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z

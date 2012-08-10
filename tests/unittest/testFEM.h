@@ -113,8 +113,8 @@ public:
         testStiffness( tri );
         
         n.resize( 6 );
-        n[ 0 ] = nodes_[ 0 ]; n[ 1 ] = nodes_[ 1 ]; n[ 2 ] = nodes_[ 3 ];
-        n[ 3 ] = nodes_[ 8 ]; n[ 4 ] = nodes_[ 12 ]; n[ 5 ] = nodes_[ 11 ];
+        n[ 0 ] = nodes_[ 0 ]; n[ 1 ] = nodes_[ 1 ];  n[ 2 ]  = nodes_[ 3 ];
+        n[ 3 ] = nodes_[ 8 ]; n[ 4 ] = nodes_[ 20 ]; n[ 5 ] = nodes_[ 11 ];
         GIMLI::Triangle6 tri6( n );
 
         CPPUNIT_ASSERT( tri6.createShapeFunctions()[ 0 ] == T3_1 * ( 2.0 * T3_1 + -1.0 ) );
@@ -125,7 +125,6 @@ public:
         CPPUNIT_ASSERT( tri6.createShapeFunctions()[ 5 ] == T3_3 * T3_1 * 4.0 );
         
         testStiffness( tri6 );
-
         
         n.resize( 4 );
         n[ 0 ] = nodes_[ 0 ]; n[ 1 ] = nodes_[ 1 ]; n[ 2 ] = nodes_[ 2 ];n[ 3 ] = nodes_[ 3 ];
@@ -204,15 +203,15 @@ public:
             4------* |  \n
             | 3----|-*  \n
             |/     |/   \n
-            0------1    \n
+            0---8---1    \n
         */
         
         n.resize( 10 );
         n[ 0 ] = nodes_[ 0 ]; n[ 1 ] = nodes_[ 1 ]; n[ 2 ] = nodes_[ 3 ]; n[ 3 ] = nodes_[ 4 ];
         
         //*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
-        n[ 4 ] = nodes_[ 8 ];  n[ 5 ] = nodes_[ 12 ]; n[ 6 ] = nodes_[ 11 ];
-        n[ 7 ] = nodes_[ 13 ]; n[ 8 ] = nodes_[ 16 ]; n[ 9 ] = nodes_[ 17 ];
+        n[ 4 ] = nodes_[ 8 ];  n[ 5 ] = nodes_[ 20 ]; n[ 6 ] = nodes_[ 11 ];
+        n[ 7 ] = nodes_[ 16 ]; n[ 8 ] = nodes_[ 22 ]; n[ 9 ] = nodes_[ 23 ];
         
         GIMLI::Tetrahedron10 tet10_b( n );
         testStiffness( tet10_b );
@@ -229,8 +228,8 @@ public:
         CPPUNIT_ASSERT( tet10_b.createShapeFunctions()[ 9 ] == 4.0 * T4_3 * T4_4 );
         
         //*! Zienkiewicz count: 1-2-3-4, 5(1-2), 6(1-3), 7(1-4), 8(2-3), 9(3-4), 10(4-2)* //
-        n[ 4 ] = nodes_[ 8 ];  n[ 5 ] = nodes_[ 11 ]; n[ 6 ] = nodes_[ 13 ];
-        n[ 7 ] = nodes_[ 12 ]; n[ 8 ] = nodes_[ 17 ]; n[ 9 ] = nodes_[ 16 ];
+        n[ 4 ] = nodes_[ 8 ];  n[ 5 ] = nodes_[ 11 ]; n[ 6 ] = nodes_[ 16 ];
+        n[ 7 ] = nodes_[ 20 ]; n[ 8 ] = nodes_[ 23 ]; n[ 9 ] = nodes_[ 22 ];
 
         GIMLI::Tetrahedron10 tet10( n );
 
@@ -287,6 +286,79 @@ public:
         CPPUNIT_ASSERT( hex.createShapeFunctions()[ 6 ] == Q4_3 * E2_2T );
         CPPUNIT_ASSERT( hex.createShapeFunctions()[ 7 ] == Q4_4 * E2_2T );
         
+        testStiffness( hex );
+
+        /*        7------*  \n
+                 /|     /|  \n
+                4------5 |  \n
+                | 3----|-*  \n
+                |/     |/   \n
+                0------1    \n
+            */
+        n.resize( 6 );
+
+        n[ 0 ] = nodes_[ 0 ];  n[ 1 ] = nodes_[ 1 ]; n[ 2 ] = nodes_[ 3 ]; 
+        n[ 3 ] = nodes_[ 4 ];  n[ 4 ] = nodes_[ 5 ]; n[ 5 ] = nodes_[ 7 ];
+        
+        GIMLI::TriPrism pri( n );
+        
+        GIMLI::RPolynomialFunction T3_2( e2, RVector( 0 ) );
+        GIMLI::RPolynomialFunction T3_3( RVector( 0 ), e2 );
+        GIMLI::RPolynomialFunction T3_1 = -( -1.0 + T3_2 + T3_3 );
+        
+        GIMLI::RPolynomialFunction P6_1 = T3_1 * E2_1T;
+        GIMLI::RPolynomialFunction P6_2 = T3_2 * E2_1T;
+        GIMLI::RPolynomialFunction P6_3 = T3_3 * E2_1T;
+        GIMLI::RPolynomialFunction P6_4 = T3_1 * E2_2T;
+        GIMLI::RPolynomialFunction P6_5 = T3_2 * E2_2T;
+        GIMLI::RPolynomialFunction P6_6 = T3_3 * E2_2T;
+        
+        
+        CPPUNIT_ASSERT( pri.createShapeFunctions()[ 0 ] == P6_1 );
+        CPPUNIT_ASSERT( pri.createShapeFunctions()[ 1 ] == P6_2 );
+        CPPUNIT_ASSERT( pri.createShapeFunctions()[ 2 ] == P6_3 );
+        CPPUNIT_ASSERT( pri.createShapeFunctions()[ 3 ] == P6_4 );
+        CPPUNIT_ASSERT( pri.createShapeFunctions()[ 4 ] == P6_5 );
+        CPPUNIT_ASSERT( pri.createShapeFunctions()[ 5 ] == P6_6 );
+                
+        testStiffness( pri );
+        
+        n.resize( 15 );        
+        n[ 0 ] = nodes_[ 0 ];  n[ 1 ] = nodes_[ 1 ]; n[ 2 ] = nodes_[ 3 ]; 
+        n[ 3 ] = nodes_[ 4 ];  n[ 4 ] = nodes_[ 5 ]; n[ 5 ] = nodes_[ 7 ];
+        
+        n[ 6 ] = nodes_[ 8  ];  n[ 7 ]  = nodes_[ 20 ]; n[ 8 ]  = nodes_[ 11 ];
+        n[ 9 ] = nodes_[ 12 ];  n[ 10 ] = nodes_[ 21 ]; n[ 11 ] = nodes_[ 15 ];
+        n[ 12 ] = nodes_[ 16 ]; n[ 13 ] = nodes_[ 17 ]; n[ 14 ] = nodes_[ 19 ]; 
+        
+        GIMLI::TriPrism15 pri2( n );
+
+//         for (uint i = 0; i < pri2.nodeCount(); i ++ ){
+//             std::cout << pri2.rst(i) << " " << pri2.node(i).pos() << std::endl;
+//         }
+//         std::cout << pri2.createShapeFunctions()[ 0 ] << std::endl;
+//         std::cout << T3_1 * E2_1T * ( 2. * ( T3_1 + E2_1T ) + -3. ) << std::endl;
+//         
+        
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 0 ] == T3_1 * E2_1T * ( 2. * ( T3_1 + E2_1T ) + -3. ) );
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 1 ] == T3_2 * E2_1T * ( 2. * ( T3_2 + E2_1T ) + -3. ) );
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 2 ] == T3_3 * E2_1T * ( 2. * ( T3_3 + E2_1T ) + -3. ) );
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 3 ] == T3_1 * E2_2T * ( 2. * ( T3_1 + E2_2T ) + -3. ) );
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 4 ] == T3_2 * E2_2T * ( 2. * ( T3_2 + E2_2T ) + -3. ) );
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 5 ] == T3_3 * E2_2T * ( 2. * ( T3_3 + E2_2T ) + -3. ) );
+        
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 6 ] == 4.0 * T3_1 * T3_2 * E2_1T ); // T6_4 * E2_1T
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 7 ] == 4.0 * T3_2 * T3_3 * E2_1T ); // T6_5 * E2_1T
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 8 ] == 4.0 * T3_3 * T3_1 * E2_1T ); // T6_6 * E2_1T
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 9 ] == 4.0 * T3_1 * T3_2 * E2_2T ); // T6_4 * E2_2T
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 10 ] == 4.0 * T3_2 * T3_3 * E2_2T ); // T6_5 * E2_2T
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 11 ] == 4.0 * T3_3 * T3_1 * E2_2T ); // T6_6 * E2_2T
+        
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 12 ] == 4.0 * T3_1 * E2_1T * E2_2T ); // T3_1 * E3_3T
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 13 ] == 4.0 * T3_2 * E2_1T * E2_2T ); // T3_2 * E3_3T
+        CPPUNIT_ASSERT( pri2.createShapeFunctions()[ 14 ] == 4.0 * T3_3 * E2_1T * E2_2T ); // T3_3 * E3_3T
+        
+        testStiffness( pri2 );
     }
 
     void testStiffness( const Cell & ent ){
@@ -316,6 +388,7 @@ public:
         for ( size_t i = 0; i < S.size(); i ++ ){
             double s = sum( S.row( i ) );
             if ( ::fabs( s ) > TOLERANCE ) {
+                std::cout << ent.rtti() << " " << ent.shape().name() << std::endl;
                 std::cout << S.row( i ) << std::endl;
                 std::cout << s << std::endl;
             }
@@ -359,11 +432,11 @@ public:
     |/     |/   \n
     0------1    \n
 */
-        nodes_.resize( 18 );
-        nodes_[ 0 ] = new GIMLI::Node( 0.0, 0.0 );
-        nodes_[ 1 ] = new GIMLI::Node( 1.0, 0.0 );
-        nodes_[ 2 ] = new GIMLI::Node( 1.0, 1.0 );
-        nodes_[ 3 ] = new GIMLI::Node( 0.0, 1.0 );
+        nodes_.resize( 24 );
+        nodes_[ 0 ] = new GIMLI::Node( 0.0, 0.0, 0.0 );
+        nodes_[ 1 ] = new GIMLI::Node( 1.0, 0.0, 0.0 );
+        nodes_[ 2 ] = new GIMLI::Node( 1.0, 1.0, 0.0 );
+        nodes_[ 3 ] = new GIMLI::Node( 0.0, 1.0, 0.0 );
         nodes_[ 4 ] = new GIMLI::Node( 0.0, 0.0, 1.0 );
         nodes_[ 5 ] = new GIMLI::Node( 1.0, 0.0, 1.0 );
         nodes_[ 6 ] = new GIMLI::Node( 1.0, 1.0, 1.0 );
@@ -373,14 +446,22 @@ public:
         nodes_[ 9  ] = new GIMLI::Node( ( nodes_[ 1 ]->pos() + nodes_[ 2 ]->pos() ) / 2.0 );
         nodes_[ 10 ] = new GIMLI::Node( ( nodes_[ 2 ]->pos() + nodes_[ 3 ]->pos() ) / 2.0 );
         nodes_[ 11 ] = new GIMLI::Node( ( nodes_[ 3 ]->pos() + nodes_[ 0 ]->pos() ) / 2.0 );
-        nodes_[ 12 ] = new GIMLI::Node( ( nodes_[ 1 ]->pos() + nodes_[ 3 ]->pos() ) / 2.0 );
+        
+        nodes_[ 12 ] = new GIMLI::Node( ( nodes_[ 4 ]->pos() + nodes_[ 5 ]->pos() ) / 2.0 );
+        nodes_[ 13 ] = new GIMLI::Node( ( nodes_[ 5 ]->pos() + nodes_[ 6 ]->pos() ) / 2.0 );
+        nodes_[ 14 ] = new GIMLI::Node( ( nodes_[ 6 ]->pos() + nodes_[ 7 ]->pos() ) / 2.0 );
+        nodes_[ 15 ] = new GIMLI::Node( ( nodes_[ 7 ]->pos() + nodes_[ 4 ]->pos() ) / 2.0 );
 
-        nodes_[ 13 ] = new GIMLI::Node( ( nodes_[ 0 ]->pos() + nodes_[ 4 ]->pos() ) / 2.0 );
-        nodes_[ 14 ] = new GIMLI::Node( ( nodes_[ 4 ]->pos() + nodes_[ 7 ]->pos() ) / 2.0 );
-        nodes_[ 15 ] = new GIMLI::Node( ( nodes_[ 7 ]->pos() + nodes_[ 3 ]->pos() ) / 2.0 );
-        nodes_[ 16 ] = new GIMLI::Node( ( nodes_[ 1 ]->pos() + nodes_[ 4 ]->pos() ) / 2.0 );
-        nodes_[ 17 ] = new GIMLI::Node( ( nodes_[ 3 ]->pos() + nodes_[ 4 ]->pos() ) / 2.0 );
+        nodes_[ 16 ] = new GIMLI::Node( ( nodes_[ 0 ]->pos() + nodes_[ 4 ]->pos() ) / 2.0 );
+        nodes_[ 17 ] = new GIMLI::Node( ( nodes_[ 1 ]->pos() + nodes_[ 5 ]->pos() ) / 2.0 );
+        nodes_[ 18 ] = new GIMLI::Node( ( nodes_[ 2 ]->pos() + nodes_[ 6 ]->pos() ) / 2.0 );
+        nodes_[ 19 ] = new GIMLI::Node( ( nodes_[ 3 ]->pos() + nodes_[ 7 ]->pos() ) / 2.0 );
 
+        nodes_[ 20 ] = new GIMLI::Node( ( nodes_[ 1 ]->pos() + nodes_[ 3 ]->pos() ) / 2.0 );
+        nodes_[ 21 ] = new GIMLI::Node( ( nodes_[ 5 ]->pos() + nodes_[ 7 ]->pos() ) / 2.0 );
+        nodes_[ 22 ] = new GIMLI::Node( ( nodes_[ 1 ]->pos() + nodes_[ 4 ]->pos() ) / 2.0 );
+        nodes_[ 23 ] = new GIMLI::Node( ( nodes_[ 3 ]->pos() + nodes_[ 4 ]->pos() ) / 2.0 );
+        
         for ( size_t i = 0; i < nodes_.size(); i ++ ) nodes_[ i ]->setId( i );
     }
 

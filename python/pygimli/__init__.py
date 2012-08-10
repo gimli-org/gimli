@@ -226,6 +226,32 @@ def abs( v ):
     return fabs( v )
 
 
+########################################################
+# compare operators for stdVector
+########################################################
+
+def __CMP_stdVectorI__( self, val  ):
+    raise "__CMP_stdVectorI__ do not use"
+    return 0
+    print "__CMP_stdVectorI__"
+    ret = _pygimli_.BVector( len( self ) )
+    for i, v in enumerate( ret ):
+        print self[ i ] < val, int( self[ i ] < val )
+        #v = int( self[ i ] < val )
+    print ret
+
+def __EQ_stdVectorI__( self, val  ):
+    raise "__EQ_stdVectorI__ do not use"
+    ret = _pygimli_.BVector( len( self ) )
+    for i, v in enumerate( ret ):
+        print self[ i ] == val, int( self[ i ] == val )
+        #v = self[ i ] == val
+    print ret
+
+_pygimli_.stdVectorI.__cmp__ = __CMP_stdVectorI__
+_pygimli_.stdVectorI.__eq__  = __EQ_stdVectorI__
+
+
 ############################
 # usefull stuff
 ############################

@@ -64,6 +64,8 @@ public:
     inline const std::vector < RVector3 > & hexAbscissa( uint order ) const { return hexAbscissa_[ order ]; }
     inline const RVector & hexWeights( uint order ) const { return hexWeights_[ order ]; }
 
+    inline const std::vector < RVector3 > & priAbscissa( uint order ) const { return priAbscissa_[ order ]; }
+    inline const RVector & priWeights( uint order ) const { return priWeights_[ order ]; }
     /*! 
      * Return Gauss-Legendre quadrature positions for a given shape of the \ref MeshEntity upto order 10
      */
@@ -90,6 +92,7 @@ protected:
     void initTet_();
     void initQua_();
     void initHex_();
+    void initPri_();
 
     std::vector < std::vector < RVector3 > > gauAbscissa_;
     std::vector < RVector > gauWeights_;
@@ -109,6 +112,8 @@ protected:
     std::vector < RVector > quaWeights_;
     std::vector < std::vector < RVector3 > > hexAbscissa_;
     std::vector < RVector > hexWeights_;
+    std::vector < std::vector < RVector3 > > priAbscissa_;
+    std::vector < RVector > priWeights_;
     
 };
 

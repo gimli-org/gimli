@@ -164,7 +164,7 @@ def generate( defined_symbols ):
 
     exclude( main_ns.variables, name = [ 'Triangle6_S1', 'Triangle6_S2', 'Triangle6_S3'
                                         ,'HexahedronFacesID', 'HexahedronSplit5TetID', 'HexahedronSplit6TetID'
-                                        ,'TriPrismFacesID'
+                                        ,'TriPrismFacesID', 'TriPrimSplit3TetID'
                                         , 'NodeCoordinates','EdgeCoordinates' 
                                         , 'TriCoordinates', 'QuadCoordinates' 
                                         , 'TetCoordinates', 'HexCoordinates', 'PrismCoordinates', 'PyramidCoordinates' 

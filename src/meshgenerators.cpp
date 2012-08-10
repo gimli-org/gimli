@@ -101,34 +101,66 @@ Mesh createMesh3D( const RVector & x, const RVector & y, const RVector & z, int 
     return mesh;
 }
 
-Mesh createMesh3D( const Mesh mesh, const RVector & z, int markerType ){
+Mesh createMesh3D( const Mesh & mesh, const RVector & z, int topLayer, int bottomLayer ){
     Mesh mesh3( 3 );
     
     if ( z.size() < 2 ){
         std::cout << "Warning!: " << WHERE_AM_I << "extrusion vector size need z be greater than 1" << std::endl;
     }
         
+    bool first = true;
     for ( Index iz = 0; iz < z.size(); iz ++ ){
         for ( Index ic = 0; ic < mesh.nodeCount(); ic ++ ){
-            mesh3.createNode( mesh.node( ic ).pos() + RVector3( 0.0, 0.0, z[ iz ] ) );
-        }
-    }
-    
-    std::vector < Node * > nodes( 6 );
-    for ( Index iz = 1; iz < z.size(); iz ++ ){
-        for ( Index ic = 0; ic < mesh.cellCount(); ic ++ ){
-            // "check for triangle here"
+            int marker = 0;
+            if ( first ) marker = mesh.node( ic ).marker();
             
-            nodes[ 0 ] = & mesh3.node( (iz-1) * mesh.nodeCount() + mesh.cell( ic ).node( 0 ).id() );
-            nodes[ 1 ] = & mesh3.node( (iz-1) * mesh.nodeCount() + mesh.cell( ic ).node( 1 ).id() );
-            nodes[ 2 ] = & mesh3.node( (iz-1) * mesh.nodeCount() + mesh.cell( ic ).node( 2 ).id() );
-            nodes[ 3 ] = & mesh3.node( (iz) * mesh.nodeCount() + mesh.cell( ic ).node( 0 ).id() );
-            nodes[ 4 ] = & mesh3.node( (iz) * mesh.nodeCount() + mesh.cell( ic ).node( 1 ).id() );
-            nodes[ 5 ] = & mesh3.node( (iz) * mesh.nodeCount() + mesh.cell( ic ).node( 2 ).id() );
-            mesh3.createCell( nodes, markerType );
+            mesh3.createNode( mesh.node( ic ).pos() + RVector3( 0.0, 0.0, z[ iz ] ), marker );
         }
+        first = false;
     }
     
+    std::vector < Node * > nodes;
+    
+    for ( Index iz = 1; iz < z.size(); iz ++ ){
+        first = true;
+        for ( Index ic = 0; ic < mesh.cellCount(); ic ++ ){
+            uint nC = mesh.cell( ic ).nodeCount();
+            nodes.resize( nC * 2 ) ;
+            
+            for ( Index k = 0; k < nC; k ++ ){
+                nodes[ k ] = & mesh3.node( (iz-1) * mesh.nodeCount() + mesh.cell( ic ).node( k ).id() );
+            }
+            for ( Index k = 0; k < nC; k ++ ){
+                nodes[ nC + k ] = & mesh3.node( iz * mesh.nodeCount() + mesh.cell( ic ).node( k ).id() );
+            }
+            mesh3.createCell( nodes, mesh.cell( ic ).marker() );
+            
+            if ( iz == 1 ){
+                // create top layer boundaries // in revers direction so the outer normal shows downward into the mesh
+                std::vector < Node * > nBound( nC ); for ( Index k = 0; k < nC; k ++ ) nBound[ nC - k - 1] = nodes[ k ];
+                mesh3.createBoundary( nBound, topLayer );
+            }
+            if ( iz == z.size()-1 ){
+                // create bottom layer boundaries
+                std::vector < Node * > nBound( nC ); for ( Index k = 0; k < nC; k ++ ) nBound[ k ] = nodes[ nC + k];
+                mesh3.createBoundary( nBound, bottomLayer );
+            }
+        }
+        first = false;
+    }
+    
+    nodes.resize( 4 );
+    for ( Index iz = 1; iz < z.size(); iz ++ ){
+        for ( Index ib = 0; ib < mesh.boundaryCount(); ib ++ ){
+            if ( mesh.boundary( ib ).marker() != 0 ){
+                nodes[ 0 ] = & mesh3.node( (iz-1) * mesh.nodeCount() + mesh.boundary( ib ).node( 0 ).id() );
+                nodes[ 1 ] = & mesh3.node( (iz-1) * mesh.nodeCount() + mesh.boundary( ib ).node( 1 ).id() );
+                nodes[ 3 ] = & mesh3.node( iz * mesh.nodeCount() + mesh.boundary( ib ).node( 0 ).id() );
+                nodes[ 2 ] = & mesh3.node( iz * mesh.nodeCount() + mesh.boundary( ib ).node( 1 ).id() );
+                mesh3.createBoundary( nodes, mesh.boundary( ib ).marker() );
+            }
+        }
+    }
     
     return mesh3;
 }

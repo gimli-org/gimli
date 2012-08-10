@@ -84,11 +84,11 @@ public:
 
     std::set < Cell * > & cellSet() { return cellSet_; }
 
-    inline void scale( const RVector3 & s ) { pos_.scale( s ); }
+    inline void scale( const RVector3 & s ) { changed_(); pos_.scale( s ); }
 
-    inline void translate( const RVector3 & t ) { pos_.translate( t ); }
+    inline void translate( const RVector3 & t ) { changed_(); pos_.translate( t ); }
 
-    inline void rotate( const RVector3 & r ) { pos_.rotate( r ); }
+    inline void rotate( const RVector3 & r ) { changed_(); pos_.rotate( r ); }
 
     inline double x() const { return pos_[ 0 ]; }
 
@@ -103,6 +103,8 @@ public:
 protected:
 
     void copy_( const Node & node );
+    
+    void changed_( );
 
     void init_();
 

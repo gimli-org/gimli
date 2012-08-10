@@ -7,12 +7,12 @@ from pygimli.polytools import *
 
 def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
                             , quality = 34.0, isSubSurface = False, verbose = False ):
-    ''' adds a box around an existing mesh (for forward calculation)
-        outputMesh = appendTriangleBoundary( inputMesh <parameters> )        
+    ''' Returns a new mesh that contains a triangulated box around a given mesh suitable for geo-simulation (surface boundary at top)
+        mesh = appendTriangleBoundary( inputMesh <parameters> )        
         xbound/ybound defines the x/y distance to the box
-        marker defines the marker of the new elements
-        quality is the triangle quality
-        if isSubsurface also distance positive y is added 
+        Marker defines the marker of the new cells.
+        Quality is the triangle quality.
+        If isSubsurface is set also distance positive y is added. 
     '''         
            
     ''' function comparing x for using sort '''
@@ -111,14 +111,17 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
     
     poly.exportVTK('out.poly')
     mesh2 = g.Mesh()
+    
     ''' call triangle mesh generation '''
     triswitches= '-pzeAfaq' + str( quality )
+    
     if not verbose:
         triswitches += 'Q'
     
     if isSubSurface:
         tri = g.TriangleWrapper( poly );
-        tri.addRegionMarkerTmp( 0, g.RVector3( mesh.xmin() +1 , mesh.ymax() - 1 ), -1 );
+        # area -1.0 means this is a hole
+        tri.addRegionMarkerTmp( 0, g.RVector3( mesh.xmin() + 0.0001 , mesh.ymax() - 0.0001 ), -1.0 );
         tri.setSwitches( triswitches );
         tri.generate( mesh2 );
     else:
@@ -131,6 +134,7 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
         mesh2.copyCell( cell );
 
     mesh2.createNeighbourInfos()
+    
     for b in mesh2.boundaries():
         if b.leftCell() is None or b.rightCell() is None:
             if b.center().y() == mesh2.ymax():

@@ -36,16 +36,19 @@ namespace GIMLI{
 template < > DLLEXPORT ShapeFunctionCache * Singleton < ShapeFunctionCache >::pInstance_ = NULL;
     
 std::vector < PolynomialFunction < double > > 
-    createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff, bool pascale, bool serendipity ){
+    createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff
+    , bool pascale, bool serendipity, const RVector & startVector ){
 
     bool verbose = false;
     if ( verbose ){
+        std::cout << "pascale: " << pascale << " serendipity: " << serendipity << std::endl;
+        std::cout << "start: " << startVector << std::endl;
         for (Index i = 0; i < pnts.size(); i ++ ) {
             std::cout << "P" << i << ": " << pnts[ i ] << std::endl;
         }
     }
     
-    PolynomialModelling fop( dim, nCoeff, pnts );
+    PolynomialModelling fop( dim, nCoeff, pnts, startVector );
     fop.setPascalsStyle( pascale );
     fop.setSerendipityStyle( serendipity );
 //     
@@ -64,7 +67,7 @@ std::vector < PolynomialFunction < double > >
                 
         RVector N( pnts.size(), 0.0 );
         N[ i ] = 1.0;
-        RInversion inv( N, fop, verbose, false );
+        RInversion inv( N, fop, verbose, verbose );
         inv.setRelativeError( 0.0 );
         inv.stopAtChi1( false );
         inv.setCGLSTolerance( 1e-40 );
@@ -89,13 +92,16 @@ std::ostream & operator << ( std::ostream & str, const Shape & c ){
 }
 
 Shape::Shape(){
-    jacDeterminant_ = 0.0;
-    hasJacDeterminant_ = false;
     domSize_ = 0.0;
     hasDomSize_ = false;
 }
 
 Shape::~Shape(){
+}
+
+void Shape::changed(){
+    invJacobian_.clear();
+    hasDomSize_ = false;
 }
 
 Node & Shape::node( uint i ) {
@@ -115,12 +121,12 @@ const Node & Shape::node( uint i ) const {
 }
 
 void Shape::setNode( uint i, Node & n ) {
-  if ( i < 0 || i > nodeCount() - 1 ){
-    std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-    exit( EXIT_MESH_NO_NODE );
-  }
-  nodeVector_[ i ] = &n;
-  hasJacDeterminant_ = false;
+    if ( i < 0 || i > nodeCount() - 1 ){
+        std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
+        exit( EXIT_MESH_NO_NODE );
+    }
+    nodeVector_[ i ] = &n;
+    this->changed();
 }
 
 RVector3 Shape::center() const {
@@ -360,6 +366,10 @@ RVector3 EdgeShape::rst( uint i ) const{
     THROW_TO_IMPL; return RVector3( 0.0, 0.0, 0.0 );
 }
 
+void TriangleShape::setNodes( Node * n0, Node * n1, Node * n2 ){
+    setNode( 0, *n0 ); setNode( 1, *n1 ); setNode( 2, *n2 );
+}
+
 //** Start TRIANGLE specific implementation
 double TriangleShape::area() const {
 //   RVector3 p1 = nodeVector_[ 0 ]->pos();
@@ -420,22 +430,31 @@ RVector3 QuadrangleShape::rst( uint i ) const{
 }
 
 double QuadrangleShape::area() const {
-  //** Gaußsche Trapezformel
+    double sum = 0.0;
+    TriangleShape tri;
+    tri.setNodes( nodeVector_[ 0 ], nodeVector_[ 1 ], nodeVector_[ 2 ] );
+    sum += tri.area();
+    tri.setNodes( nodeVector_[ 0 ], nodeVector_[ 2 ], nodeVector_[ 3 ] );
+    sum += tri.area();
+    
+    return sum;
+    
+    //** Gaußsche Trapezformel fails for surface boundaries
+  
+/*  
   double x13 = nodeVector_[ 0 ]->pos()[ 0 ]- nodeVector_[ 2 ]->pos()[ 0 ];
   double x42 = nodeVector_[ 3 ]->pos()[ 0 ]- nodeVector_[ 1 ]->pos()[ 0 ];
 
   double y13 = nodeVector_[ 0 ]->pos()[ 1 ]- nodeVector_[ 2 ]->pos()[ 1 ];
   double y24 = nodeVector_[ 1 ]->pos()[ 1 ]- nodeVector_[ 3 ]->pos()[ 1 ];
-  return 0.5 * std::fabs( y13 * x42 + y24 * x13 );
+  return 0.5 * std::fabs( y13 * x42 + y24 * x13 );*/
     //return std::fabs( this->jacobianDeterminant() );
 }
 
 RVector3 QuadrangleShape::norm() const {
-    //  CERR_TO_IMPL; return RVector3(0.0, 0.0, 0.0);//::ZERO;
-    RVector3 a( nodeVector_[ 1 ]->pos() - nodeVector_[ 0 ]->pos() );
-    RVector3 b( nodeVector_[ 2 ]->pos() - nodeVector_[ 0 ]->pos() );
-    RVector3 n( ( a ).cross( b ) );
-    return n / n.abs();
+    TriangleShape tri;
+    tri.setNodes( nodeVector_[ 0 ], nodeVector_[ 1 ], nodeVector_[ 2 ] );
+    return tri.norm();
 }
 
 RVector3 TetrahedronShape::rst( uint i ) const{
@@ -503,46 +522,8 @@ double TetrahedronShape::volume() const {
 }
 
 void TetrahedronShape::setNodes( Node * n0, Node * n1, Node * n2, Node * n3 ){
-  setNode( 0, *n0 ); setNode( 1, *n1 ); setNode( 2, *n2 ); setNode( 3, *n3 );
+    setNode( 0, *n0 ); setNode( 1, *n1 ); setNode( 2, *n2 ); setNode( 3, *n3 );
 }
-
-// bool TetrahedronShape::touch1( const RVector3 & pos, bool verbose, int & pFunIdx ) const {
-//     RVector sf( shapeFunctions( rst( pos ) ) );
-// 
-//     double minsf = min( sf );
-//     pFunIdx = find( sf == minsf )[0];
-//     
-//     if ( std::fabs( minsf ) < max( TOUCH_TOLERANCE, TOUCH_TOLERANCE * pos.abs() ) ) return true; //** on boundary
-//     if ( minsf > 0.0 ) return true; //** inside
-// 
-// //     RVector3 coords = coordinates( pos );
-// //     double r = coords[ 0 ];
-// //     double s = coords[ 1 ];
-// //     double t = coords[ 2 ];
-// // 
-// //     double N1 = 1.0 - r - s - t;
-// //     double N2 = r;
-// //     double N3 = s;
-// //     double N4 = t;
-// // 
-// //     //** fun < 0 outside; fun == 0 bound; fun > 0 inside; max(fun ) =barycenter (1/4 for tetrahedron)
-// //     double fun = std::min( std::min( std::min( N1, N2 ), N3 ), N4 );
-// //     if ( N1 == fun ) pFunIdx = 0;
-// //     else if ( N2 == fun ) pFunIdx = 1;
-// //     else if ( N3 == fun ) pFunIdx = 2;
-// //     else if ( N4 == fun ) pFunIdx = 3;
-// // 
-// //     if ( verbose ){
-// //         std::cout << "Jac: " << jacobianDeterminant() << " ";
-// //         std::cout << "Tet: pFunIdx: " << pFunIdx<< std::endl;
-// //         std::cout << " fun: " << fun << ": " << N1 << " " << N2 << " "<< N3 << " " << N4 << std::endl;
-// //     }
-// // 
-// //     if ( std::fabs( fun ) < max( TOUCH_TOLERANCE, TOUCH_TOLERANCE * pos.abs() ) ) return true; //** on boundary
-// //     if ( fun > 0.0 ) return true; //** inside
-//     //** outside
-//     return false;
-// }
 
 RVector3 HexahedronShape::rst( uint i ) const{
     if ( i >= 0 && i < nodeCount() ) return RVector3( HexCoordinates[ i ][ 0 ], HexCoordinates[ i ][ 1 ], HexCoordinates[ i ][ 2 ] );
@@ -563,15 +544,26 @@ double HexahedronShape::volume() const {
 
 RVector3 TriPrismShape::rst( uint i ) const{
     if ( i >= 0 && i < nodeCount() ) return RVector3( PrismCoordinates[ i ][ 0 ], PrismCoordinates[ i ][ 1 ], PrismCoordinates[ i ][ 2 ] );
-    THROW_TO_IMPL; return RVector3( 0.0, 0.0, 0.0 );
+    THROW_TO_IMPL; 
+    return RVector3( 0.0, 0.0, 0.0 );
 }
 
 double TriPrismShape::volume() const{
+    double sum = 0.0;
+    TetrahedronShape tet;
+    for ( Index i = 0; i < 3; i ++ ){
+        tet.setNodes( nodeVector_[ TriPrimSplit3TetID[ i ][ 0 ] ], nodeVector_[ TriPrimSplit3TetID[ i ][ 1 ] ],
+                      nodeVector_[ TriPrimSplit3TetID[ i ][ 2 ] ], nodeVector_[ TriPrimSplit3TetID[ i ][ 3 ] ] );
+        sum += tet.volume();
+    }
+
+    return sum;
+    /*
     RVector3 a( nodeVector_[ 1 ]->pos() - nodeVector_[ 0 ]->pos() );
     RVector3 b( nodeVector_[ 2 ]->pos() - nodeVector_[ 0 ]->pos() );
     double z41 = nodeVector_[ 3 ]->pos()[ 2 ] - nodeVector_[ 0 ]->pos()[ 2 ];
 
-    return ( ( a ).cross( b ) ).abs() * 0.5 * z41;
+    return ( ( a ).cross( b ) ).abs()  z41;*/
 }
 
 std::vector < PolynomialFunction < double > > TriPrismShape::createShapeFunctions( ) const {
@@ -586,7 +578,6 @@ std::vector < PolynomialFunction < double > > TriPrismShape::createShapeFunction
     std::vector < PolynomialFunction < double > > ret;
     
     ret.push_back( T3_1 * E2_1T );
-    std::cout << ret.back() << std::endl;
     ret.push_back( T3_2 * E2_1T );
     ret.push_back( T3_3 * E2_1T );
     ret.push_back( T3_1 * E2_2T );

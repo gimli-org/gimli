@@ -157,6 +157,20 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tan,   TAN )
 DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
 #undef DEFINE_PY_VEC_UNARY_OPERATOR__
 
+#define DEFINE_COMPARE_OPERATOR__( OP ) \
+template BVector operator OP ( const std::vector < int > & vec, const int & v ); \
+template BVector operator OP ( const std::vector < uint > & vec, const uint & v ); \
+
+DEFINE_COMPARE_OPERATOR__( < )
+DEFINE_COMPARE_OPERATOR__( <= )
+DEFINE_COMPARE_OPERATOR__( >= )
+DEFINE_COMPARE_OPERATOR__( == )
+DEFINE_COMPARE_OPERATOR__( != )
+DEFINE_COMPARE_OPERATOR__( > )
+
+#undef DEFINE_COMPARE_OPERATOR__
+
+
     //** maybee better to move these instantiation into libgimli
 
     template class Vector< double >;
@@ -187,9 +201,9 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
     template PolynomialFunction < double > operator + ( const double & val, const PolynomialFunction < double > & f );
     
     template std::vector < PolynomialFunction < double > > 
-        createPolynomialShapeFunctions( const Shape & ent, uint nCoeff, bool pascale, bool serendipity );
+        createPolynomialShapeFunctions( const Shape & ent, uint nCoeff, bool pascale, bool serendipity, const RVector & );
     template std::vector < PolynomialFunction < double > > 
-        createPolynomialShapeFunctions( const MeshEntity & ent, uint nCoeff, bool pascale, bool serendipity );
+        createPolynomialShapeFunctions( const MeshEntity & ent, uint nCoeff, bool pascale, bool serendipity, const RVector & );
         
     template class Inversion< double >;
 
@@ -214,6 +228,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
 //     template Vector< double > operator * ( const SparseMatrix< double > & A, const Vector < double > & a );
 
     template class ElementMatrix< double >;
+    template std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & p );
 
     template RVector cat( const RVector & a, const RVector & b );
 
@@ -311,7 +326,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__( tanh,  TANH )
 		sizeof( ::GIMLI::IndexArray );
     }
 
-    /*! Temporary workaound until there is as solution for
+    /*! Temporary workaround until there is as solution for
         http://www.mail-archive.com/cplusplus-sig@python.org/msg00333.html/
 
         declare and init new function, inject them to original class within __init__.py
@@ -408,7 +423,7 @@ namespace pyplusplus{ namespace aliases{
 
     typedef std::vector< std::string >                  stdVectorString;
     typedef std::vector< int >                          stdVectorI;
-    typedef std::vector< GIMLI::Index >                       stdVectorUL;
+    typedef std::vector< GIMLI::Index >                 stdVectorUL;
     typedef std::vector< double >                       stdVectorR;
     typedef std::vector< std::complex < double > >      stdVectorC;
     typedef std::vector< std::pair< GIMLI::Index, GIMLI::Index > > stdVectorPairLongLong;

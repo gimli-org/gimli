@@ -27,8 +27,6 @@
 
 namespace GIMLI{
 
-DLLEXPORT std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & pos );
-
 template < class T > class DLLEXPORT ElementMatrix {
 public:
     ElementMatrix( ) { }
@@ -126,6 +124,21 @@ protected:
 
 };
 
+template < class ValueType > std::ostream & operator << ( std::ostream & str, const ElementMatrix< ValueType > & e ){
+    for ( uint i = 0; i < e.idx().size(); i ++ ) str << e.idx(i) << " " ;
+
+    str << std::endl;
+    for ( uint i = 0; i < e.size(); i ++ ){
+        str << e.idx( i ) << "\t: ";
+        for ( uint j = 0; j < e.size(); j ++ ){
+            str << e.getVal( i , j ) << " ";
+        }
+        str << std::endl;
+    }
+    return str;
+}
+
+    
 } // namespace GIMLI{
 
 #endif // _GIMLI_ELEMENTMATRIX__H
