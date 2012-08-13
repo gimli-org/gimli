@@ -107,6 +107,8 @@
 		<Unit filename="..\src\meshgenerators.h" />
 		<Unit filename="..\src\modellingbase.cpp" />
 		<Unit filename="..\src\modellingbase.h" />
+		<Unit filename="..\src\multimatrix.cpp" />
+		<Unit filename="..\src\multimatrix.h" />
 		<Unit filename="..\src\node.cpp" />
 		<Unit filename="..\src\node.h" />
 		<Unit filename="..\src\numericbase.cpp" />
@@ -117,6 +119,7 @@
 		<Unit filename="..\src\plane.h" />
 		<Unit filename="..\src\platform.cpp" />
 		<Unit filename="..\src\platform.h" />
+		<Unit filename="..\src\polynomial.h" />
 		<Unit filename="..\src\pos.cpp" />
 		<Unit filename="..\src\pos.h" />
 		<Unit filename="..\src\quaternion.cpp" />

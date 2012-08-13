@@ -116,7 +116,7 @@ protected:
 
 //! Multidimensional polynomial modelling class.
 /*! Multidimensional polynomial modelling class. 1, 2 or 3 dimensional polynomial modelling operator based on \ref PolynomialFunction */
-class PolynomialModelling : public ModellingBase {
+class DLLEXPORT PolynomialModelling : public ModellingBase {
 public:
     
     PolynomialModelling( uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints,

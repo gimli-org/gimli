@@ -36,7 +36,7 @@ DLLEXPORT std::vector < PolynomialFunction < double > >
     createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff, 
                                     bool pascale, bool serendipity, const RVector & startVector = RVector( 0 ) );
     
-template < class Ent > DLLEXPORT std::vector < PolynomialFunction < double > > 
+template < class Ent > std::vector < PolynomialFunction < double > > 
     createPolynomialShapeFunctions( const Ent & ent, uint nCoeff, 
                                     bool pascale, bool serendipity, const RVector & startVector = RVector( 0 ) ) {
         
