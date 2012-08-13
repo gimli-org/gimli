@@ -105,9 +105,9 @@ void ModellingBase::createRefinedForwardMesh( bool refine, bool pRefine ){
     
     if ( refine ){
         if ( pRefine ){
-            mesh_->createP2( regionManager_->mesh() );
+            *mesh_ = regionManager_->mesh().createP2( );
         } else {
-            mesh_->createH2( regionManager_->mesh() );
+            *mesh_ = regionManager_->mesh().createH2( );
         }
     } else {
         setMesh_( regionManager_->mesh() );

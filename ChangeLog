@@ -1,3 +1,8 @@
+2012-08-13
+    libgimli::mesh()
+        - new createH2 method to support all mesh entity types (need tests)
+        - remove old stuff for adaptive meshing ... this needs a new implementation
+
 2012-08-10
     gimli
         - hex, hex20, prism and prism15 and corresponding p2-refinement are seems to be work now
