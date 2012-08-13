@@ -184,12 +184,6 @@ public:
     /*! Create and copy global P2 mesh of this mesh.*/
     Mesh createP2( ) const;
     
-    void createH2( const Mesh & mesh );
-
-    void createP2( const Mesh & mesh );
-
-    int createRefined( const Mesh & mesh, const std::vector < int > & cellIdx );
-
     /*! Create a partly mesh from mesh, based on cell-ids */
     void createMeshByCellIdx( const Mesh & mesh, std::vector < int > & idxList );
 
@@ -482,10 +476,8 @@ protected:
 //    Node * createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, Index > & nodeMatrix );
     Node * createRefinementNode_( Node * n0, Node * n1, std::map< std::pair < Index, Index >, Node * > & nodeMatrix );
     
-    int createRefined2D_( const Mesh & mesh, const std::vector < int > & cellIdx );
-
-    int createRefined3D_( const Mesh & mesh, const std::vector < int > & cellIdx );
-
+    void createRefined_( const Mesh & mesh, bool p2, bool r2 );
+    
     Cell * findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t & count, bool tagging ) const;
 
     void fillKDTree_() const;
