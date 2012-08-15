@@ -42,20 +42,27 @@ public:
         
         mesh.createNeighbourInfos();
         
-        mesh.save("mesh.bms");
-        mesh.showInfos();
+        // split tri into 4 tris, quad into 4 quads
+        CPPUNIT_ASSERT( mesh.cellCount() == 2 );
+        CPPUNIT_ASSERT( mesh.nodeCount() == 5 );
+        CPPUNIT_ASSERT( mesh.boundaryCount() == 6 );
+                
+//         mesh.save("mesh.bms");
+//         mesh.showInfos();
         
-        Mesh tmp;
-        tmp.createH2( mesh );
+        Mesh tmp( mesh.createH2(  ) );
+        tmp.createNeighbourInfos();
+        
 //         tmp.save("tmph2.bms");
 //         tmp.showInfos();
         
-        // split tri into 4 tris, quad into 8 tris
-        CPPUNIT_ASSERT( tmp.cellCount() == 12 );
+//         
+        // split tri into 4 tris, quad into 4 quads
+        CPPUNIT_ASSERT( tmp.cellCount() == 8 );
         CPPUNIT_ASSERT( tmp.nodeCount() == 12 );
-        CPPUNIT_ASSERT( tmp.boundaryCount() == 23 );
+        CPPUNIT_ASSERT( tmp.boundaryCount() == 19 );
                  
-        tmp.createP2( mesh );
+        tmp = mesh.createP2( );
         
 //         tmp.save("tmpp2.bms");
 //         tmp.showInfos();
@@ -77,15 +84,21 @@ public:
         mesh.createTetrahedron( *n0, *n1, *n2, *n3 );
         mesh.createNeighbourInfos();
         
-        Mesh tmp;
-        tmp.createH2( mesh );
+        CPPUNIT_ASSERT( mesh.cellCount() == 1 );
+        CPPUNIT_ASSERT( mesh.nodeCount() == 4 );
+        // boundaries with marker 0 will not yet refined
+        CPPUNIT_ASSERT( mesh.boundaryCount() == 4 );
+                
+        Mesh tmp( mesh.createH2( ) );
        
         CPPUNIT_ASSERT( tmp.cellCount() == 8 );
         CPPUNIT_ASSERT( tmp.nodeCount() == 10 );
-        // boundaries with marker 0 will not yet refined
-        CPPUNIT_ASSERT( tmp.boundaryCount() == 0 );
-                 
-        tmp.createP2( mesh );
+        CPPUNIT_ASSERT( tmp.boundaryCount() == 16 );
+        
+        tmp.createNeighbourInfos();
+        CPPUNIT_ASSERT( tmp.boundaryCount() == 24 );
+        
+        tmp = mesh.createP2( );
         CPPUNIT_ASSERT( tmp.cellCount() == 1 );
         CPPUNIT_ASSERT( tmp.nodeCount() == 10 );
         CPPUNIT_ASSERT( tmp.boundaryCount() == 4 );

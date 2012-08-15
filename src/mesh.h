@@ -460,7 +460,7 @@ protected:
         if ( !b ) {
             b = createBoundary_< B >( nodes, marker, boundaryCount() );
         } else {
-            b->setMarker( marker );
+            if ( marker != 0 ) b->setMarker( marker );
         }
         return b;
     }
