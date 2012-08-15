@@ -688,7 +688,7 @@ void Mesh::createRefined_( const Mesh & mesh, bool p2, bool h2 ){
                     
                         n[ j ] = createRefinementNode_( & this->node( c.node( Tet10NodeSplitZienk[ j ][ 0 ] ).id() ),
                                                         & this->node( c.node( Tet10NodeSplitZienk[ j ][ 1 ] ).id() ), 
-                                                            nodeMatrix );
+                                                        nodeMatrix );
                     }
                     
                     if ( h2 ){
@@ -1268,40 +1268,47 @@ void Mesh::createNeighbourInfos( bool force ){
                     bound = findBoundary( c->node( j ) );
                     if ( bound == NULL ) bound = createNodeBoundary( c->node( j ) );
                 break;
-                case MESH_TRIANGLE_RTTI:
-                     //** er baut hier nur ein Edge2 da allerdings der marker == 0 ist wird es nie zum
-                     //** rechnen genutzt, aber für neighbour related infos, also ist das erstmal ok
-                case MESH_TRIANGLE6_RTTI:
-                case MESH_QUADRANGLE_RTTI:
-                case MESH_QUADRANGLE8_RTTI:
-                    bound = findBoundary( c->node( j ), c->node( ( j + 1 )%nBounds ) );
-                    if ( bound == NULL ) {
-                        bound = createEdge( c->node( j ), c->node( ( j + 1 )%nBounds ) );
-                    } 
-                break;
-                case MESH_TETRAHEDRON_RTTI:
-                     //** er baut hier nur ein triangle3Face da allerdings der marker == 0 ist wird es
-                     //** nie zum rechnen genutzt, aber für neighbour related infos, also ist das erstmal
-                     //** ok, muss ich aufräumen wenn die Knotennummerierung der Tet10 eindeutig ist
-                case MESH_TETRAHEDRON10_RTTI:
-                    bound = findBoundary( c->node( j ),
-                                          c->node( ( j + 1 )%nBounds ),
-                                          c->node( ( j + 2 )%nBounds ) );
-                    if ( bound == NULL ) {
-                        bound = createTriangleFace( c->node( j ),
-                                                    c->node( ( j + 1 )%nBounds ),
-                                                    c->node( ( j + 2 )%nBounds ) );
-                    } 
-                    break;
-                case MESH_HEXAHEDRON_RTTI:{
-                    std::vector < Node * > boundNodes( c->boundaryNodes( j ) );
-                    bound = findBoundary( boundNodes );
-                    if ( bound == NULL ) {
-                        bound = this->createBoundary( boundNodes );
-                    } 
-                } break;
-                default:
-                      std::cerr << WHERE_AM_I << c->rtti() << std::endl;
+//                 case MESH_TRIANGLE_RTTI:
+//                      //** er baut hier nur ein Edge2 da allerdings der marker == 0 ist wird es nie zum
+//                      //** rechnen genutzt, aber für neighbour related infos, also ist das erstmal ok
+//                 case MESH_TRIANGLE6_RTTI:
+//                 case MESH_QUADRANGLE_RTTI:
+//                 case MESH_QUADRANGLE8_RTTI:
+//                     bound = findBoundary( c->node( j ), c->node( ( j + 1 )%nBounds ) );
+//                     if ( bound == NULL ) {
+//                         bound = createEdge( c->node( j ), c->node( ( j + 1 )%nBounds ) );
+//                     } 
+//                 break;
+//                 case MESH_TETRAHEDRON_RTTI:
+//                      //** er baut hier nur ein triangle3Face da allerdings der marker == 0 ist wird es
+//                      //** nie zum rechnen genutzt, aber für neighbour related infos, also ist das erstmal
+//                      //** ok, muss ich aufräumen wenn die Knotennummerierung der Tet10 eindeutig ist
+//                 case MESH_TETRAHEDRON10_RTTI:
+//                     bound = createBoundaryChecked_( c->boundaryNodes( j ) );
+//                     bound = findBoundary( c->node( j ),
+//                                           c->node( ( j + 1 )%nBounds ),
+//                                           c->node( ( j + 2 )%nBounds ) );
+//                     if ( bound == NULL ) {
+//                         bound = createTriangleFace( c->node( j ),
+//                                                     c->node( ( j + 1 )%nBounds ),
+//                                                     c->node( ( j + 2 )%nBounds ) );
+//                     } 
+//                     break;
+//                 case MESH_HEXAHEDRON_RTTI:
+//                 case MESH_HEXAHEDRON20_RTT:
+//                     //** er baut hier nur ein Quadrangle da allerdings der marker == 0 ist wird es nie zum
+//                     //** rechnen genutzt, aber für neighbour related infos, also ist das erstmal ok
+//                     bound = createBoundaryChecked_( c->boundaryNodes( j ) );
+// 
+//                     break;
+                default:{
+                    std::vector < Node * > nodes( c->boundaryNodes( j ) );
+                    bound = createBoundary( nodes, 0 );
+//                     std::cout << c->rtti() << " " << j << std::endl;
+//                     std::cout << bound << std::endl;
+                }
+//                     THROW_TO_IMPL
+//                     std::cerr << WHERE_AM_I << c->rtti() << std::endl;
                 }
 
                 bool cellIsLeft = true;
@@ -1315,7 +1322,6 @@ void Mesh::createNeighbourInfos( bool force ){
                      cellIsLeft = true;
                 } 
 
-                
                 if ( bound->leftCell() == NULL && cellIsLeft ) {
                     bound->setLeftCell( c );
                 } else if ( bound->rightCell() == NULL ) {

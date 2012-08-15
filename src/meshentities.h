@@ -229,7 +229,7 @@ public:
     inline bool tagged() const { return tagged_; }
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes( uint i ){
+    virtual std::vector < Node * > boundaryNodes( Index i ){
         CERR_TO_IMPL
         std::cout << rtti() << std::endl;
         std::vector < Node * > n;
@@ -524,6 +524,8 @@ public:
      
     friend std::ostream & operator << ( std::ostream & str, const Triangle & t );
 
+    virtual std::vector < Node * > boundaryNodes( Index i );
+    
 protected:
 };
 
@@ -579,6 +581,8 @@ public:
 
     friend std::ostream & operator << ( std::ostream & str, const Quadrangle & t );
 
+    virtual std::vector < Node * > boundaryNodes( Index i );
+    
 protected:
 };
 
@@ -607,20 +611,16 @@ public:
 protected:
 };
 
+static const uint8 TetrahedronFacesID[ 4 ][ 3 ] = {
+    {0, 2, 1},
+    {0, 1, 3},
+    {1, 2, 3},
+    {2, 0, 3}
+};
+
 //! A Tetrahedron
-/*! A Tet
-
-Node direction:
-
-Neighbourship relations:
-
-Neighbour Nr, on Boundary a-b-c
-  intersectionSet( c1, nodeVector_[ ( i + 1 )%4 ]->cellSet(), nodeVector_[ ( i + 2 )%4 ]->cellSet() );
-    intersectionSet( common, c1, nodeVector_[ ( i + 3 )%4 ]->cellSet() );
-    0           1-2-3
-    1           2-3-0
-    2           3-2-1
-    3           0-1-2
+/*! 
+ * A Tetrahedron for linear shape functions
 */
 class DLLEXPORT Tetrahedron : public Cell {
 public:
@@ -644,6 +644,8 @@ public:
 
     friend std::ostream & operator << ( std::ostream & str, const Tetrahedron & t );
 
+    virtual std::vector < Node * > boundaryNodes( Index i );
+    
 protected:
 };
 
@@ -729,9 +731,18 @@ public:
     friend std::ostream & operator << ( std::ostream & str, const Hexahedron & t );
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes( uint i );
+    virtual std::vector < Node * > boundaryNodes( Index i );
 
 protected:
+};
+
+static const uint8 Hexahedron20FacesID[ 6 ][ 8 ] = {
+    {0,1,5,4,8,17,12,16},
+    {1,2,6,5,9,18,13,17},
+    {2,3,7,6,10,19,14,18},
+    {3,0,4,7,11,16,15,19},
+    {0,3,2,1,11,10,9,8},
+    {4,5,6,7,12,13,14,15},
 };
 
 static const uint8 Hex20NodeSplit[ 20 ][ 2 ] = {
@@ -772,6 +783,9 @@ public:
     
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
 
+    /*! Experimental */
+    virtual std::vector < Node * > boundaryNodes( Index i );
+    
 protected:
 };
 
@@ -815,7 +829,7 @@ public:
     friend std::ostream & operator << ( std::ostream & str, const Hexahedron & t );
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes( uint i );
+    virtual std::vector < Node * > boundaryNodes( Index i );
 
 protected:
 };
@@ -889,7 +903,7 @@ public:
     virtual uint neighbourCellCount() const { return 5; }
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes( uint i );
+    virtual std::vector < Node * > boundaryNodes( Index i );
 
 protected:
 };

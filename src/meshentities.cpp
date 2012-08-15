@@ -806,6 +806,11 @@ std::vector < PolynomialFunction < double > > Triangle::createShapeFunctions( ) 
     return createPolynomialShapeFunctions( *this, 2, true, false );
 }
 
+std::vector < Node * > Triangle::boundaryNodes( Index i ){
+    std::vector < Node * > nodes( 2 );
+    for ( Index j = 0; j < 2; j ++ ) nodes[ j ] = nodeVector_[ (i+j)%3 ];
+    return nodes;
+}
 
 // RVector Triangle::N( const RVector3 & L ) const {
 //     return shape_->N( L );
@@ -903,6 +908,12 @@ std::vector < PolynomialFunction < double > > Quadrangle::createShapeFunctions( 
     return createPolynomialShapeFunctions( *this, 2, true, true );
 }
 
+std::vector < Node * > Quadrangle::boundaryNodes( Index i ){
+    std::vector < Node * > nodes( 2 );
+    for ( Index j = 0; j < 2; j ++ ) nodes[ j ] = nodeVector_[ (i+j)%4 ];
+    return nodes;
+}
+
 Quadrangle8::Quadrangle8( std::vector < Node * > & nodes ) : Quadrangle( nodes ){
 }
 
@@ -954,6 +965,12 @@ std::vector < PolynomialFunction < double > > Tetrahedron::createShapeFunctions(
     return createPolynomialShapeFunctions( *this, 2, true, false );
 }
 
+std::vector < Node * > Tetrahedron::boundaryNodes( Index i ){
+    std::vector < Node * > nodes( 3 );
+    for ( Index j = 0; j < 3; j ++ ) nodes[ j ] = nodeVector_[ TetrahedronFacesID[ i ][ j ] ];
+    return nodes;
+}
+
 Tetrahedron10::Tetrahedron10( std::vector < Node * > & nodes ) : Tetrahedron( nodes ){
 }
 
@@ -997,7 +1014,7 @@ std::vector < PolynomialFunction < double > > Hexahedron::createShapeFunctions( 
 //     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
 // }
 
-std::vector < Node * > Hexahedron::boundaryNodes( uint i ){
+std::vector < Node * > Hexahedron::boundaryNodes( Index i ){
     std::vector < Node * > nodes( 4 );
     nodes[ 0 ] = nodeVector_[ HexahedronFacesID[ i ][ 0 ] ];
     nodes[ 1 ] = nodeVector_[ HexahedronFacesID[ i ][ 1 ] ];
@@ -1018,6 +1035,11 @@ std::vector < PolynomialFunction < double > > Hexahedron20::createShapeFunctions
     return createPolynomialShapeFunctions( *this, 3, true, true );
 }
 
+std::vector < Node * > Hexahedron20::boundaryNodes( Index i ){
+    std::vector < Node * > nodes( 8 );
+    for ( Index j = 0; j < 8; j ++ ) nodes[ j ] = nodeVector_[ Hexahedron20FacesID[ i ][ j ] ];
+    return nodes;
+}
 
 TriPrism::TriPrism( std::vector < Node * > & nodes ) : Cell( nodes ){
     shape_ = new TriPrismShape();
@@ -1051,7 +1073,7 @@ std::vector < PolynomialFunction < double > > TriPrism::createShapeFunctions( ) 
     
 }
 
-std::vector < Node * > TriPrism::boundaryNodes( uint i ){
+std::vector < Node * > TriPrism::boundaryNodes( Index i ){
     std::vector < Node * > nodes;
     for ( uint j = 0; j < 3; j ++ ){
         nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ j ] ] );
@@ -1109,7 +1131,7 @@ std::vector < PolynomialFunction < double > > Pyramid::createShapeFunctions( ) c
     return std::vector < PolynomialFunction < double > >();
 }
  
-std::vector < Node * > Pyramid::boundaryNodes( uint i ){
+std::vector < Node * > Pyramid::boundaryNodes( Index i ){
 THROW_TO_IMPL
     return std::vector < Node * > ();
 }
