@@ -195,8 +195,11 @@ public:
 
     void cleanNeighbourInfos( );
 
+    Cell * neighbourCell( const RVector & sf );
+    
     /*! Return the direct neighbour cell corresponding to local node i. The cell will be searched and stored by the virtual method \ref findNeighbourCell. All neighbouring relationships have to be initialized ones by calling \ref Mesh.createNeighborInfos( ).
      If no cell can be found NULL is returned. */
+
     inline Cell * neighbourCell( uint i ){ return neighbourCells_[ i ]; }
 
     /*! Find neighbour cell regarding to the i-th Boundary and store them in neighbourCells_. */
@@ -210,10 +213,8 @@ public:
       Find the node of this cell which is in opposite position to the given boundary. Returns a pointer to the node. The boundary must be part of the cell otherwise, a NULL pointer returns. Works for triangle/edge and tetrahedron/triangleFace*/
     Node * oppositeTo( const Boundary & bound );
 
-//     /*! Find the Boundary of this cell which is in opposite position to the given node. Returns a pointer to the boundary.
-//       or a NULL pointer. Works for triangle/edge and tetrahedron/triangleFace*/
-//     Boundary * oppositeTo( const Node & node );
-
+    Boundary * boundaryTo( const RVector & sf );
+    
     DLLEXPORT friend std::ostream & operator << ( std::ostream & str, const Cell & c );
 
     /*! Mark the cell. Don't use the tag when you use some cell search. */
@@ -246,8 +247,6 @@ protected:
     double attribute_;
 
     bool tagged_;
-
-    //std::vector < Cell * > neighbourCells_;
 
 private:
     /*! Don't call this class directly */
@@ -339,7 +338,7 @@ public:
 
     /*! Swap edge between two triangular neighbor cells. Only defined if both neighbors are triangles. */
     int swap();
-
+    
 //     /*! See ref MeshEntity::N() */
 //     virtual RVector N( const RVector3 & L ) const;
     
@@ -476,12 +475,14 @@ public:
 
     virtual uint neighbourCellCount() const { return 2; }
 
-    virtual void findNeighbourCell( uint id );
+//     virtual void findNeighbourCell( uint id );
 
     void setNodes( Node & n1, Node & n2, bool changed = true  );
     
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
      
+    virtual std::vector < Node * > boundaryNodes( Index i );
+    
     friend std::ostream & operator << ( std::ostream & str, const EdgeCell & t );
 
 protected:
@@ -516,7 +517,7 @@ public:
 
     virtual uint neighbourCellCount() const { return 3; }
 
-    virtual void findNeighbourCell( uint i );
+//     virtual void findNeighbourCell( uint i );
 
     void setNodes( Node & n1, Node & n2, Node & n3, bool changed = true  );
 
@@ -575,7 +576,7 @@ public:
 
     virtual uint neighbourCellCount() const { return 4; }
 
-    virtual void findNeighbourCell( uint i );
+//     virtual void findNeighbourCell( uint i );
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
 
@@ -640,7 +641,7 @@ public:
 
     virtual uint neighbourCellCount() const { return 4; }
 
-    virtual void findNeighbourCell( uint i );
+//     virtual void findNeighbourCell( uint i );
 
     friend std::ostream & operator << ( std::ostream & str, const Tetrahedron & t );
 
@@ -753,7 +754,7 @@ static const uint8 Hex20NodeSplit[ 20 ][ 2 ] = {
 };
 
 //! A Hexahedron with 20 nodes
-/*! A Hexahedron with 20 nodes for quadratic base functions in serendipity style
+/*! A Hexahedron with 20 nodes for quadratic base functions of serendipity style
 
 Node direction:
 
