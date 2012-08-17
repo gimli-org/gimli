@@ -167,7 +167,9 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
         if coverage:
             cov = g.RVector()
             try:
+                print mesh.exportDataMap().keys()
                 if coverage in mesh.exportDataMap().keys():
+                    print "found coverage in mesh"
                     cov = mesh.exportData( coverage )
 #                    if coverage.find( 'log10' ) > 0:
 #                        cov = g.exp10( cov )
@@ -467,6 +469,10 @@ def main( argv ):
     parser.add_option("", "--title", dest="title", default ="", help="draw title" )
     parser.add_option("", "--aspect", dest="aspect" , default ="equal"
                             , help="set aspect ratio 'auto' or 'equal' [equal] " )
+    parser.add_option("", "--xlim", dest="xlim" , default = '', type = "string"
+                            , help="set x limits for plot (: separated) " )
+    parser.add_option("", "--ylim", dest="ylim" , default = '', type = "string"
+                            , help="set y limits for plot (: separated) " )
     parser.add_option("", "--xOffset", dest="xoffset" , default = 0.0, type = "float"
                             , help="set x-coordinate offset for first electrode [0.0] " )
     parser.add_option("", "--zOffset", dest="zoffset" , default = 0.0, type = "float"
@@ -622,7 +628,16 @@ def main( argv ):
             
             if options.verbose:
                 print "new ylims", axes.get_ylim( )
-            
+        
+        if len( options.xlim ) > 0:
+            xl = P.double( options.xlim.split(':') )
+            print "xlim = ", xl
+            axes.set_xlim( xl ) 
+        if len( options.ylim ) > 0:
+            yl = P.double( options.ylim.split(':') )
+            print "ylim = ", yl
+            axes.set_ylim( yl ) 
+        
         if options.ylabel:
             axes.set_ylabel( options.ylabel )
 
