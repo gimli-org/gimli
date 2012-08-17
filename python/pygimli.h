@@ -171,7 +171,7 @@ DEFINE_COMPARE_OPERATOR__( > )
 #undef DEFINE_COMPARE_OPERATOR__
 
 
-    //** maybee better to move these instantiation into libgimli
+    //** maybe better to move these instantiation into libgimli
 
     template class Vector< double >;
     template class Vector< Complex >;

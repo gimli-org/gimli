@@ -333,14 +333,14 @@ template < typename ValueType > ValueType getEnvironment( const std::string & na
 }
 
 
-//! General template for conversion to string, shoul supersede all sprintf etc.
+//! General template for conversion to string, should supersede all sprintf etc.
 template< typename T > inline std::string str( const T & value ){
   std::ostringstream streamOut;
   streamOut << value;
   return streamOut.str();
 }
 
-//! Deprecated! use str() instead, General template for conversion to string, shoul supersede all sprintf etc.
+//! Deprecated! use str() instead, General template for conversion to string, should supersede all sprintf etc.
 template< typename T > inline std::string toStr( const T & value ){
     return str( value );
 }

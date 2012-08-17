@@ -167,14 +167,12 @@ int main( int argc, char *argv [] ){
     }
     std::cout << "Mesh:\t"; mesh.showInfos();
     if ( refineH ) {
-        Mesh meshTmp( mesh );
-        mesh.createH2Mesh( meshTmp );
+        mesh = mesh.createH2();
         std::cout << "MeshH:\t"; mesh.showInfos();
         saveBin = true;
     }
     if ( refineP ) {
-        Mesh meshTmp( mesh );
-        mesh.createP2Mesh( meshTmp );
+        mesh = mesh.createP2( );
         std::cout << "MeshP:\t"; mesh.showInfos();
         saveBin = true;
     }
