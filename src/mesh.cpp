@@ -364,15 +364,16 @@ Cell * Mesh::findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t 
         } else {
             cell->tag();
             cellIDX__.push_back( cell->id() );
-            int pFunIdx = 0;
+            RVector sf;
 
 //             std::cout << "testpos: " << pos << std::endl;
-//             std::cout << "cell: " << *cell << " touch: " << cell->shape().touch( pos, true ) << std::endl;
+//             std::cout << "cell: " << *cell << " touch: " << cell->shape().isInside( pos, true ) << std::endl;
+            
 //             for ( uint i = 0; i < cell->nodeCount() ; i ++ ){
 //                 std::cout << cell->node( i )<< std::endl;
 //             }
 
-            if ( cell->shape().isInside( pos, pFunIdx, false ) ) {
+            if ( cell->shape().isInside( pos, sf, false ) ) {
                 return cell;
             } else {
                 if ( !neighboursKnown_ ){
@@ -380,9 +381,9 @@ Cell * Mesh::findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t 
                         cell->findNeighbourCell( j );
                     }
                 }
-                cell = cell->neighbourCell( pFunIdx );
+                cell = cell->neighbourCell( sf );
 
-//                 std::cout << "pFunIdx " << pFunIdx << std::endl;
+//                 std::cout << "sf: " << sf << std::endl;
 //                 std::cout << "neighCell " << cell << std::endl;
             }
             count++;
@@ -427,7 +428,10 @@ Cell * Mesh::findCell( const RVector3 & pos, size_t & count, bool extensive ) co
         count = 0;
         fillKDTree_();
         Node * refNode = tree_->nearest( pos );
-        
+        if ( !refNode ){
+            std::cout << "pos: " << pos << std::endl;
+            throwError( 1, WHERE_AM_I + " no nearest node to pos. This is a empty mesh" ); 
+        }
         if ( refNode->cellSet().empty() ){
             std::cout << "Node: " << *refNode << std::endl;
             throwError( 1, WHERE_AM_I + " no cells for this node. This is a corrupt mesh" ); 
@@ -436,12 +440,12 @@ Cell * Mesh::findCell( const RVector3 & pos, size_t & count, bool extensive ) co
 //         for ( std::set< Cell * >::iterator it = refNode->cellSet().begin(); it != refNode->cellSet().end(); it ++ ){
 //             std::cout << (*it)->id() << std::endl;
 //         }
-        if ( refNode ) {
-            cell = findCellBySlopeSearch_( pos, *refNode->cellSet().begin(), count, false );
-            if ( cell ) return cell;
-        }
-        //std::cout << "more expensive test here" << std::endl;
-
+        cell = findCellBySlopeSearch_( pos, *refNode->cellSet().begin(), count, false );
+        if ( cell ) return cell;
+        
+//         std::cout << "more expensive test here" << std::endl;
+//         exportVTK( "slopesearch");
+//         exit(0);
         if ( extensive ){
             std::for_each( cellVector_.begin(), cellVector_.end(), std::mem_fun( &Cell::untag ) );
             //!** *sigh, no luck with simple kd-tree search, try more expensive full slope search
@@ -604,11 +608,11 @@ Mesh Mesh::createP2( ) const {
 }
 
 int markerT( Node * n0, Node * n1 ){
-  if ( n0->marker() == -99 && n1->marker() == -99 ) return -1;
-  if ( n0->marker() == -99 ) return n1->marker();
-  if ( n1->marker() == -99 ) return n0->marker();
-  if ( n0->marker() == n1->marker() ) return n1->marker();
-  else return 0;
+    if ( n0->marker() == -99 && n1->marker() == -99 ) return -1;
+    if ( n0->marker() == -99 ) return n1->marker();
+    if ( n1->marker() == -99 ) return n0->marker();
+    if ( n0->marker() == n1->marker() ) return n1->marker();
+    else return 0;
 }
 
 Node * Mesh::createRefinementNode_( Node * n0, Node * n1, std::map< std::pair < Index, Index >, Node * > & nodeMatrix ){
@@ -1797,13 +1801,19 @@ void Mesh::relax(){
 void Mesh::smooth( bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint smoothIteration ){
     createNeighbourInfos();
 
-    for ( uint j = 0; j < smoothIteration; j++ ){
+    for ( Index j = 0; j < smoothIteration; j++ ){
 //         if ( edgeSwapping ) {
 //             for ( uint i = 0; i < boundaryCount(); i++) dynamic_cast< Edge & >( boundary( i ) ).swap( 1 );
 //         }
         if ( nodeMoving ) {
-            for ( uint i = 0; i < nodeCount(); i++) {
-                if ( node( i ).marker() == 0 ) node( i ).smooth( smoothFunction );
+            for ( Index i = 0; i < nodeCount(); i++) {
+                bool forbidMove = (node( i ).marker() != 0);
+                
+                for ( std::set< Boundary * >::iterator it = node( i ).boundSet().begin();
+                     it != node( i ).boundSet().end(); it ++ ){
+                    forbidMove = forbidMove || (*it)->marker() != 0;
+                }
+                if ( !forbidMove ) node( i ).smooth( smoothFunction );
             }
         }
     }

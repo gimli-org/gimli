@@ -311,18 +311,15 @@ RVector3 Shape::rst( uint i ) const {
 }
     
 bool Shape::isInside( const RVector3 & xyz, bool verbose ) const {
-    int tmp; return isInside( xyz, tmp, verbose );
+     RVector sf; return isInside( xyz, sf, verbose );
 }
 
-bool Shape::isInside( const RVector3 & xyz, int & pFunIdx, bool verbose) const {
+bool Shape::isInside( const RVector3 & xyz, RVector & sf, bool verbose) const {
     
-    RVector sf( N( rst( xyz) ) );
-
+    sf = N( rst( xyz) );
     double minsf = min( sf );
-    pFunIdx = find( sf == minsf )[0];
-    
+       
     if ( verbose ){
-        std::cout << name()<< ": pFunIdx: " << pFunIdx<< std::endl;
         std::cout << "rst: " << rst( xyz )<< std::endl;
         std::cout << "sf: " << sf << std::endl;
     }

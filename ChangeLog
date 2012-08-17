@@ -1,3 +1,8 @@
+2012-08-17
+    libgimli::mesh()
+        - replaced pIndx by sf( shape function) in isInside method for more sophisticated neighbor search
+        - fixed:  slopesearch
+        
 2012-08-13
     libgimli::mesh()
         - new createH2 method to support all mesh entity types (need tests)

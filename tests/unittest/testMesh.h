@@ -62,6 +62,9 @@ public:
         CPPUNIT_ASSERT( tmp.nodeCount() == 12 );
         CPPUNIT_ASSERT( tmp.boundaryCount() == 19 );
                  
+        tmp.findCell( RVector3( 0.5, 0.5 ) );
+        
+        
         tmp = mesh.createP2( );
         
 //         tmp.save("tmpp2.bms");

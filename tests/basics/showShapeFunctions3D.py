@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
 import pygimli as g
 from pygimli.viewer import showMesh
 
@@ -107,7 +109,8 @@ def tetrahedron( p2 ):
     show( mesh )
 
 def hexahedron( p2 ):
-    
+    """
+    """
     mesh = g.createMesh3D( g.asvector( np.linspace( 0, 1, 2 ) ), 
                            g.asvector( np.linspace( 0, 1, 2 ) ), 
                            g.asvector( np.linspace( 0, 1, 2 ) ) )
@@ -116,7 +119,7 @@ def hexahedron( p2 ):
     #mesh.scale( g.RVector3( 0.9, 0.8, 0.7 ) )
 
     #mesh.rotate( g.RVector3( 10.0, 34.0, 45 ) )
-    mesh.scale( g.RVector3( 1.0, 1.0, 5.0 ) )
+    #mesh.scale( g.RVector3( 1.0, 1.0, 5.0 ) )
 
     if p2: mesh = mesh.createP2()
 
@@ -151,8 +154,31 @@ def prism( p2 ):
     
 #tetrahedron( p2 = False )
 #tetrahedron( p2 = True )
-hexahedron( p2 = False )
+#hexahedron( p2 = False )
 #hexahedron( p2 = True )
 #prism( p2 = False )
-prism( p2 = True )
+#prism( p2 = True )
 
+
+mesh = g.createMesh3D( g.asvector( np.linspace( 0, 1, 5 ) ), 
+                        g.asvector( np.linspace( 0, 1, 5 ) ), 
+                           g.asvector( np.linspace( 0, 1, 5 ) ) )
+                           
+
+#mesh = g.Mesh(2)
+#n0 = mesh.createNode( 0.0, 0.0, 0.0 )
+#n1 = mesh.createNode( 1.0, 0.0, 0.0 )
+#n2 = mesh.createNode( 0.0, 1.0, 0.0 )
+
+
+#mesh.createTriangle( n0, n1, n2)
+mesh.createNeighbourInfos()
+
+print mesh
+#mesh = g.createMesh2D( g.asvector( np.linspace( 0, 1, 2 ) ), 
+                       #g.asvector( np.linspace( 0, 1, 2 ) ) )
+
+c = mesh.findCell( g.RVector3( 1.0, 1.0, 0.8 ), False )
+
+print c
+    

@@ -243,8 +243,8 @@ public:
     virtual bool isInside( const RVector3 & xyz, bool verbose = false ) const;
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape. On boundary means inside too.
-     pFunIdx Return the node index farthermost to xyz. */
-    virtual bool isInside( const RVector3 & xyz, int & pFunIdx, bool verbose = false ) const;
+     sf contains the complete shape function to identify next neighbor. */
+    virtual bool isInside( const RVector3 & xyz, RVector & sf, bool verbose = false ) const;
     
     /*! Get the domain size of this shape, i.e., length, area or volume */
     double domainSize() const;
