@@ -378,7 +378,7 @@ Cell * Mesh::findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t 
             } else {
                 if ( !neighboursKnown_ ){
                     for ( uint j = 0; j < cell->neighbourCellCount(); j++ ){
-                        cell->findNeighbourCell( j );
+                         cell->findNeighbourCell( j );
                     }
                 }
                 cell = cell->neighbourCell( sf );
@@ -1305,12 +1305,12 @@ void Mesh::createNeighbourInfos( bool force ){
 //                     bound = createBoundaryChecked_( c->boundaryNodes( j ) );
 // 
 //                     break;
-                default:{
-                    std::vector < Node * > nodes( c->boundaryNodes( j ) );
-                    bound = createBoundary( nodes, 0 );
+                    default:{
+                        std::vector < Node * > nodes( c->boundaryNodes( j ) );
+                        bound = createBoundary( nodes, 0 );
 //                     std::cout << c->rtti() << " " << j << std::endl;
 //                     std::cout << bound << std::endl;
-                }
+                    }
 //                     THROW_TO_IMPL
 //                     std::cerr << WHERE_AM_I << c->rtti() << std::endl;
                 }
@@ -1340,17 +1340,17 @@ void Mesh::createNeighbourInfos( bool force ){
             //** cross check;
                 if ( ( bound->leftCell() != c ) && ( bound->rightCell() != c ) ){
                     std::cerr << *c << std::endl;
-                    std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
                     std::cerr << *bound << std::endl;
+                    std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
                     std::cerr << WHERE << " Ooops, crosscheck --this should not happen." << std::endl;
                 } else {
 //                     std::cout << nBounds << std::endl;
 //                     std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
                 }
-            }
-        }
+            } // for_each boundary in cell
+        } // for_each cell
         neighboursKnown_ = true;
-    }
+    } // if ! neighboursKnown_
 }
 
 void Mesh::create1DGrid( const RVector & x ){
