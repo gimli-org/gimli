@@ -403,7 +403,7 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
         common = node( maxIdx[ 0 ] ).boundSet();
     }
     
-//     std::cout << "common.size() " << common.size()<< std::endl;
+    std::cout << "common.size() " << common.size()<< std::endl;
     
     if ( common.size() == 0 ) return NULL;
     
@@ -416,7 +416,7 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
             ++it;
         }
     }
-//     std::cout << "common.size() remove foreign" << common.size()<< std::endl;
+     std::cout << "common.size() remove foreign" << common.size()<< std::endl;
 //     
     std::set < Boundary * > commonSub;
     
@@ -429,14 +429,14 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
         commonSub = node( minIdx[ 0 ] ).boundSet();
     }
     
-    
-    
     for ( std::set < Boundary * >::iterator it = commonSub.begin(); it != commonSub.end(); it++){
         common.erase( *(it) );
     }
 
     if ( common.size() == 0 ) {
         std::cerr << " this.should not happend" << std::endl;
+        std::cout << rtti() << " " << *this  << std::endl;
+        std::cout << sf  << std::endl;
         THROW_TO_IMPL
         return NULL;
     }
@@ -447,6 +447,14 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
 }
     
 Cell * Cell::neighbourCell( const RVector & sf ){
+    //** hack for triangle and tetrahedron. pls refactor
+    if ( ( sf.size() == 3 && shape_->dim() == 2 ) ||
+         ( sf.size() == 4 && shape_->dim() == 3 ) ){
+        double minSF = min( sf );
+        Index minId = find( sf == minSF )[ 0 ];
+        return neighbourCells_[ (minId+1)%sf.size() ];
+    }
+    
     Boundary *b = boundaryTo( sf );
     
 //     std::cout << *b << " " << b->leftCell() << " "<< b->rightCell() << std::endl;
@@ -889,8 +897,12 @@ std::vector < PolynomialFunction < double > > Triangle::createShapeFunctions( ) 
 }
 
 std::vector < Node * > Triangle::boundaryNodes( Index i ){
+    // 0 -> 1..2
+    // 1 -> 2..0
+    // 2 -> 0..1
     std::vector < Node * > nodes( 2 );
-    for ( Index j = 0; j < 2; j ++ ) nodes[ j ] = nodeVector_[ (i+j)%3 ];
+    nodes[ 0 ] = nodeVector_[ (i+0)%3 ];
+    nodes[ 1 ] = nodeVector_[ (i+1)%3 ];
     return nodes;
 }
 
@@ -1048,6 +1060,11 @@ std::vector < PolynomialFunction < double > > Tetrahedron::createShapeFunctions(
 }
 
 std::vector < Node * > Tetrahedron::boundaryNodes( Index i ){
+    // 0 -> 1..2..3
+    // 1 -> 2..0..3
+    // 2 -> 0..1..3
+    // 3 -> 0..2..1
+    
     std::vector < Node * > nodes( 3 );
     for ( Index j = 0; j < 3; j ++ ) nodes[ j ] = nodeVector_[ TetrahedronFacesID[ i ][ j ] ];
     return nodes;
