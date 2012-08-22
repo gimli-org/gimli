@@ -18,12 +18,12 @@ def drawMesh( axes, mesh ):
 
 def drawModel( axes, mesh, data = None, cMin = None, cMax = None
                , showCbar = True , linear = False, label = "", cmap=None
-               , nLevs = 5, orientation = 'horizontal', xlab=None, ylab=None):
-    ''
-    ' Draw a 2d mesh and color the cell by the data '
-    ''
+               , nLevs = 5, orientation = 'horizontal', alpha = 1, xlab=None, ylab=None):
+    '''
+        Draw a 2d mesh and color the cell by the data 
+    '''
         
-    gci = g.mplviewer.createMeshPatches( axes, mesh, alpha = 1.0 )
+    gci = g.mplviewer.createMeshPatches( axes, mesh, alpha = alpha )
 
     if cmap is not None: 
         if cmap == 'b2r':

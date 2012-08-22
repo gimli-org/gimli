@@ -191,10 +191,11 @@ P15_15 = T3_3 * E3_3T
 pnts = g.stdVectorRVector3()
     
 # quad
-#pnts.append( g.RVector3( 0.0, 0.0 ) )
-#pnts.append( g.RVector3( 1.0, 0.0 ) )
-#pnts.append( g.RVector3( 1.0, 1.0 ) )
-#pnts.append( g.RVector3( 0.0, 1.0 ) )
+pnts.append( g.RVector3( 0.0, 0.0 ) )
+pnts.append( g.RVector3( 1.0, 0.0 ) )
+pnts.append( g.RVector3( 1.0, 1.0 ) )
+pnts.append( g.RVector3( 0.0, 1.0 ) )
+pnts.append( g.RVector3( 0.5, 0.5 ) )
 #pnts.append( g.RVector3( 0.5, 0.0 ) )
 #pnts.append( g.RVector3( 1.0, 0.5 ) )
 #pnts.append( g.RVector3( 0.5, 1.0 ) )
@@ -243,26 +244,26 @@ pnts = g.stdVectorRVector3()
 #pnts.append( (pnts[ 3 ] + pnts[ 7 ]) / 2.0 )
 
 # pri
-pnts.append( g.RVector3( 0.0, 0.0, 0.0 ) )
-pnts.append( g.RVector3( 1.0, 0.0, 0.0 ) )
-pnts.append( g.RVector3( 0.0, 1.0, 0.0 ) )
-pnts.append( g.RVector3( 0.0, 0.0, 1.0 ) )
-pnts.append( g.RVector3( 1.0, 0.0, 1.0 ) )
-pnts.append( g.RVector3( 0.0, 1.0, 1.0 ) )
+#pnts.append( g.RVector3( 0.0, 0.0, 0.0 ) )
+#pnts.append( g.RVector3( 1.0, 0.0, 0.0 ) )
+#pnts.append( g.RVector3( 0.0, 1.0, 0.0 ) )
+#pnts.append( g.RVector3( 0.0, 0.0, 1.0 ) )
+#pnts.append( g.RVector3( 1.0, 0.0, 1.0 ) )
+#pnts.append( g.RVector3( 0.0, 1.0, 1.0 ) )
 
-pnts.append( (pnts[ 0 ] + pnts[ 1 ]) / 2.0 )
-pnts.append( (pnts[ 1 ] + pnts[ 2 ]) / 2.0 )
-pnts.append( (pnts[ 2 ] + pnts[ 0 ]) / 2.0 )
-pnts.append( (pnts[ 3 ] + pnts[ 4 ]) / 2.0 )
-pnts.append( (pnts[ 4 ] + pnts[ 5 ]) / 2.0 )
-pnts.append( (pnts[ 5 ] + pnts[ 3 ]) / 2.0 )
-pnts.append( (pnts[ 0 ] + pnts[ 3 ]) / 2.0 )
-pnts.append( (pnts[ 1 ] + pnts[ 4 ]) / 2.0 )
-pnts.append( (pnts[ 2 ] + pnts[ 5 ]) / 2.0 )
+#pnts.append( (pnts[ 0 ] + pnts[ 1 ]) / 2.0 )
+#pnts.append( (pnts[ 1 ] + pnts[ 2 ]) / 2.0 )
+#pnts.append( (pnts[ 2 ] + pnts[ 0 ]) / 2.0 )
+#pnts.append( (pnts[ 3 ] + pnts[ 4 ]) / 2.0 )
+#pnts.append( (pnts[ 4 ] + pnts[ 5 ]) / 2.0 )
+#pnts.append( (pnts[ 5 ] + pnts[ 3 ]) / 2.0 )
+#pnts.append( (pnts[ 0 ] + pnts[ 3 ]) / 2.0 )
+#pnts.append( (pnts[ 1 ] + pnts[ 4 ]) / 2.0 )
+#pnts.append( (pnts[ 2 ] + pnts[ 5 ]) / 2.0 )
 
 uN = g.RVector( len(pnts) )
-uN[ 5 ] = 1
-dim = 3
+uN[ 0 ] = 1
+dim = 2
 nCoeff = 3
 pascale = False
 serendipity = False

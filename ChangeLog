@@ -1,3 +1,8 @@
+2012-08-22
+    pygimli
+        - add app: createParaMesh.py to replace the old dcfemlib createParaMesh 
+            - currently support only grid/triangle hybrid meshes
+
 2012-08-17
     libgimli::mesh()
         - replaced pIndx by sf( shape function) in isInside method for more sophisticated neighbor search

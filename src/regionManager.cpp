@@ -896,8 +896,10 @@ void RegionManager::fillConstraints( DSparseMapMatrix & C ){
                 throwLengthError( 1, WHERE_AM_I + " left | right  MC size == 0 " + toStr( lMC->size() )
                 + " "+ toStr( rMC->size() ) );
             }
-            std::cout << "left : " << lMC->size() << " min " << min(*lMC) << " max " << max(*lMC) << " start " << lStart << std::endl;
-            std::cout << "right: " << rMC->size() << " min " << min(*rMC) << " max " << max(*rMC) << " start " << rStart << std::endl;
+//             if ( verbose_ ){
+//                 std::cout << "left : " << lMC->size() << " min " << min(*lMC) << " max " << max(*lMC) << " start " << lStart << std::endl;
+//                 std::cout << "right: " << rMC->size() << " min " << min(*rMC) << " max " << max(*rMC) << " start " << rStart << std::endl;
+//             }
 
             if ( iRMapIter != interRegionInterfaceMap_.end() ){
                 for ( std::list < Boundary * >::const_iterator bIter  = iRMapIter->second.begin();
@@ -1003,7 +1005,7 @@ void RegionManager::loadMap( const std::string & fname ){
         if ( lower( token[ 0 ] ) == "no" ){
             row = getRow( file ); if ( row.empty() ) continue;
             if ( verbose_ ){
-                if ( verbose_ ) std::cout << "Get region propertie tokens: " << std::endl;
+                if ( verbose_ ) std::cout << "Get region property tokens: " << std::endl;
                 for ( uint i = 0; i < token.size(); i ++ ) {
                     if ( verbose_ ) std::cout << token[ i ] << ", ";
                 }

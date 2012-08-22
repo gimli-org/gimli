@@ -1812,6 +1812,7 @@ void Mesh::smooth( bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint
                 for ( std::set< Boundary * >::iterator it = node( i ).boundSet().begin();
                      it != node( i ).boundSet().end(); it ++ ){
                     forbidMove = forbidMove || (*it)->marker() != 0;
+                    forbidMove = forbidMove || ( (*it)->leftCell() == NULL || (*it)->rightCell() == NULL );
                 }
                 if ( !forbidMove ) node( i ).smooth( smoothFunction );
             }

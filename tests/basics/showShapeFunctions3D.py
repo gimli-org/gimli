@@ -115,6 +115,7 @@ def hexahedron( p2 ):
                            g.asvector( np.linspace( 0, 1, 2 ) ), 
                            g.asvector( np.linspace( 0, 1, 2 ) ) )
 
+    mesh.node(0).setPos( g.RVector3( 0.0, 0.0, 0.5 ) )
     #mesh.rotate( g.RVector3( 10.0, 34.0, 45 ) )
     #mesh.scale( g.RVector3( 0.9, 0.8, 0.7 ) )
 
@@ -133,7 +134,7 @@ def prism( p2 ):
     n2 = mesh.createNode( 0.0, 1.0, 0.0 )
     n4 = mesh.createNode( 0.0, 0.0, 1.0 )
     n5 = mesh.createNode( 1.0, 0.0, 1.0 )
-    n6 = mesh.createNode( 0.0, 1.0, 1.0 )
+    n6 = mesh.createNode( 0.0, 1.0, 1.4 )
         
     ns = g.stdVectorNodes()
     for n in mesh.nodes():
@@ -155,30 +156,30 @@ def prism( p2 ):
 #tetrahedron( p2 = False )
 #tetrahedron( p2 = True )
 #hexahedron( p2 = False )
-#hexahedron( p2 = True )
+hexahedron( p2 = True )
 #prism( p2 = False )
 #prism( p2 = True )
 
 
-mesh = g.createMesh3D( g.asvector( np.linspace( 0, 1, 5 ) ), 
-                        g.asvector( np.linspace( 0, 1, 5 ) ), 
-                           g.asvector( np.linspace( 0, 1, 5 ) ) )
+#mesh = g.createMesh3D( g.asvector( np.linspace( 0, 1, 5 ) ), 
+                        #g.asvector( np.linspace( 0, 1, 5 ) ), 
+                           #g.asvector( np.linspace( 0, 1, 5 ) ) )
                            
 
-#mesh = g.Mesh(2)
-#n0 = mesh.createNode( 0.0, 0.0, 0.0 )
-#n1 = mesh.createNode( 1.0, 0.0, 0.0 )
-#n2 = mesh.createNode( 0.0, 1.0, 0.0 )
+##mesh = g.Mesh(2)
+##n0 = mesh.createNode( 0.0, 0.0, 0.0 )
+##n1 = mesh.createNode( 1.0, 0.0, 0.0 )
+##n2 = mesh.createNode( 0.0, 1.0, 0.0 )
 
 
-#mesh.createTriangle( n0, n1, n2)
-mesh.createNeighbourInfos()
+##mesh.createTriangle( n0, n1, n2)
+#mesh.createNeighbourInfos()
 
-print mesh
-#mesh = g.createMesh2D( g.asvector( np.linspace( 0, 1, 2 ) ), 
-                       #g.asvector( np.linspace( 0, 1, 2 ) ) )
+#print mesh
+##mesh = g.createMesh2D( g.asvector( np.linspace( 0, 1, 2 ) ), 
+                       ##g.asvector( np.linspace( 0, 1, 2 ) ) )
 
-c = mesh.findCell( g.RVector3( 1.0, 1.0, 0.8 ), False )
+#c = mesh.findCell( g.RVector3( 1.0, 1.0, 0.8 ), False )
 
-print c
+#print c
     

@@ -89,6 +89,15 @@ def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
                 
                 for i in range( d.sensorCount() ):
                     d.setSensorPosition( i, start + float(i)*(end-start)/(d.sensorCount() - 1.) )
+            elif len( row ) == 7:
+                ### filename xstart ystart zstart xend yend zend
+                d = ContainerTyp( row[0] )
+
+                start = g.RVector3( float( row[1] ), float( row[2] ), float( row[3] ) )
+                end   = g.RVector3( float( row[4] ), float( row[5] ), float( row[6] ) ) 
+                
+                for i in range( d.sensorCount() ):
+                    d.setSensorPosition( i, start + float(i)*(end-start)/(d.sensorCount() - 1.) )
             else:
                 print "cannot interprete project format: len(row) = ", len( row )
                 return dataList
