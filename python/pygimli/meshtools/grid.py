@@ -5,8 +5,10 @@ from os import system
 
 from pygimli.polytools import *
 
+import numpy as np
+
 def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
-                            , quality = 34.0, isSubSurface = False, verbose = False ):
+                            , quality = 34.0, smooth = False, isSubSurface = False, verbose = False ):
     ''' Returns a new mesh that contains a triangulated box around a given mesh suitable for geo-simulation (surface boundary at top)
         mesh = appendTriangleBoundary( inputMesh <parameters> )        
         xbound/ybound defines the x/y distance to the box
@@ -24,9 +26,9 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
 
     surface = 0.0
     ''' find boundaries on left/right/bottom/top side  '''
-    le = filter( lambda b: b.center().x() == mesh.xmin(), mesh.boundaries() )
-    bo = filter( lambda b: b.center().y() == mesh.ymin(), mesh.boundaries() )
-    ri = filter( lambda b: b.center().x() == mesh.xmax(), mesh.boundaries() )
+    le  = filter( lambda b: b.center().x() == mesh.xmin(), mesh.boundaries() )
+    bo  = filter( lambda b: b.center().y() == mesh.ymin(), mesh.boundaries() )
+    ri  = filter( lambda b: b.center().x() == mesh.xmax(), mesh.boundaries() )
     top = filter( lambda b: b.center().y() == mesh.ymax(), mesh.boundaries() )
 
     ''' gather all right boundary nodes after sorting in boundaryNodes  '''
@@ -36,8 +38,9 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
             tmp.append( b.node( 0 ) );
         if b.node( 1 ) not in tmp:
             tmp.append( b.node( 1 ) );
+            
     tmp.sort( sortNodeY ); tmp.reverse()
-    boundaryNodes = tmp;
+    boundaryNodes = tmp
 
     ''' gather all bottom boundary nodes and add them to boundaryNodes '''
     boNode = []
@@ -48,15 +51,15 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
             boNode.append( b.node( 1 ) );
 
     boNode.sort( sortNodeX ); boNode.reverse()
-    boundaryNodes = boundaryNodes + boNode;
+    boundaryNodes = boundaryNodes + boNode
 
     ''' gather all left boundary nodes and add them to boundaryNodes '''
     tmp = []
     for b in le:
         if b.node( 0 ) not in tmp + boundaryNodes:
-            tmp.append( b.node( 0 ) );
+            tmp.append( b.node( 0 ) )
         if b.node( 1 ) not in tmp + boundaryNodes:
-            tmp.append( b.node( 1 ) );
+            tmp.append( b.node( 1 ) )
 
     tmp.sort( sortNodeY );
     boundaryNodes = boundaryNodes + tmp;
@@ -80,8 +83,8 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
         for n in boundaryNodes:
             poly.createNode( n.pos() );
         ''' and connect them by a closed polygon '''
-        for id in range( 0, poly.nodeCount() ):
-            poly.createEdge( poly.node( id ), poly.node( (id + 1)%poly.nodeCount() ), marker )
+        for i in range( 0, poly.nodeCount() ):
+            poly.createEdge( poly.node( i ), poly.node( (i + 1)%poly.nodeCount() ), marker )
         ''' add four corners of the world box '''
         n1 = poly.createNode( g.RVector3( mesh.xmax() + xbound, surface, 0.0 ) );
         n2 = poly.createNode( g.RVector3( mesh.xmin() - xbound, surface, 0.0 ) );
@@ -95,25 +98,46 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
 
     else:
         ''' add top right node and boundary nodes '''
-        poly.createNode( g.RVector3( mesh.xmax() + xbound, mesh.ymax(), 0.0 ) );
+        xtLen = 12
+        
+        dxMin = boNode[ 0 ].pos().distance( boNode[ 1 ].pos() ) * 1.5
+        #x top boundary sampling points
+        xTop = g.increasingRange( dxMin, xbound, xtLen )
+        #y boundary sampling points
+        yLeft = g.increasingRange( xTop[xtLen-1] - xTop[xtLen-2], abs( mesh.ymin()-ybound ), xtLen )
+        #x bottom boundary sampling points
+        xBottom = g.asvector( np.linspace( mesh.xmin() - xbound, mesh.xmax() + xbound, xtLen ) )
+        
+        for t in g.fliplr( xTop )(0, len(xTop)-1):
+            poly.createNode( g.RVector3( mesh.xmax() + t, mesh.ymax(), 0.0 ) );
 
         for n in boundaryNodes:
             poly.createNode( n.pos() );
 
         ''' add top left, bottom left and bottom right node '''
-        poly.createNode( g.RVector3( mesh.xmin() - xbound, mesh.ymax(), 0.0 ) );
-        poly.createNode( g.RVector3( mesh.xmin() - xbound, mesh.ymin() - ybound, 0.0 ) );
-        poly.createNode( g.RVector3( mesh.xmax() + xbound, mesh.ymin() - ybound, 0.0 ) );
-
-        ''' create a closed polygone through all new nodes '''
-        for id in range( 0, poly.nodeCount() ):
-            poly.createEdge( poly.node( id ), poly.node( (id + 1)%poly.nodeCount() ), marker )
+        
+        for t in xTop( 1, len( xTop ) ):
+            poly.createNode( g.RVector3( mesh.xmin() - t, mesh.ymax(), 0.0 ) );
+            
+        for t in yLeft( 1, len( yLeft ) ):
+            poly.createNode( g.RVector3( mesh.xmin() - xbound, mesh.ymax() - t, 0.0 ) );
+        
+        for t in xBottom( 1, len( xBottom ) - 1 ):
+            poly.createNode( g.RVector3( t, mesh.ymin() - ybound, 0.0 ) );
+        
+        for t in g.fliplr( yLeft )( 0, len( yLeft ) - 1 ):
+            poly.createNode( g.RVector3( mesh.xmax() + xbound, mesh.ymax() - t, 0.0 ) );
+            
+        ''' create a closed polygon through all new nodes '''
+        for i in range( 0, poly.nodeCount() ):
+            poly.createEdge( poly.node( i ), poly.node( (i + 1)%poly.nodeCount() ), marker )
     
-    poly.exportVTK('out.poly')
+    #poly.exportVTK('out.poly')
+    
     mesh2 = g.Mesh()
     
     ''' call triangle mesh generation '''
-    triswitches= '-pzeAfaq' + str( quality )
+    triswitches= '-YpzeAfaq' + str( quality )
     
     if not verbose:
         triswitches += 'Q'
@@ -127,13 +151,19 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
     else:
         g.TriangleWrapper( poly, mesh2, triswitches );
 
-    #mesh3.smooth( 1, 4, 1, 1 )
+        
+    if smooth:
+        mesh2.smooth( nodeMoving = True, edgeSwapping = True, smoothFunction = 1, smoothIteration = 2 )
+        
     map( lambda cell: cell.setMarker( marker ), mesh2.cells() )
 
+    #! map copy the cell not the reference, this should not happen
+    #! map( lambda cell: mesh2.copyCell( cell ), mesh2.cells() )
     for cell in mesh.cells():
         mesh2.copyCell( cell );
 
-    mesh2.createNeighbourInfos()
+    #! old neighbor infos need to be cleaned since the new cells are added
+    mesh2.createNeighbourInfos( force = True )
     
     for b in mesh2.boundaries():
         if b.leftCell() is None or b.rightCell() is None:
@@ -142,6 +172,8 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
             else:
                 b.setMarker( g.MARKER_BOUND_MIXED )
 
+    
+        
     return mesh2
 
 

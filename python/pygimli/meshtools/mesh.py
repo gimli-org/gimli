@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pygimli as g
+import pygimli.utils
 
 def readHydrus2dMesh(filename='MESHTRIA.TXT'):
     '''
@@ -123,5 +124,53 @@ def mergeMeshes( meshlist ):
     return mesh
     
         
+def createParaMesh2dGrid( sensors, paraDX = 1, paraDZ = 1, paraDepth = 0, nLayers = 11, boundary = -1, paraBoundary = 2, verbose = False,  *args, **kwargs ):
+    '''
+        Create gimli parameter mesh for a given list of sensor positions
+        sensors .. list of RVector3
+        paraDX - Horizontal distance between sensors, relative regarding sensor distance. Value must be greater than 0 otherwise 1 is assumed
+        paraDZ - Vertical distance to the first depth layer, relative regarding sensor distance.
+        Value must be greater than 0 otherwise 1 is assumed
+        paraDepth - Maximum depth for parametric domain, 0[default] means 0.4 * max sensor range
+        nLayers - Number of depth layers
+        boundary - triangle boundary to be appended for domain prolongation  values lover 0 force boundary to be 4 times para domain width
+        paraBoundary - offset for parameter domain in absolute sensor distance 2[default]
+        verbose .. be verbose
+    '''
+    mesh = g.Mesh( 2 )
+    
+    # maybee separete x y z and sort
+    sensorX = g.x( sensors )
+    eSpacing = sensorX[ 1 ] - sensorX[ 0 ]
+
+    xmin = sensorX[ 0 ] - paraBoundary * eSpacing
+    xmax = sensorX[ -1 ] + paraBoundary * eSpacing
+
+    if paraDX == 0: paraDX = 1.
+    if paraDZ == 0: paraDZ = 1.
+    
+    dx = eSpacing * paraDX
+    dz = eSpacing * paraDZ
+    
+    if paraDepth == 0:
+        paraDepth = 0.4 * (xmax-xmin)
         
+    x = g.utils.grange( xmin, xmax, dx = dx )
+    y = -g.increasingRange( dz, paraDepth, nLayers )
+
+    mesh.createGrid( x, y )
+        
+    map( lambda cell: cell.setMarker( 2 ), mesh.cells() )
+
+    paraXLimits = [ xmin, xmax ]
+    paraYLimits = [ min( y ), max( y ) ]
+    
+    if boundary < 0:
+        boundary = ( paraXLimits[ 1 ] - paraXLimits[ 0 ] ) * 4.0
+        
+    mesh = g.meshtools.appendTriangleBoundary( mesh, xbound = boundary, ybound = boundary, marker = 1, 
+                                                *args, **kwargs )
+  
+    return mesh
+# def createParaMesh2dGrid( ... )
     
