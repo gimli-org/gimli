@@ -278,9 +278,15 @@ class AppResource( ManagedProperties ):
         self.activateApplication( False )
 
     def setSource( self, name, function ):
+        '''
+            Add a functor to source data into the data dictionary
+        '''
         self.dataSources_[ name ] = function
 
     def getSource( self, name ):
+        '''
+            Get source data from the functor the data dictionary
+        '''
         if name in self.dataSources_:
             return self.dataSources_[ name ]()
         else:

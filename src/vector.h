@@ -1200,6 +1200,10 @@ Return a RVector with increasing values of size(n+1) filled with : 0, first, ...
 */
 template < class ValueType >
 Vector< ValueType > increasingRange( const ValueType & first, const ValueType & last, Index n ){
+    if ( sign( first ) != sign( last ) ){
+        throwError( 1, "cant increase range from [0 " + toStr( first) + " to " + toStr( last ) + " ]" );
+    }
+    
     Placeholder x__;
     RVector y( n + 1 ); y.fill( x__ );
 

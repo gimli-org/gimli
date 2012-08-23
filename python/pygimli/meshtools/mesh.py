@@ -141,10 +141,10 @@ def createParaMesh2dGrid( sensors, paraDX = 1, paraDZ = 1, paraDepth = 0, nLayer
     
     # maybee separete x y z and sort
     sensorX = g.x( sensors )
-    eSpacing = sensorX[ 1 ] - sensorX[ 0 ]
+    eSpacing = abs( sensorX[ 1 ] - sensorX[ 0 ] )
 
-    xmin = sensorX[ 0 ] - paraBoundary * eSpacing
-    xmax = sensorX[ -1 ] + paraBoundary * eSpacing
+    xmin = min( sensorX ) - paraBoundary * eSpacing
+    xmax = max( sensorX ) + paraBoundary * eSpacing
 
     if paraDX == 0: paraDX = 1.
     if paraDZ == 0: paraDZ = 1.
@@ -156,6 +156,7 @@ def createParaMesh2dGrid( sensors, paraDX = 1, paraDZ = 1, paraDepth = 0, nLayer
         paraDepth = 0.4 * (xmax-xmin)
         
     x = g.utils.grange( xmin, xmax, dx = dx )
+    
     y = -g.increasingRange( dz, paraDepth, nLayers )
 
     mesh.createGrid( x, y )
@@ -166,7 +167,7 @@ def createParaMesh2dGrid( sensors, paraDX = 1, paraDZ = 1, paraDepth = 0, nLayer
     paraYLimits = [ min( y ), max( y ) ]
     
     if boundary < 0:
-        boundary = ( paraXLimits[ 1 ] - paraXLimits[ 0 ] ) * 4.0
+        boundary = abs( ( paraXLimits[ 1 ] - paraXLimits[ 0 ] ) * 4.0 )
         
     mesh = g.meshtools.appendTriangleBoundary( mesh, xbound = boundary, ybound = boundary, marker = 1, 
                                                 *args, **kwargs )

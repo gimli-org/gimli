@@ -288,64 +288,6 @@ RVector3 MeshEntity::grad( const RVector3 & xyz, const RVector & u ) const {
     //return grad_( shapeFunctionsDerive( xyz ), u );
 }
 
-// RVector3 MeshEntity::grad_( const std::pair< IndexArray, std::vector < RVector3 > > & dN, const RVector & u ) const {
-//     
-//     RVector3 res(0.0, 0.0, 0.0);
-//     for ( uint i = 0; i < 3; i ++ ){
-//         //std::cout << i << std::endl;;
-//         //for ( std::map< uint, double >::const_iterator it = sF[ i ].begin(); it != sF[ i ].end(); it ++  ){
-//           //  std::cout << "   " << it->first << "=" << data[ it->first ] << " " << it->second<< std::endl;;
-// 
-//         for ( uint j = 0; j < nodeCount(); j ++ ){
-//             res[ i ] += u[ dN.first[ j ] ] * dN.second[ j ][ i ];
-//         }
-//     }
-//     //std::cout << res << std::endl;
-//     return res;
-// }
-
-// void MeshEntity::shapeFunctionsDeriveL( const RVector3 & coord, uint d, RVector & funct ) const {
-//     funct.resize( nodeCount() );
-//     switch ( this->dim() ){
-//         case 1:
-//         {
-//             double drd = shape_->deriveCoordinates( 0, d );
-//             funct = drd * dNdL( coord, 0 );
-//         } break;
-//         case 2:
-//         {
-//             double drd = shape_->deriveCoordinates( 0, d );
-//             double dsd = shape_->deriveCoordinates( 1, d );
-//             funct = drd * dNdL( coord, 0 ) + dsd * dNdL( coord, 1 );
-//         } break;
-//         case 3:
-//         {
-//             double drd = shape_->deriveCoordinates( 0, d );
-//             double dsd = shape_->deriveCoordinates( 1, d );
-//             double dtd = shape_->deriveCoordinates( 2, d );
-//             funct = drd * dNdL( coord, 0 ) + dsd * dNdL( coord, 1 ) + dtd * dNdL( coord, 2 );
-//         } break;
-//     };
-// 
-// }
-
-// // std::pair< IndexArray, std::vector < RVector3 > > MeshEntity::shapeFunctionsDerive( const RVector3 & xyz ) const {
-// //     RVector3 coords = shape().rst( xyz );
-// // 
-// //     std::vector< RVector3 > dSF( nodeCount(), RVector3( 0.0, 0.0 ) );
-// //     RVector funct( nodeCount() );
-// // 
-// //     for ( uint d = 0; d < dim(); d ++ ){
-// //         shapeFunctionsDeriveL( coords, d, funct );
-// // 
-// //         for ( uint i = 0; i < nodeCount(); i ++ ) {
-// //             dSF[ i ][ d ] = funct[ i ];
-// //         }
-// //     }
-// // 
-// //     return std::pair< IndexArray, std::vector < RVector3 > >( this->ids(), dSF );
-// // }
-
 //############### Cell ##################
 
 Cell::Cell(  ) : MeshEntity( ), attribute_( ), tagged_( false ) {
@@ -448,14 +390,12 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
     
 Cell * Cell::neighbourCell( const RVector & sf ){
     //** hack for triangle and tetrahedron. pls refactor
-    if ( ( sf.size() == 3 && shape_->dim() == 2 ) ||
-         ( sf.size() == 4 && shape_->dim() == 3 ) ){
-        double minSF = min( sf );
-        Index minId = find( sf == minSF )[ 0 ];
-        return neighbourCells_[ (minId+1)%sf.size() ];
-    }
-    
-    Boundary *b = boundaryTo( sf );
+    if ( ( ( sf.size() == 3 ) && ( shape_->dim() == 2 ) ) || ( ( sf.size() == 4 ) && ( shape_->dim() == 3 ) ) ){
+        Index minId = find( sf == min( sf ) )[ 0 ];
+        return neighbourCells_[ minId ];
+    }   
+            
+    Boundary * b = boundaryTo( sf );
     
 //     std::cout << *b << " " << b->leftCell() << " "<< b->rightCell() << std::endl;
 //     this->setMarker(-33);
@@ -816,21 +756,6 @@ std::vector < PolynomialFunction < double > > Edge3Cell::createShapeFunctions( )
     return createPolynomialShapeFunctions( *this, 3, true, false );
 }
 
-// RVector Edge3Cell::N( const RVector3 & rst ) const{
-//     RVector n( 3 );
-//     Edge3_shapeFunctions( rst[ 0 ], n );
-//     return n;
-// }
-// 
-// RVector Edge3Cell::dNdL( const RVector3 & coord, uint dim ) const {
-//     RVector f( nodeCount() );
-//     double r = coord[ 0 ];
-//     f[ 0 ] = 4.0 * r - 3.0;
-//     f[ 1 ] = 4.0 * r - 1.0;
-//     f[ 2 ] = 4.0 - 8.0 * r;
-//     return f;
-// }
-
 Triangle::Triangle( std::vector < Node * > & nodes ) : Cell( nodes ){
     shape_ = new TriangleShape();
     fillShape_( );
@@ -844,7 +769,6 @@ Triangle::Triangle( Node & n1, Node & n2, Node & n3 ): Cell(){
 }
 
 Triangle::~Triangle(){
-//     std::cout << " delete Triangle shape_ " << std::endl;
     delete shape_;
 }
 
@@ -861,36 +785,8 @@ void Triangle::setNodes( Node & n1, Node & n2, Node & n3, bool changed ){
     setNodes_( nodes );
     registerNodes_( );
     fillShape_( );
-
-//  double J = this->jacobianDeterminant();
-
-//   //** switch direction to force positiv jacobian determinant
-//   if ( J < 0 ) {
-//     shape_->setNode( 1, n3 );
-//     shape_->setNode( 2, n2 );
-//     J *= -1.0;
-//   }
-//
-//   for ( int i = 0; i < 3; i++ ){
-//     Boundary * bound = findBoundary( node( i ), node( (i+1)%3 ) );
-//
-//     if ( bound != NULL ) {
-//       if ( &bound->node( 0 ) == &node( i ) ) {
-// 	bound->setLeftCell( *this );
-//       } else {
-// 	bound->setRightCell( *this );
-//       }
-//     }
-//   }
 }
 
-// void Triangle::findNeighbourCell( uint i ){
-//     std::set < Cell * > common;
-//     //** cell oposite to node(i)
-//     intersectionSet( common, nodeVector_[ ( i + 1 )%3 ]->cellSet(), nodeVector_[ ( i + 2 )%3 ]->cellSet() );
-//     common.erase( this );
-//     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
-// }
 
 std::vector < PolynomialFunction < double > > Triangle::createShapeFunctions( ) const{
     return createPolynomialShapeFunctions( *this, 2, true, false );
@@ -901,32 +797,10 @@ std::vector < Node * > Triangle::boundaryNodes( Index i ){
     // 1 -> 2..0
     // 2 -> 0..1
     std::vector < Node * > nodes( 2 );
-    nodes[ 0 ] = nodeVector_[ (i+0)%3 ];
-    nodes[ 1 ] = nodeVector_[ (i+1)%3 ];
+    nodes[ 0 ] = nodeVector_[ (i+1)%3 ];
+    nodes[ 1 ] = nodeVector_[ (i+2)%3 ];
     return nodes;
 }
-
-// RVector Triangle::N( const RVector3 & L ) const {
-//     return shape_->N( L );
-// }
-
-// // dNdL( Nr, pos ), return for each N
-// RVector Triangle::dNdL( const RVector3 & coord, uint dim ) const {
-//     RVector f( nodeCount(), 0.0 );
-//     switch ( dim ){
-//         case 0: // dNdr
-//             f[ 0 ] = - 1.0;
-//             f[ 1 ] =   1.0;
-//             f[ 2 ] =   0.0;
-//             return f;
-//         case 1:// dNds
-//             f[ 0 ] = - 1.0;
-//             f[ 1 ] =   0.0;
-//             f[ 2 ] =   1.0;
-//             return f;
-//     }
-//     return f;
-// }
 
 Triangle6::Triangle6( std::vector < Node * > & nodes ) : Triangle( nodes ){
 }
@@ -939,15 +813,15 @@ std::vector < PolynomialFunction < double > > Triangle6::createShapeFunctions( )
 }
 
 Quadrangle::Quadrangle( std::vector < Node * > & nodes ) : Cell( nodes ){
-  shape_ = new QuadrangleShape();
-  fillShape_( );
-  neighbourCells_.resize( this->neighbourCellCount(), NULL );
+    shape_ = new QuadrangleShape();
+    fillShape_( );
+    neighbourCells_.resize( this->neighbourCellCount(), NULL );
 }
 
 Quadrangle::Quadrangle( Node & n1, Node & n2, Node & n3, Node & n4 ): Cell(){
-  shape_ = new QuadrangleShape();
-  setNodes( n1, n2, n3, n4, false  );
-  neighbourCells_.resize( this->neighbourCellCount(), NULL );
+    shape_ = new QuadrangleShape();
+    setNodes( n1, n2, n3, n4, false  );
+    neighbourCells_.resize( this->neighbourCellCount(), NULL );
 }
 
 Quadrangle::~Quadrangle(){

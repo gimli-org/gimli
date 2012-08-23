@@ -78,14 +78,27 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
 
     poly = g.Mesh();
 
+    preserveSwitch = ''
+    
     if isSubSurface:
+        
         ''' add all boundary nodes '''
+        
         for n in boundaryNodes:
             poly.createNode( n.pos() );
         ''' and connect them by a closed polygon '''
+        
         for i in range( 0, poly.nodeCount() ):
             poly.createEdge( poly.node( i ), poly.node( (i + 1)%poly.nodeCount() ), marker )
+        
         ''' add four corners of the world box '''
+        
+        xtLen = 12
+        
+        ##x bottom boundary sampling points
+        #xBottom = g.asvector( np.linspace( mesh.xmin() - xbound, mesh.xmax() + xbound, xtLen ) )
+        
+        
         n1 = poly.createNode( g.RVector3( mesh.xmax() + xbound, surface, 0.0 ) );
         n2 = poly.createNode( g.RVector3( mesh.xmin() - xbound, surface, 0.0 ) );
         n3 = poly.createNode( g.RVector3( mesh.xmin() - xbound, mesh.ymin() - ybound, 0.0 ) );
@@ -105,6 +118,7 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
         xTop = g.increasingRange( dxMin, xbound, xtLen )
         #y boundary sampling points
         yLeft = g.increasingRange( xTop[xtLen-1] - xTop[xtLen-2], abs( mesh.ymin()-ybound ), xtLen )
+        
         #x bottom boundary sampling points
         xBottom = g.asvector( np.linspace( mesh.xmin() - xbound, mesh.xmax() + xbound, xtLen ) )
         
@@ -132,12 +146,13 @@ def appendTriangleBoundary( mesh, xbound = 10, ybound = 10, marker = 1
         for i in range( 0, poly.nodeCount() ):
             poly.createEdge( poly.node( i ), poly.node( (i + 1)%poly.nodeCount() ), marker )
     
+        preserveSwitch = 'Y'
     #poly.exportVTK('out.poly')
     
     mesh2 = g.Mesh()
     
     ''' call triangle mesh generation '''
-    triswitches= '-YpzeAfaq' + str( quality )
+    triswitches= '-pzeAfa' + preserveSwitch + 'q' + str( quality )
     
     if not verbose:
         triswitches += 'Q'
