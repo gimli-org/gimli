@@ -368,7 +368,6 @@ Cell * Mesh::findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t 
 
 //             std::cout << "testpos: " << pos << std::endl;
 //             std::cout << "cell: " << *cell << " touch: " << cell->shape().isInside( pos, true ) << std::endl;
-            
 //             for ( uint i = 0; i < cell->nodeCount() ; i ++ ){
 //                 std::cout << cell->node( i )<< std::endl;
 //             }
@@ -387,21 +386,21 @@ Cell * Mesh::findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t 
 //                 std::cout << "neighCell " << cell << std::endl;
             }
             count++;
-//             if ( count == 10 ){
+//             if ( count == 20 ){
 //                 std::cout << "testpos: " << pos << std::endl;
 //                 std::cout << "cell: " << this->cell( cellIDX__.back() ) << std::endl;
 //                 for ( uint i = 0; i < this->cell( cellIDX__.back() ).nodeCount() ; i ++ ){
 //                     std::cout << this->cell( cellIDX__.back() ).node( i )<< std::endl;
 //                 }
-//
+// 
 //                 std::cout << WHERE_AM_I << " exit with submesh " << std::endl;
 //                 std::cout << "probably cant find a cell for " << pos << std::endl;
-// //                 Mesh subMesh; subMesh.createMeshByIdx( *this, cellIDX__ );
-// //
-// //                 subMesh.exportVTK( "submesh" );
-// //                 this->cell( 2368 ).setAttribute( 3 );
-// //                 this->exportVTK( "submeshParent" );
-//
+//                 Mesh subMesh; subMesh.createMeshByCellIdx( *this, cellIDX__ );
+// 
+//                 subMesh.exportVTK( "submesh" );
+//                 this->cell( 2368 ).setAttribute( 3 );
+//                 this->exportVTK( "submeshParent" );
+// 
 //                 exit(0);
 //             }
         }
@@ -1267,62 +1266,13 @@ void Mesh::createNeighbourInfos( bool force ){
                 Boundary * bound = NULL;
                 c->findNeighbourCell( j );
 
-                switch ( c->rtti() ){
-                case MESH_EDGE_CELL_RTTI:
-                    bound = findBoundary( c->node( j ) );
-                    if ( bound == NULL ) bound = createNodeBoundary( c->node( j ) );
-                break;
-//                 case MESH_TRIANGLE_RTTI:
-//                      //** er baut hier nur ein Edge2 da allerdings der marker == 0 ist wird es nie zum
-//                      //** rechnen genutzt, aber für neighbour related infos, also ist das erstmal ok
-//                 case MESH_TRIANGLE6_RTTI:
-//                 case MESH_QUADRANGLE_RTTI:
-//                 case MESH_QUADRANGLE8_RTTI:
-//                     bound = findBoundary( c->node( j ), c->node( ( j + 1 )%nBounds ) );
-//                     if ( bound == NULL ) {
-//                         bound = createEdge( c->node( j ), c->node( ( j + 1 )%nBounds ) );
-//                     } 
-//                 break;
-//                 case MESH_TETRAHEDRON_RTTI:
-//                      //** er baut hier nur ein triangle3Face da allerdings der marker == 0 ist wird es
-//                      //** nie zum rechnen genutzt, aber für neighbour related infos, also ist das erstmal
-//                      //** ok, muss ich aufräumen wenn die Knotennummerierung der Tet10 eindeutig ist
-//                 case MESH_TETRAHEDRON10_RTTI:
-//                     bound = createBoundaryChecked_( c->boundaryNodes( j ) );
-//                     bound = findBoundary( c->node( j ),
-//                                           c->node( ( j + 1 )%nBounds ),
-//                                           c->node( ( j + 2 )%nBounds ) );
-//                     if ( bound == NULL ) {
-//                         bound = createTriangleFace( c->node( j ),
-//                                                     c->node( ( j + 1 )%nBounds ),
-//                                                     c->node( ( j + 2 )%nBounds ) );
-//                     } 
-//                     break;
-//                 case MESH_HEXAHEDRON_RTTI:
-//                 case MESH_HEXAHEDRON20_RTT:
-//                     //** er baut hier nur ein Quadrangle da allerdings der marker == 0 ist wird es nie zum
-//                     //** rechnen genutzt, aber für neighbour related infos, also ist das erstmal ok
-//                     bound = createBoundaryChecked_( c->boundaryNodes( j ) );
-// 
-//                     break;
-                    default:{
-                        std::vector < Node * > nodes( c->boundaryNodes( j ) );
-                        bound = createBoundary( nodes, 0 );
-//                     std::cout << c->rtti() << " " << j << std::endl;
-//                     std::cout << bound << std::endl;
-                    }
-//                     THROW_TO_IMPL
-//                     std::cerr << WHERE_AM_I << c->rtti() << std::endl;
-                }
+                std::vector < Node * > nodes( c->boundaryNodes( j ) );
+                bound = createBoundary( nodes, 0 );
 
                 bool cellIsLeft = true;
                 if ( bound->shape().nodeCount() == 2 ) {
-                    cellIsLeft = ( c->node( j ).id() == bound->node( 0 ).id() );
+                    cellIsLeft = ( c->boundaryNodes( j )[0]->id() == bound->node( 0 ).id() );
                 } else if ( bound->shape().nodeCount() > 2 ) {
-//                     double d1 = bound->center().dist( c->center() );
-//                     double d2 = ( bound->center() + bound->norm() ).dist( c->center() );
-//                     cellIsLeft = d2 < d1;
-                    // Old check, pls check if this works on 3d boundaries 
                      cellIsLeft = true;
                 } 
 
@@ -1342,7 +1292,7 @@ void Mesh::createNeighbourInfos( bool force ){
                     std::cerr << *c << std::endl;
                     std::cerr << *bound << std::endl;
                     std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
-                    std::cerr << WHERE << " Ooops, crosscheck --this should not happen." << std::endl;
+                    throwError( 1, WHERE + " Ooops, crosscheck --this should not happen." );
                 } else {
 //                     std::cout << nBounds << std::endl;
 //                     std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
