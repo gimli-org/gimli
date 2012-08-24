@@ -49,6 +49,9 @@ public:
 
     /*! Generate the mesh and store in mesh. */
     void generate( Mesh & mesh );
+    
+    /*! Generate and return the new mesh. */
+    Mesh generate( );
 
     void addRegionMarkerTmp( int marker, const RVector3 & pos, double area );
 

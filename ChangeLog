@@ -1,3 +1,11 @@
+2012-08-24
+    pygimli
+        - automatic right-value type conversion for RVector(any sequence with elements that can be transformed into doubles)
+            - obsoletes libgimli.asvector() but need heavy testing
+        - automatic right-value type conversion for RVector3( list(3), typle(3) )
+    
+        - add prototype for solver tutorial (not yet functional)
+
 2012-08-22
     pygimli
         - add app: createParaMesh.py to replace the old dcfemlib createParaMesh 

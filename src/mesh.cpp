@@ -1320,6 +1320,13 @@ void Mesh::create1DGrid( const RVector & x ){
             this->createCell( nodes );
         }
         this->createNeighbourInfos( );
+        
+        for ( Index i = 0; i < boundaryCount(); i ++ ){
+            if ( boundary( i ).leftCell() == NULL || boundary( i ).rightCell() == NULL ){
+                boundary( i ).setMarker( 1 );
+            }
+        }
+        
     } else {
         std::cerr << WHERE_AM_I << "Warning! there are too few positions given: "
                 << x.size() << std::endl;
@@ -1342,6 +1349,7 @@ void Mesh::create2DGrid( const RVector & x, const RVector & y, int markerType ){
     if ( x.size() > 1 && y.size() > 1 ){
         for ( uint i = 0; i < y.size(); i ++ ){
             if ( i > 0 && markerType == 2 ) marker++;
+            
             for ( uint j = 0; j < x.size(); j ++ ){
                 this->createNode( x[ j ], y[ i ], 0.0 );
 
@@ -1358,7 +1366,14 @@ void Mesh::create2DGrid( const RVector & x, const RVector & y, int markerType ){
             if ( markerType == 1 ) marker = 0;
         }
         this->createNeighbourInfos( );
-    } else {
+        
+        for ( Index i = 0; i < boundaryCount(); i ++ ){
+            if ( boundary( i ).leftCell() == NULL || boundary( i ).rightCell() == NULL ){
+                boundary( i ).setMarker( 1 );
+            }
+        }
+        
+    } else { 
         std::cerr << WHERE_AM_I << "Warning! there are too few positions given: "
             << x.size() << " " << y.size() << std::endl;
     }
@@ -1414,6 +1429,13 @@ void Mesh::create3DGrid( const RVector & x, const RVector & y, const RVector & z
             if ( markerType == 2 || markerType == 12 ) marker = 0;
         } //** z loop (k)
         this->createNeighbourInfos( );
+        
+        for ( Index i = 0; i < boundaryCount(); i ++ ){
+            if ( boundary( i ).leftCell() == NULL || boundary( i ).rightCell() == NULL ){
+                boundary( i ).setMarker( 1 );
+            }
+        }
+        
     } else {
         std::cerr << WHERE_AM_I << "Warning! there are too few positions given: "
             << x.size() << " " << y.size() << " " << z.size() << std::endl;

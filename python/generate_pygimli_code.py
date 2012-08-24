@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os
+import os, shutil
 import sys
 import string
 from environment_for_pygimli_build import settings
@@ -16,8 +16,30 @@ from pyplusplus import code_creators, module_builder, messages, decl_wrappers
 from pyplusplus.module_builder import call_policies
 from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
 
+import md5
+
 MAIN_NAMESPACE = 'GIMLI'
 
+def samefile( sourcefile, destfile ):
+    '''
+    '''
+    if not os.path.exists( destfile ): return False
+    if not os.path.exists( sourcefile ): return False
+        
+    inhash = md5.new()
+    inhash.update ( open ( sourcefile ).read() )
+
+    outhash = md5.new()
+    outhash.update ( open ( destfile ).read() )
+    
+    if inhash.digest() != outhash.digest(): return False    
+        
+    ## probably don't need these as hash should handle it fine..    
+    if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime: return False
+    if os.stat(sourcefile).st_size != os.stat(destfile).st_size: return False
+            
+    return True
+    
 class decl_starts_with (object):
     def __init__ (self, prefix):
         self.prefix = prefix
@@ -162,6 +184,21 @@ def generate( defined_symbols ):
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
 
+    ### START manual r-value converters
+    rvalue_converters = [
+                            'register_pytuple_to_rvector3_conversion',
+                            'register_pysequence_to_rvector_conversion'
+                        ]
+
+    for converter in rvalue_converters:
+        mb.add_declaration_code( 'void %s();' % converter )
+        mb.add_registration_code( '%s();' % converter )
+
+    ### END manual r-value converters
+        
+    custom_rvalue_path = os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' )
+    
+    
     exclude( main_ns.variables, name = [ 'Triangle6_S1', 'Triangle6_S2', 'Triangle6_S3'
                                         , 'HexahedronFacesID', 'Hexahedron20FacesID'
                                         , 'TetrahedronFacesID'
@@ -316,6 +353,21 @@ def generate( defined_symbols ):
     def ignore( val ):
         pass
     mb.split_module( './generated', on_unused_file_found = ignore )
+    
+    additional_files = [
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'tuples.hpp' ) 
+            ]
+            
+    for sourcefile in additional_files:
+        p,filename = os.path.split( sourcefile )
+        destfile = os.path.join('./generated', filename )
+
+        if not samefile( sourcefile, destfile ):
+            shutil.copy( sourcefile, './generated' )
+            print "Updated ", filename, "as it was missing or out of date"
+    
+    
 
 if __name__ == '__main__':
 

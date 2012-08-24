@@ -123,6 +123,12 @@ void TriangleWrapper::generate( Mesh & mesh ){
 #endif
 }
 
+Mesh TriangleWrapper::generate( ){
+    Mesh mesh( 2 );
+    generate( mesh );
+    return mesh;
+}
+
 void TriangleWrapper::allocateOutMemory_(){
 #ifdef HAVE_LIBTRIANGLE
 
