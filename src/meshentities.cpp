@@ -353,12 +353,15 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
     for ( std::set < Boundary * >::iterator it = common.begin(); it != common.end(); ){
 
         if ( (*it)->leftCell() != this && (*it)->rightCell() != this ){
+            std::cout << *(*it)<< std::endl;
+            std::cout << this << " " << (*it)->leftCell() << " " << (*it)->rightCell() << std::endl;
             common.erase( it++ );
         } else {
             ++it;
         }
     }
-     std::cout << "common.size() remove foreign" << common.size()<< std::endl;
+    
+    std::cout << "common.size() remove foreign" << common.size()<< std::endl;
 //     
     std::set < Boundary * > commonSub;
     

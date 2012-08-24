@@ -25,6 +25,25 @@
 
 namespace GIMLI{
 
+Mesh createGrid( const RVector & x ){
+    Mesh mesh( 1 );
+    mesh.createGrid( x );
+    return mesh;
+}
+
+Mesh createGrid( const RVector & x, const RVector & y ){
+    Mesh mesh( 2 );
+    mesh.createGrid( x, y );
+    return mesh;
+}
+
+Mesh createGrid( const RVector & x, const RVector & y, const RVector & z ){
+    Mesh mesh( 3 );
+    mesh.createGrid( x, y, z );
+    return mesh;
+}
+
+
 Mesh createMesh1D( uint nCells, uint nClones ){
     RVector pos( nCells * nClones + 1);
 

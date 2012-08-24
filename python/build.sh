@@ -16,6 +16,8 @@ fi
 
 if [ $# -lt 1 ]; then 
     python generate_pygimli_code.py
+
+
     make -f $MAKEFILE $MAKEOPTS 
 elif [ $# -gt 0 ]; then
     if [ "$1" = "test" ]; then

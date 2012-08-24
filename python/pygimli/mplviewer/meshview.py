@@ -267,18 +267,38 @@ def drawField( axes, mesh, data = None, filled = False, *args, **kwargs ):
         x[ i ] = p[ 0 ]
         y[ i ] = p[ 1 ]
 
-    triangles = np.zeros( (mesh.cellCount(), 3 ) )
-    
-    for i, c in enumerate( mesh.cells() ):
+    triCount = 0
         
-        triangles[ i, 0 ] = c.node(0).id()
-        triangles[ i, 1 ] = c.node(1).id()
-        triangles[ i, 2 ] = c.node(2).id()
+    for c in mesh.cells():
+        if c.shape().nodeCount() == 4:
+            triCount = triCount + 2
+        else:
+            triCount = triCount + 2
+        
+    triangles = np.zeros( ( triCount, 3 ) )
+    
+    triCount = 0
+    for i, c in enumerate( mesh.cells() ):
+        if c.shape().nodeCount() == 4:
+            triangles[ triCount, 0 ] = c.node(0).id()
+            triangles[ triCount, 1 ] = c.node(1).id()
+            triangles[ triCount, 2 ] = c.node(2).id()
+            triCount = triCount + 1
+            
+            triangles[ triCount, 0 ] = c.node(0).id()
+            triangles[ triCount, 1 ] = c.node(2).id()
+            triangles[ triCount, 2 ] = c.node(3).id()
+            triCount = triCount + 1
+        else:            
+            triangles[ triCount, 0 ] = c.node(0).id()
+            triangles[ triCount, 1 ] = c.node(1).id()
+            triangles[ triCount, 2 ] = c.node(2).id()
+            triCount = triCount + 1
         
     if filled:
         axes.tricontourf( x, y, triangles, data, *args, **kwargs )
-    else:
-        axes.tricontour( x, y, triangles, data, *args, **kwargs )
+    
+    axes.tricontour( x, y, triangles, data, *args, **kwargs )
 
 # def drawField(...)
 

@@ -25,6 +25,16 @@
 
 namespace GIMLI{
 
+/*! Unified interface. Generate simple grid with nodes at the given positions */
+DLLEXPORT Mesh createGrid( const RVector & x );
+
+/*! Unified interface. Generate simple grid with nodes at the given positions */
+DLLEXPORT Mesh createGrid( const RVector & x, const RVector & y );
+
+/*! Unified interface. Generate simple grid with nodes at the given positions */
+DLLEXPORT Mesh createGrid( const RVector & x, const RVector & y, const RVector & z );
+
+
 /*! Generate simple one dimensional mesh with nCells cells with length = 1.0, and nCells + 1 nodes. */
 DLLEXPORT Mesh createMesh1D( uint nCells, uint nClones = 1 );
 
@@ -57,8 +67,6 @@ DLLEXPORT bool addTriangleBoundary( Mesh & mesh,
  * Top and bottomLayer boundary marker are set from parameter topLayer and bottomLayer. */
 DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z, int topLayer = 0, int bottomLayer = 0);
 
-// /*! Shortcut */
-// DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z, int topLayer);
 // 
 // /*! Shortcut */
 // DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z );

@@ -322,6 +322,7 @@ bool Shape::isInside( const RVector3 & xyz, RVector & sf, bool verbose) const {
     if ( verbose ){
         std::cout << "rst: " << rst( xyz )<< std::endl;
         std::cout << "sf: " << sf << std::endl;
+        std::cout << std::fabs( minsf ) << " " << max( TOUCH_TOLERANCE, TOUCH_TOLERANCE * xyz.abs() ) << std::endl;
     }
     
     if ( std::fabs( minsf ) < max( TOUCH_TOLERANCE, TOUCH_TOLERANCE * xyz.abs() ) ) return true; //** on boundary

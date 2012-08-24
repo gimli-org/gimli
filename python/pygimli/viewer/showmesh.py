@@ -24,9 +24,12 @@ def showMesh( mesh, data = None, showLater = False, *args, **kwargs):
         elif len( data ) == mesh.nodeCount():
             drawField( a, mesh, data, *args, **kwargs )
 
+    a.set_aspect( 'equal')
+        
     if not showLater:
         P.show()
 
+        
     #fig.show()
     #fig.canvas.draw()
     return a
