@@ -61,9 +61,9 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
 # def drawModel( ... )
 
 def drawSelectedMeshBoundaries( axes, boundaries, color = ( 0.0, 0.0, 0.0, 1.0 ), linewidth = 1.0 ):
-    ''
-    ' Draw selected mesh boundaries into a given axes'
-    ''
+    '''
+        Draw mesh boundaries into a given axes'
+    '''
     #print "drawSelectedMeshBoundaries", boundaries
 
     drawAA = True
@@ -83,7 +83,7 @@ def drawSelectedMeshBoundaries( axes, boundaries, color = ( 0.0, 0.0, 0.0, 1.0 )
 
 def drawSelectedMeshBoundariesShadow( axes, boundaries, first='x', second='y', color=( 0.5, 0.5, 0.5, 1.0 ) ):
     ''' 
-        
+        what is this?        
     '''
     polys = []
     print len( boundaries )
@@ -295,11 +295,14 @@ def drawField( axes, mesh, data = None, filled = False, *args, **kwargs ):
             triangles[ triCount, 2 ] = c.node(2).id()
             triCount = triCount + 1
         
+    gci = None
+    
     if filled:
-        axes.tricontourf( x, y, triangles, data, *args, **kwargs )
+        gci = axes.tricontourf( x, y, triangles, data, *args, **kwargs )
     
     axes.tricontour( x, y, triangles, data, *args, **kwargs )
 
+    return gci
 # def drawField(...)
 
 def drawStreamCircular( a, mesh, u, pos, rad, nLines = 20, step = 0.1, showStartPos = False ):

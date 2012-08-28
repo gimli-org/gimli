@@ -124,7 +124,7 @@ def createColorbar2( patches, cMin = None, cMax = None, nLevs = 5, label = None,
 
     return cbar
 
-def createColorbar( patches, cMin = None, cMax = None, nLevs = 5, label = None, orientation = 'horizontal' ):
+def createColorbar( patches, cMin = None, cMax = None, nLevs = 5, label = None, orientation = 'horizontal', *args, **kwargs ):
     cbarTarget = pylab
     
     if hasattr( patches, 'figure' ):

@@ -309,7 +309,8 @@ public:
                                 toStr( idx.size() ) + " " + toStr( vals.size() ) );
         }
         for ( Index i = 0; i < idx.size(); i ++ ){
-            setVal( vals[ i ], idx[ i ] );
+           data_[ idx[ i ] ] = vals[ i ];
+//            setVal( vals[ i ], idx[ i ] );
         }
         return *this;
     }
@@ -358,6 +359,17 @@ public:
         return *this;
     }
 
+    /*! Add values from vals id index idx. Throws out of range exception if index check fails. */
+    inline Vector< ValueType > & addVal( const Vector < ValueType > & vals, const std::vector < Index > & idx ) {
+        if ( idx.size() != vals.size() ){
+            throwLengthError( 1, WHERE_AM_I + " idx.size() != vals.size() " +
+                                toStr( idx.size() ) + " " + toStr( vals.size() ) );
+        }
+        for ( Index i = 0; i < idx.size(); i ++ ) data_[ idx[ i ] ] += vals[ i ];
+        
+        return *this;
+    }
+    
     /*! Get a value. Throws out of range exception if index check fails. */
     inline const ValueType & getVal( Index i ) const {
         if ( i >= 0 && i < this->size() ) {

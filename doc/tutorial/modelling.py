@@ -20,9 +20,7 @@ We will solve a simple version of Poisson's equation with zero boundary values, 
                u & = 0 \quad{\mathrm{on}}\quad\partial\Omega\\
   
 
-\begin{align*} -\Delta u &= 1 \qquad\qquad & \text{in}\ \Omega, \\ u &= 0 \qquad\qquad & \text{on}\ \partial\Omega. \end{align*}
-
-We will solve this equation on the unit square, $\Omega=[0,1]^2$
+We will solve this equation on the unit square, $\Omega=[-1,1]^2$
 
 First, the library must be imported.
 To avoid name clashes with other libraries we suggest to import `pygimli` and alias it to a simple abbreviation 'g', e.g., by using
@@ -38,44 +36,55 @@ printing the version string for gimli.
 '''
 import numpy as np
     
-grid = g.createGrid( np.linspace( 0, 1, 5 ), np.linspace( 0, 1, 5 ) )
-#grid.createNeighbourInfos( True )
-print grid.boundary( 1 ).leftCell()
-print grid.boundary( 1 ).rightCell()
+#grid = g.createGrid( np.linspace( -1, 1, 5 ), np.linspace( -1, 1, 5 ) )
 
-c = grid.cell( 0 )
-for n in c.nodes():
-    print n.id(), n.pos()
-    
-print c.shape().isInside( [1. / 3., 1. / 3.], True )
-grid.findCell( [1. / 3., 1. / 3.] )
-#.pot( [1. / 3., 1. / 3.], u)
+##.pot( [1. / 3., 1. / 3.], u)
 
-for i in range( 4 ):
-    u = solvePoisson( grid, f = 1., u0 = grid.findBoundaryByMarker( 1 ), verbose = True )
+#u = []
+
+#for i in range( 4 ):
+    #grid = grid.createH2()
+    #grid.createNeighbourInfos()
+    #u = solvePoisson( grid, f = 1., u0 = grid.findBoundaryByMarker( 1 ), verbose = True )
     
     #print grid.findCell( [1. / 3., 1. / 3.] ).pot( [1. / 3., 1. / 3.], u)
-    grid = grid.createH2()
-    #grid.createNeighbourInfos( True )
+
+    ##grid.createNeighbourInfos( True )
 
 from pygimli.viewer import showMesh
-from pygimli.mplviewer import drawMesh
+from pygimli.mplviewer import *
+import pylab as P
 
-print sum(u)
+grid = g.createGrid( np.linspace( -1, 1, 25 ), np.linspace( -1, 1, 25 ) )
+u = solvePoisson( grid, f = 1., u0 = grid.findBoundaryByMarker( 1 ), verbose = True )
 
-#grid = g.createGrid( np.linspace( 0, 1, 25 ), np.linspace( 0, 1, 25 ) )
-#u = solvePoisson( grid, f = 1., u0 = grid.findBoundaryByMarker( 1 ), verbose = True )
-
-ax = showMesh( grid, data = u, filled = True, showLater = True )
+ax = showMesh( grid, data = u, filled = True, showLater = True, colorBar = True, orientation = 'vertical', label = 'Solution er$u$' )[0]
 drawMesh( ax, grid )
 
-
-
-
 '''
-do we have an analytical solution for this example?
+.. error::
+    
+    do we find an analytical solution for this example?
 '''
 
+for b in grid.boundaries():
+    if b.marker() == 1:
+        if b.norm()[0] == 1:
+            b.setMarker( 2 )
+        if b.norm()[1] == 1:
+            b.setMarker( 3 )
+        if b.norm()[1] == -1:
+            b.setMarker( 4 )
+            
 
-import pylab as P
+u = solvePoisson( grid, f = 0., u0 = grid.findBoundaryByMarker( -1 ), Btest = grid.findBoundaryByMarker( 4 ),  verbose = True )
+
+ax = showMesh( grid, data = u, filled = True, showLater = True, colorBar = True, orientation = 'vertical', label = 'Solution $u$'  )[0]
+drawMesh( ax, grid )
+drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 1 ), color = (1.0, 0.0, 0.0), linewidth=2 )
+drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 2 ), color = (0.0, 1.0, 0.0), linewidth=2 )
+drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 3 ), color = (0.0, 0.0, 1.0), linewidth=2 )
+
+    
+    
 P.show()

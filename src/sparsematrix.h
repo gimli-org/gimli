@@ -779,7 +779,8 @@ public:
 
 protected:
 
-    // int to be cholmod compatible
+    // int to be cholmod compatible!!!!!!!!
+    
     std::vector < int > colPtr_;
     std::vector < int > rowIdx_;
     Vector < ValueType > vals_;
