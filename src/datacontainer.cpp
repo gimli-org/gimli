@@ -248,6 +248,11 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
     if ( row.size() != 1 ) {
         std::stringstream str;
         str << WHERE_AM_I << " cannot determine data size. " << row.size() << std::endl;
+        for ( Index i = 0; i < row.size(); i ++ ){
+            std::cerr << row[i] << " " ;
+        }
+        std::cerr << std::endl;
+        
         throwError( EXIT_DATACONTAINER_NELECS, str.str() );
     }
 

@@ -26,11 +26,47 @@ def assembleStiffnessMatrixHomogenDirichletBC( S, u0, rhs = None ):
         S.setVal( i, i, 1.0 )
         
         if rhs is not None:
-            rhs[ i ] = 0
+            rhs[ i ] = 0.
 # def assembleStiffnessMatrixHomogenDirichletBC( ... )
     
+def assembleStiffnessMatrixDirichletBC( S, boundaries, rhs ):
+    u_Ids = []
     
-def solvePoisson( mesh, a = None, f = 1, u0 = None, verbose = False ):
+    if len( boundaries ):
+       
+        if ( type( boundaries ) == g._pygimli_.stdVectorBounds ):
+            #assuming 
+            for b in boundaries:
+                for n in b.nodes():
+                    u_Ids.append( n.id() )
+        else:
+            raise Exception( "cannot interpret u0 sequence: " + boundaries )
+            
+    ud = g.RVector( S.rows(), 0.0 )
+    
+    for i in u_Ids:
+    
+        #S.cleanRow( i )
+        #S.cleanCol( i )
+        #S.setVal( i, i, 1.0 )
+        
+        ud[ i ] = 1.
+
+    print ud
+    rhs -= S * ud
+        
+    #for i in u_Ids:
+    
+        #S.cleanRow( i )
+        #S.cleanCol( i )
+        #S.setVal( i, i, 1.0 )
+        
+        #rhs[ i ] = 0.
+        
+    print "rhs-3", rhs
+    
+    
+def solvePoisson( mesh, a = None, f = 1, u0 = None, Btest = None, verbose = False ):
     '''
     '''
     if verbose:
@@ -55,18 +91,21 @@ def solvePoisson( mesh, a = None, f = 1, u0 = None, verbose = False ):
         raise Exception( "Material array 'a' has the wrong size: " + len( a ) + " != " +  mesh.cellCount() )
     
     # assemble the stiffness matrix
+    rhs = g.RVector( mesh.nodeCount(), 0 )
+    
     for c in mesh.cells():
         Se.ux2uy2uz2( c )
         Se *= a[ c.id() ] 
         S += Se
-
-    rhs = g.RVector( mesh.nodeCount(), 0 )
-
-    if type( f ) is float:
-        rhs.fill( f )
-    else:
-        raise Exception( "cannot interpret force vector: " + str( f ) )
-
+    
+        Se.u( c )
+        for i, idx in enumerate( Se.idx() ):
+            rhs[ idx ] += Se.row( 0 )[ i ] * f
+    
+    
+    if Btest:
+        ud = assembleStiffnessMatrixDirichletBC( S, Btest, rhs )    
+    
     assembleStiffnessMatrixHomogenDirichletBC( S, u0, rhs )
            
     u = g.RVector( rhs.size(), 0.0 )
@@ -74,10 +113,16 @@ def solvePoisson( mesh, a = None, f = 1, u0 = None, verbose = False ):
     if verbose:
         print( "asssemblation takes: ", swatch.duration( True ) )
 
+    print S, S.rows(), S.cols()
+    print rhs, u
+        
     solver = g.LinSolver( S, verbose )
     solver.solve( rhs, u )
     
+    
     if verbose:
         print( "lin solving takes: ", swatch.duration( True ) )
+    
+    print min(u), max(u)
     
     return u

@@ -62,17 +62,11 @@ public:
     ElementMatrix < T > & operator += ( const ElementMatrix < T > & E ){
         for ( uint i = 0; i < size(); i ++ ){ mat_[ i ] += E.row( i ); } return *this;
     }
-  /*ElementMatrix < T > & operator += ( T a ){
-    for ( uint i = 0; i < size(); i ++ ){ mat_[ i ] += a; } return *this; }
-  ElementMatrix < T > & operator *= ( T a ){
-    for ( uint i = 0; i < size(); i ++ ){ mat_[ i ] *= a; } return *this; }
-  */
-// ElementMatrix < T > & operator OP##= ( T val ) {
-//    for ( register size_t i = 0; i < size(); i ++ ) mat_[ i ] OP##= val; return *this; }
-
+  
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__( OP )                   \
-        void operator OP##= ( T val ) { \
+        ElementMatrix < T > & operator OP##= ( T val ) { \
             for ( register size_t i = 0; i < size(); i ++ ) mat_[ i ] OP##= val; \
+            return *this;\
         } \
 
         DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__( + )

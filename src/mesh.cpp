@@ -76,6 +76,10 @@ void Mesh::copy_( const Mesh & mesh ){
 
     setExportDataMap( mesh.exportDataMap() );
     setCellAttributes( mesh.cellAttributes() );
+    
+    if ( mesh.neighboursKnown() ){
+        this->createNeighbourInfos( true );
+    }
 }
 
 Mesh::~Mesh(){
