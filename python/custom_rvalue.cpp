@@ -56,9 +56,6 @@ struct PyTuple2RVector3{
 
 struct PySequence2RVector{
 
-// typedef GIMLI::Index length_type;
-//typedef boost::mpl::int_< GIMLI::Index > length_type;
-
     /*! Check if the object is convertible */
     static void * convertible( PyObject * obj ){
                 
@@ -117,41 +114,71 @@ struct PySequence2RVector{
     }
     
 private:    
-//     template< int index, int length >
-//     static bool convertible_impl( const bpl::object & py_sequence, boost::mpl::int_< index >, boost::mpl::int_< length > ){
-// 
-//         //typedef typename tuples::element< index, TTuple>::type element_type;
-// 
-//         bpl::object element = py_sequence[ index ];
-//         extract< double > type_checker( element );
-//         if( !type_checker.check() ){
-//             return false;
-//         }
-//         else {
-//             return convertible_impl( py_sequence, boost::details::increment_index<index>(), length_type() );
-//         }
-//     }
-// 
-//     template< int length >
-//     static bool convertible_impl( const bpl::object & py_sequence, boost::mpl::int_< length >, boost::mpl::int_< length > ){
-//         return true;
-//     }
 
-//     template< int index, int length >
-//     static void construct_impl( const bpl::object & py_sequence, GIMLI::RVector & vec, boost::mpl::int_< index >, boost::mpl::int_< length > ){
-//           std::cout << "construct_impl here am i 1 " << len( py_sequence ) << std::endl;
-// //         typedef typename tuples::element< index, TTuple>::type element_type;
-// // 
-// //         object element = py_sequence[index];
-// //         c_tuple.template get< index >() = extract<element_type>( element );
-// // 
-// //         construct_impl( py_sequence, c_tuple, details::increment_index<index>(), length_type() );
-//     }
-// 
-//     template< int length >
-//     static void construct_impl( const bpl::object & py_sequence, GIMLI::RVector & vec, boost::mpl::int_< length >, boost::mpl::int_< length > )
-//     {}
 };
+
+struct PySequence2StdVectorUL{
+
+    /*! Check if the object is convertible */
+    static void * convertible( PyObject * obj ){
+                
+        // is obj is a sequence
+        if( !PySequence_Check( obj ) ){
+            return NULL;
+        }
+
+        // has the obj a len method
+        if( !PyObject_HasAttrString( obj, "__len__" ) ){
+            return NULL;
+        }
+
+        bpl::object py_sequence( bpl::handle<>( bpl::borrowed( obj ) ) );
+        
+        if ( len( py_sequence ) > 0 ) {
+            
+            bpl::object element = py_sequence[ 0 ];
+            bpl::extract< GIMLI::Index > type_checker( element );
+            
+            if( type_checker.check() ){
+                return obj;
+            } else {
+                std::cout << WHERE_AM_I << "element cannot converted to GIMLI::Index: " << std::endl;
+            }
+            
+        } else {
+            std::cout << WHERE_AM_I << " " << std::endl;
+            return NULL;
+        }
+        // check if there is a valid converter
+//         if( convertible_impl( py_sequence, boost::mpl::int_< 0 >(), length_type() ) ){
+//             return obj;
+//         } else{
+        return NULL;
+        
+    }
+
+    /*! Convert obj into RVector */
+    static void construct( PyObject* obj, bpl::converter::rvalue_from_python_stage1_data * data ){
+        
+        bpl::object py_sequence( bpl::handle<>( bpl::borrowed( obj ) ) );
+
+        typedef bpl::converter::rvalue_from_python_storage< std::vector < GIMLI::Index > > storage_t;
+         
+        storage_t* the_storage = reinterpret_cast<storage_t*>( data );
+        void* memory_chunk = the_storage->storage.bytes;
+ 
+        std::vector < GIMLI::Index > * vec = new (memory_chunk) std::vector < GIMLI::Index >( len( py_sequence ) );
+        data->convertible = memory_chunk;
+
+        for ( GIMLI::Index i = 0; i < vec->size(); i ++ ){
+            (*vec)[ i ] = bpl::extract< GIMLI::Index >( py_sequence[ i ] );
+        }
+    }
+    
+private:    
+
+};
+
 
 } //r_values_impl
 
@@ -166,3 +193,10 @@ void register_pysequence_to_rvector_conversion(){
                                           & r_values_impl::PySequence2RVector::construct, 
                                             bpl::type_id< GIMLI::Vector< double > >() );
 }
+
+void register_pysequence_to_StdVectorUL_conversion(){
+    bpl::converter::registry::push_back(  & r_values_impl::PySequence2StdVectorUL::convertible, 
+                                          & r_values_impl::PySequence2StdVectorUL::construct, 
+                                            bpl::type_id< std::vector< GIMLI::Index > >() );
+}
+

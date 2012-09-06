@@ -22,19 +22,25 @@ def showMesh( mesh, data = None, showLater = False, colorBar = False,  *args, **
     
     gci = None
     cbar = None
+    validData = False
     
     if data is None:
         drawMesh( a, mesh )
     else:
-        if len( data ) == mesh.cellCount():
-            gci = drawModel( a, mesh, data, *args, **kwargs )
-        elif len( data ) == mesh.nodeCount():
-            gci = drawField( a, mesh, data, *args, **kwargs )
+        if min( data ) == max( data ):
+            print( "No valid data",  min( data ), max( data ) )
+            drawMesh( a, mesh )
+        else:
+            validData = True
+            if len( data ) == mesh.cellCount():
+                gci = drawModel( a, mesh, data, *args, **kwargs )
+            elif len( data ) == mesh.nodeCount():
+                gci = drawField( a, mesh, data, *args, **kwargs )
 
                 
     a.set_aspect( 'equal')
     
-    if colorBar:
+    if colorBar and validData:
         cbar = createColorbar( gci, *args, **kwargs )
                 
     if not showLater:

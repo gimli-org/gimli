@@ -57,10 +57,13 @@ Boundary * findBoundary( const Node & n1, const Node & n2, const Node & n3 ) {
 
 Boundary * findBoundary( const std::vector < Node * > & n ) {
     std::vector < std::set< Boundary * > > bs;
-    for ( uint i = 0; i < n.size(); i ++ ) bs.push_back( n[ i ]->boundSet() );
 
     std::set < Boundary * > common;
+    
+    for ( uint i = 0; i < n.size(); i ++ ) bs.push_back( n[ i ]->boundSet() );
+    
     intersectionSet( common, bs );
+    
 
     if ( common.size() == 1 ) {
         return *common.begin();
@@ -392,8 +395,10 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
 }
     
 Cell * Cell::neighbourCell( const RVector & sf ){
-    //** hack for triangle and tetrahedron. pls refactor
-    if ( ( ( sf.size() == 3 ) && ( shape_->dim() == 2 ) ) || ( ( sf.size() == 4 ) && ( shape_->dim() == 3 ) ) ){
+    //** hack for edge, triangle and tetrahedron. pls refactor
+    if ( ( ( sf.size() == 2 ) && ( shape_->dim() == 1 ) ) ||
+         ( ( sf.size() == 3 ) && ( shape_->dim() == 2 ) ) || 
+         ( ( sf.size() == 4 ) && ( shape_->dim() == 3 ) ) ){
         Index minId = find( sf == min( sf ) )[ 0 ];
         return neighbourCells_[ minId ];
     }   
@@ -417,11 +422,15 @@ void Cell::findNeighbourCell( uint i ){
     std::set < Cell *> common;
     std::set < Cell *> commonTmp;
 
-    if ( n.size() > 1 ) intersectionSet( common, n[ 0 ]->cellSet(), n[ 1 ]->cellSet() );
-    
-    for ( uint j = 2; j < n.size(); j ++ ){
-        commonTmp = common;
-        intersectionSet( common, commonTmp, n[ j ]->cellSet() );
+    if ( n.size() > 1 ) {
+        intersectionSet( common, n[ 0 ]->cellSet(), n[ 1 ]->cellSet() );
+        
+        for ( uint j = 2; j < n.size(); j ++ ){
+            commonTmp = common;
+            intersectionSet( common, commonTmp, n[ j ]->cellSet() );
+        }
+    } else {
+        common = n[ 0 ]->cellSet();
     }
 
     common.erase( this );
@@ -464,27 +473,27 @@ RVector3 Boundary::rst( uint i ) const {
 }
 
 NodeBoundary::NodeBoundary( std::vector < Node * > & nodes ) : Boundary( nodes ){
-  shape_ = new NodeShape();
-  fillShape_( );
+    shape_ = new NodeShape();
+    fillShape_( );
 }
 
 NodeBoundary::NodeBoundary( Node & n1 ) : Boundary( ) {
-  shape_ = new NodeShape();
-  setNodes( n1, false );
+    shape_ = new NodeShape();
+    setNodes( n1, false );
 }
 
 NodeBoundary::~NodeBoundary(){
-  delete shape_;
+    delete shape_;
 }
 
 void NodeBoundary::setNodes( Node & n1, bool changed ){
-  if ( changed ) deRegisterNodes_( );
+    if ( changed ) deRegisterNodes_( );
 
-  std::vector < Node * > nodes;
-  nodes.push_back( &n1 );
-  setNodes_( nodes );
-  registerNodes_( );
-  fillShape_( );
+    std::vector < Node * > nodes;
+    nodes.push_back( & n1 );
+    setNodes_( nodes );
+    registerNodes_( );
+    fillShape_( );
 }
 
 Edge::Edge( std::vector < Node * > & nodes ) : Boundary( nodes ){
@@ -721,7 +730,7 @@ void EdgeCell::setNodes( Node & n1, Node & n2, bool changed ){
 
 std::vector < Node * > EdgeCell::boundaryNodes( Index i ){
     std::vector < Node * > nodes( 1 );
-    nodes[ 0 ] = nodeVector_[ (i)%2 ];
+    nodes[ 0 ] = nodeVector_[ (i+1)%2 ];
     return nodes;
 }
 
@@ -753,6 +762,11 @@ Edge3Cell::Edge3Cell( std::vector < Node * > & nodes ) : EdgeCell( nodes ){
 }
 
 Edge3Cell::~Edge3Cell(){
+}
+
+RVector3 Edge3Cell::rst( uint i ) const {
+    if ( i == 2 ) return RVector3( 0.5, 0.0, 0.0 );
+    return shape_->rst( i );
 }
 
 std::vector < PolynomialFunction < double > > Edge3Cell::createShapeFunctions( ) const{

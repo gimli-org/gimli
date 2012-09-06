@@ -214,8 +214,12 @@ DEFINE_COMPARE_OPERATOR__( > )
     template class TransLogLU< RVector >;
     template class TransCotLU< RVector >;
 
-    template std::vector < int > unique( const std::vector < int > & a );
-    template std::vector < int > sort( const std::vector < int > & a );
+    template std::vector< Index > unique( const std::vector < Index > & a );
+    template std::vector< SIndex > unique( const std::vector < SIndex > & a );
+    
+    template std::vector< Index > sort( const std::vector < Index > & a );
+    template std::vector< SIndex > sort( const std::vector < SIndex > & a );
+    
     template RVector fliplr( const RVector & a );
 
     template RVector increasingRange( const double & first, const double & last, Index n );
@@ -225,8 +229,11 @@ DEFINE_COMPARE_OPERATOR__( > )
 
     template class SparseMatrix< double >;
     template Vector < double > operator * ( const SparseMatrix < double > & A, const Vector < double > & a );
-    template SparseMatrix< double > operator + ( const SparseMatrix< double > & A, const SparseMatrix< double > & B );
-    
+    template SparseMatrix< double > operator + ( const SparseMatrix < double > & A, const SparseMatrix< double > & B );
+    template SparseMatrix< double > operator * ( const SparseMatrix < double > & A, const double & b );
+    template SparseMatrix< double > operator * ( const double & b, const SparseMatrix < double > & A );
+
+   
     template class ElementMatrix< double >;
     template std::ostream & operator << ( std::ostream & str, const ElementMatrix< double > & p );
 

@@ -498,6 +498,8 @@ public:
 
     virtual uint rtti() const { return MESH_EDGE3_CELL_RTTI; }
 
+    virtual RVector3 rst( uint i ) const;
+    
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
      
 protected:

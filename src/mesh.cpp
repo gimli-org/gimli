@@ -219,7 +219,12 @@ Cell * Mesh::createCell( std::vector < Node * > & nodes, int marker ){
     switch ( nodes.size() ){
         case 0: return createCell_< Cell >( nodes, marker, cellCount() ); break;
         case 2: return createCell_< EdgeCell >( nodes, marker, cellCount() ); break;
-        case 3: return createCell_< Triangle >( nodes, marker, cellCount() ); break;
+        case 3: 
+            switch ( dimension_ ){
+                case 1: return createCell_< Edge3Cell >( nodes, marker, cellCount() ); break;
+                case 2: return createCell_< Triangle >( nodes, marker, cellCount() ); break;
+            }
+            break;
         case 4:
             switch ( dimension_ ){
                 case 2: return createCell_< Quadrangle >( nodes, marker, cellCount() ); break;
@@ -635,6 +640,7 @@ Node * Mesh::createRefinementNode_( Node * n0, Node * n1, std::map< std::pair < 
 }
 
 void Mesh::createRefined_( const Mesh & mesh, bool p2, bool h2 ){
+    
     this->clear();
 
     std::map< std::pair < Index, Index >, Node * > nodeMatrix;
@@ -648,6 +654,20 @@ void Mesh::createRefined_( const Mesh & mesh, bool p2, bool h2 ){
         const Cell & c = mesh.cell( i );
         
         switch ( c.rtti() ){
+            case MESH_EDGE_CELL_RTTI:
+                n.resize( 3 );
+                n[ 0 ] = &node( mesh.cell( i ).node( 0 ).id() );
+                n[ 1 ] = &node( mesh.cell( i ).node( 1 ).id() );
+                n[ 2 ] = createRefinementNode_( n[ 0 ], n[ 1 ], nodeMatrix );
+                
+                if ( h2 ){
+                    std::vector < Node * > e1( 2 );
+                    e1[ 0 ] = n[0]; e1[ 1 ] = n[2];
+                    this->createCell( e1, c.marker() );
+                    e1[ 0 ] = n[2]; e1[ 1 ] = n[1];
+                    this->createCell( e1, c.marker() );
+                }
+                break;
             case MESH_TRIANGLE_RTTI:
                 n.resize( 6 );
                 n[ 0 ] = &node( mesh.cell( i ).node( 0 ).id() );
@@ -841,7 +861,11 @@ void Mesh::createRefined_( const Mesh & mesh, bool p2, bool h2 ){
 
         const Boundary & b = mesh.boundary( i );
         
-        switch ( b.rtti() ){
+        switch ( b.rtti() ){ 
+            case MESH_BOUNDARY_NODE_RTTI:
+                n.resize( 1 );
+                n[ 0 ] = &node( b.node( 0 ).id() );
+                break;
             case MESH_EDGE_RTTI:
                 n.resize( 3 );
                 n[ 0 ] = &node( b.node( 0 ).id() );
@@ -877,6 +901,9 @@ void Mesh::createRefined_( const Mesh & mesh, bool p2, bool h2 ){
             createBoundary( n, b.marker() );
         } else {
             switch ( b.rtti() ){
+                case MESH_BOUNDARY_NODE_RTTI:
+                    this->createBoundary( n, b.marker() );
+                    break;
                 case MESH_EDGE_RTTI:
                     this->createEdge( *n[ 0 ], *n[ 2 ], b.marker() );
                     this->createEdge( *n[ 2 ], *n[ 1 ], b.marker() );
@@ -1271,8 +1298,12 @@ void Mesh::createNeighbourInfos( bool force ){
                 c->findNeighbourCell( j );
 
                 std::vector < Node * > nodes( c->boundaryNodes( j ) );
+//                 std::cout << findBoundary( nodes ) << std::endl;
+                
                 bound = createBoundary( nodes, 0 );
 
+//                 std::cout << *c << " " << nodes.size() << " j: " << j << " " <<  *bound << std::endl;
+                
                 bool cellIsLeft = true;
                 if ( bound->shape().nodeCount() == 2 ) {
                     cellIsLeft = ( c->boundaryNodes( j )[0]->id() == bound->node( 0 ).id() );

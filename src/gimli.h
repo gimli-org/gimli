@@ -409,6 +409,7 @@ template < typename Set > inline void intersectionSet( Set & dest, const Set & a
     dest.clear();
     set_intersection( tmp.begin(), tmp.end(), c.begin(), c.end(), std::inserter( dest, dest.begin() ) );
 }
+
 template < typename Set > inline void intersectionSet( Set & dest, const std::vector < Set > & a ){
     if ( a.size() > 1 ) {
         intersectionSet( dest, a[ 0 ], a[ 1 ] );
@@ -418,6 +419,8 @@ template < typename Set > inline void intersectionSet( Set & dest, const std::ve
             set_intersection( tmp.begin(), tmp.end(), a[ i ].begin(), a[ i ].end(),
                               std::inserter( dest, dest.begin() ) );
         }
+    } else if ( a.size() == 1 ){
+        dest = a[0];
     } else {
         dest.clear();
     }

@@ -84,23 +84,6 @@ def setMemberFunctionCallPolicieByReturn(mb, MemberRetRef, callPolicie ):
                 memFun.call_policies = \
                 call_policies.return_value_policy( callPolicie )
 
-def addAutoConversions( mb ):
-    rvalue_converters = (
-        #'register_pylist_to_rvector_conversion',
-         'register_pytuple_to_rvector3_conversion' )
-
-
-    mb.add_declaration_code( 'void register_pytuple_to_rvector3_conversion();' )
-    mb.add_registration_code( 'register_pytuple_to_rvector3_conversion();' )
-
-    #for converter in rvalue_converters:
-        #mb.add_declaration_code( 'void %s();' % converter )
-        #mb.add_registration_code( '%s();' % converter )
-
-    custom_rvalue_path = os.path.join(
-                            os.path.abspath(os.path.dirname(__file__) )
-                            , 'custom_rvalue.cpp' )
-
 class docExtractor( doc_extractor_i ):
     def __init__( self ):
         doc_extractor_i.__init__( self )
@@ -186,6 +169,7 @@ def generate( defined_symbols ):
 
     ### START manual r-value converters
     rvalue_converters = [
+                            'register_pysequence_to_StdVectorUL_conversion',
                             'register_pytuple_to_rvector3_conversion',
                             'register_pysequence_to_rvector_conversion'
                         ]
