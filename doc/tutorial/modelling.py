@@ -55,11 +55,11 @@ from pygimli.viewer import showMesh
 from pygimli.mplviewer import *
 import pylab as P
 
-grid = g.createGrid( np.linspace( -1, 1, 25 ), np.linspace( -1, 1, 25 ) )
-u = solvePoisson( grid, f = 1., u0 = grid.findBoundaryByMarker( 1 ), verbose = True )
+grid = g.createGrid( np.linspace( -1, 1, 20 ), np.linspace( -1, 1, 20 ), np.linspace( -1, 1, 20 ) )
+u = solvePoisson( grid, f = 1., uBoundary = [ grid.findBoundaryByMarker( 1 ), 0], verbose = True )
 
-ax = showMesh( grid, data = u, filled = True, showLater = True, colorBar = True, orientation = 'vertical', label = 'Solution er$u$' )[0]
-drawMesh( ax, grid )
+#ax = showMesh( grid, data = u, filled = True, showLater = True, colorBar = True, orientation = 'vertical', label = 'Solution er$u$' )[0]
+#drawMesh( ax, grid )
 
 '''
 .. error::
@@ -76,15 +76,16 @@ for b in grid.boundaries():
         if b.norm()[1] == -1:
             b.setMarker( 4 )
             
+u = solvePoisson( grid, f = 0., uBoundary = [ [ grid.findBoundaryByMarker( 2 ), 1.0 ], 
+                                              [ grid.findBoundaryByMarker( 4 ), 0.0 ] ],  verbose = True )
 
-u = solvePoisson( grid, f = 0., u0 = grid.findBoundaryByMarker( -1 ), Btest = grid.findBoundaryByMarker( 4 ),  verbose = True )
-
-ax = showMesh( grid, data = u, filled = True, showLater = True, colorBar = True, orientation = 'vertical', label = 'Solution $u$'  )[0]
-drawMesh( ax, grid )
-drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 1 ), color = (1.0, 0.0, 0.0), linewidth=2 )
-drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 2 ), color = (0.0, 1.0, 0.0), linewidth=2 )
-drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 3 ), color = (0.0, 0.0, 1.0), linewidth=2 )
-
+#ax = showMesh( grid, data = u, filled = True, showLater = True, colorBar = True, orientation = 'vertical', label = 'Solution $u$'  )[0]
+#drawMesh( ax, grid )
+#drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 1 ), color = (1.0, 0.0, 0.0), linewidth=2 )
+#drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 2 ), color = (0.0, 1.0, 0.0), linewidth=2 )
+#drawSelectedMeshBoundaries( ax, grid.findBoundaryByMarker( 3 ), color = (0.0, 0.0, 1.0), linewidth=2 )
     
+grid.addExportData('u', u )
+grid.exportVTK( "grid" )
     
 P.show()

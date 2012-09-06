@@ -855,34 +855,37 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
                 }
             }
             file << std::endl;
-        } // if ( boundaryCount() > 0 )
-        RVector tmp( boundaryCount() );
-        std::transform( boundaryVector_.begin(), boundaryVector_.end(),
-                        &tmp[0], std::mem_fun( &Boundary::marker ) );
         
-        if ( !data.count( "_Marker" ) ) data.insert( std::make_pair( "_Marker",  tmp ) );
         
-        //** write boundary data
-        file << "CELL_DATA " << boundaryCount() << std::endl;
-        for ( std::map < std::string, RVector >::iterator it = data.begin(); it != data.end(); it ++ ){
-            if ( verbose ){
-                std::cout << it->first << " " << it->second.size() << std::endl;
-            }
-            if ( it->second.size() == (uint)boundaryCount() ){
-                file << "SCALARS " << strReplaceBlankWithUnderscore( it->first )
-                        << " double 1" << std::endl;
-                file << "LOOKUP_TABLE default" << std::endl;
-
-                for ( uint i = 0, imax = it->second.size(); i < imax; i ++) {
-                    if ( binary ){
-                        //file.write( (char*)&scaledValues[ i ], sizeof( double ) );
-                    } else {
-                        file << it->second[ i ] << " ";
-                    }
+            RVector tmp( boundaryCount() );
+            std::transform( boundaryVector_.begin(), boundaryVector_.end(),
+                            &tmp[0], std::mem_fun( &Boundary::marker ) );
+        
+            if ( !data.count( "_Marker" ) ) data.insert( std::make_pair( "_Marker",  tmp ) );
+        
+            //** write boundary data
+            file << "CELL_DATA " << boundaryCount() << std::endl;
+            for ( std::map < std::string, RVector >::iterator it = data.begin(); it != data.end(); it ++ ){
+                if ( verbose ){
+                    std::cout << it->first << " " << it->second.size() << std::endl;
                 }
-                file << std::endl;
+                if ( it->second.size() == (uint)boundaryCount() ){
+                    file << "SCALARS " << strReplaceBlankWithUnderscore( it->first )
+                            << " double 1" << std::endl;
+                    file << "LOOKUP_TABLE default" << std::endl;
+
+                    for ( uint i = 0, imax = it->second.size(); i < imax; i ++) {
+                        if ( binary ){
+                            //file.write( (char*)&scaledValues[ i ], sizeof( double ) );
+                        } else {
+                            file << it->second[ i ] << " ";
+                        }
+                    }
+                    file << std::endl;
+                }
             }
-        }
+        } // if ( boundaryCount() > 0 )
+        
     } // else write boundaries
 }
 

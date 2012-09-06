@@ -793,6 +793,16 @@ template < class ValueType > SparseMatrix< ValueType > operator + ( const Sparse
     return ret += B;
 }
 
+template < class ValueType > SparseMatrix < ValueType > operator * ( const SparseMatrix < ValueType > & A, const ValueType & b ){
+    SparseMatrix< ValueType > ret( A );
+    return ret *= b;
+}
+
+template < class ValueType > SparseMatrix < ValueType > operator * ( const ValueType & b, const SparseMatrix < ValueType > & A ){
+    SparseMatrix< ValueType > ret( A );
+    return ret *= b;
+}
+
 template < class ValueType > Vector < ValueType > operator * ( const SparseMatrix < ValueType > & A
                                                              , const Vector < ValueType >& a ){
 
@@ -809,6 +819,8 @@ template < class ValueType > Vector < ValueType > operator * ( const SparseMatri
     return b;
 }
 
+
+  
 } // namespace GIMLI
 
 #endif //GIMLI__H

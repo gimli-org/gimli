@@ -40,8 +40,9 @@ std::vector < PolynomialFunction < double > >
     , bool pascale, bool serendipity, const RVector & startVector ){
 
     bool verbose = false;
+    
     if ( verbose ){
-        std::cout << "pascale: " << pascale << " serendipity: " << serendipity << std::endl;
+        std::cout << "dim: " << dim << " pascale: " << pascale << " serendipity: " << serendipity << std::endl;
         std::cout << "start: " << startVector << std::endl;
         for (Index i = 0; i < pnts.size(); i ++ ) {
             std::cout << "P" << i << ": " << pnts[ i ] << std::endl;

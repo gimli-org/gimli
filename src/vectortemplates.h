@@ -145,6 +145,7 @@ template < class T > std::vector< T > unique( const std::vector < T > & a ){
     std::unique_copy( a.begin(), a.end(), back_inserter( t ) );
     return t;
 }
+
 //** END std::vector shortcuts
 
 template < class Vec > Vec abs( const Vec & v ) {
