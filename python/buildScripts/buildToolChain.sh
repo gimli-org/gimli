@@ -117,7 +117,7 @@ installPYPLUSPLUS(){
 }
 
 installGCCXML
-#installPYGCCXML
-#installPYPLUSPLUS
+installPYGCCXML
+installPYPLUSPLUS
 fixGCCXML
 fixGCCXML

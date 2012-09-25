@@ -21,6 +21,13 @@ else
 	exit
 fi
 
+if ( wget --version ); then 
+	echo "########### wget found: ok" ; 
+else 
+	echo "########### Installing wget" ; 
+	mingw-get.exe install msys-wget ; 
+fi; 
+
 # fixing python2.7 win64 installation -- there is a file missing
 #if [ ! -f $PYTHON_ROOT/libs/libpython27.a ]; then
 #	echo missing $PYTHON_ROOT/libs/libpython27.a
