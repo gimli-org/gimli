@@ -1,4 +1,4 @@
-BOOST_VERSION=1_49_0
+BOOST_VERSION=1.51.0
 
 if [ $# -eq 0 ]; then
 	prefix=`pwd`
@@ -8,6 +8,7 @@ fi
 
 echo "Installing boost at " $prefix
 
+BOOST_NAME=boost_${BOOST_VERSION//./_}
 BOOST_SRC=$prefix
 
 if ( (python --version) );then
@@ -32,7 +33,7 @@ fi
 #	dlltool --dllname python27.dll --def libgimli/trunk/external/patches/python27.def --output-lib $PYTHON_ROOT/libs/libpython27.a
 #fi
 
-BOOST_SRC_DIR=$BOOST_SRC/boost_$BOOST_VERSION
+BOOST_SRC_DIR=$BOOST_SRC/$BOOST_NAME
 GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f2`
 if [ "$GCCVER" = "mingw-version" ]; then
     GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f3`
@@ -46,8 +47,8 @@ else
 fi
 
 if [ ! -d $BOOST_SRC_DIR ]; then
-     wget -nc -nd http://sourceforge.net/projects/boost/files/boost/1.48.0/boost_1_48_0.tar.gz
-     tar -xzvf boost_1_48_0.tar.gz 
+     wget -nc -nd http://sourceforge.net/projects/boost/files/boost/$BOOST_VERSION/$BOOST_NAME'.tar.gz'
+     tar -xzvf $BOOST_NAME'.tar.gz'
 fi
 
 pushd $BOOST_SRC_DIR
