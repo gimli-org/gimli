@@ -8,7 +8,7 @@ LAPACK_VER=3.4.0
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
-SUITESPARSE=SuiteSparse-3.7.1.tar.gz
+SUITESPARSE=SuiteSparse-4.0.2.tar.gz
 SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
 
 #LDFLAGS="-static-libgfortran -static-libgcc"
@@ -61,14 +61,13 @@ suitesparse: prep $(SUITESPARSE)
 
 	echo "building suitesparse for ", $(OSTYPE)
 
-	if [ $(OSTYPE) == "msys" ]; then \
-		echo "CC = gcc" >> SuiteSparse/UFconfig/UFconfig.mk; \
+	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ]; then \
+		echo "CC = gcc" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 	else \
-		echo "CC = gcc -fPIC" >> SuiteSparse/UFconfig/UFconfig.mk; \
+		echo "CC = gcc -fPIC" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 	fi
 
-	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/UFconfig/UFconfig.mk; 
-
+	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk
 	for i in AMD CAMD COLAMD CCOLAMD LDL; do \
 		$(MAKE) -C SuiteSparse/$$i clean; \
 		$(MAKE) -C SuiteSparse/$$i; \
@@ -126,5 +125,5 @@ cmake:
 clean:
 	echo "Cleaning ..."
 	rm -rf lib triangle AMD CAMD COLAMD CCOLAMD LDL CHOLMOD SuiteSparse lapack-* *~
-
+	echo "done"
 	
