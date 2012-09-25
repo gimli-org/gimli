@@ -8,7 +8,7 @@ LAPACK_VER=3.4.0
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
-SUITESPARSE=SuiteSparse-4.0.2.tar.gz
+SUITESPARSE=SuiteSparse-3.7.1.tar.gz
 SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
 
 #LDFLAGS="-static-libgfortran -static-libgcc"
@@ -57,7 +57,7 @@ $(SUITESPARSE): wget unzip
 	wget -nc -nd $(SUITESPARSE_URL)
 	tar -xzvf $(SUITESPARSE)
 		
-suitesparse: prep $(SUITESPARSE)
+suitesparse-4: prep $(SUITESPARSE)
 
 	echo "building suitesparse for ", $(OSTYPE)
 
@@ -68,6 +68,28 @@ suitesparse: prep $(SUITESPARSE)
 	fi
 
 	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk
+	for i in AMD CAMD COLAMD CCOLAMD LDL; do \
+		$(MAKE) -C SuiteSparse/$$i clean; \
+		$(MAKE) -C SuiteSparse/$$i; \
+		cp SuiteSparse/$$i/Lib/*.a lib/; \
+	done
+
+	$(MAKE) -C SuiteSparse/CHOLMOD/Lib clean
+	$(MAKE) -C SuiteSparse/CHOLMOD/Lib 
+	cp SuiteSparse/CHOLMOD/Lib/*.a lib/; \
+	
+suitesparse: prep $(SUITESPARSE)
+
+	echo "building suitesparse for ", $(OSTYPE)
+
+	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ]; then \
+		echo "CC = gcc" >> SuiteSparse/UFconfig/UFconfig.mk; \
+	else \
+		echo "CC = gcc -fPIC" >> SuiteSparse/UFconfig/UFconfig.mk; \
+	fi
+
+	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/UFconfig/UFconfig.mk; 
+
 	for i in AMD CAMD COLAMD CCOLAMD LDL; do \
 		$(MAKE) -C SuiteSparse/$$i clean; \
 		$(MAKE) -C SuiteSparse/$$i; \

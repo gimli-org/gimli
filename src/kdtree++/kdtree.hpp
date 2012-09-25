@@ -175,7 +175,7 @@ namespace KDTree
          // We increment __first all the way to __last once within
          // the distance() call, and again within the copy() call.
          //
-         // This should end up using some funky C++ concepts or 
+         // This should end up using some funky C++ concepts or
          // type traits to check that the iterators can be used in this way...
       }
 
@@ -1163,7 +1163,7 @@ namespace KDTree
       {
          typename _Base::NoLeakAlloc noleak(this);
          _Link_type new_node = noleak.get();
-         _M_construct_node(new_node, __V, __PARENT, __LEFT, __RIGHT);
+         this->_M_construct_node(new_node, __V, __PARENT, __LEFT, __RIGHT);
          noleak.disconnect();
          return new_node;
       }
@@ -1181,8 +1181,8 @@ namespace KDTree
       void
       _M_delete_node(_Link_type __p)
       {
-        _M_destroy_node(__p);
-        _M_deallocate_node(__p);
+        this->_M_destroy_node(__p);
+        this->_M_deallocate_node(__p);
       }
 
       _Link_type _M_root;
