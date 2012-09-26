@@ -59,11 +59,11 @@ Boundary * findBoundary( const std::vector < Node * > & n ) {
     std::vector < std::set< Boundary * > > bs;
 
     std::set < Boundary * > common;
-    
+
     for ( uint i = 0; i < n.size(); i ++ ) bs.push_back( n[ i ]->boundSet() );
-    
+
     intersectionSet( common, bs );
-    
+
 
     if ( common.size() == 1 ) {
         return *common.begin();
@@ -177,7 +177,7 @@ std::ostream & operator << ( std::ostream & str, const TriPrism & t ){
         << " attribute: " << t.attribute();
     return str;
 }
-    
+
 MeshEntity::MeshEntity( ){
     marker_ = 0;
 }
@@ -190,10 +190,10 @@ MeshEntity::MeshEntity( std::vector < Node * > & nodes ){
 MeshEntity::~MeshEntity(){
 }
 
-RVector3 MeshEntity::center() const { 
-    return shape_->center(); 
+RVector3 MeshEntity::center() const {
+    return shape_->center();
 }
-    
+
 void MeshEntity::fillShape_( ){
     if ( shape_ ){
         if ( shape_->nodeCount() > this->nodeCount() ){
@@ -202,8 +202,8 @@ void MeshEntity::fillShape_( ){
                         << " " << this->nodeCount() << std::endl;
         } else {
             for ( Index i = 0; i < shape_->nodeCount(); i ++ ) shape_->setNode( i, node( i ) );
-            
-            //* create Shape function and cache them to avoid multithreading problems ... 
+
+            //* create Shape function and cache them to avoid multithreading problems ...
             ShapeFunctionCache::instance().shapeFunctions( *shape_ );
         }
     }
@@ -223,7 +223,7 @@ void MeshEntity::deRegisterNodes_(){
 
 IndexArray MeshEntity::ids() const {
     IndexArray idVec( nodeCount() );
-    
+
     for ( uint i = 0; i < nodeCount(); i ++ ) {
         idVec[ i ] = node( i ).id();
     }
@@ -239,54 +239,54 @@ std::vector < PolynomialFunction < double > > MeshEntity::createShapeFunctions( 
     THROW_TO_IMPL
     return std::vector < PolynomialFunction < double > > ();
 }
- 
+
 RVector MeshEntity::N( const RVector3 & rst ) const {
     RVector n( nodeCount(), 0.0 );
     this->N( rst, n );
     return n;
 }
-    
+
 void MeshEntity::N( const RVector3 & rst, RVector & n ) const {
     const std::vector< PolynomialFunction < double > > &N = ShapeFunctionCache::instance().shapeFunctions( *this );
-    
+
     for ( Index i = 0; i < N.size(); i ++ ) {
         n[ i ] = N[ i ]( rst );
     }
 }
 
 RVector MeshEntity::dNdL( const RVector3 & rst, uint i ) const {
-        
+
     const std::vector< PolynomialFunction < double > > &dNL = ShapeFunctionCache::instance().deriveShapeFunctions( *this, i );
-    
+
     RVector ret( dNL.size() );
-    
+
     for ( Index i = 0; i < dNL.size(); i ++ ) {
          ret[ i ] = dNL[ i ]( rst );
     }
-    
+
     return ret;
 }
-    
-    
+
+
 double MeshEntity::pot( const RVector3 & xyz, const RVector & u ) const {
     return sum( u( this->ids() ) * this->N( shape().rst( xyz ) ) );
 }
 
 RVector3 MeshEntity::grad( const RVector3 & xyz, const RVector & u ) const {
-  
+
     RVector3 rst( shape_->rst( xyz ) );
-        
+
     RMatrix MdNdL;
     MdNdL.push_back( dNdL( rst, 0 ) );
     MdNdL.push_back( dNdL( rst, 1 ) );
     MdNdL.push_back( dNdL( rst, 2 ) );
-        
+
     RVector up( u( this->ids() ) );
     RVector3 gr( 3 );
     gr[0] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 0 ) ) );
     gr[1] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 1 ) ) );
     gr[2] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 2 ) ) );
-    
+
     return gr;
     //return grad_( shapeFunctionsDerive( xyz ), u );
 }
@@ -295,7 +295,7 @@ RVector3 MeshEntity::grad( const RVector3 & xyz, const RVector & u ) const {
 
 Cell::Cell(  ) : MeshEntity( ), attribute_( ), tagged_( false ) {
 }
-    
+
 Cell::Cell( std::vector < Node * > & nodes ) : MeshEntity( nodes ), attribute_( 0.0 ), tagged_( false ) {
     registerNodes_( );
 }
@@ -304,7 +304,7 @@ Cell::~Cell(){
     deRegisterNodes_();
 }
 
-    
+
 Node * Cell::oppositeTo( const Boundary & bound ){
     THROW_TO_IMPL
     //** maybee obsolete pls check
@@ -330,28 +330,28 @@ void Cell::cleanNeighbourInfos( ){
 }
 
 Boundary * Cell::boundaryTo( const RVector & sf ){
-    
+
     double maxSF = max( sf );
     double minSF = min( sf );
-    
+
     IndexArray maxIdx( find( sf == maxSF ) );
     IndexArray minIdx( find( sf == minSF ) );
-    
+
     std::set < Boundary * > common;
-    
+
     if ( maxIdx.size() > 1 ){
         std::vector < std::set< Boundary * > > bs;
         for ( Index i = 0; i < maxIdx.size(); i ++ ) bs.push_back( node( maxIdx[ i ] ).boundSet() );
-    
+
         intersectionSet( common, bs );
     } else {
         common = node( maxIdx[ 0 ] ).boundSet();
     }
-    
+
     std::cout << "common.size() " << common.size()<< std::endl;
-    
+
     if ( common.size() == 0 ) return NULL;
-    
+
     // remove bounds from foreign cells
     for ( std::set < Boundary * >::iterator it = common.begin(); it != common.end(); ){
 
@@ -363,20 +363,20 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
             ++it;
         }
     }
-    
+
     std::cout << "common.size() remove foreign" << common.size()<< std::endl;
-//     
+//
     std::set < Boundary * > commonSub;
-    
+
     if ( minIdx.size() > 1 ){
         std::vector < std::set< Boundary * > > bs;
         for ( Index i = 0; i < minIdx.size(); i ++ ) bs.push_back( node( minIdx[ i ] ).boundSet() );
-    
+
         intersectionSet( commonSub, bs );
     } else {
         commonSub = node( minIdx[ 0 ] ).boundSet();
     }
-    
+
     for ( std::set < Boundary * >::iterator it = commonSub.begin(); it != commonSub.end(); it++){
         common.erase( *(it) );
     }
@@ -388,31 +388,31 @@ Boundary * Cell::boundaryTo( const RVector & sf ){
         THROW_TO_IMPL
         return NULL;
     }
-    
+
 //     std::cout << "common.size() remove sub: " << common.size()<< std::endl;
 
     return (*common.begin());
 }
-    
+
 Cell * Cell::neighbourCell( const RVector & sf ){
     //** hack for edge, triangle and tetrahedron. pls refactor
     if ( ( ( sf.size() == 2 ) && ( shape_->dim() == 1 ) ) ||
-         ( ( sf.size() == 3 ) && ( shape_->dim() == 2 ) ) || 
+         ( ( sf.size() == 3 ) && ( shape_->dim() == 2 ) ) ||
          ( ( sf.size() == 4 ) && ( shape_->dim() == 3 ) ) ){
         Index minId = find( sf == min( sf ) )[ 0 ];
         return neighbourCells_[ minId ];
-    }   
-            
+    }
+
     Boundary * b = boundaryTo( sf );
-    
+
 //     std::cout << *b << " " << b->leftCell() << " "<< b->rightCell() << std::endl;
 //     this->setMarker(-33);
-    
+
     if ( b ){
         if ( b->rightCell() == this ) return b->leftCell();
         if ( b->leftCell() == this ) return b->rightCell();
     }
-    
+
     return NULL;
 }
 
@@ -424,7 +424,7 @@ void Cell::findNeighbourCell( uint i ){
 
     if ( n.size() > 1 ) {
         intersectionSet( common, n[ 0 ]->cellSet(), n[ 1 ]->cellSet() );
-        
+
         for ( uint j = 2; j < n.size(); j ++ ){
             commonTmp = common;
             intersectionSet( common, commonTmp, n[ j ]->cellSet() );
@@ -638,6 +638,10 @@ Triangle6Face::Triangle6Face( std::vector < Node * > & nodes ) : TriangleFace( n
 Triangle6Face::~Triangle6Face(){
 }
 
+std::vector < PolynomialFunction < double > > Triangle6Face::createShapeFunctions( ) const {
+    return createPolynomialShapeFunctions( *this, 3, true, false );
+}
+
 RVector3 Triangle6Face::rst( uint i ) const {
     if ( i == 3 ) return RVector3( ( shape_->rst( 0 ) + shape_->rst( 1 ) ) / 2 );
     if ( i == 4 ) return RVector3( ( shape_->rst( 1 ) + shape_->rst( 2 ) ) / 2 );
@@ -645,9 +649,6 @@ RVector3 Triangle6Face::rst( uint i ) const {
     return shape_->rst( i );
 }
 
-std::vector < PolynomialFunction < double > > Triangle6Face::createShapeFunctions( ) const {
-    return createPolynomialShapeFunctions( *this, 3, true, false );
-}
 
 QuadrangleFace::QuadrangleFace( std::vector < Node * > & nodes ) : Boundary( nodes ){
     shape_ = new QuadrangleShape();
@@ -737,7 +738,7 @@ std::vector < Node * > EdgeCell::boundaryNodes( Index i ){
 // void EdgeCell::findNeighbourCell( uint id ){
 //     //     case: 0 - 1
 //     //     case: 1 - 0
-// 
+//
 //     std::set < Cell * > common( nodeVector_[ (id + 1 )%2 ]->cellSet() );
 //     common.erase( this );
 //     if ( common.size() == 1 ) neighbourCells_[ id ] = *common.begin(); else neighbourCells_[ id ] = NULL;
@@ -750,7 +751,7 @@ std::vector < PolynomialFunction < double > > EdgeCell::createShapeFunctions( ) 
 // RVector EdgeCell::N( const RVector3 & L ) const{
 //     return shape_->N( L );
 // }
-// 
+//
 // RVector EdgeCell::dNdL( const RVector3 & coord, uint dim ) const {
 //     RVector dN( nodeCount() );
 //     dN[ 0 ] = - 1.0;
@@ -858,7 +859,7 @@ void Quadrangle::setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool chan
 
 // void Quadrangle::findNeighbourCell( uint id ){
 //     std::set < Cell * > common;
-// 
+//
 //     intersectionSet( common, nodeVector_[ ( id + 1 )%4 ]->cellSet(), nodeVector_[ ( id + 2 )%4 ]->cellSet() );
 //     common.erase( this );
 //     if ( common.size() == 1 ) neighbourCells_[ id ] = *common.begin(); else neighbourCells_[ id ] = NULL;
@@ -941,7 +942,7 @@ void Tetrahedron::setNodes( Node & n1, Node & n2, Node & n3, Node & n4, bool cha
 //     std::set < Cell * > c1, common;
 //     intersectionSet( c1, nodeVector_[ ( i + 1 )%4 ]->cellSet(), nodeVector_[ ( i + 2 )%4 ]->cellSet() );
 //     intersectionSet( common, c1, nodeVector_[ ( i + 3 )%4 ]->cellSet() );
-// 
+//
 //     common.erase( this );
 //     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
 // }
@@ -955,7 +956,7 @@ std::vector < Node * > Tetrahedron::boundaryNodes( Index i ){
     // 1 -> 2..0..3
     // 2 -> 0..1..3
     // 3 -> 0..2..1
-    
+
     std::vector < Node * > nodes( 3 );
     for ( Index j = 0; j < 3; j ++ ) nodes[ j ] = nodeVector_[ TetrahedronFacesID[ i ][ j ] ];
     return nodes;
@@ -989,17 +990,17 @@ std::vector < PolynomialFunction < double > > Hexahedron::createShapeFunctions( 
 
 // void Hexahedron::findNeighbourCell( uint i ){
 //     std::vector < Node * > n( boundaryNodes( i ) );
-// 
+//
 //     std::set < Cell *> common;
 //     std::set < Cell *> commonTmp;
-// 
+//
 //     if ( n.size() > 1 ) intersectionSet( common, n[ 0 ]->cellSet(), n[ 1 ]->cellSet() );
-//     
+//
 //     for ( uint j = 2; j < n.size(); j ++ ){
 //         commonTmp = common;
 //         intersectionSet( common, commonTmp, n[ j ]->cellSet() );
 //     }
-// 
+//
 //     common.erase( this );
 //     if ( common.size() == 1 ) neighbourCells_[ i ] = *common.begin(); else neighbourCells_[ i ] = NULL;
 // }
@@ -1017,7 +1018,7 @@ Hexahedron20::Hexahedron20( std::vector < Node * > & nodes ) : Hexahedron( nodes
 }
 
 Hexahedron20::~Hexahedron20(){
-    
+
 }
 
 std::vector < PolynomialFunction < double > > Hexahedron20::createShapeFunctions( ) const{
@@ -1048,11 +1049,11 @@ std::vector < PolynomialFunction < double > > TriPrism::createShapeFunctions( ) 
     RPolynomialFunction T3_2( e2, RVector( 0 ) );
     RPolynomialFunction T3_3( RVector( 0 ), e2 );
     RPolynomialFunction T3_1 = -( -1.0 + T3_2 + T3_3 );
-        
+
     RPolynomialFunction E2_2T( RVector( 0 ), RVector( 0 ), e2 );
     RPolynomialFunction E2_1T = -( -1.0 + E2_2T );
     std::vector < PolynomialFunction < double > > ret;
-    
+
     ret.push_back( T3_1 * E2_1T );
     ret.push_back( T3_2 * E2_1T );
     ret.push_back( T3_3 * E2_1T );
@@ -1060,16 +1061,16 @@ std::vector < PolynomialFunction < double > > TriPrism::createShapeFunctions( ) 
     ret.push_back( T3_2 * E2_2T );
     ret.push_back( T3_3 * E2_2T );
     return ret;
-    
+
 }
 
 std::vector < Node * > TriPrism::boundaryNodes( Index i ){
     std::vector < Node * > nodes;
     for ( uint j = 0; j < 3; j ++ ){
         nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ j ] ] );
-    }    
+    }
     if ( TriPrismFacesID[ i ][ 3 ] != 255 ) nodes.push_back( nodeVector_[ TriPrismFacesID[ i ][ 3 ] ] );
-    
+
     return nodes;
 }
 
@@ -1081,7 +1082,7 @@ TriPrism15::~TriPrism15(){
 
 std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions( ) const{
     //return createPolynomialShapeFunctions( *this, 3, false, false);
-    
+
     RVector xy( 9, 0.0 );
     xy[ 0 ] = 1.;  // 1
     xy[ 1 ] = 1.;  // x
@@ -1092,7 +1093,7 @@ std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions( 
     xy[ 6 ] = 1.;  // y^2
     xy[ 7 ] = 0.;  // y^2x
     xy[ 8 ] = 0.;  // y^2x^2
-    
+
     RVector start( 27 );
     start.setVal( xy, 0, 9 );
     start.setVal( xy, 9, 18 );
@@ -1100,10 +1101,10 @@ std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions( 
     start[ 18 + 2 ] = 0.; // z^2x^2
     start[ 18 + 4 ] = 0.; // z^2xy
     start[ 18 + 6 ] = 0.; // z^2y^2
-    
+
     return createPolynomialShapeFunctions( *this, 3, false, false, start);
-    
-    
+
+
     //#return createPolynomialShapeFunctions( *this, 3, true, true);
 }
 
@@ -1120,7 +1121,7 @@ std::vector < PolynomialFunction < double > > Pyramid::createShapeFunctions( ) c
     THROW_TO_IMPL
     return std::vector < PolynomialFunction < double > >();
 }
- 
+
 std::vector < Node * > Pyramid::boundaryNodes( Index i ){
 THROW_TO_IMPL
     return std::vector < Node * > ();
@@ -1138,5 +1139,5 @@ THROW_TO_IMPL
 }
 
 
-    
+
 } // namespace GIMLI{
