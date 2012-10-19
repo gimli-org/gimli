@@ -1,11 +1,7 @@
 lib_LTLIBRARIES = libgimli.la
 
-include_HEADERS = gimli.h
-
-# 			eameshwrapper.h \
-# 			eameshwrapper.cpp 
-
-libgimli_la_SOURCES = \
+otherincludedir = $(includedir)/$(pgkincludedir)/kdtree++/
+otherinclude_HEADERS = \
 			kdtree++/AUTHORS \
 			kdtree++/COPYING \
 			kdtree++/NEWS \
@@ -16,93 +12,99 @@ libgimli_la_SOURCES = \
 			kdtree++/iterator.hpp \
 			kdtree++/kdtree.hpp \
 			kdtree++/node.hpp \
-			kdtree++/region.hpp \
+			kdtree++/region.hpp 
+
+pgkincludedir = gimli
+pkginclude_HEADERS = \
 			baseentity.h \
+			blockmatrix.h \
 			cholmodWrapper.h \
-			cholmodWrapper.cpp \
 			curvefitting.h \
-			curvefitting.cpp \
 			datacontainer.h \
-			datacontainer.cpp \
 			dc1dmodelling.h \
-			dc1dmodelling.cpp \
 			elementmatrix.h \
-			elementmatrix.cpp \
 			em1dmodelling.h \
-			em1dmodelling.cpp \
 			exitcodes.h \
 			expressions.h \
 			gimli.h \
-			gimli.cpp \
 			gravimetry.h \
-			gravimetry.cpp \
 			integration.h \
-			integration.cpp \
 			interpolate.h \
-			interpolate.cpp \
 			inversion.h \
-			inversion.cpp \
 			inversionBase.h \
 			inversionFramework.h \
 			ipcClient.h\
-			ipcClient.cpp\
 			kdtreeWrapper.h \
-			kdtreeWrapper.cpp \
 			ldlWrapper.h \
-			ldlWrapper.cpp \
 			line.h \
-			line.cpp \
 			linSolver.h \
-			linSolver.cpp \
 			matrix.h \
-			matrixTemplates.h \
 			mesh.h \
-			mesh.cpp \
-			mesh_io.cpp \
 			meshentities.h \
-			meshentities.cpp \
 			meshgenerators.h \
-			meshgenerators.cpp \
 			memwatch.h \
-			memwatch.cpp \
 			modellingbase.h \
-			modellingbase.cpp \
 			multimatrix.h \
-			multimatrix.cpp \
 			node.h \
-			node.cpp \
 			numericbase.h \
-			numericbase.cpp \
 			optionmap.h \
-			optionmap.cpp \
 			plane.h \
-			plane.cpp \
 			platform.h \
-			platform.cpp \
 			polynomial.h \
 			pos.h \
-			pos.cpp \
 			quaternion.h \
-			quaternion.cpp \
 			regionManager.h \
-			regionManager.cpp \
 			shape.h \
-			shape.cpp \
 			solver.h \
 			solverWrapper.h \
-			solverWrapper.cpp \
 			sparsematrix.h \
 			spline.h \
-			spline.cpp \
 			stopwatch.h \
-			stopwatch.cpp \
 			trans.h \
 			triangleWrapper.h \
-			triangleWrapper.cpp \
 			ttdijkstramodelling.h \
-			ttdijkstramodelling.cpp \
 			vector.h \
 			vectortemplates.h
+
+
+libgimli_la_SOURCES = \
+			cholmodWrapper.cpp \
+			curvefitting.cpp \
+			datacontainer.cpp \
+			dc1dmodelling.cpp \
+			elementmatrix.cpp \
+			em1dmodelling.cpp \
+			gimli.cpp \
+			gravimetry.cpp \
+			integration.cpp \
+			interpolate.cpp \
+			inversion.cpp \
+			ipcClient.cpp\
+			kdtreeWrapper.cpp \
+			ldlWrapper.cpp \
+			line.cpp \
+			linSolver.cpp \
+			mesh.cpp \
+			mesh_io.cpp \
+			meshentities.cpp \
+			meshgenerators.cpp \
+			memwatch.cpp \
+			modellingbase.cpp \
+			multimatrix.cpp \
+			node.cpp \
+			numericbase.cpp \
+			optionmap.cpp \
+			plane.cpp \
+			platform.cpp \
+			pos.cpp \
+			quaternion.cpp \
+			regionManager.cpp \
+			shape.cpp \
+			solverWrapper.cpp \
+			spline.cpp \
+			stopwatch.cpp \
+			triangleWrapper.cpp \
+			ttdijkstramodelling.cpp 
 
 libgimli_la_LDFLAGS= \
 	-no-undefined \

@@ -17,6 +17,7 @@ gimliUnitTest_SOURCES = \
 	testShape.h \
 	testGeometry.h \
 	testFEM.h \
+	testMesh.h \
 	testExternals.h 
 
 # 	testOptionMap.h 
