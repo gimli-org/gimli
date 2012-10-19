@@ -69,7 +69,7 @@ public:
         CPPUNIT_ASSERT( data.sensorCount() == nSensors - 2 );
         CPPUNIT_ASSERT( data.size()        == nSensors - 4 );
         
-        data.save( "test0.dat" );        
+        data.save( "test.0.dat" );        
         
         DataContainer data2( data );
         data.add( data2 );
@@ -82,9 +82,9 @@ public:
         CPPUNIT_ASSERT( data.sensorCount() == data2.sensorCount()+1 );
         CPPUNIT_ASSERT( data.size()        == data2.size()*3 );
         
-        data.save( "test1.dat" );        
+        data.save( "test.1.dat" );        
         data.sortSensorsIndex( );
-        data.save( "test2.dat" );        
+        data.save( "test.2.dat" );        
         
         CPPUNIT_ASSERT( max( data("S1") ) == data("S1")[ data.size()-1 ] );
         

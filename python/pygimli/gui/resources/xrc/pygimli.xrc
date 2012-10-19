@@ -25,6 +25,7 @@
 						<flag>wxTOP|wxBOTTOM</flag>
 						<border>5</border>
 						<object class="wxCheckBox" name="piColorBarActiveCheckBox">
+							<style>wxTAB_TRAVERSAL</style>
 							<label>Colorbar</label>
 							<checked>0</checked>
 						</object>
@@ -81,6 +82,7 @@
 									<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 									<border>5</border>
 									<object class="wxTextCtrl" name="piColorBarNColorsTextCtrl">
+										<style>wxTAB_TRAVERSAL</style>
 										<tooltip>Set amount of colors [2...256]</tooltip>
 										<value>256</value>
 										<maxlength>0</maxlength>
@@ -109,6 +111,7 @@
 									<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 									<border>5</border>
 									<object class="wxTextCtrl" name="piColorBarCminTextCtrl">
+										<style>wxTAB_TRAVERSAL</style>
 										<size>50,-1</size>
 										<value></value>
 										<maxlength>0</maxlength>
@@ -129,6 +132,7 @@
 									<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 									<border>5</border>
 									<object class="wxTextCtrl" name="piColorBarCmaxTextCtrl">
+										<style>wxTAB_TRAVERSAL</style>
 										<size>50,-1</size>
 										<value></value>
 										<maxlength>0</maxlength>
@@ -157,6 +161,7 @@
 									<flag>wxALL</flag>
 									<border>5</border>
 									<object class="wxCheckBox" name="piColorBarAutoColorCheckBox">
+										<style>wxTAB_TRAVERSAL</style>
 										<tooltip>tooltip</tooltip>
 										<label>auto range</label>
 										<checked>1</checked>
@@ -167,6 +172,7 @@
 									<flag>wxALL</flag>
 									<border>5</border>
 									<object class="wxCheckBox" name="piColorBarLogCheckBox">
+										<style>wxTAB_TRAVERSAL</style>
 										<label>log10 scale</label>
 										<checked>1</checked>
 									</object>
@@ -193,6 +199,7 @@
 									<flag>wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND</flag>
 									<border>5</border>
 									<object class="wxTextCtrl" name="piColorBarLabelTextCtrl">
+										<style>wxTAB_TRAVERSAL</style>
 										<value></value>
 										<maxlength>0</maxlength>
 									</object>
@@ -210,6 +217,7 @@
 									<flag>wxALL</flag>
 									<border>5</border>
 									<object class="wxRadioButton" name="piColorBarHorizRadioButton">
+										<style>wxTAB_TRAVERSAL</style>
 										<enabled>0</enabled>
 										<label>Horizontal</label>
 										<value>0</value>
@@ -220,6 +228,7 @@
 									<flag>wxALL</flag>
 									<border>5</border>
 									<object class="wxRadioButton" name="piColorBarVertRadioButton">
+										<style>wxTAB_TRAVERSAL</style>
 										<enabled>0</enabled>
 										<label>Vertical</label>
 										<value>0</value>

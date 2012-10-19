@@ -53,11 +53,12 @@ class Property:
             print "no ctrl given"
 
     def onPropertyChanged( self, event = None ):
-        try:
-            event.Skip()
-        except:
-            pass
         
+        #try:
+            #event.Skip()
+        #except:
+            #print "event cannot be skiped", event
+
         oldVal = self.val
         self.val = self.getValFromCtrl()
 

@@ -1,8 +1,13 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.61])
 
+#define( [SUMMARY], "GIMLi summary" )
+#AC_DEFINE( SUMMARY )
+
 define([SVNVERSION], esyscmd([sh -c "svnversion -n"]))
 AC_DEFINE(SVN_REVISION, "SVNVERSION", [SVN Revision])
+
+#http://sourceforge.net/projects/libgimli/
 
 #AC_INIT(package, version, bug-report-address)
 #     information on the package
@@ -17,26 +22,30 @@ AC_DEFINE(SVN_REVISION, "SVNVERSION", [SVN Revision])
 #     AC_CONFIG_FILES([file...])
 #     AC_OUTPUT
 
-AC_INIT( [gimli], 0.9.0-SVNVERSION, [carsten@resistivity.net] )
+AC_INIT( [gimli], 0.9.0.SVNVERSION, [carsten@resistivity.net] )
 
 GIMLI_MAJOR_VERSION=0
 GIMLI_MINOR_VERSION=9
 GIMLI_MICRO_VERSION=0
 GIMLI_INTERFACE_AGE=0
 GIMLI_BINARY_AGE=0
+
 AC_SUBST(GIMLI_MAJOR_VERSION)
 AC_SUBST(GIMLI_MINOR_VERSION)
 AC_SUBST(GIMLI_MICRO_VERSION)
 AC_SUBST(GIMLI_INTERFACE_AGE)
 AC_SUBST(GIMLI_BINARY_AGE)
 
-GIMLI_VERSION=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION.$GIMLI_MICRO_VERSION-$SVNVERSION
-AC_SUBST(GIMLI_VERSION)
+GIMLI_VERSION=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION.$GIMLI_MICRO_VERSION.$SVNVERSION
+#AC_CONFIG_SRCDIR([src/foo.c])
 
-AM_INIT_AUTOMAKE( gimli, $GIMLI_VERSION )
+AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
 
-# libtool versioning
+################################################################################
+# Init magic libtool
+################################################################################
+
 LT_RELEASE=$GIMLI_MAJOR_VERSION.$GIMLI_MINOR_VERSION
 LT_CURRENT=`expr $GIMLI_MICRO_VERSION - $GIMLI_INTERFACE_AGE`
 LT_REVISION=$GIMLI_INTERFACE_AGE
@@ -46,10 +55,26 @@ AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
 
-# init magic libtool
-# -all-static
 LT_PREREQ([2.2])
 LT_INIT([dlopen,win32-dll])
+
+AC_SUBST([CR_ARCH],$host_cpu)
+AC_SUBST([CR_CPU],$host_cpu)
+
+################################################################################
+# Check for rpmbuild
+################################################################################
+
+AC_PATH_PROGS([RPMBUILD],[rpmbuild rpmb rpm],[none],[$PATH:/usr/lib/rpm])
+if $RPMBUILD -bs 2>&1 | grep 'Usage' >/dev/null 2>/dev/null; then
+    :
+else
+    RPMBUILD=none
+fi
+AM_CONDITIONAL(HAVE_RPMBUILD,[test $RPMBUILD != none])
+
+################################################################################
+
 
 #BB_ENABLE_DOXYGEN
 
@@ -60,9 +85,10 @@ AC_CONFIG_HEADER([config.h])
 
 AC_PREFIX_DEFAULT(`pwd`)
 
-#
+################################################################################
 # Checks for programs.
-#
+################################################################################
+
 AC_PROG_CXX
 AC_LANG([C++])
 
@@ -76,6 +102,7 @@ AC_SUBST([CXXFLAGS], ["-O2 -g -Wall -ansi -pedantic -pipe"])
 #CXXFLAGS="$CXXFLAGS -O2 -g -Wall -fPIC -ansi -pedantic #-D svn-\`svnversion -n\` "
 #CXXFLAGS="$CXXFLAGS -O2 -g -Wall -fPIC -ansi -pedantic -D ${PACKAGE_VERSION}"
 #AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -Wall"])
+
 
 #
 # Checks for header files.
@@ -222,6 +249,8 @@ AC_CONFIG_FILES([Makefile
                 apps/fit/Makefile
                 apps/em1d/Makefile
                 apps/traveltime/Makefile
+                rpm/Makefile
+                rpm/specfile
                 ] )
 
 #                apps/bert/Makefile

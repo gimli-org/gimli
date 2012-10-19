@@ -143,7 +143,11 @@ class ColorBarWxMPL( ManagedProperties ):
             self.active = flag
             
         if self.active:
-            self.enablePanel.Enable( True )
+            try:
+                self.enablePanel.Enable( True )
+            except:
+                pass
+            
             if not self.cbar:
                 if isinstance( self.parent.gci, list ):
                     gci = self.parent.gci[ -1 ]
