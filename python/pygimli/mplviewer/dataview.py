@@ -445,10 +445,13 @@ def createDataMatrix( data, values, pseudotype = Pseudotype.unknown ):
     #mat = mat.reshape( len( Sidx ), xLength )
 
     for i in range( 0, nData ):
-        mat[ g.find( Sidx == sep[ i ] ), g.find( Xidx == x[ i ] ) + xOffset ] = values[ i ]
-        for j in range( 1, dataWidthInMatrix ):
-            mat[ g.find( Sidx == sep[ i ] ), g.find( Xidx == x[ i ] ) + xOffset + j ] = values[ i ]
+        if data.get( 'valid' )[i]:
+            mat[ g.find( Sidx == sep[ i ] ), g.find( Xidx == x[ i ] ) + xOffset ] = values[ i ]
+        
+            for j in range( 1, dataWidthInMatrix ):
+                mat[ g.find( Sidx == sep[ i ] ), g.find( Xidx == x[ i ] ) + xOffset + j ] = values[ i ]
 
+            
     print "datasize:", data.size(), "shown: ", len( mat[~mat.mask] ) / dataWidthInMatrix
     notShown = ( data.size() - len( mat[~mat.mask] ) / dataWidthInMatrix )
     
@@ -632,7 +635,7 @@ def createDataPatches( ax, data, shemetype = Pseudotype.unknown, **kwarg ):
     for i, xv in enumerate( x ):
         s = sep[ i ]
         polys.append( zip( [ xv-dx2, xv+dx2, xv+dx2, xv-dx2],
-                           [ s - dSep2, s - dSep2, s + dSep2, s + dSep2 ] ) )
+                               [ s - dSep2, s - dSep2, s + dSep2, s + dSep2 ] ) )
 
     patches = mpl.collections.PolyCollection( polys, antialiaseds = False, lod = True, **kwarg)
     patches.set_edgecolor( 'face' )
@@ -652,7 +655,10 @@ def drawDataAsPatches( ax, data, values, shemetype = Pseudotype.unknown, writeVa
 
     # now draw the data Marker
     gci = createDataPatches( ax, data, shemetype, **kwarg )
-    g.mplviewer.setMappableData( gci, values, logScale = True )
+    
+    vals = ma.masked_where( values == 0, values * data.get( 'valid') )
+        
+    g.mplviewer.setMappableData( gci, vals, logScale = True )
     
     #if min( values ) < 0 :
     #    writeValues = True

@@ -14,6 +14,7 @@ except ImportError: # if it's not there locally, try the wxPython lib.
 
 import wx.py  as py
 import wx.stc as stc
+import wx.lib.scrolledpanel
 
 import time
 
@@ -334,8 +335,14 @@ class PyGIMLIMainFrame( wx.Frame ):
     def createPropertyInspectorSlot_( self, parent ):
         '''
         '''
-        self.propertyInspectorSlot = wx.Panel( parent )
+        self.propertyInspectorSlot = wx.lib.scrolledpanel.ScrolledPanel( parent
+                                        , -1, size=(14, 30),
+                                          style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="PropertySlot" ) 
+        
         self.propertyInspectorSlot.SetSizer( wx.BoxSizer() )
+        self.propertyInspectorSlot.SetAutoLayout(1)
+        self.propertyInspectorSlot.SetupScrolling()
+        
         return self.propertyInspectorSlot
 
     def createLogPane_( self, parent  ):
@@ -668,6 +675,9 @@ class PyGIMLIMainFrame( wx.Frame ):
 from pygimli.utils import IPCServer, IPCThreadedTCPRequestHandler
 import threading
 
+#import wx.lib.inspection
+#wx.lib.inspection.InspectionTool().Show()            
+
 class PyGIMLIApp( wx.App ):
     def __init__( self, options, args, ws ):
         wx.App.__init__( self, redirect = False )
@@ -692,7 +702,8 @@ class PyGIMLIApp( wx.App ):
         self.SetTopWindow( self.mainFrame )
         self.mainFrame.Show()
         self.mainFrame.registerPlugins()
-
+       
+        
         #self.ipcServer_ = IPCServer( ('localhost', 0), IPCThreadedTCPRequestHandler)
         #self.ipcServer_.environment = 'production'
         #ip, port = self.ipcServer_.server_address
