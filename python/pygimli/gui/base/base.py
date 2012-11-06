@@ -180,7 +180,10 @@ class ManagedProperties:
             
     def appendProperty( self, name, default = None, valType = None
                         , ctrl = None, ctrlEvent = None, targetFunct = None ):
+        '''
+        '''
         prop = None
+        
         if name in self.properties:
             prop = self.properties[ name ]
         else:
@@ -224,6 +227,7 @@ class AppResource( ManagedProperties ):
     '''
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
         ManagedProperties.__init__( self )
+        
         self.xrc                 = None
         self.parent              = parent
 
@@ -561,28 +565,40 @@ class AppResource( ManagedProperties ):
 
     def createPropertyInspectorNoteBookPanel( self, parent, panelName, title = None ):
         '''
-            What is this
+            Create and return the Property-Notebook and create the first tab from panelName
         '''
         if title is not None:
             self.piCaption = title
 
-        panel = aui.AuiNotebook( parent
-                                            , style = aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT |
-                                            aui.AUI_NB_TAB_MOVE | aui.AUI_NB_SCROLL_BUTTONS )
+        propertyNoteBook = aui.AuiNotebook( parent
+                                    , style = aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT |
+                                              aui.AUI_NB_TAB_MOVE | aui.AUI_NB_SCROLL_BUTTONS )
 
+        scrolled = wx.lib.scrolledpanel.ScrolledPanel( propertyNoteBook
+                                        , -1, style = wx.TAB_TRAVERSAL, name="PropertySlot" + panelName ) 
+        
         #print self.xrc
         #print self.parent.xrc
+
         tab = None
         if self.xrc is not None:
         #    print "self.xrc "
-            tab = self.xrc.LoadPanel( parent, panelName )
+            tab = self.xrc.LoadPanel( scrolled, panelName )
         else:
          #   print "self.parent.xrc "
-            tab = self.parent.xrc.LoadPanel( parent, panelName )
+            tab = self.parent.xrc.LoadPanel( scrolled, panelName )
 
-        if tab is not None:
-            panel.AddPage( tab, self.piCaption, True )
-        return panel
+        sizer = wx.BoxSizer()
+        sizer.Add( tab, 1 )
+        
+        scrolled.SetSizer( sizer )
+        scrolled.SetAutoLayout(1)
+        scrolled.SetupScrolling()
+        
+        if scrolled is not None:
+            propertyNoteBook.AddPage( scrolled, self.piCaption, True )
+            
+        return propertyNoteBook
         
     def setStatusMessage( self, msg ):
         """

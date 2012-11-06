@@ -1,5 +1,5 @@
 BOOSTDIR=/usr/include/boost
-BOOSTLIB=/usr/lib64 -l boost_python-mt
+BOOSTLIB=/usr/lib64 -l boost_python-2.7-mt
 PYTHONDIR=/usr/include/python2.7
 
 GIMLILIB=../src/.libs/ -lgimli -lrt
