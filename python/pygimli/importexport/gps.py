@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from xml.dom.minidom import parse
+from pyproj import Proj, transform
+from osgeo import gdal
+from osgeo.gdalconst import GA_ReadOnly
+import pylab as P
+
+gk2   = Proj( init="epsg:31466" ) # GK zone 2
+gk3   = Proj( init="epsg:31467" ) # GK zone 3
+wgs84 = Proj( init="epsg:4326" ) # pure ellipsoid for step-wise change
 
 def handleWPTS( wpts ):
     """ Handler for Waypoints in gpx xml-dom """
@@ -51,4 +59,61 @@ def readSimpleLatLon( filename ):
         #w.append( (float(vals[2]), float(vals[1]), vals[0], 'time')  )
     
     return w
+
+def GK2toUTM( R, H=None, zone=32 ):
+    """ transform Gauss-Krueger zone 2 into UTM """
+    """ note the double transformation (1-ellipsoid,2-projection) """
+
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM zone 32   
+
+    if H is None: # two-column matrix
+        lon, lat = transform( gk2, wgs84, R[0], R[1] )
+    else:
+        lon, lat = transform( gk2, wgs84, R, H )
+		
+    return utm( lon, lat )
+
+def GK3toUTM( R, H=None, zone=33 ):
+    """ transform Gauss-Krueger zone 3 into UTM """
+    """ note the double transformation (1-ellipsoid,2-projection) """
+
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM zone 32   
+
+    if H is None: # two-column matrix
+        lon, lat = transform( gk3, wgs84, R[0], R[1] )
+    else:
+        lon, lat = transform( gk3, wgs84, R, H )
+		
+    return utm( lon, lat )
+
+def convddmm(num):
+    dd = P.floor( num / 100. )
+    r1 = num - dd * 100.
+    return dd + r1 / 60.
+
+def readGeoRefTIF( file_name ):
+	""" read geo-referenced TIFF file and return image and bbox """
+	""" P.imshow( im, ext = bbox.ravel() ) , bbox might need transform """
+	dataset = gdal.Open( file_name, GA_ReadOnly )
+	geotr = dataset.GetGeoTransform()
+	projection = dataset.GetProjection()
+	im = P.flipud( P.imread( file_name ) )  
+	tifx, tify, dx = geotr[0], geotr[3], geotr[1]
+	bbox = [ [ tifx, tifx + im.shape[1] * dx], [ tify - im.shape[0] * dx, tify ] ]
+	return im, bbox, projection
+ 
+def getBKGaddress(xlim,ylim,imsize,zone=33,service='dop40',uuid='',fmt='jpeg'):
+    """ generate address for rendering web service image from BKG """
+    """ assumes UTM in any zone """
+    url='https://sg.geodatenzentrum.de/wms_' + service
+    stdarg='REQUEST=GetMap&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT='+fmt
+    srsstr='SRS=EPSG:' + str( 25800 + zone ) # 
     
+    boxstr='BBOX='+ '%d' % xlim[0] + ',' + '%d' % ylim[0] + ',' + '%d' % xlim[1] + ',' + '%d' % ylim[1]
+    ysize = imsize * (ylim[1]-ylim[0]) / (xlim[1]-xlim[0])
+    sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
+    addr = url + '__' + uuid + '?' + stdarg + '&' + srsstr + '&' + boxstr +'&' + sizestr
+    
+    return addr
+
+ 

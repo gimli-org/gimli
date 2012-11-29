@@ -3,7 +3,8 @@ GIMLi - Geophysical Inversion and Modelling Library
 
 Tested with:
     gentoo x86_64 gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
-    mingw win32 gcc-4.6.2 (gcc-4.7.0 DOES NOT WORK!!!!! strange segfault while dll call)
+	OpenSuse 11.4 x86_64 gcc-4
+    mingw win32 gcc-4.6.2/4 (gcc-4.7.0 DOES NOT WORK!!!!! strange segfault while dll call)
     mingw win64 gcc-4.5.4 (without python bindings)
 
 
@@ -15,8 +16,8 @@ BUILD (for posix systems such as Linux, Unix, MacOS):
 
 Prerequisites:
 You will need at least (incomplete for now):
-	>=automake-1.11
-	>=gcc-4.4.5 (just for some boost stuff that uses long long)
+	automake>=1.11
+	gcc>=4.4.5 (just for some boost stuff that uses long long)
 	...
 
 For the first time after initial svn checkout:
@@ -37,11 +38,11 @@ OPTIONAL EXTERNALS:
 for the testsuite
 cppunit (http://sourceforge.net/projects/cppunit)
 
-support for light-weight linear solver:
+support for light-weight linear solver (LDL):
 amd (http://www.cise.ufl.edu/research/sparse/amd/)
 ldl (http://www.cise.ufl.edu/research/sparse/ldl/)
 
-support for advanced linear solver:
+support for advanced linear solvers:
 blas                    
 lapack                  
 colamd                  
@@ -59,11 +60,11 @@ Windows toolchain:
 
 mingw-4.5.0 & msys-1.0.15
     automatic installer: http://sourceforge.net/projects/mingw/files/
-    testet: mingw-get-inst-20100909.exe
+    tested: mingw-get-inst-20100909.exe
     
 codeblocks
     from: http://www.codeblocks.org/downloads/26
-    testet: codeblocks-10.05-setup.exe
+    tested: codeblocks-10.05-setup.exe
     change codeblocks toolchain (setting/Compiler & Debugger../) 
         to c:/mingw or MinGW64 base directory
 
@@ -108,19 +109,19 @@ Install third party dependencies: blas, lapack
 > cd libgimli/externals
 > make lapack
 
-copy blas and lapack into libgimli/mingw path
+copy blas and lapack into libgimli/mingw path (why should we??)
 
 Install third party dependencies: boost
 	
 > wget -nc -nd http://sourceforge.net/projects/boost/files/boost/1.48.0/boost_1_48_0.tar.gz
 > tar -xzvf boost_1_48_0.tar.gz
-(maybee some errors using tar at command line, choose totalcommander instead)
+(maybe some errors using tar at command line, choose total commander etc. instead)
 
 fix boot sources that boost-python can be build
 
 > sh libglimli/python/buildScripts/buildBoostWin32.sh
 
-copy libboost-threads into libgimli/mingw path
+copy libboost-threads into libgimli/mingw path (why??)
 
 build libgimli.dll by using codeblocks
 
