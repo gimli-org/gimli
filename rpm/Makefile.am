@@ -2,7 +2,7 @@
 # This is also our chance to substitute in an RPM release number and a date.
 RPM_SPECFILE = $(PACKAGE)-$(VERSION).spec
 RPM_RELEASE = 1
-RPM_DATE = $(shell date +"%a %b %d %Y")
+#RPM_DATE = $(shell date +"%a %b %d %Y")
 
 $(RPM_SPECFILE): specfile
 	@SED@ -e 's/\@rpm_release\@/$(RPM_RELEASE)/' \
@@ -56,3 +56,6 @@ all:
 distcheck-hook:
 	@true
 endif
+
+DISTCLEANFILES =
+	*~
