@@ -412,31 +412,29 @@ def createDataMatrix( data, values, pseudotype = Pseudotype.unknown ):
     nElecs = data.sensorCount();
     nData  = data.size();
 
+    #create horizontal (separations) and vertical (x)'pseudopositions' for each datapoint
     x, sep = createPseudoPosition( data, pseudotype )
 
+    # unique separations
     Sidx = g.unique( g.sort( sep ) )
-    #print Sidx
-    ux = g.unique( g.sort( x ) )
-    Xidx = ux
+    
+    # unique x-position
+    Xidx = g.unique( g.sort( x ) )
 
-    #print Sidx
-    #print ux
-
+    # scale parameter
     dataWidthInMatrix = 1
     xOffset = 0
-    xLength = len( ux )
+    xLength = len( Xidx )
 
-    if pseudotype > 2:
-        if g.min( g.utils.diff( ux ) ) < 1.0:
-            dataWidthInMatrix = int( 1.0 / g.min( g.utils.diff( ux ) ) )
-        #print "dataWidthInMatrix", dataWidthInMatrix, g.min( g.utils.diff( ux ) )
-        #print Xidx
-        #print Sidx
-        if dataWidthInMatrix > 1:
+    if pseudotype > 2 and len( Xidx ) > 1:
+        
+        if g.min( g.utils.diff( Xidx ) ) < 1.0:
+            dataWidthInMatrix = int( 1.0 / g.min( g.utils.diff( Xidx ) ) )
             xOffset = int( Xidx[0] * dataWidthInMatrix ) -1
             xLength = (nElecs -1)* dataWidthInMatrix
-        #xLength = ( len( Xidx ) + 2 * xOffset )
 
+    print "xLength: ", xLength
+    
     mat = np.ndarray(shape=(len( Sidx ), xLength,), dtype=float, order='F')
 
     #mat = arange( 0.0, len( Sidx ) * xLength )
@@ -463,7 +461,7 @@ def createDataMatrix( data, values, pseudotype = Pseudotype.unknown ):
 
 def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = None, logScale = True ):
     """
-        Draw data as matrix
+        Draw data as matrix image in axes ax
     """
 
     norm = None
@@ -487,8 +485,8 @@ def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = N
                 mat = m
 
         else:
-            raise Exception, ( 'no values or matrix given' )
-    else:
+            raise Exception, ( 'drawDataAsMatrix(...) No values or matrix given.' )
+    else: 
         cmin = g.min( values )
         cmax = g.max( values )
 
@@ -499,8 +497,6 @@ def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = N
             values, cmin, cmax = findAndMaskBestClim( values, cMin = None, cMax = None, dropColLimitsPerc = 5 )
             norm = mpl.colors.LogNorm()
 
-        print "cmin, cmax", cmin, cmax
-
     matSpacing = None
     
     if mat is None:
@@ -509,47 +505,25 @@ def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = N
         else:
             raise Exception, ( 'no data or matrix given' )
 
-
     mat = ma.masked_where( mat == 0.0, mat )
+
     if min( mat.flat ) < 0:
         norm = mpl.colors.Normalize()
     else:
         norm = mpl.colors.LogNorm()
             
-#print type( mat )
     image = ax.imshow( mat, interpolation = 'nearest'
                             , norm = norm
                             , lod = True )
 
     image.get_cmap().set_bad( [1.0, 1.0, 1.0, 0.0 ] )
 
-    #if pseudotype > 2:
-        #ax.xaxis.tick_top()
-        ##offset = data.electrode( 0 ).pos()[ 0 ]
-        ##spacing = data.electrode( 1 ).pos()[ 0 ]- data.electrode( 0 ).pos()[ 0 ]
-        ##print ax.xaxis.get_ticklocs()
-        ##print map(lambda l: l - 1.0/matSpacing, ax.xaxis.get_ticklocs() )
-        #if matSpacing is not None:
-            ##ax.set_xlim( ax.get_xlim()[0] + 1.0 / matSpacing, ax.get_xlim()[-1])
-            #ax.xaxis.set_ticks( map(lambda l: l - 1.0/matSpacing, ax.xaxis.get_ticklocs() ) )
-            #ax.xaxis.set_ticklabels( map(lambda l: '$'+str( (l +1.0/ matSpacing )/matSpacing)+'$', ax.xaxis.get_ticklocs() ) )
-
-            #ax.yaxis.set_ticks( map(lambda l: l, range( 0, len( matSidx )
-                                                #, max(1, int( len( matSidx ) / 6.0 ) ) ) ))
-
-            ##def levelName( l ):
-                ##suff = ""
-                ##print l
-                ##print matSidx
-                ##print matSidx[ 0 ]
-                ##print matSidx[ l ]
-                ##if matSidx[ l ] < 0:
-                    ##suff = "'"
-                ##return 'dd $' + str( int( abs( matSidx[ l ] ) ) - 1 ) + suff +'$'
-
-            ##ax.yaxis.set_ticklabels( map(lambda l: levelName( l ), ax.yaxis.get_ticklocs() ) )
-            ##ax.set_ylim( len( matSidx ) + 0.5, -0.5 )
-
+    print mat.shape
+    print min( matXidx ), max( matXidx ), matSidx, matSpacing
+    
+    ax.set_xlim( data.sensorPositions()[0][0]  - matSpacing, 
+                 data.sensorPositions()[-1][0] + matSpacing )
+    
     annotateSeparationAxis( ax, pseudotype, grid = True )
 
     return image
@@ -562,7 +536,6 @@ def annotateSeparationAxis( ax, shemeID, grid = False ):
     prefix = DataShemeManager().sheme( shemeID ).prefix
     
     def sepName( l ):
-        print "sepname ", l
         suffix = ""
         
         if l == 0:
@@ -628,7 +601,7 @@ def createDataPatches( ax, data, shemetype = Pseudotype.unknown, **kwarg ):
     
     ax.set_ylim( [ min( sep )-1, max( sep )+1 ] )
 
-    dx2 = (x[1]-x[0])/4.
+    dx2 = (data.sensorPositions()[1][0] - data.sensorPositions()[0][0])/4.
     dSep2 = 0.5
     
     polys = []

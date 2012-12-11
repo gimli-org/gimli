@@ -45,6 +45,7 @@ Mesh::Mesh( uint dim )
 
 Mesh::Mesh( const std::string & filename )
 : rangesKnown_( false ), neighboursKnown_( false ), tree_( NULL ){
+    dimension_ = 2;
     oldTet10NumberingStyle_ = true;
     load( filename );
 }

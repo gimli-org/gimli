@@ -121,7 +121,7 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
     if vendor == 'OSM' or vendor == 'Open Street Map':
         #http://[abc].tile.openstreetmap.org
         serverName = 'tile.openstreetmap.org'
-        url = 'http://c.' + serverName + '/' + imagename + '.png' 
+        url = 'http://a.' + serverName + '/' + imagename + '.png' 
         imFormat = '.png'
     elif vendor == 'GM' or vendor == 'Google Maps':
         #http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
