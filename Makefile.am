@@ -4,7 +4,7 @@ EXTRA_DIST = configure
 SUBDIRS = src tests apps rpm
 
 # Never build as part of 'all', 'check' or 'install', but may be built manually.
-NOAUTO_DIRS = examples doc
+NOAUTO_DIRS = examples doc rpm
 
 dist-hook:
 	echo "dist-hook ###############################################################################"

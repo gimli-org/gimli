@@ -65,7 +65,8 @@ AC_SUBST([CR_CPU],$host_cpu)
 # Check for rpmbuild
 ################################################################################
 
-AC_PATH_PROGS([RPMBUILD],[rpmbuild rpmb rpm],[none],[$PATH:/usr/lib/rpm])
+#AC_PATH_PROGS([RPMBUILD],[rpmbuild rpmb rpm],[none],[$PATH:/usr/lib/rpm])
+AC_PATH_PROGS([RPMBUILD],[rpmbuild rpm],[none],[$PATH:/usr/lib/rpm])
 if $RPMBUILD -bs 2>&1 | grep 'Usage' >/dev/null 2>/dev/null; then
     :
 else
