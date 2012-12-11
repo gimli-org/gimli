@@ -570,9 +570,9 @@ class AppResource( ManagedProperties ):
         if title is not None:
             self.piCaption = title
 
-        propertyNoteBook = aui.AuiNotebook( parent
-                                    , style = aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT |
-                                              aui.AUI_NB_TAB_MOVE | aui.AUI_NB_SCROLL_BUTTONS )
+        propertyNoteBook = aui.AuiNotebook( parent,
+                                            style = aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT |
+                                                    aui.AUI_NB_TAB_MOVE | aui.AUI_NB_SCROLL_BUTTONS )
 
         scrolled = wx.lib.scrolledpanel.ScrolledPanel( propertyNoteBook
                                         , -1, style = wx.TAB_TRAVERSAL, name="PropertySlot" + panelName ) 
@@ -587,13 +587,16 @@ class AppResource( ManagedProperties ):
         else:
          #   print "self.parent.xrc "
             tab = self.parent.xrc.LoadPanel( scrolled, panelName )
-
+        
         sizer = wx.BoxSizer()
         sizer.Add( tab, 1 )
+        sizer.Layout()
         
         scrolled.SetSizer( sizer )
         scrolled.SetAutoLayout(1)
         scrolled.SetupScrolling()
+
+        scrolled.Layout()
         
         if scrolled is not None:
             propertyNoteBook.AddPage( scrolled, self.piCaption, True )

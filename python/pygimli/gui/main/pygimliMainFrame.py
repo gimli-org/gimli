@@ -45,6 +45,7 @@ class RedirectOutput:
             self.style = 1 #black
         elif console == "cerr": #sys.stderr
             self.style = 2 #red
+            
         self.counter = 0
 
         self.timer = wx.PyTimer( self.writeOut )
@@ -679,29 +680,34 @@ import threading
 #wx.lib.inspection.InspectionTool().Show()            
 
 class PyGIMLIApp( wx.App ):
-    def __init__( self, options, args, ws ):
+    def __init__( self, options = None, args = None, ws = None):
+        print "Mops"
         wx.App.__init__( self, redirect = False )
+        
+        from optparse import OptionParser
+        parser = OptionParser()
+        parser.add_option("", "--debug", dest = "debug", action = "store_true"
+                            , help = "Debug mode.", default = False )
+                            
+        (options, args) = parser.parse_args()
+    
         
         print options, args
         self.options = options
         self.args = args
+        self.logFile = 'pygi.log'
         
-        #self.init(**kwargs)
-
-        #globPath = os.path.dirname( sys.argv[ 0 ] )
-        #print globPath
-        #globPath = os.path.dirname( __file__ )
-        #print globPath
-        #print os.path.abspath( globPath )
-
-        logFile = 'pygi.log'
-
-        self.mainFrame = PyGIMLIMainFrame( ws )
-        #self.mainFrame.redirectOutput( logFile )
-
+        
+        self.mainFrame = PyGIMLIMainFrame( ws = ws )
+        
+        if not options.debug:
+            self.mainFrame.redirectOutput( self.logFile )
+            
         self.SetTopWindow( self.mainFrame )
         self.mainFrame.Show()
-        self.mainFrame.registerPlugins()
+        #self.mainFrame.registerPlugins()
+        
+        
        
         
         #self.ipcServer_ = IPCServer( ('localhost', 0), IPCThreadedTCPRequestHandler)
@@ -721,3 +727,5 @@ class PyGIMLIApp( wx.App ):
             self.mainFrame.openFile( p )
 
         self.MainLoop()
+        
+        
