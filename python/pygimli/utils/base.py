@@ -5,6 +5,9 @@ import pylab as P
 import numpy as N
 import pygimli as g
 from matplotlib.patches import Rectangle
+from matplotlib.collections import PatchCollection
+from matplotlib.cm import jet
+from pygimli.mplviewer import setMappableData
 #from math import sqrt, floor, ceil
 
 def gmat2numpy(mat):
@@ -154,6 +157,56 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
     if x is None:
         x = P.arange( len(models) )
         
+    nlay = int( P.floor( ( len(models[0]) + 1 ) / 2. ) )
+        
+    ax = P.gcf().add_subplot(111)
+    ax.cla()
+
+    dxmed2 = P.median( P.diff(x) ) / 2.
+    vals = P.zeros( (len(models),nlay) )
+    patches = []
+    maxz = 0.
+    for i, imod in enumerate( models ):
+        if isinstance( imod, g.RVector ):
+            vals[i,:] = imod(nlay-1,2*nlay-1)
+            thk = P.asarray( imod( 0, nlay-1 ) )
+        else:
+            vals[i,:] = imod[nlay-1:2*nlay-1]
+            thk = imod[:nlay-1]
+        
+        thk = P.hstack( (thk, thk[-1]) )
+        z = P.hstack( (0., P.cumsum(thk)) )
+        maxz = max( maxz, z[-1] )
+
+        for j in range( nlay ):    
+            rect = Rectangle( ( x[i]-dxmed2, z[j] ), dxmed2*2, thk[j] )
+            patches.append( rect )
+
+    p = PatchCollection(patches, cmap=jet, linewidths=0)
+    
+    if cmin is not None:
+        p.set_clim( cmin, cmax )
+    
+    #p.set_array( P.log10( vals.ravel() ) )
+    setMappableData( p, vals.ravel(), logScale = True )
+    ax.add_collection(p)
+    
+    ax.set_ylim( ( maxz, 0. ) )
+    ax.set_xlim( ( min(x)-dxmed2, max(x)+dxmed2 ) )
+    if title is not None:
+        P.title( title )
+
+    P.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
+
+    P.draw()
+    return
+
+def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
+                       islog=True, title=None):
+    """ show several 1d block models as (stitched) section """
+    if x is None:
+        x = P.arange( len(models) )
+        
     nlay = int( P.floor( ( len(models[0]) - 1 ) / 2. ) ) + 1
     if cmin is None or cmax is None:
         cmin = 1e9
@@ -172,7 +225,7 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
     ax.cla()
     mapsize = 64
     cmap = jetmap( mapsize )
-    P.plot( x, x * 0., 'k.' )
+    P.plot( x, P.zeros( len( x ) ), 'k.' )
     maxz = 0.
     for i, mod in enumerate( models ):
         mod1 = P.asarray(mod)

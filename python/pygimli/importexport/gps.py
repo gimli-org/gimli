@@ -63,29 +63,43 @@ def readSimpleLatLon( filename ):
 def GK2toUTM( R, H=None, zone=32 ):
     """ transform Gauss-Krueger zone 2 into UTM """
     """ note the double transformation (1-ellipsoid,2-projection) """
+    """ default zone is 32 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM zone 32   
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM 
 
     if H is None: # two-column matrix
         lon, lat = transform( gk2, wgs84, R[0], R[1] )
     else:
         lon, lat = transform( gk2, wgs84, R, H )
-		
+    
     return utm( lon, lat )
 
 def GK3toUTM( R, H=None, zone=33 ):
     """ transform Gauss-Krueger zone 3 into UTM """
     """ note the double transformation (1-ellipsoid,2-projection) """
+    """ default zone is 33 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM zone 32   
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM 
 
     if H is None: # two-column matrix
         lon, lat = transform( gk3, wgs84, R[0], R[1] )
     else:
         lon, lat = transform( gk3, wgs84, R, H )
-		
+    
     return utm( lon, lat )
 
+def GKtoUTM(R, H=None):
+    """ transforms any Gauss-Krueger to UTM """
+    """ autodetect GK zone from offset """
+    if H is None: rr = R[0][0]
+    else: rr = R[0]
+    if floor( rr*1e-6 ) == 2.:
+        return GK2toUTM( R, H )
+    elif floor( rr*1e-6 ) == 3.:
+        return GK3toUTM( R, H )
+    else:
+        print "cannot detect valid GK zone"
+    
 def convddmm(num):
     dd = P.floor( num / 100. )
     r1 = num - dd * 100.
