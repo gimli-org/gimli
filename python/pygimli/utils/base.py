@@ -4,10 +4,11 @@
 import pylab as P
 import numpy as N
 import pygimli as g
+
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 from matplotlib.cm import jet
-from pygimli.mplviewer import setMappableData
+from pygimli.mplviewer.colorbar import setMappableData
 #from math import sqrt, floor, ceil
 
 def gmat2numpy(mat):

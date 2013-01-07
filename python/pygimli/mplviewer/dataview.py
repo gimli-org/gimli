@@ -420,7 +420,7 @@ def createDataMatrix( data, values, pseudotype = Pseudotype.unknown ):
     
     # unique x-position
     Xidx = g.unique( g.sort( x ) )
-
+    
     # scale parameter
     dataWidthInMatrix = 1
     xOffset = 0
@@ -429,9 +429,11 @@ def createDataMatrix( data, values, pseudotype = Pseudotype.unknown ):
     if pseudotype > 2 and len( Xidx ) > 1:
         
         if g.min( g.utils.diff( Xidx ) ) < 1.0:
+
             dataWidthInMatrix = int( 1.0 / g.min( g.utils.diff( Xidx ) ) )
-            xOffset = int( Xidx[0] * dataWidthInMatrix ) -1
-            xLength = (nElecs -1)* dataWidthInMatrix
+            if dataWidthInMatrix > 1:    
+                xOffset = int( Xidx[0] * dataWidthInMatrix ) -1
+                xLength = (nElecs -1)* dataWidthInMatrix
 
     print "xLength: ", xLength
     
@@ -512,6 +514,8 @@ def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = N
     else:
         norm = mpl.colors.LogNorm()
             
+    print mat
+            
     image = ax.imshow( mat, interpolation = 'nearest'
                             , norm = norm
                             , lod = True )
@@ -521,8 +525,9 @@ def drawDataAsMatrix( ax, data, values, pseudotype = Pseudotype.unknown, mat = N
     print mat.shape
     print min( matXidx ), max( matXidx ), matSidx, matSpacing
     
-    ax.set_xlim( data.sensorPositions()[0][0]  - matSpacing, 
-                 data.sensorPositions()[-1][0] + matSpacing )
+    # check with co2man data@l.e.
+    #ax.set_xlim( data.sensorPositions()[0][0]  - matSpacing, 
+                 #data.sensorPositions()[-1][0] + matSpacing )
     
     annotateSeparationAxis( ax, pseudotype, grid = True )
 
@@ -601,7 +606,8 @@ def createDataPatches( ax, data, shemetype = Pseudotype.unknown, **kwarg ):
     
     ax.set_ylim( [ min( sep )-1, max( sep )+1 ] )
 
-    dx2 = (data.sensorPositions()[1][0] - data.sensorPositions()[0][0])/4.
+    #dx2 = (data.sensorPositions()[1][0] - data.sensorPositions()[0][0])/4.
+    dx2 = (x[1]-x[0])/4.
     dSep2 = 0.5
     
     polys = []
