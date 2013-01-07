@@ -79,6 +79,7 @@ def applyPublishStyle( style ):
     else:
         print "publish dominant dimension not known", vals[ 0 ]
 
+    
     paper = vals[1]
     margin = float( vals[2] )
     widthScale = float( vals[3] )
@@ -479,6 +480,8 @@ def main( argv ):
                             , help="set z-coordinate offset for first electrode [0.0] " )
     parser.add_option("", "--maxDepth", dest="maxDepth" , default = 0.0, type = "float"
                             , help="limit z-coordinate to maximum depth" )
+    parser.add_option("", "--sensorDiameter", dest="sensorDiameter" , default = 0.0, type = "float"
+                            , help = "absolute size of sensor marker (default is sensordistance / 8 )" )
     parser.add_option("", "--outSize", dest="outSize", default = None, type = "string"
                             , help="set the x:y pixel for the resulting figure file" )
     parser.add_option("", "--dpi", dest="dpi", default = 600, type = "float"
@@ -602,7 +605,11 @@ def main( argv ):
             try:
                 d = g.DataContainer( options.electrodes )
                 elPos = d.sensorPositions()
-                pygimli.mplviewer.drawSensors( axes, elPos, diam = None )
+                diam = None
+                if options.sensorDiameter > 0.0:
+                    diam = options.sensorDiameter
+                    
+                pygimli.mplviewer.drawSensors( axes, elPos, diam = diam )
                 #pygimli.mplviewer.drawSensors( axes, elPos, diam = None )
             except Exception as e:
                 print ( e + "Cannot determine electrode informations from file:" + str( options.electrodes ) )
