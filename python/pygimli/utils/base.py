@@ -138,11 +138,32 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, z0=0, 
     #P.show()
     return li
 
+def draw1dmodelErr( x, xL, xU=None, thk=None, **kwargs ):
+    if thk is None:
+        nlay = ( len( x ) + 1 ) / 2
+        thk = P.array( x )[:nlay-1]
+        x = P.asarray( x )[nlay-1:nlay*2-1]
+        thkL = P.array( xL )[:nlay-1]
+        thkU = P.array( xU )[:nlay-1]
+        xL = P.asarray( xL )[nlay-1:nlay*2-1]
+        xU = P.asarray( xU )[nlay-1:nlay*2-1]
+    
+    thk0 = P.hstack( ( thk, 0. ) )
+    thkL0 = P.hstack( ( thkL, 0. ) )
+    thkU0 = P.hstack( ( thkU, 0. ) )
+    zm = P.hstack((P.cumsum(thk)-thk/2,P.sum(thk)*1.2)) # midpoint
+    zc = P.cumsum( thk ) # cumulative
+    draw1dmodel( x, thk )
+    P.xlim( min(xL)*0.95, max(xU)*1.05 )
+    P.ylim( zm[-1]*1.1, 0. )
+    P.errorbar( x, zm, fmt='.', xerr=P.vstack( ( x - xL, xU - x ) ) )
+    P.errorbar( ( x[:-1]+x[1:] ) / 2, zc, fmt='.', yerr=P.vstack( ( thk-thkL, thkU-thk ) ) )
+    
 def draw1dmodelLU( x, xL, xU, thk=None, **kwargs ):
     """ draw 1d model with lower and upper bounds """
     draw1dmodel(x,thk,color='red',**kwargs)
     for i in range( len(x) ):
-        x1 = x.copy()
+        x1 = P.array( x )
         x1[i] = xL[i]
         draw1dmodel(x1,thk,color='blue')
         x1[i] = xU[i]
@@ -197,7 +218,9 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
     if title is not None:
         P.title( title )
 
-    P.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
+    cb = P.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
+    xt = [10, 20, 50, 100, 200, 500]
+    #cb.set_xticks( xt, [str(xti) for xti in xt] )
 
     P.draw()
     return
@@ -238,7 +261,6 @@ def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
         else:
             cmi = cmin
             cma = cmax
-            
             
         thk = mod1[:nlay-1]
         thk = P.hstack( (thk, thk[-1]) )

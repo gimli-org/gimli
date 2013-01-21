@@ -11,19 +11,13 @@ import numpy as np
 from numpy import array, ma
 import math
 
-cdict = { 'red': ((0.0, 0.0, 0.0),
-                  (0.5, 1.0, 1.0),
-                  (1.0, 1.0, 1.0)),
-        'green': ((0.0, 0.0, 0.0),
-                  (0.5, 1.0, 1.0),
-                  (1.0, 0.0, 0.0)),
-         'blue': ((0.0, 1.0, 1.0),
-                  (0.5, 1.0, 1.0),
-                  (1.0, 0.0, 0.0))}
+cdict = { 'red': ( (0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0) ),
+        'green': ( (0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0) ),
+         'blue': ( (0.0, 1.0, 1.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0) ) }
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap( 'my_colormap', cdict, 256 )
 
-def cmapFromName( cmapname, ncols = 256 ):
+def cmapFromName( cmapname, ncols = 256, bad = [1.0, 1.0, 1.0, 0.0 ] ):
     cmap = mpl.cm.get_cmap( 'jet', ncols )
     if cmapname is not None:
         if cmapname == 'b2r':
@@ -34,7 +28,7 @@ def cmapFromName( cmapname, ncols = 256 ):
             except:
                 print "could not retrieve colormap ", cmapname
         
-    cmap.set_bad( [1.0, 1.0, 1.0, 0.0 ] )
+    cmap.set_bad( bad )
     return cmap
 
 def findAndMaskBestClim( dataIn, cMin = None, cMax = None, dropColLimitsPerc = 5, logScale = True ):

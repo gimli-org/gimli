@@ -4,6 +4,7 @@ try:
     import pygimli as g
     from pygimli.mplviewer import drawMesh, drawModel, drawField, createColorbar
 except ImportError:
+    import sys
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
     sys.exit( 1 )
 
