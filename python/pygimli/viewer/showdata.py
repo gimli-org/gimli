@@ -4,15 +4,16 @@ try:
     import pygimli as g
     import pygimli.mplviewer
 except ImportError:
+    import sys
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
     sys.exit( 1 )
 
 import pylab
 
-def showData( data ):
+def showData( data, **kwargs ):
     fig = pylab.figure()
     a = fig.add_subplot( 111 )
-    drawData( a, data, data('rhoa') )
+    drawData( a, data, data('rhoa'), **kwargs )
     a.set_aspect( 'equal')
     pylab.show()
     return a

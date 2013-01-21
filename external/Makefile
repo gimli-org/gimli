@@ -4,7 +4,7 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/$(TRIANGLE)
 BLAS=lib/libblas.dll
 
 LAPACK=lib/liblapack.dll
-LAPACK_VER=3.4.0
+LAPACK_VER=3.4.2
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 

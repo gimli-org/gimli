@@ -1,5 +1,6 @@
 import pylab as P
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
+from pygimli.utils import draw1dmodel
 
 def importMaxminData( filename, verbose = False ):
     """ pure import function reading in positions, data, frequencies and geometry """
@@ -10,9 +11,9 @@ def importMaxminData( filename, verbose = False ):
     for i, aline in enumerate( fid ):
         if aline.split()[0][0].isdigit(): #number found
             break
-        elif aline.find('COIL') > 0:     #[:6] == '/ COIL':
+        elif aline.upper().find('COIL') > 0:     #[:6] == '/ COIL':
             coilspacing = float( aline.split()[-2] )
-        elif aline.find('FREQ') > 0:   #[:6] == '/ FREQ':
+        elif aline.upper().find('FREQ') > 0:   #[:6] == '/ FREQ':
             freq = P.array( [float(aa) for aa in aline[aline.find(':')+1:].replace(',',' ').split() if aa[0].isdigit()] )
     
     fid.close()
@@ -28,10 +29,10 @@ def importMaxminData( filename, verbose = False ):
     return x, freq, coilspacing, IP, OP
 
 class FDEMData():
-    def __init__( self, filename ):
+    def __init__( self, filename, height=1.0, verbose=False ):
         """ initialize data class and load data """
-        self.x, self.f, self.cs, self.IP, self.OP = importMaxminData( filename )
-        self.height = 1.0
+        self.x, self.f, self.cs, self.IP, self.OP = importMaxminData( filename, verbose )
+        self.height = height
         self.activeFreq = ( self.f > 0.0 )
         
     def showInfos( self ):
@@ -107,36 +108,57 @@ class FDEMData():
         self.inv.setReferenceModel( model )
         return self.inv
     
-    def plotData( self, xpos=0, response = None, marker='bo-', rmarker='rx-', clf=True ):
+    def plotData( self, xpos=0, response = None, ax=None, marker='bo-', rmarker='rx-', clf=True, addlabel='', nv=2 ):
         """ plot data as curves at given position """
         ip, op = self.selectData( xpos )
         fr = self.freq()
-        if clf: P.clf()
-        P.subplot(121)
-        P.semilogy( ip, fr, marker, label='obs' )
+        if ax is None:
+            if clf: P.clf()
+            P.subplot(1,nv,nv-1)
+        else:
+            P.sca( ax[0] )
+            
+        P.semilogy( ip, fr, marker, label='obs'+addlabel )
         P.axis('tight')
         P.grid(True)
         P.xlabel('inphase [%]')
         P.ylabel('f [Hz]')
         if response is not None:
             rip = P.asarray( response )[:len(ip)]
-            P.semilogy( rip, fr, rmarker, label='syn' )
+            P.semilogy( rip, fr, rmarker, label='syn'+addlabel )
         
         P.legend( loc='best' )
         
-        P.subplot(122)
-        P.semilogy( op, fr, marker, label='obs' )
+        if ax is None:
+            P.subplot(1,nv,nv)
+        else:
+            P.sca( ax[1] )
+        
+        P.semilogy( op, fr, marker, label='obs'+addlabel )
         if response is not None:
             rop = P.asarray( response )[len(ip):]
-            P.semilogy( rop, fr, rmarker, label='syn' )
+            P.semilogy( rop, fr, rmarker, label='syn'+addlabel )
         
         P.axis('tight')
         P.grid(True)
         P.xlabel('outphase [%]')
         P.ylabel('f [Hz]')
         P.legend( loc='best' )
+        P.subplot( 1, nv, 1 )
         return
     
+    def showModelAndData( self, model, xpos=0, response=None ):
+        P.clf()
+        model = P.asarray( model )
+        nlay = ( len( model ) + 1 ) / 2
+        thk = model[:nlay-1]
+        res = model[nlay-1:2*nlay-1]
+        ax1 = P.subplot(131)
+        draw1dmodel( res, thk )
+        ax2 = P.subplot(132)
+        ax3 = P.subplot(133)
+        self.plotData( xpos, response, (ax2, ax3), clf=False )
+        
     def plotAllData( self, allF = True, orientation='vertical' ):
         """ plot data along a profile as image plots for IP and OP """
         nt = range( 0, len( self.x ), 5 )
