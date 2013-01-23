@@ -1,6 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+    Was macht das ding
+
+'''
+
+import pygimli as g
+
 import pylab as P
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
-from pygimli.utils import draw1dmodel
 
 def importMaxminData( filename, verbose = False ):
     """ pure import function reading in positions, data, frequencies and geometry """
@@ -11,9 +19,9 @@ def importMaxminData( filename, verbose = False ):
     for i, aline in enumerate( fid ):
         if aline.split()[0][0].isdigit(): #number found
             break
-        elif aline.upper().find('COIL') > 0:     #[:6] == '/ COIL':
+        elif aline.find('COIL') > 0:     #[:6] == '/ COIL':
             coilspacing = float( aline.split()[-2] )
-        elif aline.upper().find('FREQ') > 0:   #[:6] == '/ FREQ':
+        elif aline.find('FREQ') > 0:   #[:6] == '/ FREQ':
             freq = P.array( [float(aa) for aa in aline[aline.find(':')+1:].replace(',',' ').split() if aa[0].isdigit()] )
     
     fid.close()
@@ -29,10 +37,14 @@ def importMaxminData( filename, verbose = False ):
     return x, freq, coilspacing, IP, OP
 
 class FDEMData():
-    def __init__( self, filename, height=1.0, verbose=False ):
+    def __init__( self, filename = None):
         """ initialize data class and load data """
-        self.x, self.f, self.cs, self.IP, self.OP = importMaxminData( filename, verbose )
-        self.height = height
+        self.x, self.f, self.cs, self.IP, self.OP = None,None,None,None,None
+        
+        if filename:
+            self.x, self.f, self.cs, self.IP, self.OP = importMaxminData( filename )
+            
+        self.height = 1.0
         self.activeFreq = ( self.f > 0.0 )
         
     def showInfos( self ):
@@ -108,57 +120,36 @@ class FDEMData():
         self.inv.setReferenceModel( model )
         return self.inv
     
-    def plotData( self, xpos=0, response = None, ax=None, marker='bo-', rmarker='rx-', clf=True, addlabel='', nv=2 ):
+    def plotData( self, xpos=0, response = None, marker='bo-', rmarker='rx-', clf=True ):
         """ plot data as curves at given position """
         ip, op = self.selectData( xpos )
         fr = self.freq()
-        if ax is None:
-            if clf: P.clf()
-            P.subplot(1,nv,nv-1)
-        else:
-            P.sca( ax[0] )
-            
-        P.semilogy( ip, fr, marker, label='obs'+addlabel )
+        if clf: P.clf()
+        P.subplot(121)
+        P.semilogy( ip, fr, marker, label='obs' )
         P.axis('tight')
         P.grid(True)
         P.xlabel('inphase [%]')
         P.ylabel('f [Hz]')
         if response is not None:
             rip = P.asarray( response )[:len(ip)]
-            P.semilogy( rip, fr, rmarker, label='syn'+addlabel )
+            P.semilogy( rip, fr, rmarker, label='syn' )
         
         P.legend( loc='best' )
         
-        if ax is None:
-            P.subplot(1,nv,nv)
-        else:
-            P.sca( ax[1] )
-        
-        P.semilogy( op, fr, marker, label='obs'+addlabel )
+        P.subplot(122)
+        P.semilogy( op, fr, marker, label='obs' )
         if response is not None:
             rop = P.asarray( response )[len(ip):]
-            P.semilogy( rop, fr, rmarker, label='syn'+addlabel )
+            P.semilogy( rop, fr, rmarker, label='syn' )
         
         P.axis('tight')
         P.grid(True)
         P.xlabel('outphase [%]')
         P.ylabel('f [Hz]')
         P.legend( loc='best' )
-        P.subplot( 1, nv, 1 )
         return
     
-    def showModelAndData( self, model, xpos=0, response=None ):
-        P.clf()
-        model = P.asarray( model )
-        nlay = ( len( model ) + 1 ) / 2
-        thk = model[:nlay-1]
-        res = model[nlay-1:2*nlay-1]
-        ax1 = P.subplot(131)
-        draw1dmodel( res, thk )
-        ax2 = P.subplot(132)
-        ax3 = P.subplot(133)
-        self.plotData( xpos, response, (ax2, ax3), clf=False )
-        
     def plotAllData( self, allF = True, orientation='vertical' ):
         """ plot data along a profile as image plots for IP and OP """
         nt = range( 0, len( self.x ), 5 )
@@ -194,21 +185,30 @@ class FDEMData():
 #        """ 2d forward modelling operator """
 #        return FDEM1dModelling( nlay, asvector( self.freq() ), self.cs, -self.height )
 #    
-        
-# Data file example        
-#/ MAXMIN ELECTROMAGNETIC SURVEY
-#/ FILENAME: Muell150.xyz
-#/ PROJECT NUMBER:         1
-#/ OPERATOR NUMBER:        3
-#/ MAXMIN EQUIPMENT: MMI-9 S/N 3395
-#/ SLOPE METHOD: NO SLOPES
-#/ COIL SEPARATION:    150.0 METRES 
-#/ STATION SPACING:     50.0 METRES 
-#/ MODE: MAX1 (Horizontal Coplanar)
-#/ FREQUENCIES ON SPREE150.dat FILE: 110, 220, 440, 880, 1760, 3520, 7040, 14080 Hz
-#LINE      1.0 Surveying:  N    ELEV        110             220             440             880            1760            3520            7040           14080        110C   220C   440C   880C  1760C  3520C  7040C 14080C    BFC  ERROR
-#	0	0	6.61	7.97	8.07	12.42	14.14	19.5	27.66	28.03	45.82	23.67	63.08	11.45	68.98	-8.62	58.82	-20.77
-#	20	0	5.04	5.56	7.11	10.31	13.22	16.28	25.06	21.91	37.18	14.17	57.3	4.67	52.07	-17.81	42.18	-31.07
 
-if __name__ == '__main__':
-    print "print do some tests here"
+if __name__ == "__main__":
+    import sys
+    from optparse import OptionParser
+
+    parser = OptionParser( "usage: %prog [options] fdem", version="%prog: " + g.versionStr()  )
+    parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
+                            , help="be verbose", default=False )
+    
+    (options, args) = parser.parse_args()
+
+    if options.verbose:
+        __verbose__ = True 
+        
+    if len( args ) == 0:
+        parser.print_help()
+        print "Please add a mesh or model name."
+        sys.exit( 2 )
+    else:
+        if len( args ) == 0:
+            parser.print_help()
+            print "Please add a mesh or model name."
+            sys.exit( 2 )
+        else:
+            fdem = FDEMData( args[ 0 ] )
+
+

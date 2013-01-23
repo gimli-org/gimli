@@ -980,30 +980,46 @@ void RegionManager::loadMap( const std::string & fname ){
     std::vector < std::string > token;
     std::vector < std::string > row;
 
-    //! Set default , region with smaller marker is set to background
+    //! Set default, region with smaller marker is set to background
     //! can be overridden bei region control file (VERY DANGEROUS)
     //if ( regionCount() > 1 ) {
     //    regions()->begin()->second->markBackground( true );
     //}
 
-    int count = 0;
     while ( !file.eof() ){
-        count ++;
-        char c; file.get( c );
-        if ( c == '#' ) {
-            token = getRowSubstrings( file );
+        
+        row = getNonEmptyRow( file, '-' );
+        if ( row.empty() ) {
+            file.close();
+            return;
         }
-        file.unget();
+        
+        if ( row[0][0] == '#' ){
+            
+            token.clear();
 
+            if ( row[ 0 ].size() > 1 ) {
+                // tokenline starts with '#XYZ'
+                token.push_back( row[ 0 ].substr( 1, row[ 0 ].size() ) );
+            }
+            
+            for ( uint i = 1; i < row.size(); i ++ ) {
+                token.push_back( row[ i ] );
+            }
+            
+            // read next row line to parse them
+            continue;
+        }
+        
         if ( token.size() == 0 ) {
              std::cerr << WHERE_AM_I << " not a valid region file. looking for leading #" << fname << std::endl;
              file.close();
              return;
         }
                 
-        // interpret the following lines as region informations
+        // interpret row as region informations
         if ( lower( token[ 0 ] ) == "no" ){
-            row = getRow( file ); if ( row.empty() ) continue;
+
             if ( verbose_ ){
                 if ( verbose_ ) std::cout << "Get region property tokens: " << std::endl;
                 for ( uint i = 0; i < token.size(); i ++ ) {
@@ -1020,7 +1036,7 @@ void RegionManager::loadMap( const std::string & fname ){
                     if ( this->regionExists( toInt( row[ 0 ] ) ) ) {
                         regionMarker.push_back( toInt( row[ 0 ] ) );
                     } else {
-                        std::cerr << "Region number " << regionMarker[ 0 ] << " does not exist!" << std::endl;
+                        std::cerr << "Region number " << toInt( row[ 0 ] ) << " " << row[ 0 ] << " does not exist!" << std::endl;
                     }
                 } else {
                     regionMarker = allRegionMarker_();
@@ -1030,7 +1046,7 @@ void RegionManager::loadMap( const std::string & fname ){
                     for ( uint i = 1; i < row.size(); i ++ ){
                         if ( regionAttributeMap.count( lower( token[ i ] ) ) ){
                             if ( verbose_ ) std::cout << regionMarker[ j ] << " : " << token[ i ]
-                                                           << " " << row[ i ] << std::endl;
+                                                      << " " << row[ i ] << std::endl;
                             (region( regionMarker[ j ] )->*regionAttributeMap[ lower( token[ i ] ) ] )( row[ i ] );
                         } else {
                             std::cerr << WHERE_AM_I << " no region attribute associated with key:"
@@ -1047,7 +1063,6 @@ void RegionManager::loadMap( const std::string & fname ){
                 std::cerr << WHERE_AM_I << " too few tokens defined in region control file: " << fname << std::endl;
             }
         } else if ( lower( token[ 0 ] ) == "inter-region" ) {
-            row = getRow( file ); if ( row.empty() ) continue;
             if ( verbose_ ){
                 if ( verbose_ ) std::cout << "Get inter-region properties" << std::endl;
                 for ( uint i = 0; i < token.size(); i ++ ) {
@@ -1083,8 +1098,6 @@ void RegionManager::loadMap( const std::string & fname ){
             }
 
         } else if ( lower( token[ 0 ] ) == "interface" ){
-            row = getRow( file ); if ( row.empty() ) continue;
-
             if ( verbose_ ){
                 std::cout << "Apply interface properties" << std::endl;
                 std::cout << "WARNING! no inner interfaces yet" << std::endl;
@@ -1123,6 +1136,7 @@ void RegionManager::loadMap( const std::string & fname ){
         }
     }
     file.close();
+    
     this->recountParaMarker_();
     this->createParaDomain_();
 }

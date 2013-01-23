@@ -28,7 +28,7 @@ def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, k
     
     while c is not None and len( xd ) < maxSteps:
         d = c.grad( pos, field )
-        u = c.interpolate( pos, field )
+        u = c.pot( pos, field )
         #print "cell:", c.id(), u
         # always go u down
         if u > lastU:
@@ -55,7 +55,7 @@ def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, k
     lastu=-1e99
     while c is not None and len( xu ) < maxSteps:
         d = c.grad( pos, field )
-        u = c.interpolate( pos, field )
+        u = c.pot( pos, field )
         
         # always go u up
         if u < lastU:

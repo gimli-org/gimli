@@ -705,7 +705,7 @@ class PyGIMLIApp( wx.App ):
             
         self.SetTopWindow( self.mainFrame )
         self.mainFrame.Show()
-        #self.mainFrame.registerPlugins()
+        self.mainFrame.registerPlugins()
         
         
        
@@ -727,5 +727,4 @@ class PyGIMLIApp( wx.App ):
             self.mainFrame.openFile( p )
 
         self.MainLoop()
-        
         

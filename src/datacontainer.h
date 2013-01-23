@@ -32,6 +32,7 @@
 
 namespace GIMLI{
 
+//! DataContainer to store, load and save data in the GIMLi unified data format.
 /*! DataContainer to store, load and save data in the GIMLi unified data format.
  The DataContainer contains a data map that holds the data itself. Each map entry can be identified by tokens.
  By default there is a data field with the token 'valid' to mark the validity of the data.
@@ -39,6 +40,7 @@ namespace GIMLI{
  A vector of indices to the sensor positions can be defined for each datum. e.g., Store an index-vector 'a' to the first current electrode 'A' of a ERT measurement.
  If you need a special DataContainer you should derive a child and specify a token translator and sensor index entries.
  There is also a unit test for the DataContainer that may help to understand what is it good for. */
+
 class DLLEXPORT DataContainer{
 public:
     /*! Simple Constructor, builds an empty data container.*/

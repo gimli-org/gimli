@@ -432,12 +432,9 @@ public:
     /*! Return a reference to the current response vector */
     inline const Vec & response() const { return response_; }
 
-    /*! Return roughness vector, i.e. constraint matrix times model vector */
-    inline Vec roughness() const { return C_ * tM_->trans( model_ ); }
-
     /*! Return IRLS function of roughness vector */
     Vec getIRLS() const {
-        return getIRLSWeights( Vec( roughness() * constraintsWeight_ ), 0.0, 1.0 );
+        return getIRLSWeights( Vec( C_ * tM_->trans( model_ ) * constraintsWeight_ ), 0.0, 1.0 );
     }
 
     /*! Set the constraint weight (boundary control) vector */
@@ -528,17 +525,25 @@ public:
         return modelCellResolution( ipos );
     }
 
-    /*! compute whole resolution matrix by single cell resolutions */
+    /*! Compute whole resolution matrix by single cell resolutions */
     RMatrix modelResolutionMatrix( ) {
         RMatrix resMat;
         for ( size_t i = 0 ; i < model_.size(); i++ ) resMat.push_back( modelCellResolution( i ) );
         return resMat;
     }
 
+    /*! Return (C * m * m_w ) * c_w */
+    RVector roughness( const RVector & model ) const {
+       return C_ * Vec( tM_->trans( model ) * modelWeight_ ) * constraintsWeight_;
+    }
+    
+    /*! Shortcut for roughness for the current model vector */
+    RVector roughness(  ) const {
+       return roughness( model_ );
+    }
+    
     /*! Return data objective function (sum of squared data-weighted misfit) */
     double getPhiD( const Vec & response ) const {
-        // cr: warum steht hier tD_->error( fixZero( data_, TOLERANCE ), error_ ) und nicht dweight? DRY?
-        // tg: weil dWeight von der dataTrans abh�ngig ist (und damit tempor�r), error aber nicht
         Vec deltaData( ( tD_->trans( data_ ) - tD_->trans( response ) ) / tD_->error( fixZero( data_, TOLERANCE ), error_ ) ) ;
 
         double ret = dot( deltaData, deltaData );
@@ -558,16 +563,16 @@ public:
 //        Vec dModel( tM_->trans( model ) );
 //        if ( haveReferenceModel_ ) dModel = dModel - tM_->trans( modelRef_ );
 //        Vec roughness( Vec(C_ * dModel) * constraintsWeight_ );
-        Vec roughness( C_ * Vec( tM_->trans( model ) * modelWeight_ ) * constraintsWeight_ );
-        if ( haveReferenceModel_ ) roughness = roughness - constraintsH_;
+        Vec rough( this->roughness( model ) );
+        if ( haveReferenceModel_ ) rough = rough - constraintsH_;
 
-        double ret = dot( roughness, roughness );
+        double ret = dot( rough, rough );
         if ( std::isnan( ret ) || std::isinf( ret ) ){
             std::cerr << "haveReferenceModel_: " << haveReferenceModel_<< std::endl;
             DOSAVE save( model,       "Nan_PhiM_model" );
             DOSAVE save( modelRef_,  "Nan_PhiM_modelref" );
 //            DOSAVE save( dModel,      "Nan_PhiM_tM_dmodel" );
-            DOSAVE save( roughness,   "Nan_PhiM_roughness" );
+            DOSAVE save( rough,   "Nan_PhiM_roughness" );
             DOSAVE save( constraintsWeight_,   "Nan_PhiM_cweight" );
 
             throwError( 1, WHERE_AM_I + " getPhiM == " + str( ret ) );
@@ -586,6 +591,8 @@ public:
     /*! Shortcut for \ref getPhiM( model_ ) necessary ? */
     inline double getPhiM() const { return getPhiM( model_ ); }
 
+    
+    
     /*! Shortcut for \ref getPhi( model_, response_ ) necessary ? */
     inline double getPhi( ) const { return getPhiD() + getPhiM() * lambda_ * (1.0 - double( localRegularization_ ) ); }
 
@@ -947,7 +954,7 @@ template < class Vec > bool Inversion< Vec>::oneStep( ) {
 //    Vec deltaModel0( model_.size() );
     Vec modelNew(    model_.size() );
     Vec responseNew(  data_.size() );
-    Vec roughness( constraintsH_.size() );
+    Vec roughness( constraintsH_.size(), 0.0 );
 
     if ( recalcJacobian_ && iter_ > 1 ) {
         Stopwatch swatch( true );
@@ -958,13 +965,11 @@ template < class Vec > bool Inversion< Vec>::oneStep( ) {
 
     if ( !localRegularization_ ) {
         DOSAVE echoMinMax( model_, "model: " );
-//        deltaModel0 = tM_->trans( model_ );
-//        DOSAVE echoMinMax( deltaModel0, "dM0" );
 
-        roughness = C_ * Vec( tM_->trans( model_ ) * modelWeight_ ) * constraintsWeight_;
+        roughness = this->roughness();
+
         if ( haveReferenceModel_ ) {
             DOSAVE echoMinMax( modelRef_,  "reference model" );
-//            deltaModel0 -= tM_->trans( modelRef_ );
             roughness = roughness - constraintsH_;
         }
     } else {
@@ -973,6 +978,10 @@ template < class Vec > bool Inversion< Vec>::oneStep( ) {
 
     if ( iter_ == 1 && optimizeLambda_ ) { //optimize regularization strength using L-curve
 //        deltaModelIter_ = optLambda( deltaDataIter_, deltaModel0 ); //!!! h-variante
+        
+        /////////////*********************
+        // fix this!!!!!!!!!!!!!1 constraintsH != deltaModel0
+        /////////////*********************
         deltaModelIter_ = optLambda( deltaDataIter_, constraintsH_ );
     } else {
         DOSAVE save( deltaDataIter_, "dd_" + toStr( iter_ ) PLUS_TMP_VECSUFFIX);
@@ -1083,11 +1092,12 @@ ALLOW_PYTHON_THREADS
     Vec deltaModel( model_.size() );
     Vec tModel( tM_->trans( model_ ) );
     Vec tResponse( tM_->trans( response_ ) );
-    Vec roughness( constraintsH_.size() );
+    Vec roughness( constraintsH_.size(), 0.0 );
 
     if ( !localRegularization_ ) {
         DOSAVE echoMinMax( model_, "model: " );
-        roughness = C_ * Vec( tM_->trans( model_ ) * modelWeight_ ) * constraintsWeight_;
+        roughness = this->roughness();
+        
         if ( haveReferenceModel_ ) {
             if ( verbose_ ) echoMinMax( modelRef_,  "reference model" );
             roughness = roughness - constraintsH_;

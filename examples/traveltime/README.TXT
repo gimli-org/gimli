@@ -16,5 +16,13 @@ Refraction seismics
     koenigsee.sgt/.bms  Classical refraction seismics data set
                         with slightly heterogeneous overburden
                         and some high-velocity bedrock
-                        
+    
+@test ttinv -v -z 0.2 -t 8e-4 -p koenigsee.bms koenigsee.sgt @result chi^2 = 0.997091
+
+to view:
+	pytripatch -d velocity.vector meshParaDomain.bms
+
+
     jmulda-a.sgt/.bms   Joint inversion DC/Ra data set 
+
+
