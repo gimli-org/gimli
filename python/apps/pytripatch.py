@@ -203,9 +203,10 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
     m = mesh.findBoundaryByMarker(1)
     print "boundary > 2 " , len(m)
     if len( m ) > 0:
-        g.mplviewer.drawSelectedMeshBoundaries( axis, filter( lambda b: b.marker() == 1, mesh.boundaries() )
-                                , color = ( 0, 0.0, 0.0, 1.0 )
-                                , linewidth = 3.0 )
+        pass
+        #g.mplviewer.drawSelectedMeshBoundaries( axis, filter( lambda b: b.marker() == 1, mesh.boundaries() )
+                                #, color = ( 0, 0.0, 0.0, 1.0 )
+                                #, linewidth = 3.0 )
     elif drawEdges:
         g.mplviewer.drawMeshBoundaries( axis, mesh )
 
