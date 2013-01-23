@@ -73,6 +73,7 @@ class GPSViewerApp( AppResourceWxMPL ):
         self.newXLimits = None
         self.newYLimits = None
     
+        
     def createPropertyPanel( self, parent ):
         """
          Define and return panel that is shown in the property-inspector (PI) 

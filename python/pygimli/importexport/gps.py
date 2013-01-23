@@ -2,8 +2,13 @@
 
 from xml.dom.minidom import parse
 from pyproj import Proj, transform
-from osgeo import gdal
-from osgeo.gdalconst import GA_ReadOnly
+
+try:
+    from osgeo import gdal
+    from osgeo.gdalconst import GA_ReadOnly
+except:
+    print "no modules osgeo"
+    
 import pylab as P
 
 gk2   = Proj( init="epsg:31466" ) # GK zone 2

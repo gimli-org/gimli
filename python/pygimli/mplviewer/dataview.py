@@ -333,6 +333,15 @@ class DataShemeSchlumberger( DataShemeBase ):
         return self.data_
 # class DataShemeSchlumberger( ... )
 
+
+
+
+
+
+
+
+
+
 def createPseudoPosition( data, pseudotype = Pseudotype.unknown, scaleX = False ):
     '''
         Create pseudo x position and separation for the dataset
