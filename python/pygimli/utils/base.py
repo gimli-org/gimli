@@ -138,7 +138,7 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, z0=0, 
     #P.show()
     return li
 
-def draw1dmodelErr( x, xL, xU=None, thk=None, **kwargs ):
+def draw1dmodelErr( x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs ):
     if thk is None:
         nlay = ( len( x ) + 1 ) / 2
         thk = P.array( x )[:nlay-1]
@@ -153,12 +153,12 @@ def draw1dmodelErr( x, xL, xU=None, thk=None, **kwargs ):
     thkU0 = P.hstack( ( thkU, 0. ) )
     zm = P.hstack((P.cumsum(thk)-thk/2,P.sum(thk)*1.2)) # midpoint
     zc = P.cumsum( thk ) # cumulative
-    draw1dmodel( x, thk )
+    draw1dmodel( x, thk, **kwargs )
     P.xlim( min(xL)*0.95, max(xU)*1.05 )
     P.ylim( zm[-1]*1.1, 0. )
-    P.errorbar( x, zm, fmt='.', xerr=P.vstack( ( x - xL, xU - x ) ) )
-    P.errorbar( ( x[:-1]+x[1:] ) / 2, zc, fmt='.', yerr=P.vstack( ( thk-thkL, thkU-thk ) ) )
-    
+    P.errorbar( x, zm, fmt='.', xerr=P.vstack( ( x - xL, xU - x ) ), ecolor=xcol, **kwargs )
+    P.errorbar( ( x[:-1]+x[1:] ) / 2, zc, fmt='.', yerr=P.vstack( ( thk-thkL, thkU-thk ) ), ecolor=ycol )
+
 def draw1dmodelLU( x, xL, xU, thk=None, **kwargs ):
     """ draw 1d model with lower and upper bounds """
     draw1dmodel(x,thk,color='red',**kwargs)
@@ -218,9 +218,11 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
     if title is not None:
         P.title( title )
 
-    cb = P.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
-    xt = [10, 20, 50, 100, 200, 500]
-    #cb.set_xticks( xt, [str(xti) for xti in xt] )
+    g.mplviewer.createColorbar( p, cMin = cmin, cMax = cmax, nLevs = 5 )
+
+#    cb = P.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
+#    xt = [10, 20, 50, 100, 200, 500]
+#    cb.set_ticks( xt, [str(xti) for xti in xt] )
 
     P.draw()
     return

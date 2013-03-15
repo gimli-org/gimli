@@ -6,7 +6,9 @@ Created on Thu Feb 02 14:15:13 2012
 """
 
 import pygimli as g
+from pygimli.utils import gmat2numpy
 import numpy as N
+import pylab as P
 
 def iterateBounds( inv, dchi2 = 0.5, maxiter = 100, change = 1.02 ):
     '''
@@ -47,3 +49,31 @@ def iterateBounds( inv, dchi2 = 0.5, maxiter = 100, change = 1.02 ):
         modelL[ im ] = model2[ im ]
 
     return modelL, modelU
+
+def modCovar( inv ):
+    td = P.asarray( inv.transData().deriv( inv.response() ) )
+    tm = P.asarray( inv.transModel().deriv( inv.model() ) )
+    J = td.reshape(len(td),1) * gmat2numpy( inv.forwardOperator().jacobian() ) * (1./tm)
+    d = 1. / P.asarray( inv.transData().error( inv.response(), inv.error() ) )
+    DJ = d.reshape(len(d),1) * J
+    JTJ = DJ.T.dot( DJ )
+    MCM = P.inv( JTJ )   # model covariance matrix
+    varVG = P.sqrt( P.diag( MCM ) ) # standard deviations from main diagonal
+    di = ( 1. / varVG )  # variances as column vector
+    MCMs = di.reshape(len(di),1) * MCM * di  # scaled model covariance (=correlation) matrix
+    return varVG, MCMs
+
+def print1dBlockVar( var, thk, xpos=None ):
+    if xpos is None:
+        xpos = P.xlim()[0]
+    
+    nlay = len(thk)+1
+    zl  = P.cumsum(thk)
+    zvec = P.hstack((zl,zl-thk/2,zl[-1]+thk[-1]/2))
+    for j in range(nlay*2-1):
+        v = P.log(1.+var[j])
+        if j<nlay-1:
+            P.text( xpos ,zvec[j],'$\delta$='+str(P.round_( v*thk[j], 1 ))+'m')            
+        else:
+            P.text( xpos, zvec[j],'$\delta$='+str(P.round_( v*100., 1 ))+'$\%$')
+
