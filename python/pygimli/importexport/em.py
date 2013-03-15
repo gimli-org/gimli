@@ -2,6 +2,64 @@ import pylab as P
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
 from pygimli.utils import draw1dmodel
 
+def readusffile( filename, DATA = [] ):
+    ''' read data from single USF (universal sounding file) file
+        DATA = readusffile( filename )
+        DATA = readusffile( filename, DATA ) will append to DATA '''
+    
+    columns = []
+    nr = 0
+    sounding = {}
+    sounding['FILENAME'] = filename
+    isdata = False
+    fid = open( filename )
+    for line in fid:
+        zeile = line.replace('\n','').replace(',','') # commas are useless here
+        if zeile: # anything at all
+            if zeile[0] == '/': # comment-like
+                if zeile[1:4] == 'END': # end of a sounding
+                    if isdata: # already read some data
+                        sounding[ 'data' ] = columns
+                        for i, cn in enumerate( sounding['column_names'] ):
+                            sounding[cn] = columns[:,i]
+                        
+                        DATA.append( sounding )
+                        sounding = {}
+                    
+                    isdata = not isdata # turn off data mode
+                elif zeile.find(':') > 0: # key-value pair
+                    key, value = zeile[1:].split(':')
+                    try:
+                        val = float( value )
+                        sounding[key] = val
+                    except:    
+                        sounding[key] = value
+    
+            else:
+                if isdata:
+                    values = zeile.split()
+                    try:
+                        for i, v  in enumerate( values ):
+                            columns[ nr, i ] = float( v )
+                        
+                        nr += 1
+                    except:
+                        sounding['column_names'] = values
+                        columns = P.zeros( ( int(sounding['POINTS']), len( values ) ) )
+                        nr = 0
+    
+    fid.close()
+    return DATA
+
+def readusffiles( filenames, DATA = [] ):
+    ''' read all soundings data from a list of usf files
+        DATA = readusffiles( filenames ) '''
+    DATA = []
+    for onefile in filenames:
+        DATA = readusffile( onefile, DATA )
+    
+    return DATA
+    
 def importMaxminData( filename, verbose = False ):
     """ pure import function reading in positions, data, frequencies and geometry """
     delim = None
@@ -168,23 +226,23 @@ class FDEMData():
         ax1 = P.subplot(211)
         P.imshow( self.IP[:,self.activeFreq].T, interpolation='nearest' )
         P.imshow( self.IP[:,self.activeFreq].T, interpolation='nearest' )
-        P.ylim(P.ylim()[::-1])
         ax1.set_xticks(nt)
         ax1.set_xticklabels(["%g" % xi for xi in self.x[nt]])
         ax1.set_yticks(range(0,nf+1,2))
         ax1.set_yticklabels(["%g" % freq[i] for i in range(0,nf,2)])
-        P.colorbar(orientation=orientation,aspect=30)
+        P.ylim((-0.5,nf-0.5))
+        P.colorbar(orientation=orientation,aspect=30,shrink=0.8)
         P.xlabel('x [m]')
         P.ylabel('f [Hz]')
         P.title('inphase percent')
         ax2 = P.subplot(212)
         P.imshow( self.OP[:,self.activeFreq].T, interpolation='nearest' )
-        P.ylim(P.ylim()[::-1])
         ax2.set_xticks(nt)
         ax2.set_xticklabels(["%g" % xi for xi in self.x[nt]])
         ax2.set_yticks(range(0,nf+1,2))
         ax2.set_yticklabels(["%g" % freq[i] for i in range(0,nf,2)])
-        P.colorbar(orientation=orientation,aspect=30)
+        P.ylim((-0.5,nf-0.5))
+        P.colorbar(orientation=orientation,aspect=30,shrink=0.8)
         P.xlabel('x [m]')
         P.ylabel('f [Hz]')
         P.title('outphase percent')

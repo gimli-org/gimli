@@ -10,6 +10,7 @@ except:
     print "no modules osgeo"
     
 import pylab as P
+from math import floor
 
 gk2   = Proj( init="epsg:31466" ) # GK zone 2
 gk3   = Proj( init="epsg:31467" ) # GK zone 3
@@ -121,10 +122,10 @@ def readGeoRefTIF( file_name ):
 	bbox = [ [ tifx, tifx + im.shape[1] * dx], [ tify - im.shape[0] * dx, tify ] ]
 	return im, bbox, projection
  
-def getBKGaddress(xlim,ylim,imsize,zone=33,service='dop40',uuid='',fmt='jpeg'):
+def getBKGaddress(xlim,ylim,imsize=1000,zone=32,service='dop40',uuid='',fmt='jpeg'):
     """ generate address for rendering web service image from BKG """
     """ assumes UTM in any zone """
-    url='https://sg.geodatenzentrum.de/wms_' + service
+    url='http://sg.geodatenzentrum.de/wms_' + service
     stdarg='REQUEST=GetMap&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT='+fmt
     srsstr='SRS=EPSG:' + str( 25800 + zone ) # 
     
