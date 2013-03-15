@@ -227,7 +227,6 @@ public:
             error_ = errorDefault_();
         }
 
-        
         dataWeight_ = 1.0 / tD_->error( fixZero( data_, TOLERANCE ), error_ );
 
         if ( verbose_ ) std::cout << "min/max(dweight) = " << min( dataWeight_ ) << "/"
@@ -256,16 +255,22 @@ public:
         model_    = forward_->startModel( );
     }
 
-    /*! Return forward operator */
+    /*! Return forward operator.*/
     inline ModellingBase * forwardOperator() { return forward_; }
 
     /*TODO Change interface to Trans < vec > *tD, or copy the trans ,giving non const reference is dangerous.*/
-    /*! Set and get data transform */
+    /*! Set and get data transform. 
+     * WARNING! we just store a reference to the trans .. U have to ensure that the trans is and stayes valid. 
+     * TODO change this!!!
+     */
     inline void setTransData( Trans< Vec > & tD ) { tD_ = & tD; }
     inline Trans< Vec > & transData() { return * tD_; }
 
     /*TODO Change interface to Trans < vec > *tD, or copy the trans ,giving non const reference is dangerous. */
-    /*! Set and get Model transform */
+    /*! Set and get Model transform 
+     * WARNING! we just store a reference to the trans .. U have to ensure that the trans is and stayes valid. 
+     * TODO change this!!!
+     */
     inline void setTransModel( Trans< Vec > & tM ) { tM_ = & tM; }
     inline Trans< Vec > & transModel() { return * tM_; }
 
@@ -366,7 +371,7 @@ public:
             if ( verbose_ ) std::cout << " found valid constraints matrix. omit rebuild" << std::endl;
         }
         if ( model_.size() != C_.cols() ){
-            //** vielleicht irgendwo ne sch�ne resize funktion
+            //** vielleicht irgendwo ne schöne resize funktion
             std::cout << WHERE_AM_I << " resize model " << model_.size() << " to fit constrain size: " << C_.cols() << std::endl;
             model_.resize( C_.cols() );
         }
@@ -591,8 +596,6 @@ public:
     /*! Shortcut for \ref getPhiM( model_ ) necessary ? */
     inline double getPhiM() const { return getPhiM( model_ ); }
 
-    
-    
     /*! Shortcut for \ref getPhi( model_, response_ ) necessary ? */
     inline double getPhi( ) const { return getPhiD() + getPhiM() * lambda_ * (1.0 - double( localRegularization_ ) ); }
 
@@ -816,11 +819,11 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
 
     //** check if transfunctions are valid
     this->checkTransFunctions( );
-
+    
     //! calculation of initial modelresponse
     response_ = forward_->response( model_ );
 
-    //! (DEBUG) clear the model history
+    //! () clear the model history
     modelHist_.clear();
 
     //! validate and rebuild the data error if necessary
@@ -834,8 +837,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
     if ( activateFillConstraintsWeight_ ) {
         forward_->regionManager().fillConstraintsWeight( constraintsWeight_ );
     }
-    //std::cout << WHERE_AM_I << std::endl;
-
+    
     if ( constraintsWeight_.size() != C_.rows() ){
         std::cout << WHERE_AM_I << " Fixing cweight.size()" << std::endl;
         std::cout << constraintsWeight_.size() << " " << C_.rows() << std::endl;
@@ -844,7 +846,9 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
     
     //! compute roughness constraint and correct it for inter-region constraints
     size_t cc = forward_->regionManager().constraintCount();
+    
     if ( constraintsH_.size() != cc ) constraintsH_.resize( cc );
+    
     if ( haveReferenceModel_ ) {
         constraintsH_ = ( C_ * Vec( tM_->trans( modelRef_ ) * modelWeight_ ) ) * constraintsWeight_; //!!!template
         size_t ircc = forward_->regionManager().interRegionConstraintsCount();

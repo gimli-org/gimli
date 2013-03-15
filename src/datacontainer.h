@@ -250,6 +250,10 @@ public:
      * \param token String to identify the data */
     const RVector & get( const std::string & token ) const ;
 
+    /*! Return a copy of the index data field as IndexArray. Throws an exception if token index don't exist.
+     * \param token String to identify the index data field */
+    const IndexArray id( const std::string & token ) const ;
+    
     /*! Read/Write access via a pointer to the token data field
      * \param token String to identify the data */
     RVector * ref( const std::string & token );

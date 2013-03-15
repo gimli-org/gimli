@@ -3,30 +3,38 @@
 
 import pygimli as g
 from pygimli.mplviewer import underlayMap
-from pygimli.importexport import readGPX
+from pygimli.importexport import readGPX, readSimpleLatLon
 
 import pyproj
 
 import pylab as P
 
-pnts = readGPX( 'rieseltag.gpx' ); zone = 32
-#pnts = readGPX( 'gps.gpx' ); zone = 29
+#zone = 32
+#vendor = 'OSM'
+#pnts = readGPX( 'rieseltag.gpx' )
 
-print pnts
-zoom = -1
+zone = 31
+vendor = 'GM'
+pnts = readSimpleLatLon( 'bleicherode.dat', True )
+
+#zone = 29
+#pnts = readGPX( 'gps.gpx' )
 
 proj = pyproj.Proj( proj = 'utm', zone = zone, ellps = 'WGS84' )
 
-#pnts = [ ( 7.34737639312, 51.5834143599 ),
-#           ( 7.43579248219, 51.5306718274 ) ]
+#gauss krüger projektion 4. Meridianstreifen (GK 4), Ellipsoid = "Bessel"
+proj = pyproj.Proj( proj = 'tmerc', init = 'epsg:31468', ellps = 'WGS84' )
+#proj = pyproj.Proj( proj = 'tmerc', init = 'epsg:31468', ellps = 'bessel' )
 
 for p in pnts:
     x,y = proj( p[0], p[1] )
+    print x,y
     P.plot( x, y, '.', markersize = 18 )
+    P.text( x, y, p[2] )
 
 axes = P.gca()
 
-underlayMap( axes, proj, vendor = 'GMS', zoom = 17, pixelLimit = [1024,1024], verbose = True, fitMap = True )
+underlayMap( axes, proj, vendor=vendor, zoom = 10, pixelLimit = [1024,1024], verbose = True, fitMap = True )
     
 axes.grid()
 

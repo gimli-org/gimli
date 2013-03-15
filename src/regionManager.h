@@ -159,7 +159,14 @@ public:
 
     void countParameter( uint start );
 
+    /*! Set the values of start for the start model of this region. */
+    void setStartModel( const RVector & start );
+    /*! Set the value of start into the start model vector for this region. */
+    void setStartModel( double start );
+    
+    /*! DEPRECATED use setStartModel */
     void setStartVector( const RVector & start );
+    /*! DEPRECATED use setStartModel */
     void setStartValue( double start );
 
     void setModelControl( double mc );
@@ -186,7 +193,7 @@ public:
     void setModelTransStr_( const std::string & val );
 
     void setModelControlStr_(   const std::string & val ){ setModelControl( toDouble( val ) ); }
-    void setStartValueStr_(     const std::string & val ){ setStartValue( toDouble( val ) ); }
+    void setStartModelStr_(     const std::string & val ){ setStartModel( toDouble( val ) ); }
     void setZPowerStr_(         const std::string & val ){ setZPower( toDouble( val ) ); }
     void setZWeightStr_(        const std::string & val ){ setZWeight( toDouble( val ) ); }
     void setConstraintTypeStr_( const std::string & val ){ setConstraintType( toInt( val ) ); }

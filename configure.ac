@@ -124,7 +124,8 @@ fi
 # Checks for libraries.
 #
 AC_CHECK_LIB( m, sqrt )
-AC_CHECK_LIB( proc, look_up_our_self )
+AC_CHECK_LIB( procps, look_up_our_self )
+
 
 #
 # CHECK for boost/bind.hpp
@@ -312,6 +313,11 @@ else
 fi
 
 AC_MSG_RESULT()
+
+if test x"$ac_cv_lib_procps_look_up_our_self_" = "xno"; then
+    AC_MSG_RESULT(  -lprocps        [Not FOUND])
+    AC_MSG_RESULT(           (recommended for memwatch) )
+fi
 
 AC_MSG_RESULT( 
 

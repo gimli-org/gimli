@@ -544,12 +544,14 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
 
 std::string DataContainer::tokenList() const {
     std::string tokenList;
+    tokenList += "SensorIdx: ";
     for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
             tokenList += it->first;
             tokenList += " ";
         }
     }
+    tokenList += " Data: ";
     for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( !isSensorIndex( it->first ) ){
             tokenList += it->first;
@@ -593,6 +595,25 @@ const RVector & DataContainer::get( const std::string & token ) const {
 
     throwError( 1, WHERE_AM_I + " unknown token data for get: " + token + " available are: " + tokenList()  );
     return *new RVector( 0 );
+}
+
+const IndexArray DataContainer::id( const std::string & token ) const {
+    if ( !dataMap_.count( token ) ) {
+        throwError( 1, WHERE_AM_I + " unknown token data for get: " + token + " available are: " + tokenList()  );
+    }
+        
+    if ( !isSensorIndex( token ) ) {
+        throwError( 1, WHERE_AM_I + " token: " + token + " is not an index list: " + tokenList()  );
+    }
+        
+    //RVector idx = dataMap_.find( token )->second;
+    IndexArray ret( dataMap_.find( token )->second.size() );
+    
+    for (uint i = 0; i < ret.size(); i ++ ){
+        ret[ i ] = Index( dataMap_.find( token )->second[ i ] );
+    }
+            
+    return ret;
 }
 
 RVector * DataContainer::ref( const std::string & token ){

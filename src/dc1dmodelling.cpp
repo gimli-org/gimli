@@ -72,6 +72,13 @@ bm_( RVector( data.size(), 9e9 ) ), bn_( RVector( data.size(), 9e9 ) ){
 }
     
 RVector DC1dModelling::response( const RVector & model ) {
+    if ( model.size() < ( nlayers_ * 2 - 1 ) ){
+        throwError( 1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 2 - 1 ) + " > " + toStr( model.size() ) );
+    }
+    if ( model.size() > ( nlayers_ * 2 - 1 ) ){
+        throwError( 1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 2 - 1 ) + " < " + toStr( model.size() ) );
+    }
+    
     RVector rho( nlayers_ );
     RVector thk( nlayers_ - 1 );
     for ( size_t i = 0 ; i < nlayers_ -1 ; i++ ) thk[ i ] = model[ i ];
@@ -394,16 +401,25 @@ void DC1dModelling::init_() {
 }
 
 RVector DC1dModellingC::response( const RVector & model ) {
-    RVector rhoM( nlayers_ );
-    RVector rhoP( nlayers_ );
-    RVector thk( nlayers_ - 1 );
-    for ( size_t i = 0 ; i < nlayers_ -1 ; i++ ) thk[ i ] = model[ i ];
-    for ( size_t i = 0 ; i < nlayers_ ; i++ ) rhoM[ i ] = model[ nlayers_ + i -1 ];
-    for ( size_t i = 0 ; i < nlayers_ ; i++ ) rhoP[ i ] = - model[ 2 * nlayers_ + i -1 ];
+    if ( model.size() < ( nlayers_ * 3 - 1 ) ){
+        throwError( 1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 3 - 1 ) + " > " + toStr( model.size() ) );
+    }
+    if ( model.size() > ( nlayers_ * 3 - 1 ) ){
+        throwError( 1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 3 - 1 ) + " < " + toStr( model.size() ) );
+    }
+    
+    RVector thk(    model( 0,               nlayers_ -1 ) );
+    RVector rhoM(   model( nlayers_ - 1,    2 * nlayers_ -1 ) );
+    RVector rhoP( - model( 2 * nlayers_ -1, 3 * nlayers_ -1 ) );
+    
+//     for ( size_t i = 0 ; i < nlayers_ -1 ; i++ ) thk[ i ] = model[ i ];
+//     for ( size_t i = 0 ; i < nlayers_ ; i++ ) rhoM[ i ] = model[ nlayers_ + i -1 ];
+//     for ( size_t i = 0 ; i < nlayers_ ; i++ ) rhoP[ i ] = - model[ 2 * nlayers_ + i -1 ];
     CVector rhoC = toComplex( RVector( rhoM * cos( rhoP ) ), RVector( rhoM * sin( rhoP ) ) );
     
     CVector rhoaC = rhoaT< CVector >( rhoC, thk );
     RVector angPlus = abs( angle( rhoaC ) );
+    
     return cat( abs( rhoaC ), angPlus );
 }
 

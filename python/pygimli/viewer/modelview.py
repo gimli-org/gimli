@@ -18,7 +18,50 @@ def showmymatrix(A,x,y,dx=2,dy=1,xlab=None,ylab=None,cbar=None):
     if cbar is not None: P.colorbar(orientation=cbar)
     return
     
+def drawModel1D( ax, thickness, values,  plotfunction = 'plot', xlabel = 'Resistivity $[\Omega$ m$]$'
+                , *args, **kwargs ):
+    '''
+        Draw 1d block model into axis ax defined by values and thickness vectors using plotfunction
+    '''
+    
+    nLayers = len( thickness ) + 1
+    px = P.zeros( nLayers * 2 )
+    pz = P.zeros( nLayers * 2 )
+    z1 = P.cumsum( thickness )
+    
+    for i in range( nLayers ):
+        px[ 2 * i ]     = values[ i ]
+        px[ 2 * i + 1 ] = values[ i ]
+        
+        if i == nLayers - 1:
+            pz[ 2 * i + 1 ]  = z1[ i - 1 ] * 1.2
+            pass
+        else:
+            pz[ 2 * i + 1 ] = z1[ i ]
+            pz[ 2 * i + 2 ] = z1[ i ]
+        
+    if plotfunction == 'loglog' or plotfunction == 'semilogy':
+        pz[ 0 ] = thickness[ 0 ] * 0.8
+        
+    try:
+        plot = getattr( ax, plotfunction )
+        plot( px, pz, *args, **kwargs )
+    except Exception as e:
+        print e
+    
+    ax.set_ylabel( 'Depth [m]' )
+    ax.set_xlabel( xlabel )
+    ax.set_ylim( pz[-1], pz[0] )
+    ax.grid()
+    return ax
+    
+#def draw1dmodel(... )
+    
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
+    print "STYLE_WARNING!!!!!!!!!!! don't use this call. Use show1dmodel instead."
+    show1dmodel(x, thk, xlab, zlab, islog, z0 )
+    
+def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     """draw 1d block model defined by value and thickness vectors."""
     if xlab is None: 
         xlab = "$\\rho$ in $\\Omega$m"
