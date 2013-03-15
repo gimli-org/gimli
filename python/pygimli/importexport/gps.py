@@ -17,7 +17,9 @@ gk3   = Proj( init="epsg:31467" ) # GK zone 3
 wgs84 = Proj( init="epsg:4326" ) # pure ellipsoid for step-wise change
 
 def handleWPTS( wpts ):
-    """ Handler for Waypoints in gpx xml-dom """
+    """ 
+        Handler for Waypoints in gpx xml-dom 
+    """
     w = []
 
     for wpt in wpts:
@@ -46,9 +48,44 @@ def readGPX( filename ):
     return handleWPTS( wpts )
 # def readGPX( ... )
 
+def readSimpleLatLon(filename, verbose=False):
+    '''
+        read a list of the following formats. Try to convert the format automatically
+        If u want to be sure provide format without "d" to ensure floating point format:
+            lon lat
+            
+            marker lat lon
+            
+        return list:
+            lon lat name time
+    '''
+    
+    def conv_(deg):
+        '''
+            convert degree into floating vpoint
+        '''
+        ret = 0.0
+        if 'd' in deg:
+            # 10d???
+            d = deg.split('d')
+            ret = float(d[0])
 
-def readSimpleLatLon( filename ):
-    """ """
+            if "'" in d[1]:
+                # 10d23'2323.44''
+                m = d[1].split("'")
+                if len(m) > 1:
+                    ret += float(m[0]) / 60.
+                    ret += float(m[1]) / 3600.
+            else:
+                # 10d23.2323
+                ret += float( d[1] ) / 60.
+        else:
+            # 10.4432323
+            ret = float( deg )
+
+        return ret
+    # def conv_(...):
+    
     w = []
     
     with open( filename, 'r') as fi:
@@ -59,10 +96,17 @@ def readSimpleLatLon( filename ):
         if line[0] == '#': continue
         
         vals = line.split()
-        if len( vals ) > 1:
-            w.append( (float(vals[1]), float(vals[0]), '', 'time')  )
+        
+        if len( vals ) == 2:
+            #lon lat
+            w.append((conv_(vals[1]), conv_(vals[0]), '', 'time'))
+        if len( vals ) == 3:
+            # marker lat lon
+            w.append((conv_(vals[2]), conv_(vals[1]), vals[0], 'time'))
+                    
+        if verbose:
             print w[-1]
-        #w.append( (float(vals[2]), float(vals[1]), vals[0], 'time')  )
+        
     
     return w
 

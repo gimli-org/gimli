@@ -166,6 +166,7 @@ def main( argv ):
             
     for d in dataList:
         outdata = merge( outdata, d, ContainerTyp, options.snap )
+        
         if options.verbose:
             print outdata
 

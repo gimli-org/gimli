@@ -475,6 +475,8 @@ def main( argv ):
                             , help="set x limits for plot (: separated) " )
     parser.add_option("", "--ylim", dest="ylim" , default = '', type = "string"
                             , help="set y limits for plot (: separated) " )
+    parser.add_option("", "--reverseX", dest = "reverseX", default = False
+                            , help = "Reverse the x axis", action = "store_true" )
     parser.add_option("", "--xOffset", dest="xoffset" , default = 0.0, type = "float"
                             , help="set x-coordinate offset for first electrode [0.0] " )
     parser.add_option("", "--zOffset", dest="zoffset" , default = 0.0, type = "float"
@@ -641,11 +643,15 @@ def main( argv ):
             xl = P.double( options.xlim.split(':') )
             print "xlim = ", xl
             axes.set_xlim( xl ) 
+            
         if len( options.ylim ) > 0:
             yl = P.double( options.ylim.split(':') )
             print "ylim = ", yl
             axes.set_ylim( yl ) 
         
+        if options.reverseX:
+            axes.set_xlim( axes.get_xlim( )[::-1] ) 
+            
         if options.ylabel:
             axes.set_ylabel( options.ylabel )
 

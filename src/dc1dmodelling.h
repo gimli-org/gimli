@@ -34,7 +34,8 @@ namespace GIMLI{
 /*! Classical DC 1D forward operator for given resistivities and thicknesses 
     DC1dModelling( nlayers, ab2, mn2, verbose )
     DC1dModelling( nlayers, am, an, bm, bn, verbose )
-    DC1dModelling( nlayers, dataContainer, verbose ) */
+    DC1dModelling( nlayers, dataContainer, verbose ) 
+*/
 class DLLEXPORT DC1dModelling : public ModellingBase {
 public:
     /*! general constructor using AM, AN, BM, BN, distances (as stored internally) */
@@ -100,7 +101,7 @@ public:
         return mod;
     }
     
-
+    
 protected:
 
     /*! init myw and myx */
@@ -124,19 +125,20 @@ protected:
 /*! DC (direct current) 1D modelling for complex resistivity */
 class DLLEXPORT DC1dModellingC : public DC1dModelling {
 public:    
-    /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) */
-    DC1dModellingC( size_t nlayers, DataContainer & data, bool verbose = false ) :
-        DC1dModelling( nlayers, data, verbose ){}
+// do not use until cleanup
+//     /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) */
+//     DC1dModellingC( size_t nlayers, DataContainer & data, bool verbose = false ) :
+//         DC1dModelling( nlayers, data, verbose ){ }
 
     /*! constructor for classical Schlumberger sounding */
     DC1dModellingC( size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose = false ) :
         DC1dModelling( nlayers, ab2, mn2, verbose ){
             setMesh( createMesh1DBlock( nlayers, 2 ) );
         }
-
-    /*! general constructor using AM, AN, BM, BN distances */
-    DC1dModellingC( size_t nlayers, const RVector & am, const RVector & an, const RVector & bm, const RVector & bn, bool verbose = false ) :
-        DC1dModelling( nlayers, am, an, bm, bn, verbose ){}
+// do not use until cleanup
+//     /*! general constructor using AM, AN, BM, BN distances */
+//     DC1dModellingC( size_t nlayers, const RVector & am, const RVector & an, const RVector & bm, const RVector & bn, bool verbose = false ) :
+//         DC1dModelling( nlayers, am, an, bm, bn, verbose ){}
 
     virtual ~DC1dModellingC() { }
 

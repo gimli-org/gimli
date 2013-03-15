@@ -26,8 +26,12 @@
 #ifdef WIN32_LEAN_AND_MEAN
     #include <psapi.h>
 #else
-    #ifdef HAVE_PROC_READPROC
-        #include <proc/readproc.h>
+
+    #ifdef HAVE_LIBPROCPS
+        #ifdef HAVE_PROC_READPROC
+            #include <proc/readproc.h>
+            #define USE_PROC_READPROC
+        #endif
     #endif
 #endif
 
@@ -68,7 +72,7 @@ double MemWatch::inUse( ) {
     } else { return 0; }
 
 #else
-    #ifdef HAVE_PROC_READPROC
+    #ifdef USE_PROC_READPROC
     struct proc_t usage;
     look_up_our_self( & usage );
     double ret = mByte( usage.vsize );
@@ -81,7 +85,7 @@ double MemWatch::inUse( ) {
 }
 
 void MemWatch::info( const std::string & str ) {
-    #if defined( WIN32_LEAN_AND_MEAN ) || defined(  HAVE_PROC_READPROC )
+    #if defined( WIN32_LEAN_AND_MEAN ) || defined( USE_PROC_READPROC )
     if ( __GIMLI_DEBUG__ ){
 
         std::cout << "\t" << str << " Memory in use: abs: " << inUse() << " rel: "

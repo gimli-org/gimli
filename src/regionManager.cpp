@@ -176,21 +176,27 @@ void Region::countParameter( uint start){
 
 
 //################ Start values
-
-void Region::setStartVector( const RVector & start ){
+void Region::setStartModel( const RVector & start ){
     setBackground( false );
     if ( start.size() == parameterCount_ ){
        startVector_ = start;
     } else {
         throwLengthError( 1, WHERE_AM_I + " " + toStr( start.size() ) + " != " + toStr( parameterCount_ ) );
     }
+    
+}
+
+void Region::setStartModel( double start ){
+    startDefault_ = start;
+    this->setStartModel( RVector( parameterCount_, start ) );
+}
+    
+void Region::setStartVector( const RVector & start ){
+    return setStartModel( start );
 }
 
 void Region::setStartValue( double val ){
-    startDefault_ = val;
-    setBackground( false );
-    startVector_.resize( parameterCount_ );
-    startVector_.fill( val );
+    return setStartModel( val );
 }
 
 void Region::fillStartVector( RVector & vec ){
@@ -427,8 +433,8 @@ void Region::setParameters( double start, double lb, double ub ){
     if ( lb < ub ) {
         if ( ( start <= lb ) | ( start >= ub ) ) {
             std::cout << "WARNING! starting model not within bounds! readjusting" << std::endl;
-            setStartValue( std::sqrt( lb * ub ) );
-        } else setStartValue( start );
+            setStartModel( std::sqrt( lb * ub ) );
+        } else setStartModel( start );
         setLowerBound( lb );
         setUpperBound( ub );
     } else {
@@ -964,7 +970,7 @@ void RegionManager::loadMap( const std::string & fname ){
 
     std::map< std::string, void (Region::*)( const std::string & val ) > regionAttributeMap;
     regionAttributeMap[ lower( "MC" ) ]       = &Region::setModelControlStr_;
-    regionAttributeMap[ lower( "start" ) ]    = &Region::setStartValueStr_;
+    regionAttributeMap[ lower( "start" ) ]    = &Region::setStartModelStr_;
     regionAttributeMap[ lower( "zPower" ) ]   = &Region::setZPowerStr_;
     regionAttributeMap[ lower( "zWeight" ) ]  = &Region::setZWeightStr_;
     regionAttributeMap[ lower( "Ctype" ) ]    = &Region::setConstraintTypeStr_;
