@@ -231,8 +231,8 @@ public:
     /*! Resize the data map and all data fields to size.*/
     void resize( uint size );
 
-    /*! Return string with space-separated list of all available data tokens. */
-    std::string tokenList() const;
+    /*! Return string with space-separated list of all available data tokens. If withAnnotation is set the List is separated by the Words "SensorIndex:" and "Data:" */
+    std::string tokenList(bool withAnnotation = true) const;
 
     /*! Add new data field with optional description. Throws an exception if the data field size is not the same size of the DataContainer.
         \param token String to identify the data

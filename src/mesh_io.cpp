@@ -648,7 +648,7 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
                         
 void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RVector > & dataMap, 
                       const std::vector < RVector3 > & vec ) const {
-    bool verbose = false;
+    bool verbose = true;
     
     if ( verbose ){
         std::cout << "Write vtk " << fbody + ".vtk" << std::endl;
@@ -689,8 +689,8 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
             file.write( (char*)&node( i ).pos()[2], sizeof( double ) );
         } else {
             file << node( i ).pos().x() << "\t"
-                << node( i ).pos().y() << "\t"
-                << node( i ).pos().z() << std::endl;
+                 << node( i ).pos().y() << "\t"
+                 << node( i ).pos().z() << std::endl;
         }
     }
     if ( binary ){ file << std::endl; }
@@ -761,30 +761,6 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
             }
         }
         file << std::endl;
-
-        //** write point data
-        file << "POINT_DATA " << nodeCount() << std::endl;
-        for ( std::map < std::string, RVector >::iterator it = data.begin(); it != data.end(); it ++ ){
-            if ( it->second.size() == (uint)nodeCount() ){
-                file << "SCALARS " << strReplaceBlankWithUnderscore( it->first )
-                        << " double 1" << std::endl;
-                file << "LOOKUP_TABLE default" << std::endl;
-
-                for ( uint i = 0, imax = nodeCount(); i < imax; i ++) {
-                    file << it->second[ i ] << " ";
-                }
-                file << std::endl;
-            }
-        }
-        
-        //** write point vector data
-        if ( vec.size() == nodeCount() ){
-            file << "VECTORS vec double" << std::endl;
-            
-            for ( uint i = 0; i < vec.size(); i ++ ){
-                file << vec[i][0] << " " << vec[i][1] << " "<< vec[i][2] << " " << std::endl;
-            }
-        }
         
         //** write cell data
         file << "CELL_DATA " << cellCount() << std::endl;
@@ -887,6 +863,39 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
         } // if ( boundaryCount() > 0 )
         
     } // else write boundaries
+    
+    //** write point data
+    file << "POINT_DATA " << nodeCount() << std::endl;
+    for ( std::map < std::string, RVector >::iterator it = data.begin(); it != data.end(); it ++ ){
+        if ( it->second.size() == (uint)nodeCount() ){
+            file << "SCALARS " << strReplaceBlankWithUnderscore( it->first )
+                 << " double 1" << std::endl;
+            file << "LOOKUP_TABLE default" << std::endl;
+
+            for ( uint i = 0, imax = nodeCount(); i < imax; i ++) {
+                file << it->second[ i ] << " ";
+            }
+            file << std::endl;
+        }
+    }
+        
+    //** write point vector data
+    if ( vec.size() == nodeCount() ){
+        if ( verbose ){
+            std::cout << "write vector field data" << std::endl;
+        }
+        file << "VECTORS vec double" << std::endl;
+            
+        for ( uint i = 0; i < vec.size(); i ++ ){
+            file << vec[i][0] << " " << vec[i][1] << " "<< vec[i][2] << " " << std::endl;
+        }
+    } else {
+        if ( vec.size() > 0 ){
+            std::cerr << "Vector data size does not match node size: " << vec.size() << " " << nodeCount() << std::endl;
+        }
+    }
+    
+    file.close();
 }
 
 void Mesh::importVTK( const std::string & fbody ) {
