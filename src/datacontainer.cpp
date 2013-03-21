@@ -470,7 +470,7 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
 
     if ( lower( formatData ) == "all" ){
         toSaveIdx = find( get("valid") > -1 );
-        formatString = this->tokenList();
+        formatString = this->tokenList(false);
     } else {
         toSaveIdx = find( get("valid") == 1 );
         formatString = formatData;
@@ -542,16 +542,17 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
     return 1;
 }
 
-std::string DataContainer::tokenList() const {
+std::string DataContainer::tokenList( bool withAnnotation ) const {
     std::string tokenList;
-    tokenList += "SensorIdx: ";
+    if (withAnnotation) tokenList += "SensorIdx: ";
+    
     for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
             tokenList += it->first;
             tokenList += " ";
         }
     }
-    tokenList += " Data: ";
+    if (withAnnotation) tokenList += " Data: ";
     for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( !isSensorIndex( it->first ) ){
             tokenList += it->first;

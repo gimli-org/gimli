@@ -156,6 +156,7 @@ def main( argv ):
         print "snap =", options.snap
 
     ContainerTyp = g.DataContainer
+    
     if options.bert:
         import pybert as b
         ContainerTyp = b.DataContainerERT
@@ -163,15 +164,19 @@ def main( argv ):
     dataList = loadProjectFile( projectFileName, ContainerTyp, verbose = options.verbose )
 
     outdata  = dataList[ 0 ]
-            
-    for d in dataList:
+
+    if options.verbose:
+        print "start merging ..."
+        print outdata
+
+    for d in dataList[1:]:
         outdata = merge( outdata, d, ContainerTyp, options.snap )
         
         if options.verbose:
             print outdata
 
     if options.verbose:
-        print "outdata:", options.outFileName
+        print "Write file to: ", options.outFileName
                 
     outdata.save( options.outFileName )
 
