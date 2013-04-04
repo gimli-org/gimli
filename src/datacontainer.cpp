@@ -224,11 +224,11 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
 
             if ( j == format.size() ) break; // no or to few format defined, ignore
 
-            if ( format[ j ] == "x" || format[ j ] == "X" ) x[ i ] = toDouble( row[ j ] );
+            if ( format[ j ] == "x" || format[ j ] == "X" ||  format[ j ] == "x/m" || format[ j ] == "X/m" ) x[ i ] = toDouble( row[ j ] );
             else if ( format[ j ] == "x/mm" || format[ j ] == "X/mm" ) x[ i ] = toDouble( row[ j ] ) / 1000.0;
-            else if ( format[ j ] == "y" || format[ j ] == "Y" ) y[ i ] = toDouble( row[ j ] );
+            else if ( format[ j ] == "y" || format[ j ] == "Y" ||  format[ j ] == "y/m" || format[ j ] == "Y/m"  ) y[ i ] = toDouble( row[ j ] );
             else if ( format[ j ] == "y/mm" || format[ j ] == "Y/mm" ) y[ i ] = toDouble( row[ j ] ) / 1000.0;
-            else if ( format[ j ] == "z" || format[ j ] == "Z" ) z[ i ] = toDouble( row[ j ] );
+            else if ( format[ j ] == "z" || format[ j ] == "Z" ||  format[ j ] == "z/m" || format[ j ] == "Z/m"  ) z[ i ] = toDouble( row[ j ] );
             else if ( format[ j ] == "z/mm" || format[ j ] == "z/mm" ) z[ i ] = toDouble( row[ j ] ) / 1000.0;
             else {
                 std::stringstream str;
@@ -252,7 +252,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
             std::cerr << row[i] << " " ;
         }
         std::cerr << std::endl;
-        
+
         throwError( EXIT_DATACONTAINER_NELECS, str.str() );
     }
 
@@ -347,14 +347,14 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
 
     //** start read topography;
     row = getNonEmptyRow( file );
-    
+
     if ( row.size() == 1 ) {
         //** we found topography
         nSensors = toInt( row[ 0 ] );
         RVector xt( nSensors ), yt( nSensors ), zt( nSensors );
 
         std::string topoFormatDefault( "x y z" );
-        
+
         file.get( c );
         if ( c == '#' ) {
             format = getRowSubstrings( file );
@@ -416,7 +416,7 @@ void DataContainer::checkDataValidity( bool remove ){
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
         if ( isSensorIndex( it->first ) ){
 //             std::cout << it->first << " "<< sensorCount()<< " " << find( ( it->second < -1 ) | ( it->second >= sensorCount() ) ) << std::endl;
-//             
+//
             this->markInvalid( find( ( it->second < -1 ) | ( it->second >= sensorCount() ) ) );
         }
     }

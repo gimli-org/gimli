@@ -69,9 +69,9 @@ template < class Vec > Vec getIRLSWeightsP( const Vec & a, int p, double locut =
     return tmp;
 }
 
-/*! Inversion template using a Generalized Minimization Approach, atm fixed to Gauss-Newton solver   
-    Inversion(bool verbose, bool dosave   
-    Inversion(RVector data, FOP f, bool verbose, bool dosave   
+/*! Inversion template using a Generalized Minimization Approach, atm fixed to Gauss-Newton solver
+    Inversion(bool verbose, bool dosave
+    Inversion(RVector data, FOP f, bool verbose, bool dosave
     Inversion(RVector data, FOP f, transData, transModel, bool verbose, bool dosave */
 template < class ModelValType > class Inversion : public InversionBase< ModelValType > {
 public:
@@ -169,7 +169,7 @@ protected:
         lambdaFactor_       = 1.0;
         dPhiAbortPercent_   = 2.0;
         phiD_               = 0.0;
-        
+
         CGLStol_            = -1.0; //** -1 means automatic scaled
     }
 
@@ -226,6 +226,7 @@ public:
             std::cerr << WHERE_AM_I << " Warning error contains zero values, reset to default. " << std::endl;
             error_ = errorDefault_();
         }
+
 
         dataWeight_ = 1.0 / tD_->error( fixZero( data_, TOLERANCE ), error_ );
 
@@ -323,7 +324,7 @@ public:
     /*! Set and get abort tolerance for cgls solver. -1 means default scaling [default] */
     inline void setCGLSTolerance( double tol ){ CGLStol_ = tol; }
     inline double maxCGLSTolerance( ) const { return CGLStol_; }
-    
+
     /*! Return curent iteration number */
     inline uint iter() const { return iter_; }
 
@@ -342,8 +343,9 @@ public:
 
     /*! Marquardt scheme (local damping with decreasing regularization strength */
     void setMarquardtScheme( double lambdaFactor = 0.8 ){
-        setLocalRegularization( true );
-        setLambdaFactor( lambdaFactor );
+        setLocalRegularization( true );  //! no contribution of regularization to objective function
+        setLambdaFactor( lambdaFactor ); //! lambda is decreased towards zero
+        stopAtChi1( false );             //! let the solution fully converge (important for statistics)
         forward_->regionManager().setConstraintType( 0 );
     }
 
@@ -386,7 +388,7 @@ public:
 
     /*! Check size of Jacobian matrix against data and model number */
     void checkJacobian( ) {
-        if ( forward_->jacobian()->rows() == data_.size() && 
+        if ( forward_->jacobian()->rows() == data_.size() &&
              forward_->jacobian()->cols() == model_.size() ) return;
 
         if ( verbose_ && forward_->jacobian()->rows() + forward_->jacobian()->cols() > 0 ){
@@ -422,13 +424,13 @@ public:
 
     /*! Set model vector. */
     void setModel( const Vec & model ){ model_ = model; }
-    
+
     /*! Return a const reference to the current model vector */
     inline const ModelVector & model() const { return model_; }
 
     /*! Set reference model vector */
-    inline void setReferenceModel( const Vec & model ){ 
-        haveReferenceModel_ = true; modelRef_ = model; 
+    inline void setReferenceModel( const Vec & model ){
+        haveReferenceModel_ = true; modelRef_ = model;
     }
 
     /*! Set current model response (e.g. in order to avoid time-consuming forward calculation */
@@ -513,7 +515,7 @@ public:
 
         return resolution;
     }
-    
+
     /*! Compute cell resolution for closest cell to given position */
     Vec modelCellResolution( RVector3 pos ){
         int ipos=0;
@@ -541,12 +543,12 @@ public:
     RVector roughness( const RVector & model ) const {
        return C_ * Vec( tM_->trans( model ) * modelWeight_ ) * constraintsWeight_;
     }
-    
+
     /*! Shortcut for roughness for the current model vector */
     RVector roughness(  ) const {
        return roughness( model_ );
     }
-    
+
     /*! Return data objective function (sum of squared data-weighted misfit) */
     double getPhiD( const Vec & response ) const {
         Vec deltaData( ( tD_->trans( data_ ) - tD_->trans( response ) ) / tD_->error( fixZero( data_, TOLERANCE ), error_ ) ) ;
@@ -595,6 +597,8 @@ public:
 
     /*! Shortcut for \ref getPhiM( model_ ) necessary ? */
     inline double getPhiM() const { return getPhiM( model_ ); }
+
+
 
     /*! Shortcut for \ref getPhi( model_, response_ ) necessary ? */
     inline double getPhi( ) const { return getPhiD() + getPhiM() * lambda_ * (1.0 - double( localRegularization_ ) ); }
@@ -655,11 +659,15 @@ public:
             RVector modelQuad( tM_->update( model_, dModel * tauquad ) );
             RVector responseQuad ( forward_->response( modelQuad ) );
             tau = linesearchQuad( modelNew, responseNew, modelQuad, responseQuad, tauquad );
-            if ( verbose_ ) std::cout << " ==> tau = " << tau << std::endl;
+            if ( verbose_ ) std::cout << " ==> tau = " << tau;
+            if ( tau > 1.0 ) { //! too large
+                tau = 1.0;
+                if ( verbose_ ) std::cout << " resetting to " << tau;
+            }
+            if ( verbose_ ) std::cout << std::endl;
 
             if ( tau < 0.03) { //! negative or nearly zero (stucked) -> use small step instead
-                // Das ist komisch, entweder konsequenz tau = 0.03, oder ganz lassen und ausserhalb als Abbruchkriterium w�hlen.
-                tau = 0.1;
+                tau = 0.03;
                 if ( verbose_ ) std::cout << " tau < 0.03 ==> tau = " << tau << std::endl;
             }
         } // else tau > 0.03
@@ -692,7 +700,7 @@ public:
     /*! Return the single models for each iteration. For debugging.*/
     inline const std::vector < RVector > & modelHistory() const { return modelHist_; }
 
-    /*! Compute model update by solving one inverse sub-step 
+    /*! Compute model update by solving one inverse sub-step
        \param rhs The right-hand-side vector of the system of equation
     */
     Vec invSubStep( const Vec & rhs ) {
@@ -801,7 +809,7 @@ protected:
     bool haveReferenceModel_;
     bool recalcJacobian_;
     bool activateFillConstraintsWeight_; //jointinv hack!!!
-    
+
     /*! Set this to zero if u want to use absolute errors == zero*/
     bool fixError_;
 
@@ -843,7 +851,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
         std::cout << constraintsWeight_.size() << " " << C_.rows() << std::endl;
         constraintsWeight_.resize( C_.rows(), 1.0 );
     }
-    
+
     //! compute roughness constraint and correct it for inter-region constraints
     size_t cc = forward_->regionManager().constraintCount();
     
@@ -904,7 +912,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
         if ( ipc_.getBool( "abort" ) ) break;
 
         if ( !oneStep() ) break;
-        
+
         DOSAVE save( *forward_->jacobian() * model_, "dataJac_"  + toStr( iter_ ) PLUS_TMP_VECSUFFIX );
         DOSAVE save( response_,    "response_" + toStr( iter_ ) PLUS_TMP_VECSUFFIX );
 
@@ -944,7 +952,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run( ){ ALLOW_PYTHON_
 template < class Vec > bool Inversion< Vec>::oneStep( ) {
     iter_++;
     ipc_.setInt( "Iter", iter_ );
-    
+
     if ( verbose_ ) std::cout << "Iter: " << iter_ << std::endl;
 
     deltaModelIter_.resize( model_.size() );
@@ -982,7 +990,7 @@ template < class Vec > bool Inversion< Vec>::oneStep( ) {
 
     if ( iter_ == 1 && optimizeLambda_ ) { //optimize regularization strength using L-curve
 //        deltaModelIter_ = optLambda( deltaDataIter_, deltaModel0 ); //!!! h-variante
-        
+
         /////////////*********************
         // fix this!!!!!!!!!!!!!1 constraintsH != deltaModel0
         /////////////*********************
@@ -1014,15 +1022,15 @@ template < class Vec > bool Inversion< Vec>::oneStep( ) {
 //             solveCGLSCDWWtrans( *J_, C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
 //                                  modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
 //                                lambda_, deltaModel0, maxCGLSIter_, verbose_ );
-            
+
             //save( forward_->jacobian(), "S"+ toStr(iter_) + ".mat", Ascii );
-            
+
             // wannebee
 //             DoubleWeightedMatrix scaledJacobian ( forward_->jacobian(), tM_->deriv( model_ ), tD_->deriv( response_ ) );
 //             DoubleWeightedMatrix weightedConstraints( C_, constraintsWeight_, modelWeight_ );
-//             solveCGLSCDWWhtransWB( scaledJacobian, weightedConstraints, dataWeight_, deltaDataIter_, deltaModelIter_, 
+//             solveCGLSCDWWhtransWB( scaledJacobian, weightedConstraints, dataWeight_, deltaDataIter_, deltaModelIter_,
 //                                    lambda_, roughness, maxCGLSIter_, verbose_ );
-            
+
             solveCGLSCDWWhtrans( *forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
                                   modelWeight_, tM_->deriv( model_ ), tD_->deriv( response_ ),
                                   lambda_, roughness, maxCGLSIter_, CGLStol_, verbose_ );
@@ -1101,7 +1109,7 @@ ALLOW_PYTHON_THREADS
     if ( !localRegularization_ ) {
         DOSAVE echoMinMax( model_, "model: " );
         roughness = this->roughness();
-        
+
         if ( haveReferenceModel_ ) {
             if ( verbose_ ) echoMinMax( modelRef_,  "reference model" );
             roughness = roughness - constraintsH_;

@@ -32,7 +32,7 @@
 namespace GIMLI{
 
 Region::Region( int marker, RegionManager * parent, bool single )
-    : marker_( marker ), parent_( parent ), 
+    : marker_( marker ), parent_( parent ),
     isBackground_( false ), isSingle_( single ), parameterCount_( 0 )
     , tM_( NULL ) {
     init_();
@@ -257,12 +257,12 @@ void Region::fillModelControl( RVector & vec ){
 //################ constraints behaviour
 uint Region::constraintCount() const {
     if ( isSingle_ && constraintType_ == 1 ) return 0;
-    
+
     if ( constraintType_ == 0 || constraintType_ == 2 || constraintType_ == 20 ) return parameterCount();
     if ( constraintType_ == 10 ) return bounds_.size() + parameterCount();
     return bounds_.size();
 }
-    
+
 void Region::fillConstraints( DSparseMapMatrix & C, uint startConstraintsID ){
     if ( isBackground_ ) return;
 
@@ -276,7 +276,7 @@ void Region::fillConstraints( DSparseMapMatrix & C, uint startConstraintsID ){
         }
         if ( constraintType_ == 0 ) return;
     }
-    
+
     int leftParaId = -1, rightParaId = -1;
     if ( constraintType_ == 2 || constraintType_ == 20 ) { //** 2nd order constraints (opt. mixed with 0th)
         for ( std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
@@ -320,16 +320,16 @@ void Region::fillConstraints( DSparseMapMatrix & C, uint startConstraintsID ){
             C[ cID ][ startParameter_ + i ] = cMixRatio;
             cID++;
         }
-        
+
     }
 }
 
-void Region::setConstraintType( uint type ) { 
-    constraintType_ = type; 
+void Region::setConstraintType( uint type ) {
+    constraintType_ = type;
     constraintsWeight_.resize( this->constraintCount(), 1 );
 }
-    
-    
+
+
 void Region::setConstraintsWeight( double val ){
     setBackground( false );
     //std::cout << "Region::setConstraintsWeight( double val ) " << val << " " <<  this->constraintCount() << std::endl;
@@ -405,15 +405,15 @@ void Region::setTransModel( Trans< RVector > & tM ){
 void Region::setModelTransStr_( const std::string & val ){
     transString_ = val;
     delete tM_; tM_ = NULL;
-    
+
     if ( val == "lin" || val == "Lin" ){
         tM_ = new Trans< RVector >( );
     } else if ( val == "log" || val == "Log" ){
         tM_ = new TransLogLU< RVector >( lowerBound_, upperBound_ );
-    } else if ( val == "cot" || val == "Cot" ){
+    } else if ( val == "cot" || val == "Cot" || val == "tan" || val == "Tan" ){
         tM_ = new TransCotLU< RVector >( lowerBound_, upperBound_ );
     } else  {
-        throwLengthError( 1, WHERE_AM_I + " : " + val + ". Available are: lin, log, cot." );
+        throwLengthError( 1, WHERE_AM_I + " : " + val + ". Available are: lin, log, cot/tan." );
     }
     parent_->setLocalTransFlag( true );
     ownsTrans_ = true;
@@ -438,7 +438,7 @@ void Region::setParameters( double start, double lb, double ub ){
         setLowerBound( lb );
         setUpperBound( ub );
     } else {
-        throwError( EXIT_FAILURE, WHERE_AM_I + " bounds not matching: " + toStr( lb ) + ">=" + toStr( ub ) );    
+        throwError( EXIT_FAILURE, WHERE_AM_I + " bounds not matching: " + toStr( lb ) + ">=" + toStr( ub ) );
     }
 }
 
@@ -667,7 +667,7 @@ void RegionManager::fillModelControl( RVector & vec ){
     }
 
     if ( vec.size() != parameterCount() ) vec.resize( parameterCount(), 1.0 );
-    
+
     for ( std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++ ){
         it->second->fillModelControl( vec );
@@ -764,9 +764,9 @@ void RegionManager::fillConstraintsWeight( RVector & vec ){
                             double zDir = std::fabs( meanNorm[ mesh_->dim() -1 ] ); //! z-component
 
                             //! rather linear for bigger angles
-                            vec[ cID ] = ( 1.0 + ( interRegionConstraintsZWeight_ - 1.0 ) * zDir ) 
+                            vec[ cID ] = ( 1.0 + ( interRegionConstraintsZWeight_ - 1.0 ) * zDir )
                                             * it->second;
-                            
+
                         }
 
                     }
@@ -780,7 +780,7 @@ void RegionManager::fillConstraintsWeight( RVector & vec ){
             }
         }
     } // if ( interRegionConstraints_.size() > 0 )
-    
+
 //     if ( interfaceConstraintMap_
 //     interfaceConstraintMap_[ it->second->boundaries()[ i ]->marker() ] = toDouble( row[ 1 ] );
 }
@@ -824,7 +824,7 @@ uint RegionManager::constraintCount() const {
     if ( regionMap_.empty() ) {
         return parameterCount_;
     }
-         
+
     int count = 0;
     for ( std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++ ){
@@ -891,7 +891,7 @@ void RegionManager::fillConstraints( DSparseMapMatrix & C ){
 //                                       << it->first.second << std::endl;
             std::map< std::pair< int, int >, std::list < Boundary * > >::const_iterator iRMapIter;
             iRMapIter = interRegionInterfaceMap_.find( it->first );
-            
+
             Region * lR = region(it->first.first);
             Region * rR = region(it->first.second);
             size_t lStart = lR->startParameter();
@@ -919,7 +919,7 @@ void RegionManager::fillConstraints( DSparseMapMatrix & C ){
                         rMarker = dummy;
                     }
 //                    std::cout << lMarker << " " << rMarker << " " << lMarker - lStart << " " << rMarker - rStart << std::endl;
-                        
+
                     C[ consCount ][ lMarker ] = +1.0 / (*lMC)[ size_t( lMarker - lStart ) ];
                     C[ consCount ][ rMarker ] = -1.0 / (*rMC)[ size_t( rMarker - rStart ) ];
                     consCount ++;
@@ -986,43 +986,37 @@ void RegionManager::loadMap( const std::string & fname ){
     std::vector < std::string > token;
     std::vector < std::string > row;
 
-    //! Set default, region with smaller marker is set to background
-    //! can be overridden bei region control file (VERY DANGEROUS)
-    //if ( regionCount() > 1 ) {
-    //    regions()->begin()->second->markBackground( true );
-    //}
-
     while ( !file.eof() ){
-        
+
         row = getNonEmptyRow( file, '-' );
         if ( row.empty() ) {
             file.close();
             return;
         }
-        
+
         if ( row[0][0] == '#' ){
-            
+
             token.clear();
 
             if ( row[ 0 ].size() > 1 ) {
                 // tokenline starts with '#XYZ'
                 token.push_back( row[ 0 ].substr( 1, row[ 0 ].size() ) );
             }
-            
+
             for ( uint i = 1; i < row.size(); i ++ ) {
                 token.push_back( row[ i ] );
             }
-            
+
             // read next row line to parse them
             continue;
         }
-        
+
         if ( token.size() == 0 ) {
              std::cerr << WHERE_AM_I << " not a valid region file. looking for leading #" << fname << std::endl;
              file.close();
              return;
         }
-                
+
         // interpret row as region informations
         if ( lower( token[ 0 ] ) == "no" ){
 
@@ -1142,7 +1136,7 @@ void RegionManager::loadMap( const std::string & fname ){
         }
     }
     file.close();
-    
+
     this->recountParaMarker_();
     this->createParaDomain_();
 }
