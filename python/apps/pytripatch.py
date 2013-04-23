@@ -159,6 +159,9 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
             data = pylab.asarray( mesh.cellAttributes() )
         elif modelname in mesh.exportDataMap().keys():
             data = mesh.exportData( modelname )
+        elif modelname.rfind( '.bmat' ) != -1:
+            A = g.RMatrix( modelname )
+            data = A[0]
         else:
             g.load( data, modelname, g.Ascii )
 
@@ -183,10 +186,10 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
                 cov = None
 
         if ( contour ):
-            showMeshInterpolated( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear )
+            patches = showMeshInterpolated( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear )
         else:
-            showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, 
-            label = label, linear = linear, cmapname = cmapname )
+            patches = showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, 
+                                     label = label, linear = linear, cmapname = cmapname )
     else:
         g.mplviewer.drawMeshBoundaries( axis, mesh )
         pass
@@ -210,7 +213,7 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
     elif drawEdges:
         g.mplviewer.drawMeshBoundaries( axis, mesh )
 
-    return axis
+    return axis, patches
 
 def showDC2DInvResMod( modfile, contour, cMin = None, cMax = None, label = "", cmapname = None ):
     mesh = g.Mesh();
@@ -289,7 +292,7 @@ def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showC
     axis.set_aspect('equal')
 #    axis.set_xlabel('x [m]')
 #    axis.set_ylabel('z [m]')
-
+    return patches
 
 def addCoverageImageOverlay( axis, mesh, cov ):
     Nx = 200
@@ -585,7 +588,7 @@ def main( argv ):
                 axes = showDC2DInvResMod( meshname, options.contourplot, cMin = options.cMin, cMax = options.cMax
                                         , label = options.label)
             elif ( ( meshname.rfind( '.bms' ) != -1 ) | ( meshname.rfind( '.vtk' ) != -1 ) ):
-                axes = showTriMesh( meshname, options.datafile, options.contourplot
+                axes, patches = showTriMesh( meshname, options.datafile, options.contourplot
                         , options.constraintMat, cWeight = options.cWeight
                         , cMin = options.cMin, cMax = options.cMax
                         , coverage = options.coverage
@@ -714,7 +717,24 @@ def main( argv ):
 	if ( fileExtension == '.svg' ):
             pylab.savefig( options.outFileName, transparent=True )
         elif ( fileExtension == '.pdf' ):
-            pylab.savefig( options.outFileName, bbox_inches='tight' )
+            if options.datafile.rfind( '.bmat' ) != -1:
+                from matplotlib.backends.backend_pdf import PdfPages
+                import numpy as N
+                
+                A = g.RMatrix( options.datafile )
+                pdf = PdfPages( options.outFileName ) 
+                for i, a in enumerate( A ):
+                    print "\rWriting multipage pdf %d/%d" % (i,len(A)),
+                    patches.set_array( N.asarray( a ) ) # necessary due to non existing functin .ndim
+                    fig.savefig( pdf, format='pdf', bbox_inches='tight' ) 
+                
+                print 'ready'
+                pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'
+                pdf.infodict()['Author'] = u'BERT@resistivity.net'
+                pdf.close()
+                patches.set_array( N.asarray( A[0] ) ) # show original
+            else:
+                pylab.savefig( options.outFileName, bbox_inches='tight' )
         elif ( fileExtension == '.png' ):
             pylab.savefig( options.outFileName, dpi=options.dpi, bbox_inches='tight', transparent=True )
         elif ( fileExtension == '.ps' ):
