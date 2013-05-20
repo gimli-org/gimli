@@ -6,7 +6,7 @@ import textwrap
 
 from colorbar import *
 import pygimli as g
-from pygimli.misc import streamlines
+from pygimli.misc import streamline
 
 
 class CellBrowser:
