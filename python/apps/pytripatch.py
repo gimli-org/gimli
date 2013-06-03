@@ -724,11 +724,10 @@ def main( argv ):
                 A = g.RMatrix( options.datafile )
                 pdf = PdfPages( options.outFileName ) 
                 for i, a in enumerate( A ):
-                    print "\rWriting multipage pdf %d/%d" % (i,len(A)),
+                    print "\rWriting multipage pdf %d/%d" % (i+1,len(A)),
                     patches.set_array( N.asarray( a ) ) # necessary due to non existing functin .ndim
                     fig.savefig( pdf, format='pdf', bbox_inches='tight' ) 
                 
-                print 'ready'
                 pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'
                 pdf.infodict()['Author'] = u'BERT@resistivity.net'
                 pdf.close()

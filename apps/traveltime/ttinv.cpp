@@ -43,7 +43,7 @@ int main( int argc, char *argv [] ) {
     int nSegments = 6;
     double relativeInnerMaxEdgeLength = 0.01;
     bool lambdaOpt = false, isBlocky = false, isRobust = false, createGradientModel = false;
-    bool useAppPar = false, isBertMesh = false, isVelocity = false;//, useWater = false;
+    bool useAppPar = false, isBertMesh = false, isVelocity = false, refineFwdMesh = false;
     double errTime = 0.001, errPerc = 0.1, lbound = 0.0, ubound = 0.0;
     double lambda = 100.0, zWeight = 1.0;
     int maxIter = 20, verboseCount = 0;
@@ -60,6 +60,7 @@ int main( int argc, char *argv [] ) {
     oMap.add( createGradientModel,"G" , "gradientModel", "Gradient starting model." );
     oMap.add( isRobust,           "R" , "RobustData", "Robust (L1) data weighting." );
     oMap.add( lambdaOpt,          "O" , "OptimizeLambda", "Optimize model smoothness using L-curve." );
+    oMap.add( refineFwdMesh,      "S" , "refineFwdMesh", "Refine mesh for forward calculation." );
     oMap.add( isVelocity,         "V" , "isVelocity", "boundaries are velocities (not slowness)." );
     oMap.add( lambda,             "l:", "lambda", "Regularization parameter lambda." );
     oMap.add( maxIter,            "i:", "iterations", "Maximum iteration number." );
@@ -106,12 +107,8 @@ int main( int argc, char *argv [] ) {
     if ( paraMeshFilename != NOT_DEFINED ) {
         paraMesh.load( paraMeshFilename );
     } else {
-        std::cout << "do we really need this here???????????? "  << std::endl;
-        std::cerr << "No para mesh given. Creating one. ..."  << std::endl;
-        paraMesh.createClosedGeometryParaMesh( dataIn.sensorPositions(), //** better not
-                                               nSegments, relativeInnerMaxEdgeLength,
-                                               dataIn.additionalPoints() );
-        DEBUG paraMesh.save( "meshPara.bms" );
+        std::cerr << "No mesh given!" << std::endl;
+        return 1;
     }
     vcout << "Paramesh: " << paraMesh << std::endl;
 
@@ -124,30 +121,23 @@ int main( int argc, char *argv [] ) {
     if ( isBertMesh && f.regionManager().regionCount() > 1 ) {
         f.regionManager().regions()->begin()->second->setBackground( true );
     }
-    
+
     Mesh paraDomain( f.regionManager().paraDomain() );
     vcout << "ParaDomain:\t"<< paraDomain << std::endl;
     DEBUG paraDomain.save( "meshParaDomain.bms" );
     DEBUG paraDomain.exportVTK( "meshParaDomain" );
 
     //!** necessary step to reflect changes due to possible region changes
-    f.createRefinedForwardMesh( false, false);
-    
-    //vcout << "Secmesh:\t"; f->mesh()->showInfos( );
-    //DEBUG f->mesh()->save( "meshSec.bms" );
-    //DEBUG f->mesh()->exportVTK( "meshSec" );
+    f.createRefinedForwardMesh( refineFwdMesh, false);
 
     size_t nModel = f.regionManager().parameterCount();
     vcout << "model size = " << nModel << std::endl;
-    RVector startModel( nModel );
+    RVector startModel( nModel, median( appSlowness ) );
 
     if ( startModelFilename != NOT_DEFINED ) {
         load( startModel, startModelFilename );
-    } else {
-        vcout << "No starting model given." << std::endl;
-        createGradientModel = true;
     }
-    
+
     if ( createGradientModel ) { // auslagern in ttdijkstramodel
         vcout << "Creating Gradient model ..." << std::endl;
         double smi = min( appSlowness ) / 2.0;
@@ -170,9 +160,9 @@ int main( int argc, char *argv [] ) {
         }
         DEBUG save( startModel, "startModel.vector" );
     }
-    
+
     f.setStartModel( startModel );
-    
+
     double sloRef = max( appSlowness );
     if ( sloRef < lbound || ( ubound > 0.0 && sloRef > ubound ) ) {
         sloRef = std::max( std::sqrt( lbound * ubound ), ( lbound + ubound ) / 2 );
@@ -184,7 +174,7 @@ int main( int argc, char *argv [] ) {
     RTrans transData;
 
     //!** Model transformation: log slowness with lower and upper bound
-    Inversion < double > inv( dataIn( "t" ), f, transData, transModel, verbose, debug ); 
+    Inversion < double > inv( dataIn( "t" ), f, transData, transModel, verbose, debug );
     inv.setModel( startModel );
     inv.setLambda( lambda );
     inv.setMaxIter( maxIter );
@@ -192,33 +182,34 @@ int main( int argc, char *argv [] ) {
     inv.setOptimizeLambda( lambdaOpt );
     inv.setRobustData( isRobust );
     inv.setBlockyModel( isBlocky );
+    inv.stopAtChi1( false );
 
     vcout << "setting z weight...";
     f.regionManager().setZWeight( zWeight );
     vcout << "ready. Start inversion." << std::endl;
-    
+
     //!** Start Inversion
     RVector model( inv.run() );
     vcout << "inversion ready." << std::endl;
-    
+
     //!** Save velocity, model response and coverage
     RVector velocity( 1.0 / ( model + TOLERANCE ) );
     save( velocity, "velocity.vector" );
     save( inv.response(), "response.vector" );
-   
+
     RVector one( dataIn.size(), 1.0 );
     RVector coverage( transMult( *f.jacobian(), one ) );
     save( coverage, "coverage.vector" );
-    
+
     RVector scoverage( transMult( inv.constraintMatrix(), inv.constraintMatrix() * coverage ) );
     for ( Index i = 0 ; i < scoverage.size() ; i++ ){
         scoverage[ i ] = sign( std::abs( scoverage[ i ] ) );
     }
     save( scoverage, "scoverage.vector" );
-    
+
     //!** Save VTK file with the vectors
     paraDomain.addExportData( "slowness" , model );
-    paraDomain.addExportData( "velocity" , velocity );    
+    paraDomain.addExportData( "velocity" , velocity );
     paraDomain.addExportData( "coverage" , coverage );
     paraDomain.addExportData( "scoverage" , scoverage );
     paraDomain.exportVTK( "ttinv.result" );

@@ -34,25 +34,27 @@
 		<Compiler>
 			<Add option="-O2" />
 			<Add option="-DMINGW" />
-			<Add directory="..\src" />
+			<Add directory="../src" />
 		</Compiler>
 		<Linker>
+			<Add option="-s" />
 			<Add option="-Wl,--enable-auto-import" />
 			<Add library="gimli" />
 			<Add directory="." />
 		</Linker>
-		<Unit filename="..\apps\traveltime\ttinv.cpp">
+		<Unit filename="../apps/traveltime/ttinv.cpp">
 			<Option target="ttinv" />
 		</Unit>
-		<Unit filename="..\apps\traveltime\ttmod.cpp">
+		<Unit filename="../apps/traveltime/ttmod.cpp">
 			<Option target="ttmod" />
 		</Unit>
-		<Unit filename="..\apps\traveltime\ttresolution.cpp">
+		<Unit filename="../apps/traveltime/ttresolution.cpp">
 			<Option target="ttresolution" />
 		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
