@@ -1,117 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import matplotlib as mpl
-import numpy as np
-import textwrap
-
-from colorbar import *
 import pygimli as g
 from pygimli.misc import streamline
 
+import matplotlib as mpl
 
-class CellBrowser:
-    """
-    Interactive cell browser on current or specified axes for a given mesh.
-    Cell information can be displayed by mouse picking. Arrow keys up and
-    down can be used to scroll through the cells, while ESC closes the cell
-    information window.
-
-    Parameters
-    ----------
-    mesh : 2D pygimli.Mesh instance
-        The plotted mesh to browse through.
-    ax : mpl axis instance, optional
-        Axis instance where the mesh is plotted (default is current axis).
-
-    Usage
-    -----
-    >>> browser = CellBrowser(mesh)
-    >>> browser.connect()
-    """
-
-    def __init__(self, mesh, ax=None):
-        if ax:
-            self.ax = ax
-        else:
-            self.ax = mpl.pyplot.gca()
-
-        self.fig = self.ax.figure
-        self.mesh = mesh
-        self.lw = np.ones(mesh.cellCount())
-        self.data, self.cell = None, None
-
-        bbox=dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
-        arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
-        kwargs = dict(fontproperties='monospace', visible=False, fontsize=11,
-                      weight='bold', xytext=(50,20), textcoords='offset points',
-                      bbox=bbox, arrowprops=arrowprops, va='center')
-        self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
-
-    def connect(self):
-        self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
-        self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
-        print "Interactive cell browser activated on Figure", self.fig.number
-
-    def disconnect(self):
-        self.fig.canvas.mpl_connect(self.pid)
-        self.fig.canvas.mpl_connect(self.kid)
-        print "Cell browser disconnected from Figure", self.fig.number
-
-    def hide(self):
-        self.text.set_visible(False)
-        self.artist.set_edgecolors(self.ec)
-        self.fig.canvas.draw()
-
-    def highlight(self):
-        ec = self.ec.copy()
-        ec[self.cell] = np.ones(ec.shape[1])
-        self.artist.set_edgecolors(ec)
-        lw = self.lw.copy()
-        lw[self.cell] = 3
-        self.artist.set_linewidths(lw)
-
-    def onpick(self, event):
-        self.event = event
-        self.artist = event.artist
-        if self.data is None:
-            self.data = self.artist.get_array()
-            self.ec = self.artist.get_edgecolors()
-        self.cell = event.ind[0]
-        self.update()
-
-    def onpress(self, event):
-        if self.data is None:
-            return
-        if event.key not in ('up', 'down', 'escape'):
-            return
-        if event.key is 'up':
-            self.cell += 1
-        elif event.key is'down':
-            self.cell -= 1
-        else:
-            self.hide()
-            return
-        self.cell = int(np.clip(self.cell, 0, self.mesh.cellCount() - 1))
-        self.update()
-
-    def update(self):
-        center = self.mesh.cellCenter()[self.cell]
-        x, y = center[0], center[1]
-        marker = self.mesh.cells()[self.cell].marker()
-        data = self.data[self.cell]
-        header = "Cell #%d:\n" % self.cell
-        header += "-" * (len(header) - 1)
-        info = """
-             x: %.2f
-             y: %.2f
-          data: %.2e
-        marker: %d """ % (x, y, data, marker)
-        text = header + textwrap.dedent(info)
-        self.text.set_text(text)
-        self.text.xy = x, y
-        self.text.set_visible(True)
-        self.highlight()
-        self.fig.canvas.draw()
+from colorbar import *
 
 def drawMesh( axes, mesh ):
     ''
@@ -127,19 +20,22 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
                , showCbar = True , linear = False, label = "", cmap=None
                , nLevs = 5, orientation = 'horizontal', alpha = 1, xlab=None, ylab=None):
     '''
-        Draw a 2d mesh and color the cell by the data
+        Draw a 2d mesh and color the cell by the data 
     '''
-
+        
     gci = g.mplviewer.createMeshPatches( axes, mesh, alpha = alpha )
 
     if cmap is not None:
-        if cmap == 'b2r':
-            mpl.set_cmap( cmapFromName( 'b2r' ) )
+        if isinstance( cmap, str ):
+            if cmap == 'b2r':
+                mpl.set_cmap( cmapFromName( 'b2r' ) )
+            else:
+                eval('mpl.pyplot.'+cmap+'()')
         else:
-            eval('mpl.pyplot.'+cmap+'()')
+            gci.set_cmap( cmap )
 
     axes.set_aspect( 'equal')
-
+    
     gci.set_antialiased( True )
     gci.set_linewidth( None )
 
@@ -157,14 +53,15 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
     g.mplviewer.setMappableData( gci, viewdata, cMin = cMin, cMax = cMax, logScale = not(linear)  )
 
     if showCbar:
-
+        
         patches = g.mplviewer.createColorbar( gci, cMin = cMin, cMax = cMax,
-                                    nLevs = nLevs, label = label, orientation = orientation
+                                    nLevs = nLevs, label = label, orientation = orientation 
                                     )
     if xlab is not None: axes.set_xlabel( xlab )
     if ylab is not None: axes.set_ylabel( ylab )
-
+    
     return gci
+# def drawModel( ... )
 
 def drawSelectedMeshBoundaries( axes, boundaries, color = ( 0.0, 0.0, 0.0, 1.0 ), linewidth = 1.0 ):
     '''
@@ -188,8 +85,8 @@ def drawSelectedMeshBoundaries( axes, boundaries, color = ( 0.0, 0.0, 0.0, 1.0 )
     return lineCollection
 
 def drawSelectedMeshBoundariesShadow( axes, boundaries, first='x', second='y', color=( 0.5, 0.5, 0.5, 1.0 ) ):
-    '''
-        what is this?
+    ''' 
+        what is this?        
     '''
     polys = []
     print len( boundaries )
@@ -280,7 +177,7 @@ def createMeshPatches( axes, mesh, **kwarg ):
         else:
             print "unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()
 
-    patches = mpl.collections.PolyCollection( polys, antialiaseds = False, lod = True, picker=True, **kwarg)
+    patches = mpl.collections.PolyCollection( polys, antialiaseds = False, lod = True, **kwarg)
 
     #patches.set_edgecolor( None )
     patches.set_edgecolor( 'face' )
@@ -296,20 +193,20 @@ def drawMeshPotential( ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
     ''
     ' Draw the potential that is associated to a mesh '
     ''
-
+    
     swatch = g.Stopwatch( True )
     if ( verbose ):
         print "start interpolation:", swatch.duration( True )
-
+        
     xg = createLinLevs( x[ 0 ], x[ 1 ], int( ( x[1] - x[0] ) / dx ) )
     yg = createLinLevs( z[ 0 ], z[ 1 ], int( ( z[1] - z[0] ) / dx ) )
     X,Y = np.meshgrid( xg, yg )
-
+    
     uI = g.interpolate( mesh, u
                     , g.asvector( list( X.flat ) )
                     , g.RVector( len( Y.flat ), 0.0 )
                     , g.asvector( list( Y.flat ) ), verbose )
-
+    
     if ( verbose ):
         print "interpolation:", swatch.duration( True )
 
@@ -320,41 +217,41 @@ def drawMeshPotential( ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
 
     maxZ = max( min( zi ), max( zi ) )
     epsZ = min( abs( zi ) )
-
+    
     if min( zi ) < 0:
         potLevs = np.linspace( -maxZ, -epsZ, nLevs/2.)
         print potLevs
         potLevs = np.hstack( ( potLevs, potLevs[::-1] * -1. ) )
     else:
         potLevs = np.linspace( 0, maxZ, nLevs )
-
+        
     print potLevs
     linestyles = ['solid'] * len( potLevs )
-
+    
     gci = ax.contourf( X, Y, Z, potLevs )
     ax.contour( X, Y, Z, potLevs, colors = 'white', linewidths = 0.3, linestyles = linestyles )
     ax.set_aspect('equal')
-
+    
     ax.set_xlim( x )
     ax.set_ylim( z )
-
+    
     ax.set_ylabel( 'Depth [m]')
     ax.set_xlabel( '$x$ [m]')
-
+    
     if title is not None:
         ax.set_title( title )
-
+    
     if ( verbose ):
         print "time:", swatch.duration( True )
-
+        
     print "fixing 'Depth' to be positive values"
     ticks = ax.yaxis.get_majorticklocs()
     tickLabels=[]
-
+    
     for t in ticks:
         tickLabels.append( str( int( abs( t ) ) ) )
         ax.set_yticklabels( tickLabels )
-
+        
     return gci
 #def drawMeshPotential( ... )
 
@@ -374,15 +271,15 @@ def drawField( axes, mesh, data = None, filled = False, *args, **kwargs ):
         y[ i ] = p[ 1 ]
 
     triCount = 0
-
+        
     for c in mesh.cells():
         if c.shape().nodeCount() == 4:
             triCount = triCount + 2
         else:
             triCount = triCount + 2
-
+        
     triangles = np.zeros( ( triCount, 3 ) )
-
+    
     triCount = 0
     for i, c in enumerate( mesh.cells() ):
         if c.shape().nodeCount() == 4:
@@ -390,22 +287,22 @@ def drawField( axes, mesh, data = None, filled = False, *args, **kwargs ):
             triangles[ triCount, 1 ] = c.node(1).id()
             triangles[ triCount, 2 ] = c.node(2).id()
             triCount = triCount + 1
-
+            
             triangles[ triCount, 0 ] = c.node(0).id()
             triangles[ triCount, 1 ] = c.node(2).id()
             triangles[ triCount, 2 ] = c.node(3).id()
             triCount = triCount + 1
-        else:
+        else:            
             triangles[ triCount, 0 ] = c.node(0).id()
             triangles[ triCount, 1 ] = c.node(1).id()
             triangles[ triCount, 2 ] = c.node(2).id()
             triCount = triCount + 1
-
+        
     gci = None
-
+    
     if filled:
         gci = axes.tricontourf( x, y, triangles, data, *args, **kwargs )
-
+    
     axes.tricontour( x, y, triangles, data, *args, **kwargs )
 
     return gci
@@ -447,7 +344,7 @@ def drawSensors( axes, sensors, diam = None ):
     ''
     eCircles = []
     eSpacing = sensors[ 0 ].distance( sensors[ 1 ] )
-
+    
     if diam is None:
         diam = eSpacing / 8.0
 

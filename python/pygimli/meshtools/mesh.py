@@ -235,6 +235,9 @@ def merge2Meshes( m1, m2 ):
     for c in m2.cells():
         mesh.copyCell( c )
 
+    for b in m2.boundaries():
+        mesh.copyBoundary( b )
+
     for key in mesh.exportDataMap().keys():
         d = mesh.exportDataMap()[ key ]
         print d
