@@ -41,11 +41,9 @@ fi;
 #fi
 
 BOOST_SRC_DIR=$BOOST_SRC/$BOOST_NAME
-GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f2`
-if [ "$GCCVER" = "mingw-version" ]; then
-    GCCVER=mingw-`gcc -v 2>&1 | tail -n1 | cut -d' ' -f3`
-fi
+GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
 
+echo 'Found gcc ' $GCCVER 
 arch=`python -c 'import platform; print platform.architecture()[0]'`
 if [ "$arch" == "64bit" ]; then
 	ADRESSMODEL=64
@@ -71,14 +69,22 @@ pushd $BOOST_SRC_DIR
 	echo Calling from $OLDDIR
 	echo Installing at $DISTDIR
 
-	if [ ! -f ./bjam.exe ]; then
-		./bootstrap.sh --with-toolset=mingw 
+	if [ ! -f ./b2.exe ]; then
+		./bootstrap.sh --with-toolset=mingw
 	fi
 
-	LDFLAGS='-static-libgcc -static-libstdc++' ./bootstrap.sh --prefix=$DISTDIR --with-bjam=./bjam.exe --with-toolset=gcc \
-		--with-python-root=$PYTHON_ROOT --with-libraries=python,system,thread,regex
-		
-	LDFLAGS='-static-libgcc -static-libstdc++' ./b2 install -d+2 --prefix=$DISTDIR --layout=tagged \
+	LDFLAGS='-static-libgcc -static-libstdc++' 
+	#./bootstrap.sh --prefix=$DISTDIR --with-toolset=mingw \
+		#--with-python-root=$PYTHON_ROOT \
+		#--with-libraries=python,system,thread,regex
+	
+	#sed -e 's/ using mingw / using gcc /' project-config.jam > tmp
+	#mv tmp project-config.jam
+	
+	
+	#exit
+	#LDFLAGS='-static-libgcc -static-libstdc++' 
+	./b2 install -d+2 --prefix=$DISTDIR --layout=tagged \
 			address-model=$ADRESSMODEL variant=release link=shared \
 			threading=multi
 

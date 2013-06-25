@@ -146,8 +146,8 @@ static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
 static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
 
-extern bool __SAVE_PYTHON_GIL__ ;
-extern bool __GIMLI_DEBUG__;
+static bool __SAVE_PYTHON_GIL__ = false;
+static bool __GIMLI_DEBUG__ = false;
 
 /*! Flag load/save Ascii or binary */
 enum IOFormat{ Ascii, Binary };
