@@ -21,23 +21,26 @@
 #ifndef _GIMLI_PLATFORM__H
 #define _GIMLI_PLATFORM__H
 
-#if defined(WINDOWS) || defined(_WIN32)
+#if defined(WINDOWS) || defined(_WIN32) || defined(WIN32)
 #define PATHSEPARATOR "\\"
 
 #define WIN32_LEAN_AND_MEAN
+#define BOOST_USE_WINDOWS_H
 
-#ifdef DLL_EXPORT
-#define DLLEXPORT __declspec(dllexport)
-#else /* NO BUILDING_DLL */
-#define DLLEXPORT __declspec(dllimport)
-#endif /* NO BUILDING_DLL */
+#if defined(DLL_EXPORT) || defined(gimli_EXPORTS)
+    //* We are building this library
+    #define DLLEXPORT __declspec(dllexport)
+#else
+    //* We are using this library
+    #define DLLEXPORT __declspec(dllimport)
+#endif
 
 // Don't let win32api windef.h define min and max as macros
 // if included after c++config.h.
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-
+#include <stddef.h>
 #include <windows.h>
 #undef near
 #undef far

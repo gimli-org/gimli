@@ -25,7 +25,7 @@
 
 namespace GIMLI{
 
-template <> DLLEXPORT IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
+template <> IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
 
 IntegrationRules::IntegrationRules(){
     initGau_();

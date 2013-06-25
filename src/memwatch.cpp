@@ -26,7 +26,6 @@
 #ifdef WIN32_LEAN_AND_MEAN
     #include <psapi.h>
 #else
-
     #ifdef HAVE_LIBPROCPS
         #ifdef HAVE_PROC_READPROC
             #include <proc/readproc.h>
@@ -38,7 +37,7 @@
 namespace GIMLI {
 
 // Global static pointer used to ensure a single instance of the class.
-template < > DLLEXPORT MemWatch* Singleton < MemWatch>::pInstance_ = NULL;
+template < > MemWatch * Singleton < MemWatch>::pInstance_ = NULL;
 
 MemWatch::MemWatch( ){
     last_ = inUse();

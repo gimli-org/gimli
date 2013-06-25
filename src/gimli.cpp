@@ -29,8 +29,8 @@
 
 namespace GIMLI{
 
-DLLEXPORT bool __SAVE_PYTHON_GIL__ = false;
-DLLEXPORT bool __GIMLI_DEBUG__ = false;
+//extern bool __SAVE_PYTHON_GIL__ = false;
+//extern bool __GIMLI_DEBUG__ = false;
 
 std::string authors(){
   std::string a( (std::string)("bugs and suggestions to: ") + PACKAGE_AUTHORS );
