@@ -25,6 +25,12 @@
 #include "node.h"
 
 #ifdef TRIANGLE_FOUND
+    #if TRIANGLE_FOUND==TRUE
+        #define USE_LIBTRIANGLE 1
+    #endif
+#endif
+
+#ifdef USE_LIBTRIANGLE
 extern "C"{
     #define REAL double
     #define VOID void
@@ -32,10 +38,10 @@ extern "C"{
     #define ANSI_DECLARATORS
 
     #include <triangle.h>
-    #define USE_LIBTRIANGLE    
+    #define USE_LIBTRIANGLE
 }
 #elif HAVE_LIBTRIANGLE
-#define USE_LIBTRIANGLE    
+#define USE_LIBTRIANGLE
 
 extern "C"{
 
@@ -179,7 +185,7 @@ void TriangleWrapper::freeMemory_(){
     if ( mesh_output_->edgelist != (int*)NULL )             free( mesh_output_->edgelist );
     if ( mesh_output_->edgemarkerlist != (int*)NULL )       free( mesh_output_->edgemarkerlist );
     if ( mesh_output_->normlist != (REAL *) NULL )          free( mesh_output_->normlist );
-        
+
     delete [] mesh_input_->pointlist;
     delete [] mesh_input_->pointmarkerlist;
     delete [] mesh_input_->segmentlist;
@@ -319,7 +325,7 @@ void TriangleWrapper::transformMeshToTriangle_( const Mesh & mesh, triangulateio
 }
 
 void TriangleWrapper::addRegionMarkerTmp( int marker, const RVector3 & pos, double area ){
-    
+
     if ( area == -1.0 ) {
         holeMarker_.push_back( pos );
     } else {
