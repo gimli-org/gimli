@@ -371,22 +371,17 @@ void Mesh::loadBinary( const std::string & fbody ){
 
 }
 
-template < class ValueType > void writeToFile( FILE * file, const ValueType & v, int count = 1){
-    if ( !fwrite( &v, sizeof( ValueType ), count, file ) ){
-        std::stringstream str;
-        str << WHERE_AM_I << strerror( errno ) << " " << errno <<     std::endl;
-        throwError( EXIT_OPEN_FILE, str.str() );
+template < class ValueType > void writeToFile(FILE * file, const ValueType & v, int count=1){
+    if (!fwrite(&v, sizeof(ValueType), count, file)){
+        throwError(EXIT_OPEN_FILE, WHERE_AM_I + strerror(errno)  + str(errno));
     }
 }
 
-template < class ValueType > void readFromFile( FILE * file, ValueType & v, int count = 1){
-    uint ret = fread( &v, sizeof( ValueType ), count, file );
+template < class ValueType > void readFromFile(FILE * file, ValueType & v, int count=1){
+    uint ret = fread(&v, sizeof( ValueType ), count, file);
 
-    if ( ret && ferror( file ) ){
-        //std::cout << ret << " " << ferror( file ) << std::endl;
-        std::stringstream str;
-        str << WHERE_AM_I << strerror( errno ) << " " << errno <<     std::endl;
-        throwError( EXIT_OPEN_FILE, str.str() );
+    if (ret && ferror(file)){
+        throwError(EXIT_OPEN_FILE, WHERE_AM_I + strerror(errno) + " " + str(errno));
     }
 }
 

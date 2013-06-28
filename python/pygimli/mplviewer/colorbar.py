@@ -216,15 +216,15 @@ def setCbarLevels( cbar, cMin = None, cMax = None, nLevs = 5 ):
 
     cbar.draw_all()
 
-def setMappableData( mappable, dataIn, cMin = None, cMax = None, logScale = False ):
-    data = np.asarray( dataIn )
+def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False ):
+    data = np.asarray(dataIn)
     
     if logScale and data.min() <= 0:
-        data = ma.masked_where( data <= 0.0, data )
+        data = ma.masked_where(data <= 0.0, data)
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
-        mappable.get_cmap().set_bad( [1.0, 1.0, 1.0, 0.0 ] )
+        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0 ])
 
     if not cMin: cMin = data.min()
     if not cMax: cMax = data.max()

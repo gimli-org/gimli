@@ -39,7 +39,7 @@ DataContainer::DataContainer( const std::string & fileName, bool sensorIndicesFr
 DataContainer::DataContainer( const std::string & fileName, const std::string & sensorTokens, bool sensorIndicesFromOne ){
     initDefaults();
     std::vector < std::string > tokenList = getSubstrings( sensorTokens );
-    for( Index i=0 ; i < tokenList.size() ; i++ ) registerSensorIndex( tokenList[i] );
+    for( Index i=0 ; i < tokenList.size() ; i++) registerSensorIndex( tokenList[i] );
     this->load( fileName, sensorIndicesFromOne );
     //std::cout << "DataContainer( const std::string & fileName ){" << std::endl;
 }
@@ -125,15 +125,15 @@ void DataContainer::add( const DataContainer & data, double snap ){
     IndexArray perm( data.sensorCount(), 0 );
 
     //** merge sensor data
-    for ( uint i = 0; i < data.sensorCount(); i ++ ){
+    for (uint i = 0; i < data.sensorCount(); i ++){
         perm[ i ] = this->createSensor( data.sensorPositions()[ i ], snap );
     }
 
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         //** permutate sensorindices
         if ( isSensorIndex( it->first ) ){
             RVector tmp( data.get( it->first ) );
-            for ( uint i = 0; i < tmp.size(); i ++ ){
+            for (uint i = 0; i < tmp.size(); i ++){
                 SIndex id = tmp[ i ];
                 if ( id > -1 && id < (SIndex)perm.size() ) {
                     it->second[ start + i ] = perm[ id ];
@@ -151,7 +151,7 @@ void DataContainer::add( const DataContainer & data, double snap ){
 long DataContainer::createSensor( const RVector3 & pos, double tolerance ){
 
     long ret = -1;
-    for ( uint i = 0; i < sensorPoints_.size(); i ++ ){
+    for (uint i = 0; i < sensorPoints_.size(); i ++){
         if ( pos.distance( sensorPoints_[ i ] ) < tolerance ){
             ret = i;
         }
@@ -177,12 +177,9 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
     setSensorIndexOnFileFromOne( sensorIndicesFromOne );
     std::fstream file; if ( !openInFile( fileName, & file, true ) );
 
-    std::vector < std::string > row; row = getNonEmptyRow( file );
-    if ( row.size() != 1 ) {
-        std::stringstream str;
-        str << WHERE_AM_I << " cannot determine data format. " << row.size() << std::endl;
-        std::cerr << row << std::endl;
-        throwError( EXIT_DATACONTAINER_NELECS, str.str() );
+    std::vector < std::string > row; row = getNonEmptyRow(file);
+    if (row.size() != 1){
+        throwError(EXIT_DATACONTAINER_NELECS, WHERE_AM_I + " cannot determine data format. " + str(row.size()));
     }
 
     //** read number of electrodes
@@ -209,18 +206,21 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
     file.unget();
 
     inputFormatStringSensors_.clear();
-    for ( uint i = 0; i < format.size(); i ++ ) inputFormatStringSensors_ += format[ i ] + " ";
+    for (uint i = 0; i < format.size(); i ++)
+        inputFormatStringSensors_ += format[i] + " ";
 
     //** read sensor
-    for ( int i = 0; i < nSensors; i ++ ){
-        row = getNonEmptyRow( file );
-        if ( row.empty() ) {
-            std::stringstream str;
-            str << WHERE_AM_I << "To few sensor data. " << nSensors << " Sensors expected but " << i << " found." << std::endl;
-            throwError( EXIT_DATACONTAINER_NELECS, str.str() );
+    for (int i = 0; i < nSensors; i ++){
+        row = getNonEmptyRow(file);
+        
+        if (row.empty()){
+            throwError(EXIT_DATACONTAINER_NELECS, 
+                       WHERE_AM_I + "To few sensor data. " +
+                       str(nSensors) + " Sensors expected but " +
+                       str(i) + " found.");
         }
 
-        for ( uint j = 0; j < row.size(); j ++ ){
+        for (uint j = 0; j < row.size(); j ++){
 
             if ( j == format.size() ) break; // no or to few format defined, ignore
 
@@ -231,29 +231,25 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
             else if ( format[ j ] == "z" || format[ j ] == "Z" ||  format[ j ] == "z/m" || format[ j ] == "Z/m"  ) z[ i ] = toDouble( row[ j ] );
             else if ( format[ j ] == "z/mm" || format[ j ] == "z/mm" ) z[ i ] = toDouble( row[ j ] ) / 1000.0;
             else {
-                std::stringstream str;
-                str << WHERE_AM_I << " Warning! format description unknown: format[ " << j << " ] = " << format[ j ] << " column ignored." << std::endl;
-                std::cerr << str.str() << std::endl;
+                std::cerr << WHERE_AM_I << " Warning! format description unknown: format[ " << j << " ] = " << format[ j ] << " column ignored." << std::endl;
                 //throwError( EXIT_DATACONTAINER_ELECS_TOKEN, str.str() );
             }
         }
     }
 
-    for ( int i = 0; i < nSensors; i ++ ) {
+    for (int i = 0; i < nSensors; i ++) {
         createSensor( RVector3( x[ i ], y[ i ], z[ i ] ).round( 1e-12 ) );
     }
 
     //****************************** Start read the data;
     row = getNonEmptyRow( file );
-    if ( row.size() != 1 ) {
-        std::stringstream str;
-        str << WHERE_AM_I << " cannot determine data size. " << row.size() << std::endl;
-        for ( Index i = 0; i < row.size(); i ++ ){
-            std::cerr << row[i] << " " ;
+    if (row.size() != 1) {
+        for (Index i = 0; i < row.size(); i ++){
+            std::cerr << row[i] << " ";
         }
         std::cerr << std::endl;
 
-        throwError( EXIT_DATACONTAINER_NELECS, str.str() );
+        throwError( EXIT_DATACONTAINER_NELECS, WHERE_AM_I + " cannot determine data size. " + str(row.size()));
     }
 
     int nData = toInt( row[ 0 ] );
@@ -268,36 +264,33 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
         file.get( c );
         if ( c == '#' ) {
             format = getRowSubstrings( file );
-            if ( format.size() == 0 ) {
-                std::stringstream str;
-                str << WHERE_AM_I << "Can not determine data format." << std::endl;
-                throwError( EXIT_DATACONTAINER_NO_DATAFORMAT, str.str() );
+            if (format.size() == 0){
+                throwError(EXIT_DATACONTAINER_NO_DATAFORMAT, WHERE_AM_I + "Can not determine data format.");
             }
 //            if ( format.size() == 4 ) schemeOnly = true;
         }
         file.unget();
 
         inputFormatString_.clear();
-        for ( uint i = 0; i < format.size(); i ++) inputFormatString_ += format[ i ] + " ";
+        for (uint i = 0; i < format.size(); i ++) inputFormatString_ += format[ i ] + " ";
     }
 
     std::map< std::string, RVector > tmpMap;
 
-    for ( int data = 0; data < nData; data ++ ){
-        row = getNonEmptyRow( file );
+    for (int data = 0; data < nData; data ++){
+        row = getNonEmptyRow(file);
 
-        if ( row.empty() ) {
-            std::stringstream str;
-            str << WHERE_AM_I << " To few data. " << nData << " data expected and "
-                    << data << " data found." << std::endl;
-            throwError( EXIT_DATACONTAINER_DATASIZE, str.str() );
+        if (row.empty()){
+            throwError(EXIT_DATACONTAINER_DATASIZE, 
+                       WHERE_AM_I + " To few data. " + str(nData) + 
+                       " data expected and " + str(data) + " data found.");
         }
 
 // should only used in speccialication
 // if ( row.size() == 4 ) schemeOnly = true;
 //        int a = -1, b = -1, m = -1, n = -1;
 
-        for ( uint j = 0; j < row.size(); j ++ ){
+        for (uint j = 0; j < row.size(); j ++){
             if ( j == format.size() ) break;
 
             if ( !tmpMap.count( format[ j ] ) ){
@@ -310,7 +303,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
     }
 
     //** renaming formats with the token translator (tT_):
-    for ( std::map< std::string, RVector >::iterator it = tmpMap.begin(); it != tmpMap.end(); it++ ){
+    for ( std::map< std::string, RVector >::iterator it = tmpMap.begin(); it != tmpMap.end(); it++){
         if ( haveTranslationForAlias( it->first ) ){
 
             double scale = 1.0;
@@ -332,7 +325,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
     }
 
     if ( sensorIndexOnFileFromOne_ ){
-        for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+        for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
             if ( isSensorIndex( it->first ) ){
                 it->second -= RVector( size(), 1. );
             }
@@ -366,17 +359,16 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
         file.unget();
 
         //** read topography points;
-        for ( int i = 0; i < nSensors; i ++ ){
-            row = getNonEmptyRow( file );
+        for (int i = 0; i < nSensors; i ++){
+            row = getNonEmptyRow(file);
 
-            if ( row.empty() ) {
-                std::stringstream str;
-                str << WHERE_AM_I << "To few topo data. " << nSensors
-                                  << " Topopoints expected and " << i << " found." << std::endl;
-                throwError( EXIT_DATACONTAINER_NTOPO, str.str() );
+            if (row.empty()) {
+                throwError(EXIT_DATACONTAINER_NTOPO, WHERE_AM_I 
+                           + "To few topo data. " + str(nSensors)
+                           + " Topopoints expected and " + str(i) + " found.");
             }
 
-            for ( uint j = 0; j < row.size(); j ++ ){
+            for (uint j = 0; j < row.size(); j ++){
                 if ( j == format.size() ) break; // no or to few format defined, ignore
 
                 if (      format[ j ] == "x" || format[ j ] == "X" ) xt[ i ] = toDouble( row[ j ] );
@@ -391,7 +383,7 @@ int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne
             }
         }
 
-        for ( int i = 0 ; i < nSensors; i ++ ) {
+        for (int i = 0 ; i < nSensors; i ++) {
             topoPoints_.push_back( RVector3( xt[ i ], yt[ i ], zt[ i ] ).round( 1e-12 ) );
         }
     } // if topo
@@ -404,7 +396,7 @@ void DataContainer::checkDataValidity( bool remove ){
     //** mark inf and nans as invalid
     int nInvalid0 = find( get("valid") < 1 ).size();
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin();
-            it!= dataMap_.end(); it ++ ){
+            it!= dataMap_.end(); it ++){
         this->markInvalid( find( isInfNaN( it->second ) ) );
     }
     int nInvalidNaN = find( get("valid") < 1 ).size() - nInvalid0;
@@ -413,7 +405,7 @@ void DataContainer::checkDataValidity( bool remove ){
     }
 
     //** check sensor indices < -1 and >= sensorCount()
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
 //             std::cout << it->first << " "<< sensorCount()<< " " << find( ( it->second < -1 ) | ( it->second >= sensorCount() ) ) << std::endl;
 //
@@ -451,8 +443,8 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
     file << "# " << sensorsString << std::endl;
 
     std::vector < std::string > format( getSubstrings( sensorsString ) );
-    for ( uint i = 0, imax = sensorPoints_.size(); i < imax; i ++ ){
-        for ( uint j = 0; j < format.size(); j ++ ){
+    for (uint i = 0, imax = sensorPoints_.size(); i < imax; i ++){
+        for (uint j = 0; j < format.size(); j ++){
             if ( format[ j ] == "x" || format[ j ] == "X" ) file << sensorPoints_[ i ].x();
             if ( format[ j ] == "y" || format[ j ] == "Y" ) file << sensorPoints_[ i ].y();
             if ( format[ j ] == "z" || format[ j ] == "Z" ) file << sensorPoints_[ i ].z();
@@ -482,7 +474,7 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
 
     std::vector < std::string > token( getSubstrings( formatString ) );
 
-    for ( uint i = 0; i < token.size(); i ++ ){
+    for (uint i = 0; i < token.size(); i ++){
         //  std::cout << token[ i ] << std::endl;
 
         std::string valName;
@@ -505,11 +497,11 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
         }
     }
 
-    for ( uint i = 0; i < toSaveIdx.size(); i ++ ){
+    for (uint i = 0; i < toSaveIdx.size(); i ++){
         file.setf( std::ios::scientific, std::ios::floatfield );
         file.precision( 14 );
 
-        for ( uint j = 0; j < token.size(); j ++ ){
+        for (uint j = 0; j < token.size(); j ++){
 
             if ( outInt[ j ] ){
                 file << int( ( *outVec[ j ] )[ toSaveIdx[ i ] ] ) + sensorIndexOnFileFromOne_;
@@ -527,7 +519,7 @@ int DataContainer::save( const std::string & fileName, const std::string & forma
 
     //** START write additional points
     file << topoPoints_.size() << std::endl;
-    for ( uint i = 0; i < topoPoints_.size(); i ++ ){
+    for (uint i = 0; i < topoPoints_.size(); i ++){
         std::cout   << topoPoints_[ i ].x() << "\t"
                     << topoPoints_[ i ].y() << "\t"
                     << topoPoints_[ i ].z() << std::endl;
@@ -546,14 +538,14 @@ std::string DataContainer::tokenList( bool withAnnotation ) const {
     std::string tokenList;
     if (withAnnotation) tokenList += "SensorIdx: ";
     
-    for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
             tokenList += it->first;
             tokenList += " ";
         }
     }
     if (withAnnotation) tokenList += " Data: ";
-    for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( !isSensorIndex( it->first ) ){
             tokenList += it->first;
             tokenList += " ";
@@ -610,7 +602,7 @@ const IndexArray DataContainer::id( const std::string & token ) const {
     //RVector idx = dataMap_.find( token )->second;
     IndexArray ret( dataMap_.find( token )->second.size() );
     
-    for (uint i = 0; i < ret.size(); i ++ ){
+    for (uint i = 0; i < ret.size(); i ++){
         ret[ i ] = Index( dataMap_.find( token )->second[ i ] );
     }
             
@@ -642,7 +634,7 @@ std::string DataContainer::dataDescription( const std::string & token ) const {
 
 void DataContainer::resize( uint size ) {
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin();
-            it!= dataMap_.end(); it ++ ){
+            it!= dataMap_.end(); it ++){
 
         if ( isSensorIndex( it->first ) ){
             // if the data field represent a sensorIDX fill with -1
@@ -658,7 +650,7 @@ void DataContainer::resize( uint size ) {
 void DataContainer::removeInvalid(){
     std::vector< size_t > validIdx( find( get("valid") == 1 ) );
 
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         dataMap_[ it->first ] = it->second( validIdx );
     }
 }
@@ -683,9 +675,9 @@ void DataContainer::removeSensorIdx( uint idx ){
 }
 
 void DataContainer::removeSensorIdx( const IndexArray & idx ){
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
-            for ( IndexArray::const_iterator id = idx.begin(); id != idx.end(); id ++ ){
+            for ( IndexArray::const_iterator id = idx.begin(); id != idx.end(); id ++){
                 this->markValid( find( it->second == *id ), false );
             }
         }
@@ -700,9 +692,9 @@ void DataContainer::removeUnusedSensors( bool verbose ){
 
     BVector activeSensors( this->sensorCount(), false );
 
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
-            for ( uint i = 0; i < it->second.size(); i ++ ){
+            for (uint i = 0; i < it->second.size(); i ++){
                 SIndex id = it->second[ i ];
                 if ( id > -1 && id < (SIndex)this->sensorCount() ) activeSensors[ id ] = true;
             }
@@ -714,16 +706,16 @@ void DataContainer::removeUnusedSensors( bool verbose ){
     std::vector < RVector3 > tmp( sensorPoints_ );
     sensorPoints_.clear();
 
-    for ( size_t i = 0; i < activeSensors.size(); i ++ ) {
+    for ( size_t i = 0; i < activeSensors.size(); i ++) {
         if ( activeSensors[ i ] ){
             sensorPoints_.push_back( tmp[ i ] );
         }
         perm[ i ] = sensorPoints_.size() -1;
     }
 
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
-            for ( uint i = 0; i < it->second.size(); i ++ ){
+            for (uint i = 0; i < it->second.size(); i ++){
                 SIndex id = it->second[ i ];
                 if ( id > -1 && id < (SIndex)perm.size() ) it->second[ i ] = perm[ id ];
             }
@@ -741,19 +733,19 @@ bool idPosLesserX( const std::pair < RVector3, Index > & a, const std::pair < RV
 
 void DataContainer::sortSensorsX(){
     std::vector < std::pair < RVector3, Index > > permSens( sensorCount() );
-    for ( uint i = 0; i < sensorCount(); i ++ ) permSens[ i ] = std::pair< RVector3, Index >( sensorPoints_[ i ], i );
+    for (uint i = 0; i < sensorCount(); i ++) permSens[ i ] = std::pair< RVector3, Index >( sensorPoints_[ i ], i );
 
     std::sort( permSens.begin(), permSens.end(), idPosLesserX );
 
     IndexArray perm( sensorCount() );
-    for ( uint i = 0; i < perm.size(); i ++ ){
+    for (uint i = 0; i < perm.size(); i ++){
         sensorPoints_[ i ] = permSens[ i ].first;
         perm[ permSens[ i ].second ] = i;
     }
 
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
-            for ( uint i = 0; i < it->second.size(); i ++ ){
+            for (uint i = 0; i < it->second.size(); i ++){
                 SIndex id = it->second[ i ];
                 if ( id > -1 && id < (SIndex)perm.size() ) it->second[ i ] = perm[ id ];
             }
@@ -770,10 +762,10 @@ void DataContainer::sortSensorsIndex( ){
     std::vector < std::pair < Index, Index > > permSens( this->size() );
     int nSensorsIdx = dataSensorIdx_.size();
 
-    for ( uint i = 0; i < this->size(); i ++ ) {
+    for (uint i = 0; i < this->size(); i ++) {
         Index sensorUniqueID = 0;
         int count = nSensorsIdx;
-        for ( std::set< std::string >::iterator it = dataSensorIdx_.begin(); it!= dataSensorIdx_.end(); it ++ ){
+        for ( std::set< std::string >::iterator it = dataSensorIdx_.begin(); it!= dataSensorIdx_.end(); it ++){
             count --;
             sensorUniqueID += (dataMap_[ *it ][ i ]+1) * std::pow( this->sensorCount(), count );
         }
@@ -783,17 +775,17 @@ void DataContainer::sortSensorsIndex( ){
     std::sort( permSens.begin(), permSens.end(), ididLesser );
 
     IndexArray perm( this->size() );
-    for ( uint i = 0; i < perm.size(); i ++ ){
+    for (uint i = 0; i < perm.size(); i ++){
         perm[ i ] = permSens[ i ].second ;
     }
 
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         it->second = it->second( perm );
     }
 }
 
 void DataContainer::markInvalidSensorIndices(){
-    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++ ){
+    for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
             this->markValid( find( it->second >= this->sensorCount() ), false );
         }
@@ -801,13 +793,13 @@ void DataContainer::markInvalidSensorIndices(){
 }
 
 void DataContainer::translate( const RVector3 & trans ){
-    for ( uint i = 0; i < sensorPoints_.size(); i ++ ) {
+    for (uint i = 0; i < sensorPoints_.size(); i ++) {
         sensorPoints_[ i ].translate( trans );
     }
 }
 
 void DataContainer::scale( const RVector3 & scale ){
-    for ( uint i = 0; i < sensorPoints_.size(); i ++ ) {
+    for (uint i = 0; i < sensorPoints_.size(); i ++) {
         sensorPoints_[ i ].scale( scale );
     }
 }

@@ -213,8 +213,8 @@ public:
         if ( start >= 0 && start < e ){
             std::copy( & data_[ start ], & data_[ e ], &v[ 0 ] );
         } else {
-            throwLengthError( 1, WHERE_AM_I + " bounds out of range " +
-                                toStr( start ) + " " + toStr( end ) + " " + toStr( size_ ) );
+            throwLengthError(1, WHERE_AM_I + " bounds out of range " +
+                                str(start) + " " + str(end) + " " + str(size_));
         }
         return v;
     }

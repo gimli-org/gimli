@@ -37,13 +37,11 @@ std::string authors(){
   return a;
 }
 
-int openFile( const std::string & fname, std::fstream * file, std::ios_base::openmode farg, bool terminate ){
-    file->open( fname.c_str(), farg );
-    if ( !*file ){
-        if ( terminate ) {
-            std::stringstream str;
-            str << WHERE_AM_I << " '" << fname << "': " << strerror( errno ) << " " << errno <<     std::endl;
-            throwError( EXIT_OPEN_FILE, str.str() );
+int openFile(const std::string & fname, std::fstream * file, std::ios_base::openmode farg, bool terminate){
+    file->open(fname.c_str(), farg);
+    if (!*file){
+        if (terminate) {
+            throwError( EXIT_OPEN_FILE, WHERE_AM_I + " '" + fname + "': " +strerror(errno) + str(errno));
         }
         return 0;
     }

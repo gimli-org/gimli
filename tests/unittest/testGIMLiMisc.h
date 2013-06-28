@@ -29,6 +29,7 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
 public:    
 	void testGimliMisc(){
 		std::cout << "Hello, this is: " << GIMLI::versionStr() << std::endl;
+        std::cout << "I'm calling from" << WHERE_AM_I << std::endl;
 		CPPUNIT_ASSERT( GIMLI::fileExist( "unittest.sh" ) == true );
         std::cout << "number of CPU: " << GIMLI::numberOfCPU() << std::endl;
         std::cout << "sizes: int" << " " << sizeof( int ) 
@@ -108,9 +109,9 @@ public:
     
     void testMemWatch(){
         GIMLI::__GIMLI_DEBUG__ = true;
-        GIMLI::MemWatch::instance().info( WHERE );
+        GIMLI::MemWatch::instance().info(WHERE);
         double * mat2 = new double[ 10000 * 10000 ];
-        GIMLI::MemWatch::instance().info( WHERE );
+        GIMLI::MemWatch::instance().info(WHERE);
         delete [] mat2;
         GIMLI::MemWatch::instance().info( WHERE );
         GIMLI::RMatrix mat( 10000, 10000 );

@@ -109,38 +109,61 @@ class DataShemeDipoleDipole( DataShemeBase ):
         self.typ = Pseudotype.DipoleDipole
         self.enlargeEverySep = 0
 
-    def increase( self, l ):
-        self.enlargeEverySep = l
+    def increase(self, l):
+        self.enlargeEverySep=l
 
-    def create( self, nElectrodes = 24, electrodeSpacing = 1 ):
+    def create(self, nElectrodes=24, electrodeSpacing=1, 
+               closed=False, complete=False):
         '''
         '''
-        self.createElectrodes( nElectrodes, electrodeSpacing )
+        self.createElectrodes(nElectrodes, electrodeSpacing)
 
-        maxSep = nElectrodes - 2
-        if self.maxSeparation < maxSep:
-            maxSep = self.maxSeparation
-
-        ### reserve a couple more than nesseccary
+        ### reserve a couple more than necessary
         self.data_.resize( nElectrodes * nElectrodes )
 
         count = 0
-        space = 0
-        
-        for sep in range( 1, maxSep + 1):
-            
-            if self.enlargeEverySep > 0:
-                if (sep-1)%self.enlargeEverySep == 0:
-                    space +=1
-            else:
-                space = 1
-                
-            for i in range( ( nElectrodes - 2 ) - sep ):
+
+        if closed:
+            space = 1
+            for i in range(nElectrodes):
                 a = i
-                b = a + space
-                m = b + sep
-                n = m + space
-                count = self.createDatum_( a, b, m, n, count )
+                b = (a + space)%nElectrodes
+                
+                for j in range(nElectrodes):
+                    m = (j)%nElectrodes
+                    n = (m + space)%nElectrodes
+                    
+                    if not complete:
+                        if j <= i: continue
+                        
+                    if a != m and a != n and b != m and b!= n:
+                        #print a, b, m, n
+                        count = self.createDatum_( a, b, m, n, count )
+
+        else:
+            maxSep = nElectrodes - 2
+            maxInj = nElectrodes - 2
+        
+            if self.maxSeparation < maxSep:
+                maxSep = self.maxSeparation
+            
+            space = 0
+        
+            for sep in range( 1, maxSep + 1):
+            
+                if self.enlargeEverySep > 0:
+                    if (sep-1)%self.enlargeEverySep == 0:
+                        space +=1
+                else:
+                    space = 1
+                
+                for i in range( maxInj - sep ):
+                    a = i
+                    b = (a + space)%nElectrodes
+                    m = (b + sep)%nElectrodes
+                    n = (m + space)%nElectrodes
+                    #print a, b, m, n
+                    count = self.createDatum_( a, b, m, n, count )
                     
         self.data_.removeInvalid()
         return self.data_

@@ -5,12 +5,15 @@
 
 #include <gimli.h>
 #include <triangleWrapper.h>
+#include <cholmodWrapper.h>
+#include <sparsematrix.h>
 #include <mesh.h>
 #include <pos.h>
 
 class GIMLIExternalTest : public CppUnit::TestFixture  {
-    CPPUNIT_TEST_SUITE( GIMLIExternalTest );
-    CPPUNIT_TEST( testTriangle );
+    CPPUNIT_TEST_SUITE(GIMLIExternalTest);
+    CPPUNIT_TEST(testTriangle);
+    CPPUNIT_TEST(testCHOLMOD);
     CPPUNIT_TEST_SUITE_END();
     
 public:    
@@ -30,8 +33,20 @@ public:
         CPPUNIT_ASSERT( outMesh.nodeCount() == 3 );
         CPPUNIT_ASSERT( outMesh.boundaryCount() == 3 );
     }
+    
+    void testCHOLMOD(){
+        GIMLI::DSparseMapMatrix Sm(3,3);
+        Sm.addVal(0,0,1.0);
+        Sm.addVal(1,1,1.0);
+        Sm.addVal(2,2,1.0);
+        GIMLI::DSparseMatrix S(Sm);
+       
+        GIMLI::CHOLMODWrapper solver(S, true);
+        
+    }
+    
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( GIMLIExternalTest );
+CPPUNIT_TEST_SUITE_REGISTRATION(GIMLIExternalTest);
 
 #endif

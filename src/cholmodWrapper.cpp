@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -23,8 +23,14 @@
 #include "vector.h"
 #include "sparsematrix.h"
 
+#ifdef CHOLMOD_FOUND
+    #define CHOLMOD_MAXMETHODS 9    
+    #define UF_long long
+ 
+    #include <cholmod.h>
+    #define USE_CHOLMOD 1
 
-#ifdef HAVE_LIBCHOLMOD 
+#elif HAVE_LIBCHOLMOD
 
 extern "C" {
  #define CHOLMOD_MAXMETHODS 9	
@@ -170,7 +176,7 @@ extern "C" {
 
 namespace GIMLI{
 
-#ifdef HAVE_LIBCHOLMOD
+#ifdef USE_CHOLMOD
   bool CHOLMODWrapper::valid() { return true; }
 #else
   bool CHOLMODWrapper::valid() { return false; }
@@ -180,7 +186,7 @@ CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrappe
   c_ = NULL;
   A_ = NULL;
   L_ = NULL;
-#ifdef HAVE_LIBCHOLMOD 
+#ifdef USE_CHOLMOD 
   c_ = new cholmod_common;
   int ret =  cholmod_start( c_ );
   if ( ret ) dummy_ = false;
@@ -195,7 +201,7 @@ CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrappe
 }
 
 CHOLMODWrapper::~CHOLMODWrapper(){
-#ifdef HAVE_LIBCHOLMOD 
+#ifdef USE_CHOLMOD 
   cholmod_free_factor( &L_, c_ );
   //** We did not allocate the matrix so we dont need to free it
   //  cholmod_free_sparse( &A_, c_ );
@@ -211,7 +217,7 @@ CHOLMODWrapper::~CHOLMODWrapper(){
  
 int CHOLMODWrapper::factorise(){
   if ( !dummy_ ){
-#ifdef HAVE_LIBCHOLMOD 
+#ifdef USE_CHOLMOD 
     L_ = cholmod_analyze( A_, c_  );		    /* analyze */
     cholmod_factorize( A_, L_, c_ );		    /* factorize */
     //    L_ = cholmod_super_symbolic (A_, c_ );	/* analyze */
@@ -226,7 +232,7 @@ int CHOLMODWrapper::factorise(){
 
 int CHOLMODWrapper::solve( const RVector & rhs, RVector & solution ){
   if ( !dummy_ ){
-#ifdef HAVE_LIBCHOLMOD 
+#ifdef USE_CHOLMOD 
     cholmod_dense * b = cholmod_ones( A_->nrow, 1, A_->xtype, c_ );
     double * bx = (double*)b->x;
     for ( uint i = 0; i < dim_; i++) bx[ i ] = rhs[ i ];
@@ -247,7 +253,7 @@ int CHOLMODWrapper::solve( const RVector & rhs, RVector & solution ){
 
 int CHOLMODWrapper::initialize_( DSparseMatrix & S ){
   if ( !dummy_ ){
-#ifdef HAVE_LIBCHOLMOD 
+#ifdef USE_CHOLMOD 
 
   //** We do not allocate the matrix since we use the allocated space from DSparsemarix
 //    A_ = cholmod_allocate_sparse( dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_ ) ;
@@ -277,24 +283,4 @@ int CHOLMODWrapper::initialize_( DSparseMatrix & S ){
   return 0;
 }
 
-
 } //namespace GIMLI
-
-/*
-$Log: cholmodWrapper.cpp,v $
-Revision 1.6  2008/09/30 16:02:54  carsten
-*** empty log message ***
-
-Revision 1.5  2008/02/06 10:31:19  carsten
-*** empty log message ***
-
-Revision 1.4  2007/10/22 13:34:57  carsten
-*** empty log message ***
-
-Revision 1.2  2007/10/21 21:13:10  carsten
-*** empty log message ***
-
-Revision 1.1  2007/10/11 15:59:57  carsten
-*** empty log message ***
-
-*/

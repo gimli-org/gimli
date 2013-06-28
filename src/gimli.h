@@ -21,17 +21,23 @@
 #ifndef _GIMLI_GIMLI__H
 #define _GIMLI_GIMLI__H
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#else
-    #ifndef PACKAGE_NAME
+#ifdef HAVE_CONFIG_CMAKE_H
+    #include <config.cmake.h>
+#else 
+    #if defined(HAVE_CONFIG_H)
+        #include <config.h>
+    #endif
+#endif
+    
+#ifndef PACKAGE_NAME
         #define PACKAGE_NAME "gimli"
         #define PACKAGE_VERSION "0.9.0-win"
         #define PACKAGE_BUGREPORT "carsten@resistivity.net"
-    #endif // PACKAGE_NAME
-#endif
+        #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
+#endif // PACKAGE_NAME
 
-#define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
+
+#include <cassert>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -51,7 +57,7 @@
 namespace GIMLI{
 
 #ifndef __USE_MISC
-typedef unsigned int uint;
+    typedef unsigned int uint;
 #endif
 
 typedef uint8_t  uint8;
@@ -65,24 +71,25 @@ typedef int32_t int32;
 typedef int64_t int64;
 
 #ifdef _WIN64
-// for some magic reasons gccxml ignores the size_t = __int64 typedef under win64, so this helps let the python bindings through
-typedef unsigned __int64 Index;
-typedef __int64 SIndex;
+    // for some magic reasons gccxml ignores the size_t = __int64 typedef under win64, so this helps let the python bindings through
+    typedef unsigned __int64 Index;
+    typedef __int64 SIndex;
 #else
-#include <sys/types.h>
-typedef size_t Index;
-typedef ssize_t SIndex;
+    #include <sys/types.h>
+    typedef size_t Index;
+    typedef ssize_t SIndex;
 #endif
 
 #ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION "__ASSERT_FUNCTION"
+//#define __ASSERT_FUNCTION "__ASSERT_FUNCTION-?"
+    #define __ASSERT_FUNCTION __PRETTY_FUNCTION__
 #endif
 
-#define WHERE std::string( __FILE__ ) + ": " + GIMLI::toStr( __LINE__ )+ "\t"
-#define WHERE_AM_I std::string( WHERE + "\t" + std::string( __ASSERT_FUNCTION ) + " " )
-#define THROW_TO_IMPL { std::stringstream str; str << WHERE_AM_I << " not yet implemented\n " << GIMLI::versionStr() << "\nPlease send the messages above, the commandline and all necessary data to the author." << std::endl;\
-                         throwToImplement( str.str() ); }
-#define CERR_TO_IMPL std::cerr << "Warning! " << WHERE_AM_I << " not yet implemented\n " << GIMLI::versionStr() << "\nPlease send the messages above, the commandline and all necessary data to the author." << std::endl;
+#define WHERE GIMLI::str(__FILE__) + ": " + GIMLI::str(__LINE__) + "\t"
+#define WHERE_AM_I WHERE + "\t" + GIMLI::str(__ASSERT_FUNCTION) + " "
+#define TO_IMPL WHERE_AM_I + " not yet implemented\n " + GIMLI::versionStr() + "\nPlease send the messages above, the commandline and all necessary data to the author."
+#define THROW_TO_IMPL throwToImplement(TO_IMPL);
+#define CERR_TO_IMPL std::cerr << TO_IMPL << std::endl;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
 #define COUTMARKER std::cerr << WHERE_AM_I << std::endl;
 #define UNTESTED std::cerr << "WARNING!" << WHERE_AM_I << " " << "this function is untested" << std::endl;
@@ -254,11 +261,19 @@ private:
     #define Py_END_ALLOW_THREADS
 #endif
 
-//DLLEXPORT std::string version();
+//! General template for conversion to string, should supersede all sprintf etc.
+template< typename T > inline std::string str(const T & value){
+    std::ostringstream streamOut;
+    streamOut << value;
+    return streamOut.str();
+}
 
+//! DEPRECATED do not use
+template< typename T > inline std::string toStr(const T & value){ return str(value);}
+  
 inline std::string versionStr(){
-  std::string vers( (std::string)(PACKAGE_NAME) + "-" + PACKAGE_VERSION );
-  return vers;
+    std::string vers(str(PACKAGE_NAME) + "-" + str(PACKAGE_VERSION));
+    return vers;
 }
 
 DLLEXPORT std::string authors();
@@ -333,17 +348,10 @@ template < typename ValueType > ValueType getEnvironment( const std::string & na
 }
 
 
-//! General template for conversion to string, should supersede all sprintf etc.
-template< typename T > inline std::string str( const T & value ){
-  std::ostringstream streamOut;
-  streamOut << value;
-  return streamOut.str();
-}
-
-//! Deprecated! use str() instead, General template for conversion to string, should supersede all sprintf etc.
-template< typename T > inline std::string toStr( const T & value ){
-    return str( value );
-}
+// //! Deprecated! use str() instead, General template for conversion to string, should supersede all sprintf etc.
+// template< typename T > inline std::string toStr( const T & value ){
+//     return str( value );
+// }
 
 inline std::string strReplaceBlankWithUnderscore( const std::string & str ) {
     std::string res( str );
