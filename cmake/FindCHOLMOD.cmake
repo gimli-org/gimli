@@ -48,9 +48,14 @@ find_package(BLAS QUIET)
 find_package(LAPACK QUIET)
 find_package(ParMETIS 4.0.2 QUIET)
 
+find_path(SUITESPARSE_DIR SuiteSparse_demo.m
+	${PROJECT_SOURCE_DIR}/external/SuiteSparse
+	)
 
 find_path(CHOLMOD_DIR cholmod.h
-    ${PROJECT_SOURCE_DIR}/external/
+	${SUITESPARSE_DIR}/CHOLMOD/include
+	${PROJECT_SOURCE_DIR}/external/
+	${PROJECT_SOURCE_DIR}/external/SuiteSparse
     ${PROJECT_BINARY_DIR}/external/
     /usr/local/include
     /usr/includes
@@ -65,10 +70,11 @@ find_path(CHOLMOD_DIR cholmod.h
 # FIXME: framework on Darwin).
 
 
-
 # Check for header file
 find_path(CHOLMOD_INCLUDE_DIRS cholmod.h
-  HINTS ${CHOLMOD_DIR}/include $ENV{CHOLMOD_DIR}/include
+  HINTS 
+	${CHOLMOD_DIR}/include $ENV{CHOLMOD_DIR}/include
+	${SUITESPARSE_DIR}/CHOLMOD/include
   PATH_SUFFIXES suitesparse ufsparse
   DOC "Directory where the CHOLMOD header is located"
  )
@@ -113,7 +119,7 @@ if (CHOLMOD_LIBRARY)
     if (CAMD_LIBRARY)
         set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${CAMD_LIBRARY})
     endif()
-    if (COLAMD_LIBRARY)
+    if (COLAMD_LIBRARY)	
         set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${COLAMD_LIBRARY})
     endif()
     if (CCOLAMD_LIBRARY)
@@ -149,10 +155,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(CHOLMOD
   "CHOLMOD could not be found. Be sure to set CHOLMOD_DIR."
   CHOLMOD_LIBRARIES CHOLMOD_INCLUDE_DIRS)
-
-if (CHOLMOD_FOUND)
-    set(HAVE_LIBCHOLMOD 1)
-endif (CHOLMOD_FOUND)
 
 mark_as_advanced(
   CHOLMOD_INCLUDE_DIRS

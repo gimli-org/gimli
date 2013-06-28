@@ -25,20 +25,25 @@
 
 #include <deque>
 
-// #include <boost/asio.hpp>
-// #include <boost/bind.hpp>
-#if defined( HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP ) || defined( USE_IPC )
+
 #ifndef USE_IPC
     #define USE_IPC
 #endif
-#include <boost/interprocess/managed_shared_memory.hpp>
-using namespace boost::interprocess;
+
+#undef USE_IPC
+#ifdef HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
+    #if USE_IPC==ON
+        //#include <boost/interprocess/managed_shared_memory.hpp>
+        //using namespace boost::interprocess;
+    #endif
+#else
+    #undef USE_IPC
 #endif
 
 namespace GIMLI{
 
 //! Inter process communication via shared memory.
-/*! Inter process communication via shared memory. 
+/*! Inter process communication via shared memory.
  * For sample usage see: unittest/testGIMLiMisc.h:testIPCSHM()
  */
 class IPCClientSHM{
@@ -113,7 +118,7 @@ public:
                 return ValueType( *v );
             } break;
             case ARRAY:{
-                
+
             }break;
         }
 #endif

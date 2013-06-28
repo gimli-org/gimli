@@ -25,13 +25,17 @@
 #include "solverWrapper.h"
 
 #ifdef CHOLMOD_FOUND
-    #define CHOLMOD_MAXMETHODS 9    
-    #define UF_long long
- 
-    #include <cholmod.h>
-    #define USE_CHOLMOD 1
-#else
+    #if CHOLMOD_FOUND==TRUE
+        #define USE_CHOLMOD 1
+    #endif
+#endif
 
+#ifdef USE_CHOLMOD
+    #define CHOLMOD_MAXMETHODS 9
+    #define UF_long long
+
+    #include <cholmod.h>
+#else
 struct cholmod_sparse;
 struct cholmod_factor;
 struct cholmod_common;
@@ -43,7 +47,7 @@ class DLLEXPORT CHOLMODWrapper : public SolverWrapper {
 public:
   CHOLMODWrapper(DSparseMatrix & S, bool verbose = false);
   ~CHOLMODWrapper();
- 
+
   static bool valid();
 
   int factorise();

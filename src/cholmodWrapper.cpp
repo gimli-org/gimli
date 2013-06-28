@@ -24,117 +24,124 @@
 #include "sparsematrix.h"
 
 #ifdef CHOLMOD_FOUND
-    #define CHOLMOD_MAXMETHODS 9    
+    #if CHOLMOD_FOUND==TRUE
+        #define USE_CHOLMOD 1
+    #endif
+#endif
+
+#ifdef USE_CHOLMOD
+    #define CHOLMOD_MAXMETHODS 9
     #define UF_long long
- 
+
     #include <cholmod.h>
     #define USE_CHOLMOD 1
 
 #elif HAVE_LIBCHOLMOD
 
 extern "C" {
- #define CHOLMOD_MAXMETHODS 9	
- #define UF_long long
+    #define USE_CHOLMOD
+    #define CHOLMOD_MAXMETHODS 9
+    #define UF_long long
 
   struct cholmod_common{
     double dbound ;
-    double grow0 ;	
+    double grow0 ;
     double grow1 ;
-    size_t grow2 ;	
-    size_t maxrank ;	
-    double supernodal_switch ;	
-    int supernodal ;	
-    int final_asis ;	
-    int final_super ;	
-    int final_ll ;	
-    int final_pack ;	
-    int final_monotonic ; 
+    size_t grow2 ;
+    size_t maxrank ;
+    double supernodal_switch ;
+    int supernodal ;
+    int final_asis ;
+    int final_super ;
+    int final_ll ;
+    int final_pack ;
+    int final_monotonic ;
     int final_resymbol ;
     double zrelax [3] ;
     size_t nrelax [3] ;
-    int prefer_zomplex ;    
-    int prefer_upper ;	    
-    int quick_return_if_not_posdef ;	
-    int print ;		
-    int precise ;	
-    int (*print_function) (const char *, ...) ;	
-    int try_catch ;	
+    int prefer_zomplex ;
+    int prefer_upper ;
+    int quick_return_if_not_posdef ;
+    int print ;
+    int precise ;
+    int (*print_function) (const char *, ...) ;
+    int try_catch ;
     void (*error_handler) (int status, char *file, int line, char *message) ;
-    int nmethods ;	
-    int current ;	
-    int selected ;	
+    int nmethods ;
+    int current ;
+    int selected ;
     struct cholmod_method_struct    {
-	double lnz ;	    
-	double fl ;	    
+	double lnz ;
+	double fl ;
 	double prune_dense ;
 	double prune_dense2 ;
-	double nd_oksep ;   
-	double other1 [4] ; 
-	size_t nd_small ;   
-	size_t other2 [4] ; 
-	int aggressive ;    
-	int order_for_lu ;  
-	int nd_compress ;   
-	int nd_camd ;	    
-	int nd_components ; 
+	double nd_oksep ;
+	double other1 [4] ;
+	size_t nd_small ;
+	size_t other2 [4] ;
+	int aggressive ;
+	int order_for_lu ;
+	int nd_compress ;
+	int nd_camd ;
+	int nd_components ;
 	int ordering ;
-	size_t other3 [4] ; 
+	size_t other3 [4] ;
     } method [CHOLMOD_MAXMETHODS + 1] ;
 
-    int postorder ;	
-    void *(*malloc_memory) (size_t) ;		
-    void *(*realloc_memory) (void *, size_t) ;  
-    void (*free_memory) (void *) ;		
-    void *(*calloc_memory) (size_t, size_t) ;	
+    int postorder ;
+    void *(*malloc_memory) (size_t) ;
+    void *(*realloc_memory) (void *, size_t) ;
+    void (*free_memory) (void *) ;
+    void *(*calloc_memory) (size_t, size_t) ;
     int (*complex_divide) (double ax, double az, double bx, double bz,
 	    double *cx, double *cz) ;
     double (*hypotenuse) (double x, double y) ;
-    double metis_memory ;   
-    double metis_dswitch ;	
-    size_t metis_nswitch ;	
-    size_t nrow ;	
-    UF_long mark ;	
-    size_t iworksize ;	
-    size_t xworksize ;	
-    void *Flag ;	
-    void *Head ;	
-    void *Xwork ; 	
-    void *Iwork ;	
-    int itype ;		
-    int dtype ;		
-    int no_workspace_reallocate ;   
-    int status ;	    
-    double fl ;		    
-    double lnz ;	    
-    double anz ;	    
-    double modfl ;	    
-    size_t malloc_count ;   
-    size_t memory_usage ;   
-    size_t memory_inuse ;   
-    double nrealloc_col ;   
+    double metis_memory ;
+    double metis_dswitch ;
+    size_t metis_nswitch ;
+    size_t nrow ;
+    UF_long mark ;
+    size_t iworksize ;
+    size_t xworksize ;
+    void *Flag ;
+    void *Head ;
+    void *Xwork ;
+    void *Iwork ;
+    int itype ;
+    int dtype ;
+    int no_workspace_reallocate ;
+    int status ;
+    double fl ;
+    double lnz ;
+    double anz ;
+    double modfl ;
+    size_t malloc_count ;
+    size_t memory_usage ;
+    size_t memory_inuse ;
+    double nrealloc_col ;
     double nrealloc_factor ;
-    double ndbounds_hit ;   
-    double rowfacfl ;	    
-    double aatfl ;	    
+    double ndbounds_hit ;
+    double rowfacfl ;
+    double aatfl ;
     double  other1 [16] ;
     UF_long other2 [16] ;
-    int     other3 [13] ;   
-    int prefer_binary ;	    
-    int default_nesdis ;    
-    int called_nd ;	    
+    int     other3 [13] ;
+    int prefer_binary ;
+    int default_nesdis ;
+    int called_nd ;
     size_t  other4 [16] ;
     void   *other5 [16] ;
 };
 
   struct cholmod_dense  {
-    size_t nrow ;	
+    size_t nrow ;
     size_t ncol ;
-    size_t nzmax ;	
-    size_t d ;		
-    void *x ;		
-    void *z ;		
-    int xtype ;		
-    int dtype ;		
+    size_t nzmax ;
+    size_t d ;
+    void *x ;
+    void *z ;
+    int xtype ;
+    int dtype ;
   };
 
   struct cholmod_sparse {
@@ -146,12 +153,12 @@ extern "C" {
     void *nz ;
     void *x ;
     void *z ;
-    int stype ;		
-    int itype ;	
-    int xtype ;		
-    int dtype ;		
-    int sorted ;	
-    int packed ;	
+    int stype ;
+    int itype ;
+    int xtype ;
+    int dtype ;
+    int sorted ;
+    int packed ;
   };
 
 #define CHOLMOD_A    0    /* solve Ax=b */
@@ -172,7 +179,7 @@ extern "C" {
   int cholmod_free_factor( cholmod_factor ** L, cholmod_common *Common ) ;
 }
 
-#endif 
+#endif
 
 namespace GIMLI{
 
@@ -186,7 +193,7 @@ CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrappe
   c_ = NULL;
   A_ = NULL;
   L_ = NULL;
-#ifdef USE_CHOLMOD 
+#ifdef USE_CHOLMOD
   c_ = new cholmod_common;
   int ret =  cholmod_start( c_ );
   if ( ret ) dummy_ = false;
@@ -201,7 +208,7 @@ CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrappe
 }
 
 CHOLMODWrapper::~CHOLMODWrapper(){
-#ifdef USE_CHOLMOD 
+#ifdef USE_CHOLMOD
   cholmod_free_factor( &L_, c_ );
   //** We did not allocate the matrix so we dont need to free it
   //  cholmod_free_sparse( &A_, c_ );
@@ -214,10 +221,10 @@ CHOLMODWrapper::~CHOLMODWrapper(){
   std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
 #endif
 }
- 
+
 int CHOLMODWrapper::factorise(){
   if ( !dummy_ ){
-#ifdef USE_CHOLMOD 
+#ifdef USE_CHOLMOD
     L_ = cholmod_analyze( A_, c_  );		    /* analyze */
     cholmod_factorize( A_, L_, c_ );		    /* factorize */
     //    L_ = cholmod_super_symbolic (A_, c_ );	/* analyze */
@@ -232,7 +239,7 @@ int CHOLMODWrapper::factorise(){
 
 int CHOLMODWrapper::solve( const RVector & rhs, RVector & solution ){
   if ( !dummy_ ){
-#ifdef USE_CHOLMOD 
+#ifdef USE_CHOLMOD
     cholmod_dense * b = cholmod_ones( A_->nrow, 1, A_->xtype, c_ );
     double * bx = (double*)b->x;
     for ( uint i = 0; i < dim_; i++) bx[ i ] = rhs[ i ];
@@ -253,7 +260,7 @@ int CHOLMODWrapper::solve( const RVector & rhs, RVector & solution ){
 
 int CHOLMODWrapper::initialize_( DSparseMatrix & S ){
   if ( !dummy_ ){
-#ifdef USE_CHOLMOD 
+#ifdef USE_CHOLMOD
 
   //** We do not allocate the matrix since we use the allocated space from DSparsemarix
 //    A_ = cholmod_allocate_sparse( dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_ ) ;
@@ -265,10 +272,10 @@ int CHOLMODWrapper::initialize_( DSparseMatrix & S ){
     A_->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
     A_->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
     A_->x     = S.vals();     /* numerical values, size nzmax */
-    
+
      //std::cout << "CHOLMODWrapper::initialize: " << nVals_ << std::endl;
-     
-    A_->stype  = 1; 
+
+    A_->stype  = 1;
 
     A_->itype = CHOLMOD_INT;
     A_->xtype = CHOLMOD_REAL;
