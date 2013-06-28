@@ -1,6 +1,69 @@
 GIMLi - Geophysical Inversion and Modelling Library
         an open-source multi-method library for solving inverse and forward tasks
 
+Prerequisites
+==============
+
+    . subversion
+    . gcc
+        tested: gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
+                OpenSuse 11.4 x86_64: gcc-4
+                Debian 3.2.46-1 x86_64: gcc-4.7.2
+                MinGW32: gcc-4.6.2/4
+                MinGW64: gcc-4.5.4 (without python bindings)
+                
+    . SuiteSparse http://www.cise.ufl.edu/research/sparse/SuiteSparse/
+        tested: SuiteSparse-3.7.1.tar.gz
+    . triangle http://www.cs.cmu.edu/~quake/triangle.html
+
+
+#### Example Installation on Vanilla Ubuntu ####
+
+For sure you will need subversion to get the source files and some things for the tool-chain
+
+    sudo apt-get install subversion gnu-standards autoconf libtool
+
+Create a directory for your installation, e.g., $HOME/src
+
+    mkdir -p ~/src
+    cd src
+
+Checkout the current sources for libgimli:
+    
+    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk libgimli
+
+Getting necessary or optional external libraries. We need suitesparse and triangle. If they are not installed system-wide we provide a small script to obtain them.
+
+    cd src/libgimli
+    make -C external/
+
+Now we can prepare the build:
+
+    ./autogen.sh
+ 
+
+*to be continued ..........................*
+
+sudo apt-get install libboost-all-dev libblas-dev liblapack-dev cmake git 
+
+sudo apt-get install python-matplotlib
+
+
+if 'sh COMMAND.sh' complains about missing pushd or popd try 'bash COMMAND.sh'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Tested with:
     gentoo x86_64 gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
 	OpenSuse 11.4 x86_64 gcc-4

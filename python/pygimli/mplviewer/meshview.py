@@ -50,12 +50,14 @@ def drawModel( axes, mesh, data = None, cMin = None, cMax = None
     if min( data ) < 0:
         linear = True
 
-    g.mplviewer.setMappableData( gci, viewdata, cMin = cMin, cMax = cMax, logScale = not(linear)  )
+    g.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax, 
+                                logScale = not(linear))
 
     if showCbar:
         
-        patches = g.mplviewer.createColorbar( gci, cMin = cMin, cMax = cMax,
-                                    nLevs = nLevs, label = label, orientation = orientation 
+        patches = g.mplviewer.createColorbar(gci, cMin=cMin, cMax=cMax,
+                                             nLevs=nLevs, label=label,
+                                             orientation=orientation 
                                     )
     if xlab is not None: axes.set_xlabel( xlab )
     if ylab is not None: axes.set_ylabel( ylab )
