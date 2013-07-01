@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2012 by the resistivity.net development team            *
+ *   Copyright (C) 2012 -- 2013 by the resistivity.net development team    *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,11 +23,7 @@
 
 #include "gimli.h"
 
-#ifdef HAVE_BOOST_THREAD_HPP
-    #include <boost/thread.hpp>
-#endif
-
-#define MEMINFO GIMLI::MemWatch::instance().info( WHERE );
+#define MEMINFO GIMLI::MemWatch::instance().info(WHERE);
 
 namespace GIMLI{
 
@@ -42,7 +38,7 @@ inline double mByte( long byte ){ return double( byte / ( 1024.0 * 1024.0 ) ); }
  * Informations are taken from /proc system, so only available for linux systems.
  * This is a singleton class to ensure a single instance.
  * To call it use e.g.: MemWatch::instance().info( WHERE );*/
-class DLLEXPORT MemWatch  : public Singleton< MemWatch > {
+class DLLEXPORT MemWatch : public Singleton< MemWatch > {
 public:
     friend class Singleton< MemWatch >;
 
@@ -71,10 +67,6 @@ private:
     Stopwatch * swatchAll_;
     Stopwatch * swatchDur_;
 
-    /*! Lock proc reading to be thread safe */
-    #ifdef HAVE_BOOST_THREAD_HPP
-    boost::mutex mutex_;
-    #endif
 };
 
 

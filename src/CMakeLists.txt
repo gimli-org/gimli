@@ -37,6 +37,10 @@ if (CHOLMOD_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${CHOLMOD_LIBRARIES})
 endif (CHOLMOD_FOUND)
 
+if (READPROC_FOUND)
+    include_directories(${READPROC_INCLUDE_DIR})
+    target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
+endif (READPROC_FOUND)
 
 #install(TARGETS ${libgimli_TARGET_NAME} 
 #        LIBRARY 

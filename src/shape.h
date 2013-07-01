@@ -25,7 +25,7 @@
 #include "polynomial.h"
 #include "curvefitting.h"
 
-#ifdef HAVE_LIBBOOST_THREAD
+#ifdef HAVE_BOOST_THREAD_HPP
     #include <boost/thread.hpp>
     extern boost::mutex writeCacheMutex__;
 #endif
@@ -83,8 +83,10 @@ private:
 
     /*! probably threading problems .. pls check*/
     template < class Ent > void createShapeFunctions_( const Ent & e ) const {
-        #ifdef HAVE_LIBBOOST_THREAD
-            boost::mutex::scoped_lock lock( writeCacheMutex__ ); 
+        #ifdef HAVE_BOOST_THREAD_HPP
+            boost::mutex::scoped_lock lock(writeCacheMutex__); 
+        #else
+            #error "No boost threading"
         #endif
         
         std::vector < PolynomialFunction < double > > N = e.createShapeFunctions(); 

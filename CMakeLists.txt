@@ -45,6 +45,7 @@ if (CPPUNIT_FOUND)
     option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
 endif (CPPUNIT_FOUND)
 
+find_package(readproc)
 find_package(Doxygen)
 
 if (DOXYGEN_FOUND)

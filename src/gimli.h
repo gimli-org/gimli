@@ -26,6 +26,13 @@
 #else 
     #if defined(HAVE_CONFIG_H)
         #include <config.h>
+        #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
+    #endif
+#endif
+
+#ifdef BOOST_THREAD_FOUND 
+    #if BOOST_THREAD_FOUND==ON
+        #define HAVE_BOOST_THREAD_HPP
     #endif
 #endif
     
@@ -153,8 +160,8 @@ static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
 static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
 
-static bool __SAVE_PYTHON_GIL__ = false;
-static bool __GIMLI_DEBUG__ = false;
+extern bool __SAVE_PYTHON_GIL__;
+extern bool __GIMLI_DEBUG__;
 
 /*! Flag load/save Ascii or binary */
 enum IOFormat{ Ascii, Binary };

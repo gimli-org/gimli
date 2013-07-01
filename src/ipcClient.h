@@ -25,16 +25,15 @@
 
 #include <deque>
 
+#ifdef USE_IPC
+    #if USE_IPC==TRUE
 
-#ifndef USE_IPC
-    #define USE_IPC
-#endif
-
-#undef USE_IPC
-#ifdef HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
-    #if USE_IPC==ON
-        //#include <boost/interprocess/managed_shared_memory.hpp>
-        //using namespace boost::interprocess;
+        #if HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP==1
+            #include <boost/interprocess/managed_shared_memory.hpp>
+            using namespace boost::interprocess;
+        #else
+            #undef USE_IPC
+        #endif
     #endif
 #else
     #undef USE_IPC
