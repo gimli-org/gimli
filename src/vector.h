@@ -53,15 +53,6 @@
 #include <cerrno>
 #include <iterator>
 
-//#include <function> inherit std::multiplies
-
-// #ifdef HAVE_LIBBOOST_THREAD
-// #define EXPRVEC_USE_LIBBOOST_THREAD
-// #include <boost/thread.hpp>
-// #endif
-
-// #ifdef HAVE_LIBBOOST_THREAD
-// #define EXPRVEC_USE_LIBBOOST_THREAD
 #ifdef HAVE_BOOST_BIND_HPP
 #include <boost/bind.hpp>
 #endif
@@ -619,8 +610,11 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
             }
             Index ret = 0;
             int64 size; ret = fread( &size, sizeof( int64 ), 1, file );
-            this->resize( size );
+            if (ret) this->resize( size );
+
             ret = fread( &data_[ 0 ], sizeof( ValueType ), size, file );
+            if (!ret) {
+            }
             fclose( file );
         }
         return true;
@@ -709,8 +703,9 @@ template< class ValueType, class Iter > void assignResult( Vector< ValueType > &
     Iter& result2 = (Iter&)result;
 #endif
 
-#ifdef EXPRVEC_USE_LIBBOOST_THREAD
 
+#ifdef EXPRVEC_USE_BOOST_THREAD
+//DEPRECATED
     if ( v.nThreads() == 1 ) {
       AssignResult< ValueType, Iter >( v, result, 0, v.size() )();
     } else {
@@ -1361,7 +1356,9 @@ template < class ValueType >
  Load vector from file. See Vector< ValueType >::load.
 */
 template < class ValueType >
-    bool loadVec( Vector < ValueType > & a, const std::string & filename, IOFormat format = Ascii ){ return a.load( filename, format ); }
+    bool loadVec(Vector < ValueType > & a, 
+                 const std::string & filename, 
+                 IOFormat format = Ascii ){ return a.load( filename, format ); }
 
 
 

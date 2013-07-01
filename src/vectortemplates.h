@@ -125,9 +125,13 @@ template < class Vec > bool loadVec( Vec & a, const std::string & filename,
         return false;
     }
     uint ret = 0;
-    int size; ret = fread( &size, sizeof( int ), 1, file ); ret;
-    a.resize( size );
-    ret = fread( &a[ 0 ], sizeof( double ), size, file );
+    int size; ret = fread( &size, sizeof( int ), 1, file ); 
+    if (ret){
+        a.resize( size );
+        ret = fread( &a[ 0 ], sizeof( double ), size, file );
+    }else {
+        
+    }
     fclose( file );
   }
   return true;

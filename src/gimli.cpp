@@ -28,9 +28,9 @@
 #include <cstdlib>
 
 namespace GIMLI{
-
-//extern bool __SAVE_PYTHON_GIL__ = false;
-//extern bool __GIMLI_DEBUG__ = false;
+    
+bool __SAVE_PYTHON_GIL__ = false;
+bool __GIMLI_DEBUG__ = false;
 
 std::string authors(){
   std::string a( (std::string)("bugs and suggestions to: ") + PACKAGE_AUTHORS );

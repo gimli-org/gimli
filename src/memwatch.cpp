@@ -23,15 +23,22 @@
 
 #include <iostream>
 
-#ifdef WIN32_LEAN_AND_MEAN
-    #include <psapi.h>
-#else
-    #ifdef HAVE_LIBPROCPS
-        #ifdef HAVE_PROC_READPROC
-            #include <proc/readproc.h>
-            #define USE_PROC_READPROC
-        #endif
+#ifdef READPROC_FOUND 
+    #if READPROC_FOUND==TRUE
+        #include <proc/readproc.h>
+        #define USE_PROC_READPROC
     #endif
+#elif HAVE_PROC_READPROC
+    #include <proc/readproc.h>
+    #define USE_PROC_READPROC
+#elif WIN32_LEAN_AND_MEAN
+    #include <psapi.h>
+#endif
+
+#ifdef HAVE_BOOST_THREAD_HPP
+    #include <boost/thread.hpp>
+    /*! Lock proc reading to be thread safe */
+    boost::mutex __readproc__mutex__;
 #endif
 
 namespace GIMLI {
@@ -58,7 +65,7 @@ double MemWatch::current( ){
 
 double MemWatch::inUse( ) {
 #ifdef HAVE_BOOST_THREAD_HPP
-    boost::mutex::scoped_lock lock( mutex_ ); // slows down alot
+    boost::mutex::scoped_lock lock( __readproc__mutex__ );
 #endif
 
 #ifdef WIN32_LEAN_AND_MEAN
@@ -83,15 +90,20 @@ double MemWatch::inUse( ) {
     return 0;
 }
 
-void MemWatch::info( const std::string & str ) {
-    #if defined( WIN32_LEAN_AND_MEAN ) || defined( USE_PROC_READPROC )
-    if ( __GIMLI_DEBUG__ ){
-
-        std::cout << "\t" << str << " Memory in use: abs: " << inUse() << " rel: "
+void MemWatch::info(const std::string & str){
+    if (__GIMLI_DEBUG__){
+#if defined( WIN32_LEAN_AND_MEAN ) || defined( USE_PROC_READPROC )
+        std::cout << "\t" << str << " Memory " 
+#ifdef HAVE_BOOST_THREAD_HPP
+                    << "(mt)"
+#endif // HAVE_BOOST_THREAD_HPP
+                    << " in use: abs: " << inUse() << " rel: "
                     << current() << " MByte. t = "
                     << swatchAll_->duration() << "/" << swatchDur_->duration( true ) << " s " <<  std::endl;
-    }
+    #else
+        std::cout << "\t" << str << " Memory no info"  <<  std::endl;
     #endif
+    }
 }
 
 } // namespace GIMLI

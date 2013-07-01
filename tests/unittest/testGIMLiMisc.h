@@ -108,16 +108,17 @@ public:
     }
     
     void testMemWatch(){
+        std::cout << "MemWatch" << std::endl;
         GIMLI::__GIMLI_DEBUG__ = true;
         GIMLI::MemWatch::instance().info(WHERE);
-        double * mat2 = new double[ 10000 * 10000 ];
+        double * mat2 = new double[10000 * 10000];
         GIMLI::MemWatch::instance().info(WHERE);
         delete [] mat2;
-        GIMLI::MemWatch::instance().info( WHERE );
-        GIMLI::RMatrix mat( 10000, 10000 );
-        GIMLI::MemWatch::pInstance()->info( WHERE );
+        GIMLI::MemWatch::instance().info(WHERE);
+        GIMLI::RMatrix mat(10000, 10000);
+        GIMLI::MemWatch::pInstance()->info(WHERE);
         mat.clear();
-        GIMLI::MemWatch::pInstance()->info( WHERE );
+        GIMLI::MemWatch::pInstance()->info(WHERE);
     }
     
     void testPolynomialFunction(){

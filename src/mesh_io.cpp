@@ -643,7 +643,7 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
                         
 void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RVector > & dataMap, 
                       const std::vector < RVector3 > & vec ) const {
-    bool verbose = true;
+    bool verbose = false;
     
     if ( verbose ){
         std::cout << "Write vtk " << fbody + ".vtk" << std::endl;

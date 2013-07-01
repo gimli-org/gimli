@@ -30,9 +30,9 @@
 #include <cerrno>
 
 #ifdef USE_THREADS
-#ifdef HAVE_LIBBOOST_THREAD
+#ifdef HAVE_BOOST_THREAD_HPP
 #include <boost/thread.hpp>
-#endif // HAVE_LIBBOOST_THREAD
+#endif // HAVE_BOOST_THREAD_HPP
 #endif // USE_THREADS
 
 namespace GIMLI{
