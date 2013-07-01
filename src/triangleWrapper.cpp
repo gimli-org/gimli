@@ -26,22 +26,18 @@
 
 #ifdef TRIANGLE_FOUND
     #if TRIANGLE_FOUND==TRUE
-        #define USE_LIBTRIANGLE 1
+        extern "C"{
+            #define REAL double
+            #define VOID void
+            #define TRILIBRARY
+            #define ANSI_DECLARATORS
+
+            #include <triangle.h>
+            #define USE_LIBTRIANGLE
+        }
     #endif
-#endif
-
-#ifdef USE_LIBTRIANGLE
-extern "C"{
-    #define REAL double
-    #define VOID void
-    #define TRILIBRARY
-    #define ANSI_DECLARATORS
-
-    #include <triangle.h>
-    #define USE_LIBTRIANGLE
-}
 #elif HAVE_LIBTRIANGLE
-#define USE_LIBTRIANGLE
+    #define USE_LIBTRIANGLE
 
 extern "C"{
 
