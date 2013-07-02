@@ -147,9 +147,17 @@ if (CHOLMOD_LIBRARY)
                         OUTPUT_STRIP_TRAILING_WHITESPACE)
         if (EXISTS "${GFORTRAN_LIBRARY}")
             set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${GFORTRAN_LIBRARY})
-            set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} rt)
         endif()
     endif(GFORTRAN_EXECUTABLE)
+
+    IF(WIN32)
+  
+    ELSE(WIN32)
+    # On unix system, debug and release have the same name
+        set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} rt)
+    ENDIF(WIN32)
+
+
 endif (CHOLMOD_LIBRARY)
 
 # Standard package handling
