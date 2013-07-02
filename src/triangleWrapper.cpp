@@ -82,9 +82,6 @@ void triangulate(char *, struct triangulateio *, struct triangulateio *, struct 
 }
 #endif // #ifdef USE_LIBTRIANGLE
 
-
-
-
 namespace GIMLI{
 
 TriangleWrapper::TriangleWrapper( const Mesh & inMesh ) : inMesh_( & inMesh ){

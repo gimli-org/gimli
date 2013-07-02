@@ -1,7 +1,5 @@
 set( libgimli_TARGET_NAME gimli )
 
-include_directories(${Boost_INCLUDE_DIR})
-
 link_directories(${libgimli_BINARY_DIR})
 
 file (GLOB SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.cpp)
@@ -23,8 +21,20 @@ generate_export_header( ${libgimli_TARGET_NAME}
 
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)
+	
+	if (Boost_THREAD_FOUND)
+		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
+	endif (Boost_THREAD_FOUND)
+	if (Boost_SYSTEM_FOUND)
+		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
+	endif (Boost_SYSTEM_FOUND)
+	
 elseif (UNIX AND NOT APPLE)
     target_link_libraries(${libgimli_TARGET_NAME} ${CMAKE_DL_LIBS})
+	if (READPROC_FOUND)
+		include_directories(${READPROC_INCLUDE_DIR})
+		target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
+	endif (READPROC_FOUND)
 endif(WIN32)
 
 if (TRIANGLE_FOUND)
@@ -37,10 +47,6 @@ if (CHOLMOD_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${CHOLMOD_LIBRARIES})
 endif (CHOLMOD_FOUND)
 
-if (READPROC_FOUND)
-    include_directories(${READPROC_INCLUDE_DIR})
-    target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
-endif (READPROC_FOUND)
 
 #install(TARGETS ${libgimli_TARGET_NAME} 
 #        LIBRARY 

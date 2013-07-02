@@ -29,9 +29,11 @@
 
 #if defined(DLL_EXPORT) || defined(gimli_EXPORTS)
     //* We are building this library
+    //#warning (We are building this library)
     #define DLLEXPORT __declspec(dllexport)
 #else
     //* We are using this library
+    //#warning (We are using this library)
     #define DLLEXPORT __declspec(dllimport)
 #endif
 

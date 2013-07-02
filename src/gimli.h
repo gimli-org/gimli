@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,19 +23,19 @@
 
 #ifdef HAVE_CONFIG_CMAKE_H
     #include <config.cmake.h>
-#else 
+#else
     #if defined(HAVE_CONFIG_H)
         #include <config.h>
         #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
     #endif
 #endif
 
-#ifdef BOOST_THREAD_FOUND 
+#ifdef BOOST_THREAD_FOUND
     #if BOOST_THREAD_FOUND==ON
         #define HAVE_BOOST_THREAD_HPP
     #endif
 #endif
-    
+
 #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "gimli"
         #define PACKAGE_VERSION "0.9.0-win"
@@ -277,7 +277,7 @@ template< typename T > inline std::string str(const T & value){
 
 //! DEPRECATED do not use
 template< typename T > inline std::string toStr(const T & value){ return str(value);}
-  
+
 inline std::string versionStr(){
     std::string vers(str(PACKAGE_NAME) + "-" + str(PACKAGE_VERSION));
     return vers;

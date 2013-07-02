@@ -12,6 +12,7 @@
 # mode.
 
 FIND_PATH(CPPUNIT_INCLUDE_DIR cppunit/TestCase.h
+  /local/include
   /usr/local/include
   /usr/include
 )
@@ -21,6 +22,7 @@ IF(WIN32)
   FIND_LIBRARY(CPPUNIT_LIBRARY cppunit
                ${CPPUNIT_INCLUDE_DIR}/../lib
                /usr/local/lib
+			   /local/lib
                /usr/lib)
   FIND_LIBRARY(CPPUNIT_DEBUG_LIBRARY cppunitd
                ${CPPUNIT_INCLUDE_DIR}/../lib

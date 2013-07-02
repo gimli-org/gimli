@@ -32,20 +32,20 @@
 
 namespace GIMLI{
 
-DLLEXPORT std::vector < PolynomialFunction < double > > 
-    createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff, 
+DLLEXPORT std::vector < PolynomialFunction < double > >
+    createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff,
                                     bool pascale, bool serendipity, const RVector & startVector = RVector( 0 ) );
-    
-template < class Ent > std::vector < PolynomialFunction < double > > 
-    createPolynomialShapeFunctions( const Ent & ent, uint nCoeff, 
+
+template < class Ent > std::vector < PolynomialFunction < double > >
+    createPolynomialShapeFunctions( const Ent & ent, uint nCoeff,
                                     bool pascale, bool serendipity, const RVector & startVector = RVector( 0 ) ) {
-        
+
     std::vector < RVector3 > pnts;
     for ( Index i = 0; i < ent.nodeCount(); i ++ ){ pnts.push_back( ent.rst( i ) ); }
-    
+
     return createPolynomialShapeFunctions( pnts, ent.dim(), nCoeff, pascale, serendipity, startVector );
 }
-    
+
 class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {
 public:
     friend class Singleton< ShapeFunctionCache >;
@@ -55,57 +55,56 @@ public:
         std::map < uint8, std::vector < PolynomialFunction < double > > >::const_iterator it = shapeFunctions_.find( e.rtti() );
 
         if ( it == shapeFunctions_.end() ){
-            this->createShapeFunctions_( e ); 
+            this->createShapeFunctions_( e );
             it = shapeFunctions_.find( e.rtti() );
-        } 
-        
+        }
+
         return (*it).second;
     }
-        
-    template < class Ent > const std::vector < PolynomialFunction < double > > & 
+
+    template < class Ent > const std::vector < PolynomialFunction < double > > &
     deriveShapeFunctions( const Ent & e , uint dim  ) const {
         std::map < uint8, std::vector < std::vector < PolynomialFunction < double > > > >::const_iterator it = dShapeFunctions_.find( e.rtti() );
-    
+
         if ( it == dShapeFunctions_.end() ) {
-            this->createShapeFunctions_( e ); 
+            this->createShapeFunctions_( e );
             it = dShapeFunctions_.find( e.rtti() );
-        } 
+        }
         return (*it).second[ dim ];
     }
-    
+
     /*! Clear the cache. */
     void clear( ) {
         shapeFunctions_.clear();
         dShapeFunctions_.clear();
     }
-    
+
 private:
 
     /*! probably threading problems .. pls check*/
     template < class Ent > void createShapeFunctions_( const Ent & e ) const {
         #ifdef HAVE_BOOST_THREAD_HPP
-            boost::mutex::scoped_lock lock(writeCacheMutex__); 
+            boost::mutex::scoped_lock lock(writeCacheMutex__);
         #else
             #error "No boost threading"
         #endif
-        
-        std::vector < PolynomialFunction < double > > N = e.createShapeFunctions(); 
-            
+
+        std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();
+
         shapeFunctions_[ e.rtti() ] = N;
         dShapeFunctions_[ e.rtti() ] = std::vector < std::vector < PolynomialFunction < double > > >();
-        
+
         dShapeFunctions_[ e.rtti() ].push_back( std::vector < PolynomialFunction < double > >() );
         dShapeFunctions_[ e.rtti() ].push_back( std::vector < PolynomialFunction < double > >() );
         dShapeFunctions_[ e.rtti() ].push_back( std::vector < PolynomialFunction < double > >() );
-            
+
         for ( uint i = 0; i < N.size(); i ++ ){
             dShapeFunctions_[ e.rtti() ][ 0 ].push_back ( N[ i ].derive( 0 ) );
             dShapeFunctions_[ e.rtti() ][ 1 ].push_back ( N[ i ].derive( 1 ) );
             dShapeFunctions_[ e.rtti() ][ 2 ].push_back ( N[ i ].derive( 2 ) );
         }
     }
-    
-        
+
     /*! Private so that it can not be called */
     ShapeFunctionCache( ){}
     /*! Private so that it can not be called */
@@ -119,12 +118,12 @@ protected:
 
     /*! Cache for shape functions. */
     mutable std::map < uint8, std::vector < PolynomialFunction < double > > > shapeFunctions_;
-    
+
     /*! Cache for shape functions derivatives. */
     mutable std::map < uint8, std::vector< std::vector < PolynomialFunction < double > > > > dShapeFunctions_;
-    
-};    
-    
+
+};
+
 static const double NodeCoordinates[ 1 ][ 3 ] = {
     {0.0, 0.0, 0.0}
 };
@@ -141,7 +140,7 @@ public:
 
     /*! Pure virtual methode for runtime identification. */
     virtual int rtti() const = 0;
-    
+
     virtual int dim() const = 0;
 
     /*! Return an identification name for the shape. */
@@ -149,7 +148,7 @@ public:
 
     /*! Return the amount of nodes for this shape. */
     uint nodeCount() const { return nodeVector_.size(); }
-    
+
     /*! Set the i-th \ref Node. */
     void setNode( uint i, Node & n );
 
@@ -166,15 +165,15 @@ public:
     std::vector < Node * > & nodes( ) { return nodeVector_ ; }
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const ;
-    
-    /*! Create and return the Jacobian matrix for this shape at the local coordinate \f$ L[r,s,t]\f$. \n    
+
+    /*! Create and return the Jacobian matrix for this shape at the local coordinate \f$ L[r,s,t]\f$. \n
      * The Jacobian matrix is a 3x3 matrix representing the absolute derivative matrix for this shape regarding the \f$ \mathcal{N} \f$ shape functions:\n
      \f{eqnarray*}{
         J(0,i-1) & = \sum_n^{\mathcal{N}}\frac{dN_n(r,s,t)}{\partial r,s,t}x_n \\
         J(1,i-1) & = \sum_n^{\mathcal{N}}\frac{dN_n(r,s,t)}{\partial r,s,t}y_n \\
-        J(2,i-1) & = \sum_n^{\mathcal{N}}\frac{dN_n(r,s,t)}{\partial r,s,t}z_n      
+        J(2,i-1) & = \sum_n^{\mathcal{N}}\frac{dN_n(r,s,t)}{\partial r,s,t}z_n
      \f} for i = [1,2,3]
-     
+
      \f{eqnarray*}{
                     & \frac{\partial x}{\partial r}, \frac{\partial x}{\partial s}, \frac{\partial x}{\partial t}\\
         J      =    & \frac{\partial y}{\partial r}, \frac{\partial y}{\partial s}, \frac{\partial y}{\partial t}\\
@@ -185,69 +184,69 @@ public:
                                & \frac{\partial r}{\partial x}, \frac{\partial r}{\partial y}, \frac{\partial r}{\partial z}\\
         J^{-1} = \frac{1}{|J|} & \frac{\partial s}{\partial x}, \frac{\partial s}{\partial y}, \frac{\partial s}{\partial z}\\
                                & \frac{\partial t}{\partial x}, \frac{\partial t}{\partial y}, \frac{\partial t}{\partial z}
-        \f} 
+        \f}
     */
     RMatrix createJacobian( ) const;
-        
-    /*! Return the inverse of the Jacobian Matrix. And create and cache it on demand. 
-     * The matrix is no more valid if the shape was transformed. 
+
+    /*! Return the inverse of the Jacobian Matrix. And create and cache it on demand.
+     * The matrix is no more valid if the shape was transformed.
      */
     const RMatrix & invJacobian() const;
-    
-    /*! Return a \ref RVector for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions 
-     *\f$ N_n(r,s,t)\f$ at the local coordinate \f$ L(r,s,t)\f$. */    
+
+    /*! Return a \ref RVector for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions
+     *\f$ N_n(r,s,t)\f$ at the local coordinate \f$ L(r,s,t)\f$. */
     virtual RVector N( const RVector3 & L ) const;
-    
+
     /*! TODO replace this with expressions. \n
      * Fill the allocated \ref RVector n of size \f$ \mathcal{N} \f$ for the \f$ n=[0,\f$ \mathcal{N} \f$) \f$ shape functions \f$ N_n(r,s,t)\f$ for the local coordinate \f$ L(r,s,t)\f$. For performance reasons the size of L will not be checked.
-     This method needs to be specialized in the corresponding child classes. */     
+     This method needs to be specialized in the corresponding child classes. */
     virtual void N( const RVector3 & L, RVector & ret ) const;
-    
-    /*! Return the derivative matrix of size ( \f$ 3\times\mathcal{N} \f$ ) for the shape functions at the local coordinate. 
+
+    /*! Return the derivative matrix of size ( \f$ 3\times\mathcal{N} \f$ ) for the shape functions at the local coordinate.
      * \f$ L(r,s,t) \f$. Result is independent of L for linear shape function (TODO Remove on cleanup)
      * \f$ [[\frac{dN_i(r,s,t)}{\partial r}],[\frac{dN_i(r,s,t)}{\partial s}],[\frac{dN_i(r,s,t)}{\partial t}]^{\mathrm{T}}] \f$ for \f$ i = [0,\mathcal{N}\f$ */
     virtual RMatrix dNdrst( const RVector3 & L ) const;
-    
-    /*! Perform coordinate transformation from the locale coordinates \f$ (r,s,t)=(r,s,t)=([0..1,0..1,0..1]) \f$ of this shape to Cartesian coordinates \f$ (x,y,z) \f$ regarding to the \f$ \mathcal{N} \f$ shape functions \ref N 
+
+    /*! Perform coordinate transformation from the locale coordinates \f$ (r,s,t)=(r,s,t)=([0..1,0..1,0..1]) \f$ of this shape to Cartesian coordinates \f$ (x,y,z) \f$ regarding to the \f$ \mathcal{N} \f$ shape functions \ref N
      * \f$ N_i \f$ with \f$ i=[0,\mathcal{N})\f$ \n
      * This is the opposite to \ref xyz2rst().
      * \f{eqnarray*}{
      *  x &=& \sum_i^{\mathcal{N}} N_i(r,s,t)x_i \\
      *  y &=& \sum_i^{\mathcal{N}} N_i(r,s,t)y_i \\
-     *  z &=& \sum_i^{\mathcal{N}} N_i(r,s,t)z_i 
+     *  z &=& \sum_i^{\mathcal{N}} N_i(r,s,t)z_i
         \f}
      * This is a generic function and may be overwritten by faster methods for shape simplexes.
      */
     virtual void rst2xyz( const RVector3 & rst, RVector3 & xyz ) const;
-    
+
     /*! Return the Cartesian coordinates for the locale coordinates rst. See \ref rst2xyz. */
     virtual RVector3 xyz( const RVector3 & rst ) const;
-    
-    /*! Convert Cartesian coordinates into locale coordinates regarding the shape functions. 
+
+    /*! Convert Cartesian coordinates into locale coordinates regarding the shape functions.
      * This is the opposite to \ref xyz2rst.
      * This is a generic function and may be overwritten by faster methods for shape simplexes.
      * Solve the nonlinear system of equations by newton method \f$ \mathrm{d}(x,y,z)= J*\mathrm{d}(r,s,t) \f$
      */
     virtual void xyz2rst( const RVector3 & xyz, RVector3 & rst ) const;
-    
+
     /*! Return local coordinates for Cartesian coordinates regarding the shape function. */
     virtual RVector3 rst( const RVector3 & xyz ) const;
-    
+
     /*! Return local coordinates for node i. */
     virtual RVector3 rst( uint i ) const;
-    
+
     /*! Return derivative from local coordinates to Cartesian coordinates.
-     * These are the elements of the inverse Jacobian matrix. 
+     * These are the elements of the inverse Jacobian matrix.
      */
     inline double drstdxyz( uint rstI, uint xyzJ ) const { return invJacobian()[ rstI ][ xyzJ ]; }
-    
+
     /*! Return true if the Cartesian coordinates xyz are inside the shape. On boundary means inside too. */
     virtual bool isInside( const RVector3 & xyz, bool verbose = false ) const;
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape. On boundary means inside too.
      sf contains the complete shape function to identify next neighbor. */
     virtual bool isInside( const RVector3 & xyz, RVector & sf, bool verbose = false ) const;
-    
+
     /*! Get the domain size of this shape, i.e., length, area or volume */
     double domainSize() const;
 
@@ -259,19 +258,19 @@ public:
 
     /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */
     void changed();
-    
+
 protected:
-    
+
     inline void resizeNodeSize_( uint n ) { nodeVector_.resize( n, NULL );  }
-    
+
     /*! Virtual method to calculate the domain size i.e length, area, volume of the shapes */
     virtual double domainSize_() const { return 0.0; }
 
     mutable double domSize_;
     mutable bool hasDomSize_;
-    
+
     mutable RMatrix invJacobian_;
-    
+
     std::vector < Node * > nodeVector_;
 };
 
@@ -286,7 +285,7 @@ public:
     virtual int rtti() const { return MESH_SHAPE_NODE_RTTI; }
 
     virtual int dim() const { return 0; }
-    
+
     virtual std::string name() const { return "NodeShape"; }
 
     virtual RVector3 rst( uint i ) const;
@@ -315,18 +314,18 @@ public:
     virtual int rtti() const { return MESH_SHAPE_EDGE_RTTI; }
 
     virtual int dim() const { return 1; }
-    
+
     virtual std::string name() const { return "EdgeShape"; }
 
     /*! See Shape::rst */
     virtual RVector3 rst( uint i ) const;
-    
+
 //     /*! See Shape::N. */
 //     virtual void N( const RVector3 & L, RVector & n ) const;
-//     
+//
 //     /*! See Shape::dNdrst. */
 //     virtual RMatrix dNdrst( const RVector3 & rst ) const;
-        
+
 //     /*! Returns the partial derivative of the natural coordinates \f$L_i, i=0..1\f$ with respect to the cartesian coordinates
 //     \ref RVector3 pos \f$ (x) \f$:
 //         \f$ \frac{ \partial L_i(x) }{ \partial x } \f$ \n
@@ -334,7 +333,7 @@ public:
 //     virtual double deriveCoordinates( uint i, uint coord ) const;
 
 //     virtual bool touch( const RVector3 & pos, bool verbose = false ) const ;
-// 
+//
 //     virtual bool touch1( const RVector3 & pos, bool verbose, int & pFunIdx ) const;
 
     double length() const;
@@ -372,19 +371,19 @@ public:
     virtual ~TriangleShape(){ }
 
     virtual int rtti() const { return MESH_SHAPE_TRIANGLE_RTTI; }
-    
+
     virtual int dim() const { return 2; }
 
     virtual std::string name() const { return "TriangleShape"; }
 
     /*! See Shape::rst */
     virtual RVector3 rst( uint i ) const;
-    
+
     /*! See Shape::xyz2rst. this is a specialized override for speedup. */
     virtual void xyz2rst( const RVector3 & pos, RVector3 & rst  ) const;
-    
+
     void setNodes( Node * n0, Node * n1, Node * n2 );
-        
+
     double area() const;
 
     virtual RVector3 norm() const;
@@ -404,14 +403,14 @@ static const double QuadCoordinates[ 4 ][ 3 ] = {
 };
 
 //! Quadrangle shape.
-/*! 
+/*!
  * Quadrangle shape. Convex quadrangle. Every inner angle might be arbitrary but lower than 180 degrees.
  *  3-------2
  *  |       |
- *  s       |  
+ *  s       |
  *  |       |
  *  0---r---1
- * 
+ *
  * r from 0 to 1
  * s from 0 to 1
 */
@@ -423,24 +422,24 @@ public:
     virtual ~QuadrangleShape(){ }
 
     virtual int rtti() const { return MESH_SHAPE_QUADRANGLE_RTTI; }
-    
+
     virtual int dim() const { return 2; }
 
     virtual std::string name() const { return "QuadrangleShape"; }
 
     /*! See Shape::rst */
     virtual RVector3 rst( uint i ) const;
-    
+
     double area() const;
 
 //     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
-        
+
 //     /*! See Shape::N. */
 //     virtual void N( const RVector3 & L, RVector & n ) const;
-    
+
 //     /*! See Shape::dNdrst. */
 //     virtual RMatrix dNdrst( const RVector3 & rst ) const;
-//     
+//
     virtual RVector3 norm() const;
 
 protected:
@@ -455,7 +454,7 @@ static const double TetCoordinates[ 4 ][ 3 ] = {
 };
 
 //! Tetrahedral shape.
-/*! 
+/*!
  * Tetrahedral shape.
 */
 class DLLEXPORT TetrahedronShape : public Shape {
@@ -465,25 +464,25 @@ public:
     virtual ~TetrahedronShape(){ }
 
     virtual int rtti() const { return MESH_SHAPE_TETRAHEDRON_RTTI; }
-    
+
     virtual int dim() const { return 3; }
 
     virtual std::string name() const { return "TetrahedronShape"; }
 
     /*! See Shape::rst */
     virtual RVector3 rst( uint i ) const;
-    
+
     /*! See Shape::xyz2rst. Specialization for speedup */
     void xyz2rst( const RVector3 & pos, RVector3 & rst  ) const;
-    
+
     void setNodes( Node * n0, Node * n1, Node * n2, Node * n3 );
-        
+
 //     /*! See Shape::N. */
 //     virtual void N( const RVector3 & L, RVector & n ) const;
-//     
+//
 //     /*! See Shape::dNdrst. */
 //     virtual RMatrix dNdrst( const RVector3 & rst ) const;
-    
+
     double volume() const;
 
 protected:
@@ -540,22 +539,22 @@ public:
     virtual ~HexahedronShape(){ }
 
     virtual int rtti() const { return MESH_SHAPE_HEXAHEDRON_RTTI; }
-    
+
     virtual int dim() const { return 3; }
 
     /*! See Shape::rst */
     virtual RVector3 rst( uint i ) const;
-    
+
     virtual std::string name() const { return "HexahedronShape"; }
 
     double volume() const;
 
 //     /*! See Shape::N. */
 //     virtual void N( const RVector3 & L, RVector & n ) const;
-//     
+//
 //     /*! See Shape::dNdrst. */
 //     virtual RMatrix dNdrst( const RVector3 & rst ) const;
-    
+
 protected:
 
     virtual double domainSize_() const { return volume(); }
@@ -577,7 +576,7 @@ static const double PrismCoordinates[ 6 ][ 3 ] = {
 };
 
 //! Triangular prism
-/*! 
+/*!
  * A Triangular prism is a three-sided prism. Equivalently, it is a pentahedron of which two faces are parallel.
  * Node direction:
   5    \n
@@ -595,18 +594,18 @@ public:
     virtual ~TriPrismShape(){ }
 
     virtual int rtti() const { return MESH_SHAPE_TRIPRISM_RTTI; }
-    
+
     virtual int dim() const { return 3; }
 
     virtual std::string name() const { return "TriagonalPrismShape"; }
 
     /*! See Shape::rst */
     virtual RVector3 rst( uint i ) const;
-    
+
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions( ) const;
-    
+
     double volume() const;
-    
+
 protected:
 
     virtual double domainSize_() const { return volume(); }
@@ -623,7 +622,7 @@ static const double PyramidCoordinates[ 5 ][ 3 ] = {
 //! Pyramid
 /*!
  *         4    \n
- *              \n       
+ *              \n
  *     3------2 \n
  *    /      /  \n
  *   0------1   \n
@@ -635,20 +634,20 @@ public:
     virtual ~PyramidShape(){ }
 
     virtual int rtti() const { return MESH_SHAPE_PYRAMID_RTTI; }
-    
+
     virtual int dim() const { return 3; }
-    
+
     /*! See Shape::rst */
     virtual RVector3 rst( uint i ) const;
-    
+
 //     /*! See Shape::N. */
 //     virtual void N( const RVector3 & L, RVector & n ) const;
-//     
+//
 //     /*! See Shape::dNdrst. */
 //     virtual RMatrix dNdrst( const RVector3 & rst ) const;
-    
+
 };
-    
+
 } // namespace GIMLI
 
 #endif // _GIMLI_SHAPE__H

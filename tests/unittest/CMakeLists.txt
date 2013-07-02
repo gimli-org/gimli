@@ -10,6 +10,7 @@ add_executable(gimliUnitTest unitTest.cpp ${unitTest_HEADERS})
 
 if (CPPUNIT_FOUND)
     add_definitions( -DHAVE_UNITTEST )
+	include_directories(${CPPUNIT_INCLUDE_DIR})
     target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
 endif (CPPUNIT_FOUND)
 

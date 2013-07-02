@@ -25,7 +25,7 @@
 
 namespace GIMLI{
 
-template <> IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
+template <> DLLEXPORT IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
 
 IntegrationRules::IntegrationRules(){
     initGau_();
@@ -357,20 +357,20 @@ void IntegrationRules::initQua_(){
     quaWeights_.push_back( RVector( 0, 0.0 ) );
 
     for ( uint order = 1; order < edgAbscissa_.size(); order ++ ){
-        
+
         uint nK = edgAbscissa_[ order ].size();
-        
+
         quaAbscissa_.push_back( std::vector < RVector3 > ( nK * nK ) );
         quaWeights_.push_back( RVector( nK * nK ) );
 
         for ( uint i = 0; i < nK; i ++ ){
             for ( uint j = 0; j < nK; j ++ ){
-                
+
                 uint k = i * nK + j;
-                
-                quaAbscissa_[ order ][ k ] = RVector3( edgAbscissa_[ order ][ i ][ 0 ], 
+
+                quaAbscissa_[ order ][ k ] = RVector3( edgAbscissa_[ order ][ i ][ 0 ],
                                                        edgAbscissa_[ order ][ j ][ 0 ] );
-                quaWeights_[ order ][ k ] = edgWeights_[ order ][ i ] * 
+                quaWeights_[ order ][ k ] = edgWeights_[ order ][ i ] *
                                             edgWeights_[ order ][ j ];
             }
         }
@@ -383,20 +383,20 @@ void IntegrationRules::initHex_(){
 
     for ( uint order = 1; order < edgAbscissa_.size(); order ++ ){
         uint nK = edgAbscissa_[ order ].size();
-        
+
         hexAbscissa_.push_back( std::vector < RVector3 > ( nK * nK * nK ) );
         hexWeights_.push_back( RVector( nK * nK * nK ) );
 
         for ( uint i = 0; i < nK; i ++ ){
             for ( uint j = 0; j < nK; j ++ ){
                 for ( uint h = 0; h < nK; h ++ ) {
-                    
+
                     uint k = i * nK * nK + j * nK + h;
-                    
-                    hexAbscissa_[ order ][ k ] = RVector3( edgAbscissa_[ order ][ i ][ 0 ], 
-                                                           edgAbscissa_[ order ][ j ][ 0 ], 
+
+                    hexAbscissa_[ order ][ k ] = RVector3( edgAbscissa_[ order ][ i ][ 0 ],
+                                                           edgAbscissa_[ order ][ j ][ 0 ],
                                                            edgAbscissa_[ order ][ h ][ 0 ] );
-                    hexWeights_[ order ][ k ] = edgWeights_[ order ][ i ] * 
+                    hexWeights_[ order ][ k ] = edgWeights_[ order ][ i ] *
                                                 edgWeights_[ order ][ j ] *
                                                 edgWeights_[ order ][ h ];
                 }
@@ -410,10 +410,10 @@ void IntegrationRules::initPri_(){
     priWeights_.push_back( RVector( 0, 0.0 ) );
 
     for ( Index order = 1; order < triAbscissa_.size(); order ++ ){
-        
+
         Index nTri = triAbscissa_[ order ].size();
         Index nEdg = edgAbscissa_[ order ].size();
-        
+
         priAbscissa_.push_back( std::vector < RVector3 > ( nTri * nEdg ) );
         priWeights_.push_back( RVector( nTri * nEdg ) );
 
@@ -423,10 +423,10 @@ void IntegrationRules::initPri_(){
             for ( uint j = 0; j < nEdg; j ++ ){
                 uint k = i * nEdg + j;
 //                 std::cout << order << " " << i << " " << j << " "<< triAbscissa_[ order ][ i ] << std::endl;
-                priAbscissa_[ order ][ k ] = RVector3( triAbscissa_[ order ][ i ][ 0 ], 
-                                                       triAbscissa_[ order ][ i ][ 1 ], 
+                priAbscissa_[ order ][ k ] = RVector3( triAbscissa_[ order ][ i ][ 0 ],
+                                                       triAbscissa_[ order ][ i ][ 1 ],
                                                        edgAbscissa_[ order ][ j ][ 0 ] );
-                priWeights_[ order ][ k ] = triWeights_[ order ][ i ] * 
+                priWeights_[ order ][ k ] = triWeights_[ order ][ i ] *
                                             edgWeights_[ order ][ j ];
             }
         }

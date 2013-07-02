@@ -10,16 +10,16 @@
 
 class ShapeTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE( ShapeTest );
-    CPPUNIT_TEST( testShapeFunctions );
-    CPPUNIT_TEST( testEquality );
-    CPPUNIT_TEST( testRSTXYZ );
-    CPPUNIT_TEST( testDomainSizes );
-    CPPUNIT_TEST( testJacobiDeterminat );
-    CPPUNIT_TEST( testTouch );
-    CPPUNIT_TEST( testTouch1 );
-    CPPUNIT_TEST( testInterpolate );
-    CPPUNIT_TEST( testSplit );
-    CPPUNIT_TEST( testGridGen );
+    // CPPUNIT_TEST( testShapeFunctions );
+    // CPPUNIT_TEST( testEquality );
+    // CPPUNIT_TEST( testRSTXYZ );
+    // CPPUNIT_TEST( testDomainSizes );
+    // CPPUNIT_TEST( testJacobiDeterminat );
+    // CPPUNIT_TEST( testTouch );
+    // CPPUNIT_TEST( testTouch1 );
+    // CPPUNIT_TEST( testInterpolate );
+    // CPPUNIT_TEST( testSplit );
+    // CPPUNIT_TEST( testGridGen );
     CPPUNIT_TEST_SUITE_END();
 
 public:
