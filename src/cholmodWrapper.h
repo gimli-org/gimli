@@ -24,22 +24,25 @@
 #include "gimli.h"
 #include "solverWrapper.h"
 
-#ifdef CHOLMOD_FOUND
-    #if CHOLMOD_FOUND==TRUE
-        #define USE_CHOLMOD 1
-    #endif
-#endif
-
-#ifdef USE_CHOLMOD
-    #define CHOLMOD_MAXMETHODS 9
-    #define UF_long long
-
-    #include <cholmod.h>
-#else
-struct cholmod_sparse;
-struct cholmod_factor;
-struct cholmod_common;
-#endif
+// #ifdef CHOLMOD_FOUND
+//     #if CHOLMOD_FOUND==TRUE
+//         #define USE_CHOLMOD 1
+//     #endif
+// #endif
+// 
+// #ifdef USE_CHOLMOD
+//     #define CHOLMOD_MAXMETHODS 9
+//     #define UF_long long
+// 
+//     #include <cholmod.h>
+// #else
+// struct cholmod_sparse;
+// struct cholmod_factor;
+// struct cholmod_common;
+// #endif
+// class cholmod_sparse;
+// class cholmod_factor;
+// class cholmod_common;
 
 namespace GIMLI{
 
@@ -56,9 +59,9 @@ public:
 protected:
   int initialize_( DSparseMatrix & S );
 
-  cholmod_common *c_;
-  cholmod_sparse *A_;
-  cholmod_factor *L_;
+  void *c_;
+  void *A_;
+  void *L_;
 };
 
 } //namespace GIMLI;

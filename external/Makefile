@@ -8,7 +8,7 @@ LAPACK_VER=3.4.2
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
-SUITESPARSE=SuiteSparse-3.7.1.tar.gz
+SUITESPARSE=SuiteSparse-4.2.1.tar.gz
 SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
 
 #LDFLAGS="-static-libgfortran -static-libgcc"
@@ -17,6 +17,7 @@ default: prep triangle suitesparse
 
 prep:
 	mkdir -p lib
+	mkdir -p include
 
 $(TRIANGLE): wget unzip patch
 	wget -nc -nd $(TRIANGLE_URL)
@@ -57,7 +58,7 @@ $(SUITESPARSE): wget unzip
 	wget -nc -nd $(SUITESPARSE_URL)
 	tar -xzvf $(SUITESPARSE)
 		
-suitesparse-4: prep $(SUITESPARSE)
+suitesparse: prep $(SUITESPARSE)
 
 	echo "building suitesparse for ", $(OSTYPE)
 
@@ -66,39 +67,11 @@ suitesparse-4: prep $(SUITESPARSE)
 	else \
 		echo "CC = gcc -fPIC" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 	fi
+	echo "INSTALL_LIB = $(PWD)/lib" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
+	echo "INSTALL_INCLUDE = $(PWD)/include" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
 
-	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk
-	for i in AMD CAMD COLAMD CCOLAMD LDL; do \
-		$(MAKE) -C SuiteSparse/$$i clean; \
-		$(MAKE) -C SuiteSparse/$$i; \
-		cp SuiteSparse/$$i/Lib/*.a lib/; \
-	done
-
-	$(MAKE) -C SuiteSparse/CHOLMOD/Lib clean
-	$(MAKE) -C SuiteSparse/CHOLMOD/Lib 
-	cp SuiteSparse/CHOLMOD/Lib/*.a lib/; \
-	
-suitesparse: prep $(SUITESPARSE)
-
-	echo "building suitesparse for ", $(OSTYPE)
-
-	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ]; then \
-		echo "CC = gcc" >> SuiteSparse/UFconfig/UFconfig.mk; \
-	else \
-		echo "CC = gcc -fPIC" >> SuiteSparse/UFconfig/UFconfig.mk; \
-	fi
-
-	sed -i -e 's/CHOLMOD_CONFIG =/CHOLMOD_CONFIG = -DNPARTITION/g' SuiteSparse/UFconfig/UFconfig.mk; 
-
-	for i in AMD CAMD COLAMD CCOLAMD LDL; do \
-		$(MAKE) -C SuiteSparse/$$i clean; \
-		$(MAKE) -C SuiteSparse/$$i; \
-		cp SuiteSparse/$$i/Lib/*.a lib/; \
-	done
-
-	$(MAKE) -C SuiteSparse/CHOLMOD/Lib clean
-	$(MAKE) -C SuiteSparse/CHOLMOD/Lib 
-	cp SuiteSparse/CHOLMOD/Lib/*.a lib/; \
+	$(MAKE) -C SuiteSparse/
+	$(MAKE) -C SuiteSparse/ install
 
 wget:
 	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ] ; then \
