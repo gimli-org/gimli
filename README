@@ -2,7 +2,7 @@ GIMLi - Geophysical Inversion and Modelling Library
         an open-source multi-method library for solving inverse and forward tasks
 
 Prerequisites
-==============
+=============
 
     . subversion
     . gcc
@@ -46,10 +46,50 @@ Now we can prepare the build:
 
 sudo apt-get install libboost-all-dev libblas-dev liblapack-dev cmake git 
 
+sudo apt-get install libcppunit-dev
+
+sudo apt-get install libprocps0-dev
+
 sudo apt-get install python-matplotlib
 
 
+
 if 'sh COMMAND.sh' complains about missing pushd or popd try 'bash COMMAND.sh'
+
+
+Install via cmake
+=================
+
+We test a new build system using cmake http://www.cmake.org/ that hopefully supersede the most steps above.
+In the first, cmake provide out of source build so we recommend using a build directory beside the trunk path:
+
+    gimli/trunk
+    gimli/build
+
+
+    cd /build
+
+Prepare and configure the build
+    
+    cmake ../trunk
+
+cmake provide interactive configuration and fine tuning with. Window user will probably adjust the boost-include and boost-library paths.
+
+    ccmake ../trunk #for Linux user
+    cmake-gui ../trunk #for MS Windows user
+
+To build the library just run make
+    
+    make
+
+You can test you build by running 
+
+    make check
+
+Of course the test will be very silent if you don't have cppunit installed
+
+
+
 
 
 

@@ -14,7 +14,8 @@ FIND_PATH(READPROC_INCLUDE_DIR proc/readproc.h
 # On unix system, debug and release have the same name
 FIND_LIBRARY(READPROC_LIBRARIES procps
             /usr/local/lib
-            /usr/lib)
+            /usr/lib
+)
 
 # Standard package handling
 include(FindPackageHandleStandardArgs)

@@ -48,18 +48,11 @@ find_package(BLAS QUIET)
 find_package(LAPACK QUIET)
 find_package(ParMETIS 4.0.2 QUIET)
 
-find_path(SUITESPARSE_DIR SuiteSparse_demo.m
-	${PROJECT_SOURCE_DIR}/external/SuiteSparse
-	)
+set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
 
-find_path(CHOLMOD_DIR cholmod.h
-	${SUITESPARSE_DIR}/CHOLMOD/include
-	${PROJECT_SOURCE_DIR}/external/
-	${PROJECT_SOURCE_DIR}/external/SuiteSparse
-    ${PROJECT_BINARY_DIR}/external/
-    /usr/local/include
-    /usr/includes
-)
+find_path(SUITESPARSE_DIR SuiteSparse_demo.m
+	${EXTERNAL_DIR}/SuiteSparse
+	)
 
 # FIXME: Should we have separate FindXX modules for CAMD, COLAMD, and CCOLAMD?
 # FIXME: find_package(CAMD)
@@ -73,7 +66,7 @@ find_path(CHOLMOD_DIR cholmod.h
 # Check for header file
 find_path(CHOLMOD_INCLUDE_DIRS cholmod.h
   HINTS 
-	${CHOLMOD_DIR}/include $ENV{CHOLMOD_DIR}/include
+	${EXTERNAL_DIR}/include $ENV{EXTERNAL_DIR}/include
 	${SUITESPARSE_DIR}/CHOLMOD/include
   PATH_SUFFIXES suitesparse ufsparse
   DOC "Directory where the CHOLMOD header is located"
@@ -81,31 +74,36 @@ find_path(CHOLMOD_INCLUDE_DIRS cholmod.h
 
 # Check for CHOLMOD library
 find_library(CHOLMOD_LIBRARY cholmod
-  HINTS ${CHOLMOD_DIR}/lib $ENV{CHOLMOD_DIR}/lib
+  HINTS ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib
   DOC "The CHOLMOD library"
+  )
+
+find_library(AMD_LIBRARY amd
+  HINTS ${EXTERNAL_DIR}/lib ${AMD_DIR}/lib $ENV{EXTERNAL_DIR}/lib $ENV{AMD_DIR}/lib
+  DOC "The AMD library"
   )
 
 # Check for CAMD library
 find_library(CAMD_LIBRARY camd
-  HINTS ${CHOLMOD_DIR}/lib ${CAMD_DIR}/lib $ENV{CHOLMOD_DIR}/lib $ENV{CAMD_DIR}/lib
+  HINTS ${EXTERNAL_DIR}/lib ${CAMD_DIR}/lib $ENV{EXTERNAL_DIR}/lib $ENV{CAMD_DIR}/lib
   DOC "The CAMD library"
   )
 
 # Check for COLAMD library
 find_library(COLAMD_LIBRARY colamd
-  HINTS ${CHOLMOD_DIR}/lib ${COLAMD_DIR}/lib $ENV{CHOLMOD_DIR}/lib $ENV{COLAMD_DIR}/lib
+  HINTS ${EXTERNAL_DIR}/lib ${COLAMD_DIR}/lib $ENV{EXTERNAL_DIR}/lib $ENV{COLAMD_DIR}/lib
   DOC "The COLAMD library"
   )
 
 # Check for CCOLAMD library
 find_library(CCOLAMD_LIBRARY ccolamd
-  HINTS ${CHOLMOD_DIR}/lib ${CCOLAMD_DIR}/lib $ENV{CHOLMOD_DIR}/lib $ENV{CCOLAMD_DIR}/lib
+  HINTS ${EXTERNAL_DIR}/lib ${CCOLAMD_DIR}/lib $ENV{EXTERNAL_DIR}/lib $ENV{CCOLAMD_DIR}/lib
   DOC "The CCOLAMD library"
   )
 
 # Check for SUITESPARSECONFIG library
 find_library(SUITESPARSE_LIBRARY suitesparseconfig
-  HINTS ${CHOLMOD_DIR}/lib ${CCOLAMD_DIR}/lib $ENV{CHOLMOD_DIR}/lib $ENV{CCOLAMD_DIR}/lib
+  HINTS ${EXTERNAL_DIR}/lib ${CCOLAMD_DIR}/lib $ENV{EXTERNAL_DIR}/lib $ENV{CCOLAMD_DIR}/lib
   DOC "The SUITESPARSECONFIG library"
   )
 
@@ -118,6 +116,9 @@ if (CHOLMOD_LIBRARY)
     endif()
     if (CAMD_LIBRARY)
         set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${CAMD_LIBRARY})
+    endif()
+    if (AMD_LIBRARY)
+        set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${AMD_LIBRARY})
     endif()
     if (COLAMD_LIBRARY)	
         set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${COLAMD_LIBRARY})
@@ -146,6 +147,7 @@ if (CHOLMOD_LIBRARY)
                         OUTPUT_STRIP_TRAILING_WHITESPACE)
         if (EXISTS "${GFORTRAN_LIBRARY}")
             set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${GFORTRAN_LIBRARY})
+            set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} rt)
         endif()
     endif(GFORTRAN_EXECUTABLE)
 endif (CHOLMOD_LIBRARY)
@@ -153,7 +155,7 @@ endif (CHOLMOD_LIBRARY)
 # Standard package handling
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(CHOLMOD
-  "CHOLMOD could not be found. Be sure to set CHOLMOD_DIR."
+  "CHOLMOD could not be found. Be sure to set EXTERNAL_DIR."
   CHOLMOD_LIBRARIES CHOLMOD_INCLUDE_DIRS)
 
 mark_as_advanced(
@@ -161,6 +163,7 @@ mark_as_advanced(
   CHOLMOD_LIBRARY
   CHOLMOD_LIBRARIES
   CAMD_LIBRARY
+  AMD_LIBRARY
   COLAMD_LIBRARY
   CCOLAMD_LIBRARY
   )
