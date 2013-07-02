@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -27,16 +27,16 @@
 
 #ifdef USE_IPC
     #if USE_IPC==TRUE
+        #if HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
 
-        #if HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP==1
             #include <boost/interprocess/managed_shared_memory.hpp>
             using namespace boost::interprocess;
         #else
             #undef USE_IPC
         #endif
+    #else
+        #undef USE_IPC
     #endif
-#else
-    #undef USE_IPC
 #endif
 
 namespace GIMLI{

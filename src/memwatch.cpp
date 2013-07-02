@@ -23,16 +23,18 @@
 
 #include <iostream>
 
-#ifdef READPROC_FOUND 
+#ifdef WIN32_LEAN_AND_MEAN
+    #include <psapi.h>
+#elif READPROC_FOUND
     #if READPROC_FOUND==TRUE
         #include <proc/readproc.h>
         #define USE_PROC_READPROC
+    #else
+        #undef READPROC_FOUND
     #endif
 #elif HAVE_PROC_READPROC
     #include <proc/readproc.h>
     #define USE_PROC_READPROC
-#elif WIN32_LEAN_AND_MEAN
-    #include <psapi.h>
 #endif
 
 #ifdef HAVE_BOOST_THREAD_HPP
@@ -44,7 +46,7 @@
 namespace GIMLI {
 
 // Global static pointer used to ensure a single instance of the class.
-template < > MemWatch * Singleton < MemWatch>::pInstance_ = NULL;
+template < > DLLEXPORT MemWatch * Singleton < MemWatch>::pInstance_ = NULL;
 
 MemWatch::MemWatch( ){
     last_ = inUse();
@@ -93,7 +95,7 @@ double MemWatch::inUse( ) {
 void MemWatch::info(const std::string & str){
     if (__GIMLI_DEBUG__){
 #if defined( WIN32_LEAN_AND_MEAN ) || defined( USE_PROC_READPROC )
-        std::cout << "\t" << str << " Memory " 
+        std::cout << "\t" << str << " Memory "
 #ifdef HAVE_BOOST_THREAD_HPP
                     << "(mt)"
 #endif // HAVE_BOOST_THREAD_HPP

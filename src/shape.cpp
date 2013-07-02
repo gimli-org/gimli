@@ -33,7 +33,7 @@ boost::mutex writeCacheMutex__;
 
 namespace GIMLI{
 
-template < > ShapeFunctionCache * Singleton < ShapeFunctionCache >::pInstance_ = NULL;
+template < > DLLEXPORT ShapeFunctionCache * Singleton < ShapeFunctionCache >::pInstance_ = NULL;
 
 std::vector < PolynomialFunction < double > >
     createPolynomialShapeFunctions( const std::vector < RVector3 > & pnts, uint dim, uint nCoeff

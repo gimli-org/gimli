@@ -40,15 +40,19 @@
 #
 message(STATUS "Checking for package 'CHOLMOD'")
 
+set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+
 # Find packages that CHOLMOD depends on
 set(CMAKE_LIBRARY_PATH ${BLAS_DIR}/lib $ENV{BLAS_DIR}/lib ${CMAKE_LIBRARY_PATH})
 set(CMAKE_LIBRARY_PATH ${LAPACK_DIR}/lib $ENV{LAPACK_DIR}/lib ${CMAKE_LIBRARY_PATH})
+set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRARY_PATH})
+
 find_package(AMD QUIET)
 find_package(BLAS QUIET)
 find_package(LAPACK QUIET)
 find_package(ParMETIS 4.0.2 QUIET)
 
-set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+
 
 find_path(SUITESPARSE_DIR SuiteSparse_demo.m
 	${EXTERNAL_DIR}/SuiteSparse
