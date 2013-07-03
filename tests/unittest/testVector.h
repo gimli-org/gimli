@@ -155,6 +155,7 @@ public:
         vs *= 1.111;
         vs.round( 0.01 );
         CPPUNIT_ASSERT( ::fabs( vs[0] - 1.11 ) < TOLERANCE );
+		std::cout << vs[4] << std::endl;
         CPPUNIT_ASSERT( ::fabs( vs[4] - 5.56 ) < TOLERANCE );
         CPPUNIT_ASSERT( ::fabs( vs[6] - 7.78 ) < TOLERANCE );
         CPPUNIT_ASSERT( ::fabs( vs[9] - 11.11 ) < TOLERANCE );

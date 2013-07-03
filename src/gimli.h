@@ -38,10 +38,14 @@
     #define ON 1
 #endif
 
-#if BOOST_THREAD_FOUND || HAVE_BOOST_THREAD_HPP
+#if BOOST_THREAD_FOUND || defined(HAVE_BOOST_THREAD_HPP)
     #define USE_BOOST_THREAD TRUE
 #endif
-    
+
+#if BOOST_BIND_FOUND || defined(HAVE_BOOST_BIND_HPP)
+	#define USE_BOOST_BIND TRUE
+#endif
+
 #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "gimli"
         #define PACKAGE_VERSION "0.9.0-win"

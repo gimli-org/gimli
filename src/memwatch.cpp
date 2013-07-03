@@ -23,7 +23,9 @@
 
 #include <iostream>
 
-#if READPROC_FOUND || HAVE_PROC_READPROC
+#ifdef WIN32_LEAN_AND_MEAN
+    #include <psapi.h>
+#elif READPROC_FOUND || defined(HAVE_PROC_READPROC)
     #include <proc/readproc.h>
     #define USE_PROC_READPROC TRUE
 #else
