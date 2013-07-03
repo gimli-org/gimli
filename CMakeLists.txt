@@ -28,18 +28,30 @@ set(PACKAGE_AUTHORS \"carsten@resistivity.net thomas@resistivity.net\")
 
 include(CheckIncludeFileCXX)
 
-find_package(Boost 1.48.0 COMPONENTS python system thread REQUIRED)
+IF(WIN32)
+	set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/../../boost/include)
+endif(WIN32)
+
+find_package(Boost 1.48.0 COMPONENTS python system thread REQUIRED
+			)
+
 if (Boost_INCLUDE_DIR)
     message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
     include_directories(${Boost_INCLUDE_DIR})
 	set (CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIR})
 		check_include_file_cxx(boost/interprocess/managed_shared_memory.hpp HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
 						   HINT ${Boost_INCLUDE_DIR})
+		check_include_file_cxx(boost/bind.hpp BOOST_BIND_FOUND
+						   HINT ${Boost_INCLUDE_DIR})
+		set(BOOST_BIND_FOUND ON)
 	if (HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP)
 		message( "HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP ${HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP} ${Boost_INCLUDE_DIR}")
+		option (USE_IPC "Use support for interprocess communication" ON) 
+	else()
+		message( "HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP 0 ${HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP} ${Boost_INCLUDE_DIR}")
+		set(USE_IPC  OFF) 
+		set(HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP 0 )
 	endif()
-	message( "HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP ${HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP} ${Boost_INCLUDE_DIR}")
-    option (USE_IPC "Use support for interprocess communication" ON) 
 endif (Boost_INCLUDE_DIR)
 
 find_package(Triangle)
@@ -47,6 +59,10 @@ find_package(BLAS)
 find_package(LAPACK)
 find_package(CHOLMOD)
 
+IF(WIN32)
+	set(CppUnit_DIR C:/MinGW/msys/1.0/local/include)
+endif(WIN32)
+	
 find_package(CppUnit)
 if (CPPUNIT_FOUND)
     option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
@@ -63,6 +79,7 @@ if (DOXYGEN_FOUND)
 endif()
 
 IF(WIN32)
+	set(READPROC_FOUND FALSE)
 ELSE(WIN32)
     find_package(readproc)
 ENDIF(WIN32)

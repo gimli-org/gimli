@@ -25,7 +25,9 @@
 
 #include <deque>
 
-#if USE_IPC
+#ifndef USE_IPC
+    #define USE_IPC 0
+#elif USE_IPC
     #if HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
         #include <boost/interprocess/managed_shared_memory.hpp>
         using namespace boost::interprocess;

@@ -53,7 +53,7 @@
 #include <cerrno>
 #include <iterator>
 
-#ifdef HAVE_BOOST_BIND_HPP
+#ifdef USE_BOOST_BIND
 #include <boost/bind.hpp>
 #endif
 
@@ -483,7 +483,7 @@ DEFINE_UNARY_MOD_OPERATOR__( *, MULT )
 
     /*! Round all values of this array to a given tolerance. */
     Vector< ValueType > & round( const ValueType & tolerance ){
-#ifdef HAVE_BOOST_BIND_HPP
+#ifdef USE_BOOST_BIND
         std::transform( data_, data_ + size_, data_, boost::bind( roundTo< ValueType >, _1, tolerance ) );
 #else
         for ( register Index i = 0; i < size_; i ++ ) data_[ i ] = roundTo( data_[ i ], tolerance );
