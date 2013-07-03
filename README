@@ -73,6 +73,10 @@ Prepare and configure the build
     
     cmake ../trunk
 
+For mingw users it should be preferable to generate for msys makefiles
+
+    cmake -G 'MSYS Makefiles' ../trunk/
+
 cmake provide interactive configuration and fine tuning with. Window user will probably adjust the boost-include and boost-library paths.
 
     ccmake ../trunk #for Linux user

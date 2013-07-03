@@ -27,9 +27,9 @@
 
 #include "inversion.h"
 
-#ifdef HAVE_BOOST_THREAD_HPP
+#if USE_BOOST_THREAD
 boost::mutex writeCacheMutex__;
-#endif // HAVE_BOOST_THREAD_HPP
+#endif // USE_BOOST_THREAD
 
 namespace GIMLI{
 

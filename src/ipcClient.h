@@ -25,17 +25,12 @@
 
 #include <deque>
 
-#ifdef USE_IPC
-    #if USE_IPC==TRUE
-        #if HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
-
-            #include <boost/interprocess/managed_shared_memory.hpp>
-            using namespace boost::interprocess;
-        #else
-            #undef USE_IPC
-        #endif
+#if USE_IPC
+    #if HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
+        #include <boost/interprocess/managed_shared_memory.hpp>
+        using namespace boost::interprocess;
     #else
-        #undef USE_IPC
+        #define USE_IPC 0
     #endif
 #endif
 
@@ -62,7 +57,7 @@ private:
 public:
     void setSegmentName( const std::string & segmentName ){
         name_ = segmentName;
-#ifdef USE_IPC
+#if USE_IPC
         segment_ = managed_shared_memory( open_or_create, segmentName.c_str(), 65536 );
         initialized_ = true;
 #endif
@@ -70,7 +65,7 @@ public:
 
     template < class ValueType > void set( const std::string & name, ValueType val, TypeID type ){
         if ( !initialized_ ) return;
-#ifdef USE_IPC
+#if USE_IPC
         segment_.find_or_construct< TypeID >( (name + "-TypeID").c_str() )( type );
 
         switch ( type ){
@@ -96,7 +91,7 @@ public:
 
     template < class ValueType > ValueType get( const std::string & name ){
        if ( !initialized_ ) return ValueType(0);
-#ifdef USE_IPC
+#if USE_IPC
 
         TypeID * t = segment_.find< TypeID >( (name + "-TypeID" ).c_str() ).first;
         if ( !t ){
@@ -138,7 +133,7 @@ public:
             std::cout << "IPC(shared_memory) not initialized or supported" << std::endl;
             return;
         }
-#ifdef USE_IPC
+#if USE_IPC
 
         std::cout << "name: " << segment_.get_size() << std::endl;
         std::cout << "size: " << segment_.get_size() << std::endl;
@@ -188,7 +183,7 @@ public:
     }
 
     static void free( const std::string & name ){
-#ifdef USE_IPC
+#if USE_IPC
         std::cout << "freeing ipc workspace: " << name << std::endl;
         shared_memory_object::remove( name.c_str() );
 #endif
@@ -199,7 +194,7 @@ protected:
     bool initialized_;
 
     std::string name_;
-#ifdef USE_IPC
+#if USE_IPC
     managed_shared_memory segment_;
 #endif
 };

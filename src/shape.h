@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -25,7 +25,7 @@
 #include "polynomial.h"
 #include "curvefitting.h"
 
-#ifdef HAVE_BOOST_THREAD_HPP
+#if USE_BOOST_THREAD
     #include <boost/thread.hpp>
     extern boost::mutex writeCacheMutex__;
 #endif
@@ -83,7 +83,7 @@ private:
 
     /*! probably threading problems .. pls check*/
     template < class Ent > void createShapeFunctions_( const Ent & e ) const {
-        #ifdef HAVE_BOOST_THREAD_HPP
+        #if USE_BOOST_THREAD
             boost::mutex::scoped_lock lock(writeCacheMutex__);
         #else
             #error "No boost threading"

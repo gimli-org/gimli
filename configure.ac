@@ -216,6 +216,8 @@ GIMLI_EXTERNAL_LIBS_PATH=$GIMLI_PATH/external/lib
 #LDFLAGS_OLD="$LDFLAGS"
 LDFLAGS="$LDFLAGS -L$GIMLI_EXTERNAL_LIBS_PATH"
 
+AC_CHECK_LIB( [suitesparseconfig], [main])
+
 AC_CHECK_LIB( [triangle], [triangulate], [], [], [-lm] )
 #$LDFLAGS="$LDFLAGS_OLD"
 #AC_DEFINE( [HAVE_LIBTRIANGLE], [1], [Define and we can use unittest])  
@@ -238,6 +240,8 @@ if test "$ac_cv_lib_cholmod_main" == "yes" || test "$ac_cv_lib_cholmod_cholmod_s
     AC_SEARCH_LIBS( dgemm_, blas )
     AC_SEARCH_LIBS( dpotrf_, lapack )
 fi
+
+
 
 #AC_CHECK_LIB( [blas],   [main])
 #AC_CHECK_LIB( [lapack], [main])
