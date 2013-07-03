@@ -119,6 +119,6 @@ cmake:
 	
 clean:
 	echo "Cleaning ..."
-	rm -rf lib triangle AMD CAMD COLAMD CCOLAMD LDL CHOLMOD SuiteSparse lapack-* *~
+	rm -rf lib include triangle AMD CAMD COLAMD CCOLAMD LDL CHOLMOD SuiteSparse lapack-* *~
 	echo "done"
 	

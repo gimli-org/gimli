@@ -22,6 +22,7 @@
 #define _GIMLI_MESHENTITIES__H
 
 #include "gimli.h"
+
 #include "vector.h"
 #include "matrix.h"
 #include "elementmatrix.h"

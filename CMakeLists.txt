@@ -52,7 +52,7 @@ if (CPPUNIT_FOUND)
     option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
 endif (CPPUNIT_FOUND)
 
-find_package(readproc)
+
 find_package(Doxygen)
 
 if (DOXYGEN_FOUND)
@@ -61,6 +61,12 @@ if (DOXYGEN_FOUND)
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen"
         COMMENT "Generating documentation" VERBATIM)
 endif()
+
+IF(WIN32)
+ELSE(WIN32)
+    find_package(readproc)
+ENDIF(WIN32)
+
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config.cmake.h.in"

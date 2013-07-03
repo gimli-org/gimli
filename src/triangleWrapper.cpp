@@ -24,20 +24,18 @@
 #include "meshentities.h"
 #include "node.h"
 
-#ifdef TRIANGLE_FOUND
-    #if TRIANGLE_FOUND==TRUE
-        extern "C"{
-            #define REAL double
-            #define VOID void
-            #define TRILIBRARY
-            #define ANSI_DECLARATORS
+#if TRIANGLE_FOUND
+    extern "C"{
+        #define REAL double
+        #define VOID void
+        #define TRILIBRARY
+        #define ANSI_DECLARATORS
 
-            #include <triangle.h>
-            #define USE_LIBTRIANGLE
-        }
-    #endif
+        #include <triangle.h>
+        #define USE_LIBTRIANGLE TRUE
+    }
 #elif HAVE_LIBTRIANGLE
-    #define USE_LIBTRIANGLE
+    #define USE_LIBTRIANGLE TRUE
 
 extern "C"{
 
@@ -80,7 +78,9 @@ struct triangulateio {
 void triangulate(char *, struct triangulateio *, struct triangulateio *, struct triangulateio *);
 
 }
-#endif // #ifdef USE_LIBTRIANGLE
+#else // HAVE_LIBTRIANGLE
+    #define USE_LIBTRIANGLE 0
+#endif    
 
 namespace GIMLI{
 
@@ -97,7 +97,7 @@ TriangleWrapper::TriangleWrapper( const Mesh & inMesh, Mesh & outMesh, const std
 
 TriangleWrapper::~TriangleWrapper(){
     freeMemory_();
-#ifdef USE_LIBTRIANGLE
+#if USE_LIBTRIANGLE
     if ( mesh_input_ )          delete mesh_input_;
     if ( mesh_output_ )         delete mesh_output_;
     if ( mesh_voronoi_output_ ) delete mesh_voronoi_output_;
@@ -108,7 +108,7 @@ TriangleWrapper::~TriangleWrapper(){
 
 void TriangleWrapper::init_( ){
     switches_ = "-pze";
-#ifdef USE_LIBTRIANGLE
+#if USE_LIBTRIANGLE
     mesh_input_           = new struct triangulateio;
     mesh_output_          = new struct triangulateio;
     mesh_voronoi_output_  = new struct triangulateio;
@@ -119,7 +119,7 @@ void TriangleWrapper::init_( ){
 }
 
 void TriangleWrapper::generate( Mesh & mesh ){
-#ifdef USE_LIBTRIANGLE
+#if USE_LIBTRIANGLE
 
     if ( inMesh_->nodeCount() < 3 ){
         throwError( 1, WHERE_AM_I + " input mesh must have at least 3 nodes " );
@@ -143,7 +143,7 @@ Mesh TriangleWrapper::generate( ){
 }
 
 void TriangleWrapper::allocateOutMemory_(){
-#ifdef USE_LIBTRIANGLE
+#if USE_LIBTRIANGLE
 
     mesh_output_->pointlist             = (REAL *) NULL;
     mesh_output_->pointattributelist    = (REAL *) NULL;
@@ -164,7 +164,7 @@ void TriangleWrapper::allocateOutMemory_(){
 }
 
 void TriangleWrapper::freeMemory_(){
-#ifdef USE_LIBTRIANGLE
+#if USE_LIBTRIANGLE
     if ( mesh_output_->pointlist != (REAL*)NULL )           free( mesh_output_->pointlist );
     if ( mesh_output_->pointattributelist != (REAL*)NULL )  free( mesh_output_->pointattributelist );
     if ( mesh_output_->pointmarkerlist != (int*)NULL  )     free( mesh_output_->pointmarkerlist ) ;
@@ -191,7 +191,7 @@ void TriangleWrapper::freeMemory_(){
 }
 
 void TriangleWrapper::transformTriangleToMesh_( const triangulateio & trimesh, Mesh & mesh ){
-#ifdef USE_LIBTRIANGLE
+#if USE_LIBTRIANGLE
     mesh.clear();
 
     //!  Nodes;
@@ -245,7 +245,7 @@ void TriangleWrapper::transformTriangleToMesh_( const triangulateio & trimesh, M
 }
 
 void TriangleWrapper::transformMeshToTriangle_( const Mesh & mesh, triangulateio & trimesh ){
-#ifdef USE_LIBTRIANGLE
+#if USE_LIBTRIANGLE
     //! node section
     int nVerts = mesh.nodeCount();
 
