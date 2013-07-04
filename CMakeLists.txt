@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 2.8.6)
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
-add_custom_target(python)
+add_custom_target(pygimli)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -89,8 +89,22 @@ ELSE(WIN32)
     find_package(readproc)
 ENDIF(WIN32)
 
+################################################################################
+# Check for python stuff
+################################################################################
+
 set(PythonLibs_FIND_VERSION 2.7)
+find_package(PythonInterp)
 find_package(PythonLibs)
+
+find_package(gccxml)
+find_package(pygccxml)
+
+if(PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND)
+    set (PYGIMLI 1)
+    message (STATUS "pygimli can be build.")
+endif ()
+
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config.cmake.h.in"
@@ -133,14 +147,14 @@ endif(LIBGIMLI_BUILD_TESTS)
 add_subdirectory(src)
 add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(apps)
-add_subdirectory(python EXCLUDE_FROM_ALL)
+
+if (PYGIMLI)
+    add_subdirectory(python EXCLUDE_FROM_ALL)
+endif (PYGIMLI)
 
 #what is this good for?
 export(TARGETS gimli
        FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
-
-
-
 
 ################################################################################
 # CPack (mostly for source tarballs)

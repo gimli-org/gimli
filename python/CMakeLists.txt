@@ -17,6 +17,7 @@ macro(gimli_add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS )
     target_link_libraries(${PYTHON_MODULE_NAME} ${EXTRA_LIBS})
     target_link_libraries(${PYTHON_MODULE_NAME} ${PYTHON_LIBRARY})
     target_link_libraries(${PYTHON_MODULE_NAME} ${Boost_PYTHON_LIBRARY})
+    target_link_libraries(${PYTHON_MODULE_NAME} gimli)
 
     set_target_properties(${PYTHON_MODULE_NAME} PROPERTIES PREFIX "")
 
@@ -41,7 +42,7 @@ endmacro()
 ADD_CUSTOM_TARGET(pygimlisrc ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
-        python 
+        ${PYTHON_EXECUTABLE}
     ARGS 
         ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py
     TARGET
@@ -62,7 +63,7 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(buildpygimli ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
-        make -C ${CMAKE_CURRENT_BINARY_DIR} pygimli
+        make -j4 -C ${CMAKE_CURRENT_BINARY_DIR} pg
     TARGET
         buildpygimli
    )
@@ -72,10 +73,12 @@ file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/generated/dummy.cpp "")
 
 gimli_add_python_module(_pygimli_ "${CMAKE_CURRENT_BINARY_DIR}/generated/" "" )
 
-ADD_CUSTOM_TARGET(pygimli ALL)
 add_dependencies(fixpygimlisrc pygimlisrc)
 add_dependencies(buildpygimli fixpygimlisrc)
-add_dependencies(python buildpygimli)
-add_dependencies(pygimli _pygimli_)
+add_dependencies(pygimli buildpygimli)
+
+# for calling the build only
+ADD_CUSTOM_TARGET(pg ALL)
+add_dependencies(pg _pygimli_)
 
 

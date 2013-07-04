@@ -22,19 +22,19 @@ class settings:
 
     @staticmethod
     def setup_environment():
-        pass
-        #sys.path.append( settings.pygccxml_path )
-        #sys.path.append( settings.pyplusplus_path )
+        sys.path.append( settings.pygccxml_path )
+        sys.path.append( settings.pyplusplus_path )
 
 if sys.platform == 'linux2':
-    settings.gccxml_path        = '/usr/bin'    
-    settings.pygccxml_path      = '/usr/lib64/python/site-packages'
-    settings.pyplusplus_path    = '/usr/lib64/python/site-packages'
+    settings.gccxml_path        = '../../../gccxml-bin/bin/gccxml'
+    settings.pygccxml_path      = '../../../pygccxml'
+    settings.pyplusplus_path    = '../../../pyplusplus'
     
 elif sys.platform == 'win32':
     settings.gimli_defines      = 'MINGW'
-    #settings.pygccxml_path     = 'c:/python26/Lib/site-packages/'
     settings.python_libs_path   = distutils.sysconfig.get_python_lib(standard_lib=True)
+    settings.pygccxml_path      = '../../../pygccxml'
+    settings.pyplusplus_path    = '../../../pyplusplus'
     
     if os.path.exists('../../../gccxml-bin/bin'):
         settings.gccxml_path = os.path.abspath('../../../gccxml-bin/bin')
