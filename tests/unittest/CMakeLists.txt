@@ -18,7 +18,6 @@ if (CHOLMOD_FOUND)
     target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
 endif (CHOLMOD_FOUND)
 
-
 target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY})
 target_link_libraries(gimliUnitTest gimli)
 target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})

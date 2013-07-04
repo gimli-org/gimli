@@ -124,23 +124,34 @@ def generate( defined_symbols ):
 #        , messages.W1031
 #        , messages.W1036 # check this
 #        )
-
-
-    xml_cached_fc = parser.create_cached_source_fc( os.path.join( r"pygimli.h" ), settings.module_name + '.cache' )
+    
+    print "####################################", os.path.abspath(__file__)
+    print "####################################", os.getcwd()
+    
+    sourcedir = os.path.dirname(os.path.abspath(__file__))
+    sourceHeader = os.path.abspath(sourcedir + "/" + r"pygimli.h" )
+    sourceInclude = os.path.dirname(os.path.abspath(sourcedir + "/../src/" + r"gimli.h" ))
+    print "####################################", sourceHeader
+    print "####################################", sourceInclude
+    
+    
+    xml_cached_fc = parser.create_cached_source_fc(sourceHeader,
+                                                   settings.module_name + '.cache')
+    #xml_cached_fc = parser.create_cached_source_fc( os.path.join( r"pygimli.h" ), settings.module_name + '.cache' )
+    
 
     import platform
     
-    defines = ['PYGIMLI_GCCXML']
+    defines = ['PYGIMLI_GCCXML', 'HAVE_BOOST_THREAD_HPP']
 
     print platform.architecture()
     if platform.architecture()[0] == '64bit' and platform.architecture()[1] != 'ELF':
-        defines.append( '_WIN64' )
+        defines.append('_WIN64')
         print 'Marking win64 for gccxml'
 
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:
             defines.append( define )
-
 
     if sys.platform == 'win32':
         # os.name == 'nt' (default on my mingw) results in wrong commandline for gccxml
@@ -149,12 +160,12 @@ def generate( defined_symbols ):
     else:
         gccxmlpath = settings.gccxml_path
 
-    mb = module_builder.module_builder_t( [xml_cached_fc]
-                                        , gccxml_path   = gccxmlpath
-                                        , working_directory = settings.gimli_path
-                                        , include_paths = [settings.gimli_path]
-                                        , define_symbols = defines
-                                        , indexing_suite_version = 2 )
+    mb = module_builder.module_builder_t([xml_cached_fc]
+                                        ,gccxml_path   = gccxmlpath
+                                        ,working_directory = settings.gimli_path
+                                        ,include_paths = [sourceInclude]
+                                        ,define_symbols = defines
+                                        ,indexing_suite_version = 2)
 
     mb.classes().always_expose_using_scope = True
     mb.calldefs().create_with_signature = True
@@ -181,8 +192,7 @@ def generate( defined_symbols ):
     ### END manual r-value converters
         
     custom_rvalue_path = os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' )
-    
-    
+        
     exclude( main_ns.variables, name = [ 'Triangle6_S1', 'Triangle6_S2', 'Triangle6_S3'
                                         , 'HexahedronFacesID', 'Hexahedron20FacesID'
                                         , 'TetrahedronFacesID'
