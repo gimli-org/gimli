@@ -24,7 +24,7 @@ if ( (python --version) );then
 else
 	echo "need python2.7 installation"
 	echo "get one from http://www.python.org/"
-	echo "if allready ensure python26 installation directory is in your PATH"
+	echo "if already .. ensure python27 installation directory is in your PATH"
 	exit
 fi
 echo ""
@@ -34,7 +34,7 @@ if ( (cmake --version) );then
 else
 	echo "need cmake"
 	echo "get one from http://www.cmake.org/cmake/resources/software.html"
-	echo "if allready ensure cmake installation directory is in your PATH"
+	echo "if already .. ensure cmake installation directory is in your PATH"
 	exit
 fi
 echo ""
@@ -44,8 +44,21 @@ if ( (svn --version --quiet) );then
 else
 	echo "need svn client"
 	echo "get one from http://www.sliksvn.com/en/download"
-	echo "if allready ensure svn installation directory is in your PATH"
+	echo "if already .. ensure svn installation directory is in your PATH"
 	exit
+fi
+echo ""
+echo "Installing sources at" $prefix
+
+echo ""
+echo "looking for git ..."
+if ( (git --version) );then
+    echo "... found, good"
+else
+    echo "need git client"
+    echo "get one from ??"
+    echo "if already .. ensure git installation directory is in your PATH"
+    exit
 fi
 echo ""
 echo "Installing sources at" $prefix
@@ -53,13 +66,18 @@ echo "Installing sources at" $prefix
 installGCCXML(){
     echo "install gccxml"
     pushd $prefix
-		cvs -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co gccxml/
-		rm -rf gccxml-build gccxml-bin
+        git clone --depth 1 git://github.com/gccxml/gccxml.git gccxml/
+		rm -rf gccxml-build $GCCXML_BIN_ROOT
 		mkdir -p gccxml-build
 		mkdir -p $GCCXML_BIN_ROOT
 		pushd gccxml-build
-			cmake -D CMAKE_INSTALL_PREFIX=$GCCXML_BIN_ROOT ../gccxml -G 'MSYS Makefiles' 
-			make
+            if [ $OSTYPE = "msys" ]; then
+                cmake -D CMAKE_INSTALL_PREFIX=$GCCXML_BIN_ROOT ../gccxml -G 'MSYS Makefiles' 
+            else
+                cmake -D CMAKE_INSTALL_PREFIX=$GCCXML_BIN_ROOT ../gccxml
+            fi
+			
+			make -j4
 			make install
 		popd
 	popd
@@ -100,7 +118,8 @@ installPYGCCXML(){
         echo "getting sources ..."
         svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r $WORKING_PYGCC_REV pygccxml
         pushd pygccxml
-            python setup.py install
+            python setup.py build
+            #python setup.py install
         popd
     popd
 }
@@ -111,7 +130,8 @@ installPYPLUSPLUS(){
         echo "getting sources ..."
         svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r $WORKING_PYGCC_REV pyplusplus
         pushd pyplusplus
-            python setup.py install
+            python setup.py build
+            #python setup.py install
         popd
     popd
 }
@@ -119,5 +139,5 @@ installPYPLUSPLUS(){
 installGCCXML
 installPYGCCXML
 installPYPLUSPLUS
-fixGCCXML
-fixGCCXML
+#fixGCCXML
+#fixGCCXML

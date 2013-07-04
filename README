@@ -57,6 +57,17 @@ sudo apt-get install python-matplotlib
 if 'sh COMMAND.sh' complains about missing pushd or popd try 'bash COMMAND.sh'
 
 
+Dependencies for python bindings
+================================
+
+Python bindings are generally a good idea because some tools depend on it. 
+If you just want the libgimli library you can skip this part
+
+we need gccxml, pygccxml and pyplusplus
+
+bash libgimli/trunk/python/buildScripts/buildToolChain.sh
+
+
 Install via cmake
 =================
 
@@ -75,7 +86,7 @@ Prepare and configure the build
 
 For mingw users it should be preferable to generate for msys makefiles
 
-    cmake -G 'MSYS Makefiles' ../trunk/
+    cmake -D CMAKE_INSTALL_PREFIX=../gimli-install -G 'MSYS Makefiles' ../trunk
 
 cmake provide interactive configuration and fine tuning with. Window user will probably adjust the boost-include and boost-library paths.
 
@@ -91,9 +102,6 @@ You can test you build by running
     make check
 
 Of course the test will be very silent if you don't have cppunit installed
-
-
-
 
 
 
