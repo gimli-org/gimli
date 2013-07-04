@@ -10,11 +10,11 @@
 #include <list>
 #include <map>
 
-#ifndef PACKAGE_NAME
-        #define PACKAGE_NAME "gimli (python build)"
-        #define PACKAGE_VERSION "0.9.0"
-        #define PACKAGE_BUGREPORT "carsten@resistivity.net"
-#endif // PACKAGE_NAME
+// #ifndef PACKAGE_NAME
+//         #define PACKAGE_NAME "gimli (python build)"
+//         #define PACKAGE_VERSION "0.9.0"
+//         #define PACKAGE_BUGREPORT "carsten@resistivity.net"
+// #endif // PACKAGE_NAME
 
 #ifdef PYTEST
 

@@ -8,7 +8,7 @@ file (GLOB HEADER_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
 ###########################################################################
 #                       SHARED LIBRARY SET UP
 ###########################################################################
-add_library(${libgimli_TARGET_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES_VAR})
+add_library(${libgimli_TARGET_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
 include (GenerateExportHeader)
 

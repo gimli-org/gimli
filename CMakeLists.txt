@@ -3,6 +3,7 @@
 cmake_minimum_required(VERSION 2.8.6)
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+add_custom_target(python)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -11,6 +12,9 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 project(libgimli)
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe")
+set(CMAKE_CXX_FLAGS "")
 
 set(LIBGIMLI_VERSION_MAJOR 0)
 set(LIBGIMLI_VERSION_MINOR 9)
@@ -21,6 +25,7 @@ set(PACKAGE_NAME \"${PROJECT_NAME}\")
 set(PACKAGE_VERSION \"${LIBGIMLI_VERSION}\")
 set(PACKAGE_BUGREPORT \"carsten@resistivity.net\")
 set(PACKAGE_AUTHORS \"carsten@resistivity.net thomas@resistivity.net\")
+
 
 ################################################################################
 # Check for libs and other packages we might use.
@@ -84,6 +89,8 @@ ELSE(WIN32)
     find_package(readproc)
 ENDIF(WIN32)
 
+set(PythonLibs_FIND_VERSION 2.7)
+find_package(PythonLibs)
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config.cmake.h.in"
@@ -106,6 +113,9 @@ cmake_dependent_option( GIMLI_BUILD_SHARED_LIBS_WITH_STATIC_DEPENDENCIES
 components - they must all match or you will get crashes, heap corruption and/or
 other issues." FALSE "WIN32 OR APPLE" FALSE)
 
+# cmake_dependent_option(GIMLI_BUILD_PYTHON_MODULES "Specifies whether to build the Python extension module(s)" "PYTHONINTERP_FOUND;PYTHONLIBS_FOUND;Boost_PYTHON_FOUND")
+
+
 ################################################################################
 # Add main header locations (for everything we build)
 ################################################################################
@@ -123,6 +133,14 @@ endif(LIBGIMLI_BUILD_TESTS)
 add_subdirectory(src)
 add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(apps)
+add_subdirectory(python EXCLUDE_FROM_ALL)
+
+#what is this good for?
+export(TARGETS gimli
+       FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
+
+
+
 
 ################################################################################
 # CPack (mostly for source tarballs)
