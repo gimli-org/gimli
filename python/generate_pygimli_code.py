@@ -130,10 +130,11 @@ def generate( defined_symbols ):
     
     sourcedir = os.path.dirname(os.path.abspath(__file__))
     sourceHeader = os.path.abspath(sourcedir + "/" + r"pygimli.h" )
-    sourceInclude = os.path.dirname(os.path.abspath(sourcedir + "/../src/" + r"gimli.h" ))
+    gimliInclude = os.path.dirname(os.path.abspath(sourcedir + "/../src/" + r"gimli.h" ))
     print "####################################", sourceHeader
-    print "####################################", sourceInclude
-    
+    settings.includesPaths.append( gimliInclude)
+    print "### gimliInclude:", gimliInclude
+    print "### settingsInclude:", settings.includesPaths
     
     xml_cached_fc = parser.create_cached_source_fc(sourceHeader,
                                                    settings.module_name + '.cache')
@@ -163,7 +164,7 @@ def generate( defined_symbols ):
     mb = module_builder.module_builder_t([xml_cached_fc]
                                         ,gccxml_path   = gccxmlpath
                                         ,working_directory = settings.gimli_path
-                                        ,include_paths = [sourceInclude]
+                                        ,include_paths = settings.includesPaths
                                         ,define_symbols = defines
                                         ,indexing_suite_version = 2)
 

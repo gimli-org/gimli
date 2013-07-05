@@ -53,7 +53,11 @@ echo "Installing sources at" $prefix
 echo ""
 echo "looking for git ..."
 if ( (git --version) );then
-    echo "... found, good"
+	GITEXE="git"
+    echo "... found $GIT_EXE, good"
+elif ( (/c/Program\ Files\ \(x86\)/Git/bin/git --version) );then
+	GITEXE="/c/Program Files (x86)/Git/bin/git"
+	echo "... found $GITEXE, good"
 else
     echo "need git client"
     echo "get one from ??"
@@ -66,7 +70,13 @@ echo "Installing sources at" $prefix
 installGCCXML(){
     echo "install gccxml"
     pushd $prefix
-        git clone --depth 1 git://github.com/gccxml/gccxml.git gccxml/
+		if ( [ -d gccxml ] ); then 
+			pushd gccxml
+				"$GITEXE" pull
+			popd
+		else
+			"$GITEXE" clone --depth 1 git://github.com/gccxml/gccxml.git gccxml/
+		fi
 		rm -rf gccxml-build $GCCXML_BIN_ROOT
 		mkdir -p gccxml-build
 		mkdir -p $GCCXML_BIN_ROOT
