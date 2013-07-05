@@ -104,6 +104,8 @@ You can test you build by running
 Of course the test will be very silent if you don't have cppunit installed
 
 
+####Using cmake with CodeBlocks####
+
 
 
 

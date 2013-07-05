@@ -15,9 +15,6 @@ print distutils.sysconfig.get_python_lib(standard_lib=True)
 class settings:
     module_name = '_pygimli_'
     gimli_path = '../src'
-    #gccxml_path                 = complete_path( 'gccxml_bin', 'v09', sys.platform, 'bin' )
-    #pygccxml_path               = complete_path( 'pygccxml_dev' )
-    #pyplusplus_path             = complete_path( 'pyplusplus_dev' )
     gimli_defines               = ''
     includesPaths				= []
 

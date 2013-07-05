@@ -6,8 +6,8 @@ macro(gimli_add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS )
 
     include_directories(BEFORE ${SOURCE_DIR})
     include_directories(${PYTHON_INCLUDE_DIR})
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/generated/)
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
     add_definitions(-DPYGIMLI)
     add_definitions(-DBOOST_PYTHON_NO_PY_SIGNATURES)

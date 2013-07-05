@@ -60,7 +60,7 @@ elif ( (/c/Program\ Files\ \(x86\)/Git/bin/git --version) );then
 	echo "... found $GITEXE, good"
 else
     echo "need git client"
-    echo "get one from ??"
+    echo "get one from http://msysgit.github.io/"
     echo "if already .. ensure git installation directory is in your PATH"
     exit
 fi
