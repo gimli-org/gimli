@@ -39,7 +39,6 @@ endif(WIN32)
 
 find_package(Boost 1.48.0 COMPONENTS python system thread REQUIRED
 			)
-
 if (Boost_INCLUDE_DIR)
     message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
     include_directories(${Boost_INCLUDE_DIR})
