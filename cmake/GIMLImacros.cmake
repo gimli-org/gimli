@@ -55,12 +55,16 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     set(PYTHON_IN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
     set(PYTHON_OUT_PATH "${CMAKE_CURRENT_BINARY_DIR}")
 
-    file(GLOB_RECURSE PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${PYTHON_MODULE_NAME}/*")
+    file(GLOB_RECURSE PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" 
+                    "${PYTHON_MODULE_NAME}/*.py" 
+                    "${PYTHON_MODULE_NAME}/*.png" 
+                    "${PYTHON_MODULE_NAME}/*.xrc"
+                    "${PYTHON_MODULE_NAME}/*.fbp")
 
     
     foreach(file ${PYTHON_FILES})
         
-    message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
+        message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
         add_custom_command(
             OUTPUT "${PYTHON_OUT_PATH}/${file}"
             COMMAND cmake -E copy
