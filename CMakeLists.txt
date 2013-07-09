@@ -14,8 +14,8 @@ endif()
 
 project(libgimli)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe")
-set(CMAKE_CXX_FLAGS "")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe")
+#set(CMAKE_CXX_FLAGS "")
 
 set(LIBGIMLI_VERSION_MAJOR 0)
 set(LIBGIMLI_VERSION_MINOR 9)

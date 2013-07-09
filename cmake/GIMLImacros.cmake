@@ -64,7 +64,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     
     foreach(file ${PYTHON_FILES})
         
-        message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
+        #message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
         add_custom_command(
             OUTPUT "${PYTHON_OUT_PATH}/${file}"
             COMMAND cmake -E copy
