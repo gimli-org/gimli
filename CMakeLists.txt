@@ -2,10 +2,11 @@
 
 cmake_minimum_required(VERSION 2.8.6)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+include(GIMLImacros)
+
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 add_custom_target(pygimli)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
@@ -63,24 +64,12 @@ find_package(BLAS)
 find_package(LAPACK)
 find_package(CHOLMOD)
 
-IF(WIN32)
-	set(CppUnit_DIR C:/MinGW/msys/1.0/local/include)
-endif(WIN32)
-	
 find_package(CppUnit)
 if (CPPUNIT_FOUND)
     option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
 endif (CPPUNIT_FOUND)
 
-
 find_package(Doxygen)
-
-if (DOXYGEN_FOUND)
-    add_custom_target(html
-        "${DOXYGEN_EXECUTABLE}"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen"
-        COMMENT "Generating documentation" VERBATIM)
-endif()
 
 IF(WIN32)
 	set(READPROC_FOUND FALSE)
@@ -105,17 +94,20 @@ if(PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE AND PYGCCXML_FOU
 endif ()
 
 
-configure_file (
-  "${PROJECT_SOURCE_DIR}/config.cmake.h.in"
-  "${PROJECT_BINARY_DIR}/config.cmake.h"
-  )
+configure_file ("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
+configure_file( doc/doxygen/doxyfile.in doc/doxygen/doxyfile )
+
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
+
+if (DOXYGEN_FOUND)
+    add_custom_target(html
+        "${DOXYGEN_EXECUTABLE}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen"
+        COMMENT "Generating documentation" VERBATIM)
+endif()
+
 # 
 # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config1.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
-
-set(LIBRARY_INSTALL_DIR lib)
-set(INCLUDE_INSTALL_DIR include/gimli/)
 
 ################################################################################
 # Define the configurable options
@@ -128,6 +120,51 @@ other issues." FALSE "WIN32 OR APPLE" FALSE)
 
 # cmake_dependent_option(GIMLI_BUILD_PYTHON_MODULES "Specifies whether to build the Python extension module(s)" "PYTHONINTERP_FOUND;PYTHONLIBS_FOUND;Boost_PYTHON_FOUND")
 
+################################################################################
+# 
+################################################################################
+set (LIBRARY_INSTALL_DIR lib)
+set (INCLUDE_INSTALL_DIR include/gimli/)
+
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+if (WIN32)
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+else()
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+endif()
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+# set up install sub-directories
+if (CMAKE_SIZEOF_VOID_P EQUAL 8 AND EXISTS "${CMAKE_INSTALL_PREFIX}/lib64")
+    set( GIMLI_LIB_INSTALL_DIR lib64 )
+elseif (CMAKE_SIZEOF_VOID_P EQUAL 4 AND EXISTS "${CMAKE_INSTALL_PREFIX}/lib32")
+    set( GIMLI_LIB_INSTALL_DIR lib32 )
+else()
+    set( GIMLI_LIB_INSTALL_DIR lib )
+endif()
+
+set( GIMLI_VER_INSTALL_SUBDIR "/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}" )
+set( GIMLI_DATA_INSTALL_DIR "share${GIMLI_VER_INSTALL_SUBDIR}" )
+set( GIMLI_DOC_INSTALL_DIR "share/doc${GIMLI_VER_INSTALL_SUBDIR}" )
+
+set( GIMLI_PKGCONFIG_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/pkgconfig" )
+set( GIMLI_MODULE_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}.${GIMLI_VERSION_MINOR}" )
+set( GIMLI_SAMPLE_INSTALL_DIR "${GIMLI_MODULE_INSTALL_DIR}" ) # TODO: put into /samples subdir!
+set( GIMLI_INCLUDE_INSTALL_DIR "include${GIMLI_VER_INSTALL_SUBDIR}" )
+set( GIMLI_PYTHON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/python/pygimli)
 
 ################################################################################
 # Add main header locations (for everything we build)
@@ -174,11 +211,10 @@ set(CPACK_SOURCE_IGNORE_FILES
 # repository history should not be in source tarballs
 "\\\\.svn.*"
 # most likely not needed in the tarball
-"promo/"
 "cppcheck-output"
 "perform-cppcheck"
 
-# the rest is modelled after .hgignore
+# the rest is modeled after .hgignore
 "build/"
 "~$"
 

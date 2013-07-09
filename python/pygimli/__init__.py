@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-These are the python bindings for libgimli
+These are the python bindings for libgimli 
 
 import pygimli
 
