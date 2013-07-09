@@ -4,30 +4,42 @@ GIMLi - Geophysical Inversion and Modelling Library
 Prerequisites
 =============
 
-    . subversion
+    . subversion, cmake, git
     . gcc
         tested: gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
                 OpenSuse 11.4 x86_64: gcc-4
                 Debian 3.2.46-1 x86_64: gcc-4.7.2
                 MinGW32: gcc-4.6.2/4
                 MinGW64: gcc-4.5.4 (without python bindings)
+    . libboost >=1.48 (thread, [python])
+        tested: 1.48, 1.49
                 
+Optional some can be installed via script
+
+    . blas and lapack for suitesparse
     . SuiteSparse http://www.cise.ufl.edu/research/sparse/SuiteSparse/
-        tested: SuiteSparse-3.7.1.tar.gz
-    . triangle http://www.cs.cmu.edu/~quake/triangle.html
-
-
-#### Example Installation on Windows ####
-
-Console 
-
-
+        tested: SuiteSparse-4.2.1.tar.gz (via script)
+    . triangle http://www.cs.cmu.edu/~quake/triangle.html (via script)
+    . cppunit
+    . procps
+    . gccxml, pygccxml and pyplusplus (via script)
+    . matplotlib >=1.1.0
+        
 
 #### Example Installation on Vanilla Ubuntu ####
 
+First install some of the necessary stuff.
 For sure you will need subversion to get the source files and some things for the tool-chain
 
-    sudo apt-get install subversion gnu-standards autoconf libtool
+    sudo apt-get install subversion git cmake
+
+    sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
+
+Optional install usefullstuff:
+
+    sudo apt-get install libcppunit-dev libprocps0-dev
+
+    sudo apt-get install python-matplotlib
 
 Create a directory for your installation, e.g., $HOME/src
 
@@ -38,32 +50,64 @@ Create a directory for your installation, e.g., $HOME/src
 
 Checkout the current sources for libgimli:
     
-    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk libgimli
+    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
 
-Getting necessary or optional external libraries. We need suitesparse and triangle. If they are not installed system-wide we provide a small script to obtain them.
+Getting necessary and optional external libraries. 
+We need suitesparse and triangle. If they are not installed system-wide we provide a small script to obtain them.
 
-    cd libgimli
-    make -C external/
+    cd trunk
+    cd external
+    make 
 
-Now we can prepare the build:
+Check if there are now a lib and an include path. With some content in it (e.g. libtriangle.a and libcholmod.a)
+Then you can go back to the main gimli path:
+    
+    cd ../..
+    
+#### Dependencies for python bindings ####
 
-    ./autogen.sh
- 
+Python bindings are generally a good idea because some tools depend on it. 
+If you just want the libgimli library you can skip this part
 
-*to be continued ..........................*
+The python binding files are generated automatic by using gccxml, pygccxml and pyplusplus
+If you cannot install them with your distribution we provide a script for it.
 
-sudo apt-get install libboost-all-dev libblas-dev liblapack-dev cmake git 
+    cd ..
+    sh gimli/trunk/python/buildScripts/buildToolChain.sh
 
-sudo apt-get install libcppunit-dev
+if 'sh COMMAND.sh' complains about missing pushd or popd try 'bash COMMAND.sh':
 
-sudo apt-get install libprocps0-dev
-
-sudo apt-get install python-matplotlib
-
+    bash gimli/trunk/python/buildScripts/buildToolChain.sh
 
 
-if 'sh COMMAND.sh' complains about missing pushd or popd try 'bash COMMAND.sh'
+##### Building with cmake #####
 
+We test a new build system using cmake http://www.cmake.org/ that hopefully avoid a lot of problems from the past.
+In the first, cmake provide out of source build so we recommend using a build directory beside the trunk path:
+
+    cd gimli
+    mkdir -p build
+    
+the main directory structure should looks like this:
+
+    gimli/trunk
+    gimli/build
+
+change to the build path:
+
+    cd build
+
+and configure the build:
+    
+    cmake ../trunk
+
+To build the library just run make
+    
+    make
+
+
+
+#### Example Installation on Windows ####
 
 Dependencies for python bindings
 ================================
@@ -76,16 +120,6 @@ we need gccxml, pygccxml and pyplusplus
 bash libgimli/trunk/python/buildScripts/buildToolChain.sh
 
 
-Install via cmake
-=================
-
-We test a new build system using cmake http://www.cmake.org/ that hopefully supersede the most steps above.
-In the first, cmake provide out of source build so we recommend using a build directory beside the trunk path:
-
-    gimli/trunk
-    gimli/build
-
-    cd build
 
 ####Linux systems####
 For *Linux* user prepare and configure the build
