@@ -11,10 +11,15 @@
 # CPPUNIT_DEBUG_LIBRARY, where to find the CppUnit library in debug
 # mode.
 
+#IF(WIN32)
+#    set(CppUnit_DIR C:/MinGW/msys/1.0/local/include)
+#endif(WIN32)
+
 FIND_PATH(CPPUNIT_INCLUDE_DIR cppunit/TestCase.h
-  /local/include
-  /usr/local/include
-  /usr/include
+    /local/include
+    /usr/local/include
+    /usr/include
+    C:/MinGW/msys/1.0/local/include
 )
 
 # With Win32, important to have both

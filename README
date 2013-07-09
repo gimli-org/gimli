@@ -17,6 +17,12 @@ Prerequisites
     . triangle http://www.cs.cmu.edu/~quake/triangle.html
 
 
+#### Example Installation on Windows ####
+
+Console 
+
+
+
 #### Example Installation on Vanilla Ubuntu ####
 
 For sure you will need subversion to get the source files and some things for the tool-chain
@@ -27,6 +33,8 @@ Create a directory for your installation, e.g., $HOME/src
 
     mkdir -p ~/src
     cd src
+    mkdir -p gimli
+    cd gimli
 
 Checkout the current sources for libgimli:
     
@@ -34,7 +42,7 @@ Checkout the current sources for libgimli:
 
 Getting necessary or optional external libraries. We need suitesparse and triangle. If they are not installed system-wide we provide a small script to obtain them.
 
-    cd src/libgimli
+    cd libgimli
     make -C external/
 
 Now we can prepare the build:
@@ -77,31 +85,45 @@ In the first, cmake provide out of source build so we recommend using a build di
     gimli/trunk
     gimli/build
 
+    cd build
 
-    cd /build
-
-Prepare and configure the build
+####Linux systems####
+For *Linux* user prepare and configure the build
     
     cmake ../trunk
 
-For mingw users it should be preferable to generate for msys makefiles
+To build the library just run make
+    
+    make
+
+####Windows i.e. Mingw systems####
+For *Mingw* users it should be preferable to generate for msys makefiles
 
     cmake -D CMAKE_INSTALL_PREFIX=../gimli-install -G 'MSYS Makefiles' ../trunk
 
 cmake provide interactive configuration and fine tuning with. Window user will probably adjust the boost-include and boost-library paths.
 
-    ccmake ../trunk #for Linux user
     cmake-gui ../trunk #for MS Windows user
 
 To build the library just run make
     
     make
 
-You can test you build by running 
+####Interesting make targets####
+
+You may want to build python bindings by by running:
+
+    make pygimli
+
+You can test your build:
 
     make check
 
-Of course the test will be very silent if you don't have cppunit installed
+Of course the test will be very silent if you don't have cppunit installed.
+
+If you have doxygen installed, you can create the api documentation:
+
+    make html
 
 
 ####Using cmake with CodeBlocks####

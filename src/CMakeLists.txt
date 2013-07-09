@@ -48,12 +48,11 @@ if (CHOLMOD_FOUND)
 endif (CHOLMOD_FOUND)
 
 
-#install(TARGETS ${libgimli_TARGET_NAME} 
-#        LIBRARY 
-#        DESTINATION ${LIBRARY_INSTALL_DIR})
+install(TARGETS ${libgimli_TARGET_NAME} 
+        LIBRARY 
+        DESTINATION ${LIBRARY_INSTALL_DIR})
 
-install(FILES gimli.h
-              ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h 
-        DESTINATION ${INCLUDE_INSTALL_DIR})
+#install(FILES gimli.h ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h 
+#        DESTINATION ${INCLUDE_INSTALL_DIR})
 
 
