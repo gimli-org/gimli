@@ -24,9 +24,8 @@
 #if defined(WINDOWS) || defined(_WIN32) || defined(WIN32)
 #define PATHSEPARATOR "\\"
 
-#define WIN32_LEAN_AND_MEAN
-#define BOOST_USE_WINDOWS_H
-
+	#define WIN32_LEAN_AND_MEAN
+	#define BOOST_USE_WINDOWS_H
 #if defined(DLL_EXPORT) || defined(gimli_EXPORTS)
     //* We are building this library
     //#warning (We are building this library)

@@ -19,24 +19,6 @@ generate_export_header( ${libgimli_TARGET_NAME}
              STATIC_DEFINE LIBGIMLI_BUILT_AS_STATIC
 )
 
-if (WIN32)
-    target_link_libraries(${libgimli_TARGET_NAME} psapi)
-	
-	if (Boost_THREAD_FOUND)
-		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
-	endif (Boost_THREAD_FOUND)
-	if (Boost_SYSTEM_FOUND)
-		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
-	endif (Boost_SYSTEM_FOUND)
-	
-elseif (UNIX AND NOT APPLE)
-    target_link_libraries(${libgimli_TARGET_NAME} ${CMAKE_DL_LIBS})
-	if (READPROC_FOUND)
-		include_directories(${READPROC_INCLUDE_DIR})
-		target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
-	endif (READPROC_FOUND)
-endif(WIN32)
-
 if (TRIANGLE_FOUND)
     include_directories(${Triangle_INCLUDE_DIR})
     target_link_libraries(${libgimli_TARGET_NAME} ${Triangle_LIBRARIES})
@@ -47,10 +29,34 @@ if (CHOLMOD_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${CHOLMOD_LIBRARIES})
 endif (CHOLMOD_FOUND)
 
+if (WIN32)
+    target_link_libraries(${libgimli_TARGET_NAME} psapi)
+	
+	if (Boost_THREAD_FOUND)
+		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
+	endif (Boost_THREAD_FOUND)
+	if (Boost_SYSTEM_FOUND)
+		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
+	endif (Boost_SYSTEM_FOUND)
 
-install(TARGETS ${libgimli_TARGET_NAME} 
-        LIBRARY 
-        DESTINATION ${LIBRARY_INSTALL_DIR})
+	file(COPY ${BLAS_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+	file(COPY ${LAPACK_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+	file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+	file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+
+	install(PROGRAMS ${BLAS_LIBRARIES} DESTINATION bin)
+	install(PROGRAMS ${LAPACK_LIBRARIES} DESTINATION bin)
+	install(PROGRAMS ${Boost_THREAD_LIBRARIES} DESTINATION bin)
+	install(PROGRAMS ${Boost_SYSTEM_LIBRARIES} DESTINATION bin)
+
+elseif (UNIX AND NOT APPLE)
+    target_link_libraries(${libgimli_TARGET_NAME} ${CMAKE_DL_LIBS})
+	if (READPROC_FOUND)
+		include_directories(${READPROC_INCLUDE_DIR})
+		target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
+	endif (READPROC_FOUND)
+	install(TARGETS ${libgimli_TARGET_NAME} LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR})	
+endif(WIN32)
 
 #install(FILES gimli.h ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h 
 #        DESTINATION ${INCLUDE_INSTALL_DIR})

@@ -25,10 +25,6 @@ target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
 add_test(unitTest unittest.sh)
 
 add_dependencies(check gimliUnitTest)
-
-message("BUILD ${CMAKE_CURRENT_BINARY_DIR} ")
-message("SOURCE ${CMAKE_CURRENT_SOURCE_DIR} ")
-
-file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/unittest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/unittest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 INSTALL_FILES(${CMAKE_CURRENT_SOURCE_DIR} unittest.sh)

@@ -1,4 +1,4 @@
-BOOST_VERSION=1.51.0
+BOOST_VERSION=1.53.0
 
 if [ $# -eq 0 ]; then
 	prefix=`pwd`
@@ -70,23 +70,27 @@ pushd $BOOST_SRC_DIR
 	echo Installing at $DISTDIR
 
 	if [ ! -f ./b2.exe ]; then
-		./bootstrap.sh --with-toolset=mingw
+		 cmd /c "bootstrap.bat mingw --with-python-root=$PYTHON_ROOT "
 	fi
 
-	LDFLAGS='-static-libgcc -static-libstdc++' 
-	#./bootstrap.sh --prefix=$DISTDIR --with-toolset=mingw \
-		#--with-python-root=$PYTHON_ROOT \
-		#--with-libraries=python,system,thread,regex
+	./b2.exe toolset=gcc variant=release link=shared threading=multi address-model=$ADRESSMODEL install \
+		--prefix=$DISTDIR \
+		--layout=tagged \
+		--with-python \
+		--with-system \
+		--with-thread \
+		--with-regex 
+		#libraries=python,system,thread,regex 
+		
 	
 	#sed -e 's/ using mingw / using gcc /' project-config.jam > tmp
 	#mv tmp project-config.jam
 	
-	
 	#exit
 	#LDFLAGS='-static-libgcc -static-libstdc++' 
-	./b2 install -d+2 --prefix=$DISTDIR --layout=tagged \
-			address-model=$ADRESSMODEL variant=release link=shared \
-			threading=multi
+	#./b2 toolset=gcc install -d+2 --prefix=$DISTDIR --layout=tagged \
+	#		address-model=$ADRESSMODEL variant=release link=shared \
+	#		threading=multi
 
     echo "copying into new boost dir", ../boost
 	mkdir -p ../boost
