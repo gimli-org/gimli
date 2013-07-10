@@ -45,3 +45,8 @@ set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
 foreach(program ${SCRIPTS})
     install(PROGRAMS apps/${program} DESTINATION bin)
 endforeach(program)
+
+if (WIN32)
+	file(COPY ${Boost_PYTHON_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+	install(PROGRAMS ${Boost_PYTHON_LIBRARIES} DESTINATION bin)
+endif()
