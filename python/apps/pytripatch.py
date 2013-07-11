@@ -146,7 +146,7 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
     # overide default draw function that ignore zorder of images, what we need for coverage image overlay
     #mypa = MPLAxesPatch( axis )
     #axis.draw = mypa.draw
-
+    patches = None
     axis.set_aspect( 'equal' )
 
     if ( constraintMat ):
