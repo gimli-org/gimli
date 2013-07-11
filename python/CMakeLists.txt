@@ -38,6 +38,7 @@ add_dependencies(pygimli buildpygimli)
 
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
+add_dependencies(pygimlisrc pg)
 add_dependencies(pg _pygimli_)
 
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
