@@ -12,8 +12,8 @@ Prerequisites
                 Ubuntu 
                 MinGW32: gcc-4.6.2/4
                 MinGW64: gcc-4.5.4 (without python bindings)
-    . libboost >=1.48 (thread, [python])
-        tested: 1.48, 1.49
+    . libboost >=1.46 (thread, [python])
+        tested: 1.46, 1.48, 1.49
                 
 Optional some can be installed via script
 
@@ -170,8 +170,24 @@ to come ....
 
 #### Example Installation on Ubuntu ####
 
+    sudo apt-get install subversion git cmake
+    sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
+    sudo apt-get install libcppunit-dev
+    sudo apt-get install python-matplotlib
+    sudo apt-get install doxygen
+
     mkdir -p ~/src
     cd ~/src
+    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
+    cd trunk/external/
+    make
+    cd ../../../
+    bash gimli/trunk/python/buildScripts/buildToolChain.sh    
+    cd gimli
+    mkdir build
+    cmake ../trunk
+    make
+    make pygimli
 
 
 -- deprecated ------------ 

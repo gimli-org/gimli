@@ -45,7 +45,7 @@ public:
 
     void setSolverType( SolverType solverType = AUTOMATIC );
   
-    void setMatrix( DSparseMatrix & S );
+    void setMatrix(DSparseMatrix & S, bool verbose=false);
     
     SolverType solverType() const { return solverType_; }
 

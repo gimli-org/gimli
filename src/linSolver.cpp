@@ -34,20 +34,20 @@ LinSolver::LinSolver(  )
 LinSolver::LinSolver( DSparseMatrix & S, bool verbose ) 
     : solver_( NULL ), verbose_( verbose ) {
     setSolverType( AUTOMATIC );
-    setMatrix( S );
+    setMatrix(S);
 }
   
 LinSolver::LinSolver( DSparseMatrix & S, SolverType solverType, bool verbose ) 
     : solver_( NULL ), verbose_( verbose ) {
     setSolverType( solverType );
-    setMatrix( S );
+    setMatrix(S);
 }
   
 LinSolver::~LinSolver(){
     delete solver_;
 }
 
-void LinSolver::setSolverType( SolverType solverType ){
+void LinSolver::setSolverType(SolverType solverType){
    solverType_ = solverType;
    if ( solverType_ == AUTOMATIC ){
         solverType_ = UNKNOWN;
@@ -61,18 +61,19 @@ void LinSolver::setSolverType( SolverType solverType ){
     }
 }
 
-void LinSolver::setMatrix( DSparseMatrix & S ){
-    initialize_( S );
+void LinSolver::setMatrix(DSparseMatrix & S, bool verbose){
+    verbose_ = verbose;
+    initialize_(S);
 }
 
-void LinSolver::initialize_( DSparseMatrix & S ){
+void LinSolver::initialize_(DSparseMatrix & S){
     rows_ = S.rows();
     cols_ = S.cols();
-    setSolverType( solverType_ );
+    setSolverType(solverType_);
     
     switch( solverType_ ){
     case LDL:     solver_ = new LDLWrapper( S, verbose_ ); break;
-    case CHOLMOD: solver_ = new CHOLMODWrapper( S, verbose_ ); break;
+    case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_); break;
     case UNKNOWN: 
     default:
         std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;

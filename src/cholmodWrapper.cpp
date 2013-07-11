@@ -199,7 +199,7 @@ CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrappe
   int ret =  cholmod_start( (cholmod_common*)c_ );
   if ( ret ) dummy_ = false;
 
-  initialize_( S );
+  initialize_(S);
   //  dummy_ = true;
   factorise();
 #else
@@ -227,9 +227,13 @@ int CHOLMODWrapper::factorise(){
   if ( !dummy_ ){
 #if USE_CHOLMOD
     L_ = cholmod_analyze( (cholmod_sparse*)A_, (cholmod_common*)c_  );		    /* analyze */
+    if (verbose_) std::cout << "Cholmod analyze .. preordering: " << ((cholmod_factor *)(L_))->ordering << std::endl;
+    
     cholmod_factorize( (cholmod_sparse*)A_, (cholmod_factor *)L_, (cholmod_common*)c_ );		    /* factorize */
+    
     //    L_ = cholmod_super_symbolic (A_, c_ );	/* analyze */
     //    cholmod_super_numeric (A_, L_, c_);		/* factorize */
+    
     return 1;
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
@@ -259,7 +263,7 @@ int CHOLMODWrapper::solve( const RVector & rhs, RVector & solution ){
   return 0;
 }
 
-int CHOLMODWrapper::initialize_( DSparseMatrix & S ){
+int CHOLMODWrapper::initialize_(DSparseMatrix & S){
   if ( !dummy_ ){
 #if USE_CHOLMOD
 
