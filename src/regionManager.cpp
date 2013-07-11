@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -98,8 +98,8 @@ void Region::setBackground( bool background ){
 }
 
 void Region::setSingle( bool single ){
-    if ( single != isSingle_ ) {
-        markSingle( single );
+    if (single != isSingle_) {
+        markSingle(single);
         parent_->recountParaMarker_();
         parent_->createParaDomain_();
         bounds_.clear();
@@ -490,21 +490,21 @@ void RegionManager::clear(){
 void RegionManager::setMesh( const Mesh & mesh, bool holdRegionInfos ){
 
     if ( !holdRegionInfos ){
-        if ( verbose_ ) std::cout << "Reset region parameter" << std::endl;
+        if (verbose_) std::cout << "Reset region parameter" << std::endl;
         this->clear();
     }
 
     Stopwatch swatch( true );
-    if ( verbose_ ) std::cout << "RegionManager copying mesh ...";
+    if (verbose_) std::cout << "RegionManager copying mesh ...";
 
     if ( mesh_ ) delete mesh_; mesh_ = new Mesh( mesh );
 
-    if ( verbose_ ){
+    if (verbose_){
         std::cout << swatch.duration( true ) << " s " << std::endl;
         std::cout << "create NeighbourInfos ... ";
     }
     mesh_->createNeighbourInfos();
-    if ( verbose_ ) {
+    if (verbose_) {
         std::cout << swatch.duration( true ) << " s " << std::endl;
         std::cout << "analysing mesh ... ";
     }
@@ -512,12 +512,12 @@ void RegionManager::setMesh( const Mesh & mesh, bool holdRegionInfos ){
     //** looking for and create regions
     std::vector < int > regions( unique( sort( mesh_->cellMarker() ) ) );
 
-    if ( verbose_ ) std::cout << regions.size() << " regions." << std::endl;
+    if (verbose_) std::cout << regions.size() << " regions." << std::endl;
 
     bool singleOnly = false;
     if ( regions.size() > 50 ){
         singleOnly = true;
-        if ( verbose_ ) std::cout << " guessing singles only regions." << std::endl;
+        if (verbose_) std::cout << " guessing singles only regions." << std::endl;
     }
 
     std::map < int, std::vector< Cell * > > markerCellVectorMap;
@@ -583,7 +583,7 @@ Region * RegionManager::addRegion( int marker, const Mesh & mesh ){
 }
 
 void RegionManager::createParaDomain_(){
-    if ( verbose_ ) std::cout << "creating para domain ... ";
+    if (verbose_) std::cout << "creating para domain ... ";
     Stopwatch swatch( true );
     std::vector < int > cellIdx;
     cellIdx.reserve( mesh_->cellCount() );
@@ -598,7 +598,7 @@ void RegionManager::createParaDomain_(){
 
     paraDomain_->createMeshByCellIdx( *mesh_, cellIdx );
 
-    if ( verbose_ ) std::cout << swatch.duration( true ) << " s" << std::endl;
+    if (verbose_) std::cout << swatch.duration( true ) << " s" << std::endl;
 }
 
 void RegionManager::recountParaMarker_(){
@@ -609,6 +609,7 @@ void RegionManager::recountParaMarker_(){
         it->second->countParameter( count );
         count += it->second->parameterCount();
     }
+    if (verbose_) std::cout << "Recounted parameter: " << count << std::endl;
 }
 
 void RegionManager::findInterRegionInterfaces_( ){
@@ -706,7 +707,7 @@ void RegionManager::fillConstraintsWeight( RVector & vec ){
 
     //!** fill constraints weights from inter regions constrains
     if ( interRegionConstraints_.size() > 0 ){
-        if ( verbose_  ) std::cout << "apply inter region constraints weights " << std::endl;
+        if (verbose_) std::cout << "apply inter region constraints weights " << std::endl;
 
         for ( std::map< std::pair< int, int >, double >::iterator
                         it = interRegionConstraints_.begin();
@@ -714,7 +715,7 @@ void RegionManager::fillConstraintsWeight( RVector & vec ){
 
             std::map< std::pair< int, int >, std::list < Boundary * > >::const_iterator iRMapIter = interRegionInterfaceMap_.find( it->first );
 
-//             if ( verbose_ ) {
+//             if (verbose_) {
 //                 std::cout << "regions: " << it->first.first << " " << it->first.second;
 //                 if ( iRMapIter != interRegionInterfaceMap_.end() ){
 //                     std::cout << " ( " << iRMapIter->second.size() << " ) " ;
@@ -882,12 +883,12 @@ void RegionManager::fillConstraints( DSparseMapMatrix & C ){
     }
 
     if ( interRegionConstraints_.size() > 0 ){
-        if ( verbose_  ) std::cout << "apply inter region constraints " << std::endl;
+        if (verbose_) std::cout << "apply inter region constraints " << std::endl;
 
         for ( std::map< std::pair< int, int >, double >::iterator
                 it  = interRegionConstraints_.begin();
                 it != interRegionConstraints_.end(); it ++ ){
-//             if ( verbose_ ) std::cout << "regions: " << it->first.first << " "
+//             if (verbose_) std::cout << "regions: " << it->first.first << " "
 //                                       << it->first.second << std::endl;
             std::map< std::pair< int, int >, std::list < Boundary * > >::const_iterator iRMapIter;
             iRMapIter = interRegionInterfaceMap_.find( it->first );
@@ -902,7 +903,7 @@ void RegionManager::fillConstraints( DSparseMapMatrix & C ){
                 throwLengthError( 1, WHERE_AM_I + " left | right  MC size == 0 " + toStr( lMC->size() )
                 + " "+ toStr( rMC->size() ) );
             }
-//             if ( verbose_ ){
+//             if (verbose_){
 //                 std::cout << "left : " << lMC->size() << " min " << min(*lMC) << " max " << max(*lMC) << " start " << lStart << std::endl;
 //                 std::cout << "right: " << rMC->size() << " min " << min(*rMC) << " max " << max(*rMC) << " start " << rStart << std::endl;
 //             }
@@ -980,7 +981,7 @@ void RegionManager::loadMap( const std::string & fname ){
     regionAttributeMap[ lower( "single" ) ]   = &Region::setSingleStr_;
     regionAttributeMap[ lower( "background" ) ] = &Region::setBackgroundStr_;
 
-    if ( verbose_ ) std::cout << "reading region control file" << std::endl;
+    if (verbose_) std::cout << "Reading region control file" << std::endl;
 
     std::fstream file; openInFile( fname, &file );
     std::vector < std::string > token;
@@ -989,9 +990,10 @@ void RegionManager::loadMap( const std::string & fname ){
     while ( !file.eof() ){
 
         row = getNonEmptyRow( file, '-' );
-        if ( row.empty() ) {
-            file.close();
-            return;
+        if (row.empty()){
+            continue;
+//             file.close();
+//             return;
         }
 
         if ( row[0][0] == '#' ){
@@ -1011,7 +1013,7 @@ void RegionManager::loadMap( const std::string & fname ){
             continue;
         }
 
-        if ( token.size() == 0 ) {
+        if (token.size() == 0) {
              std::cerr << WHERE_AM_I << " not a valid region file. looking for leading #" << fname << std::endl;
              file.close();
              return;
@@ -1020,12 +1022,12 @@ void RegionManager::loadMap( const std::string & fname ){
         // interpret row as region informations
         if ( lower( token[ 0 ] ) == "no" ){
 
-            if ( verbose_ ){
-                if ( verbose_ ) std::cout << "Get region property tokens: " << std::endl;
+            if (verbose_){
+                if (verbose_) std::cout << "Get region property tokens: " << std::endl;
                 for ( uint i = 0; i < token.size(); i ++ ) {
-                    if ( verbose_ ) std::cout << token[ i ] << ", ";
+                    if (verbose_) std::cout << token[ i ] << ", ";
                 }
-                if ( verbose_ ) std::cout << std::endl;
+                if (verbose_) std::cout << std::endl;
             }
 
             if ( token.size() >= row.size() ){
@@ -1045,7 +1047,7 @@ void RegionManager::loadMap( const std::string & fname ){
                 for ( uint j = 0; j < regionMarker.size(); j ++ ){
                     for ( uint i = 1; i < row.size(); i ++ ){
                         if ( regionAttributeMap.count( lower( token[ i ] ) ) ){
-                            if ( verbose_ ) std::cout << regionMarker[ j ] << " : " << token[ i ]
+                            if (verbose_) std::cout << regionMarker[ j ] << " : " << token[ i ]
                                                       << " " << row[ i ] << std::endl;
                             (region( regionMarker[ j ] )->*regionAttributeMap[ lower( token[ i ] ) ] )( row[ i ] );
                         } else {
@@ -1063,12 +1065,12 @@ void RegionManager::loadMap( const std::string & fname ){
                 std::cerr << WHERE_AM_I << " too few tokens defined in region control file: " << fname << std::endl;
             }
         } else if ( lower( token[ 0 ] ) == "inter-region" ) {
-            if ( verbose_ ){
-                if ( verbose_ ) std::cout << "Get inter-region properties" << std::endl;
+            if (verbose_){
+                if (verbose_) std::cout << "Get inter-region properties" << std::endl;
                 for ( uint i = 0; i < token.size(); i ++ ) {
-                    if ( verbose_ ) std::cout << token[ i ] << " ";
+                    if (verbose_) std::cout << token[ i ] << " ";
                 }
-                if ( verbose_ ) std::cout << std::endl;
+                if (verbose_) std::cout << std::endl;
             }
 
             if ( row.size() == 3 ){
@@ -1098,7 +1100,7 @@ void RegionManager::loadMap( const std::string & fname ){
             }
 
         } else if ( lower( token[ 0 ] ) == "interface" ){
-            if ( verbose_ ){
+            if (verbose_){
                 std::cout << "Apply interface properties" << std::endl;
                 std::cout << "WARNING! no inner interfaces yet" << std::endl;
             }
@@ -1109,7 +1111,7 @@ void RegionManager::loadMap( const std::string & fname ){
                     for ( std::map < int, Region * > ::const_iterator it  = regionMap_.begin();
                                                           it != regionMap_.end(); it++ ){
                         for ( uint i = 0; i < it->second->boundaries().size(); i ++ ){
-                            if ( verbose_ ) std::cout << it->second->boundaries()[ i ]->marker() << std::endl;
+                            if (verbose_) std::cout << it->second->boundaries()[ i ]->marker() << std::endl;
                             if ( it->second->boundaries()[ i ]->marker() != 0 ){
                                 interfaceConstraint_[ it->second->boundaries()[ i ]->marker() ] = toDouble( row[ 1 ] );
                             }
@@ -1120,9 +1122,9 @@ void RegionManager::loadMap( const std::string & fname ){
                 }
             } else {
                 for ( uint i = 0; i < row.size(); i ++ ){
-                    if ( verbose_ ) std::cout << row[ i ] << " ";
+                    if (verbose_) std::cout << row[ i ] << " ";
                 }
-                if ( verbose_ ) std::cout << std::endl;
+                if (verbose_) std::cout << std::endl;
                 std::cerr << "Format unknown: (interfaceNo constraint) " << std::endl;
             }
 
@@ -1153,7 +1155,7 @@ void RegionManager::setInterRegionConstraint( int aIn, int bIn, double c ){
         if ( interRegionInterfaceMap_.find( std::pair< int, int >( a, b ) )
              != interRegionInterfaceMap_.end() ){
             interRegionConstraints_[ std::pair< int, int >( a, b ) ] = c;
-//             if ( verbose_ ){
+//             if (verbose_){
 //                 std::cout << "regions: " << a << " " << b << " " << c << std::endl;
 //             }
         }

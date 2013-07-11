@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2005-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -202,13 +202,13 @@ void ModellingBase::createJacobian( const RVector & model ){
     if ( verbose_ ) std::cout << " ... " << swatch.duration() << " s." << std::endl;
 }
     
-void ModellingBase::mapModel( const RVector & model, double background ){
+void ModellingBase::mapModel(const RVector & model, double background){
     int marker = -1;
     std::vector< Cell * > emptyList;
     mesh_->createNeighbourInfos();
 
-    for ( uint i = 0, imax = mesh_->cellCount(); i < imax; i ++ ){
-        marker = mesh_->cell( i ).marker();
+    for (uint i = 0, imax = mesh_->cellCount(); i < imax; i ++){
+        marker = mesh_->cell(i).marker();
         if ( marker >= 0 ) {
             if ( (size_t)marker >= model.size() ){
                 mesh_->exportVTK( "mapModelfail" );
@@ -230,7 +230,7 @@ void ModellingBase::mapModel( const RVector & model, double background ){
         }
     }
 
-    if ( emptyList.size() == mesh_->cellCount() ){
+    if (emptyList.size() == mesh_->cellCount()){
         throwLengthError( 1, WHERE_AM_I + " too many empty cells" + toStr( emptyList.size() )
                        + " == " + toStr( mesh_->cellCount() ) );
     }
