@@ -176,8 +176,8 @@ to come ....
     sudo apt-get install python-matplotlib
     sudo apt-get install doxygen
 
-    mkdir -p ~/src
-    cd ~/src
+    mkdir -p ~/src/gimli
+    cd ~/src/gimli
     svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
     cd trunk/external/
     make
@@ -185,6 +185,7 @@ to come ....
     bash gimli/trunk/python/buildScripts/buildToolChain.sh    
     cd gimli
     mkdir build
+    cd build
     cmake ../trunk
     make
     make pygimli
