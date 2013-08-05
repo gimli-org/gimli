@@ -79,6 +79,8 @@ pushd $BOOST_SRC_DIR
 		--with-python \
 		--with-system \
 		--with-thread \
+		--with-date_time \
+		--with-chrono \
 		--with-regex 
 		#libraries=python,system,thread,regex 
 		
