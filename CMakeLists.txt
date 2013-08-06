@@ -38,8 +38,7 @@ IF(WIN32)
 	set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/../../boost/include)
 endif(WIN32)
 
-find_package(Boost 1.46.0 COMPONENTS python system thread REQUIRED
-			)
+find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
 if (Boost_INCLUDE_DIR)
     message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
     include_directories(${Boost_INCLUDE_DIR})
@@ -84,11 +83,14 @@ ENDIF(WIN32)
 set(PythonLibs_FIND_VERSION 2.7)
 find_package(PythonInterp)
 find_package(PythonLibs)
+find_package(Boost 1.46.0 COMPONENTS python )
 
 find_package(gccxml)
 find_package(pygccxml)
 
-if(PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND)
+if(PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE 
+	AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
+	AND Boost_SYSTEM_LIBRARIES)
     set (PYGIMLI 1)
     message (STATUS "pygimli can be build.")
 endif ()
