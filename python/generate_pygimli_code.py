@@ -156,7 +156,7 @@ def generate( defined_symbols ):
 
     if sys.platform == 'win32':
         #os.name == 'nt' (default on my mingw) results in wrong commandline for gccxml
-        #os.name = 'mingw'
+        os.name = 'mingw'
         gccxmlpath = settings.gccxml_path.replace('\\', '\\\\') + '\\\\gccxml.exe'
     else:
         gccxmlpath = settings.gccxml_path
