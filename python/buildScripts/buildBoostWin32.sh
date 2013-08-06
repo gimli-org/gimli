@@ -42,13 +42,28 @@ fi;
 
 BOOST_SRC_DIR=$BOOST_SRC/$BOOST_NAME
 GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
+GCCARCH=`gcc -dumpmachine`
+
+if [ "$GCCARCH" == "mingw32" ]; then
+	ADRESSMODEL=32
+else
+	ADRESSMODEL=64
+fi
 
 echo 'Found gcc ' $GCCVER 
+WITHPYTHON='--with-python'
 arch=`python -c 'import platform; print platform.architecture()[0]'`
+
 if [ "$arch" == "64bit" ]; then
-	ADRESSMODEL=64
+	if [ "$ADRESSMODEL" == "32" ]; then
+		echo "32bit GCC but 64bit python .. omitting boostpython."
+		WITHPYTHON=''
+	fi
 else
-	ADRESSMODEL=32
+	if [ "$ADRESSMODEL" == "64" ]; then
+		echo "64bit GCC but 32bit python .. omitting boostpython."
+		WITHPYTHON=''
+	fi
 fi
 
 if [ ! -d $BOOST_SRC_DIR ]; then
@@ -64,7 +79,7 @@ pushd $BOOST_SRC_DIR
     # is this still necessary ??
     # edit ./tools/build/v2/tools/python-config.jam:12 (add 2.7 2.6 2.5) but not necessary
     
-    DISTDIR=$BOOST_SRC_DIR/boost_$BOOST_VERSION-$GCCVER-$ADRESSMODEL
+    DISTDIR=$BOOST_SRC_DIR/build/boost_$BOOST_VERSION-$GCCVER-$ADRESSMODEL
 
 	echo Calling from $OLDDIR
 	echo Installing at $DISTDIR
@@ -76,7 +91,7 @@ pushd $BOOST_SRC_DIR
 	./b2.exe toolset=gcc variant=release link=shared threading=multi address-model=$ADRESSMODEL install \
 		--prefix=$DISTDIR \
 		--layout=tagged \
-		--with-python \
+		$WITHPYTHON \
 		--with-system \
 		--with-thread \
 		--with-date_time \
