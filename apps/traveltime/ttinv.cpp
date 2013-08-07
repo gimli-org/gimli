@@ -89,18 +89,15 @@ int main( int argc, char *argv [] ) {
     vcout << "Lower/upper slowness bound = " << lbound << "/" << ubound << std::endl;
 
     //!** load data file
-    DataContainer dataIn;
-    dataIn.registerSensorIndex( "s" );
-    dataIn.registerSensorIndex( "g" );
-    dataIn.load( dataFileName, true );
+    DataContainer dataIn( dataFileName, "s g" ); //! predefine sensor indices and load
     if ( verbose ) dataIn.showInfos();
 
     //!** apply error model if not defined;
     if ( !dataIn.nonZero( "err" ) ) {
         vcout << "Estimate error: " << errPerc << "% + " << errTime << "s" << std::endl;
-        dataIn.set( "err", errTime / dataIn( "t" ) + errPerc / 100.0 ); // always relative error
+        dataIn.set( "err", dataIn( "t" )*  errPerc / 100.0 + errTime ); // always relative error
     }
-    vcout << "Data error:" << " min = " << min( dataIn( "err" ) ) * 100 << "%" 	<< " max = " << max( dataIn( "err" ) ) * 100 << "%" << std::endl;
+    vcout << "Data error:" << " min = " << min( dataIn( "err" ) ) * 1000. << "ms" 	<< " max = " << max( dataIn( "err" ) ) * 1000. << "ms" << std::endl;
 
     //!** Load mesh
     Mesh paraMesh;
@@ -140,7 +137,7 @@ int main( int argc, char *argv [] ) {
 
     if ( createGradientModel ) { // auslagern in ttdijkstramodel
         vcout << "Creating Gradient model ..." << std::endl;
-        double smi = min( appSlowness ) / 2.0;
+        double smi = median( appSlowness );
         if ( smi < lbound ) smi = lbound * 1.1;
         double sma = max( appSlowness ) / 2.0;
         if ( ubound > 0.0 && sma > ubound ) sma = ubound * 0.9;
@@ -178,7 +175,7 @@ int main( int argc, char *argv [] ) {
     inv.setModel( startModel );
     inv.setLambda( lambda );
     inv.setMaxIter( maxIter );
-    inv.setError( dataIn( "err" ) );
+    inv.setAbsoluteError( dataIn( "err" ) );
     inv.setOptimizeLambda( lambdaOpt );
     inv.setRobustData( isRobust );
     inv.setBlockyModel( isBlocky );

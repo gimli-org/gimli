@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dataview import *
+#from dataview import *  # because it still requires pybert -> should be moved to bert
 from meshview import *
 from colorbar import *
 from overlayimage import *
