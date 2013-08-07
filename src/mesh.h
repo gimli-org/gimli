@@ -162,12 +162,12 @@ public:
     void createGrid( const RVector & x ) { create1DGrid( x ); }
 
     /*! Create two dimensional grid. Boundary on the domain border will get marker = 1 .*/
-    void createGrid( const RVector & x, const RVector & y, int markerType = 0 ) { 
-        create2DGrid( x, y, markerType ); 
+    void createGrid( const RVector & x, const RVector & y, int markerType = 0 ) {
+        create2DGrid( x, y, markerType );
     }
     /*! Create three dimensional grid. Boundary on the domain border will get marker = 1 .*/
-    void createGrid( const RVector & x, const RVector & y, const RVector & z, int markerType = 0 ){ 
-        create3DGrid( x, y, z, markerType ); 
+    void createGrid( const RVector & x, const RVector & y, const RVector & z, int markerType = 0 ){
+        create3DGrid( x, y, z, markerType );
     }
 
     /*! Fill this 3D mesh with 3D boundary elements from the 2D mesh cells. Increase mesh dimension. Mesh should contain 2D cells. */
@@ -182,10 +182,10 @@ public:
 
     /*! Create and copy global H2 mesh of this mesh.*/
     Mesh createH2( ) const;
-    
+
     /*! Create and copy global P2 mesh of this mesh.*/
     Mesh createP2( ) const;
-    
+
     /*! Create a partly mesh from mesh, based on cell-ids */
     void createMeshByCellIdx( const Mesh & mesh, std::vector < int > & idxList );
 
@@ -224,7 +224,8 @@ public:
     std::vector < RVector3 > positions( const IndexArray & idx ) const;
 
     /*! Returns a vector of all cell center positions*/
-    std::vector < RVector3 > cellCenter( ) const;
+    std::vector < RVector3 > cellCenters( ) const;
+    std::vector < RVector3 > cellCenter( ) const { return cellCenters(); }
 
     /*! Returns a RVector of all cell sizes */
     RVector cellSizes( ) const;
@@ -237,7 +238,7 @@ public:
 
     /*! Returns a vector of all node marker */
     std::vector < int > nodeMarker() const;
-    
+
     /*! Returns an index vector of all nodes that match the marker */
     IndexArray findNodesIdxByMarker( int marker ) const;
 
@@ -262,7 +263,7 @@ public:
 
     /*! Return the index to the node of this mesh with the smallest distance to pos. */
     uint findNearestNode( const RVector3 & pos );
-    
+
     /*! Returns vector of cell ptrs with marker match the range [from .. to). \n
         For single marker match to is set to 0, for open end set to = -1 */
     std::vector < Cell * > findCellByMarker( int from, int to = 0 ) const;
@@ -324,15 +325,15 @@ public:
 
     /*! Load Mesh from file and try to import fileformat regarding file suffix.*/
     void load( const std::string & fileName, IOFormat format = Binary );
-    
+
     void loadAscii( const std::string & fileName );
-    
+
     void importMod( const std::string & fileName );
-    
+
     void importVTK( const std::string & fbody );
-    
+
     void importVTU( const std::string & fbody );
-    
+
     /*! Import Ascii STL, and save triangles as \ref Boundary(ies). */
     void importSTL( const std::string & fileName, bool isBinary = false );
 
@@ -361,20 +362,20 @@ public:
                             const RVector & data2 = RVector( 0 ) ) const ;
 
     void exportVTK( const std::string & fbody, const std::map< std::string, RVector > & data, const std::vector < RVector3 > & vec ) const;
-    
+
     void exportVTK( const std::string & fbody, const std::map< std::string, RVector > & data ) const;
-    
+
     /*! Export mesh and whole exportData map */
     void exportVTK( const std::string & fbody ) const;
-    
+
     /*! Export mesh and whole exportData map and vector data in vec*/
     void exportVTK( const std::string & fbody, const std::vector < RVector3 > & vec ) const;
- 
+
     void readVTKPoints_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKCells_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKScalars_( std::fstream & file, const std::vector < std::string > & row );
     void readVTKPolygons_( std::fstream & file, const std::vector < std::string > & row );
-    
+
     /*! Export the mesh in filename using vtu format:
     Visualization Toolkit Unstructured Points Data (http://www.vtk.org)
     Set binary to true writes the data content in binary format.
@@ -392,7 +393,7 @@ public:
     void exportAsTetgenPolyFile( const std::string & filename );
     //** end I/O stuff
 
-    
+
     void addExportData( const std::string & name, const RVector & data );
 
     RVector exportData( const std::string & name ) const;
@@ -402,9 +403,9 @@ public:
     void setExportDataMap( const std::map< std::string, RVector > & eMap ) { exportDataMap_ = eMap; }
 
     void clearExportData( );
-    
+
     void setCommentString( std::string & commentString ) { commentString_ = commentString; }
-    
+
     std::string & commentString( ){ return commentString_; }
 
     //** probably deprecated
@@ -477,9 +478,9 @@ protected:
 
 //    Node * createRefinementNode_( Node * n0, Node * n1, SparseMapMatrix < Node *, Index > & nodeMatrix );
     Node * createRefinementNode_( Node * n0, Node * n1, std::map< std::pair < Index, Index >, Node * > & nodeMatrix );
-    
+
     void createRefined_( const Mesh & mesh, bool p2, bool r2 );
-    
+
     Cell * findCellBySlopeSearch_( const RVector3 & pos, Cell * start, size_t & count, bool tagging ) const;
 
     void fillKDTree_() const;
@@ -502,7 +503,7 @@ protected:
     mutable KDTreeWrapper * tree_;
 
     bool oldTet10NumberingStyle_;
-    
+
     std::string commentString_;
 
 }; // class Mesh
