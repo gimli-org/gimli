@@ -283,10 +283,10 @@ RVector3 MeshEntity::grad( const RVector3 & xyz, const RVector & u ) const {
     MdNdL.push_back( dNdL( rst, 2 ) );
 
     RVector up( u( this->ids() ) );
-    RVector3 gr( 3 );
-    gr[0] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 0 ) ) );
-    gr[1] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 1 ) ) );
-    gr[2] = sum( up * MdNdL.transMult( shape_->invJacobian().col( 2 ) ) );
+    RVector3 gr;
+    gr[0] = sum(up * MdNdL.transMult( shape_->invJacobian().col(0)));
+    gr[1] = sum(up * MdNdL.transMult( shape_->invJacobian().col(1)));
+    gr[2] = sum(up * MdNdL.transMult( shape_->invJacobian().col(2)));
 
     return gr;
     //return grad_( shapeFunctionsDerive( xyz ), u );

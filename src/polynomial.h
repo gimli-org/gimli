@@ -64,9 +64,8 @@ template < class ValueType > bool operator == ( const PolynomialElement < ValueT
         
 /*! Three dimensional polynomial function. For symbolic calculation and derivation. 
  I.e. f(x,y,z) = 1 + x + y + z + xy + xz + zz ...
- 
- */
-template< class ValueType > class PolynomialFunction {
+*/
+template< class ValueType > class DLLEXPORT PolynomialFunction {
 public:
     
     /*! Create empty polynomial */
@@ -286,7 +285,7 @@ template < class ValueType > bool operator == ( const PolynomialFunction < Value
 template < class ValueType > PolynomialFunction < ValueType > 
 operator - ( const PolynomialFunction < ValueType > & f ){
     
-    PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
+    PolynomialFunction < ValueType > h(Vector<ValueType>(f.size(), 0.0));
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
@@ -333,7 +332,7 @@ operator * ( const PolynomialFunction < ValueType > & f, const ValueType & val){
 
 template < class ValueType > PolynomialFunction < ValueType > 
 operator + ( const ValueType & val, const PolynomialFunction < ValueType > & f ){
-    PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
+    PolynomialFunction < ValueType > h(RVector(f.size(), 0.0));
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
@@ -349,7 +348,7 @@ operator + ( const ValueType & val, const PolynomialFunction < ValueType > & f )
 
 template < class ValueType > PolynomialFunction < ValueType > 
 operator + ( const PolynomialFunction < ValueType > & f, const ValueType & val){
-    PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
+    PolynomialFunction < ValueType > h(RVector(f.size(), 0.0 ));
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
@@ -366,7 +365,7 @@ operator + ( const PolynomialFunction < ValueType > & f, const ValueType & val){
 template < class ValueType > PolynomialFunction < ValueType > 
 operator + ( const PolynomialFunction < ValueType > & f, const PolynomialFunction < ValueType > & g ){
     
-    PolynomialFunction < ValueType > h( RVector( max( f.size(), g.size() ), 0.0 ) );
+    PolynomialFunction < ValueType > h(RVector(max(f.size(),g.size()), 0.0 ));
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
@@ -389,7 +388,7 @@ operator + ( const PolynomialFunction < ValueType > & f, const PolynomialFunctio
 template < class ValueType > PolynomialFunction < ValueType > 
 operator - ( const PolynomialFunction < ValueType > & f, const PolynomialFunction < ValueType > & g ){
     
-    PolynomialFunction < ValueType > h( RVector( max( f.size(), g.size() ), 0.0 ) );
+    PolynomialFunction < ValueType > h(RVector(max(f.size(),g.size()), 0.0));
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
@@ -415,7 +414,7 @@ operator * ( const PolynomialFunction < ValueType > & f, const PolynomialFunctio
     
     
     //TODO & TEST das muss besser werden weil es nicht immer f.size() + g.size() aufspannt. bsp. x*y statt x*x 
-    PolynomialFunction < ValueType > h( RVector( f.size() + g.size(), 0 ) );
+    PolynomialFunction < ValueType > h(RVector(f.size() + g.size(), 0.0));
     
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y

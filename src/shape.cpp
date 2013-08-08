@@ -276,7 +276,7 @@ void Shape::xyz2rst( const RVector3 & xyz, RVector3 & rst ) const{
 
     double err = 1., tol = TOLERANCE;
     uint maxiter = 200;
-    uint iter = 0.;
+    uint iter = 0;
     RVector3 dxyz( 0.0, 0.0, 0.0 );
     RVector3 drst( 0.0, 0.0, 0.0 );
 

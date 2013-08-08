@@ -42,12 +42,12 @@ template < class ValueType > ValueType radToDeg( const ValueType & rad ){ return
 
 template < class T > T powInt( const T & a, uint dim ){ 
     switch ( dim ){
-        case 0 : return 1.0;
+        case 0 : return (T)1;
         case 1 : return a;
         case 2 : return a*a;
         case 3 : return a*a*a;
         case 4 : return a*a*a*a; 
-        default: return std::pow( a, dim );
+        default: return (T)std::pow( (float)a, (float)dim );
     }
 }
 

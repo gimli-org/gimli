@@ -27,7 +27,12 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdio>
-#include <getopt.h>
+
+#ifdef _MSC_VER
+	#include <wingetopt.h>
+#else
+	#include <getopt.h>
+#endif
 
 #include "gimli.h"
 

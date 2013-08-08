@@ -29,8 +29,8 @@
 
 namespace GIMLI{
 
-DLLEXPORT bool __SAVE_PYTHON_GIL__ = false;
-DLLEXPORT bool __GIMLI_DEBUG__ = false;
+bool __SAVE_PYTHON_GIL__ = false;
+bool __GIMLI_DEBUG__ = false;
 
 std::string authors(){
   std::string a( (std::string)("bugs and suggestions to: ") + PACKAGE_AUTHORS );
@@ -59,11 +59,11 @@ bool fileExist( const std::string & filename ){
 }
 
 uint fileLength( std::fstream & file ){
-    uint oldPos = file.tellg();
+    std::streamoff oldPos = file.tellg();
     file.seekg( 0, std::ios::end );
-    uint length = file.tellg();
+    std::streamoff length = file.tellg();
     file.seekg( oldPos );
-    return length;
+    return (uint)length;
 }
 
 uint countColumnsInFile( const std::string & fname){

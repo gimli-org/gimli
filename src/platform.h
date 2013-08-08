@@ -46,22 +46,22 @@
 #undef near
 #undef far
 
-inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */ ,
-                       DWORD reason        /* Reason this function is being called. */ ,
-                       LPVOID reserved     /* Not used. */ ){
-    switch ( reason )    {
-      case DLL_PROCESS_ATTACH:
-        break;
-      case DLL_PROCESS_DETACH:
-        break;
-      case DLL_THREAD_ATTACH:
-        break;
-      case DLL_THREAD_DETACH:
-        break;
-    }
-    /* Returns TRUE on success, FALSE on failure */
-    return TRUE;
-}
+// inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */ ,
+                       // DWORD reason        /* Reason this function is being called. */ ,
+                       // LPVOID reserved     /* Not used. */ ){
+    // switch ( reason )    {
+      // case DLL_PROCESS_ATTACH:
+        // break;
+      // case DLL_PROCESS_DETACH:
+        // break;
+      // case DLL_THREAD_ATTACH:
+        // break;
+      // case DLL_THREAD_DETACH:
+        // break;
+    // }
+    // /* Returns TRUE on success, FALSE on failure */
+    // return TRUE;
+// }
 
 //inline bool isnan( double x ) { return x != x; }
 
@@ -70,27 +70,30 @@ inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */
 #define DLLEXPORT
 #endif /* NO WINDOWS */
 
+#ifdef __unix
+	#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
+#endif
+
 /*!
  * Return the numbers of virtual CPUS on this system
  */
 
+#include <cmath>
 namespace GIMLI{
-    DLLEXPORT int numberOfCPU();
+DLLEXPORT int numberOfCPU();
 
 // Microsoft Visual C++ 10 does not provide some C99 functions
-#ifdef _MSC_VER
-
-template < class T > T rint( T x ){ return std::floor(x + 0.5); }
-
-template<typename T> inline bool isinf(T value) {
-    return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
-}
-
-template< typename T > inline bool isnan( T value ) {
-    return (x) != (x);
-}
-
-
+#if defined(_MSC_VER) 
+template< typename T > T rint( T x ){ return std::floor(x + 0.5); }
+template< typename T > inline bool isinf(T value){return value >= std::numeric_limits<T>::min() && 
+														 value <= std::numeric_limits<T>::max();}
+template< typename T > inline bool isnan(T value){return (value) != (value);}
+#elif defined(_WIN32) // mingw
+template< typename T > inline bool isinf(T value){return std::isinf(value);}
+template< typename T > inline bool isnan(T value){return std::isnan(value);}
+#else
+template< typename T > inline bool isinf(T value){return std::isinf(value);}
+template< typename T > inline bool isnan(T value){return std::isnan(value);}
 #endif
 
 }

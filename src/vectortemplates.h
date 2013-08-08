@@ -78,8 +78,9 @@ template < class Vec > bool saveVec( const Vec & a, const std::string & filename
 
         int count = a.size();
         uint ret = 0; ret = fwrite( (char*)&count, sizeof( int ), 1, file );
-        if ( ret );
-        for ( uint i = 0; i < a.size(); i++ ) ret = fwrite( (char*)&a[ i ], sizeof( double ), 1, file );
+        if (ret){
+			for (uint i = 0; i < a.size(); i++) ret = fwrite( (char*)&a[ i ], sizeof( double ), 1, file );
+		}
         fclose( file );
     }
     return true;

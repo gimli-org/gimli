@@ -179,7 +179,7 @@ public:
 
     double angle( const Pos < ValueType > & p ) const {
         double result = acos( this->dot( p ) / ( this->abs() * p.abs() ) );
-        if ( std::isnan( result ) || std::isinf( result ) ) {
+        if (isnan(result) || isinf(result)){
             result = 0.0;
         }
         return result;

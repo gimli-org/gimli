@@ -41,7 +41,7 @@ namespace GIMLI{
 /*! Pure virtual interface class for matrices.
  * If you want your own Jacobian matrix to be used in \ref Inversion or \ref ModellingBase
  you have to derive your matrix from this class and implement all necessary members. */
-class MatrixBase{
+class DLLEXPORT MatrixBase{
 public:
 
     /*! Default constructor. */
@@ -96,7 +96,7 @@ protected:
 };
 
 //! Identity matrix: derived from matrixBase
-class IdentityMatrix : public MatrixBase {
+class DLLEXPORT IdentityMatrix : public MatrixBase {
 public:
     /*! Default constructor (empty matrix). */
     IdentityMatrix( ) : nrows_( 0 ), val_( 0.0 ){}
@@ -138,7 +138,7 @@ protected:
 
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
-template < class ValueType > class Matrix : public MatrixBase {
+template < class ValueType > class DLLEXPORT Matrix : public MatrixBase {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols. Content of the matrix is zero. */
     Matrix( Index rows = 0, Index cols = 0 ){
@@ -366,7 +366,7 @@ protected:
         for ( Index i = 0; i < mat_.size(); i ++ ) mat_[ i ] = mat[ i ];
     }
 
-    std::vector < Vector< ValueType > > mat_;
+	std::vector < Vector< ValueType > > mat_;
 
     /*! BVector flag(rows) for free use, e.g., check if rows are set valid. */
     BVector rowFlag_;
@@ -389,7 +389,7 @@ DEFINE_BINARY_OPERATOR__( *, MULT )
 
 #undef DEFINE_BINARY_OPERATOR__
 
-template< class ValueType > class Mult{
+template< class ValueType > class DLLEXPORT Mult{
 public:
     Mult( Vector< ValueType > & x, const Vector< ValueType > & b, const Matrix < ValueType > & A, Index start, Index end ) :
         x_( &x ), b_( &b ), A_( &A), start_( start ), end_( end ){
@@ -501,9 +501,10 @@ bool saveMatrix( const Matrix < ValueType > & A, const std::string & filename, I
     std::string fname( filename );
     if ( fname.rfind( '.' ) == std::string::npos ) fname += MATRIXBINSUFFIX;
 
-    FILE *file; file = fopen( fname.c_str(), "w+b" );
-    if ( !file ) {
-        std::cerr << fname << ": " << strerror( errno ) << " " << errno << std::endl;
+    FILE *file; //file = fopen( fname.c_str(), "w+b" );
+	//msvc unsecure complainment 
+    if (fopen_s(&file, fname.c_str(), "w+b")){
+		std::cerr << fname << ": " << strerror( errno ) << " " << errno << std::endl;
         return false;
     }
 

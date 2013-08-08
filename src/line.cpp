@@ -73,7 +73,7 @@ bool Line::checkValidity( double tol ){
 }
 
 bool Line::compare( const Line & line, double epsilon ) const {
-    if ( this->touch( line.p0() ) > 0 && this->touch( line.p1() ) > 0 ) return true;
+    if (this->touch(line.p0()) && this->touch(line.p1())) return true;
     else return false;
 }
 
@@ -173,9 +173,9 @@ double Line::t( const RVector3 & pos, double tol ) const {
 //   cout << RVector3( ( pos - p0_ ) / ( p1_ - p0_ ) ) << endl;
 //   cout << WHERE_AM_I << t << endl;
 
-    if ( !std::isnan( t[ 0 ] ) && !std::isinf( t[ 0 ] ) ) return t[ 0 ];
-    else if ( !std::isnan( t[ 1 ] ) && !std::isinf( t[ 1 ] ) ) return t[ 1 ];
-    else if ( !std::isnan( t[ 2 ] ) && !std::isinf( t[ 2 ] ) ) return t[ 2 ];
+    if ( !isnan( t[ 0 ] ) && !isinf( t[ 0 ] ) ) return t[ 0 ];
+    else if ( !isnan( t[ 1 ] ) && !isinf( t[ 1 ] ) ) return t[ 1 ];
+    else if ( !isnan( t[ 2 ] ) && !isinf( t[ 2 ] ) ) return t[ 2 ];
 
     throwError( 1, WHERE_AM_I + " pos is not at this line " );
 
