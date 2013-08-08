@@ -5,6 +5,10 @@ link_directories(${libgimli_BINARY_DIR})
 file (GLOB SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.cpp)
 file (GLOB HEADER_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
 
+if (NOT MSVC)
+	list(REMOVE_ITEM SOURCE_FILES wingetopt.cpp)
+endif(NOT MSVC)
+
 ###########################################################################
 #                       SHARED LIBRARY SET UP
 ###########################################################################

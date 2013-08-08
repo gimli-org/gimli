@@ -61,11 +61,11 @@ namespace GIMLI{
 
 typedef std::vector < Index > IndexArray;template < class ValueType, class A > class __VectorExpr;
 
-template < class ValueType > class VectorIterator {
+template < class ValueType > class DLLEXPORT VectorIterator {
 public:
     VectorIterator( ) : val_( NULL ), maxSize_( 0 ){ }
 
-    VectorIterator( const VectorIterator & iter ) : val_( iter.val_ ), maxSize_( iter.maxSize_ ){ }
+    VectorIterator(const VectorIterator < ValueType > & iter) : val_( iter.val_ ), maxSize_( iter.maxSize_ ){ }
 
     VectorIterator < ValueType > & operator = ( const VectorIterator < ValueType > & iter ){
         if ( this != & iter ){
@@ -81,12 +81,12 @@ public:
     inline const ValueType & operator [] ( const Index i ) const { return val_[ i ]; }
     inline ValueType & operator [] ( const Index i ) { return val_[ i ]; }
 
-    inline VectorIterator & operator ++ () { ++val_; return *this; }
-    inline VectorIterator & operator -- () { --val_; return *this; }
-
+    inline VectorIterator< ValueType > & operator ++ () { ++val_; return *this; }
+    inline VectorIterator< ValueType > & operator -- () { --val_; return *this; }
+	
     inline bool operator == ( const VectorIterator< ValueType > & a ){ return val_ == a.val_; }
     inline bool operator != ( const VectorIterator< ValueType > & a ){ return val_ != a.val_; }
-
+ 
     inline Index size() const { return maxSize_; }
 
     inline ValueType * ptr() const { return val_; }
@@ -94,13 +94,23 @@ public:
 
     ValueType * val_;
     Index maxSize_;
+	
+	#ifdef _MSC_VER
+	// basic iterator traits needed by msvc
+	typedef ValueType value_type;
+	typedef Index difference_type;
+	typedef value_type & pointer;    
+	typedef value_type & reference;
+	typedef std::random_access_iterator_tag iterator_category;
+	bool operator < (const VectorIterator< ValueType > & a) const { return val_ < a.val_; }
+	#endif
 };
 
 //! One dimensional array aka Vector of limited size.
 /*!
 One dimensional array aka Vector of limited size. Size limit depends on platform (32bit system maxsize = 2^32, 64bit system, maxsize=2^64)
 */
-template< class ValueType > class Vector {
+template< class ValueType > class DLLEXPORT Vector {
 public:
     typedef ValueType ValType;
     /*!

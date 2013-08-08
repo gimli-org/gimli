@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -21,6 +21,7 @@
 
 #include "datacontainer.h"
 #include "pos.h"
+#include "numericbase.h"
 #include "vectortemplates.h"
 
 namespace GIMLI{
@@ -81,7 +82,7 @@ void DataContainer::initTokenTranslator(){
 bool DataContainer::haveTranslationForAlias( const std::string & alias ) const {
     std::string test( alias );
     test[ 0 ] = tolower( test[ 0 ] );
-    return tT_.count( test );
+    return tT_.count(test) != 0;
 }
 
 std::string DataContainer::translateAlias( const std::string & alias ) const {
@@ -134,7 +135,7 @@ void DataContainer::add( const DataContainer & data, double snap ){
         if ( isSensorIndex( it->first ) ){
             RVector tmp( data.get( it->first ) );
             for (uint i = 0; i < tmp.size(); i ++){
-                SIndex id = tmp[ i ];
+                SIndex id = (SIndex)tmp[i];
                 if ( id > -1 && id < (SIndex)perm.size() ) {
                     it->second[ start + i ] = perm[ id ];
                 } else {
@@ -175,9 +176,11 @@ bool DataContainer::isSensorIndex( const std::string & token ) const {
 
 int DataContainer::load( const std::string & fileName, bool sensorIndicesFromOne ){
     setSensorIndexOnFileFromOne( sensorIndicesFromOne );
-    std::fstream file; if ( !openInFile( fileName, & file, true ) );
+    
+	std::fstream file; openInFile(fileName, & file, true);
 
-    std::vector < std::string > row; row = getNonEmptyRow(file);
+    std::vector < std::string > row(getNonEmptyRow(file));
+	
     if (row.size() != 1){
         throwError(EXIT_DATACONTAINER_NELECS, WHERE_AM_I + " cannot determine data format. " + str(row.size()));
     }
@@ -695,7 +698,7 @@ void DataContainer::removeUnusedSensors( bool verbose ){
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
             for (uint i = 0; i < it->second.size(); i ++){
-                SIndex id = it->second[ i ];
+                SIndex id = (SIndex)it->second[ i ];
                 if ( id > -1 && id < (SIndex)this->sensorCount() ) activeSensors[ id ] = true;
             }
         }
@@ -716,7 +719,7 @@ void DataContainer::removeUnusedSensors( bool verbose ){
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
             for (uint i = 0; i < it->second.size(); i ++){
-                SIndex id = it->second[ i ];
+                SIndex id = (SIndex)it->second[ i ];
                 if ( id > -1 && id < (SIndex)perm.size() ) it->second[ i ] = perm[ id ];
             }
         }
@@ -746,7 +749,7 @@ void DataContainer::sortSensorsX(){
     for ( std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if ( isSensorIndex( it->first ) ){
             for (uint i = 0; i < it->second.size(); i ++){
-                SIndex id = it->second[ i ];
+                SIndex id = (SIndex)it->second[ i ];
                 if ( id > -1 && id < (SIndex)perm.size() ) it->second[ i ] = perm[ id ];
             }
         }
@@ -760,16 +763,16 @@ bool ididLesser( const std::pair < Index, Index > & a, const std::pair < Index, 
 void DataContainer::sortSensorsIndex( ){
 
     std::vector < std::pair < Index, Index > > permSens( this->size() );
-    int nSensorsIdx = dataSensorIdx_.size();
+    Index nSensorsIdx = dataSensorIdx_.size();
 
     for (uint i = 0; i < this->size(); i ++) {
         Index sensorUniqueID = 0;
-        int count = nSensorsIdx;
+        Index count = nSensorsIdx;
         for ( std::set< std::string >::iterator it = dataSensorIdx_.begin(); it!= dataSensorIdx_.end(); it ++){
             count --;
-            sensorUniqueID += (dataMap_[ *it ][ i ]+1) * std::pow( this->sensorCount(), count );
+            sensorUniqueID += ((Index)dataMap_[*it][i] + 1) * (Index)powInt(this->sensorCount(), count);
         }
-        permSens[ i ] = std::pair< Index, Index >( sensorUniqueID, i );
+        permSens[ i ] = std::pair< Index, Index >(sensorUniqueID, i);
     }
 
     std::sort( permSens.begin(), permSens.end(), ididLesser );

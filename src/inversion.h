@@ -554,7 +554,7 @@ public:
         Vec deltaData( ( tD_->trans( data_ ) - tD_->trans( response ) ) / tD_->error( fixZero( data_, TOLERANCE ), error_ ) ) ;
 
         double ret = dot( deltaData, deltaData );
-        if ( std::isnan( ret ) || std::isinf( ret ) ){
+        if (isnan(ret) || isinf(ret)){
             DOSAVE save( tD_->trans( data_ ),          "Nan_PhiD_tD_data" );
             DOSAVE save( response,                     "Nan_PhiD_response" );
             DOSAVE save( tD_->trans( response ),       "Nan_PhiD_tD_response" );
@@ -574,7 +574,7 @@ public:
         if ( haveReferenceModel_ ) rough = rough - constraintsH_;
 
         double ret = dot( rough, rough );
-        if ( std::isnan( ret ) || std::isinf( ret ) ){
+        if (isnan(ret) || isinf(ret)){
             std::cerr << "haveReferenceModel_: " << haveReferenceModel_<< std::endl;
             DOSAVE save( model,       "Nan_PhiM_model" );
             DOSAVE save( modelRef_,  "Nan_PhiM_modelref" );

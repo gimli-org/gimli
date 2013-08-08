@@ -194,7 +194,7 @@ public:
     }
 
     /*! Return true if the data with the token exist. */
-    inline bool exists( const std::string & token ) const { return dataMap_.count( token ); }
+    inline bool exists( const std::string & token ) const { return dataMap_.count(token)!=0; }
 
     /*! Return the token list of a previously loaded file. */
     inline const std::string & inputFormatString() const { return inputFormatString_; }

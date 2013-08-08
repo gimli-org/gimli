@@ -199,8 +199,8 @@ public:
     void setConstraintTypeStr_( const std::string & val ){ setConstraintType( toInt( val ) ); }
     void setLowerBoundStr_(     const std::string & val ){ setLowerBound( toDouble( val ) ); }
     void setUpperBoundStr_(     const std::string & val ){ setUpperBound( toDouble( val ) ); }
-    void setSingleStr_(         const std::string & val ){ markSingle( (bool)toInt( val ) ); }
-    void setBackgroundStr_(     const std::string & val ){ markBackground( (bool)toInt( val ) ); }
+    void setSingleStr_(         const std::string & val ){ markSingle(toInt(val) != 0); }
+    void setBackgroundStr_(     const std::string & val ){ markBackground(toInt(val) != 0); }
 
 protected:
     void init_();

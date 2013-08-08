@@ -24,6 +24,12 @@
 #include "gimli.h"
 
 #include <iostream>
+
+#ifdef _MSC_VER
+	// warning from kdtree
+	#pragma warning( disable: 4396)
+#endif
+
 #define KDTREE_DEFINE_OSTREAM_OPERATORS
 #include <kdtree++/kdtree.hpp>
 

@@ -14,9 +14,16 @@ endif()
 
 project(libgimli)
 
-#set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe")
-#set(CMAKE_CXX_FLAGS "")
-
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -g -ansi -pedantic -Wall -Wno-long-long")
+endif ()
+ 
+if(MSVC)
+	# MSVC complain a lot of possible unsecure std function
+	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+ 
 set(LIBGIMLI_VERSION_MAJOR 0)
 set(LIBGIMLI_VERSION_MINOR 9)
 set(LIBGIMLI_VERSION_PATCH 1)
@@ -38,7 +45,19 @@ IF(WIN32)
 	set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/../../boost/include)
 endif(WIN32)
 
-find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
+if (MSVC)
+	find_package(Boost 1.46.0 COMPONENTS system thread)
+	
+	if (NOT Boost_THREAD_FOUND)
+		set(Boost_THREAD_FOUND ON)
+	endif (NOT Boost_THREAD_FOUND)
+	link_directories(${BOOST_LIBRARYDIR})	
+	
+else(MSVC)
+	find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
+	link_directories(${BOOST_LIBRARYDIR})
+endif(MSVC)
+
 if (Boost_INCLUDE_DIR)
     message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
     include_directories(${Boost_INCLUDE_DIR})

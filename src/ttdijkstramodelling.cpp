@@ -60,7 +60,7 @@ void Dijkstra::setStartNode( uint startNode ) {
     while ( !priQueue.empty() ) {
         dummy = priQueue.top();
 
-        float distance = dummy.first;
+        double distance = dummy.first;
         int node = dummy.second.end;
         priQueue.pop();
 
@@ -164,13 +164,13 @@ double TravelTimeDijkstraModelling::findMedianSlowness( ) const {
 
 RVector TravelTimeDijkstraModelling::getApparentSlowness( ) const {
     uint nData = dataContainer_->size();
-    uint s = 0, g = 0;
+    SIndex s = 0, g = 0;
     double edgeLength = 0.0;
     RVector apparentSlowness( nData );
 
     for ( uint dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-        s = (*dataContainer_)( "s" )[ dataIdx ];
-        g = (*dataContainer_)( "g" )[ dataIdx ];
+        s = (SIndex)(*dataContainer_)("s")[dataIdx];
+        g = (SIndex)(*dataContainer_)("g")[dataIdx];
         edgeLength = dataContainer_->sensorPosition( s ).distance( dataContainer_->sensorPosition( g ) );
         apparentSlowness[ dataIdx ] = dataContainer_->get( "t" )[ dataIdx ] / edgeLength;
     }
@@ -185,8 +185,8 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     shotsInv_.clear();
     
     for ( uint i = 0; i < shots.size(); i ++ ){
-        shotNodeId_[ i ] = mesh_->findNearestNode( dataContainer_->sensorPosition( shots[ i ] ) );
-        shotsInv_[ uint( shots[ i ] ) ] = i;
+        shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
+        shotsInv_[Index(shots[i])] = i;
     }
      
     RVector receiver( unique( sort( (*dataContainer_)( "g" ) ) ) );
@@ -195,8 +195,8 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     receiInv_.clear();
     
     for ( uint i = 0; i < receiver.size(); i ++ ){
-        receNodeId_[ i ] = mesh_->findNearestNode( dataContainer_->sensorPosition( receiver[ i ] ) );
-        receiInv_[ uint( receiver[ i ] ) ] = i;
+        receNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition(Index(receiver[i])));
+        receiInv_[Index(receiver[i])] = i;
     }
 }
    
@@ -222,13 +222,13 @@ RVector TravelTimeDijkstraModelling::response( const RVector & slowness ) {
     }
 
     int nData = dataContainer_->size();
-    int s = 0, g = 0;
+    Index s = 0, g = 0;
 
     RVector resp( nData );
 
     for ( int dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-        s = shotsInv_[ (*dataContainer_)( "s" )[dataIdx] ];
-        g = receiInv_[ (*dataContainer_)( "g" )[dataIdx] ];
+        s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
+        g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
 //         std::cout << s << " " << (*dataContainer_)( "s" )[dataIdx] << " " 
 //                   << g << " " << (*dataContainer_)( "g" )[dataIdx] << std::endl;
         resp[ dataIdx ] = dMap[ s ][ g ];
@@ -284,8 +284,8 @@ void TravelTimeDijkstraModelling::createJacobian( DSparseMapMatrix & jacobian, c
         if ( verbose_ ) openOutFile( "jacobian.way", &file );
 
         for ( uint dataIdx = 0; dataIdx < nData; dataIdx ++ ) {
-            uint s = shotsInv_[ (*dataContainer_)( "s" )[dataIdx] ];
-            uint g = receiInv_[ (*dataContainer_)( "g" )[dataIdx] ];
+            Index s = shotsInv_[Index((*dataContainer_)( "s" )[dataIdx])];
+            Index g = receiInv_[Index((*dataContainer_)( "g" )[dataIdx])];
             std::set < Cell * > neighborCells;
 
             for ( uint i = 0; i < wayMatrix[ s ][ g ].size()-1; i ++ ) {
@@ -338,10 +338,10 @@ TTModellingWithOffset::TTModellingWithOffset( Mesh & mesh, DataContainer & dataC
 : TravelTimeDijkstraModelling( mesh, dataContainer, verbose ) {
 
     //! find occuring shots, and map them to indices starting from zero
-    shots_ = unique( sort( dataContainer.get("s") ) );
+    shots_ = unique(sort(dataContainer.get("s")));
     std::cout << "found " << shots_.size() << " shots." << std::endl;
-    for ( size_t i = 0 ; i < shots_.size() ; i++ ) {
-        shotMap_.insert( std::pair< int, int >( shots_[ i ], i ) );
+    for (Index i = 0 ; i < shots_.size() ; i++) {
+        shotMap_.insert(std::pair< int, int >((Index)shots_[i], i));
     }
 
     //! create new region containing offsets with special marker
@@ -371,7 +371,7 @@ RVector TTModellingWithOffset::response( const RVector & model ) {
     RVector shotpos = dataContainer_->get( "s" );
 
     for ( size_t i = 0; i < resp.size() ; i++ ){
-        resp[ i ] += offsets[ shotMap_[ shotpos[ i ] ] ];
+        resp[ i ] += offsets[shotMap_[Index(shotpos[i])]];
     }
 
     return resp;
@@ -401,7 +401,7 @@ void TTModellingWithOffset::createJacobian( const RVector & model ){
     RVector shotpos = dataContainer_->get( "s" ); // shot=C1/A
 
     for ( size_t i = 0; i < dataContainer_->size(); i++ ) {
-        jacobian->H2().setVal( i, shotMap_[ shotpos[ i ] ], 1.0 );
+        jacobian->H2().setVal(i, shotMap_[Index(shotpos[i])], 1.0);
     }
 }
 

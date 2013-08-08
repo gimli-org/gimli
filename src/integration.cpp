@@ -105,8 +105,8 @@ void IntegrationRules::initGau_(){
     gauAbscissa_.back()[ 1 ] = RVector3( -1.0 / 3.0 * ::sqrt( 5.0 - 2.0 * ::sqrt( 10.0 / 7.0 ) ), 0.0 );
     gauAbscissa_.back()[ 2 ] = RVector3(  0.000000000000000, 0.0 );
     gauWeights_.push_back( RVector( 5, 0.0 ) );
-    gauWeights_.back()[ 0 ] = ( 322.0 - 13.0 * ::sqrt( 70 ) ) / 900.0;
-    gauWeights_.back()[ 1 ] = ( 322.0 + 13.0 * ::sqrt( 70 ) ) / 900.0; //0.478628670499366;
+    gauWeights_.back()[ 0 ] = ( 322.0 - 13.0 * ::sqrt( 70.0 ) ) / 900.0;
+    gauWeights_.back()[ 1 ] = ( 322.0 + 13.0 * ::sqrt( 70.0 ) ) / 900.0; //0.478628670499366;
     gauWeights_.back()[ 2 ] = 128.0 / 225.0;//0.568888888888889;
 
     //** 6.Order, n=6
@@ -159,7 +159,7 @@ void IntegrationRules::initGau_(){
 
     for ( uint i = 2; i < gauAbscissa_.size(); i ++ ){
         uint n = gauAbscissa_[ i ].size();
-        uint start = ::ceil( n/2.0 );
+        uint start = (uint)::ceil( n/2.0 );
 //         std::cout << "n = " << n << " s: " << start << " " << std::endl;
         for ( uint j = start; j < n; j ++ ){
             //std::cout << j << " <-> " << n - j -1<< std::endl;

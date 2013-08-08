@@ -1621,10 +1621,17 @@ std::vector < int > Mesh::cellMarker() const{
 }
 
 RVector Mesh::cellAttributes() const{
-    RVector tmp( cellCount() );
+    #ifdef _MSC_VER
+	std::vector< double > tmp(cellCount());
+    std::transform( cellVector_.begin(), cellVector_.end(), tmp.begin(),
+                    std::mem_fun( &Cell::attribute ) );
+	return tmp;
+	#else
+	RVector tmp( cellCount() );
     std::transform( cellVector_.begin(), cellVector_.end(), tmp.begin(),
                     std::mem_fun( &Cell::attribute ) );
     return tmp;
+	#endif
 }
 
 void Mesh::setCellAttributes( const RVector & attr ){
@@ -1643,7 +1650,7 @@ void Mesh::mapCellAttributes( const std::map < float, float > & aMap ){
 
     if ( aMap.size() != 0 ){
         for ( uint i = 0, imax = cellCount(); i < imax; i++ ){
-            itm = aMap.find( (double)cell( i ).marker() );
+            itm = aMap.find(float(cell( i ).marker()));
             if ( itm != aMap.end() ) cell( i ).setAttribute( (*itm).second );
         }
     }

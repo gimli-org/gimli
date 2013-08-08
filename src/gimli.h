@@ -53,6 +53,9 @@
         #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
 #endif // PACKAGE_NAME
 
+#ifdef _MSC_VER
+	#pragma warning( disable: 4251 )
+#endif
 
 #include <cassert>
 #include <iostream>
@@ -91,6 +94,9 @@ typedef int64_t int64;
     // for some magic reasons gccxml ignores the size_t = __int64 typedef under win64, so this helps let the python bindings through
     typedef unsigned __int64 Index;
     typedef __int64 SIndex;
+#elif defined(_MSC_VER)
+	typedef unsigned __int32 Index;
+    typedef __int32 SIndex;
 #else
     #include <sys/types.h>
     typedef size_t Index;
@@ -98,8 +104,11 @@ typedef int64_t int64;
 #endif
 
 #ifndef __ASSERT_FUNCTION
-//#define __ASSERT_FUNCTION "__ASSERT_FUNCTION-?"
-    #define __ASSERT_FUNCTION __PRETTY_FUNCTION__
+	#if defined(_MSC_VER)
+		#define __ASSERT_FUNCTION __FUNCTION__
+	#else
+		#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
+	#endif
 #endif
 
 #define WHERE GIMLI::str(__FILE__) + ": " + GIMLI::str(__LINE__) + "\t"
@@ -170,8 +179,8 @@ static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
 static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
 
-extern bool __SAVE_PYTHON_GIL__;
-extern bool __GIMLI_DEBUG__;
+extern DLLEXPORT bool __SAVE_PYTHON_GIL__;
+extern DLLEXPORT bool __GIMLI_DEBUG__;
 
 /*! Flag load/save Ascii or binary */
 enum IOFormat{ Ascii, Binary };
@@ -322,8 +331,8 @@ inline std::vector < std::string > getRow( std::fstream & file, char comment = '
     return getRowSubstrings( file, comment );
 }
 
-DLLEXPORT std::vector < std::string > getNonEmptyRow( std::fstream & file, char comment = '#' );
-DLLEXPORT std::vector < std::string > getCommentLine( std::fstream & file, char comment = '#' );
+DLLEXPORT std::vector < std::string > getNonEmptyRow(std::fstream & file, char comment = '#');
+DLLEXPORT std::vector < std::string > getCommentLine(std::fstream & file, char comment = '#');
 
 DLLEXPORT std::vector < std::string > getSubstrings( const std::string & str );
 DLLEXPORT std::vector < std::string > split( const std::string & str, char delimiter = ':' );
@@ -336,7 +345,7 @@ DLLEXPORT std::map < int, int > loadIntMap( const std::string & filename );
 inline void convert( bool          & var, char * opt ) { var = true; }
 inline void convert( int           & var, char * opt ) { if ( !opt ) var ++;    else var = atoi( opt ); }
 inline void convert( uint          & var, char * opt ) { if ( !opt ) var ++;    else var = atoi( opt ); }
-inline void convert( float         & var, char * opt ) { if ( !opt ) var = 0.0; else var = atof( opt ); }
+inline void convert( float         & var, char * opt ) { if ( !opt ) var = 0.0f; else var = (float)atof( opt ); }
 inline void convert( double        & var, char * opt ) { if ( !opt ) var = 0.0; else var = atof( opt ); }
 inline void convert( std::string   & var, char * opt ) { if ( !opt ) var = "";  else var = opt ; }
 inline void convert( std::vector < std::string >  & var, char * opt ) { if ( opt ) var.push_back( opt ); }
@@ -348,7 +357,7 @@ inline std::string type( std::string   & var ) { return "string"; }
 inline std::string type( std::vector < std::string >  & var ) { return "string"; }
 
 inline int       toInt( const std::string & str ){ return std::atoi( str.c_str() ); }
-inline float   toFloat( const std::string & str ){ return std::atof( str.c_str() ); }
+inline float   toFloat( const std::string & str ){ return (float)std::atof( str.c_str() ); }
 inline double toDouble( const std::string & str ){ return std::strtod( str.c_str(), NULL ); }
 
 /*! Read value from environment variable. Return default value if environment not set.
@@ -460,7 +469,7 @@ private:
 };
 
 /*! Template class for singleton instances */
-template < typename Classname > class Singleton {
+template < typename Classname > class DLLEXPORT Singleton {
 public:
 
     virtual ~Singleton() { delete pInstance_; pInstance_ = NULL; }
