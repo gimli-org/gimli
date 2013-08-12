@@ -404,9 +404,11 @@ public:
 
     void clearExportData( );
 
-    void setCommentString( std::string & commentString ) { commentString_ = commentString; }
+    /*!Set the comment for VTK Ascii export headline.*/
+    void setCommentString(const std::string & commentString) {commentString_ = commentString;}
 
-    std::string & commentString( ){ return commentString_; }
+    /*!Return comment for VTK Ascii export headline.*/
+    const std::string & commentString() const {return commentString_;}
 
     //** probably deprecated
     void mapCellAttributes( const std::map < float, float > & aMap );
