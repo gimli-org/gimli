@@ -1,7 +1,7 @@
 My first inversion
 ------------------
 
-.. literate:: first.py
+.. .. literate:: first.py
 
 Similar to C++, command line options can be parsed using the class OptionParser, see the code file.
 The output is illustrated for two a synthetic function :math:`y=2.1x+1.1` noisified with Gaussian noise for two different orders in Figure \ref{fig:polyfit}.

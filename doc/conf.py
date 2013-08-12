@@ -36,11 +36,13 @@ extensions = [ 'sphinx.ext.autodoc'
              #'matplotlib.sphinxext.mathmpl'
              , 'myexec_directive'
              , 'myliterate_directive'
+             , 'plot2rst'
              , 'sphinx.ext.pngmath'
              #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency
            ]  
 
-           
+plot2rst_paths = './tutorial/', 't1'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

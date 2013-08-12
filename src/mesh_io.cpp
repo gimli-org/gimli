@@ -662,7 +662,7 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
     bool binary = false;
     file.precision( 14 );
     file << "# vtk DataFile Version 3.0" << std::endl;
-    if ( commentString_.size() > 0 ) {
+    if (commentString_.size() > 0) {
         file << commentString_ << std::endl;
     } else {
         file << "created by " << WHERE_AM_I << std::endl;
