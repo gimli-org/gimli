@@ -41,8 +41,10 @@ int openFile(const std::string & fname, std::fstream * file, std::ios_base::open
     file->open(fname.c_str(), farg);
     if (!*file){
         if (terminate) {
-            throwError( EXIT_OPEN_FILE, WHERE_AM_I + " '" + fname + "': " +strerror(errno) + str(errno));
-        }
+            throwError(EXIT_OPEN_FILE, WHERE_AM_I + " '" + fname + "': " +strerror(errno) + str(errno));
+        } else {
+			std::cerr << fname << ": " << strerror( errno ) << " " << errno << std::endl;
+		}
         return 0;
     }
     return 1;

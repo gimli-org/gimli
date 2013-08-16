@@ -501,9 +501,9 @@ bool saveMatrix( const Matrix < ValueType > & A, const std::string & filename, I
     std::string fname( filename );
     if ( fname.rfind( '.' ) == std::string::npos ) fname += MATRIXBINSUFFIX;
 
-    FILE *file; //file = fopen( fname.c_str(), "w+b" );
-	//msvc unsecure complainment 
-    if (fopen_s(&file, fname.c_str(), "w+b")){
+    FILE *file; file = fopen(fname.c_str(), "w+b");
+	
+    if (!file){
 		std::cerr << fname << ": " << strerror( errno ) << " " << errno << std::endl;
         return false;
     }
