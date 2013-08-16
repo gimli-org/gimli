@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009-2010 by the resistivity.net development team       *
+ *   Copyright (C) 2009-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -113,7 +113,7 @@ int main( int argc, char *argv [] ){
     RVector K1( f.response( RVector( nModel, 1.0 ) ) );
     RVector wca( data / K1 );
     save( wca, "wca.vec" );
-    vcout << "apparent water content: min/max = " << min( wca ) << "/" << max( wca ) << std::endl;
+    vcout << "apparent water content: min/max = " << min(wca) << "/" << max(wca) << std::endl;
     
     //! transformations (variable as pointer)
     Trans < RVector > * transData;

@@ -23,16 +23,12 @@
 #ifdef WIN32_LEAN_AND_MEAN
 
 #else
-    #include <unistd.h>
+	#include <unistd.h>
 #endif
 
 #include <iostream>
 #include <cerrno>
 #include <cstring>
-#include <fstream>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
 
 namespace GIMLI{
 

@@ -70,8 +70,8 @@
 #define DLLEXPORT
 #endif /* NO WINDOWS */
 
-#ifdef __unix
-	#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
+#ifndef _MSC_VER 
+	//#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
 #endif
 
 /*!
