@@ -509,7 +509,7 @@ public:
         //** retrieve one colomn from the jacobian matrix and scale according to data/model transformation
         Vec sensCol = (*forward_->jacobian()) * resolution * tD_->deriv( response_ ) / tM_->deriv( model_ )[ iModel ];
         //** call inverse substep with sensCol on right hand side (see Gnther, 2004)
-        Vec deltaModel0( model_.size() );// !!! h variante
+        Vec deltaModel0( model_.size() );// !!! h   zvariante
         solveCGLSCDWWtrans( *forward_->jacobian(), C_, dataWeight_, sensCol, resolution, constraintsWeight_, modelWeight_,
                          tM_->deriv( model_ ), tD_->deriv( response_ ), lambda_, deltaModel0, maxCGLSIter_, false );
 
@@ -517,19 +517,20 @@ public:
     }
 
     /*! Compute cell resolution for closest cell to given position */
-    Vec modelCellResolution( RVector3 pos ){
-        int ipos=0;
+    Vec modelCellResolution(const RVector3 & pos){
+        Index ipos = 0;
         double mindist = 9e99;
         std::vector< RVector3 > cellCenters = forward_->mesh()->cellCenter();
-        for ( int i = 0 ; i < model_.size() ; i++ ) {
-            double dist = cellCenters[i].distance( pos );
-            if ( dist < mindist ) {
+        
+        for (Index i = 0 ; i < model_.size() ; i++){
+            double dist = cellCenters[i].distance(pos);
+            if (dist < mindist) {
                 mindist = dist;
                 ipos = i;
             }
         }
-        // Achung Parametermapping und Backgroundzellen!
-        return modelCellResolution( ipos );
+        // Achtung Parametermapping und Backgroundzellen!
+        return modelCellResolution(ipos);
     }
 
     /*! Compute whole resolution matrix by single cell resolutions */

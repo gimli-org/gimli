@@ -40,8 +40,8 @@ using namespace GIMLI;
 int main( int argc, char *argv [] ) {
 
     //!** Initialisation of mesh and inversion options;
-    int nSegments = 6;
-    double relativeInnerMaxEdgeLength = 0.01;
+// //     int nSegments = 6;
+//     double relativeInnerMaxEdgeLength = 0.01;
     bool lambdaOpt = false, isBlocky = false, isRobust = false, createGradientModel = false;
     bool useAppPar = false, isBertMesh = false, isVelocity = false, refineFwdMesh = false;
     double errTime = 0.001, errPerc = 0.1, lbound = 0.0, ubound = 0.0;

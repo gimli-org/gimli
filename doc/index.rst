@@ -23,8 +23,9 @@ Contents:
 .. toctree::
 
     gimli.rst
-    tutorial/tutorial.rst
-    ../examples/examples.rst
+    _tutorials_auto/index.rst
+    _examples_auto/index.rst
+    
 
 .. toctree::
     :hidden:

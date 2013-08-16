@@ -32,11 +32,11 @@ from docutils.parsers.rst import directives
 from docutils.parsers.rst.directives.misc import Include as BaseInclude
 import sphinx
 
-def preProcessLines( rawtext ):
+def preProcessLines(rawtext):
     '''
     '''
     
-    def startCodeBlock( text ):
+    def startCodeBlock(text):
             text.append('')
             text.append('.. plot::')
             text.append('    :context:')
@@ -55,10 +55,10 @@ def preProcessLines( rawtext ):
             
             startCodeBlock( text )
             continue
-        elif (isComment == False) and ("'''" in line):
+        elif (isComment == False) and (("'''" in line) or ('"""' in line)):
             isComment = True
             continue
-        elif (isComment == True) and ("'''" in line):
+        elif (isComment == True) and (("'''" in line) or ('"""' in line)):
             isComment = False
             startCodeBlock( text )
             continue
@@ -80,7 +80,7 @@ def preProcessLines( rawtext ):
 class MyLiterateInclude(BaseInclude):
     """
     Like the standard "Include" directive, but interprets absolute paths
-    "correctly", i.e. relative to source directory.
+    "correctly", i.e., relative to source directory.
     """
     
     def run(self):
@@ -117,7 +117,7 @@ class MyLiterateInclude(BaseInclude):
                 handle_io_errors=None)
         except IOError, error:
             raise self.severe(u'Problems with "%s" directive path:\n%s.' %
-                      (self.name, ErrorString(error)))
+                      (self.name, error))
         startline = self.options.get('start-line', None)
         endline = self.options.get('end-line', None)
         try:

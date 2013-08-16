@@ -62,7 +62,7 @@ int main( int argc, char *argv [] ) {
     loadMatrixCol( TRP, dataFileName );
     size_t nperiods = TRP.cols();
     std::cout << "nperiods " << nperiods << std::endl;
-    size_t nModel;
+
     Mesh mesh;
     RVector model;
     double medrhoa = median( TRP[ 1 ] );
@@ -77,7 +77,7 @@ int main( int argc, char *argv [] ) {
     transData.push_back( transPhi, nperiods );
     RVector error( cat( RVector( TRP[ 1 ] * errPerc / 100.0 ), RVector( nperiods, errPhase ) ) );
     save( error, "error.vec" );
-    nModel = 2 * nlay - 1;
+//     size_t nModel = 2 * nlay - 1;
     MT1dModelling f( TRP[ 0 ], nlay, debug );
     double medskindepth = sqrt( median( TRP[ 0 ] ) * medrhoa ) *503.0;
     model = cat( RVector( nlay - 1, medskindepth / nlay ), RVector( nlay, medrhoa ) );

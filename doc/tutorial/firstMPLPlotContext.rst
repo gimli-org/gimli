@@ -61,7 +61,7 @@ this is doku within
 
     y = 1.1 + 2.1 * x
 
-    print x, y
+    print( x, y )
 
     nP = 3
     # two coefficients and x-vector (first data column)

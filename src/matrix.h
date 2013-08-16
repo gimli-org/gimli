@@ -555,23 +555,24 @@ template < class ValueType >
 bool loadMatrixSingleBin( Matrix < ValueType > & A,
                           const std::string & filename ){
 
-    FILE *file;  file = fopen( filename.c_str(), "r+b" );
-    if ( !file ) {
-        throwError( EXIT_OPEN_FILE, WHERE_AM_I + " " + filename + ": " + strerror( errno ) );
+    FILE *file; file = fopen(filename.c_str(), "r+b");
+    
+    if (!file) {
+        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + 
+                   filename + ": " + strerror(errno));
     }
 
-    uint ret = 0;
-    int rows = 0; ret = fread( &rows, sizeof(uint32), 1, file );
-    int cols = 0; ret = fread( &cols, sizeof(uint32), 1, file );
+    uint32 rows = 0; fread(&rows, sizeof(uint32), 1, file);
+    uint32 cols = 0; fread(&cols, sizeof(uint32), 1, file);
 
     A.resize( rows, cols );
-    for ( int i = 0; i < rows; i ++ ){
-        for ( int j = 0; j < cols; j ++ ){
-            ret = fread( (char*)&A[ i ][ j ], sizeof( ValueType ), 1, file );
+    for (uint32 i = 0; i < rows; i ++){
+        for (uint32 j = 0; j < cols; j ++){
+            fread((char*)&A[i][j], sizeof(ValueType), 1, file);
         }
     }
-    fclose( file );
-    A.rowFlag().fill( 1 );
+    fclose(file);
+    A.rowFlag().fill(1);
     return true;
 }
 
