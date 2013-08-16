@@ -1,4 +1,4 @@
 {{ fullname }}
 {{ underline }}
 
-.. automodule:: {{ module }}.{{ objname }}
+.. .. automodule:: {{ module }}.{{ objname }}

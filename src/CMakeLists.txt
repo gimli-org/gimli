@@ -33,15 +33,16 @@ if (CHOLMOD_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${CHOLMOD_LIBRARIES})
 endif (CHOLMOD_FOUND)
 
+if (Boost_THREAD_FOUND)
+    target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
+endif (Boost_THREAD_FOUND)
+
+if (Boost_SYSTEM_FOUND)
+    target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
+endif (Boost_SYSTEM_FOUND)
+
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)
-	
-	if (Boost_THREAD_FOUND)
-		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
-	endif (Boost_THREAD_FOUND)
-	if (Boost_SYSTEM_FOUND)
-		target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
-	endif (Boost_SYSTEM_FOUND)
 
 	file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 	file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)

@@ -1,7 +1,34 @@
 My first inversion
 ------------------
 
-.. .. literate:: first.py
+.. plot::
+    :context:
+    :include-source:
+
+    import pygimli as g
+    import numpy as np
+
+    print(g.versionStr())
+
+.. plot:: doc/tutorial/first.py
+
+------------------
+
+**literate:: first.py**
+
+---------------------
+
+.. literate:: first.py
+
+---------------------
+
+**literate:: testplot2rst.py**
+
+---------------------
+
+.. rst2plot:: testplot2rst.py
+
+---------------------
 
 Similar to C++, command line options can be parsed using the class OptionParser, see the code file.
 The output is illustrated for two a synthetic function :math:`y=2.1x+1.1` noisified with Gaussian noise for two different orders in Figure \ref{fig:polyfit}.

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *

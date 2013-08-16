@@ -52,7 +52,7 @@ To avoid name clashes with other libraries we suggest to import `pygimli` and al
 import pygimli as g
 import numpy as np
 
-print g.versionStr()
+print(g.versionStr())
 
 '''
 #! As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `g.`, e.g., 
@@ -107,7 +107,7 @@ y = 1.1 + 2.1 * x
 this is doku within
 '''
 
-print x, y
+print(x, y)
 
 nP = 3
 # two coefficients and x-vector (first data column)

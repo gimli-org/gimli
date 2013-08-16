@@ -407,27 +407,26 @@ public:
     }
     
     /*! Import columnwise from bmat starting at offset */
-    void importCol( const std::string & filename, double dropTol = 1e-3, Index colOffset = 0 ){
+    void importCol(const std::string & filename, double dropTol = 1e-3, Index colOffset = 0){
     //std::cout << "rows: " << Jcluster.rows() << " cols: " << Jcluster.cols()<< std::endl;
         
-        FILE *file;  file = fopen( filename.c_str(), "r+b" );
-        if ( !file ) {
-            throwError( EXIT_OPEN_FILE, WHERE_AM_I + " " + filename + ": " + strerror( errno ) );
+        FILE *file; file = fopen(filename.c_str(), "r+b");
+        if (!file) {
+            throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + filename + ": " + strerror(errno));
         }
 
-        uint ret = 0;
-        uint32 rows = 0; ret = fread( &rows, sizeof(uint32), 1, file );
-        uint32 cols = 0; ret = fread( &cols, sizeof(uint32), 1, file );
-        double val;
-        for ( uint i = 0; i < rows; i ++ ){
-            for ( uint j = 0; j < cols; j ++ ){
-                ret = fread( &val, sizeof(double), 1, file );
+        uint32 rows = 0; fread(&rows, sizeof(uint32), 1, file);
+        uint32 cols = 0; fread(&cols, sizeof(uint32), 1, file);
+        ValueType val;
+        for (uint i = 0; i < rows; i ++){
+            for (uint j = 0; j < cols; j ++){
+                fread(&val, sizeof(ValueType), 1, file);
                 
-                if ( ::fabs( val ) > dropTol ) this->setVal( i, j + colOffset, val );
+                if (::fabs(val) > dropTol) this->setVal(i, j + colOffset, val);
             }
         }
         
-        fclose( file );
+        fclose(file);
     }
 
 protected:
@@ -759,16 +758,17 @@ public:
     inline Index cols() const { return size(); }
     inline Index rows() const { return size(); }
 
-    int save( const std::string & fileName ){
-        if ( !valid_ ) SPARSE_NOT_VALID;
-        std::fstream file; if ( !openOutFile( fileName, & file ) ) return 0;
+    int save(const std::string & fileName){
+        if (!valid_) SPARSE_NOT_VALID;
+        std::fstream file; if (!openOutFile(fileName, & file)) return 0;
 
-        file.setf( std::ios::scientific, std::ios::floatfield );
+        file.setf(std::ios::scientific, std::ios::floatfield);
         file.precision( 14 );
 
         for ( uint i = 0; i < size(); i++ ){
-            for ( Index j = colPtr_[ i ]; j < colPtr_[ i + 1 ]; j ++ ){
-                file << i << "\t" << rowIdx_[ j ] << "\t" << vals_[ j ] << std::endl;
+            for (SIndex j = colPtr_[i]; j < colPtr_[i + 1]; j ++){
+                file << i << "\t" << rowIdx_[j] 
+                          << "\t" << vals_[j] << std::endl;
             }
         }
         file.close();

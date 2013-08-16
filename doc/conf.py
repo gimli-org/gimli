@@ -41,7 +41,9 @@ extensions = [ 'sphinx.ext.autodoc'
              #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency
            ]  
 
-plot2rst_paths = './tutorial/', 't1'
+#plot2rst_paths = './tutorial/', 't1'
+plot2rst_paths = [('doc/tutorials', 'doc/_tutorials_auto'),
+                  ('doc/examples', 'doc/_examples_auto')]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -82,7 +84,7 @@ release = g.versionStr()
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['doc/_build', 'doc/_sphinx-ext']
+exclude_patterns = ['doc/_build', 'doc/_sphinx-ext', 'doc/_templates', 'doc/examples', 'doc/tutorials', 'doc/tutorial']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
