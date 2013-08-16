@@ -50,10 +50,6 @@
     #define DLLEXPORT
 #endif /* NO WINDOWS */
 
-#ifndef _MSC_VER 
-	#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
-#endif
-
 /*!
  * Return the numbers of virtual CPUS on this system
  */
