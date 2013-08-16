@@ -17,7 +17,7 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the                                                          
 # documentation root, use os.path.abspath to make it absolute, like shown here.                                                        
 #sys.path.insert(0, os.path.abspath('.'))                                                                                              
-sys.path.append( os.path.abspath('./_sphinx-ext'))                                                                                     
+sys.path.append(os.path.abspath('./_sphinx-ext'))                                                                                     
                                                                                                                                        
 # -- General configuration -----------------------------------------------------
 
@@ -41,7 +41,6 @@ extensions = [ 'sphinx.ext.autodoc'
              #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency
            ]  
 
-#plot2rst_paths = './tutorial/', 't1'
 plot2rst_paths = [('doc/tutorials', 'doc/_tutorials_auto'),
                   ('doc/examples', 'doc/_examples_auto')]
 

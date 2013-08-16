@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -36,42 +36,22 @@
     #define DLLEXPORT __declspec(dllimport)
 #endif
 
-// Don't let win32api windef.h define min and max as macros
-// if included after c++config.h.
-#ifndef NOMINMAX
-#define NOMINMAX
+    // Don't let win32api windef.h define min and max as macros
+    // if included after c++config.h.
+    #ifndef NOMINMAX
+    #define NOMINMAX
 #endif
-#include <stddef.h>
-#include <windows.h>
-#undef near
-#undef far
-
-// inline BOOL APIENTRY DllMain (HINSTANCE hInst     /* Library instance handle. */ ,
-                       // DWORD reason        /* Reason this function is being called. */ ,
-                       // LPVOID reserved     /* Not used. */ ){
-    // switch ( reason )    {
-      // case DLL_PROCESS_ATTACH:
-        // break;
-      // case DLL_PROCESS_DETACH:
-        // break;
-      // case DLL_THREAD_ATTACH:
-        // break;
-      // case DLL_THREAD_DETACH:
-        // break;
-    // }
-    // /* Returns TRUE on success, FALSE on failure */
-    // return TRUE;
-// }
-
-//inline bool isnan( double x ) { return x != x; }
-
+    #include <stddef.h>
+    #include <windows.h>
+    #undef near
+    #undef far
 #else /* ELSE NO WINDOWS */
-#define PATHSEPARATOR "/"
-#define DLLEXPORT
+    #define PATHSEPARATOR "/"
+    #define DLLEXPORT
 #endif /* NO WINDOWS */
 
 #ifndef _MSC_VER 
-	//#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
+	#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
 #endif
 
 /*!
