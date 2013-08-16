@@ -1,15 +1,16 @@
 .. _part:gimli:
 
-****************
-GIMLi - Overview
-****************
+=========
+**GIMLi**
+=========
 
 .. toctree::
     :maxdepth: 3
 
-    ../README.rst
-    installation.rst
+    ../readme.rst
+    ../installation.rst
     design.rst
+    api.rst
     faq.rst
     publist.rst
     credits.rst
