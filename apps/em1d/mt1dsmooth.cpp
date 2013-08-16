@@ -115,7 +115,7 @@ int main( int argc, char *argv [] ) {
     save( inv.response(), "response.vec" );
     
     if ( verbose ) {
-        for ( size_t i = 0 ; i < model.size() ; i++ ) model[i] = round( model[i] * 10.0 ) / 10.0;        
+		model.round(0.1);        
         std::cout << "Res = " << model << std::endl;
     }
     

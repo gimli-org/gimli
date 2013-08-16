@@ -114,8 +114,9 @@ int main( int argc, char *argv [] ) {
     if ( verbose ) {
         RVector cumz( thk );
         for ( size_t i = 1 ; i < thk.size() ; i++ ) cumz[i] = cumz[ i-1 ] + thk[i];
-        for ( size_t i = 0 ; i < cumz.size() ; i++ ) cumz[i] = round( cumz[i] * 10.0 ) / 10.0;        
-        for ( size_t i = 0 ; i < res.size() ; i++ ) res[i] = round( res[i] * 10.0 ) / 10.0;        
+		cumz.round(0.1);        
+		res.round(0.1);        
+
         std::cout << "Res = " << res << std::endl;
         std::cout << "  z =  " << cumz << std::endl;
     }
