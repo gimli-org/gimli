@@ -11,7 +11,7 @@ Contents:
 
 .. only:: html
 
-    .. seealso::
+    .. see also::
 
         Restructured Text (reST) and Sphinx CheatSheets:
  
@@ -26,7 +26,8 @@ Contents:
     gimli.rst
     _tutorials_auto/index.rst
     _examples_auto/index.rst
-    
+    api.rst
+    rst_basics.rst
 
 .. toctree::
     :hidden:

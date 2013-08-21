@@ -38,7 +38,7 @@ extensions = [ 'sphinx.ext.autodoc'
              , 'myliterate_directive'
              , 'plot2rst'
              , 'sphinx.ext.pngmath'
-             #, 'bibstuff.sphinxext.bibref'  # buggy until simpleparse dependency
+             , 'sphinxcontrib.bibtex'
            ]  
 
 plot2rst_paths = [('doc/tutorials', 'doc/_tutorials_auto'),
@@ -108,18 +108,23 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
+# Add any paths that contain custom themes here, relative to this directory.
+html_theme_path = ['_themes']
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#agogo
 
-html_theme = 'sphinxdoc'
-
-html_theme_options = {
-    #"nosidebar": "false",
-    #"sidebarwidth": "230"
-}
-
+html_theme = 'gimli'
 #html_theme = 'default'
+#html_theme = 'agogo'
+#html_theme = 'blue'
+#html_theme = 'nature'
+#html_theme = 'sphinxdoc'
+
+#html_theme_options = {
+    #"nosidebar": "false",
+    #"sidebarwidth": "280"
+#}
 
 #html_theme_options = {
     #"rightsidebar": "true",
@@ -131,8 +136,6 @@ html_theme_options = {
 # documentation.
 #html_theme_options = {}
 
-# Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -157,11 +160,11 @@ html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%b %d, %Y with ' + version
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
@@ -203,6 +206,7 @@ html_show_copyright = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'gimlidoc'
 html_additional_pages = {'index': 'index.html'}
+
 
 # -- Options for LaTeX output --------------------------------------------------
  
@@ -295,3 +299,14 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 texinfo_show_urls = 'footnote'
+
+
+# -- Options for pybtex output -------------------------------------------------
+# load our plugins for manual bibstyle
+import pkg_resources
+
+for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
+    pkg_resources.working_set.add(dist)
+
+#End pybtex stuff
+    
