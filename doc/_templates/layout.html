@@ -11,13 +11,12 @@
 {% endblock %}
 
 {% block rootrellink %}
-        <li><a href="{{ pathto('index') }}">GIMLi home</a>&nbsp;|&nbsp;</li>
-        <li><a href="{{ pathto('doc/index') }}">Documentation</a>
-          &raquo;</li>
+        <li><a href="{{pathto('index')}}">GIMLi home</a>&nbsp;|&nbsp;</li>
+        <li><a href="{{pathto('doc/index')}}">Documentation</a>&raquo;</li>
 {% endblock %}
 
 {% block header %}
-<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<img src="{{ pathto("_static/gimli.png", 1) }}" alt="GIMLi logo" />
+<div style="background-color: #0a507a; text-align: left; padding: 10px 10px 15px 15px">
+<img src="{{pathto("_static/gimli.png", 1)}}" alt="GIMLi logo"/>
 </div>
 {% endblock %}

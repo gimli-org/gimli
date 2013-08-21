@@ -1,5 +1,5 @@
-reStructuredText Cockbock
-=========================
+Section reStructuredText Cockbock
+=================================
 
 .. this is a comment
     comment comment comment
@@ -8,17 +8,21 @@ reStructuredText Cockbock
 
     This is the latex-only version for how to document :term:`GIMLi` 
     
+SubSection 
+----------
+
 This is the common version for how to document :term:`GIMLi`. 
 Can we uses cites [RueckerGueSpi2006]_, [GuentherRueSpi2006]_, [RueckerGuen2011]_.
 
-SomeDefaults
-............
+Check for autocite :cite:`RueckerGuen2011`, :cite:`GuentherRueSpi2006`, :cite:`RueckerGueSpi2006`
 
-Terms, e.g., :term:`GIMLi` are defined in glossery.rst
 
-References, e.g., :ref:`Matplotlib` are defined in glossery.rst
+    * Terms, e.g., :term:`GIMLi` are defined in glossery.rst
 
-Modules, e.g., :mod:`Matplotlib` are defined in glossery.rst
+    * References, e.g., :term:`Matplotlib` are defined in glossery.rst
+
+    * Modules, e.g., :mod:`Matplotlib` are defined in glossery.rst
+
 
 SubSubSection
 .............
@@ -43,10 +47,7 @@ backquotes: ``text`` for code samples.
 .. _a link to sphinx: http://sphinx.pocoo.org/
 
 
-SubSection 
-----------
-
-...please read :ref:`INSTALLATION`, :ref:`USAGE` and :ref:`FAQ`, as well
+...please read :ref:`sec:install`, and :ref:`sec:faq`, as well
 
 special box::
 
@@ -55,6 +56,11 @@ special box::
 ::
 
     this looks like a listing
+
+Admonitions
+...........
+
+(Most themes style only “note” and “warning” specially.)
 
 .. note::
 
@@ -66,20 +72,21 @@ or a
 
    to indicate something that could cause serious problems.
 
-
-Bibliography:
-
-.. [GuentherRueSpi2006] T. Günther, C. Rücker and K. Spitzer. Three-dimensional modelling and inversion of dc resistivity data incorporating topography -- I. Modelling. Geophys. J. Int. 166, 495--505 
-
-.. [RueckerGueSpi2006] C. Rücker, T. Günther and K. Spitzer. Three-dimensional modelling and inversion of dc resistivity data incorporating topography -- I. Modelling. Geophys. J. Int. 166, 495--505
+.. admonition:: Whatever we need for captionname
+    
+    simple box with personal annotation
+    also possible boxes are: attention, caution, danger, error, hint, important, note, tip, warning and the generic admonition. 
 
 
-.. warning::
-    automatic reference by bibtex using `bibstuff.sphinxext.bibref` does not support utf8 so far
+.. note::
 
-.. .. bibmissing:: libgimli.bib
-..      :sort:
-..      :encoding: utf-8
+    ::
+
+        pip install sphinxcontrib-bibtex
+    
+    install http://sphinxcontrib-bibtex.readthedocs.org/en/0.2.8/quickstart.html#installation
+
+
 
 
 
