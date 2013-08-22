@@ -72,6 +72,9 @@ u = solvePoisson( grid, f = 1., uBoundary = [ grid.findBoundaryByMarker( 1 ), 0]
 #drawMesh( ax, grid )
 
 '''
+
+.. lastcout::
+
 .. error::
     
     do we find an analytical solution for this example?
