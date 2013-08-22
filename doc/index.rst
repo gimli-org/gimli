@@ -21,6 +21,10 @@ Contents:
         
         http://packages.python.org/an_example_pypi_project/sphinx.html
 
+   
+    .. include::
+        doc_todo.rst
+
 .. toctree::
 
     gimli.rst

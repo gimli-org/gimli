@@ -45,15 +45,19 @@ Glossary
 
     NumPy
         The :mod:`numpy` :term:`Python` package provides array arithmetic 
-        facilities. See: http://www.scipy.org/NumPy.
+        facilities. See: http://docs.scipy.org/doc/numpy 
+
+    Paraview
+        Is an open-source, multi-platform data analysis and visualization application.
+        See:: http://paraview.org/
 
     Python
         The programming language that :term:`pyGIMLi` (and your scripts) are
-        written in. See: http://www.python.org/.
+        written in. See: http://www.python.org/
 
     Sphinx
         The tools used to generate the :term:`GIMLi` documentation.
-        See: http://sphinx.pocoo.org/.
+        See: http://sphinx.pocoo.org/
 
     SuiteSparse
         SuiteSparse is a single archive that contains packages for solving large sparse problems using Sparse Cholesky factorization.
