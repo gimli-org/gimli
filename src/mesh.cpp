@@ -38,22 +38,22 @@ std::ostream & operator << ( std::ostream & str, const Mesh & mesh ){
     return str;
 }
 
-Mesh::Mesh( uint dim )
-: dimension_( dim ), rangesKnown_( false ), neighboursKnown_( false ), tree_( NULL ){
+Mesh::Mesh(uint dim)
+: dimension_(dim), rangesKnown_(false), neighboursKnown_(false), tree_(NULL){
     oldTet10NumberingStyle_ = true;
 }
 
-Mesh::Mesh( const std::string & filename )
-: rangesKnown_( false ), neighboursKnown_( false ), tree_( NULL ){
+Mesh::Mesh(const std::string & filename)
+: rangesKnown_(false), neighboursKnown_(false), tree_(NULL){
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
-    load( filename );
+    load(filename);
 }
 
-Mesh::Mesh( const Mesh & mesh )
+Mesh::Mesh(const Mesh & mesh)
 : rangesKnown_( false ), neighboursKnown_( false ), tree_( NULL ){
     oldTet10NumberingStyle_ = true;
-    copy_( mesh );
+    copy_(mesh);
 }
 
 Mesh & Mesh::operator = ( const Mesh & mesh ){
@@ -251,7 +251,7 @@ Cell * Mesh::createCell( std::vector < Node * > & nodes, int marker ){
         case 20: return createCell_< Hexahedron20 >( nodes, marker, cellCount() ); break;
 
     }
-    std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine cell for nodes: " << nodes.size() << std::endl;
+    std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine cell for nodes: " << nodes.size() << " for dim: " << dimension_ << std::endl;
     return NULL;
 }
 

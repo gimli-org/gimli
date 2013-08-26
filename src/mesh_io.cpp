@@ -21,6 +21,7 @@
 #include "mesh.h"
 #include "node.h"
 #include "matrix.h"
+#include "pos.h"
 #include "vectortemplates.h"
 
 #include <map>
@@ -28,15 +29,15 @@
 
 namespace GIMLI{
 
-void Mesh::load( const std::string & fbody, IOFormat format ){
+void Mesh::load(const std::string & fbody, IOFormat format){
 
-    if ( fbody.find( ".mod" ) != std::string::npos ){
-        importMod( fbody );
-    } else if ( fbody.find( ".vtk" ) != std::string::npos ){
-        importVTK( fbody );
-    } else if ( fbody.find( ".vtu" ) != std::string::npos ){
-        importVTU( fbody );
-    } else if ( format == Binary || fbody.find( MESHBINSUFFIX ) != std::string::npos ) {
+    if (fbody.find(".mod") != std::string::npos){
+        importMod(fbody);
+    } else if (fbody.find(".vtk") != std::string::npos){
+        importVTK(fbody);
+    } else if (fbody.find(".vtu") != std::string::npos){
+        importVTU(fbody);
+    } else if (format == Binary || fbody.find(MESHBINSUFFIX) != std::string::npos){
         try {
              return loadBinary( fbody );
         } catch( std::exception & e ){
@@ -895,18 +896,18 @@ void Mesh::exportVTK( const std::string & fbody, const std::map< std::string, RV
 
 void Mesh::importVTK( const std::string & fbody ) {
     this->clear();
-    std::fstream file; openInFile( fbody.substr( 0, fbody.rfind( ".vtk") ) + ".vtk", &file );
+    std::fstream file; openInFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", &file);
 
-    std::vector < std::string > row ;
-    getline( file, commentString_ ); //** vtk version line
-    getline( file, commentString_ ); //** comment line
-    while ( !file.eof() ){
+    std::vector < std::string > row;
+    getline(file, commentString_); //** vtk version line
+    getline(file, commentString_); //** comment line
+    while (!file.eof()){
         row = getRowSubstrings( file );
       //  std::cout << row.size() << std::endl;
-        if ( row.size() ){
-            if ( row[ 0 ] == "ASCII" ){
+        if (row.size()){
+            if (row[0] == "ASCII"){
                 break;
-            } else if ( row[ 0 ] == "BINARY" ){
+            } else if (row[0] == "BINARY"){
                 THROW_TO_IMPL
                 break;
             }
@@ -914,14 +915,13 @@ void Mesh::importVTK( const std::string & fbody ) {
     }
     row = getRowSubstrings( file );
     //std::cout << row.size() << std::endl;
-    if ( row.back() == "UNSTRUCTURED_GRID" ){
+    if (row.back() == "UNSTRUCTURED_GRID"){
         
         //** End reading header
-
-        while ( !file.eof() ){
+        while (!file.eof()){
             row = getRowSubstrings( file );
-            if ( row.size() ){
-                if ( row[ 0 ] == "POINTS" ) readVTKPoints_( file, row );
+            if (row.size()){
+                if (row[0] == "POINTS") readVTKPoints_(file, row);
                 else if ( row[ 0 ] == "CELLS" ) readVTKCells_( file, row );
                 else if ( row[ 0 ] == "SCALARS" ) readVTKScalars_( file, row );
             }
@@ -947,10 +947,11 @@ void Mesh::readVTKPoints_( std::fstream & file, const std::vector < std::string 
     uint nVerts = toInt( row[ 1 ] );
     //std::cout << "nVerts: " << nVerts << std::endl;
     double x = 0.0, y = 0.0, z = 0.0;
-    for ( uint i = 0; i < nVerts; i ++ ) {
+    for (uint i = 0; i < nVerts; i ++) {
         file >> x >> y >> z;
-        this->createNode( x, y, z );
+        this->createNode(x, y, z);
     }
+    if (!nonZero(GIMLI::z(positions()))) dimension_ = 2;
 }
 
 void Mesh::readVTKCells_( std::fstream & file, const std::vector < std::string > & row ){

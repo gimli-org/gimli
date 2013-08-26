@@ -7,15 +7,22 @@ import pygimli as g
 from matplotlib.patches import Rectangle
 #from math import sqrt, floor, ceil
 
-def showmymatrix(A,x,y,dx=2,dy=1,xlab=None,ylab=None,cbar=None):
-    P.imshow(A,interpolation='nearest')
-    P.xticks(N.arange(0,len(x),dx),["%g" % rndig(xi,2) for xi in x]) #,b
-    P.yticks(N.arange(0,len(y),dy),["%g" % rndig(yi,2) for yi in y]) #,a
-    P.ylim((len(y)-0.5,-0.5))
+def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
+    '''
+        Pls. insert short Docu here
+    '''
+    P.imshow(A, interpolation='nearest')
+    P.xticks(N.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x]) #,b
+    P.yticks(N.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y]) #,a
+    P.ylim((len(y) - 0.5, - 0.5))
+    
     if xlab is not None: P.xlabel(xlab)
     if ylab is not None: P.ylabel(ylab)
+    
     P.axis('auto') 
+    
     if cbar is not None: P.colorbar(orientation=cbar)
+    
     return
     
 def drawModel1D( ax, thickness, values,  plotfunction = 'plot', xlabel = 'Resistivity $[\Omega$ m$]$'

@@ -105,10 +105,10 @@ class DLLEXPORT Mesh {
 public:
 
     /*! Default constructor, create empty mesh with dimension dim */
-    Mesh( uint dim = 2 );
+    Mesh(uint dim=2);
 
     /*! Constructor, read mesh from filename */
-    Mesh( const std::string & filename );
+    Mesh(const std::string & filename);
 
     /*! Copy constructor. */
     Mesh( const Mesh & mesh );
@@ -218,17 +218,17 @@ public:
     Boundary & boundary( uint i );
 
     /*! Returns a vector of all node positions */
-    std::vector < RVector3 > positions( ) const;
+    std::vector < RVector3 > positions() const;
 
     /*! Returns a vector of node positions for an index vector */
-    std::vector < RVector3 > positions( const IndexArray & idx ) const;
+    std::vector < RVector3 > positions(const IndexArray & idx) const;
 
     /*! Returns a vector of all cell center positions*/
-    std::vector < RVector3 > cellCenters( ) const;
-    std::vector < RVector3 > cellCenter( ) const { return cellCenters(); }
+    std::vector < RVector3 > cellCenters() const;
+    std::vector < RVector3 > cellCenter() const { return cellCenters(); }
 
     /*! Returns a RVector of all cell sizes */
-    RVector cellSizes( ) const;
+    RVector cellSizes() const;
 
     /*! Returns a vector of all boundary marker */
     std::vector < int > boundaryMarker() const;
