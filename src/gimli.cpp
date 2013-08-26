@@ -33,11 +33,12 @@ bool __SAVE_PYTHON_GIL__ = false;
 bool __GIMLI_DEBUG__ = false;
 
 std::string authors(){
-  std::string a( (std::string)("bugs and suggestions to: ") + PACKAGE_AUTHORS );
-  return a;
+    return (std::string)("bugs and suggestions to:") + PACKAGE_AUTHORS;
 }
 
-int openFile(const std::string & fname, std::fstream * file, std::ios_base::openmode farg, bool terminate){
+int openFile(const std::string & fname, std::fstream * file,
+             std::ios_base::openmode farg, bool terminate){
+    
     file->open(fname.c_str(), farg);
     if (!*file){
         if (terminate) {

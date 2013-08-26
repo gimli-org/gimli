@@ -115,13 +115,13 @@ def main( argv ):
     else:
         meshname = args[ 0 ];
 
-    mesh = g.Mesh( meshname )
+    mesh = g.Mesh(meshname)
 
     if options.verbose:
         print meshname, mesh
         
     if options.interpolateCoords is not None:
-        applyInterpolation( options.interpolateCoords, mesh )
+        applyInterpolation(options.interpolateCoords, mesh)
        
     if options.rotate is not None:
         rot = strToRVector3( options.rotate )

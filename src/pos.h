@@ -32,13 +32,16 @@ DLLEXPORT RVector3 center( const std::vector < RVector3 > & vPos );
 DLLEXPORT double jacobianDetXY( const RVector3 & p1, const RVector3 & p2, const RVector3 & p3 );
 DLLEXPORT double angle( const RVector3 & p1, const RVector3 & p2, const RVector3 & p3 );
 
-DLLEXPORT bool xVari( const std::vector < RVector3 > & electrodeList );
-DLLEXPORT bool yVari( const std::vector < RVector3 > & electrodeList );
-DLLEXPORT bool zVari( const std::vector < RVector3 > & electrodeList );
+DLLEXPORT bool xVari(const std::vector < RVector3 > & electrodeList);
+DLLEXPORT bool yVari(const std::vector < RVector3 > & electrodeList);
+DLLEXPORT bool zVari(const std::vector < RVector3 > & electrodeList);
 
-DLLEXPORT RVector x( const std::vector < RVector3 > & rv );
-DLLEXPORT RVector y( const std::vector < RVector3 > & rv );
-DLLEXPORT RVector z( const std::vector < RVector3 > & rv );
+/*! Return array of all x-koordinates. [:,0]*/
+DLLEXPORT RVector x(const std::vector < RVector3 > & rv);
+/*! Return array of all y-koordinates. [:,1]*/
+DLLEXPORT RVector y(const std::vector < RVector3 > & rv);
+/*! Return array of all z-koordinates. [:,2]*/
+DLLEXPORT RVector z(const std::vector < RVector3 > & rv);
 
 DLLEXPORT void swapXY( std::vector < RVector3 > & rv );
 DLLEXPORT void swapXZ( std::vector < RVector3 > & rv );

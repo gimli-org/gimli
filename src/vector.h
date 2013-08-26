@@ -988,6 +988,13 @@ bool operator == ( const Vector< ValueType > & v1, const __VectorExpr< ValueType
     return v1 == Vector< ValueType >( v2 );
 }
 
+/*! Return true if at least one value is greater than TOLERANCE. */
+template < class ValueType >
+bool nonZero(const Vector< ValueType > & v){
+    return (min(abs(v)) > TOLERANCE);
+}
+
+
 
 template < class ValueType >
 bool operator != ( const Vector< ValueType > & v1, const Vector< ValueType > & v2 ){
