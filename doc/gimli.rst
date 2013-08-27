@@ -20,7 +20,7 @@
 
 .. rubric:: References
 
-.. bibliography:: libgimli.bib
+.. bibliography:: biblio.bib
     :style: mystyle
     :all:
 

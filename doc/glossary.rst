@@ -54,6 +54,13 @@ Glossary
     Python
         The programming language that :term:`pyGIMLi` (and your scripts) are
         written in. See: http://www.python.org/
+    
+    Pylab
+        At the moment, the current combination of :term:`Python`, :term:`NumPy`, :term:`SciPy`, :term:`Matplotlib`, and IPython provide a compelling environment for numerical analysis and computation.
+        See: http://wiki.scipy.org/PyLab
+
+    SciPy
+        Scientific Tools for Python is open-source software for mathematics, science, and engineering. See: http://wiki.scipy.org/SciPy
 
     Sphinx
         The tools used to generate the :term:`GIMLi` documentation.
