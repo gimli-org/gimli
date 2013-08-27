@@ -8,6 +8,7 @@ Section reStructuredText Cockbock
 
     This is the latex-only version for how to document :term:`GIMLi` 
     
+
 SubSection 
 ----------
 

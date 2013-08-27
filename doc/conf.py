@@ -39,6 +39,8 @@ extensions = [ 'sphinx.ext.autodoc'
              , 'plot2rst'
              , 'sphinx.ext.pngmath'
              , 'sphinxcontrib.bibtex'
+             , 'doxylink'
+             , 'sphinxcontrib.programoutput'
            ]  
 
 plot2rst_paths = [('doc/tutorials', 'doc/_tutorials_auto'),
@@ -309,4 +311,9 @@ for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
     pkg_resources.working_set.add(dist)
 
 #End pybtex stuff
+    
+# -- Options for doxylink ------------------------------------------------------
+doxylink = {
+        'gimliapi' : ('doxygen/gimli.tag', 'doxygen/html/')
+}
     

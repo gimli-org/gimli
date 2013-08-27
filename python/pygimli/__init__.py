@@ -31,9 +31,7 @@ import locale
 if locale.localeconv()['decimal_point'] == ',':
     print "Found locale decimal_point ',', change it to: decimal point '.':",
     locale.localeconv()['decimal_point']
-    locale.setlocale( locale.LC_NUMERIC, 'C' )
-
-print locale.localeconv()['decimal_point']
+    locale.setlocale(locale.LC_NUMERIC, 'C')
 
     
 ############################

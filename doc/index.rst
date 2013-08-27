@@ -3,27 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-*********************************
-Welcome to GIMLi's documentation!
-*********************************
-
-Contents:
-
 .. only:: html
 
-    .. see also::
+    .. include:: doc_todo.rst
 
-        Restructured Text (reST) and Sphinx CheatSheets:
- 
-        http://docs.geoserver.org/trunk/en/docguide/sphinx.html
-
-        http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html
-        
-        http://packages.python.org/an_example_pypi_project/sphinx.html
-
-   
-    .. include::
-        doc_todo.rst
+=================================
+Welcome to GIMLi's documentation!
+=================================
 
 .. toctree::
 
