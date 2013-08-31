@@ -12,19 +12,20 @@ import pylab as P
 
 def showMesh( mesh, data = None, showLater = False, colorBar = False,  *args, **kwargs):
     '''
-        Syntactic sugar, short-cut to create axes and plot node or cell values 
+        Syntactic sugar, short-cut to create axes and plot node or cell values
         return axes, cbar
     '''
-    
+
     ret = []
-    
+
     fig = P.figure()
     a = fig.add_subplot( 111 )
-    
+    print fig
+
     gci = None
     cbar = None
     validData = False
-    
+
     if data is None:
         drawMesh( a, mesh )
     else:
@@ -38,16 +39,15 @@ def showMesh( mesh, data = None, showLater = False, colorBar = False,  *args, **
             elif len( data ) == mesh.nodeCount():
                 gci = drawField( a, mesh, data, *args, **kwargs )
 
-                
+
     a.set_aspect( 'equal')
-    
+
     if colorBar and validData:
         cbar = createColorbar( gci, *args, **kwargs )
-                
+
     if not showLater:
         P.show()
 
-        
     #fig.show()
     #fig.canvas.draw()
     return a, cbar
