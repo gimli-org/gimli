@@ -1,5 +1,5 @@
 BOOSTDIR=/usr/include/boost
-BOOSTLIB=/usr/lib64 -l boost_python-mt-py27 
+BOOSTLIB=/usr/lib64 -l boost_python-2.7-mt
 PYTHONDIR=/usr/include/python2.7
 
 GIMLILIB=../src/.libs/ -lgimli -lrt
@@ -17,7 +17,7 @@ default: $(TARGET)
 	g++ $(COPT) $(DEFINES) -c -o $(patsubst %.cpp,%.o, $<) -I $(BOOSTDIR) -I. -I $(GIMLIINC) -I $(PYTHONDIR) -I generated $<
 
 $(TARGET): $(OBJECTS)
-	g++ -o $(TARGET).so -shared $(OBJECTS) -L. \
+	g++ -o $(TARGET).so --strip-all -shared $(OBJECTS) -L. \
 		-L $(BOOSTLIB) \
 		-L $(GIMLILIB) -lcolamd 
 	mv $(TARGET).so ./pygimli/
