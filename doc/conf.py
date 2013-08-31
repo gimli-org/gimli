@@ -11,37 +11,48 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys, os, pip
 
 # If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the                                                          
-# documentation root, use os.path.abspath to make it absolute, like shown here.                                                        
-#sys.path.insert(0, os.path.abspath('.'))                                                                                              
-sys.path.append(os.path.abspath('./_sphinx-ext'))                                                                                     
-                                                                                                                                       
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+#sys.path.insert(0, os.path.abspath('.'))
+sys.path.append(os.path.abspath('./_sphinx-ext'))
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 needs_sphinx = '1.0'
 
+# Check for external sphinx extensions
+deps = ['pybtex', 'sphinxcontrib-programoutput', 'numpydoc']
+modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
+
+for dep in deps:
+    if dep not in modules:
+        msg = "Sorry, %s is required to build the docs. Try: pip install %s." \
+                % (dep, dep)
+        raise ImportError(msg)
+
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = [ 'sphinx.ext.autodoc'
-             , 'sphinx.ext.todo'
-             , 'sphinx.ext.doctest'
-             , 'sphinx.ext.viewcode'
-             , 'sphinx.ext.autosummary'
-             , 'matplotlib.sphinxext.plot_directive'
-             , 'matplotlib.sphinxext.only_directives'
-             #'matplotlib.sphinxext.mathmpl'
-             , 'myexec_directive'
-             , 'myliterate_directive'
-             , 'plot2rst'
-             , 'sphinx.ext.pngmath'
-             , 'sphinxcontrib.bibtex'
-             , 'doxylink'
-             , 'sphinxcontrib.programoutput'
-           ]  
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.todo',
+              'sphinx.ext.doctest',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.autosummary',
+              'matplotlib.sphinxext.plot_directive',
+              'matplotlib.sphinxext.only_directives',
+              #'matplotlib.sphinxext.mathmpl',
+              'myexec_directive',
+              'myliterate_directive',
+              'plot2rst',
+              'sphinx.ext.pngmath',
+              'sphinxcontrib.bibtex',
+              'doxylink'
+              ]
+
+extensions += [dep.replace('-','.') for dep in deps]
 
 plot2rst_paths = [('doc/tutorials', 'doc/_tutorials_auto'),
                   ('doc/examples', 'doc/_examples_auto')]
@@ -124,13 +135,13 @@ html_theme = 'gimli'
 #html_theme = 'sphinxdoc'
 
 #html_theme_options = {
-    #"nosidebar": "false",
-    #"sidebarwidth": "280"
+#"nosidebar": "false",
+#"sidebarwidth": "280"
 #}
 
 #html_theme_options = {
-    #"rightsidebar": "true",
-    #"relbarbgcolor": "black"
+#"rightsidebar": "true",
+#"relbarbgcolor": "black"
 #}
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -158,7 +169,7 @@ html_favicon = '_static/G.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -211,33 +222,33 @@ html_additional_pages = {'index': 'index.html'}
 
 
 # -- Options for LaTeX output --------------------------------------------------
- 
+
 from os import environ, path
 
 extradir = path.abspath( '_static' ).replace('\\','/')
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-'papersize': 'a4paper',
+    # The paper size ('letterpaper' or 'a4paper').
+    'papersize': 'a4paper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-'preamble':
-'\\usepackage{amsfonts}\
-\\usepackage{amssymb}\
-\\usepackage{bm}\
-\\usepackage{pslatex} \
-\\input{mylatex-commands.tex}'
+    # Additional stuff for the LaTeX preamble.
+    'preamble':
+    '\\usepackage{amsfonts}\
+    \\usepackage{amssymb}\
+    \\usepackage{bm}\
+    \\usepackage{pslatex} \
+    \\input{mylatex-commands.tex}'
 }
 
 pngmath_latex_preamble = '\
-\\usepackage{amsfonts}\
-\\usepackage{amssymb}\
-\\usepackage{bm}\
-\\usepackage{pslatex}\
-\\input{' + extradir+ '/mylatex-commands.tex}'
+        \\usepackage{amsfonts}\
+        \\usepackage{amssymb}\
+        \\usepackage{bm}\
+        \\usepackage{pslatex}\
+        \\input{' + extradir+ '/mylatex-commands.tex}'
 
 _mathpng_tempdir = './mathtmp'
 
@@ -248,7 +259,7 @@ latex_documents = [
 ]
 
 latex_additional_files = ['./_static/mylatex-commands.tex' ]
-                          
+
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
 #latex_logo = None
@@ -288,9 +299,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'GIMLi', u'GIMLi Documentation',
-   u'Carsten Rücker and Thoma Günther', 'GIMLi', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'GIMLi', u'GIMLi Documentation',
+     u'Carsten Rücker and Thomas Günther', 'GIMLi',
+     'Geophysical Inversion and Modeling Library', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -311,9 +322,8 @@ for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
     pkg_resources.working_set.add(dist)
 
 #End pybtex stuff
-    
+
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-        'gimliapi' : ('doxygen/gimli.tag', 'doxygen/html/')
+    'gimliapi' : ('doxygen/gimli.tag', 'doxygen/html/')
 }
-    

@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import pygimli as g
-import pygimli.utils
 import numpy as np
 
 def readGmsh(fname, verbose=False):
-    """
-        Read Gmsh ASCII file and return instance of GIMLI::Mesh class.
-        Author: Florian Wagner (GFZ Potsdam)
+    """ Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
+
         Parameters
         ----------
         fname : string
-            Filename of the file to read (*.msh). The file must conform
+            Filename of the file to read (\\*.msh). The file must conform
             to the `MSH ASCII file version 2 <http://geuz.org/gmsh/doc/
             texinfo/gmsh.html#MSH-ASCII-file-format>`_ format.
         verbose : boolean
@@ -30,6 +28,13 @@ def readGmsh(fname, verbose=False):
         - Physical Surfaces and Volumes define regions in 2D and 3D, respectively.
             - Physical Number 1: No inversion region
             - Physical Number >= 2: Inversion region
+
+        References
+        ----------
+        [1] C. Geuzaine and J.-F. Remacle. Gmsh: a three-dimensional finite
+        element mesh generator with built-in pre- and post-processing
+        facilities. International Journal for Numerical Methods in Engineering
+        79(11), pp. 1309-1331, 2009.
     """
 
     inNodes, inElements, ncount, ecount = 0, 0, 0, 0
@@ -141,12 +146,12 @@ def readGmsh(fname, verbose=False):
         print '\nDone. \n'
         print '  ' + str(mesh)
 
-    return mesh 
+    return mesh
 
 def readHydrus2dMesh(filename='MESHTRIA.TXT'):
     '''
         import Hydrus2D mesh (MESHTRIA.TXT)
-        mesh=readHydrus2dMesh(filename) 
+        mesh=readHydrus2dMesh(filename)
     '''
     fid=open(filename)
     line=fid.readline().split()
@@ -156,10 +161,10 @@ def readHydrus2dMesh(filename='MESHTRIA.TXT'):
     for i in range(nnodes):
         line=fid.readline().split()
         mesh.createNode(g.RVector3(float(line[1])/100.,float(line[2])/100.,0.))
-    
-    for i in range(3): 
+
+    for i in range(3):
         line=fid.readline()
-        
+
     for i in range(ncells):
         line=fid.readline().split()
         if len(line)==4:
@@ -167,20 +172,20 @@ def readHydrus2dMesh(filename='MESHTRIA.TXT'):
         elif len(line)==5:
             mesh.createTetrahedron(mesh.node(int(line[1])-1),mesh.node(int(line[2])-1),
                                    mesh.node(int(line[3])-1),mesh.node(int(line[4])-1),1)
-    
+
     fid.close()
     return mesh
-    
+
 
 def readHydrus3dMesh(filename='MESHTRIA.TXT'):
     '''
         import regular Hydrus3D mesh (MESHTRIA.TXT)
-        mesh=readHydrus3dMesh(filename) 
+        mesh=readHydrus3dMesh(filename)
     '''
     f=open(filename,'r')
     for i in range(6):
         line1=f.readline()
-        
+
     nnodes=int(line1.split()[0])
     ncells=int(line1.split()[1])
     print nnodes, ncells
@@ -208,14 +213,14 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
 def rot2DGridToWorld( mesh, start, end ):
     '''
-        rotate a given 2D grid in 
+        rotate a given 2D grid in
     '''
     mesh.rotate( g.degToRad( g.RVector3( -90.0, 0.0, 0.0 ) ) )
 
     src = g.RVector3( 0.0, 0.0, 0.0 ).norm( g.RVector3( 0.0,  0.0, -10.0 ),
                                             g.RVector3( 10.0, 0.0, -10.0 ) )
     dest = start.norm( start - g.RVector3( 0.0, 0.0, 10.0 ), end )
-                        
+
     q = g.getRotation( src, dest )
     rot = g.RMatrix( 4, 4 )
     q.rotMatrix( rot )
@@ -229,7 +234,7 @@ def merge2Meshes( m1, m2 ):
         Merge two meshes into one a new mesh
         return the new mesh.
     '''
-    
+
     mesh = g.Mesh( m1 )
 
     for c in m2.cells():
@@ -245,9 +250,9 @@ def merge2Meshes( m1, m2 ):
         d.setVal( m1.exportDataMap()[ key ], 0, m1.cellCount() )
         d.setVal( m2.exportDataMap()[ key ], m1.cellCount(), m1.cellCount() + m2.cellCount() )
         mesh.addExportData( key, d )
-        
-    return mesh;
-    
+
+    return mesh
+
 def mergeMeshes( meshlist ):
     '''
         Merge several meshes into one a new mesh, meshlist have to be a list of at least 2 meshes
@@ -255,18 +260,18 @@ def mergeMeshes( meshlist ):
     '''
     if type( meshlist ) is not list:
         raise "argument meshlist is no list"
-    
+
     if len( meshlist ) < 2:
         raise "to few meshes in meshlist"
-    
+
     mesh = meshlist[ 0 ]
-    
+
     for m in range( 1, len( meshlist ) ):
         mesh = merge2Meshes( mesh, meshlist[ m ] )
-        
+
     return mesh
-    
-        
+
+
 def createParaMesh2dGrid( sensors, paraDX = 1, paraDZ = 1, paraDepth = 0, nLayers = 11, boundary = -1, paraBoundary = 2, verbose = False,  *args, **kwargs ):
     '''
         Create gimli parameter mesh for a given list of sensor positions
@@ -281,7 +286,7 @@ def createParaMesh2dGrid( sensors, paraDX = 1, paraDZ = 1, paraDepth = 0, nLayer
         verbose .. be verbose
     '''
     mesh = g.Mesh( 2 )
-    
+
     # maybee separete x y z and sort
     sensorX = g.x( sensors )
     eSpacing = abs( sensorX[ 1 ] - sensorX[ 0 ] )
@@ -291,30 +296,30 @@ def createParaMesh2dGrid( sensors, paraDX = 1, paraDZ = 1, paraDepth = 0, nLayer
 
     if paraDX == 0: paraDX = 1.
     if paraDZ == 0: paraDZ = 1.
-    
+
     dx = eSpacing * paraDX
     dz = eSpacing * paraDZ
-    
+
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax-xmin)
-        
+
     x = g.utils.grange( xmin, xmax, dx = dx )
-    
+
     y = -g.increasingRange( dz, paraDepth, nLayers )
 
     mesh.createGrid( x, y )
-        
+
     map( lambda cell: cell.setMarker( 2 ), mesh.cells() )
 
     paraXLimits = [ xmin, xmax ]
     paraYLimits = [ min( y ), max( y ) ]
-    
+
     if boundary < 0:
         boundary = abs( ( paraXLimits[ 1 ] - paraXLimits[ 0 ] ) * 4.0 )
-        
-    mesh = g.meshtools.appendTriangleBoundary( mesh, xbound = boundary, ybound = boundary, marker = 1, 
+
+    mesh = g.meshtools.appendTriangleBoundary( mesh, xbound = boundary, ybound = boundary, marker = 1,
                                                 *args, **kwargs )
-  
+
     return mesh
 # def createParaMesh2dGrid( ... )
-    
+
