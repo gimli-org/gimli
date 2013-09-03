@@ -27,6 +27,7 @@ Needed external extensions for building this docu
 * somewhere explain difference between gimli and pygimli
 * somewhere explain difference python bind of gimli and pygimli scripts
 
-Docstring example
------------------
+Docstring examples
+------------------
+.. autofunction:: pygimli.meshtools.mesh.readHydrus2dMesh
 .. autofunction:: pygimli.meshtools.mesh.readGmsh

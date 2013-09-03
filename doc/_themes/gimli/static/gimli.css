@@ -643,6 +643,11 @@ table {
 table td, table th {
     padding: 0.2em 0.5em 0.2em 0.5em;
 }
+/* adjusted for numpydoc */  
+table th {
+    background-color: #eee; 
+    width: 7.5em;
+}
 
 div.admonition {
     font-size: 0.9em;

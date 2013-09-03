@@ -327,3 +327,7 @@ for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
 doxylink = {
     'gimliapi' : ('doxygen/gimli.tag', 'doxygen/html/')
 }
+
+# TEMP: Show TODOS while building documentation
+[extensions]
+todo_include_todos = True
