@@ -183,7 +183,8 @@ def generate( defined_symbols ):
     rvalue_converters = [
                             'register_pysequence_to_StdVectorUL_conversion',
                             'register_pytuple_to_rvector3_conversion',
-                            'register_pysequence_to_rvector_conversion'
+                            'register_pysequence_to_rvector_conversion',
+                            'register_pysequence_to_StdVectorRVector3_conversion'
                         ]
 
     for converter in rvalue_converters:

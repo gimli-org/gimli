@@ -28,10 +28,6 @@ Check for autocite :cite:`RueckerGuen2011`, :cite:`GuentherRueSpi2006`, :cite:`R
 SubSubSection
 .............
 
-automatic show api documentation
-
-.. autofunction:: pygimli.randN
-
 reStructuredText is a plaintext markup syntax that is interpreted by sphinx to generate this html or pdf document
 
 * http://docutils.sourceforge.net/rst.html

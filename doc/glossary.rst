@@ -49,7 +49,7 @@ Glossary
 
     Paraview
         Is an open-source, multi-platform data analysis and visualization application.
-        See:: http://paraview.org/
+        See: http://paraview.org/
 
     Python
         The programming language that :term:`pyGIMLi` (and your scripts) are

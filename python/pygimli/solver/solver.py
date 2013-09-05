@@ -39,7 +39,6 @@ def assembleDirichletBC( S, uDirchlet, rhs, time = 0 ):
     uDirNodes = []
     uDirVal = dict()
 
-    print uDirchlet
     if type( uDirchlet ) == list or type( uDirchlet ) == tuple:
         
         if ( type( uDirchlet[ 0 ] ) == g._pygimli_.stdVectorBounds ):  
@@ -56,7 +55,7 @@ def assembleDirichletBC( S, uDirchlet, rhs, time = 0 ):
                 if uVal is not None:
                     for n in b.nodes():
                         uDirNodes.append( n )
-                        print b.marker(), n.id(), uVal
+                        #print b.marker(), n.id(), uVal
                         uDirVal[ n.id() ] = uVal
     
         else:
@@ -181,7 +180,7 @@ def solvePoisson( mesh, a = 1.0, timeSteps = None, f = 1, verbose = False,  *arg
   
             # previous timestep
   
-            print "i: ", i, U[i-1]
+            #print "i: ", i, U[i-1]
             b = b + B * U[ i-1 ]
   
             
@@ -191,7 +190,7 @@ def solvePoisson( mesh, a = 1.0, timeSteps = None, f = 1, verbose = False,  *arg
                 assembleDirichletBC( S, kwargs[ 'uBoundary' ], b, timeSteps[ i-1 ] )    
                              
             solver = g.LinSolver( S, verbose )
-            print "b", b
+            #print "b", b
             solver.solve( b, u )
             
         
