@@ -1,3 +1,7 @@
+2013-09-04
+    pygimli:
+        - automatic right-value type conversion for sequence< Tuple> to std::vector < RVector3 >
+        
 2012-08-24
     pygimli
         - automatic right-value type conversion for RVector(any sequence with elements that can be transformed into doubles)

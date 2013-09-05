@@ -11,6 +11,9 @@ except ImportError:
 import pylab
 
 def showData( data, **kwargs ):
+    """
+        Syntactic sugar for drawData. Creates figure, axis and Show.
+    """
     fig = pylab.figure()
     a = fig.add_subplot( 111 )
     drawData( a, data, data('rhoa'), **kwargs )
@@ -18,8 +21,8 @@ def showData( data, **kwargs ):
     pylab.show()
     return a
 
-def drawData( axes, data, vals, pseudotype = 'A_M', cMin = None, cMax = None
-               , showCbar = True , linear = False, label = "" ):
+def drawData(axes, data, vals, pseudotype='A_M', cMin=None, cMax=None,
+             showCbar=True, linear=False, label="" ):
 
     try:
         sheme = getattr( g.mplviewer.Pseudotype, pseudotype )

@@ -27,40 +27,40 @@
 
 namespace GIMLI {
     
-inline void throwToImplement(const std::string & errString ){
+inline void throwToImplement(const std::string & errString){
   #ifndef USE_EXIDCODES
-  throw std::length_error( errString );
+  throw std::length_error(errString);
   #else
   std::cerr << errString << std::endl;
   #endif
 }
 
-inline void throwRangeError( int exitCode, const std::string & errString, int idx, int low, int high ){
+inline void throwRangeError(int exitCode, const std::string & errString, int idx, int low, int high){
 #ifndef USE_EXIDCODES
-    std::stringstream str( errString );
+    std::stringstream str(errString);
     str << " " << idx << "(range: " << low << ".." << high << "] ";
-    throw std::out_of_range( str.str() );
+    throw std::out_of_range(str.str());
 #else
   std::cerr << str.str() << std::endl;
-  exit( exitCode );
+  exit(exitCode);
 #endif
 }
 
-inline void throwLengthError( int exitCode, const std::string & errString ){
+inline void throwLengthError(int exitCode, const std::string & errString){
 #ifndef USE_EXIDCODES
-  throw std::length_error( errString );
+  throw std::length_error(errString);
 #else
   std::cerr << errString << std::endl;
-  exit( exitCode );
+  exit(exitCode);
 #endif
 }
 
-inline void throwError( int exitCode, const std::string & errString ){
+inline void throwError(int exitCode, const std::string & errString){
 #ifndef USE_EXIDCODES
-  throw std::length_error( errString );
+    throw std::length_error(errString);
 #else
-  std::cout << errString << std::endl;
-  exit( exitCode );
+    std::cout << errString << std::endl;
+    exit(exitCode);
 #endif
 }
 

@@ -1,4 +1,4 @@
-.. _sec:tutorial:
+.. _part:tutorial:
 
 =============
 **Tutorials**

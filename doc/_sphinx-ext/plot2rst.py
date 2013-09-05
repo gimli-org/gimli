@@ -137,6 +137,7 @@ TOCTREE_TEMPLATE = """
 IMAGE_TEMPLATE = """
 .. image:: images/%s
     :align: center
+    :scale: 75
 
 """
 
