@@ -6,8 +6,10 @@ import matplotlib as mpl
 import matplotlib.ticker as ticker
 import matplotlib.colors as colors
 import matplotlib.cbook as cbook
+
 import pylab
 import numpy as np
+
 from numpy import array, ma
 import math
 
@@ -224,7 +226,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbar.draw_all()
 
-def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False ):
+def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     data = np.asarray(dataIn)
     
     if logScale and data.min() <= 0:
@@ -248,4 +250,5 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False ):
         mappable.set_norm(mpl.colors.Normalize())
 
     mappable.set_array(data)
+    #mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
