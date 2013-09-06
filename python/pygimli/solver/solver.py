@@ -5,171 +5,212 @@ import pygimli as g
 from pygimli.utils import unique
 import numpy as np
 
-def assembleForceVector( mesh, vals, scale = 1. ):
-    rhs = g.RVector( mesh.nodeCount(), 0 )
+def assembleForceVector(mesh, vals, scale = 1.):
+    rhs = g.RVector(mesh.nodeCount(), 0)
     
     b_l = g.DElementMatrix()
     
     for c in mesh.cells():
-        b_l.u( c )
+        b_l.u(c)
             
-        for i, idx in enumerate( b_l.idx() ):
-            rhs[ idx ] += b_l.row( 0 )[ i ] * vals * scale
+        for i, idx in enumerate(b_l.idx()):
+            rhs[ idx ] += b_l.row(0)[ i ] * vals * scale
             
     return rhs
-# def assembleForceVector(  )
+# def assembleForceVector()
     
-def assembleNeumannBC( S, boundaries, vals ):
+def assembleNeumannBC(S, boundaries, vals):
 
     Se = g.DElementMatrix()
     
     for b in boundaries:
-        Se.u2( b )
+        Se.u2(b)
         Se *= vals
         S += Se;
                 
-#def assembleNeumannBC( ... )
+#def assembleNeumannBC(...)
 
 
-def assembleDirichletBC( S, uDirchlet, rhs, time = 0 ):
-    '''
-        Create Dirichlet boundary condition and apply them to stiffness matrix S
-    '''
-    
+def assembleDirichletBC(S, boundaryPair, rhs, time=0.0):
+    """
+    Create Dirichlet boundary condition and apply them to system matrix S.
+
+    Parameters
+    ----------
+    S : g.DSparseMatrix()
+        System matrix of the system equation.
+    boundaryPair: tuple
+        Pair of [list_of_boundaris, value], the value will assigned to 
+        the nodes of the boundaries. 
+        Value can be a scalar (float or int) or a function, which will be called
+        with the boundary and a optional time, that return the value for u.
+    rhs : g.RVector
+        Right hand side vector of the system equation
+    time : optional
+        time, if some time depended given boundary function
+
+    """
+           
     uDirNodes = []
     uDirVal = dict()
 
-    if type( uDirchlet ) == list or type( uDirchlet ) == tuple:
-        
-        if ( type( uDirchlet[ 0 ] ) == g._pygimli_.stdVectorBounds ):  
+    if type(boundaryPair) == tuple or len(boundaryPair) == 2:
+        print boundaryPair[0]
+        for b in boundaryPair[0]:
+            uVal = None
             
-            for b in uDirchlet[ 0 ]:
-                
-                uVal = None
-                
-                if type( uDirchlet[ 1 ] ) == float or type( uDirchlet[ 1 ] ) == int:
-                    uVal = uDirchlet[ 1 ]
+            if type(boundaryPair[1]) == float or type(boundaryPair[1]) == int:
+                uVal = boundaryPair[1]
+            else:
+                if time != 0.0:
+                    uVal = boundaryPair[1](b, time)
                 else:
-                    uVal = uDirchlet[ 1 ]( boundary = b, time = time )
+                    uVal = boundaryPair[1](b)
                                     
-                if uVal is not None:
-                    for n in b.nodes():
-                        uDirNodes.append( n )
+            if uVal is not None:
+                for n in b.nodes():
+                    uDirNodes.append(n)
                         #print b.marker(), n.id(), uVal
-                        uDirVal[ n.id() ] = uVal
+                    uDirVal[n.id()] = uVal
     
-        else:
-            for uDir in uDirchlet:
-                assembleDirichletBC( S, uDir, rhs, time )    
     else:
-        raise Exception( "cannot interpret boundaries sequence: " + str( type( uDirchlet ) ) )
+        raise Exception("cannot interpret boundaries sequence:" + str(type(uDirchlet)))
     
-    if len( uDirNodes ) == 0:
+    if len(uDirNodes) == 0:
         return 
         
-    uniqueNodes = unique( uDirNodes ) 
+    uniqueNodes = unique(uDirNodes) 
         
-    uDirchlet = g.RVector( len( uniqueNodes ) )
+    uDirchlet = g.RVector(len(uniqueNodes))
     uDirIndex = []
     
     
-    for i, n in enumerate( uniqueNodes ):
-        uDirIndex.append( n.id() )
-        uDirchlet[ i ] = uDirVal[ n.id() ]
+    for i, n in enumerate(uniqueNodes):
+        uDirIndex.append(n.id())
+        uDirchlet[i] = uDirVal[n.id()]
     
-    udirTmp = g.RVector( S.rows(), 0.0 )
+    udirTmp = g.RVector(S.rows(), 0.0)
     
-    udirTmp.setVal( uDirchlet, uDirIndex )
+    udirTmp.setVal(uDirchlet, uDirIndex)
     
     rhs -= S * udirTmp
         
     for i in uDirIndex:
     
-        S.cleanRow( i )
-        S.cleanCol( i )
-        S.setVal( i, i, 1.0 )
+        S.cleanRow(i)
+        S.cleanCol(i)
+        S.setVal(i, i, 1.0)
     
-    rhs.setVal( uDirchlet, uDirIndex )
+    rhs.setVal(uDirchlet, uDirIndex)
     
     
-def solvePoisson( mesh, a = 1.0, timeSteps = None, f = 1, verbose = False,  *args, **kwargs):
-    '''
-    '''
+def solvePoisson(mesh, a=1.0, timeSteps=None, f=1, verbose=False,
+                 *args, **kwargs):
+    """
+        TODO
+    Parameters
+    ----------
+    
+    """
     if verbose:
-        print( mesh )
+        print(mesh)
 
     dof = mesh.nodeCount()
         
-    swatch = g.Stopwatch( True )
+    swatch = g.Stopwatch(True)
     
     # define an empty stiffness matrix
     A = g.DSparseMatrix()
     B = g.DSparseMatrix()
     
     # create matrix structure regarding the mesh
-    A.buildSparsityPattern( mesh )
-    B.buildSparsityPattern( mesh )
+    A.buildSparsityPattern(mesh)
+    B.buildSparsityPattern(mesh)
 
     # define a local element matrix 
     A_l = g.DElementMatrix()
     B_l = g.DElementMatrix()
 
     # check for material parameter
-    if type( a ) == float:
-        a = g.RVector( mesh.cellCount(), a )
-    elif len( a ) != mesh.cellCount():
-        raise Exception( "Material array 'a' has the wrong size: " + len( a ) + " != " +  mesh.cellCount() )
+    if type(a) == float:
+        a = g.RVector(mesh.cellCount(), a)
+    elif len(a) != mesh.cellCount():
+        raise Exception("Material array 'a' has the wrong size: " + len(a) + " != " +  mesh.cellCount())
     
     # assemble the stiffness matrix
         
     for c in mesh.cells():
-        A_l.ux2uy2uz2( c )
+        A_l.ux2uy2uz2(c)
         A_l *= a[ c.id() ] 
         A += A_l
     
-        B_l.u2( c )
+        B_l.u2(c)
         B += B_l
     
     
     #print rhs
-        #for i in range( S.size() ):
-            #for j in range( S.vecColPtr()[ i ], S.vecColPtr()[ i + 1 ] ):
+        #for i in range(S.size()):
+            #for j in range(S.vecColPtr()[ i ], S.vecColPtr()[ i + 1 ]):
                     #print i, S.vecVals()[ j ]
                     ##print i, S.rowIdx()[ j ], S.vecVals()[ j ]
 
     if timeSteps == None:
     
-        rhs = assembleForceVector( mesh, f )
+        rhs = assembleForceVector(mesh, f)
         
         if 'neumann' in kwargs:
             gb = kwargs[ 'neumann' ]
-            assembleNeumannBC( A, boundaries = gb[ 0 ], vals = gb[ 1 ] )
+            assembleNeumannBC(A, boundaries = gb[ 0 ], vals = gb[ 1 ])
         
         if 'uBoundary' in kwargs:
-            assembleDirichletBC( A, kwargs[ 'uBoundary' ], rhs )    
-               
-        u = g.RVector( rhs.size(), 0.0 )
-        
-        if verbose:
-            print( "asssemblation takes: ", swatch.duration( True ) )
+            
+            uBound = kwargs['uBoundary']
+            
+            bounds = []
+            # [bounds, u]
+            print uBound, type(uBound)
+            if type(uBound[0]) == g.stdVectorBounds:
+                
+                bounds.append(uBound)
+            else:
+                bounds = uBound
+                
+            print bounds
+            # [[bounds1, u1], [bounds2, u2]]
+            for bound in bounds:
 
-        solver = g.LinSolver( A, verbose )
-        solver.solve( rhs, u )
+                if bound == tuple or len(bound) == 2:
+                    if type(bound[0]) == int:
+                        bound[0] = mesh.findBoundaryByMarker(bound[0])
+
+                    assembleDirichletBC(A, boundaryPair=bound, rhs=rhs)    
+                else:
+                    raise Exception("cannot interpret boundaries sequence: " +
+                                    str(type(bound)))
+            
+            
+        u = g.RVector(rhs.size(), 0.0)
         
         if verbose:
-            print( "lin solving takes: ", swatch.duration( True ) )
+            print("asssemblation takes: ", swatch.duration(True))
+
+        solver = g.LinSolver(A, verbose)
+        solver.solve(rhs, u)
+        
+        if verbose:
+            print("lin solving takes: ", swatch.duration(True))
             
         return u
         
     else:
-        U = g.RMatrix( 0, dof)
+        U = g.RMatrix(0, dof)
         #init state
-        u = g.RVector( dof, 0.0 )
-        U.push_back( u )
+        u = g.RVector(dof, 0.0)
+        U.push_back(u)
     
-        for i in range( 1, len( timeSteps ) ):
+        for i in range(1, len(timeSteps)):
             dt = timeSteps[ i ] - timeSteps[ i - 1 ]
-            b = assembleForceVector( mesh, f, dt )
+            b = assembleForceVector(mesh, f, dt)
 
   #% Neumann conditions
   #for j = 1 : size(neumann,1)
@@ -187,14 +228,14 @@ def solvePoisson( mesh, a = 1.0, timeSteps = None, f = 1, verbose = False,  *arg
             S = A * dt + B
             
             if 'uBoundary' in kwargs:
-                assembleDirichletBC( S, kwargs[ 'uBoundary' ], b, timeSteps[ i-1 ] )    
+                assembleDirichletBC(S, kwargs[ 'uBoundary' ], b, timeSteps[ i-1 ])    
                              
-            solver = g.LinSolver( S, verbose )
+            solver = g.LinSolver(S, verbose)
             #print "b", b
-            solver.solve( b, u )
+            solver.solve(b, u)
             
         
-            U.push_back( u )
+            U.push_back(u)
     
         return U
-# def solvePoisson( .. ):
+# def solvePoisson(..):

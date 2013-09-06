@@ -26,10 +26,10 @@ def main( argv ):
         print "Please add a mesh or model name."
         sys.exit( 2 )
     else:
-        meshname1 = args[ 0 ];
-        meshname2 = args[ 1 ];
+        meshname1 = args[0];
+        meshname2 = args[1];
 
-    (outfileBody, fileExtension) = os.path.splitext( options.outFileName )
+    (outfileBody, fileExtension) = os.path.splitext(options.outFileName)
     
     # 2d should default here, since most users will merge 2d meshes. for 3d we need an option here->Ca
     m1 = g.Mesh(2); m1.load(meshname1)
@@ -39,13 +39,13 @@ def main( argv ):
         print meshname1, m1
         print meshname2, m2
 
-    mesh = g.Mesh( m1 )
+    mesh = g.Mesh(m1)
 
     for c in m2.cells():
         mesh.copyCell( c )
 
     for key in mesh.exportDataMap().keys():
-        d = mesh.exportDataMap()[ key ]
+        d = mesh.exportDataMap()[key]
         print d
         d.resize( mesh.cellCount() )
         d.setVal( m1.exportDataMap()[ key ], 0, m1.cellCount() )
@@ -56,10 +56,10 @@ def main( argv ):
     if options.verbose:
         print "write bms: ", outfileBody + ".bms" 
 
-    if outfileBody.find( '.vtk' ):
-        mesh.exportVTK( outfileBody )
+    if outfileBody.find('.vtk'):
+        mesh.exportVTK(outfileBody)
     else:
-        mesh.saveBinaryV2( outfileBody )
+        mesh.saveBinaryV2(outfileBody)
     
 
 if __name__ == "__main__":
