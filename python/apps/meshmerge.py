@@ -31,8 +31,9 @@ def main( argv ):
 
     (outfileBody, fileExtension) = os.path.splitext( options.outFileName )
     
-    m1 = g.Mesh( meshname1 )
-    m2 = g.Mesh( meshname2 )
+    # 2d should default here, since most users will merge 2d meshes. for 3d we need an option here->Ca
+    m1 = g.Mesh(2); m1.load(meshname1)
+    m2 = g.Mesh(2); m2.load(meshname2)
 
     if options.verbose:
         print meshname1, m1
