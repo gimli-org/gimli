@@ -205,6 +205,11 @@ DEFINE_COMPARE_OPERATOR__(>)
     template std::vector < PolynomialFunction < double > > 
         createPolynomialShapeFunctions(const MeshEntity & ent, uint nCoeff, bool pascale, bool serendipity, const RVector &);
         
+    template double besselI0< double >(const double & x);
+    template double besselI1< double >(const double & x);
+    template double besselK0< double >(const double & x);
+    template double besselK1< double >(const double & x);
+
     template class Inversion< double >;
 
     template class Trans< RVector >;

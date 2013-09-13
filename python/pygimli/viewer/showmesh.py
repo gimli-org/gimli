@@ -11,7 +11,7 @@ except ImportError:
 import matplotlib.pyplot as plt
 import numpy as np
 
-def showMesh(mesh, data=None, showLater=False, colorBar=False,
+def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
              *args, **kwargs):
     """
     Syntactic sugar, short-cut to create axes and plot node or cell values
@@ -23,8 +23,10 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False,
 
     ret = []
 
-    fig = plt.figure()
-    a = fig.add_subplot(1,1,1)
+    a = axis
+    if a == None:
+        fig = plt.figure()
+        a = fig.add_subplot(1,1,1)
 
     gci = None
     cbar = None

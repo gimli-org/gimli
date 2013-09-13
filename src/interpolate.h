@@ -55,15 +55,15 @@ DLLEXPORT RVector interpolate(const Mesh & mesh, const RVector & data,
                               const RVector & x, const RVector & y, 
                               const RVector & z, bool verbose = false);
 
-/*! Utility function for interpolation. Interpolate all exportData from mesh to the querymesh. Point and Cell based. */
+/*! Utility function for interpolation. Interpolate all export data from mesh to the query mesh. Point and Cell based. */
 DLLEXPORT void interpolate(const Mesh & mesh, Mesh & qmesh,
                            bool verbose=false);
 
-/*! Utility function for interpolation. Interpolate the z-koordinate from mesh to the z-koordinate of the query mesh qmesh.*/
+/*! Utility function for interpolation. Interpolate the z-coordinate from mesh to the z-coordinate of the query mesh qmesh.*/
 DLLEXPORT void interpolateSurface(const Mesh & mesh, Mesh & qmesh, 
                                   bool verbose=false);
 
-/*! Utility function. Convert cell data to point data with the corrsponding the cell interpolation function */
+/*! Utility function. Convert cell data to point data with the corresponding the cell interpolation function */
 DLLEXPORT RVector cellDataToPointData(const Mesh & mesh,
                                       const RVector & cellData);
 
