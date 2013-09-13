@@ -50,7 +50,7 @@ grid = g.createGrid(x=np.linspace(-1.0, 1.0, 10), y=np.linspace(-1.0, 1.0, 10))
 #material?
 
 u = solvePoisson(grid, f=1.,
-                 uBoundary=[grid.findBoundaryByMarker(1), 0.0],
+                 uBoundary=[grid.findBoundaryByMarker(1,5), 0.0],
                  verbose=True)
 
 """
@@ -73,7 +73,7 @@ drawMesh(ax, grid)
 gridp2 = grid.createP2()
 
 up = solvePoisson(gridp2, f=1.,
-                  uBoundary=[gridp2.findBoundaryByMarker(1), 0.0],
+                  uBoundary=[gridp2.findBoundaryByMarker(1,5), 0.0],
                   verbose=True)
 
 ax = showMesh(gridp2, data=up, filled=True, showLater=True,
@@ -87,7 +87,6 @@ drawMesh(ax, gridp2)
     :scale: 50
     
 """
-
 
 xp = np.linspace(-1.0, 1.0, 100)
 

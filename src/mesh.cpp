@@ -1410,7 +1410,12 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType){
                     nodes[2] = & node(this->nodeCount() - 1);
                     nodes[1] = & node(this->nodeCount() - 1 - x.size());
                     nodes[0] = & node(this->nodeCount() - 2 - x.size());
+
                     this->createCell(nodes, marker);
+                   
+//                     this->createTriangle(*nodes[1], *nodes[2], *nodes[3], marker);
+//                     this->createTriangle(*nodes[0], *nodes[1], *nodes[3], marker);
+                    
                 }
             }
             if (markerType == 1) marker = 0;
@@ -1419,7 +1424,15 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType){
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
-                boundary(i).setMarker(1);
+                //Top
+                if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(1);
+                // Bottom
+                else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(3);
+                // Left
+                else if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(2);
+                // Right
+                else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(4);
+//                 boundary(i).setMarker(1);
             }
         }
 

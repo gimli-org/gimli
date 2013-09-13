@@ -162,11 +162,11 @@ public:
     void createGrid(const RVector & x) { create1DGrid(x); }
 
     /*! Create two dimensional grid. Boundary on the domain border will get marker = 1 .*/
-    void createGrid(const RVector & x, const RVector & y, int markerType = 0) {
+    void createGrid(const RVector & x, const RVector & y, int markerType=0) {
         create2DGrid(x, y, markerType);
     }
     /*! Create three dimensional grid. Boundary on the domain border will get marker = 1 .*/
-    void createGrid(const RVector & x, const RVector & y, const RVector & z, int markerType = 0){
+    void createGrid(const RVector & x, const RVector & y, const RVector & z, int markerType=0){
         create3DGrid(x, y, z, markerType);
     }
 

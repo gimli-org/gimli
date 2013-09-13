@@ -193,9 +193,11 @@ def createMeshPatches(axes, mesh, **kwarg):
 
 def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
                     , dx = 1, nLevs = 20, title = None, verbose = False, maskZero = False):
-    ''
-    ' Draw the potential that is associated to a mesh '
-    ''
+    """
+        Give drawField a try .. should be better.
+        Draw the potential that is associated to a mesh
+    
+    """
     
     swatch = g.Stopwatch(True)
     if (verbose):
@@ -258,12 +260,12 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
     return gci
 #def drawMeshPotential(...)
 
-def drawField(axes, mesh, data=None, filled=False, *args, **kwargs):
+def drawField(axes, mesh, data=None, filled=False, omitLines=False, 
+              *args, **kwargs):
     """
     What is this?
-    only for triangle meshes currently
+    only for triangle/quadrangle meshes currently
     """
-    print kwargs
     import matplotlib.tri as tri
 
     x = np.zeros(mesh.nodeCount())
@@ -313,7 +315,8 @@ def drawField(axes, mesh, data=None, filled=False, *args, **kwargs):
     else:
         cols = ['0.5']
         
-    axes.tricontour(x, y, triangles, data, colors=cols, *args, **kwargs)
+    if not omitLines:        
+        axes.tricontour(x, y, triangles, data, colors=cols, *args, **kwargs)
 
     return gci
 # def drawField(...)
@@ -333,7 +336,8 @@ def drawStreamCircular(a, mesh, u, pos, rad, nLines = 20, step = 0.1, showStartP
 #def drawStreamCircular(...)
 
 
-def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01, showStartPos = True, color = 'black'):
+def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01,
+                     showStartPos = True, color = 'black'):
     ''
     '  draw nLines streamlines for u linear from start to end '
     ''
@@ -347,6 +351,34 @@ def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01, showStart
             a.plot([s[0], s[0]], [s[1], s[1]], color = 'blue', linewidth = 2, linestyle = 'solid')
 
 #def drawStreamLinear(...)
+
+def drawStreamLines(a, mesh, u, nx=25, ny=25, *args, **kwargs):
+    """
+        Draw streamlines for the gradients of field values u on mesh.
+        The matplotlib internal streamplot need equidistant space value so we 
+        interpolate first on a grid defined by nx and ny values. 
+        Additionally arguments are piped to streamplot.
+    """
+        
+    X,Y = np.meshgrid(np.linspace(mesh.xmin(), mesh.xmax(), nx),
+                      np.linspace(mesh.ymin(), mesh.ymax(), ny))
+
+    U = X.copy()
+    V = X.copy()
+    
+    for i, row in enumerate(X):
+        for j, x in enumerate(row):
+            p = [X[i, j], Y[i, j]]
+            gr = [0.0, 0.0]
+            c = mesh.findCell(p)
+            if c:
+                gr = c.grad(p, u)    
+                    
+            U[i, j] = -gr[0]
+            V[i, j] = -gr[1]
+
+    a.streamplot(X, Y, U, V, *args, **kwargs)
+#def drawStreamlines(... )
 
 def drawSensors(axes, sensors, diam = None):
     ''

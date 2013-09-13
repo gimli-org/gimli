@@ -190,7 +190,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     else:
         cbarLevels = createLinLevs(cMin, cMax, nLevs)
 
-    print cbarLevels
+    #print cbarLevels
     cbarLevelsString = []
     for i in cbarLevels:
         if abs(i) == 0.0:
