@@ -5,9 +5,50 @@ import pygimli as g
 from pygimli.utils import unique
 import numpy as np
 
-def assembleForceVector(mesh, vals, scale=1., userData=None):
+
+def parseArgToArray(arg, ndof, mesh, userData=None):
+    """
+        What is this
+    """
+  
+    if type(arg) == float or type(arg) == int:
+        return g.RVector(ndof, float(arg))
+    
+    elif hasattr(arg, '__len__'):
+        if len(arg) == ndof:
+            return arg;
+        raise Exception("Array 'arg' has the wrong size: " + 
+                        len(arg) + " != " +  dof)
+    elif hasattr(arg, '__call__'):
+        ret = g.RVector(ndof, 0.0)
+        
+        if ndof == mesh.nodeCount():
+            for n in mesh.nodes():
+                if userData:
+                    ret[n.id()] = arg(n.pos(), userData)
+                else:
+                    ret[n.id()] = arg(n.pos())
+        elif ndof == mesh.cellCount():
+            for c in mesh.cells():
+                if userData:
+                    ret[c.id()] = arg(c, userData)
+                else:
+                    ret[c.id()] = arg(c)
+        else:
+            raise Exception("Cannot parse callable argument " + str(ndof) + 
+                            " nodes: " + str(mesh.nodeCount()) + 
+                            " cells: " + str(mesh.cellCount()))
+            
+        return ret
+    raise Exception("Cannot parse argument type " + str(type(arg)))
+#def parseArgToArray(...)
+
+    
+def assembleForceVector(mesh, vals, userData=None):
     rhs = g.RVector(mesh.nodeCount(), 0)
     
+    if vals == 0.:
+        return rhs
     b_l = g.DElementMatrix()
     
     for c in mesh.cells():
@@ -20,7 +61,7 @@ def assembleForceVector(mesh, vals, scale=1., userData=None):
             b_l.u(c)
             
             for i, idx in enumerate(b_l.idx()):
-                rhs[idx] += b_l.row(0)[i] * vals * scale
+                rhs[idx] += b_l.row(0)[i] * vals
             
     return rhs
 # def assembleForceVector()
@@ -236,12 +277,26 @@ def createMassMatrix(mesh, b):
     
     return B
 
-def solvePoisson(mesh, a=1.0, b=0.0, f=1.0, times=None, userData=None,
+    
+
+def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                  verbose=False, *args, **kwargs):
     """
         TODO
     Parameters
     ----------
+        a       : value|array|callable(cell, userData)
+        b       : value|array|callable(cell, userData)
+        u0      : value|array|callable(pos, userData)
+        f       : value|array|callable(??????)
+        theta   : float
+            heat equation is stable for 0.5 <= theta <= 1.0
+            theta = 1, implicit Euler
+            theta = 0.5, Crank-Nicolsen, maybe instable 
+            theta = 0, explicit Euler, maybe stable for dT near h 
+            if unsure choose 0.5+epsilon, this may be stable 
+        progress : bool
+    
     
     """
     if verbose:
@@ -252,28 +307,14 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=1.0, times=None, userData=None,
     swatch = g.Stopwatch(True)
     
     # check for material parameter
-    if type(a) == float:
-        a = g.RVector(mesh.cellCount(), a)
-    if type(a) == int:
-        a = g.RVector(mesh.cellCount(), float(a))
-    elif len(a) != mesh.cellCount():
-        raise Exception("Material array 'a' has the wrong size: " + 
-                        len(a) + " != " +  mesh.cellCount())
-    
-    # check for material parameter
-    if type(b) == float:
-        b = g.RVector(mesh.cellCount(), b)
-    if type(b) == int:
-        b = g.RVector(mesh.cellCount(), float(b))
-    elif len(b) != mesh.cellCount():
-        raise Exception("Diffusion parameter array 'b' has the wrong size: " + 
-                        len(b) + " != " +  mesh.cellCount())
+    a = parseArgToArray(a, mesh.cellCount(), mesh, userData)
+    b = parseArgToArray(b, mesh.cellCount(), mesh, userData)
         
     # assemble the stiffness matrix
     A = createStiffnessMatrix(mesh, a)
-    B = createMassMatrix(mesh, b)
+    M = createMassMatrix(mesh, b)
         
-    S = A + B
+    S = A + M
     
     if times == None:
     
@@ -310,24 +351,30 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=1.0, times=None, userData=None,
         return u
         
     else:
-        ################## better solve this with recursion
+        M = createMassMatrix(mesh, g.RVector(mesh.cellCount(), 1.0))
+
+        rhs = np.zeros((len(times), dof))
+        rhs[:] = assembleForceVector(mesh, f) # this is slow: optimize
+        
         U = np.zeros((len(times), dof))
         #init state
         u = g.RVector(dof, 0.0)
         
         if 'u0' in kwargs:
-            U[0,:] = kwargs['u0']
-        
-        
-        for i in range(1, len(times)):
-            dt = times[i] - times[i - 1]
-            rhs = assembleForceVector(mesh, f, dt)
-
-            # previous timestep
-            #print "i: ", i, dt, U[i-1]
-            b = rhs + B * U[i - 1]
+            U[0, :] = parseArgToArray(kwargs['u0'], dof, mesh, userData)
             
-            #S = A * dt + B
+        theta = 1.0
+        if 'theta' in kwargs:
+             theta = float(kwargs['theta'])
+             
+        for i in range(1, len(times)):
+            swatch.reset()
+            
+            dt = times[i] - times[i - 1]
+            
+            # previous timestep
+            #print "i: ", i, dt, U[i - 1]
+            
             if 'duBoundary' in kwargs:
                 # aufschreiben und checken ob neumann auf A oder auf S mit skaliertem val*dt angewendet wird
                 A = createStiffnessMatrix(mesh, a)
@@ -335,7 +382,13 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=1.0, times=None, userData=None,
                                            assembleNeumannBC,
                                            time=times[i],
                                            verbose=verbose)
-            S = A * dt + B
+
+            
+            b = (M + A * (dt*(theta - 1.0))) * U[i - 1] + \
+                rhs[i - 1] * (dt*(1.0 - theta)) + \
+                rhs[i] * dt * theta
+            
+            S = M + A * dt * theta
                 
             if 'uBoundary' in kwargs:
                 assembleBoundaryConditions(mesh, S, b, kwargs['uBoundary'], 
@@ -344,6 +397,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=1.0, times=None, userData=None,
                                            verbose=verbose)
                 
             #u = S/b
+            t_prep = swatch.duration(True)
             solver = g.LinSolver(S, verbose)
             solver.solve(b, u)
             
@@ -351,6 +405,11 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=1.0, times=None, userData=None,
                 kwargs['plotTimeStep'](u, times[i])
                     
             U[i,:] = np.asarray(u)
-    
+
+            if 'progress' in kwargs:
+                if kwargs['progress']:
+                    print("\t" + str(i) +"/" + str(len(times)-1) + 
+                          ": " + str(t_prep) +"/" + str(swatch.duration()))
+                    
         return U
 # def solvePoisson(..):

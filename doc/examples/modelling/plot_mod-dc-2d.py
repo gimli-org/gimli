@@ -14,7 +14,6 @@ Let us start with a mathematical formulation ...
 Fourier-Cosine-Transform
 
 .. math::
-
     \nabla\cdot( \sigma \cdot \nabla u ) & = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
 
@@ -79,7 +78,7 @@ Right hand side entries will be shape functions(pos)
 
 """
 
-def sourceTerm(cell, f, userData):
+def pointSource(cell, f, userData):
     sourcePos = userData['sourcePos']
     
     if cell.shape().isInside(sourcePos):
@@ -90,6 +89,7 @@ def sourceTerm(cell, f, userData):
 """
 
 grid = g.createGrid(x=np.linspace(-10.0, 10.0, 50), y=np.linspace(-15.0, .0, 50))
+
 #grid = grid.createH2()
 grid = grid.createP2()
 
@@ -104,12 +104,12 @@ neumannBC = [[2, mixedBC],
 
 """
 k = 1e-3
-u = solvePoisson(grid, a=1, b=k * k, f=sourceTerm, 
+u = solvePoisson(grid, a=1, b=k * k, f=pointSource,
                  duBoundary=neumannBC,
                  userData={'sourcePos': sourcePosA, 'k': k},
                  verbose=True)
 
-u -= solvePoisson(grid, a=1, b=k * k, f=sourceTerm, 
+u -= solvePoisson(grid, a=1, b=k * k, f=pointSource, 
                   duBoundary=neumannBC,
                   userData={'sourcePos': sourcePosB, 'k': k},
                   verbose=True)
