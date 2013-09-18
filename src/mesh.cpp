@@ -1373,7 +1373,8 @@ void Mesh::create1DGrid(const RVector & x){
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
-                boundary(i).setMarker(1);
+                if (boundary(i).node(0).pos()[0] == x[0]) boundary(i).setMarker(1);
+                else if (boundary(i).node(0).pos()[0] == x[x.size()-1]) boundary(i).setMarker(2);
             }
         }
 
