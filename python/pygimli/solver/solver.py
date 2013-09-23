@@ -11,10 +11,12 @@ def parseArgToArray(arg, ndof, mesh, userData=None):
         What is this
     """
   
-    if type(arg) == float or type(arg) == int:
+    try:
         return g.RVector(ndof, float(arg))
+    except:
+        pass
     
-    elif hasattr(arg, '__len__'):
+    if hasattr(arg, '__len__'):
         if len(arg) == ndof:
             return arg;
         raise Exception("Array 'arg' has the wrong size: " + 

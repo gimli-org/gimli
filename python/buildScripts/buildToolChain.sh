@@ -126,7 +126,8 @@ installPYGCCXML(){
     echo "install pygccxml"
     pushd $prefix
         echo "getting sources ..."
-        svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r $WORKING_PYGCC_REV pygccxml
+        svn checkout svn://svn.code.sf.net/p/pygccxml/svn/pygccxml_dev pygccxml
+        #svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r $WORKING_PYGCC_REV pygccxml
         pushd pygccxml
             python setup.py build
             #python setup.py install
@@ -138,7 +139,8 @@ installPYPLUSPLUS(){
     echo "install pyplusplus"
     pushd $prefix
         echo "getting sources ..."
-        svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r $WORKING_PYGCC_REV pyplusplus
+        svn checkout svn://svn.code.sf.net/p/pygccxml/svn/pyplusplus_dev pyplusplus
+        #svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r $WORKING_PYGCC_REV pyplusplus
         pushd pyplusplus
             python setup.py build
             #python setup.py install
@@ -146,7 +148,7 @@ installPYPLUSPLUS(){
     popd
 }
 
-installGCCXML
+#installGCCXML
 installPYGCCXML
 installPYPLUSPLUS
 #fixGCCXML
