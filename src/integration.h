@@ -31,49 +31,49 @@ public:
     friend class Singleton< IntegrationRules >;
     
     /*! Return Gauss-Legendre quadrature point upto order <10. */
-    inline const std::vector < RVector3 > & gauAbscissa( uint order ) const { return gauAbscissa_[ order ]; }
+    inline const std::vector < RVector3 > & gauAbscissa(uint order) const { return gauAbscissa_[order]; }
     
     /*! Return Gauss-Legendre quadrature weights upto order <10. */
-    inline const RVector & gauWeights( uint order ) const { return gauWeights_[ order ]; }
+    inline const RVector & gauWeights(uint order) const { return gauWeights_[order]; }
 
     /*!
      * Generic quadrature positions for a triangle based on Gauss-Legendre quadrature
      H. T. RATHOD1*, K. V. NAGARAJA2, B. VENKATESUDU3 AND N. L. RAMESH4. Gauss Legendre quadrature over a triangle.
      J. Indian Inst. Sci., Sept.-Oct. 2004, 84, 183-188
     */
-    inline const std::vector < RVector3 > & triGLAbscissa( uint order ) const { return triGLAbscissa_[ order ]; }
+    inline const std::vector < RVector3 > & triGLAbscissa(uint order) const { return triGLAbscissa_[order]; }
     /*!
      * Generic quadrature weights for a triangle based on Gauss-Legendre quadrature
      H.T. RATHOD, K. V. NAGARAJA, B. VENKATESUDU AND N. L. RAMESH. Gauss Legendre quadrature over a triangle.
      J. Indian Inst. Sci., Sept.-Oct. 2004, 84, 183-188
     */
-    inline const RVector & triGLWeights( uint order ) const { return triGLWeights_[ order ]; }
+    inline const RVector & triGLWeights(uint order) const { return triGLWeights_[order]; }
 
-    inline const std::vector < RVector3 > & edgAbscissa( uint order ) const { return edgAbscissa_[ order ]; }
-    inline const RVector & edgWeights( uint order ) const { return edgWeights_[ order ]; }
+    inline const std::vector < RVector3 > & edgAbscissa(uint order) const { return edgAbscissa_[order]; }
+    inline const RVector & edgWeights(uint order) const { return edgWeights_[order]; }
 
-    inline const std::vector < RVector3 > & triAbscissa( uint order ) const { return triAbscissa_[ order ]; }
-    inline const RVector & triWeights( uint order ) const { return triWeights_[ order ]; }
+    inline const std::vector < RVector3 > & triAbscissa(uint order) const { return triAbscissa_[order]; }
+    inline const RVector & triWeights(uint order) const { return triWeights_[order]; }
 
-    inline const std::vector < RVector3 > & tetAbscissa( uint order ) const { return tetAbscissa_[ order ]; }
-    inline const RVector & tetWeights( uint order ) const { return tetWeights_[ order ]; }
+    inline const std::vector < RVector3 > & tetAbscissa(uint order) const { return tetAbscissa_[order]; }
+    inline const RVector & tetWeights(uint order) const { return tetWeights_[order]; }
 
-    inline const std::vector < RVector3 > & quaAbscissa( uint order ) const { return quaAbscissa_[ order ]; }
-    inline const RVector & quaWeights( uint order ) const { return quaWeights_[ order ]; }
+    inline const std::vector < RVector3 > & quaAbscissa(uint order) const { return quaAbscissa_[order]; }
+    inline const RVector & quaWeights(uint order) const { return quaWeights_[order]; }
 
-    inline const std::vector < RVector3 > & hexAbscissa( uint order ) const { return hexAbscissa_[ order ]; }
-    inline const RVector & hexWeights( uint order ) const { return hexWeights_[ order ]; }
+    inline const std::vector < RVector3 > & hexAbscissa(uint order) const { return hexAbscissa_[order]; }
+    inline const RVector & hexWeights(uint order) const { return hexWeights_[order]; }
 
-    inline const std::vector < RVector3 > & priAbscissa( uint order ) const { return priAbscissa_[ order ]; }
-    inline const RVector & priWeights( uint order ) const { return priWeights_[ order ]; }
+    inline const std::vector < RVector3 > & priAbscissa(uint order) const { return priAbscissa_[order]; }
+    inline const RVector & priWeights(uint order) const { return priWeights_[order]; }
     /*! 
      * Return Gauss-Legendre quadrature positions for a given shape of the \ref MeshEntity upto order 10
      */
-    const std::vector < RVector3 > & abscissa( const Shape & shape, uint order ) const;
+    const std::vector < RVector3 > & abscissa(const Shape & shape, uint order) const;
     /*!
      * Return Gauss-Legendre quadrature weights for a given shape of the \ref MeshEntity upto order 10
      */
-    const RVector & weights( const Shape & shape, uint order ) const;
+    const RVector & weights(const Shape & shape, uint order) const;
 
 private:    
     /*! Default constructor */

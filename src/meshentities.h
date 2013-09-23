@@ -58,8 +58,11 @@ public:
     std::set< Node * > * c_;
 };
 
-/*! Collect all common \ref Node's for a container of MeshEntities, e.g., commonNodes(std::list< Cell > & cellList), returns all common nodes that are associated to each cell at the cellList. */
-template < class ContainerOfMeshEntities > std::set< Node * > commonNodes(const ContainerOfMeshEntities & c){
+/*! Collect all common \ref Node's for a container of MeshEntities, e.g.,
+ * commonNodes(std::list< Cell > & cellList), returns all common nodes that are
+ * associated to each cell at the cellList. */
+template < class ContainerOfMeshEntities > 
+std::set< Node * > commonNodes(const ContainerOfMeshEntities & c){
     std::set< Node * > commons;
 
     CollectNodeFunctor gc(commons);
@@ -195,6 +198,7 @@ public:
     virtual uint rtti() const { return MESH_CELL_RTTI; }
     virtual uint parentType() const { return MESH_CELL_RTTI; }
     virtual uint neighbourCellCount() const { return 0; }
+    inline uint boundaryCount() const { return neighbourCellCount(); }
 
     void cleanNeighbourInfos();
 
@@ -280,10 +284,10 @@ public:
     /*! return these coordinates manual until boundary coordinate transformation is done. */
     virtual RVector3 rst(uint i) const;
     
-    inline const Cell & leftCell() const { return *leftCell_; }
+    inline Cell & leftCell() const { return *leftCell_; }
     inline Cell * leftCell() { return leftCell_; }
 
-    inline const Cell & rightCell() const { return *rightCell_; }
+    inline Cell & rightCell() const { return *rightCell_; }
     inline Cell * rightCell() { return rightCell_; }
 
     inline void setLeftCell(Cell * cell) { leftCell_  = cell; }

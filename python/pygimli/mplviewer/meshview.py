@@ -113,12 +113,14 @@ def drawMeshBoundaries(axes, mesh, fitView = True):
     ' Draw all mesh boundaries '
     ''
     if not mesh:
-        print "drawMeshBoundaries(axes, mesh): invalid mesh"
-        return
-
+        raise Exception("drawMeshBoundaries(axes, mesh): invalid mesh")
+        
+    if not mesh.dimension() == 2:
+        raise Exception("No 2d mesh: dim = ", mesh.dimension())
+    
     if mesh.nodeCount() < 2:
-        print "drawMeshBoundaries(axes, mesh): to few nodes"
-        return
+        raise Exception("drawMeshBoundaries(axes, mesh): to few nodes", mesh.nodeCount())
+        
 
     if fitView:
         axes.set_xlim(mesh.xmin() - 0.05, mesh.xmax() + 0.05)
