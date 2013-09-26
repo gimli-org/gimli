@@ -75,6 +75,11 @@ public:
      */
     const RVector & weights(const Shape & shape, uint order) const;
 
+    /*! Set whether triangle integration use Gauss Legendre polynomials (up to order 9) or 
+     * native triangle coordinates (up to order 5). Default is true. */
+    inline void setTriUseGaussLegendre(bool use){ triUseGaussLegendre_ = use;}
+    inline bool triUseGaussLegendre() const { return triUseGaussLegendre_; }
+        
 private:    
     /*! Default constructor */
     IntegrationRules();
@@ -94,6 +99,8 @@ protected:
     void initHex_();
     void initPri_();
 
+    bool triUseGaussLegendre_;
+    
     std::vector < std::vector < RVector3 > > gauAbscissa_;
     std::vector < RVector > gauWeights_;
 

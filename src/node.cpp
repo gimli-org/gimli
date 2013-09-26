@@ -25,7 +25,7 @@
 
 namespace GIMLI{
 
-std::ostream & operator << ( std::ostream & str, const GIMLI::Node & n ){
+std::ostream & operator << (std::ostream & str, const GIMLI::Node & n){
     str << "Node: "<< &n << " id: " << n.id() << "\t" << n.pos();
     str << " marker: " << n.marker();
     return str;
@@ -36,30 +36,30 @@ Node::Node(){
     marker_ = 0;
 }
 
-Node::Node( double x, double y, double z )
-: pos_( RVector3( x, y, z ) ) {
+Node::Node(double x, double y, double z)
+: pos_(RVector3(x, y, z)) {
     init_();
 }
 
-Node::Node( const RVector3 & pos )
-: pos_( pos ) {
+Node::Node(const RVector3 & pos)
+: pos_(pos) {
     init_();
 }
 
-Node::Node( const RVector3 & pos, int marker, int id )
-: pos_( pos ) {
+Node::Node(const RVector3 & pos, int marker, int id)
+: pos_(pos) {
     init_();
-    setMarker( marker );
-    setId( id );
+    setMarker(marker);
+    setId(id);
 }
 
-Node::Node( const Node & node ){
-    copy_( node );
+Node::Node(const Node & node){
+    copy_(node);
 }
 
-Node & Node::operator = ( const Node & node ){
-    if ( this != &node ){
-        copy_( node );
+Node & Node::operator = (const Node & node){
+    if (this != &node){
+        copy_(node);
     }
     return *this;
 }
@@ -68,36 +68,36 @@ Node::~Node(){
     //std::cout << " delete Node " << pos_ << " " << id_ << " at " << this << std::endl;
 }
 
-void Node::changed_( ){
-    for ( std::set < Boundary * >::iterator it = boundSet_.begin(); it!= boundSet_.end(); it ++ ){
+void Node::changed_(){
+    for (std::set < Boundary * >::iterator it = boundSet_.begin(); it!= boundSet_.end(); it ++){
         (*it)->shape().changed();        
     }
-    for ( std::set < Cell * >::iterator it = cellSet_.begin(); it!= cellSet_.end(); it ++ ){
+    for (std::set < Cell * >::iterator it = cellSet_.begin(); it!= cellSet_.end(); it ++){
         (*it)->shape().changed();        
     }
 }
 
-void Node::copy_( const Node & node ){
+void Node::copy_(const Node & node){
     //std::cout << "copy node from "  << & node << " into " << this << std::endl;
     pos_    = node.pos();
     marker_ = node.marker();
-    setId( node.id() );
+    setId(node.id());
 }
 
 void Node::init_(){
-    setId( -1 );
+    setId(-1);
 }
 
-void Node::smooth( uint function ){
-    std::set< Node * > common( commonNodes( this->boundSet() ) );
+void Node::smooth(uint function){
+    std::set< Node * > common(commonNodes(this->boundSet()));
     //** Achtung konkave gebiete koennen entstehen wenn zu festen knoten benachbarte gesmooth werden
     //** aufzeichen -> pruefen -> fixen.
     //** was passiert bei node at interface or boundary
-    RVector3 c( 0.0, 0.0, 0.0 );
-    for ( std::set< Node * >::iterator it = common.begin(); it != common.end(); it ++){
+    RVector3 c(0.0, 0.0, 0.0);
+    for (std::set< Node * >::iterator it = common.begin(); it != common.end(); it ++){
         c += (*it)->pos();
     }
-    this->setPos( c / (double)common.size() );
+    this->setPos(c / (double)common.size());
 }
 
 } // namespace GIMLI{

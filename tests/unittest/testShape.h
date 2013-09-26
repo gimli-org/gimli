@@ -10,6 +10,7 @@
 
 class ShapeTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(ShapeTest);
+    CPPUNIT_TEST(testNorm);
     CPPUNIT_TEST(testShapeFunctions);
     CPPUNIT_TEST(testEquality);
     CPPUNIT_TEST(testRSTXYZ);
@@ -20,6 +21,7 @@ class ShapeTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testInterpolate);
     CPPUNIT_TEST(testSplit);
     CPPUNIT_TEST(testGridGen);
+    
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -129,7 +131,7 @@ public:
         CPPUNIT_ASSERT(::fabs(tri.pot(GIMLI::RVector3(0.0, 0.5), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri.pot(GIMLI::RVector3(0.5, 0.0), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri.pot(GIMLI::RVector3(0.5, 0.5), u) - 0.0) < TOLERANCE);
-        CPPUNIT_ASSERT(::fabs(tri.grad(GIMLI::RVector3(0, 0), u).dist(GIMLI::RVector3(-1.0, -1.0))) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tri.grad(GIMLI::RVector3(0.0, 0.0), u).dist(GIMLI::RVector3(-1.0, -1.0))) < TOLERANCE);
 
         GIMLI::Triangle tri2(*n1_, *n3_, *n4_);
         CPPUNIT_ASSERT(::fabs(tri2.shape().rst(tri2.center())[ 0 ] - 1.0/3.0) < TOLERANCE);
@@ -137,7 +139,7 @@ public:
         CPPUNIT_ASSERT(::fabs(tri2.pot(GIMLI::RVector3(0.0, 0.5), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri2.pot(GIMLI::RVector3(1.0, 1.0), u) - 0.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri2.pot(GIMLI::RVector3(0.5, 0.5), u) - 0.5) < TOLERANCE);
-        CPPUNIT_ASSERT(::fabs(tri2.grad(GIMLI::RVector3(0, 0), u).dist(GIMLI::RVector3(0.0, -1.0))) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tri2.grad(GIMLI::RVector3(0.0, 0.0), u).dist(GIMLI::RVector3(0.0, -1.0))) < TOLERANCE);
 
         GIMLI::Tetrahedron tet(*n1_, *n2_, *n4_, *n5_);
         CPPUNIT_ASSERT(::fabs(tet.shape().rst(tet.center())[ 0 ] - 0.25) < TOLERANCE);
@@ -147,7 +149,7 @@ public:
         CPPUNIT_ASSERT(::fabs(tet.pot(GIMLI::RVector3(0.5, 0.5), u) - 0.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tet.pot(GIMLI::RVector3(0.5, 0.0), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tet.pot(GIMLI::RVector3(0.0, 0.0, 0.5), u) - 0.5) < TOLERANCE);
-        CPPUNIT_ASSERT(::fabs(tet.grad(GIMLI::RVector3(0, 0), u).dist(GIMLI::RVector3(-1.0, -1.0, -1.0))) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tet.grad(GIMLI::RVector3(0.0, 0.0), u).dist(GIMLI::RVector3(-1.0, -1.0, -1.0))) < TOLERANCE);
     }
 
     void testSplit(){
@@ -234,6 +236,106 @@ public:
             CPPUNIT_ASSERT(det(inv(mesh1.cell(i).shape().createJacobian())) > 1e-12);
         }
         
+    }
+    
+    template < class cell > void checkCellBoundNorms_(cell & c){
+        for (Index i = 0; i < c.boundaryCount(); i ++ ){
+            
+            std::vector < Node * > nodes; nodes = c.boundaryNodes(i);
+//             std::cout << i << " " << c << " " << nodes.size() << std::endl;
+            
+            GIMLI::Boundary *b;
+            
+            switch (nodes.size()){
+                case 2:
+                    b = new Edge(nodes); break;
+                case 3:
+                    b = new TriangleFace(nodes); break;
+                case 4:
+                    b = new QuadrangleFace(nodes); break;
+            }
+            
+//             std::cout << *b << std::endl;
+//             std::cout << c.center() << " " << b->center() << std::endl;
+//             std::cout << b->norm() << std::endl;
+//             std::cout << (c.center()-b->center()).abs() << " (-)" 
+//                       << (c.center()-(b->center() - b->norm())).abs() << " (+)"
+//                       << (c.center()-(b->center() + b->norm())).abs() << std::endl;
+
+            CPPUNIT_ASSERT(b->normShowsOutside(c));
+            
+            delete b;
+        }
+    }
+    
+    void testNorm(){
+        Mesh mesh(3);
+        Node *n0 = mesh.createNode(0.0, 0.0, 0.0 );
+        Node *n1 = mesh.createNode(2.0, 0.0, 0.0 );
+        Node *n2 = mesh.createNode(2.0, 2.0, 0.0 );
+        Node *n3 = mesh.createNode(0.0, 2.0, 0.0 );
+        
+        Node *n4 = mesh.createNode(0.0, 0.0, 2.0 );
+        Node *n5 = mesh.createNode(2.0, 0.0, 2.0 );
+        Node *n6 = mesh.createNode(2.0, 2.0, 2.0 );
+        Node *n7 = mesh.createNode(0.0, 2.0, 2.0 );
+        
+        Boundary * qb = mesh.createQuadrangleFace(*n0, *n1, *n2, *n3);
+        CPPUNIT_ASSERT(qb->norm() == RVector3(0.0, 0.0, 1.0));
+                
+        Boundary * qt = mesh.createQuadrangleFace(*n7, *n6, *n5, *n4);
+        CPPUNIT_ASSERT(qt->norm() == RVector3(0.0, 0.0, -1.0));
+        
+        //### TRIANGLE
+        std::vector < Node * > nodes;
+        for (Index i = 0; i < 3; i ++)
+            nodes.push_back(new Node(TriCoordinates[i][0], 
+                                     TriCoordinates[i][1], 
+                                     TriCoordinates[i][2]));
+        GIMLI::Triangle tri(nodes);
+        checkCellBoundNorms_(tri);
+        
+        //### QUADRANGLE
+        nodes.clear();
+        for (Index i = 0; i < 4; i ++)
+            nodes.push_back(new Node(QuadCoordinates[i][0], 
+                                     QuadCoordinates[i][1], 
+                                     QuadCoordinates[i][2]));
+        GIMLI::Quadrangle quad(nodes);
+        checkCellBoundNorms_(quad);
+        
+        
+        //### TETRAHEDRON
+        nodes.clear();
+        for (Index i = 0; i < 4; i ++)
+            nodes.push_back(new Node(TetCoordinates[i][0], 
+                                     TetCoordinates[i][1], 
+                                     TetCoordinates[i][2]));
+        GIMLI::Tetrahedron tet(nodes);
+        checkCellBoundNorms_(tet);
+                    
+        //### HEXAHEDRON
+        nodes.clear();    
+        for (Index i = 0; i < 8; i ++)
+            nodes.push_back(new Node(HexCoordinates[i][0], 
+                                     HexCoordinates[i][1], 
+                                     HexCoordinates[i][2]));
+        
+        GIMLI::Hexahedron hex(nodes);
+        checkCellBoundNorms_(hex);
+        
+        //### TRIPRISM
+        nodes.clear();    
+        for (Index i = 0; i < 6; i ++)
+            nodes.push_back(new Node(PrismCoordinates[i][0], 
+                                     PrismCoordinates[i][1], 
+                                     PrismCoordinates[i][2]));
+        GIMLI::TriPrism prism(nodes);
+        checkCellBoundNorms_(prism);
+        
+//         exit(0);
+        
+                
     }
     
     void tearDown(){

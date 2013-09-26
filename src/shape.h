@@ -46,7 +46,8 @@ template < class Ent > std::vector < PolynomialFunction < double > >
     std::vector < RVector3 > pnts;
     for (Index i = 0; i < ent.nodeCount(); i ++){ pnts.push_back(ent.rst(i)); }
 
-    return createPolynomialShapeFunctions(pnts, ent.dim(), nCoeff, pascale, serendipity, startVector);
+    return createPolynomialShapeFunctions(pnts, ent.dim(), nCoeff, pascale,
+                                          serendipity, startVector);
 }
 
 class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {
@@ -66,7 +67,7 @@ public:
     }
 
     template < class Ent > const std::vector < PolynomialFunction < double > > &
-    deriveShapeFunctions(const Ent & e , uint dim ) const {
+    deriveShapeFunctions(const Ent & e , uint dim) const {
         std::map < uint8, std::vector < std::vector < PolynomialFunction < double > > > >::const_iterator it = dShapeFunctions_.find(e.rtti());
 
         if (it == dShapeFunctions_.end()) {
@@ -386,7 +387,7 @@ public:
     virtual RVector3 rst(uint i) const;
 
     /*! See Shape::xyz2rst. this is a specialized override for speedup. */
-    virtual void xyz2rst(const RVector3 & pos, RVector3 & rst ) const;
+    virtual void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
 
     void setNodes(Node * n0, Node * n1, Node * n2);
 
@@ -479,7 +480,7 @@ public:
     virtual RVector3 rst(uint i) const;
 
     /*! See Shape::xyz2rst. Specialization for speedup */
-    void xyz2rst(const RVector3 & pos, RVector3 & rst ) const;
+    void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
 
     void setNodes(Node * n0, Node * n1, Node * n2, Node * n3);
 

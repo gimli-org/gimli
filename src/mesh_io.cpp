@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -901,6 +901,7 @@ void Mesh::importVTK(const std::string & fbody) {
     std::vector < std::string > row;
     getline(file, commentString_); //** vtk version line
     getline(file, commentString_); //** comment line
+    
     while (!file.eof()){
         row = getRowSubstrings(file);
       //  std::cout << row.size() << std::endl;

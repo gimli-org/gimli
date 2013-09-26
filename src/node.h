@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -43,38 +43,38 @@ public:
     Node();
     
     /*! Construct node from koordinates $x,y,[z]$ with marker = 0 */
-    Node( double x, double y, double z = 0.0 );
+    Node(double x, double y, double z=0.0);
 
     /*! Construct node from RVector3 */
-    Node( const RVector3 & pos );
+    Node(const RVector3 & pos);
 
     /*! Construct node from RVector3 with marker and optional id */
-    Node( const RVector3 & pos, int marker, int id = -1 );
+    Node(const RVector3 & pos, int marker, int id = -1);
 
     /*! Copy constructor */
-    Node( const Node & node );
+    Node(const Node & node);
 
     /*! Assignement operator */
-    Node & operator = ( const Node & node );
+    Node & operator = (const Node & node);
 
     /*! Destruct the node and all containing informations */
     ~Node();
     
     inline uint rtti() const { return MESH_NODE_RTTI; }
 
-    inline void setPos( const RVector3 & pos ) { pos_ = pos; }
+    inline void setPos(const RVector3 & pos) { pos_ = pos; }
 
     inline const RVector3 & pos() const { return pos_; }
 
     inline RVector3 & pos() { return pos_; }
 
-    inline void insertBoundary( Boundary & bound ){ boundSet_.insert( &bound ); }
+    inline void insertBoundary(Boundary & bound){ boundSet_.insert(&bound); }
 
-    inline void eraseBoundary( Boundary & bound ){ boundSet_.erase( &bound ); }
+    inline void eraseBoundary(Boundary & bound){ boundSet_.erase(&bound); }
 
-    inline void insertCell( Cell & cell ){ cellSet_.insert( &cell ); }
+    inline void insertCell(Cell & cell){ cellSet_.insert(&cell); }
 
-    inline void eraseCell( Cell & cell ){ cellSet_.erase( &cell ); }
+    inline void eraseCell(Cell & cell){ cellSet_.erase(&cell); }
 
     const std::set < Boundary * > & boundSet() const { return boundSet_; }
 
@@ -84,11 +84,11 @@ public:
 
     std::set < Cell * > & cellSet() { return cellSet_; }
 
-    inline void scale( const RVector3 & s ) { changed_(); pos_.scale( s ); }
+    inline void scale(const RVector3 & s) { changed_(); pos_.scale(s); }
 
-    inline void translate( const RVector3 & t ) { changed_(); pos_.translate( t ); }
+    inline void translate(const RVector3 & t) { changed_(); pos_.translate(t); }
 
-    inline void rotate( const RVector3 & r ) { changed_(); pos_.rotate( r ); }
+    inline void rotate(const RVector3 & r) { changed_(); pos_.rotate(r); }
 
     inline double x() const { return pos_[ 0 ]; }
 
@@ -96,15 +96,15 @@ public:
 
     inline double z() const { return pos_[ 2 ]; }
 
-    inline double dist( const Node & n ) const { return pos_.dist( n.pos() ); }
+    inline double dist(const Node & n) const { return pos_.dist(n.pos()); }
 
-    void smooth( uint function );
+    void smooth(uint function);
 
 protected:
 
-    void copy_( const Node & node );
+    void copy_(const Node & node);
     
-    void changed_( );
+    void changed_();
 
     void init_();
 
@@ -115,9 +115,9 @@ protected:
 
 }; // class Node
 
-DLLEXPORT std::ostream & operator << ( std::ostream & str, const GIMLI::Node & node );
+DLLEXPORT std::ostream & operator << (std::ostream & str, const GIMLI::Node & node);
 
-inline bool operator == ( const Node & n1, const Node & n2 ) { return n1.pos() == n2.pos(); }
+inline bool operator == (const Node & n1, const Node & n2) { return n1.pos() == n2.pos(); }
 
 } // namespace GIMLI
 

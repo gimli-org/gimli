@@ -56,26 +56,28 @@ Boundary * findBoundary(const Node & n1, const Node & n2, const Node & n3) {
     return findBoundary_(common);
 }
 
-Boundary * findBoundary(const std::vector < Node * > & n) {
-    std::vector < std::set< Boundary * > > bs;
-
+Boundary * findBoundary(const Node & n1, const Node & n2, const Node & n3, 
+                        const Node & n4){
     std::set < Boundary * > common;
+    intersectionSet(common, n1.boundSet(), n2.boundSet(),
+                    n3.boundSet(), n4.boundSet());
+    return findBoundary_(common);
+}
 
-    for (uint i = 0; i < n.size(); i ++) bs.push_back(n[i]->boundSet());
+Boundary * findBoundary(const std::vector < Node * > & n) {
+    if (n.size() == 1) return findBoundary(*n[0]);
+    else if (n.size() == 2) return findBoundary(*n[0], *n[1]);
+    else if (n.size() == 3) return findBoundary(*n[0], *n[1], *n[2]);
+    else if (n.size() == 4) return findBoundary(*n[0], *n[1], *n[2], *n[3]);
+    
+    std::vector < std::set< Boundary * > > bs(n.size());
 
+    for (uint i = 0; i < n.size(); i ++) bs[i] = n[i]->boundSet();
+    
+    std::set < Boundary * > common;
     intersectionSet(common, bs);
 
-
-    if (common.size() == 1) {
-        return *common.begin();
-    } else {
-        if (common.size() > 1){
-            std::cerr << WHERE_AM_I << " pls. check, this should not happen. there is zero ore more then one cell defined." <<
-            common.size() << std::endl;
-            return *common.begin();
-        }
-    }
-    return NULL;
+    return findBoundary_(common);
 }
 
 Cell * findCommonCell(const std::vector < Node * > & n, bool warn) {
@@ -481,6 +483,13 @@ RVector3 Boundary::rst(uint i) const {
     std::cerr << "need local coordinate function implementation for meshEntity " << rtti() << std::endl;
     THROW_TO_IMPL
     return RVector3(0.0, 0.0, 0.0);
+}
+
+bool Boundary::normShowsOutside(const Cell & cell){
+    RVector3 n(this->norm());
+    RVector3 bc(this->center());
+    RVector3 cc(cell.center());
+    return (cc-(bc+n)).abs() > (cc-(bc-n)).abs();
 }
 
 NodeBoundary::NodeBoundary(std::vector < Node * > & nodes) : Boundary(nodes){
@@ -969,7 +978,10 @@ std::vector < Node * > Tetrahedron::boundaryNodes(Index i){
     // 3 -> 0..2..1
 
     std::vector < Node * > nodes(3);
-    for (Index j = 0; j < 3; j ++) nodes[j] = nodeVector_[TetrahedronFacesID[i][j]];
+    for (Index j = 0; j < 3; j ++) {
+        nodes[j] = nodeVector_[TetrahedronFacesID[i][j]];
+//         std::cout << *nodes[j] << std::endl;
+    }
     return nodes;
 }
 

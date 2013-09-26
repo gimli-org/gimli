@@ -81,6 +81,7 @@ void Mesh::copy_(const Mesh & mesh){
     if (mesh.neighboursKnown()){
         this->createNeighbourInfos(true);
     }
+//     std::cout << "COPY mesh " << mesh.cell(0) << " " << cell(0) << std::endl;
 }
 
 Mesh::~Mesh(){
@@ -751,21 +752,22 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                 n.resize(20);
                 for (Index j = 0; j < n.size(); j ++) {
                     n[j] = createRefinementNode_(& this->node(c.node(Hex20NodeSplit[j][0]).id()),
-                                                    & this->node(c.node(Hex20NodeSplit[j][1]).id()),
-                                                    nodeMatrix);
+                                                 & this->node(c.node(Hex20NodeSplit[j][1]).id()),
+                                                 nodeMatrix);
                 }
                 if (h2){
-/*        7-----14------6  \n
+/* 27 new nodes 3 x 9 = 8 nodes + 12 edges + 6 facets + 1 center                     
+          7-----14------6  \n
          /|            /|  \n
         / |           / |  \n
-      15 19   21     13 18 \n
+      15 19  -21-    13 18 \n
       /   |     24  /   |  \n
      /    |        /    |  \n
     4-----12------5  23 |  \n
     | 25  3-----10|-----2  \n
     |    /        |    /   \n
    16   / -22-    17  /    \n
-    | 11     20   |  9     \n
+    | 11    -20-  |  9     \n
     | /           | /      \n
     |/            |/       \n
     0------8------1        \n
@@ -812,8 +814,8 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                 n.resize(15);
                 for (Index j = 0; j < n.size(); j ++) {
                     n[j] = createRefinementNode_(& this->node(c.node(Prism15NodeSplit[j][0]).id()),
-                                                    & this->node(c.node(Prism15NodeSplit[j][1]).id()),
-                                                    nodeMatrix);
+                                                 & this->node(c.node(Prism15NodeSplit[j][1]).id()),
+                                                 nodeMatrix);
                 }
                 if (h2){
 
@@ -920,7 +922,15 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                     this->createTriangleFace(*n[3], *n[4], *n[5], b.marker());
                     break;
                 case MESH_QUADRANGLEFACE_RTTI:
-                    Node *n8 = createRefinementNode_(n[4], n[6], nodeMatrix);
+                    /* 
+                     * 3---6---2
+                     * |   |   |            
+                     * 7---8---5
+                     * |   |   |
+                     * 0---4---1
+                    */
+                    Node *n8 = nodeMatrix[std::make_pair(n[4]->id(), n[6]->id())];
+                    if (!n8) n8 = createRefinementNode_(n[5], n[7], nodeMatrix);
 
                     this->createQuadrangleFace(*n[0], *n[4], *n8, *n[7], b.marker());
                     this->createQuadrangleFace(*n[1], *n[5], *n8, *n[4], b.marker());
@@ -1289,35 +1299,63 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
 // return 1;
 // }
     
+void Mesh::cleanNeighbourInfos(){
+    //std::cout << "Mesh::cleanNeighbourInfos()"<< std::endl;
+    for (uint i = 0; i < cellCount(); i ++){
+        cell(i).cleanNeighbourInfos();
+    }
+    for (uint i = 0; i < boundaryCount(); i ++){
+        boundary(i).setLeftCell(NULL);
+        boundary(i).setRightCell(NULL);
+    }
+}
+
 void Mesh::createNeighbourInfos(bool force){
+//     double med = 0.;
     if (!neighboursKnown_ || force){
         this->cleanNeighbourInfos();
 
+//         Stopwatch sw(true);
+        
         for (uint i = 0; i < cellCount(); i ++){
+            
             createNeighbourInfosCell_(&cell(i));
-        } // for_each cell
+//             med+=sw.duration(true);
+        }
         neighboursKnown_ = true;
-    } // if ! neighboursKnown_
+    }
+    
+//     std::cout << med << " " << med/cellCount() << std::endl;
 }
 
 void Mesh::createNeighbourInfosCell_(Cell *c){
-    uint nBounds = c->neighbourCellCount();
-
-    for (uint j = 0; j < nBounds; j++){
+    
+    for (uint j = 0; j < c->boundaryCount(); j++){
         if (c->neighbourCell(j)) continue;
         
         c->findNeighbourCell(j);
-
         std::vector < Node * > nodes(c->boundaryNodes(j));
 //                 std::cout << findBoundary(nodes) << std::endl;
 
+ 
         Boundary * bound = createBoundary(nodes, 0);
 
+//         Boundary * bound = findBoundary(*nodes[0], *nodes[1], *nodes[2]);
+//         Boundary * bound = findBoundary(nodes);
+//         if (!bound) {
+//             bound = createBoundary_< TriangleFace >(nodes, 0, boundaryCount());
+//         }
+            
         bool cellIsLeft = true;
         if (bound->shape().nodeCount() == 2) {
             cellIsLeft = (c->boundaryNodes(j)[0]->id() == bound->node(0).id());
         } else if (bound->shape().nodeCount() > 2) {
-            cellIsLeft = true;
+            // normvector of boundary shows outside for left cell ... every bound need leftcell
+            if (bound->normShowsOutside(*c)){
+                cellIsLeft = true;
+            } else {
+                cellIsLeft = false;
+            }
         }
 
         if (bound->leftCell() == NULL && cellIsLeft) {
@@ -1338,6 +1376,12 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
             }
         }
                    
+//         if (!bound->leftCell()){
+//             std::cout << *bound << " " << bound->leftCell() << " " << *bound->rightCell() << std::endl;
+//             throwError(1, WHERE + " Ooops, crosscheck -- every boundary need left cell.");
+//         }
+                   
+//         std::cout << bound->id() << " " << bound->leftCell() << " " << bound->rightCell() << std::endl;
             
         //** cross check;
         if (((bound->leftCell() != c) && (bound->rightCell() != c)) || 
@@ -1462,12 +1506,18 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
     int marker = 0;
     if (x.size() > 1 && y.size() > 1 && z.size() > 1){
         for (uint k = 0; k < z.size(); k ++){
+            
             if (k > 0 && markerType == 3) marker++; //** count only increasing z
+            
             for (uint j = 0; j < y.size(); j ++){
+                
                 if (j > 0 && markerType == 2) marker++;  //** count increasing y or yz
                 if (j > 0 && k > 0 && markerType == 23) marker++;  //** count increasing y or yz
+                
                 for (uint i = 0; i < x.size(); i ++){ //**  count increasing x, yz, xz or xyz
+                    
                     this->createNode(x[i], y[j], z[k]);
+                    
                     if (i > 0 && j > 0 && k > 0){
                         if (markerType == 1 || markerType == 12 || markerType == 13 || markerType == 123) marker++; //** increasing y
 
@@ -1780,17 +1830,6 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
         }
         fillEmptyCells(nextVector, background);
     } //** if emptyList.size() > 0
-}
-
-void Mesh::cleanNeighbourInfos(){
-    //std::cout << "Mesh::cleanNeighbourInfos()"<< std::endl;
-    for (uint i = 0; i < cellCount(); i ++){
-        cell(i).cleanNeighbourInfos();
-    }
-    for (uint i = 0; i < boundaryCount(); i ++){
-        boundary(i).setLeftCell(NULL);
-        boundary(i).setRightCell(NULL);
-    }
 }
 
 Mesh & Mesh::scale(const RVector3 & s){

@@ -26,5 +26,6 @@ add_test(unitTest unittest.sh)
 
 add_dependencies(check gimliUnitTest)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/unittest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/gimliUnitTest DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 INSTALL_FILES(${CMAKE_CURRENT_SOURCE_DIR} unittest.sh)

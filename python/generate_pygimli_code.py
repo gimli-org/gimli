@@ -202,7 +202,8 @@ def generate( defined_symbols ):
                                         , 'TriPrismFacesID', 'TriPrimSplit3TetID'
                                         , 'NodeCoordinates','EdgeCoordinates' 
                                         , 'TriCoordinates', 'QuadCoordinates' 
-                                        , 'TetCoordinates', 'HexCoordinates', 'PrismCoordinates', 'PyramidCoordinates' 
+                                        , 'TetCoordinates', 'HexCoordinates'
+                                        , 'PrismCoordinates', 'PyramidCoordinates', 'PyramidFacesID'
                                         , 'Tet10NodeSplit', 'Tet10NodeSplitZienk'  
                                         , 'Hex20NodeSplit', 'Prism15NodeSplit', 'Pyramid13NodeSplit'
                                         ] )
