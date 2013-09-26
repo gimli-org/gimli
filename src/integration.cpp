@@ -28,6 +28,7 @@ namespace GIMLI{
 template <> DLLEXPORT IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
 
 IntegrationRules::IntegrationRules(){
+    triUseGaussLegendre_ = true;
     initGau_();
     initTriGL_();
 
@@ -46,7 +47,9 @@ IntegrationRules::~IntegrationRules(){
 const std::vector < RVector3 > & IntegrationRules::abscissa(const Shape & shape, uint order) const {
     switch(shape.rtti()){
         case MESH_SHAPE_EDGE_RTTI: return edgAbscissa_[order];
-        case MESH_SHAPE_TRIANGLE_RTTI: return triGLAbscissa_[order];
+        case MESH_SHAPE_TRIANGLE_RTTI: 
+             if (triUseGaussLegendre_) return triGLAbscissa_[order]; 
+             else return triAbscissa_[order];
         case MESH_SHAPE_QUADRANGLE_RTTI: return quaAbscissa_[order];
         case MESH_SHAPE_TETRAHEDRON_RTTI: return tetAbscissa_[order];
         case MESH_SHAPE_HEXAHEDRON_RTTI: return hexAbscissa_[order];
@@ -59,7 +62,9 @@ const std::vector < RVector3 > & IntegrationRules::abscissa(const Shape & shape,
 const RVector & IntegrationRules::weights(const Shape & shape, uint order) const {
     switch(shape.rtti()){
         case MESH_SHAPE_EDGE_RTTI: return edgWeights_[order];
-        case MESH_SHAPE_TRIANGLE_RTTI: return triGLWeights_[order];
+        case MESH_SHAPE_TRIANGLE_RTTI:
+            if (triUseGaussLegendre_) return triGLWeights_[order]; 
+            else return triWeights_[order];
         case MESH_SHAPE_QUADRANGLE_RTTI: return quaWeights_[order];
         case MESH_SHAPE_TETRAHEDRON_RTTI: return tetWeights_[order];
         case MESH_SHAPE_HEXAHEDRON_RTTI: return hexWeights_[order];
@@ -199,10 +204,10 @@ void IntegrationRules::initTriGL_(){
         for (uint j = 0; j < i; j ++){
             for (uint k = 0; k < i; k ++){
                 double w = ((1.0 - gauAbscissa_[i][j][0]) / 8.0) * gauWeights_[i][j] * gauWeights_[i][k];
-                double x =   (1.0 + gauAbscissa_[i][j][0]) / 2.0;
+                double x =  (1.0 + gauAbscissa_[i][j][0]) / 2.0;
                 double y = ((1.0 - gauAbscissa_[i][j][0]) * (1.0 + gauAbscissa_[i][k][0])) / 4.0;
 
-                 triGLWeights_.back()[j * i + k] = w;
+                 triGLWeights_.back()[j * i + k] = w * 2.0;
                 triGLAbscissa_.back()[j * i + k] = RVector3(x, y);
             }
         }

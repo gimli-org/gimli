@@ -26,50 +26,50 @@
 namespace GIMLI{
 
 /*! Unified interface. Generate simple grid with nodes at the given positions */
-DLLEXPORT Mesh createGrid( const RVector & x );
+DLLEXPORT Mesh createGrid(const RVector & x);
 
 /*! Unified interface. Generate simple grid with nodes at the given positions */
-DLLEXPORT Mesh createGrid( const RVector & x, const RVector & y );
+DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y);
 
 /*! Unified interface. Generate simple grid with nodes at the given positions */
-DLLEXPORT Mesh createGrid( const RVector & x, const RVector & y, const RVector & z );
+DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, const RVector & z);
 
 
 /*! Generate simple one dimensional mesh with nCells cells with length = 1.0, and nCells + 1 nodes. */
-DLLEXPORT Mesh createMesh1D( uint nCells, uint nClones = 1 );
+DLLEXPORT Mesh createMesh1D(uint nCells, uint nClones = 1);
 
 /*! Generate simple one dimensional mesh with nodes at position in RVector pos. */
-DLLEXPORT Mesh createMesh1D( const std::vector < double > & x );
-DLLEXPORT Mesh createMesh1D( const RVector & x );
+DLLEXPORT Mesh createMesh1D(const std::vector < double > & x);
+DLLEXPORT Mesh createMesh1D(const RVector & x);
 
 /*! Generate 1D block model of thicknesses and properties */
-DLLEXPORT Mesh createMesh1DBlock( uint nLayers, uint nProperties = 1 );
+DLLEXPORT Mesh createMesh1DBlock(uint nLayers, uint nProperties=1);
 
 /*! Generate simple two dimensional mesh with nRows x nCols cells with each length = 1.0 */
-DLLEXPORT Mesh createMesh2D( uint xDim, uint yDim, int markerType = 0 );
+DLLEXPORT Mesh createMesh2D(uint xDim, uint yDim, int markerType=0);
 
 /*! Generate simple two dimensional mesh with nodes at position in RVector x and y. */
-DLLEXPORT Mesh createMesh2D( const RVector & x, const RVector & y, int markerType = 0 );
+DLLEXPORT Mesh createMesh2D(const RVector & x, const RVector & y, int markerType=0);
 
 /*! Generate simple three dimensional mesh with nx x nx x nz cells with each length = 1.0 */
-DLLEXPORT Mesh createMesh3D( uint xDim, uint yDim, uint zDim, int markerType = 0 );
+DLLEXPORT Mesh createMesh3D(uint xDim, uint yDim, uint zDim, int markerType=0);
 
 /*! Generate simple three dimensional mesh with nodes at position in RVector x and y. */
-DLLEXPORT Mesh createMesh3D( const RVector & x, const RVector & y, const RVector & z, int markerType = 0 );
+DLLEXPORT Mesh createMesh3D(const RVector & x, const RVector & y, const RVector & z, int markerType=0);
 
 /*! Add triangle boundary to the mesh. Return false on failors. */
-DLLEXPORT bool addTriangleBoundary( Mesh & mesh, 
-                                    double xBoundary, double yBoundary, int cellMarker, bool save = false );
+DLLEXPORT bool addTriangleBoundary(Mesh & mesh, 
+                                    double xBoundary, double yBoundary, int cellMarker, bool save = false);
 
 /*! Generate a simple three dimensional mesh by extruding a two dimensional mesh into RVector z using triangle prism or hexahedrons or both.
  * 3D cell marker are set from 2D cell marker. 
  * The boundary marker for the side boundaries are set from edge marker in mesh. 
  * Top and bottomLayer boundary marker are set from parameter topLayer and bottomLayer. */
-DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z, int topLayer = 0, int bottomLayer = 0);
+DLLEXPORT Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer=0, int bottomLayer=0);
 
 // 
 // /*! Shortcut */
-// DLLEXPORT Mesh createMesh3D( const Mesh & mesh, const RVector & z );
+// DLLEXPORT Mesh createMesh3D(const Mesh & mesh, const RVector & z);
 
 
     

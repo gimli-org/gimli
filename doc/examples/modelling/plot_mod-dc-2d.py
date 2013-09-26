@@ -63,8 +63,8 @@ def mixedBC(boundary, userData):
     # need rho here !!!!!!!!!!!!!!!!!!!!!!!!!!!1
     
     if r1A > 1e-12 and r2A > 1e-12:
-        return k * (abs(r1.dot(n)) / r1A * g.besselK1(r1A * k) +
-                    abs(r2.dot(n)) / r2A * g.besselK1(r2A * k)) / \
+        return k * ((r1.dot(n)) / r1A * g.besselK1(r1A * k) +
+                    (r2.dot(n)) / r2A * g.besselK1(r2A * k)) / \
         (g.besselK0(r1A * k) + g.besselK0(r2A * k))
     else:
         return 0.

@@ -74,7 +74,6 @@ public:
     /*! Construct an empty in 3d at (0, 0, 0). Optional set valid flag. */
     Pos(bool valid) : valid_(valid) { assign(0.0, 0.0, 0.0); }
 
-    //Pos(ValueType x) : valid_(true) { assign(x, 0.0, 0.0); }
     Pos(ValueType x, ValueType y) : valid_(true) { assign(x, y, 0.0); }
     Pos(ValueType x, ValueType y, ValueType z) : valid_(true) { assign(x, y, z); }
 

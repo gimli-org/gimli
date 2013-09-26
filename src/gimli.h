@@ -54,7 +54,7 @@
 #endif // PACKAGE_NAME
 
 #ifdef _MSC_VER
-	#pragma warning( disable: 4251 )
+	#pragma warning(disable: 4251)
 #endif
 
 #include <cassert>
@@ -247,29 +247,29 @@ template < class Vec > class Trans;
 //** end forward declaration
 
 /*! */
-inline void savePythonGIL( bool s ){
+inline void savePythonGIL(bool s){
     __SAVE_PYTHON_GIL__ = s;
 }
 
 /*! set global gimli debug flag on or off */
-inline void setGimliDebug( bool s ){
+inline void setGimliDebug(bool s){
     __GIMLI_DEBUG__ = s;
 }
 
 
 class PythonGILSave {
 public:
-    PythonGILSave( ): saved_( false ) { save(); }
+    PythonGILSave(): saved_(false) { save(); }
     ~PythonGILSave() { restore(); }
-    void save() { if( !saved_ ) {
+    void save() { if(!saved_) {
 #ifdef PYGIMLI
 //#warning  "save_ = PyEval_SaveThread();"
-        if ( __SAVE_PYTHON_GIL__ ) save_ =  PyEval_SaveThread();
+        if (__SAVE_PYTHON_GIL__) save_ =  PyEval_SaveThread();
 #endif
         saved_ = true; } }
-    void restore() { if ( saved_ ) {
+    void restore() { if (saved_) {
 #ifdef PYGIMLI
-        if ( __SAVE_PYTHON_GIL__ ) PyEval_RestoreThread( save_ );
+        if (__SAVE_PYTHON_GIL__) PyEval_RestoreThread(save_);
 #endif
         saved_ = false; } }
 private:
@@ -304,106 +304,106 @@ inline std::string versionStr(){
 
 DLLEXPORT std::string authors();
 
-template < class T, class U > T min( const T & a, const U & b ){ return std::min( a, T(b) ); }
-template < class T, class U > T max( const T & a, const U & b ){ return std::max( a, T(b) ); }
+template < class T, class U > T min(const T & a, const U & b){ return std::min(a, T(b)); }
+template < class T, class U > T max(const T & a, const U & b){ return std::max(a, T(b)); }
 
-DLLEXPORT int openFile( const std::string & fname, std::fstream * file,
-                        std::ios_base::openmode farg, bool terminate );
+DLLEXPORT int openFile(const std::string & fname, std::fstream * file,
+                        std::ios_base::openmode farg, bool terminate);
 
-inline int openInFileTerm( const std::string & fname, std::fstream * file ){
-    return openFile( fname, file, std::ios::in, true);
+inline int openInFileTerm(const std::string & fname, std::fstream * file){
+    return openFile(fname, file, std::ios::in, true);
 }
-inline int openInFile( const std::string & fname, std::fstream * file, bool terminate = true ){
-    return openFile( fname, file, std::ios::in, terminate );
+inline int openInFile(const std::string & fname, std::fstream * file, bool terminate = true){
+    return openFile(fname, file, std::ios::in, terminate);
 }
-inline int openOutFile( const std::string & fname, std::fstream * file, bool terminate = true ){
-    return openFile( fname, file, std::ios::out, terminate );
+inline int openOutFile(const std::string & fname, std::fstream * file, bool terminate = true){
+    return openFile(fname, file, std::ios::out, terminate);
 }
 
-DLLEXPORT bool fileExist( const std::string & filename );
-DLLEXPORT uint countColumnsInFile( const std::string & fname, uint & columnCount );
-DLLEXPORT uint countColumnsInFile( const std::string & fname );
-DLLEXPORT uint countRowsInFile( const std::string & fname );
-DLLEXPORT uint fileLength( std::fstream & file );
-DLLEXPORT std::vector < std::string > getRowSubstrings( std::fstream & file, char comment = '#' );
+DLLEXPORT bool fileExist(const std::string & filename);
+DLLEXPORT uint countColumnsInFile(const std::string & fname, uint & columnCount);
+DLLEXPORT uint countColumnsInFile(const std::string & fname);
+DLLEXPORT uint countRowsInFile(const std::string & fname);
+DLLEXPORT uint fileLength(std::fstream & file);
+DLLEXPORT std::vector < std::string > getRowSubstrings(std::fstream & file, char comment = '#');
 
-inline std::vector < std::string > getRow( std::fstream & file, char comment = '#' ){
-    return getRowSubstrings( file, comment );
+inline std::vector < std::string > getRow(std::fstream & file, char comment = '#'){
+    return getRowSubstrings(file, comment);
 }
 
 DLLEXPORT std::vector < std::string > getNonEmptyRow(std::fstream & file, char comment = '#');
 DLLEXPORT std::vector < std::string > getCommentLine(std::fstream & file, char comment = '#');
 
-DLLEXPORT std::vector < std::string > getSubstrings( const std::string & str );
-DLLEXPORT std::vector < std::string > split( const std::string & str, char delimiter = ':' );
+DLLEXPORT std::vector < std::string > getSubstrings(const std::string & str);
+DLLEXPORT std::vector < std::string > split(const std::string & str, char delimiter = ':');
 
 
-DLLEXPORT std::map < float, float > loadFloatMap( const std::string & filename );
-DLLEXPORT std::map < int, int > loadIntMap( const std::string & filename );
+DLLEXPORT std::map < float, float > loadFloatMap(const std::string & filename);
+DLLEXPORT std::map < int, int > loadIntMap(const std::string & filename);
 
 
-inline void convert( bool          & var, char * opt ) { var = true; }
-inline void convert( int           & var, char * opt ) { if ( !opt ) var ++;    else var = atoi( opt ); }
-inline void convert( uint          & var, char * opt ) { if ( !opt ) var ++;    else var = atoi( opt ); }
-inline void convert( float         & var, char * opt ) { if ( !opt ) var = 0.0f; else var = (float)atof( opt ); }
-inline void convert( double        & var, char * opt ) { if ( !opt ) var = 0.0; else var = atof( opt ); }
-inline void convert( std::string   & var, char * opt ) { if ( !opt ) var = "";  else var = opt ; }
-inline void convert( std::vector < std::string >  & var, char * opt ) { if ( opt ) var.push_back( opt ); }
-inline std::string type( bool          & var ) { return "bool"; }
-inline std::string type( int           & var ) { return "int"; }
-inline std::string type( float         & var ) { return "float"; }
-inline std::string type( double        & var ) { return "double"; }
-inline std::string type( std::string   & var ) { return "string"; }
-inline std::string type( std::vector < std::string >  & var ) { return "string"; }
+inline void convert(bool          & var, char * opt) { var = true; }
+inline void convert(int           & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
+inline void convert(uint          & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
+inline void convert(float         & var, char * opt) { if (!opt) var = 0.0f; else var = (float)atof(opt); }
+inline void convert(double        & var, char * opt) { if (!opt) var = 0.0; else var = atof(opt); }
+inline void convert(std::string   & var, char * opt) { if (!opt) var = "";  else var = opt ; }
+inline void convert(std::vector < std::string >  & var, char * opt) { if (opt) var.push_back(opt); }
+inline std::string type(bool          & var) { return "bool"; }
+inline std::string type(int           & var) { return "int"; }
+inline std::string type(float         & var) { return "float"; }
+inline std::string type(double        & var) { return "double"; }
+inline std::string type(std::string   & var) { return "string"; }
+inline std::string type(std::vector < std::string >  & var) { return "string"; }
 
-inline int       toInt( const std::string & str ){ return std::atoi( str.c_str() ); }
-inline float   toFloat( const std::string & str ){ return (float)std::atof( str.c_str() ); }
-inline double toDouble( const std::string & str ){ return std::strtod( str.c_str(), NULL ); }
+inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }
+inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }
+inline double toDouble(const std::string & str){ return std::strtod(str.c_str(), NULL); }
 
 /*! Read value from environment variable. Return default value if environment not set.
  Environment var can be set in sh via: export name=val, or simple passing name=val in front of executable.*/
-template < typename ValueType > ValueType getEnvironment( const std::string & name, ValueType def, bool verbose = false){
+template < typename ValueType > ValueType getEnvironment(const std::string & name, ValueType def, bool verbose = false){
     ValueType var = def;
 
-    char * cVar = getenv( name.c_str() );
-    if ( cVar != NULL ){
-        convert( var, cVar );
-        if ( verbose ) std::cout << "Found: export " << name << "=" << cVar << std::endl;
+    char * cVar = getenv(name.c_str());
+    if (cVar != NULL){
+        convert(var, cVar);
+        if (verbose) std::cout << "Found: export " << name << "=" << cVar << std::endl;
     }
     return var;
 }
 
 
 // //! Deprecated! use str() instead, General template for conversion to string, should supersede all sprintf etc.
-// template< typename T > inline std::string toStr( const T & value ){
-//     return str( value );
+// template< typename T > inline std::string toStr(const T & value){
+//     return str(value);
 // }
 
-inline std::string strReplaceBlankWithUnderscore( const std::string & str ) {
-    std::string res( str );
-    for ( size_t i = 0; i < res.length(); i ++ ) if ( res[ i ] == ' ' ) res[ i ] = '_';
+inline std::string strReplaceBlankWithUnderscore(const std::string & str) {
+    std::string res(str);
+    for (size_t i = 0; i < res.length(); i ++) if (res[i] == ' ') res[i] = '_';
     return res;
 }
 
-inline std::string lower( const std::string & str ){
-    std::string lo( str );
-    std::transform( lo.begin(), lo.end(), lo.begin(), tolower );
+inline std::string lower(const std::string & str){
+    std::string lo(str);
+    std::transform(lo.begin(), lo.end(), lo.begin(), tolower);
     return lo;
 }
 
-template < typename T > inline void swapVal( T & a, T & m ){
-    T tmp( a ); a = m; m = tmp;
+template < typename T > inline void swapVal(T & a, T & m){
+    T tmp(a); a = m; m = tmp;
 }
 
-template < typename T > void test( T a, T b, std::vector < bool > & success ){
-    success.push_back( a == b );
-    if ( !success.back() ){
+template < typename T > void test(T a, T b, std::vector < bool > & success){
+    success.push_back(a == b);
+    if (!success.back()){
         std::cout << "test " << success.size() << " ist: " << a << " soll: " << b << std::endl;
     }
 }
 
-template < typename T > bool test( T a, T b, bool verbose = false ){
-    if ( verbose ){
+template < typename T > bool test(T a, T b, bool verbose = false){
+    if (verbose){
         std::cout << "ist: " << a << " soll: " << b << std::endl;
     }
     return a == b;
@@ -413,47 +413,72 @@ template < typename T > bool test( T a, T b, bool verbose = false ){
 Example: Delete all objects in a container.
 vector < ptr * > vP;
 // ... // something that fills vP with the new operator.
-for_each( vP.begin(), vP.end(), deletePtr() );
+for_each(vP.begin(), vP.end(), deletePtr());
 */
 struct DLLEXPORT deletePtr{
-    template < typename T > void operator()( T * p ) { delete p; }
+    template < typename T > void operator()(T * p) { delete p; }
 };
 struct DLLEXPORT cerrPtr{
-  template < typename T > void operator() ( const T * p ) const { std::cerr << p << " " << std::endl; }
+  template < typename T > void operator() (const T * p) const { std::cerr << p << " " << std::endl; }
 };
 struct DLLEXPORT cerrPtrObject{
-  template < typename T > void operator() ( const T * p ) const { std::cerr << *p << " " << std::endl; }
+  template < typename T > void operator() (const T * p) const { std::cerr << *p << " " << std::endl; }
 };
 struct DLLEXPORT coutPtr{
-  template < typename T > void operator() ( const T * p ) const { std::cout << p << " " << std::endl; }
+  template < typename T > void operator() (const T * p) const { std::cout << p << " " << std::endl; }
 };
 struct DLLEXPORT coutPtrObject{
-  template < typename T > void operator() ( const T * p ) const { std::cout << *p << " " << std::endl; }
+  template < typename T > void operator() (const T * p) const { std::cout << *p << " " << std::endl; }
 };
 
-template < typename Set > inline void intersectionSet( Set & dest, const Set & a, const Set & b ){
+template < typename Set > inline void intersectionSet(Set & dest, 
+                                                      const Set & a, 
+                                                      const Set & b){
     dest.clear();
-    set_intersection( a.begin(), a.end(), b.begin(), b.end(), std::inserter( dest, dest.begin() ) );
+    set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::inserter(dest, dest.begin()));
 }
-template < typename Set > inline void intersectionSet( Set & dest, const Set & a, const Set & b,
-                                                       const Set & c ){
+template < typename Set > inline void intersectionSet(Set & dest, 
+                                                      const Set & a, 
+                                                      const Set & b,
+                                                      const Set & c){
     dest.clear();
-    set_intersection( a.begin(), a.end(), b.begin(), b.end(), std::inserter( dest, dest.begin() ) );
-    Set tmp( dest );
+    set_intersection(a.begin(), a.end(), b.begin(), b.end(), 
+                     std::inserter(dest, dest.begin()));
+    Set tmp(dest);
     dest.clear();
-    set_intersection( tmp.begin(), tmp.end(), c.begin(), c.end(), std::inserter( dest, dest.begin() ) );
+    set_intersection(tmp.begin(), tmp.end(), c.begin(), c.end(), 
+                     std::inserter(dest, dest.begin()));
 }
 
-template < typename Set > inline void intersectionSet( Set & dest, const std::vector < Set > & a ){
-    if ( a.size() > 1 ) {
-        intersectionSet( dest, a[ 0 ], a[ 1 ] );
-        for ( size_t i = 2; i < a.size(); i ++ ){
-            Set tmp( dest );
+template < typename Set > inline void intersectionSet(Set & dest, 
+                                                      const Set & a, 
+                                                      const Set & b,
+                                                      const Set & c, 
+                                                      const Set & d){
+    dest.clear();
+    set_intersection(a.begin(), a.end(), b.begin(), b.end(), 
+                     std::inserter(dest, dest.begin()));
+    Set tmp(dest);
+    dest.clear();
+    set_intersection(tmp.begin(), tmp.end(), c.begin(), c.end(), 
+                     std::inserter(dest, dest.begin()));
+    tmp = dest;
+    dest.clear();
+    set_intersection(tmp.begin(), tmp.end(), d.begin(), d.end(), 
+                     std::inserter(dest, dest.begin()));
+}
+
+template < typename Set > inline void intersectionSet(Set & dest,
+                                                      const std::vector < Set > & a){
+    if (a.size() > 1) {
+        intersectionSet(dest, a[0], a[1]);
+        for (size_t i = 2; i < a.size(); i ++){
+            Set tmp(dest);
             dest.clear();
-            set_intersection( tmp.begin(), tmp.end(), a[ i ].begin(), a[ i ].end(),
-                              std::inserter( dest, dest.begin() ) );
+            set_intersection(tmp.begin(), tmp.end(), a[i].begin(), a[i].end(),
+                             std::inserter(dest, dest.begin()));
         }
-    } else if ( a.size() == 1 ){
+    } else if (a.size() == 1){
         dest = a[0];
     } else {
         dest.clear();
@@ -462,7 +487,7 @@ template < typename Set > inline void intersectionSet( Set & dest, const std::ve
 
 template < class T > class IncrementSequence {
 public:
-    IncrementSequence( T initialValue = 0 ) : value_( initialValue ) {   }
+    IncrementSequence(T initialValue = 0) : value_(initialValue) {   }
     inline T operator() () { return value_++; }
 private:
     T value_;
@@ -476,7 +501,7 @@ public:
 
     /*! This call create one instance of the class and return a pointer to it. */
     static Classname * pInstance() {
-        return pInstance_ ? pInstance_ : ( pInstance_ = new Classname() );
+        return pInstance_ ? pInstance_ : (pInstance_ = new Classname());
     }
 
     /*! This call create one instance of the class and return a reference to it. */
@@ -492,7 +517,7 @@ private:
     /*! Private so that it can not be called */
 
     /*! Copy constructor is private, so don't use it */
-    Singleton( const Singleton & ){};
+    Singleton(const Singleton &){};
 
     static Classname * pInstance_;
 };

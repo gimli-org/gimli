@@ -195,6 +195,11 @@ public:
     /*! Default destructor. */
     ~Cell();
 
+    /*! For pygimli bindings to allow simple check*/
+    bool operator==(const Cell & cell){
+        return &cell == this;
+    }
+    
     virtual uint rtti() const { return MESH_CELL_RTTI; }
     virtual uint parentType() const { return MESH_CELL_RTTI; }
     virtual uint neighbourCellCount() const { return 0; }
@@ -261,7 +266,7 @@ protected:
 
 private:
     /*! Don't call this class directly */
-    Cell(const Cell & cell){}
+    Cell(const Cell & cell){ std::cerr << "cell(const cell & cell)" << std::endl; }
 };
 
 class DLLEXPORT Boundary : public MeshEntity{
@@ -284,10 +289,10 @@ public:
     /*! return these coordinates manual until boundary coordinate transformation is done. */
     virtual RVector3 rst(uint i) const;
     
-    inline Cell & leftCell() const { return *leftCell_; }
+    inline const Cell & leftCell() const { return *leftCell_; }
     inline Cell * leftCell() { return leftCell_; }
 
-    inline Cell & rightCell() const { return *rightCell_; }
+    inline const Cell & rightCell() const { return *rightCell_; }
     inline Cell * rightCell() { return rightCell_; }
 
     inline void setLeftCell(Cell * cell) { leftCell_  = cell; }
@@ -296,6 +301,9 @@ public:
     friend std::ostream & operator << (std::ostream & str, const Boundary & e);
 
     virtual RVector3 norm() const;
+    
+    /*! Return true if the normal vector of this boundary shown from the cell away (outside-direction) */
+    bool normShowsOutside(const Cell & cell);
 
 protected:
     void registerNodes_();
@@ -625,11 +633,31 @@ public:
 protected:
 };
 
+//! A Tetrahedron
+/*! A Tetrahedron
+
+Node direction:
+
+3           \n
+| 2         \n
+|/          \n
+0-----1     \n
+
+Neighbourship relations:
+Boundary normal shows outside .. so the boundary left neighbor is this cell
+
+Neighbour Nr, on Boundary a-b-c
+    0           0-2-1     re -- view from inner
+    1           1-2-3     le -- view from outer
+    2           2-0-3     re -- view from inner
+    3           0-1-3     le -- view from outer
+
+*/
 static const uint8 TetrahedronFacesID[ 4 ][ 3 ] = {
-    {1, 2, 3},
-    {2, 0, 3},
-    {0, 1, 3},
-    {0, 2, 1}
+    {0, 2, 1},  
+    {1, 2, 3},  
+    {2, 0, 3},  
+    {0, 1, 3}   
 };
 
 //! A Tetrahedron
@@ -703,14 +731,15 @@ Node direction:
 0------1    \n
 
 Neighbourship relations:
+Boundary normal shows outside .. so the boundary left neighbor is this cell
 
 Neighbour Nr, on Boundary a-b-c-d
-    0           1-2-6-5
-    1           2-3-7-6
-    2           0-4-7-3
-    3           0-1-5-4
-    4           4-5-6-7
-    5           0-3-2-1
+    0           1-2-6-5  // le
+    1           2-3-7-6  // re  
+    2           3-0-4-7  // re
+    3           0-1-5-4  // le
+    4           4-5-6-7  // le
+    5           0-3-2-1  // re
 
 T.~Apel and N.~Düvelmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
 Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, Pages   293-304
@@ -722,7 +751,7 @@ Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, P
 static const uint8 HexahedronFacesID[ 6 ][ 4 ] = {
     {1, 2, 6, 5},
     {2, 3, 7, 6},
-    {0, 4, 7, 3},
+    {3, 0, 4, 7},
     {0, 1, 5, 4},
     {4, 5, 6, 7},
     {0, 3, 2, 1}
@@ -818,11 +847,11 @@ protected:
 */
 
 static const uint8 TriPrismFacesID[ 5 ][ 4 ] = {
-    {1, 2, 5, 4},
-    {0, 2, 5, 3},
-    {0, 1, 4, 3},
-    {3, 4, 5, 255},
-    {0, 2, 1, 255},
+    {1, 2, 5, 4},        // r
+    {2, 0, 3, 5},        // r
+    {0, 1, 4, 3},        // l
+    {3, 4, 5, 255},      // l
+    {0, 2, 1, 255},      // r
 };
 
 
@@ -901,6 +930,14 @@ Node direction:
     0------------1-------r \n
 
 */
+
+static const uint8 PyramidFacesID[ 5 ][ 4 ] = {
+    {1, 2, 5, 255},    // l
+    {2, 3, 5, 255},    // l
+    {0, 5, 3, 255},    // l
+    {0, 1, 5, 255},    // l
+    {0, 3, 2, 1},      // r
+};
 
 class DLLEXPORT Pyramid : public Cell {
 public:
