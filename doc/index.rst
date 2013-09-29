@@ -5,7 +5,7 @@
 
 .. only:: html
 
-    .. include:: doc_todo.rst
+    .. include:: doc.rst
 
 =================================
 Welcome to GIMLi's documentation!

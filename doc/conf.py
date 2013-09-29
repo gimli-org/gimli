@@ -25,14 +25,17 @@ sys.path.append(os.path.abspath('./_sphinx-ext'))
 needs_sphinx = '1.0'
 
 # Check for external sphinx extensions
-deps = ['pybtex', 'sphinxcontrib-programoutput', 'numpydoc']
+deps = ['pybtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-bibtex', 'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 
+req = []
 for dep in deps:
     if dep not in modules:
-        msg = "Sorry, %s is required to build the docs. Try: pip install %s." \
-                % (dep, dep)
-        raise ImportError(msg)
+        req.append(dep)
+if req:
+    msg = "Sorry, there are missing dependencies to build the docs. Try: pip install %s." \
+    % (' '.join(req))
+    raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -48,7 +51,6 @@ extensions = ['sphinx.ext.autodoc',
               'myliterate_directive',
               'plot2rst',
               'sphinx.ext.pngmath',
-              'sphinxcontrib.bibtex',
               'doxylink'
               ]
 
@@ -71,7 +73,7 @@ master_doc = 'doc/index'
 
 # General information about the project.
 project = u'GIMLi'
-copyright = u'2012, Carsten Rücker and Thomas Günther'
+copyright = u'2013, Carsten Rücker and Thomas Günther'
 
 import pygimli as g
 
@@ -113,7 +115,7 @@ exclude_patterns = ['doc/_build', 'doc/_sphinx-ext', 'doc/_templates', 'doc/exam
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'default'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -128,21 +130,6 @@ html_theme_path = ['_themes']
 # a list of builtin themes.
 
 html_theme = 'gimli'
-#html_theme = 'default'
-#html_theme = 'agogo'
-#html_theme = 'blue'
-#html_theme = 'nature'
-#html_theme = 'sphinxdoc'
-
-#html_theme_options = {
-#"nosidebar": "false",
-#"sidebarwidth": "280"
-#}
-
-#html_theme_options = {
-#"rightsidebar": "true",
-#"relbarbgcolor": "black"
-#}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -152,10 +139,10 @@ html_theme = 'gimli'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = "GIMLi - Geophysical Inversion and Modelling Library"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = "GIMLi"
+html_short_title = "GIMLi"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -203,7 +190,7 @@ html_use_modindex = True
 html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-html_show_sphinx = True
+html_show_sphinx = True # does not have any affect. sphinx credit is located in footer.html
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = True
