@@ -1,0 +1,17 @@
+<small>
+<div style="width:50%; float:left">
+    {%- if show_copyright %}
+    {%- if hasdoc('copyright') %}
+    {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
+    {%- else %}
+    {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
+    {%- endif %}
+    {%- endif %}
+</div>
+<div align="right" style="width:50%; float:right">
+    Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+    {%- if last_updated %}
+    {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+    {%- endif %}
+</div>
+</small>

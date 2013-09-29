@@ -1,0 +1,48 @@
+{% if pagename != 'index' %}
+<h4 class="sidebar-box-heading">{{ _('Navigation') }}</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li class="nav-header"><i class="icon-home"></i> Documentation Home</li>
+        <li><a href="{{ pathto(master_doc) }}">Documentation Home</a></li>
+        {%- if prev %}
+        <li class="nav-header"><i class="icon-caret-left"></i> Previous topic</li>
+        <li><a href="{{ prev.link|e }}" title="{{ _('previous chapter') }}">{{ prev.title }}</a></li>
+        {%- endif %}
+        {%- if next %}
+        <li class="nav-header"><i class="icon-caret-right"></i> Next topic</li>
+        <li><a href="{{ next.link|e }}" title="{{ _('next chapter') }}">{{ next.title }}</a></li>
+        {%- endif %}
+    </ul>
+</div>
+{% endif %}
+{%- if display_toc %}
+<h4 class="sidebar-box-heading">Contents</h4>
+<div class="well sidebar-box toc">
+    {{ toc|replace('<ul>', '<ul class="nav nav-list">') }}
+</div>
+{%- endif %}
+
+
+<h4 class="sidebar-box-heading">Download</h4>
+<div class="well sidebar-box">
+    <br>
+    <small><p align="center">Get the latest development version.</small>
+    <br>
+    
+    <br>
+<a class="btn btn-primary" href="https://github.com/gimli-org/gimli/archive/master.zip">
+    <i class="icon-download"></i> Download {{ version }}</a></p>
+<br>
+</div>
+
+<h4 class="sidebar-box-heading">Links</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+    <li><a href="https://github.com/gimli-org/gimli"><i class="icon-fixed-width icon-github"></i> Code repository</a></li>
+    <li><a href="https://github.com/gimli-org/gimli/issues"><i class="icon-fixed-width icon-bug"></i> Report a bug</a></li>
+    </ul>
+</div>
+
+<!--<div align="center">-->
+    <!--<iframe src="http://ghbtns.com/github-btn.html?user=gimli-org&repo=gimli&type=watch&count=true"-->
+        <!--allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe></div>-->
