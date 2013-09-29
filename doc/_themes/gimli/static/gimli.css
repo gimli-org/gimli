@@ -1,640 +1,89 @@
-@import url("basic.css");
-
+/*general settings*/
 body {
-    font-family: 'Open Sans', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva',
-                 'Verdana', sans-serif;
-    font-size: 14px;
-    text-align: center;
-    background: url("bg.png") repeat;
-    /*background-image: url(bodybg.png);*/
-    color: #002b36;
-    padding: 0px;
-    border-right: 1px solid #0a507a;
-    border-left: 1px solid #0a507a;
-
-    margin: 0 auto;
-    min-width: 780px;
-    max-width: 1080px;
+    font-family: "Open Sans";
+    font-family: "Open Sans", sans-serif;
+    font-size: 15px
+    /*background: url("bg.png") repeat;*/
 }
 
-.pageheader {
-    background-color: #0a507a;
-    background-image: url(headerbg.png);
-    text-align: left;
-    padding: 10px 15px;
+a { color: #16540e }
+a:hover { color: #3c8732 }
+
+input,
+button,
+select,
+textarea {
+    font-family: "Open Sans" 
 }
 
-.pageheader ul {
-    float: right;
-    color: white;
-    list-style-type: none;
-    padding-left: 0;
-    margin-top: 30px;
-    margin-right: 10px;
-}
 
-.pageheader li {
+/*gallery for examples and tutorials*/
+.gallery.figure {
     float: left;
-    margin: 0 0 0 10px;
+    width: 100%;
+    height: 160px;
 }
 
-.pageheader li a {
-    border-radius: 1px;
-    padding: 8px 12px;
-    color: #f9f9f0;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+.gallery.figure img {
+    display: inline;
+    margin-left: auto;
+    margin-right: auto;
+    width: 180px;
 }
 
-.pageheader li a:hover {
-    background-color: #f9f9f0;
-    color: #0a507a;
-    text-shadow: none;
-}
-
-div.document {
-    background-color: white;
-    text-align: left;
-}
-
-div.bodywrapper {
-    margin: 0 240px 0 0;
-    border-right: 1px solid #0a507a;
-}
-
-div.body {
-    margin: 0;
-    padding: 0.5em 20px 20px 20px;
-}
-
-div.related {
-    background-color: #07324b;
-    font-size: 1em;
-    color: white;
-}
-
-div.related ul {
-    background-image: url(relbg.png);
-    height: 1.9em;
-    border-top: 1px solid #002e50;
-    border-bottom: 1px solid #002e50;
-}
-
-div.related ul li {
-    margin: 0 5px 0 0;
-    padding: 0;
-    float: left;
-}
-
-div.related ul li.right {
-    float: right;
-    margin-right: 5px;
-}
-
-div.related ul li a {
-    margin: 0;
-    padding: 0 5px 0 5px;
-    line-height: 1.75em;
-    color: #f9f9f0;
-    text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
-}
-
-div.related ul li a:hover {
-    color: white;
-    /*text-decoration: underline;*/
-    text-shadow: 0px 0px 1px rgba(255, 255, 255, 0.5);
-}
-
-div.sphinxsidebarwrapper {
+.gallery.figure .caption {
+    text-align: left !important;
+    font-size: 18px;
+    font-weight: 180;
     position: relative;
-    top: 0px;
+    top: -50%;
+    left: +22%;
+}
+
+/*sidebar*/
+.sidebar-box {
     padding: 0;
 }
-
-div.sphinxsidebar {
-    margin: 0;
-    padding: 0 15px 15px 0;
-    width: 210px;
-    float: right;
-    font-size: 1em;
-    text-align: left;
-}
-
-div.sphinxsidebar .logo {
-    font-size: 1.8em;
-    color: #0A507A;
-    font-weight: 300;
-    text-align: center;
-}
-
-div.sphinxsidebar .logo img {
-    vertical-align: middle;
-}
-
-div.sphinxsidebar input {
-    border: 1px solid #aaa;
-    font-family: 'Open Sans', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva',
-                 'Verdana', sans-serif;
-    font-size: 1em;
-}
-
-div.sphinxsidebar h3 {
-    font-size: 1.5em;
-    border-top: 1px solid #0a507a;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
-    padding-top: 0.5em;
-}
-
-div.sphinxsidebar h4 {
-    font-size: 1.2em;
-    margin-bottom: 0;
-}
-
-div.sphinxsidebar h3, div.sphinxsidebar h4 {
-    margin-right: -15px;
-    margin-left: -15px;
-    padding-right: 14px;
-    padding-left: 14px;
-    color: #333;
-    font-weight: 300;
-    /*text-shadow: 0px 0px 0.5px rgba(0, 0, 0, 0.4);*/
-}
-
-div.sphinxsidebarwrapper > h3:first-child {
-    margin-top: 0.5em;
-    border: none;
-}
-
-div.sphinxsidebar h3 a {
-    color: #333;
-}
-
-div.sphinxsidebar ul {
-    color: #444;
-    margin-top: 7px;
-    padding: 0;
-    line-height: 130%;
-}
-
-div.sphinxsidebar ul ul {
-    margin-left: 20px;
-    list-style-image: url(listitem.png);
-}
-
-div.footer {
-/*    background-image: url(footerbg.png);*/
-    background-color: #0a507a;
-    color: #ccc;
-    text-shadow: 0 0 .2px rgba(255, 255, 255, 0.8);
-    padding: 3px 8px 3px 0;
-    clear: both;
-    font-size: 0.8em;
-    text-align: right;
-}
-
-/* no need to make a visible link to Sphinx on the Sphinx page */
-/*div.footer a {
-    color: #ccc;
-}*/
-
-/* -- body styles ----------------------------------------------------------- */
-
-p {    
-    margin: 1.5em 0 1.5em 0;
-    line-height: 1.5;
-}
-
-a {
-    color: #A2881D;
-    text-decoration: none;
-}
-
-a:hover {
-    color: #E1C13F;
-}
-
-div.body a {
-    text-decoration: underline;
-}
-
-h1 {
-    margin: 10px 0 0 0;
-    font-size: 2.2em;
-    color: #0A507A;
-    font-weight: 300;
-}
-
-h2 {
-    margin: 1.em 0 0.2em 0;
-    font-size: 1.5em;
-    font-weight: 300;
-    padding: 0;
-    color: #174967;
-}
-
-h3 {
-    margin: 1em 0 -0.3em 0;
-    font-size: 1.3em;
-    font-weight: 300;
-}
-
-div.body h1 a, div.body h2 a, div.body h3 a, div.body h4 a, div.body h5 a, div.body h6 a {
-    text-decoration: none;
-}
-
-div.body h1 a tt, div.body h2 a tt, div.body h3 a tt, div.body h4 a tt, div.body h5 a tt, div.body h6 a tt {
-    color: #0A507A !important;
-    font-size: inherit !important;
-}
-
-a.headerlink {
-    color: #0A507A !important;
-    font-size: 12px;
-    margin-left: 6px;
-    padding: 0 4px 0 4px;
-    text-decoration: none !important;
-    float: right;
-}
-
-a.headerlink:hover {
-    background-color: #ccc;
-    color: white!important;
-}
-
-cite, code, tt {
-    font-family: 'Consolas', 'DejaVu Sans Mono',
-                 'Bitstream Vera Sans Mono', monospace;
-    font-size: 14px;
-    letter-spacing: -0.02em;
-}
-
-tt {
-    background-color: #f2f2f2;
-    border: 1px solid #ddd;
-    border-radius: 2px;
-    color: #333;
-    padding: 1px;
-}
-
-tt.descname, tt.descclassname, tt.xref {
-    border: 0;
-}
-
-hr {
-    border: 1px solid #abc;
-    margin: 2em;
-}
-
-a tt {
-    border: 0;
-    color: #a2881d;
-}
-
-a tt:hover {
-    color: #e1c13f;
-}
-
-pre {
-    font-family: 'Consolas', 'DejaVu Sans Mono',
-                 'Bitstream Vera Sans Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 0.015em;
-    line-height: 120%;
-    padding: 0.5em;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    background-color: #f8f8f8;
-}
-
-pre a {
-    color: inherit;
-    text-decoration: underline;
-}
-
-td.linenos pre {
-    padding: 0.5em 0;
-}
-
-div.quotebar {
-    background-color: #f8f8f8;
-    max-width: 250px;
-    float: right;
-    padding: 0px 7px;
-    border: 1px solid #ccc;
-    margin-left: 1em;
-}
-
-div.topic {
-    background-color: #f8f8f8;
-}
-
-table {
-    border-collapse: collapse;
-    margin: 0 -0.5em 0 -0.5em;
-}
-
-table td, table th {
-    padding: 0.2em 0.5em 0.2em 0.5em;
-}
-
-div.admonition, div.warning {
-    font-size: 0.9em;
-    margin: 1em 0 1em 0;
-    border: 1px solid #86989B;
-    border-radius: 2px;
-    background-color: #f7f7f7;
-    padding: 0;
-}
-
-div.admonition p, div.warning p {
-    margin: 0.5em 1em 0.5em 1em;
-    padding: 0;
-}
-
-div.admonition pre, div.warning pre {
-    margin: 0.4em 1em 0.4em 1em;
-}
-
-div.admonition p.admonition-title,
-div.warning p.admonition-title {
-    margin-top: 1em;
-    padding-top: 0.5em;
-    font-weight: bold;
-}
-
-div.warning {
-    border: 1px solid #940000;
-/*    background-color: #FFCCCF;*/
-}
-
-div.warning p.admonition-title {
-}
-
-div.admonition ul, div.admonition ol,
-div.warning ul, div.warning ol {
-    margin: 0.1em 0.5em 0.5em 3em;
-    padding: 0;
-}
-
-.viewcode-back {
-    font-family: 'Open Sans', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva',
-                 'Verdana', sans-serif;
-}
-
-div.viewcode-block:target {
-    background-color: #f4debf;
-    border-top: 1px solid #ac9;
-    border-bottom: 1px solid #ac9;
-}
-
-
-
-
-
-
-/*div.document {
-    background-color: #fcfcfc;
-    text-align: left;
-    background-repeat: repeat-x;
-}
-
-div.bodywrapper {
-    margin: 0 240px 0 0;
-    border-right: 1px dotted #eee8d5;
-}
-
-div.body {
-    background-color: white;
-    margin: 0;
-    padding: 0.5em 20px 20px 20px;
-}
-
-div.related {
-    font-size: 1em;
-    background: #002b36;
-    color: #839496;
-    padding: 5px 0px;
-}
-
-div.related ul {
-    height: 2em;
-    margin: 2px;
-}
-
-div.related ul li {
-    margin: 0;
-    padding: 0;
-    height: 2em;
-    float: left;
-}
-
-div.related ul li.right {
-    float: right;
-    margin-right: 5px;
-}
-
-div.related ul li a {
-    margin: 0;
-    padding: 2px 5px;
-    line-height: 2em;
-    text-decoration: none;
-    color: #839496;
-}
-
-div.related ul li a:hover {
-    background-color: #073642;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-}
-
-div.sphinxsidebarwrapper {
-    padding: 0;
-}
-
-div.sphinxsidebar {
-    margin: 0;
-    padding: 0.5em 15px 15px 0;
-    width: 250px;
-    float: right;
-    font-size: 0.9em;
-    text-align: left;
-}
-
-div.sphinxsidebar h3, div.sphinxsidebar h4 {
-    margin: 1em 0 0.5em 0;
-    font-size: 1em;
-    padding: 0.7em;
-    background-color: #eeeff1;
-}
-
-div.sphinxsidebar h3 a {
-    color: #2E3436;
-}
-
-div.sphinxsidebar ul {
-    padding-left: 1.5em;
-    margin-top: 7px;
-    padding: 0;
-    line-height: 150%;
-    color: #586e75;
-}
-
-div.sphinxsidebar ul ul {
-    margin-left: 20px;
-}
-
-div.sphinxsidebar input {
-    border: 1px solid #eee8d5;
-}
-
-div.footer {
-    background-color: #93a1a1;
-    color: #eee;
-    padding: 3px 8px 3px 0;
-    clear: both;
-    font-size: 0.8em;
-    text-align: right;
-}
-
-div.footer a {
-    color: #eee;
-    text-decoration: none;
-}
-
-p {    
-    margin: 0.8em 0 0.5em 0;
-}
-
-div.body a, div.sphinxsidebarwrapper a {
-    color: #519548;
-    text-decoration: none;
-}
-
-div.body a:hover, div.sphinxsidebarwrapper a:hover {
-    border-bottom: 1px solid #519548
+.sidebar-box-heading {
+    padding-left: 15px;
 }
 
+/*header format*/
 h1, h2, h3, h4, h5, h6 {
     font-family: "Open Sans", sans-serif;
-    font-weight: 300;
+    font-weight: 100;
+    margin: 0;
+    padding: 0.7em 0 0.5em 0em;
+    line-height: 1.2em;
+    color: #002b36;
 }
 
 h1 {
-    margin: 0;
-    padding: 0.7em 0 0.3em 0;
-    line-height: 1.2em;
-    color: #002b36;
-    text-shadow: #eee 0.1em 0.1em 0.1em;
+    font-size: 30px;
+    line-height: 36px;
 }
-
 h2 {
-    margin: 1.3em 0 0.2em 0;
-    padding: 0 0 10px 0;
-    color: #073642;
-    border-bottom: 1px solid #eee;
+    font-size: 24px;
+    line-height: 30px;
 }
-
 h3 {
-    margin: 1em 0 -0.3em 0;
-    padding-bottom: 5px;
+    font-size: 19px;
+    line-height: 21px;
+}
+h4 {
+    font-size: 17px;
+    line-height: 19px;
+}
+h5 {
+    font-size: 15px;
+    line-height: 17px;
+}
+h6 {
+    font-size: 13px;
+    line-height: 15px;
 }
 
-h3, h4, h5, h6 {
-    color: #073642;
-	border-bottom: 1px dotted #eee;
-}
-
-div.body h1 a, div.body h2 a, div.body h3 a, div.body h4 a, div.body h5 a, div.body h6 a {
-    color: #657B83!important;
-}
-
-h1 a.anchor, h2 a.anchor, h3 a.anchor, h4 a.anchor, h5 a.anchor, h6 a.anchor {
-    display: none;
-    margin: 0 0 0 0.3em;
-    padding: 0 0.2em 0 0.2em;
-    color: #aaa!important;
-}
-
-h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor,
-h5:hover a.anchor, h6:hover a.anchor {
-    display: inline;
-}
-
-h1 a.anchor:hover, h2 a.anchor:hover, h3 a.anchor:hover, h4 a.anchor:hover,
-h5 a.anchor:hover, h6 a.anchor:hover {
-    color: #777;
-    background-color: #eee;
-}
-
-a.headerlink {
-    color: #c60f0f!important;
-    font-size: 1em;
-    margin-left: 6px;
-    padding: 0 4px 0 4px;
-    text-decoration: none!important;
-}
-
-a.headerlink:hover {
-    background-color: #ccc;
-    color: white!important;
-}
-
-
-cite, code, tt {
-    font-family: 'Source Code Pro', monospace;
-	font-size: 0.9em;
-    letter-spacing: 0.01em;
-    background-color: #eeeff2;
-    font-style: normal;
-}
-
-hr {
-    border: 1px solid #eee;
-    margin: 2em;
-}
-
-.highlight {
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-}
-
-pre {
-    font-family: 'Source Code Pro', monospace;
-    font-style: normal;
-	font-size: 0.9em;
-    letter-spacing: 0.015em;
-    line-height: 120%;
-    padding: 0.7em;
-	white-space: pre-wrap;       /* css-3 */
-	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-	white-space: -pre-wrap;      /* Opera 4-6 */
-	white-space: -o-pre-wrap;    /* Opera 7 */
-	word-wrap: break-word;       /* Internet Explorer 5.5+ */
-}
-
-pre a {
-    color: inherit;
-    text-decoration: underline;
-}
-
-td.linenos pre {
-    padding: 0.5em 0;
-}
-
-div.quotebar {
-    background-color: #f8f8f8;
-    max-width: 250px;
-    float: right;
-    padding: 2px 7px;
-    border: 1px solid #ccc;
-}
-
-div.topic {
-    background-color: #f8f8f8;
-}
-
+/*adjusted for numpydoc*/
 table {
     border-collapse: collapse;
     margin: 0 -0.5em 0 -0.5em;
@@ -643,75 +92,117 @@ table {
 table td, table th {
     padding: 0.2em 0.5em 0.2em 0.5em;
 }
-/* adjusted for numpydoc */  
+
 table th {
     background-color: #eee; 
     width: 7.5em;
 }
 
-div.admonition {
-    font-size: 0.9em;
-    margin: 1em 0 1em 0;
-    border: 1px solid #eee;
-    background-color: #f7f7f7;
-    padding: 0;
-    -moz-box-shadow: 0px 8px 6px -8px #93a1a1;
-    -webkit-box-shadow: 0px 8px 6px -8px #93a1a1;
-    box-shadow: 0px 8px 6px -8px #93a1a1;
+/*permanent headerlinks*/
+.headerlink {
+    margin-left: 10px;
+    color: #ddd;
+    display: none;
+}
+h1:hover .headerlink,
+h2:hover .headerlink,
+h3:hover .headerlink,
+h4:hover .headerlink,
+h5:hover .headerlink,
+h6:hover .headerlink {
+    display: inline;
+}
+.headerlink:hover {
+    color: #3c8732;
+    text-decoration: none;
 }
 
-div.admonition p {
-    margin: 0.5em 1em 0.5em 1em;
-    padding: 0.2em;
+/*format of code cells lastcout directive*/
+pre, code, blockquote {
+    font-family: "Source Code Pro";
+    font-size: 14px;  
+    line-height: 15px;
+    }
+
+blockquote p{
+    font-size: 14px;
 }
 
-div.admonition pre {
-    margin: 0.4em 1em 0.4em 1em;
+/*make source link of functions appear right*/
+span.viewcode-link {
+    float: right;
 }
-
-div.admonition p.admonition-title
-{
-    margin: 0;
-    padding: 0.2em 0 0.2em 0.6em;
-    color: white;
-    border-bottom: 1px solid #eee8d5;
+/* master content table */
+.contentstable.docutils, .contentstable.docutils td {
+    border-color: transparent;
+}
+.contentstable.docutils .first {
     font-weight: bold;
-    background-color: #268bd2;
+}
+.contentstable.docutils .last {
+    padding-left: 10px;
 }
 
-div.warning p.admonition-title,
-div.important p.admonition-title {
-    background-color: #cb4b16;
+.docutils .label, .docutils .badge {
+    background: transparent;
+    text-shadow: none;
+    font-size: 13px;
+    padding: 5px;
+    line-height: 20px;
+    color: #333;
 }
 
-div.hint p.admonition-title,
-div.tip p.admonition-title {
-    background-color: #859900;
+/* module summary table */
+.longtable.docutils {
+    font-size: 12px;
+    margin-bottom: 30px;
+}
+.longtable.docutils, .longtable.docutils td {
+    border-color: #ccc;
 }
 
-div.caution p.admonition-title,
-div.attention p.admonition-title,
-div.danger p.admonition-title,
-div.error p.admonition-title {
-    background-color: #dc322f;
+/* function and class description */
+dl.class, dl.function, dl.method, dl.attribute {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
 }
-
-div.admonition ul, div.admonition ol {
-    margin: 0.1em 0.5em 0.5em 3em;
-    padding: 0;
+.descclassname {
+    color: #aaa;
+    font-weight: normal;
+    font-family: monospace;
 }
-
-div.versioninfo {
-    margin: 1em 0 0 0;
-    border: 1px solid #eee;
-    background-color: #DDEAF0;
-    padding: 8px;
-    line-height: 1.3em;
-    font-size: 0.9em;
+.descname {
+    font-family: monospace;
 }
-
-div.viewcode-block:target {
-    background-color: #f4debf;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-}*/
+dl.class em, dl.function em, dl.class big, dl.function big {
+    font-weight: normal;
+    font-family: monospace;
+}
+dl.class dd, dl.function dd {
+    padding: 10px;
+}
+.docutils.field-list th {
+    background-color: #eee;
+    padding: 10px;
+    text-align: left;
+    vertical-align: top;
+    width: 100px;
+}
+.docutils.field-list td {
+    padding: 10px 10px 10px 20px;
+    text-align: left;
+    vertical-align: top;
+}
+.docutils.field-list td blockquote p {
+    font-size: 13px;
+    line-height: 18px;
+}
+p.rubric {
+    font-weight: bold;
+    font-size: 15px;
+    margin: 15px 0 10px 0;
+}
+p.admonition-title {
+    font-weight: bold;
+    text-decoration: underline;
+}
