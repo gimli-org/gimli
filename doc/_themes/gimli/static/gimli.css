@@ -1,6 +1,6 @@
 /*general settings*/
 html {
-    background: url("bg.png") repeat;
+    background: url("bg.png") repeat fixed;
 }
 
 .container {
