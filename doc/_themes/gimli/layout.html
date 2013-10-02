@@ -74,6 +74,7 @@ URL_ROOT:    '{{ url_root }}',
     <body class="container">
         <a href="{{ pathto('', 1) }}" class="logo"><img src="{{ pathto('_static/', 1) }}gimli.png" alt=""></a>
         <br><br>
+        <div class="clearfix"></div>
         <div class="navbar">
             <div class="navbar-inner">
                 <ul class="nav">
@@ -89,7 +90,7 @@ URL_ROOT:    '{{ url_root }}',
                 </form>
             </div>
         </div>
-        <div class="row">
+        <div class="row-fluid">
             <div class="span9">
                 {% block body %}{% endblock %}
                 <ul class="pager">
@@ -107,10 +108,11 @@ URL_ROOT:    '{{ url_root }}',
             </div>
             <div class="span3">
                 {% include 'sidebar.html' %}
+            </div>
         </div>
-        </div>
-        <div class="well well-small">
+            <div class="well well-small">
                 {% include 'footer.html' %}
+            </div>
         </div>
     </body>
 </html>

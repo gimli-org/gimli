@@ -1,9 +1,24 @@
 /*general settings*/
+html {
+    background: url("bg.png") repeat;
+}
+
+.container {
+    padding-left: 30px;
+    padding-right: 30px;
+    width: 1000px;
+    box-shadow:   2px  0  10px  #aaa,
+                 -2px  0  10px  #aaa;
+    -moz-box-shadow:  2px  0  10px  #aaa,
+                      -2px  0  10px  #aaa;
+    -webkit-box-shadow:  2px  0  10px  #aaa,
+                         -2px  0  10px  #aaa;
+}
+
 body {
     font-family: "Open Sans";
     font-family: "Open Sans", sans-serif;
     font-size: 15px
-    /*background: url("bg.png") repeat;*/
 }
 
 a { color: #16540e }
@@ -37,7 +52,7 @@ textarea {
     font-weight: 180;
     position: relative;
     top: -50%;
-    left: +22%;
+    left: +25%;
 }
 
 /*sidebar*/
