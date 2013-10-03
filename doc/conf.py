@@ -50,7 +50,7 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'plot2rst',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.mathjax',
               'doxylink'
               ]
 

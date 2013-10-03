@@ -1,9 +1,8 @@
 .. _sec:GIMli:
 
-=========
-**GIMLi**
-=========
-
+=====
+GIMLi
+=====
 .. toctree::
     :maxdepth: 3
 

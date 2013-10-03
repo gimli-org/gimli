@@ -2,10 +2,12 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-PAPER         =
-BUILDDIR      = _build
+SPHINXOPTS     =
+SPHINXBUILD    = sphinx-build
+SPHINXAPIBUILD = sphinx-apidoc
+PAPER          =
+BUILDDIR       = _build
+PYTHON         = python
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -14,10 +16,12 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) -c 
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+.PHONY: all api help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  all        to make API docs and HTML files"
+	@echo "  api        to make API docs"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
@@ -37,6 +41,12 @@ help:
 	@echo "  changes    to make an overview of all changed/added/deprecated items"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+
+all: api html
+
+api:
+	$(SPHINXAPIBUILD) -o api/pygimli ../python/pygimli
+	@echo "API build finished."
 
 clean:
 	-rm -rf $(BUILDDIR)/*
