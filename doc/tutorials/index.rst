@@ -1,7 +1,7 @@
 .. _part:tutorial:
 
-=============
-**Tutorials**
-=============
+=========
+Tutorials
+=========
 
 Simple one dimensional inversions with increasing complexity.

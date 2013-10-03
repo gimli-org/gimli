@@ -16,7 +16,6 @@ html {
 }
 
 body {
-    font-family: "Open Sans";
     font-family: "Open Sans", sans-serif;
     font-size: 15px
 }
@@ -144,9 +143,11 @@ blockquote p{
 }
 
 /*make source link of functions appear right*/
-span.viewcode-link {
+.viewcode-link, .viewcode-back {
     float: right;
+    font-weight: bold;
 }
+
 /* master content table */
 .contentstable.docutils, .contentstable.docutils td {
     border-color: transparent;
@@ -209,8 +210,10 @@ dl.class dd, dl.function dd {
     vertical-align: top;
 }
 .docutils.field-list td blockquote p {
-    font-size: 13px;
+    font-size: 14px;
+    font-family: "Open Sans";
     line-height: 18px;
+    font-weight: normal;
 }
 p.rubric {
     font-weight: bold;
