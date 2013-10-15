@@ -48,7 +48,7 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
     else:
         viewdata = data
 
-    if min(data) < 0:
+    if min(data) <= 0:
         linear = True
 
     g.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax, 
