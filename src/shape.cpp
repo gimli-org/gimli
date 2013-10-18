@@ -141,6 +141,7 @@ RVector3 Shape::center() const {
 }
 
 RVector3 Shape::norm() const {
+    THROW_TO_IMPL
     return RVector3();
 }
 
@@ -389,7 +390,7 @@ RVector3 TriangleShape::norm() const{
     RVector3 a(nodeVector_[1]->pos() - nodeVector_[0]->pos());
     RVector3 b(nodeVector_[2]->pos() - nodeVector_[0]->pos());
     RVector3 n((a).cross(b));
-    return n / n.abs();
+    return n.norm();
 }
 
 RVector3 TriangleShape::rst(uint i) const{

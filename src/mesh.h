@@ -367,15 +367,22 @@ public:
     int exportMidCellValue(const std::string & fileName, const RVector & data1,
                             const RVector & data2 = RVector(0)) const ;
 
-    void exportVTK(const std::string & fbody, const std::map< std::string, RVector > & data, const std::vector < RVector3 > & vec) const;
+    void exportVTK(const std::string & fbody,
+                   const std::map< std::string, RVector > & data,
+                   const std::vector < RVector3 > & vec,
+                   bool writeCells=true) const;
 
-    void exportVTK(const std::string & fbody, const std::map< std::string, RVector > & data) const;
+    void exportVTK(const std::string & fbody,
+                   const std::map< std::string, RVector > & data,
+                   bool writeCells=true) const;
 
     /*! Export mesh and whole exportData map */
-    void exportVTK(const std::string & fbody) const;
+    void exportVTK(const std::string & fbody, bool writeCells=true) const;
 
     /*! Export mesh and whole exportData map and vector data in vec*/
-    void exportVTK(const std::string & fbody, const std::vector < RVector3 > & vec) const;
+    void exportVTK(const std::string & fbody,
+                   const std::vector < RVector3 > & vec,
+                   bool writeCells=true) const;
 
     void readVTKPoints_(std::fstream & file, const std::vector < std::string > & row);
     void readVTKCells_(std::fstream & file, const std::vector < std::string > & row);

@@ -486,7 +486,13 @@ RVector3 Boundary::rst(uint i) const {
 }
 
 bool Boundary::normShowsOutside(const Cell & cell){
+    
     RVector3 n(this->norm());
+    
+    //** checkthis!!!!!!!!!!!! unittest
+    //return n.dot(shape.node(0).pos()) > 0.0;
+    //** checkthis!!!!!!!!!!!! unittest
+    
     RVector3 bc(this->center());
     RVector3 cc(cell.center());
     return (cc-(bc+n)).abs() > (cc-(bc-n)).abs();
@@ -527,7 +533,7 @@ Edge::Edge(Node & n1, Node & n2){
 }
 
 Edge::~Edge(){
-    delete shape_;
+//     delete shape_;
 }
 
 void Edge::setNodes(Node & n1, Node & n2, bool changed){

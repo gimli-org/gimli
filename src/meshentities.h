@@ -507,7 +507,6 @@ public:
 protected:
 };
 
-
 /*! count: 0-1, 2(0-1) */
 class DLLEXPORT Edge3Cell : public EdgeCell {
 public:

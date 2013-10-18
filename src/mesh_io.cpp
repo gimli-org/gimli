@@ -30,7 +30,6 @@
 namespace GIMLI{
 
 void Mesh::load(const std::string & fbody, IOFormat format){
-
     if (fbody.find(".mod") != std::string::npos){
         importMod(fbody);
     } else if (fbody.find(".vtk") != std::string::npos){
@@ -630,27 +629,33 @@ int Mesh::exportSimple(const std::string & fbody, const RVector & data) const {
   return 1;
 }
 
-void Mesh::exportVTK(const std::string & fbody ) const {
-    return exportVTK(fbody, exportDataMap_, std::vector < RVector3 >(0));
+void Mesh::exportVTK(const std::string & fbody, bool writeCells) const {
+    return exportVTK(fbody, exportDataMap_, std::vector < RVector3 >(0), writeCells);
 }
 
-void Mesh::exportVTK(const std::string & fbody, const std::vector < RVector3 > & vec ) const {
-    return exportVTK(fbody, exportDataMap_, vec);
+void Mesh::exportVTK(const std::string & fbody,
+                     const std::vector < RVector3 > & vec,
+                     bool writeCells) const {
+    return exportVTK(fbody, exportDataMap_, vec, writeCells);
 }
 
-void Mesh::exportVTK(const std::string & fbody, const std::map< std::string, RVector > & dataMap) const {
-    return exportVTK(fbody, dataMap, std::vector < RVector3 >(0));
+void Mesh::exportVTK(const std::string & fbody,
+                     const std::map< std::string, 
+                     RVector > & dataMap, bool writeCells) const {
+    return exportVTK(fbody, dataMap, std::vector < RVector3 >(0), writeCells);
 }
                         
-void Mesh::exportVTK(const std::string & fbody, const std::map< std::string, RVector > & dataMap, 
-                      const std::vector < RVector3 > & vec) const {
+void Mesh::exportVTK(const std::string & fbody,
+                     const std::map< std::string, RVector > & dataMap, 
+                     const std::vector < RVector3 > & vec, bool cells) const {
     bool verbose = false;
     
     if (verbose){
         std::cout << "Write vtk " << fbody + ".vtk" << std::endl;
     }
 
-    std::fstream file; if (! openOutFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", & file)) { return; }
+    std::fstream file; if (! openOutFile(fbody.substr(0, 
+                                                      fbody.rfind(".vtk")) + ".vtk", & file)) { return; }
     std::map< std::string, RVector > data(dataMap);
 
     if (cellCount() > 0){
@@ -692,7 +697,6 @@ void Mesh::exportVTK(const std::string & fbody, const std::map< std::string, RVe
     if (binary){ file << std::endl; }
 
     //** write cells
-    bool cells = true;
     if (cells && cellCount() > 0){
         int idxCount = 0;
         for (uint i = 0; i < cellCount(); i ++) idxCount += cell(i).nodeCount()+1;
@@ -856,6 +860,18 @@ void Mesh::exportVTK(const std::string & fbody, const std::map< std::string, RVe
                     file << std::endl;
                 }
             }
+            
+            //** write boundary vector data
+            if (vec.size() == boundaryCount()){
+                if (verbose){
+                    std::cout << "write vector field data" << std::endl;
+                }
+                file << "VECTORS vec double" << std::endl;
+            
+                for (uint i = 0; i < vec.size(); i ++){
+                    file << vec[i][0] << " " << vec[i][1] << " "<< vec[i][2] << " " << std::endl;
+                }
+            }
         } // if (boundaryCount() > 0)
         
     } // else write boundaries
@@ -895,6 +911,7 @@ void Mesh::exportVTK(const std::string & fbody, const std::map< std::string, RVe
 }
 
 void Mesh::importVTK(const std::string & fbody) {
+//     __MS(dimension_)
     this->clear();
     std::fstream file; openInFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", &file);
 
@@ -939,7 +956,7 @@ void Mesh::importVTK(const std::string & fbody) {
     } else {
             THROW_TO_IMPL
     }
-    
+//     __MS(dimension_)
     this->showInfos();
     file.close();
 }
@@ -952,6 +969,10 @@ void Mesh::readVTKPoints_(std::fstream & file, const std::vector < std::string >
         file >> x >> y >> z;
         this->createNode(x, y, z);
     }
+    
+//     std::cout << GIMLI::z(positions()) << std::endl;
+//     std::cout << (min(abs(GIMLI::z(positions()))) << std::endl;
+//     __MS(nonZero(GIMLI::z(positions())))
     if (!nonZero(GIMLI::z(positions()))) dimension_ = 2;
 }
 

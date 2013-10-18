@@ -26,96 +26,96 @@
 
 namespace GIMLI {
 
-DC1dModelling::DC1dModelling( size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn, 
-                              bool verbose )
-: ModellingBase( verbose ), nlayers_( nlayers ), am_( am ), an_( an ), bm_( bm ), bn_( bn ){
+DC1dModelling::DC1dModelling(size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn, 
+                              bool verbose)
+: ModellingBase(verbose), nlayers_(nlayers), am_(am), an_(an), bm_(bm), bn_(bn){
     init_();
-    setMesh( createMesh1DBlock( nlayers ) );
-    k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ );        
+    setMesh(createMesh1DBlock(nlayers));
+    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_);        
     meanrhoa_ = 100.0; //*** hack   
 }
 
-DC1dModelling::DC1dModelling( size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose )
-: ModellingBase( verbose ), nlayers_( nlayers ){
+DC1dModelling::DC1dModelling(size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose)
+: ModellingBase(verbose), nlayers_(nlayers){
     init_();
-    setMesh( createMesh1DBlock( nlayers ) );
+    setMesh(createMesh1DBlock(nlayers));
     am_ = ab2 - mn2;
     an_ = ab2 + mn2;
     bm_ = ab2 + mn2;
     bn_ = ab2 - mn2;
-    k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ ); 
+    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_); 
     meanrhoa_ = 100.0; //*** hack   
 }
 
-DC1dModelling::DC1dModelling( size_t nlayers, DataContainer & data, bool verbose ) 
-: ModellingBase( verbose ), nlayers_ ( nlayers ),
-am_( RVector( data.size(), 9e9 ) ), an_( RVector( data.size(), 9e9 ) ), 
-bm_( RVector( data.size(), 9e9 ) ), bn_( RVector( data.size(), 9e9 ) ){
+DC1dModelling::DC1dModelling(size_t nlayers, DataContainer & data, bool verbose) 
+: ModellingBase(verbose), nlayers_ (nlayers),
+am_(RVector(data.size(), 9e9)), an_(RVector(data.size(), 9e9)), 
+bm_(RVector(data.size(), 9e9)), bn_(RVector(data.size(), 9e9)){
     init_();
-    setMesh( createMesh1DBlock( nlayers ) );
-    setData( data );
+    setMesh(createMesh1DBlock(nlayers));
+    setData(data);
     std::vector< RVector3 > spos = data.sensorPositions();
-    for ( Index i = 0 ; i < data.size() ; i++ ){
+    for (Index i = 0 ; i < data.size() ; i++){
         int ia = (int) data("a")[i];
         int ib = (int) data("b")[i];
         int im = (int) data("m")[i];
         int in = (int) data("n")[i];
-        if ( ia >= 0 && im >= 0 ) am_[ i ] = spos[ ia ].distance( spos[ im ] );
-        if ( ia >= 0 && in >= 0 ) an_[ i ] = spos[ ia ].distance( spos[ in ] );
-        if ( ib >= 0 && im >= 0 ) bm_[ i ] = spos[ ib ].distance( spos[ im ] );
-        if ( ib >= 0 && in >= 0 ) bn_[ i ] = spos[ ib ].distance( spos[ in ] );
+        if (ia >= 0 && im >= 0) am_[i] = spos[ia].distance(spos[im]);
+        if (ia >= 0 && in >= 0) an_[i] = spos[ia].distance(spos[in]);
+        if (ib >= 0 && im >= 0) bm_[i] = spos[ib].distance(spos[im]);
+        if (ib >= 0 && in >= 0) bn_[i] = spos[ib].distance(spos[in]);
     }
-    k_ = ( 2.0 * PI ) / ( 1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_ ); 
+    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_); 
     meanrhoa_ = 100.0; //*** hack   
 
-    if ( data.nonZero( "rhoa" ) ) meanrhoa_ = mean( data("rhoa") );
+    if (data.allNonZero("rhoa")) meanrhoa_ = mean(data("rhoa"));
 }
     
-RVector DC1dModelling::response( const RVector & model ) {
-    if ( model.size() < ( nlayers_ * 2 - 1 ) ){
-        throwError( 1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 2 - 1 ) + " > " + toStr( model.size() ) );
+RVector DC1dModelling::response(const RVector & model) {
+    if (model.size() < (nlayers_ * 2 - 1)){
+        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 2 - 1) + " > " + toStr(model.size()));
     }
-    if ( model.size() > ( nlayers_ * 2 - 1 ) ){
-        throwError( 1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 2 - 1 ) + " < " + toStr( model.size() ) );
+    if (model.size() > (nlayers_ * 2 - 1)){
+        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 2 - 1) + " < " + toStr(model.size()));
     }
     
-    RVector rho( nlayers_ );
-    RVector thk( nlayers_ - 1 );
-    for ( size_t i = 0 ; i < nlayers_ -1 ; i++ ) thk[ i ] = model[ i ];
-    for ( size_t i = 0 ; i < nlayers_ ; i++ ) rho[ i ] = model[ nlayers_ + i -1 ];
-    return rhoa( rho, thk );
+    RVector rho(nlayers_);
+    RVector thk(nlayers_ - 1);
+    for (size_t i = 0 ; i < nlayers_ -1 ; i++) thk[i] = model[i];
+    for (size_t i = 0 ; i < nlayers_ ; i++) rho[i] = model[nlayers_ + i -1];
+    return rhoa(rho, thk);
 }
 
-RVector DC1dModelling::rhoa( const RVector & rho, const RVector & thk ) {
-    tmp_ = pot1d( am_, rho, thk );
-    tmp_ -= pot1d( an_, rho, thk );
-    tmp_ -= pot1d( bm_, rho, thk );
-    tmp_ += pot1d( bn_, rho, thk );
-    return tmp_ * k_ + rho[ 0 ];
+RVector DC1dModelling::rhoa(const RVector & rho, const RVector & thk) {
+    tmp_ = pot1d(am_, rho, thk);
+    tmp_ -= pot1d(an_, rho, thk);
+    tmp_ -= pot1d(bm_, rho, thk);
+    tmp_ += pot1d(bn_, rho, thk);
+    return tmp_ * k_ + rho[0];
 }
 
-RVector DC1dModelling::kern1d( const RVector & lam, const RVector & rho, const RVector & h ) {
+RVector DC1dModelling::kern1d(const RVector & lam, const RVector & rho, const RVector & h) {
     size_t nr = rho.size();
     size_t nl = lam.size();
-    RVector z( nl, rho[ nr - 1 ] );
-    RVector p( nl, 0.0 );
-    RVector th( nl );
-    for ( int i = nr - 2; i >= 0; i-- ) {
-        p = ( z - rho[ i ] ) / ( z + rho[ i ] );
-        th = tanh( lam * h[ i ] );
-        z = rho[ i ] * ( z + th * rho[ i ] ) / ( z * th + rho[ i ] );
+    RVector z(nl, rho[nr - 1]);
+    RVector p(nl, 0.0);
+    RVector th(nl);
+    for (int i = nr - 2; i >= 0; i--) {
+        p = (z - rho[i]) / (z + rho[i]);
+        th = tanh(lam * h[i]);
+        z = rho[i] * (z + th * rho[i]) / (z * th + rho[i]);
     }
 
-    RVector ehl( exp( -2.0 * lam * h[ 0 ] ) * p );
-    return ehl / ( 1.0 - ehl ) * rho[ 0 ] / 2.0 / PI ;
+    RVector ehl(exp(-2.0 * lam * h[0]) * p);
+    return ehl / (1.0 - ehl) * rho[0] / 2.0 / PI ;
 }
 
-RVector DC1dModelling::pot1d( const RVector & R, const RVector & rho, const RVector & thk ) {
-    RVector z0( R.size() );
+RVector DC1dModelling::pot1d(const RVector & R, const RVector & rho, const RVector & thk) {
+    RVector z0(R.size());
     double rabs;
-    for ( size_t i = 0; i < R.size(); i++ ) {
-        rabs = std::fabs( R[ i ] );
-        z0[ i ] = sum( myw_ * kern1d( myx_ / rabs, rho, thk ) * 2.0 ) / rabs;
+    for (size_t i = 0; i < R.size(); i++) {
+        rabs = std::fabs(R[i]);
+        z0[i] = sum(myw_ * kern1d(myx_ / rabs, rho, thk) * 2.0) / rabs;
     }
     return z0;
 }
@@ -394,33 +394,33 @@ void DC1dModelling::init_() {
                         9.095360729014628e-11
                       };
 
-    myx_.resize( 801 );
-    myx_.fill( myx );
-    myw_.resize( 801 );
-    myw_.fill( myw );
+    myx_.resize(801);
+    myx_.fill(myx);
+    myw_.resize(801);
+    myw_.fill(myw);
 }
 
-RVector DC1dModellingC::response( const RVector & model ) {
-    if ( model.size() < ( nlayers_ * 3 - 1 ) ){
-        throwError( 1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 3 - 1 ) + " > " + toStr( model.size() ) );
+RVector DC1dModellingC::response(const RVector & model) {
+    if (model.size() < (nlayers_ * 3 - 1)){
+        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 3 - 1) + " > " + toStr(model.size()));
     }
-    if ( model.size() > ( nlayers_ * 3 - 1 ) ){
-        throwError( 1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr( nlayers_ * 3 - 1 ) + " < " + toStr( model.size() ) );
+    if (model.size() > (nlayers_ * 3 - 1)){
+        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 3 - 1) + " < " + toStr(model.size()));
     }
     
-    RVector thk(    model( 0,               nlayers_ -1 ) );
-    RVector rhoM(   model( nlayers_ - 1,    2 * nlayers_ -1 ) );
-    RVector rhoP( - model( 2 * nlayers_ -1, 3 * nlayers_ -1 ) );
+    RVector thk(model(0,               nlayers_ -1));
+    RVector rhoM(model(nlayers_ - 1,    2 * nlayers_ -1));
+    RVector rhoP(- model(2 * nlayers_ -1, 3 * nlayers_ -1));
     
-//     for ( size_t i = 0 ; i < nlayers_ -1 ; i++ ) thk[ i ] = model[ i ];
-//     for ( size_t i = 0 ; i < nlayers_ ; i++ ) rhoM[ i ] = model[ nlayers_ + i -1 ];
-//     for ( size_t i = 0 ; i < nlayers_ ; i++ ) rhoP[ i ] = - model[ 2 * nlayers_ + i -1 ];
-    CVector rhoC = toComplex( RVector( rhoM * cos( rhoP ) ), RVector( rhoM * sin( rhoP ) ) );
+//     for (size_t i = 0 ; i < nlayers_ -1 ; i++) thk[i] = model[i];
+//     for (size_t i = 0 ; i < nlayers_ ; i++) rhoM[i] = model[nlayers_ + i -1];
+//     for (size_t i = 0 ; i < nlayers_ ; i++) rhoP[i] = - model[2 * nlayers_ + i -1];
+    CVector rhoC = toComplex(RVector(rhoM * cos(rhoP)), RVector(rhoM * sin(rhoP)));
     
-    CVector rhoaC = rhoaT< CVector >( rhoC, thk );
-    RVector angPlus = abs( angle( rhoaC ) );
+    CVector rhoaC = rhoaT< CVector >(rhoC, thk);
+    RVector angPlus = abs(angle(rhoaC));
     
-    return cat( abs( rhoaC ), angPlus );
+    return cat(abs(rhoaC), angPlus);
 }
 
 } // namespace GIMLI{

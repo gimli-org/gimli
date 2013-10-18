@@ -5,14 +5,15 @@ from meshview import *
 from colorbar import *
 from overlayimage import *
 
-import pylab as P
+import matplotlib.pyplot as plt
+import numpy as np
 
-goldenMean = 1.618 #( 1.0 + math.sqrt(5.0) ) / 2.0
+goldenMean = 1.618 #(1.0 + math.sqrt(5.0)) / 2.0
 
-def setOutputStyle( dim = 'w', paperMargin = 5, xScale = 1.0, yScale = 1.0, fontsize = 9, scale = 1, usetex = True ):
-    '''
-        
-    '''
+def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0,
+                   fontsize=9, scale=1, usetex=True):
+    """
+    """
     
     if dim == 'w':
         dim = 0
@@ -22,20 +23,18 @@ def setOutputStyle( dim = 'w', paperMargin = 5, xScale = 1.0, yScale = 1.0, font
     a4 = [21.0, 29.7]
     
     inches_per_cm = 1. / 2.54
-    inches_per_pt   = 1.0 / 72.27 # pt/inch ( latex )
-    golden_mean = ( 1.0 + math.sqrt(5.0) ) / 2.0
+    inches_per_pt   = 1.0 / 72.27 # pt/inch (latex)
+    golden_mean = (1.0 + math.sqrt(5.0)) / 2.0
 
-    textwidth       = ( a4[ 0 ] - paperMargin ) * inches_per_cm 
+    textwidth       = (a4[0] - paperMargin) * inches_per_cm 
 
     fig_width   = textwidth * xScale # fig width in inches
     fig_height  = textwidth * yScale # fig height in inches
     
-    fig_size    = [  fig_width * scale
-                    ,fig_height * scale
-                  ]
+    fig_size    = [fig_width * scale, fig_height * scale]
 
     #print "figsize:", fig_size
-#    fig.set_size_inches( fig_size )
+#    fig.set_size_inches(fig_size)
 
     #from matplotlib import rc
     ##rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -68,6 +67,6 @@ def setOutputStyle( dim = 'w', paperMargin = 5, xScale = 1.0, yScale = 1.0, font
                 'lines.linewidth'      : 0.6 * scale
             }
 
-    P.rcParams.update(params)
+    plt.rcParams.update(params)
     
 # def setOutPutStyle

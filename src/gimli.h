@@ -131,6 +131,9 @@ typedef int64_t int64;
 #define VECTORBINSUFFIX ".bvec"
 #define VECTORASCSUFFIX ".vector"
 #define NOT_DEFINED "notDefined"
+    
+#define __M std::cout << "*** " << WHERE << std::endl;
+#define __MS(str) std::cout << "*** " <<str << " " << WHERE << std::endl;
 
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;

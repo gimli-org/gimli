@@ -11,6 +11,14 @@ except ImportError:
 import matplotlib.pyplot as plt
 import numpy as np
 
+def show(mesh, *args, **kwargs):
+    """
+        Syntactic sugar
+    """
+    if isinstance(mesh, g.Mesh):
+        showMesh(mesh, *args, **kwargs)
+
+
 def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
              *args, **kwargs):
     """
@@ -58,3 +66,29 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
     return a, cbar
 #def showMesh(...)
 
+def showBoundaryNorm(mesh, *args, **kwargs):
+    """
+    """
+    
+    ax = showMesh(mesh, showLater=True)[0]
+    
+    for b in mesh.boundaries():
+        c1 = b.center()
+        c2 = c1 + b.norm()
+        ax.plot([c1[0], c2[0]],
+                [c1[1], c2[1]], color='Black')
+    
+    plt.show()
+           
+    return ax
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

@@ -1834,7 +1834,7 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
 
 Mesh & Mesh::scale(const RVector3 & s){
     std::for_each(nodeVector_.begin(), nodeVector_.end(),
-                   boost::bind(& Node::scale, _1, boost::ref(s)));
+                  boost::bind(& Node::scale, _1, boost::ref(s)));
    //for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->scale(s);
     rangesKnown_ = false;
     return *this;
