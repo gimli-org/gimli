@@ -284,11 +284,11 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
             gzi, gzzi = lineIntegralZ_WonBevis(a - p, b - p)
          
           #  print gzi, gzzi
-            gz[i,:] += gzi *[1.0, 1.0, -1.0]
-            gzz[i,:] += gzzi *-1.0
+            gz[i,:] += -gzi *[1.0, 1.0, -1.0]
+            gzz[i,:] += -gzzi 
 
         
-    return density * 2.0 * -G * gz, density * 2.0 * -G * -gzz
+    return density * 2.0 * -G * gz, density * 2.0 * -G * gzz
 # def calcPolydgdz()
 
 def angle(p1, p2, p3, Un):
@@ -471,8 +471,8 @@ def grav(mesh, pnts, rho):
                 if mesh.dimension() == 2:
                     dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                        b.node(1).pos())
-                    dgi *= 2.0
-                    dgzi *= 2.0
+                    dgi *= -2.0
+                    dgzi *= -2.0
                 else:
                     dgi, dgzi = gravMagBoundarySinghGup(b)
                 
