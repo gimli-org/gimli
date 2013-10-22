@@ -490,7 +490,7 @@ bool Boundary::normShowsOutside(const Cell & cell){
     RVector3 n(this->norm());
     
     //** checkthis!!!!!!!!!!!! unittest
-    //return n.dot(shape.node(0).pos()) > 0.0;
+//     return n.dot(shape_->node(0).pos()) > 0.0;
     //** checkthis!!!!!!!!!!!! unittest
     
     RVector3 bc(this->center());
