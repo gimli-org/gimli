@@ -1,12 +1,21 @@
 .. _sec:doc_todo:
 
-=====================
-*Documentation TODOs*
-=====================
+===================
+Documentation TODOs
+===================
+
+* somewhere explain difference between gimli and pygimli
+* somewhere explain difference python bind of gimli and pygimli scripts
+* create minimalistic welcome page (short about, getting started, download and installation)
+* transfer current index.html to doc.rst (Documentation Home)
+* transfer gmsh tutorial
+* make sphinx warnings, adminitions, etc. compatible with `bootstrap alerts <http://getbootstrap.com/2.3.2/components.html#alerts>`_
 
 .. admonition:: See also
 
-    Restructured Text (reST) and Sphinx CheatSheets:
+    **Restructured Text (reST) and Sphinx CheatSheets**
+
+    :ref:`rst-basics`
  
     http://docs.geoserver.org/trunk/en/docguide/sphinx.html
 
@@ -14,18 +23,29 @@
         
     http://packages.python.org/an_example_pypi_project/sphinx.html
 
+
+    **Conventions**
+
+    PEP 8:
+
+    http://www.python.org/dev/peps/pep-0008/
+
     Numpy/Scipy Docstring convention:
 
     https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#docstring-standard
    
+    Matplotlib naming convention:
+
+    http://matplotlib.org/1.3.0/faq/usage_faq.html#coding-styles
+
+**Requirements**
+
 Needed external extensions for building this docu
 
 :: 
 
     pip install numpydoc pybtex sphinxcontrib-programoutput
 
-* somewhere explain difference between gimli and pygimli
-* somewhere explain difference python bind of gimli and pygimli scripts
 
 Linking to Python API
 ---------------------
@@ -47,4 +67,3 @@ Docstring examples
 ------------------
 .. autofunction:: pygimli.meshtools.mesh.readHydrus2dMesh
 .. autofunction:: pygimli.meshtools.mesh.readGmsh
-
