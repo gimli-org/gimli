@@ -20,9 +20,10 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  all        to make API docs and HTML files"
+	@echo "  all        to make API docs, gallery and HTML files"
 	@echo "  api        to make API docs"
 	@echo "  html       to make standalone HTML files"
+	@echo "  gallery    to make tutorial/example gallery for sidebar"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
@@ -42,14 +43,17 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
-all: api html
+all: api gallery html
 
 api:
 	$(SPHINXAPIBUILD) -o api/pygimli ../python/pygimli
 	@echo "API build finished."
 
 clean:
-	-rm -rf $(BUILDDIR)/*
+	-rm -rf $(BUILDDIR)/* _examples_auto _tutorials_auto api
+
+gallery:
+	python sidebar_gallery.py
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

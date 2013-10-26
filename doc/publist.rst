@@ -1,9 +1,9 @@
 Publications
 ============
 
-.. attention:: the main GIMLi publication is still work in progress
+.. attention:: The main GIMLi publication is still work in progress.
 
-.. rubric:: Extended abstracts and publications about gimli and bert
+.. rubric:: Extended abstracts and publications about GIMLi and BERT
 
 .. bibliography:: libgimli.bib
     :style: mystyle

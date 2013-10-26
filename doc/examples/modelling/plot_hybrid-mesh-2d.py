@@ -16,6 +16,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pygimli as g
 from pygimli.viewer import showMesh
+from pygimli.mplviewer import drawMesh
 from pygimli.meshtools import merge2Meshes, appendTriangleBoundary
 
 """
@@ -25,8 +26,9 @@ We continue by building a regular grid and assign the marker 2 to all cells.
 xmin, xmax = 0., 50.
 zmin, zmax = -50., -25.
 
-xreg = np.arange(xmin, xmax, 1, 'float')
-zreg = np.arange(zmin, zmax, 1, 'float')
+dx = 1.0
+xreg = np.arange(xmin, xmax + dx, dx, 'float')
+zreg = np.arange(zmin, zmax + dx, dx, 'float')
 
 mesh1 = g.Mesh(2)
 mesh1.create2DGrid(xreg, zreg, 0)
@@ -85,15 +87,18 @@ mesh3 = merge2Meshes(mesh1, mesh2)
 print mesh3
 
 """
-... lastcout::
+.. lastcout::
 
 Of course, you can treat the hybrid mesh like any other mesh and append a triangle
 boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
 """
 
+
 mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31, smooth=True, marker=3, isSubSurface=True)
-showMesh(mesh, mesh.cellMarker())
-showMesh(mesh, showLater=True)
+showMesh(mesh, mesh.cellMarker(), cmap="summer", label="Region marker")
+ax, _ = showMesh(mesh, mesh.cellMarker(), showLater=True, linear=True, label="Region marker")
+drawMesh(ax, mesh)
 plt.xlim(40,60)
 plt.ylim(-30, -20)
 plt.show()
+

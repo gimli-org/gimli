@@ -62,6 +62,18 @@ textarea {
     padding-left: 15px;
 }
 
+/*examples/tutorials gallery in sidebar*/
+.carousel-control { 
+    font-size: 20px;
+    line-height: 15px;
+    height: 20px;
+    width: 20px;
+    top: 55%;
+}
+
+.carousel-caption {
+    color: #fff;
+}
 /*header format*/
 h1, h2, h3, h4, h5, h6 {
     font-family: "Open Sans", sans-serif;
@@ -126,6 +138,7 @@ h5:hover .headerlink,
 h6:hover .headerlink {
     display: inline;
 }
+
 .headerlink:hover {
     color: #3c8732;
     text-decoration: none;
@@ -135,11 +148,20 @@ h6:hover .headerlink {
 pre, code, blockquote {
     font-family: "Source Code Pro";
     font-size: 14px;  
-    line-height: 15px;
-    }
+    line-height: 18px;
+}
+
+blockquote {
+    border-left: 0px;
+}
 
 blockquote p{
     font-size: 14px;
+}
+
+blockquote em{
+    font-weight: bold;
+    font-style: normal;
 }
 
 /*make source link of functions appear right*/
@@ -166,6 +188,7 @@ blockquote p{
     padding: 5px;
     line-height: 20px;
     color: #333;
+    width: 170px;
 }
 
 /* module summary table */

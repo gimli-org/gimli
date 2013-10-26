@@ -1,3 +1,5 @@
+.. _rst-basics:
+
 Section reStructuredText Cockbock
 =================================
 

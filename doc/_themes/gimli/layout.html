@@ -83,7 +83,7 @@ URL_ROOT:    '{{ url_root }}',
                 <form class="navbar-form pull-right" action="{{ pathto('search') }}" method="get">
                     <div class="input-prepend">
                     <span class="add-on"><i class="icon-search"></i></span>
-                    <input type="text" class="search span3" name="q" placeholder="Search GIMLi documentation...">
+                    <input type="text" data-provide="typeahead", data-source=["test1", "teest2"], class="search span3" name="q" placeholder="Search GIMLi documentation...">
                     <input type="hidden" name="check_keywords" value="yes" >
                     <input type="hidden" name="area" value="default" >
                     </div>
