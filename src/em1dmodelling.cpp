@@ -24,93 +24,115 @@
 #include "meshgenerators.h"
 
 #include <math.h>
+
 namespace GIMLI {
 
-RVector MT1dModelling::rhoaphi( const RVector & rho, const RVector & thk ) { // after mtmod.c by R.-U. Börner
+RVector MT1dModelling::rhoaphi(const RVector & rho, const RVector & thk) { // after mtmod.c by R.-U. Börner
     size_t nperiods = periods_.size();
-    RVector rhoa( nperiods ), phi( nperiods );
+    RVector rhoa(nperiods), phi(nperiods);
     
     RVector::ValType my0 = PI * 4e-7;
-    Complex i_unit( 0.0 , 1.0 ), adm, alpha, tanalpha;
-    CVector z( nlay_ );
-    for ( size_t i = 0 ; i < nperiods ; i++ ) {
-        RVector::ValType omega = 2.0 * PI / periods_[ i ];
-        z[ nlay_ - 1 ] = sqrt( i_unit * omega * rho[ nlay_ - 1 ] / my0 );
-        for ( int k = nlay_ - 2 ; k >= 0 ; k-- ) {
-            adm = sqrt( my0 / ( rho[ k ] * i_unit * omega ) );
-            alpha = thk[ k ] * sqrt( i_unit * my0 * omega / rho[k] );
-            tanalpha = sinh( alpha ) / cosh( alpha );
-            z[ k ] = ( adm * z[ k + 1 ] + tanalpha ) / ( adm * z[ k + 1 ] * tanalpha + (RVector::ValType)1.0 );
-            z[ k ] /= adm;
+    Complex i_unit(0.0 , 1.0), adm, alpha, tanalpha;
+    CVector z(nlay_);
+    for (size_t i = 0 ; i < nperiods ; i++) {
+        RVector::ValType omega = 2.0 * PI / periods_[i];
+        z[nlay_ - 1] = sqrt(i_unit * omega * rho[nlay_ - 1] / my0);
+        for (int k = nlay_ - 2 ; k >= 0 ; k--) {
+            adm = sqrt(my0 / (rho[k] * i_unit * omega));
+            alpha = thk[k] * sqrt(i_unit * my0 * omega / rho[k]);
+            tanalpha = sinh(alpha) / cosh(alpha);
+            z[k] = (adm * z[k + 1] + tanalpha) / (adm * z[k + 1] * tanalpha + (RVector::ValType)1.0);
+            z[k] /= adm;
         }
-        rhoa[i] = abs( z[ 0 ] ) * abs( z[ 0 ] ) * my0 / omega;
-        phi[i] = std::atan( imag( z[ 0 ] ) / real( z[ 0 ] ) );
+        rhoa[i] = abs(z[0]) * abs(z[0]) * my0 / omega;
+        phi[i] = std::atan(imag(z[0]) / real(z[0]));
     }
-    return cat( rhoa, phi );
+    return cat(rhoa, phi);
 }
 
-RVector MT1dModelling::rhoa( const RVector & model ){ //! app. res. for thk/res vector
-    if ( model.size() != nlay_ * 2 - 1 ) return EXIT_VECTOR_SIZE_INVALID;
-    RVector thk( model, 0, nlay_ - 1 ), rho( model, nlay_ - 1, 2 * nlay_ - 1 );
-    return rhoa( rho, thk );
+RVector MT1dModelling::rhoa(const RVector & model){ //! app. res. for thk/res vector
+    if (model.size() != nlay_ * 2 - 1) return EXIT_VECTOR_SIZE_INVALID;
+    RVector thk(model, 0, nlay_ - 1), rho(model, nlay_ - 1, 2 * nlay_ - 1);
+    return rhoa(rho, thk);
 }
 
     /*! the actual (full) forward operator returning app.res.+phase for thickness+resistivity */
-RVector MT1dModelling::response( const RVector & model ) {
-    if ( model.size() != nlay_ * 2 - 1 ) return EXIT_VECTOR_SIZE_INVALID;
-    RVector thk( model, 0, nlay_ - 1 ), rho( model, nlay_ - 1, 2 * nlay_ - 1 );
-    return rhoaphi( rho, thk );
+RVector MT1dModelling::response(const RVector & model) {
+    if (model.size() != nlay_ * 2 - 1) return EXIT_VECTOR_SIZE_INVALID;
+    RVector thk(model, 0, nlay_ - 1), rho(model, nlay_ - 1, 2 * nlay_ - 1);
+    return rhoaphi(rho, thk);
 }
 
-RVector MT1dModelling::rhoa( const RVector & rho, const RVector & thk ) { // after mtmod.c by R.-U. Börner
+RVector MT1dModelling::rhoa(const RVector & rho, const RVector & thk) { // after mtmod.c by R.-U. Börner
     size_t nperiods = periods_.size();
-    return rhoaphi( rho, thk )(0,nperiods);
+    return rhoaphi(rho, thk)(0,nperiods);
     //CR not needed?
-//     RVector rhoa( nperiods );
+//     RVector rhoa(nperiods);
 //     static double my0 = PI * 4e-7;
-//     Complex i_unit( 0.0 , 1.0 ), adm, alpha, tanalpha;
-//     CVector z( nlay_ );
-//     for ( size_t i = 0 ; i < nperiods ; i++ ) {
-//         double omega = 2.0 * PI / periods_[ i ];
-//         z[ nlay_ - 1 ] = sqrt( i_unit * omega * rho[ nlay_ - 1 ] / my0 );
-//         for ( int k = nlay_ - 2 ; k >= 0 ; k-- ) {
-//             adm = sqrt( my0 / ( rho[ k ] * i_unit * omega ) );
-//             alpha = thk[ k ] * sqrt( i_unit * my0 * omega / rho[k] );
-//             tanalpha = sinh( alpha ) / cosh( alpha );
-//             z[ k ] = ( adm * z[ k + 1 ] + tanalpha ) / ( adm * z[ k + 1 ] * tanalpha + 1.0 );
-//             z[ k ] /= adm;
+//     Complex i_unit(0.0 , 1.0), adm, alpha, tanalpha;
+//     CVector z(nlay_);
+//     for (size_t i = 0 ; i < nperiods ; i++) {
+//         double omega = 2.0 * PI / periods_[i];
+//         z[nlay_ - 1] = sqrt(i_unit * omega * rho[nlay_ - 1] / my0);
+//         for (int k = nlay_ - 2 ; k >= 0 ; k--) {
+//             adm = sqrt(my0 / (rho[k] * i_unit * omega));
+//             alpha = thk[k] * sqrt(i_unit * my0 * omega / rho[k]);
+//             tanalpha = sinh(alpha) / cosh(alpha);
+//             z[k] = (adm * z[k + 1] + tanalpha) / (adm * z[k + 1] * tanalpha + 1.0);
+//             z[k] /= adm;
 //         }
-//         rhoa[i] = abs( z[ 0 ] ) * abs( z[ 0 ] ) * my0 / omega;
+//         rhoa[i] = abs(z[0]) * abs(z[0]) * my0 / omega;
 //     }
 //     return rhoa;
 }
 
-void FDEM1dModelling::init( ){
-    setMesh( createMesh1DBlock( nlay_ ) );
-    nfr_ = freq_.size(); 
-    double zp = ze_ + zs_;    
-    RVector rpq = coilspacing_ * coilspacing_ + zp * zp;
-    freeAirSolution_ = ( rpq - zp * zp * 3. ) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
+FDEM1dModelling::FDEM1dModelling(size_t nlay,
+                                 const RVector & freqs,
+                                 const RVector & coilspacing, 
+                                 double z, bool verbose)
+    : ModellingBase(verbose), nlay_(nlay), freqs_(freqs),
+      coilspacing_(coilspacing), 
+      zs_(-std::fabs(z)), ze_(-std::fabs(z)) {
+    init();
 }
 
-Complex btp( double u, double f, RVector rho, RVector d){
+FDEM1dModelling::FDEM1dModelling(size_t nlay,
+                                 const RVector & freqs,
+                                 double coilspacing,
+                                 double z, bool verbose)
+    : ModellingBase(verbose), nlay_(nlay), freqs_(freqs),
+      zs_(-std::fabs(z)), ze_(-std::fabs(z)) {
+
+    coilspacing_ = RVector(freqs.size(), coilspacing);
+    init();
+}
+
+void FDEM1dModelling::init(){
+    setMesh(createMesh1DBlock(nlay_));
+    nfr_ = freqs_.size(); 
+    double zp = ze_ + zs_;    
+    RVector rpq(coilspacing_ * coilspacing_ + zp * zp);
+    freeAirSolution_ = (rpq - zp * zp * 3.0) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
+}
+
+Complex btp(double u, double f, RVector rho, RVector d){
     size_t nl = rho.size();
     double mu0 = 4e-7 * PI;
     Complex c(0.0, mu0 * 2. * PI * f);
 
-    Complex b( std::sqrt( c / rho[nl-1] + u*u ) );
-    if( nl > 1 ) {
-        for( int nn=nl-2; nn>=0 ; nn-- ){
-            Complex alpha( std::sqrt( c/rho[ nn ] + u*u ) );
-            Complex cth( std::exp( alpha * d[ nn ] * -2.0 ) );
-            cth=( Complex( 1.0 ) - cth ) / ( cth + 1.0 );
-            b=( alpha * cth + b ) / ( cth * b / alpha + 1.0 );
+    Complex b(std::sqrt(c / rho[nl-1] + u*u));
+    if(nl > 1) {
+        for(int nn=nl-2; nn>=0 ; nn--){
+            Complex alpha(std::sqrt(c/rho[nn] + u*u));
+            Complex cth(std::exp(alpha * d[nn] * -2.0));
+            cth=(Complex(1.0) - cth) / (cth + 1.0);
+            b=(alpha * cth + b) / (cth * b / alpha + 1.0);
         }
     }
     return b;
 }
 
-RVector FDEM1dModelling::calc( const RVector & rho, const RVector & thk ){ 
+RVector FDEM1dModelling::calc(const RVector & rho, const RVector & thk){ 
     double hankelJ0[100]={
         2.89878288E-07,3.64935144E-07,4.59426126E-07,5.78383226E-07,
         7.28141338E-07,9.16675639E-07,1.15402625E-06,1.45283298E-06,
@@ -137,77 +159,78 @@ RVector FDEM1dModelling::calc( const RVector & rho, const RVector & thk ){
         9.89181741E-06,-6.24131160E-06,3.93800058E-06,-2.48471018E-06,
         1.56774609E-06,-9.89180896E-07,6.24130948E-07,-3.93800005E-07,
         2.48471005E-07,-1.56774605E-07,9.89180888E-08,-6.24130946E-08};
+    
     //** extract resistivity and thickness
-    RVector inph( nfr_ ), outph( nfr_ );//** inphase and quadrature components
+    RVector inph(nfr_), outph(nfr_);//** inphase and quadrature components
     int nc = 100, nc0 = 60; // number of coefficients
     RVector::ValType q=0.1*std::log(10.0);
-    for ( size_t i = 0 ; i < nfr_ ; i++ ) {
-        Complex aux( 0.0, 0.0 );
-        for ( int ii = 0 ; ii < nc ; ii++) {
-            RVector::ValType ui=std::exp( q * ( nc - ii - nc0 ) ) / coilspacing_[ i ];
-            Complex bti( btp( ui, freq_[i], rho, thk) );
-            Complex delta( ( bti - ui ) / ( bti + ui ) * std::exp( ui * ze_ ) * std::exp( ui * zs_ ) );
-            aux += delta * ui * ui * hankelJ0[ nc - ii - 1 ];
+    for (size_t i = 0 ; i < nfr_ ; i++) {
+        Complex aux(0.0, 0.0);
+        for (int ii = 0 ; ii < nc ; ii++) {
+            RVector::ValType ui=std::exp(q * (nc - ii - nc0)) / coilspacing_[i];
+            Complex bti(btp(ui, freqs_[i], rho, thk));
+            Complex delta((bti - ui) / (bti + ui) * std::exp(ui * ze_) * std::exp(ui * zs_));
+            aux += delta * ui * ui * hankelJ0[nc - ii - 1];
         }
         
-        aux /= PI * 4.0 *coilspacing_[ i ];
+        aux /= PI * 4.0 * coilspacing_[i];
         // normalize by free air solution in per cent
-        inph[ i ]  = real( aux ) / freeAirSolution_[ i ] * 100.0;
-        outph[ i ] = imag( aux ) / freeAirSolution_[ i ] * 100.0;
+        inph[i]  = real(aux) / freeAirSolution_[i] * 100.0;
+        outph[i] = imag(aux) / freeAirSolution_[i] * 100.0;
     }
     //** paste together both components and 
-    return cat( inph, outph );
+    return cat(inph, outph);
 }
 
-RVector FDEM1dModelling::response( const RVector & model ){ 
-    RVector thk( model, 0, nlay_ - 1 ), rho( model, nlay_ - 1, 2 * nlay_ - 1 );
-    return calc( rho, thk );
+RVector FDEM1dModelling::response(const RVector & model){ 
+    RVector thk(model, 0, nlay_ - 1), rho(model, nlay_ - 1, 2 * nlay_ - 1);
+    return calc(rho, thk);
 }
 
-RVector MRSModelling::response( const RVector & model ) { 
-    RVector outreal( *KR_ * model );
-    RVector outimag( *KI_ * model );
-    return RVector( sqrt( outreal * outreal + outimag * outimag ) ); 
+RVector MRSModelling::response(const RVector & model) { 
+    RVector outreal(*KR_ * model);
+    RVector outimag(*KI_ * model);
+    return RVector(sqrt(outreal * outreal + outimag * outimag)); 
 }
     
-void MRSModelling::createJacobian( const RVector & model ) {
-    RVector ddr( *KR_ * model );
-    RVector ddi( *KI_ * model );
-    RVector dda( sqrt( ddr * ddr + ddi * ddi ) );
+void MRSModelling::createJacobian(const RVector & model) {
+    RVector ddr(*KR_ * model);
+    RVector ddi(*KI_ * model);
+    RVector dda(sqrt(ddr * ddr + ddi * ddi));
     
-    RMatrix * jacobian = dynamic_cast < RMatrix * >( jacobian_ );
-    jacobian->resize( dda.size(), model.size() );
+    RMatrix * jacobian = dynamic_cast < RMatrix * >(jacobian_);
+    jacobian->resize(dda.size(), model.size());
     
-    for ( size_t i = 0 ; i < KR_->rows() ; i++ ) {
-        (*jacobian)[ i ] = ( (*KR_)[ i ] * ddr[i] + (*KI_)[ i ] * ddi[i] ) / dda[i];         
+    for (size_t i = 0 ; i < KR_->rows() ; i++) {
+        (*jacobian)[i] = ((*KR_)[i] * ddr[i] + (*KI_)[i] * ddi[i]) / dda[i];         
     }
 }
 
-RVector MRS1dBlockModelling::response( const RVector & model ){
+RVector MRS1dBlockModelling::response(const RVector & model){
         //! extract water content and thickness from model vector
-        RVector wc( model, nlay_ - 1 , nlay_ * 2 - 1 );
-        RVector thk( model, 0 , nlay_ - 1 );
+        RVector wc(model, nlay_ - 1 , nlay_ * 2 - 1);
+        RVector thk(model, 0 , nlay_ - 1);
         //! fill vector of original size wit last layer water content
-        RVector wcvec( nvec_, wc[ nlay_ - 1 ] );
+        RVector wcvec(nvec_, wc[nlay_ - 1]);
         size_t iz1 = 0, iz2 = 0;
         double zthk = 0;
         //! run through layers and fill water content
-        for ( size_t i = 0 ; i < nlay_ - 1 ; i++ ){
-            zthk += thk[ i ];
+        for (size_t i = 0 ; i < nlay_ - 1 ; i++){
+            zthk += thk[i];
             iz2 = 0;
-            while ( iz2 < zvec_.size() && zvec_[ iz2 ] < zthk ) iz2++;
-            if ( iz2 > nvec_ ) iz2 = nvec_;
-            for ( size_t j = iz1 ; j < iz2 ; j++ ) wcvec[ j ] = wc[ i ];
-            if ( iz2 + 1 >= zvec_.size() ) break; // end reached
-            wcvec[ iz2 ] = ( ( zthk - zvec_[ iz2 ] ) * wc[ i ] 
-                           + ( zvec_[ iz2 + 1 ] - zthk ) * wc[ i + 1 ] ) 
-                         / ( zvec_[ iz2 + 1 ] - zvec_[ iz2 ] );
+            while (iz2 < zvec_.size() && zvec_[iz2] < zthk) iz2++;
+            if (iz2 > nvec_) iz2 = nvec_;
+            for (size_t j = iz1 ; j < iz2 ; j++) wcvec[j] = wc[i];
+            if (iz2 + 1 >= zvec_.size()) break; // end reached
+            wcvec[iz2] = ((zthk - zvec_[iz2]) * wc[i] 
+                           + (zvec_[iz2 + 1] - zthk) * wc[i + 1]) 
+                         / (zvec_[iz2 + 1] - zvec_[iz2]);
             iz1 = iz2 + 1;
         }
         
-        if ( verbose_ ) save( wcvec, "wctmp.vec" );
+        if (verbose_) save(wcvec, "wctmp.vec");
         //! call original forward response and return;
-        return MRSModelling::response( wcvec );
+        return MRSModelling::response(wcvec);
     }
     
     

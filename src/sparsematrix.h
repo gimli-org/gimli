@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -41,7 +41,7 @@
 
 namespace GIMLI{
 
-#define SPARSE_NOT_VALID throwError( EXIT_SPARSE_INVALID, WHERE_AM_I + " no data/or sparsity pattern defined.");
+#define SPARSE_NOT_VALID throwError(EXIT_SPARSE_INVALID, WHERE_AM_I + " no data/or sparsity pattern defined.");
 
 //! based on: Ulrich Breymann, Addison Wesley Longman 2000 , revised edition ISBN 0-201-67488-2, Designing Components with the C++ STL
 template< class ValueType, class IndexType, class ContainerType > class MatrixElement {
@@ -49,8 +49,8 @@ public:
   typedef std::pair< IndexType, IndexType > IndexPair;
   typedef MatrixElement< ValueType, IndexType, ContainerType > & Reference;
 
-  MatrixElement( ContainerType & Cont, IndexType r, IndexType c )
-    : C( Cont ), I( C.find( IndexPair( r, c ) ) ), row( r ), column( c ) {
+  MatrixElement(ContainerType & Cont, IndexType r, IndexType c)
+    : C(Cont), I(C.find(IndexPair(r, c))), row(r), column(c) {
   }
 
   /* An assignment operator is required which in turn requires a
@@ -61,9 +61,9 @@ public:
      described together with the above assignment operator, so that
      here it is simply called: */
 
-    Reference operator = ( const Reference rhs ) {
-        if ( this != & rhs ) {    // not identical?
-            return operator = ( rhs.asValue() );  // see above
+    Reference operator = (const Reference rhs) {
+        if (this != & rhs) {    // not identical?
+            return operator = (rhs.asValue());  // see above
         } return *this;
     }
 
@@ -75,7 +75,7 @@ public:
      C.end(). */
 
   ValueType asValue() const {
-    if ( I == C.end() ) return ValueType( 0 ); else return ( *I ).second;
+    if (I == C.end()) return ValueType(0); else return (*I).second;
   }
 
   //** type conversion operator;
@@ -86,17 +86,17 @@ public:
      result is the second part of the object of type value_type
      stored in the container. */
 
-  Reference operator = ( const ValueType & x ) {
+  Reference operator = (const ValueType & x) {
     // not equal 0?
-    if ( x != ValueType( 0 ) ) {
+    if (x != ValueType(0)) {
       /* If the element does not yet exist, it is put, together
 	 with the indices, into an object of type value_type and
 	 inserted with insert(): */
 
-      if ( I == C.end() ) {
-        assert( C.size() < C.max_size() );
-        I = ( C.insert( typename ContainerType::value_type( IndexPair( row, column ), x ) ) ).first;
-      } else ( *I ).second = x;
+      if (I == C.end()) {
+        assert(C.size() < C.max_size());
+        I = (C.insert(typename ContainerType::value_type(IndexPair(row, column), x))).first;
+      } else (*I).second = x;
     }
 
     /* insert() returns a pair whose first part is an iterator
@@ -111,29 +111,29 @@ public:
        deleted if it existed. */
 
     else {                    // x = 0
-      if ( I != C.end() ) {
-        C.erase( I );
+      if (I != C.end()) {
+        C.erase(I);
         I = C.end();
       }
     } return *this;
   }
 
-  Reference operator += ( const ValueType & x ) {
-    if ( x != ValueType( 0 ) ) {
-      if ( I == C.end() ) {
-        assert( C.size() < C.max_size() );
-        I = ( C.insert( typename ContainerType::value_type( IndexPair( row, column ), x ) ) ).first;
-      } else ( *I ).second += x;
+  Reference operator += (const ValueType & x) {
+    if (x != ValueType(0)) {
+      if (I == C.end()) {
+        assert(C.size() < C.max_size());
+        I = (C.insert(typename ContainerType::value_type(IndexPair(row, column), x))).first;
+      } else (*I).second += x;
     }
     return *this;
   }
 
-  Reference operator -= ( const ValueType & x ) {
-    if ( x != ValueType( 0 ) ) {
-      if ( I == C.end() ) {
-        assert( C.size() < C.max_size() );
-        I = ( C.insert( typename ContainerType::value_type( IndexPair( row, column ), -x ) ) ).first;
-      } else ( *I ).second -= x;
+  Reference operator -= (const ValueType & x) {
+    if (x != ValueType(0)) {
+      if (I == C.end()) {
+        assert(C.size() < C.max_size());
+        I = (C.insert(typename ContainerType::value_type(IndexPair(row, column), -x))).first;
+      } else (*I).second -= x;
     }
     return *this;
   }
@@ -155,38 +155,38 @@ public:
     typedef typename ContainerType::const_iterator    const_iterator;
     typedef MatrixElement< ValueType, IndexType, ContainerType > MatElement;
 
-    SparseMapMatrix( IndexType r = 0, IndexType c = 0 ) : rows_( r ), cols_( c ) {   }
+    SparseMapMatrix(IndexType r = 0, IndexType c = 0) : rows_(r), cols_(c) {   }
 
-    SparseMapMatrix( const std::string & filename ){
-        this->load( filename );
+    SparseMapMatrix(const std::string & filename){
+        this->load(filename);
     }
 
-    SparseMapMatrix( const SparseMatrix< ValueType > & S ){
-        this->copy( S );
+    SparseMapMatrix(const SparseMatrix< ValueType > & S){
+        this->copy(S);
     }
 
-    SparseMapMatrix & operator = ( const SparseMatrix< ValueType > & S ){
-        this->copy( S );
+    SparseMapMatrix & operator = (const SparseMatrix< ValueType > & S){
+        this->copy(S);
         return *this;
     }
 
-    virtual ~SparseMapMatrix( ) {}    
+    virtual ~SparseMapMatrix() {}    
     
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_SPARSEMAPMATRIX_RTTI; }
     
-    void copy( const SparseMatrix< ValueType > & S ){
+    void copy(const SparseMatrix< ValueType > & S){
         clear();
         cols_ = S.cols();
         rows_ = S.rows();
 
-        std::vector < int > colPtr( S.vecColPtr() );
-        std::vector < int > rowIdx( S.vecRowIdx() );
-        Vector < ValueType > vals( S.vecVals() );
+        std::vector < int > colPtr(S.vecColPtr());
+        std::vector < int > rowIdx(S.vecRowIdx());
+        Vector < ValueType > vals(S.vecVals());
 
-        for ( Index i = 0; i < S.size(); i++ ){
-            for ( int j = colPtr[ i ]; j < colPtr[ i + 1 ]; j ++ ){
-                (*this)[ i ][ rowIdx[ j ] ] = vals[ j ];
+        for (Index i = 0; i < S.size(); i++){
+            for (int j = colPtr[i]; j < colPtr[i + 1]; j ++){
+                (*this)[i][rowIdx[j]] = vals[j];
             }
         }
     }
@@ -196,10 +196,10 @@ public:
         cols_ = 0; rows_ = 0;
     }
 
-    inline void setRows( IndexType r ) { rows_ = r ; }
+    inline void setRows(IndexType r) { rows_ = r ; }
     virtual IndexType rows()     const { return rows_; }
 
-    inline void setCols( IndexType c ) { cols_ = c ; }
+    inline void setCols(IndexType c) { cols_ = c ; }
     virtual IndexType cols()     const { return cols_; }
 
     inline IndexType size()     const { return C_.size(); }
@@ -212,116 +212,116 @@ public:
     inline const_iterator begin() const { return C_.begin(); }
     inline const_iterator end()   const { return C_.end(); }
 
-    void addToCol( Index id, const ElementMatrix < double > & A ){
-        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
-            (*this)[ A.idx( i ) ][ id ] += (ValueType) A.getVal( 0, i );
+    void addToCol(Index id, const ElementMatrix < double > & A){
+        for (Index i = 0, imax = A.size(); i < imax; i++){
+            (*this)[A.idx(i)][id] += (ValueType) A.getVal(0, i);
         }
     }
 
-    void addToRow( Index id, const ElementMatrix < double > & A ){
-        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
-            (*this)[ id ][ A.idx( i ) ] += (ValueType)A.getVal( 0, i );
+    void addToRow(Index id, const ElementMatrix < double > & A){
+        for (Index i = 0, imax = A.size(); i < imax; i++){
+            (*this)[id][A.idx(i)] += (ValueType)A.getVal(0, i);
         }
     }
 
-    //SparseMatrix< T > & operator += ( const ElementMatrix < T > & A ){
-    void operator += ( const ElementMatrix < double >& A ){
-        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
-            for ( Index j = 0, jmax = A.size(); j < jmax; j++ ){
-                (*this)[ A.idx( i ) ][ A.idx( j ) ] += (ValueType)A.getVal( i, j );
+    //SparseMatrix< T > & operator += (const ElementMatrix < T > & A){
+    void operator += (const ElementMatrix < double >& A){
+        for (Index i = 0, imax = A.size(); i < imax; i++){
+            for (Index j = 0, jmax = A.size(); j < jmax; j++){
+                (*this)[A.idx(i)][A.idx(j)] += (ValueType)A.getVal(i, j);
             }
         }
     }
 
     class Aux {  // for index operator below
     public:
-        Aux( IndexType r, IndexType maxs, ContainerType & Cont )
-            : Row( r ), maxColumns( maxs ), C( Cont ) { }
+        Aux(IndexType r, IndexType maxs, ContainerType & Cont)
+            : Row(r), maxColumns(maxs), C(Cont) { }
 
-        MatElement operator [] ( IndexType c ) {
-            if ( c < 0 || c >= maxColumns ){
-                throwLengthError( EXIT_SPARSE_SIZE,
-                                  WHERE_AM_I + " idx = " + toStr( c ) + " maxcol = "
-                                  + toStr( maxColumns ) );
+        MatElement operator [] (IndexType c) {
+            if (c < 0 || c >= maxColumns){
+                throwLengthError(EXIT_SPARSE_SIZE,
+                                  WHERE_AM_I + " idx = " + toStr(c) + " maxcol = "
+                                  + toStr(maxColumns));
             }
-            return MatElement( C, Row, c );
+            return MatElement(C, Row, c);
         }
     protected:
         IndexType Row, maxColumns;
         ContainerType & C;
     };
 
-    Aux operator [] ( IndexType r ) {
-        if ( r < 0 || r >= rows_ ){
-            throwLengthError( EXIT_SPARSE_SIZE,
-                              WHERE_AM_I + " idx = " + toStr( r ) + " maxrow = "
-                              + toStr( rows_ ) );
+    Aux operator [] (IndexType r) {
+        if (r < 0 || r >= rows_){
+            throwLengthError(EXIT_SPARSE_SIZE,
+                              WHERE_AM_I + " idx = " + toStr(r) + " maxrow = "
+                              + toStr(rows_));
         }
-        return Aux( r, cols(), C_ );
+        return Aux(r, cols(), C_);
     }
 
-    inline IndexType idx1( const const_iterator & I ) const { return ( *I ).first.first; }
-    inline IndexType idx2( const const_iterator & I ) const { return ( *I ).first.second; }
+    inline IndexType idx1(const const_iterator & I) const { return (*I).first.first; }
+    inline IndexType idx2(const const_iterator & I) const { return (*I).first.second; }
 
-//     inline IndexType idx1( iterator & I ) { return ( *I ).first.first; }
-//     inline IndexType idx2( iterator & I ) { return ( *I ).first.second; }
+//     inline IndexType idx1(iterator & I) { return (*I).first.first; }
+//     inline IndexType idx2(iterator & I) { return (*I).first.second; }
 
-    inline const ValueType & val( const const_iterator & I ) const { return (*I).second;  }
+    inline const ValueType & val(const const_iterator & I) const { return (*I).second;  }
 
-    inline ValueType & val( const iterator & I ) { return (*I).second;  }
+    inline ValueType & val(const iterator & I) { return (*I).second;  }
 
-    inline ValueType getVal( IndexType i, IndexType j ) { return (*this)[ i ][ j ]; }
+    inline ValueType getVal(IndexType i, IndexType j) { return (*this)[i][j]; }
 
-    inline void setVal( IndexType i, IndexType j, const ValueType & val ) {
-        if ( ( i >= 0 && i < rows_ ) && ( j >=0 && j < cols_ ) ) {
-            (*this)[ i ][ j ] = val;
+    inline void setVal(IndexType i, IndexType j, const ValueType & val) {
+        if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
+            (*this)[i][j] = val;
         } else {
-            throwLengthError( EXIT_SPARSE_SIZE,
+            throwLengthError(EXIT_SPARSE_SIZE,
                               WHERE_AM_I +
-                              " i = " + toStr( i ) + " max_row = " + toStr( rows_ ) +
-                              " j = " + toStr( j ) + " max_col = " + toStr( cols_ )
-                              );
+                              " i = " + toStr(i) + " max_row = " + toStr(rows_) +
+                              " j = " + toStr(j) + " max_col = " + toStr(cols_)
+                             );
         }
     }
-    inline void addVal( IndexType i, IndexType j, const ValueType & val ) {
-        if ( ( i >= 0 && i < rows_ ) && ( j >=0 && j < cols_ ) ) {
-            (*this)[ i ][ j ] += val;
+    inline void addVal(IndexType i, IndexType j, const ValueType & val) {
+        if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
+            (*this)[i][j] += val;
         } else {
-            throwLengthError( EXIT_SPARSE_SIZE,
+            throwLengthError(EXIT_SPARSE_SIZE,
                               WHERE_AM_I +
-                              " i = " + toStr( i ) + " max_row = " + toStr( rows_ ) +
-                              " j = " + toStr( j ) + " max_col = " + toStr( cols_ )
-                              );
+                              " i = " + toStr(i) + " max_row = " + toStr(rows_) +
+                              " j = " + toStr(j) + " max_col = " + toStr(cols_)
+                             );
         }
     }
     
     /*! Return this * a  */
-    virtual RVector mult( const RVector & a ) const {
-        RVector ret( this->rows(), 0.0 );
+    virtual RVector mult(const RVector & a) const {
+        RVector ret(this->rows(), 0.0);
         
-        for ( const_iterator it = this->begin(); it != this->end(); it ++ ){
-            ret[ it->first.first ] += a[ it->first.second ] * it->second;
+        for (const_iterator it = this->begin(); it != this->end(); it ++){
+            ret[it->first.first] += a[it->first.second] * it->second;
         }
      //      THROW_TO_IMPL
         return ret;
 
 // template < class ValueType, class IndexType, class V2 >
-// Vector < V2 > operator * ( const SparseMapMatrix< ValueType, IndexType > & S,
-//                            const Vector< V2 > & a ) {
+// Vector < V2 > operator * (const SparseMapMatrix< ValueType, IndexType > & S,
+//                            const Vector< V2 > & a) {
 // 
 //     typedef std::pair< IndexType, IndexType > IndexPair;
 //     typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;
 //     typedef typename ContainerType::iterator          iterator;
 //     typedef typename ContainerType::const_iterator    const_iterator;
 // 
-//     if ( S.cols() != a.size() ){
-//         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " S.cols() " + toStr( S.cols() ) + " != a.size() " + toStr( a.size() ) );
+//     if (S.cols() != a.size()){
+//         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " S.cols() " + toStr(S.cols()) + " != a.size() " + toStr(a.size()));
 //     }
-//     Vector < V2 > ret( S.rows() );
+//     Vector < V2 > ret(S.rows());
 // 
-//     for ( const_iterator it = S.begin(); it != S.end(); it ++ ){
-//         //tmp[ S.idx1( it ) ] += S.val( it ) * a[ S.idx2( it ) ];
-//         ret[ it->first.first ] += a[ it->first.second ] * it->second;
+//     for (const_iterator it = S.begin(); it != S.end(); it ++){
+//         //tmp[S.idx1(it)] += S.val(it) * a[S.idx2(it)];
+//         ret[it->first.first] += a[it->first.second] * it->second;
 //     }
 //     return ret;
 // }
@@ -329,32 +329,32 @@ public:
     }
     
     /*! Return this.T * a */
-    virtual RVector transMult( const RVector & a ) const {
-        RVector ret( this->cols(), 0.0 );
+    virtual RVector transMult(const RVector & a) const {
+        RVector ret(this->cols(), 0.0);
 
-        for ( const_iterator it = this->begin(); it != this->end(); it ++ ){
-            ret[ it->first.second ] += a[ it->first.first ] * it->second;
+        for (const_iterator it = this->begin(); it != this->end(); it ++){
+            ret[it->first.second] += a[it->first.first] * it->second;
         }
       //  THROW_TO_IMPL
         
         return ret;
 // template < class ValueType, class IndexType, class V2 >
-// Vector < V2 > transMult( const SparseMapMatrix< ValueType, IndexType > & S,
-//                          const Vector < V2 > & a ){
+// Vector < V2 > transMult(const SparseMapMatrix< ValueType, IndexType > & S,
+//                          const Vector < V2 > & a){
 // 
 //     typedef std::pair< IndexType, IndexType > IndexPair;
 //     typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;
 //     typedef typename ContainerType::iterator          iterator;
 //     typedef typename ContainerType::const_iterator    const_iterator;
 // 
-//     if ( S.rows() != a.size() ){
-//         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.rows() ) + " != " + toStr( a.size() ) );
+//     if (S.rows() != a.size()){
+//         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.rows()) + " != " + toStr(a.size()));
 //     }
-//     Vector < V2 > tmp( S.cols(), 0.0 );
+//     Vector < V2 > tmp(S.cols(), 0.0);
 // 
-//     for ( const_iterator it = S.begin(); it != S.end(); it ++ ){
-// //         tmp[ S.idx2( it ) ] += S.val( it ) * a[ S.idx1( it ) ];
-//         tmp[ it->first.second ] += a[ it->first.first ] * it->second;
+//     for (const_iterator it = S.begin(); it != S.end(); it ++){
+// //         tmp[S.idx2(it)] += S.val(it) * a[S.idx1(it)];
+//         tmp[it->first.second] += a[it->first.first] * it->second;
 // 
 //     }
 //     return tmp;
@@ -363,46 +363,46 @@ public:
     }
     
 //     /*! Return this * a  */
-//     virtual Vector < ValueType > mult( const Vector < ValueType > & a ) const {
-//         Vector < ValueType > ret( this->rows(), 0.0 );
+//     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
+//         Vector < ValueType > ret(this->rows(), 0.0);
 //         THROW_TO_IMPL
 //         return ret;
 //     }
 //     
 //     /*! Return this.T * a */
-//     virtual Vector < ValueType > transMult( const Vector < ValueType > & a ) const {
-//         Vector < ValueType > ret( this->cols(), 0.0 );
+//     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
+//         Vector < ValueType > ret(this->cols(), 0.0);
 //         THROW_TO_IMPL
 //         return ret;
 //     }
     
-    void save( const std::string & filename ) const {
-        std::fstream file; openOutFile( filename, &file );
+    void save(const std::string & filename) const {
+        std::fstream file; openOutFile(filename, &file);
 
-        for ( const_iterator it = begin(); it != end(); it ++ ){
-            file <<  idx1( it ) << " " << idx2( it ) << " " << val( it ) << std::endl;
+        for (const_iterator it = begin(); it != end(); it ++){
+            file <<  idx1(it) << " " << idx2(it) << " " << val(it) << std::endl;
         }
 
         file.close();
     }
 
-    void load( const std::string & filename ){
-        std::fstream file; openInFile( filename, &file );
+    void load(const std::string & filename){
+        std::fstream file; openInFile(filename, &file);
         std::vector < IndexType > vi, vj;
         std::vector < ValueType > vval;
         IndexType i, j;
         ValueType val;
-        while ( file >> i >> j >> val ){
-            vi.push_back( i );
-            vj.push_back( j );
-            vval.push_back( val );
+        while (file >> i >> j >> val){
+            vi.push_back(i);
+            vj.push_back(j);
+            vval.push_back(val);
         }
         file.close();
-        setRows( (IndexType)max( vi ) + 1 );
-        setCols( (IndexType)max( vj ) + 1 );
+        setRows((IndexType)max(vi) + 1);
+        setCols((IndexType)max(vj) + 1);
 
-        for ( Index i = 0; i < vi.size(); i ++ ){
-            (*this)[ vi[ i ] ][ vj[ i ] ] = vval[ i ];
+        for (Index i = 0; i < vi.size(); i ++){
+            (*this)[vi[i]][vj[i]] = vval[i];
         }
     }
     
@@ -437,66 +437,68 @@ protected:
 };// class SparseMapMatrix
 
 template < class ValueType, class IndexType >
-int save( const SparseMapMatrix< ValueType, IndexType > & S, const std::string & fname ){
-    return S.save( fname );
+int save(const SparseMapMatrix< ValueType, IndexType > & S,
+         const std::string & fname){
+    return S.save(fname);
 }
 
 template < class ValueType, class IndexType >
-int load( SparseMapMatrix< ValueType, IndexType > & S, const std::string & fname ){
-    return S.load( fname );
+int load(SparseMapMatrix< ValueType, IndexType > & S,
+         const std::string & fname){
+    return S.load(fname);
 }
 
-inline RVector operator * ( const DSparseMapMatrix & A, const RVector & b ){
-    return A.mult( b );
+inline RVector operator * (const DSparseMapMatrix & A, const RVector & b){
+    return A.mult(b);
 }
 
-inline RVector transMult( const DSparseMapMatrix & A, const RVector & b ){
-    return A.transMult( b );
+inline RVector transMult(const DSparseMapMatrix & A, const RVector & b){
+    return A.transMult(b);
 }
 
 
 
 /*! Scales a matrix A from left and right vectors such that A -> diag(l) * A * diag(r) */
 template< class Vec >
-void scaleMatrix ( SparseMapMatrix< double, Index > & S, const Vec & l, const Vec & r ) {
+void scaleMatrix (SparseMapMatrix< double, Index > & S, const Vec & l, const Vec & r) {
 
-    if ( S.cols() != r.size() )
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.cols() )
-                                            + " != " + toStr( r.size() ) );
-    if ( S.rows() != l.size() )
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.rows() )
-                                            + " != " + toStr( l.size() ) );
+    if (S.cols() != r.size())
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
+                                            + " != " + toStr(r.size()));
+    if (S.rows() != l.size())
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.rows())
+                                            + " != " + toStr(l.size()));
 
-    for ( SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++ ){
-                S.val( it ) *= l[ S.idx1( it ) ] * r[ S.idx2( it ) ];
-//       int i = S.idx1( it );
-//     int j = S.idx2( it );
-//     S[ i ][ j ] *= ( l[ i ] * r[ j ] );
+    for (SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++){
+                S.val(it) *= l[S.idx1(it)] * r[S.idx2(it)];
+//       int i = S.idx1(it);
+//     int j = S.idx2(it);
+//     S[i][j] *= (l[i] * r[j]);
     }
     return;
 }
 
 /*! Performs a rank 1 update of a matrix such that A -> A + u * v^T */
 template< class Vec >
-void rank1Update ( SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v ) {
+void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
 
-    if ( S.cols() != v.size() )
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.cols() )
-                                + " != " + toStr( v.size() ) );
-    if ( S.rows() != u.size() )
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr( S.rows() )
-                                + " != " + toStr( u.size() ) );
+    if (S.cols() != v.size())
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
+                                + " != " + toStr(v.size()));
+    if (S.rows() != u.size())
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.rows())
+                                + " != " + toStr(u.size()));
 
-    for ( SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++ ){
-        S.val( it ) += u[ S.idx1( it ) ] * v[ S.idx2( it ) ];
+    for (SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++){
+        S.val(it) += u[S.idx1(it)] * v[S.idx2(it)];
     }
     return;
 }
 
 // template < class ValueType, class IndexType, class V2, class T, class A >
-// Vector < V2 > operator * ( const SparseMapMatrix< ValueType, IndexType > & S,
-//                            const VectorExpr< T, A > & a ) {
-//     return S * Vector< V2 >( a );
+// Vector < V2 > operator * (const SparseMapMatrix< ValueType, IndexType > & S,
+//                            const VectorExpr< T, A > & a) {
+//     return S * Vector< V2 >(a);
 // }
 
 
@@ -506,34 +508,34 @@ template < class ValueType > class SparseMatrix {
 public:
 
   /*! Default constructor. Builds invalid sparse matrix */
-    SparseMatrix() : valid_( false ) { }
+    SparseMatrix() : valid_(false) { }
 
     /*! Copy constructor. */
-    SparseMatrix( const SparseMatrix < ValueType > & S )
-        : colPtr_( S.vecColPtr() ), rowIdx_( S.vecRowIdx() ), vals_( S.vecVals() ), valid_( true ){
+    SparseMatrix(const SparseMatrix < ValueType > & S)
+        : colPtr_(S.vecColPtr()), rowIdx_(S.vecRowIdx()), vals_(S.vecVals()), valid_(true){
     }
 
     /*! Create Sparsematrix from c-arrays. Cant check for valid ranges, so please be carefull. */
-    SparseMatrix( uint dim, Index * colPtr, Index nVals, Index * rowIdx, ValueType * vals ){
-        colPtr_.reserve( dim + 1);
-        colPtr_.resize( dim + 1);
+    SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx, ValueType * vals){
+        colPtr_.reserve(dim + 1);
+        colPtr_.resize(dim + 1);
 
-        rowIdx_.reserve( nVals );
-        rowIdx_.resize( nVals );
+        rowIdx_.reserve(nVals);
+        rowIdx_.resize(nVals);
 
-        vals_.resize( nVals );
+        vals_.resize(nVals);
 
-//         std::copy( colPtr[ 0 ], colPtr[ dim ], colPtr_[ 0 ] );
-//         std::copy( rowIdx[ 0 ], rowIdx[ nVals - 1 ], rowIdx_[ 0 ] );
-//         std::copy( vals[ 0 ], vals[ nVals - 1 ], & vals_[ 0 ] );
+//         std::copy(colPtr[0], colPtr[dim], colPtr_[0]);
+//         std::copy(rowIdx[0], rowIdx[nVals - 1], rowIdx_[0]);
+//         std::copy(vals[0], vals[nVals - 1], & vals_[0]);
     }
 
     /*! Destructor */
     ~SparseMatrix(){ }
 
     /*! Copy assignment operator. */
-    SparseMatrix < ValueType > & operator = ( const SparseMatrix < ValueType > & S){
-        if ( this != &S ){
+    SparseMatrix < ValueType > & operator = (const SparseMatrix < ValueType > & S){
+        if (this != &S){
             colPtr_ = S.vecColPtr();
             rowIdx_ = S.vecRowIdx();
             vals_   = S.vecVals();
@@ -541,54 +543,54 @@ public:
         } return *this;
     }
 
-    SparseMatrix( const DSparseMapMatrix & S ){
-        this->copy_( S );
+    SparseMatrix(const DSparseMapMatrix & S){
+        this->copy_(S);
     }
 
-    SparseMatrix & operator = ( const DSparseMapMatrix & S ){
-        this->copy_( S );
+    SparseMatrix & operator = (const DSparseMapMatrix & S){
+        this->copy_(S);
         return *this;
     }
 
-    #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__( OP, FUNCT ) \
-        void FUNCT( int i, int j, ValueType val ){ \
-            if ( ::fabs( val ) > TOLERANCE ){ \
-                for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){ \
-                    if ( rowIdx_[ k ] == j ) { \
-                        vals_[ k ] OP##= val; return; \
+    #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
+        void FUNCT(int i, int j, ValueType val){ \
+            if (::fabs(val) > TOLERANCE){ \
+                for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){ \
+                    if (rowIdx_[k] == j) { \
+                        vals_[k] OP##= val; return; \
                     } \
                 } \
                 std::cerr << WHERE_AM_I << " pos " << i << " " << j << " is not part of the sparsity pattern " << std::endl; \
             } \
         }\
-        SparseMatrix< ValueType > & operator OP##= ( const ValueType & v ){\
+        SparseMatrix< ValueType > & operator OP##= (const ValueType & v){\
             vals_ OP##= v; \
             return *this;\
         }\
 
-        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__( +, addVal )
-        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__( -, subVal )
-        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__( *, mulVal )
-        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__( /, divVal )
+        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(+, addVal)
+        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(-, subVal)
+        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(*, mulVal)
+        DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(/, divVal)
 
     #undef DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__
 
-    SparseMatrix< ValueType > & operator += ( const SparseMatrix< ValueType > & A ){
+    SparseMatrix< ValueType > & operator += (const SparseMatrix< ValueType > & A){
         vals_ += A.vecVals();
         return *this;
     }
 
-    SparseMatrix< ValueType > & operator += ( const ElementMatrix< double > & A ){
-        if ( !valid_ ) SPARSE_NOT_VALID;
-        for ( Index i = 0, imax = A.size(); i < imax; i++ ){
-            for ( Index j = 0, jmax = A.size(); j < jmax; j++ ){
-                addVal( A.idx( i ), A.idx( j ), A.getVal( i, j ) );
+    SparseMatrix< ValueType > & operator += (const ElementMatrix< double > & A){
+        if (!valid_) SPARSE_NOT_VALID;
+        for (Index i = 0, imax = A.size(); i < imax; i++){
+            for (Index j = 0, jmax = A.size(); j < jmax; j++){
+                addVal(A.idx(i), A.idx(j), A.getVal(i, j));
             }
         }
         return *this;
     }
 
-    void clean(){ for ( Index i = 0, imax = nVals(); i < imax; i++ ) vals_[ i ] = (ValueType)( 0 ); }
+    void clean(){ for (Index i = 0, imax = nVals(); i < imax; i++) vals_[i] = (ValueType)(0); }
 
     void clear(){
         colPtr_.clear();
@@ -597,21 +599,21 @@ public:
         valid_ = false;
     }
 
-    void setVal( int i, int j, ValueType val ){
-        if ( ::fabs( val ) > TOLERANCE ){
-            for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
-                if ( rowIdx_[ k ] == j ) {
-                    vals_[ k ] = val; return;
+    void setVal(int i, int j, ValueType val){
+        if (::fabs(val) > TOLERANCE){
+            for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+                if (rowIdx_[k] == j) {
+                    vals_[k] = val; return;
                 }
             }
             std::cerr << WHERE_AM_I << " pos " << i << " " << j << " is not part of the sparsity pattern " << std::endl;
         }
     }
 
-    ValueType getVal( int i, int j ){
-        for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
-            if ( rowIdx_[ k ] == j ) {
-                return vals_[ k ];
+    ValueType getVal(int i, int j){
+        for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+            if (rowIdx_[k] == j) {
+                return vals_[k];
             }
         }
         std::cerr << WHERE_AM_I << " pos " << i << " "
@@ -619,138 +621,173 @@ public:
         return (ValueType)-1.0;
     }
 
-    void cleanRow( int i ){
-         for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
-            vals_[ k ] = (ValueType)0.0;
+    void cleanRow(int i){
+         for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+            vals_[k] = (ValueType)0.0;
          }
     }
 
-    void cleanCol( int i ){
-        for ( int k = colPtr_[ i ]; k < colPtr_[ i + 1 ]; k ++ ){
-            for ( int j = colPtr_[ rowIdx_[ k ] ]; j < colPtr_[ rowIdx_[ k ] + 1 ]; j ++ ){
-                if ( rowIdx_[ j ] == i ) {
-                    vals_[ j ] = ValueType(0);
+    void cleanCol(int i){
+        for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+            for (int j = colPtr_[rowIdx_[k]]; j < colPtr_[rowIdx_[k] + 1]; j ++){
+                if (rowIdx_[j] == i) {
+                    vals_[j] = ValueType(0);
                 }
             }
         }
     }
 
-    void copy_( const ISparseMapMatrix & S ){
+    void copy_(const ISparseMapMatrix & S){
         CERR_TO_IMPL
     }
 
-    void copy_( const DSparseMapMatrix & S ){
+    void copy_(const DSparseMapMatrix & S){
         this->clear();
         Index col = 0, row = 0;
         double val;
 
-        std::vector < std::map < Index, double > > idxMap( S.cols() );
+        std::vector < std::map < Index, double > > idxMap(S.cols());
 
-        for ( DSparseMapMatrix::const_iterator it = S.begin(); it != S.end(); it ++ ){
-            col = S.idx1( it );
-            row = S.idx2( it );
-            val = S.val( it );
-            idxMap[ col ].insert( std::pair< Index, ValueType >( row, val ) );
+        for (DSparseMapMatrix::const_iterator it = S.begin(); it != S.end(); it ++){
+            col = S.idx1(it);
+            row = S.idx2(it);
+            val = S.val(it);
+            idxMap[col].insert(std::pair< Index, ValueType >(row, val));
         }
 
-        colPtr_.reserve( S.cols() + 1);
-        colPtr_.resize( S.cols() + 1);
+        colPtr_.reserve(S.cols() + 1);
+        colPtr_.resize(S.cols() + 1);
 
-        rowIdx_.reserve( S.nVals() );
-        rowIdx_.resize( S.nVals() );
+        rowIdx_.reserve(S.nVals());
+        rowIdx_.resize(S.nVals());
 
-        vals_.resize( S.nVals() );
+        vals_.resize(S.nVals());
 
-        colPtr_[ 0 ] = 0;
+        colPtr_[0] = 0;
 
         Index colCounter = 0, rowCounter = 0;
-        for ( std::vector < std::map < Index, double > >::iterator it = idxMap.begin(); it != idxMap.end(); it++ ){
-            for ( std::map < Index, double >::iterator itR = (*it).begin(); itR != (*it).end(); itR++ ){
-                rowIdx_[ rowCounter ] = itR->first;
-                vals_[ rowCounter ] = (ValueType)itR->second;
+        for (std::vector < std::map < Index, double > >::iterator it = idxMap.begin(); it != idxMap.end(); it++){
+            for (std::map < Index, double >::iterator itR = (*it).begin(); itR != (*it).end(); itR++){
+                rowIdx_[rowCounter] = itR->first;
+                vals_[rowCounter] = (ValueType)itR->second;
                 rowCounter ++;
             }
             colCounter ++;
-            colPtr_[ colCounter ] = rowCounter;
+            colPtr_[colCounter] = rowCounter;
         }
         valid_ = true;
     }
 
-    void buildSparsityPattern( const Mesh & mesh ){
-        Stopwatch swatch( true );
+    void buildSparsityPattern(const Mesh & mesh){
+        Stopwatch swatch(true);
         
-        colPtr_.resize( mesh.nodeCount() + 1 );
+        colPtr_.resize(mesh.nodeCount() + 1);
 
         //*** much to slow
-        //DSparseMapMatrix S( mesh.nodeCount(), mesh.nodeCount() );
+        //DSparseMapMatrix S(mesh.nodeCount(), mesh.nodeCount());
         
         Index col = 0, row = 0;
 
-        // need unique(sort) maybee to slow
-//        std::vector < std::vector< Index > > idxMap( mesh.nodeCount() );
-//         for ( std::vector < std::vector< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
+        // need unique(sort) maybe to slow
+//        std::vector < std::vector< Index > > idxMap(mesh.nodeCount());
+//         for (std::vector < std::vector< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++){
 //             (*mIt).reserve(100);
 //         }
 
 // using set is by a factor of approx 5 more expensive
-        std::vector < std::set< Index > > idxMap( mesh.nodeCount() );
+        std::vector < std::set< Index > > idxMap(mesh.nodeCount());
         
-        Cell *cell;
-        uint nc;
+        Cell *cell = 0;
+        uint nc = 0;
         
-        for ( uint c = 0; c < mesh.cellCount(); c ++ ){
-            cell = &mesh.cell( c );
+        for (uint c = 0; c < mesh.cellCount(); c ++){
+            cell = &mesh.cell(c);
             nc = cell->nodeCount();
-            for ( uint i = 0; i < nc; i ++ ){
-                for ( uint j = 0; j < nc; j ++ ){
-                    row = cell->node( i ).id();
-                    col = cell->node( j ).id();
-                    //idxMap[ col ].push_back( row );
-                    idxMap[ col ].insert( row );
+            
+            for (uint i = 0; i < nc; i ++){
+                for (uint j = 0; j < nc; j ++){
+                    row = cell->node(i).id();
+                    col = cell->node(j).id();
+                    //idxMap[col].push_back(row);
+                    idxMap[col].insert(row);
                     //S[col][row] = 1;
                 }
             }
         }
 
         int nVals = 0;
-        for ( std::vector < std::set< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
-            //std::sort( (*mIt).begin(), (*mIt).end() );
+        for (std::vector < std::set< Index > >::iterator mIt = idxMap.begin();
+             mIt != idxMap.end(); mIt++){
+            //std::sort((*mIt).begin(), (*mIt).end());
             nVals += (*mIt).size();
         }
 
-//         std::cout << "timwe: " << swatch.duration(  true ) << std::endl;
+//         std::cout << "timwe: " << swatch.duration( true) << std::endl;
 //         exit(0);
 
-        rowIdx_.reserve( nVals );
-        rowIdx_.resize( nVals );
-        vals_.resize( nVals );
+        rowIdx_.reserve(nVals);
+        rowIdx_.resize(nVals);
+        vals_.resize(nVals);
 
-        colPtr_[ 0 ] = 0;
+        colPtr_[0] = 0;
         Index k = 0;
         row = 0;
-        for ( std::vector < std::set< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++ ){
-            for ( std::set< Index >::iterator sIt = (*mIt).begin(); sIt != (*mIt).end(); sIt++ ){
-                rowIdx_[ k ] = (*sIt);
-                vals_[ k ] = (ValueType)0.0;
+        for (std::vector < std::set< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++){
+            for (std::set< Index >::iterator sIt = (*mIt).begin(); sIt != (*mIt).end(); sIt++){
+                rowIdx_[k] = (*sIt);
+                vals_[k] = (ValueType)0.0;
                 k++;
             }
             row++;
-            colPtr_[ row ] = k;
+            colPtr_[row] = k;
         }
         valid_ = true;
         //** freeing idxMap ist expensive
     }
 
-    inline int * colPtr() { if ( valid_ ) return &colPtr_[ 0 ]; else SPARSE_NOT_VALID;  return 0; }
-    inline const int & colPtr() const { if ( valid_ ) return colPtr_[ 0 ]; else SPARSE_NOT_VALID; return colPtr_[ 0 ]; }
+    void fillStiffnessMatrix(const Mesh & mesh){
+        RVector a(mesh.cellCount(), 1.0);
+        fillStiffnessMatrix(mesh, a);
+    }
+        
+    void fillStiffnessMatrix(const Mesh & mesh, const RVector & a){
+        clean();
+        buildSparsityPattern(mesh);
+        ElementMatrix < ValueType > A_l;
+        
+        for (uint i = 0; i < mesh.cellCount(); i ++){
+            A_l.ux2uy2uz2(mesh.cell(i));
+            A_l *= a[mesh.cell(i).id()];
+            *this += A_l;
+        }
+    }
+    void fillMassMatrix(const Mesh & mesh){
+        RVector a(mesh.cellCount(), 1.0);
+        fillMassMatrix(mesh, a);
+    }
+    
+    void fillMassMatrix(const Mesh & mesh, const RVector & a){
+        clean();
+        buildSparsityPattern(mesh);
+        ElementMatrix < ValueType > A_l;
+        
+        for (uint i = 0; i < mesh.cellCount(); i ++){
+            A_l.u2(mesh.cell(i));
+            A_l *= a[mesh.cell(i).id()];
+            *this += A_l;
+        }
+    }
+        
+    inline int * colPtr() { if (valid_) return &colPtr_[0]; else SPARSE_NOT_VALID;  return 0; }
+    inline const int & colPtr() const { if (valid_) return colPtr_[0]; else SPARSE_NOT_VALID; return colPtr_[0]; }
     inline const std::vector < int > & vecColPtr() const { return colPtr_; }
 
-    inline int * rowIdx() { if ( valid_ ) return &rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
-    inline const int & rowIdx() const { if ( valid_ ) return rowIdx_[ 0 ]; else SPARSE_NOT_VALID; return rowIdx_[ 0 ]; }
+    inline int * rowIdx() { if (valid_) return &rowIdx_[0]; else SPARSE_NOT_VALID; return 0; }
+    inline const int & rowIdx() const { if (valid_) return rowIdx_[0]; else SPARSE_NOT_VALID; return rowIdx_[0]; }
     inline const std::vector < int > & vecRowIdx() const { return rowIdx_; }
 
-    inline ValueType * vals() { if ( valid_ ) return &vals_[ 0 ]; else SPARSE_NOT_VALID; return 0; }
-    inline const ValueType & vals() const { if ( valid_ ) return vals_[ 0 ]; else SPARSE_NOT_VALID; return vals_[ 0 ]; }
+    inline ValueType * vals() { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
+    inline const ValueType & vals() const { if (valid_) return vals_[0]; else SPARSE_NOT_VALID; return vals_[0]; }
     inline const Vector < ValueType > & vecVals() const { return vals_; }
 
     inline Index size() const { return colPtr_.size() - 1; }
@@ -763,9 +800,9 @@ public:
         std::fstream file; if (!openOutFile(fileName, & file)) return 0;
 
         file.setf(std::ios::scientific, std::ios::floatfield);
-        file.precision( 14 );
+        file.precision(14);
 
-        for ( uint i = 0; i < size(); i++ ){
+        for (uint i = 0; i < size(); i++){
             for (SIndex j = colPtr_[i]; j < colPtr_[i + 1]; j ++){
                 file << i << "\t" << rowIdx_[j] 
                           << "\t" << vals_[j] << std::endl;
@@ -788,38 +825,43 @@ protected:
     bool valid_;
 };
 
-template < class ValueType > SparseMatrix< ValueType > operator + ( const SparseMatrix< ValueType > & A, const SparseMatrix< ValueType > & B ){
-    SparseMatrix< ValueType > ret( A );
+template < class ValueType > 
+SparseMatrix< ValueType > operator + (const SparseMatrix< ValueType > & A,
+                                      const SparseMatrix< ValueType > & B){
+    SparseMatrix< ValueType > ret(A);
     return ret += B;
 }
 
-template < class ValueType > SparseMatrix < ValueType > operator * ( const SparseMatrix < ValueType > & A, const ValueType & b ){
-    SparseMatrix< ValueType > ret( A );
+template < class ValueType > 
+SparseMatrix < ValueType > operator * (const SparseMatrix < ValueType > & A,
+                                       const ValueType & b){
+    SparseMatrix< ValueType > ret(A);
     return ret *= b;
 }
 
-template < class ValueType > SparseMatrix < ValueType > operator * ( const ValueType & b, const SparseMatrix < ValueType > & A ){
-    SparseMatrix< ValueType > ret( A );
+template < class ValueType > 
+SparseMatrix < ValueType > operator * (const ValueType & b,
+                                       const SparseMatrix < ValueType > & A){
+    SparseMatrix< ValueType > ret(A);
     return ret *= b;
 }
 
-template < class ValueType > Vector < ValueType > operator * ( const SparseMatrix < ValueType > & A
-                                                             , const Vector < ValueType >& a ){
+template < class ValueType > 
+Vector < ValueType > operator * (const SparseMatrix < ValueType > & A,
+                                 const Vector < ValueType >& a){
 
-    if ( a.size() < A.size() ){
-        throwLengthError( 1, WHERE_AM_I + " SparseMatrix size(): " + toStr( A.size() ) + " a.size(): " +
-                                toStr( a.size() ) ) ;
+    if (a.size() < A.size()){
+        throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + toStr(A.size()) + " a.size(): " +
+                                toStr(a.size())) ;
     }
-    Vector < ValueType > b( a.size() );
-    for ( Index i = 0; i < A.size(); i++ ){
-        for ( int j = A.vecColPtr()[ i ]; j < A.vecColPtr()[ i + 1 ]; j ++ ){
-            b[ i ] += a[ A.vecRowIdx()[ j ] ] * A.vecVals()[ j ];
+    Vector < ValueType > b(a.size());
+    for (Index i = 0; i < A.size(); i++){
+        for (int j = A.vecColPtr()[i]; j < A.vecColPtr()[i + 1]; j ++){
+            b[i] += a[A.vecRowIdx()[j]] * A.vecVals()[j];
         }
     }
     return b;
 }
-
-
   
 } // namespace GIMLI
 

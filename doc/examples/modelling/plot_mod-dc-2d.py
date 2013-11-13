@@ -141,4 +141,4 @@ drawStreamLines(ax, grid, u, nx=40, ny=40, color='Black')
 
 """
 
-P.show()
+plt.show()

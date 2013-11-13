@@ -64,8 +64,11 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose){
+template < > 
+ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
+                               const RVector & w,
+                               const std::vector < RVector3 > & integrationPnts,
+                               bool verbose){
 
     uint nVerts = ent.nodeCount();
     std::map< uint, RMatrix>::const_iterator it = u2Cache_.find(ent.rtti());
@@ -105,9 +108,13 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2(const MeshE
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose){
-                                 uint nVerts = ent.nodeCount();
+template < > 
+ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
+                                const RVector & w,
+                                const std::vector < RVector3 > & integrationPnts,
+                                bool verbose){
+
+    uint nVerts = ent.nodeCount();
     uint nRules = w.size();
 
     if (dNdr_.rows() != nVerts){
@@ -117,9 +124,11 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2(const Mesh
         }
     }
 
-    double drdx = ent.shape().invJacobian()[0][0];
+    double drdx = ent.shape().drstdxyz(0, 0);
+//     double drdx = ent.shape().invJacobian()[0];
 
     double A = ent.shape().domainSize();
+    
     for (uint i = 0; i < nVerts; i ++){
         for (uint j = i; j < nVerts; j ++){
             mat_[i][j] = A * sum(w * (drdx * dNdr_[i] * drdx * dNdr_[j]));
@@ -131,7 +140,9 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2(const Mesh
 }
 
 template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose){
+                                const RVector & w,
+                                const std::vector < RVector3 > & integrationPnts,
+                                bool verbose){
 
     uint nVerts = ent.nodeCount();
     uint nRules = w.size();
@@ -145,12 +156,17 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(const M
             dNds_.setCol(i, ent.dNdL(integrationPnts[i], 1));
         }
     }
+   
+//     double drdx = ent.shape().invJacobian()[0]; //ent.shape().drstdxyz(0,0)
+//     double drdy = ent.shape().invJacobian()[1];
+//     double dsdx = ent.shape().invJacobian()[2];
+//     double dsdy = ent.shape().invJacobian()[3];
 
-    double drdx = ent.shape().invJacobian()[0][0];
-    double dsdx = ent.shape().invJacobian()[1][0];
-    double drdy = ent.shape().invJacobian()[0][1];
-    double dsdy = ent.shape().invJacobian()[1][1];
-
+    double drdx = ent.shape().drstdxyz(0, 0);
+    double drdy = ent.shape().drstdxyz(0, 1);
+    double dsdx = ent.shape().drstdxyz(1, 0);
+    double dsdy = ent.shape().drstdxyz(1, 1);
+    
     double A = ent.shape().domainSize();
     for (uint i = 0; i < nVerts; i ++){
         for (uint j = i; j < nVerts; j ++){
@@ -164,7 +180,9 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(const M
 }
 
 template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
-                                const RVector & w, const std::vector < RVector3 > & integrationPnts, bool verbose){
+                                                                            const RVector & w, 
+                                                                            const std::vector < RVector3 > & integrationPnts, 
+                                                                            bool verbose){
 
     uint nVerts = ent.nodeCount();
     uint nRules = w.size();
@@ -181,15 +199,29 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
         }
     }
 
-    double drdx = ent.shape().invJacobian()[0][0];
-    double dsdx = ent.shape().invJacobian()[1][0];
-    double dtdx = ent.shape().invJacobian()[2][0];
-    double drdy = ent.shape().invJacobian()[0][1];
-    double dsdy = ent.shape().invJacobian()[1][1];
-    double dtdy = ent.shape().invJacobian()[2][1];
-    double drdz = ent.shape().invJacobian()[0][2];
-    double dsdz = ent.shape().invJacobian()[1][2];
-    double dtdz = ent.shape().invJacobian()[2][2];
+    double drdx = ent.shape().drstdxyz(0, 0);
+    double drdy = ent.shape().drstdxyz(0, 1);
+    double drdz = ent.shape().drstdxyz(0, 2);
+    
+    double dsdx = ent.shape().drstdxyz(1, 0);
+    double dsdy = ent.shape().drstdxyz(1, 1);
+    double dsdz = ent.shape().drstdxyz(1, 2);
+    
+    double dtdx = ent.shape().drstdxyz(2, 0);
+    double dtdy = ent.shape().drstdxyz(2, 1);
+    double dtdz = ent.shape().drstdxyz(2, 2);
+    
+//     double drdx = ent.shape().invJacobian()[0];
+//     double drdy = ent.shape().invJacobian()[1];
+//     double drdz = ent.shape().invJacobian()[2];
+// 
+//     double dsdx = ent.shape().invJacobian()[3];
+//     double dsdy = ent.shape().invJacobian()[4];
+//     double dsdz = ent.shape().invJacobian()[5];
+// 
+//     double dtdx = ent.shape().invJacobian()[6];
+//     double dtdy = ent.shape().invJacobian()[7];
+//     double dtdz = ent.shape().invJacobian()[8];
     
     double A = ent.shape().domainSize();
     for (uint i = 0; i < nVerts; i ++){
@@ -375,13 +407,14 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2(const MeshE
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(const Cell & cell){
+template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 
     uint dim = cell.nodeCount();
     if (size() != dim) resize(dim);
+    
     for (uint i = 0; i < dim; i ++) idx_[i] = cell.node(i).id();
 
-    if (cell.uxCache().rows() > 0){
+    if (cell.uxCache().rows() > 0 && useCache){
         mat_ = cell.uxCache();
         return *this;
     }
@@ -393,7 +426,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
     switch (cell.rtti()) {
     case MESH_EDGE_CELL_RTTI:
     case MESH_EDGE3_CELL_RTTI:
-        ux2(cell, IntegrationRules::instance().edgWeights(2), IntegrationRules::instance().edgAbscissa(2), false); break;
+        ux2(cell, IntegrationRules::instance().edgWeights(2),
+            IntegrationRules::instance().edgAbscissa(2), false); break;
     case MESH_TRIANGLE_RTTI: {
     ////////////////////////////////////////////////////////////////////
 /*        double dN1dx = cell.shape().deriveCoordinates(0, 0);
@@ -513,12 +547,18 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
 //             }
 //         }
 //         std::cout << "2" << *this << std::endl;
-        ux2uy2(cell, IntegrationRules::instance().triWeights(2), IntegrationRules::instance().triAbscissa(2), false); //ch
+        ux2uy2(cell,
+               IntegrationRules::instance().triWeights(2),
+               IntegrationRules::instance().triAbscissa(2), false); //ch
     } break;
     case MESH_QUADRANGLE_RTTI:
-        ux2uy2(cell, IntegrationRules::instance().quaWeights(2), IntegrationRules::instance().quaAbscissa(2), false); break;
+        ux2uy2(cell,
+               IntegrationRules::instance().quaWeights(2), 
+               IntegrationRules::instance().quaAbscissa(2), false); break;
     case MESH_QUADRANGLE8_RTTI:
-        ux2uy2(cell, IntegrationRules::instance().quaWeights(3), IntegrationRules::instance().quaAbscissa(3), false); break;
+        ux2uy2(cell, 
+               IntegrationRules::instance().quaWeights(3),
+               IntegrationRules::instance().quaAbscissa(3), false); break;
     case MESH_TETRAHEDRON_RTTI:
     //{
 //         double x_xi = cell.shape().partDerivationRealToUnity(0, 1);
@@ -598,7 +638,9 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
 //     }
 //     std::cout << "0 " << *this << std::endl;
 //} break;
-        ux2uy2uz2(cell, IntegrationRules::instance().tetWeights(1), IntegrationRules::instance().tetAbscissa(1), false); //ch
+        ux2uy2uz2(cell,
+                  IntegrationRules::instance().tetWeights(1), 
+                  IntegrationRules::instance().tetAbscissa(1), false); //ch
         break;
     case MESH_TETRAHEDRON10_RTTI:
 //     {
@@ -650,25 +692,35 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
 //
 //     break;
 //   }
-        ux2uy2uz2(cell, IntegrationRules::instance().tetWeights(2), IntegrationRules::instance().tetAbscissa(2), false);   break;
+        ux2uy2uz2(cell, 
+                  IntegrationRules::instance().tetWeights(2),
+                  IntegrationRules::instance().tetAbscissa(2), false);   break;
     case MESH_HEXAHEDRON_RTTI:
-        ux2uy2uz2(cell, IntegrationRules::instance().hexWeights(2), IntegrationRules::instance().hexAbscissa(2), false);   break;
+        ux2uy2uz2(cell,
+                  IntegrationRules::instance().hexWeights(2),
+                  IntegrationRules::instance().hexAbscissa(2), false);   break;
     case MESH_HEXAHEDRON20_RTTI:
-        ux2uy2uz2(cell, IntegrationRules::instance().hexWeights(4), IntegrationRules::instance().hexAbscissa(4), false);   break;
+        ux2uy2uz2(cell,
+                  IntegrationRules::instance().hexWeights(4),
+                  IntegrationRules::instance().hexAbscissa(4), false);   break;
     case MESH_TRIPRISM_RTTI:
-        ux2uy2uz2(cell, IntegrationRules::instance().priWeights(2), IntegrationRules::instance().priAbscissa(2), false);   break;
+        ux2uy2uz2(cell, 
+                  IntegrationRules::instance().priWeights(2), 
+                  IntegrationRules::instance().priAbscissa(2), false);   break;
     case MESH_TRIPRISM15_RTTI:
-        ux2uy2uz2(cell, IntegrationRules::instance().priWeights(4), IntegrationRules::instance().priAbscissa(4), false);   break;
+        ux2uy2uz2(cell,
+                  IntegrationRules::instance().priWeights(4),
+                  IntegrationRules::instance().priAbscissa(4), false);   break;
            
-  default:
-    std::cerr << cell.rtti() << std::endl;
-    THROW_TO_IMPL
-    break;
-  }
+    default:
+        std::cerr << cell.rtti() << std::endl;
+        THROW_TO_IMPL
+        break;
+    }
 
-  cell.setUxCache(mat_);
+    if (useCache) cell.setUxCache(mat_);
   
-  return *this;
+    return *this;
 }
 
 } // namespace GIMLI

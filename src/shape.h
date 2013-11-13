@@ -42,9 +42,11 @@ template < class Ent > std::vector < PolynomialFunction < double > >
     createPolynomialShapeFunctions(const Ent & ent, uint nCoeff,
                                    bool pascale, bool serendipity, 
                                    const RVector & startVector=RVector(0)){
-
+// __MS(ent)
     std::vector < RVector3 > pnts;
-    for (Index i = 0; i < ent.nodeCount(); i ++){ pnts.push_back(ent.rst(i)); }
+    for (Index i = 0; i < ent.nodeCount(); i ++){
+        pnts.push_back(ent.rst(i));
+    }
 
     return createPolynomialShapeFunctions(pnts, ent.dim(), nCoeff, pascale,
                                           serendipity, startVector);
@@ -74,7 +76,7 @@ public:
             this->createShapeFunctions_(e);
             it = dShapeFunctions_.find(e.rtti());
         }
-        return (*it).second[ dim ];
+        return (*it).second[dim];
     }
 
     /*! Clear the cache. */
@@ -83,6 +85,12 @@ public:
         dShapeFunctions_.clear();
     }
 
+    inline std::vector< RMatrix3 > & RMatrix3Cache() { return rmatrix3Cache_; }
+    inline std::vector< RMatrix > & RMatrixCache(uint rtti) { return rmatrixCache_[rtti]; }
+    
+    inline RMatrix3 & cachedRMatrix3(uint i) { return rmatrix3Cache_[i]; }
+    inline RMatrix & cachedRMatrix(uint rtti, uint i) { return rmatrixCache_[rtti][i]; }
+    
 private:
 
     /*! probably threading problems .. pls check*/
@@ -95,17 +103,17 @@ private:
 
         std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();
 
-        shapeFunctions_[ e.rtti() ] = N;
-        dShapeFunctions_[ e.rtti() ] = std::vector < std::vector < PolynomialFunction < double > > >();
+        shapeFunctions_[e.rtti()] = N;
+        dShapeFunctions_[e.rtti()] = std::vector < std::vector < PolynomialFunction < double > > >();
 
-        dShapeFunctions_[ e.rtti() ].push_back(std::vector < PolynomialFunction < double > >());
-        dShapeFunctions_[ e.rtti() ].push_back(std::vector < PolynomialFunction < double > >());
-        dShapeFunctions_[ e.rtti() ].push_back(std::vector < PolynomialFunction < double > >());
+        dShapeFunctions_[e.rtti()].push_back(std::vector < PolynomialFunction < double > >());
+        dShapeFunctions_[e.rtti()].push_back(std::vector < PolynomialFunction < double > >());
+        dShapeFunctions_[e.rtti()].push_back(std::vector < PolynomialFunction < double > >());
 
         for (uint i = 0; i < N.size(); i ++){
-            dShapeFunctions_[ e.rtti() ][ 0 ].push_back (N[ i ].derive(0));
-            dShapeFunctions_[ e.rtti() ][ 1 ].push_back (N[ i ].derive(1));
-            dShapeFunctions_[ e.rtti() ][ 2 ].push_back (N[ i ].derive(2));
+            dShapeFunctions_[e.rtti()][0].push_back (N[i].derive(0));
+            dShapeFunctions_[e.rtti()][1].push_back (N[i].derive(1));
+            dShapeFunctions_[e.rtti()][2].push_back (N[i].derive(2));
         }
     }
 
@@ -118,6 +126,8 @@ private:
     /*! Assignment operator is private, so don't use it */
     void operator = (const ShapeFunctionCache &){};
 
+    
+    
 protected:
 
     /*! Cache for shape functions. */
@@ -125,10 +135,13 @@ protected:
 
     /*! Cache for shape functions derivatives. */
     mutable std::map < uint8, std::vector< std::vector < PolynomialFunction < double > > > > dShapeFunctions_;
-
+    
+    mutable std::vector< RMatrix3 > rmatrix3Cache_;
+    mutable std::map< uint, std::vector< RMatrix > > rmatrixCache_;
+    
 };
 
-static const double NodeCoordinates[ 1 ][ 3 ] = {
+static const double NodeCoordinates[1][3] = {
     {0.0, 0.0, 0.0}
 };
 
@@ -190,12 +203,14 @@ public:
                                & \frac{\partial t}{\partial x}, \frac{\partial t}{\partial y}, \frac{\partial t}{\partial z}
         \f}
     */
-    RMatrix createJacobian() const;
-
+    void createJacobian(RMatrix3 & J) const;
+    
+    RMatrix3 createJacobian() const;
+    
     /*! Return the inverse of the Jacobian Matrix. And create and cache it on demand.
      * The matrix is no more valid if the shape was transformed.
      */
-    const RMatrix & invJacobian() const;
+    const RMatrix3 & invJacobian() const;
 
     /*! Return a \ref RVector for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions
      *\f$ N_n(r,s,t)\f$ at the local coordinate \f$ L(r,s,t)\f$. */
@@ -209,8 +224,10 @@ public:
     /*! Return the derivative matrix of size (\f$ 3\times\mathcal{N} \f$) for the shape functions at the local coordinate.
      * \f$ L(r,s,t) \f$. Result is independent of L for linear shape function (TODO Remove on cleanup)
      * \f$ [[\frac{dN_i(r,s,t)}{\partial r}],[\frac{dN_i(r,s,t)}{\partial s}],[\frac{dN_i(r,s,t)}{\partial t}]^{\mathrm{T}}] \f$ for \f$ i = [0,\mathcal{N}\f$ */
+    virtual void dNdrst(const RVector3 & rst, RMatrix & MdNdrst) const;
+        
     virtual RMatrix dNdrst(const RVector3 & L) const;
-
+    
     /*! Perform coordinate transformation from the locale coordinates \f$ (r,s,t)=(r,s,t)=([0..1,0..1,0..1]) \f$ of this shape to Cartesian coordinates \f$ (x,y,z) \f$ regarding to the \f$ \mathcal{N} \f$ shape functions \ref N
      * \f$ N_i \f$ with \f$ i=[0,\mathcal{N})\f$ \n
      * This is the opposite to \ref xyz2rst().
@@ -243,7 +260,8 @@ public:
      * These are the elements of the inverse Jacobian matrix.
      */
     inline double drstdxyz(uint rstI, uint xyzJ) const {
-        return invJacobian()[ rstI ][ xyzJ ];}
+//         return invJacobian()[rstI][xyzJ];}
+        return invJacobian()[rstI * 3 + xyzJ];}
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
      * On boundary means inside too. */
@@ -276,7 +294,7 @@ protected:
     mutable double domSize_;
     mutable bool hasDomSize_;
 
-    mutable RMatrix invJacobian_;
+    mutable RMatrix3 invJacobian_;
 
     std::vector < Node * > nodeVector_;
 };
@@ -307,7 +325,7 @@ protected:
 //     virtual double jacobianDeterminant_() const { return 0.0; }
 };
 
-static const double EdgeCoordinates[ 2 ][ 3 ] = {
+static const double EdgeCoordinates[2][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0}
 };
@@ -354,7 +372,7 @@ protected:
     virtual double domainSize_() const { return length(); }
 };
 
-static const double TriCoordinates[ 3 ][ 3 ] = {
+static const double TriCoordinates[3][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
     {0.0, 1.0, 0.0}
@@ -402,7 +420,7 @@ protected:
 };
 
 
-static const double QuadCoordinates[ 4 ][ 3 ] = {
+static const double QuadCoordinates[4][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
     {1.0, 1.0, 0.0},
@@ -453,7 +471,7 @@ protected:
     virtual double domainSize_() const { return area(); }
 };
 
-static const double TetCoordinates[ 4 ][ 3 ] = {
+static const double TetCoordinates[4][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
     {0.0, 1.0, 0.0},
@@ -514,7 +532,7 @@ static const uint8 HexahedronSplit6TetID[6][4] = {
     {0, 4, 6, 7}
 };
 
-static const double HexCoordinates[ 8 ][ 3 ] = {
+static const double HexCoordinates[8][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
     {1.0, 1.0, 0.0},
@@ -567,13 +585,13 @@ protected:
     virtual double domainSize_() const { return volume(); }
 };
 
-static const uint8 TriPrimSplit3TetID[ 3 ][ 4 ] = {
+static const uint8 TriPrimSplit3TetID[3][4] = {
     {0, 5, 1, 2},
     {3, 1, 5, 4},
     {3, 5, 1, 0}
 };
 
-static const double PrismCoordinates[ 6 ][ 3 ] = {
+static const double PrismCoordinates[6][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
     {0.0, 1.0, 0.0},
@@ -618,7 +636,7 @@ protected:
     virtual double domainSize_() const { return volume(); }
 };
 
-static const double PyramidCoordinates[ 5 ][ 3 ] = {
+static const double PyramidCoordinates[5][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},
     {1.0, 1.0, 0.0},
