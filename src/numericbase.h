@@ -47,6 +47,8 @@ template < class T > T powInt(const T & a, uint dim){
         case 2 : return a*a;
         case 3 : return a*a*a;
         case 4 : return a*a*a*a; 
+        case 5 : return a*a*a*a*a;
+        case 6 : return a*a*a*a*a*a;
         default: return (T)std::pow((float)a, (float)dim);
     }
 }

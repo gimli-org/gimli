@@ -218,12 +218,14 @@ typedef SparseMapMatrix< double, Index >  DSparseMapMatrix;
 typedef SparseMapMatrix< double, Index >  RSparseMapMatrix;
 
 template < class ValueType > class Matrix;
+template < class ValueType > class Matrix3;
 template < class ValueType > class Vector;
 //template <> class Vector< double >;
 
 typedef std::complex < double > Complex;
 typedef Vector < double > RVector;
 typedef Matrix < double > RMatrix;
+typedef Matrix3< double > RMatrix3;
 
 typedef Vector< Complex > CVector;
 //typedef Matrix < Complex > CMatrix;
@@ -365,7 +367,9 @@ inline double toDouble(const std::string & str){ return std::strtod(str.c_str(),
 
 /*! Read value from environment variable. Return default value if environment not set.
  Environment var can be set in sh via: export name=val, or simple passing name=val in front of executable.*/
-template < typename ValueType > ValueType getEnvironment(const std::string & name, ValueType def, bool verbose = false){
+template < typename ValueType > ValueType getEnvironment(const std::string & name,
+                                                         ValueType def, 
+                                                         bool verbose=false){
     ValueType var = def;
 
     char * cVar = getenv(name.c_str());

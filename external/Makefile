@@ -48,11 +48,19 @@ lapack: prep $(LAPACK_SRC)
 	echo "building lapack for ", $(OSTYPE)
 	mkdir -p lapack-build
 	pushd lapack-build; \
+	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ]; then \
 		cmake -D BUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -G 'MSYS Makefiles' ../lapack-$(LAPACK_VER); \
-		make blas lapack VERBOSE=1; \
+		$(MAKE); \
+		cp bin/liblapack.dll ../$(LAPACK); \
+		cp bin/libblas.dll ../$(BLAS); \
+	else \
+		cmake -D BUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release ../lapack-$(LAPACK_VER); \
+		$(MAKE); \
+		cp lib/liblapack.so ../lib/; \
+		cp lib/libblas.so ../lib/; \
+	fi; \
 	popd
-	cp lapack-build/bin/liblapack.dll $(LAPACK)
-	cp lapack-build/bin/libblas.dll $(BLAS)
+
 	
 $(SUITESPARSE): wget unzip
 	wget -nc -nd $(SUITESPARSE_URL)
@@ -69,6 +77,8 @@ suitesparse: prep $(SUITESPARSE)
 	fi
 	echo "INSTALL_LIB = $(PWD)/lib" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
 	echo "INSTALL_INCLUDE = $(PWD)/include" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
+# 	echo "BLAS=-L$(PWD)/lib -lblas" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
+# 	echo "LAPACK=-L$(PWD)/lib -llapack" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
 
 	$(MAKE) -C SuiteSparse/
 	$(MAKE) -C SuiteSparse/ install

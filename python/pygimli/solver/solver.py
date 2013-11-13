@@ -5,6 +5,7 @@ import pygimli as g
 from pygimli.utils import unique
 import numpy as np
 
+import copy
 
 def parseArgToArray(arg, ndof, mesh, userData=None):
     """
@@ -163,10 +164,10 @@ def assembleDirichletBC(S, boundaryPair, rhs, time=0.0,
            
     uDirNodes = []
     uDirVal = dict()
-
+    
     if type(boundaryPair) == tuple or len(boundaryPair) == 2:
+        
         for b in boundaryPair[0]:
-            
             for n in b.nodes():
                 
                 uVal = None
@@ -212,7 +213,8 @@ def assembleDirichletBC(S, boundaryPair, rhs, time=0.0,
     assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet)
         
     
-def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler, time=0.0, 
+def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
+                               time=0.0, 
                                userData=None,
                                verbose=False):
     """
@@ -224,16 +226,18 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler, time=0.0,
     value can be float, int or a callable(boundary)
     
     """
-    boundaries = []
+    boundaries = list()
 
-    if type(boundArgs[0]) == g.stdVectorBounds or \
-       type(boundArgs[0]) == int:
+    if type(boundArgs[0]) == g.stdVectorBounds:
         boundaries.append(boundArgs)
+    elif type(boundArgs[0]) == int:
+        boundaries.append(copy.deepcopy(boundArgs))
     else:
-        boundaries = boundArgs
-                
-    for bound in boundaries:
+        boundaries = copy.deepcopy(boundArgs)
+        
 
+    for bound in boundaries:
+        
         if type(bound) == list or len(bound) == 2:
             if type(bound[0]) == int:
                 bound[0] = mesh.findBoundaryByMarker(bound[0])
@@ -250,10 +254,12 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler, time=0.0,
 
 def createStiffnessMatrix(mesh, a):
     A = g.DSparseMatrix()
-        
+    A.fillStiffnessMatrix(mesh, a)
+    return A
+    
     # create matrix structure regarding the mesh
     A.buildSparsityPattern(mesh)
-    
+
     # define a local element matrix 
     A_l = g.DElementMatrix()
     for c in mesh.cells():
@@ -265,7 +271,9 @@ def createStiffnessMatrix(mesh, a):
 
 def createMassMatrix(mesh, b):
     B = g.DSparseMatrix()
-        
+    B.fillMassMatrix(mesh, b)
+    return B
+
     # create matrix structure regarding the mesh
     B.buildSparsityPattern(mesh)
     
@@ -282,7 +290,7 @@ def createMassMatrix(mesh, b):
     
 
 def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
-                 verbose=False, *args, **kwargs):
+                 verbose=False, stats=None, *args, **kwargs):
     """
         TODO
     Parameters
@@ -307,48 +315,63 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     dof = mesh.nodeCount()
         
     swatch = g.Stopwatch(True)
+    swatch2 = g.Stopwatch(True)
     
     # check for material parameter
     a = parseArgToArray(a, mesh.cellCount(), mesh, userData)
     b = parseArgToArray(b, mesh.cellCount(), mesh, userData)
         
+    print "2: ", swatch2.duration(True)
     # assemble the stiffness matrix
     A = createStiffnessMatrix(mesh, a)
+    print "3: ", swatch2.duration(True)
     M = createMassMatrix(mesh, b)
         
+    print "4: ", swatch2.duration(True)
     S = A + M
     
+    print "5: ", swatch2.duration(True)
     if times == None:
-    
         rhs = assembleForceVector(mesh, f, userData=userData)
         
+        print "6: ", swatch2.duration(True)
         if 'duBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['duBoundary'], 
-                                       assembleNeumannBC, userData=userData, 
+                                       assembleNeumannBC,
+                                       userData=userData, 
                                        verbose=verbose)
-        
+
         if 'uBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['uBoundary'],
                                        assembleDirichletBC, 
                                        userData=userData,
                                        verbose=verbose)
-            
+
         if 'uDirichlet' in kwargs:
             assembleUDirichlet_(S, rhs,
                                 kwargs['uDirichlet'][0],
                                 kwargs['uDirichlet'][1])
             
             
+            
         u = g.RVector(rhs.size(), 0.0)
+        print "7: ", swatch2.duration(True)
         
+        assembleTime = swatch.duration(True)
+        if stats:
+            stats.assembleTime = assembleTime
+                
         if verbose:
-            print("Asssemblation time: ", swatch.duration(True))
+            print("Asssemblation time: ", assembleTime)
 
         solver = g.LinSolver(S, verbose)
         solver.solve(rhs, u)
-        
+
+        solverTime = swatch.duration(True)
         if verbose:
-            print("Solving time: ", swatch.duration(True))
+            if stats:
+                stats.solverTime = solverTime
+            print("Solving time: ", solverTime)
             
         return u
         

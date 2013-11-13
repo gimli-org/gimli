@@ -92,6 +92,7 @@ namespace pyplusplus{ namespace aliases{
 #include "line.h"
 #include "linSolver.h"
 #include "matrix.h"
+#include "memwatch.h"
 #include "mesh.h"
 #include "meshentities.h"
 #include "meshgenerators.h"
@@ -380,6 +381,7 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Vector< int >                         BVector;
 
     typedef GIMLI::Matrix< double >                      RMatrix;
+    typedef GIMLI::Matrix3< double >                     RMatrix3;
     //typedef GIMLI::Matrix< Complex >                     CMatrix;
 
     typedef GIMLI::VectorIterator< double >              RVectorIter;

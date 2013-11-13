@@ -39,7 +39,7 @@ std::vector < PolynomialFunction < double > >
 createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
                                uint dim, uint nCoeff, bool pascale,
                                bool serendipity, const RVector & startVector){
-
+// __M
     bool verbose = false;
 
     if (verbose){
@@ -103,6 +103,7 @@ Shape::~Shape(){
 
 void Shape::changed(){
     invJacobian_.clear();
+//     invJacobian_.setValid(false);
     hasDomSize_ = false;
 }
 
@@ -182,6 +183,11 @@ void Shape::N(const RVector3 & rst, RVector & n) const {
 
 RMatrix Shape::dNdrst(const RVector3 & rst) const {
     RMatrix MdNdrst(3, nodeCount());
+    dNdrst(rst, MdNdrst);
+    return MdNdrst;
+}
+
+void Shape::dNdrst(const RVector3 & rst, RMatrix & MdNdrst) const {
     MdNdrst *= 0.0;
 
     const std::vector< PolynomialFunction < double > > &dNx = ShapeFunctionCache::instance().deriveShapeFunctions(*this, 0);
@@ -193,7 +199,6 @@ RMatrix Shape::dNdrst(const RVector3 & rst) const {
          if (this->dim() > 1) MdNdrst[1][i] = dNy[i](rst);
          if (this->dim() > 2) MdNdrst[2][i] = dNz[i](rst);
     }
-    return MdNdrst;
 }
 
 RVector crossN(const RVector & a, const RVector & b){
@@ -204,7 +209,13 @@ RVector crossN(const RVector & a, const RVector & b){
     return c / norm(c);
 }
 
-RMatrix Shape::createJacobian() const {
+RMatrix3 Shape::createJacobian() const {
+    RMatrix3 J;
+    createJacobian(J);
+    return J;
+}
+
+void Shape::createJacobian(RMatrix3 & J) const {
     RVector x(nodeCount());
     RVector y(nodeCount());
     RVector z(nodeCount());
@@ -215,20 +226,25 @@ RMatrix Shape::createJacobian() const {
         z[i] = nodeVector_[i]->pos()[2];
     }
 
-    RMatrix J(3, 3);
-    RMatrix MdNdrst(this->dNdrst(RVector3(0.0, 0.0, 0.0)));
+    if (ShapeFunctionCache::instance().RMatrixCache(rtti()).size() < 1){
+        ShapeFunctionCache::instance().RMatrixCache(rtti()).push_back(RMatrix(3, nodeCount()));
+    }
+    
+    RMatrix & MdNdrst = ShapeFunctionCache::instance().cachedRMatrix(rtti(), 0);
+    this->dNdrst(RVector3(0.0, 0.0, 0.0), MdNdrst);
+//     RMatrix MdNdrst(this->dNdrst(RVector3(0.0, 0.0, 0.0))); 
 
     switch (this->dim()){
         case 1:{
             J.setVal(MdNdrst * x, 0);
-            RVector J0(J[0]);
-            RVector J1(J[1]);
+            RVector J0(J.row(0));
+            RVector J1(J.row(1));
 
             if ((fabs(J0[0]) >= fabs(J0[1]) && fabs(J0[0]) >= fabs(J0[2])) ||
-                 (fabs(J0[1]) >= fabs(J0[0]) && fabs(J0[1]) >= fabs(J0[2]))) {
+                (fabs(J0[1]) >= fabs(J0[0]) && fabs(J0[1]) >= fabs(J0[2]))) {
                 J1[0] =  J0[1];
                 J1[1] = -J0[0];
-                J1[2] =      0.;
+                J1[2] =     0.;
             } else {
                 J1[0] =     0.;
                 J1[1] =  J0[2];
@@ -236,12 +252,15 @@ RMatrix Shape::createJacobian() const {
             }
 
             J.setVal(J1 / norml2(J1), 1);
-            J.setVal(crossN(J[0],J[1]), 2);
+            J.setVal(crossN(J.row(0), J.row(1)), 2);
+// __M            
+//             std::cout << J1 << std::endl;
+//             std::cout << J << std::endl;
          } break;
         case 2:
             J.setVal(MdNdrst * x, 0);
             J.setVal(MdNdrst * y, 1);
-            J.setVal(crossN(J[0],J[1]), 2);
+            J.setVal(crossN(J.row(0), J.row(1)), 2);
             break;
         case 3:
             J.setVal(MdNdrst * x, 0);
@@ -249,9 +268,8 @@ RMatrix Shape::createJacobian() const {
             J.setVal(MdNdrst * z, 2);
             break;
     }
-
-    return J;
 }
+
 
 RVector3 Shape::xyz(const RVector3 & rst) const{
     RVector3 xyz(0.0, 0.0, 0.0);
@@ -267,10 +285,22 @@ void Shape::rst2xyz(const RVector3 & rst, RVector3 & xyz) const{
     }
 }
 
-const RMatrix & Shape::invJacobian() const {
-    if (invJacobian_.rows() != 3) {
-        invJacobian_ = inv(this->createJacobian());
+const RMatrix3 & Shape::invJacobian() const {
+    if (!invJacobian_.valid()){
+       if (ShapeFunctionCache::instance().RMatrix3Cache().size() < 1){
+           ShapeFunctionCache::instance().RMatrix3Cache().push_back(RMatrix3());
+       }
+           
+       this->createJacobian(ShapeFunctionCache::instance().cachedRMatrix3(0)); 
+       inv(ShapeFunctionCache::instance().cachedRMatrix3(0), invJacobian_);
+       invJacobian_.setValid(true);
     }
+//     if (invJacobian_.rows() != 3) {
+//         invJacobian_.resize(3,3);
+// //RMatrix J(3,3);
+//         this->createJacobian(__tmp__J__); 
+//         inv(__tmp__J__, invJacobian_ );
+//     }
     return invJacobian_;
 }
 
@@ -285,11 +315,11 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
     while (err > tol && iter < maxiter){
         iter ++;
         dxyz = xyz - this->xyz(rst);
-        drst = invJacobian() * dxyz.vec();
+        drst = invJacobian() * dxyz;
         rst += drst;
         err = drst.abs();
     }
-
+// __M
 //     std::cout << xyz << " " << rst << std::endl;
 //     if (err > tol) {
 //         std::cout << xyz << " " << rst << std::endl;
@@ -363,7 +393,10 @@ RVector3 EdgeShape::norm() const {
 }
 
 RVector3 EdgeShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount()) return RVector3(EdgeCoordinates[i][0], EdgeCoordinates[i][1], EdgeCoordinates[i][2]);
+    if (i >= 0 && i < nodeCount())
+        return RVector3(EdgeCoordinates[i][0],
+                        EdgeCoordinates[i][1],
+                        EdgeCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
 }
 
