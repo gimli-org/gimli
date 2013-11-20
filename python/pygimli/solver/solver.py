@@ -89,7 +89,8 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
 #def assembleUDirichlet_(...)
        
        
-def assembleNeumannBC(S, boundaryPair, rhs, time=0.0, 
+def assembleNeumannBC(S,
+                      boundaryPair, rhs, time=0.0, 
                       userData=None, verbose=False):
     """
     Apply Neumann condition and apply them to system matrix S.
