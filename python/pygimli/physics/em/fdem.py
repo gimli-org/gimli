@@ -118,7 +118,7 @@ class FDEMData():
     """
     def __init__(self, x=None, freqs=None, 
                  coilSpacing=None, inphase=None, outphase=None,
-                 filename=None):
+                 filename=None, scaleFreeAir=False):
         """
             Initialize data class and load data. Either provide filename or data.
             If a filename is given we try to load the data and overwrite data settings
@@ -142,6 +142,9 @@ class FDEMData():
                            
             filename : str
                 Filename to read from. Supported so far: ..??
+                
+            scaleFreeAir : bool
+                Scale inphase and outphase data by free air solution (primary field)
             
         """
         self.x = x
@@ -163,6 +166,12 @@ class FDEMData():
             
         self.isActiveFreq = self.frequencies > 0.0
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
+        
+        if scaleFreeAir:
+            freeAirSolution = self.FOP().freeAirSolution();
+            self.IP /= freeAirSolution * 1e6
+            self.OP /= freeAirSolution * 1e6
+        
 
     def __repr__(self):
         if self.x is None:
@@ -185,7 +194,7 @@ class FDEMData():
         """
             Deactivate a single frequency
         """
-        fi = np.find(np.absolute(self.frequencies / fr - 1.) < 0.1)
+        fi = np.nonzero(np.absolute(self.frequencies / fr - 1.) < 0.1)
         
         self.isActiveFreq[fi] = False
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
@@ -274,8 +283,10 @@ class FDEMData():
                 Number of layers of the model to be determined
                 
             noise : float
+                Absolute data err in percent
             
             stmod : float
+                Constant Starting model
                 
             lam : float
                 Global regularization parameter lambda.
