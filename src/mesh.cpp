@@ -379,7 +379,7 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
             cellIDX__.push_back(cell->id());
             RVector sf;
 
-//             std::cout << "testpos: " << pos << std::endl;
+//             std::cout << cellIDX__.size() << " testpos: " << pos << std::endl;
 //             std::cout << "cell: " << *cell << " touch: " << cell->shape().isInside(pos, true) << std::endl;
 //             for (uint i = 0; i < cell->nodeCount() ; i ++){
 //                 std::cout << cell->node(i)<< std::endl;
@@ -401,23 +401,23 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 //                  std::cout << "neighCell " << cell << std::endl;
             }
             count++;
-//             if (count == 20){
-//                 std::cout << "testpos: " << pos << std::endl;
-//                 std::cout << "cell: " << this->cell(cellIDX__.back()) << std::endl;
-//                 for (uint i = 0; i < this->cell(cellIDX__.back()).nodeCount() ; i ++){
-//                     std::cout << this->cell(cellIDX__.back()).node(i)<< std::endl;
-//                 }
-//
-//                 std::cout << WHERE_AM_I << " exit with submesh " << std::endl;
-//                 std::cout << "probably cant find a cell for " << pos << std::endl;
-//                 Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
-//
-//                 subMesh.exportVTK("submesh");
+            if (count == 50){
+                std::cout << "testpos: " << pos << std::endl;
+                std::cout << "cell: " << this->cell(cellIDX__.back()) << std::endl;
+                for (uint i = 0; i < this->cell(cellIDX__.back()).nodeCount() ; i ++){
+                    std::cout << this->cell(cellIDX__.back()).node(i)<< std::endl;
+                }
+
+                std::cout << WHERE_AM_I << " exit with submesh " << std::endl;
+                std::cout << "probably cant find a cell for " << pos << std::endl;
+                Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
+
+                subMesh.exportVTK("submesh");
 //                 this->cell(2368).setAttribute(3);
-//                 this->exportVTK("submeshParent");
-//
-//                 exit(0);
-//             }
+                this->exportVTK("submeshParent");
+                return NULL;
+                exit(0);
+            }
         }
     } while (cell);
 
@@ -457,10 +457,11 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count, bool extensive) cons
         cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(), count, false);
         if (cell) return cell;
 
-//         std::cout << "more expensive test here" << std::endl;
 //         exportVTK("slopesearch");
 //         exit(0);
-        if (extensive){
+        if (extensive || 1){
+            std::cout << "more expensive test here" << std::endl;
+
             std::for_each(cellVector_.begin(), cellVector_.end(), std::mem_fun(&Cell::untag));
             //!** *sigh, no luck with simple kd-tree search, try more expensive full slope search
             count = 0;
@@ -493,6 +494,15 @@ std::vector < Boundary * > Mesh::findBoundaryByMarker(int from, int to) const {
     return vBounds;
 }
 
+void Mesh::setBoundaryMarker(const IndexArray & ids, int marker){
+    for(IndexArray::const_iterator it = ids.begin(); it != ids.end(); it++){
+        if (*it < boundaryCount()){
+            boundaryVector_[*it]->setMarker(marker);
+        }
+    }
+}
+    
+
 std::vector < Cell * > Mesh::findCellByMarker(int from, int to) const {
     if (to == -1) to = MAX_INT;
     else if (to == 0) to = from + 1;
@@ -522,6 +532,14 @@ std::vector < Cell * > Mesh::findCellByAttribute(double from, double to) const {
         }
     }
     return vCell;
+}
+
+void Mesh::setCellMarker(const IndexArray & ids, int marker){
+    for(IndexArray::const_iterator it = ids.begin(); it != ids.end(); it++){
+        if (*it < cellCount()){
+            cellVector_[*it]->setMarker(marker);
+        }
+    }
 }
 
 IndexArray Mesh::findNodesIdxByMarker(int marker) const {

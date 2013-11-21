@@ -385,11 +385,13 @@ Boundary * Cell::boundaryTo(const RVector & sf){
         commonSub = node(minIdx[0]).boundSet();
     }
 
-    for (std::set < Boundary * >::iterator it = commonSub.begin(); it != commonSub.end(); it++){
+    for (std::set < Boundary * >::iterator it = commonSub.begin();
+         it != commonSub.end(); it++){
         common.erase(*(it));
     }
 
-//     std::cout << WHERE << "common.size() remove foreign: " << common.size()<< std::endl;
+//     std::cout << WHERE << "common.size() remove foreign: "
+//      << common.size()<< std::endl;
     
     if (common.size() == 0) {
         std::cerr << " this.should not happen" << std::endl;

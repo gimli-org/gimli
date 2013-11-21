@@ -30,30 +30,40 @@ namespace GIMLI{
 /*! Interpolate a given data vector on a mesh to a set of positions and write the interpolated data to iData. iData will resized if nessecary. Amount of data have to correspond to mesh.nodeCount() if data correspond to mesh.cellCount() cellDataToPointData will performed. The interpolation rule depend on the shape functions of mesh cells. Several utility or shortcut functions are defined.*/
 DLLEXPORT void interpolate(const Mesh & mesh, const RMatrix & data,
                            const std::vector< RVector3 > & pos, RMatrix & iData,
-                           bool verbose = false);
+                           bool verbose=false);
 
 /*! Utility function for interpolation. */
 DLLEXPORT void interpolate(const Mesh & mesh, const RVector & data,
                            const std::vector< RVector3 > & pos, RVector & iData,
-                           bool verbose = false);
+                           bool verbose=false);
 
 /*! Utility function for interpolation. */
 DLLEXPORT RVector interpolate(const Mesh & mesh, const RVector & data,
                               const std::vector< RVector3 > & pos,
-                              bool verbose = false);
+                              bool verbose=false);
 
 /*! Utility function for interpolation. */
 DLLEXPORT void interpolate(const Mesh & mesh, const RVector & data,
                            const Mesh & pos, RVector & iData,
-                           bool verbose = false);
+                           bool verbose=false);
 
 DLLEXPORT void interpolate(const Mesh & mesh, const std::string & data,
-                           Mesh & pos, bool verbose = false);
+                           Mesh & pos, bool verbose=false);
 
 /*! Utility function for interpolation.*/
 DLLEXPORT RVector interpolate(const Mesh & mesh, const RVector & data,
                               const RVector & x, const RVector & y, 
-                              const RVector & z, bool verbose = false);
+                              const RVector & z, bool verbose=false);
+
+/*! Utility function for interpolation.*/
+DLLEXPORT RVector interpolate(const Mesh & mesh, const RVector & data,
+                              const RVector & x, const RVector & y, 
+                              bool verbose=false);
+
+/*! Utility function for interpolation.*/
+DLLEXPORT RVector interpolate(const Mesh & mesh, const RVector & data,
+                              const RVector & x, 
+                              bool verbose=false);
 
 /*! Utility function for interpolation. Interpolate all export data from mesh to the query mesh. Point and Cell based. */
 DLLEXPORT void interpolate(const Mesh & mesh, Mesh & qmesh,
