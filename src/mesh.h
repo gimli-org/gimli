@@ -45,7 +45,8 @@ typedef BoundingBox< double > IBoundingBox;
 template < class ValueType > class DLLEXPORT BoundingBox{
 public:
     /*! Default constructor, with BoundingBox[0.0, 0.0, 0.0; 1.0, 1.0, 1.0] */
-    BoundingBox(const Pos < ValueType > & min = Pos < double >(0, 0, 0), const Pos < ValueType > & max = Pos < double >(1.0, 1.0, 1.0))
+    BoundingBox(const Pos < ValueType > & min=Pos < double >(0, 0, 0),
+                const Pos < ValueType > & max=Pos < double >(1.0, 1.0, 1.0))
         : min_(min), max_(max){
     }
 
@@ -73,6 +74,12 @@ public:
         } return * this;
     }
 
+    bool isInside(const Pos < ValueType > & p){
+        return ((p[0] < max_[0] && p[0] > min_[0]) && 
+                (p[1] < max_[1] && p[1] > min_[1]) && 
+                (p[2] < max_[2] && p[2] > min_[2]));
+    }
+    
     /*! Set minimum Position. */
     void setMin(const Pos < ValueType > & min) { min_ = min; }
     /*! Returns a copy of the minimum position. */
@@ -251,7 +258,10 @@ public:
     /*! Returns a vector of boundary ptrs with the boundary marker between [from and to). \n
         for to equal open end set to = MAX_INT */
     std::vector < Boundary * > findBoundaryByMarker(int from, int to) const;
-
+    
+    /*! Set the marker to all boundaries in index array. */
+    void setBoundaryMarker(const IndexArray & ids, int marker);
+    
     /*! Return ptr to the cell that match position pos, counter holds amount of touch tests.
         Searching is done first by nearest-neighbour-kd-tree search,
         followed by slope-search if extensive is set. Return NULL if no cell can be found. */
@@ -261,6 +271,9 @@ public:
     Cell * findCell(const RVector3 & pos, bool extensive = true) const {
         size_t counter; return findCell(pos, counter, extensive); }
 
+    /*! Set the marker to all boundaries in index array. */
+    void setCellMarker(const IndexArray & ids, int marker);
+        
     /*! Return the index to the node of this mesh with the smallest distance to pos. */
     uint findNearestNode(const RVector3 & pos);
 

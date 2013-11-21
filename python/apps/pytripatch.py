@@ -9,7 +9,7 @@ import sys, math, os
 
 __verbose__ = False
 
-def sign( i ): return abs( i ) / i
+def sign(i): return abs(i) / i
 
 # for system call
 from os import system, path
@@ -18,7 +18,7 @@ try:
     import pygimli as g
 except ImportError:
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
-    sys.exit( 1 )
+    sys.exit(1)
 
 import pygimli.mplviewer
 from pygimli.mplviewer.colorbar import cmapFromName
@@ -39,8 +39,8 @@ import pylab
 import numpy as np
 from numpy import arange, sin, pi, linspace, meshgrid, array, zeros
 
-def on_draw( event = None):
-    def _getBB( items, fig ):
+def on_draw(event = None):
+    def _getBB(items, fig):
         bboxes = []
         #for label in labels:
         for item in items:
@@ -48,17 +48,17 @@ def on_draw( event = None):
             bboxi = bbox.inverse_transformed(fig.transFigure)
             bboxes.append(bboxi)
 
-        bbox = mtransforms.Bbox.union( bboxes )
+        bbox = mtransforms.Bbox.union(bboxes)
     return bbox
 
-    ybbox = _getBB( ax.get_yticklabels() + [ax.yaxis.label], fig )
-    fig.subplots_adjust( left = 1.05 * ybbox.width )
-    xbbox = _getBB( ax.get_xticklabels() + [ax.xaxis.label], fig )
-    fig.subplots_adjust( bottom = 1.05 * xbbox.height )
+    ybbox = _getBB(ax.get_yticklabels() + [ax.yaxis.label], fig)
+    fig.subplots_adjust(left = 1.05 * ybbox.width)
+    xbbox = _getBB(ax.get_xticklabels() + [ax.xaxis.label], fig)
+    fig.subplots_adjust(bottom = 1.05 * xbbox.height)
 
     print ybbox.width, xbbox.width
-    fig.subplots_adjust( right = 0.99 ) # pad a little
-    fig.subplots_adjust( top = 0.99 ) # pad a little
+    fig.subplots_adjust(right = 0.99) # pad a little
+    fig.subplots_adjust(top = 0.99) # pad a little
 
 #    print bbox
 #    print bbox.width
@@ -66,10 +66,10 @@ def on_draw( event = None):
 #       # we need to move it over
 #    fig.subplots_adjust(left=bbox.width) # pad a little
     #fig.canvas.draw()
-    #fig.update(  )
+    #fig.update()
     return False
 
-def applyPublishStyle( style ):
+def applyPublishStyle(style):
     vals = style.split(':')
 
     if vals[0] == 'w':
@@ -81,51 +81,51 @@ def applyPublishStyle( style ):
 
     
     paper = vals[1]
-    margin = float( vals[2] )
-    widthScale = float( vals[3] )
-    heightScale = float( vals[4] )
-    fontsize = int( vals[5] )
-    scale = float( vals[6] )
-    wOffset = float( vals[7] )
-    hOffset = float( vals[8] )
+    margin = float(vals[2])
+    widthScale = float(vals[3])
+    heightScale = float(vals[4])
+    fontsize = int(vals[5])
+    scale = float(vals[6])
+    wOffset = float(vals[7])
+    hOffset = float(vals[8])
 
-    pygimli.mplviewer.setOutputStyle( dim = 'w', paperMargin = margin
+    pygimli.mplviewer.setOutputStyle(dim = 'w', paperMargin = margin
                                    , xScale = widthScale, yScale = heightScale,
-                                   fontsize = fontsize, scale = scale )
+                                   fontsize = fontsize, scale = scale)
 
     return wOffset, hOffset
 #    fig.canvas.mpl_connect('draw_event', on_draw)
-#def applyPublishStyle( ... )
+#def applyPublishStyle(...)
 
 
 #from MatplotPanel import MatplotPanel
 #from MiscUtils import *
 #import wx
 
-class MyLinearSegmentedColormapAlpha( mpl.colors.LinearSegmentedColormap ):
+class MyLinearSegmentedColormapAlpha(mpl.colors.LinearSegmentedColormap):
     def __init__(self, name, segmentdata, N=256):
-        mpl.colors.LinearSegmentedColormap.__init__( self, name, segmentdata, N )
+        mpl.colors.LinearSegmentedColormap.__init__(self, name, segmentdata, N)
 
-    def _init( self ):
+    def _init(self):
         self._lut = np.ones((self.N + 3, 4), np.float)
         self._lut[:-3, 0] = mpl.colors.makeMappingArray(self.N, self._segmentdata['red'])
         self._lut[:-3, 1] = mpl.colors.makeMappingArray(self.N, self._segmentdata['green'])
         self._lut[:-3, 2] = mpl.colors.makeMappingArray(self.N, self._segmentdata['blue'])
         if self._segmentdata.has_key('alpha'):
-            self._lut[:-3, 3] = mpl.colors.makeMappingArray( self.N, self._segmentdata['alpha'] )
+            self._lut[:-3, 3] = mpl.colors.makeMappingArray(self.N, self._segmentdata['alpha'])
             #print "found alpha"
 
         self._isinit = True
         self._set_extremes()
 
-def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWeight = None, cMin = None, drawEdges = False,
-                    cMax = None, coverage = None, showCbar = True, label = "", linear = False , offset = g.RVector3( 0.0, 0.0 ),
-                    cmapname = None ):
-    mesh = g.Mesh( )
-    if ( meshname.rfind( '.vtk' ) != -1 ):
+def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWeight = None, cMin = None, drawEdges = False,
+                    cMax = None, coverage = None, showCbar = True, label = "", linear = False , offset = g.RVector3(0.0, 0.0),
+                    cmapname = None):
+    mesh = g.Mesh()
+    if (meshname.rfind('.vtk') != -1):
         mesh.importVTK(meshname)
     else:
-        mesh.load( meshname )
+        mesh.load(meshname)
     
     if __verbose__:
         print mesh
@@ -133,7 +133,7 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
     for key, val in mesh.exportDataMap():
         print key, val
 
-    mesh.translate( offset )
+    mesh.translate(offset)
     data = g.RVector();
 
     fig = pylab.figure()
@@ -144,26 +144,26 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
     axis = fig.add_subplot(111)
 
     # overide default draw function that ignore zorder of images, what we need for coverage image overlay
-    #mypa = MPLAxesPatch( axis )
+    #mypa = MPLAxesPatch(axis)
     #axis.draw = mypa.draw
     patches = None
-    axis.set_aspect( 'equal' )
+    axis.set_aspect('equal')
 
-    if ( constraintMat ):
-        showConstrainMat( axis, mesh, constraintMat, cWeight )
-    elif ( modelname ):
+    if (constraintMat):
+        showConstrainMat(axis, mesh, constraintMat, cWeight)
+    elif (modelname):
 
         if modelname == 'marker':
-            data = pylab.asarray( mesh.cellMarker() )
+            data = pylab.asarray(mesh.cellMarker())
         elif modelname == 'attribute':
-            data = pylab.asarray( mesh.cellAttributes() )
+            data = pylab.asarray(mesh.cellAttributes())
         elif modelname in mesh.exportDataMap().keys():
-            data = mesh.exportData( modelname )
-        elif modelname.rfind( '.bmat' ) != -1:
-            A = g.RMatrix( modelname )
+            data = mesh.exportData(modelname)
+        elif modelname.rfind('.bmat') != -1:
+            A = g.RMatrix(modelname)
             data = A[0]
         else:
-            g.load( data, modelname, g.Ascii )
+            g.load(data, modelname, g.Ascii)
 
         print "data min/max:", min(data), max(data)
         cov = None
@@ -174,109 +174,109 @@ def showTriMesh( meshname, modelname, contour = False, constraintMat = None, cWe
                 print mesh.exportDataMap().keys()
                 if coverage in mesh.exportDataMap().keys():
                     print "found coverage in mesh"
-                    cov = mesh.exportData( coverage )
-#                    if coverage.find( 'log10' ) > 0:
-#                        cov = g.exp10( cov )
+                    cov = mesh.exportData(coverage)
+#                    if coverage.find('log10') > 0:
+#                        cov = g.exp10(cov)
                 else:
-                    g.load( cov, coverage )
+                    g.load(cov, coverage)
                 print "coverage min/max:", min(cov), max(cov)
             except Exception as e:
                 print e
                 "coverage not found, ignoring"
                 cov = None
 
-        if ( contour ):
-            patches = showMeshInterpolated( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear )
+        if (contour):
+            patches = showMeshInterpolated(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear)
         else:
-            patches = showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, 
-                                     label = label, linear = linear, cmapname = cmapname )
+            patches = showMeshPatch(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar, 
+                                     label = label, linear = linear, cmapname = cmapname)
     else:
-        g.mplviewer.drawMeshBoundaries( axis, mesh )
+        g.mplviewer.drawMeshBoundaries(axis, mesh)
         pass
 
     #ol = g.Mesh()
-    #ol.createEdge( ol.createNode( 148.5,   0.0, 0.0 ),
-                   #ol.createNode( 0.0, -100.0, 0.0 ) )
+    #ol.createEdge(ol.createNode(148.5,   0.0, 0.0),
+                   #ol.createNode(0.0, -100.0, 0.0))
     #overlaysLines = ol.boundaries()
-    ##overlaysLines.append( g.Edge(  ) )
+    ##overlaysLines.append(g.Edge())
 
-    #g.mplviewer.drawSelectedMeshBoundaries( axis, overlaysLines, color = ( 0.0, 0.0, 0.0, 1.0 ),
-                                                    #linewidth = 2.0 )
+    #g.mplviewer.drawSelectedMeshBoundaries(axis, overlaysLines, color = (0.0, 0.0, 0.0, 1.0),
+                                                    #linewidth = 2.0)
 
     m = mesh.findBoundaryByMarker(1)
     print "boundary > 2 " , len(m)
-    if len( m ) > 0:
+    if len(m) > 0:
         pass
-        #g.mplviewer.drawSelectedMeshBoundaries( axis, filter( lambda b: b.marker() == 1, mesh.boundaries() )
-                                #, color = ( 0, 0.0, 0.0, 1.0 )
-                                #, linewidth = 3.0 )
+        #g.mplviewer.drawSelectedMeshBoundaries(axis, filter(lambda b: b.marker() == 1, mesh.boundaries())
+                                #, color = (0, 0.0, 0.0, 1.0)
+                                #, linewidth = 3.0)
     elif drawEdges:
-        g.mplviewer.drawMeshBoundaries( axis, mesh )
+        g.mplviewer.drawMeshBoundaries(axis, mesh)
 
     return axis, patches
 
-def showDC2DInvResMod( modfile, contour, cMin = None, cMax = None, label = "", cmapname = None ):
+def showDC2DInvResMod(modfile, contour, cMin = None, cMax = None, label = "", cmapname = None):
     mesh = g.Mesh();
-    mesh.importMod( modfile );
+    mesh.importMod(modfile);
     mesh.showInfos();
 
     fig = pylab.figure()
     axis = fig.add_subplot(111)
-    axis.set_aspect( 'equal' )
+    axis.set_aspect('equal')
 
-    data = mesh.exportData( "rho/Ohmm" );
-    cov  = mesh.exportData( "coverage" );
-    if ( contour ):
-        showMeshInterpolated( axis, mesh, data, cov = cov )
+    data = mesh.exportData("rho/Ohmm");
+    cov  = mesh.exportData("coverage");
+    if (contour):
+        showMeshInterpolated(axis, mesh, data, cov = cov)
     else:
-        showMeshPatch( axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, label = label, cmapname = cmapname )
+        showMeshPatch(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, label = label, cmapname = cmapname)
 
     return axis
 
-def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showCbar = True, 
-                   label = "", linear = False, nLevs = 5, orientation = 'horizontal', cmapname = None ):
+def showMeshPatch(axis, mesh, data, cov = None, cMin = None, cMax = None, showCbar = True, 
+                   label = "", linear = False, nLevs = 5, orientation = 'horizontal', cmapname = None):
 
-    patches = pygimli.mplviewer.drawModel( axis, mesh, data, cMin = cMin, cMax = cMax
+    patches = pygimli.mplviewer.drawModel(axis, mesh, data, cMin = cMin, cMax = cMax
                , showCbar = showCbar, linear = linear, label = label
-               , nLevs = nLevs, orientation = orientation )
+               , nLevs = nLevs, orientation = orientation)
     
     if cmapname is not None:
-        cmap = cmapFromName( cmapname )
-        patches.set_cmap( cmap )
+        cmap = cmapFromName(cmapname)
+        patches.set_cmap(cmap)
     
-    patches.set_edgecolor( 'face' )
-    patches.set_antialiased( False )
-    patches.set_linewidth( 0.001 )
+    patches.set_edgecolor('face')
+    patches.set_antialiased(False)
+    patches.set_linewidth(0.001)
     
     alphaPatch = True
 
     if cov is not None:
         if alphaPatch:
-            patches.set_antialiaseds( True )
-            patches.set_linewidth( 0.000 )
+            patches.set_antialiaseds(True)
+            patches.set_linewidth(0.000)
 
             # generate individual color values here
             patches.update_scalarmappable()
     
-            cols = patches.get_facecolor( )
+            cols = patches.get_facecolor()
             
-            C = np.asarray( cov )
-            print np.min( C ), np.max( C )
-            if ( np.min( C ) < 0. ) | ( np.max ( C ) > 1. ) | ( np.max( C ) < 0.5 ): # not already alpha map
-                ( nn, hh ) = np.histogram( C, 50 )
-                nnn = nn.cumsum( axis = 0 ) / float( len( C ) )
+            C = np.asarray(cov)
+            print np.min(C), np.max(C)
+            if (np.min(C) < 0.) | (np.max (C) > 1.) | (np.max(C) < 0.5): # not already alpha map
+                (nn, hh) = np.histogram(C, 50)
+                nnn = nn.cumsum(axis = 0) / float(len(C))
                 print "min-max nnn ", min(nnn), max(nnn)
-                mi = hh[ min( np.where( nnn > 0.02 )[0] ) ]
+                mi = hh[ min(np.where(nnn > 0.02)[0]) ]
                 if min(nnn)>0.4:
-                    ma = max( C )
+                    ma = max(C)
                 else:
-                    ma = hh[ max( np.where( nnn < 0.4 )[0] ) ]
+                    ma = hh[ max(np.where(nnn < 0.4)[0]) ]
 
-                #mi = hh[ min( np.where( nnn > 0.2 )[0] ) ]
-                #ma = hh[ max( np.where( nnn < 0.7 )[0] ) ]
-                C = ( C - mi ) / ( ma - mi )
-                C[ np.where( C < 0. ) ] = 0.0
-                C[ np.where( C > 1. ) ] = 1.0
+                #mi = hh[ min(np.where(nnn > 0.2)[0]) ]
+                #ma = hh[ max(np.where(nnn < 0.7)[0]) ]
+                C = (C - mi) / (ma - mi)
+                C[ np.where(C < 0.) ] = 0.0
+                C[ np.where(C > 1.) ] = 1.0
 
             # add alpha value to the color values
             cols[:,3 ] = C
@@ -287,147 +287,147 @@ def showMeshPatch( axis, mesh, data, cov = None, cMin = None, cMax = None, showC
             # delete patch data to avoid automatically rewrite of _facecolors
             patches._A = None
         else:
-            addCoverageImageOverlay( axis, mesh, cov )
+            addCoverageImageOverlay(axis, mesh, cov)
             
     axis.set_aspect('equal')
 #    axis.set_xlabel('x [m]')
 #    axis.set_ylabel('z [m]')
     return patches
 
-def addCoverageImageOverlay( axis, mesh, cov ):
+def addCoverageImageOverlay(axis, mesh, cov):
     Nx = 200
     Ny = 100
-    tix = linspace( mesh.xmin(), mesh.xmax(), Nx )
-    tiy = linspace( mesh.ymin(), mesh.ymax(), Ny )
-    (X,Y) = meshgrid( tix, tiy )
+    tix = linspace(mesh.xmin(), mesh.xmax(), Nx)
+    tiy = linspace(mesh.ymin(), mesh.ymax(), Ny)
+    (X,Y) = meshgrid(tix, tiy)
     extent = X.min(), X.max(), Y.min(), Y.max()
-#           print "interpolate prep t = ", swatch.duration( True )
+#           print "interpolate prep t = ", swatch.duration(True)
 
-    c = arange( 0, Nx * Ny ); c[ : ] = 0.0
-    c = g.interpolate( mesh, cov, g.asvector( X.flat[:] )
-                                  , g.asvector( Y.flat[:] )
-                                  , g.RVector( len( Y.flat[:] ), 0.0 ) )
-    c = asarray( c )
+    c = arange(0, Nx * Ny); c[ : ] = 0.0
+    c = g.interpolate(mesh, cov, g.asvector(X.flat[:])
+                                  , g.asvector(Y.flat[:])
+                                  , g.RVector(len(Y.flat[:]), 0.0))
+    c = asarray(c)
 
-    print "coverage min: ", min(c), "max: ", max( c )
+    print "coverage min: ", min(c), "max: ", max(c)
 
-    ( nn, hh ) = np.histogram( c, bins = 50 )
-    nnn = nn.cumsum( axis = 0 ) / float( len( c ) )
-    mi = hh[ min( np.where( nnn > 0.02 )[0] ) ]
-    ma = hh[ max( np.where( nnn < 0.5 )[0] ) ]
-    C = array( c ).reshape( Ny, Nx )
-    C = ( C - mi ) / ( ma - mi )
-    C[ np.where( C < 0 ) ] = 0.0
-    C[ np.where( C > 1 ) ] = 1.0
+    (nn, hh) = np.histogram(c, bins = 50)
+    nnn = nn.cumsum(axis = 0) / float(len(c))
+    mi = hh[ min(np.where(nnn > 0.02)[0]) ]
+    ma = hh[ max(np.where(nnn < 0.5)[0]) ]
+    C = array(c).reshape(Ny, Nx)
+    C = (C - mi) / (ma - mi)
+    C[ np.where(C < 0) ] = 0.0
+    C[ np.where(C > 1) ] = 1.0
 
-            #(Nhist , xHist) = np.histogram( c, bins = 100 );
+            #(Nhist , xHist) = np.histogram(c, bins = 100);
     #covMin = xHist[ 0 ];
     #covMax = xHist[ 80 ];
     ##covMin = -3.51
     ##covMax = -3.5
 
-    covColors = np.ones( (Ny, Nx, 4) )
+    covColors = np.ones((Ny, Nx, 4))
 
-    for i, row in enumerate( C ):
-        for j, val in enumerate( row ):
+    for i, row in enumerate(C):
+        for j, val in enumerate(row):
             covColors[ i, j ] = [ 1.0, 1.0, 1.0, 1.0 - C[ i, j ] ]
 
     #zorder default for patches = 1, axis = 2.5
-    cso = axis.imshow( covColors, extent = extent
+    cso = axis.imshow(covColors, extent = extent
                                 , origin = 'lower'
                                 , zorder = 1.5
                                 , alpha = 1.0
-                     )
+                    )
     return cso
 
-def showConstrainMat( axes, mesh, constraintMat, cWeight = None  ):
-    g.mplviewer.drawMeshBoundaries( axes, mesh )
+def showConstrainMat(axes, mesh, constraintMat, cWeight = None ):
+    g.mplviewer.drawMeshBoundaries(axes, mesh)
 
     C = g.RMatrix();
-    g.loadMatrixCol( C, constraintMat );
+    g.loadMatrixCol(C, constraintMat);
     cw = None
 
     if cWeight is not None:
-        cw = g.RVector( cWeight );
+        cw = g.RVector(cWeight);
 
-    drawParameterConstraints( axes, mesh, C, cw)
+    drawParameterConstraints(axes, mesh, C, cw)
 
 
 
-def showMeshInterpolated( axis, mesh, data, cov = None, cMin = None, cMax = None, linear = False ):
+def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None, linear = False):
     withCoverageOverlayImage = True
-    swatch = g.Stopwatch( True )
+    swatch = g.Stopwatch(True)
     Nx = 200
     Ny = 100
     nLevels = 12
 
     dropColLimitsPerc = 5
-    axis.set_xlim( mesh.xmin(), mesh.xmax() );
-    axis.set_ylim( mesh.ymin(), mesh.ymax() );
+    axis.set_xlim(mesh.xmin(), mesh.xmax());
+    axis.set_ylim(mesh.ymin(), mesh.ymax());
 
-    tix = linspace( mesh.xmin(), mesh.xmax(), Nx )
-    tiy = linspace( mesh.ymin(), mesh.ymax(), Ny )
-    (X,Y) = meshgrid( tix, tiy )
+    tix = linspace(mesh.xmin(), mesh.xmax(), Nx)
+    tiy = linspace(mesh.ymin(), mesh.ymax(), Ny)
+    (X,Y) = meshgrid(tix, tiy)
     extent = X.min(), X.max(), Y.min(), Y.max()
-    print "interpolate prep t = ", swatch.duration( True )
+    print "interpolate prep t = ", swatch.duration(True)
 
-    z = arange( 0, Nx * Ny )
+    z = arange(0, Nx * Ny)
 
-    if ( data.size() > 0 ):
-        z = g.interpolate( mesh, data, g.asvector( X.flat[:] )
-                                       , g.asvector( Y.flat[:] )
-                                       , g.RVector( len( Y.flat ), 0.0 )
-                        )
-        z = asarray ( z )
+    if (data.size() > 0):
+        z = g.interpolate(mesh, data, g.asvector(X.flat[:])
+                                       , g.asvector(Y.flat[:])
+                                       , g.RVector(len(Y.flat), 0.0)
+                       )
+        z = asarray (z)
 
-    print "interpolate t = ", swatch.duration( True )
+    print "interpolate t = ", swatch.duration(True)
 
-    Z, cMin, cMax = g.mplviewer.findAndMaskBestClim( z, cMin, cMax, not(linear) );
-    Z = ma.masked_where( z <= 0.0, Z )
-    Z = Z.reshape( Ny, Nx )
+    Z, cMin, cMax = g.mplviewer.findAndMaskBestClim(z, cMin, cMax, not(linear));
+    Z = ma.masked_where(z <= 0.0, Z)
+    Z = Z.reshape(Ny, Nx)
     #print cMin, cMax
 
-    if ( linear ):
-	    levs = g.mplviewer.createLinLevs( cMin, cMax, nLevels + 1 )
+    if (linear):
+	    levs = g.mplviewer.createLinLevs(cMin, cMax, nLevels + 1)
     else:
-	    levs = g.mplviewer.createLogLevs( cMin, cMax, nLevels + 1 )
+	    levs = g.mplviewer.createLogLevs(cMin, cMax, nLevels + 1)
 
-    #print np.min( Z )
+    #print np.min(Z)
     print levs
 
     levs[0] = levs[0]* 0.999
     levs[ len(levs)-1] = levs[len(levs)-1]* 1.001
 
-    cmap = matplotlib.cm.get_cmap( name='jet' );
+    cmap = matplotlib.cm.get_cmap(name='jet');
 
-    cmap.set_over( color='#001111', alpha=0.5 )
-    cmap.set_under( color=(1.0, 1.0, 0.0 ), alpha=0.5 )
+    cmap.set_over(color='#001111', alpha=0.5)
+    cmap.set_under(color=(1.0, 1.0, 0.0), alpha=0.5)
 
-    cs = axis.contourf( X, Y, Z
+    cs = axis.contourf(X, Y, Z
                                 , levs
                                 , cmap = cmap
                                 #, norm   = mpl.colors.LogNorm()
-                        )
-    cs.set_clim( cMin, cMax )
+                       )
+    cs.set_clim(cMin, cMax)
 
     if __verbose__:
-        print "plotting t = ", swatch.duration( True )
+        print "plotting t = ", swatch.duration(True)
 
     if cov:
-        addCoverageImageOverlay( axis, mesh, cov )
+        addCoverageImageOverlay(axis, mesh, cov)
 
-    g.mplviewer.createColorbar( cs, cMin = cMin, cMax = cMax, nLevs = 5 )
+    g.mplviewer.createColorbar(cs, cMin = cMin, cMax = cMax, nLevs = 5)
     return cs
 
 
-def main( argv ):
+def main(argv):
     global __verbose__
     
     from optparse import OptionParser
 
-    parser = OptionParser( "usage: %prog [options] mesh|mod", version="%prog: " + g.versionStr()  )
+    parser = OptionParser("usage: %prog [options] mesh|mod", version="%prog: " + g.versionStr() )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
-                            , help="be verbose", default=False )
+                            , help="be verbose", default=False)
     parser.add_option("-S", "--silent", dest="silent", action="store_true"
                             , help="set viewer silent mode", default=False)
     parser.add_option("-L", "--linear", dest="linear", action="store_true"
@@ -439,64 +439,64 @@ def main( argv ):
     parser.add_option("-E", "--drawEdges", dest="drawEdges",action="store_true"
                             , help="Force drawing all edges independent on marker", default=False)
     parser.add_option("-i", "--interperc", dest="interperc",
-                            help="interpecentile", type = "float", default = "0.0" )
+                            help="interpecentile", type = "float", default = "0.0")
     parser.add_option("-m", "--cmap", dest="cmapname",
-                            help="color map name", metavar="File" )
+                            help="color map name", metavar="File")
     parser.add_option("-d", "--data", dest="datafile",
-                            help="data file", metavar="File" )
+                            help="data file", metavar="File")
     parser.add_option("-o", "--output", dest="outFileName",
-                            help="filename for the resulting picture. suffix define fileformat (.pdf|.png|.svg)", metavar="File" )
+                            help="filename for the resulting picture. suffix define fileformat (.pdf|.png|.svg)", metavar="File")
     parser.add_option("-c", "--constraintMat", dest="constraintMat",
-                            help="show mesh constraints connections", metavar="File", default='' )
+                            help="show mesh constraints connections", metavar="File", default='')
     parser.add_option("-e", "--electrodes", dest="electrodes",
-                            help="Show electrode positions as black dots. Give datafile.", metavar="File" )
+                            help="Show electrode positions as black dots. Give datafile.", metavar="File")
     parser.add_option("", "--cMin", dest="cMin",
-                            help="minimum colour", type="float" )
+                            help="minimum colour", type="float")
     parser.add_option("", "--cMax", dest="cMax",
-                            help="maximum colour", type="float" )
+                            help="maximum colour", type="float")
     parser.add_option("", "--coverage", dest="coverage",
-                            help="coverage vector", metavar="File" )
+                            help="coverage vector", metavar="File")
     parser.add_option("", "--cWeight", dest="cWeight",
-                            help="constraint weight vector", metavar="File" )
+                            help="constraint weight vector", metavar="File")
     parser.add_option("", "--no-cbar", dest="showCbar", default =True
-                            , help="show colorbar", action="store_false" )
+                            , help="show colorbar", action="store_false")
     parser.add_option("", "--cbar-only", dest="cbarOnly", default =False
-                            , help="show colorbar only", action="store_true" )
+                            , help="show colorbar only", action="store_true")
     parser.add_option("", "--label", dest="label"
                             , help="label to be displayed on colorbar", metavar="String"
-                            , default = "Resistivity [$\Omega $m]" )
+                            , default = "Resistivity [$\Omega $m]")
     parser.add_option("", "--xLabel", dest="xlabel"
                             , help="label to x-axes", metavar="String"
-                            , default = None )
+                            , default = None)
     parser.add_option("", "--yLabel", dest="ylabel"
                             , help="label to y-axes", metavar="String"
-                            , default = None )
-    parser.add_option("", "--title", dest="title", default ="", help="draw title" )
+                            , default = None)
+    parser.add_option("", "--title", dest="title", default ="", help="draw title")
     parser.add_option("", "--aspect", dest="aspect" , default ="equal"
-                            , help="set aspect ratio 'auto' or 'equal' [equal] " )
+                            , help="set aspect ratio 'auto' or 'equal' [equal] ")
     parser.add_option("", "--xlim", dest="xlim" , default = '', type = "string"
-                            , help="set x limits for plot (: separated) " )
+                            , help="set x limits for plot (: separated) ")
     parser.add_option("", "--ylim", dest="ylim" , default = '', type = "string"
-                            , help="set y limits for plot (: separated) " )
+                            , help="set y limits for plot (: separated) ")
     parser.add_option("", "--reverseX", dest = "reverseX", default = False
-                            , help = "Reverse the x axis", action = "store_true" )
+                            , help = "Reverse the x axis", action = "store_true")
     parser.add_option("", "--xOffset", dest="xoffset" , default = 0.0, type = "float"
-                            , help="set x-coordinate offset for first electrode [0.0] " )
+                            , help="set x-coordinate offset for first electrode [0.0] ")
     parser.add_option("", "--zOffset", dest="zoffset" , default = 0.0, type = "float"
-                            , help="set z-coordinate offset for first electrode [0.0] " )
+                            , help="set z-coordinate offset for first electrode [0.0] ")
     parser.add_option("", "--maxDepth", dest="maxDepth" , default = 0.0, type = "float"
-                            , help="limit z-coordinate to maximum depth" )
+                            , help="limit z-coordinate to maximum depth")
     parser.add_option("", "--sensorDiameter", dest="sensorDiameter" , default = 0.0, type = "float"
-                            , help = "absolute size of sensor marker (default is sensordistance / 8 )" )
+                            , help = "absolute size of sensor marker (default is sensordistance / 8)")
     parser.add_option("", "--outSize", dest="outSize", default = None, type = "string"
-                            , help="set the x:y pixel for the resulting figure file" )
+                            , help="set the x:y pixel for the resulting figure file")
     parser.add_option("", "--dpi", dest="dpi", default = 600, type = "float"
-                            , help="set the dpi for pixel output or preview" )
+                            , help="set the dpi for pixel output or preview")
     parser.add_option("", "--publish", dest="publish", default = None, type = "string"
                             , help="set output style for publishing " +
                              " dominant-dim:paperSize:margin:wScale:hScale:Fontsize:scale" +
                              " e.g., w:a4:5:0.5:0.2:9:2 (size:width of a4-5cm*0.5 plus 9pt Font scal everything by 2)"
-                            )
+                           )
 
     (options, args) = parser.parse_args()
 
@@ -507,19 +507,19 @@ def main( argv ):
 
     if options.interperc > 0.0 and options.cMin is None and options.cMax is None:
         if options.datafile is not None:
-            if os.path.exists( options.datafile ):
-                a = np.loadtxt( options.datafile )
-                options.cMin, options.cMax = interperc( a, options.interperc )
+            if os.path.exists(options.datafile):
+                a = np.loadtxt(options.datafile)
+                options.cMin, options.cMax = interperc(a, options.interperc)
             # else:
                 # mesh = g.Mesh(
                 # if options.datafile in mesh.exportDataMap().keys():
-                    # a = mesh.exportData( options.datafile )
-                    # options.cMin, options.cMax = interperc( a, options.interperc )
+                    # a = mesh.exportData(options.datafile)
+                    # options.cMin, options.cMax = interperc(a, options.interperc)
         
     wOffset = 0.05
     hOffset = 0.05
     if options.publish:
-        wOffset,hOffset= applyPublishStyle( options.publish )
+        wOffset,hOffset= applyPublishStyle(options.publish)
 
     axes = None
 
@@ -544,31 +544,31 @@ def main( argv ):
 
         norm = None
         if cmin > 0:
-            norm = mpl.colors.LogNorm( vmin = cmin, vmax = cmax)
+            norm = mpl.colors.LogNorm(vmin = cmin, vmax = cmax)
         else:
-            norm = mpl.colors.NoNorm( vmin = cmin, vmax = cmax)
+            norm = mpl.colors.NoNorm(vmin = cmin, vmax = cmax)
 
-        cmap = cmapFromName( options.cmapname )
+        cmap = cmapFromName(options.cmapname)
 
         cbar = mpl.colorbar.ColorbarBase(axes, norm = norm, cmap = cmap
                                         ,orientation = orientation
         #                               ,drawedges='True'
-                                       )
-        g.mplviewer.setCbarLevels( cbar, cMin = None, cMax = None, nLevs = 5 )
+                                      )
+        g.mplviewer.setCbarLevels(cbar, cMin = None, cMax = None, nLevs = 5)
 
         #cbar.labelpad = -20
         #cbar.ax.yaxis.set_label_position('left')
-        cbar.set_label( options.label )
+        cbar.set_label(options.label)
 
     else:
-        if len( args ) == 0:
+        if len(args) == 0:
             parser.print_help()
             print "Please add a mesh or model name."
-            sys.exit( 2 )
+            sys.exit(2)
         else:
             meshname = args[ 0 ];
 
-        if ( options.verbose ):
+        if (options.verbose):
             print "verbose =", options.verbose
             print "silent =", options.silent
             print "linear =", options.linear
@@ -577,18 +577,18 @@ def main( argv ):
             print "output =", options.outFileName
             print "data =", options.datafile
             print "coverage =", options.coverage
-            print "cMin =", options.cMin, type( options.cMin )
+            print "cMin =", options.cMin, type(options.cMin)
             print "cMax =", options.cMax
             print "cmapname =", options.cmapname
 
         axes = None
         
         try:
-            if ( meshname.rfind( '.mod' ) != -1 ):
-                axes = showDC2DInvResMod( meshname, options.contourplot, cMin = options.cMin, cMax = options.cMax
+            if (meshname.rfind('.mod') != -1):
+                axes = showDC2DInvResMod(meshname, options.contourplot, cMin = options.cMin, cMax = options.cMax
                                         , label = options.label)
-            elif ( ( meshname.rfind( '.bms' ) != -1 ) | ( meshname.rfind( '.vtk' ) != -1 ) ):
-                axes, patches = showTriMesh( meshname, options.datafile, options.contourplot
+            elif ((meshname.rfind('.bms') != -1) | (meshname.rfind('.vtk') != -1)):
+                axes, patches = showTriMesh(meshname, options.datafile, options.contourplot
                         , options.constraintMat, cWeight = options.cWeight
                         , cMin = options.cMin, cMax = options.cMax
                         , coverage = options.coverage
@@ -596,9 +596,9 @@ def main( argv ):
                         , label = options.label
                         , linear = options.linear
                         , drawEdges = options.drawEdges
-                        , offset = g.RVector3( options.xoffset, options.zoffset )
+                        , offset = g.RVector3(options.xoffset, options.zoffset)
                         , cmapname = options.cmapname
-                        )
+                       )
             else:
                 print "Cannot determine format for input mesh. Available are *.bms, *.mod"
                 exit(2)
@@ -609,54 +609,54 @@ def main( argv ):
 
         if options.electrodes:
             try:
-                d = g.DataContainer( options.electrodes )
+                d = g.DataContainer(options.electrodes)
                 elPos = d.sensorPositions()
                 diam = None
                 if options.sensorDiameter > 0.0:
                     diam = options.sensorDiameter
                     
-                pygimli.mplviewer.drawSensors( axes, elPos, diam = diam )
-                #pygimli.mplviewer.drawSensors( axes, elPos, diam = None )
+                pygimli.mplviewer.drawSensors(axes, elPos, diam = diam)
+                #pygimli.mplviewer.drawSensors(axes, elPos, diam = None)
             except Exception as e:
-                print ( e + "Cannot determine electrode informations from file:" + str( options.electrodes ) )
+                print (e + "Cannot determine electrode informations from file:" + str(options.electrodes))
 
             axes.figure.canvas.draw()
 
         if options.title:
-            axes.set_title( options.title )
+            axes.set_title(options.title)
 
         if options.aspect:
-            axes.set_aspect( options.aspect )
+            axes.set_aspect(options.aspect)
 
         if options.xlabel:
-            axes.set_xlabel( options.xlabel )
+            axes.set_xlabel(options.xlabel)
 
         if options.maxDepth:
-            yl = axes.get_ylim( )
+            yl = axes.get_ylim()
             
             if options.verbose:
                 print "old ylims", yl
                 
-            axes.set_ylim( [ -options.maxDepth, yl[1] ] )
+            axes.set_ylim([ -options.maxDepth, yl[1] ])
             
             if options.verbose:
-                print "new ylims", axes.get_ylim( )
+                print "new ylims", axes.get_ylim()
         
-        if len( options.xlim ) > 0:
-            xl = P.double( options.xlim.split(':') )
+        if len(options.xlim) > 0:
+            xl = P.double(options.xlim.split(':'))
             print "xlim = ", xl
-            axes.set_xlim( xl ) 
+            axes.set_xlim(xl) 
             
-        if len( options.ylim ) > 0:
-            yl = P.double( options.ylim.split(':') )
+        if len(options.ylim) > 0:
+            yl = P.double(options.ylim.split(':'))
             print "ylim = ", yl
-            axes.set_ylim( yl ) 
+            axes.set_ylim(yl) 
         
         if options.reverseX:
-            axes.set_xlim( axes.get_xlim( )[::-1] ) 
+            axes.set_xlim(axes.get_xlim()[::-1]) 
             
         if options.ylabel:
-            axes.set_ylabel( options.ylabel )
+            axes.set_ylabel(options.ylabel)
 
             if 'Depth' in options.ylabel or 'Tiefe' in options.ylabel:
                 print "fixing 'Depth' to be positive values"
@@ -664,9 +664,9 @@ def main( argv ):
                 tickLabels=[]
                 for t in ticks:
                     print t
-                    tickLabels.append( str( int( abs( t ) ) ) )
+                    tickLabels.append(str(int(abs(t))))
 
-                axes.set_yticklabels( tickLabels )
+                axes.set_yticklabels(tickLabels)
                 print tickLabels
 
         
@@ -681,7 +681,7 @@ def main( argv ):
             axes.figure.show()
             axes.figure.canvas.draw()
 
-            def _getBB( items, fig ):
+            def _getBB(items, fig):
                 import matplotlib.transforms as mtransforms
                 bboxes = []
                 #for label in labels:
@@ -691,60 +691,60 @@ def main( argv ):
                     bboxi = bbox.inverse_transformed(fig.transFigure)
                     bboxes.append(bboxi)
 
-                bbox = mtransforms.Bbox.union( bboxes )
+                bbox = mtransforms.Bbox.union(bboxes)
                 return bbox
 
-            #ybbox = _getBB( axes.get_yticklabels() + [axes.yaxis.label], fig )
+            #ybbox = _getBB(axes.get_yticklabels() + [axes.yaxis.label], fig)
             #print wOffset, hOffset
-            #fig.subplots_adjust( left = wOffset + ybbox.width )
+            #fig.subplots_adjust(left = wOffset + ybbox.width)
 
-            #xbbox = _getBB( axes.get_xticklabels() + [axes.xaxis.label], fig )
+            #xbbox = _getBB(axes.get_xticklabels() + [axes.xaxis.label], fig)
             #print xbbox
             #print xbbox.height
 
-            fig.subplots_adjust( bottom = hOffset, left = wOffset )
+            fig.subplots_adjust(bottom = hOffset, left = wOffset)
 
             #print ybbox.width, xbbox.width
-            fig.subplots_adjust( right = 0.99 ) # pad a little
-            fig.subplots_adjust( top = 0.99 ) # pad a little
+            fig.subplots_adjust(right = 0.99) # pad a little
+            fig.subplots_adjust(top = 0.99) # pad a little
 
-            fig.patch.set_alpha( 0.0 )
-            axes.patch.set_alpha( 1.0 )
+            fig.patch.set_alpha(0.0)
+            axes.patch.set_alpha(1.0)
         # if options.publish
 
-	(fileBaseName, fileExtension) = path.splitext( options.outFileName )
+	(fileBaseName, fileExtension) = path.splitext(options.outFileName)
 
-	if ( fileExtension == '.svg' ):
-            pylab.savefig( options.outFileName, transparent=True )
-        elif ( fileExtension == '.pdf' ):
-            if options.datafile.rfind( '.bmat' ) != -1:
+	if (fileExtension == '.svg'):
+            pylab.savefig(options.outFileName, transparent=True)
+        elif (fileExtension == '.pdf'):
+            if options.datafile.rfind('.bmat') != -1:
                 from matplotlib.backends.backend_pdf import PdfPages
                 import numpy as N
                 
-                A = g.RMatrix( options.datafile )
-                pdf = PdfPages( options.outFileName ) 
-                for i, a in enumerate( A ):
+                A = g.RMatrix(options.datafile)
+                pdf = PdfPages(options.outFileName) 
+                for i, a in enumerate(A):
                     print "\rWriting multipage pdf %d/%d" % (i+1,len(A)),
-                    patches.set_array( N.asarray( a ) ) # necessary due to non existing functin .ndim
-                    fig.savefig( pdf, format='pdf', bbox_inches='tight' ) 
+                    patches.set_array(N.asarray(a)) # necessary due to non existing functin .ndim
+                    fig.savefig(pdf, format='pdf', bbox_inches='tight') 
                 
                 pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'
                 pdf.infodict()['Author'] = u'BERT@resistivity.net'
                 pdf.close()
-                patches.set_array( N.asarray( A[0] ) ) # show original
+                patches.set_array(N.asarray(A[0])) # show original
             else:
-                pylab.savefig( options.outFileName, bbox_inches='tight' )
-        elif ( fileExtension == '.png' ):
-            pylab.savefig( options.outFileName, dpi=options.dpi, bbox_inches='tight', transparent=True )
-        elif ( fileExtension == '.ps' ):
-            pylab.savefig( options.outFileName, dpi=(600) )
-        elif ( fileExtension == '.eps' ):
-            pylab.savefig( options.outFileName, dpi=(1200), bbox_inches='tight' )
+                pylab.savefig(options.outFileName, bbox_inches='tight')
+        elif (fileExtension == '.png'):
+            pylab.savefig(options.outFileName, dpi=options.dpi, bbox_inches='tight', transparent=True)
+        elif (fileExtension == '.ps'):
+            pylab.savefig(options.outFileName, dpi=(600))
+        elif (fileExtension == '.eps'):
+            pylab.savefig(options.outFileName, dpi=(1200), bbox_inches='tight')
         else:
-            assert False, ('format %s unknown. (available( svg, png, pdf) )' % fileExtension )
+            assert False, ('format %s unknown. (available(svg, png, pdf))' % fileExtension)
 
     if not options.silent:
         pylab.show()
 
 if __name__ == "__main__":
-    main( sys.argv[ 1: ] )
+    main(sys.argv[ 1: ])

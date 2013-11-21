@@ -43,7 +43,7 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
         cells[i] = mesh.findCell(pos[i], count, false);
 
         if (verbose) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
-//                                 << "\t searched: " << count << std::endl;
+//                             << "\t searched: " << count << std::endl;
     }
     if (verbose) std::cout << std::endl;
 
@@ -116,15 +116,16 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
 }
 
 void interpolate(const Mesh & mesh, const std::string & dataName, Mesh & pos,
-                bool verbose){
+                 bool verbose){
     RMatrix vData; vData.push_back(mesh.exportData(dataName));
     RMatrix viData;
     interpolate(mesh, vData, pos.positions(), viData, verbose);
     pos.addExportData(dataName, viData[0]);
 }
 
-void interpolate(const Mesh & mesh, const RVector & data, const std::vector< RVector3 > & pos,
-                  RVector & iData, bool verbose){
+void interpolate(const Mesh & mesh, const RVector & data,
+                 const std::vector< RVector3 > & pos,
+                 RVector & iData, bool verbose){
     RMatrix vData; vData.push_back(data);
     RMatrix viData;
     interpolate(mesh, vData, pos, viData, verbose);
@@ -132,7 +133,8 @@ void interpolate(const Mesh & mesh, const RVector & data, const std::vector< RVe
 }
 
 RVector interpolate(const Mesh & mesh, const RVector & data,
-                     const RVector & x, const RVector & y, const RVector & z, bool verbose){
+                    const RVector & x, const RVector & y,
+                    const RVector & z, bool verbose){
     
     if (x.size() != y.size() || x.size() != z.size()) {
         throwLengthError(EXIT_VECTOR_SIZE_INVALID, " x.size invalid y.size invalid z.size() "
@@ -145,6 +147,18 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
     RVector iData;
     interpolate(mesh, data, pos, iData, verbose);
     return iData;
+}
+
+RVector interpolate(const Mesh & mesh, const RVector & data,
+                    const RVector & x, const RVector & y,
+                    bool verbose){
+    return interpolate(mesh, data, x, y, RVector(x.size(), 0.0));
+}
+
+RVector interpolate(const Mesh & mesh, const RVector & data,
+                    const RVector & x, bool verbose){
+    return interpolate(mesh, data, x,
+                       RVector(x.size(), 0.0), RVector(x.size(), 0.0));
 }
 
 void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose){

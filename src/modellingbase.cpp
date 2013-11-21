@@ -29,38 +29,38 @@
 
 namespace GIMLI{
 
-ModellingBase::ModellingBase( bool verbose )
-    : dataContainer_( NULL ), verbose_( verbose ){
+ModellingBase::ModellingBase(bool verbose)
+    : dataContainer_(NULL), verbose_(verbose){
     init_();
 }
 
-ModellingBase::ModellingBase( DataContainer & data, bool verbose )
-    : dataContainer_( NULL ), verbose_( verbose ){
+ModellingBase::ModellingBase(DataContainer & data, bool verbose)
+    : dataContainer_(NULL), verbose_(verbose){
     init_();
-    setData( data );
+    setData(data);
 }
 
-ModellingBase::ModellingBase( const Mesh & mesh, bool verbose )
-    : dataContainer_( NULL ), verbose_( verbose ){
+ModellingBase::ModellingBase(const Mesh & mesh, bool verbose)
+    : dataContainer_(NULL), verbose_(verbose){
     init_();
-    setMesh( mesh );
+    setMesh(mesh);
 }
 
-ModellingBase::ModellingBase( const Mesh & mesh, DataContainer & data, bool verbose )
-    : dataContainer_( NULL ), verbose_( verbose ){
+ModellingBase::ModellingBase(const Mesh & mesh, DataContainer & data, bool verbose)
+    : dataContainer_(NULL), verbose_(verbose){
     init_();
-    setData( data );
-    setMesh( mesh );
+    setData(data);
+    setMesh(mesh);
 }
 
-ModellingBase::~ModellingBase( ) {
+ModellingBase::~ModellingBase() {
     delete regionManager_;
-    if ( mesh_ ) delete mesh_;
-    if ( jacobian_ && ownJacobian_ ) delete jacobian_;
+    if (mesh_) delete mesh_;
+    if (jacobian_ && ownJacobian_) delete jacobian_;
 }
 
 void ModellingBase::init_() {
-    regionManager_      = new RegionManager( verbose_ );
+    regionManager_      = new RegionManager(verbose_);
     regionManagerInUse_ = false;
     
     mesh_               = NULL;
@@ -71,127 +71,128 @@ void ModellingBase::init_() {
     initJacobian();
 }
 
-void ModellingBase::setData( DataContainer & data ){
-    //if ( dataContainer_ ) {
+void ModellingBase::setData(DataContainer & data){
+    //if (dataContainer_) {
     dataContainer_ = &data;
 //     } else {
-//         dataContainer_ = new DataContainer( data );
+//         dataContainer_ = new DataContainer(data);
 //     }
     updateDataDependency_();
 }
 
-RVector ModellingBase::startModel( ) {
-    if ( startModel_.size() > 0 ) return startModel_;
+RVector ModellingBase::startModel() {
+    if (startModel_.size() > 0) return startModel_;
 
-    setStartModel( regionManager_->createStartVector( ) );
+    setStartModel(regionManager_->createStartVector());
 
-    if ( startModel_.size() == 0 ){
-/*            std::cerr << WHERE_AM_I << "Warning! no mesh defined. "
-                "You should either define a mesh or override this function." << std::endl;*/
+    if (startModel_.size() == 0){
+    /*  std::cerr << WHERE_AM_I << "Warning! no mesh defined. "
+        "You should either define a mesh or " +
+        "override this function." << std::endl;*/
 
-        setStartModel( createDefaultStartModel() );
+        setStartModel(createDefaultStartModel());
     }
     return startModel_;
 }
 
-void ModellingBase::createRefinedForwardMesh( bool refine, bool pRefine ){
+void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
 	this->initRegionManager();
 
-    if ( !mesh_ ) {
+    if (!mesh_) {
         mesh_ = new Mesh();
     } else {
         mesh_->clear();
     }
     
-    if ( refine ){
-        if ( pRefine ){
-            *mesh_ = regionManager_->mesh().createP2( );
+    if (refine){
+        if (pRefine){
+            *mesh_ = regionManager_->mesh().createP2();
         } else {
-            *mesh_ = regionManager_->mesh().createH2( );
+            *mesh_ = regionManager_->mesh().createH2();
         }
     } else {
-        setMesh_( regionManager_->mesh() );
+        setMesh_(regionManager_->mesh());
     }
     updateMeshDependency_();
 }
  
-void ModellingBase::setRefinedMesh( const Mesh & mesh ){
-    if ( verbose_ ) {
+void ModellingBase::setRefinedMesh(const Mesh & mesh){
+    if (verbose_) {
         std::cout << "set extenal secondary mesh:" << std::endl;
     }
-    setMesh_( mesh );
-    if ( verbose_ ) {
+    setMesh_(mesh);
+    if (verbose_) {
         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
-        std::vector < int > m( unique( sort( mesh_->cellMarker() ) ) );
+        std::vector < int > m(unique(sort(mesh_->cellMarker())));
         std::cout << "secMesh marker = [ " << m[0] <<", " << m[1] << ", " << m[2]  
          << ", ... ,  " << m.back() << " ]" << std::endl;
     }
     updateMeshDependency_();
 }
  
-void ModellingBase::setMesh( const Mesh & mesh, bool holdRegionInfos ) {
+void ModellingBase::setMesh(const Mesh & mesh, bool holdRegionInfos) {
     deleteMeshDependency_();
 
-    Stopwatch swatch( true );
-    if ( regionManagerInUse_ ){
-        regionManager_->setMesh( mesh, holdRegionInfos );
-        if ( verbose_ ) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
-        this->setMesh_( regionManager_->mesh() );
+    Stopwatch swatch(true);
+    if (regionManagerInUse_){
+        regionManager_->setMesh(mesh, holdRegionInfos);
+        if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
+        this->setMesh_(regionManager_->mesh());
     } else {
-        if ( verbose_ ) std::cout << "ModellingBase::setMesh() copying new mesh ... ";
-        this->setMesh_( mesh );
-        if ( verbose_ ) std::cout << swatch.duration( true ) << " s" << std::endl;
+        if (verbose_) std::cout << "ModellingBase::setMesh() copying new mesh ... ";
+        this->setMesh_(mesh);
+        if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
     }
 
-    if ( verbose_ ) std::cout << "FOP updating mesh dependencies ... ";
+    if (verbose_) std::cout << "FOP updating mesh dependencies ... ";
     startModel_.clear();
     updateMeshDependency_();
-    if ( verbose_ ) std::cout << swatch.duration( true ) << " s" << std::endl;
+    if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
 }
 
-void ModellingBase::setMesh_( const Mesh & mesh ){
-    if ( !mesh_ ) mesh_ = new Mesh();
+void ModellingBase::setMesh_(const Mesh & mesh){
+    if (!mesh_) mesh_ = new Mesh();
     (*mesh_) = mesh;
 }
 
-void ModellingBase::initJacobian( ){
-    if ( !jacobian_ ){
+void ModellingBase::initJacobian(){
+    if (!jacobian_){
         jacobian_ = new RMatrix();
         ownJacobian_ = true;
     }
 }
 
-void ModellingBase::setJacobian( MatrixBase * J ){
-    if ( !jacobian_ && ownJacobian_ ){
+void ModellingBase::setJacobian(MatrixBase * J){
+    if (!jacobian_ && ownJacobian_){
         delete jacobian_;
     }
     jacobian_ = J;
     ownJacobian_ = false;
 }
 
-void ModellingBase::createJacobian( const RVector & model ){
-    if ( verbose_ ) std::cout << "Create Jacobian matrix (brute force) ...";
+void ModellingBase::createJacobian(const RVector & model){
+    if (verbose_) std::cout << "Create Jacobian matrix (brute force) ...";
 
-    Stopwatch swatch( true );
-    RVector resp( response( model ) );
+    Stopwatch swatch(true);
+    RVector resp(response(model));
 
-    if ( !jacobian_ ){
+    if (!jacobian_){
         this->initJacobian();
     }
  
-    RMatrix *J = dynamic_cast< RMatrix * >( jacobian_ );
+    RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
     
-    if ( J->rows() != resp.size() ){ J->resize( resp.size(), model.size() ); }
+    if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
 
     double fak = 1.05;
-    for ( size_t i = 0; i < model.size(); i++ ) {
-        RVector modelChange( model );
+    for (size_t i = 0; i < model.size(); i++) {
+        RVector modelChange(model);
         modelChange[ i ] *= fak;
-        RVector respChange( response( modelChange ) );
+        RVector respChange(response(modelChange));
 
-        for ( size_t j = 0; j < resp.size(); j++ ){
-            if ( ::fabs( modelChange[ i ] - model[ i ] ) > TOLERANCE ){
-                (*J)[ j ][ i ] = ( respChange[ j ] - resp[ j ] ) / ( modelChange[ i ] - model[ i ] );
+        for (size_t j = 0; j < resp.size(); j++){
+            if (::fabs(modelChange[ i ] - model[ i ]) > TOLERANCE){
+                (*J)[ j ][ i ] = (respChange[ j ] - resp[ j ]) / (modelChange[ i ] - model[ i ]);
             } else {
                 (*J)[ j ][ i ] = 0.0;
             }
@@ -199,7 +200,7 @@ void ModellingBase::createJacobian( const RVector & model ){
     }
 
     swatch.stop();
-    if ( verbose_ ) std::cout << " ... " << swatch.duration() << " s." << std::endl;
+    if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
 }
     
 void ModellingBase::mapModel(const RVector & model, double background){
@@ -209,40 +210,40 @@ void ModellingBase::mapModel(const RVector & model, double background){
 
     for (uint i = 0, imax = mesh_->cellCount(); i < imax; i ++){
         marker = mesh_->cell(i).marker();
-        if ( marker >= 0 ) {
-            if ( (size_t)marker >= model.size() ){
-                mesh_->exportVTK( "mapModelfail" );
+        if (marker >= 0) {
+            if ((size_t)marker >= model.size()){
+                mesh_->exportVTK("mapModelfail");
                 std::cerr << WHERE_AM_I << std::endl
                           << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
                           << *mesh_ << std::endl
-                          << "mesh contains " << unique( sort( mesh_->cellMarker() ) ).size() << " unique marker. " << std::endl;
-                throwLengthError( 1, WHERE_AM_I + " marker greater = then model.size() " + toStr( marker )
-                       + " >= " + toStr( model.size() ) );
+                          << "mesh contains " << unique(sort(mesh_->cellMarker())).size() << " unique marker. " << std::endl;
+                throwLengthError(1, WHERE_AM_I + " marker greater = then model.size() " + toStr(marker)
+                       + " >= " + toStr(model.size()));
             }
-            if ( model[ marker ] < TOLERANCE ){
-                emptyList.push_back( &mesh_->cell( i ) );
+            if (model[ marker ] < TOLERANCE){
+                emptyList.push_back(&mesh_->cell(i));
             }
-            mesh_->cell( i ).setAttribute( model[ marker ] );
+            mesh_->cell(i).setAttribute(model[ marker ]);
 
         } else {
-            mesh_->cell( i ).setAttribute( 0.0 );
-            emptyList.push_back( &mesh_->cell( i ) );
+            mesh_->cell(i).setAttribute(0.0);
+            emptyList.push_back(&mesh_->cell(i));
         }
     }
 
     if (emptyList.size() == mesh_->cellCount()){
-        throwLengthError( 1, WHERE_AM_I + " too many empty cells" + toStr( emptyList.size() )
-                       + " == " + toStr( mesh_->cellCount() ) );
+        throwLengthError(1, WHERE_AM_I + " too many empty cells" + toStr(emptyList.size())
+                       + " == " + toStr(mesh_->cellCount()));
     }
 
-    mesh_->fillEmptyCells( emptyList, background );
+    mesh_->fillEmptyCells(emptyList, background);
 }
 
 void ModellingBase::initRegionManager() {
-    if ( !regionManagerInUse_ ){
-        if ( mesh_ ){
-            regionManager_->setMesh( *mesh_ );
-            this->setMesh_( regionManager_->mesh() );
+    if (!regionManagerInUse_){
+        if (mesh_){
+            regionManager_->setMesh(*mesh_);
+            this->setMesh_(regionManager_->mesh());
         }
         regionManagerInUse_   = true;
     }
@@ -253,35 +254,35 @@ const RegionManager & ModellingBase::regionManager() const {
 }
 
 RegionManager & ModellingBase::regionManager(){
-    initRegionManager( );
+    initRegionManager();
     return *regionManager_;
 }
 
-Region * ModellingBase::region( int marker ){
-    return regionManager().region( marker );
+Region * ModellingBase::region(int marker){
+    return regionManager().region(marker);
 }
 
-RVector ModellingBase::createStartVector( ) {
+RVector ModellingBase::createStartVector() {
     return regionManager().createStartVector();
 }
 
 
-LinearModelling::LinearModelling( MatrixBase & A, bool verbose )
-    : ModellingBase( verbose ){//, A_( & A ) {
-        setJacobian( &A );
-        this->regionManager().setParameterCount( A.cols() );
+LinearModelling::LinearModelling(MatrixBase & A, bool verbose)
+    : ModellingBase(verbose){//, A_(& A) {
+        setJacobian(&A);
+        this->regionManager().setParameterCount(A.cols());
 }
 
-RVector LinearModelling::response( const RVector & model ) {
-    if ( jacobian_->cols() != model.size() ){
-        throwLengthError( 1, WHERE_AM_I + " Jacobian col size != model.size()"
-                                + toStr( jacobian_->cols() ) + " != " + toStr( model.size() ) );
+RVector LinearModelling::response(const RVector & model) {
+    if (jacobian_->cols() != model.size()){
+        throwLengthError(1, WHERE_AM_I + " Jacobian col size != model.size()"
+                                + toStr(jacobian_->cols()) + " != " + toStr(model.size()));
     }
     return *jacobian_ * model;
 }
 
-RVector LinearModelling::createDefaultStartModel( ) {
-    return RVector( jacobian_->cols(), 1.0 );
+RVector LinearModelling::createDefaultStartModel() {
+    return RVector(jacobian_->cols(), 1.0);
 }
 
 } // namespace GIMLI

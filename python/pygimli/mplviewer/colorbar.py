@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import pygimli as g
+import pygimli as pg
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 import matplotlib as mpl
 import matplotlib.ticker as ticker
 import matplotlib.colors as colors
 import matplotlib.cbook as cbook
 
-import pylab
-import numpy as np
-
-from numpy import array, ma
 import math
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
@@ -21,7 +20,10 @@ blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
 
 def cmapFromName(cmapname, ncols=256, bad=[1.0, 1.0, 1.0, 0.0]):
+    """
+    """
     cmap = mpl.cm.get_cmap('jet', ncols)
+    
     if cmapname is not None:
         if cmapname == 'b2r':
             cmap = mpl.colors.LinearSegmentedColormap(
@@ -105,19 +107,19 @@ def createLinLevs(vMin, vMax, nLevs):
 
 def createColorbar2(patches, cMin=None, cMax=None,
                     nLevs=5, label=None, orientation='horizontal'):
-    cbarTarget = pylab
+    
+    cbarTarget = plt
+    
     if hasattr(patches, 'ax'):
         cbarTarget = patches.ax
 
-    cax = mpl.colorbar.make_axes(
-        cbarTarget,
-        orientation=orientation,
-        aspect=50)
+    cax = mpl.colorbar.make_axes(cbarTarget,
+                                 orientation=orientation,
+                                 aspect=50)
 
     # print cax
-    cbar = mpl.colorbar.Colorbar(cax[0], patches, orientation=orientation
-                                 #
-                                 )
+    cbar = mpl.colorbar.Colorbar(cax[0], patches,
+                                 orientation=orientation)
 
 #    if cMin is None:
 #        cMin= patches.zmin
@@ -134,13 +136,14 @@ def createColorbar2(patches, cMin=None, cMax=None,
 
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', *args, **kwargs):
-    cbarTarget = pylab
+    cbarTarget = plt
 
     if hasattr(patches, 'figure'):
         cbarTarget = patches.figure
 
-    cbar = cbarTarget.colorbar(patches, orientation=orientation, aspect=50
-                               )
+    cbar = cbarTarget.colorbar(patches, 
+                               orientation=orientation, 
+                               aspect=50)
 
     setCbarLevels(cbar, cMin, cMax, nLevs)
 
@@ -152,30 +155,13 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
-    print "setCbarLevels", cMin, cMax
+    #print "setCbarLevels", cMin, cMax
 
     if cMin is None:
         cMin = cbar.get_clim()[0]
     if cMax is None:
         cMax = cbar.get_clim()[1]
 
-    # cbar.add_lines( patches )
-#    if cMin is None and hasattr( patches, 'zmin' ):
-#        cMin = patches.zmin
-#    if cMax is None and hasattr( patches, 'zmin' ):
-#        cMax = patches.zmax
-
-#    if cMin is None and hasattr( patches, 'get_clim' ):
-#        cMin = patches.get_clim()[0]
-#    if cMax is None and hasattr( patches, 'get_clim' ):
-#        cMax = patches.get_clim()[1]
-
-    # if isinstance( cbar.mappable.norm, mpl.colors.LogNorm ) and cMin <= 0:
-        # cMin = cbar.get_clim()[ 0 ]
-        # cMax = cbar.get_clim()[ 1 ]
-    # else:
-        # print "lin: cMin", cMin, "cMax", cMax
-        # pass
     if cMin == cMax:
         cMin *= 0.999
         cMax *= 1.001
