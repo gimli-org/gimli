@@ -232,9 +232,12 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
     if type(boundArgs[0]) == g.stdVectorBounds:
         boundaries.append(boundArgs)
     elif type(boundArgs[0]) == int:
+        #FIXME
         boundaries.append(copy.deepcopy(boundArgs))
     else:
-        boundaries = copy.deepcopy(boundArgs)
+        #FIXME
+        boundaries = boundArgs
+        #boundaries = copy.deepcopy(boundArgs)
         
 
     for bound in boundaries:

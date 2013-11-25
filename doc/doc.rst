@@ -1,9 +1,6 @@
 Documentation
 =============
 
-
-
-
 Test
 ====
 
