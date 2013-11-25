@@ -269,10 +269,8 @@ class PyGIMLIMainFrame( wx.Frame ):
 
 
     def initDefaultMenuBar_( self ):
-        '''
-           Main menubar menues are come from mainXRCFile
-           Init some default menubar entries File/Open, File/Quit
-        '''
+        """Main menubar menues are come from mainXRCFile Init some default
+        menubar entries File/Open, File/Quit."""
         
         # File/Open
         mbMenu = self.MenuBar.GetMenu( self.MenuBar.FindMenu( "File" ) )
@@ -293,9 +291,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         #mbFileMenu.AppendItem( item )
         
     def initToolBar_( self ):
-        '''
-            Initilize some default toolbar entries
-        '''
+        """Initilize some default toolbar entries."""
         self.toolBar_ = aui.AuiToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
                                         aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_PLAIN_BACKGROUND )
                                         #| aui.AUI_TB_OVERFLOW)
@@ -313,29 +309,24 @@ class PyGIMLIMainFrame( wx.Frame ):
                                       .LeftDockable(True).RightDockable(True) )
 
     def initStatusBar_( self ):
-        '''
-            Initilize the default statusbar
-        '''
+        """Initilize the default statusbar."""
         self.statusBar = CustomStatusBar( self )
         self.SetStatusBar( self.statusBar )
 
     def createRendererSlot_( self, parent ):
-        '''
-        '''
+        """"""
         self.rendererSlot = wx.Panel( parent )
         self.rendererSlot.SetSizer( wx.BoxSizer() )
         return self.rendererSlot
 
     def createResourceView_( self, parent ):
-        '''
-        '''
+        """"""
         pane = ResourceTree( parent )
         self.resourceTree = pane
         return self.resourceTree
 
     def createPropertyInspectorSlot_( self, parent ):
-        '''
-        '''
+        """"""
         self.propertyInspectorSlot = wx.lib.scrolledpanel.ScrolledPanel( parent
                                         , -1, size=(14, 30),
                                           style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="PropertySlot" ) 
@@ -347,8 +338,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         return self.propertyInspectorSlot
 
     def createLogPane_( self, parent  ):
-        '''
-        '''
+        """"""
         pane = wx.Notebook( parent, -1, size=(810,210), style=wx.BK_DEFAULT)
 
         self.log = stc.StyledTextCtrl( pane, -1 )
@@ -384,8 +374,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         return self.logAndMore
 
     def onClosePane( self, event ):
-        '''
-        '''
+        """"""
         window = event.GetPane().window
 
         if window == self.auiMgr.GetPane( self.logAndMore ).window:
@@ -396,8 +385,7 @@ class PyGIMLIMainFrame( wx.Frame ):
             self.GetMenuBar().Check( xrc.XRCID( 'mbViewProperties' ), False )
 
     def onSwitchViewPane( self, event ):
-        '''
-        '''
+        """"""
         if event.GetId() == xrc.XRCID( 'mbViewLogAndMore' ):
             pane = self.auiMgr.GetPane( self.logAndMore )
         elif event.GetId() == xrc.XRCID( 'mbViewResources' ):
@@ -427,9 +415,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         self.Bind( wx.EVT_IDLE, self._onIdle )
 
     def redirectOutput( self, logFile = None ):
-        '''
-            Redirect stdout and stderr into a log console buffer
-        '''
+        """Redirect stdout and stderr into a log console buffer."""
         sys.stdout = RedirectOutput( self.log, "cout", logFile )
         sys.stderr = RedirectOutput( self.errLog, "cerr", logFile )
         pass
@@ -545,9 +531,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         sys.exit( 0 )
 
     def onAbout( self, event ):
-        '''
-            Show informations about pygimli
-        '''
+        """Show informations about pygimli."""
         from wx.lib.wordwrap import wordwrap
         info = wx.AboutDialogInfo()
         info.Name = "PyGI"
@@ -571,9 +555,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         #self.aboutGIMLiDialog.Show()
 
     def registerOpenFileSuffix( self, suffix, wildcard, cls, callback ):
-        '''
-            What is this?
-        '''
+        """What is this?"""
         if suffix not in self.fileSuffixes:
             print "Register main open file suffix:", suffix, " for ", wildcard
             self.fileSuffixes[ suffix ] = [ wildcard, cls, callback ]
@@ -582,9 +564,7 @@ class PyGIMLIMainFrame( wx.Frame ):
                     "(" + self.fileSuffixes[ suffix ][0] + ")"
 
     def registerPlugins( self ):
-        '''
-            What is this?
-        '''
+        """What is this?"""
         print "register plugins: "
         pluginpath = os.path.dirname( __file__ ) + '/../apps/'
         paths = os.listdir( pluginpath )
@@ -658,9 +638,7 @@ class PyGIMLIMainFrame( wx.Frame ):
                 return
 
     def createApplication( self, event = None, obj = None ):
-        '''
-            What is this?
-        '''
+        """What is this?"""
 
         if event is not None:
             obj = self.plugins_[ event.GetId() ]
@@ -727,4 +705,3 @@ class PyGIMLIApp( wx.App ):
             self.mainFrame.openFile( p )
 
         self.MainLoop()
-        

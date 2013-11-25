@@ -40,7 +40,11 @@ def handleWPTS( wpts ):
 #def findWPTS( ... )
 
 def readGPX( filename ):
-    """ Extract GPS Waypoint from GPS Exchange Format (GPX). Currently only simple waypoint extraction is supported. """
+    """
+    Extract GPS Waypoint from GPS Exchange Format (GPX).
+
+    Currently only simple waypoint extraction is supported.
+    """
     
     dom = parse( filename )
     wpts = dom.getElementsByTagName("wpt")
@@ -61,9 +65,7 @@ def readSimpleLatLon(filename, verbose=False):
     '''
     
     def conv_(deg):
-        '''
-            convert degree into floating vpoint
-        '''
+        """convert degree into floating vpoint."""
         ret = 0.0
         if 'd' in deg:
             # 10d???
@@ -167,7 +169,7 @@ def readGeoRefTIF( file_name ):
 	return im, bbox, projection
  
 def getBKGaddress(xlim,ylim,imsize=1000,zone=32,service='dop40',uuid='',fmt='jpeg'):
-    """ generate address for rendering web service image from BKG """
+    """generate address for rendering web service image from BKG."""
     """ assumes UTM in any zone """
     url='http://sg.geodatenzentrum.de/wms_' + service
     stdarg='REQUEST=GetMap&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT='+fmt
@@ -180,4 +182,3 @@ def getBKGaddress(xlim,ylim,imsize=1000,zone=32,service='dop40',uuid='',fmt='jpe
     
     return addr
 
- 

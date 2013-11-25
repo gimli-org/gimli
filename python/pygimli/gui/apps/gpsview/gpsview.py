@@ -13,9 +13,11 @@ from pygimli.mplviewer import underlayMap
     
 def findUTMZone( lon, lat ):
     """
-     find utm zone for lon and lat values. Return str(zone)+hemisphere
-     lon -180 -- -174 -> 1 ... 174 -- 180 -> 60 
-     lat < 0 hemisphere = S, > 0 hemisphere = N 
+    find utm zone for lon and lat values.
+
+    Return str(zone)+hemisphere
+    lon -180 -- -174 -> 1 ... 174 -- 180 -> 60
+    lat < 0 hemisphere = S, > 0 hemisphere = N
     """
     zone = ( int( lon ) + 180 ) / 6 + 1
     
@@ -28,7 +30,11 @@ def findUTMZone( lon, lat ):
 
 
 class GPSViewerApp( AppResourceWxMPL ):
-    """ Main Class for GPS Viewer App. Default render window is a wxmpl panel """
+    """
+    Main Class for GPS Viewer App.
+
+    Default render window is a wxmpl panel
+    """
     
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
         AppResourceWxMPL.__init__( self, parent, rendererSlot, propertyInspectorSlot )
@@ -108,7 +114,8 @@ class GPSViewerApp( AppResourceWxMPL ):
         self.draw()
         
     def drawData_( self ):
-        """ Define what we have to be drawn (needed from base class) is called while a draw event is fired """
+        """Define what we have to be drawn (needed from base class) is called
+        while a draw event is fired."""
         
         proj = self.getProjection( )
 
@@ -126,7 +133,7 @@ class GPSViewerApp( AppResourceWxMPL ):
         self.axes.grid()
         
     def getProjection( self ):
-        """ Create and return the current projection """
+        """Create and return the current projection."""
         
         if self.utmZone().find('S'):
             hemisphere='south'
@@ -143,7 +150,7 @@ class GPSViewerApp( AppResourceWxMPL ):
         return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = self.ellipsoid() )
         
     def openFile( self, files = None ):
-        """ Load data here """
+        """Load data here."""
         
         print files.find('.gpx')
         if files.find('.gpx') != -1:
@@ -157,19 +164,18 @@ class GPSViewerApp( AppResourceWxMPL ):
         self.draw()
     
     def onImportFile( self, event = None ):
-        """ Import coordinates in Lon Lat format """
+        """Import coordinates in Lon Lat format."""
         self.parent.onOpenFileDialog()
     
     def onExportUTM( self, event = None ):
-        """ Export coordinates in UTM format """
+        """Export coordinates in UTM format."""
         pass
 
     def onExportAscii( self, event = None ):
-        """ Export LonLat coordinates in simple column separated list """
+        """Export LonLat coordinates in simple column separated list."""
         
         fi = open( "latlon.lanlot", 'w' )
         for pnt in self.gpsWPTs:
             fi.write("%s\t%.8f\t%.8f\n" % ( pnt[2], pnt[1], pnt[0]) )
             
         fi.close()
-        

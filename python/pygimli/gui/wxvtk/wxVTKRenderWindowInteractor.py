@@ -1,6 +1,5 @@
 # -*- coding: iso-8859-1 -*-
 """
-
 A VTK RenderWindowInteractor widget for wxPython.
 
 Find wxPython info at http://wxPython.org
@@ -72,11 +71,12 @@ _useCapture = (wx.Platform == "__WXMSW__")
 # end of configuration items
 
 class EventTimer(wx.Timer):
-    """Simple wx.Timer class.
-    """
+    """Simple wx.Timer class."""
 
     def __init__(self, iren):
-        """Default class constructor.
+        """
+        Default class constructor.
+
         @param iren: current render window
         """
         wx.Timer.__init__(self)
@@ -84,14 +84,14 @@ class EventTimer(wx.Timer):
 
         
     def Notify(self):
-        """ The timer has expired.
-        """
+        """The timer has expired."""
         self.iren.TimerEvent()
 
 
 class wxVTKRenderWindowInteractor(baseClass):
     """
     A wxRenderWindow for wxPython.
+
     Use GetRenderWindow() to get the vtkRenderWindow.
     Create with the keyword stereo=1 in order to
     generate a stereo-capable window.
@@ -106,7 +106,9 @@ class wxVTKRenderWindowInteractor(baseClass):
     USE_STEREO = False
     
     def __init__(self, parent, ID, *args, **kw):
-        """Default class constructor.
+        """
+        Default class constructor.
+
         @param parent: parent window
         @param ID: window id
         @param **kw: wxPython keywords (position, size, style) plus the
@@ -234,9 +236,7 @@ class wxVTKRenderWindowInteractor(baseClass):
                            }
         
     def BindEvents(self):
-        """Binds all the necessary events for navigation, sizing,
-        drawing.
-        """        
+        """Binds all the necessary events for navigation, sizing, drawing."""        
         # refresh window by doing a Render
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         # turn off background erase to reduce flicker
@@ -271,9 +271,7 @@ class wxVTKRenderWindowInteractor(baseClass):
 
  
     def __getattr__(self, attr):        
-        """Makes the object behave like a
-        vtkGenericRenderWindowInteractor.
-        """
+        """Makes the object behave like a vtkGenericRenderWindowInteractor."""
         if attr == '__vtk__':
             return lambda t=self._Iren: t
         elif hasattr(self._Iren, attr):
@@ -283,27 +281,22 @@ class wxVTKRenderWindowInteractor(baseClass):
                   " has no attribute named " + attr
 
     def CreateTimer(self, obj, evt):
-        """ Creates a timer.
-        """
+        """Creates a timer."""
         self._timer = EventTimer(self)
         self._timer.Start(10, True)
 
     def DestroyTimer(self, obj, evt):
-        """The timer is a one shot timer so will expire automatically.
-        """
+        """The timer is a one shot timer so will expire automatically."""
         return 1
    
     def _CursorChangedEvent(self, obj, evt):
-        """Change the wx cursor if the renderwindow's cursor was
-        changed. 
-        """
+        """Change the wx cursor if the renderwindow's cursor was changed."""
         cur = self._cursor_map[obj.GetCurrentCursor()]
         c = wx.StockCursor(cur)
         self.SetCursor(c)
 
     def CursorChangedEvent(self, obj, evt):
-        """Called when the CursorChangedEvent fires on the render
-        window."""
+        """Called when the CursorChangedEvent fires on the render window."""
         # This indirection is needed since when the event fires, the
         # current cursor is not yet set so we defer this by which time
         # the current cursor should have been set.
@@ -322,8 +315,9 @@ class wxVTKRenderWindowInteractor(baseClass):
         self.SetCursor(c)
 
     def GetDisplayId(self):
-        """Function to get X11 Display ID from WX and return it in a format
-        that can be used by VTK Python.
+        """
+        Function to get X11 Display ID from WX and return it in a format that
+        can be used by VTK Python.
 
         We query the X11 Display with a new call that was added in wxPython
         2.6.0.1.  The call returns a SWIG object which we can query for the
@@ -356,9 +350,11 @@ class wxVTKRenderWindowInteractor(baseClass):
         return d
 
     def OnMouseCaptureLost(self, event):
-        """This is signalled when we lose mouse capture due to an
-        external event, such as when a dialog box is shown.  See the
-        wx documentation.
+        """
+        This is signalled when we lose mouse capture due to an external event,
+        such as when a dialog box is shown.
+
+        See the wx documentation.
         """
 
         # the documentation seems to imply that by this time we've
@@ -368,9 +364,7 @@ class wxVTKRenderWindowInteractor(baseClass):
             self._own_mouse = False
  
     def OnPaint(self,event):
-        """Handles the wx.EVT_PAINT event for
-        wxVTKRenderWindowInteractor.
-        """
+        """Handles the wx.EVT_PAINT event for wxVTKRenderWindowInteractor."""
 
         # wx should continue event processing after this handler.
         # We call this BEFORE Render(), so that if Render() raises
@@ -402,9 +396,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         self.Render()
 
     def OnSize(self,event):
-        """Handles the wx.EVT_SIZE event for
-        wxVTKRenderWindowInteractor.
-        """
+        """Handles the wx.EVT_SIZE event for wxVTKRenderWindowInteractor."""
 
         # event processing should continue (we call this before the
         # Render(), in case it raises an exception)
@@ -422,9 +414,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         self.Render()
 
     def OnMotion(self,event):
-        """Handles the wx.EVT_MOTION event for
-        wxVTKRenderWindowInteractor.
-        """
+        """Handles the wx.EVT_MOTION event for wxVTKRenderWindowInteractor."""
         
         # event processing should continue
         # we call this early in case any of the VTK code raises an
@@ -439,8 +429,7 @@ class wxVTKRenderWindowInteractor(baseClass):
 
     def OnEnter(self,event):
         """Handles the wx.EVT_ENTER_WINDOW event for
-        wxVTKRenderWindowInteractor.
-        """
+        wxVTKRenderWindowInteractor."""
         
         # event processing should continue
         event.Skip()
@@ -454,8 +443,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         
     def OnLeave(self,event):
         """Handles the wx.EVT_LEAVE_WINDOW event for
-        wxVTKRenderWindowInteractor.
-        """
+        wxVTKRenderWindowInteractor."""
         
         # event processing should continue
         event.Skip()
@@ -469,8 +457,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         
     def OnButtonDown(self,event):
         """Handles the wx.EVT_LEFT/RIGHT/MIDDLE_DOWN events for
-        wxVTKRenderWindowInteractor.
-        """
+        wxVTKRenderWindowInteractor."""
         
         # allow wx event processing to continue
         # on wxPython 2.6.0.1, omitting this will cause problems with
@@ -505,8 +492,7 @@ class wxVTKRenderWindowInteractor(baseClass):
 
     def OnButtonUp(self,event):
         """Handles the wx.EVT_LEFT/RIGHT/MIDDLE_UP events for
-        wxVTKRenderWindowInteractor.
-        """
+        wxVTKRenderWindowInteractor."""
 
         # event processing should continue
         event.Skip()
@@ -543,8 +529,7 @@ class wxVTKRenderWindowInteractor(baseClass):
             
     def OnMouseWheel(self,event):
         """Handles the wx.EVT_MOUSEWHEEL event for
-        wxVTKRenderWindowInteractor.
-        """
+        wxVTKRenderWindowInteractor."""
         
         # event processing should continue
         event.Skip()
@@ -560,8 +545,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         
     def OnKeyDown(self,event):
         """Handles the wx.EVT_KEY_DOWN event for
-        wxVTKRenderWindowInteractor.
-        """
+        wxVTKRenderWindowInteractor."""
 
         # event processing should continue
         event.Skip()
@@ -584,9 +568,7 @@ class wxVTKRenderWindowInteractor(baseClass):
 
         
     def OnKeyUp(self,event):
-        """Handles the wx.EVT_KEY_UP event for
-        wxVTKRenderWindowInteractor.
-        """
+        """Handles the wx.EVT_KEY_UP event for wxVTKRenderWindowInteractor."""
         
         # event processing should continue
         event.Skip()
@@ -604,13 +586,11 @@ class wxVTKRenderWindowInteractor(baseClass):
 
 
     def GetRenderWindow(self):
-        """Returns the render window (vtkRenderWindow).
-        """
+        """Returns the render window (vtkRenderWindow)."""
         return self._Iren.GetRenderWindow()
 
     def Render(self):
-        """Actually renders the VTK scene on screen.
-        """
+        """Actually renders the VTK scene on screen."""
         RenderAllowed = 1
         
         if not self.__RenderWhenDisabled:
@@ -645,7 +625,8 @@ class wxVTKRenderWindowInteractor(baseClass):
                 self._Iren.GetRenderWindow().Render()
 
     def SetRenderWhenDisabled(self, newValue):
-        """Change value of __RenderWhenDisabled ivar.
+        """
+        Change value of __RenderWhenDisabled ivar.
 
         If __RenderWhenDisabled is false (the default), this widget will not
         call Render() on the RenderWindow if the top level frame (i.e. the
@@ -657,7 +638,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         it does this by disabling all windows (disallowing user-input to
         prevent re-entrancy of code) and then handling all outstanding
         GUI events.
-        
+
         However, this often triggers an OnPaint() method for wxVTKRWIs,
         resulting in a Render(), resulting in Update() being called whilst
         still in progress.
@@ -667,8 +648,7 @@ class wxVTKRenderWindowInteractor(baseClass):
 
 #--------------------------------------------------------------------  
 def wxVTKRenderWindowInteractorConeExample():
-    """Like it says, just a simple example
-    """
+    """Like it says, just a simple example."""
     # every wx app needs an app
     app = wx.PySimpleApp()
 

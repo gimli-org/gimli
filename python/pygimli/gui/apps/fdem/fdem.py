@@ -9,8 +9,10 @@ from pygimli.gui.resources import loadIcon, MakeDisabledBitmap
 from pygimli.physics import FDEMData
 
 class FDEMApp( AppResourceWxMPL ):
-    """ 
-        Main Class for EM App. Default render window is a wxmpl panel 
+    """
+    Main Class for EM App.
+
+    Default render window is a wxmpl panel
     """
     
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
@@ -63,23 +65,19 @@ class FDEMApp( AppResourceWxMPL ):
         return panel
 
     def drawData_( self ):
-        """ 
-            Define what we have to be drawn (needed from base class) is called while a draw event is fired 
-        """
+        """Define what we have to be drawn (needed from base class) is called
+        while a draw event is fired."""
         
         #self.axes.grid()
         
        
     def openFile( self, files = None ):
-        """ 
-            Load data here 
-        """
+        """Load data here."""
         print "#openFile( self, files = None )"
         self.draw()
     
     def onImportFile( self, event = None ):
-        """ Import coordinates in Lon Lat format """
+        """Import coordinates in Lon Lat format."""
         print "#onImportFile( self, event = None ):"
         #self.parent.onOpenFileDialog()
     
-        

@@ -200,4 +200,3 @@ class ColorBarWxMPL( ManagedProperties ):
 
         self.parent.updateDrawOnIdle()
         
-        

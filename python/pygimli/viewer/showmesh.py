@@ -12,9 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def show(mesh, *args, **kwargs):
-    """
-        Syntactic sugar
-    """
+    """Syntactic sugar."""
     if isinstance(mesh, g.Mesh):
         showMesh(mesh, *args, **kwargs)
 
@@ -67,8 +65,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
 #def showMesh(...)
 
 def showBoundaryNorm(mesh, *args, **kwargs):
-    """
-    """
+    """"""
     
     ax = showMesh(mesh, showLater=True)[0]
     

@@ -14,9 +14,7 @@ except ImportError: # if it's not there locally, try the wxPython lib.
 from pygimli.utils import unicodeToAscii
 
 class Property:
-    '''
-        What is this??
-    '''
+    """What is this??"""
     def __init__( self, name, default = None, valType = None, ctrl = None, ctrlEvent = None, targetFunct = None ):
         self.name        = name
         self.val         = default
@@ -170,9 +168,7 @@ class Property:
 # END class Property
                             
 class ManagedProperties:
-    '''
-        What is this??
-    '''
+    """What is this??"""
     def __init__( self ):
         self.properties = dict()
         self.piCaption  = "None"
@@ -180,8 +176,7 @@ class ManagedProperties:
             
     def appendProperty( self, name, default = None, valType = None
                         , ctrl = None, ctrlEvent = None, targetFunct = None ):
-        '''
-        '''
+        """"""
         prop = None
         
         if name in self.properties:
@@ -222,9 +217,7 @@ class ManagedProperties:
 # END class ManagedProperties
         
 class AppResource( ManagedProperties ):
-    '''
-        What is this??
-    '''
+    """What is this??"""
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
         ManagedProperties.__init__( self )
         
@@ -283,15 +276,11 @@ class AppResource( ManagedProperties ):
         self.activateApplication( False )
 
     def setSource( self, name, function ):
-        '''
-            Add a functor to source data into the data dictionary
-        '''
+        """Add a functor to source data into the data dictionary."""
         self.dataSources_[ name ] = function
 
     def getSource( self, name ):
-        '''
-            Get source data from the functor the data dictionary
-        '''
+        """Get source data from the functor the data dictionary."""
         if name in self.dataSources_:
             return self.dataSources_[ name ]()
         else:
@@ -355,15 +344,16 @@ class AppResource( ManagedProperties ):
 
 
     def processData( self ):
-        '''
-            To be overridden by child. Return True if something was done, that the listener should know, else return False
-        '''
+        """
+        To be overridden by child.
+
+        Return True if something was done, that the listener should
+        know, else return False
+        """
         return False;
 
     def getPropertyPanel( self, slot ):
-        '''
-            What is this?
-        '''
+        """What is this?"""
         if self.propertyPanel_ is None and slot is not None:
             if hasattr( self, 'createPropertyPanel' ):
                 self.propertyPanel_ = self.createPropertyPanel( slot )
@@ -373,9 +363,7 @@ class AppResource( ManagedProperties ):
         return self.propertyPanel_
 
     def getRenderer( self, slot = None):
-        '''
-            What is this?
-        '''
+        """What is this?"""
         
         if not self.renderer_ and slot is not None:
             self.renderer_ = aui.AuiNotebook( slot
@@ -412,9 +400,7 @@ class AppResource( ManagedProperties ):
     # def onRendererTabSwitch( ... )
     
     def activatePropertyPanel( self, active ):
-        '''
-            What is this?
-        '''
+        """What is this?"""
         p = self.getPropertyPanel( self.propertyInspectorSlot_ )
         if p is not None:
             if active:
@@ -423,9 +409,7 @@ class AppResource( ManagedProperties ):
                 p.Hide()
 
     def activateToolBar_( self, tb, active, pos = 5):
-        '''
-            What is this?
-        '''
+        """What is this?"""
         #print "activateToolBar( self, active ):", self, active
         if active:
             name = tb.GetName()
@@ -534,9 +518,7 @@ class AppResource( ManagedProperties ):
         self.parent.auiMgr.Update()
 
     def createSubPanel( self, classname, name = None ):
-        '''
-            What is this?
-        '''
+        """What is this?"""
         r = self.getRenderer( self.rendererSlot_ )
         
         if isinstance( r , aui.AuiNotebook ):
@@ -557,9 +539,7 @@ class AppResource( ManagedProperties ):
             raise Exception( "createSubPanel only defined for application with notebook renderer" )
 
     def propertyChanged( self ):
-        '''
-            What is this
-        '''
+        """What is this."""
         if self.parentResource is not None:
             self.parentResource.propertyChanged()
 
@@ -604,9 +584,7 @@ class AppResource( ManagedProperties ):
         return propertyNoteBook
         
     def setStatusMessage( self, msg ):
-        """
-            Helper function for manageing status messages
-        """
+        """Helper function for manageing status messages."""
         self.parent.statusBar.setStatusMessage( msg )
     #def setStatusMessage( ... )
 
@@ -614,7 +592,11 @@ class AppResource( ManagedProperties ):
 #START Menu related stuff    
 #
     def findMainMenu( self, name ):
-        """ Find the main menu entry with a given name. If none exist create one. """
+        """
+        Find the main menu entry with a given name.
+
+        If none exist create one.
+        """
         self.mainMenus          = dict()
         pos = self.parent.GetMenuBar().FindMenu( name )
         if pos > -1:
@@ -624,7 +606,7 @@ class AppResource( ManagedProperties ):
     # def findMainMenu( ... ):
     
     def createMainMenu( self, name, pos = 3 ):
-        """ Create new main menu entry """
+        """Create new main menu entry."""
         menu = wx.Menu( )
         self.parent.GetMenuBar().Insert( pos, menu, name )
         menu.SetTitle( name.replace( '&', '' ) )
@@ -638,9 +620,10 @@ class AppResource( ManagedProperties ):
         return sec
 
     def createMenuItem( self, menu, name = "", help = "auto", function = None, bitmap = None ):
-        """ 
-            What is this? 
-            If help is set to 'auto', the docstring of function is used. please ensure this docstring is a one-liner
+        """
+        What is this?
+
+        If help is set to 'auto', the docstring of function is used. please ensure this docstring is a one-liner
         """
         if help == 'auto':
             help = function.__doc__
@@ -687,7 +670,8 @@ class AppResource( ManagedProperties ):
 # END class AppResourceWx
 
 class MenuSection:
-    """This is a helper class to manage local menu groups, that can be shown/hidden by calling activate"""
+    """This is a helper class to manage local menu groups, that can be
+    shown/hidden by calling activate."""
     def __init__( self, menu ):
         self.menu = menu
         self.items = []

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
-    Was macht das ding
-
-'''
+"""Was macht das ding."""
 
 import pygimli as g
 
@@ -11,7 +8,8 @@ import pylab as P
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
 
 def importEmsysAsciiData( filename, verbose = False ):
-    """ pure import function reading in positions, data, frequencies, error and geometry """
+    """pure import function reading in positions, data, frequencies, error and
+    geometry."""
     
     xx, sep, f, pf, ip, op, hmod, q = P.loadtxt( filename, skiprows=1, usecols=(1,4,6,8,9,12,15,16 ), unpack=True )
 
@@ -38,7 +36,8 @@ def importEmsysAsciiData( filename, verbose = False ):
     return x, freq, coilspacing, IP, OP, ERR    
 
 def importMaxminData( filename, verbose = False ):
-    """ pure import function reading in positions, data, frequencies and geometry """
+    """pure import function reading in positions, data, frequencies and
+    geometry."""
     delim = None
     fid = open(filename)
     coilspacing = 0.
@@ -64,7 +63,7 @@ def importMaxminData( filename, verbose = False ):
     return x, freq, coilspacing, IP, OP
 
 def xfplot( ax, DATA, x, freq, everyx=5, orientation='vertical', aspect=40 ):
-    """ plots a matrix according to x and frequencies """
+    """plots a matrix according to x and frequencies."""
     nt = range( 0, len( x ), everyx )
     P.imshow( DATA.T, interpolation='nearest' )
     P.ylim(P.ylim()[::-1])
@@ -79,7 +78,7 @@ def xfplot( ax, DATA, x, freq, everyx=5, orientation='vertical', aspect=40 ):
     
 class FDEMData():
     def __init__( self, filename = None):
-        """ initialize data class and load data """
+        """initialize data class and load data."""
         self.x, self.f, self.cs, self.IP, self.OP, self.ERR = None,None,None,None,None,None
         self.height = 1.0
         
@@ -102,24 +101,26 @@ class FDEMData():
         print __repr__( self )
 
     def deactivate( self, fr ):
-        """ deactivate a single frequency """
+        """deactivate a single frequency."""
         fi = P.find( P.absolute( self.f / fr - 1.) < 0.1 )
         self.activeFreq[ fi ] = False
         
     def freq( self ):
-        """ return active frequencies """
+        """return active frequencies."""
         return self.f[ self.activeFreq ]
     
     def FOP( self, nlay = 2 ):
-        """ retrieve forward modelling operator using a block discretization """
+        """retrieve forward modelling operator using a block discretization."""
         return FDEM1dModelling( nlay, asvector( self.freq() ), self.cs, -self.height )
     
     def FOPsmooth( self, zvec ):
-        """ retrieve forward modelling operator using fixed layers (smooth inversion) """
+        """retrieve forward modelling operator using fixed layers (smooth
+        inversion)"""
         return FDEM1dRhoModelling( asvector( zvec ), asvector( self.freq() ), self.cs, -self.height )
     
     def selectData( self, xpos=0 ):
-        """ retrieve inphase and outphase vector from index or near given position """
+        """retrieve inphase and outphase vector from index or near given
+        position."""
         if isinstance( xpos, int ) and ( xpos < len( self.x ) ) and ( xpos >= 0 ): # index
             n = xpos
         else:
@@ -131,17 +132,17 @@ class FDEMData():
             return self.IP[ n, self.activeFreq ], self.OP[ n, self.activeFreq ], None
 
     def datavec( self, xpos=0 ):
-        """ extract data vector (stacking inphase and outphase """
+        """extract data vector (stacking inphase and outphase."""
         ip, op, err = self.selectData( xpos )
         return asvector( P.hstack( ( ip, op ) ) )
     
     def errorvec( self, xpos=0, minvalue=0.0 ):
-        """ extract error vector """
+        """extract error vector."""
         ip, op, err = self.selectData( xpos )
         return asvector( P.tile( P.maximum( err * 0.7071, minvalue ) ) )
     
     def invBlock( self, xpos=0, nlay=2, noise=1.0, stmod=10., lam=100., lBound=1., uBound=0., verbose=False ):
-        """ yield gimli inversion instance for block inversion """
+        """yield gimli inversion instance for block inversion."""
         """ inv(xpos,nlay) where nlay can be a FOP or a number of layers """
         self.transThk = RTransLog()
         self.transRes = RTransLogLU( lBound, uBound )
@@ -181,7 +182,7 @@ class FDEMData():
         return self.inv
     
     def plotData( self, xpos=0, response = None, error=None, ax=None, marker='bo-', rmarker='rx-', clf=True, addlabel='', nv=2 ):
-        """ plot data as curves at given position """
+        """plot data as curves at given position."""
         ip, op = self.selectData( xpos )
         fr = self.freq()
         if ax is None:
@@ -238,7 +239,7 @@ class FDEMData():
 
         
     def plotDataOld( self, xpos=0, response = None, marker='bo-', rmarker='rx-', clf=True ):
-        """ plot data as curves at given position """
+        """plot data as curves at given position."""
         ip, op = self.selectData( xpos )
         fr = self.freq()
         if clf: P.clf()
@@ -281,7 +282,7 @@ class FDEMData():
         self.plotData( xpos, response, (ax2, ax3), clf=False )
          
     def plotAllData( self, allF = True, orientation='vertical', outname=None ):
-        """ plot data along a profile as image plots for IP and OP """
+        """plot data along a profile as image plots for IP and OP."""
         
         freq = self.freq()
         nf = len( freq )

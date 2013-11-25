@@ -43,10 +43,10 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     """
 
     def sortNodeY(n1, n2):
-        """ function comparing x for using sort """
+        """function comparing x for using sort."""
         return cmp(n1.pos().y(), n2.pos().y())
     def sortNodeX(n1, n2):
-        """ function comparing y for using sort """
+        """function comparing y for using sort."""
         return cmp(n1.pos().x(), n2.pos().x())
 
     surface = 0.0

@@ -74,9 +74,7 @@ def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, k
     return x,y
 
 def boundaryPlaneIntersectionLines( boundaries, plane ):
-    '''
-        Create Lines from boundaries that intersect a plane
-    '''
+    """Create Lines from boundaries that intersect a plane."""
     lines = []
 
     for b in boundaries:
@@ -116,9 +114,7 @@ def number_of_processors():
     
     
 def assembleDC( mesh, source = g.RVector3( 0.0, 0.0, 0.0 ) ):
-    '''
-        assemble stiffness matrix for 3d dc forward problem using fem
-    '''
+    """assemble stiffness matrix for 3d dc forward problem using fem."""
     S = g.DSparseMatrix()
     S.buildSparsityPattern( mesh )
 #    se = g.DElementMatrix()

@@ -15,10 +15,8 @@ def iconFileName( filename ):
     return os.path.join( iconpath, filename )
         
 def loadIcon( filename ):
-    """
-    Load a bitmap file from the resource/icons subdirectory
-    Returns a wx.Bitmap object
-    """
+    """Load a bitmap file from the resource/icons subdirectory Returns a
+    wx.Bitmap object."""
 
     #globPath = os.path.dirname( __file__ )
     #iconpath = os.path.join( globPath, "icons" )

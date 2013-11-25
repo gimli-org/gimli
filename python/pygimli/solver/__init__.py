@@ -5,10 +5,7 @@ from solver import *
 # unsorted stuff need
 
 def divergence(mesh, F=lambda r:r, order=1):
-    """
-        
-        
-    """
+    """"""
     div = 0
     directionCheck = False
     

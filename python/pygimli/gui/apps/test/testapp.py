@@ -19,9 +19,7 @@ from pygimli.gui.resources import loadIcon, MakeDisabledBitmap
 HAVE_PROPGRID = False
 
 class TestVTKApp( AppResourceWxVTK ):
-    """
-	this is a vtk child renderer for the test application see below
-    """
+    """this is a vtk child renderer for the test application see below."""
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
         AppResourceWxVTK.__init__( self, parent, rendererSlot, propertyInspectorSlot )
         
@@ -63,9 +61,7 @@ class TestVTKApp( AppResourceWxVTK ):
         return panel
 
 class TestMPLApp( AppResourceWxMPL ):
-    """
-	this is a mpl child renderer for the test application see below
-    """
+    """this is a mpl child renderer for the test application see below."""
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
         AppResourceWxMPL.__init__( self, parent, rendererSlot, propertyInspectorSlot )
             
@@ -184,10 +180,8 @@ class TestApp( AppResource ):
         return panel
         
     def createRendererPanel( self, parent ):
-        """
-            Optionally create a renderer panel for this application beside the subpanels
-            The panel will post created at the first call
-        """
+        """Optionally create a renderer panel for this application beside the
+        subpanels The panel will post created at the first call."""
         panel = wx.TextCtrl( parent, -1, "", 
                             wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.NO_BORDER )
         panel.SetName( "Log or Whatever" )
@@ -202,21 +196,16 @@ class TestApp( AppResource ):
         return panel
     
     def menuFunction( self, event = None ):
-        """
-            do nothing here, just to show the technique
-        """
+        """do nothing here, just to show the technique."""
         pass
     
     def openFile( self, files = None ):
-        """
-            do nothing here, just to show the technique for MainOpenFileSuffix register
-        """
+        """do nothing here, just to show the technique for MainOpenFileSuffix
+        register."""
         print files
     
     def setTitle( self, title = None ):
-        """
-            Set the title, either called manually or by callback
-        """
+        """Set the title, either called manually or by callback."""
         if title is None:
             title = self.titleTextProp()
         else:
@@ -224,4 +213,3 @@ class TestApp( AppResource ):
 
         self.getResourceTree().SetItemText( self.treeItem, self.getName() + ": " + title )
 
-        

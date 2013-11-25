@@ -29,9 +29,7 @@ class CheckListBoxComboPopupControl( wx.combo.ComboCtrl ):
             self.popup.AddItem( t, checked )
 
     def SetValue( self, value ):
-        '''
-            Give a tuple of strings for the ids of the checked boxes
-        '''
+        """Give a tuple of strings for the ids of the checked boxes."""
         for i in self.popup.GetChecked():
             self.popup.Check( i, False )
 
@@ -45,9 +43,7 @@ class CheckListBoxComboPopupControl( wx.combo.ComboCtrl ):
         wx.combo.ComboCtrl.SetValue( self, str( self.popup.GetChecked() ) )
 
     def GetValue( self ):
-        '''
-            Return tuple of ids for the checked boxes
-        '''
+        """Return tuple of ids for the checked boxes."""
         wx.combo.ComboCtrl.SetValue( self, str( self.popup.GetChecked() ) )
         return self.popup.GetChecked()
 

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
-	provide matplotlib wxGTK panel
-'''
+"""provide matplotlib wxGTK panel."""
 import sys, traceback
 
 try:

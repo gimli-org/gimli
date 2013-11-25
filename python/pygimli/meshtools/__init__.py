@@ -2,8 +2,7 @@
 # encoding: utf-8
 
 """
-meshtools
-=========
+meshtools.
 
 This package provides functions for mesh generation and modification.
 

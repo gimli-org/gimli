@@ -17,7 +17,11 @@ class PatchedAuiToolBar( aui.AuiToolBar ):
         aui.AuiToolBar.__init__( self, parent, id, pos, size, style )
         
     def Realize(self):
-        """ Realizes the toolbar. This function should be called after you have added tools. """
+        """
+        Realizes the toolbar.
+
+        This function should be called after you have added tools.
+        """
 
         dc = wx.ClientDC(self)
         
