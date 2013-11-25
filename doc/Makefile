@@ -20,6 +20,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  clean      to clean generated output files"
 	@echo "  all        to make API docs, gallery and HTML files"
 	@echo "  api        to make API docs"
 	@echo "  html       to make standalone HTML files"

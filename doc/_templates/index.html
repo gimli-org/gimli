@@ -1,55 +1,37 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h1>GIMLi: Geophysical Inversion and Modelling Library</h1>
-  <p><a class="reference external" href="{{pathto("README")}}"><em class="xref">GIMLi</em></a>
-    is a multi-method library for solving inverse and forward tasks.
-     Written in C++ and <a class="reference external" href="http://www.python.org/">Python</a>,
- {% block tables %}
-   <h2>Documentation</h2>
-   <table class="contentstable" align="center"><tr>
-     <td width="50%">
-       <p class="biglink"><a class="biglink" href="{{pathto("README")}}">About GIMLi</a><br/>
-          <span class="linkdescr">Start here ...</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("INSTALL") }}">Installation</a><br/>
-	  <span class="linkdescr">How to install GIMLi on different platforms</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/_tutorials_auto/index") }}">Tutorial</a><br/>
-          <span class="linkdescr">How to use GIMLi</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/_examples_auto/index") }}">Examples</a><br/>
-          <span class="linkdescr">Examples of usage</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/faq") }}">FAQs</a><br/>
-          <span class="linkdescr">Frequently asked questions (with answers!)</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("LICENSE") }}">License</a><br/>
-          <span class="linkdescr">Terms of use</span></p>
-     </td><td width="50%">
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/design") }}">GIMLi Design</a><br/>
-          <span class="linkdescr">GIMli structure and numerical approach</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/tools") }}">Tools</a><br/>
-          <span class="linkdescr">There are some usefull tools</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doxygen/html/index") }}">GIMLi API</a><br/>
-          <span class="linkdescr">Reference for Python programmers</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/api/pygimli") }}">pyGIMli</a><br/>
-          <span class="linkdescr">The python bindings </span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/publist") }}">Publications</a><br/>
-          <span class="linkdescr">Papers and talks about (or using) GIMLi</span></p>
-     </td></tr>
-   </table>
+<div class="hero-unit">
+    <h1>GIMLi <small>Geophysical Inversion and Modelling Library</small></h1>
+    GIMLi is an open-source multi-method library for solving inverse and
+    forward tasks related to geophysical problems. Written in C++ and Python,
+    it offers both efficiency and flexibility allowing you to quickly build
+    your own robust inversion applications for the geophysical problem at hand.
+    <br><br>
+    <a class="btn btn-primary btn-large" href="{{pathto("README")}}">
+      Learn more
+    </a>
+</div>
 
-   <h2>Indices and tables</h2>
-   <table class="contentstable" align="center"><tr>
-     <td width="50%">
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/modindex") }}">Global Module Index</a><br/>
-          <span class="linkdescr">Quick access to all modules</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/genindex") }}">General Index</a><br/>
-          <span class="linkdescr">All functions, classes, terms</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/glossary") }}">Glossary</a><br/>
-          <span class="linkdescr">The most important terms explained</span></p>
-     </td><td width="50%">
-       <p class="biglink"><a class="biglink" href="{{ pathto("search") 
-       }}">Search Page</a><br/>
-          <span class="linkdescr">Search this documentation</span></p>
-       <p class="biglink"><a class="biglink" href="{{ pathto("doc/contents") }}">Complete Table of Contents</a><br/>
-          <span class="linkdescr">lists all sections and subsections</span></p>
-     </td></tr>
-   </table>
- {% endblock %}
+<h1>Get GIMLi. 
+    <small>
+        Available for different platforms.
+        <i class="icon-windows"></i>
+        <i class="icon-linux"></i>
+        <i class="icon-apple"></i>  
+    </small>
+</h1>
+<h1>Get started.
+    <small>
+        Check out the tutorials.
+    </small>
+</h1>
+To get started, have a look at the 
+<a href="{{pathto("doc/_tutorials_auto/index")}}">GIMLi tutorials</a>.
+Interesting applications can be found in the 
+<a href="{{pathto("doc/_examples_auto/index")}}">example section</a>.
+<h1>Get involved.</h1>
+You found a bug or desperately miss a certain functionality? Fill out a 
+<a href="https://github.com/gimli-org/gimli/issues">bug report or a feature request</a> 
+If you have used GIMLi for an interesting application, please 
+<a href="mailto:mail@gimli.org">send us your example.</a>
 {% endblock %}

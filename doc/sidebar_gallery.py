@@ -30,7 +30,7 @@ tutorials = glob(join(tutorial_dir, '*/*plot*.py'))
 def readRSTSecTitles(fname, verbose=False):
     """ Return list of section titles found in a given RST file. """
     import re
-    rst_titles = re.compile(r"^(.+)\n+[-=]+",re.MULTILINE)
+    rst_titles = re.compile(r"^(.+)\n+[-=]+\n",re.MULTILINE)
     with open(fname) as file:
         titles = re.findall(rst_titles, file.read())
         if verbose:

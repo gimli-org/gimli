@@ -1,3 +1,5 @@
+.. _sec:publications:
+
 Publications
 ============
 
