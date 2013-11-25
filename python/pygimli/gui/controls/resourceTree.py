@@ -43,9 +43,7 @@ class ResourceTree( wx.TreeCtrl ):
         return item
         
     def getSelectedData( self ):
-        """
-            Return the current selected item data
-        """
+        """Return the current selected item data."""
         return self.GetPyData( self.GetSelection( ) )
         
     def onSelectTreeObject(self, event):

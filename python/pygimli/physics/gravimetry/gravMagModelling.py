@@ -43,34 +43,33 @@ def dBZPoly(pnts, poly, M, openPoly=False):
     return poissonEoetvoes(adot(M, -dgz))
    
 def dBZKugel(pnts, R, pos, M):
-    '''
-        Calculate the vertical component of the magnetic response dBz for a 
-        buried sphere at position pos with radius R for a given magnetization M 
-        at measurement points pnts.
-        pnts: measurement points -- array[x,y,z]
-        R: radius -- float
-        pos: sphere center -- [x,y,z]
-        M: magnetization -- [Mx, My, Mz]
-    '''
+    """
+    Calculate the vertical component of the magnetic response dBz for a buried
+    sphere at position pos with radius R for a given magnetization M at
+    measurement points pnts.
+
+    pnts: measurement points -- array[x,y,z]
+    R: radius -- float
+    pos: sphere center -- [x,y,z]
+    M: magnetization -- [Mx, My, Mz]
+    """
     return poissonEoetvoes(adot(M, gradGZKugel(pnts, R, rho=1.0, pos=pos)))
 
 def dBZZylinderHoriz(pnts, R, pos, M):
-    '''
-    '''
+    """"""
     return poissonEoetvoes(adot(M, gradGZZylinderHoriz(pnts, R, rho=1.0, pos=pos)))
     
 def poissonEoetvoes(dg):
-    '''
-        
-    '''
+    """"""
     return mu0/(4.0 * np.pi * G) * dg
 #def poissonEoetvoes(...)
     
 def uKugel(r, R, rho, pos=[0., 0., 0.]):
-    '''
-        Gravitationspotential einer Kugel mit Radius R und Dichte rho an pos 
-        u = -G * dM * 1/r
-    '''
+    """
+    Gravitationspotential einer Kugel mit Radius R und Dichte rho an pos.
+
+    u = -G * dM * 1/r
+    """
     return -G * deltaMSph(R, rho) * 1. / rabs(r - pos)
 
 def gradUKugel(r, R, rho, pos=[0., 0., 0.]):
@@ -98,8 +97,7 @@ def gradGZKugel(r, R, rho, pos=[0., 0., 0.]):
 
 
 def uZylinderHoriz(pnts, R, rho, pos=[0., 0.]):
-    """
-    """
+    """"""
     u = np.zeros(len(pnts))
     for i, r in enumerate(rabs(pnts-pos)):
         if r > R:
@@ -174,9 +172,9 @@ def gradGZHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
 
 def lineIntegralZ_WonBevis(p1, p2):
     """
-        WonBevis1987
-        
-        Return g = -grad u =(Fx, 0.0, Fz), dFz(Fzx, Fzy, Fzz)
+    WonBevis1987.
+
+    Return g = -grad u =(Fx, 0.0, Fz), dFz(Fzx, Fzy, Fzz)
     """
     #print p1, p2
     x1 = p1[0]
@@ -258,11 +256,13 @@ def lineIntegralZ_WonBevis(p1, p2):
     return np.asarray((Fx, 0.0, Fz)), np.asarray((Fzx, 0.0, Fzz))
 
 def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
-    '''
-       Calculate 2D gravimetric response at given points for a polygon with relative density change. 
-       pnts must be numbered clockwise. Else change the sign of the result.
-       Return values are in mGal.
-    '''
+    """
+    Calculate 2D gravimetric response at given points for a polygon with
+    relative density change.
+
+    pnts must be numbered clockwise. Else change the sign of the result.
+    Return values are in mGal.
+    """
     
     qpnts = pnts
     N = len(pnts)
@@ -363,17 +363,16 @@ def angle(p1, p2, p3, Un):
 
 def gravMagBoundarySinghGup(boundary):
     """
-        Calculate [Fx, Fy, FZ] and [Fzx, Fzy, Fzz] at Origin for a given boundary
-        
-        @ARTICLE{SinghGup2001,
-        author = {Bijendra Singh and D. Guptasarma},
-        title = {{N}ew method for fast computation of gravity and magnetic
-                 anomalies from arbitrary polyhedra},
-        journal = {Geophysics},
-        year = {2001},
-        volume = {66},
-        pages = {521-526}}
+    Calculate [Fx, Fy, FZ] and [Fzx, Fzy, Fzz] at Origin for a given boundary.
 
+    @ARTICLE{SinghGup2001,
+    author = {Bijendra Singh and D. Guptasarma},
+    title = {{N}ew method for fast computation of gravity and magnetic
+             anomalies from arbitrary polyhedra},
+    journal = {Geophysics},
+    year = {2001},
+    volume = {66},
+    pages = {521-526}}
     """
     shape = boundary.shape()
     #print shape
@@ -455,9 +454,7 @@ def gravMagBoundarySinghGup(boundary):
 
 
 def grav(mesh, pnts, rho):
-    """
-        Return 
-    """
+    """Return."""
     dg = np.zeros((len(pnts), 3))
     dgz = np.zeros((len(pnts), 3))
     upoly = np.zeros(len(pnts))
@@ -485,8 +482,7 @@ def grav(mesh, pnts, rho):
     return dg * [1.0, 1.0, -1.0], dgz
     
 def buildCircle(pos, radius, segments=12, leftDirection=True):
-    '''
-    '''
+    """"""
     poly = np.zeros((segments, 2))
     poly[0, :] = (0, radius)
     for i in range(1, segments):

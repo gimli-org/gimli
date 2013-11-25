@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' pygimli functions for dc resistivity / SIP data '''
+"""pygimli functions for dc resistivity / SIP data."""
 
 import pylab as P
 import numpy as N
@@ -8,7 +8,7 @@ from base import rndig
 import string
 
 def astausgleich(ab2org, mn2org, rhoaorg):
-    """shifts the branches of a dc sounding to generate a matching curve"""
+    """shifts the branches of a dc sounding to generate a matching curve."""
     ab2 = P.asarray(ab2org)
     mn2 = P.asarray(mn2org)
     rhoa = P.asarray(rhoaorg)    
@@ -29,8 +29,8 @@ def astausgleich(ab2org, mn2org, rhoaorg):
     return g.asvector(rhoa)
 
 def loadSIPallData(filename,outnumpy=False):
-    """load SIP data with the columns ab/2,mn/2,rhoa and PHI
-    with the corresponding frequencies in the first row"""
+    """load SIP data with the columns ab/2,mn/2,rhoa and PHI with the
+    corresponding frequencies in the first row."""
     if outnumpy:
         A = N.loadtxt(filename)
         fr = A[0, 3:]
@@ -53,7 +53,7 @@ def loadSIPallData(filename,outnumpy=False):
     return ab2, mn2, rhoa, PHI, fr
 
 def makeSlmData(ab2, mn2, rhoa=None, filename=None):
-    """generate a pygimli data container from ab/2 and mn/2 array"""
+    """generate a pygimli data container from ab/2 and mn/2 array."""
     data = g.DataContainer()
     data.resize(len(ab2))
     pos = N.unique(N.hstack((ab2, mn2)))
@@ -92,7 +92,7 @@ def makeSlmData(ab2, mn2, rhoa=None, filename=None):
     return data
 
 def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
-    """display a sounding curve (rhoa over ab/2) and an additional response"""
+    """display a sounding curve (rhoa over ab/2) and an additional response."""
     if xlab is None:
         xlab = r'$\rho_a$ in $\Omega$m'
 
@@ -158,7 +158,7 @@ def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
     return
 
 def showsip1ddata(PHI, fr, ab2, mn2=None, cmax=None, ylab=True, cbar=True):
-    """display SIP phase data as image plot"""
+    """display SIP phase data as image plot."""
     P.cla()
     ax = P.gca()
     pal = P.cm.get_cmap()
@@ -211,7 +211,7 @@ def showsip1ddata(PHI, fr, ab2, mn2=None, cmax=None, ylab=True, cbar=True):
 
 def showsip1dmodel(M, tau, thk, res=None, z=None, 
                    cmin=None, cmax=None, islog=True):
-    """display an SIP Debye block model as image"""
+    """display an SIP Debye block model as image."""
     if z == None: 
         z = N.cumsum(N.hstack((0., thk)))
 
@@ -276,7 +276,7 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
     return lgm, tch
 
 class DebyeModelling(g.ModellingBase):
-    """ forward operator for Debye decomposition """
+    """forward operator for Debye decomposition."""
     def __init__(self, fvec, tvec=None, zero = False, verbose = False):
         if tvec == None:
             tvec = N.logspace(-4, 0, 5)
@@ -291,7 +291,7 @@ class DebyeModelling(g.ModellingBase):
         self.zero_ = zero
 
     def response(self, par):
-        """ phase spectrum as function of spectral chargeabilities """
+        """phase spectrum as function of spectral chargeabilities."""
         y = g.RVector(len(self.f_), 0.0)
         for (t, p) in zip(self.t_, par):
             wt = self.f_ * 2.0 * P.pi * t
@@ -301,7 +301,7 @@ class DebyeModelling(g.ModellingBase):
 
 def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False, 
                        zero = False, err = 0.25e-3, lam = 10., blocky=False):
-    """ Debye decomposition of a phase spectrum """
+    """Debye decomposition of a phase spectrum."""
     if maxfr is not None:
         idx = (fr <= maxfr) & (phi >= 0.)
         phi1 = phi[ idx ]
@@ -362,7 +362,7 @@ class DoubleColeColeModelling(g.ModellingBase):
         self.si_ = si
 
     def response(self, par):
-        """ yields phase response response of double Cole Cole model """
+        """yields phase response response of double Cole Cole model."""
         y = g.RVector(self.f_.size(), 0.0)
         wti = self.f_ * par[1] * 2.0 * P.pi
         wte = self.f_ * par[4] * 2.0 * P.pi
@@ -375,7 +375,7 @@ class DoubleColeColeModelling(g.ModellingBase):
         return y
 
 def read1resfile(filename, readsecond=False, dellast=True):
-    """ read Radic instrument res file containing a single spectrum """
+    """read Radic instrument res file containing a single spectrum."""
     f = open(filename, 'r')
     line = f.readline()
     fr = []

@@ -40,9 +40,7 @@ def cmapFromName(cmapname, ncols=256, bad=[1.0, 1.0, 1.0, 0.0]):
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
                         dropColLimitsPerc=5, logScale=True):
-    """
-        What is this
-    """
+    """What is this."""
     data = np.asarray(dataIn)
 
     # if type( dataIn ) == g.RVector:

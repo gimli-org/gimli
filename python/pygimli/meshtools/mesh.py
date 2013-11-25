@@ -273,7 +273,9 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
 def rot2DGridToWorld(mesh, start, end):
     """
-    .. todo:: Complete Documentation. ...rotate a given 2D grid in...
+    ..
+
+    todo:: Complete Documentation. ...rotate a given 2D grid in...
     """
     mesh.rotate(g.degToRad(g.RVector3(-90.0, 0.0, 0.0)))
 
@@ -289,7 +291,7 @@ def rot2DGridToWorld(mesh, start, end):
 
 
 def merge2Meshes(m1, m2):
-    """ Merge two meshes into one new mesh and return the new mesh. """
+    """Merge two meshes into one new mesh and return combined mesh."""
 
     mesh = g.Mesh(m1)
 

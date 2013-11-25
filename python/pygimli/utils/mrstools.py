@@ -12,7 +12,7 @@ class MRS1dBlockQTModelling( g.ModellingBase ):
     f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False  )
     '''
     def __init__( self, nlay, KR, KI, zvec, t, verbose = False  ):
-        """ constructor """
+        """constructor."""
         mesh = g.createMesh1DBlock( nlay, 2 ) # thk, wc, T2*
         g.ModellingBase.__init__( self, mesh, verbose )
         self.KR_ = KR
@@ -24,7 +24,7 @@ class MRS1dBlockQTModelling( g.ModellingBase ):
         self.nt_ = len(t)
 
     def response( self, par ):
-        """ compute response function """
+        """compute response function."""
         nl = self.nl_
         thk = par( 0, nl-1 )
         wc  = par( nl-1, 2*nl-1 )
@@ -55,8 +55,11 @@ class MRS1dBlockQTModelling( g.ModellingBase ):
         return g.asvector( N.abs(A).ravel() )
 
 def loadmrsproject(mydir):
-    ''' load mrs project from given directory (zkernel.ve)
-        (datacube.dat, KR/KI.bmat, zkernel.vec)'''
+    """
+    load mrs project from given directory (zkernel.ve)
+
+    (datacube.dat, KR/KI.bmat, zkernel.vec)
+    """
     if mydir is None: 
         mydir = '.'
     if mydir[-1] != '/': 

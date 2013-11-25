@@ -4,9 +4,11 @@ from os import system
 import pygimli as g
 
 class Rectangle():
-    '''
-        Simple Rectangle that can be written to a xy file. nothing else.
-    '''
+    """
+    Simple Rectangle that can be written to a xy file.
+
+    nothing else.
+    """
     def __init__(self, start, size):
         self.start = start
         self.size = size

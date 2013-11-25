@@ -12,7 +12,9 @@ import pylab
 
 def showData(data, **kwargs):
     """
-        Syntactic sugar for drawData. Creates figure, axis and Show.
+    Syntactic sugar for drawData.
+
+    Creates figure, axis and Show.
     """
     MOVETOBERT
     fig = pylab.figure()
@@ -24,8 +26,7 @@ def showData(data, **kwargs):
 
 def drawData(axes, data, vals, pseudotype='A_M', cMin=None, cMax=None,
              showCbar=True, linear=False, label=""):
-    """
-    """
+    """"""
     MOVETOBERT
     try:
         sheme = getattr(g.mplviewer.Pseudotype, pseudotype)

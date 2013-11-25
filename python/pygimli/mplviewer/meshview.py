@@ -11,8 +11,8 @@ from pygimli.misc import streamline
 class CellBrowser:
     """
     Interactive cell browser on current or specified axes for a given mesh.
-    Cell information can be displayed by mouse picking. Arrow keys up and
-    down can be used to scroll through the cells, while ESC closes the cell
+    Cell information can be displayed by mouse picking. Arrow keys up and down
+    can be used to scroll through the cells, while ESC closes the cell
     information window.
 
     Parameters
@@ -114,7 +114,9 @@ class CellBrowser:
 
 def drawMesh(axes, mesh):
     """
-    Draw a 2d mesh into a given axes. Set the limits of the axes tor the mesh extent.
+    Draw a 2d mesh into a given axes.
+
+    Set the limits of the axes tor the mesh extent.
     """
     g.mplviewer.drawMeshBoundaries(axes, mesh)
     axes.set_aspect('equal')
@@ -125,12 +127,10 @@ def drawMesh(axes, mesh):
 def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
               showCbar=True , linear=False, label="", cmap=None,
               nLevs=5, orientation='horizontal', alpha=1,
-              xlab=None, ylab=None):
-    """
-        Draw a 2d mesh and color the cell by the data
-    """
+              xlab=None, ylab=None, verbose=False):
+    """Draw a 2d mesh and color the cell by the data."""
 
-    gci = g.mplviewer.createMeshPatches(axes, mesh, alpha=alpha)
+    gci = g.mplviewer.createMeshPatches(axes, mesh, alpha=alpha, verbose=verbose)
 
     if cmap is not None:
         if isinstance(cmap, str):
@@ -164,8 +164,7 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
 
         patches = g.mplviewer.createColorbar(gci, cMin=cMin, cMax=cMax,
                                              nLevs=nLevs, label=label,
-                                             orientation=orientation
-                                   )
+                                             orientation=orientation)
     if xlab is not None: axes.set_xlabel(xlab)
     if ylab is not None: axes.set_ylabel(ylab)
 
@@ -173,9 +172,7 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
 # def drawModel(...)
 
 def drawSelectedMeshBoundaries(axes, boundaries, color = (0.0, 0.0, 0.0, 1.0), linewidth = 1.0):
-    '''
-        Draw mesh boundaries into a given axes'
-    '''
+    """Draw mesh boundaries into a given axes'."""
     #print "drawSelectedMeshBoundaries", boundaries
 
     drawAA = True
@@ -194,9 +191,7 @@ def drawSelectedMeshBoundaries(axes, boundaries, color = (0.0, 0.0, 0.0, 1.0), l
     return lineCollection
 
 def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y', color=(0.5, 0.5, 0.5, 1.0)):
-    '''
-        what is this?
-    '''
+    """what is this?"""
     polys = []
     print len(boundaries)
     for cell in boundaries:
@@ -257,7 +252,7 @@ def drawMeshBoundaries(axes, mesh, fitView = True):
                                 #, color = (1.0, 0.0, 0.0, 1.0)
                                 #, linewidth = 5.5)
 
-def createMeshPatches(axes, mesh, **kwarg):
+def createMeshPatches(axes, mesh, verbose=True, **kwarg):
     ''
     ' Utility function to create 2d mesh patches in a axes'
     ''
@@ -288,23 +283,24 @@ def createMeshPatches(axes, mesh, **kwarg):
         else:
             print "unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()
 
-    patches = mpl.collections.PolyCollection(polys, antialiaseds = False, lod = True, **kwarg)
+    patches = mpl.collections.PolyCollection(polys, antialiaseds = False, lod = True, picker=True, **kwarg)
 
     #patches.set_edgecolor(None)
     patches.set_edgecolor('face')
     #patches.set_linewidth(1.001)
     axes.add_collection(patches)
 
-    print "plotting time = ", swatch.duration(True)
+    if verbose:
+        print "plotting time = ", swatch.duration(True)
     return patches
 # def createMeshPatches(...)
 
 def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
                     , dx = 1, nLevs = 20, title = None, verbose = False, maskZero = False):
     """
-        Give drawField a try .. should be better.
-        Draw the potential that is associated to a mesh
+    Give drawField a try ..
 
+    should be better. Draw the potential that is associated to a mesh
     """
 
     swatch = g.Stopwatch(True)
@@ -366,12 +362,12 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
         ax.set_yticklabels(tickLabels)
 
     return gci
-#def drawMeshPotential(...)
 
 def drawField(axes, mesh, data=None, filled=False, omitLines=False,
               *args, **kwargs):
     """
     What is this?
+
     only for triangle/quadrangle meshes currently
     """
     import matplotlib.tri as tri
@@ -427,7 +423,6 @@ def drawField(axes, mesh, data=None, filled=False, omitLines=False,
         axes.tricontour(x, y, triangles, data, colors=cols, *args, **kwargs)
 
     return gci
-# def drawField(...)
 
 def drawStreamCircular(a, mesh, u, pos, rad, nLines = 20, step = 0.1, showStartPos = False):
     ''
@@ -441,7 +436,6 @@ def drawStreamCircular(a, mesh, u, pos, rad, nLines = 20, step = 0.1, showStartP
 
         if showStartPos:
             a.plot([start[0], start[0]], [start[1], start[1]], color = 'blue', linewidth = 2, linestyle = 'solid')
-#def drawStreamCircular(...)
 
 
 def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01,
@@ -458,14 +452,14 @@ def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01,
         if showStartPos:
             a.plot([s[0], s[0]], [s[1], s[1]], color = 'blue', linewidth = 2, linestyle = 'solid')
 
-#def drawStreamLinear(...)
 
 def drawStreamLines(a, mesh, u, nx=25, ny=25, *args, **kwargs):
     """
-        Draw streamlines for the gradients of field values u on mesh.
-        The matplotlib internal streamplot need equidistant space value so we
-        interpolate first on a grid defined by nx and ny values.
-        Additionally arguments are piped to streamplot.
+    Draw streamlines for the gradients of field values u on mesh.
+
+    The matplotlib internal streamplot need equidistant space value so
+    we interpolate first on a grid defined by nx and ny values.
+    Additionally arguments are piped to streamplot.
     """
 
     X,Y = np.meshgrid(np.linspace(mesh.xmin(), mesh.xmax(), nx),
@@ -486,7 +480,6 @@ def drawStreamLines(a, mesh, u, nx=25, ny=25, *args, **kwargs):
             V[i, j] = -gr[1]
 
     a.streamplot(X, Y, U, V, *args, **kwargs)
-#def drawStreamlines(... )
 
 def drawSensors(axes, sensors, diam = None):
     ''
@@ -503,7 +496,6 @@ def drawSensors(axes, sensors, diam = None):
 
     p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
     axes.add_collection(p)
-# def drawSensors(...)
 
 
 def createParameterContraintsLines(mesh, cMat, cWeight = None):
@@ -595,6 +587,3 @@ def drawParameterConstraints(axes, mesh, cMat, cWeight = None):
     linCol.set_color(colors)
     linCol.set_linewidth(linewidths)
     axes.add_collection(linCol)
-
-
-

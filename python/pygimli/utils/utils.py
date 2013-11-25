@@ -11,8 +11,7 @@ def unicodeToAscii( text ):
         return text
 
 def logDropTol( p, droptol = 1e-3 ):
-    '''
-    '''
+    """"""
     tmp = g.RVector( p );
 
     tmp = g.abs( tmp / droptol )
@@ -68,9 +67,8 @@ def diff( v ):
     return r
 
 def xyToLength( x, y ):
-    '''
-        return RVector of lengths from two RVectors x and y starting from 0 to end
-    '''
+    """return RVector of lengths from two RVectors x and y starting from 0 to
+    end."""
     ret = g.RVector( len( x ), 0.0 )
 
     for i in range( len( ret ) -1 ):
@@ -120,9 +118,12 @@ def findNearest( x, y, xp, yp, radius = -1 ):
 import itertools
 
 def unique_everseen(iterable, key=None):
-    '''List unique elements, preserving order. Remember all elements ever seen.
-        http://docs.python.org/library/itertools.html#recipes
-    '''
+    """
+    List unique elements, preserving order.
+
+    Remember all elements ever seen.
+    http://docs.python.org/library/itertools.html#recipes
+    """
     # unique_everseen('AAAABBBCCDAABBB') --> A B C D
     # unique_everseen('ABBCcAD', str.lower) --> A B C D
     seen = set()

@@ -1,7 +1,9 @@
+.. _sec:GIMLI:
+
 About GIMLi
 ===========
 
-:ref:`sec:GIMLi` is an open-source multi-method library for solving :ref:`inverse<sec:about_gimli_inversion>` 
+GIMLi is an open-source multi-method library for solving :ref:`inverse<sec:about_gimli_inversion>` 
 and :ref:`forward<sec:about_gimli_modelling>` modelling tasks.
 
 What GIMLi is good for?:
@@ -43,3 +45,10 @@ Currently there is a Finite Element Framework for solving partial differential e
     * solver for elliptic problems (Helmholtz-type PDE)
 
 Please see :ref:`modelling tutorial<tut:modelling>` for examples and more details.
+
+References
+----------
+
+.. bibliography:: doc/biblio.bib
+    :style: mystyle
+    :all:

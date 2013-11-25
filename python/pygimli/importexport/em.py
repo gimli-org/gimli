@@ -61,7 +61,8 @@ def readusffiles( filenames, DATA = [] ):
     return DATA
     
 def importMaxminData( filename, verbose = False ):
-    """ pure import function reading in positions, data, frequencies and geometry """
+    """pure import function reading in positions, data, frequencies and
+    geometry."""
     delim = None
     fid = open(filename)
     coilspacing = 0.
@@ -88,7 +89,7 @@ def importMaxminData( filename, verbose = False ):
 
 class FDEMData():
     def __init__( self, filename, height=1.0, verbose=False ):
-        """ initialize data class and load data """
+        """initialize data class and load data."""
         self.x, self.f, self.cs, self.IP, self.OP = importMaxminData( filename, verbose )
         self.height = height
         self.activeFreq = ( self.f > 0.0 )
@@ -100,20 +101,21 @@ class FDEMData():
             print len(self.x), "soundings with each", len(self.f), "frequencies"
 
     def deactivate( self, fr ):
-        """ deactivate a single frequency """
+        """deactivate a single frequency."""
         fi = P.find( P.absolute( self.f / fr - 1.) < 0.1 )
         self.activeFreq[ fi ] = False
         
     def freq( self ):
-        """ return active frequencies """
+        """return active frequencies."""
         return self.f[ self.activeFreq ]
     
     def FOP( self, nlay = 2 ):
-        """ retrieve forward modelling operator """
+        """retrieve forward modelling operator."""
         return FDEM1dModelling( nlay, asvector( self.freq() ), self.cs, -self.height )
     
     def selectData( self, xpos=0 ):
-        """ retrieve inphase and outphase vector from index or near given position """
+        """retrieve inphase and outphase vector from index or near given
+        position."""
         if isinstance( xpos, int ) and ( xpos < len( self.x ) ) and ( xpos >= 0 ): # index
             n = xpos
         else:
@@ -122,12 +124,12 @@ class FDEMData():
         return self.IP[ n, self.activeFreq ], self.OP[ n, self.activeFreq ]
 
     def datavec( self, xpos=0 ):
-        """ extract data vector (stacking inphase and outphase """
+        """extract data vector (stacking inphase and outphase."""
         ip, op = self.selectData( xpos )
         return asvector( P.hstack( ( ip, op ) ) )
     
     def invBlock( self, xpos=0, nlay=2, noise=1.0, stmod=10., lam=100., lBound=1., uBound=0., verbose=False ):
-        """ yield gimli inversion instance for block inversion """
+        """yield gimli inversion instance for block inversion."""
         """ inv(xpos,nlay) where nlay can be a FOP or a number of layers """
         self.transThk = RTransLog()
         self.transRes = RTransLogLU( lBound, uBound )
@@ -167,7 +169,7 @@ class FDEMData():
         return self.inv
     
     def plotData( self, xpos=0, response = None, ax=None, marker='bo-', rmarker='rx-', clf=True, addlabel='', nv=2 ):
-        """ plot data as curves at given position """
+        """plot data as curves at given position."""
         ip, op = self.selectData( xpos )
         fr = self.freq()
         if ax is None:
@@ -218,7 +220,7 @@ class FDEMData():
         self.plotData( xpos, response, (ax2, ax3), clf=False )
         
     def plotAllData( self, allF = True, orientation='vertical' ):
-        """ plot data along a profile as image plots for IP and OP """
+        """plot data along a profile as image plots for IP and OP."""
         nt = range( 0, len( self.x ), 5 )
         freq = self.freq()
         nf = len( freq )

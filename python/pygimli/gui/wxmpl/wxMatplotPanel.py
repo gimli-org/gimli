@@ -30,10 +30,11 @@ except ImportError: # if it's not there locally, try the wxPython lib.
     from wx.lib.agw.aui import aui_switcherdialog as ASD
 
 class MPLRubberBander:
-    '''
-		A class to manage mouse events / rubberbanding of a mpl canvas object.
-        Instance must be started and stoped
-    '''
+    """
+    A class to manage mouse events / rubberbanding of a mpl canvas object.
+
+    Instance must be started and stoped
+    """
     def __init__(self, canvas ):
 
         # canvas object
@@ -62,9 +63,7 @@ class MPLRubberBander:
         self.oldCursor_ = None
 
     def registerEventHandlers(self):
-        """
-            Register event handlers for this object
-        """
+        """Register event handlers for this object."""
         if self.mouseMoveID_ is None:
             self.mouseMoveID_ = self.canvas_.mpl_connect( 'motion_notify_event', self.onMouseMove )
         if self.mousePressID_ is None:
@@ -73,9 +72,7 @@ class MPLRubberBander:
             self.mouseReleaseID_ = self.canvas_.mpl_connect( 'button_release_event', self.onMouseRelease )
 
     def releaseEventHandlers(self):
-        '''
-            Release events
-        '''
+        """Release events."""
         if self.mouseMoveID_ is not None:
             self.mouseMoveID_ = self.canvas_.mpl_disconnect( self.mouseMoveID_ )
         if self.mousePressID_ is not None:
@@ -98,9 +95,7 @@ class MPLRubberBander:
         self.canvas_.SetCursor( self.oldCursor_ )
 
     def convertCoords( self, x, y ):
-        '''
-            convert event.coordinates into global widget coordinates
-        '''
+        """convert event.coordinates into global widget coordinates."""
         #print x, y, self.canvas_._lastx, self.canvas_._lasty, self.canvas_.GetSize()
 
         pos = ( min( max( 0, x ), self.canvas_.GetSize()[0] )
@@ -209,9 +204,7 @@ class MPLRubberBander:
                 self.startPoint_ = self.endPoint_
 
     def getDC(self):
-        '''
-            define rectangle drawing properties
-        '''
+        """define rectangle drawing properties."""
         # get device context of canvas
         dc= wx.ClientDC(self.canvas_)
 
@@ -234,9 +227,7 @@ class MPLRubberBander:
         return dc
 
     def getCurrentSelection(self):
-        """
-            Return the current selected rectangle
-        """
+        """Return the current selected rectangle."""
         # if there is no selection, selection defaults to
         # current viewport
         left = wx.Point(0,0)
@@ -254,9 +245,7 @@ class MPLRubberBander:
         return (left.x, left.y, right.x, right.y)
 
     def clearCurrentSelection(self):
-        """
-            Clear the current selected rectangle
-        """
+        """Clear the current selected rectangle."""
         dc = self.getDC()
         box = self.getCurrentSelection()
         w = box[2] - box[0]
@@ -271,9 +260,7 @@ class MPLRubberBander:
         self.resetSelection()
 
     def resetSelection(self):
-		'''
-            Resets the mouse selection to entire canvas
-		'''
+		"""Resets the mouse selection to entire canvas."""
 		self.startPoint_ = wx.Point(0,0)
 		sz = self.canvas_.GetSize()
 		w,h = sz.GetWidth(), sz.GetHeight()
@@ -636,8 +623,9 @@ class wxMatplotPanelSimple( wx.Panel ):
 
 class wxMatplotPanel( scrolled.ScrolledPanel  ):
     """
-    The PlotPanel has a Figure and a Canvas. OnSize events simply set a
-    flag, and the actually redrawing of the
+    The PlotPanel has a Figure and a Canvas.
+
+    OnSize events simply set a flag, and the actually redrawing of the
     figure is triggered by an Idle event.
     """
     def __init__( self, renderPanel, color=None, dpi=None, **kwargs ):
@@ -794,9 +782,7 @@ class wxMatplotPanel( scrolled.ScrolledPanel  ):
 # END class wxMatplotPanel
 
 class AppResourceWxMPL( AppResource, wxMatplotPanel ):
-    '''
-        What is this??
-    '''
+    """What is this??"""
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
         AppResource.__init__( self, parent, rendererSlot, propertyInspectorSlot )
         wxMatplotPanel.__init__( self, rendererSlot, style = wx.NO_FULL_REPAINT_ON_RESIZE )
@@ -849,7 +835,6 @@ class AppResourceWxMPL( AppResource, wxMatplotPanel ):
             self.needDrawing = True
 
     def drawData_( self ):
-        '''
-           Abstract interface, Define what we have to be drawn (needed from base class) is called while a draw event is fired
-        '''
+        """Abstract interface, Define what we have to be drawn (needed from
+        base class) is called while a draw event is fired."""
         Abstract_interface_need_to_be_derived

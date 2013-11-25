@@ -44,25 +44,22 @@ Example Installation on Vanilla Debian
 
 First install some of the necessary stuff. For sure you will need subversion to get the source files and some things for the tool-chain
 
-::
+.. code-block:: bash
 
     sudo apt-get install subversion git cmake
-
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
 
 Optional install useful stuff:
 
-::
+.. code-block:: bash
 
     sudo apt-get install libcppunit-dev libprocps0-dev
-
     sudo apt-get install python-matplotlib
-
     sudo apt-get install doxygen
 
 Create a directory for your installation, e.g., $HOME/src
 
-::
+.. code-block:: bash
 
     mkdir -p ~/src
     cd src
@@ -71,14 +68,14 @@ Create a directory for your installation, e.g., $HOME/src
 
 Checkout the current sources for libgimli:
     
-::
+.. code-block:: bash
 
     svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
 
 Getting necessary and optional external libraries. 
 We need suitesparse and triangle. If they are not installed system-wide we provide a small script to obtain them.
 
-::
+.. code-block:: bash
 
     cd trunk
     cd external
@@ -87,7 +84,7 @@ We need suitesparse and triangle. If they are not installed system-wide we provi
 Check if there are now a lib and an include path. With some content in it (e.g. libtriangle.a and libcholmod.a)
 Then you can go back to the main gimli path:
     
-::
+.. code-block:: bash
 
     cd ../..
     
@@ -100,14 +97,14 @@ If you just want the libgimli library you can skip this part
 The python binding files are generated automatic by using gccxml, pygccxml and pyplusplus
 If you cannot install them with your distribution we provide a script for it.
 
-::
+.. code-block:: bash
 
     cd ..
     sh gimli/trunk/python/buildScripts/buildToolChain.sh
 
 if 'sh COMMAND.sh' complains about missing pushd or popd try 'bash COMMAND.sh':
 
-::
+.. code-block:: bash
 
     bash gimli/trunk/python/buildScripts/buildToolChain.sh
 
@@ -118,27 +115,27 @@ Building with cmake
 We test a new build system using cmake http://www.cmake.org/ that hopefully avoid a lot of problems from the past.
 In the first, cmake provide out of source build so we recommend using a build directory beside the trunk path:
 
-::
+.. code-block:: bash
 
     cd gimli
     mkdir -p build
     
 the main directory structure should looks like this:
 
-::
+.. code-block:: bash
 
     gimli/trunk
     gimli/build
 
 change to the build path:
 
-::
+.. code-block:: bash
 
     cd build
 
 and configure the build:
     
-::
+.. code-block:: bash
 
     cmake ../trunk
 
@@ -146,7 +143,7 @@ If the output complains some missing dependencies you want to install .. just in
 
 To build the library just run make
     
-::
+.. code-block:: bash
 
     make
 
@@ -154,14 +151,14 @@ The libraries will be installed in build/lib and some test applications are inst
 
 If you want to build the python bindings call
     
-::
+.. code-block:: bash
 
     make pygimli
 
 the _pygimli_.so library will be copied into the source path ../trunk/python/pygimli. 
 To use the gimli installation there have to be set some environment variables:
 
-::
+.. code-block:: bash
 
     export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/trunk/python
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
@@ -169,13 +166,13 @@ To use the gimli installation there have to be set some environment variables:
 
 You can test the pygimli build with:
 
-::
+.. code-block:: bash
 
     python -c 'import pygimli as g; print g.versionStr()'
 
 You can test your libgimli build with:
 
-::
+.. code-block:: bash
 
     make check
 
@@ -183,7 +180,7 @@ Of course the test will be very silent if you don't have cppunit installed.
 
 If you have doxygen installed, you can create the api documentation:
 
-::
+.. code-block:: bash
 
     make html
 
@@ -208,38 +205,38 @@ The installation is common to the linux way with some small differences.
 Prepare the directory structure like described above:
 If you don't have a proper boost installation you can install them yourself:
 
-::
+.. code-block:: bash
 
     sh glimli/trunk/python/buildScripts/buildBoostWin32.sh
 
 If you don't have blas and lapack you can install it via script
 
-::
+.. code-block:: bash
 
     cd gimli/external
     make lapack
 
 The build is performed via cmake. While calling cmake *Mingw* users should be preferable generate for msys makefiles:
 
-::
+.. code-block:: bash
 
     cmake -G 'MSYS Makefiles' ../trunk
 
 cmake provide an interactive configuration and fine tuning, e.g., for adjusting the boost-include and boost-library paths.
 
-::
+.. code-block:: bash
 
     cmake-gui ../trunk 
 
 To build the library just run make
     
-::
+.. code-block:: bash
 
     make
 
 just need to set the environment:
 
-::
+.. code-block:: bash
 
     export PYTHONPATH=$PYTHONPATH:$(HOME)/src/gimli/trunk/python
     export PATH=$PATH:$(HOME)/src/gimli/build/lib
@@ -261,7 +258,7 @@ to come ....
 Example Installation on Ubuntu
 ..............................
 
-::
+.. code-block:: bash
 
     sudo apt-get install subversion git cmake
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' pygimli model viewer functions '''
+"""pygimli model viewer functions."""
 
 import pylab as P
 import numpy as N
@@ -8,9 +8,11 @@ from matplotlib.patches import Rectangle
 # from math import sqrt, floor, ceil
 
 def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
-    '''
-        Pls. insert short Docu here
-    '''
+    """
+    Pls.
+
+    insert short Docu here
+    """
     P.imshow(A, interpolation='nearest')
     P.xticks(N.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x]) #,b
     P.yticks(N.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y]) #,a
@@ -28,9 +30,8 @@ def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
 
 def drawModel1D(ax, thickness, values, plotfunction='plot',
                 xlabel='Resistivity $[\Omega$ m$]$', *args, **kwargs):
-    '''
-        Draw 1d block model into axis ax defined by values and thickness vectors using plotfunction
-    '''
+    """Draw 1d block model into axis ax defined by values and thickness vectors
+    using plotfunction."""
 
     nLayers = len(thickness) + 1
     px = P.zeros(nLayers * 2)
@@ -109,7 +110,7 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
 
 def showStitchedModels(models, x=None, cmin=None, cmax=None,
                        islog=True, title=None):
-    """ show several 1d block models as (stitched) section """
+    """show several 1d block models as (stitched) section."""
     if x is None:
         x = P.arange(len(models))
 
@@ -167,8 +168,8 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
 
 
 def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):
-    """ show FDEM sounding as real(inphase) and imaginary (quadrature)
-        fields normalized by the (purely real) free air solution """
+    """show FDEM sounding as real(inphase) and imaginary (quadrature) fields
+    normalized by the (purely real) free air solution."""
     nf = len(freq)
     fig = P.figure(1)
     fig.clf()
