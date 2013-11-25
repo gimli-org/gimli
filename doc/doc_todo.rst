@@ -6,10 +6,7 @@ Documentation TODOs
 
 * somewhere explain difference between gimli and pygimli
 * somewhere explain difference python bind of gimli and pygimli scripts
-* create minimalistic welcome page (short about, getting started, download and installation)
-* transfer current index.html to doc.rst (Documentation Home)
 * transfer gmsh tutorial
-* make sphinx warnings, adminitions, etc. compatible with `bootstrap alerts <http://getbootstrap.com/2.3.2/components.html#alerts>`_
 
 .. admonition:: See also
 
@@ -65,5 +62,12 @@ See :py:func:`pygimli.meshtools.grid.appendTriangleBoundary` in :py:mod:`pygimli
 
 Docstring examples
 ------------------
+Functions
+"""""""""
 .. autofunction:: pygimli.meshtools.mesh.readHydrus2dMesh
 .. autofunction:: pygimli.meshtools.mesh.readGmsh
+
+Classes
+"""""""
+.. warning:: Usage and source link do not show when displaying classes, why?
+.. autoclass:: pygimli.mplviewer.CellBrowser

@@ -113,6 +113,7 @@ h6 {
 table {
     border-collapse: collapse;
     margin: 0 -0.5em 0 -0.5em;
+    border: 0px none #fff;
 }
 
 table td, table th {
@@ -171,13 +172,12 @@ blockquote em{
 }
 
 /* master content table */
-.contentstable.docutils, .contentstable.docutils td {
-    border-color: transparent;
+.doc-index.docutils .first em {
+    font-style: normal;
+    font-size: 18px;
 }
-.contentstable.docutils .first {
-    font-weight: bold;
-}
-.contentstable.docutils .last {
+
+.doc-index.docutils .last {
     padding-left: 10px;
 }
 
@@ -191,6 +191,32 @@ blockquote em{
     width: 170px;
 }
 
+/*admonition boxes*/
+div.admonition {
+    padding: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #3a87ad;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.admonition a {
+    color: #2d6987;
+}
+
+div.admonition.warning {
+  color: #c09853;
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+}
+
+.admonition.warning a {
+  color: #a47e3c;
+}
+
 /* module summary table */
 .longtable.docutils {
     font-size: 12px;
@@ -198,6 +224,21 @@ blockquote em{
 }
 .longtable.docutils, .longtable.docutils td {
     border-color: #ccc;
+}
+
+/*for glossary*/
+dd {
+    margin-bottom: 10px;
+}
+
+/*index page*/
+.hero-unit {
+    padding: 40px;
+}
+
+.hero-unit h1 {
+    font-size: 50px;
+    padding-top: 0px;
 }
 
 /* function and class description */
@@ -244,6 +285,7 @@ p.rubric {
     margin: 15px 0 10px 0;
 }
 p.admonition-title {
-    font-weight: bold;
-    text-decoration: underline;
-}
+    font-weight: 100;
+    font-size: 18px;
+    text-decoration: italic;
+    }

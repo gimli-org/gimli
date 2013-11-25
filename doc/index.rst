@@ -1,34 +1,87 @@
-.. GIMLi documentation master file, created by
-   sphinx-quickstart on Wed Apr 11 16:37:21 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-.. only:: html
-
-    .. include:: doc.rst
-
-=================================
-Welcome to GIMLi's documentation!
-=================================
-
-.. toctree::
-
-    gimli.rst
-    _tutorials_auto/index.rst
-    _examples_auto/index.rst
-    api.rst
-    rst_basics.rst
-
 .. toctree::
     :hidden:
 
+    ../INSTALL.rst
+    ../README.rst
+    _examples_auto/index.rst
+    _examples_auto/modelling/plot_mod-dc-2d.rst
+    _tutorials_auto/index.rst
+    _tutorials_auto/modelling/plot_2-mod-fem.rst
+    _tutorials_auto/modelling/plot_3-mod-fem-BC.rst
+    _tutorials_auto/modelling/plot_4-mod-fem-heat-1d.rst
+    credits.rst
+    design.rst
+    doc_todo.rst
+    faq.rst
+    glossary.rst
+    license.rst
+    publist.rst
+    pygimli.rst
     rst_basics.rst
 
-==================
+Documentation
+=============
+.. list-table:: 
+    :class: doc-index
+
+    * - :ref:`sec:GIMLi`
+
+        Getting started
+
+      - :ref:`sec:design`
+        
+        Software design
+   
+    * - :ref:`sec:install`
+
+        How to install GIMLi on different platforms
+
+      - :ref:`sec:faq`
+
+        Frequently asked questions (with anwers!)
+
+    * - :ref:`part:tutorial`
+
+        How to use GIMLi
+
+      - :ref:`part:examples`
+
+        Interesting examples
+
+    * - GIMLi API
+
+        Reference for C++ programmers
+
+      - pyGIMLi API
+
+        Reference for Python programmers
+
+    * - :ref:`sec:publications`
+
+        Papers and talks about (or using) GIMLi
+
+      - :ref:`sec:license` 
+
+        Terms of use
+
+
 Indices and tables
 ==================
+.. list-table:: 
+    :class: doc-index
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    * - :ref:`genindex`
 
+        All functions, classes and terms
+            
+      - :ref:`modindex`
+
+        Quick access to all modules
+
+    * - :ref:`search`
+
+        Search this documentation
+
+      - :ref:`glossary`
+
+        Important terms explained
