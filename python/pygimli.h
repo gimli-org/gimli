@@ -183,6 +183,8 @@ DEFINE_COMPARE_OPERATOR__(>)
     
     template RVector unique(const RVector & a);
     template RVector sort(const RVector & a);
+    template void sort(const RVector & a, RVector & b, IndexArray & idx);
+    template IndexArray sortIdx(const RVector & a);
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
 

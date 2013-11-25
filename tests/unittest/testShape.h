@@ -32,8 +32,8 @@ public:
     
     void testShapeFunctions(){
 
-        RVector e1(2); e1[ 0 ] = 1; e1[ 1 ] = -1; // 1-x
-        RVector e2(2); e2[ 0 ] = 0; e2[ 1 ] =  1; // x
+        RVector e1(2); e1[0] = 1; e1[1] = -1; // 1-x
+        RVector e2(2); e2[0] = 0; e2[1] =  1; // x
         
         GIMLI::RPolynomialFunction E2_1_R(e1);// 1-x
         GIMLI::RPolynomialFunction E2_2_R(e2);// x
@@ -45,10 +45,10 @@ public:
         GIMLI::RPolynomialFunction Q4_3 = E2_2_R * E2_2_S ; // x * y            = xy
         GIMLI::RPolynomialFunction Q4_4 = E2_1_R * E2_2_S ; // (1-x) * y        = y - xy
         
-        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[ 0 ] == Q4_1);
-        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[ 1 ] == Q4_2);
-        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[ 2 ] == Q4_3);
-        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[ 3 ] == Q4_4);
+        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[0] == Q4_1);
+        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[1] == Q4_2);
+        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[2] == Q4_3);
+        CPPUNIT_ASSERT(q1_->shape().createShapeFunctions()[3] == Q4_4);
     }
     
     void testRSTXYZ(){
@@ -61,7 +61,6 @@ public:
         CPPUNIT_ASSERT(t1_->shape().xyz(RVector3(0.0, 1.0, 0.0)) == t1_->node(2).pos());
         CPPUNIT_ASSERT(t1_->shape().xyz(RVector3(1./3., 1./3.0, 0.0)) == t1_->center());
     }
-    
     void testDomainSizes(){
         CPPUNIT_ASSERT(t1_->shape().domainSize() == 0.5);
         CPPUNIT_ASSERT(t2_->shape().domainSize() == 0.5);
@@ -95,56 +94,66 @@ public:
     }
     void testTouch1(){
         RVector sf;
+        __MS(*t1_)
+        __MS(t1_->node(0))
+        __MS(t1_->node(1))
+        __MS(t1_->node(2))
         t1_->shape().isInside(GIMLI::RVector3(-0.1,  0.0), sf, false); 
-//             CPPUNIT_ASSERT(pIndx == 1);
-        t1_->shape().isInside(GIMLI::RVector3( 0.5,  1.0), sf, false);
-//             CPPUNIT_ASSERT(pIndx == 1);
-        t1_->shape().isInside(GIMLI::RVector3( 0.5, -1.0), sf, false);
-//             CPPUNIT_ASSERT(pIndx == 2);
+        __MS(sf)
+        CPPUNIT_ASSERT(sortIdx(sf)[0] == 1);
+        
+        t1_->shape().isInside(GIMLI::RVector3(0.5,  1.0), sf, false);
+        __MS(sf)
+        CPPUNIT_ASSERT(sortIdx(sf)[0] == 1);
+        
+        t1_->shape().isInside(GIMLI::RVector3(0.5, -1.0), sf, false);
+        __MS(sf)
+        CPPUNIT_ASSERT(sortIdx(sf)[0] == 2);
 
+        __MS(sortIdx(sf)[0])
         GIMLI::Node n1(5.0, -1.0); n1.setId(0);
         GIMLI::Node n2(6.0, -1.0); n2.setId(1);
         GIMLI::Node n3(6.0,  0.0); n3.setId(2);
         GIMLI::Node n4(5.0,  0.0); n4.setId(3);
         GIMLI::Quadrangle q(n1, n2, n3, n4);
 
-//         q.shape().isInside(GIMLI::RVector3( 4.0,  0.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 2);
-//         q.shape().isInside(GIMLI::RVector3( 4.0, -0.5), pIndx, false); CPPUNIT_ASSERT(pIndx == 1);
-//         q.shape().isInside(GIMLI::RVector3( 4.0, -1.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 1);
-//         q.shape().isInside(GIMLI::RVector3( 7.0, -0.5), pIndx, false); CPPUNIT_ASSERT(pIndx == 0);
-//         q.shape().isInside(GIMLI::RVector3( 7.0, -1.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 0);
-//         q.shape().isInside(GIMLI::RVector3( 5.0, -2.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 3);
-//         q.shape().isInside(GIMLI::RVector3( 5.5, -2.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 2);
-//         q.shape().isInside(GIMLI::RVector3( 6.0, -2.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 2);
-//         q.shape().isInside(GIMLI::RVector3( 5.0, 1.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 0);
-//         q.shape().isInside(GIMLI::RVector3( 5.5, 1.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 0);
-//         q.shape().isInside(GIMLI::RVector3( 6.0, 1.0), pIndx, false); CPPUNIT_ASSERT(pIndx == 1);
+        q.shape().isInside(GIMLI::RVector3(4.0,  0.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==2);
+        q.shape().isInside(GIMLI::RVector3(4.0, -0.5), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==1);
+        q.shape().isInside(GIMLI::RVector3(4.0, -1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==1);
+        q.shape().isInside(GIMLI::RVector3(7.0, -0.5), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==0);
+        q.shape().isInside(GIMLI::RVector3(7.0, -1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==0);
+        q.shape().isInside(GIMLI::RVector3(5.0, -2.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==3);
+        q.shape().isInside(GIMLI::RVector3(5.5, -2.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==2);
+        q.shape().isInside(GIMLI::RVector3(6.0, -2.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==2);
+        q.shape().isInside(GIMLI::RVector3(5.0, 1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==0);
+        q.shape().isInside(GIMLI::RVector3(5.5, 1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==0);
+        q.shape().isInside(GIMLI::RVector3(6.0, 1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==1);
     }
 
     void testInterpolate(){
         GIMLI::Triangle tri(*n1_, *n2_, *n4_);
 
         RVector u(5, 0.0);
-        u[ 0 ] = 1.0;
-        CPPUNIT_ASSERT(::fabs(tri.shape().rst(tri.center())[ 0 ] - 1.0/3.0) < TOLERANCE);
-        CPPUNIT_ASSERT(::fabs(tri.shape().rst(tri.center())[ 1 ] - 1.0/3.0) < TOLERANCE);
+        u[0] = 1.0;
+        CPPUNIT_ASSERT(::fabs(tri.shape().rst(tri.center())[0] - 1.0/3.0) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tri.shape().rst(tri.center())[1] - 1.0/3.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri.pot(GIMLI::RVector3(0.0, 0.5), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri.pot(GIMLI::RVector3(0.5, 0.0), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri.pot(GIMLI::RVector3(0.5, 0.5), u) - 0.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri.grad(GIMLI::RVector3(0.0, 0.0), u).dist(GIMLI::RVector3(-1.0, -1.0))) < TOLERANCE);
 
         GIMLI::Triangle tri2(*n1_, *n3_, *n4_);
-        CPPUNIT_ASSERT(::fabs(tri2.shape().rst(tri2.center())[ 0 ] - 1.0/3.0) < TOLERANCE);
-        CPPUNIT_ASSERT(::fabs(tri2.shape().rst(tri2.center())[ 1 ] - 1.0/3.0) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tri2.shape().rst(tri2.center())[0] - 1.0/3.0) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tri2.shape().rst(tri2.center())[1] - 1.0/3.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri2.pot(GIMLI::RVector3(0.0, 0.5), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri2.pot(GIMLI::RVector3(1.0, 1.0), u) - 0.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri2.pot(GIMLI::RVector3(0.5, 0.5), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri2.grad(GIMLI::RVector3(0.0, 0.0), u).dist(GIMLI::RVector3(0.0, -1.0))) < TOLERANCE);
 
         GIMLI::Tetrahedron tet(*n1_, *n2_, *n4_, *n5_);
-        CPPUNIT_ASSERT(::fabs(tet.shape().rst(tet.center())[ 0 ] - 0.25) < TOLERANCE);
-        CPPUNIT_ASSERT(::fabs(tet.shape().rst(tet.center())[ 1 ] - 0.25) < TOLERANCE);
-        CPPUNIT_ASSERT(::fabs(tet.shape().rst(tet.center())[ 2 ] - 0.25) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tet.shape().rst(tet.center())[0] - 0.25) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tet.shape().rst(tet.center())[1] - 0.25) < TOLERANCE);
+        CPPUNIT_ASSERT(::fabs(tet.shape().rst(tet.center())[2] - 0.25) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tet.pot(GIMLI::RVector3(0.0, 0.5), u) - 0.5) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tet.pot(GIMLI::RVector3(0.5, 0.5), u) - 0.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tet.pot(GIMLI::RVector3(0.5, 0.0), u) - 0.5) < TOLERANCE);
@@ -156,10 +165,10 @@ public:
         
         double testSum = 0.0;
         for (size_t j = 0; j < 5; j ++){
-            GIMLI::Tetrahedron tet(hex1_->node(GIMLI::HexahedronSplit5TetID[ j ][ 0 ]),
-                                    hex1_->node(GIMLI::HexahedronSplit5TetID[ j ][ 1 ]),
-                                    hex1_->node(GIMLI::HexahedronSplit5TetID[ j ][ 2 ]),
-                                    hex1_->node(GIMLI::HexahedronSplit5TetID[ j ][ 3 ]));
+            GIMLI::Tetrahedron tet(hex1_->node(GIMLI::HexahedronSplit5TetID[j][0]),
+                                    hex1_->node(GIMLI::HexahedronSplit5TetID[j][1]),
+                                    hex1_->node(GIMLI::HexahedronSplit5TetID[j][2]),
+                                    hex1_->node(GIMLI::HexahedronSplit5TetID[j][3]));
             testSum += tet.shape().domainSize();
             CPPUNIT_ASSERT(det(inv(tet.shape().createJacobian())) > 1e-12);
         }
@@ -168,12 +177,12 @@ public:
         testSum = 0.0;
         for (size_t j = 0; j < 6; j ++){
             //std::cout << j << std::endl;
-            GIMLI::Tetrahedron tet(hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 0 ]),
-                                    hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 1 ]),
-                                    hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 2 ]),
-                                    hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 3 ]));
-//             std::cout << hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 0 ])  << "\n " << hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 1 ]) <<"\n "
-//                     << hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 2 ])<< "\n" << hex1_->node(GIMLI::HexahedronSplit6TetID[ j ][ 3 ]) <<std::endl;
+            GIMLI::Tetrahedron tet(hex1_->node(GIMLI::HexahedronSplit6TetID[j][0]),
+                                    hex1_->node(GIMLI::HexahedronSplit6TetID[j][1]),
+                                    hex1_->node(GIMLI::HexahedronSplit6TetID[j][2]),
+                                    hex1_->node(GIMLI::HexahedronSplit6TetID[j][3]));
+//             std::cout << hex1_->node(GIMLI::HexahedronSplit6TetID[j][0])  << "\n " << hex1_->node(GIMLI::HexahedronSplit6TetID[j][1]) <<"\n "
+//                     << hex1_->node(GIMLI::HexahedronSplit6TetID[j][2])<< "\n" << hex1_->node(GIMLI::HexahedronSplit6TetID[j][3]) <<std::endl;
             testSum += tet.shape().domainSize();
 
 //             std::cout << j << " " <<  tet << std::endl;
@@ -244,7 +253,7 @@ public:
             std::vector < Node * > nodes; nodes = c.boundaryNodes(i);
 //             std::cout << i << " " << c << " " << nodes.size() << std::endl;
             
-            GIMLI::Boundary *b;
+            GIMLI::Boundary *b =0;
             
             switch (nodes.size()){
                 case 2:
@@ -264,7 +273,7 @@ public:
 
             CPPUNIT_ASSERT(b->normShowsOutside(c));
             
-            delete b;
+            if (b) delete b;
         }
     }
     

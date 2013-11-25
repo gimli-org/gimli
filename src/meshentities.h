@@ -267,6 +267,15 @@ protected:
 private:
     /*! Don't call this class directly */
     Cell(const Cell & cell){ std::cerr << "cell(const cell & cell)" << std::endl; }
+    
+    /*! Don't call this class directly */
+    Cell & operator = (const Cell & cell){
+        if (this != &cell) {
+            std::cerr << "cell=cell" << std::endl; 
+        }
+        return *this;
+    }
+    
 };
 
 class DLLEXPORT Boundary : public MeshEntity{
@@ -318,6 +327,15 @@ private:
     Boundary(const Boundary & bound){
         std::cerr << "Boundary(const Boundary & bound)" << std::endl;
     }
+        
+    /*! Don't call this class directly */
+    Boundary & operator = (const Boundary & boundary){
+        if (this != &boundary) {
+            std::cerr << "boundary=boundary" << std::endl; 
+        }
+        return *this;
+    }
+    
 };
 
 class DLLEXPORT NodeBoundary : public Boundary{
@@ -413,6 +431,19 @@ public:
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
     
 protected:
+    
+     /*! Don't call this class directly */
+    TriangleFace(const TriangleFace & bound){
+        std::cerr << "TriangleFace(const Boundary & bound)" << std::endl;
+    }
+        
+    /*! Don't call this class directly */
+    TriangleFace & operator = (const TriangleFace & boundary){
+        if (this != &boundary) {
+            std::cerr << "TriangleFace boundary=boundary" << std::endl; 
+        }
+        return *this;
+    }
 };
 
 class DLLEXPORT Triangle6Face : public TriangleFace{
@@ -500,6 +531,10 @@ public:
     
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
      
+    /*! Index : NodeBoundary
+     * 0 : 1 \n
+     * 1 : 0 
+     */
     virtual std::vector < Node * > boundaryNodes(Index i);
     
     friend std::ostream & operator << (std::ostream & str, const EdgeCell & t);
@@ -545,6 +580,11 @@ public:
      
     friend std::ostream & operator << (std::ostream & str, const Triangle & t);
 
+    /*! Index : Edge Boundaries
+     * 0 : 1-2 \n
+     * 1 : 2-0 \n
+     * 2 : 0-1 \n
+     */
     virtual std::vector < Node * > boundaryNodes(Index i);
     
 protected:
@@ -645,18 +685,17 @@ Node direction:
 Neighbourship relations:
 Boundary normal shows outside .. so the boundary left neighbor is this cell
 
-Neighbour Nr, on Boundary a-b-c
-    0           0-2-1     re -- view from inner
-    1           1-2-3     le -- view from outer
-    2           2-0-3     re -- view from inner
-    3           0-1-3     le -- view from outer
-
+Neighbour Nr., on Boundary a-b-c. Boundary to neighbour cell is opposite to NodeNr.
+    0           1-2-3     le -- view from outer
+    1           2-0-3     re -- view from inner
+    2           0-1-3     le -- view from outer
+    3           0-2-1     re -- view from inner
 */
-static const uint8 TetrahedronFacesID[ 4 ][ 3 ] = {
-    {0, 2, 1},  
+static const uint8 TetrahedronFacesID[4][3] = {
     {1, 2, 3},  
     {2, 0, 3},  
-    {0, 1, 3}   
+    {0, 1, 3},   
+    {0, 2, 1}  
 };
 
 //! A Tetrahedron
@@ -685,9 +724,27 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const Tetrahedron & t);
 
+    /*! Index : Triangle Boundaries
+     * 0:   
+     * 
+     * 
+     */
     virtual std::vector < Node * > boundaryNodes(Index i);
     
 protected:
+    
+private:
+    /*! Don't call this class directly */
+    Tetrahedron(const Tetrahedron& cell){ std::cerr << "Tetrahedron cell(const cell & cell)" << std::endl; }
+    
+    /*! Don't call this class directly */
+    Tetrahedron & operator = (const Tetrahedron & cell){
+        if (this != &cell) {
+            std::cerr << "Tetrahedron cell=cell" << std::endl; 
+        }
+        return *this;
+    }
+    
 };
 
 //*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //

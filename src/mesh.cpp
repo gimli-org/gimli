@@ -368,11 +368,12 @@ uint Mesh::findNearestNode(const RVector3 & pos){
 std::vector < int > cellIDX__;
 
 Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start, 
-                                    size_t & count, bool tagging) const {
+                                    size_t & count, bool useTagging) const {
     Cell * cell = start;
     
+    Index cellCounter = 0; //** for avoiding infinite loop
     do {
-        if (cell->tagged() && tagging) {
+        if (cell->tagged() && useTagging) {
             cell = NULL;
         } else {
             cell->tag();
@@ -395,44 +396,57 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 //                          cell->findNeighbourCell(j);
 //                     }
                 }
+                
+//                 for (uint i = 0; i < cell->neighbourCellCount(); i ++ ){
+//                     if (cell->neighbourCell(i)){
+//                         std::cout << "\t " << i << " " << *cell->neighbourCell(i) << std::endl;
+//                     } else {
+//                         std::cout << "\t " << i << " " << 0 << std::endl;
+//                     }
+//                 }
+                
                 cell = cell->neighbourCell(sf);
 
-//                  std::cout << "sf: " << sf << std::endl;
-//                  std::cout << "neighCell " << cell << std::endl;
+//                 std::cout << "sf: " << sf << std::endl;
+//                 std::cout << "neighCell " << cell << std::endl;
             }
             count++;
-            if (count == 50){
-                std::cout << "testpos: " << pos << std::endl;
-                std::cout << "cell: " << this->cell(cellIDX__.back()) << std::endl;
-                for (uint i = 0; i < this->cell(cellIDX__.back()).nodeCount() ; i ++){
-                    std::cout << this->cell(cellIDX__.back()).node(i)<< std::endl;
-                }
+            if (count == 100){
+//                 std::cout << "testpos: " << pos << std::endl;
+//                 std::cout << "cell: " << this->cell(cellIDX__.back()) << std::endl;
+//                 for (uint i = 0;
+//                      i < this->cell(cellIDX__.back()).nodeCount(); i ++){
+//                     std::cout << this->cell(cellIDX__.back()).node(i)<< std::endl;
+//                 }
 
-                std::cout << WHERE_AM_I << " exit with submesh " << std::endl;
+                std::cout << WHERE_AM_I << " exit with submesh " << cellIDX__.size() << std::endl;
                 std::cout << "probably cant find a cell for " << pos << std::endl;
+                
                 Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
 
                 subMesh.exportVTK("submesh");
-//                 this->cell(2368).setAttribute(3);
                 this->exportVTK("submeshParent");
-                return NULL;
                 exit(0);
             }
         }
-    } while (cell);
-
+    } while (++cellCounter < cellCount() && cell);
+__M
     return NULL;
 }
 
-Cell * Mesh::findCell(const RVector3 & pos, size_t & count, bool extensive) const {
+Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
+                      bool extensive) const {
     bool bruteForce = false;
     Cell * cell = NULL;
-
+            
     if (bruteForce){
         for (uint i = 0; i < this->cellCount(); i ++) {
             count++;
             if (cellVector_[i]->shape().isInside(pos)){
                 cell = cellVector_[i];
+                
+//                 std::cout << "testpos: " << pos << std::endl;
+//                 std::cout << "cell: " << *cell<< std::endl;
                 break;
             }
         }
@@ -442,33 +456,42 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count, bool extensive) cons
         count = 0;
         fillKDTree_();
         Node * refNode = tree_->nearest(pos);
+        
         if (!refNode){
             std::cout << "pos: " << pos << std::endl;
-            throwError(1, WHERE_AM_I + " no nearest node to pos. This is a empty mesh");
+            throwError(1, WHERE_AM_I + 
+                       " no nearest node to pos. This is a empty mesh");
         }
         if (refNode->cellSet().empty()){
             std::cout << "Node: " << *refNode << std::endl;
-            throwError(1, WHERE_AM_I + " no cells for this node. This is a corrupt mesh");
+            throwError(1, WHERE_AM_I + 
+                       " no cells for this node. This is a corrupt mesh");
         }
             //std::cout << "Node: " << *refNode << std::endl;
-//         for (std::set< Cell * >::iterator it = refNode->cellSet().begin(); it != refNode->cellSet().end(); it ++){
+//         for (std::set< Cell * >::iterator it = refNode->cellSet().begin();
+//              it != refNode->cellSet().end(); it ++){
 //             std::cout << (*it)->id() << std::endl;
 //         }
-        cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(), count, false);
+        cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
+                                      count, false);
         if (cell) return cell;
 
 //         exportVTK("slopesearch");
 //         exit(0);
         if (extensive || 1){
-            std::cout << "more expensive test here" << std::endl;
-
+//             __M
+//             std::cout << "More expensive test here" << std::endl;
+            cellIDX__.clear();
             std::for_each(cellVector_.begin(), cellVector_.end(), std::mem_fun(&Cell::untag));
             //!** *sigh, no luck with simple kd-tree search, try more expensive full slope search
             count = 0;
             for (uint i = 0; i < this->cellCount(); i ++) {
                 cell = cellVector_[i];
                 cell = findCellBySlopeSearch_(pos, cell, count, true);
-                if (cell) break;
+                if (cell) {
+                    
+                    break;
+                }
             }
         } else {
             return NULL;
@@ -1355,7 +1378,6 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
         std::vector < Node * > nodes(c->boundaryNodes(j));
 //                 std::cout << findBoundary(nodes) << std::endl;
 
- 
         Boundary * bound = createBoundary(nodes, 0);
 
 //         Boundary * bound = findBoundary(*nodes[0], *nodes[1], *nodes[2]);
@@ -1407,6 +1429,14 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
             std::cerr << *c << std::endl;
             std::cerr << *bound << std::endl;
             std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
+            if (bound->leftCell()){
+                std::cerr << *bound->leftCell() << std::endl;
+            }
+            if (bound->rightCell()){
+                std::cerr << *bound->rightCell() << std::endl;
+            }
+                
+            
             throwError(1, WHERE + " Ooops, crosscheck --this should not happen.");
         } else {
 //                     std::cout << nBounds << std::endl;
@@ -1603,44 +1633,56 @@ void Mesh::createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundar
 
 }
 
-void Mesh::createMeshByCellIdx(const Mesh & mesh, std::vector < int > & idxList){
+void Mesh::createMeshByCellIdx(const Mesh & mesh, std::vector < int > & idxListIn){
     this->clear();
     this->setDimension(mesh.dim());
 
     std::map < int, Node* > nodeMap;
+    
+    std::vector < int > idxList = unique(sort(idxListIn));
 
+    if (idxList.size() != idxListIn.size()){
+        std::cerr << "This should not happen: double values in idxListIn: " 
+                  << str(idxListIn.size()) << " " 
+                  << str(idxList.size()) << std::endl;
+    }
+    
     //** Create new nodes
-    for (size_t i = 0; i < idxList.size(); i ++){
-        Cell * cell = &mesh.cell(idxList[i]);
-        for (uint j = 0; j < cell->nodeCount(); j ++){
+    for (Index i = 0; i < idxList.size(); i ++){
+        
+        Cell * cell = & mesh.cell(idxList[i]);
+        
+        for (Index j = 0; j < cell->nodeCount(); j ++){
             if (nodeMap.count(cell->node(j).id()) == 0){
 
                 nodeMap[cell->node(j).id()] =
                         this->createNode(cell->node(j).pos(),
-                                          cell->node(j).marker());
+                                         cell->node(j).marker());
             }
         }
     }
 
     //! Create new cells
-    for (size_t i = 0; i < idxList.size(); i ++){
+    for (Index i = 0; i < idxList.size(); i ++){
         Cell * cell = &mesh.cell(idxList[i]);
         std::vector < Node * > nodes(cell->nodeCount());
-        for (uint j = 0; j < nodes.size(); j ++){
+
+        for (Index j = 0; j < nodes.size(); j ++){
             nodes[j] = nodeMap[cell->node(j).id()];
         }
-        createCell(nodes, cell->marker());
+        
+//         __MS(*createCell(nodes, cell->marker()))
     }
 
     //! copy all boundary with marker != 0
-    for (uint i = 0, imax = mesh.boundaryCount(); i < imax; i ++){
+    for (Index i = 0, imax = mesh.boundaryCount(); i < imax; i ++){
         Boundary * bound = &mesh.boundary(i);
 
         if (bound->marker() != 0){
             bool inside = true;
             std::vector < Node * > nodes(bound->nodeCount());
 
-            for (uint j = 0, jmax = bound->nodeCount(); j < jmax; j ++){
+            for (Index j = 0, jmax = bound->nodeCount(); j < jmax; j ++){
                 if (nodeMap.find(bound->node(j).id()) != nodeMap.end()) {
                     nodes[j] = nodeMap[bound->node(j).id()];
                 } else {
@@ -1656,7 +1698,8 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, std::vector < int > & idxList)
             }
         }
     }
-    //! Create all remaining boundarys
+    
+    //! Create all remaining boundaries
     createNeighbourInfos();
 }
 

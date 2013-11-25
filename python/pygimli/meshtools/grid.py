@@ -9,7 +9,8 @@ import numpy as np
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
-                           smooth=False, isSubSurface=False, verbose=False):
+                           smooth=False, markerBoundary=1, 
+                           isSubSurface=False, verbose=False):
     """
     Returns a new mesh that contains a triangulated box around a given mesh
     suitable for geo-simulation (surface boundary at top).
@@ -24,6 +25,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         Vertical prolongation distance.
     marker : int, optional
         Marker of new cells.
+    markerBoundary : int, optional
+        Marker of the inner boundary edges between mesh and new boundary.
     quality : float, optional
         Triangle quality.
     smooth : boolean, optional
@@ -112,7 +115,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         for i in range(0, poly.nodeCount()):
             poly.createEdge(
                 poly.node(i), poly.node((i + 1) %
-                                        poly.nodeCount()), marker)
+                                        poly.nodeCount()), markerBoundary)
 
         # add four corners of the world box
         xtLen = 12
@@ -121,14 +124,12 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
 
         n1 = poly.createNode(g.RVector3(mesh.xmax() + xbound, surface, 0.0))
         n2 = poly.createNode(g.RVector3(mesh.xmin() - xbound, surface, 0.0))
-        n3 = poly.createNode(
-            g.RVector3(mesh.xmin() - xbound,
-                       mesh.ymin() - ybound,
-                       0.0))
-        n4 = poly.createNode(
-            g.RVector3(mesh.xmax() + xbound,
-                       mesh.ymin() - ybound,
-                       0.0))
+        n3 = poly.createNode(g.RVector3(mesh.xmin() - xbound,
+                                        mesh.ymin() - ybound,
+                                        0.0))
+        n4 = poly.createNode(g.RVector3(mesh.xmax() + xbound,
+                                        mesh.ymin() - ybound,
+                                        0.0))
         # and connect them by a closed polygon
         poly.createEdge(n1, n2, g.MARKER_BOUND_HOMOGEN_NEUMANN)
         poly.createEdge(n2, n3, g.MARKER_BOUND_MIXED)
@@ -184,7 +185,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         for i in range(0, poly.nodeCount()):
             poly.createEdge(
                 poly.node(i), poly.node((i + 1) %
-                                        poly.nodeCount()), marker)
+                                        poly.nodeCount()), markerBoundary)
 
         preserveSwitch = 'Y'
     # poly.exportVTK('out.poly')
@@ -200,22 +201,20 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     if isSubSurface:
         tri = g.TriangleWrapper(poly)
         # area -1.0 means this is a hole
-        tri.addRegionMarkerTmp(
-            0,
-            g.RVector3(mesh.xmin() + 0.0001,
-                       mesh.ymax() - 0.0001),
-            -1.0)
+        tri.addRegionMarkerTmp(0,
+                               g.RVector3(mesh.xmin() + 0.0001,
+                                          mesh.ymax() - 0.0001),
+                               -1.0)
         tri.setSwitches(triswitches)
         tri.generate(mesh2)
     else:
         g.TriangleWrapper(poly, mesh2, triswitches)
 
     if smooth:
-        mesh2.smooth(
-            nodeMoving=True,
-            edgeSwapping=True,
-            smoothFunction=1,
-            smoothIteration=2)
+        mesh2.smooth(nodeMoving=True,
+                     edgeSwapping=True,
+                     smoothFunction=1,
+                     smoothIteration=2)
 
     map(lambda cell: cell.setMarker(marker), mesh2.cells())
 

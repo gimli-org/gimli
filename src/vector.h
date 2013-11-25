@@ -1210,6 +1210,41 @@ template < class T > Vector< T > unique(const Vector < T > & a){
     return ret;
 }
 
+
+//** Beware! this is not thread safe.
+template< class ValueType > struct indexCmp { 
+    indexCmp(const Vector < ValueType > & arr) : arr_(arr) {}
+    bool operator()(const Index a, const Index b) const { 
+        return arr_[a] < arr_[b];
+    }
+    const Vector < ValueType > & arr_;
+};
+
+template < class ValueType > 
+void sort(const Vector < ValueType > & unsorted, 
+          Vector < ValueType > & sorted,
+          IndexArray & indexMap){
+  
+    indexMap.resize(unsorted.size());
+  
+    for (Index i=0; i < unsorted.size(); i++){
+        indexMap[i] = i;
+    }
+  
+    // Sort the index map, using unsorted for comparison
+    sort(indexMap.begin(), indexMap.end(), indexCmp< ValueType >(unsorted));
+    sorted = unsorted(indexMap);
+}
+
+template < class ValueType > 
+IndexArray sortIdx(const Vector < ValueType > & unsorted){
+    IndexArray indexMap;
+    Vector < ValueType > sorted;
+    sort(unsorted, sorted, indexMap);
+    return indexMap;    
+}
+
+          
 // template < template < class T > class Vec, class T >
 // std::ostream & operator << (std::ostream & str, const Vec < T > & vec){
 //     for (Index i = 0; i < vec.size(); i ++) str << vec[i] << " ";
