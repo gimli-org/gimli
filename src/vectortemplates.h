@@ -296,6 +296,11 @@ void randn(Vector< ValueType > & vec){
     }
 }
 
+// //*!Position of the minimum Value position as IndexArray */
+// template < class ValueType >
+// IndexArray minIdx(Vector< ValueType > & vec){
+// minId
+
 } // namespace GIMLI{
 
 #endif // _GIMLI_VECTORTEMPLATES__H

@@ -268,7 +268,8 @@ public:
     virtual bool isInside(const RVector3 & xyz, bool verbose=false) const;
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape. 
-     * On boundary means inside too. sf contains the complete shape function to identify next neighbor. */
+     * On boundary means inside too. 
+     * sf contains the complete shape function to identify next neighbor. */
     virtual bool isInside(const RVector3 & xyz, RVector & sf,
                           bool verbose=false) const;
 

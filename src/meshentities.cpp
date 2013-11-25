@@ -409,10 +409,17 @@ Boundary * Cell::boundaryTo(const RVector & sf){
 Cell * Cell::neighbourCell(const RVector & sf){
     //** hack for edge, triangle and tetrahedron. pls refactor
     if (((sf.size() == 2) && (shape_->dim() == 1)) ||
-        ((sf.size() == 3) && (shape_->dim() == 2)) ||
-        ((sf.size() == 4) && (shape_->dim() == 3))){
+        ((sf.size() == 3) && (shape_->dim() == 2)) 
+        //|| ((sf.size() == 4) && (shape_->dim() == 3))
+    ){
         
         Index minId = find(sf == min(sf))[0];
+    
+//         Boundary * b = boundaryTo(sf);
+//        __MS(b)
+//        __MS(b->leftCell())
+//        __MS(b->rightCell())
+    
         return neighbourCells_[minId];
     }
 
@@ -924,6 +931,7 @@ std::vector < PolynomialFunction < double > > Quadrangle::createShapeFunctions()
 }
 
 std::vector < Node * > Quadrangle::boundaryNodes(Index i){
+    
     std::vector < Node * > nodes(2);
     for (Index j = 0; j < 2; j ++) nodes[j] = nodeVector_[(i+j)%4];
     return nodes;
