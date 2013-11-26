@@ -236,8 +236,8 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
         boundaries.append(copy.deepcopy(boundArgs))
     else:
         #FIXME
-        boundaries = boundArgs
-        #boundaries = copy.deepcopy(boundArgs)
+        for i in boundArgs:
+            boundaries.append(copy.deepcopy(i))
         
 
     for bound in boundaries:
@@ -328,6 +328,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     print "2: ", swatch2.duration(True)
     # assemble the stiffness matrix
     A = createStiffnessMatrix(mesh, a)
+    
     print "3: ", swatch2.duration(True)
     M = createMassMatrix(mesh, b)
         
@@ -368,6 +369,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if verbose:
             print("Asssemblation time: ", assembleTime)
 
+        
         solver = g.LinSolver(S, verbose)
         solver.solve(rhs, u)
 
