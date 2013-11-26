@@ -27,22 +27,22 @@ namespace GIMLI{
 
 class DLLEXPORT SolverWrapper{
 public:
-  SolverWrapper( );
+    SolverWrapper();
 
-  SolverWrapper( const DSparseMatrix & S, bool verbose = false );
+    SolverWrapper(const DSparseMatrix & S, bool verbose=false);
 
-  virtual ~SolverWrapper( );
+    virtual ~SolverWrapper();
 
-  virtual int solve( const RVector & rhs, RVector & solution ) = 0;
+    virtual int solve(const RVector & rhs, RVector & solution) = 0;
 
 protected:
-  bool dummy_;
-  bool verbose_;
-  uint dim_;
-  long nVals_;
-  double dropTol_;
-  double tolerance_;
-  double maxiter_;
+    bool dummy_;
+    bool verbose_;
+    uint dim_;
+    long nVals_;
+    double dropTol_;
+    double tolerance_;
+    double maxiter_;
 };
 
 } //namespace GIMLI;

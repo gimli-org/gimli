@@ -48,20 +48,22 @@ namespace GIMLI{
 
 class DLLEXPORT CHOLMODWrapper : public SolverWrapper {
 public:
-  CHOLMODWrapper(DSparseMatrix & S, bool verbose = false);
-  ~CHOLMODWrapper();
+    CHOLMODWrapper(DSparseMatrix & S, bool verbose = false);
+    
+    ~CHOLMODWrapper();
 
-  static bool valid();
+    static bool valid();
 
-  int factorise();
-  int solve( const RVector & rhs, RVector & solution );
+    int factorise();
+    
+    int solve( const RVector & rhs, RVector & solution );
 
 protected:
-  int initialize_( DSparseMatrix & S );
+    int initialize_( DSparseMatrix & S );
 
-  void *c_;
-  void *A_;
-  void *L_;
+    void *c_;
+    void *A_;
+    void *L_;
 };
 
 } //namespace GIMLI;

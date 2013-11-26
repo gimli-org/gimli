@@ -25,7 +25,10 @@ namespace GIMLI{
 
 SolverWrapper::SolverWrapper( ){ dummy_ = true; }
 
-SolverWrapper::SolverWrapper( const DSparseMatrix & S, bool verbose ) : verbose_( verbose ) {
+SolverWrapper::SolverWrapper(const DSparseMatrix & S, 
+                             bool verbose) 
+    : verbose_(verbose){
+        
     dummy_ = true; 
     dim_ = S.size(); 
     nVals_ = S.nVals();
@@ -33,6 +36,6 @@ SolverWrapper::SolverWrapper( const DSparseMatrix & S, bool verbose ) : verbose_
     dropTol_ = 0.0;
 }
 
-SolverWrapper::~SolverWrapper( ){ }
+SolverWrapper::~SolverWrapper(){ }
 
 } //namespace GIMLI;

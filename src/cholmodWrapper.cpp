@@ -161,17 +161,17 @@ extern "C" {
 #define CHOLMOD_DOUBLE 0  /* all numerical values are double */
     struct cholmod_factor;
 
-  int cholmod_start( cholmod_common * Common );
-  int cholmod_finish( cholmod_common * Common );
-  cholmod_factor * cholmod_analyze( cholmod_sparse * A,	cholmod_common * Common );
-  int cholmod_factorize( cholmod_sparse *A, cholmod_factor *L, cholmod_common *Common );
-  cholmod_dense * cholmod_ones( size_t nrow, size_t ncol, int xtype, cholmod_common *Common );
-  cholmod_dense * cholmod_solve( int, cholmod_factor * L, cholmod_dense *b, cholmod_common *Common );
-  int cholmod_free_dense( cholmod_dense **b, cholmod_common *Common ) ;
+  int cholmod_start(cholmod_common * Common);
+  int cholmod_finish(cholmod_common * Common);
+  cholmod_factor * cholmod_analyze(cholmod_sparse * A,	cholmod_common * Common);
+  int cholmod_factorize(cholmod_sparse *A, cholmod_factor *L, cholmod_common *Common);
+  cholmod_dense * cholmod_ones(size_t nrow, size_t ncol, int xtype, cholmod_common *Common);
+  cholmod_dense * cholmod_solve(int, cholmod_factor * L, cholmod_dense *b, cholmod_common *Common);
+  int cholmod_free_dense(cholmod_dense **b, cholmod_common *Common) ;
 
   cholmod_sparse * cholmod_allocate_sparse (size_t, size_t, size_t, int, int, int, int, cholmod_common *) ;
-  int cholmod_free_sparse( cholmod_sparse ** A, cholmod_common *Common ) ;
-  int cholmod_free_factor( cholmod_factor ** L, cholmod_common *Common ) ;
+  int cholmod_free_sparse(cholmod_sparse ** A, cholmod_common *Common) ;
+  int cholmod_free_factor(cholmod_factor ** L, cholmod_common *Common) ;
 }
 
 #else 
@@ -186,7 +186,8 @@ namespace GIMLI{
   bool CHOLMODWrapper::valid() { return false; }
 #endif
 
-CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrapper( S, verbose ){
+CHOLMODWrapper::CHOLMODWrapper(DSparseMatrix & S, bool verbose)
+    : SolverWrapper(S, verbose){
   c_ = NULL;
   A_ = NULL;
   L_ = NULL;
@@ -196,8 +197,8 @@ CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrappe
 //   cholmod_sparse *A_;
 //   cholmod_factor *L_;
   
-  int ret =  cholmod_start( (cholmod_common*)c_ );
-  if ( ret ) dummy_ = false;
+  int ret =  cholmod_start((cholmod_common*)c_);
+  if (ret) dummy_ = false;
 
   initialize_(S);
   //  dummy_ = true;
@@ -210,13 +211,13 @@ CHOLMODWrapper::CHOLMODWrapper( DSparseMatrix & S, bool verbose ) : SolverWrappe
 
 CHOLMODWrapper::~CHOLMODWrapper(){
 #if USE_CHOLMOD
-  cholmod_free_factor( (cholmod_factor**)(&L_), (cholmod_common*)c_ );
+  cholmod_free_factor((cholmod_factor**)(&L_), (cholmod_common*)c_);
   //** We did not allocate the matrix so we dont need to free it
-  //  cholmod_free_sparse( &A_, c_ );
-  cholmod_finish( (cholmod_common*)c_ );
+  //  cholmod_free_sparse(&A_, c_);
+  cholmod_finish((cholmod_common*)c_);
 
-  if ( A_ ) delete (cholmod_sparse*)A_;
-  if ( c_ ) delete (cholmod_common*)c_;
+  if (A_) delete (cholmod_sparse*)A_;
+  if (c_) delete (cholmod_common*)c_;
 
 #else
   std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
@@ -224,14 +225,14 @@ CHOLMODWrapper::~CHOLMODWrapper(){
 }
 
 int CHOLMODWrapper::factorise(){
-  if ( !dummy_ ){
+  if (!dummy_){
 #if USE_CHOLMOD
-    L_ = cholmod_analyze( (cholmod_sparse*)A_, (cholmod_common*)c_  );		    /* analyze */
+    L_ = cholmod_analyze((cholmod_sparse*)A_, (cholmod_common*)c_);		    /* analyze */
     if (verbose_) std::cout << "Cholmod analyze .. preordering: " << ((cholmod_factor *)(L_))->ordering << std::endl;
     
-    cholmod_factorize( (cholmod_sparse*)A_, (cholmod_factor *)L_, (cholmod_common*)c_ );		    /* factorize */
+    cholmod_factorize((cholmod_sparse*)A_, (cholmod_factor *)L_, (cholmod_common*)c_);		    /* factorize */
     
-    //    L_ = cholmod_super_symbolic (A_, c_ );	/* analyze */
+    //    L_ = cholmod_super_symbolic (A_, c_);	/* analyze */
     //    cholmod_super_numeric (A_, L_, c_);		/* factorize */
     
     return 1;
@@ -242,19 +243,19 @@ int CHOLMODWrapper::factorise(){
   return 0;
 }
 
-int CHOLMODWrapper::solve( const RVector & rhs, RVector & solution ){
-  if ( !dummy_ ){
+int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
+  if (!dummy_){
 #if USE_CHOLMOD
-    cholmod_dense * b = cholmod_ones( ((cholmod_sparse*)A_)->nrow, 1, ((cholmod_sparse*)A_)->xtype, (cholmod_common*)c_ );
+    cholmod_dense * b = cholmod_ones(((cholmod_sparse*)A_)->nrow, 1, ((cholmod_sparse*)A_)->xtype, (cholmod_common*)c_);
     double * bx = (double*)b->x;
-    for ( uint i = 0; i < dim_; i++) bx[ i ] = rhs[ i ];
+    for (uint i = 0; i < dim_; i++) bx[ i ] = rhs[ i ];
 
-    cholmod_dense * x = cholmod_solve( CHOLMOD_A, (cholmod_factor *)L_, b, (cholmod_common*)c_ );	    /* solve Ax=b */
+    cholmod_dense * x = cholmod_solve(CHOLMOD_A, (cholmod_factor *)L_, b, (cholmod_common*)c_);	    /* solve Ax=b */
     bx = (double*)x->x;
 
-    for ( uint i = 0; i < dim_; i++) solution[ i ] = bx[ i ];
-    cholmod_free_dense( &x, (cholmod_common*)c_ ) ;
-    cholmod_free_dense( &b, (cholmod_common*)c_ ) ;
+    for (uint i = 0; i < dim_; i++) solution[ i ] = bx[ i ];
+    cholmod_free_dense(&x, (cholmod_common*)c_) ;
+    cholmod_free_dense(&b, (cholmod_common*)c_) ;
     return 1;
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
@@ -264,11 +265,11 @@ int CHOLMODWrapper::solve( const RVector & rhs, RVector & solution ){
 }
 
 int CHOLMODWrapper::initialize_(DSparseMatrix & S){
-  if ( !dummy_ ){
+  if (!dummy_){
 #if USE_CHOLMOD
 
   //** We do not allocate the matrix since we use the allocated space from DSparsemarix
-//    A_ = cholmod_allocate_sparse( dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_ ) ;
+//    A_ = cholmod_allocate_sparse(dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_) ;
 
     A_ = new cholmod_sparse;
     ((cholmod_sparse*)A_)->nrow  = dim_;         /* number of rows */

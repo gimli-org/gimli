@@ -33,26 +33,27 @@ enum SolverType{AUTOMATIC,LDL,CHOLMOD,UNKNOWN};
 
 class DLLEXPORT LinSolver{
 public:
-    LinSolver( );
+    LinSolver();
   
-    LinSolver( DSparseMatrix & S, bool verbose = false );
+    LinSolver(DSparseMatrix & S, bool verbose=false);
 
-    LinSolver( DSparseMatrix & S, SolverType solverType, bool verbose = false );
+    LinSolver(DSparseMatrix & S, SolverType solverType, bool verbose=false);
 
-    ~LinSolver( );
+    ~LinSolver();
 
-    void solve( const RVector & rhs, RVector & solution );
+    void solve(const RVector & rhs, RVector & solution);
 
-    void setSolverType( SolverType solverType = AUTOMATIC );
+    void setSolverType(SolverType solverType = AUTOMATIC);
   
-    void setMatrix(DSparseMatrix & S, bool verbose=false);
+    /*! Verbose level = -1, use Linsolver.verbose(). */
+    void setMatrix(DSparseMatrix & S, int verbose=-1);
     
     SolverType solverType() const { return solverType_; }
 
     std::string solverName() const;
     
 protected:
-    void initialize_( DSparseMatrix & S );
+    void initialize_(DSparseMatrix & S);
 
     SolverType      solverType_;
     SolverWrapper * solver_;
@@ -61,89 +62,91 @@ protected:
     uint cols_;
 };
 
-template < class Mat, class Vec > int solveLU( const Mat & A, Vec & x, const Vec & b ){
+template < class Mat, class Vec > int solveLU(const Mat & A, Vec & x, const Vec & b){
 
 	//** from TETGEN
 
-  Mat lu( A );
+    Mat lu(A);
 
-  int N = 0;
-  uint n = b.size();
-  int ps[ n ];
+    int N = 0;
+    uint n = b.size();
+    int ps[n];
 
-  double scales[ n ];
-  double pivot, biggest, mult, tempf;
-  uint pivotindex = 0, tmpIdx = 0;
+    double scales[n];
+    double pivot, biggest, mult, tempf;
+    uint pivotindex = 0, tmpIdx = 0;
 
-  for ( uint i = N; i < n + N; i++ ) {
-    // Find the largest element in each row for row equilibration
-    biggest = 0.0;
-    for ( uint j = N; j < n + N; j++ ) {
-      if ( biggest < ( tempf = std::fabs( lu[ i ][ j ] ) ) ) biggest  = tempf;
+    for (uint i = N; i < n + N; i++) {
+        // Find the largest element in each row for row equilibration
+        biggest = 0.0;
+        for (uint j = N; j < n + N; j++) {
+            if (biggest < (tempf = std::fabs(lu[i][j]))) biggest  = tempf;
+        }
+
+        if (biggest != 0.0) scales[i] = 1.0 / biggest;
+        else {
+            scales[i] = 0.0;
+            std::cerr << WHERE_AM_I << " Zero row: singular matrix" << std::endl;
+            return false;                      // Zero row: singular matrix.
+        }
+        ps[i] = i;                                 // Initialize pivot sequence.
     }
 
-    if ( biggest != 0.0 ) scales[ i ] = 1.0 / biggest;
-    else {
-      scales[i] = 0.0;
-      std::cerr << WHERE_AM_I << " Zero row: singular matrix" << std::endl;
-      return false;                            // Zero row: singular matrix.
+    for (uint k = N; k < n + N - 1; k++) {      // For each column.
+        // Find the largest element in each column to pivot around.
+        biggest = 0.0;
+        for (uint i = k; i < n + N; i++) {
+            if (biggest < (tempf = std::fabs(lu[ps[i]][k]) * scales[ps[i]])) {
+                biggest = tempf;
+                pivotindex = i;
+            }
+        }
+        if (biggest == 0.0) {
+            std::cerr << WHERE_AM_I << " Zero column: singular matrix" << std::endl;
+            return false;                         // Zero column: singular matrix.
+        }
+        
+        if (pivotindex != k) {                         // Update pivot sequence.
+            tmpIdx = ps[k];
+            ps[k] = ps[pivotindex];
+            ps[pivotindex] = tmpIdx;
+            //      *d = -(*d);               // ...and change the parity of d.
+        }
+
+        // Pivot, eliminating an extra variable  each time
+        pivot = lu[ps[k]][k];
+    
+        for (uint i = k + 1; i < n + N; i++) {
+            lu[ps[i]][k] = mult = lu[ps[i]][k] / pivot;
+            if (mult != 0.0) {
+                for (uint j = k + 1; j < n + N; j++) lu[ps[i]][j] -= mult * lu[ps[k]][j];
+            } 
+        }
     }
-    ps[ i ] = i;                                 // Initialize pivot sequence.
-  }
 
-  for ( uint k = N; k < n + N - 1; k++) {                      // For each column.
-    // Find the largest element in each column to pivot around.
-    biggest = 0.0;
-    for ( uint i = k; i < n + N; i++) {
-      if (biggest < (tempf = std::fabs(lu[ps[i]][k]) * scales[ps[i]])) {
-        biggest = tempf;
-        pivotindex = i;
-      }
-    }
-    if (biggest == 0.0) {
-      std::cerr << WHERE_AM_I << " Zero column: singular matrix" << std::endl;
-      return false;                         // Zero column: singular matrix.
-    }
-    if ( pivotindex != k ) {                         // Update pivot sequence.
-      tmpIdx = ps[ k ];
-      ps[ k ] = ps[ pivotindex ];
-      ps[ pivotindex ] = tmpIdx;
-      //      *d = -(*d);                          // ...and change the parity of d.
+    double dot = 0.0;
+
+    // Vector reduction using U triangular matrix.
+    for (uint i = N; i < n + N; i++) {
+        dot = 0.0;
+        for (uint j = N; j < i + N; j++) dot += lu[ps[i]][j] * x[j];
+        x[i] = b[ps[i]] - dot;
     }
 
-    // Pivot, eliminating an extra variable  each time
-    pivot = lu[ ps[ k ] ][ k ];
-    for ( uint i = k + 1; i < n + N; i++) {
-      lu[ ps[ i ] ][ k ] = mult = lu[ ps[ i ] ][ k ] / pivot;
-      if ( mult != 0.0 ) {
-        for ( uint j = k + 1; j < n + N; j++ ) lu[ ps[ i ] ][ j ] -= mult * lu[ ps[ k ] ][ j ];
-      }
+    // Back substitution, in L triangular matrix.
+    for (int i = n + N - 1; i >= N; i--) {
+        dot = 0.0;
+        for (uint j = i + 1; j < n + N; j++) dot += lu[ps[i]][j] * x[j];
+        x[i] = (x[i] - dot) / lu[ps[i]][i];
     }
-  }
 
-  double dot = 0.0;
-
-  // Vector reduction using U triangular matrix.
-  for ( uint i = N; i < n + N; i++) {
-    dot = 0.0;
-    for ( uint j = N; j < i + N; j++) dot += lu[ ps[ i ] ][ j ] * x[ j ];
-    x[ i ] = b[ ps[ i ] ] - dot;
-  }
-
-  // Back substitution, in L triangular matrix.
-  for ( int i = n + N - 1; i >= N; i--) {
-    dot = 0.0;
-    for ( uint j = i + 1; j < n + N; j++ ) dot += lu[ ps[ i ] ][ j ] * x[ j ];
-    x[ i ] = ( x[ i ] - dot ) / lu[ ps[ i ] ][ i ];
-  }
-
-  if ( rms( Vec( A * x - b ) ) > 1e-9 ){
-    std::cerr << "rms( A * x -b ) " << rms( (const Vec)(A * x - b) ) << std::endl;
-//     std::cout << Vector( A * x - b ) << std::endl;
-//     std::cout << A << b << x << std::endl;
-    return -1;
-  }
-  return 1;
+    if (rms(Vec(A * x - b)) > 1e-9){
+        std::cerr << "rms(A * x -b) " << rms((const Vec)(A * x - b)) << std::endl;
+    //     std::cout << Vector(A * x - b) << std::endl;
+    //     std::cout << A << b << x << std::endl;
+        return -1;
+    }
+    return 1;
 }
 
 

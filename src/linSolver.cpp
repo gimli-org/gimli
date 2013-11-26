@@ -26,20 +26,20 @@
 
 namespace GIMLI{
 
-LinSolver::LinSolver(  ) 
-    : solver_( NULL ), verbose_( false ), rows_( 0 ), cols_( 0 ) {
-    setSolverType( AUTOMATIC );
+LinSolver::LinSolver() 
+    : solver_(NULL), verbose_(false), rows_(0), cols_(0) {
+    setSolverType(AUTOMATIC);
 }
 
-LinSolver::LinSolver( DSparseMatrix & S, bool verbose ) 
-    : solver_( NULL ), verbose_( verbose ) {
-    setSolverType( AUTOMATIC );
+LinSolver::LinSolver(DSparseMatrix & S, bool verbose) 
+    : solver_(NULL), verbose_(verbose) {
+    setSolverType(AUTOMATIC);
     setMatrix(S);
 }
   
-LinSolver::LinSolver( DSparseMatrix & S, SolverType solverType, bool verbose ) 
-    : solver_( NULL ), verbose_( verbose ) {
-    setSolverType( solverType );
+LinSolver::LinSolver(DSparseMatrix & S, SolverType solverType, bool verbose) 
+    : solver_(NULL), verbose_(verbose) {
+    setSolverType(solverType);
     setMatrix(S);
 }
   
@@ -49,20 +49,20 @@ LinSolver::~LinSolver(){
 
 void LinSolver::setSolverType(SolverType solverType){
    solverType_ = solverType;
-   if ( solverType_ == AUTOMATIC ){
+   if (solverType_ == AUTOMATIC){
         solverType_ = UNKNOWN;
 
-        if ( LDLWrapper::valid() ){
+        if (LDLWrapper::valid()){
             solverType_ = LDL;
         } 
-        if ( CHOLMODWrapper::valid() ){
+        if (CHOLMODWrapper::valid()){
             solverType_ = CHOLMOD;
         }
     }
 }
 
-void LinSolver::setMatrix(DSparseMatrix & S, bool verbose){
-    verbose_ = verbose;
+void LinSolver::setMatrix(DSparseMatrix & S, int verbose){
+    if (verbose > -1) verbose_ = verbose;
     initialize_(S);
 }
 
@@ -70,9 +70,9 @@ void LinSolver::initialize_(DSparseMatrix & S){
     rows_ = S.rows();
     cols_ = S.cols();
     setSolverType(solverType_);
-    
-    switch( solverType_ ){
-    case LDL:     solver_ = new LDLWrapper( S, verbose_ ); break;
+
+    switch(solverType_){
+    case LDL:     solver_ = new LDLWrapper(S, verbose_); break;
     case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_); break;
     case UNKNOWN: 
     default:
@@ -80,16 +80,16 @@ void LinSolver::initialize_(DSparseMatrix & S){
     }
 }
 
-void LinSolver::solve( const RVector & rhs, RVector & solution ){
-    solution.resize( rows_ );
-    if ( rhs.size() != cols_ ){
+void LinSolver::solve(const RVector & rhs, RVector & solution){
+    solution.resize(rows_);
+    if (rhs.size() != cols_){
         std::cerr << WHERE_AM_I << " rhs size mismatch: " << cols_ << "  " << rhs.size() << std::endl;
     }
-    if ( solver_ ) solver_->solve( rhs, solution );
+    if (solver_) solver_->solve(rhs, solution);
 }
 
 std::string LinSolver::solverName() const {
-  switch( solverType_ ){
+  switch(solverType_){
   case LDL:     return "LDL"; break;
   case CHOLMOD: return "CHOLMOD"; break;
   case UNKNOWN: 
