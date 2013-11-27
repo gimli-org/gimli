@@ -1671,7 +1671,7 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, std::vector < int > & idxListI
             nodes[j] = nodeMap[cell->node(j).id()];
         }
         
-//         __MS(*createCell(nodes, cell->marker()))
+        createCell(nodes, cell->marker());
     }
 
     //! copy all boundary with marker != 0

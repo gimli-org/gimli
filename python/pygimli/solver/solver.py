@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pygimli as g
+import pygimli as pg
 
 from pygimli.utils import unique
 import numpy as np
@@ -13,7 +13,7 @@ def parseArgToArray(arg, ndof, mesh, userData=None):
     """
   
     try:
-        return g.RVector(ndof, float(arg))
+        return pg.RVector(ndof, float(arg))
     except:
         pass
     
@@ -23,7 +23,7 @@ def parseArgToArray(arg, ndof, mesh, userData=None):
         raise Exception("Array 'arg' has the wrong size: " + 
                         len(arg) + " != " +  dof)
     elif hasattr(arg, '__call__'):
-        ret = g.RVector(ndof, 0.0)
+        ret = pg.RVector(ndof, 0.0)
         
         if ndof == mesh.nodeCount():
             for n in mesh.nodes():
@@ -48,11 +48,26 @@ def parseArgToArray(arg, ndof, mesh, userData=None):
 
     
 def assembleForceVector(mesh, vals, userData=None):
-    rhs = g.RVector(mesh.nodeCount(), 0)
+    
+    """Check size of vals for the right hand side .. loading vector"""
+    try:
+        """ Check size of given f equals the requested rhs vector. 
+            So we use it directly.
+        """
+        if len(vals) == mesh.nodeCount():
+            rhs = pg.RVector(vals)
+            return rhs
+        else:
+            print Exception("f does not fit directly so we generate the RHS")
+    except:
+        pass
+            
+    rhs = pg.RVector(mesh.nodeCount(), 0)
     
     if vals == 0.:
         return rhs
-    b_l = g.DElementMatrix()
+    
+    b_l = pg.DElementMatrix()
     
     for c in mesh.cells():
         if hasattr(vals, '__call__'):
@@ -65,7 +80,7 @@ def assembleForceVector(mesh, vals, userData=None):
             
             for i, idx in enumerate(b_l.idx()):
                 rhs[idx] += b_l.row(0)[i] * vals
-            
+
     return rhs
 # def assembleForceVector()
     
@@ -74,7 +89,7 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
     """
         this should be moved directly into gimli
     """
-    udirTmp = g.RVector(S.rows(), 0.0)
+    udirTmp = pg.RVector(S.rows(), 0.0)
     udirTmp.setVal(uDirchlet, uDirIndex)
     
     rhs -= S * udirTmp
@@ -98,7 +113,7 @@ def assembleNeumannBC(S,
         
     Parameters
     ----------
-    S : g.DSparseMatrix()
+    S : pg.DSparseMatrix()
         System matrix of the system equation.
     boundaryPair: tuple
         Pair of [list_of_boundaris, value], the value will assigned to 
@@ -109,13 +124,13 @@ def assembleNeumannBC(S,
         *For compatibility only*
     """
 
-    Se = g.DElementMatrix()
+    Se = pg.DElementMatrix()
 
     if type(boundaryPair) == tuple or len(boundaryPair) == 2:
         
         #if verbose:
             #print("Setting " + str(len(boundaryPair[0])) + " bounds to du/dn = " + str(boundaryPair[1]));
-        
+    
         for b in boundaryPair[0]:
             val = None
             
@@ -134,9 +149,8 @@ def assembleNeumannBC(S,
             if val is not 0.0:
                 Se.u2(b)
                 Se *= val
-                #Se *= val * 0.0134228187919
                 S += Se;
-                
+        
 #def assembleNeumannBC(...)
 
 
@@ -149,14 +163,14 @@ def assembleDirichletBC(S, boundaryPair, rhs, time=0.0,
     
     Parameters
     ----------
-    S : g.DSparseMatrix()
+    S : pg.DSparseMatrix()
         System matrix of the system equation.
     boundaryPair: tuple
         Pair of [list_of_boundaris, value], the value will assigned to 
         the nodes of the boundaries. 
         Value can be a scalar (float or int) or a function, which will be called
         with the boundary and a optional time, that return the value for u.
-    rhs : g.RVector
+    rhs : pg.RVector
         Right hand side vector of the system equation
     time : optional
         time, if some time depended given boundary function
@@ -201,7 +215,7 @@ def assembleDirichletBC(S, boundaryPair, rhs, time=0.0,
         
     uniqueNodes = unique(uDirNodes) 
         
-    uDirchlet = g.RVector(len(uniqueNodes))
+    uDirchlet = pg.RVector(len(uniqueNodes))
     uDirIndex = []
     
     for i, n in enumerate(uniqueNodes):
@@ -229,7 +243,7 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
     """
     boundaries = list()
 
-    if type(boundArgs[0]) == g.stdVectorBounds:
+    if type(boundArgs[0]) == pg.stdVectorBounds:
         boundaries.append(boundArgs)
     elif type(boundArgs[0]) == int:
         #FIXME
@@ -257,7 +271,7 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
 #def assembleBoundaryConditions(...)
 
 def createStiffnessMatrix(mesh, a):
-    A = g.DSparseMatrix()
+    A = pg.DSparseMatrix()
     A.fillStiffnessMatrix(mesh, a)
     return A
     
@@ -265,7 +279,7 @@ def createStiffnessMatrix(mesh, a):
     A.buildSparsityPattern(mesh)
 
     # define a local element matrix 
-    A_l = g.DElementMatrix()
+    A_l = pg.DElementMatrix()
     for c in mesh.cells():
         A_l.ux2uy2uz2(c)
         A_l *= a[c.id()] 
@@ -274,7 +288,7 @@ def createStiffnessMatrix(mesh, a):
     return A
 
 def createMassMatrix(mesh, b):
-    B = g.DSparseMatrix()
+    B = pg.DSparseMatrix()
     B.fillMassMatrix(mesh, b)
     return B
 
@@ -282,7 +296,7 @@ def createMassMatrix(mesh, b):
     B.buildSparsityPattern(mesh)
     
     # define a local element matrix 
-    B_l = g.DElementMatrix()
+    B_l = pg.DElementMatrix()
     for c in mesh.cells():
         B_l.u2(c)
         # check if b[i] == B*b
@@ -302,7 +316,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         a       : value|array|callable(cell, userData)
         b       : value|array|callable(cell, userData)
         u0      : value|array|callable(pos, userData)
-        f       : value|array|callable(??????)
+        f       : value|array(cells)|array(nodes)|callable(??????)
         theta   : float
             heat equation is stable for 0.5 <= theta <= 1.0
             theta = 1, implicit Euler
@@ -318,8 +332,8 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     dof = mesh.nodeCount()
         
-    swatch = g.Stopwatch(True)
-    swatch2 = g.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
+    swatch2 = pg.Stopwatch(True)
     
     # check for material parameter
     a = parseArgToArray(a, mesh.cellCount(), mesh, userData)
@@ -337,21 +351,24 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     
     print "5: ", swatch2.duration(True)
     if times == None:
+        
         rhs = assembleForceVector(mesh, f, userData=userData)
         
-        print "6: ", swatch2.duration(True)
+        print "6a: ", swatch2.duration(True)
         if 'duBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['duBoundary'], 
                                        assembleNeumannBC,
                                        userData=userData, 
                                        verbose=verbose)
 
+        print "6b: ", swatch2.duration(True)
         if 'uBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['uBoundary'],
                                        assembleDirichletBC, 
                                        userData=userData,
                                        verbose=verbose)
 
+        print "6c: ", swatch2.duration(True)
         if 'uDirichlet' in kwargs:
             assembleUDirichlet_(S, rhs,
                                 kwargs['uDirichlet'][0],
@@ -359,7 +376,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             
             
             
-        u = g.RVector(rhs.size(), 0.0)
+        u = pg.RVector(rhs.size(), 0.0)
         print "7: ", swatch2.duration(True)
         
         assembleTime = swatch.duration(True)
@@ -370,7 +387,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             print("Asssemblation time: ", assembleTime)
 
         
-        solver = g.LinSolver(S, verbose)
+        solver = pg.LinSolver(S, verbose)
         solver.solve(rhs, u)
 
         solverTime = swatch.duration(True)
@@ -382,14 +399,14 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         return u
         
     else:
-        M = createMassMatrix(mesh, g.RVector(mesh.cellCount(), 1.0))
+        M = createMassMatrix(mesh, pg.RVector(mesh.cellCount(), 1.0))
 
         rhs = np.zeros((len(times), dof))
         rhs[:] = assembleForceVector(mesh, f) # this is slow: optimize
         
         U = np.zeros((len(times), dof))
         #init state
-        u = g.RVector(dof, 0.0)
+        u = pg.RVector(dof, 0.0)
         
         if 'u0' in kwargs:
             U[0, :] = parseArgToArray(kwargs['u0'], dof, mesh, userData)
@@ -429,7 +446,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 
             #u = S/b
             t_prep = swatch.duration(True)
-            solver = g.LinSolver(S, verbose)
+            solver = pg.LinSolver(S, verbose)
             solver.solve(b, u)
             
             if 'plotTimeStep' in kwargs:
