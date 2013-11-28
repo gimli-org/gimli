@@ -75,7 +75,7 @@ installGCCXML(){
 				"$GITEXE" pull
 			popd
 		else
-			"$GITEXE" clone --depth 1 git://github.com/gccxml/gccxml.git gccxml/
+			"$GITEXE" clone --depth 1 https://github.com/gccxml/gccxml.git gccxml
 		fi
 		rm -rf gccxml-build $GCCXML_BIN_ROOT
 		mkdir -p gccxml-build

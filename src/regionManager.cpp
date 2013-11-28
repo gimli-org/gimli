@@ -1063,7 +1063,7 @@ void RegionManager::loadMap(const std::string & fname){
             } else {
                 std::cerr << WHERE_AM_I << " too few tokens defined in region control file: " << fname << std::endl;
             }
-        } else if (lower(token[0]) == "inter-region") {
+        } else if (lower(token[0]) == "inter-region" || lower(token[0]) == "interregion") {
             if (verbose_){
                 if (verbose_) std::cout << "Get inter-region properties" << std::endl;
                 for (uint i = 0; i < token.size(); i ++) {
