@@ -585,8 +585,11 @@ def main(argv):
         
         try:
             if (meshname.rfind('.mod') != -1):
-                axes = showDC2DInvResMod(meshname, options.contourplot, cMin = options.cMin, cMax = options.cMax
-                                        , label = options.label)
+                axes = showDC2DInvResMod(meshname, options.contourplot,
+                                         cMin=options.cMin,
+                                         cMax=options.cMax,
+                                         label=options.label)
+                
             elif ((meshname.rfind('.bms') != -1) | (meshname.rfind('.vtk') != -1)):
                 axes, patches = showTriMesh(meshname, options.datafile, options.contourplot
                         , options.constraintMat, cWeight = options.cWeight
@@ -609,15 +612,22 @@ def main(argv):
 
         if options.electrodes:
             try:
-                d = g.DataContainer(options.electrodes)
-                elPos = d.sensorPositions()
+                elPos = None
+                print options.electrodes
+                if options.electrodes == 'mesh':
+                    mesh = g.Mesh(meshname)
+                    elPos = mesh.positions(mesh.findNodesIdxByMarker(-99))            
+                else:
+                    d = g.DataContainer(options.electrodes)
+                    elPos = d.sensorPositions()
+
                 diam = None
                 if options.sensorDiameter > 0.0:
                     diam = options.sensorDiameter
-                    
                 pygimli.mplviewer.drawSensors(axes, elPos, diam = diam)
-                #pygimli.mplviewer.drawSensors(axes, elPos, diam = None)
+
             except Exception as e:
+                print e
                 print (e + "Cannot determine electrode informations from file:" + str(options.electrodes))
 
             axes.figure.canvas.draw()
