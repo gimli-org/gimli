@@ -14,6 +14,7 @@ from math import floor
 
 gk2   = Proj( init="epsg:31466" ) # GK zone 2
 gk3   = Proj( init="epsg:31467" ) # GK zone 3
+gk4   = Proj( init="epsg:31468" ) # GK zone 3
 wgs84 = Proj( init="epsg:4326" ) # pure ellipsoid for step-wise change
 
 def handleWPTS( wpts ):
@@ -140,6 +141,20 @@ def GK3toUTM( R, H=None, zone=33 ):
     
     return utm( lon, lat )
 
+def GK4toUTM( R, H=None, zone=33 ):
+    """ transform Gauss-Krueger zone 3 into UTM """
+    """ note the double transformation (1-ellipsoid,2-projection) """
+    """ default zone is 33 """
+
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM 
+
+    if H is None: # two-column matrix
+        lon, lat = transform( gk4, wgs84, R[0], R[1] )
+    else:
+        lon, lat = transform( gk4, wgs84, R, H )
+    
+    return utm( lon, lat )
+
 def GKtoUTM(R, H=None):
     """ transforms any Gauss-Krueger to UTM """
     """ autodetect GK zone from offset """
@@ -149,6 +164,8 @@ def GKtoUTM(R, H=None):
         return GK2toUTM( R, H )
     elif floor( rr*1e-6 ) == 3.:
         return GK3toUTM( R, H )
+    elif floor( rr*1e-6 ) == 4.:
+        return GK4toUTM( R, H )
     else:
         print "cannot detect valid GK zone"
     

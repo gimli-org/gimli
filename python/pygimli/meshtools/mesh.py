@@ -270,6 +270,39 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
     f.close()
     return mesh
 
+def transform2DMeshTo3D( mesh, x, y, z=None ):
+    """
+    Transform a 2D mesh into 3D coordinates using a point list (e.g. from GPS)
+
+    Parameters
+    ----------
+    mesh: GIMLi::Mesh
+    x,y: array of x/y positions along 2d profile
+    z: optional height to add (topographical correction if computed flat earth)
+
+    See Also
+    --------
+
+    References
+    ----------
+    """
+    
+    # get mesh node positions
+    mt, mz = g.x( mesh.positions() ), g.y( mesh.positions() ) # mesh tape and z
+    # compute length of reference points along tape
+    pt = np.hstack( (0., np.cumsum( np.sqrt( np.diff( x )**2 + np.diff( y )**2 ) ) ) )
+    #  interpolate node positions from tape to x/y using tape positions
+    mx = np.interp( mt, pt, x )
+    my = np.interp( mt, pt, y )
+    # compute z offset by interpolating z
+    if z is None:
+        oz = np.zeros( len(mt) )
+    else:
+        oz = np.interp( mt, pt, z )
+    
+    # set the positions in the mesh
+    for i, node in enumerate( mesh.nodes() ):
+        node.setPos( g.RVector3( mx[i], my[i], mz[i]+oz[i] ) )
 
 def rot2DGridToWorld(mesh, start, end):
     """

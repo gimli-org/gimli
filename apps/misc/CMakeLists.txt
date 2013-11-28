@@ -1,6 +1,6 @@
 #link_directories (${libgimli_BINARY_DIR}/src) 
 
-set(PROGRAMS bms2vtk)
+set( PROGRAMS bms2vtk invlinearmat )
 
 foreach(program ${PROGRAMS})
     add_executable(${program} ${program}.cpp)
