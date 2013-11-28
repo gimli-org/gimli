@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
-# CR: can be removed here
-#from dataview import *  # because it still requires pybert -> should be moved to bert
+from dataview import *  
 
 from meshview import *
 from colorbar import *
