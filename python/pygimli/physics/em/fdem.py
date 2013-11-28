@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-    Was macht das ding
-
+    Was macht das Ding
 '''
 
 import pygimli as g
 
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
+
+
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -82,8 +83,8 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='vertical', aspect=40):
     plt.ylim(plt.ylim()[::-1])
     ax.set_xticks(nt)
     ax.set_xticklabels(["%g" % xi for xi in x[nt]])
-    ax.set_yticks(range(0,len(freq)+1,2))
-    ax.set_yticklabels(["%g" % freq[i] for i in range(0,len(freq),2)])
+    ax.set_yticks(range(0,len(freq)+1, 2))
+    ax.set_yticklabels(["%g" % freq[i] for i in range(0, len(freq), 2)])
     plt.colorbar(orientation=orientation, aspect=aspect)
     plt.xlabel('x [m]')
     plt.ylabel('f [Hz]')
@@ -169,8 +170,8 @@ class FDEMData():
         
         if scaleFreeAir:
             freeAirSolution = self.FOP().freeAirSolution();
-            self.IP /= freeAirSolution * 1e6
-            self.OP /= freeAirSolution * 1e6
+            self.IP /= freeAirSolution
+            self.OP /= freeAirSolution
         
 
     def __repr__(self):
@@ -453,14 +454,19 @@ class FDEMData():
         """
         """
         plt.clf()
+        
         model = np.asarray(model)
         nlay = (len(model) + 1) / 2
+        
         thk = model[:nlay-1]
-        res = model[nlay-1:2*nlay-1]
+        res = model[nlay-1: 2*nlay-1]
+        
         ax1 = plt.subplot(131)
         draw1dmodel(res, thk)
+        
         ax2 = plt.subplot(132)
         ax3 = plt.subplot(133)
+        
         self.plotData(xpos, response, (ax2, ax3), clf=False)
          
     def plotAllData(self, allF=True, orientation='vertical', outname=None):
@@ -480,16 +486,19 @@ class FDEMData():
         
         plt.clf()
         ax1 = plt.subplot(np, 1, 1)
-        xfplot(ax1, self.IP[:,self.activeFreq], self.x, freq, orientation=orientation)
+        xfplot(ax1, self.IP[:,self.activeFreq], self.x, freq,
+               orientation=orientation)
         ax1.set_title('inphase percent')
         
         ax2 = plt.subplot(np,1,2)
-        xfplot(ax2, self.OP[:,self.activeFreq], self.x, freq, orientation=orientation)
+        xfplot(ax2, self.OP[:,self.activeFreq], self.x, freq,
+               orientation=orientation)
         ax2.set_title('outphase percent')
         
         if self.ERR is not None:
             ax3 = plt.subplot(np,1,3)
-            xfplot(ax3, self.ERR[:,self.activeFreq], self.x, freq, orientation=orientation)
+            xfplot(ax3, self.ERR[:,self.activeFreq], self.x, freq,
+                   orientation=orientation)
             ax3.set_title('error percent')
 
         if outname is not None:
