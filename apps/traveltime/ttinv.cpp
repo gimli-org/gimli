@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2013 by the resistivity.net development team       *
  *   Thomas Günther thomas@resistivity.net                                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -94,10 +94,12 @@ int main(int argc, char *argv []) {
 
     //!** apply error model if not defined;
     if (!dataIn.allNonZero("err")) {
-        vcout << "Estimate error: " << errPerc << "% + " << errTime << "s" << std::endl;
+        vcout << "Estimate error: " << errPerc << "% + " 
+              << errTime << "s" << std::endl;
         dataIn.set("err", dataIn("t")*  errPerc / 100.0 + errTime); // always relative error
     }
-    vcout << "Data error:" << " min = " << min(dataIn("err")) * 1000. << "ms" 	<< " max = " << max(dataIn("err")) * 1000. << "ms" << std::endl;
+    vcout << "Data error: min = " << min(dataIn("err")) * 1000. 
+          << "ms max = " << max(dataIn("err")) * 1000. << "ms" << std::endl;
 
     //!** Load mesh
     Mesh paraMesh;
@@ -112,7 +114,8 @@ int main(int argc, char *argv []) {
     //!** set up TT modeling class;
     TravelTimeDijkstraModelling f(paraMesh, dataIn, verbose);
     RVector appSlowness(f.getApparentSlowness());
-    vcout << "min/max apparent velocity = " << 1.0 / max(appSlowness) << " / " << 1.0 / min(appSlowness) << " m/s" << std::endl;
+    vcout << "min/max apparent velocity = " << 1.0 / max(appSlowness) 
+          << " / " << 1.0 / min(appSlowness) << " m/s" << std::endl;
 
     //!** get mesh from region manager (BERT convention: first/smallest region is background
     if (isBertMesh && f.regionManager().regionCount() > 1) {
@@ -139,6 +142,7 @@ int main(int argc, char *argv []) {
         vcout << "Creating Gradient model ..." << std::endl;
         double smi = median(appSlowness);
         if (smi < lbound) smi = lbound * 1.1;
+        
         double sma = max(appSlowness) / 2.0;
         if (ubound > 0.0 && sma > ubound) sma = ubound * 0.9;
 
@@ -165,7 +169,9 @@ int main(int argc, char *argv []) {
         sloRef = std::max(std::sqrt(lbound * ubound), (lbound + ubound) / 2);
     }
 
-    vcout << "Start model size = " << startModel.size() << " min/max = " << min(startModel) << "/" << max(startModel) << std::endl;
+    vcout << "Start model size = " << startModel.size() 
+            << " min/max = " << min(startModel) << "/" 
+            << max(startModel) << std::endl;
 
     RTransLogLU transModel(lbound, ubound);
     RTrans transData;

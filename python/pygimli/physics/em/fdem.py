@@ -7,8 +7,7 @@
 import pygimli as g
 
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
-
-
+from pygimli.viewer import show1dmodel
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -462,7 +461,7 @@ class FDEMData():
         res = model[nlay-1: 2*nlay-1]
         
         ax1 = plt.subplot(131)
-        draw1dmodel(res, thk)
+        show1dmodel(res, thk)
         
         ax2 = plt.subplot(132)
         ax3 = plt.subplot(133)
@@ -509,7 +508,7 @@ class FDEMData():
 
     def plotModelAndData(self, model, xpos, response, modelL=None, modelU=None):
         plotData(xpos, response, nv=3)
-        draw1dmodel(model, color='blue')
+        show1dmodel(model, color='blue')
         if modelL is not None and modelU is not None:
             draw1dmodelErr(model, modelL, modelU)
 

@@ -99,6 +99,8 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
         P.semilogx(px, pz)
     else:
         P.plot(px, pz)
+    
+    P.ion()
     P.grid(which='both')
     P.xlim((N.min(x) * 0.9, N.max(x) * 1.1))
     P.ylim((max(z1) * 1.15, 0.))
