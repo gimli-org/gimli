@@ -96,7 +96,7 @@ int main(int argc, char *argv []) {
     if (!dataIn.allNonZero("err")) {
         vcout << "Estimate error: " << errPerc << "% + " 
               << errTime << "s" << std::endl;
-        dataIn.set("err", dataIn("t")*  errPerc / 100.0 + errTime); // always relative error
+        dataIn.set("err", dataIn("t") * errPerc / 100.0 + errTime); // always relative error
     }
     vcout << "Data error: min = " << min(dataIn("err")) * 1000. 
           << "ms max = " << max(dataIn("err")) * 1000. << "ms" << std::endl;
@@ -138,28 +138,10 @@ int main(int argc, char *argv []) {
         load(startModel, startModelFilename);
     }
 
-    if (createGradientModel) { // auslagern in ttdijkstramodel
-        vcout << "Creating Gradient model ..." << std::endl;
-        double smi = median(appSlowness);
-        if (smi < lbound) smi = lbound * 1.1;
-        
-        double sma = max(appSlowness) / 2.0;
-        if (ubound > 0.0 && sma > ubound) sma = ubound * 0.9;
-
-        RVector zmid(nModel);
-        int di = paraDomain.dim() - 1;
-        for (size_t i = 0; i < paraDomain.cellCount() ; i++) {
-            for (size_t j = 0; j < paraDomain.cell(i).nodeCount(); j++) {
-                zmid[ i ] += paraDomain.cell(i).node(j).pos()[ di ];
-            }
-            zmid[ i ] /= double(paraDomain.cell(i).nodeCount());
-        }
-        double zmi = min(zmid);
-        double zma = max(zmid);
-        for (size_t i = 0; i < startModel.size(); i++) {
-            startModel[ i ] = smi * std::exp((zmid[ i ] - zmi) / (zma - zmi) * std::log(sma / smi));
-        }
-        DEBUG save(startModel, "startModel.vector");
+    if (createGradientModel) { 
+        startModel = f.createGradientModel(lbound, ubound);
+        DEBUG save(startModel, "startModelSl.vector");
+        DEBUG save(RVector(1./startModel), "startModelVel.vector");
     }
 
     f.setStartModel(startModel);
@@ -206,7 +188,7 @@ int main(int argc, char *argv []) {
 
     RVector scoverage(transMult(inv.constraintMatrix(), inv.constraintMatrix() * coverage));
     for (Index i = 0 ; i < scoverage.size() ; i++){
-        scoverage[ i ] = sign(std::abs(scoverage[ i ]));
+        scoverage[i] = sign(std::abs(scoverage[i]));
     }
     save(scoverage, "scoverage.vector");
 
