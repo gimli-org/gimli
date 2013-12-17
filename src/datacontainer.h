@@ -69,6 +69,13 @@ public:
     /*! Return reference to the RVector at the data map associated to the token. */
     inline RVector & operator() (const std::string & token) { return *ref(token); }
 
+//     /*! Return read-only reference to the RVector at the data map associated to the token. */
+//     inline const RVector & operator[] (const std::string & token) const { return get(token); }
+// 
+//     /*! Return reference to the RVector at the data map associated to the token. */
+//     inline RVector & operator[] (const std::string & token) { return *ref(token); }
+
+    
     /*! Init default data fields 'valid' and call virtual init method. */
     void initDefaults();
 
@@ -199,9 +206,6 @@ public:
     inline bool exists(const std::string & token) const { 
         return dataMap_.count(token) != 0; }
 
-    /*! Return the token list of a previously loaded file. */
-    inline const std::string & inputFormatString() const { return inputFormatString_; }
-
     /*! Return reference to the token translator map. */
     inline const std::map< std::string, std::string > & tokenTranslator() const { return tT_; }
 
@@ -321,7 +325,12 @@ public:
     void removeUnusedSensors(bool verbose = false);
     
     /*! Set input format string (e.g. for import routines) */
-    inline void setInputFormatString(std::string inputFormatString){ inputFormatString_ = inputFormatString; }
+    inline void setInputFormatString(const std::string & inputFormatString){ 
+        inputFormatString_ = inputFormatString; }
+       
+    /*! Return the token list of a previously loaded file. */
+    inline const std::string & inputFormatString() const {
+        return inputFormatString_; }
     
 protected:
     virtual void copy_(const DataContainer & data);
