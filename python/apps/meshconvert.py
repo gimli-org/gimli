@@ -7,26 +7,26 @@ Visit http://www.resistivity.net for further information or the latest version.
 
 import sys, os
 
-import pygimli as g
+import pygimli as pg
 import numpy as np
 
 def strToRVector3(s):
     vals = s.split(',')
     if len(vals) == 1:
-        return g.RVector3(float(vals[0]), 0.0)
+        return pg.RVector3(float(vals[0]), 0.0)
     if len(vals) == 2:
-        return g.RVector3(float(vals[0]), float(vals[1]))
+        return pg.RVector3(float(vals[0]), float(vals[1]))
     if len(vals) == 3:
-        return g.RVector3(float(vals[0]), float(vals[1]), float(vals[2]))
+        return pg.RVector3(float(vals[0]), float(vals[1]), float(vals[2]))
 
 def parseDataStr(s):
     vals = s.split(':')
-    data = g.RVector(0)
+    data = pg.RVector(0)
     
     if len(vals) > 0:
-        g.load(data, vals[0]);
+        pg.load(data, vals[0]);
         if len(data) == 0:
-            g.load(data, vals[0], g.Binary);
+            pg.load(data, vals[0], pg.Binary);
         
     if len(vals) == 1:
         return vals[0], data
@@ -35,34 +35,51 @@ def parseDataStr(s):
     if len(vals) == 3:
         modificator = getattr(g, vals[2])
 
-        if modificator == g.log10 and min(data) <= 0.0:
-            return vals[1], g.prepExportPotentialData(g.RVector(vals[0]))
+        if modificator == pg.log10 and min(data) <= 0.0:
+            return vals[1], pg.prepExportPotentialData(g.RVector(vals[0]))
         else:
             return vals[1], modificator(data)
     if len(vals) == 4:
         modificator = getattr(g, vals[2])
 
-        if modificator == g.log10 and min(data) <= 0.0:
-            return vals[1], g.prepExportPotentialData(data, float(vals[3]))
+        if modificator == pg.log10 and min(data) <= 0.0:
+            return vals[1], pg.prepExportPotentialData(data, float(vals[3]))
         else:
             return vals[1], modificator(data)
 
-def applyInterpolation(filename, mesh):
+def applyInterpolation(filename, mesh, verbose=False):
     '''
         needs to be moved into libgimli
         needs to be documented
     '''
     
+    data = pg.DataContainer(filename)
+
+    A = None
+    try:
+        A = np.zeros((3,data.sensorCount()))
+        A[1] = pg.x(data.sensorPositions())
+        A[2] = pg.y(data.sensorPositions())
+        for i, p in enumerate(data.sensorPositions()):
+            if i > 0:
+                A[0,i] = A[0, i-1] + data.sensorPositions()[i-1].distance(p)
+        if verbose:
+            print("loaded DataContainer: ", filename)
+    except:
+        A = np.loadtxt(filename).T    
+        if verbose:
+            print("loaded txtfile: ", filename)
+        
+        
+        
     tn = [n.pos()[0] for n in mesh.nodes()]
     zn = [n.pos()[1] for n in mesh.nodes()]
-
-    A = np.loadtxt(filename).T
 
     xn = np.interp(tn, A[0], A[1])
     yn = np.interp(tn, A[0], A[2])
 
     for i,n in enumerate(mesh.nodes()):
-        n.setPos(g.RVector3(xn[i], yn[i], zn[i]))
+        n.setPos(pg.RVector3(xn[i], yn[i], zn[i]))
     
 # def applyInterpolation(...)
 
@@ -70,7 +87,7 @@ def main(argv):
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mesh|mod|vtk"
-                            , version = "%prog: " + g.versionStr())
+                            , version = "%prog: " + pg.versionStr())
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     parser.add_option("-V", "--outVTK", dest="outVTK", action="store_true"
@@ -100,8 +117,11 @@ def main(argv):
                             help="translate the mesh. "'"x,y,z"'" ")
 
     parser.add_option("", "--interpolateCoords", dest="interpolateCoords", metavar="File",
-                            help = " Interpolate a 2D mesh into 3D Coordinates. File is a 3-column-ascii-file (dx x y)")
-                            
+                            help = " Interpolate a 2D mesh into 3D Coordinates." +
+                            "File is a 3-column-ascii-file (dx x y)")
+    parser.add_option("", "--interpolateMesh", dest="interpolateMesh", metavar="File",
+                            help = " Interpolate the data of mesh into the mesh given by File." +
+                            "File is a bms|mod|vtk")
                             
     (options, args) = parser.parse_args()
 
@@ -115,14 +135,21 @@ def main(argv):
     else:
         meshname = args[0];
 
-    mesh = g.Mesh(meshname)
+    mesh = pg.Mesh(meshname)
 
     if options.verbose:
         print meshname, mesh
         
     if options.interpolateCoords is not None:
-        applyInterpolation(options.interpolateCoords, mesh)
+        applyInterpolation(filename=options.interpolateCoords, 
+                           mesh=mesh,
+                           verbose=options.verbose)
        
+    if options.interpolateMesh is not None:
+        imesh = pg.Mesh(options.interpolateMesh)
+        pg.interpolate(mesh, imesh)
+        mesh = imesh
+        
     if options.rotate is not None:
         rot = strToRVector3(options.rotate)
         if options.verbose:

@@ -351,62 +351,67 @@ class FDEMData():
             error = err
         
         fr = self.freq()
+        
+        ipax = None
+        
         if ax is None:
             if clf: plt.clf()
             plt.subplot(1,nv,nv-1)
         else:
-            plt.sca(ax[0])
+            ipax = ax[0]
         
         markersize = 4
 
         if error is not None:
             markersize = 2
         
-        plt.semilogy(ip, fr, marker, label='obs'+addlabel, markersize=markersize)
+        ipax.semilogy(ip, fr, marker, label='obs'+addlabel, markersize=markersize)
 
         if error is not None and len(error) == len(ip):
-            plt.errorbar(ip, fr, xerr=error)
-        
-        plt.axis('tight')
+            ipax.errorbar(ip, fr, xerr=error)
+
+        #ipax.set_axis('tight')
 
         if error is not None:
-            plt.ylim((min(fr)*.98,max(fr)*1.02))
+            ipax.ylim((min(fr)*.98,max(fr)*1.02))
 
-        plt.grid(True)
-        plt.xlabel('inphase [%]')
-        plt.ylabel('f [Hz]')
+        ipax.grid(True)
+        ipax.set_xlabel('inphase [%]')
+        ipax.set_ylabel('f [Hz]')
         
         if response is not None:
             rip = np.asarray(response)[:len(ip)]
-            plt.semilogy(rip, fr, rmarker, label='syn' + addlabel)
+            ipax.semilogy(rip, fr, rmarker, label='syn' + addlabel)
         
-        plt.legend(loc='best')
+        ipax.legend(loc='best')
+        
+        opax = None
         
         if ax is None:
-            plt.subplot(1, nv, nv)
+            opax = plt.subplot(1, nv, nv)
         else:
-            plt.sca(ax[1])
+            opax = ax[1]
         
-        plt.semilogy(op, fr, marker, label='obs'+addlabel,
+        opax.semilogy(op, fr, marker, label='obs'+addlabel,
                      markersize=markersize)
         
         if error is not None and len(error) == len(ip):
-            plt.errorbar(op, fr, xerr=error)
+            opax.errorbar(op, fr, xerr=error)
 
         if response is not None:
             rop = np.asarray(response)[len(ip):]
-            plt.semilogy(rop, fr, rmarker, label='syn'+addlabel)
+            opax.semilogy(rop, fr, rmarker, label='syn'+addlabel)
         
-        plt.axis('tight')
+        #opax.set_axis('tight')
         
         if error is not None:
-            plt.ylim((min(fr) * .98, max(fr) * 1.02))
+            opax.ylim((min(fr) * .98, max(fr) * 1.02))
         
-        plt.grid(True)
-        plt.xlabel('outphase [%]')
-        plt.ylabel('f [Hz]')
-        plt.legend(loc='best')
-        plt.subplot(1, nv, 1)
+        opax.grid(True)
+        opax.set_xlabel('outphase [%]')
+        opax.set_ylabel('f [Hz]')
+        opax.legend(loc='best')
+        #plt.subplot(1, nv, 1)
         return 
 
         
@@ -466,7 +471,7 @@ class FDEMData():
         ax2 = plt.subplot(132)
         ax3 = plt.subplot(133)
         
-        self.plotData(xpos, response, (ax2, ax3), clf=False)
+        self.plotData(xpos, response, ax=(ax2, ax3), clf=False)
          
     def plotAllData(self, allF=True, orientation='vertical', outname=None):
         """

@@ -190,7 +190,8 @@ public:
         checkError();
     }
 
-    /*! Set relative data error to scalar error value relerr. If you force relerr == 0 here. Data will not corrected or weighted. */
+    /*! Set relative data error to scalar error value relerr.
+     * If you force relerr == 0 here. Data will not corrected or weighted. */
     inline void setRelativeError(double relerr) {
         if (relerr == 0.0) fixError_ = false;
         setRelativeError(RVector(data_.size(), relerr));

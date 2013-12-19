@@ -66,7 +66,7 @@ int Mesh::saveAscii(const std::string & fbody) const {
 
   file.precision(14);
   for (uint i = 0; i < nodeCount(); i ++){
-    for (uint j = 0; j < dim(); j ++) file << node(i).pos()[ j ] << "\t";
+    for (uint j = 0; j < dim(); j ++) file << node(i).pos()[j] << "\t";
     file << node(i).marker() << std::endl;
   }
   file.close();
@@ -107,7 +107,7 @@ int Mesh::saveBinary(const std::string & fbody) const {
     }
 
     //! write vertex dummy-infos;
-    int dummy[ 127 ]; memset(dummy, 0, 127 * sizeof(int));
+    int dummy[127]; memset(dummy, 0, 127 * sizeof(int));
     if (!fwrite(dummy, sizeof(int), 127, file)) {
     }
 
@@ -115,10 +115,10 @@ int Mesh::saveBinary(const std::string & fbody) const {
     if (!fwrite(&nVerts, sizeof(int), 1, file)){
     }
 
-    double * koord = new double[ dimension * nVerts ];
+    double * koord = new double[dimension * nVerts];
     for (int i = 0; i < nVerts; i ++){
         for (int j = 0; j < dimension; j ++){
-            koord[ i * dimension + j ] = node(i).pos()[ j ];
+            koord[i * dimension + j] = node(i).pos()[j];
         }
     }
 
@@ -127,8 +127,8 @@ int Mesh::saveBinary(const std::string & fbody) const {
     }
     delete [] koord;
 
-    int * marker = new int[ nVerts ];
-    for (int i = 0; i < nVerts; i ++) marker[ i ] = node(i).marker();
+    int * marker = new int[nVerts];
+    for (int i = 0; i < nVerts; i ++) marker[i] = node(i).marker();
 
     if (!fwrite(marker, sizeof(int), nVerts, file)){
 
@@ -145,23 +145,23 @@ int Mesh::saveBinary(const std::string & fbody) const {
 
     }
 
-    int * cellVerts = new int[ nCells ];
+    int * cellVerts = new int[nCells];
     int nCellIdx = 0;
 
     for (int i = 0; i < nCells; i ++){
-        cellVerts[ i ] = cell(i).nodeCount();
-        nCellIdx += cellVerts[ i ];
+        cellVerts[i] = cell(i).nodeCount();
+        nCellIdx += cellVerts[i];
     }
     if (!fwrite(cellVerts, sizeof(int), nCells, file)){
 
     }
 
-    int * idx = new int[ nCellIdx ];
+    int * idx = new int[nCellIdx];
 
     int count = 0;
     for (int i = 0; i < nCells; i ++){
-        for (int j = 0; j < cellVerts[ i ]; j ++){
-            idx[ count ] = cell(i).node(j).id();
+        for (int j = 0; j < cellVerts[i]; j ++){
+            idx[count] = cell(i).node(j).id();
             count ++;
         }
     }
@@ -172,8 +172,8 @@ int Mesh::saveBinary(const std::string & fbody) const {
     delete [] idx;
     delete [] cellVerts;
 
-    double * attribute = new double[ nCells ];
-    for (int i = 0; i < nCells; i ++) attribute[ i ] = cell(i).marker();
+    double * attribute = new double[nCells];
+    for (int i = 0; i < nCells; i ++) attribute[i] = cell(i).marker();
 
     if (!fwrite(attribute, sizeof(double), nCells, file)){
     }
@@ -190,21 +190,21 @@ int Mesh::saveBinary(const std::string & fbody) const {
 
     }
 
-    int * boundVerts = new int[ nBounds ];
+    int * boundVerts = new int[nBounds];
     int nBoundIdx = 0;
     for (int i = 0; i < nBounds; i ++){
-        boundVerts[ i ] = boundary(i).nodeCount();
-        nBoundIdx += boundVerts[ i ];
+        boundVerts[i] = boundary(i).nodeCount();
+        nBoundIdx += boundVerts[i];
     }
     if (!fwrite(boundVerts, sizeof(int), nBounds, file)){
 
     }
 
-    idx = new int[ nBoundIdx ];
+    idx = new int[nBoundIdx];
     count = 0;
     for (int i = 0; i < nBounds; i ++){
-        for (int j = 0; j < boundVerts[ i ]; j ++){
-            idx[ count ] = boundary(i).node(j).id();
+        for (int j = 0; j < boundVerts[i]; j ++){
+            idx[count] = boundary(i).node(j).id();
             count ++;
         }
     }
@@ -216,26 +216,26 @@ int Mesh::saveBinary(const std::string & fbody) const {
   delete [] idx;
   delete [] boundVerts;
 
-  marker = new int[ nBounds ];
-  for (int i = 0; i < nBounds; i ++) marker[ i ] = boundary(i).marker();
+  marker = new int[nBounds];
+  for (int i = 0; i < nBounds; i ++) marker[i] = boundary(i).marker();
  if (!fwrite(marker, sizeof(int), nBounds, file)){}
   delete [] marker;
 
-  idx = new int[ nBounds ];
+  idx = new int[nBounds];
   for (int i = 0; i < nBounds; i ++){
     if (boundary(i).leftCell() != NULL){
-      idx[ i ] = boundary(i).leftCell()->id();
+      idx[i] = boundary(i).leftCell()->id();
     } else {
-      idx[ i ] = -1;
+      idx[i] = -1;
     }
   }
   if (!fwrite(idx, sizeof(int), nBounds, file)){}
 
   for (int i = 0; i < nBounds; i ++){
     if (boundary(i).rightCell() != NULL){
-      idx[ i ] = boundary(i).rightCell()->id();
+      idx[i] = boundary(i).rightCell()->id();
     } else {
-      idx[ i ] = -1;
+      idx[i] = -1;
     }
   }
   if (!fwrite(idx, sizeof(int), nBounds, file)) {}
@@ -247,23 +247,23 @@ int Mesh::saveBinary(const std::string & fbody) const {
 
 void Mesh::loadBinary(const std::string & fbody){
 //   sizeof(int) = 4 byte
-//   int[ 1 ] dimension
-//   int[ 127 ] dummy vertices information
-//   int[ 1 ] nVerts, number of vertices
-//   double[ dimension * nVerts ]; coordinates,  dimension == 2 (x, y), dimension == 3 (x, y, z)
-//   int[ nVerts ] vertex markers
-//   int[ 127 ] dummy cell information
-//   int[ 1 ] nCells, number of cell
-//   int[ nCells ] cellVerts; number of nodes for each cell
-//   int[ sum(cellVerts) ] cellsidx
-//   double[ nCells ] attribute, cell attributes
-//   int[ 127 ] dummy boundary information
-//   int[ 1 ] nBounds, number of boundarys
-//   int[ nBounds ] boundVerts; numbers of nodes for each boundary
-//   int[ sum(boundVerts) ] boundIdx
-//   int[ nBounds ] boundary markers
-//   int[ nBounds ] leftNeighbor idx (-1) if no neighbor present or info unavailable
-//   int[ nBounds ] rightNeighbor idx (-1) if no neighbor present or info unavailable
+//   int[1] dimension
+//   int[127] dummy vertices information
+//   int[1] nVerts, number of vertices
+//   double[dimension * nVerts]; coordinates,  dimension == 2 (x, y), dimension == 3 (x, y, z)
+//   int[nVerts] vertex markers
+//   int[127] dummy cell information
+//   int[1] nCells, number of cell
+//   int[nCells] cellVerts; number of nodes for each cell
+//   int[sum(cellVerts)] cellsidx
+//   double[nCells] attribute, cell attributes
+//   int[127] dummy boundary information
+//   int[1] nBounds, number of boundarys
+//   int[nBounds] boundVerts; numbers of nodes for each boundary
+//   int[sum(boundVerts)] boundIdx
+//   int[nBounds] boundary markers
+//   int[nBounds] leftNeighbor idx (-1) if no neighbor present or info unavailable
+//   int[nBounds] rightNeighbor idx (-1) if no neighbor present or info unavailable
     //std::cout << "load binary " << fbody << std::endl;
     clear();
     std::string fileName(fbody.substr(0, fbody.rfind(MESHBINSUFFIX)) + MESHBINSUFFIX);
@@ -281,40 +281,40 @@ void Mesh::loadBinary(const std::string & fbody){
     }
     this->setDimension(dim);
     //** read vertex dummy-infos
-    int dummy[ 127 ]; ret = fread(dummy, sizeof(int), 127, file);
+    int dummy[127]; ret = fread(dummy, sizeof(int), 127, file);
     int nVerts; ret = fread(&nVerts, sizeof(int), 1, file);
-    double * koords = new double[ dimension_ * nVerts ];
+    double * koords = new double[dimension_ * nVerts];
     ret = fread(koords, sizeof(double), dimension_ * nVerts, file);
 
-    int * nodeMarker = new int[ nVerts ]; ret = fread(nodeMarker, sizeof(int), nVerts, file);
+    int * nodeMarker = new int[nVerts]; ret = fread(nodeMarker, sizeof(int), nVerts, file);
     //** read cell dummy-infos
     ret = fread(dummy, sizeof(int), 127, file);
 
   int nCells; ret = fread(&nCells, sizeof(int), 1, file);
-  int * cellVerts = new int[ nCells ]; ret = fread(cellVerts, sizeof(int), nCells, file);
-  int nCellIdx = 0; for (int i = 0; i < nCells; i ++) nCellIdx += cellVerts[ i ];
-  int * cellIdx = new int[ nCellIdx ]; ret = fread(cellIdx, sizeof(int), nCellIdx, file);
-  double * attribute = new double[ nCells ]; ret = fread(attribute, sizeof(double), nCells, file);
+  int * cellVerts = new int[nCells]; ret = fread(cellVerts, sizeof(int), nCells, file);
+  int nCellIdx = 0; for (int i = 0; i < nCells; i ++) nCellIdx += cellVerts[i];
+  int * cellIdx = new int[nCellIdx]; ret = fread(cellIdx, sizeof(int), nCellIdx, file);
+  double * attribute = new double[nCells]; ret = fread(attribute, sizeof(double), nCells, file);
 
   //** read boundary dummy-infos
   ret = fread(dummy, sizeof(int), 127, file);
 
   int nBounds; ret = fread(&nBounds, sizeof(int), 1, file);
-  int * boundVerts = new int[ nBounds ]; ret = fread(boundVerts, sizeof(int), nBounds, file);
-  int nBoundIdx = 0; for (int i = 0; i < nBounds; i ++) nBoundIdx += boundVerts[ i ];
-  int * boundIdx = new int[ nBoundIdx ]; ret = fread(boundIdx, sizeof(int), nBoundIdx, file);
-  int * boundMarker = new int[ nBounds ]; ret = fread(boundMarker, sizeof(int), nBounds, file);
-  int * left = new int[ nBounds ]; ret = fread(left, sizeof(int), nBounds, file);
-  int * right = new int[ nBounds ]; ret = fread(right, sizeof(int), nBounds, file);
+  int * boundVerts = new int[nBounds]; ret = fread(boundVerts, sizeof(int), nBounds, file);
+  int nBoundIdx = 0; for (int i = 0; i < nBounds; i ++) nBoundIdx += boundVerts[i];
+  int * boundIdx = new int[nBoundIdx]; ret = fread(boundIdx, sizeof(int), nBoundIdx, file);
+  int * boundMarker = new int[nBounds]; ret = fread(boundMarker, sizeof(int), nBounds, file);
+  int * left = new int[nBounds]; ret = fread(left, sizeof(int), nBounds, file);
+  int * right = new int[nBounds]; ret = fread(right, sizeof(int), nBounds, file);
 
     //** create Nodes;
     nodeVector_.reserve(nVerts);
     for (int i = 0; i < nVerts; i ++){
         createNode(RVector3(0.0, 0.0, 0.0));
         for (uint j = 0; j < dimension_; j ++){
-            node(i).pos()[ j ] = koords[ i * dimension_ + j ];
+            node(i).pos()[j] = koords[i * dimension_ + j];
         }
-        node(i).setMarker(nodeMarker[ i ]);
+        node(i).setMarker(nodeMarker[i]);
     }
 
     //** create Cells;
@@ -323,35 +323,35 @@ void Mesh::loadBinary(const std::string & fbody){
 
     cellVector_.reserve(nCells);
     for (int i = 0; i < nCells; i ++){
-        std::vector < Node * > nodes(cellVerts[ i ]);
+        std::vector < Node * > nodes(cellVerts[i]);
         for (uint j = 0; j < nodes.size(); j ++) {
-            nodes[ j ] = & node(cellIdx[ count + j ]);
+            nodes[j] = & node(cellIdx[count + j]);
         }
         createCell(nodes);
-        count += cellVerts[ i ];
+        count += cellVerts[i];
     }
 
     for (int i = 0; i < nCells; i ++) {
-        cell(i).setMarker((int)rint(attribute[ i ]));
-        cell(i).setAttribute(attribute[ i ]);
+        cell(i).setMarker((int)rint(attribute[i]));
+        cell(i).setAttribute(attribute[i]);
     }
 
     //** create Boundaries;
     count = 0;
     boundaryVector_.reserve(nBounds);
     for (int i = 0; i < nBounds; i ++){
-        std::vector < Node * > nodes(boundVerts[ i ]);
-        for (uint j = 0; j < nodes.size(); j ++) nodes[ j ] = & node(boundIdx[ count + j ]);
+        std::vector < Node * > nodes(boundVerts[i]);
+        for (uint j = 0; j < nodes.size(); j ++) nodes[j] = & node(boundIdx[count + j]);
         createBoundary(nodes);
-        count += boundVerts[ i ];
+        count += boundVerts[i];
     }
 
     for (int i = 0; i < nBounds; i ++){
-        boundary(i).setMarker(boundMarker[ i ]);
-        if (left[ i ] != -1) {
-            boundary(i).setLeftCell(&cell(left[ i ]));
+        boundary(i).setMarker(boundMarker[i]);
+        if (left[i] != -1) {
+            boundary(i).setLeftCell(&cell(left[i]));
         }
-        if (right[ i ] != -1) boundary(i).setRightCell(&cell(right[ i ]));
+        if (right[i] != -1) boundary(i).setRightCell(&cell(right[i]));
     }
 
     delete [] koords;
@@ -388,22 +388,22 @@ template < class ValueType > void readFromFile(FILE * file, ValueType & v, int c
 void Mesh::saveBinaryV2(const std::string & fbody) const {
 //     std::cout << sizeof(uint8) << " "  << sizeof(uint16) << " " << sizeof(uint32) << " " << sizeof(uint64) << std::endl;
 
-//   uint8[ 1 ] dimension
-//   uint8[ 1 ] file format version
-//   uint32[ 1 ] nVerts, number of vertices, max 2 ^ 32 (4e9)
-//   double[ 3 * nVerts ]; coordinates, dimension == 3 (x, y, z)
-//   int32[ nVerts ] vertex markers [-2e9, .. , 2e9 ]
-//   uint32[ 1 ] nCells, number of cell
-//   uint8[ nCells ] cell nodeCount;
-//   uint32[ sum(cell nodeCount) ] cellsidx
+//   uint8[1] dimension
+//   uint8[1] file format version
+//   uint32[1] nVerts, number of vertices, max 2 ^ 32 (4e9)
+//   double[3 * nVerts]; coordinates, dimension == 3 (x, y, z)
+//   int32[nVerts] vertex markers [-2e9, .. , 2e9]
+//   uint32[1] nCells, number of cell
+//   uint8[nCells] cell nodeCount;
+//   uint32[sum(cell nodeCount)] cellsidx
 
-//   int32[ nCells ] cellMarkers [-2e9, .. , 2e9 ]
-//   uint32[ 1 ] nBounds, number of boundarys
-//   uint8[ nBounds ] bound nodeCount
-//   uint32[ sum(bound nodeCount) ] boundsidx
-//   int32[ nBounds ] boundaryMarkers [-2e9, .. , 2e9 ]
-//   int32[ nBounds ] leftNeighbour idx (-1) if no neighbor present or info unavailable
-//   int32[ nBounds ] rightNeighbour idx (-1) if no neighbor present or info unavailable
+//   int32[nCells] cellMarkers [-2e9, .. , 2e9]
+//   uint32[1] nBounds, number of boundarys
+//   uint8[nBounds] bound nodeCount
+//   uint32[sum(bound nodeCount)] boundsidx
+//   int32[nBounds] boundaryMarkers [-2e9, .. , 2e9]
+//   int32[nBounds] leftNeighbour idx (-1) if no neighbor present or info unavailable
+//   int32[nBounds] rightNeighbour idx (-1) if no neighbor present or info unavailable
 
     std::string fileName(fbody.substr(0, fbody.rfind(MESHBINSUFFIX)) + MESHBINSUFFIX);
 
@@ -418,88 +418,88 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
     writeToFile(file, uint8(2));
 
     //** write nodes
-    double * coord = new double[ 3 * this->nodeCount() ];
+    double * coord = new double[3 * this->nodeCount()];
     for (uint i = 0; i < this->nodeCount(); i ++){
         for (uint j = 0; j < 3; j ++){
-            coord[ i * 3 + j ] = node(i).pos()[ j ];
+            coord[i * 3 + j] = node(i).pos()[j];
         }
     }
 
-    int32 * marker = new int32[ this->nodeCount() ];
-    for (uint i = 0; i < this->nodeCount(); i ++) marker[ i ] = node(i).marker();
+    int32 * marker = new int32[this->nodeCount()];
+    for (uint i = 0; i < this->nodeCount(); i ++) marker[i] = node(i).marker();
 
     writeToFile(file, uint32(this->nodeCount()));
-    writeToFile(file, coord[ 0 ], 3 * this->nodeCount());
-    writeToFile(file, marker[ 0 ], this->nodeCount());
+    writeToFile(file, coord[0], 3 * this->nodeCount());
+    writeToFile(file, marker[0], this->nodeCount());
 
     //** write Cells
     uint32 nCells = this->cellCount();
-    uint8 * cellVerts = new uint8[ nCells ];
+    uint8 * cellVerts = new uint8[nCells];
     uint32 nCellIdx = 0;
     for (uint i = 0; i < nCells; i ++){
-        cellVerts[ i ] = (uint8)cell(i).nodeCount();
-        nCellIdx += cellVerts[ i ];
+        cellVerts[i] = (uint8)cell(i).nodeCount();
+        nCellIdx += cellVerts[i];
     }
-    uint32 * cellIdx = new uint32[ nCellIdx ];
+    uint32 * cellIdx = new uint32[nCellIdx];
     uint count = 0;
     for (uint i = 0; i < nCells; i ++){
-        for (uint j = 0; j < cellVerts[ i ]; j ++){
-            cellIdx[ count ] = cell(i).node(j).id();
+        for (uint j = 0; j < cellVerts[i]; j ++){
+            cellIdx[count] = cell(i).node(j).id();
             count ++;
         }
     }
-    int32 * cellMarker = new int32[ nCells ];
-    for (uint i = 0; i < nCells; i ++) cellMarker[ i ] = cell(i).marker();
+    int32 * cellMarker = new int32[nCells];
+    for (uint i = 0; i < nCells; i ++) cellMarker[i] = cell(i).marker();
 
     writeToFile(file, nCells);
-    writeToFile(file, cellVerts[ 0 ], nCells);
-    writeToFile(file, cellIdx[ 0 ], nCellIdx);
-    writeToFile(file, cellMarker[ 0 ], nCells);
+    writeToFile(file, cellVerts[0], nCells);
+    writeToFile(file, cellIdx[0], nCellIdx);
+    writeToFile(file, cellMarker[0], nCells);
 
     //** write boundarys
     uint32 nBound = this->boundaryCount();
-    uint8 * boundVerts = new uint8[ nBound ];
+    uint8 * boundVerts = new uint8[nBound];
     std::vector < uint32 > boundIdx;
-    int32 * boundMarker = new int32[ nBound ];
-    int32 * leftCells = new int32[ nBound ];
-    int32 * rightCells = new int32[ nBound ];
+    int32 * boundMarker = new int32[nBound];
+    int32 * leftCells = new int32[nBound];
+    int32 * rightCells = new int32[nBound];
 
     count = 0;
     for (uint i = 0; i < nBound;  i ++){
         Boundary * bound = &this->boundary(i);
 
-        boundVerts[ i ] = (uint8)bound->nodeCount();
+        boundVerts[i] = (uint8)bound->nodeCount();
 
-        for (uint j = 0; j < boundVerts[ i ]; j ++){
+        for (uint j = 0; j < boundVerts[i]; j ++){
             boundIdx.push_back((uint32)bound->node(j).id());
         }
 
-        boundMarker[ i ] = bound->marker();
+        boundMarker[i] = bound->marker();
 
         if (bound->leftCell()) {
-            leftCells[ i ] = bound->leftCell()->id();
-        } else leftCells[ i ] = -1;
+            leftCells[i] = bound->leftCell()->id();
+        } else leftCells[i] = -1;
 
         if (bound->rightCell()) {
-            rightCells[ i ] = bound->rightCell()->id();
-        } else rightCells[ i ] = -1;
+            rightCells[i] = bound->rightCell()->id();
+        } else rightCells[i] = -1;
     }
 
 
     writeToFile(file, nBound);
-    writeToFile(file, boundVerts[ 0 ], nBound);
-    writeToFile(file, boundIdx[ 0 ], boundIdx.size());
-    writeToFile(file, boundMarker[ 0 ], nBound);
-    writeToFile(file, leftCells[ 0 ], nBound);
-    writeToFile(file, rightCells[ 0 ], nBound);
+    writeToFile(file, boundVerts[0], nBound);
+    writeToFile(file, boundIdx[0], boundIdx.size());
+    writeToFile(file, boundMarker[0], nBound);
+    writeToFile(file, leftCells[0], nBound);
+    writeToFile(file, rightCells[0], nBound);
 
     writeToFile(file, exportDataMap_.size());
 
     for (std::map < std::string, RVector >::const_iterator it = exportDataMap_.begin(); it != exportDataMap_.end(); it ++){
         writeToFile(file, it->first.length());
-        writeToFile(file, it->first[ 0 ], it->first.length());
+        writeToFile(file, it->first[0], it->first.length());
         writeToFile(file, it->second.size());
-        writeToFile(file, it->second[ 0 ], it->second.size());
+        writeToFile(file, it->second[0], it->second.size());
     }
 
     fclose(file);
@@ -540,52 +540,52 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
         throwError(1, WHERE_AM_I + " probably something wrong: nVerts > 1e9 " + toStr(nVerts));
     }
 
-    double * coord = new double[ 3 * nVerts ]; readFromFile(file, coord[ 0 ], 3 * nVerts);
-    int32 * marker = new int32[ nVerts ]; readFromFile(file, marker[ 0 ], nVerts);
+    double * coord = new double[3 * nVerts]; readFromFile(file, coord[0], 3 * nVerts);
+    int32 * marker = new int32[nVerts]; readFromFile(file, marker[0], nVerts);
 
     nodeVector_.reserve(nVerts);
     for (uint i = 0; i < nVerts; i ++) {
-        this->createNode(coord[ i * 3 ], coord[ i * 3 + 1 ], coord[ i * 3 + 2 ], marker[ i ]);
+        this->createNode(coord[i * 3], coord[i * 3 + 1], coord[i * 3 + 2], marker[i]);
     }
 
     //** read cells
     uint32 nCells; readFromFile(file, nCells);
-    uint8 * cellVerts = new uint8[ nCells ]; readFromFile(file, cellVerts[ 0 ], nCells);
-    uint nCellIdx = 0; for (uint i = 0; i < nCells; i ++) nCellIdx += cellVerts[ i ];
-    uint32 * cellIdx = new uint32[ nCellIdx ];   readFromFile(file, cellIdx[ 0 ], nCellIdx);
-    int32 * cellMarker = new int32[ nCells ]; readFromFile(file, cellMarker[ 0 ], nCells);
+    uint8 * cellVerts = new uint8[nCells]; readFromFile(file, cellVerts[0], nCells);
+    uint nCellIdx = 0; for (uint i = 0; i < nCells; i ++) nCellIdx += cellVerts[i];
+    uint32 * cellIdx = new uint32[nCellIdx];   readFromFile(file, cellIdx[0], nCellIdx);
+    int32 * cellMarker = new int32[nCells]; readFromFile(file, cellMarker[0], nCells);
 
     //** create cells
     uint count = 0;
     cellVector_.reserve(nCells);
     for (uint i = 0; i < nCells; i ++){
-        std::vector < Node * > nodes(cellVerts[ i ]);
-        for (uint j = 0; j < nodes.size(); j ++) nodes[ j ] = & node(cellIdx[ count + j ]);
-        this->createCell(nodes, cellMarker[ i ]);
-        count += cellVerts[ i ];
+        std::vector < Node * > nodes(cellVerts[i]);
+        for (uint j = 0; j < nodes.size(); j ++) nodes[j] = & node(cellIdx[count + j]);
+        this->createCell(nodes, cellMarker[i]);
+        count += cellVerts[i];
     }
 
     //** read bounds
     uint32 nBound;                                  readFromFile(file, nBound);
-    uint8 * boundVerts = new uint8[ nBound ];       readFromFile(file, boundVerts[ 0 ], nBound);
-    uint nBoundIdx = 0; for (uint i = 0; i < nBound; i ++) nBoundIdx += boundVerts[ i ];
-    uint32 * boundIdx = new uint32[ nBoundIdx ];    readFromFile(file, boundIdx[ 0 ], nBoundIdx);
-    int32 * boundMarker = new int32[ nBound ];      readFromFile(file, boundMarker[ 0 ], nBound);
-    int32 * leftCells = new int32[ nBound ];        readFromFile(file, leftCells[ 0 ], nBound);
-    int32 * rightCells = new int32[ nBound ];       readFromFile(file, rightCells[ 0 ], nBound);
+    uint8 * boundVerts = new uint8[nBound];       readFromFile(file, boundVerts[0], nBound);
+    uint nBoundIdx = 0; for (uint i = 0; i < nBound; i ++) nBoundIdx += boundVerts[i];
+    uint32 * boundIdx = new uint32[nBoundIdx];    readFromFile(file, boundIdx[0], nBoundIdx);
+    int32 * boundMarker = new int32[nBound];      readFromFile(file, boundMarker[0], nBound);
+    int32 * leftCells = new int32[nBound];        readFromFile(file, leftCells[0], nBound);
+    int32 * rightCells = new int32[nBound];       readFromFile(file, rightCells[0], nBound);
 
     //** create cells
     count = 0;
     boundaryVector_.reserve(nBound);
     for (uint i = 0; i < nBound; i ++){
-        std::vector < Node * > nodes(boundVerts[ i ]);
-        for (uint j = 0; j < nodes.size(); j ++) nodes[ j ] = & node(boundIdx[ count + j ]);
+        std::vector < Node * > nodes(boundVerts[i]);
+        for (uint j = 0; j < nodes.size(); j ++) nodes[j] = & node(boundIdx[count + j]);
 
-        Boundary * bound = this->createBoundary(nodes, boundMarker[ i ]);
-        count += boundVerts[ i ];
+        Boundary * bound = this->createBoundary(nodes, boundMarker[i]);
+        count += boundVerts[i];
 
-        if (leftCells[ i ] > -1) bound->setLeftCell(&this->cell(leftCells[ i ]));
-        if (rightCells[ i ] > -1) bound->setRightCell(&this->cell(rightCells[ i ]));
+        if (leftCells[i] > -1) bound->setLeftCell(&this->cell(leftCells[i]));
+        if (rightCells[i] > -1) bound->setRightCell(&this->cell(rightCells[i]));
     }
 
     size_t nData; readFromFile(file, nData);
@@ -623,7 +623,7 @@ int Mesh::exportSimple(const std::string & fbody, const RVector & data) const {
     for (uint j = 0; j < 3; j ++){
       file << cell(i).node(j).x() << "\t" << cell(i).node(j).y() << "\t";
     }
-    file << data[ i ] << std::endl;
+    file << data[i] << std::endl;
   }
   file.close();
   return 1;
@@ -669,9 +669,9 @@ void Mesh::exportVTK(const std::string & fbody,
     file.precision(14);
     file << "# vtk DataFile Version 3.0" << std::endl;
     if (commentString_.size() > 0) {
-        file << commentString_ << std::endl;
+        file << "d-" << dimension_ << "__ " << commentString_ << std::endl;
     } else {
-        file << "created by " << WHERE_AM_I << std::endl;
+        file << "d-" << dimension_ << "__ created by " << versionStr() << std::endl;
     }
     if (binary){
         file << "BINARY" << std::endl;
@@ -775,9 +775,9 @@ void Mesh::exportVTK(const std::string & fbody,
 
                 for (uint i = 0, imax = it->second.size(); i < imax; i ++) {
                     if (binary){
-                        //file.write((char*)&scaledValues[ i ], sizeof(double));
+                        //file.write((char*)&scaledValues[i], sizeof(double));
                     } else {
-                        file << it->second[ i ] << " ";
+                        file << it->second[i] << " ";
                     }
                 }
                 file << std::endl;
@@ -852,9 +852,9 @@ void Mesh::exportVTK(const std::string & fbody,
 
                     for (uint i = 0, imax = it->second.size(); i < imax; i ++) {
                         if (binary){
-                            //file.write((char*)&scaledValues[ i ], sizeof(double));
+                            //file.write((char*)&scaledValues[i], sizeof(double));
                         } else {
-                            file << it->second[ i ] << " ";
+                            file << it->second[i] << " ";
                         }
                     }
                     file << std::endl;
@@ -885,7 +885,7 @@ void Mesh::exportVTK(const std::string & fbody,
             file << "LOOKUP_TABLE default" << std::endl;
 
             for (uint i = 0, imax = nodeCount(); i < imax; i ++) {
-                file << it->second[ i ] << " ";
+                file << it->second[i] << " ";
             }
             file << std::endl;
         }
@@ -919,6 +919,13 @@ void Mesh::importVTK(const std::string & fbody) {
     getline(file, commentString_); //** vtk version line
     getline(file, commentString_); //** comment line
     
+    
+    if (commentString_.find("d-2__") != std::string::npos){
+        dimension_ = 2;
+    } else if (commentString_.find("d-3__") != std::string::npos){
+        dimension_ = 3;
+    }
+        
     while (!file.eof()){
         row = getRowSubstrings(file);
       //  std::cout << row.size() << std::endl;
@@ -940,8 +947,8 @@ void Mesh::importVTK(const std::string & fbody) {
             row = getRowSubstrings(file);
             if (row.size()){
                 if (row[0] == "POINTS") readVTKPoints_(file, row);
-                else if (row[ 0 ] == "CELLS") readVTKCells_(file, row);
-                else if (row[ 0 ] == "SCALARS") readVTKScalars_(file, row);
+                else if (row[0] == "CELLS") readVTKCells_(file, row);
+                else if (row[0] == "SCALARS") readVTKScalars_(file, row);
             }
         } 
         
@@ -949,8 +956,8 @@ void Mesh::importVTK(const std::string & fbody) {
         while (!file.eof()){
             row = getRowSubstrings(file);
             if (row.size()){
-                if (row[ 0 ] == "POINTS") readVTKPoints_(file, row);
-                else if (row[ 0 ] == "POLYGONS") readVTKPolygons_(file, row);
+                if (row[0] == "POINTS") readVTKPoints_(file, row);
+                else if (row[0] == "POLYGONS") readVTKPolygons_(file, row);
             }
         } 
     } else {
@@ -961,8 +968,9 @@ void Mesh::importVTK(const std::string & fbody) {
     file.close();
 }
 
-void Mesh::readVTKPoints_(std::fstream & file, const std::vector < std::string > & row){
-    uint nVerts = toInt(row[ 1 ]);
+void Mesh::readVTKPoints_(std::fstream & file,
+                          const std::vector < std::string > & row){
+    uint nVerts = toInt(row[1]);
     //std::cout << "nVerts: " << nVerts << std::endl;
     double x = 0.0, y = 0.0, z = 0.0;
     for (uint i = 0; i < nVerts; i ++) {
@@ -976,8 +984,9 @@ void Mesh::readVTKPoints_(std::fstream & file, const std::vector < std::string >
     if (!nonZero(GIMLI::z(positions()))) dimension_ = 2;
 }
 
-void Mesh::readVTKCells_(std::fstream & file, const std::vector < std::string > & row){
-    uint nCells = toInt(row[ 1 ]);
+void Mesh::readVTKCells_(std::fstream & file, 
+                         const std::vector < std::string > & row){
+    uint nCells = toInt(row[1]);
     //std::cout << "nCells: " << nCells << std::endl;
     uint nNodes = 0;
     uint id;
@@ -987,14 +996,14 @@ void Mesh::readVTKCells_(std::fstream & file, const std::vector < std::string > 
         nodes.resize(nNodes);
         for (uint j = 0; j < nNodes; j ++) {
             file >> id;
-            nodes[ j ] = &this->node(id);
+            nodes[j] = &this->node(id);
         }
         this->createCell(nodes);
     }
 }
 
 void Mesh::readVTKPolygons_(std::fstream & file, const std::vector < std::string > & row){
-    uint nPoly = toInt(row[ 1 ]);
+    uint nPoly = toInt(row[1]);
     uint nNodes = 0;
     uint id;
     std::vector < Node * > nodes;
@@ -1003,7 +1012,7 @@ void Mesh::readVTKPolygons_(std::fstream & file, const std::vector < std::string
         nodes.resize(nNodes);
         for (uint j = 0; j < nNodes; j ++) {
             file >> id;
-            nodes[ j ] = &this->node(id);
+            nodes[j] = &this->node(id);
         }
         this->createBoundary(nodes);
     }
@@ -1030,10 +1039,10 @@ void Mesh::readVTKPolygons_(std::fstream & file, const std::vector < std::string
 // };
 
 void Mesh::readVTKScalars_(std::fstream & file, const std::vector < std::string > & row){
-    std::string name(row[ 1 ]);
+    std::string name(row[1]);
     std::vector < std::string > r(getRowSubstrings(file));
     if (r.size()){
-        if (r[ 0 ] == "LOOKUP_TABLE"){
+        if (r[0] == "LOOKUP_TABLE"){
             r = getRowSubstrings(file);
         }
     }
@@ -1045,7 +1054,7 @@ void Mesh::readVTKScalars_(std::fstream & file, const std::vector < std::string 
     //std::cout << bind< double, toDouble >(&toDouble)(*r.begin()) << std::endl;
 
     //std::copy(r.begin(), r.end(), data.begin(), bind< double >(toDouble);
-    for (uint i = 0; i < data.size(); i ++) data[ i ] = toDouble(r[ i ]);
+    for (uint i = 0; i < data.size(); i ++) data[i] = toDouble(r[i]);
     addExportData(name, data);
 }
 
@@ -1103,7 +1112,7 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
     std::map< std::string, RVector > boundData;
 
     RVector tmp(boundMesh.boundaryCount());
-    std::transform(boundMesh.boundaries().begin(), boundMesh.boundaries().end(), &tmp[ 0 ],
+    std::transform(boundMesh.boundaries().begin(), boundMesh.boundaries().end(), &tmp[0],
                     std::mem_fun(&Boundary::marker));
     if (!boundData.count("_BoundaryMarker")) boundData.insert(std::make_pair("_BoundaryMarker",  tmp));
     boundMesh.exportVTK(fbody, boundData);
@@ -1145,7 +1154,7 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
     file << "<Cells>" << std::endl;
     file << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << std::endl;
     for (uint i = 0; i < nCells; i ++) {
-        MeshEntity * cell = cells[ i ];
+        MeshEntity * cell = cells[i];
         if (cell->rtti() == MESH_TETRAHEDRON10_RTTI){
 
             file << cell->node(0).id() << " " << cell->node(1).id() << " "
@@ -1159,13 +1168,13 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
     file << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << std::endl;
     uint count = 0;
     for (uint i = 0; i < nCells; i ++) {
-        count += cells[ i ]->nodeCount();
+        count += cells[i]->nodeCount();
         file << count << " ";
     }
     file << std::endl << "</DataArray>" << std::endl;
     file << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << std::endl;
     for (uint i = 0; i < nCells; i ++) {
-        switch (cells[ i ]->rtti()){
+        switch (cells[i]->rtti()){
             case MESH_BOUNDARY_NODE_RTTI: file     << "1 "; break;
             case MESH_EDGE_CELL_RTTI:
             case MESH_EDGE_RTTI: file          << "3 "; break;
@@ -1183,7 +1192,7 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
             case MESH_TETRAHEDRON10_RTTI: file << "24 "; break;
             case MESH_HEXAHEDRON_RTTI: file    << "12 "; break;
             case MESH_HEXAHEDRON20_RTTI: file  << "25 "; break;
-            default: std::cerr << WHERE_AM_I << " nothing know about." << cells[ i ]->rtti() << std::endl;
+            default: std::cerr << WHERE_AM_I << " nothing know about." << cells[i]->rtti() << std::endl;
         }
     }
     file << std::endl << "</DataArray>" << std::endl;
@@ -1207,7 +1216,7 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
             if (it->second.size() == nNodes) {
                  file << "<DataArray type=\"Float32\" Name=\""
                       << it->first << "\" format=\"ascii\">" << std::endl;
-                 for (uint i = 0; i < it->second.size(); i ++) file << it->second[ i ] << " ";
+                 for (uint i = 0; i < it->second.size(); i ++) file << it->second[i] << " ";
                  file << std::endl << "</DataArray>" << std::endl;
             }
         }
@@ -1222,10 +1231,10 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
                  file << "<DataArray type=\"Float64\" Name=\"" << it->first;
                  if (!binary){
                     file << "\" format=\"ascii\">" << std::endl;
-                    for (uint i = 0; i < it->second.size(); i ++) file << it->second[ i ] << " ";
+                    for (uint i = 0; i < it->second.size(); i ++) file << it->second[i] << " ";
                  } else {
                     file << "\" format=\"binary\">";
-                    file.write((char*)&it->second[ 0 ], it->second.size() * sizeof(double));
+                    file.write((char*)&it->second[0], it->second.size() * sizeof(double));
                  }
 
 
@@ -1244,13 +1253,13 @@ void Mesh::importMod(const std::string & filename){
     loadMatrixCol(mat, filename, comments);
 //     std::cout << comments.size() << std::endl;
 //     std::cout << mat.size() << std::endl;
-//     std::cout << mat[ 0 ].size() << std::endl;
+//     std::cout << mat[0].size() << std::endl;
 
-    RVector x(unique(sort(cat(mat[ 0 ], mat[ 1 ]))));
-    RVector y(unique(sort(cat(mat[ 2 ], mat[ 3 ]))) * -1.0);
+    RVector x(unique(sort(cat(mat[0], mat[1]))));
+    RVector y(unique(sort(cat(mat[2], mat[3]))) * -1.0);
     create2DGrid(x, y);
-    if (comments.size() > 4 && mat.cols() > 4) addExportData(comments[ 4 ], mat[ 4 ]);
-    if (comments.size() > 5 && mat.cols() > 5) addExportData(comments[ 5 ], mat[ 5 ]);
+    if (comments.size() > 4 && mat.cols() > 4) addExportData(comments[4], mat[4]);
+    if (comments.size() > 5 && mat.cols() > 5) addExportData(comments[5], mat[5]);
 }
 
 void Mesh::importSTL(const std::string & fileName, bool isBinary ){
@@ -1264,7 +1273,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
         std::vector < std::string > row;
 
         row = getNonEmptyRow(file);
-        if (row[ 0 ] != "solid") {
+        if (row[0] != "solid") {
             file.close();
             importSTL(fileName, true);
         }
@@ -1272,14 +1281,14 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
         bool finish = false;
         while (!finish){
             row = getNonEmptyRow(file);
-            if (row[ 0 ] == "facet" && row[ 1 ] == "normal"){ //** facet normal  0.0  0.0  0.0
+            if (row[0] == "facet" && row[1] == "normal"){ //** facet normal  0.0  0.0  0.0
                 row = getNonEmptyRow(file);  //** outer loop
                 row = getNonEmptyRow(file); //** vertex x y z;
-                allVerts.push_back(RVector3(toDouble(row[ 1 ]), toDouble(row[ 2 ]), toDouble(row[ 3 ])));
+                allVerts.push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
                 row = getNonEmptyRow(file); //** vertex x y z
-                allVerts.push_back(RVector3(toDouble(row[ 1 ]), toDouble(row[ 2 ]), toDouble(row[ 3 ])));
+                allVerts.push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
                 row = getNonEmptyRow(file); //** vertex x y z
-                allVerts.push_back(RVector3(toDouble(row[ 1 ]), toDouble(row[ 2 ]), toDouble(row[ 3 ])));
+                allVerts.push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
                 row = getNonEmptyRow(file);  //** endloop
             row = getNonEmptyRow(file);  //** endfacet;
             } else finish = true;
@@ -1290,7 +1299,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
         
         FILE * file; file = fopen(fileName.c_str(), "r+b");
 
-        char header[ 80 ];
+        char header[80];
         Index ret = 0; 
         ret = fread(&header, 1, 80, file);
         if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
@@ -1301,15 +1310,15 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
 
         std::vector < RVector3 > allVerts;
 
-        float rd[ 48 ];
-        char padding[ 2 ];
+        float rd[48];
+        char padding[2];
         for (int i = 0; i < nFaces; i ++){
             ret = fread(&rd, 4, 12, file);
             if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
             
-            allVerts.push_back(RVector3(rd[ 3 ], rd[ 4 ],  rd[ 5 ]).round(tolerance * 0.01));
-            allVerts.push_back(RVector3(rd[ 6 ], rd[ 7 ],  rd[ 8 ]).round(tolerance * 0.01));
-            allVerts.push_back(RVector3(rd[ 9 ], rd[ 10 ], rd[ 11 ]).round(tolerance * 0.01));
+            allVerts.push_back(RVector3(rd[3], rd[4],  rd[5]).round(tolerance * 0.01));
+            allVerts.push_back(RVector3(rd[6], rd[7],  rd[8]).round(tolerance * 0.01));
+            allVerts.push_back(RVector3(rd[9], rd[10], rd[11]).round(tolerance * 0.01));
 
             ret = fread(&padding, 1, 2, file);
             if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
@@ -1321,9 +1330,9 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
     Node *n1, *n2, *n3;
     if (allVerts.size() % 3 == 0 && allVerts.size() > 0){
         for (uint i = 0; i < allVerts.size() / 3; i ++){
-            n1 = createNodeWithCheck(allVerts[ i * 3 ], tolerance);
-            n2 = createNodeWithCheck(allVerts[ i * 3 + 1 ], tolerance);
-            n3 = createNodeWithCheck(allVerts[ i * 3 + 2 ], tolerance);
+            n1 = createNodeWithCheck(allVerts[i * 3], tolerance);
+            n2 = createNodeWithCheck(allVerts[i * 3 + 1], tolerance);
+            n3 = createNodeWithCheck(allVerts[i * 3 + 2], tolerance);
             this->createTriangleFace(*n1, *n2, *n3, 0);
         }
     } else {
@@ -1338,7 +1347,7 @@ int Mesh::exportMidCellValue(const std::string & fileName,
     RMatrix mat(dimension_, cellCount());
     for (uint j = 0; j < cellCount(); j ++) {
         for (uint i = 0; i < dimension_; i ++) {
-            mat[ i ][ j ] = cell(j).center()[ i ];
+            mat[i][j] = cell(j).center()[i];
         }
     }
 
@@ -1391,9 +1400,9 @@ void Mesh::exportAsTetgenPolyFile(const std::string & filename){
     //file << "#    hole x y z" << endl;
 //     for (int i = 0, imax = vecpHoles_.size(); i < imax ; i ++){
 //         file << i << "\t"
-//         << vecpHoles_[ i ]->x() << "\t"
-//         << vecpHoles_[ i ]->y() << "\t"
-//         << vecpHoles_[ i ]->z() << endl;
+//         << vecpHoles_[i]->x() << "\t"
+//         << vecpHoles_[i]->y() << "\t"
+//         << vecpHoles_[i]->z() << endl;
 //     }
 
   //file << "# nregions" << endl;
@@ -1401,11 +1410,11 @@ void Mesh::exportAsTetgenPolyFile(const std::string & filename){
   //file << "#    region x y z attribute maxarea" << endl;
 //   for (int i = 0, imax = regions_.size(); i < imax ; i ++){
 //     file << i << "\t"
-//      << regions_[ i ]->x() << "\t"
-//      << regions_[ i ]->y() << "\t"
-//          << regions_[ i ]->z() << "\t"
-//      << regions_[ i ]->attribute() << "\t"
-//      << regions_[ i ]->dx() << endl;
+//      << regions_[i]->x() << "\t"
+//      << regions_[i]->y() << "\t"
+//          << regions_[i]->z() << "\t"
+//      << regions_[i]->attribute() << "\t"
+//      << regions_[i]->dx() << endl;
 //   }
   file.close();
 
