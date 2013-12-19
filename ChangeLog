@@ -1,3 +1,11 @@
+2013-12-19
+    pygimli:
+        meshconvert.py
+            add new interpolation target --interpolateMesh
+    gimli:
+        mesh_io.cpp
+            add dimension flag into vtk-export/import
+
 2013-09-04
     pygimli:
         - automatic right-value type conversion for sequence< Tuple> to std::vector < RVector3 >

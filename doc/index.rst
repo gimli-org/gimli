@@ -50,11 +50,11 @@ Documentation
 
     * - GIMLi API
 
-        Reference for C++ programmers
+        Reference for C++/Python
 
-      - pyGIMLi API
+      - pyGIMLi Modules
 
-        Reference for Python programmers
+        Reference for Python modules
 
     * - :ref:`sec:publications`
 

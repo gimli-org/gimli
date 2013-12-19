@@ -226,10 +226,15 @@ public:
         \param fileName String of the file name
         \param formatData String to specify the tokens of the data map to be save. If formatData == "all", all datafields will be saved inclusive invalid data.
         \param formatSensor String to specify the tokens of the sensor format to be save */
-    virtual int save(const std::string & fileName, const std::string & formatData, const std::string & formatSensor, bool verbose = false) const;
+    virtual int save(const std::string & fileName,
+                     const std::string & formatData,
+                     const std::string & formatSensor,
+                     bool verbose=false) const;
 
     /*! Shortcut for \ref save(fileName, formatData, "x y z", verbose); */
-    inline int save(const std::string & fileName, const std::string & formatData = "all", bool verbose = false) const {
+    inline int save(const std::string & fileName,
+                    const std::string & formatData="all",
+                    bool verbose=false) const {
         return save(fileName, formatData, "x y z", verbose); }
 
     /*! Show some information that belongs to the DataContainer.*/
