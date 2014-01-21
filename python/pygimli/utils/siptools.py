@@ -4,7 +4,7 @@
 import pylab as P
 import numpy as N
 import pygimli as g
-from base import rndig
+from .base import rndig
 import string
 
 def astausgleich(ab2org, mn2org, rhoaorg):
@@ -22,7 +22,7 @@ def astausgleich(ab2org, mn2org, rhoaorg):
         
         if len(r0) > 0:
             fak = P.mean(P.array(r0) / P.array(r1))
-            print fak
+            print(fak)
             if P.isfinite(fak) and fak>0.: 
                 rhoa[ mn2 == um[ i + 1 ] ] *= fak
                 
@@ -306,7 +306,7 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False,
         idx = (fr <= maxfr) & (phi >= 0.)
         phi1 = phi[ idx ]
         fr1 = fr[ idx ]
-        print "using frequencies from ", N.min(fr), " to ", N.max(fr), "Hz"
+        print("using frequencies from ", N.min(fr), " to ", N.max(fr), "Hz")
     else:
         phi1 = phi
         fr1 = fr

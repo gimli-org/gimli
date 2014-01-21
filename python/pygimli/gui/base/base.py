@@ -48,7 +48,7 @@ class Property:
             if self.ctrlEvent is not None:
                 self.ctrl.Bind( self.ctrlEvent, self.onPropertyChanged )
         else:
-            print "no ctrl given"
+            print("no ctrl given")
 
     def onPropertyChanged( self, event = None ):
         
@@ -87,19 +87,19 @@ class Property:
                 self.ctrl.SetSelection( self.ctrl.FindString( val ) )
 
             elif isinstance( self.ctrl, wx.RadioBox ):
-                if self.valType == str or self.valType == unicode:
+                if self.valType == str or self.valType == str:
                     self.ctrl.SetSelection( self.ctrl.FindString( val ) )
                 else:
                     self.ctrl.SetSelection( int( self.val ) )
 
             elif isinstance( self.ctrl, wx.TextCtrl ):
-                if not isinstance( val, basestring ):
+                if not isinstance( val, str ):
                     self.ctrl.SetValue( str( val ) )
                 else:
                     self.ctrl.SetValue( val )
 
             elif isinstance( self.ctrl, wx.FilePickerCtrl ):
-                print self.ctrl, val
+                print(self.ctrl, val)
                 self.ctrl.SetPath( val )
             
             elif hasattr( self.ctrl, 'SetValue' ):
@@ -115,7 +115,7 @@ class Property:
         else:
             if self.valType is not None:
                 if self.valType == tuple:
-                    self.val = map( lambda x__: int( x__), val[1:len(val)-1 ].split(',') )
+                    self.val = [int( x__) for x__ in val[1:len(val)-1 ].split(',')]
                 else:
                     self.val = self.valType( val )
             else:
@@ -137,7 +137,7 @@ class Property:
             return int( self.ctrl.GetValue( ) )
 
         elif isinstance( self.ctrl, wx.RadioBox ):
-            if self.valType == str or self.valType == unicode:
+            if self.valType == str or self.valType == str:
                 return self.ctrl.GetString( self.ctrl.GetSelection( ) )
             else:
                 return self.ctrl.GetSelection( )
@@ -146,7 +146,7 @@ class Property:
             return self.ctrl.GetStringSelection( )
 
         elif isinstance( self.ctrl, wx.TextCtrl ):
-            if self.valType == str or self.valType == unicode or self.valType == None:
+            if self.valType == str or self.valType == str or self.valType == None:
                 return self.ctrl.GetValue( )
             else:
                 if len( self.ctrl.GetValue( ) ) == 0:
@@ -155,7 +155,7 @@ class Property:
                     return self.valType( self.ctrl.GetValue( ) )
 
         elif isinstance( self.ctrl, wx.FilePickerCtrl ):
-            print self.ctrl, self.ctrl.GetPath()
+            print(self.ctrl, self.ctrl.GetPath())
             return self.ctrl.GetPath()
 
         elif hasattr( self.ctrl, 'IsChecked' ):
@@ -163,7 +163,7 @@ class Property:
         elif hasattr( self.ctrl, 'GetValue' ):
             return self.ctrl.GetValue()
 
-        print "Cannot convert Value from control. Pls fix me", self.ctrl
+        print("Cannot convert Value from control. Pls fix me", self.ctrl)
     
 # END class Property
                             
@@ -197,15 +197,15 @@ class ManagedProperties:
     def writePropertiesToFile( self, fi ):
         fi.write( "[" + self.piCaption + "]\n" )
 
-        for k, v in self.properties.iteritems():
-            print "write:", fi, k, v, v()
-            fi.write( k + "=" + unicode( v() ) + "\n" )
+        for k, v in self.properties.items():
+            print("write:", fi, k, v, v())
+            fi.write( k + "=" + str( v() ) + "\n" )
 
     def setProperties( self, props ):
         #print "setProperties:", self.piCaption, props
-        for k, v in props.iteritems():
+        for k, v in props.items():
             if k in self.properties:
-                print k, v, self.properties[ k ]
+                print(k, v, self.properties[ k ])
                 self.properties[ k ].setVal( v )
             else:
                 sys.stderr.write( "unknown property for panel "  + self.piCaption + " : " + k + "\n" )
@@ -299,7 +299,7 @@ class AppResource( ManagedProperties ):
             c.listenerList.append( self )
 
     def dependencyChanged( self ):
-        print "dependencyChanged( self )", self
+        print("dependencyChanged( self )", self)
         self.dependencyChanged_ = True
 
     def notifyListenerDependencyChanged_( self, force = False ):
@@ -315,8 +315,8 @@ class AppResource( ManagedProperties ):
                         #return
 
     def checkDependencies( self, recursive = True ):
-        print "CheckDependencies:", self
-        print self.listenerList
+        print("CheckDependencies:", self)
+        print(self.listenerList)
         if recursive:
             for d in self.dependencyList:
                 d.checkDependencies( )
@@ -327,19 +327,19 @@ class AppResource( ManagedProperties ):
         self.dependencyChanged_ = False
 
     def process( self, recursive = True ):
-        print "process:", self
+        print("process:", self)
         self.checkDependencies( recursive )
 
         # update resources
         if self.parentResource:
             for s in self.parentResource.subPanels:
                 if s is not self:
-                    print self, s, s.dependencyChanged_, s.IsShownOnScreen()
+                    print(self, s, s.dependencyChanged_, s.IsShownOnScreen())
                     if s.dependencyChanged_ and s.IsShownOnScreen():
                         s.process()
 
             if self.parentResource.dependencyChanged_ and not hasattr( self.parentResource, 'IsShownOnScreen' ):
-                print "parent process forced:", self.parentResource
+                print("parent process forced:", self.parentResource)
                 self.parentResource.process( recursive = False )
 
 
@@ -375,9 +375,9 @@ class AppResource( ManagedProperties ):
 
             self.renderer_.Bind( aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onRendererTabSwitch )
         else:
-            print "def getRenderer( self, slot = None):"
+            print("def getRenderer( self, slot = None):")
 
-        print self.renderer_, slot
+        print(self.renderer_, slot)
         return self.renderer_
 
     def getRendererPanel( self ) : return self.rendererPanel_
@@ -434,12 +434,12 @@ class AppResource( ManagedProperties ):
         ''
         ' What is this? '
         ''
-        print "activateApplication( self, active ):", self, active
+        print("activateApplication( self, active ):", self, active)
         
         if hasattr( self, "getRenderer" ):
             r = self.getRenderer( self.rendererSlot_ )
             if active:
-                print "activate parent: ", r
+                print("activate parent: ", r)
                 self.rendererSlot_.GetSizer().Add( r, 1, wx.EXPAND, 0  )
                 self.rendererSlot_.GetSizer().Layout()
                 r.Show()
@@ -458,7 +458,7 @@ class AppResource( ManagedProperties ):
         if hasattr( self, 'getApplicationToolBar' ):
             self.activateToolBar_( self.getApplicationToolBar( self.parent ), active, pos = 1 )
 
-        for m in self.mainMenus.keys():
+        for m in list(self.mainMenus.keys()):
             pos = self.parent.GetMenuBar().FindMenu( m.GetTitle() )
             #print "check: ", m.GetTitle(), pos
             if active:
@@ -475,7 +475,7 @@ class AppResource( ManagedProperties ):
         ''
         ' What is this? '
         ''
-        print "activate( self, active ):", self, self.active, active
+        print("activate( self, active ):", self, self.active, active)
         
         if self.active == active:
             return
@@ -487,10 +487,10 @@ class AppResource( ManagedProperties ):
             nb = None
 
             if isinstance( self.rendererSlot_, aui.AuiNotebook ):
-                print "# self is child renderpanel (AppResourceWx*)"
+                print("# self is child renderpanel (AppResourceWx*)")
                 nb = self.rendererSlot_
             elif isinstance( self.getRenderer( ), aui.AuiNotebook ):
-                print "# self is parent (AppResource)"
+                print("# self is parent (AppResource)")
                 nb = self.getRenderer( )
 
             if nb is not None:
@@ -509,7 +509,7 @@ class AppResource( ManagedProperties ):
             sec.activate( active )
         
         if self.active and self.dependencyChanged_:
-            print "process due to activate", self
+            print("process due to activate", self)
             self.process()
             
         self.parent.resourceTree.selectItem( self )
@@ -654,10 +654,10 @@ class AppResource( ManagedProperties ):
             dirname     = dlg.GetDirectory()
             filenames    = dlg.GetFilenames()
             
-            print "getExportFileNameWithDialog", paths, dirname, filenames
+            print("getExportFileNameWithDialog", paths, dirname, filenames)
             
             if style & wx.FD_MULTIPLE:
-                return map( lambda f_: unicodeToAscii( f_ ), paths )
+                return [unicodeToAscii( f_ ) for f_ in paths]
             else:
                 return unicodeToAscii( paths[ 0 ] )
 

@@ -69,7 +69,7 @@ class GPSViewerApp( AppResourceWxMPL ):
         ## the application has some properties that can be altered by the property inspector (PI), loaded and saved
         #self.titleTextProp = self.appendProperty( "Title", default = 'unknown', valType = str )
                 
-        self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Google Maps' )
+        self.vendorProp = self.appendProperty( "MapVendor", valType = str, default = 'Google Maps' )
         #self.vendorProp = self.appendProperty( "MapVendor", valType = unicode, default = 'Open Street Map' )
         self.utmZone = self.appendProperty( "UTMZone", valType = str, default = '' )
         self.ellipsoid = self.appendProperty( "Ellipsoid", valType = str, default = 'WGS84' )
@@ -146,19 +146,19 @@ class GPSViewerApp( AppResourceWxMPL ):
                 
         #return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = 'WGS84' )
         #Ell: GRS80, clrk66
-        print "ell:" , self.ellipsoid()
+        print("ell:" , self.ellipsoid())
         return pyproj.Proj( proj = 'utm', zone = self.utmZone(), ellps = self.ellipsoid() )
         
     def openFile( self, files = None ):
         """Load data here."""
         
-        print files.find('.gpx')
+        print(files.find('.gpx'))
         if files.find('.gpx') != -1:
             self.gpsWPTs = readGPX( files )
         else:
             self.gpsWPTs = readSimpleLatLon( files )
         
-        print "reading ", len( self.gpsWPTs ), " points"
+        print("reading ", len( self.gpsWPTs ), " points")
                 
         self.utmZone.setVal( findUTMZone( self.gpsWPTs[0][0], self.gpsWPTs[0][1] ) )
         self.draw()

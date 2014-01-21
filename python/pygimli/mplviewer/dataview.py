@@ -74,17 +74,17 @@ def drawTravelTimeData(a, data):
     
     for shot in shots:
         gIdx = pg.find(data('s') == shot)
-        sensorIdx = map(lambda i__: int(i__ - startOffsetIDX), data('g')[ gIdx ])
+        sensorIdx = [int(i__ - startOffsetIDX) for i__ in data('g')[ gIdx ]]
         a.plot(x[ sensorIdx ], data('t')[ gIdx ], 'x-')
             
     yPixel = a.transData.inverted().transform_point((1, 1))[1]-a.transData.inverted().transform_point((0, 0))[1]
     xPixel = a.transData.inverted().transform_point((1, 1))[0]-a.transData.inverted().transform_point((0, 0))[0]
 
     # draw shot points
-    a.plot(x[ map(lambda i__: int(i__ - startOffsetIDX), shots) ], np.zeros(len(shots)) + 8.*yPixel, 'gv', markersize = 8)    
+    a.plot(x[ [int(i__ - startOffsetIDX) for i__ in shots] ], np.zeros(len(shots)) + 8.*yPixel, 'gv', markersize = 8)    
 
     # draw geophone points
-    a.plot(x[ map(lambda i__: int(i__ - startOffsetIDX), geoph) ], np.zeros(len(geoph)) + 3.*yPixel, 'r^', markersize = 8)    
+    a.plot(x[ [int(i__ - startOffsetIDX) for i__ in geoph] ], np.zeros(len(geoph)) + 3.*yPixel, 'r^', markersize = 8)    
 
     a.grid()    
     a.set_ylim([ max(data('t')), +16.*yPixel])

@@ -16,6 +16,8 @@ project(libgimli)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -g -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing")
+    
+    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common -s")
 endif ()
  
 if(MSVC)
@@ -100,6 +102,7 @@ ENDIF(WIN32)
 ################################################################################
 
 set(PythonLibs_FIND_VERSION 2.7)
+set(Python_ADDITIONAL_VERSIONS 3.3 3.2 2.7)
 find_package(PythonInterp)
 find_package(PythonLibs)
 find_package(Boost 1.46.0 COMPONENTS python )
@@ -113,7 +116,6 @@ if(PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE
     set (PYGIMLI 1)
     message (STATUS "pygimli can be build.")
 endif ()
-
 
 configure_file ("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
 configure_file( doc/doxygen/doxyfile.in doc/doxygen/doxyfile )

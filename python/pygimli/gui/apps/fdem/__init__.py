@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fdem import *
+from .fdem import *
 
 PluginApplication = FDEMApp
 

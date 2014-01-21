@@ -3,9 +3,9 @@
 import sys, traceback
 
 try:
-	from wxMatplotPanel import wxMatplotPanel, AppResourceWxMPL
-	from colorBarWxMPL import ColorBarWxMPL
+	from .wxMatplotPanel import wxMatplotPanel, AppResourceWxMPL
+	from .colorBarWxMPL import ColorBarWxMPL
 except Exception:
-	print '-'*60
+	print('-'*60)
 	traceback.print_exc( file = sys.stdout)
-	print '-'*60
+	print('-'*60)

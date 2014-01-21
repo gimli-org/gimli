@@ -4,7 +4,7 @@
 import pygimli as g
 import numpy as N
 import pylab as P
-from base import draw1dmodel, rndig
+from .base import draw1dmodel, rndig
 
 class MRS1dBlockQTModelling( g.ModellingBase ):
     '''

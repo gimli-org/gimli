@@ -5,7 +5,7 @@
 
 import sys,os
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import math, random
 import pylab as P
 import numpy as np
@@ -44,15 +44,15 @@ class OverlayImageMPL( ):
             #print self.figure.axes
             if self.imAxes not in self.figure.axes:
                 if ( x + self.axes.get_position().x0 ) > 10:
-                    print "overlay size out of range", (x + self.axes.get_position().x0 )
-                    print posX, posY
-                    print xRange, yRange
-                    print x, y
-                    print self.axes.get_position().x0, self.axes.get_position().x1
-                    print self.figure.get_size_inches()
-                    print "add axes", [ x + self.axes.get_position().x0 - self.dx/6.0
+                    print(("overlay size out of range", (x + self.axes.get_position().x0 )))
+                    print((posX, posY))
+                    print((xRange, yRange))
+                    print((x, y))
+                    print((self.axes.get_position().x0, self.axes.get_position().x1))
+                    print((self.figure.get_size_inches()))
+                    print(("add axes", [ x + self.axes.get_position().x0 - self.dx/6.0
                                                     , y + self.axes.get_position().y0, self.dx, self.dy
-                                                    ]
+                                                    ]))
                     #hackish
                     return 
                 
@@ -66,7 +66,7 @@ class OverlayImageMPL( ):
                                             , y + self.axes.get_position().y0, self.dx, self.dy ] )
                                             
             if ( len( self.imAxes.get_xticks() ) > 0 ):
-                print "overlay imshow"
+                print("overlay imshow")
                 self.imAxes.imshow( self.image, origin='lower' )
                 self.imAxes.set_xticks( [] )
                 self.imAxes.set_yticks( [] )
@@ -142,17 +142,17 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
     filename = filenameProxi( imagename, serverName ) + imFormat
     
     if os.path.exists( filename ):
-        if verbose: print "Read image from disk", filename
+        if verbose: print(("Read image from disk", filename))
         image = P.imread( filename )
     else:
-        if verbose: print "Get map from url maps", url
+        if verbose: print(("Get map from url maps", url))
         
-        opener1 = urllib2.build_opener()
+        opener1 = urllib.request.build_opener()
         filehandle = opener1.open( url, timeout = 15 )
         data = filehandle.read()
         opener1.close()
         
-        if verbose: print imagename
+        if verbose: print(imagename)
         
         fi = open( filename, 'w')
         fi.write( data )
@@ -190,10 +190,10 @@ def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024
 
             nXtiles = ( endTile[0] - startTile[0] ) + 1
             nYtiles = ( endTile[1] - startTile[1] ) + 1
-            print "tiles: ", zoom, nYtiles, nXtiles
+            print(("tiles: ", zoom, nYtiles, nXtiles))
             if nXtiles == 1 and nYtiles == 1: break
             
-        print "zoom set to ", zoom
+        print(("zoom set to ", zoom))
             
     startTile = deg2MapTile( ul[ 0 ], ul[ 1 ], zoom )
     endTile   = deg2MapTile( lr[ 0 ], lr[ 1 ], zoom )
@@ -204,7 +204,7 @@ def underlayMap( axes, proj, vendor = 'OSM', zoom = -1, pixelLimit = [1024, 1024
     image = np.zeros( shape = (256 * nYtiles, 256 * nXtiles, 3) )
 
     if verbose: 
-        print "Mapimage size:", image.shape
+        print(("Mapimage size:", image.shape))
 
     for i in range( nXtiles ):
         for j in range( nYtiles ):

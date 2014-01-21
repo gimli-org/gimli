@@ -39,8 +39,8 @@ import wx
 
 try:
     import vtk
-except Exception,e:
-    print e
+except Exception as e:
+    print(e)
 
 # wxPython 2.4.0.4 and newer prefers the use of True and False, standard
 # booleans in Python 2.2 but not earlier.  Here we define these values if
@@ -122,7 +122,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         
         stereo = 0
         
-        if kw.has_key('stereo'):
+        if 'stereo' in kw:
             if kw['stereo']:
                 stereo = 1
             del kw['stereo']
@@ -132,11 +132,11 @@ class wxVTKRenderWindowInteractor(baseClass):
 
         position, size = wx.DefaultPosition, wx.DefaultSize
 
-        if kw.has_key('position'):
+        if 'position' in kw:
             position = kw['position']
             del kw['position']
 
-        if kw.has_key('size'):
+        if 'size' in kw:
             size = kw['size']
             del kw['size']
         
@@ -144,7 +144,7 @@ class wxVTKRenderWindowInteractor(baseClass):
         # wx.NO_FULL_REPAINT_ON_RESIZE cuts down resize flicker under GTK
         style = wx.WANTS_CHARS | wx.NO_FULL_REPAINT_ON_RESIZE
 
-        if kw.has_key('style'):
+        if 'style' in kw:
             style = style | kw['style']
             del kw['style']
 
@@ -277,8 +277,8 @@ class wxVTKRenderWindowInteractor(baseClass):
         elif hasattr(self._Iren, attr):
             return getattr(self._Iren, attr)
         else:
-            raise AttributeError, self.__class__.__name__ + \
-                  " has no attribute named " + attr
+            raise AttributeError(self.__class__.__name__ + \
+                  " has no attribute named " + attr)
 
     def CreateTimer(self, obj, evt):
         """Creates a timer."""

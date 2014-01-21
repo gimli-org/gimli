@@ -77,11 +77,11 @@ def importMaxminData( filename, verbose = False ):
     
     fid.close()
     
-    if verbose: print "CS=", coilspacing, "F=", freq
+    if verbose: print("CS=", coilspacing, "F=", freq)
     if aline.find(',')>0: delim=','
     
     nf = len( freq )
-    if verbose: print "delim=", delim, "nf=", nf
+    if verbose: print("delim=", delim, "nf=", nf)
     A = P.loadtxt( filename, skiprows=i, delimiter=delim ).T
     x, IP, OP = A[0], A[2:nf*2+2:2].T, A[3:nf*2+2:2].T
 
@@ -96,9 +96,9 @@ class FDEMData():
         
     def showInfos( self ):
         if isinstance( self.x, float ):
-            print "Soundings with", len(self.f), "frequencies"
+            print("Soundings with", len(self.f), "frequencies")
         else:
-            print len(self.x), "soundings with each", len(self.f), "frequencies"
+            print(len(self.x), "soundings with each", len(self.f), "frequencies")
 
     def deactivate( self, fr ):
         """deactivate a single frequency."""
@@ -221,7 +221,7 @@ class FDEMData():
         
     def plotAllData( self, allF = True, orientation='vertical' ):
         """plot data along a profile as image plots for IP and OP."""
-        nt = range( 0, len( self.x ), 5 )
+        nt = list(range( 0, len( self.x ), 5))
         freq = self.freq()
         nf = len( freq )
         P.clf()
@@ -230,7 +230,7 @@ class FDEMData():
         P.imshow( self.IP[:,self.activeFreq].T, interpolation='nearest' )
         ax1.set_xticks(nt)
         ax1.set_xticklabels(["%g" % xi for xi in self.x[nt]])
-        ax1.set_yticks(range(0,nf+1,2))
+        ax1.set_yticks(list(range(0,nf+1,2)))
         ax1.set_yticklabels(["%g" % freq[i] for i in range(0,nf,2)])
         P.ylim((-0.5,nf-0.5))
         P.colorbar(orientation=orientation,aspect=30,shrink=0.8)
@@ -241,7 +241,7 @@ class FDEMData():
         P.imshow( self.OP[:,self.activeFreq].T, interpolation='nearest' )
         ax2.set_xticks(nt)
         ax2.set_xticklabels(["%g" % xi for xi in self.x[nt]])
-        ax2.set_yticks(range(0,nf+1,2))
+        ax2.set_yticks(list(range(0,nf+1,2)))
         ax2.set_yticklabels(["%g" % freq[i] for i in range(0,nf,2)])
         P.ylim((-0.5,nf-0.5))
         P.colorbar(orientation=orientation,aspect=30,shrink=0.8)
@@ -271,4 +271,4 @@ class FDEMData():
 #	20	0	5.04	5.56	7.11	10.31	13.22	16.28	25.06	21.91	37.18	14.17	57.3	4.67	52.07	-17.81	42.18	-31.07
 
 if __name__ == '__main__':
-    print "print do some tests here"
+    print("print do some tests here")

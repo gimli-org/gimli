@@ -25,7 +25,7 @@ except ImportError:
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH \n''')
     sys.exit( 1 )
 except Exception as e:
-    print e
+    print(e)
     
 from pygimli.gui.resources import loadIcon
 from pygimli.gui.controls import ResourceTree
@@ -97,7 +97,7 @@ class RedirectOutput:
                     st = self.writeQueue_.pop( 0 )
 
                     #self.frame.AddText( str( ("%d/%d-%d %s")%(counter,l,len(st), st) ) )
-                    self.frame.AddText( (unicode("%s")% st) )
+                    self.frame.AddText( (str("%s")% st) )
                     self.frame.EnsureCaretVisible()
                     self.frame.SetStyling( len( st ), self.style )
 
@@ -190,7 +190,7 @@ class PyGIMLIMainFrame( wx.Frame ):
 
         import locale
         if locale.localeconv()['decimal_point'] == ',':
-            print "decimal point:", locale.localeconv()['decimal_point']
+            print("decimal point:", locale.localeconv()['decimal_point'])
             locale.setlocale( locale.LC_NUMERIC, 'C' )
 
         self.ws = ws
@@ -445,13 +445,13 @@ class PyGIMLIMainFrame( wx.Frame ):
             [cmd, args, name] = self.onIdleCmdQueue_[ 0 ]
 
             label = xrc.XRCCTRL( self.idleProzessPanel, 'IdleLabel'  )
-            print gauge.GetValue(), ": ", name
+            print(gauge.GetValue(), ": ", name)
             label.SetLabel( "Prozessing: " + str( gauge.GetValue() ) + "/" + str( gauge.GetRange() )
                                             + " ... " + name )
 
             try:
                 if len( args ) == 0:
-                    print name, cmd
+                    print(name, cmd)
                     cmd()
                 elif len( args ) == 1:
                     cmd( args[ 0 ] )
@@ -460,7 +460,7 @@ class PyGIMLIMainFrame( wx.Frame ):
             except Exception as e:
                 import traceback
                 traceback.print_exc( file=sys.stdout )
-                print e
+                print(e)
                 
             self.onIdleCmdQueue_.pop( 0 )
         else:
@@ -481,7 +481,7 @@ class PyGIMLIMainFrame( wx.Frame ):
 
     def onOpenFileDialog( self, event = None ):
         wildcard = str()
-        for suffix in self.fileSuffixes.keys():
+        for suffix in list(self.fileSuffixes.keys()):
             wildcard += self.fileSuffixes[ suffix ][0] + "|*" + suffix + "|"
         wildcard += "All files (*.*)|*.*"
 
@@ -496,12 +496,12 @@ class PyGIMLIMainFrame( wx.Frame ):
         if dlg.ShowModal() == wx.ID_OK:
             # This returns a Python list of files that were selected.
             paths = dlg.GetPaths()
-            print('You selected %d files:' % len(paths))
+            print(('You selected %d files:' % len(paths)))
 
             self.openFile( paths[ 0 ] )
 
     # Compare this with the debug above; did we change working dirs?
-        print("CWD: %s\n" % os.getcwd())
+        print(("CWD: %s\n" % os.getcwd()))
 
         # Destroy the dialog. Don't do this until you are done with it!
         # BAD things can happen otherwise!
@@ -512,7 +512,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         (fileBaseName, fileExtension) = os.path.splitext( fileName )
 
         if fileExtension in self.fileSuffixes:
-            print "Openfile: starting: ", self.fileSuffixes[ fileExtension ][1]
+            print("Openfile: starting: ", self.fileSuffixes[ fileExtension ][1])
             app = self.createApplication( obj = self.fileSuffixes[ fileExtension ][1] )
             self.fileSuffixes[ fileExtension ][2]( app, path )
         else:
@@ -536,15 +536,15 @@ class PyGIMLIMainFrame( wx.Frame ):
         info = wx.AboutDialogInfo()
         info.Name = "PyGI"
         info.Version = "0.9.0"
-        info.Copyright = unicode("(C) 2011 Carsten Rücker and Thomas Günther", 'utf8')
-        print wx.PlatformInfo[1:]
+        info.Copyright = str("(C) 2011 Carsten Rücker and Thomas Günther", 'utf8')
+        print(wx.PlatformInfo[1:])
         info.Description = wordwrap(
             "wyPython-" + wx.VERSION_STRING +  " , ".join(wx.PlatformInfo[1:]) + ", \n" +
             " Running on python-" + sys.version.split()[0]
             , 350, wx.ClientDC(self))
         info.WebSite = ("http://www.resistivity.net")
-        info.Developers = [ unicode("Carsten Rücker (carsten@resistivity.net)", 'utf8'),
-                            unicode("Thomas Günther (thomas@resistivity.net)", 'utf8'),
+        info.Developers = [ str("Carsten Rücker (carsten@resistivity.net)", 'utf8'),
+                            str("Thomas Günther (thomas@resistivity.net)", 'utf8'),
                              ]
 
         info.License = wordwrap( "licenseText", 500, wx.ClientDC(self))
@@ -557,15 +557,15 @@ class PyGIMLIMainFrame( wx.Frame ):
     def registerOpenFileSuffix( self, suffix, wildcard, cls, callback ):
         """What is this?"""
         if suffix not in self.fileSuffixes:
-            print "Register main open file suffix:", suffix, " for ", wildcard
+            print("Register main open file suffix:", suffix, " for ", wildcard)
             self.fileSuffixes[ suffix ] = [ wildcard, cls, callback ]
         else:
-            print " there is already a definition for mainOpenFileSlot suffix: ", suffix, \
-                    "(" + self.fileSuffixes[ suffix ][0] + ")"
+            print(" there is already a definition for mainOpenFileSlot suffix: ", suffix, \
+                    "(" + self.fileSuffixes[ suffix ][0] + ")")
 
     def registerPlugins( self ):
         """What is this?"""
-        print "register plugins: "
+        print("register plugins: ")
         pluginpath = os.path.dirname( __file__ ) + '/../apps/'
         paths = os.listdir( pluginpath )
 
@@ -575,15 +575,15 @@ class PyGIMLIMainFrame( wx.Frame ):
                 continue
 
             pluginName = "pygimli.gui.apps." + p
-            print "installing: ", pluginName
+            print("installing: ", pluginName)
             importCmd = "import " + pluginName + " as plugin"
 
             try:
-                exec importCmd
+                exec(importCmd)
             except Exception as e:
                 import traceback
                 traceback.print_exc( file=sys.stdout )
-                print "import exception: ", e
+                print("import exception: ", e)
                 continue
 
             if not hasattr( plugin, 'PluginApplication' ):
@@ -615,7 +615,7 @@ class PyGIMLIMainFrame( wx.Frame ):
             except Exception as e:
                 import traceback
                 traceback.print_exc( file=sys.stdout )
-                print "Exception in register MainMenuBar Entry", e
+                print("Exception in register MainMenuBar Entry", e)
                 return
 
             try:
@@ -634,7 +634,7 @@ class PyGIMLIMainFrame( wx.Frame ):
             except Exception as e:
                 import traceback
                 traceback.print_exc( file=sys.stdout )
-                print "Exception in register OpenFileSuffix", e
+                print("Exception in register OpenFileSuffix", e)
                 return
 
     def createApplication( self, event = None, obj = None ):
@@ -659,7 +659,7 @@ import threading
 
 class PyGIMLIApp( wx.App ):
     def __init__( self, options = None, args = None, ws = None):
-        print "Mops"
+        print("Mops")
         wx.App.__init__( self, redirect = False )
         
         from optparse import OptionParser
@@ -670,7 +670,7 @@ class PyGIMLIApp( wx.App ):
         (options, args) = parser.parse_args()
     
         
-        print options, args
+        print(options, args)
         self.options = options
         self.args = args
         self.logFile = 'pygi.log'

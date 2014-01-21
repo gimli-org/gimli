@@ -3,7 +3,7 @@ import matplotlib as mpl
 import numpy as np
 import textwrap
 
-from colorbar import *
+from .colorbar import *
 import pygimli as g
 from pygimli.misc import streamline
 
@@ -49,12 +49,12 @@ class CellBrowser:
     def connect(self):
         self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
         self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
-        print "Interactive cell browser activated on Figure", self.fig.number
+        print(("Interactive cell browser activated on Figure", self.fig.number))
 
     def disconnect(self):
         self.fig.canvas.mpl_connect(self.pid)
         self.fig.canvas.mpl_connect(self.kid)
-        print "Cell browser disconnected from Figure", self.fig.number
+        print(("Cell browser disconnected from Figure", self.fig.number))
 
     def hide(self):
         self.text.set_visible(False)
@@ -179,8 +179,8 @@ def drawSelectedMeshBoundaries(axes, boundaries, color = (0.0, 0.0, 0.0, 1.0), l
     lines  = []
 
     for bound in boundaries:
-        lines.append(zip([bound.node(0).x(), bound.node(1).x()],
-                           [bound.node(0).y(), bound.node(1).y()]))
+        lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
+                           [bound.node(0).y(), bound.node(1).y()])))
 
     lineCollection = mpl.collections.LineCollection(lines, antialiaseds = drawAA)
 
@@ -193,14 +193,14 @@ def drawSelectedMeshBoundaries(axes, boundaries, color = (0.0, 0.0, 0.0, 1.0), l
 def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y', color=(0.5, 0.5, 0.5, 1.0)):
     """what is this?"""
     polys = []
-    print len(boundaries)
+    print((len(boundaries)))
     for cell in boundaries:
-        polys.append(zip([getattr(cell.node(0), first)()
+        polys.append(list(zip([getattr(cell.node(0), first)()
                             , getattr(cell.node(1), first)()
                             , getattr(cell.node(2), first)()],
                            [getattr(cell.node(0), second)()
                             , getattr(cell.node(1), second)()
-                            , getattr(cell.node(2), second)()]))
+                            , getattr(cell.node(2), second)()])))
 
     collection = mpl.collections.PolyCollection(polys, antialiaseds = True)
 
@@ -241,10 +241,10 @@ def drawMeshBoundaries(axes, mesh, fitView = True):
     drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(g.MARKER_BOUND_MIXED)
                                 , color = (1.0, 0.0, 0.0, 1.0)
                                 , linewidth = 1.0)
-    drawSelectedMeshBoundaries(axes, filter(lambda b: b.marker() > 0, mesh.boundaries())
+    drawSelectedMeshBoundaries(axes, [b for b in mesh.boundaries() if b.marker() > 0]
                                 , color = (0.0, 0.0, 0.0, 1.0)
                                 , linewidth = 1.0)
-    drawSelectedMeshBoundaries(axes, filter(lambda b: b.marker() < -4, mesh.boundaries())
+    drawSelectedMeshBoundaries(axes, [b for b in mesh.boundaries() if b.marker() < -4]
                                 , color = (0.0, 0.0, 0.0, 1.0)
                                 , linewidth = 1.0)
 
@@ -257,11 +257,11 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
     ' Utility function to create 2d mesh patches in a axes'
     ''
     if not mesh:
-        print "drawMeshBoundaries(axes, mesh): invalid mesh"
+        print("drawMeshBoundaries(axes, mesh): invalid mesh")
         return
 
     if mesh.nodeCount() < 2:
-        print "drawMeshBoundaries(axes, mesh): to few nodes"
+        print("drawMeshBoundaries(axes, mesh): to few nodes")
         return
 
     swatch = g.Stopwatch(True)
@@ -273,15 +273,15 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
 
     for cell in mesh.cells():
         if (cell.shape().nodeCount() == 3):
-            polys.append(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
-                               [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()]))
+            polys.append(list(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
+                               [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()])))
         elif (cell.shape().nodeCount() == 4):
-            polys.append(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
+            polys.append(list(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
                                     cell.node(3).x()],
                                [cell.node(0).y(), cell.node(1).y(), cell.node(2).y(),
-                                    cell.node(3).y()]))
+                                    cell.node(3).y()])))
         else:
-            print "unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()
+            print(("unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()))
 
     patches = mpl.collections.PolyCollection(polys, antialiaseds = False, lod = True, picker=True, **kwarg)
 
@@ -291,7 +291,7 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
     axes.add_collection(patches)
 
     if verbose:
-        print "plotting time = ", swatch.duration(True)
+        print(("plotting time = ", swatch.duration(True)))
     return patches
 # def createMeshPatches(...)
 
@@ -305,7 +305,7 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
 
     swatch = g.Stopwatch(True)
     if (verbose):
-        print "start interpolation:", swatch.duration(True)
+        print(("start interpolation:", swatch.duration(True)))
 
     xg = createLinLevs(x[0], x[1], int((x[1] - x[0]) / dx))
     yg = createLinLevs(z[0], z[1], int((z[1] - z[0]) / dx))
@@ -317,7 +317,7 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
                     , g.asvector(list(Y.flat)), verbose)
 
     if (verbose):
-        print "interpolation:", swatch.duration(True)
+        print(("interpolation:", swatch.duration(True)))
 
     zi = np.asarray(uI)
     if maskZero:
@@ -329,12 +329,12 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
 
     if min(zi) < 0:
         potLevs = np.linspace(-maxZ, -epsZ, nLevs/2.)
-        print potLevs
+        print(potLevs)
         potLevs = np.hstack((potLevs, potLevs[::-1] * -1.))
     else:
         potLevs = np.linspace(0, maxZ, nLevs)
 
-    print potLevs
+    print(potLevs)
     linestyles = ['solid'] * len(potLevs)
 
     gci = ax.contourf(X, Y, Z, potLevs)
@@ -351,9 +351,9 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
         ax.set_title(title)
 
     if (verbose):
-        print "time:", swatch.duration(True)
+        print(("time:", swatch.duration(True)))
 
-    print "fixing 'Depth' to be positive values"
+    print("fixing 'Depth' to be positive values")
     ticks = ax.yaxis.get_majorticklocs()
     tickLabels=[]
 
@@ -517,7 +517,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight = None):
         cellList[cId].append(mesh.cell(cId))
 
     paraCenter = dict()
-    for id, vals in cellList.items():
+    for id, vals in list(cellList.items()):
         p = g.RVector3(0.0, 0.0, 0.0);
         for c in vals:
             p += c.center()
@@ -562,7 +562,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight = None):
         start.append(pa)
         end.append(pb)
 
-    print "createParameterContraintsLines t = ", swatch.duration(True)
+    print(("createParameterContraintsLines t = ", swatch.duration(True)))
     return start, end
 
 def drawParameterConstraints(axes, mesh, cMat, cWeight = None):
@@ -575,7 +575,7 @@ def drawParameterConstraints(axes, mesh, cMat, cWeight = None):
     colors      = []
     linewidths  = []
     for i, v in enumerate(start):
-        lines.append(zip([start[i].x(), end[i].x()], [start[i].y(), end[i].y()]))
+        lines.append(list(zip([start[i].x(), end[i].x()], [start[i].y(), end[i].y()])))
 
         linewidth = 0.5
         col = (0.0, 0.0, 1.0, 1.0)

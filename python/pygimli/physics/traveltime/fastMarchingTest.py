@@ -102,7 +102,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
 mesh = g.Mesh('mesh/test2d')
 mesh.createNeighbourInfos()
 
-print mesh
+print(mesh)
 
 source = g.RVector3( -80, 0. )
 times = g.RVector( mesh.nodeCount(), 0. )
@@ -182,7 +182,7 @@ while len( downwind ) > 0:
 
     fastMarch( mesh, downwind, times, upTags, downTags)
 
-print time.time()-tic, "s"
+print(time.time()-tic, "s")
 
 drawMesh( a, mesh )
 drawField( a, mesh, times, filled=True )

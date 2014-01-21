@@ -31,8 +31,8 @@ def drawData(axes, data, vals, pseudotype='A_M', cMin=None, cMax=None,
     try:
         sheme = getattr(g.mplviewer.Pseudotype, pseudotype)
     except:
-        print "no pseudotype ", pseudotype, " found. Falling back to A_M"
-        print dir(g.mplviewer.Pseudotype)
+        print("no pseudotype ", pseudotype, " found. Falling back to A_M")
+        print(dir(g.mplviewer.Pseudotype))
         sheme = g.mplviewer.Pseudotype.A_M
 
     gci = g.mplviewer.drawDataAsMatrix(axes, data, vals, pseudotype = sheme

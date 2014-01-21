@@ -16,7 +16,7 @@ def importEmsysAsciiData( filename, verbose = False ):
     err = q / pf  * 100. # percentage of primary field
     
     if len( P.unique( sep ) ) > 1:
-        print "Warning! Several coil spacings present in file!"
+        print("Warning! Several coil spacings present in file!")
     
     coilspacing = P.median( sep )
     
@@ -52,11 +52,11 @@ def importMaxminData( filename, verbose = False ):
     
     fid.close()
     
-    if verbose: print "CS=", coilspacing, "F=", freq
+    if verbose: print("CS=", coilspacing, "F=", freq)
     if aline.find(',')>0: delim=','
     
     nf = len( freq )
-    if verbose: print "delim=", delim, "nf=", nf
+    if verbose: print("delim=", delim, "nf=", nf)
     A = P.loadtxt( filename, skiprows=i, delimiter=delim ).T
     x, IP, OP = A[0], A[2:nf*2+2:2].T, A[3:nf*2+2:2].T
 
@@ -64,12 +64,12 @@ def importMaxminData( filename, verbose = False ):
 
 def xfplot( ax, DATA, x, freq, everyx=5, orientation='vertical', aspect=40 ):
     """plots a matrix according to x and frequencies."""
-    nt = range( 0, len( x ), everyx )
+    nt = list(range( 0, len( x ), everyx))
     P.imshow( DATA.T, interpolation='nearest' )
     P.ylim(P.ylim()[::-1])
     ax.set_xticks(nt)
     ax.set_xticklabels(["%g" % xi for xi in x[nt]])
-    ax.set_yticks(range(0,len(freq)+1,2))
+    ax.set_yticks(list(range(0,len(freq)+1,2)))
     ax.set_yticklabels(["%g" % freq[i] for i in range(0,len(freq),2)])
     P.colorbar(orientation=orientation,aspect=aspect)
     P.xlabel('x [m]')
@@ -98,7 +98,7 @@ class FDEMData():
             return  "<FDEMdata: %d soundings with each %d frequencies, coilspacing is %.1f>" % (len(self.x), len(self.f), self.cs)
         
     def showInfos( self ): # only for old scripts using it
-        print __repr__( self )
+        print(__repr__( self ))
 
     def deactivate( self, fr ):
         """deactivate a single frequency."""
@@ -328,12 +328,12 @@ if __name__ == "__main__":
         
     if len( args ) == 0:
         parser.print_help()
-        print "Please add a mesh or model name."
+        print("Please add a mesh or model name.")
         sys.exit( 2 )
     else:
         if len( args ) == 0:
             parser.print_help()
-            print "Please add a mesh or model name."
+            print("Please add a mesh or model name.")
             sys.exit( 2 )
         else:
             fdem = FDEMData( args[ 0 ] )

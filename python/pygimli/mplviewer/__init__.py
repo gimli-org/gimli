@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from dataview import *  
+from .dataview import *  
 
-from meshview import *
-from colorbar import *
-from overlayimage import *
+from .meshview import *
+from .colorbar import *
+from .overlayimage import *
 
 import matplotlib.pyplot as plt
 import numpy as np

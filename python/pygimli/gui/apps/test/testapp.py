@@ -7,7 +7,7 @@ from pygimli.gui.base import AppResource
 try:
     from pygimli.gui.wxmpl import AppResourceWxMPL
 except Exception as e:
-	print 'Import of wxmpl failed: ', e
+	print('Import of wxmpl failed: ', e)
 
 try:
     from pygimli.gui.wxvtk import vtk, AppResourceWxVTK
@@ -116,22 +116,22 @@ class TestMPLApp( AppResourceWxMPL ):
         self.updateDrawOnIdle()
 
     def onMousePress( self, event ):
-        print "mousePress"
+        print("mousePress")
         axes = event.inaxes
         if axes is not None:
             #print axes
-            print 'button=%d, x=%d, y=%d, xdata=%f, ydata=%f'%(
-            event.button, event.x, event.y, event.xdata, event.ydata)
+            print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f'%(
+            event.button, event.x, event.y, event.xdata, event.ydata))
             p = axes.pick(event)
-            print "inaxes pick", p
+            print("inaxes pick", p)
             
         else:
-            print "Pos:", event.canvas._lastx, event.canvas._lasty
+            print("Pos:", event.canvas._lastx, event.canvas._lasty)
             xdata, ydata = self.axes.transData.inverted().transform_point((event.canvas._lastx, event.canvas._lasty))
-            print "DPos:", xdata, ydata
+            print("DPos:", xdata, ydata)
 
     def onPick( self, event ):
-        print "onPick", event
+        print("onPick", event)
         
 class TestApp( AppResource ):
     def __init__( self, parent, rendererSlot, propertyInspectorSlot ):
@@ -202,7 +202,7 @@ class TestApp( AppResource ):
     def openFile( self, files = None ):
         """do nothing here, just to show the technique for MainOpenFileSuffix
         register."""
-        print files
+        print(files)
     
     def setTitle( self, title = None ):
         """Set the title, either called manually or by callback."""

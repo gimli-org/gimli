@@ -24,14 +24,14 @@ __get_window_handle.argtypes = [__ctypes.c_void_p]
 
 def get_window_handle_str(window): 
     if not isinstance(window, __wx.Window): 
-        raise TypeError, 'Must be called with a wx.Window or a subclass' 
+        raise TypeError('Must be called with a wx.Window or a subclass') 
     
     handle = __get_window_handle( int(window.this) )
     if handle == -2:
-        print "not window found"
+        print("not window found")
         handle = 0
     elif handle == -1:
-        print "not widget found"
+        print("not widget found")
         handle = 0
         
     return str( handle )

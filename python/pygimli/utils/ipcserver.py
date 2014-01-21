@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import threading
-import SocketServer
+import socketserver
 import struct
 
 def parseIPCMessage( data ):
@@ -17,13 +17,13 @@ def parseIPCMessage( data ):
 
     return name, value
 
-class IPCThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
+class IPCThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     #def __init__( self ):
         #SocketServer.BaseRequestHandler.__init__( self )
         #pass
 
     def setup(self):
-        print 'ipcserver: got new connection %d from %s' % (self.request.fileno(), self.client_address)
+        print('ipcserver: got new connection %d from %s' % (self.request.fileno(), self.client_address))
         welcome = "Welcome on ipc-server. Client " + str( self.request.fileno() ) #+ str( self.server_address )
         out_msg = struct.pack( "<B", len( welcome ) ) + welcome + struct.pack( "<B", 0 ) + struct.pack( "<q", -111 )
         self.request.send( struct.pack( "<H", len( out_msg ) ) + out_msg )
@@ -40,7 +40,7 @@ class IPCThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                     end = start + struct.unpack( "<H", data[ start : start + 2 ] )[0] +2;
                     # print "parsing:", len(data), start, end
                     name,value = parseIPCMessage( data[ start : end ] )
-                    print "server: client(", self.request.fileno(), ")", name, value, "\n"
+                    print("server: client(", self.request.fileno(), ")", name, value, "\n")
                     start = end
                 # just echoing
                 # self.request.send( data )
@@ -50,7 +50,7 @@ class IPCThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         #self.request.send(response)
 
     def finish(self):
-        print "unsubscribe: ", self.request.fileno()
+        print("unsubscribe: ", self.request.fileno())
 
-class IPCServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class IPCServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass

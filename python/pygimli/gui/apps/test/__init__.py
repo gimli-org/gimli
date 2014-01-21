@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 
-from testapp import *
+from .testapp import *
 
 PluginApplication = TestApp
 

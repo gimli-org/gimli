@@ -56,7 +56,7 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
         plot = getattr(ax, plotfunction)
         plot(px, pz, *args, **kwargs)
     except Exception as e:
-        print e
+        print(e)
 
     ax.set_ylabel('Depth [m]')
     ax.set_xlabel(xlabel)
@@ -68,7 +68,7 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
 
 
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
-    print "STYLE_WARNING!!!!!!!!!!! don't use this call. Use show1dmodel instead."
+    print("STYLE_WARNING!!!!!!!!!!! don't use this call. Use show1dmodel instead.")
     show1dmodel(x, thk, xlab, zlab, islog, z0)
 
 
@@ -125,7 +125,7 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
             cmin = min(cmin, min(res))
             cmax = max(cmax, max(res))
 
-        print "cmin=", cmin, " cmax=", cmax
+        print("cmin=", cmin, " cmax=", cmax)
 
     dx = P.diff(x)
     dx = P.hstack((dx, dx[-1]))

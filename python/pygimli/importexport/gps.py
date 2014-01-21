@@ -7,7 +7,7 @@ try:
     from osgeo import gdal
     from osgeo.gdalconst import GA_ReadOnly
 except:
-    print "no modules osgeo"
+    print("no modules osgeo")
     
 import pylab as P
 from math import floor
@@ -108,7 +108,7 @@ def readSimpleLatLon(filename, verbose=False):
             w.append((conv_(vals[2]), conv_(vals[1]), vals[0], 'time'))
                     
         if verbose:
-            print w[-1]
+            print(w[-1])
         
     
     return w
@@ -167,7 +167,7 @@ def GKtoUTM(R, H=None):
     elif floor( rr*1e-6 ) == 4.:
         return GK4toUTM( R, H )
     else:
-        print "cannot detect valid GK zone"
+        print("cannot detect valid GK zone")
     
 def convddmm(num):
     dd = P.floor( num / 100. )

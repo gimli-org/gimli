@@ -45,7 +45,7 @@ class FDEMApp( AppResourceWxMPL ):
         """
 
         # create a Notebook for the PI and add the content for the panel with the name piGPSViewerApp defined in gpsview.xrc
-        print "panel = self.createPropertyInspectorNoteBookPanel( parent, 'piFDEMApp', title = 'FDEM' )"
+        print("panel = self.createPropertyInspectorNoteBookPanel( parent, 'piFDEMApp', title = 'FDEM' )")
         panel = self.createPropertyInspectorNoteBookPanel( parent, 'piFDEMApp', title = 'FDEM' )
          
          
@@ -73,11 +73,11 @@ class FDEMApp( AppResourceWxMPL ):
        
     def openFile( self, files = None ):
         """Load data here."""
-        print "#openFile( self, files = None )"
+        print("#openFile( self, files = None )")
         self.draw()
     
     def onImportFile( self, event = None ):
         """Import coordinates in Lon Lat format."""
-        print "#onImportFile( self, event = None ):"
+        print("#onImportFile( self, event = None ):")
         #self.parent.onOpenFileDialog()
     

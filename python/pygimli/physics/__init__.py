@@ -2,5 +2,5 @@
 
 """What does this physics do??"""
 
-from fdem import FDEMData
+from .fdem import FDEMData
 

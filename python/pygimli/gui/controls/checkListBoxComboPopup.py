@@ -142,7 +142,7 @@ class CheckListBoxComboPopup( wx.CheckListBox, wx.combo.ComboPopup):
         try:
             prefHeight = self.GetCount() * ( self.GetItemHeight( ) + 7 )
         except Exception as e:
-            print e            
+            print(e)            
             prefHeight = self.GetCount() * ( 17 + 7 )    
         return wx.combo.ComboPopup.GetAdjustedSize(self, minWidth, prefHeight, maxHeight)
 

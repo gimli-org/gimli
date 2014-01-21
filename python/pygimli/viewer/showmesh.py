@@ -42,7 +42,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
         drawMesh(a, mesh)
     else:
         if min(data) == max(data):
-            print("No valid data",  min(data), max(data))
+            print(("No valid data",  min(data), max(data)))
             drawMesh(a, mesh)
         else:
             validData = True

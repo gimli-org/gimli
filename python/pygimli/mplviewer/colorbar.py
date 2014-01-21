@@ -32,7 +32,7 @@ def cmapFromName(cmapname, ncols=256, bad=[1.0, 1.0, 1.0, 0.0]):
             try:
                 cmap = mpl.cm.get_cmap(cmapname, ncols)
             except:
-                print "could not retrieve colormap ", cmapname
+                print(("could not retrieve colormap ", cmapname))
 
     cmap.set_bad(bad)
     return cmap
@@ -80,7 +80,7 @@ def createLogLevs(vMin, vMax, nLevs):
     vMinLog = np.log10(vMin)
     vMaxLog = np.log10(vMax)
 
-    lev_exp = range(0, nLevs)
+    lev_exp = list(range(0, nLevs))
     lev_exp[0] = vMinLog
     dxLog = (vMaxLog - vMinLog) / (nLevs - 1)
 
@@ -93,7 +93,7 @@ def createLogLevs(vMin, vMax, nLevs):
 
 
 def createLinLevs(vMin, vMax, nLevs):
-    levs = range(0, nLevs)
+    levs = list(range(0, nLevs))
     levs[0] = vMin
     dx = (float(vMax) - float(vMin)) / (nLevs - 1)
 

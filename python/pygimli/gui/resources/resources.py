@@ -37,7 +37,7 @@ def loadIcon( filename ):
     bmp = wx.Bitmap( iconfile )
     return bmp
 
-def MakeGray((r,g,b), factor, maskColor):
+def MakeGray(xxx_todo_changeme, factor, maskColor):
     """
     Make a pixel grayed-out. If the pixel matches the `maskColor`, it won't be
     changed.
@@ -46,9 +46,9 @@ def MakeGray((r,g,b), factor, maskColor):
     :param `factor`: a graying-out factor;
     :param `maskColor`: a colour mask.
     """
-    
+    (r,g,b) = xxx_todo_changeme
     if (r,g,b) != maskColor:
-        return map(lambda x: int((230 - x) * factor) + x, (r,g,b))
+        return [int((230 - x) * factor) + x for x in (r,g,b)]
     else:
         return (r,g,b)
         
@@ -75,7 +75,7 @@ def MakeDisabledBitmap(bitmap):
     else:
         alpha = None
 
-    data = map(ord, list(anImage.GetData()))
+    data = list(map(ord, list(anImage.GetData())))
 
     for i in range(0, len(data), 3):
         

@@ -72,7 +72,7 @@ class ColorBarWxMPL( ManagedProperties ):
                                                     , ctrlEvent = wx.EVT_RADIOBUTTON
                                                     , targetFunct = self.update )
         else:
-            print "no panel given"
+            print("no panel given")
 
         return propertyPanel
 
@@ -97,7 +97,7 @@ class ColorBarWxMPL( ManagedProperties ):
         self.update()
         
     def autoColor( self ):
-        print "cBarAutoColor( self )", self.cAuto()
+        print("cBarAutoColor( self )", self.cAuto())
         if self.cbar:
             if self.cAuto():
                 self.cmax.ctrl.Enable( False )
@@ -160,11 +160,11 @@ class ColorBarWxMPL( ManagedProperties ):
                         self.autoColor()
                         self.update()
                     else:
-                        print "data range to small", gci.get_array( ).min(), gci.get_array( ).max()
+                        print("data range to small", gci.get_array( ).min(), gci.get_array( ).max())
                         self.activeCheck.setVal( False )
                         self.enablePanel.Enable( False )
                 else:
-                    print "no data asigned to mappable", self.parent.gci
+                    print("no data asigned to mappable", self.parent.gci)
                     self.activeCheck.setVal( False )
                     self.enablePanel.Enable( False )
         else:
@@ -194,7 +194,7 @@ class ColorBarWxMPL( ManagedProperties ):
             else:
                 self.parent.gci.set_cmap( cmap )
                 
-            print self.cmin(), self.cmax()
+            print(self.cmin(), self.cmax())
             if nLevs > 1:
                 g.mplviewer.setCbarLevels( self.cbar, cMin = self.cmin(), cMax = self.cmax(), nLevs = self.cbarTicks() )
 

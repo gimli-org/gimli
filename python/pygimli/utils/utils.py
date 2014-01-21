@@ -5,7 +5,7 @@ import pygimli as g
 from math import sqrt, floor, ceil
 
 def unicodeToAscii( text ):
-    if type( text ) == unicode:
+    if type( text ) == str:
         return text.encode("iso-8859-1", "ignore")
     else:
         return text
@@ -38,12 +38,12 @@ def grange( start, end, dx = 0, n = 0, log = False ):
     
     if dx != 0:
         if end < start and dx > 0:
-            print "grange: decreasing range but increasing dx, swap dx sign"
+            print("grange: decreasing range but increasing dx, swap dx sign")
             d = -d
         if end > start and dx < 0:
-            print "grange: increasing range but decreasing dx, swap dx sign"
+            print("grange: increasing range but decreasing dx, swap dx sign")
             d = -d
-        ret = g.asvector( range( int( floor( abs( ( e - s ) / d ) ) + 1 ) ) )
+        ret = g.asvector( list(range( int( floor( abs( ( e - s ) / d ) ) + 1 ))) )
         ret *= d
         ret += s
         return ret;
@@ -97,7 +97,7 @@ def filterIndex( seq, idx ):
         #return seq( idx )
         ret = g.RVector( len( idx ) )
     else:
-        ret = range( len( idx ) )
+        ret = list(range( len( idx )))
 
     for i, id in enumerate( idx ):
         ret[ i ] = seq[ id ]
@@ -129,7 +129,7 @@ def unique_everseen(iterable, key=None):
     seen = set()
     seen_add = seen.add
     if key is None:
-        for element in itertools.ifilterfalse(seen.__contains__, iterable):
+        for element in itertools.filterfalse(seen.__contains__, iterable):
             seen_add(element)
             yield element
     else:
