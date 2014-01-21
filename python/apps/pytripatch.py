@@ -56,7 +56,7 @@ def on_draw(event = None):
     xbbox = _getBB(ax.get_xticklabels() + [ax.xaxis.label], fig)
     fig.subplots_adjust(bottom = 1.05 * xbbox.height)
 
-    print ybbox.width, xbbox.width
+    print(ybbox.width, xbbox.width)
     fig.subplots_adjust(right = 0.99) # pad a little
     fig.subplots_adjust(top = 0.99) # pad a little
 
@@ -77,7 +77,7 @@ def applyPublishStyle(style):
     elif vals[0] == 'h':
         "not yet done"
     else:
-        print "publish dominant dimension not known", vals[ 0 ]
+        print("publish dominant dimension not known", vals[ 0 ])
 
     
     paper = vals[1]
@@ -111,7 +111,7 @@ class MyLinearSegmentedColormapAlpha(mpl.colors.LinearSegmentedColormap):
         self._lut[:-3, 0] = mpl.colors.makeMappingArray(self.N, self._segmentdata['red'])
         self._lut[:-3, 1] = mpl.colors.makeMappingArray(self.N, self._segmentdata['green'])
         self._lut[:-3, 2] = mpl.colors.makeMappingArray(self.N, self._segmentdata['blue'])
-        if self._segmentdata.has_key('alpha'):
+        if 'alpha' in self._segmentdata:
             self._lut[:-3, 3] = mpl.colors.makeMappingArray(self.N, self._segmentdata['alpha'])
             #print "found alpha"
 
@@ -128,10 +128,10 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
         mesh.load(meshname)
     
     if __verbose__:
-        print mesh
-        print "mesh data are:"
+        print(mesh)
+        print("mesh data are:")
     for key, val in mesh.exportDataMap():
-        print key, val
+        print(key, val)
 
     mesh.translate(offset)
     data = g.RVector();
@@ -139,7 +139,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
     fig = pylab.figure()
     
     if __verbose__:
-        print "create figure"
+        print("create figure")
     
     axis = fig.add_subplot(111)
 
@@ -157,7 +157,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
             data = pylab.asarray(mesh.cellMarker())
         elif modelname == 'attribute':
             data = pylab.asarray(mesh.cellAttributes())
-        elif modelname in mesh.exportDataMap().keys():
+        elif modelname in list(mesh.exportDataMap().keys()):
             data = mesh.exportData(modelname)
         elif modelname.rfind('.bmat') != -1:
             A = g.RMatrix(modelname)
@@ -165,23 +165,23 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
         else:
             g.load(data, modelname, g.Ascii)
 
-        print "data min/max:", min(data), max(data)
+        print("data min/max:", min(data), max(data))
         cov = None
         
         if coverage:
             cov = g.RVector()
             try:
-                print mesh.exportDataMap().keys()
-                if coverage in mesh.exportDataMap().keys():
-                    print "found coverage in mesh"
+                print(list(mesh.exportDataMap().keys()))
+                if coverage in list(mesh.exportDataMap().keys()):
+                    print("found coverage in mesh")
                     cov = mesh.exportData(coverage)
 #                    if coverage.find('log10') > 0:
 #                        cov = g.exp10(cov)
                 else:
                     g.load(cov, coverage)
-                print "coverage min/max:", min(cov), max(cov)
+                print("coverage min/max:", min(cov), max(cov))
             except Exception as e:
-                print e
+                print(e)
                 "coverage not found, ignoring"
                 cov = None
 
@@ -204,7 +204,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
                                                     #linewidth = 2.0)
 
     m = mesh.findBoundaryByMarker(1)
-    print "boundary > 2 " , len(m)
+    print("boundary > 2 " , len(m))
     if len(m) > 0:
         pass
         #g.mplviewer.drawSelectedMeshBoundaries(axis, filter(lambda b: b.marker() == 1, mesh.boundaries())
@@ -261,11 +261,11 @@ def showMeshPatch(axis, mesh, data, cov = None, cMin = None, cMax = None, showCb
             cols = patches.get_facecolor()
             
             C = np.asarray(cov)
-            print np.min(C), np.max(C)
+            print(np.min(C), np.max(C))
             if (np.min(C) < 0.) | (np.max (C) > 1.) | (np.max(C) < 0.5): # not already alpha map
                 (nn, hh) = np.histogram(C, 50)
                 nnn = nn.cumsum(axis = 0) / float(len(C))
-                print "min-max nnn ", min(nnn), max(nnn)
+                print("min-max nnn ", min(nnn), max(nnn))
                 mi = hh[ min(np.where(nnn > 0.02)[0]) ]
                 if min(nnn)>0.4:
                     ma = max(C)
@@ -309,7 +309,7 @@ def addCoverageImageOverlay(axis, mesh, cov):
                                   , g.RVector(len(Y.flat[:]), 0.0))
     c = asarray(c)
 
-    print "coverage min: ", min(c), "max: ", max(c)
+    print("coverage min: ", min(c), "max: ", max(c))
 
     (nn, hh) = np.histogram(c, bins = 50)
     nnn = nn.cumsum(axis = 0) / float(len(c))
@@ -369,7 +369,7 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
     tiy = linspace(mesh.ymin(), mesh.ymax(), Ny)
     (X,Y) = meshgrid(tix, tiy)
     extent = X.min(), X.max(), Y.min(), Y.max()
-    print "interpolate prep t = ", swatch.duration(True)
+    print("interpolate prep t = ", swatch.duration(True))
 
     z = arange(0, Nx * Ny)
 
@@ -380,7 +380,7 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
                        )
         z = asarray (z)
 
-    print "interpolate t = ", swatch.duration(True)
+    print("interpolate t = ", swatch.duration(True))
 
     Z, cMin, cMax = g.mplviewer.findAndMaskBestClim(z, cMin, cMax, not(linear));
     Z = ma.masked_where(z <= 0.0, Z)
@@ -393,7 +393,7 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
 	    levs = g.mplviewer.createLogLevs(cMin, cMax, nLevels + 1)
 
     #print np.min(Z)
-    print levs
+    print(levs)
 
     levs[0] = levs[0]* 0.999
     levs[ len(levs)-1] = levs[len(levs)-1]* 1.001
@@ -411,7 +411,7 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
     cs.set_clim(cMin, cMax)
 
     if __verbose__:
-        print "plotting t = ", swatch.duration(True)
+        print("plotting t = ", swatch.duration(True))
 
     if cov:
         addCoverageImageOverlay(axis, mesh, cov)
@@ -502,8 +502,8 @@ def main(argv):
 
     if options.verbose:
         __verbose__ = True 
-        print "matplotlib-", mpl.__version__
-        print options, args
+        print("matplotlib-", mpl.__version__)
+        print(options, args)
 
     if options.interperc > 0.0 and options.cMin is None and options.cMax is None:
         if options.datafile is not None:
@@ -524,7 +524,7 @@ def main(argv):
     axes = None
 
     if options.cbarOnly:
-        print "cbar only"
+        print("cbar only")
 
         fig = pylab.figure()
         #axes = fig.add_axes([0.023, 0.25, 0.967, 0.1])
@@ -563,23 +563,23 @@ def main(argv):
     else:
         if len(args) == 0:
             parser.print_help()
-            print "Please add a mesh or model name."
+            print("Please add a mesh or model name.")
             sys.exit(2)
         else:
             meshname = args[ 0 ];
 
         if (options.verbose):
-            print "verbose =", options.verbose
-            print "silent =", options.silent
-            print "linear =", options.linear
-            print "drawEdges =", options.drawEdges
-            print "meshname =", meshname
-            print "output =", options.outFileName
-            print "data =", options.datafile
-            print "coverage =", options.coverage
-            print "cMin =", options.cMin, type(options.cMin)
-            print "cMax =", options.cMax
-            print "cmapname =", options.cmapname
+            print("verbose =", options.verbose)
+            print("silent =", options.silent)
+            print("linear =", options.linear)
+            print("drawEdges =", options.drawEdges)
+            print("meshname =", meshname)
+            print("output =", options.outFileName)
+            print("data =", options.datafile)
+            print("coverage =", options.coverage)
+            print("cMin =", options.cMin, type(options.cMin))
+            print("cMax =", options.cMax)
+            print("cmapname =", options.cmapname)
 
         axes = None
         
@@ -603,17 +603,17 @@ def main(argv):
                         , cmapname = options.cmapname
                        )
             else:
-                print "Cannot determine format for input mesh. Available are *.bms, *.mod"
+                print("Cannot determine format for input mesh. Available are *.bms, *.mod")
                 exit(2)
-        except RuntimeError,err:
-            print err
-            print "something goes wrong while drawing mesh"
+        except RuntimeError as err:
+            print(err)
+            print("something goes wrong while drawing mesh")
             exit(2)
 
         if options.electrodes:
             try:
                 elPos = None
-                print options.electrodes
+                print(options.electrodes)
                 if options.electrodes == 'mesh':
                     mesh = g.Mesh(meshname)
                     elPos = mesh.positions(mesh.findNodesIdxByMarker(-99))            
@@ -627,8 +627,8 @@ def main(argv):
                 pygimli.mplviewer.drawSensors(axes, elPos, diam = diam)
 
             except Exception as e:
-                print e
-                print (e + "Cannot determine electrode informations from file:" + str(options.electrodes))
+                print(e)
+                print((e + "Cannot determine electrode informations from file:" + str(options.electrodes)))
 
             axes.figure.canvas.draw()
 
@@ -645,21 +645,21 @@ def main(argv):
             yl = axes.get_ylim()
             
             if options.verbose:
-                print "old ylims", yl
+                print("old ylims", yl)
                 
             axes.set_ylim([ -options.maxDepth, yl[1] ])
             
             if options.verbose:
-                print "new ylims", axes.get_ylim()
+                print("new ylims", axes.get_ylim())
         
         if len(options.xlim) > 0:
             xl = P.double(options.xlim.split(':'))
-            print "xlim = ", xl
+            print("xlim = ", xl)
             axes.set_xlim(xl) 
             
         if len(options.ylim) > 0:
             yl = P.double(options.ylim.split(':'))
-            print "ylim = ", yl
+            print("ylim = ", yl)
             axes.set_ylim(yl) 
         
         if options.reverseX:
@@ -669,22 +669,22 @@ def main(argv):
             axes.set_ylabel(options.ylabel)
 
             if 'Depth' in options.ylabel or 'Tiefe' in options.ylabel:
-                print "fixing 'Depth' to be positive values"
+                print("fixing 'Depth' to be positive values")
                 ticks = axes.yaxis.get_majorticklocs()
                 tickLabels=[]
                 for t in ticks:
-                    print t
+                    print(t)
                     tickLabels.append(str(int(abs(t))))
 
                 axes.set_yticklabels(tickLabels)
-                print tickLabels
+                print(tickLabels)
 
         
         
     # else not cbar only
 
     if options.outFileName:
-        print "writing: ", options.outFileName
+        print("writing: ", options.outFileName)
         fig = axes.figure
 
         if options.publish:
@@ -696,7 +696,7 @@ def main(argv):
                 bboxes = []
                 #for label in labels:
                 for item in items:
-                    print item._renderer, axes.figure.canvas.renderer
+                    print(item._renderer, axes.figure.canvas.renderer)
                     bbox = item.get_window_extent(axes.figure.canvas.renderer)
                     bboxi = bbox.inverse_transformed(fig.transFigure)
                     bboxes.append(bboxi)
@@ -722,9 +722,9 @@ def main(argv):
             axes.patch.set_alpha(1.0)
         # if options.publish
 
-	(fileBaseName, fileExtension) = path.splitext(options.outFileName)
+        (fileBaseName, fileExtension) = path.splitext(options.outFileName)
 
-	if (fileExtension == '.svg'):
+        if (fileExtension == '.svg'):
             pylab.savefig(options.outFileName, transparent=True)
         elif (fileExtension == '.pdf'):
             if options.datafile.rfind('.bmat') != -1:
@@ -734,12 +734,12 @@ def main(argv):
                 A = g.RMatrix(options.datafile)
                 pdf = PdfPages(options.outFileName) 
                 for i, a in enumerate(A):
-                    print "\rWriting multipage pdf %d/%d" % (i+1,len(A)),
+                    print("\rWriting multipage pdf %d/%d" % (i+1,len(A)), end=' ')
                     patches.set_array(N.asarray(a)) # necessary due to non existing functin .ndim
                     fig.savefig(pdf, format='pdf', bbox_inches='tight') 
                 
                 pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'
-                pdf.infodict()['Author'] = u'BERT@resistivity.net'
+                pdf.infodict()['Author'] = 'BERT@resistivity.net'
                 pdf.close()
                 patches.set_array(N.asarray(A[0])) # show original
             else:

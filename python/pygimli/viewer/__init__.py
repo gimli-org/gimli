@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-1 -*-
 """"""
-from showmesh import *
-from showdata import *
-from modelview import *
+from .showmesh import *
+from .showdata import *
+from .modelview import *

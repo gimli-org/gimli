@@ -1,90 +1,92 @@
 #!/usr/bin/env bash
 
-if [ $# -eq 0 ]; then
-	prefix=`pwd`
-else 
-	prefix=`readlink -m $1`
-fi
-
-echo "Installing at " $prefix
-
-GCCXML_BIN_ROOT=$prefix/gccxml-bin
-
-echo "looking for gcc ..."
-if ( (gcc --version) );then
-	echo "... found, good"
-else
-	echo "need a working gcc installation"
-	exit
-fi
-echo ""
-echo "looking for python ..."
-if ( (python --version) );then
-	echo "... found, good"
-else
-	echo "need python2.7 installation"
-	echo "get one from http://www.python.org/"
-	echo "if already .. ensure python27 installation directory is in your PATH"
-	exit
-fi
-echo ""
-echo "looking for cmake ..."
-if ( (cmake --version) );then
-	echo "... found, good"
-else
-	echo "need cmake"
-	echo "get one from http://www.cmake.org/cmake/resources/software.html"
-	echo "if already .. ensure cmake installation directory is in your PATH"
-	exit
-fi
-echo ""
-echo "looking for svn ..."
-if ( (svn --version --quiet) );then
-	echo "... found, good"
-else
-	echo "need svn client"
-	echo "get one from http://www.sliksvn.com/en/download"
-	echo "if already .. ensure svn installation directory is in your PATH"
-	exit
-fi
-echo ""
-echo "Installing sources at" $prefix
-
-echo ""
-echo "looking for git ..."
-if ( (git --version) );then
-	GITEXE="git"
+needSVN(){
+    SVNEXE="svn"
+}
+needHG(){
+    echo "Toolcheck for mecurial here"
+    HG="hg"
+}
+needGIT(){
+    if ( (git --version) ); then
+        GIT="git"
     echo "... found $GIT_EXE, good"
-elif ( (/c/Program\ Files\ \(x86\)/Git/bin/git --version) );then
-	GITEXE="/c/Program Files (x86)/Git/bin/git"
-	echo "... found $GITEXE, good"
-else
-    echo "need git client"
-    echo "get one from http://msysgit.github.io/"
-    echo "if already .. ensure git installation directory is in your PATH"
-    exit
-fi
-echo ""
-echo "Installing sources at" $prefix
+    elif ( (/c/Program\ Files\ \(x86\)/Git/bin/git --version) );then
+        GIT="/c/Program Files (x86)/Git/bin/git"
+        echo "... found $GITEXE, good"
+    else
+        echo "need git client"
+        echo "get one from http://msysgit.github.io/"
+        echo "if already .. ensure git installation directory is in your PATH"
+        exit
+    fi
+}
+needGCC(){
+    echo "looking for gcc ..."
+    if ( (gcc --version) );then
+        echo "... found, good"
+    else
+        echo "need a working gcc installation"
+        exit
+    fi
+}
+needPYTHON(){
+    echo ""
+    echo "looking for python ..."
+    if ( (python --version) );then
+        echo "... found, good"
+    else
+        echo "need python2.7 installation"
+        echo "get one from http://www.python.org/"
+        echo "if already .. ensure python27 installation directory is in your PATH"
+        exit
+    fi
+}
+needCMAKE(){
+    echo ""
+    echo "looking for cmake ..."
+    if ( (cmake --version) );then
+        echo "... found, good"
+    else
+        echo "need cmake"
+        echo "get one from http://www.cmake.org/cmake/resources/software.html"
+        echo "if already .. ensure cmake installation directory is in your PATH"
+        exit
+    fi
+}
 
-installGCCXML(){
-    echo "install gccxml"
-    pushd $prefix
-		if ( [ -d gccxml ] ); then 
-			pushd gccxml
-				"$GITEXE" pull
+########## build scripts starting here
+buildGCCXML(){
+    needGIT
+    needCMAKE
+    needGCC
+
+    SRCDIR=$PREFIX/gccxml
+    BUILDDIR=$PREFIX/gccxml-build
+    DISTDIR=$PREFIX/gccxml-bin
+
+    echo "#########################################"
+    echo "install gccxml from $SRCDIR into $DISTDIR"
+    echo "#########################################"
+
+    pushd $PREFIX
+		if ( [ -d $SRCDIR ] ); then 
+			pushd $SRCDIR
+				"$GIT" pull
 			popd
 		else
-			"$GITEXE" clone --depth 1 https://github.com/gccxml/gccxml.git gccxml
+			"$GIT" clone https://github.com/gccxml/gccxml.git $SRCDIR
 		fi
-		rm -rf gccxml-build $GCCXML_BIN_ROOT
-		mkdir -p gccxml-build
-		mkdir -p $GCCXML_BIN_ROOT
-		pushd gccxml-build
+
+		mkdir -p $BUILDDIR
+		
+		pushd $BUILDDIR
             if [ $OSTYPE = "msys" ]; then
-                cmake -D CMAKE_INSTALL_PREFIX=$GCCXML_BIN_ROOT ../gccxml -G 'MSYS Makefiles' 
+                cmake $SRCDIR  -G 'MSYS Makefiles' \
+                    -DCMAKE_INSTALL_PREFIX=$DISTDIR 
             else
-                cmake -D CMAKE_INSTALL_PREFIX=$GCCXML_BIN_ROOT ../gccxml
+                cmake $SRCDIR \
+                    -DCMAKE_INSTALL_PREFIX=$DISTDIR
             fi
 			
 			make -j4
@@ -92,10 +94,9 @@ installGCCXML(){
 		popd
 	popd
 }
-
-fixGCCXML(){
+fixGCCXML(){ # check if obsolete
 	GCCXML_CFG=$GCCXML_BIN_ROOT/share/gccxml-0.9/gccxml_config
-	pushd $prefix
+	pushd $PREFIX
 		rm -rf *.gch
 		echo "#include <string>" > test.h
 		("$GCCXML_BIN_ROOT/bin/gccxml" --debug test.h > .test.log)
@@ -119,37 +120,110 @@ fixGCCXML(){
 		#rm -rf test.h .test.log
     popd
 }
+buildPYGCCXML(){
+    needHG
+    needPYTHON
 
-WORKING_PYGCC_REV=1856
+    SRCDIR=$PREFIX/pygccxml
 
-installPYGCCXML(){
-    echo "install pygccxml"
-    pushd $prefix
-        echo "getting sources ..."
-        svn checkout svn://svn.code.sf.net/p/pygccxml/svn/pygccxml_dev pygccxml
-        #svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev -r $WORKING_PYGCC_REV pygccxml
-        pushd pygccxml
+    echo "#########################################"
+    echo "install pygccxml at $SRCDIR"
+    echo "#########################################"
+
+    pushd $PREFIX
+        if ( [ -d $SRCDIR ] ); then 
+            pushd $SRCDIR
+                "$HG" pull
+            popd
+        else
+            "$HG" clone https://bitbucket.org/ompl/pygccxml $SRCDIR
+        fi
+
+        pushd $SRCDIR
+            python setup.py build
+            #python setup.py install
+        popd
+    popd
+}
+buildPYPLUSPLUS(){
+    needHG
+    needPYTHON
+    
+    SRCDIR=$PREFIX/pyplusplus
+
+    echo "#########################################"
+    echo "install pyplusplus at $SRCDIR"
+    echo "#########################################"
+
+    pushd $PREFIX
+        if ( [ -d $SRCDIR ] ); then 
+            pushd $SRCDIR
+                "$HG" pull
+            popd
+        else
+            "$HG" clone https://bitbucket.org/ompl/pyplusplus $SRCDIR
+        fi
+
+        pushd $SRCDIR
             python setup.py build
             #python setup.py install
         popd
     popd
 }
 
-installPYPLUSPLUS(){
-    echo "install pyplusplus"
-    pushd $prefix
-        echo "getting sources ..."
-        svn checkout svn://svn.code.sf.net/p/pygccxml/svn/pyplusplus_dev pyplusplus
-        #svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev -r $WORKING_PYGCC_REV pyplusplus
-        pushd pyplusplus
-            python setup.py build
-            #python setup.py install
-        popd
-    popd
+showHelp(){
+    echo "Compilation helper script."
+    echo "--------------------------"
+    echo "Install a TOOL on the current path by calling"
+    echo "sh $0 TOOL"
+    echo "You can specify an installation path by setting the PREFIX variable i.e.:"
+    echo "PREFIX=/path/where/to/install/ sh $0 TOOL"
+    echo "TOOLS ar so far: all, gccxml, pygccxml, pyplusplus"
+    exit
 }
 
-installGCCXML
-installPYGCCXML
-installPYPLUSPLUS
-#fixGCCXML
-#fixGCCXML
+slotAll(){
+    echo "building all"
+    buildGCCXML
+    buildPYGCCXML
+    buildPYPLUSPLUS
+}
+
+# script starts here 
+
+if [ -n "$PREFIX" ]; then
+    PREFIX=`readlink -m $PREFIX`
+else 
+    PREFIX=`pwd`
+fi
+
+echo "Installing at " $PREFIX
+
+#shift 1
+for arg in $@
+do
+    echo $arg
+
+    case $arg in
+    msvc) 
+        SetMSVC_TOOLSET;;
+    mingw) 
+        SetMINGW_TOOLSET;;
+    all) 
+        slotAll;;
+    help)
+        showHelp
+        exit;;
+    gccxml)
+        buildGCCXML;;
+    pygccxml)
+        buildPYGCCXML;;
+    py++)
+        buildPYPLUSPLUS;;
+    pyplusplus)
+        buildPYPLUSPLUS;;
+    *) 
+        echo "Don't know what to do"
+        showHelp
+    esac
+done

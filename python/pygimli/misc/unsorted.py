@@ -3,7 +3,7 @@
 import pygimli as g
 
 def rot2DGridToWorld( mesh, start, end ):
-    print mesh, start, end
+    print(mesh, start, end)
     mesh.rotate( g.degToRad( g.RVector3( -90.0, 0.0, 0.0 ) ) )
 
     src = g.RVector3( 0.0, 0.0, 0.0 ).norm( g.RVector3( 0.0,  0.0, -10.0 ), g.RVector3( 10.0, 0.0, -10.0 ) )
@@ -43,7 +43,7 @@ def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, k
         
         lastU = u
         if verbose:
-            print pos, u
+            print(pos, u)
 
     xu = []
     yu = []
@@ -86,8 +86,8 @@ def boundaryPlaneIntersectionLines( boundaries, plane ):
                 ps.append( p )
         
         if len( ps ) == 2:
-            lines.append( zip( [ ps[0].x(), ps[1].x() ],
-                               [ ps[0].z(), ps[1].z() ] ) )
+            lines.append( list(zip( [ ps[0].x(), ps[1].x() ],
+                               [ ps[0].z(), ps[1].z() ] )) )
     return lines
 # def intersectionLines
 
@@ -110,7 +110,7 @@ def number_of_processors():
     # Please add similar hacks for MacOSX, Solaris, Irix,
     # FreeBSD, HPUX, etc.
     else:
-        raise RuntimeError, 'unknown platform'
+        raise RuntimeError('unknown platform')
     
     
 def assembleDC( mesh, source = g.RVector3( 0.0, 0.0, 0.0 ) ):
@@ -137,10 +137,10 @@ def assembleCEM( S, mesh, marker, zi, nodeID = -1, verbose = False ):
     if nodeID == -1:
         for b in mesh.findBoundaryByMarker( marker ):
             sumArea += b.shape().domainSize()
-        print "addCEM: ", marker, sumArea, 'm^2', zi/sumArea, 'Ohm\n', 
+        print("addCEM: ", marker, sumArea, 'm^2', zi/sumArea, 'Ohm\n', end=' ') 
     else:
         sumArea = 1
-        print "addCEM: node"
+        print("addCEM: node")
 
     mapS = g.DSparseMapMatrix( S );
     oldSize = S.size()

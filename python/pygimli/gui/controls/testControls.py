@@ -3,8 +3,8 @@
 
 import wx
 
-from listCtrlComboPopup import *
-from checkListBoxComboPopup import *
+from .listCtrlComboPopup import *
+from .checkListBoxComboPopup import *
 
 class MainFrame( wx.Frame ):
     def __init__( self, *args, **kwds ):

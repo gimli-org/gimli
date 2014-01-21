@@ -19,9 +19,9 @@ if sys.platform == 'win32':
     os.environ['PATH'] =  __path__[0] +';' + os.environ['PATH']
 
 try:
-    from _pygimli_ import *
+    from ._pygimli_ import *
 except ImportError as e:
-    print e
+    print(e)
     import traceback
     
     traceback.print_exc(file=sys.stdout)
@@ -29,7 +29,7 @@ except ImportError as e:
 
 import locale
 if locale.localeconv()['decimal_point'] == ',':
-    print "Found locale decimal_point ',', change it to: decimal point '.':",
+    print("Found locale decimal_point ',', change it to: decimal point '.':", end=' ')
     locale.localeconv()['decimal_point']
     locale.setlocale(locale.LC_NUMERIC, 'C')
 
@@ -126,20 +126,20 @@ def __getVal(self, idx):
         
     if type(idx) is slice:
         if idx.step is None:
-            return self(long(idx.start), long(idx.stop))
+            return self(int(idx.start), int(idx.stop))
         else:
             "not yet implemented"
 
     if idx == -1: idx = len(self)-1
     
-    return self.getVal(long(idx))
+    return self.getVal(int(idx))
 # def __getVal(...)
     
 def __setVal(self, idx, val):
     
     if type(idx) is slice:
         if idx.step is None:
-            self.setVal(float(val), long(idx.start), long(idx.stop))
+            self.setVal(float(val), int(idx.start), int(idx.stop))
             return
         else:
             "not yet implemented"
@@ -204,7 +204,7 @@ class VectorIter:
 
     def __iter__(self): return self
 
-    def next(self):
+    def __next__(self):
         self.pos += 1
         if self.pos == self.length:
             raise StopIteration()
@@ -240,22 +240,22 @@ def abs(v):
 ########################################################
 
 def __CMP_stdVectorI__(self, val):
-    raise "__CMP_stdVectorI__ do not use"
+    raise Exception("__CMP_stdVectorI__ do not use")
     return 0
-    print "__CMP_stdVectorI__"
+    print("__CMP_stdVectorI__")
     ret = _pygimli_.BVector(len(self))
     for i, v in enumerate(ret):
-        print self[i] < val, int(self[i] < val)
+        print(self[i] < val, int(self[i] < val))
         #v = int(self[i] < val)
-    print ret
+    print(ret)
 
 def __EQ_stdVectorI__(self, val):
-    raise "__EQ_stdVectorI__ do not use"
+    raise Exception("__EQ_stdVectorI__ do not use")
     ret = _pygimli_.BVector(len(self))
     for i, v in enumerate(ret):
-        print self[i] == val, int(self[i] == val)
+        print(self[i] == val, int(self[i] == val))
         #v = self[i] == val
-    print ret
+    print(ret)
 
 _pygimli_.stdVectorI.__cmp__ = __CMP_stdVectorI__
 _pygimli_.stdVectorI.__eq__  = __EQ_stdVectorI__
@@ -314,6 +314,6 @@ def checkAndFixLocaleDecimal_point(verbose = False):
     import locale
     if locale.localeconv()['decimal_point'] == ',':
         if verbose:
-            print "decimal point: ", locale.localeconv()['decimal_point']
-            print "setting ."
+            print("decimal point: ", locale.localeconv()['decimal_point'])
+            print("setting .")
         locale.setlocale(locale.LC_NUMERIC, 'C')

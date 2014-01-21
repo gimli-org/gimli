@@ -1192,7 +1192,7 @@ CumulativeTrans< RVector > * RegionManager::transModel(){
 
 void RegionManager::setZWeight(double z){
     for (std::map< int, Region* >::const_iterator it  = regionMap_.begin();
-                                                   it != regionMap_.end(); it ++){
+         it != regionMap_.end(); it ++){
         it->second->setZWeight(z);
     }
     interRegionConstraintsZWeight_ = z;

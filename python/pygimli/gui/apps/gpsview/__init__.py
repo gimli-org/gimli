@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from gpsview import *
+from .gpsview import *
 
 PluginApplication = GPSViewerApp
 

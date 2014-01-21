@@ -51,10 +51,10 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
 
     surface = 0.0
     # find boundaries on left/right/bottom/top side
-    le = filter(lambda b: b.center().x() == mesh.xmin(), mesh.boundaries())
-    bo = filter(lambda b: b.center().y() == mesh.ymin(), mesh.boundaries())
-    ri = filter(lambda b: b.center().x() == mesh.xmax(), mesh.boundaries())
-    top = filter(lambda b: b.center().y() == mesh.ymax(), mesh.boundaries())
+    le = [b for b in mesh.boundaries() if b.center().x() == mesh.xmin()]
+    bo = [b for b in mesh.boundaries() if b.center().y() == mesh.ymin()]
+    ri = [b for b in mesh.boundaries() if b.center().x() == mesh.xmax()]
+    top = [b for b in mesh.boundaries() if b.center().y() == mesh.ymax()]
 
     # gather all right boundary nodes after sorting in boundaryNodes
     tmp = []
@@ -216,7 +216,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
                      smoothFunction=1,
                      smoothIteration=2)
 
-    map(lambda cell: cell.setMarker(marker), mesh2.cells())
+    list(map(lambda cell: cell.setMarker(marker), mesh2.cells()))
 
     #! map copy the cell not the reference, this should not happen
     #! map( lambda cell: mesh2.copyCell( cell ), mesh2.cells() )
@@ -336,7 +336,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         c.setMarker(marker)
 
     if verbose:
-        print "merge grid and boundary"
+        print("merge grid and boundary")
 
     swatch = g.Stopwatch(True)
     for c in meshBoundary.cells():
@@ -346,7 +346,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
 
         boundMesh.createCell(nodes, c.marker())
     if verbose:
-        print " done.", swatch.duration(True)
+        print(" done.", swatch.duration(True))
 
     try:
         os.remove('boundaryWorld.bms')

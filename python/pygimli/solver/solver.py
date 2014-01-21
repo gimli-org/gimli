@@ -58,7 +58,7 @@ def assembleForceVector(mesh, vals, userData=None):
             rhs = pg.RVector(vals)
             return rhs
         else:
-            print Exception("f does not fit directly so we generate the RHS")
+            print(Exception("f does not fit directly so we generate the RHS"))
     except:
         pass
             
@@ -328,7 +328,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     
     """
     if verbose:
-        print("Mesh: ", str(mesh))
+        print(("Mesh: ", str(mesh)))
 
     dof = mesh.nodeCount()
         
@@ -339,36 +339,36 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     a = parseArgToArray(a, mesh.cellCount(), mesh, userData)
     b = parseArgToArray(b, mesh.cellCount(), mesh, userData)
         
-    print "2: ", swatch2.duration(True)
+    print("2: ", swatch2.duration(True))
     # assemble the stiffness matrix
     A = createStiffnessMatrix(mesh, a)
     
-    print "3: ", swatch2.duration(True)
+    print("3: ", swatch2.duration(True))
     M = createMassMatrix(mesh, b)
         
-    print "4: ", swatch2.duration(True)
+    print("4: ", swatch2.duration(True))
     S = A + M
     
-    print "5: ", swatch2.duration(True)
+    print("5: ", swatch2.duration(True))
     if times == None:
         
         rhs = assembleForceVector(mesh, f, userData=userData)
         
-        print "6a: ", swatch2.duration(True)
+        print("6a: ", swatch2.duration(True))
         if 'duBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['duBoundary'], 
                                        assembleNeumannBC,
                                        userData=userData, 
                                        verbose=verbose)
 
-        print "6b: ", swatch2.duration(True)
+        print("6b: ", swatch2.duration(True))
         if 'uBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['uBoundary'],
                                        assembleDirichletBC, 
                                        userData=userData,
                                        verbose=verbose)
 
-        print "6c: ", swatch2.duration(True)
+        print("6c: ", swatch2.duration(True))
         if 'uDirichlet' in kwargs:
             assembleUDirichlet_(S, rhs,
                                 kwargs['uDirichlet'][0],
@@ -377,14 +377,14 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             
             
         u = pg.RVector(rhs.size(), 0.0)
-        print "7: ", swatch2.duration(True)
+        print("7: ", swatch2.duration(True))
         
         assembleTime = swatch.duration(True)
         if stats:
             stats.assembleTime = assembleTime
                 
         if verbose:
-            print("Asssemblation time: ", assembleTime)
+            print(("Asssemblation time: ", assembleTime))
 
         
         solver = pg.LinSolver(S, verbose)
@@ -394,7 +394,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if verbose:
             if stats:
                 stats.solverTime = solverTime
-            print("Solving time: ", solverTime)
+            print(("Solving time: ", solverTime))
             
         return u
         
@@ -456,8 +456,8 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             if 'progress' in kwargs:
                 if kwargs['progress']:
-                    print("\t" + str(i) +"/" + str(len(times)-1) + 
-                          ": " + str(t_prep) +"/" + str(swatch.duration()))
+                    print(("\t" + str(i) +"/" + str(len(times)-1) + 
+                          ": " + str(t_prep) +"/" + str(swatch.duration())))
                     
         return U
 # def solvePoisson(..):

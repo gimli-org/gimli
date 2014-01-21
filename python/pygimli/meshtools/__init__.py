@@ -11,5 +11,5 @@ This package provides functions for mesh generation and modification.
     (unstructured), both objects are treated the same internally.
 """
 
-from grid import *
-from mesh import *
+from .grid import *
+from .mesh import *

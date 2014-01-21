@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from solver import *
+from .solver import *
 
 # unsorted stuff need
 
@@ -16,10 +16,10 @@ def divergence(mesh, F=lambda r:r, order=1):
                
         if directionCheck:
             if b.leftCell() is None and b.rightCell() is None:
-                print b.id(), b.leftCell(), b.rightCell()  
+                print(b.id(), b.leftCell(), b.rightCell())  
                 sw = g.Stopwatch(True)
                 mesh.createNeighbourInfos()
-                print "NeighbourInfos()", sw.duration(True)
+                print("NeighbourInfos()", sw.duration(True))
                 ##return gauss(grid, F)
               
             if not b.leftCell() is None and not b.rightCell() is None: continue

@@ -12,9 +12,9 @@ G = 6.6742e-11 / 1e-5 # / mGal
 
 deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__ #[m^2 * kg/m³] = [kg/m]
 deltaMSph = lambda R__, rho__: 4./3. * np.pi * R__**3. * rho__ #[kg]
-rabs   = lambda r__: np.asarray(map(lambda x__: np.sqrt(x__.dot(x__)), r__))
+rabs   = lambda r__: np.asarray([np.sqrt(x__.dot(x__)) for x__ in r__])
 gradR  = lambda r__: (r__.T / rabs(r__))
-adot = lambda M__, x__: np.asarray(map(lambda a__: (a__.dot(M__)), x__)) 
+adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__]) 
 
 
 #def magnetization(lat, lon, suszept, dat=date.today()): 
@@ -268,7 +268,7 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
     N = len(pnts)
     
     if np.size(pnts[0]) == 1:
-        qpnts = zip(pnts,np.zeros(N))
+        qpnts = list(zip(pnts,np.zeros(N)))
     
     if not forceOpen:
         if np.linalg.norm(poly[0] - poly[-1], 2) < 1e-8: openPoly=True
@@ -499,8 +499,8 @@ def buildCircle(pos, radius, segments=12, leftDirection=True):
 # def buildCircle(pos, radius, segments)
 
 if __name__ == "__main__":
-    print sys.argv[1:]
-    print "do some tests here"
+    print(sys.argv[1:])
+    print("do some tests here")
     
     
     #print lineIntegralZ([-2,-2], [2,-2])

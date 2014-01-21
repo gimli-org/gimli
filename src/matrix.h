@@ -589,7 +589,10 @@ bool saveMatrix(const Matrix < ValueType > & A, const std::string & filename, IO
 
     uint32 rows = A.rows();
     uint ret = fwrite(& rows, sizeof(uint32), 1, file);
-    if (ret == 0) return false;
+    if (ret == 0) {
+        fclose(file);
+        return false;
+    }
     uint32 cols = A.cols();
     ret = fwrite(& cols, sizeof(uint32), 1, file);
 

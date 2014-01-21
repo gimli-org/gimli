@@ -41,7 +41,7 @@ def readGmsh(fname, verbose=False):
     inNodes, inElements, ncount, ecount = 0, 0, 0, 0
     fid = open(fname)
     if verbose:
-        print 'Reading %s... \n' % fname
+        print('Reading %s... \n' % fname)
 
     for line in fid:
 
@@ -60,7 +60,7 @@ def readGmsh(fname, verbose=False):
                 if len(line.split()) == 1:
                     nodes = np.zeros((int(line), 3))
                     if verbose:
-                        print '  Nodes: %s' % int(line)
+                        print('  Nodes: %s' % int(line))
                 else:
                     nodes[ncount, :] = np.array(line.split(), 'float')[1:]
                     ncount += 1
@@ -68,7 +68,7 @@ def readGmsh(fname, verbose=False):
             elif inElements == 1:
                 if len(line.split()) == 1:
                     if verbose:
-                        print '  Entries: %s' % int(line)
+                        print('  Entries: %s' % int(line))
                     points, lines, triangles, tets = [], [], [], []
 
                 else:
@@ -91,11 +91,11 @@ def readGmsh(fname, verbose=False):
     tets = np.asarray(tets)
 
     if verbose:
-        print '    Points: %s' % len(points)
-        print '    Lines: %s' % len(lines)
-        print '    Triangles: %s' % len(triangles)
-        print '    Tetrahedra: %s \n' % len(tets)
-        print 'Creating mesh object... \n'
+        print('    Points: %s' % len(points))
+        print('    Lines: %s' % len(lines))
+        print('    Triangles: %s' % len(triangles))
+        print('    Tetrahedra: %s \n' % len(tets))
+        print('Creating mesh object... \n')
 
     # check dimension
     if len(tets) == 0:
@@ -104,7 +104,7 @@ def readGmsh(fname, verbose=False):
     else:
         dim, bounds, cells = 3, triangles, tets
     if verbose:
-        print '  Dimension: %s-D' % dim
+        print('  Dimension: %s-D' % dim)
 
     # creating instance of GIMLI::Mesh class
     mesh = g.Mesh(dim)
@@ -119,8 +119,8 @@ def readGmsh(fname, verbose=False):
     if verbose:
         bound_types = np.unique(bounds[:, dim])
         regions = np.unique(cells[:, dim + 1])
-        print '  Regions: %s ' % len(regions) + str(tuple(regions))
-        print '  Boundary types: %s ' % len(bound_types) + str(tuple(bound_types))
+        print('  Regions: %s ' % len(regions) + str(tuple(regions)))
+        print('  Boundary types: %s ' % len(bound_types) + str(tuple(bound_types)))
 
     for node in nodes:
         if dim == 2:
@@ -161,9 +161,9 @@ def readGmsh(fname, verbose=False):
     if verbose:
         points = np.asarray(points)
         node_types = np.unique(points[:, 1])
-        print '  Marked nodes: %s ' % len(points) + str(tuple(node_types))
-        print '\nDone. \n'
-        print '  ' + str(mesh)
+        print('  Marked nodes: %s ' % len(points) + str(tuple(node_types)))
+        print('\nDone. \n')
+        print('  ' + str(mesh))
 
     return mesh
 
@@ -240,7 +240,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
     nnodes = int(line1.split()[0])
     ncells = int(line1.split()[1])
-    print nnodes, ncells
+    print(nnodes, ncells)
     line1 = f.readline()
     nodes = []
     dx = 0.01
@@ -334,9 +334,9 @@ def merge2Meshes(m1, m2):
     for b in m2.boundaries():
         mesh.copyBoundary(b)
 
-    for key in mesh.exportDataMap().keys():
+    for key in list(mesh.exportDataMap().keys()):
         d = mesh.exportDataMap()[key]
-        print d
+        print(d)
         d.resize(mesh.cellCount())
         d.setVal(m1.exportDataMap()[key], 0, m1.cellCount())
         d.setVal(
@@ -431,7 +431,7 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     mesh.createGrid(x, y)
 
-    map(lambda cell: cell.setMarker(2), mesh.cells())
+    list(map(lambda cell: cell.setMarker(2), mesh.cells()))
 
     paraXLimits = [xmin, xmax]
     paraYLimits = [min(y), max(y)]

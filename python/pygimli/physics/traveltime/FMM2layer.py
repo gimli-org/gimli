@@ -122,7 +122,7 @@ tri.setSwitches( '-pzeAfaq34.5' )
 mesh = g.Mesh(2)
 tri.generate( mesh )
 mesh.createNeighbourInfos()
-print mesh
+print(mesh)
 
 # make velocity model
 v = [ 1000., 3000. ]
@@ -158,7 +158,7 @@ tic = time.time()
 while len( downwind ) > 0:
     fastMarch( mesh, downwind, times, upTags, downTags)
 
-print time.time()-tic, "s"
+print(time.time()-tic, "s")
 
 # compare with analytical solution along the x axis
 x = P.arange( 0., 100., 0.5)
@@ -168,7 +168,7 @@ alfa = asin( v[0]/v[1] ) # critically refracted wave angle
 xreflec = tan( alfa ) * zlay * 2. # first critically refracted
 trefrac = (x-xreflec) / v[1] + xreflec*v[1]/v[0]**2 
 tana = P.where( trefrac<tdirect,trefrac,tdirect) # minimum of both
-print "min(dt)=", min(t-tana)*1000, "ms max(dt)=", max(t-tana)*1000, "ms"
+print("min(dt)=", min(t-tana)*1000, "ms max(dt)=", max(t-tana)*1000, "ms")
 
 # plot traveltime field, a few lines
 fig = P.figure()

@@ -50,7 +50,7 @@ def tetgen(filename, quality = 1.2, preserveBoundary = False, verbose = False):
     syscal += ' ' + filebody + '.poly'
     
     if verbose:
-        print syscal
+        print(syscal)
     
     system(syscal)
     system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
@@ -86,7 +86,7 @@ def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
         
     syscal += " " + filename 
                         
-    if verbose: print syscal
+    if verbose: print(syscal)
     system(syscal) 
 # def polyAddVIP
 
@@ -128,11 +128,11 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
         out of core wrapper for dcfemlib::polytools::polyCreateWorld
     '''
     if depth is None:
-        print "Please specify worlds depth."
+        print("Please specify worlds depth.")
         return
     
     if x is None:
-        print "Please specify worlds x dimension."
+        print("Please specify worlds x dimension.")
         return
     
     dimension = 3
@@ -153,7 +153,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     syscal = syscal + ' ' + filename
     
     if verbose:
-        print syscal
+        print(syscal)
         
     os.system(syscal)
 

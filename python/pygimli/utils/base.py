@@ -242,7 +242,7 @@ def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
             cmin = min( cmin, min(res) )
             cmax = max( cmax, max(res) )
             
-        print "cmin=", cmin, " cmax=", cmax
+        print("cmin=", cmin, " cmax=", cmax)
         
     dx = P.diff(x)
     dx = P.hstack( (dx, dx[-1]) )

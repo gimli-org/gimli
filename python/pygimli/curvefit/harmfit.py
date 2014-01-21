@@ -36,7 +36,7 @@ def harmfitNative( y, x = None, nc = None, xc = None, err = None ):
     y = np.asarray( y )
     
     if x is None:
-       x = range( len(y) )
+       x = list(range( len(y)))
        
     x = np.asarray( x )
     

@@ -22,7 +22,7 @@ def rhoafromB( B, t, Tx, I=1 ):
 def rhoa( snd, cal=260e-9, corrramp=True ):
     ''' compute apparent resistivity from sounding '''
     Tx = P.prod( [float(a) for a in snd['LOOP_SIZE'].split()] )
-    if snd.has_key('COIL_SIZE'):
+    if 'COIL_SIZE' in snd:
         Rx = snd['COIL_SIZE']
     else:
         Rx = Tx
@@ -39,7 +39,7 @@ def rhoa( snd, cal=260e-9, corrramp=True ):
     v = v[istart:istop]
     dv = snd['ST_DEV'][istart:istop] #/ snd['CURRENT']
     t = snd['TIME'][istart:istop]
-    if corrramp and snd.has_key('RAMP_TIME'): 
+    if corrramp and 'RAMP_TIME' in snd: 
         t = t - snd['RAMP_TIME']
     
     if Rx == 1: # apparently B-field
@@ -205,9 +205,9 @@ class TDEMData():
             return  "<FDEMdata: %d soundings with each %d frequencies, coilspacing is %.1f>" % (len(self.x), len(self.f), self.cs)
         
     def showInfos( self ): # only for old scripts using it
-        print __repr__( self )
+        print(__repr__( self ))
 
 
     
 if __name__ == '__main__':
-    print "print do some tests here"
+    print("print do some tests here")

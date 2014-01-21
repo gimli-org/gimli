@@ -567,7 +567,10 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
             int64 count = (int64)size_;
             Index ret = 0; ret = fwrite((char*)&count, sizeof(int64), 1, file);
-            if (ret == 0) return false;
+            if (ret == 0) {
+                fclose(file);
+                return false;
+            }
             for (Index i = 0; i < size_; i++) ret = fwrite((char*)&data_[i], sizeof(ValueType), 1, file);
             fclose(file);
         }

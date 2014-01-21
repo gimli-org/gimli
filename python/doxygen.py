@@ -21,13 +21,13 @@ class doxygen_doc_extractor:
     #__init__
 
     def __call__(self, declaration):
+        doc_lines = []
         try:
             if self.file_name != declaration.location.file_name:
                 self.file_name = declaration.location.file_name
                 self.source = open(declaration.location.file_name).readlines()
-
             find_block_end = False
-            doc_lines = []
+            
             # search backward until file begin
             for lcount in xrange(declaration.location.line-2, -1, -1):
                 line = self.source[lcount]
@@ -56,7 +56,7 @@ class doxygen_doc_extractor:
         except:
             pass
         finally:
-            if doc_lines:
+            if len(doc_lines) > 0:
                 final_doc_lines = [ line.replace("\n","\\n") for line in doc_lines[:-1] ]
                 final_doc_lines.append(doc_lines[-1].replace("\n",""))
                 return '\"' + ''.join(final_doc_lines) + '\"'

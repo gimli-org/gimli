@@ -7,16 +7,16 @@ vtk = None
 
 try:
     import vtk
-    from wxVTKRenderWindowInteractor import *
-except Exception, e:
-    print e
-    print "no wxVTK installation found"
-    print "for win32 you can install from http://cpbotha.net/software/latest-vtk-windows-binaries/"
+    from .wxVTKRenderWindowInteractor import *
+except Exception as e:
+    print(e)
+    print("no wxVTK installation found")
+    print("for win32 you can install from http://cpbotha.net/software/latest-vtk-windows-binaries/")
     wxVTKRenderWindowInteractor = wx.Panel
 
 try:
-    import getHandleHack as wxHandle 
-except Exception, e:
+    from . import getHandleHack as wxHandle 
+except Exception as e:
     pass
 
 class wxVTKPanel( wxVTKRenderWindowInteractor ):

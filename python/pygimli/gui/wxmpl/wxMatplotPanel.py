@@ -158,7 +158,7 @@ class MPLRubberBander:
                 if self.zoomCallback_ is not None:
                     self.zoomCallback_( ( selection, ( leX,leY,riX,riY), self.lastAxes_ ) )
         else:
-            print "MPLRubberBander::onMouseRelease no axes found"
+            print("MPLRubberBander::onMouseRelease no axes found")
 
         self.button_ = 0 # end of clicking
 
@@ -543,7 +543,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
     def save(self, evt):
         ' Fetch the required filename and file type. '
         filetypes, exts, filter_index = self.canvas._get_imagesave_wildcards()
-        print "filter_index", filter_index, filetypes
+        print("filter_index", filter_index, filetypes)
         default_file = "image"
         dlg = wx.FileDialog(self.panel, "Save to file", "", default_file,
                             filetypes,
@@ -555,7 +555,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
 
             format = exts[dlg.GetFilterIndex()]
             basename, ext = os.path.splitext(filename)
-            print "ext = ", ext, format
+            print("ext = ", ext, format)
             if ext.startswith('.'):
                 ext = ext[1:]
             if ext in ('svg', 'pdf', 'ps', 'eps', 'png') and format!=ext:
@@ -566,7 +566,7 @@ class wxAUIMatplotPanelToolbar( aui.AuiToolBar ):
 
             try:
                 self.canvas.print_figure( os.path.join( dirname, basename + '.' + format), format=format)
-            except Exception, e:
+            except Exception as e:
                 error_msg_wx(str(e))
                 
     def push_current(self):
@@ -592,9 +592,9 @@ class wxMatplotPanelSimple( wx.Panel ):
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
         from matplotlib.figure import Figure
     # initialize Panel
-        if 'id' not in kwargs.keys():
+        if 'id' not in list(kwargs.keys()):
             kwargs['id'] = wx.ID_ANY
-        if 'style' not in kwargs.keys():
+        if 'style' not in list(kwargs.keys()):
             kwargs['style'] = wx.NO_FULL_REPAINT_ON_RESIZE
         wx.Panel.__init__( self, renderPanel, **kwargs )
 
@@ -611,7 +611,7 @@ class wxMatplotPanelSimple( wx.Panel ):
 
     def _onSize( self, event = None ):
         pixels = tuple( [ self.GetSize()[0], self.GetSize()[1] ] )
-        print pixels
+        print(pixels)
 
         #if self.canvas.GetMinSize(  )[0] != pixels[0] or \
             #self.canvas.GetMinSize(  )[1] != pixels[1] :
@@ -633,9 +633,9 @@ class wxMatplotPanel( scrolled.ScrolledPanel  ):
         from matplotlib.figure import Figure
 
         # initialize Panel
-        if 'id' not in kwargs.keys():
+        if 'id' not in list(kwargs.keys()):
             kwargs['id'] = wx.ID_ANY
-        if 'style' not in kwargs.keys():
+        if 'style' not in list(kwargs.keys()):
             kwargs['style'] = wx.NO_FULL_REPAINT_ON_RESIZE
 
         scrolled.ScrolledPanel.__init__( self, renderPanel, **kwargs )
@@ -720,7 +720,7 @@ class wxMatplotPanel( scrolled.ScrolledPanel  ):
 
                 if self.canvasZoomWidth == 1.0:
                     self.SetupScrolling( False, False )
-                print "draw: ",  swatch.duration()
+                print("draw: ",  swatch.duration())
 
     def updateDrawOnIdle( self ):
         self._updateDraw = True
