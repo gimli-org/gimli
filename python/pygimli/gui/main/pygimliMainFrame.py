@@ -651,8 +651,8 @@ class PyGIMLIMainFrame( wx.Frame ):
         else:
             err( "createApplication found no object to an application" )
 
-from pygimli.utils import IPCServer, IPCThreadedTCPRequestHandler
-import threading
+#from pygimli.utils import IPCServer, IPCThreadedTCPRequestHandler
+#import threading
 
 #import wx.lib.inspection
 #wx.lib.inspection.InspectionTool().Show()            

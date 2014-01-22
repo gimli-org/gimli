@@ -5,7 +5,7 @@
 
 import sys,os
 
-import urllib.request, urllib.error, urllib.parse
+#import urllib.request, urllib.error, urllib.parse
 import math, random
 import pylab as P
 import numpy as np
