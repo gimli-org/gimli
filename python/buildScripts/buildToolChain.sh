@@ -1,5 +1,62 @@
 #!/usr/bin/env bash
 
+BOOST_VERSION_DEFAULT=1.54.0
+
+checkTOOLSET(){
+	ADRESSMODEL=32
+	if [ "$TOOLSET" == "none" ]; then
+		echo "No TOOLSET set .. using default msvc"
+		SYSTEM=UNIX
+		SetGCC_TOOLSET
+	fi
+
+	SRC_DIR=$PREFIX
+	DIST_DIR=$PREFIX
+	
+	echo "-----------------------------------------------------------"
+	echo "SYSTEM: $SYSTEM"
+	echo "USING TOOLSET=$TOOLSET and CMAKE_GENERATOR=$CMAKE_GENERATOR"
+	echo "ADRESSMODEL=$ADRESSMODEL"
+	echo "-----------------------------------------------------------"
+}
+
+SetMSVC_TOOLSET(){
+	TOOLSET=vc10
+	SYSTEM=WIN
+	export PATH=/C/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 10.0/VC/bin/:$PATH
+	export PATH=/C/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 10.0/Common7/IDE/:$PATH
+	CMAKE_GENERATOR='Visual Studio 10'
+	COMPILER='msvc-10.0'
+	ADRESSMODEL=32
+}
+SetGCC_TOOLSET(){
+	TOOLSET=gcc
+	
+	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
+		CMAKE_GENERATOR='MSYS Makefiles'
+		SYSTEM=WIN
+	else
+		CMAKE_GENERATOR='Unix Makefiles'
+	fi
+	
+	COMPILER='gcc'
+	GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
+	GCCARCH=`gcc -dumpmachine`
+	
+	if [ "$GCCARCH" == "mingw32" ]; then
+		ADRESSMODEL=32
+	else
+		ADRESSMODEL=64
+	fi
+}
+needWGET(){
+    if ( wget --version ); then 
+        echo "########### wget found: ok" ; 
+    else 
+        echo "########### Installing wget" ; 
+        mingw-get.exe install msys-wget ; 
+    fi; 
+}
 needSVN(){
     SVNEXE="svn"
 }
@@ -34,6 +91,7 @@ needPYTHON(){
     echo ""
     echo "looking for python ..."
     if ( (python --version) );then
+		HAVEPYTHON=1
         echo "... found, good"
     else
         echo "need python2.7 installation"
@@ -55,12 +113,67 @@ needCMAKE(){
     fi
 }
 
+prepBOOST(){
+    BOOST_VER=boost_${BOOST_VERSION//./_}
+	BOOST_SRC=$SRC_DIR/$BOOST_VER
+	BOOST_DIST=$DIST_DIR/$BOOST_VER-$TOOLSET-$ADRESSMODEL
+	
+	export BOOST_ROOT=$BOOST_DIST
+	
+	BOOST_ROOT_WIN=${BOOST_ROOT/\/c\//C:\/}
+	BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/d\//D:\/}
+	BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/e\//E:\/}
+}
+buildBOOST(){
+	checkTOOLSET
+	prepBOOST
+    needWGET
+	needPYTHON
+    
+    echo "--------------------------------------------------"
+	echo "-------$BOOST_VER : $BOOST_SRC to $BOOST_DIST"
+	echo "--------------------------------------------------"
+	
+	if [ ! -d $BOOST_SRC ]; then
+        pushd $SRC_DIR
+            wget -nc -nd http://sourceforge.net/projects/boost/files/boost/$BOOST_VERSION/$BOOST_VER'.tar.gz'
+            tar -xzvf $BOOST_VER'.tar.gz'
+        popd
+    fi
+    
+	pushd $BOOST_SRC
+		
+		if [ "$SYSTEM" == "UNIX" ]; then
+			sh bootstrap.sh
+		else
+			if [ ! -f ./b2.exe ]; then
+				cmd /c "bootstrap.bat "
+			fi
+		fi
+
+		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
+		
+		./b2.exe toolset=$COMPILER variant=release link=static threading=multi address-model=$ADRESSMODEL install \
+		--prefix=$BOOST_DIST \
+		--layout=tagged \
+		$WITHPYTHON \
+		--with-system \
+		--with-thread \
+		--with-date_time \
+		--with-chrono \
+		--with-regex \
+		--with-filesystem \
+		--with-test \
+		--with-atomic 
+	popd
+}
+
 ########## build scripts starting here
 buildGCCXML(){
+	checkTOOLSET
     needGIT
     needCMAKE
-    needGCC
-
+    
     SRCDIR=$PREFIX/gccxml
     BUILDDIR=$PREFIX/gccxml-build
     DISTDIR=$PREFIX/gccxml-bin
@@ -175,10 +288,15 @@ showHelp(){
     echo "Compilation helper script."
     echo "--------------------------"
     echo "Install a TOOL on the current path by calling"
-    echo "sh $0 TOOL"
+    echo "TOOLS ar so far: boost, gccxml, pygccxml, pyplusplus"
+	echo "sh $0 TOOL"
+	echo ""
     echo "You can specify an installation path by setting the PREFIX variable i.e.:"
     echo "PREFIX=/path/where/to/install/ sh $0 TOOL"
-    echo "TOOLS ar so far: all, gccxml, pygccxml, pyplusplus"
+	echo "You can specify an installation path by setting the PREFIX variable i.e.:"
+    echo ""
+    echo "You can specify boost version setting the BOOST_VERSION (default is $BOOST_VERSION) variable i.e.:"
+    echo "BOOST_VERSION=$BOOST_VERSION sh $0 boost"
     exit
 }
 
@@ -190,6 +308,13 @@ slotAll(){
 }
 
 # script starts here 
+TOOLSET=none
+
+if [ -n "$BOOST_VERSION" ]; then
+	BOOST_VERSION=$BOOST_VERSION
+else
+	BOOST_VERSION=$BOOST_VERSION_DEFAULT
+fi
 
 if [ -n "$PREFIX" ]; then
     PREFIX=`readlink -m $PREFIX`
@@ -208,12 +333,14 @@ do
     msvc) 
         SetMSVC_TOOLSET;;
     mingw) 
-        SetMINGW_TOOLSET;;
+        SetGCC_TOOLSET;;
     all) 
         slotAll;;
     help)
         showHelp
         exit;;
+	boost)
+        buildBOOST;;
     gccxml)
         buildGCCXML;;
     pygccxml)
