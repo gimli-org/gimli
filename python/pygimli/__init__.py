@@ -13,6 +13,7 @@ or
 
 from pygimli import *
 """
+from __future__ import print_function
 
 import sys, os
 if sys.platform == 'win32':
@@ -204,6 +205,10 @@ class VectorIter:
 
     def __iter__(self): return self
 
+    # this is for python < 3
+    def next(self): return self.__next__()
+    
+    # this is the same but for python > 3
     def __next__(self):
         self.pos += 1
         if self.pos == self.length:
