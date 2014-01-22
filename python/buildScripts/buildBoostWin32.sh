@@ -1,4 +1,4 @@
-BOOST_VERSION=1.53.0
+BOOST_VERSION=1.55.0
 
 if [ $# -eq 0 ]; then
 	prefix=`pwd`
@@ -85,12 +85,13 @@ pushd $BOOST_SRC_DIR
 	echo Installing at $DISTDIR
 
 	if [ ! -f ./b2.exe ]; then
-		 cmd /c "bootstrap.bat mingw --with-python-root=$PYTHON_ROOT "
+		 #cmd /c "bootstrap.bat mingw --with-python-root=$PYTHON_ROOT "
+		 cmd /c "bootstrap.bat"
 	fi
 
-	./b2.exe toolset=gcc variant=release link=shared threading=multi address-model=$ADRESSMODEL install \
+	./b2.exe toolset=gcc variant=release link=static threading=multi address-model=$ADRESSMODEL install \
 		--prefix=$DISTDIR \
-		--layout=tagged \
+		--layout=versioned \
 		$WITHPYTHON \
 		--with-system \
 		--with-thread \

@@ -43,9 +43,13 @@ set(PACKAGE_AUTHORS \"carsten@resistivity.net thomas@resistivity.net\")
 
 include(CheckIncludeFileCXX)
 
-IF(WIN32)
-	set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/../../boost/include)
-endif(WIN32)
+if (BOOST_ROOT)
+	set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
+else()
+	IF(WIN32)
+		set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/../../boost/include)
+	endif(WIN32)
+endif()
 
 if (MSVC)
 	find_package(Boost 1.46.0 COMPONENTS system thread)
@@ -101,10 +105,18 @@ ENDIF(WIN32)
 # Check for python stuff
 ################################################################################
 
-set(PythonLibs_FIND_VERSION 2.7)
+
 set(Python_ADDITIONAL_VERSIONS 3.3 3.2 2.7)
 find_package(PythonInterp)
-find_package(PythonLibs)
+if (win32)
+	get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
+	set (PYTHON_LIBRARY ${PYTHONPATH}/libs/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib)
+	set (PYTHON_INCLUDE_DIR ${PYTHONPATH}/include)
+else()
+	set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+	set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+	find_package(PythonLibs)
+endif()
 find_package(Boost 1.46.0 COMPONENTS python )
 
 find_package(gccxml)
