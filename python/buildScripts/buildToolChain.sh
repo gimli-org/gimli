@@ -5,7 +5,7 @@ BOOST_VERSION_DEFAULT=1.54.0
 checkTOOLSET(){
 	ADRESSMODEL=32
 	if [ "$TOOLSET" == "none" ]; then
-		echo "No TOOLSET set .. using default msvc"
+		echo "No TOOLSET set .. using default gcc"
 		SYSTEM=UNIX
 		SetGCC_TOOLSET
 	fi
