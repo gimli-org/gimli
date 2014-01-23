@@ -4,7 +4,7 @@ ADD_CUSTOM_COMMAND(
     COMMAND 
         ${PYTHON_EXECUTABLE}
     ARGS 
-        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-includes=${Boost_INCLUDE_DIR}
     TARGET
         pggen
     DEPENDS 

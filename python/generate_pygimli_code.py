@@ -103,7 +103,7 @@ class docExtractor(doc_extractor_i):
         print("extract(self, decl):", decl)
         return "Doku coming soon"
 
-def generate(defined_symbols):
+def generate(defined_symbols, extraIncludes):
 #    messages.disable(
 #        messages.W1005 # using a non public variable type for argucments or returns
 ##           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
@@ -131,8 +131,7 @@ def generate(defined_symbols):
     sourceHeader = os.path.abspath(sourcedir + "/" + r"pygimli.h")
     gimliInclude = os.path.dirname(os.path.abspath(sourcedir + "/../src/" + r"gimli.h"))
     settings.includesPaths.append(gimliInclude)
-    
-        
+            
     xml_cached_fc = parser.create_cached_source_fc(sourceHeader,
                                                    settings.module_name + '.cache')
     #xml_cached_fc = parser.create_cached_source_fc(os.path.join(r"pygimli.h"), settings.module_name + '.cache')
@@ -161,8 +160,13 @@ def generate(defined_symbols):
         print (str(e))
         raise("Problems determine gccxml binary")
 
+    
+
+    settings.includesPaths.insert(0,os.path.abspath(extraIncludes))
+
     print("gccxml-binary: ", gccxmlpath)
     print("gccxml includes: ", settings.includesPaths)
+    print("extra-include: ", os.path.abspath(extraIncludes))
     print("gccxml defines: ", defines)
     
     mb = module_builder.module_builder_t([xml_cached_fc],
@@ -373,11 +377,15 @@ def generate(defined_symbols):
 if __name__ == '__main__':
 
     defined_symbols = ''
+  
+    from optparse import OptionParser
 
-    for i in sys.argv:
-        if i == 'test':
-            defined_symbols = 'PYTEST'
+    optionParser = OptionParser("usage: %prog [options]")
+    optionParser.add_option("", "--extra-includes", dest="extraIncludes")
+                      
+    (options, args) = optionParser.parse_args()
+    
 
-    generate(defined_symbols)
+    generate(defined_symbols, options.extraIncludes)
 
 
