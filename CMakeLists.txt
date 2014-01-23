@@ -44,6 +44,7 @@ set(PACKAGE_AUTHORS \"carsten@resistivity.net thomas@resistivity.net\")
 include(CheckIncludeFileCXX)
 
 if (BOOST_ROOT)
+    get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
 	set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
 else()
 	IF(WIN32)
