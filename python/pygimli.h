@@ -452,7 +452,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< double >                       stdVectorR;
     typedef std::vector< std::complex < double > >      stdVectorC;
     typedef std::vector< std::pair< GIMLI::Index, GIMLI::Index > > stdVectorPairLongLong;
-    typedef std::vector< std::pair< uint, uint > >      stdVectorPairUintUint;
+    typedef std::vector< std::pair< unsigned int, unsigned int> >      stdVectorPairUintUint;
     
     typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
     typedef std::vector< GIMLI::Matrix< double > >      stdVectorRMatrix;

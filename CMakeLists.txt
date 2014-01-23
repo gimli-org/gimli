@@ -15,7 +15,7 @@ endif()
 project(libgimli)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -g -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -g -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
     
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common -s")
 endif ()
