@@ -52,8 +52,6 @@ find_package(BLAS QUIET)
 find_package(LAPACK QUIET)
 find_package(ParMETIS 4.0.2 QUIET)
 
-
-
 find_path(SUITESPARSE_DIR SuiteSparse_demo.m
 	${EXTERNAL_DIR}/SuiteSparse
 	)
