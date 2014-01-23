@@ -160,13 +160,11 @@ def generate(defined_symbols, extraIncludes):
         print (str(e))
         raise("Problems determine gccxml binary")
 
-    print("extraIncludes", extraIncludes)
-
     settings.includesPaths.insert(0,os.path.abspath(extraIncludes))
 
     print("gccxml-binary: ", gccxmlpath)
-    print("gccxml includes: ", settings.includesPaths)
     print("extra-include: ", os.path.abspath(extraIncludes))
+    print("gccxml includes: ", settings.includesPaths)
     print("gccxml defines: ", defines)
     
     mb = module_builder.module_builder_t([xml_cached_fc],
