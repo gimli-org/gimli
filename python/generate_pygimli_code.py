@@ -160,7 +160,7 @@ def generate(defined_symbols, extraIncludes):
         print (str(e))
         raise("Problems determine gccxml binary")
 
-    
+    print("extraIncludes", extraIncludes)
 
     settings.includesPaths.insert(0,os.path.abspath(extraIncludes))
 
