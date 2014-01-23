@@ -28,6 +28,7 @@ SetMSVC_TOOLSET(){
 	CMAKE_GENERATOR='Visual Studio 10'
 	COMPILER='msvc-10.0'
 	ADRESSMODEL=32
+    CPUCOUNT=1
 }
 SetGCC_TOOLSET(){
 	TOOLSET=gcc
@@ -42,6 +43,7 @@ SetGCC_TOOLSET(){
 	COMPILER='gcc'
 	GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
 	GCCARCH=`gcc -dumpmachine`
+    CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
 	
 	if [ "$GCCARCH" == "mingw32" ]; then
 		ADRESSMODEL=32
@@ -142,18 +144,22 @@ buildBOOST(){
     fi
     
 	pushd $BOOST_SRC
-		
+
+        
 		if [ "$SYSTEM" == "UNIX" ]; then
 			sh bootstrap.sh
+            B2=b2
 		else
 			if [ ! -f ./b2.exe ]; then
 				cmd /c "bootstrap.bat "
 			fi
+            B2="./b2.exe"
 		fi
 
 		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
 		
-		./b2.exe toolset=$COMPILER variant=release link=static threading=multi address-model=$ADRESSMODEL install \
+		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADRESSMODEL install \
+        -j $CPUCOUNT \
 		--prefix=$BOOST_DIST \
 		--layout=tagged \
 		$WITHPYTHON \
@@ -163,7 +169,6 @@ buildBOOST(){
 		--with-chrono \
 		--with-regex \
 		--with-filesystem \
-		--with-test \
 		--with-atomic 
 	popd
 }
