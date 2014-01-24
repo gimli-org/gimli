@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.54.0
+BOOST_VERSION_DEFAULT=1.53.0
 
 checkTOOLSET(){
 	ADRESSMODEL=32
@@ -148,7 +148,7 @@ buildBOOST(){
         
 		if [ "$SYSTEM" == "UNIX" ]; then
 			sh bootstrap.sh
-            B2=b2
+            B2="./b2"
 		else
 			if [ ! -f ./b2.exe ]; then
 				cmd /c "bootstrap.bat "
