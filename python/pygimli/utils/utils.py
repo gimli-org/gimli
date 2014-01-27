@@ -115,7 +115,7 @@ def findNearest( x, y, xp, yp, radius = -1 ):
             idx = i
     return idx, startPointDist[ idx ]
 
-import itertools
+
 
 def unique_everseen(iterable, key=None):
     """
@@ -126,10 +126,12 @@ def unique_everseen(iterable, key=None):
     """
     # unique_everseen('AAAABBBCCDAABBB') --> A B C D
     # unique_everseen('ABBCcAD', str.lower) --> A B C D
+    from itertools import ifilterfalse
+    
     seen = set()
     seen_add = seen.add
     if key is None:
-        for element in itertools.filterfalse(seen.__contains__, iterable):
+        for element in ifilterfalse(seen.__contains__, iterable):
             seen_add(element)
             yield element
     else:
