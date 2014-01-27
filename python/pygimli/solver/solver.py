@@ -251,7 +251,7 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
     else:
         #FIXME
         for i in boundArgs:
-            boundaries.append(copy.deepcopy(i))
+            boundaries.append(copy.copy(i))
         
 
     for bound in boundaries:
@@ -387,7 +387,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             print(("Asssemblation time: ", assembleTime))
 
         
-        solver = pg.LinSolver(S, verbose)
+        solver = pg.LinSolver(S, verbose=False)
         solver.solve(rhs, u)
 
         solverTime = swatch.duration(True)
