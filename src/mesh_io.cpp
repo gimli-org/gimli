@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -1069,7 +1069,7 @@ void Mesh::exportVTU(const std::string & fbody, bool binary) const {
     if (filename.rfind(".vtu") == std::string::npos){
         filename = fbody.substr(0, filename.rfind(".vtk")) + ".vtu";
     }
-    std::fstream file; if (! openOutFile(filename, & file)) { return ; }
+    std::fstream file; if (!openOutFile(filename, & file)) { return ; }
     file.precision(14);
     file << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">" << std::endl;
     file << "<UnstructuredGrid>" << std::endl;
@@ -1093,16 +1093,19 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
     if (filename.rfind(".vtu") == std::string::npos){
         filename = fbody.substr(0, filename.rfind(".vtk")) + ".vtu";
     }
-    std::fstream file; if (! openOutFile(filename, & file)) { return ; }
-
+    std::fstream file; if (!openOutFile(filename, & file)) { return ; }
 
     file << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">" << std::endl;
     file << "<UnstructuredGrid>" << std::endl;
 
     std::vector < Boundary * > bs;
     for (uint i = 0; i < boundaryCount(); i ++) {
-        if (boundary(i).marker() != 0.0) bs.push_back(&boundary(i));
-//         std::cout << boundary(i)<< " " << boundary(i).center() << " " << boundary(i).marker() << std::endl;
+        if (boundary(i).marker() != 0.0) {
+            bs.push_back(&boundary(i));
+        }
+//         if (boundary(i).marker() == -2) {
+//             std::cout << boundary(i)<< " " << boundary(i).center() << " " << boundary(i).marker() << std::endl;
+//         }
     }
 
     Mesh boundMesh;
@@ -1112,9 +1115,12 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
     std::map< std::string, RVector > boundData;
 
     RVector tmp(boundMesh.boundaryCount());
-    std::transform(boundMesh.boundaries().begin(), boundMesh.boundaries().end(), &tmp[0],
-                    std::mem_fun(&Boundary::marker));
+    std::transform(boundMesh.boundaries().begin(),
+                   boundMesh.boundaries().end(),
+                   &tmp[0], std::mem_fun(&Boundary::marker));
+    
     if (!boundData.count("_BoundaryMarker")) boundData.insert(std::make_pair("_BoundaryMarker",  tmp));
+    
     boundMesh.exportVTK(fbody, boundData);
     addVTUPiece_(file, boundMesh, boundData);
 
@@ -1127,10 +1133,12 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
                   const std::map < std::string, RVector > & data) const{
 
     bool binary = false;
+    bool cellsAreBoundaries = false;
 
     std::vector < MeshEntity * > cells;
 
-    if (mesh.cellCount() == 0 && mesh.boundaryCount () > 0){
+    if (mesh.cellCount() == 0 && mesh.boundaryCount() > 0){
+        cellsAreBoundaries = true;
         cells.reserve(mesh.boundaryCount());
         for (uint i = 0; i < mesh.boundaryCount(); i ++) cells.push_back(& mesh.boundary(i));
     } else {
@@ -1167,12 +1175,14 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
     file << std::endl << "</DataArray>" << std::endl;
     file << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << std::endl;
     uint count = 0;
+    
     for (uint i = 0; i < nCells; i ++) {
         count += cells[i]->nodeCount();
         file << count << " ";
     }
     file << std::endl << "</DataArray>" << std::endl;
     file << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << std::endl;
+    
     for (uint i = 0; i < nCells; i ++) {
         switch (cells[i]->rtti()){
             case MESH_BOUNDARY_NODE_RTTI: file     << "1 "; break;
@@ -1199,10 +1209,17 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
     file << "</Cells>" << std::endl;
 
     uint nodeData = 0, cellData = 0;
-    for (std::map < std::string, RVector >::const_iterator it = data.begin(); it != data.end(); it ++){
-        if (it->second.size() == nNodes) nodeData++;
-        else if (it->second.size() == nCells) cellData++;
-        else {
+    
+    for (std::map < std::string, RVector >::const_iterator it = data.begin(); 
+         it != data.end(); it ++){
+        
+        
+        if (it->second.size() == nNodes && !cellsAreBoundaries) { 
+            //NodeCount == Cellcount for cellsAreBoundaries(2d)
+            nodeData++;
+        } else if (it->second.size() == nCells) {
+            cellData++;
+        } else {
             std::cerr << WHERE_AM_I << " dont know how to handle data array: " << it->first
                         << " with size " << it->second.size() << " nodesize = " << nNodes
                         << " cellsize = " << nCells << std::endl;
@@ -1213,7 +1230,7 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
         file << "<PointData>" << std::endl;
         for (std::map < std::string, RVector >::const_iterator it = data.begin();
               it != data.end(); it ++){
-            if (it->second.size() == nNodes) {
+            if (it->second.size() == nNodes && !cellsAreBoundaries ) {
                  file << "<DataArray type=\"Float32\" Name=\""
                       << it->first << "\" format=\"ascii\">" << std::endl;
                  for (uint i = 0; i < it->second.size(); i ++) file << it->second[i] << " ";
@@ -1226,7 +1243,8 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
      if (cellData > 0){
         file << "<CellData>" << std::endl;
         for (std::map < std::string, RVector >::const_iterator it = data.begin();
-              it != data.end(); it ++){
+             it != data.end(); it ++){
+            
             if (it->second.size() == nCells) {
                  file << "<DataArray type=\"Float64\" Name=\"" << it->first;
                  if (!binary){
