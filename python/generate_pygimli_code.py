@@ -158,7 +158,7 @@ def generate(defined_symbols, extraIncludes):
             gccxmlpath = settings.gccxml_path
     except Exception as e:
         print (str(e))
-        raise("Problems determine gccxml binary")
+        raise Exception("Problems determine gccxml binary")
 
     settings.includesPaths.insert(0,os.path.abspath(extraIncludes))
 
