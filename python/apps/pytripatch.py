@@ -5,7 +5,10 @@ This program is part of pygimli
 Visit http://www.resistivity.net for further information or the latest version.
 """
 
+from __future__ import print_function
+
 import sys, math, os
+
 
 __verbose__ = False
 
