@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -1517,15 +1517,14 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType){
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
-                //Top
-                if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(1);
-                // Bottom
-                else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(3);
                 // Left
-                else if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(2);
+                if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(1);
                 // Right
-                else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(4);
-//                 boundary(i).setMarker(1);
+                else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(2);
+                // Top
+                else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(3);
+                // Bottom
+                else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(4);
             }
         }
 
@@ -1592,11 +1591,23 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
         } //** z loop (k)
         this->createNeighbourInfos();
 
-        for (Index i = 0; i < boundaryCount(); i ++){
+         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
-                boundary(i).setMarker(1);
+                // Left
+                if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(1);
+                // Right
+                else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(2);
+                // Top
+                else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(3);
+                // Bottom
+                else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(4);
+                // Front
+                else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(5);
+                // Back
+                else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) boundary(i).setMarker(6);
             }
         }
+        
 
     } else {
         std::cerr << WHERE_AM_I << "Warning! there are too few positions given: "

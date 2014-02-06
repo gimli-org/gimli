@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -165,14 +165,18 @@ public:
 
     void create3DGrid(const RVector & x, const RVector & y, const RVector & z, int markerType = 0);
 
-    /*! Create one dimensional grid. Boundary on the domain border will get marker = 1 .*/
+    /*! Create one dimensional grid. 
+     * Boundary on the domain border will get 
+     * marker: 1,2 for: left, right.*/
     void createGrid(const RVector & x) { create1DGrid(x); }
 
-    /*! Create two dimensional grid. Boundary on the domain border will get marker = 1 .*/
+    /*! Create two dimensional grid. Boundary on the domain border will get the
+     * marker: 1,2,3,4 for: left, right, top, bottom*/
     void createGrid(const RVector & x, const RVector & y, int markerType=0) {
         create2DGrid(x, y, markerType);
     }
-    /*! Create three dimensional grid. Boundary on the domain border will get marker = 1 .*/
+    /*! Create three dimensional grid. Boundary on the domain border will get the
+     * marker: 1,2,3,4,5,6 for: left, right, top, bottom, front, back*/
     void createGrid(const RVector & x, const RVector & y, const RVector & z, int markerType=0){
         create3DGrid(x, y, z, markerType);
     }

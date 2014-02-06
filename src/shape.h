@@ -316,7 +316,7 @@ public:
 
     virtual RVector3 rst(uint i) const;
 
-    virtual double domainSize_() const { return 0.0; }
+    virtual double domainSize_() const { return 1.0; }
 
 //     virtual bool touch1(const RVector3 & pos, bool verbose, int & pFunIdx) const;
 

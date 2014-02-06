@@ -187,7 +187,8 @@ def assembleDirichletBC(S, boundaryPair, rhs, time=0.0,
                 
                 uVal = None
                 
-                if type(boundaryPair[1]) == float or type(boundaryPair[1]) == int:
+                if type(boundaryPair[1]) == float or \
+                   type(boundaryPair[1]) == int :
                     uVal = boundaryPair[1]
                 else:
                     kwargs = dict()
