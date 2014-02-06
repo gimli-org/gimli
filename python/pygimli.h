@@ -237,7 +237,7 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     template class SparseMatrix< double >;
     template Vector < double > operator * (const SparseMatrix < double > & A, const Vector < double > & a);
-    template SparseMatrix< double > operator + (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
+//     template SparseMatrix< double > operator + (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
     template SparseMatrix< double > operator * (const SparseMatrix < double > & A, const double & b);
     template SparseMatrix< double > operator * (const double & b, const SparseMatrix < double > & A);
 

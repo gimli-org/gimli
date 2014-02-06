@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -579,6 +579,10 @@ public:
         vals_ += A.vecVals();
         return *this;
     }
+    SparseMatrix< ValueType > & operator -= (const SparseMatrix< ValueType > & A){
+        vals_ -= A.vecVals();
+        return *this;
+    }
 
     SparseMatrix< ValueType > & operator += (const ElementMatrix< double > & A){
         if (!valid_) SPARSE_NOT_VALID;
@@ -831,6 +835,16 @@ SparseMatrix< ValueType > operator + (const SparseMatrix< ValueType > & A,
     SparseMatrix< ValueType > ret(A);
     return ret += B;
 }
+template SparseMatrix< double > operator + (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
+
+template < class ValueType > 
+SparseMatrix< ValueType > operator - (const SparseMatrix< ValueType > & A,
+                                      const SparseMatrix< ValueType > & B){
+    SparseMatrix< ValueType > ret(A);
+    return ret -= B;
+}
+template SparseMatrix< double > operator - (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
+
 
 template < class ValueType > 
 SparseMatrix < ValueType > operator * (const SparseMatrix < ValueType > & A,

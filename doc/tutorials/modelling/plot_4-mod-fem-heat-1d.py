@@ -29,7 +29,7 @@ times = np.arange(0, 1.0, 0.04)
 dirichletBC = [[1, 0], # top
                [2, 0]] #bottom
 
-probeID = grid.nodeCount() / 2
+probeID = int(grid.nodeCount() / 2)
 
 """
 Fortunately we have an analytical solution:

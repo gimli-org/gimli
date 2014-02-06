@@ -126,14 +126,22 @@ def unique_everseen(iterable, key=None):
     """
     # unique_everseen('AAAABBBCCDAABBB') --> A B C D
     # unique_everseen('ABBCcAD', str.lower) --> A B C D
-    from itertools import ifilterfalse
-    
+    try:
+        from itertools import ifilterfalse
+    except:
+        from itertools import filterfalse
+        
     seen = set()
     seen_add = seen.add
     if key is None:
-        for element in ifilterfalse(seen.__contains__, iterable):
-            seen_add(element)
-            yield element
+        try:
+            for element in ifilterfalse(seen.__contains__, iterable):
+                seen_add(element)
+                yield element
+        except:
+            for element in filterfalse(seen.__contains__, iterable):
+                seen_add(element)
+                yield element
     else:
         for element in iterable:
             k = key(element)

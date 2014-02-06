@@ -104,12 +104,12 @@ neumannBC = [[2, mixedBC],
 
 """
 k = 1e-3
-u = solvePoisson(grid, a=1, b=k * k, f=pointSource,
+u = solvePoisson(grid, a=1, b=k*k, f=pointSource,
                  duBoundary=neumannBC,
                  userData={'sourcePos': sourcePosA, 'k': k},
                  verbose=True)
 
-u -= solvePoisson(grid, a=1, b=k * k, f=pointSource, 
+u -= solvePoisson(grid, a=1, b=k*k, f=pointSource, 
                   duBoundary=neumannBC,
                   userData={'sourcePos': sourcePosB, 'k': k},
                   verbose=True)
