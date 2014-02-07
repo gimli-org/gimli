@@ -147,9 +147,9 @@ class MRS():
     
     def loadMRSI(self,filename,defaultNoise=100e-9):
         ''' load data, error and kernel from mrsi file '''
-        idata=loadmat('K1.mrsi',struct_as_record=False,
+        idata=loadmat(filename,struct_as_record=False,
                       squeeze_me=True)['idata']
-        self.t = idata.data.t
+        self.t = idata.data.t + idata.data.effDead
         self.q = idata.data.q
         self.K = idata.kernel.K
         self.z = np.hstack( (0.,idata.kernel.z) )
@@ -295,7 +295,7 @@ class MRS():
         ''' return block model results '''
         return self.splitModel()
     
-    def showResult(self,figsize=(10,8),show=False):
+    def showResult(self,figsize=(10,8),save='',show=False):
         ''' show theta(z) and T2*(z) (+uncertainties if there) '''
         fig, ax = plt.subplots(1,2,sharey=True,figsize=figsize)
         thk, wc, t2 = self.splitModel()
@@ -307,10 +307,11 @@ class MRS():
             showErrorBars(ax[0],thk,wc,thkL,thkU,wcL,wcU)
             showErrorBars(ax[1],thk,t2*1e3,thkL,thkU,t2L*1e3,t2U*1e3)
         
+        if save: fig.savefig(save,bbox_inches='tight')
         if show: plt.show()
         return fig, ax
     
-    def showResultAndFit(self,figsize=(10,10),show=False):
+    def showResultAndFit(self,figsize=(10,10),save='',show=False):
         ''' show theta(z), T2*(z), data and model response '''
         fig, ax = plt.subplots(2,2,figsize=figsize)
         thk, wc, t2 = self.splitModel()
@@ -326,6 +327,7 @@ class MRS():
         ax[1,0].set_title('measured data [log10 nV]')
         self.showCube(ax[1,1],self.INV.response()*1e9,clim=clim)
         ax[1,1].set_title('simulated data [log10 nV]')
+        if save: fig.savefig(save,bbox_inches='tight')
         if show: plt.show()
         return fig, ax
         
