@@ -10,12 +10,12 @@ import getopt
 from os import system
 
 try:
-    import pygimli as g
+    import pygimli as pg
 except ImportError:
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
     sys.exit( 1 )
 
-    
+import matplotlib.pyplot as plt    
 from pygimli.meshtools import createParaMesh2dGrid
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawModel, drawSensors
@@ -76,14 +76,14 @@ def main( argv ):
     
     if options.verbose: print( options )
 
-    sensorPositions = g.DataContainer( options.dataFileName ).sensorPositions()
+    sensorPositions = pg.DataContainer( options.dataFileName ).sensorPositions()
     
     if options.verbose: print( "Sensorcount = ", len( sensorPositions ) )
     
     if options.dimension == 3:
         raise( Exception( "not yet implemented" ) )
     
-    swatch = g.Stopwatch( True )
+    swatch = pg.Stopwatch( True )
     if options.dimension == 2:
         
         mesh = createParaMesh2dGrid( sensors = sensorPositions, 
@@ -115,8 +115,7 @@ def main( argv ):
         
         drawSensors( ax, sensorPositions )
         
-        import pylab as P
-        P.show() 
+        plt.show() 
     
 if __name__ == "__main__":
     main( sys.argv[ 1: ] )

@@ -9,7 +9,7 @@ try:
 except:
     print("no modules osgeo")
     
-import pylab as P
+import matplotlib.image as mpimg
 from math import floor
 
 gk2   = Proj( init="epsg:31466" ) # GK zone 2
@@ -170,17 +170,17 @@ def GKtoUTM(R, H=None):
         print("cannot detect valid GK zone")
     
 def convddmm(num):
-    dd = P.floor( num / 100. )
+    dd = np.floor( num / 100. )
     r1 = num - dd * 100.
     return dd + r1 / 60.
 
 def readGeoRefTIF( file_name ):
 	""" read geo-referenced TIFF file and return image and bbox """
-	""" P.imshow( im, ext = bbox.ravel() ) , bbox might need transform """
+	""" plt.imshow( im, ext = bbox.ravel() ) , bbox might need transform """
 	dataset = gdal.Open( file_name, GA_ReadOnly )
 	geotr = dataset.GetGeoTransform()
 	projection = dataset.GetProjection()
-	im = P.flipud( P.imread( file_name ) )  
+	im = np.flipud( mpimg.imread( file_name ) )  
 	tifx, tify, dx = geotr[0], geotr[3], geotr[1]
 	bbox = [ [ tifx, tifx + im.shape[1] * dx], [ tify - im.shape[0] * dx, tify ] ]
 	return im, bbox, projection

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import pygimli as g
-
-import time
-
-from pygimli.viewer import *
-from pygimli.mplviewer import *
 
 import numpy as np
+import time
+
+import pygimli as pg
+import matplotlib.pyplot as plt
+from pygimli.mplviewer import drawMesh, drawField, drawStreamLinear
+
 '''
 Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal equation
 .. math::
@@ -37,7 +37,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
     upCandidate = []
 
     for node in downwind:
-        neighNodes = g.commonNodes( node.cellSet() )
+        neighNodes = pg.commonNodes( node.cellSet() )
 
         upNodes = []
         for n in neighNodes:
@@ -46,7 +46,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
 
         if len( upNodes ) == 1:
             # this is the dijkstra case
-            edge = g.findBoundary( upNodes[0], node )
+            edge = pg.findBoundary( upNodes[0], node )
             tt = times[ upNodes[0].id() ] + findSlowness( edge ) * edge.shape().domainSize()
 
             heapq.heappush( upCandidate, (tt, node) )
@@ -54,7 +54,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
             cells = node.cellSet()
             for c in cells:
                 for i in range( c.nodeCount() ):
-                    edge = g.findBoundary( c.node( i ), c.node( (i + 1 )%3 ) )
+                    edge = pg.findBoundary( c.node( i ), c.node( (i + 1 )%3 ) )
 
                     a = edge.node( 0 )
                     b = edge.node( 1 )
@@ -62,11 +62,11 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
                     tb = times[ b.id() ]
 
                     if upTags[ a.id() ] and upTags[ b.id() ]:
-                        line = g.Line( a.pos(), b.pos() )
+                        line = pg.Line( a.pos(), b.pos() )
                         t = min( 1., max( 0., line.nearest( node.pos() ) ) )
 
-                        ea = g.findBoundary( a, node )
-                        eb = g.findBoundary( b, node )
+                        ea = pg.findBoundary( a, node )
+                        eb = pg.findBoundary( b, node )
 
                         if t == 0:
                             slowness = findSlowness( ea )
@@ -91,7 +91,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
     #print newUpNode
     downwind.remove( newUpNode )
 
-    newDownNodes = g.commonNodes( newUpNode.cellSet() )
+    newDownNodes = pg.commonNodes( newUpNode.cellSet() )
     for nn in newDownNodes:
         if not upTags[ nn.id() ] and not downTags[ nn.id() ]:
             downwind.add( nn )
@@ -99,13 +99,13 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
 
 # def fastMarch(...)
 
-mesh = g.Mesh('mesh/test2d')
+mesh = pg.Mesh('mesh/test2d')
 mesh.createNeighbourInfos()
 
 print(mesh)
 
-source = g.RVector3( -80, 0. )
-times = g.RVector( mesh.nodeCount(), 0. )
+source = pg.RVector3( -80, 0. )
+times = pg.RVector( mesh.nodeCount(), 0. )
 
 for c in mesh.cells():
     if c.marker() == 1:
@@ -114,16 +114,15 @@ for c in mesh.cells():
             c.setAttribute( 0.5 )
     #c.setAttribute( abs( 1./c.center()[1] ) )
 
-fig = pylab.figure()
-a = fig.add_subplot( 1,1,1 )
+fig, a = plt.add_subplots()
 
-anaTimes = g.RVector( mesh.nodeCount() , 0.0 )
+anaTimes = pg.RVector( mesh.nodeCount() , 0.0 )
 for n in mesh.nodes():
     anaTimes[n.id() ] = source.distance( n.pos() )
 
 
-#d = g.DataContainer()
-#dijk = g.TravelTimeDijkstraModelling( mesh, d )
+#d = pg.DataContainer()
+#dijk = pg.TravelTimeDijkstraModelling( mesh, d )
 
 upwind = set()
 downwind = set()
@@ -137,7 +136,7 @@ for i, n in enumerate( cell.nodes() ):
     times[ n.id() ] = cell.attribute() * n.pos().distance( source )
     upTags[ n.id() ] = 1
 for i, n in enumerate( cell.nodes() ):
-    tmpNodes = g.commonNodes( n.cellSet() )
+    tmpNodes = pg.commonNodes( n.cellSet() )
     for nn in tmpNodes:
         if not upTags[ nn.id() ] and not downTags[ nn.id() ]:
             downwind.add( nn )
@@ -147,7 +146,7 @@ for i, n in enumerate( cell.nodes() ):
 #start fast marching
 tic = time.time()
 while len( downwind ) > 0:
-    model = g.RVector( mesh.cellCount(), 0.0 )
+    model = pg.RVector( mesh.cellCount(), 0.0 )
 
     #for c in upwind: model.setVal( 2, c.id() )
     #for c in downwind: model.setVal( 1, c.id() )
@@ -190,7 +189,7 @@ drawField( a, mesh, times, filled=True )
 
 #ax1.streamplot(X, Y, U, V, density=[0.5, 1])
 
-drawStreamLinear( a, mesh, times, g.RVector3(-100., -10.0 ), g.RVector3(100., -10.0 ), nLines = 50, step = 0.01, showStartPos = True )
+drawStreamLinear( a, mesh, times, pg.RVector3(-100., -10.0 ), pg.RVector3(100., -10.0 ), nLines = 50, step = 0.01, showStartPos = True )
 
-pylab.show()
+plt.show()
 

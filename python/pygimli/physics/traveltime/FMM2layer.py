@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import pygimli as g
+import pygimli as pg
+import numpy as np
+import matplotlib.pyplot as plt
 import time
 from pygimli.mplviewer import drawMesh, drawField, drawStreamLinear
-import pylab as P
 import heapq
 from math import asin, tan
 
@@ -34,7 +35,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
     upCandidate = []
 
     for node in downwind:
-        neighNodes = g.commonNodes( node.cellSet() )
+        neighNodes = pg.commonNodes( node.cellSet() )
 
         upNodes = []
         for n in neighNodes:
@@ -43,7 +44,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
 
         if len( upNodes ) == 1:
             # this is the dijkstra case
-            edge = g.findBoundary( upNodes[0], node )
+            edge = pg.findBoundary( upNodes[0], node )
             tt = times[ upNodes[0].id() ] + findSlowness( edge ) * edge.shape().domainSize()
 
             heapq.heappush( upCandidate, (tt, node) )
@@ -51,7 +52,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
             cells = node.cellSet()
             for c in cells:
                 for i in range( c.nodeCount() ):
-                    edge = g.findBoundary( c.node( i ), c.node( (i + 1 )%3 ) )
+                    edge = pg.findBoundary( c.node( i ), c.node( (i + 1 )%3 ) )
 
                     a = edge.node( 0 )
                     b = edge.node( 1 )
@@ -59,11 +60,11 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
                     tb = times[ b.id() ]
 
                     if upTags[ a.id() ] and upTags[ b.id() ]:
-                        line = g.Line( a.pos(), b.pos() )
+                        line = pg.Line( a.pos(), b.pos() )
                         t = min( 1., max( 0., line.nearest( node.pos() ) ) )
 
-                        ea = g.findBoundary( a, node )
-                        eb = g.findBoundary( b, node )
+                        ea = pg.findBoundary( a, node )
+                        eb = pg.findBoundary( b, node )
 
                         if t == 0:
                             slowness = findSlowness( ea )
@@ -84,7 +85,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
     upTags[ newUpNode.id() ] = 1
     downwind.remove( newUpNode )
 
-    newDownNodes = g.commonNodes( newUpNode.cellSet() )
+    newDownNodes = pg.commonNodes( newUpNode.cellSet() )
     for nn in newDownNodes:
         if not upTags[ nn.id() ] and not downTags[ nn.id() ]:
             downwind.add( nn )
@@ -94,7 +95,7 @@ def fastMarch( mesh, downwind, times, upTags, downTags ):
 
 xmin, xmax, zlay = -20., 150., 20.
 # create PLC (piece-wise linear complex) of two layers
-PLC = g.Mesh( 2 )
+PLC = pg.Mesh( 2 )
 nodes = []
 #   0-----------1
 #   |           |
@@ -115,30 +116,30 @@ PLC.createEdge( nodes[5], nodes[0] )
 PLC.createEdge( nodes[5], nodes[2] )
 
 # insert region markers into the two layers and make mesh
-tri = g.TriangleWrapper( PLC )
-tri.addRegionMarkerTmp( 0, g.RVector3( 0., -zlay+.1 ), 10. ) # 10m^2 max area
-tri.addRegionMarkerTmp( 1, g.RVector3( 0., -zlay-.1 ), 10. )
+tri = pg.TriangleWrapper( PLC )
+tri.addRegionMarkerTmp( 0, pg.RVector3( 0., -zlay+.1 ), 10. ) # 10m^2 max area
+tri.addRegionMarkerTmp( 1, pg.RVector3( 0., -zlay-.1 ), 10. )
 tri.setSwitches( '-pzeAfaq34.5' )
-mesh = g.Mesh(2)
+mesh = pg.Mesh(2)
 tri.generate( mesh )
 mesh.createNeighbourInfos()
 print(mesh)
 
 # make velocity model
 v = [ 1000., 3000. ]
-slomap = g.stdMapF_F() # map for mapping real slowness values
+slomap = pg.stdMapF_F() # map for mapping real slowness values
 for i,vi in enumerate( v ):
     slomap.insert( i, 1./vi )
 
 mesh.mapCellAttributes( slomap ) # map values to attributes using map
 
 # initialize source position and trvel time vector
-source = g.RVector3( 0., 0. )
-times = g.RVector( mesh.nodeCount(), 0. )
+source = pg.RVector3( 0., 0. )
+times = pg.RVector( mesh.nodeCount(), 0. )
 
 # initialize sets and tags
 upwind, downwind = set(), set()
-upTags, downTags = P.zeros( mesh.nodeCount() ), P.zeros( mesh.nodeCount() )
+upTags, downTags = np.zeros( mesh.nodeCount() ), np.zeros( mesh.nodeCount() )
 
 # define initial condition
 cell = mesh.findCell( source )
@@ -147,7 +148,7 @@ for i, n in enumerate( cell.nodes() ):
     times[ n.id() ] = cell.attribute() * n.pos().distance( source )
     upTags[ n.id() ] = 1
 for i, n in enumerate( cell.nodes() ):
-    tmpNodes = g.commonNodes( n.cellSet() )
+    tmpNodes = pg.commonNodes( n.cellSet() )
     for nn in tmpNodes:
         if not upTags[ nn.id() ] and not downTags[ nn.id() ]:
             downwind.add( nn )
@@ -161,24 +162,24 @@ while len( downwind ) > 0:
 print(time.time()-tic, "s")
 
 # compare with analytical solution along the x axis
-x = P.arange( 0., 100., 0.5)
-t = g.interpolate( mesh, times, g.asvector( x ), x*0., x*0. )
+x = np.arange( 0., 100., 0.5)
+t = pg.interpolate( mesh, times, pg.asvector( x ), x*0., x*0. )
 tdirect = x/v[0] # direct wave
 alfa = asin( v[0]/v[1] ) # critically refracted wave angle
 xreflec = tan( alfa ) * zlay * 2. # first critically refracted
 trefrac = (x-xreflec) / v[1] + xreflec*v[1]/v[0]**2 
-tana = P.where( trefrac<tdirect,trefrac,tdirect) # minimum of both
+tana = np.where( trefrac<tdirect,trefrac,tdirect) # minimum of both
 print("min(dt)=", min(t-tana)*1000, "ms max(dt)=", max(t-tana)*1000, "ms")
 
 # plot traveltime field, a few lines
-fig = P.figure()
+fig = plt.figure()
 a = fig.add_subplot( 211 )
 drawMesh( a, mesh )
 drawField( a, mesh, times, True, 20 )
-drawStreamLinear( a, mesh, times, g.RVector3(-100., -10.0 ), 
-    g.RVector3(100., -10.0 ), nLines = 50, step = 0.01, showStartPos = True )
+drawStreamLinear( a, mesh, times, pg.RVector3(-100., -10.0 ), 
+    pg.RVector3(100., -10.0 ), nLines = 50, step = 0.01, showStartPos = True )
 
 # plot calculated and measured travel times
 a2 = fig.add_subplot( 212 )
-P.plot( x, t, 'b.-', x, tdirect, 'r-', x, trefrac, 'g-' )
-P.show()
+plt.plot( x, t, 'b.-', x, tdirect, 'r-', x, trefrac, 'g-' )
+plt.show()

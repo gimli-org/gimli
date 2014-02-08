@@ -7,8 +7,8 @@ import sys,os
 
 #import urllib.request, urllib.error, urllib.parse
 import math, random
-import pylab as P
 import numpy as np
+import matplotlib.image as mpimg
 
 class OverlayImageMPL( ):
         ''
@@ -143,7 +143,7 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
     
     if os.path.exists( filename ):
         if verbose: print(("Read image from disk", filename))
-        image = P.imread( filename )
+        image = mpimg.imread( filename )
     else:
         if verbose: print(("Get map from url maps", url))
         
@@ -157,7 +157,7 @@ def getMapTile( xtile, ytile, zoom, vendor = 'OSM', verbose = False ):
         fi = open( filename, 'w')
         fi.write( data )
         fi.close()
-        image = P.imread( filename )
+        image = mpimg.imread( filename )
 
     if imFormat == '.jpeg': image = image[::-1,...] / 256.
     return image

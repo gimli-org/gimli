@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pygimli as g
+#import pygimli as g
 from pygimli.mplviewer import underlayMap
 from pygimli.importexport import readGPX, readSimpleLatLon
 
+import matplotlib.pyplot as plt
 import pyproj
-
-import pylab as P
 
 #zone = 32
 #vendor = 'OSM'
@@ -29,13 +28,13 @@ proj = pyproj.Proj( proj = 'tmerc', init = 'epsg:31468', ellps = 'WGS84' )
 for p in pnts:
     x,y = proj( p[0], p[1] )
     print x,y
-    P.plot( x, y, '.', markersize = 18 )
-    P.text( x, y, p[2] )
+    plt.plot( x, y, '.', markersize = 18 )
+    plt.text( x, y, p[2] )
 
-axes = P.gca()
+axes = plt.gca()
 
 underlayMap( axes, proj, vendor=vendor, zoom = 10, pixelLimit = [1024,1024], verbose = True, fitMap = True )
     
 axes.grid()
 
-P.show()
+plt.show()

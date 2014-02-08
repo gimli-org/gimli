@@ -5,7 +5,11 @@ import sys
 # for system calls
 from os import system
 
-# the name pygimli is abbreviated as g
-import pygimli as g
+# the name pygimli is abbreviated as pg
+import pygimli as pg
 
-import pylab as P
+# for numerical stuff as vectors, matrices
+import numpy as np
+
+# for plotting
+import matplotlib.pyplot as plt

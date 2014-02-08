@@ -1,14 +1,14 @@
 # -*- coding: iso-8859-1 -*-
 
 try:
-    import pygimli as g
+    import pygimli as pg
     import pygimli.mplviewer
 except ImportError:
     import sys
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
     sys.exit(1)
 
-import pylab
+import matplotlib.pyplot as plt
 
 def showData(data, **kwargs):
     """
@@ -17,11 +17,11 @@ def showData(data, **kwargs):
     Creates figure, axis and Show.
     """
     MOVETOBERT
-    fig = pylab.figure()
+    fig = plt.figure()
     a = fig.add_subplot(111)
     drawData(a, data, data('rhoa'), **kwargs)
     a.set_aspect('equal')
-    pylab.show()
+    plt.show()
     return a
 
 def drawData(axes, data, vals, pseudotype='A_M', cMin=None, cMax=None,
@@ -29,17 +29,17 @@ def drawData(axes, data, vals, pseudotype='A_M', cMin=None, cMax=None,
     """"""
     MOVETOBERT
     try:
-        sheme = getattr(g.mplviewer.Pseudotype, pseudotype)
+        sheme = getattr(pg.mplviewer.Pseudotype, pseudotype)
     except:
         print("no pseudotype ", pseudotype, " found. Falling back to A_M")
-        print(dir(g.mplviewer.Pseudotype))
-        sheme = g.mplviewer.Pseudotype.A_M
+        print(dir(pg.mplviewer.Pseudotype))
+        sheme = pg.mplviewer.Pseudotype.A_M
 
-    gci = g.mplviewer.drawDataAsMatrix(axes, data, vals, pseudotype = sheme
+    gci = pg.mplviewer.drawDataAsMatrix(axes, data, vals, pseudotype = sheme
                                         , logScale = not linear)
 
     if showCbar and (cMin is not cMax):
-        g.mplviewer.createColorbar(gci, cMin=cMin, cMax=cMax,
+        pg.mplviewer.createColorbar(gci, cMin=cMin, cMax=cMax,
                                    nLevs=5, label=label)
 
     return gci
