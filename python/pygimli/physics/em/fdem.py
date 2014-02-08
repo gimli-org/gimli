@@ -4,7 +4,7 @@
     Was macht das Ding
 '''
 
-import pygimli as g
+import pygimli as pg
 
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
 from pygimli.viewer import show1dmodel
@@ -88,27 +88,27 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='vertical', aspect=40):
     plt.xlabel('x [m]')
     plt.ylabel('f [Hz]')
 
-class FDEM2dFOP(g.ModellingBase):
+class FDEM2dFOP(pg.ModellingBase):
     """
     """
     def __init__(self, data, nlay=2, verbose=False):
         """
         """
-        g.ModellingBase.__init__(self, verbose)
+        pg.ModellingBase.__init__(self, verbose)
         self.nlay_ = nlay
         self.FOP_  = data.FOP(nlay)
         self.nx_   = len(data.x)
         self.nf    = len(data.freq())
-        self.mesh_ = g.createMesh1D(self.nx_, 2*nlay-1)
+        self.mesh_ = pg.createMesh1D(self.nx_, 2*nlay-1)
         self.setMesh(self.mesh_)
 
     def response(self, model):
         """
         """
         modA = np.asarray(model).reshape((self.nlay_*2-1,self.nx_)).T
-        resp = g.RVector(0)
+        resp = pg.RVector(0)
         for modi in modA:
-            resp = g.cat(resp, self.FOP_.response(modi))
+            resp = pg.cat(resp, self.FOP_.response(modi))
         
         return resp
     
@@ -530,7 +530,7 @@ class FDEMData():
         """
         
         if isinstance(nlay, int):
-            modVec = g.RVector(nlay*2 -1, 30.)
+            modVec = pg.RVector(nlay*2 -1, 30.)
             cType = 0 # no reference model
         else:
             modVec = nlay
@@ -542,9 +542,9 @@ class FDEMData():
         self.f2d = self.FOP2d(nlay)
 
         # transformations
-        self.tD = g.RTrans()
-        self.tThk = g.RTransLogLU(thkL, thkU)
-        self.tRes = g.RTransLogLU(resL, resU)
+        self.tD = pg.RTrans()
+        self.tThk = pg.RTransLogLU(thkL, thkU)
+        self.tRes = pg.RTransLogLU(resL, resU)
         
         for i in range(nlay-1): self.f2d.region(i).setTransModel(self.tThk)
         
@@ -555,10 +555,10 @@ class FDEMData():
         self.f2d.region(1).setConstraintType(10)
 
         # collect data vector
-        datvec = g.RVector(0)
+        datvec = pg.RVector(0)
         
         for i in range(len(self.x)):
-            datvec = g.cat(datvec, self.datavec(i))
+            datvec = pg.cat(datvec, self.datavec(i))
 
         # collect error vector
         errVec = []
@@ -568,9 +568,9 @@ class FDEMData():
             errVec.extend(np.maximum(self.ERR[i][self.activeFreq] * 0.701, minErr))
 
         # generate starting model by repetition
-        model = g.asvector(np.repeat(modVec, len(self.x)))
-        INV = g.RInversion(datvec, self.f2d, self.tD) 
-        INV.setAbsoluteError(g.asvector(errVec))
+        model = pg.asvector(np.repeat(modVec, len(self.x)))
+        INV = pg.RInversion(datvec, self.f2d, self.tD) 
+        INV.setAbsoluteError(pg.asvector(errVec))
         INV.setLambda(lam)
         INV.setModel(model)
         INV.setReferenceModel(model)
@@ -581,7 +581,7 @@ if __name__ == "__main__":
     import sys
     from optparse import OptionParser
 
-    parser = OptionParser("usage: %prog [options] fdem", version="%prog: " + g.versionStr() )
+    parser = OptionParser("usage: %prog [options] fdem", version="%prog: " + pg.versionStr() )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     

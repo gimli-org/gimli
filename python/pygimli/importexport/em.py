@@ -1,4 +1,5 @@
-import pylab as P
+import numpy as np
+import matplotlib.pyplot as plt
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
 from pygimli.utils import draw1dmodel
 
@@ -45,7 +46,7 @@ def readusffile( filename, DATA = [] ):
                         nr += 1
                     except:
                         sounding['column_names'] = values
-                        columns = P.zeros( ( int(sounding['POINTS']), len( values ) ) )
+                        columns = np.zeros( ( int(sounding['POINTS']), len( values ) ) )
                         nr = 0
     
     fid.close()
@@ -73,7 +74,7 @@ def importMaxminData( filename, verbose = False ):
         elif aline.upper().find('COIL') > 0:     #[:6] == '/ COIL':
             coilspacing = float( aline.split()[-2] )
         elif aline.upper().find('FREQ') > 0:   #[:6] == '/ FREQ':
-            freq = P.array( [float(aa) for aa in aline[aline.find(':')+1:].replace(',',' ').split() if aa[0].isdigit()] )
+            freq = np.array( [float(aa) for aa in aline[aline.find(':')+1:].replace(',',' ').split() if aa[0].isdigit()] )
     
     fid.close()
     
@@ -82,7 +83,7 @@ def importMaxminData( filename, verbose = False ):
     
     nf = len( freq )
     if verbose: print("delim=", delim, "nf=", nf)
-    A = P.loadtxt( filename, skiprows=i, delimiter=delim ).T
+    A = np.loadtxt( filename, skiprows=i, delimiter=delim ).T
     x, IP, OP = A[0], A[2:nf*2+2:2].T, A[3:nf*2+2:2].T
 
     return x, freq, coilspacing, IP, OP
@@ -102,7 +103,7 @@ class FDEMData():
 
     def deactivate( self, fr ):
         """deactivate a single frequency."""
-        fi = P.find( P.absolute( self.f / fr - 1.) < 0.1 )
+        fi = np.find( np.absolute( self.f / fr - 1.) < 0.1 )
         self.activeFreq[ fi ] = False
         
     def freq( self ):
@@ -119,14 +120,14 @@ class FDEMData():
         if isinstance( xpos, int ) and ( xpos < len( self.x ) ) and ( xpos >= 0 ): # index
             n = xpos
         else:
-            n = P.argmin( P.absolute( self.x - xpos ) )
+            n = Pnpargmin( np.absolute( self.x - xpos ) )
         
         return self.IP[ n, self.activeFreq ], self.OP[ n, self.activeFreq ]
 
     def datavec( self, xpos=0 ):
         """extract data vector (stacking inphase and outphase."""
         ip, op = self.selectData( xpos )
-        return asvector( P.hstack( ( ip, op ) ) )
+        return asvector( np.hstack( ( ip, op ) ) )
     
     def invBlock( self, xpos=0, nlay=2, noise=1.0, stmod=10., lam=100., lBound=1., uBound=0., verbose=False ):
         """yield gimli inversion instance for block inversion."""
@@ -173,50 +174,50 @@ class FDEMData():
         ip, op = self.selectData( xpos )
         fr = self.freq()
         if ax is None:
-            if clf: P.clf()
-            P.subplot(1,nv,nv-1)
+            if clf: plt.clf()
+            plt.subplot(1,nv,nv-1)
         else:
-            P.sca( ax[0] )
+            plt.sca( ax[0] )
             
-        P.semilogy( ip, fr, marker, label='obs'+addlabel )
-        P.axis('tight')
-        P.grid(True)
-        P.xlabel('inphase [%]')
-        P.ylabel('f [Hz]')
+        plt.semilogy( ip, fr, marker, label='obs'+addlabel )
+        plt.axis('tight')
+        plt.grid(True)
+        plt.xlabel('inphase [%]')
+        plt.ylabel('f [Hz]')
         if response is not None:
-            rip = P.asarray( response )[:len(ip)]
-            P.semilogy( rip, fr, rmarker, label='syn'+addlabel )
+            rip = np.asarray( response )[:len(ip)]
+            plt.semilogy( rip, fr, rmarker, label='syn'+addlabel )
         
-        P.legend( loc='best' )
+        plt.legend( loc='best' )
         
         if ax is None:
-            P.subplot(1,nv,nv)
+            plt.subplot(1,nv,nv)
         else:
-            P.sca( ax[1] )
+            plt.sca( ax[1] )
         
-        P.semilogy( op, fr, marker, label='obs'+addlabel )
+        plt.semilogy( op, fr, marker, label='obs'+addlabel )
         if response is not None:
-            rop = P.asarray( response )[len(ip):]
-            P.semilogy( rop, fr, rmarker, label='syn'+addlabel )
+            rop = np.asarray( response )[len(ip):]
+            plt.semilogy( rop, fr, rmarker, label='syn'+addlabel )
         
-        P.axis('tight')
-        P.grid(True)
-        P.xlabel('outphase [%]')
-        P.ylabel('f [Hz]')
-        P.legend( loc='best' )
-        P.subplot( 1, nv, 1 )
+        plt.axis('tight')
+        plt.grid(True)
+        plt.xlabel('outphase [%]')
+        plt.ylabel('f [Hz]')
+        plt.legend( loc='best' )
+        plt.subplot( 1, nv, 1 )
         return
     
     def showModelAndData( self, model, xpos=0, response=None ):
-        P.clf()
-        model = P.asarray( model )
+        plt.clf()
+        model = np.asarray( model )
         nlay = ( len( model ) + 1 ) / 2
         thk = model[:nlay-1]
         res = model[nlay-1:2*nlay-1]
-        ax1 = P.subplot(131)
+        ax1 = plt.subplot(131)
         draw1dmodel( res, thk )
-        ax2 = P.subplot(132)
-        ax3 = P.subplot(133)
+        ax2 = plt.subplot(132)
+        ax3 = plt.subplot(133)
         self.plotData( xpos, response, (ax2, ax3), clf=False )
         
     def plotAllData( self, allF = True, orientation='vertical' ):
@@ -224,30 +225,30 @@ class FDEMData():
         nt = list(range( 0, len( self.x ), 5))
         freq = self.freq()
         nf = len( freq )
-        P.clf()
-        ax1 = P.subplot(211)
-        P.imshow( self.IP[:,self.activeFreq].T, interpolation='nearest' )
-        P.imshow( self.IP[:,self.activeFreq].T, interpolation='nearest' )
+        plt.clf()
+        ax1 = plt.subplot(211)
+        plt.imshow( self.IP[:,self.activeFreq].T, interpolation='nearest' )
+        plt.imshow( self.IP[:,self.activeFreq].T, interpolation='nearest' )
         ax1.set_xticks(nt)
         ax1.set_xticklabels(["%g" % xi for xi in self.x[nt]])
         ax1.set_yticks(list(range(0,nf+1,2)))
         ax1.set_yticklabels(["%g" % freq[i] for i in range(0,nf,2)])
-        P.ylim((-0.5,nf-0.5))
-        P.colorbar(orientation=orientation,aspect=30,shrink=0.8)
-        P.xlabel('x [m]')
-        P.ylabel('f [Hz]')
-        P.title('inphase percent')
-        ax2 = P.subplot(212)
-        P.imshow( self.OP[:,self.activeFreq].T, interpolation='nearest' )
+        plt.ylim((-0.5,nf-0.5))
+        plt.colorbar(orientation=orientation,aspect=30,shrink=0.8)
+        plt.xlabel('x [m]')
+        plt.ylabel('f [Hz]')
+        plt.title('inphase percent')
+        ax2 = plt.subplot(212)
+        plt.imshow( self.OP[:,self.activeFreq].T, interpolation='nearest' )
         ax2.set_xticks(nt)
         ax2.set_xticklabels(["%g" % xi for xi in self.x[nt]])
         ax2.set_yticks(list(range(0,nf+1,2)))
         ax2.set_yticklabels(["%g" % freq[i] for i in range(0,nf,2)])
-        P.ylim((-0.5,nf-0.5))
-        P.colorbar(orientation=orientation,aspect=30,shrink=0.8)
-        P.xlabel('x [m]')
-        P.ylabel('f [Hz]')
-        P.title('outphase percent')
+        plt.ylim((-0.5,nf-0.5))
+        plt.colorbar(orientation=orientation,aspect=30,shrink=0.8)
+        plt.xlabel('x [m]')
+        plt.ylabel('f [Hz]')
+        plt.title('outphase percent')
         return
 
 #    def FOP2d( nlay ):

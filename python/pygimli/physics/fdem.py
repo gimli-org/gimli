@@ -2,30 +2,30 @@
 # -*- coding: utf-8 -*-
 """Was macht das ding."""
 
-import pygimli as g
+import numpy as np
+import pygimli as pg
 
-import pylab as P
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
 
 def importEmsysAsciiData( filename, verbose = False ):
     """pure import function reading in positions, data, frequencies, error and
     geometry."""
     
-    xx, sep, f, pf, ip, op, hmod, q = P.loadtxt( filename, skiprows=1, usecols=(1,4,6,8,9,12,15,16 ), unpack=True )
+    xx, sep, f, pf, ip, op, hmod, q = np.loadtxt( filename, skiprows=1, usecols=(1,4,6,8,9,12,15,16 ), unpack=True )
 
     err = q / pf  * 100. # percentage of primary field
     
-    if len( P.unique( sep ) ) > 1:
+    if len( np.unique( sep ) ) > 1:
         print("Warning! Several coil spacings present in file!")
     
-    coilspacing = P.median( sep )
+    coilspacing = np.median( sep )
     
-    f = P.round_( f )
-    freq, mf, nf = P.unique( f, True, True )
-    x, mx, nx = P.unique( xx, True, True )
-    IP = P.ones( ( len(x), len(freq) ) ) * P.nan
-    OP = P.ones( ( len(x), len(freq) ) ) * P.nan
-    ERR = P.ones( ( len(x), len(freq) ) ) * P.nan
+    f = np.round_( f )
+    freq, mf, nf = np.unique( f, True, True )
+    x, mx, nx = np.unique( xx, True, True )
+    IP = np.ones( ( len(x), len(freq) ) ) * np.nan
+    OP = np.ones( ( len(x), len(freq) ) ) * np.nan
+    ERR = np.ones( ( len(x), len(freq) ) ) * np.nan
     
     for i in range( len( f ) ):
         #print i, nx[i], nf[i]
@@ -48,7 +48,7 @@ def importMaxminData( filename, verbose = False ):
         elif aline.find('COIL') > 0:     #[:6] == '/ COIL':
             coilspacing = float( aline.split()[-2] )
         elif aline.find('FREQ') > 0:   #[:6] == '/ FREQ':
-            freq = P.array( [float(aa) for aa in aline[aline.find(':')+1:].replace(',',' ').split() if aa[0].isdigit()] )
+            freq = np.array( [float(aa) for aa in aline[aline.find(':')+1:].replace(',',' ').split() if aa[0].isdigit()] )
     
     fid.close()
     
@@ -57,7 +57,7 @@ def importMaxminData( filename, verbose = False ):
     
     nf = len( freq )
     if verbose: print("delim=", delim, "nf=", nf)
-    A = P.loadtxt( filename, skiprows=i, delimiter=delim ).T
+    A = np.loadtxt( filename, skiprows=i, delimiter=delim ).T
     x, IP, OP = A[0], A[2:nf*2+2:2].T, A[3:nf*2+2:2].T
 
     return x, freq, coilspacing, IP, OP
@@ -65,15 +65,15 @@ def importMaxminData( filename, verbose = False ):
 def xfplot( ax, DATA, x, freq, everyx=5, orientation='vertical', aspect=40 ):
     """plots a matrix according to x and frequencies."""
     nt = list(range( 0, len( x ), everyx))
-    P.imshow( DATA.T, interpolation='nearest' )
-    P.ylim(P.ylim()[::-1])
+    plt.imshow( DATA.T, interpolation='nearest' )
+    plt.ylim(plt.ylim()[::-1])
     ax.set_xticks(nt)
     ax.set_xticklabels(["%g" % xi for xi in x[nt]])
     ax.set_yticks(list(range(0,len(freq)+1,2)))
     ax.set_yticklabels(["%g" % freq[i] for i in range(0,len(freq),2)])
-    P.colorbar(orientation=orientation,aspect=aspect)
-    P.xlabel('x [m]')
-    P.ylabel('f [Hz]')
+    plt.colorbar(orientation=orientation,aspect=aspect)
+    plt.xlabel('x [m]')
+    plt.ylabel('f [Hz]')
 
     
 class FDEMData():
@@ -102,7 +102,7 @@ class FDEMData():
 
     def deactivate( self, fr ):
         """deactivate a single frequency."""
-        fi = P.find( P.absolute( self.f / fr - 1.) < 0.1 )
+        fi = np.find( np.absolute( self.f / fr - 1.) < 0.1 )
         self.activeFreq[ fi ] = False
         
     def freq( self ):
@@ -124,7 +124,7 @@ class FDEMData():
         if isinstance( xpos, int ) and ( xpos < len( self.x ) ) and ( xpos >= 0 ): # index
             n = xpos
         else:
-            n = P.argmin( P.absolute( self.x - xpos ) )
+            n = np.argmin( np.absolute( self.x - xpos ) )
         
         if self.ERR is not None:
             return self.IP[ n, self.activeFreq ], self.OP[ n, self.activeFreq ], self.ERR[ n, self.activeFreq ]
@@ -134,12 +134,12 @@ class FDEMData():
     def datavec( self, xpos=0 ):
         """extract data vector (stacking inphase and outphase."""
         ip, op, err = self.selectData( xpos )
-        return asvector( P.hstack( ( ip, op ) ) )
+        return asvector( np.hstack( ( ip, op ) ) )
     
     def errorvec( self, xpos=0, minvalue=0.0 ):
         """extract error vector."""
         ip, op, err = self.selectData( xpos )
-        return asvector( P.tile( P.maximum( err * 0.7071, minvalue ) ) )
+        return asvector( np.tile( np.maximum( err * 0.7071, minvalue ) ) )
     
     def invBlock( self, xpos=0, nlay=2, noise=1.0, stmod=10., lam=100., lBound=1., uBound=0., verbose=False ):
         """yield gimli inversion instance for block inversion."""
@@ -186,55 +186,55 @@ class FDEMData():
         ip, op = self.selectData( xpos )
         fr = self.freq()
         if ax is None:
-            if clf: P.clf()
-            P.subplot(1,nv,nv-1)
+            if clf: plt.clf()
+            plt.subplot(1,nv,nv-1)
         else:
-            P.sca( ax[0] )
+            plt.sca( ax[0] )
         
         markersize = 4
         if error is not None:
             markersize = 2
         
-        P.semilogy( ip, fr, marker, label='obs'+addlabel, markersize=markersize )
+        plt.semilogy( ip, fr, marker, label='obs'+addlabel, markersize=markersize )
         if error is not None and len(error) == len( ip ):
-            P.errorbar( ip, fr, xerr=error )
+            plt.errorbar( ip, fr, xerr=error )
         
-        P.axis('tight')
+        plt.axis('tight')
         if error is not None:
-            P.ylim((min(fr)*.98,max(fr)*1.02))
+            plt.ylim((min(fr)*.98,max(fr)*1.02))
 
 
-        P.grid(True)
-        P.xlabel('inphase [%]')
-        P.ylabel('f [Hz]')
+        plt.grid(True)
+        plt.xlabel('inphase [%]')
+        plt.ylabel('f [Hz]')
         if response is not None:
-            rip = P.asarray( response )[:len(ip)]
-            P.semilogy( rip, fr, rmarker, label='syn'+addlabel )
+            rip = np.asarray( response )[:len(ip)]
+            plt.semilogy( rip, fr, rmarker, label='syn'+addlabel )
         
-        P.legend( loc='best' )
+        plt.legend( loc='best' )
         
         if ax is None:
-            P.subplot(1,nv,nv)
+            plt.subplot(1,nv,nv)
         else:
-            P.sca( ax[1] )
+            plt.sca( ax[1] )
         
-        P.semilogy( op, fr, marker, label='obs'+addlabel, markersize=markersize )
+        plt.semilogy( op, fr, marker, label='obs'+addlabel, markersize=markersize )
         if error is not None and len(error) == len( ip ):
-            P.errorbar( op, fr, xerr=error )
+            plt.errorbar( op, fr, xerr=error )
 
         if response is not None:
-            rop = P.asarray( response )[len(ip):]
-            P.semilogy( rop, fr, rmarker, label='syn'+addlabel )
+            rop = np.asarray( response )[len(ip):]
+            plt.semilogy( rop, fr, rmarker, label='syn'+addlabel )
         
-        P.axis('tight')
+        plt.axis('tight')
         if error is not None:
-            P.ylim((min(fr)*.98,max(fr)*1.02))
+            plt.ylim((min(fr)*.98,max(fr)*1.02))
         
-        P.grid(True)
-        P.xlabel('outphase [%]')
-        P.ylabel('f [Hz]')
-        P.legend( loc='best' )
-        P.subplot( 1, nv, 1 )
+        plt.grid(True)
+        plt.xlabel('outphase [%]')
+        plt.ylabel('f [Hz]')
+        plt.legend( loc='best' )
+        plt.subplot( 1, nv, 1 )
         return 
 
         
@@ -242,43 +242,43 @@ class FDEMData():
         """plot data as curves at given position."""
         ip, op = self.selectData( xpos )
         fr = self.freq()
-        if clf: P.clf()
-        P.subplot(121)
-        P.semilogy( ip, fr, marker, label='obs' )
-        P.axis('tight')
-        P.grid(True)
-        P.xlabel('inphase [%]')
-        P.ylabel('f [Hz]')
+        if clf: plt.clf()
+        plt.subplot(121)
+        plt.semilogy( ip, fr, marker, label='obs' )
+        plt.axis('tight')
+        plt.grid(True)
+        plt.xlabel('inphase [%]')
+        plt.ylabel('f [Hz]')
         if response is not None:
-            rip = P.asarray( response )[:len(ip)]
-            P.semilogy( rip, fr, rmarker, label='syn' )
+            rip = np.asarray( response )[:len(ip)]
+            plt.semilogy( rip, fr, rmarker, label='syn' )
         
-        P.legend( loc='best' )
+        plt.legend( loc='best' )
         
-        P.subplot(122)
-        P.semilogy( op, fr, marker, label='obs' )
+        plt.subplot(122)
+        plt.semilogy( op, fr, marker, label='obs' )
         if response is not None:
-            rop = P.asarray( response )[len(ip):]
-            P.semilogy( rop, fr, rmarker, label='syn' )
+            rop = np.asarray( response )[len(ip):]
+            plt.semilogy( rop, fr, rmarker, label='syn' )
         
-        P.axis('tight')
-        P.grid(True)
-        P.xlabel('outphase [%]')
-        P.ylabel('f [Hz]')
-        P.legend( loc='best' )
-        P.show()
+        plt.axis('tight')
+        plt.grid(True)
+        plt.xlabel('outphase [%]')
+        plt.ylabel('f [Hz]')
+        plt.legend( loc='best' )
+        plt.show()
         return
     
     def showModelAndData( self, model, xpos=0, response=None ):
-        P.clf()
-        model = P.asarray( model )
+        plt.clf()
+        model = np.asarray( model )
         nlay = ( len( model ) + 1 ) / 2
         thk = model[:nlay-1]
         res = model[nlay-1:2*nlay-1]
-        ax1 = P.subplot(131)
+        ax1 = plt.subplot(131)
         draw1dmodel( res, thk )
-        ax2 = P.subplot(132)
-        ax3 = P.subplot(133)
+        ax2 = plt.subplot(132)
+        ax3 = plt.subplot(133)
         self.plotData( xpos, response, (ax2, ax3), clf=False )
          
     def plotAllData( self, allF = True, orientation='vertical', outname=None ):
@@ -290,22 +290,22 @@ class FDEMData():
         if self.ERR is not None:
             np = 3
         
-        P.clf()
-        ax1 = P.subplot(np,1,1)
+        plt.clf()
+        ax1 = plt.subplot(np,1,1)
         xfplot( ax1, self.IP[:,self.activeFreq], self.x, freq, orientation=orientation )
-        P.title('inphase percent')
-        ax2 = P.subplot(np,1,2)
+        plt.title('inphase percent')
+        ax2 = plt.subplot(np,1,2)
         xfplot( ax2, self.OP[:,self.activeFreq], self.x, freq, orientation=orientation )
-        P.title('outphase percent')
+        plt.title('outphase percent')
         if self.ERR is not None:
-            ax3 = P.subplot(np,1,3)
+            ax3 = plt.subplot(np,1,3)
             xfplot( ax3, self.ERR[:,self.activeFreq], self.x, freq, orientation=orientation )
-            P.title('error percent')
+            plt.title('error percent')
 
         if outname is not None:
-            P.savefig( outname )
+            plt.savefig( outname )
         
-        P.show()
+        plt.show()
         return
 
 #    def FOP2d( nlay ):
@@ -317,7 +317,7 @@ if __name__ == "__main__":
     import sys
     from optparse import OptionParser
 
-    parser = OptionParser( "usage: %prog [options] fdem", version="%prog: " + g.versionStr()  )
+    parser = OptionParser( "usage: %prog [options] fdem", version="%prog: " + pg.versionStr()  )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False )
     
