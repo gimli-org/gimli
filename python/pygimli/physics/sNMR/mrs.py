@@ -40,17 +40,17 @@ class MRS1dBlockQTModelling( pg.ModellingBase ):
             izvec[i+1] = ii
             if ii <= len(zv):
                 rzvec[i+1]=(zthk[i]-zv[ii-1])/(zv[ii]-zv[ii-1])
-        
+
         izvec[-1] = lzv-1
         A = np.zeros((self.nq_,self.nt_),dtype=complex)
         for i in range(nl):
             wcvec = np.zeros(lzv-1)
             wcvec[izvec[i]:izvec[i+1]] = wc[i]
-            if izvec[i+1]<lzv: wcvec[izvec[i+1]-1]=wc[i]*rzvec[i+1]            
+            if izvec[i+1]<lzv: wcvec[izvec[i+1]-1]=wc[i]*rzvec[i+1]
             if izvec[i]>0: wcvec[izvec[i]-1]=wc[i]*(1-rzvec[i])
             amps=np.dot(self.K_,wcvec)
             for ii,a in enumerate(A): a += np.exp(-self.t_/t2[i])*amps[ii]
-        
+
         return pg.asvector( np.abs(A).ravel() )
 
 # plotting functions
@@ -83,7 +83,7 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
         plot(px, pz, *args, **kwargs)
     except Exception as e:
         print(e)
-    
+
     ax.set_ylabel('Depth [m]')
     ax.set_xlabel(xlabel)
     ax.set_ylim(pz[-1], pz[0])
@@ -97,7 +97,7 @@ def showErrorBars(ax,thk,val,thkL,thkU,valL,valU,*args,**kwargs):
     yerr = [ thk-thkL, thkU-thk ]
     ax.errorbar( val, zm, fmt='.', xerr=xerr, ecolor='r', **kwargs )
     ax.errorbar( valm, zb, fmt='.', yerr=yerr, ecolor='g', **kwargs )
-    
+
 def showWC(ax,thk,wc,wmin=0.,wmax=0.45,dw=0.05,**kwargs):
     ''' show water content function nicely '''
     drawModel1D( ax, thk, wc, xlabel=r'$\theta$' )
@@ -135,7 +135,7 @@ class MRS():
                 self.loadMRSI(name,defaultNoise)
             else: #else mrsd+k?
                 self.loadDir(name)
-    
+
     def __repr__(self): # for print function
         out = ""
         if len(self.t)>0 and len(self.q)>0:
@@ -144,7 +144,7 @@ class MRS():
         if len(self.z)>0:
             out += ", %d layers" % len(self.z)
         return out
-    
+
     def loadMRSI(self,filename,defaultNoise=100e-9):
         ''' load data, error and kernel from mrsi file '''
         idata=loadmat(filename,struct_as_record=False,
@@ -162,7 +162,7 @@ class MRS():
             ecube /= np.sqrt( idata.data.gateL )
         if len(ecube)==len(self.q) and len(ecube[0])==len(self.t):
             self.error = ecube.ravel()
-        
+
     def loadDataCube(self,filename='datacube.dat'):
         ''' load data cube from single ascii file '''
         A = np.loadtxt(filename).T
@@ -180,7 +180,7 @@ class MRS():
             print len(self.error)
         else:
             self.error = np.ones(len(q)*len(t))*100e-9
-        
+
     def loadKernel(self,name=''):
         ''' load kernel matrix from mrsk or two bmat files '''
         if name[-5:].lower() == '.mrsk':
@@ -197,7 +197,7 @@ class MRS():
     def loadZVector(self,filename='zkernel.vec'):
         ''' load the kernel discretisation '''
         self.z = pg.RVector(filename)
-        
+
     def loadDir(self,dirname):
         ''' load several files from dir (old Borkum stage) '''
         if not dirname[-1] == '/': dirname+='/'
@@ -206,7 +206,7 @@ class MRS():
         self.loadKernel(dirname)
         self.loadZVector(dirname+'zkernel.vec')
         self.dirname = dirname # to save results etc.
-    
+
     def showCube(self,ax=None,vec=None,islog=None,clim=None):
         ''' plot a data cube nicely '''
         if vec is None: vec = np.array( self.data ).flat
@@ -223,7 +223,7 @@ class MRS():
                 if islog: cmin = cmax - 1.5
                 else: cmin=0.
                 clim = (cmin,cmax)
-        
+
         xt = range( 0, len(self.t), 10)
         xtl = [str(ti) for ti in np.round( self.t[xt] * 1000. ) ]
         qt = range( 0, len(self.q), 5 )
@@ -239,14 +239,14 @@ class MRS():
         ax.set_ylabel('q [As]')
         plt.colorbar(im,ax=ax,orientation='horizontal')
         return clim
-    
+
     def showDataAndError(self,figsize=(10,10),show=False):
         ''' show data cube and error cube '''
         fig, ax = plt.subplots(1,2,figsize=figsize)
         self.showCube(ax[0],self.data*1e9)
         self.showCube(ax[1],self.error*1e9,islog=False)
         if show: plt.show()
-    
+
     def createInv(self,nlay=3,lam=10.,verbose=True, **kwargs):
         ''' create inversion instance '''
         self.nlay = nlay
@@ -269,7 +269,7 @@ class MRS():
         self.INV.setDeltaPhiAbortPercent(0.5)
         self.INV.setAbsoluteError(self.error)
         return self.INV
-    
+
     def run(self,nlay=3,lam=10.,startvec=None,verbose=True,uncertainty=False,**kwargs):
         ''' even easier variant returning all in one call '''
         if self.INV is None:
@@ -290,11 +290,11 @@ class MRS():
         wc = model[nl-1:2*nl-1]
         t2 = model[2*nl-1:3*nl-1]
         return thk, wc, t2
-        
+
     def result(self):
         ''' return block model results '''
         return self.splitModel()
-    
+
     def showResult(self,figsize=(10,8),save='',show=False):
         ''' show theta(z) and T2*(z) (+uncertainties if there) '''
         fig, ax = plt.subplots(1,2,sharey=True,figsize=figsize)
@@ -306,11 +306,11 @@ class MRS():
             thkU, wcU, t2U = self.splitModel(self.modelU)
             showErrorBars(ax[0],thk,wc,thkL,thkU,wcL,wcU)
             showErrorBars(ax[1],thk,t2*1e3,thkL,thkU,t2L*1e3,t2U*1e3)
-        
+
         if save: fig.savefig(save,bbox_inches='tight')
         if show: plt.show()
         return fig, ax
-    
+
     def showResultAndFit(self,figsize=(10,10),save='',show=False):
         ''' show theta(z), T2*(z), data and model response '''
         fig, ax = plt.subplots(2,2,figsize=figsize)
@@ -322,7 +322,7 @@ class MRS():
             thkU, wcU, t2U = self.splitModel(self.modelU)
             showErrorBars(ax[0,0],thk,wc,thkL,thkU,wcL,wcU)
             showErrorBars(ax[0,1],thk,t2*1e3,thkL,thkU,t2L*1e3,t2U*1e3)
-        
+
         clim = self.showCube(ax[1,0],self.data*1e9)
         ax[1,0].set_title('measured data [log10 nV]')
         self.showCube(ax[1,1],self.INV.response()*1e9,clim=clim)
@@ -330,7 +330,7 @@ class MRS():
         if save: fig.savefig(save,bbox_inches='tight')
         if show: plt.show()
         return fig, ax
-        
+
     def saveResult(self,filename):
         ''' save inversion result to column text file '''
         thk, wc, t2 = self.splitModel()
@@ -344,9 +344,9 @@ class MRS():
             zU = z.copy()
             zU[1:] += (thkU-thk)
             ALL=np.column_stack((z,wc,t2,zL,zU,wcL,wcU,t2L,t2U))
-        
+
         np.savetxt(filename,ALL,fmt='%.3f')
-    
+
     def loadResult(self,filename):
         ''' load inversion result from column file '''
         A = np.loadtxt(filename)
@@ -363,7 +363,7 @@ class MRS():
             self.modelL = np.hstack( (thkL,wcL,t2L) )
             t2U[t2U>1.0] = 1.0
             self.modelU = np.hstack( (thkU,wcU,t2U) )
-    
+
     def calcMCM(self):
         ''' compute model covariance matrix '''
         J = gmat2numpy( self.f.jacobian() ) # (linear) jacobian matrix
@@ -375,3 +375,35 @@ class MRS():
         di = ( 1. / varVG )  # variances as column vector
         MCMs = di.reshape(len(di),1) * MCM * di  # scaled model covariance (=correlation) matrix
         return varVG, MCMs
+
+############ MAIN ############
+if __name__ == "__main__":
+    import sys # not PEP-conform to import here
+    from optparse import OptionParser
+
+    parser = OptionParser("usage: %prog [options] mrs", version="%prog: " + pg.versionStr() )
+    parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
+                            , help="be verbose", default=False)
+    parser.add_option("-n", "--nLayers", dest="nlay",
+                            help="number of layers", type = "int", default = "4")
+
+    (options, args) = parser.parse_args()
+
+    if options.verbose:
+        __verbose__ = True
+
+    if len(args) == 0:
+#        datafile = 'example.mrsi'
+        parser.print_help()
+        print("Please add a mesh or model name.")
+        sys.exit(2)
+    else:
+        datafile = args[0]
+
+    mrs = MRS(datafile)
+    print(mrs)
+    mrs.run(options.nlay, uncertainty=True)
+    thk, wc, t2 = mrs.result()
+    name = datafile.rstrip('.mrsi')
+    mrs.saveResult(name+'.result')
+    mrs.showResultAndFit(save=name+'.pdf',show=True)
