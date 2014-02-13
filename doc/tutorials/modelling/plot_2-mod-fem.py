@@ -110,4 +110,4 @@ plt.legend()
 
 """
 
-P.show()
+plt.show()

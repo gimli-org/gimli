@@ -150,4 +150,4 @@ ax.set_ylim([-1.1, 1.1])
 
 """
 
-P.show()
+plt.show()

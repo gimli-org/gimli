@@ -42,6 +42,7 @@ To avoid name clashes with other libraries we suggest to import `pygimli` and al
 
 import pygimli as g
 import numpy as np
+import matplotlib.pyplot as plt
 
 print(g.versionStr())
 
@@ -117,8 +118,7 @@ inv.setLambda(0)
 # actual inversion run yielding coefficient model
 coeff = inv.run()
 
-import pylab as P
-P.plot(x, y, 'rx', x, inv.response(), 'b-')
+plt.plot(x, y, 'rx', x, inv.response(), 'b-')
 
 """
 create output 
@@ -127,4 +127,4 @@ create output
 
 """
 
-P.show()
+plt.show()
