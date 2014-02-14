@@ -243,7 +243,7 @@ class MRS():
     def showDataAndError(self,figsize=(10,10),show=False):
         ''' show data cube and error cube '''
         fig, ax = plt.subplots(1,2,figsize=figsize)
-        self.showCube(ax[0],self.data*1e9)
+        self.showCube(ax[0],self.data*1e9,islog=False)
         self.showCube(ax[1],self.error*1e9,islog=False)
         if show: plt.show()
 
@@ -323,9 +323,9 @@ class MRS():
             showErrorBars(ax[0,0],thk,wc,thkL,thkU,wcL,wcU)
             showErrorBars(ax[0,1],thk,t2*1e3,thkL,thkU,t2L*1e3,t2U*1e3)
 
-        clim = self.showCube(ax[1,0],self.data*1e9)
+        clim = self.showCube(ax[1,0],self.data*1e9,islog=False)
         ax[1,0].set_title('measured data [log10 nV]')
-        self.showCube(ax[1,1],self.INV.response()*1e9,clim=clim)
+        self.showCube(ax[1,1],self.INV.response()*1e9,clim=clim,islog=False)
         ax[1,1].set_title('simulated data [log10 nV]')
         if save: fig.savefig(save,bbox_inches='tight')
         if show: plt.show()
