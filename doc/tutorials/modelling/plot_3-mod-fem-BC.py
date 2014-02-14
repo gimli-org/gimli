@@ -5,59 +5,30 @@
 Modelling with Boundary Conditions
 ----------------------------------
 
-This is the first step for the modelling tutorial where we actually use finite elements to compute something. 
+We use the preceding example (Poisson equation on the unit square) but want to specify different boundary conditions on the four sides.
 
-We will not go in deep detail about the Finite Elements Theory here, this can be found in several books, e.g., 
-:cite:`Zienkiewicz1977`
-
-We just want to solve some problems to show how the *M* in *GIMLi* works.
-
-We will solve a simple version of Poisson's equation with zero boundary values, but a nonzero right hand side:
-
-Let us start with a mathematical formulation ...
-
-.. math::
-
-    \nabla\cdot( A \cdot \nabla u ) + B u + C = 0
-   
-.. math::
-
-    - \Delta u & = 1 \quad{\mathrm{in}}\quad\Omega\\
-               u & = u_d \quad{\mathrm{on}}\quad\partial\Omega\\
-     \frac{\partial u}{\partial \vec{n}} & = u_n \quad{\mathrm{on}}\quad\partial\Omega\\
-
-
-We will solve this equation on the unit square: :math:`\Omega=[-1, 1]^2`
-
-As usually, the library have to be imported first.
-
-**Define term Dirichlet boundaries**
-
+Again, we first import numpy and pyplot, pygimli, the solver and some plotting functions.
+Then we create a 50x50 node grid to solve on.
 """
 
-import pygimli as g
-
-from pygimli.solver import solvePoisson
-
-'''
-
-'''
 import numpy as np
 import matplotlib.pyplot as plt
 
+import pygimli as pg
+from pygimli.solver import solvePoisson
 from pygimli.viewer import showMesh
-from pygimli.mplviewer import *
+from pygimli.mplviewer import drawMesh, drawStreamLines
 
-
-grid = g.createGrid(x=np.linspace(-1.0, 1.0, 50), y=np.linspace(-1.0, 1.0, 50))
-
-#grid = grid.createP2()
+grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 50), y=np.linspace(-1.0, 1.0, 50))
 
 """
-Define a list of pairs for boundaries and potential values for the Dirichlet boundaries. 
-Definition of the used boundaries are either by the marker directly or by a given list of boundaries.
-The value can be defined directly or by a given function.
+We start considering inhomogeneous Dichlet boundary conditions (BC).
+There are different ways of specifying BCs. 
+They can be maps from markers to values, explicit functions or implicit (lambda) functions as exemplified in the next example.
 
+The boundary 1 (top) and 2 (left) are directly mapped to the values 1.0 and 2.0.
+On side 3 (bottom) a lambda function 3+x is used (p is the boundary position and p[0] its x coordinate.
+On side 4 (right) a function uDirichlet is used that simply returns 4.0 in this example but can compute everything as a function of the individual boundaries b.
 """
 
 def uDirichlet(b):
@@ -72,7 +43,8 @@ dirichletBC = [[1, 1.0], # top
                [grid.findBoundaryByMarker(4), uDirichlet]] # right
 
 """
-
+The BC are passed using the uBoundary keyword.
+Note that showMesh returns the created figure axes ax while drawMesh plots on it and it can also be used as a class with plotting or decoration methods.
 """
 u = solvePoisson(grid, f=1.,
                  uBoundary=dirichletBC)
@@ -88,47 +60,43 @@ ax.text(-1.08, 0.0, '$u=2$', rotation='vertical')
 ax.text( 0.0, -1.08, '$u=3+x$')
 ax.text( 1.02, 0.0, '$u=4$', rotation='vertical')
 
-
 ax.set_title('$\\nabla\cdot(1\\nabla u)=1$')
 
-ax.set_xlim([-1.1, 1.1])
+ax.set_xlim([-1.1, 1.1]) # some boundary for the text
 ax.set_ylim([-1.1, 1.1])
-   
+
 """
 .. image:: PLOT2RST.current_figure
     :scale: 75
 
 
-We can define how the gradients of the solution have to be on the boundaries, 
-i.e., Boundary conditions of Neumann type.
-
+Alternatively we can define the gradients of the solution on the boundary, i.e., Neumann type BC.
+This is done as another map (marker, right-hand-side value) and passed by the keyword duBoundary.
 """
 neumannBC = [[2, -0.5], # left
              [grid.findBoundaryByMarker(3), 2.4]] # bottom
 
 dirichletBC = [1, 1.0] # top
 
-"""
-On boundary 4, the top side, the default or natural boundary conditions are applied 
-:math:`\frac{\partial u}{\partial n}=0`
-"""
-              
 u = solvePoisson(grid, f=0.,
                  duBoundary=neumannBC,
                  uBoundary=dirichletBC)
 
+"""
+Note that on boundary 4 (right) no BC is explicitly applied leading to default or natural BC that are of homogeneous Neumann type 
+:math:`\frac{\partial u}{\partial n}=0`
+"""
+              
 ax = showMesh(grid, data=u, filled=True, colorBar=True,
               orientation='vertical', label='Solution $u$',
               levels=np.linspace(min(u), max(u), 14), showLater=True)[0]
 
 """
-Instead of the grid we want to add streamlines to the plot to show the gradients
-of the solution.
+Instead of the grid we now want to add streamlines to the plot to show the gradients of the solution (i.e., the flow direction).
 """
 
 drawStreamLines(ax, grid, u, nx=25, ny=25, color='Black')
 
-#drawMesh(ax, grid)
 ax.text(0.0, 1.02, '$u=1$',
         horizontalalignment='center' )
 ax.text(-1.08, 0.0, '$\partial u/\partial n=-0.5$',

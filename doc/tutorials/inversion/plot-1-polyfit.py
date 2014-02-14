@@ -5,10 +5,8 @@
 Polyfit
 -------
 
-*This introductory sentence should state the intent and goal of the tutorial. Keep it brief.
-This next block should state any assumptions that you the writer are making. Present them in list form.*
-
-Let us start with the very simple inverse problem of fitting a polynomial curve of degree :math:`P`
+This tutorial shows how to treat the simplest inversion case with an own forward calculation.
+As linear regression is the easiest inverse problem we start with fitting a polynomial of degree :math:`P`
 
 .. math::
 
@@ -40,21 +38,21 @@ First, the library must be imported.
 To avoid name clashes with other libraries we suggest to import `pygimli` and alias it to an easy name, e.g. by using
 """
 
-import pygimli as g
+import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
 
-print(g.versionStr())
+print(pg.versionStr())
 
 '''
-#! As a result, all :ref:`sec:api` objects (classes and functions) can be referred to with a preceding `g.`, e.g., 
+#! As a result, all :ref:`sec:api` objects (classes and functions) can be referred to with a preceding `pg.`, e.g., 
 #! printing the version string for gimli.
 
 
 Next, the modelling class is derived from ModellingBase, a constructor is defined and the response function is defined.
 
 The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators) 
-can be used by g.classname, e.g. g.RVector is the already known vector of real (double) values.
+can be used by pg.classname, e.g. pg.RVector is the already known vector of real (double) values.
 
 The main program is very easy then and the code is very similar to C++.
 Data are loaded, both forward operator and inversion are created.
@@ -65,22 +63,22 @@ As a main advantage of Python, the actual computations can be easily combined wi
 In this code example we use matplotlib, a plotting library inside of pylab, a compound of different routines for numerics and plotting, very much comparable to MatLab.
 '''
 
-class FunctionModelling(g.ModellingBase):
+class FunctionModelling(pg.ModellingBase):
     def __init__(self, nc, xvec, verbose = False):
-        g.ModellingBase.__init__(self, verbose)
+        pg.ModellingBase.__init__(self, verbose)
         self.x_ = xvec
         self.nc_ = nc
         self.regionManager().setParameterCount(nc)
     
     def response(self, par):
-        y = g.RVector(self.x_.size(), par[0])
+        y = pg.RVector(self.x_.size(), par[0])
         
         for i in range( 1, self.nc_ ):
-            y += g.pow(self.x_, i) * par[i];
+            y += pg.pow(self.x_, i) * par[i];
         return y;
     
     def startModel(self): 
-        return g.RVector(self.nc_, 0.5)
+        return pg.RVector(self.nc_, 0.5)
 
 
 #!this is doku within
@@ -104,10 +102,10 @@ print(x, y)
 nP = 3
 
 # two coefficients and x-vector (first data column)
-fop = FunctionModelling(nP, g.asvector(x))
+fop = FunctionModelling(nP, pg.asvector(x))
 
 # initialize inversion with data and forward operator and set options
-inv = g.RInversion(y, fop)
+inv = pg.RInversion(y, fop)
 
 # constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
 inv.setAbsoluteError(0.01)
