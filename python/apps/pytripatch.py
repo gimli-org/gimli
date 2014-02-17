@@ -422,7 +422,7 @@ def main(argv):
 
     from optparse import OptionParser
 
-    parser = OptionParser("usage: %prog [options] mesh|mod", version="%prog: " + pg.versionStr() )
+    parser = OptionParser("usage: %prog [options] mesh|mod", version="%prog: " + pg.__version__ )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     parser.add_option("-S", "--silent", dest="silent", action="store_true"

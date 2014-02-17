@@ -5,7 +5,7 @@
 GIMLi Basics
 ------------
 
-This is the first tutorial where we demonstrate the general use of :term:`GIMLi` in Python, i.e., :term:`pyGIMLi`. 
+This is the first tutorial where we demonstrate the general use of :term:`GIMLi` in Python, i.e., :term:`pyGIMLi`.
 
 The modelling as well as the inversion part of :term:`GIMLi` often requires discretization, so handling meshes is an important aspect of this tutorial.
 
@@ -22,10 +22,10 @@ Every part of the namespace :gimliapi:`GIMLI` is bind to python and can be now u
 For instance get the current version for :term:`GIMLi` with:
 """
 
-print(pg.versionStr())
+print(pg.__version__)
 
 """
-This yields: 
+This yields:
 
 .. lastcout::
 
@@ -68,7 +68,7 @@ To define the grid generation input arrays ``x`` and ``y``, you can also use the
 import numpy as np
 
 
-grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10), 
+grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
                     y=1.0 - np.logspace(np.log10(1.0), np.log10(2.0), 10))
 
 

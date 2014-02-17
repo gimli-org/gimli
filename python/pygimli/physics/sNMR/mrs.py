@@ -381,7 +381,7 @@ if __name__ == "__main__":
     import sys # not PEP-conform to import here
     from optparse import OptionParser
 
-    parser = OptionParser("usage: %prog [options] mrs", version="%prog: " + pg.versionStr() )
+    parser = OptionParser("usage: %prog [options] mrs", version="%prog: " + pg.__version__ )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     parser.add_option("-n", "--nLayers", dest="nlay",

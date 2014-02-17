@@ -20,7 +20,7 @@ def exportSens( meshfile, sensMatrix, dataID, tol = 1e-5, save = False):
     g.load( S, sensMatrix )
     print S.rows()
     print S.cols()
-    
+
     if dataID == -1:
         for i in range( 0, S.rows() ):
             d = b.prepExportSensitivityData( mesh , S[ i ], tol )
@@ -35,14 +35,14 @@ def exportSens( meshfile, sensMatrix, dataID, tol = 1e-5, save = False):
         if save:
             g.save( d, name + ".vec" )
         mesh.addExportData( name, d )
-        
+
     mesh.exportVTK("sens");
 
 def main( argv ):
     from optparse import OptionParser
 
     parser = OptionParser( "usage: %prog [options] mesh"
-                            , version="%prog: " + g.versionStr() 
+                            , version="%prog: " + g.__version__
                             )
     parser.add_option("-v", "--verbose", dest="verbose", action = "store_true", default = False
                             , help="Be verbose." )
@@ -71,9 +71,9 @@ def main( argv ):
         print "ith.", options.id
         print "tol=",  options.tolerance
         print "save=",  options.save
-    
-        
+
+
     exportSens( meshfile, options.sensMatrix, options.id, options.tolerance, options.save )
-            
+
 if __name__ == "__main__":
     main( sys.argv[ 1: ] )

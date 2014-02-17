@@ -168,7 +168,7 @@ You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as g; print g.versionStr()'
+    python -c 'import pygimli as g; print g.__version__'
 
 You can test your libgimli build with:
 

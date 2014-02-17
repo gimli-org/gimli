@@ -8,7 +8,7 @@ My first inversion
     import pygimli as g
     import numpy as np
 
-    print(g.versionStr())
+    print(g.__version__)
 
 .. plot:: doc/tutorial/first.py
 

@@ -22,12 +22,12 @@ def strToRVector3(s):
 def parseDataStr(s):
     vals = s.split(':')
     data = pg.RVector(0)
-    
+
     if len(vals) > 0:
         pg.load(data, vals[0]);
         if len(data) == 0:
             pg.load(data, vals[0], pg.Binary);
-        
+
     if len(vals) == 1:
         return vals[0], data
     if len(vals) == 2:
@@ -52,7 +52,7 @@ def applyInterpolation(filename, mesh, verbose=False):
         needs to be moved into libgimli
         needs to be documented
     '''
-    
+
     data = pg.DataContainer(filename)
 
     A = None
@@ -66,12 +66,12 @@ def applyInterpolation(filename, mesh, verbose=False):
         if verbose:
             print("loaded DataContainer: ", filename)
     except:
-        A = np.loadtxt(filename).T    
+        A = np.loadtxt(filename).T
         if verbose:
             print("loaded txtfile: ", filename)
-        
-        
-        
+
+
+
     tn = [n.pos()[0] for n in mesh.nodes()]
     zn = [n.pos()[1] for n in mesh.nodes()]
 
@@ -80,14 +80,14 @@ def applyInterpolation(filename, mesh, verbose=False):
 
     for i,n in enumerate(mesh.nodes()):
         n.setPos(pg.RVector3(xn[i], yn[i], zn[i]))
-    
+
 # def applyInterpolation(...)
 
 def main(argv):
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mesh|mod|vtk"
-                            , version = "%prog: " + pg.versionStr())
+                            , version = "%prog: " + pg.__version__)
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     parser.add_option("-V", "--outVTK", dest="outVTK", action="store_true"
@@ -122,7 +122,7 @@ def main(argv):
     parser.add_option("", "--interpolateMesh", dest="interpolateMesh", metavar="File",
                             help = " Interpolate the data of mesh into the mesh given by File." +
                             "File is a bms|mod|vtk")
-                            
+
     (options, args) = parser.parse_args()
 
     if options.verbose:
@@ -139,17 +139,17 @@ def main(argv):
 
     if options.verbose:
         print meshname, mesh
-        
+
     if options.interpolateCoords is not None:
-        applyInterpolation(filename=options.interpolateCoords, 
+        applyInterpolation(filename=options.interpolateCoords,
                            mesh=mesh,
                            verbose=options.verbose)
-       
+
     if options.interpolateMesh is not None:
         imesh = pg.Mesh(options.interpolateMesh)
         pg.interpolate(mesh, imesh)
         mesh = imesh
-        
+
     if options.rotate is not None:
         rot = strToRVector3(options.rotate)
         if options.verbose:
@@ -196,19 +196,19 @@ def main(argv):
 
         suff = '.xy'
         if mesh.dimension() == 3: suff += 'z'
-        
+
         if 'r' in mesh.exportDataMap() and 'i' in mesh.exportDataMap():
             mesh.exportMidCellValue(outfileBody + suff + 'ri', mesh.exportData('r'), mesh.exportData('i'));
         elif 'r' in mesh.exportDataMap():
             mesh.exportMidCellValue(outfileBody + suff + 'r', mesh.exportData('r'));
         else:
-            print "Sry!, no resistivity data with name r found" 
-        
+            print "Sry!, no resistivity data with name r found"
+
     if options.outVTK:
         if options.verbose:
             print "write vtk: ", outfileBody + ".vtk"
         mesh.exportVTK(outfileBody)
-        
+
     if options.outBoundaryVTU:
         mesh.exportBoundaryVTU(outfileBody)
 
