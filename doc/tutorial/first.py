@@ -11,7 +11,7 @@ Let us start with the very simple inverse problem of fitting a polynomial curve 
 .. math::
 
     f(x) = p_0 + p_1 x + \ldots + p_P x^P = \sum\limits_{i=0}^{P} p_i x^i
-    
+
 *This introductory sentence should state the intent and goal of the tutorial. Keep it brief.
 This next block should state any assumptions that you the writer are making. Present them in list form.*
 
@@ -52,16 +52,16 @@ To avoid name clashes with other libraries we suggest to import `pygimli` and al
 import pygimli as g
 import numpy as np
 
-print(g.versionStr())
+print(g.__version__)
 
 '''
-#! As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `g.`, e.g., 
+#! As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `g.`, e.g.,
 #! printing the version string for gimli.
 
 
 Next, the modelling class is derived from ModellingBase, a constructor is defined and the response function is defined.
 
-The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators) 
+The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators)
 can be used by g.classname, e.g. g.RVector is the already known vector of real (double) values.
 
 The main program is very easy then and the code is very similar to C++.
@@ -79,15 +79,15 @@ class FunctionModelling( g.ModellingBase ):
         self.x_ = xvec
         self.nc_ = nc
         self.regionManager().setParameterCount( nc )
-    
+
     def response( self, par ):
         y = g.RVector( self.x_.size(), par[ 0 ] )
-        
+
         for i in range( 1, self.nc_ ):
             y += g.pow( self.x_, i ) * par[ i ];
         return y;
-    
-    def startModel( self ): 
+
+    def startModel( self ):
         return g.RVector( self.nc_, 0.5 )
 
 

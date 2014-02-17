@@ -569,7 +569,7 @@ class FDEMData():
 if __name__ == "__main__":
     from optparse import OptionParser
 
-    parser = OptionParser("usage: %prog [options] fdem", version="%prog: " + pg.versionStr() )
+    parser = OptionParser("usage: %prog [options] fdem", version="%prog: " + pg.__version__ )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     parser.add_option("-n", "--nLayers", dest="nlay",

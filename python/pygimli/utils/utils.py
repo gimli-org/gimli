@@ -35,7 +35,7 @@ def grange( start, end, dx = 0, n = 0, log = False ):
     s = float( start )
     e = float( end )
     d = float( dx )
-    
+
     if dx != 0:
         if end < start and dx > 0:
             print("grange: decreasing range but increasing dx, swap dx sign")
@@ -47,18 +47,18 @@ def grange( start, end, dx = 0, n = 0, log = False ):
         ret *= d
         ret += s
         return ret;
-        
+
     elif n > 0:
         if not log:
             return grange( start, end, dx = ( e - s ) / ( n - 1 ) )
         else:
             raise Exception( 'not yet implemented.' )
-        
+
     else:
         raise Exception( 'Either dx or nSteps have to be given.' )
-    
+
 def diff( v ):
-    ''' 
+    '''
         Return RVector as approximate derivative from v as r[v_1-v_0, v2-v_1,...]
     '''
     r = g.RVector( len( v ) -1 )

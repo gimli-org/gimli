@@ -42,16 +42,16 @@ import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
 
-print(pg.versionStr())
+print(pg.__version__)
 
 '''
-#! As a result, all :ref:`sec:api` objects (classes and functions) can be referred to with a preceding `pg.`, e.g., 
+#! As a result, all :ref:`sec:api` objects (classes and functions) can be referred to with a preceding `pg.`, e.g.,
 #! printing the version string for gimli.
 
 
 Next, the modelling class is derived from ModellingBase, a constructor is defined and the response function is defined.
 
-The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators) 
+The pygimli library must once be imported (in this case under the name g) and all classes (e.g. modelling operators)
 can be used by pg.classname, e.g. pg.RVector is the already known vector of real (double) values.
 
 The main program is very easy then and the code is very similar to C++.
@@ -69,15 +69,15 @@ class FunctionModelling(pg.ModellingBase):
         self.x_ = xvec
         self.nc_ = nc
         self.regionManager().setParameterCount(nc)
-    
+
     def response(self, par):
         y = pg.RVector(self.x_.size(), par[0])
-        
+
         for i in range( 1, self.nc_ ):
             y += pg.pow(self.x_, i) * par[i];
         return y;
-    
-    def startModel(self): 
+
+    def startModel(self):
         return pg.RVector(self.nc_, 0.5)
 
 
@@ -119,7 +119,7 @@ coeff = inv.run()
 plt.plot(x, y, 'rx', x, inv.response(), 'b-')
 
 """
-create output 
+create output
 
 .. image:: PLOT2RST.current_figure
 
