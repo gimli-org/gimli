@@ -2,5 +2,6 @@
 
 """What does this physics do??"""
 
-from .fdem import FDEMData
+from .em import FDEMData
+from .sNMR import MRS
 

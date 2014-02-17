@@ -11,11 +11,12 @@ from scipy.linalg import inv
 
 # forward modelling class (physics)
 class MRS1dBlockQTModelling( pg.ModellingBase ):
-    '''
+    """
     MRS1dBlockQTModelling - pygimli modelling class for block-mono QT inversion
     f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False  )
-    '''
+    """
     def __init__( self, nlay, K, zvec, t, verbose = False  ):
+        """ constructor with number of layers, kernel, z and t vectors """
         mesh = pg.createMesh1DBlock( nlay, 2 ) # thk, wc, T2*
         pg.ModellingBase.__init__( self, mesh )
         self.K_ = K
@@ -26,6 +27,7 @@ class MRS1dBlockQTModelling( pg.ModellingBase ):
         self.nt_ = len(t)
 
     def response( self, par ):
+        """ yield model response cube as vector """
         nl=self.nl_
         thk = par( 0, nl-1 )
         wc  = par( nl-1, 2*nl-1 )
@@ -53,7 +55,7 @@ class MRS1dBlockQTModelling( pg.ModellingBase ):
 
         return pg.asvector( np.abs(A).ravel() )
 
-# plotting functions
+# plotting functions (just a copy for now, later from pygimli.mplviewer)
 def drawModel1D(ax, thickness, values, plotfunction='plot',
                 xlabel='', *args, **kwargs):
     """Draw 1d block model into axis ax defined by values and thickness vectors
@@ -90,6 +92,7 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
     ax.grid(True)
 
 def showErrorBars(ax,thk,val,thkL,thkU,valL,valU,*args,**kwargs):
+    """ plot error bars into a plot """
     zb = np.cumsum(thk)
     zm = np.hstack( (zb-thk/2, zb[-1]+thk[-1]/2) )
     valm = (val[:-1]+val[1:])/2
@@ -99,7 +102,7 @@ def showErrorBars(ax,thk,val,thkL,thkU,valL,valU,*args,**kwargs):
     ax.errorbar( valm, zb, fmt='.', yerr=yerr, ecolor='g', **kwargs )
 
 def showWC(ax,thk,wc,wmin=0.,wmax=0.45,dw=0.05,**kwargs):
-    ''' show water content function nicely '''
+    """ show water content function nicely """
     drawModel1D( ax, thk, wc, xlabel=r'$\theta$' )
     ax.set_xlim(0.,0.45)
     wt = np.arange(wmin,wmax,dw)
@@ -107,7 +110,7 @@ def showWC(ax,thk,wc,wmin=0.,wmax=0.45,dw=0.05,**kwargs):
     ax.set_xticklabels([str(wi) for wi in wt])
 
 def showT2(ax,thk,t2,**kwargs):
-    ''' show T2 function nicely '''
+    """ show T2 function nicely """
     drawModel1D( ax, thk, t2*1e3, xlabel=r'$T_2^*$ [ms]', plotfunction='semilogx' )
     tmin = min(20,min(t2)*0.9e3)
     tmax = max(500,max(t2)*1.1e3)
@@ -121,13 +124,14 @@ class MRS():
     '''
     class for managing a magnetic resonance sounding (MRS)
     '''
-    def __init__(self,name=None,defaultNoise=150e-9): # constructor with dummy values
-        ''' init function with optional data load '''
+    def __init__(self,name=None,defaultNoise=150e-9,verbose=True): # constructor with dummy values
+        ''' init function with optional data load from mrsi file '''
+        self.verbose = verbose
         self.t, self.q, self.z = None, None, None
         self.data, self.error = None, None
         self.K, self.f, self.INV = None, None, None
         self.model, self.modelL, self.modelU  = None, None, None
-        self.lowerBound = (0.5,0.00,0.02) # d, theta, T2*
+        self.lowerBound = (0.5,0.01,0.02) # d, theta, T2*
         self.upperBound = (50.,0.45,1.00) # d, theta, T2*
         self.startval   = (10.,0.30,0.20)  # d, theta, T2*
         if name is not None: # check for mrsi/d/k
@@ -143,7 +147,7 @@ class MRS():
             (len(self.q),len(self.t))
         if len(self.z)>0:
             out += ", %d layers" % len(self.z)
-        return out
+        return out+">"
 
     def loadMRSI(self,filename,defaultNoise=100e-9):
         ''' load data, error and kernel from mrsi file '''
@@ -157,11 +161,22 @@ class MRS():
         if len(dcube)==len(self.q) and len(dcube[0])==len(self.t):
             self.data = np.abs( dcube.flat )
         ecube = idata.data.ecube
+        if self.verbose: print("loaded file: "+filename)
         if ecube[0][0] == 0:
+            if self.verbose: print("no errors in file, assuming",defaultNoise,"nV")
             ecube=np.ones( (len(self.q),len(self.t)) ) * defaultNoise
             ecube /= np.sqrt( idata.data.gateL )
         if len(ecube)==len(self.q) and len(ecube[0])==len(self.t):
             self.error = ecube.ravel()
+        
+        if min(self.error)<0.:
+            if self.verbose: print("Warning: negative errors present! Taking absolute value")
+            self.error = np.absolute(self.error)
+        if min(self.error)==0.:
+            if self.verbose: print("Warning: zero error, assuming",defaultNoise)
+            self.error[self.error==0.] = defaultNoise
+        
+        if self.verbose: print(self)
 
     def loadDataCube(self,filename='datacube.dat'):
         ''' load data cube from single ascii file '''
@@ -177,7 +192,6 @@ class MRS():
             self.error = A.ravel()
         elif len(A)==len(self.q)+1 and len(A[0])==len(self.t)+1:
             self.error = A[1:,1:].ravel()
-            print len(self.error)
         else:
             self.error = np.ones(len(q)*len(t))*100e-9
 
@@ -240,15 +254,16 @@ class MRS():
         plt.colorbar(im,ax=ax,orientation='horizontal')
         return clim
 
-    def showDataAndError(self,figsize=(10,10),show=False):
+    def showDataAndError(self,figsize=(10,8),show=False):
         ''' show data cube and error cube '''
         fig, ax = plt.subplots(1,2,figsize=figsize)
         self.showCube(ax[0],self.data*1e9,islog=False)
         self.showCube(ax[1],self.error*1e9,islog=False)
         if show: plt.show()
+        return fig, ax
 
-    def createInv(self,nlay=3,lam=10.,verbose=True, **kwargs):
-        ''' create inversion instance '''
+    def createFOP(self,nlay=3,verbose=True, **kwargs):
+        ''' create forward operator instance '''
         self.nlay = nlay
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
         self.f.region(0).setStartValue(self.startval[0])
@@ -261,6 +276,9 @@ class MRS():
         self.f.region(0).setTransModel(self.transTH)
         self.f.region(1).setTransModel(self.transWC)
         self.f.region(2).setTransModel(self.transT2)
+
+    def createInv(self,nlay=3,lam=10.,verbose=True, **kwargs):
+        ''' create inversion instance '''
         if self.f is None: self.createFOP(nlay)
         self.INV = pg.RInversion(self.data, self.f, verbose)
         self.INV.setLambda(lam)
@@ -375,10 +393,59 @@ class MRS():
         di = ( 1. / varVG )  # variances as column vector
         MCMs = di.reshape(len(di),1) * MCM * di  # scaled model covariance (=correlation) matrix
         return varVG, MCMs
+    
+    def genMod( self, individual ):
+        return pg.exp( pg.asvector( individual ) * ( self.lUB - self.lLB ) + self.lLB )
+        
+    def runEA(self,nlay=None,type='GA',pop_size=100,max_evaluations=10000):
+        import inspyred
+        import random
+        import time
+        
+        def mygenerate( random, args ):
+            """ generate a random vector of model size """
+            return [random.random() for i in range( nlay*4 - 1 )]
 
+        @inspyred.ec.evaluators.evaluator
+        def datafit( individual, args ):
+            misfit = (self.data-self.f.response(self.genMod(individual)))/self.error
+            return np.mean(misfit**2)
+        
+        if self.f is None or (nlay is not None and nlay<>self.nlay): self.createFOP(nlay)
+        lowerBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.lowerBound[0]), 
+            pg.RVector(self.nlay,self.lowerBound[1])), pg.RVector(self.nlay,self.lowerBound[2]) )
+        upperBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.upperBound[0]), 
+            pg.RVector(self.nlay,self.upperBound[1])), pg.RVector(self.nlay,self.upperBound[2]) )
+        self.lLB, self.lUB = pg.log(lowerBound), pg.log(upperBound) # ready mapping functions
+        self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
+        rand = random.Random()
+        rand.seed(int(time.time()))
+        
+        ea = inspyred.ec.GA(rand)
+        ea.variator = [inspyred.ec.variators.blend_crossover, inspyred.ec.variators.gaussian_mutation]
+        ea.terminator = inspyred.ec.terminators.evaluation_termination
+        self.pop = ea.evolve(evaluator=datafit,generator=mygenerate,maximize=False,num_elites=1,
+                              bounder=inspyred.ec.Bounder(0.,1.),max_evaluations=max_evaluations)
+        self.pop.sort(reverse=True)
+        self.fits=[ind.fitness for ind in self.pop]
+        
+    def plotPop(self,maxfitness=None):
+        if maxfitness is None: maxfitness=self.pop[0].fitness*2
+        fig, ax = plt.subplots(1,2)
+        for ind in self.pop:
+            if ind.fitness < maxfitness:
+                model = np.asarray( self.genMod( ind.candidate ) )
+                thk = model[:self.nlay-1]
+                wc = model[self.nlay-1:self.nlay*2-1]
+                t2 = model[self.nlay*2-1:]
+                drawModel1D( ax[0], thk, wc )
+                drawModel1D( ax[1], thk, t2 )
+
+        plt.show()
+            
 ############ MAIN ############
 if __name__ == "__main__":
-    import sys # not PEP-conform to import here
+    import sys # not really PEP-7 conform to import here
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mrs", version="%prog: " + pg.__version__ )
@@ -393,7 +460,6 @@ if __name__ == "__main__":
         __verbose__ = True
 
     if len(args) == 0:
-#        datafile = 'example.mrsi'
         parser.print_help()
         print("Please add a mesh or model name.")
         sys.exit(2)
@@ -401,7 +467,6 @@ if __name__ == "__main__":
         datafile = args[0]
 
     mrs = MRS(datafile)
-    print(mrs)
     mrs.run(options.nlay, uncertainty=True)
     thk, wc, t2 = mrs.result()
     name = datafile.rstrip('.mrsi')
