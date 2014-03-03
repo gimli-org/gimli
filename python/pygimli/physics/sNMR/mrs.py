@@ -397,7 +397,7 @@ class MRS():
     def genMod( self, individual ):
         return pg.exp( pg.asvector( individual ) * ( self.lUB - self.lLB ) + self.lLB )
         
-    def runEA(self,nlay=None,type='GA',pop_size=100,max_evaluations=10000):
+    def runEA(self,nlay=None,type='GA',pop_size=100,max_evaluations=10000,**kwargs):
         import inspyred
         import random
         import time
@@ -405,12 +405,17 @@ class MRS():
         def mygenerate( random, args ):
             """ generate a random vector of model size """
             return [random.random() for i in range( nlay*4 - 1 )]
-
+        
+        def my_observer(population, num_generations, num_evaluations, args):
+            best = min(population)
+            print('{0:6} -- {1}'.format(num_generations,best.fitness))
+        
         @inspyred.ec.evaluators.evaluator
         def datafit( individual, args ):
             misfit = (self.data-self.f.response(self.genMod(individual)))/self.error
             return np.mean(misfit**2)
         
+        # prepare forward operator
         if self.f is None or (nlay is not None and nlay<>self.nlay): self.createFOP(nlay)
         lowerBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.lowerBound[0]), 
             pg.RVector(self.nlay,self.lowerBound[1])), pg.RVector(self.nlay,self.lowerBound[2]) )
@@ -418,29 +423,49 @@ class MRS():
             pg.RVector(self.nlay,self.upperBound[1])), pg.RVector(self.nlay,self.upperBound[2]) )
         self.lLB, self.lUB = pg.log(lowerBound), pg.log(upperBound) # ready mapping functions
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
+        # setup random generator
         rand = random.Random()
         rand.seed(int(time.time()))
-        
-        ea = inspyred.ec.GA(rand)
-        ea.variator = [inspyred.ec.variators.blend_crossover, inspyred.ec.variators.gaussian_mutation]
-        ea.terminator = inspyred.ec.terminators.evaluation_termination
+        # choose among different evolution algorithms
+        if type == 'GA': 
+            ea = inspyred.ec.GA(rand)
+            ea.variator = [inspyred.ec.variators.blend_crossover, 
+                           inspyred.ec.variators.gaussian_mutation]
+        if type == 'SA': ea = inspyred.ec.SA(rand)
+        if type == 'DEA': ea = inspyred.ec.DEA(rand)
+        if type == 'PSO': ea = inspyred.swarm.PSO(rand)
+        if type == 'ACS': ea = inspyred.swarm.ACS(rand)
+        if type == 'ES': 
+            ea = inspyred.ec.ES(rand)
+            ea.terminator = [inspyred.ec.terminators.evaluation_termination, 
+                             inspyred.ec.terminators.diversity_termination]            
+        else:
+            ea.terminator = inspyred.ec.terminators.evaluation_termination                     
+
+        ea.observer = my_observer
         self.pop = ea.evolve(evaluator=datafit,generator=mygenerate,maximize=False,num_elites=1,
-                              bounder=inspyred.ec.Bounder(0.,1.),max_evaluations=max_evaluations)
+                              bounder=inspyred.ec.Bounder(0.,1.),max_evaluations=max_evaluations,**kwargs)
         self.pop.sort(reverse=True)
         self.fits=[ind.fitness for ind in self.pop]
         
     def plotPop(self,maxfitness=None):
         if maxfitness is None: maxfitness=self.pop[0].fitness*2
-        fig, ax = plt.subplots(1,2)
+        fig, ax = plt.subplots(1,2,sharey=True)
+        maxz = 0
         for ind in self.pop:
             if ind.fitness < maxfitness:
                 model = np.asarray( self.genMod( ind.candidate ) )
                 thk = model[:self.nlay-1]
                 wc = model[self.nlay-1:self.nlay*2-1]
                 t2 = model[self.nlay*2-1:]
-                drawModel1D( ax[0], thk, wc )
-                drawModel1D( ax[1], thk, t2 )
-
+                drawModel1D( ax[0], thk, wc*100 )
+                drawModel1D( ax[1], thk, t2*1000 )
+                maxz = max( maxz, sum(thk) )
+ 
+        ax[0].set_xlim(self.lowerBound[1]*100,self.upperBound[1]*100)
+        ax[0].set_ylim((maxz*1.2,0))
+        ax[1].set_xlim(self.lowerBound[2]*1000,self.upperBound[2]*1000)
+        ax[1].set_ylim((maxz*1.2,0))
         plt.show()
             
 ############ MAIN ############
