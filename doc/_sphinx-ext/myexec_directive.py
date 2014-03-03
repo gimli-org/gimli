@@ -33,21 +33,21 @@ class ExecDirective( Directive ):
 #class ExecDirective(name, arguments, options, content, lineno,
 #                    content_offset, block_text, state, state_machine ):
 
-    print "ExecDirective(Directive):", Directive
+    print(("ExecDirective(Directive):", Directive))
 
     has_content = True
 
     def run( self ):
-        print "run() ExecDirective(Directive):", Directive
-        print "name:", self.name
-        print "arguments:", self.arguments
-        print "options:", self.options
-        print "content:", self.content
-        print "lineno:", self.lineno
-        print "content_offset:", self.content_offset
-        print "block_text:", self.block_text
-        print "state:", self.state
-        print "state_machine:", self.state_machine
+        print(("run() ExecDirective(Directive):", Directive))
+        print(("name:", self.name))
+        print(("arguments:", self.arguments))
+        print(("options:", self.options))
+        print(("content:", self.content))
+        print(("lineno:", self.lineno))
+        print(("content_offset:", self.content_offset))
+        print(("block_text:", self.block_text))
+        print(("state:", self.state))
+        print(("state_machine:", self.state_machine))
 
         # Now start generating the lines of output
         lines = []

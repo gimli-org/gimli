@@ -107,7 +107,7 @@ y = 1.1 + 2.1 * x
 this is doku within
 '''
 
-print(x, y)
+print((x, y))
 
 nP = 3
 # two coefficients and x-vector (first data column)

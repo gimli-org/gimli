@@ -17,7 +17,7 @@ mn2  = abmnr[1]
 rhoa = abmnr[2]
 
 maxDep = max( ab2 ) / 2.
-print "Maximum depth estimated to ", maxDep
+print("Maximum depth estimated to ", maxDep)
 thk = g.RVector( nlay - 1, maxDep / ( nlay - 1 ) )
 thk *= ( maxDep / sum( thk ) / 3 )
 

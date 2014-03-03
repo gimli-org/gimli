@@ -181,13 +181,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class Matrix<  double >;
    // template class Matrix< Complex >;
     
-    template RVector unique(const RVector & a);
-    template RVector sort(const RVector & a);
-    template void sort(const RVector & a, RVector & b, IndexArray & idx);
-    template IndexArray sortIdx(const RVector & a);
-    template RVector pow(const RVector & a, double power);
-    template RVector pow(const RVector & a, int power);
-
+  
     template class Pos< double >;
     template class Quaternion< double >;
     
@@ -245,6 +239,10 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class ElementMatrix< double >;
     template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
 
+    template RVector unique(const RVector & a);
+    template RVector sort(const RVector & a);
+    template RVector pow(const RVector & a, double power);
+    template RVector pow(const RVector & a, int power);
     template RVector cat(const RVector & a, const RVector & b);
 
     template double sum(const RVector & v);
@@ -266,7 +264,8 @@ DEFINE_COMPARE_OPERATOR__(>)
     template double arithmeticMean(const RVector & v);
     template double geometricMean(const RVector & v);
     template double harmonicMean(const RVector & a);
-
+    template double dot(const RVector & v1, const RVector & v2);
+    
     template void rand(RVector & vec, double min = 0.0, double max = 1.0);
     template void randn(RVector & vec);
 
@@ -276,6 +275,10 @@ DEFINE_COMPARE_OPERATOR__(>)
     template RVector3 degToRad(const RVector3 & deg);
     template RVector3 radToDeg(const RVector3 & rad);
 
+    template void sort(const RVector & a, RVector & b, IndexArray & idx);
+    template IndexArray sortIdx(const RVector & a);
+    
+    
     template bool save(const RVector &v, const std::string & fname, IOFormat format = Ascii);
     template bool load(RVector &v, const std::string & fname, IOFormat format = Ascii,
                         bool verbose = true);
