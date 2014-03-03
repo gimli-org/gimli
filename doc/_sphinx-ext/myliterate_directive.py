@@ -24,8 +24,10 @@ Configuration options
 no options so far
 """
 
-import sys, os, glob, shutil, imp, warnings, cStringIO, re, textwrap, \
-       traceback, exceptions
+import sys, os, glob, shutil, imp, warnings, io, re, textwrap
+import traceback
+   
+#import exceptions
 
 from docutils import io, nodes, statemachine, utils
 from docutils.parsers.rst import directives
@@ -115,8 +117,8 @@ class MyLiterateInclude(BaseInclude):
                 error_handler=(self.state.document.settings.\
                                input_encoding_error_handler),
                 handle_io_errors=None)
-        except IOError, error:
-            raise self.severe(u'Problems with "%s" directive path:\n%s.' %
+        except IOError as error:
+            raise self.severe('Problems with "%s" directive path:\n%s.' %
                       (self.name, error))
         startline = self.options.get('start-line', None)
         endline = self.options.get('end-line', None)
@@ -126,8 +128,8 @@ class MyLiterateInclude(BaseInclude):
                 rawtext = ''.join(lines[startline:endline])
             else:
                 rawtext = include_file.read()
-        except UnicodeError, error:
-            raise self.severe(u'Problem with "%s" directive:\n%s' %
+        except UnicodeError as error:
+            raise self.severe('Problem with "%s" directive:\n%s' %
                               (self.name, ErrorString(error)))
         # start-after/end-before: no restrictions on newlines in match-text,
         # and no restrictions on matching inside lines vs. line boundaries

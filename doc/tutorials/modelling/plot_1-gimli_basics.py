@@ -78,7 +78,7 @@ We can found that this new ``grid`` contains
 
 """
 
-print(grid.cellCount())
+print((grid.cellCount()))
 
 """
 
@@ -88,7 +88,7 @@ rectangles of type :gimliapi:`GIMLI::Quadrangle` being derived from the base typ
 
 """
 
-print(grid.boundaryCount())
+print((grid.boundaryCount()))
 
 """
 

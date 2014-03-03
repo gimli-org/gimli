@@ -21,4 +21,4 @@ class Alpha(BaseLabelStyle):
     def format(self, entry):
         #print '#############################################'
         #print entry.__dict__
-        return unicode(entry.key)
+        return str(entry.key)

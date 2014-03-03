@@ -26,7 +26,10 @@ sys.path.append(os.path.abspath('./_sphinx-ext'))
 needs_sphinx = '1.0'
 
 # Check for external sphinx extensions
-deps = ['pybtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-bibtex', 'numpydoc']
+# not yet ported to python3
+# 'numpydoc'
+#
+deps = ['pybtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-bibtex']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 
 req = []
@@ -73,8 +76,8 @@ source_encoding = 'utf-8-sig'
 master_doc = 'doc/index'
 
 # General information about the project.
-project = u'GIMLi'
-copyright = u'2013, Carsten Rücker and Thomas Günther'
+project = 'GIMLi'
+copyright = '2013, Carsten Rücker and Thomas Günther'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -241,7 +244,7 @@ _mathpng_tempdir = './mathtmp'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('doc/index', 'gimli.tex', u'GIMLi Documentation', u'Carsten Rücker and Thomas Günther', 'manual'),
+    ('doc/index', 'gimli.tex', 'GIMLi Documentation', 'Carsten Rücker and Thomas Günther', 'manual'),
 ]
 
 latex_additional_files = ['./_static/mylatex-commands.tex' ]
@@ -272,7 +275,7 @@ latex_additional_files = ['./_static/mylatex-commands.tex' ]
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'GIMLi', u'GIMLi Documentation', [u'Carsten Rücker and Thomas Günther'], 1)
+    ('index', 'GIMLi', 'GIMLi Documentation', ['Carsten Rücker and Thomas Günther'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -285,8 +288,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'GIMLi', u'GIMLi Documentation',
-     u'Carsten Rücker and Thomas Günther', 'GIMLi',
+    ('index', 'GIMLi', 'GIMLi Documentation',
+     'Carsten Rücker and Thomas Günther', 'GIMLi',
      'Geophysical Inversion and Modeling Library', 'Miscellaneous'),
 ]
 

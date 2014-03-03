@@ -35,7 +35,7 @@ mesh1.create2DGrid(xreg, zreg, 0)
 for c in mesh1.cells():
     c.setMarker(2)
 
-print mesh1
+print(mesh1)
 
 """
 .. lastcout::
@@ -75,7 +75,7 @@ tri.generate(mesh2)
 for cell in mesh2.cells():
     cell.setMarker(1)
 
-print mesh2
+print(mesh2)
 """
 .. lastcout::
 
@@ -84,7 +84,7 @@ modelling.
 """
 mesh3 = merge2Meshes(mesh1, mesh2)
 
-print mesh3
+print(mesh3)
 
 """
 .. lastcout::

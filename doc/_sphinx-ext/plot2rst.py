@@ -251,7 +251,7 @@ def generate_example_galleries(app):
 def generate_examples_and_gallery(example_dir, rst_dir, cfg):
     """Generate rst from examples and create gallery to showcase examples."""
     if not example_dir.exists:
-        print "No example directory found at", example_dir
+        print(("No example directory found at", example_dir))
         return
     rst_dir.makedirs()
 
@@ -289,12 +289,12 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
     index_name = cfg.plot2rst_index_name + cfg.source_suffix
     gallery_template = src_dir.pjoin(index_name)
     if not os.path.exists(gallery_template):
-        print src_dir
-        print 80*'_'
-        print ('Example directory %s does not have a %s file'
-                        % (src_dir, index_name))
-        print 'Skipping this directory'
-        print 80*'_'
+        print(src_dir)
+        print((80*'_'))
+        print(('Example directory %s does not have a %s file'
+                        % (src_dir, index_name)))
+        print('Skipping this directory')
+        print((80*'_'))
         return
     flags = get_flags_from_rst(gallery_template)
 
@@ -439,8 +439,8 @@ def write_example(src_name, src_dir, rst_dir, cfg):
 
     if not thumb_path.exists:
         if cfg.plot2rst_default_thumb is None:
-            print "WARNING: No plots found and default thumbnail not defined."
-            print "Specify 'plot2rst_default_thumb' in Sphinx config file."
+            print("WARNING: No plots found and default thumbnail not defined.")
+            print("Specify 'plot2rst_default_thumb' in Sphinx config file.")
         else:
             shutil.copy(cfg.plot2rst_default_thumb, thumb_path)
 
@@ -479,7 +479,7 @@ def split_code_and_text_blocks(source_file):
     # Every other block should be a text block
     idx_text_block = np.arange(idx_first_text_block, len(block_edges), 2)
     blocks = []
-    slice_ranges = zip(block_edges[:-1], block_edges[1:])
+    slice_ranges = list(zip(block_edges[:-1], block_edges[1:]))
     for i, (start, end) in enumerate(slice_ranges):
         block_label = 'text' if i in idx_text_block else 'code'
         # subtract 1 from indices b/c line numbers start at 1, not 0

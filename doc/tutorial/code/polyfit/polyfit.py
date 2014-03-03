@@ -47,7 +47,7 @@ def main( argv ):
 
     if len( args ) == 0:
         parser.print_help()
-        print "Please add a datafile."
+        print("Please add a datafile.")
         sys.exit( 2 )
     else:
         datafile = args[ 0 ];
@@ -56,7 +56,7 @@ def main( argv ):
     g.loadMatrixCol( xy, datafile );
 
     if options.verbose:
-        print "data:", xy
+        print("data:", xy)
 
     # two coefficients and x-vector (first data column)
     f = FunctionModelling( options.np + 1, xy[ 0 ] )
@@ -82,7 +82,7 @@ def main( argv ):
     for i in range( 1, options.np+1 ):
         s = s + " + " + str( round( coeff[ i ] *1000 ) / 1000 ) + " x^" + str( i )
 
-    print s
+    print(s)
 
     g.save( coeff, "out.vec" );
 

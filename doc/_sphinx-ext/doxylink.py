@@ -2,7 +2,7 @@
 
 import os
 import xml.etree.ElementTree as ET
-import urlparse
+import urllib.parse
 import re
 import itertools
 
@@ -150,7 +150,7 @@ def parse_tag_file(doc):
 			else:
 				mapping[member_symbol] = {'kind' : member.get('kind'), 'file' : join(anchorfile,'#',member.findtext('anchor'))}
 	
-	for old_tuple, normalised_tuple in zip(function_list, itertools.imap(normalise, (member_tuple[1] for member_tuple in function_list))):
+	for old_tuple, normalised_tuple in zip(function_list, list(map(normalise, (member_tuple[1] for member_tuple in function_list)))):
 		member_symbol = old_tuple[0]
 		original_arglist = old_tuple[1]
 		kind = old_tuple[2]
@@ -162,7 +162,7 @@ def parse_tag_file(doc):
 			else:
 				mapping[member_symbol] = {'kind' : kind, 'arglist' : {normalised_arglist : anchor_link}}
 		else:
-			print('Skipping %s %s%s. Error reported from parser was: %s' % (old_tuple[2], old_tuple[0], old_tuple[1], normalised_tuple[0]))
+			print(('Skipping %s %s%s. Error reported from parser was: %s' % (old_tuple[2], old_tuple[0], old_tuple[1], normalised_tuple[0])))
 	
 	#from pprint import pprint; pprint(mapping)
 	return mapping
@@ -221,7 +221,7 @@ def find_url2(mapping, symbol):
 	
 	#If there is only one match, return it.
 	if len(piecewise_list) is 1:
-		return return_from_mapping(piecewise_list.values()[0], normalised_arglist)
+		return return_from_mapping(list(piecewise_list.values())[0], normalised_arglist)
 	
 	#print("Still", len(piecewise_list), 'possible matches')
 	
@@ -231,7 +231,7 @@ def find_url2(mapping, symbol):
 	
 	#If there is only one by here we return it.
 	if len(classes_list) is 1:
-		return classes_list.values()[0]
+		return list(classes_list.values())[0]
 	
 	#print("Still", len(classes_list), 'possible matches')
 	
@@ -242,14 +242,14 @@ def find_url2(mapping, symbol):
 	no_templates_list = find_url_remove_templates(classes_list, symbol)
 	
 	if len(no_templates_list) is 1:
-		return return_from_mapping(no_templates_list.values()[0], normalised_arglist)
+		return return_from_mapping(list(no_templates_list.values())[0], normalised_arglist)
 	
 	#print("Still", len(no_templates_list), 'possible matches')
 	
 	#If not found by now, just return the first one in the list
 	if len(no_templates_list) != 0:
 		#TODO return a warning here?
-		return return_from_mapping(no_templates_list.values()[0], normalised_arglist)
+		return return_from_mapping(list(no_templates_list.values())[0], normalised_arglist)
 	#Else return None if the list is empty
 	else:
 		LookupError('Could not find a match')
@@ -280,10 +280,10 @@ def return_from_mapping(mapping_entry, normalised_arglist=''):
 			filename = mapping_entry['arglist'].get(normalised_arglist)
 			if not filename: #If we didn't get the filename because it's not in the mapping then we will just return a random one?
 				#TODO return a warning here!
-				filename = mapping_entry['arglist'].values()[0]
+				filename = list(mapping_entry['arglist'].values())[0]
 		else:
 			#Otherwise just return the first entry (if they don't care they get whatever comes first)
-			filename = mapping_entry['arglist'].values()[0]
+			filename = list(mapping_entry['arglist'].values())[0]
 		
 		return {'kind' : 'function', 'file' : filename}
 	elif mapping_entry.get('arglist'):
@@ -330,7 +330,7 @@ def find_url_piecewise(mapping, symbol):
 	
 	"""
 	piecewise_list = {}
-	for item, data in mapping.items():
+	for item, data in list(mapping.items()):
 		split_symbol = symbol.split('::')
 		split_item = item.split('::')
 		
@@ -353,7 +353,7 @@ def find_url_piecewise(mapping, symbol):
 def find_url_classes(mapping, symbol):
 	"""Prefer classes over names of constructors"""
 	classes_list = {}
-	for item, data in mapping.items():
+	for item, data in list(mapping.items()):
 		if data['kind'] == 'class':
 			#print symbol + ' : ' + item
 			classes_list[item] = data
@@ -363,7 +363,7 @@ def find_url_classes(mapping, symbol):
 def find_url_remove_templates(mapping, symbol):
 	"""Now, to disambiguate between ``PolyVox::Array< 1, ElementType >::operator[]`` and ``PolyVox::Array::operator[]`` matching ``operator[]``, we will ignore templated (as in C++ templates) tag names by removing names containing ``<``"""
 	no_templates_list = {}
-	for item, data in mapping.items():
+	for item, data in list(mapping.items()):
 		if '<' not in item:
 			#print symbol + ' : ' + item
 			no_templates_list[item] = data
@@ -421,7 +421,7 @@ def create_role(app, tag_filename, rootdir):
 				
 				#If it's an absolute path then the link will work regardless of the document directory
 				#Also check if it is a URL (i.e. it has a 'scheme' like 'http' or 'file')
-				if os.path.isabs(rootdir) or urlparse.urlparse(rootdir).scheme:
+				if os.path.isabs(rootdir) or urllib.parse.urlparse(rootdir).scheme:
 					full_url = join(rootdir, url['file'])
 				#But otherwise we need to add the relative path of the current document to the root source directory to the link
 				else:
@@ -444,7 +444,7 @@ def create_role(app, tag_filename, rootdir):
 	return find_doxygen_link
 
 def setup_doxylink_roles(app):
-	for name, [tag_filename, rootdir] in app.config.doxylink.iteritems():
+	for name, [tag_filename, rootdir] in list(app.config.doxylink.items()):
 		app.add_role(name, create_role(app, tag_filename, rootdir))
 
 def setup(app):

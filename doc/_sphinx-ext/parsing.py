@@ -5,7 +5,7 @@ import itertools
 from pyparsing import Word, Literal, alphas, nums, alphanums, OneOrMore, Optional, SkipTo, ParseException, Group, ZeroOrMore, Suppress, Combine, delimitedList, quotedString, nestedExpr, ParseResults, oneOf
 
 # define punctuation - reuse of expressions helps packratting work better
-LPAR,RPAR,LBRACK,RBRACK,COMMA,EQ = map(Literal,"()[],=")
+LPAR,RPAR,LBRACK,RBRACK,COMMA,EQ = list(map(Literal,"()[],="))
 
 #Qualifier to go in front of type in the argument list (unsigned const int foo)
 qualifier = OneOrMore(oneOf('const unsigned typename struct enum'))
@@ -13,11 +13,11 @@ qualifier = OneOrMore(oneOf('const unsigned typename struct enum'))
 def turn_parseresults_to_list(s, loc, toks):
 	return ParseResults(normalise_templates(toks[0].asList()))
 
-def normalise_templates(toks, isinstance=isinstance, basestring=basestring):
+def normalise_templates(toks, isinstance=isinstance, str=str):
 	s_list = ['<']
 	s_list_append = s_list.append #lookup append func once, instead of many times
 	for tok in toks:
-		if isinstance(tok, basestring): #See if it's a string
+		if isinstance(tok, str): #See if it's a string
 			s_list_append(' ' + tok)
 		else:
 			#If it's not a string
@@ -95,7 +95,7 @@ def normalise(symbol):
 		arglist_input_string = arglist_input_string[:closing_bracket_location+1]
 	except ValueError:
 		#This shouldn't happen.
-		print 'Could not find closing bracket in %s' % arglist_input_string
+		print(('Could not find closing bracket in %s' % arglist_input_string))
 		raise
 	
 	try:
@@ -150,5 +150,5 @@ def normalise_list(list_of_symbols):
 	#normalise_pool = multiprocessing.Pool(multiprocessing.cpu_count() * 2)
 	#results = normalise_pool.map(normalise, list_of_symbols)
 	#normalise_pool.terminate()
-	results = itertools.imap(normalise, list_of_symbols)
+	results = list(map(normalise, list_of_symbols))
 	return results

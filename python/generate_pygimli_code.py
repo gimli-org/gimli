@@ -355,7 +355,7 @@ def generate(defined_symbols, extraIncludes):
     #And finally we can write code to the disk
     def ignore(val):
         pass
-    mb.split_module('./generated', on_unused_file_found = ignore)
+    mb.split_module('./generated', on_unused_file_found=ignore)
     
     additional_files = [
             os.path.join(os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp'),
@@ -369,8 +369,7 @@ def generate(defined_symbols, extraIncludes):
         if not samefile(sourcefile, destfile):
             shutil.copy(sourcefile, './generated')
             print("Updated ", filename, "as it was missing or out of date")
-    
-    
+
 
 if __name__ == '__main__':
 

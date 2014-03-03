@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -1007,11 +1007,26 @@ bool nonZero(const Vector< ValueType > & v){
     return !zero(v);
 }
 
-
 template < class ValueType >
 bool operator != (const Vector< ValueType > & v1, const Vector< ValueType > & v2){
     return !(v1==v2);
 }
+
+/*! Return scalar product <v1, v2>. Redirect from \ref dot*/
+template < class ValueType >
+ValueType mult(const Vector< ValueType > & v1, const Vector< ValueType > & v2){
+    return sum(v1*v2);
+}
+// 
+// /*! Return scalar product <v1, v2>.*/
+// template < class ValueType >
+// ValueType dot(const Vector< ValueType > & v1, const Vector< ValueType > & v2){
+//     return mult(v1,v2);
+// }
+
+// template double dot(const RVector & v1, const RVector & v2);
+template double mult(const RVector & v1, const RVector & v2);
+
 
 /*! Find function. Return index vector of true values */
 inline IndexArray find(const BVector & v){

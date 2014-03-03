@@ -337,7 +337,7 @@ def __svnversion__(path=__path__[0]):
     p = subprocess.Popen("svnversion -n %s" % path, shell=True, \
        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
-    return stdout
+    return str(stdout)
 
 __version__ = _pygimli_.versionStr() + "_rev" + __svnversion__()
 
