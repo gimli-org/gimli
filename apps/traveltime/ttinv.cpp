@@ -111,6 +111,13 @@ int main(int argc, char *argv []) {
     }
     vcout << "Paramesh: " << paraMesh << std::endl;
 
+    if (unique(sort(paraMesh.cellAttributes())).size() > 100){
+        // assume bert meshParaDomain.bms
+        vcout << "assume bert meshParaDomain.bms. Recount cell marker" << std::endl;
+        paraMesh.setCellAttributes(RVector(paraMesh.cellCount(), 2));
+        paraMesh.setCellMarker(RVector(paraMesh.cellCount(), 2));
+    }
+        
     //!** set up TT modeling class;
     TravelTimeDijkstraModelling f(paraMesh, dataIn, verbose);
     RVector appSlowness(f.getApparentSlowness());

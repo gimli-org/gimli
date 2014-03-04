@@ -565,6 +565,18 @@ void Mesh::setCellMarker(const IndexArray & ids, int marker){
     }
 }
 
+void Mesh::setCellMarker(const RVector & attribute){
+    if (attribute.size() >= cellVector_.size()){
+        for (Index i = 0; i < cellVector_.size(); i ++){
+            cellVector_[i]->setMarker(int(attribute[i]));
+        }
+    } else {
+        throwError(1,"Mesh::setCellMarker: attribute size to small: " + 
+            str(attribute.size()) + " < " + str(cellCount()));
+    }
+}
+
+    
 IndexArray Mesh::findNodesIdxByMarker(int marker) const {
     return find(this->nodeMarker() == marker);
 //     std::vector < uint > idx; idx.reserve(nodeCount());
