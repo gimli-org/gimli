@@ -575,7 +575,6 @@ void Mesh::setCellMarker(const RVector & attribute){
             str(attribute.size()) + " < " + str(cellCount()));
     }
 }
-
     
 IndexArray Mesh::findNodesIdxByMarker(int marker) const {
     return find(this->nodeMarker() == marker);

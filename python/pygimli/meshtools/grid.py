@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import pygimli as g
 from os import system
+
+import pygimli as pg
 
 from pygimli.polytools import *
 
@@ -45,11 +46,13 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     def sortNodeY(n1, n2):
         """function comparing x for using sort."""
         return cmp(n1.pos().y(), n2.pos().y())
+    
     def sortNodeX(n1, n2):
         """function comparing y for using sort."""
         return cmp(n1.pos().x(), n2.pos().x())
 
     surface = 0.0
+    
     # find boundaries on left/right/bottom/top side
     le = [b for b in mesh.boundaries() if b.center().x() == mesh.xmin()]
     bo = [b for b in mesh.boundaries() if b.center().y() == mesh.ymin()]
@@ -64,7 +67,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         if b.node(1) not in tmp:
             tmp.append(b.node(1))
 
-    tmp.sort(sortNodeY)
+    tmp.sort(key=lambda n: n.pos().y())
     tmp.reverse()
     boundaryNodes = tmp
 
@@ -76,7 +79,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         if b.node(1) not in boNode + boundaryNodes:
             boNode.append(b.node(1))
 
-    boNode.sort(sortNodeX)
+    boNode.sort(key=lambda n: n.pos().x())
     boNode.reverse()
     boundaryNodes = boundaryNodes + boNode
 
@@ -88,7 +91,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         if b.node(1) not in tmp + boundaryNodes:
             tmp.append(b.node(1))
 
-    tmp.sort(sortNodeY)
+    tmp.sort(key=lambda n: n.pos().y())
     boundaryNodes = boundaryNodes + tmp
 
     if isSubSurface:
@@ -99,10 +102,10 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
                 topNodes.append(boundary.node(0))
             if boundary.node(1) not in topNodes + boundaryNodes:
                 topNodes.append(boundary.node(1))
-        topNodes.sort(sortNodeX)
+        topNodes.sort(key=lambda n: n.pos().x())
         boundaryNodes = boundaryNodes + topNodes
 
-    poly = g.Mesh()
+    poly = pg.Mesh()
 
     preserveSwitch = ''
 
@@ -120,21 +123,21 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         # add four corners of the world box
         xtLen = 12
         # x bottom boundary sampling points
-        #xBottom = g.asvector( np.linspace( mesh.xmin() - xbound, mesh.xmax() + xbound, xtLen ) )
+        #xBottom = pg.asvector( np.linspace( mesh.xmin() - xbound, mesh.xmax() + xbound, xtLen ) )
 
-        n1 = poly.createNode(g.RVector3(mesh.xmax() + xbound, surface, 0.0))
-        n2 = poly.createNode(g.RVector3(mesh.xmin() - xbound, surface, 0.0))
-        n3 = poly.createNode(g.RVector3(mesh.xmin() - xbound,
+        n1 = poly.createNode(pg.RVector3(mesh.xmax() + xbound, surface, 0.0))
+        n2 = poly.createNode(pg.RVector3(mesh.xmin() - xbound, surface, 0.0))
+        n3 = poly.createNode(pg.RVector3(mesh.xmin() - xbound,
                                         mesh.ymin() - ybound,
                                         0.0))
-        n4 = poly.createNode(g.RVector3(mesh.xmax() + xbound,
+        n4 = poly.createNode(pg.RVector3(mesh.xmax() + xbound,
                                         mesh.ymin() - ybound,
                                         0.0))
         # and connect them by a closed polygon
-        poly.createEdge(n1, n2, g.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.createEdge(n2, n3, g.MARKER_BOUND_MIXED)
-        poly.createEdge(n3, n4, g.MARKER_BOUND_MIXED)
-        poly.createEdge(n4, n1, g.MARKER_BOUND_MIXED)
+        poly.createEdge(n1, n2, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.createEdge(n2, n3, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n3, n4, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n4, n1, pg.MARKER_BOUND_MIXED)
 
     else:
         # add top right node and boundary nodes
@@ -142,21 +145,21 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
 
         dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.5
         # x top boundary sampling points
-        xTop = g.increasingRange(dxMin, xbound, xtLen)
+        xTop = pg.increasingRange(dxMin, xbound, xtLen)
         # y boundary sampling points
-        yLeft = g.increasingRange(
+        yLeft = pg.increasingRange(
             xTop[xtLen - 1] - xTop[xtLen - 2],
             abs(mesh.ymin() - ybound),
             xtLen)
 
         # x bottom boundary sampling points
-        xBottom = g.asvector(
+        xBottom = pg.asvector(
             np.linspace(mesh.xmin() - xbound,
                         mesh.xmax() + xbound,
                         xtLen))
 
-        for t in g.fliplr(xTop)(0, len(xTop) - 1):
-            poly.createNode(g.RVector3(mesh.xmax() + t, mesh.ymax(), 0.0))
+        for t in pg.fliplr(xTop)(0, len(xTop) - 1):
+            poly.createNode(pg.RVector3(mesh.xmax() + t, mesh.ymax(), 0.0))
 
         for n in boundaryNodes:
             poly.createNode(n.pos())
@@ -164,20 +167,20 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         # add top left, bottom left and bottom right node
 
         for t in xTop(1, len(xTop)):
-            poly.createNode(g.RVector3(mesh.xmin() - t, mesh.ymax(), 0.0))
+            poly.createNode(pg.RVector3(mesh.xmin() - t, mesh.ymax(), 0.0))
 
         for t in yLeft(1, len(yLeft)):
             poly.createNode(
-                g.RVector3(mesh.xmin() - xbound,
+                pg.RVector3(mesh.xmin() - xbound,
                            mesh.ymax() - t,
                            0.0))
 
         for t in xBottom(1, len(xBottom) - 1):
-            poly.createNode(g.RVector3(t, mesh.ymin() - ybound, 0.0))
+            poly.createNode(pg.RVector3(t, mesh.ymin() - ybound, 0.0))
 
-        for t in g.fliplr(yLeft)(0, len(yLeft) - 1):
+        for t in pg.fliplr(yLeft)(0, len(yLeft) - 1):
             poly.createNode(
-                g.RVector3(mesh.xmax() + xbound,
+                pg.RVector3(mesh.xmax() + xbound,
                            mesh.ymax() - t,
                            0.0))
 
@@ -190,7 +193,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         preserveSwitch = 'Y'
     # poly.exportVTK('out.poly')
 
-    mesh2 = g.Mesh()
+    mesh2 = pg.Mesh()
 
     # call triangle mesh generation
     triswitches = '-pzeAfa' + preserveSwitch + 'q' + str(quality)
@@ -199,16 +202,16 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         triswitches += 'Q'
 
     if isSubSurface:
-        tri = g.TriangleWrapper(poly)
+        tri = pg.TriangleWrapper(poly)
         # area -1.0 means this is a hole
         tri.addRegionMarkerTmp(0,
-                               g.RVector3(mesh.xmin() + 0.0001,
+                               pg.RVector3(mesh.xmin() + 0.0001,
                                           mesh.ymax() - 0.0001),
                                -1.0)
         tri.setSwitches(triswitches)
         tri.generate(mesh2)
     else:
-        g.TriangleWrapper(poly, mesh2, triswitches)
+        pg.TriangleWrapper(poly, mesh2, triswitches)
 
     if smooth:
         mesh2.smooth(nodeMoving=True,
@@ -229,9 +232,9 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     for b in mesh2.boundaries():
         if b.leftCell() is None or b.rightCell() is None:
             if b.center().y() == mesh2.ymax():
-                b.setMarker(g.MARKER_BOUND_HOMOGEN_NEUMANN)
+                b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
             else:
-                b.setMarker(g.MARKER_BOUND_MIXED)
+                b.setMarker(pg.MARKER_BOUND_MIXED)
 
     return mesh2
 
@@ -272,7 +275,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     Boundaries of mesh need marker 1.
     """
     # create boundary for mesh from boundary marker == 1
-    meshBoundary = g.Mesh()
+    meshBoundary = pg.Mesh()
     meshBoundary.createH2Mesh(mesh)
 
     bounds = []
@@ -280,7 +283,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         if b.marker() == 1:
             bounds.append(b)
 
-    meshBoundaryPoly = g.Mesh()
+    meshBoundaryPoly = pg.Mesh()
     meshBoundaryPoly.createMeshByBoundaries(
         meshBoundary,
         meshBoundary.findBoundaryByMarker(1))
@@ -306,7 +309,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     worldBoundary = tetgen('worldSurface', quality=1.12, verbose=verbose)
     # worldBoundary.exportBoundaryVTU('worldSurface')
 
-    worldPoly = g.Mesh()
+    worldPoly = pg.Mesh()
     worldPoly.createMeshByBoundaries(
         worldBoundary,
         worldBoundary.findBoundaryByMarker(
@@ -338,9 +341,9 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     if verbose:
         print("merge grid and boundary")
 
-    swatch = g.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
     for c in meshBoundary.cells():
-        nodes = g.stdVectorNodes()
+        nodes = pg.stdVectorNodes()
         for i, n in enumerate(c.nodes()):
             nodes.append(boundMesh.createNodeWithCheck(n.pos()))
 

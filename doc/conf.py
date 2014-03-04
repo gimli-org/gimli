@@ -307,8 +307,10 @@ texinfo_show_urls = 'footnote'
 # load our plugins for manual bibstyle
 import pkg_resources
 
+# temporary disable due to python3 pybtex quirks
 for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
     pkg_resources.working_set.add(dist)
+
 
 #End pybtex stuff
 
