@@ -55,12 +55,12 @@ public:
         min_ = Pos < ValueType >((ValueType)MAX_DOUBLE, (ValueType)MAX_DOUBLE, (ValueType)MAX_DOUBLE);
         max_ = min_ * -1.0;
         for (uint i = 0; i < vPos.size(); i ++){
-            min_[ 0 ] = std::min(vPos[ i ][ 0 ], min_[ 0 ]);
-            min_[ 1 ] = std::min(vPos[ i ][ 1 ], min_[ 1 ]);
-            min_[ 2 ] = std::min(vPos[ i ][ 2 ], min_[ 2 ]);
-            max_[ 0 ] = std::max(vPos[ i ][ 0 ], max_[ 0 ]);
-            max_[ 1 ] = std::max(vPos[ i ][ 1 ], max_[ 1 ]);
-            max_[ 2 ] = std::max(vPos[ i ][ 2 ], max_[ 2 ]);
+            min_[0] = std::min(vPos[i][0], min_[0]);
+            min_[1] = std::min(vPos[i][1], min_[1]);
+            min_[2] = std::min(vPos[i][2], min_[2]);
+            max_[0] = std::max(vPos[i][0], max_[0]);
+            max_[1] = std::max(vPos[i][1], max_[1]);
+            max_[2] = std::max(vPos[i][2], max_[2]);
         }
     }
 
@@ -102,7 +102,7 @@ protected:
 };
 
 template < class ValueType > std::ostream & operator << (std::ostream & str, const BoundingBox< ValueType > & bb){
-    str << "BoundingBox [ " << bb.min() << ", " << bb.max() << " ]" ;
+    str << "BoundingBox [" << bb.min() << ", " << bb.max() << "]" ;
     return str;
 }
 
@@ -275,12 +275,9 @@ public:
     Cell * findCell(const RVector3 & pos, bool extensive = true) const {
         size_t counter; return findCell(pos, counter, extensive); }
 
-    /*! Set the marker to all boundaries in index array. */
-    void setCellMarker(const IndexArray & ids, int marker);
-        
     /*! Return the index to the node of this mesh with the smallest distance to pos. */
     uint findNearestNode(const RVector3 & pos);
-
+    
     /*! Returns vector of cell ptrs with marker match the range [from .. to). \n
         For single marker match to is set to 0, for open end set to = -1 */
     std::vector < Cell * > findCellByMarker(int from, int to = 0) const;
@@ -333,7 +330,7 @@ public:
     template < class Matrix > Mesh & transform(const Matrix & mat){
 //         std::for_each(nodeVector_.begin(), nodeVector_.end(),
 //                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
-        for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[ i ]->pos().transform(mat);
+        for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->pos().transform(mat);
         rangesKnown_ = false;
         return *this;
     }
@@ -459,6 +456,12 @@ public:
     /*! Return a RVector of all cell attributes */
     RVector cellAttributes() const;
 
+    /*! Set the cell marker of all indices in ids to marker. */
+    void setCellMarker(const IndexArray & ids, int marker);
+
+    /*! Set all cell marker the values in attribute (casting to int)*/
+    void setCellMarker(const RVector & attribute);
+    
     //** probably deprecated
     double xmin() const { findRange_(); return minRange_[0]; }
     double ymin() const { findRange_(); return minRange_[1]; }
