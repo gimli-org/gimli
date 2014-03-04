@@ -1,13 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+    Was macht das Ding
+'''
+
 # general modules to import according to standards
 import pygimli as pg
 import matplotlib.pyplot as plt
 import numpy as np
+
 # specific functions imported from pygimli
 from pygimli.utils import iterateBounds
 from pygimli.utils.base import gmat2numpy
+
 #from pygimli.viewer import drawModel1D
 from scipy.io import loadmat
 from scipy.linalg import inv
+
 
 # forward modelling class (physics)
 class MRS1dBlockQTModelling( pg.ModellingBase ):
@@ -416,11 +425,13 @@ class MRS():
             return np.mean(misfit**2)
         
         # prepare forward operator
-        if self.f is None or (nlay is not None and nlay<>self.nlay): self.createFOP(nlay)
+        if self.f is None or (nlay is not None and nlay is not self.nlay): self.createFOP(nlay)
+        
         lowerBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.lowerBound[0]), 
             pg.RVector(self.nlay,self.lowerBound[1])), pg.RVector(self.nlay,self.lowerBound[2]) )
         upperBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.upperBound[0]), 
             pg.RVector(self.nlay,self.upperBound[1])), pg.RVector(self.nlay,self.upperBound[2]) )
+        
         self.lLB, self.lUB = pg.log(lowerBound), pg.log(upperBound) # ready mapping functions
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
         # setup random generator
