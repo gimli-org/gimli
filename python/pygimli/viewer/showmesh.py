@@ -3,6 +3,7 @@
 try:
     import pygimli as g
     from pygimli.mplviewer import drawMesh, drawModel, drawField, createColorbar
+    from .mayaview import showMesh3D
 except ImportError:
     import sys
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
@@ -14,7 +15,12 @@ import numpy as np
 def show(mesh, *args, **kwargs):
     """Syntactic sugar."""
     if isinstance(mesh, g.Mesh):
-        showMesh(mesh, *args, **kwargs)
+        if mesh.dimension() == 2:
+            showMesh(mesh, *args, **kwargs)
+        elif mesh.dimension() == 3:
+            showMesh3D(mesh, **kwargs)
+        else:
+            print("ERROR: Mesh not valid.")
 
 
 def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
@@ -22,7 +28,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
     """
     Syntactic sugar, short-cut to create axes and plot node or cell values
     return axes, cbar
-        
+
     Parameters
     ----------
     """
@@ -66,26 +72,26 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axis=None,
 
 def showBoundaryNorm(mesh, *args, **kwargs):
     """"""
-    
+
     ax = showMesh(mesh, showLater=True)[0]
-    
+
     for b in mesh.boundaries():
         c1 = b.center()
         c2 = c1 + b.norm()
         ax.plot([c1[0], c2[0]],
                 [c1[1], c2[1]], color='Black')
-    
+
     plt.show()
-           
+
     return ax
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+

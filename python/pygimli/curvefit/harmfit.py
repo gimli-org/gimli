@@ -3,7 +3,7 @@
 import math
 import numpy as np
 
-import pygimli as g
+import pygimli as pg
 from pygimli.utils import getIndex, filterIndex
 
 #from numpy import ones, array, sin, cos, pi, linalg, diag
@@ -14,7 +14,7 @@ class harmFunctor():
         self.coeff_ = coeff
         self.xmin_ = xmin
         self.xSpan_ = xSpan
-        
+
     def __call__( self, x ):
         nc = len( self.coeff_ )/2
         A = np.ones( nc * 2 ) * 0.5
@@ -22,29 +22,29 @@ class harmFunctor():
         A[ 2::2 ] = np.sin( 2.0 * np.pi * np.arange( 1, nc ) * ( x - self.xmin_ ) / self.xSpan_ )
         A[ 3::2 ] = np.cos( 2.0 * np.pi * np.arange( 1, nc ) * ( x - self.xmin_ ) / self.xSpan_ )
         return sum( A * self.coeff_ )
-    
+
 def harmfitNative( y, x = None, nc = None, xc = None, err = None ):
     '''
         python based curve-fit by harmonic functions
         yc = harmfitNativ(x,y[,nc,xc,err]);
         y   .. values of a curve to be fitted
-        x   .. abscissa, if none [0..len(y)) 
+        x   .. abscissa, if none [0..len(y))
         nc  .. number of coefficients
         xc  .. abscissa to fit on (otherwise equal to x)
         err .. data error
     '''
     y = np.asarray( y )
-    
+
     if x is None:
        x = list(range( len(y)))
-       
+
     x = np.asarray( x )
-    
+
     if xc is not None:
         xc = np.asarray( xc )
     else:
         xc = x
-    
+
     if err is None:
         err = np.ones(  ( 1, len( x ) ) ) # ones(size(x)); end
 
@@ -75,12 +75,12 @@ def harmfitNative( y, x = None, nc = None, xc = None, err = None ):
         B[ :, i * 2 + 1 ] = np.cos( 2.0 * i * np.pi * ( xc - xmi ) / xspan );
 
     #w = 1.0 / err; w(~isfinite(w))=0;
-    w = 1.0 / err; 
+    w = 1.0 / err;
     #w[ (~isfinite(w) ]=0;
-    
+
     #coeff=(spdiags(w,0,length(w),length(w))*A)\(y.*w);
     coeff, res, rank, s = np.linalg.lstsq( np.diag( w, 0) * A, (y * w)[0,:] )
-    
+
     return sum( (B * coeff).T ), harmFunctor( A, coeff, xmi, xspan )
 
 def harmfit( y, x = None, error = None, nCoefficients = 42, resample = None
@@ -89,74 +89,74 @@ def harmfit( y, x = None, error = None, nCoefficients = 42, resample = None
     '''
         HARMFIT - GIMLi based curve-fit by harmonic functions
         y .. 1d-array( len(y) ); values to be fitted
-        x .. 1d-array( len(y) ); abscissa data spacing. if not given: 1 * [ 0 .. len( y ) ) 
+        x .. 1d-array( len(y) ); abscissa data spacing. if not given: 1 * [ 0 .. len( y ) )
         error .. 1d-array( len(y) );  data error of y (fit y into the range of error). if not given (absolute err = 1%)
         nCoefficients .. int; Number of harmonic coefficients
         resample .. 1d-array( len( resample ) ); resample y based on fitting coeffients
         window .. just fit data inside window bounds
         return response, coefficients
-        
+
         response .. 1d-array( len( y ) ) if no resample given, else 1d-array( len( resample ) )
         coefficients .. coefficients for harmic functions that fit y
-    '''    
+    '''
     if x is None:
-        x = g.asvector( np.arange( len( y ) ) )
+        x = pg.asvector( np.arange( len( y ) ) )
     else:
-        if not isinstance( x, g.RVector ):
-            x = g.asvector( x )
+        if not isinstance( x, pg.RVector ):
+            x = pg.asvector( x )
 
-    if not isinstance( y, g.RVector ):
-        y = g.asvector( y )
-        
+    if not isinstance( y, pg.RVector ):
+        y = pg.asvector( y )
+
     xToFit = None
     yToFit = None
-    
+
     if window is not None:
-        idx = g.find( ( x >= window[ 0 ] ) & ( x < window[ 1 ] ) )
+        idx = pg.find( ( x >= window[ 0 ] ) & ( x < window[ 1 ] ) )
         #idx = getIndex( x , lambda v: v > window[0] and v < window[1] )
-        
+
         xToFit = x( idx );
         yToFit = y( idx );
-        
+
         if error is not None: error = error( idx );
     else:
         xToFit = x
         yToFit = y
-            
+
 #    print xToFit
 #    print yToFit
-    fop = g.HarmonicModelling( nCoefficients, xToFit, verbose )
-    inv = g.RInversion( yToFit, fop, verbose, dosave );
+    fop = pg.HarmonicModelling( nCoefficients, xToFit, verbose )
+    inv = pg.RInversion( yToFit, fop, verbose, dosave );
     if error is not None:
-        if not isinstance( error, g.RVector ):
-            error = g.asvector( error )
-        
+        if not isinstance( error, pg.RVector ):
+            error = pg.asvector( error )
+
         inv.setRelativeError( error )
     else:
         inv.setAbsoluteError( 0.01 )
-        
+
     inv.setLambda( 000.0 )
     inv.setLocalRegularization( True )
     inv.setMaxIter( maxiter )
     inv.setLineSearch( lineSearch )
     inv.setRobustData( robust );
     #inv.setConstraintType( 0 );
-    
+
     coeff = inv.run();
-    
+
     if resample is not None:
-        if not isinstance( resample, g.RVector ):
-            resample = g.asvector( resample )
-            
+        if not isinstance( resample, pg.RVector ):
+            resample = pg.asvector( resample )
+
         ret = fop.response( coeff, resample )
-        
+
 #        print ret
-        
+
         if window is not None:
 #            print resample
 #            print window[0], window[1]
-#            print g.find( ( resample < window[ 0 ] ) | ( resample >= window[ 1 ] ) )
-            ret.setVal( 0.0, g.find( ( resample < window[ 0 ] ) | ( resample >= window[ 1 ] ) ) )
+#            print pg.find( ( resample < window[ 0 ] ) | ( resample >= window[ 1 ] ) )
+            ret.setVal( 0.0, pg.find( ( resample < window[ 0 ] ) | ( resample >= window[ 1 ] ) ) )
 #            idx = getIndex( resample, lambda v: v <= window[0] or v >= window[1] )
 #            for i in idx: ret[ i ] = 0.0
 #        print ret

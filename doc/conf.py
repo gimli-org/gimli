@@ -37,7 +37,7 @@ for dep in deps:
     if dep not in modules:
         req.append(dep)
 if req:
-    msg = "Sorry, there are missing dependencies to build the docs. Try: pip install %s." \
+    msg = "Sorry, there are missing dependencies to build the docs. Try: sudo pip install %s." \
     % (' '.join(req))
     raise ImportError(msg)
 

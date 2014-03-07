@@ -2,17 +2,17 @@
 
 from __future__ import print_function
 
-import pygimli as g
+import pygimli as pg
 
 def rot2DGridToWorld( mesh, start, end ):
     print(mesh, start, end)
-    mesh.rotate( g.degToRad( g.RVector3( -90.0, 0.0, 0.0 ) ) )
+    mesh.rotate( pg.degToRad( pg.RVector3( -90.0, 0.0, 0.0 ) ) )
 
-    src = g.RVector3( 0.0, 0.0, 0.0 ).norm( g.RVector3( 0.0,  0.0, -10.0 ), g.RVector3( 10.0, 0.0, -10.0 ) )
-    dest = start.norm( start - g.RVector3( 0.0, 0.0, 10.0 ), end )
+    src = pg.RVector3( 0.0, 0.0, 0.0 ).norm( pg.RVector3( 0.0,  0.0, -10.0 ), pg.RVector3( 10.0, 0.0, -10.0 ) )
+    dest = start.norm( start - pg.RVector3( 0.0, 0.0, 10.0 ), end )
 
-    q = g.getRotation( src, dest )
-    rot = g.RMatrix( 4, 4 )
+    q = pg.getRotation( src, dest )
+    rot = pg.RMatrix( 4, 4 )
     q.rotMatrix( rot )
     mesh.transform( rot )
     mesh.translate( start )
@@ -22,12 +22,12 @@ def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, k
     xd = []
     yd = []
     counter = 0
-    
+
     # search downward
-    pos = g.RVector3( start )
+    pos = pg.RVector3( start )
     c = mesh.findCell( pos );
     lastU = 1e99;
-    
+
     while c is not None and len( xd ) < maxSteps:
         d = c.grad( pos, field )
         u = c.pot( pos, field )
@@ -37,12 +37,12 @@ def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, k
             #print u, lastU
             break;
             #pass
-        
+
         pos -= d/d.length() * dLength * max( 1.0, ( (start-pos).length() ) )
         xd.append( pos[ koords[ 0 ] ] )
         yd.append( pos[ koords[ 1 ] ] )
         c = mesh.findCell( pos, False );
-        
+
         lastU = u
         if verbose:
             print(pos, u)
@@ -51,24 +51,24 @@ def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, k
     yu = []
     #return xu, yu
     # search upward
-    pos = g.RVector3( start )
+    pos = pg.RVector3( start )
     c = mesh.findCell( pos );
 
     lastu=-1e99
     while c is not None and len( xu ) < maxSteps:
         d = c.grad( pos, field )
         u = c.pot( pos, field )
-        
+
         # always go u up
         if u < lastU:
             break;
-    
+
         pos += d/d.length() * dLength * max( 1.0, ( (start-pos).length() ) )
         xu.append( pos[ koords[ 0 ] ] )
         yu.append( pos[ koords[ 1 ] ] )
         c = mesh.findCell( pos, False );
         lastU = u
-            
+
     xu.reverse()
     yu.reverse()
     x = xu + xd
@@ -82,11 +82,11 @@ def boundaryPlaneIntersectionLines( boundaries, plane ):
     for b in boundaries:
         ps = []
         for i, n in enumerate( b.shape().nodes() ):
-            line = g.Line( n.pos(), b.shape().node( (i+1)%b.shape().nodeCount() ).pos() )
+            line = pg.Line( n.pos(), b.shape().node( (i+1)%b.shape().nodeCount() ).pos() )
             p = plane.intersect( line, 1e-8, True )
             if p.valid():
                 ps.append( p )
-        
+
         if len( ps ) == 2:
             lines.append( list(zip( [ ps[0].x(), ps[1].x() ],
                                [ ps[0].z(), ps[1].z() ] )) )
@@ -113,22 +113,22 @@ def number_of_processors():
     # FreeBSD, HPUX, etc.
     else:
         raise RuntimeError('unknown platform')
-    
-    
-def assembleDC( mesh, source = g.RVector3( 0.0, 0.0, 0.0 ) ):
+
+
+def assembleDC( mesh, source = pg.RVector3( 0.0, 0.0, 0.0 ) ):
     """assemble stiffness matrix for 3d dc forward problem using fem."""
-    S = g.DSparseMatrix()
+    S = pg.DSparseMatrix()
     S.buildSparsityPattern( mesh )
-#    se = g.DElementMatrix()
+#    se = pg.DElementMatrix()
 
 #    for c in mesh.cells():
 #        se.ux2uy2uz2( c )
 #        S += se
-    g.dcfemDomainAssembleStiffnessMatrix( S, mesh, 0.0, False )
-    g.dcfemBoundaryAssembleStiffnessMatrix( S, mesh, source, 0.0 )
+    pg.dcfemDomainAssembleStiffnessMatrix( S, mesh, 0.0, False )
+    pg.dcfemBoundaryAssembleStiffnessMatrix( S, mesh, source, 0.0 )
     return S
 #def assembleDC
-    
+
 def assembleCEM( S, mesh, marker, zi, nodeID = -1, verbose = False ):
     '''
         add dc-cem to stiffness system, return new Matrix and sum of electrodes surface
@@ -139,19 +139,19 @@ def assembleCEM( S, mesh, marker, zi, nodeID = -1, verbose = False ):
     if nodeID == -1:
         for b in mesh.findBoundaryByMarker( marker ):
             sumArea += b.shape().domainSize()
-        print("addCEM: ", marker, sumArea, 'm^2', zi/sumArea, 'Ohm\n', end=' ') 
+        print("addCEM: ", marker, sumArea, 'm^2', zi/sumArea, 'Ohm\n', end=' ')
     else:
         sumArea = 1
         print("addCEM: node")
 
-    mapS = g.DSparseMapMatrix( S );
+    mapS = pg.DSparseMapMatrix( S );
     oldSize = S.size()
 
-    se = g.DElementMatrix()
-    
+    se = pg.DElementMatrix()
+
     mapS.setRows( oldSize + 1 );
     mapS.setCols( oldSize + 1 );
-        
+
     if nodeID == -1:
         for b in mesh.findBoundaryByMarker( marker ):
             se.u( b )
@@ -169,5 +169,5 @@ def assembleCEM( S, mesh, marker, zi, nodeID = -1, verbose = False ):
         mapS.addVal( nodeID,  oldSize, - 1.0 )
         mapS.addVal( oldSize,  oldSize, 1.0 )
 
-    return g.DSparseMatrix( mapS ), sumArea
+    return pg.DSparseMatrix( mapS ), sumArea
 #def assembleCEM

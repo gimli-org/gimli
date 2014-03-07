@@ -26,7 +26,9 @@ URL_ROOT:    '{{ url_root }}',
 {%- endmacro %}
 
 {%- macro css() %}
-<link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Source+Code+Pro|Open+Sans:300,400,700,400,300,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" 
+href='http://fonts.googleapis.com/css?family=Inconsolata|Open+Sans:300,400,700,400,300,700' 
+rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="{{ pathto('_static/', 1) }}bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="{{ pathto('_static/', 1) }}font-awesome/css/font-awesome.min.css">
 <link rel="stylesheet" href="{{ pathto('_static/', 1) }}gimli.css">

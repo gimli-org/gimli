@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import wx
-import pygimli as g
+import pygimli as pg
 
 from pygimli.gui.resources import loadXRC
 from pygimli.gui.base import ManagedProperties
@@ -15,14 +15,14 @@ class ColorBarWxMPL( ManagedProperties ):
         ManagedProperties.__init__( self )
         self.cbar = None
         self.active = False
-        
+
     def createPropertyPanel( self, panel = None ):
         xml = loadXRC( 'pygimli' )
         propertyPanel = None
         if panel:
             propertyPanel = xml.LoadPanel( panel, 'piColorBarWxMPL' )
             self.enablePanel = wx.xrc.XRCCTRL( panel, 'piColorBarPanel' )
-            
+
             self.activeCheck = self.appendProperty( "cbActive"
                                                     , ctrl = wx.xrc.XRCCTRL( panel, 'piColorBarActiveCheckBox')
                                                     , ctrlEvent = wx.EVT_CHECKBOX
@@ -39,7 +39,7 @@ class ColorBarWxMPL( ManagedProperties ):
                                                     , valType = int
                                                     , targetFunct = self.update )
             self.nColors.setValidRange( 2, 256 )
-            
+
             self.cmin       = self.appendProperty( "cbCmin"
                                                     , ctrl = wx.xrc.XRCCTRL( panel, 'piColorBarCminTextCtrl')
                                                     , ctrlEvent = wx.EVT_KILL_FOCUS
@@ -63,7 +63,7 @@ class ColorBarWxMPL( ManagedProperties ):
                                                     , ctrl = wx.xrc.XRCCTRL( panel, 'piColorBarLabelTextCtrl')
                                                     , ctrlEvent = wx.EVT_KILL_FOCUS
                                                     , targetFunct = self.update )
-            self.horizontal  = self.appendProperty( "cbHoriz" 
+            self.horizontal  = self.appendProperty( "cbHoriz"
                                                     , ctrl = wx.xrc.XRCCTRL( panel, 'piColorBarHorizRadioButton')
                                                     , ctrlEvent = wx.EVT_RADIOBUTTON
                                                     , targetFunct = self.update )
@@ -77,17 +77,17 @@ class ColorBarWxMPL( ManagedProperties ):
         return propertyPanel
 
     def setLogScale( self ):
-        
+
         norm = None
-        
+
         if self.logScale():
             if ( self.cmin() < 0 ):
                 self.cmin.setVal( 1.0 )
-            
+
             norm = mpl.colors.LogNorm()
         else:
             norm = mpl.colors.Normalize()
-                
+
         if isinstance( self.parent.gci, list ):
             for gci in self.parent.gci:
                 gci.set_norm( norm )
@@ -95,14 +95,14 @@ class ColorBarWxMPL( ManagedProperties ):
             self.parent.gci.set_norm( norm )
 
         self.update()
-        
+
     def autoColor( self ):
         print("cBarAutoColor( self )", self.cAuto())
         if self.cbar:
             if self.cAuto():
                 self.cmax.ctrl.Enable( False )
                 self.cmin.ctrl.Enable( False )
-                    
+
                 cmin = 1e100
                 cmax = -1e100
                 if isinstance( self.parent.gci, list ):
@@ -121,7 +121,7 @@ class ColorBarWxMPL( ManagedProperties ):
                 self.cmax.ctrl.SetValue( "" )
                 self.cmin.val = cmin
                 self.cmax.val = cmax
-                
+
             else:
                 self.cmax.ctrl.Enable( True )
                 self.cmin.ctrl.Enable( True )
@@ -129,34 +129,34 @@ class ColorBarWxMPL( ManagedProperties ):
                 self.cmax.ctrl.SetValue( str( self.cmax() ) )
 
             self.update()
-        
+
     def setGCI( self, gci ):
         if not self.cbar:
-            self.cbar = g.mplviewer.createColorbar( gci )
+            self.cbar = pg.mplviewer.createColorbar( gci )
 
     def activator( self, flag = None ):
         # possible bug: mehrfaches an und aus schalten verlangsamt alles.
-       
+
         if flag is None:
             self.active = self.activeCheck()
         else:
             self.active = flag
-            
+
         if self.active:
             try:
                 self.enablePanel.Enable( True )
             except:
                 pass
-            
+
             if not self.cbar:
                 if isinstance( self.parent.gci, list ):
                     gci = self.parent.gci[ -1 ]
                 else:
                     gci = self.parent.gci
-                    
+
                 if gci.get_array( ) is not None:
                     if gci.get_array( ).min() != gci.get_array( ).max():
-                        self.cbar = g.mplviewer.createColorbar( gci )
+                        self.cbar = pg.mplviewer.createColorbar( gci )
                         self.autoColor()
                         self.update()
                     else:
@@ -174,7 +174,7 @@ class ColorBarWxMPL( ManagedProperties ):
                 self.parent.figure.delaxes( self.cbar.ax )
                 self.cbar = None;
                 self.parent.redraw()
-                
+
                 #self.parent.updateDrawOnIdle()
                 #self.parent.resizeOnIdle()
 
@@ -183,20 +183,20 @@ class ColorBarWxMPL( ManagedProperties ):
             #print "horizontal", self.horizontal()
             nLevs = self.cbarTicks()
             self.cbar.set_label( self.label() )
-            
+
             cmap = mpl.cm.get_cmap( 'jet',  self.nColors() )
             cmap.set_bad( [1.0, 1.0, 1.0, 0.0 ] )
-            
+
             if isinstance( self.parent.gci, list ):
                 for gci in self.parent.gci:
                     gci.set_cmap( cmap )
                     gci.set_clim( [ self.cmin(), self.cmax() ] )
             else:
                 self.parent.gci.set_cmap( cmap )
-                
+
             print(self.cmin(), self.cmax())
             if nLevs > 1:
-                g.mplviewer.setCbarLevels( self.cbar, cMin = self.cmin(), cMax = self.cmax(), nLevs = self.cbarTicks() )
+                pg.mplviewer.setCbarLevels( self.cbar, cMin = self.cmin(), cMax = self.cmax(), nLevs = self.cbarTicks() )
 
         self.parent.updateDrawOnIdle()
-        
+

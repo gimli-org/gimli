@@ -19,14 +19,14 @@ import wx.lib.scrolledpanel
 import time
 
 try:
-    import pygimli as g
+    import pygimli as pg
     import pygimli.misc
 except ImportError:
     sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH \n''')
     sys.exit( 1 )
 except Exception as e:
     print(e)
-    
+
 from pygimli.gui.resources import loadIcon
 from pygimli.gui.controls import ResourceTree
 
@@ -45,7 +45,7 @@ class RedirectOutput:
             self.style = 1 #black
         elif console == "cerr": #sys.stderr
             self.style = 2 #red
-            
+
         self.counter = 0
 
         self.timer = wx.PyTimer( self.writeOut )
@@ -214,10 +214,10 @@ class PyGIMLIMainFrame( wx.Frame ):
         self.xrc.Load( mainXRCFile )
 
         self.PostCreate( self.xrc.LoadFrame( None, 'PyGIMLIMainFrame' ) )
-        
+
         self.idleProzessPanel = self.xrc.LoadFrame( None, 'IdleProzessPanel' )
         self.SetMinSize( ( 800, 600 ) )
-        
+
         self.initFrameManager_( )
         self.initDefaultMenuBar_( )
         self.initToolBar_( )
@@ -271,7 +271,7 @@ class PyGIMLIMainFrame( wx.Frame ):
     def initDefaultMenuBar_( self ):
         """Main menubar menues are come from mainXRCFile Init some default
         menubar entries File/Open, File/Quit."""
-        
+
         # File/Open
         mbMenu = self.MenuBar.GetMenu( self.MenuBar.FindMenu( "File" ) )
 
@@ -289,7 +289,7 @@ class PyGIMLIMainFrame( wx.Frame ):
         #item = wx.MenuItem( mbFileMenu, wx.NewId(), "Open &recent ...", "Open recent applications" )
         #item.SetBitmap( loadIcon( 'application-exit-16.png' ) )
         #mbFileMenu.AppendItem( item )
-        
+
     def initToolBar_( self ):
         """Initilize some default toolbar entries."""
         self.toolBar_ = aui.AuiToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
@@ -329,12 +329,12 @@ class PyGIMLIMainFrame( wx.Frame ):
         """"""
         self.propertyInspectorSlot = wx.lib.scrolledpanel.ScrolledPanel( parent
                                         , -1, size=(14, 30),
-                                          style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="PropertySlot" ) 
-        
+                                          style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="PropertySlot" )
+
         self.propertyInspectorSlot.SetSizer( wx.BoxSizer() )
         self.propertyInspectorSlot.SetAutoLayout(1)
         self.propertyInspectorSlot.SetupScrolling()
-        
+
         return self.propertyInspectorSlot
 
     def createLogPane_( self, parent  ):
@@ -461,7 +461,7 @@ class PyGIMLIMainFrame( wx.Frame ):
                 import traceback
                 traceback.print_exc( file=sys.stdout )
                 print(e)
-                
+
             self.onIdleCmdQueue_.pop( 0 )
         else:
             if self.idleProzessPanel.IsShown():
@@ -551,7 +551,7 @@ class PyGIMLIMainFrame( wx.Frame ):
 
         # Then we call wx.AboutBox giving it that info object
         wx.AboutBox(info)
-        #-1-1 self.aboutGIMLiLabel.SetLabel( g.version() )
+        #-1-1 self.aboutGIMLiLabel.SetLabel( pg.version() )
         #self.aboutGIMLiDialog.Show()
 
     def registerOpenFileSuffix( self, suffix, wildcard, cls, callback ):
@@ -655,39 +655,39 @@ class PyGIMLIMainFrame( wx.Frame ):
 #import threading
 
 #import wx.lib.inspection
-#wx.lib.inspection.InspectionTool().Show()            
+#wx.lib.inspection.InspectionTool().Show()
 
 class PyGIMLIApp( wx.App ):
     def __init__( self, options = None, args = None, ws = None):
         print("Mops")
         wx.App.__init__( self, redirect = False )
-        
+
         from optparse import OptionParser
         parser = OptionParser()
         parser.add_option("", "--debug", dest = "debug", action = "store_true"
                             , help = "Debug mode.", default = False )
-                            
+
         (options, args) = parser.parse_args()
-    
-        
+
+
         print(options, args)
         self.options = options
         self.args = args
         self.logFile = 'pygi.log'
-        
-        
+
+
         self.mainFrame = PyGIMLIMainFrame( ws = ws )
-        
+
         if not options.debug:
             self.mainFrame.redirectOutput( self.logFile )
-            
+
         self.SetTopWindow( self.mainFrame )
         self.mainFrame.Show()
         self.mainFrame.registerPlugins()
-        
-        
-       
-        
+
+
+
+
         #self.ipcServer_ = IPCServer( ('localhost', 0), IPCThreadedTCPRequestHandler)
         #self.ipcServer_.environment = 'production'
         #ip, port = self.ipcServer_.server_address

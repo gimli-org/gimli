@@ -147,9 +147,8 @@ h6:hover .headerlink {
 
 /*format of code cells lastcout directive*/
 pre, code, blockquote {
-    font-family: "Source Code Pro";
-    font-size: 14px;  
-    line-height: 18px;
+    font-family: "Inconsolata";
+    font-size: 15px;  
 }
 
 blockquote {

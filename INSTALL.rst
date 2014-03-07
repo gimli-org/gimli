@@ -17,12 +17,14 @@ We need some more or less important tools to build libgimli
         * gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
         *        Debian 3.2.46-1 x86_64: gcc-4.7.2
         *        Ubuntu 
+        *        Arch Linux
+        *        CentOS
         *        MinGW32: gcc-4.6.2/4, gcc-4.7.2
         *        MinGW64: gcc-4.5.4 (without python bindings)
 
     * libboost >=1.46 (thread, [python])
 
-        tested: 1.46, 1.48, 1.49, 1.51, 1.53
+        tested: 1.46, 1.48, 1.49, 1.51, 1.52, 1.53
                 
 Optional Prerequisites -- some can be installed via provided scripts
 ....................................................................
@@ -168,7 +170,7 @@ You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as g; print g.__version__'
+    python -c 'import pygimli as pg; print pg.__version__'
 
 You can test your libgimli build with:
 

@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """ mrstools - functions for MRS data """
 
-import pygimli as g
+import pygimli as pg
 import numpy as N
 import pylab as P
 from .base import draw1dmodel, rndig
 
-class MRS1dBlockQTModelling( g.ModellingBase ):
+class MRS1dBlockQTModelling( pg.ModellingBase ):
     '''
     MRS1dBlockQTModelling - pygimli modelling class for block-mono QT inversion
     f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False  )
     '''
     def __init__( self, nlay, KR, KI, zvec, t, verbose = False  ):
         """constructor."""
-        mesh = g.createMesh1DBlock( nlay, 2 ) # thk, wc, T2*
-        g.ModellingBase.__init__( self, mesh, verbose )
+        mesh = pg.createMesh1DBlock( nlay, 2 ) # thk, wc, T2*
+        pg.ModellingBase.__init__( self, mesh, verbose )
         self.KR_ = KR
         self.KI_ = KI
         self.zv_ = N.array( zvec )
@@ -44,15 +44,15 @@ class MRS1dBlockQTModelling( g.ModellingBase ):
         for i in range(nl):
             wcvec = N.zeros(lzv-1)
             wcvec[ izvec[i]:izvec[i+1] ] = wc[i]
-            if izvec[i+1] < lzv: 
-                wcvec[ izvec[i+1] - 1 ] = wc[i] * rzvec[ i + 1 ]            
-            if izvec[i] > 0: 
+            if izvec[i+1] < lzv:
+                wcvec[ izvec[i+1] - 1 ] = wc[i] * rzvec[ i + 1 ]
+            if izvec[i] > 0:
                 wcvec[ izvec[i] - 1 ] = wc[i] * ( 1 - rzvec[i] )
             amps = N.dot( self.KR_, wcvec ) + N.dot( self.KI_, wcvec ) * 1j
-            for ii, a in enumerate(A): 
+            for ii, a in enumerate(A):
                 a += N.exp( -self.t_ / t2[i] ) * amps[ii]
-                
-        return g.asvector( N.abs(A).ravel() )
+
+        return pg.asvector( N.abs(A).ravel() )
 
 def loadmrsproject(mydir):
     """
@@ -60,21 +60,21 @@ def loadmrsproject(mydir):
 
     (datacube.dat, KR/KI.bmat, zkernel.vec)
     """
-    if mydir is None: 
+    if mydir is None:
         mydir = '.'
-    if mydir[-1] != '/': 
+    if mydir[-1] != '/':
         mydir = mydir + '/'
     # load files from directory
-    zvec = g.RVector(mydir + 'zkernel.vec')
-    KR = g.RMatrix(mydir + 'KR.bmat')
-    KI = g.RMatrix(mydir + 'KI.bmat')
-    A = g.RMatrix()
-    g.loadMatrixCol(A, mydir + 'datacube.dat')
+    zvec = pg.RVector(mydir + 'zkernel.vec')
+    KR = pg.RMatrix(mydir + 'KR.bmat')
+    KI = pg.RMatrix(mydir + 'KI.bmat')
+    A = pg.RMatrix()
+    pg.loadMatrixCol(A, mydir + 'datacube.dat')
     t = N.array(A[0])
     #data
-    datvec = g.RVector()
+    datvec = pg.RVector()
     for i in range(1, len(A)):
-        datvec = g.cat( datvec, A[i] )
+        datvec = pg.cat( datvec, A[i] )
     #print len(A), len(t)
     return KR, KI, zvec, t, datvec
 
@@ -85,11 +85,11 @@ def qtblockmodelling(mydir, nlay,
                                 lowerbound=(0.1,0,0.02),upperbound(100.,0.45,,0.5))
     '''
     KR, KI, zvec, t, datvec = loadmrsproject(mydir)
-    if startvec is None: 
+    if startvec is None:
         startvec = [10., 0.3, 0.2]
-    if lowerbound is None: 
+    if lowerbound is None:
         lowerbound = [0.1, 0.0, 0.02]
-    if upperbound is None: 
+    if upperbound is None:
         upperbound = [100., 0.45, 0.5]
     # modelling operator
     f = MRS1dBlockQTModelling( nlay, KR, KI, zvec, t ) #A[0] )
@@ -97,9 +97,9 @@ def qtblockmodelling(mydir, nlay,
     f.region(1).setStartValue( startvec[1] )
     f.region(2).setStartValue( startvec[2] )
     # Model transformations
-    f.transTH = g.RTransLogLU( lowerbound[0], upperbound[0] )
-    f.transWC = g.RTransLogLU( lowerbound[1], upperbound[1] )
-    f.transT2 = g.RTransLogLU( lowerbound[2], upperbound[2] )
+    f.transTH = pg.RTransLogLU( lowerbound[0], upperbound[0] )
+    f.transWC = pg.RTransLogLU( lowerbound[1], upperbound[1] )
+    f.transT2 = pg.RTransLogLU( lowerbound[2], upperbound[2] )
     f.region(0).setTransModel( f.transTH )
     f.region(1).setTransModel( f.transWC )
     f.region(2).setTransModel( f.transT2 )
@@ -117,17 +117,17 @@ def showqtresultfit(thk, wc, t2, datvec, resp, t,
             cma = N.log10(cma)
             cmi = cma - 1.5
         clim = (cmi, cma)
-        
+
     nt = len(t)
     nq = len(datvec) / nt
     si = (nq, nt)
-    
+
 #    P.clf()
 #    P.subplot(nu,nv,1)
 
     fig = P.figure(1)
     ax1 = fig.add_subplot(nu, nv, 1)
-    
+
     draw1dmodel(wc, thk, islog=False, xlab=r'$\theta$')
 #    P.subplot(nu,nv,3)
     ax3 = fig.add_subplot(nu, nv, 3)
@@ -135,20 +135,20 @@ def showqtresultfit(thk, wc, t2, datvec, resp, t,
     ax3.set_xticks( [0.02, 0.05, 0.1, 0.2, 0.5] )
     ax3.set_xticklabels( ('0.02', '0.05', '0.1', '0.2', '0.5') )
 #    P.subplot(nu,nv,2)
-    ax2 = fig.add_subplot(nu, nv, 2)    
-    if islog: 
+    ax2 = fig.add_subplot(nu, nv, 2)
+    if islog:
         P.imshow(N.log10( N.array(datvec).reshape(si) ),
                  interpolation='nearest', aspect='auto')
-    else: 
+    else:
         P.imshow(N.array(datvec).reshape(si),
                  interpolation='nearest', aspect='auto')
     P.clim(clim)
 #    P.subplot(nu,nv,4)
     ax4 = fig.add_subplot(nu, nv, 4)
-    if islog: 
+    if islog:
         P.imshow(N.log10(resp.reshape(si)),
                  interpolation='nearest',aspect='auto')
-    else: 
+    else:
         P.imshow(resp.reshape(si),
                  interpolation='nearest',aspect='auto')
     misfit = N.array( datvec - resp )

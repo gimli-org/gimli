@@ -3,19 +3,32 @@
 Design
 ======
 
-In applied geophysics, various physical processes and fields are used to gain information about subsurface parameters.
-Fields and processes can be well studied and understood by simulation assuming a parameter distribution.
-This so-called forward task can be done by using analytical solution and numerical integration, or solving partial differential equations with finite difference or finite element techniques.
-In the recent years, very different studies have been presented that open up new methods to be used.
+In applied geophysics, various physical processes and fields are used to gain 
+information about subsurface parameters.
+Fields and processes can be well studied and understood by simulation assuming 
+a parameter distribution.
+This so-called forward task can be done by using analytical solution and 
+numerical integration, or solving partial differential equations with finite 
+difference or finite element techniques.
+In the recent years, very different studies have been presented that open up 
+new methods to be used.
 
-However, in almost all approaches the task is finally to derive subsurface parameters, i.e. the inverse problem has to be solved.
-Very often this is ill-posed, i.e. a variety of solutions is fitting the data within error bounds.
+However, in almost all approaches the task is finally to derive subsurface 
+parameters, i.e. the inverse problem has to be solved.
+Very often this is ill-posed, i.e. a variety of solutions is fitting the data 
+within error bounds.
 Hence regularization methods have to be applied.
-There exist numerous inversion and regularization schemes, which do not have to be reinvented.
-Furthermore, resolution analysis is desirable in order to appraise the quality of the results.
-The idea of :ref:`sec:GIMLi` is to present a very flexible framework for geophysical inversion and modelling such that it can be used in an abstract way for any forward operator.
-All problems such as optimization of regularization parameters, line search are solved generally.
-The GIMLi library is structured into four layers (Fig. :ref:`fig:gimliblock`) that are based on each other:
+There exist numerous inversion and regularization schemes, which do not have to 
+be reinvented.
+Furthermore, resolution analysis is desirable in order to appraise the quality 
+of the results.
+The idea of :ref:`sec:GIMLi` is to present a very flexible framework for 
+geophysical inversion and modelling such that it can be used in an abstract way 
+for any forward operator.
+All problems such as optimization of regularization parameters, line search are 
+solved generally.
+The GIMLi library is structured into four layers (Fig. :ref:`fig:gimliblock`) 
+that are based on each other:
 
 .. _fig:gimliblock:
 .. figure:: tutorial/pics/gimliblock.*

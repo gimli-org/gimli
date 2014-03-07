@@ -1,7 +1,7 @@
 import os
 from os import system
 
-import pygimli as g
+import pygimli as pg
 
 class Rectangle():
     """
@@ -27,31 +27,31 @@ class Rectangle():
             p = self.points[ 0 ]
             fi.write(str(p[ 0 ]) + "\t" + str(p[ 1 ]) + "\n")
         fi.close()
-        
+
     def area(self) : return self.size[ 0 ] * self.size[ 1 ]
     # def writeXY
 # class Rectangle
 
 
 def tetgen(filename, quality = 1.2, preserveBoundary = False, verbose = False):
-    
+
     filebody = filename.replace('.poly', '')
     syscal = 'tetgen -pazAC'
     syscal += 'q' + str(quality)
-    
+
     if not verbose:
         syscal += 'Q'
     else:
         syscal += 'V'
-        
+
     if preserveBoundary:
         syscal += 'Y'
-        
+
     syscal += ' ' + filebody + '.poly'
-    
+
     if verbose:
         print(syscal)
-    
+
     system(syscal)
     system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
     try:
@@ -60,9 +60,9 @@ def tetgen(filename, quality = 1.2, preserveBoundary = False, verbose = False):
         os.remove(filebody + '.1.face')
     except:
         None
-    mesh = g.Mesh(filebody)
+    mesh = pg.Mesh(filebody)
     return mesh
-        
+
 
 def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
                isHoleMarker=False, maxCellSize=0, verbose=False):
@@ -72,41 +72,41 @@ def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
     syscal = "polyAddVIP -x " + str(pos[ 0 ]) + \
                         " -y " + str(pos[ 1 ]) + \
                         " -z " + str(pos[ 2 ])
-      
+
     if isHoleMarker:
         syscal += " -H "
     else:
-        syscal += " -m " + str(marker) 
-        
+        syscal += " -m " + str(marker)
+
     if isRegionMarker:
         syscal += " -R "
-        
+
     if maxCellSize > 0:
-        syscal += " -a " + str(maxArea) 
-        
-    syscal += " " + filename 
-                        
+        syscal += " -a " + str(maxArea)
+
+    syscal += " " + filename
+
     if verbose: print(syscal)
-    system(syscal) 
+    system(syscal)
 # def polyAddVIP
 
 def polyAddRectangle(filename, rect, marker = 0, depth = 0, clean = True):
     '''
-        out of core wrapper for dcfemlib::polytools 
+        out of core wrapper for dcfemlib::polytools
         merge a meshed horizontal Rectangle with given marker[0] to a 3D PLC at a given depth [0]
         clean removes all out of core files
     '''
     rect.writeXY("__pad.xy", close = True)
     system("polyCreateWorld -d2 -t __pad.xy -C __pad")
     a = rect.area() / 29.0
-    
+
     system("dctriangle -a " + str(a) + " -q34.0 -S __pad")
     system("polyCreateFacet -o __pad3d -m " + str(marker) + " __pad.bms")
     system("polyTranslate -z " + str(depth) + " __pad3d")
-    
+
     ### add node to the center of the recangle
-#    system("polyAddVIP -x " + str(rect.start[0]) 
-#                    + " -y " + str(rect.start[1]) 
+#    system("polyAddVIP -x " + str(rect.start[0])
+#                    + " -y " + str(rect.start[1])
 #                    + " -m -1 __pad3d")
     system("polyMerge " + filename + " __pad3d " + filename)
 
@@ -121,7 +121,7 @@ def polyAddRectangle(filename, rect, marker = 0, depth = 0, clean = True):
         os.remove('__pad3d.poly')
 #def polyAddRectangle
 
-   
+
 def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
                     maxCellSize=0, verbose=True):
     '''
@@ -130,44 +130,44 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     if depth is None:
         print("Please specify worlds depth.")
         return
-    
+
     if x is None:
         print("Please specify worlds x dimension.")
         return
-    
+
     dimension = 3
     z = depth
-    
+
     if y is None:
         dimension = 2
-        
+
     syscal = 'polyCreateWorld -d ' + str(dimension) \
                                 + ' -x ' + str(x) \
                                 + ' -y ' + str(y) \
                                 + ' -z ' + str(z) \
                                 + ' -m ' + str(marker) \
-                                
+
     if maxCellSize > 0:
-        syscal += " -a " + str(maxCellSize) 
+        syscal += " -a " + str(maxCellSize)
 
     syscal = syscal + ' ' + filename
-    
+
     if verbose:
         print(syscal)
-        
+
     os.system(syscal)
 
 # def polyCreateWorld
 
 def polyTranslate(filename, x=0.0, y=0.0, z=0.0, verbose=True):
     """
-        out of core wrapper for dcfemlib::polytools 
+        out of core wrapper for dcfemlib::polytools
         Translation the PLC in filename by x,y and z
     """
-    system("polyTranslate " + 
+    system("polyTranslate " +
            " -x " + str(x) +
            " -y " + str(y) +
            " -z " + str(z) + " " + filename)
-    
+
 #def polyTranslate(...)
 
