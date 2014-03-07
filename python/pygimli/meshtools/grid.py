@@ -10,7 +10,7 @@ import numpy as np
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
-                           smooth=False, markerBoundary=1, 
+                           smooth=False, markerBoundary=1,
                            isSubSurface=False, verbose=False):
     """
     Returns a new mesh that contains a triangulated box around a given mesh

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pygimli as g
+import pygimli as pg
 import numpy as np
 
 
@@ -107,12 +107,12 @@ def readGmsh(fname, verbose=False):
         print('  Dimension: %s-D' % dim)
 
     # creating instance of GIMLI::Mesh class
-    mesh = g.Mesh(dim)
+    mesh = pg.Mesh(dim)
 
     # replacing boundary markers (gmsh does not allow negative physical
     # regions)
-    bound_marker = (g.MARKER_BOUND_HOMOGEN_NEUMANN, g.MARKER_BOUND_MIXED,
-                    g.MARKER_BOUND_HOMOGEN_DIRICHLET, g.MARKER_BOUND_DIRICHLET)
+    bound_marker = (pg.MARKER_BOUND_HOMOGEN_NEUMANN, pg.MARKER_BOUND_MIXED,
+                    pg.MARKER_BOUND_HOMOGEN_DIRICHLET, pg.MARKER_BOUND_DIRICHLET)
     for i in range(4):
         bounds[:, dim][bounds[:, dim] == i + 1] = bound_marker[i]
 
@@ -189,11 +189,11 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
     line = fid.readline().split()
     nnodes = int(line[1])
     ncells = int(line[3])
-    mesh = g.Mesh()
+    mesh = pg.Mesh()
     for i in range(nnodes):
         line = fid.readline().split()
         mesh.createNode(
-            g.RVector3(float(line[1]) / 100.,
+            pg.RVector3(float(line[1]) / 100.,
                        float(line[2]) / 100.,
                        0.))
 
@@ -244,10 +244,10 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
     line1 = f.readline()
     nodes = []
     dx = 0.01
-    mesh = g.Mesh()
+    mesh = pg.Mesh()
     for ni in range(nnodes):
         pos = f.readline().split()
-        p = g.RVector3(
+        p = pg.RVector3(
             float(pos[1]) * dx,
             float(pos[2]) * dx,
             float(pos[3]) * dx * (-1.))
@@ -286,9 +286,9 @@ def transform2DMeshTo3D( mesh, x, y, z=None ):
     References
     ----------
     """
-    
+
     # get mesh node positions
-    mt, mz = g.x( mesh.positions() ), g.y( mesh.positions() ) # mesh tape and z
+    mt, mz = pg.x( mesh.positions() ), pg.y( mesh.positions() ) # mesh tape and z
     # compute length of reference points along tape
     pt = np.hstack( (0., np.cumsum( np.sqrt( np.diff( x )**2 + np.diff( y )**2 ) ) ) )
     #  interpolate node positions from tape to x/y using tape positions
@@ -299,10 +299,10 @@ def transform2DMeshTo3D( mesh, x, y, z=None ):
         oz = np.zeros( len(mt) )
     else:
         oz = np.interp( mt, pt, z )
-    
+
     # set the positions in the mesh
     for i, node in enumerate( mesh.nodes() ):
-        node.setPos( g.RVector3( mx[i], my[i], mz[i]+oz[i] ) )
+        node.setPos( pg.RVector3( mx[i], my[i], mz[i]+oz[i] ) )
 
 def rot2DGridToWorld(mesh, start, end):
     """
@@ -310,14 +310,14 @@ def rot2DGridToWorld(mesh, start, end):
 
     todo:: Complete Documentation. ...rotate a given 2D grid in...
     """
-    mesh.rotate(g.degToRad(g.RVector3(-90.0, 0.0, 0.0)))
+    mesh.rotate(pg.degToRad(g.RVector3(-90.0, 0.0, 0.0)))
 
-    src = g.RVector3(0.0, 0.0, 0.0).norm(g.RVector3(0.0, 0.0, -10.0),
-                                         g.RVector3(10.0, 0.0, -10.0))
-    dest = start.norm(start - g.RVector3(0.0, 0.0, 10.0), end)
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0),
+                                         pg.RVector3(10.0, 0.0, -10.0))
+    dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 
-    q = g.getRotation(src, dest)
-    rot = g.RMatrix(4, 4)
+    q = pg.getRotation(src, dest)
+    rot = pg.RMatrix(4, 4)
     q.rotMatrix(rot)
     mesh.transform(rot)
     mesh.translate(start)
@@ -326,7 +326,7 @@ def rot2DGridToWorld(mesh, start, end):
 def merge2Meshes(m1, m2):
     """Merge two meshes into one new mesh and return combined mesh."""
 
-    mesh = g.Mesh(m1)
+    mesh = pg.Mesh(m1)
 
     for c in m2.cells():
         mesh.copyCell(c)
@@ -405,10 +405,10 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     verbose : boolean, optional
         Be verbose.
     """
-    mesh = g.Mesh(2)
+    mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort
-    sensorX = g.x(sensors)
+    sensorX = pg.x(sensors)
     eSpacing = abs(sensorX[1] - sensorX[0])
 
     xmin = min(sensorX) - paraBoundary * eSpacing
@@ -425,7 +425,7 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax - xmin)
 
-    x = g.utils.grange(xmin, xmax, dx=dx)
+    x = pg.utils.grange(xmin, xmax, dx=dx)
 
     y = -g.increasingRange(dz, paraDepth, nLayers)
 
@@ -439,7 +439,7 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if boundary < 0:
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
-    mesh = g.meshtools.appendTriangleBoundary(
+    mesh = pg.meshtools.appendTriangleBoundary(
         mesh, xbound=boundary, ybound=boundary, marker=1,
         *args, **kwargs)
 

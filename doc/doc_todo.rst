@@ -1,14 +1,15 @@
 .. _sec:doc_todo:
 
-===================
-Documentation TODOs
-===================
-
-* somewhere explain difference between gimli and pygimli
-* somewhere explain difference python bind of gimli and pygimli scripts
-* transfer gmsh tutorial
+=======================
+Documentation TODO-LIST
+=======================
 
 .. todolist::
+
+
+======================
+Additional information
+======================
 
 .. admonition:: See also
 
@@ -71,5 +72,4 @@ Functions
 
 Classes
 """""""
-.. warning:: Usage and source link do not show when displaying classes, why?
 .. autoclass:: pygimli.mplviewer.CellBrowser

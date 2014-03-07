@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pygimli as g
+import pygimli as pg
 
 from math import sqrt, floor, ceil
 
@@ -12,17 +12,17 @@ def unicodeToAscii( text ):
 
 def logDropTol( p, droptol = 1e-3 ):
     """"""
-    tmp = g.RVector( p );
+    tmp = pg.RVector( p );
 
-    tmp = g.abs( tmp / droptol )
-    tmp.setVal( 1.0, g.find( tmp < 1.0 ) )
+    tmp = pg.abs( tmp / droptol )
+    tmp.setVal( 1.0, pg.find( tmp < 1.0 ) )
 
     #for i, v in enumerate( tmp ):
         #tmp[ i ] = abs( tmp[ i ] / droptol );
         #if tmp[ i ] < 1.0: tmp[ i ] = 1.0;
 
-    tmp = g.log10( tmp );
-    tmp *= g.sign( p );
+    tmp = pg.log10( tmp );
+    tmp *= pg.sign( p );
     return tmp;
 # def logDropTol
 
@@ -43,7 +43,7 @@ def grange( start, end, dx = 0, n = 0, log = False ):
         if end > start and dx < 0:
             print("grange: increasing range but decreasing dx, swap dx sign")
             d = -d
-        ret = g.asvector( list(range( int( floor( abs( ( e - s ) / d ) ) + 1 ))) )
+        ret = pg.asvector( list(range( int( floor( abs( ( e - s ) / d ) ) + 1 ))) )
         ret *= d
         ret += s
         return ret;
@@ -61,7 +61,7 @@ def diff( v ):
     '''
         Return RVector as approximate derivative from v as r[v_1-v_0, v2-v_1,...]
     '''
-    r = g.RVector( len( v ) -1 )
+    r = pg.RVector( len( v ) -1 )
     for i in range( len( r ) ):
         r[ i ] = v[ i + 1 ] - v[ i ]
     return r
@@ -69,7 +69,7 @@ def diff( v ):
 def xyToLength( x, y ):
     """return RVector of lengths from two RVectors x and y starting from 0 to
     end."""
-    ret = g.RVector( len( x ), 0.0 )
+    ret = pg.RVector( len( x ), 0.0 )
 
     for i in range( len( ret ) -1 ):
         dx = x[ i + 1] - x[ i ]
@@ -81,9 +81,9 @@ def xyToLength( x, y ):
     return ret
 
 def getIndex( seq, f ):
-    DEPRECATED_SLOW
+    #DEPRECATED_SLOW
     idx = [ ]
-    if isinstance( seq, g.RVector ):
+    if isinstance( seq, pg.RVector ):
         for i in range( len ( seq ) ):
             v = seq[ i ]
             if f( v ): idx.append( i )
@@ -93,9 +93,9 @@ def getIndex( seq, f ):
     return idx
 
 def filterIndex( seq, idx ):
-    if isinstance( seq, g.RVector ):
+    if isinstance( seq, pg.RVector ):
         #return seq( idx )
-        ret = g.RVector( len( idx ) )
+        ret = pg.RVector( len( idx ) )
     else:
         ret = list(range( len( idx )))
 
@@ -106,7 +106,7 @@ def filterIndex( seq, idx ):
 def findNearest( x, y, xp, yp, radius = -1 ):
     idx = 0
     minDist = 1e9
-    startPointDist = g.RVector( len( x ) )
+    startPointDist = pg.RVector( len( x ) )
     for i in range( len( x ) ):
         startPointDist[ i ] = sqrt( ( x[ i ] - xp ) * ( x[ i ] - xp ) + ( y[ i ] - yp ) * ( y[ i ] - yp ) )
 
@@ -130,7 +130,7 @@ def unique_everseen(iterable, key=None):
         from itertools import ifilterfalse
     except:
         from itertools import filterfalse
-        
+
     seen = set()
     seen_add = seen.add
     if key is None:
