@@ -77,7 +77,7 @@ master_doc = 'doc/index'
 
 # General information about the project.
 project = 'GIMLi'
-copyright = '2013, Carsten Rücker and Thomas Günther'
+copyright = u'2013, Carsten Rücker and Thomas Günther'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
