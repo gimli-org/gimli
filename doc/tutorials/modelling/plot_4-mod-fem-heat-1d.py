@@ -1,7 +1,7 @@
 #!/ussr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    
+
 Heat equation in 1D
 -------------------
 
@@ -18,14 +18,14 @@ time step :math:`k=0.04\text{s}` and spatial discretization :math:`h=0.1\text{m}
 
 """
 
-import pygimli as g
+import pygimli as pg
 from pygimli.solver import solvePoisson
 import matplotlib.pyplot as plt
 import numpy as np
 
-grid = g.createGrid(x=np.linspace(0.0, 1.0, 10))
+grid = pg.createGrid(x=np.linspace(0.0, 1.0, 10))
 times = np.arange(0, 1.0, 0.04)
-            
+
 dirichletBC = [[1, 0], # top
                [2, 0]] #bottom
 
@@ -37,7 +37,7 @@ Fortunately we have an analytical solution:
 .. math::
 
     u(t,x) = \e^{-\pi^2 t} \sin(\pi x)
-    
+
 
 """
 
@@ -47,7 +47,7 @@ def uAna(t, x):
 plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='Analytical')
 
 """
-    
+
 
 """
 
@@ -57,7 +57,7 @@ u = solvePoisson(grid, times=times, theta=0.0,
 plt.plot(times, u[:, probeID], label='explicit Euler')
 
 """
-    
+
 
 """
 u = solvePoisson(grid, times=times, theta=0.5,
@@ -66,7 +66,7 @@ u = solvePoisson(grid, times=times, theta=0.5,
 plt.plot(times, u[:, probeID], label='Crank-Nicolson')
 
 """
-    
+
 
 """
 u = solvePoisson(grid, times=times, theta=1.0,
@@ -87,6 +87,6 @@ plt.show()
 .. image:: PLOT2RST.current_figure
     :scale: 75
 
-Explicit Euler scheme is unstable at hight times.   
+Explicit Euler scheme is unstable at hight times.
 """
 

@@ -14,7 +14,7 @@ We start by importing numpy, matplotlib and pygimli with its required components
 """
 import numpy as np
 from matplotlib import pyplot as plt
-import pygimli as g
+import pygimli as pg
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawMesh
 from pygimli.meshtools import merge2Meshes, appendTriangleBoundary
@@ -30,7 +30,7 @@ dx = 1.0
 xreg = np.arange(xmin, xmax + dx, dx, 'float')
 zreg = np.arange(zmin, zmax + dx, dx, 'float')
 
-mesh1 = g.Mesh(2)
+mesh1 = pg.Mesh(2)
 mesh1.create2DGrid(xreg, zreg, 0)
 for c in mesh1.cells():
     c.setMarker(2)
@@ -45,9 +45,9 @@ triangle via pygimli's TriangleWrapper.
 """
 
 # append rectangle above, search upper lines
-poly = g.Mesh(2)  # empty 2d mesh
+poly = pg.Mesh(2)  # empty 2d mesh
 n1 = poly.createNode(xmin, zmax, 0.0)
-n0 = g.Node(n1)  # make a copy for later
+n0 = pg.Node(n1)  # make a copy for later
 for x in xreg[1:]:
     n2 = poly.createNode(x, zmax, 0.0)
     poly.createEdge(n1, n2)
@@ -60,7 +60,7 @@ n1 = poly.createNode(xmin, z2, 0.0)
 poly.createEdge(n1, n2)
 poly.createEdge(n1, n0)
 
-tri = g.TriangleWrapper(poly)
+tri = pg.TriangleWrapper(poly)
 tri.setSwitches('-pzeAfaq31')
 
 """
@@ -69,7 +69,7 @@ the reader is referred to `the triangle website <http://www.cs.cmu.edu/~quake/tr
 
 Now we can generate the unstructured mesh.
 """
-mesh2 = g.Mesh(2)
+mesh2 = pg.Mesh(2)
 tri.generate(mesh2)
 
 for cell in mesh2.cells():

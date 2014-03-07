@@ -8,6 +8,8 @@ Documentation TODOs
 * somewhere explain difference python bind of gimli and pygimli scripts
 * transfer gmsh tutorial
 
+.. todolist::
+
 .. admonition:: See also
 
     **Restructured Text (reST) and Sphinx CheatSheets**
