@@ -19,9 +19,8 @@ import numpy as np
 try:
     import pygimli as pg
 except ImportError:
-    sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
-    sys.exit(1)
-
+    raise Exception('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
+    
 import pygimli.mplviewer
 from pygimli.mplviewer.colorbar import cmapFromName
 from pygimli.mplviewer import drawParameterConstraints
@@ -420,6 +419,7 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
 def main(argv):
     global __verbose__
 
+    #!!!!use argparse!!!
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mesh|mod", version="%prog: " + pg.__version__ )

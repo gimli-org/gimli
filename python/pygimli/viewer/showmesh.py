@@ -3,12 +3,15 @@
 try:
     import pygimli as g
     from pygimli.mplviewer import drawMesh, drawModel, drawField, createColorbar
+except ImportError:
+    raise Exception('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
+
+try:
     from .mayaview import showMesh3D
 except ImportError:
-    import sys
-    sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
-    sys.exit(1)
-
+    def showMesh3D(*args, **kwargs):
+        print('''Don't knwo how to handle 3D meshes. No mayaview installed. ''')
+    
 import matplotlib.pyplot as plt
 import numpy as np
 
