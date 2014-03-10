@@ -4,9 +4,9 @@ try:
     import pygimli as pg
     import pygimli.mplviewer
 except ImportError:
-    import sys
-    sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
-    sys.exit(1)
+    raise Exception('''ERROR: cannot import the library 'pygimli'. 
+                    Ensure that pygimli is in your PYTHONPATH ''')
+    
 
 import matplotlib.pyplot as plt
 

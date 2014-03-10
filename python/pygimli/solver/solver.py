@@ -323,7 +323,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             theta = 1, implicit Euler
             theta = 0.5, Crank-Nicolsen, maybe instable 
             theta = 0, explicit Euler, maybe stable for dT near h 
-            if unsure choose 0.5+epsilon, this may be stable 
+            if unsure choose 0.5+epsilon which is probably be stable 
         progress : bool
     
     
