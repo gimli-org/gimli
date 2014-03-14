@@ -8,9 +8,9 @@ def iconFileName( filename ):
     iconpath = os.path.join( globPath, "icons" ) 
     
     if hasattr( sys, "frozen"):
-    	globPath = os.path.dirname( sys.argv[ 0 ] )
-	respath  = os.path.join( globPath, "resources" )
-	iconpath = os.path.join( respath, "icons" )
+        globPath = os.path.dirname( sys.argv[ 0 ] )
+    respath  = os.path.join( globPath, "resources" )
+    iconpath = os.path.join( respath, "icons" )
     
     return os.path.join( iconpath, filename )
         
@@ -23,13 +23,13 @@ def loadIcon( filename ):
     #iconfile = os.path.join( iconPath(), filename )
 
     #if hasattr( sys, "frozen"):
-    	#globPath = os.path.dirname( sys.argv[ 0 ] )
-	#respath  = os.path.join( globPath, "resources" )
-	#iconpath = os.path.join( respath, "icons" )
-	#iconfile = os.path.join( iconpath, filename )
-	#pass
+        #globPath = os.path.dirname( sys.argv[ 0 ] )
+    #respath  = os.path.join( globPath, "resources" )
+    #iconpath = os.path.join( respath, "icons" )
+    #iconfile = os.path.join( iconpath, filename )
+    #pass
     #else:
-    	#pass
+        #pass
     iconfile = iconFileName( filename )
     if not os.path.exists( iconfile ):
         raise IOError('Could not find icon file "%s"; dying'%iconfile)
@@ -101,9 +101,9 @@ def loadXRC( filename ):
     xrcfile = filename + '.xrc'
     
     if hasattr( sys, "frozen"):
-    	globPath = os.path.dirname( sys.argv[ 0 ] )
-	respath  = os.path.join( globPath, "resources" )
-	xrcpath = os.path.join( respath, "xrc" )
+        globPath = os.path.dirname( sys.argv[ 0 ] )
+        respath  = os.path.join( globPath, "resources" )
+        xrcpath = os.path.join( respath, "xrc" )
     else:
         globPath = os.path.dirname( __file__ )
         xrcpath = os.path.join( globPath, "xrc" )

@@ -604,8 +604,8 @@ if __name__ == "__main__":
     INV = fdem.invBlock(xpos=xpos,lam=options.lam,nlay=options.nlay,noise=options.err,verbose=False)
     model = np.asarray( INV.run() )
     INV.echoStatus()
-    print "thk = ", model[:nlay-1]
-    print "res = ", model[nlay-1:]
+    print("thk = ", model[:nlay-1])
+    print("res = ", model[nlay-1:])
     fig, ax = fdem.showModelAndData(model,xpos,INV.response())
     fig.savefig(name+str(xpos)+'-result.pdf',bbox_inches='tight')
     plt.show()

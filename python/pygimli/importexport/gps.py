@@ -6,8 +6,11 @@ from pyproj import Proj, transform
 try:
     from osgeo import gdal
     from osgeo.gdalconst import GA_ReadOnly
-except:
-    print("no modules osgeo")
+except ImportError as e:
+    print(e)
+    import traceback
+    traceback.print_exc(file=sys.stdout)
+    sys.stderr.write("no modules osgeo\n")
     
 import matplotlib.image as mpimg
 from math import floor
@@ -175,19 +178,29 @@ def convddmm(num):
     return dd + r1 / 60.
 
 def readGeoRefTIF( file_name ):
-	""" read geo-referenced TIFF file and return image and bbox """
-	""" plt.imshow( im, ext = bbox.ravel() ) , bbox might need transform """
-	dataset = gdal.Open( file_name, GA_ReadOnly )
-	geotr = dataset.GetGeoTransform()
-	projection = dataset.GetProjection()
-	im = np.flipud( mpimg.imread( file_name ) )  
-	tifx, tify, dx = geotr[0], geotr[3], geotr[1]
-	bbox = [ [ tifx, tifx + im.shape[1] * dx], [ tify - im.shape[0] * dx, tify ] ]
-	return im, bbox, projection
+    """ 
+        Read geo-referenced TIFF file and return image and bbox
+        plt.imshow( im, ext = bbox.ravel() ), bbox might need transform.
+    """
+    dataset = gdal.Open(file_name, GA_ReadOnly)
+    geotr = dataset.GetGeoTransform()
+    projection = dataset.GetProjection()
+    
+    im = np.flipud( mpimg.imread(file_name))  
+    
+    tifx, tify, dx = geotr[0], geotr[3], geotr[1]
+    
+    bbox = [[tifx, tifx + im.shape[1] * dx],
+            [tify - im.shape[0] * dx, tify]]
+    
+    return im, bbox, projection
  
-def getBKGaddress(xlim,ylim,imsize=1000,zone=32,service='dop40',uuid='',fmt='jpeg'):
-    """generate address for rendering web service image from BKG."""
-    """ assumes UTM in any zone """
+def getBKGaddress(xlim, ylim, imsize=1000,
+                  zone=32, service='dop40', uuid='', fmt='jpeg'):
+    """
+        Generate address for rendering web service image from BKG.
+        Assumes UTM in any zone.
+    """
     url='http://sg.geodatenzentrum.de/wms_' + service
     stdarg='REQUEST=GetMap&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT='+fmt
     srsstr='SRS=EPSG:' + str( 25800 + zone ) # 
