@@ -7,10 +7,10 @@ import numpy as np
 
 mu0 = 4.0 * np.pi * 1e-7
 
-G = 6.6742e-11 # in [m³/(kg s²)]
+G = 6.6742e-11 # in [m^3/(kg s^2)]
 G = 6.6742e-11 / 1e-5 # / mGal
 
-deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__ #[m^2 * kg/m³] = [kg/m]
+deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__ #[m^2 * kg/m^3] = [kg/m]
 deltaMSph = lambda R__, rho__: 4./3. * np.pi * R__**3. * rho__ #[kg]
 rabs   = lambda r__: np.asarray([np.sqrt(x__.dot(x__)) for x__ in r__])
 gradR  = lambda r__: (r__.T / rabs(r__))
@@ -114,7 +114,7 @@ def gradUZylinderHoriz(r, R, rho, pos=[0., 0.]):
         R   = cylinder radius in [Meter]
         p   = cylinder center (x, z) 
         rho = density in [kg/m^3]
-        g = -G[m³/(kg s²)] * dM[kg/m] * 1/r[1/m] * grad(r)[1/1] = [m³/(kg s²)] * [kg/m] * 1/m * [1/1] == m/s²
+        g = -G[m^3/(kg s^2)] * dM[kg/m] * 1/r[1/m] * grad(r)[1/1] = [m^3/(kg s^2)] * [kg/m] * 1/m * [1/1] == m/s^2
         
     '''
     return [1., -1.0] * (gradR(r - pos) * -G * deltaACyl(R, rho) * 1. / (rabs(r - pos))).T 

@@ -1,9 +1,9 @@
-#!/ussr/bin/env python
-# -*- coding: utf-8 -*-
-"""
+#!/usr/bin/env python
+# encoding: UTF-8
 
+"""
 Geoelectric in 2.5d
--------------------
+===================
 
 Let us start with a mathematical formulation ...
 
