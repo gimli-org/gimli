@@ -74,9 +74,9 @@ def uKugel(r, R, rho, pos=[0., 0., 0.]):
 
 def gradUKugel(r, R, rho, pos=[0., 0., 0.]):
     '''
-        Gravitationsfeldstärke einer Kugel mit Radius R und Dichte rho an pos 
+        Gravitationsfeldstrke einer Kugel mit Radius R und Dichte rho an pos 
         g = -grad u, return [gx, gy, gz]
-        g = -G[m³/(kg s²)] * dM[kg] * 1/r²[1/m²] * grad(r)[1/1] = [m³/(kg s²)] * [kg] * 1/m² * [1/1] == m/s²
+        g = -G[m^3/(kg s^2)] * dM[kg] * 1/r^2 1/m^2] * grad(r)[1/1] = [m^3/(kg s^2)] * [kg] * 1/m^2 * [1/1] == m/s^2
     '''
     
     # gesucht eigentlich g_z aber nach unten als -z
@@ -482,7 +482,8 @@ def grav(mesh, pnts, rho):
     return dg * [1.0, 1.0, -1.0], dgz
     
 def buildCircle(pos, radius, segments=12, leftDirection=True):
-    """"""
+    """
+    """
     poly = np.zeros((segments, 2))
     poly[0, :] = (0, radius)
     for i in range(1, segments):

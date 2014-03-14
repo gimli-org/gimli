@@ -154,7 +154,7 @@ def assembleNeumannBC(S,
 #def assembleNeumannBC(...)
 
 
-def assembleDirichletBC(S, boundaryPair, rhs, time=0.0,
+def assembleDirichletBC(S, boundaryPair, rhs=None, time=0.0,
                         userData=None, verbose=False):
     """
     Apply Dirichlet boundary condition and apply them to system matrix S.
@@ -225,7 +225,7 @@ def assembleDirichletBC(S, boundaryPair, rhs, time=0.0,
     
     #if verbose:
         #print("Setting " + str(len(uDirIndex)) + " nodes to u = " + str(uDirchlet[0]));
- 
+    
     assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet)
         
     
@@ -323,7 +323,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             theta = 1, implicit Euler
             theta = 0.5, Crank-Nicolsen, maybe instable 
             theta = 0, explicit Euler, maybe stable for dT near h 
-            if unsure choose 0.5+epsilon which is probably be stable 
+            if unsure choose 0.5 + epsilon, which is probably be stable 
         progress : bool
     
     
@@ -400,11 +400,14 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         return u
         
     else:
+        print("start TL", swatch.duration())
         M = createMassMatrix(mesh, pg.RVector(mesh.cellCount(), 1.0))
 
         rhs = np.zeros((len(times), dof))
+        # rhs kann zeitabhängig sein ..wird hier nicht berücksichtigt
         rhs[:] = assembleForceVector(mesh, f) # this is slow: optimize
         
+        print("rhs", swatch.duration())
         U = np.zeros((len(times), dof))
         #init state
         u = pg.RVector(dof, 0.0)
@@ -416,10 +419,13 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if 'theta' in kwargs:
              theta = float(kwargs['theta'])
              
-        for i in range(1, len(times)):
+        print("u0", swatch.duration())
+             
+        measure = 0.
+        for n in range(1, len(times)):
             swatch.reset()
             
-            dt = times[i] - times[i - 1]
+            dt = times[n] - times[n - 1]
             
             # previous timestep
             #print "i: ", i, dt, U[i - 1]
@@ -429,20 +435,32 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 A = createStiffnessMatrix(mesh, a)
                 assembleBoundaryConditions(mesh, A, None, kwargs['duBoundary'],
                                            assembleNeumannBC,
-                                           time=times[i],
+                                           time=times[n],
                                            verbose=verbose)
 
+            swatch.reset()
+            # (A + a*B)u is fastest, followed by A*u + (B*u)*a and finally A*u + a*B*u and 
+            b = (M - (dt*(1.0 - theta)) * A) * U[n - 1] + \
+                dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+                       
+            #print ('a',swatch.duration(True))
+            #b = M * U[n - 1] - (A * U[n - 1]) * (dt*(1.0 - theta)) + \
+                #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
             
-            b = (M + A * (dt*(theta - 1.0))) * U[i - 1] + \
-                rhs[i - 1] * (dt*(1.0 - theta)) + \
-                rhs[i] * dt * theta
+            #print ('b',swatch.duration(True))
+            
+            #b = M * U[n - 1] - (dt*(1.0 - theta)) * A * U[n - 1] + \
+                #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+            #print ('c',swatch.duration(True))
+                        
+            measure += swatch.duration()
             
             S = M + A * dt * theta
                 
             if 'uBoundary' in kwargs:
                 assembleBoundaryConditions(mesh, S, b, kwargs['uBoundary'], 
                                            assembleDirichletBC,
-                                           time=times[i],
+                                           time=times[n],
                                            verbose=verbose)
                 
             #u = S/b
@@ -451,14 +469,14 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             solver.solve(b, u)
             
             if 'plotTimeStep' in kwargs:
-                kwargs['plotTimeStep'](u, times[i])
+                kwargs['plotTimeStep'](u, times[n])
                     
-            U[i,:] = np.asarray(u)
+            U[n,:] = np.asarray(u)
 
             if 'progress' in kwargs:
                 if kwargs['progress']:
-                    print(("\t" + str(i) +"/" + str(len(times)-1) + 
+                    print(("\t" + str(n) +"/" + str(len(times)-1) + 
                           ": " + str(t_prep) +"/" + str(swatch.duration())))
-                    
+        print( "Measure:", measure/len(times))
         return U
 # def solvePoisson(..):

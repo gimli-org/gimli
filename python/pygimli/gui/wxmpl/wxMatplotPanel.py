@@ -3,8 +3,13 @@
 
 import sys, os
 
-import wx
-import wx.lib.scrolledpanel as scrolled
+try:
+    import wx
+    import wx.lib.scrolledpanel as scrolled
+except ImportError as e:
+    import traceback
+    traceback.print_exc(file=sys.stdout)
+    sys.stderr.write("No proper wx installed'.\n")
 
 import matplotlib
 
@@ -260,11 +265,13 @@ class MPLRubberBander:
         self.resetSelection()
 
     def resetSelection(self):
-		"""Resets the mouse selection to entire canvas."""
-		self.startPoint_ = wx.Point(0,0)
-		sz = self.canvas_.GetSize()
-		w,h = sz.GetWidth(), sz.GetHeight()
-		self.endPoint_ = wx.Point(w,h)
+        """
+            Resets the mouse selection to entire canvas.
+        """
+        self.startPoint_ = wx.Point(0,0)
+        sz = self.canvas_.GetSize()
+        w,h = sz.GetWidth(), sz.GetHeight()
+        self.endPoint_ = wx.Point(w,h)
 
 #END class MPLRubberBander:
 
