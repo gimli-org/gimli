@@ -23,7 +23,7 @@ import pygimli.solver as solver
 import matplotlib.pyplot as plt
 import numpy as np
 
-grid = pg.createGrid(x=np.linspace(0.0, 1.0, 10000))
+grid = pg.createGrid(x=np.linspace(0.0, 1.0, 100))
 times = np.arange(0, 1.0, 0.04)
 
 dirichletBC = [[1, 0], # top
@@ -93,9 +93,6 @@ plt.plot(times, u[:, probeID], label='Explicit Euler')
 
 
 """
-u*=0.
-u[0,:] = list(map(lambda r: np.sin(np.pi * r[0]), grid.positions()))
-
 theta=1
 
 for n in range(1,len(times)):
@@ -151,4 +148,3 @@ plt.show()
 
 Explicit Euler scheme is unstable at hight times.
 """
-
