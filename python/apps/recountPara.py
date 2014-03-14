@@ -32,11 +32,11 @@ def main( argv ):
     (options, args) = parser.parse_args()
 
     if options.verbose:
-        print options, args
+        print(options, args)
 
     if len( args ) == 0:
         parser.print_help()
-        print "Please add a mesh or model name."
+        print("Please add a mesh or model name.")
         sys.exit( 2 )
     else:
         meshname = args[ 0 ];
@@ -44,13 +44,13 @@ def main( argv ):
     mesh = g.Mesh( meshname )
     
     if options.verbose:
-        print "input mesh:", mesh
-        print "nModel(input):",
+        print("input mesh:", mesh)
+        print("nModel(input):", end=' ')
         for m in g.unique( g.sort( mesh.cellMarker() ) ):
-            print m
+            print(m)
 
     if len( options.paraMesh ) == 0:
-        print "no reference mesh given"
+        print("no reference mesh given")
         sys.exit(0)
 
     refParaIn = g.Mesh( options.paraMesh )
@@ -58,8 +58,8 @@ def main( argv ):
     refPara.createH2Mesh( refParaIn )
     refModel = g.unique( g.sort( refPara.cellMarker() ) )
     if options.verbose:
-        print "reference mesh:", refPara
-        print "nModel(ref):", len( refModel ), refModel[ 0] , refModel[1], refModel[2], '...', refModel[-1]
+        print("reference mesh:", refPara)
+        print("nModel(ref):", len( refModel ), refModel[ 0] , refModel[1], refModel[2], '...', refModel[-1])
     
     swatch = g.Stopwatch( True )
     lastTime = 0
@@ -67,7 +67,7 @@ def main( argv ):
         cell = refPara.findCell( c.center(), False )
         
         if swatch.duration() - lastTime > 1:
-            print "\r", c.id()
+            print("\r", c.id())
             lastTime = swatch.duration()
         
         if cell is not None:
@@ -79,9 +79,9 @@ def main( argv ):
     newModel = g.unique( g.sort( mesh.cellMarker() ) )
     
     if options.verbose:
-        print "convert:", swatch.duration()
-        print "nModel(out):", len( newModel ), newModel[ 0 ], newModel[ 1 ], newModel[ 2 ], ' ... ' , newModel[ -1 ]
-        print "diff should be 1(background)", len( newModel ) -len( refModel )
+        print("convert:", swatch.duration())
+        print("nModel(out):", len( newModel ), newModel[ 0 ], newModel[ 1 ], newModel[ 2 ], ' ... ' , newModel[ -1 ])
+        print("diff should be 1(background)", len( newModel ) -len( refModel ))
 
     missing = g.stdVectorI()
     missingMesh = g.Mesh()
@@ -89,7 +89,7 @@ def main( argv ):
         if i-1 not in newModel:
             for c in refPara.findCellByMarker( i-1 ):
                 missing.append( c.id() )
-    print len( missing ), missing
+    print(len( missing ), missing)
     
     missingMesh.createMeshByCellIdx( refPara, missing );
     missingMesh.exportVTK( 'missing' )
@@ -97,7 +97,7 @@ def main( argv ):
     if options.outFileName:
         mesh.save( options.outFileName )
         if options.verbose:
-            print "wrote: ", options.outFileName
+            print("wrote: ", options.outFileName)
 
 if __name__ == "__main__":
     main( sys.argv[ 1: ] )

@@ -99,20 +99,20 @@ def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
                 for i in range( d.sensorCount() ):
                     d.setSensorPosition( i, start + float(i)*(end-start)/(d.sensorCount() - 1.) )
             else:
-                print "cannot interprete project format: len(row) = ", len( row )
+                print(("cannot interprete project format: len(row) = ", len( row )))
                 return dataList
 
             dataList.append( d )
 
             if verbose:
-                print "append: ", d
-                print "from:" , d.sensorPositions()[ 0 ], "to:", d.sensorPositions()[ -1 ]
+                print(("append: ", d))
+                print(("from:" , d.sensorPositions()[ 0 ], "to:", d.sensorPositions()[ -1 ]))
 
     return dataList
 
 def usage( exitcode = 0, comment = '' ):
-    print comment
-    print __doc__
+    print(comment)
+    print(__doc__)
     exit( exitcode )
 
 def main( argv ):
@@ -140,7 +140,7 @@ def main( argv ):
 
     if len( args ) == 0:
         parser.print_help()
-        print "Please add a project-file."
+        print("Please add a project-file.")
         sys.exit( 2 )
     else:
         projectFileName = args[ 0 ];
@@ -149,11 +149,11 @@ def main( argv ):
         options.outFileName = projectFileName[0:projectFileName.find('.pro')] + '.dat'
 
     if options.verbose:
-        print options, args
-        print "verbose =", options.verbose
-        print "project =", projectFileName
-        print "output =", options.outFileName
-        print "snap =", options.snap
+        print((options, args))
+        print(("verbose =", options.verbose))
+        print(("project =", projectFileName))
+        print(("output =", options.outFileName))
+        print(("snap =", options.snap))
 
     ContainerTyp = g.DataContainer
 
@@ -166,17 +166,17 @@ def main( argv ):
     outdata  = dataList[ 0 ]
 
     if options.verbose:
-        print "start merging ..."
-        print outdata
+        print("start merging ...")
+        print(outdata)
 
     for d in dataList[1:]:
         outdata = merge( outdata, d, ContainerTyp, options.snap )
 
         if options.verbose:
-            print outdata
+            print(outdata)
 
     if options.verbose:
-        print "Write file to: ", options.outFileName
+        print(("Write file to: ", options.outFileName))
 
     outdata.save( options.outFileName )
 

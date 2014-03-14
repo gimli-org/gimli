@@ -24,7 +24,7 @@ def createCoarsePoly( coarseData ):
     yMin = min( y ); yMax = max( y )
     zMin = min( z ); zMax = max( z )        
 
-    print xMin, xMax, yMin, yMax
+    print(xMin, xMax, yMin, yMax)
     border = max( (xMax - xMin) * boundary / 100.0, (yMax - yMin) * boundary / 100.0);
 
     n1 = mesh.createNode( xMin - border, yMin - border, zMin, 1 )
@@ -97,11 +97,11 @@ def main( argv ):
     
     (options, args) = parser.parse_args()
 
-    print options, args
+    print(options, args)
 
     if len( args ) == 0:
         parser.print_help()
-        print "Please add a mesh or model name."
+        print("Please add a mesh or model name.")
         sys.exit( 2 )
     else:
         datafile = args[ 0 ];
@@ -109,7 +109,7 @@ def main( argv ):
     topoList = None
     try:
         data = g.DataContainer( datafile )
-        print data
+        print(data)
         topoList = data.electrodePositions()
     except:
         topoList = g.loadRVector3( datafile )
@@ -131,7 +131,7 @@ def main( argv ):
         for n in coarseMesh.nodes():
             n.pos().setZ( coarseTopoZ[ n.id() ] );
     else:
-        print " this should not happen. " + str( coarseMesh.nodeCount() )  + "/=" + str( len( coarseTopoZ ) )
+        print(" this should not happen. " + str( coarseMesh.nodeCount() )  + "/=" + str( len( coarseTopoZ ) ))
 
     coarsePoly.exportVTK('meshCoarsePoly.vtk')
     coarseMesh.exportVTK('meshCoarseMesh.vtk')

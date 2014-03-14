@@ -78,10 +78,10 @@ def main( argv ):
 
     sensorPositions = pg.DataContainer( options.dataFileName ).sensorPositions()
     
-    if options.verbose: print( "Sensorcount = ", len( sensorPositions ) )
+    if options.verbose: print(( "Sensorcount = ", len( sensorPositions ) ))
     
     if options.dimension == 3:
-        raise( Exception( "not yet implemented" ) )
+        raise Exception
     
     swatch = pg.Stopwatch( True )
     if options.dimension == 2:
@@ -96,9 +96,9 @@ def main( argv ):
                                      verbose = options.verbose, quality = 30.0, smooth = True)
     
     if options.verbose:
-        print( "generation takes ", swatch.duration(), " s" )
+        print(( "generation takes ", swatch.duration(), " s" ))
         print( mesh )
-        print( "writing " + options.outFileName + '.bms' )
+        print(( "writing " + options.outFileName + '.bms' ))
     
     mesh.save( options.outFileName )
     

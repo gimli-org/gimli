@@ -28,7 +28,7 @@ def main( argv ):
 
     (options, args) = parser.parse_args()
 
-    print options, args
+    print((options, args))
 
 if __name__ == "__main__":
-    main( sys.argv[ 1: ] )
+    main(sys.argv[1:])
