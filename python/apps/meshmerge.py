@@ -23,7 +23,7 @@ def main( argv ):
 
     if len( args ) < 2:
         parser.print_help()
-        print "Please add a mesh or model name."
+        print("Please add a mesh or model name.")
         sys.exit( 2 )
     else:
         meshname1 = args[0];
@@ -36,25 +36,25 @@ def main( argv ):
     m2 = g.Mesh(2); m2.load(meshname2)
 
     if options.verbose:
-        print meshname1, m1
-        print meshname2, m2
+        print(meshname1, m1)
+        print(meshname2, m2)
 
     mesh = g.Mesh(m1)
 
     for c in m2.cells():
         mesh.copyCell( c )
 
-    for key in mesh.exportDataMap().keys():
+    for key in list(mesh.exportDataMap().keys()):
         d = mesh.exportDataMap()[key]
-        print d
+        print(d)
         d.resize( mesh.cellCount() )
         d.setVal( m1.exportDataMap()[ key ], 0, m1.cellCount() )
         d.setVal( m2.exportDataMap()[ key ], m1.cellCount(), m1.cellCount() + m2.cellCount() )
         mesh.addExportData( key, d )
 
-    print mesh
+    print(mesh)
     if options.verbose:
-        print "write bms: ", outfileBody + ".bms" 
+        print("write bms: ", outfileBody + ".bms") 
 
     if outfileBody.find('.vtk'):
         mesh.exportVTK(outfileBody)

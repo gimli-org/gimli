@@ -64,11 +64,11 @@ def applyInterpolation(filename, mesh, verbose=False):
             if i > 0:
                 A[0,i] = A[0, i-1] + data.sensorPositions()[i-1].distance(p)
         if verbose:
-            print("loaded DataContainer: ", filename)
+            print(("loaded DataContainer: ", filename))
     except:
         A = np.loadtxt(filename).T
         if verbose:
-            print("loaded txtfile: ", filename)
+            print(("loaded txtfile: ", filename))
 
 
 
@@ -126,11 +126,11 @@ def main(argv):
     (options, args) = parser.parse_args()
 
     if options.verbose:
-        print options, args
+        print(options, args)
 
     if len(args) == 0:
         parser.print_help()
-        print "Please add a mesh or model name."
+        print("Please add a mesh or model name.")
         sys.exit(2)
     else:
         meshname = args[0];
@@ -138,7 +138,7 @@ def main(argv):
     mesh = pg.Mesh(meshname)
 
     if options.verbose:
-        print meshname, mesh
+        print(meshname, mesh)
 
     if options.interpolateCoords is not None:
         applyInterpolation(filename=options.interpolateCoords,
@@ -153,19 +153,19 @@ def main(argv):
     if options.rotate is not None:
         rot = strToRVector3(options.rotate)
         if options.verbose:
-            print "rotate: " , rot
+            print("rotate: " , rot)
         mesh.rotate(g.degToRad(rot))
 
     if options.translate is not None:
         tra = strToRVector3(options.translate)
         if options.verbose:
-            print "translate: " , tra
+            print("translate: " , tra)
         mesh.translate(tra)
 
     if options.scale is not None:
         sca = strToRVector3(options.scale)
         if options.verbose:
-            print "scale: " , sca
+            print("scale: " , sca)
         mesh.scale(sca)
 
     if options.data is not None:
@@ -173,7 +173,7 @@ def main(argv):
             data = parseDataStr(dataStr)
 
             if options.verbose:
-                print dataStr, data[0], data[1]
+                print(dataStr, data[0], data[1])
 
             mesh.addExportData(data[0], data[1])
 
@@ -192,7 +192,7 @@ def main(argv):
 
     if options.outMidCell:
         if options.verbose:
-            print "write Ascii cell center: ", outfileBody
+            print("write Ascii cell center: ", outfileBody)
 
         suff = '.xy'
         if mesh.dimension() == 3: suff += 'z'
@@ -202,11 +202,11 @@ def main(argv):
         elif 'r' in mesh.exportDataMap():
             mesh.exportMidCellValue(outfileBody + suff + 'r', mesh.exportData('r'));
         else:
-            print "Sry!, no resistivity data with name r found"
+            print("Sry!, no resistivity data with name r found")
 
     if options.outVTK:
         if options.verbose:
-            print "write vtk: ", outfileBody + ".vtk"
+            print("write vtk: ", outfileBody + ".vtk")
         mesh.exportVTK(outfileBody)
 
     if options.outBoundaryVTU:
@@ -214,15 +214,15 @@ def main(argv):
 
     if options.outBMS:
         if options.verbose:
-            print "write bms: ", outfileBody + ".vtk"
+            print("write bms: ", outfileBody + ".vtk")
         mesh.save(outfileBody)
 
     if options.outBMS2:
         if options.verbose:
-            print "write bms.v2: ", outfileBody + ".bms"
+            print("write bms.v2: ", outfileBody + ".bms")
         mesh.saveBinaryV2(outfileBody)
         mesh.loadBinaryV2(outfileBody)
-        print mesh
+        print(mesh)
 
 
 if __name__ == "__main__":

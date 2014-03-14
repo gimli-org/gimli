@@ -18,15 +18,15 @@ def exportSens( meshfile, sensMatrix, dataID, tol = 1e-5, save = False):
 
     S = g.RMatrix();
     g.load( S, sensMatrix )
-    print S.rows()
-    print S.cols()
+    print(S.rows())
+    print(S.cols())
 
     if dataID == -1:
         for i in range( 0, S.rows() ):
             d = b.prepExportSensitivityData( mesh , S[ i ], tol )
             name = "sens-" + str( i )
             if save:
-                print name
+                print(name)
                 g.save( d, name + ".vec" )
             mesh.addExportData( name, d )
     else:
@@ -60,17 +60,17 @@ def main( argv ):
 
     if len( args ) == 0:
         parser.print_help()
-        print "Please add a mesh-file."
+        print("Please add a mesh-file.")
         sys.exit( 2 )
     else:
         meshfile = args[ 0 ];
 
     if ( options.verbose ):
-        print "meshfile =", meshfile
-        print "sensMatrix =", options.sensMatrix
-        print "ith.", options.id
-        print "tol=",  options.tolerance
-        print "save=",  options.save
+        print("meshfile =", meshfile)
+        print("sensMatrix =", options.sensMatrix)
+        print("ith.", options.id)
+        print("tol=",  options.tolerance)
+        print("save=",  options.save)
 
 
     exportSens( meshfile, options.sensMatrix, options.id, options.tolerance, options.save )
