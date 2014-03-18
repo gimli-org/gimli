@@ -3,7 +3,7 @@
 
 """
 Geoelectric in 2.5d
-===================
+-------------------
 
 Let us start with a mathematical formulation ...
 
@@ -96,9 +96,9 @@ grid = grid.createP2()
 sourcePosA = [-5.0, -4.0]
 sourcePosB = [ 5.0, -4.0]
 
-neumannBC = [[2, mixedBC],
-             [3, mixedBC],
-             [4, mixedBC]] #left
+neumannBC = [[1, mixedBC], #left boundary
+             [2, mixedBC], #right boundary
+             [4, mixedBC]] #bottom boundary
 
 """
 

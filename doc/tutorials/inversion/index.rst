@@ -1,6 +1,7 @@
+.. _tut:inversion:
+
 Inversion
 =========
 
-Here we add sorted simple tutorials that the reader should help understanding pygimli.
+Simple one dimensional inversions with increasing complexity.
 
-.. _tut:inversion:

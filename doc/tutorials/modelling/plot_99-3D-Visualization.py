@@ -3,7 +3,8 @@
 """
 
 3D Visualization (Proof of concept)
-===================================
+-----------------------------------
+
 """
 
 import pygimli as pg

@@ -107,6 +107,7 @@ Suggested CSS definitions
     }
 
 """
+import re
 import sys
 import os
 import shutil
@@ -225,6 +226,7 @@ def setup(app):
     app.add_config_value('plot2rst_plot_tag', 'PLOT2RST.current_figure', True)
     app.add_config_value('plot2rst_index_name', 'index', True)
     app.add_config_value('plot2rst_gallery_style', 'thumbnail', True)
+    app.add_config_value('plot2rst_commandTranslator', '', 'html')
     # NOTE: plot2rst_flags gets set with defaults later so that keys that are
     # not set in config file still get set to the desired defaults.
     app.add_config_value('plot2rst_flags', {}, True)
@@ -618,7 +620,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
                 bcontent = bcontent.replace('.. lastcout::', printcout2rst(lastCoutBuff))
                 lastCoutBuff = []
                 
-            rst_blocks.append(docstr2rst(bcontent))
+            rst_blocks.append(docstr2rst(bcontent, cfg))
             
     return figure_list, '\n'.join(rst_blocks)
 
@@ -652,7 +654,7 @@ def codestr2rst(codestr):
     return code_directive + indented_block
 
 
-def docstr2rst(docstr):
+def docstr2rst(docstr, cfg):
     """Return reStructuredText from docstring"""
     idx_whitespace = len(docstr.rstrip()) - len(docstr)
     whitespace = docstr[idx_whitespace:]
@@ -662,6 +664,38 @@ def docstr2rst(docstr):
     #CR print whitespace
     #CR print "##################################################################"
     #CR eval() eats latex commands like \a \t so we need to replace them first
+    
+    mathDictionary = {}
+    commandDictionary = {}
+    command1Dictionary = {}
+    
+    if cfg.plot2rst_commandTranslator:
+        #print(cfg.plot2rst_commandTranslator)
+        mathDictionary = cfg.plot2rst_commandTranslator['mathDictionary']
+        commandDictionary = cfg.plot2rst_commandTranslator['commandDictionary']
+        command1Dictionary = cfg.plot2rst_commandTranslator['command1Dictionary']
+        
+    current = docstr
+    for x in mathDictionary:
+        current = re.sub('\\\\' + x + '(?!\w)',
+                         '\\operatorname{' + mathDictionary[x] + '}', current)
+    for x in commandDictionary:
+        current = re.sub('\\\\' + x + '(?!\w)', commandDictionary[x], current)
+    for x in command1Dictionary:
+        n=1
+        while n > 0:
+            sub = re.search('\\\\arr{([A-Za-z]*)}', current)
+            if sub:
+                (current,n) = re.subn('\\\\' + x + '{([A-Za-z]*)}',
+                             command1Dictionary[x].replace('#1',sub.group(1)),
+                             current,count=1)
+                #print(x, current, n)
+            else:
+                n = 0
+    docstr = current
+    
+    #print(docstr)
+    #sys.exit()
     return eval(docstr.replace("\\","\\\\")) + whitespace
     
 

@@ -11,7 +11,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os, pip
+import sys
+import os
+import pip
+import re
 import pygimli as pg
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -54,7 +57,8 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'plot2rst',
-              'sphinx.ext.mathjax',
+              'sphinx.ext.mathjax', # nicer html output than pngmath
+              #'sphinx.ext.pngmath',
               'doxylink'
               ]
 
@@ -211,56 +215,7 @@ html_show_copyright = True
 htmlhelp_basename = 'gimlidoc'
 html_additional_pages = {'index': 'index.html'}
 
-
-# -- Options for LaTeX output --------------------------------------------------
-
-from os import environ, path
-
-extradir = path.abspath( '_static' ).replace('\\','/')
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    'papersize': 'a4paper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    'preamble':
-    '\\usepackage{amsfonts}\n\
-    \\usepackage{amssymb}\n\
-    \\usepackage{bm}\n\
-    \\usepackage{pslatex}\n'
-}
-
-try:
-    pngmath_latex_preamble  # check whether this is already defined
-except NameError:
-    pngmath_latex_preamble = ""
-
-pngmath_latex_preamble = '\
-        \\usepackage{amsfonts}\n\
-        \\usepackage{amssymb}\n\
-        \\usepackage{bm}\n\
-        \\usepackage{pslatex}\n'
-
-_mathpng_tempdir = './mathtmp'
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-    ('doc/index', 'gimli.tex', 'GIMLi Documentation', 'Carsten Rücker and Thomas Günther', 'manual'),
-]
-
-latex_additional_macros = open('./_static/mylatex-commands.sty')
-
-for macro in latex_additional_macros:
-    # used when building latex and pdf versions
-    latex_elements['preamble'] += macro + '\n'
-    # used when building html version
-    pngmath_latex_preamble += macro
-
-
+############# -- Options for LaTeX output
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -281,6 +236,86 @@ for macro in latex_additional_macros:
 
 # If false, no module index is generated.
 #latex_domain_indices = True
+
+from os import environ, path
+
+extradir = path.abspath( '_static' ).replace('\\','/')
+
+latex_elements = {
+    # The paper size ('letterpaper' or 'a4paper').
+    'papersize': 'a4paper',
+
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
+
+    # Additional stuff for the LaTeX preamble.
+    'preamble':
+    '\\usepackage{amsfonts}\n\
+    \\usepackage{amssymb}\n\
+    \\usepackage{bm}\n\
+    \\usepackage{pslatex}\n'
+}
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title, author, documentclass [howto/manual]).
+latex_documents = [
+    ('doc/index', 'gimli.tex', 'GIMLi Documentation', 'Carsten Rücker and Thomas Günther', 'manual'),
+]
+
+try:
+    pngmath_latex_preamble  # check whether this is already defined
+except NameError:
+    pngmath_latex_preamble = ""
+
+pngmath_latex_preamble = '\
+        \\usepackage{amsfonts}\n\
+        \\usepackage{amssymb}\n\
+        \\usepackage{bm}\n\
+        \\usepackage{pslatex}\n'
+
+#latex.add_macro("\\newcommand{\\arr}[1]{\\ensuremath{\\textbf{#1}}}")
+
+_mathpng_tempdir = './mathtmp'
+
+latex_additional_macros = open('./_static/mylatex-commands.sty')
+
+mathjax_latex_preamble=""
+
+   
+LatexCommandTranslator = {}
+LatexCommandTranslator['mathDictionary'] = {}
+LatexCommandTranslator['commandDictionary'] = {}
+LatexCommandTranslator['command1Dictionary'] = {}
+            
+trans = LatexCommandTranslator
+
+for macro in latex_additional_macros:
+    # used when building latex and pdf versions
+    latex_elements['preamble'] += macro + '\n'
+    # used when building html version
+    pngmath_latex_preamble += macro + '\n'
+
+    mathOperator = re.search('\\\\DeclareMathOperator{\\\\([A-Za-z]*)}{(.*)}', macro)
+    if mathOperator:
+        LatexCommandTranslator['mathDictionary'][mathOperator.group(1)] = mathOperator.group(2).replace("\\","\\\\")
+        
+    newCommand = re.search('\\\\newcommand{\\\\([A-Za-z]*)}{(.*)}', macro)
+    if newCommand:
+        LatexCommandTranslator['commandDictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
+    newCommand = re.search('\\\\renewcommand{\\\\([A-Za-z]*)}{(.*)}', macro)
+    if newCommand:
+        LatexCommandTranslator['commandDictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
+
+    newCommand = re.search('\\\\newcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}', macro)
+    if newCommand:
+        LatexCommandTranslator['command1Dictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
+    newCommand = re.search('\\\\renewcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}', macro)
+    if newCommand:
+        LatexCommandTranslator['command1Dictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
+    
+latex_additional_macros.close()
+
+plot2rst_commandTranslator = LatexCommandTranslator
 
 
 # -- Options for manual page output --------------------------------------------
