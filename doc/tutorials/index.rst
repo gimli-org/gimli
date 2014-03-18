@@ -1,9 +1,12 @@
-.. _part:tutorial:
+.. _chapt:tutorial:
 
-=========
 Tutorials
-=========
+*********
 
-Simple one dimensional inversions with increasing complexity.
+Learn how gimli can be used to solve your problems (at least the numerical one)
+
+Here we add sorted simple tutorials that the reader should help understanding pygimli.
 
 .. todo:: Transfer Gmsh tutorial
+    
+    This is an example on how to incorporate alternative mesh generators.

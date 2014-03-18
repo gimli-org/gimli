@@ -1,7 +1,10 @@
 .. _sec:install:
 
+.. toctree::
+
 Installation
 ============
+
 
 Prerequisites
 -------------
@@ -27,7 +30,7 @@ We need some more or less important tools to build libgimli
         tested: 1.46, 1.48, 1.49, 1.51, 1.52, 1.53
                 
 Optional Prerequisites -- some can be installed via provided scripts
-....................................................................
+^^^^
 
     * blas and lapack for suitesparse (system or script)
     * SuiteSparse http://www.cise.ufl.edu/research/sparse/SuiteSparse/

@@ -1,6 +1,5 @@
 .. _sec:pygimli:
    
-=======
 pyGIMli
 =======
 

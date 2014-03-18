@@ -1,26 +1,28 @@
-.. toctree::
-    :hidden:
+.. :hidden:
 
-    ../INSTALL.rst
-    ../README.rst
-    _examples_auto/index.rst
-    _examples_auto/modelling/plot_mod-dc-2d.rst
-    _tutorials_auto/index.rst
-    _tutorials_auto/modelling/plot_2-mod-fem.rst
-    _tutorials_auto/modelling/plot_3-mod-fem-BC.rst
-    _tutorials_auto/modelling/plot_4-mod-fem-heat-1d.rst
-    credits.rst
-    design.rst
-    doc_todo.rst
-    faq.rst
-    glossary.rst
-    license.rst
-    publist.rst
-    pygimli.rst
-    rst_basics.rst
+.. only:: latex
 
+    .. toctree::
+        :maxdepth: 4
+
+        ../INSTALL.rst
+        ../README.rst
+        design.rst
+        faq.rst
+        pygimli.rst
+        _examples_auto/index.rst
+        _tutorials_auto/index.rst
+        credits.rst
+        doc_todo.rst
+        glossary.rst
+        license.rst
+        publist.rst
+        rst_basics.rst
+
+#############
 Documentation
-=============
+#############
+
 .. list-table:: 
     :class: doc-index
 
@@ -40,11 +42,11 @@ Documentation
 
         Frequently asked questions (with anwers!)
 
-    * - :ref:`part:tutorial`
+    * - :ref:`chapt:tutorial`
 
         How to use GIMLi
 
-      - :ref:`part:examples`
+      - :ref:`chapt:examples`
 
         Interesting examples
 
@@ -65,8 +67,10 @@ Documentation
         Terms of use
 
 
+##################
 Indices and tables
-==================
+##################
+
 .. list-table:: 
     :class: doc-index
 

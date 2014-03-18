@@ -1,7 +1,7 @@
-.. _glossary:
+.. _sec:glossary:
 
 Glossary
---------
+========
 
 .. glossary::
     GCC

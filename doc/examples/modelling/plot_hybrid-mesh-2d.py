@@ -3,7 +3,7 @@
 
 """
 Building a hybrid mesh in 2-D
-=============================
+-----------------------------
 
 In some cases, the modelling domain may require flexibility in one region and
 equidistant structure in another. In this short example, we demonstrate how to
@@ -14,6 +14,7 @@ We start by importing numpy, matplotlib and pygimli with its required components
 """
 import numpy as np
 from matplotlib import pyplot as plt
+
 import pygimli as pg
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawMesh

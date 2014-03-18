@@ -1,15 +1,12 @@
 .. _sec:doc_todo:
 
-=======================
 Documentation TODO-LIST
 =======================
 
 .. todolist::
 
-
-======================
 Additional information
-======================
+----------------------
 
 .. admonition:: See also
 
@@ -65,11 +62,14 @@ See :py:func:`pygimli.meshtools.grid.appendTriangleBoundary` in :py:mod:`pygimli
 
 Docstring examples
 ------------------
+
 Functions
-"""""""""
+^^^^^^^^^
+
 .. autofunction:: pygimli.meshtools.mesh.readHydrus2dMesh
 .. autofunction:: pygimli.meshtools.mesh.readGmsh
 
 Classes
-"""""""
+^^^^^^^
+
 .. autoclass:: pygimli.mplviewer.CellBrowser

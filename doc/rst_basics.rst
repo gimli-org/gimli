@@ -10,9 +10,21 @@ Section reStructuredText Cockbock
 
     This is the latex-only version for how to document :term:`GIMLi` 
     
+#####
+parts
+#####
 
-SubSection 
-----------
+chapters
+********
+
+sections
+========
+
+subsections
+-----------
+
+sub-subsections
+^^^^^^^^^^^^^^^
 
 This is the common version for how to document :term:`GIMLi`. 
 Can we uses cites [RueckerGueSpi2006]_, [GuentherRueSpi2006]_, [RueckerGuen2011]_.
@@ -25,10 +37,6 @@ Check for autocite :cite:`RueckerGuen2011`, :cite:`GuentherRueSpi2006`, :cite:`R
     * References, e.g., :term:`Matplotlib` are defined in glossery.rst
 
     * Modules, e.g., :mod:`Matplotlib` are defined in glossery.rst
-
-
-SubSubSection
-.............
 
 reStructuredText is a plaintext markup syntax that is interpreted by sphinx to generate this html or pdf document
 
@@ -57,7 +65,7 @@ special box::
     this looks like a listing
 
 Admonitions
-...........
+^^^^^^^^^^^
 
 (Most themes style only “note” and “warning” specially.)
 
