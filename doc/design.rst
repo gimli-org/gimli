@@ -62,7 +62,8 @@ External forward operators can be easily linked against GIMLi.
 As soon they meet the requirements, the inversion can be setup and run with 2 lines.
 With some additional effort, applications can easily be created either using C++ or, more easily, using Python scripts.
 So far, various forward calculations are already included in GIMLi:
-    * different 1d electromagnetic methods: VES, FDEM, TDEM, MT, TDR
-    * first-arrival traveltime (refraction)
-    * gravimetry
-    * various fitting functions for 
+
+* different 1d electromagnetic methods: VES, FDEM, TDEM, MT, TDR
+* first-arrival traveltime (refraction)
+* gravimetry
+* various fitting functions for 

@@ -1752,7 +1752,8 @@ RVector Mesh::exportData(const std::string & name) const {
     if (exportDataMap_.count(name)){
         return exportDataMap_.find(name)->second;
     } else {
-        std::cerr << WHERE_AM_I << " Warning!! requested export 'data' vector " << name << " does not exist." << std::endl;
+        throwError(1, " Warning!! requested export 'data' vector " + name +
+        " does not exist.");
     }
     return RVector(0);
 }

@@ -1,7 +1,15 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
-import sys, os
-import wx
+import sys
+import os
+
+try:
+    import wx
+except ImportError as e:
+    import traceback
+    #traceback.print_exc(file=sys.stdout)
+    sys.stderr.write("No proper wx installed'.\n")
+
 
 def iconFileName( filename ):
     globPath = os.path.dirname( __file__ )

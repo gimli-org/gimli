@@ -420,21 +420,29 @@ public:
     void exportAsTetgenPolyFile(const std::string & filename);
     //** end I/O stuff
 
-
+    /*! Add data to the mesh that will be saved with by using the binary mesh 
+     * format v.2. or exported with the appropriate name in VTK format,
+     * if the size of data equals the amount of nodes, cells or boundaries. 
+     */
     void addExportData(const std::string & name, const RVector & data);
 
+    /*! Return the data with a given name. 
+     * If there is no such data an exception is thrown.*/
     RVector exportData(const std::string & name) const;
 
+    /*! Return the full data map read only. */
     const std::map< std::string, RVector > & exportDataMap() const { return exportDataMap_; }
 
+    /*! Set the full data map.*/
     void setExportDataMap(const std::map< std::string, RVector > & eMap) { exportDataMap_ = eMap; }
 
+    /*! Empty the data map.*/
     void clearExportData();
 
-    /*!Set the comment for VTK Ascii export headline.*/
+    /*! Set the comment for VTK Ascii export headline.*/
     void setCommentString(const std::string & commentString) {commentString_ = commentString;}
 
-    /*!Return comment for VTK Ascii export headline.*/
+    /*! Return comment for VTK Ascii export headline.*/
     const std::string & commentString() const {return commentString_;}
 
     //** probably deprecated

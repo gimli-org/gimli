@@ -627,7 +627,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
 
 def printcerr2rst(outbuff):
     code_directive = ".. error:: \n"
-    indented_block += '\t\n'
+    indented_block = '\t\n'
     for t in outbuff:
         if t == '\n':
             indented_block += '\t\n'

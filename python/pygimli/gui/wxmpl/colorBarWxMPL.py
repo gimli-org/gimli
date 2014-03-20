@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import wx
+import sys
+
+try:
+    import wx
+except ImportError as e:
+    import traceback
+    #traceback.print_exc(file=sys.stdout)
+    sys.stderr.write("No proper wx installed'.\n")
+    
 import pygimli as pg
 
 from pygimli.gui.resources import loadXRC

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys 
 from xml.dom.minidom import parse
 from pyproj import Proj, transform
 
@@ -57,16 +58,19 @@ def readGPX( filename ):
 # def readGPX( ... )
 
 def readSimpleLatLon(filename, verbose=False):
-    '''
-        read a list of the following formats. Try to convert the format automatically
-        If u want to be sure provide format without "d" to ensure floating point format:
-            lon lat
+    """
+        Read a list of the following formats. Try to convert the format automatically
+        If you want to be sure, provide format without "d" to ensure floating point format:
             
-            marker lat lon
+        lon lat
+        
+        or
+        
+        marker lat lon
             
         return list:
             lon lat name time
-    '''
+    """
     
     def conv_(deg):
         """convert degree into floating vpoint."""

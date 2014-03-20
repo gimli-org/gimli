@@ -8,9 +8,10 @@ except ImportError:
 
 try:
     from .mayaview import showMesh3D
-except ImportError:
-    def showMesh3D(*args, **kwargs):
-        print('''Don't knwo how to handle 3D meshes. No mayaview installed. ''')
+except:
+    def showMesh3D(mesh, interactive=True):
+        pass
+    
     
 import matplotlib.pyplot as plt
 import numpy as np

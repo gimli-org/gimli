@@ -1,20 +1,36 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
-import wx
+import sys
 
+try:
+    import wx
+except ImportError as e:
+    import traceback
+    #traceback.print_exc(file=sys.stdout)
+    raise(Exception("No proper wx installed'.\n"))
+    sys.stderr.write("No proper wx installed'.\n")
+    
 try:
     from agw import aui
     from agw.aui import aui_switcherdialog as ASD
     from agw.aui.aui_constants import *
+    TOOLBAR = aui.AuiToolBar
 except ImportError: # if it's not there locally, try the wxPython lib.
-    import wx.lib.agw.aui as aui
-    from wx.lib.agw.aui import aui_switcherdialog as ASD
-    from wx.lib.agw.aui.aui_constants import *
+    try:
+        import wx.lib.agw.aui as aui
+        from wx.lib.agw.aui import aui_switcherdialog as ASD
+        from wx.lib.agw.aui.aui_constants import *
+    except ImportError as e:
+        import traceback
+        #traceback.print_exc(file=sys.stdout)
+        sys.stderr.write("No proper agw installed'.\n")
+        TOOLBAR = object
+
     
-class PatchedAuiToolBar( aui.AuiToolBar ):
+class PatchedAuiToolBar(TOOLBAR):
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                     size=wx.DefaultSize, style=AUI_TB_DEFAULT_STYLE):
-        aui.AuiToolBar.__init__( self, parent, id, pos, size, style )
+        aui.AuiToolBar.__init__(self, parent, id, pos, size, style)
         
     def Realize(self):
         """

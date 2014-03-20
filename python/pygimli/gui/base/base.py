@@ -1,15 +1,25 @@
 # -*- coding: utf-8 -*-
 
-import sys, os
-import wx
-import wx.xrc as xrc
+import sys
+import os
 
+try:
+    import wx
+    import wx.xrc as xrc
+except ImportError as e:
+    import traceback
+    #traceback.print_exc(file=sys.stdout)
+    sys.stderr.write("No proper wx installed'.\n")
 try:
     from agw import aui
     from agw.aui import aui_switcherdialog as ASD
 except ImportError: # if it's not there locally, try the wxPython lib.
-    import wx.lib.agw.aui as aui
-    from wx.lib.agw.aui import aui_switcherdialog as ASD
+
+    try:
+        import wx.lib.agw.aui as aui
+        from wx.lib.agw.aui import aui_switcherdialog as ASD
+    except ImportError: # if it's not there locally, try the wxPython lib.
+        sys.stderr.write("No proper wx.aui installed'.\n")
 
 from pygimli.utils import unicodeToAscii
 
@@ -639,8 +649,10 @@ class AppResource( ManagedProperties ):
         
     def getExportFileNameWithDialog( self, defaultFile, wildcard, message = "Choose file"
                                    , defaultDir = os.getcwd()
-                                   , style = wx.SAVE|wx.OVERWRITE_PROMPT|wx.CHANGE_DIR ):
-
+                                   , style=None):
+        if not style:
+            style = wx.SAVE|wx.OVERWRITE_PROMPT|wx.CHANGE_DIR
+            
         dlg = wx.FileDialog( self.parent
                             , message = message
                             , defaultDir = defaultDir

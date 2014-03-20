@@ -16,7 +16,6 @@ rabs   = lambda r__: np.asarray([np.sqrt(x__.dot(x__)) for x__ in r__])
 gradR  = lambda r__: (r__.T / rabs(r__))
 adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__]) 
 
-
 #def magnetization(lat, lon, suszept, dat=date.today()): 
     #'''
     #'''
@@ -34,8 +33,14 @@ adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__])
 
 def dBZPoly(pnts, poly, M, openPoly=False):
     '''
-        pnts Measurment points = [[p1x, p1z], [p2x, p2z],...]
-        poly Polygon = [[p1x, p1z], [p2x, p2z],...]
+    Parameters
+    ----------
+    
+    pnts :
+        Measurment points = [[p1x, p1z], [p2x, p2z],...]
+    poly :
+        Polygon = [[p1x, p1z], [p2x, p2z],...]
+    M :
         Magnetization = [M_x, M_y, M_z]
         
     '''
@@ -48,10 +53,18 @@ def dBZKugel(pnts, R, pos, M):
     sphere at position pos with radius R for a given magnetization M at
     measurement points pnts.
 
-    pnts: measurement points -- array[x,y,z]
-    R: radius -- float
-    pos: sphere center -- [x,y,z]
-    M: magnetization -- [Mx, My, Mz]
+    Parameters
+    ----------
+    
+    pnts :
+        measurement points -- array[x,y,z]
+    R :
+        radius -- float
+    pos :
+        sphere center -- [x,y,z]
+    M :
+        magnetization -- [Mx, My, Mz]
+
     """
     return poissonEoetvoes(adot(M, gradGZKugel(pnts, R, rho=1.0, pos=pos)))
 
@@ -68,26 +81,45 @@ def uKugel(r, R, rho, pos=[0., 0., 0.]):
     """
     Gravitationspotential einer Kugel mit Radius R und Dichte rho an pos.
 
-    u = -G * dM * 1/r
+    .. math:: u = -G * dM * \frec{1}{r}
+    
+    Parameters
+    ----------
+    
     """
     return -G * deltaMSph(R, rho) * 1. / rabs(r - pos)
 
 def gradUKugel(r, R, rho, pos=[0., 0., 0.]):
-    '''
-        Gravitationsfeldstrke einer Kugel mit Radius R und Dichte rho an pos 
-        g = -grad u, return [gx, gy, gz]
-        g = -G[m^3/(kg s^2)] * dM[kg] * 1/r^2 1/m^2] * grad(r)[1/1] = [m^3/(kg s^2)] * [kg] * 1/m^2 * [1/1] == m/s^2
-    '''
+    """
+    Gravitationsfeldstrke einer Kugel mit Radius R und Dichte rho an pos 
+        
+       
+    .. math:: g = -G[m^3/(kg s^2)] * dM[kg] * 1/r^2 1/m^2] * grad(r)[1/1] = [m^3/(kg s^2)] * [kg] * 1/m^2 * [1/1] == m/s^2
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    [gx, gy, gz]
+    
+    """
     
     # gesucht eigentlich g_z aber nach unten als -z
     return [1., 1., -1.] * (gradR(r - pos) * - G * deltaMSph(R, rho) * 1. / (rabs(r - pos)**2)).T
 #def gKugel(...)
     
 def gradGZKugel(r, R, rho, pos=[0., 0., 0.]):
-    '''
-        g = -grad u, 
-        return grad gz [gz_x gz_y, gz_z]
-    '''
+    """
+    .. math:: g = -\\nabla u
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+        grad, gz, [gz_x, gz_y, gz_z]
+    """
     t = pos[2]
     
     gzxyz = np.asarray([-3.0 * t * r[:,0], 
@@ -97,7 +129,13 @@ def gradGZKugel(r, R, rho, pos=[0., 0., 0.]):
 
 
 def uZylinderHoriz(pnts, R, rho, pos=[0., 0.]):
-    """"""
+    """
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
     u = np.zeros(len(pnts))
     for i, r in enumerate(rabs(pnts-pos)):
         if r > R:
@@ -109,23 +147,47 @@ def uZylinderHoriz(pnts, R, rho, pos=[0., 0.]):
     
     
 def gradUZylinderHoriz(r, R, rho, pos=[0., 0.]):
-    '''
-        calculate horizontal component of gravimetric field in mGal
-        R   = cylinder radius in [Meter]
-        p   = cylinder center (x, z) 
-        rho = density in [kg/m^3]
+    """
+    Calculate horizontal component of gravimetric field in mGal
+    
+    .. math::
         g = -G[m^3/(kg s^2)] * dM[kg/m] * 1/r[1/m] * grad(r)[1/1] = [m^3/(kg s^2)] * [kg/m] * 1/m * [1/1] == m/s^2
+       
+    Parameters
+    ----------
+    R   :
+        Cylinder radius in [meter]
+    p   :
+        Cylinder center (x, z) 
+    rho :
+        Density in [kg/m^3]
         
-    '''
+    Returns
+    -------
+       
+    """
     return [1., -1.0] * (gradR(r - pos) * -G * deltaACyl(R, rho) * 1. / (rabs(r - pos))).T 
 #def gZylinderHoriz():
 
 
 def gradGZZylinderHoriz(r, R, rho, pos=[0., 0.]):
-    '''
-        g = -grad u(r), with r = [x,z], |r| = \sqrt(x^2+z^2)
-        return grad gz [gz_x, gz_z]
-    '''
+    """
+    .. math:: g = -grad u(r), with r = [x,z], |r| = \sqrt(x^2+z^2)
+    
+    Parameters
+    ----------
+    r   :
+        
+    R   :
+        
+    rho :
+        Density in [kg/m^3]
+        
+    Returns
+    -------
+    grad gz, [gz_x, gz_z]
+    
+    """
     t = pos[1]
     
     gz_xz = np.asarray([-2.0 * r[:,0]*(t - r[:,1]), 
@@ -136,9 +198,24 @@ def gradGZZylinderHoriz(r, R, rho, pos=[0., 0.]):
 
 
 def gzHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
-    '''
-        g = -grad u, return z-component of g;  grad (d u/d r)_z
-    '''
+    """
+    g = -grad u, 
+    
+    Parameters
+    ----------
+    pnts   :
+        
+    t   :
+        
+    rho :
+        Density in [kg/m^3]
+        
+    Returns
+    -------
+    gz:
+        z-component of g
+        .. math:: \\nabla(\\partial u/\\partial \\vec{r})_z
+    """
     gz = np.zeros(len(pnts))
     
     for i, q in enumerate(pnts):
@@ -153,9 +230,27 @@ def gzHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
 #def gzPlatteHoriz(...)
 
 def gradGZHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
-    '''
-        g = -grad u, return z-component of g;  grad (d u/d r)_z
-    '''
+    """
+    .. math:: g = -\\nabla u
+    
+    Parameters
+    ----------
+    
+    pnts : array (:math:`n\\times 2`)
+        n 2 dimensional measurement points
+    t : float
+        Plate thickness in :math:`[\\text{m}]`
+    rho : float
+        Density in :math:`[\\text{kg}/\\text{m}^3]`
+        
+    Returns
+    -------
+    
+    gz : array
+        Gradient of z-component of g :math:`\\nabla(\\frac{\\partial u}{\\partial \\vec{r}}_z)`
+    
+    """
+    
     gz = np.zeros((len(pnts), 2))
     
     for i, q in enumerate(pnts):
@@ -174,7 +269,10 @@ def lineIntegralZ_WonBevis(p1, p2):
     """
     WonBevis1987.
 
-    Return g = -grad u =(Fx, 0.0, Fz), dFz(Fzx, Fzy, Fzz)
+    Returns
+    -------
+        g = -grad u =(Fx, 0.0, Fz), dFz(Fzx, Fzy, Fzz)
+        
     """
     #print p1, p2
     x1 = p1[0]
@@ -293,22 +391,14 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
 
 def angle(p1, p2, p3, Un):
     """
-    Finds the angle between planes O-p1-p2
-    and O-p2-p3, where p1,p2,p3 are coordinates of three points,
-    taken in ccw order as seen from origin O. This is used by
-    gravMag for finding the solid angle subtended by a polygon
-    at the origin. Un is the unit outward normal vector to the
-    polygon.
+    Finds the angle between planes O-p1-p2 and O-p2-p3, where p1,p2,p3 
+    are coordinates of three points, taken in ccw order as seen from origin O.
+    This is used by gravMag for finding the solid angle subtended by a polygon
+    at the origin. Un is the unit outward normal vector to the polygon.
 
-    @ARTICLE{SinghGup2001,
-        author = {Bijendra Singh and D. Guptasarma},
-        title = {{N}ew method for fast computation of gravity and magnetic anomalies
-                from arbitrary polyhedra},
-        journal = {Geophysics},
-        year = {2001},
-        volume = {66},
-        pages = {521-526}}
-        
+    References
+    ----------
+    .. [1] Bijendra Singh and D. Guptasarma. 2001. New method for fast computation of gravity and magnetic anomalies from arbitrary polyhedra. Geophysics 66, pp. 521-526.
     """
     
     #Check if face is seen from inside
@@ -365,14 +455,11 @@ def gravMagBoundarySinghGup(boundary):
     """
     Calculate [Fx, Fy, FZ] and [Fzx, Fzy, Fzz] at Origin for a given boundary.
 
-    @ARTICLE{SinghGup2001,
-    author = {Bijendra Singh and D. Guptasarma},
-    title = {{N}ew method for fast computation of gravity and magnetic
-             anomalies from arbitrary polyhedra},
-    journal = {Geophysics},
-    year = {2001},
-    volume = {66},
-    pages = {521-526}}
+    References
+    ----------
+    
+    .. [1] Bijendra Singh and D. Guptasarma. 2001. New method for fast computation of gravity and magnetic anomalies from arbitrary polyhedra. Geophysics 66, pp. 521-526.
+    
     """
     shape = boundary.shape()
     #print shape
