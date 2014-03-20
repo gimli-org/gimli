@@ -9,14 +9,14 @@ from pygimli.misc import streamline
 
 
 class CellBrowser:
-    """
-    Interactive cell browser on current or specified axes for a given mesh.
+    """Interactive cell browser on current or specified axes for a given mesh.
     Cell information can be displayed by mouse picking. Arrow keys up and down
     can be used to scroll through the cells, while ESC closes the cell
     information window.
 
     Parameters
     ----------
+    
     mesh : 2D pygimli.Mesh instance
         The plotted mesh to browse through.
     ax : mpl axis instance, optional

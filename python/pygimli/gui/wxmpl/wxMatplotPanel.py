@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 # taken and modified from http://www.scipy.org/Matplotlib_figure_in_a_wx_panel
 
-import sys, os
+import sys
+import os
 
 try:
     import wx
     import wx.lib.scrolledpanel as scrolled
 except ImportError as e:
     import traceback
-    traceback.print_exc(file=sys.stdout)
+    #traceback.print_exc(file=sys.stdout)
     sys.stderr.write("No proper wx installed'.\n")
 
 import matplotlib

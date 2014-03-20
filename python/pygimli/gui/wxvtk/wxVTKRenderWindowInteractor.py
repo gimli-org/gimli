@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 A VTK RenderWindowInteractor widget for wxPython.
 
@@ -34,39 +34,41 @@ Behaviour:
 """
 
 # import usual libraries
-import math, os, sys
-import wx
+import math
+import sys
+import os
+
+baseClass = object
+_useCapture = None
+    
+try:
+    import wx
+    
+    # a few configuration items, see what works best on your system
+
+    # Use GLCanvas as base class instead of wx.Window.
+    # This is sometimes necessary under wxGTK or the image is blank.
+    # (in wxWindows 2.3.1 and earlier, the GLCanvas had scroll bars)
+
+    if wx.Platform == "__WXGTK__":
+        import wx.glcanvas
+        baseClass = wx.glcanvas.GLCanvas
+
+    # Keep capturing mouse after mouse is dragged out of window
+    # (in wxGTK 2.3.2 there is a bug that keeps this from working,
+    # but it is only relevant in wxGTK if there are multiple windows)
+    _useCapture = (wx.Platform == "__WXMSW__")
+    
+except ImportError as e:
+    import traceback
+    #traceback.print_exc(file=sys.stdout)
+    sys.stderr.write("No proper wx installed'.\n")
+    
 
 try:
     import vtk
 except Exception as e:
-    print(e)
-
-# wxPython 2.4.0.4 and newer prefers the use of True and False, standard
-# booleans in Python 2.2 but not earlier.  Here we define these values if
-# they don't exist so that we can use True and False in the rest of the
-# code.  At the time of this writing, that happens exactly ONCE in
-# CreateTimer()
-try:
-    True
-except NameError:
-    True = 1
-    False = 0
-
-# a few configuration items, see what works best on your system
-
-# Use GLCanvas as base class instead of wx.Window.
-# This is sometimes necessary under wxGTK or the image is blank.
-# (in wxWindows 2.3.1 and earlier, the GLCanvas had scroll bars)
-baseClass = wx.Window
-if wx.Platform == "__WXGTK__":
-    import wx.glcanvas
-    baseClass = wx.glcanvas.GLCanvas
-
-# Keep capturing mouse after mouse is dragged out of window
-# (in wxGTK 2.3.2 there is a bug that keeps this from working,
-# but it is only relevant in wxGTK if there are multiple windows)
-_useCapture = (wx.Platform == "__WXMSW__")
+    sys.stderr.write("No proper vtk installed'.\n")
 
 # end of configuration items
 

@@ -103,25 +103,28 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
     rhs.setVal(uDirchlet, uDirIndex)
 #def assembleUDirichlet_(...)
        
-       
 def assembleNeumannBC(S,
                       boundaryPair, rhs, time=0.0, 
                       userData=None, verbose=False):
     """
     Apply Neumann condition and apply them to system matrix S.
-    ..math::`frac{\partial u}{\partial \vec{u}} = vals`
+         
+    .. math::
+        \\frac{\\partial\\textbf{u}}{\\partial\\textbf{n}} = vals
         
     Parameters
     ----------
-    S : pg.DSparseMatrix()
+
+    S   : pg.DSparseMatrix()
         System matrix of the system equation.
-    boundaryPair: tuple
+    boundaryPair    : tuple
         Pair of [list_of_boundaris, value], the value will assigned to 
         the nodes of the boundaries. 
         Value can be a scalar (float or int) or a function, which will be called
         with the boundary and a optional time, that return the value for u.
-    rhs: unused
+    rhs :unused
         *For compatibility only*
+    
     """
 
     Se = pg.DElementMatrix()
@@ -159,13 +162,14 @@ def assembleDirichletBC(S, boundaryPair, rhs=None, time=0.0,
     """
     Apply Dirichlet boundary condition and apply them to system matrix S.
 
-    ..math::`u = vals` on boundaries
+    .. math::
+        u = vals` on boundaries
     
     Parameters
     ----------
     S : pg.DSparseMatrix()
         System matrix of the system equation.
-    boundaryPair: tuple
+    boundaryPair : tuple
         Pair of [list_of_boundaris, value], the value will assigned to 
         the nodes of the boundaries. 
         Value can be a scalar (float or int) or a function, which will be called
@@ -311,21 +315,53 @@ def createMassMatrix(mesh, b):
 def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                  verbose=False, stats=None, *args, **kwargs):
     """
-        TODO
+    TODO
+    
+    The value of :math:`\omega` is larger than 5.
+
+    Variable names are displayed in typewriter font, obtained by using \\mathtt{var}:
+
+    We square the input parameter `a` to obtain
+    :math:`\mathtt{alpha}^2`.
+    
+
     Parameters
     ----------
-        a       : value|array|callable(cell, userData)
-        b       : value|array|callable(cell, userData)
-        u0      : value|array|callable(pos, userData)
-        f       : value|array(cells)|array(nodes)|callable(??????)
-        theta   : float
-            heat equation is stable for 0.5 <= theta <= 1.0
-            theta = 1, implicit Euler
-            theta = 0.5, Crank-Nicolsen, maybe instable 
-            theta = 0, explicit Euler, maybe stable for dT near h 
-            if unsure choose 0.5 + epsilon, which is probably be stable 
-        progress : bool
     
+    a   : value | array | callable(cell, userData)
+        Cell values
+    b   : value | array | callable(cell, userData)
+        Cell values
+    u0      : value | array | callable(pos, userData)
+        Node values
+    f       : value | array(cells) | array(nodes) | callable(args, kwargs)
+        force values 
+    theta   : float
+        - `theta` = 1, implicit Euler
+        - `theta` = 0.5, Crank-Nicolsen, maybe instable 
+        - `theta` = 0, explicit Euler, maybe stable for
+
+        .. math:: \\Delta t \\quad\\text{near}\\quad h
+
+        Time dependent equation is stable for:
+        .. math:: 0.5 <= \\theta <= 1.0
+        
+        If unsure choose 0.5 + epsilon, which is probably be stable.
+    
+    progress : bool
+        Give some calculation progress.
+
+    Returns
+    -------
+    
+    u : array
+        Returns the solution u either 1,n array for stationary problems or 
+        for m,n array for m time steps
+        
+    See Also
+    --------
+        
+    other solver TODO
     
     """
     if verbose:

@@ -10,21 +10,21 @@ Section reStructuredText Cockbock
 
     This is the latex-only version for how to document :term:`GIMLi` 
     
-#####
-parts
-#####
+.. #####
+.. parts
+.. #####
 
-chapters
-********
+.. chapters
+.. ********
 
-sections
-========
+.. sections
+.. ========
 
 subsections
 -----------
 
 sub-subsections
-^^^^^^^^^^^^^^^
+...............
 
 This is the common version for how to document :term:`GIMLi`. 
 Can we uses cites [RueckerGueSpi2006]_, [GuentherRueSpi2006]_, [RueckerGuen2011]_.
@@ -65,7 +65,7 @@ special box::
     this looks like a listing
 
 Admonitions
-^^^^^^^^^^^
+...........
 
 (Most themes style only “note” and “warning” specially.)
 

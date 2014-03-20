@@ -29,9 +29,7 @@ sys.path.append(os.path.abspath('./_sphinx-ext'))
 needs_sphinx = '1.0'
 
 # Check for external sphinx extensions
-# not yet ported to python3
-# 'numpydoc'
-#
+#deps = ['pybtex', 'sphinxcontrib-programoutput']
 deps = ['pybtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-bibtex']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 
@@ -59,16 +57,20 @@ extensions = ['sphinx.ext.autodoc',
               'plot2rst',
               'sphinx.ext.mathjax', # nicer html output than pngmath
               #'sphinx.ext.pngmath',
+              'numpydoc',
               'doxylink'
               ]
 
 extensions += [dep.replace('-','.') for dep in deps]
 
 plot2rst_paths = [('doc/tutorials', 'doc/_tutorials_auto'),
-                  ('doc/examples', 'doc/_examples_auto')]
+                  ('doc/examples', 'doc/_examples_auto')
+                  ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+
+numpydoc_show_class_members = False
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -106,7 +108,9 @@ release = release.replace('_', '\\_')
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['doc/_build', 'doc/_sphinx-ext', 'doc/_templates', 'doc/examples', 'doc/tutorials', 'doc/tutorial']
+exclude_patterns = ['doc/_build', 'doc/_sphinx-ext', 'doc/_templates',
+                    'doc/examples', 'doc/tutorials', 'doc/tutorial',
+                    'python/pygimli/gui']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None

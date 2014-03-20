@@ -1,7 +1,7 @@
 .. :hidden:
 
 .. only:: latex
-
+    
     .. toctree::
         :maxdepth: 4
 
@@ -9,9 +9,12 @@
         ../README.rst
         design.rst
         faq.rst
-        pygimli.rst
         _examples_auto/index.rst
         _tutorials_auto/index.rst
+        tools.rst
+        api.rst
+        pygimli.rst
+        api/pygimli/modules.rst
         credits.rst
         doc_todo.rst
         glossary.rst
@@ -50,11 +53,17 @@ Documentation
 
         Interesting examples
 
-    * - GIMLi API
+    * - :ref:`sec:tools`
+
+        Handy applications and tools shipped with
+
+      -
+
+    * - :ref:`sec:api`
 
         Reference for C++/Python
 
-      - pyGIMLi Modules
+      - :ref:`sec:pygimli`
 
         Reference for Python modules
 
@@ -86,6 +95,6 @@ Indices and tables
 
         Search this documentation
 
-      - :ref:`glossary`
+      - :ref:`sec:glossary`
 
         Important terms explained

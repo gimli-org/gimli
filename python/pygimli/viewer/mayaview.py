@@ -1,7 +1,16 @@
+# -*- coding: utf-8 -*-
+import sys
 import os
-from mayavi import mlab
+
 from matplotlib import pyplot as plt
 
+try:
+    from mayavi import mlab 
+except ImportError:
+    sys.stderr.write("Mayavi not installed")
+    sys.stderr.write("Don't knwo how to handle 3D meshes. No mayaview installed.")
+    raise Exception("Mayavi not installed")
+        
 def showMesh3D(mesh, interactive=True):
     """
     Proof of concept for mayavi binding.
@@ -25,6 +34,7 @@ def showMesh3D(mesh, interactive=True):
     surf = mlab.pipeline.surface(src, figure=fig, opacity=0.5)
     edges = mlab.pipeline.extract_edges(surf, figure=fig)
     mlab.pipeline.surface(edges, color=(0,0,0), figure=fig)
+    
     if interactive:
         mlab.show()
     else:

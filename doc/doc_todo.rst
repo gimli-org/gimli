@@ -43,6 +43,19 @@ Needed external extensions for building this docu
 
     pip install numpydoc pybtex sphinxcontrib-programoutput
 
+Linking to Gimli API
+---------------------
+
+To link to a specific class defintion the C++ API from the docs,
+you can use 
+
+::
+
+    See: :gimliapi:`GIMLI::Mesh`
+
+Which results in 
+
+See: :gimliapi:`GIMLI::Mesh`
 
 Linking to Python API
 ---------------------
@@ -64,12 +77,14 @@ Docstring examples
 ------------------
 
 Functions
-^^^^^^^^^
+.........
 
 .. autofunction:: pygimli.meshtools.mesh.readHydrus2dMesh
+    :noindex:
 .. autofunction:: pygimli.meshtools.mesh.readGmsh
+    :noindex:
 
 Classes
-^^^^^^^
+.......
 
 .. autoclass:: pygimli.mplviewer.CellBrowser
