@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import matplotlib as mpl
+import matplotlib.cm as cm
 import numpy as np
 import textwrap
 
@@ -137,7 +138,8 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
             if cmap == 'b2r':
                 mpl.set_cmap(cmapFromName('b2r'))
             else:
-                eval('mpl.pyplot.' + cmap + '()')
+#                eval('mpl.pyplot.' + cmap + '()')
+                eval('cm.' + cmap)
         else:
             gci.set_cmap(cmap)
 
