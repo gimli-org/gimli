@@ -16,6 +16,7 @@ from pygimli.utils.base import gmat2numpy
 #from pygimli.viewer import drawModel1D
 from scipy.io import loadmat
 from scipy.linalg import inv
+import time
 
 
 # forward modelling class (physics)
@@ -140,9 +141,10 @@ class MRS():
         self.data, self.error = None, None
         self.K, self.f, self.INV = None, None, None
         self.model, self.modelL, self.modelU  = None, None, None
-        self.lowerBound = (0.5,0.01,0.02) # d, theta, T2*
-        self.upperBound = (50.,0.45,1.00) # d, theta, T2*
-        self.startval   = (10.,0.30,0.20)  # d, theta, T2*
+        self.lowerBound = [1.0,0.05,0.02] # d, theta, T2*
+        self.upperBound = [30.,0.45,1.00] # d, theta, T2*
+        self.startval   = [10.,0.30,0.20]  # d, theta, T2*
+        self.logpar = False
         if name is not None: # check for mrsi/d/k
             if name[-5:].lower() == '.mrsi':
                 self.loadMRSI(name,defaultNoise)
@@ -230,7 +232,7 @@ class MRS():
         self.loadZVector(dirname+'zkernel.vec')
         self.dirname = dirname # to save results etc.
 
-    def showCube(self,ax=None,vec=None,islog=None,clim=None):
+    def showCube(self,ax=None,vec=None,islog=None,clim=None,clab=None):
         ''' plot a data cube nicely '''
         if vec is None: vec = np.array( self.data ).flat
         if ax is None: fig, ax = plt.subplots(1,1)
@@ -260,7 +262,10 @@ class MRS():
         ax.set_yticklabels(qtl)
         ax.set_xlabel('t [ms]')
         ax.set_ylabel('q [As]')
-        plt.colorbar(im,ax=ax,orientation='horizontal')
+        cb=plt.colorbar(im,ax=ax,orientation='horizontal')
+        if clab is not None:
+            cb.ax.set_title(clab)
+        
         return clim
 
     def showDataAndError(self,figsize=(10,8),show=False):
@@ -351,9 +356,9 @@ class MRS():
             showErrorBars(ax[0,1],thk,t2*1e3,thkL,thkU,t2L*1e3,t2U*1e3)
 
         clim = self.showCube(ax[1,0],self.data*1e9,islog=False)
-        ax[1,0].set_title('measured data [log10 nV]')
+        ax[1,0].set_title('measured data [nV]') #log10 
         self.showCube(ax[1,1],self.INV.response()*1e9,clim=clim,islog=False)
-        ax[1,1].set_title('simulated data [log10 nV]')
+        ax[1,1].set_title('simulated data [nV]') #log10 
         if save: fig.savefig(save,bbox_inches='tight')
         if show: plt.show()
         return fig, ax
@@ -404,16 +409,19 @@ class MRS():
         return varVG, MCMs
     
     def genMod( self, individual ):
-        return pg.exp( pg.asvector( individual ) * ( self.lUB - self.lLB ) + self.lLB )
+        model = pg.asvector( individual ) * ( self.lUB - self.lLB ) + self.lLB
+        if self.logpar:
+            return pg.exp( model )
+        else:
+            return model
         
     def runEA(self,nlay=None,type='GA',pop_size=100,max_evaluations=10000,**kwargs):
         import inspyred
         import random
-        import time
         
         def mygenerate( random, args ):
             """ generate a random vector of model size """
-            return [random.random() for i in range( nlay*4 - 1 )]
+            return [random.random() for i in range( nlay*3 - 1 )]
         
         def my_observer(population, num_generations, num_evaluations, args):
             best = min(population)
@@ -431,21 +439,25 @@ class MRS():
             pg.RVector(self.nlay,self.lowerBound[1])), pg.RVector(self.nlay,self.lowerBound[2]) )
         upperBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.upperBound[0]), 
             pg.RVector(self.nlay,self.upperBound[1])), pg.RVector(self.nlay,self.upperBound[2]) )
+        if self.logpar:
+            self.lLB, self.lUB = pg.log(lowerBound), pg.log(upperBound) # ready mapping functions
+        else:
+            self.lLB, self.lUB = lowerBound, upperBound
         
-        self.lLB, self.lUB = pg.log(lowerBound), pg.log(upperBound) # ready mapping functions
-        self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
+#        self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
         # setup random generator
         rand = random.Random()
         rand.seed(int(time.time()))
         # choose among different evolution algorithms
         if type == 'GA': 
             ea = inspyred.ec.GA(rand)
-            ea.variator = [inspyred.ec.variators.blend_crossover, 
-                           inspyred.ec.variators.gaussian_mutation]
+            ea.variator = [inspyred.ec.variators.blend_crossover, inspyred.ec.variators.gaussian_mutation]
+            ea.selector = inspyred.ec.selectors.tournament_selection
+            ea.replacer = inspyred.ec.replacers.generational_replacement
         if type == 'SA': ea = inspyred.ec.SA(rand)
         if type == 'DEA': ea = inspyred.ec.DEA(rand)
         if type == 'PSO': ea = inspyred.swarm.PSO(rand)
-        if type == 'ACS': ea = inspyred.swarm.ACS(rand)
+        if type == 'ACS': ea = inspyred.swarm.ACS(rand,[])
         if type == 'ES': 
             ea = inspyred.ec.ES(rand)
             ea.terminator = [inspyred.ec.terminators.evaluation_termination, 
@@ -453,13 +465,15 @@ class MRS():
         else:
             ea.terminator = inspyred.ec.terminators.evaluation_termination                     
 
-        ea.observer = my_observer
-        self.pop = ea.evolve(evaluator=datafit,generator=mygenerate,maximize=False,num_elites=1,
-                              bounder=inspyred.ec.Bounder(0.,1.),max_evaluations=max_evaluations,**kwargs)
+        #ea.observer = my_observer
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        self.pop = ea.evolve(evaluator=datafit,generator=mygenerate,maximize=False,
+                             pop_size=pop_size,max_evaluations=max_evaluations,num_elites=1,
+                             bounder=inspyred.ec.Bounder(0.,1.),**kwargs)
         self.pop.sort(reverse=True)
         self.fits=[ind.fitness for ind in self.pop]
         
-    def plotPop(self,maxfitness=None):
+    def plotPop(self,maxfitness=None,savefile=True):
         if maxfitness is None: maxfitness=self.pop[0].fitness*2
         fig, ax = plt.subplots(1,2,sharey=True)
         maxz = 0
@@ -469,14 +483,24 @@ class MRS():
                 thk = model[:self.nlay-1]
                 wc = model[self.nlay-1:self.nlay*2-1]
                 t2 = model[self.nlay*2-1:]
-                drawModel1D( ax[0], thk, wc*100 )
-                drawModel1D( ax[1], thk, t2*1000 )
+                drawModel1D( ax[0], thk, wc*100, color='grey' )
+                drawModel1D( ax[1], thk, t2*1000, color='grey' )
                 maxz = max( maxz, sum(thk) )
- 
+
+        model = np.asarray( self.genMod( self.pop[0].candidate ) )
+        thk = model[:self.nlay-1]
+        wc = model[self.nlay-1:self.nlay*2-1]
+        t2 = model[self.nlay*2-1:]
+        drawModel1D( ax[0], thk, wc*100, color='black', linewidth='5' )
+        drawModel1D( ax[1], thk, t2*1000, color='black', linewidth='5' )
+                
         ax[0].set_xlim(self.lowerBound[1]*100,self.upperBound[1]*100)
         ax[0].set_ylim((maxz*1.2,0))
         ax[1].set_xlim(self.lowerBound[2]*1000,self.upperBound[2]*1000)
         ax[1].set_ylim((maxz*1.2,0))
+        if savefile: 
+            fig.savefig(time.strftime('%y%m%d-%H%M%S')+'.pdf',bbox_inches='tight')
+        
         plt.show()
             
 ############ MAIN ############
