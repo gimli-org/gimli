@@ -45,7 +45,7 @@ SetGCC_TOOLSET(){
 	GCCARCH=`gcc -dumpmachine`
     CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
 	
-    if [ "$CPUCOUNT"==1 ]; then
+    if [ "$CPUCOUNT" == 0 ]; then
         CPUCOUNT=1
     fi
 
