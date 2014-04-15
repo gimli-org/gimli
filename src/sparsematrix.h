@@ -155,12 +155,32 @@ public:
     typedef typename ContainerType::const_iterator    const_iterator;
     typedef MatrixElement< ValueType, IndexType, ContainerType > MatElement;
 
-    SparseMapMatrix(IndexType r = 0, IndexType c = 0) : rows_(r), cols_(c) {   }
+    SparseMapMatrix(IndexType r=0, IndexType c=0) : rows_(r), cols_(c) {   
+    }
 
     SparseMapMatrix(const std::string & filename){
         this->load(filename);
     }
 
+    SparseMapMatrix(const SparseMapMatrix< ValueType, IndexType > & S){
+        clear();
+        cols_ = S.cols();
+        rows_ = S.rows();
+        for (const_iterator it = S.begin(); it != S.end(); it ++){
+            this->setVal(it->first.first, it->first.second, it->second);
+        }
+    }
+    SparseMapMatrix< ValueType, IndexType > & operator = (const SparseMapMatrix< ValueType, IndexType > & S){
+        if (this != &S){
+            clear();
+            cols_ = S.cols();
+            rows_ = S.rows();
+            for (const_iterator it = S.begin(); it != S.end(); it ++){
+                this->setVal(it->first.first, it->first.second, it->second);
+            }
+        } return *this;
+    }
+    
     SparseMapMatrix(const SparseMatrix< ValueType > & S){
         this->copy(S);
     }
@@ -214,7 +234,7 @@ public:
 
     void addToCol(Index id, const ElementMatrix < double > & A){
         for (Index i = 0, imax = A.size(); i < imax; i++){
-            (*this)[A.idx(i)][id] += (ValueType) A.getVal(0, i);
+            (*this)[A.idx(i)][id] += (ValueType)A.getVal(0, i);
         }
     }
 
@@ -223,9 +243,35 @@ public:
             (*this)[id][A.idx(i)] += (ValueType)A.getVal(0, i);
         }
     }
+       
+#define DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(OP) \
+    SparseMapMatrix & operator OP##= (const ValueType & v){\
+        for (iterator it = begin(); it != end(); it ++) (*it).second OP##= v; \
+        return *this; \
+    } \
+                       
+        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(+)
+        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(-)
+        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(*)
+        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(/)
 
+#undef DEFINE_SPARSEMMAPATRIX_UNARY_MOD_OPERATOR__
+    
+    DSparseMapMatrix & operator += (const DSparseMapMatrix & A){
+        for (const_iterator it = A.begin(); it != A.end(); it ++){
+            this->addVal(it->first.first, it->first.second, it->second);
+        }
+        return *this;
+    }
+    DSparseMapMatrix & operator -= (const DSparseMapMatrix & A){
+        for (const_iterator it = A.begin(); it != A.end(); it ++){
+            this->addVal(it->first.first, it->first.second, -it->second);
+        }
+        return *this;
+    }   
+        
     //SparseMatrix< T > & operator += (const ElementMatrix < T > & A){
-    void operator += (const ElementMatrix < double >& A){
+    void operator += (const ElementMatrix < double > & A){
         for (Index i = 0, imax = A.size(); i < imax; i++){
             for (Index j = 0, jmax = A.size(); j < jmax; j++){
                 (*this)[A.idx(i)][A.idx(j)] += (ValueType)A.getVal(i, j);
@@ -455,6 +501,29 @@ inline RVector operator * (const DSparseMapMatrix & A, const RVector & b){
 inline RVector transMult(const DSparseMapMatrix & A, const RVector & b){
     return A.transMult(b);
 }
+
+inline DSparseMapMatrix operator + (const DSparseMapMatrix & A, const DSparseMapMatrix & B){
+    DSparseMapMatrix tmp(A);
+    return tmp += B;
+} 
+
+inline DSparseMapMatrix operator - (const DSparseMapMatrix & A, const DSparseMapMatrix & B){
+    DSparseMapMatrix tmp(A);
+    return tmp -= B;
+} 
+
+#define DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(OP) \
+    inline DSparseMapMatrix operator OP (const DSparseMapMatrix & A, const double & v){\
+        return DSparseMapMatrix(A) OP##= v; \
+    } \
+    
+    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(+)
+    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(-)
+    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(*)
+    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(/)
+
+#undef DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__
+
 
 
 

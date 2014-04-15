@@ -1017,12 +1017,12 @@ template < class ValueType >
 ValueType mult(const Vector< ValueType > & v1, const Vector< ValueType > & v2){
     return sum(v1*v2);
 }
-// 
-// /*! Return scalar product <v1, v2>.*/
-// template < class ValueType >
-// ValueType dot(const Vector< ValueType > & v1, const Vector< ValueType > & v2){
-//     return mult(v1,v2);
-// }
+
+/*! Return scalar product <v1, v2>.*/
+template < class ValueType >
+ValueType dot(const Vector< ValueType > & v1, const Vector< ValueType > & v2){
+    return mult(v1,v2);
+}
 
 // template double dot(const RVector & v1, const RVector & v2);
 template double mult(const RVector & v1, const RVector & v2);

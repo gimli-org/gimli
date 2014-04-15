@@ -189,7 +189,7 @@ public:
     inline const std::vector < RVector3 > & additionalPoints() const { return topoPoints_; }
 
     /*! Return true if token data exist and all elements != 0.0. 
-     Return false if the data contains SOME zero values. */
+     Return false if the data contains one zero value. */
     inline bool allNonZero(const std::string & token) const {
         if (exists(token)) return (min(abs(dataMap_.find(token)->second)) > TOLERANCE);
         return false;

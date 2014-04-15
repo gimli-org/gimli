@@ -684,12 +684,12 @@ def docstr2rst(docstr, cfg):
     for x in command1Dictionary:
         n=1
         while n > 0:
-            sub = re.search('\\\\arr{([A-Za-z]*)}', current)
+            sub = re.search('\\\\'+ x +'{([A-Za-z]*)}', current)
             if sub:
                 (current,n) = re.subn('\\\\' + x + '{([A-Za-z]*)}',
                              command1Dictionary[x].replace('#1',sub.group(1)),
                              current,count=1)
-                #print(x, current, n)
+                #print(x, current, n, sub.group(1))
             else:
                 n = 0
     docstr = current

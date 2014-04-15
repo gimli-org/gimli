@@ -5,6 +5,7 @@
 GIMLi Basics
 ------------
 
+:math:`\arr{u} \u{kg}\u{s}\T{\u{err}}`
 This is the first tutorial where we demonstrate the general use of :term:`GIMLi` in Python, i.e., :term:`pyGIMLi`.
 
 The modelling as well as the inversion part of :term:`GIMLi` often requires discretization, so handling meshes is an important aspect of this tutorial.
