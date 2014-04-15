@@ -9,7 +9,7 @@ Isotropic and homogeneous heat equation in one dimension with test case:
 
 .. math::
 
-    \Delta u(t,x) + \frac{\partial u(t,x)}{\partial t} & = f(t,x)\\
+    \Delta u(t,x) - check(-) \frac{\partial u(t,x)}{\partial t} & = f(t,x)\\
     u(0,x) & = \sin(\pi x)\in x=\Omega \\
     u(t,x) & = 0 \in x=\partial\Omega
 

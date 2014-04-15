@@ -23,7 +23,7 @@ def readGmsh(fname, verbose=False):
 
     - Points with the physical number 99 are interpreted as sensors.
     - Physical Lines and Surfaces define boundaries in 2D and 3D, respectively.
-        - Physical Number 1: homogenous Neumann condition
+        - Physical Number 1: homogeneous Neumann condition
         - Physical Number 2: mixed boundary condition
         - Physical Number 3: homogeneous Dirichlet condition
         - Physical Number 4: Dirichlet condition

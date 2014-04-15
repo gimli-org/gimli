@@ -164,20 +164,24 @@ template < class Vec > void clear(Vec & a) {
     for (int i = 0; i < (int)a.size(); i ++) a[i] = 0.0;
 }
 
-template < class T, class Iter, template < class T, class Iter > class Vec > T min(const Vec< T, Iter > & v){
-    return *std::min_element(&v[0], &v[0] + v.size());
-}
-
-template < class T, class Iter, template < class T, class Iter > class Vec > T max(const Vec< T, Iter > & v){
-    return *std::max_element(v.begin(), v.end());
-}
-
-template < class T, class Iter, template < class T, class Iter > class Vec > T sum(const Vec< T, Iter > & v){
-    return std::accumulate(v.begin(), v.end(), 0.0);
-//     register T sum = 0.0;
-//     for (register size_t i = v.size(); i--;) sum += v[i];
-//     return sum;
-}
+// template < class T, class Iter, template < class T, class Iter > class Vec > T min(const Vec< T, Iter > & v){
+//     return *std::min_element(&v[0], &v[0] + v.size());
+// }
+// 
+// template < class T, class Iter, template < class T, class Iter > class Vec > T max(const Vec< T, Iter > & v){
+//     return *std::max_element(v.begin(), v.end());
+// }
+// 
+// template < class T, class Iter, template < class T, class Iter > class Vec > T sum(const Vec< T, Iter > & v){
+//     return std::accumulate(v.begin(), v.end(), 0.0);
+// //     register T sum = 0.0;
+// //     for (register size_t i = v.size(); i--;) sum += v[i];
+// //     return sum;
+// }
+// 
+// template < class ValueType, template < class T > class Vec > T dot(const Vec< T > & a, const Vec < T > & b) {
+//     return sum(a * b);
+// }
 
 template < class Vec > void echoMinMax(const Vec & vec, const std::string & name){
     if (vec.size() > 0){
@@ -187,10 +191,6 @@ template < class Vec > void echoMinMax(const Vec & vec, const std::string & name
         std::cout << "min " << name << " = ndef."
               << " max " << name << " = ndef." << std::endl;
     }
-}
-
-template < class T, template < class T > class Vec > T dot(const Vec< T > & a, const Vec < T > & b) {
-    return sum(a * b);
 }
 
 template < class Vec > double median(const Vec & a) {

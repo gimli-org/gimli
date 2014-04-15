@@ -46,40 +46,116 @@ def parseArgToArray(arg, ndof, mesh, userData=None):
     raise Exception("Cannot parse argument type " + str(type(arg)))
 #def parseArgToArray(...)
 
+def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
+    A = pg.DSparseMapMatrix(dom, dom)
+    
+    if end == -1: end = dom
+    
+    for i in range(start, end):
+        A.addVal(i, i, a)
+        if i > start: 
+            A.addVal(i, i - 1, l)  
+            
+        if i < end-1: 
+            A.addVal(i, i + 1, r)  
+    return A
+        
+def identity(dom, start=0, end=-1):
+    A = pg.DSparseMapMatrix(dom, dom)
+    
+    if end == -1: end = dom
+    
+    for i in range(start, end):
+        A.addVal(i, i, 1)
+    return A
+    
+def showSparseMatrix(A):
+    """
+        helper function
+    """
+    S = pg.DSparseMatrix(A)
+    rows = S.vecRowIdx()
+    cols = S.vecColPtr()
+    vals = S.vecVals()
+
+    for i in range(S.rows()):
+        for j in range(cols[i], cols[i + 1]):
+            print(i,rows[j],vals[j])
+            
+
+
+def linsolve(A, b, verbose=False):
+    """
+    Direct solution after :math:`\textbf{x}` using cholmod:
+    .. math::
+        \textbf{A}\textbf{x} = \textbf{b}
+        
+    If :math:`\textbf{x}` is symmetric, sparse and positive definite.
+        
+    
+    Parameters
+    ----------
+    A : pg.DSparseMatrix | pg.DSparseMapMatrix
+        System matrix.
+    
+    b : array
+        Right hand side of the equation.
+        
+    verbose : bool[False]
+        Be verbose
+        
+    Returns
+    -------
+    
+    x : array
+        Solution vector
+    
+    """
+    x = pg.RVector(len(b), .0 )
+    
+    if type(A) == pg.DSparseMapMatrix:
+        S = pg.DSparseMatrix(A)
+        solver = pg.LinSolver(S, verbose=verbose)
+        solver.solve(b, x)
+    else:    
+        solver = pg.LinSolver(A, verbose=verbose)
+        solver.solve(b, x)
+    return x
     
 def assembleForceVector(mesh, vals, userData=None):
-    
-    """Check size of vals for the right hand side .. loading vector"""
-    try:
-        """ Check size of given f equals the requested rhs vector. 
-            So we use it directly.
-        """
-        if len(vals) == mesh.nodeCount():
-            rhs = pg.RVector(vals)
-            return rhs
-        else:
-            print(Exception("f does not fit directly so we generate the RHS"))
-    except:
-        pass
+    """
+        Check size of vals for the right hand side .. loading vector
+    """
+    #try:
+        #""" Check size of given f equals the requested rhs vector. 
+            #So we use it directly.
+        #"""
+        #if len(vals) == mesh.nodeCount():
+            #rhs = pg.RVector(vals)
+            #return rhs
+        #else:
+            #print(Exception("f does not fit directly so we generate the RHS"))
+    #except:
+        #pass
             
     rhs = pg.RVector(mesh.nodeCount(), 0)
-    
-    if vals == 0.:
-        return rhs
-    
+        
     b_l = pg.DElementMatrix()
     
-    for c in mesh.cells():
-        if hasattr(vals, '__call__'):
+    if hasattr(vals, '__call__') and type(vals) is not pg.RVector:
+        for c in mesh.cells():
             if userData is not None:
                 vals(c, rhs, userData)
             else:
                 vals(c, rhs)
-        else:
+    else:
+        for c in mesh.cells():
             b_l.u(c)
-            
             for i, idx in enumerate(b_l.idx()):
-                rhs[idx] += b_l.row(0)[i] * vals
+                if type(vals) == float:
+                    rhs[idx] += b_l.row(0)[i] * vals
+                else:
+                    rhs[idx] += b_l.row(0)[i] * vals[idx]
 
     return rhs
 # def assembleForceVector()
@@ -199,6 +275,7 @@ def assembleDirichletBC(S, boundaryPair, rhs=None, time=0.0,
                     args = [n.pos()]
                     if time != 0.0:
                         args.append(time)
+                        
                     if userData:
                         kwargs['userData'] = userData
                     
@@ -275,7 +352,31 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
     
 #def assembleBoundaryConditions(...)
 
-def createStiffnessMatrix(mesh, a):
+def createStiffnessMatrix(mesh, a=None):
+    """
+    Calculates the stiffness matrix for the given mesh scaled with the per cell values a.
+    
+    ..math::
+            ...
+    
+    Parameters
+    ----------
+    mesh : pg.Mesh
+        Arbitrary mesh to calculate the stiffness for. Type of base and shape functions depends on the cell types.
+    
+    a : array
+        Per cell values., e.g., physical parameter. If None given default is 1.
+        
+    Returns
+    -------
+    
+    A : pg.DSparseMatrix
+        Stiffness matrix 
+    
+    """
+    if not a:
+        a = pg.RVector(mesh.cellCount(), 1.0)
+    
     A = pg.DSparseMatrix()
     A.fillStiffnessMatrix(mesh, a)
     return A
@@ -292,7 +393,31 @@ def createStiffnessMatrix(mesh, a):
     
     return A
 
-def createMassMatrix(mesh, b):
+def createMassMatrix(mesh, b=None):
+    """
+    Calculates the mass element matrix for the given mesh scaled with the per cell values b.
+    
+    ..math::
+            ...
+    
+    Parameters
+    ----------
+    mesh : pg.Mesh
+        Arbitrary mesh to calculate the mass element matrix. Type of base and shape functions depends on the cell types.
+    
+    b : array
+        Per cell values. If None given default is 1.
+        
+    Returns
+    -------
+    
+    A : pg.DSparseMatrix
+        Stiffness matrix 
+    
+    """
+    if not b:
+        b = pg.RVector(mesh.cellCount(), 1.0)
+        
     B = pg.DSparseMatrix()
     B.fillMassMatrix(mesh, b)
     return B

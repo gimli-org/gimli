@@ -293,15 +293,14 @@ showHelp(){
     echo "Compilation helper script."
     echo "--------------------------"
     echo "Install a TOOL on the current path by calling"
-    echo "TOOLS ar so far: boost, gccxml, pygccxml, pyplusplus"
-	echo "sh $0 TOOL"
+    echo "TOOLS are so far: boost, gccxml, pygccxml, pyplusplus"
+	echo "bash $0 TOOL"
 	echo ""
     echo "You can specify an installation path by setting the PREFIX variable i.e.:"
-    echo "PREFIX=/path/where/to/install/ sh $0 TOOL"
-	echo "You can specify an installation path by setting the PREFIX variable i.e.:"
+    echo "PREFIX=/path/where/to/install/ bash $0 TOOL"
     echo ""
     echo "You can specify boost version setting the BOOST_VERSION (default is $BOOST_VERSION) variable i.e.:"
-    echo "BOOST_VERSION=$BOOST_VERSION sh $0 boost"
+    echo "BOOST_VERSION=$BOOST_VERSION bash $0 boost"
     exit
 }
 
