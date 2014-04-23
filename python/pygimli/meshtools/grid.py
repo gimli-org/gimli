@@ -46,13 +46,13 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     def sortNodeY(n1, n2):
         """function comparing x for using sort."""
         return cmp(n1.pos().y(), n2.pos().y())
-    
+
     def sortNodeX(n1, n2):
         """function comparing y for using sort."""
         return cmp(n1.pos().x(), n2.pos().x())
 
     surface = 0.0
-    
+
     # find boundaries on left/right/bottom/top side
     le = [b for b in mesh.boundaries() if b.center().x() == mesh.xmin()]
     bo = [b for b in mesh.boundaries() if b.center().y() == mesh.ymin()]
@@ -276,7 +276,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     """
     # create boundary for mesh from boundary marker == 1
     meshBoundary = pg.Mesh()
-    meshBoundary.createH2Mesh(mesh)
+    meshBoundary.createH2()
 
     bounds = []
     for b in meshBoundary.boundaries():

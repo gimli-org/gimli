@@ -10,9 +10,18 @@ try:
     from .mayaview import showMesh3D
 except:
     def showMesh3D(mesh, interactive=True):
-        pass
-    
-    
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        if len(mesh.positions()) < 1e4:
+            for pos in mesh.positions():
+                ax.scatter(pos[0], pos[1], pos[2], 'ko')
+        text = ("Proper visualization in 3D requires Mayavi.\n"
+                """Try 'pip install mayavi' depending on your system.""")
+        ax.set_title(text)
+        plt.show()
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 
