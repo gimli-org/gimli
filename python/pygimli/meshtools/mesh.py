@@ -86,6 +86,7 @@ def readGmsh(fname, verbose=False):
                                      entry[-1], entry[2]))
     fid.close()
 
+
     lines = np.asarray(lines)
     triangles = np.asarray(triangles)
     tets = np.asarray(tets)
@@ -159,9 +160,10 @@ def readGmsh(fname, verbose=False):
             mesh.node(point[0] - 1).setMarker(-point[1])
 
     if verbose:
-        points = np.asarray(points)
-        node_types = np.unique(points[:, 1])
-        print('  Marked nodes: %s ' % len(points) + str(tuple(node_types)))
+        if len(points) > 0:
+            points = np.asarray(points)
+            node_types = np.unique(points[:, 1])
+            print('  Marked nodes: %s ' % len(points) + str(tuple(node_types)))
         print('\nDone. \n')
         print('  ' + str(mesh))
 

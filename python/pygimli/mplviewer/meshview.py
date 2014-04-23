@@ -17,7 +17,7 @@ class CellBrowser:
 
     Parameters
     ----------
-    
+
     mesh : 2D pygimli.Mesh instance
         The plotted mesh to browse through.
     ax : mpl axis instance, optional
