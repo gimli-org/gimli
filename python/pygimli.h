@@ -3,6 +3,17 @@
 
 //See best practices section in Py++ documentation
 
+//# gcc 4.8 with linux complains about a couple of atomic problems
+#ifdef __GCC_ATOMIC_BOOL_LOCK_FREE
+    #if __GCC_ATOMIC_BOOL_LOCK_FREE == 2
+        #undef __GCC_ATOMIC_BOOL_LOCK_FREE
+        #define __GCC_ATOMIC_BOOL_LOCK_FREE 1
+    #endif        
+#endif
+#define BOOST_ATOMIC_FORCE_FALLBACK
+
+
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -11,9 +22,9 @@
 #include <map>
 
 // #ifndef PACKAGE_NAME
-//         #define PACKAGE_NAME "gimli (python build)"
-//         #define PACKAGE_VERSION "0.9.0"
-//         #define PACKAGE_BUGREPORT "carsten@resistivity.net"
+// #define PACKAGE_NAME "gimli (python build)"
+// #define PACKAGE_VERSION "0.9.0"
+// #define PACKAGE_BUGREPORT "carsten@resistivity.net"
 // #endif // PACKAGE_NAME
 
 #ifdef PYTEST

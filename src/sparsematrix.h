@@ -444,8 +444,8 @@ public:
             vval.push_back(val);
         }
         file.close();
-        setRows((IndexType)max(vi) + 1);
-        setCols((IndexType)max(vj) + 1);
+        setRows(IndexType(max(vi) + 1));
+        setCols(IndexType(max(vj) + 1));
 
         for (Index i = 0; i < vi.size(); i ++){
             (*this)[vi[i]][vj[i]] = vval[i];

@@ -76,9 +76,11 @@ template< typename T > inline bool isnan(T value){return std::isnan(value);}
 
 #if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) )
 // #include <ieeefp.h>
-// #include <unistd.h>
 // inline int isinf( double x ){ return !finite(x) && x==x; }
                               // /*
+#include <unistd.h>
+#include <sys/types.h>
+                            
 //   Apple (OS X) and Sun systems declare getopt in unistd.h,
 //   other systems (Linux) use getopt.h
 // */

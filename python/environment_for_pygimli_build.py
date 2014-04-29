@@ -33,6 +33,9 @@ class settings:
 if sys.platform == 'linux2' or sys.platform == 'linux':
     pass
 
+elif sys.platform == 'darwin':
+    pass
+
 elif sys.platform == 'win32':
     settings.gimli_defines      = 'MINGW'
     settings.python_libs_path   = distutils.sysconfig.get_python_lib(standard_lib=True)
