@@ -1,4 +1,5 @@
 #! /usr/bin/python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 import os, shutil
@@ -142,8 +143,12 @@ def generate(defined_symbols, extraIncludes):
     defines = ['PYGIMLI_GCCXML', 'HAVE_BOOST_THREAD_HPP']
 
     if platform.architecture()[0] == '64bit' and platform.architecture()[1] != 'ELF':
-        defines.append('_WIN64')
-        print('Marking win64 for gccxml')
+    
+        if sys.platform == 'darwin':
+            pass
+        else:
+            defines.append('_WIN64')
+            print('Marking win64 for gccxml')
 
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:

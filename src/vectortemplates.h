@@ -164,13 +164,13 @@ template < class Vec > void clear(Vec & a) {
     for (int i = 0; i < (int)a.size(); i ++) a[i] = 0.0;
 }
 
-// template < class T, class Iter, template < class T, class Iter > class Vec > T min(const Vec< T, Iter > & v){
-//     return *std::min_element(&v[0], &v[0] + v.size());
-// }
-// 
-// template < class T, class Iter, template < class T, class Iter > class Vec > T max(const Vec< T, Iter > & v){
-//     return *std::max_element(v.begin(), v.end());
-// }
+template < class T, class Iter, template < class T, class Iter > class Vec > T min(const Vec< T, Iter > & v){
+    return *std::min_element(&v[0], &v[0] + v.size());
+}
+
+template < class T, class Iter, template < class T, class Iter > class Vec > T max(const Vec< T, Iter > & v){
+    return *std::max_element(v.begin(), v.end());
+}
 // 
 // template < class T, class Iter, template < class T, class Iter > class Vec > T sum(const Vec< T, Iter > & v){
 //     return std::accumulate(v.begin(), v.end(), 0.0);

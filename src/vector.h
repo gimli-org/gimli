@@ -1024,8 +1024,8 @@ ValueType dot(const Vector< ValueType > & v1, const Vector< ValueType > & v2){
     return mult(v1,v2);
 }
 
-// template double dot(const RVector & v1, const RVector & v2);
-template double mult(const RVector & v1, const RVector & v2);
+//template double dot(const RVector & v1, const RVector & v2);
+//template double mult(const RVector & v1, const RVector & v2);
 
 
 /*! Find function. Return index vector of true values */
