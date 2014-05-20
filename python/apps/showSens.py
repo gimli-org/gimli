@@ -14,7 +14,7 @@ from os import system
 import pygimli as g
 import pybert as b
 
-def exportSens(meshfile, sensMatrix, dataID, tol=1e-5,
+def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
                save=False, saveTo='.'):
     mesh = g.Mesh(meshfile)
     mesh.showInfos()
@@ -40,7 +40,7 @@ def exportSens(meshfile, sensMatrix, dataID, tol=1e-5,
         for i in range(0, S.rows()):
             d = b.prepExportSensitivityData(mesh , S[i], tol)
             
-            name = os.path.join(savePath, "sens-" + str(i) + ".vec")
+            name = os.path.join(savePath, outFilename + "-" + str(i) + ".vec")
     
             if save:
                 print(name)
@@ -48,13 +48,13 @@ def exportSens(meshfile, sensMatrix, dataID, tol=1e-5,
             mesh.addExportData(name, d)
     else:
         d = b.prepExportSensitivityData(mesh , S[dataID], tol)
-        name = os.path.join(savePath, "sens-" + str(dataID) + ".vec")
+        name = os.path.join(savePath, outFilename + "-" + str(dataID) + ".vec")
         if save:
             print(name)
             g.save(d, name)
         mesh.addExportData(name, d)
 
-    mesh.exportVTK("sens");
+    mesh.exportVTK(outFilename)
 
 def main(argv):
     from optparse import OptionParser
@@ -71,11 +71,13 @@ def main(argv):
 
     parser.add_option("-t", "--tolerance", dest = "tolerance", type = float, default = 1e-5
                             , help = "Tolerance for Data preparation")
+    parser.add_option("-o", "--outFilename", metavar="File", dest="outFilename", default="sens",
+                        help="Set output filename [sens]")
     parser.add_option("", "--save", dest="save", action="store_true",
                         default=False,
                         help="Save single sensitivity vector.")
-    parser.add_option("", "--save-to", metavar="File", dest="saveTo", default='.',
-                        help="Save single sensitivity vector into a given path. [default .]")
+    parser.add_option("", "--save-to", metavar="PATH", dest="saveTo", default='.',
+                        help="Save single sensitivity vector into a given path. [.]")
 
     (options, args) = parser.parse_args()
 
@@ -89,6 +91,7 @@ def main(argv):
     if options.verbose:
         print("meshfile =", meshfile)
         print("sensMatrix =", options.sensMatrix)
+        print("out=",  options.outFilename)
         print("ith.", options.id)
         print("tol=",  options.tolerance)
         print("save=",  options.save)
@@ -97,7 +100,9 @@ def main(argv):
     if options.saveTo is not '.':
         options.save=True
         
-    exportSens(meshfile, options.sensMatrix, options.id, options.tolerance, 
+    exportSens(meshfile, options.sensMatrix,
+               options.outFilename,
+               options.id, options.tolerance, 
                options.save, options.saveTo)
 
 if __name__ == "__main__":
