@@ -272,7 +272,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
     f.close()
     return mesh
 
-def transform2DMeshTo3D( mesh, x, y, z=None ):
+def transform2DMeshTo3D(mesh, x, y, z=None):
     """
     Transform a 2D mesh into 3D coordinates using a point list (e.g. from GPS)
 

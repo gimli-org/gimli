@@ -14,21 +14,21 @@ class Rectangle():
         self.size = size
         self.points = []
 
-        self.points.append([ self.start[ 0 ] - self.size[ 0 ] /2.0, self.start[ 1 ] - self.size[ 1 ] /2.0 ])
-        self.points.append([ self.start[ 0 ] + self.size[ 0 ] /2.0, self.start[ 1 ] - self.size[ 1 ] /2.0 ])
-        self.points.append([ self.start[ 0 ] + self.size[ 0 ] /2.0, self.start[ 1 ] + self.size[ 1 ] /2.0 ])
-        self.points.append([ self.start[ 0 ] - self.size[ 0 ] /2.0, self.start[ 1 ] + self.size[ 1 ] /2.0 ])
+        self.points.append([self.start[0] - self.size[0] /2.0, self.start[1] - self.size[1] /2.0])
+        self.points.append([self.start[0] + self.size[0] /2.0, self.start[1] - self.size[1] /2.0])
+        self.points.append([self.start[0] + self.size[0] /2.0, self.start[1] + self.size[1] /2.0])
+        self.points.append([self.start[0] - self.size[0] /2.0, self.start[1] + self.size[1] /2.0])
 
     def writeXY(self, filename, close = False):
         fi = open(filename, 'w')
         for p in self.points:
-            fi.write(str(p[ 0 ]) + "\t" + str(p[ 1 ]) + "\n")
+            fi.write(str(p[0]) + "\t" + str(p[1]) + "\n")
         if close:
-            p = self.points[ 0 ]
-            fi.write(str(p[ 0 ]) + "\t" + str(p[ 1 ]) + "\n")
+            p = self.points[0]
+            fi.write(str(p[0]) + "\t" + str(p[1]) + "\n")
         fi.close()
 
-    def area(self) : return self.size[ 0 ] * self.size[ 1 ]
+    def area(self) : return self.size[0] * self.size[1]
     # def writeXY
 # class Rectangle
 
@@ -69,9 +69,9 @@ def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
     '''
         out of core wrapper for dcfemlib::polytools::polyAddVIP
     '''
-    syscal = "polyAddVIP -x " + str(pos[ 0 ]) + \
-                        " -y " + str(pos[ 1 ]) + \
-                        " -z " + str(pos[ 2 ])
+    syscal = "polyAddVIP -x " + str(pos[0]) + \
+                        " -y " + str(pos[1]) + \
+                        " -z " + str(pos[2])
 
     if isHoleMarker:
         syscal += " -H "
@@ -90,7 +90,7 @@ def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
     system(syscal)
 # def polyAddVIP
 
-def polyAddRectangle(filename, rect, marker = 0, depth = 0, clean = True):
+def polyAddRectangle(filename, rect, marker=0, depth=0, clean=True):
     '''
         out of core wrapper for dcfemlib::polytools
         merge a meshed horizontal Rectangle with given marker[0] to a 3D PLC at a given depth [0]
