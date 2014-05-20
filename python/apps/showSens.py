@@ -24,30 +24,34 @@ def exportSens(meshfile, sensMatrix, dataID, tol=1e-5,
     print(S.rows())
     print(S.cols())
 
+    savePath = os.path.abspath(saveTo)
+    try:
+        os.makedirs(savePath)
+    except OSError:
+        if os.path.exists(savePath):
+            # We are nearly safe
+            pass
+        else:   
+            # There was an error on creation, so make sure we know about it
+            raise
+
+    
     if dataID == -1:
         for i in range(0, S.rows()):
             d = b.prepExportSensitivityData(mesh , S[i], tol)
-            name = "sens-" + str(i)
+            
+            name = os.path.join(savePath, "sens-" + str(i) + ".vec")
+    
             if save:
                 print(name)
-                g.save(d, name + ".vec")
+                g.save(d, name)
             mesh.addExportData(name, d)
     else:
         d = b.prepExportSensitivityData(mesh , S[dataID], tol)
-        name = "sens-" + str(dataID)
+        name = os.path.join(savePath, "sens-" + str(dataID) + ".vec")
         if save:
-            p = os.path.abspath(saveTo)
-            try:
-                os.makedirs(p)
-            except OSError:
-                if os.path.exists(p):
-                    # We are nearly safe
-                    pass
-                else:   
-                    # There was an error on creation, so make sure we know about it
-                    raise
-            
-            g.save(d, os.path.join(p, name + ".vec"))
+            print(name)
+            g.save(d, name)
         mesh.addExportData(name, d)
 
     mesh.exportVTK("sens");
