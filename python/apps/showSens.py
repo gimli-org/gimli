@@ -6,74 +6,95 @@
 """
 
 import sys
+import os
 import getopt
+
 from os import system
 
 import pygimli as g
 import pybert as b
 
-def exportSens( meshfile, sensMatrix, dataID, tol = 1e-5, save = False):
-    mesh = g.Mesh( meshfile )
+def exportSens(meshfile, sensMatrix, dataID, tol=1e-5,
+               save=False, saveTo='.'):
+    mesh = g.Mesh(meshfile)
     mesh.showInfos()
 
     S = g.RMatrix();
-    g.load( S, sensMatrix )
+    g.load(S, sensMatrix)
     print(S.rows())
     print(S.cols())
 
     if dataID == -1:
-        for i in range( 0, S.rows() ):
-            d = b.prepExportSensitivityData( mesh , S[ i ], tol )
-            name = "sens-" + str( i )
+        for i in range(0, S.rows()):
+            d = b.prepExportSensitivityData(mesh , S[i], tol)
+            name = "sens-" + str(i)
             if save:
                 print(name)
-                g.save( d, name + ".vec" )
-            mesh.addExportData( name, d )
+                g.save(d, name + ".vec")
+            mesh.addExportData(name, d)
     else:
-        d = b.prepExportSensitivityData( mesh , S[ dataID ], tol )
-        name = "sens-" + str( dataID )
+        d = b.prepExportSensitivityData(mesh , S[dataID], tol)
+        name = "sens-" + str(dataID)
         if save:
-            g.save( d, name + ".vec" )
-        mesh.addExportData( name, d )
+            p = os.path.abspath(saveTo)
+            try:
+                os.makedirs(p)
+            except OSError:
+                if os.path.exists(p):
+                    # We are nearly safe
+                    pass
+                else:   
+                    # There was an error on creation, so make sure we know about it
+                    raise
+            
+            g.save(d, os.path.join(p, name + ".vec"))
+        mesh.addExportData(name, d)
 
     mesh.exportVTK("sens");
 
-def main( argv ):
+def main(argv):
     from optparse import OptionParser
 
-    parser = OptionParser( "usage: %prog [options] mesh"
-                            , version="%prog: " + g.__version__
-                            )
-    parser.add_option("-v", "--verbose", dest="verbose", action = "store_true", default = False
-                            , help="Be verbose." )
+    parser = OptionParser("usage: %prog [options] mesh",
+                          version="%prog: " + g.__version__)
+    
+    parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,
+                        help="Be verbose.")
     parser.add_option("-s", "--sensMatrix", dest = "sensMatrix", metavar = "File", default = 'sens.bmat'
-                            , help = "Sensitivity matrix" )
+                            , help = "Sensitivity matrix")
     parser.add_option("-i", "--dataId", dest = "id", type = int, default = -1
-                            , help = "Export the data for the given id. -1 for all data." )
+                            , help = "Export the data for the given id. -1 for all data.")
 
     parser.add_option("-t", "--tolerance", dest = "tolerance", type = float, default = 1e-5
-                            , help = "Tolerance for Data preparation" )
-    parser.add_option("", "--save", dest = "save", action = "store_true", default = False
-                            , help = "Save single sensitivity vector" )
+                            , help = "Tolerance for Data preparation")
+    parser.add_option("", "--save", dest="save", action="store_true",
+                        default=False,
+                        help="Save single sensitivity vector.")
+    parser.add_option("", "--save-to", metavar="File", dest="saveTo", default='.',
+                        help="Save single sensitivity vector into a given path. [default .]")
 
     (options, args) = parser.parse_args()
 
-    if len( args ) == 0:
+    if len(args) == 0:
         parser.print_help()
         print("Please add a mesh-file.")
-        sys.exit( 2 )
+        sys.exit(2)
     else:
-        meshfile = args[ 0 ];
+        meshfile = args[0];
 
-    if ( options.verbose ):
+    if options.verbose:
         print("meshfile =", meshfile)
         print("sensMatrix =", options.sensMatrix)
         print("ith.", options.id)
         print("tol=",  options.tolerance)
         print("save=",  options.save)
+        print("saveTo=",  options.saveTo)
 
-
-    exportSens( meshfile, options.sensMatrix, options.id, options.tolerance, options.save )
+    if options.saveTo is not '.':
+        options.save=True
+        
+    exportSens(meshfile, options.sensMatrix, options.id, options.tolerance, 
+               options.save, options.saveTo)
 
 if __name__ == "__main__":
-    main( sys.argv[ 1: ] )
+    main(sys.argv[ 1: ])
