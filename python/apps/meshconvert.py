@@ -53,10 +53,9 @@ def applyInterpolation(filename, mesh, verbose=False):
         needs to be documented
     '''
 
-    data = pg.DataContainer(filename)
-
     A = None
     try:
+        data = pg.DataContainer(filename)
         A = np.zeros((3,data.sensorCount()))
         A[1] = pg.x(data.sensorPositions())
         A[2] = pg.y(data.sensorPositions())
