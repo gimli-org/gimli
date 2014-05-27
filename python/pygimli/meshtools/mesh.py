@@ -110,12 +110,14 @@ def readGmsh(fname, verbose=False):
     # creating instance of GIMLI::Mesh class
     mesh = pg.Mesh(dim)
 
-    # replacing boundary markers (gmsh does not allow negative physical
-    # regions)
+    # replacing boundary markers (gmsh does not allow negative physical regions)
     bound_marker = (pg.MARKER_BOUND_HOMOGEN_NEUMANN, pg.MARKER_BOUND_MIXED,
                     pg.MARKER_BOUND_HOMOGEN_DIRICHLET, pg.MARKER_BOUND_DIRICHLET)
     for i in range(4):
         bounds[:, dim][bounds[:, dim] == i + 1] = bound_marker[i]
+
+    # account for CEM markers
+    bounds[:,dim][bounds[:,dim] >= 10000] *= -1
 
     if verbose:
         bound_types = np.unique(bounds[:, dim])
