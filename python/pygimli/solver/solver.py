@@ -152,7 +152,8 @@ def assembleForceVector(mesh, vals, userData=None):
         for c in mesh.cells():
             b_l.u(c)
             for i, idx in enumerate(b_l.idx()):
-                if type(vals) == float:
+                
+                if type(vals) == float or type(vals) == int:
                     rhs[idx] += b_l.row(0)[i] * vals
                 else:
                     rhs[idx] += b_l.row(0)[i] * vals[idx]
@@ -374,10 +375,12 @@ def createStiffnessMatrix(mesh, a=None):
         Stiffness matrix 
     
     """
-    if not a:
+    
+    if a is None:
         a = pg.RVector(mesh.cellCount(), 1.0)
     
     A = pg.DSparseMatrix()
+    
     A.fillStiffnessMatrix(mesh, a)
     return A
     
@@ -415,7 +418,7 @@ def createMassMatrix(mesh, b=None):
         Stiffness matrix 
     
     """
-    if not b:
+    if b is None:
         b = pg.RVector(mesh.cellCount(), 1.0)
         
     B = pg.DSparseMatrix()

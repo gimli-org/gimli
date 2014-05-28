@@ -69,8 +69,6 @@ def applyInterpolation(filename, mesh, verbose=False):
         if verbose:
             print(("loaded txtfile: ", filename))
 
-
-
     tn = [n.pos()[0] for n in mesh.nodes()]
     zn = [n.pos()[1] for n in mesh.nodes()]
 
