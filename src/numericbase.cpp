@@ -20,6 +20,7 @@
 
 #include "numericbase.h"
 #include "vector.h"
+#include "pos.h"
 
 namespace GIMLI{
 
@@ -129,5 +130,20 @@ void GaussLegendre( double x1, double x2, uint n, RVector & x, RVector & w ){
    //   w[ n + 1 - i ] = w[ i - 1 ];
   }
 }
+
+RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon){
+    
+    double th = lat * PI/180.0;
+    double ph = lon * PI/180.0;
+    double ct = std::cos(th);
+    double st = std::sin(th);
+    double cp = std::cos(ph);
+    double sp = std::sin(ph);
+    return RVector3(
+            (V[0]* ct + V[1] * -st) * cp + V[2] * -sp,
+            (V[0]* ct + V[1] * -st) * sp + V[2] *  cp,
+             V[0]* st + V[1] * ct);
+}
+
 
 } //namespace GIMLI;

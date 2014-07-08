@@ -16,23 +16,23 @@ rabs   = lambda r__: np.asarray([np.sqrt(x__.dot(x__)) for x__ in r__])
 gradR  = lambda r__: (r__.T / rabs(r__))
 adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__]) 
 
-#def magnetization(lat, lon, suszept, dat=date.today()): 
-    #'''
-    #'''
-    #T0, I, D = GeoMagT0(lat, lon, dat) 
-    #'''indizierte Magnetisierung'''
-    #Mi = 1./mu0 * suszept * T0  
-    #'''remanente Magnetisierung'''
-    #Mr = 0. 
+def magnetization(lat, lon, suszept, dat=(2010,1,1)): 
+    '''
+    '''
+    T0, I, D = GeoMagT0(lat, lon, 0, dat) 
+    '''indizierte Magnetisierung'''
+    Mi = 1./mu0 * suszept * T0  
+    '''remanente Magnetisierung'''
+    Mr = 0. 
 
-    #print T0, I, D, "abs: ", np.sqrt(T0.dot(T0))
+    print(T0, I, D, "abs: ", np.sqrt(T0.dot(T0)))
 
-    #return Mr + Mi;
-## magnetization(...)
+    return Mr + Mi;
+# magnetization(...)
         
 
-def dBZPoly(pnts, poly, M, openPoly=False):
-    '''
+def BZPoly(pnts, poly, M, openPoly=False):
+    """
     Parameters
     ----------
     
@@ -43,13 +43,13 @@ def dBZPoly(pnts, poly, M, openPoly=False):
     M :
         Magnetization = [M_x, M_y, M_z]
         
-    '''
+    """
     dg, dgz = calcPolyGz(pnts, poly, 1.0, openPoly)   
     return poissonEoetvoes(adot(M, -dgz))
    
-def dBZKugel(pnts, R, pos, M):
+def BaZSphere(pnts, R, pos, M):
     """
-    Calculate the vertical component of the magnetic response dBz for a buried
+    Calculate the vertical component of the anomalous magnetic field Bz for a buried
     sphere at position pos with radius R for a given magnetization M at
     measurement points pnts.
 
@@ -66,20 +66,20 @@ def dBZKugel(pnts, R, pos, M):
         magnetization -- [Mx, My, Mz]
 
     """
-    return poissonEoetvoes(adot(M, gradGZKugel(pnts, R, rho=1.0, pos=pos)))
+    return poissonEoetvoes(adot(M, gradGZSphere(pnts, R, rho=1.0, pos=pos)))
 
-def dBZZylinderHoriz(pnts, R, pos, M):
+def BaZCylinderHoriz(pnts, R, pos, M):
     """"""
-    return poissonEoetvoes(adot(M, gradGZZylinderHoriz(pnts, R, rho=1.0, pos=pos)))
+    return poissonEoetvoes(adot(M, gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
     
 def poissonEoetvoes(dg):
     """"""
     return mu0/(4.0 * np.pi * G) * dg
 #def poissonEoetvoes(...)
     
-def uKugel(r, R, rho, pos=[0., 0., 0.]):
+def uSphere(r, R, rho, pos=[0., 0., 0.]):
     """
-    Gravitationspotential einer Kugel mit Radius R und Dichte rho an pos.
+    Gravitationspotential einer Sphere mit Radius R und Dichte rho an pos.
 
     .. math:: u = -G * dM * \frec{1}{r}
     
@@ -89,9 +89,9 @@ def uKugel(r, R, rho, pos=[0., 0., 0.]):
     """
     return -G * deltaMSph(R, rho) * 1. / rabs(r - pos)
 
-def gradUKugel(r, R, rho, pos=[0., 0., 0.]):
+def gradUSphere(r, R, rho, pos=[0., 0., 0.]):
     """
-    Gravitationsfeldstrke einer Kugel mit Radius R und Dichte rho an pos 
+    Gravitationsfeldstrke einer Sphere mit Radius R und Dichte rho an pos 
         
        
     .. math:: g = -G[m^3/(kg s^2)] * dM[kg] * 1/r^2 1/m^2] * grad(r)[1/1] = [m^3/(kg s^2)] * [kg] * 1/m^2 * [1/1] == m/s^2
@@ -107,9 +107,9 @@ def gradUKugel(r, R, rho, pos=[0., 0., 0.]):
     
     # gesucht eigentlich g_z aber nach unten als -z
     return [1., 1., -1.] * (gradR(r - pos) * - G * deltaMSph(R, rho) * 1. / (rabs(r - pos)**2)).T
-#def gKugel(...)
+#def gSphere(...)
     
-def gradGZKugel(r, R, rho, pos=[0., 0., 0.]):
+def gradGZSphere(r, R, rho, pos=[0., 0., 0.]):
     """
     .. math:: g = -\\nabla u
     
@@ -118,7 +118,7 @@ def gradGZKugel(r, R, rho, pos=[0., 0., 0.]):
     
     Returns
     -------
-        grad, gz, [gz_x, gz_y, gz_z]
+        [\d g_z /\dx, \d g_z /\dy, \d g_z /\dz]
     """
     t = pos[2]
     
@@ -128,7 +128,7 @@ def gradGZKugel(r, R, rho, pos=[0., 0., 0.]):
     return (G * deltaMSph(R, rho) / rabs(r - pos)**5. * gzxyz).T
 
 
-def uZylinderHoriz(pnts, R, rho, pos=[0., 0.]):
+def uCylinderHoriz(pnts, R, rho, pos=[0., 0.]):
     """
     Parameters
     ----------
@@ -146,7 +146,7 @@ def uZylinderHoriz(pnts, R, rho, pos=[0., 0.]):
     return u
     
     
-def gradUZylinderHoriz(r, R, rho, pos=[0., 0.]):
+def gradUCylinderHoriz(r, R, rho, pos=[0., 0.]):
     """
     Calculate horizontal component of gravimetric field in mGal
     
@@ -170,7 +170,7 @@ def gradUZylinderHoriz(r, R, rho, pos=[0., 0.]):
 #def gZylinderHoriz():
 
 
-def gradGZZylinderHoriz(r, R, rho, pos=[0., 0.]):
+def gradGZCylinderHoriz(r, R, rho, pos=[0., 0.]):
     """
     .. math:: g = -grad u(r), with r = [x,z], |r| = \sqrt(x^2+z^2)
     
@@ -194,7 +194,7 @@ def gradGZZylinderHoriz(r, R, rho, pos=[0., 0.]):
                          1.0 * (- r[:,0]**2 + (t - r[:,1])**2)])
     
     return (G * deltaACyl(R, rho) / rabs(r - pos)**4. * gz_xz).T
-#def gZKugel(...)
+#def gZSphere(...)
 
 
 def gzHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
@@ -360,6 +360,8 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
 
     pnts must be numbered clockwise. Else change the sign of the result.
     Return values are in mGal.
+    
+    Bei der magnetischen Lösung fehlt vermutlich ein 1/4.Pi im won & Bevis (ötvös beziehung gl (9) ..... !!check this!!
     """
     
     qpnts = pnts
@@ -386,7 +388,7 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
             gzz[i,:] += -gzzi 
 
         
-    return density * 2.0 * -G * gz, density * 2.0 * -G * gzz
+    return density * 2.0 * -G * gz, density * 2.0 * -G * gzz 
 # def calcPolydgdz()
 
 def angle(p1, p2, p3, Un):
@@ -553,6 +555,7 @@ def grav(mesh, pnts, rho):
             if b.marker() != 0:
                 
                 if mesh.dimension() == 2:
+                    print(b.node(0).pos(), b.node(1).pos())
                     dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                        b.node(1).pos())
                     dgi *= -2.0
@@ -587,6 +590,7 @@ def buildCircle(pos, radius, segments=12, leftDirection=True):
 # def buildCircle(pos, radius, segments)
 
 if __name__ == "__main__":
+    import sys
     print(sys.argv[1:])
     print("do some tests here")
     

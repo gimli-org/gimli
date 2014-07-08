@@ -175,6 +175,41 @@ template < class ValueType > ValueType besselK1(const ValueType & x){
     return result;
 }
 
+//*!Spherical tangential coordinates to geocentric Cartesian coordinates
+/*!      
+ * Convert vector field from spherical tangential coordinates 
+    (radial, Latitude/theta(north/south), Longitude/phi(east/west))
+        
+        \vec{V(1, lat, lon)} = V[0] * \vec{unit_r} +  V[1] * \vec{unit_theta} + V[2] * \vec{unit_phi}
+        
+        to geocentric Cartesian coordinates x/y/z:
+        
+        \vec{F(x, y, z)} = F[0] * \vec{unit_x} +  F[1] * \vec{unit_y} + F[2] * \vec{unit_z}
+        
+        Transformation via rotation matrix S
+        F(x,y,z) = S * V(r,\theta,\phi)
+
+        J = S * (1, r, r cos th)
+        
+        J (\dx, \dy, \dz) / (\dr, \d th, \d ph)
+        
+        x = r * cos ph * cos th
+        y = r * sin ph * cos th
+        z = r * sin th
+        
+        th = latitude degrees pi/2 .. pi/2 .. 90° = north pole
+        ph = longitude degrees  -pi .. pi .. west - east
+       
+    
+    Inputs
+        V B in radial direction | Magnetic field strength (B)
+        lon longitude degrees (in degrees from -180 to 180)
+        lat Latitude measured positive north from equator (in degrees from south pole [-90 .. 0 .. 90] north pole)
+    Outputs
+        F
+*/
+RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon);
+
 } // namespace GIMLI
 
 #endif // _GIMLI_NUMERICBASE__H
