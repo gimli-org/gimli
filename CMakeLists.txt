@@ -18,7 +18,18 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -g -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
     
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common -s")
+
+    #Static start
+#     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+#     set(BUILD_SHARED_LIBS OFF)
+#     set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
+#     set_target_properties(icarus PROPERTIES LINK_SEARCH_END_STATIC 1)
+#     set(GCC_CXX_FLAGS ${GCC_CXX_FLAGS} "-static-libgcc -static-libstdc++ -static")
+    #Static Libs
+
 endif ()
+
+
  
 if(MSVC)
 	# MSVC complain a lot of possible unsecure std function
@@ -117,16 +128,17 @@ else()
 	set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 endif()
 find_package(PythonLibs)
-find_package(Boost 1.46.0 COMPONENTS python )
+find_package(Boost 1.46.0 COMPONENTS python)
 
 find_package(gccxml)
 find_package(pygccxml)
 
 if(PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE 
 	AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
-	AND Boost_SYSTEM_LIBRARIES)
+	AND Boost_PYTHON_LIBRARIES)
     set (PYGIMLI 1)
     message (STATUS "pygimli can be build.")
+    message (STATUS "boost_python:" ${Boost_PYTHON_LIBRARIES})
 endif ()
 
 configure_file ("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )

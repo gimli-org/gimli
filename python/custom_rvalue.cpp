@@ -52,7 +52,8 @@ struct PyTuple2RVector3{
             boost::tuples::tie(x, y) = xy_converter_type::to_c_tuple(obj);
         }        
                 
-        xyz_t * vec = new (memory_chunk) xyz_t(x, y, z);
+        //** don't know where this will be deleted but it is necessary
+        new (memory_chunk) xyz_t(x, y, z);
         data->convertible = memory_chunk;
     }
 };
