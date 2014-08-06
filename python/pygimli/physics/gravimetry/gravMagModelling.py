@@ -555,7 +555,6 @@ def grav(mesh, pnts, rho):
             if b.marker() != 0:
                 
                 if mesh.dimension() == 2:
-                    print(b.node(0).pos(), b.node(1).pos())
                     dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                        b.node(1).pos())
                     dgi *= -2.0

@@ -314,6 +314,7 @@ public:
         
     void relax();
 
+    /*! Smooth the mesh via moving all free nodes into the average of all neighboring nodes. Repeat this smoothIteration times. There is currently only this smoothFunction. EdgeSwapping is deactivated.*/
     void smooth(bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint smoothIteration);
 
     /*! Scale mesh with \ref RVector3 s*/

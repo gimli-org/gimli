@@ -3,6 +3,64 @@
 import pygimli as pg
 import numpy as np
 
+def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None):
+    """
+    Create a mesh for a given PLC using triangle (http://www.cs.cmu.edu/~quake/triangle.html)
+    or tetgen 
+    if the gimli support for the meshgenerator is installed. Poly need to be a valid PLC.
+    
+    Tetgen support need to be implemented
+        
+    Parameters
+    ----------
+    poly: :gimliapi:`GIMLI::Mesh`
+        2D or 3D gimli mesh that contains the PLC.
+        2D mesh needs edges
+        3D mesh needs ... to be implemented
+    quality: float
+        2D triangle quality sets a minimum angle constraint. Be careful with values above 34 degrees
+    area: float
+        2D maximum triangle size in m*m
+    smooth: tuple
+        [smoothing algorithm, number of iterations]
+        0, no smoothing
+        1, node center
+        2, weighted node center
+    switches: str
+        force triangle to use the gives command switches
+    
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        
+    
+    """
+    
+    if poly.dim() == 2:
+        tri = pg.TriangleWrapper(poly)
+        
+        if switches == None:
+            switches = '-DpzeAfq' + str(quality)
+                
+            if area > 0:
+                switches += 'a'+ str(area)
+        
+        tri.setSwitches(switches)
+        
+        mesh = tri.generate()
+        
+        if smooth != None:
+            mesh.smooth(nodeMoving=True,
+                        edgeSwapping=False,
+                        smoothFunction=smooth[0],
+                        smoothIteration=smooth[1])
+        
+        return mesh
+
+    else:
+        raise('not yet implemented')
+    
+    
 
 def readGmsh(fname, verbose=False):
     """

@@ -5,8 +5,8 @@ import numpy as np
 import textwrap
 
 from .colorbar import *
-import pygimli as g
-from pygimli.misc import streamline
+import pygimli as pg
+from pygimli.misc import streamline, streamlineDir
 
 
 class CellBrowser:
@@ -119,19 +119,20 @@ def drawMesh(axes, mesh):
 
     Set the limits of the axes tor the mesh extent.
     """
-    g.mplviewer.drawMeshBoundaries(axes, mesh)
+    pg.mplviewer.drawMeshBoundaries(axes, mesh)
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
 # def drawMesh(...)
 
 def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
-              showCbar=True , linear=False, label="", cmap=None,
+              #showCbar=True ,
+              logScale=True, label="", cmap=None,
               nLevs=5, orientation='horizontal', alpha=1,
               xlab=None, ylab=None, verbose=False):
     """Draw a 2d mesh and color the cell by the data."""
 
-    gci = g.mplviewer.createMeshPatches(axes, mesh, alpha=alpha, verbose=verbose)
+    gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha, verbose=verbose)
 
     if cmap is not None:
         if isinstance(cmap, str):
@@ -149,7 +150,7 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
     gci.set_linewidth(None)
 
     if data is None:
-        data = g.RVector(mesh.cellCount())
+        data = pg.RVector(mesh.cellCount())
 
     if len(data) != mesh.cellCount():
         viewdata = data(mesh.cellMarker())
@@ -157,16 +158,18 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
         viewdata = data
 
     if min(data) <= 0:
-        linear = True
+        logScale = False
 
-    g.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
-                                logScale=not(linear))
+    pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
+                                 logScale=logScale)
 
-    if showCbar:
+    # draw Model only draws the model, if you want a cbar use show() 
+    ## or add them manualy
+    #if showCbar:
+        #patches = pg.mplviewer.createColorbar(gci, cMin=cMin, cMax=cMax,
+                                             #nLevs=nLevs, label=label,
+                                             #orientation=orientation)
 
-        patches = g.mplviewer.createColorbar(gci, cMin=cMin, cMax=cMax,
-                                             nLevs=nLevs, label=label,
-                                             orientation=orientation)
     if xlab is not None: axes.set_xlabel(xlab)
     if ylab is not None: axes.set_ylabel(ylab)
 
@@ -224,23 +227,22 @@ def drawMeshBoundaries(axes, mesh, fitView = True):
     if mesh.nodeCount() < 2:
         raise Exception("drawMeshBoundaries(axes, mesh): to few nodes", mesh.nodeCount())
 
-
     if fitView:
         axes.set_xlim(mesh.xmin() - 0.05, mesh.xmax() + 0.05)
         axes.set_ylim(mesh.ymin() - 0.05, mesh.ymax() + 0.05)
 
     drawAA = True;
-    swatch = g.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
     mesh.createNeighbourInfos()
 
     drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(0)
                                 , color = (0.0, 0.0, 0.0, 1.0)
                                 , linewidth = 0.3)
     #return
-    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(g.MARKER_BOUND_HOMOGEN_NEUMANN)
+    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
                                 , color = (0.0, 1.0, 0.0, 1.0)
                                 , linewidth = 1.0)
-    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(g.MARKER_BOUND_MIXED)
+    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED)
                                 , color = (1.0, 0.0, 0.0, 1.0)
                                 , linewidth = 1.0)
     drawSelectedMeshBoundaries(axes, [b for b in mesh.boundaries() if b.marker() > 0]
@@ -266,7 +268,7 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
         print("drawMeshBoundaries(axes, mesh): to few nodes")
         return
 
-    swatch = g.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
 
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
@@ -305,7 +307,7 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
     should be better. Draw the potential that is associated to a mesh
     """
 
-    swatch = g.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
     if (verbose):
         print(("start interpolation:", swatch.duration(True)))
 
@@ -313,10 +315,10 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
     yg = createLinLevs(z[0], z[1], int((z[1] - z[0]) / dx))
     X,Y = np.meshgrid(xg, yg)
 
-    uI = g.interpolate(mesh, u
-                    , g.asvector(list(X.flat))
-                    , g.RVector(len(Y.flat), 0.0)
-                    , g.asvector(list(Y.flat)), verbose)
+    uI = pg.interpolate(mesh, u
+                    , pg.asvector(list(X.flat))
+                    , pg.RVector(len(Y.flat), 0.0)
+                    , pg.asvector(list(Y.flat)), verbose)
 
     if (verbose):
         print(("interpolation:", swatch.duration(True)))
@@ -387,7 +389,7 @@ def drawField(axes, mesh, data=None, filled=False, omitLines=False,
         if c.shape().nodeCount() == 4:
             triCount = triCount + 2
         else:
-            triCount = triCount + 2
+            triCount = triCount + 1
 
     triangles = np.zeros((triCount, 3))
 
@@ -413,8 +415,7 @@ def drawField(axes, mesh, data=None, filled=False, omitLines=False,
 
     if filled:
         gci = axes.tricontourf(x, y, triangles, data, *args, **kwargs)
-
-
+    
     if 'levels' in kwargs:
         l = kwargs['levels']
         cols = ['0.5']
@@ -428,11 +429,11 @@ def drawField(axes, mesh, data=None, filled=False, omitLines=False,
 
 def drawStreamCircular(a, mesh, u, pos, rad, nLines = 20, step = 0.1, showStartPos = False):
     ''
-    ' Draw nLines streamlines for u circular around pos staring at radius rad '
+    ' Draw nLines streamlines for u circular around pos starting at radius rad '
     ''
     for i in np.linspace(0, 2. * np.pi, nLines):
-        start = pos + g.RVector3(1.0, 0.0, 0.0) * rad * np.cos(i) + \
-                g.RVector3(0.0, 1.0, 0.0) * rad * np.sin(i)
+        start = pos + pg.RVector3(1.0, 0.0, 0.0) * rad * np.cos(i) + \
+                pg.RVector3(0.0, 1.0, 0.0) * rad * np.sin(i)
         x,y = streamline(mesh, u, start, step, maxSteps=50000, koords=[0,1])
         a.plot(x,y, color = 'black', linewidth = 0.6, linestyle = 'solid')
 
@@ -457,7 +458,7 @@ def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01,
 
 def drawStreamLines(a, mesh, u, nx=25, ny=25, *args, **kwargs):
     """
-    Draw streamlines for the gradients of field values u on mesh.
+    Draw streamlines for the gradients of field values u on a mesh.
 
     The matplotlib internal streamplot need equidistant space value so
     we interpolate first on a grid defined by nx and ny values.
@@ -482,8 +483,64 @@ def drawStreamLines(a, mesh, u, nx=25, ny=25, *args, **kwargs):
             V[i, j] = -gr[1]
 
     a.streamplot(X, Y, U, V, *args, **kwargs)
+# def drawStreamLines(...)
 
-def drawSensors(axes, sensors, diam = None):
+def drawStreamLines2(axe, mesh, data, *args, **kwargs):
+    """
+        Draw streamlines based on unstructured mesh. Every cell contains only one streamline and each new stream line starts in the center of a cell.
+        Stream density can by chosen by parameter a, that leads to a new mesh with equidistant maximum cell size a.
+    """
+    for c in mesh.cells(): c.setValid(True)
+    
+    for b in mesh.findBoundaryByMarker(1,99):
+        c = b.leftCell()
+        if c is None:
+            c = b.rightCell()
+            
+        if c.valid():
+            
+            #x, y = streamlineDir(mesh, data, startCoord=c.center(), dLength=0.01,
+                                 #down=True, verbose=False)
+            #axe.plot(x,y, color='red')
+            #c.setValid(True)
+            #x, y = streamlineDir(mesh, data, startCoord=c.center(), dLength=0.01,
+                                 #down=False, verbose=False)
+            #axe.plot(x,y, color='blue')
+    
+            x,y = streamline(mesh, data, startCoord=c.center(),
+                             dLength=c.center().dist(c.node(0).pos())/4.,
+                             maxSteps=10000,
+                             verbose=False,
+                             koords=[0,1])
+            #print( x, y)
+            axe.plot(x, y, color='black', *args, **kwargs)
+            xmid=int(len(x)/2)
+            ymid=int(len(y)/2)
+            dx=x[xmid+1]-x[xmid]
+            dy=y[ymid+1]-y[ymid]
+            axe.arrow(x[xmid], y[ymid], dx, dy)  
+            #axe.plot(c.center()[0], c.center()[1], 'o')
+            #break
+    #return
+    for c in mesh.cells():
+    
+        if c.valid():
+            x,y = streamline(mesh, data, startCoord=c.center(),
+                             dLength=c.center().dist(c.node(0).pos())/4.,
+                             maxSteps=10000,
+                             verbose=False,
+                             koords=[0,1])
+    
+            #axe.plot(mesh.cell(0).center()[0], mesh.cell(0).center()[1], 'o')
+            axe.plot(x, y, color='black', *args, **kwargs)
+            #break
+
+    #a.plot(x,y, color = color, linewidth = 0.6, linestyle = 'solid')
+    
+    for c in mesh.cells(): c.setValid(True)
+# def drawStreamLines2(...)
+    
+def drawSensors(axes, sensors, diam=None, koord=[0,2]):
     ''
     ''
     ''
@@ -494,7 +551,7 @@ def drawSensors(axes, sensors, diam = None):
         diam = eSpacing / 8.0
 
     for e in sensors:
-        eCircles.append(mpl.patches.Circle((e[0], e[2]), diam))
+        eCircles.append(mpl.patches.Circle((e[koords[0]], e[koords[1]]), diam))
 
     p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
     axes.add_collection(p)
@@ -504,10 +561,10 @@ def createParameterContraintsLines(mesh, cMat, cWeight = None):
     ''
     ''
     ''
-    C = g.RMatrix()
-    if type(cMat) == g.DSparseMapMatrix:
+    C = pg.RMatrix()
+    if type(cMat) == pg.DSparseMapMatrix:
         cMat.save('tmpC.matrix')
-        g.loadMatrixCol(C, 'tmpC.matrix');
+        pg.loadMatrixCol(C, 'tmpC.matrix');
     else:
         C = cMat
 
@@ -520,7 +577,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight = None):
 
     paraCenter = dict()
     for id, vals in list(cellList.items()):
-        p = g.RVector3(0.0, 0.0, 0.0);
+        p = pg.RVector3(0.0, 0.0, 0.0);
         for c in vals:
             p += c.center()
         p /= float(len(vals))
@@ -529,7 +586,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight = None):
     nConstraints = C[0].size()
     start      = []
     end        = []
-    swatch = g.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
     for i in range(0, nConstraints / 2):
         #print i
         #if i == 1000: break;
@@ -543,12 +600,12 @@ def createParameterContraintsLines(mesh, cMat, cWeight = None):
             #if idR == index:
                 #rightCells.append(mesh.cell(c))
 
-        #p1 = g.RVector3(0.0,0.0);
+        #p1 = pg.RVector3(0.0,0.0);
         #for c in leftCells:
             #p1 += c.center()
         #p1 /= float(len(leftCells))
 
-        #p2 = g.RVector3(0.0,0.0);
+        #p2 = pg.RVector3(0.0,0.0);
         #for c in rightCells:
             #p2 += c.center()
         ##print cWeight[i]
@@ -556,8 +613,8 @@ def createParameterContraintsLines(mesh, cMat, cWeight = None):
         p1 = paraCenter[idL]; p2 = paraCenter[idR]
 
         if cWeight is not None:
-            pa = g.RVector3(p1 + (p2-p1)/2.0 * (1.0 - cWeight[i]))
-            pb = g.RVector3(p2 + (p1-p2)/2.0 * (1.0 - cWeight[i]))
+            pa = pg.RVector3(p1 + (p2-p1)/2.0 * (1.0 - cWeight[i]))
+            pb = pg.RVector3(p2 + (p1-p2)/2.0 * (1.0 - cWeight[i]))
         else:
             pa = p1; pb = p2
 

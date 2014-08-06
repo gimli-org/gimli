@@ -4,92 +4,142 @@ from __future__ import print_function
 
 import pygimli as pg
 
-def rot2DGridToWorld( mesh, start, end ):
+def rot2DGridToWorld(mesh, start, end):
     print(mesh, start, end)
-    mesh.rotate( pg.degToRad( pg.RVector3( -90.0, 0.0, 0.0 ) ) )
+    mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3( 0.0, 0.0, 0.0 ).norm( pg.RVector3( 0.0,  0.0, -10.0 ), pg.RVector3( 10.0, 0.0, -10.0 ) )
-    dest = start.norm( start - pg.RVector3( 0.0, 0.0, 10.0 ), end )
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0,  0.0, -10.0), pg.RVector3(10.0, 0.0, -10.0))
+    dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 
-    q = pg.getRotation( src, dest )
-    rot = pg.RMatrix( 4, 4 )
-    q.rotMatrix( rot )
-    mesh.transform( rot )
-    mesh.translate( start )
+    q = pg.getRotation(src, dest)
+    rot = pg.RMatrix(4, 4)
+    q.rotMatrix(rot)
+    mesh.transform(rot)
+    mesh.translate(start)
 
 
-def streamline( mesh, field, start, dLength, maxSteps = 1000, verbose = False, koords=[0,2] ):
+def streamline(mesh, field, startCoord, dLength, 
+               maxSteps=1000, verbose=False, koords=[0, 1]):
+    xd, yd = streamlineDir(mesh, field, startCoord, dLength, maxSteps=maxSteps,
+                           down=True, verbose=verbose, koords=koords)
+    c = mesh.findCell(startCoord)
+    
+    if c is not None:
+        c.setValid(True)
+
+    xu, yu = streamlineDir(mesh, field, startCoord, dLength, maxSteps=maxSteps,
+                           down=False, verbose=verbose, koords=koords)
+    return xd + xu, yd + yu
+
+def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
+                  verbose=False, koords=[0, 1]):
+    """
+        down = -1, up = 1, both = 0
+    """
     xd = []
     yd = []
     counter = 0
+    
+    pot = None
+    vx = None
+    vy = None
+    isVectorData = False
 
+    if hasattr(field[0], '__len__'):
+        vx = pg.RVector(field[:,0])
+        vy = pg.RVector(field[:,1])
+        isVectorData = True
+    else:
+        pot = pg.RVector(field)
+
+    direction = 1
+    if down:
+        direction = -1
+        
     # search downward
-    pos = pg.RVector3( start )
-    c = mesh.findCell( pos );
-    lastU = 1e99;
+    pos = pg.RVector3(startCoord)
+    c = mesh.findCell(startCoord)
+    
+    if c is not None:
+        xd.append(pos[koords[0]])
+        yd.append(pos[koords[1]])
+    
+    lastC = c
+    lastU = -direction*1e99
 
-    while c is not None and len( xd ) < maxSteps:
-        d = c.grad( pos, field )
-        u = c.pot( pos, field )
+    d = None
+    while c is not None and len(xd) < maxSteps:
+
+        # valid .. temporary check if there is already a stream within the cell
+        if not c.valid():
+            break
+        
+        if isVectorData:
+            if len(vx) == mesh.cellCount():
+                d = pg.RVector3(vx[c.id()], vy[c.id()])
+            else:
+                d = pg.RVector3(c.pot(pos, vx), c.pot(pos, vy))
+            u = 0.
+        else:
+            d = c.grad(pos, pot)
+            u = c.pot(pos, pot)
         #print "cell:", c.id(), u
         # always go u down
-        if u > lastU:
-            #print u, lastU
-            break;
-            #pass
+        
+        if down:
+            if u > lastU: break
+        else: 
+            if u < lastU: break
 
-        pos -= d/d.length() * dLength * max( 1.0, ( (start-pos).length() ) )
-        xd.append( pos[ koords[ 0 ] ] )
-        yd.append( pos[ koords[ 1 ] ] )
-        c = mesh.findCell( pos, False );
+        pos += direction * d/d.length() * dLength * max(1.0, ((startCoord - pos).length()))
+        c = mesh.findCell(pos, False)
+
+        #Change cell here .. set old cell to be processed
+        if c is not None:
+            
+            xd.append(pos[koords[0]])
+            yd.append(pos[koords[1]])
+
+            # If the new cell is different from the current we move into the 
+            # new cell and make the last to be invalid .. 
+            # the last active contains a stream element
+            if c.id() != lastC.id():
+                lastC.setValid(False)
+                lastC = c
+        else:
+            #There is no new cell .. the last active contains a stream element
+            lastC.setValid(False)
 
         lastU = u
         if verbose:
             print(pos, u)
 
-    xu = []
-    yu = []
-    #return xu, yu
-    # search upward
-    pos = pg.RVector3( start )
-    c = mesh.findCell( pos );
+    #Stream line has stopped and the current cell (if there is one) ..
+    # .. contains a stream element    
+    if c is not None:
+    
+        c.setValid(False)
 
-    lastu=-1e99
-    while c is not None and len( xu ) < maxSteps:
-        d = c.grad( pos, field )
-        u = c.pot( pos, field )
-
-        # always go u up
-        if u < lastU:
-            break;
-
-        pos += d/d.length() * dLength * max( 1.0, ( (start-pos).length() ) )
-        xu.append( pos[ koords[ 0 ] ] )
-        yu.append( pos[ koords[ 1 ] ] )
-        c = mesh.findCell( pos, False );
-        lastU = u
-
-    xu.reverse()
-    yu.reverse()
-    x = xu + xd
-    y = yu + yd
-    return x,y
-
-def boundaryPlaneIntersectionLines( boundaries, plane ):
+    if down:
+        xd.reverse(), yd.reverse()
+        
+    return xd, yd
+   
+def boundaryPlaneIntersectionLines(boundaries, plane):
     """Create Lines from boundaries that intersect a plane."""
     lines = []
 
     for b in boundaries:
         ps = []
-        for i, n in enumerate( b.shape().nodes() ):
-            line = pg.Line( n.pos(), b.shape().node( (i+1)%b.shape().nodeCount() ).pos() )
-            p = plane.intersect( line, 1e-8, True )
+        for i, n in enumerate(b.shape().nodes()):
+            line = pg.Line(n.pos(), b.shape().node((i+1)%b.shape().nodeCount()).pos())
+            p = plane.intersect(line, 1e-8, True)
             if p.valid():
-                ps.append( p )
+                ps.append(p)
 
-        if len( ps ) == 2:
-            lines.append( list(zip( [ ps[0].x(), ps[1].x() ],
-                               [ ps[0].z(), ps[1].z() ] )) )
+        if len(ps) == 2:
+            lines.append(list(zip([ps[0].x(), ps[1].x()],
+                               [ps[0].z(), ps[1].z()])))
     return lines
 # def intersectionLines
 
@@ -115,21 +165,21 @@ def number_of_processors():
         raise RuntimeError('unknown platform')
 
 
-def assembleDC( mesh, source = pg.RVector3( 0.0, 0.0, 0.0 ) ):
+def assembleDC(mesh, source = pg.RVector3(0.0, 0.0, 0.0)):
     """assemble stiffness matrix for 3d dc forward problem using fem."""
     S = pg.DSparseMatrix()
-    S.buildSparsityPattern( mesh )
+    S.buildSparsityPattern(mesh)
 #    se = pg.DElementMatrix()
 
 #    for c in mesh.cells():
-#        se.ux2uy2uz2( c )
+#        se.ux2uy2uz2(c)
 #        S += se
-    pg.dcfemDomainAssembleStiffnessMatrix( S, mesh, 0.0, False )
-    pg.dcfemBoundaryAssembleStiffnessMatrix( S, mesh, source, 0.0 )
+    pg.dcfemDomainAssembleStiffnessMatrix(S, mesh, 0.0, False)
+    pg.dcfemBoundaryAssembleStiffnessMatrix(S, mesh, source, 0.0)
     return S
 #def assembleDC
 
-def assembleCEM( S, mesh, marker, zi, nodeID = -1, verbose = False ):
+def assembleCEM(S, mesh, marker, zi, nodeID = -1, verbose = False):
     '''
         add dc-cem to stiffness system, return new Matrix and sum of electrodes surface
     '''
@@ -137,37 +187,37 @@ def assembleCEM( S, mesh, marker, zi, nodeID = -1, verbose = False ):
     sumArea = 0
 
     if nodeID == -1:
-        for b in mesh.findBoundaryByMarker( marker ):
+        for b in mesh.findBoundaryByMarker(marker):
             sumArea += b.shape().domainSize()
         print("addCEM: ", marker, sumArea, 'm^2', zi/sumArea, 'Ohm\n', end=' ')
     else:
         sumArea = 1
         print("addCEM: node")
 
-    mapS = pg.DSparseMapMatrix( S );
+    mapS = pg.DSparseMapMatrix(S);
     oldSize = S.size()
 
     se = pg.DElementMatrix()
 
-    mapS.setRows( oldSize + 1 );
-    mapS.setCols( oldSize + 1 );
+    mapS.setRows(oldSize + 1);
+    mapS.setCols(oldSize + 1);
 
     if nodeID == -1:
-        for b in mesh.findBoundaryByMarker( marker ):
-            se.u( b )
+        for b in mesh.findBoundaryByMarker(marker):
+            se.u(b)
             se /= -zi
-            mapS.addToCol( oldSize, se );
-            mapS.addToRow( oldSize, se );
+            mapS.addToCol(oldSize, se);
+            mapS.addToRow(oldSize, se);
             se.u2(b)
             se /= zi
             mapS += se
 
-        mapS.setVal( oldSize,  oldSize, sumArea /zi )
+        mapS.setVal(oldSize,  oldSize, sumArea /zi)
     else:
-        mapS.addVal( nodeID, nodeID,  1.0 )
-        mapS.addVal( oldSize, nodeID,  - 1.0 )
-        mapS.addVal( nodeID,  oldSize, - 1.0 )
-        mapS.addVal( oldSize,  oldSize, 1.0 )
+        mapS.addVal(nodeID, nodeID,  1.0)
+        mapS.addVal(oldSize, nodeID,  - 1.0)
+        mapS.addVal(nodeID,  oldSize, - 1.0)
+        mapS.addVal(oldSize,  oldSize, 1.0)
 
-    return pg.DSparseMatrix( mapS ), sumArea
+    return pg.DSparseMatrix(mapS), sumArea
 #def assembleCEM
