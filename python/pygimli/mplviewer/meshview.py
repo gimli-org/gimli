@@ -540,7 +540,7 @@ def drawStreamLines2(axe, mesh, data, *args, **kwargs):
     for c in mesh.cells(): c.setValid(True)
 # def drawStreamLines2(...)
     
-def drawSensors(axes, sensors, diam=None, koord=[0,2]):
+def drawSensors(axes, sensors, diam=None, koords=[0,2]):
     ''
     ''
     ''
