@@ -232,9 +232,14 @@ def showDC2DInvResMod(modfile, contour, cMin = None, cMax = None, label = "", cm
 def showMeshPatch(axis, mesh, data, cov = None, cMin = None, cMax = None, showCbar = True,
                    label = "", linear = False, nLevs = 5, orientation = 'horizontal', cmapname = None):
 
-    patches = pygimli.mplviewer.drawModel(axis, mesh, data, cMin = cMin, cMax = cMax
-               , showCbar = showCbar, linear = linear, label = label
-               , nLevs = nLevs, orientation = orientation)
+    patches = pygimli.mplviewer.drawModel(axis, mesh, data, cMin=cMin, cMax=cMax,
+                                          logScale=not linear, label=label,
+                                          nLevs=nLevs, orientation=orientation)
+
+    if showCbar:
+        pg.mplviewer.createColorbar(patches, cMin=cMin, cMax=cMax,
+                                    nLevs=nLevs, label=label,
+                                    orientation=orientation)
 
     if cmapname is not None:
         cmap = cmapFromName(cmapname)
