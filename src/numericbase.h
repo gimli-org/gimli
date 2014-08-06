@@ -197,12 +197,12 @@ template < class ValueType > ValueType besselK1(const ValueType & x){
         y = r * sin ph * cos th
         z = r * sin th
         
-        th = latitude degrees pi/2 .. pi/2 .. 90° = north pole
+        th = latitude degrees -pi/2 .. pi/2, 90 = north pole
         ph = longitude degrees  -pi .. pi .. west - east
        
     
     Inputs
-        V B in radial direction | Magnetic field strength (B)
+        V B in radial direction or Magnetic field strength (B)
         lon longitude degrees (in degrees from -180 to 180)
         lat Latitude measured positive north from equator (in degrees from south pole [-90 .. 0 .. 90] north pole)
     Outputs
