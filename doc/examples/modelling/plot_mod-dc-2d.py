@@ -9,12 +9,12 @@ Let us start with a mathematical formulation ...
 
 .. math::
 
-    \nabla\cdot( \sigma \cdot \nabla u ) = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
+    \nabla\cdot( \sigma \nabla u ) = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
 
 Fourier-Cosine-Transform
 
 .. math::
-    \nabla\cdot( \sigma \cdot \nabla u ) & = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
+    \nabla\cdot( \sigma \nabla u ) & = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
 
 """
@@ -123,7 +123,7 @@ u -= solvePoisson(grid, a=1, b=k*k, f=pointSource,
 #print "error min max", min(err), max(err)
 
 ax = showMesh(grid, data=u, filled=True, colorBar=True,
-              orientation='vertical', label='Solution $u$',
+              orientation='horizontal', label='Solution $u$',
               showLater=True)[0]
 
 drawMesh(ax, grid)

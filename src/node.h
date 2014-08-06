@@ -98,6 +98,7 @@ public:
 
     inline double dist(const Node & n) const { return pos_.dist(n.pos()); }
 
+    /*!*/
     void smooth(uint function);
 
 protected:

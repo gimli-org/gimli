@@ -430,7 +430,7 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
             }
         }
     } while (++cellCounter < cellCount() && cell);
-__M
+
     return NULL;
 }
 
@@ -478,7 +478,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
 
 //         exportVTK("slopesearch");
 //         exit(0);
-        if (extensive || 1){
+        if (extensive || 0){
 //             __M
 //             std::cout << "More expensive test here" << std::endl;
             cellIDX__.clear();
@@ -1401,7 +1401,7 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
         if (bound->shape().nodeCount() == 2) {
             cellIsLeft = (c->boundaryNodes(j)[0]->id() == bound->node(0).id());
         } else if (bound->shape().nodeCount() > 2) {
-            // normvector of boundary shows outside for left cell ... every bound need leftcell
+            // normal vector of boundary shows outside for left cell ... every boundary needs a left cell
             if (bound->normShowsOutside(*c)){
                 cellIsLeft = true;
             } else {

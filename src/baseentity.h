@@ -31,21 +31,22 @@ namespace GIMLI{
   * This information will be inherited in many objects i.e. the mesh and data entitys. */
 class DLLEXPORT BaseEntity{
     public:
-    BaseEntity() : id_( -1 ), valid_( false ), marker_( 0 ) { }
+    BaseEntity() 
+        : id_(-1), valid_(false), marker_(0) { }
 
-    BaseEntity( const BaseEntity & ent ) 
-        : id_( ent.id() ), valid_( ent.valid() ), marker_( ent.marker() ){ 
+    BaseEntity(const BaseEntity & ent) 
+        : id_(ent.id()), valid_(ent.valid()), marker_(ent.marker()){ 
     }
 
-    BaseEntity & operator = ( const BaseEntity & ent ){
-        if ( this != &ent ){
+    BaseEntity & operator = (const BaseEntity & ent){
+        if (this != &ent){
             id_ = ent.id();
             valid_ = ent.valid();
             marker_ = ent.marker();
         } return * this;
     }
   
-    virtual ~BaseEntity( ){}
+    virtual ~BaseEntity(){}
 
     /*! Return entity rtti value. */
     inline virtual uint rtti() const { return MESH_BASEENTITY_RTTI; }
@@ -54,17 +55,30 @@ class DLLEXPORT BaseEntity{
     inline virtual bool valid() const { return valid_; }
 
     /*! Set entity valid status. */
-    inline virtual void setValid( bool valid ) { valid_ = valid ; }
+    inline virtual void setValid(bool valid) { valid_ = valid ; }
 
     /*! Returns the entity id. */
     inline int id() const { return id_; }
 
     /*! Set the entity id. */
-    inline void setId( int id ) { id_ = id ; }
+    inline void setId(int id) { id_ = id ; }
     
-    inline void setMarker( int marker ) { marker_ = marker; }
+    inline void setMarker(int marker) { marker_ = marker; }
     
     inline int marker() const { return marker_; }
+    
+    /*! Userflag to mark the entity for something you want.
+     * This will be used internal while cell search so be carefully. */
+    inline void setTagged(bool tagged){ tagged_ = tagged; }
+    
+    /*! Untag the cell */
+    inline void untag() { setTagged(false); }
+    
+    /*! Tag the cell */
+    inline void tag() { setTagged(true); }
+    
+    /*! Return true if the cell is tagged */
+    inline bool tagged() const { return tagged_; }
     
 protected:
     int id_;
@@ -72,6 +86,9 @@ protected:
     bool valid_;
     
     int marker_;
+    
+    bool tagged_;
+     
 }; // class BaseEntity;
 
 }  // namespace GIMLI{

@@ -181,12 +181,12 @@ std::ostream & operator << (std::ostream & str, const TriPrism & t){
     return str;
 }
 
-MeshEntity::MeshEntity(){
-    marker_ = 0;
+MeshEntity::MeshEntity()
+    : BaseEntity(){
 }
 
-MeshEntity::MeshEntity(std::vector < Node * > & nodes){
-    marker_ = 0;
+MeshEntity::MeshEntity(std::vector < Node * > & nodes)
+    : BaseEntity(){
     setNodes_(nodes);
 }
 
@@ -275,6 +275,10 @@ double MeshEntity::pot(const RVector3 & xyz, const RVector & u) const {
     return sum(u(this->ids()) * this->N(shape().rst(xyz)));
 }
 
+RVector3 MeshEntity::vec(const RVector3 & xyz, const std::vector < RVector3 > & v) const{
+    return RVector3(pot(xyz,x(v)), pot(xyz,y(v)), pot(xyz, z(v)));
+}
+
 RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
 
     RVector3 rst(shape_->rst(xyz));
@@ -296,10 +300,11 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
 
 //############### Cell ##################
 
-Cell::Cell() : MeshEntity(), attribute_(), tagged_(false) {
+Cell::Cell() : MeshEntity(), attribute_(){
 }
 
-Cell::Cell(std::vector < Node * > & nodes) : MeshEntity(nodes), attribute_(0.0), tagged_(false) {
+Cell::Cell(std::vector < Node * > & nodes)
+    : MeshEntity(nodes), attribute_(0.0){
     registerNodes_();
 }
 

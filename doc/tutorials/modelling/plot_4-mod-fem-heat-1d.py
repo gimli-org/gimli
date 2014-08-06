@@ -16,6 +16,11 @@ Isotropic and homogeneous heat equation in one dimension with test case:
 We will solve this for :math:`(t,x) \in [0,1]\text{s} \times \Omega=[0,1]\text{m}`
 time step :math:`k=0.04\text{s}` and spatial discretization :math:`h=0.1\text{m}`
 
+See: :py:mod:`pygimli.viewer`
+
+Diskutieren: FEM weniger geeignet für Probleme mit stückweise (über Elementfläche) konstanten Lösungen weil lineare Formfunktionen mindestens 2. ableitbare Lösungen erfordern. Linearer Verlauf ist 2x ableitbar. 
+Bei Diffusions und Wellengleichung mit partiellen startgradienten = 0, kommt es dann zu numerische erzwungenen Undulationen durch die formfunktionen also akausale überschwinger im eigentlich ungestörten Bereich vor der ankommenen Ereignissfront.
+
 """
 
 import pygimli as pg
@@ -69,7 +74,7 @@ theta=0
 
 for n in range(1, len(times)):
     
-    b = (M - A * dt) * u[n-1] + rhs * dt
+    b = (M - A * dt) * u[n - 1] + rhs * dt
     S = M
 
     solver.assembleBoundaryConditions(grid, S, 

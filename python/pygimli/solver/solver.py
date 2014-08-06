@@ -7,7 +7,7 @@ import numpy as np
 
 import copy
 
-def parseArgToArray(arg, ndof, mesh, userData=None):
+def parseArgToArray(arg, ndof, mesh=None, userData=None):
     """
         What is this
     """
@@ -24,6 +24,9 @@ def parseArgToArray(arg, ndof, mesh, userData=None):
                         len(arg) + " != " +  dof)
     elif hasattr(arg, '__call__'):
         ret = pg.RVector(ndof, 0.0)
+        
+        if not mesh:
+            raise Exception("Please provide a mesh for the callable argument to parse ")
         
         if ndof == mesh.nodeCount():
             for n in mesh.nodes():
@@ -122,41 +125,46 @@ def linsolve(A, b, verbose=False):
         solver.solve(b, x)
     return x
     
-def assembleForceVector(mesh, vals, userData=None):
+def assembleForceVector(mesh, f, userData=None):
     """
-        Check size of vals for the right hand side .. loading vector
+        Create right hand side vector based on the given mesh and on the force values
+        
+    Parameters
+    ----------
+    f: float, array, callable(cell, [userData])
+        Force Values
+        float -> ones(mesh.nodeCount()) * vals, 
+        for each node [0 .. mesh.nodeCount()]
+        for each cell [0 .. mesh.cellCount()]
+        
     """
-    #try:
-        #""" Check size of given f equals the requested rhs vector. 
-            #So we use it directly.
-        #"""
-        #if len(vals) == mesh.nodeCount():
-            #rhs = pg.RVector(vals)
-            #return rhs
-        #else:
-            #print(Exception("f does not fit directly so we generate the RHS"))
-    #except:
-        #pass
-            
+
     rhs = pg.RVector(mesh.nodeCount(), 0)
         
     b_l = pg.DElementMatrix()
     
-    if hasattr(vals, '__call__') and type(vals) is not pg.RVector:
+    if hasattr(f, '__call__') and type(f) is not pg.RVector:
         for c in mesh.cells():
             if userData is not None:
-                vals(c, rhs, userData)
+                f(c, rhs, userData)
             else:
-                vals(c, rhs)
+                f(c, rhs)
     else:
-        for c in mesh.cells():
-            b_l.u(c)
-            for i, idx in enumerate(b_l.idx()):
-                
-                if type(vals) == float or type(vals) == int:
-                    rhs[idx] += b_l.row(0)[i] * vals
-                else:
-                    rhs[idx] += b_l.row(0)[i] * vals[idx]
+        
+        if type(f) == float or type(f) == int:
+            fArray = pg.RVector(mesh.cellCount(), f)
+        else:
+            fArray = f
+            
+        if len(fArray) == mesh.cellCount():
+            for c in mesh.cells():
+                b_l.u(c)
+                for i, idx in enumerate(b_l.idx()):
+                    rhs[idx] += b_l.row(0)[i] * fArray[c.id()]
+        elif len(fArray) == mesh.nodeCount():
+            rhs = pg.RVector(fArray)
+        else:
+            raise Exception("Forcevector have the wrong size: " + str(len(fArray)))
 
     return rhs
 # def assembleForceVector()
@@ -169,7 +177,8 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
     udirTmp = pg.RVector(S.rows(), 0.0)
     udirTmp.setVal(uDirchlet, uDirIndex)
     
-    rhs -= S * udirTmp
+    if rhs:
+        rhs -= S * udirTmp
         
     for i in uDirIndex:
     
@@ -177,7 +186,8 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
         S.cleanCol(i)
         S.setVal(i, i, 1.0)
     
-    rhs.setVal(uDirchlet, uDirIndex)
+    if rhs:
+        rhs.setVal(uDirchlet, uDirIndex)
 #def assembleUDirichlet_(...)
        
 def assembleNeumannBC(S,
@@ -465,9 +475,9 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     f       : value | array(cells) | array(nodes) | callable(args, kwargs)
         force values 
     theta   : float
-        - `theta` = 1, implicit Euler
-        - `theta` = 0.5, Crank-Nicolsen, maybe instable 
         - `theta` = 0, explicit Euler, maybe stable for
+        - `theta` = 0.5, Crank-Nicolsen, maybe instable 
+        - `theta` = 1, implicit Euler
 
         .. math:: \\Delta t \\quad\\text{near}\\quad h
 
@@ -591,6 +601,10 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             
             dt = times[n] - times[n - 1]
             
+            #u[n] = u[n-1] + dt * theta * L(u[n]) + dt * (1-theta) * L(u[n-1])
+            
+            
+            
             # previous timestep
             #print "i: ", i, dt, U[i - 1]
             
@@ -641,6 +655,6 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 if kwargs['progress']:
                     print(("\t" + str(n) +"/" + str(len(times)-1) + 
                           ": " + str(t_prep) +"/" + str(swatch.duration())))
-        print( "Measure:", measure/len(times))
+        print( "Measure("+str(len(times))+"): ", measure, measure/len(times))
         return U
 # def solvePoisson(..):

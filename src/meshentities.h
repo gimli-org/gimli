@@ -130,6 +130,11 @@ public:
      * \param p Cartesian coordinates (x,y,z) need to be inside, or on the boundary, of the entity.
      * \param u The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.  */
     double pot(const RVector3 & p, const RVector & u) const;
+    
+    /*! Interpolate a vector field at position p for the vector field v regarding to the shape functions of the entity. 
+     * \param p Cartesian coordinates (x,y,z) need to be inside, or on the boundary, of the entity.
+     * \param v The vector field vector v need to be of size mesh.nodeCount() for the corresponding mesh. */
+    RVector3 vec(const RVector3 & p, const std::vector < RVector3 > & v) const;
          
     /*! Return gradient at position pos for field u regarding to the shape functions of the entity. 
     * The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.
@@ -150,6 +155,8 @@ public:
     void setUxCache(const RMatrix & mat) const { uxCache_ = mat; }
    
     const RMatrix & uxCache() const { return uxCache_; }
+    
+
 
 protected:
     void fillShape_();
@@ -233,18 +240,6 @@ public:
      * responsible for the shape function. */
     Boundary * boundaryTo(const RVector & sf);
     
-    /*! Mark the cell. Don't use the tag when you use some cell search. */
-    inline void setTagged(bool tagged){ tagged_ = tagged; }
-    
-    /*! Untag the cell */
-    inline void untag() { setTagged(false); }
-    
-    /*! Tag the cell */
-    inline void tag() { setTagged(true); }
-    
-    /*! Return true if the cell is tagged */
-    inline bool tagged() const { return tagged_; }
-
     /*! Experimental */
     virtual std::vector < Node * > boundaryNodes(Index i){
         CERR_TO_IMPL
@@ -261,8 +256,6 @@ protected:
     std::vector < Cell * > neighbourCells_;
 
     double attribute_;
-
-    bool tagged_;
 
 private:
     /*! Don't call this class directly */
@@ -295,9 +288,11 @@ public:
     virtual uint rtti() const { return MESH_BOUNDARY_RTTI; }
     virtual uint parentType() const { return MESH_BOUNDARY_RTTI; }
 
-    /*! return these coordinates manual until boundary coordinate transformation is done. */
+    /*! Return these coordinates manual until boundary coordinate transformation is done. */
     virtual RVector3 rst(uint i) const;
     
+    /*! Normal vector of the boundary shows outside for left cell. 
+     * Every boundary needs a left cell for a valid mesh. */
     inline const Cell & leftCell() const { return *leftCell_; }
     inline Cell * leftCell() { return leftCell_; }
 
@@ -350,7 +345,7 @@ public:
 
     virtual uint rtti() const { return MESH_BOUNDARY_NODE_RTTI; }
 
-    void setNodes(Node & n1, bool changed = true);
+    void setNodes(Node & n1, bool changed=true);
 
     friend std::ostream & operator << (std::ostream & str, const NodeBoundary & e);
 
