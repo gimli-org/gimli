@@ -97,7 +97,7 @@ boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundar
 
 mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31, smooth=True, marker=3, isSubSurface=True)
 showMesh(mesh, mesh.cellMarker(), cmap="summer", label="Region marker")
-ax, _ = showMesh(mesh, mesh.cellMarker(), showLater=True, linear=True, label="Region marker")
+ax, _ = showMesh(mesh, mesh.cellMarker(), showLater=True, logScale=False, label="Region marker")
 drawMesh(ax, mesh)
 plt.xlim(40,60)
 plt.ylim(-30, -20)
