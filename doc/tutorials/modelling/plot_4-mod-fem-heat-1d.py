@@ -1,4 +1,4 @@
-#!/ussr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 
@@ -18,8 +18,8 @@ time step :math:`k=0.04\text{s}` and spatial discretization :math:`h=0.1\text{m}
 
 See: :py:mod:`pygimli.viewer`
 
-Diskutieren: FEM weniger geeignet für Probleme mit stückweise (über Elementfläche) konstanten Lösungen weil lineare Formfunktionen mindestens 2. ableitbare Lösungen erfordern. Linearer Verlauf ist 2x ableitbar. 
-Bei Diffusions und Wellengleichung mit partiellen startgradienten = 0, kommt es dann zu numerische erzwungenen Undulationen durch die formfunktionen also akausale überschwinger im eigentlich ungestörten Bereich vor der ankommenen Ereignissfront.
+Diskutieren: FEM weniger geeignet fuer Probleme mit stueckweise (ueber Elementflaeche) konstanten Loesungen weil lineare Formfunktionen mindestens 2. ableitbare Loesungen erfordern. Linearer Verlauf ist 2x ableitbar. 
+Bei Diffusions und Wellengleichung mit partiellen startgradienten = 0, kommt es dann zu numerische erzwungenen Undulationen durch die formfunktionen also akausale ueberschwinger im eigentlich ungestoerten Bereich vor der ankommenen Ereignissfront.
 
 """
 
