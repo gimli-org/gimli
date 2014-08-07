@@ -243,7 +243,7 @@ fixGCCXML(){ # check if obsolete
     popd
 }
 buildPYGCCXML(){
-    needHG
+    needGIT
     needPYTHON
 
     SRCDIR=$PREFIX/pygccxml
@@ -258,7 +258,8 @@ buildPYGCCXML(){
                 "$HG" pull
             popd
         else
-            "$HG" clone https://bitbucket.org/ompl/pygccxml $SRCDIR
+            "$GIT" clone https://github.com/gccxml/pygccxml  $SRCDIR
+           # "$HG" clone https://bitbucket.org/ompl/pygccxml $SRCDIR
         fi
 
         pushd $SRCDIR
@@ -283,6 +284,7 @@ buildPYPLUSPLUS(){
                 "$HG" pull
             popd
         else
+            #"$GIT" clone https://github.com/gccxml/pyplusplus  $SRCDIR
             "$HG" clone https://bitbucket.org/ompl/pyplusplus $SRCDIR
         fi
 

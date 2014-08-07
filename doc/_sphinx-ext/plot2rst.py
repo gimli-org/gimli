@@ -508,7 +508,6 @@ def analyze_blocks(source_file):
     with open(source_file) as f:
         token_iter = tokenize.generate_tokens(f.readline)
 
-        print(source_file)
         for token_tuple in token_iter:
             t_id, t_str, (srow, scol), (erow, ecol), src_line = token_tuple
             tok_name = token.tok_name[t_id]
