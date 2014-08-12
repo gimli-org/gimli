@@ -129,15 +129,19 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
               #showCbar=True ,
               logScale=True, label="", cmap=None,
               nLevs=5, orientation='horizontal', alpha=1,
-              xlab=None, ylab=None, verbose=False):
-    """Draw a 2d mesh and color the cell by the data."""
+              xlab=None, ylab=None, verbose=False, *args, **kwargs):
+    """
+        Draw a 2d mesh and color the cell by the data.
+        
+        Implement this with tripcolor  ..........!!!!!!!!
+    """
 
     gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha, verbose=verbose)
 
     if cmap is not None:
         if isinstance(cmap, str):
             if cmap == 'b2r':
-                mpl.set_cmap(cmapFromName('b2r'))
+                gci.set_cmap(cmapFromName('b2r'))
             else:
 #                eval('mpl.pyplot.' + cmap + '()')
                 eval('cm.' + cmap)
@@ -176,7 +180,8 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
     return gci
 # def drawModel(...)
 
-def drawSelectedMeshBoundaries(axes, boundaries, color = (0.0, 0.0, 0.0, 1.0), linewidth = 1.0):
+def drawSelectedMeshBoundaries(axes, boundaries,
+                               color=(0.0, 0.0, 0.0, 1.0), linewidth=1.0):
     """Draw mesh boundaries into a given axes'."""
     #print "drawSelectedMeshBoundaries", boundaries
 
@@ -195,7 +200,8 @@ def drawSelectedMeshBoundaries(axes, boundaries, color = (0.0, 0.0, 0.0, 1.0), l
 
     return lineCollection
 
-def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y', color=(0.5, 0.5, 0.5, 1.0)):
+def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
+                                     color=(0.5, 0.5, 0.5, 1.0)):
     """what is this?"""
     polys = []
     print((len(boundaries)))
@@ -214,7 +220,7 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y', co
     collection.set_linewidth(0.2)
     axes.add_collection(collection)
 
-def drawMeshBoundaries(axes, mesh, fitView = True):
+def drawMeshBoundaries(axes, mesh, fitView=True):
     ''
     ' Draw all mesh boundaries '
     ''
@@ -287,7 +293,8 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
         else:
             print(("unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()))
 
-    patches = mpl.collections.PolyCollection(polys, antialiaseds = False, lod = True, picker=True, **kwarg)
+    patches = mpl.collections.PolyCollection(polys, antialiaseds=False,
+                                             lod=True, picker=True, **kwarg)
 
     #patches.set_edgecolor(None)
     patches.set_edgecolor('face')
@@ -299,8 +306,9 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
     return patches
 # def createMeshPatches(...)
 
-def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
-                    , dx = 1, nLevs = 20, title = None, verbose = False, maskZero = False):
+def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0],
+                      dx=1, nLevs=20, title=None,
+                      verbose=False, maskZero=False):
     """
     Give drawField a try ..
 
@@ -342,7 +350,8 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
     linestyles = ['solid'] * len(potLevs)
 
     gci = ax.contourf(X, Y, Z, potLevs)
-    ax.contour(X, Y, Z, potLevs, colors = 'white', linewidths = 0.3, linestyles = linestyles)
+    ax.contour(X, Y, Z, potLevs, colors='white', linewidths=0.3,
+               linestyles=linestyles)
     ax.set_aspect('equal')
 
     ax.set_xlim(x)
@@ -367,12 +376,12 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0]
 
     return gci
 
-def drawField(axes, mesh, data=None, filled=False, omitLines=False,
+def drawField(axes, mesh, data=None, filled=False, omitLines=False, cmap=None,
               *args, **kwargs):
     """
-    What is this?
+        What is this?
 
-    only for triangle/quadrangle meshes currently
+        Only for triangle/quadrangle meshes currently
     """
     import matplotlib.tri as tri
 
@@ -413,21 +422,33 @@ def drawField(axes, mesh, data=None, filled=False, omitLines=False,
 
     gci = None
 
-    if filled:
-        gci = axes.tricontourf(x, y, triangles, data, *args, **kwargs)
-    
-    if 'levels' in kwargs:
-        l = kwargs['levels']
-        cols = ['0.5']
-    else:
-        cols = ['0.5']
+    levels = []
+    if not 'levels' in kwargs:
+        nLevs = 8
+        if 'nLevs' in kwargs:
+            nLevs = kwargs['nLevs']
+        levels = autolevel(data, nLevs)
 
+    if filled:
+        gci = axes.tricontourf(x, y, triangles, data, levels, *args, **kwargs)
+        
+        if cmap is not None:
+            if isinstance(cmap, str):
+                if cmap == 'b2r':
+                    gci.set_cmap(cmapFromName('b2r'))
+                else:
+#                    eval('mpl.pyplot.' + cmap + '()')
+                    eval('cm.' + cmap)
+            else:
+                gci.set_cmap(cmap)
+    
     if not omitLines:
-        axes.tricontour(x, y, triangles, data, colors=cols, *args, **kwargs)
+        axes.tricontour(x, y, triangles, data, levels, colors=['0.5'], *args, **kwargs)
 
     return gci
 
-def drawStreamCircular(a, mesh, u, pos, rad, nLines = 20, step = 0.1, showStartPos = False):
+def drawStreamCircular(axes, mesh, u, pos, rad, 
+                       nLines=20, step=0.1, showStartPos=False):
     ''
     ' Draw nLines streamlines for u circular around pos starting at radius rad '
     ''
@@ -435,13 +456,13 @@ def drawStreamCircular(a, mesh, u, pos, rad, nLines = 20, step = 0.1, showStartP
         start = pos + pg.RVector3(1.0, 0.0, 0.0) * rad * np.cos(i) + \
                 pg.RVector3(0.0, 1.0, 0.0) * rad * np.sin(i)
         x,y = streamline(mesh, u, start, step, maxSteps=50000, koords=[0,1])
-        a.plot(x,y, color = 'black', linewidth = 0.6, linestyle = 'solid')
+        axes.plot(x,y, color = 'black', linewidth = 0.6, linestyle = 'solid')
 
         if showStartPos:
             a.plot([start[0], start[0]], [start[1], start[1]], color = 'blue', linewidth = 2, linestyle = 'solid')
 
 
-def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01,
+def drawStreamLinear(axes, mesh, u, start, end, nLines = 50, step = 0.01,
                      showStartPos = True, color = 'black'):
     ''
     '  draw nLines streamlines for u linear from start to end '
@@ -450,13 +471,13 @@ def drawStreamLinear(a, mesh, u, start, end, nLines = 50, step = 0.01,
         s = start + (end-start)/float((nLines-1)) * float(i)
 
         x,y = streamline(mesh, u, s, step, maxSteps=50000, koords=[0,1])
-        a.plot(x,y, color = color, linewidth = 0.6, linestyle = 'solid')
+        axes.plot(x,y, color = color, linewidth = 0.6, linestyle = 'solid')
 
         if showStartPos:
-            a.plot([s[0], s[0]], [s[1], s[1]], color = 'blue', linewidth = 2, linestyle = 'solid')
+            axes.plot([s[0], s[0]], [s[1], s[1]], color = 'blue', linewidth = 2, linestyle = 'solid')
 
 
-def drawStreamLines(a, mesh, u, nx=25, ny=25, *args, **kwargs):
+def drawStreamLines(axes, mesh, u, nx=25, ny=25, *args, **kwargs):
     """
     Draw streamlines for the gradients of field values u on a mesh.
 
@@ -482,10 +503,10 @@ def drawStreamLines(a, mesh, u, nx=25, ny=25, *args, **kwargs):
             U[i, j] = -gr[0]
             V[i, j] = -gr[1]
 
-    a.streamplot(X, Y, U, V, *args, **kwargs)
+    axes.streamplot(X, Y, U, V, *args, **kwargs)
 # def drawStreamLines(...)
 
-def drawStreamLines2(axe, mesh, data, *args, **kwargs):
+def drawStreamLines2(axes, mesh, data, *args, **kwargs):
     """
         Draw streamlines based on unstructured mesh. Every cell contains only one streamline and each new stream line starts in the center of a cell.
         Stream density can by chosen by parameter a, that leads to a new mesh with equidistant maximum cell size a.
@@ -513,12 +534,12 @@ def drawStreamLines2(axe, mesh, data, *args, **kwargs):
                              verbose=False,
                              koords=[0,1])
             #print( x, y)
-            axe.plot(x, y, color='black', *args, **kwargs)
+            axes.plot(x, y, color='black', *args, **kwargs)
             xmid=int(len(x)/2)
             ymid=int(len(y)/2)
             dx=x[xmid+1]-x[xmid]
             dy=y[ymid+1]-y[ymid]
-            axe.arrow(x[xmid], y[ymid], dx, dy)  
+            axes.arrow(x[xmid], y[ymid], dx, dy)  
             #axe.plot(c.center()[0], c.center()[1], 'o')
             #break
     #return
@@ -532,7 +553,12 @@ def drawStreamLines2(axe, mesh, data, *args, **kwargs):
                              koords=[0,1])
     
             #axe.plot(mesh.cell(0).center()[0], mesh.cell(0).center()[1], 'o')
-            axe.plot(x, y, color='black', *args, **kwargs)
+            axes.plot(x, y, color='black', *args, **kwargs)
+            xmid=int(len(x)/2)
+            ymid=int(len(y)/2)
+            dx=x[xmid+1]-x[xmid]
+            dy=y[ymid+1]-y[ymid]
+            axes.arrow(x[xmid], y[ymid], dx, dy)  
             #break
 
     #a.plot(x,y, color = color, linewidth = 0.6, linestyle = 'solid')

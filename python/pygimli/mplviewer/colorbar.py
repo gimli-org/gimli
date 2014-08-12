@@ -18,6 +18,24 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
+def autolevel(z, N, logscale=None):
+    """
+        Create N levels for the data array z based on matplotlib ticker. 
+    """
+    locator = None
+    if logscale:
+        locator = ticker.LogLocator()
+    else:
+        locator = ticker.MaxNLocator(N + 1)
+    
+    zmin = min(z)
+    zmax = max(z)
+       
+    return locator.tick_values(zmin, zmax)
+        
+    # For line contours, drop levels outside the data range.
+    return lev[(lev > zmin) & (lev < zmax)]
+# def autolevel()
 
 def cmapFromName(cmapname, ncols=256, bad=[1.0, 1.0, 1.0, 0.0]):
     """

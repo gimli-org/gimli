@@ -108,6 +108,9 @@ public:
     
     /*! Return the center coordinates of this MeshEntity. */
     RVector3 center() const;
+    
+    /*! Return the size (i.e., length, area, volume) of this MeshEntity. */
+    double size() const;
 
     virtual double attribute() const { return -1.0; }
 

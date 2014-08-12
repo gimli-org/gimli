@@ -59,7 +59,9 @@
 
 namespace GIMLI{
 
-typedef std::vector < Index > IndexArray;template < class ValueType, class A > class __VectorExpr;
+typedef std::vector < Index > IndexArray;
+
+template < class ValueType, class A > class __VectorExpr;
 
 template < class ValueType > class DLLEXPORT VectorIterator {
 public:
@@ -1415,13 +1417,15 @@ DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR(+)
 #undef DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR
 
 template < class ValueType >
-bool save(const Vector< ValueType > & a, const std::string & filename, IOFormat format = Ascii){
+bool save(const Vector< ValueType > & a, const std::string & filename,
+          IOFormat format=Ascii){
     return saveVec(a, filename, format);
 }
 
 template < class ValueType >
-bool load(Vector< ValueType > & a, const std::string & filename, IOFormat format = Ascii,
-                                    bool verbose = true){
+bool load(Vector< ValueType > & a, const std::string & filename,
+          IOFormat format = Ascii,
+          bool verbose=true){
     return loadVec(a, filename, format, verbose);
 }
 
@@ -1429,7 +1433,10 @@ bool load(Vector< ValueType > & a, const std::string & filename, IOFormat format
  Save vector to file. See Vector< ValueType >::save.
 */
 template < class ValueType >
-    bool saveVec(const Vector< ValueType > & a, const std::string & filename, IOFormat format = Ascii){ return a.save(filename, format); }
+bool saveVec(const Vector< ValueType > & a, const std::string & filename,
+             IOFormat format=Ascii){ 
+    return a.save(filename, format);
+}
 
 /*!
  Load vector from file. See Vector< ValueType >::load.
