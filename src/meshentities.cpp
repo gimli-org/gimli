@@ -197,7 +197,12 @@ RVector3 MeshEntity::center() const {
     return shape_->center();
 }
 
-void MeshEntity::fillShape_(){
+double MeshEntity::size() const {
+    return shape_->domainSize();
+}
+    
+ 
+ void MeshEntity::fillShape_(){
     if (shape_){
         if (shape_->nodeCount() > this->nodeCount()){
             std::cerr << WHERE_AM_I << " not enough nodes to fill shape: " << shape_->rtti()

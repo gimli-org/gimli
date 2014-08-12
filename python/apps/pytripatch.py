@@ -85,9 +85,9 @@ def applyPublishStyle(style):
     wOffset = float(vals[7])
     hOffset = float(vals[8])
 
-    pygimli.mplviewer.setOutputStyle(dim = 'w', paperMargin = margin
-                                   , xScale = widthScale, yScale = heightScale,
-                                   fontsize = fontsize, scale = scale)
+    pygimli.mplviewer.setOutputStyle(dim='w', paperMargin=margin,
+                                     xScale=widthScale, yScale=heightScale,
+                                     fontsize=fontsize, scale=scale)
 
     return wOffset, hOffset
 #    fig.canvas.mpl_connect('draw_event', on_draw)

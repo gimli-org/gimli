@@ -44,12 +44,17 @@ def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
     vx = None
     vy = None
     isVectorData = False
+    
 
     if hasattr(field[0], '__len__'):
+        if min(field[:,0]) == max(field[:,0]) and min(field[:,1]) == max(field[:,1]):
+            raise BaseException("No data range streamline: min/max == ", min(field[:,0]))
         vx = pg.RVector(field[:,0])
         vy = pg.RVector(field[:,1])
         isVectorData = True
     else:
+        if min(field) == max(field):
+            raise BaseException("No data range for streamline: min/max == ", min(field))
         pot = pg.RVector(field)
 
     direction = 1

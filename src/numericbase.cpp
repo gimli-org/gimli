@@ -24,6 +24,19 @@
 
 namespace GIMLI{
 
+RVector logTransDropTol(const RVector & data, double logdrop){
+    RVector tmp(data);
+
+    for (uint i = 0; i < tmp.size(); i ++) {
+        tmp[i] =std::fabs(tmp[i] / logdrop);
+        if (tmp[i] < 1.0) tmp[i] = 1.0;
+    }
+
+    tmp = log10(tmp);
+    tmp /= max(tmp) * sign(data);
+    return tmp;
+}
+    
 void GaussLaguerre( uint n, RVector & x, RVector & w ){
 //  taken from matlab-code (Thomas Guenther)
 //  function [x, w] = gaulag(n)
