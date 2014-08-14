@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import matplotlib as mpl
 import matplotlib.cm as cm
+import matplotlib.tri as tri
+
 import numpy as np
 import textwrap
 
 from .colorbar import *
 import pygimli as pg
 from pygimli.misc import streamline, streamlineDir
+
 
 
 class CellBrowser:
@@ -126,7 +129,6 @@ def drawMesh(axes, mesh):
 # def drawMesh(...)
 
 def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
-              #showCbar=True ,
               logScale=True, label="", cmap=None,
               nLevs=5, orientation='horizontal', alpha=1,
               xlab=None, ylab=None, verbose=False, *args, **kwargs):
@@ -135,44 +137,46 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
         
         Implement this with tripcolor  ..........!!!!!!!!
     """
+    useTri = False
+    if 'tri' in kwargs:
+        useTri = kwargs['tri']
+        del(kwargs['tri'])
+    if useTri:
+        gci = drawMPLTri(axes, mesh, data, cmap=cmap, 
+                         *args, **kwargs)
 
-    gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha, verbose=verbose)
-
-    if cmap is not None:
-        if isinstance(cmap, str):
-            if cmap == 'b2r':
-                gci.set_cmap(cmapFromName('b2r'))
-            else:
-#                eval('mpl.pyplot.' + cmap + '()')
-                eval('cm.' + cmap)
-        else:
-            gci.set_cmap(cmap)
-
-    axes.set_aspect('equal')
-
-    gci.set_antialiased(True)
-    gci.set_linewidth(None)
-
-    if data is None:
-        data = pg.RVector(mesh.cellCount())
-
-    if len(data) != mesh.cellCount():
-        viewdata = data(mesh.cellMarker())
     else:
-        viewdata = data
+        gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha, verbose=verbose)
 
-    if min(data) <= 0:
-        logScale = False
+        if cmap is not None:
+            if isinstance(cmap, str):
+                if cmap == 'b2r':
+                    gci.set_cmap(cmapFromName('b2r'))
+                else:
+#                    eval('mpl.pyplot.' + cmap + '()')
+                    eval('cm.' + cmap)
+            else:
+                gci.set_cmap(cmap)
 
-    pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
-                                 logScale=logScale)
+        axes.set_aspect('equal')
 
-    # draw Model only draws the model, if you want a cbar use show() 
-    ## or add them manualy
-    #if showCbar:
-        #patches = pg.mplviewer.createColorbar(gci, cMin=cMin, cMax=cMax,
-                                             #nLevs=nLevs, label=label,
-                                             #orientation=orientation)
+        gci.set_antialiased(True)
+        gci.set_linewidth(None)
+
+        if data is None:
+            data = pg.RVector(mesh.cellCount())
+
+        if len(data) != mesh.cellCount():
+            viewdata = data(mesh.cellMarker())
+        else:
+            viewdata = data
+
+        if min(data) <= 0:
+            logScale = False
+
+        pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
+                                     logScale=logScale)
+
 
     if xlab is not None: axes.set_xlabel(xlab)
     if ylab is not None: axes.set_ylabel(ylab)
@@ -314,7 +318,7 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0],
 
     should be better. Draw the potential that is associated to a mesh
     """
-
+    raise ('do not use')
     swatch = pg.Stopwatch(True)
     if (verbose):
         print(("start interpolation:", swatch.duration(True)))
@@ -376,22 +380,16 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0],
 
     return gci
 
-def drawField(axes, mesh, data=None, filled=False, omitLines=False, cmap=None,
-              *args, **kwargs):
+def createTriangles(mesh, data=None):
     """
-        What is this?
-
-        Only for triangle/quadrangle meshes currently
+    
     """
-    import matplotlib.tri as tri
-
-    x = np.zeros(mesh.nodeCount())
-    y = np.zeros(mesh.nodeCount())
-
-    for i, p in enumerate(mesh.positions()):
-        x[i] = p[0]
-        y[i] = p[1]
-
+    x = pg.x(mesh.positions())
+    #x.round(1e-1)
+    y = pg.y(mesh.positions())
+    #y.round(1e-1)
+    #y = pg.y(mesh.positions())
+    
     triCount = 0
 
     for c in mesh.cells():
@@ -401,51 +399,127 @@ def drawField(axes, mesh, data=None, filled=False, omitLines=False, cmap=None,
             triCount = triCount + 1
 
     triangles = np.zeros((triCount, 3))
-
+    dataIdx = list(range(triCount))
+   
     triCount = 0
     for i, c in enumerate(mesh.cells()):
         if c.shape().nodeCount() == 4:
             triangles[triCount, 0] = c.node(0).id()
             triangles[triCount, 1] = c.node(1).id()
             triangles[triCount, 2] = c.node(2).id()
+            dataIdx[triCount] = c.id()
             triCount = triCount + 1
 
             triangles[triCount, 0] = c.node(0).id()
             triangles[triCount, 1] = c.node(2).id()
             triangles[triCount, 2] = c.node(3).id()
+            dataIdx[triCount] = c.id()
             triCount = triCount + 1
         else:
             triangles[triCount, 0] = c.node(0).id()
             triangles[triCount, 1] = c.node(1).id()
             triangles[triCount, 2] = c.node(2).id()
+            dataIdx[triCount] = c.id()
             triCount = triCount + 1
+    
+    z = None
+    if data is not None:
+        if len(data) == mesh.cellCount():
+            z = data(dataIdx)
+            
+    return x, y, triangles, z
 
-    gci = None
 
+def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
+              logScale=True, cmap=None, interpolate=False, omitLines=False,
+              *args, **kwargs):
+    """
+        Only for triangle/quadrangle meshes currently
+    """
+    x, y, triangles, z = createTriangles(mesh, data)
+    
     levels = []
     if not 'levels' in kwargs:
         nLevs = 8
         if 'nLevs' in kwargs:
             nLevs = kwargs['nLevs']
         levels = autolevel(data, nLevs)
-
-    if filled:
-        gci = axes.tricontourf(x, y, triangles, data, levels, *args, **kwargs)
         
-        if cmap is not None:
-            if isinstance(cmap, str):
-                if cmap == 'b2r':
-                    gci.set_cmap(cmapFromName('b2r'))
-                else:
-#                    eval('mpl.pyplot.' + cmap + '()')
-                    eval('cm.' + cmap)
-            else:
-                gci.set_cmap(cmap)
+    if len(data) == mesh.cellCount():
     
-    if not omitLines:
-        axes.tricontour(x, y, triangles, data, levels, colors=['0.5'], *args, **kwargs)
-
+        shading = 'flat'
+        if interpolate:
+            shading = 'gouraud'
+            z = pg.cellDataToPointData(mesh, data)
+            
+        gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
+                             #edgecolors='k',
+                             *args, **kwargs)
+    elif len(data) == mesh.nodeCount():
+        
+        gci = axes.tricontourf(x, y, triangles, data, levels, 
+                               *args, **kwargs)
+        if not omitLines:
+            axes.tricontour(x, y, triangles, data, levels, colors=['0.5'],
+                            *args, **kwargs)
+        
+    if cmap is not None:
+        if isinstance(cmap, str):
+            if cmap == 'b2r':
+                gci.set_cmap(cmapFromName('b2r'))
+            else:
+#                    eval('mpl.pyplot.' + cmap + '()')
+                eval('cm.' + cmap)
+        else:
+            gci.set_cmap(cmap)
+        
+    axes.set_aspect('equal')
+    axes.set_xlim(mesh.xmin(), mesh.xmax())
+    axes.set_ylim(mesh.ymin(), mesh.ymax())
+    
     return gci
+    
+  
+def drawField(axes, mesh, data=None, filled=True, omitLines=False, cmap=None,
+              *args, **kwargs):
+    """
+        What is this?
+
+        Only for triangle/quadrangle meshes currently
+    """
+    
+    return drawMPLTri(axes, mesh, data, cmap=cmap, *args, **kwargs)
+    #x, y, triangles = createTriangles(mesh)
+    
+    #gci = None
+
+    #levels = []
+    #if not 'levels' in kwargs:
+        #nLevs = 8
+        #if 'nLevs' in kwargs:
+            #nLevs = kwargs['nLevs']
+        #levels = autolevel(data, nLevs)
+
+    #if filled:
+        #gci = axes.tricontourf(x, y, triangles, data, levels, *args, **kwargs)
+        
+        #if cmap is not None:
+            #if isinstance(cmap, str):
+                #if cmap == 'b2r':
+                    #gci.set_cmap(cmapFromName('b2r'))
+                #else:
+##                    eval('mpl.pyplot.' + cmap + '()')
+                    #eval('cm.' + cmap)
+            #else:
+                #gci.set_cmap(cmap)
+    
+    
+
+    #axes.set_aspect('equal')
+    #axes.set_xlim(mesh.xmin(), mesh.xmax())
+    #axes.set_ylim(mesh.ymin(), mesh.ymax())
+    
+    #return gci
 
 def drawStreamCircular(axes, mesh, u, pos, rad, 
                        nLines=20, step=0.1, showStartPos=False):
