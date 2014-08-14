@@ -9,6 +9,7 @@ import matplotlib as mpl
 import matplotlib.ticker as ticker
 import matplotlib.colors as colors
 import matplotlib.cbook as cbook
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import math
 
@@ -153,13 +154,28 @@ def createColorbar2(patches, cMin=None, cMax=None,
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', *args, **kwargs):
     cbarTarget = plt
+    cax = None
+    divider = None
+    #if hasattr(patches, 'figure'):
+        #cbarTarget = patches.figure
 
-    if hasattr(patches, 'figure'):
-        cbarTarget = patches.figure
+    #print( patches)
 
-    cbar = cbarTarget.colorbar(patches, 
-                               orientation=orientation, 
-                               aspect=50)
+    if hasattr(patches, 'ax'):
+        divider = make_axes_locatable(patches.ax)
+    elif hasattr(patches, 'get_axes'):
+        divider = make_axes_locatable(patches.get_axes())
+    
+    if divider:
+        if orientation == 'horizontal':
+            cax = divider.append_axes("bottom", size=0.2, pad=0.3)
+        else:
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            #cbar3 = plt.colorbar(im3, cax=cax3)
+        
+    #print(patches,  cax)
+    cbar = cbarTarget.colorbar(patches, cax=cax,
+                               orientation=orientation)
 
     setCbarLevels(cbar, cMin, cMax, nLevs)
 

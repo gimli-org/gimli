@@ -26,14 +26,18 @@ namespace GIMLI{
 
 RVector logTransDropTol(const RVector & data, double logdrop){
     RVector tmp(data);
-
+    
+    RVector tmp2(data);
+    tmp2.setVal(logdrop, find(data == 0.0));
+        
+    
     for (uint i = 0; i < tmp.size(); i ++) {
-        tmp[i] =std::fabs(tmp[i] / logdrop);
-        if (tmp[i] < 1.0) tmp[i] = 1.0;
+        
+        tmp[i] = max(1.0, std::fabs(tmp[i] / logdrop));
     }
-
+    
     tmp = log10(tmp);
-    tmp /= max(tmp) * sign(data);
+    tmp /= max(tmp) * sign(tmp2);
     return tmp;
 }
     

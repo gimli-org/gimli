@@ -234,7 +234,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     template std::vector< SIndex > sort(const std::vector < SIndex > & a);
     
     template RVector fliplr(const RVector & a);
-
+    template RVector round(const RVector & a, double tol);
     template RVector increasingRange(const double & first, const double & last, Index n);
 
     template Mesh & Mesh::transform(const Matrix < double > & mat);
