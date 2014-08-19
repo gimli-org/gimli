@@ -2,7 +2,7 @@
 
 try:
     import pygimli as g
-    from pygimli.mplviewer import drawMesh, drawModel, drawField, createColorbar
+    from pygimli.mplviewer import drawMesh, drawModel, drawField, createColorbar, drawStreamLines2
     
 except ImportError:
     raise Exception('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
@@ -49,7 +49,15 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
     if data is None:
         drawMesh(ax, mesh)
     else:
-        if min(data) == max(data):
+        #print(data[0], type(data[0]))
+        if hasattr(data[0], '__len__'):
+            if sum(data[:,0]) != sum(data[:,1]):
+                drawStreamLines2(ax, mesh, data)
+            else:
+                print("No valid stream data:",  data)
+                drawMesh(ax, mesh)
+
+        elif min(data) == max(data):
             print(("No valid data",  min(data), max(data)))
             drawMesh(ax, mesh)
         else:

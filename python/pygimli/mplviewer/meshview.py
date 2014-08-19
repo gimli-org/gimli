@@ -626,8 +626,9 @@ def drawStreamLines2(axes, mesh, data, *args, **kwargs):
                              verbose=False,
                              koords=[0,1])
     
+            a = np.linspace(1.0, 0.0, len(x))
             #axe.plot(mesh.cell(0).center()[0], mesh.cell(0).center()[1], 'o')
-            axes.plot(x, y, color='black', *args, **kwargs)
+            axes.plot(x, y, color='black', alpha=1.0, *args, **kwargs)
             xmid=int(len(x)/2)
             ymid=int(len(y)/2)
             dx=x[xmid+1]-x[xmid]

@@ -30,18 +30,18 @@ RVector logTransDropTol(const RVector & data, double logdrop){
     RVector tmp2(data);
     tmp2.setVal(logdrop, find(data == 0.0));
         
-    
     for (uint i = 0; i < tmp.size(); i ++) {
-        
         tmp[i] = max(1.0, std::fabs(tmp[i] / logdrop));
     }
     
     tmp = log10(tmp);
-    tmp /= max(tmp) * sign(tmp2);
-    return tmp;
+    // normalize
+    double m = max(tmp);
+    if (m != 0.0) tmp /= m;
+    return tmp * sign(tmp2);
 }
     
-void GaussLaguerre( uint n, RVector & x, RVector & w ){
+void GaussLaguerre(uint n, RVector & x, RVector & w){
 //  taken from matlab-code (Thomas Guenther)
 //  function [x, w] = gaulag(n)
 //  GAULAG - Gauss-Laguerre Integration Points
@@ -53,8 +53,8 @@ void GaussLaguerre( uint n, RVector & x, RVector & w ){
 //  For a description of the following routines see
 //  Numerical Recipes, Press et a
 
-  if ( x.size() != n ) x.resize( n );
-  if ( w.size() != n ) w.resize( n );
+  if (x.size() != n) x.resize(n);
+  if (w.size() != n) w.resize(n);
 
   double epsilon = 3.0e-11;
   int maxiter = 20;
@@ -62,37 +62,37 @@ void GaussLaguerre( uint n, RVector & x, RVector & w ){
   double z = 0.0, z1 = 0.0, p1 = 1.0, p2 = 0.0, p3 = 0.0, pp = 0.0;
   int ai = 0;
 
-  for ( size_t i = 1; i <=n; i ++ ){ //	Loop over desired roots
-    if ( i == 1 ){
-      z = 3.0 / ( 1.0 + 2.4 * n );
-    } else if ( i == 2 ){
-      z = z + 15.0 / ( 1.0 +2.5 * n );
+  for (size_t i = 1; i <=n; i ++){ //	Loop over desired roots
+    if (i == 1){
+      z = 3.0 / (1.0 + 2.4 * n);
+    } else if (i == 2){
+      z = z + 15.0 / (1.0 +2.5 * n);
     } else {
       ai = i - 2;
-      z = z + ( 1.0 + 2.55 * ai ) / ( 1.9 * ai ) *( z - x[ ai - 1 ] );
+      z = z + (1.0 + 2.55 * ai) / (1.9 * ai) *(z - x[ ai - 1 ]);
     }
 
-    for ( int its = 1; its <= maxiter; its ++ ){
+    for (int its = 1; its <= maxiter; its ++){
       p1 = 1.0;
       p2 = 0.0;
 
-      for ( size_t j = 1; j <= n; j ++ ){
+      for (size_t j = 1; j <= n; j ++){
 	p3 = p2;
 	p2 = p1;
-	p1 = ( ( 2.0 * j - 1 - z ) * p2 - ( j - 1 ) * p3 ) / j;
+	p1 = ((2.0 * j - 1 - z) * p2 - (j - 1) * p3) / j;
       }
-      pp = n *( p1 - p2 ) / z;
+      pp = n *(p1 - p2) / z;
       z1 = z;
       z  = z1 - p1 / pp;
 
-      if ( std::fabs( z - z1 ) <= epsilon ) break;
+      if (std::fabs(z - z1) <= epsilon) break;
     }
     x[ i - 1 ] = z;
-    w[ i - 1 ] = -1.0 / ( pp * n * p2 );
+    w[ i - 1 ] = -1.0 / (pp * n * p2);
   }
 }
 
-void GaussLegendre( double x1, double x2, uint n, RVector & x, RVector & w ){
+void GaussLegendre(double x1, double x2, uint n, RVector & x, RVector & w){
 //  taken from matlab-code (Thomas Guenther)
 //  function [x, w] = gauleg(x1, x2, n)
 //  Given the lower and upper limits of integration x1 and x2 and given n,
@@ -102,37 +102,37 @@ void GaussLegendre( double x1, double x2, uint n, RVector & x, RVector & w ){
 //  For a description of the following routines see
 //  Numerical Recipes, Press et al.
 
-  if ( x.size() != n ) x.resize( n );
-  if ( w.size() != n ) w.resize( n );
+  if (x.size() != n) x.resize(n);
+  if (w.size() != n) w.resize(n);
 
   double epsilon = 3.0e-6;
 
-  double m = ( n + 1.0 ) / 2.0 ;
-  double xm = 0.5 * ( x2 + x1 );
-  double xl = 0.5 * ( x2 - x1 );
+  double m = (n + 1.0) / 2.0 ;
+  double xm = 0.5 * (x2 + x1);
+  double xl = 0.5 * (x2 - x1);
 
   double z = 0.0, z1 = 0.0, p1 = 0.0, p2 = 0.0, p3 = 0.0, pp = 0.0;
 
-  for ( int i = 1; i <= m; i ++ ){
-    z = std::cos( PI * ( i - 0.25 ) / ( n + 0.5 ) );
+  for (int i = 1; i <= m; i ++){
+    z = std::cos(PI * (i - 0.25) / (n + 0.5));
 
    // Starting with the above approximation to the ith root, we enter
    // the main loop of refinements by Newton's method
    z1 = z + 2.0 * epsilon;
 
-   while ( std::fabs( z - z1 ) > epsilon ){
+   while (std::fabs(z - z1) > epsilon){
      p1 = 1.0;
      p2 = 0.0;
-     for ( size_t j = 1; j <= n; j ++ ){
+     for (size_t j = 1; j <= n; j ++){
        p3 = p2;
        p2 = p1;
-       p1 = ( ( 2.0 * j - 1.0 ) * z * p2 - ( j - 1.0 ) * p3 ) / (double)j;
+       p1 = ((2.0 * j - 1.0) * z * p2 - (j - 1.0) * p3) / (double)j;
      }
 
      // p1 is now the desired Legendre polynomial. We next compute pp,
      // its derivative, by a standard relation involving also p2, the
      // polynomial of one lower order
-     pp = (double)n * ( z * p1 - p2 ) / ( z * z - 1.0 );
+     pp = (double)n * (z * p1 - p2) / (z * z - 1.0);
      z1 = z;
      z = z1 - p1 / pp; // Newtons method
    }
@@ -142,7 +142,7 @@ void GaussLegendre( double x1, double x2, uint n, RVector & x, RVector & w ){
    x[ n - i ] = xm + xl * z;
    //   x[ n +1 - i ] = xm + xl * z;
    //Compute the weight and ist symmetric counterpart
-   w[ i - 1 ] = 2.0 * xl / ( ( 1.0 -z * z ) *pp *pp );
+   w[ i - 1 ] = 2.0 * xl / ((1.0 -z * z) *pp *pp);
    w[ n - i ] = w[ i - 1 ];
    //   w[ n + 1 - i ] = w[ i - 1 ];
   }
