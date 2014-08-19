@@ -3,8 +3,12 @@ libgimli:
     PolynomialFunction :: refactor (only use list), clean TODO
     entknote das modellingbase::startModel, createStartModel, createDefaultStartModel, createStartVector kuddelmuddel
 
+    pytripach:
+        - remove redundant stuff use show/draw only
+        - input for 2D poly 
 
-we want to use sourceforce tracker for this task
+
+We want to use sourceforce tracker for this task
 http://sourceforge.net/tracker/?group_id=542831
 
 

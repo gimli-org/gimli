@@ -203,10 +203,11 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
     print("boundary > 2 " , len(m))
     if len(m) > 0:
         pass
-        #pg.mplviewer.drawSelectedMeshBoundaries(axis, filter(lambda b: b.marker() == 1, mesh.boundaries())
-                                #, color = (0, 0.0, 0.0, 1.0)
-                                #, linewidth = 3.0)
-    elif drawEdges:
+        pg.mplviewer.drawSelectedMeshBoundaries(axis, 
+                                                filter(lambda b: b.marker() == 1, mesh.boundaries()),
+                                                color=(0, 0.0, 0.0, 1.0),
+                                                linewidth=2.0)
+    if drawEdges:
         pg.mplviewer.drawMeshBoundaries(axis, mesh)
 
     return axis, patches
