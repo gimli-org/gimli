@@ -7,6 +7,8 @@ libgimli:
         - remove redundant stuff use show/draw only
         - input for 2D poly 
 
+polytools:
+    default region marker for (createWorld -d2/3/createCube allways at minBB+0.001
 
 We want to use sourceforce tracker for this task
 http://sourceforge.net/tracker/?group_id=542831

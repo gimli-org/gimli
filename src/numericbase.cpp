@@ -24,7 +24,7 @@
 
 namespace GIMLI{
 
-RVector logTransDropTol(const RVector & data, double logdrop){
+RVector logTransDropTol(const RVector & data, double logdrop, bool normalize){
     RVector tmp(data);
     
     RVector tmp2(data);
@@ -36,8 +36,10 @@ RVector logTransDropTol(const RVector & data, double logdrop){
     
     tmp = log10(tmp);
     // normalize
-    double m = max(tmp);
-    if (m != 0.0) tmp /= m;
+    if (normalize){
+        double m = max(tmp);
+        if (m != 0.0) tmp /= m;
+    }
     return tmp * sign(tmp2);
 }
     
