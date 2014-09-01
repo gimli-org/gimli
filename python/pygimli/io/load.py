@@ -5,7 +5,7 @@ import os.path
 import pygimli as pg
 from pygimli.meshtools import readGmsh
 
-def load(fname):
+def load(fname, verbose=False):
     """
     General import function to load data and meshes.
 
@@ -35,7 +35,8 @@ def load(fname):
     # recursive function call if fname is a folder of files
     if os.path.isdir(fname):
         files = os.listdir(fname)
-        print("Reading %s with %d files..." % (fname, len(files)))
+        if verbose:
+            print("Reading %s with %d files..." % (fname, len(files)))
         return [load(f) for f in files]
 
     suffix = os.path.splitext(fname)[1]
@@ -44,9 +45,11 @@ def load(fname):
         try:
             return import_routines[suffix](fname)
         except:
-            print("File extension %s seems to be not correct. Trying auto-detect." % suffix)
+            if verbose:
+                print("File extension %s seems to be not correct. Trying auto-detect." % suffix)
     else:
-        print("File extension %s is not known. Trying auto-detect." % suffix)
+        if verbose:
+            print("File extension %s is not known. Trying auto-detect." % suffix)
 
     for routine in import_routines.values():
         try:
@@ -54,4 +57,4 @@ def load(fname):
         except:
             pass
 
-    print("File type of %s is unknown and could not be imported." % fname)
+    raise Exception("File type of %s is unknown and could not be imported." % fname)

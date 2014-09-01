@@ -580,64 +580,50 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, *args, **kwargs):
     axes.streamplot(X, Y, U, V, *args, **kwargs)
 # def drawStreamLines(...)
 
+def drawStreamLine(axes, mesh, c, data, *args, **kwargs):
+    """
+    """
+    dLength = c.center().dist(c.node(0).pos())/4.
+        
+    x,y = streamline(mesh, data, startCoord=c.center(),
+                     dLength=dLength,
+                     maxSteps=1000,
+                     verbose=False,
+                     koords=[0, 1])
+    if len(x) > 2:
+        #print( x, y)
+        axes.plot(x, y, color='black', *args, **kwargs)
+        
+    if len(x) > 3:
+        xmid=int(len(x)/2)
+        ymid=int(len(y)/2)
+        dx=x[xmid+1]-x[xmid]
+        dy=y[ymid+1]-y[ymid]
+        c = mesh.findCell([x[xmid], y[ymid]])
+        dLength = c.center().dist(c.node(0).pos())/4.
+        axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15., color='black')  
+    
 def drawStreamLines2(axes, mesh, data, *args, **kwargs):
     """
         Draw streamlines based on unstructured mesh. Every cell contains only one streamline and each new stream line starts in the center of a cell.
         Stream density can by chosen by parameter a, that leads to a new mesh with equidistant maximum cell size a.
     """
+    mesh.createNeighbourInfos()
     for c in mesh.cells(): c.setValid(True)
-    
-    for b in mesh.findBoundaryByMarker(1,99):
+        
+    for b in mesh.findBoundaryByMarker(1, 99):
         c = b.leftCell()
         if c is None:
             c = b.rightCell()
             
         if c.valid():
-            
-            #x, y = streamlineDir(mesh, data, startCoord=c.center(), dLength=0.01,
-                                 #down=True, verbose=False)
-            #axe.plot(x,y, color='red')
-            #c.setValid(True)
-            #x, y = streamlineDir(mesh, data, startCoord=c.center(), dLength=0.01,
-                                 #down=False, verbose=False)
-            #axe.plot(x,y, color='blue')
-    
-            x,y = streamline(mesh, data, startCoord=c.center(),
-                             dLength=c.center().dist(c.node(0).pos())/4.,
-                             maxSteps=10000,
-                             verbose=False,
-                             koords=[0,1])
-            #print( x, y)
-            axes.plot(x, y, color='black', *args, **kwargs)
-            xmid=int(len(x)/2)
-            ymid=int(len(y)/2)
-            dx=x[xmid+1]-x[xmid]
-            dy=y[ymid+1]-y[ymid]
-            axes.arrow(x[xmid], y[ymid], dx, dy)  
-            #axe.plot(c.center()[0], c.center()[1], 'o')
-            #break
-    #return
+            drawStreamLine(axes, mesh, c, data, *args, **kwargs)
+
     for c in mesh.cells():
     
         if c.valid():
-            x,y = streamline(mesh, data, startCoord=c.center(),
-                             dLength=c.center().dist(c.node(0).pos())/4.,
-                             maxSteps=10000,
-                             verbose=False,
-                             koords=[0,1])
-    
-            a = np.linspace(1.0, 0.0, len(x))
-            #axe.plot(mesh.cell(0).center()[0], mesh.cell(0).center()[1], 'o')
-            axes.plot(x, y, color='black', alpha=1.0, *args, **kwargs)
-            xmid=int(len(x)/2)
-            ymid=int(len(y)/2)
-            dx=x[xmid+1]-x[xmid]
-            dy=y[ymid+1]-y[ymid]
-            axes.arrow(x[xmid], y[ymid], dx, dy)  
-            #break
-
-    #a.plot(x,y, color = color, linewidth = 0.6, linestyle = 'solid')
-    
+            drawStreamLine(axes, mesh, c, data, *args, **kwargs)
+            
     for c in mesh.cells(): c.setValid(True)
 # def drawStreamLines2(...)
     

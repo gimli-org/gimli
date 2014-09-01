@@ -203,12 +203,12 @@ def __getValMatrix(self, idx):
     return self.rowR(idx)
 
 
-#_pygimli_.RVector.__setitem__ = __setVal
-#_pygimli_.RVector.__getitem__ = __getVal # very slow -- inline is better
+_pygimli_.RVector.__setitem__ = __setVal
+_pygimli_.RVector.__getitem__ = __getVal # very slow -- inline is better
 
 _pygimli_.RVector3.__setitem__ = __setVal
 
-#_pygimli_.RMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
+_pygimli_.RMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
 _pygimli_.RMatrix.__setitem__ = __setVal
 
 

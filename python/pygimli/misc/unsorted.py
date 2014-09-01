@@ -22,11 +22,12 @@ def streamline(mesh, field, startCoord, dLength,
                maxSteps=1000, verbose=False, koords=[0, 1]):
     xd, yd = streamlineDir(mesh, field, startCoord, dLength, maxSteps=maxSteps,
                            down=True, verbose=verbose, koords=koords)
+    
     c = mesh.findCell(startCoord)
     
     if c is not None:
         c.setValid(True)
-
+    
     xu, yu = streamlineDir(mesh, field, startCoord, dLength, maxSteps=maxSteps,
                            down=False, verbose=verbose, koords=koords)
     return xd + xu, yd + yu
@@ -45,7 +46,6 @@ def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
     vy = None
     isVectorData = False
     
-
     if hasattr(field[0], '__len__'):
         if min(field[:,0]) == max(field[:,0]) and min(field[:,1]) == max(field[:,1]):
             raise BaseException("No data range streamline: min/max == ", min(field[:,0]))
@@ -90,7 +90,10 @@ def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
             u = c.pot(pos, pot)
         #print "cell:", c.id(), u
         # always go u down
-        
+        if d.length() == 0.0:
+            print(d, "check this in streamlineDir(", )
+            break
+                
         if down:
             if u > lastU: break
         else: 
@@ -111,6 +114,7 @@ def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
             if c.id() != lastC.id():
                 lastC.setValid(False)
                 lastC = c
+                dLength = c.center().dist(c.node(0).pos())/4.
         else:
             #There is no new cell .. the last active contains a stream element
             lastC.setValid(False)

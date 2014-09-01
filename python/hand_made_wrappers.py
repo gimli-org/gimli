@@ -4,6 +4,18 @@
 import os
 import environment_for_pygimli_build
 
+#boost::python::numeric::array RVector_getArray(GIMLI::RVector & vec)
+        #{
+            #boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+            #std::cout << "HEREAM_I boost::array" << std::endl;
+            #if (!vec.size()) {
+            #}
+            #boost::python::numeric::array a;
+            #return a;
+        #}
+#"""def( "getArray", &RVector_getArray, 
+                #"PyGIMLI Helper Function: extract an array object from an RVector ");""",
+            
 WRAPPER_DEFINITION_RVector=\
 """
 boost::python::tuple RVector_getData(GIMLI::RVector & vec )
@@ -12,20 +24,10 @@ boost::python::tuple RVector_getData(GIMLI::RVector & vec )
             if (!vec.size()) return boost::python::make_tuple( "none", 0 );
             return boost::python::make_tuple( "none", 0 ); 
         }
-
-boost::python::tuple RVector_getArray(GIMLI::RVector & vec)
-        {
-            std::cout << "HEREAM_I boost::python::tuple RVector_getData(Gimli::RVector & vec )" << std::endl;
-            if (!vec.size()) return boost::python::make_tuple( "none", 0 );
-            return boost::python::make_tuple( "none", 0 ); 
-        }
-
 """   
 WRAPPER_REGISTRATION_RVector = [   
 """def( "getData", &RVector_getData, 
                 "PyGIMLI Helper Function: extract an python object from an RVector ");""",
-"""def( "getArray", &RVector_getArray, 
-                "PyGIMLI Helper Function: extract an array object from an RVector ");""",
 ]                
 
 WRAPPER_DEFINITION_General = \
