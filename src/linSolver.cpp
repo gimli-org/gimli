@@ -88,6 +88,12 @@ void LinSolver::solve(const RVector & rhs, RVector & solution){
     if (solver_) solver_->solve(rhs, solution);
 }
 
+RVector LinSolver::solve(const RVector & rhs){
+    RVector solution(rhs.size());
+    if (solver_) solver_->solve(rhs, solution);
+    return solution;
+}
+
 std::string LinSolver::solverName() const {
   switch(solverType_){
   case LDL:     return "LDL"; break;

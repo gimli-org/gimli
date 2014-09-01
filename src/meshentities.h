@@ -307,10 +307,15 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const Boundary & e);
 
+    /*!Return normal vector for this boundary.*/
     virtual RVector3 norm() const;
     
+    /*!Return outer normal vector for this boundary regarding the given cell. 
+     *The boundary should part of this cell.*/
+    virtual RVector3 norm(const Cell & cell) const;
+    
     /*! Return true if the normal vector of this boundary shown from the cell away (outside-direction) */
-    bool normShowsOutside(const Cell & cell);
+    bool normShowsOutside(const Cell & cell) const;
 
 protected:
     void registerNodes_();
@@ -352,6 +357,10 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const NodeBoundary & e);
 
+    /*!Returns the normal vector for this boundary that shows outside along the 
+     *tangent of the cell which is 1D and an Edge.*/
+    virtual RVector3 norm(const Cell & cell) const;
+    
 protected:
 };
 

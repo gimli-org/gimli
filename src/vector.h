@@ -65,15 +65,29 @@ template < class ValueType, class A > class __VectorExpr;
 
 template < class ValueType > class DLLEXPORT VectorIterator {
 public:
+    typedef ValueType value_type;
+    
+    #ifdef _MSC_VER
+    // basic iterator traits needed by msvc
+    typedef Index difference_type;
+    typedef value_type & pointer;    
+    typedef value_type & reference;
+    typedef std::random_access_iterator_tag iterator_category;
+    bool operator < (const VectorIterator< ValueType > & a) const { return val_ < a.val_; }
+    #endif
+        
     VectorIterator() : val_(NULL), maxSize_(0){ }
 
     VectorIterator(const VectorIterator < ValueType > & iter) 
-        : val_(iter.val_), maxSize_(iter.maxSize_){ }
+        : val_(iter.val_), maxSize_(iter.maxSize_){ 
+            end_ = val_ + maxSize_;
+    }
 
     VectorIterator < ValueType > & operator = (const VectorIterator < ValueType > & iter){
         if (this != & iter){
             val_ = iter.val_;
             maxSize_ = iter.maxSize_ ;
+            end_ = iter.end_;
         }
         return *this;
     }
@@ -95,18 +109,15 @@ public:
     inline ValueType * ptr() const { return val_; }
     inline ValueType * ptr() { return val_; }
 
+    inline bool hasMore() const { return val_ != end_; }
+    
+    /*!Return the current and advance the iterator to the next.*/
+    inline ValueType nextVal(){ return *val_++; }
+    
     ValueType * val_;
     Index maxSize_;
-	
-	#ifdef _MSC_VER
-	// basic iterator traits needed by msvc
-	typedef ValueType value_type;
-	typedef Index difference_type;
-	typedef value_type & pointer;    
-	typedef value_type & reference;
-	typedef std::random_access_iterator_tag iterator_category;
-	bool operator < (const VectorIterator< ValueType > & a) const { return val_ < a.val_; }
-	#endif
+    ValueType * end_;
+
 };
 
 //! One dimensional array aka Vector of limited size.
@@ -504,7 +515,9 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 #endif
         return *this;
     }
-        
+    
+    const VectorIterator< ValueType > & beginPyIter() const { return *begin_; }
+    
 //   ValueType min()
 
     const VectorIterator< ValueType > & begin() const { return *begin_; }
@@ -669,7 +682,10 @@ protected:
     void copy_(const Vector< ValueType > & v){
         if (v.size()) {
             resize(v.size());
-            std::copy(&v[0], &v[v.size()], data_);
+            //"" check speed for memcpy here 
+             //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
+             // memcpy is approx 0.3% faster but copy is extensively testet
+             std::copy(&v[0], &v[v.size()], data_);
         }
     }
 

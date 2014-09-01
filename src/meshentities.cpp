@@ -202,7 +202,7 @@ double MeshEntity::size() const {
 }
     
  
- void MeshEntity::fillShape_(){
+void MeshEntity::fillShape_(){
     if (shape_){
         if (shape_->nodeCount() > this->nodeCount()){
             std::cerr << WHERE_AM_I << " not enough nodes to fill shape: " << shape_->rtti()
@@ -492,11 +492,7 @@ void Boundary::deRegisterNodes_(){
         if (nodeVector_[i]) nodeVector_[i]->eraseBoundary(*this);
     }
 }
-
-RVector3 Boundary::norm() const {
-    return shape_->norm();
-}
-
+   
 RVector3 Boundary::rst(uint i) const {
     if (this->nodeCount() == shape_->nodeCount()) return shape_->rst(i);
     std::cerr << "need local coordinate function implementation for meshEntity " << rtti() << std::endl;
@@ -504,14 +500,17 @@ RVector3 Boundary::rst(uint i) const {
     return RVector3(0.0, 0.0, 0.0);
 }
 
-bool Boundary::normShowsOutside(const Cell & cell){
-    
+RVector3 Boundary::norm() const {
+    return shape_->norm();
+}
+
+RVector3 Boundary::norm(const Cell & c) const {
+    if (!this->normShowsOutside(c)) return -this->norm();
+    return this->norm();
+}
+
+bool Boundary::normShowsOutside(const Cell & cell) const {
     RVector3 n(this->norm());
-    
-    //** checkthis!!!!!!!!!!!! unittest
-//     return n.dot(shape_->node(0).pos()) > 0.0;
-    //** checkthis!!!!!!!!!!!! unittest
-    
     RVector3 bc(this->center());
     RVector3 cc(cell.center());
     return (cc-(bc+n)).abs() > (cc-(bc-n)).abs();
@@ -540,6 +539,11 @@ void NodeBoundary::setNodes(Node & n1, bool changed){
     registerNodes_();
     fillShape_();
 }
+
+RVector3 NodeBoundary::norm(const Cell & c) const{
+    return (c.center() - this->center()).norm();
+}
+
 
 Edge::Edge(std::vector < Node * > & nodes) : Boundary(nodes){
     shape_ = new EdgeShape();

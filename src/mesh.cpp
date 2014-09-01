@@ -39,19 +39,32 @@ std::ostream & operator << (std::ostream & str, const Mesh & mesh){
 }
 
 Mesh::Mesh(uint dim)
-: dimension_(dim), rangesKnown_(false), neighboursKnown_(false), tree_(NULL){
+    : dimension_(dim),
+    rangesKnown_(false), 
+    neighboursKnown_(false), 
+    tree_(NULL),
+    staticGeometry_(true){
+        
     oldTet10NumberingStyle_ = true;
 }
 
 Mesh::Mesh(const std::string & filename)
-: rangesKnown_(false), neighboursKnown_(false), tree_(NULL){
+    : rangesKnown_(false),
+    neighboursKnown_(false),
+    tree_(NULL),
+    staticGeometry_(true){
+        
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
     load(filename);
 }
 
 Mesh::Mesh(const Mesh & mesh)
-: rangesKnown_(false), neighboursKnown_(false), tree_(NULL){
+    : rangesKnown_(false),
+    neighboursKnown_(false),
+    tree_(NULL),
+    staticGeometry_(true){
+        
     oldTet10NumberingStyle_ = true;
     copy_(mesh);
 }
@@ -65,8 +78,11 @@ Mesh & Mesh::operator = (const Mesh & mesh){
 void Mesh::copy_(const Mesh & mesh){
     clear();
     rangesKnown_ = false;
+    
+    setStaticGeometry(mesh.staticGeometry());
     dimension_ = mesh.dim();
     nodeVector_.reserve(mesh.nodeCount());
+    
     for (uint i = 0; i < mesh.nodeCount(); i ++) createNode(mesh.node(i));
 
     boundaryVector_.reserve(mesh.boundaryCount());
@@ -86,6 +102,10 @@ void Mesh::copy_(const Mesh & mesh){
 
 Mesh::~Mesh(){
     clear();
+}
+
+void Mesh::setStaticGeometry(bool stat){
+    staticGeometry_ = stat;
 }
 
 void Mesh::clear(){
@@ -608,21 +628,45 @@ std::vector < RVector3 > Mesh::positions(const IndexArray & idx) const {
 }
 
 std::vector < RVector3 > Mesh::cellCenters() const {
-    std::vector < RVector3 > pos; pos.reserve(this->cellCount());
-    for (uint i = 0; i < this->cellCount(); i ++) {
-        pos.push_back(cellVector_[i]->center());
-    }
+    std::vector < RVector3 > pos(this->cellCount());
+    std::transform(cellVector_.begin(), cellVector_.end(), pos.begin(),
+                   std::mem_fun(&Cell::center));
     return pos;
 }
 
-RVector Mesh::cellSizes() const{
-    RVector tmp(cellCount());
-//     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
-//                     std::bind1st(&Cell::shape, std::mem_fun(&Shape::domainSize));
-    for (uint i = 0; i < this->cellCount(); i ++) {
-        tmp[i] = cellVector_[i]->shape().domainSize();
+RVector & Mesh::cellSizes() const{
+    
+    if (cellSizesCache_.size() != cellCount()){
+        cellSizesCache_.resize(cellCount());
+        
+        std::transform(cellVector_.begin(), cellVector_.end(),
+                       cellSizesCache_.begin(),
+                       std::mem_fun(&Cell::size));
+    } else {
+        if (!staticGeometry_){
+            cellSizesCache_.resize(0);
+            return this->cellSizes();
+        }
     }
-    return tmp;
+    
+    return cellSizesCache_;
+}
+
+RVector & Mesh::boundarySizes() const{
+    if (boundarySizesCache_.size() != boundaryCount()){
+        boundarySizesCache_.resize(boundaryCount());
+        
+        std::transform(boundaryVector_.begin(), boundaryVector_.end(), 
+                       boundarySizesCache_.begin(),
+                       std::mem_fun(&MeshEntity::size));
+    } else {
+        if (!staticGeometry_){
+            boundarySizesCache_.resize(0);
+            return this->boundarySizes();
+        }
+    }
+    
+    return boundarySizesCache_;
 }
 
 void Mesh::sortNodes(const std::vector < int > & perm){

@@ -7,8 +7,7 @@ import sys
 import string
 from environment_for_pygimli_build import settings
 
-# maybe we will use this later for fast rvector <-> np.array conversion, maybe not.
-# import hand_made_wrappers
+import hand_made_wrappers
 
 from pygccxml import parser
 from pygccxml import declarations
@@ -47,7 +46,7 @@ class decl_starts_with (object):
     def __call__ (self, decl):
         return self.prefix in decl.name
 
-def exclude(method, return_type = '', name = '', symbol = ''):
+def exclude(method, return_type='', name='', symbol=''):
     for funct in return_type:
         if len(funct):
             fun = method(return_type = funct, allow_empty = True)
@@ -182,8 +181,7 @@ def generate(defined_symbols, extraIncludes):
     mb.classes().always_expose_using_scope = True
     mb.calldefs().create_with_signature = True
 
-    # maybe we will use this later for fast rvector <-> np.array conversion, maybe not.
-    # hand_made_wrappers.apply(mb)
+    hand_made_wrappers.apply(mb)
 
     global_ns = mb.global_ns
     global_ns.exclude()
@@ -258,7 +256,8 @@ def generate(defined_symbols, extraIncludes):
                                                 ,'::GIMLI::__VectorUnaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::LOG10 >'
                                                 ,'::GIMLI::__VectorUnaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::LOG >'
                                                 ,'::GIMLI::__VectorExpr<double, GIMLI::__VectorValExprOp<double, GIMLI::__VectorExpr<double, GIMLI::__ValVectorExprOp<double, GIMLI::__VectorIterator<double >, GIMLI::MULT > >, GIMLI::MULT > >'
-                                                ,'::GIMLI::__VectorValExprOp<double, GIMLI::__VectorExpr<double, GIMLI::__ValVectorExprOp<double, GIMLI::__VectorIterator<double >, GIMLI::MULT > >, GIMLI::MULT >.pypp.hpp'
+    ,'::GIMLI::__VectorValExprOp<double, GIMLI::__VectorExpr<double, GIMLI::__ValVectorExprOp<double, GIMLI::__VectorIterator<double >, GIMLI::MULT > >, GIMLI::MULT >.pypp.hpp',
+                                                'GIMLI::Expr<GIMLI::ExprIdentity>'
                                                ])
 
     exclude(main_ns.member_functions,  name = ['begin', 'end', 'val'],  return_type = [''])
@@ -364,6 +363,7 @@ def generate(defined_symbols, extraIncludes):
     
     additional_files = [
             os.path.join(os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp'),
+            os.path.join(os.path.abspath(os.path.dirname(__file__)), 'generators.h'),
             os.path.join(os.path.abspath(os.path.dirname(__file__)), 'tuples.hpp') 
             ]
             
@@ -387,7 +387,6 @@ if __name__ == '__main__':
                       
     (options, args) = optionParser.parse_args()
     
-
     generate(defined_symbols, options.extraIncludes)
 
 

@@ -6,6 +6,8 @@
 #include <boost/mpl/next.hpp>
 #include "tuples.hpp"
 
+#include <numpy/arrayobject.h>
+
 #include "gimli.h"
 #include "pos.h"
 #include "vector.h"
@@ -99,21 +101,118 @@ struct PySequence2RVector{
         
     }
 
-    /*! Convert obj into RVector */
+    /*! Convert List[] or ndarray into RVector */
     static void construct(PyObject* obj, bpl::converter::rvalue_from_python_stage1_data * data){
+        // check tests/testPerf.py
+        // check tests/RValueConverter.py
         
-        bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
-
         typedef bpl::converter::rvalue_from_python_storage< GIMLI::Vector< double > > storage_t;
-         
         storage_t* the_storage = reinterpret_cast<storage_t*>(data);
         void* memory_chunk = the_storage->storage.bytes;
- 
-        GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
-        data->convertible = memory_chunk;
+        
+        // std::cout << "size: " << PyArray_DIM(obj,0) << std::endl;
+        // std::cout << "type: " << PyArray_TYPE(obj) << std::endl;
+        // type 12 = float64
+        if (PyArray_ISONESEGMENT(obj) && PyArray_TYPE(obj) == 12){
+            // convert from numpy array
+            GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(PyArray_DIM(obj,0));
+            data->convertible = memory_chunk;
+            void * arrData = PyArray_DATA(obj);
 
-        for (GIMLI::Index i = 0; i < vec->size(); i ++){
-            vec->setVal(bpl::extract< double >(py_sequence[i]), i);
+// //         std::cout << "PyArray_NDIM(obj) " << PyArray_NDIM(obj) << std::endl;
+// //         std::cout << "PyArray_NDIM(arrData) " << PyArray_NDIM(arrData) << std::endl;
+// //         std::cout << "PyArray_ISONESEGMENT(obj) " << PyArray_ISONESEGMENT(obj) << std::endl;
+//         
+            std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(double));
+            
+        } else {
+            // convert from list
+            bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
+            GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
+            data->convertible = memory_chunk;
+            
+            for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                 (*vec)[i]= bpl::extract< double >(py_sequence[i]);
+            }
+        }
+    }
+private:    
+};
+
+struct PyRVector2Ndarray{
+
+    /*! Check if the object is convertible */
+    static void * convertible(PyObject * obj){
+        __M
+        // is obj is a sequence
+        if(!PySequence_Check(obj)){
+            return NULL;
+        }
+
+        // has the obj a len method
+        if(!PyObject_HasAttrString(obj, "__len__")){
+            return NULL;
+        }
+
+        bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
+//         std::cout << "here am i 1 " << len(py_sequence) << std::endl;
+        
+        if (len(py_sequence) > 0) {
+            
+            bpl::object element = py_sequence[0];
+            bpl::extract< double > type_checker(element);
+            
+            if(type_checker.check()){
+                return obj;
+            } else {
+                std::cout << WHERE_AM_I << "element cannot converted to double" << std::endl;
+            }
+            
+        } else {
+            std::cout << WHERE_AM_I << " " << std::endl;
+            return NULL;
+        }
+        // check if there is a valid converter
+//         if(convertible_impl(py_sequence, boost::mpl::int_< 0 >(), length_type())){
+//             return obj;
+//         } else{
+        return NULL;
+        
+    }
+
+    /*! Convert List[] or ndarray into RVector */
+    static void construct(PyObject* obj, bpl::converter::rvalue_from_python_stage1_data * data){
+        // check tests/testPerf.py
+        // check tests/RValueConverter.py
+        
+        typedef bpl::converter::rvalue_from_python_storage< GIMLI::Vector< double > > storage_t;
+        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+        void* memory_chunk = the_storage->storage.bytes;
+        
+        // std::cout << "size: " << PyArray_DIM(obj,0) << std::endl;
+        // std::cout << "type: " << PyArray_TYPE(obj) << std::endl;
+        // type 12 = float64
+        if (PyArray_ISONESEGMENT(obj) && PyArray_TYPE(obj) == 12){
+            // convert from numpy array
+            GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(PyArray_DIM(obj,0));
+            data->convertible = memory_chunk;
+            void * arrData = PyArray_DATA(obj);
+
+// //         std::cout << "PyArray_NDIM(obj) " << PyArray_NDIM(obj) << std::endl;
+// //         std::cout << "PyArray_NDIM(arrData) " << PyArray_NDIM(arrData) << std::endl;
+// //         std::cout << "PyArray_ISONESEGMENT(obj) " << PyArray_ISONESEGMENT(obj) << std::endl;
+//         
+            std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(double));
+            
+        } else {
+            // convert from list
+            bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
+            GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
+            data->convertible = memory_chunk;
+            
+            for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                 (*vec)[i]= bpl::extract< double >(py_sequence[i]);
+            }
         }
     }
 private:    
@@ -253,6 +352,12 @@ void register_pysequence_to_rvector_conversion(){
                                         bpl::type_id< GIMLI::Vector< double > >());
 }
 
+void register_rvector_to_ndarray_conversion(){
+    bpl::converter::registry::push_back(& r_values_impl::PyRVector2Ndarray::convertible, 
+                                        & r_values_impl::PyRVector2Ndarray::construct, 
+                                        bpl::type_id< GIMLI::Vector< double > >());
+}
+
 void register_pysequence_to_StdVectorUL_conversion(){
     bpl::converter::registry::push_back(& r_values_impl::PySequence2StdVectorUL::convertible, 
                                         & r_values_impl::PySequence2StdVectorUL::construct, 
@@ -264,3 +369,5 @@ void register_pysequence_to_StdVectorRVector3_conversion(){
                                         & r_values_impl::PySequence2StdVectorRVector3::construct, 
                                         bpl::type_id< std::vector< GIMLI::Pos< double > > >());
 }
+
+

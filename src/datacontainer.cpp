@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -31,17 +31,22 @@ DataContainer::DataContainer(){
     //std::cout << "DataContainer(){" << std::endl;
 }
 
-DataContainer::DataContainer(const std::string & fileName, bool sensorIndicesFromOne){
+DataContainer::DataContainer(const std::string & fileName,
+                             bool sensorIndicesFromOne,
+                             bool removeInvalid){
     initDefaults();
-    this->load(fileName, sensorIndicesFromOne);
+    this->load(fileName, sensorIndicesFromOne, removeInvalid);
     //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
 
-DataContainer::DataContainer(const std::string & fileName, const std::string & sensorTokens, bool sensorIndicesFromOne){
+DataContainer::DataContainer(const std::string & fileName, 
+                             const std::string & sensorTokens, 
+                             bool sensorIndicesFromOne,
+                             bool removeInvalid){
     initDefaults();
     std::vector < std::string > tokenList = getSubstrings(sensorTokens);
     for(Index i=0 ; i < tokenList.size() ; i++) registerSensorIndex(tokenList[i]);
-    this->load(fileName, sensorIndicesFromOne);
+    this->load(fileName, sensorIndicesFromOne, removeInvalid);
     //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
 
@@ -174,7 +179,9 @@ bool DataContainer::isSensorIndex(const std::string & token) const {
     return dataSensorIdx_.find(token) != dataSensorIdx_.end();
 }
 
-int DataContainer::load(const std::string & fileName, bool sensorIndicesFromOne){
+int DataContainer::load(const std::string & fileName, 
+                        bool sensorIndicesFromOne, 
+                        bool removeInvalid){
     setSensorIndexOnFileFromOne(sensorIndicesFromOne);
     
 	std::fstream file; openInFile(fileName, & file, true);
@@ -347,7 +354,7 @@ int DataContainer::load(const std::string & fileName, bool sensorIndicesFromOne)
     dataMap_["valid"] = 1;
 
     // validity check should only used in specialization
-    this->checkDataValidity();
+    this->checkDataValidity(removeInvalid);
 
     //** start read topography;
     row = getNonEmptyRow(file);

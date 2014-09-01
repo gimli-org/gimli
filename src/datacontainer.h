@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -46,13 +46,19 @@ public:
     /*! Simple Constructor, builds an empty data container.*/
     DataContainer();
 
-    /*! Constructor, builds a data container and fills the data from a file. See \ref load.
-      \param fileName String of the file name */
-    DataContainer(const std::string & fileName, bool sensorIndicesFromOne = true);
+    /*! Constructor, builds a data container and fills the data from a file.
+     * See \ref load.
+      \param fileName String of the file name
+      */
+    DataContainer(const std::string & fileName,
+                  bool sensorIndicesFromOne=true,
+                  bool removeInvalid=true);
 
     /*! Constructor, builds a data container, registers sensor indices and fills the data from a file.
         See \ref load. \param fileName String of the file name */
-    DataContainer(const std::string & fileName, const std::string & sensorTokens, bool sensorIndicesFromOne = true);
+    DataContainer(const std::string & fileName, const std::string & sensorTokens,
+                  bool sensorIndicesFromOne=true,
+                  bool removeInvalid=true);
 
     /*! Copy Constructor */
     DataContainer(const DataContainer & data);
@@ -209,8 +215,12 @@ public:
     /*! Return reference to the token translator map. */
     inline const std::map< std::string, std::string > & tokenTranslator() const { return tT_; }
 
-    /*! Loads the data from a file. See save for details on the fileformat.*/
-    virtual int load(const std::string & fileName, bool sensorIndicesFromOne = true);
+    /*! Loads the data from a file. See save for details on the fileformat.
+     On default remove all invalid data that have been marked by checkDataValidity 
+     and checkDataValidityLocal.*/
+    virtual int load(const std::string & fileName, 
+                     bool sensorIndicesFromOne=true, 
+                     bool removeInvalid=true);
 
     /*! Save the data to a file. Saves only valid data(except formatData == "all"). File format is\n\n
      * Number of Sensors\n
