@@ -128,6 +128,13 @@ public:
 
     void clear();
 
+    /*!If the mesh is static in geometry and shape some useful informations are cached. 
+     * (cell sizes, boundary sizes, ...)
+     For dynamic meshes, i.e., node positions can be moved, you have to set staticGeometry to false to avoid any caching.*/
+    void setStaticGeometry(bool stat);
+    
+    inline bool staticGeometry() const { return staticGeometry_; }
+    
     //** start creation stuff
     Node * createNode(double x, double y, double z, int marker = 0);
 
@@ -238,14 +245,17 @@ public:
     std::vector < RVector3 > cellCenters() const;
     std::vector < RVector3 > cellCenter() const { return cellCenters(); }
 
-    /*! Returns a RVector of all cell sizes */
-    RVector cellSizes() const;
+    /*! Returns a RVector of all cell sizes. Cached for static geometry.*/
+    RVector & cellSizes() const;
 
-    /*! Returns a vector of all boundary marker */
-    std::vector < int > boundaryMarker() const;
+    /*! Returns a RVector of all boundary sizes. Cached for static geometry. */
+    RVector & boundarySizes() const;
 
     /*! Returns a vector of all cell marker */
     std::vector < int > cellMarker() const;
+
+    /*! Returns a vector of all boundary marker */
+    std::vector < int > boundaryMarker() const;
 
     /*! Returns a vector of all node marker */
     std::vector < int > nodeMarker() const;
@@ -538,14 +548,19 @@ protected:
     mutable RVector3 minRange_;
     mutable RVector3 maxRange_;
     mutable bool rangesKnown_;
+
     bool neighboursKnown_;
-
-    std::map< std::string, RVector > exportDataMap_;
-
+    
     mutable KDTreeWrapper * tree_;
 
+    /*! A static geometry mesh caches geometry informations. */
+    bool staticGeometry_;
+    mutable RVector cellSizesCache_;
+    mutable RVector boundarySizesCache_;
+    
     bool oldTet10NumberingStyle_;
 
+    std::map< std::string, RVector > exportDataMap_;
     std::string commentString_;
 
 }; // class Mesh

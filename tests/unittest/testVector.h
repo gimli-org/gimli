@@ -14,6 +14,7 @@ using namespace GIMLI;
 
 class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(VectorTest);
+    CPPUNIT_TEST(testIterator);
     CPPUNIT_TEST(testEquality);
     CPPUNIT_TEST(testFill);
     CPPUNIT_TEST(testSetVal);
@@ -32,6 +33,17 @@ class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE_END();
     
 public:    
+    
+    void testIterator(){
+        RVector v(10); v.fill(x__ + 1.0);
+        GIMLI::VectorIterator<double> iter = v.begin();
+        uint i = 0;
+        do {
+            i++;
+            CPPUNIT_ASSERT(i == iter.nextVal());
+        } while (iter.hasMore());
+        CPPUNIT_ASSERT(i == 10);
+    }
     
     void testEquality(){
         testEquality_< RVector > ();
@@ -378,5 +390,6 @@ private:
     RVector * v1_, * v2_;
     
 };
+
 
 CPPUNIT_TEST_SUITE_REGISTRATION(VectorTest);

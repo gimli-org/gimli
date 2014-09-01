@@ -127,18 +127,25 @@ else()
 	set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 	set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 endif()
+
 find_package(PythonLibs)
+
+find_python_module(numpy)
+
 find_package(Boost 1.46.0 COMPONENTS python)
 
 find_package(gccxml)
 find_package(pygccxml)
 
-if(PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE 
-	AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
-	AND Boost_PYTHON_LIBRARIES)
+if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE 
+    AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
+    AND Boost_PYTHON_LIBRARIES AND numpy_FOUND)
     set (PYGIMLI 1)
     message (STATUS "pygimli can be build.")
     message (STATUS "boost_python:" ${Boost_PYTHON_LIBRARIES})
+else()
+    message (STATUS "pygimli cannot be build due to some missing packages. 
+Check above for python, gccxml, pygccxml, pyplusplus, boost_python, numpy")
 endif ()
 
 configure_file ("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )

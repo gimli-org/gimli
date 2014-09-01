@@ -42,6 +42,8 @@ public:
     ~LinSolver();
 
     void solve(const RVector & rhs, RVector & solution);
+    
+    RVector solve(const RVector & rhs);
 
     void setSolverType(SolverType solverType = AUTOMATIC);
   

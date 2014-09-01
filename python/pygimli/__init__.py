@@ -23,7 +23,7 @@ if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
 
 try:
-    from ._pygimli_ import *
+    from . _pygimli_ import *
 except ImportError as e:
     print(e)
     import traceback
@@ -115,7 +115,6 @@ _pygimli_.stdVectorUL.__str__ = RVector_str
 # compatibility stuff
 ############################
 
-
 def nonzero_test(self):
     raise "Warning! there is no 'and' for BVector and RVector use '&' instead" + \
         "If you looking for the nonzero test, use len(v) > 0"
@@ -127,6 +126,7 @@ _pygimli_.BVector.__nonzero__ = nonzero_test
 ############################
 # allow:
 ############################
+
 def __ADD(self, val):
     ret = type(self)()
     for i, r in enumerate(self):
@@ -140,7 +140,7 @@ _pygimli_.stdVectorUL.__add__ = __ADD
 # Indexing operator for RVector, RVector3, RMatrix
 ############################
 def __getVal(self, idx):
-
+    
     if isinstance(idx, list):
         idxL = _pygimli_.stdVectorUL()
         for ix in idx:
@@ -154,7 +154,11 @@ def __getVal(self, idx):
         if idx.step is None:
             return self(int(idx.start), int(idx.stop))
         else:
-            "not yet implemented"
+            ids = range(idx.start, idx.stop, idx.step)
+            if len(ids):
+                return self(ids)
+            else:
+                raise Exception("slice invalid")
 
     if idx == -1:
         idx = len(self) - 1
@@ -173,13 +177,6 @@ def __setVal(self, idx, val):
             "not yet implemented"
 
     self.setVal(val, idx)
-
-
-_pygimli_.RVector.__setitem__ = __setVal
-_pygimli_.RVector.__getitem__ = __getVal
-
-_pygimli_.RVector3.__setitem__ = __setVal
-
 
 def __getValMatrix(self, idx):
 
@@ -206,7 +203,12 @@ def __getValMatrix(self, idx):
     return self.rowR(idx)
 
 
-_pygimli_.RMatrix.__getitem__ = __getValMatrix
+#_pygimli_.RVector.__setitem__ = __setVal
+#_pygimli_.RVector.__getitem__ = __getVal # very slow -- inline is better
+
+_pygimli_.RVector3.__setitem__ = __setVal
+
+#_pygimli_.RMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
 _pygimli_.RMatrix.__setitem__ = __setVal
 
 
@@ -244,16 +246,19 @@ class VectorIter:
 
     # this is the same but for python > 3
     def __next__(self):
+        #print('next')
         self.pos += 1
         if self.pos == self.length:
             raise StopIteration()
         else:
             return self.vec[self.pos]
 
-
 def __VectorIterCall__(self):
-    return VectorIter(self)
+    #return VectorIter(self)
+    return _pygimli_.RVectorIter(self.beginPyIter())
 
+def __MatIterCall__(self):
+    return VectorIter(self)
 
 class Vector3Iter (VectorIter):
 
@@ -266,11 +271,10 @@ class Vector3Iter (VectorIter):
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
-
 _pygimli_.RVector.__iter__ = __VectorIterCall__
 _pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
-_pygimli_.RMatrix.__iter__ = __VectorIterCall__
+_pygimli_.RMatrix.__iter__ = __MatIterCall__
 
 
 ############################
@@ -324,13 +328,13 @@ _pygimli_.RVector.isArray = RVector_ArrayInit
 #
 # Construct RVector from numpy array , opposite to asarray(RVector)
 #
-def asvector(arr):
-    r = _pygimli_.RVector(len(arr))
+#def asvector(arr):
+    #r = _pygimli_.RVector(len(arr))
 
-    for i, v in enumerate(arr):
-        r[i] = v
+    #for i, v in enumerate(arr):
+        #r[i] = v
 
-    return r
+    #return r
 
 # PEP conform version str with SVN revision number
 def __svnversion__(path=__path__[0]):

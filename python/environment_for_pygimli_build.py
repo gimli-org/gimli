@@ -29,7 +29,7 @@ class settings:
 
         sys.path.append(settings.pygccxml_path)
         sys.path.append(settings.pyplusplus_path)
-
+ 
 if sys.platform == 'linux2' or sys.platform == 'linux':
     pass
 

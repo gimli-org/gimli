@@ -12,8 +12,6 @@
 #endif
 #define BOOST_ATOMIC_FORCE_FALLBACK
 
-
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -27,6 +25,7 @@
 // #define PACKAGE_BUGREPORT "carsten@resistivity.net"
 // #endif // PACKAGE_NAME
 
+//#define PYTEST
 #ifdef PYTEST
 
 #include "stopwatch.h"
@@ -35,6 +34,7 @@
 namespace GIMLI{
 
 	template class Vector< double >;
+    template class VectorIterator< double >;
     template class Vector< Complex >;
     template class Vector< int >;
 
@@ -67,17 +67,18 @@ namespace GIMLI{
 namespace pyplusplus{ namespace aliases{
     //typedef std::complex< double >                  Complex;
 
-    //typedef GIMLI::Vector< double >                 RVector;
-  //  typedef GIMLI::Vector< Complex >                CVector;
+    typedef GIMLI::Vector< double >                 RVector;
+    typedef GIMLI::VectorIterator< double >              RVectorIter;
+    //  typedef GIMLI::Vector< Complex >                CVector;
 //    typedef GIMLI::Pos< double >                    RVector3;
 
 //    typedef GIMLI::Matrix< double >                 RMatrix;
 
     //typedef std::vector< double >                   stdVectorR;
-    typedef std::vector< int >                        stdVectorI;
+
     //typedef std::vector< std::complex< double > >   stdVectorC;
 
-    //typedef std::vector< std::string > stdVectorString;
+//     typedef std::vector< std::string > stdVectorString;
     //typedef std::map< float, float > stdMapF_F;
 }
 } //pyplusplus::aliases
@@ -188,7 +189,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class Vector< double >;
     template class Vector< Complex >;
     template class Vector< int >;
-
+    
     template class Matrix<  double >;
    // template class Matrix< Complex >;
     
@@ -401,6 +402,7 @@ namespace pyplusplus{ namespace aliases{
     //typedef GIMLI::Matrix< Complex >                     CMatrix;
 
     typedef GIMLI::VectorIterator< double >              RVectorIter;
+    typedef GIMLI::VectorIterator< int >                 BVectorIter;
     typedef GIMLI::Pos< double >                         RVector3;
 
     typedef GIMLI::Quaternion< double >                  RQuaternion;
@@ -434,7 +436,7 @@ namespace pyplusplus{ namespace aliases{
 //     typedef GIMLI::Variable< GIMLI::XAxis >                 VariableXAxis;
 //     typedef GIMLI::Variable< GIMLI::YAxis >                 VariableYAxis;
 //     typedef GIMLI::Variable< GIMLI::ZAxis >                 VariableZAxis;
-    typedef GIMLI::VectorIterator< int >                    VectorIteratorInt;
+    
     typedef GIMLI::Expr< GIMLI::ExprIdentity >              ExprExprIdent;
 
     

@@ -147,7 +147,8 @@ private:
 
 
 //! based on: Ulrich Breymann, Addison Wesley Longman 2000 , revised edition ISBN 0-201-67488-2, Designing Components with the C++ STL
-template< class ValueType, class IndexType > class SparseMapMatrix : public MatrixBase {
+template< class ValueType, class IndexType > 
+class SparseMapMatrix : public MatrixBase {
 public:
     typedef std::pair< IndexType, IndexType > IndexPair;
     typedef std::map< IndexPair, ValueType, std::less< IndexPair > > ContainerType;

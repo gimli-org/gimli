@@ -12,34 +12,47 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
         What is this
     """
   
+    if not hasattr(ndof, '__len__'):
+        nDofs = [ndof]
+    else:
+        nDofs = ndof
+    
     try:
-        return pg.RVector(ndof, float(arg))
+        return pg.RVector(nDofs[0], float(arg))
     except:
         pass
-    
+
     if hasattr(arg, '__len__'):
-        if len(arg) == ndof:
-            return arg;
+        for n in nDofs:
+            if len(arg) == n:
+                return arg
+        
         raise Exception("Array 'arg' has the wrong size: " + 
                         len(arg) + " != " +  dof)
     elif hasattr(arg, '__call__'):
-        ret = pg.RVector(ndof, 0.0)
+        ret = pg.RVector(nDofs[0], 0.0)
         
         if not mesh:
             raise Exception("Please provide a mesh for the callable argument to parse ")
         
-        if ndof == mesh.nodeCount():
+        if nDofs[0] == mesh.nodeCount():
             for n in mesh.nodes():
                 if userData:
                     ret[n.id()] = arg(n.pos(), userData)
                 else:
                     ret[n.id()] = arg(n.pos())
-        elif ndof == mesh.cellCount():
+        elif nDofs[0] == mesh.cellCount():
             for c in mesh.cells():
                 if userData:
                     ret[c.id()] = arg(c, userData)
                 else:
                     ret[c.id()] = arg(c)
+        elif nDofs[0] == mesh.boundaryCount():
+            for b in mesh.boundaries():
+                if userData:
+                    ret[b.id()] = arg(b, userData)
+                else:
+                    ret[b.id()] = arg(b)
         else:
             raise Exception("Cannot parse callable argument " + str(ndof) + 
                             " nodes: " + str(mesh.nodeCount()) + 

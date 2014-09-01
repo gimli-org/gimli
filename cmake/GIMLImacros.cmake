@@ -5,13 +5,15 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     
     set(PYTHON_TARGET_NAME "_${PYTHON_MODULE_NAME}_")
 
-    file( GLOB ${PYTHON_MODULE_NAME}_SOURCE_FILES ${SOURCE_DIR}/*.cpp )
+    file(GLOB ${PYTHON_MODULE_NAME}_SOURCE_FILES ${SOURCE_DIR}/*.cpp)
+    list(SORT ${PYTHON_MODULE_NAME}_SOURCE_FILES)
 
     set_source_files_properties(${PYTHON_MODULE_NAME}_SOURCE_FILES
                                 PROPERTIES GENERATED TRUE)
 
     include_directories(BEFORE ${SOURCE_DIR})
     include_directories(${PYTHON_INCLUDE_DIR})
+    include_directories(${PY_NUMPY}/core/include/)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
@@ -88,3 +90,31 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION "${PYTHON_MODULE_NAME}/")
 endmacro()
 
+function(find_python_module module)
+    string(TOUPPER ${module} module_upper)
+    if(NOT PY_${module_upper})
+        if(ARGC GREATER 1 AND ARGV1 STREQUAL "REQUIRED")
+            set(${module}_FIND_REQUIRED TRUE)
+        endif()
+        # A module's location is usually a directory, but for binary modules
+        # it's a .so file.
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+            "import re, ${module}; print(re.compile('/__init__.py.*').sub('',${module}.__file__))"
+            RESULT_VARIABLE _${module}_status 
+            OUTPUT_VARIABLE _${module}_location
+            ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if(NOT _${module}_status)
+            set(PY_${module_upper} ${_${module}_location} CACHE STRING 
+                "Location of Python module ${module}")
+        endif(NOT _${module}_status)
+    endif(NOT PY_${module_upper})
+
+    find_package_handle_standard_args(${module} 
+                                      FOUND_VAR ${module}_FOUND
+                                      REQUIRED_VARS PY_${module_upper}
+                                      )
+    if (${module}_FOUND)
+        set( ${module}_FOUND ${${module}_FOUND} CACHE INTERNAL ${module}_FOUND)
+    endif()
+   
+endfunction(find_python_module)
