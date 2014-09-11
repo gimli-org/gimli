@@ -116,11 +116,14 @@ _pygimli_.stdVectorUL.__str__ = RVector_str
 ############################
 
 def nonzero_test(self):
-    raise "Warning! there is no 'and' for BVector and RVector use '&' instead" + \
-        "If you looking for the nonzero test, use len(v) > 0"
+    raise BaseException("Warning! there is no 'and' and 'or' for BVector and RVector. " + \
+        "Use binary operators '&' or '|' instead. " + \
+        "If you looking for the nonzero test, use len(v) > 0")
 
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.BVector.__nonzero__ = nonzero_test
+_pygimli_.RVector.__bool__ = nonzero_test
+_pygimli_.BVector.__bool__ = nonzero_test
 
 
 ############################
@@ -278,7 +281,7 @@ _pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 _pygimli_.RMatrix.__iter__ = __MatIterCall__
 
-# for backward compatibility should be removed
+# DEPRECATED for backward compatibility should be removed
 def asvector(array):
     return array
  
