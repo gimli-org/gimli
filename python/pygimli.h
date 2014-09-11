@@ -28,6 +28,7 @@
 //#define PYTEST
 #ifdef PYTEST
 
+//#include <numpy/arrayobject.h>
 #include "stopwatch.h"
 #include "vector.h"
 
@@ -150,7 +151,7 @@ namespace GIMLI{
 
 #define DEFINE_PY_VEC_UNARY_OPERATOR__(OP, FUNCT)                      \
     inline RVector OP (const RVector & a) { \
-        RVector tmp(a.size()); for (uint i = 0; i < a.size(); i ++) tmp[ i ] = FUNCT()(a[ i ]); return tmp; } \
+        RVector tmp(a.size()); for (uint i = 0; i < a.size(); i ++) tmp[i] = FUNCT()(a[i]); return tmp; } \
 
 DEFINE_PY_VEC_UNARY_OPERATOR__(abs,   ABS_)
 DEFINE_PY_VEC_UNARY_OPERATOR__(acot,  ACOT)
@@ -188,6 +189,7 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     template class Vector< double >;
     template class Vector< Complex >;
+    template class Vector< RVector3 >;
     template class Vector< int >;
     
     template class Matrix<  double >;
@@ -392,8 +394,10 @@ DEFINE_COMPARE_OPERATOR__(>)
 //** define some aliases to avoid insane method names
 namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
+    typedef GIMLI::Pos< double >                         RVector3;
 
     typedef GIMLI::Vector< double >                      RVector;
+    typedef GIMLI::Vector< RVector3 >                    R3Vector;
     typedef GIMLI::Vector< Complex >                     CVector;
     typedef GIMLI::Vector< int >                         BVector;
 
@@ -403,7 +407,7 @@ namespace pyplusplus{ namespace aliases{
 
     typedef GIMLI::VectorIterator< double >              RVectorIter;
     typedef GIMLI::VectorIterator< int >                 BVectorIter;
-    typedef GIMLI::Pos< double >                         RVector3;
+    
 
     typedef GIMLI::Quaternion< double >                  RQuaternion;
     

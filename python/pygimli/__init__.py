@@ -140,6 +140,9 @@ _pygimli_.stdVectorUL.__add__ = __ADD
 # Indexing operator for RVector, RVector3, RMatrix
 ############################
 def __getVal(self, idx):
+    """
+        Hell slow
+    """
     
     if isinstance(idx, list):
         idxL = _pygimli_.stdVectorUL()
@@ -267,7 +270,6 @@ class Vector3Iter (VectorIter):
         self.length = 3
         self.pos = -1
 
-
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
@@ -276,6 +278,32 @@ _pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 _pygimli_.RMatrix.__iter__ = __MatIterCall__
 
+# for backward compatibility should be removed
+def asvector(array):
+    return array
+ 
+########## c to python converter ######
+# default converter from RVector3 to numpy array 
+def __RVector3ArrayCall__(self, idx=None):
+    if idx:
+        print(self)
+        print(idx)
+        raise Exception("we need to fix this")
+    import numpy as np
+    return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
+
+# default converter from RVector to numpy array 
+def __RVectorArrayCall__(self, idx=None):
+    if idx:
+        print(self)
+        print(idx)
+        raise Exception("we need to fix this")
+    return self.array()
+    
+_pygimli_.RVector.__array__ = __RVectorArrayCall__
+_pygimli_.RVector3.__array__ = __RVector3ArrayCall__
+#_pygimli_.RVector3.__array__ = _pygimli_.RVector3.array
+#del _pygimli_.RVector.__array__
 
 ############################
 # non automatic exposed functions
@@ -319,10 +347,10 @@ _pygimli_.stdVectorI.__eq__ = __EQ_stdVectorI__
 ############################
 # ???
 ############################
-def RVector_ArrayInit(self):
-    #self.ndim = [1, self.size()]
-    self.ndim = 1
-_pygimli_.RVector.isArray = RVector_ArrayInit
+#def RVector_ArrayInit(self):
+    ##self.ndim = [1, self.size()]
+    #self.ndim = 1
+#_pygimli_.RVector.isArray = RVector_ArrayInit
 
 
 #

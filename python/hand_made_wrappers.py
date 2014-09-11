@@ -4,31 +4,53 @@
 import os
 import environment_for_pygimli_build
 
-#boost::python::numeric::array RVector_getArray(GIMLI::RVector & vec)
-        #{
-            #boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-            #std::cout << "HEREAM_I boost::array" << std::endl;
-            #if (!vec.size()) {
-            #}
-            #boost::python::numeric::array a;
-            #return a;
-        #}
-#"""def( "getArray", &RVector_getArray, 
-                #"PyGIMLI Helper Function: extract an array object from an RVector ");""",
-            
+#boost::python::numeric::array
+
+WRAPPER_DEFINITION_RVector3=\
+"""
+#include <numpy/arrayobject.h>
+
+PyObject * RVector3_getArray(GIMLI::RVector3 & vec){
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    npy_intp length = 3;
+    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, &vec[0]);
+    //Py_DECREF(ret);
+    return ret;
+}
+
+"""   
+WRAPPER_REGISTRATION_RVector3 = [   
+"""def("array",
+       &RVector3_getArray, 
+       "PyGIMLI Helper Function: extract a numpy array object from a RVector3 ");""",
+]                
+
 WRAPPER_DEFINITION_RVector=\
 """
-boost::python::tuple RVector_getData(GIMLI::RVector & vec )
-        {
-            std::cout << "HEREAM_I boost::python::tuple RVector_getData(Gimli::RVector & vec )" << std::endl;
-            if (!vec.size()) return boost::python::make_tuple( "none", 0 );
-            return boost::python::make_tuple( "none", 0 ); 
-        }
+#include <numpy/arrayobject.h>
+
+boost::python::tuple RVector_getData(GIMLI::RVector & vec){
+    std::cout << "HEREAM_I boost::python::tuple RVector_getData(Gimli::RVector & vec )" << std::endl;
+    if (!vec.size()) return boost::python::make_tuple( "none", 0 );
+    return boost::python::make_tuple( "none", 0 ); 
+}
+
+PyObject * RVector_getArray(GIMLI::RVector & vec){
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    npy_intp length = vec.size();
+    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, &vec[0]);
+    //Py_DECREF(ret);
+    return ret;
+}
+
 """   
 WRAPPER_REGISTRATION_RVector = [   
-"""def( "getData", &RVector_getData, 
-                "PyGIMLI Helper Function: extract an python object from an RVector ");""",
-]                
+"""def("getData", &RVector_getData, 
+                "PyGIMLI Helper Function: extract an python object from a RVector ");""",
+"""def("array",
+       &RVector_getArray, 
+       "PyGIMLI Helper Function: extract a numpy array object from a RVector ");""",
+]
 
 WRAPPER_DEFINITION_General = \
 """
@@ -80,10 +102,13 @@ def apply_reg(class_, code):
         class_.add_registration_code(c)
         
 def apply(mb):
-    pass
     rt = mb.class_('Vector<double>')
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
+    
+    rt = mb.class_('Pos<double>')
+    rt.add_declaration_code(WRAPPER_DEFINITION_RVector3)
+    apply_reg(rt, WRAPPER_REGISTRATION_RVector3)
     #rt.add_registration_code ("""def(bp::init< PyObject * >((bp::arg("value"))))""")
     
     mb.add_declaration_code(WRAPPER_DEFINITION_General)
