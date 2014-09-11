@@ -255,28 +255,24 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if type(data) != np.ma.core.MaskedArray:
         data = np.array(dataIn)
     
-    
-    if logScale and min(data) <= 0:
-        data = ma.masked_where(data <= 0.0, data)
+    if logScale and data.min() <= 0:
+        data = np.ma.masked_array(data, data <= 0.0)
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
         mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0 ])
 
     if not cMin:
-        cMin = min(data)
+        cMin = data.min()
     if not cMax:
-        cMax = max(data)
+        cMax = data.max()
 
-    # print "set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ",
-    # cMax
+    #print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
 
     if cMin > 0.0 and logScale:
         mappable.set_norm(mpl.colors.LogNorm())
     else:
         mappable.set_norm(mpl.colors.Normalize())
-
-    print(type(data))
 
     mappable.set_array(data)
     #mappable.set_level(10)

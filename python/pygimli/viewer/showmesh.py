@@ -49,8 +49,8 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
     if data is None:
         drawMesh(ax, mesh)
     else:
-        print(data[0], type(data[0]))
-        if hasattr(data[0], '__len__'):
+        #print(data[0], type(data[0]))
+        if hasattr(data[0], '__len__') and type(data) != np.ma.core.MaskedArray:
             if sum(data[:,0]) != sum(data[:,1]):
                 drawStreamLines2(ax, mesh, data)
             else:
