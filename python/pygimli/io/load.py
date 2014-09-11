@@ -7,12 +7,14 @@ from pygimli.meshtools import readGmsh
 
 def load(fname, verbose=False):
     """
-    General import function to load data and meshes.
+    General import function to load data and meshes from file.
 
     Parameters
     ----------
     fname : string
         Filename or folder of files to load.
+    verbose : bool
+        Be verbose.
     """
 
     import_routines = {

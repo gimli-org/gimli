@@ -33,6 +33,16 @@ def testNumpyFromRVec():
     print(sys.getrefcount(x))
     print(sys.getrefcount(a))
     
+def testNumpyFromRVec3():
+    a = pg.RVector3()
+    print(sys.getrefcount(a))
+    print(a.array())
+    x = np.array(a)
+    print(type(x))
+    print(x)
+    print(sys.getrefcount(x))
+    print(sys.getrefcount(a))
+    
 def testRValNumpyArray():
     x = np.arange(0, 1., 0.2 )
     print(sys.getrefcount(x))
@@ -96,6 +106,7 @@ if __name__ == '__main__':
     #testRValSeqRVector3()
     #testRValSequenz()
     testNumpyFromRVec()
+    testNumpyFromRVec3()
     #testRValNumpyArray()
     #testSlices()
     

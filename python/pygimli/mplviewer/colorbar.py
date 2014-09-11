@@ -249,9 +249,14 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     cbar.draw_all()
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
-    data = np.asarray(dataIn)
     
-    if logScale and data.min() <= 0:
+    data = dataIn
+    
+    if type(data) != np.ma.core.MaskedArray:
+        data = np.array(dataIn)
+    
+    
+    if logScale and min(data) <= 0:
         data = ma.masked_where(data <= 0.0, data)
 
     # set bad value color to white
@@ -259,9 +264,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
         mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0 ])
 
     if not cMin:
-        cMin = data.min()
+        cMin = min(data)
     if not cMax:
-        cMax = data.max()
+        cMax = max(data)
 
     # print "set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ",
     # cMax
@@ -270,6 +275,8 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
         mappable.set_norm(mpl.colors.LogNorm())
     else:
         mappable.set_norm(mpl.colors.Normalize())
+
+    print(type(data))
 
     mappable.set_array(data)
     #mappable.set_level(10)

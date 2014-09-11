@@ -11,7 +11,6 @@ import pygimli as pg
 from pygimli.misc import streamline, streamlineDir
 
 
-
 class CellBrowser:
     """Interactive cell browser on current or specified axes for a given mesh.
     Cell information can be displayed by mouse picking. Arrow keys up and down
@@ -137,6 +136,7 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
         
         Implement this with tripcolor  ..........!!!!!!!!
     """
+    
     useTri = False
     if 'tri' in kwargs:
         useTri = kwargs['tri']
@@ -425,7 +425,8 @@ def createTriangles(mesh, data=None):
     z = None
     if data is not None:
         if len(data) == mesh.cellCount():
-            z = data(dataIdx)
+            #strange behaviour if we just use these slice
+            z = np.array(data[dataIdx])
             
     return x, y, triangles, z
 
@@ -450,7 +451,7 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
         shading = 'flat'
         if interpolate:
             shading = 'gouraud'
-            z = pg.cellDataToPointData(mesh, data)
+            z = pg.cellDataToPointData(mesh, z)
             
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              #edgecolors='k',
@@ -462,6 +463,9 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
         if not omitLines:
             axes.tricontour(x, y, triangles, data, levels, colors=['0.5'],
                             *args, **kwargs)
+    else:
+        gci = None
+        raise Exception("Data size does not fit mesh size: ", len(data), mesh.cellCount(), mesh.nodeCount())
         
     if cmap is not None:
         if isinstance(cmap, str):
@@ -487,45 +491,15 @@ def drawField(axes, mesh, data=None, filled=True, omitLines=False, cmap=None,
 
         Only for triangle/quadrangle meshes currently
     """
-    
     return drawMPLTri(axes, mesh, data, cmap=cmap, *args, **kwargs)
-    #x, y, triangles = createTriangles(mesh)
-    
-    #gci = None
 
-    #levels = []
-    #if not 'levels' in kwargs:
-        #nLevs = 8
-        #if 'nLevs' in kwargs:
-            #nLevs = kwargs['nLevs']
-        #levels = autolevel(data, nLevs)
-
-    #if filled:
-        #gci = axes.tricontourf(x, y, triangles, data, levels, *args, **kwargs)
-        
-        #if cmap is not None:
-            #if isinstance(cmap, str):
-                #if cmap == 'b2r':
-                    #gci.set_cmap(cmapFromName('b2r'))
-                #else:
-##                    eval('mpl.pyplot.' + cmap + '()')
-                    #eval('cm.' + cmap)
-            #else:
-                #gci.set_cmap(cmap)
-    
-    
-
-    #axes.set_aspect('equal')
-    #axes.set_xlim(mesh.xmin(), mesh.xmax())
-    #axes.set_ylim(mesh.ymin(), mesh.ymax())
-    
-    #return gci
 
 def drawStreamCircular(axes, mesh, u, pos, rad, 
                        nLines=20, step=0.1, showStartPos=False):
     ''
     ' Draw nLines streamlines for u circular around pos starting at radius rad '
     ''
+    DEPRECATED_WILL_BE_REMOVED_SHORTLY
     for i in np.linspace(0, 2. * np.pi, nLines):
         start = pos + pg.RVector3(1.0, 0.0, 0.0) * rad * np.cos(i) + \
                 pg.RVector3(0.0, 1.0, 0.0) * rad * np.sin(i)
@@ -541,6 +515,7 @@ def drawStreamLinear(axes, mesh, u, start, end, nLines = 50, step = 0.01,
     ''
     '  draw nLines streamlines for u linear from start to end '
     ''
+    DEPRECATED_WILL_BE_REMOVED_SHORTLY
     for i in range(nLines):
         s = start + (end-start)/float((nLines-1)) * float(i)
 
@@ -583,34 +558,37 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, *args, **kwargs):
 def drawStreamLine(axes, mesh, c, data, *args, **kwargs):
     """
     """
-    dLength = c.center().dist(c.node(0).pos())/4.
-        
     x,y = streamline(mesh, data, startCoord=c.center(),
-                     dLength=dLength,
-                     maxSteps=1000,
+                     dLengthSteps=5,
+                     maxSteps=10000,
                      verbose=False,
                      koords=[0, 1])
     if len(x) > 2:
         #print( x, y)
+        #axes.plot(x, y, '.-', color='black', *args, **kwargs)
         axes.plot(x, y, color='black', *args, **kwargs)
         
     if len(x) > 3:
-        xmid=int(len(x)/2)
-        ymid=int(len(y)/2)
-        dx=x[xmid+1]-x[xmid]
-        dy=y[ymid+1]-y[ymid]
+        xmid = int(len(x) / 2)
+        ymid = int(len(y) / 2)
+        dx = x[xmid + 1] - x[xmid]
+        dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
         dLength = c.center().dist(c.node(0).pos())/4.
-        axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15., color='black')  
+        axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15., 
+                   head_starts_at_zero=True,
+                   color='black')  
     
 def drawStreamLines2(axes, mesh, data, *args, **kwargs):
     """
-        Draw streamlines based on unstructured mesh. Every cell contains only one streamline and each new stream line starts in the center of a cell.
+        Draw streamlines based on unstructured mesh. 
+        Every cell contains only one streamline and each new stream line starts in the center of a cell.
         Stream density can by chosen by parameter a, that leads to a new mesh with equidistant maximum cell size a.
     """
     mesh.createNeighbourInfos()
     for c in mesh.cells(): c.setValid(True)
         
+    # start a stream from each boundary cell
     for b in mesh.findBoundaryByMarker(1, 99):
         c = b.leftCell()
         if c is None:
@@ -618,9 +596,10 @@ def drawStreamLines2(axes, mesh, data, *args, **kwargs):
             
         if c.valid():
             drawStreamLine(axes, mesh, c, data, *args, **kwargs)
+        #return
 
+    # start a stream from each unused cell
     for c in mesh.cells():
-    
         if c.valid():
             drawStreamLine(axes, mesh, c, data, *args, **kwargs)
             

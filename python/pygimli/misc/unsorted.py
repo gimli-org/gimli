@@ -18,9 +18,13 @@ def rot2DGridToWorld(mesh, start, end):
     mesh.translate(start)
 
 
-def streamline(mesh, field, startCoord, dLength, 
+def streamline(mesh, field, startCoord, dLengthSteps, 
                maxSteps=1000, verbose=False, koords=[0, 1]):
-    xd, yd = streamlineDir(mesh, field, startCoord, dLength, maxSteps=maxSteps,
+    """
+    """
+    xd, yd = streamlineDir(mesh, field, startCoord, 
+                           dLengthSteps,
+                           maxSteps=maxSteps,
                            down=True, verbose=verbose, koords=koords)
     
     c = mesh.findCell(startCoord)
@@ -28,11 +32,13 @@ def streamline(mesh, field, startCoord, dLength,
     if c is not None:
         c.setValid(True)
     
-    xu, yu = streamlineDir(mesh, field, startCoord, dLength, maxSteps=maxSteps,
+    xu, yu = streamlineDir(mesh, field, startCoord, 
+                           dLengthSteps,
+                           maxSteps=maxSteps,
                            down=False, verbose=verbose, koords=koords)
     return xd + xu, yd + yu
 
-def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
+def streamlineDir(mesh, field, startCoord, dLengthSteps, maxSteps=1000, down=True,
                   verbose=False, koords=[0, 1]):
     """
         down = -1, up = 1, both = 0
@@ -64,6 +70,7 @@ def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
     # search downward
     pos = pg.RVector3(startCoord)
     c = mesh.findCell(startCoord)
+    dLength = c.center().dist(c.node(0).pos()) / dLengthSteps
     
     if c is not None:
         xd.append(pos[koords[0]])
@@ -99,7 +106,7 @@ def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
         else: 
             if u < lastU: break
 
-        pos += direction * d/d.length() * dLength * max(1.0, ((startCoord - pos).length()))
+        pos += direction * d/d.length() * dLength# * min(1.0, ((startCoord - pos).length()))
         c = mesh.findCell(pos, False)
 
         #Change cell here .. set old cell to be processed
@@ -114,7 +121,7 @@ def streamlineDir(mesh, field, startCoord, dLength, maxSteps=1000, down=True,
             if c.id() != lastC.id():
                 lastC.setValid(False)
                 lastC = c
-                dLength = c.center().dist(c.node(0).pos())/4.
+                dLength = c.center().dist(c.node(0).pos()) / dLengthSteps
         else:
             #There is no new cell .. the last active contains a stream element
             lastC.setValid(False)

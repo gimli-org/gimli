@@ -40,7 +40,7 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None):
         tri = pg.TriangleWrapper(poly)
         
         if switches == None:
-            switches = '-DpzeAfq' + str(quality)
+            switches = '-DpzeAq' + str(quality)
                 
             if area > 0:
                 switches += 'a'+ str(area)
