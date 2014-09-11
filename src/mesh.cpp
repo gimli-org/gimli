@@ -46,6 +46,7 @@ Mesh::Mesh(uint dim)
     staticGeometry_(true){
         
     oldTet10NumberingStyle_ = true;
+    cellToBoundaryInterpolationCache_ = 0;
 }
 
 Mesh::Mesh(const std::string & filename)
@@ -56,6 +57,7 @@ Mesh::Mesh(const std::string & filename)
         
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
+    cellToBoundaryInterpolationCache_ = 0;
     load(filename);
 }
 
@@ -66,6 +68,7 @@ Mesh::Mesh(const Mesh & mesh)
     staticGeometry_(true){
         
     oldTet10NumberingStyle_ = true;
+    cellToBoundaryInterpolationCache_ = 0;
     copy_(mesh);
 }
 
@@ -123,6 +126,9 @@ void Mesh::clear(){
     for_each(nodeVector_.begin(), nodeVector_.end(), deletePtr());
     nodeVector_.clear();
 
+    if (cellToBoundaryInterpolationCache_){
+        delete cellToBoundaryInterpolationCache_;
+    }
 
     rangesKnown_ = false;
     neighboursKnown_ = false;
@@ -163,20 +169,6 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol){
     Node * newNode = createNode(pos);
     tree_->insert(newNode);
     return newNode;
-}
-
-void Mesh::findRange_() const{
-    if (!rangesKnown_){
-        minRange_ = RVector3(MAX_DOUBLE, MAX_DOUBLE, MAX_DOUBLE);
-        maxRange_ = -minRange_;
-        for (uint i = 0; i < nodeVector_.size(); i ++){
-            for (uint j = 0; j < 3; j ++){
-                minRange_[j] = min(nodeVector_[i]->pos()[j], minRange_[j]);
-                maxRange_[j] = max(nodeVector_[i]->pos()[j], maxRange_[j]);
-            }
-        }
-        rangesKnown_ = true;
-    }
 }
 
 Boundary * Mesh::createBoundary(std::vector < Node * > & nodes, int marker){
@@ -366,15 +358,29 @@ Boundary & Mesh::boundary(uint i) {
     } return *boundaryVector_[i];
 }
 
+void Mesh::findRange_() const{
+    if (!rangesKnown_ || !staticGeometry_){
+        minRange_ = RVector3(MAX_DOUBLE, MAX_DOUBLE, MAX_DOUBLE);
+        maxRange_ = -minRange_;
+        for (Index i=0; i < nodeVector_.size(); i ++){
+            for (Index j=0; j < 3; j ++){
+                minRange_[j] = min(nodeVector_[i]->pos()[j], minRange_[j]);
+                maxRange_[j] = max(nodeVector_[i]->pos()[j], maxRange_[j]);
+            }
+        }
+        rangesKnown_ = true;
+    }
+}
+
 void Mesh::createHull(const Mesh & mesh){
-    if (dim() == 3 && mesh.dim() == 2){
+    if (this->dim() == 3 && mesh.dim() == 2){
         clear();
         rangesKnown_ = false;
         nodeVector_.reserve(mesh.nodeCount());
-        for (uint i = 0; i < mesh.nodeCount(); i ++) createNode(mesh.node(i));
+        for (Index i = 0; i < mesh.nodeCount(); i ++) createNode(mesh.node(i));
 
         boundaryVector_.reserve(mesh.cellCount());
-        for (uint i = 0; i < mesh.cellCount(); i ++) createBoundary(mesh.cell(i));
+        for (Index i = 0; i < mesh.cellCount(); i ++) createBoundary(mesh.cell(i));
     } else {
         std::cerr << WHERE_AM_I << " increasing dimension fails, you should set the dimension for this mesh to 3" << std::endl;
     }
@@ -446,6 +452,7 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 
                 subMesh.exportVTK("submesh");
                 this->exportVTK("submeshParent");
+                return NULL;
                 exit(0);
             }
         }
@@ -598,11 +605,6 @@ void Mesh::setCellMarker(const RVector & attribute){
     
 IndexArray Mesh::findNodesIdxByMarker(int marker) const {
     return find(this->nodeMarker() == marker);
-//     std::vector < uint > idx; idx.reserve(nodeCount());
-//     for (uint i = 0; i < nodeCount(); i ++) {
-//         if (node(i).marker() == marker) idx.push_back(i);
-//     }
-//     return idx;
 }
 
 // std::list < uint > Mesh::findListNodesIdxByMarker(int marker) const {
@@ -667,6 +669,24 @@ RVector & Mesh::boundarySizes() const{
     }
     
     return boundarySizesCache_;
+}
+
+std::vector< RVector3 > & Mesh::boundarySizedNormals() const {
+    if (boundarySizedNormCache_.size() != boundaryCount()){
+        boundarySizedNormCache_.resize(boundaryCount());
+        
+        for (Index i = 0; i < boundaryCount(); i ++){
+            boundarySizedNormCache_[i] = boundaryVector_[i]->norm() * boundaryVector_[i]->size();
+        }
+        
+    } else {
+        if (!staticGeometry_){
+            boundarySizedNormCache_.resize(0);
+            return this->boundarySizedNormals();
+        }
+    }
+    
+    return boundarySizedNormCache_;
 }
 
 void Mesh::sortNodes(const std::vector < int > & perm){
@@ -2046,4 +2066,135 @@ void Mesh::fillKDTree_() const {
     }
 }
 
+RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
+    if (!cellToBoundaryInterpolationCache_){
+        if (!neighboursKnown_){
+            throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+        }
+        
+        cellToBoundaryInterpolationCache_ = new RSparseMapMatrix(this->boundaryCount(), 
+                                                                 this->cellCount());    
+        for (Index i = 0; i < boundaryCount(); i ++){
+            Boundary * b = boundaryVector_[i];
+            Cell * lC = b->leftCell();
+            Cell * rC = b->rightCell();
+    
+            double df1 = 0.0;
+            double df2 = 0.0;
+            
+            bool harmonic = false;
+            if (lC) df1 = b->center().distance(lC->center());
+            if (rC) df2 = b->center().distance(rC->center());
+            double d12 = (df1 + df2);
+            
+            if (lC && rC){
+                if (harmonic){
+                } else {
+                    cellToBoundaryInterpolationCache_->addVal(b->id(), lC->id(), df2/d12);
+                    cellToBoundaryInterpolationCache_->addVal(b->id(), rC->id(), -df2/d12 + 1.0);
+                }
+            } else if (lC){
+                cellToBoundaryInterpolationCache_->addVal(b->id(), lC->id(), 1.0);
+            } else {
+                throwError(1, WHERE_AM_I + " this should not happen");
+            }
+        }
+    } else {
+        if (!staticGeometry_){
+            delete cellToBoundaryInterpolationCache_;
+            cellToBoundaryInterpolationCache_ = 0;
+            return this->cellToBoundaryInterpolation();
+        }
+    }
+        
+    return *cellToBoundaryInterpolationCache_;
+}
+
+std::vector< RVector3 > 
+Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
+    return cellDataToBoundaryGradient(cellData, 
+      boundaryDataToCellGradient(this->cellToBoundaryInterpolation()*cellData));
+}
+
+std::vector< RVector3 > 
+Mesh::cellDataToBoundaryGradient(const RVector & cellData,
+        const std::vector< RVector3 > & cellGrad) const{
+    if (!neighboursKnown_){
+        throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+    }
+    std::vector< RVector3 > ret(boundaryCount());
+    
+    for (Index i = 0; i < boundaryCount(); i ++){
+        Boundary * b = boundaryVector_[i];
+        Cell * lC = b->leftCell();
+        Cell * rC = b->rightCell();
+    
+        RVector3 grad(0.0, 0.0, 0.0);
+        RVector3 tangent((b->node(1).pos() - b->node(0).pos()).norm());
+        
+        if (lC && rC){
+            double df1 = b->center().distance(lC->center());
+            double df2 = b->center().distance(rC->center());
+                    
+            ret[b->id()] = b->norm()*(cellData[rC->id()] - cellData[lC->id()]) / (df1+df2);
+                        
+            ret[b->id()] += tangent * (tangent.dot(cellGrad[lC->id()]) + 
+                                       tangent.dot(cellGrad[rC->id()])) * 0.5;
+        } else if(lC){
+            ret[b->id()] = tangent * tangent.dot(cellGrad[lC->id()]);
+        }
+    }                 
+    return ret;
+}
+
+std::vector< RVector3 > 
+Mesh::boundaryDataToCellGradient(const RVector & v) const{
+    if (!neighboursKnown_){
+        throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+    }
+    std::vector < RVector3 > ret(this->cellCount());
+
+    const std::vector < RVector3 > & flow = this->boundarySizedNormals();
+    RVector3 vec(0.0, 0.0, 0.0);
+    for (Index i = 0; i < this->boundaryCount(); i ++ ){
+        Boundary * b = this->boundaryVector_[i];
+        vec = flow[b->id()] * v[b->id()];
+        
+        if (b->leftCell()){
+            ret[b->leftCell()->id()] += vec;
+        } 
+        if (b->rightCell()){
+            ret[b->rightCell()->id()] -= vec;
+        } 
+    }
+    for (Index i = 0; i < ret.size(); i ++ ){
+        ret[i] /= cellVector_[i]->size();
+    }
+    return ret;
+}
+        
+RVector Mesh::divergence(const std::vector < RVector3 > & V) const{
+    RVector ret(this->cellCount());
+    if (!neighboursKnown_){
+        throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+    }
+    
+    const std::vector < RVector3 > & flow = this->boundarySizedNormals();
+    double vec = 0;
+    for (Index i = 0; i < this->boundaryCount(); i ++ ){
+        Boundary * b = this->boundaryVector_[i];
+        vec = flow[b->id()].dot(V[b->id()]);
+        
+        if (b->leftCell()){
+            ret[b->leftCell()->id()] += vec;
+        } 
+        if (b->rightCell()){
+            ret[b->rightCell()->id()] -= vec;
+        } 
+    }
+    return ret / this->cellSizes();
+}
+
+        
+    
 } // namespace GIMLI

@@ -104,17 +104,17 @@ function(find_python_module module)
             OUTPUT_VARIABLE _${module}_location
             ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-            message(STATUS "Find python module ${module}")
-            message(STATUS "Result: _${module}_status")
-            message(STATUS "Output: _${module}_location")
-
         if(NOT _${module}_status)
             set(PY_${module_upper} ${_${module}_location} CACHE STRING 
                 "Location of Python module ${module}")
+            message(STATUS "Find python module ${module}")
+            message(STATUS "Result: ${_${module}_status}")
+            message(STATUS "Output: ${_${module}_location}")
         else(NOT _${module}_status)
             message(STATUS "Find python module ${module} fails:")
-            message(STATUS "Result: _${module}_status")
-            message(STATUS "Output: _${module}_location")
+            message(STATUS "Result: ${_${module}_status}")
+            message(STATUS "Output: ${_${module}_location}")
+            message(STATUS "Maybe you can provide the location by stetting PY_${module_upper}")
         endif(NOT _${module}_status)
 
         find_package_handle_standard_args(${module} 

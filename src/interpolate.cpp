@@ -28,9 +28,17 @@
 namespace GIMLI{
 
 void interpolate(const Mesh & mesh, const RMatrix & vData,
-                 const std::vector< RVector3 > & pos, RMatrix & iData,
+                 const std::vector< RVector3 > & ipos, RMatrix & iData,
                  bool verbose){
 
+    std::vector< RVector3 > pos(ipos);
+    
+    if (mesh.dim() == 2){
+        if (verbose) std::cout << "Warning! swap YZ coordinates for query positions to meet mesh dimensions." << std::endl;
+        if ((zVari(pos) || max(abs(z(pos))) > 0.) && 
+            (!yVari(pos) && max(abs(y(pos))) < 1e-8)) swapYZ(pos);
+    }
+        
     if (iData.rows() != vData.rows()){
         iData.resize(vData.rows(), pos.size());
     }

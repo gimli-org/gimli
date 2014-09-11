@@ -126,6 +126,7 @@ public:
     /*! Default destructor. */
     ~Mesh();
 
+    /*! Clear all data, inclusive all caches.*/
     void clear();
 
     /*!If the mesh is static in geometry and shape some useful informations are cached. 
@@ -133,18 +134,28 @@ public:
      For dynamic meshes, i.e., node positions can be moved, you have to set staticGeometry to false to avoid any caching.*/
     void setStaticGeometry(bool stat);
     
+    /*! Return true if this mesh have static geometry. [Default=True]*/
     inline bool staticGeometry() const { return staticGeometry_; }
+        
+    /*! Set the dimension of the mesh. [Default = 2] */
+    void setDimension(uint dim){ dimension_ = dim;}
     
+    /*! Return the dimension of this mesh.*/
+    uint dimension() const { return dimension_; }
+    
+    /*! Shortcut for \ref dimension.*/
+    uint dim() const { return dimension_; }
+
     //** start creation stuff
-    Node * createNode(double x, double y, double z, int marker = 0);
+    Node * createNode(double x, double y, double z, int marker=0);
 
     Node * createNode(const Node & node);
 
-    Node * createNode(const RVector3 & pos, int marker = 0);
+    Node * createNode(const RVector3 & pos, int marker=0);
 
-    Node * createNodeWithCheck(const RVector3 & pos, double tol = 1e-6);
+    Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6);
 
-    Boundary * createBoundary(std::vector < Node * > & nodes, int marker = 0);
+    Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0);
     Boundary * createBoundary(const Boundary & bound);
     Boundary * createBoundary(const Cell & cell);
     Boundary * createNodeBoundary(Node & n1, int marker = 0);
@@ -245,12 +256,20 @@ public:
     std::vector < RVector3 > cellCenters() const;
     std::vector < RVector3 > cellCenter() const { return cellCenters(); }
 
-    /*! Returns a RVector of all cell sizes. Cached for static geometry.*/
+    /*! Returns the reference to a RVector of all cell sizes. Cached for static geometry.*/
     RVector & cellSizes() const;
 
-    /*! Returns a RVector of all boundary sizes. Cached for static geometry. */
+    /*! Returns the reference to a RVector of all boundary sizes. Cached for static geometry. */
     RVector & boundarySizes() const;
 
+    /*! Returns the reference to the vector of scaled normal directions for each boundary.
+     * Cached for static geometry and will be build on first call. Not thread safe, perhaps not python GC safe. 
+     Return \f$ \{A_i \vec{n}_i\} \foreach i = [0..N_B]\f$.
+     Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary. 
+     If you want to use this, i.e. for the calculation of inside or outside flow through the boundary, you need to recognize the orientation of this boundary to the cell the flow goes into or comes from.
+     For the left cell neighbor the normal direction should be always the outer normal.*/
+    std::vector< RVector3 > & boundarySizedNormals() const;
+    
     /*! Returns a vector of all cell marker */
     std::vector < int > cellMarker() const;
 
@@ -491,9 +510,24 @@ public:
 
     const RBoundingBox boundingBox() const { findRange_(); return RBoundingBox(minRange_, maxRange_);}
 
-    void setDimension(uint dim){ dimension_ = dim;}
-    uint dimension() const { return dimension_; }
-    uint dim() const { return dimension_; }
+
+    /*! Returns the reference to the matrix for cell value to boundary value interpolation matrix. */
+    RSparseMapMatrix & cellToBoundaryInterpolation() const;
+
+    /*!Returns the divergence of a given vector field for each cell.
+     *The divergence is calculated by simple 1 point boundary integration over each cells. 
+     * Higher order integration needs to be implemented. Contact the author if you need this.*/
+    RVector divergence(const std::vector < RVector3 > & V) const;
+
+    /*! Interpolate boundary based values to cell based gradients. */
+    std::vector< RVector3 > boundaryDataToCellGradient(const RVector & boundaryData) const;
+    
+    /*! Interpolate cell based values to boundary based gradients. */
+    std::vector< RVector3 > cellDataToBoundaryGradient(const RVector & cellData) const;
+        
+    /*! Interpolate cell based values to boundary based gradients with a given cell Gradient.*/
+    std::vector< RVector3 > cellDataToBoundaryGradient(const RVector & cellData,
+        const std::vector< RVector3 > & cellGradient) const;
 
 protected:
     void copy_(const Mesh & mesh);
@@ -557,6 +591,9 @@ protected:
     bool staticGeometry_;
     mutable RVector cellSizesCache_;
     mutable RVector boundarySizesCache_;
+    mutable std::vector< RVector3 > boundarySizedNormCache_;
+    
+    mutable RSparseMapMatrix * cellToBoundaryInterpolationCache_;
     
     bool oldTet10NumberingStyle_;
 

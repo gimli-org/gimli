@@ -119,7 +119,7 @@ typedef int64_t int64;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
 #define COUTMARKER std::cerr << WHERE_AM_I << std::endl;
 #define UNTESTED std::cerr << "WARNING!" << WHERE_AM_I << " " << "this function is untested" << std::endl;
-
+    
 #define TOLERANCE 1e-12
 #define TOUCH_TOLERANCE 1e-12
 #define MAX_DOUBLE std::numeric_limits<double>::max()
@@ -223,11 +223,14 @@ template < class ValueType > class Vector;
 //template <> class Vector< double >;
 
 typedef std::complex < double > Complex;
+
 typedef Vector < double > RVector;
+typedef Vector < Complex > CVector;
+typedef Vector < RVector3 > R3Vector;
+
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 
-typedef Vector< Complex > CVector;
 //typedef Matrix < Complex > CMatrix;
 
 typedef Vector< int > BVector;

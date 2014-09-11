@@ -133,7 +133,7 @@ Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottom
             int marker = 0;
             if (first) marker = mesh.node(ic).marker();
             
-            mesh3.createNode(mesh.node(ic).pos() + RVector3(0.0, 0.0, z[ iz ]), marker);
+            mesh3.createNode(mesh.node(ic).pos() + RVector3(0.0, 0.0, z[iz]), marker);
         }
         first = false;
     }
@@ -147,21 +147,21 @@ Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottom
             nodes.resize(nC * 2) ;
             
             for (Index k = 0; k < nC; k ++){
-                nodes[ k ] = & mesh3.node((iz-1) * mesh.nodeCount() + mesh.cell(ic).node(k).id());
+                nodes[k] = & mesh3.node((iz-1) * mesh.nodeCount() + mesh.cell(ic).node(k).id());
             }
             for (Index k = 0; k < nC; k ++){
-                nodes[ nC + k ] = & mesh3.node(iz * mesh.nodeCount() + mesh.cell(ic).node(k).id());
+                nodes[nC + k] = & mesh3.node(iz * mesh.nodeCount() + mesh.cell(ic).node(k).id());
             }
             mesh3.createCell(nodes, mesh.cell(ic).marker());
             
             if (iz == 1){
                 // create top layer boundaries // in revers direction so the outer normal shows downward into the mesh
-                std::vector < Node * > nBound(nC); for (Index k = 0; k < nC; k ++) nBound[ nC - k - 1] = nodes[ k ];
+                std::vector < Node * > nBound(nC); for (Index k = 0; k < nC; k ++) nBound[nC - k - 1] = nodes[k];
                 mesh3.createBoundary(nBound, topLayer);
             }
             if (iz == z.size()-1){
                 // create bottom layer boundaries
-                std::vector < Node * > nBound(nC); for (Index k = 0; k < nC; k ++) nBound[ k ] = nodes[ nC + k];
+                std::vector < Node * > nBound(nC); for (Index k = 0; k < nC; k ++) nBound[k] = nodes[nC + k];
                 mesh3.createBoundary(nBound, bottomLayer);
             }
         }
@@ -172,10 +172,10 @@ Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottom
     for (Index iz = 1; iz < z.size(); iz ++){
         for (Index ib = 0; ib < mesh.boundaryCount(); ib ++){
             if (mesh.boundary(ib).marker() != 0){
-                nodes[ 0 ] = & mesh3.node((iz-1) * mesh.nodeCount() + mesh.boundary(ib).node(0).id());
-                nodes[ 1 ] = & mesh3.node((iz-1) * mesh.nodeCount() + mesh.boundary(ib).node(1).id());
-                nodes[ 3 ] = & mesh3.node(iz * mesh.nodeCount() + mesh.boundary(ib).node(0).id());
-                nodes[ 2 ] = & mesh3.node(iz * mesh.nodeCount() + mesh.boundary(ib).node(1).id());
+                nodes[0] = & mesh3.node((iz-1) * mesh.nodeCount() + mesh.boundary(ib).node(0).id());
+                nodes[1] = & mesh3.node((iz-1) * mesh.nodeCount() + mesh.boundary(ib).node(1).id());
+                nodes[3] = & mesh3.node(iz * mesh.nodeCount() + mesh.boundary(ib).node(0).id());
+                nodes[2] = & mesh3.node(iz * mesh.nodeCount() + mesh.boundary(ib).node(1).id());
                 mesh3.createBoundary(nodes, mesh.boundary(ib).marker());
             }
         }
@@ -280,7 +280,7 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
     //** looking for polygon ends
     Node * upperLeftSurface = innerBound.front(); 
     Node * upperRightSurface = innerBound.back();
-    if (upperLeftSurface->pos()[ 0 ] > upperRightSurface->pos()[ 0 ]){
+    if (upperLeftSurface->pos()[0] > upperRightSurface->pos()[0]){
         upperLeftSurface = innerBound.back(); 
         upperRightSurface = innerBound.front();
     }
@@ -298,7 +298,7 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
     
     for (uint i = 1; i < dx.size()-1; i ++) {
         outerBound.push_back(poly.createNode(upperLeftSurface->pos() 
-                            + RVector3(-dx[ i ], 0)));
+                            + RVector3(-dx[i], 0)));
     }
     outerBound.push_back(n1);   
     for (uint i = 0; i < 9; i ++) {
@@ -318,16 +318,16 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
     outerBound.push_back(n4);   
     for (uint i = dx.size()-2; i > 0; i --) {
         outerBound.push_back(poly.createNode(upperRightSurface->pos() 
-                            + RVector3(dx[ i ], 0)));
+                            + RVector3(dx[i], 0)));
     }
     outerBound.push_back(upperRightSurface);   
     
     for (uint i = 0; i < outerBound.size() -1; i ++){
-        poly.createEdge(*outerBound[ i ], *outerBound[ i + 1 ], -1);
+        poly.createEdge(*outerBound[i], *outerBound[i + 1], -1);
     }
     
     for (uint i = 0; i < innerBound.size() -1; i ++){
-        poly.createEdge(*innerBound[ i ], *innerBound[ i + 1 ], boundMarker);
+        poly.createEdge(*innerBound[i], *innerBound[i + 1], boundMarker);
     }
     
     Mesh boundaryMesh;

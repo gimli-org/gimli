@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -316,7 +316,7 @@ public:
     
     /*! Return true if the normal vector of this boundary shown from the cell away (outside-direction) */
     bool normShowsOutside(const Cell & cell) const;
-
+    
 protected:
     void registerNodes_();
 

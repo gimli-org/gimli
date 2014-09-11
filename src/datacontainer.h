@@ -141,7 +141,7 @@ public:
         Atm. brute force search with a snapping distance of tolerance is done.
         \param pos RVector3 of the sensor position
         \param tolerance Double of the snapping tolerance */
-    long createSensor(const RVector3 & pos, double tolerance = 1e-3);
+    long createSensor(const RVector3 & pos, double tolerance=1e-3);
 
     /*! Return the number of sensors. */
     uint sensorCount() const { return sensorPoints_.size(); }
@@ -161,6 +161,10 @@ public:
     /*! Return true if the sensor indices on a loaded/saved file start with 1. Internally the indices are stored from 0. */
     bool sensorIndexOnFileFromOne() const { return sensorIndexOnFileFromOne_ ;}
 
+    /*! Translate a RVector into a valid IndexArray for the corresponding sensors. */
+    IndexArray findSensorIndex(const RVector & d) const;
+    
+    
     /*! Mark all data invalid that use a sensor index greater than sensor count. */
     void markInvalidSensorIndices();
 

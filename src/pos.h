@@ -304,6 +304,13 @@ inline bool operator != (const RVector3 & a , const RVector3 & b){
 inline bool operator < (const RVector3 & a , const RVector3 & b){
     std::cout << WHERE_AM_I << std::endl; return true;
 }
+inline bool operator > (const RVector3 & a , const RVector3 & b){
+    std::cout << WHERE_AM_I << std::endl; return true;
+}
+inline RVector3 RINT(const RVector3 & a) {
+    std::cout << WHERE_AM_I << std::endl;
+    return RVector3(); 
+}
 
 #define DEFINE_POS_BIN_OPERATOR__(OP)                      \
 inline Pos < double > operator OP (const Pos< double > & a, const Pos< double > & b){ \
@@ -319,6 +326,12 @@ DEFINE_POS_BIN_OPERATOR__(-)
 DEFINE_POS_BIN_OPERATOR__(*)
 DEFINE_POS_BIN_OPERATOR__(/)
 
+
+template < class ValueType > std::istream & operator >> (std::istream & str, Pos< ValueType > & pos){
+    THROW_TO_IMPL
+    return str;
+}
+    
 template < class ValueType > std::ostream & operator << (std::ostream & str, const Pos< ValueType > & pos){
   if (pos.valid()){
     str << pos[0] << "\t" << pos[1] << "\t" << pos[2];

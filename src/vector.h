@@ -63,6 +63,8 @@ typedef std::vector < Index > IndexArray;
 
 template < class ValueType, class A > class __VectorExpr;
 
+IndexArray find(const BVector & v);
+    
 template < class ValueType > class DLLEXPORT VectorIterator {
 public:
     typedef ValueType value_type;
@@ -218,9 +220,14 @@ public:
     inline const Vector < ValueType > operator[](const IndexArray & i) const { return (*this)(i); }
     
     inline Vector < ValueType > operator[](const IndexArray & i) { return (*this)(i); }
+    
+    inline Vector < ValueType > operator[](const BVector & b) { return (*this)(b); }
 
-     /*! Return a new vector that match the slice [start, end).  end == -1 or larger size() sets end = size.
-        Throws exception on violating boundaries. */
+     /*!
+      * Return a new vector that match the slice [start, end).
+      *  end == -1 or larger size() sets end = size.
+      * Throws exception on violating boundaries. 
+      */
     Vector < ValueType > operator () (Index start, SIndex end) const {
         Index e = (Index) end;
         if (end == -1 || end > (SIndex)size_) e = size_;
@@ -236,7 +243,8 @@ public:
     }
 
     /*!
-     * Return a new vector that based on indices's. Throws exception if indices's are out of bound
+     * Return a new vector that based on indices's.
+     * Throws exception if indices's are out of bound
      */
     Vector < ValueType > operator () (const IndexArray & idx) const {
         Vector < ValueType > v(idx.size());
@@ -252,7 +260,10 @@ public:
         }
         return v;
     }
-
+    /*!
+     * Return a new vector that based on indices's.
+     * Throws exception if indices's are out of bound 
+     */
     Vector < ValueType > operator () (const std::vector < int > & idx) const {
         Vector < ValueType > v(idx.size());
         Index id;
@@ -267,7 +278,11 @@ public:
         }
         return v;
     }
-    
+    /*! */
+    Vector < ValueType > operator () (const BVector & b) const {
+        return (*this)(GIMLI::find(b));
+    }
+        
     /*!
     Implicite type converter
      */
