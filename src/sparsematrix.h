@@ -343,6 +343,16 @@ public:
     }
     
     /*! Return this * a  */
+    virtual R3Vector mult(const R3Vector & a) const {
+        R3Vector ret(this->rows(), 0.0);
+        
+        for (const_iterator it = this->begin(); it != this->end(); it ++){
+            ret[it->first.first] += a[it->first.second] * it->second;
+        }
+        return ret;
+    }
+    
+    /*! Return this * a  */
     virtual RVector mult(const RVector & a) const {
         RVector ret(this->rows(), 0.0);
         
@@ -496,6 +506,10 @@ int load(SparseMapMatrix< ValueType, IndexType > & S,
 }
 
 inline RVector operator * (const DSparseMapMatrix & A, const RVector & b){
+    return A.mult(b);
+}
+
+inline R3Vector operator * (const DSparseMapMatrix & A, const R3Vector & b){
     return A.mult(b);
 }
 

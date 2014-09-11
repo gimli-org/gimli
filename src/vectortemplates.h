@@ -194,13 +194,13 @@ template < class Vec > void echoMinMax(const Vec & vec, const std::string & name
 }
 
 template < class Vec > double median(const Vec & a) {
-  int dim = a.size();
-  Vec tmp(sort(a));
-  if (std::fabs(dim / 2.0 - rint(dim / 2.0)) < 1e-12){ // even
-    return (tmp[dim / 2] + tmp[dim / 2 - 1]) / 2.0;
-  } else { // odd
-    return tmp[(dim - 1)/ 2];
-  }
+    int dim = a.size();
+    Vec tmp(sort(a));
+    if (std::fabs(dim / 2.0 - rint(dim / 2.0)) < 1e-12){ // even
+        return (tmp[dim / 2] + tmp[dim / 2 - 1]) / 2.0;
+    } else { // odd
+        return tmp[(dim - 1)/ 2];
+    }
 }
 
 template < class Vec > double mean(const Vec & a) { return sum(a) / a.size(); }
@@ -212,20 +212,20 @@ template < class Vec > double stdDev(const Vec & a) {
 template < class Vec > double arithmeticMean(const Vec & a) { return mean(a); }
 
 template < class Vec > double geometricMean(const Vec & a) {
-  int dim = a.size();
-  double result = 0.0;
-  for (int i = 0; i < dim; i ++) result += std::log(a[i]);
-  result /= (double)dim;
-  return std::exp(result);
+    int dim = a.size();
+    double result = 0.0;
+    for (int i = 0; i < dim; i ++) result += std::log(a[i]);
+    result /= (double)dim;
+    return std::exp(result);
 }
 
 template < class Vec > double harmonicMean(const Vec & a) {
-  int dim = a.size();
-  double result = 1.0 / a[0];
+    int dim = a.size();
+    double result = 1.0 / a[0];
 
-  for (int i = 1; i < dim; i ++) result += 1.0 / a[i];
-  result /= dim;
-  return 1.0 / result;
+    for (int i = 1; i < dim; i ++) result += 1.0 / a[i];
+    result /= dim;
+    return 1.0 / result;
 }
 
 template < class Vec > double rms(const Vec & a) { return std::sqrt(mean(square(a))); }

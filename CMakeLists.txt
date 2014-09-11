@@ -1,6 +1,6 @@
 # main cmake configuration file
 
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 2.8.8)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include(GIMLImacros)
@@ -30,7 +30,6 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 endif ()
 
 
- 
 if(MSVC)
 	# MSVC complain a lot of possible unsecure std function
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)

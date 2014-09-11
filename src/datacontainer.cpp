@@ -688,6 +688,20 @@ DataContainer DataContainer::filter(const IndexArray & idx) const {
     return data;
 }
 
+IndexArray DataContainer::findSensorIndex(const RVector & d) const{
+    IndexArray ret(d.size());
+    for (Index i = 0; i < d.size(); i ++){
+        if (d[i] > -1 && d[i] < sensorCount()) {
+            ret[i] = Index(d[i]);
+        } else {
+            throwError(1, WHERE_AM_I + " Sensor index value out of range 0--" 
+                        + str(sensorCount()) + " " + str(Index(d[i])));
+            
+        }
+    }
+    return ret;
+}
+
 // START Sensor related section
 void DataContainer::removeSensorIdx(uint idx){
     IndexArray i(1, idx);
