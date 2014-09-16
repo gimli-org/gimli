@@ -35,9 +35,9 @@ class DLLEXPORT LinSolver{
 public:
     LinSolver();
   
-    LinSolver(DSparseMatrix & S, bool verbose=false);
+    LinSolver(RSparseMatrix & S, bool verbose=false);
 
-    LinSolver(DSparseMatrix & S, SolverType solverType, bool verbose=false);
+    LinSolver(RSparseMatrix & S, SolverType solverType, bool verbose=false);
 
     ~LinSolver();
 
@@ -48,14 +48,14 @@ public:
     void setSolverType(SolverType solverType = AUTOMATIC);
   
     /*! Verbose level = -1, use Linsolver.verbose(). */
-    void setMatrix(DSparseMatrix & S, int verbose=-1);
+    void setMatrix(RSparseMatrix & S, int verbose=-1);
     
     SolverType solverType() const { return solverType_; }
 
     std::string solverName() const;
     
 protected:
-    void initialize_(DSparseMatrix & S);
+    void initialize_(RSparseMatrix & S);
 
     SolverType      solverType_;
     SolverWrapper * solver_;

@@ -579,13 +579,18 @@ def process_blocks(blocks, src_path, image_path, cfg):
     fig_num = 1
     lastCoutBuff = []
     
+    print("Processing:", src_path)
+    plt.ion()
     for i, (blabel, brange, bcontent) in enumerate(blocks):
         if blabel == 'code':
+            
+            #print(bcontent, example_globals)
+            
             tmpSysOut = sys.stdout
             tmpSysErr = sys.stderr
             sys.stdout = RedirectOutput( "cout" )
             sys.stderr = RedirectOutput( "cerr" )
-        
+            
             exec(bcontent, example_globals)
             rst_blocks.append(codestr2rst(bcontent))
             
@@ -622,7 +627,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
                 lastCoutBuff = []
                 
             rst_blocks.append(docstr2rst(bcontent, cfg))
-            
+    plt.ioff()
     return figure_list, '\n'.join(rst_blocks)
 
 

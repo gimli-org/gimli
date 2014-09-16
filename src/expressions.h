@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -71,8 +71,9 @@ typedef Expr< Variable<XAxis__> > VariableX;
 typedef Expr< Variable<YAxis__> > VariableY;
 typedef Expr< Variable<ZAxis__> > VariableZ;
 
+inline double abs(double a) { return std::fabs(a); }
 
-inline double fabs(double a) { return std::fabs(a); }
+inline double abs(Complex a) { return std::abs(a); }
 
 //**! Simple show the results of the expression
 template< class Ex > void show(Expr< Ex > expr, double start, double end, double step = 1.0){

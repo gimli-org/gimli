@@ -189,11 +189,11 @@ public:
     
     /*! Scale all sensor positions by scale. */
     void scale(const RVector3 & scale);
-    // END Sensor related section
-
-   
+    
     /*! Sort all data regarding their sensor indices and sensorIdxNames. */
     void sortSensorsIndex();
+    
+    // END Sensor related section
     
     /*! Return the additional points. */
     inline const std::vector < RVector3 > & additionalPoints() const { return topoPoints_; }

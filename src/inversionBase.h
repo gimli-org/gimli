@@ -70,7 +70,7 @@ public:
 
     virtual const ModelVector & cWeight( ) const = 0;
 
-    virtual const DSparseMapMatrix & constraintMatrix() const = 0;
+    virtual const RSparseMapMatrix & constraintMatrix() const = 0;
 
     virtual void abort() = 0;
 

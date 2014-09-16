@@ -63,66 +63,66 @@ As a main advantage of Python, the actual computations can be easily combined wi
 In this code example we use matplotlib, a plotting library inside of pylab, a compound of different routines for numerics and plotting, very much comparable to MatLab.
 '''
 
-class FunctionModelling(pg.ModellingBase):
-    def __init__(self, nc, xvec, verbose = False):
-        pg.ModellingBase.__init__(self, verbose)
-        self.x_ = xvec
-        self.nc_ = nc
-        self.regionManager().setParameterCount(nc)
+#class FunctionModelling(pg.ModellingBase):
+    #def __init__(self, nc, xvec, verbose = False):
+        #pg.ModellingBase.__init__(self, verbose)
+        #self.x_ = xvec
+        #self.nc_ = nc
+        #self.regionManager().setParameterCount(nc)
 
-    def response(self, par):
-        y = pg.RVector(self.x_.size(), par[0])
+    #def response(self, par):
+        #y = pg.RVector(self.x_.size(), par[0])
 
-        for i in range( 1, self.nc_ ):
-            y += pg.pow(self.x_, i) * par[i];
-        return y;
+        #for i in range( 1, self.nc_ ):
+            #y += pg.pow(self.x_, i) * par[i];
+        #return y;
 
-    def startModel(self):
-        return pg.RVector(self.nc_, 0.5)
-
-
-#!this is doku within
+    #def startModel(self):
+        #return pg.RVector(self.nc_, 0.5)
 
 
-# evaluate f(x) = 1.1 + 2.1 * x
-x = np.arange(0., 10., 1)
+##!this is doku within
 
-"""
-this is doku within
-"""
 
-y = 1.1 + 2.1 * x
+## evaluate f(x) = 1.1 + 2.1 * x
+#x = np.arange(0., 10., 1)
 
-"""
-this is doku within
-"""
+#"""
+#this is doku within
+#"""
 
-print((x, y))
+#y = 1.1 + 2.1 * x
 
-nP = 3
+#"""
+#this is doku within
+#"""
 
-# two coefficients and x-vector (first data column)
-fop = FunctionModelling(nP, pg.asvector(x))
+#print((x, y))
 
-# initialize inversion with data and forward operator and set options
-inv = pg.RInversion(y, fop)
+#nP = 3
 
-# constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
-inv.setAbsoluteError(0.01)
+## two coefficients and x-vector (first data column)
+#fop = FunctionModelling(nP, pg.asvector(x))
 
-# the problem is well-posed and does not need regularization
-inv.setLambda(0)
+## initialize inversion with data and forward operator and set options
+#inv = pg.RInversion(y, fop)
 
-# actual inversion run yielding coefficient model
-coeff = inv.run()
+## constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
+#inv.setAbsoluteError(0.01)
 
-plt.plot(x, y, 'rx', x, inv.response(), 'b-')
+## the problem is well-posed and does not need regularization
+#inv.setLambda(0)
 
-"""
-create output
+## actual inversion run yielding coefficient model
+#coeff = inv.run()
 
-.. image:: PLOT2RST.current_figure
+#plt.plot(x, y, 'rx', x, inv.response(), 'b-')
 
-"""
+#"""
+#create output
 
-plt.show()
+#.. image:: PLOT2RST.current_figure
+
+#"""
+
+#plt.show()

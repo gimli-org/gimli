@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -111,7 +111,7 @@ public:
 
     RVector getApparentSlowness() const;
 
-    void createJacobian(DSparseMapMatrix & jacobian, const RVector & slowness );
+    void createJacobian(RSparseMapMatrix & jacobian, const RVector & slowness);
 
 protected:
 

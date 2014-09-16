@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -186,7 +186,7 @@ namespace GIMLI{
   bool CHOLMODWrapper::valid() { return false; }
 #endif
 
-CHOLMODWrapper::CHOLMODWrapper(DSparseMatrix & S, bool verbose)
+CHOLMODWrapper::CHOLMODWrapper(RSparseMatrix & S, bool verbose)
     : SolverWrapper(S, verbose){
   c_ = NULL;
   A_ = NULL;
@@ -201,14 +201,33 @@ CHOLMODWrapper::CHOLMODWrapper(DSparseMatrix & S, bool verbose)
   if (ret) dummy_ = false;
 
   initialize_(S);
-  //  dummy_ = true;
+
   factorise();
 #else
-
   std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
 #endif
 }
+CHOLMODWrapper::CHOLMODWrapper(CSparseMatrix & S, bool verbose)
+    : SolverWrapper(S, verbose){
+  c_ = NULL;
+  A_ = NULL;
+  L_ = NULL;
+#if USE_CHOLMOD
+  c_ = new cholmod_common;
+//   cholmod_common *c_;
+//   cholmod_sparse *A_;
+//   cholmod_factor *L_;
+  
+  int ret =  cholmod_start((cholmod_common*)c_);
+  if (ret) dummy_ = false;
 
+  initialize_(S);
+
+  factorise();
+#else
+  std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
+#endif
+}
 CHOLMODWrapper::~CHOLMODWrapper(){
 #if USE_CHOLMOD
   cholmod_free_factor((cholmod_factor**)(&L_), (cholmod_common*)c_);
@@ -222,6 +241,70 @@ CHOLMODWrapper::~CHOLMODWrapper(){
 #else
   std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
 #endif
+}
+
+int CHOLMODWrapper::initialize_(CSparseMatrix & S){
+  if (!dummy_){
+#if USE_CHOLMOD
+
+  //** We do not allocate the matrix since we use the allocated space from DSparsemarix
+//    A_ = cholmod_allocate_sparse(dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_) ;
+
+    A_ = new cholmod_sparse;
+    ((cholmod_sparse*)A_)->nrow  = dim_;         /* number of rows */
+    ((cholmod_sparse*)A_)->ncol  = dim_;           /* number of columns */
+    ((cholmod_sparse*)A_)->nzmax = nVals_;       /* maximum number of entries */
+    ((cholmod_sparse*)A_)->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
+    ((cholmod_sparse*)A_)->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
+    ((cholmod_sparse*)A_)->x     = S.vals();     /* numerical values, size nzmax */
+
+     //std::cout << "CHOLMODWrapper::initialize: " << nVals_ << std::endl;
+
+    ((cholmod_sparse*)A_)->stype  = 1;
+
+    ((cholmod_sparse*)A_)->itype = CHOLMOD_INT;
+    ((cholmod_sparse*)A_)->xtype = CHOLMOD_REAL;
+    ((cholmod_sparse*)A_)->dtype = CHOLMOD_DOUBLE;
+    ((cholmod_sparse*)A_)->packed = true;
+    ((cholmod_sparse*)A_)->sorted = true; // testen, scheint schneller, aber hab ich das immer?
+    return 1;
+#else
+    std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
+#endif
+  }
+  return 0;
+}
+
+int CHOLMODWrapper::initialize_(RSparseMatrix & S){
+  if (!dummy_){
+#if USE_CHOLMOD
+
+  //** We do not allocate the matrix since we use the allocated space from DSparsemarix
+//    A_ = cholmod_allocate_sparse(dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_) ;
+
+    A_ = new cholmod_sparse;
+    ((cholmod_sparse*)A_)->nrow  = dim_;         /* number of rows */
+    ((cholmod_sparse*)A_)->ncol  = dim_;           /* number of columns */
+    ((cholmod_sparse*)A_)->nzmax = nVals_;       /* maximum number of entries */
+    ((cholmod_sparse*)A_)->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
+    ((cholmod_sparse*)A_)->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
+    ((cholmod_sparse*)A_)->x     = S.vals();     /* numerical values, size nzmax */
+
+     //std::cout << "CHOLMODWrapper::initialize: " << nVals_ << std::endl;
+
+    ((cholmod_sparse*)A_)->stype  = 1;
+
+    ((cholmod_sparse*)A_)->itype = CHOLMOD_INT;
+    ((cholmod_sparse*)A_)->xtype = CHOLMOD_REAL;
+    ((cholmod_sparse*)A_)->dtype = CHOLMOD_DOUBLE;
+    ((cholmod_sparse*)A_)->packed = true;
+    ((cholmod_sparse*)A_)->sorted = true; // testen, scheint schneller, aber hab ich das immer?
+    return 1;
+#else
+    std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
+#endif
+  }
+  return 0;
 }
 
 int CHOLMODWrapper::factorise(){
@@ -264,30 +347,19 @@ int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
   return 0;
 }
 
-int CHOLMODWrapper::initialize_(DSparseMatrix & S){
+int CHOLMODWrapper::solve(const CVector & rhs, CVector & solution){
   if (!dummy_){
 #if USE_CHOLMOD
+    cholmod_dense * b = cholmod_ones(((cholmod_sparse*)A_)->nrow, 1, ((cholmod_sparse*)A_)->xtype, (cholmod_common*)c_);
+    Complex * bx = (Complex*)b->x;
+    for (uint i = 0; i < dim_; i++) bx[ i ] = rhs[ i ];
 
-  //** We do not allocate the matrix since we use the allocated space from DSparsemarix
-//    A_ = cholmod_allocate_sparse(dim_, dim_, nVals_, true, true, 1, CHOLMOD_REAL, c_) ;
+    cholmod_dense * x = cholmod_solve(CHOLMOD_A, (cholmod_factor *)L_, b, (cholmod_common*)c_);     /* solve Ax=b */
+    bx = (Complex*)x->x;
 
-    A_ = new cholmod_sparse;
-    ((cholmod_sparse*)A_)->nrow  = dim_;         /* number of rows */
-    ((cholmod_sparse*)A_)->ncol  = dim_;	       /* number of columns */
-    ((cholmod_sparse*)A_)->nzmax = nVals_;       /* maximum number of entries */
-    ((cholmod_sparse*)A_)->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
-    ((cholmod_sparse*)A_)->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
-    ((cholmod_sparse*)A_)->x     = S.vals();     /* numerical values, size nzmax */
-
-     //std::cout << "CHOLMODWrapper::initialize: " << nVals_ << std::endl;
-
-    ((cholmod_sparse*)A_)->stype  = 1;
-
-    ((cholmod_sparse*)A_)->itype = CHOLMOD_INT;
-    ((cholmod_sparse*)A_)->xtype = CHOLMOD_REAL;
-    ((cholmod_sparse*)A_)->dtype = CHOLMOD_DOUBLE;
-    ((cholmod_sparse*)A_)->packed = true;
-    ((cholmod_sparse*)A_)->sorted = true; // testen, scheint schneller, aber hab ich das immer?
+    for (uint i = 0; i < dim_; i++) solution[ i ] = bx[ i ];
+    cholmod_free_dense(&x, (cholmod_common*)c_) ;
+    cholmod_free_dense(&b, (cholmod_common*)c_) ;
     return 1;
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
@@ -296,4 +368,5 @@ int CHOLMODWrapper::initialize_(DSparseMatrix & S){
   return 0;
 }
 
+    
 } //namespace GIMLI

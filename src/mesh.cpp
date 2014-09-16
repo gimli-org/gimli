@@ -391,7 +391,7 @@ uint Mesh::findNearestNode(const RVector3 & pos){
     return tree_->nearest(pos)->id();
 }
 
-std::vector < int > cellIDX__;
+IndexArray cellIDX__;
 
 Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start, 
                                     size_t & count, bool useTagging) const {
@@ -1719,13 +1719,13 @@ void Mesh::createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundar
 
 }
 
-void Mesh::createMeshByCellIdx(const Mesh & mesh, std::vector < int > & idxListIn){
+void Mesh::createMeshByCellIdx(const Mesh & mesh, IndexArray & idxListIn){
     this->clear();
     this->setDimension(mesh.dim());
 
     std::map < int, Node* > nodeMap;
     
-    std::vector < int > idxList = unique(sort(idxListIn));
+    IndexArray idxList = unique(sort(idxListIn));
 
     if (idxList.size() != idxListIn.size()){
         std::cerr << "This should not happen: double values in idxListIn: " 
@@ -1793,9 +1793,9 @@ void Mesh::createMeshByMarker(const Mesh & mesh, int from, int to){
     if (to == -1) to = MAX_INT;
     else if (to == 0) to = from + 1;
 
-    std::vector < int > cellIdx;
+    IndexArray cellIdx;
 
-    for (uint i = 0; i < mesh.cellCount(); i ++){
+    for (Index i = 0; i < mesh.cellCount(); i ++){
         if (mesh.cell(i).marker() >= from && mesh.cell(i).marker() < to){
             cellIdx.push_back(i);
         }

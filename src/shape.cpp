@@ -240,8 +240,8 @@ void Shape::createJacobian(RMatrix3 & J) const {
             RVector J0(J.row(0));
             RVector J1(J.row(1));
 
-            if ((fabs(J0[0]) >= fabs(J0[1]) && fabs(J0[0]) >= fabs(J0[2])) ||
-                (fabs(J0[1]) >= fabs(J0[0]) && fabs(J0[1]) >= fabs(J0[2]))) {
+            if ((abs(J0[0]) >= abs(J0[1]) && abs(J0[0]) >= abs(J0[2])) ||
+                (abs(J0[1]) >= abs(J0[0]) && abs(J0[1]) >= abs(J0[2]))) {
                 J1[0] =  J0[1];
                 J1[1] = -J0[0];
                 J1[2] =     0.;

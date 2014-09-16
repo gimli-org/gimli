@@ -39,6 +39,12 @@ if locale.localeconv()['decimal_point'] == ',':
     locale.localeconv()['decimal_point']
     locale.setlocale(locale.LC_NUMERIC, 'C')
 
+###  Global shortcutes #####
+_pygimli_.load = None
+from pygimli.io import load
+from pygimli.viewer import show
+############################
+
 
 ############################
 # print function for gimli stuff

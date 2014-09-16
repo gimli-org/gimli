@@ -359,8 +359,8 @@ public:
     }
 
     /*! Set and get constraint matrix */
-    inline void setConstraintMatrix(const DSparseMapMatrix & C){ C_ = C; }
-    inline const DSparseMapMatrix & constraintMatrix() const { return C_; }
+    inline void setConstraintMatrix(const RSparseMapMatrix & C){ C_ = C; }
+    inline const RSparseMapMatrix & constraintMatrix() const { return C_; }
 
     /*! Clear Constraints matrix */
     inline void clearConstraints(){ C_.clear(); }
@@ -692,7 +692,7 @@ public:
         double phi10 = getPhi(modelNew, responseNew)   - phi0;
         double phit0 = getPhi(modelQuad, responseQuad) - phi0;
         double dphit = phit0 - phi10 * tauquad;
-        if (fabs(dphit) < TOLERANCE) return 0.0;
+        if (abs(dphit) < TOLERANCE) return 0.0;
         double tauopt = (phit0 - phi10 * tauquad * tauquad) / dphit / 2.0;
 
         DOSAVE std::cout << "LineSearchQuad: Phi = " << phi0 << " - " << phit0 + phi0
@@ -765,7 +765,7 @@ protected:
     Vec                   data_;
     ModellingBase       * forward_;
 
-    DSparseMapMatrix      C_;
+    RSparseMapMatrix      C_;
 
     Trans< Vec >        * tD_;
     Trans< Vec >        * tM_;

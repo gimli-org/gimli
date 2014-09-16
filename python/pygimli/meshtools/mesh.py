@@ -3,7 +3,7 @@
 import pygimli as pg
 import numpy as np
 
-def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None):
+def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None, verbose=False):
     """
     Create a mesh for a given PLC using triangle (http://www.cs.cmu.edu/~quake/triangle.html)
     or tetgen 
@@ -45,6 +45,9 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None):
             if area > 0:
                 switches += 'a'+ str(area)
         
+            if not verbose:
+                switches += 'Q'
+                
         tri.setSwitches(switches)
         
         mesh = tri.generate()

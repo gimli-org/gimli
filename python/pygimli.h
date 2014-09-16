@@ -244,6 +244,8 @@ DEFINE_COMPARE_OPERATOR__(>)
     template Pos< double > & Pos< double >::transform(const Matrix < double > & mat);
 
     template class SparseMatrix< double >;
+    template class SparseMatrix< Complex >;
+    
     template Vector < double > operator * (const SparseMatrix < double > & A, const Vector < double > & a);
 //     template SparseMatrix< double > operator + (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
     template SparseMatrix< double > operator * (const SparseMatrix < double > & A, const double & b);
@@ -396,14 +398,14 @@ namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
     typedef GIMLI::Pos< double >                         RVector3;
 
+    typedef GIMLI::Vector< int >                         BVector;
     typedef GIMLI::Vector< double >                      RVector;
     typedef GIMLI::Vector< RVector3 >                    R3Vector;
     typedef GIMLI::Vector< Complex >                     CVector;
-    typedef GIMLI::Vector< int >                         BVector;
-
+    
     typedef GIMLI::Matrix< double >                      RMatrix;
     typedef GIMLI::Matrix3< double >                     RMatrix3;
-    //typedef GIMLI::Matrix< Complex >                     CMatrix;
+    typedef GIMLI::Matrix< Complex >                     CMatrix;
 
     typedef GIMLI::VectorIterator< double >              RVectorIter;
     typedef GIMLI::VectorIterator< int >                 BVectorIter;
@@ -417,11 +419,13 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Inversion< double >                   RInversion;
 //     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
 
-    typedef GIMLI::ElementMatrix< double >                   DElementMatrix;
+    typedef GIMLI::ElementMatrix< double >                   ElementMatrix;
     typedef GIMLI::SparseMapMatrix< int, GIMLI::Index >      ISparseMapMatrix;
-    typedef GIMLI::SparseMapMatrix< double, GIMLI::Index >   DSparseMapMatrix;
+    typedef GIMLI::SparseMapMatrix< double, GIMLI::Index >   RSparseMapMatrix;
+    typedef GIMLI::SparseMapMatrix< Complex, GIMLI::Index >   CSparseMapMatrix;
     typedef GIMLI::SparseMatrix< int >                       ISparseMatrix;
-    typedef GIMLI::SparseMatrix< double >                    DSparseMatrix;
+    typedef GIMLI::SparseMatrix< double >                    RSparseMatrix;
+    typedef GIMLI::SparseMatrix< Complex >                    CSparseMatrix;
 
     typedef GIMLI::Trans< GIMLI::RVector >        RTrans;
     typedef GIMLI::TransLinear< GIMLI::RVector >  RTransLinear;

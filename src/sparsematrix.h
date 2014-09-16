@@ -183,11 +183,11 @@ public:
     }
     
     SparseMapMatrix(const SparseMatrix< ValueType > & S){
-        this->copy(S);
+        this->copy_(S);
     }
 
     SparseMapMatrix & operator = (const SparseMatrix< ValueType > & S){
-        this->copy(S);
+        this->copy_(S);
         return *this;
     }
 
@@ -196,7 +196,7 @@ public:
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_SPARSEMAPMATRIX_RTTI; }
     
-    void copy(const SparseMatrix< ValueType > & S){
+    void copy_(const SparseMatrix< ValueType > & S){
         clear();
         cols_ = S.cols();
         rows_ = S.rows();
@@ -246,7 +246,7 @@ public:
     }
        
 #define DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(OP) \
-    SparseMapMatrix & operator OP##= (const ValueType & v){\
+    SparseMapMatrix< ValueType, IndexType > & operator OP##= (const ValueType & v){\
         for (iterator it = begin(); it != end(); it ++) (*it).second OP##= v; \
         return *this; \
     } \
@@ -258,13 +258,13 @@ public:
 
 #undef DEFINE_SPARSEMMAPATRIX_UNARY_MOD_OPERATOR__
     
-    DSparseMapMatrix & operator += (const DSparseMapMatrix & A){
+    SparseMapMatrix< ValueType, IndexType > & operator += (const SparseMapMatrix< ValueType, IndexType > & A){
         for (const_iterator it = A.begin(); it != A.end(); it ++){
             this->addVal(it->first.first, it->first.second, it->second);
         }
         return *this;
     }
-    DSparseMapMatrix & operator -= (const DSparseMapMatrix & A){
+    SparseMapMatrix< ValueType, IndexType > & operator -= (const SparseMapMatrix< ValueType, IndexType > & A){
         for (const_iterator it = A.begin(); it != A.end(); it ++){
             this->addVal(it->first.first, it->first.second, -it->second);
         }
@@ -275,7 +275,7 @@ public:
     void operator += (const ElementMatrix < double > & A){
         for (Index i = 0, imax = A.size(); i < imax; i++){
             for (Index j = 0, jmax = A.size(); j < jmax; j++){
-                (*this)[A.idx(i)][A.idx(j)] += (ValueType)A.getVal(i, j);
+                (*this)[A.idx(i)][A.idx(j)] += A.getVal(i, j);
             }
         }
     }
@@ -343,18 +343,18 @@ public:
     }
     
     /*! Return this * a  */
-    virtual R3Vector mult(const R3Vector & a) const {
-        R3Vector ret(this->rows(), 0.0);
-        
-        for (const_iterator it = this->begin(); it != this->end(); it ++){
-            ret[it->first.first] += a[it->first.second] * it->second;
-        }
-        return ret;
-    }
+//     virtual R3Vector mult(const R3Vector & a) const {
+//         R3Vector ret(this->rows(), 0.0);
+//         
+//         for (const_iterator it = this->begin(); it != this->end(); it ++){
+//             ret[it->first.first] += a[it->first.second] * it->second;
+//         }
+//         return ret;
+//     }
     
     /*! Return this * a  */
-    virtual RVector mult(const RVector & a) const {
-        RVector ret(this->rows(), 0.0);
+    virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
         
         for (const_iterator it = this->begin(); it != this->end(); it ++){
             ret[it->first.first] += a[it->first.second] * it->second;
@@ -386,8 +386,8 @@ public:
     }
     
     /*! Return this.T * a */
-    virtual RVector transMult(const RVector & a) const {
-        RVector ret(this->cols(), 0.0);
+    virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
+        Vector < ValueType > ret(this->cols(), 0.0);
 
         for (const_iterator it = this->begin(); it != this->end(); it ++){
             ret[it->first.second] += a[it->first.first] * it->second;
@@ -479,7 +479,7 @@ public:
             for (uint j = 0; j < cols; j ++){
                 fread(&val, sizeof(ValueType), 1, file);
                 
-                if (::fabs(val) > dropTol) this->setVal(i, j + colOffset, val);
+                if (abs(val) > dropTol) this->setVal(i, j + colOffset, val);
             }
         }
         
@@ -505,31 +505,39 @@ int load(SparseMapMatrix< ValueType, IndexType > & S,
     return S.load(fname);
 }
 
-inline RVector operator * (const DSparseMapMatrix & A, const RVector & b){
+inline RVector operator * (const RSparseMapMatrix & A, const RVector & b){
     return A.mult(b);
 }
 
-inline R3Vector operator * (const DSparseMapMatrix & A, const R3Vector & b){
+inline CVector operator * (const CSparseMapMatrix & A, const CVector & b){
     return A.mult(b);
 }
 
-inline RVector transMult(const DSparseMapMatrix & A, const RVector & b){
+// inline R3Vector operator * (const RSparseMapMatrix & A, const R3Vector & b){
+//     return A.mult(b);
+// }
+
+inline RVector transMult(const RSparseMapMatrix & A, const RVector & b){
     return A.transMult(b);
 }
 
-inline DSparseMapMatrix operator + (const DSparseMapMatrix & A, const DSparseMapMatrix & B){
-    DSparseMapMatrix tmp(A);
+inline CVector transMult(const CSparseMapMatrix & A, const CVector & b){
+    return A.transMult(b);
+}
+
+inline RSparseMapMatrix operator + (const RSparseMapMatrix & A, const RSparseMapMatrix & B){
+    RSparseMapMatrix tmp(A);
     return tmp += B;
 } 
 
-inline DSparseMapMatrix operator - (const DSparseMapMatrix & A, const DSparseMapMatrix & B){
-    DSparseMapMatrix tmp(A);
+inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMapMatrix & B){
+    RSparseMapMatrix tmp(A);
     return tmp -= B;
 } 
 
 #define DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(OP) \
-    inline DSparseMapMatrix operator OP (const DSparseMapMatrix & A, const double & v){\
-        return DSparseMapMatrix(A) OP##= v; \
+    inline RSparseMapMatrix operator OP (const RSparseMapMatrix & A, const double & v){\
+        return RSparseMapMatrix(A) OP##= v; \
     } \
     
     DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(+)
@@ -599,8 +607,15 @@ public:
         : colPtr_(S.vecColPtr()), rowIdx_(S.vecRowIdx()), vals_(S.vecVals()), valid_(true){
     }
 
+//     /*! Copy constructor. */
+//     SparseMatrix(const SparseMapMatrix< ValueType, Index > & S){
+//         : valid_(true){
+//         copy_(S);
+//     }
+    
     /*! Create Sparsematrix from c-arrays. Cant check for valid ranges, so please be carefull. */
-    SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx, ValueType * vals){
+    SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx,
+                 ValueType * vals){
         colPtr_.reserve(dim + 1);
         colPtr_.resize(dim + 1);
 
@@ -627,18 +642,20 @@ public:
         } return *this;
     }
 
-    SparseMatrix(const DSparseMapMatrix & S){
-        this->copy_(S);
-    }
-
-    SparseMatrix & operator = (const DSparseMapMatrix & S){
+    SparseMatrix < ValueType > & operator = (const SparseMapMatrix< ValueType, Index > & S){
         this->copy_(S);
         return *this;
     }
+    
+//     void copy(const SparseMapMatrix< ValueType, Index > & S){
+//         this->copy_(S);
+//     }
 
+    
+    
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
         void FUNCT(int i, int j, ValueType val){ \
-            if (::fabs(val) > TOLERANCE){ \
+            if (abs(val) > TOLERANCE){ \
                 for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){ \
                     if (rowIdx_[k] == j) { \
                         vals_[k] OP##= val; return; \
@@ -688,7 +705,7 @@ public:
     }
 
     void setVal(int i, int j, ValueType val){
-        if (::fabs(val) > TOLERANCE){
+        if (abs(val) > TOLERANCE){
             for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
                 if (rowIdx_[k] == j) {
                     vals_[k] = val; return;
@@ -725,18 +742,17 @@ public:
         }
     }
 
-    void copy_(const ISparseMapMatrix & S){
-        CERR_TO_IMPL
-    }
-
-    void copy_(const DSparseMapMatrix & S){
+    void copy_(const SparseMapMatrix< ValueType, Index > & S){
+            
         this->clear();
         Index col = 0, row = 0;
-        double val;
+        ValueType val;
 
-        std::vector < std::map < Index, double > > idxMap(S.cols());
+        std::vector < std::map < Index, ValueType > > idxMap(S.cols());
 
-        for (DSparseMapMatrix::const_iterator it = S.begin(); it != S.end(); it ++){
+        for (typename SparseMapMatrix< ValueType, Index>::const_iterator 
+            it = S.begin(); it != S.end(); it ++){
+            
             col = S.idx1(it);
             row = S.idx2(it);
             val = S.val(it);
@@ -754,8 +770,12 @@ public:
         colPtr_[0] = 0;
 
         Index colCounter = 0, rowCounter = 0;
-        for (std::vector < std::map < Index, double > >::iterator it = idxMap.begin(); it != idxMap.end(); it++){
-            for (std::map < Index, double >::iterator itR = (*it).begin(); itR != (*it).end(); itR++){
+        for (typename std::vector < std::map < Index, ValueType > >::iterator 
+            it = idxMap.begin(); it != idxMap.end(); it++){
+            
+            for (typename std::map < Index, ValueType >::iterator 
+                itR = (*it).begin(); itR != (*it).end(); itR++){
+                
                 rowIdx_[rowCounter] = itR->first;
                 vals_[rowCounter] = (ValueType)itR->second;
                 rowCounter ++;
@@ -772,7 +792,7 @@ public:
         colPtr_.resize(mesh.nodeCount() + 1);
 
         //*** much to slow
-        //DSparseMapMatrix S(mesh.nodeCount(), mesh.nodeCount());
+        //RSparseMapMatrix S(mesh.nodeCount(), mesh.nodeCount());
         
         Index col = 0, row = 0;
 
@@ -841,7 +861,7 @@ public:
     void fillStiffnessMatrix(const Mesh & mesh, const RVector & a){
         clean();
         buildSparsityPattern(mesh);
-        ElementMatrix < ValueType > A_l;
+        ElementMatrix < double > A_l;
         
         for (uint i = 0; i < mesh.cellCount(); i ++){
             A_l.ux2uy2uz2(mesh.cell(i));
@@ -857,7 +877,7 @@ public:
     void fillMassMatrix(const Mesh & mesh, const RVector & a){
         clean();
         buildSparsityPattern(mesh);
-        ElementMatrix < ValueType > A_l;
+        ElementMatrix < double > A_l;
         
         for (uint i = 0; i < mesh.cellCount(); i ++){
             A_l.u2(mesh.cell(i));
