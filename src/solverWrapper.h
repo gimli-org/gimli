@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -29,20 +29,27 @@ class DLLEXPORT SolverWrapper{
 public:
     SolverWrapper();
 
-    SolverWrapper(const DSparseMatrix & S, bool verbose=false);
+    SolverWrapper(const RSparseMatrix & S, bool verbose=false);
 
+    SolverWrapper(const CSparseMatrix & S, bool verbose=false);
+    
     virtual ~SolverWrapper();
 
     virtual int solve(const RVector & rhs, RVector & solution) = 0;
+    
+    virtual int solve(const CVector & rhs, CVector & solution){ THROW_TO_IMPL return 0;}
 
 protected:
+   
     bool dummy_;
     bool verbose_;
+    bool isComplex_;
     uint dim_;
     long nVals_;
     double dropTol_;
     double tolerance_;
     double maxiter_;
+
 };
 
 } //namespace GIMLI;

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -25,17 +25,30 @@ namespace GIMLI{
 
 SolverWrapper::SolverWrapper( ){ dummy_ = true; }
 
-SolverWrapper::SolverWrapper(const DSparseMatrix & S, 
+SolverWrapper::SolverWrapper(const RSparseMatrix & S, 
                              bool verbose) 
     : verbose_(verbose){
-        
     dummy_ = true; 
     dim_ = S.size(); 
     nVals_ = S.nVals();
     tolerance_ = 1e-12;
     dropTol_ = 0.0;
+    isComplex_ = false;
+}
+
+SolverWrapper::SolverWrapper(const CSparseMatrix & S, 
+                             bool verbose) 
+    : verbose_(verbose){
+    dummy_ = true; 
+    dim_ = S.size(); 
+    nVals_ = S.nVals();
+    tolerance_ = 1e-12;
+    dropTol_ = 0.0;
+    isComplex_ = true;
 }
 
 SolverWrapper::~SolverWrapper(){ }
 
+    
 } //namespace GIMLI;
+

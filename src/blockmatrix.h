@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2014 by the resistivity.net development team       *
  *   Thomas Günther  thomas@resistivity.net                                *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -55,14 +55,14 @@ public:
     }
     
     /*! Return references to the 2 matriced (const and non-const, why?). */
-    inline const DSparseMapMatrix & H1() const { return H1_; }
-    inline const DSparseMapMatrix & H2() const { return H2_; }
-    inline DSparseMapMatrix & H1() { return H1_; }
-    inline DSparseMapMatrix & H2() { return H2_; }
+    inline const RSparseMapMatrix & H1() const { return H1_; }
+    inline const RSparseMapMatrix & H2() const { return H2_; }
+    inline RSparseMapMatrix & H1() { return H1_; }
+    inline RSparseMapMatrix & H2() { return H2_; }
 
 protected:
     //! create inplace (or better hold references of it?)
-    DSparseMapMatrix H1_, H2_; 
+    RSparseMapMatrix H1_, H2_; 
 }; // class H2SparseMapMatrix
 
 inline void rank1Update( H2SparseMapMatrix & A, const RVector & u, const RVector & v ) {
@@ -187,7 +187,7 @@ typedef DRMatrix< SparseMapMatrix< double, Index > > SDRMatrix;
 //! Some examples useful for special inversions
 typedef H2Matrix< IdentityMatrix, IdentityMatrix > TwoModelsCMatrix; // -I +I
 typedef DRMatrix< TwoModelsCMatrix > ManyModelsCMatrix;  //** not really diagonal!
-typedef DRMatrix< DSparseMapMatrix > ManyCMatrix;
+typedef DRMatrix< RSparseMapMatrix > ManyCMatrix;
 typedef V2Matrix< ManyCMatrix, ManyModelsCMatrix > MMMatrix; // Multiple models (LCI,timelapse)
 
 } // namespace GIMLI

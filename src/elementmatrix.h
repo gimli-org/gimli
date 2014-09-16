@@ -27,12 +27,12 @@
 
 namespace GIMLI{
 
-template < class T > class DLLEXPORT ElementMatrix {
+template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     ElementMatrix() { }
 
-    ElementMatrix(const ElementMatrix < T > & E) {
-        std::cout << "ElementMatrix(const ElementMatrix < T > & E) " << std::endl;
+    ElementMatrix(const ElementMatrix < ValueType > & E) {
+        std::cout << "ElementMatrix(const ElementMatrix < ValueType > & E) " << std::endl;
         THROW_TO_IMPL
 //     this->resize(E.size());
 //         for (uint i = 0; i < E.size(); i ++) mat_[i] = E.mat(i);
@@ -40,7 +40,7 @@ public:
 //         initBaseMatricies();
     }
 
-    ElementMatrix < T > & operator = (const ElementMatrix < T > & E) {
+    ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
         std::cout << "ElementMatrix::operator = (" << std::endl;
         THROW_TO_IMPL
         if (this != & E){
@@ -52,19 +52,19 @@ public:
 
     ~ElementMatrix() {}
 
-    inline const RVector & operator[](uint row) const { return mat_[row]; }
-
+    inline const Vector< ValueType > & operator[](uint row) const { return mat_[row]; }
+    
     void resize(uint newSize) {
         idx_.resize(newSize);
         mat_.resize(newSize, newSize);
     }
 
-    ElementMatrix < T > & operator += (const ElementMatrix < T > & E){
+    ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E){
         for (uint i = 0; i < size(); i ++){ mat_[i] += E.row(i); } return *this;
     }
   
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
-        ElementMatrix < T > & operator OP##= (T val) { \
+        ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
             for (register size_t i = 0; i < size(); i ++) mat_[i] OP##= val; \
             return *this;\
         } \
@@ -78,45 +78,46 @@ public:
 
     inline uint idx(uint i) const { return idx_[i]; }
     inline uint size() const { return mat_.rows(); }
-    inline const T getVal(uint i, uint j) const { return mat_[i][j]; }
+    inline const ValueType getVal(uint i, uint j) const { return mat_[i][j]; }
 
-    inline const RVector & row(uint i) const { return mat_[i]; }
-    inline const RMatrix & mat() const { return mat_; }
-    inline const std::vector < uint > & idx() const { return idx_; }
+    inline const Vector < ValueType > & row(uint i) const { return mat_[i]; }
+    inline const Matrix < ValueType > & mat() const { return mat_; }
+    inline const IndexArray & idx() const { return idx_; }
 
-    ElementMatrix < T > & u(const MeshEntity & ent);
+    ElementMatrix < ValueType > & u(const MeshEntity & ent);
 
-    ElementMatrix < T > & u2(const MeshEntity & ent);
+    ElementMatrix < ValueType > & u2(const MeshEntity & ent);
 
-    ElementMatrix < T > & ux2uy2uz2(const Cell & cell, bool useCache=false);
+    ElementMatrix < ValueType > & ux2uy2uz2(const Cell & cell, bool useCache=false);
 
-    ElementMatrix < T > & u(const MeshEntity & ent, 
+    ElementMatrix < ValueType > & u(const MeshEntity & ent, 
                             const RVector & w,
                             const std::vector < RVector3 > & integrationPnts,
                             bool verbose = false);
-    ElementMatrix < T > & u2(const MeshEntity & ent, const RVector & w, 
-                              const std::vector < RVector3 > & integrationPnts,
-                             bool verbose = false);
-    ElementMatrix < T > & ux2(const MeshEntity & ent, const RVector & w, 
+    ElementMatrix < ValueType > & u2(const MeshEntity & ent, const RVector & w, 
+                                     const std::vector < RVector3 > & integrationPnts,
+                                     bool verbose = false);
+    ElementMatrix < ValueType > & ux2(const MeshEntity & ent, const RVector & w, 
                                const std::vector < RVector3 > & integrationPnts,
                               bool verbose = false);
-    ElementMatrix < T > & ux2uy2(const MeshEntity & ent, const RVector & w, 
+    ElementMatrix < ValueType > & ux2uy2(const MeshEntity & ent, const RVector & w, 
                                   const std::vector < RVector3 > & integrationPnts,
                                  bool verbose = false);
-    ElementMatrix < T > & ux2uy2uz2(const MeshEntity & ent, const RVector & w, 
+    ElementMatrix < ValueType > & ux2uy2uz2(const MeshEntity & ent, const RVector & w, 
                                     const std::vector < RVector3 > & integrationPnts, 
                                     bool verbose = false);
 
 protected:
-    RMatrix mat_;
-    std::vector < uint > idx_;
+    //RMatrix mat_;
+    Matrix < ValueType > mat_;
+    IndexArray idx_;
 
     RMatrix functx_;
     RMatrix functy_;
     RMatrix functz_;
 
     std::map< uint, RVector > uCache_;
-    std::map< uint, RMatrix > u2Cache_;
+    std::map< uint, Matrix < ValueType > > u2Cache_;
     
     RMatrix dNdr_;
     RMatrix dNds_;

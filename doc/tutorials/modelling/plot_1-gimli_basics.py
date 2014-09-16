@@ -37,8 +37,10 @@ Now we know the gimli name space and can start creating a first mesh. A mesh is 
 
 Gimli provides a collection of tools for mesh import and generation. Easy grid generation is built-in but we also provide wrappers for unstructured mesh generations. e.g. :term:`triangle` and :term:`tetgen`. Incorporation of other generators should be straightforward, e.g., :py:mod:`pygimli.meshtools`
 """
+import numpy as np
+grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 3), y=-np.linspace(-1.0, 1.0, 3))
+#grid = pg.createGrid(x=[-1.0, 0.0, 1.0, 4.0], y=[-1.0, 0.0, 1.0, 4.0])
 
-grid = pg.createGrid(x=[-1.0, 0.0, 1.0], y=[-1.0, 0.0, 1.0])
 
 """
 ``grid`` is an instance of :gimliapi:`GIMLI::Mesh` and provides various methods for modification and io-operations.
@@ -105,10 +107,8 @@ See: :py:mod:`pygimli.viewer`
 
 """
 
-from pygimli.viewer import showMesh
 
-
-showMesh(grid)
+pg.show(grid)
 
 """
 .. image:: PLOT2RST.current_figure

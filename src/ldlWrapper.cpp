@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -76,10 +76,16 @@ namespace GIMLI{
 #endif
 
 
-LDLWrapper::LDLWrapper( DSparseMatrix & S, bool verbose) : SolverWrapper( S, verbose ) {
+LDLWrapper::LDLWrapper(RSparseMatrix & S, bool verbose)
+    : SolverWrapper(S, verbose) {
   preordering_ = true;
   initialize_( S );
   factorise( );
+}
+
+LDLWrapper::LDLWrapper(CSparseMatrix & S, bool verbose)
+    : SolverWrapper(S, verbose) {
+    THROW_TO_IMPL
 }
 
 LDLWrapper::~LDLWrapper(){
@@ -98,7 +104,7 @@ LDLWrapper::~LDLWrapper(){
   std::cerr << WHERE_AM_I << " LDL not installed" << std::endl;
 }
 
-int LDLWrapper::initialize_( DSparseMatrix & S ){
+int LDLWrapper::initialize_(RSparseMatrix & S){
 
 #ifdef HAVE_LIBLDL
     colPtr_ = reinterpret_cast< int * >(S.colPtr());

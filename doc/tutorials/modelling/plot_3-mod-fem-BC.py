@@ -37,10 +37,10 @@ def uDirichlet(b):
     '''
     return 4.0
 
-dirichletBC = [[1, 1.0], # top
-               [grid.findBoundaryByMarker(2), 2.0], # left
-               [grid.findBoundaryByMarker(3), lambda p: 3.0 + p[0]], # bottom
-               [grid.findBoundaryByMarker(4), uDirichlet]] # right
+dirichletBC = [[1, 1.0], # left
+               [grid.findBoundaryByMarker(2), 2.0], # right
+               [grid.findBoundaryByMarker(3), lambda p: 3.0 + p[0]], # top
+               [grid.findBoundaryByMarker(4), uDirichlet]] # bottom
 
 """
 The BC are passed using the uBoundary keyword.

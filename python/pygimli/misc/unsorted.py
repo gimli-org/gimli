@@ -19,11 +19,13 @@ def rot2DGridToWorld(mesh, start, end):
 
 
 def streamline(mesh, field, startCoord, dLengthSteps, 
+               dataMesh=None,
                maxSteps=1000, verbose=False, koords=[0, 1]):
     """
     """
     xd, yd = streamlineDir(mesh, field, startCoord, 
                            dLengthSteps,
+                           dataMesh=dataMesh,
                            maxSteps=maxSteps,
                            down=True, verbose=verbose, koords=koords)
     
@@ -34,11 +36,14 @@ def streamline(mesh, field, startCoord, dLengthSteps,
     
     xu, yu = streamlineDir(mesh, field, startCoord, 
                            dLengthSteps,
+                           dataMesh=dataMesh,
                            maxSteps=maxSteps,
                            down=False, verbose=verbose, koords=koords)
     return xd + xu, yd + yu
 
-def streamlineDir(mesh, field, startCoord, dLengthSteps, maxSteps=1000, down=True,
+def streamlineDir(mesh, field, startCoord, dLengthSteps,
+                  dataMesh=None,
+                  maxSteps=1000, down=True,
                   verbose=False, koords=[0, 1]):
     """
         down = -1, up = 1, both = 0
@@ -87,14 +92,25 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, maxSteps=1000, down=Tru
             break
         
         if isVectorData:
+            u = 0.
             if len(vx) == mesh.cellCount():
                 d = pg.RVector3(vx[c.id()], vy[c.id()])
+            elif dataMesh:
+                cd = dataMesh.findCell(pos)
+                if len(vx) == dataMesh.cellCount():
+                    d = pg.RVector3(vx[cd.id()], vy[cd.id()])
+                else:
+                    d = pg.RVector3(c.pot(pos, vx), c.pot(pos, vy))
             else:
-                d = pg.RVector3(c.pot(pos, vx), c.pot(pos, vy))
-            u = 0.
+                raise ADDME
         else:
-            d = c.grad(pos, pot)
-            u = c.pot(pos, pot)
+            if dataMesh:
+                cd = dataMesh.findCell(pos)
+                d = cd.grad(pos, pot)
+                u = cd.pot(pos, pot)
+            else:
+                d = c.grad(pos, pot)
+                u = c.pot(pos, pot)
         #print "cell:", c.id(), u
         # always go u down
         if d.length() == 0.0:

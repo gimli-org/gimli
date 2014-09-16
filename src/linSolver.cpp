@@ -31,13 +31,13 @@ LinSolver::LinSolver()
     setSolverType(AUTOMATIC);
 }
 
-LinSolver::LinSolver(DSparseMatrix & S, bool verbose) 
+LinSolver::LinSolver(RSparseMatrix & S, bool verbose) 
     : solver_(NULL), verbose_(verbose) {
     setSolverType(AUTOMATIC);
     setMatrix(S);
 }
   
-LinSolver::LinSolver(DSparseMatrix & S, SolverType solverType, bool verbose) 
+LinSolver::LinSolver(RSparseMatrix & S, SolverType solverType, bool verbose) 
     : solver_(NULL), verbose_(verbose) {
     setSolverType(solverType);
     setMatrix(S);
@@ -61,12 +61,12 @@ void LinSolver::setSolverType(SolverType solverType){
     }
 }
 
-void LinSolver::setMatrix(DSparseMatrix & S, int verbose){
+void LinSolver::setMatrix(RSparseMatrix & S, int verbose){
     if (verbose > -1) verbose_ = verbose;
     initialize_(S);
 }
 
-void LinSolver::initialize_(DSparseMatrix & S){
+void LinSolver::initialize_(RSparseMatrix & S){
     rows_ = S.rows();
     cols_ = S.cols();
     setSolverType(solverType_);

@@ -133,7 +133,8 @@ Instead of the grid we want to add streamlines to the plot to show the gradients
 of the solution.
 """
 
-drawStreamLines(ax, grid, u, nx=40, ny=40, color='Black')
+gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 30), y=np.linspace(-15.0, .0, 30))
+drawStreamLines2(ax, grid, u, coarseMesh=gridCoarse, color='Black')
 
 """
 .. image:: PLOT2RST.current_figure

@@ -47,6 +47,7 @@ void Mesh::load(const std::string & fbody, IOFormat format){
     } else {
         loadAscii(fbody);
     }
+    createNeighbourInfos();
 }
 
 void Mesh::loadAscii(const std::string & fbody){

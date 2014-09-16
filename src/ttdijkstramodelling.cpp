@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014     by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -286,17 +286,17 @@ void TravelTimeDijkstraModelling::initJacobian(){
     if (jacobian_ && ownJacobian_){
         delete jacobian_;
     }
-    jacobian_ = new DSparseMapMatrix();
+    jacobian_ = new RSparseMapMatrix();
     ownJacobian_ = true;
 }
 
 
 void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
-    DSparseMapMatrix * jacobian = dynamic_cast < DSparseMapMatrix * > (jacobian_);
+    RSparseMapMatrix * jacobian = dynamic_cast < RSparseMapMatrix * > (jacobian_);
     this->createJacobian(*jacobian, slowness);
 }
 
-void TravelTimeDijkstraModelling::createJacobian(DSparseMapMatrix & jacobian, const RVector & slowness) {
+void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian, const RVector & slowness) {
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
         background_ = 1e16;

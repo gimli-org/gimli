@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -207,34 +207,33 @@ class Stopwatch;
 template < class ValueType > class Pos;
 typedef Pos< int >          IntPos;
 typedef Pos< double >       RVector3;
+typedef std::complex < double > Complex;
 
 template < class ValueType >        class SparseMatrix;
 typedef SparseMatrix< int >         ISparseMatrix;
-typedef SparseMatrix< double >      DSparseMatrix;
+typedef SparseMatrix< double >      RSparseMatrix;
+typedef SparseMatrix< Complex >     CSparseMatrix;
 
 template< class ValueType, class IndexType > class SparseMapMatrix;
 typedef SparseMapMatrix< int, Index >     ISparseMapMatrix;
-typedef SparseMapMatrix< double, Index >  DSparseMapMatrix;
 typedef SparseMapMatrix< double, Index >  RSparseMapMatrix;
+typedef SparseMapMatrix< Complex, Index >  CSparseMapMatrix;
 
 template < class ValueType > class Matrix;
 template < class ValueType > class Matrix3;
 template < class ValueType > class Vector;
 //template <> class Vector< double >;
 
-typedef std::complex < double > Complex;
-
 typedef Vector < double > RVector;
 typedef Vector < Complex > CVector;
 typedef Vector < RVector3 > R3Vector;
+typedef Vector< int > BVector;
+typedef Vector< long > LVector;
 
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
+typedef Matrix < Complex > CMatrix;
 
-//typedef Matrix < Complex > CMatrix;
-
-typedef Vector< int > BVector;
-typedef Vector< long > LVector;
 //#typedef Vector< unsigned char > BVector;
 
 // typedef std::vector < RVector > RMatrix;
@@ -249,6 +248,7 @@ template < class ModelValType > class Inversion;
 typedef GIMLI::Inversion< double > RInversion;
 
 template < class ValueType > class ElementMatrix;
+
 
 template < class Vec > class Trans;
 

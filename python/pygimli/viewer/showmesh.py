@@ -52,7 +52,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
         #print(data[0], type(data[0]))
         if hasattr(data[0], '__len__') and type(data) != np.ma.core.MaskedArray:
             if sum(data[:,0]) != sum(data[:,1]):
-                drawStreamLines2(ax, mesh, data)
+                drawStreamLines2(ax, mesh, data, *args, **kwargs)
             else:
                 print("No valid stream data:",  data)
                 drawMesh(ax, mesh)

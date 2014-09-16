@@ -216,7 +216,7 @@ public:
     Mesh createP2() const;
 
     /*! Create a partly mesh from mesh, based on cell-ids */
-    void createMeshByCellIdx(const Mesh & mesh, std::vector < int > & idxList);
+    void createMeshByCellIdx(const Mesh & mesh, IndexArray & idxList);
 
     /*! Create a partly mesh without cells from mesh, based on a vector of ptrs to boundaries */
     void createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds);

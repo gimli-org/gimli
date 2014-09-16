@@ -262,7 +262,7 @@ uint Region::constraintCount() const {
     return bounds_.size();
 }
 
-void Region::fillConstraints(DSparseMapMatrix & C, uint startConstraintsID){
+void Region::fillConstraints(RSparseMapMatrix & C, uint startConstraintsID){
     if (isBackground_) return;
 
     if (isSingle_ && constraintType_ == 1) return;
@@ -584,7 +584,7 @@ Region * RegionManager::addRegion(int marker, const Mesh & mesh){
 void RegionManager::createParaDomain_(){
     if (verbose_) std::cout << "creating para domain ... ";
     Stopwatch swatch(true);
-    std::vector < int > cellIdx;
+    IndexArray cellIdx;
     cellIdx.reserve(mesh_->cellCount());
 
     for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
@@ -856,7 +856,7 @@ uint RegionManager::interRegionConstraintsCount() const {
     return count;
 }
 
-void RegionManager::fillConstraints(DSparseMapMatrix & C){
+void RegionManager::fillConstraints(RSparseMapMatrix & C){
     uint nModel  = parameterCount();
     uint nConstr = constraintCount();
     C.clear();

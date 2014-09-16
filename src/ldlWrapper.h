@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -28,19 +28,21 @@ namespace GIMLI{
 
 class DLLEXPORT LDLWrapper : public SolverWrapper {
 public:
-    LDLWrapper( DSparseMatrix & S, bool verbose = false );
+    LDLWrapper(RSparseMatrix & S, bool verbose=false);
     
-    ~LDLWrapper();
+    LDLWrapper(CSparseMatrix & S, bool verbose=false);
+    
+    virtual ~LDLWrapper();
  
     static bool valid();
 
     int factorise();
     
-    int solve( const RVector & rhs, RVector & solution );
-
+    virtual int solve( const RVector & rhs, RVector & solution );
+    
 protected:
   
-    int initialize_( DSparseMatrix & S );
+    int initialize_(RSparseMatrix & S);
 
     int * colPtr_;
     int * rowIdx_;

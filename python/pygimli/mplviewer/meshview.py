@@ -350,7 +350,7 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0],
     else:
         potLevs = np.linspace(0, maxZ, nLevs)
 
-    print(potLevs)
+    #print(potLevs)
     linestyles = ['solid'] * len(potLevs)
 
     gci = ax.contourf(X, Y, Z, potLevs)
@@ -555,18 +555,23 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, *args, **kwargs):
     axes.streamplot(X, Y, U, V, *args, **kwargs)
 # def drawStreamLines(...)
 
-def drawStreamLine(axes, mesh, c, data, *args, **kwargs):
+def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
     """
     """
     x,y = streamline(mesh, data, startCoord=c.center(),
                      dLengthSteps=5,
+                     dataMesh=dataMesh,
                      maxSteps=10000,
                      verbose=False,
                      koords=[0, 1])
+    
+    if not 'color' in kwargs:
+       kwargs['color'] = 'black'
+               
     if len(x) > 2:
         #print( x, y)
         #axes.plot(x, y, '.-', color='black', *args, **kwargs)
-        axes.plot(x, y, color='black', *args, **kwargs)
+        axes.plot(x, y, *args, **kwargs)
         
     if len(x) > 3:
         xmid = int(len(x) / 2)
@@ -575,35 +580,66 @@ def drawStreamLine(axes, mesh, c, data, *args, **kwargs):
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
         dLength = c.center().dist(c.node(0).pos())/4.
+        
         axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15., 
                    head_starts_at_zero=True,
-                   color='black')  
+                   *args, **kwargs)  
     
-def drawStreamLines2(axes, mesh, data, *args, **kwargs):
+def drawStreamLines2(axes, mesh, data, startStream == 3, *args, **kwargs):
     """
         Draw streamlines based on unstructured mesh. 
         Every cell contains only one streamline and each new stream line starts in the center of a cell.
         Stream density can by chosen by parameter a, that leads to a new mesh with equidistant maximum cell size a.
     """
-    mesh.createNeighbourInfos()
-    for c in mesh.cells(): c.setValid(True)
+    
+    viewMesh = None
+    dataMesh = None
+
+    if 'coarseMesh' in kwargs:
+        viewMesh = kwargs['coarseMesh']
+        dataMesh = mesh
+        dataMesh.createNeighbourInfos()
+        del(kwargs['coarseMesh'])
+    else:
+        viewMesh = mesh
+    
+    viewMesh.createNeighbourInfos()
+    
+    for c in viewMesh.cells(): c.setValid(True)
         
-    # start a stream from each boundary cell
-    for b in mesh.findBoundaryByMarker(1, 99):
-        c = b.leftCell()
-        if c is None:
-            c = b.rightCell()
+    if startStream == 1:
+        # start a stream from each boundary cell
+        for y in np.linspace(viewMesh.ymin(), viewMesh.ymax(), 100):
+            c = viewMesh.findCell([(viewMesh.xmax()-viewMesh.xmax())/2.0, y])
+            if c is not None:
+                if c.valid():
+                    drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
+                
+    elif startStream == 2:
+        # start a stream from each boundary cell
+        for x in np.linspace(viewMesh.xmin(), viewMesh.xmax(), 100):
+            c = viewMesh.findCell([x, (viewMesh.ymax()-viewMesh.ymax())/2.0])
+            if c is not None:
+                if c.valid():
+                    drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
+        
+    elif startStream == 3:
+        # start a stream from each boundary cell
+        for b in viewMesh.findBoundaryByMarker(1, 99):
+            c = b.leftCell()
+            if c is None:
+                c = b.rightCell()
             
-        if c.valid():
-            drawStreamLine(axes, mesh, c, data, *args, **kwargs)
-        #return
+            if c.valid():
+                drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
+            #return
 
     # start a stream from each unused cell
-    for c in mesh.cells():
+    for c in viewMesh.cells():
         if c.valid():
-            drawStreamLine(axes, mesh, c, data, *args, **kwargs)
+            drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
             
-    for c in mesh.cells(): c.setValid(True)
+    for c in viewMesh.cells(): c.setValid(True)
 # def drawStreamLines2(...)
     
 def drawSensors(axes, sensors, diam=None, koords=[0,2]):

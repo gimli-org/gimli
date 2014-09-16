@@ -63,7 +63,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 #def parseArgToArray(...)
 
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
-    A = pg.DSparseMapMatrix(dom, dom)
+    A = pg.RSparseMapMatrix(dom, dom)
     
     if end == -1: end = dom
     
@@ -77,7 +77,7 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
     return A
         
 def identity(dom, start=0, end=-1):
-    A = pg.DSparseMapMatrix(dom, dom)
+    A = pg.RSparseMapMatrix(dom, dom)
     
     if end == -1: end = dom
     
@@ -89,7 +89,7 @@ def showSparseMatrix(A):
     """
         helper function
     """
-    S = pg.DSparseMatrix(A)
+    S = pg.RSparseMatrix(A)
     rows = S.vecRowIdx()
     cols = S.vecColPtr()
     vals = S.vecVals()
@@ -111,7 +111,7 @@ def linsolve(A, b, verbose=False):
     
     Parameters
     ----------
-    A : pg.DSparseMatrix | pg.DSparseMapMatrix
+    A : pg.RSparseMatrix | pg.RSparseMapMatrix
         System matrix.
     
     b : array
@@ -129,8 +129,8 @@ def linsolve(A, b, verbose=False):
     """
     x = pg.RVector(len(b), .0 )
     
-    if type(A) == pg.DSparseMapMatrix:
-        S = pg.DSparseMatrix(A)
+    if type(A) == pg.RSparseMapMatrix:
+        S = pg.RSparseMatrix(A)
         solver = pg.LinSolver(S, verbose=verbose)
         solver.solve(b, x)
     else:    
@@ -154,7 +154,7 @@ def assembleForceVector(mesh, f, userData=None):
 
     rhs = pg.RVector(mesh.nodeCount(), 0)
         
-    b_l = pg.DElementMatrix()
+    b_l = pg.ElementMatrix()
     
     if hasattr(f, '__call__') and type(f) is not pg.RVector:
         for c in mesh.cells():
@@ -190,7 +190,7 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
     udirTmp = pg.RVector(S.rows(), 0.0)
     udirTmp.setVal(uDirchlet, uDirIndex)
     
-    if rhs:
+    if rhs is not None:
         rhs -= S * udirTmp
         
     for i in uDirIndex:
@@ -199,7 +199,7 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
         S.cleanCol(i)
         S.setVal(i, i, 1.0)
     
-    if rhs:
+    if rhs is not None:
         rhs.setVal(uDirchlet, uDirIndex)
 #def assembleUDirichlet_(...)
        
@@ -215,7 +215,7 @@ def assembleNeumannBC(S,
     Parameters
     ----------
 
-    S   : pg.DSparseMatrix()
+    S   : pg.RSparseMatrix()
         System matrix of the system equation.
     boundaryPair    : tuple
         Pair of [list_of_boundaris, value], the value will assigned to 
@@ -227,7 +227,7 @@ def assembleNeumannBC(S,
     
     """
 
-    Se = pg.DElementMatrix()
+    Se = pg.ElementMatrix()
 
     if type(boundaryPair) == tuple or len(boundaryPair) == 2:
         
@@ -267,7 +267,7 @@ def assembleDirichletBC(S, boundaryPair, rhs=None, time=0.0,
     
     Parameters
     ----------
-    S : pg.DSparseMatrix()
+    S : pg.RSparseMatrix()
         System matrix of the system equation.
     boundaryPair : tuple
         Pair of [list_of_boundaris, value], the value will assigned to 
@@ -394,7 +394,7 @@ def createStiffnessMatrix(mesh, a=None):
     Returns
     -------
     
-    A : pg.DSparseMatrix
+    A : pg.RSparseMatrix
         Stiffness matrix 
     
     """
@@ -402,7 +402,7 @@ def createStiffnessMatrix(mesh, a=None):
     if a is None:
         a = pg.RVector(mesh.cellCount(), 1.0)
     
-    A = pg.DSparseMatrix()
+    A = pg.RSparseMatrix()
     
     A.fillStiffnessMatrix(mesh, a)
     return A
@@ -411,7 +411,7 @@ def createStiffnessMatrix(mesh, a=None):
     A.buildSparsityPattern(mesh)
 
     # define a local element matrix 
-    A_l = pg.DElementMatrix()
+    A_l = pg.ElementMatrix()
     for c in mesh.cells():
         A_l.ux2uy2uz2(c)
         A_l *= a[c.id()] 
@@ -437,14 +437,14 @@ def createMassMatrix(mesh, b=None):
     Returns
     -------
     
-    A : pg.DSparseMatrix
+    A : pg.RSparseMatrix
         Stiffness matrix 
     
     """
     if b is None:
         b = pg.RVector(mesh.cellCount(), 1.0)
         
-    B = pg.DSparseMatrix()
+    B = pg.RSparseMatrix()
     B.fillMassMatrix(mesh, b)
     return B
 
@@ -452,7 +452,7 @@ def createMassMatrix(mesh, b=None):
     B.buildSparsityPattern(mesh)
     
     # define a local element matrix 
-    B_l = pg.DElementMatrix()
+    B_l = pg.ElementMatrix()
     for c in mesh.cells():
         B_l.u2(c)
         # check if b[i] == B*b

@@ -108,7 +108,7 @@ public:
         for constraintstype == 0 fill  (startConstraintsID + i, startParameter_ + i) = 1, i=1..constraintCount()\n
         else fill (startConstraintsID + i, Boundary_i_leftNeightbourParameterID) = 1, 
                   (startConstraintsID + i, Boundary_i_rightNeightbourParameterID) = -1, i = 1..nBoundaries.*/
-    void fillConstraints(DSparseMapMatrix & C, uint startConstraintsID);
+    void fillConstraints(RSparseMapMatrix & C, uint startConstraintsID);
 
     /*! Set region wide constant constraints weight, (default = 1). If this method is called background is forced to false. */
     void setConstraintsWeight(double bc);
@@ -310,7 +310,7 @@ public:
     
     /*! Fill global constraints-matrix
         no regions: fill with 0th-order constraints */
-    void fillConstraints(DSparseMapMatrix & C);
+    void fillConstraints(RSparseMapMatrix & C);
 
     /*! Syntactic sugar: set zweight/constraintType to all regions. */
     void setZWeight(double z);

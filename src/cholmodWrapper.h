@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,42 +24,28 @@
 #include "gimli.h"
 #include "solverWrapper.h"
 
-// #ifdef CHOLMOD_FOUND
-//     #if CHOLMOD_FOUND==TRUE
-//         #define USE_CHOLMOD 1
-//     #endif
-// #endif
-// 
-// #ifdef USE_CHOLMOD
-//     #define CHOLMOD_MAXMETHODS 9
-//     #define UF_long long
-// 
-//     #include <cholmod.h>
-// #else
-// struct cholmod_sparse;
-// struct cholmod_factor;
-// struct cholmod_common;
-// #endif
-// class cholmod_sparse;
-// class cholmod_factor;
-// class cholmod_common;
-
 namespace GIMLI{
 
 class DLLEXPORT CHOLMODWrapper : public SolverWrapper {
 public:
-    CHOLMODWrapper(DSparseMatrix & S, bool verbose = false);
+    CHOLMODWrapper(RSparseMatrix & S, bool verbose = false);
     
-    ~CHOLMODWrapper();
+    CHOLMODWrapper(CSparseMatrix & S, bool verbose = false);
+    
+    virtual ~CHOLMODWrapper();
 
     static bool valid();
 
     int factorise();
     
-    int solve( const RVector & rhs, RVector & solution );
+    virtual int solve(const RVector & rhs, RVector & solution);
+    
+    virtual int solve(const CVector & rhs, CVector & solution);
 
 protected:
-    int initialize_( DSparseMatrix & S );
+    int initialize_(RSparseMatrix & S);
+    
+    int initialize_(CSparseMatrix & S);
 
     void *c_;
     void *A_;
