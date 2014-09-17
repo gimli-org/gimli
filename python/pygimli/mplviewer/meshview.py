@@ -585,7 +585,7 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
                    head_starts_at_zero=True,
                    *args, **kwargs)  
     
-def drawStreamLines2(axes, mesh, data, startStream == 3, *args, **kwargs):
+def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
     """
         Draw streamlines based on unstructured mesh. 
         Every cell contains only one streamline and each new stream line starts in the center of a cell.
