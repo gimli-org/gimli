@@ -36,7 +36,7 @@ extern "C" {
     #define USE_CHOLMOD 1
     #define CHOLMOD_MAXMETHODS 9
     #define UF_long long
-
+#error DEPRECATED
   struct cholmod_common{
     double dbound ;
     double grow0 ;
@@ -158,7 +158,11 @@ extern "C" {
 #define CHOLMOD_A    0    /* solve Ax=b */
 #define CHOLMOD_INT  0    /* all integer arrays are int */
 #define CHOLMOD_REAL 1    /* a real matrix */
+#define CHOLMOD_SINGLE 1  /* all numerical values are double */
 #define CHOLMOD_DOUBLE 0  /* all numerical values are double */
+#define CHOLMOD_COMPLEX 2
+#define CHOLMOD_ZOMPLEX 3
+ 
     struct cholmod_factor;
 
   int cholmod_start(cholmod_common * Common);
@@ -173,7 +177,7 @@ extern "C" {
   int cholmod_free_sparse(cholmod_sparse ** A, cholmod_common *Common) ;
   int cholmod_free_factor(cholmod_factor ** L, cholmod_common *Common) ;
 }
-
+#error DEPRECATED
 #else 
     #define USE_CHOLMOD 0
 #endif
@@ -256,15 +260,28 @@ int CHOLMODWrapper::initialize_(CSparseMatrix & S){
     ((cholmod_sparse*)A_)->nzmax = nVals_;       /* maximum number of entries */
     ((cholmod_sparse*)A_)->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
     ((cholmod_sparse*)A_)->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
+    
+//     RVector * x = new RVector(real(S.vecVals()));
+//     RVector * z = new RVector(imag(S.vecVals()));
+//__MS(*x)
+//    __MS(*z)
     ((cholmod_sparse*)A_)->x     = S.vals();     /* numerical values, size nzmax */
+//     double * bx = (double*)((cholmod_sparse*)A_)->x;
+//     for (Index i = 0; i < nVals_; i ++ ){
+//         std::cout << i << " " << bx[i*2] 
+//                   << " + j" 
+//                   << bx[i*2+1] << std::endl;
+//     }
+    //((cholmod_sparse*)A_)->z     = (void*)&(*z)[0];     /* numerical values, size nzmax */
 
      //std::cout << "CHOLMODWrapper::initialize: " << nVals_ << std::endl;
 
-    ((cholmod_sparse*)A_)->stype  = 1;
+    // stype > 0 A is square and symmetric, stype == 0 unsymmetric
+    ((cholmod_sparse*)A_)->stype  = 0;
 
     ((cholmod_sparse*)A_)->itype = CHOLMOD_INT;
-    ((cholmod_sparse*)A_)->xtype = CHOLMOD_REAL;
-    ((cholmod_sparse*)A_)->dtype = CHOLMOD_DOUBLE;
+    ((cholmod_sparse*)A_)->xtype = CHOLMOD_COMPLEX;  // data type for the pattern (Real, complex, zcomplex)
+    ((cholmod_sparse*)A_)->dtype = CHOLMOD_DOUBLE; // data type for complex or real (float/double)
     ((cholmod_sparse*)A_)->packed = true;
     ((cholmod_sparse*)A_)->sorted = true; // testen, scheint schneller, aber hab ich das immer?
     return 1;
@@ -350,14 +367,30 @@ int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
 int CHOLMODWrapper::solve(const CVector & rhs, CVector & solution){
   if (!dummy_){
 #if USE_CHOLMOD
-    cholmod_dense * b = cholmod_ones(((cholmod_sparse*)A_)->nrow, 1, ((cholmod_sparse*)A_)->xtype, (cholmod_common*)c_);
+    cholmod_dense * b = cholmod_ones(((cholmod_sparse*)A_)->nrow, 1,
+                                     ((cholmod_sparse*)A_)->xtype,
+                                     (cholmod_common*)c_);
     Complex * bx = (Complex*)b->x;
-    for (uint i = 0; i < dim_; i++) bx[ i ] = rhs[ i ];
-
-    cholmod_dense * x = cholmod_solve(CHOLMOD_A, (cholmod_factor *)L_, b, (cholmod_common*)c_);     /* solve Ax=b */
+    __M
+    //for (uint i = 0; i < dim_; i++) bx[i*2] = rhs[i].real();
+    for (uint i = 0; i < dim_; i++) bx[i] = rhs[i];
+    
+    for (uint i = 0; i < dim_; i++) std::cout << bx[i] << std::endl;
+    
+    
+    __M
+    cholmod_dense * x = cholmod_solve(CHOLMOD_A,                // solve Ax=b
+                                      (cholmod_factor *)L_,
+                                      b,
+                                      (cholmod_common *)c_);     
+    __M
     bx = (Complex*)x->x;
+    
+    
+    
+    __M
 
-    for (uint i = 0; i < dim_; i++) solution[ i ] = bx[ i ];
+    for (uint i = 0; i < dim_; i++) solution[i] = bx[i];
     cholmod_free_dense(&x, (cholmod_common*)c_) ;
     cholmod_free_dense(&b, (cholmod_common*)c_) ;
     return 1;

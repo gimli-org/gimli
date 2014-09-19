@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2014 by the resistivity.net development team       *
  *   Carsten Ruecker carsten@resistivity.net                               *
  *   Thomas Guenther thomas@resistivity.net                                *
  *                                                                         *
@@ -36,19 +36,43 @@ public:
     LinSolver();
   
     LinSolver(RSparseMatrix & S, bool verbose=false);
+    
+    LinSolver(CSparseMatrix & S, bool verbose=false);
 
     LinSolver(RSparseMatrix & S, SolverType solverType, bool verbose=false);
 
+    LinSolver(CSparseMatrix & S, SolverType solverType, bool verbose=false);
+    
     ~LinSolver();
 
     void solve(const RVector & rhs, RVector & solution);
-    
+    void solve(const CVector & rhs, CVector & solution);
     RVector solve(const RVector & rhs);
+    CVector solve(const CVector & rhs);
+
+    
+//     template < class ValueType > void solve(const Vector < ValueType > & rhs,
+//                                             Vector < ValueType > & solution){
+//         solution.resize(rows_);
+//         if (rhs.size() != cols_){
+//             std::cerr << WHERE_AM_I << " rhs size mismatch: " << cols_ << "  " << rhs.size() << std::endl;
+//         }
+//         if (solver_) solver_->solve(rhs, solution);
+//     }
+// 
+//     template < class ValueType > Vector < ValueType > solve(const Vector < ValueType > & rhs){
+//         Vector < ValueType > solution(rhs.size());
+//         if (solver_) solver_->solve(rhs, solution);
+//         return solution;
+//     }
 
     void setSolverType(SolverType solverType = AUTOMATIC);
   
     /*! Verbose level = -1, use Linsolver.verbose(). */
     void setMatrix(RSparseMatrix & S, int verbose=-1);
+    
+    /*! Verbose level = -1, use Linsolver.verbose(). */
+    void setMatrix(CSparseMatrix & S, int verbose=-1);
     
     SolverType solverType() const { return solverType_; }
 
@@ -56,7 +80,8 @@ public:
     
 protected:
     void initialize_(RSparseMatrix & S);
-
+    void initialize_(CSparseMatrix & S);
+        
     SolverType      solverType_;
     SolverWrapper * solver_;
     bool            verbose_;

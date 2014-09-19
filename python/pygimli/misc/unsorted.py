@@ -106,6 +106,9 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
         else:
             if dataMesh:
                 cd = dataMesh.findCell(pos)
+                if not cd:
+                    break
+                
                 d = cd.grad(pos, pot)
                 u = cd.pot(pos, pot)
             else:

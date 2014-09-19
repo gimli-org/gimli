@@ -39,6 +39,7 @@ if locale.localeconv()['decimal_point'] == ',':
     locale.localeconv()['decimal_point']
     locale.setlocale(locale.LC_NUMERIC, 'C')
 
+############################
 ###  Global shortcutes #####
 _pygimli_.load = None
 from pygimli.io import load
@@ -109,6 +110,7 @@ def Data_str(self):
 
 _pygimli_.RVector3.__str__ = RVector3_str
 _pygimli_.RVector.__str__ = RVector_str
+_pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
 _pygimli_.RMatrix.__str__ = RMatrix_str
 _pygimli_.Line.__str__ = Line_str
@@ -127,10 +129,11 @@ def nonzero_test(self):
         "If you looking for the nonzero test, use len(v) > 0")
 
 _pygimli_.RVector.__nonzero__ = nonzero_test
-_pygimli_.BVector.__nonzero__ = nonzero_test
 _pygimli_.RVector.__bool__ = nonzero_test
+_pygimli_.BVector.__nonzero__ = nonzero_test
 _pygimli_.BVector.__bool__ = nonzero_test
-
+_pygimli_.CVector.__nonzero__ = nonzero_test
+_pygimli_.CVector.__bool__ = nonzero_test
 
 ############################
 # allow:
@@ -146,7 +149,7 @@ _pygimli_.stdVectorUL.__add__ = __ADD
 
 
 ############################
-# Indexing operator for RVector, RVector3, RMatrix
+# Indexing operator for RVector, CVector, RVector3, RMatrix
 ############################
 def __getVal(self, idx):
     """
@@ -218,6 +221,9 @@ def __getValMatrix(self, idx):
 _pygimli_.RVector.__setitem__ = __setVal
 _pygimli_.RVector.__getitem__ = __getVal # very slow -- inline is better
 
+_pygimli_.CVector.__setitem__ = __setVal
+_pygimli_.CVector.__getitem__ = __getVal # very slow -- inline is better
+
 _pygimli_.RVector3.__setitem__ = __setVal
 
 _pygimli_.RMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
@@ -232,6 +238,7 @@ def RVector_len(self):
 
 _pygimli_.RVector.__len__ = RVector_len
 _pygimli_.BVector.__len__ = RVector_len
+_pygimli_.CVector.__len__ = RVector_len
 
 
 def RMatrix_len(self):
@@ -283,6 +290,7 @@ def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
 _pygimli_.RVector.__iter__ = __VectorIterCall__
+_pygimli_.CVector.__iter__ = __MatIterCall__
 _pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 _pygimli_.RMatrix.__iter__ = __MatIterCall__
