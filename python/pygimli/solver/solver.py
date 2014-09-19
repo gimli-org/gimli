@@ -89,7 +89,8 @@ def showSparseMatrix(A):
     """
         helper function
     """
-    S = pg.RSparseMatrix(A)
+    S = A
+    #S = pg.RSparseMatrix(A)
     rows = S.vecRowIdx()
     cols = S.vecColPtr()
     vals = S.vecVals()
@@ -388,7 +389,7 @@ def createStiffnessMatrix(mesh, a=None):
     mesh : pg.Mesh
         Arbitrary mesh to calculate the stiffness for. Type of base and shape functions depends on the cell types.
     
-    a : array
+    a : array, either complex or real
         Per cell values., e.g., physical parameter. If None given default is 1.
         
     Returns
@@ -402,20 +403,27 @@ def createStiffnessMatrix(mesh, a=None):
     if a is None:
         a = pg.RVector(mesh.cellCount(), 1.0)
     
-    A = pg.RSparseMatrix()
+    A = None
     
-    A.fillStiffnessMatrix(mesh, a)
-    return A
+    if type(a[0]) is float:
+        
+        A = pg.RSparseMatrix()
+        A.fillStiffnessMatrix(mesh, a)
+        return A
+    else:
+        A = pg.CSparseMatrix()
     
     # create matrix structure regarding the mesh
     A.buildSparsityPattern(mesh)
 
+    
     # define a local element matrix 
     A_l = pg.ElementMatrix()
     for c in mesh.cells():
         A_l.ux2uy2uz2(c)
-        A_l *= a[c.id()] 
-        A += A_l
+        #A_l *= a[c.id()] 
+        #A += A_l
+        A.add(A_l, a[c.id()])
     
     return A
 
@@ -562,9 +570,13 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                 kwargs['uDirichlet'][0],
                                 kwargs['uDirichlet'][1])
             
+        u = None    
+        if type(a[0]) is float:
+            u = pg.RVector(rhs.size(), 0.0)
+        else:
+            u = pg.CVector(rhs.size(), 0.0)
+            rhs = pg.toComplex(rhs)
             
-            
-        u = pg.RVector(rhs.size(), 0.0)
         print("7: ", swatch2.duration(True))
         
         assembleTime = swatch.duration(True)
@@ -574,9 +586,38 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if verbose:
             print(("Asssemblation time: ", assembleTime))
 
+        #showSparseMatrix(S)
+    
+        Sa = np.zeros((S.rows(), S.rows())) *(1 + 1.0j)
         
+        rows = S.vecRowIdx()
+        cols = S.vecColPtr()
+        vals = S.vecVals()
+    
+        for i in range(S.rows()):
+            for j in range(cols[i], cols[i + 1]):
+                Sa[i,rows[j]] = vals[j]
+        
+        
+        #print(Sa)
+        u = np.linalg.solve(Sa, rhs)
+        u = pg.toComplex(u.real, u.imag)
+        print(pg.real(rhs))
+        print(pg.real(u))
+        print(pg.imag(u))
+        #print(min(u), max(u))
+        #return pg.toComplex(u.real, u.imag)
+        #print(u)
+        #print(rhs)
+                
+        u*=0.0
         solver = pg.LinSolver(S, verbose=False)
-        solver.solve(rhs, u)
+        u = solver.solve(rhs)
+        print("cholmod")
+        print(pg.real(rhs))
+        print(pg.real(u))
+        print(pg.imag(u))
+        #print(min(u), max(u))
 
         solverTime = swatch.duration(True)
         if verbose:

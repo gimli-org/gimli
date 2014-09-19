@@ -352,12 +352,12 @@ public:
     }
     
     void testSparseMapMatrix(){
-        GIMLI::DSparseMapMatrix A(2, 2);
+        GIMLI::RSparseMapMatrix A(2, 2);
         A.addVal(0, 0, 1.0);
         A.addVal(1, 1, 1.0);
-        GIMLI::DSparseMapMatrix B;
+        GIMLI::RSparseMapMatrix B;
         B = A;
-        GIMLI::DSparseMapMatrix C(B+A);
+        GIMLI::RSparseMapMatrix C(B+A);
         CPPUNIT_ASSERT(C.getVal(0, 0) == 2.0);
         CPPUNIT_ASSERT((C+C)[0][0] == 4.0);
         CPPUNIT_ASSERT((C+C).getVal(0, 0) == 4.0);

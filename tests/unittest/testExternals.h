@@ -35,14 +35,46 @@ public:
     }
     
     void testCHOLMOD(){
-        GIMLI::DSparseMapMatrix Sm(3,3);
+        GIMLI::RSparseMapMatrix Sm(3,3);
         Sm.addVal(0,0,1.0);
         Sm.addVal(1,1,1.0);
         Sm.addVal(2,2,1.0);
-        GIMLI::DSparseMatrix S(Sm);
-       
+        GIMLI::RSparseMatrix S(Sm);
         GIMLI::CHOLMODWrapper solver(S, true);
+
+        GIMLI::RVector ones(Sm.rows(), 1.0);
+        GIMLI::RVector x(Sm.rows());
+        solver.solve(ones, x);
+        std::cout << GIMLI::norm(ones - S * x) << std::endl;
+//         3 3 5 -1
+//         1 1  1.  0.
+//         3 1  2. -1.
+//         2 2  1.  0.
+//         3 2  3.  0.
+//         3 3 42.  0.
+
+        return;
+        GIMLI::CSparseMapMatrix Smc(3,3);
+        Smc.addVal(0, 0, Complex( 1.0,  0.0));
+        Smc.addVal(2, 0, Complex( 2.0, -1.0));
+        Smc.addVal(1, 1, Complex( 1.0,  0.0));
+        Smc.addVal(2, 1, Complex( 3.0,  0.0));
+        Smc.addVal(2, 2, Complex(42.0,  0.0));
         
+    
+        GIMLI::CSparseMatrix Sc(Smc);
+        GIMLI::CHOLMODWrapper solverC(Sc, true);
+        GIMLI::CVector bC(Sm.rows(), Complex(1.0, 0.0));
+        GIMLI::CVector xC(Sm.rows());
+        solver.solve(bC, xC);
+        std::cout << GIMLI::norm(xC) << std::endl;
+        std::cout << GIMLI::norm(Sc * xC) << std::endl;
+        std::cout << GIMLI::norm(bC - Sc * xC) << std::endl;
+        
+//std::cout << norm(ones - S * solverC.solve(toComplex(ones))) << std::endl;
+        
+                
+
     }
     
 };

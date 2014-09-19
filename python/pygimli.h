@@ -135,18 +135,33 @@ namespace pyplusplus{ namespace aliases{
 // #include "matrixTemplates.h"
 
 namespace GIMLI{
+    
 #define DEFINE_PY_VEC_OPERATOR__(OP)                      \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
-			RVector c(a);	c OP##=b; return c; } 				\
+        RVector c(a);   c OP##=b; return c; }                           \
     inline RVector operator OP (const RVector & a, double v){ \
-			RVector b(a);	b OP##=v; return b; } 				\
+        RVector b(a);   b OP##=v; return b; }                           \
     inline RVector operator OP (double v, const RVector & a){ \
-			RVector b(a);	for (uint i = 0; i < b.size(); i ++) b[ i ] = v OP b[i]; return b; } \
-
-    DEFINE_PY_VEC_OPERATOR__(+)
-    DEFINE_PY_VEC_OPERATOR__(-)
-    DEFINE_PY_VEC_OPERATOR__(*)
-    DEFINE_PY_VEC_OPERATOR__(/)
+        RVector b(a.size());   for (Index i = 0; i < b.size(); i ++) b[i] = v OP a[i]; return b; } \
+    inline CVector operator OP (const CVector & a, const CVector & b){ \
+        CVector c(a);   c OP##=b; return c; }                           \
+    inline CVector operator OP (const CVector & a, const Complex & b){ \
+        CVector c(a);   c OP##=b; return c; }                           \
+    inline CVector operator OP (const CVector & a, const RVector & b){ \
+        CVector c(a);   c OP##=toComplex(b); return c; }                        \
+    inline CVector operator OP (const CVector & a, const double  & b){ \
+        CVector c(a);   c OP##=Complex(b); return c; }                         \
+    inline CVector operator OP (const Complex & v, const CVector & b){ \
+        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return b; } \
+    inline CVector operator OP (const double  & v, const CVector & b){ \
+        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return b; } \
+    inline CVector operator OP (const RVector & a, const CVector & b){ \
+        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = a[i] OP b[i]; return b; } \
+    
+DEFINE_PY_VEC_OPERATOR__(+)
+DEFINE_PY_VEC_OPERATOR__(-)
+DEFINE_PY_VEC_OPERATOR__(*)
+DEFINE_PY_VEC_OPERATOR__(/)
 #undef DEFINE_PY_VEC_OPERATOR__
 
 #define DEFINE_PY_VEC_UNARY_OPERATOR__(OP, FUNCT)                      \
@@ -248,10 +263,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     
     template Vector < double > operator * (const SparseMatrix < double > & A, const Vector < double > & a);
 //     template SparseMatrix< double > operator + (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
-    template SparseMatrix< double > operator * (const SparseMatrix < double > & A, const double & b);
-    template SparseMatrix< double > operator * (const double & b, const SparseMatrix < double > & A);
-
-   
+       
     template class ElementMatrix< double >;
     template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
 
@@ -260,6 +272,12 @@ DEFINE_COMPARE_OPERATOR__(>)
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
     template RVector cat(const RVector & a, const RVector & b);
+    
+    template RVector real(const CVector & a);
+    template RVector imag(const CVector & a);
+    template RVector angle(const CVector & a);
+    template RVector abs(const CVector & a);
+    template CVector conj(const CVector & a);
 
     template double sum(const RVector & v);
     template double min(const RVector & v);

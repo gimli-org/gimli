@@ -114,7 +114,6 @@ u -= solvePoisson(grid, a=1, b=k*k, f=pointSource,
                   userData={'sourcePos': sourcePosB, 'k': k},
                   verbose=True)
 
-
 #uAna = pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosA, k), grid.positions()))
 #uAna -= pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosB, k), grid.positions()))
 
@@ -133,7 +132,7 @@ Instead of the grid we want to add streamlines to the plot to show the gradients
 of the solution.
 """
 
-gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 30), y=np.linspace(-15.0, .0, 30))
+gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, .0, 20))
 drawStreamLines2(ax, grid, u, coarseMesh=gridCoarse, color='Black')
 
 """

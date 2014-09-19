@@ -607,11 +607,11 @@ public:
         : colPtr_(S.vecColPtr()), rowIdx_(S.vecRowIdx()), vals_(S.vecVals()), valid_(true){
     }
 
-//     /*! Copy constructor. */
-//     SparseMatrix(const SparseMapMatrix< ValueType, Index > & S){
-//         : valid_(true){
-//         copy_(S);
-//     }
+    /*! Copy constructor. */
+    SparseMatrix(const SparseMapMatrix< ValueType, Index > & S)
+        : valid_(true){
+        copy_(S);
+    }
     
     /*! Create Sparsematrix from c-arrays. Cant check for valid ranges, so please be carefull. */
     SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx,
@@ -695,6 +695,20 @@ public:
         return *this;
     }
 
+    SparseMatrix< ValueType > & add(const ElementMatrix< double > & A){
+        return add(A, ValueType(1.0));
+    }
+    
+    SparseMatrix< ValueType > & add(const ElementMatrix< double > & A, ValueType scale){
+        if (!valid_) SPARSE_NOT_VALID;
+        for (Index i = 0, imax = A.size(); i < imax; i++){
+            for (Index j = 0, jmax = A.size(); j < jmax; j++){
+                addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+            }
+        }
+        return *this;
+    }
+    
     void clean(){ for (Index i = 0, imax = nVals(); i < imax; i++) vals_[i] = (ValueType)(0); }
 
     void clear(){
@@ -897,6 +911,7 @@ public:
     inline ValueType * vals() { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
     inline const ValueType & vals() const { if (valid_) return vals_[0]; else SPARSE_NOT_VALID; return vals_[0]; }
     inline const Vector < ValueType > & vecVals() const { return vals_; }
+    inline Vector < ValueType > & vecVals() { return vals_; }
 
     inline Index size() const { return colPtr_.size() - 1; }
     inline Index nVals() const { return vals_.size(); }
@@ -939,7 +954,13 @@ SparseMatrix< ValueType > operator + (const SparseMatrix< ValueType > & A,
     SparseMatrix< ValueType > ret(A);
     return ret += B;
 }
-template SparseMatrix< double > operator + (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
+template RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B);
+template CSparseMatrix operator + (const CSparseMatrix & A, const CSparseMatrix & B);
+inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & B){
+    CSparseMatrix ret(A);
+    ret.vecVals() += toComplex(B.vecVals());
+    return ret;
+}
 
 template < class ValueType > 
 SparseMatrix< ValueType > operator - (const SparseMatrix< ValueType > & A,
@@ -947,7 +968,8 @@ SparseMatrix< ValueType > operator - (const SparseMatrix< ValueType > & A,
     SparseMatrix< ValueType > ret(A);
     return ret -= B;
 }
-template SparseMatrix< double > operator - (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
+template RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B);
+template CSparseMatrix operator - (const CSparseMatrix & A, const CSparseMatrix & B);
 
 
 template < class ValueType > 
@@ -956,6 +978,8 @@ SparseMatrix < ValueType > operator * (const SparseMatrix < ValueType > & A,
     SparseMatrix< ValueType > ret(A);
     return ret *= b;
 }
+template SparseMatrix < double > operator * (const SparseMatrix < double > & A, const double & b);
+template CSparseMatrix operator * (const CSparseMatrix & A, const Complex & b);
 
 template < class ValueType > 
 SparseMatrix < ValueType > operator * (const ValueType & b,
@@ -963,6 +987,9 @@ SparseMatrix < ValueType > operator * (const ValueType & b,
     SparseMatrix< ValueType > ret(A);
     return ret *= b;
 }
+
+template RSparseMatrix operator * (const double & b, const RSparseMatrix & A);
+template CSparseMatrix operator * (const Complex & b, const CSparseMatrix & A);
 
 template < class ValueType > 
 Vector < ValueType > operator * (const SparseMatrix < ValueType > & A,
