@@ -71,9 +71,11 @@ typedef Expr< Variable<XAxis__> > VariableX;
 typedef Expr< Variable<YAxis__> > VariableY;
 typedef Expr< Variable<ZAxis__> > VariableZ;
 
-inline double abs(double a) { return std::fabs(a); }
+inline double abs(const double & a) { return std::fabs(a); }
+inline double abs(const Complex & a) { return std::abs(a); }
 
-inline double abs(Complex a) { return std::abs(a); }
+inline double conj(const double & a) { return a; }
+inline Complex conj(const Complex & a) { return std::conj(a); }
 
 //**! Simple show the results of the expression
 template< class Ex > void show(Expr< Ex > expr, double start, double end, double step = 1.0){
@@ -108,7 +110,7 @@ DEFINE_BINARY_OPERATOR__(DIVID, /)
 
 #undef DEFINE_BINARY_OPERATOR__
 
-// inline bool isEqual(const double & a, const double & b) { return (::fabs(a - b) < TOLERANCE); }
+inline bool isEqual(const double & a, const double & b) { return (::fabs(a - b) < TOLERANCE); }
 // inline bool isEqual(const Complex & a, const Complex & b) { return (a == b); }
 //inline bool isNonEqual(const double & a, const double & b) { return !isEqual(a, b); }
 //inline bool isNonEqual(const Complex & a, const Complex & b) { return (a != b); }
@@ -139,6 +141,7 @@ inline double cot(const double & a) { return 1.0 / std::tan(a); }
 inline double acot(const double & a) { return PI / 2.0 * std::atan(a); }
 inline double sign(const double & a) { return a > 0.0 ? 1.0 : (a < 0.0 ? -1.0 : 0.0); }
 inline double exp10(const double & a) { return std::pow(10.0, a); }
+
 
 // template < class T > inline T square(const T & a) { return a * a; }
 // template < class T > inline T cot(const T & a) { return 1.0 / std::tan(a); }

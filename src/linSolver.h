@@ -68,19 +68,20 @@ public:
 
     void setSolverType(SolverType solverType = AUTOMATIC);
   
-    /*! Verbose level = -1, use Linsolver.verbose(). */
-    void setMatrix(RSparseMatrix & S, int verbose=-1);
+    /*! Verbose level = -1, use Linsolver.verbose(). 
+     * Forwarded to the wrapper to overwrite settings within S. stype =-2 -> use S.stype()*/
+    void setMatrix(RSparseMatrix & S, int stype=-2, int verbose=-1);
     
     /*! Verbose level = -1, use Linsolver.verbose(). */
-    void setMatrix(CSparseMatrix & S, int verbose=-1);
+    void setMatrix(CSparseMatrix & S, int stype=-2, int verbose=-1);
     
     SolverType solverType() const { return solverType_; }
 
     std::string solverName() const;
     
 protected:
-    void initialize_(RSparseMatrix & S);
-    void initialize_(CSparseMatrix & S);
+    void initialize_(RSparseMatrix & S, int stype);
+    void initialize_(CSparseMatrix & S, int stype);
         
     SolverType      solverType_;
     SolverWrapper * solver_;

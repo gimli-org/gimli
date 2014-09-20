@@ -33,7 +33,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     smooth : boolean, optional
         Apply mesh smoothing.
     isSubSurface : boolean, optional
-        Apply boundary conditions suitable for geo-simulaion and prolongate
+        Apply boundary conditions suitable for geo-simulation and prolongate
         mesh to the surface if necessary.
     verbose : boolean, optional
         Be verbose.
@@ -133,6 +133,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         n4 = poly.createNode(pg.RVector3(mesh.xmax() + xbound,
                                         mesh.ymin() - ybound,
                                         0.0))
+        
         # and connect them by a closed polygon
         poly.createEdge(n1, n2, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
         poly.createEdge(n2, n3, pg.MARKER_BOUND_MIXED)

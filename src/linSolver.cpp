@@ -73,14 +73,16 @@ void LinSolver::setSolverType(SolverType solverType){
     }
 }
 
-void LinSolver::setMatrix(RSparseMatrix & S, int verbose){
+void LinSolver::setMatrix(RSparseMatrix & S, int verbose, int stype){
     if (verbose > -1) verbose_ = verbose;
-    initialize_(S);
+    
+    initialize_(S, stype);
 }
 
-void LinSolver::setMatrix(CSparseMatrix & S, int verbose){
+void LinSolver::setMatrix(CSparseMatrix & S, int verbose, int stype){
     if (verbose > -1) verbose_ = verbose;
-    initialize_(S);
+    
+    initialize_(S, stype);
 }
 
 // template <> void LinSolver::solve(const RVector & rhs, RVector & solution);
@@ -116,28 +118,28 @@ CVector LinSolver::solve(const CVector & rhs){
     return solution;
 }
 
-void LinSolver::initialize_(RSparseMatrix & S){
+void LinSolver::initialize_(RSparseMatrix & S, int stype){
     rows_ = S.rows();
     cols_ = S.cols();
     setSolverType(solverType_);
 
     switch(solverType_){
         case LDL:     solver_ = new LDLWrapper(S, verbose_); break;
-        case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_); break;
+        case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_, stype); break;
         case UNKNOWN: 
     default:
             std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;
     }
 }
 
-void LinSolver::initialize_(CSparseMatrix & S){
+void LinSolver::initialize_(CSparseMatrix & S, int stype){
     rows_ = S.rows();
     cols_ = S.cols();
     setSolverType(solverType_);
 
     switch(solverType_){
         case LDL:     solver_ = new LDLWrapper(S, verbose_); break;
-        case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_); break;
+        case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_, stype); break;
         case UNKNOWN: 
     default:
             std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;

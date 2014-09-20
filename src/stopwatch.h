@@ -67,7 +67,7 @@ public:
 
     void start();
 
-    void stop( bool verbose = false );
+    void stop( bool verbose=false );
 
     /*! Restart the stopwatch.*/
     void restart();
@@ -76,10 +76,10 @@ public:
     void reset();
 
     /*! Returns the current duration in seconds. Optional you can restart the stopwatch.*/
-    double duration( bool restart = false );
+    double duration( bool restart=false );
 
     /*! Returns the cpu cycles. Optional you can restart the stopwatch.*/
-    size_t cycles( bool restart = false );
+    size_t cycles( bool restart=false );
 
     const CycleCounter & cycleCounter() const { return cCounter_; }
 

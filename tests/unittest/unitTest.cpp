@@ -15,7 +15,7 @@
     #include "testShape.h"
     #include "testGeometry.h"
     #include "testFEM.h"
-    #include "testExternals.h"
+     #include "testExternals.h"
 #endif // HAVE_UNITTEST
 
 #include <cstdlib>
