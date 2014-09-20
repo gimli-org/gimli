@@ -321,10 +321,12 @@ DLLEXPORT int openFile(const std::string & fname, std::fstream * file,
 inline int openInFileTerm(const std::string & fname, std::fstream * file){
     return openFile(fname, file, std::ios::in, true);
 }
-inline int openInFile(const std::string & fname, std::fstream * file, bool terminate = true){
+inline int openInFile(const std::string & fname, std::fstream * file,
+                      bool terminate=true){
     return openFile(fname, file, std::ios::in, terminate);
 }
-inline int openOutFile(const std::string & fname, std::fstream * file, bool terminate = true){
+inline int openOutFile(const std::string & fname, std::fstream * file,
+                       bool terminate=true){
     return openFile(fname, file, std::ios::out, terminate);
 }
 

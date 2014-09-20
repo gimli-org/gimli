@@ -8,7 +8,7 @@ LAPACK_VER=3.4.2
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
-SUITESPARSE=SuiteSparse-4.2.1.tar.gz
+SUITESPARSE=SuiteSparse-4.3.1.tar.gz
 SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
 
 #LDFLAGS="-static-libgfortran -static-libgcc"

@@ -1429,7 +1429,7 @@ Vector < std::complex< ValueType > > conj(const __VectorExpr< std::complex< Valu
 template < class ValueType >
 Vector < std::complex< ValueType > > conj(const Vector < std::complex< ValueType > > & cv){
     Vector < std::complex< ValueType > > v(cv.size());
-    for (Index i = 0; i < cv.size(); i ++) v[i] = Complex(cv[i].real(), -cv[i].imag());
+    for (Index i = 0; i < cv.size(); i ++) v[i] = conj(cv[i]);
     return v;
 }
 
