@@ -261,9 +261,6 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class SparseMatrix< double >;
     template class SparseMatrix< Complex >;
     
-    template Vector < double > operator * (const SparseMatrix < double > & A, const Vector < double > & a);
-//     template SparseMatrix< double > operator + (const SparseMatrix < double > & A, const SparseMatrix< double > & B);
-       
     template class ElementMatrix< double >;
     template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
 

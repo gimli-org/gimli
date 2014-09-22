@@ -1029,13 +1029,6 @@ SparseMatrix< ValueType > operator + (const SparseMatrix< ValueType > & A,
     SparseMatrix< ValueType > ret(A);
     return ret += B;
 }
-template RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B);
-template CSparseMatrix operator + (const CSparseMatrix & A, const CSparseMatrix & B);
-inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & B){
-    CSparseMatrix ret(A);
-    ret.vecVals() += toComplex(B.vecVals());
-    return ret;
-}
 
 template < class ValueType > 
 SparseMatrix< ValueType > operator - (const SparseMatrix< ValueType > & A,
@@ -1043,9 +1036,6 @@ SparseMatrix< ValueType > operator - (const SparseMatrix< ValueType > & A,
     SparseMatrix< ValueType > ret(A);
     return ret -= B;
 }
-template RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B);
-template CSparseMatrix operator - (const CSparseMatrix & A, const CSparseMatrix & B);
-
 
 template < class ValueType > 
 SparseMatrix < ValueType > operator * (const SparseMatrix < ValueType > & A,
@@ -1053,8 +1043,6 @@ SparseMatrix < ValueType > operator * (const SparseMatrix < ValueType > & A,
     SparseMatrix< ValueType > ret(A);
     return ret *= b;
 }
-template SparseMatrix < double > operator * (const SparseMatrix < double > & A, const double & b);
-template CSparseMatrix operator * (const CSparseMatrix & A, const Complex & b);
 
 template < class ValueType > 
 SparseMatrix < ValueType > operator * (const ValueType & b,
@@ -1063,33 +1051,31 @@ SparseMatrix < ValueType > operator * (const ValueType & b,
     return ret *= b;
 }
 
+template RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B);
+template RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B);
+template RSparseMatrix operator * (const RSparseMatrix & A, const double & b);
 template RSparseMatrix operator * (const double & b, const RSparseMatrix & A);
+
+template CSparseMatrix operator + (const CSparseMatrix & A, const CSparseMatrix & B);
+template CSparseMatrix operator - (const CSparseMatrix & A, const CSparseMatrix & B);
 template CSparseMatrix operator * (const Complex & b, const CSparseMatrix & A);
+template CSparseMatrix operator * (const CSparseMatrix & A, const Complex & b);
 
-inline RVector operator * (const RSparseMatrix & A, const RVector & b){
-    return A.mult(b);
+
+inline RVector operator * (const RSparseMatrix & A, const RVector & b){return A.mult(b);}
+inline RVector transMult(const RSparseMatrix & A, const RVector & b){return A.transMult(b);}
+
+inline CVector operator * (const CSparseMatrix & A, const CVector & b){return A.mult(b);}
+inline CVector operator * (const CSparseMatrix & A, const RVector & b){return A.mult(toComplex(b));}
+inline CVector transMult(const CSparseMatrix & A, const CVector & b){return A.transMult(b);}
+inline CVector transMult(const CSparseMatrix & A, const RVector & b){return A.transMult(toComplex(b));}
+
+inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & B){
+    CSparseMatrix ret(A);
+    ret.vecVals() += toComplex(B.vecVals());
+    return ret;
 }
-
-inline CVector operator * (const CSparseMatrix & A, const CVector & b){
-    return A.mult(b);
-}
-
-inline CVector operator * (const CSparseMatrix & A, const RVector & b){
-    return A.mult(toComplex(b));
-}
-
-inline RVector transMult(const RSparseMatrix & A, const RVector & b){
-    return A.transMult(b);
-}
-
-inline CVector transMult(const CSparseMatrix & A, const CVector & b){
-    return A.transMult(b);
-}
-
-inline CVector transMult(const CSparseMatrix & A, const RVector & b){
-    return A.transMult(toComplex(b));
-}
-
+    
 } // namespace GIMLI
 
 #endif //GIMLI__H
