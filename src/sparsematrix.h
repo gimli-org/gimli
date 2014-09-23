@@ -1051,17 +1051,6 @@ SparseMatrix < ValueType > operator * (const ValueType & b,
     return ret *= b;
 }
 
-template RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B);
-template RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B);
-template RSparseMatrix operator * (const RSparseMatrix & A, const double & b);
-template RSparseMatrix operator * (const double & b, const RSparseMatrix & A);
-
-template CSparseMatrix operator + (const CSparseMatrix & A, const CSparseMatrix & B);
-template CSparseMatrix operator - (const CSparseMatrix & A, const CSparseMatrix & B);
-template CSparseMatrix operator * (const Complex & b, const CSparseMatrix & A);
-template CSparseMatrix operator * (const CSparseMatrix & A, const Complex & b);
-
-
 inline RVector operator * (const RSparseMatrix & A, const RVector & b){return A.mult(b);}
 inline RVector transMult(const RSparseMatrix & A, const RVector & b){return A.transMult(b);}
 

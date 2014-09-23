@@ -16,12 +16,16 @@ project(libgimli)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     
-    if(WIN32)
-        set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
-    else(WIN32)
-        set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
-    endif(WIN32)
-        
+    if(OSX)
+        set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -stdlib=libc++ -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+    else (OSX)
+        if(WIN32)
+            set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+        else(WIN32)
+            set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+        endif(WIN32)
+    endif(OSX)
+  
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
 
     #Static start
@@ -79,6 +83,7 @@ else(MSVC)
 	find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
 	link_directories(${BOOST_LIBRARYDIR})
 endif(MSVC)
+
 
 if (Boost_INCLUDE_DIR)
     message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
