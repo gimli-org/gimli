@@ -193,6 +193,13 @@ other issues." FALSE "WIN32 OR APPLE" FALSE)
 
 # cmake_dependent_option(GIMLI_BUILD_PYTHON_MODULES "Specifies whether to build the Python extension module(s)" "PYTHONINTERP_FOUND;PYTHONLIBS_FOUND;Boost_PYTHON_FOUND")
 
+if(OSX)
+    LIST(REMOVE_ITEM gimli_LIB_DEPENDS rt)
+    message (${gimli_LIB_DEPENDS})
+endif(OSX)
+
+
+
 ################################################################################
 # 
 ################################################################################
