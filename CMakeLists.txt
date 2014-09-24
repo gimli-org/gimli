@@ -16,28 +16,19 @@ project(libgimli)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     
-    if(OSX)
+    if (APPLE)
         set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -stdlib=libc++ -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
-    else (OSX)
+    else (APPLE)
         if(WIN32)
             set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
         else(WIN32)
             set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
         endif(WIN32)
-    endif(OSX)
+    endif(APPLE)
   
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
 
-    #Static start
-#     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-#     set(BUILD_SHARED_LIBS OFF)
-#     set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
-#     set_target_properties(icarus PROPERTIES LINK_SEARCH_END_STATIC 1)
-#     set(GCC_CXX_FLAGS ${GCC_CXX_FLAGS} "-static-libgcc -static-libstdc++ -static")
-    #Static Libs
-
 endif ()
-
 
 if(MSVC)
 	# MSVC complain a lot of possible unsecure std function
@@ -192,13 +183,6 @@ components - they must all match or you will get crashes, heap corruption and/or
 other issues." FALSE "WIN32 OR APPLE" FALSE)
 
 # cmake_dependent_option(GIMLI_BUILD_PYTHON_MODULES "Specifies whether to build the Python extension module(s)" "PYTHONINTERP_FOUND;PYTHONLIBS_FOUND;Boost_PYTHON_FOUND")
-
-if(OSX)
-    LIST(REMOVE_ITEM gimli_LIB_DEPENDS rt)
-    message (${gimli_LIB_DEPENDS})
-endif(OSX)
-
-
 
 ################################################################################
 # 
