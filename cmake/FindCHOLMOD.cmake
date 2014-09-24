@@ -156,7 +156,10 @@ if (CHOLMOD_LIBRARY)
   
     ELSE(WIN32)
     # On unix system, debug and release have the same name
-        set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} rt)
+        if (APPLE)
+        else(APPLE)
+            set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} rt)
+        endif(APPLE)
     ENDIF(WIN32)
 
 
