@@ -72,11 +72,10 @@ suitesparse: prep $(SUITESPARSE)
 
 	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ]; then \
 		echo "CC = gcc" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
+	elif [ "$(OSTYPE)" == "darwin13" ]; then \
+		echo "LIB = -lm" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
+		echo "CC = gcc -fPIC" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 	else \
-		if [ "$(OSTYPE)" == "darwin13" ]; then \
-			echo "CC = gcc -fPIC" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
-			echo "LIB = -lm" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
-		fi \
 		echo "CC = gcc -fPIC" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 	fi
 	echo "INSTALL_LIB = $(PWD)/lib" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
