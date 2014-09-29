@@ -35,7 +35,7 @@ namespace GIMLI{
 template < class ValueType > ValueType round(const ValueType & v, ValueType tol){ return ::rint(v / tol) * tol; }
 
 /*! log10 scale of data. Conserve sign alternating a drop tolerance*/
-DLLEXPORT RVector logTransDropTol(const RVector & data, double logdrop=1e-6, 
+DLLEXPORT RVector logTransDropTol(const RVector & data, double logdrop=1e-6,
                                   bool normalize=true);
 
 /*! Converts a degree value to radian.*/
@@ -44,13 +44,13 @@ template < class ValueType > ValueType degToRad(const ValueType & deg){ return d
 /*! Converts a radian value to degree.*/
 template < class ValueType > ValueType radToDeg(const ValueType & rad){ return rad * 360.0 / (2.0 * PI); }
 
-template < class T > T powInt(const T & a, uint dim){ 
+template < class T > T powInt(const T & a, uint dim){
     switch (dim){
         case 0 : return (T)1;
         case 1 : return a;
         case 2 : return a*a;
         case 3 : return a*a*a;
-        case 4 : return a*a*a*a; 
+        case 4 : return a*a*a*a;
         case 5 : return a*a*a*a*a;
         case 6 : return a*a*a*a*a*a;
         default: return (T)std::pow((float)a, (float)dim);
@@ -180,31 +180,31 @@ template < class ValueType > ValueType besselK1(const ValueType & x){
 }
 
 //*!Spherical tangential coordinates to geocentric Cartesian coordinates
-/*!      
- * Convert vector field from spherical tangential coordinates 
+/*!
+ * Convert vector field from spherical tangential coordinates
     (radial, Latitude/theta(north/south), Longitude/phi(east/west))
-        
+
         \vec{V(1, lat, lon)} = V[0] * \vec{unit_r} +  V[1] * \vec{unit_theta} + V[2] * \vec{unit_phi}
-        
+
         to geocentric Cartesian coordinates x/y/z:
-        
+
         \vec{F(x, y, z)} = F[0] * \vec{unit_x} +  F[1] * \vec{unit_y} + F[2] * \vec{unit_z}
-        
+
         Transformation via rotation matrix S
         F(x,y,z) = S * V(r,\theta,\phi)
 
         J = S * (1, r, r cos th)
-        
+
         J (\dx, \dy, \dz) / (\dr, \d th, \d ph)
-        
+
         x = r * cos ph * cos th
         y = r * sin ph * cos th
         z = r * sin th
-        
+
         th = latitude degrees -pi/2 .. pi/2, 90 = north pole
         ph = longitude degrees  -pi .. pi .. west - east
-       
-    
+
+
     Inputs
         V B in radial direction or Magnetic field strength (B)
         lon longitude degrees (in degrees from -180 to 180)
@@ -212,7 +212,7 @@ template < class ValueType > ValueType besselK1(const ValueType & x){
     Outputs
         F
 */
-RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon);
+DLLEXPORT RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon);
 
 } // namespace GIMLI
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.53.0
+BOOST_VERSION_DEFAULT=1.54.0
 
 checkTOOLSET(){
 	ADRESSMODEL=32
@@ -43,11 +43,9 @@ SetGCC_TOOLSET(){
 	COMPILER='gcc'
 	GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
 	GCCARCH=`gcc -dumpmachine`
-    CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
-	
-    if [ "$CPUCOUNT" == 0 ]; then
-        CPUCOUNT=1
-    fi
+	CPUCOUNT=1
+	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
+    [ "$CPUCOUNT" == 0 ] && CPUCOUNT=1
 
 	if [ "$GCCARCH" == "mingw32" ]; then
 		ADRESSMODEL=32
@@ -155,13 +153,15 @@ buildBOOST(){
             B2="./b2"
 		else
 			if [ ! -f ./b2.exe ]; then
-				cmd /c "bootstrap.bat "
+#				cmd /c "bootstrap.bat gcc" # does not work
+				./bootstrap.sh --with-toolset=mingw # only mingw does not work either
+				sed -e s/gcc/mingw/ project-config.jam > project-config.jam
 			fi
             B2="./b2.exe"
 		fi
 
 		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
-		
+		CPUCOUNT=1
 		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADRESSMODEL install \
         -j $CPUCOUNT \
 		--prefix=$BOOST_DIST \
