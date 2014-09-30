@@ -26,8 +26,8 @@
 
 namespace GIMLI{
 
-LinSolver::LinSolver() 
-    : solver_(NULL), verbose_(false), rows_(0), cols_(0) {
+LinSolver::LinSolver(bool verbose) 
+    : solver_(NULL), verbose_(verbose), rows_(0), cols_(0) {
     setSolverType(AUTOMATIC);
 }
 
@@ -73,15 +73,11 @@ void LinSolver::setSolverType(SolverType solverType){
     }
 }
 
-void LinSolver::setMatrix(RSparseMatrix & S, int verbose, int stype){
-    if (verbose > -1) verbose_ = verbose;
-    
+void LinSolver::setMatrix(RSparseMatrix & S, int stype){
     initialize_(S, stype);
 }
 
-void LinSolver::setMatrix(CSparseMatrix & S, int verbose, int stype){
-    if (verbose > -1) verbose_ = verbose;
-    
+void LinSolver::setMatrix(CSparseMatrix & S, int stype){
     initialize_(S, stype);
 }
 

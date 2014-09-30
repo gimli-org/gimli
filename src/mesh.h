@@ -450,7 +450,8 @@ public:
     void exportAsTetgenPolyFile(const std::string & filename);
     //** end I/O stuff
 
-    /*! Add data to the mesh that will be saved with by using the binary mesh 
+    /*!DEPRECATED will be removed. 
+        Add data to the mesh that will be saved with by using the binary mesh 
      * format v.2. or exported with the appropriate name in VTK format,
      * if the size of data equals the amount of nodes, cells or boundaries. 
      */
@@ -469,17 +470,31 @@ public:
     /*! Empty the data map.*/
     void clearExportData();
 
+    /*!*/
+    void addData(const std::string & name, const RVector & data){ addExportData(name, data); }
+    /*!*/
+    RVector data(const std::string & name) const { return exportData(name); }
+    /*!*/
+    bool haveData(const std::string & name) const { return exportDataMap_.count(name) > 0; }
+    /*!*/
+    const std::map< std::string, RVector > & dataMap() const { return exportDataMap_; }
+    
+        
+    
+    
+    
     /*! Set the comment for VTK Ascii export headline.*/
     void setCommentString(const std::string & commentString) {commentString_ = commentString;}
 
     /*! Return comment for VTK Ascii export headline.*/
     const std::string & commentString() const {return commentString_;}
 
-    //** probably deprecated
     void mapCellAttributes(const std::map < float, float > & aMap);
-
+    
+    void mapCellAttributes(const std::map < float, Complex > & aMap);
+    
     void mapAttributeToParameter(const std::vector< int > & cellMapIndex,
-                                    const RVector & attributeMap, double defaultVal);
+                                 const RVector & attributeMap, double defaultVal);
 
     //void mapParameterToAttribute(const std::vector< int > & cellMapIndex);
     /*! Change all boundary marker that match bMap.first to bMap.second. */

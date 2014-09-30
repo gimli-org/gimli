@@ -1,6 +1,6 @@
-ï»¿/***************************************************************************
+/***************************************************************************
  *   Copyright (C) 2006-2012 by the resistivity.net development team       *
- *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -473,7 +473,7 @@ double QuadrangleShape::area() const {
 
     return sum;
 
-    //** GauÃŸsche Trapezformel fails for surface boundaries
+    //** Gaußsche Trapezformel fails for surface boundaries
 
 /*
   double x13 = nodeVector_[0]->pos()[0]- nodeVector_[2]->pos()[0];

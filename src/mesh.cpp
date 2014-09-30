@@ -1875,11 +1875,30 @@ void Mesh::mapCellAttributes(const std::map < float, float > & aMap){
     std::map< float, float >::const_iterator itm;
 
     if (aMap.size() != 0){
-        for (uint i = 0, imax = cellCount(); i < imax; i++){
+        for (Index i = 0, imax = cellCount(); i < imax; i++){
             itm = aMap.find(float(cell(i).marker()));
             if (itm != aMap.end()) cell(i).setAttribute((*itm).second);
         }
     }
+}
+
+void Mesh::mapCellAttributes(const std::map < float, Complex > & aMap){
+    std::map< float, Complex >::const_iterator itm;
+
+    RVector re(cellCount());
+    RVector im(cellCount());
+    
+    if (aMap.size() != 0){
+        for (Index i = 0, imax = cellCount(); i < imax; i++){
+            itm = aMap.find(float(cell(i).marker()));
+            if (itm != aMap.end()) {
+                re[cell(i).id()] = std::real((*itm).second);
+                im[cell(i).id()] = std::imag((*itm).second);
+            }
+        }
+    }
+    addData("AttributeReal", re);
+    addData("AttributeImag", im);
 }
 
 void Mesh::mapAttributeToParameter(const std::vector< int > & cellMapIndex,

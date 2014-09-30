@@ -37,7 +37,7 @@ RVector logTransDropTol(const RVector & data, double logdrop, bool normalize){
     tmp = log10(tmp);
     // normalize
     if (normalize){
-        double m = max(tmp);
+        double m = max(abs(tmp));
         if (m != 0.0) tmp /= m;
     }
     return tmp * sign(tmp2);

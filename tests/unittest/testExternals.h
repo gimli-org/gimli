@@ -43,7 +43,7 @@ public:
         GIMLI::Vector < ValueType > x(S.rows());
         solver.solve(b, x);
         
-        //std::cout << b - S * x << std::endl;
+//         std::cout << b - S * x << std::endl;
 //         std::cout << GIMLI::Vector < ValueType >(b - S * x)<< std::endl;
 //         std::cout << GIMLI::norm(b - S * x)<< std::endl;
         
@@ -137,6 +137,19 @@ public:
         SmCU.setVal(2, 2, GIMLI::Complex(42.0,  0.0));
         testCHOLMODSolve< GIMLI::CSparseMapMatrix, GIMLI::Complex >(SmCU);
 
+        //non-hermetian symmetric
+        GIMLI::CSparseMapMatrix SmCN(3, 3, 0);
+        SmCN.setVal(0, 0, GIMLI::Complex( 1.0,  0.0));
+        SmCN.setVal(0, 1, GIMLI::Complex( 1e-5, 0.0));
+        SmCN.setVal(0, 2, GIMLI::Complex( -2.0,  1.0));
+        SmCN.setVal(1, 0, GIMLI::Complex( 1e-5, 0.0));
+        SmCN.setVal(1, 1, GIMLI::Complex( 1.0,  0.0));
+        SmCN.setVal(1, 2, GIMLI::Complex( 3.0,  0.0));
+        SmCN.setVal(2, 0, GIMLI::Complex( -2.0,  1.0));
+        SmCN.setVal(2, 1, GIMLI::Complex( 3.0,  0.0));
+        SmCN.setVal(2, 2, GIMLI::Complex(42.0,  0.0));
+        testCHOLMODSolve< GIMLI::CSparseMapMatrix, GIMLI::Complex >(SmCN);
+        
     }
     
 };

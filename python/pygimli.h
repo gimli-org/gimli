@@ -288,17 +288,27 @@ DEFINE_COMPARE_OPERATOR__(>)
     template CVector conj(const CVector & a);
 
     template double sum(const RVector & v);
+    template Complex sum(const CVector & v);
+    
     template double min(const RVector & v);
     template double max(const RVector & v);
     //template Complex sum(const CVector & v);
     template double rms(const RVector & a);
     template double rms(const RVector & a, const RVector & b);
     template double rrms(const RVector & a, const RVector & b);
+
     template double norm(const RVector & a);
     template double normlp(const RVector & a, int p);
     template double norml1(const RVector & a);
     template double norml2(const RVector & a);
     template double normlInfinity(const RVector & a);
+    
+    template double norm(const CVector & a);
+    template double normlp(const CVector & a, int p);
+    template double norml1(const CVector & a);
+    template double norml2(const CVector & a);
+    template double normlInfinity(const CVector & a);
+
     template double euclideanNorm(const RVector & a);
     template double stdDev(const RVector & v);
     template double median(const RVector & a);
@@ -306,6 +316,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     template double arithmeticMean(const RVector & v);
     template double geometricMean(const RVector & v);
     template double harmonicMean(const RVector & a);
+    
     template double dot(const RVector & v1, const RVector & v2);
     
     template void rand(RVector & vec, double min = 0.0, double max = 1.0);

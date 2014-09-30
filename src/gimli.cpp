@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -44,50 +44,50 @@ int openFile(const std::string & fname, std::fstream * file,
         if (terminate) {
             throwError(EXIT_OPEN_FILE, WHERE_AM_I + " '" + fname + "': " +strerror(errno) + str(errno));
         } else {
-			std::cerr << fname << ": " << strerror( errno ) << " " << errno << std::endl;
+			std::cerr << fname << ": " << strerror(errno) << " " << errno << std::endl;
 		}
         return 0;
     }
     return 1;
 }
 
-bool fileExist( const std::string & filename ){
+bool fileExist(const std::string & filename){
     bool result = false;
-    std::ifstream file; file.open( filename.c_str() );
-    if ( file ) {
+    std::ifstream file; file.open(filename.c_str());
+    if (file) {
         result = true;
         file.close();
     }
     return result;
 }
 
-uint fileLength( std::fstream & file ){
+uint fileLength(std::fstream & file){
     std::streamoff oldPos = file.tellg();
-    file.seekg( 0, std::ios::end );
+    file.seekg(0, std::ios::end);
     std::streamoff length = file.tellg();
-    file.seekg( oldPos );
+    file.seekg(oldPos);
     return (uint)length;
 }
 
-uint countColumnsInFile( const std::string & fname){
+uint countColumnsInFile(const std::string & fname){
     uint columnsCount = 0;
-    return countColumnsInFile( fname, columnsCount );
+    return countColumnsInFile(fname, columnsCount);
 }
 
-uint countColumnsInFile( const std::string & fname, uint & columnsCount ){
+uint countColumnsInFile(const std::string & fname, uint & columnsCount){
     columnsCount = 0;
-    std::fstream file; if ( !openInFile( fname, & file, false ) ) { return 0; }
+    std::fstream file; if (!openInFile(fname, & file, false)) { return 0; }
 
     std::vector < std::string > subStrings;
     std::string str, tmp;
 
-    while ( !file.eof() ){
-        getline( file, str );
-        if ( str.find( '#' ) != std::string::npos || str.empty() ) {
+    while (!file.eof()){
+        getline(file, str);
+        if (str.find('#') != std::string::npos || str.empty()) {
             columnsCount++;
         } else {
             file.close();
-            return getSubstrings( str ).size();
+            return getSubstrings(str).size();
         }
     }
 
@@ -95,90 +95,121 @@ uint countColumnsInFile( const std::string & fname, uint & columnsCount ){
     return 0;
 }
 
-uint countRowsInFile( const std::string & fname ){
-    std::fstream file; openInFile( fname, & file );
+uint countRowsInFile(const std::string & fname){
+    std::fstream file; openInFile(fname, & file);
     CERR_TO_IMPL;
     file.close();
     return 0;
 }
 
-std::vector < std::string > getRowSubstrings( std::fstream & file, char comment ){
+std::vector < std::string > getRowSubstrings(std::fstream & file, char comment){
   std::vector < std::string > subStrings;
   std::string str, tmp;
-  getline( file, str );
+  getline(file, str);
 
-  std::istringstream is( str.substr( 0, str.find( comment ) ) );
-  while ( is >> tmp ) subStrings.push_back( tmp );
+  std::istringstream is(str.substr(0, str.find(comment)));
+  while (is >> tmp) subStrings.push_back(tmp);
   return subStrings;
 }
 
-std::vector < std::string > getNonEmptyRow( std::fstream & file, char comment ){
+std::vector < std::string > getNonEmptyRow(std::fstream & file, char comment){
   std::vector < std::string > row;
-  while( (row = getRowSubstrings( file, comment ) ).empty() && !file.eof() );
+  while((row = getRowSubstrings(file, comment)).empty() && !file.eof());
   return row;
 }
 
-std::vector < std::string > getCommentLine( std::fstream & file, char comment ){
+std::vector < std::string > getCommentLine(std::fstream & file, char comment){
     std::vector< std::string > row;
     std::string str;
-    getline( file, str );
-    row = getSubstrings( str.substr( str.find( comment ), std::string::npos ) );
+    getline(file, str);
+    row = getSubstrings(str.substr(str.find(comment), std::string::npos));
     return row;
 }
 
-std::vector < std::string > getSubstrings( const std::string & str ){
+std::vector < std::string > getSubstrings(const std::string & str){
   std::vector < std::string > subStrings;
-  std::istringstream is( str );
+  std::istringstream is(str);
   std::string tmp;
-  while ( is >> tmp ) subStrings.push_back( tmp );
+  while (is >> tmp) subStrings.push_back(tmp);
   return subStrings;
 }
 
-std::vector < std::string > split( const std::string & str, char delimiter ){
+std::vector < std::string > split(const std::string & str, char delimiter){
     std::vector < std::string > subStrings;
     size_t pos = 0;
     size_t lastPos = 0;
     //std::cout << str << std::endl;
-    while ( ( pos = str.find( delimiter, lastPos) ) != std::string::npos ){
-        //std::cout << pos << " " << lastPos << " " << str.substr( lastPos, pos -lastPos) << std::endl;
-        subStrings.push_back( str.substr( lastPos, pos - lastPos ) );
+    while ((pos = str.find(delimiter, lastPos)) != std::string::npos){
+        //std::cout << pos << " " << lastPos << " " << str.substr(lastPos, pos -lastPos) << std::endl;
+        subStrings.push_back(str.substr(lastPos, pos - lastPos));
         lastPos = pos + 1;
     }
-    //std::cout << pos << " " << lastPos << " " << str.substr( lastPos, pos -lastPos) << std::endl;
-    subStrings.push_back( str.substr( lastPos) );
+    //std::cout << pos << " " << lastPos << " " << str.substr(lastPos, pos -lastPos) << std::endl;
+    subStrings.push_back(str.substr(lastPos));
     return subStrings;
 }
 
-std::map < float, float > loadFloatMap( const std::string & filename ){
+std::map < float, float > loadFloatMap(const std::string & filename){
     std::map < float, float > aMap;
 
-    std::fstream file; if ( !openInFile( filename, & file ) ){
+    std::fstream file; if (!openInFile(filename, & file)){
         std::cerr << WHERE_AM_I << " Map not found: " << filename << std::endl;
         return aMap;
     }
 
     std::vector < std::string > row;
-    while ( ! file.eof() ) {
-        row = getNonEmptyRow( file );
-        if ( row.size() == 2 ) aMap[ toFloat( row[ 0 ] ) ] = toFloat( row[ 1 ] );
+    while (!file.eof()) {
+        row = getNonEmptyRow(file);
+        if (row.size() == 2){
+            aMap[toFloat(row[0])] = toFloat(row[1]);
+        } else {
+            if (aMap.size() == 0){
+                throwError(1, "no proper format found for map <float, Complex> in " + filename  + " " + str(row.size()) );
+            }
+        }
     }
 
     file.close();
     return aMap;
 }
 
-std::map < int, int > loadIntMap( const std::string & filename ){
-    std::map < int, int > aMap;
+std::map < float, Complex > loadCFloatMap(const std::string & filename){
+    std::map < float, Complex > aMap;
 
-    std::fstream file; if ( !openInFile( filename, & file ) ){
+    std::fstream file; if (!openInFile(filename, & file)){
         std::cerr << WHERE_AM_I << " Map not found: " << filename << std::endl;
         return aMap;
     }
 
     std::vector < std::string > row;
-    while ( ! file.eof() ) {
-        row = getNonEmptyRow( file );
-        if ( row.size() == 2 ) aMap[ toInt( row[ 0 ] ) ] = toInt( row[ 1 ] );
+    while (!file.eof()) {
+        row = getNonEmptyRow(file);
+        if (row.size() == 3){
+            aMap[toFloat(row[0])] = Complex(toDouble(row[1]),
+                                            toDouble(row[2]));
+        } else {
+            if (aMap.size() == 0){
+                throwError(1, "no proper format found for map <float, Complex> in " + filename  + " " + str(row.size()) );
+            }
+        }
+    }
+
+    file.close();
+    return aMap;
+}
+
+std::map < int, int > loadIntMap(const std::string & filename){
+    std::map < int, int > aMap;
+
+    std::fstream file; if (!openInFile(filename, & file)){
+        std::cerr << WHERE_AM_I << " Map not found: " << filename << std::endl;
+        return aMap;
+    }
+
+    std::vector < std::string > row;
+    while (! file.eof()) {
+        row = getNonEmptyRow(file);
+        if (row.size() == 2) aMap[toInt(row[0])] = toInt(row[1]);
     }
 
     file.close();

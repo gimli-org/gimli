@@ -556,7 +556,7 @@ Edge::Edge(Node & n1, Node & n2){
 }
 
 Edge::~Edge(){
-//     delete shape_;
+    delete shape_;
 }
 
 void Edge::setNodes(Node & n1, Node & n2, bool changed){

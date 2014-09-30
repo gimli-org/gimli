@@ -60,10 +60,5 @@ print(sum(np1 * pg1))
 print(sum(pg1 * np1))
 
 
-
-
-
-if __name__ == '__main__':
-    print("start tests")
     
     

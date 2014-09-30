@@ -159,7 +159,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
             A = pg.RMatrix(modelname)
             data = A[0]
         else:
-            pg.load(data, modelname, pg.Ascii)
+            data = pg.load(modelname)
 
         print("data min/max:", min(data), max(data))
         cov = None
@@ -174,7 +174,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
 #                    if coverage.find('log10') > 0:
 #                        cov = pg.exp10(cov)
                 else:
-                    pg.load(cov, coverage)
+                    cov = pg.load(coverage)
                 print("coverage min/max:", min(cov), max(cov))
             except Exception as e:
                 print(e)
@@ -185,7 +185,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
             patches = showMeshInterpolated(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear)
         else:
             patches = showMeshPatch(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar,
-                                     label = label, linear = linear, cmapname = cmapname)
+                                    label = label, linear = linear, cmapname = cmapname)
     else:
         pg.mplviewer.drawMeshBoundaries(axis, mesh)
         pass
@@ -204,7 +204,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
     if len(m) > 0:
         pass
         pg.mplviewer.drawSelectedMeshBoundaries(axis, 
-                                                filter(lambda b: b.marker() == 1, mesh.boundaries()),
+                                                filter(lambda b: b.marker() == 1, pg.mesh.boundaries()),
                                                 color=(0, 0.0, 0.0, 1.0),
                                                 linewidth=2.0)
     if drawEdges:

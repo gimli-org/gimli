@@ -154,11 +154,11 @@ template < class T > std::vector< T > unique(const std::vector < T > & a){
 
 //** END std::vector shortcuts
 
-template < class Vec > Vec abs(const Vec & v) {
-  Vec tmp(v.size());
-  for (uint i = 0; i < v.size(); i ++) tmp[i] = std::fabs(v[i]);
-  return tmp;
-}
+// template < class Vec > Vec abs(const Vec & v) {
+//   Vec tmp(v.size());
+//   for (uint i = 0; i < v.size(); i ++) tmp[i] = abs(v[i]);
+//   return tmp;
+// }
 
 template < class Vec > void clear(Vec & a) {
     for (int i = 0; i < (int)a.size(); i ++) a[i] = 0.0;
