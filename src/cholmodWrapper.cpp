@@ -66,8 +66,9 @@ CHOLMODWrapper::~CHOLMODWrapper(){
     if (A_) delete (cholmod_sparse*)A_;
     if (c_) delete (cholmod_common*)c_;
   
-    
-    if (Numeric_) umfpack_di_free_numeric (&Numeric_);
+#if USE_UMFPACK
+    if (Numeric_) umfpack_zi_free_numeric (&Numeric_);
+#endif
     if (AxV_) delete AxV_;
     if (AzV_) delete AzV_;
    
