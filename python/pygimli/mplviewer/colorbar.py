@@ -125,6 +125,7 @@ def createLinLevs(vMin, vMax, nLevs):
 def createColorbar2(patches, cMin=None, cMax=None,
                     nLevs=5, label=None, orientation='horizontal'):
     
+    DEPRECATED
     cbarTarget = plt
     
     if hasattr(patches, 'ax'):
@@ -168,9 +169,9 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
     
     if divider:
         if orientation == 'horizontal':
-            cax = divider.append_axes("bottom", size=0.2, pad=0.3)
+            cax = divider.append_axes("bottom", size=0.25, pad=0.65)
         else:
-            cax = divider.append_axes("right", size=0.2, pad=0.05)
+            cax = divider.append_axes("right", size=0.25, pad=0.05)
             #cax = divider.append_axes("right", size="5%", pad=0.05)
             #cbar3 = plt.colorbar(im3, cax=cax3)
         

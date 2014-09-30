@@ -31,7 +31,7 @@ class CellBrowser:
     >>> browser.connect()
     """
 
-    def __init__(self, mesh, ax=None):
+    def __init__(self, mesh, data=None, ax=None):
         if ax:
             self.ax = ax
         else:
@@ -40,11 +40,16 @@ class CellBrowser:
         self.fig = self.ax.figure
         self.mesh = mesh
         self.lw = np.ones(mesh.cellCount())
-        self.data, self.cell = None, None
-
+        self.data = data
+        self.cell = None
+        self.edgeColors = None
+ 
+        
+ 
         bbox=dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
-        kwargs = dict(fontproperties='monospace', visible=False, fontsize=11,
+        kwargs = dict(fontproperties='monospace', visible=False,
+                      fontsize=plt.rcParams['text.fontsize']-2,
                       weight='bold', xytext=(50,20), textcoords='offset points',
                       bbox=bbox, arrowprops=arrowprops, va='center')
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
@@ -65,23 +70,27 @@ class CellBrowser:
         self.fig.canvas.draw()
 
     def highlight(self):
-        ec = self.ec.copy()
-        ec[self.cell] = np.ones(ec.shape[1])
-        self.artist.set_edgecolors(ec)
-        lw = self.lw.copy()
-        lw[self.cell] = 3
-        self.artist.set_linewidths(lw)
+        if self.edgeColors:
+            ec = self.edgeColors.copy()
+            ec[self.cell] = np.ones(ec.shape[1])
+            self.artist.set_edgecolors(ec)
+            lw = self.lw.copy()
+            lw[self.cell] = 3
+            self.artist.set_linewidths(lw)
 
     def onpick(self, event):
         self.event = event
         self.artist = event.artist
         if self.data is None:
             self.data = self.artist.get_array()
-            self.ec = self.artist.get_edgecolors()
+            self.edgeColors = self.artist.get_edgecolors()
+        
+        # better!! find pick position and check for every cell if the pick pos is inside 
         self.cell = event.ind[0]
         self.update()
 
     def onpress(self, event):
+        print(event, event.key)
         if self.data is None:
             return
         if event.key not in ('up', 'down', 'escape'):
@@ -101,7 +110,7 @@ class CellBrowser:
         x, y = center[0], center[1]
         marker = self.mesh.cells()[self.cell].marker()
         data = self.data[self.cell]
-        header = "Cell #%d:\n" % self.cell
+        header = "Cell %d:\n" % self.cell
         header += "-" * (len(header) - 1)
         info = """
              x: %.2f
