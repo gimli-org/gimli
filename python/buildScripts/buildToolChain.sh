@@ -206,7 +206,7 @@ buildGCCXML(){
             if [ $OSTYPE = "msys" ]; then
                 cmake $SRCDIR  -G 'MSYS Makefiles' \
                     -DCMAKE_INSTALL_PREFIX=$DISTDIR 
-            elif [ $OSTYPE = "darwin" ]; then
+            elif [ $OSTYPE = "darwin13" ]; then
                 # on APPLE will wrong insert -no-cpp-precomp, avoid it with -DCMAKE_C_COMPILER_ID=GNUAPPLE \
                 cmake $SRCDIR \
                     -DCMAKE_C_COMPILER_ID=GNUAPPLE \

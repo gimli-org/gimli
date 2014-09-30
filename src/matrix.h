@@ -144,8 +144,10 @@ public:
         return 0;
     }
 
-//     /*! Resize this matrix to rows, cols */
-//     virtual void resize(Index rows, Index cols) = 0;
+    /*! Resize this matrix to rows, cols */
+    virtual void resize(Index rows, Index cols){
+       THROW_TO_IMPL
+    }
 
     /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {

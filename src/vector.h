@@ -287,12 +287,19 @@ public:
     Implicite type converter
      */
     template < class T > operator Vector< T >(){
-        COUTMARKER
+        //COUTMARKER
         Vector< T > f(this->size());
-        for (uint i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
+        for (Index i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
         return f;
     }
 
+//     template < > operator Vector< double >(){
+//         COUTMARKER
+//         Vector< double > f(this->size());
+//         for (Index i = 0; i < this->size(); i ++){ f[i] = std::real(data_[i]); }
+//         return f;
+//     }
+    
     /*! Set a value. Same as fill(val) */
     inline Vector< ValueType > & setVal(const ValueType & val) {
         this->fill(val);
@@ -1432,6 +1439,9 @@ Vector < std::complex< ValueType > > conj(const Vector < std::complex< ValueType
     for (Index i = 0; i < cv.size(); i ++) v[i] = conj(cv[i]);
     return v;
 }
+
+inline RVector TmpToRealHACK(const RVector & v){ return v; }
+inline RVector TmpToRealHACK(const CVector & v){ __M return real(v); }
 
 #define DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR(OP) \
 template <class T, class U > \

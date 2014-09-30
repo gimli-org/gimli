@@ -364,7 +364,7 @@ public:
 
         if (stype_ == 0){
             for (const_iterator it = this->begin(); it != this->end(); it ++){
-                ret[it->first.first] += a[it->first.second] * conj(it->second);
+                ret[it->first.first] += a[it->first.second] * it->second;
             }
         } else if (stype_ == -1){
             
@@ -582,7 +582,7 @@ void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec
 // }
 
 //! Sparse matrix in compressed column storage (CCS) form
-template < class ValueType > class SparseMatrix {
+template < class ValueType > class SparseMatrix : public MatrixBase{
 public:
 
   /*! Default constructor. Builds invalid sparse matrix */
@@ -619,7 +619,7 @@ public:
     }
 
     /*! Destructor */
-    ~SparseMatrix(){ }
+    virtual ~SparseMatrix(){ }
 
     /*! Copy assignment operator. */
     SparseMatrix < ValueType > & operator = (const SparseMatrix < ValueType > & S){
@@ -698,7 +698,7 @@ public:
         if (stype_ == 0){
             for (Index i = 0; i < ret.size(); i++){
                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-                    ret[i] += a[this->vecRowIdx()[j]] * conj(this->vecVals()[j]);
+                    ret[i] += a[this->vecRowIdx()[j]] * this->vecVals()[j];
                 }
             }
         } else if (stype_ == -1){
@@ -796,7 +796,7 @@ public:
         }
     }
 
-    ValueType getVal(int i, int j){
+    ValueType getVal(int i, int j) const {
         for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
             if (rowIdx_[k] == j) {
                 return vals_[k];
@@ -804,12 +804,12 @@ public:
         }
         std::cerr << WHERE_AM_I << " pos " << i << " "
                     << j << " is not part of the sparsity pattern " << std::endl;
-        return (ValueType)-1.0;
+        return ValueType(0);
     }
 
     void cleanRow(int i){
          for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
-            vals_[k] = (ValueType)0.0;
+            vals_[k] = ValueType(0);
          }
     }
 
@@ -981,7 +981,8 @@ public:
     inline const std::vector < int > & vecRowIdx() const { return rowIdx_; }
 
     inline ValueType * vals() { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
-    inline const ValueType & vals() const { if (valid_) return vals_[0]; else SPARSE_NOT_VALID; return vals_[0]; }
+    inline const ValueType * vals() const { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
+//     inline const ValueType & vals() const { if (valid_) return vals_[0]; else SPARSE_NOT_VALID; return vals_[0]; }
     inline const Vector < ValueType > & vecVals() const { return vals_; }
     inline Vector < ValueType > & vecVals() { return vals_; }
 

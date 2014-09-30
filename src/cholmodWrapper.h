@@ -43,15 +43,36 @@ public:
     virtual int solve(const CVector & rhs, CVector & solution);
 
 protected:
-    int initialize_(RSparseMatrix & S);
+    void init();
     
-    int initialize_(CSparseMatrix & S);
+    int initializeMatrix_(RSparseMatrix & S);
+    
+    int initializeMatrix_(CSparseMatrix & S);
 
+    template < class ValueType > 
+    void init_(SparseMatrix < ValueType > & S, int stype);
+
+    template < class ValueType > 
+    int initMatrixChol_(SparseMatrix < ValueType > & S, int xType);
+    
+    template < class ValueType > 
+    int solveCHOL_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
+
+        
     int stype_;
     
     void *c_;
     void *A_;
     void *L_;
+    
+    bool useUmfpack_;
+    void *Numeric_;
+    int * Ap_;
+    int * Ai_;
+    
+    RVector *AxV_;
+    RVector *AzV_;
+        
 };
 
 } //namespace GIMLI;

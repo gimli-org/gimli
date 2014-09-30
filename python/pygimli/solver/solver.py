@@ -587,38 +587,11 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             print(("Asssemblation time: ", assembleTime))
 
         #showSparseMatrix(S)
-    
-        Sa = np.zeros((S.rows(), S.rows())) *(1 + 1.0j)
         
-        rows = S.vecRowIdx()
-        cols = S.vecColPtr()
-        vals = S.vecVals()
-    
-        for i in range(S.rows()):
-            for j in range(cols[i], cols[i + 1]):
-                Sa[i,rows[j]] = vals[j]
-        
-        
-        #print(Sa)
-        u = np.linalg.solve(Sa, rhs)
-        u = pg.toComplex(u.real, u.imag)
-        print(pg.real(rhs))
-        print(pg.real(u))
-        print(pg.imag(u))
-        #print(min(u), max(u))
-        #return pg.toComplex(u.real, u.imag)
-        #print(u)
-        #print(rhs)
-                
-        u*=0.0
-        solver = pg.LinSolver(S, verbose=False)
+        solver = pg.LinSolver(1)
+        solver.setMatrix(S, 0)
         u = solver.solve(rhs)
-        print("cholmod")
-        print(pg.real(rhs))
-        print(pg.real(u))
-        print(pg.imag(u))
-        #print(min(u), max(u))
-
+        
         solverTime = swatch.duration(True)
         if verbose:
             if stats:
