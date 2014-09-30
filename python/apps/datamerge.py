@@ -30,9 +30,10 @@ def merge( data1, data2, ContainerTyp, snap = 0.001 ):
 # def merge( ... )
 
 def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
-    '''
-        A project file defines how multiple data files are imported and merged.
-        The currently supported formats are:
+    """
+A project file defines how multiple data files are imported and merged.
+        The currently supported formats are:\n\n
+       
         A list of multiple row entries with the following formats:
 
         fileName
@@ -40,8 +41,9 @@ def loadProjectFile( projectfile, ContainerTyp, verbose = False ):
         fileName startx starty endx endy
 
         You can comment out a row by adding '#'.
+        
         interpolationfile is a 3-column-ascii-file (dx x y)
-    '''
+    """
     dataList = []
 
     fi = open( projectfile, "r" )
@@ -120,11 +122,12 @@ def main( argv ):
     # OptionParser is deprecated since python 2.7, use argparse
     from optparse import OptionParser
 
-    parser = OptionParser( "usage: %prog [options] project-file"
-                            , version="%prog: " + g.__version__
-                            , description = loadProjectFile.__doc__ +
-                            '                                            The import data function provide the following data formats:                  ' #+ importData.__doc__
-                            )
+    parser = OptionParser("usage: %prog [options] project-file",
+                          version="%prog: " + g.__version__,
+                          description = loadProjectFile.__doc__ + \
+                          '\n The import data function provides the following data formats:\n'
+                          ) #+ importData.__doc__)
+    
     parser.add_option("-v", "--verbose", dest="verbose", action = "store_true", default = False
                             , help="Be verbose." )
     parser.add_option("-o", "--output", dest = "outFileName", metavar = "File", default = None

@@ -23,7 +23,7 @@ except ImportError:
     
 import pygimli.mplviewer
 from pygimli.mplviewer.colorbar import cmapFromName
-from pygimli.mplviewer import drawParameterConstraints
+from pygimli.mplviewer import drawParameterConstraints, CellBrowser
 from pygimli.utils.base import interperc
 
 import matplotlib as mpl
@@ -34,37 +34,6 @@ import matplotlib.transforms as mtransforms
 
 def sign(i): return abs(i) / i
 
-def on_draw(event = None):
-    def _getBB(items, fig):
-        bboxes = []
-        #for label in labels:
-        for item in items:
-            bbox = item.get_window_extent()
-            bboxi = bbox.inverse_transformed(fig.transFigure)
-            bboxes.append(bboxi)
-
-        bbox = mtransforms.Bbox.union(bboxes)
-        return bbox
-
-    # something very strange here!!!
-    ybbox = _getBB(ax.get_yticklabels() + [ax.yaxis.label], fig)
-    fig.subplots_adjust(left = 1.05 * ybbox.width)
-    xbbox = _getBB(ax.get_xticklabels() + [ax.xaxis.label], fig)
-    fig.subplots_adjust(bottom = 1.05 * xbbox.height)
-
-    print(ybbox.width, xbbox.width)
-    fig.subplots_adjust(right = 0.99) # pad a little
-    fig.subplots_adjust(top = 0.99) # pad a little
-
-#    print bbox
-#    print bbox.width
-#   if fig.subplotpars.left < bbox.width:
-#       # we need to move it over
-#    fig.subplots_adjust(left=bbox.width) # pad a little
-    #fig.canvas.draw()
-    #fig.update()
-    return False
-
 def applyPublishStyle(style):
     vals = style.split(':')
 
@@ -73,7 +42,7 @@ def applyPublishStyle(style):
     elif vals[0] == 'h':
         "not yet done"
     else:
-        print("publish dominant dimension not known", vals[ 0 ])
+        print("publish dominant dimension not known", vals[0])
 
 
 #    paper = vals[1] # not used
@@ -85,18 +54,14 @@ def applyPublishStyle(style):
     wOffset = float(vals[7])
     hOffset = float(vals[8])
 
-    pygimli.mplviewer.setOutputStyle(dim='w', paperMargin=margin,
-                                     xScale=widthScale, yScale=heightScale,
-                                     fontsize=fontsize, scale=scale)
+    pygimli.mplviewer.setOutputStyle(dim='w',
+                                     paperMargin=margin,
+                                     xScale=widthScale,
+                                     yScale=heightScale,
+                                     fontsize=fontsize, 
+                                     scale=scale)
 
     return wOffset, hOffset
-#    fig.canvas.mpl_connect('draw_event', on_draw)
-#def applyPublishStyle(...)
-
-
-#from MatplotPanel import MatplotPanel
-#from MiscUtils import *
-#import wx
 
 class MyLinearSegmentedColormapAlpha(mpl.colors.LinearSegmentedColormap):
     def __init__(self, name, segmentdata, N=256):
@@ -184,8 +149,9 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
         if (contour):
             patches = showMeshInterpolated(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, linear = linear)
         else:
-            patches = showMeshPatch(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, showCbar = showCbar,
-                                    label = label, linear = linear, cmapname = cmapname)
+            patches = showMeshPatch(axis, mesh, data, cov=cov, cMin=cMin, cMax=cMax,
+                                    showCbar=showCbar,
+                                    label=label, linear=linear, cmapname=cmapname)
     else:
         pg.mplviewer.drawMeshBoundaries(axis, mesh)
         pass
@@ -204,13 +170,13 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
     if len(m) > 0:
         pass
         pg.mplviewer.drawSelectedMeshBoundaries(axis, 
-                                                filter(lambda b: b.marker() == 1, pg.mesh.boundaries()),
+                                                filter(lambda b: b.marker() == 1, mesh.boundaries()),
                                                 color=(0, 0.0, 0.0, 1.0),
                                                 linewidth=2.0)
     if drawEdges:
         pg.mplviewer.drawMeshBoundaries(axis, mesh)
 
-    return axis, patches
+    return axis, patches, mesh, data
 
 def showDC2DInvResMod(modfile, contour, cMin = None, cMax = None, label = "", cmapname = None):
     mesh = pg.Mesh();
@@ -221,17 +187,21 @@ def showDC2DInvResMod(modfile, contour, cMin = None, cMax = None, label = "", cm
     axis = fig.add_subplot(111)
     axis.set_aspect('equal')
 
-    data = mesh.exportData("rho/Ohmm");
-    cov  = mesh.exportData("coverage");
+    data = mesh.exportData("rho/Ohmm")
+    cov  = mesh.exportData("coverage")
+    
+    patches = None
     if (contour):
-        showMeshInterpolated(axis, mesh, data, cov = cov)
+        patches = showMeshInterpolated(axis, mesh, data, cov = cov)
     else:
-        showMeshPatch(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, label = label, cmapname = cmapname)
+        patches = showMeshPatch(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, label = label, cmapname = cmapname)
 
-    return axis
+    return axis, patches, mesh, data
 
-def showMeshPatch(axis, mesh, data, cov = None, cMin = None, cMax = None, showCbar = True,
-                   label = "", linear = False, nLevs = 5, orientation = 'horizontal', cmapname = None):
+def showMeshPatch(axis, mesh, data,
+                  cov = None, cMin=None, cMax=None,
+                  showCbar=True, label="", linear=False, nLevs=5,
+                  orientation='horizontal', cmapname=None):
 
     patches = pygimli.mplviewer.drawModel(axis, mesh, data, cMin=cMin, cMax=cMax,
                                           logScale=not linear, label=label,
@@ -264,30 +234,31 @@ def showMeshPatch(axis, mesh, data, cov = None, cMin = None, cMax = None, showCb
 
             C = np.asarray(cov)
             print(np.min(C), np.max(C))
+            
             if (np.min(C) < 0.) | (np.max (C) > 1.) | (np.max(C) < 0.5): # not already alpha map
                 (nn, hh) = np.histogram(C, 50)
                 nnn = nn.cumsum(axis = 0) / float(len(C))
                 print("min-max nnn ", min(nnn), max(nnn))
-                mi = hh[ min(np.where(nnn > 0.02)[0]) ]
+                mi = hh[min(np.where(nnn > 0.02)[0])]
                 if min(nnn)>0.4:
                     ma = max(C)
                 else:
-                    ma = hh[ max(np.where(nnn < 0.4)[0]) ]
+                    ma = hh[max(np.where(nnn < 0.4)[0])]
 
-                #mi = hh[ min(np.where(nnn > 0.2)[0]) ]
-                #ma = hh[ max(np.where(nnn < 0.7)[0]) ]
+                #mi = hh[min(np.where(nnn > 0.2)[0])]
+                #ma = hh[max(np.where(nnn < 0.7)[0])]
                 C = (C - mi) / (ma - mi)
-                C[ np.where(C < 0.) ] = 0.0
-                C[ np.where(C > 1.) ] = 1.0
+                C[np.where(C < 0.)] = 0.0
+                C[np.where(C > 1.)] = 1.0
 
             # add alpha value to the color values
-            cols[:,3 ] = C
+            cols[:, 3] = C
 
             patches._facecolors = cols
-            patches._edgecolor = 'None'
+            #patches._edgecolor = 'None'
 
             # delete patch data to avoid automatically rewrite of _facecolors
-            patches._A = None
+            #patches._A = None
         else:
             addCoverageImageOverlay(axis, mesh, cov)
 
@@ -305,7 +276,7 @@ def addCoverageImageOverlay(axis, mesh, cov):
     extent = X.min(), X.max(), Y.min(), Y.max()
 #           print "interpolate prep t = ", swatch.duration(True)
 
-    c = np.arange(0, Nx * Ny); c[ : ] = 0.0
+    c = np.arange(0, Nx * Ny); c[:] = 0.0
     c = pg.interpolate(mesh, cov, pg.asvector(X.flat[:])
                                   , pg.asvector(Y.flat[:])
                                   , pg.RVector(len(Y.flat[:]), 0.0))
@@ -315,16 +286,16 @@ def addCoverageImageOverlay(axis, mesh, cov):
 
     (nn, hh) = np.histogram(c, bins = 50)
     nnn = nn.cumsum(axis = 0) / float(len(c))
-    mi = hh[ min(np.where(nnn > 0.02)[0]) ]
-    ma = hh[ max(np.where(nnn < 0.5)[0]) ]
+    mi = hh[min(np.where(nnn > 0.02)[0])]
+    ma = hh[max(np.where(nnn < 0.5)[0])]
     C = np.array(c).reshape(Ny, Nx)
     C = (C - mi) / (ma - mi)
-    C[ np.where(C < 0) ] = 0.0
-    C[ np.where(C > 1) ] = 1.0
+    C[np.where(C < 0)] = 0.0
+    C[np.where(C > 1)] = 1.0
 
             #(Nhist , xHist) = np.histogram(c, bins = 100);
-    #covMin = xHist[ 0 ];
-    #covMax = xHist[ 80 ];
+    #covMin = xHist[0];
+    #covMax = xHist[80];
     ##covMin = -3.51
     ##covMax = -3.5
 
@@ -332,7 +303,7 @@ def addCoverageImageOverlay(axis, mesh, cov):
 
     for i, row in enumerate(C):
         for j, val in enumerate(row):
-            covColors[ i, j ] = [ 1.0, 1.0, 1.0, 1.0 - C[ i, j ] ]
+            covColors[i, j] = [1.0, 1.0, 1.0, 1.0 - C[i, j]]
 
     #zorder default for patches = 1, axis = 2.5
     cso = axis.imshow(covColors, extent = extent
@@ -398,7 +369,7 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
     print(levs)
 
     levs[0] = levs[0]* 0.999
-    levs[ len(levs)-1] = levs[len(levs)-1]* 1.001
+    levs[len(levs)-1] = levs[len(levs)-1]* 1.001
 
     cmap = mpl.cm.get_cmap(name='jet');
 
@@ -453,6 +424,8 @@ def main(argv):
                             help="show mesh constraints connections", metavar="File", default='')
     parser.add_option("-e", "--electrodes", dest="electrodes",
                             help="Show electrode positions as black dots. Give datafile.", metavar="File")
+    parser.add_option("", "--cellBrowser", dest="cellBrowser", action="store_true",
+                      help="Open an interactive cell browser for the model.")
     parser.add_option("", "--cMin", dest="cMin",
                             help="minimum colour", type="float")
     parser.add_option("", "--cMax", dest="cMax",
@@ -497,8 +470,8 @@ def main(argv):
                             , help="set the dpi for pixel output or preview")
     parser.add_option("", "--publish", dest="publish", default = None, type = "string"
                             , help="set output style for publishing " +
-                             " dominant-dim:paperSize:margin:wScale:hScale:Fontsize:scale" +
-                             " e.g., w:a4:5:0.5:0.2:9:2 (size:width of a4-5cm*0.5 plus 9pt Font scal everything by 2)"
+                             " dominant-dim:paperSize:margin:wScale:hScale:Fontsize:scale:wOffset:hOffset" +
+                             " e.g., w:a4:5:0.5:0.2:9:2:0.05:0.1 (size:width of a4-5cm*0.5 plus 9pt Font scale everything by 2)"
                            )
 
     (options, args) = parser.parse_args()
@@ -520,9 +493,9 @@ def main(argv):
                     # options.cMin, options.cMax = interperc(a, options.interperc)
 
     wOffset = 0.05
-    hOffset = 0.05
+    hOffset = 0.105
     if options.publish:
-        wOffset,hOffset= applyPublishStyle(options.publish)
+        wOffset,hOffset = applyPublishStyle(options.publish)
 
     axes = None
 
@@ -569,7 +542,7 @@ def main(argv):
             print("Please add a mesh or model name.")
             sys.exit(2)
         else:
-            meshname = args[ 0 ];
+            meshname = args[0];
 
         if (options.verbose):
             print("verbose =", options.verbose)
@@ -588,13 +561,13 @@ def main(argv):
 
         try:
             if (meshname.rfind('.mod') != -1):
-                axes = showDC2DInvResMod(meshname, options.contourplot,
+                axes, patches, mesh, data = showDC2DInvResMod(meshname, options.contourplot,
                                          cMin=options.cMin,
                                          cMax=options.cMax,
                                          label=options.label)
 
             elif ((meshname.rfind('.bms') != -1) | (meshname.rfind('.vtk') != -1)):
-                axes, patches = showTriMesh(meshname, options.datafile, options.contourplot
+                axes, patches, mesh, data = showTriMesh(meshname, options.datafile, options.contourplot
                         , options.constraintMat, cWeight = options.cWeight
                         , cMin = options.cMin, cMax = options.cMax
                         , coverage = options.coverage
@@ -653,7 +626,7 @@ def main(argv):
             if options.verbose:
                 print("old ylims", yl)
 
-            axes.set_ylim([ -options.maxDepth, yl[1] ])
+            axes.set_ylim([-options.maxDepth, yl[1]])
 
             if options.verbose:
                 print("new ylims", axes.get_ylim())
@@ -684,10 +657,21 @@ def main(argv):
 
                 axes.set_yticklabels(tickLabels)
                 print(tickLabels)
+                
+                #redraw x-Ticks
+                ticks = axes.xaxis.get_majorticklocs()
+                tickLabels=[]
+                for t in ticks:
+                    tickLabels.append(str(int(abs(t))))
 
-
+                axes.set_xticklabels(tickLabels)
 
     # else not cbar only
+    
+    if options.cellBrowser:
+        browser = CellBrowser(mesh, data, axes)
+        browser.connect()    
+    
 
     if options.outFileName:
         print("writing: ", options.outFileName)
@@ -709,19 +693,11 @@ def main(argv):
                 bbox = mtransforms.Bbox.union(bboxes)
                 return bbox
 
-            #ybbox = _getBB(axes.get_yticklabels() + [axes.yaxis.label], fig)
-            #print wOffset, hOffset
-            #fig.subplots_adjust(left = wOffset + ybbox.width)
-
-            #xbbox = _getBB(axes.get_xticklabels() + [axes.xaxis.label], fig)
-            #print xbbox
-            #print xbbox.height
-
-            fig.subplots_adjust(bottom = hOffset, left = wOffset)
+            fig.subplots_adjust(bottom=hOffset, left=wOffset)
 
             #print ybbox.width, xbbox.width
-            fig.subplots_adjust(right = 0.99) # pad a little
-            fig.subplots_adjust(top = 0.99) # pad a little
+            fig.subplots_adjust(right=0.98) # pad a little
+            fig.subplots_adjust(top=0.99) # pad a little
 
             fig.patch.set_alpha(0.0)
             axes.patch.set_alpha(1.0)
@@ -762,4 +738,4 @@ def main(argv):
         plt.show()
 
 if __name__ == "__main__":
-    main(sys.argv[ 1: ])
+    main(sys.argv[1:])
