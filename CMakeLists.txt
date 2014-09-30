@@ -17,19 +17,19 @@ project(libgimli)
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     
     if (APPLE)
-        set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+        set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
     else (APPLE)
         if(WIN32)
             set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
         else(WIN32)
-            set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+            #set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+            set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-value -Wno-strict-aliasing ")
         endif(WIN32)
 
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
     endif(APPLE)
   
-    
     #-stdlib=libc++
 
 endif ()
@@ -103,6 +103,7 @@ find_package(Triangle)
 find_package(BLAS)
 find_package(LAPACK)
 find_package(CHOLMOD)
+find_package(UMFPACK)
 
 find_package(CppUnit)
 if (CPPUNIT_FOUND)
