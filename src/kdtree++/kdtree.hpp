@@ -1207,7 +1207,7 @@ namespace KDTree
       o << "dimensions:  " << __K << std::endl;
 
       typedef KDTree<__K, _Val, _Acc, _Dist, _Cmp, _Alloc> _Tree;
-      typedef typename _Tree::_Link_type _Link_type;
+      //typedef typename _Tree::_Link_type _Link_type;
 
       std::stack<_Link_const_type> s;
       s.push(tree._M_get_root());

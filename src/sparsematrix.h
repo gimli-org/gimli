@@ -448,14 +448,20 @@ public:
         if (!file) {
             throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + filename + ": " + strerror(errno));
         }
-
-        uint32 rows = 0; fread(&rows, sizeof(uint32), 1, file);
-        uint32 cols = 0; fread(&cols, sizeof(uint32), 1, file);
+        Index ret = 0;
+        
+   
+        uint32 rows = 0; 
+        ret = fread(&rows, sizeof(uint32), 1, file);
+        if (ret == 0) throwError(1, "fail reading file " + filename);
+        uint32 cols = 0; 
+        ret = fread(&cols, sizeof(uint32), 1, file);
+        if (ret == 0) throwError(1, "fail reading file " + filename);
         ValueType val;
         for (uint i = 0; i < rows; i ++){
             for (uint j = 0; j < cols; j ++){
-                fread(&val, sizeof(ValueType), 1, file);
-                
+                ret = fread(&val, sizeof(ValueType), 1, file);
+                if (ret == 0) throwError(1, "fail reading file " + filename);
                 if (abs(val) > dropTol) this->setVal(i, j + colOffset, val);
             }
         }
@@ -981,7 +987,7 @@ public:
     inline const std::vector < int > & vecRowIdx() const { return rowIdx_; }
 
     inline ValueType * vals() { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
-    inline const ValueType * vals() const { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
+//     inline const ValueType * vals() const { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
 //     inline const ValueType & vals() const { if (valid_) return vals_[0]; else SPARSE_NOT_VALID; return vals_[0]; }
     inline const Vector < ValueType > & vecVals() const { return vals_; }
     inline Vector < ValueType > & vecVals() { return vals_; }

@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2007-2014 by the resistivity.net development team       *
- *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -645,14 +645,19 @@ bool loadMatrixSingleBin(Matrix < ValueType > & A,
         throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + 
                    filename + ": " + strerror(errno));
     }
-
-    uint32 rows = 0; fread(&rows, sizeof(uint32), 1, file);
-    uint32 cols = 0; fread(&cols, sizeof(uint32), 1, file);
+    Index ret;
+    uint32 rows = 0; 
+    ret = fread(&rows, sizeof(uint32), 1, file);
+    if (ret == 0) throwError(1, "fail reading file " + filename);
+    uint32 cols = 0;
+    ret = fread(&cols, sizeof(uint32), 1, file);
+    if (ret == 0) throwError(1, "fail reading file " + filename);
 
     A.resize(rows, cols);
     for (uint32 i = 0; i < rows; i ++){
         for (uint32 j = 0; j < cols; j ++){
-            fread((char*)&A[i][j], sizeof(ValueType), 1, file);
+            ret = fread((char*)&A[i][j], sizeof(ValueType), 1, file);
+            if (ret == 0) throwError(1, "fail reading file " + filename);
         }
     }
     fclose(file);
