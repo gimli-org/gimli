@@ -6,7 +6,9 @@ import pygimli as pg
 
 from pygimli.polytools import *
 
-import numpy as np
+import sys
+print (sys.path)
+#import numpy as np
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
