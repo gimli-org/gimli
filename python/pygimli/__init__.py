@@ -13,10 +13,11 @@ or
 
 from pygimli import *
 """
+
 from __future__ import print_function
 
 import os
-import subprocess
+import subprocess # check for 3.4
 import sys
 
 if sys.platform == 'win32':
@@ -42,7 +43,7 @@ if locale.localeconv()['decimal_point'] == ',':
 ############################
 ###  Global shortcutes #####
 _pygimli_.load = None
-from pygimli.io import load
+from pygimli.ioutils import load
 from pygimli.viewer import show
 ############################
 
