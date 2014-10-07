@@ -124,7 +124,7 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
             A = pg.RMatrix(modelname)
             data = A[0]
         else:
-            data = pg.load(modelname)
+            data = pg.RVector(modelname)
 
         print("data min/max:", min(data), max(data))
         cov = None
