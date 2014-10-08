@@ -32,10 +32,12 @@ SetMSVC_TOOLSET(){
 }
 SetGCC_TOOLSET(){
 	TOOLSET=gcc
+	B2TOOLSET=''
 	
 	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
 		CMAKE_GENERATOR='MSYS Makefiles'
 		SYSTEM=WIN
+		B2TOOLSET=mingw
 	else
 		CMAKE_GENERATOR='Unix Makefiles'
 	fi
@@ -135,7 +137,7 @@ buildBOOST(){
 	needPYTHON
     
     echo "--------------------------------------------------"
-	echo "-------$BOOST_VER : $BOOST_SRC to $BOOST_DIST"
+	echo "-------$BOOST_VER : $BOOST_SRC to $BOOST_DIST $CPUCOUNT"
 	echo "--------------------------------------------------"
 	
 	if [ ! -d $BOOST_SRC ]; then
@@ -153,15 +155,19 @@ buildBOOST(){
             B2="./b2"
 		else
 			if [ ! -f ./b2.exe ]; then
-#				cmd /c "bootstrap.bat gcc" # does not work
-				./bootstrap.sh --with-toolset=mingw # only mingw does not work either
-				sed -e s/gcc/mingw/ project-config.jam > project-config.jam
+			
+				cmd /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
+				
+				if [ ! -f ./b2.exe ]; then
+					./bootstrap.sh --with-toolset=$B2TOOLSET # only mingw does not work either
+				fi
+				#sed -e s/gcc/mingw/ project-config.jam > project-config.jam
 			fi
             B2="./b2.exe"
 		fi
 
 		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
-		CPUCOUNT=1
+		
 		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADRESSMODEL install \
         -j $CPUCOUNT \
 		--prefix=$BOOST_DIST \
@@ -260,7 +266,7 @@ buildPYGCCXML(){
     pushd $PREFIX
         if ( [ -d $SRCDIR ] ); then 
             pushd $SRCDIR
-                "$HG" pull
+                "$GIT" pull
             popd
         else
             "$GIT" clone https://github.com/gccxml/pygccxml  $SRCDIR

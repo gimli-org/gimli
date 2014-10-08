@@ -21,7 +21,8 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
     else (APPLE)
         if(WIN32)
-            set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+            #set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+			set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
         else(WIN32)
             # 4.9.1
             #set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-value -Wno-strict-aliasing")
@@ -127,7 +128,7 @@ set(Python_ADDITIONAL_VERSIONS 3.3 3.2 2.7)
 find_package(PythonInterp)
 if (WIN32)
 	get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
-	set (PYTHON_LIBRARY ${PYTHONPATH}/libs/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib)
+	set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
 	set (PYTHON_INCLUDE_DIR ${PYTHONPATH}/include)
 else()
 	set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
@@ -137,8 +138,6 @@ endif()
 find_package(PythonLibs)
 
 find_python_module(numpy)
-
-#message(${numpy_FOUND})
 
 find_package(Boost 1.46.0 COMPONENTS python)
 
