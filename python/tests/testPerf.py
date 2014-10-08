@@ -43,6 +43,7 @@ print("pg * np", timeit.repeat('pg1 * np1', setup=setup, number=5000))
 print("np * pg", timeit.repeat('np1 * pg1', setup=setup, number=5000))
 print("sum(np)", timeit.repeat('sum(np1)', setup=setup, number=300))
 print("sum(pg)", timeit.repeat('sum(pg1)', setup=setup, number=300))
+print("pg.sum(pg)", timeit.repeat('pg.sum(pg1)', setup=setup, number=300))
 
 print("s", sw.duration(True))
 

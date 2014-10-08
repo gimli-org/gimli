@@ -8,11 +8,13 @@ namespace generators{
     
 template< typename VectorIterator >
 
+// don't use this until you know how to increase the reference counter for the underlying pythonobject for the vector
 struct generator_maker_vector{
         
     typedef BOOST_DEDUCED_TYPENAME VectorIterator::value_type val_type;
     
     static void iter(const VectorIterator &){
+        
     } //return_self call policies should be used
     
     static val_type next(VectorIterator & iter){

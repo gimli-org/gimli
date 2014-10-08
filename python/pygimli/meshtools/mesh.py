@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pygimli as pg
+import pygimli.utils
 import numpy as np
 
 def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None, verbose=False):
@@ -470,10 +471,16 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     verbose : boolean, optional
         Be verbose.
     """
+    
+    print("(dkjfhdjfhkjehf")
     mesh = pg.Mesh(2)
+    print(mesh)
+    print("(dkjfhdjfhkjehf")
 
     # maybe separate x y z and sort
+    
     sensorX = pg.x(sensors)
+    
     eSpacing = abs(sensorX[1] - sensorX[0])
 
     xmin = min(sensorX) - paraBoundary * eSpacing
@@ -490,9 +497,11 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax - xmin)
 
-    x = pg.utils.grange(xmin, xmax, dx=dx)
+    
 
-    y = -g.increasingRange(dz, paraDepth, nLayers)
+    x = pg.utils.grange(xmin, xmax, dx=dx)
+    
+    y = -pg.increasingRange(dz, paraDepth, nLayers)
 
     mesh.createGrid(x, y)
 
@@ -504,8 +513,9 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if boundary < 0:
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
-    mesh = pg.meshtools.appendTriangleBoundary(
-        mesh, xbound=boundary, ybound=boundary, marker=1,
-        *args, **kwargs)
+    mesh = pg.meshtools.appendTriangleBoundary(mesh,
+                                               xbound=boundary,
+                                               ybound=boundary,
+                                               marker=1, *args, **kwargs)
 
     return mesh

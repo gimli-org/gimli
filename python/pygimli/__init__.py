@@ -150,24 +150,31 @@ _pygimli_.stdVectorUL.__add__ = __ADD
 
 
 ############################
-# Indexing operator for RVector, CVector, RVector3, RMatrix
+# Indexing [] operator for RVector, CVector, RVector3, RMatrix
 ############################
 def __getVal(self, idx):
     """
         Hell slow
     """
-    
-    if isinstance(idx, list):
+    #print("__getVal")
+    if isinstance(idx, BVector):
+        return self(idx)
+    elif isinstance(idx, stdVectorUL):
+        return self(idx)
+    elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         idxL = _pygimli_.stdVectorUL()
-        for ix in idx:
-            idxL.append(ix)
+        for i, ix in enumerate(idx):
+            if ix.dtype == bool:
+                if ix:
+                    idxL.append(i)
+            else:
+                idxL.append(int(ix))
+                
         return self(idxL)
 
-    if isinstance(idx, stdVectorUL):
-        return self(idx)
-
-    if isinstance(idx, slice):
+    elif isinstance(idx, slice):
         if idx.step is None:
+            print(int(idx.start), int(idx.stop))
             return self(int(idx.start), int(idx.stop))
         else:
             ids = range(idx.start, idx.stop, idx.step)
@@ -176,12 +183,11 @@ def __getVal(self, idx):
             else:
                 raise Exception("slice invalid")
 
-    if idx == -1:
+    elif idx == -1:
         idx = len(self) - 1
 
     return self.getVal(int(idx))
 # def __getVal(...)
-
 
 def __setVal(self, idx, val):
 
@@ -241,7 +247,6 @@ _pygimli_.RVector.__len__ = RVector_len
 _pygimli_.BVector.__len__ = RVector_len
 _pygimli_.CVector.__len__ = RVector_len
 
-
 def RMatrix_len(self):
     return self.rows()
 _pygimli_.RMatrix.__len__ = RMatrix_len
@@ -250,35 +255,57 @@ _pygimli_.RMatrix.__len__ = RMatrix_len
 ############################
 # Iterator support for RVector allow to apply python build-ins
 ############################
-class VectorIter:
+class VectorIter2:
 
     def __init__(self, vec):
+        self.it = vec.beginPyIter()
         self.vec = vec
-        self.length = len(vec)
-        self.pos = -1
-
+        
     def __iter__(self):
         return self
 
     # this is for python < 3
     def next(self):
+        return self.it.nextForPy()
+
+    # this is the same but for python > 3
+    def __next__(self):
+        return self.it.nextForPy()
+        
+def __VectorIterCall__(self):
+    return VectorIter2(self)
+    # don't use pygimli iterators here this until the reference for temporary vectors are collected
+    #return _pygimli_.RVectorIter(self.beginPyIter())
+
+class VectorIter:
+    def __init__(self, vec):
+        self.vec = vec
+        self.length = len(vec)
+        self.pos = -1
+
+    def __iter__(self): 
+        return self
+    
+    def next(self): 
         return self.__next__()
 
     # this is the same but for python > 3
     def __next__(self):
-        #print('next')
         self.pos += 1
         if self.pos == self.length:
             raise StopIteration()
         else:
-            return self.vec[self.pos]
-
-def __VectorIterCall__(self):
-    #return VectorIter(self)
-    return _pygimli_.RVectorIter(self.beginPyIter())
+            return self.vec[self.pos] 
 
 def __MatIterCall__(self):
     return VectorIter(self)
+
+_pygimli_.RVector.__iter__ = __VectorIterCall__
+_pygimli_.BVector.__iter__ = __VectorIterCall__
+_pygimli_.CVector.__iter__ = __VectorIterCall__
+
+_pygimli_.RMatrix.__iter__ = __MatIterCall__
+
 
 class Vector3Iter (VectorIter):
 
@@ -290,15 +317,12 @@ class Vector3Iter (VectorIter):
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
-_pygimli_.RVector.__iter__ = __VectorIterCall__
-_pygimli_.CVector.__iter__ = __MatIterCall__
-_pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
-_pygimli_.RMatrix.__iter__ = __MatIterCall__
 
 # DEPRECATED for backward compatibility should be removed
 def asvector(array):
-    return array
+    return pg.RVector(array)
+ 
  
 ########## c to python converter ######
 # default converter from RVector3 to numpy array 

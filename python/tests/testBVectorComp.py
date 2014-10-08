@@ -6,24 +6,35 @@ import pygimli as pg
 
 # (double) array/vector
 an = np.arange(10.)
-ap = pg.RVector(an)
+ag = pg.RVector(an)
+
 # boolean array/vector
-bn = (an>4.)
-bp = (ap>4.)
+bn = (an > 4.)
+bg = (ag > 4.)
+
 # index vectors from bools
 fn = np.nonzero(bn)[0]
-fp = pg.find(bp)
+fg = pg.find(bg)
+
 # pure numpy indexing
 print(an[bn])
 print(an[fn])
-# pure pygimli indexing
-print(ap(bp))
-print(ap(fp))
-#%% mixed indexing
-print(np.nonzero(bp)) #  yields empty result
-print(pg.find(bn)) # breaks
-#%% mixed access
-print(ap(bn)) # would be nice
-print(an[bp]) # could be possible as well
 
+# pure pygimli indexing
+print(ag(bg))
+print(ag(fg))
+
+# work
+print(ag[bg])
+print(ag[fg])
+print(ag[fn])
+print(ag[bn])
+
+#%% mixed access
+print(ag(bn)) # would be nice ........... TODO need entry in custom_rvalue.cpp
+print(an[bg]) # could be possible as well .......... TODO need entry in hand_made_wrappers.py
+
+#%% mixed indexing
+print(np.nonzero(bg)) #  yields empty result
+print(pg.find(bn)) # breaks
 

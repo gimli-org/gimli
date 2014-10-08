@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 try:
-    import pygimli as g
-    from pygimli.mplviewer import drawMesh, drawModel, drawField, createColorbar, drawStreamLines2
+    import pygimli as pg
+    from pygimli.mplviewer import drawMesh, drawModel, drawField, drawSensors
+    from pygimli.mplviewer import createColorbar, drawStreamLines2
     
 except ImportError:
     raise Exception('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
@@ -12,7 +13,7 @@ import numpy as np
 
 def show(mesh, *args, **kwargs):
     """Syntactic sugar."""
-    if isinstance(mesh, g.Mesh):
+    if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
             return showMesh(mesh, *args, **kwargs)
         elif mesh.dimension() == 3:
@@ -48,6 +49,8 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
 
     if data is None:
         drawMesh(ax, mesh)
+    elif type(data) == pg.stdVectorRVector3:
+        drawSensors(ax, data)
     else:
         #print(data[0], type(data[0]))
         if hasattr(data[0], '__len__') and type(data) != np.ma.core.MaskedArray:
