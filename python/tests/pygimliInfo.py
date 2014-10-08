@@ -5,9 +5,9 @@ import sys
 
 sys.path.append( '../' )
 
-import pygimli as g
+import pygimli as pg
 
-print g.__version__
-print "Lin solver autodetection chose: %s " % g.LinSolver( ).solverName()
-print "Number of virtual cpu (c++): ", g.numberOfCPU()
+print pg.__version__
+print "Lin solver autodetection chose: %s " % pg.LinSolver( ).solverName()
+print "Number of virtual cpu (c++): ", pg.numberOfCPU()
 print "Number of virtual cpu (python): "
