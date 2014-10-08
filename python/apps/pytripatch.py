@@ -139,7 +139,8 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
 #                    if coverage.find('log10') > 0:
 #                        cov = pg.exp10(cov)
                 else:
-                    cov = pg.load(coverage)
+                    #cov = pg.load(coverage)
+                    cov = pg.RVector(coverage)
                 print("coverage min/max:", min(cov), max(cov))
             except Exception as e:
                 print(e)

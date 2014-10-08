@@ -26,7 +26,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
         else(WIN32)
             # 4.9.1
             #set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-value -Wno-strict-aliasing")
-            set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -Wall -Wno-long-long -Wno-unused-value -Wno-strict-aliasing ")
+            set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -Wall -Wno-long-long -Wno-unused-value -Wno-strict-aliasing ")
         endif(WIN32)
 
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")

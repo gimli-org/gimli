@@ -14,22 +14,23 @@ using namespace GIMLI;
 
 class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(VectorTest);
-    CPPUNIT_TEST(testIterator);
-    CPPUNIT_TEST(testEquality);
-    CPPUNIT_TEST(testFill);
-    CPPUNIT_TEST(testSetVal);
-    CPPUNIT_TEST(testUnaryOperations);
-    CPPUNIT_TEST(testBinaryOperations);
-    CPPUNIT_TEST(testFunctions);
-    CPPUNIT_TEST(testStdVectorTemplates);
-    CPPUNIT_TEST(testCVector);
-    CPPUNIT_TEST(testRVector3);
-    CPPUNIT_TEST(testMatrix);
-    CPPUNIT_TEST(testSparseMapMatrix);
-    CPPUNIT_TEST(testFind);
-    CPPUNIT_TEST(testIO);
     
-    //CPPUNIT_TEST_EXCEPTION(funct, exception);
+    CPPUNIT_TEST(testIterator);
+//     CPPUNIT_TEST(testEquality);
+//     CPPUNIT_TEST(testFill);
+//     CPPUNIT_TEST(testSetVal);
+//     CPPUNIT_TEST(testUnaryOperations);
+//     CPPUNIT_TEST(testBinaryOperations);
+//     CPPUNIT_TEST(testFunctions);
+//     CPPUNIT_TEST(testStdVectorTemplates);
+//     CPPUNIT_TEST(testCVector);
+//     CPPUNIT_TEST(testRVector3);
+//     CPPUNIT_TEST(testMatrix);
+//     CPPUNIT_TEST(testSparseMapMatrix);
+//     CPPUNIT_TEST(testFind);
+//     CPPUNIT_TEST(testIO);
+//     
+//     CPPUNIT_TEST_EXCEPTION(funct, exception);
     CPPUNIT_TEST_SUITE_END();
     
 public:    
@@ -43,6 +44,9 @@ public:
             CPPUNIT_ASSERT(i == iter.nextVal());
         } while (iter.hasMore());
         CPPUNIT_ASSERT(i == 10);
+        
+        CPPUNIT_ASSERT(v(0,10).beginPyIter()[0] == v[0]);
+        exit(0);
     }
     
     void testEquality(){
@@ -158,6 +162,7 @@ public:
                                                 (::floor(v1_->size() / 2.0) + 
                                                     (v1_->size() / 2.0 - ::floor(v1_->size() / 2.0))));
         CPPUNIT_ASSERT(GIMLI::sum(v - v) == 0.0);
+        CPPUNIT_ASSERT(GIMLI::sum(v(0, -1) - v(0, v.size())) == 0.0);
         CPPUNIT_ASSERT(min(v) == 1.0);
         CPPUNIT_ASSERT(max(v) == v1_->size());
         RVector vs(10);

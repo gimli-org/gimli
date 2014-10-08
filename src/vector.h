@@ -64,7 +64,15 @@ typedef std::vector < Index > IndexArray;
 template < class ValueType, class A > class __VectorExpr;
 
 IndexArray find(const BVector & v);
-    
+
+inline void Dump(const void * mem, unsigned int n) {
+    const char * p = reinterpret_cast< const char *>( mem );
+    for (unsigned int i = 0; i < n; i++) {
+        std::cout << std::hex << int(p[i]) << " ";
+    }
+    std::cout << std::endl;
+}
+
 template < class ValueType > class DLLEXPORT VectorIterator {
 public:
     typedef ValueType value_type;
@@ -78,15 +86,36 @@ public:
     bool operator < (const VectorIterator< ValueType > & a) const { return val_ < a.val_; }
     #endif
         
-    VectorIterator() : val_(NULL), maxSize_(0){ }
+//     VectorIterator() : val_(NULL), maxSize_(0){ }
+    VectorIterator()
+        : val_(0), maxSize_(0), end_(0){
+//         __MS(this)
+    }
+
+    VectorIterator(ValueType * v, Index size)
+        : val_(v), maxSize_(size){
+        end_ = v + size;
+//         __MS(this)
+//         __MS(val_)
+        //if ( size) {__MS(*val_)}
+    }
 
     VectorIterator(const VectorIterator < ValueType > & iter) 
-        : val_(iter.val_), maxSize_(iter.maxSize_){ 
-            end_ = val_ + maxSize_;
+        : val_(0), maxSize_(0), end_(0){ 
+        val_ = iter.val_;
+        maxSize_ = iter.maxSize_;
+        end_ = iter.val_ + iter.maxSize_;
+        
+//         __MS(this)
+//         __MS(val_)
+        //if (iter.maxSize_) {__MS(*val_)}
+        
+        //Dump(val_, sizeof(ValueType));
     }
 
     VectorIterator < ValueType > & operator = (const VectorIterator < ValueType > & iter){
         if (this != & iter){
+//             __M
             val_ = iter.val_;
             maxSize_ = iter.maxSize_ ;
             end_ = iter.end_;
@@ -97,8 +126,10 @@ public:
     inline const ValueType & operator * () const { return * val_; }
     inline ValueType & operator * () { return * val_; }
 
-    inline const ValueType & operator [] (const Index i) const { return val_[i]; }
-    inline ValueType & operator [] (const Index i) { return val_[i]; }
+    inline const ValueType & operator [] (const Index i) const { //__MS(this) __MS(val_) __MS(*val_) Dump(val_, sizeof(ValueType)); 
+        return val_[i]; }
+    inline ValueType & operator [] (const Index i) { //__MS(this) __MS(val_) __MS(*val_) Dump(val_, sizeof(ValueType)); 
+        return val_[i]; }
 
     inline VectorIterator< ValueType > & operator ++ () { ++val_; return *this; }
     inline VectorIterator< ValueType > & operator -- () { --val_; return *this; }
@@ -114,7 +145,19 @@ public:
     inline bool hasMore() const { return val_ != end_; }
     
     /*!Return the current and advance the iterator to the next.*/
-    inline ValueType nextVal(){ return *val_++; }
+    inline ValueType nextVal(){//__MS(this) __MS(val_) __MS(*val_)
+        return *val_++; }
+
+    inline ValueType nextForPy(){// __MS(val_) __MS(*val_)
+        if(!hasMore()){
+#if PYGIMLI            
+#include "boost/python.hpp"
+            boost::python::objects::stop_iteration_error();
+#endif            //will not come here
+        }
+        return nextVal();
+    }
+            
     
     ValueType * val_;
     Index maxSize_;
@@ -133,7 +176,7 @@ public:
      * Construct one-dimensional array of size n. The vector is cleaned (filled with zero)
      */
     Vector(Index n=0) 
-        : data_(NULL), begin_(NULL), end_(NULL) {
+        : size_(0), data_(0){
     // explicit Vector(Index n = 0) : data_(NULL), begin_(NULL), end_(NULL) {
         allocate_(n);
         clean();
@@ -142,7 +185,8 @@ public:
     /*!
      * Construct one-dimensional array of size n, and fill it with val
      */
-    Vector(Index n, const ValueType & val) : data_(NULL), begin_(NULL), end_(NULL) {
+    Vector(Index n, const ValueType & val)
+        : size_(0), data_(0){
         allocate_(n);
         fill(val);
     }
@@ -151,14 +195,15 @@ public:
      * Construct vector from file. Shortcut for Vector::load
      */
     Vector(const std::string & filename, IOFormat format = Ascii)
-        : size_(0), data_(NULL), begin_(NULL), end_(NULL) {
+        : size_(0), data_(0){
         this->load(filename, format);
     }
 
     /*!
      * Copy constructor. Create new vector as a deep copy of v.
      */
-    Vector(const Vector< ValueType > & v) : data_(NULL), begin_(NULL), end_(NULL) {
+    Vector(const Vector< ValueType > & v) 
+        : size_(0), data_(0){
         allocate_(v.size());
         copy_(v);
     }
@@ -167,7 +212,7 @@ public:
      * Copy constructor. Create new vector as a deep copy of the slice v[start, end)
      */
     Vector(const Vector< ValueType > & v, Index start, Index end)
-        : data_(NULL), begin_(NULL), end_(NULL) {
+        : size_(0), data_(0){
         allocate_(end - start);
         std::copy(&v[start], &v[end], data_);
     }
@@ -175,7 +220,8 @@ public:
     /*!
      * Copy constructor. Create new vector from expression
      */
-    template < class A > Vector(const __VectorExpr< ValueType, A > & v) : data_(NULL), begin_(NULL), end_(NULL) {
+    template < class A > Vector(const __VectorExpr< ValueType, A > & v) 
+        : size_(0), data_(0){
         allocate_(v.size());
         assign_(v);
     }
@@ -183,7 +229,8 @@ public:
     /*!
      * Copy constructor. Create new vector as a deep copy of std::vector(Valuetype)
      */
-    template < class U > Vector(const std::vector< U > & v) : data_(NULL), begin_(NULL), end_(NULL) {
+    template < class U > Vector(const std::vector< U > & v)
+        : size_(0), data_(0){
         allocate_(v.size());
         for (Index i = 0; i < v.size(); i ++) data_[i] = ValueType(v[i]);
         //std::copy(&v[0], &v[v.size()], data_);
@@ -228,20 +275,8 @@ public:
       *  end == -1 or larger size() sets end = size.
       * Throws exception on violating boundaries. 
       */
-    Vector < ValueType > operator () (Index start, SIndex end) const {
-        Index e = (Index) end;
-        if (end == -1 || end > (SIndex)size_) e = size_;
-
-        Vector < ValueType > v(end-start);
-        if (start >= 0 && start < e){
-            std::copy(& data_[start], & data_[e], &v[0]);
-        } else {
-            throwLengthError(1, WHERE_AM_I + " bounds out of range " +
-                                str(start) + " " + str(end) + " " + str(size_));
-        }
-        return v;
-    }
-
+    inline Vector < ValueType > operator () (Index start, SIndex end) const { return getVal(start, end);}
+        
     /*!
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound
@@ -418,6 +453,22 @@ public:
         return data_[0];
     }
 
+    Vector < ValueType > getVal(Index start, SIndex end) const {
+        Index e = (Index) end;
+        if (end == -1 || end > (SIndex)size_) e = size_;
+        
+        Vector < ValueType > v(e-start);
+        if (start >= 0 && start < e){
+            std::copy(& data_[start], & data_[e], &v[0]);
+        } else {
+            throwLengthError(1, WHERE_AM_I + " bounds out of range " +
+                                str(start) + " " + str(end) + " " + str(size_));
+        }
+        return v;
+    }
+
+    
+    
 #ifdef PYGIMLI
 //    needed for: /usr/include/boost/python/def_visitor.hpp
     bool operator < (const Vector< ValueType > & v) const { return false; }
@@ -538,16 +589,6 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         return *this;
     }
     
-    const VectorIterator< ValueType > & beginPyIter() const { return *begin_; }
-    
-//   ValueType min()
-
-    const VectorIterator< ValueType > & begin() const { return *begin_; }
-
-   // VectorIterator< ValueType > * begin() { return begin_; }
-
-    const VectorIterator< ValueType > & end() const { return *end_; }
-
     //VectorIterator< ValueType > * end() { return end_; }
 
     inline bool empty() const { return size() == 0; }
@@ -671,7 +712,11 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         }
         return true;
     }
-
+    
+    VectorIterator< ValueType > beginPyIter() const { return VectorIterator< ValueType >(data_, size_); }
+    VectorIterator< ValueType > begin() const { return VectorIterator< ValueType >(data_, size_); }
+    VectorIterator< ValueType > end() const { return VectorIterator< ValueType >(data_ + size_, 0); }
+    
 protected:
 
     void free_(){
@@ -679,11 +724,6 @@ protected:
         size_ = 0;
 //         if (data_)  free(data_);
         if (data_)  delete [] data_;
-        if (begin_) delete begin_;
-        if (end_)   delete end_;
-
-        begin_ = NULL;
-        end_   = NULL;
         data_  = NULL;
     }
 
@@ -691,11 +731,7 @@ protected:
         size_  = n;
 //         data_  = (ValueType*)malloc(size_ * sizeof(ValueType));
         data_  = new ValueType[size_];
-        begin_ = new VectorIterator< ValueType >;
-        end_   = new VectorIterator< ValueType >;
-        begin_->val_ = data_;
-        begin_->maxSize_ = size_;
-        end_->val_ = data_ + size_;
+
         nThreads_ = std::min((int)ceil((float)size_ / (float)minSizePerThread), (int)maxThreads);
         singleCalcCount_ = (Index)ceil((double)size_ / (double)nThreads_);
         //std::cout << "alloc: " << begin_ << std::endl;
@@ -709,6 +745,8 @@ protected:
              // memcpy is approx 0.3% faster but copy is extensively testet
              std::copy(&v[0], &v[v.size()], data_);
         }
+//         __MS(data_)
+//         __MS(*this)
     }
 
     template < class ExprOP > inline void assign_(const ExprOP & v) {
@@ -721,9 +759,6 @@ protected:
 
     Index size_;
     ValueType * data_;
-
-    VectorIterator< ValueType > * begin_;
-    VectorIterator< ValueType > * end_;
 
     static const Index minSizePerThread = 10000;
     static const int maxThreads = 8;

@@ -6,13 +6,11 @@ import pygimli as pg
 
 from pygimli.polytools import *
 
-import sys
-print (sys.path)
-#import numpy as np
+import numpy as np
 
 
-def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
-                           smooth=False, markerBoundary=1,
+def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
+                           quality=34.0, smooth=False, markerBoundary=1,
                            isSubSurface=False, verbose=False):
     """
     Returns a new mesh that contains a triangulated box around a given mesh
@@ -125,17 +123,18 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         # add four corners of the world box
         xtLen = 12
         # x bottom boundary sampling points
-        #xBottom = pg.asvector( np.linspace( mesh.xmin() - xbound, mesh.xmax() + xbound, xtLen ) )
+        # xBottom = pg.asvector(np.linspace(mesh.xmin() - xbound,
+        #                                   mesh.xmax() + xbound, xtLen))
 
         n1 = poly.createNode(pg.RVector3(mesh.xmax() + xbound, surface, 0.0))
         n2 = poly.createNode(pg.RVector3(mesh.xmin() - xbound, surface, 0.0))
         n3 = poly.createNode(pg.RVector3(mesh.xmin() - xbound,
-                                        mesh.ymin() - ybound,
-                                        0.0))
+                                         mesh.ymin() - ybound,
+                                         0.0))
         n4 = poly.createNode(pg.RVector3(mesh.xmax() + xbound,
-                                        mesh.ymin() - ybound,
-                                        0.0))
-        
+                                         mesh.ymin() - ybound,
+                                         0.0))
+
         # and connect them by a closed polygon
         poly.createEdge(n1, n2, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
         poly.createEdge(n2, n3, pg.MARKER_BOUND_MIXED)
@@ -147,22 +146,30 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         xtLen = 12
 
         dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.5
+
         # x top boundary sampling points
         xTop = pg.increasingRange(dxMin, xbound, xtLen)
         # y boundary sampling points
-        yLeft = pg.increasingRange(
-            xTop[xtLen - 1] - xTop[xtLen - 2],
-            abs(mesh.ymin() - ybound),
-            xtLen)
+        yLeft = pg.increasingRange(xTop[xtLen - 1] - xTop[xtLen - 2],
+                                   abs(mesh.ymin() - ybound),
+                                   xtLen)
 
         # x bottom boundary sampling points
-        xBottom = pg.asvector(
-            np.linspace(mesh.xmin() - xbound,
-                        mesh.xmax() + xbound,
-                        xtLen))
+        xBottom = pg.RVector(np.linspace(mesh.xmin() - xbound,
+                                         mesh.xmax() + xbound,
+                                         xtLen))
 
-        for t in pg.fliplr(xTop)(0, len(xTop) - 1):
-            poly.createNode(pg.RVector3(mesh.xmax() + t, mesh.ymax(), 0.0))
+        print(xTop, pg.fliplr(xTop))
+        xTopFl = pg.fliplr(xTop)
+        print('--------------------------------')
+        print(pg.fliplr(xTop)(0, len(xTop) - 1))
+        for i, val in enumerate(xTopFl):
+            print(i, val, xTopFl[i])
+        for i, val in enumerate(xTopFl(0, len(xTop) - 1)):
+            print(i, val, xTopFl[i])
+            poly.createNode([mesh.xmax() + val, mesh.ymax(), 0.0])
+
+        #sys.exit()
 
         for n in boundaryNodes:
             poly.createNode(n.pos())
@@ -170,22 +177,16 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         # add top left, bottom left and bottom right node
 
         for t in xTop(1, len(xTop)):
-            poly.createNode(pg.RVector3(mesh.xmin() - t, mesh.ymax(), 0.0))
+            poly.createNode([mesh.xmin() - t, mesh.ymax(), 0.0])
 
         for t in yLeft(1, len(yLeft)):
-            poly.createNode(
-                pg.RVector3(mesh.xmin() - xbound,
-                           mesh.ymax() - t,
-                           0.0))
+            poly.createNode([mesh.xmin() - xbound, mesh.ymax() - t, 0.0])
 
         for t in xBottom(1, len(xBottom) - 1):
-            poly.createNode(pg.RVector3(t, mesh.ymin() - ybound, 0.0))
+            poly.createNode([t, mesh.ymin() - ybound, 0.0])
 
         for t in pg.fliplr(yLeft)(0, len(yLeft) - 1):
-            poly.createNode(
-                pg.RVector3(mesh.xmax() + xbound,
-                           mesh.ymax() - t,
-                           0.0))
+            poly.createNode([mesh.xmax() + xbound, mesh.ymax() - t, 0.0])
 
         # create a closed polygon through all new nodes
         for i in range(0, poly.nodeCount()):
@@ -196,7 +197,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         preserveSwitch = 'Y'
     # poly.exportVTK('out.poly')
 
-    mesh2 = pg.Mesh()
+    mesh2 = pg.Mesh(2)
 
     # call triangle mesh generation
     triswitches = '-pzeAfa' + preserveSwitch + 'q' + str(quality)
@@ -209,7 +210,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         # area -1.0 means this is a hole
         tri.addRegionMarkerTmp(0,
                                pg.RVector3(mesh.xmin() + 0.0001,
-                                          mesh.ymax() - 0.0001),
+                                           mesh.ymax() - 0.0001),
                                -1.0)
         tri.setSwitches(triswitches)
         tri.generate(mesh2)
@@ -224,12 +225,12 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
 
     list(map(lambda cell: cell.setMarker(marker), mesh2.cells()))
 
-    #! map copy the cell not the reference, this should not happen
-    #! map( lambda cell: mesh2.copyCell( cell ), mesh2.cells() )
+    # map copy the cell not the reference, this should not happen
+    # map( lambda cell: mesh2.copyCell( cell ), mesh2.cells() )
     for cell in mesh.cells():
         mesh2.copyCell(cell)
 
-    #! old neighbor infos need to be cleaned since the new cells are added
+    # old neighbor infos need to be cleaned since the new cells are added
     mesh2.createNeighbourInfos(force=True)
 
     for b in mesh2.boundaries():
@@ -292,7 +293,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         meshBoundary.findBoundaryByMarker(1))
 
     meshBoundaryPoly.exportAsTetgenPolyFile("paraBoundary.poly")
-    #system( 'polyConvert -V paraBoundary' )
+    # system( 'polyConvert -V paraBoundary' )
 
     # create worldSurface.poly including boundary mesh for a nice surface mesh
     # it will be later the tetgen input with preserve boundary
@@ -328,14 +329,14 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         mesh.cell(0).center(),
         isHoleMarker=True,
         verbose=verbose)
-    #system( 'polyConvert -o world-poly -V boundaryWorld' )
+    # system( 'polyConvert -o world-poly -V boundaryWorld' )
 
     boundMesh = tetgen(
         'boundaryWorld',
         quality=quality,
         preserveBoundary=True,
         verbose=verbose)
-    #boundMesh.exportVTK( 'boundaryWorld' )
+    # boundMesh.exportVTK( 'boundaryWorld' )
 
     # merge mesh and worldBoundary
     for c in boundMesh.cells():

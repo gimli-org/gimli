@@ -106,13 +106,16 @@ def apply(mb):
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
     
-    rt = mb.class_('Pos<double>')
-    rt.add_declaration_code(WRAPPER_DEFINITION_RVector3)
-    apply_reg(rt, WRAPPER_REGISTRATION_RVector3)
-    #rt.add_registration_code ("""def(bp::init< PyObject * >((bp::arg("value"))))""")
+    try:
+        rt = mb.class_('Pos<double>')
+        rt.add_declaration_code(WRAPPER_DEFINITION_RVector3)
+        apply_reg(rt, WRAPPER_REGISTRATION_RVector3)
+        #rt.add_registration_code ("""def(bp::init< PyObject * >((bp::arg("value"))))""")
     
-    mb.add_declaration_code(WRAPPER_DEFINITION_General)
-    apply_reg(mb, WRAPPER_REGISTRATION_General)
+        mb.add_declaration_code(WRAPPER_DEFINITION_General)
+        apply_reg(mb, WRAPPER_REGISTRATION_General)
+    except:
+        pass
         
     #vec_iterators = mb.classes(lambda cls: cls.name.startswith('R'))
         
