@@ -71,7 +71,9 @@ suitesparse: prep $(SUITESPARSE)
 	echo "building suitesparse for ", $(OSTYPE)
 
 	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ]; then \
+		echo "LIB = -lm" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 		echo "CC = gcc" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
+		echo "BLAS = -L$(PWD)/lib -lblas" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 	elif [ "$(OSTYPE)" == "darwin13" ]; then \
 		echo "LIB = -lm" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
 		echo "CC = gcc -fPIC" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
@@ -80,10 +82,11 @@ suitesparse: prep $(SUITESPARSE)
 	fi
 	echo "INSTALL_LIB = $(PWD)/lib" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
 	echo "INSTALL_INCLUDE = $(PWD)/include" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
+	
 # 	echo "BLAS=-L$(PWD)/lib -lblas" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
 # 	echo "LAPACK=-L$(PWD)/lib -llapack" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk;
 
-	$(MAKE) -C SuiteSparse/
+	$(MAKE) -C SuiteSparse/ library
 	$(MAKE) -C SuiteSparse/ install
 
 wget:
