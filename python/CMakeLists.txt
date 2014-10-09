@@ -24,7 +24,8 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(pgbuild ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
-        make -j1 -C ${CMAKE_CURRENT_BINARY_DIR} pg
+        [ -z $J ] && PARABUILD=1 || PARABUILD=$$J && make -j $$PARABUILD -C ${CMAKE_CURRENT_BINARY_DIR} pg
+        #make -j1 -C ${CMAKE_CURRENT_BINARY_DIR} pg
     TARGET
         pgbuild
    )
