@@ -159,17 +159,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
                                          mesh.xmax() + xbound,
                                          xtLen))
 
-        print(xTop, pg.fliplr(xTop))
-        xTopFl = pg.fliplr(xTop)
-        print('--------------------------------')
-        print(pg.fliplr(xTop)(0, len(xTop) - 1))
-        for i, val in enumerate(xTopFl):
-            print(i, val, xTopFl[i])
-        for i, val in enumerate(xTopFl(0, len(xTop) - 1)):
-            print(i, val, xTopFl[i])
+        for i, val in enumerate(pg.fliplr(xTop)(0, len(xTop) - 1)):
             poly.createNode([mesh.xmax() + val, mesh.ymax(), 0.0])
-
-        #sys.exit()
 
         for n in boundaryNodes:
             poly.createNode(n.pos())
