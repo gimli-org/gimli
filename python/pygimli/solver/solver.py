@@ -405,7 +405,7 @@ def createStiffnessMatrix(mesh, a=None):
     
     A = None
     
-    if type(a[0]) is float:
+    if type(a[0]) is float or type(a[0]) is np.float64:
         
         A = pg.RSparseMatrix()
         A.fillStiffnessMatrix(mesh, a)

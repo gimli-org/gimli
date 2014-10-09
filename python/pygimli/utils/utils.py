@@ -56,10 +56,10 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
 
     if dx != 0:
         if end < start and dx > 0:
-            print("grange: decreasing range but increasing dx, swap dx sign")
+            #print("grange: decreasing range but increasing dx, swap dx sign")
             d = -d
         if end > start and dx < 0:
-            print("grange: increasing range but decreasing dx, swap dx sign")
+            #print("grange: increasing range but decreasing dx, swap dx sign")
             d = -d
         ret = pg.RVector(range(int(floor(abs((e - s) / d)) + 1)))
         ret *= d

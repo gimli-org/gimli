@@ -472,10 +472,7 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         Be verbose.
     """
     
-    print("(dkjfhdjfhkjehf")
     mesh = pg.Mesh(2)
-    print(mesh)
-    print("(dkjfhdjfhkjehf")
 
     # maybe separate x y z and sort
     
