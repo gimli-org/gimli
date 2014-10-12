@@ -1,4 +1,6 @@
-# -*- coding: iso-8859-1 -*-
-"""pre configured XRC and icons."""
+# -*- coding: utf-8 -*-
 
-from .resources import *
+# pyrcc4 -py3 -o resources_qt.py resources_qt.qrc
+from . resources_qt import *    
+
+

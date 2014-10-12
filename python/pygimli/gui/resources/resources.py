@@ -3,6 +3,8 @@
 import sys
 import os
 
+DONOTUSE
+
 try:
     import wx
 except ImportError as e:
