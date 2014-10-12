@@ -24,7 +24,6 @@ from pygimli.gui.resources import MakeDisabledBitmap
 from pygimli.gui.patches import PatchedAuiToolBar
 from pygimli.gui.controls import ListCtrlComboPopupControl
 from pygimli.gui.base import AppResource
-from pygimli.gui.base import AppResource
 
 from pygimli import Stopwatch
 
