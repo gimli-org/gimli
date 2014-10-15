@@ -159,7 +159,7 @@ def __getVal(self, idx):
     #print("__getVal")
     if isinstance(idx, BVector):
         return self(idx)
-    elif isinstance(idx, stdVectorUL):
+    elif isinstance(idx, stdVectorUL) or isinstance(idx, stdVectorI):
         return self(idx)
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         idxL = _pygimli_.stdVectorUL()
