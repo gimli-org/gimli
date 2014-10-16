@@ -1,5 +1,6 @@
-# -*- coding: iso-8859-1 -*-
-"""main gui application."""
+# -*- coding: utf-8 -*-
+
+""" Main gui application. """
 
 from . guiMainFrameQt import PyGIMLIApp as MainApp
 from . guiMainFrameQt import PyGUISystemMainFrame as MainFrame
