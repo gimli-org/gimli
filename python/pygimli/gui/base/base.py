@@ -3,6 +3,8 @@
 import sys
 import os
 
+from PyQt4 import QtGui, QtCore
+        
 from pygimli.utils import unicodeToAscii
 
 class Property:
@@ -230,7 +232,7 @@ class AppResource(ManagedProperties):
 
         self.propertyPanel_     = None
         self.rendererPanel_     = None
-        self.renderer_          = None
+        self._renderer          = None
 
         self.treeItem           = None
         self.active             = False
@@ -253,7 +255,7 @@ class AppResource(ManagedProperties):
     def setName(self, name):
         self._name = name
     
-    def getName(self):
+    def name(self):
         return self._name
     
     def getResourceTree(self):
@@ -388,21 +390,37 @@ class AppResource(ManagedProperties):
         """
             What is this?
         """
-        
-        if not self.renderer_ and slot is not None:
-            raise Exception("add default renderer")
-            #self.renderer_ = aui.AuiNotebook(slot,
+       
+        if not self._renderer and slot is not None:
+            print("*"*60)
+            print("getRenderer", slot)
+            
+            self._renderer = QtGui.QTabWidget(slot)
+            #self._renderer = aui.AuiNotebook(slot,
                                              #style = aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_TAB_MOVE | aui.AUI_NB_SCROLL_BUTTONS)
+            slot.layout().addWidget(self._renderer)
 
-            #if hasattr(self, 'createRendererPanel'):
-                #self.rendererPanel_ = self.createRendererPanel(slot)
-                #self.renderer_.AddPage(self.rendererPanel_, self.rendererPanel_.GetName(), False)
+            if hasattr(self, 'createRendererPanel'):
+                print("#"*60)
+                self.rendererPanel_ = self.createRendererPanel(self._renderer)
+                print("createRendererPanel", self.rendererPanel_)
+                                
+                self._renderer.addTab(self.rendererPanel_,
+                                      self.name())
+                
+                #self.rendererPanel_.addChild(self.createRendererPanel(self._renderer))
+                
+                #self.rendererPanel_ = QtGui.QDockWidget("Renderer", slot)
+                #self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, resourcePane)
+                
+                ##self.rendererPanel_.GetName()
+                
 
-            #self.renderer_.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onRendererTabSwitch)
+            #self._renderer.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onRendererTabSwitch)
         else:
             print("def getRenderer(self, slot = None):")
         
-        return self.renderer_
+        return self._renderer
 
     def getRendererPanel(self):
         """
@@ -413,7 +431,7 @@ class AppResource(ManagedProperties):
         """
             What happens if a tab from the renderview is switched 
         """
-        newTab = self.renderer_.GetPage(event.GetSelection())
+        newTab = self._renderer.GetPage(event.GetSelection())
 
         if newTab == self.rendererPanel_:
             newTab = self
@@ -465,48 +483,43 @@ class AppResource(ManagedProperties):
         """
             What is this?
         """
-        raise Exception("activateApplication(self, active):", self, active)
-        
         if hasattr(self, "getRenderer"):
             r = self.getRenderer(self.rendererSlot_)
             if active:
                 print("activate parent: ", r)
-                self.rendererSlot_.GetSizer().Add(r, 1, wx.EXPAND, 0 )
-                self.rendererSlot_.GetSizer().Layout()
-                r.Show()
+                #self.rendererSlot_.GetSizer().Add(r, 1, wx.EXPAND, 0 )
+                #self.rendererSlot_.GetSizer().Layout()
+                #r.Show()
 
-                #if hasattr(getApplicationToolBar
             else:
                 #print "deactivate parent: ", r
                 r.Hide()
                 self.rendererSlot_.GetSizer().Detach(r)
                 self.rendererSlot_.GetSizer().Layout()
-                    #if self.parentResource:
-            #self.parentResource.activatePropertyPanel(False)
-            #if self.parentResource.active != active:
-                #return
-        
+                #if self.parentResource:
+       
         if hasattr(self, 'getApplicationToolBar'):
             self.activateToolBar_(self.getApplicationToolBar(self.parent), active, pos = 1)
 
-        for m in list(self.mainMenus.keys()):
-            pos = self.parent.GetMenuBar().FindMenu(m.GetTitle())
-            #print "check: ", m.GetTitle(), pos
-            if active:
-                if pos is wx.NOT_FOUND:
-                    #print "activate"
-                    self.parent.GetMenuBar().Insert(2, m, self.mainMenus[m])
-                    m.SetTitle(self.mainMenus[m].replace('&', ''))
-            else:
-                if pos is not wx.NOT_FOUND:
-                    #print "deactivate"
-                    self.parent.GetMenuBar().Remove(pos)
+        #for m in list(self.mainMenus.keys()):
+            #pos = self.parent.GetMenuBar().FindMenu(m.GetTitle())
+            ##print "check: ", m.GetTitle(), pos
+            #if active:
+                #if pos is wx.NOT_FOUND:
+                    ##print "activate"
+                    #self.parent.GetMenuBar().Insert(2, m, self.mainMenus[m])
+                    #m.SetTitle(self.mainMenus[m].replace('&', ''))
+            #else:
+                #if pos is not wx.NOT_FOUND:
+                    ##print "deactivate"
+                    #self.parent.GetMenuBar().Remove(pos)
 
     def activate(self, active):
         """
             What is this?
         """
-        raise Exception("activate(self, active):", self, self.active, active)
+        print("activate(self, active):", self, self.active, active)
+        return
         
         if self.active == active:
             return
@@ -548,13 +561,19 @@ class AppResource(ManagedProperties):
 
         self.parent.auiMgr.Update()
 
-    def createSubPanel(self, classname, name = None):
+    def createSubPanel(self, classname, name=None):
         """
             What is this?
         """
+        print ("createSubPanel, ", self, classname, name)
         r = self.getRenderer(self.rendererSlot_)
         
-        if isinstance(r , aui.AuiNotebook):
+        if isinstance(r, QtGui.QTabWidget):
+            panel = classname(self.parent, r, self.propertyInspectorSlot_);
+            if name is None:
+                name = panel.getWidgetName()
+            r.addTab(panel, name)
+        elif isinstance(r, aui.AuiNotebook):
             panel = classname(self.parent, r, self.propertyInspectorSlot_);
             if panel.xrc is None:
                 panel.xrc = self.xrc
@@ -563,13 +582,14 @@ class AppResource(ManagedProperties):
                 name = panel.getName()
 
             r.AddPage(panel, name, False);
-
-            self.parent.resourceTree.addItem(panel, name, self.treeItem)
-            panel.parentResource = self
-            self.subPanels.append(panel)
-            return panel
         else:
             raise Exception("createSubPanel only defined for application with notebook renderer")
+        
+        self.parent.resourceTree().addItem(panel, name, self.treeItem)
+        panel.parentResource = self
+        self.subPanels.append(panel)
+        return panel
+        
 
     def propertyChanged(self):
         """
@@ -650,10 +670,8 @@ class AppResource(ManagedProperties):
         """
             Create new main menu entry.
         """
-        raise Exception("TOIMPL")
-        menu = wx.Menu()
-        self.parent.GetMenuBar().Insert(pos, menu, name)
-        menu.SetTitle(name.replace('&', ''))
+        menu = self.parent.menuBar().addMenu(name)
+        #menu.SetTitle(name.replace('&', ''))
         self.mainMenus[menu] = name
         
         return menu
@@ -673,18 +691,23 @@ class AppResource(ManagedProperties):
             If help is set to 'auto', the docstring of function is used. 
             Please ensure this docstring is a one-liner
         """
-        raise Exception("TOIMPL")
         if help == 'auto':
             help = function.__doc__
-        item = wx.MenuItem(menu, wx.NewId(), name, help)
+        #item = wx.MenuItem(menu, wx.NewId(), name, help)
+        
+        action = menu.addAction(name)
+        #action.setShortcut('Ctrl+O')
+        action.setStatusTip(help)
+        action.triggered.connect(lambda: function(self))
         
         if bitmap is not None:
+            raise('TOIMPL')
             item.SetBitmap(bitmap)
             
-        menu.AppendItem(item)
+        #menu.AppendItem(item)
         
-        self.parent.Bind(wx.EVT_MENU, function, id = item.GetId())
-        return item
+        #self.parent.Bind(wx.EVT_MENU, function, id = item.GetId())
+        return action
         
     def getExportFileNameWithDialog(self, defaultFile, wildcard,
                                     message="Choose file",

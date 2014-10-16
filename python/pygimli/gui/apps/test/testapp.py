@@ -1,26 +1,28 @@
 # -*- coding: utf-8 -*-
 
+from PyQt4 import QtGui, QtCore
+
 from pygimli.gui.base import AppResource
 
 try:
     from pygimli.gui.mpl import AppResourceMPL
 except Exception as e:
-	print('Import of mpl failed: ', e)
-
-#HAVE_VTK=True
+    print('Import of mpl failed: ', e)
 
 #try:
-    #from pygimli.gui.wxvtk import vtk, AppResourceVTK
+    #from pygimli.gui.vtk import vtk, AppResourceVTK
 #except Exception as e:
     #print('Import of vtk failed: ', e)
-    #HAVE_VTK=False
     
-import pygimli.gui.resources
+#import pygimli.gui.resources
 
-#class TestVTKApp(AppResourceWxVTK):
-    #"""this is a vtk child renderer for the test application see below."""
+#class TestVTKApp(AppResourceVTK):
+    #"""
+        #this is a vtk child renderer for the test application see below.
+    #"""
     #def __init__(self, parent, rendererSlot, propertyInspectorSlot):
-        #AppResourceWxVTK.__init__(self, parent, rendererSlot, propertyInspectorSlot)
+        #AppResourceVTK.__init__(self, parent, rendererSlot,
+                                #propertyInspectorSlot)
         
         #cone = vtk.vtkConeSource()
         #cone.SetResolution(8)
@@ -52,12 +54,12 @@ import pygimli.gui.resources
         #self.renderer.AddActor2D(textActor)
         #self.renderer.AddActor(coneActor)
 
-    #def createPropertyPanel(self, parent):
-        #if not HAVE_PROPGRID:
-            #return wx.Panel(parent)
-        #panel = wxPropGridWrapper(parent)
-        #panel.Append(wxpg.PropertyCategory("viewport"))
-        #return panel
+    ##def createPropertyPanel(self, parent):
+        ##if not HAVE_PROPGRID:
+            ##return wx.Panel(parent)
+        ##panel = wxPropGridWrapper(parent)
+        ##panel.Append(wxpg.PropertyCategory("viewport"))
+        ##return panel
 
 class TestMPLApp(AppResourceMPL):
     """
@@ -140,6 +142,9 @@ class TestMPLApp(AppResourceMPL):
         
 class TestApp(AppResource):
     def __init__(self, parent, rendererSlot, propertyInspectorSlot):
+        """
+            For demo purposes
+        """
         AppResource.__init__(self, parent, rendererSlot, propertyInspectorSlot)
         
         # set the name of this application that appears to the resource tree
@@ -164,11 +169,13 @@ class TestApp(AppResource):
                                                  valType=str)
                 
         # do some stuff after this application has created and registered to the resourcetree
-        #self.parent.addCommandToOnIdleQueue(self.postCreate)
+        self.parent.addCommandToOnIdleQueue(self.postCreate)
     
     def postCreate(self):
-        self.createSubPanel(TestMPLApp, "wxMPL")
-        #self.createSubPanel(TestVTKApp, "wxVTK")
+        """
+        """
+        self.createSubPanel(TestMPLApp, "MPL1")
+        self.createSubPanel(TestMPLApp, "MPL2")
         
     def createPropertyPanel(self, parent):
         """
@@ -189,18 +196,21 @@ class TestApp(AppResource):
         return panel
         
     def createRendererPanel(self, parent):
-        """Optionally create a renderer panel for this application beside the
-        subpanels The panel will post created at the first call."""
-        panel = QtGui.QTextEdit()
+        """
+        Optionally create a renderer panel for this application beside the
+        subpanels The panel will post created at the first call.
+        """
+        print("def createRendererPanel(self, parent)")
+        panel = QtGui.QTextEdit(parent)
         
-        panel.setName("Log or Whatever")
-            #S = scrolled.ScrolledPanel(self.rendererPanel_)
-            #S.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
-            #self.ipython = IPythonView()
-            ##V.modify_font(pango.FontDescription(FONT))
-            #self.ipyton.set_wrap_mode(gtk.WRAP_CHAR)
-            #self.ipyton.show()
-            #S.add(self.ipython)
+        #panel.setName("Log or Whatever")
+        #S = scrolled.ScrolledPanel(self.rendererPanel_)
+        #S.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
+        #self.ipython = IPythonView()
+        ##V.modify_font(pango.FontDescription(FONT))
+        #self.ipyton.set_wrap_mode(gtk.WRAP_CHAR)
+        #self.ipyton.show()
+        #S.add(self.ipython)
 
         return panel
     
@@ -208,6 +218,7 @@ class TestApp(AppResource):
         """
             do nothing here, just to show the technique.
         """
+        print("test MenuFunction")
         pass
     
     def openFile(self, files=None):
@@ -215,7 +226,7 @@ class TestApp(AppResource):
             do nothing here, just to show the technique for MainOpenFileSuffix
             register.
         """
-        print(files)
+        print("open files:", files)
     
     def setTitle(self, title=None):
         """

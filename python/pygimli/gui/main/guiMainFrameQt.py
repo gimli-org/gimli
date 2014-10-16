@@ -4,6 +4,8 @@
 import sys
 import os
 
+import traceback
+
 from PyQt4 import QtGui, QtCore
 
 #import pygimli.gui.resources
@@ -12,10 +14,32 @@ from PyQt4 import QtGui, QtCore
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+from pygimli.gui.controls import ResourceTree
+
 
 class WorkSpace:
     def __init__(self):
         self.activeResource = None
+
+from spyderlib.plugins.console import Console
+            
+class PythonConsoleWidget(Console):
+    """
+        PythonConsoleWidget(QtGui.QLineEdit)
+        Provides a custom widget to accept Python expressions and emit output
+        to other components via a custom signal.
+    """
+
+    pythonOutput = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        Console.__init__(self, parent,
+                         message=_("Spyder Internal Console\n\n"
+                                        "This console is used to report application\n"
+                                        "internal errors and to inspect Spyder\n"
+                                        "internals with the following commands:\n"
+                                        "  spy.app, spy.window, dir(spy)\n\n"
+                                        "Please don't use it to run your code\n\n"))
 
 
 class RedirectOutput():
@@ -36,7 +60,7 @@ class RedirectOutput():
 
         self._timer.connect(self._timer, QtCore.SIGNAL('timeout()'),
                             lambda: self.writeOut())
-        self._timer.start(20)
+        self._timer.start(50)
 
         self.frame.insertPlainText("Start redirect for: " + console + "\n")
         self.frame.setReadOnly(True)
@@ -97,6 +121,7 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
             locale.setlocale(locale.LC_NUMERIC, 'C')
 
         self.ws = ws
+        self._resourceTree = None
 
         self._createDefaultActions()
 
@@ -107,6 +132,12 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
 
         self._plugins = dict()
         self._fileSuffixes = dict()
+
+        self._onIdleCmdQueue = []
+        self._idleTimer = QtCore.QTimer()
+        self.connect(self._idleTimer, QtCore.SIGNAL('timeout()'),
+                     lambda: self._onIdle())
+        self._idleTimer.start(100)
 
     def keyPressEvent(self, event):
         print("KEY", event.key())
@@ -156,7 +187,6 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
             try:
                 plugin = importlib.import_module(pluginName)
             except Exception as e:
-                import traceback
                 traceback.print_exc(file=sys.stdout)
                 print("Import pluging fails: ", e)
                 continue
@@ -193,7 +223,6 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
                                  lambda app=app: self.createApplication(app))
 
             except Exception as e:
-                import traceback
                 traceback.print_exc(file=sys.stdout)
                 print("Exception in register MainMenuBar Entry", e)
                 continue
@@ -216,23 +245,26 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
                                                     plugin.MainOpenFileSlot)
 
             except Exception as e:
-                import traceback
                 traceback.print_exc(file=sys.stdout)
                 print("Exception in register OpenFileSuffix", e)
                 return
 
-    def createApplication(self, app):
+            try:
+                self.createApplication(plugin.PluginApplication)
+            except Exception as e:
+                traceback.print_exc(file=sys.stdout)
+                print(e)
+                pass
+
+    def createApplication(self, appDecl):
         """
             What is this?
         """
-        print(app)
-        for a in self._plugins:
-            print(a)
-        if app is not None:
-            obj = app(self, self._rendererSlot, self._propertyView)
-            #self.resourceTree.addItem( app, app.getName() )
-            #self.resourceTree.selectItem( app )
-            return obj
+        if appDecl is not None:
+            app = appDecl(self, self._rendererSlot, self._propertyView)
+            self._resourceTree.addItem(app, app.name())
+            self._resourceTree.selectItem(app)
+            return app
         else:
             raise ("CreateApplication found no app to start on")
 
@@ -241,22 +273,19 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
         """
         self._exitAction = QtGui.QAction(
             QtGui.QIcon(':icons/application-exit'), 'Quit', self)
-
         self._exitAction.setShortcut('Ctrl+Q')
         self._exitAction.setStatusTip('Quit application')
         self.connect(self._exitAction,
                      QtCore.SIGNAL('triggered()'),
                      QtCore.SLOT('close()'))
-        
+
         self._openAction = QtGui.QAction(
             QtGui.QIcon(':icons/application-open'), 'Open', self)
         self._openAction.setShortcut('Ctrl+O')
         self._openAction.setStatusTip('Open file')
         self.connect(self._openAction,
-                     QtCore.SIGNAL('triggered()'),
-                     lambda : self._onMainOpen())
-        
-        
+                     QtCore.SIGNAL('triggered()'), lambda: self._onMainOpen())
+
     def _initMenuBar(self):
         """
         """
@@ -298,16 +327,36 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, logPane)
         self._viewMB.addAction(logPane.toggleViewAction())
 
+        consolePane = QtGui.QDockWidget("Console", self)
+        logPane.setWidget(PythonConsoleWidget(self))
+        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, consolePane)
+        self._viewMB.addAction(consolePane.toggleViewAction())
+
     def _createRendererSlot(self):
         """
         """
-        self._rendererSlot = QtGui.QTextEdit()
+        #self._rendererSlot = QtGui.QMainWindow(self)
+        #self._rendererSlot = QtGui.QMdiArea(self)
+        self._rendererSlot = QtGui.QFrame(self)
+        self._rendererSlot.setBaseSize(800, 600)
+        #self._rendererSlot = QtGui.QMdiainWindow(self)
+        #self._rendererSlot.setCentralWidget(QtGui.QWidget(self._rendererSlot))
+        #self._rendererSlot.setSize(800,600)
+
+        self._rendererSlot.setLayout(QtGui.QVBoxLayout())
+        print("isDockNestingEnabled: ", self.isDockNestingEnabled())
         return self._rendererSlot
+
+    def resourceTree(self):
+        """
+        """
+        return self._createResourceView()
 
     def _createResourceView(self):
         """
         """
-        self._resourceTree = QtGui.QListWidget()
+        if self._resourceTree is None:
+            self._resourceTree = ResourceTree(self)
         return self._resourceTree
 
     def _createPropertyView(self):
@@ -326,6 +375,72 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
         """
         """
         print("_onMainOpen(self):")
+
+    def addCommandToOnIdleQueue(self, cmd, args=[], label=""):
+        if [cmd, args, label] not in self._onIdleCmdQueue:
+            self._onIdleCmdQueue.append([cmd, args, label])
+
+    def _onIdle(self):
+        """
+        """
+        if QtCore.QAbstractEventDispatcher.instance().hasPendingEvents() == True:
+            return
+        if len(self._onIdleCmdQueue) > 0:
+            print("_onIdle")
+            #gauge = xrc.XRCCTRL(self.idleProzessPanel, 'IdleGauge' )
+
+            #if not self.idleProzessPanel.IsShown():
+                #gauge.SetRange(len(self.onIdleCmdQueue_) -1)
+                #gauge.SetValue(0)
+                #self.idleProzessPanel.Layout()
+                #self.idleProzessPanel.Show()
+
+                #wx.BeginBusyCursor(wx.StockCursor(wx.CURSOR_WAIT))
+            #else:
+                #try:
+                    #gauge.SetValue(gauge.GetValue() +1)
+                #except:
+                    #pass
+
+            [cmd, args, name] = self._onIdleCmdQueue[0]
+
+            #label = xrc.XRCCTRL(self.idleProzessPanel, 'IdleLabel' )
+            #print(gauge.GetValue(), ": ", name)
+            #label.SetLabel("Prozessing: " + str(gauge.GetValue()) +
+                            #"/" + str(gauge.GetRange())+ " ... " + name)
+
+            try:
+                if len(args) == 0:
+                    print(name, cmd)
+                    cmd()
+                elif len(args) == 1:
+                    cmd(args[0])
+                elif len(args) == 2:
+                    cmd(args[0], args[1])
+            except Exception as e:
+                import traceback
+                traceback.print_exc(file=sys.stdout)
+                print(e)
+
+            self._onIdleCmdQueue.pop(0)
+        else:
+            #if self.idleProzessPanel.IsShown():
+                #wx.EndBusyCursor()
+                #self.idleProzessPanel.Hide()
+            #elif wx.IsBusy() and not self.busyCursorWarning:
+                #self.busyCursorWarning = True
+                #self.idleProzessPanel.Hide()
+                #wx.EndBusyCursor()
+                #err = wx.MessageDialog(self
+                #, 'Hanging busy cursor found, probably something goes wrong.
+                # Please refer to the error log.'
+                #, 'Something goes wrong.'
+                #, wx.OK | wx.ICON_WARNING)
+                ##err.ShowModal()
+                #if err.ShowModal() == wx.ID_OK:
+                    #self.busyCursorWarning = False
+            pass
+
 
 class PyGIMLIApp(QtGui.QApplication):
     def __init__(self, options=None, args=None, ws=None):
@@ -352,6 +467,7 @@ class PyGIMLIApp(QtGui.QApplication):
         self.mainFrame.show()
         self.mainFrame.registerPlugins(os.path.dirname(__file__) +
                                        '/../apps/')
+        self.mainFrame.resize(800, 600)
 
     def start(self):
         """

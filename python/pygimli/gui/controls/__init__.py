@@ -1,5 +1,7 @@
-# -*- coding: iso-8859-1 -*-
-"""special non standard controls."""
+# -*- coding: utf-8 -*-
 
-from .listCtrlComboPopup import *
-from .resourceTree import ResourceTree
+""" Special non standard controls."""
+
+from . resourceTree import ResourceTree
+
+#from .listCtrlComboPopup import *
