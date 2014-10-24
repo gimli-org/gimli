@@ -203,11 +203,11 @@ template < class Vec > double median(const Vec & a) {
     }
 }
 
-template < class Vec > double mean(const Vec & a) { return sum(a) / a.size(); }
+// template < class Vec > double mean(const Vec & a) { return sum(a) / a.size(); }
 
-template < class Vec > double stdDev(const Vec & a) {
-    return std::sqrt(sum(square(a - mean(a))) / (a.size() - 1));
-}
+// template < class Vec > double stdDev(const Vec & a) {
+//     return std::sqrt(sum(square(a - mean(a))) / (a.size() - 1));
+// }
 
 template < class Vec > double arithmeticMean(const Vec & a) { return mean(a); }
 

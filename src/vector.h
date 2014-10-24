@@ -1245,6 +1245,19 @@ template < class T > T max(const Vector < T > & v){
     return *std::max_element(&v[0], &v[0] + v.size());
 }
 
+template < class ValueType > ValueType mean(const Vector < ValueType > & a){
+    return sum(a) / a.size();
+}
+
+template < class ValueType, class A> 
+    ValueType mean(const __VectorExpr< ValueType, A > & a){
+    return sum(a) / a.size();
+}
+
+template < class ValueType > ValueType stdDev(const Vector < ValueType > & a){
+    return std::sqrt(sum(square(a - mean(a))) / (a.size() - 1));
+}
+
 template < class ValueType > bool haveInfNaN(const Vector < ValueType > & v){
     for (VectorIterator < ValueType > it = v.begin(); it != v.end(); ++it){
         if (isInfNaN(*it)) return true;
@@ -1371,7 +1384,7 @@ Vector< ValueType > increasingRange(const ValueType & first, const ValueType & l
     ValueType dy = (last - first * n) / (sum(y) - ValueType(n));
 
     if (dy < 0.0){
-        std::cout << "decreasing number of layers: " << n << " " << dy << std::endl;
+//         std::cout << "decreasing number of layers: " << n << " " << dy << std::endl;
         return increasingRange(first, last, n-1);
     }
 

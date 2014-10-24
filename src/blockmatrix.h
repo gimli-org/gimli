@@ -45,13 +45,13 @@ public:
     virtual void clear() { H1_.clear(); H2_.clear(); }
     
     /*! Return this * a . */
-    virtual RVector mult( const RVector & a ) const {
-        return H1_ * a( 0, H1_.cols() ) + H2_ * a( H1_.cols(), cols() );
+    virtual RVector mult(const RVector & a) const {
+        return H1_ * a(0, H1_.cols()) + H2_ * a(H1_.cols(), cols());
     }
     
-    /*! Return this.T * a = ( a.T * this ).T . */
-    virtual RVector transMult( const RVector & a ) const {
-        return cat( H1_.transMult( a ), H2_.transMult( a ) );
+    /*! Return this.T * a = (a.T * this).T . */
+    virtual RVector transMult(const RVector & a) const {
+        return cat(H1_.transMult(a), H2_.transMult(a));
     }
     
     /*! Return references to the 2 matriced (const and non-const, why?). */
@@ -65,23 +65,23 @@ protected:
     RSparseMapMatrix H1_, H2_; 
 }; // class H2SparseMapMatrix
 
-inline void rank1Update( H2SparseMapMatrix & A, const RVector & u, const RVector & v ) {
+inline void rank1Update(H2SparseMapMatrix & A, const RVector & u, const RVector & v) {
     CERR_TO_IMPL
     return;
 }
 
-inline bool save( const H2SparseMapMatrix & A, const std::string & filename, IOFormat format = Ascii ){
+inline bool save(const H2SparseMapMatrix & A, const std::string & filename, IOFormat format = Ascii){
     CERR_TO_IMPL
     return false;
 }
 
 // /*! Do we have to do this for every matrix type?? */  
-// inline RVector operator * ( const H2SparseMapMatrix & A, const RVector & x ){
-//     return A.H1() * x( 0, A.H1().cols() ) + A.H2() * x( A.H1().cols(), A.cols() );
+// inline RVector operator * (const H2SparseMapMatrix & A, const RVector & x){
+//     return A.H1() * x(0, A.H1().cols()) + A.H2() * x(A.H1().cols(), A.cols());
 // }
 // 
-// inline RVector transMult( const H2SparseMapMatrix & A, const RVector & b ){
-//     return cat( transMult( A.H1(), b ), transMult( A.H2(), b ) );
+// inline RVector transMult(const H2SparseMapMatrix & A, const RVector & b){
+//     return cat(transMult(A.H1(), b), transMult(A.H2(), b));
 // }
 
 /*! Block matrix with 2 arbitrary matrices pasted horizontally. */
@@ -96,13 +96,13 @@ public:
     virtual Index cols() const { return H1_.cols() + H2_.cols(); }
 
     /*! Return this * a . */
-    virtual RVector mult( const RVector & a ) const {
-        return H1_ * a( 0, H1_.cols() ) + H2_ * a( H1_.cols(), cols() );
+    virtual RVector mult(const RVector & a) const {
+        return H1_ * a(0, H1_.cols()) + H2_ * a(H1_.cols(), cols());
     }
     
-    /*! Return this.T * a = ( a.T * this ).T . */
-    virtual RVector transMult( const RVector & a ) const {
-        return cat( H1_.transMult( a ), H2_.transMult( a ) );
+    /*! Return this.T * a = (a.T * this).T . */
+    virtual RVector transMult(const RVector & a) const {
+        return cat(H1_.transMult(a), H2_.transMult(a));
     }
 protected:
     Matrix1 H1_;
@@ -122,22 +122,22 @@ public:
     
     virtual ~HNMatrix(){}
     
-    void push_back( Matrix Mat ){ //** standard procedure to build up matrix
-        if ( Mats_.size() > 0 && Mats_[0].nrows() == Mat.rows() ) {
-            Mats_.push_back( Mat ); 
+    void push_back(Matrix Mat){ //** standard procedure to build up matrix
+        if (Mats_.size() > 0 && Mats_[0].nrows() == Mat.rows()) {
+            Mats_.push_back(Mat); 
         } else {
-            throwLengthError( 1, WHERE_AM_I + " matrix rows do not match " +
-                                 toStr( Mats_[0].nrows() ) + " " + toStr( Mat.nrows() ) );
+            throwLengthError(1, WHERE_AM_I + " matrix rows do not match " +
+                                 toStr(Mats_[0].nrows()) + " " + toStr(Mat.nrows()));
         }
     }
     /*! Return rows and columns. */
     virtual Index rows() const { 
-        if ( Mats_.size() > 0 ) return Mats_[0].rows(); 
+        if (Mats_.size() > 0) return Mats_[0].rows(); 
         return 0;
     }
     virtual Index cols() const { 
         Index ncols = 0;
-        for ( Index i=0 ; i < Mats_.cols() ; i++ ) ncols += Mats_[i].cols();
+        for (Index i=0 ; i < Mats_.cols() ; i++) ncols += Mats_[i].cols();
         return ncols; 
     }
 
@@ -155,12 +155,12 @@ template< class Matrix > class HRMatrix : public MatrixBase{
 public:
     /*! Constructors */
     HRMatrix(){} //useful?
-    HRMatrix( Matrix Mat) : Mat_( Mat ){}
-    HRMatrix( Matrix Mat, Index nmats ) : Mat_( Mat ), nmats_( nmats ){}
+    HRMatrix(const Matrix & Mat) : Mat_(Mat){}
+    HRMatrix(const Matrix & Mat, Index nmats) : Mat_(Mat), nmats_(nmats){}
     
     ~HRMatrix(){}
     
-    void setNumber( Index nmats ){ nmats_ = nmats; }
+    void setNumber(Index nmats){ nmats_ = nmats; }
     /*! Return rows and columns. */
     virtual Index rows() const { return Mat_.rows(); }
     virtual Index cols() const { return Mat_.cols() * nmats_; }

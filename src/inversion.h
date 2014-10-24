@@ -1034,9 +1034,12 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
 //             solveCGLSCDWWhtransWB(scaledJacobian, weightedConstraints, dataWeight_, deltaDataIter_, deltaModelIter_,
 //                                    lambda_, roughness, maxCGLSIter_, verbose_);
 
-            solveCGLSCDWWhtrans(*forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
-                                  modelWeight_, tM_->deriv(model_), tD_->deriv(response_),
-                                  lambda_, roughness, maxCGLSIter_, CGLStol_, verbose_);
+            solveCGLSCDWWhtrans(*forward_->jacobian(), C_, dataWeight_, 
+                                deltaDataIter_, deltaModelIter_,
+                                constraintsWeight_, modelWeight_,
+                                tM_->deriv(model_), tD_->deriv(response_),
+                                lambda_, roughness, maxCGLSIter_, CGLStol_,
+                                verbose_);
         } // else no broyden
     } // else no optimization
 

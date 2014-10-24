@@ -247,6 +247,7 @@ def generate(defined_symbols, extraIncludes):
                                                 ,'__VectorBinaryExprOp'
                                                 ,'__VectorValExprOp'
                                                 ,'__ValVectorExprOp'
+                                                ,'GIMLI::__ValVectorExprOp< double, GIMLI::VectorIterator< double >, GIMLI::MULT > >'
                                                 ,'::GIMLI::__VectorValExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::MULT >'
                                                 ,'::GIMLI::__VectorBinaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::__VectorIterator< double >, GIMLI::MULT>'
                                                 ,'::GIMLI::__VectorExpr< double, GIMLI::__VectorBinaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::__VectorIterator< double >, GIMLI::MULT > >'

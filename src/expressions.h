@@ -71,12 +71,6 @@ typedef Expr< Variable<XAxis__> > VariableX;
 typedef Expr< Variable<YAxis__> > VariableY;
 typedef Expr< Variable<ZAxis__> > VariableZ;
 
-inline double abs(const double & a) { return std::fabs(a); }
-inline double abs(const Complex & a) { return std::abs(a); }
-
-inline double conj(const double & a) { return a; }
-inline Complex conj(const Complex & a) { return std::conj(a); }
-
 //**! Simple show the results of the expression
 template< class Ex > void show(Expr< Ex > expr, double start, double end, double step = 1.0){
     for (double i = start; i < end; i += step) std::cout << expr(i) << std::endl;
@@ -128,15 +122,22 @@ template < class T > bool isInfNaN(const T & a){ return (isinf(a) || isnan(a)); 
 template < class T > bool isInfNaN(const T & a){ return (std::isinf(a) || std::isnan(a)); }
 #endif
 
+inline bool operator < (const Complex & a, const Complex & b) { return abs(a) < abs(b); }
+inline bool operator > (const Complex & a, const Complex & b) { return abs(a) > abs(b); }
+
+inline double abs(const double & a) { return std::fabs(a); }
+inline double abs(const Complex & a) { return std::abs(a); }
+
+inline double conj(const double & a) { return a; }
+inline Complex conj(const Complex & a) { return std::conj(a); }
+
 inline Complex RINT(const Complex & a) { THROW_TO_IMPL; return Complex(0); }
 inline double RINT(const double & a) { return rint(a); }
 
 template < class T > T roundTo(const T & a, const T & tol){ return RINT(a / tol) * tol; }
 
-inline bool operator < (const Complex & a, const Complex & b) { return false; }
-inline bool operator > (const Complex & a, const Complex & b) { return false; }
+template < class T > T square(const T & a){ return a * a;}
 
-inline double square(const double & a) { return a * a; }
 inline double cot(const double & a) { return 1.0 / std::tan(a); }
 inline double acot(const double & a) { return PI / 2.0 * std::atan(a); }
 inline double sign(const double & a) { return a > 0.0 ? 1.0 : (a < 0.0 ? -1.0 : 0.0); }

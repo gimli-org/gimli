@@ -2,25 +2,23 @@
 # -*- coding: utf-8 -*-
 """
     This program is part of pygimli
-    Visit http://www.resistivity.net for further information or the latest version.
+    Visit http://www.resistivity.net for further information or the latest
+    version.
 """
 
 import sys
 import os
-import getopt
-
-from os import system
 
 import pygimli as g
 import pybert as b
+
 
 def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
                save=False, saveTo='.'):
     mesh = g.Mesh(meshfile)
     mesh.showInfos()
 
-    S = g.RMatrix();
-    g.load(S, sensMatrix)
+    S = g.RMatrix(sensMatrix)
     print(S.rows())
     print(S.cols())
 
@@ -31,23 +29,22 @@ def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
         if os.path.exists(savePath):
             # We are nearly safe
             pass
-        else:   
+        else:
             # There was an error on creation, so make sure we know about it
             raise
 
-    
     if dataID == -1:
         for i in range(0, S.rows()):
-            d = b.prepExportSensitivityData(mesh , S[i], tol)
-            
+            d = b.prepExportSensitivityData(mesh, S[i], tol)
+
             name = os.path.join(savePath, outFilename + "-" + str(i) + ".vec")
-    
+
             if save:
                 print(name)
                 g.save(d, name)
             mesh.addExportData(name, d)
     else:
-        d = b.prepExportSensitivityData(mesh , S[dataID], tol)
+        d = b.prepExportSensitivityData(mesh, S[dataID], tol)
         name = os.path.join(savePath, outFilename + "-" + str(dataID) + ".vec")
         if save:
             print(name)
@@ -56,12 +53,13 @@ def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
 
     mesh.exportVTK(outFilename)
 
+
 def main(argv):
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mesh",
                           version="%prog: " + g.__version__)
-    
+
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,
                         help="Be verbose.")
     parser.add_option("-s", "--sensMatrix", dest = "sensMatrix", metavar = "File", default = 'sens.bmat'
@@ -86,7 +84,7 @@ def main(argv):
         print("Please add a mesh-file.")
         sys.exit(2)
     else:
-        meshfile = args[0];
+        meshfile = args[0]
 
     if options.verbose:
         print("meshfile =", meshfile)
@@ -98,12 +96,12 @@ def main(argv):
         print("saveTo=",  options.saveTo)
 
     if options.saveTo is not '.':
-        options.save=True
-        
+        options.save = True
+
     exportSens(meshfile, options.sensMatrix,
                options.outFilename,
-               options.id, options.tolerance, 
+               options.id, options.tolerance,
                options.save, options.saveTo)
 
 if __name__ == "__main__":
-    main(sys.argv[ 1: ])
+    main(sys.argv[1:])
