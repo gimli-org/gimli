@@ -64,7 +64,7 @@ public:
 
     inline Mesh * mesh() { return mesh_; }
 
-    /*! Set external jacobian */
+    /*! Set external Jacobian matrix*/
     virtual void setJacobian(MatrixBase * J);
     
     /*! Create and fill the Jacobian matrix with a given model vector. */
@@ -74,10 +74,10 @@ public:
     virtual void initJacobian();
     
     /*! Return the pointer to the Jacobian matrix associated with this forward operator. */
-    virtual MatrixBase * jacobian() { return jacobian_; }
+    MatrixBase * jacobian() { return jacobian_; }
     
     /*! Return the pointer to the Jacobian matrix associated with this forward operator. */
-    virtual MatrixBase * jacobian() const { return jacobian_; }
+    MatrixBase * jacobian() const { return jacobian_; }
     
     /*! Return the Jacobian Matrix (read only) associated with this forward operator. 
      *  Throws an exception if the jacobian is not initialized. Cannot yet be overloaded py pyplusplus (return virtual reference)(Warning 1049). */
@@ -106,6 +106,7 @@ public:
     void setRefinedMesh(const Mesh & mesh);
 
     void mapModel(const RVector & model, double background=0);
+    void mapModel(const CVector & model, Complex background=Complex(0));
 
     const RegionManager & regionManager() const;
 
@@ -126,6 +127,7 @@ public:
     uint threadCount() const { return nThreads_; }
 
 protected:
+    
     virtual void init_();
     
     virtual void deleteMeshDependency_(){}

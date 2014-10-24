@@ -239,6 +239,10 @@ void ModellingBase::mapModel(const RVector & model, double background){
     mesh_->fillEmptyCells(emptyList, background);
 }
 
+void ModellingBase::mapModel(const CVector & model, Complex background){
+    mapModel(real(model), real(background));
+}
+    
 void ModellingBase::initRegionManager() {
     if (!regionManagerInUse_){
         if (mesh_){

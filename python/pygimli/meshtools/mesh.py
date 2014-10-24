@@ -490,11 +490,9 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     dx = eSpacing * paraDX
     dz = eSpacing * paraDZ
-
+    
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax - xmin)
-
-    
 
     x = pg.utils.grange(xmin, xmax, dx=dx)
     
