@@ -86,17 +86,30 @@ void Mesh::copy_(const Mesh & mesh){
     dimension_ = mesh.dim();
     nodeVector_.reserve(mesh.nodeCount());
     
-    for (uint i = 0; i < mesh.nodeCount(); i ++) createNode(mesh.node(i));
+    for (uint i = 0; i < mesh.nodeCount(); i ++){
+        this->createNode(mesh.node(i));
+    }
 
     boundaryVector_.reserve(mesh.boundaryCount());
-    for (uint i = 0; i < mesh.boundaryCount(); i ++) createBoundary(mesh.boundary(i));
+    for (uint i = 0; i < mesh.boundaryCount(); i ++){
+        this->createBoundary(mesh.boundary(i));
+    }
 
     cellVector_.reserve(mesh.cellCount());
-    for (uint i = 0; i < mesh.cellCount(); i ++) createCell(mesh.cell(i));
+    for (uint i = 0; i < mesh.cellCount(); i ++){
+        this->createCell(mesh.cell(i));
+    }
 
+    for (Index i = 0; i < mesh.regionMarker().size(); i ++){
+        this->addRegionMarker(mesh.regionMarker()[i]);
+    }
+    for (Index i = 0; i < mesh.holeMarker().size(); i ++){
+        this->addHoleMarker(mesh.holeMarker()[i]);
+    }
+    
     setExportDataMap(mesh.exportDataMap());
     setCellAttributes(mesh.cellAttributes());
-
+    
     if (mesh.neighboursKnown()){
         this->createNeighbourInfos(true);
     }
@@ -2085,6 +2098,22 @@ void Mesh::fillKDTree_() const {
     }
 }
 
+void Mesh::addRegionMarker(const RegionMarker & reg){
+    regionMarker_.push_back(reg);
+}
+    
+void Mesh::addRegionMarker(const RVector3 & pos, int marker, double area){
+    if (area < 0) {
+        addHoleMarker(pos);
+    } else {
+        regionMarker_.push_back(RegionMarker(pos, marker, area));
+    }
+}
+ 
+void Mesh::addHoleMarker(const RVector3 & pos){
+    holeMarker_.push_back(pos);
+}
+    
 RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
     if (!cellToBoundaryInterpolationCache_){
         if (!neighboursKnown_){

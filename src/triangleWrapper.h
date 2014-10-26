@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2005-2012 by the resistivity.net development team       *
- *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Copyright (C) 2005-2014 by the resistivity.net development team       *
+ *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,38 +32,41 @@ namespace GIMLI{
 
 class DLLEXPORT TriangleWrapper{
 public:
-    /*! Construct a plc from nodes and edges in inMesh and inititialize the trianglewrapper. */
-    TriangleWrapper( const Mesh & inMesh );
+    /*! Construct a PLC from nodes and edges in inMesh and inititialize 
+     * the trianglewrapper. Add region and hole marker later.*/
+    TriangleWrapper(const Mesh & inMesh);
     
-    /*! Constructor inititialize with input mesh (nodes and edges where used for input, regionmarker are not possible.) and generate the 2d mesh with corresponding triSwitches */
-    TriangleWrapper( const Mesh & inMesh, Mesh & outMesh, const std::string & triSwitches );
+    /*! Constructor inititialize with input mesh 
+     * (nodes and edges where used for input and also regionmarker,
+     * if added to the mesh) and generate the 2d mesh with corresponding 
+     * triSwitches */
+    TriangleWrapper(const Mesh & inMesh, Mesh & outMesh,
+                    const std::string & triSwitches);
 
     /*! Default destructur */
     virtual ~TriangleWrapper();
 
     /*! Set the triangle commandline switches */
-    void setSwitches( const std::string & s ){ switches_ = s; }
+    void setSwitches(const std::string & s){ switches_ = s; }
     
     /*! Return the triangle switches. */
-    inline const std::string & switches( ) const { return switches_; }
+    inline const std::string & switches() const { return switches_; }
 
     /*! Generate the mesh and store in mesh. */
-    void generate( Mesh & mesh );
+    void generate(Mesh & mesh);
     
     /*! Generate and return the new mesh. */
-    Mesh generate( );
-
-    void addRegionMarkerTmp( int marker, const RVector3 & pos, double area );
+    Mesh generate();
 
 protected:
     /*! For internal use only. */
-    void init_( );
+    void init_();
 
     /*! For internal use only. */
-    void transformTriangleToMesh_( const triangulateio & trimesh, Mesh & mesh );
+    void transformTriangleToMesh_(const triangulateio & trimesh, Mesh & mesh);
     
     /*! For internal use only. Only Edges and nodes(x,y) from mesh are used. */
-    void transformMeshToTriangle_( const Mesh & mesh, triangulateio & trimesh );
+    void transformMeshToTriangle_(const Mesh & mesh, triangulateio & trimesh);
   
     /*! For internal use only. */
     void allocateOutMemory_();
@@ -78,9 +81,7 @@ protected:
     std::string switches_;
     
     const Mesh * inMesh_;
-    
-    std::map< int, std::pair< RVector3 , double > > regionMarker_;
-    std::vector< RVector3 > holeMarker_;
+   
 };
 
 }  // namespace GIMLI

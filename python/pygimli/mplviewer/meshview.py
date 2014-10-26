@@ -254,13 +254,14 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
     swatch = pg.Stopwatch(True)
     mesh.createNeighbourInfos()
 
-    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(0)
-                                , color = (0.0, 0.0, 0.0, 1.0)
-                                , linewidth = 0.3)
+    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(0),
+                               color = (0.0, 0.0, 0.0, 1.0),
+                               linewidth = 0.3)
     #return
-    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-                                , color = (0.0, 1.0, 0.0, 1.0)
-                                , linewidth = 1.0)
+    drawSelectedMeshBoundaries(axes,
+                               mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
+                               color = (0.0, 1.0, 0.0, 1.0),
+                               linewidth = 1.0)
     drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED)
                                 , color = (1.0, 0.0, 0.0, 1.0)
                                 , linewidth = 1.0)
@@ -270,6 +271,22 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
     drawSelectedMeshBoundaries(axes, [b for b in mesh.boundaries() if b.marker() < -4]
                                 , color = (0.0, 0.0, 0.0, 1.0)
                                 , linewidth = 1.0)
+    
+    if mesh.cellCount() == 0:
+        eCircles = []
+        cols = []
+        for n in mesh.nodes():
+            col = (0.0, 0.0, 0.0)
+            if n.marker() == pg.MARKER_NODE_SENSOR:
+                col = (1.0, 0.0, 0.0)
+            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
+            cols.append(col)
+        p = mpl.collections.PatchCollection(eCircles, color=cols)
+        axes.add_collection(p)
+        
+        for reg in mesh.regionMarker():
+            axes.text(reg.pos()[0], reg.pos()[1],
+                      str(reg.marker()) + ": " + str(reg.area()))
 
     #drawSelectedMeshBoundaries(axes, [mesh.boundary(344)]
                                 #, color = (1.0, 0.0, 0.0, 1.0)

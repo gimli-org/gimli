@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2005-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -84,29 +84,30 @@ void triangulate(char *, struct triangulateio *, struct triangulateio *, struct 
 
 namespace GIMLI{
 
-TriangleWrapper::TriangleWrapper( const Mesh & inMesh ) : inMesh_( & inMesh ){
+TriangleWrapper::TriangleWrapper(const Mesh & inMesh) : inMesh_(& inMesh){
     init_();
 }
 
-TriangleWrapper::TriangleWrapper( const Mesh & inMesh, Mesh & outMesh, const std::string & triSwitches )
-    : inMesh_( & inMesh ) {
+TriangleWrapper::TriangleWrapper(const Mesh & inMesh, Mesh & outMesh,
+                                 const std::string & triSwitches)
+    : inMesh_(& inMesh) {
     init_();
     switches_ = triSwitches;
-    generate( outMesh );
+    generate(outMesh);
 }
 
 TriangleWrapper::~TriangleWrapper(){
     freeMemory_();
 #if USE_LIBTRIANGLE
-    if ( mesh_input_ )          delete mesh_input_;
-    if ( mesh_output_ )         delete mesh_output_;
-    if ( mesh_voronoi_output_ ) delete mesh_voronoi_output_;
+    if (mesh_input_)          delete mesh_input_;
+    if (mesh_output_)         delete mesh_output_;
+    if (mesh_voronoi_output_) delete mesh_voronoi_output_;
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
 #endif
 }
 
-void TriangleWrapper::init_( ){
+void TriangleWrapper::init_(){
     switches_ = "-pze";
 #if USE_LIBTRIANGLE
     mesh_input_           = new struct triangulateio;
@@ -118,27 +119,27 @@ void TriangleWrapper::init_( ){
 #endif
 }
 
-void TriangleWrapper::generate( Mesh & mesh ){
+void TriangleWrapper::generate(Mesh & mesh){
 #if USE_LIBTRIANGLE
 
-    if ( inMesh_->nodeCount() < 3 ){
-        throwError( 1, WHERE_AM_I + " input mesh must have at least 3 nodes " );
+    if (inMesh_->nodeCount() < 3){
+        throwError(1, WHERE_AM_I + " input mesh must have at least 3 nodes ");
     }
-    if ( mesh_output_->pointlist ) {
+    if (mesh_output_->pointlist) {
         freeMemory_();
         allocateOutMemory_();
     }
-    transformMeshToTriangle_( *inMesh_, * mesh_input_ );
-    triangulate( (char *)switches_.c_str(), mesh_input_, mesh_output_, mesh_voronoi_output_ );
-    transformTriangleToMesh_( * mesh_output_, mesh );
+    transformMeshToTriangle_(*inMesh_, * mesh_input_);
+    triangulate((char *)switches_.c_str(), mesh_input_, mesh_output_, mesh_voronoi_output_);
+    transformTriangleToMesh_(* mesh_output_, mesh);
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
 #endif
 }
 
-Mesh TriangleWrapper::generate( ){
-    Mesh mesh( 2 );
-    generate( mesh );
+Mesh TriangleWrapper::generate(){
+    Mesh mesh(2);
+    generate(mesh);
     return mesh;
 }
 
@@ -165,19 +166,19 @@ void TriangleWrapper::allocateOutMemory_(){
 
 void TriangleWrapper::freeMemory_(){
 #if USE_LIBTRIANGLE
-    if ( mesh_output_->pointlist != (REAL*)NULL )           free( mesh_output_->pointlist );
-    if ( mesh_output_->pointattributelist != (REAL*)NULL )  free( mesh_output_->pointattributelist );
-    if ( mesh_output_->pointmarkerlist != (int*)NULL  )     free( mesh_output_->pointmarkerlist ) ;
+    if (mesh_output_->pointlist != (REAL*)NULL)           free(mesh_output_->pointlist);
+    if (mesh_output_->pointattributelist != (REAL*)NULL)  free(mesh_output_->pointattributelist);
+    if (mesh_output_->pointmarkerlist != (int*)NULL )     free(mesh_output_->pointmarkerlist) ;
 
-    if ( mesh_output_->trianglelist != (int*)NULL )         free( mesh_output_->trianglelist );
-    if ( mesh_output_->triangleattributelist != (REAL*)NULL ) free( mesh_output_->triangleattributelist );
+    if (mesh_output_->trianglelist != (int*)NULL)         free(mesh_output_->trianglelist);
+    if (mesh_output_->triangleattributelist != (REAL*)NULL) free(mesh_output_->triangleattributelist);
 
-    if ( mesh_output_->segmentlist != (int*)NULL )          free( mesh_output_->segmentlist );
-    if ( mesh_output_->segmentmarkerlist != (int*)NULL )    free( mesh_output_->segmentmarkerlist );
+    if (mesh_output_->segmentlist != (int*)NULL)          free(mesh_output_->segmentlist);
+    if (mesh_output_->segmentmarkerlist != (int*)NULL)    free(mesh_output_->segmentmarkerlist);
 
-    if ( mesh_output_->edgelist != (int*)NULL )             free( mesh_output_->edgelist );
-    if ( mesh_output_->edgemarkerlist != (int*)NULL )       free( mesh_output_->edgemarkerlist );
-    if ( mesh_output_->normlist != (REAL *) NULL )          free( mesh_output_->normlist );
+    if (mesh_output_->edgelist != (int*)NULL)             free(mesh_output_->edgelist);
+    if (mesh_output_->edgemarkerlist != (int*)NULL)       free(mesh_output_->edgemarkerlist);
+    if (mesh_output_->normlist != (REAL *) NULL)          free(mesh_output_->normlist);
 
     delete [] mesh_input_->pointlist;
     delete [] mesh_input_->pointmarkerlist;
@@ -190,28 +191,28 @@ void TriangleWrapper::freeMemory_(){
 #endif
 }
 
-void TriangleWrapper::transformTriangleToMesh_( const triangulateio & trimesh, Mesh & mesh ){
+void TriangleWrapper::transformTriangleToMesh_(const triangulateio & trimesh, Mesh & mesh){
 #if USE_LIBTRIANGLE
     mesh.clear();
 
     //!  Nodes;
     int marker = 0;
-    for ( int i = 0; i < trimesh.numberofpoints; i ++ ){
-        if ( trimesh.pointmarkerlist != (int*)NULL ) marker = trimesh.pointmarkerlist[ i ];
-        mesh.createNode( trimesh.pointlist[ i * 2 ], trimesh.pointlist[ i * 2 + 1 ], 0.0, marker );
+    for (int i = 0; i < trimesh.numberofpoints; i ++){
+        if (trimesh.pointmarkerlist != (int*)NULL) marker = trimesh.pointmarkerlist[i];
+        mesh.createNode(trimesh.pointlist[i * 2], trimesh.pointlist[i * 2 + 1], 0.0, marker);
     }
 
     //!  Edges / Segments
-    if ( trimesh.numberofedges == 0 ){
-        for ( int i = 0; i < trimesh.numberofsegments; i ++ ){
-            if ( trimesh.segmentmarkerlist != (int*)NULL ) marker = trimesh.segmentmarkerlist[ i ];
-            mesh.createEdge( mesh.node( trimesh.segmentlist[ i * 2 ] ), mesh.node(trimesh.segmentlist[ i * 2 + 1 ] ), marker );
+    if (trimesh.numberofedges == 0){
+        for (int i = 0; i < trimesh.numberofsegments; i ++){
+            if (trimesh.segmentmarkerlist != (int*)NULL) marker = trimesh.segmentmarkerlist[i];
+            mesh.createEdge(mesh.node(trimesh.segmentlist[i * 2]), mesh.node(trimesh.segmentlist[i * 2 + 1]), marker);
         }
     } else {
-        if ( trimesh.edgelist != NULL ){
-            for ( int i = 0; i < trimesh.numberofedges; i ++ ){
-                if ( trimesh.edgemarkerlist != (int*)NULL ) marker = trimesh.edgemarkerlist[ i ];
-                mesh.createEdge( mesh.node( trimesh.edgelist[ i * 2 ] ), mesh.node( trimesh.edgelist[ i * 2 + 1 ] ), marker );
+        if (trimesh.edgelist != NULL){
+            for (int i = 0; i < trimesh.numberofedges; i ++){
+                if (trimesh.edgemarkerlist != (int*)NULL) marker = trimesh.edgemarkerlist[i];
+                mesh.createEdge(mesh.node(trimesh.edgelist[i * 2]), mesh.node(trimesh.edgelist[i * 2 + 1]), marker);
             }
         } else {
             std::cout << "Warning! " << WHERE_AM_I << " edges are not exported. Append -e flag to the triangle command." << std::endl;
@@ -221,30 +222,31 @@ void TriangleWrapper::transformTriangleToMesh_( const triangulateio & trimesh, M
     //! Triangles;
     int a = 0, b = 0, c = 0;
     double attribute = 0.0;
-    for ( int i = 0; i < trimesh.numberoftriangles; i ++ ){
-        if ( trimesh.triangleattributelist != (REAL*)NULL ) attribute = trimesh.triangleattributelist[ i ];
+    for (int i = 0; i < trimesh.numberoftriangles; i ++){
+        if (trimesh.triangleattributelist != (REAL*)NULL) attribute = trimesh.triangleattributelist[i];
 
-        a = trimesh.trianglelist[ i * 3 ];
-        b = trimesh.trianglelist[ i * 3 + 1 ];
-        c = trimesh.trianglelist[ i * 3 + 2 ];
+        a = trimesh.trianglelist[i * 3];
+        b = trimesh.trianglelist[i * 3 + 1];
+        c = trimesh.trianglelist[i * 3 + 2];
 
-        mesh.createTriangle( mesh.node( a ), mesh.node( b ), mesh.node( c ), (size_t)attribute );
+        mesh.createTriangle(mesh.node(a), mesh.node(b), mesh.node(c), (size_t)attribute);
     }
 
 // //** RegionMarker
 //   for (int i = 0; i < trimesh.numberofregions * 4; i += 4){
-//     mesh.createRegionMarker( trimesh.regionlist[ i ], trimesh.regionlist[ i + 1 ],
-// 			      trimesh.regionlist[ i + 2 ], trimesh.regionlist[ i + 3 ] );
+//     mesh.createRegionMarker(trimesh.regionlist[i], trimesh.regionlist[i + 1],
+// 			      trimesh.regionlist[i + 2], trimesh.regionlist[i + 3]);
 //   }
 //   for (int i = 0; i < trimesh.numberofholes * 2; i += 2){
-//     mesh.createRegionMarker( trimesh.holelist[ i ], trimesh.holelist[ i + 1], -1, -1 );
+//     mesh.createRegionMarker(trimesh.holelist[i], trimesh.holelist[i + 1], -1, -1);
 //   }
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
 #endif
 }
 
-void TriangleWrapper::transformMeshToTriangle_( const Mesh & mesh, triangulateio & trimesh ){
+void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
+                                               triangulateio & trimesh){
 #if USE_LIBTRIANGLE
     //! node section
     int nVerts = mesh.nodeCount();
@@ -252,13 +254,13 @@ void TriangleWrapper::transformMeshToTriangle_( const Mesh & mesh, triangulateio
     trimesh.numberofpoints = nVerts;
     trimesh.numberofpointattributes = 0;  // only one Parameter
 
-    trimesh.pointlist = new double[ 2 * nVerts ];
-    trimesh.pointmarkerlist = new int[ nVerts ];
+    trimesh.pointlist = new double[2 * nVerts];
+    trimesh.pointmarkerlist = new int[nVerts];
 
-    for ( int i = 0; i < nVerts; i ++ ){
-        trimesh.pointlist[ i * 2 ]      = mesh.node( i ).x();
-        trimesh.pointlist[ i * 2 + 1]   = mesh.node( i ).y();
-        trimesh.pointmarkerlist[ i ]    = mesh.node( i ).marker();
+    for (int i = 0; i < nVerts; i ++){
+        trimesh.pointlist[i * 2]      = mesh.node(i).x();
+        trimesh.pointlist[i * 2 + 1]   = mesh.node(i).y();
+        trimesh.pointmarkerlist[i]    = mesh.node(i).marker();
     }
 
     //! edge section;
@@ -266,64 +268,56 @@ void TriangleWrapper::transformMeshToTriangle_( const Mesh & mesh, triangulateio
     int edgeCounter = 0;
 
     trimesh.numberofsegments    = nEdges;
-    trimesh.segmentlist         = new int[ 2 * nEdges ];
-    trimesh.segmentmarkerlist   = new int[ nEdges ];
+    trimesh.segmentlist         = new int[2 * nEdges];
+    trimesh.segmentmarkerlist   = new int[nEdges];
 
-    for ( int i = 0; i < nEdges; i ++ ){
-        Boundary * edge = &mesh.boundary( i );
-        trimesh.segmentlist[ edgeCounter * 2 ]      = edge->node( 0 ).id();
-        trimesh.segmentlist[ edgeCounter * 2 + 1 ]  = edge->node( 1 ).id();
-        trimesh.segmentmarkerlist[ edgeCounter ]    = edge->marker();
+    for (int i = 0; i < nEdges; i ++){
+        Boundary * edge = &mesh.boundary(i);
+        trimesh.segmentlist[edgeCounter * 2]      = edge->node(0).id();
+        trimesh.segmentlist[edgeCounter * 2 + 1]  = edge->node(1).id();
+        trimesh.segmentmarkerlist[edgeCounter]    = edge->marker();
         edgeCounter++;
     }
 
     //! Holes;
-    uint nHoles = holeMarker_.size();//domain.holeCount();
+    uint nHoles = mesh.holeMarker().size();//domain.holeCount();
     trimesh.numberofholes = nHoles;
-    trimesh.holelist = new double[ 2 * nHoles + 1 ];
+    trimesh.holelist = new double[2 * nHoles + 1];
 
-    for ( uint i = 0; i < nHoles; i ++ ){
-        trimesh.holelist[ i * 2 ] = holeMarker_[ i ].x();
-        trimesh.holelist[ i * 2 + 1 ] = holeMarker_[ i ].y();
+    for (uint i = 0; i < nHoles; i ++){
+        trimesh.holelist[i * 2] = mesh.holeMarker()[i].x();
+        trimesh.holelist[i * 2 + 1] = mesh.holeMarker()[i].y();
      }
 
     //! Regions;
-    int nRegions = regionMarker_.size();//domain.regionCount();
+    int nRegions = mesh.regionMarker().size();//domain.regionCount();
     trimesh.numberofregions = nRegions;
-    trimesh.regionlist = new double[ 4 * nRegions + 1 ];
+    trimesh.regionlist = new double[4 * nRegions + 1];
 
     uint count = 0;
-    for ( std::map< int, std::pair< RVector3, double > >::const_iterator it  = regionMarker_.begin();
-                                                                         it != regionMarker_.end(); it ++ ){
+    for (Mesh::RegionMarkerList::const_iterator
+        it = mesh.regionMarker().begin(); it != mesh.regionMarker().end(); it ++){
 
-//         std::cout << it->second.first.x() << " "
-//                   << it->second.first.y() << " " << it->first << " "<< it->second.second << " "<< std::endl;
-        trimesh.regionlist[ count * 4 ] = it->second.first.x();
-        trimesh.regionlist[ count * 4 + 1 ] = it->second.first.y();
-        trimesh.regionlist[ count * 4 + 2 ] = it->first;
-        trimesh.regionlist[ count * 4 + 3 ] = it->second.second;
+        std::cout << it->pos().x() << " "
+                  << it->marker() << " "
+                  << it->area() << std::endl;
+        trimesh.regionlist[count * 4] = it->pos().x();
+        trimesh.regionlist[count * 4 + 1] = it->pos().y();
+        trimesh.regionlist[count * 4 + 2] = it->marker();
+        trimesh.regionlist[count * 4 + 3] = it->area();
         count ++;
     }
-//     for ( int i = 0; i < nRegions; i ++ ){
-//         trimesh.regionlist[ i * 4 ] = domain.region( i ).x();
-//         trimesh.regionlist[ i * 4 + 1 ] = domain.region( i ).y();
-//         trimesh.regionlist[ i * 4 + 2 ] = domain.region( i ).attribute();
-//         trimesh.regionlist[ i * 4 + 3 ] = domain.region( i ).dx();
+//     for (int i = 0; i < nRegions; i ++){
+//         trimesh.regionlist[i * 4] = domain.region(i).x();
+//         trimesh.regionlist[i * 4 + 1] = domain.region(i).y();
+//         trimesh.regionlist[i * 4 + 2] = domain.region(i).attribute();
+//         trimesh.regionlist[i * 4 + 3] = domain.region(i).dx();
 //     }
 
 
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
 #endif
-}
-
-void TriangleWrapper::addRegionMarkerTmp( int marker, const RVector3 & pos, double area ){
-
-    if ( area == -1.0 ) {
-        holeMarker_.push_back( pos );
-    } else {
-        regionMarker_[ marker ] = std::pair< RVector3, double > ( pos, area );
-    }
 }
 
 } // namespace GIMLI

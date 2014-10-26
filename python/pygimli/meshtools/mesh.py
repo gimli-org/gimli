@@ -4,7 +4,10 @@ import pygimli as pg
 import pygimli.utils
 import numpy as np
 
-def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None, verbose=False):
+def createMesh(poly, quality=30, area=0.0,
+               smooth=None, switches=None, 
+               regions=None, holes=None,
+               verbose=False):
     """
     Create a mesh for a given PLC using triangle (http://www.cs.cmu.edu/~quake/triangle.html)
     or tetgen 
@@ -38,14 +41,23 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None, verbose=F
     """
     
     if poly.dim() == 2:
+        if poly.nodeCount() == 0:
+            raise Exception("No nodes in poly to create a valid mesh")
+        
         tri = pg.TriangleWrapper(poly)
         
         if switches == None:
-            switches = '-DpzeAq' + str(quality)
+            # -D Conforming delaunay
+            # -F Uses Steven Fortune's sweepline algorithm 
+            switches = 'pzeA' 
                 
             if area > 0:
                 switches += 'a'+ str(area)
+            else:
+                switches += 'a'
         
+            switches += 'q' + str(quality)
+            
             if not verbose:
                 switches += 'Q'
                 
@@ -442,16 +454,127 @@ def mergeMeshes(meshlist):
     return mesh
 
 
-def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
-                         boundary=-1, paraBoundary=2, verbose=False, *args,
-                         **kwargs):
+def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
+                     paraBoundary=2, paraMaxCellSize=0, boundary=-1, 
+                     verbose=False, *args, **kwargs):
     """
-    Return parameter mesh for a given list of sensor positions.
+    Return a PLC for the parameter mesh for a given list of sensor positions.
+    Sensor position assumed on the surface and must be sorted and unique.
+    
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and 
+    two region markers, one for the parameters domain (marker=2) and
+    a larger boundary around the outside (marker=1)
+    
+    TODO
+    ----
+        * closed domains (boundary == 0)
+        * additional topopoints
+        * spline interpolations between sensorpoints or addpoints
+        * subsurface sensors
 
     Parameters
     ----------
     sensors : list of RVector3 objects
-        Sensor positions.
+        Sensor positions. Must be sorted and unique in positve x direction
+    paraDX : float
+        Relativ distance for refinement nodes between two electrodes,
+        e.g., 0.5 means 1 additional node in the middle between two electrodes
+        e.g., 0.333 means 2 additional node evenly spaced between two electrodes
+    paraDepth : float, optional
+        Maximum depth for parametric domain, 0 (default) means 0.4 * maxmimum
+        sensor range.
+    paraBoundary : float, optional
+        Margin for parameter domain in absolute sensor distances. 2 (default).
+    paraMaxCellSize: double, optional
+        Maximum size for parametrix size in m*m
+    boundary : float, optional
+        Boundary width to be appended for domain prolongation in absolute 
+        para domain width.
+        Values lover 0 force the boundary to be 4 times para domain width.
+
+    Returns
+    -------
+    poly: :gimliapi:`GIMLI::Mesh`
+ 
+    """
+        
+    eSpacing = sensors[0].distance(sensors[1])
+     
+    xmin = sensors[0][0]; ymin = sensors[0][1];
+    xmax = xmin
+    ymax = ymin
+            
+    for e in sensors:
+        xmin = min(xmin, e[0]); xmax = max(xmax, e[0])
+        ymin = min(ymin, e[1]); ymax = max(ymax, e[1])
+                      
+    paraBound = eSpacing * paraBoundary
+    
+    if paraDepth == 0:
+        paraDepth = 0.4 * (xmax - xmin)
+        
+    poly = pg.Mesh(2)
+    paraDomain = []
+    # define para domain without surface
+    n1 = poly.createNode([xmin - paraBoundary, sensors[0][1]])
+    n2 = poly.createNode([xmin - paraBoundary, sensors[0][1] - paraDepth])
+    n3 = poly.createNode([xmax + paraBoundary, sensors[-1][1] - paraDepth])
+    n4 = poly.createNode([xmax + paraBoundary, sensors[-1][1]])
+        
+    if boundary < 0:
+        boundary = 4
+    
+    bound = abs(xmax - xmin) * boundary
+    # define world without surface
+    n11 = poly.createNode(n1.pos() - [bound, 0.])
+    n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
+    n14 = poly.createNode(n4.pos() + [bound, 0.])
+    n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
+    
+    poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
+    poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
+    poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
+    poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1)
+    
+    poly.createEdge(n1, n2, 1)
+    poly.createEdge(n2, n3, 1)
+    poly.createEdge(n3, n4, 1)
+    poly.addRegionMarker(n2.pos() + [1e-3, 1e-3], 2, paraMaxCellSize)
+    
+    # define surface
+    nSurface = []
+    nSurface = []
+    nSurface.append(n1)
+    el = nSurface[0].pos()
+    for i, e in enumerate(sensors):
+        if paraDX >= 0.5:
+            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))        
+            nSurface.append(poly.createNode(e + (e-el) * 0.5)) 
+        elif paraDX < 0.5:
+            nSurface.append(poly.createNode(e - (e-el) * paraDX)) 
+            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))        
+            nSurface.append(poly.createNode(e + (e-el) * paraDX)) 
+        el = e
+    nSurface.append(n4)
+    
+    for i in range(len(nSurface)-1, 0, -1):
+        poly.createEdge(nSurface[i], nSurface[i-1], pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    
+    return poly
+    
+    
+def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
+                         boundary=-1, paraBoundary=2, verbose=False, *args,
+                         **kwargs):
+    """
+    Return parameter grid for a given list of sensor positions.
+
+    Parameters
+    ----------
+    sensors : list of RVector3 objects
+        Sensor positions. Must be sorted in positve x direction
     paraDX : float, optional
         Horizontal distance between sensors, relative regarding sensor
         distance. Value must be greater than 0 otherwise 1 is assumed.
@@ -464,12 +587,18 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     nLayers : int, optional
         Number of depth layers.
     boundary : int, optional
-        Triangle boundary to be appended for domain prolongation values lover 0
-        force boundary to be 4 times para domain width.
+        Boundary width to be appended for domain prolongation in absolute 
+        para domain width.
+        Values lover 0 force the boundary to be 4 times para domain width.
     paraBoundary : int, optional
-        Offset for parameter domain in absolute sensor distance 2 (default).
+        Offset for parameter domain boundary in absolute sensor distance. 2 (default).
     verbose : boolean, optional
         Be verbose.
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+    
     """
     
     mesh = pg.Mesh(2)
