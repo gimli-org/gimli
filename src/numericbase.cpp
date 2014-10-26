@@ -24,9 +24,8 @@
 
 namespace GIMLI{
 
-RVector logTransDropTol(const RVector & data, double logdrop, bool normalize){
+RVector logDropTol(const RVector & data, double logdrop, bool normalize){
     RVector tmp(data);
-    
     RVector tmp2(data);
     tmp2.setVal(logdrop, find(data == 0.0));
         
@@ -41,6 +40,11 @@ RVector logTransDropTol(const RVector & data, double logdrop, bool normalize){
         if (m != 0.0) tmp /= m;
     }
     return tmp * sign(tmp2);
+}
+
+
+RVector logTransDropTol(const RVector & data, double logdrop, bool normalize){
+    return logTransDropTol(data, logdrop, normalize); 
 }
     
 void GaussLaguerre(uint n, RVector & x, RVector & w){

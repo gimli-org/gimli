@@ -34,9 +34,14 @@ namespace GIMLI{
 
 template < class ValueType > ValueType round(const ValueType & v, ValueType tol){ return ::rint(v / tol) * tol; }
 
-/*! log10 scale of data. Conserve sign alternating a drop tolerance*/
+/*! DEPRECATED use logDropTol.*/
 DLLEXPORT RVector logTransDropTol(const RVector & data, double logdrop=1e-6,
                                   bool normalize=true);
+
+/*! log10 scale of data with negative values.
+ * Conserve sign alternating a drop tolerance.*/
+DLLEXPORT RVector logDropTol(const RVector & data, double logdrop=1e-6,
+                             bool normalize=true);
 
 /*! Converts a degree value to radian.*/
 template < class ValueType > ValueType degToRad(const ValueType & deg){ return deg * (2.0 * PI) / 360.0; }

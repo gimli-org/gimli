@@ -140,6 +140,7 @@ static const int MARKER_BOUND_MIXED = -2;
 static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;
 static const int MARKER_BOUND_DIRICHLET = -4;
 static const int MARKER_CELL_PARAMETER = 2;
+static const int MARKER_NODE_SENSOR = -99;
 
 static const uint8 MESH_BASEENTITY_RTTI      = 00;
 static const uint8 MESH_MESHENTITY_RTTI      = 01;

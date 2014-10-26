@@ -108,9 +108,33 @@ template < class ValueType > std::ostream & operator << (std::ostream & str, con
 
 DLLEXPORT std::ostream & operator << (std::ostream & str, const Mesh & mesh);
 
+
+class DLLEXPORT RegionMarkerPLC {
+public:
+    RegionMarkerPLC(const RVector3 & pos, int marker, double area=0.0)
+    : pos_(pos), marker_(marker), area_(area){}
+    
+    ~RegionMarkerPLC(){}
+    
+    inline const RVector3 & pos() const {return pos_;}
+    inline int marker() const {return marker_;}
+    inline double area() const {return area_;}
+    
+protected:
+    RVector3 pos_;
+    int marker_;
+    double area_;
+};
+    
+
 class DLLEXPORT Mesh {
 public:
 
+    typedef RegionMarkerPLC RegionMarker;
+    typedef std::vector< RegionMarker > RegionMarkerList;
+    typedef RVector3 HoleMarker;
+    typedef std::vector< RVector3 > HoleMarkerList;
+    
     /*! Default constructor, create empty mesh with dimension dim */
     Mesh(uint dim=2);
 
@@ -478,11 +502,7 @@ public:
     bool haveData(const std::string & name) const { return exportDataMap_.count(name) > 0; }
     /*!*/
     const std::map< std::string, RVector > & dataMap() const { return exportDataMap_; }
-    
-        
-    
-    
-    
+  
     /*! Set the comment for VTK Ascii export headline.*/
     void setCommentString(const std::string & commentString) {commentString_ = commentString;}
 
@@ -544,6 +564,21 @@ public:
     std::vector< RVector3 > cellDataToBoundaryGradient(const RVector & cellData,
         const std::vector< RVector3 > & cellGradient) const;
 
+    /*! Add a region marker for tetgen or triangle creation if the mesh 
+     *is a PLC, if area is < 0 a hole is added. */    
+    void addRegionMarker(const RVector3 & pos, int marker, double area=0);
+    void addRegionMarker(const RegionMarker & reg);
+
+    const RegionMarkerList & regionMarker() const { return regionMarker_; }
+    
+    /*! Add a hole marker for tetgen or triangle creation if the mesh
+     * is a PLC */    
+    void addHoleMarker(const RVector3 & pos);
+    
+    /*!Return read only reference for all defined hole regions. */
+    const HoleMarkerList & holeMarker() const { return holeMarker_; }
+    
+    
 protected:
     void copy_(const Mesh & mesh);
 
@@ -615,6 +650,10 @@ protected:
     std::map< std::string, RVector > exportDataMap_;
     std::string commentString_;
 
+    // for PLC creation
+    RegionMarkerList regionMarker_;
+    HoleMarkerList holeMarker_;
+    
 }; // class Mesh
 
 } // namespace GIMLI;
