@@ -10,11 +10,11 @@ def createMesh(poly, quality=30, area=0.0,
                verbose=False):
     """
     Create a mesh for a given PLC using triangle (http://www.cs.cmu.edu/~quake/triangle.html)
-    or tetgen 
+    or tetgen
     if the gimli support for the meshgenerator is installed. Poly need to be a valid PLC.
-    
+
     Tetgen support need to be implemented
-        
+
     Parameters
     ----------
     poly: :gimliapi:`GIMLI::Mesh`
@@ -32,51 +32,49 @@ def createMesh(poly, quality=30, area=0.0,
         2, weighted node center
     switches: str
         force triangle to use the gives command switches
-    
+
     Returns
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
-        
-    
+
+
     """
-    
+
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
             raise Exception("No nodes in poly to create a valid mesh")
         
         tri = pg.TriangleWrapper(poly)
-        
+
         if switches == None:
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm 
             switches = 'pzeA' 
-                
+
             if area > 0:
                 switches += 'a'+ str(area)
-            else:
-                switches += 'a'
-        
+
             switches += 'q' + str(quality)
             
             if not verbose:
                 switches += 'Q'
                 
         tri.setSwitches(switches)
-        
+
         mesh = tri.generate()
-        
+
         if smooth != None:
             mesh.smooth(nodeMoving=True,
                         edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
-        
+
         return mesh
 
     else:
         raise('not yet implemented')
-    
-    
+
+
 
 def readGmsh(fname, verbose=False):
     """
@@ -146,7 +144,7 @@ def readGmsh(fname, verbose=False):
                     points, lines, triangles, tets = [], [], [], []
 
                 else:
-                    entry = map(int, line.split())[1:]
+                    entry = list(map(int, line.split()))[1:]
 
                     if entry[0] == 15:
                         points.append((entry[-2], entry[-3]))
