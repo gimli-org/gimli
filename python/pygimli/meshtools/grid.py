@@ -199,7 +199,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     if isSubSurface:
         margin = 0.0001
         poly.addHoleMarker(pg.RVector3(mesh.xmin() + margin,
-                                       mesh.ymax() - margin)
+                                       mesh.ymax() - margin))
         tri = pg.TriangleWrapper(poly)
         tri.setSwitches(triswitches)
         tri.generate(mesh2)
