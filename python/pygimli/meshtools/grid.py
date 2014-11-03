@@ -197,12 +197,10 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         triswitches += 'Q'
 
     if isSubSurface:
+        margin = 0.0001
+        poly.addHoleMarker(pg.RVector3(mesh.xmin() + margin,
+                                       mesh.ymax() - margin)
         tri = pg.TriangleWrapper(poly)
-        # area -1.0 means this is a hole
-        tri.addRegionMarkerTmp(0,
-                               pg.RVector3(mesh.xmin() + 0.0001,
-                                           mesh.ymax() - 0.0001),
-                               -1.0)
         tri.setSwitches(triswitches)
         tri.generate(mesh2)
     else:
