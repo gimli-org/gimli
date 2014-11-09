@@ -16,32 +16,43 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 from pygimli.gui.controls import ResourceTree
 
-
 class WorkSpace:
     def __init__(self):
         self.activeResource = None
 
-from spyderlib.plugins.console import Console
-            
-class PythonConsoleWidget(Console):
+
+from spyderlib.widgets.internalshell import InternalShell
+from code import InteractiveConsole
+    
+class PythonConsoleWidget(InternalShell):
     """
-        PythonConsoleWidget(QtGui.QLineEdit)
-        Provides a custom widget to accept Python expressions and emit output
-        to other components via a custom signal.
+        Provides a custom widget to accept Python expressions.
     """
-
-    pythonOutput = QtCore.pyqtSignal(str)
-
-    def __init__(self, parent=None):
-        Console.__init__(self, parent,
-                         message=_("Spyder Internal Console\n\n"
-                                        "This console is used to report application\n"
-                                        "internal errors and to inspect Spyder\n"
-                                        "internals with the following commands:\n"
-                                        "  spy.app, spy.window, dir(spy)\n\n"
-                                        "Please don't use it to run your code\n\n"))
-
-
+    def __init__(self, parent=None, mainApp=None):
+        ns = {'win': self, 'app': mainApp, 'ws': mainApp.ws}
+        super().__init__(parent, namespace=ns,
+                         message="PyGIMLi internal console. \n\n"
+                         "Access to application or workspace via: app, ws\n\n")
+        #, message=("Spyder Internal Console\n\n" +
+                                  #"This console is used to report application\n" +
+                                  #"internal errors and to inspect Spyder\n" +
+                                  #"internals with the following commands:\n" +
+                                  #"  spy.app, spy.window, dir(spy)\n\n" +
+                                  #"Please don't use it to run your code\n\n"))
+        self.set_codecompletion_auto(True)
+        self.set_calltips(True)
+        self.interpreter.restore_stds()
+        self.interpreter.push = self.push
+    
+    def push(self, line):
+        """
+            let all console output redirect to console .. everything else to the log
+        """
+        self.interpreter.redirect_stds()
+        ret = InteractiveConsole.push(self.interpreter, "#coding=utf-8\n" + line)
+        self.interpreter.restore_stds()
+        return ret
+    
 class RedirectOutput():
     def __init__(self, frame, console, logFile=None):
         self.logFile = logFile
@@ -328,7 +339,7 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
         self._viewMB.addAction(logPane.toggleViewAction())
 
         consolePane = QtGui.QDockWidget("Console", self)
-        logPane.setWidget(PythonConsoleWidget(self))
+        consolePane.setWidget(PythonConsoleWidget(consolePane, self))
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, consolePane)
         self._viewMB.addAction(consolePane.toggleViewAction())
 
