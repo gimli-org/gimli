@@ -5,7 +5,7 @@
 SPHINXOPTS     =
 SPHINXBUILD    = sphinx-build
 SPHINXAPIBUILD = sphinx-apidoc
-PAPER          =
+PAPER          = 
 BUILDDIR       = _build
 PYTHON         = python
 
