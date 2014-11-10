@@ -8,8 +8,9 @@ LAPACK_VER=3.4.2
 LAPACK_SRC=lapack-$(LAPACK_VER).tgz
 LAPACK_URL=http://www.netlib.org/lapack/$(LAPACK_SRC)
 
-SUITESPARSE=SuiteSparse-4.3.1.tar.gz
-SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
+SUITESPARSE=SuiteSparse-4.4.1.tar.gz
+#SUITESPARSE_URL=http://www.cise.ufl.edu/research/sparse/SuiteSparse/$(SUITESPARSE)
+SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/$(SUITESPARSE)
 
 #LDFLAGS="-static-libgfortran -static-libgcc"
 #default: prep triangle blas lapack suitesparse
@@ -69,6 +70,10 @@ $(SUITESPARSE): wget unzip
 suitesparse: prep $(SUITESPARSE)
 
 	echo "building suitesparse for ", $(OSTYPE)
+
+#diff -u -r SuiteSparse-4.4.1 SuiteSparse > patches/SuiteSparse-4.4.1.patch
+	
+	patch -p0 < patches/SuiteSparse-4.4.1.patch
 
 	if [ "$(OSTYPE)" == "msys" -o "$(MSYSTEM)" == "MINGW32" ]; then \
 		echo "LIB = -lm" >> SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk; \
