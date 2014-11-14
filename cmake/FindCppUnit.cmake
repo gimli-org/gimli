@@ -20,17 +20,20 @@ FIND_PATH(CPPUNIT_INCLUDE_DIR cppunit/TestCase.h
     /usr/local/include
     /usr/include
     C:/MinGW/msys/1.0/local/include
+    ${EXTERNAL_DIR}/include
 )
 
 # With Win32, important to have both
 IF(WIN32)
   FIND_LIBRARY(CPPUNIT_LIBRARY cppunit
                ${CPPUNIT_INCLUDE_DIR}/../lib
+               ${EXTERNAL_DIR}/lib
                /usr/local/lib
 			   /local/lib
                /usr/lib)
   FIND_LIBRARY(CPPUNIT_DEBUG_LIBRARY cppunitd
                ${CPPUNIT_INCLUDE_DIR}/../lib
+               ${EXTERNAL_DIR}/lib
                /usr/local/lib
                /usr/lib)
 ELSE(WIN32)
@@ -38,11 +41,16 @@ ELSE(WIN32)
   FIND_LIBRARY(CPPUNIT_LIBRARY cppunit
                ${CPPUNIT_INCLUDE_DIR}/../lib
                /usr/local/lib
-               /usr/lib)
+               /usr/lib
+               ${EXTERNAL_DIR}/lib
+               )
   FIND_LIBRARY(CPPUNIT_DEBUG_LIBRARY cppunit
                ${CPPUNIT_INCLUDE_DIR}/../lib
                /usr/local/lib
-               /usr/lib)
+               /usr/lib
+               ${EXTERNAL_DIR}/lib
+               )
+               
 ENDIF(WIN32)
 
 IF(CPPUNIT_INCLUDE_DIR)

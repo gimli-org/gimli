@@ -4,10 +4,13 @@
 # This module defines
 # PYGCCXML_FOUND, If false, do not try to use pygccxml
 # PYPLUSPLUS_FOUND, If false, do not try to use pyplusplus
-
+if(NOT EXTERNAL_DIR)
+	set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+endif()
 
 find_path(PYGCCXML_PATH pygccxml/__init__.py
     HINTS 
+		${EXTERNAL_DIR}
         ${PROJECT_SOURCE_DIR}/../../pygccxml/
         /usr/lib/python2.7/site-packages/
         /usr/lib/python/site-packages/
@@ -16,6 +19,7 @@ find_path(PYGCCXML_PATH pygccxml/__init__.py
 
 find_path(PYPLUSPLUS_PATH pyplusplus/__init__.py
     HINTS 
+		${EXTERNAL_DIR}
         ${PROJECT_SOURCE_DIR}/../../pyplusplus/
         /usr/lib/python/site-packages/
         /usr/lib/python2.7/site-packages/

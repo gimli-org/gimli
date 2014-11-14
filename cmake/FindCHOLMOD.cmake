@@ -40,7 +40,10 @@
 #
 message(STATUS "Checking for package 'CHOLMOD'")
 
-set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+if(NOT EXTERNAL_DIR)
+	set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+endif()
+message(STATUS "External set to: ${EXTERNAL_DIR}")
 
 # Find packages that CHOLMOD depends on
 set(CMAKE_LIBRARY_PATH ${BLAS_DIR}/lib $ENV{BLAS_DIR}/lib ${CMAKE_LIBRARY_PATH})

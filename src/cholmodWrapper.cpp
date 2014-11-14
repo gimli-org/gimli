@@ -175,14 +175,20 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
         std::cerr << WHERE_AM_I << " umfpack not installed" << std::endl;
 #endif
         } else {
+#if USE_CHOLMOD
             return initMatrixChol_(S, CHOLMOD_COMPLEX);
+#endif
+			return 0;
         }
     } // if ! dummy
     return 0;
 }
 
 int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
+#if USE_CHOLMOD
     return initMatrixChol_(S, CHOLMOD_REAL);
+#endif
+	return 0;
 }
 
 int CHOLMODWrapper::factorise(){

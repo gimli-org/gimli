@@ -7,10 +7,16 @@
 
 # Optional user supplied search path.
 set (Triangle_PREFIX_PATH "" CACHE PATH "Directory to search Triangle header and library files")
+message(STATUS "Checking for package 'TRIANGLE'")
+if(NOT EXTERNAL_DIR)
+	set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+endif()
+message(STATUS "External set to: ${EXTERNAL_DIR}")
 
 # Find include directory.
 find_path (Triangle_INCLUDE_DIR triangle.h 
     ${Triangle_PREFIX_PATH}
+	${EXTERNAL_DIR}
     ${PROJECT_SOURCE_DIR}/external/triangle/
     ${PROJECT_BINARY_DIR}/external/triangle/
     /usr/local/include
@@ -21,6 +27,7 @@ find_path (Triangle_INCLUDE_DIR triangle.h
 IF(WIN32)
   FIND_LIBRARY(Triangle_LIBRARIES triangle
                ${Triangle_PREFIX_PATH}
+			   ${EXTERNAL_DIR}/lib
                ${PROJECT_SOURCE_DIR}/external/lib
                ${PROJECT_BINARY_DIR}/external/lib
                /usr/local/lib
@@ -29,6 +36,7 @@ ELSE(WIN32)
   # On unix system, debug and release have the same name
   FIND_LIBRARY(Triangle_LIBRARIES triangle
                ${Triangle_PREFIX_PATH}
+			   ${EXTERNAL_DIR}/lib
                ${PROJECT_SOURCE_DIR}/external/lib
                ${PROJECT_BINARY_DIR}/external/lib
                /usr/local/lib
