@@ -1,7 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2008-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Copyright (C) 2008-2014 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -330,7 +330,7 @@ public:
     void createParaDomain_();
     void recountParaMarker_();
 
-    CumulativeTrans< RVector > * transModel();
+    TransCumulative < RVector > * transModel();
 
     void setLocalTransFlag(bool flag) { haveLocalTrans_ = flag; }
 
@@ -377,7 +377,7 @@ protected:
 
     double interRegionConstraintsZWeight_;
 
-    CumulativeTrans< RVector >  localTrans_;
+    TransCumulative < RVector > localTrans_;
     bool haveLocalTrans_;
 };
 

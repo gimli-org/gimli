@@ -276,6 +276,10 @@ public:
       * Throws exception on violating boundaries. 
       */
     inline Vector < ValueType > operator () (Index start, SIndex end) const { return getVal(start, end);}
+    
+    inline Vector < ValueType > operator () (const std::pair< Index, SIndex > & p) const {
+        return getVal(p.first, p.second);
+    }
         
     /*!
      * Return a new vector that based on indices's.
@@ -321,13 +325,20 @@ public:
     /*!
     Implicite type converter
      */
-    template < class T > operator Vector< T >(){
+//     template < class T > operator Vector< T >(){
+//         //COUTMARKER
+//         Vector< T > f(this->size());
+//         for (Index i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
+//         return f;
+//     }
+
+    template < class T > operator const Vector< T >(){
         //COUTMARKER
         Vector< T > f(this->size());
         for (Index i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
         return f;
     }
-
+    
 //     template < > operator Vector< double >(){
 //         COUTMARKER
 //         Vector< double > f(this->size());
@@ -368,15 +379,21 @@ public:
         return *this;
     }
 
+    inline Vector< ValueType > & setVal(const ValueType & v, 
+                                        const std::pair< Index, SIndex > & p) {
+        return setVal(v, p.first, p.second);
+    }
+    
     /*! Set multiple values. Throws out of range exception if index check fails. */
-    inline Vector< ValueType > & setVal(const ValueType & val, const std::vector < Index > & idx) {
+    inline Vector< ValueType > & setVal(const ValueType & val,
+                                        const std::vector < Index > & idx) {
         for (Index i = 0; i < idx.size(); i ++) setVal(val, idx[i]);
         return *this;
     }
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
-                                            const std::vector < Index > & idx) {
+                                        const std::vector < Index > & idx) {
         if (idx.size() != vals.size()){
             throwLengthError(1, WHERE_AM_I + " idx.size() != vals.size() " +
                                 toStr(idx.size()) + " " + toStr(vals.size()));
@@ -391,7 +408,8 @@ public:
     /*! Set values from slice. If vals.size() == this.size() copy vals[start, end) -> this[start, end) else
         assume vals is a slice itsself, so copy vals[0, end-start] -> this[start, end)
          if end larger than this size() sets end = size. Throws exception on violating boundaries. */
-    inline Vector< ValueType > & setVal(const Vector < ValueType > & vals, Index start, Index end) {
+    inline Vector< ValueType > & setVal(const Vector < ValueType > & vals, 
+                                        Index start, Index end) {
         if (start > this->size()){
             throwLengthError(1, WHERE_AM_I + " vals.size() < start " +
                                 toStr(vals.size()) + " " + toStr(start) + " " + toStr(end)) ;
@@ -413,8 +431,15 @@ public:
         return *this;
     }
 
+    inline Vector< ValueType > & setVal(const Vector < ValueType > & v,
+                                        const std::pair< Index, SIndex > & p) {
+        return setVal(v, p.first, p.second);
+    }
+
+    
     /*! Like setVal(vals, start, end) instead copy use += */
-    inline Vector< ValueType > & addVal(const Vector < ValueType > & vals, Index start, Index end) {
+    inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
+                                        Index start, Index end) {
         if (end > this->size()) end = this->size();
         if (start > end) start = end;
 
@@ -432,8 +457,15 @@ public:
         return *this;
     }
 
-    /*! Add values from vals id index idx. Throws out of range exception if index check fails. */
-    inline Vector< ValueType > & addVal(const Vector < ValueType > & vals, const std::vector < Index > & idx) {
+    inline Vector< ValueType > & addVal(const Vector < ValueType > & v,
+                                        const std::pair< Index, SIndex > & p) {
+        return addVal(v, p.first, p.second);
+    }
+    
+    /*! Add values from vals id index idx.
+     * Throws out of range exception if index check fails. */
+    inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
+                                        const std::vector < Index > & idx) {
         if (idx.size() != vals.size()){
             throwLengthError(1, WHERE_AM_I + " idx.size() != vals.size() " +
                                 toStr(idx.size()) + " " + toStr(vals.size()));
@@ -458,6 +490,9 @@ public:
         if (end == -1 || end > (SIndex)size_) e = size_;
         
         Vector < ValueType > v(e-start);
+        
+        if (start == end) return v;
+            
         if (start >= 0 && start < e){
             std::copy(& data_[start], & data_[e], &v[0]);
         } else {
@@ -467,7 +502,9 @@ public:
         return v;
     }
 
-    
+    Vector < ValueType > getVal(const std::pair< Index, SIndex > & p) const {
+        return getVal(p.first, p.second);
+    }
     
 #ifdef PYGIMLI
 //    needed for: /usr/include/boost/python/def_visitor.hpp
@@ -551,7 +588,9 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         }
     }
 
-    /*! Fill the whole vector from the pointer of val. CAUTION!! There is no boundary check. val must be properly ([val, val+this->size()))assigned.  */
+    /*! Fill the whole vector from the pointer of val. 
+     *  CAUTION!! There is no boundary check. 
+     * Val must be properly ([val, val+this->size()))assigned.  */
     template< class V > Vector< ValueType > & fill(V * val) {
         for (register Index i = 0; i < size_; i ++) data_[i] = ValueType(val[i]);
         //std::copy(val, val + size_, data_);
@@ -559,11 +598,14 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     }
 
     /*! Fill the whole vector with val. */
-    Vector< ValueType > & fill(const ValueType & val) { std::fill(data_, data_ + size_, val); return *this; }
+    Vector< ValueType > & fill(const ValueType & val) { 
+        std::fill(data_, data_ + size_, val); return *this; }
 
     /*! Fill the whole vector with function expr(i) */
     template< class Ex > Vector< ValueType > & fill(Expr< Ex > expr){
-        for (register Index i = 0; i < size_; i ++) data_[i] = expr((ValueType)i);
+        for (register Index i = 0; i < size_; i ++){
+            data_[i] = expr((ValueType)i);
+        }
         return *this;
     }
 
@@ -1237,10 +1279,21 @@ template < class T > T sum(const Vector < T > & v){
 template < class T, class A > T min(const __VectorExpr< T, A > & a){ return min(Vector< T >(a)); }
 template < class T, class A > T max(const __VectorExpr< T, A > & a){ return max(Vector< T >(a)); }
 
+inline Complex max(const CVector & v){
+    Complex ret=v[0];
+    for (Index i = 1; i < v.size(); i ++ ) if (v[i] > ret) ret = v[i];
+    return ret;
+}
+
+inline Complex min(const CVector & v){
+    Complex ret=v[0];
+    for (Index i = 1; i < v.size(); i ++ ) if (v[i] < ret) ret = v[i];
+    return ret;
+}
+
 template < class T > T min(const Vector < T > & v){
     return *std::min_element(&v[0], &v[0] + v.size());
 }
-
 template < class T > T max(const Vector < T > & v){
     return *std::max_element(&v[0], &v[0] + v.size());
 }
@@ -1462,10 +1515,20 @@ Vector < ValueType > angle(const __VectorExpr< std::complex< ValueType >, A > & 
 }
 
 template < class ValueType >
-Vector < ValueType > angle(const Vector < std::complex< ValueType > > & cv){
-    return imag(log(cv));
+Vector < ValueType > angle(const Vector < std::complex< ValueType > > & z){
+    Vector < ValueType > v(z.size());
+    for (Index i = 0; i < z.size(); i ++) v[i] = std::atan2(imag(z[i]), real(z[i]));
+    return v;
 }
 
+template < class ValueType >
+Vector < ValueType > phase(const Vector < std::complex< ValueType > > & z){
+    Vector < ValueType > v(z.size());
+    for (Index i = 0; i < z.size(); i ++) v[i] = std::arg(z[i]);
+    return v;
+}
+
+    
 template < class ValueType, class A >
 Vector < ValueType > abs(const __VectorExpr< std::complex< ValueType >, A > & a){
     return abs(Vector < std::complex< ValueType > >(a));

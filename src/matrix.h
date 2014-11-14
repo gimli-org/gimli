@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2007-2014 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -124,13 +124,17 @@ class DLLEXPORT MatrixBase{
 public:
 
     /*! Default constructor. */
-    MatrixBase(){}
+    MatrixBase(bool verbose=false) : verbose_(verbose) {}
 
     /*! Default destructor. */
     virtual ~MatrixBase(){}
 
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_MATRIXBASE_RTTI; }
+    
+    void setVerbose(bool verbose){ verbose_ = verbose; }
+    
+    bool verbose() const { return verbose_; }
     
     /*! Return number of cols */
     virtual Index rows() const {
@@ -149,6 +153,11 @@ public:
        THROW_TO_IMPL
     }
 
+    /*! Fill Vector with 0.0. Don't change size.*/
+    virtual void clean() {
+        THROW_TO_IMPL
+    }
+    
     /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {
         THROW_TO_IMPL
@@ -172,8 +181,7 @@ public:
     }
 
 protected:
-    
-    
+    bool verbose_;
 };
 
 //! Identity matrix: derived from matrixBase
@@ -293,6 +301,11 @@ public:
     /*! Clear the matrix and free memory. */
     inline void clear() { mat_.clear(); }
 
+    /*! Fill Vector with 0.0. Don't change size.*/
+    inline void clean() { 
+        for (Index i = 0; i < mat_.size(); i ++) mat_[i].clear(); 
+    }
+    
     /*! Return number of rows. */
     inline Index rows() const { return mat_.size(); }
 
@@ -567,6 +580,20 @@ Matrix < ValueType > fliplr(const Matrix< ValueType > & m){
     Matrix < ValueType > n;
     for (Index i = 0; i < m.rows(); i ++) n.push_back(fliplr(m[i]));
     return n;
+}
+
+template < class ValueType >
+Matrix < ValueType > real(const Matrix < std::complex< ValueType > > & cv){
+    Matrix < ValueType > v(cv.rows());
+    for (Index i = 0; i < cv.rows(); i ++) v[i] = real(cv[i]);
+    return v;
+}
+
+template < class ValueType >
+Matrix < ValueType > imag(const Matrix < std::complex< ValueType > > & cv){
+    Matrix < ValueType > v(cv.rows());
+    for (Index i = 0; i < cv.rows(); i ++) v[i] = imag(cv[i]);
+    return v;
 }
 
 //********************* MATRIX I/O *******************************

@@ -9,14 +9,14 @@
     GIMLI::Placeholder x__;
 
     #include "testVector.h"
-//     #include "testGIMLiMisc.h" // not working on Win32 despite USE_IPC
-//     #include "testDataContainer.h"
-//     
-//     #include "testMesh.h"
-//     #include "testShape.h"
-//     #include "testGeometry.h"
-//     #include "testFEM.h"
-//     #include "testExternals.h"
+    #include "testGIMLiMisc.h" // not working on Win32 despite USE_IPC
+    #include "testDataContainer.h"
+    
+    #include "testMesh.h"
+    #include "testShape.h"
+    #include "testGeometry.h"
+    #include "testFEM.h"
+    #include "testExternals.h"
 #endif // HAVE_UNITTEST
 
 #include <cstdlib>

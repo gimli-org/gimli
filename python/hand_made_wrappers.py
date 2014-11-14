@@ -39,6 +39,8 @@ PyObject * RVector_getArray(GIMLI::RVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = vec.size();
     PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, &vec[0]);
+    //PyArray_XINCREF(ret);
+    Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
     //Py_DECREF(ret);
     return ret;
 }

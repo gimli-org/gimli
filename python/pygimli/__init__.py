@@ -44,7 +44,11 @@ if locale.localeconv()['decimal_point'] == ',':
 ###  Global shortcutes #####
 _pygimli_.load = None
 from pygimli.ioutils import load
-from pygimli.viewer import show
+from pygimli.viewer import show, showLater, plt
+
+def showNow():
+    showLater(0)
+
 ############################
 
 
@@ -164,7 +168,9 @@ def __getVal(self, idx):
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         idxL = _pygimli_.stdVectorUL()
         for i, ix in enumerate(idx):
-            if ix.dtype == bool:
+            if type(ix) == int:
+                idxL.append(int(ix))
+            elif ix.dtype == bool:
                 if ix:
                     idxL.append(i)
             else:
@@ -340,7 +346,11 @@ def __RVectorArrayCall__(self, idx=None):
         print(self)
         print(idx)
         raise Exception("we need to fix this")
-    return self.array()
+    import numpy as np
+    # we need to copy the array until we can handle increasing the reference counter in self.array() else it leads to strange behaviour
+    # test in testRValueConverter.py:testNumpyFromRVec()
+    return np.array(self.array())
+    #return self.array()
     
 _pygimli_.RVector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
@@ -351,7 +361,9 @@ _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 # non automatic exposed functions
 ############################
 def abs(v):
-    return fabs(v)
+    if type(v) == _pygimli_.CVector:
+        return _pygimli_.mag(v)
+    return _pygimli_.fabs(v)
 
 
 ########################################################

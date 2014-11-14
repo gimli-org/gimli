@@ -87,6 +87,7 @@ namespace pyplusplus{ namespace aliases{
 #else // if not PYTEST
 
 #include "baseentity.h"
+#include "blockmatrix.h"
 #include "curvefitting.h"
 #include "cholmodWrapper.h"
 #include "datacontainer.h"
@@ -207,10 +208,11 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class Vector< RVector3 >;
     template class Vector< int >;
     
-    template class Matrix<  double >;
-   // template class Matrix< Complex >;
+    template class Matrix< double >;
+    template class Matrix< std::complex< double > >;
     
-  
+    template class BlockMatrix< double >;
+    
     template class Pos< double >;
     template class Quaternion< double >;
     
@@ -281,12 +283,18 @@ DEFINE_COMPARE_OPERATOR__(>)
     template RVector pow(const RVector & a, int power);
     template RVector cat(const RVector & a, const RVector & b);
     
+
     template RVector real(const CVector & a);
     template RVector imag(const CVector & a);
     template RVector angle(const CVector & a);
+    template RVector phase(const CVector & a);
     template RVector abs(const CVector & a);
+    inline RVector mag(const CVector & a){return abs(a);}
     template CVector conj(const CVector & a);
 
+    template RMatrix real(const CMatrix & a);
+    template RMatrix imag(const CMatrix & a);
+    
     template double sum(const RVector & v);
     template Complex sum(const CVector & v);
     
@@ -442,8 +450,10 @@ namespace pyplusplus{ namespace aliases{
     
     typedef GIMLI::Matrix< double >                      RMatrix;
     typedef GIMLI::Matrix3< double >                     RMatrix3;
-    typedef GIMLI::Matrix< Complex >                     CMatrix;
+    typedef GIMLI::Matrix< std::complex< double > >      CMatrix;
 
+    typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
+      
     typedef GIMLI::VectorIterator< double >              RVectorIter;
     typedef GIMLI::VectorIterator< int >                 BVectorIter;
     
@@ -470,7 +480,7 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::TransLog< GIMLI::RVector >     RTransLog;
     typedef GIMLI::TransLogLU< GIMLI::RVector >   RTransLogLU;
     typedef GIMLI::TransCotLU< GIMLI::RVector >   RTransCotLU;
-    typedef GIMLI::CumulativeTrans < GIMLI::RVector > RTransCumulative;
+    typedef GIMLI::TransCumulative < GIMLI::RVector > RTransCumulative;
 
     typedef GIMLI::BoundingBox<double> RBoundingBox;
 

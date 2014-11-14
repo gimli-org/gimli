@@ -2,7 +2,7 @@
 
 try:
     import pygimli as pg
-    from pygimli.mplviewer import drawMesh, drawModel, drawField, drawSensors
+    from pygimli.mplviewer import drawMesh, drawModel, drawField, drawSensors, showLater
     from pygimli.mplviewer import createColorbar, drawStreamLines2
     
 except ImportError:

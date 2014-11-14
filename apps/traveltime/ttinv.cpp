@@ -193,7 +193,7 @@ int main(int argc, char *argv []) {
     RVector coverage(transMult(*f.jacobian(), one));
     save(coverage, "coverage.vector");
 
-    RVector scoverage(transMult(inv.constraintMatrix(), inv.constraintMatrix() * coverage));
+    RVector scoverage(transMult(f.constraintsRef(), f.constraintsRef() * coverage));
     for (Index i = 0 ; i < scoverage.size() ; i++){
         scoverage[i] = sign(std::abs(scoverage[i]));
     }

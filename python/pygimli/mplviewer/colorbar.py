@@ -278,3 +278,65 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     mappable.set_array(data)
     #mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
+
+def addCoverageAlpha(patches, coverage, dropTolerance=0.4):
+    """
+        Add alpha values to the colors of a polygon collection.
+    
+    Parameters
+    ----------
+
+    patches : 2D mpl mappable 
+        
+    coverage : array
+        coverage values. Maximum coverage mean no opaqueness.
+
+    dropTolerance : float
+        minimum coverage
+    
+    Usage
+    -----
+    
+        
+    """
+    
+    patches.set_antialiaseds(True)
+    patches.set_linewidth(0.000)
+
+    # generate individual color values here
+    patches.update_scalarmappable()
+
+    cols = patches.get_facecolor()
+
+    C = np.asarray(coverage)
+    #print(np.min(C), np.max(C))
+            
+    if (np.min(C) < 0.) | (np.max(C) > 1.) | (np.max(C) < 0.5):
+        
+        nn, hh = np.histogram(C, 50)
+        nnn = nn.cumsum(axis = 0) / float(len(C))
+        
+        #print("min-max nnn ", min(nnn), max(nnn))
+        mi = hh[min(np.where(nnn > 0.02)[0])]
+
+        if min(nnn) > 0.4:
+            ma = max(C)
+        else:
+            ma = hh[max(np.where(nnn < 0.4)[0])]
+
+            #mi = hh[min(np.where(nnn > 0.2)[0])]
+            #ma = hh[max(np.where(nnn < 0.7)[0])]
+            C = (C - mi) / (ma - mi)
+            C[np.where(C < 0.)] = 0.0
+            C[np.where(C > 1.)] = 1.0
+
+            # add alpha value to the color values
+            cols[:, 3] = C
+
+            patches._facecolors = cols
+            #patches._edgecolor = 'None'
+
+            # delete patch data to avoid automatically rewrite of _facecolors
+            patches._A = None
+
+# def addCoverageAlpha(...)

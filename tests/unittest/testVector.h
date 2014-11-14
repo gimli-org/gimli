@@ -3,6 +3,7 @@
 #include <gimli.h>
 #include <pos.h>
 #include <vector.h>
+#include <blockmatrix.h>
 #include <matrix.h>
 #include <sparsematrix.h>
 #include <vectortemplates.h>
@@ -16,19 +17,20 @@ class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(VectorTest);
     
     CPPUNIT_TEST(testIterator);
-//     CPPUNIT_TEST(testEquality);
-//     CPPUNIT_TEST(testFill);
-//     CPPUNIT_TEST(testSetVal);
-//     CPPUNIT_TEST(testUnaryOperations);
-//     CPPUNIT_TEST(testBinaryOperations);
-//     CPPUNIT_TEST(testFunctions);
-//     CPPUNIT_TEST(testStdVectorTemplates);
-//     CPPUNIT_TEST(testCVector);
-//     CPPUNIT_TEST(testRVector3);
-//     CPPUNIT_TEST(testMatrix);
-//     CPPUNIT_TEST(testSparseMapMatrix);
-//     CPPUNIT_TEST(testFind);
-//     CPPUNIT_TEST(testIO);
+    CPPUNIT_TEST(testEquality);
+    CPPUNIT_TEST(testFill);
+    CPPUNIT_TEST(testSetVal);
+    CPPUNIT_TEST(testUnaryOperations);
+    CPPUNIT_TEST(testBinaryOperations);
+    CPPUNIT_TEST(testFunctions);
+    CPPUNIT_TEST(testStdVectorTemplates);
+    CPPUNIT_TEST(testCVector);
+    CPPUNIT_TEST(testRVector3);
+    CPPUNIT_TEST(testMatrix);
+    CPPUNIT_TEST(testBlockMatrix);
+    CPPUNIT_TEST(testSparseMapMatrix);
+    CPPUNIT_TEST(testFind);
+    CPPUNIT_TEST(testIO);
 //     
 //     CPPUNIT_TEST_EXCEPTION(funct, exception);
     CPPUNIT_TEST_SUITE_END();
@@ -46,7 +48,6 @@ public:
         CPPUNIT_ASSERT(i == 10);
         
         CPPUNIT_ASSERT(v(0,10).beginPyIter()[0] == v[0]);
-        exit(0);
     }
     
     void testEquality(){
@@ -227,7 +228,6 @@ public:
         CVector c1(dim, Complex(1.0, 0.0)); 
         RVector r1(dim, 1.0);
         CVector c2;
-        
         c2 = c1 * r1; 
         CPPUNIT_ASSERT(c1 == c2);
         c2 = r1 * c1; 
@@ -240,12 +240,9 @@ public:
         r1 *= 0.0;
         CPPUNIT_ASSERT(imag(c1 * conj(c1)) == r1);
         CPPUNIT_ASSERT(RVector(angle(c1) + angle(conj(c1))) == r1);
-
         CPPUNIT_ASSERT(abs(c1) == RVector(sqrt(real(c1) * real(c1)
                                                   + imag(c1) * imag(c1))));
-        
         CPPUNIT_ASSERT(abs(c1) == RVector(exp(real(log(c1)))));
-        
         //real, imag, angle, conj, abs
     }
     
@@ -354,6 +351,41 @@ public:
     void testMatrix(){
         testMatrix_< double >();
 //        testMatrix_< float >();
+    }
+    
+    void testBlockMatrix(){
+        GIMLI::BlockMatrix < double > A(false);
+
+        GIMLI::RMatrix B;
+        GIMLI::Index m1 = A.addMatrix(&B);
+    
+        GIMLI::RSparseMapMatrix C;
+        GIMLI::Index m2 = A.addMatrix(&C);
+    
+        A.addMatrixEntry(m1, 0, 0);
+        A.addMatrixEntry(m1, 3, 3);
+        A.addMatrixEntry(m1, 3, 0);
+        A.addMatrixEntry(m2, 6, 0, -1.0);
+    
+        B.resize(3, 3);
+        B += 1.0;
+    
+        C.resize(3, 3);
+        for (uint i = 0; i < 3; i ++ ){
+            for (uint j = 0; j < 3; j ++ ){
+                C.addVal(i,j,1);
+            }
+        }
+        
+        CPPUNIT_ASSERT(A.rows() == 9);
+        CPPUNIT_ASSERT(A.cols() == 6);
+            
+        GIMLI::RVector b(A.cols(), 1);
+        CPPUNIT_ASSERT(sum(A.mult(b)) == 18);
+        GIMLI::RVector c(A.rows(), 1);
+        CPPUNIT_ASSERT(sum(A.transMult(c)) == 18);
+    
+    
     }
     
     void testSparseMapMatrix(){

@@ -25,6 +25,7 @@ np2 = np.linspace(2.1, 2.1, N)
 pg1 = pg.RVector(np1)
 pg2 = pg.RVector(np2)
 
+st = range(N)
 
 """
 
@@ -44,6 +45,8 @@ print("np * pg", timeit.repeat('np1 * pg1', setup=setup, number=5000))
 print("sum(np)", timeit.repeat('sum(np1)', setup=setup, number=300))
 print("sum(pg)", timeit.repeat('sum(pg1)', setup=setup, number=300))
 print("pg.sum(pg)", timeit.repeat('pg.sum(pg1)', setup=setup, number=300))
+print("pg.sum(st)", timeit.repeat('pg.sum(st)', setup=setup, number=300))
+
 
 print("s", sw.duration(True))
 

@@ -182,6 +182,8 @@ static const uint8 MESH_SHAPE_PYRAMID_RTTI     = 234;
 static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
 static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
+static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 3;
+
 
 extern DLLEXPORT bool __SAVE_PYTHON_GIL__;
 extern DLLEXPORT bool __GIMLI_DEBUG__;
@@ -221,6 +223,7 @@ typedef SparseMapMatrix< double, Index >  RSparseMapMatrix;
 typedef SparseMapMatrix< Complex, Index >  CSparseMapMatrix;
 
 template < class ValueType > class Matrix;
+template < class ValueType > class BlockMatrix;
 template < class ValueType > class Matrix3;
 template < class ValueType > class Vector;
 //template <> class Vector< double >;
@@ -234,6 +237,8 @@ typedef Vector< long > LVector;
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
+
+typedef BlockMatrix < double > RBlockMatrix;
 
 //#typedef Vector< unsigned char > BVector;
 

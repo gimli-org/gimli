@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2014 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -587,8 +587,9 @@ void RegionManager::createParaDomain_(){
     IndexArray cellIdx;
     cellIdx.reserve(mesh_->cellCount());
 
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
-          it != end; it ++){
+    for (std::map< int, Region* >::const_iterator
+         it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
+        
         if (!it->second->isBackground()){
             std::transform(it->second->cells().begin(), it->second->cells().end(),
                             std::back_inserter(cellIdx), std::mem_fun(&Cell::id));
@@ -596,7 +597,6 @@ void RegionManager::createParaDomain_(){
     }
 
     paraDomain_->createMeshByCellIdx(*mesh_, cellIdx);
-
     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
 }
 
@@ -859,6 +859,7 @@ uint RegionManager::interRegionConstraintsCount() const {
 void RegionManager::fillConstraints(RSparseMapMatrix & C){
     uint nModel  = parameterCount();
     uint nConstr = constraintCount();
+
     C.clear();
 
     //!** no regions: fill 0th-order constraints
@@ -1130,9 +1131,9 @@ void RegionManager::loadMap(const std::string & fname){
         } else {
             std::cerr << WHERE_AM_I << " cannot interpret 1.st token: " << token[0] << std::endl;
             std::cerr << "Available are: " << std::endl
-            << "#No" << std::endl
-            << "#Interface" << std::endl
-            << "#Inter-region" << std::endl;
+            << "#no" << std::endl
+            << "#interface" << std::endl
+            << "#inter-region" << std::endl;
             row = getRow(file); if (row.empty()) continue;
         }
     }
@@ -1165,24 +1166,22 @@ void RegionManager::saveMap(const std::string & fname){
     THROW_TO_IMPL
 }
 
-CumulativeTrans< RVector > * RegionManager::transModel(){
+TransCumulative < RVector > * RegionManager::transModel(){
     if (regionMap_.empty()){
         return NULL;
     }
 
-    if (localTrans_.transVec_.size() != allRegionMarker_(true).size()){
-        localTrans_.transVec_.clear();
-        localTrans_.bounds_.clear();
-
-        for (std::map< int, Region* >::const_iterator it  = regionMap_.begin();
-                                                       it != regionMap_.end(); it ++){
+    if (localTrans_.size() != allRegionMarker_(true).size()){
+        localTrans_.clear();
+        
+        for (std::map< int, Region* >::const_iterator 
+             it = regionMap_.begin(); it != regionMap_.end(); it ++){
 
             if (!it->second->isBackground()){
 
-                localTrans_.transVec_.push_back(it->second->transModel());
-
-                localTrans_.bounds_.push_back(std::pair< uint, uint >(it->second->startParameter(),
-                                                                        it->second->endParameter()));
+                localTrans_.add(*it->second->transModel(),
+                                it->second->startParameter(),
+                                it->second->endParameter());
             }
         }
     }

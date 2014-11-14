@@ -27,6 +27,7 @@ namespace GIMLI{
 RVector logDropTol(const RVector & data, double logdrop, bool normalize){
     RVector tmp(data);
     RVector tmp2(data);
+//     __MS(data)
     tmp2.setVal(logdrop, find(data == 0.0));
         
     for (uint i = 0; i < tmp.size(); i ++) {
@@ -39,6 +40,8 @@ RVector logDropTol(const RVector & data, double logdrop, bool normalize){
         double m = max(abs(tmp));
         if (m != 0.0) tmp /= m;
     }
+//     __MS(tmp)
+//     __MS(RVector(sign(tmp2)))
     return tmp * sign(tmp2);
 }
 

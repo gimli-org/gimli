@@ -67,7 +67,7 @@ public:
     virtual ~DataContainer();
 
     /*! Copy constructor, assign a copy of data and return a reference to this DataContainer. */
-    DataContainer & operator = (const DataContainer & data);
+    DataContainer & operator=(const DataContainer & data);
 
     /*! Return read-only reference to the RVector at the data map associated to the token. */
     inline const RVector & operator() (const std::string & token) const { return get(token); }
@@ -131,7 +131,7 @@ public:
     inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
 
     /*! Set the position for the i-th sensor. */
-    inline void setSensorPosition(uint i, const RVector3 & pos) { sensorPoints_[ i ] = pos; }
+    inline void setSensorPosition(uint i, const RVector3 & pos) { sensorPoints_[i ] = pos; }
 
     /*! Return a single sensor position. */
     inline const RVector3 & sensorPosition(uint i) const { return sensorPoints_[i]; }
@@ -305,17 +305,17 @@ public:
     }
 
     /*! Mark data valid by index vector. Shortcut for this->ref("valid")->setVal(idx, valid). */
-    inline void markValid(const IndexArray & idx, bool valid = true){
-        dataMap_[ "valid" ].setVal(valid, idx);
+    inline void markValid(const IndexArray & idx, bool valid=true){
+        dataMap_["valid"].setVal(valid, idx);
     }
     /*! Mark data valid by index vector. Shortcut for this->ref("valid")->setVal(bool vector, valid). */
-    inline void markValid(const BVector & bvec, bool valid = true){
-        dataMap_[ "valid" ].setVal(valid, find(bvec));
+    inline void markValid(const BVector & bvec, bool valid=true){
+        dataMap_["valid"].setVal(valid, find(bvec));
     }
 
     /*! Mark single data valid. this->ref("valid")->setVal(idx, valid). */
-    inline void markValid(Index idx, bool valid = true){
-        dataMap_[ "valid" ].setVal(valid, idx);
+    inline void markValid(Index idx, bool valid=true){
+        dataMap_["valid" ].setVal(valid, idx);
     }
 
     /*! Mark data invalid by index vector. */
@@ -332,7 +332,7 @@ public:
      * Call the virtual method checkData.
      * If remove is set, invalid data will be removed.
      */
-    void checkDataValidity(bool remove = true);
+    void checkDataValidity(bool remove=true);
 
     /*! * Virtual method with some data validity rules. Wrong data should be marked invalid here. */
     virtual void checkDataValidityLocal(){}
@@ -341,11 +341,11 @@ public:
     void removeInvalid();
 
     /*! Remove all unused sensors from this DataContainer and recount data sensor index entries. */
-    void removeUnusedSensors(bool verbose = false);
+    void removeUnusedSensors(bool verbose=false);
     
     /*! Set input format string (e.g. for import routines) */
     inline void setInputFormatString(const std::string & inputFormatString){ 
-        inputFormatString_ = inputFormatString; }
+        inputFormatString_=inputFormatString; }
        
     /*! Return the token list of a previously loaded file. */
     inline const std::string & inputFormatString() const {
