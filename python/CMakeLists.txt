@@ -4,7 +4,7 @@ ADD_CUSTOM_COMMAND(
     COMMAND 
         ${PYTHON_EXECUTABLE}
     ARGS 
-        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-includes=${Boost_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-includes=${Boost_INCLUDE_DIR} --gccxml=${GCCXML_EXECUTABLE}
     TARGET
         pggen
     DEPENDS 
@@ -24,8 +24,7 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(pgbuild ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
-        [ -z $J ] && PARABUILD=1 || PARABUILD=$$J && make -j $$PARABUILD -C ${CMAKE_CURRENT_BINARY_DIR} pg
-        #make -j1 -C ${CMAKE_CURRENT_BINARY_DIR} pg
+        [ -z "$J" ] && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_CURRENT_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_CURRENT_BINARY_DIR} pg
     TARGET
         pgbuild
    )

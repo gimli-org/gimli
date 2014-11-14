@@ -157,7 +157,11 @@ def generate(defined_symbols, extraIncludes):
         if sys.platform == 'win32':
             #os.name == 'nt' (default on my mingw) results in wrong commandline for gccxml
             os.name = 'mingw'
-            gccxmlpath = settings.gccxml_path.replace('\\', '\\\\') + '\\\\gccxml.exe'
+            gccxmlpath = settings.gccxml_path.replace('\\', '\\\\') 
+            gccxmlpath = settings.gccxml_path.replace('/', '\\') 
+            if not '.exe' in gccxmlpath:
+                gccxmlpath += '\\gccxml.exe'
+                
         else:
             gccxmlpath = settings.gccxml_path
     except Exception as e:
@@ -385,9 +389,12 @@ if __name__ == '__main__':
 
     optionParser = OptionParser("usage: %prog [options]")
     optionParser.add_option("", "--extra-includes", dest="extraIncludes")
+    optionParser.add_option("", "--gccxml", dest="gccxml")
                       
     (options, args) = optionParser.parse_args()
-    
+    if options.gccxml:
+        settings.gccxml_path = options.gccxml
+     
     generate(defined_symbols, options.extraIncludes)
 
 

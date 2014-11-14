@@ -42,7 +42,9 @@
     #define NOMINMAX
 #endif
     #include <stddef.h>
+#ifndef PYGIMLI_GCCXML
     #include <windows.h>
+#endif
     #undef near
     #undef far
 #else /* ELSE NO WINDOWS */
