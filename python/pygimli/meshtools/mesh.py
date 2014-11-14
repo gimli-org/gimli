@@ -10,8 +10,10 @@ def createMesh(poly, quality=30, area=0.0,
                verbose=False):
     """
     Create a mesh for a given PLC using triangle (http://www.cs.cmu.edu/~quake/triangle.html)
-    or tetgen
-    if the gimli support for the meshgenerator is installed. Poly need to be a valid PLC.
+    or tetgen if the gimli support for the meshgenerator is installed.
+    Poly need to be a valid PLC.
+    
+    If poly is a list coordinates a simple Delaunay mesh of the convex hull will be created.
 
     Tetgen support need to be implemented
 
@@ -21,6 +23,7 @@ def createMesh(poly, quality=30, area=0.0,
         2D or 3D gimli mesh that contains the PLC.
         2D mesh needs edges
         3D mesh needs ... to be implemented
+        List of x y pairs [[x0, y0], ... ,[xN, yN]]
     quality: float
         2D triangle quality sets a minimum angle constraint. Be careful with values above 34 degrees
     area: float
@@ -40,6 +43,12 @@ def createMesh(poly, quality=30, area=0.0,
 
     """
 
+    if type(poly) == list or type(poly) == zip:
+        delPLC = pg.Mesh(2)
+        for p in poly:
+            delPLC.createNode(p[0], p[1], 0.0)
+        return createMesh(delPLC, switches='-zeY')
+
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
             raise Exception("No nodes in poly to create a valid mesh")
@@ -55,11 +64,13 @@ def createMesh(poly, quality=30, area=0.0,
                 switches += 'a'+ str(area)
 
             switches += 'q' + str(quality)
+        
+        if not verbose:
+            switches += 'Q'
             
-            if not verbose:
-                switches += 'Q'
-                
         tri.setSwitches(switches)
+        
+        
 
         mesh = tri.generate()
 
@@ -73,7 +84,6 @@ def createMesh(poly, quality=30, area=0.0,
 
     else:
         raise('not yet implemented')
-
 
 
 def readGmsh(fname, verbose=False):

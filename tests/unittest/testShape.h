@@ -94,23 +94,23 @@ public:
     }
     void testTouch1(){
         RVector sf;
-        __MS(*t1_)
-        __MS(t1_->node(0))
-        __MS(t1_->node(1))
-        __MS(t1_->node(2))
+//         __MS(*t1_)
+//         __MS(t1_->node(0))
+//         __MS(t1_->node(1))
+//         __MS(t1_->node(2))
         t1_->shape().isInside(GIMLI::RVector3(-0.1,  0.0), sf, false); 
-        __MS(sf)
+//         __MS(sf)
         CPPUNIT_ASSERT(sortIdx(sf)[0] == 1);
         
         t1_->shape().isInside(GIMLI::RVector3(0.5,  1.0), sf, false);
-        __MS(sf)
+//         __MS(sf)
         CPPUNIT_ASSERT(sortIdx(sf)[0] == 1);
         
         t1_->shape().isInside(GIMLI::RVector3(0.5, -1.0), sf, false);
-        __MS(sf)
+//         __MS(sf)
         CPPUNIT_ASSERT(sortIdx(sf)[0] == 2);
 
-        __MS(sortIdx(sf)[0])
+//         __MS(sortIdx(sf)[0])
         GIMLI::Node n1(5.0, -1.0); n1.setId(0);
         GIMLI::Node n2(6.0, -1.0); n2.setId(1);
         GIMLI::Node n3(6.0,  0.0); n3.setId(2);

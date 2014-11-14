@@ -179,13 +179,14 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
 
     return axis, patches, mesh, data
 
-def showDC2DInvResMod(modfile, contour, cMin = None, cMax = None, label = "", cmapname = None):
-    mesh = pg.Mesh();
-    mesh.importMod(modfile);
-    mesh.showInfos();
+def showDC2DInvResMod(modfile, contour, cMin=None, cMax=None,
+                      label="", cmapname=None):
+    mesh = pg.Mesh()
+    mesh.importMod(modfile)
+    mesh.showInfos()
 
     fig = plt.figure()
-    axis = fig.add_subplot(111)
+    axis = fig.add_subplot(1,1,1)
     axis.set_aspect('equal')
 
     data = mesh.exportData("rho/Ohmm")
@@ -193,9 +194,11 @@ def showDC2DInvResMod(modfile, contour, cMin = None, cMax = None, label = "", cm
     
     patches = None
     if (contour):
-        patches = showMeshInterpolated(axis, mesh, data, cov = cov)
+        patches = showMeshInterpolated(axis, mesh, data, cov=cov)
     else:
-        patches = showMeshPatch(axis, mesh, data, cov = cov, cMin = cMin, cMax = cMax, label = label, cmapname = cmapname)
+        patches = showMeshPatch(axis, mesh, data, cov=cov,
+                                cMin=cMin, cMax=cMax, label=label,
+                                cmapname=cmapname)
 
     return axis, patches, mesh, data
 
@@ -225,37 +228,39 @@ def showMeshPatch(axis, mesh, data,
 
     if cov is not None:
         if alphaPatch:
-            patches.set_antialiaseds(True)
-            patches.set_linewidth(0.000)
-
-            # generate individual color values here
-            patches.update_scalarmappable()
-
-            cols = patches.get_facecolor()
-
-            C = np.asarray(cov)
-            print(np.min(C), np.max(C))
+            pg.mplviewer.addCoverageAlpha(patches, cov)
             
-            if (np.min(C) < 0.) | (np.max (C) > 1.) | (np.max(C) < 0.5): # not already alpha map
-                (nn, hh) = np.histogram(C, 50)
-                nnn = nn.cumsum(axis = 0) / float(len(C))
-                print("min-max nnn ", min(nnn), max(nnn))
-                mi = hh[min(np.where(nnn > 0.02)[0])]
-                if min(nnn)>0.4:
-                    ma = max(C)
-                else:
-                    ma = hh[max(np.where(nnn < 0.4)[0])]
+            #patches.set_antialiaseds(True)
+            #patches.set_linewidth(0.000)
 
-                #mi = hh[min(np.where(nnn > 0.2)[0])]
-                #ma = hh[max(np.where(nnn < 0.7)[0])]
-                C = (C - mi) / (ma - mi)
-                C[np.where(C < 0.)] = 0.0
-                C[np.where(C > 1.)] = 1.0
+            ## generate individual color values here
+            #patches.update_scalarmappable()
 
-            # add alpha value to the color values
-            cols[:, 3] = C
+            #cols = patches.get_facecolor()
 
-            patches._facecolors = cols
+            #C = np.asarray(cov)
+            #print(np.min(C), np.max(C))
+            
+            #if (np.min(C) < 0.) | (np.max (C) > 1.) | (np.max(C) < 0.5): # not already alpha map
+                #(nn, hh) = np.histogram(C, 50)
+                #nnn = nn.cumsum(axis = 0) / float(len(C))
+                #print("min-max nnn ", min(nnn), max(nnn))
+                #mi = hh[min(np.where(nnn > 0.02)[0])]
+                #if min(nnn)>0.4:
+                    #ma = max(C)
+                #else:
+                    #ma = hh[max(np.where(nnn < 0.4)[0])]
+
+                ##mi = hh[min(np.where(nnn > 0.2)[0])]
+                ##ma = hh[max(np.where(nnn < 0.7)[0])]
+                #C = (C - mi) / (ma - mi)
+                #C[np.where(C < 0.)] = 0.0
+                #C[np.where(C > 1.)] = 1.0
+
+            ## add alpha value to the color values
+            #cols[:, 3] = C
+
+            #patches._facecolors = cols
             #patches._edgecolor = 'None'
 
             # delete patch data to avoid automatically rewrite of _facecolors
@@ -562,10 +567,11 @@ def main(argv):
 
         try:
             if (meshname.rfind('.mod') != -1):
-                axes, patches, mesh, data = showDC2DInvResMod(meshname, options.contourplot,
-                                         cMin=options.cMin,
-                                         cMax=options.cMax,
-                                         label=options.label)
+                axes, patches, mesh, data = showDC2DInvResMod(meshname,
+                                                              options.contourplot,
+                                                              cMin=options.cMin,
+                                                              cMax=options.cMax,
+                                                              label=options.label)
 
             elif ((meshname.rfind('.bms') != -1) | (meshname.rfind('.vtk') != -1)):
                 axes, patches, mesh, data = showTriMesh(meshname, options.datafile, options.contourplot

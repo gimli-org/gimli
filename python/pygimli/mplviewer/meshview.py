@@ -145,17 +145,19 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
         
         Implement this with tripcolor  ..........!!!!!!!!
     """
-    
+       
     useTri = False
     if 'tri' in kwargs:
         useTri = kwargs['tri']
         del(kwargs['tri'])
+        
     if useTri:
         gci = drawMPLTri(axes, mesh, data, cmap=cmap, 
                          *args, **kwargs)
 
     else:
-        gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha, verbose=verbose)
+        gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha,
+                                             verbose=verbose)
 
         if cmap is not None:
             if isinstance(cmap, str):
@@ -185,10 +187,19 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
 
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
+        coverage = None
+        if 'coverage' in kwargs:
+            coverage = kwargs['coverage']
+            del(kwargs['coverage'])
+        if coverage is not None:
+            addCoverageAlpha(gci, coverage)
 
 
     if xlab is not None: axes.set_xlabel(xlab)
     if ylab is not None: axes.set_ylabel(ylab)
+
+    
+        
 
     return gci
 # def drawModel(...)
@@ -414,8 +425,7 @@ def createTriangles(mesh, data=None):
     #x.round(1e-1)
     y = pg.y(mesh.positions())
     #y.round(1e-1)
-    #y = pg.y(mesh.positions())
-    
+        
     triCount = 0
 
     for c in mesh.cells():
@@ -451,10 +461,10 @@ def createTriangles(mesh, data=None):
     z = None
     if data is not None:
         if len(data) == mesh.cellCount():
-            #strange behaviour if we just use these slice
+            #strange behavior if we just use these slice
             z = np.array(data[dataIdx])
             
-    return x, y, triangles, z
+    return x, y, triangles, z, dataIdx
 
 
 def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
@@ -463,25 +473,37 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
     """
         Only for triangle/quadrangle meshes currently
     """
-    x, y, triangles, z = createTriangles(mesh, data)
+    x, y, triangles, z, zIdx = createTriangles(mesh, data)
+    
+    gci = None
     
     levels = []
     if not 'levels' in kwargs:
-        nLevs = 8
-        if 'nLevs' in kwargs:
-            nLevs = kwargs['nLevs']
+        nLevs = kwargs.pop('nLevs', 8)
         levels = autolevel(data, nLevs)
         
     if len(data) == mesh.cellCount():
     
+        coverage = kwargs.pop('coverage', None)
+        #if 'coverage' in kwargs:
+            #coverage = kwargs['coverage']
+            #del(kwargs['coverage'])
+         
         shading = 'flat'
         if interpolate:
             shading = 'gouraud'
-            z = pg.cellDataToPointData(mesh, z)
-            
+            z = pg.cellDataToPointData(mesh, data)
+
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
-                             #edgecolors='k',
                              *args, **kwargs)
+        
+        if coverage is not None:
+            if len(data) == mesh.cellCount:
+                addCoverageAlpha(gci, coverage[zIdx])
+            else:
+                addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
+                
+        
     elif len(data) == mesh.nodeCount():
         
         gci = axes.tricontourf(x, y, triangles, data, levels, 

@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2005-2013 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2005-2014 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,6 +26,7 @@
 #include "stopwatch.h"
 #include "vector.h"
 #include "vectortemplates.h"
+#include "sparsematrix.h"
 
 namespace GIMLI{
 
@@ -57,18 +58,23 @@ ModellingBase::~ModellingBase() {
     delete regionManager_;
     if (mesh_) delete mesh_;
     if (jacobian_ && ownJacobian_) delete jacobian_;
+    if (constraints_ && ownConstraints_) delete constraints_;
 }
 
 void ModellingBase::init_() {
     regionManager_      = new RegionManager(verbose_);
     regionManagerInUse_ = false;
     
-    mesh_               = NULL;
-    jacobian_           = NULL;
-
+    mesh_               = 0;
+    jacobian_           = 0;
+    constraints_        = 0;
+    dataContainer_      = 0;
+    
     ownJacobian_        = false;
+    ownConstraints_     = false;
     
     initJacobian();
+    initConstraints();
 }
 
 void ModellingBase::setData(DataContainer & data){
@@ -80,18 +86,27 @@ void ModellingBase::setData(DataContainer & data){
     updateDataDependency_();
 }
 
+DataContainer & ModellingBase::data() const{
+    if (dataContainer_ == 0){
+        throwError(1, WHERE_AM_I + " no data defined");
+    }
+    return * dataContainer_;
+}
+    
 RVector ModellingBase::startModel() {
+    //*! Return startmodel if it exist
     if (startModel_.size() > 0) return startModel_;
 
-    setStartModel(regionManager_->createStartVector());
-
+    //*! Create startmodel from default builder (abstract may be overloaded)
     if (startModel_.size() == 0){
-    /*  std::cerr << WHERE_AM_I << "Warning! no mesh defined. "
-        "You should either define a mesh or " +
-        "override this function." << std::endl;*/
-
         setStartModel(createDefaultStartModel());
     }
+    
+    //*! Create startmodel from regionManger
+    if (startModel_.size() == 0){
+        setStartModel(regionManager_->createStartVector());
+    }
+    
     return startModel_;
 }
 
@@ -147,6 +162,7 @@ void ModellingBase::setMesh(const Mesh & mesh, bool holdRegionInfos) {
     if (verbose_) std::cout << "FOP updating mesh dependencies ... ";
     startModel_.clear();
     updateMeshDependency_();
+    
     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
 }
 
@@ -203,6 +219,50 @@ void ModellingBase::createJacobian(const RVector & model){
     if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
 }
     
+void ModellingBase::initConstraints(){
+    if (constraints_ == 0){
+        constraints_ = new RSparseMapMatrix(0, 0, 0);
+        ownConstraints_ = true;
+    } 
+}
+
+void ModellingBase::setConstraints(MatrixBase * C){
+    if (!constraints_ && ownConstraints_){
+        delete constraints_;
+    }
+    constraints_ = C;
+    ownConstraints_ = false;
+}
+
+void ModellingBase::createConstraints(){
+    this->regionManager().fillConstraints(constraintsRef());
+}
+    
+void ModellingBase::clearConstraints(){
+    if (constraints_) constraints_->clear();
+}
+    
+MatrixBase * ModellingBase::constraints() { 
+    //__MS(constraints_->rows())
+    return constraints_;
+}
+    
+MatrixBase * ModellingBase::constraints() const { 
+//__MS(constraints_->rows())
+    return constraints_;
+}
+    
+RSparseMapMatrix & ModellingBase::constraintsRef() const { 
+    if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
+    return *dynamic_cast < RSparseMapMatrix *>(constraints_); 
+}
+    
+RSparseMapMatrix & ModellingBase::constraintsRef() { 
+    if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
+    return *dynamic_cast < RSparseMapMatrix *>(constraints_); 
+}
+        
+    
 void ModellingBase::mapModel(const RVector & model, double background){
     int marker = -1;
     std::vector< Cell * > emptyList;
@@ -223,7 +283,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
             if (model[ marker ] < TOLERANCE){
                 emptyList.push_back(&mesh_->cell(i));
             }
-            mesh_->cell(i).setAttribute(model[ marker ]);
+            mesh_->cell(i).setAttribute(model[marker]);
 
         } else {
             mesh_->cell(i).setAttribute(0.0);
@@ -231,18 +291,18 @@ void ModellingBase::mapModel(const RVector & model, double background){
         }
     }
 
-    if (emptyList.size() == mesh_->cellCount()){
+    // if background == 0.0 .. empty cells are allowed
+    if (emptyList.size() == mesh_->cellCount() && background != 0.0){
         throwLengthError(1, WHERE_AM_I + " too many empty cells" + toStr(emptyList.size())
                        + " == " + toStr(mesh_->cellCount()));
     }
 
-    mesh_->fillEmptyCells(emptyList, background);
+    if (background != 0.0){
+        mesh_->fillEmptyCells(emptyList, background);
+    }
 }
 
-void ModellingBase::mapModel(const CVector & model, Complex background){
-    mapModel(real(model), real(background));
-}
-    
+   
 void ModellingBase::initRegionManager() {
     if (!regionManagerInUse_){
         if (mesh_){
@@ -254,6 +314,7 @@ void ModellingBase::initRegionManager() {
 }
 
 const RegionManager & ModellingBase::regionManager() const {
+    if (regionManager_ == 0) throwError(1, "No RegionManager initialized");
     return *regionManager_;
 }
 

@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008-2009 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,93 +27,93 @@
 #include <string>
 using namespace GIMLI;
 
-#define vcout if ( verbose ) std::cout
-#define dcout if ( debug ) std::cout
-#define DEBUG if ( debug )
+#define vcout if (verbose) std::cout
+#define dcout if (debug) std::cout
+#define DEBUG if (debug)
 
 
-int main( int argc, char *argv [] ) {
+int main(int argc, char *argv []) {
     bool lambdaOpt = false, doResolution = false, isRobust = false;
     double lambda = 10.0, lbound = 0.0, ubound = 0.0, errPerc = 5.0, errPhase = 5.;
     int maxIter = 10, nlay = 3, verboseCount = 0;
-    std::string modelFile( NOT_DEFINED ), dataFileName;
+    std::string modelFile(NOT_DEFINED), dataFileName;
     GIMLI::Placeholder x__;
 
     OptionMap oMap;
     oMap.setDescription("Description. MT1dInv - 1D block or smooth inversion of dc resistivity data\n");
-    oMap.addLastArg( dataFileName, "Data file" );
-    oMap.add( verboseCount, "v" , "verbose", "Verbose/debug/dosave mode (multiple use)." );
-    oMap.add( lambdaOpt,    "O" , "OptimizeLambda", "Optimize model smoothness using L-curve." );
-    oMap.add( doResolution, "D" , "doResolution", "Do resolution analysis." );
-    oMap.add( isRobust,     "R" , "RobustData"    , "Robust (L1) data weighting." );
-    oMap.add( lambda,       "l:", "lambda", "Regularization strength lambda[100]." );
-    oMap.add( errPerc,      "e:", "error", "Error percentage[0]" );
-    oMap.add( errPhase,     "p:", "PhaseError", "Phase error/degree[1]" );
-    oMap.add( nlay,         "n:", "nlay", "Number of layers[3]" );
-    oMap.add( maxIter,      "i:", "maxIter", "Number of Iterations[10]" );
-    oMap.add( lbound,       "b:", "lbound", "Lower Resistivity bound[0]" );
-    oMap.add( ubound,       "u:", "ubound", "Upper Resistivity bound[0-inactive]" );
-    oMap.add( modelFile,    "m:", "modelFile", "Model file for pure modelling" );
-    oMap.parse( argc, argv );
+    oMap.addLastArg(dataFileName, "Data file");
+    oMap.add(verboseCount, "v" , "verbose", "Verbose/debug/dosave mode (multiple use).");
+    oMap.add(lambdaOpt,    "O" , "OptimizeLambda", "Optimize model smoothness using L-curve.");
+    oMap.add(doResolution, "D" , "doResolution", "Do resolution analysis.");
+    oMap.add(isRobust,     "R" , "RobustData"    , "Robust (L1) data weighting.");
+    oMap.add(lambda,       "l:", "lambda", "Regularization strength lambda[100].");
+    oMap.add(errPerc,      "e:", "error", "Error percentage[0]");
+    oMap.add(errPhase,     "p:", "PhaseError", "Phase error/degree[1]");
+    oMap.add(nlay,         "n:", "nlay", "Number of layers[3]");
+    oMap.add(maxIter,      "i:", "maxIter", "Number of Iterations[10]");
+    oMap.add(lbound,       "b:", "lbound", "Lower Resistivity bound[0]");
+    oMap.add(ubound,       "u:", "ubound", "Upper Resistivity bound[0-inactive]");
+    oMap.add(modelFile,    "m:", "modelFile", "Model file for pure modelling");
+    oMap.parse(argc, argv);
 
-    bool verbose = ( verboseCount > 0 ), debug = ( verboseCount > 1 ), dosave = ( verboseCount > 2 );
+    bool verbose = (verboseCount > 0), debug = (verboseCount > 1), dosave = (verboseCount > 2);
 
     RMatrix TRP;
-    loadMatrixCol( TRP, dataFileName );
+    loadMatrixCol(TRP, dataFileName);
     size_t nperiods = TRP.cols();
     std::cout << "nperiods " << nperiods << std::endl;
 
     Mesh mesh;
     RVector model;
-    double medrhoa = median( TRP[ 1 ] );
+    double medrhoa = median(TRP[1]);
     std::cout << "medrhoa " << medrhoa << std::endl;
     /*! Transformations: log for app. resisivity and thickness, logLU for resistivity */
-    TransLogLU< RVector > transThk( 0.1, 1e5 );
-    TransLogLU< RVector > transRho( lbound, ubound );
-    TransLog< RVector > transRhoa; //! log apparent resistivity
-    Trans< RVector > transPhi; //! linear phases
-    CumulativeTrans< RVector > transData; //! combination of two trans functions
-    transData.push_back( transRhoa, nperiods );
-    transData.push_back( transPhi, nperiods );
-    RVector error( cat( RVector( TRP[ 1 ] * errPerc / 100.0 ), RVector( nperiods, errPhase ) ) );
-    save( error, "error.vec" );
+    RTransLogLU transThk(0.1, 1e5);
+    RTransLogLU transRho(lbound, ubound);
+    RTransLog transRhoa; //! log apparent resistivity
+    RTrans transPhi; //! linear phases
+    RTransCumulative transData; //! combination of two trans functions
+    transData.add(transRhoa, nperiods);
+    transData.add(transPhi, nperiods);
+    RVector error(cat(RVector(TRP[1] * errPerc / 100.0), RVector(nperiods, errPhase)));
+    save(error, "error.vec");
 //     size_t nModel = 2 * nlay - 1;
-    MT1dModelling f( TRP[ 0 ], nlay, debug );
-    double medskindepth = sqrt( median( TRP[ 0 ] ) * medrhoa ) *503.0;
-    model = cat( RVector( nlay - 1, medskindepth / nlay ), RVector( nlay, medrhoa ) );
-    model[ nlay ] = model[ nlay - 1 ] * 2; // inhomogeneous model
-    save( model, "start.vec" );
-    save( f.response(model), "response.vec" );
+    MT1dModelling f(TRP[0], nlay, debug);
+    double medskindepth = sqrt(median(TRP[0]) * medrhoa) *503.0;
+    model = cat(RVector(nlay - 1, medskindepth / nlay), RVector(nlay, medrhoa));
+    model[nlay] = model[nlay - 1] * 2; // inhomogeneous model
+    save(model, "start.vec");
+    save(f.response(model), "response.vec");
 
-    f.region( 0 )->setTransModel( transThk );
-    f.region( 1 )->setTransModel( transRho );
+    f.region(0)->setTransModel(transThk);
+    f.region(1)->setTransModel(transRho);
 
     /*! Set up inversion with full matrix, data and forward operator */
-    Inversion< double > inv( cat( TRP[ 1 ], TRP[ 2 ] ), f, verbose, dosave ); //! only rhoa
-    inv.setTransData( transRhoa );
-    inv.setMarquardtScheme( 0.8 ); //! Marquardt method
-    inv.setLambda( lambda );
-    inv.setOptimizeLambda( lambdaOpt );
-    inv.setRobustData( isRobust );
-    inv.setMaxIter( maxIter );
-    inv.setAbsoluteError( error ); //! error model
-    inv.setModel( model );         //! starting model
+    Inversion< double > inv(cat(TRP[1], TRP[2]), f, verbose, dosave); //! only rhoa
+    inv.setTransData(transRhoa);
+    inv.setMarquardtScheme(0.8); //! Marquardt method
+    inv.setLambda(lambda);
+    inv.setOptimizeLambda(lambdaOpt);
+    inv.setRobustData(isRobust);
+    inv.setMaxIter(maxIter);
+    inv.setAbsoluteError(error); //! error model
+    inv.setModel(model);         //! starting model
 
     /*! actual computation: run the inversion */
     model = inv.run();
-    save( model, "model.vec" );
-    save( inv.response(), "response.vec" );
+    save(model, "model.vec");
+    save(inv.response(), "response.vec");
     
-    RVector thk( nlay - 1 );
-    RVector res( nlay );
-    for ( int i = 0 ; i < nlay - 1 ; i++ ) thk[ i ] = model[ i ];
-    for ( int i = 0 ; i < nlay ; i++ ) res[ i ] = model[ nlay - 1 + i ];
-    save( res, "resistivity.vec" );
-    save( thk, "thickness.vec" );
+    RVector thk(nlay - 1);
+    RVector res(nlay);
+    for (int i = 0 ; i < nlay - 1 ; i++) thk[i] = model[i];
+    for (int i = 0 ; i < nlay ; i++) res[i] = model[nlay - 1 + i];
+    save(res, "resistivity.vec");
+    save(thk, "thickness.vec");
     
-    if ( verbose ) {
-        RVector cumz( thk );
-        for ( size_t i = 1 ; i < thk.size() ; i++ ) cumz[i] = cumz[ i-1 ] + thk[i];
+    if (verbose) {
+        RVector cumz(thk);
+        for (size_t i = 1 ; i < thk.size() ; i++) cumz[i] = cumz[i-1] + thk[i];
 		cumz.round(0.1);        
 		res.round(0.1);        
 
@@ -121,17 +121,17 @@ int main( int argc, char *argv [] ) {
         std::cout << "  z =  " << cumz << std::endl;
     }
     
-    if ( doResolution ) {
-        RVector resolution( model.size() );
-        RVector resMDiag ( model.size() );
+    if (doResolution) {
+        RVector resolution(model.size());
+        RVector resMDiag (model.size());
         RMatrix resM;
-        for ( size_t iModel = 0; iModel < model.size(); iModel++ ) {
-            resolution = inv.modelCellResolution( iModel );
-            resM.push_back( resolution );
-            resMDiag[ iModel ] = resolution[ iModel ];
+        for (size_t iModel = 0; iModel < model.size(); iModel++) {
+            resolution = inv.modelCellResolution(iModel);
+            resM.push_back(resolution);
+            resMDiag[iModel] = resolution[iModel];
         }
-        save( resMDiag, "resMDiag.vec" );
-        save( resM,     "resM" );
+        save(resMDiag, "resMDiag.vec");
+        save(resM,     "resM");
     }
 
     return EXIT_SUCCESS;

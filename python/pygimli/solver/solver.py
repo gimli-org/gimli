@@ -588,7 +588,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         #showSparseMatrix(S)
         
-        solver = pg.LinSolver(1)
+        solver = pg.LinSolver(True)
         solver.setMatrix(S, 0)
         u = solver.solve(rhs)
         

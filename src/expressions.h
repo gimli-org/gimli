@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008-2014 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -122,8 +122,13 @@ template < class T > bool isInfNaN(const T & a){ return (isinf(a) || isnan(a)); 
 template < class T > bool isInfNaN(const T & a){ return (std::isinf(a) || std::isnan(a)); }
 #endif
 
-inline bool operator < (const Complex & a, const Complex & b) { return abs(a) < abs(b); }
-inline bool operator > (const Complex & a, const Complex & b) { return abs(a) > abs(b); }
+inline bool operator < (const Complex & a, const Complex & b) { 
+    double aa(abs(a)), ab(abs(b));
+    if (aa == ab) return std::arg(a) < std::arg(b); else return aa < ab; }
+    
+inline bool operator > (const Complex & a, const Complex & b) {
+    double aa(abs(a)), ab(abs(b));
+    if (aa == ab) return std::arg(a) > std::arg(b); else return aa > ab; }
 
 inline double abs(const double & a) { return std::fabs(a); }
 inline double abs(const Complex & a) { return std::abs(a); }

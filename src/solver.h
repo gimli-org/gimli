@@ -1,7 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,8 +28,8 @@
 
 namespace GIMLI{
 
-template < class CMatrix, class Vec >
-int solveCGLSCDWWhtrans(const MatrixBase & S, const CMatrix & C,
+template < class Vec >
+int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
                         const Vec & dWeight, const Vec & b, Vec & x,
                         const Vec & wc, const Vec & wm, 
                         const Vec & tm, const Vec & td,
@@ -106,8 +106,8 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const CMatrix & C,
     return 1;
 }
 
-template < class CMatrix, class Vec >
-int solveCGLSCDWWtrans(const MatrixBase & S, const CMatrix & C, const Vec & dWeight,
+template < class Vec >
+int solveCGLSCDWWtrans(const MatrixBase & S, const MatrixBase & C, const Vec & dWeight,
 		  const Vec & b, Vec & x, const Vec & wc, const Vec & mc, const Vec & tm, const Vec & td,
 		  double lambda, const Vec & deltaX, int maxIter = 200, bool verbose = false){ //ALLOW_PYTHON_THREADS
 

@@ -9,7 +9,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 modified by CR
 
 """
-
+from functools import reduce
+import sys
+import traceback
+import codecs
+  
 class doxygen_doc_extractor:
     """
     Extracts Doxygen styled documentation from source or generates it from description.
@@ -25,11 +29,11 @@ class doxygen_doc_extractor:
         try:
             if self.file_name != declaration.location.file_name:
                 self.file_name = declaration.location.file_name
-                self.source = open(declaration.location.file_name).readlines()
+                self.source = open(declaration.location.file_name, encoding='utf-8').readlines()
             find_block_end = False
             
             # search backward until file begin
-            for lcount in xrange(declaration.location.line-2, -1, -1):
+            for lcount in range(declaration.location.line-2, -1, -1):
                 line = self.source[lcount]
 
                 if not find_block_end:
@@ -37,14 +41,17 @@ class doxygen_doc_extractor:
                         #CR print line.rstrip()[-2:]
                         if line.rstrip()[-2:] == "*/":
                             find_block_end = True
-                    except:
+                    except Exception as e:
+                        print(e)
+                        print(line)
                         pass
 
                 if find_block_end:
                     try:
                         if line.lstrip()[:2] == "/*":
                             find_block_end = False
-                    except:
+                    except Exception as e:
+                        print(e)
                         pass
 
                 final_str = self.clear_str(line)
@@ -53,7 +60,10 @@ class doxygen_doc_extractor:
                     break
                 if final_str:
                     doc_lines.insert(0, final_str)
-        except:
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            print(e)
+            print(self.file_name)
             pass
         finally:
             if len(doc_lines) > 0:
@@ -69,12 +79,20 @@ class doxygen_doc_extractor:
         Replace */! by space and \brief, @fn, \param, etc
         """
         #CR: add
-        def clean ( _str, sym, change2 = ""):
+        def clean ( _str, sym, change2=""):
             return _str.replace(sym, change2)
 
         #CR: add '\r\n'
-        tmp_str = reduce(clean, [tmp_str, '\r\n', '/','*','!',"\\brief","@brief","\\fn","@fn","\\ref","@ref", "\"", "\'", "\\c"])
+        #tmp_str = reduce(clean, [tmp_str, "\r\n", '/','*','!',
+                                 #"\\brief","@brief","\\fn","@fn",
+                                 #"\\ref","@ref", "\"", "\'", "\\c"])
 
+        for sym in ['/', "\r\n", '/', '*', '!', "\\brief", "@brief",
+                    "\\fn", "@fn", "\\ref", "@ref", "\"", "\'", "\\c"]:
+            tmp_str = clean(tmp_str, sym)
+        
+        tmp_str = clean(tmp_str, '\\', '')
+        
         #commands list taken form : http://www.stack.nl/~dimitri/doxygen/commands.html
         replacement_list = [
 #           "a",

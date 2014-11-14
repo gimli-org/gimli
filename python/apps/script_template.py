@@ -1,15 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
+"""
+    Template und Beispiel für eine einfache python app mit dem ArgumentParser
+    
+    https://docs.python.org/3.4/howto/argparse.html
+    
+"""
 
-# for system calls
-from os import system
+def main():
+    """
+        Entry function
+    """
+    import argparse
+    
+    ## intialisiere den Parser
+    parser = argparse.ArgumentParser(description="sample application")
+    
+    ## definiere erlaubte Optionen 
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
+                        help="Be verbose")
+    parser.add_argument("-i", "--integer", dest="integer", type=int,
+                        help="Eine Integer Variable mit long und short option",
+                        default=0)
+    parser.add_argument("-s", dest="string", type=str,
+                        help="Eine string Variable mit short option",
+                        default='none')
+    
+    parser.add_argument('target')
+    
+    ## veranlasse den Parser zu parsen (Default ist sys.argv)
+    args = parser.parse_args()
+     
+    ## die Ergebnisse stehen in args
+    if args.verbose:
+        print(args)
+      
+    print('Integer is:', args.integer)
+    print('String is:', args.string)
+    
+    print('Target is:', args.target)
+    
+# def main(...)    
 
-# the name pygimli is abbreviated as pg
-import pygimli as pg
-
-# for numerical stuff as vectors, matrices
-import numpy as np
-
-# for plotting
-import matplotlib.pyplot as plt
+if __name__ == "__main__":
+    main()
+ 
+    

@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2006-2011 by the resistivity.net development team       *
- *   Thomas Günther thomas@resistivity.net                                 *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -74,7 +74,9 @@ public:
     making inverse transform using Newton's method */
 template< class Vec > class TransNewton : public Trans < Vec >{
 public:
-    TransNewton(const int maxiter=10) : maxiter_(maxiter) { }
+    TransNewton(const int maxiter=10)
+    : maxiter_(maxiter) { }
+    
     virtual ~TransNewton(){ }
 
     virtual Vec trans(const Vec & a) const { }
@@ -103,9 +105,7 @@ protected:
    f(a) = a * factor + offset. */
 template< class Vec > class TransLinear : public Trans < Vec > {
 public:
-    TransLinear(const Vec & factor, const Vec & offset) 
-        : factor_(factor), offset_(offset){ }
-    TransLinear(const Vec & factor, double offset=0.0) 
+    TransLinear(const Vec & factor=1.0, double offset=0.0) 
         : factor_(factor), offset_(Vec(factor.size(), offset)) {}
         
     virtual ~TransLinear() { }
@@ -115,7 +115,9 @@ public:
 //        << offset_.size()<< std::endl;
         return a * factor_ + offset_;
     }
+    
     virtual Vec invTrans(const Vec & a) const { return (a - offset_) / factor_;}
+    
     virtual Vec deriv(const Vec & a) const { return factor_; }
 
 protected:
@@ -194,7 +196,7 @@ public:
                       << " <=" << lowerbound_ << " lowerbound" << std::endl;
             Vec tmp(a);
             for (uint i = 0; i < a.size(); i ++){
-                tmp[ i ] = max(a[ i ], lb1 );
+                tmp[i] = max(a[i], lb1 );
             }
             return log(tmp - lowerbound_);
         }
@@ -210,7 +212,7 @@ public:
                       << " <=" << lowerbound_ << " lowerbound" << std::endl;
             Vec tmp(a);
             for (uint i = 0; i < a.size(); i ++){
-                tmp[ i ] = max(a[ i ], lb1 );
+                tmp[i] = max(a[i], lb1 );
             }
             return 1.0 / (tmp - lowerbound_); 
         }
@@ -244,7 +246,7 @@ public:
             std::cerr << WHERE_AM_I << " Warning! " << min(a)
                       << " <=" << this->lowerBound() << " lower bound" << std::endl;
             for (uint i = 0; i < a.size(); i ++){
-                tmp[ i ] = max(a[ i ], lb1);
+                tmp[i] = max(a[i], lb1);
             }
         }
 
@@ -253,7 +255,7 @@ public:
             std::cerr << WHERE_AM_I << " Warning! " << max(a) << " > "
                       << upperbound_ << " upper bound" << std::endl;
             for (uint i = 0; i < a.size(); i ++){
-                tmp[ i ] = min(tmp[ i ], ub1);
+                tmp[i] = min(tmp[i], ub1);
             }
         }
         return tmp;
@@ -299,13 +301,13 @@ public:
         if (min(a) <= lowerbound_ ){
             std::cerr << WHERE_AM_I << " Warning! " << min(a) << " < " << lowerbound_ << " = lowerbound" << std::endl;
             for (uint i = 0; i < a.size(); i ++){
-                tmp[ i ] = max(a[ i ], lowerbound_ * fak);
+                tmp[i] = max(a[i], lowerbound_ * fak);
             }
         }
         if (max(a) >= upperbound_ ){
             std::cerr << WHERE_AM_I << " Warning! " << max(a) << " > " << upperbound_ << " = upperbound" << std::endl;
             for (uint i = 0; i < a.size(); i ++){
-                tmp[ i ] = min(a[ i ], upperbound_ / fak);
+                tmp[i] = min(a[i], upperbound_ / fak);
             }
         }
         return cot((tmp - lowerbound_) / (upperbound_ - lowerbound_) * PI) * (-1.0);
@@ -439,7 +441,7 @@ protected:
 /*! Tangens barrier method, replaced by TransCotLU, same results */
 template< class Vec > class TransTanLU : public Trans < Vec > {
 public:
-    TransTanLU(double lowerbound = 0.0, double upperbound = 0.0)
+    TransTanLU(double lowerbound=0.0, double upperbound=0.0)
         : lowerbound_(lowerbound), upperbound_(upperbound) {
     }
     virtual ~TransTanLU() { }
@@ -450,14 +452,14 @@ public:
         if (a.min() < lowerbound_ ){
             std::cerr << WHERE_AM_I << " Warning! " << a.min() << " < " << lowerbound_ << " lowerbound" << std::endl;
             for (int i = 0; i < a.size(); i ++){
-                tmp[ i ] = max(a[ i ], lowerbound_) + tol;
+                tmp[i] = max(a[i], lowerbound_) + tol;
             }
         }
         if (a.max() > upperbound_ ){
             std::cerr << WHERE_AM_I << " Warning! " << a.max() << " > " << upperbound_ << " lowerbound" << std::endl;
             Vec tmp(a);
             for (int i = 0; i < a.size(); i ++){
-                tmp[ i ] = min(a[ i ], upperbound_) - tol;
+                tmp[i] = min(a[i], upperbound_) - tol;
             }
         }
         return tan(((a - lowerbound_) / (upperbound_ - lowerbound_) - 0.5) * PI);
@@ -479,16 +481,21 @@ protected:
 /*! Logarithm barrier of parameter times factor, better by transNest(transLogLU,transLinear) */
 template< class Vec > class TransLogLUMult : public TransLogLU < Vec > {
 public:
-    TransLogLUMult(const Vec & factor, double lowerbound = 0.0, double upperbound = 0.0)
+    TransLogLUMult(const Vec & factor,
+                   double lowerbound=0.0,
+                   double upperbound=0.0)
         : TransLogLU< Vec >(lowerbound, upperbound), factor_(factor){ }
+        
     virtual ~TransLogLUMult() { }
 
     virtual Vec trans(const Vec & a) const {
         return TransLogLU< Vec >::trans(a * factor_);
     }
+    
     virtual Vec invTrans(const Vec & a) const {
         return TransLogLU< Vec >::invTrans(a) / factor_ ;
     }
+    
     virtual Vec deriv(const Vec & a) const {
         return TransLogLU< Vec >::deriv(a * factor_) * factor_;
     }
@@ -499,68 +506,60 @@ protected:
 
 /*! Auxillary cumulative transformation function using a vector of transformations*/
 //! Very Slow. Refactor it!!
-template< class Vec > class CumulativeTrans : public Trans <Vec>{
+template< class Vec > class TransCumulative : public Trans < Vec >{
 public:
-    CumulativeTrans() { }
+    TransCumulative() { }
 
-    virtual ~CumulativeTrans() { }
+    virtual ~TransCumulative() { }
 
     virtual Vec trans(const Vec & a) const {
-//         Vec tmp;
-//         //std::cout << "CumulativeTrans::Trans" << std::endl;
-//         for (uint i = 0; i < transVec_.size(); i ++){
-//             Vec ap(a, bounds_[ i ].first, bounds_[ i ].second);
-//             //std::cout << i << " " << bounds_[ i ].first << ": " << bounds_[ i ].second << std::endl;
-// //              std::cout << tmp << std::endl;
-//             tmp = cat(tmp, transVec_[ i ]->trans(ap));
-//           //  std::cout << tmp << std::endl;
-//         }
-//         return tmp;
         Vec tmp(a.size());
-        for (uint i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[ i ]->trans(a(bounds_[ i ].first, bounds_[ i ].second)),
-                        bounds_[ i ].first, bounds_[ i ].second);
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->trans(a(bounds_[i].first,
+                                            bounds_[i].second)),
+                       bounds_[i]);
         }
         return tmp;
     }
 
     virtual Vec invTrans(const Vec & a) const {
         Vec tmp(a.size());
-        for (uint i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[ i ]->invTrans(a(bounds_[ i ].first, bounds_[ i ].second)),
-                        bounds_[ i ].first, bounds_[ i ].second);
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->invTrans(a(bounds_[i].first,
+                                               bounds_[i].second)),
+                       bounds_[i]);
         }
         return tmp;
-//         Vec tmp;
-//         for (uint i = 0; i < transVec_.size(); i ++){
-//             Vec ap(a, bounds_[ i ].first, bounds_[ i ].second);
-//             tmp = cat(tmp, transVec_[ i ]->invTrans(ap));
-//         }
-//         return tmp;
     }
 
     virtual Vec deriv(const Vec & a) const {
-//         Vec tmp;
-//         for (uint i = 0; i < transVec_.size(); i ++){
-//             Vec ap(a, bounds_[ i ].first, bounds_[ i ].second);
-//             tmp = cat(tmp, transVec_[ i ]->deriv(ap));
-//         }
         Vec tmp(a.size());
-        for (uint i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[ i ]->deriv(a(bounds_[ i ].first, bounds_[ i ].second)),
-                        bounds_[ i ].first, bounds_[ i ].second);
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->deriv(a(bounds_[i].first, 
+                                           bounds_[i].second)),
+                       bounds_[i]);
         }
         return tmp;
     }
-    void push_back(Trans< Vec > & trans, uint len) {
-        uint oldlen = 0;
-        if (! bounds_.empty()) oldlen = bounds_.back().second;
+    
+    Index size() const { return transVec_.size(); }
+    
+    void clear() { transVec_.clear(); bounds_.clear(); }
+    
+    void add(Trans< Vec > & trans, Index size) {
+        Index start = 0;
+        if (!bounds_.empty()) start = bounds_.back().second;
+        this->add(trans, start, start + size);
+    }
+    
+    void add(Trans< Vec > & trans, Index start, Index end) {
         transVec_.push_back(&trans);
-        bounds_.push_back(std::pair< uint, uint >(oldlen, oldlen + len));
+        bounds_.push_back(std::pair< Index, Index >(start, end));
     }
 
+protected:
     std::vector < Trans< Vec > * > transVec_;
-    std::vector < std::pair< uint, uint > > bounds_;
+    std::vector < std::pair< Index, Index> > bounds_;
 };
 
 typedef Trans < RVector > RTrans;
@@ -569,7 +568,7 @@ typedef TransPower < RVector > RTransPower;
 typedef TransLog < RVector > RTransLog;
 typedef TransLogLU < RVector > RTransLogLU;
 typedef TransCotLU < RVector > RTransCotLU;
-typedef CumulativeTrans< RVector > RCumulativeTrans;
+typedef TransCumulative< RVector > RTransCumulative;
 } // namespace GIMLI
 
 

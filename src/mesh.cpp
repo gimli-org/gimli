@@ -787,6 +787,7 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
     std::vector < Node * > n;
     for (Index i = 0, imax = mesh.cellCount(); i < imax; i ++){
         const Cell & c = mesh.cell(i);
+        Index cID = i;
 
         switch (c.rtti()){
             case MESH_EDGE_CELL_RTTI:
@@ -798,9 +799,9 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                 if (h2){
                     std::vector < Node * > e1(2);
                     e1[0] = n[0]; e1[1] = n[2];
-                    this->createCell(e1, c.marker());
+                    this->createCell(e1, cID);
                     e1[0] = n[2]; e1[1] = n[1];
-                    this->createCell(e1, c.marker());
+                    this->createCell(e1, cID);
                 }
                 break;
             case MESH_TRIANGLE_RTTI:
@@ -814,10 +815,10 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                 n[5] = createRefinementNode_(n[2], n[0], nodeMatrix);
 
                 if (h2){
-                    this->createTriangle(*n[0], *n[3], *n[5], c.marker());
-                    this->createTriangle(*n[1], *n[4], *n[3], c.marker());
-                    this->createTriangle(*n[2], *n[5], *n[4], c.marker());
-                    this->createTriangle(*n[3], *n[4], *n[5], c.marker());
+                    this->createTriangle(*n[0], *n[3], *n[5], cID);
+                    this->createTriangle(*n[1], *n[4], *n[3], cID);
+                    this->createTriangle(*n[2], *n[5], *n[4], cID);
+                    this->createTriangle(*n[3], *n[4], *n[5], cID);
                 }
 
                 break;
@@ -835,10 +836,10 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
 
                 if (h2){
                     Node *n8 = this->createNode(c.shape().xyz(RVector3(0.5, 0.5)));
-                    this->createQuadrangle(*n[0], *n[4], *n8, *n[7], c.marker());
-                    this->createQuadrangle(*n[1], *n[5], *n8, *n[4], c.marker());
-                    this->createQuadrangle(*n[2], *n[6], *n8, *n[5], c.marker());
-                    this->createQuadrangle(*n[3], *n[7], *n8, *n[6], c.marker());
+                    this->createQuadrangle(*n[0], *n[4], *n8, *n[7], cID);
+                    this->createQuadrangle(*n[1], *n[5], *n8, *n[4], cID);
+                    this->createQuadrangle(*n[2], *n[6], *n8, *n[5], cID);
+                    this->createQuadrangle(*n[3], *n[7], *n8, *n[6], cID);
                 }
 
                 break;
@@ -854,14 +855,14 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                     }
 
                     if (h2){
-                        this->createTetrahedron(*n[4], *n[6], *n[5], *n[0], c.marker());
-                        this->createTetrahedron(*n[4], *n[5], *n[6], *n[9], c.marker());
-                        this->createTetrahedron(*n[7], *n[9], *n[4], *n[1], c.marker());
-                        this->createTetrahedron(*n[7], *n[4], *n[9], *n[5], c.marker());
-                        this->createTetrahedron(*n[8], *n[7], *n[5], *n[2], c.marker());
-                        this->createTetrahedron(*n[8], *n[5], *n[7], *n[9], c.marker());
-                        this->createTetrahedron(*n[6], *n[9], *n[8], *n[3], c.marker());
-                        this->createTetrahedron(*n[6], *n[8], *n[9], *n[5], c.marker());
+                        this->createTetrahedron(*n[4], *n[6], *n[5], *n[0], cID);
+                        this->createTetrahedron(*n[4], *n[5], *n[6], *n[9], cID);
+                        this->createTetrahedron(*n[7], *n[9], *n[4], *n[1], cID);
+                        this->createTetrahedron(*n[7], *n[4], *n[9], *n[5], cID);
+                        this->createTetrahedron(*n[8], *n[7], *n[5], *n[2], cID);
+                        this->createTetrahedron(*n[8], *n[5], *n[7], *n[9], cID);
+                        this->createTetrahedron(*n[6], *n[9], *n[8], *n[3], cID);
+                        this->createTetrahedron(*n[6], *n[8], *n[9], *n[5], cID);
                     }
 
                 } else {
@@ -913,28 +914,28 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
 
                     std::vector < Node* > ns(8);
                     Node *n1_[]={ n[0], n[8], n20, n[11], n[16], n22, n26, n25 }; std::copy(&n1_[0], &n1_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n2_[]= { n[8], n[1], n[9], n20, n22, n[17], n23, n26 };  std::copy(&n2_[0], &n2_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n3_[]= { n[11], n20, n[10], n[3], n25, n26, n24, n[19] };  std::copy(&n3_[0], &n3_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n4_[]= { n20, n[9], n[2], n[10], n26, n23, n[18], n24 };  std::copy(&n4_[0], &n4_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n5_[]= { n[16], n22, n26, n25, n[4], n[12], n21, n[15] };  std::copy(&n5_[0], &n5_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n6_[]= { n22, n[17], n23, n26, n[12], n[5], n[13], n21 };  std::copy(&n6_[0], &n6_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n7_[]= { n25, n26, n24, n[19], n[15], n21, n[14], n[7] };  std::copy(&n7_[0], &n7_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n8_[]= { n26, n23, n[18], n24, n21, n[13], n[6], n[14] };  std::copy(&n8_[0], &n8_[8], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                 }
 
@@ -954,22 +955,22 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
 
                     std::vector < Node* > ns(6);
                     Node *n1_[]={ n[0], n[6], n[8], n[12], nf1, nf3 }; std::copy(&n1_[0], &n1_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
                     Node *n2_[]={ n[1], n[7], n[6], n[13], nf2, nf1 }; std::copy(&n2_[0], &n2_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
                     Node *n3_[]={ n[2], n[8], n[7], n[14], nf3, nf2 }; std::copy(&n3_[0], &n3_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
                     Node *n4_[]={ n[6], n[7], n[8], nf1, nf2, nf3 }; std::copy(&n4_[0], &n4_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                     Node *n5_[]={ n[12], nf1, nf3, n[3], n[9], n[11] }; std::copy(&n5_[0], &n5_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
                     Node *n6_[]={ n[13], nf2, nf1, n[4], n[10], n[9] }; std::copy(&n6_[0], &n6_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
                     Node *n7_[]={ n[14], nf3, nf2, n[5], n[11], n[10] }; std::copy(&n7_[0], &n7_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
                     Node *n8_[]={ nf1, nf2, nf3, n[9], n[10], n[11] }; std::copy(&n8_[0], &n8_[6], &ns[0]);
-                    this->createCell(ns, c.marker());
+                    this->createCell(ns, cID);
 
                 }
                 break;
@@ -988,7 +989,7 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
         }
 
         if (p2 && !h2){
-            createCell(n, c.marker());
+            createCell(n, cID);
         }
 
     } // for_each cell
@@ -1071,362 +1072,23 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
             }
         } // if not p2
     } // for_each boundary
+    
+    //! Copy data if available
+    for (std::map < std::string, RVector >::const_iterator 
+         it = mesh.dataMap().begin(); it != mesh.dataMap().end(); it ++){
+        
+        if (it->second.size() == mesh.cellCount()){
+            addData(it->first, it->second(this->cellMarker()));
+        } else if (it->second.size() == mesh.nodeCount()){
+            THROW_TO_IMPL
+        } else if (it->second.size() == mesh.boundaryCount()){
+            THROW_TO_IMPL
+        }
+    }
+    //! copy original marker into the new mesh
+    this->setCellMarker(RVector(mesh.cellMarker())(this->cellMarker()));
+        
 }
-
-// void Mesh::createH2(const Mesh & mesh){
-//     std::vector < int > cellsToRefine(mesh.cellCount());
-//
-//     for (uint i = 0, imax = mesh.cellCount(); i < imax; i ++) cellsToRefine[i] = i;
-//     createRefined(mesh, cellsToRefine);
-// }
-
-// int Mesh::createRefined(const Mesh & mesh, const std::vector < int > & cellIdx){
-//
-//     clear();
-//     this->setDimension(mesh.dim());
-//     bool needCellSplit = false;
-//     if (dimension_ == 1) {
-//         CERR_TO_IMPL
-//     } else { // dimension != 1
-//         for (uint i = 0; i < cellIdx.size(); i ++){
-//             switch(mesh.cell(i).rtti()){
-//                 case MESH_TRIANGLE_RTTI:
-//                 case MESH_TETRAHEDRON_RTTI: break;
-//                 case MESH_QUADRANGLE_RTTI:
-//                 case MESH_HEXAHEDRON_RTTI: needCellSplit = true; break;
-//                 default:
-//                 std::cerr << WHERE_AM_I << " cell type for refinement not yet implemented " << mesh.cell(i).rtti() << std::endl;
-//             }
-//         }
-//
-//         if (needCellSplit){
-//             Mesh tmpMesh(dimension_);
-//             for (uint i = 0; i < mesh.nodeCount(); i ++) tmpMesh.createNode(mesh.node(i));
-//
-//             Cell * cell;
-//             for (uint i = 0; i < mesh.cellCount(); i ++) {
-//                 cell = &mesh.cell(i);
-//                 switch(mesh.cell(i).rtti()){
-//                 case MESH_TRIANGLE_RTTI:
-//                 case MESH_TETRAHEDRON_RTTI: tmpMesh.createCell(*cell); break;
-//                 case MESH_QUADRANGLE_RTTI:
-//                     tmpMesh.createTriangle(tmpMesh.node(cell->node(0).id()),
-//                                     tmpMesh.node(cell->node(1).id()),
-//                                     tmpMesh.node(cell->node(2).id()),
-//                                     cell->marker());
-//                     tmpMesh.cell(tmpMesh.cellCount() - 1).setAttribute(cell->attribute());
-//                     tmpMesh.createTriangle(tmpMesh.node(cell->node(0).id()),
-//                                     tmpMesh.node(cell->node(2).id()),
-//                                     tmpMesh.node(cell->node(3).id()),
-//                                     mesh.cell(i).marker());
-//                     tmpMesh.cell(tmpMesh.cellCount() - 1).setAttribute(cell->attribute());
-//                     break;
-//                 case MESH_HEXAHEDRON_RTTI:
-//                    for (uint j = 0; j < 6; j ++){
-//                         tmpMesh.createTetrahedron(
-//                             tmpMesh.node(cell->node(HexahedronSplit6TetID[j][0]).id()),
-//                             tmpMesh.node(cell->node(HexahedronSplit6TetID[j][1]).id()),
-//                             tmpMesh.node(cell->node(HexahedronSplit6TetID[j][2]).id()),
-//                             tmpMesh.node(cell->node(HexahedronSplit6TetID[j][3]).id()),
-//                             cell->marker());
-//                         tmpMesh.cell(tmpMesh.cellCount() - 1).setAttribute(cell->attribute());
-//                     }
-//                     break;
-//                 }
-//             }
-//
-//             tmpMesh.createNeighbourInfos();
-//
-//             for (uint i = 0; i < mesh.boundaryCount(); i ++){
-//                 Boundary * bound = &mesh.boundary(i);
-//                 if (bound->marker() != 0){
-//                     switch (bound->rtti()){
-//                         case MESH_EDGE_RTTI:{
-//                             Boundary *b = NULL;
-//                             b = findBoundary(tmpMesh.node(bound->node(0).id()),
-//                                               tmpMesh.node(bound->node(1).id()));
-//                             if (b) b->setMarker(bound->marker());
-//                         } break;
-//                         case MESH_TRIANGLEFACE_RTTI:
-//                             THROW_TO_IMPL
-//                             break;
-//                         case MESH_QUADRANGLEFACE_RTTI: {
-//                             Boundary *b = NULL;
-//                             b = findBoundary(tmpMesh.node(bound->node(0).id()),
-//                                               tmpMesh.node(bound->node(1).id()),
-//                                               tmpMesh.node(bound->node(2).id()));
-//                             if (b) b->setMarker(bound->marker());
-//                             b = findBoundary(tmpMesh.node(bound->node(1).id()),
-//                                               tmpMesh.node(bound->node(2).id()),
-//                                               tmpMesh.node(bound->node(3).id()));
-//                             if (b) b->setMarker(bound->marker());
-//                             b = findBoundary(tmpMesh.node(bound->node(0).id()),
-//                                               tmpMesh.node(bound->node(1).id()),
-//                                               tmpMesh.node(bound->node(3).id()));
-//                             if (b) b->setMarker(bound->marker());
-//                             b = findBoundary(tmpMesh.node(bound->node(0).id()),
-//                                               tmpMesh.node(bound->node(2).id()),
-//                                               tmpMesh.node(bound->node(3).id()));
-//                             if (b) b->setMarker(bound->marker());
-//                         } break;
-//                     }
-//                 }
-//             }
-//
-//             if (dimension_ == 3){
-//                 this->copy_(tmpMesh);
-//                 return 0;
-//             } else {
-//                 this->copy_(tmpMesh);
-//                // return 0;
-//                 std::vector < int > c(tmpMesh.cellCount());
-//                 for (uint i = 0, imax = c.size(); i < imax; i ++) c[i] = i;
-//                 return createRefined(tmpMesh, c);
-//             }
-//
-//         } // else need split
-//     } // else dimension_ != 1
-//
-//     if (dimension_ == 2) return createRefined2D_(mesh, cellIdx);
-//     else return createRefined3D_(mesh, cellIdx);
-//
-//     return 0;
-// }
-
-
-// int Mesh::createRefined2D_(const Mesh & mesh, const std::vector < int > & cellIdx){
-//     // alle OrginalKnoten werden kopiert
-//     nodeVector_.reserve(mesh.nodeCount());
-//     for (uint i = 0, imax = mesh.nodeCount(); i < imax; i ++) createNode(mesh.node(i));
-//
-//     Node *n0 = NULL, *n1 = NULL, *n2 = NULL, *n3 = NULL, *n4 = NULL; Node *n5 = NULL;
-//
-//     //SparseMapMatrix < Node *, Index > nodeMatrix(nodeCount(), nodeCount());
-//     std::map< std::pair < Index, Index >, Node * > nodeMatrix;
-//
-//     //** create nodes for all for refinement selected cell;
-//     for (int i = 0, imax = cellIdx.size(); i < imax; i ++){
-//         n0 = &node(mesh.cell(cellIdx[i]).node(0).id());
-//         n1 = &node(mesh.cell(cellIdx[i]).node(1).id());
-//         n2 = &node(mesh.cell(cellIdx[i]).node(2).id());
-//
-//         n3 = createRefinementNode_(n0, n1, nodeMatrix);
-//         n4 = createRefinementNode_(n1, n2, nodeMatrix);
-//         n5 = createRefinementNode_(n2, n0, nodeMatrix);
-//     }
-//
-//     Boundary * edge = NULL;
-//     int marker = 0;
-//     for (uint i = 0; i < mesh.boundaryCount(); i++){
-//         edge = findBoundary(mesh.boundary(i).node(0), mesh.boundary(i).node(1));
-//
-//         if (edge != NULL){
-//             n0 = &node(mesh.boundary(i).node(0).id());
-//             n1 = &node(mesh.boundary(i).node(1).id());
-//             n3 = createRefinementNode_(n0, n1, nodeMatrix);
-//
-//             marker = edge->marker();
-//
-//             if (n3 != NULL){
-//                 createEdge(*n0, *n3, marker);
-//                 createEdge(*n3, *n1, marker);
-//             } else {
-//                 createEdge(*n0, *n1, marker);
-//             }
-//
-//             // the marker of new created nodes, will be derived from its neighbors if there markers are greater 0
-//             if (marker != 0){
-//                 if (n0->marker() > 0) n0->setMarker(marker);
-//                 if (n1->marker() > 0) n1->setMarker(marker);
-//                 if (n3 != NULL) n3->setMarker(marker);
-//             }
-//         } // edge != NULL
-//     } // for each boundary
-//
-//     //** create all new cells
-//     for (int i = 0, imax = mesh.cellCount(); i < imax; i ++){
-//         n0 = &node(mesh.cell(i).node(0).id());
-//         n1 = &node(mesh.cell(i).node(1).id());
-//         n2 = &node(mesh.cell(i).node(2).id());
-//
-//         n3 = createRefinementNode_(n0, n1, nodeMatrix);
-//         n4 = createRefinementNode_(n1, n2, nodeMatrix);
-//         n5 = createRefinementNode_(n2, n0, nodeMatrix);
-//
-//         if (n3 == NULL && n4 == NULL && n5 == NULL){
-//             createTriangle(*n0, *n1, *n2, mesh.cell(i).marker());
-//         } else if (n3 != NULL && n4 == NULL && n5 == NULL) {
-//             createTriangle(*n3, *n2, *n0, mesh.cell(i).marker());
-//             createTriangle(*n3, *n1, *n2, mesh.cell(i).marker());
-//             createEdge(*n3, *n2);
-//         } else if (n3 == NULL && n4 != NULL && n5 == NULL) {
-//             createTriangle(*n4, *n2, *n0, mesh.cell(i).marker());
-//             createTriangle(*n4, *n0, *n1, mesh.cell(i).marker());
-//             createEdge(*n4, *n0);
-//         } else if (n3 == NULL && n4 == NULL && n5 != NULL) {
-//             createTriangle(*n5, *n1, *n2, mesh.cell(i).marker());
-//             createTriangle(*n5, *n0, *n1, mesh.cell(i).marker());
-//             createEdge(*n5, *n1);
-//         } else if (n3 != NULL && n4 != NULL && n5 == NULL) {
-//             createTriangle(*n3, *n1, *n4, mesh.cell(i).marker());
-//             createEdge(*n3, *n4);
-//             if (n3->dist(*n2) < n4->dist(*n0)){
-//                 createTriangle(*n3, *n4, *n2, mesh.cell(i).marker());
-//                 createTriangle(*n3, *n2, *n0, mesh.cell(i).marker());
-//                 createEdge(*n2, *n3);
-//             } else {
-//                 createTriangle(*n4, *n0, *n3, mesh.cell(i).marker());
-//                 createTriangle(*n4, *n2, *n0, mesh.cell(i).marker());
-//                 createEdge(*n0, *n4);
-//             }
-//         } else if (n3 == NULL && n4 != NULL && n5 != NULL) {
-//             createTriangle(*n4, *n2, *n5, mesh.cell(i).marker());
-//             createEdge(*n4, *n5);
-//
-//             if (n4->dist(*n0) < n5->dist(*n1)){
-//                 createTriangle(*n4, *n5, *n0, mesh.cell(i).marker());
-//                 createTriangle(*n4, *n0, *n1, mesh.cell(i).marker());
-//                 createEdge(*n0, *n4);
-//             } else {
-//                 createTriangle(*n4, *n5, *n1, mesh.cell(i).marker());
-//                 createTriangle(*n5, *n0, *n1, mesh.cell(i).marker());
-//                 createEdge(*n1, *n5);
-//             }
-//         } else if (n3 != NULL && n4 == NULL && n5 != NULL) {
-//             createTriangle(*n5, *n0, *n3, mesh.cell(i).marker());
-//             createEdge(*n3, *n5);
-//             if (n3->dist(*n2) < n5->dist(*n1)){
-//                 createTriangle(*n5, *n3, *n2, mesh.cell(i).marker());
-//                 createTriangle(*n3, *n1, *n2, mesh.cell(i).marker());
-//                 createEdge(*n2, *n3);
-//             } else {
-//                 createTriangle(*n5, *n3, *n1, mesh.cell(i).marker());
-//                 createTriangle(*n5, *n1, *n2, mesh.cell(i).marker());
-//                 createEdge(*n1, *n5);
-//             }
-//         } else if (n3 != NULL && n4 != NULL && n5 != NULL) {
-//             createTriangle(*n0, *n3, *n5, mesh.cell(i).marker());
-//             createTriangle(*n1, *n4, *n3, mesh.cell(i).marker());
-//             createTriangle(*n2, *n5, *n4, mesh.cell(i).marker());
-//             createTriangle(*n3, *n4, *n5, mesh.cell(i).marker());
-//             createEdge(*n3, *n4);
-//             createEdge(*n4, *n5);
-//             createEdge(*n5, *n3);
-//         }
-//     }
-//     return 1;
-// }
-
-// int Mesh::createRefined3D_(const Mesh & mesh, const std::vector < int > & cellIdx){
-//     nodeVector_.reserve(mesh.nodeCount());
-//
-//     for (int i = 0, imax = mesh.nodeCount(); i < imax; i ++) createNode(mesh.node(i));
-//
-//     Node *n0 = NULL, *n1 = NULL, *n2 = NULL, *n3 = NULL, *n4 = NULL;
-//     Node *n5 = NULL, *n6 = NULL, *n7 = NULL, *n8 = NULL, *n9 = NULL;
-//     Boundary * face = NULL;
-//
-//     //SparseMapMatrix < Node *, Index > nodeMatrix(nodeCount(), nodeCount());
-//     std::map< std::pair < Index, Index >, Node * > nodeMatrix;
-//
-//     for (int i = 0, imax = cellIdx.size(); i < imax; i ++){
-//     //        std::cout << "boundcount: " << cellIdx.size() << " " << this->boundaryCount() << " " << mesh.boundaryCount()<< std::endl;
-//         n0 = &node(mesh.cell(cellIdx[i]).node(0).id());
-//         n1 = &node(mesh.cell(cellIdx[i]).node(1).id());
-//         n2 = &node(mesh.cell(cellIdx[i]).node(2).id());
-//         n3 = &node(mesh.cell(cellIdx[i]).node(3).id());
-//
-//         n4 = createRefinementNode_(n0, n1, nodeMatrix);
-//         n5 = createRefinementNode_(n0, n2, nodeMatrix);
-//         n6 = createRefinementNode_(n0, n3, nodeMatrix);
-//         n7 = createRefinementNode_(n1, n2, nodeMatrix);
-//         n8 = createRefinementNode_(n2, n3, nodeMatrix);
-//         n9 = createRefinementNode_(n1, n3, nodeMatrix);
-//
-//
-// //     if ((n4 = nodeMatrix[n0->id()][n1->id()]) == NULL){
-// //       n4 = createNode((n0->pos() + n1->pos()) / 2.0, markerT(n0, n1));
-// //       nodeMatrix[n0->id()][n1->id()] = n4 ;
-// //       nodeMatrix[n1->id()][n0->id()] = n4 ;
-// //     }
-// //     if ((n5 = nodeMatrix[n0->id()][n2->id()]) == NULL){
-// //       n5 = createNode((n0->pos() + n2->pos()) / 2.0, markerT(n0, n2));
-// //       nodeMatrix[n0->id()][n2->id()] = n5 ;
-// //       nodeMatrix[n2->id()][n0->id()] = n5 ;
-// //     }
-// //     if ((n6 = nodeMatrix[n0->id()][n3->id()]) == NULL){
-// //       n6 = createNode((n0->pos() + n3->pos()) / 2.0, markerT(n0, n3));
-// //       nodeMatrix[n0->id()][n3->id()] = n6;
-// //       nodeMatrix[n3->id()][n0->id()] = n6;
-// //     }
-// //     if ((n7 = nodeMatrix[n1->id()][n2->id()]) == NULL){
-// //       n7 = createNode((n1->pos() + n2->pos()) / 2.0, markerT(n1, n2));
-// //       nodeMatrix[n1->id()][n2->id()] = n7;
-// //       nodeMatrix[n2->id()][n1->id()] = n7;
-// //     }
-// //     if ((n8 = nodeMatrix[n2->id()][n3->id()]) == NULL){
-// //       n8 = createNode((n2->pos() + n3->pos()) / 2.0, markerT(n2, n3));
-// //       nodeMatrix[n2->id()][n3->id()] = n8;
-// //       nodeMatrix[n3->id()][n2->id()] = n8;
-// //     }
-// //     if ((n9 = nodeMatrix[n1->id()][n3->id()]) == NULL){
-// //       n9 = createNode((n3->pos() + n1->pos()) / 2.0, markerT(n3, n1));
-// //       nodeMatrix[n1->id()][n3->id()] = n9;
-// //       nodeMatrix[n3->id()][n1->id()] = n9;
-// //     }
-//
-//     createTetrahedron(*n4, *n6, *n5, *n0, mesh.cell(i).marker());
-//     createTetrahedron(*n4, *n5, *n6, *n9, mesh.cell(i).marker());
-//
-//     createTetrahedron(*n7, *n9, *n4, *n1, mesh.cell(i).marker());
-//     createTetrahedron(*n7, *n4, *n9, *n5, mesh.cell(i).marker());
-//
-//     createTetrahedron(*n8, *n7, *n5, *n2, mesh.cell(i).marker());
-//     createTetrahedron(*n8, *n5, *n7, *n9, mesh.cell(i).marker());
-//
-//     createTetrahedron(*n6, *n9, *n8, *n3, mesh.cell(i).marker());
-//     createTetrahedron(*n6, *n8, *n9, *n5, mesh.cell(i).marker());
-//
-//     face = findBoundary(mesh.cell(i).node(0), mesh.cell(i).node(1), mesh.cell(i).node(2));
-//     if (face != NULL){
-//       if (face->marker() != 0) {
-//         createTriangleFace(*n0, *n5, *n4, face->marker());
-//         createTriangleFace(*n1, *n4, *n7, face->marker());
-//         createTriangleFace(*n2, *n7, *n5, face->marker());
-//         createTriangleFace(*n4, *n5, *n7, face->marker());
-//       }
-//     }
-//     face = findBoundary(mesh.cell(i).node(0), mesh.cell(i).node(1), mesh.cell(i).node(3));
-//     if (face != NULL){
-//       if (face->marker() != 0) {
-//         createTriangleFace(*n0, *n4, *n6, face->marker());
-//         createTriangleFace(*n1, *n9, *n4, face->marker());
-//         createTriangleFace(*n3, *n6, *n9, face->marker());
-//         createTriangleFace(*n4, *n9, *n6, face->marker());
-//       }
-//     }
-//     face = findBoundary(mesh.cell(i).node(1), mesh.cell(i).node(2), mesh.cell(i).node(3));
-//     if (face != NULL){
-//       if (face->marker() != 0) {
-//         createTriangleFace(*n1, *n7, *n9, face->marker());
-//         createTriangleFace(*n2, *n8, *n7, face->marker());
-//         createTriangleFace(*n3, *n9, *n8, face->marker());
-//         createTriangleFace(*n7, *n8, *n9, face->marker());
-//       }
-//     }
-//     face = findBoundary(mesh.cell(i).node(2), mesh.cell(i).node(0), mesh.cell(i).node(3));
-//     if (face != NULL){
-//       if (face->marker() != 0) {
-//         createTriangleFace(*n2, *n5, *n8, face->marker());
-//         createTriangleFace(*n3, *n8, *n6, face->marker());
-//         createTriangleFace(*n0, *n6, *n5, face->marker());
-//         createTriangleFace(*n8, *n5, *n6, face->marker());
-//       }
-//     }
-//   }
-//
-// return 1;
-// }
     
 void Mesh::cleanNeighbourInfos(){
     //std::cout << "Mesh::cleanNeighbourInfos()"<< std::endl;
@@ -1797,7 +1459,20 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, IndexArray & idxListIn){
             }
         }
     }
-    
+
+    //! Copy data if available
+    for (std::map < std::string, RVector >::const_iterator 
+         it = mesh.dataMap().begin(); it != mesh.dataMap().end(); it ++){
+        
+        if (it->second.size() == mesh.cellCount()){
+            addData(it->first, it->second(idxList));
+        } else if (it->second.size() == mesh.nodeCount()){
+            THROW_TO_IMPL
+        } else if (it->second.size() == mesh.boundaryCount()){
+            THROW_TO_IMPL
+        }
+    }
+        
     //! Create all remaining boundaries
     createNeighbourInfos();
 }
@@ -1893,25 +1568,6 @@ void Mesh::mapCellAttributes(const std::map < float, float > & aMap){
             if (itm != aMap.end()) cell(i).setAttribute((*itm).second);
         }
     }
-}
-
-void Mesh::mapCellAttributes(const std::map < float, Complex > & aMap){
-    std::map< float, Complex >::const_iterator itm;
-
-    RVector re(cellCount());
-    RVector im(cellCount());
-    
-    if (aMap.size() != 0){
-        for (Index i = 0, imax = cellCount(); i < imax; i++){
-            itm = aMap.find(float(cell(i).marker()));
-            if (itm != aMap.end()) {
-                re[cell(i).id()] = std::real((*itm).second);
-                im[cell(i).id()] = std::imag((*itm).second);
-            }
-        }
-    }
-    addData("AttributeReal", re);
-    addData("AttributeImag", im);
 }
 
 void Mesh::mapAttributeToParameter(const std::vector< int > & cellMapIndex,

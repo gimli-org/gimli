@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2006-2014 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -486,10 +486,12 @@ public:
     RVector exportData(const std::string & name) const;
 
     /*! Return the full data map read only. */
-    const std::map< std::string, RVector > & exportDataMap() const { return exportDataMap_; }
+    const std::map< std::string, RVector > & exportDataMap() const {
+        return exportDataMap_; }
 
     /*! Set the full data map.*/
-    void setExportDataMap(const std::map< std::string, RVector > & eMap) { exportDataMap_ = eMap; }
+    void setExportDataMap(const std::map< std::string, RVector > & eMap) { 
+        exportDataMap_ = eMap; }
 
     /*! Empty the data map.*/
     void clearExportData();
@@ -510,8 +512,6 @@ public:
     const std::string & commentString() const {return commentString_;}
 
     void mapCellAttributes(const std::map < float, float > & aMap);
-    
-    void mapCellAttributes(const std::map < float, Complex > & aMap);
     
     void mapAttributeToParameter(const std::vector< int > & cellMapIndex,
                                  const RVector & attributeMap, double defaultVal);

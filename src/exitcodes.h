@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2007-2014 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -67,28 +67,28 @@ inline void throwError(int exitCode, const std::string & errString){
 
 // the following may be DEPRECATED
 
-// Commandozeile ungültig, wird von getopt automatisch gesetzt
+// Commandozeile ungÃ¼ltig, wird von getopt automatisch gesetzt
 #define EXIT_DEFAULT 1
 
 // Commandozeile zu kurz;
 #define EXIT_COMANDLINE 2
 
-// Datenfile kann nicht geöffnet werden
+// Datenfile kann nicht geÃ¶ffnet werden
 #define EXIT_DATACONTAINER_FILE 3
 
 // Im Datenfile sind zu wenig Elektroden definiert
 #define EXIT_DATACONTAINER_NELECS 10
 
-// Im Datenfile ist die Spezifizierung der Elektroden ungültig (Elektroden Tokenliste)
+// Im Datenfile ist die Spezifizierung der Elektroden ungÃ¼ltig (Elektroden Tokenliste)
 #define EXIT_DATACONTAINER_ELECS_TOKEN 11
 
-// Im Datenfile ist die Spezifizierung der Datentypen ungültig (Daten Tokenliste)
+// Im Datenfile ist die Spezifizierung der Datentypen ungÃ¼ltig (Daten Tokenliste)
 #define EXIT_DATACONTAINER_UNKNOWN_TOKEN 12
 
-// Im Datenfile ist die Anzahl der Daten ungültig oder kann nicht gelesen werden
+// Im Datenfile ist die Anzahl der Daten ungÃ¼ltig oder kann nicht gelesen werden
 #define EXIT_DATACONTAINER_DATASIZE 13
 
-// Im Datenfile gibt es ungültige Elektrodenkonfigurationen, Elektrodennummer ist ggf. größer als die Anzahl an Elektroden
+// Im Datenfile gibt es ungÃ¼ltige Elektrodenkonfigurationen, Elektrodennummer ist ggf. grÃ¶ÃŸer als die Anzahl an Elektroden
 #define EXIT_DATACONTAINER_ELECS 14
 
 // Im Datenfile ist entweder u oder i nicht definiert oder gleich 0.0
@@ -100,16 +100,16 @@ inline void throwError(int exitCode, const std::string & errString){
 // Im Datenfile ist keine Formatspezifikation
 #define EXIT_DATACONTAINER_NO_DATAFORMAT 17
 
-// Kann die Datei für den Export des Netzes und Models nicht erstellen
+// Kann die Datei fÃ¼r den Export des Netzes und Models nicht erstellen
 #define EXIT_MESH_EXPORT_FAILS 21
 
-// Kann die InsertDatei für den Export des Netzes und Models nicht erstellen
+// Kann die InsertDatei fÃ¼r den Export des Netzes und Models nicht erstellen
 #define EXIT_POLY_CIRC_INSERT_ADDITIONALS 22
 
-// allgemeiner datei fehler, kann ein file entweder lesend oder schreibend nicht öffnen
+// allgemeiner datei fehler, kann ein file entweder lesend oder schreibend nicht Ã¶ffnen
 #define EXIT_OPEN_FILE 22
 
-// allgemeiner datei fehler, kann ein file entweder lesend oder schreibend nicht öffnen
+// allgemeiner datei fehler, kann ein file entweder lesend oder schreibend nicht Ã¶ffnen
 #define EXIT_DCMODELL_NO_ANALYT 30
 
 //** interne Fehler evntl Bugs, die entweder vorher entdeckt werden sollten und keine Bedienfehler sind
@@ -121,7 +121,7 @@ inline void throwError(int exitCode, const std::string & errString){
 // Im Tinyvector ungueltiger indexzugriff
 #define EXIT_TINYVECTOR_INDEX 101
 
-// Im Tinyvector ungueltige Vektorgröße
+// Im Tinyvector ungueltige VektorgrÃ¶ÃŸe
 #define EXIT_TINYVECTOR_SIZE 102
 
 // Fehler im Netzcontainer

@@ -156,7 +156,8 @@ public:
     typedef typename ContainerType::const_iterator    const_iterator;
     typedef MatrixElement< ValueType, IndexType, ContainerType > MatElement;
 
-    SparseMapMatrix(IndexType r=0, IndexType c=0, int stype = 0) 
+    /*!stype .. symmetric style. stype=0 (full), stype=1 (UpperRight), stype=2 (LowerLeft)*/
+    SparseMapMatrix(IndexType r=0, IndexType c=0, int stype=0) 
         : rows_(r), cols_(c), stype_(stype) {   
     }
 
@@ -196,6 +197,11 @@ public:
     }
 
     virtual ~SparseMapMatrix() {}    
+    
+    void resize(Index rows, Index cols){
+        rows_ = rows;
+        cols_ = cols;
+    }
     
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_SPARSEMAPMATRIX_RTTI; }

@@ -9,6 +9,14 @@ from .overlayimage import *
 import matplotlib.pyplot as plt
 import numpy as np
 
+def showLater(val):
+    import matplotlib.pyplot as plt
+    if val==1:
+        plt.ion()
+    else:
+        plt.ioff()
+        plt.show()
+        
 goldenMean = 1.618 #(1.0 + math.sqrt(5.0)) / 2.0
 
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0,

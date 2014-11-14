@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2006-2014 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -79,14 +79,17 @@ public:
     typedef Vector < ModelValType > ModelVector;
 
     /*! Minimal constructor. verbose -- gives some output and status information about the inversion progress; dosave -- advanced debuging, saves alot of stuff and temporary data */
-    Inversion(bool verbose = false, bool dosave = false)
-    : InversionBase< ModelValType >(), verbose_(verbose), dosave_(dosave), saveModelHistory_(dosave){
+    Inversion(bool verbose=false, bool dosave=false)
+    : InversionBase< ModelValType >(), verbose_(verbose), 
+        dosave_(dosave), saveModelHistory_(dosave){
         this->init_();
     }
 
     /*! Usual constructor. data -- vector of the given data; forward -- the associated forward operator */
-    Inversion(const Vec & data, ModellingBase & forward, bool verbose = false, bool dosave = false)
-    : InversionBase< ModelValType >(), verbose_(verbose), dosave_(dosave), saveModelHistory_(dosave) {
+    Inversion(const Vec & data, ModellingBase & forward,
+              bool verbose=false, bool dosave=false)
+    : InversionBase< ModelValType >(), verbose_(verbose),
+        dosave_(dosave), saveModelHistory_(dosave) {
         this->init_();
 
         //** init: data_
@@ -98,8 +101,9 @@ public:
 
     /*! Intermediate constructor including transforms and data transformation function */
     Inversion(const Vec & data, ModellingBase & forward,
-                Trans< Vec > & transData, bool verbose = true, bool dosave = false)
-    : InversionBase< ModelValType >(), verbose_(verbose), dosave_(dosave), saveModelHistory_(dosave) {
+              Trans< Vec > & transData, bool verbose=true, bool dosave=false)
+    : InversionBase< ModelValType >(), verbose_(verbose),
+        dosave_(dosave), saveModelHistory_(dosave) {
         //** set: default values
         this->init_();
         //** set: paraDomain init: modelWeight_, constraintsWeight_, ConstraintMatrix
@@ -250,11 +254,11 @@ public:
     /*! Set the forward operator and the model-transform-function derived from fop-regionManager if not set before. */
     inline void setForwardOperator(ModellingBase & forward) {
         forward_   = & forward;
-        clearConstraints();
+        forward_->clearConstraints();
 
         //! Always use a region manager
         forward_->initRegionManager();
-        model_    = forward_->startModel();
+        model_ = forward_->startModel();
     }
 
     /*! Return forward operator.*/
@@ -358,32 +362,36 @@ public:
         }
     }
 
-    /*! Set and get constraint matrix */
-    inline void setConstraintMatrix(const RSparseMapMatrix & C){ C_ = C; }
-    inline const RSparseMapMatrix & constraintMatrix() const { return C_; }
-
-    /*! Clear Constraints matrix */
-    inline void clearConstraints(){ C_.clear(); }
-
     /*! Create constraints, check and compare size of constraint matrix with model/boundary control */
     void checkConstraints() {
-        if (C_.cols() == 0 || C_.rows() == 0){
+        if (forward_->constraints()->cols() == 0 || forward_->constraints()->rows() == 0){
             if (verbose_) std::cout << "Building constraints matrix" << std::endl;
-            forward_->regionManager().fillConstraints(C_);
+            //forward_->regionManager().fillConstraints(forward_->constraints());
+            forward_->createConstraints();
         } else {
             if (verbose_) std::cout << " found valid constraints matrix. omit rebuild" << std::endl;
         }
-        if (model_.size() != C_.cols()){
+                
+        if (model_.size() != forward_->constraints()->cols()){
             //** vielleicht irgendwo ne schÃ¶ne resize funktion
-            std::cout << WHERE_AM_I << " resize model " << model_.size() << " to fit constrain size: " << C_.cols() << std::endl;
-            model_.resize(C_.cols());
+            std::cout << WHERE_AM_I << " resize model " << model_.size()
+                      << " to fit constrain size: " 
+                      << forward_->constraints()->cols() << std::endl;
+            model_.resize(forward_->constraints()->cols());
         }
-        if (modelWeight_.size() != model_.size()) modelWeight_.resize(model_.size(), 1.0);
-        if (constraintsWeight_.size() != C_.rows()) constraintsWeight_.resize(C_.rows(), 1.0);
+
+        if (modelWeight_.size() != model_.size()){
+            modelWeight_.resize(model_.size(), 1.0);
+        }
+
+        if (constraintsWeight_.size() != forward_->constraints()->rows()) {
+            constraintsWeight_.resize(forward_->constraints()->rows(), 1.0);
+        }
 
         if (verbose_){
-            std::cout << "constraint matrix of size(nBounds x nModel) " << C_.rows() << " x " << C_.cols()
-                      << " size: " << C_.size() << std::endl;
+            std::cout << "constraint matrix of size(nBounds x nModel) " 
+                << forward_->constraints()->rows() << " x " 
+                << forward_->constraints()->cols() << std::endl;
         }
     }
 
@@ -442,7 +450,7 @@ public:
 
     /*! Return IRLS function of roughness vector */
     Vec getIRLS() const {
-        return getIRLSWeights(Vec(C_ * tM_->trans(model_) * constraintsWeight_), 0.0, 1.0);
+        return getIRLSWeights(Vec(*forward_->constraints() * tM_->trans(model_) * constraintsWeight_), 0.0, 1.0);
     }
 
     /*! Set the constraint weight (boundary control) vector */
@@ -481,7 +489,7 @@ public:
     /*! Apply blocky model constraints (see also setBlockyModel) */
     void constrainBlocky() {
         if (verbose_) std::cout << "Blocky model constraints " << std::endl;
-        setCWeight(getIRLSWeights(Vec((C_ * tM_->trans(model_)) * constraintsWeight_), 0.0, 1.0));
+        setCWeight(getIRLSWeights(Vec((*forward_->constraints() * tM_->trans(model_)) * constraintsWeight_), 0.0, 1.0));
     }
 
     /*! Shortcut for \ref echoStatus(response_, model_). */
@@ -511,8 +519,12 @@ public:
         Vec sensCol = (*forward_->jacobian()) * resolution * tD_->deriv(response_) / tM_->deriv(model_)[ iModel ];
         //** call inverse substep with sensCol on right hand side (see Gnther, 2004)
         Vec deltaModel0(model_.size());// !!! h   zvariante
-        solveCGLSCDWWtrans(*forward_->jacobian(), C_, dataWeight_, sensCol, resolution, constraintsWeight_, modelWeight_,
-                         tM_->deriv(model_), tD_->deriv(response_), lambda_, deltaModel0, maxCGLSIter_, false);
+        
+        solveCGLSCDWWtrans(*forward_->jacobian(), *forward_->constraints(),
+                           dataWeight_, sensCol, resolution,
+                           constraintsWeight_, modelWeight_,
+                           tM_->deriv(model_), tD_->deriv(response_),
+                           lambda_, deltaModel0, maxCGLSIter_, false);
 
         return resolution;
     }
@@ -543,7 +555,7 @@ public:
 
     /*! Return (C * m * m_w) * c_w */
     RVector roughness(const RVector & model) const {
-       return C_ * Vec(tM_->trans(model) * modelWeight_) * constraintsWeight_;
+       return *forward_->constraints() * Vec(tM_->trans(model) * modelWeight_) * constraintsWeight_;
     }
 
     /*! Shortcut for roughness for the current model vector */
@@ -572,7 +584,7 @@ public:
     double getPhiM(const Vec & model) const {
 //        Vec dModel(tM_->trans(model));
 //        if (haveReferenceModel_) dModel = dModel - tM_->trans(modelRef_);
-//        Vec roughness(Vec(C_ * dModel) * constraintsWeight_);
+//        Vec roughness(Vec(forward_->constraints() * dModel) * constraintsWeight_);
         Vec rough(this->roughness(model));
         if (haveReferenceModel_) rough = rough - constraintsH_;
 
@@ -709,9 +721,11 @@ public:
     Vec invSubStep(const Vec & rhs) {
         Vec deltaModel0(model_.size());//!!! h-variante
         Vec solution(model_.size());
-        solveCGLSCDWWtrans(*forward_->jacobian(), C_, dataWeight_, rhs, solution, constraintsWeight_, modelWeight_,
-                            tM_->deriv(model_), tD_->deriv(response_),
-                            lambda_, deltaModel0, maxCGLSIter_, verbose_);
+        solveCGLSCDWWtrans(*forward_->jacobian(), *forward_->constraints(), 
+                           dataWeight_, rhs, solution, constraintsWeight_,
+                           modelWeight_,
+                           tM_->deriv(model_), tD_->deriv(response_),
+                           lambda_, deltaModel0, maxCGLSIter_, verbose_);
         return solution;
     }
 
@@ -764,8 +778,6 @@ protected:
 
     Vec                   data_;
     ModellingBase       * forward_;
-
-    RSparseMapMatrix      C_;
 
     Trans< Vec >        * tD_;
     Trans< Vec >        * tM_;
@@ -824,13 +836,12 @@ protected:
 
 template < class ModelValType >
 const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_THREADS
-
     abort_ = false;
     ipc_.setBool("abort", false);
 
     //** check if transfunctions are valid
     this->checkTransFunctions();
-    
+
     //! calculation of initial modelresponse
     response_ = forward_->response(model_);
 
@@ -849,19 +860,26 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
         forward_->regionManager().fillConstraintsWeight(constraintsWeight_);
     }
     
-    if (constraintsWeight_.size() != C_.rows()){
+    if (constraintsWeight_.size() != forward_->constraints()->rows()){
         std::cout << WHERE_AM_I << " Fixing cweight.size()" << std::endl;
-        std::cout << constraintsWeight_.size() << " " << C_.rows() << std::endl;
-        constraintsWeight_.resize(C_.rows(), 1.0);
+        std::cout << constraintsWeight_.size() << " " 
+                  << forward_->constraints()->rows() << std::endl;
+        constraintsWeight_.resize(forward_->constraints()->rows(), 1.0);
     }
-
+    if (modelWeight_.size() != forward_->constraints()->cols()){
+        std::cout << WHERE_AM_I << " Fixing mweight.size()" << std::endl;
+        std::cout << modelWeight_.size() << " " 
+                  << forward_->constraints()->cols() << std::endl;
+        modelWeight_.resize(forward_->constraints()->cols(), 1.0);
+    }
+    
     //! compute roughness constraint and correct it for inter-region constraints
     size_t cc = forward_->regionManager().constraintCount();
     
     if (constraintsH_.size() != cc) constraintsH_.resize(cc);
     
     if (haveReferenceModel_) {
-        constraintsH_ = (C_ * Vec(tM_->trans(modelRef_) * modelWeight_)) * constraintsWeight_; //!!!template
+        constraintsH_ = (*forward_->constraints() * Vec(tM_->trans(modelRef_) * modelWeight_)) * constraintsWeight_; //!!!template
         size_t ircc = forward_->regionManager().interRegionConstraintsCount();
         if (ircc > 0) constraintsH_.setVal(0.0, cc - ircc, long(cc));
     }
@@ -875,12 +893,13 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     DOSAVE save(response_ , "response_0");
     DOSAVE save(modelRef_ , "modelRef_0");
     DOSAVE save(RVector(response_ / data_ -1.0), "deltaData_0");
-    DOSAVE C_.save("constraint.matrix");
+//     DOSAVE forward_->constraints().save("constraint.matrix");
     DOSAVE save(constraintsWeight_, "cweight_0");
     DOSAVE save(modelWeight_, "mweight_0");
     DOSAVE save(*forward_->jacobian(), "sens.bmat");
 
-    DOSAVE std::cout << "C size: " << C_.cols() << " x " << C_.rows() << std::endl;
+    DOSAVE std::cout << "C size: " << forward_->constraints()->cols() 
+                     << " x " << forward_->constraints()->rows() << std::endl;
 
     phiD_ = getPhiD();
 
@@ -1018,11 +1037,11 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
         if (doBroydenUpdate_) { //!!! h-variante
            if (verbose_) std::cout << "solve CGLSCDWW with lambda = " << lambda_ << std::endl;
                 THROW_TO_IMPL
-//                solveCGLSCDWW(*J_, C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
+//                solveCGLSCDWW(*J_, forward_->constraints(), dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
 //                                modelWeight_, lambda_, deltaModel0, maxCGLSIter_, verbose_);
         } else {
             if (verbose_) std::cout << "solve CGLSCDWWtrans with lambda = " << lambda_ << std::endl;
-//             solveCGLSCDWWtrans(*J_, C_, dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
+//             solveCGLSCDWWtrans(*J_, forward_->constraints(), dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
 //                                  modelWeight_, tM_->deriv(model_), tD_->deriv(response_),
 //                                lambda_, deltaModel0, maxCGLSIter_, verbose_);
 
@@ -1030,12 +1049,12 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
 
             // wannebee
 //             DoubleWeightedMatrix scaledJacobian (forward_->jacobian(), tM_->deriv(model_), tD_->deriv(response_));
-//             DoubleWeightedMatrix weightedConstraints(C_, constraintsWeight_, modelWeight_);
+//             DoubleWeightedMatrix weightedConstraints(forward_->constraints(), constraintsWeight_, modelWeight_);
 //             solveCGLSCDWWhtransWB(scaledJacobian, weightedConstraints, dataWeight_, deltaDataIter_, deltaModelIter_,
 //                                    lambda_, roughness, maxCGLSIter_, verbose_);
 
-            solveCGLSCDWWhtrans(*forward_->jacobian(), C_, dataWeight_, 
-                                deltaDataIter_, deltaModelIter_,
+            solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
+                                dataWeight_, deltaDataIter_, deltaModelIter_,
                                 constraintsWeight_, modelWeight_,
                                 tM_->deriv(model_), tD_->deriv(response_),
                                 lambda_, roughness, maxCGLSIter_, CGLStol_,
@@ -1131,11 +1150,13 @@ ALLOW_PYTHON_THREADS
     DOSAVE echoMinMax(constraintsH_, "constraintsH");
     DOSAVE save(constraintsH_, "constraintsH");
 
-//    solveCGLSCDWWtrans(*J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
+//    solveCGLSCDWWtrans(*J_, forward_->constraints(), dataWeight_, deltaData, deltaModel, constraintsWeight_,
 //                        modelWeight_, tM_->deriv(model_), tD_->deriv(response_),
 //                        lambda_, deltaModel0, maxCGLSIter_, verbose_);
-    solveCGLSCDWWhtrans(*forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
-                        modelWeight_, tM_->deriv(model_), tD_->deriv(response_),
+    solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
+                        dataWeight_, deltaDataIter_, deltaModel,
+                        constraintsWeight_, modelWeight_,
+                        tM_->deriv(model_), tD_->deriv(response_),
                         lambda_, roughness, maxCGLSIter_, verbose_);
 
     Vec appModelStart(tM_->invTrans(tModel + deltaModel));
@@ -1155,12 +1176,14 @@ ALLOW_PYTHON_THREADS
     while (lambdaIter < 30) {
         lambdaIter++;
         if(verbose_) std::cout << lambdaIter << "lambda = " << lambda_ << std::endl;
-//        solveCGLSCDWWtrans(*J_, C_, dataWeight_, deltaData, deltaModel, constraintsWeight_,
+//        solveCGLSCDWWtrans(*J_, forward_->constraints(), dataWeight_, deltaData, deltaModel, constraintsWeight_,
 //                          modelWeight_, tM_->deriv(model_), tD_->deriv(response_),
 //                          lambda_, deltaModel0, maxCGLSIter_, verbose_);
-        solveCGLSCDWWhtrans(*forward_->jacobian(), C_, dataWeight_, deltaDataIter_, deltaModel, constraintsWeight_,
-                        modelWeight_, tM_->deriv(model_), tD_->deriv(response_),
-                        lambda_, roughness, maxCGLSIter_, verbose_);
+        solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
+                            dataWeight_, deltaDataIter_, deltaModel, 
+                            constraintsWeight_, modelWeight_,
+                            tM_->deriv(model_), tD_->deriv(response_),
+                            lambda_, roughness, maxCGLSIter_, verbose_);
 
         Vec appModel(tM_->invTrans(tModel + deltaModel));
         Vec appResponse(tD_->invTrans(tResponse + *forward_->jacobian() * deltaModel));

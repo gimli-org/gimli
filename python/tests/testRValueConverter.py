@@ -22,9 +22,25 @@ def testRVecIter():
     a = pg.RVector(10, 1.1)
     print(sum(a))
     
+def testFunct(a):
+    if a[0] != 1.1:
+        print('#'*40  + ' Fail: check __RVectorArrayCall__')
+    
+    print("testFunct", a)
     
 def testNumpyFromRVec():
     a = pg.RVector(10, 1.1)
+    print(type(a), sys.getrefcount(a), a)
+    a = np.asarray(a)
+    print(type(a), sys.getrefcount(a), a)
+    testFunct(a)
+    print(type(a), sys.getrefcount(a), a)
+    
+    a = pg.RVector(10, 1.1)
+    a = np.array(a)
+    testFunct(a)
+    
+    
     print(sys.getrefcount(a))
     print(a)
     x = np.array(a)
@@ -106,7 +122,7 @@ if __name__ == '__main__':
     #testRValSeqRVector3()
     #testRValSequenz()
     testNumpyFromRVec()
-    testNumpyFromRVec3()
+    #testNumpyFromRVec3()
     #testRValNumpyArray()
     #testSlices()
     

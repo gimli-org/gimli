@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2005-2014 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -47,12 +47,21 @@ public:
 
     inline RVector operator() (const RVector & model){ return response(model); }
 
-    virtual RVector createDefaultStartModel() { return RVector(0); }
-
     /*! Change the associated data container */
     void setData(DataContainer & data);
     
-    /*! */
+    /*! Return the associated data container. */
+    DataContainer & data() const;
+    
+    /*! Interface to define custom start model generators in you forward 
+     * operators.
+     * !*/
+    virtual RVector createDefaultStartModel() { return RVector(0); }
+
+    /*! Return the start model. 
+     * If there is no model defined createDefaultStartModel is called which can 
+     * be overloaded by child classes.
+     !*/
     virtual RVector startModel();
 
     virtual void setStartModel(const RVector & startModel){ 
@@ -98,6 +107,26 @@ public:
     /*! Clear Jacobian matrix. */
     virtual void clearJacobian(){ jacobian_->clear(); }
     
+    /*! Set and get constraint matrix */
+//     inline void setConstraintMatrix(const RSparseMapMatrix & C){ C_ = C; }
+//     inline const RSparseMapMatrix & constraintMatrix() const { return C_; }
+//         /*! Clear Constraints matrix */
+    virtual void setConstraints(MatrixBase * C);
+    
+    virtual void clearConstraints();
+
+    virtual void initConstraints();
+    
+    virtual void createConstraints();
+    
+    virtual MatrixBase * constraints();
+    
+    virtual MatrixBase * constraints() const;
+    
+    virtual RSparseMapMatrix & constraintsRef() const;
+
+    virtual RSparseMapMatrix & constraintsRef();
+    
     const RMatrix & solution() const { return solutions_; }
 
     void createRefinedForwardMesh(bool refine=true, bool pRefine=false);
@@ -106,8 +135,7 @@ public:
     void setRefinedMesh(const Mesh & mesh);
 
     void mapModel(const RVector & model, double background=0);
-    void mapModel(const CVector & model, Complex background=Complex(0));
-
+   
     const RegionManager & regionManager() const;
 
     RegionManager & regionManager();
@@ -141,10 +169,12 @@ protected:
     Mesh                    * mesh_;
 
     DataContainer           * dataContainer_;
-
-    MatrixBase              * jacobian_;
     
+    MatrixBase              * jacobian_;
     bool                    ownJacobian_;
+    
+    MatrixBase              * constraints_;
+    bool                    ownConstraints_;
     
     RMatrix                 solutions_;
 

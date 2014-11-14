@@ -1,7 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -43,34 +43,30 @@ public:
     /*! Abstract method for running the whole inversion. */
     virtual const ModelVector & run() = 0;
 
-    virtual void setModel( const ModelVector & model ) = 0;
+    virtual void setModel(const ModelVector & model) = 0;
 
-    virtual void setReferenceModel( const ModelVector & model ) = 0;
+    virtual void setReferenceModel(const ModelVector & model) = 0;
 
     /*! Abstract method for returning a const reference to the model vector. */
     virtual const ModelVector & model() const = 0;
 
-    virtual void setData( const ModelVector & data )   = 0;
+    virtual void setData(const ModelVector & data)   = 0;
 
-    virtual void setError( const ModelVector & err )   = 0;
+    virtual void setError(const ModelVector & err)   = 0;
 
-    virtual void setTransData( Trans< ModelVector > & t )   = 0;
+    virtual void setTransData(Trans< ModelVector > & t)   = 0;
 
-    virtual void setTransModel( Trans< ModelVector > & t )   = 0;
+    virtual void setTransModel(Trans< ModelVector > & t)   = 0;
 
-    virtual void setLambda( double l ) = 0;
+    virtual void setLambda(double l) = 0;
 
-    virtual void setMaxIter( int maxiter ) = 0;
+    virtual void setMaxIter(int maxiter) = 0;
 
     virtual ModellingBase * forwardOperator() = 0;
 
-    virtual void setForwardOperator( ModellingBase & fop ) = 0;
+    virtual void setForwardOperator(ModellingBase & fop) = 0;
 
-    virtual void clearConstraints() = 0;
-
-    virtual const ModelVector & cWeight( ) const = 0;
-
-    virtual const RSparseMapMatrix & constraintMatrix() const = 0;
+    virtual const ModelVector & cWeight() const = 0;
 
     virtual void abort() = 0;
 
