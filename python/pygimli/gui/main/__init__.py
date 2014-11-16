@@ -2,6 +2,7 @@
 
 """ Main gui application. """
 
-from . guiMainFrameQt import PyGIMLIApp as MainApp
-from . guiMainFrameQt import PyGUISystemMainFrame as MainFrame
+from . guiMainFrameQt import QtGui, QtCore
+from . guiMainFrameQt import PyGIMLIApp
+from . guiMainFrameQt import PyGUISystemMainFrame
 from . guiMainFrameQt import WorkSpace
