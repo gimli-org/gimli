@@ -26,13 +26,12 @@ if not hasattr(sys, "frozen"):
         sys.exit(1)
 
 def start():
-        
     from pygimli.gui import main
     
     global ws
     ws = WorkSpace()
 
-    app = main.MainApp(ws=ws)
+    app = main.PyGIMLIApp(ws=ws)
     app.start()
     
 if __name__ == '__main__':

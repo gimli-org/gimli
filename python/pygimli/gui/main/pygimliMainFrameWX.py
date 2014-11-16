@@ -659,22 +659,20 @@ class PyGIMLIMainFrame(wx.Frame):
 
 class PyGIMLIApp(wx.App):
     def __init__(self, options = None, args = None, ws = None):
+        raise
         print("Mops")
-        wx.App.__init__(self, redirect = False)
+        super().__init__(redirect = False)
 
         from optparse import OptionParser
         parser = OptionParser()
         parser.add_option("", "--debug", dest = "debug", action = "store_true"
                             , help = "Debug mode.", default = False)
-
         (options, args) = parser.parse_args()
-
 
         print(options, args)
         self.options = options
         self.args = args
         self.logFile = 'pygi.log'
-
 
         self.mainFrame = PyGIMLIMainFrame(ws = ws)
 
@@ -684,9 +682,6 @@ class PyGIMLIApp(wx.App):
         self.SetTopWindow(self.mainFrame)
         self.mainFrame.Show()
         self.mainFrame.registerPlugins()
-
-
-
 
         #self.ipcServer_ = IPCServer(('localhost', 0), IPCThreadedTCPRequestHandler)
         #self.ipcServer_.environment = 'production'
@@ -698,7 +693,6 @@ class PyGIMLIApp(wx.App):
         #server_thread.setDaemon(True)
         #server_thread.start()
         #ws.ipcServer = self.ipcServer_
-
 
     def start(self):
         for p in self.args:

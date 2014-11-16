@@ -20,7 +20,6 @@ class WorkSpace:
     def __init__(self):
         self.activeResource = None
 
-
 from spyderlib.widgets.internalshell import InternalShell
 from code import InteractiveConsole
     
@@ -124,7 +123,7 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
     def __init__(self, ws):
         """
         """
-        QtGui.QMainWindow.__init__(self)
+        super().__init__()
 
         import locale
         if locale.localeconv()['decimal_point'] == ',':
@@ -455,24 +454,21 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
 
 class PyGIMLIApp(QtGui.QApplication):
     def __init__(self, options=None, args=None, ws=None):
-        QtGui.QApplication.__init__(self, sys.argv)
+        super().__init__(sys.argv)
 
-        from optparse import OptionParser
+        import argparse
+        parser = argparse.ArgumentParser(description="GUI for Bert")
+    
+        parser.add_argument("--debug", dest="debug", action="store_true",
+                            help="Debug mode.", default=False)
+        args = parser.parse_args()
 
-        parser = OptionParser()
-        parser.add_option("", "--debug",
-                          dest="debug", action="store_true",
-                          help="Debug mode.", default=False)
-
-        (options, args) = parser.parse_args()
-
-        self.options = options
         self.args = args
         self.logFile = 'ogedit.log'
 
         self.mainFrame = PyGUISystemMainFrame(ws=ws)
 
-        if not options.debug:
+        if not self.args.debug:
             self.mainFrame.redirectOutput(self.logFile)
 
         self.mainFrame.show()
