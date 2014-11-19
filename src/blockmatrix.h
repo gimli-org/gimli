@@ -89,7 +89,7 @@ public:
     }
 
     Index addMatrix(MatrixBase * matrix){
-//         __MS(matrix << " " << matrix->rtti())
+        __MS(matrix << " " << matrix->rtti())
         matrieces_.push_back(matrix);
         return matrieces_.size() - 1;
     }
@@ -122,12 +122,12 @@ public:
         for (Index i = 0; i < entries_.size(); i ++ ){
             BlockMatrixEntry entry = entries_[i];
             
-            MatrixBase &mat = *matrieces_[entry.matrixID];
+            MatrixBase *mat = matrieces_[entry.matrixID];
             
-            ret.addVal(mat.mult(b.getVal(entry.colStart, 
-                                         entry.colStart + mat.cols())) * 
+            ret.addVal(mat->mult(b.getVal(entry.colStart, 
+                                         entry.colStart + mat->cols())) * 
                        entry.scale,
-                       entry.rowStart, entry.rowStart + mat.rows());
+                       entry.rowStart, entry.rowStart + mat->rows());
         } 
         
         return ret;
@@ -144,25 +144,28 @@ public:
          for (Index i = 0; i < entries_.size(); i ++ ){
             BlockMatrixEntry entry = entries_[i];
             
-            MatrixBase &mat = *matrieces_[entry.matrixID];
+            MatrixBase *mat = matrieces_[entry.matrixID];
             
-            ret.addVal(mat.transMult(b.getVal(entry.rowStart, 
-                                         entry.rowStart + mat.rows())) * 
+            ret.addVal(mat->transMult(b.getVal(entry.rowStart, 
+                                               entry.rowStart + mat->rows())) * 
                        entry.scale,
-                       entry.colStart, entry.colStart + mat.cols());
+                       entry.colStart, entry.colStart + mat->cols());
         } 
         return ret;
     }
     
     void recalcMatrixSize() const {
-        
+        __MS(entries_.size())
         for (Index i = 0; i < entries_.size(); i ++ ){
-            BlockMatrixEntry entry = entries_[i];
-//             __MS(matrieces_[entry.matrixID] << " " << matrieces_[entry.matrixID]->rtti())
-            rows_ = max(rows_, 
-                        entry.rowStart + matrieces_[entry.matrixID]->rows());
-            cols_ = max(cols_, 
-                        entry.colStart + matrieces_[entry.matrixID]->cols());
+            BlockMatrixEntry entry(entries_[i]);
+            __MS(entry.matrixID << " " << matrieces_.size())
+            __MS(matrieces_[0])
+            
+            MatrixBase *mat = matrieces_[entry.matrixID];
+            
+            __MS(mat << " " << mat->rtti())
+            rows_ = max(rows_, entry.rowStart + mat->rows());
+            cols_ = max(cols_, entry.colStart + mat->cols());
         } 
     }
     

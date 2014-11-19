@@ -31,9 +31,8 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
     endif(APPLE)
-  
-    #-stdlib=libc++
 
+    #-stdlib=libc++
 endif ()
 
 if(MSVC)
@@ -52,10 +51,33 @@ set(PACKAGE_VERSION \"${LIBGIMLI_VERSION}\")
 set(PACKAGE_BUGREPORT \"carsten@resistivity.net\")
 set(PACKAGE_AUTHORS \"carsten@resistivity.net thomas@resistivity.net\")
 
-
 ################################################################################
 # Check for libs and other packages we might use.
 ################################################################################
+
+if(NOT THIRDPARTY_DIR)
+    if (NOT ADDRESSMODEL)
+        if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+            message(STATUS "Target is 64 bits")
+            set (ADDRESSMODEL "64")
+        else()
+            message(STATUS "Target is 32 bits")
+            set (ADDRESSMODEL "32")
+        endif()
+    endif()
+
+    set(TARGETNAME "-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-${ADDRESSMODEL}")
+    set(ENV{TARGETNAME} ${TARGETNAME})
+    set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/../thirdParty/)
+    set(EXTERNAL_DIR ${THIRDPARTY_DIR}/dist${TARGETNAME})
+    message(STATUS "ThirdParty set to: ${THIRDPARTY_DIR}")
+    message(STATUS "External set to: ${EXTERNAL_DIR}")
+endif()
+
+if(NOT EXTERNAL_DIR)
+    set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+    message(STATUS "External set to: ${EXTERNAL_DIR}")
+endif()
 
 include(CheckIncludeFileCXX)
 
@@ -81,7 +103,6 @@ else(MSVC)
 	link_directories(${BOOST_LIBRARYDIR})
 endif(MSVC)
 
-
 if (Boost_INCLUDE_DIR)
     message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
     include_directories(${Boost_INCLUDE_DIR})
@@ -101,11 +122,17 @@ if (Boost_INCLUDE_DIR)
 	endif()
 endif (Boost_INCLUDE_DIR)
 
-find_package(Triangle)
-find_package(BLAS)
-find_package(LAPACK)
-find_package(CHOLMOD)
-find_package(UMFPACK)
+# Find packages that CHOLMOD depends on
+set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRARY_PATH})
+
+if (J) # dummy to avoid error msg
+endif()
+
+find_or_build_package(Triangle triangle)
+find_or_build_package(BLAS lapack)
+find_or_build_package(LAPACK lapack)
+find_or_build_package(CHOLMOD suitesparse)
+find_or_build_package(UMFPACK suitesparse)
 
 find_package(CppUnit)
 if (CPPUNIT_FOUND)
@@ -142,10 +169,11 @@ find_python_module(numpy)
 
 find_package(Boost 1.46.0 COMPONENTS python)
 
-find_package(gccxml)
-find_package(pygccxml)
+find_or_build_package(gccxml gccxml)
+find_or_build_package(pygccxml pygccxml)
+find_or_build_package(pyplusplus pygccxml)
 
-if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_EXECUTABLE 
+if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_FOUND
     AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
     AND Boost_PYTHON_LIBRARIES AND numpy_FOUND)
     set (PYGIMLI 1)

@@ -8,8 +8,8 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     file(GLOB ${PYTHON_MODULE_NAME}_SOURCE_FILES ${SOURCE_DIR}/*.cpp)
     list(SORT ${PYTHON_MODULE_NAME}_SOURCE_FILES)
 
-    set_source_files_properties(${PYTHON_MODULE_NAME}_SOURCE_FILES
-                                PROPERTIES GENERATED TRUE)
+#     set_source_files_properties(${PYTHON_MODULE_NAME}_SOURCE_FILES
+#                                 PROPERTIES GENERATED TRUE)
 
     include_directories(BEFORE ${SOURCE_DIR})
     include_directories(${PYTHON_INCLUDE_DIR})
@@ -68,6 +68,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     foreach(file ${PYTHON_FILES})
         
         #message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
+
         add_custom_command(
             OUTPUT "${PYTHON_OUT_PATH}/${file}"
             COMMAND cmake -E copy
@@ -130,3 +131,43 @@ function(find_python_module module)
     endif()
    
 endfunction(find_python_module)
+
+macro(find_or_build_package package get_package)
+
+    string(TOUPPER ${package} upper_package)
+    find_or_build_package_check(${package} ${get_package} ${upper_package}_FOUND)
+endmacro()
+
+macro(find_or_build_package_check package get_package checkVar)
+    find_package(${package})
+    
+    string(TOUPPER ${package} upper_package)
+    string(TOLOWER ${package} lower_package)
+    
+    message(STATUS "check_get: ${checkVar}")
+    if (NOT ${checkVar})
+        message(STATUS "No ${package} found .. building version from foreign sources into ${THIRDPARTY_DIR}" )
+
+        file(MAKE_DIRECTORY ${THIRDPARTY_DIR})
+        
+        if (J)
+            set(ENV{PARALLEL_BUILD} ${J})
+        endif()
+
+        if (NOT get_package)
+            set(get_package ${lower_package})
+        endif()
+
+        execute_process(
+            COMMAND sh ${PROJECT_SOURCE_DIR}/thirdParty/buildThirdParty.sh ${get_package}
+            WORKING_DIRECTORY ${THIRDPARTY_DIR}
+        )
+        
+        find_package(${package})
+    else()
+        message(STATUS "${package} found" )
+    endif()
+    
+endmacro()
+
+
