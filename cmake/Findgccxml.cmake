@@ -4,11 +4,6 @@
 # This module defines
 # GCCXML_EXECUTABLE, If false, do not try to use gccxml
 
-if(NOT EXTERNAL_DIR)
-	set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
-endif()
-#message(${GCCXML_EXECUTABLE})
-#message(${EXTERNAL_DIR}/bin)
 find_program(GCCXML_EXECUTABLE
   NAMES gccxml
         ../GCC_XML/gccxml
@@ -21,6 +16,7 @@ find_program(GCCXML_EXECUTABLE
 )
 
 if (GCCXML_EXECUTABLE)
+    set(GCCXML_FOUND TRUE)
     message( STATUS "Found gccxml executable: ${GCCXML_EXECUTABLE}")
 else()
     message( STATUS "NOT Found gccxml executable: cannot build pygimli.")

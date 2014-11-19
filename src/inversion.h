@@ -364,34 +364,45 @@ public:
 
     /*! Create constraints, check and compare size of constraint matrix with model/boundary control */
     void checkConstraints() {
-        if (forward_->constraints()->cols() == 0 || forward_->constraints()->rows() == 0){
+        __MS(forward_->constraints()->rtti())
+        
+        if (forward_->constraints()->cols() == 0 ||
+            forward_->constraints()->rows() == 0){
             if (verbose_) std::cout << "Building constraints matrix" << std::endl;
             //forward_->regionManager().fillConstraints(forward_->constraints());
+            __MS(forward_->constraints()->rtti())
             forward_->createConstraints();
+            __MS(forward_->constraints()->rtti())
         } else {
             if (verbose_) std::cout << " found valid constraints matrix. omit rebuild" << std::endl;
         }
-                
-        if (model_.size() != forward_->constraints()->cols()){
+        __MS(forward_->constraints()->rtti())
+        __MS(forward_->constraints())
+        __MS(forward_->constraints()->cols())
+        Index nModelC = forward_->constraints()->cols();
+        __MS(forward_->constraints())
+        Index nCWeightC = forward_->constraints()->rows();
+        __MS(forward_->constraints()->rtti())
+
+        if (verbose_){
+            std::cout << "constraint matrix of size(nBounds x nModel) " 
+                << nCWeightC << " x " << nModelC << std::endl;
+        }
+        
+        if (model_.size() != nModelC){
             //** vielleicht irgendwo ne schöne resize funktion
             std::cout << WHERE_AM_I << " resize model " << model_.size()
                       << " to fit constrain size: " 
-                      << forward_->constraints()->cols() << std::endl;
-            model_.resize(forward_->constraints()->cols());
+                      << nModelC << std::endl;
+            model_.resize(nModelC);
         }
 
         if (modelWeight_.size() != model_.size()){
             modelWeight_.resize(model_.size(), 1.0);
         }
 
-        if (constraintsWeight_.size() != forward_->constraints()->rows()) {
-            constraintsWeight_.resize(forward_->constraints()->rows(), 1.0);
-        }
-
-        if (verbose_){
-            std::cout << "constraint matrix of size(nBounds x nModel) " 
-                << forward_->constraints()->rows() << " x " 
-                << forward_->constraints()->cols() << std::endl;
+        if (constraintsWeight_.size() != nCWeightC) {
+            constraintsWeight_.resize(nCWeightC, 1.0);
         }
     }
 

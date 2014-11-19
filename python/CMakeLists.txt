@@ -2,14 +2,17 @@
 ADD_CUSTOM_TARGET(pggen ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
+        #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${PYTHON_EXECUTABLE} will work on cmake3.1
         ${PYTHON_EXECUTABLE}
     ARGS 
-        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-includes=${Boost_INCLUDE_DIR} --gccxml=${GCCXML_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR} --gccxml=${GCCXML_EXECUTABLE}
     TARGET
         pggen
     DEPENDS 
+        #set(ENV{PYTHONPATH} $ENV{PYTHONPATH}${PYGCCXML_PATH})
         #${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py 
         #${CMAKE_CURRENT_SOURCE_DIR}/pygimli.h
+        #ENV PYTHONPATH $ENV{PYTHONPATH}${PYGCCXML_PATH} APPEND
    )
 
 #HACK!! but we need this to force cmake looking for our generated binding files
@@ -48,9 +51,12 @@ add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
 add_dependencies(pygimli pgbuild)
 
+
+ADD_CUSTOM_TARGET(pgrebuild ALL)
+add_dependencies(pgrebuild pggen _pygimli_)
+
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
-#add_dependencies(pg pgbuild)
 add_dependencies(pg _pygimli_)
 
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)

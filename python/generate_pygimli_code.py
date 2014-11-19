@@ -5,7 +5,25 @@
 import os, shutil
 import sys
 import string
+
+from optparse import OptionParser
+
 from environment_for_pygimli_build import settings
+
+optionParser = OptionParser("usage: %prog [options]")
+optionParser.add_option("", "--extra-includes", dest="extraIncludes")
+optionParser.add_option("", "--extra-path", dest="extraPath")
+optionParser.add_option("", "--gccxml", dest="gccxml")
+                          
+(options, args) = optionParser.parse_args()
+
+if options.gccxml:
+    settings.gccxml_path = options.gccxml
+
+if options.extraPath:
+    sys.path.append(options.extraPath)
+
+
 
 import hand_made_wrappers
 
@@ -385,16 +403,21 @@ if __name__ == '__main__':
 
     defined_symbols = ''
   
-    from optparse import OptionParser
+    #from optparse import OptionParser
 
-    optionParser = OptionParser("usage: %prog [options]")
-    optionParser.add_option("", "--extra-includes", dest="extraIncludes")
-    optionParser.add_option("", "--gccxml", dest="gccxml")
-                      
-    (options, args) = optionParser.parse_args()
-    if options.gccxml:
-        settings.gccxml_path = options.gccxml
+    #optionParser = OptionParser("usage: %prog [options]")
+    #optionParser.add_option("", "--extra-includes", dest="extraIncludes")
+    #optionParser.add_option("", "--extra-path", dest="extraPath")
+    #optionParser.add_option("", "--gccxml", dest="gccxml")
+                          
+    #(options, args) = optionParser.parse_args()
+    #if options.gccxml:
+        #settings.gccxml_path = options.gccxml
      
+    #if options.extraPath:
+        #sys.path.append(options.extraPath)
+        
+        
     generate(defined_symbols, options.extraIncludes)
 
 

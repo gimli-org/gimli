@@ -857,6 +857,9 @@ uint RegionManager::interRegionConstraintsCount() const {
 }
 
 void RegionManager::fillConstraints(RSparseMapMatrix & C){
+    __MS(&C)
+    __MS(C.rtti())
+    
     uint nModel  = parameterCount();
     uint nConstr = constraintCount();
 
@@ -933,6 +936,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
             }
         }
     }
+    __MS(C.rtti())
 }
 
 std::vector < RVector3 > RegionManager::boundaryNorm() const {

@@ -34,13 +34,16 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
                         const Vec & wc, const Vec & wm, 
                         const Vec & tm, const Vec & td,
                         double lambda, const Vec & roughness, 
-                        int maxIter=200, double tol = -1.0,
+                        int maxIter=200, double tol=-1.0,
                         bool verbose=false){ //ALLOW_PYTHON_THREADS
 
     uint nData = b.size();
     uint nModel = x.size();
     uint nConst = C.rows();
 
+    __MS(S.rtti())
+    __MS(C.rtti())
+    
     if (S.rows() != nData)  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
     if (S.cols() != nModel) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
     if (C.cols() != nModel) std::cerr << "C.cols != nModel " << C.cols() << " / " << nModel << std::endl;
