@@ -341,7 +341,8 @@ mkBuildDIR(){
 prepBOOST(){
     BOOST_VER=boost_${BOOST_VERSION//./_}
 	BOOST_SRC=$SRC_DIR/$BOOST_VER
-	BOOST_DIST=$DIST_DIR/$BOOST_VER-$TOOLSET-$ADDRESSMODEL-py$PYTHONMAJOR$PYTHONMINOR
+	BOOST_DIST_NAME=$BOOST_VER-$TOOLSET-$ADDRESSMODEL-py$PYTHONMAJOR$PYTHONMINOR
+	BOOST_DIST=$DIST_DIR/$BOOST_DIST_NAME
 	
 	export BOOST_ROOT=$BOOST_DIST
 	
@@ -353,6 +354,7 @@ buildBOOST(){
 	checkTOOLSET
 	prepBOOST
 	getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
+	
 	pushd $BOOST_SRC
         
 		if [ "$SYSTEM" == "WIN" ]; then
@@ -386,6 +388,7 @@ buildBOOST(){
 		--with-filesystem \
 		--with-atomic 
 	popd
+	echo $BOOST_DIST_NAME > $DIST_DIR/.boost.dist
 }
 
 prepGCCXML(){
@@ -496,10 +499,10 @@ buildTRIANGLE(){
 	pushd $TRIANGLE_BUILD
 		if [ "$SYSTEM" == "WIN" ]; then 
 			sed -i -e 's/-DLINUX/-DCPU86/g' makefile ;
+			patch triangle.c -i $BUILDSCRIPT_HOME/patches/triangle-mingw-win64.patch
 		fi
 	
 		if [ "$ADDRESSMODEL" == "64" ]; then
-			patch triangle.c -i $BUILDSCRIPT_HOME/patches/triangle-mingw-win64.patch
 			sed -i -e 's/CC = cc/CC = gcc -fPIC/g' makefile;
 		else
 			sed -i -e 's/CC = cc/CC = gcc/g' makefile;

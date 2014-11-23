@@ -70,6 +70,7 @@ if(NOT THIRDPARTY_DIR)
     set(ENV{TARGETNAME} ${TARGETNAME})
     set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/../thirdParty/)
     set(EXTERNAL_DIR ${THIRDPARTY_DIR}/dist${TARGETNAME})
+    get_filename_component(EXTERNAL_DIR "${EXTERNAL_DIR}" ABSOLUTE)
     message(STATUS "ThirdParty set to: ${THIRDPARTY_DIR}")
     message(STATUS "External set to: ${EXTERNAL_DIR}")
 endif()
@@ -85,10 +86,22 @@ if (BOOST_ROOT)
     get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
 	set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
 else()
-	IF(WIN32)
-		set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/../../boost/include)
-	endif(WIN32)
+	find_or_build_package(BOOST boost)
+	# we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
+	FILE(READ "${EXTERNAL_DIR}/.boost.dist" BOOST_DIST_NAME)
+	STRING(REGEX REPLACE "\n" "" BOOST_DIST_NAME "${BOOST_DIST_NAME}")
+	get_filename_component(BOOST_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
+	message(STATUS "BOOST_ROOT from "${EXTERNAL_DIR}/.boost.dist": ${BOOST_ROOT}")
+	set(BOOST_ROOT ${BOOST_ROOT}  CACHE FILEPATH "Boost root distribution")
+	
+	set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
+	get_filename_component(Boost_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ABSOLUTE)
+	message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")	
+	#exit()
 endif()
+
+message(STATUS "BOOST_ROOT, ${BOOST_ROOT}")
+message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
 
 if (MSVC)
 	find_package(Boost 1.46.0 COMPONENTS system thread)
@@ -122,6 +135,8 @@ if (Boost_INCLUDE_DIR)
 	endif()
 endif (Boost_INCLUDE_DIR)
 
+mark_as_advanced(Boost_INCLUDE_DIR BOOST_ROOT)
+
 # Find packages that CHOLMOD depends on
 set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
@@ -129,6 +144,7 @@ if (J) # dummy to avoid error msg
 endif()
 
 find_or_build_package(Triangle triangle)
+
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)

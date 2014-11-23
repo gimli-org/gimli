@@ -45,9 +45,17 @@ SetGCC_TOOLSET(){
 	COMPILER='gcc'
 	GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
 	GCCARCH=`gcc -dumpmachine`
+<<<<<<< .mine
+    CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
+	
+	if [ "$CPUCOUNT" == "" ]; then
+		CPUCOUNT=1
+	fi
+=======
 	CPUCOUNT=1
 	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
     [ "$CPUCOUNT" == 0 ] && CPUCOUNT=1
+>>>>>>> .r420
 
 	if [ "$GCCARCH" == "mingw32" ]; then
 		ADRESSMODEL=32
