@@ -1,4 +1,3 @@
-
 ADD_CUSTOM_TARGET(pggen ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
@@ -24,10 +23,11 @@ ADD_CUSTOM_COMMAND(
         fixpygimlisrc
    )
 
+#[ -z "$J" ] && echo ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
 ADD_CUSTOM_TARGET(pgbuild ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
-        [ -z "$J" ] && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_CURRENT_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_CURRENT_BINARY_DIR} pg
+        [ -z "$J" ] && echo make -j 1 -C ${CMAKE_BINARY_DIR} pg || make -j $J -C ${CMAKE_BINARY_DIR} pg
     TARGET
         pgbuild
    )
@@ -51,9 +51,8 @@ add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
 add_dependencies(pygimli pgbuild)
 
-
-ADD_CUSTOM_TARGET(pgrebuild ALL)
-add_dependencies(pgrebuild pggen _pygimli_)
+#ADD_CUSTOM_TARGET(pgrebuild ALL)
+#add_dependencies(pgrebuild pggen _pygimli_)
 
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)

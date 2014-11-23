@@ -144,9 +144,8 @@ macro(find_or_build_package_check package get_package checkVar)
     string(TOUPPER ${package} upper_package)
     string(TOLOWER ${package} lower_package)
     
-    message(STATUS "check_get: ${checkVar}")
     if (NOT ${checkVar})
-        message(STATUS "No ${package} found .. building version from foreign sources into ${THIRDPARTY_DIR}" )
+        message(STATUS "${package} NOT found .. building version from foreign sources into ${THIRDPARTY_DIR}" )
 
         file(MAKE_DIRECTORY ${THIRDPARTY_DIR})
         
@@ -159,11 +158,13 @@ macro(find_or_build_package_check package get_package checkVar)
         endif()
 
         execute_process(
-            COMMAND sh ${PROJECT_SOURCE_DIR}/thirdParty/buildThirdParty.sh ${get_package}
-            WORKING_DIRECTORY ${THIRDPARTY_DIR}
+            COMMAND 
+				sh ${PROJECT_SOURCE_DIR}/thirdParty/buildThirdParty.sh ${get_package}
+            WORKING_DIRECTORY 
+				${THIRDPARTY_DIR}
         )
-        
-        find_package(${package})
+		
+		find_package(${package})
     else()
         message(STATUS "${package} found" )
     endif()
