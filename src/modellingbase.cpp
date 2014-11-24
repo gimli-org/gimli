@@ -235,7 +235,7 @@ void ModellingBase::setConstraints(MatrixBase * C){
 }
 
 void ModellingBase::createConstraints(){
-    __MS(constraints_->rtti())
+//     __MS(constraints_->rtti())
     this->regionManager().fillConstraints(constraintsRef());
 }
     
@@ -244,18 +244,18 @@ void ModellingBase::clearConstraints(){
 }
     
 MatrixBase * ModellingBase::constraints() { 
-    __M
-    __MS(constraints_)
-    __MS(constraints_->rtti())
-    __MS(constraints_->cols())
+//     __M
+//     __MS(constraints_)
+//     __MS(constraints_->rtti())
+//     __MS(constraints_->cols())
 //     __MS(constraints_->rows())
     return constraints_;
 }
     
 MatrixBase * ModellingBase::constraints() const { 
-    __M
-    __MS(constraints_)
-    __MS(constraints_->rtti())
+//     __M
+//     __MS(constraints_)
+//     __MS(constraints_->rtti())
 //__MS(constraints_->rows())
     return constraints_;
 }
