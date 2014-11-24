@@ -353,6 +353,7 @@ prepBOOST(){
 buildBOOST(){
 	checkTOOLSET
 	prepBOOST
+    exit
 	getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
 	
 	pushd $BOOST_SRC

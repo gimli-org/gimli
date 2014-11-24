@@ -41,8 +41,8 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     uint nModel = x.size();
     uint nConst = C.rows();
 
-    __MS(S.rtti())
-    __MS(C.rtti())
+//     __MS(S.rtti())
+//     __MS(C.rtti())
     
     if (S.rows() != nData)  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
     if (S.cols() != nModel) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;

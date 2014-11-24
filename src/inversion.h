@@ -364,25 +364,25 @@ public:
 
     /*! Create constraints, check and compare size of constraint matrix with model/boundary control */
     void checkConstraints() {
-        __MS(forward_->constraints()->rtti())
+//         __MS(forward_->constraints()->rtti())
         
         if (forward_->constraints()->cols() == 0 ||
             forward_->constraints()->rows() == 0){
             if (verbose_) std::cout << "Building constraints matrix" << std::endl;
             //forward_->regionManager().fillConstraints(forward_->constraints());
-            __MS(forward_->constraints()->rtti())
+//             __MS(forward_->constraints()->rtti())
             forward_->createConstraints();
-            __MS(forward_->constraints()->rtti())
+//             __MS(forward_->constraints()->rtti())
         } else {
             if (verbose_) std::cout << " found valid constraints matrix. omit rebuild" << std::endl;
         }
-        __MS(forward_->constraints()->rtti())
-        __MS(forward_->constraints())
-        __MS(forward_->constraints()->cols())
+//         __MS(forward_->constraints()->rtti())
+//         __MS(forward_->constraints())
+//         __MS(forward_->constraints()->cols())
         Index nModelC = forward_->constraints()->cols();
-        __MS(forward_->constraints())
+//         __MS(forward_->constraints())
         Index nCWeightC = forward_->constraints()->rows();
-        __MS(forward_->constraints()->rtti())
+//         __MS(forward_->constraints()->rtti())
 
         if (verbose_){
             std::cout << "constraint matrix of size(nBounds x nModel) " 
