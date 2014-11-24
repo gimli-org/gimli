@@ -43,9 +43,9 @@ class CellBrowser:
         self.data = data
         self.cell = None
         self.edgeColors = None
- 
-        
- 
+
+
+
         bbox=dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
         kwargs = dict(fontproperties='monospace', visible=False,
@@ -84,8 +84,8 @@ class CellBrowser:
         if self.data is None:
             self.data = self.artist.get_array()
             self.edgeColors = self.artist.get_edgecolors()
-        
-        # better!! find pick position and check for every cell if the pick pos is inside 
+
+        # better!! find pick position and check for every cell if the pick pos is inside
         self.cell = event.ind[0]
         self.update()
 
@@ -134,7 +134,6 @@ def drawMesh(axes, mesh):
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
-# def drawMesh(...)
 
 def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
               logScale=True, label="", cmap=None,
@@ -142,17 +141,17 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
               xlab=None, ylab=None, verbose=False, *args, **kwargs):
     """
         Draw a 2d mesh and color the cell by the data.
-        
+
         Implement this with tripcolor  ..........!!!!!!!!
     """
-       
+
     useTri = False
     if 'tri' in kwargs:
         useTri = kwargs['tri']
         del(kwargs['tri'])
-        
+
     if useTri:
-        gci = drawMPLTri(axes, mesh, data, cmap=cmap, 
+        gci = drawMPLTri(axes, mesh, data, cmap=cmap,
                          *args, **kwargs)
 
     else:
@@ -160,12 +159,8 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
                                              verbose=verbose)
 
         if cmap is not None:
-            if isinstance(cmap, str):
-                if cmap == 'b2r':
+            if cmap == 'b2r':
                     gci.set_cmap(cmapFromName('b2r'))
-                else:
-#                    eval('mpl.pyplot.' + cmap + '()')
-                    eval('cm.' + cmap)
             else:
                 gci.set_cmap(cmap)
 
@@ -198,16 +193,14 @@ def drawModel(axes, mesh, data=None, cMin=None, cMax=None,
     if xlab is not None: axes.set_xlabel(xlab)
     if ylab is not None: axes.set_ylabel(ylab)
 
-    
-        
+
+
 
     return gci
-# def drawModel(...)
 
 def drawSelectedMeshBoundaries(axes, boundaries,
                                color=(0.0, 0.0, 0.0, 1.0), linewidth=1.0):
     """Draw mesh boundaries into a given axes'."""
-    #print "drawSelectedMeshBoundaries", boundaries
 
     drawAA = True
     lines  = []
@@ -282,7 +275,7 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
     drawSelectedMeshBoundaries(axes, [b for b in mesh.boundaries() if b.marker() < -4]
                                 , color = (0.0, 0.0, 0.0, 1.0)
                                 , linewidth = 1.0)
-    
+
     if mesh.cellCount() == 0:
         eCircles = []
         cols = []
@@ -294,7 +287,7 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
             cols.append(col)
         p = mpl.collections.PatchCollection(eCircles, color=cols)
         axes.add_collection(p)
-        
+
         for reg in mesh.regionMarker():
             axes.text(reg.pos()[0], reg.pos()[1],
                       str(reg.marker()) + ": " + str(reg.area()))
@@ -345,7 +338,6 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
     if verbose:
         print(("plotting time = ", swatch.duration(True)))
     return patches
-# def createMeshPatches(...)
 
 def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0],
                       dx=1, nLevs=20, title=None,
@@ -419,13 +411,13 @@ def drawMeshPotential(ax, mesh, u, x=[-10.0, 50.0], z=[-50.0, 0.0],
 
 def createTriangles(mesh, data=None):
     """
-    
+
     """
     x = pg.x(mesh.positions())
     #x.round(1e-1)
     y = pg.y(mesh.positions())
     #y.round(1e-1)
-        
+
     triCount = 0
 
     for c in mesh.cells():
@@ -436,7 +428,7 @@ def createTriangles(mesh, data=None):
 
     triangles = np.zeros((triCount, 3))
     dataIdx = list(range(triCount))
-   
+
     triCount = 0
     for i, c in enumerate(mesh.cells()):
         if c.shape().nodeCount() == 4:
@@ -457,13 +449,13 @@ def createTriangles(mesh, data=None):
             triangles[triCount, 2] = c.node(2).id()
             dataIdx[triCount] = c.id()
             triCount = triCount + 1
-    
+
     z = None
     if data is not None:
         if len(data) == mesh.cellCount():
             #strange behavior if we just use these slice
             z = np.array(data[dataIdx])
-            
+
     return x, y, triangles, z, dataIdx
 
 
@@ -474,21 +466,21 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
         Only for triangle/quadrangle meshes currently
     """
     x, y, triangles, z, zIdx = createTriangles(mesh, data)
-    
+
     gci = None
-    
+
     levels = []
     if not 'levels' in kwargs:
         nLevs = kwargs.pop('nLevs', 8)
         levels = autolevel(data, nLevs)
-        
+
     if len(data) == mesh.cellCount():
-    
+
         coverage = kwargs.pop('coverage', None)
         #if 'coverage' in kwargs:
             #coverage = kwargs['coverage']
             #del(kwargs['coverage'])
-         
+
         shading = 'flat'
         if interpolate:
             shading = 'gouraud'
@@ -496,17 +488,17 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
 
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              *args, **kwargs)
-        
+
         if coverage is not None:
             if len(data) == mesh.cellCount:
                 addCoverageAlpha(gci, coverage[zIdx])
             else:
                 addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
-                
-        
+
+
     elif len(data) == mesh.nodeCount():
-        
-        gci = axes.tricontourf(x, y, triangles, data, levels, 
+
+        gci = axes.tricontourf(x, y, triangles, data, levels,
                                *args, **kwargs)
         if not omitLines:
             axes.tricontour(x, y, triangles, data, levels, colors=['0.5'],
@@ -514,24 +506,20 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
     else:
         gci = None
         raise Exception("Data size does not fit mesh size: ", len(data), mesh.cellCount(), mesh.nodeCount())
-        
+
     if cmap is not None:
-        if isinstance(cmap, str):
-            if cmap == 'b2r':
+        if cmap == 'b2r':
                 gci.set_cmap(cmapFromName('b2r'))
-            else:
-#                    eval('mpl.pyplot.' + cmap + '()')
-                eval('cm.' + cmap)
         else:
             gci.set_cmap(cmap)
-        
+
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
-    
+
     return gci
-    
-  
+
+
 def drawField(axes, mesh, data=None, filled=True, omitLines=False, cmap=None,
               *args, **kwargs):
     """
@@ -542,7 +530,7 @@ def drawField(axes, mesh, data=None, filled=True, omitLines=False, cmap=None,
     return drawMPLTri(axes, mesh, data, cmap=cmap, *args, **kwargs)
 
 
-def drawStreamCircular(axes, mesh, u, pos, rad, 
+def drawStreamCircular(axes, mesh, u, pos, rad,
                        nLines=20, step=0.1, showStartPos=False):
     ''
     ' Draw nLines streamlines for u circular around pos starting at radius rad '
@@ -612,15 +600,15 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
                      maxSteps=10000,
                      verbose=False,
                      koords=[0, 1])
-    
+
     if not 'color' in kwargs:
        kwargs['color'] = 'black'
-               
+
     if len(x) > 2:
         #print( x, y)
         #axes.plot(x, y, '.-', color='black', *args, **kwargs)
         axes.plot(x, y, *args, **kwargs)
-        
+
     if len(x) > 3:
         xmid = int(len(x) / 2)
         ymid = int(len(y) / 2)
@@ -628,18 +616,18 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
         dLength = c.center().dist(c.node(0).pos())/4.
-        
-        axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15., 
+
+        axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15.,
                    head_starts_at_zero=True,
-                   *args, **kwargs)  
-    
+                   *args, **kwargs)
+
 def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
     """
-        Draw streamlines based on unstructured mesh. 
+        Draw streamlines based on unstructured mesh.
         Every cell contains only one streamline and each new stream line starts in the center of a cell.
         Stream density can by chosen by parameter a, that leads to a new mesh with equidistant maximum cell size a.
     """
-    
+
     viewMesh = None
     dataMesh = None
 
@@ -650,11 +638,11 @@ def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
         del(kwargs['coarseMesh'])
     else:
         viewMesh = mesh
-    
+
     viewMesh.createNeighbourInfos()
-    
+
     for c in viewMesh.cells(): c.setValid(True)
-        
+
     if startStream == 1:
         # start a stream from each boundary cell
         for y in np.linspace(viewMesh.ymin(), viewMesh.ymax(), 100):
@@ -662,7 +650,7 @@ def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
             if c is not None:
                 if c.valid():
                     drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
-                
+
     elif startStream == 2:
         # start a stream from each boundary cell
         for x in np.linspace(viewMesh.xmin(), viewMesh.xmax(), 100):
@@ -670,14 +658,14 @@ def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
             if c is not None:
                 if c.valid():
                     drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
-        
+
     elif startStream == 3:
         # start a stream from each boundary cell
         for b in viewMesh.findBoundaryByMarker(1, 99):
             c = b.leftCell()
             if c is None:
                 c = b.rightCell()
-            
+
             if c.valid():
                 drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
             #return
@@ -686,10 +674,10 @@ def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
     for c in viewMesh.cells():
         if c.valid():
             drawStreamLine(axes, viewMesh, c, data, dataMesh, *args, **kwargs)
-            
+
     for c in viewMesh.cells(): c.setValid(True)
 # def drawStreamLines2(...)
-    
+
 def drawSensors(axes, sensors, diam=None, koords=[0,2]):
     ''
     ''
