@@ -117,8 +117,8 @@ public:
 
     /*! Full constructor including transforms. transData -- data transformation function; transModel -- model transformation function */
     Inversion(const Vec & data, ModellingBase & forward,
-                Trans< Vec > & transData, Trans< Vec > & transModel,
-                bool verbose = true, bool dosave = false)
+              Trans< Vec > & transData, Trans< Vec > & transModel,
+              bool verbose = true, bool dosave = false)
     : InversionBase< ModelValType >(), verbose_(verbose), dosave_(dosave), saveModelHistory_(dosave) {
         //** set: default values
         this->init_();
@@ -347,7 +347,7 @@ public:
     inline double deltaPhiAbortPercent() const { return dPhiAbortPercent_; }
 
     /*! Marquardt scheme (local damping with decreasing regularization strength */
-    void setMarquardtScheme(double lambdaFactor = 0.8){
+    void setMarquardtScheme(double lambdaFactor=0.8){
         setLocalRegularization(true);  //! no contribution of regularization to objective function
         setLambdaFactor(lambdaFactor); //! lambda is decreased towards zero
         stopAtChi1(false);             //! let the solution fully converge (important for statistics)
@@ -370,19 +370,12 @@ public:
             forward_->constraints()->rows() == 0){
             if (verbose_) std::cout << "Building constraints matrix" << std::endl;
             //forward_->regionManager().fillConstraints(forward_->constraints());
-//             __MS(forward_->constraints()->rtti())
             forward_->createConstraints();
-//             __MS(forward_->constraints()->rtti())
         } else {
             if (verbose_) std::cout << " found valid constraints matrix. omit rebuild" << std::endl;
         }
-//         __MS(forward_->constraints()->rtti())
-//         __MS(forward_->constraints())
-//         __MS(forward_->constraints()->cols())
         Index nModelC = forward_->constraints()->cols();
-//         __MS(forward_->constraints())
         Index nCWeightC = forward_->constraints()->rows();
-//         __MS(forward_->constraints()->rtti())
 
         if (verbose_){
             std::cout << "constraint matrix of size(nBounds x nModel) " 

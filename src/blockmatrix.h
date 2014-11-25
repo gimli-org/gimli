@@ -19,10 +19,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef GIMLI_BLOCKMATRIX__H
-#define GIMLI_BLOCKMATRIX__H
+#ifndef _GIMLI_BLOCKMATRIX__H
+#define _GIMLI_BLOCKMATRIX__H
 
 #include "gimli.h"
+
 #include "sparsematrix.h"
 #include "matrix.h"
 
@@ -88,8 +89,10 @@ public:
         return *matrieces_[idx];
     }
 
+    std::vector< MatrixBase * > & matrieces() { return matrieces_; }
+     
     Index addMatrix(MatrixBase * matrix){
-        __MS(matrix << " " << matrix->rtti())
+//         __MS(matrix << " " << matrix->rtti())
         matrieces_.push_back(matrix);
         return matrieces_.size() - 1;
     }
@@ -141,7 +144,7 @@ public:
         }
         
         Vector < ValueType > ret(cols_);
-         for (Index i = 0; i < entries_.size(); i ++ ){
+         for (Index i = 0; i < entries_.size(); i++){
             BlockMatrixEntry entry = entries_[i];
             
             MatrixBase *mat = matrieces_[entry.matrixID];
@@ -155,15 +158,9 @@ public:
     }
     
     void recalcMatrixSize() const {
-        __MS(entries_.size())
-        for (Index i = 0; i < entries_.size(); i ++ ){
+        for (Index i = 0; i < entries_.size(); i++){
             BlockMatrixEntry entry(entries_[i]);
-            __MS(entry.matrixID << " " << matrieces_.size())
-            __MS(matrieces_[0])
-            
             MatrixBase *mat = matrieces_[entry.matrixID];
-            
-            __MS(mat << " " << mat->rtti())
             rows_ = max(rows_, entry.rowStart + mat->rows());
             cols_ = max(cols_, entry.colStart + mat->cols());
         } 
@@ -349,4 +346,4 @@ typedef V2Matrix< ManyCMatrix, ManyModelsCMatrix > MMMatrix; // Multiple models 
 
 } // namespace GIMLI
 
-#endif
+#endif //_GIMLI_BLOCKMATRIX__H

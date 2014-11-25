@@ -253,6 +253,9 @@ public:
     /*! Destruct matrix and free memory. */
     virtual ~Matrix(){}
 
+    /*! Force the copy of the matrix entries. */
+    inline void copy(const Matrix < ValueType > & mat){ copy_(mat); }
+    
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_MATRIX_RTTI; }
     

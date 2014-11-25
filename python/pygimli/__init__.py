@@ -94,6 +94,15 @@ def RMatrix_str(self):
             s += self[v].__str__(True) + '\n'
     return s
 
+def CMatrix_str(self):
+    s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
+
+    if (self.rows() < 6):
+        s += '\n'
+        for v in range(self.rows()):
+            s += self[v].__str__(True) + '\n'
+    return s
+
 
 def Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
@@ -118,6 +127,7 @@ _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
 _pygimli_.RMatrix.__str__ = RMatrix_str
+_pygimli_.CMatrix.__str__ = CMatrix_str
 _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
@@ -154,7 +164,7 @@ _pygimli_.stdVectorUL.__add__ = __ADD
 
 
 ############################
-# Indexing [] operator for RVector, CVector, RVector3, RMatrix
+# Indexing [] operator for RVector, CVector, RVector3, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
     """
@@ -242,6 +252,9 @@ _pygimli_.RVector3.__setitem__ = __setVal
 _pygimli_.RMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
 _pygimli_.RMatrix.__setitem__ = __setVal
 
+_pygimli_.CMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
+_pygimli_.CMatrix.__setitem__ = __setVal
+
 
 ############################
 # len(RVector), RMatrix
@@ -256,6 +269,7 @@ _pygimli_.CVector.__len__ = RVector_len
 def RMatrix_len(self):
     return self.rows()
 _pygimli_.RMatrix.__len__ = RMatrix_len
+_pygimli_.CMatrix.__len__ = RMatrix_len
 
 
 ############################
@@ -308,9 +322,11 @@ def __MatIterCall__(self):
 
 _pygimli_.RVector.__iter__ = __VectorIterCall__
 _pygimli_.BVector.__iter__ = __VectorIterCall__
-_pygimli_.CVector.__iter__ = __VectorIterCall__
+
+_pygimli_.CVector.__iter__ = __MatIterCall__
 
 _pygimli_.RMatrix.__iter__ = __MatIterCall__
+_pygimli_.CMatrix.__iter__ = __MatIterCall__
 
 
 class Vector3Iter (VectorIter):

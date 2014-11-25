@@ -301,7 +301,7 @@ private:
     #define Py_END_ALLOW_THREADS
 #endif
 
-//! General template for conversion to string, should supersede all sprintf etc.
+//! General template for conversion to ing, should supersede all sprintf etc.
 template< typename T > inline std::string str(const T & value){
     std::ostringstream streamOut;
     streamOut << value;

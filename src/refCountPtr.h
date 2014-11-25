@@ -30,10 +30,12 @@ namespace GIMLI{
 class RCObject {                       
 public:                                
     void addReference(){
+        __M
         ++refCount_;
     }
   
     void removeReference(){
+        __M
         if (--refCount_ == 0) delete this;
     }
     
@@ -66,21 +68,6 @@ private:
     Index refCount_;
     bool shareable_;
 };
-
-   void RCObject::markUnshareable()
- {
-   shareable = false;
- }
- 
- bool RCObject::isShareable() const
- {
-   return shareable;
- }
- 
- bool RCObject::isShared() const
- {
-   return refCount > 1;
- }  
  
  //*! Template class for smart pointers-to-T objects; 
  /*! Template class for smart pointers-to-T objects; 
@@ -95,7 +82,7 @@ public:
         init_();
     }
    
-    RefCountIPtr(const RefCountPtr & rhs)
+    RefCountIPtr(const RefCountIPtr & rhs)
     : counter_(rhs.counter_){
         init_();
     }
@@ -110,6 +97,7 @@ public:
     }
    
     RefCountIPtr & operator = (const RefCountIPtr & rhs){
+        __M
         if (counter_ != rhs.counter_) {         
             counter_->removeReference();     
             counter_ = rhs.counter_;
@@ -119,7 +107,8 @@ public:
     }
    
     RefCountIPtr & operator = (RefCountIPtr & rhs){
-         if (counter_ != rhs.counter_) {         
+        __M
+        if (counter_ != rhs.counter_) {         
             counter_->removeReference();     
             counter_ = rhs.counter_;
             init_();
@@ -129,32 +118,36 @@ public:
     }
    
     T * operator->() {
+        __M
         THROW_TO_IMPL
         return counter_->pointee_;
     }
     
     T * operator->() const{
+        __M
         return counter_->pointee_;
     }
    
-    T & operator*() ;
+    T & operator*(){
+        __M
         THROW_TO_IMPL
         return *counter_->pointee_;
     }
     
-    T & operator*() const;
+    T & operator*() const {
+        __M
         return *counter_->pointee_;
     }
  
 private:
-    struct CountHolder: public RCObject {
-        ~CountHolder() { delete pointee; }
+    struct CountHolder : public RCObject {
+        ~CountHolder() { delete pointee_; }
         T * pointee_;
     };
  
     void init_(){
         if (counter_->isShareable() == false) {
-            T *oldValue = counter_->pointee;
+            T *oldValue = counter_->pointee_;
             counter_ = new CountHolder;
             counter_->pointee_ = oldValue ? new T(*oldValue) : 0;
         }     
