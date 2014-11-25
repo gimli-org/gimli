@@ -244,6 +244,11 @@ public:
                                                   + imag(c1) * imag(c1))));
         CPPUNIT_ASSERT(abs(c1) == RVector(exp(real(log(c1)))));
         //real, imag, angle, conj, abs
+         
+        c2 = toComplex(real(c1), real(c1)); 
+        CVector c3(1./c2); 
+        CPPUNIT_ASSERT(c3[0] == Complex(0.5, -0.5));
+        CPPUNIT_ASSERT(c3[0] == 1./ c2[0]);
     }
     
     template < class ValueType > void testMatrix_(){

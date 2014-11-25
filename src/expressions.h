@@ -116,11 +116,14 @@ template < class T > bool isGreater(const T & a, const T & b) { return a > b; }
 template < class T > bool isLesserEqual(const T & a, const T & b) { return a < b || isEqual(a, b); }
 template < class T > bool isGreaterEqual(const T & a, const T & b) { return a > b || isEqual(a, b); }
 
+
 #ifdef _MSC_VER
 template < class T > bool isInfNaN(const T & a){ return (isinf(a) || isnan(a)); }
 #else
 template < class T > bool isInfNaN(const T & a){ return (std::isinf(a) || std::isnan(a)); }
 #endif
+
+inline bool isInfNaN(const Complex & a){ return (isInfNaN(a.real()) || isInfNaN(a.imag())); }
 
 inline bool operator < (const Complex & a, const Complex & b) { 
     double aa(abs(a)), ab(abs(b));

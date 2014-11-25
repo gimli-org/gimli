@@ -1485,6 +1485,24 @@ Vector < std::complex < ValueType > > operator * (const Vector < ValueType > & v
     return cv * toComplex(v);
 }
 
+template < class ValueType >
+Vector < std::complex < ValueType > > operator / (const std::complex< ValueType > & v,
+                                                  const Vector < std::complex< ValueType > > & cv){
+    __M
+    Vector < std::complex< ValueType > > ret(cv.size());
+    for (Index i = 0; i < ret.size(); i ++ ) {
+        ret[i] = v / cv[i];
+    }
+    return ret;
+}
+
+template < class ValueType >
+Vector < std::complex < ValueType > > operator / (const ValueType & v,
+                                                  const Vector < std::complex< ValueType > > & cv){
+    __M
+    return std::complex< ValueType >(v) / cv;
+}
+
 template < class ValueType, class A >
 Vector < ValueType > real(const __VectorExpr< std::complex< ValueType >, A > & a){
     return real(Vector < std::complex< ValueType > >(a));

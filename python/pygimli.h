@@ -153,11 +153,11 @@ namespace GIMLI{
     inline CVector operator OP (const CVector & a, const double  & b){ \
         CVector c(a);   c OP##=Complex(b); return c; }                         \
     inline CVector operator OP (const Complex & v, const CVector & b){ \
-        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return b; } \
+        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return c; } \
     inline CVector operator OP (const double  & v, const CVector & b){ \
-        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return b; } \
+        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return c; } \
     inline CVector operator OP (const RVector & a, const CVector & b){ \
-        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = a[i] OP b[i]; return b; } \
+        CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = a[i] OP b[i]; return c; } \
     
 DEFINE_PY_VEC_OPERATOR__(+)
 DEFINE_PY_VEC_OPERATOR__(-)
@@ -218,6 +218,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     
     template class PolynomialElement< double >;
     template class PolynomialFunction< double >;
+
     template std::ostream & operator << (std::ostream & str, const PolynomialFunction < double > & p);
     template PolynomialFunction < double > operator - (const PolynomialFunction < double > & f);
     template PolynomialFunction < double > operator - (const PolynomialFunction < double > & f, const PolynomialFunction < double > & g);
