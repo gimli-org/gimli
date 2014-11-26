@@ -27,7 +27,7 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(pgbuild ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND 
-        [ -z "$J" ] && echo make -j 1 -C ${CMAKE_BINARY_DIR} pg || make -j $J -C ${CMAKE_BINARY_DIR} pg
+        [ -z "$J" ] && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
     TARGET
         pgbuild
    )

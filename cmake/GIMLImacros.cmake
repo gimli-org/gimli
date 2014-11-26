@@ -8,8 +8,8 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     file(GLOB ${PYTHON_MODULE_NAME}_SOURCE_FILES ${SOURCE_DIR}/*.cpp)
     list(SORT ${PYTHON_MODULE_NAME}_SOURCE_FILES)
 
-#     set_source_files_properties(${PYTHON_MODULE_NAME}_SOURCE_FILES
-#                                 PROPERTIES GENERATED TRUE)
+    set_source_files_properties(${PYTHON_MODULE_NAME}_SOURCE_FILES
+                                 PROPERTIES GENERATED TRUE)
 
     include_directories(BEFORE ${SOURCE_DIR})
     include_directories(${PYTHON_INCLUDE_DIR})

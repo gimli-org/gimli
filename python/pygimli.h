@@ -28,9 +28,10 @@
 //#define PYTEST
 #ifdef PYTEST
 
-//#include <numpy/arrayobject.h>
 #include "stopwatch.h"
 #include "vector.h"
+#include "blockmatrix.h"
+#include "vectortemplates.h"
 
 namespace GIMLI{
 
@@ -38,6 +39,7 @@ namespace GIMLI{
     template class VectorIterator< double >;
     template class Vector< Complex >;
     template class Vector< int >;
+    template class BlockMatrix< double >;
 
     inline void ___instantiation___(){
         sizeof(::GIMLI::Index *);
@@ -61,7 +63,7 @@ namespace GIMLI{
         sizeof(double *);
         sizeof(double);
         sizeof(double &);
-    }
+     }
 
 } // namespace GIMLI
 
@@ -70,6 +72,7 @@ namespace pyplusplus{ namespace aliases{
 
     typedef GIMLI::Vector< double >                 RVector;
     typedef GIMLI::VectorIterator< double >              RVectorIter;
+    typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
     //  typedef GIMLI::Vector< Complex >                CVector;
 //    typedef GIMLI::Pos< double >                    RVector3;
 

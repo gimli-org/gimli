@@ -226,7 +226,6 @@ template < class ValueType > class Matrix;
 template < class ValueType > class BlockMatrix;
 template < class ValueType > class Matrix3;
 template < class ValueType > class Vector;
-//template <> class Vector< double >;
 
 typedef Vector < double > RVector;
 typedef Vector < Complex > CVector;
@@ -237,7 +236,6 @@ typedef Vector< long > LVector;
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
-
 typedef BlockMatrix < double > RBlockMatrix;
 
 //#typedef Vector< unsigned char > BVector;

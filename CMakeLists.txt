@@ -30,6 +30,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
         endif(WIN32)
 
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+        #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os ")
     endif(APPLE)
 
     #-stdlib=libc++
@@ -116,7 +117,7 @@ if (MSVC)
 	if (NOT Boost_THREAD_FOUND)
 		set(Boost_THREAD_FOUND ON)
 	endif (NOT Boost_THREAD_FOUND)
-	link_directories(${BOOST_LIBRARYDIR})	
+	link_directories(${BOOST_LIBRARYDIR})
 	
 else(MSVC)
 	find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
