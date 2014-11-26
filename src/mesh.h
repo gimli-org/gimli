@@ -74,21 +74,22 @@ public:
         } return * this;
     }
 
+    /*! Check if a point lie inside (with boundary). */
     bool isInside(const Pos < ValueType > & p){
-        return ((p[0] < max_[0] && p[0] > min_[0]) && 
-                (p[1] < max_[1] && p[1] > min_[1]) && 
-                (p[2] < max_[2] && p[2] > min_[2]));
+        return ((p[0] <= max_[0] && p[0] >= min_[0]) && 
+                (p[1] <= max_[1] && p[1] >= min_[1]) && 
+                (p[2] <= max_[2] && p[2] >= min_[2]));
     }
     
     /*! Set minimum Position. */
     void setMin(const Pos < ValueType > & min) { min_ = min; }
     /*! Returns a copy of the minimum position. */
-    const Pos < ValueType > min() const { return min_; }
+    const Pos < ValueType > & min() const { return min_; }
 
     /*! Set maximum Position. */
     void setMax(const Pos < ValueType > & max) { max_ = max; }
     /*! Returns a copy of the maximum position. */
-    const Pos < ValueType > max() const { return max_; }
+    const Pos < ValueType > & max() const { return max_; }
 
 protected:
 
@@ -295,13 +296,13 @@ public:
     std::vector< RVector3 > & boundarySizedNormals() const;
     
     /*! Returns a vector of all cell marker */
-    std::vector < int > cellMarker() const;
+    IVector cellMarker() const;
 
     /*! Returns a vector of all boundary marker */
-    std::vector < int > boundaryMarker() const;
+    IVector boundaryMarker() const;
 
     /*! Returns a vector of all node marker */
-    std::vector < int > nodeMarker() const;
+    IVector nodeMarker() const;
 
     /*! Returns an index vector of all nodes that match the marker */
     IndexArray findNodesIdxByMarker(int marker) const;

@@ -206,10 +206,17 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     //** maybe better to move these instantiation into libgimli
 
+    template class Vector< bool >;
     template class Vector< double >;
-    template class Vector< Complex >;
     template class Vector< RVector3 >;
-    template class Vector< int >;
+    template class Vector< GIMLI::SIndex >;
+    template class Vector< Complex >;
+       
+    template class VectorIterator< bool >;
+    template class VectorIterator< double >;
+    template class VectorIterator< RVector3 >;
+    template class VectorIterator< GIMLI::SIndex >;
+    template class VectorIterator< Complex >;
     
     template class Matrix< double >;
     template class Matrix< std::complex< double > >;
@@ -377,6 +384,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     inline void ___instantiation___(){
         sizeof(bool);
         sizeof(bool *);
+        sizeof(bool &);
         sizeof(char);
         sizeof(char *);
         sizeof(char &);
@@ -392,6 +400,9 @@ DEFINE_COMPARE_OPERATOR__(>)
         sizeof(long unsigned int *);
         sizeof(long unsigned int &);
         sizeof(long unsigned int);
+        sizeof(long *);
+        sizeof(long &);
+        sizeof(long);
 		sizeof(long long unsigned int *);
 		sizeof(long long unsigned int &);
 		sizeof(long long unsigned int);
@@ -404,6 +415,9 @@ DEFINE_COMPARE_OPERATOR__(>)
 		sizeof(::GIMLI::Index *);
 		sizeof(::GIMLI::Index &);
 		sizeof(::GIMLI::Index);
+        sizeof(::GIMLI::SIndex *);
+        sizeof(::GIMLI::SIndex &);
+        sizeof(::GIMLI::SIndex);
 		sizeof(::GIMLI::IndexArray *);
 		sizeof(::GIMLI::IndexArray &);
 		sizeof(::GIMLI::IndexArray);
@@ -447,21 +461,25 @@ namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
     typedef GIMLI::Pos< double >                         RVector3;
 
-    typedef GIMLI::Vector< int >                         BVector;
+    typedef GIMLI::Vector< bool >                        BVector;
     typedef GIMLI::Vector< double >                      RVector;
     typedef GIMLI::Vector< RVector3 >                    R3Vector;
+    typedef GIMLI::Vector< GIMLI::SIndex >               IVector;
     typedef GIMLI::Vector< Complex >                     CVector;
+      
+    typedef GIMLI::VectorIterator< bool >                BVectorIter;
+    typedef GIMLI::VectorIterator< double >              RVectorIter;
+    typedef GIMLI::VectorIterator< RVector3 >            R3VectorIter;
+    typedef GIMLI::VectorIterator< GIMLI::SIndex >       IVectorIter;
+    typedef GIMLI::VectorIterator< Complex >             CVectorIter;
+
     
     typedef GIMLI::Matrix< double >                      RMatrix;
     typedef GIMLI::Matrix3< double >                     RMatrix3;
     typedef GIMLI::Matrix< std::complex< double > >      CMatrix;
 
     typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
-      
-    typedef GIMLI::VectorIterator< double >              RVectorIter;
-    typedef GIMLI::VectorIterator< int >                 BVectorIter;
     
-
     typedef GIMLI::Quaternion< double >                  RQuaternion;
     
     typedef GIMLI::PolynomialFunction< double >          RPolynomialFunction;

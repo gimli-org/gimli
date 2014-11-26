@@ -452,7 +452,7 @@ int DataContainer::save(const std::string & fileName,
                         const std::string & formatData,
                         const std::string & formatSensor,
                         bool verbose) const {
-
+    
     std::fstream file; if (!openOutFile(fileName, & file)) return 0;
 
     file.precision(14);

@@ -138,9 +138,9 @@ void ModellingBase::setRefinedMesh(const Mesh & mesh){
     setMesh_(mesh);
     if (verbose_) {
         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
-        std::vector < int > m(unique(sort(mesh_->cellMarker())));
+        IVector m(unique(sort(mesh_->cellMarker())));
         std::cout << "secMesh marker = [ " << m[0] <<", " << m[1] << ", " << m[2]  
-         << ", ... ,  " << m.back() << " ]" << std::endl;
+         << ", ... ,  " << m[-1] << " ]" << std::endl;
     }
     updateMeshDependency_();
 }
