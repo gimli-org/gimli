@@ -24,26 +24,29 @@
 
 #include "gimli.h"
 
+#ifndef PYTEST
 #include "sparsematrix.h"
+#endif
+
 #include "matrix.h"
 
-//! block matrices for easier inversion, see appendix E in GIMLi tutorial
+
 namespace GIMLI{
-    
-template < class ValueType > class DLLEXPORT BlockMatrix : public MatrixBase {
-public:
-    
+  
+//! Block matrices for easier inversion, see appendix E in GIMLi tutorial  
+template < class ValueType > 
+class DLLEXPORT BlockMatrix : public MatrixBase{
+private:
     struct BlockMatrixEntry {
         Index rowStart;
         Index colStart;
         Index matrixID;
         ValueType scale;
     };
-    
+public:
+
     BlockMatrix(bool verbose=false) 
-        : MatrixBase(verbose){
-        rows_ = 0;
-        cols_ = 0;
+        : MatrixBase(verbose), rows_(0), cols_(0) {
     }
     
     virtual ~BlockMatrix(){
@@ -89,6 +92,7 @@ public:
         return *matrieces_[idx];
     }
 
+
     std::vector< MatrixBase * > & matrieces() { return matrieces_; }
      
     Index addMatrix(MatrixBase * matrix){
@@ -96,6 +100,7 @@ public:
         matrieces_.push_back(matrix);
         return matrieces_.size() - 1;
     }
+
 
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
                         ValueType scale = ValueType(1.0)){
@@ -142,7 +147,7 @@ public:
             str(b.size()) + ") needed: " + str(this->rows()));
             
         }
-        
+
         Vector < ValueType > ret(cols_);
          for (Index i = 0; i < entries_.size(); i++){
             BlockMatrixEntry entry = entries_[i];
@@ -161,6 +166,7 @@ public:
         for (Index i = 0; i < entries_.size(); i++){
             BlockMatrixEntry entry(entries_[i]);
             MatrixBase *mat = matrieces_[entry.matrixID];
+
             rows_ = max(rows_, entry.rowStart + mat->rows());
             cols_ = max(cols_, entry.colStart + mat->cols());
         } 
@@ -174,7 +180,7 @@ public:
 protected:
     std::vector< MatrixBase * > matrieces_;
     std::vector< BlockMatrixEntry > entries_;
-    
+private:
     /*! Max row size.*/ 
     mutable Index rows_;
     
@@ -182,7 +188,14 @@ protected:
     mutable Index cols_;
 };
 
+inline RVector transMult(const RBlockMatrix & A, const RVector & b){
+    return A.transMult(b);
+}
+inline RVector operator * (const RBlockMatrix & A, const RVector & b){
+    return A.mult(b);
+}
 
+#ifndef PYTEST
 /*! Simple example for tutorial purposes. */
 /*! Block Matrix consisting of two horizontally pasted sparse map matrices. */
 class DLLEXPORT H2SparseMapMatrix : public MatrixBase{
@@ -343,7 +356,7 @@ typedef H2Matrix< IdentityMatrix, IdentityMatrix > TwoModelsCMatrix; // -I +I
 typedef DRMatrix< TwoModelsCMatrix > ManyModelsCMatrix;  //** not really diagonal!
 typedef DRMatrix< RSparseMapMatrix > ManyCMatrix;
 typedef V2Matrix< ManyCMatrix, ManyModelsCMatrix > MMMatrix; // Multiple models (LCI,timelapse)
-
+#endif
 } // namespace GIMLI
 
 #endif //_GIMLI_BLOCKMATRIX__H

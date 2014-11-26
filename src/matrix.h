@@ -188,7 +188,7 @@ protected:
 class DLLEXPORT IdentityMatrix : public MatrixBase {
 public:
     /*! Default constructor (empty matrix). */
-    IdentityMatrix() : nrows_(0), val_(0.0){}
+    IdentityMatrix() : MatrixBase(0), nrows_(0), val_(0.0){}
 
     /*! Constructor with number of rows/colums. */
     IdentityMatrix(Index nrows, double val = 1.0) : nrows_(nrows), val_(val){}
@@ -230,18 +230,18 @@ protected:
 template < class ValueType > class DLLEXPORT Matrix : public MatrixBase {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols. Content of the matrix is zero. */
-    Matrix(Index rows=0, Index cols=0){
+    Matrix(Index rows=0, Index cols=0) : MatrixBase(){
         resize(rows, cols);
     }
 
     /*! Copy constructor */
-    Matrix(const std::vector < Vector< ValueType > > & mat){ copy_(mat); }
+    Matrix(const std::vector < Vector< ValueType > > & mat) : MatrixBase(){ copy_(mat); }
 
     /*! Constructor, read matrix from file see \ref load(Matrix < ValueType > & A, const std::string & filename). */
-    Matrix(const std::string & filename){ load(*this, filename); }
+    Matrix(const std::string & filename) : MatrixBase() { load(*this, filename); }
 
     /*! Copyconstructor */
-    Matrix(const Matrix < ValueType > & mat){ copy_(mat); }
+    Matrix(const Matrix < ValueType > & mat) : MatrixBase() { copy_(mat); }
 
     /*! Assignment operator */
     Matrix < ValueType > & operator = (const Matrix< ValueType > & mat){
@@ -991,12 +991,15 @@ inline RVector transMult(const MatrixBase & A, const RVector & b){
 inline RVector operator * (const RMatrix & A, const RVector & b){
     return A.mult(b);
 }
-
+inline CVector operator * (const CMatrix & A, const CVector & b){
+    return A.mult(b);
+}
 inline RVector transMult(const RMatrix & A, const RVector & b){
     return A.transMult(b);
 }
-
-
+inline CVector transMult(const CMatrix & A, const CVector & b){
+    return A.transMult(b);
+}
 } //namespace GIMLI
 
 #endif // _GIMLI_MATRIX__H

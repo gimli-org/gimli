@@ -169,6 +169,7 @@ public:
 /*!
 One dimensional array aka Vector of limited size. Size limit depends on platform (32bit system maxsize = 2^32, 64bit system, maxsize=2^64)
 */
+
 template< class ValueType > class DLLEXPORT Vector {
 public:
     typedef ValueType ValType;

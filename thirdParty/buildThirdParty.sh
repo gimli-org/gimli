@@ -353,7 +353,8 @@ prepBOOST(){
 buildBOOST(){
 	checkTOOLSET
 	prepBOOST
-    getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
+
+	getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
 	
 	pushd $BOOST_SRC
         
@@ -577,80 +578,80 @@ buildCPPUNIT(){
     popd
     
 }
-prepGIMLI(){
-	GIMLI_VER=gimli
-	GIMLI_SRC=$SRC_DIR/$GIMLI_VER
-	GIMLI_BUILD=$BUILD_DIR/$GIMLI_VER
-	GIMLI_DIST=$DIST_DIR/$GIMLI_VER-py$PYTHONMAJOR$PYTHONMINOR
-}
+# prepGIMLI(){
+	# GIMLI_VER=gimli
+	# GIMLI_SRC=$SRC_DIR/$GIMLI_VER
+	# GIMLI_BUILD=$BUILD_DIR/$GIMLI_VER
+	# GIMLI_DIST=$DIST_DIR/$GIMLI_VER-py$PYTHONMAJOR$PYTHONMINOR
+# }
 
-buildGIMLI(){
-	checkTOOLSET
-	prepGIMLI
-	prepBOOST
-	prepLAPACK
-    prepGCCXML
-	prepSUITESPARSE
+# buildGIMLI(){
+	# checkTOOLSET
+	# prepGIMLI
+	# prepBOOST
+	# prepLAPACK
+    # prepGCCXML
+	# prepSUITESPARSE
 
-	getWITH_SVN $GIMLI_URL $GIMLI_SRC 
-	mkBuildDIR $GIMLI_BUILD
+	# getWITH_SVN $GIMLI_URL $GIMLI_SRC 
+	# mkBuildDIR $GIMLI_BUILD
 
-	pushd $GIMLI_BUILD
-		echo "cmake $GIMLI_SRC -G "$CMAKE_GENERATOR" \
-			-DCMAKE_INSTALL_PREFIX=$GIMLI_DIST \
-			-DBOOST_ROOT=$BOOST_ROOT \
-			-DEXTERNAL_DIR=$DIST_DIR \
-			-DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe"
-		cmake $GIMLI_SRC -G "$CMAKE_GENERATOR" \
-            -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
-			-DCMAKE_INSTALL_PREFIX=$GIMLI_DIST \
-			-DBOOST_ROOT=$BOOST_ROOT \
-			-DEXTERNAL_DIR=$DIST_DIR \
-			-DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe	
-		"$MAKE" -j$PARALLEL_BUILD 
+	# pushd $GIMLI_BUILD
+		# echo "cmake $GIMLI_SRC -G "$CMAKE_GENERATOR" \
+			# -DCMAKE_INSTALL_PREFIX=$GIMLI_DIST \
+			# -DBOOST_ROOT=$BOOST_ROOT \
+			# -DEXTERNAL_DIR=$DIST_DIR \
+			# -DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe"
+		# cmake $GIMLI_SRC -G "$CMAKE_GENERATOR" \
+            # -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
+			# -DCMAKE_INSTALL_PREFIX=$GIMLI_DIST \
+			# -DBOOST_ROOT=$BOOST_ROOT \
+			# -DEXTERNAL_DIR=$DIST_DIR \
+			# -DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe	
+		# "$MAKE" -j$PARALLEL_BUILD 
 		
-        OLDPATH=$PATH
-		export PATH=/c/mingw/bin:$PATH
-		export PYTHONPATH=$PYTHONPATH:$DIST_DIR
-		"$MAKE" pygimli J=$PARALLEL_BUILD
-        export PATH=$OLDPATH
+        # OLDPATH=$PATH
+		# export PATH=/c/mingw/bin:$PATH
+		# export PYTHONPATH=$PYTHONPATH:$DIST_DIR
+		# "$MAKE" pygimli J=$PARALLEL_BUILD
+        # export PATH=$OLDPATH
 		
-		#	-DLAPACK_LIBRARIES=C:/Users/CarstenRuecker/src/gimli/trunk/external/lib/liblapack.dll
-	popd
-}
-prepBERT(){
-	BERT_VER=bert
-	BERT_SRC=$SRC_DIR/$BERT_VER
-	BERT_BUILD=$BUILD_DIR/$BERT_VER
-	BERT_DIST=$DIST_DIR/$BERT_VER-py$PYTHONMAJOR$PYTHONMINOR
-}
-buildBERT(){
-	checkTOOLSET
-	prepBERT
-	prepGIMLI
-	prepBOOST
-    prepGCCXML
+		# #	-DLAPACK_LIBRARIES=C:/Users/CarstenRuecker/src/gimli/trunk/external/lib/liblapack.dll
+	# popd
+# }
+# prepBERT(){
+	# BERT_VER=bert
+	# BERT_SRC=$SRC_DIR/$BERT_VER
+	# BERT_BUILD=$BUILD_DIR/$BERT_VER
+	# BERT_DIST=$DIST_DIR/$BERT_VER-py$PYTHONMAJOR$PYTHONMINOR
+# }
+# buildBERT(){
+	# checkTOOLSET
+	# prepBERT
+	# prepGIMLI
+	# prepBOOST
+    # prepGCCXML
 	
-	getWITH_SVN $BERT_URL $BERT_SRC 
-	mkBuildDIR $BERT_BUILD
+	# getWITH_SVN $BERT_URL $BERT_SRC 
+	# mkBuildDIR $BERT_BUILD
 
-	pushd $BERT_BUILD
-		cmake $BERT_SRC/trunk -G "$CMAKE_GENERATOR" \
-			-DCMAKE_INSTALL_PREFIX=$BERT_DIST \
-            -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
-			-DGIMLI_SRC=$GIMLI_SRC \
-			-DGIMLI_BUILD=$GIMLI_BUILD \
-			-DBOOST_ROOT=$BOOST_ROOT \
-			-DEXTERNAL_DIR=$DIST_DIR \
-			-DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe
+	# pushd $BERT_BUILD
+		# cmake $BERT_SRC/trunk -G "$CMAKE_GENERATOR" \
+			# -DCMAKE_INSTALL_PREFIX=$BERT_DIST \
+            # -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
+			# -DGIMLI_SRC=$GIMLI_SRC \
+			# -DGIMLI_BUILD=$GIMLI_BUILD \
+			# -DBOOST_ROOT=$BOOST_ROOT \
+			# -DEXTERNAL_DIR=$DIST_DIR \
+			# -DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe
 		
-		"$MAKE" -j$PARALLEL_BUILD
-		export PATH=$PATH:/c/mingw/bin
-		export PYTHONPATH=$PYTHONPATH:$DIST_DIR
-		"$MAKE" pybert J=$PARALLEL_BUILD
+		# "$MAKE" -j$PARALLEL_BUILD
+		# export PATH=$PATH:/c/mingw/bin
+		# export PYTHONPATH=$PYTHONPATH:$DIST_DIR
+		# "$MAKE" pybert J=$PARALLEL_BUILD
 
-	popd
-}
+	# popd
+# }
 
 slotAll(){
 	buildBOOST
@@ -659,12 +660,10 @@ slotAll(){
 	buildSUITESPARSE
 	buildGCCXML
 	buildPYGCCXML
-	buildGIMLI
-	buildBERT
 }
 
 showHelp(){
-	echo "boost | lapack | triangle | suitesparse | gccxml | pygccxml | bert | gimli | all"
+	echo "boost | lapack | triangle | suitesparse | gccxml | pygccxml | all"
 }
 
 # script starts here 
@@ -717,13 +716,9 @@ do
 		buildPYGCCXML;;
     cppunit)
 		buildCPPUNIT;;
-	bert)
-		buildBERT;;
-	gimli)
-		buildGIMLI;;
 	
     *) 
         echo "Don't know what to do."
-        help;;
+        showHelp;;
     esac
 done

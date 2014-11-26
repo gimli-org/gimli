@@ -158,14 +158,14 @@ public:
 
     /*!stype .. symmetric style. stype=0 (full), stype=1 (UpperRight), stype=2 (LowerLeft)*/
     SparseMapMatrix(IndexType r=0, IndexType c=0, int stype=0) 
-        : rows_(r), cols_(c), stype_(stype) {   
+        : MatrixBase(0), rows_(r), cols_(c), stype_(stype) {   
     }
 
-    SparseMapMatrix(const std::string & filename){
+    SparseMapMatrix(const std::string & filename) : MatrixBase(0) {
         this->load(filename);
     }
 
-    SparseMapMatrix(const SparseMapMatrix< ValueType, IndexType > & S){
+    SparseMapMatrix(const SparseMapMatrix< ValueType, IndexType > & S) : MatrixBase(0) {
         clear();
         cols_ = S.cols();
         rows_ = S.rows();
@@ -598,24 +598,24 @@ template < class ValueType > class SparseMatrix : public MatrixBase{
 public:
 
   /*! Default constructor. Builds invalid sparse matrix */
-    SparseMatrix() : valid_(false), stype_(0){ }
+    SparseMatrix() : MatrixBase(0) ,valid_(false), stype_(0){ }
 
     /*! Copy constructor. */
     SparseMatrix(const SparseMatrix < ValueType > & S)
-        : colPtr_(S.vecColPtr()),
+        : MatrixBase(0), colPtr_(S.vecColPtr()),
           rowIdx_(S.vecRowIdx()), 
           vals_(S.vecVals()), valid_(true), stype_(0){
     }
 
     /*! Copy constructor. */
     SparseMatrix(const SparseMapMatrix< ValueType, Index > & S)
-        : valid_(true){
+        : MatrixBase(0), valid_(true){
         copy_(S);
     }
     
     /*! Create Sparsematrix from c-arrays. Cant check for valid ranges, so please be carefull. */
     SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx,
-                 ValueType * vals, int stype = 0){
+                 ValueType * vals, int stype=0) : MatrixBase(0) {
         colPtr_.reserve(dim + 1);
         colPtr_.resize(dim + 1);
 
