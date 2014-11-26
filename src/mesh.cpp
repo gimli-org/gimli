@@ -1514,21 +1514,21 @@ void Mesh::clearExportData(){
     exportDataMap_.clear();
 }
 
-std::vector < int > Mesh::nodeMarker() const {
-    std::vector < int > tmp(nodeCount());
+IVector Mesh::nodeMarker() const {
+    IVector tmp(nodeCount());
     std::transform(nodeVector_.begin(), nodeVector_.end(), tmp.begin(), std::mem_fun(& Node::marker));
     return tmp;
 }
 
-std::vector < int > Mesh::boundaryMarker() const {
-    std::vector < int > tmp(boundaryCount());
+IVector Mesh::boundaryMarker() const {
+    IVector tmp(boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), tmp.begin(),
-                    std::mem_fun(&Boundary::marker));
+                   std::mem_fun(&Boundary::marker));
     return tmp;
 }
 
-std::vector < int > Mesh::cellMarker() const{
-    std::vector < int > tmp(cellCount());
+IVector Mesh::cellMarker() const{
+    IVector tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
                     std::mem_fun(&Cell::marker));
     return tmp;

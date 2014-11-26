@@ -17,7 +17,11 @@ from pygimli import *
 from __future__ import print_function
 
 import os
-import subprocess # check for 3.4
+try:
+    import subprocess # check for 3.4
+except:
+    pass
+
 import sys
 
 if sys.platform == 'win32':
@@ -126,6 +130,8 @@ _pygimli_.RVector3.__str__ = RVector3_str
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
+_pygimli_.IVector.__str__ = RVector_str
+
 _pygimli_.RMatrix.__str__ = RMatrix_str
 _pygimli_.CMatrix.__str__ = CMatrix_str
 _pygimli_.Line.__str__ = Line_str
@@ -149,6 +155,8 @@ _pygimli_.BVector.__nonzero__ = nonzero_test
 _pygimli_.BVector.__bool__ = nonzero_test
 _pygimli_.CVector.__nonzero__ = nonzero_test
 _pygimli_.CVector.__bool__ = nonzero_test
+_pygimli_.IVector.__nonzero__ = nonzero_test
+_pygimli_.IVector.__bool__ = nonzero_test
 
 ############################
 # allow:
@@ -240,12 +248,17 @@ def __getValMatrix(self, idx):
 
     return self.rowR(idx)
 
-
 _pygimli_.RVector.__setitem__ = __setVal
 _pygimli_.RVector.__getitem__ = __getVal # very slow -- inline is better
 
 _pygimli_.CVector.__setitem__ = __setVal
 _pygimli_.CVector.__getitem__ = __getVal # very slow -- inline is better
+
+_pygimli_.BVector.__setitem__ = __setVal
+_pygimli_.BVector.__getitem__ = __getVal # very slow -- inline is better
+
+_pygimli_.IVector.__setitem__ = __setVal
+_pygimli_.IVector.__getitem__ = __getVal # very slow -- inline is better
 
 _pygimli_.RVector3.__setitem__ = __setVal
 
@@ -259,12 +272,13 @@ _pygimli_.CMatrix.__setitem__ = __setVal
 ############################
 # len(RVector), RMatrix
 ############################
-def RVector_len(self):
+def PGVector_len(self):
     return self.size()
 
-_pygimli_.RVector.__len__ = RVector_len
-_pygimli_.BVector.__len__ = RVector_len
-_pygimli_.CVector.__len__ = RVector_len
+_pygimli_.RVector.__len__ = PGVector_len
+_pygimli_.BVector.__len__ = PGVector_len
+_pygimli_.CVector.__len__ = PGVector_len
+_pygimli_.IVector.__len__ = PGVector_len
 
 def RMatrix_len(self):
     return self.rows()
@@ -275,7 +289,7 @@ _pygimli_.CMatrix.__len__ = RMatrix_len
 ############################
 # Iterator support for RVector allow to apply python build-ins
 ############################
-class VectorIter2:
+class VectorIter:
 
     def __init__(self, vec):
         self.it = vec.beginPyIter()
@@ -293,11 +307,16 @@ class VectorIter2:
         return self.it.nextForPy()
         
 def __VectorIterCall__(self):
-    return VectorIter2(self)
-    # don't use pygimli iterators here this until the reference for temporary vectors are collected
+    return VectorIter(self)
+    # don't use pygimli iterators here until the reference for temporary vectors are collected
     #return _pygimli_.RVectorIter(self.beginPyIter())
 
-class VectorIter:
+_pygimli_.RVector.__iter__ = __VectorIterCall__
+_pygimli_.BVector.__iter__ = __VectorIterCall__
+_pygimli_.IVector.__iter__ = __VectorIterCall__
+_pygimli_.CVector.__iter__ = __VectorIterCall__
+
+class DefaultContainerIter:
     def __init__(self, vec):
         self.vec = vec
         self.length = len(vec)
@@ -318,12 +337,7 @@ class VectorIter:
             return self.vec[self.pos] 
 
 def __MatIterCall__(self):
-    return VectorIter(self)
-
-_pygimli_.RVector.__iter__ = __VectorIterCall__
-_pygimli_.BVector.__iter__ = __VectorIterCall__
-
-_pygimli_.CVector.__iter__ = __MatIterCall__
+    return DefaultContainerIter(self)
 
 _pygimli_.RMatrix.__iter__ = __MatIterCall__
 _pygimli_.CMatrix.__iter__ = __MatIterCall__
@@ -341,11 +355,7 @@ def __Vector3IterCall__(self):
 
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 
-# DEPRECATED for backward compatibility should be removed
-def asvector(array):
-    return pg.RVector(array)
- 
- 
+
 ########## c to python converter ######
 # default converter from RVector3 to numpy array 
 def __RVector3ArrayCall__(self, idx=None):
@@ -399,6 +409,7 @@ def __CMP_stdVectorI__(self, val):
 
 def __EQ_stdVectorI__(self, val):
     raise Exception("__EQ_stdVectorI__ do not use")
+    
     ret = _pygimli_.BVector(len(self))
     for i, v in enumerate(ret):
         print(self[i] == val, int(self[i] == val))
@@ -412,6 +423,16 @@ _pygimli_.stdVectorI.__eq__ = __EQ_stdVectorI__
 ############################
 # usefull stuff
 ############################
+def toIVector(v):
+    ret = _pygimli_.IVector(len(v), 0)
+    for i, r in enumerate(v):
+        ret[i] = int(r)
+    return ret
+        
+
+# DEPRECATED for backward compatibility should be removed
+def asvector(array):
+    return pg.RVector(array)
 
 
 ############################

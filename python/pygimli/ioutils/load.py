@@ -24,6 +24,7 @@ def load(fname, verbose=False):
             # Vectors
             ".dat": pg.RVector,
             ".vector": pg.RVector,
+            ".idx": pg.IVector,
             # Matrices
             ".bmat": pg.RMatrix,
             ".mat": pg.RMatrix,

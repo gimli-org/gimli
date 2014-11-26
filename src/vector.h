@@ -287,24 +287,19 @@ public:
      * Throws exception if indices's are out of bound
      */
     Vector < ValueType > operator () (const IndexArray & idx) const {
-        Vector < ValueType > v(idx.size());
-        Index id;
-        for (Index i = 0; i < idx.size(); i ++){
-           id = idx[i];
-           if (id >= 0 && id < size_){
-                v[i] = data_[id];
-           } else {
-                throwLengthError(1, WHERE_AM_I + " idx out of range " +
-                                     str(id) + " [" + str(0) + " " + str(size_) + ")");
-           }
-        }
-        return v;
+        return get_(idx);
     }
     /*!
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound 
      */
     Vector < ValueType > operator () (const std::vector < int > & idx) const {
+        return get_(idx);
+    }
+    Vector < ValueType > operator () (const IVector & idx) const {
+        return get_(idx);
+    }
+    template < class IndexContainer > Vector < ValueType > get_(const IndexContainer & idx) const {
         Vector < ValueType > v(idx.size());
         Index id;
         for (Index i = 0; i < idx.size(); i ++){
@@ -318,6 +313,7 @@ public:
         }
         return v;
     }
+    
     /*! */
     Vector < ValueType > operator () (const BVector & b) const {
         return (*this)(GIMLI::find(b));
@@ -326,7 +322,7 @@ public:
     /*!
     Implicite type converter
      */
-//     template < class T > operator Vector< T >(){
+//     template < class T > operator Vector< T >() const {
 //         //COUTMARKER
 //         Vector< T > f(this->size());
 //         for (Index i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
@@ -1489,7 +1485,6 @@ Vector < std::complex < ValueType > > operator * (const Vector < ValueType > & v
 template < class ValueType >
 Vector < std::complex < ValueType > > operator / (const std::complex< ValueType > & v,
                                                   const Vector < std::complex< ValueType > > & cv){
-    __M
     Vector < std::complex< ValueType > > ret(cv.size());
     for (Index i = 0; i < ret.size(); i ++ ) {
         ret[i] = v / cv[i];
@@ -1500,7 +1495,6 @@ Vector < std::complex < ValueType > > operator / (const std::complex< ValueType 
 template < class ValueType >
 Vector < std::complex < ValueType > > operator / (const ValueType & v,
                                                   const Vector < std::complex< ValueType > > & cv){
-    __M
     return std::complex< ValueType >(v) / cv;
 }
 
@@ -1586,6 +1580,12 @@ DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR(-)
 DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR(+)
 
 #undef DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR
+
+inline IVector toIVector(const RVector & v){
+    IVector ret(v.size());
+    for (Index i = 0; i < ret.size(); i ++) ret[i] = int(v[i]);
+    return ret;
+}
 
 template < class ValueType >
 bool save(const Vector< ValueType > & a, const std::string & filename,

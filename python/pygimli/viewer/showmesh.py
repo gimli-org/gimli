@@ -35,6 +35,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
     ----------
     """
 
+    print(data)
     ret = []
 
     ax = axes

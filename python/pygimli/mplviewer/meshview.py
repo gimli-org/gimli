@@ -486,6 +486,7 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
             shading = 'gouraud'
             z = pg.cellDataToPointData(mesh, data)
 
+        print(levels)
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              *args, **kwargs)
 

@@ -188,10 +188,12 @@ protected:
 class DLLEXPORT IdentityMatrix : public MatrixBase {
 public:
     /*! Default constructor (empty matrix). */
-    IdentityMatrix() : MatrixBase(0), nrows_(0), val_(0.0){}
+    IdentityMatrix() 
+        : MatrixBase(), nrows_(0), val_(0.0){}
 
     /*! Constructor with number of rows/colums. */
-    IdentityMatrix(Index nrows, double val = 1.0) : nrows_(nrows), val_(val){}
+    IdentityMatrix(Index nrows, double val = 1.0)
+        : MatrixBase(), nrows_(nrows), val_(val){}
 
     /*! Default destructor. */
     virtual ~IdentityMatrix(){}
@@ -230,18 +232,23 @@ protected:
 template < class ValueType > class DLLEXPORT Matrix : public MatrixBase {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols. Content of the matrix is zero. */
-    Matrix(Index rows=0, Index cols=0) : MatrixBase(){
+    Matrix(Index rows=0, Index cols=0)
+        : MatrixBase() {
         resize(rows, cols);
     }
 
     /*! Copy constructor */
-    Matrix(const std::vector < Vector< ValueType > > & mat) : MatrixBase(){ copy_(mat); }
+
+    Matrix(const std::vector < Vector< ValueType > > & mat)
+        : MatrixBase(){ copy_(mat); }
 
     /*! Constructor, read matrix from file see \ref load(Matrix < ValueType > & A, const std::string & filename). */
-    Matrix(const std::string & filename) : MatrixBase() { load(*this, filename); }
+    Matrix(const std::string & filename)
+        : MatrixBase() { load(*this, filename); }
 
     /*! Copyconstructor */
-    Matrix(const Matrix < ValueType > & mat) : MatrixBase() { copy_(mat); }
+    Matrix(const Matrix < ValueType > & mat)
+        : MatrixBase() { copy_(mat); }
 
     /*! Assignment operator */
     Matrix < ValueType > & operator = (const Matrix< ValueType > & mat){

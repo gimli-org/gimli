@@ -230,8 +230,8 @@ template < class ValueType > class Vector;
 typedef Vector < double > RVector;
 typedef Vector < Complex > CVector;
 typedef Vector < RVector3 > R3Vector;
-typedef Vector< int > BVector;
-typedef Vector< long > LVector;
+typedef Vector< bool > BVector;
+typedef Vector< SIndex > IVector;
 
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;

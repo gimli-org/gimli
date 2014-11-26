@@ -382,7 +382,7 @@ protected:
 
     /*! Determine if the sensor indices should start from 0 or 1 */
     bool sensorIndexOnFileFromOne_;
-
+    
 }; // class DataContainer
 
 } // namespace GIMLI

@@ -302,18 +302,34 @@ def generate(defined_symbols, extraIncludes):
                                         #, call_policies.reference_existing_object)
 
 
-    setMemberFunctionCallPolicieByReturn(mb, [    '::std::string *', 'float *', 'double *', 'int *', 'long *' 
-                                                , 'long long int *', 'unsigned long long int *' 
-												, '::GIMLI::Index *']
-                                            , call_policies.return_pointee_value)
+    setMemberFunctionCallPolicieByReturn(mb, ['::std::string *',
+                                              'float *',
+                                              'double *',
+                                              'int *',
+                                              'long *',
+                                              'long int *',
+                                              'long long int *',
+                                              'unsigned long long int *',
+                                              '::GIMLI::Index *',
+                                              '::GIMLI::SIndex *',
+                                              'bool *'
+                                              ], call_policies.return_pointee_value)
+
+    setMemberFunctionCallPolicieByReturn(mb, ['::std::string &',
+                                              'float &',
+                                              'double &',
+                                              'int &',
+                                              'long &',
+                                              'long int &',
+                                              'long long int &',
+                                              'unsigned long long int &',
+                                              '::GIMLI::Index &',
+                                              '::GIMLI::SIndex &',
+                                              'bool &'
+                                              ], call_policies.return_by_value)
 
     #setMemberFunctionCallPolicieByReturn(mb, ['::GIMLI::VectorIterator<double> &']
                                         #, call_policies.copy_const_reference)
-
-    setMemberFunctionCallPolicieByReturn(mb, ['::std::string &'
-                                                ,  'double &' ]
-                                                , call_policies.return_by_value)
-
     #setMemberFunctionCallPolicieByReturn(mb, [
                                                 #,  'double &' ]
                                                 #, call_policies.reference_existing_object)
