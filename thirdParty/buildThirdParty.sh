@@ -453,7 +453,7 @@ buildPYGCCXML(){
     pushd $PYGCCXML_BUILD
 		python setup.py build
 		echo "copy build->dist"
-		cp -rf $PYGCCXML_BUILD/build/lib/* $PYGCCXML_DIST
+		cp -rf $PYGCCXML_BUILD/build/lib*/pygccxml $PYGCCXML_DIST
 		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
 		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
@@ -462,7 +462,7 @@ buildPYGCCXML(){
 	pushd $PYPLUSPLUS_BUILD
 		python setup.py build
 		echo "copy build->dist"
-		cp -rf $PYPLUSPLUS_BUILD/build/lib/* $PYPLUSPLUS_DIST
+		cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
 		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
 		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd

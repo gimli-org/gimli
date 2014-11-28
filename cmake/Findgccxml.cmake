@@ -5,14 +5,17 @@
 # GCCXML_EXECUTABLE, If false, do not try to use gccxml
 
 find_program(GCCXML_EXECUTABLE
-  NAMES gccxml
-        ../GCC_XML/gccxml
-  PATHS [HKEY_CURRENT_USER\\Software\\Kitware\\GCC_XML;loc]
+	NAMES
+		gccxml
+		../GCC_XML/gccxml
+	PATHS
+		[HKEY_CURRENT_USER\\Software\\Kitware\\GCC_XML;loc]
   		${EXTERNAL_DIR}/bin
         "$ENV{ProgramFiles}/GCC_XML"
         "C:/Program Files/GCC_XML"
 		${GCCXML_ROOT}/bin
         "${PROJECT_SOURCE_DIR}/../../gccxml-bin/bin"
+	NO_DEFAULT_PATH
 )
 
 if (GCCXML_EXECUTABLE)
