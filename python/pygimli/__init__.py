@@ -37,12 +37,16 @@ except ImportError as e:
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
 import locale
+print(locale.localeconv()['decimal_point'])
 if locale.localeconv()['decimal_point'] == ',':
     print(
         "Found locale decimal_point ',', change it to: decimal point '.':",
         end=' ')
+try:
     locale.localeconv()['decimal_point']
     locale.setlocale(locale.LC_NUMERIC, 'C')
+except:
+    print('cannot set locale to decimal point')
 
 ############################
 ###  Global shortcutes #####

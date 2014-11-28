@@ -250,7 +250,6 @@ int DataContainer::load(const std::string & fileName,
     for (int i = 0; i < nSensors; i ++) {
         createSensor(RVector3(x[i], y[i], z[i]).round(1e-12));
     }
-
     //****************************** Start read the data;
     row = getNonEmptyRow(file);
     if (row.size() != 1) {
@@ -425,8 +424,8 @@ void DataContainer::checkDataValidity(bool remove){
     //** check sensor indices < -1 and >= sensorCount()
     for (std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if (isSensorIndex(it->first)){
-//             std::cout << it->first << " "<< sensorCount()<< " " << find((it->second < -1) | (it->second >= sensorCount())) << std::endl;
-//
+//           std::cout << it->first << " "<< sensorCount()<< " " << find((it->second < -1) | (it->second >= sensorCount())) << std::endl;
+
             this->markInvalid(find((it->second < -1) | (it->second >= sensorCount())));
         }
     }
