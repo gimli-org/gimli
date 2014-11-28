@@ -198,8 +198,12 @@ def __getVal(self, idx):
 
     elif isinstance(idx, slice):
         if idx.step is None:
-            print(int(idx.start), int(idx.stop))
-            return self(int(idx.start), int(idx.stop))
+            s = idx.start
+            e = idx.stop
+            if s == None: s = 0
+            if e == None: e = len(self)
+#            print('#'*100, s, e)
+            return self.getVal(s, e)
         else:
             ids = range(idx.start, idx.stop, idx.step)
             if len(ids):
@@ -221,27 +225,41 @@ def __setVal(self, idx, val):
             return
         else:
             "not yet implemented"
-
+    elif isinstance(idx, tuple):
+        #print(idx, type(idx))
+        self.rowR(int(idx[0])).setVal(val, int(idx[1]))
+        return
+    
+    #print(idx, type(idx))
     self.setVal(val, idx)
 
 def __getValMatrix(self, idx):
 
+#    print(idx, type(idx))
     if isinstance(idx, slice):
-        if idx.step is None:
+        step = idx.step
+        if step is None:
+            step = 1
+        start = idx.start
+        if start is None:
+            start = 0
+        stop = idx.stop
+        if stop is None:
+            stop = len(self)
 
-            start = idx.start
-            if idx.start is None:
-                start = 0
+        return [self.rowR(i) for i in range(start, stop, step)]
 
-            stop = idx.stop
-            if idx.stop is None:
-                stop = len(self)
-
-            return [self.rowR(i) for i in range(start, stop)]
-
-            # return self(long(idx.start), long(idx.stop))
+    elif isinstance(idx, tuple):
+        #print(idx, type(idx))
+        if isinstance(idx[0], slice):
+            if isinstance(idx[1], int):
+                tmp = self.__getitem__(idx[0])
+                ret = _pygimli_.RVector(len(tmp))
+                for i, t in enumerate(tmp):
+                    ret[i] = t[idx[1]]
+                return ret
         else:
-            "not yet implemented"
+            return self.rowR(int(idx[0])).__getitem__(idx[1])
 
     if idx == -1:
         idx = len(self) - 1
