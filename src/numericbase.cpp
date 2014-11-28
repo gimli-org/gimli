@@ -47,7 +47,7 @@ RVector logDropTol(const RVector & data, double logdrop, bool normalize){
 
 
 RVector logTransDropTol(const RVector & data, double logdrop, bool normalize){
-    return logTransDropTol(data, logdrop, normalize); 
+    return logDropTol(data, logdrop, normalize); 
 }
     
 void GaussLaguerre(uint n, RVector & x, RVector & w){
