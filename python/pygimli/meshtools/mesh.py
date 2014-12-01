@@ -533,18 +533,19 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
         boundary = 4
     
     bound = abs(xmax - xmin) * boundary
-    # define world without surface
-    n11 = poly.createNode(n1.pos() - [bound, 0.])
-    n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
-    n14 = poly.createNode(n4.pos() + [bound, 0.])
-    n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
-    
-    poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-    poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
-    poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
-    poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
-    poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-    poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1)
+    if bound > paraBound:
+		# define world without surface
+		n11 = poly.createNode(n1.pos() - [bound, 0.])
+		n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
+		n14 = poly.createNode(n4.pos() + [bound, 0.])
+		n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
+		
+		poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+		poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
+		poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
+		poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
+		poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+		poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1)
     
     poly.createEdge(n1, n2, 1)
     poly.createEdge(n2, n3, 1)

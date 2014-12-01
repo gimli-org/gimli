@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTransLogLU, RInversion
 from pygimli.utils import draw1dmodel
 from math import sqrt, pi
@@ -9,7 +10,6 @@ def rhoafromU( UbyI, t, Tx, Rx=None ):
         Rx = Tx # assume single/coincident loop
     
     mu0 = 4e-7 * pi
-#    rhoa = ( Rx * Tx * mu0 / 20. / UbyI )**(2./3.) * t**(-5./3.) * mu0 / pi
     rhoa = ( Rx * Tx * mu0 / 20. / UbyI )**(2./3.) * t**(-5./3.) * mu0 / pi
     return rhoa
 
@@ -19,7 +19,7 @@ def rhoafromB( B, t, Tx, I=1 ):
     rhoa = ( I * Tx * mu0 / 30. / B )**(2./3.) * mu0 / pi / t
     return rhoa
 
-def rhoa( snd, cal=260e-9, corrramp=True ):
+def get_rhoa( snd, cal=260e-9, corrramp=True ):
     ''' compute apparent resistivity from sounding '''
     Tx = np.prod( [float(a) for a in snd['LOOP_SIZE'].split()] )
     if 'COIL_SIZE' in snd:
@@ -29,19 +29,24 @@ def rhoa( snd, cal=260e-9, corrramp=True ):
     
     v = snd['VOLTAGE']
     istart, istop = 0, len(v) # default: take all
-    mav = np.find( v == max(v) )
+    mav = np.arange( len(v) )[ v == max(v) ]
     if len(mav) > 1: #several equal big ones: start after
         istart = max(mav)+1
 
     if min(v) < 0.0: # negative values: stop at first
-        istop = min( np.find( v < 0.0 ) )
-    
+        istop = np.argmax( v[20:] < 0.0 ) + 20
+
+    print istart, istop
     v = v[istart:istop]
-    dv = snd['ST_DEV'][istart:istop] #/ snd['CURRENT']
+    if 'ST_DEV' in snd:
+        dv = snd['ST_DEV'][istart:istop] #/ snd['CURRENT']
+    else:
+        dv = v*0.01
+    
     t = snd['TIME'][istart:istop]
     if corrramp and 'RAMP_TIME' in snd: 
         t = t - snd['RAMP_TIME']
-    
+
     if Rx == 1: # apparently B-field
         rhoa = rhoafromB( v * cal, t, Tx )
     else:
@@ -72,6 +77,7 @@ def readusffile( filename ):
                         for i, cn in enumerate( sounding['column_names'] ):
                             sounding[cn] = columns[:,i]
                         
+                        sounding['FILENAME'] = filename
                         DATA.append( sounding )
                         sounding = {}
                     
@@ -100,14 +106,18 @@ def readusffile( filename ):
     fid.close()
     return DATA
 
-def readusffiles( filenames, DATA = [] ):
+def readusffiles( filenames ):
     ''' read all soundings data from a list of usf files
         DATA = readusffiles( filenames ) '''
-    ALLDATA = []
-    for onefile in filenames:
-        ALLDATA.extend( readusffile( onefile ) )
+    import glob
+    if filenames.find('*')>=0:
+        filenames = glob.glob(filenames)
     
-    return ALLDATA
+    DATA = []
+    for onefile in filenames:
+        DATA.extend( readusffile( onefile ) )
+    
+    return DATA
 
 def readSiroTEMData( fname ):
     ''' read TEM data from siroTEM instrument dump 
@@ -174,40 +184,80 @@ def readSiroTEMData( fname ):
         line = fid.readline()
 
     fid.close() 
+    DATA['FILENAME'] = fname
     return DATA
 
 class TDEMData():
-    """ TEM class holding data etc. """
-    def __init__( self, filename, height=1.0, verbose=False ):
-        """ initialize data class and load data """
-
+    """ TEM class mainly for holding data etc. """
     def __init__( self, filename = None):
         """ initialize data class and load data """
-        self.x, self.f, self.cs, self.IP, self.OP, self.ERR = None,None,None,None,None,None
-        self.height = 1.0
-        
+        self.DATA = []
+        self.names = []
         if filename:
-            # check if filename extension is usf
-            if filename.lower().rfind( '.usf' ) > 0:
-                if filename.find( '*' ) > 0:
-                    self.DATA = readusffiles( filename )
-                else:
-                    self.DATA = readusffile( filename )
-            elif filename.lower().rfind( '.txt' ) > 0:
-                self.DATA = readSiroTEMData( filename )
-            
-        self.activeFreq = ( self.f > 0.0 )
+            self.load( filename )
+    
+    def load( self, filename ):
+        # check if filename extension is usf
+        if filename.lower().rfind( '.usf' ) > 0:
+            if filename.find( '*' ) >= 0:
+                DATA = readusffiles( filename )
+                self.DATA.extend( DATA )
+            else:
+                self.DATA.append( readusffile( filename ) )
+        elif filename.lower().rfind( '.txt' ) > 0:
+            self.DATA = readSiroTEMData( filename )
 
     def __repr__( self ):
-        if isinstance( self.x, float ):
-            return "<FDEMdata: sounding with %d frequencies, coilspacing is %.1f>" % (len(self.f), self.cs)
-        else:
-            return  "<FDEMdata: %d soundings with each %d frequencies, coilspacing is %.1f>" % (len(self.x), len(self.f), self.cs)
+        return "<TDEMdata: %d soundings>" % (len(self.DATA))
         
     def showInfos( self ): # only for old scripts using it
         print(__repr__( self ))
 
+    def plotTransients( self, ax=None ):
+        """ plot all transients into one window """
+        if ax is None:
+            fig, ax = plt.subplots()
+        
+        cols='rgbmcyk'
+        pl = []
+        for i,data in enumerate(self.DATA):
+            t = data['TIME']
+            u = data['VOLTAGE']
+            du = data['ST_DEV']
+            
+            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
+            ax.loglog(t,u,label=name)
+
+        ax.set_xlabel('t [s]')
+        ax.set_ylabel('U/I [V/A]')
+        ax.legend(loc='best')
+        xlim = [10e-6,2e-3]
+        ax.grid(True)
+
+    def plotRhoa( self, ax=None, ploterror=False ):
+        """ plot all transients into one window """
+        if ax is None:
+            fig, ax = plt.subplots()
+        
+        cols='rgbmcyk'
+        for i,data in enumerate(self.DATA):
+            t = data['TIME']
+            u = data['VOLTAGE']
+            du = data['ST_DEV']
+            
+            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
+            
+            rhoa, t, err = get_rhoa(data)
+            err[err>.99]=.99
+            ax.loglog(t,rhoa,marker='+',label=name,color=cols[i % 7])
+            if ploterror:
+                ax.errorbar(t,rhoa,yerr=rhoa*err,color=cols[i % 7])
+
+        ax.set_xlabel('t [s]')
+        ax.set_ylabel(r'$\rho_a$ [$\Omega$m]')
+        ax.legend(loc='best')
+        ax.grid(True)
 
     
 if __name__ == '__main__':
-    print("print do some tests here")
+    print "print do some tests here"

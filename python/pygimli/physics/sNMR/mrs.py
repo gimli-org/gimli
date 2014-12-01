@@ -104,27 +104,30 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
 def showErrorBars(ax,thk,val,thkL,thkU,valL,valU,*args,**kwargs):
     """ plot error bars into a plot """
     zb = np.cumsum(thk)
-    zm = np.hstack( (zb-thk/2, zb[-1]+thk[-1]/2) )
+    zm = np.hstack( (zb-thk/2, zb[-1]*1.2 ) ) #zb[-1]+thk[-1]/2) )
     valm = (val[:-1]+val[1:])/2
     xerr = [ val - valL, valU - val ]
     yerr = [ thk-thkL, thkU-thk ]
     ax.errorbar( val, zm, fmt='.', xerr=xerr, ecolor='r', **kwargs )
     ax.errorbar( valm, zb, fmt='.', yerr=yerr, ecolor='g', **kwargs )
+    ax.set_ylim(bottom=zm[-1]*1.02,top=0)
 
-def showWC(ax,thk,wc,wmin=0.,wmax=0.45,dw=0.05,**kwargs):
+def showWC(ax,thk,wc,wmin=0.,wmax=0.45,maxdep=0.,dw=0.05,**kwargs):
     """ show water content function nicely """
     drawModel1D( ax, thk, wc, xlabel=r'$\theta$' )
     ax.set_xlim(0.,0.45)
+    if maxdep>0.: ax.set_ylim(maxdep,0.)
     wt = np.arange(wmin,wmax,dw)
     ax.set_xticks( wt )
     ax.set_xticklabels([str(wi) for wi in wt])
 
-def showT2(ax,thk,t2,**kwargs):
+def showT2(ax,thk,t2,maxdep=0.,**kwargs):
     """ show T2 function nicely """
     drawModel1D( ax, thk, t2*1e3, xlabel=r'$T_2^*$ [ms]', plotfunction='semilogx' )
     tmin = min(20,min(t2)*0.9e3)
     tmax = max(500,max(t2)*1.1e3)
     ax.set_xlim(tmin,tmax)
+    if maxdep>0.: ax.set_ylim(maxdep,0.)
     xt = [20,50,100,200,500]
     ax.set_xticks(xt)
     ax.set_xticklabels([str(ai) for ai in xt])
@@ -134,7 +137,8 @@ class MRS():
     '''
     class for managing a magnetic resonance sounding (MRS)
     '''
-    def __init__(self,name=None,defaultNoise=150e-9,verbose=True): # constructor with dummy values
+#    def __init__(self,name=None,defaultNoise=150e-9,usereal=False,verbose=True): # constructor with dummy values
+    def __init__(self,name=None,verbose=True,**kwargs): # constructor with dummy values
         ''' init function with optional data load from mrsi file '''
         self.verbose = verbose
         self.t, self.q, self.z = None, None, None
@@ -145,9 +149,10 @@ class MRS():
         self.upperBound = [30.,0.45,1.00] # d, theta, T2*
         self.startval   = [10.,0.30,0.20]  # d, theta, T2*
         self.logpar = False
-        if name is not None: # check for mrsi/d/k
+        if name is not None: # load data and kernel
+            # check for mrsi/d/k
             if name[-5:].lower() == '.mrsi':
-                self.loadMRSI(name,defaultNoise)
+                self.loadMRSI(name,**kwargs)
             else: #else mrsd+k?
                 self.loadDir(name)
 
@@ -160,21 +165,28 @@ class MRS():
             out += ", %d layers" % len(self.z)
         return out+">"
 
-    def loadMRSI(self,filename,defaultNoise=100e-9):
+    def loadMRSI(self,filename,defaultNoise=100e-9,usereal=False,mint=0.,maxt=2.0):
         ''' load data, error and kernel from mrsi file '''
         idata=loadmat(filename,struct_as_record=False,
                       squeeze_me=True)['idata']
-        self.t = idata.data.t + idata.data.effDead
+        #self.t = idata.data.t + idata.data.effDead
+        ttmp = idata.data.t + idata.data.effDead
+        good = (ttmp<=maxt) & (ttmp>=mint)
+        self.t = ttmp[good]
         self.q = idata.data.q
         self.K = idata.kernel.K
         self.z = np.hstack( (0.,idata.kernel.z) )
-        dcube = idata.data.dcube
+        dcube = idata.data.dcube[:,good]
         if len(dcube)==len(self.q) and len(dcube[0])==len(self.t):
-            self.data = np.abs( dcube.flat )
-        ecube = idata.data.ecube
+            if usereal:
+                self.data = np.abs( np.real( dcube.flat ) )
+            else:
+                self.data = np.abs( dcube.flat )
+
+        ecube = idata.data.ecube[:,good]
         if self.verbose: print("loaded file: "+filename)
         if ecube[0][0] == 0:
-            if self.verbose: print("no errors in file, assuming",defaultNoise,"nV")
+            if self.verbose: print("no errors in file, assuming",defaultNoise*1e9,"nV")
             ecube=np.ones( (len(self.q),len(self.t)) ) * defaultNoise
             ecube /= np.sqrt( idata.data.gateL )
         if len(ecube)==len(self.q) and len(ecube[0])==len(self.t):
@@ -204,12 +216,12 @@ class MRS():
         elif len(A)==len(self.q)+1 and len(A[0])==len(self.t)+1:
             self.error = A[1:,1:].ravel()
         else:
-            self.error = np.ones(len(q)*len(t))*100e-9
+            self.error = np.ones(len(self.q)*len(self.t))*100e-9
 
     def loadKernel(self,name=''):
         ''' load kernel matrix from mrsk or two bmat files '''
         if name[-5:].lower() == '.mrsk':
-            kdata=loadmat(filename,struct_as_record=False,squeeze_me=True)['kdata']
+            kdata=loadmat(name,struct_as_record=False,squeeze_me=True)['kdata']
             self.K = kdata.K
             self.z = np.hstack( (0.,kdata.model.z) )
         else: # try load real/imag parts (backward compat.)
@@ -260,8 +272,8 @@ class MRS():
         ax.set_xticklabels(xtl)
         ax.set_yticks(qt)
         ax.set_yticklabels(qtl)
-        ax.set_xlabel('t [ms]')
-        ax.set_ylabel('q [As]')
+        ax.set_xlabel('$t$ [ms]')
+        ax.set_ylabel('$q$ [As]')
         cb=plt.colorbar(im,ax=ax,orientation='horizontal')
         if clab is not None:
             cb.ax.set_title(clab)
@@ -291,7 +303,7 @@ class MRS():
         self.f.region(1).setTransModel(self.transWC)
         self.f.region(2).setTransModel(self.transT2)
 
-    def createInv(self,nlay=3,lam=10.,verbose=True, **kwargs):
+    def createInv(self,nlay=3,lam=10.,verbose=True, robust=False, **kwargs):
         ''' create inversion instance '''
         if self.f is None: self.createFOP(nlay)
         self.INV = pg.RInversion(self.data, self.f, verbose)
@@ -300,6 +312,7 @@ class MRS():
         self.INV.stopAtChi1(False) # now in MarquardtScheme
         self.INV.setDeltaPhiAbortPercent(0.5)
         self.INV.setAbsoluteError(self.error)
+        if robust: self.INV.setRobustData( True )
         return self.INV
 
     def run(self,nlay=3,lam=10.,startvec=None,verbose=True,uncertainty=False,**kwargs):
@@ -313,6 +326,7 @@ class MRS():
         if uncertainty:
             if verbose: print("Computing uncertainty...")
             self.modelL, self.modelU = iterateBounds( self.INV, dchi2=self.INV.chi2()/2, change=1.2 )
+            if verbose: print("ready")
 
     def splitModel(self,model=None):
         ''' split model vector into d, theta and T2* '''
@@ -343,22 +357,36 @@ class MRS():
         if show: plt.show()
         return fig, ax
 
-    def showResultAndFit(self,figsize=(10,10),save='',show=False):
+    def showResultAndFit(self,figsize=(12,10),save='',plotmisfit=False,
+                         maxdep=None,show=False):
         ''' show theta(z), T2*(z), data and model response '''
-        fig, ax = plt.subplots(2,2,figsize=figsize)
+        fig, ax = plt.subplots(2,2+plotmisfit,figsize=figsize)
         thk, wc, t2 = self.splitModel()
-        showWC(ax[0,0], thk, wc)
-        showT2(ax[0,1], thk, t2)
+        showWC(ax[0,0], thk, wc, maxdep=maxdep)
+        showT2(ax[0,1], thk, t2, maxdep=maxdep)
+        ax[0,0].set_title(r'MRS water content $\theta$')
+        ax[0,1].set_title(r'MRS decay time $T_2^*$')
+        ax[0,0].set_ylabel('$z$ [m]')
+        ax[0,1].set_ylabel('$z$ [m]')
         if self.modelL is not None and self.modelU is not None:
             thkL, wcL, t2L = self.splitModel(self.modelL)
             thkU, wcU, t2U = self.splitModel(self.modelU)
             showErrorBars(ax[0,0],thk,wc,thkL,thkU,wcL,wcU)
             showErrorBars(ax[0,1],thk,t2*1e3,thkL,thkU,t2L*1e3,t2U*1e3)
 
+        if maxdep>0.:
+            ax[0,0].set_ylim([maxdep,0.])
+            ax[0,1].set_ylim([maxdep,0.])
         clim = self.showCube(ax[1,0],self.data*1e9,islog=False)
         ax[1,0].set_title('measured data [nV]') #log10 
         self.showCube(ax[1,1],self.INV.response()*1e9,clim=clim,islog=False)
         ax[1,1].set_title('simulated data [nV]') #log10 
+        if plotmisfit:
+            self.showCube(ax[0,2],(self.data-self.INV.response())*1e9,islog=False)
+            ax[0,2].set_title('misfit [nV]') #log10 
+            self.showCube(ax[1,2],(self.data-self.INV.response())/self.error,islog=False)
+            ax[1,2].set_title('error-weighted misfit')
+
         if save: fig.savefig(save,bbox_inches='tight')
         if show: plt.show()
         return fig, ax
