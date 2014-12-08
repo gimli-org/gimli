@@ -51,12 +51,14 @@ void Dijkstra::setGraph(const Graph & graph) {
 void Dijkstra::setStartNode(uint startNode) {
     distances_.clear();
     root_ = startNode;
-    std::priority_queue< distancePair_, std::vector< distancePair_ >, comparePairsClass_< distancePair_ > > priQueue;
+    std::priority_queue< distancePair_, 
+                         std::vector< distancePair_ >,
+                         comparePairsClass_< distancePair_ > > priQueue;
 
     edge_ e(startNode, startNode);
     priQueue.push(distancePair_(0.0, e));
     distancePair_ dummy;
-
+    
     while (!priQueue.empty()) {
         dummy = priQueue.top();
 
@@ -66,6 +68,9 @@ void Dijkstra::setStartNode(uint startNode) {
 
         if (distances_.count(node) == 0) {
             distances_[node] = distance;
+            if (pathMatrix_.size() <= node){
+                throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
+            }
             pathMatrix_[node] = edge_(dummy.second);
 
             NodeDistMap::iterator start = graph_[node].begin();
@@ -104,7 +109,9 @@ std::vector < uint > Dijkstra::shortestPathTo(uint node) const {
 //        return response(slowness, background);
 //    }
 
-TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(Mesh & mesh, DataContainer & dataContainer, bool verbose)
+TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(Mesh & mesh,
+                                                         DataContainer & dataContainer, 
+                                                         bool verbose)
 : ModellingBase(dataContainer, verbose), background_(1e16) {
 
     this->setMesh(mesh);
@@ -122,8 +129,8 @@ Graph TravelTimeDijkstraModelling::createGraph() {
 
     double dist, oldTime, newTime;
     
-    for (uint i = 0; i < mesh_->cellCount(); i ++) {
-        for (uint j = 0; j < mesh_->cell(i).nodeCount(); j ++) {
+    for (Index i = 0; i < mesh_->cellCount(); i ++) {
+        for (Index j = 0; j < mesh_->cell(i).nodeCount(); j ++) {
             Node *na = &mesh_->cell(i).node(j);
             Node *nb = &mesh_->cell(i).node((j + 1)%mesh_->cell(i).nodeCount());
             dist = na->pos().distance(nb->pos());
@@ -144,19 +151,33 @@ Graph TravelTimeDijkstraModelling::createGraph() {
 
             Node *na = &mesh_->cell(i).node(0);
             Node *nb = &mesh_->cell(i).node(2);
-                dist = na->pos().distance(nb->pos());
-                oldTime = meshGraph[na->id()][nb->id()];
-                newTime = dist * mesh_->cell(i).attribute();
-                meshGraph[na->id()][nb->id()] = newTime;
-                meshGraph[nb->id()][na->id()] = newTime;
+        
+            dist = na->pos().distance(nb->pos());
+            oldTime = meshGraph[na->id()][nb->id()];
+            newTime = dist * mesh_->cell(i).attribute();
+        
+            meshGraph[na->id()][nb->id()] = newTime;
+            meshGraph[nb->id()][na->id()] = newTime;
 
-                na = &mesh_->cell(i).node(1);
-                nb = &mesh_->cell(i).node(3);
-                dist = na->pos().distance(nb->pos());
-                oldTime = meshGraph[na->id()][nb->id()];
-                newTime = dist * mesh_->cell(i).attribute();
-                meshGraph[na->id()][nb->id()] = newTime;
-                meshGraph[nb->id()][na->id()] = newTime;
+            na = &mesh_->cell(i).node(1);
+            nb = &mesh_->cell(i).node(3);
+            
+            dist = na->pos().distance(nb->pos());
+            oldTime = meshGraph[na->id()][nb->id()];
+            newTime = dist * mesh_->cell(i).attribute();
+            meshGraph[na->id()][nb->id()] = newTime;
+            meshGraph[nb->id()][na->id()] = newTime;
+        }
+    }
+    
+    if (meshGraph.size() < mesh_->nodeCount()){
+        std::cerr << WHERE_AM_I << 
+                " there seems to be unassigned nodes within the mesh. Dijkstra Path will be maybe invalid." 
+                 << meshGraph.size() << " < " << mesh_->nodeCount() << std::endl;
+        for (Index i = 0; i < mesh_->nodeCount(); i ++){
+            if (mesh_->node(i).cellSet().empty()){
+                std::cout << mesh_->node(i) << std::endl;
+            }
         }
     }
     return meshGraph;
@@ -231,6 +252,8 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     
     for (uint i = 0; i < shots.size(); i ++){
         shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
+        if ( mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
+        }
         shotsInv_[Index(shots[i])] = i;
     }
      
@@ -260,7 +283,6 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
 
     for (uint shot = 0; shot < nShots; shot ++) {
         dijkstra_.setStartNode(shotNodeId_[shot]);
-
         for (uint i = 0; i < nRecei; i ++) {
             dMap[shot][i] = dijkstra_.distance(receNodeId_[i]);
         }

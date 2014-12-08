@@ -48,6 +48,8 @@ try:
 except:
     print('cannot set locale to decimal point')
 
+
+print (_pygimli_)
 ############################
 ###  Global shortcutes #####
 _pygimli_.load = None
@@ -141,8 +143,8 @@ _pygimli_.CMatrix.__str__ = CMatrix_str
 _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
-_pygimli_.stdVectorUL.size = _pygimli_.stdVectorUL.__len__
-_pygimli_.stdVectorUL.__str__ = RVector_str
+#_pygimli_.stdVectorUL.size = _pygimli_.stdVectorUL.__len__
+#_pygimli_.stdVectorUL.__str__ = RVector_str
 
 ############################
 # compatibility stuff
@@ -166,14 +168,16 @@ _pygimli_.IVector.__bool__ = nonzero_test
 # allow:
 ############################
 
-def __ADD(self, val):
-    ret = type(self)()
-    for i, r in enumerate(self):
-        ret.append(r + val)
-    return ret
+#def __ADD(self, val):
+    #ret = type(self)()
+    #for i, r in enumerate(self):
+        #ret.append(r + val)
+    #return ret
 
-_pygimli_.stdVectorUL.__add__ = __ADD
+#_pygimli_.stdVectorUL.__add__ = __ADD
 
+
+#_pygimli_.stdVectorUL = _pygimli_.stdVectorI
 
 ############################
 # Indexing [] operator for RVector, CVector, RVector3, RMatrix, CMatrix
@@ -183,11 +187,12 @@ def __getVal(self, idx):
         Hell slow
     """
     #print("__getVal")
-    if isinstance(idx, BVector):
+    if isinstance(idx, BVector) or isinstance(idx, IVector):
         return self(idx)
-    elif isinstance(idx, stdVectorUL) or isinstance(idx, stdVectorI):
+    elif isinstance(idx, stdVectorI):
         return self(idx)
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
+        raise "TODO Implement with IVector"
         idxL = _pygimli_.stdVectorUL()
         for i, ix in enumerate(idx):
             if type(ix) == int:
@@ -207,7 +212,7 @@ def __getVal(self, idx):
             if s == None: s = 0
             if e == None: e = len(self)
 #            print('#'*100, s, e)
-            return self.getVal(s, e)
+            return self.getVal(int(s), int(e))
         else:
             ids = range(idx.start, idx.stop, idx.step)
             if len(ids):

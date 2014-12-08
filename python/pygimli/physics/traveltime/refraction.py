@@ -223,14 +223,24 @@ if __name__ == "__main__":
 
     ra = Refraction(datafile)
     print(ra)
+    pg.showLater()
     ra.showData()
-#    ra.showVA()
-#    ra.makeMesh()
-#    ra.showMesh()
+    ra.showVA()
+    ra.makeMesh()
+    ra.mesh.save('mesh')
+    print(ra.mesh)
+    ra.showMesh()
+    
     ra.createFOP()
+    
     slo = createGradientModel2D(ra.data, ra.mesh, 500., 5000.)
-#    resp = ra.f(slo)
-#    ra.velocity = 1. / slo
-#    ra.createInv()
-#    ra.run()
-#    ra.showResult()
+    
+    #print('#'*100)
+    resp = ra.f(slo)
+    #print('#'*100)
+    #ra.velocity = 1. / slo
+    #ra.createInv()
+    #ra.run()
+    #ra.showResult()
+
+    pg.showNow()

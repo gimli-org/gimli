@@ -425,11 +425,13 @@ def main(argv):
     parser.add_option("-d", "--data", dest="datafile",
                             help="data file", metavar="File")
     parser.add_option("-o", "--output", dest="outFileName",
-                            help="filename for the resulting picture. suffix define fileformat (.pdf|.png|.svg)", metavar="File")
+                            help="filename for the resulting picture. Suffix define fileformat (.pdf|.png|.svg)", metavar="File")
     parser.add_option("-c", "--constraintMat", dest="constraintMat",
                             help="show mesh constraints connections", metavar="File", default='')
     parser.add_option("-e", "--electrodes", dest="electrodes",
                             help="Show electrode positions as black dots. Give datafile.", metavar="File")
+    parser.add_option("", "--check", dest="check", action="store_true",
+                            help="Check the mesh consistency and show free, unassigned, nodes, if there are any.")
     parser.add_option("", "--cellBrowser", dest="cellBrowser", action="store_true",
                       help="Open an interactive cell browser for the model.")
     parser.add_option("", "--cMin", dest="cMin",
@@ -592,6 +594,16 @@ def main(argv):
             print(err)
             print("something goes wrong while drawing mesh")
             exit(2)
+
+        if options.check:
+            print(mesh)
+            for n in mesh.nodes():
+                if len(n.cellSet()) == 0:
+                    print("Node ", n.id(), " at: ", n.pos(), " have no cells.")
+                    for nt in mesh.nodes():
+                        #print(nt.pos(), nt.pos().distance(n.pos())) 
+                        if nt.id() != n.id() and nt.pos().distance(n.pos()) < 1e-4:
+                            print("\t duplicate with ", nt.id())
 
         if options.electrodes:
             try:

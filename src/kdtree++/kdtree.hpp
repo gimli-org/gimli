@@ -510,12 +510,22 @@ namespace KDTree
 	  {
 	    std::pair<const _Node<_Val>*,
 	      std::pair<size_type, typename _Acc::result_type> >
-	      best = _S_node_nearest (__K, 0, __val,
-				      _M_get_root(), &_M_header, _M_get_root(),
-				      sqrt(_S_accumulate_node_distance
-				      (__K, _M_dist, _M_acc, _M_get_root()->_M_value, __val)),
-				      _M_cmp, _M_acc, _M_dist,
-				      always_true<value_type>());
+	      best = _S_node_nearest (__K, 
+                                  0,
+                               __val,
+                               _M_get_root(),
+                                  &_M_header,
+                               _M_get_root(),
+                                  sqrt(_S_accumulate_node_distance(__K,
+                                                                   _M_dist,
+                                                                   _M_acc,
+                                                                   _M_get_root()->_M_value,
+                                                                   __val)
+                                      ),
+                               _M_cmp,
+                               _M_acc,
+                               _M_dist,
+                               always_true<value_type>());
 	    return std::pair<const_iterator, distance_type>
 	      (best.first, best.second.second);
 	  }

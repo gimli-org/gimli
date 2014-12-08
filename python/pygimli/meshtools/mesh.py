@@ -9,7 +9,8 @@ def createMesh(poly, quality=30, area=0.0,
                regions=None, holes=None,
                verbose=False):
     """
-    Create a mesh for a given PLC using triangle (http://www.cs.cmu.edu/~quake/triangle.html)
+    Create a mesh for a given PLC using
+    triangle (http://www.cs.cmu.edu/~quake/triangle.html)
     or tetgen if the gimli support for the meshgenerator is installed.
     Poly need to be a valid PLC.
     
@@ -70,8 +71,6 @@ def createMesh(poly, quality=30, area=0.0,
             
         tri.setSwitches(switches)
         
-        
-
         mesh = tri.generate()
 
         if smooth != None:
@@ -463,8 +462,8 @@ def mergeMeshes(meshlist):
 
 
 def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
-                     paraBoundary=2, paraMaxCellSize=0, boundary=-1, 
-                     verbose=False, *args, **kwargs):
+                       paraBoundary=2, paraMaxCellSize=0, boundary=-1, 
+                       verbose=False, *args, **kwargs):
     """
     Return a PLC for the parameter mesh for a given list of sensor positions.
     Sensor position assumed on the surface and must be sorted and unique.
@@ -483,18 +482,19 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
     Parameters
     ----------
     sensors : list of RVector3 objects
-        Sensor positions. Must be sorted and unique in positve x direction
+        Sensor positions. Must be sorted and unique in positive x direction. 
+        Depth need to be y-coordinate.
     paraDX : float
         Relativ distance for refinement nodes between two electrodes,
         e.g., 0.5 means 1 additional node in the middle between two electrodes
         e.g., 0.333 means 2 additional node evenly spaced between two electrodes
     paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maxmimum
+        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
     paraBoundary : float, optional
         Margin for parameter domain in absolute sensor distances. 2 (default).
     paraMaxCellSize: double, optional
-        Maximum size for parametrix size in m*m
+        Maximum size for parametric size in m*m
     boundary : float, optional
         Boundary width to be appended for domain prolongation in absolute 
         para domain width.
@@ -508,13 +508,14 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
         
     eSpacing = sensors[0].distance(sensors[1])
      
-    xmin = sensors[0][0]; ymin = sensors[0][1];
+    xmin, ymin = sensors[0][0], sensors[0][1]
     xmax = xmin
     ymax = ymin
-            
     for e in sensors:
-        xmin = min(xmin, e[0]); xmax = max(xmax, e[0])
-        ymin = min(ymin, e[1]); ymax = max(ymax, e[1])
+        xmin = min(xmin, e[0])
+        xmax = max(xmax, e[0])
+        ymin = min(ymin, e[1])
+        ymax = max(ymax, e[1])
                       
     paraBound = eSpacing * paraBoundary
     
@@ -534,18 +535,18 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
     
     bound = abs(xmax - xmin) * boundary
     if bound > paraBound:
-		# define world without surface
-		n11 = poly.createNode(n1.pos() - [bound, 0.])
-		n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
-		n14 = poly.createNode(n4.pos() + [bound, 0.])
-		n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
-		
-		poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-		poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
-		poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
-		poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
-		poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-		poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1)
+        # define world without surface
+        n11 = poly.createNode(n1.pos() - [bound, 0.])
+        n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
+        n14 = poly.createNode(n4.pos() + [bound, 0.])
+        n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
+        
+        poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1)
     
     poly.createEdge(n1, n2, 1)
     poly.createEdge(n2, n3, 1)
@@ -554,23 +555,30 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
     
     # define surface
     nSurface = []
-    nSurface = []
     nSurface.append(n1)
     el = nSurface[0].pos()
     for i, e in enumerate(sensors):
         if paraDX >= 0.5:
             nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))        
-            nSurface.append(poly.createNode(e + (e-el) * 0.5)) 
+            if (i < len(sensors)-1):
+                nSurface.append(poly.createNode((sensors[i+1] + e) * 0.5)) 
+            #print("Surface add ", e, el, nSurface[-2].pos(), nSurface[-1].pos())
         elif paraDX < 0.5:
-            nSurface.append(poly.createNode(e - (e-el) * paraDX)) 
-            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))        
-            nSurface.append(poly.createNode(e + (e-el) * paraDX)) 
+            if (i > 0):
+                nSurface.append(poly.createNode(e - (e - sensors[i - 1]) * paraDX)) 
+            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))     
+            if (i < len(sensors)-1):
+                nSurface.append(poly.createNode(e + (sensors[i + 1] - e) * paraDX)) 
+            #print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(), nSurface[-1].pos())
         el = e
     nSurface.append(n4)
     
     for i in range(len(nSurface)-1, 0, -1):
         poly.createEdge(nSurface[i], nSurface[i-1], pg.MARKER_BOUND_HOMOGEN_NEUMANN)
     
+    #for n in poly.nodes():
+        #print(n.pos())
+    #sys.exit()
     return poly
     
     

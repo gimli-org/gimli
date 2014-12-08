@@ -628,8 +628,9 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
     controlVolumes = CtB * mesh.cellSizes()
     
     for i in range(maxIter):
-        
+        print(i, '#')
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)    
+        print(i, '0#')
         #__d('vx', pressureGrad[:,0])
         
         velocity[:,0] = solveFiniteVolume(mesh,
@@ -639,6 +640,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                           uL=velocity[:,0],
                                           relax=velocityRelaxation, 
                                           ws=wsux)
+        print(i, '1#')
         #for s in wsux.S:
             #print(s)
         #__d('rhs', wsux.rhs, 1)
@@ -664,7 +666,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                 
         pxF = CtB * pressureGrad[:,0]
         pyF = CtB * pressureGrad[:,1]
-    
+     
         pF2 = cellDataToBoundaryGrad(mesh, pressure, pressureGrad)
 
         velXF = uxF + controlVolumes / apF * (pxF - pF2[:, 0])
@@ -673,9 +675,11 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
         applyBoundaryValues(velXF, mesh, velBoundaryX)
         applyBoundaryValues(velYF, mesh, velBoundaryY)
     
+        
+    
         if pressureCoeff is None:
             pressureCoeff = 1./ apF * mesh.boundarySizes() * boundaryToCellDistances(mesh)
-    
+                    
         div = -divergence(mesh, np.vstack([velXF, velYF]).T)
         
         pressureCorrection = solveFiniteVolume(mesh,
@@ -699,7 +703,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
             #sd
         if verbose:
             #print("\rIter: " + str(i) + " div V=" + str(divVNorm[-1]) + " " +  str(preCNorm[-1]), end='')
-            print("\r" + str(i) + " div V=" + str(divVNorm[-1]), end='')
+            print("\r" + str(i) + " div V=" + str(divVNorm[-1]))
      
         if i == maxIter or divVNorm[-1] < tol:
             break

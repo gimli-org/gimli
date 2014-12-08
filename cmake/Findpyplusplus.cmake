@@ -9,10 +9,7 @@ find_path(PYPLUSPLUS_PATH pyplusplus/__init__.py
     HINTS 
 		${EXTERNAL_DIR}
         ${PROJECT_SOURCE_DIR}/../../pyplusplus/
-        /usr/lib/python/site-packages/
-        /usr/lib/python2.7/site-packages/
-        /usr/lib/python/site-packages/
-        /usr/lib64/python2.7/site-packages/
+    NO_DEFAULT_PATH
 )
 
 if (PYPLUSPLUS_PATH)

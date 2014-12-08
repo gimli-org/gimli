@@ -9,7 +9,7 @@ from .overlayimage import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-def showLater(val):
+def showLater(val=1):
     import matplotlib.pyplot as plt
     if val==1:
         plt.ion()

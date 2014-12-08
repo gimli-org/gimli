@@ -292,11 +292,15 @@ public:
 //             throwLengthError(1, WHERE_AM_I + " row bounds out of range " +
 //                                 toStr(i) + " " + toStr(this->rows())) ;
 //         }
+//          
         return mat_[i];
     }
 
     /*! Read only C style index operator, without boundary check. */
-    const Vector< ValueType > & operator [] (Index i) const { return mat_[i]; }
+    const Vector< ValueType > & operator [] (Index i) const { 
+//         __MS(this << " " << &mat_[i] << " " << mat_[i].size() )
+        return mat_[i];
+    }
 
     /*! Implicite type converter. */
     template < class T > operator Matrix< T >(){
@@ -460,8 +464,13 @@ public:
 protected:
 
     void allocate_(Index rows, Index cols){
+//         __MS(rows << " " << cols)
         if (mat_.size() != rows) mat_.resize(rows);
-        for (Index i = 0; i < mat_.size(); i ++) mat_[i].resize(cols);
+        for (Index i = 0; i < mat_.size(); i ++) {
+//             __MS(this << " " << &mat_[i] << " "<< cols)
+            mat_[i].resize(cols);
+//             __MS(&mat_[i] << " " <<mat_[i].size())
+        }
         rowFlag_.resize(rows);
     }
 
