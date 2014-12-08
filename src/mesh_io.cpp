@@ -40,8 +40,8 @@ void Mesh::load(const std::string & fbody, IOFormat format){
         try {
              return loadBinary(fbody);
         } catch(std::exception & e){
-            std::cout << "Failed to loadBinary " << e.what() << std::endl;
-            std::cout << "try load bms.v2" << std::endl;
+            //std::cout << "Failed to loadBinary " << e.what() << std::endl;
+            //std::cout << "try load bms.v2" << std::endl;
             loadBinaryV2(fbody);
         }
     } else {

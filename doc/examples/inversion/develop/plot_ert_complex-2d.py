@@ -25,7 +25,7 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
         """
         res = pb.getComplexData(self.data())
         re = pg.RVector(self.regionManager().parameterCount(), pg.mean(pg.real(res)))
-        im = pg.RVector(self.regionManager().parameterCount(), pg.mean(pg.imag(res)))
+        im = pg.RVector(self.regionManager().parameterCount(), -pg.mean(pg.imag(res)))
         return pg.cat(re, im)
         
     def createJacobian(self, model):
@@ -53,7 +53,7 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
                                 
                 self._J.addMatrixEntry(JRe, 0, 0)
                 self._J.addMatrixEntry(JIm, 0, len(modelRe), -1.0)
-                self._J.addMatrixEntry(JIm, self.data().size(), 0)
+                self._J.addMatrixEntry(JIm, self.data().size(), 0, 1.0)
                 self._J.addMatrixEntry(JRe, self.data().size(), len(modelRe))
                 
             else:
@@ -173,6 +173,7 @@ inv = pg.RInversion(pg.cat(mag, phi),
                     fop,
                     verbose=True, dosave=True)
 
+
 dataTrans = pg.RTransCumulative()
 datRe = pg.RTransLog()
 datIm = pg.RTrans()
@@ -180,16 +181,19 @@ dataTrans.add(datRe, data.size())
 dataTrans.add(datIm, data.size())
 
 modRe = pg.RTransLog()
-modIm = pg.RTrans()
+modIm = pg.RTransLog()
 modelTrans = pg.RTransCumulative()
 modelTrans.add(modRe, fop.regionManager().parameterCount())
 modelTrans.add(modIm, fop.regionManager().parameterCount())
 
 inv.setTransData(dataTrans)
 inv.setTransModel(modelTrans)
-inv.setError(pg.cat(data("err"), data("err")))
+inv.setAbsoluteError(pg.cat(data("err")*mag, mag*phi*10.01))
 inv.setLambda(5)
 inv.setMaxIter(5)
+
+#inv.setCWeight(pg.cat(pg.RVector(503, 1.0),
+                      #pg.RVector(503, 100.0)))
 
 model = inv.run()
 jacRe = fop.jacobian()[0]
@@ -205,14 +209,14 @@ ax1 = fig.add_subplot(2, 2, 1)
 ax2 = fig.add_subplot(2, 2, 2)
 ax3 = fig.add_subplot(2, 2, 3)
 ax4 = fig.add_subplot(2, 2, 4)
-pg.show(modelMesh, jacRe[0:len(jacRe)/2], colorBar=1, axes=ax1)
-ax1.set_title("jac real/real")
-pg.show(modelMesh, jacRe[len(jacRe)/2:len(jacRe)], colorBar=1, axes=ax2)
-ax2.set_title("jac real/imag")
-pg.show(modelMesh, jacIm[0:len(jacIm)/2], colorBar=1, axes=ax3)
-ax3.set_title("jac imag/real")
-pg.show(modelMesh, jacIm[len(jacIm)/2:len(jacIm)], colorBar=1, axes=ax4)
-ax4.set_title("jac imag/imag")
+#pg.show(modelMesh, jacRe[0:len(jacRe)/2], colorBar=1, axes=ax1)
+#ax1.set_title("jac real/real")
+#pg.show(modelMesh, jacRe[len(jacRe)/2:len(jacRe)], colorBar=1, axes=ax2)
+#ax2.set_title("jac real/imag")
+#pg.show(modelMesh, jacIm[0:len(jacIm)/2], colorBar=1, axes=ax3)
+#ax3.set_title("jac imag/real")
+#pg.show(modelMesh, jacIm[len(jacIm)/2:len(jacIm)], colorBar=1, axes=ax4)
+#ax4.set_title("jac imag/imag")
 
 
 ax, cbar = pg.show(modelMesh, model[0:len(model)/2], colorBar=1)

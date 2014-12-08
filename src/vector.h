@@ -575,7 +575,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     inline Vector < ValueType > operator - () const { return *this * -1.0; }
 
     /*! Resize if n differs size() and fill new with val. Old data are preserved. */
-    void resize(Index n, ValueType val = 0){
+    void resize(Index n, ValueType val=0){
         if (n != size_) {
             Vector < ValueType > tmp(*this);
             free_();

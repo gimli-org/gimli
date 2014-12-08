@@ -9,9 +9,7 @@ find_path(PYGCCXML_PATH pygccxml/__init__.py
     HINTS 
 		${EXTERNAL_DIR}
         ${PROJECT_SOURCE_DIR}/../../pygccxml/
-        /usr/lib/python2.7/site-packages/
-        /usr/lib/python/site-packages/
-        /usr/lib64/python2.7/site-packages/
+    NO_DEFAULT_PATH
 )
 
 if (PYGCCXML_PATH)

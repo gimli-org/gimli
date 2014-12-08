@@ -36,7 +36,7 @@ def get_rhoa( snd, cal=260e-9, corrramp=True ):
     if min(v) < 0.0: # negative values: stop at first
         istop = np.argmax( v[20:] < 0.0 ) + 20
 
-    print istart, istop
+    print(istart, istop)
     v = v[istart:istop]
     if 'ST_DEV' in snd:
         dv = snd['ST_DEV'][istart:istop] #/ snd['CURRENT']
@@ -260,4 +260,4 @@ class TDEMData():
 
     
 if __name__ == '__main__':
-    print "print do some tests here"
+    print("print do some tests here")

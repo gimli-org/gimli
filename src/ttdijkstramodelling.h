@@ -38,22 +38,22 @@ class DLLEXPORT Dijkstra {
 public:
     Dijkstra(){}
 
-    Dijkstra(const Graph & graph );
+    Dijkstra(const Graph & graph);
 
     ~Dijkstra(){}
 
-    void setGraph(const Graph & graph );
+    void setGraph(const Graph & graph);
 
-    void setStartNode(uint startNode );
+    void setStartNode(uint startNode);
 
-    std::vector < uint > shortestPathTo(uint node ) const;
+    std::vector < uint > shortestPathTo(uint node) const;
 
-    inline double distance(int node ) { return distances_[ node ]; }
+    inline double distance(int node) { return distances_[node]; }
 
     class edge_ : std::pair< int, int > {
     public:
-        edge_() : start(0 ), end(0 ) {}
-        edge_(int a, int b ) : start(a ), end(b ) {}
+        edge_() : start(0), end(0) {}
+        edge_(int a, int b) : start(a), end(b) {}
         int start;
         int end;
     };
@@ -61,8 +61,8 @@ public:
     /*! Definition for the priority queue */
     class distancePair_ : std::pair< float, edge_ > { // weigth, vertex;
     public:
-        distancePair_() : first(0.0 ) {}
-        distancePair_(double f, edge_ & s ) : first(f ), second(s ) {}
+        distancePair_() : first(0.0) {}
+        distancePair_(double f, edge_ & s) : first(f), second(s) {}
 
         double first;
         edge_ second;
@@ -83,10 +83,12 @@ protected:
 };
 
 //! Modelling class for travel time problems using the Dijkstra algorithm
-/*! TravelTimeDijkstraModelling(mesh, datacontainer ) */
+/*! TravelTimeDijkstraModelling(mesh, datacontainer) */
 class DLLEXPORT TravelTimeDijkstraModelling : public ModellingBase {
 public:
-    TravelTimeDijkstraModelling(Mesh & mesh, DataContainer & dataContainer, bool verbose = false );
+    TravelTimeDijkstraModelling(Mesh & mesh,
+                                DataContainer & dataContainer,
+                                bool verbose=false);
 
     virtual ~TravelTimeDijkstraModelling() { }
 
@@ -95,10 +97,10 @@ public:
     RVector createGradientModel(double lBound, double uBound);
     
     /*! Interface. Calculate response */
-    virtual RVector response(const RVector & slowness );
+    virtual RVector response(const RVector & slowness);
 
     /*! Interface. */
-    virtual void createJacobian(const RVector & slowness );
+    virtual void createJacobian(const RVector & slowness);
 
     /*! Interface. */
     virtual void initJacobian();
@@ -138,17 +140,17 @@ protected:
 /*! New Class derived from standard travel time modelling */
 class DLLEXPORT TTModellingWithOffset: public TravelTimeDijkstraModelling{
 public:
-    TTModellingWithOffset(Mesh & mesh, DataContainer & dataContainer, bool verbose );
+    TTModellingWithOffset(Mesh & mesh, DataContainer & dataContainer, bool verbose);
 
     virtual ~TTModellingWithOffset();
 
     virtual RVector createDefaultStartModel();
 
-    virtual RVector response(const RVector & model );
+    virtual RVector response(const RVector & model);
 
     void initJacobian();
 
-    virtual void createJacobian(const RVector & slowness );
+    virtual void createJacobian(const RVector & slowness);
 
     size_t nShots(){ return shots_.size(); }
 

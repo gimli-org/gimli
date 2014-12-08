@@ -514,10 +514,15 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None,
         else:
             gci.set_cmap(cmap)
 
+
+    
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
 
+    if gci and cMin and cMax:
+        gci.set_clim(cMin, cMax)
+        
     return gci
 
 
@@ -528,7 +533,12 @@ def drawField(axes, mesh, data=None, filled=True, omitLines=False, cmap=None,
 
         Only for triangle/quadrangle meshes currently
     """
-    return drawMPLTri(axes, mesh, data, cmap=cmap, *args, **kwargs)
+    cMin = kwargs.pop('cMin', None)
+    cMax = kwargs.pop('cMax', None)
+    
+    return drawMPLTri(axes, mesh, data, cMin=cMin, cMax=cMax,
+                      filled=filled, omitLines=omitLines,
+                      cmap=cmap, *args, **kwargs)
 
 
 def drawStreamCircular(axes, mesh, u, pos, rad,

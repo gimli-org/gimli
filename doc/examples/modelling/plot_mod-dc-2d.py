@@ -133,7 +133,9 @@ of the solution.
 """
 
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, .0, 20))
+
 drawStreamLines2(ax, grid, u, coarseMesh=gridCoarse, color='Black')
+#pg.show(gridCoarse,  axes=ax)
 
 """
 .. image:: PLOT2RST.current_figure

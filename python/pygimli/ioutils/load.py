@@ -57,7 +57,8 @@ def load(fname, verbose=False):
     for routine in import_routines.values():
         try:
             return routine(fname)
-        except:
+        except Exception as e:
+            #print(e)
             pass
 
-    raise Exception("File type of %s is unknown and could not be imported." % fname)
+    raise Exception("File type of %s is unknown or file does not exist and could not be imported." % fname)
