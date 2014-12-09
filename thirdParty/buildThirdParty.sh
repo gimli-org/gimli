@@ -538,7 +538,7 @@ buildSUITESPARSE(){
 			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
 			echo "CC = gcc" >> SuiteSparse_config/SuiteSparse_config.mk
 			echo "BLAS = -L$TRIANGLE_DIST -lblas" >> SuiteSparse_config/SuiteSparse_config.mk
-		elif [ "$(OSTYPE)" == "darwin13" ]; then
+		elif [ "$OSTYPE" == "darwin13" ]; then
 			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
 			echo "CC = gcc -fPIC" >> SuiteSparse_config/SuiteSparse_config.mk
 		else 
