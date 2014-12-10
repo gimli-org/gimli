@@ -64,3 +64,6 @@ add_custom_target(sphinx
 #add_dependencies(sphinx doxygen)
 add_dependencies(sphinx sphinx_check_sources)
 
+add_custom_target(doc)
+add_dependencies(doc doxygen)
+add_dependencies(doc sphinx)
