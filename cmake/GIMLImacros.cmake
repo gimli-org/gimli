@@ -13,7 +13,6 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     include_directories(BEFORE ${SOURCE_DIR})
     include_directories(${PYTHON_INCLUDE_DIR})
-    include_directories(${PY_NUMPY}/core/include/)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
