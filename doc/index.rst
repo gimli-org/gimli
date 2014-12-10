@@ -18,7 +18,7 @@
         credits.rst
         doc_todo.rst
         glossary.rst
-        license.rst
+        ../COPYING.rst
         publist.rst
         rst_basics.rst
 

@@ -21,7 +21,8 @@ import pygimli as pg
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.append(os.path.abspath('./_sphinx-ext'))
+sys.path.append(os.path.abspath('@SPHINX_SRC_DIR@/doc/_sphinx-ext'))
+#SPHINX_CACHE_DIR
 
 # -- General configuration -----------------------------------------------------
 
@@ -63,12 +64,16 @@ extensions = ['sphinx.ext.autodoc',
 
 extensions += [dep.replace('-','.') for dep in deps]
 
-plot2rst_paths = [('doc/tutorials', 'doc/_tutorials_auto'),
-                  ('doc/examples', 'doc/_examples_auto')
+plot2rst_paths = [('@SPHINX_SRC_DIR@/doc/tutorials', '@SPHINX_BINARY_BUILD_DIR@/doc/_tutorials_auto'),
+                  ('@SPHINX_SRC_DIR@/doc/examples', '@SPHINX_BINARY_BUILD_DIR@/doc/_examples_auto')
                   ]
 
+#plot2rst_paths = [('@SPHINX_SRC_DIR@/doc/tutorials', '@SPHINX_SRC_DIR@/_tutorials_auto'),
+                  #('@SPHINX_SRC_DIR@/doc/examples', '@SPHINX_SRC_DIR@/_examples_auto')
+                  #]
+
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['@SPHINX_SRC_DIR@/doc/_templates']
 
 numpydoc_show_class_members = False
 
@@ -108,9 +113,14 @@ release = release.replace('_', '\\_')
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['doc/_build', 'doc/_sphinx-ext', 'doc/_templates',
-                    'doc/examples', 'doc/tutorials', 'doc/tutorial',
-                    'python/pygimli/gui']
+exclude_patterns = ['doc/_build', 
+                    'doc/_sphinx-ext',
+                    'doc/_templates',
+                    'doc/tmp',
+                    'doc/examples',
+                    'doc/tutorials',
+                    'doc/tutorial',
+                    './python/pygimli/gui']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -136,7 +146,7 @@ pygments_style = 'default'
 # -- Options for HTML output ---------------------------------------------------
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['_themes']
+html_theme_path = ['@SPHINX_SRC_DIR@/doc/_themes']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -163,7 +173,7 @@ html_short_title = "GIMLi"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = '_static/G.ico'
+html_favicon = '@SPHINX_SRC_DIR@/doc/_static/G.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -243,7 +253,7 @@ html_additional_pages = {'index': 'index.html'}
 
 from os import environ, path
 
-extradir = path.abspath( '_static' ).replace('\\','/')
+extradir = path.abspath('@SPHINX_SRC_DIR@/doc/_static').replace('\\','/')
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -262,9 +272,9 @@ latex_elements = {
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-    ('doc/index', 'gimli.tex', 'GIMLi Documentation', 'Carsten Rücker and Thomas Günther', 'manual'),
-]
+latex_documents = [('doc/index', 'gimli.tex', 'GIMLi Documentation',
+                    'Carsten Rücker and Thomas Günther', 'manual')
+                  ]
 
 try:
     pngmath_latex_preamble  # check whether this is already defined
@@ -279,9 +289,9 @@ pngmath_latex_preamble = '\
 
 #latex.add_macro("\\newcommand{\\arr}[1]{\\ensuremath{\\textbf{#1}}}")
 
-_mathpng_tempdir = './mathtmp'
+_mathpng_tempdir = '@DOXYGEN_BUILD_DIR@/mathtmp'
 
-latex_additional_macros = open('./_static/mylatex-commands.sty')
+latex_additional_macros = open('@SPHINX_SRC_DIR@/doc/_static/mylatex-commands.sty')
 
 mathjax_latex_preamble=""
 
@@ -360,7 +370,7 @@ texinfo_show_urls = 'footnote'
 import pkg_resources
 
 # temporary disable due to python3 pybtex quirks
-for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
+for dist in pkg_resources.find_distributions("@SPHINX_SRC_DIR@/doc/_templates/pybtex_plugins/"):
     pkg_resources.working_set.add(dist)
 
 
@@ -368,7 +378,7 @@ for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
 
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-    'gimliapi' : ('doxygen/gimli.tag', 'doxygen/html/')
+    'gimliapi' : ('@DOXYGEN_BUILD_DIR@/gimli.tag', '@DOXYGEN_BUILD_DIR@/html/')
 }
 
 # TEMP: Show TODOS while building documentation

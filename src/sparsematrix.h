@@ -555,7 +555,8 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMap
 
 /*! Scales a matrix A from left and right vectors such that A -> diag(l) * A * diag(r) */
 template< class Vec >
-void scaleMatrix (SparseMapMatrix< double, Index > & S, const Vec & l, const Vec & r) {
+void scaleMatrix (SparseMapMatrix< double, Index > & S, 
+                  const Vec & l, const Vec & r) {
 
     if (S.cols() != r.size())
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
@@ -597,6 +598,8 @@ void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec
 // }
 
 //! Sparse matrix in compressed column storage (CCS) form
+/*! Sparse matrix in compressed column storage (CCS) form.
+* Symmetry type: 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
 template < class ValueType > class SparseMatrix : public MatrixBase{
 public:
 

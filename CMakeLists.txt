@@ -163,8 +163,6 @@ if (CPPUNIT_FOUND)
     option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
 endif (CPPUNIT_FOUND)
 
-find_package(Doxygen)
-
 IF(WIN32)
 	set(READPROC_FOUND FALSE)
 ELSE(WIN32)
@@ -216,20 +214,26 @@ Check above for python, gccxml, pygccxml, pyplusplus, boost_python, numpy")
     
 endif ()
 
-configure_file ("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
-configure_file( doc/doxygen/doxyfile.in doc/doxygen/doxyfile )
-
+configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
 
-if (DOXYGEN_FOUND)
-    add_custom_target(html
-        "${DOXYGEN_EXECUTABLE}"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen"
-        COMMENT "Generating documentation" VERBATIM)
+find_package(Doxygen)
+
+find_package(Sphinx 1.2.0)
+if (SPHINX_FOUND)
+    add_subdirectory(doc EXCLUDE_FROM_ALL)
+    file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
+    file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
+    list(APPEND DOCFILES ${BIBFILES})
+    set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
+
+#     message(${RSTFILES})
+#     foreach(file ${RSTFILES})
+#         message(${file})
+#     endforeach()
+
 endif()
 
-# 
-# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config1.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 ################################################################################
 # Define the configurable options
@@ -320,7 +324,7 @@ export(TARGETS gimli
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "GIMLi")
 set(CPACK_PACKAGE_VENDOR ${PACKAGE_AUTHORS})
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.rst")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING.rst")
 set(CPACK_PACKAGE_VERSION_MAJOR "${GIMLI_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${GIMLI_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${GIMLI_VERSION_PATCH}")

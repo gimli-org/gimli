@@ -68,7 +68,7 @@ void Dijkstra::setStartNode(uint startNode) {
 
         if (distances_.count(node) == 0) {
             distances_[node] = distance;
-            if (pathMatrix_.size() <= node){
+            if ((int)pathMatrix_.size() <= node){
                 throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
             }
             pathMatrix_[node] = edge_(dummy.second);

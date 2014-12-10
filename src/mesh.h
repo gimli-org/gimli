@@ -326,7 +326,7 @@ public:
     Cell * findCell(const RVector3 & pos, size_t & counter, bool extensive) const ;
 
     /*! Shortcut for \ref findCell(const RVector3 & pos, size_t & counter, bool extensive) */
-    Cell * findCell(const RVector3 & pos, bool extensive = true) const {
+    Cell * findCell(const RVector3 & pos, bool extensive=true) const {
         size_t counter; return findCell(pos, counter, extensive); }
 
     /*! Return the index to the node of this mesh with the smallest distance to pos. */

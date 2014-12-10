@@ -125,19 +125,11 @@ for n in range(1,len(times)):
                  #uBoundary=dirichletBC)
 plt.plot(times, u[:, probeID], label='Implicit Euler')
 
-
-"""
-
-
-"""
 u = solver.solvePoisson(grid, times=times, theta=0.5,
                  u0=lambda r: np.sin(np.pi * r[0]),
                  uBoundary=dirichletBC)
 plt.plot(times, u[:, probeID], label='Crank-Nicolson')
 
-"""
-
-"""
 plt.xlabel("t[s] at x = " + str(round(grid.node(probeID).pos()[0],2)))
 plt.ylabel("u")
 plt.ylim(0.0, 1.0)
@@ -145,11 +137,11 @@ plt.xlim(0.0, 0.5)
 plt.legend()
 plt.grid()
 
-plt.show()
-
 """
 .. image:: PLOT2RST.current_figure
     :scale: 75
 
-Explicit Euler scheme is unstable at hight times.
+Explicit Euler scheme is unstable at higher times.
 """
+
+plt.show()

@@ -56,7 +56,6 @@ CHOLMODWrapper::CHOLMODWrapper(CSparseMatrix & S, bool verbose, int stype)
 
 CHOLMODWrapper::~CHOLMODWrapper(){
 #if USE_CHOLMOD
-
     if (L_) cholmod_free_factor((cholmod_factor**)(&L_), (cholmod_common*)c_);
 //     ** We did not allocate the matrix so we dont need to free it
 //      cholmod_free_sparse(&A_, c_);
@@ -110,6 +109,7 @@ template < class ValueType >
 int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
     if (!dummy_){
 #if USE_CHOLMOD
+
         A_ = new cholmod_sparse;
         ((cholmod_sparse*)A_)->nrow  = S.nRows();         /* number of rows */
         ((cholmod_sparse*)A_)->ncol  = S.nCols();           /* number of columns */
@@ -135,6 +135,7 @@ int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
 }
     
 int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
+    
     if (!dummy_){
         // check for non-hermetian 
         if (S.stype() == 0){ //  matrix is symmetric
@@ -194,6 +195,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 int CHOLMODWrapper::factorise(){
     if (!dummy_){
 #if USE_CHOLMOD
+
         if (verbose_) cholmod_print_sparse((cholmod_sparse *)A_, "A", (cholmod_common*)c_);
 
         L_ = cholmod_analyze((cholmod_sparse*)A_,
@@ -213,36 +215,41 @@ int CHOLMODWrapper::factorise(){
 }
 
 template < class ValueType > 
-    int CHOLMODWrapper::solveCHOL_(const Vector < ValueType > & rhs, Vector < ValueType > & solution){
+    int CHOLMODWrapper::solveCHOL_(const Vector < ValueType > & rhs, 
+                                   Vector < ValueType > & solution){
     if (!dummy_){
 #if USE_CHOLMOD
-    
-        cholmod_dense * b = cholmod_ones(((cholmod_sparse*)A_)->nrow, 1, 
-                                        ((cholmod_sparse*)A_)->xtype,
-                                        (cholmod_common*)c_);
-        cholmod_dense * r = cholmod_zeros(((cholmod_sparse*)A_)->nrow, 1,
-                                        ((cholmod_sparse*)A_)->xtype,
-                                        (cholmod_common*)c_);
+        cholmod_dense * b = cholmod_zeros(((cholmod_sparse*)A_)->nrow,
+                                         1, 
+                                         ((cholmod_sparse*)A_)->xtype,
+                                         (cholmod_common*)c_);
+        cholmod_dense * r = cholmod_zeros(((cholmod_sparse*)A_)->nrow,
+                                          1,
+                                          ((cholmod_sparse*)A_)->xtype,
+                                          (cholmod_common*)c_);
+
         ValueType * bx = (ValueType*)b->x;
         for (uint i = 0; i < dim_; i++) bx[i] = rhs[i];
 
         cholmod_dense * x = cholmod_solve(CHOLMOD_A, 
-                                        (cholmod_factor *)L_,
-                                        b,
-                                        (cholmod_common*)c_);       /* solve Ax=b */
-    
+                                          (cholmod_factor *)L_,
+                                          b,
+                                          (cholmod_common *)c_);       /* solve Ax=b */
+   
         if (((cholmod_sparse*)A_)->stype == 0){
-            double al[2] = {0,0}, be[2] = {1,0} ;       /* basic scalars */
+            double al[2] = {0,0}, be[2] = {1,0};       /* basic scalars */
+//             __M
             cholmod_sdmult((cholmod_sparse*)A_, 0, be, al, x, r, (cholmod_common*)c_);       
+//             __M
             bx = (ValueType *)r->x; /* ret = Ax */
             for (uint i = 0; i < dim_; i++) solution[i] = conj(bx[i]);
         } else {
             bx = (ValueType *)x->x; /* ret = x */
             for (uint i = 0; i < dim_; i++) solution[i] = bx[i];
         }
-    
-        cholmod_free_dense(&r, (cholmod_common*)c_);
+
         cholmod_free_dense(&x, (cholmod_common*)c_);
+        cholmod_free_dense(&r, (cholmod_common*)c_);
         cholmod_free_dense(&b, (cholmod_common*)c_);
     return 1;
 #else
