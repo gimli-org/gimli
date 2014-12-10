@@ -60,6 +60,7 @@ add_dependencies(pygimli pgbuild)
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
+include_directories(${PY_NUMPY}/core/include/)
 
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
 
