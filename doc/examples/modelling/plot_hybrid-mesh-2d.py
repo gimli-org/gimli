@@ -94,9 +94,10 @@ Of course, you can treat the hybrid mesh like any other mesh and append a triang
 boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
 """
 
-
 mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31, smooth=True, marker=3, isSubSurface=True)
-showMesh(mesh, mesh.cellMarker(), cmap="summer", label="Region marker")
+ax, cbar = showMesh(mesh, mesh.cellMarker(), cmap="summer", label="Region marker", showLater=True)
+drawMesh(ax, mesh)
+
 ax, _ = showMesh(mesh, mesh.cellMarker(), showLater=True, logScale=False, label="Region marker")
 drawMesh(ax, mesh)
 plt.xlim(40,60)

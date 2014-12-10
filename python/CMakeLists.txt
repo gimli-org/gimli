@@ -32,7 +32,10 @@ ADD_CUSTOM_COMMAND(
         pgbuild
    )
 
-file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/generated/dummy.cpp "")
+find_file (HAVE_DUMMY dummy.cpp PATHS ${CMAKE_CURRENT_BINARY_DIR}/generated/)
+if (NOT HAVE_DUMMY)
+    file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/generated/dummy.cpp "")
+endif()
 
 
 # if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)

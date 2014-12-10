@@ -42,6 +42,7 @@ public:
         GIMLI::Vector < ValueType > b(S.rows(), ValueType(1));
         GIMLI::Vector < ValueType > x(S.rows());
         solver.solve(b, x);
+        solver.solve(b, x);
         
 //         std::cout << b - S * x << std::endl;
 //         std::cout << GIMLI::Vector < ValueType >(b - S * x)<< std::endl;

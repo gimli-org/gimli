@@ -19,7 +19,7 @@ from pygimli.solver import solvePoisson
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawMesh, drawStreamLines
 
-grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 50), y=np.linspace(-1.0, 1.0, 50))
+grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21), y=np.linspace(-1.0, 1.0, 21))
 
 """
 We start considering inhomogeneous Dichlet boundary conditions (BC).

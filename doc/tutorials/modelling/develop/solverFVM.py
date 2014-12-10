@@ -314,7 +314,7 @@ def diffusionConvectionKernel(mesh, a, f, uDirBounds=[], fn=None, v=0, u0=0,
         dof = mesh.cellCount() + len(uDirBounds)
 
     if sparse:
-        S = pg.RSparseMapMatrix(dof, dof)
+        S = pg.RSparseMapMatrix(dof, dof, 0)
     else:
         S = np.zeros((dof, dof))
             
@@ -431,11 +431,15 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
                     boundsDirichlet[b.id()] = val
  
         #print('##########')
-        workspace.S, workspace.rhsBCScales = diffusionConvectionKernel(mesh=mesh, a=a, f=f,
-                                           uDirBounds=boundsDirichlet,
-                                           u0=u0,
-                                           fn=fn,
-                                           v=v, scheme=scheme, sparse=sparse)
+        workspace.S, workspace.rhsBCScales = diffusionConvectionKernel(mesh=mesh,
+                                                                       a=a,
+                                                                       f=f,
+                                                                       uDirBounds=boundsDirichlet,
+                                                                       u0=u0,
+                                                                       fn=fn,
+                                                                       v=v,
+                                                                       scheme=scheme,
+                                                                       sparse=sparse)
         dof = len(workspace.rhsBCScales)
         
         workspace.uDir = np.zeros(dof)
@@ -449,7 +453,7 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
         
         workspace.ap = np.zeros(dof)
     
-        #print('FVM: WS:', swatch.duration(True))
+        print('FVM: WS:', swatch.duration(True))
         # for nonlinears
         
         if uL is not None:
@@ -473,7 +477,8 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
         #print('FVM: Fact:', swatch.duration(True))
         #solver.showSparseMatrix(pg.RSparseMatrix(AMM)) 
     #workspace.rhs = rhs
-
+    
+    # ... if not hasattr(workspace, 'S'):
 
     workspace.rhs = np.zeros(len(workspace.rhsBCScales))
     workspace.rhs[0:mesh.cellCount()] = f * mesh.cellSizes()
@@ -490,16 +495,20 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
     
     if uL is not None:
         workspace.rhs += (1. - relax) * workspace.ap * uL
-    #print('FVM: Prep:', swatch.duration(True))
+    print('FVM: Prep:', swatch.duration(True))
     
     if not hasattr(times, '__len__'):
         
+        print('#'*100)
         u = None
         if sparse:
+            print('-'*100)
             u = workspace.solver.solve(workspace.rhs)
         else:
+            print('+'*100)
             u = np.linalg.solve(workspace.S, workspace.rhs)
         
+        print('#'*100)
         #u = workspace.solver.solve(workspace.rhs)
         #del workspace.S
         #print('FVM: solve:', swatch.duration(True))

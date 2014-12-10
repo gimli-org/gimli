@@ -88,7 +88,7 @@ def pointSource(cell, f, userData):
 
 """
 
-grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 50), y=np.linspace(-15.0, .0, 50))
+grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21), y=np.linspace(-15.0, .0, 16))
 
 #grid = grid.createH2()
 grid = grid.createP2()

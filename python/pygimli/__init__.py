@@ -48,8 +48,6 @@ try:
 except:
     print('cannot set locale to decimal point')
 
-
-print (_pygimli_)
 ############################
 ###  Global shortcutes #####
 _pygimli_.load = None

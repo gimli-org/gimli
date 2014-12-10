@@ -50,22 +50,6 @@ public:
     RVector solve(const RVector & rhs);
     CVector solve(const CVector & rhs);
 
-    
-//     template < class ValueType > void solve(const Vector < ValueType > & rhs,
-//                                             Vector < ValueType > & solution){
-//         solution.resize(rows_);
-//         if (rhs.size() != cols_){
-//             std::cerr << WHERE_AM_I << " rhs size mismatch: " << cols_ << "  " << rhs.size() << std::endl;
-//         }
-//         if (solver_) solver_->solve(rhs, solution);
-//     }
-// 
-//     template < class ValueType > Vector < ValueType > solve(const Vector < ValueType > & rhs){
-//         Vector < ValueType > solution(rhs.size());
-//         if (solver_) solver_->solve(rhs, solution);
-//         return solution;
-//     }
-
     void setSolverType(SolverType solverType = AUTOMATIC);
   
     /*! Forwarded to the wrapper to overwrite settings within S. stype =-2 -> use S.stype()*/
