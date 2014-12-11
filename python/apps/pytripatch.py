@@ -167,13 +167,13 @@ def showTriMesh(meshname, modelname, contour = False, constraintMat = None, cWei
                                                     #linewidth = 2.0)
 
     m = mesh.findBoundaryByMarker(1)
-    print("boundary > 2 ", len(m))
+    print("boundary > 2 " , len(m))
     if len(m) > 0:
         pass
-        #pg.mplviewer.drawSelectedMeshBoundaries(axis, 
-                                                #filter(lambda b: b.marker() == 1, mesh.boundaries()),
-                                                #color=(0, 0.0, 0.0, 1.0),
-                                                #linewidth=2.0)
+        pg.mplviewer.drawSelectedMeshBoundaries(axis, 
+                                                filter(lambda b: b.marker() == 1, mesh.boundaries()),
+                                                color=(0, 0.0, 0.0, 1.0),
+                                                linewidth=2.0)
     if drawEdges:
         pg.mplviewer.drawMeshBoundaries(axis, mesh)
 
@@ -333,7 +333,7 @@ def showConstrainMat(axes, mesh, constraintMat, cWeight = None ):
 
 
 
-def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None, linear = False):
+def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None, linear = False, cmapName='jet'):
     withCoverageOverlayImage = True
     swatch = pg.Stopwatch(True)
     Nx = 200
@@ -377,16 +377,12 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
     levs[0] = levs[0]* 0.999
     levs[len(levs)-1] = levs[len(levs)-1]* 1.001
 
-    cmap = mpl.cm.get_cmap(name='jet');
+    cmap = mpl.cm.get_cmap(name=cmapName)
 
     cmap.set_over(color='#001111', alpha=0.5)
     cmap.set_under(color=(1.0, 1.0, 0.0), alpha=0.5)
 
-    cs = axis.contourf(X, Y, Z
-                                , levs
-                                , cmap = cmap
-                                #, norm   = mpl.colors.LogNorm()
-                       )
+    cs = axis.contourf(X, Y, Z, levs, cmap=cmap) #, norm   = mpl.colors.LogNorm()
     cs.set_clim(cMin, cMax)
 
     if __verbose__:
@@ -395,7 +391,7 @@ def showMeshInterpolated(axis, mesh, data, cov = None, cMin = None, cMax = None,
     if cov:
         addCoverageImageOverlay(axis, mesh, cov)
 
-    pg.mplviewer.createColorbar(cs, cMin = cMin, cMax = cMax, nLevs = 5)
+    pg.mplviewer.createColorbar(cs, cMin=cMin, cMax=cMax, nLevs=5)
     return cs
 
 
@@ -727,21 +723,20 @@ def main(argv):
         if (fileExtension == '.svg'):
             plt.savefig(options.outFileName, transparent=True)
         elif (fileExtension == '.pdf'):
-            if options.datafile.rfind('.bmat') != -1:
-                from matplotlib.backends.backend_pdf import PdfPages
-                import numpy as N
+            if (options.datafile) and (options.datafile.rfind('.bmat') != -1):
+                from matplotlib.backends.backend_pdf import PdfPages # not really PEP-8 conform
 
                 A = pg.RMatrix(options.datafile)
                 pdf = PdfPages(options.outFileName)
                 for i, a in enumerate(A):
                     print("\rWriting multipage pdf %d/%d" % (i+1,len(A)), end=' ')
-                    patches.set_array(N.asarray(a)) # necessary due to non existing functin .ndim
+                    patches.set_array(np.asarray(a)) # necessary due to non existing functin .ndim
                     fig.savefig(pdf, format='pdf', bbox_inches='tight')
 
                 pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'
                 pdf.infodict()['Author'] = 'BERT@resistivity.net'
                 pdf.close()
-                patches.set_array(N.asarray(A[0])) # show original
+                patches.set_array(np.asarray(A[0])) # show original
             else:
                 plt.savefig(options.outFileName, bbox_inches='tight')
         elif (fileExtension == '.png'):

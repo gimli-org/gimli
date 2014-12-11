@@ -150,22 +150,22 @@ class Refraction():
         plt.show(block=False)
 
     def createFOP(self):  # type Dijkstra
-        if not hasattr(self,'mesh'): # self.mesh is None:
+        if not hasattr(self, 'mesh'):  # self.mesh is None:
             self.makeMesh()
         self.f = pg.TravelTimeDijkstraModelling(self.mesh, self.data, True)
         self.f.regionManager().setConstraintType(1)
         self.f.createRefinedForwardMesh(True)
-        self.pd = self.f.regionManager().paraDomain() # no idea why needed
+        self.pd = self.f.regionManager().paraDomain()  # no idea why needed
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
-        if relativeError > 1: # obviously in %
+        if relativeError > 1:  # obviously in %
             relativeError /= 100.
         self.error = absoluteError / self.data('t') + relativeError
         if hasattr(self, 'INV'):  # self.INV is not None:
             self.INV.setRelativeError(self.error)
 
     def createInv(self):
-        if not hasattr(self,'f'):
+        if not hasattr(self, 'f'):
             self.createFOP()
         if not hasattr(self, 'error'):
             self.estimateError()
@@ -178,7 +178,7 @@ class Refraction():
         self.INV.setRelativeError(self.error)
 
     def run(self, vtop=500., vbottom=5000., zweight=0.3, lam=30.):
-        if not hasattr(self,'INV'):  # self.f is None:
+        if not hasattr(self, 'INV'):  # self.f is None:
             self.createInv()
 
         self.start = createGradientModel2D(ra.data, ra.mesh, vtop, vbottom)
@@ -198,8 +198,8 @@ class Refraction():
             cbar = createColorbar(gci, *args, **kwargs)
             browser = CellBrowser(self.mesh, self.velocity, ax)
             browser.connect()
-            plt.show() # block=False)
-
+            plt.show()  # block=False)
+        return ax, cbar
 
 # # # # # # # # MAIN # # # # # # # #
 if __name__ == "__main__":
@@ -223,24 +223,20 @@ if __name__ == "__main__":
 
     ra = Refraction(datafile)
     print(ra)
-    pg.showLater()
+    pg.showLater(True)
     ra.showData()
     ra.showVA()
     ra.makeMesh()
-    ra.mesh.save('mesh')
     print(ra.mesh)
     ra.showMesh()
-    
     ra.createFOP()
-    
-    slo = createGradientModel2D(ra.data, ra.mesh, 500., 5000.)
-    
-    #print('#'*100)
-    resp = ra.f(slo)
-    #print('#'*100)
-    #ra.velocity = 1. / slo
-    #ra.createInv()
-    #ra.run()
-    #ra.showResult()
+    if True:
+        ra.createInv()
+        ra.run()
+    else:  # just view starting model
+        slo = createGradientModel2D(ra.data, ra.mesh, 500., 5000.)
+        resp = ra.f(slo)
+        ra.velocity = 1. / slo
 
+    ra.showResult()
     pg.showNow()

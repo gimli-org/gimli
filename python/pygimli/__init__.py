@@ -457,7 +457,7 @@ def toIVector(v):
 
 # DEPRECATED for backward compatibility should be removed
 def asvector(array):
-    return pg.RVector(array)
+    return _pygimli_.RVector(array)
 
 
 ############################
