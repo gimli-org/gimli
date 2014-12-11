@@ -488,7 +488,7 @@ public:
         
         Vector < ValueType > v(e-start);
         
-        if (start == end) return v;
+        if ((SIndex)start == end) return v;
             
         if (start >= 0 && start < e){
             std::copy(& data_[start], & data_[e], &v[0]);
