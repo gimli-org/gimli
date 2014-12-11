@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Template und Beispiel für eine einfache python app mit dem ArgumentParser
-    
+    Template and Example for a simple python app with argument parser
+
     https://docs.python.org/3.4/howto/argparse.html
-    
+
 """
+
 
 def main():
     """
         Entry function
     """
     import argparse
-    
-    ## intialisiere den Parser
+
+    ## intialisize parser
     parser = argparse.ArgumentParser(description="sample application")
-    
-    ## definiere erlaubte Optionen 
+
+    ## define some options (better import from defaultParser)
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
                         help="Be verbose")
     parser.add_argument("-i", "--integer", dest="integer", type=int,
@@ -25,24 +26,22 @@ def main():
     parser.add_argument("-s", dest="string", type=str,
                         help="Eine string Variable mit short option",
                         default='none')
-    
+
     parser.add_argument('target')
-    
-    ## veranlasse den Parser zu parsen (Default ist sys.argv)
+
     args = parser.parse_args()
-     
-    ## die Ergebnisse stehen in args
+
+    ## results are in args
     if args.verbose:
         print(args)
-      
+
     print('Integer is:', args.integer)
     print('String is:', args.string)
-    
+
     print('Target is:', args.target)
-    
-# def main(...)    
+
+# def main(...)
 
 if __name__ == "__main__":
     main()
- 
-    
+
