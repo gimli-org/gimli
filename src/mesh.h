@@ -289,7 +289,7 @@ public:
 
     /*! Returns the reference to the vector of scaled normal directions for each boundary.
      * Cached for static geometry and will be build on first call. Not thread safe, perhaps not python GC safe. 
-     Return \f$ \{A_i \vec{n}_i\} \foreach i = [0..N_B]\f$.
+     Return \f$ \{A_i \vec{n}_i\} \forall i = [0..N_B]\f$.
      Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary. 
      If you want to use this, i.e. for the calculation of inside or outside flow through the boundary, you need to recognize the orientation of this boundary to the cell the flow goes into or comes from.
      For the left cell neighbor the normal direction should be always the outer normal.*/
@@ -346,8 +346,11 @@ public:
     //** end get infos stuff
 
     //** start mesh modification stuff
-    /*! Prolongate the attribute of each cell in emptyList by the attribute from neighbouring cells.
-    The attributes have to be lower than \ref TOLERANCE. This function is called recursivly until all zero-attribute-cells in emptyList are filles with an attribute greater than Zero. */
+    /*! Prolongate the attribute of each cell in emptyList by the attribute 
+     * from neighbouring cells.
+     * The attributes have to be lower than \ref TOLERANCE.
+     * This function is called recursivly until all zero-attribute-cells in
+     * emptyList are filles with an attribute greater than Zero. */
     void fillEmptyCells(const std::vector< Cell * > & emptyList, double background = -1.0);
 
     void recountNodes();
