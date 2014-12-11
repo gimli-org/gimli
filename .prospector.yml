@@ -1,0 +1,6 @@
+# used by www.landscape.io
+
+pylint:
+    disable:
+        - E1101 # avoids errors about missing C++ members in pygimli 
+        - E0602 # avoids errors about unassigned function calls, i.e. _pygimli_.load

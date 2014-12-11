@@ -1,0 +1,20 @@
+# Landscape.io configuration file
+# Only considers python directory at the moment.
+# E-Mail notifications are sent if score decreases.
+
+doc-warnings: yes
+test-warnings: no
+#strictness: veryhigh # besser nicht =)
+strictness: medium
+max-line-length: 80
+autodetect: yes
+ignore-paths:
+    - apps
+    - cmake
+    - doc
+    - examples
+    - external
+    - matlab
+    - mingw
+    - rpm
+    - thirdParty
