@@ -18,7 +18,7 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testBooleanLogic);
     CPPUNIT_TEST(testFunctorTemplates);
     CPPUNIT_TEST(testStringFunctions);
-    CPPUNIT_TEST(testIPCSHM);
+    //CPPUNIT_TEST(testIPCSHM);
     CPPUNIT_TEST(testMemWatch);
     CPPUNIT_TEST(testPolynomialFunction);
 //     CPPUNIT_TEST(testRotationByQuaternion);
