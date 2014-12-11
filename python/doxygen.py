@@ -42,8 +42,8 @@ class doxygen_doc_extractor:
                         if line.rstrip()[-2:] == "*/":
                             find_block_end = True
                     except Exception as e:
-                        print(e)
-                        print(line)
+                        #print(e)
+                        #print(line)
                         pass
 
                 if find_block_end:
@@ -51,7 +51,7 @@ class doxygen_doc_extractor:
                         if line.lstrip()[:2] == "/*":
                             find_block_end = False
                     except Exception as e:
-                        print(e)
+                        #print(e)
                         pass
 
                 final_str = self.clear_str(line)
@@ -61,9 +61,9 @@ class doxygen_doc_extractor:
                 if final_str:
                     doc_lines.insert(0, final_str)
         except Exception as e:
-            traceback.print_exc(file=sys.stdout)
-            print(e)
-            print(self.file_name)
+            #traceback.print_exc(file=sys.stdout)
+            #print(e)
+            #print(self.file_name)
             pass
         finally:
             if len(doc_lines) > 0:
