@@ -171,9 +171,9 @@ class RedirectOutput:
         ##Do not put a print statement here!!##
         #self.logFile.write( what )
         self.buff.append(what)
-        
-        
-        
+
+
+
 class Path(str):
     """Path object for manipulating directory and file paths."""
 
@@ -313,9 +313,9 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
     else:
         sub_dir_list = src_dir.psplit()[-depth:]
         sub_dir = Path('/'.join(sub_dir_list) + '/')
-        
+
     #gallery_index.write(TOCTREE_TEMPLATE % (sub_dir + '\n   '.join(ex_names)))
-    
+
     tempex_names = str()
     for ex_name in ex_names:
         tempex_names += sub_dir + ex_name + "\n   "
@@ -342,6 +342,9 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
             gallery_index.write(GALLERY_IMAGE_TEMPLATE % info)
         elif gallery_style == 'list':
             gallery_index.write(GALLERY_LIST_TEMPLATE % info)
+
+    # update _templates/gallery.html
+    os.system("make gallery")
 
 
 def get_flags_from_rst(rst_file):
@@ -585,40 +588,40 @@ def process_blocks(blocks, src_path, image_path, cfg):
     rst_blocks = []
     fig_num = 1
     lastCoutBuff = []
-    
+
     print("Processing:", src_path)
     plt.ion()
     for i, (blabel, brange, bcontent) in enumerate(blocks):
         if blabel == 'code':
-            
+
             #print(bcontent, example_globals)
-            
+
             tmpSysOut = sys.stdout
             tmpSysErr = sys.stderr
             sys.stdout = RedirectOutput( "cout" )
             sys.stderr = RedirectOutput( "cerr" )
-            
+
             exec(bcontent, example_globals)
             rst_blocks.append(codestr2rst(bcontent))
-            
+
             if len(sys.stdout.buff) > 0:
                 lastCoutBuff = sys.stdout.buff
             coutbuff = sys.stdout.buff
             cerrbuff = sys.stderr.buff
-            
+
             sys.stdout = tmpSysOut
             sys.stderr = tmpSysErr
-            
+
             #print('##########################################################')
             #print coutbuff
             #print len(cerrbuff), cerrbuff
-            
+
             #if len(coutbuff) > 0:
                 #rst_blocks.append(printcout2rst(coutbuff))
-          
+
             if len(cerrbuff) > 0:
                 rst_blocks.append(printcerr2rst(cerrbuff))
-            
+
         else:
             if i in idx_inline_plot:
                 plt.savefig(image_path.format(fig_num))
@@ -627,12 +630,12 @@ def process_blocks(blocks, src_path, image_path, cfg):
                 figure_list.append(figure_name)
                 figure_link = os.path.join('images', figure_name)
                 bcontent = bcontent.replace(inline_tag, figure_link)
-                
+
 
             if '.. lastcout::' in bcontent:
                 bcontent = bcontent.replace('.. lastcout::', printcout2rst(lastCoutBuff))
                 lastCoutBuff = []
-                
+
             rst_blocks.append(docstr2rst(bcontent, cfg))
     plt.ioff()
     return figure_list, '\n'.join(rst_blocks)
@@ -657,9 +660,9 @@ def printcout2rst(outbuff):
             indented_block += '\t\n\n'
         else:
             indented_block += '\t\t*' + t.replace('\n', '\n\t') + '*'
-    
+
     return code_directive + indented_block
-             
+
 def codestr2rst(codestr):
     """Return reStructuredText code block from code string"""
     code_directive = ".. code-block:: python\n\n"
@@ -677,17 +680,17 @@ def docstr2rst(docstr, cfg):
     #CR print whitespace
     #CR print "##################################################################"
     #CR eval() eats latex commands like \a \t so we need to replace them first
-    
+
     mathDictionary = {}
     commandDictionary = {}
     command1Dictionary = {}
-    
+
     if cfg.plot2rst_commandTranslator:
         #print(cfg.plot2rst_commandTranslator)
         mathDictionary = cfg.plot2rst_commandTranslator['mathDictionary']
         commandDictionary = cfg.plot2rst_commandTranslator['commandDictionary']
         command1Dictionary = cfg.plot2rst_commandTranslator['command1Dictionary']
-        
+
     current = docstr
     for x in mathDictionary:
         current = re.sub('\\\\' + x + '(?!\w)',
@@ -706,11 +709,11 @@ def docstr2rst(docstr, cfg):
             else:
                 n = 0
     docstr = current
-    
+
     #print(docstr)
     #sys.exit()
     return eval(docstr.replace("\\","\\\\")) + whitespace
-    
+
 
 
 def save_all_figures(image_path):
