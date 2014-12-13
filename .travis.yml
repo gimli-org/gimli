@@ -35,8 +35,9 @@ before_install:
     - sudo apt-get install -qq libsuitesparse-dev
 
     # Documentation dependencies
-    - sudo apt-get install -qq doxygen doxygen-latex python-sphinx dvipng python-matplotlib python-scipy
-    - sudo pip install -q -U sphinx numpydoc pybtex sphinxcontrib-programoutput sphinxcontrib-bibtex
+    - sudo apt-get install -qq doxygen doxygen-latex dvipng python-scipy
+    - sudo apt-get build-dep -qq python-matplotlib python-sphinx
+    - sudo pip install -q -U sphinx numpydoc pybtex sphinxcontrib-programoutput sphinxcontrib-bibtex matplotlib
 
 install:
     # Show Infos
