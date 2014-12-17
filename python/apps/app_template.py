@@ -6,25 +6,23 @@ Visit http://www.resistivity.net for further information or the latest version.
 """
 
 import sys
-
-# for system call
-from os import system, path
+from os import system
 
 try:
-    import pygimli as g
-    import pygimli.mplviewer
-    from pygimli.viewer import *
+    import pygimli as pg
 
 except ImportError:
-    sys.stderr.write('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
-    sys.exit( 1 )
+    sys.stderr.write('ERROR: cannot import the library pygimli.'+ \
+                     ' Ensure that pygimli is in your PYTHONPATH')
+    sys.exit(1)
 
-def main( argv ):
+
+def main(argv):
     from optparse import OptionParser
 
-    parser = OptionParser( "usage: %prog [options] mesh|mod" )
-    parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
-                            , help="be verbose", default=False )
+    parser = OptionParser("usage: %prog [options] mesh|mod")
+    parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
+                      help="be verbose", default=False)
 
     (options, args) = parser.parse_args()
 

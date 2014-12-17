@@ -10,10 +10,12 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.meshtools import createParaDomain2D, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
+from pygimli.utils.base import interperc
+from math import pi
 
 
 def plotFirstPicks(ax, data, plotva=False):
-    ''' plot first arrivals as lines '''
+    """ plot first arrivals as lines """
     px = pg.x(data.sensorPositions())
     gx = np.array([px[int(g)] for g in data("g")])
     sx = np.array([px[int(s)] for s in data("s")])
@@ -36,7 +38,7 @@ def plotFirstPicks(ax, data, plotva=False):
 
 
 def showVA(ax, data):
-    ''' show apparent velocity as image plot '''
+    """ show apparent velocity as image plot """
     px = pg.x(data.sensorPositions())
     gx = np.asarray([px[int(g)] for g in data("g")])
     sx = np.asarray([px[int(s)] for s in data("s")])
@@ -95,22 +97,34 @@ def createGradientModel2D(data, mesh, VTop, VBot):
 
 # Data handling class (logics)
 class Refraction():
-    '''
+    """
     class for managing a refraction seismics
-    '''
+    """
     def __init__(self, filename=None, verbose=True, **kwargs):
-        ''' init function with optional data load '''
+        """ init function with optional data load """
         if filename is not None:
             self.load(filename)
 
-    def __repr__(self):  # for print function
-        out = ""
+    def __repr__(self):
+        """ string representation of the class """
+        out = "Refraction object"
+        if hasattr(self, 'data'):
+            out += "\n" + self.data.__str__()
+        if hasattr(self, 'mesh'):
+            out += "\n" + self.mesh.__str__()
         return out
 
     def load(self, filename):
         ''' load data from file '''
         # check for file formats and import if necessary
         self.data = pg.DataContainer(filename, 's g')
+        maxyabs = max(pg.abs(pg.y(self.data.sensorPositions())))
+        maxzabs = max(pg.abs(pg.z(self.data.sensorPositions())))
+        if maxzabs > 0 and maxyabs == 0:
+            for i in range(self.data.sensorCount()):
+                pos = self.data.sensorPosition(i).rotateX(-pi/2)
+                self.data.setSensorPosition(i, pos)
+
         print(self.data)
 
     def showData(self, ax=None):
@@ -172,12 +186,12 @@ class Refraction():
 
         self.tD = pg.RTrans()
         self.tM = pg.RTransLog()
-        self.INV = pg.RInversion(self.data('t'), self.f, True, True)
+        self.INV = pg.RInversion(self.data('t'), self.f, True, False)
         self.INV.setTransData(self.tD)
         self.INV.setTransModel(self.tM)
         self.INV.setRelativeError(self.error)
 
-    def run(self, vtop=500., vbottom=5000., zweight=0.3, lam=30.):
+    def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30.):
         if not hasattr(self, 'INV'):  # self.f is None:
             self.createInv()
 
@@ -189,13 +203,18 @@ class Refraction():
         slowness = self.INV.run()
         self.velocity = 1. / slowness
 
-    def showResult(self, ax=None, **kwargs):
+    def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
+                   **kwargs):
+        if cMin is None or cMax is None:
+            cMin, cMax = interperc(self.velocity, 3)
         if ax is None:
-            ax, cbar = pg.show(self.mesh, self.velocity)
+            ax, cbar = pg.show(self.mesh, self.velocity, logScale=logScale,
+                               colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
             # fig, ax = plt.subplots()
         else:
-            gci = drawModel(ax, self.mesh, self.velocity, **kwargs)
-            cbar = createColorbar(gci, *args, **kwargs)
+            gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
+                            cMin=cMin, cMax=cMax, **kwargs)
+            cbar = createColorbar(gci, **kwargs)
             browser = CellBrowser(self.mesh, self.velocity, ax)
             browser.connect()
             plt.show()  # block=False)
@@ -226,17 +245,7 @@ if __name__ == "__main__":
     pg.showLater(True)
     ra.showData()
     ra.showVA()
-    ra.makeMesh()
-    print(ra.mesh)
-    ra.showMesh()
-    ra.createFOP()
-    if True:
-        ra.createInv()
-        ra.run()
-    else:  # just view starting model
-        slo = createGradientModel2D(ra.data, ra.mesh, 500., 5000.)
-        resp = ra.f(slo)
-        ra.velocity = 1. / slo
-
+    ra.run()
     ra.showResult()
+    print(ra)
     pg.showNow()
