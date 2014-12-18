@@ -22,10 +22,12 @@ class doxygen_doc_extractor:
         #for caching source
         self.file_name = None
         self.source = None
+        self.hasError = False
     #__init__
 
     def __call__(self, declaration):
         doc_lines = []
+        
         try:
             if self.file_name != declaration.location.file_name:
                 self.file_name = declaration.location.file_name
@@ -42,8 +44,11 @@ class doxygen_doc_extractor:
                         if line.rstrip()[-2:] == "*/":
                             find_block_end = True
                     except Exception as e:
-                        print(e)
-                        print(line)
+                        if not self.hasError:
+                            print('*'*100)
+                            print(e)
+                            print(line)
+                            self.hasError = True
                         pass
 
                 if find_block_end:
@@ -51,7 +56,11 @@ class doxygen_doc_extractor:
                         if line.lstrip()[:2] == "/*":
                             find_block_end = False
                     except Exception as e:
-                        print(e)
+                        if not self.hasError:
+                            self.hasError = True
+                            print('*'*100)
+                            print(e)
+                            print(line)
                         pass
 
                 final_str = self.clear_str(line)
@@ -62,8 +71,11 @@ class doxygen_doc_extractor:
                     doc_lines.insert(0, final_str)
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
-            print(e)
-            print(self.file_name)
+            if not self.hasError:
+                self.hasError = True
+                print('*'*100)
+                print(e)
+                print(self.file_name)
             pass
         finally:
             if len(doc_lines) > 0:

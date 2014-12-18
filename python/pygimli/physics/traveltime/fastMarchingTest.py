@@ -1,16 +1,9 @@
 #!/usr/bin/env python
-
-
-import numpy as np
-import time
-
-import pygimli as pg
-import matplotlib.pyplot as plt
-from pygimli.mplviewer import drawMesh, drawField, drawStreamLinear
-
+# -*- coding: utf-8 -*-
 """
 Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal
 equation
+
 .. math::
     |\grad u(x)| & = f(x) \\
     ||\grad t||_2 &= s
@@ -21,6 +14,13 @@ where :math:`t` denote traveltime for a spatial distributed slowness :math:`s`
 In the special case when f(x) = 1, the solution gives the signed
 distance from the boundary
 """
+
+import numpy as np
+import time
+
+import pygimli as pg
+import matplotlib.pyplot as plt
+from pygimli.mplviewer import drawMesh, drawField, drawStreamLinear
 
 import heapq
 

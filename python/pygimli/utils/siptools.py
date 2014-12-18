@@ -15,16 +15,16 @@ def astausgleich(ab2org, mn2org, rhoaorg):
     um = P.unique(mn2)
     for i in range(len(um) - 1):
         r0, r1 = [], []
-        ac = P.intersect1d(ab2[ mn2 == um[i] ], ab2[ mn2 == um[ i + 1 ] ])
+        ac = P.intersect1d(ab2[mn2 == um[i]], ab2[mn2 == um[i + 1]])
         for a in ac:
-            r0.append(rhoa[ (ab2 == a) * (mn2 == um[i]) ][0])
-            r1.append(rhoa[ (ab2 == a) * (mn2 == um[i+1]) ][0])
+            r0.append(rhoa[(ab2 == a) * (mn2 == um[i])][0])
+            r1.append(rhoa[(ab2 == a) * (mn2 == um[i+1])][0])
 
         if len(r0) > 0:
             fak = P.mean(P.array(r0) / P.array(r1))
             print(fak)
             if P.isfinite(fak) and fak>0.:
-                rhoa[ mn2 == um[ i + 1 ] ] *= fak
+                rhoa[mn2 == um[i + 1]] *= fak
 
     return pg.asvector(rhoa)
 
@@ -45,7 +45,7 @@ def loadSIPallData(filename,outnumpy=False):
         ab2 = A[0](1,ndata)
         mn2 = A[1](1,ndata)
         rhoa = A[2](1,ndata)
-        PHI=g.RMatrix()
+        PHI = pg.RMatrix()
         fr = []
         for i in range(3,A.rows()):
             fr.append(A[i][0])
@@ -61,7 +61,7 @@ def makeSlmData(ab2, mn2, rhoa=None, filename=None):
     for elx in N.hstack((-pos[::-1], pos)):
         data.createElectrode(elx, 0., 0.)
 
-    if filename != None:
+    if filename is not None:
         f = open(filename, 'w')
         f.write(str(len(pos) * 2) + '\n#x y z\n')
         for elx in N.hstack((-pos[::-1], pos)):
@@ -92,7 +92,9 @@ def makeSlmData(ab2, mn2, rhoa=None, filename=None):
     return data
 
 def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
-    """display a sounding curve (rhoa over ab/2) and an additional response."""
+    """
+        Display a sounding curve (rhoa over ab/2) and an additional response.
+    """
     if xlab is None:
         xlab = r'$\rho_a$ in $\Omega$m'
 
@@ -115,15 +117,15 @@ def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
     else:
         for unmi in N.unique(mn2):
             if islog:
-                l1 = P.loglog(rhoa[ mn2==unmi ], ab2a[ mn2==unmi ],
+                l1 = P.loglog(rhoa[mn2 == unmi], ab2a[mn2 == unmi],
                             'rx-', label='observed')
             else:
-                l1 = P.semilogy(rhoa[ mn2==unmi ], ab2a[ mn2==unmi ],
+                l1 = P.semilogy(rhoa[mn2 == unmi], ab2a[mn2 == unmi],
                               'rx-',label='observed')
 
             P.hold(True)
             if resp is not None:
-                l2 = P.loglog(resp[ mn2==unmi ], ab2a[ mn2==unmi ],
+                l2 = P.loglog(resp[mn2 == unmi], ab2a[mn2 == unmi],
                             'bo-',label='simulated')
                 P.legend((l1, l2), ('obs', 'sim'))
 
@@ -211,8 +213,10 @@ def showsip1ddata(PHI, fr, ab2, mn2=None, cmax=None, ylab=True, cbar=True):
 
 def showsip1dmodel(M, tau, thk, res=None, z=None,
                    cmin=None, cmax=None, islog=True):
-    """display an SIP Debye block model as image."""
-    if z == None:
+    """
+        Display an SIP Debye block model as image.
+    """
+    if z is None:
         z = N.cumsum(N.hstack((0., thk)))
 
     P.cla()
@@ -278,13 +282,16 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
 class DebyeModelling(pg.ModellingBase):
     """forward operator for Debye decomposition."""
     def __init__(self, fvec, tvec=None, zero = False, verbose = False):
-        if tvec == None:
+        
+        if tvec is None:
             tvec = N.logspace(-4, 0, 5)
 
         mesh = pg.createMesh1D(len(tvec))
+        
         if zero:
             mesh.cell(0).setMarker(-1)
             mesh.cell(len(tvec)-1).setMarker(1)
+        
         pg.ModellingBase.__init__(self, mesh, verbose)
         self.f_ = pg.asvector(fvec)
         self.t_ = tvec
@@ -304,8 +311,8 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False,
     """Debye decomposition of a phase spectrum."""
     if maxfr is not None:
         idx = (fr <= maxfr) & (phi >= 0.)
-        phi1 = phi[ idx ]
-        fr1 = fr[ idx ]
+        phi1 = phi[idx]
+        fr1 = fr[idx]
         print("using frequencies from ", N.min(fr), " to ", N.max(fr), "Hz")
     else:
         phi1 = phi
@@ -417,20 +424,25 @@ def read1resfile(filename, readsecond=False, dellast=True):
 
 def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
                     dellast=True, ePhi=0.5, ePerc=1., lam=2000.):
-    """ Read res1file and remove EM effects using a double-Cole-Cole model
-    fr,rhoa,phi,dphi = ReadAndRemoveEM(filename, readsecond/doplot bools)"""
-    fr, rhoa, phi, drhoa, dphi = read1resfile(filename, readsecond,
+    """
+        Read res1file and remove EM effects using a double-Cole-Cole model
+        fr,rhoa,phi,dphi = ReadAndRemoveEM(filename, readsecond/doplot bools)
+    """
+    fr, rhoa, phi, drhoa, dphi = read1resfile(filename,
+                                              readsecond,
                                               dellast=dellast)
     # forward problem
     mesh = pg.createMesh1D(1, 6) # 6 independent parameters
     f = DoubleColeColeModelling(mesh, pg.asvector(fr) , phi[2]/abs(phi[2]))
     f.regionManager().loadMap("region.control")
     model = f.createStartVector()
+    
     # inversion
     inv = pg.RInversion(phi, f, True, False)
     inv.setAbsoluteError(phi * ePerc * 0.01 + ePhi / 1000.)
     inv.setRobustData(True)
-#    inv.setCWeight(pg.RVector(6, 1.0)) # wozu war das denn gut?
+    
+    # inv.setCWeight(pg.RVector(6, 1.0)) # wozu war das denn gut?
     inv.setMarquardtScheme(0.8)
     inv.setLambda(lam)
     inv.setModel(model)
@@ -438,9 +450,10 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
     inv.echoStatus()
     chi2 = inv.chi2()
     mod0 = pg.RVector(erg)
-    mod0[ 0 ] = 0.0 # set IP term to zero to obtain pure EM term
+    mod0[0] = 0.0 # set IP term to zero to obtain pure EM term
     emphi = f(mod0)
     resid = (phi - emphi) * 1000.
+    
     if doplot:
         s = "IP: m= " + str(rndig(erg[0])) + " t=" + str(rndig(erg[1]))  +  \
         " c =" + str(rndig(erg[2]))
