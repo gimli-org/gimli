@@ -70,8 +70,8 @@ class doxygen_doc_extractor:
                 if final_str:
                     doc_lines.insert(0, final_str)
         except Exception as e:
-            traceback.print_exc(file=sys.stdout)
             if not self.hasError:
+                traceback.print_exc(file=sys.stdout)
                 self.hasError = True
                 print('*'*100)
                 print(e)
