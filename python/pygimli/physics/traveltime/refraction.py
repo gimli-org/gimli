@@ -115,9 +115,16 @@ class Refraction():
         return out
 
     def load(self, filename):
-        ''' load data from file '''
+        """" load data from file """
         # check for file formats and import if necessary
         self.data = pg.DataContainer(filename, 's g')
+        oldsize = self.data.size()
+        self.data.markInvalid(pg.abs(self.data('s') - self.data('g')) < 1)
+        self.data.markInvalid(self.data('t') <= 0.)
+        self.data.removeInvalid()
+        newsize = self.data.size()
+        if newsize < oldsize:
+            print('Removed ' + str(oldsize-newsize) + ' values.')
         maxyabs = max(pg.abs(pg.y(self.data.sensorPositions())))
         maxzabs = max(pg.abs(pg.z(self.data.sensorPositions())))
         if maxzabs > 0 and maxyabs == 0:
@@ -128,6 +135,7 @@ class Refraction():
         print(self.data)
 
     def showData(self, ax=None):
+        """ show data in form of travel time curves """
         if ax is None:
             fig, ax = plt.subplots()
 
@@ -135,6 +143,7 @@ class Refraction():
         plt.show(block=False)
 
     def showVA(self, ax=None):
+        """ show apparent velocity as image plot """
         if ax is None:
             fig, ax = plt.subplots()
 
@@ -142,12 +151,14 @@ class Refraction():
         plt.show(block=False)
 
     def getOffset(self):
+        """ return vector of offsets (in m) between shot and receiver """
         px = pg.x(self.data.sensorPositions())
         gx = np.array([px[int(g)] for g in self.data("g")])
         sx = np.array([px[int(s)] for s in self.data("s")])
         return np.absolute(gx-sx)
 
     def makeMesh(self, depth=None, quality=34.3):
+        """ create (inversion) """
         if depth is None:
             depth = max(self.getOffset())/3.
         self.poly = createParaDomain2D(self.data.sensorPositions(),
@@ -157,21 +168,24 @@ class Refraction():
         self.mesh.createNeighbourInfos()
 
     def showMesh(self, ax=None):
+        """ show mesh in given axes or in a new figure """
         if ax is None:
             fig, ax = plt.subplots()
 
         drawMesh(ax, self.mesh)
         plt.show(block=False)
 
-    def createFOP(self):  # type Dijkstra
+    def createFOP(self, refine=True):  # Dijkstra, later FMM
+        """ create forward operator working on refined mesh """
         if not hasattr(self, 'mesh'):  # self.mesh is None:
             self.makeMesh()
         self.f = pg.TravelTimeDijkstraModelling(self.mesh, self.data, True)
         self.f.regionManager().setConstraintType(1)
-        self.f.createRefinedForwardMesh(True)
+        self.f.createRefinedForwardMesh(refine)
         self.pd = self.f.regionManager().paraDomain()  # no idea why needed
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
+        """ estimate error composed of an absolute and a relative part """
         if relativeError > 1:  # obviously in %
             relativeError /= 100.
         self.error = absoluteError / self.data('t') + relativeError
@@ -179,6 +193,7 @@ class Refraction():
             self.INV.setRelativeError(self.error)
 
     def createInv(self):
+        """ create inversion instance """
         if not hasattr(self, 'f'):
             self.createFOP()
         if not hasattr(self, 'error'):
@@ -192,6 +207,7 @@ class Refraction():
         self.INV.setRelativeError(self.error)
 
     def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30.):
+        """ run inversion """
         if not hasattr(self, 'INV'):  # self.f is None:
             self.createInv()
 
@@ -203,8 +219,19 @@ class Refraction():
         slowness = self.INV.run()
         self.velocity = 1. / slowness
 
+    def rayCoverage(self):
+        """ return ray coverage """
+        return self.f.jacobian().transMult(pg.RVector(self.data.size(), 1.))
+
+    def standardizedCoverage(self):
+        """ return standardized coverage vector (0|1) using neighbor info """
+        coverage = self.rayCoverage()
+        C = ra.f.constraintsRef()
+        return np.sign(np.absolute(C.transMult(C * coverage)))
+
     def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
                    **kwargs):
+        """ show resulting velocity vector """
         if cMin is None or cMax is None:
             cMin, cMax = interperc(self.velocity, 3)
         if ax is None:
@@ -213,7 +240,7 @@ class Refraction():
             # fig, ax = plt.subplots()
         else:
             gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
-                            cMin=cMin, cMax=cMax, **kwargs)
+                            colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
             cbar = createColorbar(gci, **kwargs)
             browser = CellBrowser(self.mesh, self.velocity, ax)
             browser.connect()
@@ -221,31 +248,13 @@ class Refraction():
         return ax, cbar
 
 # # # # # # # # MAIN # # # # # # # #
-if __name__ == "__main__":
-    from optparse import OptionParser
-
-    parser = OptionParser("usage: %prog [options] ",
-                          version="%prog: " + pg.__version__)
-    parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
-                      help="be verbose", default=False)
-    (options, args) = parser.parse_args()
-
-    if options.verbose:
-        __verbose__ = True
-
-    if len(args) == 0:
-        parser.print_help()
-        print("Use with a data file name.")
-        raise SystemExit
-    else:
-        datafile = args[0]
-
-    ra = Refraction(datafile)
-    print(ra)
-    pg.showLater(True)
-    ra.showData()
-    ra.showVA()
-    ra.run()
-    ra.showResult()
-    print(ra)
-    pg.showNow()
+datafile = 'example.sgt'
+ra = Refraction(datafile)
+print(ra)
+pg.showLater(True)
+ra.showData()
+ra.showVA()
+ra.run()
+ax, cbar = ra.showResult()
+print(ra)
+pg.showNow()
