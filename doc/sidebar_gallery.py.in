@@ -17,11 +17,13 @@ import random
 ###################
 
 cwd = abspath(dirname(__file__))
-build_dir = join(cwd, "_build/html")
-example_dir = join(cwd, "examples")
-tutorial_dir = join(cwd, "tutorials")
+build_dir = "@CMAKE_CURRENT_BINARY_DIR@/html"
+example_dir = "@SPHINX_SRC_DIR@/doc/examples"
+tutorial_dir = "@SPHINX_SRC_DIR@/doc/tutorials"
 img_dir = join(build_dir, "_images")
 
+#print(example_dir) 
+#print("@CMAKE_CURRENT_BINARY_DIR@") 
 # Get examples/tutorials
 examples = glob(join(example_dir, '*/*plot*.py'))
 tutorials = glob(join(tutorial_dir, '*/*plot*.py'))
@@ -44,9 +46,12 @@ titles = ex_titles + tut_titles
 
 # Adjust paths to output directory for html links
 # TODO: Account for true path structure once uploaded to gimli.org
-examples = [e.replace("doc/examples", "doc/_build/html/doc/_examples_auto")
+
+
+examples = [e.replace("@SPHINX_SRC_DIR@/doc/examples", "@CMAKE_CURRENT_BINARY_DIR@/html/doc/_examples_auto")
             for e in examples]
-tutorials = [t.replace("doc/tutorials", "doc/_build/html/doc/_tutorials_auto")
+
+tutorials = [t.replace("@SPHINX_SRC_DIR@/doc/tutorials", "@CMAKE_CURRENT_BINARY_DIR@/html/doc/_tutorials_auto")
              for t in tutorials]
 
 # Create HTML gallery for sidebar with random start item
@@ -82,6 +87,7 @@ for ix, (item, title) in enumerate(zip(gallery, titles)):
     name = basename(item)
     url = join(dir, name.replace(".py", ".html"))
     img = join(img_dir, name.replace(".py", "_1.png"))
+    #print(url, img)
     item = html_item.format(url, img, title)
 
     if ix == id:
@@ -94,5 +100,6 @@ items.insert(0, html_top)
 items.append(html_bottom)
 html = "\n".join(items)
 
-with open("_templates/gallery.html", "w") as file:
-    file.write(html)
+#don't write over src files
+with open("@SPHINX_SRC_DIR@/doc/_templates/gallery.html", "w") as file:
+   file.write(html)
