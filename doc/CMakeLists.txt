@@ -31,11 +31,16 @@ configure_file(
      "${SPHINX_BINARY_BUILD_DIR}/conf.py"
      @ONLY)
 
+configure_file(
+     "${SPHINX_SRC_DIR}/doc/sidebar_gallery.py.in"
+     "${SPHINX_BINARY_BUILD_DIR}/sidebar_gallery.py"
+     @ONLY)
 # this will ONLY cover files in the CMAKE_CURRENT_SOURCE_DIR .. maybee a cmake bug check with cmake 3
 # we collect the RSTFILES in main path
 # file(GLOB_RECURSE RSTFILES RELATIVE ${CMAKE_SOURCE_DIR} "*.rst")
 
 ADD_CUSTOM_TARGET(sphinx_check_sources ALL)
+
 foreach(file ${RSTFILES})
     add_custom_command(
             COMMAND
@@ -48,6 +53,15 @@ foreach(file ${RSTFILES})
     )
 endforeach()
 
+# add_custom_command(
+#     COMMAND
+#         python ${SPHINX_SRCBUILD_DIR}/doc/sidebar_gallery.py
+#     TARGET
+#         sphinx_check_sources
+#     VERBATIM
+#     COMMENT 
+#         "calling: python sidebar_gallery.py"
+# )
 
 add_custom_target(sphinx
     ALL

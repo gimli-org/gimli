@@ -247,14 +247,14 @@ class Refraction():
             plt.show()  # block=False)
         return ax, cbar
 
-# # # # # # # # MAIN # # # # # # # #
-datafile = 'example.sgt'
-ra = Refraction(datafile)
-print(ra)
-pg.showLater(True)
-ra.showData()
-ra.showVA()
-ra.run()
-ax, cbar = ra.showResult()
-print(ra)
-pg.showNow()
+if __name__ is '__main__':
+    datafile = 'example.sgt'
+    ra = Refraction(datafile)
+    print(ra)
+    pg.showLater(True)
+    ra.showData()
+    ra.showVA()
+    ra.run()
+    ax, cbar = ra.showResult()
+    print(ra)
+    pg.showNow()

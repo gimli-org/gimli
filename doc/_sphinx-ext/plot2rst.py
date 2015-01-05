@@ -272,7 +272,6 @@ def generate_examples_and_gallery(example_dir, rst_dir, cfg):
             write_gallery(gallery_index, example_sub, rst_sub, cfg, depth=1)
     gallery_index.flush()
 
-
 def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
     """Generate the rst files for an example directory, i.e. gallery.
 
@@ -344,7 +343,10 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
             gallery_index.write(GALLERY_LIST_TEMPLATE % info)
 
     # update _templates/gallery.html
-    os.system("make gallery")
+    #print('/'*100)
+    #os.system(os.getcwd())
+    BUILDDIR='_build/'
+    os.system("python " + BUILDDIR + "sidebar_gallery.py")
 
 
 def get_flags_from_rst(rst_file):
