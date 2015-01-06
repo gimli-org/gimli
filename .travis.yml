@@ -59,7 +59,7 @@ install:
     - cd build
     - cmake ../trunk
     - make -j 4 gimli
-    - make pygimli J=2
+    - make pygimli J=3
       
 script:
     # Test gimli
