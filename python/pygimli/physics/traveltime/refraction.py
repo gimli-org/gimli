@@ -247,8 +247,8 @@ class Refraction():
             plt.show()  # block=False)
         return ax, cbar
 
-if __name__ is '__main__':
-    datafile = 'example.sgt'
+if __name__ == '__main__':
+    datafile = 'varb.sgt'
     ra = Refraction(datafile)
     print(ra)
     pg.showLater(True)
