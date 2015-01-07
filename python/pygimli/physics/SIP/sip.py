@@ -137,8 +137,8 @@ class SIP():
                 phi = -np.array(Phase[j])
                 useit = (j > self.AB[i][0] + 1) or useall
                 if useit and np.isfinite(phi[0]) and np.isfinite(rhoa[0]):
-                    col = colors[act % 7]
-                    ma = markers[act / 7]
+                    col = colors[j % 7]
+                    ma = markers[j / 7]
                     ax[0].loglog(freq[:len(rhoa)], rhoa, color=col,
                                  label=str(j), marker=ma)
                     ax[1].semilogx(freq[:len(phi)], phi, color=col,
@@ -146,7 +146,8 @@ class SIP():
                     act += 1
 
             if act:
-                ax[0].legend(loc='upper right', numpoints=1, ncol=2)
+                if i == 0:
+                    ax[0].legend(loc='upper right', numpoints=1, ncol=2)
                 ax[0].set_xlabel('f in Hz')
                 ax[1].set_xlabel('f in Hz')
                 ax[0].set_ylabel(r'$\rho_a$ in $\Omega$m')
