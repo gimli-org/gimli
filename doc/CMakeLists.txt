@@ -53,15 +53,14 @@ foreach(file ${RSTFILES})
     )
 endforeach()
 
-# add_custom_command(
-#     COMMAND
-#         python ${SPHINX_SRCBUILD_DIR}/doc/sidebar_gallery.py
-#     TARGET
-#         sphinx_check_sources
-#     VERBATIM
-#     COMMENT 
-#         "calling: python sidebar_gallery.py"
-# )
+add_custom_target(sphinxapi
+    ALL
+        ${SPHINX_APIBUILD}
+            -o ${SPHINX_BINARY_BUILD_DIR}/doc/api/pygimli 
+            "${CMAKE_SOURCE_DIR}/python/pygimli"
+            "${CMAKE_SOURCE_DIR}/python/pygimli/gui"
+    COMMENT "Building pygimli api doc")
+
 
 add_custom_target(sphinx
     ALL
@@ -79,5 +78,7 @@ add_custom_target(sphinx
 add_dependencies(sphinx sphinx_check_sources)
 
 add_custom_target(doc)
-add_dependencies(doc doxygen)
+add_dependencies(sphinx sphinxapi)
 add_dependencies(doc sphinx)
+add_dependencies(doc doxygen)
+
