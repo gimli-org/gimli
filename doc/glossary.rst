@@ -19,10 +19,11 @@ Glossary
 
     Gmsh
         Gmsh: a three-dimensional finite element mesh generator with built-in
-        pre- and post-processing facilities See: http://geuz.org/gmsh/ 
+        pre- and post-processing facilities http://geuz.org/gmsh/. 
+        See: :py:func:`pygimli.meshtools.mesh.readGmsh`
 
     BERT
-        The eponymous software package. See :ref:`sec:GIMLi`
+        Boundless electrical resistivity tomography http://www.resistivity.net/
 
     IPython
         An improved :term:`Python` shell that integrates nicely with
@@ -32,7 +33,7 @@ Glossary
         Matplotlib :term:`Python` package displays publication quality results.
         It displays both 1D X-Y type plots and 2D contour plots for structured
         and unstructured data. It works on all common platforms and produces
-        publication quality hard copies. See http://matplotlib.sourceforge.net
+        publication quality hard copies. http://matplotlib.sourceforge.net
 
     MinGW
         MinGW, a contraction of "Minimalist GNU for Windows", is a minimalist

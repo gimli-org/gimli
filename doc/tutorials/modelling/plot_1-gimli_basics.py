@@ -17,7 +17,7 @@ import pygimli as pg
 
 
 """
-Every part of the namespace :gimliapi:`GIMLI` is bind to python and can be now used with the leading ``pg.``
+Every part of the c++ namespace :gimliapi:`GIMLI` is bind to python and can be now used with the leading ``pg.``
 
 For instance get the current version for :term:`GIMLi` with:
 """
@@ -29,13 +29,18 @@ This yields:
 
 .. lastcout::
 
-Now we know the gimli name space and can start creating a first mesh. A mesh is a collection of nodes, cells and boundaries, i.e, geometrical entities.
+Now we know the namespace :gimliapi:`GIMLI` name space and can start creating a first mesh.
+A mesh is spatial discretization and is represented by a collection of nodes, cells and boundaries, i.e., geometrical entities.
 
 .. note::
 
-    A regular spaced mesh consisting of rectangles or hexahedrons is usually called grid. However, internal grids are just special meshes.
+    A regular spaced mesh consisting of rectangles or hexahedrons is usually called grid. 
+    However, since a grid is just a kind of a mesh GIMLi does not separate between.
+    The only difference is the way of creation.
 
-Gimli provides a collection of tools for mesh import and generation. Easy grid generation is built-in but we also provide wrappers for unstructured mesh generations. e.g. :term:`triangle` and :term:`tetgen`. Incorporation of other generators should be straightforward, e.g., :py:mod:`pygimli.meshtools`
+GIMLi provides a collection of tools for mesh import, export and generation.
+A simple grid generation is built-in but we also provide wrappers for unstructured mesh generations, e.g., :term:`Triangle`, :term:`tetgen` and :term:`Gmsh`.
+Incorporation of other generators should be straight forward, e.g., :py:mod:`pygimli.meshtools`
 """
 import numpy as np
 grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 3), y=-np.linspace(-1.0, 1.0, 3))
