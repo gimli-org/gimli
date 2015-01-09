@@ -173,7 +173,7 @@ ENDIF(WIN32)
 # Check for python stuff
 ################################################################################
 
-set(Python_ADDITIONAL_VERSIONS 3.3 3.2 2.7)
+set(Python_ADDITIONAL_VERSIONS 3.4 3.3 3.2 2.7)
 find_package(PythonInterp)
 if (WIN32)
 	get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
