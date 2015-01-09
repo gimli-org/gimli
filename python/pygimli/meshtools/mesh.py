@@ -255,7 +255,49 @@ def readGmsh(fname, verbose=False):
 
     return mesh
 
+def readTriangle(fname, verbose=False):
+    """
+    Read :term:`Triangle` ASCII files and return instance of GIMLI::Mesh class.
+    http://www.cs.cmu.edu/~quake/triangle.html
 
+    Parameters
+    ----------
+    fname : string
+        Filename of the file to read (\\*.n, \\*.e)
+        
+    verbose : boolean, optional
+        Be verbose during import.
+
+    References
+    ----------
+    .. [Triangle] Jonathan Richard Shewchuk, Triangle: Engineering a 2D Quality Mesh Generator and Delaunay Triangulator, in ``Applied Computational Geometry: Towards Geometric Engineering'' (Ming C. Lin and Dinesh Manocha, editors), volume 1148 of Lecture Notes in Computer Science, pages 203-222, Springer-Verlag, Berlin, May 1996.
+    """
+    
+    raise("implement me!")
+    os.system('meshconvert -d2 ' + fname)
+    return Mesh(2)
+    
+def readTetgen(fname, verbose=False):
+    """
+    Read :term:`Tetgen` ASCII files and return instance of GIMLI::Mesh class.
+    See: http://tetgen.org/
+
+    Parameters
+    ----------
+    fname : string
+        Filename of the file to read (\\*.n, \\*.e \\*.f)
+        
+    verbose : boolean, optional
+        Be verbose during import.
+
+    References
+    ----------
+    .. [Tetgen] .
+    """
+    raise("implement me!")
+    os.system('meshconvert -d3 -D ..' + fname)
+    return Mesh(3)
+        
 def readHydrus2dMesh(fname='MESHTRIA.TXT'):
     """
     Import mesh from Hydrus2D.

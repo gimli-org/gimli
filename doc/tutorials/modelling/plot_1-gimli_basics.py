@@ -35,20 +35,20 @@ A mesh is spatial discretization and is represented by a collection of nodes, ce
 .. note::
 
     A regular spaced mesh consisting of rectangles or hexahedrons is usually called grid. 
-    However, since a grid is just a kind of a mesh GIMLi does not separate between.
-    The only difference is the way of creation.
+    However, since a grid is just a kind of a mesh GIMLi does not separate between them.
+    The only difference is the way of mesh creation.
 
 GIMLi provides a collection of tools for mesh import, export and generation.
-A simple grid generation is built-in but we also provide wrappers for unstructured mesh generations, e.g., :term:`Triangle`, :term:`tetgen` and :term:`Gmsh`.
-Incorporation of other generators should be straight forward, e.g., :py:mod:`pygimli.meshtools`
+A simple grid generation is built-in but we also provide wrappers for unstructured mesh generations, e.g., :term:`Triangle`, :term:`Tetgen` and :term:`Gmsh`.
+Incorporation of other generators should be straight forward, e.g., :py:mod:`pygimli.meshtools` and 
+:gimliapi:`GIMLI::createGrid`
 """
-import numpy as np
-grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 3), y=-np.linspace(-1.0, 1.0, 3))
-#grid = pg.createGrid(x=[-1.0, 0.0, 1.0, 4.0], y=[-1.0, 0.0, 1.0, 4.0])
+
+grid = pg.createGrid(x=[-1.0, 0.0, 1.0, 4.0], y=[-1.0, 0.0, 1.0, 4.0])
 
 
 """
-``grid`` is an instance of :gimliapi:`GIMLI::Mesh` and provides various methods for modification and io-operations.
+``grid`` is an now an instance of :gimliapi:`GIMLI::Mesh` and provides various methods for modification and io-operations.
 
 """
 print(grid)
@@ -73,7 +73,6 @@ To define the grid generation input arrays ``x`` and ``y``, you can also use the
 """
 
 import numpy as np
-
 
 grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
                     y=1.0 - np.logspace(np.log10(1.0), np.log10(2.0), 10))

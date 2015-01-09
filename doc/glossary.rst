@@ -20,7 +20,7 @@ Glossary
     Gmsh
         Gmsh: a three-dimensional finite element mesh generator with built-in
         pre- and post-processing facilities http://geuz.org/gmsh/. 
-        See: :py:func:`pygimli.meshtools.mesh.readGmsh`
+        See: readTetgen
 
     BERT
         Boundless electrical resistivity tomography http://www.resistivity.net/
@@ -75,13 +75,14 @@ Glossary
 
     SuiteSparse
         SuiteSparse is a single archive that contains packages for solving
-        large sparse problems using Sparse Cholesky factorization. See:
+        large sparse problems using Sparse Cholesky factorization.
         http://www.cise.ufl.edu/research/sparse/SuiteSparse/
 
     Triangle
         A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator.
-        See: http://www.cs.cmu.edu/~quake/triangle.html
+        http://www.cs.cmu.edu/~quake/triangle.html See: :py:func:`pygimli.meshtools.mesh.readTriangle`
 
     Tetgen
         A Quality Tetrahedral Mesh Generator and a 3D Delaunay Triangulator.
-        See: http://tetgen.org/
+        http://tetgen.org/
+        See: :py:func:`pygimli.meshtools.mesh.readTetgen`

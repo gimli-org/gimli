@@ -50,8 +50,8 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
         if len(upNodes) == 1:
             # this is the dijkstra case
             edge = pg.findBoundary(upNodes[0], node)
-            tt = times[upNodes[0].id()] 
-                        + findSlowness(edge) * edge.shape().domainSize()
+            tt = times[upNodes[0].id()] + \
+                findSlowness(edge) * edge.shape().domainSize()
 
             heapq.heappush(upCandidate, (tt, node))
         else:
@@ -80,8 +80,8 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
                             slowness = c.attribute()
 
                         ttimeA = (ta + slowness * a.pos().distance(node.pos()))
-                        ttimeQ = (ta + t*(tb-ta)) 
-                                    + slowness * line(t).distance(node.pos())
+                        ttimeQ = (ta + t*(tb-ta)) + \
+                                    slowness * line(t).distance(node.pos())
                         ttimeB = (tb + slowness * b.pos().distance(node.pos()))
 
                         heapq.heappush(upCandidate,
@@ -105,101 +105,103 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
 
 # def fastMarch(...)
 
-mesh = pg.Mesh('mesh/test2d')
-mesh.createNeighbourInfos()
+if __name__ is '__main__':
+    mesh = pg.Mesh('mesh/test2d')
+    mesh.createNeighbourInfos()
 
-print(mesh)
+    print(mesh)
 
-source = pg.RVector3(-80, 0.)
-times = pg.RVector(mesh.nodeCount(), 0.)
+    source = pg.RVector3(-80, 0.)
+    times = pg.RVector(mesh.nodeCount(), 0.)
 
-for c in mesh.cells():
-    if c.marker() == 1:
-        c.setAttribute(1.)
-    elif c.marker() == 2:
-            c.setAttribute(0.5)
-    #c.setAttribute(abs(1./c.center()[1]))
+    for c in mesh.cells():
+        if c.marker() == 1:
+            c.setAttribute(1.)
+        elif c.marker() == 2:
+                c.setAttribute(0.5)
+        #c.setAttribute(abs(1./c.center()[1]))
 
-fig, a = plt.add_subplots()
+    fig, a = plt.add_subplots()
 
-anaTimes = pg.RVector(mesh.nodeCount() , 0.0)
-for n in mesh.nodes():
-    anaTimes[n.id()] = source.distance(n.pos())
+    anaTimes = pg.RVector(mesh.nodeCount() , 0.0)
 
+    for n in mesh.nodes():
+        anaTimes[n.id()] = source.distance(n.pos())
 
-#d = pg.DataContainer()
-#dijk = pg.TravelTimeDijkstraModelling(mesh, d)
+    #d = pg.DataContainer()
+    #dijk = pg.TravelTimeDijkstraModelling(mesh, d)
 
-upwind = set()
-downwind = set()
-upTags = np.zeros(mesh.nodeCount())
-downTags = np.zeros(mesh.nodeCount())
+    upwind = set()
+    downwind = set()
+    upTags = np.zeros(mesh.nodeCount())
+    downTags = np.zeros(mesh.nodeCount())
 
-# define initial condition
-cell = mesh.findCell(source)
+    # define initial condition
+    cell = mesh.findCell(source)
 
-for i, n in enumerate(cell.nodes()):
-    times[n.id()] = cell.attribute() * n.pos().distance(source)
-    upTags[n.id()] = 1
-for i, n in enumerate(cell.nodes()):
-    tmpNodes = pg.commonNodes(n.cellSet())
-    for nn in tmpNodes:
-        if not upTags[nn.id()] and not downTags[nn.id()]:
-            downwind.add(nn)
-            downTags[nn.id()] = 1
+    for i, n in enumerate(cell.nodes()):
+        times[n.id()] = cell.attribute() * n.pos().distance(source)
+        upTags[n.id()] = 1
 
+    for i, n in enumerate(cell.nodes()):
+        tmpNodes = pg.commonNodes(n.cellSet())
+        for nn in tmpNodes:
+            if not upTags[nn.id()] and not downTags[nn.id()]:
+                downwind.add(nn)
+                downTags[nn.id()] = 1
 
-#start fast marching
-tic = time.time()
-while len(downwind) > 0:
-    model = pg.RVector(mesh.cellCount(), 0.0)
+    #start fast marching
+    tic = time.time()
+    while len(downwind) > 0:
+        model = pg.RVector(mesh.cellCount(), 0.0)
 
-    #for c in upwind: model.setVal(2, c.id())
-    #for c in downwind: model.setVal(1, c.id())
-#    drawMesh(a, mesh)
+        #for c in upwind: model.setVal(2, c.id())
+        #for c in downwind: model.setVal(1, c.id())
+    #    drawMesh(a, mesh)
 
-    #a.plot(source[0], source[1], 'x')
+        #a.plot(source[0], source[1], 'x')
 
-    #for c in mesh.cells():
-        #a.text(c.center()[0],c.center()[1], str(c.id()))
+        #for c in mesh.cells():
+            #a.text(c.center()[0],c.center()[1], str(c.id()))
 
-    #for n in mesh.nodes():
-        #if upTags[n.id()]:
-            #a.plot(n.pos()[0], n.pos()[1], 'o', color='black')
+        #for n in mesh.nodes():
+            #if upTags[n.id()]:
+                #a.plot(n.pos()[0], n.pos()[1], 'o', color='black')
 
-    #mindist = 9e99
-    #for n in downwind:
-        #a.plot(n.pos()[0], n.pos()[1], 'o', color='white')
+        #mindist = 9e99
+        #for n in downwind:
+            #a.plot(n.pos()[0], n.pos()[1], 'o', color='white')
 
-        #if n.pos().distance(source) < mindist:
-            #mindist = n.pos().distance(source)
-            #nextPredict = n
-    #print "next predicted ", n.id(), mindist
-    #a.plot(nextPredict.pos()[0], nextPredict.pos()[1], 'o', color='green')
+            #if n.pos().distance(source) < mindist:
+                #mindist = n.pos().distance(source)
+                #nextPredict = n
+    
+        #print "next predicted ", n.id(), mindist
+        #a.plot(nextPredict.pos()[0], nextPredict.pos()[1], 'o', color='green')
 
-    #drawField(a, mesh, times)
-    ###drawField(a, mesh, anaTimes, colors = 'white')
-    #a.figure.canvas.draw()
+        #drawField(a, mesh, times)
+        ###drawField(a, mesh, anaTimes, colors = 'white')
+        #a.figure.canvas.draw()
 
-    #a.figure.show()
-    ##raw_input('Press Enter...')
-    #a.clear()
+        #a.figure.show()
+        ##raw_input('Press Enter...')
+        #a.clear()
 
-    fastMarch(mesh, downwind, times, upTags, downTags)
+        fastMarch(mesh, downwind, times, upTags, downTags)
 
-print(time.time()-tic, "s")
+    print(time.time()-tic, "s")
 
-drawMesh(a, mesh)
-drawField(a, mesh, times, filled=True)
-#drawStreamCircular(a, mesh, times, source, 30.,
-#                nLines = 50, step = 0.1, showStartPos = True)
+    drawMesh(a, mesh)
+    drawField(a, mesh, times, filled=True)
+    #drawStreamCircular(a, mesh, times, source, 30.,
+    #                nLines = 50, step = 0.1, showStartPos = True)
 
-#ax1.streamplot(X, Y, U, V, density=[0.5, 1])
+    #ax1.streamplot(X, Y, U, V, density=[0.5, 1])
 
-drawStreamLinear(a, mesh, times,
+    drawStreamLinear(a, mesh, times,
                  pg.RVector3(-100., -10.0),
                  pg.RVector3(100., -10.0),
                  nLines = 50, step = 0.01, showStartPos = True)
 
-plt.show()
+    plt.show()
 

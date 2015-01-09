@@ -71,14 +71,31 @@ add_custom_target(sphinx
             -d "${SPHINX_CACHE_DIR}"
             "${SPHINX_SRCBUILD_DIR}"
             "${SPHINX_HTML_DIR}"
-    COMMENT "Building HTML documentation with Sphinx")
+    COMMENT
+        "Building HTML documentation with Sphinx"
+    DEPENDS
+        sphinx_check_sources
+        sphinxapi
+        doxygen
+)
 
 #add_dependencies(sphinx pygimli)
 #add_dependencies(sphinx doxygen)
-add_dependencies(sphinx sphinx_check_sources)
+#add_dependencies(sphinx sphinx_check_sources)
 
-add_custom_target(doc)
-add_dependencies(sphinx sphinxapi)
-add_dependencies(doc sphinx)
-add_dependencies(doc doxygen)
+add_custom_target(doc
+    DEPENDS
+        sphinx
+    
+)
+# 
+# add_custom_target(sphinxdoc
+#     ALL
+#         sphinx
+#     DEPENDS doxygen
+# )
+# add_dependencies(doc sphinxdoc)
+#add_dependencies(doc doxygen)
+
+
 

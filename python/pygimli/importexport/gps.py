@@ -4,17 +4,18 @@ import sys
 from xml.dom.minidom import parse
 from pyproj import Proj, transform
 
-try:
-    from osgeo import gdal
-    from osgeo.gdalconst import GA_ReadOnly
-except ImportError as e:
-    print(e)
-    import traceback
-    traceback.print_exc(file=sys.stdout)
-    sys.stderr.write("no modules osgeo\n")
-    
 import matplotlib.image as mpimg
 from math import floor
+
+def needOSGEO():
+    try:
+        from osgeo import gdal
+        from osgeo.gdalconst import GA_ReadOnly
+    except ImportError as e:
+        print(e)
+        import traceback
+        traceback.print_exc(file=sys.stdout)
+        sys.stderr.write("no modules osgeo\n")
 
 gk2   = Proj( init="epsg:31466" ) # GK zone 2
 gk3   = Proj( init="epsg:31467" ) # GK zone 3
