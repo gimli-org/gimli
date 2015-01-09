@@ -1,5 +1,3 @@
-.. plot2rst_gallery_style:: thumbnail
-
 .. _tut:modelling:
 
 Modelling

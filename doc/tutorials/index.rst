@@ -3,9 +3,9 @@
 Tutorials
 *********
 
-Learn how gimli can be used to solve your problems (at least the numerical one)
+Learn how GIMLi can be used to solve your problems (at least the numerical one)
 
-Here we add sorted simple tutorials that the reader should help understanding pygimli.
+Here we add sorted simple tutorials that the reader should help understanding pyGIMLi.
 
 .. todo:: Transfer Gmsh tutorial
     
