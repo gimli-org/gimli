@@ -216,6 +216,16 @@ div.admonition.warning {
   color: #a47e3c;
 }
 
+div.admonition.error {
+    color: #b94a48;
+    background-color: #f2dede;
+    border-color: #eed3d7;
+}
+
+.admonition.error a {
+    color: #b94a48;
+}
+
 /* module summary table */
 .longtable.docutils {
     font-size: 12px;

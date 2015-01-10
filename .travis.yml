@@ -59,7 +59,7 @@ install:
     - cd build
     - cmake ../trunk
     - make -j 4 gimli
-    - make pygimli J=3
+    - make pygimli J=4
       
 script:
     # Test gimli
@@ -74,9 +74,3 @@ script:
     - export PYTHONPATH=$PYTHONPATH:`pwd`/../trunk/python
     - python -c "import pygimli; print(pygimli.__version__)"
     - make doc 
-
-notifications:
-    email:
-        - wagnerfl@student.ethz.ch
-        - carsten@resistivity.net
-        - thomas@resistivity.net
