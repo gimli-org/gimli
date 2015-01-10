@@ -20,10 +20,10 @@ cwd = abspath(dirname(__file__))
 build_dir = "@CMAKE_CURRENT_BINARY_DIR@/html"
 example_dir = "@SPHINX_SRC_DIR@/doc/examples"
 tutorial_dir = "@SPHINX_SRC_DIR@/doc/tutorials"
-img_dir = join(build_dir, "_images")
+img_dir = "_images"
 
-#print(example_dir) 
-#print("@CMAKE_CURRENT_BINARY_DIR@") 
+#print(example_dir)
+#print("@CMAKE_CURRENT_BINARY_DIR@")
 # Get examples/tutorials
 examples = glob(join(example_dir, '*/*plot*.py'))
 tutorials = glob(join(tutorial_dir, '*/*plot*.py'))
@@ -48,10 +48,10 @@ titles = ex_titles + tut_titles
 # TODO: Account for true path structure once uploaded to gimli.org
 
 
-examples = [e.replace("@SPHINX_SRC_DIR@/doc/examples", "@CMAKE_CURRENT_BINARY_DIR@/html/doc/_examples_auto")
+examples = [e.replace("@SPHINX_SRC_DIR@/doc/examples", "/doc/_examples_auto")
             for e in examples]
 
-tutorials = [t.replace("@SPHINX_SRC_DIR@/doc/tutorials", "@CMAKE_CURRENT_BINARY_DIR@/html/doc/_tutorials_auto")
+tutorials = [t.replace("@SPHINX_SRC_DIR@/doc/tutorials", "/doc/_tutorials_auto")
              for t in tutorials]
 
 # Create HTML gallery for sidebar with random start item
