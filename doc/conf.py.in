@@ -15,6 +15,11 @@ import sys
 import os
 import pip
 import re
+
+# For doc build on headless machines
+import matplotlib
+matplotlib.use('Agg')
+
 import pygimli as pg
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -113,7 +118,7 @@ release = release.replace('_', '\\_')
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['doc/_build', 
+exclude_patterns = ['doc/_build',
                     'doc/_sphinx-ext',
                     'doc/_templates',
                     'doc/tmp',
@@ -295,12 +300,12 @@ latex_additional_macros = open('@SPHINX_SRC_DIR@/doc/_static/mylatex-commands.st
 
 mathjax_latex_preamble=""
 
-   
+
 LatexCommandTranslator = {}
 LatexCommandTranslator['mathDictionary'] = {}
 LatexCommandTranslator['commandDictionary'] = {}
 LatexCommandTranslator['command1Dictionary'] = {}
-            
+
 trans = LatexCommandTranslator
 
 for macro in latex_additional_macros:
@@ -312,7 +317,7 @@ for macro in latex_additional_macros:
     mathOperator = re.search('\\\\DeclareMathOperator{\\\\([A-Za-z]*)}{(.*)}', macro)
     if mathOperator:
         LatexCommandTranslator['mathDictionary'][mathOperator.group(1)] = mathOperator.group(2).replace("\\","\\\\")
-        
+
     newCommand = re.search('\\\\newcommand{\\\\([A-Za-z]*)}{(.*)}', macro)
     if newCommand:
         LatexCommandTranslator['commandDictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
@@ -326,7 +331,7 @@ for macro in latex_additional_macros:
     newCommand = re.search('\\\\renewcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}', macro)
     if newCommand:
         LatexCommandTranslator['command1Dictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
-    
+
 latex_additional_macros.close()
 
 plot2rst_commandTranslator = LatexCommandTranslator
