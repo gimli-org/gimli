@@ -654,12 +654,14 @@ def printcerr2rst(outbuff):
     return code_directive + indented_block + "*"
 
 def printcout2rst(outbuff):
-    """Return reStructuredText code block from printput string"""
+    """Return reStructuredText code block from print out string"""
     code_directive = "..\n\n"
     indented_block = '\t\n'
     for t in outbuff:
         if t == '\n':
             indented_block += '\t\n\n'
+        elif t == ' ':
+            indented_block += ' '
         else:
             indented_block += '\t\t*' + t.replace('\n', '\n\t') + '*'
 

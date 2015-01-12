@@ -294,9 +294,6 @@ def addCoverageAlpha(patches, coverage, dropTolerance=0.4):
     dropTolerance : float
         minimum coverage
     
-    Usage
-    -----
-    
         
     """
     

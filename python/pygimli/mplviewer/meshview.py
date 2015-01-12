@@ -13,7 +13,8 @@ from pygimli.misc import streamline  # , streamlineDir # (not used)
 
 
 class CellBrowser:
-    """Interactive cell browser on current or specified axes for a given mesh.
+    """
+    Interactive cell browser on current or specified axes for a given mesh.
     Cell information can be displayed by mouse picking. Arrow keys up and down
     can be used to scroll through the cells, while ESC closes the cell
     information window.
@@ -26,8 +27,9 @@ class CellBrowser:
     ax : mpl axis instance, optional
         Axis instance where the mesh is plotted (default is current axis).
 
-    Usage
-    -----
+    Examples
+    --------
+    
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
     """
@@ -640,8 +642,12 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
                    head_starts_at_zero=True,
                    *args, **kwargs)
 
-
 def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
+    print( 'instead of drawStreamLines2 pls. use drawStreams' )
+    
+    drawStreams(axes, mesh, data, startStream, *args, **kwargs)
+    
+def drawStreams(axes, mesh, data, startStream=3, *args, **kwargs):
     """
         Draw streamlines based on unstructured mesh.
         Every cell contains only one streamline and every new stream line
