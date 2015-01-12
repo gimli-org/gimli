@@ -18,3 +18,4 @@ ignore-paths:
     - mingw
     - rpm
     - thirdParty
+    - python/pygimli/gui

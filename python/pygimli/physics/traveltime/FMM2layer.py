@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from pygimli.mplviewer import drawMesh, drawField, drawStreamLinear
-import heapq
+#import heapq
 from math import asin, tan
 
 from . fastMarchingTest import fastMarch
