@@ -611,9 +611,40 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, *args, **kwargs):
     axes.streamplot(X, Y, U, V, *args, **kwargs)
 # def drawStreamLines(...)
 
+def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
+    """
+        OBSOLETE .. use drawStreams .. will be removed
+    """
+    print( 'instead of drawStreamLines2 pls. use drawStreams' )
+    drawStreams(axes, mesh, data, startStream, *args, **kwargs)
 
 def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
     """
+        Draw a single streamline into a given mesh for given data stating at 
+        the center of cell c.
+        The Streamline will be enlarged until she reached a cell that 
+        already contains a streamline.
+        
+        Parameters
+        ----------
+        
+        axes : matplotlib.axes
+            axes to draw into
+            
+        mesh : :gimliapi:`GIMLI::Mesh`
+            2d Mesh to draw the streamline
+            
+        c : :gimliapi:`GIMLI::Cell`
+            start cell
+            
+        data : iterable float | [float, float]
+            If data is an array of floats the gradients will be calculated
+            else the data will be interpreted as vector field.
+                                         
+        dataMesh : gimliapi:`GIMLI::Mesh` [None]
+        
+            Optionally mesh that for the data. If you want high resolution 
+            data to plot on coarse draw mesh.
     """
     x, y = streamline(mesh, data, startCoord=c.center(),
                       dLengthSteps=5,
@@ -629,7 +660,6 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
         axes.plot(x, y, *args, **kwargs)
 #        print( x, y)
 #        axes.plot(x, y, '.-', color='black', *args, **kwargs)
-
     if len(x) > 3:
         xmid = int(len(x) / 2)
         ymid = int(len(y) / 2)
@@ -642,17 +672,16 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
                    head_starts_at_zero=True,
                    *args, **kwargs)
 
-def drawStreamLines2(axes, mesh, data, startStream=3, *args, **kwargs):
-    print( 'instead of drawStreamLines2 pls. use drawStreams' )
-    
-    drawStreams(axes, mesh, data, startStream, *args, **kwargs)
-    
 def drawStreams(axes, mesh, data, startStream=3, *args, **kwargs):
     """
         Draw streamlines based on unstructured mesh.
         Every cell contains only one streamline and every new stream line
         starts in the center of a cell. Stream density can by chosen by
         parameter a leading to a new mesh with equidistant maximum cell size a.
+        
+        Parameters
+        ----------
+        
     """
 
     viewMesh = None
@@ -713,9 +742,12 @@ def drawStreams(axes, mesh, data, startStream=3, *args, **kwargs):
 
 
 def drawSensors(axes, sensors, diam=None, koords=[0, 2]):
-    ''
-    ''
-    ''
+    """
+        Draw sensor positions as black dots with a given diameter.
+        
+        Parameters
+        ----------
+    """
     eCircles = []
     eSpacing = sensors[0].distance(sensors[1])
 

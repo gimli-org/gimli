@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """pygimli functions for dc resistivity / SIP data."""
 

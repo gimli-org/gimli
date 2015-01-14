@@ -53,7 +53,6 @@ plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='Analytical')
 
 """
 
-
 """
 
 #u = solvePoisson(grid, times=times, theta=0.0,
@@ -67,10 +66,10 @@ dt = times[1] - times[0]
 A = solver.createStiffnessMatrix(grid, np.ones(grid.cellCount()))
 M = solver.createMassMatrix(grid, np.ones(grid.cellCount()))
 
-ut=pg.RVector(dof, 0.0)
-rhs=pg.RVector(dof, 0.0)
-b=pg.RVector(dof, 0.0)
-theta=0
+ut = pg.RVector(dof, 0.0)
+rhs = pg.RVector(dof, 0.0)
+b = pg.RVector(dof, 0.0)
+theta = 0
 
 for n in range(1, len(times)):
     
@@ -90,7 +89,7 @@ for n in range(1, len(times)):
 #u = solver.solvePoisson(grid, times=times, theta=0.0,
                  #u0=lambda r: np.sin(np.pi * r[0]),
                  #uBoundary=dirichletBC)
-                 
+                
 plt.plot(times, u[:, probeID], label='Explicit Euler')
 
 
@@ -123,11 +122,13 @@ for n in range(1,len(times)):
 #u = solver.solvePoisson(grid, times=times, theta=1.0,
                  #u0=lambda r: np.sin(np.pi * r[0]),
                  #uBoundary=dirichletBC)
+
 plt.plot(times, u[:, probeID], label='Implicit Euler')
 
-u = solver.solvePoisson(grid, times=times, theta=0.5,
+u = solver.solve(grid, times=times, theta=0.5,
                  u0=lambda r: np.sin(np.pi * r[0]),
                  uBoundary=dirichletBC)
+
 plt.plot(times, u[:, probeID], label='Crank-Nicolson')
 
 plt.xlabel("t[s] at x = " + str(round(grid.node(probeID).pos()[0],2)))

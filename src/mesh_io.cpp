@@ -597,7 +597,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
         size_t datLen; readFromFile(file, datLen);
 
         RVector dat(datLen); readFromFile(file, dat[0], datLen);
-        this->addExportData(str, dat);
+        this->addData(str, dat);
         //delete [] str;
     }
 
@@ -914,7 +914,8 @@ void Mesh::exportVTK(const std::string & fbody,
 void Mesh::importVTK(const std::string & fbody) {
 //     __MS(dimension_)
     this->clear();
-    std::fstream file; openInFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", &file);
+    std::fstream file; openInFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", 
+                                  &file);
 
     std::vector < std::string > row;
     getline(file, commentString_); //** vtk version line
@@ -981,8 +982,18 @@ void Mesh::readVTKPoints_(std::fstream & file,
     
 //     std::cout << GIMLI::z(positions()) << std::endl;
 //     std::cout << (min(abs(GIMLI::z(positions()))) << std::endl;
+//     __MS(nonZero(GIMLI::x(positions())))
+//     __MS(nonZero(GIMLI::y(positions())))
 //     __MS(nonZero(GIMLI::z(positions())))
-    if (!nonZero(GIMLI::z(positions()))) dimension_ = 2;
+    if (!nonZero(GIMLI::y(positions())) && nonZero(GIMLI::z(positions()))){
+        dimension_ = 2;
+        // swap y and z
+        for (Index i = 0; i < nodeCount(); i ++ ){
+            nodeVector_[i]->pos()[1] = nodeVector_[i]->pos()[2];
+            nodeVector_[i]->pos()[2] = 0.0;
+        }
+        
+    } else if (!nonZero(GIMLI::z(positions()))) dimension_ = 2;
 }
 
 void Mesh::readVTKCells_(std::fstream & file, 
@@ -1056,7 +1067,7 @@ void Mesh::readVTKScalars_(std::fstream & file, const std::vector < std::string 
 
     //std::copy(r.begin(), r.end(), data.begin(), bind< double >(toDouble);
     for (uint i = 0; i < data.size(); i ++) data[i] = toDouble(r[i]);
-    addExportData(name, data);
+    addData(name, data);
 }
 
 
@@ -1277,8 +1288,8 @@ void Mesh::importMod(const std::string & filename){
     RVector x(unique(sort(cat(mat[0], mat[1]))));
     RVector y(unique(sort(cat(mat[2], mat[3]))) * -1.0);
     create2DGrid(x, y);
-    if (comments.size() > 4 && mat.cols() > 4) addExportData(comments[4], mat[4]);
-    if (comments.size() > 5 && mat.cols() > 5) addExportData(comments[5], mat[5]);
+    if (comments.size() > 4 && mat.cols() > 4) addData(comments[4], mat[4]);
+    if (comments.size() > 5 && mat.cols() > 5) addData(comments[5], mat[5]);
 }
 
 void Mesh::importSTL(const std::string & fileName, bool isBinary ){
