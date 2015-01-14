@@ -35,7 +35,7 @@ A mesh is represented by a collection of nodes, cells and boundaries, i.e., geom
 
 .. note::
 
-    A regular spaced mesh consisting of rectangles or hexahedrons is usually called grid. 
+    A regular spaced mesh consisting of rectangles or hexahedrons is usually called grid.
     However, a grid is just a kind of a mesh and GIMLi does not separate between them.
     The only difference is the way of mesh creation.
 
@@ -44,7 +44,7 @@ A simple grid generation is built-in but we also provide wrappers for unstructur
 To create a 2d grid you need to give two arrays or lists for the sampling points in x and y direction, respectively.
 """
 
-grid = pg.createGrid(x=[-1.0, 0.0, 1.0, 4.0], y=[-1.0, 0.0, 1.0, 4.0])
+grid = pg.createGrid(x=(-1.0, 0.0, 1.0, 4.0), y=(-1.0, 0.0, 1.0, 4.0))
 
 
 """
@@ -80,7 +80,7 @@ for cell in grid.cells():
 """
 .. lastcout::
 
-To find the grid generation input arrays ``x`` and ``y``, you can use the 
+To find the grid generation input arrays ``x`` and ``y``, you can use the
 build-in :gimliapi:`GIMLI::Vector` (pre-defined with value type double
 as ``pg.RVector``), standard python lists or :term:`numpy` arrays,
 which are widely compatible with :term:`GIMLi` vectors.
@@ -103,7 +103,7 @@ print(grid.cellCount())
 
 .. lastcout::
 
-rectangles of type :gimliapi:`GIMLI::Quadrangle` being derived from the 
+rectangles of type :gimliapi:`GIMLI::Quadrangle` being derived from the
 base type :gimliapi:`GIMLI::Cell`,
 
 """
@@ -118,14 +118,14 @@ edges of type :gimliapi:`GIMLI::Edge`, which are boundaries of the general
 type :gimliapi:`GIMLI::Boundary`.
 
 The mesh can be saved and loaded in our binary mesh format ``.bms``.
-Or exported into ``.vtk`` format for 2D or 3D visualization using 
+Or exported into ``.vtk`` format for 2D or 3D visualization using
 :term:`Paraview`.
 
-However, we recommend visualizing 2-dimensional content using python scripts 
+However, we recommend visualizing 2-dimensional content using python scripts
 that provides better exports to graphics files (e.g. png, pdf, svg).
-In :term:`pygimli` we provide some basic post-processing routines using 
-the :term:`matplotlib` visualization framework. 
-Our main visualization call is :py:mod:`pygimli.viewer.showmesh.show` which is sufficient for 
+In :term:`pygimli` we provide some basic post-processing routines using
+the :term:`matplotlib` visualization framework.
+Our main visualization call is :py:mod:`pygimli.viewer.showmesh.show` which is sufficient for
 the most mesh, field, model and stream views.
 """
 
@@ -134,5 +134,5 @@ pg.show(grid)
 """
 .. image:: PLOT2RST.current_figure
 
-For more control you can also use the appropriate draw methods :py:mod:`pygimli.mplviewer.meshview`. 
+For more control you can also use the appropriate draw methods :py:mod:`pygimli.mplviewer.meshview`.
 """
