@@ -5,24 +5,30 @@
 Modelling with Boundary Conditions
 ----------------------------------
 
-We use the preceding example (Poisson equation on the unit square) but want to specify different boundary conditions on the four sides.
+We use the preceding example (Poisson equation on the unit square) but want to 
+specify different boundary conditions on the four sides.
 
-Again, we first import numpy and pyplot, pygimli, the solver and some plotting functions.
-Then we create a 50x50 node grid to solve on.
+Again, we first import numpy and pygimli, the solver and post processing 
+functionality.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.solver import solvePoisson
-from pygimli.viewer import showMesh
-from pygimli.mplviewer import drawMesh, drawStreamLines
-
-grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21), y=np.linspace(-1.0, 1.0, 21))
+from pygimli.solver import solve
+from pygimli.viewer import show
+from pygimli.mplviewer import drawStreams
 
 """
-We start considering inhomogeneous Dichlet boundary conditions (BC).
+We create a 50x50 node grid to solve on.
+"""
+
+grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
+                     y=np.linspace(-1.0, 1.0, 21))
+
+"""
+We start considering inhomogeneous Dirchlet boundary conditions (BC).
 There are different ways of specifying BCs. 
 They can be maps from markers to values, explicit functions or implicit (lambda) functions as exemplified in the next example.
 
@@ -46,14 +52,14 @@ dirichletBC = [[1, 1.0], # left
 The BC are passed using the uBoundary keyword.
 Note that showMesh returns the created figure axes ax while drawMesh plots on it and it can also be used as a class with plotting or decoration methods.
 """
-u = solvePoisson(grid, f=1.,
-                 uBoundary=dirichletBC)
+u = solve(grid, f=1.,
+          uBoundary=dirichletBC)
 
-ax = showMesh(grid, data=u, filled=True, colorBar=True,
-              orientation='vertical', label='Solution $u$',
-              levels=np.linspace(1.0, 4.0, 17), showLater=True)[0]
+ax = show(grid, data=u, filled=True, colorBar=True,
+          orientation='vertical', label='Solution $u$',
+          levels=np.linspace(1.0, 4.0, 17), showLater=True)[0]
 
-drawMesh(ax, grid)
+show(grid, axes=ax)
 
 ax.text( 0.0, 1.02, '$u=1$')
 ax.text(-1.08, 0.0, '$u=2$', rotation='vertical')
@@ -73,38 +79,38 @@ ax.set_ylim([-1.1, 1.1])
 Alternatively we can define the gradients of the solution on the boundary, i.e., Neumann type BC.
 This is done as another map (marker, right-hand-side value) and passed by the keyword duBoundary.
 """
-neumannBC = [[2, -0.5], # left
-             [grid.findBoundaryByMarker(3), 2.4]] # bottom
+neumannBC = [[1, -0.5], # left
+             [grid.findBoundaryByMarker(4), 2.5]] # bottom
 
-dirichletBC = [1, 1.0] # top
+dirichletBC = [3, 1.0] # top
 
-u = solvePoisson(grid, f=0.,
-                 duBoundary=neumannBC,
-                 uBoundary=dirichletBC)
+u = solve(grid, f=0.,
+          duBoundary=neumannBC,
+          uBoundary=dirichletBC)
 
 """
 Note that on boundary 4 (right) no BC is explicitly applied leading to default or natural BC that are of homogeneous Neumann type 
 :math:`\frac{\partial u}{\partial n}=0`
 """
               
-ax = showMesh(grid, data=u, filled=True, colorBar=True,
-              orientation='vertical', label='Solution $u$',
-              levels=np.linspace(min(u), max(u), 14), showLater=True)[0]
+ax = show(grid, data=u, filled=True, colorBar=True,
+          orientation='vertical', label='Solution $u$',
+          levels=np.linspace(min(u), max(u), 14), showLater=True)[0]
 
 """
 Instead of the grid we now want to add streamlines to the plot to show the gradients of the solution (i.e., the flow direction).
 """
 
-drawStreamLines(ax, grid, u, nx=25, ny=25, color='Black')
+drawStreams(ax, grid, u)
 
 ax.text(0.0, 1.02, '$u=1$',
-        horizontalalignment='center' )
+        horizontalalignment='center' ) #top -- 3
 ax.text(-1.08, 0.0, '$\partial u/\partial n=-0.5$',
-        verticalalignment='center', rotation='vertical')
+        verticalalignment='center', rotation='vertical') #left -- 1
 ax.text(0.0, -1.08, '$\partial u/\partial n=2.5$',
-        horizontalalignment='center')
+        horizontalalignment='center') # bot -- 4
 ax.text(1.02, 0.0, '$\partial u/\partial n=0$',
-        verticalalignment='center', rotation='vertical')
+        verticalalignment='center', rotation='vertical') #right -- 2
 
 
 ax.set_title('$\\nabla\cdot(1\\nabla u)=0$')

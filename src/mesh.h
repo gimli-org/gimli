@@ -509,6 +509,9 @@ public:
     /*!*/
     const std::map< std::string, RVector > & dataMap() const { return exportDataMap_; }
   
+    /*! Print data map info.*/
+    void dataInfo() const;
+  
     /*! Set the comment for VTK Ascii export headline.*/
     void setCommentString(const std::string & commentString) {commentString_ = commentString;}
 

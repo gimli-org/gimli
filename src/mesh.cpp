@@ -1514,6 +1514,17 @@ void Mesh::clearExportData(){
     exportDataMap_.clear();
 }
 
+void Mesh::dataInfo() const{
+    if (exportDataMap_.empty()){
+        std::cout << "No data." << std::endl;
+    } else {
+        for (std::map < std::string, RVector >::const_iterator
+            it = exportDataMap_.begin(); it != exportDataMap_.end(); it ++){
+            std::cout << it->first << ": " << str(it->second.size()) << std::endl;
+        }
+    }
+}
+
 IVector Mesh::nodeMarker() const {
     IVector tmp(nodeCount());
     std::transform(nodeVector_.begin(), nodeVector_.end(), tmp.begin(), std::mem_fun(& Node::marker));

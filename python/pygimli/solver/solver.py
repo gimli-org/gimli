@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import pygimli as pg
@@ -33,7 +34,8 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
         ret = pg.RVector(nDofs[0], 0.0)
         
         if not mesh:
-            raise Exception("Please provide a mesh for the callable argument to parse ")
+            raise Exception("Please provide a mesh for the callable"
+                            "argument to parse ")
         
         if nDofs[0] == mesh.nodeCount():
             for n in mesh.nodes():
@@ -63,6 +65,8 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 #def parseArgToArray(...)
 
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
+    """
+    """
     A = pg.RSparseMapMatrix(dom, dom)
     
     if end == -1: end = dom
@@ -77,6 +81,8 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
     return A
         
 def identity(dom, start=0, end=-1):
+    """
+    """
     A = pg.RSparseMapMatrix(dom, dom)
     
     if end == -1: end = dom
@@ -141,7 +147,8 @@ def linsolve(A, b, verbose=False):
     
 def assembleForceVector(mesh, f, userData=None):
     """
-        Create right hand side vector based on the given mesh and on the force values
+        Create right hand side vector based on the given mesh and on 
+        the force values
         
     Parameters
     ----------
@@ -178,7 +185,8 @@ def assembleForceVector(mesh, f, userData=None):
         elif len(fArray) == mesh.nodeCount():
             rhs = pg.RVector(fArray)
         else:
-            raise Exception("Forcevector have the wrong size: " + str(len(fArray)))
+            raise Exception("Forcevector have the wrong size: " + \
+                str(len(fArray)))
 
     return rhs
 # def assembleForceVector()
@@ -233,7 +241,8 @@ def assembleNeumannBC(S,
     if type(boundaryPair) == tuple or len(boundaryPair) == 2:
         
         #if verbose:
-            #print("Setting " + str(len(boundaryPair[0])) + " bounds to du/dn = " + str(boundaryPair[1]));
+            #print("Setting " + str(len(boundaryPair[0])) + \
+                #" bounds to du/dn = " + str(boundaryPair[1]));
     
         for b in boundaryPair[0]:
             val = None
@@ -315,7 +324,8 @@ def assembleDirichletBC(S, boundaryPair, rhs=None, time=0.0,
                     raise Exception("cannot find dirichlet value for node ", n)
     
     else:
-        raise Exception("cannot interpret boundaries sequence:" + str(type(uDirchlet)))
+        raise Exception("cannot interpret boundaries sequence:" + \
+            str(type(uDirchlet)))
     
     if len(uDirNodes) == 0:
         return 
@@ -330,7 +340,8 @@ def assembleDirichletBC(S, boundaryPair, rhs=None, time=0.0,
         uDirchlet[i] = uDirVal[n.id()]
     
     #if verbose:
-        #print("Setting " + str(len(uDirIndex)) + " nodes to u = " + str(uDirchlet[0]));
+        #print("Setting " + str(len(uDirIndex)) + \
+    #           " nodes to u = " + str(uDirchlet[0]));
     
     assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet)
         
@@ -379,15 +390,17 @@ def assembleBoundaryConditions(mesh, S, rhs, boundArgs, assembler,
 
 def createStiffnessMatrix(mesh, a=None):
     """
-    Calculates the stiffness matrix for the given mesh scaled with the per cell values a.
+    Calculates the stiffness matrix for the given mesh scaled with the per cell 
+    values a.
     
     ..math::
             ...
     
     Parameters
     ----------
-    mesh : pg.Mesh
-        Arbitrary mesh to calculate the stiffness for. Type of base and shape functions depends on the cell types.
+    mesh : gimliapi:`GIMLI::Mesh`
+        Arbitrary mesh to calculate the stiffness for.
+        Type of base and shape functions depends on the cell types.
     
     a : array, either complex or real
         Per cell values., e.g., physical parameter. If None given default is 1.
@@ -474,6 +487,20 @@ def createMassMatrix(mesh, b=None):
 def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                  verbose=False, stats=None, *args, **kwargs):
     """
+    """
+    return solveFEM(mesh, a, b, f, times, userData, verbose, stats,
+                    *args, **kwargs)
+
+def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
+          verbose=False, stats=None, *args, **kwargs):
+    """
+    """
+    return solveFEM(mesh, a, b, f, times, userData, verbose, stats,
+                    *args, **kwargs)
+
+def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
+             verbose=False, stats=None, *args, **kwargs):
+    """
     TODO
     
     The value of :math:`\omega` is larger than 5.
@@ -486,16 +513,25 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     Parameters
     ----------
+    mesh : gimliapi:`GIMLI::Mesh`
+        Mesh represents spatial discretization of the calculation domain
     
     a   : value | array | callable(cell, userData)
         Cell values
+        
     b   : value | array | callable(cell, userData)
         Cell values
-    u0      : value | array | callable(pos, userData)
+        
+    u0 : value | array | callable(pos, userData)
         Node values
-    f       : value | array(cells) | array(nodes) | callable(args, kwargs)
+        
+    f : value | array(cells) | array(nodes) | callable(args, kwargs)
         force values 
-    theta   : float
+    
+    times : array [None]
+        solve as time dependent problem for the given times
+        
+    theta : float [None]
         - `theta` = 0, explicit Euler, maybe stable for
         - `theta` = 0.5, Crank-Nicolsen, maybe instable 
         - `theta` = 1, implicit Euler
@@ -523,8 +559,10 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     other solver TODO
     
     """
+    debug = kwargs.pop('debug', False)
+        
     if verbose:
-        print(("Mesh: ", str(mesh)))
+        print("Mesh: ", str(mesh))
 
     dof = mesh.nodeCount()
         
@@ -535,36 +573,36 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     a = parseArgToArray(a, mesh.cellCount(), mesh, userData)
     b = parseArgToArray(b, mesh.cellCount(), mesh, userData)
         
-    print("2: ", swatch2.duration(True))
+    if debug: print("2: ", swatch2.duration(True))
     # assemble the stiffness matrix
     A = createStiffnessMatrix(mesh, a)
     
-    print("3: ", swatch2.duration(True))
+    if debug: print("3: ", swatch2.duration(True))
     M = createMassMatrix(mesh, b)
         
-    print("4: ", swatch2.duration(True))
+    if debug: print("4: ", swatch2.duration(True))
     S = A + M
     
-    print("5: ", swatch2.duration(True))
-    if times == None:
+    if debug: print("5: ", swatch2.duration(True))
+    if times is None:
         
         rhs = assembleForceVector(mesh, f, userData=userData)
         
-        print("6a: ", swatch2.duration(True))
+        if debug: print("6a: ", swatch2.duration(True))
         if 'duBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['duBoundary'], 
                                        assembleNeumannBC,
                                        userData=userData, 
                                        verbose=verbose)
 
-        print("6b: ", swatch2.duration(True))
+        if debug: print("6b: ", swatch2.duration(True))
         if 'uBoundary' in kwargs:
             assembleBoundaryConditions(mesh, S, rhs, kwargs['uBoundary'],
                                        assembleDirichletBC, 
                                        userData=userData,
                                        verbose=verbose)
 
-        print("6c: ", swatch2.duration(True))
+        if debug: print("6c: ", swatch2.duration(True))
         if 'uDirichlet' in kwargs:
             assembleUDirichlet_(S, rhs,
                                 kwargs['uDirichlet'][0],
@@ -577,7 +615,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             u = pg.CVector(rhs.size(), 0.0)
             rhs = pg.toComplex(rhs)
             
-        print("7: ", swatch2.duration(True))
+        if debug: print("7: ", swatch2.duration(True))
         
         assembleTime = swatch.duration(True)
         if stats:
@@ -601,14 +639,14 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         return u
         
     else:
-        print("start TL", swatch.duration())
+        if debug: print("start TL", swatch.duration())
         M = createMassMatrix(mesh, pg.RVector(mesh.cellCount(), 1.0))
 
         rhs = np.zeros((len(times), dof))
         # rhs kann zeitabhängig sein ..wird hier nicht berücksichtigt
         rhs[:] = assembleForceVector(mesh, f) # this is slow: optimize
         
-        print("rhs", swatch.duration())
+        if debug: print("rhs", swatch.duration())
         U = np.zeros((len(times), dof))
         #init state
         u = pg.RVector(dof, 0.0)
@@ -620,7 +658,7 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if 'theta' in kwargs:
              theta = float(kwargs['theta'])
              
-        print("u0", swatch.duration())
+        if debug: print("u0", swatch.duration())
              
         measure = 0.
         for n in range(1, len(times)):
@@ -682,6 +720,8 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 if kwargs['progress']:
                     print(("\t" + str(n) +"/" + str(len(times)-1) + 
                           ": " + str(t_prep) +"/" + str(swatch.duration())))
-        print( "Measure("+str(len(times))+"): ", measure, measure/len(times))
+        
+        if debug: print("Measure("+str(len(times))+"): ",
+                        measure, measure/len(times))
         return U
 # def solvePoisson(..):

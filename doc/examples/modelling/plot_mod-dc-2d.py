@@ -23,7 +23,7 @@ import pygimli as pg
 
 from pygimli.solver import solvePoisson
 
-from pygimli.viewer import showMesh
+from pygimli.viewer import show
 from pygimli.mplviewer import *
 
 """
@@ -120,12 +120,12 @@ u -= solvePoisson(grid, a=1, b=k*k, f=pointSource,
 #err = (1.0 -u/uAna)*100.0
 
 #print "error min max", min(err), max(err)
+pg.showLater(1)
 
-ax = showMesh(grid, data=u, filled=True, colorBar=True,
-              orientation='horizontal', label='Solution $u$',
-              showLater=True)[0]
-
-drawMesh(ax, grid)
+ax = show(grid, data=u, filled=True, colorBar=True,
+          orientation='horizontal', label='Solution $u$',
+          showLater=True)[0]
+show(grid, axes=ax)
 
 """
 Instead of the grid we want to add streamlines to the plot to show the gradients
@@ -134,7 +134,7 @@ of the solution.
 
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, .0, 20))
 
-drawStreamLines2(ax, grid, u, coarseMesh=gridCoarse, color='Black')
+drawStreams(ax, grid, u, coarseMesh=gridCoarse, color='Black')
 #pg.show(gridCoarse,  axes=ax)
 
 """
@@ -143,4 +143,4 @@ drawStreamLines2(ax, grid, u, coarseMesh=gridCoarse, color='Black')
 
 """
 
-plt.show()
+pg.showNow()

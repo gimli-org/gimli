@@ -22,6 +22,8 @@ def streamline(mesh, field, startCoord, dLengthSteps,
                dataMesh=None,
                maxSteps=1000, verbose=False, koords=[0, 1]):
     """
+        Create a streamline from startCoord and following a vector field in up 
+        and down direction.
     """
     xd, yd = streamlineDir(mesh, field, startCoord, 
                            dLengthSteps,
@@ -39,7 +41,8 @@ def streamline(mesh, field, startCoord, dLengthSteps,
                            dataMesh=dataMesh,
                            maxSteps=maxSteps,
                            down=False, verbose=verbose, koords=koords)
-    return xd + xu, yd + yu
+    
+    return xd + xu[1:], yd + yu[1:]
 
 def streamlineDir(mesh, field, startCoord, dLengthSteps,
                   dataMesh=None,

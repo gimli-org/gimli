@@ -162,6 +162,10 @@ _pygimli_.CVector.__bool__ = nonzero_test
 _pygimli_.IVector.__nonzero__ = nonzero_test
 _pygimli_.IVector.__bool__ = nonzero_test
 
+def __RVectorPower(self, m):
+    return pow(self, m)
+_pygimli_.RVector.__pow__ = __RVectorPower
+
 ############################
 # allow:
 ############################
@@ -187,7 +191,7 @@ def __getVal(self, idx):
     #print("__getVal")
     if isinstance(idx, BVector) or isinstance(idx, IVector):
         return self(idx)
-    elif isinstance(idx, stdVectorI):
+    elif isinstance(idx, stdVectorI) or isinstance(idx, stdVectorUL):
         return self(idx)
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         raise "TODO Implement with IVector"

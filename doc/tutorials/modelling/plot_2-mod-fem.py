@@ -5,18 +5,22 @@
 Modelling
 ---------
 
-This is the first step for the modelling tutorial where we actually use finite elements computation. 
+This is the first step for the modelling tutorial where we actually use 
+finite elements computation. 
 
-We will not go in deep detail about the Finite Elements Theory here, as this can be found in several books, e.g., 
-:cite:`Zienkiewicz1977`
+We will not go in deep detail about the finite elements theory here, 
+as this can be found in several books, e.g., :cite:`Zienkiewicz1977`
 
-We just want to solve some problems to show how the *M* (Modelling) in *GIMLi* works.
+In this modelling tutorials we just want to solve some simple problems to show how the *M* (Modelling) in *GIMLi* works.
 
-We will solve a simple Poisson equation with zero boundary values, but a nonzero right hand side:
+The starting with a simple elliptic partial diferential equation with zero boundary values, but a nonzero right hand side:
 
 .. math::
 
-    \nabla\cdot( A \cdot \nabla u ) + B u + C = 0
+    \nabla\cdot( A \cdot \nabla u ) + B u + C & = 0 \quad{\mathrm{in}}\quad\Omega \\
+    \alpha u + \beta \frac{\partial u }{\partial n} & = 0 \quad{\mathrm{on}}\quad\partial\Omega
+   
+By letting :math:`A=1,\,B=0\,and\,C = 1` we get the simplest Poisson equation:
    
 .. math::
 

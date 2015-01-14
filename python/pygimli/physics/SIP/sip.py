@@ -33,7 +33,7 @@ def readSIP256file(resfile, verbose=True):
                             else:
                                 num = int(value)
                             data[token] = num
-                        except:  # maybe beginning or end of a block
+                        except Exception as e:  # maybe beginning or end of a block
                             pass
                 else:
                     if activeBlock:

@@ -257,8 +257,8 @@ def readGmsh(fname, verbose=False):
 
 def readTriangle(fname, verbose=False):
     """
-    Read :term:`Triangle` ASCII files and return instance of GIMLI::Mesh class.
-    http://www.cs.cmu.edu/~quake/triangle.html
+    Read :term:`Triangle` :cite:`shewchuk96b`  ASCII files and return instance of GIMLI::Mesh class.
+    See: ://www.cs.cmu.edu/~quake/triangle.html
 
     Parameters
     ----------
@@ -268,9 +268,6 @@ def readTriangle(fname, verbose=False):
     verbose : boolean, optional
         Be verbose during import.
 
-    References
-    ----------
-    .. [Triangle] Jonathan Richard Shewchuk, Triangle: Engineering a 2D Quality Mesh Generator and Delaunay Triangulator, in ``Applied Computational Geometry: Towards Geometric Engineering'' (Ming C. Lin and Dinesh Manocha, editors), volume 1148 of Lecture Notes in Computer Science, pages 203-222, Springer-Verlag, Berlin, May 1996.
     """
     
     raise("implement me!")
@@ -279,7 +276,7 @@ def readTriangle(fname, verbose=False):
     
 def readTetgen(fname, verbose=False):
     """
-    Read :term:`Tetgen` ASCII files and return instance of GIMLI::Mesh class.
+    Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance of GIMLI::Mesh class.
     See: http://tetgen.org/
 
     Parameters
@@ -290,9 +287,6 @@ def readTetgen(fname, verbose=False):
     verbose : boolean, optional
         Be verbose during import.
 
-    References
-    ----------
-    .. [Tetgen] .
     """
     raise("implement me!")
     os.system('meshconvert -d3 -D ..' + fname)
