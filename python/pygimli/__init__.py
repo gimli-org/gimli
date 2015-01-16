@@ -19,7 +19,7 @@ from __future__ import print_function
 import os
 try:
     import subprocess # check for 3.4
-except:
+except ImportError:
     pass
 
 import sys
@@ -37,16 +37,30 @@ except ImportError as e:
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
 import locale
-print(locale.localeconv()['decimal_point'])
-if locale.localeconv()['decimal_point'] == ',':
-    print(
-        "Found locale decimal_point ',', change it to: decimal point '.':",
-        end=' ')
-try:
-    locale.localeconv()['decimal_point']
-    locale.setlocale(locale.LC_NUMERIC, 'C')
-except:
-    print('cannot set locale to decimal point')
+
+def checkAndFixLocaleDecimal_point(verbose=False):
+    """
+    """
+    if locale.localeconv()['decimal_point'] == ',':
+        if verbose:
+            print("Found locale decimal_point ',' "
+                 "and change it to: decimal point '.'")
+    try:
+        locale.localeconv()['decimal_point']
+        locale.setlocale(locale.LC_NUMERIC, 'C')
+    except Exception as e:
+        print(e)
+        print('cannot set locale to decimal point')
+        
+checkAndFixLocaleDecimal_point(verbose=True)
+##print(locale.localeconv()['decimal_point'])
+#if locale.localeconv()['decimal_point'] == ',':
+    #print("Found locale decimal_point ',' and change it to: decimal point '.'")
+#try:
+    #locale.localeconv()['decimal_point']
+    #locale.setlocale(locale.LC_NUMERIC, 'C')
+#except:
+    #print('cannot set locale to decimal point')
 
 ############################
 ###  Global shortcutes #####
@@ -149,7 +163,8 @@ _pygimli_.DataContainer.__str__ = Data_str
 ############################
 
 def nonzero_test(self):
-    raise BaseException("Warning! there is no 'and' and 'or' for BVector and RVector. " + \
+    raise BaseException("Warning! there is no 'and' and 'or' for "
+        "BVector and RVector. " + \
         "Use binary operators '&' or '|' instead. " + \
         "If you looking for the nonzero test, use len(v) > 0")
 
@@ -337,7 +352,8 @@ class VectorIter:
         
 def __VectorIterCall__(self):
     return VectorIter(self)
-    # don't use pygimli iterators here until the reference for temporary vectors are collected
+    # don't use pygimli iterators here until the reference for temporary 
+    # vectors are collected
     #return _pygimli_.RVectorIter(self.beginPyIter())
 
 _pygimli_.RVector.__iter__ = __VectorIterCall__
@@ -402,7 +418,8 @@ def __RVectorArrayCall__(self, idx=None):
         print(idx)
         raise Exception("we need to fix this")
     import numpy as np
-    # we need to copy the array until we can handle increasing the reference counter in self.array() else it leads to strange behaviour
+    # we need to copy the array until we can handle increasing the reference 
+    # counter in self.array() else it leads to strange behaviour
     # test in testRValueConverter.py:testNumpyFromRVec()
     return np.array(self.array())
     #return self.array()
@@ -521,10 +538,3 @@ def randN(self, n):
     return r
 
 
-def checkAndFixLocaleDecimal_point(verbose=False):
-    import locale
-    if locale.localeconv()['decimal_point'] == ',':
-        if verbose:
-            print("decimal point: ", locale.localeconv()['decimal_point'])
-            print("setting .")
-        locale.setlocale(locale.LC_NUMERIC, 'C')

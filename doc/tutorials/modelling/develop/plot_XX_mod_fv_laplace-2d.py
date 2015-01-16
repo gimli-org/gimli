@@ -7,7 +7,7 @@
 import pygimli as pg
 import pygimli.solver as solver
 from pygimli.viewer import showMesh
-from pygimli.mplviewer import drawMesh, drawStreamLines2
+from pygimli.mplviewer import drawMesh, drawStreams
 from pygimli.meshtools import createMesh
 
 import matplotlib.pyplot as plt

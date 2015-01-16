@@ -238,16 +238,13 @@ template < class ValueType >
    
         if (((cholmod_sparse*)A_)->stype == 0){
             double al[2] = {0,0}, be[2] = {1,0};       /* basic scalars */
-//             __M
             cholmod_sdmult((cholmod_sparse*)A_, 0, be, al, x, r, (cholmod_common*)c_);       
-//             __M
             bx = (ValueType *)r->x; /* ret = Ax */
             for (uint i = 0; i < dim_; i++) solution[i] = conj(bx[i]);
         } else {
             bx = (ValueType *)x->x; /* ret = x */
             for (uint i = 0; i < dim_; i++) solution[i] = bx[i];
         }
-
         cholmod_free_dense(&x, (cholmod_common*)c_);
         cholmod_free_dense(&r, (cholmod_common*)c_);
         cholmod_free_dense(&b, (cholmod_common*)c_);

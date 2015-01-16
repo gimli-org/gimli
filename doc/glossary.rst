@@ -19,8 +19,10 @@ Glossary
 
     Gmsh
         Gmsh: a three-dimensional finite element mesh generator with built-in
-        pre- and post-processing facilities http://geuz.org/gmsh/. 
-        See: readTetgen
+        pre- and post-processing facilities
+        :cite:`GeuzaineRemacle2009`
+        http://geuz.org/gmsh/. 
+        See: :py:func:`pygimli.meshtools.mesh.readGmsh`
 
     BERT
         Boundless electrical resistivity tomography http://www.resistivity.net/
@@ -79,10 +81,13 @@ Glossary
         http://www.cise.ufl.edu/research/sparse/SuiteSparse/
 
     Triangle
-        A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator.
-        http://www.cs.cmu.edu/~quake/triangle.html See: :py:func:`pygimli.meshtools.mesh.readTriangle`
+        A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator. 
+        :cite:`Shewchuk96b`
+        http://www.cs.cmu.edu/~quake/triangle.html
+        See: :py:func:`pygimli.meshtools.mesh.readTriangle`
 
     Tetgen
         A Quality Tetrahedral Mesh Generator and a 3D Delaunay Triangulator.
+        :cite:`Si2004`
         http://tetgen.org/
         See: :py:func:`pygimli.meshtools.mesh.readTetgen`
