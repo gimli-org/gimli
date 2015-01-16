@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+"""
+    Generic mesh visualization tools.
+"""
 try:
     import pygimli as pg
     from pygimli.mplviewer import drawMesh, drawModel, drawField
@@ -106,11 +108,9 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
         
     
     """
-    ret = []
-
     ax = axes
     
-    if ax == None:
+    if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         
@@ -176,7 +176,7 @@ def showBoundaryNorm(mesh, *args, **kwargs):
         c1 = b.center()
         c2 = c1 + b.norm()
         ax.plot([c1[0], c2[0]],
-                [c1[1], c2[1]], color='Black')
+                [c1[1], c2[1]], color='Black', *args, **kwargs)
 
     if not showLater:
         plt.show()

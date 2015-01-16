@@ -406,7 +406,7 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
     swatch = pg.Stopwatch(True)
     sparse=True
     
-    workspace = WorkSpace
+    workspace = WorkSpace()
     if ws:
         workspace = ws
     
@@ -430,7 +430,6 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
                 for b in bounds: 
                     boundsDirichlet[b.id()] = val
  
-        #print('##########')
         workspace.S, workspace.rhsBCScales = diffusionConvectionKernel(mesh=mesh,
                                                                        a=a,
                                                                        f=f,
@@ -472,6 +471,8 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
     
         if sparse:
             Sm = pg.RSparseMatrix(workspace.S)
+            # hold Sm until we have reference counting, loosing Sm here will kill LinSolver later            
+            workspace.Sm = Sm
             workspace.solver = pg.LinSolver(Sm)
         
         #print('FVM: Fact:', swatch.duration(True))
@@ -495,24 +496,15 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
     
     if uL is not None:
         workspace.rhs += (1. - relax) * workspace.ap * uL
-    print('FVM: Prep:', swatch.duration(True))
+    # print('FVM: Prep:', swatch.duration(True))
     
     if not hasattr(times, '__len__'):
         
-        print('#'*100)
         u = None
         if sparse:
-            print('-'*100)
             u = workspace.solver.solve(workspace.rhs)
         else:
-            print('+'*100)
             u = np.linalg.solve(workspace.S, workspace.rhs)
-        
-        print('#'*100)
-        #u = workspace.solver.solve(workspace.rhs)
-        #del workspace.S
-        #print('FVM: solve:', swatch.duration(True))
-        #print(u)
         return u[0:mesh.cellCount():1]
     else:
         u = np.zeros((len(times), len(rhs)))
@@ -637,9 +629,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
     controlVolumes = CtB * mesh.cellSizes()
     
     for i in range(maxIter):
-        print(i, '#')
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)    
-        print(i, '0#')
         #__d('vx', pressureGrad[:,0])
         
         velocity[:,0] = solveFiniteVolume(mesh,
@@ -649,13 +639,10 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                           uL=velocity[:,0],
                                           relax=velocityRelaxation, 
                                           ws=wsux)
-        print(i, '1#')
         #for s in wsux.S:
             #print(s)
         #__d('rhs', wsux.rhs, 1)
         #__d('ux', velocity[:,0])
-        
-        ##ss
         
         velocity[:,1] = solveFiniteVolume(mesh, 
                                           a=viscosity,
@@ -683,8 +670,6 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
     
         applyBoundaryValues(velXF, mesh, velBoundaryX)
         applyBoundaryValues(velYF, mesh, velBoundaryY)
-    
-        
     
         if pressureCoeff is None:
             pressureCoeff = 1./ apF * mesh.boundarySizes() * boundaryToCellDistances(mesh)

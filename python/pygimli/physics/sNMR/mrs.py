@@ -527,20 +527,23 @@ class MRS():
         ax[1].set_xlim(self.lowerBound[2]*1000,self.upperBound[2]*1000)
         ax[1].set_ylim((maxz*1.2,0))
         if savefile: 
-            fig.savefig(time.strftime('%y%m%d-%H%M%S')+'.pdf',bbox_inches='tight')
+            fig.savefig(time.strftime('%y%m%d-%H%M%S')+'.pdf',
+                        bbox_inches='tight')
         
         plt.show()
             
 ############ MAIN ############
-if __name__ == "__main__":
+if __name__ is "__main__":
     import sys # not really PEP-7 conform to import here
     from optparse import OptionParser
 
-    parser = OptionParser("usage: %prog [options] mrs", version="%prog: " + pg.__version__ )
+    parser = OptionParser("usage: %prog [options] mrs",
+                          version="%prog: " + pg.__version__ )
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     parser.add_option("-n", "--nLayers", dest="nlay",
-                            help="number of layers", type = "int", default = "4")
+                            help="number of layers", type = "int",
+                            default = "4")
 
     (options, args) = parser.parse_args()
 

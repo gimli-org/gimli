@@ -10,9 +10,9 @@ def createMesh(poly, quality=30, area=0.0,
                verbose=False):
     """
     Create a mesh for a given PLC using
-    triangle (http://www.cs.cmu.edu/~quake/triangle.html)
-    or tetgen if the gimli support for the meshgenerator is installed.
-    Poly need to be a valid PLC.
+    :term:`triangle` or :term:`tetgen` if the gimli support for the 
+    meshgenerator is installed.
+    The mesh poly need to be a valid PLC.
 
     If poly is a list coordinates a simple Delaunay mesh of the convex hull
     will be created.
@@ -114,12 +114,6 @@ def readGmsh(fname, verbose=False):
         - Physical Number 1: No inversion region
         - Physical Number >= 2: Inversion region
 
-    References
-    ----------
-    .. [1] C. Geuzaine and J.-F. Remacle. Gmsh: a three-dimensional finite
-           element mesh generator with built-in pre- and post-processing
-           facilities. International Journal for Numerical Methods in
-           Engineering 79(11), pp. 1309-1331, 2009.
     """
     inNodes, inElements, ncount, ecount = 0, 0, 0, 0
     fid = open(fname)
@@ -257,7 +251,7 @@ def readGmsh(fname, verbose=False):
 
 def readTriangle(fname, verbose=False):
     """
-    Read :term:`Triangle` :cite:`shewchuk96b`  ASCII files and return instance of GIMLI::Mesh class.
+    Read :term:`Triangle` :cite:`Shewchuk96b`  ASCII files and return instance of GIMLI::Mesh class.
     See: ://www.cs.cmu.edu/~quake/triangle.html
 
     Parameters

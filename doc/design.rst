@@ -53,7 +53,7 @@ that are based on each other:
     sophisticated techniques are formulated abstractly, e.g. time-lapse strategies, laterally constrained or roll-along inversion, different kinds of joint inversion
 
 External programs are, e.g., mesh generators and solvers for linear systems.
-For generating quality constrained irregular 2d and 3d meshes, we usually use :term:`Triangle` :cite:`shewchuk96b` and :term:`TetGen` :cite:`tetgen`. 
+For generating quality constrained irregular 2d and 3d meshes, we usually use :term:`Triangle` :cite:`Shewchuk96b` and :term:`TetGen` :cite:`Si2004`. 
 However, there is a tutorial on how to incorporate :term:`Gmsh` meshes :cite:`GeuzaineRemacle2009`.
 Regular meshes can be directly created.
 For solving linear systems we use the open-source collection :term:`SuiteSparse` :cite:`ChenDavHag+2009`, which contains multi-frontal direct \& iterative solvers as well as reordering algorithms.

@@ -16,7 +16,7 @@ import numpy as np
 
 def diffusionConvectionKernelGrid(mesh, a, f, v, uDir, scheme='CDS'):
     """
-        aEclet Number - ratio between convection/diffusion
+        Peclet Number - ratio between convection/diffusion
         
         Advection .. forced convection
     """
@@ -33,7 +33,7 @@ def diffusionConvectionKernelGrid(mesh, a, f, v, uDir, scheme='CDS'):
     AScheme = None
     if scheme == 'CDS':
         # CDS - central differences scheme .. maybe irregular for Peclet-number |F/D| > 2
-        # diffusion dominant
+        # Diffusion dominant
         # Error of order 2
         AScheme = lambda peclet_: 1.0 - 0.5 * abs(peclet_)    
     elif scheme == 'UDS':
@@ -43,12 +43,12 @@ def diffusionConvectionKernelGrid(mesh, a, f, v, uDir, scheme='CDS'):
         AScheme = lambda peclet_: 1.0
     elif scheme == 'HS':
         #HS - hybrid scheme. 
-        #Diffusion dominant for aEclet-number |(F/D)| < 2
+        #Diffusion dominant for Peclet-number |(F/D)| < 2
         #Convection dominant else
         AScheme = lambda peclet_: max(0.0, 1.0 - 0.5 * abs(peclet_))
     elif scheme == 'PS':
         #PS - power-law scheme. 
-        #Identical to HS for aEclet-number |(F/D)| > 10 and near to ES else
+        #Identical to HS for Peclet-number |(F/D)| > 10 and near to ES else
         AScheme = lambda peclet_: max(0.0, (1.0 - 0.1 * abs(peclet_))**5.0)
     elif scheme == 'ES':
         # ES - exponential scheme  

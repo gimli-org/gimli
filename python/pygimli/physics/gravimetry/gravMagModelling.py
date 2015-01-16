@@ -10,7 +10,8 @@ mu0 = 4.0 * np.pi * 1e-7
 G = 6.6742e-11 # in [m^3/(kg s^2)]
 G = 6.6742e-11 / 1e-5 # / mGal
 
-deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__ #[m^2 * kg/m^3] = [kg/m]
+deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__ 
+#[m^2 * kg/m^3] = [kg/m]
 deltaMSph = lambda R__, rho__: 4./3. * np.pi * R__**3. * rho__ #[kg]
 rabs   = lambda r__: np.asarray([np.sqrt(x__.dot(x__)) for x__ in r__])
 gradR  = lambda r__: (r__.T / rabs(r__))
@@ -49,8 +50,8 @@ def BZPoly(pnts, poly, M, openPoly=False):
    
 def BaZSphere(pnts, R, pos, M):
     """
-    Calculate the vertical component of the anomalous magnetic field Bz for a buried
-    sphere at position pos with radius R for a given magnetization M at
+    Calculate the vertical component of the anomalous magnetic field Bz for a
+    buried sphere at position pos with radius R for a given magnetization M at
     measurement points pnts.
 
     Parameters
@@ -70,12 +71,13 @@ def BaZSphere(pnts, R, pos, M):
 
 def BaZCylinderHoriz(pnts, R, pos, M):
     """"""
-    return poissonEoetvoes(adot(M, gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
+    return poissonEoetvoes(adot(M,
+                                gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
     
 def poissonEoetvoes(dg):
-    """"""
+    """
+    """
     return mu0/(4.0 * np.pi * G) * dg
-#def poissonEoetvoes(...)
     
 def uSphere(r, R, rho, pos=[0., 0., 0.]):
     """
@@ -94,19 +96,21 @@ def gradUSphere(r, R, rho, pos=[0., 0., 0.]):
     Gravitationsfeldstrke einer Sphere mit Radius R und Dichte rho an pos 
         
        
-    .. math:: g = -G[m^3/(kg s^2)] * dM[kg] * 1/r^2 1/m^2] * grad(r)[1/1] = [m^3/(kg s^2)] * [kg] * 1/m^2 * [1/1] == m/s^2
+    .. math:: g = -G[m^3/(kg s^2)] * dM[kg] * 1/r^2 1/m^2] * \
+    grad(r)[1/1] = [m^3/(kg s^2)] * [kg] * 1/m^2 * [1/1] == m/s^2
     
     Parameters
     ----------
     
     Returns
     -------
-    [gx, gy, gz]
+    [gx, gy, gz] :
     
     """
     
     # gesucht eigentlich g_z aber nach unten als -z
-    return [1., 1., -1.] * (gradR(r - pos) * - G * deltaMSph(R, rho) * 1. / (rabs(r - pos)**2)).T
+    return [1., 1., -1.] * (gradR(r - pos) * - \
+        G * deltaMSph(R, rho) * 1. / (rabs(r - pos)**2)).T
 #def gSphere(...)
     
 def gradGZSphere(r, R, rho, pos=[0., 0., 0.]):
@@ -135,6 +139,7 @@ def uCylinderHoriz(pnts, R, rho, pos=[0., 0.]):
     
     Returns
     -------
+    
     """
     u = np.zeros(len(pnts))
     for i, r in enumerate(rabs(pnts-pos)):
@@ -166,7 +171,8 @@ def gradUCylinderHoriz(r, R, rho, pos=[0., 0.]):
     -------
        
     """
-    return [1., -1.0] * (gradR(r - pos) * -G * deltaACyl(R, rho) * 1. / (rabs(r - pos))).T 
+    return [1., -1.0] * (gradR(r - pos) * -G * \
+        deltaACyl(R, rho) * 1. / (rabs(r - pos))).T 
 #def gZylinderHoriz():
 
 
@@ -221,7 +227,8 @@ def gzHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
     for i, q in enumerate(pnts):
         zz1 = q[1] - pos[1]
         xx1 = q[0] - pos[0]
-        #gz[i] = G * rho * (np.pi - 2. * np.arctan((q[0] - pos[0]) / (q[2] - pos[2])))
+        #gz[i] = G * rho * (np.pi - 2. * \
+        # np.arctan((q[0] - pos[0]) / (q[2] - pos[2])))
         #in -z richtung
         gz[i] = -G * rho * t*(np.pi + 2.0 * np.arctan2(xx1, zz1)) * -1.
         #gz[i] = G * rho * (np.pi)
@@ -247,7 +254,8 @@ def gradGZHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
     -------
     
     gz : array
-        Gradient of z-component of g :math:`\\nabla(\\frac{\\partial u}{\\partial \\vec{r}}_z)`
+        Gradient of z-component of g 
+        :math:`\\nabla(\\frac{\\partial u}{\\partial \\vec{r}}_z)`
     
     """
     
@@ -361,7 +369,8 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
     pnts must be numbered clockwise. Else change the sign of the result.
     Return values are in mGal.
     
-    Bei der magnetischen Lösung fehlt vermutlich ein 1/4.Pi im won & Bevis (ötvös beziehung gl (9) ..... !!check this!!
+    Bei der magnetischen Lösung fehlt vermutlich ein 1/4.Pi im won & Bevis 
+    (ötvös beziehung gl (9) ..... !!check this!!
     """
     
     qpnts = pnts
@@ -396,11 +405,8 @@ def angle(p1, p2, p3, Un):
     Finds the angle between planes O-p1-p2 and O-p2-p3, where p1,p2,p3 
     are coordinates of three points, taken in ccw order as seen from origin O.
     This is used by gravMag for finding the solid angle subtended by a polygon
-    at the origin. Un is the unit outward normal vector to the polygon.
-
-    References
-    ----------
-    .. [1] Bijendra Singh and D. Guptasarma. 2001. New method for fast computation of gravity and magnetic anomalies from arbitrary polyhedra. Geophysics 66, pp. 521-526.
+    at the origin. Un is the unit outward normal vector to the polygon. 
+    After :cite:`SinghGup2001`
     """
     
     #Check if face is seen from inside
@@ -456,12 +462,8 @@ def angle(p1, p2, p3, Un):
 def gravMagBoundarySinghGup(boundary):
     """
     Calculate [Fx, Fy, FZ] and [Fzx, Fzy, Fzz] at Origin for a given boundary.
+    After :cite:`SinghGup2001`
 
-    References
-    ----------
-    
-    .. [1] Bijendra Singh and D. Guptasarma. 2001. New method for fast computation of gravity and magnetic anomalies from arbitrary polyhedra. Geophysics 66, pp. 521-526.
-    
     """
     shape = boundary.shape()
     #print shape
@@ -588,7 +590,7 @@ def buildCircle(pos, radius, segments=12, leftDirection=True):
     return poly
 # def buildCircle(pos, radius, segments)
 
-if __name__ == "__main__":
+if __name__ is "__main__":
     import sys
     print(sys.argv[1:])
     print("do some tests here")
