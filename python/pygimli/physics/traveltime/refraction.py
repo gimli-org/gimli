@@ -5,6 +5,7 @@
 '''
 
 # general modules to import according to standards
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
@@ -162,8 +163,8 @@ class Refraction():
         if depth is None:
             depth = max(self.getOffset())/3.
         self.poly = createParaDomain2D(self.data.sensorPositions(),
-                                       paradepth=depth,
-                                       paraboundary=0, boundary=0)
+                                       paraDepth=depth,
+                                       paraBoundary=0, boundary=0)
         self.mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
         self.mesh.createNeighbourInfos()
 
@@ -248,13 +249,13 @@ class Refraction():
         return ax, cbar
 
 if __name__ == '__main__':
-    datafile = 'varb.sgt'
+    datafile = sys.argv[1]
     ra = Refraction(datafile)
     print(ra)
     pg.showLater(True)
     ra.showData()
     ra.showVA()
+    ra.makeMesh(depth=100)
     ra.run()
     ax, cbar = ra.showResult()
-    print(ra)
     pg.showNow()
