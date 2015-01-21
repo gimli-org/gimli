@@ -6,6 +6,7 @@
 
 from . em import *
 from . sNMR import *
+from . SIP import *
 from . traveltime import *
 
 # pygimli.physics.Refraction
