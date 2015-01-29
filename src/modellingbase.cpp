@@ -288,7 +288,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
                 throwLengthError(1, WHERE_AM_I + " marker greater = then model.size() " + toStr(marker)
                        + " >= " + toStr(model.size()));
             }
-            if (model[ marker ] < TOLERANCE){
+            if (model[marker] < TOLERANCE){
                 emptyList.push_back(&mesh_->cell(i));
             }
             mesh_->cell(i).setAttribute(model[marker]);

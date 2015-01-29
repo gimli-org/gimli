@@ -159,7 +159,7 @@ def generate(defined_symbols, extraIncludes):
     
     defines = ['PYGIMLI_GCCXML', 'HAVE_BOOST_THREAD_HPP']
 
-    if platform.architecture()[0] == '64bit' and platform.architecture()[1] != 'ELF':
+    if platform.architecture()[0] == '64bit' and platform.system() == 'Windows':
     
         if sys.platform == 'darwin':
             pass

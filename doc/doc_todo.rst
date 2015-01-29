@@ -73,6 +73,35 @@ See :py:func:`pygimli.meshtools.grid.appendTriangleBoundary` in :py:mod:`pygimli
 
 .. seealso:: http://sphinx-doc.org/domains.html#cross-referencing-python-objects
 
+Example for a code-block:
+
+.. code-block:: python
+
+    import pygimli as pg
+    import pybert as pb
+
+    data = pb.DataContainerERT("bert.dat")
+    mesh = pg.meshtools.createParaMesh2dGrid(data.sensorPositions())
+
+    # set up fwd-operator
+    fop = pb.DCSRMultiElectrodeModelling(mesh, data)
+    fop.createRefinedForwardMesh()
+    fop.regionManager().region(0).setBackground(True)
+    ...   # other region and fop options if needed
+
+    # set up inversion
+    tD, tM = pg.RTransLog(), pg.RTransLog()
+    inv = pg.RInversion(data("rhoa"), fop, tD, tM)
+    inv.setRelativeError(data("err"))
+    ...  # other inversion options if needed
+
+    # perform actual inversion
+    model = inv.run()
+
+    # plotting
+    paraMesh = f.regionManager().paraDomain()
+    pg.show(paraMesh, model)
+
 Docstring examples
 ------------------
 
