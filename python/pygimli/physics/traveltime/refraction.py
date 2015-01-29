@@ -158,13 +158,15 @@ class Refraction():
         sx = np.array([px[int(s)] for s in self.data("s")])
         return np.absolute(gx-sx)
 
-    def makeMesh(self, depth=None, quality=34.3):
+    def makeMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
+                 paraBoundary=0):
         """ create (inversion) """
         if depth is None:
             depth = max(self.getOffset())/3.
         self.poly = createParaDomain2D(self.data.sensorPositions(),
-                                       paraDepth=depth,
-                                       paraBoundary=0, boundary=0)
+                                       paraDepth=depth, paraDX=paraDX,
+                                       paraBoundary=paraBoundary,
+                                       boundary=boundary)
         self.mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
         self.mesh.createNeighbourInfos()
 
@@ -212,7 +214,7 @@ class Refraction():
         if not hasattr(self, 'INV'):  # self.f is None:
             self.createInv()
 
-        self.start = createGradientModel2D(ra.data, ra.mesh, vtop, vbottom)
+        self.start = createGradientModel2D(self.data, self.mesh, vtop, vbottom)
         self.f.setStartModel(self.start)
         self.f.regionManager().setZWeight(zweight)
         self.INV.setLambda(lam)
@@ -227,7 +229,7 @@ class Refraction():
     def standardizedCoverage(self):
         """ return standardized coverage vector (0|1) using neighbor info """
         coverage = self.rayCoverage()
-        C = ra.f.constraintsRef()
+        C = self.f.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
 
     def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
