@@ -209,16 +209,15 @@ def __getVal(self, idx):
     elif isinstance(idx, stdVectorI) or isinstance(idx, stdVectorUL):
         return self(idx)
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
-        raise "TODO Implement with IVector"
-        idxL = _pygimli_.stdVectorUL()
+        idxL = _pygimli_.IVector(len(idx))
         for i, ix in enumerate(idx):
-            if type(ix) == int:
-                idxL.append(int(ix))
-            elif ix.dtype == bool:
-                if ix:
-                    idxL.append(i)
+            if hasattr(ix, 'dtype'):
+                if ix.dtype == bool:
+                    idxL[i]=int(i)
+                else:
+                    idxL[i]=int(ix)
             else:
-                idxL.append(int(ix))
+                idxL[i]=int(ix)
                 
         return self(idxL)
 

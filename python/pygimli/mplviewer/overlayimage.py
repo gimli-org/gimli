@@ -98,7 +98,8 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
 
 
 def mapTile2deg(xtile, ytile, zoom):
-    """Returns the NW-corner of the square.
+    """
+        Returns the NW-corner of the square.
         Use the function with xtile+1 and/or ytile+1 to get the other corners.
         With xtile+0.5  ytile+0.5 it will return the center of the tile.
     """
@@ -108,8 +109,9 @@ def mapTile2deg(xtile, ytile, zoom):
     lat_deg = math.degrees(lat_rad)
     return (lon_deg, lat_deg)
     
-def filenameProxi(fullname, vendor): 
+def filenameCache(fullname, vendor): 
     """
+        Utility. Create filename and path to cache download data.
     """
     (dirName, fileName) = os.path.split(fullname)
     
@@ -170,7 +172,7 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         raise "Vendor: " + vendor + \
             " not supported (currently only OSM (Open Street Map))"
     
-    filename = filenameProxi(imagename, serverName) + imFormat
+    filename = filenameChache(imagename, serverName) + imFormat
     
     if os.path.exists(filename):
         if verbose: print(("Read image from disk", filename))

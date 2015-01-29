@@ -201,9 +201,6 @@ DEFINE_COMPARE_OPERATOR__(==)
 DEFINE_COMPARE_OPERATOR__(!=)
 DEFINE_COMPARE_OPERATOR__(>)
 
-#undef DEFINE_COMPARE_OPERATOR__
-
-
     //** maybe better to move these instantiation into libgimli
 
     template class Vector< bool >;
@@ -350,6 +347,12 @@ DEFINE_COMPARE_OPERATOR__(>)
     template void sort(const RVector & a, RVector & b, IndexArray & idx);
     template IndexArray sortIdx(const RVector & a);
     
+    template bool haveInfNaN(const RVector & v);
+        
+    template BVector isInf(const RVector & vec);
+    template BVector isNaN(const RVector & vec);
+    template BVector isInfNaN(const RVector & vec);
+
     
     template bool save(const RVector &v, const std::string & fname, IOFormat format = Ascii);
     template bool load(RVector &v, const std::string & fname, IOFormat format = Ascii,
