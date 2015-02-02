@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-
+"""
+    Fast Marching test
+"""
 import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from pygimli.mplviewer import drawMesh, drawField, drawStreamLinear
+from pygimli.mplviewer import drawMesh, drawField
 #import heapq
 from math import asin, tan
 

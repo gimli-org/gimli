@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-"""pygimli model viewer functions."""
+"""
+    pygimli model viewer functions.
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pygimli as pg
+
+import matplotlib as mpl
 from matplotlib.patches import Rectangle
-# from math import sqrt, floor, ceil
 
 def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     """
@@ -14,8 +16,8 @@ def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     insert short Docu here
     """
     plt.imshow(A, interpolation='nearest')
-    plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x]) #,b
-    plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y]) #,a
+    plt.xticks(np.arange(0, len(x), dx), ["%g" % round(xi, 2) for xi in x]) #,b
+    plt.yticks(np.arange(0, len(y), dy), ["%g" % round(yi, 2) for yi in y]) #,a
     plt.ylim((len(y) - 0.5, - 0.5))
     
     if xlab is not None: plt.xlabel(xlab)
@@ -44,7 +46,6 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
 
         if i == nLayers - 1:
             pz[2 * i + 1] = z1[i - 1] * 1.2
-            pass
         else:
             pz[2 * i + 1] = z1[i]
             pz[2 * i + 2] = z1[i]
@@ -68,7 +69,10 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
 
 
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
-    print("STYLE_WARNING!!!!!!!!!!! don't use this call. Use show1dmodel instead.")
+    """
+        DEPRECATED
+    """
+    print("STYLE_WARNING!!!!!!! don't use this call. Use show1dmodel instead.")
     show1dmodel(x, thk, xlab, zlab, islog, z0)
 
 
@@ -112,7 +116,9 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
 
 def showStitchedModels(models, x=None, cmin=None, cmax=None,
                        islog=True, title=None):
-    """show several 1d block models as (stitched) section."""
+    """
+        Show several 1d block models as (stitched) section.
+    """
     if x is None:
         x = np.arange(len(models))
 
@@ -133,7 +139,10 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
     ax = plt.gcf().add_subplot(111)
     ax.cla()
     mapsize = 64
-    cmap = jetmap(mapsize)
+    
+    #cmap = jetmap(mapsize)
+    cmap = mpl.cm.get_cmap('jet', mapsize)
+    
     plt.plot(x, x * 0., 'k.')
     maxz = 0.
     for i, mod in enumerate(models):
@@ -170,8 +179,10 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
 
 
 def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):
-    """show FDEM sounding as real(inphase) and imaginary (quadrature) fields
-    normalized by the (purely real) free air solution."""
+    """
+        Show FDEM sounding as real(inphase) and imaginary (quadrature) fields
+        normalized by the (purely real) free air solution.
+    """
     nf = len(freq)
     fig = plt.figure(1)
     fig.clf()

@@ -442,9 +442,10 @@ def main(argv):
                             , help="show colorbar", action="store_false")
     parser.add_option("", "--cbar-only", dest="cbarOnly", default =False
                             , help="show colorbar only", action="store_true")
-    parser.add_option("", "--label", dest="label"
-                            , help="label to be displayed on colorbar", metavar="String"
-                            , default = "Resistivity [$\Omega $m]")
+    parser.add_option("", "--label", dest="label", metavar="String",
+                      help="Label to be displayed on colorbar. " +
+                      "Resistivity or Velocity is set automatically.",
+                      default = "auto")
     parser.add_option("", "--xLabel", dest="xlabel"
                             , help="label to x-axes", metavar="String"
                             , default = None)
@@ -563,6 +564,15 @@ def main(argv):
 
         axes = None
 
+        if options.label == "auto" and options.datafile:
+            if "resistivity" in options.datafile:
+                options.label = "Resistivity [$\Omega $m]"
+            elif "velocity" in options.datafile:
+                options.label = "Velocity [m$/$s]"
+            elif "slowness" in options.datafile:
+                options.label = "Slowness [s$/$m]"
+            else:
+                options.label = options.datafile
         try:
             if (meshname.rfind('.mod') != -1):
                 axes, patches, mesh, data = showDC2DInvResMod(meshname,

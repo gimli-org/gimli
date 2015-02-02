@@ -1,36 +1,10 @@
 # -*- coding: utf-8 -*-
-
+"""
+    Some data related viewer
+"""
 import pygimli as pg
-#import pygimli.utils
 
 import numpy as np
-#from numpy import arange, ndarray, array, ma
-#import matplotlib as mpl
-
-#from colorbar import *
-
-#def annotateSeparationAxis(ax, shemeID, grid = False):
-    #'''
-        #Draw y-axes tick labels corresponding to the separation
-    #'''
-    #prefix = DataShemeManager().sheme(shemeID).prefix
-    
-    #def sepName(l):
-        #suffix = ""
-        
-        #if l == 0:
-            #return ''
-        #elif l > 0:
-            #suffix = "'"
-                
-        #if grid:
-            #ax.plot(ax.get_xlim(), [l,l], color = 'black', linewidth = 1, linestyle='dotted')
-        
-        #return prefix + ' $' + str(abs(int(l))) + suffix +'$'
-
-    #ax.yaxis.set_ticklabels(map(lambda l: sepName(l), ax.yaxis.get_ticklocs()))
-    
-## END def annotateSeparations(...)
 
 def drawSensorAsMarker(ax, data):
     '''
@@ -45,17 +19,17 @@ def drawSensorAsMarker(ax, data):
     
     electrodeMarker, =  ax.plot(elecsX, elecsY, 'x', color = 'black', picker = 5.)
     
-    ax.set_xlim([data.sensorPositions()[0][0]-1., data.sensorPositions()[data.sensorCount() -1][0] + 1.])
-    #print electrodeMarker
-    return electrodeMarker
-# END def drawElectrodesAsMarker(...)
+    ax.set_xlim([data.sensorPositions()[0][0]-1.,
+                 data.sensorPositions()[data.sensorCount() -1][0] + 1.])
 
+    return electrodeMarker
 
 def drawTravelTimeData(a, data):
     """
         Draw first arrival traveltime data into mpl axes a. 
         data of type \ref DataContainer must contain sensorIdx 's' and 'g' 
         and thus numbered internal from [0..n)
+        
     """
 
     x = pg.x(data.sensorPositions())
@@ -96,4 +70,3 @@ def drawTravelTimeData(a, data):
 
     a.set_xlabel('x-Coordinate [m]')
     a.set_ylabel('Traveltime [ms]')
-# def drawTravelTimeData(...)

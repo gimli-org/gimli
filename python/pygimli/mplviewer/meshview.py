@@ -10,7 +10,7 @@ from matplotlib.colors import LogNorm
 import numpy as np
 import textwrap
 
-from .colorbar import addCoverageAlpha, cmapFromName, createLinLevs, autolevel
+from .colorbar import addCoverageAlpha, cmapFromName, autolevel
 import pygimli as pg
 from pygimli.misc import streamline  # , streamlineDir # (not used)
 

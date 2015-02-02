@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+    Viewer interface .. dependents on matplotlib
+"""
 
 from .dataview import *  
 

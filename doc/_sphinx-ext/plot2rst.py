@@ -1,5 +1,6 @@
 """
 Taken from: http://tonysyu.github.io/mpltools/index.html
+Modified by CR
 
 Generate reStructuredText example from python files.
 
@@ -151,6 +152,17 @@ GALLERY_IMAGE_TEMPLATE = """
 
 """
 
+ANIMATION_TEMPLATE = '''
+.. raw:: html
+
+   <video controls="controls">
+       <source src="%s"
+               type="video/mp4" />
+       Your browser does not support the video tag.
+   </video>
+'''
+
+
 GALLERY_LIST_TEMPLATE = """
 * :ref:`example_%(link_name)s`
 """
@@ -224,6 +236,7 @@ def setup(app):
     app.add_config_value('plot2rst_default_thumb', None, True)
     app.add_config_value('plot2rst_thumb_scale', 0.2, True)
     app.add_config_value('plot2rst_plot_tag', 'PLOT2RST.current_figure', True)
+    app.add_config_value('plot2rst_anim_tag', 'PLOT2RST.current_anim', True)
     app.add_config_value('plot2rst_index_name', 'index', True)
     app.add_config_value('plot2rst_gallery_style', 'thumbnail', True)
     app.add_config_value('plot2rst_commandTranslator', '', 'html')
@@ -431,6 +444,7 @@ def write_example(src_name, src_dir, rst_dir, cfg):
     example_rst = ''.join([rst_link, rst])
 
     has_inline_plots = any(cfg.plot2rst_plot_tag in b[2] for b in blocks)
+    
     if not has_inline_plots and flags['auto_plots']:
         # Show all plots at the end of the example
         if len(plt.get_fignums()) > 0:
@@ -589,6 +603,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
     example_globals = {}
     rst_blocks = []
     fig_num = 1
+    anim_num = 1
     lastCoutBuff = []
 
     print("Processing:", src_path)
@@ -635,9 +650,24 @@ def process_blocks(blocks, src_path, image_path, cfg):
 
 
             if '.. lastcout::' in bcontent:
-                bcontent = bcontent.replace('.. lastcout::', printcout2rst(lastCoutBuff))
+                bcontent = bcontent.replace('.. lastcout::',
+                                            printcout2rst(lastCoutBuff))
                 lastCoutBuff = []
-
+            
+            if '.. animate::' in bcontent:
+                bcontent = bcontent.replace('"""', '')
+                vals = bcontent.split()
+                #print(vals)
+                animator = vals[2]
+                anim_name = image_path.format(anim_num).replace('.png', '.mp4')
+                args = vals[3:]
+                print(args)
+                exec(animator + '.save("'+anim_name+'", ' + \
+                    ','.join(args) + ' ,extra_args=["-vcodec", "libx264"])', example_globals)
+                rst_blocks.append(ANIMATION_TEMPLATE % (anim_name))
+                anim_num += 1
+                continue
+   
             rst_blocks.append(docstr2rst(bcontent, cfg))
     plt.ioff()
     return figure_list, '\n'.join(rst_blocks)
