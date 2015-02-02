@@ -109,7 +109,7 @@ def mapTile2deg(xtile, ytile, zoom):
     lat_deg = math.degrees(lat_rad)
     return (lon_deg, lat_deg)
     
-def filenameCache(fullname, vendor): 
+def cacheFileName(fullname, vendor): 
     """
         Utility. Create filename and path to cache download data.
     """
@@ -172,7 +172,7 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         raise "Vendor: " + vendor + \
             " not supported (currently only OSM (Open Street Map))"
     
-    filename = filenameChache(imagename, serverName) + imFormat
+    filename = cacheFileName(imagename, serverName) + imFormat
     
     if os.path.exists(filename):
         if verbose: print(("Read image from disk", filename))

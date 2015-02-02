@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
-
-import pygimli as pg
+"""
+    Define special colorbar behavior.
+"""
+#import pygimli as pg
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 import matplotlib as mpl
 import matplotlib.ticker as ticker
-import matplotlib.colors as colors
-import matplotlib.cbook as cbook
+#import matplotlib.colors as colors
+#import matplotlib.cbook as cbook
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import math
+#import math
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
@@ -35,23 +37,27 @@ def autolevel(z, N, logscale=None):
     return locator.tick_values(zmin, zmax)
         
     # For line contours, drop levels outside the data range.
-    return lev[(lev > zmin) & (lev < zmax)]
+    # return lev[(lev > zmin) & (lev < zmax)]
 # def autolevel()
 
-def cmapFromName(cmapname, ncols=256, bad=[1.0, 1.0, 1.0, 0.0]):
+def cmapFromName(cmapname, ncols=256, bad=None):
     """
+        Do we need this?
     """
+    if not bad:
+        bad = [1.0, 1.0, 1.0, 0.0]
+        
     cmap = mpl.cm.get_cmap('jet', ncols)
     
     if cmapname is not None:
         if cmapname == 'b2r':
-            cmap = mpl.colors.LinearSegmentedColormap(
-                'my_colormap', cdict, ncols)
+            cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
+                                                      cdict, ncols)
         else:
             try:
                 cmap = mpl.cm.get_cmap(cmapname, ncols)
-            except:
-                print(("could not retrieve colormap ", cmapname))
+            except Exception as e:
+                print("Could not retrieve colormap ", cmapname, e)
 
     cmap.set_bad(bad)
     return cmap
@@ -59,31 +65,33 @@ def cmapFromName(cmapname, ncols=256, bad=[1.0, 1.0, 1.0, 0.0]):
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
                         dropColLimitsPerc=5, logScale=True):
-    """What is this."""
+    """
+        What is this?
+    """
     data = np.asarray(dataIn)
 
     # if type( dataIn ) == g.RVector:
-        # data = np.asarray( dataIn )
+    # data = np.asarray( dataIn )
     # elif type( dataIn ) == list:
-        # data = np.array( dataIn )
+    # data = np.array( dataIn )
     # else:
-        # data = array( dataIn )
+    # data = array( dataIn )
 
     if (min(data) < 0):
         logScale = False
     if (logScale):
         data = np.log10(data)
 
-    (Nhist, xHist) = np.histogram(data, bins=100)
+    Nhist, xHist = np.histogram(data, bins=100)
 
     if not cMin:
         cMin = xHist[dropColLimitsPerc]
-        if (logScale):
+        if logScale:
             cMin = pow(10.0, cMin)
 
     if not cMax:
         cMax = xHist[100 - dropColLimitsPerc]
-        if (logScale):
+        if logScale:
             cMax = pow(10.0, cMax)
 
     if (logScale):
@@ -94,71 +102,17 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
     return data, cMin, cMax
 
-
-def createLogLevs(vMin, vMax, nLevs):
-    vMinLog = np.log10(vMin)
-    vMaxLog = np.log10(vMax)
-
-    lev_exp = list(range(0, nLevs))
-    lev_exp[0] = vMinLog
-    dxLog = (vMaxLog - vMinLog) / (nLevs - 1)
-
-    for i in range(nLevs - 1):
-        lev_exp[i + 1] = lev_exp[i] + dxLog
-
-    levs = np.power(10, lev_exp)
-
-    return levs
-
-
-def createLinLevs(vMin, vMax, nLevs):
-    levs = list(range(0, nLevs))
-    levs[0] = vMin
-    dx = (float(vMax) - float(vMin)) / (nLevs - 1)
-
-    for i in range(nLevs - 1):
-        levs[i + 1] = levs[i] + dx
-
-    return levs
-
-
-def createColorbar2(patches, cMin=None, cMax=None,
-                    nLevs=5, label=None, orientation='horizontal'):
-    
-    DEPRECATED
-    cbarTarget = plt
-    
-    if hasattr(patches, 'ax'):
-        cbarTarget = patches.ax
-
-    cax = mpl.colorbar.make_axes(cbarTarget,
-                                 orientation=orientation,
-                                 aspect=50)
-
-    # print cax
-    cbar = mpl.colorbar.Colorbar(cax[0], patches,
-                                 orientation=orientation)
-
-#    if cMin is None:
-#        cMin= patches.zmin
-#    if cMax is None:
-#        cMax= patches.zmax
-
-    # setCbarLevels( cbar, cMin, cMax, nLevs )
-
-    if label is not None:
-        cbar.set_label(label)
-
-    return cbar
-
-
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
-                   label=None, orientation='horizontal', *args, **kwargs):
+                   label=None, orientation='horizontal'):
+    """
+        Shortcut to create a matplotlib colorbar within the axes for a given 
+        patchset.
+    """
     cbarTarget = plt
     cax = None
     divider = None
     #if hasattr(patches, 'figure'):
-        #cbarTarget = patches.figure
+    #   cbarTarget = patches.figure
 
     #print( patches)
 
@@ -188,6 +142,9 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
+    """
+        What's that?
+    """
 
     #print "setCbarLevels", cMin, cMax
 
@@ -209,9 +166,9 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
         cMax = norm.vmax
 
     if isinstance(norm, mpl.colors.LogNorm):
-        cbarLevels = createLogLevs(cMin, cMax, nLevs)
+        cbarLevels = np.logspace(np.log10(cMin), np.log10(cMax), nLevs)
     else:
-        cbarLevels = createLinLevs(cMin, cMax, nLevs)
+        cbarLevels = np.linspace(cMin, cMax, nLevs)
 
     #print cbarLevels
     cbarLevelsString = []
@@ -243,13 +200,16 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     # print cbar._ticker()
 
-#    else:
-#        cbar.ax.set_xticks( ticks )
-#        cbar.ax.set_xticklabels( cbarLevelsString )
+    #    else:
+    #        cbar.ax.set_xticks( ticks )
+    #        cbar.ax.set_xticklabels( cbarLevelsString )
 
     cbar.draw_all()
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
+    """
+        Change the data values for a given mappable.
+    """
     
     data = dataIn
     
@@ -279,7 +239,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     #mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
 
-def addCoverageAlpha(patches, coverage, dropTolerance=0.4):
+def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """
         Add alpha values to the colors of a polygon collection.
     
@@ -291,8 +251,8 @@ def addCoverageAlpha(patches, coverage, dropTolerance=0.4):
     coverage : array
         coverage values. Maximum coverage mean no opaqueness.
 
-    dropTolerance : float
-        minimum coverage
+    dropThreshold : float
+        relative minimum coverage
     
         
     """
@@ -316,10 +276,10 @@ def addCoverageAlpha(patches, coverage, dropTolerance=0.4):
         #print("min-max nnn ", min(nnn), max(nnn))
         mi = hh[min(np.where(nnn > 0.02)[0])]
 
-        if min(nnn) > 0.4:
+        if min(nnn) > dropThreshold:
             ma = max(C)
         else:
-            ma = hh[max(np.where(nnn < 0.4)[0])]
+            ma = hh[max(np.where(nnn < dropThreshold)[0])]
 
             #mi = hh[min(np.where(nnn > 0.2)[0])]
             #ma = hh[max(np.where(nnn < 0.7)[0])]

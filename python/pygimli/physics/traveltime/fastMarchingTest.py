@@ -20,7 +20,7 @@ import time
 
 import pygimli as pg
 import matplotlib.pyplot as plt
-from pygimli.mplviewer import drawMesh, drawField, drawStreamLinear
+from pygimli.mplviewer import drawMesh, drawField
 
 import heapq
 

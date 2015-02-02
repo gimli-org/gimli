@@ -26,4 +26,4 @@ show(mesh, interactive=False)
     :scale: 75
 """
 
-#pg.showNow()
+pg.showNow()

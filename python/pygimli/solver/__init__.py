@@ -1,5 +1,7 @@
-#!/usr/bin/env python
-## -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+"""
+    General physics independent solver.
+"""
 
 from .solver import *
 from .green import *
@@ -7,7 +9,9 @@ from .green import *
 # unsorted stuff need
 
 def divergence(mesh, F=lambda r:r, order=1):
-    """"""
+    """
+        Whats this? Why is it here?
+    """
     div = 0
     directionCheck = False
     

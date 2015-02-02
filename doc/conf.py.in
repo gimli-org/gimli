@@ -61,8 +61,8 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'plot2rst',
-              'sphinx.ext.mathjax', # nicer html output than pngmath
-              #'sphinx.ext.pngmath',
+              #'sphinx.ext.mathjax', # nicer html output than pngmath
+              'sphinx.ext.pngmath',
               'numpydoc',
               'doxylink'
               ]
@@ -271,6 +271,7 @@ latex_elements = {
     'preamble':
     '\\usepackage{amsfonts}\n\
     \\usepackage{amssymb}\n\
+    \\usepackage{amsmath}\n\
     \\usepackage{bm}\n\
     \\usepackage{pslatex}\n'
 }
@@ -289,6 +290,7 @@ except NameError:
 pngmath_latex_preamble = '\
         \\usepackage{amsfonts}\n\
         \\usepackage{amssymb}\n\
+        \\usepackage{amsmath}\n\
         \\usepackage{bm}\n\
         \\usepackage{pslatex}\n'
 
@@ -299,7 +301,6 @@ _mathpng_tempdir = '@DOXYGEN_BUILD_DIR@/mathtmp'
 latex_additional_macros = open('@SPHINX_SRC_DIR@/doc/_static/mylatex-commands.sty')
 
 mathjax_latex_preamble=""
-
 
 LatexCommandTranslator = {}
 LatexCommandTranslator['mathDictionary'] = {}
