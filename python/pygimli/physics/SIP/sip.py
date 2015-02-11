@@ -1,7 +1,25 @@
 import numpy as np
 import pygimli as pg
 import matplotlib.pyplot as plt
-from math import pi  # , log10, exp
+from math import pi, log10, exp
+
+
+def readTXTSpectrum(filename):
+    """ read spectrum from ZEL device output (txt) data file """
+    fid = open(filename)
+    lines = fid.readlines()
+    fid.close()
+    f, amp, phi = [], [], []
+    for line in lines[1:]:
+        snums = line.replace(';', ' ').split()
+        if len(snums) > 3:
+            f.append(float(snums[0]))
+            amp.append(float(snums[1]))
+            phi.append(-float(snums[3]))
+        else:
+            break
+
+    return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
 def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho_a$ in $\Omega$m',
@@ -150,5 +168,108 @@ def readSIP256file(resfile, verbose=False):
     return header, DATA, AB, RU
 
 
+class SIPSpectrum():
+    """ SIP spectrum data and analyses """
+    def __init__(self, filename=None):  # initialize class
+        if filename.rfind('.txt') > 0:
+            self.basename = filename[:-4]
+            self.f, self.amp, self.phi = readTXTSpectrum(filename)
+
+    def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
+                mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
+                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
+        """ fit a Cole-Cole term with additional EM term to phase """
+        # %% Cole-Cole forward model
+        fCCEM = PeltonPhiEM(self.f)
+        fCCEM.region(0).setParameters(*mpar)    # m (start,lower,upper)
+        fCCEM.region(1).setParameters(*taupar)  # tau
+        fCCEM.region(2).setParameters(*cpar)   # c
+        fCCEM.region(3).setParameters(*empar)   # tau-EM
+        ICC = pg.RInversion(self.phi, fCCEM, False)  # set up inversion class
+        ICC.setAbsoluteError(ePhi)  # 1 mrad
+        ICC.setLambda(1000.)  # start with large damping and cool later
+        ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
+        self.mCC = ICC.run()  # run inversion
+        ICC.echoStatus()
+        self.rCC = np.asarray(ICC.response())  # get model response for display
+        # %% correct EM term from data
+        if remove:
+            self.phiC = self.phi + \
+                np.angle(relaxationTerm(self.f, self.mCC[3]))
+
+    def fitDebyeModel(self, ePhi=0.001, lam=1e5, lamFactor=0.8,
+                      mint=None, maxt=None, nt=None):
+        """ fit a (smooth) continuous Debye model (Debye decomposition) """
+        if mint is None:
+            mint = .1/max(self.f)
+        if maxt is None:
+            maxt = .5/min(self.f)
+        if nt is None:
+            nt = len(self.f)
+        # %% discretize tau, setup DD and perform DD inversion
+        self.tau = np.logspace(log10(mint), log10(maxt), nt)
+        fDD = DebyePhi(self.f, self.tau)
+        fDD.region(0).setConstraintType(1)
+        tD, tM = pg.RTrans(), pg.RTransLogLU(0., 1.)
+        phi = self.phi
+        if hasattr(self, 'phiC'):  # corrected data present
+            phi = self.phiC
+        IDD = pg.RInversion(phi, fDD, tD, tM, False)
+        IDD.setAbsoluteError(ePhi)  # 1 mrad
+        IDD.stopAtChi1(False)
+        startModel = pg.RVector(nt, 0.01)
+        IDD.setModel(startModel)
+        IDD.setLambda(lam)
+        IDD.setLambdaFactor(lamFactor)
+        self.mDD = IDD.run()
+        IDD.echoStatus()
+        self.rDD = IDD.response()
+
+    def totalChargeability(self):
+        return sum(self.mDD)
+
+    def logMeanTau(self):
+        return exp(np.sum(np.log(self.tau) * self.mDD) / sum(self.mDD))
+
+    def showAll(self):
+        """ plot the spectrum with its fitting and the Debye distribution """
+        mtot = self.totalChargeability()
+        lmtau = self.logMeanTau()
+        if hasattr(self, 'mCC'):
+            tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f} $\tau_2$={:.1e}s'
+            mCC = self.mCC
+            tCC = tstr.format(mCC[0], mCC[1], mCC[2], mCC[3])
+        tDD = r'DD: m={:.3f} $\tau$={:.1e}s'.format(mtot, lmtau)
+        fig, ax = plt.subplots(2, 1, figsize=(12, 10))
+        fig.subplots_adjust(hspace=0.25)
+        ax[0].semilogx(self.f, self.phi*1e3, 'b+-', label='data')
+        ax[0].semilogx(self.f, self.rCC*1e3, 'r-', label='CC+EM model')
+        if hasattr(self, 'phiC'):
+            ax[0].semilogx(self.f, self.phiC*1e3, 'c+-', label='corr. data')
+        ax[0].semilogx(self.f, self.rDD*1e3, 'm-', label='DD model')
+        ax[0].grid(True)
+        ax[0].legend(loc='best')
+        ax[0].set_xlabel('f [Hz]')
+        ax[0].set_ylabel('-phi [mrad]')
+        if hasattr(self, 'mCC'):
+            ax[0].set_title(tCC)
+        ax[1].semilogx(self.tau, self.mDD*1e3)
+        ax[1].set_xlim(ax[1].get_xlim()[::-1])
+        ax[1].grid(True)
+        ax[1].set_xlabel(r'$\tau$ [ms]')
+        ax[1].set_ylabel('m [mV/V]')
+        ax[1].set_title(tDD)
+        fig.savefig(self.basename+'.pdf', bbox_inches='tight')
+        plt.show(block=False)
+
+
 if __name__ == "__main__":
-    pass
+    # %%
+    filename = 'sipexample.txt'
+    sip = SIPSpectrum(filename)
+    print('Cole-Cole inversion')
+    sip.fitCCEM()
+    print('Debye inversion')
+    sip.fitDebyeModel()
+    # %% create titles and plot data, fit and model
+    sip.showAll()

@@ -23,19 +23,19 @@ blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
 def autolevel(z, N, logscale=None):
     """
-        Create N levels for the data array z based on matplotlib ticker. 
+        Create N levels for the data array z based on matplotlib ticker.
     """
     locator = None
     if logscale:
         locator = ticker.LogLocator()
     else:
         locator = ticker.MaxNLocator(N + 1)
-    
+
     zmin = min(z)
     zmax = max(z)
-       
+
     return locator.tick_values(zmin, zmax)
-        
+
     # For line contours, drop levels outside the data range.
     # return lev[(lev > zmin) & (lev < zmax)]
 # def autolevel()
@@ -46,9 +46,9 @@ def cmapFromName(cmapname, ncols=256, bad=None):
     """
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
-        
+
     cmap = mpl.cm.get_cmap('jet', ncols)
-    
+
     if cmapname is not None:
         if cmapname == 'b2r':
             cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
@@ -102,34 +102,33 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
     return data, cMin, cMax
 
+
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
-                   label=None, orientation='horizontal'):
+                   label=None, orientation='horizontal', *args, **kwargs):
     """
-        Shortcut to create a matplotlib colorbar within the axes for a given 
+        Shortcut to create a matplotlib colorbar within the axes for a given
         patchset.
     """
     cbarTarget = plt
     cax = None
     divider = None
-    #if hasattr(patches, 'figure'):
-    #   cbarTarget = patches.figure
-
-    #print( patches)
+#    if hasattr(patches, 'figure'):
+#       cbarTarget = patches.figure
 
     if hasattr(patches, 'ax'):
         divider = make_axes_locatable(patches.ax)
     elif hasattr(patches, 'get_axes'):
         divider = make_axes_locatable(patches.get_axes())
-    
+
     if divider:
         if orientation == 'horizontal':
             cax = divider.append_axes("bottom", size=0.25, pad=0.65)
         else:
             cax = divider.append_axes("right", size=0.25, pad=0.05)
-            #cax = divider.append_axes("right", size="5%", pad=0.05)
-            #cbar3 = plt.colorbar(im3, cax=cax3)
-        
-    #print(patches,  cax)
+#            cax = divider.append_axes("right", size="5%", pad=0.05)
+#            cbar3 = plt.colorbar(im3, cax=cax3)
+
+#    print(patches,  cax)
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
 
@@ -210,12 +209,12 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     """
         Change the data values for a given mappable.
     """
-    
+
     data = dataIn
-    
+
     if type(data) != np.ma.core.MaskedArray:
         data = np.array(dataIn)
-    
+
     if logScale and data.min() <= 0:
         data = np.ma.masked_array(data, data <= 0.0)
 
@@ -242,21 +241,21 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """
         Add alpha values to the colors of a polygon collection.
-    
+
     Parameters
     ----------
 
-    patches : 2D mpl mappable 
-        
+    patches : 2D mpl mappable
+
     coverage : array
         coverage values. Maximum coverage mean no opaqueness.
 
     dropThreshold : float
         relative minimum coverage
-    
-        
+
+
     """
-    
+
     patches.set_antialiaseds(True)
     patches.set_linewidth(0.000)
 
@@ -267,12 +266,12 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
     C = np.asarray(coverage)
     #print(np.min(C), np.max(C))
-            
+
     if (np.min(C) < 0.) | (np.max(C) > 1.) | (np.max(C) < 0.5):
-        
+
         nn, hh = np.histogram(C, 50)
         nnn = nn.cumsum(axis = 0) / float(len(C))
-        
+
         #print("min-max nnn ", min(nnn), max(nnn))
         mi = hh[min(np.where(nnn > 0.02)[0])]
 
