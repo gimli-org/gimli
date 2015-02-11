@@ -144,7 +144,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
     ax.set_aspect('equal')
 
     if colorBar and validData:
-        cbar = createColorbar(gci)  # , *args, **kwargs) # causes problems!
+        cbar = createColorbar(gci, *args, **kwargs)
 
     if not showLater:
         plt.show()
