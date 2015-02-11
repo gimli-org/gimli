@@ -65,9 +65,7 @@ def cmapFromName(cmapname, ncols=256, bad=None):
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
                         dropColLimitsPerc=5, logScale=True):
-    """
-        What is this?
-    """
+    """ What is this? """
     data = np.asarray(dataIn)
 
     # if type( dataIn ) == g.RVector:
@@ -104,10 +102,12 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
 
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
-                   label=None, orientation='horizontal', *args, **kwargs):
-    """
-        Shortcut to create a matplotlib colorbar within the axes for a given
-        patchset.
+                   label=None, orientation='horizontal'):
+    """ 
+    Create a Colobar.
+        
+    Shortcut to create a matplotlib colorbar within the axes for a given
+    patchset.
     """
     cbarTarget = plt
     cax = None
@@ -141,9 +141,7 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
-    """
-        What's that?
-    """
+    """ What's that?"""
 
     #print "setCbarLevels", cMin, cMax
 
@@ -240,7 +238,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """
-        Add alpha values to the colors of a polygon collection.
+    Add alpha values to the colors of a polygon collection.
 
     Parameters
     ----------
@@ -252,8 +250,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
     dropThreshold : float
         relative minimum coverage
-
-
     """
 
     patches.set_antialiaseds(True)
@@ -294,5 +290,3 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
             # delete patch data to avoid automatically rewrite of _facecolors
             patches._A = None
-
-# def addCoverageAlpha(...)

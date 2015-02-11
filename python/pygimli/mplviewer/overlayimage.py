@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-    Overlay / Underlay an image or a geo referenced map to mpl.axes.
-"""
+
+""" Overlay / Underlay an image or a geo referenced map to mpl.axes."""
 import os
 
 import math, random
@@ -12,9 +11,7 @@ import numpy as np
 import urllib
 
 class OverlayImageMPL(object):
-    """
-        What is this? 
-    """
+    """ What is this? """
     def __init__(self, imageFileName, axes):
         self.axes = axes
         self.imAxes  = None
@@ -22,16 +19,12 @@ class OverlayImageMPL(object):
         self.figure = self.axes.get_figure()
         
     def clear(self):
-        """
-        What is this? 
-        """
+        """ What is this? """
         if self.imAxes in self.figure.axes:
             self.figure.delaxes(self.imAxes)
     
     def setPosition(self, posX, posY, axes = None):
-        """
-        What is this? 
-        """
+        """ What is this? """
         if axes is not None:
             self.axes = axes
         self.dx = float(self.image.size[0])/ \
@@ -86,9 +79,7 @@ class OverlayImageMPL(object):
 
 
 def deg2MapTile(lon_deg, lat_deg, zoom):
-    """
-        What is this? 
-    """
+    """ What is this? """
     lat_rad = math.radians(lat_deg)
     n = 2.0 ** zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)
@@ -99,9 +90,10 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
 
 def mapTile2deg(xtile, ytile, zoom):
     """
-        Returns the NW-corner of the square.
-        Use the function with xtile+1 and/or ytile+1 to get the other corners.
-        With xtile+0.5  ytile+0.5 it will return the center of the tile.
+    Returns the NW-corner of the square.
+    
+    Use the function with xtile+1 and/or ytile+1 to get the other corners.
+    With xtile+0.5  ytile+0.5 it will return the center of the tile.
     """
     n = 2.0 ** zoom
     lon_deg = xtile / n * 360.0 - 180.0
@@ -110,9 +102,7 @@ def mapTile2deg(xtile, ytile, zoom):
     return (lon_deg, lat_deg)
     
 def cacheFileName(fullname, vendor): 
-    """
-        Utility. Create filename and path to cache download data.
-    """
+    """ Utility. Create filename and path to cache download data. """
     (dirName, fileName) = os.path.split(fullname)
     
     path = './' + vendor + '/' + dirName
@@ -127,22 +117,21 @@ def cacheFileName(fullname, vendor):
 
 def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
     """
-        Get a map tile from public mapping server.
+    Get a map tile from public mapping server.
         
     Parameters
     ----------
-        xtile : int
+    xtile : int
         
-        ytile : int
+    ytile : int
         
-        zoom : int
+    zoom : int
         
-        vendor : str
-            . 'OSM' or 'Open Street Map' (tile.openstreetmap.org)
-            . 'GM' or 'Google Maps' (mt.google.com)
+    vendor : str
+        . 'OSM' or 'Open Street Map' (tile.openstreetmap.org)
+        . 'GM' or 'Google Maps' (mt.google.com)
         
-        verbose : bool [false]
-    
+    verbose : bool [false]
         be verbose
     """
 
@@ -230,7 +219,6 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
     fitMap : bool 
     
         The axes is resized to fit the whole map.
-    
     """
 
     if pixelLimit is None:

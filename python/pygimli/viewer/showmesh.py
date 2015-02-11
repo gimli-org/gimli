@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""
-    Generic mesh visualization tools.
-"""
+
+""" Generic mesh visualization tools. """
+
 try:
     import pygimli as pg
     from pygimli.mplviewer import drawMesh, drawModel, drawField
     from pygimli.mplviewer import drawSensors, showLater
-    from pygimli.mplviewer import createColorbar, drawStreams
+    from pygimli.mplviewer import createColorbar, drawStreams, addCoverageAlpha
 
 except ImportError:
     raise Exception('''ERROR: cannot import the library 'pygimli'.
@@ -18,7 +18,10 @@ import numpy as np
 
 def show(mesh, *args, **kwargs):
     """
-    Syntactic sugar to show a mesh with
+    Mesh and model visualization.
+    
+    Syntactic sugar to show a mesh with data.   
+    Forwards to 
     :py:mod:`pygimli.viewer.showmesh.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the
     possible 2D and 3D content.
@@ -37,7 +40,6 @@ def show(mesh, *args, **kwargs):
     -------
 
     Return the results from the show functions.
-
     """
 
     if isinstance(mesh, pg.Mesh):
@@ -52,11 +54,12 @@ def show(mesh, *args, **kwargs):
             print("ERROR: Mesh not valid.")
 
 
-def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
-             *args, **kwargs):
+def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
+             axes=None, *args, **kwargs):
     """
-    Syntactic sugar, short-cut to create an axes and plot node or cell values
-    for the given 2d mesh.
+    2D Mesh visualization.
+    
+    Create an axes and plot node or cell values for the given 2d mesh. 
     Returns the axes and the color bar.
 
     Parameters
@@ -69,19 +72,19 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
         Optionally data to visualize.
 
         . None (draw mesh only)
-            forward to :py:mod:`pygimli.mplviewer.drawMesh`
+            forward to :py:mod:`pygimli.mplviewer.meshview.drawMesh`
 
         . float per cell -- model, patch
-            forward to :py:mod:`pygimli.mplviewer.drawModel`
+            forward to :py:mod:`pygimli.mplviewer.meshview.drawModel`
 
         . float per node -- scalar field
-            forward to :py:mod:`pygimli.mplviewer.drawField`
+            forward to :py:mod:`pygimli.mplviewer.meshview.drawField`
 
         . iterable of type [float, float] -- vector field
-            forward to :py:mod:`pygimli.mplviewer.drawStreams`
+            forward to :py:mod:`pygimli.mplviewer.meshview.drawStreams`
 
         . pg.stdVectorRVector3 -- sensor positions
-            forward to :py:mod:`pygimli.mplviewer.drawSensors`
+            forward to :py:mod:`pygimli.mplviewer.meshview.drawSensors`
 
     showLater : bool [false]
         Set interactive plot mode for matplotlib.
@@ -92,6 +95,9 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
 
     colorBar : bool [false]
         Create and show a colorbar.
+
+    coverage : iterable [None]
+        Weight data by the given coverage array and fadeout the color.
 
     axes : matplotlib.Axes [None]
         Instead of create a new and empty axes, just draw into the a given.
@@ -106,8 +112,6 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
     axes : matplotlib.axes
 
     colobar : matplotlib.colobar
-
-
     """
     ax = axes
 
@@ -131,20 +135,28 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
                 print("No valid stream data:",  data)
                 drawMesh(ax, mesh)
 
-        elif min(data) == max(data):
-            print(("No valid data",  min(data), max(data)))
+        elif (min(data) == max(data)) or pg.haveInfNaN(data):
+            print("No valid data: ",  min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh)
         else:
             validData = True
             if len(data) == mesh.cellCount():
-                gci = drawModel(ax, mesh, data, *args, **kwargs)
+                gci = drawModel(ax, mesh, data, **kwargs)
             elif len(data) == mesh.nodeCount():
-                gci = drawField(ax, mesh, data, *args, **kwargs)
+                gci = drawField(ax, mesh, data, **kwargs)
 
     ax.set_aspect('equal')
 
     if colorBar and validData:
-        cbar = createColorbar(gci, *args, **kwargs)
+        cbar = createColorbar(gci)  # , *args, **kwargs) # causes problems!
+
+    if coverage is not None:
+        if len(data) == mesh.cellCount():
+            addCoverageAlpha(gci, coverage)
+        else:
+            raise('toImplement')
+            addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
+
 
     if not showLater:
         plt.show()
@@ -156,8 +168,10 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, axes=None,
 
 def showBoundaryNorm(mesh, *args, **kwargs):
     """
-        Show the mesh and draw a black line along the normal direction of the
-        boundary.
+    Show mesh boundaries normals.
+    
+    Show the mesh and draw a black line along the normal direction of all
+    boundaries.
 
     Parameters
     ----------

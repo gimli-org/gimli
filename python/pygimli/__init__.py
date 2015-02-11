@@ -67,6 +67,7 @@ checkAndFixLocaleDecimal_point(verbose=True)
 _pygimli_.load = None
 from pygimli.ioutils import load
 from pygimli.viewer import show, showLater, plt
+from pygimli.solver import solve
 
 def showNow():
     showLater(0)

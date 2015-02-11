@@ -11,16 +11,18 @@ finite elements computation.
 We will not go in deep detail about the finite elements theory here, 
 as this can be found in several books, e.g., :cite:`Zienkiewicz1977`
 
-In this modelling tutorials we just want to solve some simple problems to show how the *M* (Modelling) in *GIMLi* works.
+In this modelling tutorial we just want to solve some simple problems 
+to show how the *M* (Modelling) in *GIMLi* works.
 
-The starting with a simple elliptic partial diferential equation with zero boundary values, but a nonzero right hand side:
+We start with a simple elliptic partial differential equation and 
+with zero boundary values, but a nonzero right hand side.
 
 .. math::
 
-    \nabla\cdot( A \cdot \nabla u ) + B u + C & = 0 \quad{\mathrm{in}}\quad\Omega \\
+    \nabla\cdot(A \cdot \nabla u ) + B u + C & = 0 \quad{\mathrm{in}}\quad\Omega \\
     \alpha u + \beta \frac{\partial u }{\partial n} & = 0 \quad{\mathrm{on}}\quad\partial\Omega
    
-By letting :math:`A=1,\,B=0\,and\,C = 1` we get the simplest Poisson equation:
+By letting :math:`A=1,\,B=0\,` and :math:`C = 1` we get the simplest Poisson equation:
    
 .. math::
 
@@ -30,62 +32,67 @@ By letting :math:`A=1,\,B=0\,and\,C = 1` we get the simplest Poisson equation:
 
 Model domain is the unit square: :math:`\Omega=[-1, 1]^2`
 
-As usually, the library needs to be imported first. 
-Additionally we import the Poisson solver plus some plotting routines.
+We start by importing  the pygimli package 
+Additionally we import the default solver that performs finite element solution 
+plus our generalized viewer routine. 
 """
 
 import pygimli as pg
-from pygimli.solver import solvePoisson
-from pygimli.viewer import showMesh
-from pygimli.mplviewer import drawMesh
-
-""" 
-We make use of NumPy to create vectors and the plotting library of matplotlib (Matlab-like plotting).
-
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
-    
+
+""" 
+We create a grid for our modelling domain with equidistant spacing in x 
+and y direction.
 """
-We create a grid with equidistant vectors and call the solver by providing  values for A (the material property) and the values at the four boundary with the markers 1 to 4.
+
+grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
+                     y=np.linspace(-1.0, 1.0, 10))
+
+"""
+Now we can call the solver :py:mod:`pygimli.solver.solver.solve`  for some default material values and global 
+homogeneous Dirichlet boundary conditions.
 """
 
-grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10), y=np.linspace(-1.0, 1.0, 10))
-
-#material?
-
-u = solvePoisson(grid, f=1.,
-                 uBoundary=[grid.findBoundaryByMarker(1,5), 0.0],
-                 verbose=True)
+u = pg.solver.solve(grid, f=1.,
+                    uBoundary=[grid.findBoundaryByMarker(1,5), 0.0],
+                    verbose=True)
 
 """
 .. error::
 
-    can we calculate analytical solution?
+    Do we find an analytical solution for this?
 
-The result is drawn with the function showMesh.    
+The result is drawn with the function :py:mod:`pygimli.viewer.showmesh.show` 
 """
 
-ax = showMesh(grid, data=u, filled=True, showLater=True, colorBar=True, orientation='vertical', label='P1 Solution $u$')[0]
-drawMesh(ax, grid)
+ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$',
+                   showLater=True)
+"""
+Show is just a shortcut for various drawing routines, that can also be called directly.
+
+"""
+pg.mplviewer.drawMesh(ax, grid)
 
 """
 .. image:: PLOT2RST.current_figure
     :scale: 50
 
-We repeat the computation with a spatially (H) refined version of the original grid.
+We repeat the computation with a spatially (H) refined version of the original
+grid.
 """
 
 gridh2 = grid.createH2()
 
-uh = solvePoisson(gridh2, f=1.,
-                  uBoundary=[gridh2.findBoundaryByMarker(1,5), 0.0],
-                  verbose=True)
+uh = pg.solver.solve(gridh2, f=1.,
+                     uBoundary=[gridh2.findBoundaryByMarker(1,5), 0.0],
+                     verbose=True)
 
-ax = showMesh(gridh2, data=uh, filled=True, showLater=True,colorBar=True, orientation='vertical', label='P2 Solution $u$')[0]
+ax,cbar = pg.show(gridh2, data=uh, colorBar=True, label='H2 Solution $u$',
+               showLater=True)
 
-drawMesh(ax, gridh2)
+pg.mplviewer.drawMesh(ax, gridh2)
 
 """
 The same we do using a quadratic (P) refinement.
@@ -93,15 +100,17 @@ The same we do using a quadratic (P) refinement.
 
 gridp2 = grid.createP2()
 
-up = solvePoisson(gridp2, f=1.,
-                  uBoundary=[gridp2.findBoundaryByMarker(1,5), 0.0],
-                  verbose=True)
+up = pg.solver.solve(gridp2, f=1.,
+                     uBoundary=[gridp2.findBoundaryByMarker(1,5), 0.0],
+                     verbose=True)
 
 """
 .. image:: PLOT2RST.current_figure
     :scale: 50
 
-To analyse the solution in detail we use a numpy Nx2 matrix containing the x and y values, and the interpolation function.
+To compare the different results the in detail we interpolate our solution
+along a probe line through our domain.
+
 """
 
 x = np.linspace(-1.0, 1.0, 100)
@@ -117,7 +126,8 @@ plt.figure()
 plt.plot(x, uH1, label='linear (H1)')
 plt.plot(x, uH2, label='linear (H2)')
 plt.plot(x, uP2, label='quadratic (P2)')
-
+plt.xlim([-0.5, 0.5])
+plt.ylim([0.2, 0.3])
 plt.legend()
 
 

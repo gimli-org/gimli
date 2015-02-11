@@ -251,7 +251,8 @@ def readGmsh(fname, verbose=False):
 
 def readTriangle(fname, verbose=False):
     """
-    Read :term:`Triangle` :cite:`Shewchuk96b`  ASCII files and return instance of GIMLI::Mesh class.
+    Read :term:`Triangle` :cite:`Shewchuk96b`  ASCII files and return 
+    instance of GIMLI::Mesh class.
     See: ://www.cs.cmu.edu/~quake/triangle.html
 
     Parameters
@@ -270,7 +271,8 @@ def readTriangle(fname, verbose=False):
     
 def readTetgen(fname, verbose=False):
     """
-    Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance of GIMLI::Mesh class.
+    Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
+    of GIMLI::Mesh class.
     See: http://tetgen.org/
 
     Parameters

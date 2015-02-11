@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
-    Class for managing seismic refraction data and doing inversions
-'''
 
-# general modules to import according to standards
+""" Class for managing seismic refraction data and doing inversions"""
+
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -108,6 +106,8 @@ def showVA(ax, data):
 
 def createGradientModel2D(data, mesh, VTop, VBot):
     """
+    Create 2D velocity gradient model.
+    
     Creates a smooth, linear, starting model that takes the slope
     of the topography into account. This is done by fitting a straight line
     and using the distance to that as the depth value.
@@ -146,13 +146,11 @@ def createGradientModel2D(data, mesh, VTop, VBot):
     return np.interp(d, [min(d), max(d)], [1.0/VTop, 1.0/VBot])
 
 
-# Data handling class (logics)
 class Refraction():
-    """
-    class for managing a refraction seismics
-    """
+    """ Class for managing a refraction seismics"""
+    
     def __init__(self, filename=None, verbose=True, **kwargs):
-        """ init function with optional data load """
+        """ Init function with optional data load """
         if filename is not None:
             self.load(filename)
 

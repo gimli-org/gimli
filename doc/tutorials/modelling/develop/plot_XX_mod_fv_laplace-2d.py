@@ -47,7 +47,7 @@ print('FEM:', swatch.duration(True))
 #print(min(u), max(u))
 ua = np.array(list(map(lambda p_: np.sin(np.arctan2(p_[1], p_[0]))/p_.abs(), mesh.positions())))
 print(min(u), max(u))
-ax1,cbar = showMesh(mesh, data=u, filled=True, nLevs=20,
+ax1,cbar = showMesh(mesh, data=u, nLevs=20,
                     cMin=0, cMax=10, colorBar=True, showLater=True)
 drawMesh(ax1, mesh)
 #drawStreamLines2(ax1, mesh, data=u)
@@ -60,7 +60,8 @@ bounds = mesh.findBoundaryByMarker(1,99)
 print('---:', swatch.duration(True))
 
 uDirichlet = np.array(list(map(lambda p_: np.sin(np.arctan2(p_.center()[1], 
-                                                            p_.center()[0]))/p_.center().abs(), bounds)))
+                                                            p_.center()[0]))/p_.center().abs(),
+                               bounds)))
 u = solveFiniteVolume(mesh, a=a, f=f, uDirichlet=uDirichlet)
 print('FVM:', swatch.duration(True))
 
@@ -74,7 +75,6 @@ mesh2, boundSortIdx = createFVPostProzessMesh(mesh, bounds)
 
 print('---:', swatch.duration(True))
 ax3,cbar = showMesh(mesh2, data=pg.cat(u, uDirichlet[boundSortIdx]),
-                    filled=True, 
                     cMin=0, cMax=10, colorBar=True, showLater=True)
 
 drawMesh(ax3, mesh2)

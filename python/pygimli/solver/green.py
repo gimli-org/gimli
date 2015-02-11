@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Greens function for some analytical stuff
-"""
+
+"""Greens function for some analytical stuff."""
+
 import numpy as np
 
 def greenDiffusion1D(x, t=0, a=1, dim=1):
-    """
+    r"""
     Greens function for diffusion operator.
     
     Provides the elementary solution for:
@@ -18,8 +18,8 @@ def greenDiffusion1D(x, t=0, a=1, dim=1):
     To find a solution for:
     
     .. math::
-        u(x,t) \\quad\\text{for}\\quad \\frac{\\partial u(x,t)}{\\partial t} +
-        a \\Delta u(x,t) = f(x)
+        u(x,t) \quad\text{for}\quad\frac{\partial u(x,t)}{\partial t} + 
+        a \Delta u(x,t) = f(x)
         
     .. math:: x = [-x, 0, x]
     

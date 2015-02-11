@@ -402,7 +402,7 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, v=0.0, u0=None,
                       ws=None, scheme='CDS'):
     """
     """
-    #The Workspace if to hold temporary data or preserve matrix rebuild
+    #The Workspace is to hold temporary data or preserve matrix rebuild
     swatch = pg.Stopwatch(True)
     sparse=True
     

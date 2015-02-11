@@ -1,3 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
+""" Tools to create or manage PLC """
 
-from .polytools import *
+from . polytools import *

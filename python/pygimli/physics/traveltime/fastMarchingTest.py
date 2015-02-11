@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
-Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal
-equation
+Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal 
+equation :cite:`SunFomel2000`
 
 .. math::
-    |\grad u(x)| & = f(x) \\
-    ||\grad t||_2 &= s
-    \grad t^2 &= s^2~\cite{SunFomel2000}
+
+    |\grad u(x)| & = f(x) \\\\
+    |\grad t| & = s \\\\
+    (\grad t)^2 & = s^2
+    
+.. error::
+    check equation and reference!!!
 
 where :math:`t` denote traveltime for a spatial distributed slowness :math:`s`
 
-In the special case when f(x) = 1, the solution gives the signed
+In the special case when :math:`f(x) = 1`, the solution gives the signed
 distance from the boundary
 """
 
@@ -198,10 +203,11 @@ if __name__ is '__main__':
 
     #ax1.streamplot(X, Y, U, V, density=[0.5, 1])
 
-    drawStreamLinear(a, mesh, times,
-                 pg.RVector3(-100., -10.0),
-                 pg.RVector3(100., -10.0),
-                 nLines = 50, step = 0.01, showStartPos = True)
+    #drawStreamLinear(a, mesh, times,
+                     #pg.RVector3(-100., -10.0),
+                     #pg.RVector3(100., -10.0),
+                     #nLines = 50, step = 0.01,
+                     #showStartPos = True)
 
     plt.show()
 
