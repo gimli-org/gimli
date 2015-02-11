@@ -71,15 +71,19 @@ rhs = pg.RVector(dof, 0.0)
 b = pg.RVector(dof, 0.0)
 theta = 0
 
+boundUdir = solver.parseArgToBoundaries(dirichletBC, grid)
+
 for n in range(1, len(times)):
     
     b = (M - A * dt) * u[n - 1] + rhs * dt
     S = M
 
-    solver.assembleBoundaryConditions(grid, S, 
-                                      rhs=b,
-                                      boundArgs=dirichletBC, 
-                                      assembler=solver.assembleDirichletBC)
+    solver.assembleDirichletBC(S, boundUdir, rhs=b)
+    
+    #solver.assembleBoundaryConditions(grid, S, 
+                                      #rhs=b,
+                                      #boundArgs=dirichletBC, 
+                                      #assembler=solver.assembleDirichletBC)
     
     solve = pg.LinSolver(S)
     solve.solve(b, ut)
@@ -108,12 +112,9 @@ for n in range(1,len(times)):
     b = M * u[n-1] + rhs * dt
 
     S = M + A * dt
-            
-    solver.assembleBoundaryConditions(grid, S, 
-                                      rhs=b,
-                                      boundArgs=dirichletBC, 
-                                      assembler=solver.assembleDirichletBC)
-    
+           
+    solver.assembleDirichletBC(S, boundUdir, rhs=b)           
+        
     solve = pg.LinSolver(S)
     solve.solve(b, ut)
             

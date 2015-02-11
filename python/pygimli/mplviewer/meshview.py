@@ -10,7 +10,7 @@ from matplotlib.colors import LogNorm
 import numpy as np
 import textwrap
 
-from .colorbar import addCoverageAlpha, cmapFromName, autolevel
+from .colorbar import cmapFromName, autolevel
 import pygimli as pg
 from pygimli.misc import streamline  # , streamlineDir # (not used)
 
@@ -165,11 +165,16 @@ def drawMesh(axes, mesh):
 def drawModel(axes, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cmap=None,
               alpha=1, xlabel=None, ylabel=None, verbose=False,
-              *args, **kwargs):
+              **kwargs):
     """
         Draw a 2d mesh and color the cell by the data.
 
         Implement this with tripcolor  ..........!!!!!!!!
+        
+        Parameters
+        ----------
+        
+        
     """
 
     useTri = False
@@ -179,7 +184,7 @@ def drawModel(axes, mesh, data=None,
 
     if useTri:
         gci = drawMPLTri(axes, mesh, data, cmap=cmap,
-                         *args, **kwargs)
+                         **kwargs)
 
     else:
         gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha,
@@ -209,12 +214,6 @@ def drawModel(axes, mesh, data=None,
 
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
-        coverage = None
-        if 'coverage' in kwargs:
-            coverage = kwargs['coverage']
-            del(kwargs['coverage'])
-        if coverage is not None:
-            addCoverageAlpha(gci, coverage)
 
     if xlabel is not None:
         axes.set_xlabel(xlabel)
@@ -326,7 +325,7 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
 #                                , linewidth = 5.5)
 
 
-def createMeshPatches(axes, mesh, verbose=True, **kwarg):
+def createMeshPatches(axes, mesh, verbose=True, **kwargs):
     """
        Utility function to create 2d mesh patches in a axes
     """
@@ -360,7 +359,7 @@ def createMeshPatches(axes, mesh, verbose=True, **kwarg):
                    cell.shape().nodeCount()))
 
     patches = mpl.collections.PolyCollection(polys, antialiaseds=False,
-                                             lod=True, picker=True, **kwarg)
+                                             lod=True, picker=True, **kwargs)
 
 #    patches.set_edgecolor(None)
     patches.set_edgecolor('face')
@@ -422,7 +421,7 @@ def createTriangles(mesh, data=None):
 
 
 def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
-               cmap=None, interpolate=False, omitLines=False, *args, **kwargs):
+               cmap=None, interpolate=False, omitLines=False, **kwargs):
     """
         Only for triangle/quadrangle meshes currently
     """
@@ -430,17 +429,12 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
 
     gci = None
 
-    levels = []
-    if 'levels' not in kwargs:
-        nLevs = kwargs.pop('nLevs', 8)
+    levels = kwargs.pop('levels', [])
+    nLevs = kwargs.pop('nLevs', 8)
+    if len(levels) == 0:
         levels = autolevel(data, nLevs)
 
     if len(data) == mesh.cellCount():
-
-        coverage = kwargs.pop('coverage', None)
-#         if 'coverage' in kwargs:
-#             coverage = kwargs['coverage']
-#             del(kwargs['coverage'])
 
         shading = 'flat'
         if interpolate:
@@ -449,21 +443,15 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
 
         print(levels)
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
-                             *args, **kwargs)
-
-        if coverage is not None:
-            if len(data) == mesh.cellCount:
-                addCoverageAlpha(gci, coverage[zIdx])
-            else:
-                addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
+                             **kwargs)
 
     elif len(data) == mesh.nodeCount():
 
         gci = axes.tricontourf(x, y, triangles, data, levels,
-                               *args, **kwargs)
+                               **kwargs)
         if not omitLines:
             axes.tricontour(x, y, triangles, data, levels, colors=['0.5'],
-                            *args, **kwargs)
+                            **kwargs)
     else:
         gci = None
         raise Exception("Data size does not fit mesh size: ",
@@ -482,13 +470,11 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
-
-    
         
     return gci
 
-def drawField(axes, mesh, data=None, filled=True, omitLines=False, cmap=None,
-              *args, **kwargs):
+def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
+              **kwargs):
     """
         What is this?
 
@@ -498,10 +484,10 @@ def drawField(axes, mesh, data=None, filled=True, omitLines=False, cmap=None,
     cMax = kwargs.pop('cMax', None)
     
     return drawMPLTri(axes, mesh, data, cMin=cMin, cMax=cMax,
-                      filled=filled, omitLines=omitLines,
-                      cmap=cmap, *args, **kwargs)
+                      omitLines=omitLines,
+                      cmap=cmap, **kwargs)
 
-def drawStreamLines(axes, mesh, u, nx=25, ny=25, *args, **kwargs):
+def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
     """
     Draw streamlines for the gradients of field values u on a mesh.
 
@@ -530,10 +516,10 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, *args, **kwargs):
             U[i, j] = -gr[0]
             V[i, j] = -gr[1]
 
-    axes.streamplot(X, Y, U, V, *args, **kwargs)
+    axes.streamplot(X, Y, U, V, **kwargs)
 # def drawStreamLines(...)
 
-def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
+def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
     """
         Draw a single streamline into a given mesh for given data stating at 
         the center of cell c.
@@ -556,7 +542,7 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
             If data is an array of floats the gradients will be calculated
             else the data will be interpreted as vector field.
                                          
-        dataMesh : gimliapi:`GIMLI::Mesh` [None]
+        dataMesh : :gimliapi:`GIMLI::Mesh` [None]
         
             Optionally mesh that for the data. If you want high resolution 
             data to plot on coarse draw mesh.
@@ -572,9 +558,9 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
         kwargs['color'] = 'black'
 
     if len(x) > 2:
-        axes.plot(x, y, *args, **kwargs)
+        axes.plot(x, y, **kwargs)
 #        print( x, y)
-#        axes.plot(x, y, '.-', color='black', *args, **kwargs)
+#        axes.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
         xmid = int(len(x) / 2)
         ymid = int(len(y) / 2)
@@ -585,9 +571,9 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, *args, **kwargs):
 
         axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15.,
                    head_starts_at_zero=True,
-                   *args, **kwargs)
+                   **kwargs)
 
-def drawStreams(axes, mesh, data, startStream=3, *args, **kwargs):
+def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     """
         Draw streamlines based on unstructured mesh.
         Every cell contains only one streamline and every new stream line
@@ -622,7 +608,7 @@ def drawStreams(axes, mesh, data, startStream=3, *args, **kwargs):
             if c is not None:
                 if c.valid():
                     drawStreamLine(axes, viewMesh, c, data, dataMesh,
-                                   *args, **kwargs)
+                                   **kwargs)
 
     elif startStream == 2:
         # start a stream from each boundary cell
@@ -631,7 +617,7 @@ def drawStreams(axes, mesh, data, startStream=3, *args, **kwargs):
             if c is not None:
                 if c.valid():
                     drawStreamLine(axes, viewMesh, c, data, dataMesh,
-                                   *args, **kwargs)
+                                   **kwargs)
 
     elif startStream == 3:
         # start a stream from each boundary cell
@@ -642,14 +628,14 @@ def drawStreams(axes, mesh, data, startStream=3, *args, **kwargs):
 
             if c.valid():
                 drawStreamLine(axes, viewMesh, c, data, dataMesh,
-                               *args, **kwargs)
+                               **kwargs)
             #return
 
     # start a stream from each unused cell
     for c in viewMesh.cells():
         if c.valid():
             drawStreamLine(axes, viewMesh, c, data, dataMesh,
-                           *args, **kwargs)
+                           **kwargs)
 
     for c in viewMesh.cells():
         c.setValid(True)

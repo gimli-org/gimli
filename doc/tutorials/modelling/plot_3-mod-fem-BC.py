@@ -16,6 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
+
 from pygimli.solver import solve
 from pygimli.viewer import show
 from pygimli.mplviewer import drawStreams
@@ -49,7 +50,7 @@ def uDirichlet(b):
 
 dirichletBC = [[1, 1.0],  # left
                [grid.findBoundaryByMarker(2), 2.0],  # right
-               [grid.findBoundaryByMarker(3), lambda p: 3.0 + p[0]],  # top
+               [grid.findBoundaryByMarker(3), lambda p: 3.0 + p.center()[0]],  # top
                [grid.findBoundaryByMarker(4), uDirichlet]]  # bottom
 
 """
@@ -60,16 +61,16 @@ a class with plotting or decoration methods.
 u = solve(grid, f=1.,
           uBoundary=dirichletBC)
 
-ax = show(grid, data=u, filled=True, colorBar=True,
+ax = show(grid, data=u, colorBar=True,
           orientation='vertical', label='Solution $u$',
           levels=np.linspace(1.0, 4.0, 17), showLater=True)[0]
 
-show(grid, axes=ax)
+show(grid, axes=ax, showLater=1)
 
-ax.text(0.0, 1.02, '$u=1$')
-ax.text(-1.08, 0.0, '$u=2$', rotation='vertical')
-ax.text(0.0, -1.08, '$u=3+x$')
-ax.text(1.02, 0.0, '$u=4$', rotation='vertical')
+ax.text(0.0, 1.02, '$u=3+x$')
+ax.text(-1.08, 0.0, '$u=4$', rotation='vertical')
+ax.text(0.0, -1.08, '$u=2$')
+ax.text(1.02, 0.0, '$u=1$', rotation='vertical')
 
 ax.set_title('$\\nabla\cdot(1\\nabla u)=1$')
 
