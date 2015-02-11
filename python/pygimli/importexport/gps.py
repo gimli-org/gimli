@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys 
+import sys
 from xml.dom.minidom import parse
 from pyproj import Proj, transform
 
@@ -23,8 +23,8 @@ gk4   = Proj( init="epsg:31468" ) # GK zone 3
 wgs84 = Proj( init="epsg:4326" ) # pure ellipsoid for step-wise change
 
 def handleWPTS( wpts ):
-    """ 
-        Handler for Waypoints in gpx xml-dom 
+    """
+        Handler for Waypoints in gpx xml-dom
     """
     w = []
 
@@ -51,7 +51,7 @@ def readGPX( filename ):
 
     Currently only simple waypoint extraction is supported.
     """
-    
+
     dom = parse( filename )
     wpts = dom.getElementsByTagName("wpt")
 
@@ -62,17 +62,17 @@ def readSimpleLatLon(filename, verbose=False):
     """
         Read a list of the following formats. Try to convert the format automatically
         If you want to be sure, provide format without "d" to ensure floating point format:
-            
+
         lon lat
-        
+
         or
-        
+
         marker lat lon
-            
+
         return list:
             lon lat name time
     """
-    
+
     def conv_(deg):
         """convert degree into floating vpoint."""
         ret = 0.0
@@ -96,29 +96,29 @@ def readSimpleLatLon(filename, verbose=False):
 
         return ret
     # def conv_(...):
-    
+
     w = []
-    
+
     with open( filename, 'r') as fi:
         content = fi.readlines( )
     fi.close()
-    
+
     for line in content:
         if line[0] == '#': continue
-        
+
         vals = line.split()
-        
+
         if len( vals ) == 2:
             #lon lat
             w.append((conv_(vals[1]), conv_(vals[0]), '', 'time'))
         if len( vals ) == 3:
             # marker lat lon
             w.append((conv_(vals[2]), conv_(vals[1]), vals[0], 'time'))
-                    
+
         if verbose:
             print(w[-1])
-        
-    
+
+
     return w
 
 def GK2toUTM( R, H=None, zone=32 ):
@@ -126,13 +126,13 @@ def GK2toUTM( R, H=None, zone=32 ):
     """ note the double transformation (1-ellipsoid,2-projection) """
     """ default zone is 32 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM 
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM
 
     if H is None: # two-column matrix
         lon, lat = transform( gk2, wgs84, R[0], R[1] )
     else:
         lon, lat = transform( gk2, wgs84, R, H )
-    
+
     return utm( lon, lat )
 
 def GK3toUTM( R, H=None, zone=33 ):
@@ -140,13 +140,13 @@ def GK3toUTM( R, H=None, zone=33 ):
     """ note the double transformation (1-ellipsoid,2-projection) """
     """ default zone is 33 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM 
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM
 
     if H is None: # two-column matrix
         lon, lat = transform( gk3, wgs84, R[0], R[1] )
     else:
         lon, lat = transform( gk3, wgs84, R, H )
-    
+
     return utm( lon, lat )
 
 def GK4toUTM( R, H=None, zone=33 ):
@@ -154,13 +154,13 @@ def GK4toUTM( R, H=None, zone=33 ):
     """ note the double transformation (1-ellipsoid,2-projection) """
     """ default zone is 33 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM 
+    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM
 
     if H is None: # two-column matrix
         lon, lat = transform( gk4, wgs84, R[0], R[1] )
     else:
         lon, lat = transform( gk4, wgs84, R, H )
-    
+
     return utm( lon, lat )
 
 def GKtoUTM(R, H=None):
@@ -176,44 +176,65 @@ def GKtoUTM(R, H=None):
         return GK4toUTM( R, H )
     else:
         print("cannot detect valid GK zone")
-    
+
 def convddmm(num):
     dd = np.floor( num / 100. )
     r1 = num - dd * 100.
     return dd + r1 / 60.
 
 def readGeoRefTIF( file_name ):
-    """ 
+    """
         Read geo-referenced TIFF file and return image and bbox
         plt.imshow( im, ext = bbox.ravel() ), bbox might need transform.
     """
     dataset = gdal.Open(file_name, GA_ReadOnly)
     geotr = dataset.GetGeoTransform()
     projection = dataset.GetProjection()
-    
-    im = np.flipud( mpimg.imread(file_name))  
-    
+
+    im = np.flipud( mpimg.imread(file_name))
+
     tifx, tify, dx = geotr[0], geotr[3], geotr[1]
-    
+
     bbox = [[tifx, tifx + im.shape[1] * dx],
             [tify - im.shape[0] * dx, tify]]
-    
+
     return im, bbox, projection
- 
+
 def getBKGaddress(xlim, ylim, imsize=1000,
                   zone=32, service='dop40', uuid='', fmt='jpeg'):
     """
         Generate address for rendering web service image from BKG.
-        Assumes UTM in any zone.
+        Assumes UTM in given zone.
     """
-    url='http://sg.geodatenzentrum.de/wms_' + service
-    stdarg='REQUEST=GetMap&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT='+fmt
-    srsstr='SRS=EPSG:' + str( 25800 + zone ) # 
-    
-    boxstr='BBOX='+ '%d' % xlim[0] + ',' + '%d' % ylim[0] + ',' + '%d' % xlim[1] + ',' + '%d' % ylim[1]
+    url = 'http://sg.geodatenzentrum.de/wms_' + service
+    stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT=' + fmt
+    srsstr = 'SRS=EPSG:' + str(25800 + zone)  # EPSG definition of UTM
+
+    box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
     ysize = imsize * (ylim[1]-ylim[0]) / (xlim[1]-xlim[0])
     sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
-    addr = url + '__' + uuid + '?' + stdarg + '&' + srsstr + '&' + boxstr +'&' + sizestr
-    
-    return addr
+    addr = url + '__' + uuid + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
+        '&' + 'BBOX=' + box + '&' + sizestr
 
+    return addr, box
+
+def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid=''):
+    """ 
+        Underlays digital orthophoto or topographic (mode='DTK') map under axes
+        At first access, the image is retrieved from BKG and saved, then loaded.
+    """
+    ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
+    wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for the map types
+    ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, service=wms[mode],
+                            zone=utmzone)
+    imname = mode + box + ext[mode]
+    if not os.path.isfile(imname):  # not already existing
+        print('Retrieving file from geodatenzentrum.de')
+        print(ad)
+        url = urllib.URLopener()
+        url.retrieve(ad, imname)
+
+    im = mpimg.imread(imname)
+    bb = [int(bi) for bi in box.split(',')]  # bounding box
+    plt.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
+               interpolation='nearest')

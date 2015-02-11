@@ -7,39 +7,42 @@
 import pygimli as pg
 import pybert as pb
 
+
 class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
     def __init__(self, mesh, data, verbose):
         super().__init__(mesh, data, verbose)
         self.setComplex(True)
-        
+
         self._J = pg.RBlockMatrix()
         self.setJacobian(self._J)
-    
+
         self._C = pg.RBlockMatrix()
         self.setConstraints(self._C)
         self.matrixHeap = []
-        #super().createConstraints = self.createConstraints
-    
+        # super().createConstraints = self.createConstraints
+
     def createDefaultStartModel(self):
         """
         """
         res = pb.getComplexData(self.data())
-        re = pg.RVector(self.regionManager().parameterCount(), pg.mean(pg.real(res)))
-        im = pg.RVector(self.regionManager().parameterCount(), -pg.mean(pg.imag(res)))
+        re = pg.RVector(self.regionManager().parameterCount(),
+                        pg.mean(pg.real(res)))
+        im = pg.RVector(self.regionManager().parameterCount(),
+                        -pg.mean(pg.imag(res)))
         return pg.cat(re, im)
-        
+
     def createJacobian(self, model):
         print('=' * 100)
-                
+
         if self.complex():
             modelRe = model[0:int(len(model)/2)]
             modelIm = model[int(len(model)/2):len(model)]
             modelC = pg.toComplex(modelRe, modelIm)
             print("Real", min(modelRe), max(modelRe))
             print("Imag", min(modelIm), max(modelIm))
-            
+
             u = self.prepareJacobian_(modelC)
-            
+
             if self._J.rows() == 0:
                 #re(data)/re(mod) = im(data)/im(mod)
                 # we need a local copy until we have a gimli internal reference counter FIXTHIS
@@ -47,80 +50,80 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
                 M2 = pg.RMatrix()
                 self.matrixHeap.append(M1)
                 self.matrixHeap.append(M2)
-                
+
                 JRe = self._J.addMatrix(M1)
                 JIm = self._J.addMatrix(M2)
-                                
+
                 self._J.addMatrixEntry(JRe, 0, 0)
                 self._J.addMatrixEntry(JIm, 0, len(modelRe), -1.0)
                 self._J.addMatrixEntry(JIm, self.data().size(), 0, 1.0)
                 self._J.addMatrixEntry(JRe, self.data().size(), len(modelRe))
-                
+
             else:
                 self._J.clean()
-                
-                
+
+
             k = pg.RVector(self.data()('k'))
             self.data().set('k', k*0.0 + 1.0)
-            
+
             dMapResponse = pb.DataMap()
             dMapResponse.collect(self.electrodes(), self.solution())
             respRe = dMapResponse.data(self.data(), False, False)
             respIm = dMapResponse.data(self.data(), False, True)
-                
+
             #CVector resp(toComplex(respRe, respIm));
             #RVector am(abs(resp) * dataContainer_->get("k"));
             #RVector ph(-phase(resp));
-                
+
             print("respRe", pg.median(respRe), min(respRe), max(respRe))
-            print("respIm", pg.median(respIm), min(respIm), max(respIm))                
-            
+            print("respIm", pg.median(respIm), min(respIm), max(respIm))
+
             JC = pg.CMatrix()
             self.createJacobian_(modelC, u, JC)
             for i in range(JC.rows()):
                 #JC[i] *= 1.0/(modelC*modelC) * k[i]
                 JC[i] /= (modelC * modelC) / k[i]
-                
+
             self._J.mat(0).copy(pg.real(JC))
             self._J.mat(1).copy(pg.imag(JC))
-            
+
             #self.createJacobian_(modelRe*0.0+1.0, pg.real(u), self._J.mat(1))
             #self.createJacobian_(modelRe*0.0+1.0, pg.imag(u), self._J.mat(2))
             #self.createJacobian_(modelRe*0.0+1.0, pg.imag(u), self._J.mat(3))
-                       
-            
+
+
             sumsens0 = pg.RVector(self._J.mat(0).rows())
             sumsens1 = pg.RVector(self._J.mat(0).rows())
             sumsens2 = pg.RVector(self._J.mat(0).rows())
-            
+
             for i in range(self._J.mat(0).rows()):
                 #self._J.mat(0)[i] *= 1./modelRe / respRe[i]
                 #self._J.mat(1)[i] *= 1./modelIm / respRe[i]
-                
+
                 #self._J.mat(2)[i] *= 1./modelRe / respIm[i]
                 #self._J.mat(3)[i] *= 1./modelIm / respIm[i]
-                
+
                 #self._J.mat(0)[i] *= 1./(modelRe * modelRe) * k[i]
                 #self._J.mat(1)[i] *= 1./(modelRe * modelIm) * k[i]
-                
+
                 #self._J.mat(2)[i] *= 1./(modelIm * modelRe) * k[i]
                 #self._J.mat(3)[i] *= 1./(modelIm * modelIm) * k[i]
-                
+
                 sumsens0[i] = sum(self._J.mat(0)[i])
                 sumsens1[i] = sum(self._J.mat(1)[i])
                 sumsens2[i] = abs(sum(JC[i]))
-            
+
             print(pg.median(sumsens0), min(sumsens0), max(sumsens0))
             print(pg.median(sumsens1), min(sumsens1), max(sumsens1))
             print(pg.median(sumsens2), min(sumsens2), max(sumsens2))
-                            
+
             self.data().set('k', k)
-            
+
             self._J.recalcMatrixSize()
         else:
             # self.setVerbose(True)
             u = self.prepareJacobian_(model)
-            
+
             #J = pg.RMatrix()
             if self._J.rows() == 0:
                 print('#' * 100)
@@ -129,22 +132,22 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
                 self._J.addMatrixEntry(Jid, 0, 0)
             else:
                 self._J.clean()
-                
+
             self.createJacobian_(model, u, self._J.mat(0))
             self._J.recalcMatrixSize()
-            
+
     def createConstraints(self):
         """
         """
         print ("createConstrains(self, model):")
         Ctmp = pg.RSparseMapMatrix()
         self.matrixHeap.append(Ctmp)
-        self.regionManager().fillConstraints(Ctmp)   
+        self.regionManager().fillConstraints(Ctmp)
         CiD = self._C.addMatrix(Ctmp)
         self._C.addMatrixEntry(CiD, 0, 0)
         self._C.addMatrixEntry(CiD, Ctmp.rows(), Ctmp.cols())
         self._C.recalcMatrixSize()
-        
+
 
 data = pb.DataContainerERT('wa24c.dat')
 print(data)
