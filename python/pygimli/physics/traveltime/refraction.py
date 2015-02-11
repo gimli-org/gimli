@@ -13,7 +13,57 @@ from pygimli.meshtools import createParaDomain2D, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc
 from math import pi
+import time
+import os
 
+
+def plotLines(ax, line_filename, step=1):
+    xz = np.loadtxt(line_filename)    
+    n_points = xz.shape[0]
+    if step == 2:
+        for i in range(0, n_points, step):
+            x = xz[i:i+step, 0]
+            z = xz[i:i+step, 1]
+            ax.plot(x, z, 'k-')
+    if step  == 1:
+        ax.plot(xz[:,0], xz[:,1], 'k-')
+
+
+def createResultFolder(subfolder):
+    now = time.localtime()
+    results = str(now.tm_year) + str(now.tm_mon).zfill(2) +\
+                str(now.tm_mday).zfill(2) + '-' +\
+                str(now.tm_hour).zfill(2) + '.' +\
+                str(now.tm_min).zfill(2)
+                
+    return createfolders(['./', results, subfolder])
+    
+def createfolders(foldername_list):
+    """
+    
+    """
+    path = ''
+       
+    for s in foldername_list:
+        path = path + s + '/'
+    
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if os.path.exists(path):
+            print('Path "{}" already exists.'.format(path))
+        else:
+            print('Unable to create path "{}".'.format(path))
+            raise(e)
+
+    return path
+
+def getSavePath(folder=None, subfolder=''):
+    if folder is None:
+        path = createResultFolder(subfolder)
+    else:
+        path = createfolders([folder, subfolder])
+    return path
 
 def plotFirstPicks(ax, data, plotva=False):
     """ plot first arrivals as lines """
@@ -106,6 +156,9 @@ class Refraction():
         if filename is not None:
             self.load(filename)
 
+    def __str__(self):
+        return self.__repr__()
+        
     def __repr__(self):
         """ string representation of the class """
         out = "Refraction object"
@@ -195,7 +248,7 @@ class Refraction():
         if hasattr(self, 'INV'):  # self.INV is not None:
             self.INV.setRelativeError(self.error)
 
-    def createInv(self):
+    def createInv(self, verbose=True, dosave=False):
         """ create inversion instance """
         if not hasattr(self, 'f'):
             self.createFOP()
@@ -248,7 +301,50 @@ class Refraction():
             browser = CellBrowser(self.mesh, self.velocity, ax)
             browser.connect()
             plt.show()  # block=False)
+            
+        if kwargs.has_key('lines'):
+            plotLines(ax, kwargs['lines'])
         return ax, cbar
+        
+    def saveResult(self, folder=None, size=(16, 10), **kwargs):
+        """
+        Saves the results in the specified folder.
+        
+        Saved items are:
+            Inverted profile
+            Velocity vector
+            Coverage vector
+            Standardized coverage vector
+            Mesh (bms and vtk with results)
+        """
+#        TODO: How to extract the chi2 etc. from each iteration???
+        
+        subfolder = '/' + self.__class__.__name__
+        path = getSavePath(folder, subfolder)
+        
+        print('Saving refraction data to: {}'.format(path))
+        
+        np.savetxt(path + '/velocity.vector',
+                   self.velocity)
+        np.savetxt(path + '/velocity-cov.vector',
+                   self.rayCoverage())
+        np.savetxt(path + '/velocity-scov.vector',
+                   self.standardizedCoverage())
+                   
+        self.mesh.addExportData('Velocity', self.velocity)
+        self.mesh.addExportData('Coverage', self.rayCoverage())
+        self.mesh.addExportData('S_Coverage', self.standardizedCoverage())
+        self.mesh.exportVTK(path + 'velocity')
+        self.mesh.save(path + 'velocity-mesh')
+        self.pd.save(path + 'velocity-pd')
+        
+        fig, ax = plt.subplots()
+        self.showResult(ax=ax, cov=self.standardizedCoverage(),**kwargs)        
+        fig.set_size_inches(size)     
+        fig.savefig(path + '/velocity.pdf')
+        
+        return path, fig, ax
+        
 
 if __name__ == '__main__':
     datafile = sys.argv[1]
@@ -258,6 +354,7 @@ if __name__ == '__main__':
     ra.showData()
     ra.showVA()
     ra.makeMesh(depth=100)
+    ra.showMesh()
     ra.run()
     ax, cbar = ra.showResult()
     pg.showNow()

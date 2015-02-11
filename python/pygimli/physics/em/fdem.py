@@ -230,7 +230,8 @@ class FDEMData():
             if aline.split()[0][0].isdigit():  # number found
                 break
             elif aline.find('COIL') > 0:  # [:6] == '/ COIL':
-                self.coilSpacing = float(aline.replace(':', ': ').split()[-2])
+                pass
+#                self.coilSpacing = float(aline.replace(':', ': ').split()[-2])
             elif aline.find('FREQ') > 0:  # [:6] == '/ FREQ':
                 mya = aline[aline.find(':')+1:].replace(',', ' ').split()
                 myf = [float(aa) for aa in mya if aa[0].isdigit()]
@@ -246,7 +247,7 @@ class FDEMData():
         nf = len(self.frequencies)
         if verbose:
             print("delim=", delim, "nf=", nf)
-        A = np.loadtxt(filename, skiprows=i, delimiter=delim).T
+        A = np.loadtxt(filename, skiprows=i, delimiter=delim, comments='/').T
         x, y, self.IP, self.OP = A[0], A[1], A[2:nf*2+2:2].T, A[3:nf*2+2:2].T
         if max(x) == min(x):
             self.x = y
@@ -550,7 +551,7 @@ class FDEMData():
         if self.ERR is not None:
             np = 3
 
-        fig, ax = plt.subplots(ncols=np, nrows=1, figsize=figsize)
+        fig, ax = plt.subplots(ncols=1, nrows=np, figsize=figsize)
         xfplot(ax[0], self.IP[:, self.activeFreq], self.x, freq,
                orientation=orientation)
         ax[0].set_title('inphase percent')

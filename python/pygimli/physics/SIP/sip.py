@@ -108,6 +108,7 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi_a$ in mrad',
     ax.set_ylabel(ylabel)
     ax.set_grid(grid)
 
+
 class SIP():
     '''
     class for managing spectral induced polarisation data
@@ -180,6 +181,7 @@ class SIP():
         self.data.set('n', np.array(nn)-1)
         self.data.markValid(self.data('a') > -1)
         self.data.set('k', pb.geometricFactor(self.data))
+        self.data.save(self.basename + '.shm', 'a b m n k')
         # assemble data matrices
         self.RHOA = np.ones((self.data.size(), len(self.freq)))*np.nan
         self.PHIA = self.RHOA * 1.
