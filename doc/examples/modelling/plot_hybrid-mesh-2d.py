@@ -76,16 +76,14 @@ tri.generate(mesh2)
 for cell in mesh2.cells():
     cell.setMarker(1)
 
-print(mesh2)
 """
 .. lastcout::
 
 Finally, the grid and the unstrcutured mesh can be merged to single mesh for further
 modelling.
 """
-mesh3 = merge2Meshes(mesh1, mesh2)
 
-print(mesh3)
+mesh3 = merge2Meshes(mesh1, mesh2)
 
 """
 .. lastcout::
@@ -94,11 +92,16 @@ Of course, you can treat the hybrid mesh like any other mesh and append a triang
 boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
 """
 
-mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31, smooth=True, marker=3, isSubSurface=True)
-ax, cbar = showMesh(mesh, mesh.cellMarker(), cmap="summer", label="Region marker", showLater=True)
-drawMesh(ax, mesh)
+mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
+                              smooth=True, marker=3, isSubSurface=True)
 
-ax, _ = showMesh(mesh, mesh.cellMarker(), showLater=True, logScale=False, label="Region marker")
+ax, cbar = showMesh(mesh, mesh.cellMarker(), 
+                    cmap="summer",
+                    label="Region marker", 
+                    showLater=True)
+drawMesh(ax, mesh)
+ax, _ = showMesh(mesh, mesh.cellMarker(), showLater=True,
+                 logScale=False, label="Region marker")
 drawMesh(ax, mesh)
 plt.xlim(40,60)
 plt.ylim(-30, -20)

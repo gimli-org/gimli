@@ -261,6 +261,19 @@ DEFINE_COMPARE_OPERATOR__(>)
     template std::vector< Index > sort(const std::vector < Index > & a);
     template std::vector< SIndex > sort(const std::vector < SIndex > & a);
     
+#define DEFINE_XVECTOR_STUFF__(VEC) \
+template bool haveInfNaN(const VEC & v); \
+template BVector isInf(const VEC & vec); \
+template BVector isNaN(const VEC & vec); \
+template BVector isInfNaN(const VEC & vec); \
+
+DEFINE_XVECTOR_STUFF__(RVector)
+DEFINE_XVECTOR_STUFF__(CVector)
+DEFINE_XVECTOR_STUFF__(BVector)
+DEFINE_XVECTOR_STUFF__(IVector)
+#undef DEFINE_XVECTOR_STUFF__
+
+    
     template RVector fliplr(const RVector & a);
     template RVector round(const RVector & a, double tol);
     template RVector increasingRange(const double & first, const double & last, Index n);
@@ -346,13 +359,6 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     template void sort(const RVector & a, RVector & b, IndexArray & idx);
     template IndexArray sortIdx(const RVector & a);
-    
-    template bool haveInfNaN(const RVector & v);
-        
-    template BVector isInf(const RVector & vec);
-    template BVector isNaN(const RVector & vec);
-    template BVector isInfNaN(const RVector & vec);
-
     
     template bool save(const RVector &v, const std::string & fname, IOFormat format = Ascii);
     template bool load(RVector &v, const std::string & fname, IOFormat format = Ascii,

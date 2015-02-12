@@ -95,9 +95,9 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
         return ret
     raise Exception("Cannot parse argument type " + str(type(arg)))
 
-def parseArgToBoundaryValue(arg, boundary, time=0.0, userData=None):
+def generateBoundaryValue(arg, boundary, time=0.0, userData=None):
     """
-    Parse argument to boundary related value.
+    Generate a value for the given Boundary.
     
     Parameters
     ----------
@@ -130,9 +130,11 @@ def parseArgToBoundaryValue(arg, boundary, time=0.0, userData=None):
             args.append(time)
         if userData:
             kwargs['userData'] = userData
+        
         val = arg(*args, **kwargs)
+        
     elif hasattr(arg, '__len__'):
-        val = parseArgToBoundaryValue(arg[boundary.id()], boundary)
+        val = generateBoundaryValue(arg[boundary.id()], boundary, userData)
     else:
         try:
             val = float(arg)
@@ -154,7 +156,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
         - [[boundary,...], arg]
         
         arg will be parsed by
-        :py:mod:`pygimli.solver.solver.parseArgToBoundaryValue` 
+        :py:mod:`pygimli.solver.solver.generateBoundaryValue` 
         and distributed to each boundary.
         Callable functions will be executed at runtime. 
        
@@ -181,7 +183,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
             # we want to call them at runtime
             val = pair[1]
         else:
-            val = parseArgToBoundaryValue(pair[1], b)
+            val = generateBoundaryValue(pair[1], b)
         boundaries.append([b, val])
    
     return boundaries
@@ -441,7 +443,7 @@ def assembleNeumannBC(S,
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
-        g = parseArgToBoundaryValue(val, boundary, time, userData)
+        g = generateBoundaryValue(val, boundary, time, userData)
                 
         if g is not 0.0:
             Se.u2(boundary)
@@ -511,7 +513,7 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0,
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
-        uD = parseArgToBoundaryValue(val, boundary, time, userData)
+        uD = generateBoundaryValue(val, boundary, time, userData)
     
         for n in boundary.nodes():
             uDirNodes.append(n)
@@ -750,17 +752,20 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if debug: print("6a: ", swatch2.duration(True))
 
         if 'duBoundary' in kwargs:
+            print(userData)
             assembleNeumannBC(S,
                               parseArgToBoundaries(kwargs['duBoundary'], mesh),
                               time=0.0,
-                              userData=None, verbose=False)
+                              userData=userData,
+                              verbose=False)
 
         if debug: print("6b: ", swatch2.duration(True))
         if 'uBoundary' in kwargs:
             assembleDirichletBC(S,
                                 parseArgToBoundaries(kwargs['uBoundary'], mesh),
                                 rhs, time=0.0,
-                                userData=None, verbose=False)
+                                userData=userData,
+                                verbose=False)
             
         if debug: print("6c: ", swatch2.duration(True))
         if 'uDirichlet' in kwargs:
@@ -841,7 +846,8 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                   parseArgToBoundaries(kwargs['duBoundary'],
                                                        mesh),
                                   time=times[n],
-                                  userData=None, verbose=False)
+                                  userData=userData,
+                                  verbose=False)
 
             swatch.reset()
             # (A + a*B)u is fastest, followed by A*u + (B*u)*a and finally A*u + a*B*u and 
@@ -868,7 +874,7 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                                          mesh),
                                     rhs=b,
                                     time=times[n],
-                                    userData=None,
+                                    userData=userData,
                                     verbose=verbose)
                 
             #u = S/b
