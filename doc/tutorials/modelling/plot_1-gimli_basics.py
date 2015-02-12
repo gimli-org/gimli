@@ -44,7 +44,7 @@ A simple grid generation is built-in but we also provide wrappers for unstructur
 To create a 2d grid you need to give two arrays or lists for the sampling points in x and y direction, respectively.
 """
 
-grid = pg.createGrid(x=(-1.0, 0.0, 1.0, 4.0), y=(-1.0, 0.0, 1.0, 4.0))
+grid = pg.createGrid(x=[-1.0, 0.0, 1.0, 4.0], y=(-1.0, 0.0, 1.0, 4.0))
 
 
 """

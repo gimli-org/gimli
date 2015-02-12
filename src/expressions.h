@@ -119,8 +119,16 @@ template < class T > bool isGreaterEqual(const T & a, const T & b) { return a > 
 
 #ifdef _MSC_VER
 template < class T > bool isInfNaN(const T & a){ return (isinf(a) || isnan(a)); }
+template < class T > bool isInf(const T & a){ return (isinf(a));}
+template < class T > bool isNaN(const T & a){ return (isnan(a));}
+inline bool isNaN(const Complex & a){ return (isnan(a.real()) || isnan(a.imag())); }
+inline bool isInf(const Complex & a){ return (isinf(a.real()) || isinf(a.imag())); }
 #else
 template < class T > bool isInfNaN(const T & a){ return (std::isinf(a) || std::isnan(a)); }
+template < class T > bool isInf(const T & a){ return (std::isinf(a));}
+template < class T > bool isNaN(const T & a){ return (std::isnan(a));}
+inline bool isNaN(const Complex & a){ return (std::isnan(a.real()) || std::isnan(a.imag())); }
+inline bool isInf(const Complex & a){ return (std::isinf(a.real()) || std::isinf(a.imag())); }
 #endif
 
 inline bool isInfNaN(const Complex & a){ return (isInfNaN(a.real()) || isInfNaN(a.imag())); }
@@ -179,8 +187,8 @@ DEFINE_UNARY_OPERATOR__(SQR,  square)
 #define DEFINE_UNARY_IF_FUNCTION__(OP, FUNCT) \
 struct OP { template < class T > bool operator()(const T & a) const { return FUNCT(a); } }; \
 
-DEFINE_UNARY_IF_FUNCTION__(ISINF, std::isinf)
-DEFINE_UNARY_IF_FUNCTION__(ISNAN, std::isnan)
+DEFINE_UNARY_IF_FUNCTION__(ISINF, isInf)
+DEFINE_UNARY_IF_FUNCTION__(ISNAN, isNaN)
 DEFINE_UNARY_IF_FUNCTION__(ISINFNAN, isInfNaN)
 
 #undef DEFINE_UNARY_IF_FUNCTION__

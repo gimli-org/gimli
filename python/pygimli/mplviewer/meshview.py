@@ -173,8 +173,6 @@ def drawModel(axes, mesh, data=None,
         
         Parameters
         ----------
-        
-        
     """
 
     useTri = False
@@ -211,7 +209,7 @@ def drawModel(axes, mesh, data=None,
 
         if min(data) <= 0:
             logScale = False
-
+    
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
@@ -441,7 +439,6 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
             shading = 'gouraud'
             z = pg.cellDataToPointData(mesh, data)
 
-        print(levels)
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              **kwargs)
 

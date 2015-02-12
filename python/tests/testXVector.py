@@ -9,6 +9,7 @@ def testVector(v):
     for t in v:
         print(t)
     print(sum(v))
+    print(pg.haveInfNaN(v))
     
 testVector(pg.RVector(5, 1.0))
 testVector(pg.CVector(5, 1.0))

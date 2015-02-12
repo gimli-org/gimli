@@ -121,21 +121,21 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
     gci = None
     cbar = None
     validData = False
-
+    
     if data is None:
         drawMesh(ax, mesh)
     elif type(data) == pg.stdVectorRVector3:
         drawSensors(ax, data)
     else:
-        # print(data[0], type(data[0]))
         if hasattr(data[0], '__len__') and type(data) != np.ma.core.MaskedArray:
+               
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, *args, **kwargs)
             else:
                 print("No valid stream data:",  data)
                 drawMesh(ax, mesh)
 
-        elif (min(data) == max(data)) or pg.haveInfNaN(data):
+        elif (min(data) == max(data)):# or pg.haveInfNaN(data):
             print("No valid data: ",  min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh)
         else:
@@ -156,7 +156,6 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
         else:
             raise('toImplement')
             addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
-
 
     if not showLater:
         plt.show()

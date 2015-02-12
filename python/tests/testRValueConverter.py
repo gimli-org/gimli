@@ -70,10 +70,17 @@ def testRValNumpyArray():
     
     x = np.arange(0, 1., 0.2, dtype=np.float64)
     a=pg.RVector(x)
-    print(a)
+    print('pg.RVector(x):', a)
     
-    a=pg.RVector([0.2, 0.3, 0.4, 0.5])
-    print(a)
+    x = np.array(a)
+    a=pg.RVector(x)
+    print('pg.RVector(array):', a)
+    
+    a=pg.RVector([0.2, 0.3, 0.4, 0.5, 0.6])
+    print('pg.RVector(list[float]):', a)
+    
+    a=pg.RVector((0.2, 0.3, 0.4, 0.5, 0.6))
+    print('pg.RVector(tuple(float,)):', a)
     
     a=pg.RVector(np.arange(0, 1., 0.2 ))
     print(a)
@@ -92,28 +99,6 @@ def testSlices():
         pass
     print(a[3:0:-2])
     print(pg.norm(a[0:3:1]))
-    
-
-#p = g.RVector3(x)
-#print p
-#print p.dist(x)
-
-
-#vx = np.zeros((2,3))
-#vx[:, 1] = 1
-
-#print vx
-
-#print g.x(vx)
-#print g.y(vx)
-#print g.z(vx)
-
-#print g.y([p,p])
-
-
-
-
-#x = np.zeros((1,3))
 
 
 if __name__ == '__main__':
@@ -121,8 +106,8 @@ if __name__ == '__main__':
     #testRVector()
     #testRValSeqRVector3()
     #testRValSequenz()
-    testNumpyFromRVec()
+    #testNumpyFromRVec()
     #testNumpyFromRVec3()
-    #testRValNumpyArray()
+    testRValNumpyArray()
     #testSlices()
     

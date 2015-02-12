@@ -113,7 +113,17 @@ struct PySequence2RVector{
         // std::cout << "size: " << PyArray_DIM(obj,0) << std::endl;
         // std::cout << "type: " << PyArray_TYPE(obj) << std::endl;
         // type 12 = float64
-        if (PyArray_ISONESEGMENT(obj) && PyArray_TYPE(obj) == 12){
+        
+        if (PyList_Check(obj) or PyTuple_Check(obj)){
+              // convert from list
+            bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
+            GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
+            data->convertible = memory_chunk;
+            
+            for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                 (*vec)[i]= bpl::extract< double >(py_sequence[i]);
+            }
+        } else if (PyArray_ISONESEGMENT(obj) && PyArray_TYPE(obj) == 12){
             // convert from numpy array
             GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(PyArray_DIM(obj,0));
             data->convertible = memory_chunk;
@@ -126,14 +136,8 @@ struct PySequence2RVector{
             std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(double));
             
         } else {
-            // convert from list
-            bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
-            GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
-            data->convertible = memory_chunk;
-            
-            for (GIMLI::Index i = 0; i < vec->size(); i ++){
-                 (*vec)[i]= bpl::extract< double >(py_sequence[i]);
-            }
+            __M   
+            std::cout << "not yet implemented" << std::endl;
         }
     }
 private:    
