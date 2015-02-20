@@ -109,15 +109,23 @@ print('Peclet-number:', v[0]/(a[0] / dx))
 ud0=10
 udN=0
 
-def uAna(
-    u = (1 - np.exp(-v * x / D))/(1. - np.exp(-v * L / D))
+def uAna(x, L, v, D):
+    """
+        u = \frac{1 - \e(-v_x x / D)}{1 - \e(-v_x L / D)}
 
+    """
+    return (1 - np.exp(-v * x / D))/(1. - np.exp(-v * L / D))
+
+
+plt.plot(pg.x(grid.cellCenter()),
+         uAna(x, L=1.0, v=v[0], D=a[1]),
+         '-', label='exact')
 
 for scheme in ['CDS', 'UDS', 'ES', 'HS', 'PS']:
     S, rhs = diffusionConvectionKernelGrid(grid, a, f, v, uDir=[ud0, udN], scheme=scheme)
     u = np.linalg.solve(S, rhs)
     plt.plot(pg.x(grid.cellCenter()), u[1:N+1], 'o-', label='FVM-'+scheme)
-
+    
 plt.legend()
 S, rhs = diffusionConvectionKernelGrid(grid, a, f, v, uDir=[ud0, udN], scheme='HS')
 print(S)

@@ -70,12 +70,20 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
         if min(field) == max(field):
             raise BaseException("No data range for streamline: min/max == ", min(field))
 
-        if len(field) == dataMesh.nodeCount():
-            pot = pg.RVector(field)
-        elif len(field) == dataMesh.cellCount():
-            pot = pg.cellDataToPointData(dataMesh, field)
+        if dataMesh is not None:
+            if len(field) == dataMesh.nodeCount():
+                pot = pg.RVector(field)
+            elif len(field) == dataMesh.cellCount():
+                pot = pg.cellDataToPointData(dataMesh, field)
+            else:
+                raise BaseException("Data length (%i) for streamline is neighter nodeCount (%i) nor cellCount (%i)" % (len(field), dataMesh.nodeCount(), dataMesh.nodeCount()))
         else:
-            raise BaseException("Data length (%i) for streamline is neighter nodeCount (%i) nor cellCount (%i)" % (len(field), mesh.nodeCount(), mesh.nodeCount()))
+            if len(field) == mesh.nodeCount():
+                pot = pg.RVector(field)
+            elif len(field) == mesh.cellCount():
+                pot = pg.cellDataToPointData(mesh, field)
+            else:
+                raise BaseException("Data length (%i) for streamline is neighter nodeCount (%i) nor cellCount (%i)" % (len(field), mesh.nodeCount(), mesh.nodeCount()))
 
     direction = 1
     if down:
