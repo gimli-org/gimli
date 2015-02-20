@@ -252,7 +252,7 @@ public:
     inline int save(const std::string & fileName,
                     const std::string & formatData="all",
                     bool verbose=false) const {
-        return save(fileName, formatData, "x y z", verbose); }
+        return save(fileName, formatData, "x y z", false, verbose); }
 
     /*! Show some information that belongs to the DataContainer.*/
     void showInfos() const ;

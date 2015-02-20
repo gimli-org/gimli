@@ -67,7 +67,21 @@ u = pg.solver.solve(grid, f=1.,
 The result is drawn with the function :py:mod:`pygimli.viewer.showmesh.show` 
 """
 
-ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$',
+def uAna(r):
+    x = r[0]
+    y = r[1]
+   
+    ret = 0
+    for k in range(1, 15, 2):
+        s = np.sin(k*np.pi*(1.+x)/2) / (k**3*np.sinh(k*np.pi)) * \
+            (np.sinh(k*np.pi*(1.+y)/2) + np.sinh(k*np.pi*(1.-y)/2))
+        print(k, s)
+        ret += s
+    return ret * (1. - x**2)/2 - 16/(np.pi**3)
+
+ua = np.array(list(map(uAna, grid.positions())))
+
+ax, cbar = pg.show(grid, data=ua, colorBar=True, label='P1 Solution $u$',
                    showLater=True)
 """
 Show is just a shortcut for various drawing routines, that can also be called directly.

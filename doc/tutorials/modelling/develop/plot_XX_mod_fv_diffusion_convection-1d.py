@@ -102,23 +102,24 @@ f = pg.RVector(grid.cellCount(), 0.0)
 # diffusions coefficient
 a = pg.RVector(grid.cellCount(), 2.1)
 # velocity per cell [x-direction]
-v = pg.RVector(grid.cellCount(), 10.1)
+v = pg.RVector(grid.cellCount(), 20.1)
 
 print('Peclet-number:', v[0]/(a[0] / dx))
         
-ud0=10
-udN=0
+ud0=0
+udN=1
 
 def uAna(x, L, v, D):
     """
         u = \frac{1 - \e(-v_x x / D)}{1 - \e(-v_x L / D)}
 
+        Check for -v -- herleiten
     """
-    return (1 - np.exp(-v * x / D))/(1. - np.exp(-v * L / D))
+    return (1 - np.exp(v * x / D))/(1. - np.exp(v * L / D))
 
 
-plt.plot(pg.x(grid.cellCenter()),
-         uAna(x, L=1.0, v=v[0], D=a[1]),
+plt.plot(np.linspace(0,1,100),
+         uAna(np.linspace(0,1,100), L=1.0, v=v[0], D=a[1]),
          '-', label='exact')
 
 for scheme in ['CDS', 'UDS', 'ES', 'HS', 'PS']:
@@ -126,37 +127,11 @@ for scheme in ['CDS', 'UDS', 'ES', 'HS', 'PS']:
     u = np.linalg.solve(S, rhs)
     plt.plot(pg.x(grid.cellCenter()), u[1:N+1], 'o-', label='FVM-'+scheme)
     
-plt.legend()
-S, rhs = diffusionConvectionKernelGrid(grid, a, f, v, uDir=[ud0, udN], scheme='HS')
-print(S)
-print(rhs)
-
-#plt.show()
 vC = np.vstack((v,np.zeros(len(v)))).T
-S, rhs = diffusionConvectionKernel(grid, a=a, f=f, vel=vC, 
-                                   uBoundaries=pg.solver.parseArgToBoundaries([[1,ud0],[2,udN]], grid),
-                                   scheme='HS')
-print(S)
-print(rhs)
-u = np.linalg.solve(S, rhs)
-plt.plot(pg.x(grid.cellCenter()), u[0:N], 'o-', label='FVM-M (mesh)')
 
-ws = WorkSpace()
 uFV = solveFiniteVolume(grid, a=a, f=f, vel=vC,
-                        uBoundary=[[1,ud0],[2,udN]], ws=ws, scheme='HS')
+                        uBoundary=[[1,ud0],[2,udN]], scheme='HS')
 plt.plot(pg.x(grid.cellCenter()), uFV, 'o-', label='FVM-2 (mesh)')
-
-#solver.showSparseMatrix(ws.Sm)
-print(ws.rhs)
-
-#uFV = solveFiniteVolume(grid, a=a, f=f,
-                      #uBoundary=[[1,ud0],[2,udN]])
-#plt.plot(pg.x(grid.cellCenter()), uFV, 'o-', label='FVM-2 (mesh)')
-    
-##fem reference
-#uFEM = solver.solvePoisson(grid, a=a, f=f,                        
-                           #uBoundary=[[1,ud0],[2,udN]])
-#plt.plot(pg.x(grid.positions()), uFEM, 'x-', label='FEM')
 
 plt.legend()
 
