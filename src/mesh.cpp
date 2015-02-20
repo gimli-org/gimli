@@ -649,6 +649,13 @@ std::vector < RVector3 > Mesh::cellCenters() const {
     return pos;
 }
 
+std::vector < RVector3 > Mesh::boundaryCenters() const {
+    std::vector < RVector3 > pos(this->boundaryCount());
+    std::transform(boundaryVector_.begin(), boundaryVector_.end(), pos.begin(),
+                   std::mem_fun(&Boundary::center));
+    return pos;
+}
+
 RVector & Mesh::cellSizes() const{
     
     if (cellSizesCache_.size() != cellCount()){

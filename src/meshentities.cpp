@@ -541,7 +541,7 @@ void NodeBoundary::setNodes(Node & n1, bool changed){
 }
 
 RVector3 NodeBoundary::norm(const Cell & c) const{
-    return (c.center() - this->center()).norm();
+    return (this->center() - c.center()).norm();
 }
 
 

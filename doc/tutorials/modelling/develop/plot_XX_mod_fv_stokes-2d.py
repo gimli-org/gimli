@@ -246,7 +246,7 @@ for i in range(0, len(aRange)):
                                             pre0=pre,
                                             vel0=vel,
                                             maxIter=maxIter,
-                                            tol=1e-3,
+                                            tol=1e-2,
                                             verbose=1)
     print(" Time: ", swatch.duration(True))
     

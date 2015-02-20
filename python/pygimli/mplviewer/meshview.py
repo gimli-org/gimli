@@ -175,11 +175,8 @@ def drawModel(axes, mesh, data=None,
         ----------
     """
 
-    useTri = False
-    if 'tri' in kwargs:
-        useTri = kwargs['tri']
-        del(kwargs['tri'])
-
+    useTri = kwargs.pop('tri', False)
+    
     if useTri:
         gci = drawMPLTri(axes, mesh, data, cmap=cmap,
                          **kwargs)
@@ -414,6 +411,8 @@ def createTriangles(mesh, data=None):
         if len(data) == mesh.cellCount():
             # strange behavior if we just use these slice
             z = np.array(data[dataIdx])
+        else:
+            z = np.array(data)
 
     return x, y, triangles, z, dataIdx
 
@@ -431,28 +430,28 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
     nLevs = kwargs.pop('nLevs', 8)
     if len(levels) == 0:
         levels = autolevel(data, nLevs)
-
-    if len(data) == mesh.cellCount():
-
-        shading = 'flat'
-        if interpolate:
-            shading = 'gouraud'
+ 
+    if interpolate and len(data) == mesh.cellCount():
+        z = pg.cellDataToPointData(mesh, data)
+ 
+    if len(z) == len(triangles):
+        shading = kwargs.pop('shading', 'flat')
+        if shading == 'gouraud':
             z = pg.cellDataToPointData(mesh, data)
-
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              **kwargs)
+        
+    elif len(z) == mesh.nodeCount():
 
-    elif len(data) == mesh.nodeCount():
-
-        gci = axes.tricontourf(x, y, triangles, data, levels,
+        gci = axes.tricontourf(x, y, triangles, z, levels,
                                **kwargs)
         if not omitLines:
-            axes.tricontour(x, y, triangles, data, levels, colors=['0.5'],
+            axes.tricontour(x, y, triangles, z, levels, colors=['0.5'],
                             **kwargs)
     else:
         gci = None
         raise Exception("Data size does not fit mesh size: ",
-                        len(data), mesh.cellCount(), mesh.nodeCount())
+                        len(z), mesh.cellCount(), mesh.nodeCount())
 
     if gci and cMin and cMax:
         print(cMin, cMax)
@@ -536,7 +535,7 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
             start cell
             
         data : iterable float | [float, float]
-            If data is an array of floats the gradients will be calculated
+            If data is an array of floats (per cell or per node) the gradients will be calculated
             else the data will be interpreted as vector field.
                                          
         dataMesh : :gimliapi:`GIMLI::Mesh` [None]

@@ -597,8 +597,8 @@ void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec
 //     return S * Vector< V2 >(a);
 // }
 
-//! Sparse matrix in compressed column storage (CCS) form
-/*! Sparse matrix in compressed column storage (CCS) form.
+//! Sparse matrix in compressed row storage (CCS) form
+/*! Sparse matrix in compressed row storage (CCS) form.
 * Symmetry type: 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
 template < class ValueType > class SparseMatrix : public MatrixBase{
 public:
@@ -621,7 +621,7 @@ public:
         copy_(S);
     }
     
-    /*! Create Sparsematrix from c-arrays. Cant check for valid ranges, so please be carefull. */
+    /*! Create Sparsematrix from c-arrays. Can't check for valid ranges, so please be carefull. */
     SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx,
                  ValueType * vals, int stype=0)
         : MatrixBase(){

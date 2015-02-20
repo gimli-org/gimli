@@ -416,8 +416,11 @@ DEFINE_XVECTOR_STUFF__(IVector)
 		sizeof(long long unsigned int &);
 		sizeof(long long unsigned int);
         sizeof(double *);
-        sizeof(double);
         sizeof(double &);
+        sizeof(double  );
+        sizeof(GIMLI::Complex *);
+        sizeof(GIMLI::Complex &);
+        sizeof(GIMLI::Complex );
         sizeof(GIMLI::SparseMatrix<double> &);
         sizeof(GIMLI::SparseMatrix<double> *);
         sizeof(GIMLI::SparseMatrix<double>);

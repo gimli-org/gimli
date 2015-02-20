@@ -14,8 +14,10 @@ from solverFVM import solveFiniteVolume, createFVPostProzessMesh, diffusionConve
 import matplotlib.pyplot as plt
 import numpy as np
 
-x = np.linspace(-1.0, 1.0, 41)
-y = np.linspace( 0.0, 1.0, 21)
+swatch = pg.Stopwatch(True)
+
+x = np.linspace(-1.0, 1.0, 81)
+y = np.linspace( 0.0, 1.0, 41)
 dx = x[1] - x[0]
 dy = y[1] - y[0]
 print(dx,dy)
@@ -25,54 +27,57 @@ N = grid.cellCount()
 
 # force vector per cell
 f = pg.RVector(grid.cellCount(), 0.0)
-f[40*15+3]=10.0
-# diffusions coefficient
-a = pg.RVector(grid.cellCount(), 0.1)
+#f[grid.findCell([-0.85, 0.55]).id()]=10.0
 
 # velocity per cell [x-direction, y-direction]
+vC = np.array(list(map(lambda p_: [ (2.*p_[1] *(1.0 -p_[0]**2)),
+                                   (-2.*p_[0] *(1.0 -p_[1]**2))],
+                       grid.cellCenters())))
 
-xN = pg.x(grid.positions())
-yN = pg.y(grid.positions())
-vN = np.vstack(((2.*yN *(1.0 -xN*xN)),
-               (-2.*xN *(1.0 -yN*yN)))).T
-
-xC = pg.x(grid.cellCenters())
-yC = pg.y(grid.cellCenters())
-vC = np.vstack((( 2.*yC *(1.0 -xC*xC)),
-                (-2.*xC *(1.0 -yC*yC)))).T
+vB = np.array(list(map(lambda p_: [ (2.*p_[1] *(1.0 -p_[0]**2)),
+                                   (-2.*p_[0] *(1.0 -p_[1]**2))],
+                       grid.boundaryCenters())))
 
 ud0=10
 udN=0
 
-ax1,cb = show(grid, showLater=True)
-
-swatch = pg.Stopwatch(True)
-drawStreams(ax1, grid, vC)
-
-print(swatch.duration())
-
 bounds = grid.findBoundaryByMarker(4)
 for b in bounds:
-    if b.center()[0]>0: b.setMarker(0)
-    
-bounds[7].setMarker(5)
-
-for b in bounds:
-    ax1.plot(b.center()[0], b.center()[1], 'o')
-
+    if b.center()[0] > 0: b.setMarker(5)
 
 #for scheme in ['CDS', 'UDS', 'ES', 'HS', 'PS']:
 print(vC.shape)
-u = solveFiniteVolume(grid, a=a*0.1, f=f, v=vC, 
-                      uBoundary=[[1,0],[2,0],[3,0],[4,0],[5,1]],
-                      scheme='PS')
-                           
-show(grid, data=u, 
-     cMin=0, cMax=0.3,
-     logScale=False,
-     colorBar=True, showLater=True, axes=ax1)
 
-pg.showNow()
+neumannBC = [[5, 0]]
+Peclet = 5000 # vel/diffus
+scheme='UDS'
+dirichletBC = [[1, lambda b_: 1. - np.tanh(10.)],
+               [2, lambda b_: 1. - np.tanh(10.)],
+               [3, lambda b_: 1. - np.tanh(10.)],
+               [4, lambda b_: 1. + np.tanh(10 * (2 * b_.center()[0] + 1.))],
+               ]
+
+print ("start", swatch.duration())
+uGrid = solveFiniteVolume(grid, a=1./Peclet, f=f, vel=vB, 
+                          uBoundary=dirichletBC,
+                          duBoundary=neumannBC,
+                          scheme=scheme)
+            
+
+pg.showLater(1)
+ax1,cb = show(grid)
+
+
+drawStreams(ax1, grid, vC, coarseMesh=pg.createGrid(x=np.linspace(-1.0, 1.0, 41),
+                                                    y=np.linspace(0.0, 1.0, 21)),
+            )
+print(swatch.duration())
+
+#grid2, u2 = createFVPostProzessMesh(grid, u, dirichletBC)
+show(grid, data=uGrid, 
+     logScale=False, interpolate=1, tri=1,
+     colorBar=True, axes=ax1)
+
 #unstructured
 boundary = []
 boundary.append([-1.0, 0.0])
@@ -84,43 +89,47 @@ boundary.append([-1.0, 1.0])
 poly = pg.Mesh(2)
 nodes = [poly.createNode(b) for b in boundary]
 
-poly.createEdge(nodes[0], nodes[1], 2) # dirichlet (inflow)
-poly.createEdge(nodes[1], nodes[2], 0) # hom neumann (outflow)
-poly.createEdge(nodes[2], nodes[3], 1) # hom dirichlet (isolation)
-poly.createEdge(nodes[3], nodes[4], 1) # hom dirichlet (isolation)
+poly.createEdge(nodes[0], nodes[1], 4) # dirichlet (inflow)
+poly.createEdge(nodes[1], nodes[2], 5) # hom neumann (outflow)
+poly.createEdge(nodes[2], nodes[3], 3) # hom dirichlet (isolation)
+poly.createEdge(nodes[3], nodes[4], 2) # hom dirichlet (isolation)
 poly.createEdge(nodes[4], nodes[0], 1) # hom dirichlet (isolation)
-
-for b in poly.boundaries():
-    print(b.center(), b.marker())
     
 mesh = createMesh(poly, quality=34, area=0.002, smooth=[0,10])
 print(mesh)
 
-ax2,cb = show(mesh, showLater=True)
+ax2,cb = show(mesh)
 
-xC = pg.x(mesh.cellCenters())
-yC = pg.y(mesh.cellCenters())
-vC = np.vstack((( 2.*yC *(1.0 -xC*xC)),
-                (-2.*xC *(1.0 -yC*yC)))).T
+vC = np.array(list(map(lambda p_: [ (2.*p_[1] *(1.0 -p_[0]**2)),
+                                   (-2.*p_[0] *(1.0 -p_[1]**2))],
+                       mesh.cellCenters())))
+
+vB = np.array(list(map(lambda p_: [ (2.*p_[1] *(1.0 -p_[0]**2)),
+                                   (-2.*p_[0] *(1.0 -p_[1]**2))],
+                       mesh.boundaryCenters())))
 drawStreams(ax2, mesh, vC)
 
-bounds = mesh.findBoundaryByMarker(1,99)
+f = pg.RVector(mesh.cellCount(), 0.0)
+#f[grid.findCell([-0.75, 0.75]).id()]=10.0
 
-for i, b in enumerate(bounds):
-    ax2.plot(b.center()[0], b.center()[1], 'o')
-    if b.center()[1] == 0.0 and abs(b.center()[0]+0.7) < 0.02:
-        b.setMarker(5)
-    
-u = solveFiniteVolume(mesh,
-                      a=pg.RVector(mesh.cellCount(), 0.01),
-                      f=pg.RVector(mesh.cellCount(), 0.0),
-                      v=vC, 
-                      uBoundary=[[1,0],[2,1]],
-                      scheme='PS')
+uMesh = solveFiniteVolume(mesh, a=1./Peclet, f=f, vel=vB, 
+                          uBoundary=dirichletBC,
+                          duBoundary=neumannBC,
+                          scheme=scheme)
+show(mesh, data=uMesh, 
+     logScale=False, interpolate=1, tri=1,
+     colorBar=True, axes=ax2)
 
-show(mesh, data=u, 
-     cMin=0, cMax=0.3,
-     logScale=False,
-     colorBar=True, showLater=True, axes=ax2)
+xi = np.linspace(0.2, 0.8, 81)
+uG = pg.interpolate(grid, uGrid, x=x)
+uM = pg.interpolate(mesh, uMesh, x=x)
+plt.figure()
+plt.plot(x, uG, label='outlet ' + scheme + '(grid)')
+plt.plot(x, uM, label='outlet ' + scheme + '(mesh)')
+#plt.plot(x, 1. + np.tanh(10 * (2 * x + 1.)) )
+plt.plot(-x, 1. + np.tanh(10 * (2 * x + 1.)), label='inlet-exact')
+plt.legend()
+plt.xlim([0,1])
 
-plt.show()
+
+pg.showNow()

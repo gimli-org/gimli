@@ -240,10 +240,12 @@ public:
      * http://www.resistivity.net/?unidata\n
         \param fileName String of the file name
         \param formatData String to specify the tokens of the data map to be save. If formatData == "all", all datafields will be saved inclusive invalid data.
-        \param formatSensor String to specify the tokens of the sensor format to be save */
+        \param formatSensor String to specify the tokens of the sensor format to be save
+        \param noFilter ignore invalid and save all */
     virtual int save(const std::string & fileName,
                      const std::string & formatData,
                      const std::string & formatSensor,
+                     bool noFilter=false,
                      bool verbose=false) const;
 
     /*! Shortcut for \ref save(fileName, formatData, "x y z", verbose); */

@@ -281,6 +281,9 @@ public:
     std::vector < RVector3 > cellCenters() const;
     std::vector < RVector3 > cellCenter() const { return cellCenters(); }
 
+    /*! Returns a vector of all center positions for all boundaries */
+    std::vector < RVector3 > boundaryCenters() const;
+        
     /*! Returns the reference to a RVector of all cell sizes. Cached for static geometry.*/
     RVector & cellSizes() const;
 

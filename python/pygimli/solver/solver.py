@@ -61,7 +61,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
                 return arg
         
         raise Exception("Array 'arg' has the wrong size: " + 
-                        len(arg) + " != " +  dof)
+                        str(len(arg)) + " != " +  str(dof))
     elif hasattr(arg, '__call__'):
         ret = pg.RVector(nDofs[0], 0.0)
         
@@ -95,13 +95,16 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
         return ret
     raise Exception("Cannot parse argument type " + str(type(arg)))
 
-def generateBoundaryValue(arg, boundary, time=0.0, userData=None):
+def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
     """
     Generate a value for the given Boundary.
     
     Parameters
     ----------
-    arg : convertible | iterable | callable
+    boundary : :gimliapi:`GIMLI::Boundary` or list of ..
+        The related boundary.
+        
+    arg : convertible | iterable | callable or list of ..
         
         - convertible into float 
         - iterable of minimum length = boundary.id()
@@ -112,14 +115,16 @@ def generateBoundaryValue(arg, boundary, time=0.0, userData=None):
         >>> arg(:gimliapi:`GIMLI::Boundary`, time=0.0, userData=None)
 
         and should return an appropriate value.
-        
-    b : :gimliapi:`GIMLI::Boundary`
-        The related boundary.
     
     Returns
-    -------
-    val : float
+    -------S
+    val : float or list of ..
     """
+    if hasattr(boundary, '__len__'):
+        vals = np.zeros(len(boundary))
+        for i, b in enumerate(boundary):
+            vals[i] = generateBoundaryValue(b, arg[i], time, userData)
+        return vals
     val = 0.
     
     if hasattr(arg, '__call__'):
@@ -130,11 +135,9 @@ def generateBoundaryValue(arg, boundary, time=0.0, userData=None):
             args.append(time)
         if userData:
             kwargs['userData'] = userData
-        
         val = arg(*args, **kwargs)
-        
     elif hasattr(arg, '__len__'):
-        val = generateBoundaryValue(arg[boundary.id()], boundary, userData)
+        val = generateBoundaryValue(boundary, arg[boundary.id()], userData)
     else:
         try:
             val = float(arg)
@@ -183,7 +186,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
             # we want to call them at runtime
             val = pair[1]
         else:
-            val = generateBoundaryValue(pair[1], b)
+            val = generateBoundaryValue(b, pair[1])
         boundaries.append([b, val])
    
     return boundaries
@@ -315,7 +318,7 @@ def showSparseMatrix(A):
 
     for i in range(S.rows()):
         for j in range(cols[i], cols[i + 1]):
-            print(i,rows[j],vals[j])
+            print(i, rows[j], vals[j])
 
 def linsolve(A, b, verbose=False):
     r"""
@@ -325,8 +328,7 @@ def linsolve(A, b, verbose=False):
         \textbf{A}\textbf{x} = \textbf{b}
         
     If :math:`\textbf{A}` is symmetric, sparse and positive definite.
-        
-    
+            
     Parameters
     ----------
     A : :gimliapi:`GIMLI::RSparseMatrix` | :gimliapi:`GIMLI::RSparseMapMatrix`
@@ -443,7 +445,7 @@ def assembleNeumannBC(S,
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
-        g = generateBoundaryValue(val, boundary, time, userData)
+        g = generateBoundaryValue(boundary, val, time, userData)
                 
         if g is not 0.0:
             Se.u2(boundary)
@@ -513,7 +515,7 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0,
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
-        uD = generateBoundaryValue(val, boundary, time, userData)
+        uD = generateBoundaryValue(boundary, val, time, userData)
     
         for n in boundary.nodes():
             uDirNodes.append(n)
@@ -566,6 +568,7 @@ def createStiffnessMatrix(mesh, a=None):
     if type(a[0]) is float or type(a[0]) is np.float64:
         
         A = pg.RSparseMatrix()
+        
         A.fillStiffnessMatrix(mesh, a)
         return A
     else:
@@ -737,7 +740,7 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     if debug: print("2: ", swatch2.duration(True))
     # assemble the stiffness matrix
     A = createStiffnessMatrix(mesh, a)
-    
+
     if debug: print("3: ", swatch2.duration(True))
     M = createMassMatrix(mesh, b)
         
@@ -775,11 +778,12 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                 kwargs['uDirichlet'][1])
             
         u = None    
-        if type(a[0]) is float:
-            u = pg.RVector(rhs.size(), 0.0)
-        else:
+        
+        if type(a[0]) is complex:
             u = pg.CVector(rhs.size(), 0.0)
             rhs = pg.toComplex(rhs)
+        else:
+            u = pg.RVector(rhs.size(), 0.0)
             
         if debug: print("7: ", swatch2.duration(True))
         
@@ -794,6 +798,7 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         
         solver = pg.LinSolver(True)
         solver.setMatrix(S, 0)
+        
         u = solver.solve(rhs)
         
         solverTime = swatch.duration(True)

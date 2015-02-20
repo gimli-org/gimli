@@ -33,8 +33,17 @@ inv.setLambda(5)
 
 model = inv.run()
 
-modelMesh = fop.regionManager().paraDomain()
+C = fop.contraintsMatrix()
+S = fop.jacobian()
 
-ax, cbar = pg.show(modelMesh, model, showLater=1)
+modelMesh = fop.regionManager().paraDomain()
+pg.showLater(1)
+
 pg.show(modelMesh, data.sensorPositions(), axes=ax, showLater=1)
 pg.show(modelMesh, axes=ax)
+
+ax, cbar = pg.show(modelMesh, model)
+ax, cbar = pg.show(modelMesh, model, tri=1, interpolate=1)
+ax, cbar = pg.show(modelMesh, model, tri=1, interpolate=0, shading = 'gouraud')
+
+pg.showNow()
