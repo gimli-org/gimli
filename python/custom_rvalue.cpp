@@ -136,8 +136,15 @@ struct PySequence2RVector{
             std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(double));
             
         } else {
-            __M   
-            std::cout << "not yet implemented" << std::endl;
+              // extra implementation since PyArray_TYPE(PyList) segfaults
+            bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
+            GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
+            data->convertible = memory_chunk;
+            
+            for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                 (*vec)[i]= bpl::extract< double >(py_sequence[i]);
+            }
+            //std::cout << "not yet implemented" << std::endl;
         }
     }
 private:    

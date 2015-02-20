@@ -450,6 +450,7 @@ void DataContainer::checkDataValidity(bool remove){
 int DataContainer::save(const std::string & fileName,
                         const std::string & formatData,
                         const std::string & formatSensor,
+                        bool noFilter,
                         bool verbose) const {
     
     std::fstream file; if (!openOutFile(fileName, & file)) return 0;
@@ -479,9 +480,12 @@ int DataContainer::save(const std::string & fileName,
     IndexArray toSaveIdx;
     std::string formatString;
 
-    if (lower(formatData) == "all"){
+    if (lower(formatData) == "all" ){
         toSaveIdx = find(get("valid") > -1);
         formatString = this->tokenList(false);
+    } else if (noFilter){
+        toSaveIdx = find(get("valid") > -1);
+        formatString = formatData;
     } else {
         toSaveIdx = find(get("valid") == 1);
         formatString = formatData;

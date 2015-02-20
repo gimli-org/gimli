@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -67,10 +67,14 @@ CHOLMODWrapper::~CHOLMODWrapper(){
   
 #if USE_UMFPACK
     if (Numeric_) umfpack_zi_free_numeric (&Numeric_);
+    if (NumericD_) umfpack_di_free_numeric (&NumericD_);
 #endif
     if (AxV_) delete AxV_;
     if (AzV_) delete AzV_;
-   
+    
+    if (Ap_) delete [] Ap_;
+    if (Ai_) delete [] Ai_;
+
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
 #endif
@@ -81,11 +85,14 @@ void CHOLMODWrapper::init_(SparseMatrix < ValueType > & S, int stype){
 
     useUmfpack_ = false;
     Numeric_ = 0;
+    NumericD_ = 0;
     c_ = NULL;
     A_ = NULL;
     L_ = NULL;
     AxV_ = NULL;
     AzV_ = NULL;
+    Ap_ = NULL;
+    Ai_ = NULL;
     
     if (stype == -2){
         stype_ = S.stype();
@@ -105,40 +112,11 @@ void CHOLMODWrapper::init_(SparseMatrix < ValueType > & S, int stype){
 #endif
 }
 
-template < class ValueType > 
-int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
-    if (!dummy_){
-#if USE_CHOLMOD
-
-        A_ = new cholmod_sparse;
-        ((cholmod_sparse*)A_)->nrow  = S.nRows();         /* number of rows */
-        ((cholmod_sparse*)A_)->ncol  = S.nCols();           /* number of columns */
-        ((cholmod_sparse*)A_)->nzmax = S.nVals();               /* maximum number of entries */
-        ((cholmod_sparse*)A_)->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
-        ((cholmod_sparse*)A_)->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
-    
-        ((cholmod_sparse*)A_)->x     = S.vals();     /* numerical values, size nzmax */
-        ((cholmod_sparse*)A_)->stype = stype_;
-
-        ((cholmod_sparse*)A_)->itype = CHOLMOD_INT;
-        ((cholmod_sparse*)A_)->xtype = xType;  // data type for the pattern (Real, complex, zcomplex)
-        ((cholmod_sparse*)A_)->dtype = CHOLMOD_DOUBLE; // data type for complex or real (float/double)
-        ((cholmod_sparse*)A_)->packed = true;
-        ((cholmod_sparse*)A_)->sorted = true; // testen, scheint schneller, aber hab ich das immer?
-    
-        factorise();
-#else
-        std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
-#endif
-    } // if ! dummy
-    return 0;
-}
-    
 int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
     
     if (!dummy_){
         // check for non-hermetian 
-        if (S.stype() == 0){ //  matrix is symmetric
+        if (S.stype() == 0){ //  matrix is full
             for (Index i = 0; i < S.size(); i++){
                 for (int j = S.vecColPtr()[i]; j < S.vecColPtr()[i + 1]; j ++){
                     if (std::imag(S.vecVals()[j]) != 0.0){
@@ -146,9 +124,9 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
                             // non-hermetian symmetric
                             if (verbose_) std::cout << "non-hermetian symmetric matrix found .. switching to umfpack." << std::endl;
                             useUmfpack_ = true;
+                            i = S.size();
+                            break;
                         }
-                        i = S.size();
-                        break;
                     }
                 }
             }
@@ -186,26 +164,118 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
 }
 
 int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
-#if USE_CHOLMOD
-    return initMatrixChol_(S, CHOLMOD_REAL);
+    if (!dummy_){
+        // check symmetry
+        if (S.stype() == 0){ //  matrix is full
+            for (Index i = 0; i < S.size(); i++){
+                for (int j = S.vecColPtr()[i]; j < S.vecColPtr()[i + 1]; j ++){
+//                     __MS(i << " " << j << " " << S.vecColPtr()[i] << " " << S.vecColPtr()[i + 1] << " " << S.vecRowIdx()[j])
+                    if (S.vecVals()[j] != 0.0){
+                //__MS(S.vecVals()[j] << " "  << S.getVal(S.vecRowIdx()[j], i))
+                        if (S.vecVals()[j] != S.getVal(S.vecRowIdx()[j], i)){
+                            // non-symmetric
+                            if (verbose_) std::cout << "non-symmetric matrix found .. switching to umfpack." << std::endl;
+                            useUmfpack_ = true;
+                            i = S.size();    
+                            break;
+                        }
+                        //i = S.size();
+                        //break;
+                    }
+                }
+            }
+        }
+        
+        
+        if (useUmfpack_){
+#if USE_UMFPACK
+            int * ApT = (int*)S.colPtr();
+            int * AiT = (int*)S.rowIdx();
+            double * AxT = &S.vecVals()[0];
+            
+            AxV_ = new RVector(S.vecVals());
+            
+            double * null = (double *) NULL;
+
+            Ap_ = new int[S.vecColPtr().size()];
+            Ai_ = new int[S.vecRowIdx().size()];
+            double *Ax_ =  new double[S.vecVals().size()];
+            //our crs format need to be transposed first
+            
+            int *P=0, *Q=0;
+            (void) umfpack_di_transpose(S.nRows(), S.nCols(), ApT, AiT, AxT, P, Q, Ap_, Ai_, Ax_);
+            
+            for (uint i = 0; i < S.vecVals().size(); i++) (*AxV_)[i] = Ax_[i];
+            
+            
+            void *Symbolic;
+        
+            if (verbose_) std::cout << "Using umfpack .. " << std::endl;        
+            // beware transposed matrix here
+            (void) umfpack_di_symbolic(S.nCols(), S.nRows(), Ap_, Ai_, Ax_, &Symbolic, null, null) ;
+            (void) umfpack_di_numeric(Ap_, Ai_, Ax_, Symbolic, &NumericD_, null, null) ;
+            umfpack_di_free_symbolic (&Symbolic);
+            return 1;
+#else
+            std::cerr << WHERE_AM_I << " umfpack not installed" << std::endl;
 #endif
-	return 0;
+        } else {
+#if USE_CHOLMOD
+            return initMatrixChol_(S, CHOLMOD_REAL);
+#endif
+        }
+        return 0;
+    } // if ! dummy
+    return 0;
 }
 
-int CHOLMODWrapper::factorise(){
+
+template < class ValueType > 
+int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
     if (!dummy_){
 #if USE_CHOLMOD
 
-        if (verbose_) cholmod_print_sparse((cholmod_sparse *)A_, "A", (cholmod_common*)c_);
-
-        L_ = cholmod_analyze((cholmod_sparse*)A_,
-                         (cholmod_common*)c_);		    /* analyze */
-        cholmod_factorize((cholmod_sparse*)A_,
-                      (cholmod_factor*)L_,
-                      (cholmod_common*)c_);		    /* factorize */
+        A_ = new cholmod_sparse;
+        ((cholmod_sparse*)A_)->nrow  = S.nRows();           /* number of rows */
+        ((cholmod_sparse*)A_)->ncol  = S.nCols();           /* number of columns */
+        ((cholmod_sparse*)A_)->nzmax = S.nVals();           /* maximum number of entries */
+        ((cholmod_sparse*)A_)->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
+        ((cholmod_sparse*)A_)->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
     
-    if (verbose_) std::cout << "Cholmod analyze .. preordering: " << ((cholmod_factor *)(L_))->ordering << std::endl;
-    if (verbose_) cholmod_print_factor((cholmod_factor *)L_, "L", (cholmod_common*)c_);
+        ((cholmod_sparse*)A_)->x     = S.vals();     /* numerical values, size nzmax */
+        ((cholmod_sparse*)A_)->stype = stype_;
+
+        ((cholmod_sparse*)A_)->itype = CHOLMOD_INT;
+        ((cholmod_sparse*)A_)->xtype = xType;  // data type for the pattern (Real, complex, zcomplex)
+        ((cholmod_sparse*)A_)->dtype = CHOLMOD_DOUBLE; // data type for complex or real (float/double)
+        ((cholmod_sparse*)A_)->packed = true;
+        ((cholmod_sparse*)A_)->sorted = true; // testen, scheint schneller, aber hab ich das immer?
+    
+        factorise();
+#else
+        std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
+#endif
+    } // if ! dummy
+    return 0;
+}
+    
+int CHOLMODWrapper::factorise(){
+    if (!dummy_){
+#if USE_CHOLMOD
+         if (useUmfpack_){
+             std::cerr << WHERE_AM_I << " factorize for umfpack called" << std::endl;
+         } else {
+            if (verbose_) cholmod_print_sparse((cholmod_sparse *)A_, "A", (cholmod_common*)c_);
+
+            L_ = cholmod_analyze((cholmod_sparse*)A_,
+                            (cholmod_common*)c_);		    /* analyze */
+            cholmod_factorize((cholmod_sparse*)A_,
+                        (cholmod_factor*)L_,
+                        (cholmod_common*)c_);		    /* factorize */
+    
+        if (verbose_) std::cout << "Cholmod analyze .. preordering: " << ((cholmod_factor *)(L_))->ordering << std::endl;
+        if (verbose_) cholmod_print_factor((cholmod_factor *)L_, "L", (cholmod_common*)c_);
+    }
     return 1;
 #else
         std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
@@ -241,6 +311,9 @@ template < class ValueType >
             cholmod_sdmult((cholmod_sparse*)A_, 0, be, al, x, r, (cholmod_common*)c_);       
             bx = (ValueType *)r->x; /* ret = Ax */
             for (uint i = 0; i < dim_; i++) solution[i] = conj(bx[i]);
+            
+            //conj here .. check crs->ccs format or transpose before use
+            
         } else {
             bx = (ValueType *)x->x; /* ret = x */
             for (uint i = 0; i < dim_; i++) solution[i] = bx[i];
@@ -257,7 +330,53 @@ template < class ValueType >
 }
     
 int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
-    return solveCHOL_(rhs, solution);
+    if (!dummy_){
+
+        if (useUmfpack_){
+#if USE_UMFPACK
+            double * Ax_ = &((*AxV_)[0]);
+        
+            double *null = (double *) NULL ;
+        
+            (void) umfpack_di_solve(UMFPACK_A, Ap_, Ai_, Ax_,
+                                    &solution[0], &rhs[0],
+                                    NumericD_, null, null) ;
+                             
+                             
+// int Ap [ ] = {0, 2, 5, 9, 10, 12} ;
+// int Ai [ ] = { 0, 1, 0, 2, 4, 1, 2, 3, 4, 2, 1, 4} ;
+// double Ax [ ] = {2., 3., 3., -1., 4., 4., -3., 1., 2., 2., 6., 1.} ;
+// // double b [ ] = {8., 45., -3., 3., 19.} ;
+// 
+// void *Symbolic, *Numeric ;
+// (void) umfpack_di_symbolic (n, n, Ap, Ai, Ax, &Symbolic, null, null) ;
+// (void) umfpack_di_numeric (Ap, Ai, Ax, Symbolic, &Numeric, null, null) ;
+// umfpack_di_free_symbolic (&Symbolic) ;
+// 
+// (void) umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, &solution[0], &rhs[0], Numeric, null, null) ;
+// umfpack_di_free_numeric (&Numeric) ;
+// 
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+            return 1;
+#endif
+        } else {
+            return solveCHOL_(rhs, solution);
+        }
+    }
+    return 0;
 }
 
 int CHOLMODWrapper::solve(const CVector & rhs, CVector & solution){
@@ -279,6 +398,11 @@ int CHOLMODWrapper::solve(const CVector & rhs, CVector & solution){
                              &xx[0], &xz[0], &bx[0], &bz[0],
                              Numeric_, null, null) ;
         
+            // set booth to NULL or they will be wrongly deleted .. 
+            // fix crs->ccs sparseformat and cleanup/unify umfpackwrapper for this
+            Ap_ = 0;
+            Ai_ = 0;
+            
             solution = toComplex(xx, xz);
             return 1;
 #endif

@@ -9,7 +9,7 @@ import pygimli.solver as solver
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawMesh, drawModel, drawField
 from pygimli.meshtools import createMesh
-from solverFVM import solveFiniteVolume, createFVPostProzessMesh, diffusionConvectionKernel
+from solverFVM import solveFiniteVolume, createFVPostProzessMesh, diffusionConvectionKernel, WorkSpace
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,32 +65,6 @@ def diffusionConvectionKernelGrid(mesh, a, f, v, uDir, scheme='CDS'):
         Fe = v[i - 1]
         Fw = v[i - 1]
 
-        #if scheme == 'CDS':
-            
-            #aE = De - Fe/2.
-            #aW = Dw + Fw/2.
-        #elif scheme == 'UDS':
-            
-            #aE = De + max(-Fe, 0.)
-            #aW = Dw + max( Fw, 0.)
-        #elif scheme == 'ES':
-            
-            #if Fe != 0.0:
-                #aE = (Fe) / (np.exp(Fe / De) - 1.0)
-                #aW = (Fw * np.exp(Fw / Dw)) / (np.exp(Fw / Dw) - 1.0)
-            #else:
-                ##Fallback to CDS diffusion
-                #aE = De
-                #aW = Dw
-            
-        #elif scheme == 'HS':
-            
-            #aE = max([-Fe, De - Fe/2., 0.])
-            #aW = max([ Fw, Dw + Fw/2., 0.])
-        #elif scheme == 'PS':
-            #aE = De * max(0.0, (1.- 0.1 * abs(Fe/De))**5.0) + max(-Fe, 0.0)
-            #aW = Dw * max(0.0, (1.- 0.1 * abs(Fw/Dw))**5.0) + max( Fw, 0.0)
-        
         aE = De * AScheme(Fe/De) + max(-Fe, 0.0)
         aW = Dw * AScheme(Fw/Dw) + max( Fw, 0.0)
         aP = aE + aW + (Fe - Fw)
@@ -124,9 +98,9 @@ grid = pg.createGrid(x=x)
 N = grid.cellCount()
 
 # force vector per cell
-f = pg.RVector(grid.cellCount(), 1.0)
+f = pg.RVector(grid.cellCount(), 0.0)
 # diffusions coefficient
-a = pg.RVector(grid.cellCount(), 0.01)
+a = pg.RVector(grid.cellCount(), 2.1)
 # velocity per cell [x-direction]
 v = pg.RVector(grid.cellCount(), 10.1)
 
@@ -135,33 +109,46 @@ print('Peclet-number:', v[0]/(a[0] / dx))
 ud0=10
 udN=0
 
+def uAna(
+    u = (1 - np.exp(-v * x / D))/(1. - np.exp(-v * L / D))
+
+
 for scheme in ['CDS', 'UDS', 'ES', 'HS', 'PS']:
     S, rhs = diffusionConvectionKernelGrid(grid, a, f, v, uDir=[ud0, udN], scheme=scheme)
     u = np.linalg.solve(S, rhs)
     plt.plot(pg.x(grid.cellCenter()), u[1:N+1], 'o-', label='FVM-'+scheme)
 
-
+plt.legend()
 S, rhs = diffusionConvectionKernelGrid(grid, a, f, v, uDir=[ud0, udN], scheme='HS')
 print(S)
 print(rhs)
 
-
-vC = np.vstack((v,np.zeros(len(v))))
-S, rhs = diffusionConvectionKernel(grid, a=a, f=f, v=vC, 
-                                   uDir=[ud0, udN], scheme='HS')
+#plt.show()
+vC = np.vstack((v,np.zeros(len(v)))).T
+S, rhs = diffusionConvectionKernel(grid, a=a, f=f, vel=vC, 
+                                   uBoundaries=pg.solver.parseArgToBoundaries([[1,ud0],[2,udN]], grid),
+                                   scheme='HS')
 print(S)
 print(rhs)
 u = np.linalg.solve(S, rhs)
-plt.plot(pg.x(grid.cellCenter()), u[0:N], 'o-', label='FVM2 (mesh)')
+plt.plot(pg.x(grid.cellCenter()), u[0:N], 'o-', label='FVM-M (mesh)')
 
+ws = WorkSpace()
+uFV = solveFiniteVolume(grid, a=a, f=f, vel=vC,
+                        uBoundary=[[1,ud0],[2,udN]], ws=ws, scheme='HS')
+plt.plot(pg.x(grid.cellCenter()), uFV, 'o-', label='FVM-2 (mesh)')
 
-#u = solveFiniteVolume(grid, a=a, f=f, uDirichlet=[ud0, udN])
-#plt.plot(pg.x(grid.cellCenter()), u, 'o-', label='FVM (mesh)')
+#solver.showSparseMatrix(ws.Sm)
+print(ws.rhs)
+
+#uFV = solveFiniteVolume(grid, a=a, f=f,
+                      #uBoundary=[[1,ud0],[2,udN]])
+#plt.plot(pg.x(grid.cellCenter()), uFV, 'o-', label='FVM-2 (mesh)')
     
-#fem reference
-uFEM = solver.solvePoisson(grid, a=a, f=f,                        
-                           uBoundary=[[1,ud0],[2,udN]])
-plt.plot(pg.x(grid.positions()), uFEM, 'x-', label='FEM')
+##fem reference
+#uFEM = solver.solvePoisson(grid, a=a, f=f,                        
+                           #uBoundary=[[1,ud0],[2,udN]])
+#plt.plot(pg.x(grid.positions()), uFEM, 'x-', label='FEM')
 
 plt.legend()
 

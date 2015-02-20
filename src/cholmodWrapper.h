@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -57,8 +57,12 @@ protected:
     
     template < class ValueType > 
     int solveCHOL_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
-
-        
+    
+    
+    template < class ValueType > 
+    int solveUmf_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
+    
+    
     int stype_;
     
     void *c_;
@@ -67,9 +71,10 @@ protected:
     
     bool useUmfpack_;
     void *Numeric_;
+    void *NumericD_;
     int * Ap_;
     int * Ai_;
-    
+        
     RVector *AxV_;
     RVector *AzV_;
         

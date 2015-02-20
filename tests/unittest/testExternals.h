@@ -38,13 +38,15 @@ public:
         void testCHOLMODSolve(const Matrix & Sm){
         
         GIMLI::SparseMatrix< ValueType > S(Sm);
-        GIMLI::CHOLMODWrapper solver(S, false);
+        GIMLI::CHOLMODWrapper solver(S, true);
         GIMLI::Vector < ValueType > b(S.rows(), ValueType(1));
         GIMLI::Vector < ValueType > x(S.rows());
         solver.solve(b, x);
         solver.solve(b, x);
         
-//         std::cout << b - S * x << std::endl;
+//         std::cout << "b: " << b << std::endl;
+//         std::cout << "x: " << x << std::endl;
+//         std::cout << "S*x: " << GIMLI::Vector < ValueType >(S * x)<< std::endl;
 //         std::cout << GIMLI::Vector < ValueType >(b - S * x)<< std::endl;
 //         std::cout << GIMLI::norm(b - S * x)<< std::endl;
         
@@ -64,6 +66,21 @@ public:
         GIMLI::RVector x(Sm.rows());
         solver.solve(ones, x);
         CPPUNIT_ASSERT(GIMLI::norm(ones - S * x) == 0.0 );
+        
+        GIMLI::RSparseMapMatrix Ru(5, 5, 0);
+        Ru.setVal(0, 0, 2.0);
+        Ru.setVal(0, 1, 3.0);
+        Ru.setVal(1, 0, 3.0);
+        Ru.setVal(1, 2, 4.0);
+        Ru.setVal(1, 4, 6.0);
+        Ru.setVal(2, 1, -1.0);
+        Ru.setVal(2, 2, -3.0);
+        Ru.setVal(2, 3, 2.0); //unsymmetric
+        Ru.setVal(3, 2, 1.0);
+        Ru.setVal(4, 1, 4.0);
+        Ru.setVal(4, 2, 2.0);
+        Ru.setVal(4, 4, 1.0);
+        testCHOLMODSolve< GIMLI::RSparseMapMatrix, double>(Ru);
         
         GIMLI::RSparseMapMatrix Rm(3, 3, 0);
         Rm.setVal(0, 0, 1.0);

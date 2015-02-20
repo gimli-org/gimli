@@ -5,11 +5,11 @@ import pygimli as pg
 
 
 def testVector(v):
-    print(v)
+    print("vec:", v)
     for t in v:
-        print(t)
-    print(sum(v))
-    print(pg.haveInfNaN(v))
+        print("iter:", t, type(t))
+    print("sum", sum(v))
+    print("inf", pg.haveInfNaN(v))
     
 testVector(pg.RVector(5, 1.0))
 testVector(pg.CVector(5, 1.0))
