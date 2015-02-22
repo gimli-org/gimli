@@ -172,23 +172,22 @@ Any Gmsh output (2D and 3D) can be imported using pygimli and subsequently saved
 to the binary format.
 """
 
-import os
-import shutil
+import subprocess
 import urllib
 from matplotlib import pyplot as plt
 
 import pygimli as pg
 from pygimli.meshtools import readGmsh
 
-if shutil.which('gmsh'):
+try:
     gmsh_file, _ = urllib.request.urlretrieve("http://www.fwagner.info/mesh.geo")
-    os.system("gmsh -2 -o mesh.msh %s" % gmsh_file)
+    subprocess.call(["gmsh", "-2", "-o", "mesh.msh", gmsh_file])
     mesh = readGmsh("mesh.msh", verbose=True)
     pg.show(mesh, mesh.cellMarker(), showLater=True)
     plt.xlim(0,50)
     plt.ylim(-50,0)
 
-else:
+except OSError:
     print("Gmsh needs to be installed for this example.")
     plt.figure()
     plt.title("Gmsh needs to be installed for this example")
