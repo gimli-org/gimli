@@ -54,6 +54,24 @@ textarea {
     left: +25%;
 }
 
+p.caption {
+    text-align: center;
+    margin-top: 1 em;
+    font-size: small;
+}
+
+.figure.align-center img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+img.align-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /*sidebar*/
 .sidebar-box {
     padding: 0;

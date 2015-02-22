@@ -3,4 +3,7 @@
 Examples
 ********
 
-Here we collect some examples and user stories for GIMLi.
+Here you find examples and user stories using pyGIMLi. If you have used GIMLi
+for an interesting application, please `send us your example
+<mailto:mail@pygimli.org>`_.
+
