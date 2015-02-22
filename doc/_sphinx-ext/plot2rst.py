@@ -318,7 +318,8 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
 
     rst_dir.makedirs()
     examples = [fname for fname in sorted(src_dir.listdir(), key=_plots_first)
-                      if fname.endswith('py')]
+                      if fname.endswith('.py')]
+
     ex_names = [ex[:-3] for ex in examples] # strip '.py' extension
     if depth == 0:
         sub_dir = Path('')
@@ -417,6 +418,14 @@ def write_example(src_name, src_dir, rst_dir, cfg):
     image_dir.makedirs()
     thumb_dir.makedirs()
 
+    # copy static files
+    static_src = src_dir.pjoin('static')
+    if static_src.exists:
+        static_dir = rst_dir.pjoin('static')
+        if static_dir.exists:
+            shutil.rmtree(static_dir)
+        shutil.copytree(static_src, static_dir)
+
     base_image_name = os.path.splitext(src_name)[0]
     image_path = image_dir.pjoin(base_image_name + '_{0}.png')
 
@@ -444,7 +453,7 @@ def write_example(src_name, src_dir, rst_dir, cfg):
     example_rst = ''.join([rst_link, rst])
 
     has_inline_plots = any(cfg.plot2rst_plot_tag in b[2] for b in blocks)
-    
+
     if not has_inline_plots and flags['auto_plots']:
         # Show all plots at the end of the example
         if len(plt.get_fignums()) > 0:
@@ -653,7 +662,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
                 bcontent = bcontent.replace('.. lastcout::',
                                             printcout2rst(lastCoutBuff))
                 lastCoutBuff = []
-            
+
             if '.. animate::' in bcontent:
                 bcontent = bcontent.replace('"""', '')
                 vals = bcontent.split()
@@ -667,7 +676,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
                 rst_blocks.append(ANIMATION_TEMPLATE % (anim_name))
                 anim_num += 1
                 continue
-   
+
             rst_blocks.append(docstr2rst(bcontent, cfg))
     plt.ioff()
     return figure_list, '\n'.join(rst_blocks)

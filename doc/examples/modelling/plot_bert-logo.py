@@ -9,14 +9,15 @@ import matplotlib.textpath
 import pygimli as pg
 
 """
-Generate a matplotlib path respresenting the :math:`\Omega` character.
+We start by generating a matplotlib path respresenting the :math:`\Omega`
+character.
 """
 
 logo_path = matplotlib.textpath.TextPath((0,0), '$\Omega$', size=1)
 patch = matplotlib.patches.PathPatch(logo_path)
 
 """
-Define vertices as mesh nodes and connect them with edges.
+The vertices of the path are defined as mesh nodes and connected with edges.
 """
 
 nodes = patch.get_verts() * 50
@@ -31,7 +32,8 @@ for i in range(poly.nodeCount() - 1):
 poly.createEdge(poly.node(poly.nodeCount() - 1), poly.node(0))
 
 """
-Call TriangleWrapper, define x values of cell centers as data and create figure.
+We call the TriangleWrapper to generate the mesh and set the x values as the
+data for a color transition.
 """
 
 tri = pg.TriangleWrapper(poly)
