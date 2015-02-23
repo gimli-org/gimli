@@ -173,22 +173,27 @@ to the binary format.
 """
 
 import subprocess
-import urllib
 from matplotlib import pyplot as plt
 
 import pygimli as pg
 from pygimli.meshtools import readGmsh
 
+# Downloading gmsh file externally (pygimli still password protected)
+subprocess.call(["wget", "http://www.fwagner.info/mesh.geo"])
+
 try:
-    gmsh_file, _ = urllib.request.urlretrieve("http://www.fwagner.info/mesh.geo")
-    subprocess.call(["gmsh", "-2", "-o", "mesh.msh", gmsh_file])
+    subprocess.call(["gmsh", "-2", "-o", "mesh.msh", "mesh.geo"])
+    gmsh = True
+except OSError:
+    print("Gmsh needs to be installed for this example.")
+    gmsh = False
+
+if gmsh:
     mesh = readGmsh("mesh.msh", verbose=True)
     pg.show(mesh, mesh.cellMarker(), showLater=True)
     plt.xlim(0,50)
     plt.ylim(-50,0)
-
-except OSError:
-    print("Gmsh needs to be installed for this example.")
+else:
     plt.figure()
     plt.title("Gmsh needs to be installed for this example")
 
