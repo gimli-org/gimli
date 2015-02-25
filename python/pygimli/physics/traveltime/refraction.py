@@ -16,35 +16,35 @@ import os
 
 
 def plotLines(ax, line_filename, step=1):
-    xz = np.loadtxt(line_filename)    
+    xz = np.loadtxt(line_filename)
     n_points = xz.shape[0]
     if step == 2:
         for i in range(0, n_points, step):
             x = xz[i:i+step, 0]
             z = xz[i:i+step, 1]
             ax.plot(x, z, 'k-')
-    if step  == 1:
-        ax.plot(xz[:,0], xz[:,1], 'k-')
+    if step == 1:
+        ax.plot(xz[:, 0], xz[:, 1], 'k-')
 
 
 def createResultFolder(subfolder):
     now = time.localtime()
-    results = str(now.tm_year) + str(now.tm_mon).zfill(2) +\
-                str(now.tm_mday).zfill(2) + '-' +\
-                str(now.tm_hour).zfill(2) + '.' +\
-                str(now.tm_min).zfill(2)
-                
+    results = str(now.tm_year) + str(now.tm_mon).zfill(2) + \
+        str(now.tm_mday).zfill(2) + '-' + str(now.tm_hour).zfill(2) + '.' + \
+        str(now.tm_min).zfill(2)
+
     return createfolders(['./', results, subfolder])
-    
+
+
 def createfolders(foldername_list):
     """
-    
+
     """
     path = ''
-       
+
     for s in foldername_list:
         path = path + s + '/'
-    
+
     try:
         os.makedirs(path)
     except OSError as e:
@@ -56,6 +56,7 @@ def createfolders(foldername_list):
 
     return path
 
+
 def getSavePath(folder=None, subfolder=''):
     if folder is None:
         path = createResultFolder(subfolder)
@@ -63,12 +64,14 @@ def getSavePath(folder=None, subfolder=''):
         path = createfolders([folder, subfolder])
     return path
 
-def plotFirstPicks(ax, data, plotva=False):
+
+def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     """ plot first arrivals as lines """
     px = pg.x(data.sensorPositions())
     gx = np.array([px[int(g)] for g in data("g")])
     sx = np.array([px[int(s)] for s in data("s")])
-    tt = np.array(data("t"))
+    if tt is None:
+        tt = np.array(data("t"))
     if plotva:
         tt = np.absolute(gx-sx) / tt
 
@@ -77,10 +80,8 @@ def plotFirstPicks(ax, data, plotva=False):
     for i, si in enumerate(uns):
         ti = tt[sx == si]
         gi = gx[sx == si]
-        offset = gi - si
-        print(si, len(ti), min(offset), max(offset))
         ii = gi.argsort()
-        ax.plot(gi[ii], ti[ii], 'x-', color=cols[i % 7])
+        ax.plot(gi[ii], ti[ii], marker, color=cols[i % 7])
         ax.plot(si, 0., 's', color=cols[i % 7], markersize=8)
 
     ax.grid(True)
@@ -96,18 +97,19 @@ def showVA(ax, data):
     for i in range(data.size()):
         A[int(data('s')[i]), int(data('g')[i])] = va[i]
 
-    ax.imshow(A, interpolation='nearest')
+    gci = ax.imshow(A, interpolation='nearest')
     ax.grid(True)
     xt = np.arange(0, data.sensorCount(), 50)
     ax.set_xticks(xt)
     ax.set_xticklabels([str(px[xti]) for xti in xt])
+    plt.colorbar(gci, ax=ax)
     return va
 
 
 def createGradientModel2D(data, mesh, VTop, VBot):
     """
     Create 2D velocity gradient model.
-    
+
     Creates a smooth, linear, starting model that takes the slope
     of the topography into account. This is done by fitting a straight line
     and using the distance to that as the depth value.
@@ -148,15 +150,17 @@ def createGradientModel2D(data, mesh, VTop, VBot):
 
 class Refraction():
     """ Class for managing a refraction seismics"""
-    
+
     def __init__(self, filename=None, verbose=True, **kwargs):
         """ Init function with optional data load """
+        self.figs = {}
+        self.axs = {}
         if filename is not None:
             self.load(filename)
 
     def __str__(self):
         return self.__repr__()
-        
+
     def __repr__(self):
         """ string representation of the class """
         out = "Refraction object"
@@ -186,19 +190,28 @@ class Refraction():
 
         print(self.data)
 
-    def showData(self, ax=None):
+    def showData(self, ax=None, response=None):
         """ show data in form of travel time curves """
         if ax is None:
             fig, ax = plt.subplots()
+            self.figs['data'] = fig
 
-        plotFirstPicks(ax, self.data)
+        self.axs['data'] = ax
+        if response is None:
+            plotFirstPicks(ax, self.data)
+        else:
+            plotFirstPicks(ax, self.data, marker='x')
+            plotFirstPicks(ax, self.data, np.asarray(response), marker='-')
+
         plt.show(block=False)
 
     def showVA(self, ax=None):
         """ show apparent velocity as image plot """
         if ax is None:
             fig, ax = plt.subplots()
+            self.figs['va'] = fig
 
+        self.axs['va'] = ax
         showVA(ax, self.data)
         plt.show(block=False)
 
@@ -210,7 +223,7 @@ class Refraction():
         return np.absolute(gx-sx)
 
     def makeMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                 paraBoundary=0):
+                 paraBoundary=5):
         """ create (inversion) """
         if depth is None:
             depth = max(self.getOffset())/3.
@@ -225,7 +238,9 @@ class Refraction():
         """ show mesh in given axes or in a new figure """
         if ax is None:
             fig, ax = plt.subplots()
+            self.figs['mesh'] = fig
 
+        self.axs['mesh'] = ax
         drawMesh(ax, self.mesh)
         plt.show(block=False)
 
@@ -291,7 +306,8 @@ class Refraction():
         if ax is None:
             ax, cbar = pg.show(self.mesh, self.velocity, logScale=logScale,
                                colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
-            # fig, ax = plt.subplots()
+            fig, ax = plt.subplots()
+            self.figs['result'] = fig
         else:
             gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
@@ -299,15 +315,15 @@ class Refraction():
             browser = CellBrowser(self.mesh, self.velocity, ax)
             browser.connect()
             plt.show()  # block=False)
-            
-        if kwargs.has_key('lines'):
+
+        self.axs['result'] = ax
+        if 'lines' in kwargs:
             plotLines(ax, kwargs['lines'])
-        return ax, cbar
-        
+
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """
         Saves the results in the specified folder.
-        
+
         Saved items are:
             Inverted profile
             Velocity vector
@@ -316,33 +332,33 @@ class Refraction():
             Mesh (bms and vtk with results)
         """
 #        TODO: How to extract the chi2 etc. from each iteration???
-        
+
         subfolder = '/' + self.__class__.__name__
         path = getSavePath(folder, subfolder)
-        
+
         print('Saving refraction data to: {}'.format(path))
-        
+
         np.savetxt(path + '/velocity.vector',
                    self.velocity)
         np.savetxt(path + '/velocity-cov.vector',
                    self.rayCoverage())
         np.savetxt(path + '/velocity-scov.vector',
                    self.standardizedCoverage())
-                   
+
         self.mesh.addExportData('Velocity', self.velocity)
         self.mesh.addExportData('Coverage', self.rayCoverage())
         self.mesh.addExportData('S_Coverage', self.standardizedCoverage())
         self.mesh.exportVTK(path + 'velocity')
         self.mesh.save(path + 'velocity-mesh')
         self.pd.save(path + 'velocity-pd')
-        
+
         fig, ax = plt.subplots()
-        self.showResult(ax=ax, cov=self.standardizedCoverage(),**kwargs)        
-        fig.set_size_inches(size)     
+        self.showResult(ax=ax, cov=self.standardizedCoverage(), **kwargs)
+        fig.set_size_inches(size)
         fig.savefig(path + '/velocity.pdf')
-        
+
         return path, fig, ax
-        
+
 
 if __name__ == '__main__':
     datafile = sys.argv[1]
@@ -355,4 +371,4 @@ if __name__ == '__main__':
     ra.showMesh()
     ra.run()
     ax, cbar = ra.showResult()
-    pg.showNow()
+#    pg.showNow()
