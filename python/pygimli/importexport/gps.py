@@ -6,6 +6,10 @@ from pyproj import Proj, transform
 
 import matplotlib.image as mpimg
 from math import floor
+import numpy as np
+import urllib
+import os
+
 
 def needOSGEO():
     try:
@@ -17,12 +21,13 @@ def needOSGEO():
         traceback.print_exc(file=sys.stdout)
         sys.stderr.write("no modules osgeo\n")
 
-gk2   = Proj( init="epsg:31466" ) # GK zone 2
-gk3   = Proj( init="epsg:31467" ) # GK zone 3
-gk4   = Proj( init="epsg:31468" ) # GK zone 3
-wgs84 = Proj( init="epsg:4326" ) # pure ellipsoid for step-wise change
+gk2 = Proj(init="epsg:31466")  # GK zone 2
+gk3 = Proj(init="epsg:31467")  # GK zone 3
+gk4 = Proj(init="epsg:31468")  # GK zone 3
+wgs84 = Proj(init="epsg:4326")  # pure ellipsoid for step-wise change
 
-def handleWPTS( wpts ):
+
+def handleWPTS(wpts):
     """
         Handler for Waypoints in gpx xml-dom
     """
@@ -30,38 +35,40 @@ def handleWPTS( wpts ):
 
     for wpt in wpts:
         if wpt.hasAttribute('lat'):
-            lat = float( wpt.getAttribute('lat') )
+            lat = float(wpt.getAttribute('lat'))
         else:
             continue
         if wpt.hasAttribute('lon'):
-            lon = float( wpt.getAttribute('lon') )
+            lon = float(wpt.getAttribute('lon'))
         else:
             continue
 
-        name = wpt.getElementsByTagName( 'name' )[0].childNodes[0].data
-        time = wpt.getElementsByTagName( 'time' )[0].childNodes[0].data
+        name = wpt.getElementsByTagName('name')[0].childNodes[0].data
+        time = wpt.getElementsByTagName('time')[0].childNodes[0].data
 
-        w.append( ( lon, lat, name, time)  )
+        w.append((lon, lat, name, time))
     return w
-#def findWPTS( ... )
+# def findWPTS( ... )
 
-def readGPX( filename ):
+
+def readGPX(filename):
     """
     Extract GPS Waypoint from GPS Exchange Format (GPX).
 
     Currently only simple waypoint extraction is supported.
     """
 
-    dom = parse( filename )
+    dom = parse(filename)
     wpts = dom.getElementsByTagName("wpt")
 
-    return handleWPTS( wpts )
+    return handleWPTS(wpts)
 # def readGPX( ... )
+
 
 def readSimpleLatLon(filename, verbose=False):
     """
-        Read a list of the following formats. Try to convert the format automatically
-        If you want to be sure, provide format without "d" to ensure floating point format:
+        Read a list of the following formats. Try converting automatically
+        To be sure, provide format without "d" to ensure floating point format:
 
         lon lat
 
@@ -89,100 +96,107 @@ def readSimpleLatLon(filename, verbose=False):
                     ret += float(m[1]) / 3600.
             else:
                 # 10d23.2323
-                ret += float( d[1] ) / 60.
+                ret += float(d[1]) / 60.
         else:
             # 10.4432323
-            ret = float( deg )
+            ret = float(deg)
 
         return ret
     # def conv_(...):
 
     w = []
 
-    with open( filename, 'r') as fi:
-        content = fi.readlines( )
-    fi.close()
+    with open(filename, 'r') as fi:
+        content = fi.readlines()
 
     for line in content:
-        if line[0] == '#': continue
+        if line[0] == '#':
+            continue
 
         vals = line.split()
 
-        if len( vals ) == 2:
-            #lon lat
+        if len(vals) == 2:  # lon lat
             w.append((conv_(vals[1]), conv_(vals[0]), '', 'time'))
-        if len( vals ) == 3:
+        if len(vals) == 3:
             # marker lat lon
             w.append((conv_(vals[2]), conv_(vals[1]), vals[0], 'time'))
 
         if verbose:
             print(w[-1])
 
-
     return w
 
-def GK2toUTM( R, H=None, zone=32 ):
+
+def GK2toUTM(R, H=None, zone=32):
     """ transform Gauss-Krueger zone 2 into UTM """
     """ note the double transformation (1-ellipsoid,2-projection) """
     """ default zone is 32 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM
+    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
-    if H is None: # two-column matrix
-        lon, lat = transform( gk2, wgs84, R[0], R[1] )
+    if H is None:  # two-column matrix
+        lon, lat = transform(gk2, wgs84, R[0], R[1])
     else:
-        lon, lat = transform( gk2, wgs84, R, H )
+        lon, lat = transform(gk2, wgs84, R, H)
 
-    return utm( lon, lat )
+    return utm(lon, lat)
 
-def GK3toUTM( R, H=None, zone=33 ):
+
+def GK3toUTM(R, H=None, zone=33):
     """ transform Gauss-Krueger zone 3 into UTM """
     """ note the double transformation (1-ellipsoid,2-projection) """
     """ default zone is 33 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM
+    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
-    if H is None: # two-column matrix
-        lon, lat = transform( gk3, wgs84, R[0], R[1] )
+    if H is None:  # two-column matrix
+        lon, lat = transform(gk3, wgs84, R[0], R[1])
     else:
-        lon, lat = transform( gk3, wgs84, R, H )
+        lon, lat = transform(gk3, wgs84, R, H)
 
-    return utm( lon, lat )
+    return utm(lon, lat)
 
-def GK4toUTM( R, H=None, zone=33 ):
+
+def GK4toUTM(R, H=None, zone=33):
     """ transform Gauss-Krueger zone 3 into UTM """
     """ note the double transformation (1-ellipsoid,2-projection) """
     """ default zone is 33 """
 
-    utm = Proj( proj='utm', zone=zone, ellps='WGS84' ) # UTM
+    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
-    if H is None: # two-column matrix
-        lon, lat = transform( gk4, wgs84, R[0], R[1] )
+    if H is None:  # two-column matrix
+        lon, lat = transform(gk4, wgs84, R[0], R[1])
     else:
-        lon, lat = transform( gk4, wgs84, R, H )
+        lon, lat = transform(gk4, wgs84, R, H)
 
-    return utm( lon, lat )
+    return utm(lon, lat)
+
 
 def GKtoUTM(R, H=None):
     """ transforms any Gauss-Krueger to UTM """
     """ autodetect GK zone from offset """
-    if H is None: rr = R[0][0]
-    else: rr = R[0]
-    if floor( rr*1e-6 ) == 2.:
-        return GK2toUTM( R, H )
-    elif floor( rr*1e-6 ) == 3.:
-        return GK3toUTM( R, H )
-    elif floor( rr*1e-6 ) == 4.:
-        return GK4toUTM( R, H )
+    if H is None:
+        rr = R[0][0]
+    else:
+        rr = R[0]
+
+    if floor(rr*1e-6) == 2.:
+        return GK2toUTM(R, H)
+    elif floor(rr*1e-6) == 3.:
+        return GK3toUTM(R, H)
+    elif floor(rr*1e-6) == 4.:
+        return GK4toUTM(R, H)
     else:
         print("cannot detect valid GK zone")
 
+
 def convddmm(num):
-    dd = np.floor( num / 100. )
+    dd = np.floor(num / 100.)
     r1 = num - dd * 100.
     return dd + r1 / 60.
 
-def readGeoRefTIF( file_name ):
+
+def readGeoRefTIF(file_name):
     """
         Read geo-referenced TIFF file and return image and bbox
         plt.imshow( im, ext = bbox.ravel() ), bbox might need transform.
@@ -191,7 +205,7 @@ def readGeoRefTIF( file_name ):
     geotr = dataset.GetGeoTransform()
     projection = dataset.GetProjection()
 
-    im = np.flipud( mpimg.imread(file_name))
+    im = np.flipud(mpimg.imread(file_name))
 
     tifx, tify, dx = geotr[0], geotr[3], geotr[1]
 
@@ -200,13 +214,16 @@ def readGeoRefTIF( file_name ):
 
     return im, bbox, projection
 
-def getBKGaddress(xlim, ylim, imsize=1000,
-                  zone=32, service='dop40', uuid='', fmt='jpeg'):
+
+def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
+                  usetls=False, uuid='', fmt='jpeg'):
     """
         Generate address for rendering web service image from BKG.
         Assumes UTM in given zone.
     """
     url = 'http://sg.geodatenzentrum.de/wms_' + service
+    if usetls:
+        url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
     stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT=' + fmt
     srsstr = 'SRS=EPSG:' + str(25800 + zone)  # EPSG definition of UTM
 
@@ -218,15 +235,17 @@ def getBKGaddress(xlim, ylim, imsize=1000,
 
     return addr, box
 
-def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid=''):
-    """ 
-        Underlays digital orthophoto or topographic (mode='DTK') map under axes
-        At first access, the image is retrieved from BKG and saved, then loaded.
+
+def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid='',
+                   usetls=False):
+    """
+        Underlay digital orthophoto or topographic (mode='DTK') map under axes
+        At first access, the image is retrieved from BKG and saved then loaded.
     """
     ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
-    wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for the map types
-    ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, service=wms[mode],
-                            zone=utmzone)
+    wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
+    ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
+                            service=wms[mode], usetls=usetls)
     imname = mode + box + ext[mode]
     if not os.path.isfile(imname):  # not already existing
         print('Retrieving file from geodatenzentrum.de')
@@ -236,5 +255,5 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid=''):
 
     im = mpimg.imread(imname)
     bb = [int(bi) for bi in box.split(',')]  # bounding box
-    plt.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
-               interpolation='nearest')
+    ax.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
+              interpolation='nearest')
