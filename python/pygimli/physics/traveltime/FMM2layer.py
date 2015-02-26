@@ -97,7 +97,7 @@ In the special case when f(x) = 1, the solution gives the signed distance from t
 
 # def fastMarch(...)
 
-if __name__ is '__main__':
+if __name__ == '__main__':
     xmin, xmax, zlay = -20., 150., 20.
     # create PLC (piece-wise linear complex) of two layers
     PLC = pg.Mesh(2)

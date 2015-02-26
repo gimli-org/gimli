@@ -539,8 +539,7 @@ class MRS():
         
         plt.show()
             
-############ MAIN ############
-if __name__ is "__main__":
+if __name__ == "__main__":
     import sys # not really PEP-7 conform to import here
     from optparse import OptionParser
 
