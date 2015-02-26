@@ -590,7 +590,7 @@ def buildCircle(pos, radius, segments=12, leftDirection=True):
     return poly
 # def buildCircle(pos, radius, segments)
 
-if __name__ is "__main__":
+if __name__ == "__main__":
     import sys
     print(sys.argv[1:])
     print("do some tests here")
