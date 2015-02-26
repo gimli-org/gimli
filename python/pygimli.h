@@ -543,6 +543,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map< std::string, GIMLI::Vector< double > > stdMapStringRVector;
     typedef std::map< int, GIMLI::Region * >            stdMapRegion;
     typedef std::map< float, float >                    stdMapF_F;
+    typedef std::map< float, Complex >                  stdMapF_C;
     typedef std::map< int, double >                     stdMapI_D;
     typedef std::map< long, long >                      stdMapL_L;
     typedef std::map< long, unsigned long >             stdMapL_UL;

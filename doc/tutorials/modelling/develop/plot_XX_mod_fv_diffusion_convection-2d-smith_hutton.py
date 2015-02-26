@@ -16,14 +16,13 @@ import numpy as np
 
 swatch = pg.Stopwatch(True)
 
-x = np.linspace(-1.0, 1.0, 81)
-y = np.linspace( 0.0, 1.0, 41)
+x = np.linspace(-1.0, 1.0, 41)
+y = np.linspace( 0.0, 1.0, 21)
 dx = x[1] - x[0]
 dy = y[1] - y[0]
 print(dx,dy)
 
 grid = pg.createGrid(x=x, y=y)
-N = grid.cellCount()
 
 # force vector per cell
 f = pg.RVector(grid.cellCount(), 0.0)
@@ -58,7 +57,7 @@ dirichletBC = [[1, lambda b_: 1. - np.tanh(10.)],
                ]
 
 print ("start", swatch.duration())
-uGrid = solveFiniteVolume(grid, a=1./Peclet, f=f, vel=vB, 
+uGrid = solveFiniteVolume(grid, a=1./Peclet, f=f, vel=vB,
                           uBoundary=dirichletBC,
                           duBoundary=neumannBC,
                           scheme=scheme)
@@ -110,7 +109,8 @@ vB = np.array(list(map(lambda p_: [ (2.*p_[1] *(1.0 -p_[0]**2)),
 drawStreams(ax2, mesh, vC)
 
 f = pg.RVector(mesh.cellCount(), 0.0)
-#f[grid.findCell([-0.75, 0.75]).id()]=10.0
+##f[mesh.findCell([-0.75, 0.75]).id()]=1000.0
+
 
 uMesh = solveFiniteVolume(mesh, a=1./Peclet, f=f, vel=vB, 
                           uBoundary=dirichletBC,

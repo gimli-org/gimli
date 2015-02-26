@@ -215,3 +215,4 @@ more...
     Additional Gmsh examples: a) Laboratory sandbox model. b) Finite
     discretization of a ring-shaped electrode. c) And more!
 """
+plt.show()

@@ -550,6 +550,15 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMap
 
 #undef DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__
 
+#define DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(OP) \
+    inline RSparseMapMatrix operator OP (const double & v, const RSparseMapMatrix & A){\
+        return RSparseMapMatrix(A) OP##= v; \
+    } \
+    
+    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(+)
+    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(*)
+
+#undef DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__
 
 
 
@@ -597,8 +606,9 @@ void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec
 //     return S * Vector< V2 >(a);
 // }
 
-//! Sparse matrix in compressed row storage (CCS) form
-/*! Sparse matrix in compressed row storage (CCS) form.
+//! Sparse matrix in compressed row storage (CRS) form
+/*! Sparse matrix in compressed row storage (CRS) form. 
+* IF you need native CCS format you need to transpose CRS
 * Symmetry type: 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
 template < class ValueType > class SparseMatrix : public MatrixBase{
 public:

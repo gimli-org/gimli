@@ -27,36 +27,64 @@
 namespace GIMLI{
 
 LinSolver::LinSolver(bool verbose) 
-    : solver_(NULL), verbose_(verbose), rows_(0), cols_(0) {
+    : verbose_(verbose){
+    init_();
     setSolverType(AUTOMATIC);
 }
 
 LinSolver::LinSolver(RSparseMatrix & S, bool verbose) 
-    : solver_(NULL), verbose_(verbose) {
+    : verbose_(verbose) {
+    init_();
     setSolverType(AUTOMATIC);
     setMatrix(S);
 }
+
+LinSolver::LinSolver(RSparseMapMatrix & S, bool verbose)
+    : verbose_(verbose) {
+    init_();
+    setSolverType(AUTOMATIC);
+    cacheMatrix_ = new RSparseMatrix(S);
+    
+    setMatrix(dynamic_cast < RSparseMatrix &>( *cacheMatrix_));
+}
   
 LinSolver::LinSolver(RSparseMatrix & S, SolverType solverType, bool verbose) 
-    : solver_(NULL), verbose_(verbose) {
+    : verbose_(verbose) {
+    init_();
     setSolverType(solverType);
     setMatrix(S);
 }
   
 LinSolver::LinSolver(CSparseMatrix & S, bool verbose) 
-    : solver_(NULL), verbose_(verbose) {
+    : verbose_(verbose) {
+    init_();
     setSolverType(AUTOMATIC);
     setMatrix(S);
 }
   
 LinSolver::LinSolver(CSparseMatrix & S, SolverType solverType, bool verbose) 
-    : solver_(NULL), verbose_(verbose) {
+    : verbose_(verbose) {
+    init_();
     setSolverType(solverType);
     setMatrix(S);
 }
 
+void LinSolver::init_(){
+    rows_ = 0;
+    cols_ = 0;
+    solver_ = 0;
+    cacheMatrix_ = 0;
+}
+
 LinSolver::~LinSolver(){
-    delete solver_;
+    if (cacheMatrix_) {
+        delete cacheMatrix_;
+        cacheMatrix_ = 0;
+    }
+    if (solver_) {
+        delete solver_;
+        solver_ = 0;
+    }
 }
 
 void LinSolver::setSolverType(SolverType solverType){

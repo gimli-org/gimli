@@ -72,16 +72,15 @@ def uAna(r):
     y = r[1]
    
     ret = 0
-    for k in range(1, 15, 2):
-        s = np.sin(k*np.pi*(1.+x)/2) / (k**3*np.sinh(k*np.pi)) * \
-            (np.sinh(k*np.pi*(1.+y)/2) + np.sinh(k*np.pi*(1.-y)/2))
-        print(k, s)
+    for k in range(1, 151, 2):
+        kp = k*np.pi
+        s = np.sin(kp * (1. + x)/2) / (k**3 * np.sinh(kp)) * \
+            (np.sinh(kp * (1. + y)/2) + np.sinh(kp * (1. - y)/2))
+        #print(k, s)
         ret += s
-    return ret * (1. - x**2)/2 - 16/(np.pi**3)
+    return (1. - x**2)/2 - 16./(np.pi**3) *ret
 
-ua = np.array(list(map(uAna, grid.positions())))
-
-ax, cbar = pg.show(grid, data=ua, colorBar=True, label='P1 Solution $u$',
+ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$',
                    showLater=True)
 """
 Show is just a shortcut for various drawing routines, that can also be called directly.
@@ -137,11 +136,13 @@ uH2 = pg.interpolate(mesh=gridh2, data=uh, pos=probe)
 uP2 = pg.interpolate(mesh=gridp2, data=up, pos=probe)
 
 plt.figure()
+plt.plot(x, np.array(list(map(uAna, probe))), 'black', linewidth=2, label='analytical')
 plt.plot(x, uH1, label='linear (H1)')
 plt.plot(x, uH2, label='linear (H2)')
 plt.plot(x, uP2, label='quadratic (P2)')
-plt.xlim([-0.5, 0.5])
-plt.ylim([0.2, 0.3])
+
+plt.xlim([-0.4, 0.4])
+plt.ylim([0.25, 0.3])
 plt.legend()
 
 

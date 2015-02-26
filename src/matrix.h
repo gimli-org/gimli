@@ -163,6 +163,11 @@ public:
         THROW_TO_IMPL
     }
 
+    /*! Return this * a. For being numpy api-compatible  */
+    virtual RVector dot(const RVector & a) const {
+        return mult(a);
+    }
+    
     /*! Return this * a  */
     virtual RVector mult(const RVector & a) const {
        THROW_TO_IMPL
