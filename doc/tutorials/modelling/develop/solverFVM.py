@@ -312,7 +312,7 @@ def findDiffusion(mesh, a, b, c, nc=None):
             D = a[c.id()] / b.center().distance(c.center()) * b.size()                
     return D
                     
-def diffusionConvectionKernel(mesh, a, f,
+def diffusionConvectionKernel(mesh, a=None, f=None,
                               uBoundaries=None, duBoundaries=None,
                               fn=None, vel=0, u0=0,
                               scheme='CDS', sparse=False, time=0.0, 
@@ -322,6 +322,8 @@ def diffusionConvectionKernel(mesh, a, f,
         
         Advection .. forced convection
     """
+    if a is None:
+        a = pg.RVector(mesh.boundaryCount(), 1.0)
     
     AScheme = None
     if scheme == 'CDS':
@@ -408,8 +410,8 @@ def diffusionConvectionKernel(mesh, a, f,
                            
             aB = D * AScheme(F / D) + max(-F, 0.0)
             
-            #aB = D*(0.1*cell.size())
-            
+            aB /= cell.size()
+                       
             #print(cell.center(), boundary.center(), boundary.norm(cell), aB)
             if ncell:
                 # no boundary
@@ -443,17 +445,15 @@ def diffusionConvectionKernel(mesh, a, f,
                                                     userData=userData)
                     if sparse:
                         # amount of flow through the boundary
-                        S.addVal(cell.id(), cell.id(), val * boundary.size())
+                        S.addVal(cell.id(), cell.id(), val * boundary.size()/cell.size())
                     else:
-                        S[cell.id(), cell.id()] += val* boundary.size()
-                        
-            
+                        S[cell.id(), cell.id()] += val* boundary.size()/cell.size()
         
         if fn != None:
             if sparse:
-                S.addVal(cell.id(), cell.id(), -fn[cell.id()] * cell.shape().domainSize())
+                S.addVal(cell.id(), cell.id(), -fn[cell.id()]) #* cell.shape().domainSize())
             else:
-                S[cell.id(), cell.id()] -= fn[cell.id()] * cell.shape().domainSize()
+                S[cell.id(), cell.id()] -= fn[cell.id()] #* cell.shape().domainSize()
      
     
     if useHalfBoundaries:        
@@ -487,7 +487,6 @@ def diffusionConvectionKernel(mesh, a, f,
 
 def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
                       times=None,
-                      theta=1.0,
                       uL=None, relax=1.0,
                       ws=None, scheme='CDS', **kwargs):
     """
@@ -499,9 +498,6 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     workspace = WorkSpace()
     if ws:
         workspace = ws
-    
-    if theta != 1.0:
-        raise(AttributeError("theta != 1 not yet implemented"))
     
     a = solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
     f = solver.parseArgToArray(f, mesh.cellCount())
@@ -560,17 +556,12 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
                     
                 workspace.ap[i] = val
     
-        if sparse:
-            Sm = pg.RSparseMatrix(workspace.S)
-            # hold Sm until we have reference counting, loosing Sm here will kill LinSolver later            
-            workspace.Sm = Sm
-            workspace.solver = pg.LinSolver(Sm, True)
        
         print('FVM kernel 2:', swatch.duration(True))
     # endif: not hasattr(workspace, 'S'):
 
     workspace.rhs = np.zeros(len(workspace.rhsBCScales))
-    workspace.rhs[0:mesh.cellCount()] = f * mesh.cellSizes()
+    workspace.rhs[0:mesh.cellCount()] = f# * mesh.cellSizes()
         
     #if len(workspace.uDir):
     workspace.rhs += workspace.rhsBCScales
@@ -581,6 +572,12 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     # print('FVM: Prep:', swatch.duration(True))
     
     if not hasattr(times, '__len__'):
+       
+        if sparse and not hasattr(workspace, 'solver'):
+            Sm = pg.RSparseMatrix(workspace.S)
+            # hold Sm until we have reference counting, loosing Sm here will kill LinSolver later            
+            workspace.Sm = Sm
+            workspace.solver = pg.LinSolver(Sm, True)
         
         u = None
         if sparse:
@@ -590,18 +587,40 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
         print('FVM solve:', swatch.duration(True))            
         return u[0:mesh.cellCount():1]
     else:
-        u = np.zeros((len(times), len(rhs)))
-        u[0, 0:len(u0)] = u0
-        dt = np.zeros(len(rhs))
-        dt[0:mesh.cellCount()] = mesh.cellSizes() / (times[1] - times[0])
-        I = np.diag(np.ones(len(S)))
+        theta = kwargs.pop('theta', 0.5)
+        verbose= kwargs.pop('verbose', False)
+        
+        if sparse:
+            I = solver.identity(len(workspace.rhs))
+        else:
+            I = np.diag(np.ones(len(workspace.rhs)))
+            
+        print("solve cN")
+        return solver.crankNicolson(times, theta, workspace.S, I, f=workspace.rhs, u0=u0, verbose=verbose)
     
-        for n in range(1, len(times)):
-            b = rhs + u[n - 1] * dt
-            A = (I * dt + S)
-            ut = np.linalg.solve(A, b)
-            u[n, 0:mesh.cellCount()] = ut[0:mesh.cellCount():1]
-        return u[:,0:mesh.cellCount()]
+        #if not u0:
+            #u0 = np.zeros(len(workspace.rhs))
+            
+        #u = np.zeros((len(times), len(workspace.rhs)))
+        #u[0, :] = u0
+        #dt = (times[1] - times[0])
+        #I = np.diag(np.ones(len(S)))
+    
+        #rhs = np.zeros((len(times), dof))
+        
+        #rhs[:] = workspace.rhs
+    
+        #for n in range(1, len(times)):
+            
+            #b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
+                #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+            
+            #A = (I + dt * theta * S)
+            
+            #ut = solver.linsolve(A, b)
+            #u[n, 0:mesh.cellCount()] = ut[0:mesh.cellCount():1]
+            
+        #return u[:,0:mesh.cellCount()]
     
 def createFVPostProzessMesh(mesh, u, uDirichlet):
     """
@@ -753,7 +772,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                           relax=velocityRelaxation,
                                           ws=wsuy)
         
-        ap = np.array(wsux.ap)
+        ap = np.array(wsux.ap * mesh.cellSizes())
         apF = CtB * ap
         uxF = CtB * velocity[:,0]
         uyF = CtB * velocity[:,1]

@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+    Was macht das Ding?
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
@@ -8,24 +13,27 @@ import time
 import random
 import sys
 
+
 def correctBranches(ab2, mn2, rhoa):
     """shifts the branches of a dc sounding to generate a matching curve."""
     um = np.unique(mn2)
     for i in range(len(um) - 1):
         r0, r1 = [], []
-        ac = np.intersect1d(ab2[ mn2 == um[i] ], ab2[ mn2 == um[ i + 1 ] ])
+        ac = np.intersect1d(ab2[mn2 == um[i]], ab2[mn2 == um[i + 1]])
         for a in ac:
-            r0.append(rhoa[ (ab2 == a) * (mn2 == um[i]) ][0])
-            r1.append(rhoa[ (ab2 == a) * (mn2 == um[i+1]) ][0])
+            r0.append(rhoa[(ab2 == a) * (mn2 == um[i])][0])
+            r1.append(rhoa[(ab2 == a) * (mn2 == um[i+1])][0])
         
         if len(r0) > 0:
             fak = np.mean(np.array(r0) / np.array(r1))
             print("branch correction with factor",fak)
             if np.isfinite(fak) and fak>0.: 
-                rhoa[ mn2 == um[ i + 1 ] ] *= fak
+                rhoa[mn2 == um[i + 1]] *= fak
 
 class MRSVESBlockModelling( pg.ModellingBase ):
+    
     """ Joint MRS(QT) and VES forward modelling """
+    
     def __init__( self, nlay, K, z, t, ab2, mn2, verbose = False  ):        
         self.nlay_ = nlay
         mesh = pg.createMesh1DBlock( nlay, 3 ) # 3 paramaters: thk,wc,t2,res
@@ -40,7 +48,9 @@ class MRSVESBlockModelling( pg.ModellingBase ):
         return pg.cat(self.fMRS.response(mMRS), self.fVES.response(mVES))
 
 class MRSVES( MRS ):
+    
     """ class for joint MRS/VES inversion using LS or GA """
+    
     def __init__(self, mrsfile, vesfile=None, correctbranch=False):
         """ init class and load MRS (*.mrsi) (and VES data *.ves) """
         MRS.__init__(self, mrsfile)
@@ -50,11 +60,18 @@ class MRSVES( MRS ):
         if vesfile is not None: self.loadVES(vesfile,correctbranch)
     
     def loadVES(self, vesfile, correctbranches=True):
-        """ loads vertical electrical sounding (VES) from file
+        """
+            Loads vertical electrical sounding (VES)
+            
+            Loads VES from file
             with columns AB/2, MN/2 and apparent resistivity
-            loadVES( vesfile, correctbranches=True) corrects branches """
-        self.ab2, self.mn2, self.rhoa = np.loadtxt(vesfile,usecols=(0,1,2),unpack=True)
+            loadVES( vesfile, correctbranches=True) corrects branches
+        """
+        self.ab2, self.mn2, self.rhoa = np.loadtxt(vesfile,
+                                                   usecols=(0,1,2),
+                                                   unpack=True)
         self.startval[3] = np.median(self.rhoa)
+        
         if correctbranches:
             correctBranches(self.ab2, self.mn2, self.rhoa)
     
@@ -68,8 +85,8 @@ class MRSVES( MRS ):
             self.trans.append(pg.RTransLogLU(self.lowerBound[i],self.upperBound[i]))
             self.f.region(i).setTransModel(self.trans[-1])
     
-    def createInv(self,nlay,lam=100.,errVES=3,verbose=True):
-        """ create marquardt type inversion instance with data transformation """
+    def createInv(self, nlay, lam=100., errVES=3, verbose=True):
+        """ Create Marquardt type inversion instance with data transformation"""
         self.createFOP(nlay)
         self.tMod = pg.RTransLog()
         self.tMRS = pg.RTrans()
@@ -87,7 +104,7 @@ class MRSVES( MRS ):
         error = pg.cat(self.error, self.rhoa*errVES/100.)
         self.INV.setAbsoluteError(error)
     
-    def runInv(self,uncertainty=False):
+    def runInv(self, uncertainty=False):
         """ run actual inversion (assumes one was created before) """
         self.model = np.array( mrsves.INV.run() )
         if uncertainty:
@@ -128,7 +145,8 @@ class MRSVES( MRS ):
         
         return fig, ax
 
-    def plotResultAndFit(self,filename=None,figsize=(10,10)):
+    def plotResultAndFit(self, filename=None, figsize=(10,10)):
+        """ Whats this? """
         fig, ax = self.plotResult(nrows=2,figsize=figsize)
         clim = self.showCube(ax[1,0],self.data*1e9,islog=False)
         resp = np.array( self.INV.response() )
@@ -142,7 +160,7 @@ class MRSVES( MRS ):
             fig.savefig(filename,bbox_inches='tight')
         return fig, ax
 
-    def exportResult(self,basename):
+    def exportResult(self, basename):
         """ export result in column file (z,thk,wc,t2,res) """
         nl = self.nlay
         thk = self.model[:nl-1]
@@ -155,6 +173,7 @@ class MRSVES( MRS ):
         print(ALL)
         np.savetxt(basename+'-result.txt',ALL)
 #        if hasattr(self,'modelL') and hasattr(self,'modelU'):
+
         if self.modelL is not None and self.modelU is not None:
             thkL, thkU = self.modelL[:nl-1], self.modelU[:nl-1]
             wcL, wcU = self.modelL[nl-1:2*nl-1], self.modelU[nl-1:2*nl-1]
@@ -164,10 +183,14 @@ class MRSVES( MRS ):
             ALL=np.column_stack((z,thk0,wc,t2,res,wcL,t2L,resL,wcU,t2U,resU,thkL0,thkU0))
             np.savetxt(basename + '-resultLU.txt',ALL)
 
-    def runEMO(self,nlay=5,pop_size=100,max_generations=100):
-        """ run evolutionary multi-objective optimization (EMO) using inspyred
-            for now fixed to NSGA-II algorithm after Deb (2002)
-            (non-dominated sorting genetic algorithm) """
+    def runEMO(self, nlay=5, pop_size=100, max_generations=100):
+        """
+            Run evolutionary multi-objective optimization (EMO)
+        
+            Run EMO using inspyred for now fixed to NSGA-II algorithm 
+            after Deb (2002) TODO (cite correctly)
+            (non-dominated sorting genetic algorithm)
+        """
         import inspyred
 
         def genMods( individual ):

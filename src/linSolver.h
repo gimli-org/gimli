@@ -37,6 +37,8 @@ public:
   
     LinSolver(RSparseMatrix & S, bool verbose=false);
     
+    LinSolver(RSparseMapMatrix & S, bool verbose=false);
+    
     LinSolver(CSparseMatrix & S, bool verbose=false);
 
     LinSolver(RSparseMatrix & S, SolverType solverType, bool verbose=false);
@@ -63,9 +65,12 @@ public:
     std::string solverName() const;
     
 protected:
+    void init_();
+        
     void initialize_(RSparseMatrix & S, int stype);
     void initialize_(CSparseMatrix & S, int stype);
         
+    MatrixBase * cacheMatrix_;
     SolverType      solverType_;
     SolverWrapper * solver_;
     bool            verbose_;

@@ -331,7 +331,8 @@ def linsolve(A, b, verbose=False):
             
     Parameters
     ----------
-    A : :gimliapi:`GIMLI::RSparseMatrix` | :gimliapi:`GIMLI::RSparseMapMatrix`
+    A : :gimliapi:`GIMLI::RSparseMatrix` | :gimliapi:`GIMLI::RSparseMapMatrix` |
+        numpy.array
         System matrix. Need to be symmetric, sparse and positive definite.
     
     b : iterable array
@@ -352,14 +353,19 @@ def linsolve(A, b, verbose=False):
         S = pg.RSparseMatrix(A)
         solver = pg.LinSolver(S, verbose=verbose)
         solver.solve(b, x)
+    elif type(A) == np.ndarray:
+        return np.linalg.solve(A, b)
     else:    
         solver = pg.LinSolver(A, verbose=verbose)
         solver.solve(b, x)
+        
     return x
     
 def assembleForceVector(mesh, f, userData=None):
     """
+
     Create right hand side vector based on the given mesh and force values.
+        
         
     Parameters
     ----------
@@ -590,6 +596,7 @@ def createStiffnessMatrix(mesh, a=None):
 
 def createMassMatrix(mesh, b=None):
     """
+    TODO remove b .. not necessary .. b should be scaled in final equation not here 
     Assemble mass element matrix.
 
     Calculates the mass element matrix for the given mesh scaled with the 
@@ -650,8 +657,8 @@ def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     Returns
     -------
     """
-    return solveFEM(mesh, a, b, f, times, userData, verbose, stats,
-                     **kwargs)
+    return solveFiniteElements(mesh, a, b, f, times, userData, verbose, stats,
+                               **kwargs)
 
 def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
           verbose=False, stats=None, **kwargs):
@@ -666,11 +673,11 @@ def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     Returns
     -------
     """
-    return solveFEM(mesh, a, b, f, times, userData, verbose, stats,
-                     **kwargs)
+    return solveFiniteElements(mesh, a, b, f, times, userData, verbose, stats,
+                               **kwargs)
 
-def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
-             verbose=False, stats=None, **kwargs):
+def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
+                        verbose=False, stats=None, **kwargs):
     """
     WRITEME short
     
@@ -696,7 +703,7 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     times : array [None]
         solve as time dependent problem for the given times
         
-    theta : float [None]
+    theta : float [1]
         - `theta` = 0, explicit Euler, maybe stable for
         - `theta` = 0.5, Crank-Nicolsen, maybe instable 
         - `theta` = 1, implicit Euler
@@ -811,24 +818,38 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         
     else:
         if debug: print("start TL", swatch.duration())
-        M = createMassMatrix(mesh, pg.RVector(mesh.cellCount(), 1.0))
 
+        M = createMassMatrix(mesh)
+        F = assembleForceVector(mesh, f)
+
+        if 'u0' in kwargs:
+            u0 = parseArgToArray(kwargs['u0'], dof, mesh, userData)
+            
+        theta = kwargs.pop('theta', 1)
+        
+        if not 'duBoundary' in kwargs:
+            A = createStiffnessMatrix(mesh, a)
+            
+            if 'uBoundary' in kwargs:
+                assembleDirichletBC(A,
+                                    parseArgToBoundaries(kwargs['uBoundary'],
+                                                         mesh),
+                                    rhs=F)
+            
+            return crankNicolson(times, theta, A, M, F, u0=u0, verbose=verbose)
+        
         rhs = np.zeros((len(times), dof))
         # rhs kann zeitabhängig sein ..wird hier nicht berücksichtigt
-        rhs[:] = assembleForceVector(mesh, f) # this is slow: optimize
+        rhs[:] = F # this is slow: optimize
         
         if debug: print("rhs", swatch.duration())
         U = np.zeros((len(times), dof))
+        U[0, :] = u0
+        
         #init state
         u = pg.RVector(dof, 0.0)
         
-        if 'u0' in kwargs:
-            U[0, :] = parseArgToArray(kwargs['u0'], dof, mesh, userData)
-            
-        theta = 1.0
-        if 'theta' in kwargs:
-             theta = float(kwargs['theta'])
-             
+        
         if debug: print("u0", swatch.duration())
              
         measure = 0.
@@ -836,10 +857,6 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             swatch.reset()
             
             dt = times[n] - times[n - 1]
-            
-            #u[n] = u[n-1] + dt * theta * L(u[n]) + dt * (1-theta) * L(u[n-1])
-            
-            
             
             # previous timestep
             #print "i: ", i, dt, U[i - 1]
@@ -856,9 +873,10 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             swatch.reset()
             # (A + a*B)u is fastest, followed by A*u + (B*u)*a and finally A*u + a*B*u and 
-            b = (M - (dt*(1.0 - theta)) * A) * U[n - 1] + \
+            b = (M + (dt * (theta - 1.)) * A ) * U[n - 1] + \
                 dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-                       
+            
+    
             #print ('a',swatch.duration(True))
             #b = M * U[n - 1] - (A * U[n - 1]) * (dt*(1.0 - theta)) + \
                 #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
@@ -900,3 +918,59 @@ def solveFEM(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if debug: print("Measure("+str(len(times))+"): ",
                         measure, measure/len(times))
         return U
+    
+def crankNicolson(times, theta, S, I, f, u0=None, verbose=False):
+    """
+        S = const over time
+        f = const over time
+        
+    """
+    sw = pg.Stopwatch(True)
+    swi = pg.Stopwatch(True)
+    
+    if u0 is None:
+        u0 = np.zeros(len(f))
+            
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import time
+    
+    u = np.zeros((len(times), len(f)))
+    u[0, :] = u0
+    dt = (times[1] - times[0])
+            
+    rhs = np.zeros((len(times), len(f)))
+        
+    rhs[:] = f
+    
+    A = (I + dt * theta * S)
+    solver = pg.LinSolver(A, True)
+    
+    timeIter1 = np.zeros(len(times))
+    timeIter2 = np.zeros(len(times))
+    for n in range(1, len(times)):
+        #if verbose:
+            #print(n)
+        tic = time.time()
+        b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
+            dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+        
+        timeIter1[n-1] = time.time()-tic
+        
+        tic = time.time()
+        u[n, : ] = solver.solve(b)
+        timeIter2[n-1] = time.time()-tic
+    
+        #A = (I + dt * theta * S)
+        #u[n, : ] = linsolve(A, b)
+            
+    
+    
+    #plt.figure()
+    #plt.plot(timeIter1)
+    #plt.plot(timeIter2)
+    #plt.figure()
+    if verbose:
+        print("timesteps: ", len(times), sw.duration(), "s ()", np.mean(timeIter1))
+        
+    return u

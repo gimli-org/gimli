@@ -77,13 +77,13 @@ ax2, cbar = showMesh(mesh,
 drawMesh(ax2, mesh)
 
 
-allBounds = pg.solver.parseArgToBoundaries(uDirichlet, mesh)
-bounds, vals = zip(*allBounds)
-uDirVals = pg.solver.generateBoundaryValue(bounds, vals)
-mesh2, boundSortIdx = createFVPostProzessMesh(mesh, bounds, )
+#allBounds = pg.solver.parseArgToBoundaries(uDirichlet, mesh)
+#bounds, vals = zip(*allBounds)
+#uDirVals = pg.solver.generateBoundaryValue(bounds, vals)
+mesh2, u2 = createFVPostProzessMesh(mesh, uFV, uDirichlet)
 
 print('---:', swatch.duration(True))
-ax3, cbar = showMesh(mesh2, data=pg.cat(uFV, uDirVals[boundSortIdx]),
+ax3, cbar = showMesh(mesh2, data=u2,
                      nLevs=12, cMin=0, cMax=10, colorBar=True,
                      showLater=True)
 

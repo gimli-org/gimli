@@ -11,7 +11,9 @@ import numpy as np
 import urllib
 
 class OverlayImageMPL(object):
+    
     """ What is this? """
+    
     def __init__(self, imageFileName, axes):
         self.axes = axes
         self.imAxes  = None
@@ -134,7 +136,6 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
     verbose : bool [false]
         be verbose
     """
-
     imagename = str(zoom) + '/' + str(xtile)+ '/' + str(ytile)
     
     if vendor == 'OSM' or vendor == 'Open Street Map':
@@ -220,7 +221,6 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
     
         The axes is resized to fit the whole map.
     """
-
     if pixelLimit is None:
         pixelLimit = [1024, 1024]
 

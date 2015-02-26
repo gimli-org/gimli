@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
-    Was macht das Ding
-'''
+"""
+    Was macht das Ding?
+"""
 
 # general modules to import according to standards
 import pygimli as pg
@@ -20,28 +20,30 @@ import time
 
 
 # forward modelling class (physics)
-class MRS1dBlockQTModelling( pg.ModellingBase ):
+class MRS1dBlockQTModelling(pg.ModellingBase):
+    
     """
     MRS1dBlockQTModelling - pygimli modelling class for block-mono QT inversion
-    f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False  )
+    f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False )
     """
-    def __init__( self, nlay, K, zvec, t, verbose = False  ):
+    
+    def __init__(self, nlay, K, zvec, t, verbose = False ):
         """ constructor with number of layers, kernel, z and t vectors """
-        mesh = pg.createMesh1DBlock( nlay, 2 ) # thk, wc, T2*
-        pg.ModellingBase.__init__( self, mesh )
+        mesh = pg.createMesh1DBlock(nlay, 2) # thk, wc, T2*
+        pg.ModellingBase.__init__(self, mesh)
         self.K_ = K
-        self.zv_ = np.array( zvec )
+        self.zv_ = np.array(zvec)
         self.nl_ = nlay
         self.nq_ = len(K)
         self.t_  = np.array(t)
         self.nt_ = len(t)
 
-    def response( self, par ):
+    def response(self, par):
         """ yield model response cube as vector """
         nl=self.nl_
-        thk = par( 0, nl-1 )
-        wc  = par( nl-1, 2*nl-1 )
-        t2  = par( 2*nl-1, 3*nl-1 )
+        thk = par(0, nl-1)
+        wc  = par(nl-1, 2*nl-1)
+        t2  = par(2*nl-1, 3*nl-1)
         zthk = np.cumsum(thk)
         zv = self.zv_
         lzv = len(zv)
@@ -63,7 +65,7 @@ class MRS1dBlockQTModelling( pg.ModellingBase ):
             amps=np.dot(self.K_,wcvec)
             for ii,a in enumerate(A): a += np.exp(-self.t_/t2[i])*amps[ii]
 
-        return pg.asvector( np.abs(A).ravel() )
+        return pg.asvector(np.abs(A).ravel())
 
 # plotting functions (just a copy for now, later from pygimli.mplviewer)
 def drawModel1D(ax, thickness, values, plotfunction='plot',
@@ -104,26 +106,26 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
 def showErrorBars(ax,thk,val,thkL,thkU,valL,valU,*args,**kwargs):
     """ plot error bars into a plot """
     zb = np.cumsum(thk)
-    zm = np.hstack( (zb-thk/2, zb[-1]*1.2 ) ) #zb[-1]+thk[-1]/2) )
+    zm = np.hstack((zb-thk/2, zb[-1]*1.2)) #zb[-1]+thk[-1]/2))
     valm = (val[:-1]+val[1:])/2
     xerr = [ val - valL, valU - val ]
     yerr = [ thk-thkL, thkU-thk ]
-    ax.errorbar( val, zm, fmt='.', xerr=xerr, ecolor='r', **kwargs )
-    ax.errorbar( valm, zb, fmt='.', yerr=yerr, ecolor='g', **kwargs )
+    ax.errorbar(val, zm, fmt='.', xerr=xerr, ecolor='r', **kwargs)
+    ax.errorbar(valm, zb, fmt='.', yerr=yerr, ecolor='g', **kwargs)
     ax.set_ylim(bottom=zm[-1]*1.02,top=0)
 
 def showWC(ax,thk,wc,wmin=0.,wmax=0.45,maxdep=0.,dw=0.05,**kwargs):
     """ show water content function nicely """
-    drawModel1D( ax, thk, wc, xlabel=r'$\theta$' )
+    drawModel1D(ax, thk, wc, xlabel=r'$\theta$')
     ax.set_xlim(0.,0.45)
     if maxdep>0.: ax.set_ylim(maxdep,0.)
     wt = np.arange(wmin,wmax,dw)
-    ax.set_xticks( wt )
+    ax.set_xticks(wt)
     ax.set_xticklabels([str(wi) for wi in wt])
 
 def showT2(ax,thk,t2,maxdep=0.,**kwargs):
     """ show T2 function nicely """
-    drawModel1D( ax, thk, t2*1e3, xlabel=r'$T_2^*$ [ms]', plotfunction='semilogx' )
+    drawModel1D(ax, thk, t2*1e3, xlabel=r'$T_2^*$ [ms]', plotfunction='semilogx')
     tmin = min(20,min(t2)*0.9e3)
     tmax = max(500,max(t2)*1.1e3)
     ax.set_xlim(tmin,tmax)
@@ -134,12 +136,14 @@ def showT2(ax,thk,t2,maxdep=0.,**kwargs):
 
 # Data handling class (logics)
 class MRS():
-    '''
+    
+    """
     class for managing a magnetic resonance sounding (MRS)
-    '''
+    """
+    
 #    def __init__(self,name=None,defaultNoise=150e-9,usereal=False,verbose=True): # constructor with dummy values
     def __init__(self,name=None,verbose=True,**kwargs): # constructor with dummy values
-        ''' init function with optional data load from mrsi file '''
+        """ init function with optional data load from mrsi file """
         self.verbose = verbose
         self.t, self.q, self.z = None, None, None
         self.data, self.error = None, None
@@ -166,7 +170,7 @@ class MRS():
         return out+">"
 
     def loadMRSI(self,filename,defaultNoise=100e-9,usereal=False,mint=0.,maxt=2.0):
-        ''' load data, error and kernel from mrsi file '''
+        """ load data, error and kernel from mrsi file """
         idata=loadmat(filename,struct_as_record=False,
                       squeeze_me=True)['idata']
         #self.t = idata.data.t + idata.data.effDead
@@ -175,20 +179,20 @@ class MRS():
         self.t = ttmp[good]
         self.q = idata.data.q
         self.K = idata.kernel.K
-        self.z = np.hstack( (0.,idata.kernel.z) )
+        self.z = np.hstack((0.,idata.kernel.z))
         dcube = idata.data.dcube[:,good]
         if len(dcube)==len(self.q) and len(dcube[0])==len(self.t):
             if usereal:
-                self.data = np.abs( np.real( dcube.flat ) )
+                self.data = np.abs(np.real(dcube.flat))
             else:
-                self.data = np.abs( dcube.flat )
+                self.data = np.abs(dcube.flat)
 
         ecube = idata.data.ecube[:,good]
         if self.verbose: print("loaded file: "+filename)
         if ecube[0][0] == 0:
             if self.verbose: print("no errors in file, assuming",defaultNoise*1e9,"nV")
-            ecube=np.ones( (len(self.q),len(self.t)) ) * defaultNoise
-            ecube /= np.sqrt( idata.data.gateL )
+            ecube=np.ones((len(self.q),len(self.t))) * defaultNoise
+            ecube /= np.sqrt(idata.data.gateL)
         if len(ecube)==len(self.q) and len(ecube[0])==len(self.t):
             self.error = ecube.ravel()
         
@@ -202,14 +206,14 @@ class MRS():
         if self.verbose: print(self)
 
     def loadDataCube(self,filename='datacube.dat'):
-        ''' load data cube from single ascii file '''
+        """ load data cube from single ascii file """
         A = np.loadtxt(filename).T
         self.q = A[1:,0]
         self.t = A[0,1:]
         self.data = A[1:,1:].ravel()
 
     def loadErrorCube(self,filename='errorcube.dat'):
-        ''' load error cube from a single ascii file '''
+        """ load error cube from a single ascii file """
         A = np.loadtxt(filename).T
         if len(A)==len(self.q) and len(A[0])==len(self.t):
             self.error = A.ravel()
@@ -219,24 +223,24 @@ class MRS():
             self.error = np.ones(len(self.q)*len(self.t))*100e-9
 
     def loadKernel(self,name=''):
-        ''' load kernel matrix from mrsk or two bmat files '''
+        """ load kernel matrix from mrsk or two bmat files """
         if name[-5:].lower() == '.mrsk':
             kdata=loadmat(name,struct_as_record=False,squeeze_me=True)['kdata']
             self.K = kdata.K
-            self.z = np.hstack( (0.,kdata.model.z) )
+            self.z = np.hstack((0.,kdata.model.z))
         else: # try load real/imag parts (backward compat.)
             KR = pg.RMatrix(name + 'KR.bmat')
             KI = pg.RMatrix(name + 'KI.bmat')
-            self.K = np.zeros( (KR.rows(),KR.cols()), dtype='complex' )
+            self.K = np.zeros((KR.rows(),KR.cols()), dtype='complex')
             for i in range(KR.rows()):
                 self.K[i] = np.array(KR[i]) + np.array(KI[i])*1j
 
     def loadZVector(self,filename='zkernel.vec'):
-        ''' load the kernel discretisation '''
+        """ load the kernel discretisation """
         self.z = pg.RVector(filename)
 
     def loadDir(self,dirname):
-        ''' load several files from dir (old Borkum stage) '''
+        """ load several files from dir (old Borkum stage) """
         if not dirname[-1] == '/': dirname+='/'
         self.loadDataCube(dirname+'datacube.dat')
         self.loadErrorCube(dirname+'errorcube.dat')
@@ -245,15 +249,15 @@ class MRS():
         self.dirname = dirname # to save results etc.
 
     def showCube(self,ax=None,vec=None,islog=None,clim=None,clab=None):
-        ''' plot a data cube nicely '''
-        if vec is None: vec = np.array( self.data ).flat
+        """ plot a data cube nicely """
+        if vec is None: vec = np.array(self.data).flat
         if ax is None: fig, ax = plt.subplots(1,1)
         if islog is None: islog = (min(vec)>0.)
         negative = (min(vec)<0)
-        if islog: vec = np.log10( vec )
+        if islog: vec = np.log10(vec)
         if clim is None:
             if negative:
-                cmax = max( max(vec), -min(vec) )
+                cmax = max(max(vec), -min(vec))
                 clim = (-cmax, cmax)
             else:
                 cmax = max(vec)
@@ -261,10 +265,10 @@ class MRS():
                 else: cmin=0.
                 clim = (cmin,cmax)
 
-        xt = range( 0, len(self.t), 10)
-        xtl = [str(ti) for ti in np.round( self.t[xt] * 1000. ) ]
-        qt = range( 0, len(self.q), 5 )
-        qtl = [str(qi) for qi in np.round( np.asarray( self.q )[ qt ] * 10. ) / 10. ]
+        xt = range(0, len(self.t), 10)
+        xtl = [str(ti) for ti in np.round(self.t[xt] * 1000.) ]
+        qt = range(0, len(self.q), 5)
+        qtl = [str(qi) for qi in np.round(np.asarray(self.q)[ qt ] * 10.) / 10. ]
         mat = np.array(vec).reshape((len(self.q),len(self.t)))
         im = ax.imshow(mat,interpolation='nearest',aspect='auto')
         im.set_clim(clim)
@@ -281,7 +285,7 @@ class MRS():
         return clim
 
     def showDataAndError(self,figsize=(10,8),show=False):
-        ''' show data cube and error cube '''
+        """ show data cube and error cube """
         fig, ax = plt.subplots(1,2,figsize=figsize)
         self.showCube(ax[0],self.data*1e9,islog=False)
         self.showCube(ax[1],self.error*1e9,islog=False)
@@ -289,7 +293,7 @@ class MRS():
         return fig, ax
 
     def createFOP(self,nlay=3,verbose=True, **kwargs):
-        ''' create forward operator instance '''
+        """ create forward operator instance """
         self.nlay = nlay
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
         self.f.region(0).setStartValue(self.startval[0])
@@ -304,7 +308,7 @@ class MRS():
         self.f.region(2).setTransModel(self.transT2)
 
     def createInv(self,nlay=3,lam=10.,verbose=True, robust=False, **kwargs):
-        ''' create inversion instance '''
+        """ create inversion instance """
         if self.f is None: self.createFOP(nlay)
         self.INV = pg.RInversion(self.data, self.f, verbose)
         self.INV.setLambda(lam)
@@ -312,24 +316,24 @@ class MRS():
         self.INV.stopAtChi1(False) # now in MarquardtScheme
         self.INV.setDeltaPhiAbortPercent(0.5)
         self.INV.setAbsoluteError(self.error)
-        if robust: self.INV.setRobustData( True )
+        if robust: self.INV.setRobustData(True)
         return self.INV
 
     def run(self,nlay=3,lam=10.,startvec=None,verbose=True,uncertainty=False,**kwargs):
-        ''' even easier variant returning all in one call '''
+        """ even easier variant returning all in one call """
         if self.INV is None:
             self.INV = self.createInv(nlay,lam,verbose,**kwargs)
         if startvec is not None:
-            self.INV.setModel( pg.asvector( startvec ) )
+            self.INV.setModel(pg.asvector(startvec))
         if verbose: print("Doing inversion...")
-        self.model = np.array( self.INV.run() )
+        self.model = np.array(self.INV.run())
         if uncertainty:
             if verbose: print("Computing uncertainty...")
-            self.modelL, self.modelU = iterateBounds( self.INV, dchi2=self.INV.chi2()/2, change=1.2 )
+            self.modelL, self.modelU = iterateBounds(self.INV, dchi2=self.INV.chi2()/2, change=1.2)
             if verbose: print("ready")
 
     def splitModel(self,model=None):
-        ''' split model vector into d, theta and T2* '''
+        """ split model vector into d, theta and T2* """
         if model is None: model=self.model
         nl = self.nlay
         thk = model[:nl-1]
@@ -338,11 +342,11 @@ class MRS():
         return thk, wc, t2
 
     def result(self):
-        ''' return block model results '''
+        """ return block model results """
         return self.splitModel()
 
     def showResult(self,figsize=(10,8),save='',show=False):
-        ''' show theta(z) and T2*(z) (+uncertainties if there) '''
+        """ show theta(z) and T2*(z) (+uncertainties if there) """
         fig, ax = plt.subplots(1,2,sharey=True,figsize=figsize)
         thk, wc, t2 = self.splitModel()
         showWC(ax[0], thk, wc)
@@ -359,7 +363,7 @@ class MRS():
 
     def showResultAndFit(self,figsize=(12,10),save='',plotmisfit=False,
                          maxdep=None,show=False):
-        ''' show theta(z), T2*(z), data and model response '''
+        """ show theta(z), T2*(z), data and model response """
         fig, ax = plt.subplots(2,2+plotmisfit,figsize=figsize)
         thk, wc, t2 = self.splitModel()
         showWC(ax[0,0], thk, wc, maxdep=maxdep)
@@ -392,7 +396,7 @@ class MRS():
         return fig, ax
 
     def saveResult(self,filename):
-        ''' save inversion result to column text file '''
+        """ save inversion result to column text file """
         thk, wc, t2 = self.splitModel()
         z = np.hstack((0.,np.cumsum(thk)))
         ALL = np.column_stack((z,wc,t2))
@@ -408,65 +412,67 @@ class MRS():
         np.savetxt(filename,ALL,fmt='%.3f')
 
     def loadResult(self,filename):
-        ''' load inversion result from column file '''
+        """ load inversion result from column file """
         A = np.loadtxt(filename)
         z, wc, t2 = A[:,0], A[:,1], A[:,2]
         thk = np.diff(z)
         self.nlay = len(wc)
-        self.model = np.hstack( (thk,wc,t2) )
+        self.model = np.hstack((thk,wc,t2))
         if len(A[0])>8:
             zL, wcL, t2L = A[:,3], A[:,5], A[:,7]
             zU, wcU, t2U = A[:,4], A[:,6], A[:,8]
             thkL = thk + zL[1:] - z[1:]
             thkU = thk + zU[1:] - z[1:]
             t2L[t2L<0.01] = 0.01
-            self.modelL = np.hstack( (thkL,wcL,t2L) )
+            self.modelL = np.hstack((thkL,wcL,t2L))
             t2U[t2U>1.0] = 1.0
-            self.modelU = np.hstack( (thkU,wcU,t2U) )
+            self.modelU = np.hstack((thkU,wcU,t2U))
 
     def calcMCM(self):
-        ''' compute model covariance matrix '''
-        J = gmat2numpy( self.f.jacobian() ) # (linear) jacobian matrix
-        D = np.diag( 1 / self.error )
-        DJ = D.dot( J )
-        JTJ = DJ.T.dot( DJ )
-        MCM = inv( JTJ )   # model covariance matrix
-        varVG = np.sqrt( np.diag( MCM ) ) # standard deviations from main diagonal
-        di = ( 1. / varVG )  # variances as column vector
+        """ compute model covariance matrix """
+        J = gmat2numpy(self.f.jacobian()) # (linear) jacobian matrix
+        D = np.diag(1 / self.error)
+        DJ = D.dot(J)
+        JTJ = DJ.T.dot(DJ)
+        MCM = inv(JTJ)   # model covariance matrix
+        varVG = np.sqrt(np.diag(MCM)) # standard deviations from main diagonal
+        di = (1. / varVG)  # variances as column vector
         MCMs = di.reshape(len(di),1) * MCM * di  # scaled model covariance (=correlation) matrix
         return varVG, MCMs
     
-    def genMod( self, individual ):
-        model = pg.asvector( individual ) * ( self.lUB - self.lLB ) + self.lLB
+    def genMod(self, individual):
+        model = pg.asvector(individual) * (self.lUB - self.lLB) + self.lLB
         if self.logpar:
-            return pg.exp( model )
+            return pg.exp(model)
         else:
             return model
         
-    def runEA(self,nlay=None,type='GA',pop_size=100,max_evaluations=10000,**kwargs):
+    def runEA(self, nlay=None, type='GA', pop_size=100,
+              max_evaluations=10000, **kwargs):
+        """ Whats this """
         import inspyred
         import random
         
-        def mygenerate( random, args ):
+        def mygenerate(random, args):
             """ generate a random vector of model size """
-            return [random.random() for i in range( nlay*3 - 1 )]
+            return [random.random() for i in range(nlay*3 - 1)]
         
         def my_observer(population, num_generations, num_evaluations, args):
             best = min(population)
             print('{0:6} -- {1}'.format(num_generations,best.fitness))
         
         @inspyred.ec.evaluators.evaluator
-        def datafit( individual, args ):
+        def datafit(individual, args):
             misfit = (self.data-self.f.response(self.genMod(individual)))/self.error
             return np.mean(misfit**2)
         
         # prepare forward operator
         if self.f is None or (nlay is not None and nlay is not self.nlay): self.createFOP(nlay)
         
-        lowerBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.lowerBound[0]), 
-            pg.RVector(self.nlay,self.lowerBound[1])), pg.RVector(self.nlay,self.lowerBound[2]) )
-        upperBound = pg.cat( pg.cat( pg.RVector(self.nlay-1,self.upperBound[0]), 
-            pg.RVector(self.nlay,self.upperBound[1])), pg.RVector(self.nlay,self.upperBound[2]) )
+        lowerBound = pg.cat(pg.cat(pg.RVector(self.nlay-1,self.lowerBound[0]), 
+            pg.RVector(self.nlay,self.lowerBound[1])), pg.RVector(self.nlay,self.lowerBound[2]))
+        upperBound = pg.cat(pg.cat(pg.RVector(self.nlay-1,self.upperBound[0]), 
+            pg.RVector(self.nlay,self.upperBound[1])), pg.RVector(self.nlay,self.upperBound[2]))
         if self.logpar:
             self.lLB, self.lUB = pg.log(lowerBound), pg.log(upperBound) # ready mapping functions
         else:
@@ -502,25 +508,26 @@ class MRS():
         self.fits=[ind.fitness for ind in self.pop]
         
     def plotPop(self,maxfitness=None,savefile=True):
+        """Whats this?"""
         if maxfitness is None: maxfitness=self.pop[0].fitness*2
         fig, ax = plt.subplots(1,2,sharey=True)
         maxz = 0
         for ind in self.pop:
             if ind.fitness < maxfitness:
-                model = np.asarray( self.genMod( ind.candidate ) )
+                model = np.asarray(self.genMod(ind.candidate))
                 thk = model[:self.nlay-1]
                 wc = model[self.nlay-1:self.nlay*2-1]
                 t2 = model[self.nlay*2-1:]
-                drawModel1D( ax[0], thk, wc*100, color='grey' )
-                drawModel1D( ax[1], thk, t2*1000, color='grey' )
-                maxz = max( maxz, sum(thk) )
+                drawModel1D(ax[0], thk, wc*100, color='grey')
+                drawModel1D(ax[1], thk, t2*1000, color='grey')
+                maxz = max(maxz, sum(thk))
 
-        model = np.asarray( self.genMod( self.pop[0].candidate ) )
+        model = np.asarray(self.genMod(self.pop[0].candidate))
         thk = model[:self.nlay-1]
         wc = model[self.nlay-1:self.nlay*2-1]
         t2 = model[self.nlay*2-1:]
-        drawModel1D( ax[0], thk, wc*100, color='black', linewidth='5' )
-        drawModel1D( ax[1], thk, t2*1000, color='black', linewidth='5' )
+        drawModel1D(ax[0], thk, wc*100, color='black', linewidth='5')
+        drawModel1D(ax[1], thk, t2*1000, color='black', linewidth='5')
                 
         ax[0].set_xlim(self.lowerBound[1]*100,self.upperBound[1]*100)
         ax[0].set_ylim((maxz*1.2,0))
@@ -538,7 +545,7 @@ if __name__ is "__main__":
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mrs",
-                          version="%prog: " + pg.__version__ )
+                          version="%prog: " + pg.__version__)
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
                             , help="be verbose", default=False)
     parser.add_option("-n", "--nLayers", dest="nlay",
