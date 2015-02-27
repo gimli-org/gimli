@@ -87,7 +87,7 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     ax.grid(True)
 
 
-def showVA(ax, data):
+def showVA(ax, data, usepos=True):
     """ show apparent velocity as image plot """
     px = pg.x(data.sensorPositions())
     gx = np.asarray([px[int(g)] for g in data("g")])
@@ -100,8 +100,12 @@ def showVA(ax, data):
     gci = ax.imshow(A, interpolation='nearest')
     ax.grid(True)
     xt = np.arange(0, data.sensorCount(), 50)
-    ax.set_xticks(xt)
-    ax.set_xticklabels([str(px[xti]) for xti in xt])
+    if usepos:
+        ax.set_xticks(xt)
+        ax.set_xticklabels([str(int(px[xti])) for xti in xt])
+        ax.set_yticks(xt)
+        ax.set_yticklabels([str(int(px[xti])) for xti in xt])
+
     plt.colorbar(gci, ax=ax)
     return va
 
@@ -151,12 +155,15 @@ def createGradientModel2D(data, mesh, VTop, VBot):
 class Refraction():
     """ Class for managing a refraction seismics"""
 
-    def __init__(self, filename=None, verbose=True, **kwargs):
+    def __init__(self, data=None, verbose=True, **kwargs):
         """ Init function with optional data load """
         self.figs = {}
         self.axs = {}
-        if filename is not None:
-            self.load(filename)
+        if isinstance(data, str):
+            self.load(data)
+        elif isinstance(data, pg.DataContainer):
+            self.setData(data)
+            self.basename = 'new'
 
     def __str__(self):
         return self.__repr__()
@@ -170,10 +177,20 @@ class Refraction():
             out += "\n" + self.mesh.__str__()
         return out
 
+    def setData(self, data):
+        self.data = data
+        self.checkData()
+
     def load(self, filename):
         """" load data from file """
         # check for file formats and import if necessary
         self.data = pg.DataContainer(filename, 's g')
+        self.basename = filename[:filename.rfind('.')]
+        self.checkData()
+        
+    def checkData(self):
+        """ check data w.r.t. shot/geophone identity and zero/negative
+        traveltimes, plus check y/z sensor positions """
         oldsize = self.data.size()
         self.data.markInvalid(pg.abs(self.data('s') - self.data('g')) < 1)
         self.data.markInvalid(self.data('t') <= 0.)
