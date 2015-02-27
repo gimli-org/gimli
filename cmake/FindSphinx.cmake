@@ -15,23 +15,12 @@ find_program(SPHINX_EXECUTABLE
              DOC
                 "Path to sphinx-build executable")
 
-find_program(SPHINX_APIBUILD
-             NAMES
-                sphinx-apidoc
-             DOC
-                "Path to sphinx-api build executable")
-
-
 # Handle REQUIRED and QUIET arguments
 # this will also set SPHINX_FOUND to true if SPHINX_EXECUTABLE exists
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Sphinx
                                   "Failed to locate sphinx-build executable"
                                   SPHINX_EXECUTABLE)
-
-find_package_handle_standard_args(Sphinx
-                                  "Failed to locate sphinx-api build executable"
-                                  SPHINX_APIBUILD)
 
 # Provide options for controlling different types of output
 option(SPHINX_HTML_OUTPUT "Build a single HTML with the whole content." ON )

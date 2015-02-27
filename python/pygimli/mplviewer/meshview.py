@@ -12,7 +12,7 @@ import textwrap
 
 from .colorbar import cmapFromName, autolevel
 import pygimli as pg
-from pygimli.misc import streamline  # , streamlineDir # (not used)
+from pygimli.misc import streamline
 
 
 class CellBrowser(object):
@@ -32,7 +32,7 @@ class CellBrowser(object):
 
     Examples
     --------
-    
+
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
     """
@@ -183,7 +183,7 @@ def drawModel(axes, mesh, data=None,
 
     else:
         gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha,
-                                             verbose=verbose)
+                                             verbose=verbose, **kwargs)
 
         if cmap is not None:
             if cmap == 'b2r':
@@ -315,9 +315,6 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
             axes.text(reg.pos()[0], reg.pos()[1],
                       str(reg.marker()) + ": " + str(reg.area()))
 
-#    drawSelectedMeshBoundaries(axes, [mesh.boundary(344)]
-#                                , color = (1.0, 0.0, 0.0, 1.0)
-#                                , linewidth = 5.5)
 
 
 def createMeshPatches(axes, mesh, verbose=True, **kwargs):
@@ -456,13 +453,13 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
     if gci and cMin and cMax:
         print(cMin, cMax)
         gci.set_clim(cMin, cMax)
-        
+
     if cmap is not None:
         if cmap == 'b2r':
             gci.set_cmap(cmapFromName('b2r'))
         else:
             gci.set_cmap(cmap)
-    
+
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
@@ -478,7 +475,7 @@ def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
     """
     cMin = kwargs.pop('cMin', None)
     cMax = kwargs.pop('cMax', None)
-    
+
     return drawMPLTri(axes, mesh, data, cMin=cMin, cMax=cMax,
                       omitLines=omitLines,
                       cmap=cmap, **kwargs)
@@ -490,8 +487,8 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
     The matplotlib internal streamplot need equidistant space value so
     we interpolate first on a grid defined by nx and ny values.
     Additionally arguments are piped to streamplot.
-    
-    This works only for rectangular regions.    
+
+    This works only for rectangular regions.
     drawStreamLine is more comfortable and more flexible.
     """
 
@@ -517,30 +514,30 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
 
 def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
     """
-        Draw a single streamline into a given mesh for given data stating at 
+        Draw a single streamline into a given mesh for given data stating at
         the center of cell c.
-        The Streamline will be enlarged until she reached a cell that 
+        The Streamline will be enlarged until she reached a cell that
         already contains a streamline.
-        
+
         Parameters
         ----------
-        
+
         axes : matplotlib.axes
             axes to draw into
-            
+
         mesh : :gimliapi:`GIMLI::Mesh`
             2d Mesh to draw the streamline
-            
+
         c : :gimliapi:`GIMLI::Cell`
             start cell
-            
+
         data : iterable float | [float, float]
             If data is an array of floats (per cell or per node) the gradients will be calculated
             else the data will be interpreted as vector field.
-                                         
+
         dataMesh : :gimliapi:`GIMLI::Mesh` [None]
-        
-            Optionally mesh that for the data. If you want high resolution 
+
+            Optionally mesh that for the data. If you want high resolution
             data to plot on coarse draw mesh.
     """
     x, y = streamline(mesh, data, startCoord=c.center(),
@@ -575,10 +572,10 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
         Every cell contains only one streamline and every new stream line
         starts in the center of a cell. Stream density can by chosen by
         parameter a leading to a new mesh with equidistant maximum cell size a.
-        
+
         Parameters
         ----------
-        
+
     """
 
     viewMesh = None
@@ -641,14 +638,14 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
 def drawSensors(axes, sensors, diam=None, koords=None):
     """
         Draw sensor positions as black dots with a given diameter.
-        
+
         Parameters
         ----------
     """
-    
+
     if koords is None:
         koords=[0, 2]
-    
+
     eCircles = []
     eSpacing = sensors[0].distance(sensors[1])
 
@@ -675,7 +672,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
 
     paraMarker = mesh.cellMarker()
     cellList = dict()
-    
+
     for cID in range(len(paraMarker)):
         if cID not in cellList:
             cellList[cID] = []

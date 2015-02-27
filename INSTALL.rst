@@ -56,7 +56,7 @@ Optional install useful stuff:
 .. code-block:: bash
 
     sudo apt-get install libcppunit-dev libprocps0-dev
-    sudo apt-get install python-matplotlib
+    sudo apt-get install python-numpy python-matplotlib
     sudo apt-get install doxygen
 
 Create a directory for your installation, e.g., $HOME/src

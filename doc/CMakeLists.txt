@@ -55,10 +55,10 @@ endforeach()
 
 add_custom_target(sphinxapi
     ALL
-        ${SPHINX_APIBUILD}
-            -o ${SPHINX_BINARY_BUILD_DIR}/doc/api/pygimli 
-            "${CMAKE_SOURCE_DIR}/python/pygimli"
-            "${CMAKE_SOURCE_DIR}/python/pygimli/gui"
+        # Copy build scripts for API doc generation
+        cp -f ${SPHINX_SRC_DIR}/doc/apigen.py ${SPHINX_SRCBUILD_DIR} &&
+        cp -f ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR} &&
+        python ${SPHINX_SRCBUILD_DIR}/build_api.py
     COMMENT "Building pygimli api doc")
 
 
