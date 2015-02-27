@@ -6,7 +6,7 @@ Readme for Github repository only. (Get's selected before *.rst file)
 
 # GIMLi - Geophysical Inversion and Modelling Library
 
-[![Build Status](https://travis-ci.org/gimli-org/gimli.svg)](https://travis-ci.org/gimli-org/gimli)
+[![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.log)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 
 

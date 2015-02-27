@@ -57,13 +57,7 @@ Documentation
 
         Handy applications and tools shipped with
 
-      -
-
-    * - :ref:`sec:api`
-
-        Reference for C++/Python
-
-      - :ref:`sec:pygimli`
+      - :doc:`api/index`
 
         Reference for Python modules
 
