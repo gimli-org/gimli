@@ -24,6 +24,18 @@ What do you need to use GIMLi?:
 
 .. _sec:about_gimli_inversion:
 
+Authors aka GIMLi Group
+-----------------------
+
+    * Carsten Rücker -- Technische Universität Berlin, Institut für Angewandte Geowissenschaften
+        carsten.ruecker@tu-berlin.de
+
+    * Thomas Günther -- Leibniz-Institut für Angewandte Geophysik - LIAG (Hannover)
+        email
+
+    * Florian Wagner -- Helmholtz-Zentrum Potsdam Deutsches GeoForschungsZentrum GFZ
+        email
+
 Inversion
 ---------
 

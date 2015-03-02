@@ -3,8 +3,10 @@
 """
     Full waveform seismics and utilities
 """
-
+import pygimli as pg
 import numpy as np
+
+import pygimli.solver
 
 def ricker(f, t, t0=0.0):
     """
@@ -110,14 +112,14 @@ def wiggle(axes, x, t, xoffset=0.0,
         fill, = axes.fill(tracefill + xoffset, t, color=posColor,
                           alpha=alpha, linewidth=0)
 
-def solvePressureWave(mesh, velocities, times, sourcePos, uSource):
+def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     r"""
     Solve pressure wave equation.
         
     Solve pressure wave for a given source function
         
     .. math::
-        \frac{\partial^2 u}{\partial t^2} & = \diverg(a\grad u) \\
+        \frac{\partial^2 u}{\partial t^2} & = \diverg(a\grad u) + f\\
         finalize equation
         
         
@@ -152,50 +154,97 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource):
     A = pg.RSparseMatrix()
     M = pg.RSparseMatrix()
 
-    F = pg.RVector(grid.nodeCount(), 0.0)
-    rhs = pg.RVector(grid.nodeCount(), 0.0)
-    u = pg.RMatrix(len(t), grid.nodeCount())
-    v = pg.RMatrix(len(t), grid.nodeCount())
+    F = pg.RVector(mesh.nodeCount(), 0.0)
+    rhs = pg.RVector(mesh.nodeCount(), 0.0)
+    u = pg.RMatrix(len(times), mesh.nodeCount())
+    v = pg.RMatrix(len(times), mesh.nodeCount())
 
-    sourceID = grid.findNearestNode(sourcePos)
+    sourceID = mesh.findNearestNode(sourcePos)
     
     if len(uSource) != len(times):
         raise Exception("length of uSource does not fit length of times: " +\
                         str(uSource) + " != " + len(times))
     
-    u[0, sourceID] = uSource[0]
-
-    A.fillStiffnessMatrix(grid, velocities*velocities)
-    M.fillMassMatrix(grid)
-    #M.fillMassMatrix(grid, velocities)
+    A.fillStiffnessMatrix(mesh, velocities*velocities)
+    M.fillMassMatrix(mesh)
+    #M.fillMassMatrix(mesh, velocities)
     
-    S1 = M + k*k * A
+    FV=0
+    if FV:
+        A, rhs = pygimli.solver.diffusionConvectionKernel(mesh,
+                                        velocities*velocities,
+                                        sparse=1)
+    
+        M = pygimli.solver.identity(len(rhs))
+    
+        u = pg.RMatrix(len(times), mesh.cellCount())
+        v = pg.RMatrix(len(times), mesh.cellCount())
+        sourceID = mesh.findCell(sourcePos).id()
+    
+    
+    
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import time
+    
+    dt = times[1] - times[0]
+    
+    theta = 0.71
+    S1 = M + dt*dt*theta*theta * A
     S2 = M
+    
     solver1 = pg.LinSolver(S1, verbose=False)
     solver2 = pg.LinSolver(S2, verbose=False)
     swatch=pg.Stopwatch(True)
 
-    dt = times[1] - times[0]
-
-    ut = pg.RVector(grid.nodeCount(), .0 )
-    vt = pg.RVector(grid.nodeCount(), .0 )
+    ut = pg.RVector(mesh.nodeCount(), .0 )
+    vt = pg.RVector(mesh.nodeCount(), .0 )
+    
+    timeIter1 = np.zeros(len(times))
+    timeIter2 = np.zeros(len(times))
+    timeIter3 = np.zeros(len(times))
+    timeIter4 = np.zeros(len(times))
     
     for n in range(1, len(times)):
-        u[n-1, source] = uSource[n-1]
+        u[n-1, sourceID] = uSource[n-1]
 
         # solve for u
-        rhs = M * u[n-1] + dt * M * v[n-1] + dt*dt * F
+        tic = time.time()
+        rhs = dt*M*v[n-1] + (M - dt*dt*theta*(1.-theta)*A) * u[n-1]# + * dt*dt * F
+        timeIter1[n-1] = time.time()-tic
+        
+        tic = time.time()
         u[n] = solver1.solve(rhs)
-
+        timeIter2[n-1] = time.time()-tic
+        
         # solve for v
-        rhs = M * v[n-1] - dt * A * u[n] + dt * F
+        tic = time.time()
+        rhs = M * v[n-1] - dt*((1.-theta)*A*u[n-1] + theta*A*u[n]) # + dt * F
+        timeIter3[n-1] = time.time()-tic
+        
+        tic = time.time()
         v[n] = solver2.solve(rhs)
+        timeIter4[n-1] = time.time()-tic
+        
+        # same as above
+        #rhs = M * v[n-1] - dt * A * u[n-1] + dt * F
+        #v[n] = solver1.solve(rhs)
+    
+    
+    
     
         t1 = swatch.duration(True)
     
         if verbose and (n%verbose == 0):
-            print(n, t[n], k, len(y), len(x), t1, t2, min(u[n]), max(u[n]))
+            print(str(n) + "/" + str(len(times)), times[n], dt, t1, min(u[n]), max(u[n]))
     
+    plt.figure()
+    plt.plot(timeIter1, label='Ass:1')
+    plt.plot(timeIter2, label='Sol:1')
+    plt.plot(timeIter3, label='Ass:2')
+    plt.plot(timeIter4, label='Sol:2')
+    plt.legend()
+    plt.figure()
     return u
 
     

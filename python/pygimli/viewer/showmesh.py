@@ -135,7 +135,8 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
                 print("No valid stream data:",  data)
                 drawMesh(ax, mesh)
 
-        elif (min(data) == max(data)):# or pg.haveInfNaN(data):
+        elif (min(data) == max(data)) or pg.haveInfNaN(data):
+            
             print("No valid data: ",  min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh)
         else:

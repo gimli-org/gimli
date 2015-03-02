@@ -267,10 +267,10 @@ template BVector isInf(const VEC & vec); \
 template BVector isNaN(const VEC & vec); \
 template BVector isInfNaN(const VEC & vec); \
 
-DEFINE_XVECTOR_STUFF__(RVector)
 DEFINE_XVECTOR_STUFF__(CVector)
 DEFINE_XVECTOR_STUFF__(BVector)
 DEFINE_XVECTOR_STUFF__(IVector)
+DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fail else
 #undef DEFINE_XVECTOR_STUFF__
 
     
