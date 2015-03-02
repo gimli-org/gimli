@@ -797,7 +797,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
             pressureCoeff = 1./ apF * mesh.boundarySizes() * boundaryToCellDistances(mesh)
                     
         #div = -divergence(mesh, np.vstack([velXF, velYF]).T)
-        div = mesh.divergence(np.vstack([velXF, velYF]).T)
+        div = -mesh.divergence(np.vstack([velXF, velYF]).T)
         
         pressureCorrection = solveFiniteVolume(mesh,
                                                a=pressureCoeff,
