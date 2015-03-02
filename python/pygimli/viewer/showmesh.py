@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show(mesh, **kwargs):
+def show(mesh, *args, **kwargs):
     """
     Mesh and model visualization.
     
@@ -44,12 +44,12 @@ def show(mesh, **kwargs):
 
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
-            return showMesh(mesh, **kwargs)
+            return showMesh(mesh, *args, **kwargs)
         elif mesh.dimension() == 3:
 
             from .mayaview import showMesh3D
 
-            return showMesh3D(mesh, **kwargs)
+            return showMesh3D(mesh, *args, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
 
