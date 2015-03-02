@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
+import pygimli as pg
 #from geomagnetics import GeoMagT0, date
 
 mu0 = 4.0 * np.pi * 1e-7
@@ -544,17 +544,38 @@ def gravMagBoundarySinghGup(boundary):
     return np.asarray([Fx, Fy, Fz]), np.asarray([Fzx, Fzy, Fzz]), 
 
 
-def grav(mesh, pnts, rho):
-    """Return."""
+def solveGravimetry(mesh, dDensity=0, pnts=None):
+    """
+    Solve gravimetric response.
+    
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+    
+    dDensity : float | array
+        Density difference.
+        
+        * float -- solve for positive boundary marker only. 
+            Assuming one inhomogeneity.
+        * [[int, float]] -- solve for multiple positive boundaries TOIMPL
+        * array -- solve for one delta density value per cell
+        * 0 -- return per cell kernel matrix G TOIMPL
+        
+    Returns
+    -------
+    """
+    if pnts is None:
+        pnts = [[0.0, 0.0]]
+        
     dg = np.zeros((len(pnts), 3))
     dgz = np.zeros((len(pnts), 3))
     upoly = np.zeros(len(pnts))
     
     for i, p in enumerate(pnts):
-        mesh.translate(-p)
+        mesh.translate(-pg.RVector3(p))
                     
         for b in mesh.boundaries():
-            if b.marker() != 0:
+            if b.marker() != 0 or hasattr(dDensity, '__len__'):
                 
                 if mesh.dimension() == 2:
                     dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
@@ -563,12 +584,23 @@ def grav(mesh, pnts, rho):
                     dgzi *= -2.0
                 else:
                     dgi, dgzi = gravMagBoundarySinghGup(b)
-                
         
-                dg[i]  += dgi * -G * rho
-                dgz[i] += dgzi * -G * rho
+                if hasattr(dDensity, '__len__'):
+                    cl = b.leftCell()
+                    cr = b.rightCell()
+                    
+                    if cl:
+                        dg[i]  += dgi * -G * dDensity[cl.id()]
+                        dgz[i] += dgzi * -G * dDensity[cl.id()]
+                    if cr:
+                        dg[i]  -= dgi * -G * dDensity[cr.id()]
+                        dgz[i] -= dgzi * -G * dDensity[cr.id()]
+                    
+                else:
+                    dg[i]  += dgi * -G * dDensity
+                    dgz[i] += dgzi * -G * dDensity
 
-        mesh.translate(p)
+        mesh.translate(pg.RVector3(p))
 
     return dg * [1.0, 1.0, -1.0], dgz
     

@@ -349,7 +349,7 @@ def createMeshPatches(axes, mesh, verbose=True, **kwargs):
                    cell.shape().nodeCount()))
 
     patches = mpl.collections.PolyCollection(polys, antialiaseds=False,
-                                             lod=True, picker=True, **kwargs)
+                                             lod=True, picker=True)
 
 #    patches.set_edgecolor(None)
     patches.set_edgecolor('face')
@@ -540,7 +540,7 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
 
         dataMesh : :gimliapi:`GIMLI::Mesh` [None]
 
-            Optionally mesh that for the data. If you want high resolution
+            Optional mesh for the data. If you want high resolution
             data to plot on coarse draw mesh.
     """
     x, y = streamline(mesh, data, startCoord=c.center(),

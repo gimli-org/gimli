@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show(mesh, *args, **kwargs):
+def show(mesh, **kwargs):
     """
     Mesh and model visualization.
     
@@ -44,7 +44,7 @@ def show(mesh, *args, **kwargs):
 
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
-            return showMesh(mesh, *args, **kwargs)
+            return showMesh(mesh, **kwargs)
         elif mesh.dimension() == 3:
 
             from .mayaview import showMesh3D
@@ -55,7 +55,7 @@ def show(mesh, *args, **kwargs):
 
 
 def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
-             axes=None, *args, **kwargs):
+             axes=None, **kwargs):
     """
     2D Mesh visualization.
     
@@ -122,6 +122,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
     cbar = None
     validData = False
     
+    
     if data is None:
         drawMesh(ax, mesh)
     elif type(data) == pg.stdVectorRVector3:
@@ -130,7 +131,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
         if hasattr(data[0], '__len__') and type(data) != np.ma.core.MaskedArray:
                
             if sum(data[:, 0]) != sum(data[:, 1]):
-                drawStreams(ax, mesh, data, *args, **kwargs)
+                drawStreams(ax, mesh, data, **kwargs)
             else:
                 print("No valid stream data:",  data)
                 drawMesh(ax, mesh)
@@ -148,8 +149,10 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
 
     ax.set_aspect('equal')
 
+    label=kwargs.pop('label', None)
+
     if colorBar and validData:
-        cbar = createColorbar(gci)  # , *args, **kwargs) # causes problems!
+        cbar = createColorbar(gci, label=label, **kwargs)  # , *args, **kwargs) # causes problems!
 
     if coverage is not None:
         if len(data) == mesh.cellCount():

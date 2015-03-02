@@ -102,7 +102,7 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
 
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
-        label=None, orientation='horizontal', *args, **kwargs):
+                   label=None, orientation='horizontal', **kwargs):
     """ 
     Create a Colobar.
         

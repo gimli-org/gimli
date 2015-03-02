@@ -6,7 +6,7 @@
 import pygimli as pg
 from pygimli.viewer import show
 from pygimli.meshtools import createMesh
-from pygimli.solver import identity
+from pygimli.solver import identity, parseArgToArray, parseArgToBoundaries
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -499,9 +499,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     if ws:
         workspace = ws
     
-    a = solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
-    f = solver.parseArgToArray(f, mesh.cellCount())
-    fn = solver.parseArgToArray(fn, mesh.cellCount())
+    a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
+    f = pg.solver.parseArgToArray(f, mesh.cellCount())
+    fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
     
     boundsDirichlet = None
     boundsNeumann = None
@@ -592,12 +592,13 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
         verbose= kwargs.pop('verbose', False)
         
         if sparse:
-            I = solver.identity(len(workspace.rhs))
+            I = pg.solver.identity(len(workspace.rhs))
         else:
             I = np.diag(np.ones(len(workspace.rhs)))
             
         print("solve cN")
-        return solver.crankNicolson(times, theta, workspace.S, I, f=workspace.rhs, u0=u0, verbose=verbose)
+        return pg.solver.crankNicolson(times, theta, workspace.S, I,
+                                       f=workspace.rhs, u0=u0, verbose=verbose)
     
         #if not u0:
             #u0 = np.zeros(len(workspace.rhs))
@@ -758,7 +759,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                           uBoundary=velBoundaryX,
                                           uL=velocity[:,0],
                                           relax=velocityRelaxation, 
-                                          ws=wsux)
+                                          ws=wsux, scheme='PS')
         
         #for s in wsux.S:
             #print(s)
@@ -771,7 +772,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                           uBoundary=velBoundaryY,
                                           uL=velocity[:,1],
                                           relax=velocityRelaxation,
-                                          ws=wsuy)
+                                          ws=wsuy, scheme='PS')
         
         ap = np.array(wsux.ap * mesh.cellSizes())
         apF = CtB * ap
@@ -801,7 +802,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                                a=pressureCoeff,
                                                f=div, 
                                                uBoundary=preBoundary,
-                                               ws=wsp)
+                                               ws=wsp, scheme='PS')
         
         pressure += pressureCorrection * pressureRelaxation
        
