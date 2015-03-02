@@ -74,7 +74,7 @@ def cellDataToBoundaryGrad(mesh, v, vGrad):
         gB[b.id(), 2] = gr[2]
     return gB
 
-def divergence(mesh, V, span=None):
+def divergenceDEPRECATED(mesh, V, span=None):
     div = mesh.divergence(V)
     return div
       
@@ -796,7 +796,8 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
         if pressureCoeff is None:
             pressureCoeff = 1./ apF * mesh.boundarySizes() * boundaryToCellDistances(mesh)
                     
-        div = -divergence(mesh, np.vstack([velXF, velYF]).T)
+        #div = -divergence(mesh, np.vstack([velXF, velYF]).T)
+        div = mesh.divergence(np.vstack([velXF, velYF]).T)
         
         pressureCorrection = solveFiniteVolume(mesh,
                                                a=pressureCoeff,
