@@ -231,6 +231,47 @@ def parseArgToBoundaries(args, mesh):
     
     return boundaries 
 
+def parseMapToCellArray(attributeMap, mesh):
+    """
+    Parse a value map to cell attributes.
+    
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        For each cell of mesh a value will be returned.
+    
+    attributeMap : list | dict
+        List of pairs [[int, float]], or dictionary with integer keys
+        
+    Returns
+    -------
+    atts : array
+        Array of length mesh.cellCount()
+    """
+    
+    atts = pg.RVector(mesh.cellCount(), 0.0)
+    
+    if type(attributeMap) is dict():
+        raise Exception("Please implement me!")
+    elif hasattr(attributeMap, '__len__'):
+        for pair in attributeMap:
+            if hasattr(pair, '__len__'):
+                idx = pg.find(mesh.cellMarker() == pair[0]) 
+                if len(idx) == 0:
+                    print("Warning! parseMapToCellArray: cannot find marker "+\
+                        str(pair[0]) + " within mesh.")
+                else:
+                    atts[idx] = float(pair[1])
+            else:
+                raise Exception("Please provide a list of [int, value] pairs!" + 
+                                str(pair))
+    else:
+        print("attributeMap: ", attributeMap)
+        raise Exception("Cannot interpret attributeMap!")
+            
+    return atts   
+    
+
 def divergence(mesh, F=lambda r:r, order=1):
     """ 
     MOVE THIS to a better place
@@ -919,7 +960,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                         measure, measure/len(times))
         return U
     
-def crankNicolson(times, theta, S, I, f, u0=None, verbose=False):
+def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     """
         S = const over time
         f = const over time
@@ -928,13 +969,13 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=False):
     sw = pg.Stopwatch(True)
     swi = pg.Stopwatch(True)
     
-    if u0 is None:
-        u0 = np.zeros(len(f))
-            
     import matplotlib.pyplot as plt
     import numpy as np
     import time
     
+    if u0 is None:
+        u0 = np.zeros(len(f))
+        
     u = np.zeros((len(times), len(f)))
     u[0, :] = u0
     dt = (times[1] - times[0])
@@ -970,7 +1011,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=False):
     #plt.plot(timeIter1)
     #plt.plot(timeIter2)
     #plt.figure()
-    if verbose:
+    if verbose and (n%verbose == 0):
         print("timesteps: ", len(times), sw.duration(), "s ()", np.mean(timeIter1))
         
     return u
