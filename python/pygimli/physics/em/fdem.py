@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
     Was macht das Ding
-'''
+"""
 
 import sys
 
@@ -128,32 +128,33 @@ class FDEMData():
                  coilSpacing=None, inphase=None, outphase=None,
                  filename=None, scaleFreeAir=False):
         """
-            Initialize data class and load data. Provide filename or data.
-            If filename is given, data is loaded, overwriting settings.
+        Initialize data class and load data. 
+        
+        Provide filename or data.
+        If filename is given, data is loaded, overwriting settings.
 
-            Parameters
-            ----------
-            x: array
-                Array of measurement positions
+        Parameters
+        ----------
+        x : array
+            Array of measurement positions
 
-            freq: array
-                Measured frequencies
+        freq : array
+            Measured frequencies
 
-            coilSpacing : float
-                Distance between 2 two coils
+        coilSpacing : float
+            Distance between 2 two coils
 
-            inphase : array
-                real part of |amplitude| * \exp^{i phase}
+        inphase : array
+            real part of :math:`|amplitude| * \exp^{i \phi}`
 
-            outphase : array
-                imaginary part of |amplitude| * \exp^{i phase}
+        outphase : array
+            imaginary part of :math:`|amplitude| * \exp^{i \phi}`
 
-            filename : str
-                Filename to read from. Supported: .xyz (MaxMin), *.txt (Emsys)
+        filename : str
+            Filename to read from. Supported: .xyz (MaxMin), *.txt (Emsys)
 
-            scaleFreeAir : bool
-                Scale inphase and outphase data by free air solution (primary field)
-
+        scaleFreeAir : bool
+            Scale inphase and outphase data by free air solution (primary field)
         """
         if isinstance(x, str) and freqs is None:  # string/file init
             filename = x
@@ -197,6 +198,7 @@ class FDEMData():
     def importEmsysAsciiData(self, filename, verbose=False):
         """
             Import data from emsys text export:
+            
             yields: positions, data, frequencies, error and geometry
         """
         xx, sep, f, pf, ip, op, hmod, q = np.loadtxt(filename, skiprows=1, usecols=(1,4,6,8,9,12,15,16), unpack=True)
@@ -255,9 +257,7 @@ class FDEMData():
             self.x = x
 
     def deactivate(self, fr):
-        """
-            Deactivate a single frequency
-        """
+        """ Deactivate a single frequency """
         fi = np.nonzero(np.absolute(self.frequencies/fr - 1.) < 0.1)
         self.isActiveFreq[fi] = False
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
