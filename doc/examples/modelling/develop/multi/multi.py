@@ -88,7 +88,7 @@ def calcVelocity(mesh):
     
 pg.showLater(1)
 
-mesh = createTestWorld(maxArea=0.5, verbose=0)
+mesh = createTestWorld(maxArea=0.2, verbose=0)
 meshC = createTestWorld(maxArea=1, verbose=0)
 
 viscosity, vel = calcVelocity(mesh)
@@ -137,7 +137,7 @@ for i in range(1, len(conc)):
     dg, dgz = solveGravimetry(mesh, dDensity, pnts=[[0.0, 0.0]]) 
     dz[i] = dg[0][2]
     axGra.plot(dz)
-    axGra.set_ylabel('Grav. at (0.0, 0.0) in mGal')
+    axGra.set_ylabel('Grav at (0.0, 0.0) in mGal')
     axGra.set_xlabel('time in s')
     
     print(i, time.time()-tic, "sum:", sum(conc[i]), "dsum:", (sum(conc[i])-sum(conc[i-1])),

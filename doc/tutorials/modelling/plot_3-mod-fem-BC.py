@@ -67,10 +67,10 @@ ax = show(grid, data=u, colorBar=True,
 
 show(grid, axes=ax, showLater=1)
 
-ax.text(0.0, 1.02, '$u=3+x$')
-ax.text(-1.08, 0.0, '$u=4$', rotation='vertical')
-ax.text(0.0, -1.08, '$u=2$')
-ax.text(1.02, 0.0, '$u=1$', rotation='vertical')
+ax.text( 0 .0,  1.02, '$u=3+x$')
+ax.text(-1.08,   0.0, '$u=4$', rotation='vertical')
+ax.text(  0.0, -1.08, '$u=2$')
+ax.text( 1.02,   0.0, '$u=1$', rotation='vertical')
 
 ax.set_title('$\\nabla\cdot(1\\nabla u)=1$')
 
