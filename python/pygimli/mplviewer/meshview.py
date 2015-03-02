@@ -128,9 +128,7 @@ class CellBrowser(object):
         self.update()
 
     def update(self):
-        """
-            Docstring
-        """
+        """ Docstring """
         center = self.mesh.cellCenter()[self.cell]
         x, y = center[0], center[1]
         marker = self.mesh.cells()[self.cell].marker()
@@ -439,12 +437,17 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
                              **kwargs)
         
     elif len(z) == mesh.nodeCount():
-
-        gci = axes.tricontourf(x, y, triangles, z, levels,
-                               **kwargs)
-        if not omitLines:
-            axes.tricontour(x, y, triangles, z, levels, colors=['0.5'],
-                            **kwargs)
+        shading = kwargs.pop('shading', None)
+        
+        if shading is not None:
+            gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
+                                **kwargs)
+        else:
+            gci = axes.tricontourf(x, y, triangles, z, levels,
+                                  **kwargs)
+            if not omitLines:
+                axes.tricontour(x, y, triangles, z, levels, colors=['0.5'],
+                                 **kwargs)
     else:
         gci = None
         raise Exception("Data size does not fit mesh size: ",

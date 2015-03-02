@@ -9,7 +9,9 @@ def createMesh(poly, quality=30, area=0.0,
                regions=None, holes=None,
                verbose=False):
     """
-    Create a mesh for a given PLC using
+    Create a mesh for a given PLC mesh.
+    
+    Create a mesh for a given PLC using    
     :term:`triangle` or :term:`tetgen` if the gimli support for the 
     meshgenerator is installed.
     The mesh poly need to be a valid PLC.
@@ -251,8 +253,10 @@ def readGmsh(fname, verbose=False):
 
 def readTriangle(fname, verbose=False):
     """
-    Read :term:`Triangle` :cite:`Shewchuk96b`  ASCII files and return 
-    instance of GIMLI::Mesh class.
+    Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
+    
+    Read :term:`Triangle` :cite:`Shewchuk96b` ASCII files and return a instance 
+    of GIMLI::Mesh class.
     See: ://www.cs.cmu.edu/~quake/triangle.html
 
     Parameters
@@ -271,6 +275,8 @@ def readTriangle(fname, verbose=False):
     
 def readTetgen(fname, verbose=False):
     """
+    Read :term:`Tetgen` :cite:`Si2004` mesh.
+    
     Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
     of GIMLI::Mesh class.
     See: http://tetgen.org/
@@ -500,7 +506,10 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
                        paraBoundary=2, paraMaxCellSize=0, boundary=-1,
                        verbose=False, *args, **kwargs):
     """
-    Return a PLC for the parameter mesh for a given list of sensor positions.
+    Create a PLC mesh for an inversion parameter mesh.
+    
+    Create a PLC mesh for an inversion parameter mesh for a given list of 
+    sensor positions.
     Sensor position assumed on the surface and must be sorted and unique.
 
     The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
@@ -621,6 +630,8 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
                          boundary=-1, paraBoundary=2, verbose=False, *args,
                          **kwargs):
     """
+    Create a grid style mesh for an inversion parameter mesh.
+    
     Return parameter grid for a given list of sensor positions.
 
     Parameters

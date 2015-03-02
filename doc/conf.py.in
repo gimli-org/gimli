@@ -93,7 +93,7 @@ master_doc = 'doc/index'
 
 # General information about the project.
 project = 'GIMLi'
-copyright = u'2014, Carsten Rücker and Thomas Günther'
+copyright = u'2014, GIMLi Group'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -279,7 +279,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [('doc/index', 'gimli.tex', 'GIMLi Documentation',
-                    'Carsten Rücker and Thomas Günther', 'manual')
+                    'GIMLi Group', 'manual')
                   ]
 
 try:
@@ -343,7 +343,7 @@ plot2rst_commandTranslator = LatexCommandTranslator
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'GIMLi', 'GIMLi Documentation', ['Carsten Rücker and Thomas Günther'], 1)
+    ('index', 'GIMLi', 'GIMLi Documentation', ['GIMLi Group'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -357,7 +357,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'GIMLi', 'GIMLi Documentation',
-     'Carsten Rücker and Thomas Günther', 'GIMLi',
+     'GIMLi Group', 'GIMLi',
      'Geophysical Inversion and Modeling Library', 'Miscellaneous'),
 ]
 

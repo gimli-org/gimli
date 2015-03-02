@@ -67,7 +67,7 @@ neumannBC = [[1, mixedBC], #left boundary
 dirichletBC = [[4, 0]] #bottom boundary
 k = 0.1
 
-uFE = solver.solveFEM(grid, a=a, b=k*k, f=pointSource,
+uFE = solver.solveFiniteElements(grid, a=a, b=k*k, f=pointSource,
                       duBoundary=neumannBC,
                       uBoundary=dirichletBC,
                       userData={'sourcePos': sourcePosA, 'k': k},
@@ -82,7 +82,7 @@ drawMesh(ax1, grid)
 f = pg.RVector(grid.cellCount(), 0)
 f[grid.findCell(sourcePosA).id()]=1.0/grid.findCell(sourcePosA).size()
 
-uFV = solveFiniteVolume(grid, a=a, f=f, 
+uFV = solveFiniteVolume(grid, a=a, b=k*k, f=f, 
                         duBoundary=neumannBC,
                         uBoundary=dirichletBC,
                         userData={'sourcePos': sourcePosA, 'k': k},
