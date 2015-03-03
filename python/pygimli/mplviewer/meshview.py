@@ -168,13 +168,13 @@ def drawModel(axes, mesh, data=None,
         Draw a 2d mesh and color the cell by the data.
 
         Implement this with tripcolor  ..........!!!!!!!!
-        
+
         Parameters
         ----------
     """
 
     useTri = kwargs.pop('tri', False)
-    
+
     if useTri:
         gci = drawMPLTri(axes, mesh, data, cmap=cmap,
                          **kwargs)
@@ -204,7 +204,7 @@ def drawModel(axes, mesh, data=None,
 
         if min(data) <= 0:
             logScale = False
-    
+
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
@@ -290,12 +290,12 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
     drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(
                                pg.MARKER_BOUND_MIXED),
                                color=(1.0, 0.0, 0.0, 1.0), linewidth=1.0)
-    drawSelectedMeshBoundaries(axes,
-                               [b for b in mesh.boundaries() if b.marker() > 0],
-                               color=(0.0, 0.0, 0.0, 1.0), linewidth=1.0)
-    drawSelectedMeshBoundaries(axes,
-                              [b for b in mesh.boundaries() if b.marker() < -4],
-                               color=(0.0, 0.0, 0.0, 1.0), linewidth=1.0)
+    b0 = [b for b in mesh.boundaries() if b.marker() > 0]
+    drawSelectedMeshBoundaries(axes, b0, color=(0.0, 0.0, 0.0, 1.0),
+                               linewidth=1.0)
+    b4 = [b for b in mesh.boundaries() if b.marker() < -4]
+    drawSelectedMeshBoundaries(axes, b4, color=(0.0, 0.0, 0.0, 1.0),
+                               linewidth=1.0)
 
     if mesh.cellCount() == 0:
         eCircles = []
@@ -312,7 +312,6 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
         for reg in mesh.regionMarker():
             axes.text(reg.pos()[0], reg.pos()[1],
                       str(reg.marker()) + ": " + str(reg.area()))
-
 
 
 def createMeshPatches(axes, mesh, verbose=True, **kwargs):
@@ -359,6 +358,7 @@ def createMeshPatches(axes, mesh, verbose=True, **kwargs):
     if verbose:
         print(("plotting time = ", swatch.duration(True)))
     return patches
+
 
 def createTriangles(mesh, data=None):
     """
@@ -425,17 +425,17 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
     nLevs = kwargs.pop('nLevs', 8)
     if len(levels) == 0:
         levels = autolevel(data, nLevs)
- 
+
     if interpolate and len(data) == mesh.cellCount():
         z = pg.cellDataToPointData(mesh, data)
- 
+
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
         if shading == 'gouraud':
             z = pg.cellDataToPointData(mesh, data)
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              **kwargs)
-        
+
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
         
@@ -466,8 +466,9 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
-        
+
     return gci
+
 
 def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
               **kwargs):
@@ -482,6 +483,7 @@ def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
     return drawMPLTri(axes, mesh, data, cMin=cMin, cMax=cMax,
                       omitLines=omitLines,
                       cmap=cmap, **kwargs)
+
 
 def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
     """
@@ -515,6 +517,7 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
     axes.streamplot(X, Y, U, V, **kwargs)
 # def drawStreamLines(...)
 
+
 def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
     """
         Draw a single streamline into a given mesh for given data stating at
@@ -535,8 +538,8 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
             start cell
 
         data : iterable float | [float, float]
-            If data is an array of floats (per cell or per node) the gradients will be calculated
-            else the data will be interpreted as vector field.
+            If data is an array (per cell or node) gradients are calculated
+            otherwise the data will be interpreted as vector field.
 
         dataMesh : :gimliapi:`GIMLI::Mesh` [None]
 
@@ -568,6 +571,7 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
         axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15.,
                    head_starts_at_zero=True,
                    **kwargs)
+
 
 def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     """
@@ -625,7 +629,6 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
             if c.valid():
                 drawStreamLine(axes, viewMesh, c, data, dataMesh,
                                **kwargs)
-            #return
 
     # start a stream from each unused cell
     for c in viewMesh.cells():
@@ -647,7 +650,7 @@ def drawSensors(axes, sensors, diam=None, koords=None):
     """
 
     if koords is None:
-        koords=[0, 2]
+        koords = [0, 2]
 
     eCircles = []
     eSpacing = sensors[0].distance(sensors[1])
@@ -733,7 +736,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
     return start, end
 
 
-def drawParameterConstraints(axes, mesh, cMat, cWeight = None):
+def drawParameterConstraints(axes, mesh, cMat, cWeight=None):
     """
         What is this?
     """

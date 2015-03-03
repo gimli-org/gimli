@@ -8,26 +8,8 @@ import numpy as np
 
 import matplotlib as mpl
 from matplotlib.patches import Rectangle
-
-def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
-    """
-    Pls.
-
-    insert short Docu here
-    """
-    plt.imshow(A, interpolation='nearest')
-    plt.xticks(np.arange(0, len(x), dx), ["%g" % round(xi, 2) for xi in x]) #,b
-    plt.yticks(np.arange(0, len(y), dy), ["%g" % round(yi, 2) for yi in y]) #,a
-    plt.ylim((len(y) - 0.5, - 0.5))
-    
-    if xlab is not None: plt.xlabel(xlab)
-    if ylab is not None: plt.ylabel(ylab)
-    
-    plt.axis('auto') 
-    
-    if cbar is not None: plt.colorbar(orientation=cbar)
-    
-    return
+from matplotlib.collections import PatchCollection
+from matplotlib.colors import LogNorm
 
 
 def drawModel1D(ax, thickness, values, plotfunction='plot',
@@ -103,7 +85,7 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
         plt.semilogx(px, pz)
     else:
         plt.plot(px, pz)
-    
+
     plt.ion()
     plt.grid(which='both')
     plt.xlim((np.min(x) * 0.9, np.max(x) * 1.1))
@@ -115,7 +97,7 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
 
 
 def showStitchedModels(models, x=None, cmin=None, cmax=None,
-                       islog=True, title=None):
+                       islog=True, cmap=None, title=None):
     """
         Show several 1d block models as (stitched) section.
     """
@@ -131,51 +113,43 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
             cmin = min(cmin, min(res))
             cmax = max(cmax, max(res))
 
-        print("cmin=", cmin, " cmax=", cmax)
-
     dx = np.diff(x)
     dx = np.hstack((dx, dx[-1]))
     x1 = x - dx / 2
-    ax = plt.gcf().add_subplot(111)
-    ax.cla()
-    mapsize = 64
-    
-    #cmap = jetmap(mapsize)
-    cmap = mpl.cm.get_cmap('jet', mapsize)
-    
-    plt.plot(x, x * 0., 'k.')
+    fig, ax = plt.subplots()
+
+    ax.plot(x, x * 0., 'k.')
     maxz = 0.
+    recs = []
+    RES = []
     for i, mod in enumerate(models):
         mod1 = np.asarray(mod)
         res = mod1[nlay - 1:]
-        if islog:
-            res = plt.log(res)
-            cmi = np.log(cmin)
-            cma = np.log(cmax)
-        else:
-            cmi = cmin
-            cma = cmax
+        RES.extend(res)
 
-        thk = mod1[:nlay - 1]
+        thk = mod1[:nlay-1]
         thk = np.hstack((thk, thk[-1]))
         z = np.hstack((0., np.cumsum(thk)))
         maxz = max(maxz, z[-1])
-        nres = (res - cmi) / (cma - cmi)
-        cind = np.around(nres * mapsize)
-        cind[cind >= mapsize] = mapsize - 1
-        cind[cind < 0] = 0
         for j in range(len(thk)):
-            fc = cmap[cind[j], :]
-            rect = Rectangle((x1[i], z[j]), dx[i], thk[j], fc=fc)
-            plt.gca().add_patch(rect)
+            recs.append(Rectangle((x1[i], z[j]), dx[i], thk[j]))
 
+    pp = PatchCollection(recs)
+    col = ax.add_collection(pp)
+    pp.set_edgecolor(None)
+    pp.set_linewidths(0.0)
+    if cmap is not None:
+        pp.set_cmap(cmap)
+
+    pp.set_norm(LogNorm(cmin, cmax))
+    pp.set_array(np.array(RES))
+    pp.set_clim(cmin, cmax)
     ax.set_ylim((maxz, 0.))
     ax.set_xlim((x1[0], x1[-1] + dx[-1]))
-    if title is not None:
-        plt.title(title)
 
-    plt.draw()
-    return
+    plt.colorbar(pp, ax=ax, orientation='horizontal')
+
+    return fig, ax
 
 
 def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):
