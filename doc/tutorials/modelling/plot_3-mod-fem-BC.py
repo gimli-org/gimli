@@ -50,7 +50,9 @@ def uDirichlet(b):
 
 dirichletBC = [[1, 1.0],  # left
                [grid.findBoundaryByMarker(2), 2.0],  # right
-               [grid.findBoundaryByMarker(3), lambda p: 3.0 + p.center()[0]],  # top
+               [grid.findBoundaryByMarker(3),
+                lambda p: 3.0 + p.center()[0]],
+               # top
                [grid.findBoundaryByMarker(4), uDirichlet]]  # bottom
 
 """
@@ -67,10 +69,10 @@ ax = show(grid, data=u, colorBar=True,
 
 show(grid, axes=ax, showLater=1)
 
-ax.text( 0 .0,  1.02, '$u=3+x$')
-ax.text(-1.08,   0.0, '$u=4$', rotation='vertical')
-ax.text(  0.0, -1.08, '$u=2$')
-ax.text( 1.02,   0.0, '$u=1$', rotation='vertical')
+ax.text(0.0, 1.02, '$u=3+x$')
+ax.text(-1.08, 0.0, '$u=4$', rotation='vertical')
+ax.text(0.0, -1.08, '$u=2$')
+ax.text(1.02, 0.0, '$u=1$', rotation='vertical')
 
 ax.set_title('$\\nabla\cdot(1\\nabla u)=1$')
 
