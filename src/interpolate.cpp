@@ -34,7 +34,7 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
     std::vector< RVector3 > pos(ipos);
     
     if (mesh.dim() == 2){
-        if (verbose) std::cout << "Warning! swap YZ coordinates for query "+
+        if (verbose) std::cout << "Warning! swap YZ coordinates for query "
             "positions to meet mesh dimensions." << std::endl;
         if ((zVari(pos) || max(abs(z(pos))) > 0.) && 
             (!yVari(pos) && max(abs(y(pos))) < 1e-8)) swapYZ(pos);
