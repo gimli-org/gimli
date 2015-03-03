@@ -189,7 +189,11 @@ find_package(PythonLibs)
 
 find_python_module(numpy)
 
-find_package(Boost 1.46.0 COMPONENTS python)
+if (Boost_PYTHON_LIBRARY)
+    set (Boost_PYTHON_LIBRARIES ${Boost_PYTHON_LIBRARY})
+else()
+    find_package(Boost 1.46.0 COMPONENTS python)
+endif()
 
 find_or_build_package(gccxml gccxml)
 find_or_build_package(pygccxml pygccxml)

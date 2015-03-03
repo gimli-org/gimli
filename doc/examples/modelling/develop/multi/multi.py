@@ -110,6 +110,9 @@ f[sourceCell.id()]=0.4
 
 times = np.linspace(0, 30, 30)
 Peclet = 50.0
+densityBrine = 1.2 # g/cm^3
+densityBrine *= 1000 # kg/m^3
+
 uMesh1 = solveFiniteVolume(mesh, a=1./Peclet, f=f, vel=vel, times=times, 
                           uBoundary=[2, 0],
                           scheme='PS', verbose=10)
@@ -124,8 +127,9 @@ axCon = fig.add_subplot(2,1,2)
 axGra = fig.add_subplot(2,3,2)
 show(mesh, data=uMesh1[1], colorBar=1, label='Concentration', cMin=0, cMax=0.03, axes=axCon)
 x, y, triangles, z, zIdx = pg.mplviewer.createTriangles(mesh, uMesh1[0])
-print(cbar)
+
 dz = np.zeros(2*len(times))
+
 for i in range(1, len(conc)):
     tic = time.time()
     axCon.clear()
@@ -133,12 +137,12 @@ for i in range(1, len(conc)):
     gci.set_clim(0, 0.03)
         
     axGra.clear()
-    dDensity = 1.2 * conc[i]
+    dDensity = densityBrine * conc[i]
     dg, dgz = solveGravimetry(mesh, dDensity, pnts=[[0.0, 0.0]]) 
     dz[i] = dg[0][2]
     axGra.plot(dz)
     axGra.set_ylabel('Grav at (0.0, 0.0) in mGal')
-    axGra.set_xlabel('time in s')
+    axGra.set_xlabel('Time in s')
     
     print(i, time.time()-tic, "sum:", sum(conc[i]), "dsum:", (sum(conc[i])-sum(conc[i-1])),
           "sourceCell:", sourceCell.size())

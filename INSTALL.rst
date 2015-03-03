@@ -8,7 +8,7 @@ Prerequisites
 
 We need some more or less important tools to build libgimli
  
-    * subversion, git
+    * subversion, git(gccxml), mercurial(pygccxml), wget, tar
     * cmake >= 2.8.10
     * gcc >= 4.4
 
@@ -24,19 +24,19 @@ We need some more or less important tools to build libgimli
 
     * libboost >=1.46 (thread, [python])
 
-        tested: 1.46, 1.48, 1.49, 1.51, 1.52, 1.53
+        tested: 1.46, 1.48, 1.49, 1.51, 1.52, 1.53, 1.57
                 
 Optional Prerequisites -- some can be installed via provided scripts
 ....................................................................
 
-    * blas and lapack for suitesparse (system or script)
+    * blas and lapack for suitesparse (system or auto via cmake)
     * SuiteSparse http://www.cise.ufl.edu/research/sparse/SuiteSparse/
-      tested: SuiteSparse-4.2.1.tar.gz (via script)
+      tested: SuiteSparse-4.2.1.tar.gz (system or auto via cmake)
 
-    * triangle http://www.cs.cmu.edu/~quake/triangle.html (via script)
+    * triangle http://www.cs.cmu.edu/~quake/triangle.html (auto via cmake)
     * cppunit
     * procps
-    * gccxml, pygccxml and pyplusplus (via script)
+    * gccxml, pygccxml and pyplusplus (auto via cmake)
     * matplotlib >=1.1.0
     * doxygen        
 
@@ -48,7 +48,7 @@ First install some of the necessary stuff. For sure you will need subversion to 
 
 .. code-block:: bash
 
-    sudo apt-get install subversion git cmake
+    sudo apt-get install subversion git cmake mercurial
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
 
 Optional install useful stuff:
@@ -74,43 +74,6 @@ Checkout the current sources for libgimli:
 
     svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
 
-Getting necessary and optional external libraries. 
-We need suitesparse and triangle. If they are not installed system-wide we provide a small script to obtain them.
-
-.. code-block:: bash
-
-    cd trunk
-    cd external
-    make 
-
-Check if there are now a lib and an include path. With some content in it (e.g. libtriangle.a and libcholmod.a)
-Then you can go back to the main gimli path:
-    
-.. code-block:: bash
-
-    cd ../..
-    
-Dependencies for python bindings
---------------------------------
-
-Python bindings are generally a good idea because some tools depend on it. 
-If you just want the libgimli library you can skip this part
-
-The python binding files are generated automatic by using gccxml, pygccxml and pyplusplus
-If you cannot install them with your distribution we provide a script for it.
-
-.. code-block:: bash
-
-    cd ..
-    sh gimli/trunk/python/buildScripts/buildToolChain.sh
-
-if 'sh COMMAND.sh' complains about missing pushd or popd try 'bash COMMAND.sh':
-
-.. code-block:: bash
-
-    bash gimli/trunk/python/buildScripts/buildToolChain.sh
-
-
 Building with cmake
 -------------------
 
@@ -119,7 +82,6 @@ In the first, cmake provide out of source build so we recommend using a build di
 
 .. code-block:: bash
 
-    cd gimli
     mkdir -p build
     
 the main directory structure should looks like this:
@@ -262,7 +224,7 @@ Example Installation on Ubuntu
 
 .. code-block:: bash
 
-    sudo apt-get install subversion git cmake
+    sudo apt-get install subversion git cmake mercurial
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
     sudo apt-get install libcppunit-dev
     sudo apt-get install python-matplotlib
@@ -271,12 +233,8 @@ Example Installation on Ubuntu
     mkdir -p ~/src/gimli
     cd ~/src/gimli
     svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
-    cd trunk/external/
-    make
-    cd ../../../
-    bash gimli/trunk/python/buildScripts/buildToolChain.sh    
-    cd gimli
-    mkdir build
+    
+    mkdir -p build
     cd build
     cmake ../trunk
     make

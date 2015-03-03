@@ -571,6 +571,8 @@ def solveGravimetry(mesh, dDensity=0, pnts=None):
     dgz = np.zeros((len(pnts), 3))
     upoly = np.zeros(len(pnts))
     
+    Gdgz = np.zeros((3, len(pnts), mesh.cellCount()))
+    
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
                     
@@ -592,16 +594,20 @@ def solveGravimetry(mesh, dDensity=0, pnts=None):
                     if cl:
                         dg[i]  += dgi * -G * dDensity[cl.id()]
                         dgz[i] += dgzi * -G * dDensity[cl.id()]
+                        Gdgz[i][cl.id()] += dgi
                     if cr:
                         dg[i]  -= dgi * -G * dDensity[cr.id()]
                         dgz[i] -= dgzi * -G * dDensity[cr.id()]
-                    
+                        Gdgz[i][cr.id()] -= dgi
                 else:
                     dg[i]  += dgi * -G * dDensity
                     dgz[i] += dgzi * -G * dDensity
 
         mesh.translate(pg.RVector3(p))
 
+    if hasattr(dDensity, '__len__'):
+        dg = vstack((Gdgz[0].dot(dDensity), Gdgz[1].dot(dDensity), Gdgz[2].dot(dDensity)))
+        return dg * [1.0, 1.0, -1.0], dgz
     return dg * [1.0, 1.0, -1.0], dgz
     
 def buildCircle(pos, radius, segments=12, leftDirection=True):
