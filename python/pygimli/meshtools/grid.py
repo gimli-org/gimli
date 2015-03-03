@@ -13,6 +13,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
                            quality=34.0, smooth=False, markerBoundary=1,
                            isSubSurface=False, verbose=False):
     """
+    Add a triangle mesh boundary to a given mesh.
+    
     Returns a new mesh that contains a triangulated box around a given mesh
     suitable for geo-simulation (surface boundary at top).
 
@@ -141,7 +143,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         poly.createEdge(n3, n4, pg.MARKER_BOUND_MIXED)
         poly.createEdge(n4, n1, pg.MARKER_BOUND_MIXED)
 
-    else:
+    else: # no isSubSurface
         # add top right node and boundary nodes
         xtLen = 12
 
@@ -150,7 +152,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         # x top boundary sampling points
         xTop = pg.increasingRange(dxMin, xbound, xtLen)
         # y boundary sampling points
-        yLeft = pg.increasingRange(xTop[xtLen - 1] - xTop[xtLen - 2],
+        
+        yLeft = pg.increasingRange(xTop[len(xTop)-1] - xTop[len(xTop)-2],
                                    abs(mesh.ymin() - ybound),
                                    xtLen)
 

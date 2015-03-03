@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -639,6 +639,13 @@ std::vector < RVector3 > Mesh::positions(const IndexArray & idx) const {
     for (uint i = 0; i < idx.size(); i ++) {
         pos.push_back(node(idx[i]).pos());
     }
+    return pos;
+}
+
+R3Vector Mesh::nodeCenters() const {
+    R3Vector pos(this->cellCount());
+    std::transform(cellVector_.begin(), cellVector_.end(), pos.begin(),
+                   std::mem_fun(&Cell::center));
     return pos;
 }
 

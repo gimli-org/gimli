@@ -298,9 +298,9 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
     for (Mesh::RegionMarkerList::const_iterator
         it = mesh.regionMarker().begin(); it != mesh.regionMarker().end(); it ++){
 
-        std::cout << it->pos().x() << " "
-                  << it->marker() << " "
-                  << it->area() << std::endl;
+//         std::cout << it->pos().x() << " "
+//                   << it->marker() << " "
+//                   << it->area() << std::endl;
         trimesh.regionlist[count * 4] = it->pos().x();
         trimesh.regionlist[count * 4 + 1] = it->pos().y();
         trimesh.regionlist[count * 4 + 2] = it->marker();
