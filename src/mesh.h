@@ -83,12 +83,12 @@ public:
     
     /*! Set minimum Position. */
     void setMin(const Pos < ValueType > & min) { min_ = min; }
-    /*! Returns a copy of the minimum position. */
+    /*! Return a copy of the minimum position. */
     const Pos < ValueType > & min() const { return min_; }
 
     /*! Set maximum Position. */
     void setMax(const Pos < ValueType > & max) { max_ = max; }
-    /*! Returns a copy of the maximum position. */
+    /*! Return a copy of the maximum position. */
     const Pos < ValueType > & max() const { return max_; }
 
 protected:
@@ -271,26 +271,29 @@ public:
     Boundary & boundary(uint i) const;
     Boundary & boundary(uint i);
 
-    /*! Returns a vector of all node positions */
+    /*! Return a vector of all node positions */
     std::vector < RVector3 > positions() const;
-
-    /*! Returns a vector of node positions for an index vector */
+    
+    /*! Return a vector of node positions for an index vector */
     std::vector < RVector3 > positions(const IndexArray & idx) const;
+    
+    /*! Return all node positions. */
+    R3Vector nodeCenters() const;
 
-    /*! Returns a vector of all cell center positions*/
+    /*! Return a vector of all cell center positions*/
     std::vector < RVector3 > cellCenters() const;
     std::vector < RVector3 > cellCenter() const { return cellCenters(); }
 
-    /*! Returns a vector of all center positions for all boundaries */
+    /*! Return a vector of all center positions for all boundaries */
     std::vector < RVector3 > boundaryCenters() const;
         
-    /*! Returns the reference to a RVector of all cell sizes. Cached for static geometry.*/
+    /*! Return the reference to a RVector of all cell sizes. Cached for static geometry.*/
     RVector & cellSizes() const;
 
-    /*! Returns the reference to a RVector of all boundary sizes. Cached for static geometry. */
+    /*! Return the reference to a RVector of all boundary sizes. Cached for static geometry. */
     RVector & boundarySizes() const;
 
-    /*! Returns the reference to the vector of scaled normal directions for each boundary.
+    /*! Return the reference to the vector of scaled normal directions for each boundary.
      * Cached for static geometry and will be build on first call. Not thread safe, perhaps not python GC safe. 
      Return \f$ \{A_i \vec{n}_i\} \forall i = [0..N_B]\f$.
      Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary. 
@@ -298,25 +301,25 @@ public:
      For the left cell neighbor the normal direction should be always the outer normal.*/
     std::vector< RVector3 > & boundarySizedNormals() const;
     
-    /*! Returns a vector of all cell marker */
+    /*! Return a vector of all cell marker */
     IVector cellMarker() const;
 
-    /*! Returns a vector of all boundary marker */
+    /*! Return a vector of all boundary marker */
     IVector boundaryMarker() const;
 
-    /*! Returns a vector of all node marker */
+    /*! Return a vector of all node marker */
     IVector nodeMarker() const;
 
-    /*! Returns an index vector of all nodes that match the marker */
+    /*! Return an index vector of all nodes that match the marker */
     IndexArray findNodesIdxByMarker(int marker) const;
 
-//     /*! Returns an index list of all nodes that match the marker */
+//     /*! Return an index list of all nodes that match the marker */
 //     std::list < uint > findListNodesIdxByMarker(int marker) const;
 
-    /*! Returns a vector of boundary ptrs with the boundary marker equal marker.*/
+    /*! Return a vector of boundary ptrs with the boundary marker equal marker.*/
     std::vector < Boundary * > findBoundaryByMarker(int marker) const;
 
-    /*! Returns a vector of boundary ptrs with the boundary marker between [from and to). \n
+    /*! Return a vector of boundary ptrs with the boundary marker between [from and to). \n
         for to equal open end set to = MAX_INT */
     std::vector < Boundary * > findBoundaryByMarker(int from, int to) const;
     
@@ -335,17 +338,14 @@ public:
     /*! Return the index to the node of this mesh with the smallest distance to pos. */
     uint findNearestNode(const RVector3 & pos);
     
-    /*! Returns vector of cell ptrs with marker match the range [from .. to). \n
+    /*! Return vector of cell ptrs with marker match the range [from .. to). \n
         For single marker match to is set to 0, for open end set to = -1 */
     std::vector < Cell * > findCellByMarker(int from, int to = 0) const;
 
-    /*! Returns vector of cell ptrs with attribute match the range [from .. to). \n
+    /*! Return vector of cell ptrs with attribute match the range [from .. to). \n
         For single attribute match to is set to 0.0, for open end set to = -1.0 */
     std::vector < Cell * > findCellByAttribute(double from, double to = 0.0) const;
 
-//     void setAttributes(const RVector & atts) { attributes_ = atts; }
-//     const RVector & attributes() const { return attributes_; }
-//     RVector & attributes() { return attributes_; }
     //** end get infos stuff
 
     //** start mesh modification stuff
@@ -556,10 +556,10 @@ public:
     const RBoundingBox boundingBox() const { findRange_(); return RBoundingBox(minRange_, maxRange_);}
 
 
-    /*! Returns the reference to the matrix for cell value to boundary value interpolation matrix. */
+    /*! Return the reference to the matrix for cell value to boundary value interpolation matrix. */
     RSparseMapMatrix & cellToBoundaryInterpolation() const;
 
-    /*!Returns the divergence of a given vector field for each cell.
+    /*!Return the divergence of a given vector field for each cell.
      *The divergence is calculated by simple 1 point boundary integration over each cells. 
      * Higher order integration needs to be implemented. Contact the author if you need this.*/
     RVector divergence(const std::vector < RVector3 > & V) const;
@@ -636,8 +636,6 @@ protected:
     std::vector< Cell * >     cellVector_;
 
     uint dimension_;
-
-   // RVector attributes_;
 
     mutable RVector3 minRange_;
     mutable RVector3 maxRange_;

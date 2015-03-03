@@ -544,7 +544,7 @@ def gravMagBoundarySinghGup(boundary):
     return np.asarray([Fx, Fy, Fz]), np.asarray([Fzx, Fzy, Fzz]), 
 
 
-def solveGravimetry(mesh, dDensity=0, pnts=None):
+def solveGravimetry(mesh, dDensity=None, pnts=None):
     """
     Solve gravimetric response.
     
@@ -559,25 +559,26 @@ def solveGravimetry(mesh, dDensity=0, pnts=None):
             Assuming one inhomogeneity.
         * [[int, float]] -- solve for multiple positive boundaries TOIMPL
         * array -- solve for one delta density value per cell
-        * 0 -- return per cell kernel matrix G TOIMPL
+        * None -- return per cell kernel matrix G TOIMPL
         
     Returns
     -------
     """
     if pnts is None:
         pnts = [[0.0, 0.0]]
-        
+
     dg = np.zeros((len(pnts), 3))
     dgz = np.zeros((len(pnts), 3))
     upoly = np.zeros(len(pnts))
     
-    Gdgz = np.zeros((3, len(pnts), mesh.cellCount()))
+    Gdg = np.zeros((len(pnts), mesh.cellCount(), 3))
+    Gdgz = np.zeros((len(pnts), mesh.cellCount(), 3))
     
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
                     
         for b in mesh.boundaries():
-            if b.marker() != 0 or hasattr(dDensity, '__len__'):
+            if b.marker() != 0 or hasattr(dDensity, '__len__') or dDensity == None:
                 
                 if mesh.dimension() == 2:
                     dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
@@ -587,28 +588,33 @@ def solveGravimetry(mesh, dDensity=0, pnts=None):
                 else:
                     dgi, dgzi = gravMagBoundarySinghGup(b)
         
-                if hasattr(dDensity, '__len__'):
+                dgi *= [1.0, 1.0, -1.0]
+                dgi *= -G
+                dgzi *= -G
+        
+                if hasattr(dDensity, '__len__') or dDensity == None:
                     cl = b.leftCell()
                     cr = b.rightCell()
                     
                     if cl:
-                        dg[i]  += dgi * -G * dDensity[cl.id()]
-                        dgz[i] += dgzi * -G * dDensity[cl.id()]
-                        Gdgz[i][cl.id()] += dgi
+                        Gdg[i][cl.id()] += dgi
+                        Gdgz[i][cl.id()] += dgzi
                     if cr:
-                        dg[i]  -= dgi * -G * dDensity[cr.id()]
-                        dgz[i] -= dgzi * -G * dDensity[cr.id()]
-                        Gdgz[i][cr.id()] -= dgi
+                        Gdg[i][cr.id()] -= dgi
+                        Gdgz[i][cr.id()] -= dgzi
                 else:
-                    dg[i]  += dgi * -G * dDensity
-                    dgz[i] += dgzi * -G * dDensity
+                    dg[i]  += dgi * dDensity
+                    dgz[i] += dgzi * dDensity
 
         mesh.translate(pg.RVector3(p))
 
-    if hasattr(dDensity, '__len__'):
-        dg = vstack((Gdgz[0].dot(dDensity), Gdgz[1].dot(dDensity), Gdgz[2].dot(dDensity)))
-        return dg * [1.0, 1.0, -1.0], dgz
-    return dg * [1.0, 1.0, -1.0], dgz
+    if dDensity is None:
+        return Gdg.transpose([0, 2, 1]), Gdgz.transpose([0, 2, 1])
+    elif hasattr(dDensity, '__len__'):
+        dg = Gdg.transpose([0, 2, 1]).dot(dDensity)
+        dgz = Gdgz.transpose([0, 2, 1]).dot(dDensity)
+        return dg, dgz
+    return dg, dgz
     
 def buildCircle(pos, radius, segments=12, leftDirection=True):
     """

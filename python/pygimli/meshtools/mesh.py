@@ -74,7 +74,6 @@ def createMesh(poly, quality=30, area=0.0,
             switches += 'Q'
 
         tri.setSwitches(switches)
-
         mesh = tri.generate()
 
         if smooth is not None:
@@ -82,7 +81,6 @@ def createMesh(poly, quality=30, area=0.0,
                         edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
-
         return mesh
 
     else:

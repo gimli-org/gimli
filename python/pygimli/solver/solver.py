@@ -270,7 +270,42 @@ def parseMapToCellArray(attributeMap, mesh):
         raise Exception("Cannot interpret attributeMap!")
             
     return atts   
+   
+def fillEmptyToCellArray(mesh, vals):
+    """
+    Prolongate empty cell values to complete cell attributes.
     
+    Its is possible that you have zero values that need to be filled with
+    appropriate attributes. 
+    This function tries to fill the empty values successive prolongation of the 
+    non zeros. 
+    
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        For each cell of mesh a value will be returned.
+    
+    vals : array
+        Array of size cellCount().
+    
+    Returns
+    -------
+    atts : array
+        Array of length mesh.cellCount()
+    """
+    atts = pg.RVector(mesh.cellCount(), 0.0)
+    oldAtts = mesh.cellAttributes()
+    mesh.setCellAttributes(vals)
+    
+    #std::vector< Cell * > 
+    #empties = []
+    
+    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1)
+    atts = mesh.cellAttributes()
+    mesh.setCellAttributes(oldAtts)
+    return atts;
+       
+       
 
 def divergence(mesh, F=lambda r:r, order=1):
     """ 
