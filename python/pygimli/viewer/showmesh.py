@@ -52,7 +52,7 @@ def show(mesh, *args, **kwargs):
             return showMesh3D(mesh, *args, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
-
+    plt.pause(0.001)
 
 def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
              axes=None, **kwargs):

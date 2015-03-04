@@ -3,6 +3,7 @@
 
 import numpy as np
 import pygimli as pg
+import time
 #from geomagnetics import GeoMagT0, date
 
 mu0 = 4.0 * np.pi * 1e-7
@@ -283,6 +284,11 @@ def lineIntegralZ_WonBevis(p1, p2):
         
     """
     #print p1, p2
+    dg = pg.RVector3(0.0, 0.0, 0.0)
+    dgz = pg.RVector3(0.0, 0.0, 0.0)
+    pg.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
+    return np.asarray((dg[0], dg[1], dg[2])), np.asarray((dgz[0], dgz[1], dgz[2]))
+    
     x1 = p1[0]
     z1 = p1[1]
     x2 = p2[0]
@@ -359,6 +365,7 @@ def lineIntegralZ_WonBevis(p1, p2):
         #// check this
         #fx = (th12 * z21dx21 - rln)/r21s
     
+    #rint(np.asarray((Fx, 0.0, Fz)), np.asarray((Fzx, 0.0, Fzz)))
     return np.asarray((Fx, 0.0, Fz)), np.asarray((Fzx, 0.0, Fzz))
 
 def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
@@ -573,7 +580,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None):
     
     Gdg = np.zeros((len(pnts), mesh.cellCount(), 3))
     Gdgz = np.zeros((len(pnts), mesh.cellCount(), 3))
-    
+    times = []
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
                     
@@ -581,8 +588,10 @@ def solveGravimetry(mesh, dDensity=None, pnts=None):
             if b.marker() != 0 or hasattr(dDensity, '__len__') or dDensity == None:
                 
                 if mesh.dimension() == 2:
+                    tic = time.time()
                     dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                        b.node(1).pos())
+                    times.append(time.time()-tic)
                     dgi *= -2.0
                     dgzi *= -2.0
                 else:
@@ -608,6 +617,10 @@ def solveGravimetry(mesh, dDensity=None, pnts=None):
 
         mesh.translate(pg.RVector3(p))
 
+    import matplotlib.pyplot as plt
+    print("times:", sum(times), np.mean(times))
+    plt.plot(times)
+    
     if dDensity is None:
         return Gdg.transpose([0, 2, 1]), Gdgz.transpose([0, 2, 1])
     elif hasattr(dDensity, '__len__'):
@@ -643,3 +656,4 @@ if __name__ == "__main__":
     #print lineIntegralZ([-2,-2], [2,-2])
     
     #exit(1)
+
