@@ -666,7 +666,9 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort
-
+    if type(sensors) == np.ndarray:
+        sensors = [pg.RVector3(s, 0) for s in sensors]
+        
     sensorX = pg.x(sensors)
 
     eSpacing = abs(sensorX[1] - sensorX[0])

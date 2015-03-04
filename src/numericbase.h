@@ -219,6 +219,10 @@ template < class ValueType > ValueType besselK1(const ValueType & x){
 */
 DLLEXPORT RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon);
 
+/*! Lineintegral after WonBevis .*/
+DLLEXPORT void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2, 
+                                      RVector3 & dg, RVector3 & dgz);
+
 } // namespace GIMLI
 
 #endif // _GIMLI_NUMERICBASE__H

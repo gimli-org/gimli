@@ -171,5 +171,101 @@ RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon){
              V[0]* st + V[1] * ct);
 }
 
+void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2, 
+                            RVector3 &dg, RVector3 &dgz){
+
+    double x1 = p1[0];
+    double z1 = p1[1];
+    double x2 = p2[0];
+    double z2 = p2[1];
+   
+    double x21 = x2 - x1;
+    double z21 = z2 - z1;
+    double z21s = z21 * z21;
+    double x21s = x21 * x21;
+    
+    double xz12 = x1 * z2 - x2 * z1;
+    
+    if (abs(x1) < TOLERANCE && abs(z1) < TOLERANCE){
+        dg *= 0.0;
+        dgz *= 0.0;
+        return;
+    } 
+    if (abs(x2) < TOLERANCE && abs(z2) < TOLERANCE){
+        dg *= 0.0;
+        dgz *= 0.0;
+        return;
+    } 
+    
+    double theta1 = std::atan2(z1, x1);
+    double theta2 = std::atan2(z2, x2);
+
+    double r1s = x1 * x1 + z1 * z1;
+    double r2s = x2 * x2 + z2 * z2;
+    double r1 = std::sqrt(r1s);
+    double r2 = std::sqrt(r2s);
+    
+    double r21s = x21s + z21s;
+    double R2 = r21s;
+    
+    double rln = std::log(r2 / r1);
+        
+    double p = (xz12/r21s) * ((x1*x21 - z1*z21)/r1s - (x2*x21 - z2*z21)/r2s);
+    double q = (xz12/r21s) * ((x1*z21 + z1*x21)/r1s - (x2*z21 + z2*x21)/r2s);
+    
+    double Fz = 0.0;
+    double Fx = 0.0;
+    double Fzx = 0.0; // dFz/dx
+    double Fzz = 0.0; // dFz/dz
+    
+    if (sign(z1) != sign(z2)){
+        if ((x1*z2 < x2*z1) && z2 >=0.0) theta1 = theta1 + PI2;
+        if ((x1*z2 > x2*z1) && z1 >=0.0) theta2 = theta2 + PI2;
+    }
+    if (abs(x1*z2 - x2*z1) < TOLERANCE){
+        dg *= 0.0;
+        dgz *= 0.0;
+        return;
+    }            
+    double th12 = (theta1 - theta2);
+    
+    if (abs(x21) < TOLERANCE){ 
+//         #print "case 3"
+//         #case 3
+        Fz = x1 * rln;
+        Fx = 0.0;
+        Fzz = -p;
+        Fzx = q - z21s/r21s * rln;
+        
+//__MS(Fz << " " << Fx << " " <<  R2 << " " <<  x1 << " " <<  z1 << " " <<  x2 << " " <<  z2)
+    } else { //: #default
+        double B = z21 / x21;
+        double A = (x21 * xz12) / R2;
+
+        Fz = A * (th12 + B * rln);
+        Fx = A * (-th12 * B + rln);
+        double z21dx21 = z21 / x21;
+        double z21x21 = z21 * x21;
+        
+        double fz = (th12 + z21dx21 * rln)/r21s;
+                
+        Fzz = -p + x21s * fz;
+        Fzx = q - z21x21 * fz;
+    
+//__MS(Fz << " " << Fx << " " <<  R2 << " " <<  x1 << " " <<  z1 << " " <<  x2 << " " <<  z2)        
+//         #// check this
+//         #fx = (th12 * z21dx21 - rln)/r21s
+    }
+    dg[0] = Fx;
+    dg[1] = 0.0;
+    dg[2] = Fz;
+    dgz[0] = Fzx;
+    dgz[1] = 0.0;
+    dgz[2] = Fzz;
+    return;
+}
+
+
+
 
 } //namespace GIMLI;
