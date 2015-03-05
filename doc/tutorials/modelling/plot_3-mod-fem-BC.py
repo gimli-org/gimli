@@ -69,10 +69,10 @@ ax = show(grid, data=u, colorBar=True,
 
 show(grid, axes=ax, showLater=1)
 
-ax.text(0.0, 1.02, '$u=3+x$')
-ax.text(-1.08, 0.0, '$u=4$', rotation='vertical')
-ax.text(0.0, -1.08, '$u=2$')
-ax.text(1.02, 0.0, '$u=1$', rotation='vertical')
+ax.text(0, 1.01, '$u=3+x$', ha='center')
+ax.text(-1.01, 0, '$u=1$', va='center', ha='right', rotation='vertical')
+ax.text(0, -1.01, '$u=4$', ha='center', va='top')
+ax.text(1.02, 0, '$u=2$', va='center', ha='left',  rotation='vertical')
 
 ax.set_title('$\\nabla\cdot(1\\nabla u)=1$')
 
@@ -114,14 +114,14 @@ gradients of the solution (i.e., the flow direction).
 
 drawStreams(ax, grid, u)
 
-ax.text(0.0, 1.02, '$u=1$',
+ax.text(0.0, 1.01, '$u=1$',
         horizontalalignment='center')  # top -- 3
-ax.text(-1.08, 0.0, '$\partial u/\partial n=-0.5$',
-        verticalalignment='center', rotation='vertical')  # left -- 1
-ax.text(0.0, -1.08, '$\partial u/\partial n=2.5$',
-        horizontalalignment='center')  # bot -- 4
-ax.text(1.02, 0.0, '$\partial u/\partial n=0$',
-        verticalalignment='center', rotation='vertical')  # right -- 2
+ax.text(-1.0, 0.0, '$\partial u/\partial n=-0.5$',
+        va='center', ha='right', rotation='vertical')  # left -- 1
+ax.text(0.0, -1.01, '$\partial u/\partial n=2.5$',
+        ha='center', va='top')  # bot -- 4
+ax.text(1.01, 0.0, '$\partial u/\partial n=0$',
+        va='center', ha='left', rotation='vertical')  # right -- 2
 
 ax.set_title('$\\nabla\cdot(1\\nabla u)=0$')
 

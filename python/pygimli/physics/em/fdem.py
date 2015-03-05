@@ -12,7 +12,10 @@ from pygimli.viewer import show1dmodel, drawModel1D
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pyproj import Proj
+try:
+    from pyproj import Proj
+except:
+    pass
 
 
 class NDMatrix(pg.RBlockMatrix):

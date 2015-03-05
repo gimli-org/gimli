@@ -2,7 +2,6 @@
 
 import sys
 from xml.dom.minidom import parse
-from pyproj import Proj, transform
 
 import matplotlib.image as mpimg
 from math import floor
@@ -10,21 +9,14 @@ import numpy as np
 import urllib
 import os
 
-
-def needOSGEO():
-    try:
-        from osgeo import gdal
-        from osgeo.gdalconst import GA_ReadOnly
-    except ImportError as e:
-        print(e)
-        import traceback
-        traceback.print_exc(file=sys.stdout)
-        sys.stderr.write("no modules osgeo\n")
-
-gk2 = Proj(init="epsg:31466")  # GK zone 2
-gk3 = Proj(init="epsg:31467")  # GK zone 3
-gk4 = Proj(init="epsg:31468")  # GK zone 3
-wgs84 = Proj(init="epsg:4326")  # pure ellipsoid for step-wise change
+try:
+    from pyproj import Proj, transform
+    gk2 = Proj(init="epsg:31466")  # GK zone 2
+    gk3 = Proj(init="epsg:31467")  # GK zone 3
+    gk4 = Proj(init="epsg:31468")  # GK zone 3
+    wgs84 = Proj(init="epsg:4326")  # pure ellipsoid for step-wise change
+except ImportError:
+    sys.stderr.write("no module pyproj\n")
 
 
 def handleWPTS(wpts):
@@ -201,6 +193,12 @@ def readGeoRefTIF(file_name):
         Read geo-referenced TIFF file and return image and bbox
         plt.imshow( im, ext = bbox.ravel() ), bbox might need transform.
     """
+    try:
+        import gdal
+        from osgeo.gdalconst import GA_ReadOnly
+    except ImportError:
+        sys.stderr.write("no module osgeo\n")
+
     dataset = gdal.Open(file_name, GA_ReadOnly)
     geotr = dataset.GetGeoTransform()
     projection = dataset.GetProjection()
