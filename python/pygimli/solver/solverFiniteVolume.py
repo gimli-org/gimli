@@ -321,8 +321,12 @@ def findDiffusion(mesh, a, b, c, nc=None):
         else:
             # Diffusion part
             # Interface harmonic median
+            #D = (a[c.id()] / c.center().distance(b.center()) +
+                 #a[nc.id()] / nc.center().distance(b.center())) * 0.5 * b.size()
+            
             D = 1. / (c.center().distance(b.center())/a[c.id()] +
                       nc.center().distance(b.center())/a[nc.id()]) * b.size()
+            #print(D)
     else:
         if len(a) == mesh.boundaryCount():
             D = a[b.id()] / b.center().distance(c.center()) * b.size()
@@ -776,7 +780,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                            uBoundary=velBoundaryX,
                                            uL=velocity[:, 0],
                                            relax=velocityRelaxation,
-                                           ws=wsux, scheme='PS')
+                                           ws=wsux)
 
 #        for s in wsux.S:
 #            print(s)
@@ -789,7 +793,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                            uBoundary=velBoundaryY,
                                            uL=velocity[:, 1],
                                            relax=velocityRelaxation,
-                                           ws=wsuy, scheme='PS')
+                                           ws=wsuy)
 
         ap = np.array(wsux.ap * mesh.cellSizes())
         apF = CtB * ap
@@ -821,7 +825,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                                                a=pressureCoeff,
                                                f=div,
                                                uBoundary=preBoundary,
-                                               ws=wsp, scheme='PS')
+                                               ws=wsp)
 
         pressure += pressureCorrection * pressureRelaxation
 
