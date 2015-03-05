@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 
 *This introductory sentence should state the intent and goal of the tutorial. Keep it brief.
 This next block should state any assumptions that you the writer are making. Present them in list form.*
@@ -47,7 +47,7 @@ All existing modelling classes can be used, but it is also easy to create new mo
 We exemplify this by the preceding example.
 First, the library must be imported.
 To avoid name clashes with other libraries we suggest to import `pygimli` and alias it to an easy name, e.g. by using
-'''
+"""
 
 import pygimli as pg
 import matplotlib.pyplot as plt
@@ -55,7 +55,7 @@ import numpy as np
 
 print(pg.__version__)
 
-'''
+"""
 #! As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `pg.`, e.g.,
 #! printing the version string for gimli.
 
@@ -72,7 +72,7 @@ That's it.
 
 As a main advantage of Python, the actual computations can be easily combined with post-processing or visualization, even building graphical user-interfaces.
 In this code example we use matplotlib, a plotting library inside of pylab, a compound of different routines for numerics and plotting, very much comparable to MatLab.
-'''
+"""
 
 class FunctionModelling( pg.ModellingBase ):
     def __init__( self, nc, xvec, verbose = False  ):
@@ -98,15 +98,15 @@ class FunctionModelling( pg.ModellingBase ):
 # evaluate f(x) = 1.1 + 2.1 * x
 x = pg.asvector( np.arange( 0., 10., 1 ) )
 
-'''
+"""
 this is doku within
-'''
+"""
 
 y = 1.1 + 2.1 * x
 
-'''
+"""
 this is doku within
-'''
+"""
 
 print((x, y))
 

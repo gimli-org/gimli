@@ -1,5 +1,4 @@
-#! /usr/bin/python
-#! /usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os, shutil
@@ -39,8 +38,8 @@ import hashlib
 MAIN_NAMESPACE = 'GIMLI'
 
 def samefile(sourcefile, destfile):
-    '''
-    '''
+    """
+    """
     if not os.path.exists(destfile): return False
     if not os.path.exists(sourcefile): return False
         

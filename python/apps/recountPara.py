@@ -15,8 +15,8 @@ try:
     import pygimli.mplviewer
     from pygimli.viewer import *
 except ImportError:
-    sys.stderr.write('''ERROR: cannot import the library 'pygimli'.
-        Ensure that pygimli is in your PYTHONPATH ''')
+    sys.stderr.write("""ERROR: cannot import the library 'pygimli'.
+        Ensure that pygimli is in your PYTHONPATH """)
     sys.exit(1)
 
 def main(argv):

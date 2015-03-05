@@ -51,10 +51,10 @@ def parseDataStr(s):
 
 
 def applyInterpolation(filename, mesh, verbose=False):
-    '''
+    """
         needs to be moved into libgimli
         needs to be documented
-    '''
+    """
 
     A = None
     try:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 
 *This introductory sentence should state the intent and goal of the tutorial. Keep it brief.
 This next block should state any assumptions that you the writer are making. Present them in list form.*
@@ -24,16 +24,16 @@ We will solve this equation on the unit square, $\Omega=[-1,1]^2$
 
 First, the library must be imported.
 To avoid name clashes with other libraries we suggest to import `pygimli` and alias it to a simple abbreviation 'g', e.g., by using
-'''
+"""
 
 import pygimli as g
 from pygimli.solver import solvePoisson
 
-'''
+"""
 As a result, all :ref:`gimli` objects (classes and functions) can be referred to with a preceding `g.`, e.g., 
 printing the version string for gimli.
 
-'''
+"""
 import numpy as np
     
 #grid = g.createGrid( np.linspace( -1, 1, 5 ), np.linspace( -1, 1, 5 ) )
@@ -61,11 +61,11 @@ u = solvePoisson( grid, f = 1., uBoundary = [ grid.findBoundaryByMarker( 1 ), 0]
 #ax = showMesh( grid, data = u, filled = True, showLater = True, colorBar = True, orientation = 'vertical', label = 'Solution er$u$' )[0]
 #drawMesh( ax, grid )
 
-'''
+"""
 .. error::
     
     do we find an analytical solution for this example?
-'''
+"""
 
 for b in grid.boundaries():
     if b.marker() == 1:
