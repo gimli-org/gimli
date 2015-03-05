@@ -293,7 +293,7 @@ def lineIntegralZ_WonBevis(p1, p2):
     """
     dg = pg.RVector3(0.0, 0.0, 0.0)
     dgz = pg.RVector3(0.0, 0.0, 0.0)
-#    pg.lineIntegralZ_WonBevis(p1, p2, dg, dgz)  # strange!!!
+    pg.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
     return np.asarray((dg[0], dg[1], dg[2])), np.asarray((dgz[0], dgz[1], dgz[2]))
 
     x1 = p1[0]

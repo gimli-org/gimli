@@ -279,6 +279,10 @@ def findVelocity(mesh, v, b, c, nc=None):
             if nc:
                 # mean cell based vector-field v[x,y,z] for cell c and cell nc
                 vel = (v[c.id()] + v[nc.id()])/2.0
+                
+                #vel1 = 1./ (1./v[c.id()] + 1./v[nc.id()])
+                #print("findVel, check:", vel1, vel)
+                
             else:
                 # cell based vector-field v[x,y,z] for cell c
                 vel = v[c.id()]
@@ -592,7 +596,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
             u = workspace.solver.solve(workspace.rhs)
         else:
             u = np.linalg.solve(workspace.S, workspace.rhs)
-        print('FVM solve:', swatch.duration(True))
+        #print('FVM solve:', swatch.duration(True))
         return u[0:mesh.cellCount():1]
     else:
         theta = kwargs.pop('theta', 0.5)
@@ -761,6 +765,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
 
     controlVolumes = CtB * mesh.cellSizes()
 
+   
     for i in range(maxIter):
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)
 #        __d('vx', pressureGrad[:,0])
@@ -832,11 +837,22 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
 #        __d('div', div)
 #        if ( i == 1):
 #            sd
+            
+        convergenceTest = 100
+        if i > 6:
+            convergenceTest = (divVNorm[-1]-divVNorm[-2]) + \
+                              (divVNorm[-2]-divVNorm[-3]) + \
+                              (divVNorm[-3]-divVNorm[-4]) + \
+                              (divVNorm[-4]-divVNorm[-5]) + \
+                              (divVNorm[-5]-divVNorm[-6])
+            convergenceTest /= 5
+            
         if verbose:
             # print("\rIter: " + str(i) + " div V=" + str(divVNorm[-1]) + " " +  str(preCNorm[-1]), end='')
-            print("\r" + str(i) + " div V=" + str(divVNorm[-1]))
+            print("\r" + str(i) + " div V=" + str(divVNorm[-1]) + \
+                " ddiv V=" + str(convergenceTest)) 
 
-        if i == maxIter or divVNorm[-1] < tol:
+        if i == maxIter or divVNorm[-1] < tol or abs(convergenceTest*divVNorm[-1]) < tol:
             break
 
     if verbose:

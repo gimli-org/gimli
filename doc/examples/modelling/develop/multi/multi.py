@@ -87,7 +87,7 @@ class ERT():
         return data
         
 
-def createTestWorld(maxArea=0.2, verbose=0):
+def createTestWorld1(maxArea=0.2, verbose=0):
     boundary = []
     boundary.append([-20.0,   0.0]) #0
     boundary.append([-20.0,  -2.0]) #1
@@ -101,12 +101,12 @@ def createTestWorld(maxArea=0.2, verbose=0):
     poly = pg.Mesh(2)
     nodes = [poly.createNode(b) for b in boundary]
 
-    boundaryMarker = [1, 2, 1, 3, 1, 4, 1, 1]
+    boundaryMarker = [1, 2, 3, 4, 5, 6, 7, 8]
     for i in range(len(boundary)):
         poly.createEdge(nodes[i], nodes[(i+1)%len(boundary)], boundaryMarker[i]) # dirichlet (inflow)
     
-    poly.createEdge(nodes[1], nodes[6], 5)
-    poly.createEdge(nodes[2], nodes[5], 6)
+    poly.createEdge(nodes[1], nodes[6], 9)
+    poly.createEdge(nodes[2], nodes[5], 10)
         
     boundary = []
     boundary.append([-6.0, -4.0]) #0
@@ -116,25 +116,116 @@ def createTestWorld(maxArea=0.2, verbose=0):
     
     nodes = [poly.createNode(b) for b in boundary]
     for i in range(len(boundary)):
-        poly.createEdge(nodes[i], nodes[(i+1)%len(boundary)], 10) # dirichlet (inflow)
+        poly.createEdge(nodes[i], nodes[(i+1)%len(boundary)], 11) # dirichlet (inflow)
   
-    poly.addRegionMarker((-19, -1), 1)
-    poly.addRegionMarker((-19, -19), 1)
+    poly.addRegionMarker((-19, -1),  1)
     poly.addRegionMarker((-19, -10), 2)
-    poly.addRegionMarker((  0, -7), 3)
+    poly.addRegionMarker((-19, -19), 3)
+    poly.addRegionMarker((  0, -7),  4)
+    
+    mesh = createMesh(poly, quality=33, area=maxArea, smooth=[1,10], verbose=verbose)
+    
+    velBoundary=[[2, [1.0, 0.0]],
+                 [6, [1.0, 0.0]],
+                 #[3, [0.0, 0.0]]
+                 [8, [0.0, 0.0]],
+                 [4, [0.0, 0.0]]
+                ]
+    preBoundary=[[1, 0.0],
+                 [3, 0.0],
+                 [5, 0.0],
+                 [7, 0.0]]
+    
+    viscosity = pg.solver.parseMapToCellArray([[1, 5.0], [2, 1.0], [3, 3.0], [4, 10.0]], mesh)
+    viscosity *= 10.
+
+    return mesh, velBoundary, preBoundary, viscosity
+
+def createTestWorld2(maxArea=0.2, verbose=0):
+    boundary = []
+    boundary.append([-20.0,   0.0]) #0
+    boundary.append([-20.0,  -1.0]) #1
+    boundary.append([-20.0,  -4.0]) #2
+    boundary.append([-20.0,  -5.0]) #3
+    boundary.append([-20.0,  -8.0]) #4
+    boundary.append([-20.0, -12.0]) #5
+    boundary.append([ 20.0, -12.0]) #6
+    boundary.append([ 20.0,  -8.0]) #7
+    boundary.append([ 20.0,  -5.0]) #8
+    boundary.append([ 20.0,  -4.0]) #9
+    boundary.append([ 20.0,  -1.0]) #10
+    boundary.append([ 20.0,   0.0]) #11
+       
+    poly = pg.Mesh(2)
+    nodes = [poly.createNode(b) for b in boundary]
+
+    boundaryMarker = [1, 5, 1, 6, 1, 3, 1, 7, 1, 8, 1, 4]
+    for i in range(len(boundary)):
+        poly.createEdge(nodes[i], nodes[(i+1)%len(boundary)], boundaryMarker[i]) # dirichlet (inflow)
+    
+    poly.createEdge(nodes[1], nodes[10], 9)
+    poly.createEdge(nodes[4], nodes[7], 9)
+    
+    boundary = []
+    boundary.append([-0.5, -4.0]) #12
+    boundary.append([-0.5, -5.0]) #13
+    boundary.append([ 0.5, -5.0]) #14
+    boundary.append([ 0.5, -4.0]) #15
+    
+    
+    nodes2 = [poly.createNode(b) for b in boundary]
+    for i in range(len(boundary)):
+        poly.createEdge(nodes2[i], nodes2[(i+1)%len(boundary)], 11)
+  
+    poly.createEdge(nodes[2], nodes2[0], 10)
+    poly.createEdge(nodes[3], nodes2[1], 10)
+    poly.createEdge(nodes2[2], nodes[8], 10)
+    poly.createEdge(nodes2[3], nodes[9], 10)
+
+    poly.createEdge(nodes2[0], nodes2[1], 10)
+    poly.createEdge(nodes2[2], nodes2[3], 10)    
+        
+    poly.addRegionMarker((-19, -0.1), 1)
+    poly.addRegionMarker((-19, -1.1), 3)
+    poly.addRegionMarker((-19, -4.1), 5)
+    poly.addRegionMarker(( 19, -4.1), 5)
+    poly.addRegionMarker((-19, -5.1), 4)
+    poly.addRegionMarker((-19, -8.1), 2)
+    poly.addRegionMarker((0.0, -5.0), 6, 0.02)
+    
+    poly.addHoleMarker((-19, -4.1))
+    poly.addHoleMarker(( 19, -4.1))
     
 
     mesh = createMesh(poly, quality=33, area=maxArea, smooth=[1,10], verbose=verbose)
-    return mesh
-
-def calcVelocity(mesh, viscosity):
+    
     velBoundary=[[1, [0.0, 0.0]],
-                 [2, [1.0, 0.0]],
-                 [4, [1.0, 0.0]],
-                 [3, [0.0, 0.0]]
+                 [5, [1.0, 0.0]],
+                 [8, [0.0, 0.0]],
+                 #[6, [0.0, 0.0]],
+                 #[7, [-1, 0.0]],
+                 [4, [0.0, 0.0]],
+                 [3, [0.0, 0.0]],
+                 [10,[0.0, 0.0]]
                 ]
-    preBoundary=[[1, 0.0],
-                 [3, 0.0]]
+    preBoundary=[[6, 0.0],
+                 [7, 0.0]
+                 ]
+    
+    viscosity = pg.solver.parseMapToCellArray([[1, 1.0],
+                                               [2, 1.0],
+                                               [3, 1.0],
+                                               [4, 1.0],
+                                               [5, 1.0],
+                                               [6, 1.0]], 
+                                              mesh)
+    viscosity *= 10.
+    
+    print("div(V) = ", pg.solver.divergence(mesh, normMap=velBoundary))
+    
+    return mesh, velBoundary, preBoundary, viscosity
+
+def calcVelocity(mesh, viscosity, velBoundary, preBoundary):
 
     solutionName = createCacheName('vel', mesh, times)
     try:
@@ -147,9 +238,14 @@ def calcVelocity(mesh, viscosity):
         vel, pres, pCNorm, divVNorm = solveStokes_NEEDNAME(mesh, velBoundary,
                                                            preBoundary,
                                                            viscosity=viscosity,
-                                                           maxIter=200,
+                                                           maxIter=1000,
+                                                           tol=1e-6,
                                                            verbose=1)
         np.save(solutionName + '.bmat', vel)
+    
+        #plt.semilogy(divVNorm)
+        #pg.show(mesh, pg.cellDataToPointData(mesh, pres), cmap='b2r')
+        
     return vel
 
 def calcConcentration(mesh, vel, times):
@@ -258,10 +354,13 @@ vis=1
 swatch = pg.Stopwatch(True)
 pg.showLater(1)
 
-mesh = createTestWorld(maxArea=0.2, verbose=0)
-meshC = createTestWorld(maxArea=1, verbose=0)
+mesh, velBoundary, preBoundary, viscosity = createTestWorld1(maxArea=0.2,
+                                                             verbose=0)
+print(mesh)
+meshC, tmp, tmp, tmp=createTestWorld1(maxArea=1, verbose=0)
+meshD, tmp, tmp, tmp=createTestWorld1(maxArea=0.1, verbose=0)
 
-meshERT_FOP = appendTriangleBoundary(createTestWorld(maxArea=0.1, verbose=0), 
+meshERT_FOP = appendTriangleBoundary(meshD, 
                                     xbound=50, ybound=50, marker=1,
                                     quality=34.0, smooth=False, markerBoundary=1,
                                     isSubSurface=False, verbose=False)
@@ -269,11 +368,10 @@ print("meshgen:", swatch.duration(True))
 
 times = np.linspace(0, 40, 50)
 
-viscosity = pg.solver.parseMapToCellArray([[1, 3], [2, 1], [3, 12.0]], mesh)
-viscosity *= 10.
-
 dpi=92
-fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi)  
+#fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi)  
+
+fig = plt.figure() 
 axVis = fig.add_subplot(3,2,5)
 axVel = fig.add_subplot(3,2,6)
 
@@ -287,27 +385,31 @@ if vis:
     show(mesh, data=viscosity, colorBar=1, 
          orientation='vertical', label='Viscosity', axes=axVis)
     show(mesh, axes=axVis)
-
-vel = calcVelocity(mesh, viscosity)
+    
+vel = calcVelocity(mesh, viscosity, velBoundary, preBoundary)
 
 if vis:
-    show(mesh, data=pg.cellDataToPointData(mesh,
+    axVel, cbar = show(mesh, data=pg.cellDataToPointData(mesh,
                                            np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1])),
-         logScale=0, colorBar=1, orientation='vertical', label='|Velocity| in m/s',
-         cbar='b2r', axes=axVel)
+         logScale=0, colorBar=1,
+         orientation='vertical', label='|Velocity| in m/s',
+         axes=axVel
+         )
 
     pg.mplviewer.drawMeshBoundaries(axVel, mesh, fitView=True)
+    pg.viewer.showBoundaryNorm(mesh, velBoundary, color='red', axes=axVel)
     show(mesh, data=vel, axes=axVel, coarseMesh=meshC)
     plt.pause(0.1)
 print("vel:", swatch.duration(True))
-
 
 conc = calcConcentration(mesh, vel, times)
 
 
 if vis:
     gciCon= pg.mplviewer.drawModel(axCon, mesh, data=conc[1],
-                                   cMin=0, cMax=0.03)
+                                   cMin=0, cMax=0.03, 
+                                   #cmap='b2r'
+                                   )
     cbar = createColorbar(gciCon, orientation='vertical', label='Concentration')
 print("con:", swatch.duration(True))
 
@@ -343,26 +445,26 @@ def animate(i):
     #for i in range(1, len(conc)):
     tic = time.time()
     if vis:
-        pg.mplviewer.setMappableData(gciCon, conc[i], cMin=0, cMax=0.03,
-                                     logScale=False)
+        pg.mplviewer.setMappableData(gciCon, conc[i], logScale=False)
         gciCon.set_clim(0, 0.03)
         
     axGra.clear()
     
     dDensity = densityBrine * conc[i]
-    print(time.time()-tic); tic = time.time()
+    #print(time.time()-tic); tic = time.time()
     
     # calc gravimetric response
     dz = Gdg.dot(dDensity)[:,2]
+    print(min(dz), max(dz))
     axGra.clear()
     axGra.plot(gravPointsX, dz)
-    axGra.plot(gravPointsX, gravPointsX*0.0+0.03, 'v', color='black')
+    axGra.plot(gravPointsX, gravPointsX*0.0, 'v', color='black')
     axGra.set_ylabel('Grav in mGal')
-    axGra.set_xlim((-20,20))
-    axGra.set_ylim((0,0.003))
-    axGra.grid((0,0.003))
+    axGra.set_xlim((-20, 20))
+    axGra.set_ylim((0, 0.003))
+    axGra.grid()
     
-    print(time.time()-tic); tic = time.time()
+    #print(time.time()-tic); tic = time.time()
     axReA.clear()
     ert.show(ertScheme, values=resA[i], axes=axReA, scheme='DipoleDipole',
              cMin=5, cMax=35, colorBar=0)
@@ -376,16 +478,15 @@ def animate(i):
           "sum:", sum(conc[i]),
           "dsum:", (sum(conc[i])-sum(conc[i-1])),
           )
-    plt.pause(0.001)
+    #plt.pause(0.001)
 
 anim = animation.FuncAnimation(fig, animate,
                                frames=int(len(conc)),
-                               interval=1)#, blit=True)
-
+                               interval=2)#, blit=True)
 solutionName = createCacheName('all', mesh, times)+ "-" + str(ertScheme.size())
-anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
-          bitrate=24*1024, extra_args=None, metadata=None,
-          extra_anim=None, savefig_kwargs=None)
-
-
+#anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
+          #bitrate=24*1024, extra_args=None, metadata=None,
+          #extra_anim=None, savefig_kwargs=None)
+plt.ion()
+plt.show()
 pg.showNow()

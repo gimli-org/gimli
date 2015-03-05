@@ -307,7 +307,7 @@ def fillEmptyToCellArray(mesh, vals):
        
        
 
-def divergence(mesh, F=lambda r:r, order=1):
+def divergence(mesh, F=None, normMap=None, order=1):
     """ 
     MOVE THIS to a better place
     
@@ -317,11 +317,24 @@ def divergence(mesh, F=lambda r:r, order=1):
     Returns
     -------
     """
+    
+    if F is None:
+        F = lambda r:r
+    
     div = 0
     directionCheck = False
     
     if mesh.cellCount() > 0:
         directionCheck = True
+
+    bNorms = None
+    if normMap is not None:
+        bNorms = np.zeros((mesh.boundaryCount(), 2))
+        for pair in normMap: 
+            bounds = mesh.findBoundaryByMarker(pair[0])
+            for b in bounds:
+                bNorms[b.id()] = pair[1]
+                
         
     for b in mesh.boundaries():
                
@@ -333,13 +346,17 @@ def divergence(mesh, F=lambda r:r, order=1):
                 print("NeighbourInfos()", sw.duration(True))
                 ##return gauss(grid, F)
               
+            #don't calc for inner boundaries 
             if not b.leftCell() is None and not b.rightCell() is None: continue
                
         tmpdiv = 0
         shape = b.shape()
         
         if order == 1:
-            tmpdiv = shape.norm().dot(F(shape.center())) * shape.domainSize()
+            if bNorms is not None:
+                tmpdiv = shape.norm().dot(bNorms[b.id()]) * shape.domainSize()
+            else:
+                tmpdiv = shape.norm().dot(F(shape.center())) * shape.domainSize()
         else:
             weights = g.IntegrationRules.instance().weights(shape, order)
             abscissa = g.IntegrationRules.instance().abscissa(shape, order)

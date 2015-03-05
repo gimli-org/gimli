@@ -105,7 +105,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
         Instead of create a new and empty axes, just draw into the a given.
         Useful to combine draws.
 
-    *args, **kwargs :
+    **kwargs :
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
 
@@ -171,31 +171,58 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
 # def showMesh(...)
 
 
-def showBoundaryNorm(mesh, *args, **kwargs):
+def showBoundaryNorm(mesh, normMap=None, **kwargs):
     """
     Show mesh boundaries normals.
     
     Show the mesh and draw a black line along the normal direction of all
-    boundaries.
+    boundaries. If you provide a boundary marker vs. norm direction map, 
+    then only these norms are drawn.
 
     Parameters
     ----------
 
     mesh : :gimliapi:`GIMLI::Mesh`
         2D or 3D GIMLi mesh
+        
+    normMap : list
+        list of [boundary marker, [norm]] pairs. e.g. [[1, [0.0,1.0]], ... ]
 
+    **kwargs :
+        Will be forwarded to the draw functions and matplotlib methods,
+        respectively.
+        
     Returns
     -------
     axes : matplotlib.axes
     """
     ax = kwargs.pop('axes', None)
-    ax = show(mesh, showLater=True, axes=ax)[0]
+    
 
+    col = kwargs.pop('color', 'Black')
+    
+    if normMap:
+        for pair in normMap: 
+            bounds = mesh.findBoundaryByMarker(pair[0])
+            
+            for b in bounds:
+                c1 = b.center()
+                
+                if (pair[1][0] != 0) or (pair[1][1] != 0):
+                    ax.arrow(c1[0], c1[1], pair[1][0], pair[1][1],
+                             head_width=0.1, head_length=0.3,
+                             color=col, **kwargs)
+                else:
+                    ax.plot(c1[0], c1[1], 'o', color=col)
+        return
+    
+    
+    ax = show(mesh, showLater=True, axes=ax)[0]
     for b in mesh.boundaries():
         c1 = b.center()
         c2 = c1 + b.norm()
         ax.plot([c1[0], c2[0]],
-                [c1[1], c2[1]], color='Black', *args, **kwargs)
+                [c1[1], c2[1]], color=col, **kwargs)
 
     if not showLater:
         plt.show()
