@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+pygimli.utils - compilation of several utility functions 
+"""
 
 import pygimli as pg
 
@@ -106,9 +109,9 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
         raise Exception('Either dx or nSteps have to be given.')
 
 def diff(v):
-    '''
+    """
         Return RVector as approximate derivative from v as r[v_1-v_0, v2-v_1,...]
-    '''
+    """
     r = pg.RVector(len(v) -1)
     for i in range(len(r)):
         r[ i ] = v[ i + 1 ] - v[ i ]

@@ -4,9 +4,9 @@ from pygimli import FDEM1dModelling, RVector, asvector, RTrans, RTransLog, RTran
 from pygimli.utils import draw1dmodel
 
 def readusffile( filename, DATA = [] ):
-    ''' read data from single USF (universal sounding file) file
+    """ read data from single USF (universal sounding file) file
         DATA = readusffile( filename )
-        DATA = readusffile( filename, DATA ) will append to DATA '''
+        DATA = readusffile( filename, DATA ) will append to DATA """
     
     columns = []
     nr = 0
@@ -53,8 +53,8 @@ def readusffile( filename, DATA = [] ):
     return DATA
 
 def readusffiles( filenames, DATA = [] ):
-    ''' read all soundings data from a list of usf files
-        DATA = readusffiles( filenames ) '''
+    """ read all soundings data from a list of usf files
+        DATA = readusffiles( filenames ) """
     DATA = []
     for onefile in filenames:
         DATA = readusffile( onefile, DATA )

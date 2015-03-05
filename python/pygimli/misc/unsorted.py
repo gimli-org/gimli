@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
@@ -201,7 +202,7 @@ def boundaryPlaneIntersectionLines(boundaries, plane):
 
 def number_of_processors():
     import sys, os
-    ''' number of virtual processors on the computer '''
+    """ number of virtual processors on the computer """
     # Windows
     if os.name == 'nt':
         return int(os.getenv('NUMBER_OF_PROCESSORS'))
@@ -234,9 +235,9 @@ def assembleDC(mesh, source = pg.RVector3(0.0, 0.0, 0.0)):
 #def assembleDC
 
 def assembleCEM(S, mesh, marker, zi, nodeID = -1, verbose = False):
-    '''
+    """
         add dc-cem to stiffness system, return new Matrix and sum of electrodes surface
-    '''
+    """
 
     sumArea = 0
 
