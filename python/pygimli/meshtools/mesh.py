@@ -64,7 +64,8 @@ def createMesh(poly, quality=30, area=0.0,
         if switches is None:
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm
-            switches = 'pzeA'
+            # no -a here ignores per region area
+            switches = 'pzaeA'
 
             if area > 0:
                 switches += 'a' + str(area)
@@ -74,6 +75,7 @@ def createMesh(poly, quality=30, area=0.0,
         if not verbose:
             switches += 'Q'
 
+        #print(switches)
         tri.setSwitches(switches)
         mesh = tri.generate()
 

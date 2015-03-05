@@ -298,7 +298,7 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
     for (Mesh::RegionMarkerList::const_iterator
         it = mesh.regionMarker().begin(); it != mesh.regionMarker().end(); it ++){
 
-//         std::cout << it->pos().x() << " "
+//         std::cout << it->pos().x() << " " << it->pos().y() << " " 
 //                   << it->marker() << " "
 //                   << it->area() << std::endl;
         trimesh.regionlist[count * 4] = it->pos().x();
@@ -307,13 +307,6 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
         trimesh.regionlist[count * 4 + 3] = it->area();
         count ++;
     }
-//     for (int i = 0; i < nRegions; i ++){
-//         trimesh.regionlist[i * 4] = domain.region(i).x();
-//         trimesh.regionlist[i * 4 + 1] = domain.region(i).y();
-//         trimesh.regionlist[i * 4 + 2] = domain.region(i).attribute();
-//         trimesh.regionlist[i * 4 + 3] = domain.region(i).dx();
-//     }
-
 
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
