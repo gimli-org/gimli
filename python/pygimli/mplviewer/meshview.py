@@ -172,6 +172,8 @@ def drawModel(axes, mesh, data=None,
         Parameters
         ----------
     """
+    if mesh.nodeCount() == 0:
+        raise("drawModel: The mesh is empty.", mesh)
 
     useTri = kwargs.pop('tri', False)
 
@@ -180,6 +182,7 @@ def drawModel(axes, mesh, data=None,
                          **kwargs)
 
     else:
+        
         gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha,
                                              verbose=verbose, **kwargs)
 

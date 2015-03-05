@@ -27,8 +27,13 @@ def createCacheName(base, mesh, times):
 
 class ERT():
     
-    def __init__(self, verbose=False):
+    """
+        ERT Manager. should solve most of the common problems
+    """
         
+    def __init__(self, verbose=False):
+        """
+        """
         self.fop = pb.DCSRMultiElectrodeModelling(verbose=verbose)
         #self.fop.regionManager().region(1).setBackground(True)
         #self.fop.createRefinedForwardMesh(refine=True, pRefine=False)
@@ -38,19 +43,20 @@ class ERT():
         self.datTrans = pg.RTransLog()
         self.modTrans = pg.RTransLog()
 
-        self.inv.setMaxIter(10)
         self.inv.setTransData(self.datTrans)
         self.inv.setTransModel(self.datTrans)
         #self.inv.setError(data('err'))
         #self.inv.setModel(pg.RVector(fop.regionManager().parameterCount(),
                           #pg.median(data('rhoa'))))
         
-        self.inv.setLambda(5)
         self.schemeMg = pb.dataview.dataview.DataSchemeManager()
+        self.paraMesh = None
          
     def show(self, data, values=None, axes=None,
              cMin=None, cMax=None, colorBar=1, **kwargs):
-        
+        """
+        """
+        gci = None
         if isinstance(data, pg.DataContainer):
             scheme = kwargs.pop('scheme', 'unknown')
             pseudoscheme = getattr(pb.dataview.Pseudotype, scheme)
@@ -67,18 +73,112 @@ class ERT():
                                                      cMin=cMin,  cMax=cMax,
                                      label='Apparent resistivity in $\Omega m$',
                                      **kwargs)
+        elif isinstance(data, pg.RVector):
+            # assuming this is a model from the last inversion run
+            pg.show(self.fop.regionManager().paraDomain(), data, 
+                    axes=axes, **kwargs)
+            
         else:
             print(type(data))
             raise
         return gci
         
+    def invert(self, data, values=None, verbose=0, **kwargs):
+        """
+        Invert the given data.
+        
+        A parametric mesh for the inversion will be created if non is given
+        before.
+            
+        Parameters
+        ----------
+        """
+        self.fop.setVerbose(verbose)
+        self.inv.setVerbose(verbose)
+        self.inv.setMaxIter(kwargs.pop('maxiter', 10))
+        self.inv.setLambda(kwargs.pop('lambd', 10))
+        
+        if self.paraMesh is None:
+            self.paraMesh = createParaMesh2dGrid(data.sensorPositions(),
+                                                 **kwargs)
+            self.setParaMesh(self.paraMesh)
+            if verbose:
+                print(self.paraMesh)
+                #pg.show(self.paraMesh)
+                
+        err = data('err')
+        rhoa = data('rhoa')
+                    
+        startModel = pg.RVector(self.fop.regionManager().parameterCount(),
+                                pg.median(rhoa))
+
+        self.fop.setData(data)
+        self.inv.setForwardOperator(self.fop)
+        
+        # check err here 
+        self.inv.setData(rhoa)
+        self.inv.setError(err)
+        self.inv.setModel(startModel)
+        
+        model = self.inv.run()
+        
+        if values is not None:
+            
+            if isinstance(values, pg.RVector):
+                values = [values]
+            elif isinstance(values, np.ndarray):
+                if values.ndim == 1:
+                    values = [values]
+            
+            allModel = pg.RMatrix(len(values)+1, len(model))
+            allModel[0] = model
+            self.inv.setVerbose(False)
+            for i in range(1, len(values)):
+                tic=time.time()
+                self.inv.setModel(model)
+                self.inv.setReferenceModel(model)
+                dData = pg.abs(values[i] / rhoa)
+                
+                relModel = self.inv.invSubStep(pg.log(dData))
+                allModel[i] = model * pg.exp(relModel)
+                print(i, "/", len(values), " : ", time.time()-tic, "s")
+                
+            return allModel
+        return model
+
+    def setParaMesh(self, mesh):
+        """
+        Set the parameter mesh for any inversion.
+            
+        Parameters
+        ----------
+        """
+        self.fop.setMesh(self.paraMesh)
+        self.fop.regionManager().region(1).setBackground(True)
+        self.fop.createRefinedForwardMesh(refine=True, pRefine=False)
+        
     def createData(self, sensors, scheme):
+        """
+        Create a empty data file. i.e. a measurement scheme.
+            
+        Parameters
+        ----------
+        """
         scheme = self.schemeMg.scheme(scheme)
         scheme.setInverse(False)
         scheme.addInverse(False)
         return scheme.create(sensorList=sensors)
         
     def simulate(self, mesh, resistivity, data):
+        """
+        Simulation a ERT measurement.
+        
+        Perform the forward task for a given mesh, 
+        a resistivity distribution and a measurement scheme.
+            
+        Parameters
+        ----------
+        """
         self.fop.setMesh(mesh)
         self.fop.setData(data)
         res = self.fop.response(resistivity)
@@ -123,20 +223,25 @@ def createTestWorld1(maxArea=0.2, verbose=0):
     poly.addRegionMarker((-19, -19), 3)
     poly.addRegionMarker((  0, -7),  4)
     
-    mesh = createMesh(poly, quality=33, area=maxArea, smooth=[1,10], verbose=verbose)
+    mesh = createMesh(poly, quality=33, area=maxArea,
+                      smooth=[1,10], verbose=verbose)
     
     velBoundary=[[2, [1.0, 0.0]],
                  [6, [1.0, 0.0]],
-                 #[3, [0.0, 0.0]]
+                 [3, [1./3., 0.0]],
                  [8, [0.0, 0.0]],
                  [4, [0.0, 0.0]]
                 ]
     preBoundary=[[1, 0.0],
-                 [3, 0.0],
+                 #[3, 0.0],
                  [5, 0.0],
                  [7, 0.0]]
     
-    viscosity = pg.solver.parseMapToCellArray([[1, 5.0], [2, 1.0], [3, 3.0], [4, 10.0]], mesh)
+    viscosity = pg.solver.parseMapToCellArray([[1, 3.0], 
+                                               [2, 1.0], 
+                                               [3, 6.0],
+                                               [4, 12.0]], mesh)
+    # 30 works nice with tol=1e-2 and pressureRelaxation = 0.01
     viscosity *= 10.
 
     return mesh, velBoundary, preBoundary, viscosity
@@ -239,7 +344,7 @@ def calcVelocity(mesh, viscosity, velBoundary, preBoundary):
                                                            preBoundary,
                                                            viscosity=viscosity,
                                                            maxIter=1000,
-                                                           tol=1e-6,
+                                                           tol=1e-4,
                                                            verbose=1)
         np.save(solutionName + '.bmat', vel)
     
@@ -293,8 +398,8 @@ def calcGravKernel(mesh):
     return gravPointsX, Gdg
         
 def transResistivity(mesh, viscosity, concentration, meshI):
-    viscERT = pg.interpolate(mesh, viscosity, meshI.cellCenters())
-    viscERT = pg.solver.fillEmptyToCellArray(meshI, viscERT)
+    viscI = pg.interpolate(mesh, viscosity, meshI.cellCenters())
+    viscI = pg.solver.fillEmptyToCellArray(meshI, viscI)
 
     Con = pg.RMatrix(len(concentration), len(concentration[0]))
     for i in range(len(concentration)):
@@ -302,10 +407,10 @@ def transResistivity(mesh, viscosity, concentration, meshI):
     ConI = pg.RMatrix(len(concentration), meshI.cellCount())
     pg.interpolate(mesh, Con, meshI.cellCenters(), ConI)
     
-    resistivity = pg.RMatrix(len(concentration), meshI.cellCount())
+    resis = pg.RMatrix(len(concentration), meshI.cellCount())
     for i in range(len(concentration)):
-        resistivity[i] = 1./(1./viscERT + pg.abs(12.*ConI[i]))
-    return resistivity 
+        resis[i] = 1./(1./viscI + pg.abs(12.*ConI[i]))
+    return resis
 
 def calcApparentResistivities(mesh, resistivities):
     ert = ERT(verbose=False)
@@ -316,7 +421,7 @@ def calcApparentResistivities(mesh, resistivities):
     
     try:
         resA = np.load(solutionName + '.bmat.npy')
-        
+        ertScheme = pb.DataContainerERT(solutionName + '.dat')
     except Exception as e:
         print(e)
         print("Building .... ")
@@ -346,10 +451,28 @@ def calcApparentResistivities(mesh, resistivities):
                   "min:", min(resA[i]), "max:", max(resA[i]) )
 
         np.save(solutionName + '.bmat', resA)
+        ertScheme.save(solutionName + '.dat', 'a b m n rhoa err k')
+        
     return resA, ert, ertScheme
 
+def calcERT(ert, ertScheme, resA):
+    solutionName = createCacheName('ERT', mesh, times)+ "-" + str(ertScheme.size())
+    try:   
+        ertModels = pg.load(solutionName + '.bmat')
+        ertMesh = pg.load(solutionName + '.bms')
+    except Exception as e:
+        print(e)
+        print("Building .... ")
+        ertModels = ert.invert(ertScheme, values=resA, maxiter=10, 
+                               paraDX=0.5, paraDZ= 0.5, nLayers=20, paraDepth=20,
+                               lambd=50, verbose=1)
+        ertMesh=ert.fop.regionManager().paraDomain()
+        ertModels.save(solutionName + '.bmat')
+        ertMesh.save(solutionName)
+    return ertModels, ertMesh
 
-vis=1
+vis = 1
+mp4 = 1
 
 swatch = pg.Stopwatch(True)
 pg.showLater(1)
@@ -369,16 +492,22 @@ print("meshgen:", swatch.duration(True))
 times = np.linspace(0, 40, 50)
 
 dpi=92
-#fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi)  
-
-fig = plt.figure() 
+fig = None
+if mp4:
+    fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi)  
+else:
+    fig = plt.figure() 
+    
 axVis = fig.add_subplot(3,2,5)
 axVel = fig.add_subplot(3,2,6)
 
-axCon = fig.add_subplot(3,3,5)
-axGra = fig.add_subplot(3,3,2)
-axRes = fig.add_subplot(3,3,6)
-axReA = fig.add_subplot(3,3,3)
+axCon = fig.add_subplot(3,3,4)
+axGra = fig.add_subplot(3,3,1)
+axRes = fig.add_subplot(3,3,5)
+axReA = fig.add_subplot(3,3,2)
+
+axERT = fig.add_subplot(3,3,6)
+axERR = fig.add_subplot(3,3,3)
    
     
 if vis:
@@ -414,32 +543,45 @@ if vis:
 print("con:", swatch.duration(True))
 
 
-resistivity = transResistivity(mesh, viscosity, conc, meshERT_FOP)
+resistivities = transResistivity(mesh, viscosity, conc, meshERT_FOP)
 
 if vis:
     gciRes = pg.mplviewer.drawModel(axRes, meshERT_FOP, 
-                                    data=resistivity[0],
+                                    data=resistivities[0],
                                     cMin=1, cMax=100)
     cbar = createColorbar(gciRes, orientation='vertical', label='Resistivity')
     axRes.set_xlim((-20, 20))
     axRes.set_ylim((-20, 00))
 print("res:", swatch.duration(True))
     
-dz = np.zeros(len(conc))
-densityBrine = 1.2 # g/cm^3
-densityBrine *= 1000. # kg/m^3
-
 gravPointsX, Gdg = calcGravKernel(mesh)
 print("grav:", swatch.duration(True))
 
-#meshERT = pg.meshtools.createParaMesh2dGrid(ertPointsX,
-                                            #paraDZ=0.5)
-
-resA, ert, ertScheme = calcApparentResistivities(meshERT_FOP, resistivity)
+resA, ert, ertScheme = calcApparentResistivities(meshERT_FOP, resistivities)
 gciARes = ert.show(ertScheme, values=resA[0], axes=axReA, 
                    scheme='DipoleDipole',
                    cMin=5, cMax=35, orientation='vertical')
 print("appRes:", swatch.duration(True))
+
+ertModels, meshERT = calcERT(ert, ertScheme, resA)
+
+if vis:
+    gciERT = pg.mplviewer.drawModel(axERT, meshERT, 
+                                    data=ertModels[0],
+                                    cMin=1, cMax=100)
+    cbar = createColorbar(gciERT, orientation='vertical', label='Resistivity')
+    gciERR = pg.mplviewer.drawModel(axERR, meshERT, 
+                                    data=ertModels[0]/ertModels[0],
+                                    cMin=1/4, cMax=4, cmap='b2r')
+    cbar = createColorbar(gciERR, orientation='vertical', label='Ratio')
+
+print("ert:", swatch.duration(True))
+
+
+
+dz = np.zeros(len(conc))
+densityBrine = 1.2 # g/cm^3
+densityBrine *= 1000. # kg/m^3
 
 def animate(i):
     #for i in range(1, len(conc)):
@@ -455,7 +597,7 @@ def animate(i):
     
     # calc gravimetric response
     dz = Gdg.dot(dDensity)[:,2]
-    print(min(dz), max(dz))
+    
     axGra.clear()
     axGra.plot(gravPointsX, dz)
     axGra.plot(gravPointsX, gravPointsX*0.0, 'v', color='black')
@@ -471,22 +613,33 @@ def animate(i):
      
     if vis:
         pg.mplviewer.setMappableData(gciRes, 
-                                     resistivity[i],
+                                     resistivities[i],
                                      cMin=1, cMax=100,
                                      logScale=True)
+        pg.mplviewer.setMappableData(gciERT, 
+                                     ertModels[i+1],
+                                     cMin=1, cMax=100,
+                                     logScale=True)
+        pg.mplviewer.setMappableData(gciERR, 
+                                     ertModels[i+1]/ertModels[0],
+                                     cMin=1/4, cMax=4,
+                                     logScale=True)
+        
     print(i, time.time()-tic, 
           "sum:", sum(conc[i]),
           "dsum:", (sum(conc[i])-sum(conc[i-1])),
           )
-    #plt.pause(0.001)
+    if mp4 or vis:
+        plt.pause(0.001)
 
 anim = animation.FuncAnimation(fig, animate,
                                frames=int(len(conc)),
-                               interval=2)#, blit=True)
+                               interval=1)#, blit=True)
 solutionName = createCacheName('all', mesh, times)+ "-" + str(ertScheme.size())
-#anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
-          #bitrate=24*1024, extra_args=None, metadata=None,
-          #extra_anim=None, savefig_kwargs=None)
-plt.ion()
-plt.show()
+
+if mp4:
+    anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
+          bitrate=24*1024, extra_args=None, metadata=None,
+          extra_anim=None, savefig_kwargs=None)
+
 pg.showNow()
