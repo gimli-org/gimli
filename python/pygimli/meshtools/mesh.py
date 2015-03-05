@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import pygimli as pg
 import numpy as np
 
@@ -10,9 +11,9 @@ def createMesh(poly, quality=30, area=0.0,
                verbose=False):
     """
     Create a mesh for a given PLC mesh.
-    
-    Create a mesh for a given PLC using    
-    :term:`triangle` or :term:`tetgen` if the gimli support for the 
+
+    Create a mesh for a given PLC using
+    :term:`triangle` or :term:`tetgen` if the gimli support for the
     meshgenerator is installed.
     The mesh poly need to be a valid PLC.
 
@@ -249,11 +250,12 @@ def readGmsh(fname, verbose=False):
 
     return mesh
 
+
 def readTriangle(fname, verbose=False):
     """
     Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
-    
-    Read :term:`Triangle` :cite:`Shewchuk96b` ASCII files and return a instance 
+
+    Read :term:`Triangle` :cite:`Shewchuk96b` ASCII files and return a instance
     of GIMLI::Mesh class.
     See: ://www.cs.cmu.edu/~quake/triangle.html
 
@@ -261,20 +263,21 @@ def readTriangle(fname, verbose=False):
     ----------
     fname : string
         Filename of the file to read (\\*.n, \\*.e)
-        
+
     verbose : boolean, optional
         Be verbose during import.
 
     """
-    
+
     raise("implement me!")
     os.system('meshconvert -d2 ' + fname)
-    return Mesh(2)
-    
+    return pg.Mesh(2)
+
+
 def readTetgen(fname, verbose=False):
     """
     Read :term:`Tetgen` :cite:`Si2004` mesh.
-    
+
     Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
     of GIMLI::Mesh class.
     See: http://tetgen.org/
@@ -283,15 +286,16 @@ def readTetgen(fname, verbose=False):
     ----------
     fname : string
         Filename of the file to read (\\*.n, \\*.e \\*.f)
-        
+
     verbose : boolean, optional
         Be verbose during import.
 
     """
     raise("implement me!")
     os.system('meshconvert -d3 -D ..' + fname)
-    return Mesh(3)
-        
+    return pg.Mesh(3)
+
+
 def readHydrus2dMesh(fname='MESHTRIA.TXT'):
     """
     Import mesh from Hydrus2D.
@@ -505,8 +509,8 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
                        verbose=False, *args, **kwargs):
     """
     Create a PLC mesh for an inversion parameter mesh.
-    
-    Create a PLC mesh for an inversion parameter mesh for a given list of 
+
+    Create a PLC mesh for an inversion parameter mesh for a given list of
     sensor positions.
     Sensor position assumed on the surface and must be sorted and unique.
 
@@ -629,7 +633,7 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
                          **kwargs):
     """
     Create a grid style mesh for an inversion parameter mesh.
-    
+
     Return parameter grid for a given list of sensor positions.
 
     Parameters
