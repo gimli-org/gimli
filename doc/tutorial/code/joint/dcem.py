@@ -6,13 +6,13 @@ import pylab as P
 from pygimli.utils.base import draw1dmodel
 
 class DCEM1dModelling( g.ModellingBase ):
-    '''
+    """
         modelling jointing DC and EM 1Dforward operators
-    '''
+    """
     def __init__( self, nlay, ab2, mn2, freq, coilspacing, verbose = False  ):
-        '''
+        """
             constructor, number of layers, AB/2 & MN/2, frequencies & coil spacing */
-        '''
+        """
         g.ModellingBase.__init__( self, verbose )
         self.nlay_ = nlay
         self.fDC_ = g.DC1dModelling( nlay, ab2, mn2, verbose )

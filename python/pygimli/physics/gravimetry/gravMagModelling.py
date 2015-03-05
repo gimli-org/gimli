@@ -4,7 +4,7 @@
 import numpy as np
 import pygimli as pg
 import time
-from geomagnetics import GeoMagT0  # , date
+#from geomagnetics import GeoMagT0  # , date
 
 mu0 = 4.0 * np.pi * 1e-7
 

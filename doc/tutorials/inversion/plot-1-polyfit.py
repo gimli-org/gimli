@@ -44,7 +44,7 @@ import matplotlib.pyplot as plt
 
 print(pg.__version__)
 
-'''
+"""
 #! As a result, all :ref:`sec:api` objects (classes and functions) can be referred to with a preceding `pg.`, e.g.,
 #! printing the version string for gimli.
 
@@ -61,7 +61,7 @@ That's it.
 
 As a main advantage of Python, the actual computations can be easily combined with post-processing or visualization, even building graphical user-interfaces.
 In this code example we use matplotlib, a plotting library inside of pylab, a compound of different routines for numerics and plotting, very much comparable to MatLab.
-'''
+"""
 
 class FunctionModelling(pg.ModellingBase):
     def __init__(self, nc, xvec, verbose = False):

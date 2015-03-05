@@ -19,7 +19,7 @@ import numpy as np
 try:
     import pygimli as pg
 except ImportError:
-    raise Exception('''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH ''')
+    raise Exception("""ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH """)
     
 import pygimli.mplviewer
 from pygimli.mplviewer.colorbar import cmapFromName

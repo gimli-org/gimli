@@ -25,10 +25,9 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
         """
         """
         res = pb.getComplexData(self.data())
-        re = pg.RVector(self.regionManager().parameterCount(),
-                        pg.mean(pg.real(res)))
-        im = pg.RVector(self.regionManager().parameterCount(),
-                        -pg.mean(pg.imag(res)))
+        parCount = self.regionManager().parameterCount()
+        re = pg.RVector(parCount, pg.mean(pg.real(res)))
+        im = pg.RVector(parCount, -pg.mean(pg.imag(res)))
         return pg.cat(re, im)
 
     def createJacobian(self, model):

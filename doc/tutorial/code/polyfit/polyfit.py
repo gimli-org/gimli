@@ -6,31 +6,31 @@ import pygimli as g
 import pylab as P
 
 class FunctionModelling( g.ModellingBase ):
-    '''
+    """
         new modelling operator returning f(x) derived from modelling base class
-    '''
+    """
     def __init__( self, nc, xvec, verbose = False  ):
-        '''
+        """
             constructor, nc: number of coefficients, xvec: abscissa, */
-        '''
+        """
         g.ModellingBase.__init__( self, verbose )
         self.x_ = xvec
         self.nc_ = nc
         self.regionManager().setParameterCount( nc )
 
     def response( self, par ):
-        '''
+        """
            the main thing - the forward operator: return f(x)
-        '''
+        """
         y = g.RVector( self.x_.size(), par[ 0 ] )
         for i in range( 1, self.nc_ ):
             y += g.pow( self.x_, i ) * par[ i ];
         return y;
 
     def startModel( self ):
-        '''
+        """
             define the startmodel
-        '''
+        """
         return g.RVector( self.nc_, 0.5 )
 
 

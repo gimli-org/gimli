@@ -43,9 +43,9 @@ of the individual boundaries b.
 
 
 def uDirichlet(b):
-    '''
+    """
         Return a solution value for coordinate p.
-    '''
+    """
     return 4.0
 
 dirichletBC = [[1, 1.0],  # left
