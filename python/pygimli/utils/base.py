@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-''' pygimli base functions '''
+""" 
+pygimli base functions 
+"""
 
 import numpy as np
 import pygimli as pg

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
     Some data related viewer
@@ -7,9 +8,9 @@ import numpy as np
 
 
 def drawSensorAsMarker(ax, data):
-    '''
+    """
         Draw Sensor marker, these marker are pickable
-    '''
+    """
     elecsX = []
     elecsY = []
 
@@ -26,11 +27,11 @@ def drawSensorAsMarker(ax, data):
 
 
 def drawTravelTimeData(a, data):
-    '''
+    """
         Draw first arrival traveltime data into mpl axes a.
         data of type \ref DataContainer must contain sensorIdx 's' and 'g'
         and thus being numbered internally [0..n)
-    '''
+    """
 
     x = pg.x(data.sensorPositions())
 #    z = pg.z(data.sensorPositions())

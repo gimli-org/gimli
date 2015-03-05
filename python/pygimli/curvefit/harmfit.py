@@ -6,7 +6,6 @@ import numpy as np
 import pygimli as pg
 from pygimli.utils import getIndex, filterIndex
 
-#from numpy import ones, array, sin, cos, pi, linalg, diag
 
 class harmFunctor():
     def __init__(self, A, coeff, xmin, xSpan):
@@ -24,7 +23,7 @@ class harmFunctor():
         return sum(A * self.coeff_)
 
 def harmfitNative(y, x = None, nc = None, xc = None, err = None):
-    '''
+    """
         python based curve-fit by harmonic functions
         yc = harmfitNativ(x,y[,nc,xc,err])
         y   .. values of a curve to be fitted
@@ -32,7 +31,7 @@ def harmfitNative(y, x = None, nc = None, xc = None, err = None):
         nc  .. number of coefficients
         xc  .. abscissa to fit on (otherwise equal to x)
         err .. data error
-    '''
+    """
     y = np.asarray(y)
 
     if x is None:
@@ -86,7 +85,7 @@ def harmfitNative(y, x = None, nc = None, xc = None, err = None):
 def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
             window=None, verbose=False, dosave=False,
             lineSearch=True, robust=False, maxiter=20):
-    '''
+    """
         HARMFIT - GIMLi based curve-fit by harmonic functions
         y .. 1d-array(len(y)) values to be fitted
         x .. 1d-array(len(y)) abscissa data spacing. if not given: 1 * [0 .. len(y))
@@ -98,7 +97,7 @@ def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
 
         response .. 1d-array(len(y)) if no resample given, else 1d-array(len(resample))
         coefficients .. coefficients for harmic functions that fit y
-    '''
+    """
     if x is None:
         x = pg.asvector(np.arange(len(y)))
     else:

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import sys
@@ -69,9 +70,9 @@ class Property:
                 self.targetFunct()
         
     def setVal(self, val):
-        '''
+        """
             Convert a value INTO the appropriate ctrl-setting
-        '''
+        """
 #        print "set value for: ", self.name, self.ctrl, val
         if val is None:
             raise Exception("internal: No value given for setter: " + self.name + self.ctrl)
@@ -124,9 +125,9 @@ class Property:
                     #self.val = val
 
     def getValFromCtrl(self):
-        '''
+        """
             Convert the value FROM the appropriate ctrl-setting
-        '''
+        """
 
         #print "getValFromCtrl", self.ctrl
 
@@ -211,7 +212,7 @@ class ManagedProperties:
                 sys.stderr.write("unknown property for panel "  + self.piCaption + " : " + k + "\n")
 
     def propertyChanged(self):
-        ''' Abstract: will be called if some property value changed. to be overridden by child classes '''
+        """ Abstract: will be called if some property value changed. to be overridden by child classes """
         pass
 
 # END class ManagedProperties

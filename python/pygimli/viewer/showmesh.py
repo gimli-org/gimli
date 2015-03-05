@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-""" Generic mesh visualization tools. """
+"""
+Generic mesh visualization tools. 
+"""
 
 try:
     import pygimli as pg

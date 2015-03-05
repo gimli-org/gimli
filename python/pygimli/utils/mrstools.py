@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-""" mrstools - functions for MRS data """
+""" 
+mrstools - tools for magnetic resonance sounding (MRS)
+"""
 
 import pygimli as pg
 import numpy as N
@@ -7,10 +9,10 @@ import pylab as P
 from .base import draw1dmodel, rndig
 
 class MRS1dBlockQTModelling(pg.ModellingBase):
-    '''
+    """
     MRS1dBlockQTModelling - pygimli modelling class for block-mono QT inversion
     f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False )
-    '''
+    """
     def __init__(self, nlay, KR, KI, zvec, t, verbose=False ):
         """constructor."""
         mesh = pg.createMesh1DBlock(nlay, 2) # thk, wc, T2*
@@ -125,9 +127,9 @@ def qtblockmodelling(mydir, nlay,
 
 def showqtresultfit(thk, wc, t2, datvec, resp, t,
                     islog=True, clim=None, nu=3, nv=2):
-    ''' show mrs qt result and data fit
+    """ show mrs qt result and data fit
     showqtresultfit(thk,wc,t2,datvec,resp,t,islog=True,clim=None,nu=3,nv=2)
-    '''
+    """
     if clim is None:
         cma = max(datvec)
         cmi = min(datvec)
