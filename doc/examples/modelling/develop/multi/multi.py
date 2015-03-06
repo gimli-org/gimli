@@ -435,8 +435,6 @@ def calcApparentResistivities(mesh, resistivities):
         ertData.set('err', pg.abs(errVolt / voltage) + errPerc / 100.0)
         print('err min:', min(ertData('err'))*100, 'max:', max(ertData('err'))*100)
         
-        ertData.save('ert-0.dat', 'a b m n rhoa err k')
-        
         for i in range(0, len(resistivities)):
             tic =  time.time()
             resA[i] = ert.fop.response(resistivities[i])
@@ -451,9 +449,9 @@ def calcApparentResistivities(mesh, resistivities):
                   "min:", min(resA[i]), "max:", max(resA[i]) )
 
         np.save(solutionName + '.bmat', resA)
-        ertScheme.save(solutionName + '.dat', 'a b m n rhoa err k')
+        ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
         
-    return resA, ert, ertScheme
+    return resA, ert, ertData
 
 def calcERT(ert, ertScheme, resA):
     solutionName = createCacheName('ERT', mesh, times)+ "-" + str(ertScheme.size())
@@ -572,7 +570,7 @@ if vis:
     cbar = createColorbar(gciERT, orientation='vertical', label='Resistivity')
     gciERR = pg.mplviewer.drawModel(axERR, meshERT, 
                                     data=ertModels[0]/ertModels[0],
-                                    cMin=1/4, cMax=4, cmap='b2r')
+                                    cMin=1/6, cMax=6, cmap='b2r')
     cbar = createColorbar(gciERR, orientation='vertical', label='Ratio')
 
 print("ert:", swatch.duration(True))
@@ -622,7 +620,7 @@ def animate(i):
                                      logScale=True)
         pg.mplviewer.setMappableData(gciERR, 
                                      ertModels[i+1]/ertModels[0],
-                                     cMin=1/4, cMax=4,
+                                     cMin=1/6, cMax=6,
                                      logScale=True)
         
     print(i, time.time()-tic, 
