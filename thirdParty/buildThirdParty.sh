@@ -550,8 +550,15 @@ buildSUITESPARSE(){
 		echo "INSTALL_LIB = $SUITESPARSE_DIST/lib" >> SuiteSparse_config/SuiteSparse_config.mk;
 		echo "INSTALL_INCLUDE = $SUITESPARSE_DIST/include" >> SuiteSparse_config/SuiteSparse_config.mk;
 
-		"$MAKE" -j$PARALLEL_BUILD library
-		"$MAKE" install
+		MODULE='.'
+		if [ -n "$1" ]; then
+			MODULES=$1
+		fi
+		echo "Installing $MODULES"
+		pushd $MODULE
+            		"$MAKE" -j$PARALLEL_BUILD library
+		        "$MAKE" install
+		popd 
 	popd
 }
 
@@ -710,6 +717,8 @@ do
 		buildTRIANGLE;;
 	suitesparse)
 		buildSUITESPARSE;;
+    umfpack)
+        buildSUITESPARSE UMFPACK;;
 	gccxml)
 		buildGCCXML;;
 	pygccxml)

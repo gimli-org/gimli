@@ -187,10 +187,11 @@ def generate(defined_symbols, extraIncludes):
 
     settings.includesPaths.insert(0,os.path.abspath(extraIncludes))
 
-    print("gccxml-binary: ", gccxmlpath)
-    print("extra-include: ", os.path.abspath(extraIncludes))
-    print("gccxml includes: ", settings.includesPaths)
-    print("gccxml defines: ", defines)
+    print("gccxml_path=%s" % gccxmlpath)
+    print("working_directory=%s" % settings.gimli_path)
+    print("include_paths=%s" % settings.includesPaths)
+    print("define_symbols=%s" % defines)
+    print("indexing_suite_version=2")
     
     mb = module_builder.module_builder_t([xml_cached_fc],
                                          gccxml_path=gccxmlpath,

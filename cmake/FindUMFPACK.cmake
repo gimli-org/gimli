@@ -5,16 +5,11 @@ if (UMFPACK_INCLUDES AND UMFPACK_LIBRARIES)
   set(UMFPACK_FIND_QUIETLY TRUE)
 endif (UMFPACK_INCLUDES AND UMFPACK_LIBRARIES)
 
-if(NOT EXTERNAL_DIR)
-	set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
-endif()
-message(STATUS "External set to: ${EXTERNAL_DIR}")
-
 find_path(UMFPACK_INCLUDES
   NAMES
   umfpack.h
   HINTS 
-	${EXTERNAL_DIR}/include $ENV{EXTERNAL_DIR}/include
+    ${EXTERNAL_DIR}/include $ENV{EXTERNAL_DIR}/include
   PATHS
   $ENV{UMFPACKDIR}
   ${INCLUDE_INSTALL_DIR}
@@ -23,7 +18,23 @@ find_path(UMFPACK_INCLUDES
   ufsparse
 )
 
-find_library(UMFPACK_LIBRARIES umfpack PATHS $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+find_library(UMFPACK_LIBRARIES umfpack 
+    HINTS 
+        ${EXTERNAL_DIR}/lib
+    PATHS 
+        ${EXTERNAL_DIR}
+        $ENV{UMFPACKDIR} 
+        ${LIB_INSTALL_DIR}
+        
+    PATH_SUFFIXES
+        lib
+)
+
+# if (NOT UMFPACK_LIBRARIES)
+#     if(EXISTS ${EXTERNAL_DIR}/lib/libumfpack.a)
+#         set(UMFPACK_LIBRARIES ${EXTERNAL_DIR}/lib/libumfpack.a)
+#     endif()
+# endif()
 
 if(UMFPACK_LIBRARIES)
 
@@ -46,6 +57,7 @@ if(UMFPACK_LIBRARIES)
     set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARIES} ${SUITESPARSE_LIBRARY})
   endif (SUITESPARSE_LIBRARY)
 
+    message(STATUS "UMFPACK_LIBRARIES: ${UMFPACK_LIBRARIES}")
 endif(UMFPACK_LIBRARIES)
 
 include(FindPackageHandleStandardArgs)

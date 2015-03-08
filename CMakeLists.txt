@@ -156,7 +156,7 @@ find_or_build_package(Triangle triangle)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
-find_or_build_package(UMFPACK suitesparse)
+find_or_build_package(UMFPACK umfpack)
 
 find_package(CppUnit)
 if (CPPUNIT_FOUND)
@@ -318,7 +318,7 @@ if (PYGIMLI)
     add_subdirectory(python EXCLUDE_FROM_ALL)
 endif (PYGIMLI)
 
-#what is this good for?
+#CR what is this good for?
 export(TARGETS gimli
        FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
 
