@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2009-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -31,54 +31,54 @@ namespace GIMLI{
 /*! Abstract function class, i.e., functor */
 template < class ArgType , class ValueType > class DLLEXPORT Function {
 public:
-    Function( ) { }
+    Function() { }
 
-    virtual ~Function( ) { }
+    virtual ~Function() { }
 
-    Function( const Function & funct ){ copy_( funct ); }
+    Function(const Function & funct){ copy_(funct); }
 
-    Function & operator = ( const Function & funct ){
-        if ( this != & funct ){
-            copy_( funct );
+    Function & operator = (const Function & funct){
+        if (this != & funct){
+            copy_(funct);
         } return * this;
     }
 
-    inline ValueType operator() ( const ArgType & arg ) const { return this->getValue( arg ); }
+    inline ValueType operator() (const ArgType & arg) const { return this->getValue(arg); }
 
-    inline Vector < ValueType > operator() ( const Vector < ArgType > & arg ) const { return this->getValue( arg ); }
+    inline Vector < ValueType > operator() (const Vector < ArgType > & arg) const { return this->getValue(arg); }
 
-    virtual ValueType getValue( const ArgType & arg ) const = 0;
+    virtual ValueType getValue(const ArgType & arg) const = 0;
 
-    virtual Vector < ValueType > getValue( const Vector < ArgType > & arg ) const = 0;
+    virtual Vector < ValueType > getValue(const Vector < ArgType > & arg) const = 0;
 
 protected:
-    virtual void copy_( const Function & funct ) { };
+    virtual void copy_(const Function & funct) { };
 };
 
 class DLLEXPORT HarmonicFunction : public Function< double, double >{
 public:
-    HarmonicFunction( const RVector & coeff, double xmin, double xmax );
+    HarmonicFunction(const RVector & coeff, double xmin, double xmax);
 
-    virtual ~HarmonicFunction( );
+    virtual ~HarmonicFunction();
 
-    virtual double getValue( const double & arg ) const;
+    virtual double getValue(const double & arg) const;
 
-    virtual RVector getValue( const RVector & arg ) const;
+    virtual RVector getValue(const RVector & arg) const;
 
-    void setCoefficients( const RVector & coeff );
+    void setCoefficients(const RVector & coeff);
 
     inline const RVector & coefficients() const { return coeff_; }
 
-    inline void setXMin( double xmin ){ xMin_ = xmin; }
+    inline void setXMin(double xmin){ xMin_ = xmin; }
 
     inline double xMin() const { return xMin_; }
 
-    inline void setXMax( double xmax ){ xMax_ = xmax; }
+    inline void setXMax(double xmax){ xMax_ = xmax; }
 
     inline double xMax() const { return xMax_; }
 
 protected:
-    virtual void copy_( const HarmonicFunction & funct );
+    virtual void copy_(const HarmonicFunction & funct);
 
     RVector coeff_;
     size_t nHarmonic_;
@@ -89,21 +89,21 @@ protected:
 class DLLEXPORT HarmonicModelling : public ModellingBase {
 public:
     /*! constructor, nh: number of coefficients, xvec: abscissa, */
-    HarmonicModelling( size_t nh, const RVector & tvec, bool verbose = false  );
+    HarmonicModelling(size_t nh, const RVector & tvec, bool verbose = false);
 
-    virtual ~HarmonicModelling( ){ }
+    virtual ~HarmonicModelling(){ }
 
     /*! the main thing - the forward operator: return f(x) */
-    virtual RVector response( const RVector & par );
+    virtual RVector response(const RVector & par);
 
     /*! an additional forward operator for another time basis */
-    virtual RVector response( const RVector & par, const RVector tvec );
+    virtual RVector response(const RVector & par, const RVector tvec);
 
     /*! optional: generation of Jacobian matrix, uncomment for default behavior (brute force) */
-    virtual void createJacobian( const RVector & model );
+    virtual void createJacobian(const RVector & model);
 
     /*! Define the start model */
-    inline virtual RVector startModel( ){ return RVector( np_, 0.0 ); }
+    inline virtual RVector startModel(){ return RVector(np_, 0.0); }
 
 protected:
 
@@ -119,30 +119,30 @@ protected:
 class DLLEXPORT PolynomialModelling : public ModellingBase {
 public:
 
-    PolynomialModelling( uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints,
-                        const RVector & startModel = RVector( 0 ) );
+    PolynomialModelling(uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints,
+                        const RVector & startModel = RVector(0));
 
-    virtual RVector response( const RVector & par );
+    virtual RVector response(const RVector & par);
 
     /*! Create starting model. The dimension is recognized here \n
         * one-dimensional:         p[0][0][*] = 1 \n
         * two-dimensional:         p[0][*][*] = 1 \n
         * three-dimensional:       p[*][*][*] = 1 \n
     */
-    virtual RVector startModel( );
+    virtual RVector startModel();
 
     /*! Return read only reference to the Polynomial Functor. */
     const PolynomialFunction< double > & polynomialFunction() const { return f_; }
 
-    /*! Constrain to polynomial function based on Pascal's triangle, i.e., forbid x^iy^jz^k with (i +j +k ) > size */
-    void setPascalsStyle( bool is ) { pascalTriangle_ = is; }
+    /*! Constrain to polynomial function based on Pascal's triangle, i.e., forbid x^iy^jz^k with (i +j +k) > size */
+    void setPascalsStyle(bool is) { pascalTriangle_ = is; }
 
-    /*! Constrain the polynomial function serendipity style Pascal's triangle, i.e., forbid x^iy^jz^k with (i +j +k ) > size+1.
+    /*! Constrain the polynomial function serendipity style Pascal's triangle, i.e., forbid x^iy^jz^k with (i +j +k) > size+1.
      *  Just work if setPascalsStyle is set.
      */
-    void setSerendipityStyle( bool is ) { serendipityStyle_ = is; }
+    void setSerendipityStyle(bool is) { serendipityStyle_ = is; }
 
-    void setPowCombinationTmp( int i ) { powCombination_ = i; }
+    void setPowCombinationTmp(int i) { powCombination_ = i; }
 
 protected:
     uint dim_;
