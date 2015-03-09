@@ -13,6 +13,8 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=git://github.com/gccxml/gccxml.git
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
+#PYGCCXML_REV=57d9d02
+PYGCCXML_REV=36234fd
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
@@ -226,17 +228,21 @@ getWITH_GIT(){
 		
 	if ( [ -d $_SRC_ ] ); then 
 		pushd $_SRC_
-			#"$GIT" pull && git update $_BRANCH_
             "$GIT" pull
 		popd
 	else
         pushd $SRC_DIR
             "$GIT" clone $_URL_ $_SRC_
-            #pushd $_SRC_
-            #    "$GITEXE" pull && git update $_BRANCH_
-            #popd
         popd
 	fi
+    if [ -n $_BRANCH_ ]; then
+        pushd $_SRC_
+          echo $_SRC_ $_BRANCH_
+          echo $GIT checkout $_BRANCH_ .
+          "$GIT" checkout $_BRANCH_ .
+        popd
+    fi
+
 }
 needGCC(){
     echo "looking for gcc ..."
@@ -446,7 +452,7 @@ buildPYGCCXML(){
 	checkTOOLSET
 	prepPYGCCXML
 
-	getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC
+	getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
 	getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC
 	
 	mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC

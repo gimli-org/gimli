@@ -557,10 +557,12 @@ def gravMagBoundarySinghGup(boundary):
     return np.asarray([Fx, Fy, Fz]), np.asarray([Fzx, Fzy, Fzz]),
 
 
-def solveGravimetry(mesh, dDensity=None, pnts=None):
+def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
     """
     Solve gravimetric response.
-
+    
+    TOWRITE 
+    
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -574,18 +576,32 @@ def solveGravimetry(mesh, dDensity=None, pnts=None):
         * array -- solve for one delta density value per cell
         * None -- return per cell kernel matrix G TOIMPL
 
+    complete : bool [False]
+        If True return whole solution or matrix for [dgx, dgy, dgz] and ... TODO
+        
     Returns
     -------
     """
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
-    dg = np.zeros((len(pnts), 3))
-    dgz = np.zeros((len(pnts), 3))
+    
 #    upoly = np.zeros(len(pnts))
 
-    Gdg = np.zeros((len(pnts), mesh.cellCount(), 3))
-    Gdgz = np.zeros((len(pnts), mesh.cellCount(), 3))
+    Gdg = None
+    Gdgz = None
+    dg = None
+    dgz = None
+    
+    if complete:
+        Gdg = np.zeros((len(pnts), mesh.cellCount(), 3))
+        Gdgz = np.zeros((len(pnts), mesh.cellCount(), 3))
+        dg = np.zeros((len(pnts), 3))
+        dgz = np.zeros((len(pnts), 3))
+    else:
+        dg = np.zeros(len(pnts))
+        Gdg = np.zeros((len(pnts), mesh.cellCount()))
+    
     times = []
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
@@ -595,17 +611,25 @@ def solveGravimetry(mesh, dDensity=None, pnts=None):
 
                 if mesh.dimension() == 2:
                     tic = time.time()
-                    dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
+                    if complete:
+                        dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                        b.node(1).pos())
-                    times.append(time.time()-tic)
-                    dgi *= -2.0
-                    dgzi *= -2.0
+                        times.append(time.time()-tic)
+                        dgi *= -2.0
+                        dgzi *= -2.0
+                    else:
+                        dgi *= 2.*G * pg.lineIntegralZ_WonBevis(b.node(0).pos(),
+                                                                b.node(1).pos())
                 else:
-                    dgi, dgzi = gravMagBoundarySinghGup(b)
+                    if complete:
+                        dgi, dgzi = gravMagBoundarySinghGup(b)
+                    else:
+                        raise Exception(TOIMPL)
 
-                dgi *= [1.0, 1.0, -1.0]
-                dgi *= -G
-                dgzi *= -G
+                if complete:
+                    dgi *= [1.0, 1.0, -1.0]
+                    dgi *= -G
+                    dgzi *= -G
 
                 if hasattr(dDensity, '__len__') or dDensity is None:
                     cl = b.leftCell()
@@ -613,13 +637,16 @@ def solveGravimetry(mesh, dDensity=None, pnts=None):
 
                     if cl:
                         Gdg[i][cl.id()] += dgi
-                        Gdgz[i][cl.id()] += dgzi
+                        if complete:
+                            Gdgz[i][cl.id()] += dgzi
                     if cr:
                         Gdg[i][cr.id()] -= dgi
-                        Gdgz[i][cr.id()] -= dgzi
+                        if complete:
+                            Gdgz[i][cr.id()] -= dgzi
                 else:
                     dg[i] += dgi * dDensity
-                    dgz[i] += dgzi * dDensity
+                    if complete:
+                        dgz[i] += dgzi * dDensity
 
         mesh.translate(pg.RVector3(p))
 
@@ -628,12 +655,20 @@ def solveGravimetry(mesh, dDensity=None, pnts=None):
     plt.plot(times)
 
     if dDensity is None:
-        return Gdg.transpose([0, 2, 1]), Gdgz.transpose([0, 2, 1])
+        if complete:
+            return Gdg.transpose([0, 2, 1]), Gdgz.transpose([0, 2, 1])
+        return Gdg
     elif hasattr(dDensity, '__len__'):
-        dg = Gdg.transpose([0, 2, 1]).dot(dDensity)
-        dgz = Gdgz.transpose([0, 2, 1]).dot(dDensity)
+        if complete:
+            dg = Gdg.transpose([0, 2, 1]).dot(dDensity)
+            dgz = Gdgz.transpose([0, 2, 1]).dot(dDensity)
+            return dg, dgz
+        else:
+            return Gdg.dot(dDensity)
+        
+    if complete:
         return dg, dgz
-    return dg, dgz
+    return dg
 
 
 def buildCircle(pos, radius, segments=12, leftDirection=True):
