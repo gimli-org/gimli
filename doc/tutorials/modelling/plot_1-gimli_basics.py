@@ -122,17 +122,17 @@ Or exported into ``.vtk`` format for 2D or 3D visualization using
 :term:`Paraview`.
 
 However, we recommend visualizing 2-dimensional content using python scripts
-that provides better exports to graphics files (e.g. png, pdf, svg).
+that provides better exports to graphics files (e.g., png, pdf, svg).
 In :term:`pygimli` we provide some basic post-processing routines using
 the :term:`matplotlib` visualization framework.
-Our main visualization call is :py:mod:`pygimli.viewer.showmesh.show` which is sufficient for
+Our main visualization call is :py:mod:`pygimli.viewer.show` which is sufficient for
 the most mesh, field, model and stream views.
 """
 
-pg.show(grid)
+pg.viewer.show(grid)
 
 """
 .. image:: PLOT2RST.current_figure
 
-For more control you can also use the appropriate draw methods :py:mod:`pygimli.mplviewer.meshview`.
+For more control you can also use the appropriate draw methods :py:mod:`pygimli.mplviewer.drawMesh`.
 """
