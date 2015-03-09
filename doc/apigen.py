@@ -214,16 +214,17 @@ class ApiDocWriter(object):
                 continue
             obj = mod.__dict__[obj_str]
 
-            # figure out if obj is a function or class
-            if isinstance(obj, FunctionType):
-                functions.append(obj_str)
-            else:
-                try:
-                    issubclass(obj, object)
-                    classes.append(obj_str)
-                except TypeError:
-                    # not a function or class
-                    pass
+            if hasattr(obj, "__module__") and obj.__module__.startswith("pygimli"):
+                # figure out if obj is a function or class
+                if isinstance(obj, FunctionType):
+                    functions.append(obj_str)
+                else:
+                    try:
+                        issubclass(obj, object)
+                        classes.append(obj_str)
+                    except TypeError:
+                        # not a function or class
+                        pass
         return functions, classes
 
     def _parse_lines(self, linesource):
