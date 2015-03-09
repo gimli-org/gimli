@@ -603,6 +603,10 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
         Gdg = np.zeros((len(pnts), mesh.cellCount()))
     
     times = []
+    
+    dgi = None
+    dgzi = None
+    
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
 
@@ -613,13 +617,14 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
                     tic = time.time()
                     if complete:
                         dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
-                                                       b.node(1).pos())
+                                                           b.node(1).pos())
                         times.append(time.time()-tic)
                         dgi *= -2.0
                         dgzi *= -2.0
                     else:
-                        dgi *= 2.*G * pg.lineIntegralZ_WonBevis(b.node(0).pos(),
-                                                                b.node(1).pos())
+                        dgi = pg.lineIntegralZ_WonBevis(b.node(0).pos(),
+                                                        b.node(1).pos())
+                        dgi *= -2.0 * G
                 else:
                     if complete:
                         dgi, dgzi = gravMagBoundarySinghGup(b)

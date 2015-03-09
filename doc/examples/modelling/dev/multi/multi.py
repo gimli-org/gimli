@@ -394,7 +394,8 @@ def calcGravKernel(mesh):
     except Exception as e:
         print(e)
         print("Building .... ")
-        Gdg, Gdgz = solveGravimetry(mesh, None, pnts=gravPoints) 
+        #Gdg, Gdgz = solveGravimetry(mesh, None, pnts=gravPoints, complete=True) 
+        Gdg = solveGravimetry(mesh, None, pnts=gravPoints) 
         np.save(solutionName + '.bmat', Gdg)
         
     return gravPointsX, Gdg
@@ -423,7 +424,7 @@ def calcApparentResistivities(mesh, resistivities):
     
     try:
         resA = np.load(solutionName + '.bmat.npy')
-        ertScheme = pb.DataContainerERT(solutionName + '.dat')
+        ertData = pb.DataContainerERT(solutionName + '.dat')
     except Exception as e:
         print(e)
         print("Building .... ")
@@ -436,8 +437,6 @@ def calcApparentResistivities(mesh, resistivities):
         voltage = ertData('rhoa') / ertData('k')
         ertData.set('err', pg.abs(errVolt / voltage) + errPerc / 100.0)
         print('err min:', min(ertData('err'))*100, 'max:', max(ertData('err'))*100)
-        
-        ertData.save('ert-0.dat', 'a b m n rhoa err k')
         
         for i in range(0, len(resistivities)):
             tic =  time.time()
@@ -453,9 +452,9 @@ def calcApparentResistivities(mesh, resistivities):
                   "min:", min(resA[i]), "max:", max(resA[i]) )
 
         np.save(solutionName + '.bmat', resA)
-        ertScheme.save(solutionName + '.dat', 'a b m n rhoa err k')
+        ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
         
-    return resA, ert, ertScheme
+    return resA, ert, ertData
 
 def calcERT(ert, ertScheme, resA):
     solutionName = createCacheName('ERT', mesh, times)+ "-" + str(ertScheme.size())
@@ -598,7 +597,7 @@ def animate(i):
     #print(time.time()-tic); tic = time.time()
     
     # calc gravimetric response
-    dz = Gdg.dot(dDensity)[:,2]
+    dz = Gdg.dot(dDensity)
     
     axGra.clear()
     axGra.plot(gravPointsX, dz)
