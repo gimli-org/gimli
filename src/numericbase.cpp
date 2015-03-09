@@ -265,6 +265,58 @@ void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2,
     return;
 }
 
+double lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2){
+    double dgz = 0.0;
+    
+    double x1 = p1[0];
+    double z1 = p1[1];
+    double x2 = p2[0];
+    double z2 = p2[1];
+   
+    double x21 = x2 - x1;
+    double z21 = z2 - z1;
+    double z21s = z21 * z21;
+    double x21s = x21 * x21;
+    
+    double xz12 = x1 * z2 - x2 * z1;
+    
+    if (abs(x1) < TOLERANCE && abs(z1) < TOLERANCE){
+        return 0.0;
+    } 
+    if (abs(x2) < TOLERANCE && abs(z2) < TOLERANCE){
+        return 0.0;
+    } 
+    
+    double theta1 = std::atan2(z1, x1);
+    double theta2 = std::atan2(z2, x2);
+
+    double r1s = x1 * x1 + z1 * z1;
+    double r2s = x2 * x2 + z2 * z2;
+    double r1 = std::sqrt(r1s);
+    double r2 = std::sqrt(r2s);
+    
+    double r21s = x21s + z21s;
+    double R2 = r21s;
+    double rln = std::log(r2 / r1);
+    
+    if (sign(z1) != sign(z2)){
+        if ((x1*z2 < x2*z1) && z2 >=0.0) theta1 = theta1 + PI2;
+        if ((x1*z2 > x2*z1) && z1 >=0.0) theta2 = theta2 + PI2;
+    }
+    if (abs(x1*z2 - x2*z1) < TOLERANCE){
+        return 0.0;
+    }            
+    
+    if (abs(x21) < TOLERANCE){ 
+        dgz = x1 * rln;
+    } else { //: #default
+        double B = z21 / x21;
+        double A = (x21 * xz12) / R2;
+        double th12 = (theta1 - theta2);
+        dgz = A * (th12 + B * rln);
+    }
+    return dgz;
+}
 
 
 

@@ -28,7 +28,9 @@ def createCacheName(base, mesh, times):
 class ERT():
     
     """
-        ERT Manager. should solve most of the common problems
+        ERT Manager. 
+        
+        Should solve most of the common problems
     """
         
     def __init__(self, verbose=False):
