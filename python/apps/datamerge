@@ -25,17 +25,16 @@ def merge(data1, data2, ContainerType=pg.DataContainer, snap=0.001):
     data = ContainerType(data1)
     data.add(data2, snap)
     return data
-# def merge(...)
 
 def loadProjectFile(projectfile, ContainerType=pg.DataContainer, verbose=False):
-    """ 
+    """
         A project file defines how multiple data files can be imported and
         merged.
         A list of row entries for each data file to merge. The data will not be
-        sorted, i.e., the sensor positions will be in the same order than the 
+        sorted, i.e., the sensor positions will be in the same order than the
         list entries are. However, sensors on the same positions (with tolerance
         SNAP) will be merged.
-        You can also give just one data file if you want just a spatial 
+        You can also give just one data file if you want just a spatial
         transformation of the data.
 
         The currently supported formats are:
@@ -49,7 +48,7 @@ def loadProjectFile(projectfile, ContainerType=pg.DataContainer, verbose=False):
         You can comment out a row by adding a leading '#'
 
         interpolationFilename is a 3-column-ascii-file (dx x y)
-        
+
     """
     dataList = []
 
@@ -145,7 +144,7 @@ def main(argv):
     args = parser.parse_args()
 
     projectFileName = args.project
-    
+
     if args.outFileName is None:
         args.outFileName = \
             projectFileName[0:projectFileName.find('.pro')] + '.dat'

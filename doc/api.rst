@@ -1,7 +1,8 @@
-.. _sec:api:
+.. _sec:gimliapi:
 
-API Documentation
-=================
+GIMLi API
+=========
 
-The api documentation for the c++ part of gimli can be found here: :gimliapi:`GIMLI`
+The API documentation for the C++ part of GIMLi is generated with `doxygen
+<www.doxygen.org>`_ and can be found here: :gimliapi:`GIMLI`
 

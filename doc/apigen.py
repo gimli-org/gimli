@@ -458,10 +458,10 @@ class ApiDocWriter(object):
             relpath = outdir
         idx = open(path,'wt')
         w = idx.write
-        w('.. _sec:api:\n\n')
+        w('.. _sec:pygimliapi:\n\n')
         w('.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n')
 
-        title = "pyGIMLi API Reference"
+        title = "pyGIMLi API"
 
         w(title + "\n")
         w("=" * len(title) + "\n\n")

@@ -1,6 +1,6 @@
 
 if (DOXYGEN_FOUND)
-    set(DOXYGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/doxygen")
+    set(DOXYGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/html/doc/gimliapi")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/doxygen/doxyfile.in"
                     ${DOXYGEN_BUILD_DIR}/doxyfile)
     add_custom_target(doxygen

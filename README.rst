@@ -8,33 +8,42 @@ and :ref:`forward<sec:about_gimli_modelling>` modelling tasks.
 
 What GIMLi is good for?:
 
-    * creating inversion applications (C++) and scripts (Python) for existing modules
-    * add your own forward calculations and build a robust inversion quickly
-    * combining different geophysical methods in various ways
-    * doing modelling of different PDEs
+* creating inversion applications (C++) and scripts (Python) for existing modules
+* add your own forward calculations and build a robust inversion quickly
+* combining different geophysical methods in various ways
+* doing modelling of different PDEs
 
 What GIMLi is **NOT** good for?:
 
-    * for people that expect a ready-made GUI for interpreting their data
+* for people that expect a ready-made GUI for interpreting their data
 
 What do you need to use GIMLi?:
 
-    * either the source code and some time to build the system or binaries
-    * preferrably Python with numpy and matplotlib, or a C++ compiler
+* either the source code and some time to build the system or binaries
+* preferrably Python with numpy and matplotlib, or a C++ compiler
 
 .. _sec:about_gimli_inversion:
 
 Authors aka GIMLi Group
 -----------------------
 
-    * Carsten Rücker -- Technische Universität Berlin, Institut für Angewandte Geowissenschaften
-        carsten.ruecker@tu-berlin.de
+* **Carsten Rücker**
 
-    * Thomas Günther -- Leibniz-Institut für Angewandte Geophysik - LIAG (Hannover)
-        email
+  *Berlin University of Technology, Department of Applied Geophysics, Berlin, Germany*
 
-    * Florian Wagner -- Helmholtz-Zentrum Potsdam Deutsches GeoForschungsZentrum GFZ
-        email
+  carsten@pygimli.org
+
+* **Thomas Günther**
+
+  *Leibniz Institute for Applied Geophysics, Hannover, Germany*
+
+  thomas@pygimli.org
+
+* **Florian Wagner**
+
+  *Helmholtz Centre Potsdam, GFZ German Research Centre for Geosciences, Potsdam, Germany*
+
+  florian@pygimli.org
 
 Inversion
 ---------
@@ -51,10 +60,11 @@ Modelling
 ---------
 
 Currently there is a Finite Element Framework for solving partial differential equations (PDE)
-    * 1D, 2D, 3D discretizations
-    * linear and quadratic shape functions (automatic shape function generator for possible higher order)
-    * Triangle, Quads, Tetrahedron, Prism and Hexahedron, mixed meshes
-    * solver for elliptic problems (Helmholtz-type PDE)
+
+* 1D, 2D, 3D discretizations
+* linear and quadratic shape functions (automatic shape function generator for possible higher order)
+* Triangle, Quads, Tetrahedron, Prism and Hexahedron, mixed meshes
+* solver for elliptic problems (Helmholtz-type PDE)
 
 Please see :ref:`modelling tutorial<tut:modelling>` for examples and more details.
 
@@ -62,5 +72,5 @@ References
 ----------
 
 .. bibliography:: doc/biblio.bib
-    :style: mystyle
+    :style: alpha
     :all:

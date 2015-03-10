@@ -28,6 +28,7 @@ if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
 
 try:
+    from . import _pygimli_
     from . _pygimli_ import *
 except ImportError as e:
     print(e)
@@ -51,7 +52,7 @@ def checkAndFixLocaleDecimal_point(verbose=False):
     except Exception as e:
         print(e)
         print('cannot set locale to decimal point')
-        
+
 checkAndFixLocaleDecimal_point(verbose=True)
 ##print(locale.localeconv()['decimal_point'])
 #if locale.localeconv()['decimal_point'] == ',':
@@ -219,7 +220,7 @@ def __getVal(self, idx):
                     idxL[i]=int(ix)
             else:
                 idxL[i]=int(ix)
-                
+
         return self(idxL)
 
     elif isinstance(idx, slice):
@@ -255,7 +256,7 @@ def __setVal(self, idx, val):
         #print(idx, type(idx))
         self.rowR(int(idx[0])).setVal(val, int(idx[1]))
         return
-    
+
     #print(idx, type(idx))
     self.setVal(val, idx)
 
@@ -338,7 +339,7 @@ class VectorIter:
     def __init__(self, vec):
         self.it = vec.beginPyIter()
         self.vec = vec
-        
+
     def __iter__(self):
         return self
 
@@ -349,10 +350,10 @@ class VectorIter:
     # this is the same but for python > 3
     def __next__(self):
         return self.it.nextForPy()
-        
+
 def __VectorIterCall__(self):
     return VectorIter(self)
-    # don't use pygimli iterators here until the reference for temporary 
+    # don't use pygimli iterators here until the reference for temporary
     # vectors are collected
     #return _pygimli_.RVectorIter(self.beginPyIter())
 
@@ -367,10 +368,10 @@ class DefaultContainerIter:
         self.length = len(vec)
         self.pos = -1
 
-    def __iter__(self): 
+    def __iter__(self):
         return self
-    
-    def next(self): 
+
+    def next(self):
         return self.__next__()
 
     # this is the same but for python > 3
@@ -379,7 +380,7 @@ class DefaultContainerIter:
         if self.pos == self.length:
             raise StopIteration()
         else:
-            return self.vec[self.pos] 
+            return self.vec[self.pos]
 
 def __MatIterCall__(self):
     return DefaultContainerIter(self)
@@ -402,7 +403,7 @@ _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 
 
 ########## c to python converter ######
-# default converter from RVector3 to numpy array 
+# default converter from RVector3 to numpy array
 def __RVector3ArrayCall__(self, idx=None):
     if idx:
         print(self)
@@ -411,19 +412,19 @@ def __RVector3ArrayCall__(self, idx=None):
     import numpy as np
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
 
-# default converter from RVector to numpy array 
+# default converter from RVector to numpy array
 def __RVectorArrayCall__(self, idx=None):
     if idx:
         print(self)
         print(idx)
         raise Exception("we need to fix this")
     import numpy as np
-    # we need to copy the array until we can handle increasing the reference 
+    # we need to copy the array until we can handle increasing the reference
     # counter in self.array() else it leads to strange behaviour
     # test in testRValueConverter.py:testNumpyFromRVec()
     return np.array(self.array())
     #return self.array()
-    
+
 _pygimli_.RVector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 #_pygimli_.RVector3.__array__ = _pygimli_.RVector3.array
@@ -455,7 +456,7 @@ def __CMP_stdVectorI__(self, val):
 
 def __EQ_stdVectorI__(self, val):
     raise Exception("__EQ_stdVectorI__ do not use")
-    
+
     ret = _pygimli_.BVector(len(self))
     for i, v in enumerate(ret):
         print(self[i] == val, int(self[i] == val))
@@ -474,7 +475,7 @@ def toIVector(v):
     for i, r in enumerate(v):
         ret[i] = int(r)
     return ret
-        
+
 
 # DEPRECATED for backward compatibility should be removed
 def asvector(array):
@@ -506,9 +507,13 @@ def __svnversion__(path=__path__[0]):
     p = subprocess.Popen("svnversion -n %s" % path, shell=True, \
        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
-    return str(stdout)
+    version = str(stdout)
+    if version == "Nicht versioniertes Verzeichnis":
+        return ""
+    else:
+        return "_rev" + version
 
-__version__ = _pygimli_.versionStr() + "_rev" + __svnversion__()
+__version__ = _pygimli_.versionStr() + __svnversion__()
 
 ###########################
 # unsorted stuff
