@@ -5,14 +5,13 @@
     .. toctree::
         :maxdepth: 4
 
-        ../INSTALL.rst
         ../README.rst
+        ../INSTALL.rst
         design.rst
         faq.rst
         _examples_auto/index.rst
         _tutorials_auto/index.rst
         tools.rst
-        api.rst
         pygimli.rst
         api/pygimli/modules.rst
         credits.rst
