@@ -1,7 +1,7 @@
 .. :hidden:
 
 .. only:: latex
-    
+
     .. toctree::
         :maxdepth: 4
 
@@ -26,7 +26,7 @@
 Documentation
 #############
 
-.. list-table:: 
+.. list-table::
     :class: doc-index
 
     * - :ref:`sec:GIMLi`
@@ -34,9 +34,9 @@ Documentation
         Getting started
 
       - :ref:`sec:design`
-        
+
         Software design
-   
+
     * - :ref:`sec:install`
 
         How to install GIMLi on different platforms
@@ -55,32 +55,38 @@ Documentation
 
     * - :ref:`sec:tools`
 
-        Handy applications and tools shipped with
+        Handy applications and tools shipped with GIMLi
 
-      - :doc:`api/index`
+      - 
+
+    * - :doc:`pygimliapi/index`
 
         Reference for Python modules
+
+      - :gimliapi:`GIMLI`
+
+        Reference for C++ modules
 
     * - :ref:`sec:publications`
 
         Papers and talks about (or using) GIMLi
 
-      - :ref:`sec:license` 
+      - :ref:`sec:license`
 
-        Terms of use
+        Terms of use and redistribution
 
 
 ##################
 Indices and tables
 ##################
 
-.. list-table:: 
+.. list-table::
     :class: doc-index
 
     * - :ref:`genindex`
 
         All functions, classes and terms
-            
+
       - :ref:`modindex`
 
         Quick access to all modules

@@ -190,7 +190,7 @@ except OSError:
 
 if gmsh:
     mesh = readGmsh("mesh.msh", verbose=True)
-    pg.show(mesh, mesh.cellMarker(), showLater=True)
+    pg.show(mesh, mesh.cellMarker(), showLater=True, cmap="BrBG")
     plt.xlim(0,50)
     plt.ylim(-50,0)
 else:

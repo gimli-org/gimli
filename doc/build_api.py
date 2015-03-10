@@ -12,7 +12,7 @@ if __name__ == '__main__':
         print("Can not import pygimli")
         exit()
 
-    outdir = '_build/doc/api'
+    outdir = '_build/doc/pygimliapi'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
