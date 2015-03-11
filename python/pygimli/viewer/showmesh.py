@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Generic mesh visualization tools. 
+Generic mesh visualization tools.
 """
 
 try:
@@ -21,9 +21,9 @@ import numpy as np
 def show(mesh, *args, **kwargs):
     """
     Mesh and model visualization.
-    
-    Syntactic sugar to show a mesh with data.   
-    Forwards to 
+
+    Syntactic sugar to show a mesh with data.
+    Forwards to
     :py:mod:`pygimli.viewer.showmesh.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the
     possible 2D and 3D content.
@@ -60,8 +60,8 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
              axes=None, **kwargs):
     """
     2D Mesh visualization.
-    
-    Create an axes and plot node or cell values for the given 2d mesh. 
+
+    Create an axes and plot node or cell values for the given 2d mesh.
     Returns the axes and the color bar.
 
     Parameters
@@ -123,15 +123,15 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
     gci = None
     cbar = None
     validData = False
-    
-    
+
+
     if data is None:
         drawMesh(ax, mesh)
     elif type(data) == pg.stdVectorRVector3:
         drawSensors(ax, data)
     else:
         if hasattr(data[0], '__len__') and type(data) != np.ma.core.MaskedArray:
-               
+
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, **kwargs)
             else:
@@ -139,7 +139,7 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
                 drawMesh(ax, mesh)
 
         elif (min(data) == max(data)) or pg.haveInfNaN(data):
-            
+
             print("No valid data: ",  min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh)
         else:
@@ -174,9 +174,9 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
 def showBoundaryNorm(mesh, normMap=None, **kwargs):
     """
     Show mesh boundaries normals.
-    
+
     Show the mesh and draw a black line along the normal direction of all
-    boundaries. If you provide a boundary marker vs. norm direction map, 
+    boundaries. If you provide a boundary marker vs. norm direction map,
     then only these norms are drawn.
 
     Parameters
@@ -184,30 +184,30 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 
     mesh : :gimliapi:`GIMLI::Mesh`
         2D or 3D GIMLi mesh
-        
+
     normMap : list
         list of [boundary marker, [norm]] pairs. e.g. [[1, [0.0,1.0]], ... ]
 
     **kwargs :
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
-        
+
     Returns
     -------
     axes : matplotlib.axes
     """
     ax = kwargs.pop('axes', None)
-    
+
 
     col = kwargs.pop('color', 'Black')
-    
+
     if normMap:
-        for pair in normMap: 
+        for pair in normMap:
             bounds = mesh.findBoundaryByMarker(pair[0])
-            
+
             for b in bounds:
                 c1 = b.center()
-                
+
                 if (pair[1][0] != 0) or (pair[1][1] != 0):
                     ax.arrow(c1[0], c1[1], pair[1][0], pair[1][1],
                              head_width=0.1, head_length=0.3,
@@ -215,8 +215,8 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
                 else:
                     ax.plot(c1[0], c1[1], 'o', color=col)
         return
-    
-    
+
+
     ax = show(mesh, showLater=True, axes=ax)[0]
     for b in mesh.boundaries():
         c1 = b.center()
