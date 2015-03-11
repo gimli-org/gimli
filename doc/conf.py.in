@@ -52,7 +52,6 @@ if req:
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.doctest',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'matplotlib.sphinxext.plot_directive',
@@ -73,14 +72,39 @@ plot2rst_paths = [('@SPHINX_SRC_DIR@/doc/tutorials', '@SPHINX_BINARY_BUILD_DIR@/
                   ('@SPHINX_SRC_DIR@/doc/examples', '@SPHINX_BINARY_BUILD_DIR@/doc/_examples_auto')
                   ]
 
-#plot2rst_paths = [('@SPHINX_SRC_DIR@/doc/tutorials', '@SPHINX_SRC_DIR@/_tutorials_auto'),
-                  #('@SPHINX_SRC_DIR@/doc/examples', '@SPHINX_SRC_DIR@/_examples_auto')
-                  #]
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@SPHINX_SRC_DIR@/doc/_templates']
 
-numpydoc_show_class_members = False
+# Numpydoc settings
+numpydoc_class_members_toctree = True
+numpydoc_show_class_members = True
+numpydoc_use_plots = True
+plot_formats = [('png', 100), ('pdf', 100)]
+plot_include_source = True
+
+# Figure fine-tuning
+import math
+phi = (math.sqrt(5) + 1)/2
+
+plot_rcparams = {
+        'font.size': 8,
+        'axes.titlesize': 8,
+        'axes.labelsize': 8,
+        'xtick.labelsize': 8,
+        'ytick.labelsize': 8,
+        'legend.fontsize': 8,
+        'figure.figsize': (3 * phi, 3),
+        'figure.subplot.bottom': 0.2,
+        'figure.subplot.left': 0.2,
+        'figure.subplot.right': 0.9,
+        'figure.subplot.top': 0.85,
+        'figure.subplot.wspace': 0.4,
+        'text.usetex': False,
+        }
+
+plot2rst_rcparams = plot_rcparams # same settings for numpydoc and plot2rst
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -211,7 +235,7 @@ html_use_index = True
 html_use_modindex = True
 
 # If true, the index is split into individual pages for each letter.
-#html_split_index = False
+html_split_index = True
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = True

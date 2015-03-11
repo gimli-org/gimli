@@ -153,6 +153,17 @@ def drawMesh(axes, mesh):
     Draw a 2d mesh into a given axes.
 
     Set the limits of the axes tor the mesh extent.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawMesh
+    >>> n = np.linspace(1,2,10)
+    >>> mesh = pg.createGrid(x=n, y=n)
+    >>> fig, ax = plt.subplots()
+    >>> drawMesh(ax, mesh)
     """
     pg.mplviewer.drawMeshBoundaries(axes, mesh)
     axes.set_aspect('equal')
@@ -165,15 +176,31 @@ def drawModel(axes, mesh, data=None,
               alpha=1, xlabel=None, ylabel=None, verbose=False,
               **kwargs):
     """
-        Draw a 2d mesh and color the cell by the data.
+    Draw a 2d mesh and color the cell by the data.
 
-        Implement this with tripcolor  ..........!!!!!!!!
+    Implement this with tripcolor  ..........!!!!!!!!
 
-        Parameters
-        ----------
+    Parameters
+    ----------
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawModel
+    >>> n = np.linspace(0, -2, 11)
+    >>> mesh = pg.createGrid(x=n, y=n)
+    >>> data = []
+    >>> for cell in mesh.cells():
+    >>>     x, y = cell.center().x(), cell.center().y()
+    >>>     val = np.cos(1.5 * x) * np.sin(1.5 * y)
+    >>>     data.append(val)
+    >>> fig, ax = plt.subplots()
+    >>> drawModel(ax, mesh, data)
     """
     if mesh.nodeCount() == 0:
-        raise("drawModel: The mesh is empty.", mesh)
+        raise "drawModel: The mesh is empty."
 
     useTri = kwargs.pop('tri', False)
 
@@ -182,7 +209,7 @@ def drawModel(axes, mesh, data=None,
                          **kwargs)
 
     else:
-        
+
         gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha,
                                              verbose=verbose, **kwargs)
 
@@ -264,7 +291,23 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
 
 def drawMeshBoundaries(axes, mesh, fitView=True):
     """
-        What is this?
+    Draw mesh on axes with boundary conditions colorized.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawMeshBoundaries
+    >>> n = np.linspace(0,-2,11)
+    >>> mesh = pg.createGrid(x=n, y=n)
+    >>> for bound in mesh.boundaries():
+    >>> if not bound.rightCell():
+    >>> bound.setMarker(pg.MARKER_BOUND_MIXED)
+    >>> if bound.center().y() == 0:
+    >>>     bound.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    >>> fig, ax = plt.subplots()
+    >>> drawMeshBoundaries(ax, mesh)
     """
     if not mesh:
         raise Exception("drawMeshBoundaries(axes, mesh): invalid mesh")
@@ -441,16 +484,16 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
 
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
-        
+
         if shading is not None:
             gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
-                                **kwargs)
+                                 **kwargs)
         else:
             gci = axes.tricontourf(x, y, triangles, z, levels,
-                                  **kwargs)
+                                   **kwargs)
             if not omitLines:
                 axes.tricontour(x, y, triangles, z, levels, colors=['0.5'],
-                                 **kwargs)
+                                **kwargs)
     else:
         gci = None
         raise Exception("Data size does not fit mesh size: ",
@@ -479,6 +522,22 @@ def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
         What is this?
 
         Only for triangle/quadrangle meshes currently
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawField
+    >>> n = np.linspace(0,-2,11)
+    >>> mesh = pg.createGrid(x=n, y=n)
+    >>> data = []
+    >>> for node in mesh.nodes():
+    >>>     x, y = node.x(), node.y()
+    >>>     val = np.cos(1.5 * x) * np.sin(1.5 * y)
+    >>>     data.append(val)
+    >>> fig, ax = plt.subplots()
+    >>> drawField(ax, mesh, data)
     """
     cMin = kwargs.pop('cMin', None)
     cMax = kwargs.pop('cMax', None)
@@ -523,31 +582,31 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
 
 def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
     """
-        Draw a single streamline into a given mesh for given data stating at
-        the center of cell c.
-        The Streamline will be enlarged until she reached a cell that
-        already contains a streamline.
+    Draw a single streamline into a given mesh for given data stating at
+    the center of cell c.
+    The Streamline will be enlarged until she reached a cell that
+    already contains a streamline.
 
-        Parameters
-        ----------
+    Parameters
+    ----------
 
-        axes : matplotlib.axes
-            axes to draw into
+    axes : matplotlib.axes
+        axes to draw into
 
-        mesh : :gimliapi:`GIMLI::Mesh`
-            2d Mesh to draw the streamline
+    mesh : :gimliapi:`GIMLI::Mesh`
+        2d Mesh to draw the streamline
 
-        c : :gimliapi:`GIMLI::Cell`
-            start cell
+    c : :gimliapi:`GIMLI::Cell`
+        start cell
 
-        data : iterable float | [float, float]
-            If data is an array (per cell or node) gradients are calculated
-            otherwise the data will be interpreted as vector field.
+    data : iterable float | [float, float]
+        If data is an array (per cell or node) gradients are calculated
+        otherwise the data will be interpreted as vector field.
 
-        dataMesh : :gimliapi:`GIMLI::Mesh` [None]
+    dataMesh : :gimliapi:`GIMLI::Mesh` [None]
 
-            Optional mesh for the data. If you want high resolution
-            data to plot on coarse draw mesh.
+        Optional mesh for the data. If you want high resolution
+        data to plot on coarse draw mesh.
     """
     x, y = streamline(mesh, data, startCoord=c.center(),
                       dLengthSteps=5,
@@ -578,14 +637,30 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
 
 def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     """
-        Draw streamlines based on unstructured mesh.
-        Every cell contains only one streamline and every new stream line
-        starts in the center of a cell. Stream density can by chosen by
-        parameter a leading to a new mesh with equidistant maximum cell size a.
+    Draw streamlines based on an unstructured mesh.
 
-        Parameters
-        ----------
+    Every cell contains only one streamline and every new stream line
+    starts in the center of a cell. Stream density can by chosen by
+    parameter a leading to a new mesh with equidistant maximum cell size a.
 
+    Parameters
+    ----------
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawStreams
+    >>> n = np.linspace(1,2,10)
+    >>> mesh = pg.createGrid(x=n, y=n)
+    >>> data = []
+    >>> for cell in mesh.cells():
+    >>>     x, y = cell.center().x(), cell.center().y()
+    >>>     val = np.cos(1.5 * x) * np.sin(1.5 * y)
+    >>>     data.append(-val)
+    >>> fig, ax = plt.subplots()
+    >>> drawStreams(ax, mesh, data)
     """
 
     viewMesh = None
@@ -646,19 +721,29 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
 
 def drawSensors(axes, sensors, diam=None, koords=None):
     """
-        Draw sensor positions as black dots with a given diameter.
+    Draw sensor positions as black dots with a given diameter.
 
-        Parameters
-        ----------
+    Parameters
+    ----------
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from pygimli.mplviewer import drawSensors
+    >>> sensors = np.random.rand(5,2)
+    >>> fig, ax = plt.subplots()
+    >>> drawSensors(ax, sensors, diam=0.02, koords=[0,1])
+    >>> ax.set_aspect('equal')
     """
 
     if koords is None:
         koords = [0, 2]
 
     eCircles = []
-    eSpacing = sensors[0].distance(sensors[1])
 
     if diam is None:
+        eSpacing = sensors[0].distance(sensors[1])
         diam = eSpacing / 8.0
 
     for e in sensors:
@@ -673,7 +758,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
         What is this?
     """
     C = pg.RMatrix()
-    if type(cMat) == pg.DSparseMapMatrix:
+    if isinstance(cMat, pg.DSparseMapMatrix):
         cMat.save('tmpC.matrix')
         pg.loadMatrixCol(C, 'tmpC.matrix')
     else:
@@ -767,7 +852,18 @@ def drawParameterConstraints(axes, mesh, cMat, cWeight=None):
 def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
                  cmap=None, name=None):
     """
-    draw a 1D column (as from a 1D inversion) onto a given axis
+    Draw a 1D column (e.g., from a 1D inversion) on a given axes.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from pygimli.mplviewer import draw1DColumn
+    >>> thk = [1,2,3,4]
+    >>> val = thk
+    >>> fig, ax = plt.subplots()
+    >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="1D Inversion")
+    >>> ax.set_ylim(-np.sum(thk), 0)
     """
     z = -np.hstack((0., np.cumsum(thk), np.sum(thk)*1.5)) + ztopo
     recs = []
