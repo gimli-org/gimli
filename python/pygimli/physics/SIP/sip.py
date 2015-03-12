@@ -35,7 +35,7 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho_a$ in $\Omega$m',
 
 def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi_a$ in mrad',
                       grid=True, marker='+', **kwargs):
-    """ show amplitude spectrum """
+    """ show phase spectrum """
     ax.loglog(freq, phi, marker=marker, label='obs', **kwargs)
     ax.set_xlabel('f in Hz')
     ax.set_ylabel(ylabel)
@@ -95,23 +95,23 @@ class DebyePhi(pg.ModellingBase):
 
 def readSIP256file(resfile, verbose=False):
     """
-        read SIP256 file (RES format) - can be used for 2d SIP by pybert/sip
+    read SIP256 file (RES format) - can be used for 2d SIP by pybert/sip
 
-        Parameters:
-        -----------
-            filename - *.RES file (SIP256 raw output file)
-            verbose - do some output [False]
+    Parameters:
+    -----------
+        filename - *.RES file (SIP256 raw output file)
+        verbose - do some output [False]
 
-        Returns:
-        --------
-            header - dictionary of measuring setup
-            DATA - data matrix
-            AB - list of current injection
-            RU - list of remote units
+    Returns:
+    --------
+        header - dictionary of measuring setup
+        DATA - data matrix
+        AB - list of current injection
+        RU - list of remote units
 
-        Example:
-        --------
-            header, DATA, AB, RU = readSIP256file(filename, TrueS)
+    Examples:
+    --------
+        header, DATA, AB, RU = readSIP256file(filename, TrueS)
     """
     activeBlock = ''
     header = {}
