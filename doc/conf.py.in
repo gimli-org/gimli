@@ -46,7 +46,7 @@ for dep in deps:
         req.append(dep)
 if req:
     msg = "Sorry, there are missing dependencies to build the docs. Try: sudo pip install %s." \
-    % (' '.join(req))
+        % (' '.join(req))
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -60,51 +60,55 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'plot2rst',
-              #'sphinx.ext.mathjax', # nicer html output than pngmath
+              # 'sphinx.ext.mathjax', # nicer html output than pngmath
               'sphinx.ext.pngmath',
               'numpydoc',
               'doxylink'
               ]
 
-extensions += [dep.replace('-','.') for dep in deps]
-
-plot2rst_paths = [('@SPHINX_SRC_DIR@/doc/tutorials', '@SPHINX_BINARY_BUILD_DIR@/doc/_tutorials_auto'),
-                  ('@SPHINX_SRC_DIR@/doc/examples', '@SPHINX_BINARY_BUILD_DIR@/doc/_examples_auto')
-                  ]
-
+extensions += [dep.replace('-', '.') for dep in deps]
 
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@SPHINX_SRC_DIR@/doc/_templates']
 
-# Numpydoc settings
-numpydoc_class_members_toctree = True
-numpydoc_show_class_members = True
+# Numpydoc/plot settings
+plot2rst_paths = [
+    ('@SPHINX_SRC_DIR@/doc/tutorials',
+     '@SPHINX_BINARY_BUILD_DIR@/doc/_tutorials_auto'),
+    ('@SPHINX_SRC_DIR@/doc/examples',
+     '@SPHINX_BINARY_BUILD_DIR@/doc/_examples_auto')]
+
+numpydoc_class_members_toctree = False
+numpydoc_show_class_members = False
 numpydoc_use_plots = True
 plot_formats = [('png', 100), ('pdf', 100)]
 plot_include_source = True
 
-# Figure fine-tuning
 import math
 phi = (math.sqrt(5) + 1)/2
 
-plot_rcparams = {
-        'font.size': 8,
-        'axes.titlesize': 8,
-        'axes.labelsize': 8,
-        'xtick.labelsize': 8,
-        'ytick.labelsize': 8,
-        'legend.fontsize': 8,
-        'figure.figsize': (3 * phi, 3),
-        'figure.subplot.bottom': 0.2,
-        'figure.subplot.left': 0.2,
-        'figure.subplot.right': 0.9,
-        'figure.subplot.top': 0.85,
-        'figure.subplot.wspace': 0.4,
-        'text.usetex': False,
-        }
+general_settings = {
+    'font.size': 8,
+    'axes.titlesize': 8,
+    'axes.labelsize': 8,
+    'xtick.labelsize': 8,
+    'ytick.labelsize': 8,
+    'legend.fontsize': 8,
+    'figure.subplot.bottom': 0.2,
+    'figure.subplot.left': 0.2,
+    'figure.subplot.right': 0.9,
+    'figure.subplot.top': 0.85,
+    'figure.subplot.wspace': 0.4,
+    'text.usetex': False,
+    }
 
-plot2rst_rcparams = plot_rcparams # same settings for numpydoc and plot2rst
+api_settings = {
+    'figure.figsize': (3 * phi, 3),
+    }
+
+plot2rst_rcparams = plot_rcparams = general_settings
+plot_rcparams.update(api_settings)
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -241,7 +245,8 @@ html_split_index = True
 html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-html_show_sphinx = True # does not have any affect. sphinx credit is located in footer.html
+# does not have any affect. sphinx credit is located in footer.html
+html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = True
@@ -257,7 +262,7 @@ html_show_copyright = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'gimlidoc'
 
-############# -- Options for LaTeX output
+# -- Options for LaTeX output
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -281,7 +286,7 @@ htmlhelp_basename = 'gimlidoc'
 
 from os import environ, path
 
-extradir = path.abspath('@SPHINX_SRC_DIR@/doc/_static').replace('\\','/')
+extradir = path.abspath('@SPHINX_SRC_DIR@/doc/_static').replace('\\', '/')
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -303,7 +308,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [('doc/index', 'gimli.tex', 'GIMLi Documentation',
                     'GIMLi Group', 'manual')
-                  ]
+                   ]
 
 try:
     pngmath_latex_preamble  # check whether this is already defined
@@ -317,13 +322,14 @@ pngmath_latex_preamble = '\
         \\usepackage{bm}\n\
         \\usepackage{pslatex}\n'
 
-#latex.add_macro("\\newcommand{\\arr}[1]{\\ensuremath{\\textbf{#1}}}")
+# latex.add_macro("\\newcommand{\\arr}[1]{\\ensuremath{\\textbf{#1}}}")
 
 _mathpng_tempdir = '@DOXYGEN_BUILD_DIR@/mathtmp'
 
-latex_additional_macros = open('@SPHINX_SRC_DIR@/doc/_static/mylatex-commands.sty')
+latex_additional_macros = open(
+    '@SPHINX_SRC_DIR@/doc/_static/mylatex-commands.sty')
 
-mathjax_latex_preamble=""
+mathjax_latex_preamble = ""
 
 LatexCommandTranslator = {}
 LatexCommandTranslator['mathDictionary'] = {}
@@ -338,23 +344,44 @@ for macro in latex_additional_macros:
     # used when building html version
     pngmath_latex_preamble += macro + '\n'
 
-    mathOperator = re.search('\\\\DeclareMathOperator{\\\\([A-Za-z]*)}{(.*)}', macro)
+    mathOperator = re.search(
+        '\\\\DeclareMathOperator{\\\\([A-Za-z]*)}{(.*)}',
+        macro)
     if mathOperator:
-        LatexCommandTranslator['mathDictionary'][mathOperator.group(1)] = mathOperator.group(2).replace("\\","\\\\")
+        LatexCommandTranslator['mathDictionary'][
+            mathOperator.group(1)] = mathOperator.group(2).replace(
+            "\\",
+            "\\\\")
 
     newCommand = re.search('\\\\newcommand{\\\\([A-Za-z]*)}{(.*)}', macro)
     if newCommand:
-        LatexCommandTranslator['commandDictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
+        LatexCommandTranslator['commandDictionary'][
+            newCommand.group(1)] = newCommand.group(2).replace(
+            "\\",
+            "\\\\")
     newCommand = re.search('\\\\renewcommand{\\\\([A-Za-z]*)}{(.*)}', macro)
     if newCommand:
-        LatexCommandTranslator['commandDictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
+        LatexCommandTranslator['commandDictionary'][
+            newCommand.group(1)] = newCommand.group(2).replace(
+            "\\",
+            "\\\\")
 
-    newCommand = re.search('\\\\newcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}', macro)
+    newCommand = re.search(
+        '\\\\newcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}',
+        macro)
     if newCommand:
-        LatexCommandTranslator['command1Dictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
-    newCommand = re.search('\\\\renewcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}', macro)
+        LatexCommandTranslator['command1Dictionary'][
+            newCommand.group(1)] = newCommand.group(2).replace(
+            "\\",
+            "\\\\")
+    newCommand = re.search(
+        '\\\\renewcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}',
+        macro)
     if newCommand:
-        LatexCommandTranslator['command1Dictionary'][newCommand.group(1)] = newCommand.group(2).replace("\\","\\\\")
+        LatexCommandTranslator['command1Dictionary'][
+            newCommand.group(1)] = newCommand.group(2).replace(
+            "\\",
+            "\\\\")
 
 latex_additional_macros.close()
 
@@ -403,8 +430,8 @@ for dist in pkg_resources.find_distributions("@SPHINX_SRC_DIR@/doc/_templates/py
     pkg_resources.working_set.add(dist)
 
 
-#End pybtex stuff
+# End pybtex stuff
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-    'gimliapi' : ('@DOXYGEN_BUILD_DIR@/gimli.tag', 'doc/gimliapi/html/')
+    'gimliapi': ('@DOXYGEN_BUILD_DIR@/gimli.tag', 'doc/gimliapi/html/')
 }

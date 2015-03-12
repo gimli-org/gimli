@@ -661,6 +661,7 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     >>>     data.append(-val)
     >>> fig, ax = plt.subplots()
     >>> drawStreams(ax, mesh, data)
+    >>> ax.set_aspect('equal')
     """
 
     viewMesh = None

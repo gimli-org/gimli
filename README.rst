@@ -22,7 +22,7 @@ What do you need to use GIMLi?:
 * either the source code and some time to build the system or binaries
 * preferrably Python with numpy and matplotlib, or a C++ compiler
 
-.. _sec:about_gimli_inversion:
+.. _sec:authors
 
 Authors aka GIMLi Group
 -----------------------
@@ -44,6 +44,8 @@ Authors aka GIMLi Group
   *Helmholtz Centre Potsdam, GFZ German Research Centre for Geosciences, Potsdam, Germany*
 
   florian@pygimli.org
+
+.. _sec:about_gimli_inversion:
 
 Inversion
 ---------
