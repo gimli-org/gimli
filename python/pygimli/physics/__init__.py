@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """
-    What does this physics do??
+    Module containing submodules for various geophysical methods (physics)
 """
 
-from . em import *
-from . sNMR import *
-from . SIP import *
-from . traveltime import *
-
-# pygimli.physics.Refraction
-# pygimli.physics.traveltime.Refraction
+from . em import FDEMData, TDEMData
+from . sNMR import MRS
+from . SIP import SIPSpectrum
+from . traveltime import Refraction
+#from . gravimetry import *
+#from . seismics import *

@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 try:
     from pyproj import Proj
-except:
+except ImportError:
     pass
 
 

@@ -4,5 +4,4 @@
     What we have here?
 """
 
-from . mrs import *
-#MRS, MRS1dBlockQTModelling, drawModel1D
+from . mrs import MRS, MRS1dBlockQTModelling

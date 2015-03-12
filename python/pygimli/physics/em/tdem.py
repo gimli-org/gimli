@@ -9,11 +9,10 @@ import sys
 
 
 def rhoafromU(UbyI, t, Tx, Rx=None):
-    """
-        Apparent resistivity curve from classical TEM (U or dB/dt)
+    """Apparent resistivity curve from classical TEM (U or dB/dt)
 
-        rhoafromU(U/I, t, TXarea[, RXarea])
-        \rho_a = ( (A_{Rx} *A_{Tx} * \mu_0)/ (20 U/I) )^2/3*t^{-5/3}*4e-7
+    rhoafromU(U/I, t, TXarea[, RXarea])
+    .. math:: \rho_a = ( (A_{Rx} *A_{Tx} * \mu_0)/ (20 U/I) )^2/3*t^{-5/3}*4e-7
     """
     if Rx is None:
         Rx = Tx  # assume single/coincident loop
@@ -24,10 +23,9 @@ def rhoafromU(UbyI, t, Tx, Rx=None):
 
 
 def rhoafromB(B, t, Tx, I=1):
-    """
-        Apparent resistivity from B-field TEM
+    """Apparent resistivity from B-field TEM
 
-        \rho_a = ( (A_{Tx}*I*\mu_0 ) / (30B) )^2/3 * 4e-7 / t
+    .. math:: \rho_a = ( (A_{Tx}*I*\mu_0 ) / (30B) )^2/3 * 4e-7 / t
     """
     mu0 = 4e-7 * np.pi
     rhoa = (I * Tx * mu0 / 30. / B)**(2./3.) * mu0 / np.pi / t
