@@ -225,17 +225,33 @@ def KramersKronig(f, re, im, usezero=False):
 
 class SIPSpectrum():
     """ SIP spectrum data and analyses """
-    def __init__(self, filename=None, unify=False, onlydown=True):
-        if filename.rfind('.txt') > 0:
-            self.basename = filename[:-4]
-            self.f, self.amp, self.phi = readTXTSpectrum(filename)
-            if unify:
-                self.unifyData()
-            if onlydown:
-                wende = min(np.nonzero(np.diff(self.f) > 0)[0])
-                self.f = self.f[wende::-1]
-                self.amp = self.amp[wende::-1]
-                self.phi = self.phi[wende::-1]
+    def __init__(self, filename=None, unify=False, onlydown=True,
+                 f=None, amp=None, phi=None, basename='new'):
+        """init SIP class with either filename to read or data vectors
+
+        Examples:
+        ---------
+        >>> sip = SIPSpectrum('myfilename.txt', unify=True) # unique f values
+        >>> sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
+        """
+        self.basename = basename
+        if filename is not None:
+            if filename.rfind('.txt') > 0:
+                self.basename = filename[:-4]
+                self.f, self.amp, self.phi = readTXTSpectrum(filename)
+                if unify:
+                    self.unifyData()
+                if onlydown:
+                    wende = min(np.nonzero(np.diff(self.f) > 0)[0])
+                    self.f = self.f[wende::-1]
+                    self.amp = self.amp[wende::-1]
+                    self.phi = self.phi[wende::-1]
+        if f is not None:
+            self.f = f
+        if amp is not None:
+            self.amp = amp
+        if phi is not None:
+            self.phi = phi
 
     def unifyData(self):
         fu = np.unique(self.f)

@@ -2,4 +2,4 @@
 """
     Refraction seismics or first arrival traveltime calculations.
 """
-from .refraction import *
+from .refraction import Refraction

@@ -21,7 +21,7 @@ except ImportError:
 
 def handleWPTS(wpts):
     """
-        Handler for Waypoints in gpx xml-dom
+    Handler for Waypoints in gpx xml-dom
     """
     w = []
 
@@ -183,15 +183,16 @@ def GKtoUTM(R, H=None):
 
 
 def convddmm(num):
+    """convert numeric position into degree and minute"""
     dd = np.floor(num / 100.)
     r1 = num - dd * 100.
     return dd + r1 / 60.
 
 
 def readGeoRefTIF(file_name):
-    """
-        Read geo-referenced TIFF file and return image and bbox
-        plt.imshow( im, ext = bbox.ravel() ), bbox might need transform.
+    """Read geo-referenced TIFF file and return image and bbox
+
+    plt.imshow(im, ext = bbox.ravel()), bbox might need transform.
     """
     try:
         import gdal

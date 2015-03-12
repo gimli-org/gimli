@@ -191,11 +191,9 @@ def drawModel(axes, mesh, data=None,
     >>> from pygimli.mplviewer import drawModel
     >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
-    >>> data = []
-    >>> for cell in mesh.cells():
-    >>>     x, y = cell.center().x(), cell.center().y()
-    >>>     val = np.cos(1.5 * x) * np.sin(1.5 * y)
-    >>>     data.append(val)
+    >>> mx = pg.x(mesh.cellCenter())
+    >>> my = pg.y(mesh.cellCenter())
+    >>> data = np.cos(1.5 * mx) * np.sin(1.5 * my)
     >>> fig, ax = plt.subplots()
     >>> drawModel(ax, mesh, data)
     """
@@ -531,11 +529,9 @@ def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
     >>> from pygimli.mplviewer import drawField
     >>> n = np.linspace(0,-2,11)
     >>> mesh = pg.createGrid(x=n, y=n)
-    >>> data = []
-    >>> for node in mesh.nodes():
-    >>>     x, y = node.x(), node.y()
-    >>>     val = np.cos(1.5 * x) * np.sin(1.5 * y)
-    >>>     data.append(val)
+    >>> nx = pg.x(mesh.positions())
+    >>> ny = pg.y(mesh.positions())
+    >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
     >>> drawField(ax, mesh, data)
     """
@@ -551,8 +547,8 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
     """
     Draw streamlines for the gradients of field values u on a mesh.
 
-    The matplotlib internal streamplot need equidistant space value so
-    we interpolate first on a grid defined by nx and ny values.
+    The matplotlib routine streamplot needs equidistant spacings so
+    we interpolate first on a grid defined by nx and ny nodes.
     Additionally arguments are piped to streamplot.
 
     This works only for rectangular regions.
@@ -654,11 +650,9 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     >>> from pygimli.mplviewer import drawStreams
     >>> n = np.linspace(1,2,10)
     >>> mesh = pg.createGrid(x=n, y=n)
-    >>> data = []
-    >>> for cell in mesh.cells():
-    >>>     x, y = cell.center().x(), cell.center().y()
-    >>>     val = np.cos(1.5 * x) * np.sin(1.5 * y)
-    >>>     data.append(-val)
+    >>> nx = pg.x(mesh.positions())
+    >>> ny = pg.y(mesh.positions())
+    >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
     >>> drawStreams(ax, mesh, data)
     >>> ax.set_aspect('equal')
@@ -863,7 +857,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     >>> thk = [1,2,3,4]
     >>> val = thk
     >>> fig, ax = plt.subplots()
-    >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="1D Inversion")
+    >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")
     >>> ax.set_ylim(-np.sum(thk), 0)
     """
     z = -np.hstack((0., np.cumsum(thk), np.sum(thk)*1.5)) + ztopo
