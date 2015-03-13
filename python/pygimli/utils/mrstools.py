@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" 
+"""
 mrstools - tools for magnetic resonance sounding (MRS)
 """
 
@@ -51,9 +51,9 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
             if izvec[i] > 0:
                 wcvec[ izvec[i] - 1 ] = wc[i] * (1 - rzvec[i])
             amps = N.dot(self.KR_, wcvec) + N.dot(self.KI_, wcvec) * 1j
-            
+
             for ii in range(len(A)):
-                a += N.exp(-self.t_ / t2[i]) * amps[ii]
+                A += N.exp(-self.t_ / t2[i]) * amps[ii]
 
         return pg.asvector(N.abs(A).ravel())
 
@@ -84,22 +84,22 @@ def loadmrsproject(mydir):
 def qtblockmodelling(mydir, nlay,
                      startvec=None, lowerbound=None, upperbound=None):
     """Loads data from dir, creates forward operator
-    
+
     Parameters
     ----------
     mydir :
-    
-    nlay : 
-    
+
+    nlay :
+
     startvec :
-    
+
     lowerbound :
-    
+
     upperbound :
 
     Examples
     --------
-    
+
     t,datvec,f=qtblockmodelling(mydir,nlay,startvec=(10,0.3,0.2),
                                 lowerbound=(0.1,0,0.02),
                                 upperbound(100.,0.45,,0.5))

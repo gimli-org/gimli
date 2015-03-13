@@ -1,15 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, os
+import sys
+import os
 
-this_module_dir_path = os.path.abspath (os.path.dirname(sys.modules[__name__].__file__))
-project_root = os.path.abspath(os.path.join(this_module_dir_path, '..','..', '..'))
+this_module_dir_path = os.path.abspath(
+    os.path.dirname(
+        sys.modules[__name__].__file__))
+project_root = os.path.abspath(
+    os.path.join(
+        this_module_dir_path,
+        '..',
+        '..',
+        '..'))
 complete_path = lambda *args: os.path.join(project_root, *args)
 
 import distutils.sysconfig
-print("Python version:", distutils.sysconfig.get_python_version()) # Get the major Python version without patchlevel
+# Get the major Python version without patchlevel
+print("Python version:", distutils.sysconfig.get_python_version())
 print("Python lib:", distutils.sysconfig.get_python_lib(standard_lib=True))
+
 
 class settings:
     module_name = '_pygimli_'
@@ -19,8 +29,8 @@ class settings:
 
     @staticmethod
     def setup_environment():
-        settings.pygccxml_path      = '../../../pygccxml'
-        settings.pyplusplus_path    = '../../../pyplusplus'
+        settings.pygccxml_path = '../../../pygccxml'
+        settings.pyplusplus_path = '../../../pyplusplus'
 
         if os.path.exists('../../../gccxml-bin/bin'):
             settings.gccxml_path = os.path.abspath('../../../gccxml-bin/bin')
@@ -29,9 +39,9 @@ class settings:
 
         sys.path.append(settings.pygccxml_path)
         sys.path.append(settings.pyplusplus_path)
-        
+
         print(sys.path)
- 
+
 if sys.platform == 'linux2' or sys.platform == 'linux':
     pass
 
@@ -39,13 +49,16 @@ elif sys.platform == 'darwin':
     pass
 
 elif sys.platform == 'win32':
-    settings.gimli_defines      = 'MINGW'
-    settings.python_libs_path   = distutils.sysconfig.get_python_lib(standard_lib=True)
-    
+    settings.gimli_defines = 'MINGW'
+    settings.python_libs_path = distutils.sysconfig.get_python_lib(
+        standard_lib=True)
+
     if os.path.exists('../../../boost/include'):
         settings.includesPaths.append(os.path.abspath('../../../boost/include'))
 
 else:
-    raise RuntimeError('There is no configuration for "%s" platform.' % sys.platform)
+    raise RuntimeError(
+        'There is no configuration for "%s" platform.' %
+        sys.platform)
 
-setup_environment = settings.setup_environment()
+settings.setup_environment()

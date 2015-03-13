@@ -300,10 +300,10 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
     >>> n = np.linspace(0,-2,11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> for bound in mesh.boundaries():
-    >>> if not bound.rightCell():
-    >>> bound.setMarker(pg.MARKER_BOUND_MIXED)
-    >>> if bound.center().y() == 0:
-    >>>     bound.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    >>>     if not bound.rightCell():
+    >>>         bound.setMarker(pg.MARKER_BOUND_MIXED)
+    >>>     if bound.center().y() == 0:
+    >>>         bound.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
     >>> fig, ax = plt.subplots()
     >>> drawMeshBoundaries(ax, mesh)
     """

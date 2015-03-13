@@ -9,28 +9,29 @@ showMesh3DFunct = 'showMesh3DMayvi'
 try:
     from mayavi import mlab
 except ImportError:
-    error_msg  = """Visualization in 3D requires Mayavi.\n""" + \
-                 """Try 'pip install mayavi' depending on your system.\n""" + \
-                 """Fallback to matplotlib \n"""
+    error_msg = """Visualization in 3D requires Mayavi.\n""" + \
+                """Try 'pip install mayavi' depending on your system.\n""" + \
+                """Fallback to matplotlib \n"""
     sys.stderr.write(error_msg)
-    #raise Exception("Visualization in 3D requires Mayavi.")
     showMesh3DFunct = 'showMesh3DFallback'
+
 
 def showMesh3D(mesh, interactive=True):
     return globals()[showMesh3DFunct](mesh, interactive)
+
 
 def showMesh3DFallback(mesh, interactive=True):
     from mpl_toolkits.mplot3d import Axes3D
     fig = plt.figure()
     ax = Axes3D(fig)
-    
+
     if len(mesh.positions()) < 1e4:
         for pos in mesh.positions():
             ax.scatter(pos[0], pos[1], pos[2], 'ko')
             text = ("Proper visualization in 3D requires Mayavi.\n"
-                """Try 'pip install mayavi' depending on your system.""")
+                    """Try 'pip install mayavi' depending on your system.""")
             ax.set_title(text)
-            
+
     plt.show()
 
 
@@ -59,8 +60,8 @@ def showMesh3DMayvi(mesh, interactive=True):
     surf = mlab.pipeline.surface(src, figure=fig, opacity=0.5)
     edges = mlab.pipeline.extract_edges(surf, figure=fig)
     mlab.pipeline.surface(edges, color=(0, 0, 0), figure=fig)
-    #mlab.pipeline.image_plane_widget(surf, colormap='gray',
-                                     #plane_orientation='x_axes')
+    # mlab.pipeline.image_plane_widget(surf, colormap='gray',
+    #                                  plane_orientation='x_axes')
 
     if interactive:
         mlab.show()
@@ -69,4 +70,3 @@ def showMesh3DMayvi(mesh, interactive=True):
         plt.imshow(arr)
         plt.axis('off')
         plt.show()
-

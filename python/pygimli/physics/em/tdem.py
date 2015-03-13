@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Time Domain Electromagnetics (TDEM) functions and class
+Time Domain Electromagnetics (TDEM) functions and class
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -226,7 +226,9 @@ def readSiroTEMData(fname):
 
 
 class TDEMData():
+
     """ TEM class mainly for holding data etc. """
+
     def __init__(self, filename=None):
         """ Initialize class and (optionally) load data """
         self.DATA = []
@@ -251,7 +253,7 @@ class TDEMData():
         return "<TDEMdata: %d soundings>" % (len(self.DATA))
 
     def showInfos(self):  # only for old scripts using it
-        print(__repr__(self))
+        print(self.__repr__)
 
     def plotTransients(self, ax=None):
         """ plot all transients into one window """

@@ -11,20 +11,20 @@ import numpy as np
 import urllib
 
 class OverlayImageMPL(object):
-    
+
     """ What is this? """
-    
+
     def __init__(self, imageFileName, axes):
         self.axes = axes
         self.imAxes  = None
         self.image = mpimg.open(imageFileName)
         self.figure = self.axes.get_figure()
-        
+
     def clear(self):
         """ What is this? """
         if self.imAxes in self.figure.axes:
             self.figure.delaxes(self.imAxes)
-    
+
     def setPosition(self, posX, posY, axes = None):
         """ What is this? """
         if axes is not None:
@@ -33,16 +33,16 @@ class OverlayImageMPL(object):
             self.figure.get_dpi()/self.figure.get_size_inches()[0]
         self.dy = float(self.image.size[0])/ \
             self.figure.get_dpi()/self.figure.get_size_inches()[1]
-        
+
         xRange = self.axes.get_xlim()[1]-self.axes.get_xlim()[0]
         yRange = self.axes.get_ylim()[1]-self.axes.get_ylim()[0]
-        
+
         x = (posX - self.axes.get_xlim()[0]) / xRange
         y = (posY - self.axes.get_ylim()[0]) / yRange
-    
+
         x *= (self.axes.get_position().x1 - self.axes.get_position().x0)
         y *= (self.axes.get_position().y1 - self.axes.get_position().y0)
-        
+
         #print self.imAxes
         #print self.figure.axes
         if self.imAxes not in self.figure.axes:
@@ -59,9 +59,9 @@ class OverlayImageMPL(object):
                        [x + self.axes.get_position().x0 - self.dx/6.0,
                         y + self.axes.get_position().y0, self.dx, self.dy]))
                 #hackish
-                return 
-            
-            
+                return
+
+
             self.imAxes = self.figure.add_axes([
                                 x + self.axes.get_position().x0 - self.dx/6.0,
                                 y + self.axes.get_position().y0,
@@ -72,7 +72,7 @@ class OverlayImageMPL(object):
                     x + self.axes.get_position().x0 - self.dx/6.0,
                     y + self.axes.get_position().y0,
                     self.dx, self.dy])
-                                        
+
         if (len(self.imAxes.get_xticks()) > 0):
             print("overlay imshow")
             self.imAxes.imshow(self.image, origin='lower')
@@ -93,7 +93,7 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
 def mapTile2deg(xtile, ytile, zoom):
     """
     Returns the NW-corner of the square.
-    
+
     Use the function with xtile+1 and/or ytile+1 to get the other corners.
     With xtile+0.5  ytile+0.5 it will return the center of the tile.
     """
@@ -102,46 +102,46 @@ def mapTile2deg(xtile, ytile, zoom):
     lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
     lat_deg = math.degrees(lat_rad)
     return (lon_deg, lat_deg)
-    
-def cacheFileName(fullname, vendor): 
+
+def cacheFileName(fullname, vendor):
     """ Utility. Create filename and path to cache download data. """
     (dirName, fileName) = os.path.split(fullname)
-    
+
     path = './' + vendor + '/' + dirName
 
     try:
         os.makedirs(path)
     except OSError:
         pass
- 
+
     return path + '/' + fileName
-    
+
 
 def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
     """
     Get a map tile from public mapping server.
-        
+
     Parameters
     ----------
     xtile : int
-        
+
     ytile : int
-        
+
     zoom : int
-        
+
     vendor : str
         . 'OSM' or 'Open Street Map' (tile.openstreetmap.org)
         . 'GM' or 'Google Maps' (mt.google.com)
-        
+
     verbose : bool [false]
         be verbose
     """
     imagename = str(zoom) + '/' + str(xtile)+ '/' + str(ytile)
-    
+
     if vendor == 'OSM' or vendor == 'Open Street Map':
         #http://[abc].tile.openstreetmap.org
         serverName = 'tile.openstreetmap.org'
-        url = 'http://a.' + serverName + '/' + imagename + '.png' 
+        url = 'http://a.' + serverName + '/' + imagename + '.png'
         imFormat = '.png'
     elif vendor == 'GM' or vendor == 'Google Maps':
         #http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
@@ -161,23 +161,23 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
     else:
         raise "Vendor: " + vendor + \
             " not supported (currently only OSM (Open Street Map))"
-    
+
     filename = cacheFileName(imagename, serverName) + imFormat
-    
+
     if os.path.exists(filename):
         if verbose: print(("Read image from disk", filename))
         image = mpimg.imread(filename)
     else:
         if verbose: print(("Get map from url maps", url))
-        
+
         opener1 = urllib.request.build_opener()
         filehandle = opener1.open(url, timeout=15)
         data = filehandle.read()
         opener1.close()
-        
+
         if verbose:
             print(imagename)
-        
+
         fi = open(filename, 'w')
         fi.write(data)
         fi.close()
@@ -192,33 +192,33 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
                 verbose=False, fitMap=False):
     """
     Get a map from public mapping server and underlay it on the given axes
-         
+
     Parameters
     ----------
     axes : matplotlib.axes
-    
+
     proj : pyproy
-    
+
         Proj Projection
-        
+
     vendor : str
-        
+
         . 'OSM' or 'Open Street Map' (tile.openstreetmap.org)
         . 'GM' or 'Google Maps' (mt.google.com)
-        
+
     zoom : int [-1]
-    
-        Zoom level. If zoom is set to -1, the pixel size of the resulting 
-        image is lower than pixelLimit. 
-        
+
+        Zoom level. If zoom is set to -1, the pixel size of the resulting
+        image is lower than pixelLimit.
+
     pixelLimit : [int,int]
-            
+
     verbose : bool [false]
-    
+
         be verbose
-    
-    fitMap : bool 
-    
+
+    fitMap : bool
+
         The axes is resized to fit the whole map.
     """
     if pixelLimit is None:
@@ -226,16 +226,16 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     origXLimits = axes.get_xlim()
     origYLimits = axes.get_ylim()
-    
+
     ul = proj(axes.get_xlim()[0], axes.get_ylim()[1], inverse=True)
     lr = proj(axes.get_xlim()[1], axes.get_ylim()[0], inverse=True)
 
     if zoom == -1:
-        
+
         nXtiles = 1e99
         nYtiles = 1e99
         zoom = 19
-               
+
         while ((nYtiles * 256) > pixelLimit[0] or \
               (nXtiles * 256) > pixelLimit[1]):
             zoom = zoom -1
@@ -247,10 +247,10 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
             if verbose:
                 print(("tiles: ", zoom, nYtiles, nXtiles))
             if nXtiles == 1 and nYtiles == 1: break
-            
+
         if verbose:
             print(("zoom set to ", zoom))
-            
+
     startTile = deg2MapTile(ul[0], ul[1], zoom)
     endTile   = deg2MapTile(lr[0], lr[1], zoom)
 
@@ -259,7 +259,7 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     image = np.zeros(shape = (256 * nYtiles, 256 * nXtiles, 3))
 
-    if verbose: 
+    if verbose:
         print(("Mapimage size:", image.shape))
 
     for i in range(nXtiles):
@@ -275,7 +275,7 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     imUL = proj(lonLatStart[0], lonLatStart[1])
     imLR = proj(lonLatEnd[0], lonLatEnd[1])
-    
+
     extent = np.asarray([imUL[0], imLR[0], imLR[1], imUL[1]])
 
     axes.imshow(image, extent=extent)
@@ -283,6 +283,3 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
     if not fitMap:
         axes.set_xlim(origXLimits)
         axes.set_ylim(origYLimits)
-    
-#def underlayMap()
-

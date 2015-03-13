@@ -6,7 +6,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import LogNorm
@@ -135,7 +134,7 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
             recs.append(Rectangle((x1[i], z[j]), dx[i], thk[j]))
 
     pp = PatchCollection(recs)
-    col = ax.add_collection(pp)
+    ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
     if cmap is not None:
