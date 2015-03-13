@@ -4,10 +4,10 @@
 Module containing submodules for various geophysical methods (physics)
 """
 
-from . em import *
-from . sNMR import *
-from . SIP import *
-from . traveltime import *
+from . em import FDEMData, TDEMData
+from . sNMR import MRS
+from . SIP import SIPSpectrum
+from . traveltime import Refraction
 #from . gravimetry import *
 #from . seismics import *
 

@@ -2,30 +2,35 @@
 import wx
 import wx.combo
 
-class NullLog():
-    def write( self, txt ):
-        pass
-        #print txt
 
-class ListCtrlComboPopupControl( wx.combo.ComboCtrl ):
+class NullLog():
+
+    def write(self, txt):
+        pass
+        # print txt
+
+
+class ListCtrlComboPopupControl(wx.combo.ComboCtrl):
 
     def __init__(self, *args, **kwargs):
 
-        wx.combo.ComboCtrl.__init__( self, *args, **kwargs)
-        self.popup = ListCtrlComboPopup( )
-        self.SetPopupControl( self.popup )
+        wx.combo.ComboCtrl.__init__(self, *args, **kwargs)
+        self.popup = ListCtrlComboPopup()
+        self.SetPopupControl(self.popup)
 
-    def select( self, item ):
-      #  print "ListCtrlComboPopupControl.Select", item, self.popup.GetItemText( item )
-        self.SetValueWithEvent( self.popup.GetItemText( item ), True )
+    def select(self, item):
+      # print "ListCtrlComboPopupControl.Select", item, self.popup.GetItemText(
+      # item )
+        self.SetValueWithEvent(self.popup.GetItemText(item), True)
 
-    def getSelection( self ):
+    def getSelection(self):
         return self.popup.curitem
         #self.SetValue( self.popup.GetItemText( item ) )
 
-    def addItems( self, txt ):
+    def addItems(self, txt):
         for t in txt:
-            self.popup.AddItem( t )
+            self.popup.AddItem(t)
+
 
 class ListCtrlComboPopup(wx.ListCtrl, wx.combo.ComboPopup):
 
@@ -35,7 +40,6 @@ class ListCtrlComboPopup(wx.ListCtrl, wx.combo.ComboPopup):
             self.log = log
         else:
             self.log = NullLog()
-
 
         # Since we are using multiple inheritance, and don't know yet
         # which window is to be the parent, we'll do 2-phase create of
@@ -63,7 +67,6 @@ class ListCtrlComboPopup(wx.ListCtrl, wx.combo.ComboPopup):
     # ComboPopup base class.  Most of them are not required, but all
     # are shown here for demonstration purposes.
 
-
     # This is called immediately after construction finishes.  You can
     # use self.GetCombo if needed to get to the ComboCtrl instance.
     def Init(self):
@@ -71,21 +74,19 @@ class ListCtrlComboPopup(wx.ListCtrl, wx.combo.ComboPopup):
         self.value = -1
         self.curitem = -1
 
-
     # Create the popup child control.  Return true for success.
     def Create(self, parent):
         self.log.write("ListCtrlComboPopup.Create")
         wx.ListCtrl.Create(self, parent,
-                           style=wx.LC_LIST|wx.LC_SINGLE_SEL|wx.SIMPLE_BORDER)
+                           style=wx.LC_LIST | wx.LC_SINGLE_SEL | wx.SIMPLE_BORDER)
 
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         return True
 
-
     # Return the widget that is to be used for the popup
     def GetControl(self):
-        #self.log.write("ListCtrlComboPopup.GetControl")
+        # self.log.write("ListCtrlComboPopup.GetControl")
         return self
 
     # Called just prior to displaying the popup, you can use it to
@@ -141,9 +142,12 @@ class ListCtrlComboPopup(wx.ListCtrl, wx.combo.ComboPopup):
     # maxHeight = max height for window, as limited by screen size
     #   and should only be rounded down, if necessary.
     def GetAdjustedSize(self, minWidth, prefHeight, maxHeight):
-        self.log.write("ListCtrlComboPopup.GetAdjustedSize: %d, %d, %d" % (minWidth, prefHeight, maxHeight))
-        prefHeight = self.GetItemCount() * ( self.GetItemRect(0 )[3] + 3 )
-        return wx.combo.ComboPopup.GetAdjustedSize(self, minWidth, prefHeight, maxHeight)
+        self.log.write(
+            "ListCtrlComboPopup.GetAdjustedSize: %d, %d, %d" %
+            (minWidth, prefHeight, maxHeight))
+        prefHeight = self.GetItemCount() * (self.GetItemRect(0)[3] + 3)
+        return wx.combo.ComboPopup.GetAdjustedSize(
+            self, minWidth, prefHeight, maxHeight)
 
     # Return true if you want delay the call to Create until the popup
     # is shown for the first time. It is more efficient, but note that

@@ -8,6 +8,7 @@ from pygimli.utils import getIndex, filterIndex
 
 
 class harmFunctor():
+
     def __init__(self, A, coeff, xmin, xSpan):
         self.A_ = A
         self.coeff_ = coeff
@@ -15,14 +16,25 @@ class harmFunctor():
         self.xSpan_ = xSpan
 
     def __call__(self, x):
-        nc = len(self.coeff_)/2
+        nc = len(self.coeff_) / 2
         A = np.ones(nc * 2) * 0.5
         A[1] = 3. * x
-        A[2::2] = np.sin(2.0 * np.pi * np.arange(1, nc) * (x - self.xmin_) / self.xSpan_)
-        A[3::2] = np.cos(2.0 * np.pi * np.arange(1, nc) * (x - self.xmin_) / self.xSpan_)
+        A[2::2] = np.sin(2.0 *
+                         np.pi *
+                         np.arange(1, nc) *
+                         (x -
+                          self.xmin_) /
+                         self.xSpan_)
+        A[3::2] = np.cos(2.0 *
+                         np.pi *
+                         np.arange(1, nc) *
+                         (x -
+                          self.xmin_) /
+                         self.xSpan_)
         return sum(A * self.coeff_)
 
-def harmfitNative(y, x = None, nc = None, xc = None, err = None):
+
+def harmfitNative(y, x=None, nc=None, xc=None, err=None):
     """
         python based curve-fit by harmonic functions
         yc = harmfitNativ(x,y[,nc,xc,err])
@@ -35,7 +47,7 @@ def harmfitNative(y, x = None, nc = None, xc = None, err = None):
     y = np.asarray(y)
 
     if x is None:
-       x = list(range(len(y)))
+        x = list(range(len(y)))
 
     x = np.asarray(x)
 
@@ -45,42 +57,43 @@ def harmfitNative(y, x = None, nc = None, xc = None, err = None):
         xc = x
 
     if err is None:
-        err = np.ones((1, len(x))) # ones(size(x)) end
+        err = np.ones((1, len(x)))  # ones(size(x)) end
 
     if nc is None or nc == 0:
-    #nc=round(length(x)/30) % number of coefficients
+        # nc=round(length(x)/30) % number of coefficients
         nc = int(len(x) / 30)
 
     xspan = max(x) - min(x)
     xmi = min(x)
 
     #A=ones(length(x),nc*2+2)/2 %nc*(sin+cos)+offset+drift
-    A = np.ones((len(x), nc * 2 + 2)) / 2.0 # %nc*(sin+cos)+offset+drift
-    #B=ones(length(xc),nc*2+2)/2
+    A = np.ones((len(x), nc * 2 + 2)) / 2.0  # %nc*(sin+cos)+offset+drift
+    # B=ones(length(xc),nc*2+2)/2
     B = np.ones((len(xc), nc * 2 + 2)) / 2.0
 
-    A[:,1] = x[:] * 3.0
-    B[:,1] = xc[:] * 3.0
+    A[:, 1] = x[:] * 3.0
+    B[:, 1] = xc[:] * 3.0
 
-    for i in range(1, nc +1):
-        #A(:,i*2+1)=sin(2*i*pi*(x-xmi)/xspan)
-        #A(:,i*2+2)=cos(2*i*pi*(x-xmi)/xspan)
-        #B(:,i*2+1)=sin(2*i*pi*(xc(:)-xmi)/xspan)
-        #B(:,i*2+2)=cos(2*i*pi*(xc(:)-xmi)/xspan)
+    for i in range(1, nc + 1):
+        # A(:,i*2+1)=sin(2*i*pi*(x-xmi)/xspan)
+        # A(:,i*2+2)=cos(2*i*pi*(x-xmi)/xspan)
+        # B(:,i*2+1)=sin(2*i*pi*(xc(:)-xmi)/xspan)
+        # B(:,i*2+2)=cos(2*i*pi*(xc(:)-xmi)/xspan)
 
         A[:, i * 2 + 0] = np.sin(2.0 * i * np.pi * (x - xmi) / xspan)
         A[:, i * 2 + 1] = np.cos(2.0 * i * np.pi * (x - xmi) / xspan)
         B[:, i * 2 + 0] = np.sin(2.0 * i * np.pi * (xc - xmi) / xspan)
         B[:, i * 2 + 1] = np.cos(2.0 * i * np.pi * (xc - xmi) / xspan)
 
-    #w = 1.0 / err w(~isfinite(w))=0
+    # w = 1.0 / err w(~isfinite(w))=0
     w = 1.0 / err
-    #w[(~isfinite(w)]=0
+    # w[(~isfinite(w)]=0
 
-    #coeff=(spdiags(w,0,length(w),length(w))*A)\(y.*w)
+    # coeff=(spdiags(w,0,length(w),length(w))*A)\(y.*w)
     coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :])
 
     return sum((B * coeff).T), harmFunctor(A, coeff, xmi, xspan)
+
 
 def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
             window=None, verbose=False, dosave=False,
@@ -117,7 +130,8 @@ def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
         xToFit = x(idx)
         yToFit = y(idx)
 
-        if error is not None: error = error(idx)
+        if error is not None:
+            error = error(idx)
     else:
         xToFit = x
         yToFit = y
@@ -139,7 +153,7 @@ def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
     inv.setMaxIter(maxiter)
     inv.setLineSearch(lineSearch)
     inv.setRobustData(robust)
-    #inv.setConstraintType(0)
+    # inv.setConstraintType(0)
 
     coeff = inv.run()
 
@@ -152,14 +166,17 @@ def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
 #        print ret
 
         if window is not None:
-#            print resample
-#            print window[0], window[1]
-#            print pg.find((resample < window[0]) | (resample >= window[1]))
-            ret.setVal(0.0, pg.find((resample < window[0]) | (resample >= window[1])))
+            #            print resample
+            #            print window[0], window[1]
+            # print pg.find((resample < window[0]) | (resample >= window[1]))
+            ret.setVal(
+                0.0, pg.find(
+                    (resample < window[0]) | (
+                        resample >= window[1])))
 #            idx = getIndex(resample, lambda v: v <= window[0] or v >= window[1])
 #            for i in idx: ret[i] = 0.0
 #        print ret
-        #sys.exit
+        # sys.exit
         return ret, coeff
     else:
         return inv.response(), coeff

@@ -4,7 +4,7 @@
 import numpy as np
 import pygimli as pg
 import time
-#from geomagnetics import GeoMagT0  # , date
+# from geomagnetics import GeoMagT0  # , date
 
 mu0 = 4.0 * np.pi * 1e-7
 
@@ -13,7 +13,7 @@ G = 6.6742e-11 / 1e-5  # mGal
 
 deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__
 # [m^2 kg/m^3]=[kg/m]
-deltaMSph = lambda R__, rho__: 4./3. * np.pi * R__**3. * rho__  # [kg]
+deltaMSph = lambda R__, rho__: 4. / 3. * np.pi * R__**3. * rho__  # [kg]
 rabs = lambda r__: np.asarray([np.sqrt(x__.dot(x__)) for x__ in r__])
 gradR = lambda r__: (r__.T / rabs(r__))
 adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__])
@@ -24,7 +24,7 @@ def magnetization(lat, lon, suszept, dat=(2010, 1, 1)):
     """
     T0, I, D = GeoMagT0(lat, lon, 0, dat)
     """indizierte Magnetisierung"""
-    Mi = 1./mu0 * suszept * T0
+    Mi = 1. / mu0 * suszept * T0
     """remanente Magnetisierung"""
     Mr = 0.
 
@@ -82,7 +82,7 @@ def BaZCylinderHoriz(pnts, R, pos, M):
 def poissonEoetvoes(dg):
     """
     """
-    return mu0/(4.0 * np.pi * G) * dg
+    return mu0 / (4.0 * np.pi * G) * dg
 
 
 def uSphere(r, R, rho, pos=(0., 0., 0.)):
@@ -150,7 +150,7 @@ def uCylinderHoriz(pnts, R, rho, pos=(0., 0.)):
 
     """
     u = np.zeros(len(pnts))
-    for i, r in enumerate(rabs(pnts-pos)):
+    for i, r in enumerate(rabs(pnts - pos)):
         if r > R:
             u[i] = -2 * np.pi * G * R * R * rho * np.log(r / R)
         else:
@@ -181,7 +181,7 @@ def gradUCylinderHoriz(r, R, rho, pos=(0., 0.)):
 
     """
     return [1., -1.0] * (gradR(r - pos) * -G *
-                         deltaACyl(R, rho)*1./(rabs(r-pos))).T
+                         deltaACyl(R, rho) * 1. / (rabs(r - pos))).T
 # def gZylinderHoriz():
 
 
@@ -205,7 +205,7 @@ def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
     """
     t = pos[1]
 
-    gz_xz = np.asarray([-2.0 * r[:, 0]*(t - r[:, 1]),
+    gz_xz = np.asarray([-2.0 * r[:, 0] * (t - r[:, 1]),
                         1.0 * (- r[:, 0]**2 + (t - r[:, 1])**2)])
 
     return (G * deltaACyl(R, rho) / rabs(r - pos)**4. * gz_xz).T
@@ -239,7 +239,7 @@ def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
 #        gz[i] = G * rho * (np.pi - 2. * \
 #         np.arctan((q[0] - pos[0]) / (q[2] - pos[2])))
 #         -z direction
-        gz[i] = -G * rho * t*(np.pi + 2.0 * np.arctan2(xx1, zz1)) * -1.
+        gz[i] = -G * rho * t * (np.pi + 2.0 * np.arctan2(xx1, zz1)) * -1.
 #        gz[i] = G * rho * np.pi
 
     return gz
@@ -276,8 +276,8 @@ def gradGZHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
         zz1 = q[1] - pos[1]
         xx1 = q[0] - pos[0]
 
-        gz[i, 0] = -2.0 * G * rho * t * (zz1 / (xx1*xx1 + zz1*zz1))
-        gz[i, 1] = +2.0 * G * rho * t * (xx1 / (xx1*xx1 + zz1*zz1))
+        gz[i, 0] = -2.0 * G * rho * t * (zz1 / (xx1 * xx1 + zz1 * zz1))
+        gz[i, 1] = +2.0 * G * rho * t * (xx1 / (xx1 * xx1 + zz1 * zz1))
 
     return gz
 # def gzPlatteHoriz(...)
@@ -294,7 +294,8 @@ def lineIntegralZ_WonBevis(p1, p2):
     dg = pg.RVector3(0.0, 0.0, 0.0)
     dgz = pg.RVector3(0.0, 0.0, 0.0)
     pg.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
-    return np.asarray((dg[0], dg[1], dg[2])), np.asarray((dgz[0], dgz[1], dgz[2]))
+    return np.asarray((dg[0], dg[1], dg[2])), np.asarray(
+        (dgz[0], dgz[1], dgz[2]))
 
     x1 = p1[0]
     z1 = p1[1]
@@ -326,8 +327,10 @@ def lineIntegralZ_WonBevis(p1, p2):
 
     rln = np.log(r2 / r1)
 
-    p = (xz12/r21s) * ((x1*x21 - z1*z21)/r1s - (x2*x21 - z2*z21)/r2s)
-    q = (xz12/r21s) * ((x1*z21 + z1*x21)/r1s - (x2*z21 + z2*x21)/r2s)
+    p = (xz12 / r21s) * \
+        ((x1 * x21 - z1 * z21) / r1s - (x2 * x21 - z2 * z21) / r2s)
+    q = (xz12 / r21s) * \
+        ((x1 * z21 + z1 * x21) / r1s - (x2 * z21 + z2 * x21) / r2s)
 
     Fz = 0.0
     Fx = 0.0
@@ -335,13 +338,13 @@ def lineIntegralZ_WonBevis(p1, p2):
     Fzz = 0.0  # dFz/dz
 
     if np.sign(z1) != np.sign(z2):
-        if (x1*z2 < x2*z1) and z2 >= 0.0:
+        if (x1 * z2 < x2 * z1) and z2 >= 0.0:
             theta1 = theta1 + 2. * np.pi
 
-        if (x1*z2 > x2*z1) and z1 >= 0.0:
+        if (x1 * z2 > x2 * z1) and z1 >= 0.0:
             theta2 = theta2 + 2. * np.pi
 
-    if x1*z2 == x2*z1:
+    if x1 * z2 == x2 * z1:
         return np.asarray((0., 0.0, 0.)), np.asarray((0., 0.0, 0.))
 
     th12 = (theta1 - theta2)
@@ -351,7 +354,7 @@ def lineIntegralZ_WonBevis(p1, p2):
         Fz = x1 * rln
         Fx = 0.0
         Fzz = -p
-        Fzx = q - z21s/r21s * rln
+        Fzx = q - z21s / r21s * rln
         # print(Zz, Zx, R2, x1, z1, x2, z2)
 
     else:  # default
@@ -363,10 +366,10 @@ def lineIntegralZ_WonBevis(p1, p2):
         z21dx21 = z21 / x21
 #        z21x21 = z21 * x21
 
-        fz = (th12 + z21dx21 * rln)/r21s
+        fz = (th12 + z21dx21 * rln) / r21s
 
         Fzz = -p + x21s * fz
-        Fzx = q - x21*z21 * fz
+        Fzx = q - x21 * z21 * fz
 
         # // check this!!!
         # fx = (th12 * z21dx21 - rln)/r21s
@@ -452,11 +455,12 @@ def angle(p1, p2, p3, Un):
         return ang, perp
 
     # Normals
-    n1 = np.asarray([y2*z1 - y1*z2, x1*z2 - x2*z1, x2*y1 - x1*y2])
-    n2 = np.asarray([y3*z2 - y2*z3, x2*z3 - x3*z2, x3*y2 - x2*y3]) * -1.0
+    n1 = np.asarray([y2 * z1 - y1 * z2, x1 * z2 - x2 * z1, x2 * y1 - x1 * y2])
+    n2 = np.asarray(
+        [y3 * z2 - y2 * z3, x2 * z3 - x3 * z2, x3 * y2 - x2 * y3]) * -1.0
 
-    n1 = n1/np.linalg.norm(n1)
-    n2 = n2/np.linalg.norm(n2)
+    n1 = n1 / np.linalg.norm(n1)
+    n2 = n2 / np.linalg.norm(n2)
 
     perp = np.sum([x3, y3, z3] * n1)
 
@@ -497,8 +501,8 @@ def gravMagBoundarySinghGup(boundary):
     W = 0
     for i in range(shape.nodeCount()):
         p1 = shape.node(i).pos()
-        p2 = shape.node((i+1) % shape.nodeCount()).pos()
-        p3 = shape.node((i+2) % shape.nodeCount()).pos()
+        p2 = shape.node((i + 1) % shape.nodeCount()).pos()
+        p3 = shape.node((i + 2) % shape.nodeCount()).pos()
 
         a, p = angle(p1, p2, p3, u)
         W += a
@@ -511,23 +515,24 @@ def gravMagBoundarySinghGup(boundary):
     for i in range(shape.nodeCount()):
 
         vr1 = shape.node(i).pos()
-        vr2 = shape.node((i+1) % shape.nodeCount()).pos()
+        vr2 = shape.node((i + 1) % shape.nodeCount()).pos()
 
         r1 = vr1.abs()
 
-        L = (vr2-vr1).abs()
+        L = (vr2 - vr1).abs()
 
         Lx = vr2[0] - vr1[0]
         Ly = vr2[1] - vr1[1]
         Lz = vr2[2] - vr1[2]
 
-        b = 2.*(vr1[0] * Lx + vr1[1] * Ly + vr1[2] * Lz)
+        b = 2. * (vr1[0] * Lx + vr1[1] * Ly + vr1[2] * Lz)
 
-        b2 = b/L/2.
+        b2 = b / L / 2.
         if r1 + b2 == 0:
-            I = (1.0/L) * np.log((L - r1)/r1)
+            I = (1.0 / L) * np.log((L - r1) / r1)
         else:
-            I = (1.0/L) * np.log((np.sqrt(L*L + b + r1*r1) + L + b2)/(r1 + b2))
+            I = (1.0 / L) * \
+                np.log((np.sqrt(L * L + b + r1 * r1) + L + b2) / (r1 + b2))
 
         # print(I, L, b, r1,  Lx, Ly, Lz)
         P += I * Lx
@@ -611,14 +616,15 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
         mesh.translate(-pg.RVector3(p))
 
         for b in mesh.boundaries():
-            if b.marker() != 0 or hasattr(dDensity, '__len__') or dDensity is None:
+            if b.marker() != 0 or hasattr(
+                    dDensity, '__len__') or dDensity is None:
 
                 if mesh.dimension() == 2:
                     tic = time.time()
                     if complete:
                         dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                            b.node(1).pos())
-                        times.append(time.time()-tic)
+                        times.append(time.time() - tic)
                         dgi *= -2.0
                         dgzi *= -2.0
                     else:

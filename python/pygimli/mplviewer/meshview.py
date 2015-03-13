@@ -16,6 +16,7 @@ from pygimli.misc import streamline
 
 
 class CellBrowser(object):
+
     """
     Interactive cell browser on current or specified axes for a given mesh.
     Cell information can be displayed by mouse picking. Arrow keys up and down
@@ -53,8 +54,8 @@ class CellBrowser(object):
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
         kwargs = dict(fontproperties='monospace', visible=False,
-                      fontsize=mpl.rcParams['text.fontsize']-2,
-                      weight='bold', xytext=(50, 20),  arrowprops=arrowprops,
+                      fontsize=mpl.rcParams['text.fontsize'] - 2,
+                      weight='bold', xytext=(50, 20), arrowprops=arrowprops,
                       textcoords='offset points', bbox=bbox, va='center')
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
@@ -624,9 +625,9 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
         dx = x[xmid + 1] - x[xmid]
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
-        dLength = c.center().dist(c.node(0).pos())/4.
+        dLength = c.center().dist(c.node(0).pos()) / 4.
 
-        axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength/15.,
+        axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
                    head_starts_at_zero=True,
                    **kwargs)
 
@@ -677,7 +678,8 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     if startStream == 1:
         # start a stream from each boundary cell
         for y in np.linspace(viewMesh.ymin(), viewMesh.ymax(), 100):
-            c = viewMesh.findCell([(viewMesh.xmax()-viewMesh.xmax())/2.0, y])
+            c = viewMesh.findCell(
+                [(viewMesh.xmax() - viewMesh.xmax()) / 2.0, y])
             if c is not None:
                 if c.valid():
                     drawStreamLine(axes, viewMesh, c, data, dataMesh,
@@ -686,7 +688,8 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     elif startStream == 2:
         # start a stream from each boundary cell
         for x in np.linspace(viewMesh.xmin(), viewMesh.xmax(), 100):
-            c = viewMesh.findCell([x, (viewMesh.ymax()-viewMesh.ymax())/2.0])
+            c = viewMesh.findCell(
+                [x, (viewMesh.ymax() - viewMesh.ymax()) / 2.0])
             if c is not None:
                 if c.valid():
                     drawStreamLine(axes, viewMesh, c, data, dataMesh,
@@ -806,8 +809,8 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
         p2 = paraCenter[idR]
 
         if cWeight is not None:
-            pa = pg.RVector3(p1 + (p2-p1)/2.0 * (1.0 - cWeight[i]))
-            pb = pg.RVector3(p2 + (p1-p2)/2.0 * (1.0 - cWeight[i]))
+            pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeight[i]))
+            pb = pg.RVector3(p2 + (p1 - p2) / 2.0 * (1.0 - cWeight[i]))
         else:
             pa = p1
             pb = p2
@@ -860,10 +863,10 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")
     >>> ax.set_ylim(-np.sum(thk), 0)
     """
-    z = -np.hstack((0., np.cumsum(thk), np.sum(thk)*1.5)) + ztopo
+    z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
     recs = []
     for i in range(len(val)):
-        recs.append(Rectangle((x-width/2., z[i]), width, z[i+1]-z[i]))
+        recs.append(Rectangle((x - width / 2., z[i]), width, z[i + 1] - z[i]))
 
     pp = PatchCollection(recs)
     col = ax.add_collection(pp)

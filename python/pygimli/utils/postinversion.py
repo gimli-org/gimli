@@ -73,7 +73,7 @@ def modCovar(inv):
     tm = np.asarray(inv.transModel().deriv(inv.model()))
 
     J = td.reshape(len(td), 1) * \
-        gmat2numpy(inv.forwardOperator().jacobian()) * (1./tm)
+        gmat2numpy(inv.forwardOperator().jacobian()) * (1. / tm)
     d = 1. / np.asarray(inv.transData().error(inv.response(), inv.error()))
 
     DJ = d.reshape(len(d), 1) * J
@@ -94,17 +94,16 @@ def print1dBlockVar(var, thk, xpos=None):
     """
     raise('fixme')
     # welches plt??
-    #if xpos is None:
-        #xpos = plt.xlim()[0]
+    # if xpos is None:
+    #xpos = plt.xlim()[0]
 
     #nlay = len(thk) + 1
     #zl  = np.cumsum(thk)
     #zvec = np.hstack((zl,zl-thk/2,zl[-1]+thk[-1]/2))
 
-    #for j in range(nlay*2-1):
-        #v = np.log(1.+var[j])
-        #if j<nlay-1:
-            #plt.text(xpos ,zvec[j],'$\delta$='+str(np.round_(v*thk[j], 1))+'m')
-        #else:
-            #plt.text(xpos, zvec[j],'$\delta$='+str(np.round_(v*100., 1))+'$\%$')
-
+    # for j in range(nlay*2-1):
+    #v = np.log(1.+var[j])
+    # if j<nlay-1:
+    #plt.text(xpos ,zvec[j],'$\delta$='+str(np.round_(v*thk[j], 1))+'m')
+    # else:
+    #plt.text(xpos, zvec[j],'$\delta$='+str(np.round_(v*100., 1))+'$\%$')

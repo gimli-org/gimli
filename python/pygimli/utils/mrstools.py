@@ -8,54 +8,58 @@ import numpy as N
 import pylab as P
 from .base import draw1dmodel, rndig
 
+
 class MRS1dBlockQTModelling(pg.ModellingBase):
+
     """
     MRS1dBlockQTModelling - pygimli modelling class for block-mono QT inversion
     f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False )
     """
-    def __init__(self, nlay, KR, KI, zvec, t, verbose=False ):
+
+    def __init__(self, nlay, KR, KI, zvec, t, verbose=False):
         """constructor."""
-        mesh = pg.createMesh1DBlock(nlay, 2) # thk, wc, T2*
+        mesh = pg.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
         pg.ModellingBase.__init__(self, mesh, verbose)
         self.KR_ = KR
         self.KI_ = KI
         self.zv_ = N.array(zvec)
         self.nl_ = nlay
         self.nq_ = len(KR)
-        self.t_  = N.array(t)
+        self.t_ = N.array(t)
         self.nt_ = len(t)
 
     def response(self, par):
         """compute response function."""
         nl = self.nl_
-        thk = par(0, nl-1)
-        wc  = par(nl-1, 2*nl-1)
-        t2  = par(2*nl-1, 3*nl-1)
+        thk = par(0, nl - 1)
+        wc = par(nl - 1, 2 * nl - 1)
+        t2 = par(2 * nl - 1, 3 * nl - 1)
         zthk = N.cumsum(thk)
         zv = self.zv_
         lzv = len(zv)
         izvec = N.zeros(nl + 1, N.int32)
         rzvec = N.zeros(nl + 1)
-        for i in range(nl-1):
-            ii = (zv<zthk[i]).argmin()
-            izvec[ i + 1 ] = ii
+        for i in range(nl - 1):
+            ii = (zv < zthk[i]).argmin()
+            izvec[i + 1] = ii
             if ii <= len(zv):
-                rzvec[i+1] = (zthk[i] - zv[ii-1]) / (zv[ii] - zv[ii-1])
+                rzvec[i + 1] = (zthk[i] - zv[ii - 1]) / (zv[ii] - zv[ii - 1])
         izvec[-1] = lzv - 1
         A = N.zeros((self.nq_, self.nt_), dtype=complex)
         for i in range(nl):
-            wcvec = N.zeros(lzv-1)
-            wcvec[ izvec[i]:izvec[i+1] ] = wc[i]
-            if izvec[i+1] < lzv:
-                wcvec[ izvec[i+1] - 1 ] = wc[i] * rzvec[ i + 1 ]
+            wcvec = N.zeros(lzv - 1)
+            wcvec[izvec[i]:izvec[i + 1]] = wc[i]
+            if izvec[i + 1] < lzv:
+                wcvec[izvec[i + 1] - 1] = wc[i] * rzvec[i + 1]
             if izvec[i] > 0:
-                wcvec[ izvec[i] - 1 ] = wc[i] * (1 - rzvec[i])
+                wcvec[izvec[i] - 1] = wc[i] * (1 - rzvec[i])
             amps = N.dot(self.KR_, wcvec) + N.dot(self.KI_, wcvec) * 1j
 
             for ii in range(len(A)):
                 A += N.exp(-self.t_ / t2[i]) * amps[ii]
 
         return pg.asvector(N.abs(A).ravel())
+
 
 def loadmrsproject(mydir):
     """
@@ -74,12 +78,13 @@ def loadmrsproject(mydir):
     A = pg.RMatrix()
     pg.loadMatrixCol(A, mydir + 'datacube.dat')
     t = N.array(A[0])
-    #data
+    # data
     datvec = pg.RVector()
     for i in range(1, len(A)):
         datvec = pg.cat(datvec, A[i])
-    #print len(A), len(t)
+    # print len(A), len(t)
     return KR, KI, zvec, t, datvec
+
 
 def qtblockmodelling(mydir, nlay,
                      startvec=None, lowerbound=None, upperbound=None):
@@ -112,7 +117,7 @@ def qtblockmodelling(mydir, nlay,
     if upperbound is None:
         upperbound = [100., 0.45, 0.5]
     # modelling operator
-    f = MRS1dBlockQTModelling(nlay, KR, KI, zvec, t) #A[0])
+    f = MRS1dBlockQTModelling(nlay, KR, KI, zvec, t)  # A[0])
     f.region(0).setStartValue(startvec[0])
     f.region(1).setStartValue(startvec[1])
     f.region(2).setStartValue(startvec[2])
@@ -124,6 +129,7 @@ def qtblockmodelling(mydir, nlay,
     f.region(1).setTransModel(f.transWC)
     f.region(2).setTransModel(f.transT2)
     return t, datvec, f
+
 
 def showqtresultfit(thk, wc, t2, datvec, resp, t,
                     islog=True, clim=None, nu=3, nv=2):
@@ -167,10 +173,10 @@ def showqtresultfit(thk, wc, t2, datvec, resp, t,
     ax4 = fig.add_subplot(nu, nv, 4)
     if islog:
         P.imshow(N.log10(resp.reshape(si)),
-                 interpolation='nearest',aspect='auto')
+                 interpolation='nearest', aspect='auto')
     else:
         P.imshow(resp.reshape(si),
-                 interpolation='nearest',aspect='auto')
+                 interpolation='nearest', aspect='auto')
     misfit = N.array(datvec - resp)
     P.clim(clim)
 #    P.subplot(nu,nv,5)
@@ -183,5 +189,5 @@ def showqtresultfit(thk, wc, t2, datvec, resp, t,
 #    P.subplot(nu,nv,6)
     ax6 = fig.add_subplot(nu, nv, 6)
     P.imshow(misfit.reshape(si), interpolation='nearest', aspect='auto')
-    ax = [ ax1, ax2, ax3, ax4, ax5, ax6 ]
+    ax = [ax1, ax2, ax3, ax4, ax5, ax6]
     return ax

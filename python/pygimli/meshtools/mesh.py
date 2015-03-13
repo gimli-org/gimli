@@ -49,7 +49,7 @@ def createMesh(poly, quality=30, area=0.0,
 
     """
 
-    if type(poly) == list or type(poly) == zip:
+    if isinstance(poly, list) or isinstance(poly, zip):
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
@@ -75,7 +75,7 @@ def createMesh(poly, quality=30, area=0.0,
         if not verbose:
             switches += 'Q'
 
-        #print(switches)
+        # print(switches)
         tri.setSwitches(switches)
         mesh = tri.generate()
 
@@ -431,7 +431,7 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
 
     # set the positions in the mesh
     for i, node in enumerate(mesh.nodes()):
-        node.setPos(pg.RVector3(mx[i], my[i], mz[i]+oz[i]))
+        node.setPos(pg.RVector3(mx[i], my[i], mz[i] + oz[i]))
 
 
 def rot2DGridToWorld(mesh, start, end):
@@ -606,22 +606,24 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
     for i, e in enumerate(sensors):
         if paraDX >= 0.5:
             nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors)-1):
-                nSurface.append(poly.createNode((sensors[i+1] + e) * 0.5))
+            if (i < len(sensors) - 1):
+                nSurface.append(poly.createNode((sensors[i + 1] + e) * 0.5))
             # print("Surface add ", e, el, nSurface[-2].pos(),
             #        nSurface[-1].pos())
         elif paraDX < 0.5:
             if (i > 0):
-                nSurface.append(poly.createNode(e-(e-sensors[i-1]) * paraDX))
+                nSurface.append(
+                    poly.createNode(e - (e - sensors[i - 1]) * paraDX))
             nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors)-1):
-                nSurface.append(poly.createNode(e+(sensors[i+1]-e) * paraDX))
+            if (i < len(sensors) - 1):
+                nSurface.append(
+                    poly.createNode(e + (sensors[i + 1] - e) * paraDX))
             # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
             #        nSurface[-1].pos())
     nSurface.append(n4)
 
-    for i in range(len(nSurface)-1, 0, -1):
-        poly.createEdge(nSurface[i], nSurface[i-1],
+    for i in range(len(nSurface) - 1, 0, -1):
+        poly.createEdge(nSurface[i], nSurface[i - 1],
                         pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
 #     for n in poly.nodes():
@@ -672,9 +674,9 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort
-    if type(sensors) == np.ndarray:
+    if isinstance(sensors, np.ndarray):
         sensors = [pg.RVector3(s, 0) for s in sensors]
-        
+
     sensorX = pg.x(sensors)
 
     eSpacing = abs(sensorX[1] - sensorX[0])

@@ -27,7 +27,7 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho_a$ in $\Omega$m',
                           grid=True, marker='+', **kwargs):
     """ show amplitude spectrum """
     ax.loglog(freq, amp, marker=marker, label='obs', **kwargs)
-    ax.set_ylim(min(amp)*.99, max(amp*1.01))
+    ax.set_ylim(min(amp) * .99, max(amp * 1.01))
     ax.set_xlabel('f in Hz')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
@@ -61,7 +61,9 @@ def ColeCole(f, R, m, tau, c):
 
 
 class PeltonPhiEM(pg.ModellingBase):
+
     """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
@@ -75,7 +77,9 @@ class PeltonPhiEM(pg.ModellingBase):
 
 
 class DebyePhi(pg.ModellingBase):
+
     """ Debye decomposition (smooth Debye relaxation model) """
+
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
         """ constructor with frequecy and tau vector """
         self.f_ = fvec
@@ -133,7 +137,7 @@ def readSIP256file(resfile, verbose=False):
                         activeBlock = token[6:]
                         header[activeBlock] = []
                     else:
-                        value = line[line.rfind(']')+1:]
+                        value = line[line.rfind(']') + 1:]
                         try:  # direct line information
                             if '.' in value:
                                 num = float(value)
@@ -180,7 +184,7 @@ def readSIP256file(resfile, verbose=False):
                     else:
                         part1 = sline[c][:-10]
                         part2 = sline[c][9:]
-                    sline = sline[:c] + [part1] + [part2] + sline[c+1:]
+                    sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
             data.append(np.array(sline[:5], dtype=float))
 
     Data.append(np.array(data))
@@ -201,9 +205,9 @@ def KramersKronig(f, re, im, usezero=False):
     re2 = np.zeros(im.shape)
     re3 = np.zeros(im.shape)
     drdx = np.diff(re) / np.diff(x)
-    dredx = np.hstack((drdx[0], (drdx[:-1]+drdx[1:])/2, drdx[-1]))
+    dredx = np.hstack((drdx[0], (drdx[:-1] + drdx[1:]) / 2, drdx[-1]))
     didx = np.diff(im) / np.diff(x)
-    dimdx = np.hstack((didx[0], (didx[:-1]+didx[1:])/2, didx[-1]))
+    dimdx = np.hstack((didx[0], (didx[:-1] + didx[1:]) / 2, didx[-1]))
     for num in range(len(x)):
         w = x[num]
         x2w2 = x**2 - w**2
@@ -214,7 +218,7 @@ def KramersKronig(f, re, im, usezero=False):
         fun2 = (im * w / x - im[num]) / x2w2
         re2[num] = simps(fun2, x) * 2. * w / pi + re[0]
         fun3 = (im * x - im[num] * w) / x2w2
-        fun3[num] = (im[num]/w + dimdx[num]) / 2
+        fun3[num] = (im[num] / w + dimdx[num]) / 2
         re3[num] = simps(fun3, x) * 2. / pi + re[-1]
 
     if usezero:
@@ -224,7 +228,9 @@ def KramersKronig(f, re, im, usezero=False):
 
 
 class SIPSpectrum():
+
     """ SIP spectrum data and analyses """
+
     def __init__(self, filename=None, unify=False, onlydown=True,
                  f=None, amp=None, phi=None, basename='new'):
         """init SIP class with either filename to read or data vectors
@@ -267,7 +273,7 @@ class SIPSpectrum():
         self.phi = phi
 
     def realimag(self):
-        return self.amp*np.cos(self.phi), self.amp*np.sin(self.phi)
+        return self.amp * np.cos(self.phi), self.amp * np.sin(self.phi)
 
     def showData(self, reim=False):
         """ show amplitude and phase spectrum in two subplots """
@@ -303,8 +309,8 @@ class SIPSpectrum():
         ax.grid(True)
         for i in range(0, len(re), 5):
             fi = self.f[i]
-            mul = 10**np.floor(np.log10(fi)-2)  # 3 counting digits
-            ax.text(re[i], im[i], str(int(fi/mul)*mul))
+            mul = 10**np.floor(np.log10(fi) - 2)  # 3 counting digits
+            ax.text(re[i], im[i], str(int(fi / mul) * mul))
 
         return fig, ax
 
@@ -334,9 +340,9 @@ class SIPSpectrum():
                       mint=None, maxt=None, nt=None):
         """ fit a (smooth) continuous Debye model (Debye decomposition) """
         if mint is None:
-            mint = .1/max(self.f)
+            mint = .1 / max(self.f)
         if maxt is None:
-            maxt = .5/min(self.f)
+            maxt = .5 / min(self.f)
         if nt is None:
             nt = len(self.f)
         # %% discretize tau, setup DD and perform DD inversion
@@ -377,24 +383,24 @@ class SIPSpectrum():
         tDD = r'DD: m={:.3f} $\tau$={:.1e}s'.format(mtot, lmtau)
         fig, ax = plt.subplots(2, 1, figsize=(12, 10))
         fig.subplots_adjust(hspace=0.25)
-        ax[0].semilogx(self.f, self.phi*1e3, 'b+-', label='data')
-        ax[0].semilogx(self.f, self.rCC*1e3, 'r-', label='CC+EM model')
+        ax[0].semilogx(self.f, self.phi * 1e3, 'b+-', label='data')
+        ax[0].semilogx(self.f, self.rCC * 1e3, 'r-', label='CC+EM model')
         if hasattr(self, 'phiC'):
-            ax[0].semilogx(self.f, self.phiC*1e3, 'c+-', label='corr. data')
-        ax[0].semilogx(self.f, self.rDD*1e3, 'm-', label='DD model')
+            ax[0].semilogx(self.f, self.phiC * 1e3, 'c+-', label='corr. data')
+        ax[0].semilogx(self.f, self.rDD * 1e3, 'm-', label='DD model')
         ax[0].grid(True)
         ax[0].legend(loc='best')
         ax[0].set_xlabel('f [Hz]')
         ax[0].set_ylabel('-phi [mrad]')
         if hasattr(self, 'mCC'):
             ax[0].set_title(tCC)
-        ax[1].semilogx(self.tau, self.mDD*1e3)
+        ax[1].semilogx(self.tau, self.mDD * 1e3)
         ax[1].set_xlim(ax[1].get_xlim()[::-1])
         ax[1].grid(True)
         ax[1].set_xlabel(r'$\tau$ [ms]')
         ax[1].set_ylabel('m [mV/V]')
         ax[1].set_title(tDD)
-        fig.savefig(self.basename+'.pdf', bbox_inches='tight')
+        fig.savefig(self.basename + '.pdf', bbox_inches='tight')
         plt.show(block=False)
 
 
