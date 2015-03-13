@@ -8,6 +8,7 @@ import pygimli as pg
 from .base import rndig
 import string
 
+
 def astausgleich(ab2org, mn2org, rhoaorg):
     """shifts the branches of a dc sounding to generate a matching curve."""
     ab2 = P.asarray(ab2org)
@@ -24,12 +25,13 @@ def astausgleich(ab2org, mn2org, rhoaorg):
         if len(r0) > 0:
             fak = P.mean(P.array(r0) / P.array(r1))
             print(fak)
-            if P.isfinite(fak) and fak>0.:
+            if P.isfinite(fak) and fak > 0.:
                 rhoa[mn2 == um[i + 1]] *= fak
 
     return pg.asvector(rhoa)
 
-def loadSIPallData(filename,outnumpy=False):
+
+def loadSIPallData(filename, outnumpy=False):
     """load SIP data with the columns ab/2,mn/2,rhoa and PHI with the
     corresponding frequencies in the first row."""
     if outnumpy:
@@ -43,15 +45,16 @@ def loadSIPallData(filename,outnumpy=False):
         A = pg.RMatrix()
         pg.loadMatrixCol(A, 'sch/dc.ves')
         ndata = A.cols()
-        ab2 = A[0](1,ndata)
-        mn2 = A[1](1,ndata)
-        rhoa = A[2](1,ndata)
+        ab2 = A[0](1, ndata)
+        mn2 = A[1](1, ndata)
+        rhoa = A[2](1, ndata)
         PHI = pg.RMatrix()
         fr = []
-        for i in range(3,A.rows()):
+        for i in range(3, A.rows()):
             fr.append(A[i][0])
             PHI.push_back(A[i](1, ndata))
     return ab2, mn2, rhoa, PHI, fr
+
 
 def makeSlmData(ab2, mn2, rhoa=None, filename=None):
     """generate a pygimli data container from ab/2 and mn/2 array."""
@@ -92,6 +95,7 @@ def makeSlmData(ab2, mn2, rhoa=None, filename=None):
     data.set('rhoa', pg.asvector(rhoa))
     return data
 
+
 def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
     """
         Display a sounding curve (rhoa over ab/2) and an additional response.
@@ -119,15 +123,15 @@ def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
         for unmi in N.unique(mn2):
             if islog:
                 l1 = P.loglog(rhoa[mn2 == unmi], ab2a[mn2 == unmi],
-                            'rx-', label='observed')
+                              'rx-', label='observed')
             else:
                 l1 = P.semilogy(rhoa[mn2 == unmi], ab2a[mn2 == unmi],
-                              'rx-',label='observed')
+                                'rx-', label='observed')
 
             P.hold(True)
             if resp is not None:
                 l2 = P.loglog(resp[mn2 == unmi], ab2a[mn2 == unmi],
-                            'bo-',label='simulated')
+                              'bo-', label='simulated')
                 P.legend((l1, l2), ('obs', 'sim'))
 
     P.axis('tight')
@@ -156,9 +160,10 @@ def showsounding(ab2, rhoa, resp=None, mn2=None, islog=True, xlab=None):
     P.grid(which='both')
     P.xlabel(xlab)
     P.ylabel('AB/2 in m')
-    #P.legend()
+    # P.legend()
     P.show()
     return
+
 
 def showsip1ddata(PHI, fr, ab2, mn2=None, cmax=None, ylab=True, cbar=True):
     """display SIP phase data as image plot."""
@@ -171,7 +176,7 @@ def showsip1ddata(PHI, fr, ab2, mn2=None, cmax=None, ylab=True, cbar=True):
         PHI = N.asarray(PHI)
 
     im = P.imshow(PHI.reshape((len(ab2), len(fr))),
-                interpolation='nearest', cmap=pal)
+                  interpolation='nearest', cmap=pal)
     if cmax is None:
         cmax = N.max(PHI)
 
@@ -211,6 +216,7 @@ def showsip1ddata(PHI, fr, ab2, mn2=None, cmax=None, ylab=True, cbar=True):
     P.show()
     P.ylim((len(ab2) - 0.5, -0.5))
     return
+
 
 def showsip1dmodel(M, tau, thk, res=None, z=None,
                    cmin=None, cmax=None, islog=True):
@@ -261,7 +267,6 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
         for i in range(len(res)):
             P.text(xl, i, ' %g $\Omega$m' % rndig(res[i], 2))
 
-
     lgm = N.zeros((len(z), 1))
     tch = N.zeros((len(z), 1))
     lgt = N.log(tau)
@@ -280,19 +285,22 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
     P.show()
     return lgm, tch
 
+
 class DebyeModelling(pg.ModellingBase):
+
     """forward operator for Debye decomposition."""
-    def __init__(self, fvec, tvec=None, zero = False, verbose = False):
-        
+
+    def __init__(self, fvec, tvec=None, zero=False, verbose=False):
+
         if tvec is None:
             tvec = N.logspace(-4, 0, 5)
 
         mesh = pg.createMesh1D(len(tvec))
-        
+
         if zero:
             mesh.cell(0).setMarker(-1)
             mesh.cell(len(tvec)-1).setMarker(1)
-        
+
         pg.ModellingBase.__init__(self, mesh, verbose)
         self.f_ = pg.asvector(fvec)
         self.t_ = tvec
@@ -307,8 +315,9 @@ class DebyeModelling(pg.ModellingBase):
 
         return y
 
-def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False,
-                       zero = False, err = 0.25e-3, lam = 10., blocky=False):
+
+def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose=False,
+                       zero=False, err=0.25e-3, lam=10., blocky=False):
     """Debye decomposition of a phase spectrum."""
     if maxfr is not None:
         idx = (fr <= maxfr) & (phi >= 0.)
@@ -331,9 +340,9 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False,
     tm = pg.RTransLog()
     start = pg.RVector(len(tvec), 1e-4)
     if zero:
-        f.region(-1).setConstraintType(0) # smoothness
-        f.region(0).setConstraintType(1) # smoothness
-        f.region(1).setConstraintType(0) # min length
+        f.region(-1).setConstraintType(0)  # smoothness
+        f.region(0).setConstraintType(1)  # smoothness
+        f.region(1).setConstraintType(0)  # min length
         f.regionManager().setInterRegionConstraint(-1, 0, 1.)
         f.regionManager().setInterRegionConstraint(0, 1, 1.)
         f.region(-1).setTransModel(tm)
@@ -342,7 +351,7 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False,
         f.region(-1).setModelControl(1000.)
         f.region(1).setModelControl(1000.)
     else:
-        f.regionManager().setConstraintType(1) # smoothness
+        f.regionManager().setConstraintType(1)  # smoothness
 
     inv = pg.RInversion(pg.asvector(phi1 * 1e-3), f, verbose)
     inv.setAbsoluteError(pg.RVector(len(fr1), err))
@@ -361,10 +370,12 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose = False,
 
 
 class DoubleColeColeModelling(pg.ModellingBase):
+
     """
         Modelling using two Cole-Cole terms
     """
-    def __init__(self, mesh, fvec, si = 1.0, verbose = False):
+
+    def __init__(self, mesh, fvec, si=1.0, verbose=False):
         pg.ModellingBase.__init__(self, mesh, verbose)
         self.f_ = fvec
         self.si_ = si
@@ -382,6 +393,7 @@ class DoubleColeColeModelling(pg.ModellingBase):
 
         return y
 
+
 def read1resfile(filename, readsecond=False, dellast=True):
     """read Radic instrument res file containing a single spectrum."""
     f = open(filename, 'r')
@@ -393,18 +405,18 @@ def read1resfile(filename, readsecond=False, dellast=True):
     dphi = []
     while True:
         line = f.readline()
-        if string.rfind(line,'Freq')>-1:
+        if string.rfind(line, 'Freq') > -1:
             break
 
     if readsecond:
         while True:
-            if string.rfind(f.readline(),'Freq')>-1:
+            if string.rfind(f.readline(), 'Freq') > -1:
                 break
 
     while True:
         line = f.readline()
         b = line.split('\t')
-        if len(b)<5:
+        if len(b) < 5:
             break
 
         fr.append(string.atof(b[0]))
@@ -423,6 +435,7 @@ def read1resfile(filename, readsecond=False, dellast=True):
 
     return fr, rhoa, pg.asvector(phi), drhoa, pg.asvector(dphi)
 
+
 def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
                     dellast=True, ePhi=0.5, ePerc=1., lam=2000.):
     """
@@ -433,16 +446,16 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
                                               readsecond,
                                               dellast=dellast)
     # forward problem
-    mesh = pg.createMesh1D(1, 6) # 6 independent parameters
-    f = DoubleColeColeModelling(mesh, pg.asvector(fr) , phi[2]/abs(phi[2]))
+    mesh = pg.createMesh1D(1, 6)  # 6 independent parameters
+    f = DoubleColeColeModelling(mesh, pg.asvector(fr), phi[2]/abs(phi[2]))
     f.regionManager().loadMap("region.control")
     model = f.createStartVector()
-    
+
     # inversion
     inv = pg.RInversion(phi, f, True, False)
     inv.setAbsoluteError(phi * ePerc * 0.01 + ePhi / 1000.)
     inv.setRobustData(True)
-    
+
     # inv.setCWeight(pg.RVector(6, 1.0)) # wozu war das denn gut?
     inv.setMarquardtScheme(0.8)
     inv.setLambda(lam)
@@ -451,15 +464,15 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
     inv.echoStatus()
     chi2 = inv.chi2()
     mod0 = pg.RVector(erg)
-    mod0[0] = 0.0 # set IP term to zero to obtain pure EM term
+    mod0[0] = 0.0  # set IP term to zero to obtain pure EM term
     emphi = f(mod0)
     resid = (phi - emphi) * 1000.
-    
+
     if doplot:
         s = "IP: m= " + str(rndig(erg[0])) + " t=" + str(rndig(erg[1]))  +  \
-        " c =" + str(rndig(erg[2]))
+            " c =" + str(rndig(erg[2]))
         s = s + "  EM: m= " + str(rndig(erg[3])) + " t=" + str(rndig(erg[4])) +\
-        " c =" + str(rndig(erg[5]))
+            " c =" + str(rndig(erg[5]))
         fig = P.figure(1)
         fig.clf()
         ax = P.subplot(111)
@@ -474,7 +487,8 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
         P.ylabel(r'-$\phi$ in mrad')
         P.grid(True)
         P.title(s)
-        P.legend(loc=2)#('measured','2-cole-cole','residual'))
+        P.legend(loc=2)  # ('measured','2-cole-cole','residual'))
         fig.show()
 
-    return N.array(fr), N.array(rhoa), N.array(resid), N.array(phi)*1e3, dphi, chi2, N.array(emphi)*1e3
+    return N.array(fr), N.array(rhoa), N.array(resid), N.array(
+        phi)*1e3, dphi, chi2, N.array(emphi)*1e3

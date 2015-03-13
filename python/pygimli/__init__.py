@@ -8,17 +8,13 @@ import pygimli
 or
 
 import pygimli as pg
-
-or
-
-from pygimli import *
 """
 
 from __future__ import print_function
 
 import os
 try:
-    import subprocess # check for 3.4
+    import subprocess  # check for 3.4
 except ImportError:
     pass
 
@@ -39,13 +35,14 @@ except ImportError as e:
 
 import locale
 
+
 def checkAndFixLocaleDecimal_point(verbose=False):
     """
     """
     if locale.localeconv()['decimal_point'] == ',':
         if verbose:
             print("Found locale decimal_point ',' "
-                 "and change it to: decimal point '.'")
+                  "and change it to: decimal point '.'")
     try:
         locale.localeconv()['decimal_point']
         locale.setlocale(locale.LC_NUMERIC, 'C')
@@ -54,31 +51,33 @@ def checkAndFixLocaleDecimal_point(verbose=False):
         print('cannot set locale to decimal point')
 
 checkAndFixLocaleDecimal_point(verbose=True)
-##print(locale.localeconv()['decimal_point'])
-#if locale.localeconv()['decimal_point'] == ',':
-    #print("Found locale decimal_point ',' and change it to: decimal point '.'")
-#try:
-    #locale.localeconv()['decimal_point']
-    #locale.setlocale(locale.LC_NUMERIC, 'C')
-#except:
-    #print('cannot set locale to decimal point')
+# print(locale.localeconv()['decimal_point'])
+# if locale.localeconv()['decimal_point'] == ',':
+#    print("Found locale decimal_point ',' and change it to: decimal point '.'")
+# try:
+#    locale.localeconv()['decimal_point']
+#    locale.setlocale(locale.LC_NUMERIC, 'C')
+# except:
+#    print('cannot set locale to decimal point')
 
-############################
-###  Global shortcutes #####
+###########################
+###  Global shortcuts #####
+###########################
+
 _pygimli_.load = None
 from pygimli.ioutils import load
 from pygimli.viewer import show, showLater, plt
 from pygimli.solver import solve
 
+
 def showNow():
     showLater(0)
 
 ############################
-
-
-############################
 # print function for gimli stuff
 ############################
+
+
 def RVector_str(self, valsOnly=False):
     s = str()
 
@@ -117,6 +116,7 @@ def RMatrix_str(self):
         for v in range(self.rows()):
             s += self[v].__str__(True) + '\n'
     return s
+
 
 def CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
@@ -164,11 +164,12 @@ _pygimli_.DataContainer.__str__ = Data_str
 # compatibility stuff
 ############################
 
+
 def nonzero_test(self):
     raise BaseException("Warning! there is no 'and' and 'or' for "
-        "BVector and RVector. " + \
-        "Use binary operators '&' or '|' instead. " + \
-        "If you looking for the nonzero test, use len(v) > 0")
+                        "BVector and RVector. " +
+                        "Use binary operators '&' or '|' instead. " +
+                        "If you looking for the nonzero test, use len(v) > 0")
 
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.RVector.__bool__ = nonzero_test
@@ -179,6 +180,7 @@ _pygimli_.CVector.__bool__ = nonzero_test
 _pygimli_.IVector.__nonzero__ = nonzero_test
 _pygimli_.IVector.__bool__ = nonzero_test
 
+
 def __RVectorPower(self, m):
     return pow(self, m)
 _pygimli_.RVector.__pow__ = __RVectorPower
@@ -187,11 +189,11 @@ _pygimli_.RVector.__pow__ = __RVectorPower
 # allow:
 ############################
 
-#def __ADD(self, val):
+# def __ADD(self, val):
     #ret = type(self)()
-    #for i, r in enumerate(self):
+    # for i, r in enumerate(self):
         #ret.append(r + val)
-    #return ret
+    # return ret
 
 #_pygimli_.stdVectorUL.__add__ = __ADD
 
@@ -205,7 +207,7 @@ def __getVal(self, idx):
     """
         Hell slow
     """
-    #print("__getVal")
+    # print("__getVal")
     if isinstance(idx, BVector) or isinstance(idx, IVector):
         return self(idx)
     elif isinstance(idx, stdVectorI) or isinstance(idx, stdVectorUL):
@@ -215,11 +217,11 @@ def __getVal(self, idx):
         for i, ix in enumerate(idx):
             if hasattr(ix, 'dtype'):
                 if ix.dtype == bool:
-                    idxL[i]=int(i)
+                    idxL[i] = int(i)
                 else:
-                    idxL[i]=int(ix)
+                    idxL[i] = int(ix)
             else:
-                idxL[i]=int(ix)
+                idxL[i] = int(ix)
 
         return self(idxL)
 
@@ -227,9 +229,11 @@ def __getVal(self, idx):
         if idx.step is None:
             s = idx.start
             e = idx.stop
-            if s == None: s = 0
-            if e == None: e = len(self)
-#            print('#'*100, s, e)
+            if s is None:
+                s = 0
+            if e is None:
+                e = len(self)
+# print('#'*100, s, e)
             return self.getVal(int(s), int(e))
         else:
             ids = range(idx.start, idx.stop, idx.step)
@@ -242,7 +246,7 @@ def __getVal(self, idx):
         idx = len(self) - 1
 
     return self.getVal(int(idx))
-# def __getVal(...)
+
 
 def __setVal(self, idx, val):
 
@@ -259,6 +263,7 @@ def __setVal(self, idx, val):
 
     #print(idx, type(idx))
     self.setVal(val, idx)
+
 
 def __getValMatrix(self, idx):
 
@@ -294,23 +299,23 @@ def __getValMatrix(self, idx):
     return self.rowR(idx)
 
 _pygimli_.RVector.__setitem__ = __setVal
-_pygimli_.RVector.__getitem__ = __getVal # very slow -- inline is better
+_pygimli_.RVector.__getitem__ = __getVal  # very slow -- inline is better
 
 _pygimli_.CVector.__setitem__ = __setVal
-_pygimli_.CVector.__getitem__ = __getVal # very slow -- inline is better
+_pygimli_.CVector.__getitem__ = __getVal  # very slow -- inline is better
 
 _pygimli_.BVector.__setitem__ = __setVal
-_pygimli_.BVector.__getitem__ = __getVal # very slow -- inline is better
+_pygimli_.BVector.__getitem__ = __getVal  # very slow -- inline is better
 
 _pygimli_.IVector.__setitem__ = __setVal
-_pygimli_.IVector.__getitem__ = __getVal # very slow -- inline is better
+_pygimli_.IVector.__getitem__ = __getVal  # very slow -- inline is better
 
 _pygimli_.RVector3.__setitem__ = __setVal
 
-_pygimli_.RMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
+_pygimli_.RMatrix.__getitem__ = __getValMatrix  # very slow -- inline is better
 _pygimli_.RMatrix.__setitem__ = __setVal
 
-_pygimli_.CMatrix.__getitem__ = __getValMatrix # very slow -- inline is better
+_pygimli_.CMatrix.__getitem__ = __getValMatrix  # very slow -- inline is better
 _pygimli_.CMatrix.__setitem__ = __setVal
 
 
@@ -324,6 +329,7 @@ _pygimli_.RVector.__len__ = PGVector_len
 _pygimli_.BVector.__len__ = PGVector_len
 _pygimli_.CVector.__len__ = PGVector_len
 _pygimli_.IVector.__len__ = PGVector_len
+
 
 def RMatrix_len(self):
     return self.rows()
@@ -351,18 +357,21 @@ class VectorIter:
     def __next__(self):
         return self.it.nextForPy()
 
+
 def __VectorIterCall__(self):
     return VectorIter(self)
     # don't use pygimli iterators here until the reference for temporary
     # vectors are collected
-    #return _pygimli_.RVectorIter(self.beginPyIter())
+    # return _pygimli_.RVectorIter(self.beginPyIter())
 
 _pygimli_.RVector.__iter__ = __VectorIterCall__
 _pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.IVector.__iter__ = __VectorIterCall__
 _pygimli_.CVector.__iter__ = __VectorIterCall__
 
+
 class DefaultContainerIter:
+
     def __init__(self, vec):
         self.vec = vec
         self.length = len(vec)
@@ -382,6 +391,7 @@ class DefaultContainerIter:
         else:
             return self.vec[self.pos]
 
+
 def __MatIterCall__(self):
     return DefaultContainerIter(self)
 
@@ -395,6 +405,7 @@ class Vector3Iter (VectorIter):
         self.vec = vec
         self.length = 3
         self.pos = -1
+
 
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
@@ -413,6 +424,8 @@ def __RVector3ArrayCall__(self, idx=None):
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
 
 # default converter from RVector to numpy array
+
+
 def __RVectorArrayCall__(self, idx=None):
     if idx:
         print(self)
@@ -423,7 +436,7 @@ def __RVectorArrayCall__(self, idx=None):
     # counter in self.array() else it leads to strange behaviour
     # test in testRValueConverter.py:testNumpyFromRVec()
     return np.array(self.array())
-    #return self.array()
+    # return self.array()
 
 _pygimli_.RVector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
@@ -433,8 +446,10 @@ _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 ############################
 # non automatic exposed functions
 ############################
+
+
 def abs(v):
-    if type(v) == _pygimli_.CVector:
+    if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
     return _pygimli_.fabs(v)
 
@@ -485,7 +500,7 @@ def asvector(array):
 ############################
 # ???
 ############################
-#def RVector_ArrayInit(self):
+# def RVector_ArrayInit(self):
     ##self.ndim = [1, self.size()]
     #self.ndim = 1
 #_pygimli_.RVector.isArray = RVector_ArrayInit
@@ -494,18 +509,18 @@ def asvector(array):
 #
 # Construct RVector from numpy array , opposite to asarray(RVector)
 #
-#def asvector(arr):
+# def asvector(arr):
     #r = _pygimli_.RVector(len(arr))
 
-    #for i, v in enumerate(arr):
+    # for i, v in enumerate(arr):
         #r[i] = v
 
-    #return r
+    # return r
 
 # PEP conform version str with SVN revision number
 def __svnversion__(path=__path__[0]):
-    p = subprocess.Popen("svnversion -n %s" % path, shell=True, \
-       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen("svnversion -n %s" % path, shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
     version = str(stdout)
     if version == "Nicht versioniertes Verzeichnis":
@@ -534,12 +549,11 @@ def __getRotMatrix__(self, mat):
     getRotMatrix__(self, mat)
 _pygimli_.RQuaternion.rotMatrix = __getRotMatrix__
 
-
 # some rvector helpers
+
+
 def randN(self, n):
-    '''Create RVector of length n with normally distributed random numbers'''
+    """Create RVector of length n with normally distributed random numbers"""
     r = _pygimli_.RVector(n)
     _pygimli_.randn(r)
     return r
-
-

@@ -85,7 +85,7 @@ def poissonEoetvoes(dg):
     return mu0/(4.0 * np.pi * G) * dg
 
 
-def uSphere(r, R, rho, pos=[0., 0., 0.]):
+def uSphere(r, R, rho, pos=(0., 0., 0.)):
     """
     Gravitationspotential einer Sphere mit Radius R und Dichte rho an pos.
 
@@ -98,7 +98,7 @@ def uSphere(r, R, rho, pos=[0., 0., 0.]):
     return -G * deltaMSph(R, rho) * 1. / rabs(r - pos)
 
 
-def gradUSphere(r, R, rho, pos=[0., 0., 0.]):
+def gradUSphere(r, R, rho, pos=(0., 0., 0.)):
     """
     Gravitationsfeldstrke einer Sphere mit Radius R und Dichte rho an pos
 
@@ -121,7 +121,7 @@ def gradUSphere(r, R, rho, pos=[0., 0., 0.]):
 # def gSphere(...)
 
 
-def gradGZSphere(r, R, rho, pos=[0., 0., 0.]):
+def gradGZSphere(r, R, rho, pos=(0., 0., 0.)):
     """
     .. math:: g = -\\nabla u
 
@@ -140,7 +140,7 @@ def gradGZSphere(r, R, rho, pos=[0., 0., 0.]):
     return (G * deltaMSph(R, rho) / rabs(r - pos)**5. * gzxyz).T
 
 
-def uCylinderHoriz(pnts, R, rho, pos=[0., 0.]):
+def uCylinderHoriz(pnts, R, rho, pos=(0., 0.)):
     """
     Parameters
     ----------
@@ -159,7 +159,7 @@ def uCylinderHoriz(pnts, R, rho, pos=[0., 0.]):
     return u
 
 
-def gradUCylinderHoriz(r, R, rho, pos=[0., 0.]):
+def gradUCylinderHoriz(r, R, rho, pos=(0., 0.)):
     """
     Calculate horizontal component of gravimetric field in mGal
 
@@ -185,7 +185,7 @@ def gradUCylinderHoriz(r, R, rho, pos=[0., 0.]):
 # def gZylinderHoriz():
 
 
-def gradGZCylinderHoriz(r, R, rho, pos=[0., 0.]):
+def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
     """
     .. math:: g = -grad u(r), with r = [x,z], |r| = \sqrt(x^2+z^2)
 
@@ -212,7 +212,7 @@ def gradGZCylinderHoriz(r, R, rho, pos=[0., 0.]):
 # def gZSphere(...)
 
 
-def gzHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
+def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
     """
     g = -grad u,
 
@@ -246,7 +246,7 @@ def gzHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
 # def gzPlatteHoriz(...)
 
 
-def gradGZHalfPlateHoriz(pnts, t, rho, pos=[0.0, 0.0]):
+def gradGZHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
     """
     .. math:: g = -\\nabla u
 
@@ -560,9 +560,9 @@ def gravMagBoundarySinghGup(boundary):
 def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
     """
     Solve gravimetric response.
-    
-    TOWRITE 
-    
+
+    TOWRITE
+
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -578,21 +578,21 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
 
     complete : bool [False]
         If True return whole solution or matrix for [dgx, dgy, dgz] and ... TODO
-        
+
     Returns
     -------
     """
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
-    
+
 #    upoly = np.zeros(len(pnts))
 
     Gdg = None
     Gdgz = None
     dg = None
     dgz = None
-    
+
     if complete:
         Gdg = np.zeros((len(pnts), mesh.cellCount(), 3))
         Gdgz = np.zeros((len(pnts), mesh.cellCount(), 3))
@@ -601,12 +601,12 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
     else:
         dg = np.zeros(len(pnts))
         Gdg = np.zeros((len(pnts), mesh.cellCount()))
-    
+
     times = []
-    
+
     dgi = None
     dgzi = None
-    
+
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
 
@@ -670,7 +670,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
             return dg, dgz
         else:
             return Gdg.dot(dDensity)
-        
+
     if complete:
         return dg, dgz
     return dg

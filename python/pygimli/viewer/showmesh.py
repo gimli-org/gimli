@@ -56,6 +56,7 @@ def show(mesh, *args, **kwargs):
             print("ERROR: Mesh not valid.")
     plt.pause(0.001)
 
+
 def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
              axes=None, **kwargs):
     """
@@ -124,13 +125,12 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
     cbar = None
     validData = False
 
-
     if data is None:
         drawMesh(ax, mesh)
-    elif type(data) == pg.stdVectorRVector3:
+    elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data)
     else:
-        if hasattr(data[0], '__len__') and type(data) != np.ma.core.MaskedArray:
+        if hasattr(data[0], '__len__') and not isinstance(data, np.ma.core.MaskedArray):
 
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, **kwargs)
@@ -151,10 +151,11 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
 
     ax.set_aspect('equal')
 
-    label=kwargs.pop('label', None)
+    label = kwargs.pop('label', None)
 
     if colorBar and validData:
-        cbar = createColorbar(gci, label=label, **kwargs)  # , *args, **kwargs) # causes problems!
+        # , *args, **kwargs) # causes problems!
+        cbar = createColorbar(gci, label=label, **kwargs)
 
     if coverage is not None:
         if len(data) == mesh.cellCount():
@@ -198,7 +199,6 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     """
     ax = kwargs.pop('axes', None)
 
-
     col = kwargs.pop('color', 'Black')
 
     if normMap:
@@ -215,7 +215,6 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
                 else:
                     ax.plot(c1[0], c1[1], 'o', color=col)
         return
-
 
     ax = show(mesh, showLater=True, axes=ax)[0]
     for b in mesh.boundaries():

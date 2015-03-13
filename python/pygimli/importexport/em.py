@@ -4,12 +4,14 @@ import pygimli as pg
 from pygimli.utils import draw1dmodel
 
 
-def readusffile(filename, DATA=[]):
+def readusffile(filename, data=None):
     """read data from single USF (universal sounding file) file
 
-    DATA = readusffile( filename )
-    DATA = readusffile( filename, DATA ) will append to DATA
+    data = readusffile( filename )
+    data = readusffile( filename, data ) will append to data
     """
+    if not data:
+        data = []
 
     columns = []
     nr = 0
@@ -27,7 +29,7 @@ def readusffile(filename, DATA=[]):
                         for i, cn in enumerate(sounding['column_names']):
                             sounding[cn] = columns[:, i]
 
-                        DATA.append(sounding)
+                        data.append(sounding)
                         sounding = {}
 
                     isdata = not isdata  # turn off data mode
@@ -53,7 +55,7 @@ def readusffile(filename, DATA=[]):
                         nr = 0
 
     fid.close()
-    return DATA
+    return data
 
 
 def readusffiles(filenames, DATA=[]):
@@ -98,7 +100,9 @@ def importMaxminData(filename, verbose=False):
 
 
 class FDEMData():
+
     """class for organizing frequency domain electromagnetic data"""
+
     def __init__(self, filename, height=1.0, verbose=False):
         """initialize data class and load data"""
         self.x, self.f, self.cs, self.IP, self.OP = importMaxminData(filename,
@@ -283,7 +287,8 @@ class FDEMData():
 # / FREQUENCIES ON a.dat FILE: 110, 220, 440, 880, 1760, 3520, 7040, 14080 Hz
 # LINE 1.0 Surveying: N ELEV 110 220 440 880 1760 3520 7040 14080 110C 220C 440C 880C 1760C 3520C 7040C 14080C BFC ERROR
 # 	0	0	6.61	7.97	8.07	12.42	14.14	19.5	27.66	28.03	45.82	23.67	63.08	11.45	68.98	-8.62	58.82	-20.77
-# 	20	0	5.04	5.56	7.11	10.31	13.22	16.28	25.06	21.91	37.18	14.17	57.3	4.67	52.07	-17.81	42.18	-31.07
+# 20      0       5.04    5.56    7.11    10.31   13.22   16.28   25.06
+# 21.91   37.18   14.17   57.3    4.67    52.07   -17.81  42.18   -31.07
 
 if __name__ == '__main__':
     print("print do some tests here")

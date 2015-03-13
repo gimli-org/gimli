@@ -88,27 +88,21 @@ plot_include_source = True
 import math
 phi = (math.sqrt(5) + 1)/2
 
-general_settings = {
+plot_rcparams = {
     'font.size': 8,
     'axes.titlesize': 8,
     'axes.labelsize': 8,
     'xtick.labelsize': 8,
     'ytick.labelsize': 8,
     'legend.fontsize': 8,
+    'text.usetex': False,
     'figure.subplot.bottom': 0.2,
     'figure.subplot.left': 0.2,
     'figure.subplot.right': 0.9,
     'figure.subplot.top': 0.85,
     'figure.subplot.wspace': 0.4,
-    'text.usetex': False,
-    }
-
-api_settings = {
     'figure.figsize': (3 * phi, 3),
     }
-
-plot2rst_rcparams = plot_rcparams = general_settings
-plot_rcparams.update(api_settings)
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -239,7 +233,7 @@ html_use_index = True
 html_use_modindex = True
 
 # If true, the index is split into individual pages for each letter.
-html_split_index = True
+html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = True
