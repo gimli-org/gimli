@@ -110,6 +110,12 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
     Shortcut to create a matplotlib colorbar within the axes for a given
     patchset.
+    
+    Parameters
+    ----------
+    **kwargs :
+        * size : with or height of the colobar
+        * pad : padding distance from axes
     """
     cbarTarget = plt
     cax = None
@@ -124,13 +130,14 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
     if divider:
         if orientation == 'horizontal':
-            cax = divider.append_axes("bottom", size=0.25, pad=0.65)
+            size = kwargs.pop('size', 0.2)
+            pad = kwargs.pop('pad', 0.35)
+            cax = divider.append_axes("bottom", size=size, pad=pad)
         else:
-            cax = divider.append_axes("right", size=0.2, pad=0.1)
-#            cax = divider.append_axes("right", size="5%", pad=0.05)
-#            cbar3 = plt.colorbar(im3, cax=cax3)
+            size = kwargs.pop('size', 0.2)
+            pad = kwargs.pop('pad', 0.1)
+            cax = divider.append_axes("right", size=size, pad=pad)
 
-#    print(patches,  cax)
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
 
@@ -228,13 +235,14 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if not cMax:
         cMax = data.max()
 
-    #print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
+    
 
     if cMin > 0.0 and logScale:
         mappable.set_norm(mpl.colors.LogNorm())
     else:
         mappable.set_norm(mpl.colors.Normalize())
 
+    #print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
     mappable.set_array(data)
     # mappable.set_level(10)
     mappable.set_clim(cMin, cMax)

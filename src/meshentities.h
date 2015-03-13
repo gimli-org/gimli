@@ -45,6 +45,9 @@ DLLEXPORT Boundary * findBoundary(const Node & n1, const Node & n2, const Node &
 
 DLLEXPORT Boundary * findBoundary(const std::vector < Node * > & n);
 
+/*! */
+DLLEXPORT Boundary * findCommonBoundary(const Cell & c1, const Cell & c2);
+
 DLLEXPORT Cell * findCommonCell(const std::vector < Node * > & n, bool warn = true);
 
 /*! Functor to collect all nodes of a MeshEntity into a given std::set. */
@@ -91,9 +94,9 @@ public:
     /*! To separate between major MeshEntity families e.g. Cell and Boundary. */
     virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
     
-    inline Node & node(uint i) { return *nodeVector_[ i ]; }
+    inline Node & node(uint i) { return *nodeVector_[i]; }
 
-    inline Node & node(uint i) const { return *nodeVector_[ i ]; }
+    inline Node & node(uint i) const { return *nodeVector_[i]; }
 
     inline uint nodeCount() const { return nodeVector_.size(); }
 
@@ -225,7 +228,7 @@ public:
      * All neighboring relationships have to be initialized ones by calling 
      * \ref Mesh::createNeighborInfos(). 
      * If no cell can be found NULL is returned. */
-    inline Cell * neighbourCell(uint i){ return neighbourCells_[ i ]; }
+    inline Cell * neighbourCell(uint i){ return neighbourCells_[i]; }
 
     /*! Find neighbor cell regarding to the i-th Boundary and store them 
      * in neighbourCells_. */
@@ -244,7 +247,7 @@ public:
     Boundary * boundaryTo(const RVector & sf);
     
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes(Index i){
+    virtual std::vector < Node * > boundaryNodes(Index i) const{
         CERR_TO_IMPL
         std::cout << rtti() << std::endl;
         std::vector < Node * > n;
@@ -542,7 +545,7 @@ public:
      * 0 : 1 \n
      * 1 : 0 
      */
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
     
     friend std::ostream & operator << (std::ostream & str, const EdgeCell & t);
 
@@ -592,7 +595,7 @@ public:
      * 1 : 2-0 \n
      * 2 : 0-1 \n
      */
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
     
 protected:
 };
@@ -649,7 +652,7 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const Quadrangle & t);
 
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
     
 protected:
 };
@@ -736,7 +739,7 @@ public:
      * 
      * 
      */
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
     
 protected:
     
@@ -755,14 +758,14 @@ private:
 };
 
 //*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
-static const uint8 Tet10NodeSplit[ 10 ][ 2 ] = {
+static const uint8 Tet10NodeSplit[10][2] = {
     {0,0},{1,1},{2,2},{3,3},
     {0,1},{1,2},{2,0},
     {0,3},{1,3},{2,3}
 };
 
 //*! Zienkiewicz count: 1-2-3-4, 5(1-2), 6(1-3), 7(1-4), 8(2-3), 9(3-4), 10(4-2)* //
-static const uint8 Tet10NodeSplitZienk[ 10 ][ 2 ] = {
+static const uint8 Tet10NodeSplitZienk[10][2] = {
     {0,0},{1,1},{2,2},{3,3},
     {0,1},{0,2},{0,3},
     {1,2},{2,3},{3,1}
@@ -811,7 +814,7 @@ Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, P
 
 */
 
-static const uint8 HexahedronFacesID[ 6 ][ 4 ] = {
+static const uint8 HexahedronFacesID[6][4] = {
     {1, 2, 6, 5},
     {2, 3, 7, 6},
     {3, 0, 4, 7},
@@ -837,12 +840,12 @@ public:
     friend std::ostream & operator << (std::ostream & str, const Hexahedron & t);
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
 
 protected:
 };
 
-static const uint8 Hexahedron20FacesID[ 6 ][ 8 ] = {
+static const uint8 Hexahedron20FacesID[6][8] = {
     {0,1,5,4,8,17,12,16},
     {1,2,6,5,9,18,13,17},
     {2,3,7,6,10,19,14,18},
@@ -851,7 +854,7 @@ static const uint8 Hexahedron20FacesID[ 6 ][ 8 ] = {
     {4,5,6,7,12,13,14,15},
 };
 
-static const uint8 Hex20NodeSplit[ 20 ][ 2 ] = {
+static const uint8 Hex20NodeSplit[20][2] = {
     {0,0},{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},
     {0,1},{1,2},{2,3},{3,0},
     {4,5},{5,6},{6,7},{7,4},
@@ -890,7 +893,7 @@ public:
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
     
 protected:
 };
@@ -909,7 +912,7 @@ protected:
 
 */
 
-static const uint8 TriPrismFacesID[ 5 ][ 4 ] = {
+static const uint8 TriPrismFacesID[5][4] = {
     {1, 2, 5, 4},        // r
     {2, 0, 3, 5},        // r
     {0, 1, 4, 3},        // l
@@ -935,12 +938,12 @@ public:
     friend std::ostream & operator << (std::ostream & str, const Hexahedron & t);
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
 
 protected:
 };
 
-static const uint8 Prism15NodeSplit[ 15 ][ 2 ] = {
+static const uint8 Prism15NodeSplit[15][2] = {
     {0,0},{1,1},{2,2},{3,3},{4,4},{5,5},
     {0,1},{1,2},{2,0},
     {3,4},{4,5},{5,3},
@@ -994,7 +997,7 @@ Node direction:
 
 */
 
-static const uint8 PyramidFacesID[ 5 ][ 4 ] = {
+static const uint8 PyramidFacesID[5][4] = {
     {1, 2, 5, 255},    // l
     {2, 3, 5, 255},    // l
     {0, 5, 3, 255},    // l
@@ -1017,13 +1020,13 @@ public:
     virtual uint neighbourCellCount() const { return 5; }
 
     /*! Experimental */
-    virtual std::vector < Node * > boundaryNodes(Index i);
+    virtual std::vector < Node * > boundaryNodes(Index i) const;
 
 protected:
 };
 
 //*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
-static const uint8 Pyramid13NodeSplit[ 13 ][ 2 ] = {
+static const uint8 Pyramid13NodeSplit[13][2] = {
     {0,0},{1,1},{2,2},{3,3},{4,4},
     {0,1},{1,2},{2,3},{3,0},
     {0,4},{1,4},{2,4},{3,4}

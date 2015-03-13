@@ -1642,9 +1642,11 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
     }
 
     bool smooth = false;
+    bool horizontalWeight = true;
+    
     createNeighbourInfos();
     if (emptyList.size() > 0){
-        //std::cout << "Prolongate " << emptyList.size() << " empty cells." << std::endl;
+//         std::cout << "Prolongate " << emptyList.size() << " empty cells." << std::endl;
         std::vector< Cell * > nextVector;
         Cell * cell;
 
@@ -1653,24 +1655,33 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
         for (size_t i = 0; i < emptyList.size(); i ++){
             cell = emptyList[i];
 
-            uint count = 0;
+            double weight = 0.0;
             double val = 0.0;
             for (uint j = 0; j < cell->neighbourCellCount(); j ++){
                 Cell * nCell = cell->neighbourCell(j);
                 if (nCell){
                     if (nCell->attribute() > TOLERANCE){
-                        val += nCell->attribute();
-                        count ++;
+                        if (horizontalWeight){
+                            Boundary * b=findCommonBoundary(*nCell, *cell);
+                            if (b){
+                                double zWeight = abs(b->norm()[0]);
+                                val += nCell->attribute() * zWeight;
+                                weight += zWeight;
+                            }
+                        } else {
+                            val += nCell->attribute();
+                            weight += 1.0;
+                        }
                     }
                 }
             }
-            if (count == 0) {
+            if (weight < 1e-8) {
                 nextVector.push_back(cell);
             } else {
                 if (smooth){
-                    cell->setAttribute(val / (double)count);
+                    cell->setAttribute(val / weight);
                 } else {
-                    prolongationMap[cell] = val / (double)count;
+                    prolongationMap[cell] = val / weight;
                 }
             }
         }

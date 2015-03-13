@@ -13,7 +13,6 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=git://github.com/gccxml/gccxml.git
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
-#PYGCCXML_REV=57d9d02
 PYGCCXML_REV=36234fd
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 

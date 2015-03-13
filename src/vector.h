@@ -1344,6 +1344,12 @@ template < class T, class T2 > Vector < T > pow(const Vector < T > & v, T2 npowe
     return r;
 }
 
+template < class T, class T2 > Vector < T > pow(const Vector < T > & v, const Vector < T2 > & npower){
+    Vector < T > r(v.size());
+    for (Index i = 0; i < v.size(); i ++) r[i] = std::pow(v[i], T(npower[i]));
+    return r;
+}
+
 template < class T > Vector< T > sort(const Vector < T > & a){
     std::vector < T > tmp(a.size(), 0.0) ;
     for (Index i = 0; i < a.size(); i ++) tmp[i] = a[i];

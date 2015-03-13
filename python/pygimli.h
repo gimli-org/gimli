@@ -302,6 +302,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RVector sort(const RVector & a);
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
+    template RVector pow(const RVector & a, const RVector & power);
     template RVector cat(const RVector & a, const RVector & b);
     
 

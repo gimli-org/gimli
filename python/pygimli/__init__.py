@@ -23,6 +23,8 @@ import sys
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
 
+_pygimli_ = None
+
 try:
     from . import _pygimli_
     from . _pygimli_ import *
@@ -451,6 +453,11 @@ _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 def abs(v):
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
+    elif type(v) == _pygimli_.RMatrix:
+        for i in range(len(v)):
+            v[i] = pg.abs(v[i])
+        return v
+    
     return _pygimli_.fabs(v)
 
 
