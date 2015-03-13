@@ -14,10 +14,10 @@ def main():
     """
     import argparse
 
-    ## intialisize parser
+    # intialisize parser
     parser = argparse.ArgumentParser(description="sample application")
 
-    ## define some options (better import from defaultParser)
+    # define some options (better import from defaultParser)
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
                         help="Be verbose")
     parser.add_argument("-i", "--integer", dest="integer", type=int,
@@ -31,7 +31,7 @@ def main():
 
     args = parser.parse_args()
 
-    ## results are in args
+    # results are in args
     if args.verbose:
         print(args)
 
@@ -44,4 +44,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

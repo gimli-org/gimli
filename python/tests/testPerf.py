@@ -6,14 +6,14 @@ import timeit
 import pygimli as pg
 import numpy as np
 
-a = np.linspace(1,11,10)
+a = np.linspace(1, 11, 10)
 print(dir(a))
 pg1 = pg.RVector(a)
 
 print(pg1)
-#sys.exit
+# sys.exit
 
-setup="""\
+setup = """\
 import pygimli as pg
 import numpy as np
 
@@ -50,19 +50,15 @@ print("pg.sum(st)", timeit.repeat('pg.sum(st)', setup=setup, number=300))
 
 print("s", sw.duration(True))
 
-N=10001
+N = 10001
 np1 = np.linspace(1.1, 1.2, N)
 np2 = np.linspace(2.1, 2.1, N)
 
 pg1 = pg.RVector(np1)
 pg2 = pg.RVector(np2)
 
-#print(sw.duration(True))
+# print(sw.duration(True))
 print(sum(np1 * np1))
 print(sum(pg1 * pg1))
 print(sum(np1 * pg1))
 print(sum(pg1 * np1))
-
-
-    
-    

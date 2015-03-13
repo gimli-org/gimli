@@ -130,9 +130,9 @@ def main(argv):
 
     if coarseMesh.nodeCount() == len(coarseTopoZ):
         for n in coarseMesh.nodes():
-            n.pos().setZ(coarseTopoZ[n.id()]);
+            n.pos().setZ(coarseTopoZ[n.id()])
     else:
-        print(" this should not happen. " + str( coarseMesh.nodeCount() )  +
+        print(" this should not happen. " + str(coarseMesh.nodeCount()) +
               "/=" + str(len(coarseTopoZ)))
 
     coarsePoly.exportVTK('meshCoarsePoly.vtk')

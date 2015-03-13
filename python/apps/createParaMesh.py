@@ -48,7 +48,7 @@ def main(argv):
                         "relative regarding sensor distance. For --grid only")
     parser.add_argument("--nLayers", dest="nLayers", type=int, default="11",
                         help="Number of depth layers [default=11] for --grid")
-    parser.add_argument("--paraBoundary", dest="paraBoundary", type = float,
+    parser.add_argument("--paraBoundary", dest="paraBoundary", type=float,
                         help="Parameter domain boundary in profile distance",
                         default="2")
     parser.add_argument("--show", dest="show", action="store_true",
@@ -88,7 +88,7 @@ def main(argv):
 
     if options.verbose:
         print(("generation takes ", swatch.duration(), " s"))
-        print( mesh )
+        print(mesh)
         print(("writing " + options.outFileName + ".bms"))
 
     mesh.save(options.outFileName)

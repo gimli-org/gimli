@@ -64,7 +64,8 @@ def applyInterpolation(filename, mesh, verbose=False):
         A[2] = pg.y(data.sensorPositions())
         for i, p in enumerate(data.sensorPositions()):
             if i > 0:
-                A[0, i] = A[0, i-1] + data.sensorPositions()[i-1].distance(p)
+                A[0, i] = A[0, i - 1] + \
+                    data.sensorPositions()[i - 1].distance(p)
         if verbose:
             print(("loaded DataContainer: ", filename))
     except:
@@ -93,7 +94,7 @@ def main(argv):
                       help="be verbose", default=False)
     parser.add_option("-V", "--outVTK", dest="outVTK", action="store_true",
                       help="export VTK format", default=False)
-    parser.add_option("" , "--outBoundaryVTU", dest="outBoundaryVTU",
+    parser.add_option("", "--outBoundaryVTU", dest="outBoundaryVTU",
                       action="store_true", default=False,
                       help="export mesh boundary in VTU format")
     parser.add_option("-B", "--outBMS", dest="outBMS", action="store_true",
@@ -106,8 +107,8 @@ def main(argv):
                       action="store_true",
                       help="Export simple xy[z]r[i] data. xy[z] are 2d[3d] cell center coordinates. r are resistivity and i optional ip-data values. Import data with the names r and i.", default=False)
     parser.add_option("-d", "--data", dest="data", action='append',
-                      help="data file with optional name or modificator. This option can appended multiple. e.g.: -d data.vector (adds the data from file data.vector)\n"+
-                      "-d data.vector:Data (adds the data from file data.vector and name it Data \n"+
+                      help="data file with optional name or modificator. This option can appended multiple. e.g.: -d data.vector (adds the data from file data.vector)\n" +
+                      "-d data.vector:Data (adds the data from file data.vector and name it Data \n" +
                       "-d data.vector:Data:Log10 (adds the data from file data.vector, name it Data and stores log10(data)\n" +
                       "-d data.vector:Data:Log10:1e-4 (adds the data from file data.vector, name it Data and stores log10(data) with droptolerancs 1e-4 for neg. data values()")
 
@@ -122,10 +123,10 @@ def main(argv):
                       help="translate the mesh. "'"x,y,z"'" ")
 
     parser.add_option("", "--interpolateCoords", dest="interpolateCoords", metavar="File",
-                      help = " Interpolate a 2D mesh into 3D Coordinates." +
+                      help=" Interpolate a 2D mesh into 3D Coordinates." +
                       "File is a 3-column-ascii-file (dx x y)")
     parser.add_option("", "--interpolateMesh", dest="interpolateMesh", metavar="File",
-                      help = " Interpolate the data of mesh into the mesh given by File." +
+                      help=" Interpolate the data of mesh into the mesh given by File." +
                       "File is a bms|mod|vtk")
 
     (options, args) = parser.parse_args()
