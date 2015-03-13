@@ -16,7 +16,7 @@ from pygimli.viewer import *
 from pygimli.solver import *
 from pygimli.meshtools import *
 
-from pygimli.physics.seismics import ricker, wiggle, solvePressureWave
+from pygimli.physics.seismics import ricker, solvePressureWave, drawSeismogramm
 from pygimli.physics.gravimetry import solveGravimetry
 
 import pybert as pb
@@ -25,7 +25,104 @@ import pybert.dataview
 def createCacheName(base, mesh, times):
     return 'cache-' + base + '-' + str(mesh.nodeCount()) + '-' + str(len(times))
 
-class ERT():
+
+class MethodManager(object):
+    """
+        General manager to maintenance a measurement method. 
+        
+        The method manager holds one instance of a forward operator and a 
+        appropriate inversion method to handle simulation and reconstruction of
+        common geophysical problems.
+        
+    """
+    def __init__(self, verbose=False):
+        self.fop = self.createFOP(verbose)
+        self.tD = None
+        self.tM = None
+        self.inv = self.createInv(verbose)
+    
+    def __str__(self):
+        return self.__repr__()
+    
+    def __repr__(self):
+        """ String representation of the class """
+        out = "Abstract MethodManager."
+        pass
+    
+    def createFOP(self, refine=True): 
+        """ Create forward operator working on refined mesh """
+        raise Exception("Overload me!")
+
+    def createInv(self, verbose=True, dosave=False):
+        """ Create inversion instance, data- and model transformations. """
+        raise Exception("Overload me!")
+    
+    # Visualization stuff
+    def show(self, data, values=None, axes=None,
+             cMin=None, cMax=None, colorBar=1, **kwargs):
+        """ Forward the visualization """
+        pass
+        
+    def showData(self, ax=None, response=None):
+        """ show data in form of travel time curves """
+        pass
+
+    def showMesh(self, ax=None):
+        """ show mesh in given axes or in a new figure """
+        pass
+
+    def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
+                   **kwargs):
+        """ show resulting velocity vector """
+        pass
+
+    # Mesh related methods
+    def createMesh(self, ):
+        """ Create a mesh aka the parametrization """
+        pass
+    
+    def setParaMesh(self, mesh):
+        """ Set mesh for the inverse problem """
+        pass
+    
+    # Data related methods
+    def createData(self, sensors, scheme):   
+        """ Create an empty data set """
+        pass
+    
+    def setData(self, data):
+        """ Set data """
+        pass
+
+    def importData(self, filename):
+        """ Import data """
+        pass
+        
+    def checkData(self):
+        """ Check data validity """
+        pass
+
+    def estimateError(self, absoluteError=0.001, relativeError=0.001):
+        """ estimate error composed of an absolute and a relative part """
+        pass
+    
+    # Work related methods
+    def invert(self, data, values=None, verbose=0, **kwargs):
+        """ Invert the data and fill the parametrization. """ 
+        pass
+             
+    def simulate(self, mesh, values, data=None):
+        """ Run a simulation aka the forward task. """ 
+        pass
+    
+    def saveResult(self, folder=None, size=(16, 10),
+                   **kwargs):
+        """
+        Saves the results in the specified folder.
+        """
+        pass
+
+class ERT(MethodManager):
     
     """
         ERT Manager. 
@@ -36,24 +133,24 @@ class ERT():
     def __init__(self, verbose=False):
         """
         """
-        self.fop = pb.DCSRMultiElectrodeModelling(verbose=verbose)
-        #self.fop.regionManager().region(1).setBackground(True)
-        #self.fop.createRefinedForwardMesh(refine=True, pRefine=False)
-
-        self.inv = pg.RInversion(verbose=verbose, dosave=False)
-
-        self.datTrans = pg.RTransLog()
-        self.modTrans = pg.RTransLog()
-
-        self.inv.setTransData(self.datTrans)
-        self.inv.setTransModel(self.datTrans)
-        #self.inv.setError(data('err'))
-        #self.inv.setModel(pg.RVector(fop.regionManager().parameterCount(),
-                          #pg.median(data('rhoa'))))
-        
+        super(type(self), self).__init__(verbose)
+                
         self.schemeMg = pb.dataview.dataview.DataSchemeManager()
         self.paraMesh = None
          
+    def createFOP(self, verbose):
+        """ Create resistivity modelling forward operator. """
+        return pb.DCSRMultiElectrodeModelling(verbose=verbose)
+         
+    def createInv(self, verbose):
+        """ Create resistivity inversion instance. """
+        self.tD = pg.RTransLog()
+        self.tM = pg.RTransLog()
+        inv = pg.RInversion(verbose=verbose, dosave=False)
+        inv.setTransData(self.tD)
+        inv.setTransModel(self.tM)
+        return inv
+        
     def show(self, data, values=None, axes=None,
              cMin=None, cMax=None, colorBar=1, **kwargs):
         """
@@ -187,23 +284,24 @@ class ERT():
         data = pb.DataContainerERT(self.fop.data())
         data.set('rhoa', res)
         return data
-        
-
+    
 def createTestWorld1(maxArea=0.2, verbose=0):
     boundary = []
     boundary.append([-20.0,   0.0]) #0
     boundary.append([-20.0,  -2.0]) #1
-    boundary.append([-20.0, -12.0]) #2
-    boundary.append([-20.0, -20.0]) #3
-    boundary.append([ 20.0, -20.0]) #4
-    boundary.append([ 20.0, -12.0]) #5
+    boundary.append([-20.0,  -8.0]) #2
+    boundary.append([-20.0,  -15.0]) #3
+    boundary.append([ 20.0,  -15.0]) #4
+    boundary.append([ 20.0,  -8.0]) #5
     boundary.append([ 20.0,  -2.0]) #6
     boundary.append([ 20.0,   0.0]) #7
        
+    boundary = boundary + [pg.RVector3(x,0) for x in np.arange(19, -19.1, -1)]   
+    boundaryMarker = [1, 2, 3, 4, 5, 6, 7, 8] + [8 for x in range(40)]
+    
     poly = pg.Mesh(2)
     nodes = [poly.createNode(b) for b in boundary]
-
-    boundaryMarker = [1, 2, 3, 4, 5, 6, 7, 8]
+    
     for i in range(len(boundary)):
         poly.createEdge(nodes[i], nodes[(i+1)%len(boundary)], boundaryMarker[i]) # dirichlet (inflow)
     
@@ -211,19 +309,19 @@ def createTestWorld1(maxArea=0.2, verbose=0):
     poly.createEdge(nodes[2], nodes[5], 10)
         
     boundary = []
-    boundary.append([-6.0, -4.0]) #0
-    boundary.append([-6.0, -8.0]) #1
-    boundary.append([ 6.0, -8.0]) #2
-    boundary.append([ 6.0, -4.0]) #3
+    boundary.append([-6.0, -3.5]) #0
+    boundary.append([-6.0, -6.0]) #1
+    boundary.append([ 6.0, -6.0]) #2
+    boundary.append([ 6.0, -3.5]) #3
     
     nodes = [poly.createNode(b) for b in boundary]
     for i in range(len(boundary)):
         poly.createEdge(nodes[i], nodes[(i+1)%len(boundary)], 11) # dirichlet (inflow)
   
     poly.addRegionMarker((-19, -1),  1)
-    poly.addRegionMarker((-19, -10), 2)
-    poly.addRegionMarker((-19, -19), 3)
-    poly.addRegionMarker((  0, -7),  4)
+    poly.addRegionMarker((-19, -3), 2)
+    poly.addRegionMarker((-19, -14), 3)
+    poly.addRegionMarker((  0, -5),  4, 0.1)
     
     mesh = createMesh(poly, quality=33, area=maxArea,
                       smooth=[1,10], verbose=verbose)
@@ -232,21 +330,21 @@ def createTestWorld1(maxArea=0.2, verbose=0):
                  [6, [1.0, 0.0]],
                  [3, [1./3., 0.0]],
                  [8, [0.0, 0.0]],
-                 [4, [0.0, 0.0]]
+                 [5, [1./3, 0.0]],
+                 [4, [1./3, 0.0]]
                 ]
     preBoundary=[[1, 0.0],
-                 #[3, 0.0],
-                 [5, 0.0],
+                 #[4, 0.0], // bottom
+                 #[5, 0.0],
                  [7, 0.0]]
     
-    viscosity = pg.solver.parseMapToCellArray([[1, 3.0], 
-                                               [2, 1.0], 
-                                               [3, 6.0],
-                                               [4, 12.0]], mesh)
+    porosity = pg.solver.parseMapToCellArray([[1, 0.3], 
+                                              [2, 0.4], 
+                                              [3, 0.2],
+                                              [4, 0.115]], mesh)
     # 30 works nice with tol=1e-2 and pressureRelaxation = 0.01
-    viscosity *= 10.
-
-    return mesh, velBoundary, preBoundary, viscosity
+    
+    return mesh, velBoundary, preBoundary, porosity
 
 def createTestWorld2(maxArea=0.2, verbose=0):
     boundary = []
@@ -298,7 +396,7 @@ def createTestWorld2(maxArea=0.2, verbose=0):
     poly.addRegionMarker(( 19, -4.1), 5)
     poly.addRegionMarker((-19, -5.1), 4)
     poly.addRegionMarker((-19, -8.1), 2)
-    poly.addRegionMarker((0.0, -5.0), 6, 0.02)
+    poly.addRegionMarker((0.0, -5.0), 6, 0.01)
     
     poly.addHoleMarker((-19, -4.1))
     poly.addHoleMarker(( 19, -4.1))
@@ -326,14 +424,122 @@ def createTestWorld2(maxArea=0.2, verbose=0):
                                                [5, 1.0],
                                                [6, 1.0]], 
                                               mesh)
-    viscosity *= 10.
-    
+
     print("div(V) = ", pg.solver.divergence(mesh, normMap=velBoundary))
     
     return mesh, velBoundary, preBoundary, viscosity
 
-def calcVelocity(mesh, viscosity, velBoundary, preBoundary):
+        
+def density(porosity, rhoMatrix=2510, rhoFluid=1000, S=1,
+            mesh=None):
+    r"""
+    """
+    porosity = parseArgToArray(porosity, mesh.cellCount(), mesh)
+    rhoMatrix = parseArgToArray(rhoMatrix, mesh.cellCount(), mesh)
+    rhoFluid = parseArgToArray(rhoFluid, mesh.cellCount(), mesh)
+    S = parseArgToArray(S, mesh.cellCount(), mesh)
+    
+    dens = np.array(rhoMatrix * (1.-porosity)) + rhoFluid * porosity * S
+    return dens
+ 
+def velocityVp(porosity, vMatrix=5000, vFluid=1442, S=1,
+                     mesh=None):
+    r"""
+    """
+    porosity = parseArgToArray(porosity, mesh.cellCount(), mesh)
+    vMatrix = parseArgToArray(vMatrix, mesh.cellCount(), mesh)
+    vFluid = parseArgToArray(vFluid, mesh.cellCount(), mesh)
+    S = parseArgToArray(S, mesh.cellCount(), mesh)
+    
+    vAir = 343.0
+    
+    vel = 1./(np.array((1.-porosity)/vMatrix) + \
+              porosity * S / vFluid + \
+              porosity * (1.-S)/vAir)
+    return vel
 
+def permeabiltyEngelhardtPitter(porosity, q=3.5, s=5e-3,
+                                mesh=None, meshI=None):
+    r"""
+    For sand and sandstones
+    
+    .. math:: 
+        k & = 2\cdot 10^7 \frac{\phi^2}{(1-\phi)^2}* \frac{1}{S^2} \\
+        S & = q\cdot s \\
+        s & = \sum_{i=1}(\frac{P_i}{r_i})
+        
+    * :math:`\phi` - porosity 0.0 --1.0
+    * :math:`S` - in cm^-1  specific surface in cm^2/cm^3
+    * :math:`q` - (3 for spheres, > 3 shape differ from sphere)
+        3.5 sand
+    * :math:`s` - in cm^-1 (s = 1/r for particles with homogeneous radii r)
+    * :math:`P_i` - Particle ration with radii :math:`r_i` on 1cm³ Sample
+    
+    Returns
+    -------
+    k :
+        in Darcy
+    """
+    porosity = parseArgToArray(porosity, mesh.cellCount(), mesh)
+    q = parseArgToArray(q, mesh.cellCount(), mesh)
+    s = parseArgToArray(s, mesh.cellCount(), mesh)
+    
+    S = q * s
+    k = 2e-7 * (porosity**2 / (1.0-porosity)**2) * 1.0/ S**2
+    
+    if meshI:
+        k = pg.interpolate(mesh, k, meshI.cellCenters()) 
+        k = pg.solver.fillEmptyToCellArray(meshI, k)
+    return k
+        
+        
+def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
+                      mesh=None, meshI=None):
+    """
+    .. math:: 
+        \rho = a\rho_{\text{Brine}}\phi^{-m}\S_w^{-n}
+        
+    * :math:`\rho` - the electrical conductivity of the fluid saturated rock
+    * :math:`\rho_{\text{Brine}}` - electrical conductivity of the brine
+    * :math:`\phi` - porosity 0.0 --1.0
+    * :math:`a` - tortuosity factor. (common 1)
+    * :math:`m` - cementation exponent of the rock
+            (usually in the range 1.3 -- 2.5 for sandstones)
+    * :math:`n` - is the saturation exponent (usually close to 2)
+     
+    """
+    rB = None
+    
+    if rBrine.ndim == 1:
+        rB = pg.RMatrix(1, len(rBrine))
+        rB[0] = parseArgToArray(rBrine, mesh.cellCount(), mesh)
+    elif rBrine.ndim == 2:
+        rB = pg.RMatrix(len(rBrine), len(rBrine[0]))
+        for i in range(len(rBrine)):
+            rB[i] = rBrine[i]
+     
+    porosity = parseArgToArray(porosity, mesh.cellCount(), mesh)
+    a = parseArgToArray(a, mesh.cellCount(), mesh)
+    m = parseArgToArray(m, mesh.cellCount(), mesh)
+    S = parseArgToArray(S, mesh.cellCount(), mesh)
+    n = parseArgToArray(n, mesh.cellCount(), mesh)
+    
+    r = pg.RMatrix(len(rBrine), len(rBrine[0]))
+    for i in range(len(r)):
+        r[i] = rB[i] * a * porosity**(-m) * S**(-n)
+            
+    rI = pg.RMatrix(len(r), meshI.cellCount())
+    if meshI:
+        pg.interpolate(mesh, r, meshI.cellCenters(), rI) 
+        
+    for i in range(len(rI)):
+        rI[i] = pg.solver.fillEmptyToCellArray(meshI, rI[i])
+        
+    return rI
+    
+def calcVelocity(mesh, permeabilty, velBoundary, preBoundary):
+
+    viscosity = 1./permeabilty
     solutionName = createCacheName('vel', mesh, times)
     try:
         #vel = pg.load(solutionName + '.bmat')
@@ -342,27 +548,34 @@ def calcVelocity(mesh, viscosity, velBoundary, preBoundary):
     except Exception as e:
         print(e)
         print("Building .... ")
+        class WS:
+            pass
+        ws = WS
         vel, pres, pCNorm, divVNorm = solveStokes_NEEDNAME(mesh, velBoundary,
                                                            preBoundary,
                                                            viscosity=viscosity,
                                                            maxIter=1000,
-                                                           tol=1e-4,
-                                                           verbose=1)
+                                                           tol=1e-4, pRelax=0.1,
+                                                           verbose=1, ws=ws)
         np.save(solutionName + '.bmat', vel)
     
         #plt.semilogy(divVNorm)
         #pg.show(mesh, pg.cellDataToPointData(mesh, pres), cmap='b2r')
+        data=pg.cellDataToPointData(mesh,
+                                    np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1]))
+        
+        ax, cbar = pg.show(mesh, ws.div, colorBar=1, label='divergence')
+        ax, cbar = pg.show(mesh, data, colorBar=1, label='Velocity')
+        pg.show(mesh, vel, axes=ax)
+        pg.showNow()
         
     return vel
 
 def calcConcentration(mesh, vel, times):
-
-    f = pg.RVector(mesh.cellCount(), 0.0)
-    sourceCell=mesh.findCell([-18., -6])
-    f[sourceCell.id()]=0.4
-
-    Peclet = 50.0
-   
+    r"""
+    .. math::
+        
+    """
     solutionName = createCacheName('conc', mesh, times)
     
     try:
@@ -372,6 +585,15 @@ def calcConcentration(mesh, vel, times):
     except Exception as e:
         print(e)
         print("Building .... ")
+        
+        f = pg.RVector(mesh.cellCount(), 0.0)
+        sourceCell=mesh.findCell([-18., -6])
+        f[sourceCell.id()]=2.0
+        print(sourceCell.size())
+
+        Peclet = 50.0
+
+
         uMesh1 = solveFiniteVolume(mesh, a=1./Peclet, f=f, vel=vel, times=times, 
                           uBoundary=[2, 0],
                           scheme='PS', verbose=10)
@@ -399,21 +621,6 @@ def calcGravKernel(mesh):
         np.save(solutionName + '.bmat', Gdg)
         
     return gravPointsX, Gdg
-        
-def transResistivity(mesh, viscosity, concentration, meshI):
-    viscI = pg.interpolate(mesh, viscosity, meshI.cellCenters())
-    viscI = pg.solver.fillEmptyToCellArray(meshI, viscI)
-
-    Con = pg.RMatrix(len(concentration), len(concentration[0]))
-    for i in range(len(concentration)):
-        Con[i] = concentration[i]
-    ConI = pg.RMatrix(len(concentration), meshI.cellCount())
-    pg.interpolate(mesh, Con, meshI.cellCenters(), ConI)
-    
-    resis = pg.RMatrix(len(concentration), meshI.cellCount())
-    for i in range(len(concentration)):
-        resis[i] = 1./(1./viscI + pg.abs(12.*ConI[i]))
-    return resis
 
 def calcApparentResistivities(mesh, resistivities):
     ert = ERT(verbose=False)
@@ -423,12 +630,12 @@ def calcApparentResistivities(mesh, resistivities):
     solutionName = createCacheName('appRes', mesh, times)+ "-" + str(ertScheme.size())
     
     try:
-        resA = np.load(solutionName + '.bmat.npy')
+        rhoa = np.load(solutionName + '.bmat.npy')
         ertData = pb.DataContainerERT(solutionName + '.dat')
     except Exception as e:
         print(e)
         print("Building .... ")
-        resA = np.zeros((len(resistivities), ertScheme.size()))
+        rhoa = np.zeros((len(resistivities), ertScheme.size()))
         ertScheme.set('k', pb.geometricFactor(ertScheme))
         ertData = ert.simulate(meshERT_FOP, resistivities[0], ertScheme)
         
@@ -440,23 +647,23 @@ def calcApparentResistivities(mesh, resistivities):
         
         for i in range(0, len(resistivities)):
             tic =  time.time()
-            resA[i] = ert.fop.response(resistivities[i])
+            rhoa[i] = ert.fop.response(resistivities[i])
                         
-            rand = pg.RVector(len(resA[i]))
+            rand = pg.RVector(len(rhoa[i]))
             pg.randn(rand)
         
-            resA[i] *= (1.0 + rand * ertData('err'))
+            rhoa[i] *= (1.0 + rand * ertData('err'))
             
             print(i, "/", len(resistivities), " : ", time.time()-tic, "s",
                   "min:", min(resistivities[i]), "max:", max(resistivities[i]),
-                  "min:", min(resA[i]), "max:", max(resA[i]) )
+                  "min:", min(rhoa[i]), "max:", max(rhoa[i]) )
 
-        np.save(solutionName + '.bmat', resA)
+        np.save(solutionName + '.bmat', rhoa)
         ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
         
-    return resA, ert, ertData
+    return rhoa, ert, ertData
 
-def calcERT(ert, ertScheme, resA):
+def calcERT(ert, ertScheme, rhoa):
     solutionName = createCacheName('ERT', mesh, times)+ "-" + str(ertScheme.size())
     try:   
         ertModels = pg.load(solutionName + '.bmat')
@@ -464,7 +671,7 @@ def calcERT(ert, ertScheme, resA):
     except Exception as e:
         print(e)
         print("Building .... ")
-        ertModels = ert.invert(ertScheme, values=resA, maxiter=10, 
+        ertModels = ert.invert(ertScheme, values=rhoa, maxiter=10, 
                                paraDX=0.5, paraDZ= 0.5, nLayers=20, paraDepth=20,
                                lambd=50, verbose=1)
         ertMesh=ert.fop.regionManager().paraDomain()
@@ -472,132 +679,257 @@ def calcERT(ert, ertScheme, resA):
         ertMesh.save(solutionName)
     return ertModels, ertMesh
 
+def calcSeismics(mesh, vP):
+    
+    meshSeis = appendTriangleBoundary(mesh, 
+                                      xbound=50, ybound=50, marker=1,
+                                      quality=33.0, area=0.5, smooth=True, 
+                                      markerBoundary=1,
+                                      isSubSurface=False, verbose=False)
+    print(meshSeis)
+    meshSeis = meshSeis.createH2()
+    vP = pg.interpolate(mesh, vP, meshSeis.cellCenters())
+    #mesh = meshSeis.createH2()
+    mesh = meshSeis
+    vP = pg.solver.fillEmptyToCellArray(mesh, vP)
+    print(mesh)
+    #ax, cbar = pg.show(mesh, data=vP)
+    #pg.show(mesh, axes=ax)
+    #pg.showNow()
+    
+    h = pg.median(mesh.boundarySizes())/2
+    dt = h * 0.5/max(vP)
+    tmax = 50./min(vP)
+    times = np.arange(0.0, tmax, dt)
+        
+    geophPointsX = np.arange(-19, 19.1, 1)
+    geophPoints = np.vstack((geophPointsX, np.zeros(len(geophPointsX)))).T
+    
+    solutionName = createCacheName('seis', mesh, times)
+    try:   
+        u = pg.load(solutionName + '.bmat')
+    except Exception as e:
+        print(e)
+        print("Building .... ")
+        f0 = 1/dt/10
+        
+        print("h:", round(h,2), "dt:", round(dt,5), "1/dt:", round(1/dt,1), "f0", round(f0,2))
+        
+        uSource = ricker(f0, times, t0=1./f0)
+    
+        plt.plot(times, uSource)
+        plt.show()
+        u = solvePressureWave(mesh, vP, times, sourcePos=geophPoints[38],
+                            uSource=uSource, verbose=10)
+        u.save(solutionName)
+        
+    nodes = [mesh.findNearestNode(p) for p in geophPoints]
+    
+    fig = plt.figure()
+    axs = fig.add_subplot(1,1,1)
+    drawSeismogramm(axs, mesh, u, nodes, dt, i=None)
+    plt.show()
+        
+    fig = plt.figure()
+    
+    ax, cbar = pg.show(mesh, data=vP)
+    #pg.showNow()
+    #ax = fig.add_subplot(1,1,1)
+    for i in range(1, len(u), 5):
+        ui = u[i]
+        ui = ui / max(pg.abs(ui))
+        ui = pg.logDropTol(ui, 1e-2)
+        cMax = max(pg.abs(ui))
+        
+        ax.clear()
+        #pg.show(mesh, axes=ax)
+        drawField(ax, mesh, data=ui,
+                  cMin=-cMax, cMax=cMax,
+                  cmap='RdBu')
+        #ax.set_xlim((-25, 25))
+        #ax.set_ylim((-25, 0))
+        plt.pause(0.001)
+    
+    
+    
 vis = 1
 mp4 = 1
 
 swatch = pg.Stopwatch(True)
 pg.showLater(1)
 
-mesh, velBoundary, preBoundary, viscosity = createTestWorld1(maxArea=0.2,
-                                                             verbose=0)
-print(mesh)
-meshC, tmp, tmp, tmp=createTestWorld1(maxArea=1, verbose=0)
-meshD, tmp, tmp, tmp=createTestWorld1(maxArea=0.1, verbose=0)
+modelFkt = createTestWorld1
 
+mesh, velBoundary, preBoundary, porosity = modelFkt(maxArea=0.2,
+                                                    verbose=0)
+print("meshgen:", swatch.duration(True))
+
+times = np.linspace(0, 50, 51)
+densityBrine = 1.2 * 1000 # kg/m^3
+ 
+permeabilty = permeabiltyEngelhardtPitter(porosity, mesh=mesh)    
+
+vP = velocityVp(porosity, mesh=mesh)
+
+
+#calcSeismics(mesh, vP)
+
+
+
+print("Seismcs:", swatch.duration(True))
+
+
+vel = calcVelocity(mesh, permeabilty, velBoundary, preBoundary)
+print("vel:", swatch.duration(True))
+
+conc = calcConcentration(mesh, vel, times)
+print("con:", swatch.duration(True))
+
+dens0 = density(porosity, rhoMatrix=2510, rhoFluid=1000, mesh=mesh)
+densC = density(porosity, rhoMatrix=2510, 
+                rhoFluid=1000 *(1.-conc) + densityBrine * conc, mesh=mesh)
+dDens = densC - dens0
+
+
+gravPointsX, Gdg = calcGravKernel(mesh)
+print("grav:", swatch.duration(True))
+
+
+
+meshD, tmp, tmp, tmp=modelFkt(maxArea=0.1, verbose=0)
 meshERT_FOP = appendTriangleBoundary(meshD, 
                                     xbound=50, ybound=50, marker=1,
                                     quality=34.0, smooth=False, markerBoundary=1,
                                     isSubSurface=False, verbose=False)
-print("meshgen:", swatch.duration(True))
+print("res:", swatch.duration(True))
+resistivities = resistivityArchie(rBrine=1./(1./20. + abs(1.*conc)),
+                                  porosity=porosity, S=1, 
+                                  mesh=mesh, meshI=meshERT_FOP)
+print("res:", swatch.duration(True))
 
-times = np.linspace(0, 40, 50)
+rhoa, ert, ertScheme = calcApparentResistivities(meshERT_FOP, resistivities)
+print("rhoa:", swatch.duration(True))
+
+ertModels, meshERT = calcERT(ert, ertScheme, rhoa)
+print("ert:", swatch.duration(True))
+
+vP = velocityVp(porosity, mesh=mesh)
+print("vp:", swatch.duration(True))
+
+
+
 
 dpi=92
 fig = None
-if mp4:
-    fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi)  
-else:
-    fig = plt.figure() 
-    
-axVis = fig.add_subplot(3,2,5)
-axVel = fig.add_subplot(3,2,6)
 
-axCon = fig.add_subplot(3,3,4)
-axGra = fig.add_subplot(3,3,1)
-axRes = fig.add_subplot(3,3,5)
-axReA = fig.add_subplot(3,3,2)
-
-axERT = fig.add_subplot(3,3,6)
-axERR = fig.add_subplot(3,3,3)
-   
-    
-if vis:
-    show(mesh, data=viscosity, colorBar=1, 
-         orientation='vertical', label='Viscosity', axes=axVis)
-    show(mesh, axes=axVis)
-    
-vel = calcVelocity(mesh, viscosity, velBoundary, preBoundary)
+orientation = 'horizontal'
 
 if vis:
+
+    if mp4:
+        fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi)  
+    else:
+        fig = plt.figure() 
+    
+    axPor = fig.add_subplot(4,4,1)
+    axPer = fig.add_subplot(4,4,2)
+    axDen = fig.add_subplot(4,4,3)
+    axVp  = fig.add_subplot(4,4,4)
+    
+    axVel = fig.add_subplot(4,4,5)
+    axCon = fig.add_subplot(4,4,6)
+    axDDe = fig.add_subplot(4,4,7)
+    axRes = fig.add_subplot(4,4,8)
+    
+    axGra = fig.add_subplot(4,4,11)
+    axReA = fig.add_subplot(4,4,12)
+    
+    axERT = fig.add_subplot(4,4,15)
+    axERR = fig.add_subplot(4,4,16)
+        
+
+    # ** Porosity **
+    show(mesh, data=porosity, colorBar=1, 
+         orientation=orientation, label='Porosity', axes=axPor)
+    show(mesh, axes=axPor)
+    
+    # ** Permeabilty **
+    show(mesh, data=permeabilty, colorBar=1, 
+         orientation=orientation, label='Permeabilty', axes=axPer)
+    show(mesh, axes=axPer)
+    
+    # ** Density **
+    show(mesh, data=dens0, colorBar=1, 
+         orientation=orientation, label='Density in kg/m$^3$', axes=axDen)
+    show(mesh, axes=axPer)
+    
+    # ** Velocity abs **
     axVel, cbar = show(mesh, data=pg.cellDataToPointData(mesh,
-                                           np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1])),
-         logScale=0, colorBar=1,
-         orientation='vertical', label='|Velocity| in m/s',
-         axes=axVel
-         )
+                                np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1])),
+                       logScale=0, colorBar=1,
+                       orientation=orientation, label='|Velocity| in m/s',
+                       axes=axVel
+                       )
 
+    # ** Velocity vector **
     pg.mplviewer.drawMeshBoundaries(axVel, mesh, fitView=True)
     pg.viewer.showBoundaryNorm(mesh, velBoundary, color='red', axes=axVel)
+    
+    meshC, tmp, tmp, tmp=modelFkt(maxArea=1, verbose=0)
     show(mesh, data=vel, axes=axVel, coarseMesh=meshC)
-    plt.pause(0.1)
-print("vel:", swatch.duration(True))
-
-conc = calcConcentration(mesh, vel, times)
-
-
-if vis:
+    
+    # ** vP **
+    show(mesh, data=vP, colorBar=1, 
+         orientation=orientation, label='Vp m/s', axes=axVp)
+    show(mesh, axes=axVp)
+    
+    # Prepare time lapse figures
+    # ** Concentration **
     gciCon= pg.mplviewer.drawModel(axCon, mesh, data=conc[1],
-                                   cMin=0, cMax=0.03, 
+                                   cMin=0, cMax=0.1, 
+                                   logScale=False
                                    #cmap='b2r'
                                    )
-    cbar = createColorbar(gciCon, orientation='vertical', label='Concentration')
-print("con:", swatch.duration(True))
-
-
-resistivities = transResistivity(mesh, viscosity, conc, meshERT_FOP)
-
-if vis:
+    cbar = createColorbar(gciCon, orientation=orientation, label='Concentration')
+    
+    gciDDe = pg.mplviewer.drawModel(axDDe, mesh, data=dDens[1],
+                                    cMin=0, cMax=20, 
+                                    #cmap='b2r'
+                                   )
+    cbar = createColorbar(gciDDe, orientation=orientation, label='Delta density in kg/m$^3$')
+    
+    # ** Resistivity (model) **
     gciRes = pg.mplviewer.drawModel(axRes, meshERT_FOP, 
                                     data=resistivities[0],
-                                    cMin=1, cMax=100)
-    cbar = createColorbar(gciRes, orientation='vertical', label='Resistivity')
+                                    cMin=20, cMax=700,
+                                    )
+    cbar = createColorbar(gciRes, orientation=orientation, label='Resistivity')
     axRes.set_xlim((-20, 20))
     axRes.set_ylim((-20, 00))
-print("res:", swatch.duration(True))
     
-gravPointsX, Gdg = calcGravKernel(mesh)
-print("grav:", swatch.duration(True))
+    # ** Apparent resistivities (data) **
+    gciARes = ert.show(ertScheme, values=rhoa[0], axes=axReA, 
+                       scheme='DipoleDipole',
+                       cMin=100, cMax=300, 
+                       orientation=orientation)
 
-resA, ert, ertScheme = calcApparentResistivities(meshERT_FOP, resistivities)
-gciARes = ert.show(ertScheme, values=resA[0], axes=axReA, 
-                   scheme='DipoleDipole',
-                   cMin=5, cMax=35, orientation='vertical')
-print("appRes:", swatch.duration(True))
-
-ertModels, meshERT = calcERT(ert, ertScheme, resA)
-
-if vis:
+    # ** ERT (model) **
     gciERT = pg.mplviewer.drawModel(axERT, meshERT, 
                                     data=ertModels[0],
-                                    cMin=1, cMax=100)
-    cbar = createColorbar(gciERT, orientation='vertical', label='Resistivity')
+                                    cMin=20, cMax=700)
+    cbar = createColorbar(gciERT, orientation=orientation, label='Resistivity')
+    # ** ERT ratio (model) **
     gciERR = pg.mplviewer.drawModel(axERR, meshERT, 
                                     data=ertModels[0]/ertModels[0],
                                     cMin=1/4, cMax=4, cmap='b2r')
-    cbar = createColorbar(gciERR, orientation='vertical', label='Ratio')
+    cbar = createColorbar(gciERR, orientation=orientation, label='Ratio')
 
-print("ert:", swatch.duration(True))
-
-
-
-dz = np.zeros(len(conc))
-densityBrine = 1.2 # g/cm^3
-densityBrine *= 1000. # kg/m^3
 
 def animate(i):
-    #for i in range(1, len(conc)):
     tic = time.time()
-    if vis:
-        pg.mplviewer.setMappableData(gciCon, conc[i], logScale=False)
-        gciCon.set_clim(0, 0.03)
         
     axGra.clear()
-    
-    dDensity = densityBrine * conc[i]
-    #print(time.time()-tic); tic = time.time()
-    
-    # calc gravimetric response
-    dz = Gdg.dot(dDensity)
+    dz = Gdg.dot(dDens[i])
     
     axGra.clear()
     axGra.plot(gravPointsX, dz)
@@ -607,40 +939,57 @@ def animate(i):
     axGra.set_ylim((0, 0.003))
     axGra.grid()
     
-    #print(time.time()-tic); tic = time.time()
     axReA.clear()
-    ert.show(ertScheme, values=resA[i], axes=axReA, scheme='DipoleDipole',
-             cMin=5, cMax=35, colorBar=0)
+    ert.show(ertScheme, values=rhoa[i], axes=axReA, scheme='DipoleDipole',
+             cMin=100, cMax=300, 
+             colorBar=0)
      
     if vis:
+        
+        pg.mplviewer.setMappableData(gciCon, conc[i], 
+                                     #cMin=0, cMax=0.03,
+                                     logScale=False)
+        gciCon.set_clim(0, 0.1)
+        pg.mplviewer.setMappableData(gciDDe, dDens[i], 
+                                     cMin=0, cMax=20,
+                                     logScale=False)
         pg.mplviewer.setMappableData(gciRes, 
                                      resistivities[i],
-                                     cMin=1, cMax=100,
+                                     cMin=20, cMax=700,
                                      logScale=True)
         pg.mplviewer.setMappableData(gciERT, 
                                      ertModels[i+1],
-                                     cMin=1, cMax=100,
+                                     cMin=20, cMax=700,
                                      logScale=True)
         pg.mplviewer.setMappableData(gciERR, 
                                      ertModels[i+1]/ertModels[0],
                                      cMin=1/4, cMax=4,
                                      logScale=True)
         
-    print(i, time.time()-tic, 
+    print(i, round(time.time()-tic, 2),
+          "t=", round(i *(times[1]-times[0]),1),
+          "dt:", round(times[1]-times[0],1),
+          "sum mass:", round(sum(dDens[i]*mesh.cellSizes()),1), "kg/m "
           "sum:", sum(conc[i]),
           "dsum:", (sum(conc[i])-sum(conc[i-1])),
           )
     if mp4 or vis:
         plt.pause(0.001)
 
-anim = animation.FuncAnimation(fig, animate,
-                               frames=int(len(conc)),
-                               interval=1)#, blit=True)
-solutionName = createCacheName('all', mesh, times)+ "-" + str(ertScheme.size())
+animate(50)
 
-if mp4:
-    anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
-          bitrate=24*1024, extra_args=None, metadata=None,
-          extra_anim=None, savefig_kwargs=None)
+#for i in range(len(times)*2-1):
+    #animate(i)
+
+#anim = animation.FuncAnimation(fig, animate,
+                               #frames=int(len(conc)),
+                               #interval=1)#, blit=True)
+
+#solutionName = createCacheName('all', mesh, times)+ "-" + str(ertScheme.size())
+
+#if mp4:
+    #anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
+          #bitrate=24*1024, extra_args=None, metadata=None,
+          #extra_anim=None, savefig_kwargs=None)
 
 pg.showNow()
