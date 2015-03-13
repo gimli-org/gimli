@@ -50,8 +50,8 @@ def ricker(f, t, t0=0.0):
     return y
 
 
-def wiggle(axes, x, t, xoffset=0.0,
-           posColor='red', negColor='blue', alpha=0.5, **kwargs):
+def drawWiggle(axes, x, t, xoffset=0.0,
+               posColor='red', negColor='blue', alpha=0.5, **kwargs):
     """
     Draw signal in wiggle style into a given axes.
 
@@ -91,9 +91,9 @@ def wiggle(axes, x, t, xoffset=0.0,
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(1,1,1)
     >>>
-    >>> wiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue', alpha=0.2)
-    >>> wiggle(ax, r, t, xoffset=1)
-    >>> wiggle(ax, r, t, xoffset=2, posColor='black', negColor='white', alpha=1.0)
+    >>> drawWiggle(ax, r, t, 0, posColor='red', negColor='blue', alpha=0.2)
+    >>> drawWiggle(ax, r, t, xoffset=1)
+    >>> drawWiggle(ax, r, t, 2, posColor='black', negColor='white', alpha=1.0)
     >>> plt.show()
 
     """
@@ -114,7 +114,41 @@ def wiggle(axes, x, t, xoffset=0.0,
         fill, = axes.fill(tracefill + xoffset, t, color=posColor,
                           alpha=alpha, linewidth=0)
 
+def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
+    r"""
+    Extract and show time series from wave field
+        
+    Extract and show time series from wave field
+        
+    Parameters
+    ----------
+    """
+    axes.set_xlim(-20., 20.)
+    axes.set_ylim(0., dt*len(u)*1000)
+    axes.set_aspect(1)
+    axes.set_ylabel('Time in ms')
 
+    if i is None:
+        i = len(u)-1
+    t=np.linspace(0, i*dt*1000, i+1)
+        
+    for iw, n in enumerate(ids):
+        pos = mesh.node(n).pos()
+        print(pos)
+        axes.plot(pos[0], 0.05, '^', color='black')
+        
+        trace = pg.cat(pg.RVector(0), u[:(i+1), n])
+        #print(i+1, n)
+        #print(trace, (max(pg.abs(trace))))
+        
+        #if max(pg.abs(trace)) > 1e-8:
+        
+        trace *= np.exp(0.5*t)
+        trace /= (max(pg.abs(trace))*1.5)
+        
+        drawWiggle(axes, trace, t=t, xoffset=pos[0])
+            
+        
 def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     r"""
     Solve pressure wave equation.
@@ -253,7 +287,6 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     plt.legend()
     plt.figure()
     return u
-
 
 if __name__ == "__main__":
     from pygimli.physics.seismics import ricker, wiggle

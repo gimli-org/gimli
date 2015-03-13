@@ -152,7 +152,7 @@ def createGradientModel2D(data, mesh, VTop, VBot):
     return np.interp(d, [min(d), max(d)], [1.0 / VTop, 1.0 / VBot])
 
 
-class Refraction():
+class Refraction(object):
 
     """ Class for managing a refraction seismics"""
 

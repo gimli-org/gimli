@@ -10,7 +10,7 @@ import numpy as np
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
-                           quality=34.0, smooth=False, markerBoundary=1,
+                           quality=34.0, area=0.0, smooth=False, markerBoundary=1,
                            isSubSurface=False, verbose=False):
     """
     Add a triangle mesh boundary to a given mesh.
@@ -32,6 +32,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         Marker of the inner boundary edges between mesh and new boundary.
     quality : float, optional
         Triangle quality.
+    area: float, optional
+        Triangle max size within the boundary.
     smooth : boolean, optional
         Apply mesh smoothing.
     isSubSurface : boolean, optional
@@ -145,9 +147,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     else:  # no isSubSurface
         # add top right node and boundary nodes
-        xtLen = 12
-
-        dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.5
+        dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.1
+        xtLen = int(xbound / dxMin / 2.)
 
         # x top boundary sampling points
         xTop = pg.increasingRange(dxMin, xbound, xtLen)
@@ -196,6 +197,10 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     # call triangle mesh generation
     triswitches = '-pzeAfa' + preserveSwitch + 'q' + str(quality)
 
+    
+    if area > 0:
+        triswitches += 'a'+str(area)
+        
     if not verbose:
         triswitches += 'Q'
 

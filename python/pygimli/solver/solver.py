@@ -55,6 +55,9 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
         pass
 
     if hasattr(arg, '__len__'):
+        if type(arg) == np.ndarray:
+            return arg
+            
         for n in nDofs:
             if len(arg) == n:
                 return arg
@@ -233,8 +236,7 @@ def parseArgToBoundaries(args, mesh):
 
     return boundaries
 
-
-def parseMapToCellArray(attributeMap, mesh):
+def parseMapToCellArray(attributeMap, mesh, default=0.0):
     """
     Parse a value map to cell attributes.
 
@@ -246,15 +248,18 @@ def parseMapToCellArray(attributeMap, mesh):
     attributeMap : list | dict
         List of pairs [[int, float]], or dictionary with integer keys
 
+    default : float [0.0]
+        Fill all unmapped atts to this default.
+        
     Returns
     -------
     atts : array
         Array of length mesh.cellCount()
     """
 
-    atts = pg.RVector(mesh.cellCount(), 0.0)
+    atts = pg.RVector(mesh.cellCount(), default)
 
-    if isinstance(attributeMap, dict()):
+    if isinstance(attributeMap, dict):
         raise Exception("Please implement me!")
     elif hasattr(attributeMap, '__len__'):
         for pair in attributeMap:

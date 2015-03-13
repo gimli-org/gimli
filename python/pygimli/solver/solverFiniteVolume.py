@@ -736,19 +736,20 @@ def __d(name, v, showAll=False):
 def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
                          viscosity=1, pre0=None, vel0=None,
                          tol=1e-4, maxIter=1000,
-                         verbose=1):
+                         verbose=1, **kwargs):
     """
     """
-    velocityRelaxation = 0.5
-    pressureRelaxation = 0.8
+    ws=kwargs.pop('ws', None)
+    
+    velocityRelaxation = kwargs.pop('vRelax', 0.5) 
+    pressureRelaxation = kwargs.pop('pRelax', 0.8) 
+
     pressureCoeff = None
     preCNorm = []
     divVNorm = []
 
     velBoundaryX = [[marker, vel[0]] for marker, vel in velBoundary]
     velBoundaryY = [[marker, vel[1]] for marker, vel in velBoundary]
-
-    print(velBoundaryX)
 
     class WS:
         pass
@@ -842,7 +843,9 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
 
         preCNorm.append(pg.norm(pressureCorrection))
         divVNorm.append(pg.norm(div))
-
+        
+        if ws:
+            ws.div=div
 #        __d('div', div)
 #        if ( i == 1):
 #            sd
@@ -857,12 +860,11 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
             convergenceTest /= 5
 
         if verbose:
-            # print("\rIter: " + str(i) + " div V=" + str(divVNorm[-1]) + " " +  str(preCNorm[-1]), end='')
             print("\r" + str(i) + " div V=" + str(divVNorm[-1]) +
                   " ddiv V=" + str(convergenceTest))
 
-        if i == maxIter or divVNorm[-
-                                    1] < tol or abs(convergenceTest * divVNorm[-1]) < tol:
+        if i == maxIter or divVNorm[-1] < tol or \
+            abs(convergenceTest * divVNorm[-1]) < tol:
             break
 
     if verbose:

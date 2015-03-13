@@ -13,6 +13,7 @@ project_root = os.path.abspath(
         '..',
         '..',
         '..'))
+
 complete_path = lambda *args: os.path.join(project_root, *args)
 
 import distutils.sysconfig
@@ -20,8 +21,7 @@ import distutils.sysconfig
 print("Python version:", distutils.sysconfig.get_python_version())
 print("Python lib:", distutils.sysconfig.get_python_lib(standard_lib=True))
 
-
-class settings:
+class settings(object):
     module_name = '_pygimli_'
     gimli_path = '../src'
     gimli_defines = ''
@@ -52,7 +52,7 @@ elif sys.platform == 'win32':
     settings.gimli_defines = 'MINGW'
     settings.python_libs_path = distutils.sysconfig.get_python_lib(
         standard_lib=True)
-
+    
     if os.path.exists('../../../boost/include'):
         settings.includesPaths.append(
             os.path.abspath('../../../boost/include'))

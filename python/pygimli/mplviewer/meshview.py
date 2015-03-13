@@ -113,7 +113,7 @@ class CellBrowser(object):
         """
             Docstring
         """
-        print(event, event.key)
+        #print(event, event.key)
         if self.data is None:
             return
         if event.key not in ('up', 'down', 'escape'):
@@ -271,7 +271,7 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
         What is this?
     """
     polys = []
-    print((len(boundaries)))
+    
     for cell in boundaries:
         polys.append(list(zip([getattr(cell.node(0), first)(),
                                getattr(cell.node(1), first)(),
@@ -499,7 +499,6 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
                         len(z), mesh.cellCount(), mesh.nodeCount())
 
     if gci and cMin and cMax:
-        print(cMin, cMax)
         gci.set_clim(cMin, cMax)
 
     if cmap is not None:

@@ -562,7 +562,7 @@ def gravMagBoundarySinghGup(boundary):
     return np.asarray([Fx, Fy, Fz]), np.asarray([Fzx, Fzy, Fzz]),
 
 
-def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
+def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     """
     Solve gravimetric response.
 
@@ -607,7 +607,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
         dg = np.zeros(len(pnts))
         Gdg = np.zeros((len(pnts), mesh.cellCount()))
 
-    times = []
+    #times = []
 
     dgi = None
     dgzi = None
@@ -620,7 +620,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
                     dDensity, '__len__') or dDensity is None:
 
                 if mesh.dimension() == 2:
-                    tic = time.time()
+                    #tic = time.time()
                     if complete:
                         dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                            b.node(1).pos())
@@ -635,7 +635,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
                     if complete:
                         dgi, dgzi = gravMagBoundarySinghGup(b)
                     else:
-                        raise Exception(TOIMPL)
+                        raise Exception("TOIMPL")
 
                 if complete:
                     dgi *= [1.0, 1.0, -1.0]
@@ -661,9 +661,9 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=0):
 
         mesh.translate(pg.RVector3(p))
 
-    import matplotlib.pyplot as plt
-    print("times:", sum(times), np.mean(times))
-    plt.plot(times)
+    #import matplotlib.pyplot as plt
+    #print("times:", sum(times), np.mean(times))
+    #plt.plot(times)
 
     if dDensity is None:
         if complete:
