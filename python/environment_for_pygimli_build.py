@@ -54,7 +54,8 @@ elif sys.platform == 'win32':
         standard_lib=True)
 
     if os.path.exists('../../../boost/include'):
-        settings.includesPaths.append(os.path.abspath('../../../boost/include'))
+        settings.includesPaths.append(
+            os.path.abspath('../../../boost/include'))
 
 else:
     raise RuntimeError(

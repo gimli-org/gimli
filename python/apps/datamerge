@@ -16,6 +16,7 @@ except ImportError:
                      ' Ensure that pygimli is in your PYTHONPATH')
     sys.exit(1)
 
+
 def merge(data1, data2, ContainerType=pg.DataContainer, snap=0.001):
     """
         Merge two datacontainers into one by copying the sensor positions
@@ -26,7 +27,9 @@ def merge(data1, data2, ContainerType=pg.DataContainer, snap=0.001):
     data.add(data2, snap)
     return data
 
-def loadProjectFile(projectfile, ContainerType=pg.DataContainer, verbose=False):
+
+def loadProjectFile(
+        projectfile, ContainerType=pg.DataContainer, verbose=False):
     """
         A project file defines how multiple data files can be imported and
         merged.
@@ -63,7 +66,7 @@ def loadProjectFile(projectfile, ContainerType=pg.DataContainer, verbose=False):
         if len(row) > 0 and row[0] != '#':
             if len(row) == 1:  # filename only
                 d = ContainerType(row[0])
-            elif len(row) == 2: # dataFilename interpolationFilename
+            elif len(row) == 2:  # dataFilename interpolationFilename
                 # Thomas?? ist das von dir?? was macht das
                 # kommt mir nur vage bekannt vor, benutzt aber extra-File
                 d = ContainerType(row[0])
@@ -86,7 +89,8 @@ def loadProjectFile(projectfile, ContainerType=pg.DataContainer, verbose=False):
                 end = pg.RVector3(float(row[2]), 0.0)
 
                 for i in range(d.sensorCount()):
-                    pos = start + float(i)*(end-start)/(d.sensorCount() - 1.)
+                    pos = start + \
+                        float(i) * (end - start) / (d.sensorCount() - 1.)
                     d.setSensorPosition(i, pos)
 
             elif len(row) == 5:  # filename xstart ystart xend yend
@@ -96,17 +100,23 @@ def loadProjectFile(projectfile, ContainerType=pg.DataContainer, verbose=False):
                 end = pg.RVector3(float(row[3]), float(row[4]))
 
                 for i in range(d.sensorCount()):
-                    pos = start + float(i)*(end-start)/(d.sensorCount() - 1.)
+                    pos = start + \
+                        float(i) * (end - start) / (d.sensorCount() - 1.)
                     d.setSensorPosition(i, pos)
-            elif not len(row) % 2 is 0: #dataFilename x1 y1 x2 y2 x3 y3 ...
+            elif not len(row) % 2 is 0:  # dataFilename x1 y1 x2 y2 x3 y3 ...
                 d = ContainerType(row[0])
 
                 raise ('toimpl')
-                start = pg.RVector3(float(row[1]), float(row[2]), float(row[3]))
+                start = pg.RVector3(
+                    float(
+                        row[1]), float(
+                        row[2]), float(
+                        row[3]))
                 end = pg.RVector3(float(row[4]), float(row[5]), float(row[6]))
 
                 for i in range(d.sensorCount()):
-                    pos = start + float(i)*(end-start)/(d.sensorCount() - 1.)
+                    pos = start + \
+                        float(i) * (end - start) / (d.sensorCount() - 1.)
                     d.setSensorPosition(i, pos)
             else:
                 print(("cannot interpret the project format: len(row) = ",
@@ -117,18 +127,19 @@ def loadProjectFile(projectfile, ContainerType=pg.DataContainer, verbose=False):
 
             if verbose:
                 print(("append: ", d))
-                print(("from:" , d.sensorPositions()[ 0 ],
-                       "to:", d.sensorPositions()[ -1 ]))
+                print(("from:", d.sensorPositions()[0],
+                       "to:", d.sensorPositions()[-1]))
 
     return dataList
+
 
 def main(argv):
 
     import argparse
 
     parser = argparse.ArgumentParser(
-                formatter_class=argparse.RawDescriptionHelpFormatter,
-                description=trimDocString(loadProjectFile.__doc__))
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=trimDocString(loadProjectFile.__doc__))
 
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
                         help="Be verbose.")
@@ -166,7 +177,7 @@ def main(argv):
                                ContainerTyp,
                                verbose=args.verbose)
 
-    outdata  = dataList[0]
+    outdata = dataList[0]
 
     if args.verbose:
         print("start merging ...")

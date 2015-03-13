@@ -13,13 +13,16 @@ from functools import reduce
 import sys
 import traceback
 import codecs
-  
+
+
 class doxygen_doc_extractor:
+
     """
     Extracts Doxygen styled documentation from source or generates it from description.
     """
+
     def __init__(self):
-        #for caching source
+        # for caching source
         self.file_name = None
         self.source = None
         self.hasError = False
@@ -27,25 +30,27 @@ class doxygen_doc_extractor:
 
     def __call__(self, declaration):
         doc_lines = []
-        
+
         try:
             if self.file_name != declaration.location.file_name:
                 self.file_name = declaration.location.file_name
-                self.source = open(declaration.location.file_name, encoding='utf-8').readlines()
+                self.source = open(
+                    declaration.location.file_name,
+                    encoding='utf-8').readlines()
             find_block_end = False
-            
+
             # search backward until file begin
-            for lcount in range(declaration.location.line-2, -1, -1):
+            for lcount in range(declaration.location.line - 2, -1, -1):
                 line = self.source[lcount]
 
                 if not find_block_end:
                     try:
-                        #CR print line.rstrip()[-2:]
+                        # CR print line.rstrip()[-2:]
                         if line.rstrip()[-2:] == "*/":
                             find_block_end = True
                     except Exception as e:
                         if not self.hasError:
-                            print('*'*100)
+                            print('*' * 100)
                             print(e)
                             print(line)
                             self.hasError = True
@@ -58,7 +63,7 @@ class doxygen_doc_extractor:
                     except Exception as e:
                         if not self.hasError:
                             self.hasError = True
-                            print('*'*100)
+                            print('*' * 100)
                             print(e)
                             print(line)
                         pass
@@ -73,14 +78,19 @@ class doxygen_doc_extractor:
             if not self.hasError:
                 traceback.print_exc(file=sys.stdout)
                 self.hasError = True
-                print('*'*100)
+                print('*' * 100)
                 print(e)
                 print(self.file_name)
             pass
         finally:
             if len(doc_lines) > 0:
-                final_doc_lines = [ line.replace("\n","\\n") for line in doc_lines[:-1] ]
-                final_doc_lines.append(doc_lines[-1].replace("\n",""))
+                final_doc_lines = [
+                    line.replace(
+                        "\n",
+                        "\\n") for line in doc_lines[
+                        :-
+                        1]]
+                final_doc_lines.append(doc_lines[-1].replace("\n", ""))
                 return '\"' + ''.join(final_doc_lines) + '\"'
             else:
                 return '\"\"'
@@ -90,39 +100,40 @@ class doxygen_doc_extractor:
         """
         Replace */! by space and \brief, @fn, \param, etc
         """
-        #CR: add
-        def clean ( _str, sym, change2=""):
+        # CR: add
+        def clean(_str, sym, change2=""):
             return _str.replace(sym, change2)
 
-        #CR: add '\r\n'
-        #tmp_str = reduce(clean, [tmp_str, "\r\n", '/','*','!',
-                                 #"\\brief","@brief","\\fn","@fn",
-                                 #"\\ref","@ref", "\"", "\'", "\\c"])
+        # CR: add '\r\n'
+        # tmp_str = reduce(clean, [tmp_str, "\r\n", '/','*','!',
+            #"\\brief","@brief","\\fn","@fn",
+            #"\\ref","@ref", "\"", "\'", "\\c"])
 
         for sym in ['/', "\r\n", '/', '*', '!', "\\brief", "@brief",
                     "\\fn", "@fn", "\\ref", "@ref", "\"", "\'", "\\c"]:
             tmp_str = clean(tmp_str, sym)
-        
+
         tmp_str = clean(tmp_str, '\\', '')
-        
-        #commands list taken form : http://www.stack.nl/~dimitri/doxygen/commands.html
+
+        # commands list taken form :
+        # http://www.stack.nl/~dimitri/doxygen/commands.html
         replacement_list = [
-#           "a",
+            #           "a",
             "addindex",
             "addtogroup",
             "anchor",
             "arg",
             "attention",
             "author",
-#           "b",
-#           "brief",
+            #           "b",
+            #           "brief",
             "bug",
-#           "c",
+            #           "c",
             "callgraph",
             "callergraph",
             "category",
             "class",
-            ("code","[Code]"),
+            ("code", "[Code]"),
             "cond",
             "copybrief",
             "copydetails",
@@ -134,15 +145,15 @@ class doxygen_doc_extractor:
             "details",
             "dir",
             "dontinclude",
-            ("dot","[Dot]"),
+            ("dot", "[Dot]"),
             "dotfile",
             "e",
             "else",
             "elseif",
             "em",
-            ("endcode","[/Code]"),
+            ("endcode", "[/Code]"),
             "endcond",
-            ("enddot","[/Dot]"),
+            ("enddot", "[/Dot]"),
             "endhtmlonly",
             "endif",
             "endlatexonly",
@@ -161,7 +172,7 @@ class doxygen_doc_extractor:
             "f{",
             "f}",
             "file",
-#           "fn",
+            #           "fn",
             "headerfile",
             "hideinitializer",
             "htmlinclude",
@@ -184,13 +195,13 @@ class doxygen_doc_extractor:
             "manonly",
             "memberof",
             "msc",
-#           "n",
+            #           "n",
             "name",
             "namespace",
             "nosubgrouping",
             "note",
             "overload",
-#           "p",
+            #           "p",
             "package",
             "page",
             "par",
@@ -198,15 +209,15 @@ class doxygen_doc_extractor:
             "param",
             "post",
             "pre",
-#           "private (PHP only)",
-#           "privatesection (PHP only)",
+            #           "private (PHP only)",
+            #           "privatesection (PHP only)",
             "property",
-#           "protected (PHP only)",
-#           "protectedsection (PHP only)",
+            #           "protected (PHP only)",
+            #           "protectedsection (PHP only)",
             "protocol",
-#           "public (PHP only)",
-#           "publicsection (PHP only)",
-#           "ref",
+            #           "public (PHP only)",
+            #           "publicsection (PHP only)",
+            #           "ref",
             "relates",
             "relatesalso",
             "remarks",
@@ -225,7 +236,7 @@ class doxygen_doc_extractor:
             "subsubsection",
             "test",
             "throw",
-            ("todo","TODO"),
+            ("todo", "TODO"),
             "tparam",
             "typedef",
             "union",
@@ -238,28 +249,28 @@ class doxygen_doc_extractor:
             "weakgroup",
             "xmlonly",
             "xrefitem",
-#           "$",
-#           "@",
-#           "\",
-#           "&",
-#           "~",
-#           "<",
-#           ">",
-#           "#",
-#           "%",
-            ]
+            #           "$",
+            #           "@",
+            #           "\",
+            #           "&",
+            #           "~",
+            #           "<",
+            #           ">",
+            #           "#",
+            #           "%",
+        ]
 
         for command in replacement_list:
             try:
-                old,new = command
+                old, new = command
             except ValueError:
                 old = command
-                new = command.capitalize()+":"
-            tmp_str = clean(tmp_str, "@"+old, new)
-            tmp_str = clean(tmp_str, "\\"+old, new)
+                new = command.capitalize() + ":"
+            tmp_str = clean(tmp_str, "@" + old, new)
+            tmp_str = clean(tmp_str, "\\" + old, new)
 
         return tmp_str.lstrip()
-    #clean_str()
+    # clean_str()
 
     def is_code(self, tmp_str):
         """
@@ -271,6 +282,6 @@ class doxygen_doc_extractor:
         except:
             pass
         return False
-    #is_code()
+    # is_code()
 
-#class doxygen_doc_extractor
+# class doxygen_doc_extractor

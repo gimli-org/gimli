@@ -11,4 +11,4 @@ from . traveltime import Refraction
 #from . gravimetry import *
 #from . seismics import *
 
-__all__ = ["FDEMData, TDEMData, MRS, SIPSpectrum, Refraction"]
+__all__ = [FDEMData, TDEMData, MRS, SIPSpectrum, Refraction]

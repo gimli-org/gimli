@@ -9,10 +9,13 @@ Copyright (C) 2009-2014 Thomas Gnther <thomas@resistivty.net>
 License - noch nicht entschieden -
 """
 
-import sys, os
+import sys
+import os
+
 
 class WorkSpace:
-    activeResource = None;
+    activeResource = None
+
     def __init__(self):
         None
 
@@ -25,14 +28,15 @@ if not hasattr(sys, "frozen"):
         sys.stderr.write('''ERROR: cannot import the library 'pygimli'.''')
         sys.exit(1)
 
+
 def start():
     from pygimli.gui import main
-    
+
     global ws
     ws = WorkSpace()
 
     app = main.PyGIMLIApp(ws=ws)
     app.start()
-    
+
 if __name__ == '__main__':
     start()

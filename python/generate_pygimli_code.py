@@ -127,7 +127,7 @@ class docExtractor(doc_extractor_i):
         # return ""Doku here""
 
     def escape_doc(self, doc):
-        return '"'+doc+'"'
+        return '"' + doc + '"'
 
     def extract(self, decl):
         print(decl.location.file_name)
@@ -137,25 +137,25 @@ class docExtractor(doc_extractor_i):
 
 
 def generate(defined_symbols, extraIncludes):
-#    messages.disable(
-# messages.W1005 # using a non public variable type for argucments or returns
-# Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-# , messages.W1009 # check this
-# , messages.W1014 # check this
-#        , messages.W1020
-#        , messages.W1021
-#        , messages.W1022
-#        , messages.W1023
-#        , messages.W1024
-#        , messages.W1025
-#        , messages.W1026
-#        , messages.W1027
-#        , messages.W1028
-#        , messages.W1029
-#        , messages.W1030
-#        , messages.W1031
-# , messages.W1036 # check this
-#)
+    #    messages.disable(
+    # messages.W1005 # using a non public variable type for argucments or returns
+    # Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+    # , messages.W1009 # check this
+    # , messages.W1014 # check this
+    #        , messages.W1020
+    #        , messages.W1021
+    #        , messages.W1022
+    #        , messages.W1023
+    #        , messages.W1024
+    #        , messages.W1025
+    #        , messages.W1026
+    #        , messages.W1027
+    #        , messages.W1028
+    #        , messages.W1029
+    #        , messages.W1030
+    #        , messages.W1031
+    # , messages.W1036 # check this
+    #)
 
     print("Install SRC:  ", os.path.abspath(__file__))
     print("Execute from: ", os.getcwd())
@@ -179,7 +179,8 @@ def generate(defined_symbols, extraIncludes):
 
     defines = ['PYGIMLI_GCCXML', 'HAVE_BOOST_THREAD_HPP']
 
-    if platform.architecture()[0] == '64bit' and platform.system() == 'Windows':
+    if platform.architecture()[
+            0] == '64bit' and platform.system() == 'Windows':
 
         if sys.platform == 'darwin':
             pass
@@ -204,7 +205,7 @@ def generate(defined_symbols, extraIncludes):
         else:
             gccxmlpath = settings.gccxml_path
     except Exception as e:
-        print (str(e))
+        print(str(e))
         raise Exception("Problems determine gccxml binary")
 
     settings.includesPaths.insert(0, os.path.abspath(extraIncludes))
@@ -238,7 +239,7 @@ def generate(defined_symbols, extraIncludes):
         'register_pytuple_to_rvector3_conversion',
         'register_pysequence_to_rvector_conversion',
         'register_pysequence_to_StdVectorRVector3_conversion'
-        ]
+    ]
 
     for converter in rvalue_converters:
         mb.add_declaration_code('void %s();' % converter)
@@ -303,7 +304,7 @@ def generate(defined_symbols, extraIncludes):
             'abs',
             'type'])
 
-    exclude(main_ns.free_operators,    name=[''],
+    exclude(main_ns.free_operators, name=[''],
             return_type=['::std::ostream &', '::std::istream &'])
 
     exclude(
@@ -335,21 +336,21 @@ def generate(defined_symbols, extraIncludes):
             'val'],
         return_type=[''])
 
-    exclude(main_ns.member_operators,  symbol=[''])
+    exclude(main_ns.member_operators, symbol=[''])
 
     mb.calldefs(access_type_matcher_t('protected')).exclude()
     mb.calldefs(access_type_matcher_t('private')).exclude()
 
     # setMemberFunctionCallPolicieByReturn(mb, [ '::GIMLI::Node &'
-                                                #, '::GIMLI::Cell &'
-                                                #, '::GIMLI::Boundary &'
-                                                #, '::GIMLI::Shape &'
-                                                #, '::GIMLI::Node *'
-                                                #, '::GIMLI::Cell *'
-                                                #, '::GIMLI::Boundary *'
-                                                #, '::GIMLI::Shape *'
-                                        #]
-                                        #, call_policies.reference_existing_object)
+    #, '::GIMLI::Cell &'
+    #, '::GIMLI::Boundary &'
+    #, '::GIMLI::Shape &'
+    #, '::GIMLI::Node *'
+    #, '::GIMLI::Cell *'
+    #, '::GIMLI::Boundary *'
+    #, '::GIMLI::Shape *'
+    #]
+    #, call_policies.reference_existing_object)
 
     setMemberFunctionCallPolicieByReturn(
         mb,
@@ -372,26 +373,26 @@ def generate(defined_symbols, extraIncludes):
                                               ], call_policies.return_by_value)
 
     # setMemberFunctionCallPolicieByReturn(mb, ['::GIMLI::VectorIterator<double> &']
-                                        #, call_policies.copy_const_reference)
+    #, call_policies.copy_const_reference)
     # setMemberFunctionCallPolicieByReturn(mb, [
-                                                #,  'double &' ]
-                                                #, call_policies.reference_existing_object)
+    #,  'double &' ]
+    #, call_policies.reference_existing_object)
 
     # call_policies.return_value_policy(call_policies.reference_existing_object)
     # call_policies.return_value_policy(call_policies.copy_non_const_reference)
     # call_policies.return_value_policy(call_policies.copy_const_reference)
 
-     # addAutoConversions(mb)
+    # addAutoConversions(mb)
 
    # excludeMemberByReturn(main_ns, ['::DCFEMLib::SparseMatrix<double> &'])
     #main_ns.classes(decl_starts_with(['STLMatrix']), allow_empty=True).exclude()
     #fun = mb.global_ns.member_functions('begin', allow_empty=True)
     # for f in fun:
-        # f.exclude()
+    # f.exclude()
 
     # excludeFreeFunctionsByName(main_ns, ['strReplaceBlankWithUnderscore'
-                               #'toStr', 'toInt', 'toFloat', 'toDouble',
-                               #'getRowSubstrings', 'getNonEmptyRow', 'getSubstrings' ])
+    #'toStr', 'toInt', 'toFloat', 'toDouble',
+    #'getRowSubstrings', 'getNonEmptyRow', 'getSubstrings' ])
 
     #excludeFreeFunctionsByReturn(main_ns, [ 'float *', 'float &' ])
     #fun = ns.free_operators(return_type=funct, allow_empty=True)
@@ -419,7 +420,7 @@ def generate(defined_symbols, extraIncludes):
                 # mem_fun.call_policies = \
                 #    call_policies.return_value_policy(call_policies.return_opaque_pointer)
                 # mem_fun.call_policies = \
-                 #   call_policies.return_value_policy(call_policies.copy_non_const_reference)
+                #   call_policies.return_value_policy(call_policies.copy_non_const_reference)
 
     # Now it is the time to give a name to our module
     from doxygen import doxygen_doc_extractor
@@ -469,9 +470,9 @@ if __name__ == '__main__':
 
     #(options, args) = optionParser.parse_args()
     # if options.gccxml:
-        #settings.gccxml_path = options.gccxml
+    #settings.gccxml_path = options.gccxml
 
     # if options.extraPath:
-        # sys.path.append(options.extraPath)
+    # sys.path.append(options.extraPath)
 
     generate(defined_symbols, options.extraIncludes)

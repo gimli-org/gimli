@@ -19,12 +19,18 @@ except ImportError:
         Ensure that pygimli is in your PYTHONPATH """)
     sys.exit(1)
 
+
 def main(argv):
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mesh")
-    parser.add_option("-v", "--verbose", dest="verbose", action="store_true"
-                            , help="be verbose", default=False)
+    parser.add_option(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        action="store_true",
+        help="be verbose",
+        default=False)
     parser.add_option("-o", "--output", dest="outFileName", metavar="File",
                       help="filename for the resulting mesh")
     parser.add_option("-p", "--paramesh", dest="paraMesh", metavar="File",
@@ -43,7 +49,7 @@ def main(argv):
         meshname = args[0]
 
     mesh = g.Mesh(meshname)
-    
+
     if options.verbose:
         print("input mesh:", mesh)
         print("nModel(input):")
@@ -60,18 +66,18 @@ def main(argv):
     refModel = g.unique(g.sort(refPara.cellMarker()))
     if options.verbose:
         print("reference mesh:", refPara)
-        print("nModel(ref):", len(refModel), refModel[0] , refModel[1], 
+        print("nModel(ref):", len(refModel), refModel[0], refModel[1],
               refModel[2], '...', refModel[-1])
-    
+
     swatch = g.Stopwatch(True)
     lastTime = 0
     for c in mesh.cells():
         cell = refPara.findCell(c.center(), False)
-        
+
         if swatch.duration() - lastTime > 1:
             print("\r", c.id())
             lastTime = swatch.duration()
-        
+
         if cell is not None:
             c.setMarker(cell.marker())
         else:
@@ -79,24 +85,24 @@ def main(argv):
             c.setMarker(-1)
 
     newModel = g.unique(g.sort(mesh.cellMarker()))
-    
+
     if options.verbose:
         print("convert:", swatch.duration())
         print("nModel(out):", len(newModel), newModel[0], newModel[1],
-              newModel[2], ' ... ' , newModel[-1])
-        print("diff should be 1(background)", len(newModel) -len(refModel))
+              newModel[2], ' ... ', newModel[-1])
+        print("diff should be 1(background)", len(newModel) - len(refModel))
 
     missing = g.stdVectorI()
     missingMesh = g.Mesh()
     for i in refModel:
-        if i-1 not in newModel:
-            for c in refPara.findCellByMarker(i-1):
+        if i - 1 not in newModel:
+            for c in refPara.findCellByMarker(i - 1):
                 missing.append(c.id())
     print(len(missing), missing)
-    
+
     missingMesh.createMeshByCellIdx(refPara, missing)
     missingMesh.exportVTK('missing')
-    
+
     if options.outFileName:
         mesh.save(options.outFileName)
         if options.verbose:

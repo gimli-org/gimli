@@ -61,21 +61,36 @@ def main(argv):
                           version="%prog: " + g.__version__)
 
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,
-                        help="Be verbose.")
-    parser.add_option("-s", "--sensMatrix", dest = "sensMatrix", metavar = "File", default = 'sens.bmat'
-                            , help = "Sensitivity matrix")
-    parser.add_option("-i", "--dataId", dest = "id", type = int, default = -1
-                            , help = "Export the data for the given id. -1 for all data.")
+                      help="Be verbose.")
+    parser.add_option(
+        "-s",
+        "--sensMatrix",
+        dest="sensMatrix",
+        metavar="File",
+        default='sens.bmat',
+        help="Sensitivity matrix")
+    parser.add_option(
+        "-i",
+        "--dataId",
+        dest="id",
+        type=int,
+        default=-1,
+        help="Export the data for the given id. -1 for all data.")
 
-    parser.add_option("-t", "--tolerance", dest = "tolerance", type = float, default = 1e-5
-                            , help = "Tolerance for Data preparation")
+    parser.add_option(
+        "-t",
+        "--tolerance",
+        dest="tolerance",
+        type=float,
+        default=1e-5,
+        help="Tolerance for Data preparation")
     parser.add_option("-o", "--outFilename", metavar="File", dest="outFilename", default="sens",
-                        help="Set output filename [sens]")
+                      help="Set output filename [sens]")
     parser.add_option("", "--save", dest="save", action="store_true",
-                        default=False,
-                        help="Save single sensitivity vector.")
+                      default=False,
+                      help="Save single sensitivity vector.")
     parser.add_option("", "--save-to", metavar="PATH", dest="saveTo", default='.',
-                        help="Save single sensitivity vector into a given path. [.]")
+                      help="Save single sensitivity vector into a given path. [.]")
 
     (options, args) = parser.parse_args()
 
@@ -89,11 +104,11 @@ def main(argv):
     if options.verbose:
         print("meshfile =", meshfile)
         print("sensMatrix =", options.sensMatrix)
-        print("out=",  options.outFilename)
+        print("out=", options.outFilename)
         print("ith.", options.id)
-        print("tol=",  options.tolerance)
-        print("save=",  options.save)
-        print("saveTo=",  options.saveTo)
+        print("tol=", options.tolerance)
+        print("save=", options.save)
+        print("saveTo=", options.saveTo)
 
     if options.saveTo is not '.':
         options.save = True

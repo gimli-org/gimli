@@ -31,10 +31,10 @@ print(ag[fn])
 print(ag[bn])
 
 #%% mixed access
-print(ag(bn)) # would be nice ........... TODO need entry in custom_rvalue.cpp
-print(an[bg]) # could be possible as well .......... TODO need entry in hand_made_wrappers.py
+print(ag(bn))  # would be nice ........... TODO need entry in custom_rvalue.cpp
+# could be possible as well .......... TODO need entry in hand_made_wrappers.py
+print(an[bg])
 
 #%% mixed indexing
-print(np.nonzero(bg)) #  yields empty result
-print(pg.find(bn)) # breaks
-
+print(np.nonzero(bg))  # yields empty result
+print(pg.find(bn))  # breaks

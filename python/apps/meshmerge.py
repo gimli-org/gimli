@@ -21,7 +21,7 @@ def main(argv):
 
     (options, args) = parser.parse_args()
 
-    if len( args ) < 2:
+    if len(args) < 2:
         parser.print_help()
         print("Please add a mesh or model name.")
         sys.exit(2)
@@ -31,7 +31,8 @@ def main(argv):
 
     (outfileBody, fileExtension) = os.path.splitext(options.outFileName)
 
-    #  2d should default here, since most users will merge 2d meshes. for 3d we need an option here->Ca
+    # 2d should default here, since most users will merge 2d meshes. for 3d we
+    # need an option here->Ca
     m1 = pg.Mesh(2)
     m1.load(meshname1)
     m2 = pg.Mesh(2)
