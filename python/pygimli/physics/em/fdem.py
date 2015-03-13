@@ -19,10 +19,12 @@ except ImportError:
 
 
 class NDMatrix(pg.RBlockMatrix):
+
     """
     Diagonal block (block-Jacobi) matrix derived from pg.BlockMatrix
     (to be moved to a better place at a later stage)
     """
+
     def __init__(self, num, nrows, ncols):
         super(type(self), self).__init__()  # call inherited init function
         self.Ji = []  # list of individual block matrices
@@ -30,7 +32,7 @@ class NDMatrix(pg.RBlockMatrix):
             self.Ji.append(pg.RMatrix())
             self.Ji[-1].resize(nrows, ncols)
             n = self.addMatrix(self.Ji[-1])
-            self.addMatrixEntry(n, nrows*i, ncols*i)
+            self.addMatrixEntry(n, nrows * i, ncols * i)
 
         self.recalcMatrixSize()
         print(self.rows(), self.cols())
@@ -43,7 +45,7 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
     ax.set_ylim(plt.ylim()[::-1])
     ax.set_xticks(nt)
     ax.set_xticklabels(["%g" % xi for xi in x[nt]])
-    ax.set_yticks(list(range(0, len(freq)+1, 2)))
+    ax.set_yticks(list(range(0, len(freq) + 1, 2)))
     ax.set_yticklabels(["%g" % freq[i] for i in range(0, len(freq), 2)])
     ax.set_xlabel('x [m]')
     ax.set_ylabel('f [Hz]')
@@ -52,7 +54,9 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
 
 
 class FDEM2dFOPold(pg.ModellingBase):
+
     """ old variant of 2D FOP (to be deleted) """
+
     def __init__(self, data, nlay=2, verbose=False):
         """ constructor with data and (optionally) number of layers """
         pg.ModellingBase.__init__(self, verbose)
@@ -60,12 +64,12 @@ class FDEM2dFOPold(pg.ModellingBase):
         self.FOP1d = data.FOP(nlay)
         self.nx = len(data.x)
         self.nf = len(data.freq())
-        self.mesh_ = pg.createMesh1D(self.nx, 2*nlay-1)
+        self.mesh_ = pg.createMesh1D(self.nx, 2 * nlay - 1)
         self.setMesh(self.mesh_)
 
     def response(self, model):
         """ yields forward model response """
-        modA = np.asarray(model).reshape((self.nlay*2-1, self.nx)).T
+        modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
         resp = pg.RVector(0)
         for modi in modA:
             resp = pg.cat(resp, self.FOP1d.response(modi))
@@ -74,7 +78,9 @@ class FDEM2dFOPold(pg.ModellingBase):
 
 
 class FDEM2dFOP(pg.ModellingBase):
+
     """ FDEM 2d-LCI modelling class based on BlockMatrices """
+
     def __init__(self, data, nlay=2, verbose=False):
         """ Parameters: FDEM data class and number of layers """
         super(FDEM2dFOP, self).__init__(verbose)
@@ -84,7 +90,7 @@ class FDEM2dFOP(pg.ModellingBase):
         self.nf = len(data.freq())
         npar = 2 * nlay - 1
         self.mesh1d = pg.createMesh1D(self.nx, npar)
-        self.mesh_ = pg.createMesh1D(self.nx, 2*nlay-1)
+        self.mesh_ = pg.createMesh1D(self.nx, 2 * nlay - 1)
         self.setMesh(self.mesh_)
 
         # self.J = NDMatrix(self.nx, self.nf*2, npar)
@@ -92,16 +98,16 @@ class FDEM2dFOP(pg.ModellingBase):
         self.FOP1d = []
         for i in range(self.nx):
             self.FOP1d.append(pg.FDEM1dModelling(nlay, data.freq(),
-                              data.coilSpacing, -data.height))
+                                                 data.coilSpacing, -data.height))
             n = self.J.addMatrix(self.FOP1d[-1].jacobian())
-            self.J.addMatrixEntry(n, self.nf*2*i, npar*i)
+            self.J.addMatrixEntry(n, self.nf * 2 * i, npar * i)
 
         self.J.recalcMatrixSize()
         print(self.J.rows(), self.J.cols())
 
     def response(self, model):
         """ cut-together forward responses of all soundings """
-        modA = np.asarray(model).reshape((self.nlay*2-1, self.nx)).T
+        modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
         resp = pg.RVector(0)
         for modi in modA:
             resp = pg.cat(resp, self.FOP.response(modi))
@@ -109,33 +115,37 @@ class FDEM2dFOP(pg.ModellingBase):
         return resp
 
     def createJacobian(self, model):
-        modA = np.asarray(model).reshape((self.nlay*2-1, self.nx)).T
+        modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
         for i in range(self.nx):
             self.FOP1d[i].createJacobian(modA[i])
 
 
 class HEM1dWithElevation(pg.ModellingBase):
+
     """
     Airborne FDEM modelling including variable bird height
     """
+
     def __init__(self, frequencies, coilspacing, nlay=2, verbose=False):
         """ Set up class by frequencies and geometries """
         pg.ModellingBase.__init__(self, verbose)
         self.nlay_ = nlay  # real layers (actually one more!)
-        self.FOP_ = pg.FDEM1dModelling(nlay+1, frequencies, coilspacing, 0.0)
+        self.FOP_ = pg.FDEM1dModelling(nlay + 1, frequencies, coilspacing, 0.0)
         self.mesh_ = pg.createMesh1D(nlay, 2)  # thicknesses and resistivities
         self.mesh_.cell(0).setMarker(2)
         self.setMesh(self.mesh_)
 
     def response(self, model):
         thk = model(0, self.nlay)  # all thicknesses including bird height
-        res = model(self.nlay-1, self.nlay*2)
+        res = model(self.nlay - 1, self.nlay * 2)
         res[0] = 10000.
         return self.FOP_.response(pg.cat(thk, res))
 
 
 class FDEMData():
+
     """ Class for managing Frequency Domain EM data and their inversions """
+
     def __init__(self, x=None, freqs=None,
                  coilSpacing=None, inphase=None, outphase=None,
                  filename=None, scaleFreeAir=False):
@@ -274,8 +284,20 @@ class FDEMData():
                                  comments='/', unpack=True)
         utm = Proj(proj='utm', zone=32, ellps='WGS84')  # projection
         x, y = utm(lon, lat)
-        IP = np.loadtxt(filename, skiprows=sr, usecols=ivcp*2+11, comments='/')
-        OP = np.loadtxt(filename, skiprows=sr, usecols=ivcp*2+12, comments='/')
+        IP = np.loadtxt(
+            filename,
+            skiprows=sr,
+            usecols=ivcp *
+            2 +
+            11,
+            comments='/')
+        OP = np.loadtxt(
+            filename,
+            skiprows=sr,
+            usecols=ivcp *
+            2 +
+            12,
+            comments='/')
         # better do a decimation or running average here
         self.IP = IP[::takeevery, :]
         self.OP = OP[::takeevery, :]
@@ -300,7 +322,7 @@ class FDEMData():
                 pass
 #                self.coilSpacing = float(aline.replace(':', ': ').split()[-2])
             elif aline.find('FREQ') > 0:  # [:6] == '/ FREQ':
-                mya = aline[aline.find(':')+1:].replace(',', ' ').split()
+                mya = aline[aline.find(':') + 1:].replace(',', ' ').split()
                 myf = [float(aa) for aa in mya if aa[0].isdigit()]
                 self.frequencies = np.array(myf)
 
@@ -315,7 +337,8 @@ class FDEMData():
         if verbose:
             print("delim=", delim, "nf=", nf)
         A = np.loadtxt(filename, skiprows=i, delimiter=delim, comments='/').T
-        x, y, self.IP, self.OP = A[0], A[1], A[2:nf*2+2:2].T, A[3:nf*2+2:2].T
+        x, y, self.IP, self.OP = A[0], A[1], A[
+            2:nf * 2 + 2:2].T, A[3:nf * 2 + 2:2].T
         if max(x) == min(x):
             self.x = y
         else:
@@ -323,7 +346,7 @@ class FDEMData():
 
     def deactivate(self, fr):
         """ Deactivate a single frequency """
-        fi = np.nonzero(np.absolute(self.frequencies/fr - 1.) < 0.1)
+        fi = np.nonzero(np.absolute(self.frequencies / fr - 1.) < 0.1)
         self.isActiveFreq[fi] = False
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
 
@@ -457,10 +480,10 @@ class FDEMData():
             model = pg.RVector(nlay * 2 - 1, stmod)
             model[0] = 2.
         else:
-            if len(stmod) == nlay*2-1:
+            if len(stmod) == nlay * 2 - 1:
                 model = pg.asvector(stmod)
             else:
-                model = pg.RVector(nlay*2-1, 30.)
+                model = pg.RVector(nlay * 2 - 1, 30.)
 
         self.inv.setAbsoluteError(noiseVec)
         self.inv.setLambda(lam)
@@ -493,7 +516,7 @@ class FDEMData():
         if error is not None:
             markersize = 2
 
-        ipax.semilogy(ip, fr, marker, label='obs'+addlabel,
+        ipax.semilogy(ip, fr, marker, label='obs' + addlabel,
                       markersize=markersize)
 
         if error is not None and len(error) == len(ip):
@@ -521,7 +544,7 @@ class FDEMData():
         else:
             opax = ax[-1]
 
-        opax.semilogy(op, fr, marker, label='obs'+addlabel,
+        opax.semilogy(op, fr, marker, label='obs' + addlabel,
                       markersize=markersize)
 
         if error is not None and len(error) == len(ip):
@@ -529,7 +552,7 @@ class FDEMData():
 
         if response is not None:
             rop = np.asarray(response)[len(ip):]
-            opax.semilogy(rop, fr, rmarker, label='syn'+addlabel)
+            opax.semilogy(rop, fr, rmarker, label='syn' + addlabel)
 
 #        opax.set_axis('tight')
 
@@ -591,8 +614,8 @@ class FDEMData():
         model = np.asarray(model)
         nlay = (len(model) + 1) / 2
 
-        thk = model[:nlay-1]
-        res = model[nlay-1: 2*nlay-1]
+        thk = model[:nlay - 1]
+        res = model[nlay - 1: 2 * nlay - 1]
 
         drawModel1D(ax[0], thk, res, plotfunction='semilogx')
 
@@ -615,7 +638,7 @@ class FDEMData():
             np = 3
 
         if everyx is None:
-            everyx = len(self.x)/50
+            everyx = len(self.x) / 50
 
         fig, ax = plt.subplots(ncols=1, nrows=np, figsize=figsize)
         xfplot(ax[0], self.IP[:, self.activeFreq], self.x, freq,
@@ -675,10 +698,10 @@ class FDEMData():
         self.tThk = pg.RTransLogLU(thkL, thkU)
         self.tRes = pg.RTransLogLU(resL, resU)
 
-        for i in range(nlay-1):
+        for i in range(nlay - 1):
             self.f2d.region(i).setTransModel(self.tThk)
 
-        for i in range(nlay-1, nlay*2-1):
+        for i in range(nlay - 1, nlay * 2 - 1):
             self.f2d.region(i).setTransModel(self.tRes)
 
         # set constraints
@@ -751,13 +774,13 @@ if __name__ == "__main__":
     fdem = FDEMData(datafile)
     print(fdem)
     fdem.deactivate(56320.)  # do not use highest frequency
-    fdem.plotAllData(outname=name+'-alldata.pdf')
+    fdem.plotAllData(outname=name + '-alldata.pdf')
     INV = fdem.invBlock(xpos=xpos, lam=options.lam, nlay=options.nlay,
                         noise=options.err, verbose=False)
     model = np.asarray(INV.run())
     INV.echoStatus()
-    print("thk = ", model[:nlay-1])
-    print("res = ", model[nlay-1:])
+    print("thk = ", model[:nlay - 1])
+    print("res = ", model[nlay - 1:])
     fig, ax = fdem.showModelAndData(model, xpos, INV.response())
     INV = fdem.inv2D(options.nlay)
     INV.run()

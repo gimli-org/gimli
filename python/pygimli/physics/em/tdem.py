@@ -18,7 +18,8 @@ def rhoafromU(UbyI, t, Tx, Rx=None):
         Rx = Tx  # assume single/coincident loop
 
     mu0 = 4e-7 * np.pi
-    rhoa = (Rx * Tx * mu0 / 20. / UbyI)**(2./3.) * t**(-5./3.) * mu0 / np.pi
+    rhoa = (Rx * Tx * mu0 / 20. / UbyI)**(2. / 3.) * \
+        t**(-5. / 3.) * mu0 / np.pi
     return rhoa
 
 
@@ -28,7 +29,7 @@ def rhoafromB(B, t, Tx, I=1):
     .. math:: \rho_a = ( (A_{Tx}*I*\mu_0 ) / (30B) )^2/3 * 4e-7 / t
     """
     mu0 = 4e-7 * np.pi
-    rhoa = (I * Tx * mu0 / 30. / B)**(2./3.) * mu0 / np.pi / t
+    rhoa = (I * Tx * mu0 / 30. / B)**(2. / 3.) * mu0 / np.pi / t
     return rhoa
 
 
@@ -44,7 +45,7 @@ def get_rhoa(snd, cal=260e-9, corrramp=True):
     istart, istop = 0, len(v)  # default: take all
     mav = np.arange(len(v))[v == max(v)]
     if len(mav) > 1:  # several equal big ones: start after
-        istart = max(mav)+1
+        istart = max(mav) + 1
 
     if min(v) < 0.0:  # negative values: stop at first
         istop = np.argmax(v[20:] < 0.0) + 20
@@ -54,7 +55,7 @@ def get_rhoa(snd, cal=260e-9, corrramp=True):
     if 'ST_DEV' in snd:
         dv = snd['ST_DEV'][istart:istop]  # / snd['CURRENT']
     else:
-        dv = v*0.01
+        dv = v * 0.01
 
     t = snd['TIME'][istart:istop]
     if corrramp and 'RAMP_TIME' in snd:
@@ -65,7 +66,7 @@ def get_rhoa(snd, cal=260e-9, corrramp=True):
     else:
         rhoa = rhoafromU(v, t, Tx, Rx)
 
-    rhoaerr = dv / v * (2./3.)
+    rhoaerr = dv / v * (2. / 3.)
     return rhoa, t, rhoaerr
 
 
@@ -190,7 +191,7 @@ def readSiroTEMData(fname):
         snd['ttype'] = int(header[20])
         # 1=composite, 2=earlytime, 3=standard, 4=highresolution
         snd['CURRENT'] = float(header[17])
-        snd['RAMP_TIME'] = float(header[18])*1e-6
+        snd['RAMP_TIME'] = float(header[18]) * 1e-6
         snd['TIME_DELAY'] = float(header[19])
         snd['LOOP_SIZE'] = float(header[21])
         snd['COIL_SIZE'] = float(header[22])
@@ -203,16 +204,16 @@ def readSiroTEMData(fname):
                 line = line[:-1] + fid.readline()[:-1].replace('\t', '')
 #                aline = line
 
-            nums = [float(el[-7:-2])*10**(float(el[-2:])) for el in
+            nums = [float(el[-7:-2]) * 10**(float(el[-2:])) for el in
                     line[1:-5].split(',')[1:]]
             data.append(np.array(nums))
             line = fid.readline().rstrip('\n').rstrip('\r')
 
         snd['VOLTAGE'] = data[0]
         if snd['ttype'] == 2:  # early time
-            snd['TIME'] = Time_ET[snd['win0']-1:snd['win1']] * 1e-3
+            snd['TIME'] = Time_ET[snd['win0'] - 1:snd['win1']] * 1e-3
         if snd['ttype'] == 3:  # standard time
-            snd['TIME'] = Time_ST[snd['win0']-1:snd['win1']] * 1e-6
+            snd['TIME'] = Time_ST[snd['win0'] - 1:snd['win1']] * 1e-6
 
         snd['ST_DEV'] = data[1]
         if snd['dtype'] > 0:  # normal measurement

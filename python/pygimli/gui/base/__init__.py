@@ -5,4 +5,3 @@
 """
 
 from . base import ManagedProperties, AppResource
-

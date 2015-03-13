@@ -6,4 +6,3 @@
 #from . wxVTKPanel import vtk, wxVTKPanel, AppResourceWxVTK
 
 from . qtVTKPanel import vtk, VTKPanel, AppResourceVTK
-

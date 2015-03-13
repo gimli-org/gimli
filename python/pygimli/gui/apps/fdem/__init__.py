@@ -7,6 +7,6 @@ PluginApplication = FDEMApp
 MainMenuBarNew_Item = '&FDEM\tCtrl+F'
 MainMenuBarNew_ItemHelp = 'Create new FDEM'
 
-MainOpenFileSuffix = [ '.fdem' ]
+MainOpenFileSuffix = ['.fdem']
 MainOpenFileSlot = FDEMApp.openFile
-MainOpenWildcard = [ "fdem file" ]
+MainOpenWildcard = ["fdem file"]

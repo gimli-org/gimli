@@ -21,6 +21,7 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
+
 def autolevel(z, N, logscale=None):
     """
         Create N levels for the data array z based on matplotlib ticker.
@@ -39,6 +40,7 @@ def autolevel(z, N, logscale=None):
     # For line contours, drop levels outside the data range.
     # return lev[(lev > zmin) & (lev < zmax)]
 # def autolevel()
+
 
 def cmapFromName(cmapname, ncols=256, bad=None):
     """
@@ -103,9 +105,9 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', **kwargs):
-    """ 
+    """
     Create a Colobar.
-        
+
     Shortcut to create a matplotlib colorbar within the axes for a given
     patchset.
     """
@@ -143,7 +145,7 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     """ What's that?"""
 
-    #print "setCbarLevels", cMin, cMax
+    # print "setCbarLevels", cMin, cMax
 
     if cMin is None:
         cMin = cbar.get_clim()[0]
@@ -167,7 +169,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     else:
         cbarLevels = np.linspace(cMin, cMax, nLevs)
 
-    #print cbarLevels
+    # print cbarLevels
     cbarLevelsString = []
     for i in cbarLevels:
         if abs(i) == 0.0:
@@ -203,6 +205,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbar.draw_all()
 
+
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     """
         Change the data values for a given mappable.
@@ -210,7 +213,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
 
     data = dataIn
 
-    if type(data) != np.ma.core.MaskedArray:
+    if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
 
     if logScale and data.min() <= 0:
@@ -218,7 +221,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
-        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0 ])
+        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
     if not cMin:
         cMin = data.min()
@@ -233,8 +236,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
         mappable.set_norm(mpl.colors.Normalize())
 
     mappable.set_array(data)
-    #mappable.set_level(10)
+    # mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
+
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """
@@ -266,7 +270,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     if (np.min(C) < 0.) | (np.max(C) > 1.) | (np.max(C) < 0.5):
 
         nn, hh = np.histogram(C, 50)
-        nnn = nn.cumsum(axis = 0) / float(len(C))
+        nnn = nn.cumsum(axis=0) / float(len(C))
 
         #print("min-max nnn ", min(nnn), max(nnn))
         mi = hh[min(np.where(nnn > 0.02)[0])]

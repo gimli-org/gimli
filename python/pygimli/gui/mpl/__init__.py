@@ -3,7 +3,8 @@
     provide matplotlib qt widget
 """
 
-import sys, traceback
+import sys
+import traceback
 
 try:
     from . qtMatplotPanel import MatplotPanel

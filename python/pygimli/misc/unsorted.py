@@ -65,7 +65,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
     isVectorData = False
 
     if hasattr(field[0], '__len__'):
-        if min(field[:, 0]) == max(field[:, 0]) and min(field[:, 1]) == max(field[:, 1]):
+        if min(field[:, 0]) == max(field[:, 0]) and min(
+                field[:, 1]) == max(field[:, 1]):
             raise BaseException(
                 "No data range streamline: min/max == ", min(field[:, 0]))
         vx = pg.RVector(field[:, 0])
@@ -110,7 +111,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
         yd.append(pos[koords[1]])
 
     lastC = c
-    lastU = -direction*1e99
+    lastU = -direction * 1e99
 
     d = None
     while c is not None and len(xd) < maxSteps:
@@ -126,7 +127,10 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
             elif dataMesh:
                 cd = dataMesh.findCell(pos)
                 if cd is None:
-                    raise BaseException("Cannot find " + str(pos) + " dataMesh")
+                    raise BaseException(
+                        "Cannot find " +
+                        str(pos) +
+                        " dataMesh")
                 if len(vx) == dataMesh.cellCount():
                     d = pg.RVector3(vx[cd.id()], vy[cd.id()])
                 else:
@@ -158,7 +162,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
                 break
 
         # * min(1.0, ((startCoord - pos).length()))
-        pos += direction * d/d.length() * dLength
+        pos += direction * d / d.length() * dLength
         c = mesh.findCell(pos, False)
 
         # Change cell here .. set old cell to be processed
@@ -203,7 +207,7 @@ def boundaryPlaneIntersectionLines(boundaries, plane):
         for i, n in enumerate(b.shape().nodes()):
             line = pg.Line(
                 n.pos(), b.shape().node(
-                    (i+1) %
+                    (i + 1) %
                     b.shape().nodeCount()).pos())
             p = plane.intersect(line, 1e-8, True)
             if p.valid():
@@ -263,7 +267,15 @@ def assembleCEM(S, mesh, marker, zi, nodeID=-1, verbose=False):
     if nodeID == -1:
         for b in mesh.findBoundaryByMarker(marker):
             sumArea += b.shape().domainSize()
-        print("addCEM: ", marker, sumArea, 'm^2', zi/sumArea, 'Ohm\n', end=' ')
+        print(
+            "addCEM: ",
+            marker,
+            sumArea,
+            'm^2',
+            zi /
+            sumArea,
+            'Ohm\n',
+            end=' ')
     else:
         sumArea = 1
         print("addCEM: node")
@@ -286,11 +298,11 @@ def assembleCEM(S, mesh, marker, zi, nodeID=-1, verbose=False):
             se /= zi
             mapS += se
 
-        mapS.setVal(oldSize,  oldSize, sumArea / zi)
+        mapS.setVal(oldSize, oldSize, sumArea / zi)
     else:
-        mapS.addVal(nodeID, nodeID,  1.0)
-        mapS.addVal(oldSize, nodeID,  - 1.0)
-        mapS.addVal(nodeID,  oldSize, - 1.0)
-        mapS.addVal(oldSize,  oldSize, 1.0)
+        mapS.addVal(nodeID, nodeID, 1.0)
+        mapS.addVal(oldSize, nodeID, - 1.0)
+        mapS.addVal(nodeID, oldSize, - 1.0)
+        mapS.addVal(oldSize, oldSize, 1.0)
 
     return pg.DSparseMatrix(mapS), sumArea

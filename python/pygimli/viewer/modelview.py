@@ -126,7 +126,7 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
         res = mod1[nlay - 1:]
         RES.extend(res)
 
-        thk = mod1[:nlay-1]
+        thk = mod1[:nlay - 1]
         thk = np.hstack((thk, thk[-1]))
         z = np.hstack((0., np.cumsum(thk)))
         maxz = max(maxz, z[-1])

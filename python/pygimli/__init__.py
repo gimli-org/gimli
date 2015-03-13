@@ -190,10 +190,10 @@ _pygimli_.RVector.__pow__ = __RVectorPower
 ############################
 
 # def __ADD(self, val):
-    #ret = type(self)()
-    # for i, r in enumerate(self):
-        #ret.append(r + val)
-    # return ret
+#ret = type(self)()
+# for i, r in enumerate(self):
+#ret.append(r + val)
+# return ret
 
 #_pygimli_.stdVectorUL.__add__ = __ADD
 
@@ -267,7 +267,7 @@ def __setVal(self, idx, val):
 
 def __getValMatrix(self, idx):
 
-#    print(idx, type(idx))
+    #    print(idx, type(idx))
     if isinstance(idx, slice):
         step = idx.step
         if step is None:
@@ -513,7 +513,7 @@ def asvector(array):
     #r = _pygimli_.RVector(len(arr))
 
     # for i, v in enumerate(arr):
-        #r[i] = v
+    #r[i] = v
 
     # return r
 
@@ -535,8 +535,8 @@ __version__ = _pygimli_.versionStr() + __svnversion__()
 ###########################
 
 # def __interpolate__cmd(self):
-    # print "my interpolate"
-    # return _pygimli_.interpolate_GILsave__
+# print "my interpolate"
+# return _pygimli_.interpolate_GILsave__
 #_pygimli_.interpolate = __interpolate__cmd
 
 _pygimli_.interpolate = _pygimli_.interpolate_GILsave__

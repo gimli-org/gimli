@@ -60,15 +60,15 @@ def drawTravelTimeData(a, data):
 
     # draw shot points
     a.plot(x[[int(i__ - startOffsetIDX) for i__ in shots]],
-           np.zeros(len(shots)) + 8.*yPixel, 'gv', markersize=8)
+           np.zeros(len(shots)) + 8. * yPixel, 'gv', markersize=8)
 
     # draw geophone points
     a.plot(x[[int(i__ - startOffsetIDX) for i__ in geoph]],
-           np.zeros(len(geoph)) + 3.*yPixel, 'r^', markersize=8)
+           np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
 
     a.grid()
-    a.set_ylim([max(data('t')), +16.*yPixel])
-    a.set_xlim([min(x)-5.*xPixel, max(x)+5.*xPixel])
+    a.set_ylim([max(data('t')), +16. * yPixel])
+    a.set_xlim([min(x) - 5. * xPixel, max(x) + 5. * xPixel])
 
     a.set_xlabel('x-Coordinate [m]')
     a.set_ylabel('Traveltime [ms]')

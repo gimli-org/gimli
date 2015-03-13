@@ -81,7 +81,7 @@ def importMaxminData(filename, verbose=False):
             coilspacing = float(aline.split()[-2])
         elif aline.upper().find('FREQ') > 0:  # [:6] == '/ FREQ':
             freq = np.array([float(aa) for aa in aline[aline.find(':') +
-                             1:].replace(',', ' ').split() if aa[0].isdigit()])
+                                                       1:].replace(',', ' ').split() if aa[0].isdigit()])
 
     fid.close()
 
@@ -94,7 +94,7 @@ def importMaxminData(filename, verbose=False):
     if verbose:
         print("delim=", delim, "nf=", nf)
     A = np.loadtxt(filename, skiprows=i, delimiter=delim).T
-    x, IP, OP = A[0], A[2:nf*2+2:2].T, A[3:nf*2+2:2].T
+    x, IP, OP = A[0], A[2:nf * 2 + 2:2].T, A[3:nf * 2 + 2:2].T
 
     return x, freq, coilspacing, IP, OP
 
@@ -174,10 +174,10 @@ class FDEMData():
             model = pg.RVector(nlay * 2 - 1, stmod)
             model[0] = 2.
         else:
-            if len(stmod) == nlay*2-1:
+            if len(stmod) == nlay * 2 - 1:
                 model = pg.asvector(stmod)
             else:
-                model = pg.RVector(nlay*2-1, 30.)
+                model = pg.RVector(nlay * 2 - 1, 30.)
 
         self.inv.setAbsoluteError(noiseVec)
         self.inv.setLambda(lam)
@@ -194,18 +194,18 @@ class FDEMData():
         if ax is None:
             if clf:
                 plt.clf()
-            plt.subplot(1, nv, nv-1)
+            plt.subplot(1, nv, nv - 1)
         else:
             plt.sca(ax[0])
 
-        plt.semilogy(ip, fr, marker, label='obs'+addlabel)
+        plt.semilogy(ip, fr, marker, label='obs' + addlabel)
         plt.axis('tight')
         plt.grid(True)
         plt.xlabel('inphase [%]')
         plt.ylabel('f [Hz]')
         if response is not None:
             rip = np.asarray(response)[:len(ip)]
-            plt.semilogy(rip, fr, rmarker, label='syn'+addlabel)
+            plt.semilogy(rip, fr, rmarker, label='syn' + addlabel)
 
         plt.legend(loc='best')
 
@@ -214,10 +214,10 @@ class FDEMData():
         else:
             plt.sca(ax[1])
 
-        plt.semilogy(op, fr, marker, label='obs'+addlabel)
+        plt.semilogy(op, fr, marker, label='obs' + addlabel)
         if response is not None:
             rop = np.asarray(response)[len(ip):]
-            plt.semilogy(rop, fr, rmarker, label='syn'+addlabel)
+            plt.semilogy(rop, fr, rmarker, label='syn' + addlabel)
 
         plt.axis('tight')
         plt.grid(True)
@@ -231,8 +231,8 @@ class FDEMData():
         plt.clf()
         model = np.asarray(model)
         nlay = (len(model) + 1) / 2
-        thk = model[:nlay-1]
-        res = model[nlay-1:2*nlay-1]
+        thk = model[:nlay - 1]
+        res = model[nlay - 1:2 * nlay - 1]
         ax1 = plt.subplot(131)
         draw1dmodel(res, thk)
         ax2 = plt.subplot(132)
@@ -249,9 +249,9 @@ class FDEMData():
         ax1.imshow(self.IP[:, self.activeFreq].T, interpolation='nearest')
         ax1.set_xticks(nt)
         ax1.set_xticklabels(["%g" % xi for xi in self.x[nt]])
-        ax1.set_yticks(range(0, nf+1, 2))
+        ax1.set_yticks(range(0, nf + 1, 2))
         ax1.set_yticklabels(["%g" % freq[i] for i in range(0, nf, 2)])
-        plt.ylim((-0.5, nf-0.5))
+        plt.ylim((-0.5, nf - 0.5))
         plt.colorbar(orientation=orientation, aspect=30, shrink=0.8)
         plt.xlabel('x [m]')
         plt.ylabel('f [Hz]')
@@ -260,9 +260,9 @@ class FDEMData():
         ax2.imshow(self.OP[:, self.activeFreq].T, interpolation='nearest')
         ax2.set_xticks(nt)
         ax2.set_xticklabels(["%g" % xi for xi in self.x[nt]])
-        ax2.set_yticks(range(0, nf+1, 2))
+        ax2.set_yticks(range(0, nf + 1, 2))
         ax2.set_yticklabels(["%g" % freq[i] for i in range(0, nf, 2)])
-        plt.ylim((-0.5, nf-0.5))
+        plt.ylim((-0.5, nf - 0.5))
         plt.colorbar(orientation=orientation, aspect=30, shrink=0.8)
         plt.xlabel('x [m]')
         plt.ylabel('f [Hz]')

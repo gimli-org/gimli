@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal 
+Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal
 equation :cite:`SunFomel2000`
 
 .. math::
@@ -10,7 +10,7 @@ equation :cite:`SunFomel2000`
     |\grad u(x)| & = f(x) \\\\
     |\grad t| & = s \\\\
     (\grad t)^2 & = s^2
-    
+
 .. error::
     check equation and reference!!!
 
@@ -29,6 +29,7 @@ from pygimli.mplviewer import drawMesh, drawField
 
 import heapq
 
+
 def findSlowness(edge):
     if edge.leftCell() is None:
         slowness = edge.rightCell().attribute()
@@ -39,7 +40,8 @@ def findSlowness(edge):
                        edge.rightCell().attribute())
     return slowness
 # def findSlowness(...)
-    
+
+
 def fastMarch(mesh, downwind, times, upTags, downTags):
 
     upCandidate = []
@@ -63,7 +65,7 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
             cells = node.cellSet()
             for c in cells:
                 for i in range(c.nodeCount()):
-                    edge = pg.findBoundary(c.node(i), c.node((i + 1)%3))
+                    edge = pg.findBoundary(c.node(i), c.node((i + 1) % 3))
 
                     a = edge.node(0)
                     b = edge.node(1)
@@ -85,21 +87,21 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
                             slowness = c.attribute()
 
                         ttimeA = (ta + slowness * a.pos().distance(node.pos()))
-                        ttimeQ = (ta + t*(tb-ta)) + \
-                                    slowness * line(t).distance(node.pos())
+                        ttimeQ = (ta + t * (tb - ta)) + \
+                            slowness * line(t).distance(node.pos())
                         ttimeB = (tb + slowness * b.pos().distance(node.pos()))
 
                         heapq.heappush(upCandidate,
-                                       (min(ttimeA,ttimeQ,ttimeB), node))
+                                       (min(ttimeA, ttimeQ, ttimeB), node))
 
-    #for c in upCandidate:
-        #print c[1].id(), c[0]
+    # for c in upCandidate:
+        # print c[1].id(), c[0]
     candidate = heapq.heappop(upCandidate)
-    #print candidate
+    # print candidate
     newUpNode = candidate[1]
     times[newUpNode.id()] = candidate[0]
     upTags[newUpNode.id()] = 1
-    #print newUpNode
+    # print newUpNode
     downwind.remove(newUpNode)
 
     newDownNodes = pg.commonNodes(newUpNode.cellSet())
@@ -123,12 +125,12 @@ if __name__ is '__main__':
         if c.marker() == 1:
             c.setAttribute(1.)
         elif c.marker() == 2:
-                c.setAttribute(0.5)
-        #c.setAttribute(abs(1./c.center()[1]))
+            c.setAttribute(0.5)
+        # c.setAttribute(abs(1./c.center()[1]))
 
     fig, a = plt.add_subplots()
 
-    anaTimes = pg.RVector(mesh.nodeCount() , 0.0)
+    anaTimes = pg.RVector(mesh.nodeCount(), 0.0)
 
     for n in mesh.nodes():
         anaTimes[n.id()] = source.distance(n.pos())
@@ -155,7 +157,7 @@ if __name__ is '__main__':
                 downwind.add(nn)
                 downTags[nn.id()] = 1
 
-    #start fast marching
+    # start fast marching
     tic = time.time()
     while len(downwind) > 0:
         model = pg.RVector(mesh.cellCount(), 0.0)
@@ -166,48 +168,47 @@ if __name__ is '__main__':
 
         #a.plot(source[0], source[1], 'x')
 
-        #for c in mesh.cells():
-            #a.text(c.center()[0],c.center()[1], str(c.id()))
+        # for c in mesh.cells():
+        #a.text(c.center()[0],c.center()[1], str(c.id()))
 
-        #for n in mesh.nodes():
-            #if upTags[n.id()]:
-                #a.plot(n.pos()[0], n.pos()[1], 'o', color='black')
+        # for n in mesh.nodes():
+        # if upTags[n.id()]:
+        #a.plot(n.pos()[0], n.pos()[1], 'o', color='black')
 
         #mindist = 9e99
-        #for n in downwind:
-            #a.plot(n.pos()[0], n.pos()[1], 'o', color='white')
+        # for n in downwind:
+        #a.plot(n.pos()[0], n.pos()[1], 'o', color='white')
 
-            #if n.pos().distance(source) < mindist:
-                #mindist = n.pos().distance(source)
-                #nextPredict = n
-    
-        #print "next predicted ", n.id(), mindist
+        # if n.pos().distance(source) < mindist:
+        #mindist = n.pos().distance(source)
+        #nextPredict = n
+
+        # print "next predicted ", n.id(), mindist
         #a.plot(nextPredict.pos()[0], nextPredict.pos()[1], 'o', color='green')
 
         #drawField(a, mesh, times)
         ###drawField(a, mesh, anaTimes, colors = 'white')
-        #a.figure.canvas.draw()
+        # a.figure.canvas.draw()
 
-        #a.figure.show()
+        # a.figure.show()
         ##raw_input('Press Enter...')
-        #a.clear()
+        # a.clear()
 
         fastMarch(mesh, downwind, times, upTags, downTags)
 
-    print(time.time()-tic, "s")
+    print(time.time() - tic, "s")
 
     drawMesh(a, mesh)
     drawField(a, mesh, times, filled=True)
-    #drawStreamCircular(a, mesh, times, source, 30.,
+    # drawStreamCircular(a, mesh, times, source, 30.,
     #                nLines = 50, step = 0.1, showStartPos = True)
 
     #ax1.streamplot(X, Y, U, V, density=[0.5, 1])
 
-    #drawStreamLinear(a, mesh, times,
-                     #pg.RVector3(-100., -10.0),
-                     #pg.RVector3(100., -10.0),
-                     #nLines = 50, step = 0.01,
-                     #showStartPos = True)
+    # drawStreamLinear(a, mesh, times,
+    #pg.RVector3(-100., -10.0),
+    #pg.RVector3(100., -10.0),
+    # nLines = 50, step = 0.01,
+    # showStartPos = True)
 
     plt.show()
-

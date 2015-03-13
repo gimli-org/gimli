@@ -45,7 +45,7 @@ def boundaryToCellDistancesBound(b):
         df1 = b.center().distance(leftCell.center())
     if rightCell:
         df2 = b.center().distance(rightCell.center())
-    return df1+df2
+    return df1 + df2
 
 
 def cellDataToBoundaryGrad(mesh, v, vGrad):
@@ -68,12 +68,13 @@ def cellDataToBoundaryGrad(mesh, v, vGrad):
             df1 = b.center().distance(leftCell.center())
             df2 = b.center().distance(rightCell.center())
 
-            gr = b.norm()*(v[rightCell.id()] - v[leftCell.id()]) / (df1+df2)
+            gr = b.norm() * \
+                (v[rightCell.id()] - v[leftCell.id()]) / (df1 + df2)
 
             grL = t * t.dot(vGrad[leftCell.id()])
             grR = t * t.dot(vGrad[rightCell.id()])
 
-            gr += (grL+grR) * 0.5
+            gr += (grL + grR) * 0.5
 
         elif leftCell:
             gr = t * t.dot(vGrad[leftCell.id()])
@@ -122,7 +123,7 @@ def divergenceDEPRECATED(mesh, V, span=None):
     ret[:, 2] /= mesh.cellSizes()
     print('     D', swatch.duration(True))
 
-    if type(V[0]) == float:
+    if isinstance(V[0], float):
         return ret
 
     return ret[:, 0] + ret[:, 1] + ret[:, 2]
@@ -151,11 +152,11 @@ def cellToFace(boundary, vec, harmonic=False):
     if leftCell and rightCell:
         if harmonic:
             # harmonic mean
-            uFace = (u1 * u2) / ((u2-u1)*df2/d12 + u1)
+            uFace = (u1 * u2) / ((u2 - u1) * df2 / d12 + u1)
         else:
             # arithmetic mean
             # check left vs. right
-            uFace = (u1 - u2) * df2/d12 + u2
+            uFace = (u1 - u2) * df2 / d12 + u2
 
     elif leftCell:
         uFace = u1  # / df1
@@ -184,8 +185,8 @@ def cellToFaceArithmetic(boundary, AMM):
         else:
             # arithmetic mean
             # check left vs. right
-            AMM.addVal(boundary.id(), leftCell.id(), df2/d12)
-            AMM.addVal(boundary.id(), rightCell.id(), -df2/d12 + 1.0)
+            AMM.addVal(boundary.id(), leftCell.id(), df2 / d12)
+            AMM.addVal(boundary.id(), rightCell.id(), -df2 / d12 + 1.0)
             # uFace = (u1 - u2) * df2/d12 + u2
 
     elif leftCell:
@@ -220,7 +221,7 @@ def cellDataToCellGrad2(mesh, v):
 
 def cellDataToCellGrad(mesh, v, CtB):
     if len(v) != mesh.cellCount():
-        print (len(v), mesh.cellCount())
+        print(len(v), mesh.cellCount())
         raise
     div = mesh.boundaryDataToCellGradient(CtB * v)
     return np.vstack([pg.x(div), pg.y(div), pg.z(div)]).T
@@ -278,11 +279,11 @@ def findVelocity(mesh, v, b, c, nc=None):
         if len(v) == mesh.cellCount():
             if nc:
                 # mean cell based vector-field v[x,y,z] for cell c and cell nc
-                vel = (v[c.id()] + v[nc.id()])/2.0
-                
+                vel = (v[c.id()] + v[nc.id()]) / 2.0
+
                 #vel1 = 1./ (1./v[c.id()] + 1./v[nc.id()])
                 #print("findVel, check:", vel1, vel)
-                
+
             else:
                 # cell based vector-field v[x,y,z] for cell c
                 vel = v[c.id()]
@@ -321,12 +322,13 @@ def findDiffusion(mesh, a, b, c, nc=None):
         else:
             # Diffusion part
             # Interface harmonic median
-            #D = (a[c.id()] / c.center().distance(b.center()) +
-                 #a[nc.id()] / nc.center().distance(b.center())) * 0.5 * b.size()
-            
-            D = 1. / (c.center().distance(b.center())/a[c.id()] +
-                      nc.center().distance(b.center())/a[nc.id()]) * b.size()
-            #print(D)
+            # D = (a[c.id()] / c.center().distance(b.center()) +
+                 # a[nc.id()] / nc.center().distance(b.center())) * 0.5 *
+                 # b.size()
+
+            D = 1. / (c.center().distance(b.center()) / a[c.id()] +
+                      nc.center().distance(b.center()) / a[nc.id()]) * b.size()
+            # print(D)
     else:
         if len(a) == mesh.boundaryCount():
             D = a[b.id()] / b.center().distance(c.center()) * b.size()
@@ -371,7 +373,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
     elif scheme == 'ES':
         # ES - exponential scheme
         # Only stationary one-dimensional but exact solution
-        AScheme = lambda peclet_: (peclet_) / (np.exp(abs(peclet_))-1.0) \
+        AScheme = lambda peclet_: (peclet_) / (np.exp(abs(peclet_)) - 1.0) \
             if peclet_ != 0.0 else 1
     else:
         raise
@@ -440,16 +442,17 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
                 # no boundary
                 if sparse:
                     S.addVal(cell.id(), ncell.id(), -aB)
-                    S.addVal(cell.id(), cell.id(),  +aB)
+                    S.addVal(cell.id(), cell.id(), +aB)
                 else:
                     S[cell.id(), ncell.id()] -= aB
-                    S[cell.id(),  cell.id()] += aB
+                    S[cell.id(), cell.id()] += aB
 
             elif not useHalfBoundaries:
 
                 if boundary.id() in uBoundaryID:
                     val = pg.solver.generateBoundaryValue(boundary,
-                                                          uBoundaryVals[boundary.id()],
+                                                          uBoundaryVals[
+                                                              boundary.id()],
                                                           time=time,
                                                           userData=userData)
 
@@ -468,15 +471,18 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
                     if sparse:
                         # amount of flow through the boundary
                         S.addVal(cell.id(), cell.id(), val *
-                                 boundary.size()/cell.size())
+                                 boundary.size() / cell.size())
                     else:
-                        S[cell.id(), cell.id()] += val * boundary.size() / cell.size()
+                        S[cell.id(), cell.id()] += val * \
+                            boundary.size() / cell.size()
 
-        if fn != None:
+        if fn is not None:
             if sparse:
-                S.addVal(cell.id(), cell.id(), -fn[cell.id()])  # * cell.shape().domainSize())
+                # * cell.shape().domainSize())
+                S.addVal(cell.id(), cell.id(), -fn[cell.id()])
             else:
-                S[cell.id(), cell.id()] -= fn[cell.id()]  # * cell.shape().domainSize()
+                # * cell.shape().domainSize()
+                S[cell.id(), cell.id()] -= fn[cell.id()]
 
     if useHalfBoundaries:
         for i, [b, val] in enumerate(uDirBounds):  # not defined!!!
@@ -769,7 +775,6 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
 
     controlVolumes = CtB * mesh.cellSizes()
 
-   
     for i in range(maxIter):
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)
 #        __d('vx', pressureGrad[:,0])
@@ -841,22 +846,23 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
 #        __d('div', div)
 #        if ( i == 1):
 #            sd
-            
+
         convergenceTest = 100
         if i > 6:
-            convergenceTest = (divVNorm[-1]-divVNorm[-2]) + \
-                              (divVNorm[-2]-divVNorm[-3]) + \
-                              (divVNorm[-3]-divVNorm[-4]) + \
-                              (divVNorm[-4]-divVNorm[-5]) + \
-                              (divVNorm[-5]-divVNorm[-6])
+            convergenceTest = (divVNorm[-1] - divVNorm[-2]) + \
+                              (divVNorm[-2] - divVNorm[-3]) + \
+                              (divVNorm[-3] - divVNorm[-4]) + \
+                              (divVNorm[-4] - divVNorm[-5]) + \
+                              (divVNorm[-5] - divVNorm[-6])
             convergenceTest /= 5
-            
+
         if verbose:
             # print("\rIter: " + str(i) + " div V=" + str(divVNorm[-1]) + " " +  str(preCNorm[-1]), end='')
-            print("\r" + str(i) + " div V=" + str(divVNorm[-1]) + \
-                " ddiv V=" + str(convergenceTest)) 
+            print("\r" + str(i) + " div V=" + str(divVNorm[-1]) +
+                  " ddiv V=" + str(convergenceTest))
 
-        if i == maxIter or divVNorm[-1] < tol or abs(convergenceTest*divVNorm[-1]) < tol:
+        if i == maxIter or divVNorm[-
+                                    1] < tol or abs(convergenceTest * divVNorm[-1]) < tol:
             break
 
     if verbose:
@@ -870,8 +876,8 @@ if __name__ == '__main__':
     Nx = N
     Ny = N
 
-    x = np.linspace(-1.0, 1.0, Nx+1)
-    y = np.linspace(-1.0, 1.0, Ny+1)
+    x = np.linspace(-1.0, 1.0, Nx + 1)
+    y = np.linspace(-1.0, 1.0, Ny + 1)
     grid = pg.createGrid(x=x, y=y)
 
     a = pg.RVector(grid.cellCount(), 1.0)
@@ -901,7 +907,7 @@ if __name__ == '__main__':
     referencesolution = 1.2889506342694153
     referencesolutionDivV = 0.029187181920161752
     print("divNorm: ", divVNorm[-1])
-    print("to reference: ", divVNorm[-1]-referencesolutionDivV)
+    print("to reference: ", divVNorm[-1] - referencesolutionDivV)
 
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 3, 1)
@@ -911,10 +917,16 @@ if __name__ == '__main__':
     show(grid, data=pg.cellDataToPointData(grid, pres),
          logScale=False, showLater=True, colorBar=True, axes=ax1, cbar='b2r')
     show(grid,
-         data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 0]), 1e-2),
+         data=pg.logTransDropTol(
+             pg.cellDataToPointData(
+                 grid, vel[
+                     :, 0]), 1e-2),
          logScale=False, showLater=True, colorBar=True, axes=ax2)
     show(grid,
-         data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 1]), 1e-2),
+         data=pg.logTransDropTol(
+             pg.cellDataToPointData(
+                 grid, vel[
+                     :, 1]), 1e-2),
          logScale=False, showLater=True, colorBar=True, axes=ax3)
 
     show(grid, data=vel, axes=ax1)

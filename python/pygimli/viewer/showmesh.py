@@ -130,17 +130,18 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data)
     else:
-        if hasattr(data[0], '__len__') and not isinstance(data, np.ma.core.MaskedArray):
+        if hasattr(data[0], '__len__') and not isinstance(
+                data, np.ma.core.MaskedArray):
 
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, **kwargs)
             else:
-                print("No valid stream data:",  data)
+                print("No valid stream data:", data)
                 drawMesh(ax, mesh)
 
         elif (min(data) == max(data)) or pg.haveInfNaN(data):
 
-            print("No valid data: ",  min(data), max(data), pg.haveInfNaN(data))
+            print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh)
         else:
             validData = True

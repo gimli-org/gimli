@@ -20,7 +20,7 @@ def astausgleich(ab2org, mn2org, rhoaorg):
         ac = P.intersect1d(ab2[mn2 == um[i]], ab2[mn2 == um[i + 1]])
         for a in ac:
             r0.append(rhoa[(ab2 == a) * (mn2 == um[i])][0])
-            r1.append(rhoa[(ab2 == a) * (mn2 == um[i+1])][0])
+            r1.append(rhoa[(ab2 == a) * (mn2 == um[i + 1])][0])
 
         if len(r0) > 0:
             fak = P.mean(P.array(r0) / P.array(r1))
@@ -248,7 +248,7 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
 
     a = []
     for t in tau[::2]:
-        a.append("%g" % rndig(t*1000, 2))
+        a.append("%g" % rndig(t * 1000, 2))
 
     P.xticks(N.arange(0, len(tau), 2), a)
 
@@ -299,7 +299,7 @@ class DebyeModelling(pg.ModellingBase):
 
         if zero:
             mesh.cell(0).setMarker(-1)
-            mesh.cell(len(tvec)-1).setMarker(1)
+            mesh.cell(len(tvec) - 1).setMarker(1)
 
         pg.ModellingBase.__init__(self, mesh, verbose)
         self.f_ = pg.asvector(fvec)
@@ -366,7 +366,7 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose=False,
     mvec = inv.run()
     resp = inv.response()
 
-    return tvec, mvec, N.array(resp)*1e3, idx
+    return tvec, mvec, N.array(resp) * 1e3, idx
 
 
 class DoubleColeColeModelling(pg.ModellingBase):
@@ -421,9 +421,9 @@ def read1resfile(filename, readsecond=False, dellast=True):
 
         fr.append(string.atof(b[0]))
         rhoa.append(string.atof(b[1]))
-        phi.append(-string.atof(b[2])*P.pi/180.)
+        phi.append(-string.atof(b[2]) * P.pi / 180.)
         drhoa.append(string.atof(b[3]))
-        dphi.append(string.atof(b[4])*P.pi/180.)
+        dphi.append(string.atof(b[4]) * P.pi / 180.)
 
     f.close()
     if dellast:
@@ -447,7 +447,7 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
                                               dellast=dellast)
     # forward problem
     mesh = pg.createMesh1D(1, 6)  # 6 independent parameters
-    f = DoubleColeColeModelling(mesh, pg.asvector(fr), phi[2]/abs(phi[2]))
+    f = DoubleColeColeModelling(mesh, pg.asvector(fr), phi[2] / abs(phi[2]))
     f.regionManager().loadMap("region.control")
     model = f.createStartVector()
 
@@ -476,10 +476,17 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
         fig = P.figure(1)
         fig.clf()
         ax = P.subplot(111)
-        P.errorbar(fr, phi*1000., yerr=dphi*1000., fmt='x-', label='measured')
+        P.errorbar(
+            fr,
+            phi *
+            1000.,
+            yerr=dphi *
+            1000.,
+            fmt='x-',
+            label='measured')
         ax.set_xscale('log')
         P.semilogx(fr, f(mod0) * 1000., label='EM term (CC)')
-        P.errorbar(fr, resid, yerr=dphi*1000., label='IP term')
+        P.errorbar(fr, resid, yerr=dphi * 1000., label='IP term')
         ax.set_yscale('log')
         P.xlim((min(fr), max(fr)))
         P.ylim((0.1, max(phi) * 1000.))
@@ -491,4 +498,4 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
         fig.show()
 
     return N.array(fr), N.array(rhoa), N.array(resid), N.array(
-        phi)*1e3, dphi, chi2, N.array(emphi)*1e3
+        phi) * 1e3, dphi, chi2, N.array(emphi) * 1e3

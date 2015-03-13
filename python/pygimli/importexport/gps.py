@@ -172,11 +172,11 @@ def GKtoUTM(R, H=None):
     else:
         rr = R[0]
 
-    if floor(rr*1e-6) == 2.:
+    if floor(rr * 1e-6) == 2.:
         return GK2toUTM(R, H)
-    elif floor(rr*1e-6) == 3.:
+    elif floor(rr * 1e-6) == 3.:
         return GK3toUTM(R, H)
-    elif floor(rr*1e-6) == 4.:
+    elif floor(rr * 1e-6) == 4.:
         return GK4toUTM(R, H)
     else:
         print("cannot detect valid GK zone")
@@ -227,7 +227,7 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
     srsstr = 'SRS=EPSG:' + str(25800 + zone)  # EPSG definition of UTM
 
     box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
-    ysize = imsize * (ylim[1]-ylim[0]) / (xlim[1]-xlim[0])
+    ysize = imsize * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])
     sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
     addr = url + '__' + uuid + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
         '&' + 'BBOX=' + box + '&' + sizestr

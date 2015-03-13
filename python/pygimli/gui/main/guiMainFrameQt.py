@@ -16,43 +16,53 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 from pygimli.gui.controls import ResourceTree
 
+
 class WorkSpace:
+
     def __init__(self):
         self.activeResource = None
 
 from spyderlib.widgets.internalshell import InternalShell
 from code import InteractiveConsole
-    
+
+
 class PythonConsoleWidget(InternalShell):
+
     """
         Provides a custom widget to accept Python expressions.
     """
+
     def __init__(self, parent=None, mainApp=None):
         ns = {'win': self, 'app': mainApp, 'ws': mainApp.ws}
         super().__init__(parent, namespace=ns,
                          message="PyGIMLi internal console. \n\n"
                          "Access to application or workspace via: app, ws\n\n")
         #, message=("Spyder Internal Console\n\n" +
-                                  #"This console is used to report application\n" +
-                                  #"internal errors and to inspect Spyder\n" +
-                                  #"internals with the following commands:\n" +
-                                  #"  spy.app, spy.window, dir(spy)\n\n" +
-                                  #"Please don't use it to run your code\n\n"))
+        #"This console is used to report application\n" +
+        #"internal errors and to inspect Spyder\n" +
+        #"internals with the following commands:\n" +
+        #"  spy.app, spy.window, dir(spy)\n\n" +
+        #"Please don't use it to run your code\n\n"))
         self.set_codecompletion_auto(True)
         self.set_calltips(True)
         self.interpreter.restore_stds()
         self.interpreter.push = self.push
-    
+
     def push(self, line):
         """
             let all console output redirect to console .. everything else to the log
         """
         self.interpreter.redirect_stds()
-        ret = InteractiveConsole.push(self.interpreter, "#coding=utf-8\n" + line)
+        ret = InteractiveConsole.push(
+            self.interpreter,
+            "#coding=utf-8\n" +
+            line)
         self.interpreter.restore_stds()
         return ret
-    
+
+
 class RedirectOutput():
+
     def __init__(self, frame, console, logFile=None):
         self.logFile = logFile
         self.frame = frame
@@ -96,15 +106,15 @@ class RedirectOutput():
 
                     self.frame.setTextColor(self._col)
                     #cursor = self.frame.textCursor()
-                    #self.frame.textCursor().setPosition(QtGui.QTextCursor.end)
-                    #cursor.setPosition(QtGui.QTextCursor.Down,
-                                       #QtGui.QTextCursor.MoveAnchor)
+                    # self.frame.textCursor().setPosition(QtGui.QTextCursor.end)
+                    # cursor.setPosition(QtGui.QTextCursor.Down,
+                    # QtGui.QTextCursor.MoveAnchor)
 
-                    #self.frame.setTextCursor(cursor)
-                    #self.frame.textCursor().insertText(st)
+                    # self.frame.setTextCursor(cursor)
+                    # self.frame.textCursor().insertText(st)
 
                     self.frame.insertPlainText(st)
-                    #self.frame.EnsureCaretVisible()
+                    # self.frame.EnsureCaretVisible()
 
                     if fi:
                         if self._style == 2:
@@ -118,8 +128,10 @@ class RedirectOutput():
 
 
 class PyGUISystemMainFrame(QtGui.QMainWindow):
+
     """
     """
+
     def __init__(self, ws):
         """
         """
@@ -127,7 +139,7 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
 
         import locale
         if locale.localeconv()['decimal_point'] == ',':
-            print ("decimal point:", locale.localeconv()['decimal_point'])
+            print("decimal point:", locale.localeconv()['decimal_point'])
             locale.setlocale(locale.LC_NUMERIC, 'C')
 
         self.ws = ws
@@ -151,8 +163,8 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
 
     def keyPressEvent(self, event):
         print("KEY", event.key())
-        if type(event) == QtGui.QKeyEvent:
-             #here accept the event and do something
+        if isinstance(event, QtGui.QKeyEvent):
+             # here accept the event and do something
             event.accept()
         else:
             event.ignore()
@@ -189,7 +201,7 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
 
         for p in paths:
             if not os.path.isdir(pluginpath + p) or p[0] is '.' or p[0] is '_':
-                #print p, "is not a plugin"
+                # print p, "is not a plugin"
                 continue
 
             pluginName = "pygimli.gui.apps." + p
@@ -242,12 +254,13 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
                    hasattr(plugin, 'MainOpenFileSlot') and \
                    hasattr(plugin, 'MainOpenWildcard'):
 
-                    if type(plugin.MainOpenFileSuffix) is list:
+                    if isinstance(plugin.MainOpenFileSuffix, list):
                         for i, suffix in enumerate(plugin.MainOpenFileSuffix):
                             self.registerOpenFileSuffix(suffix,
-                                plugin.MainOpenWildcard[i],
-                                plugin.PluginApplication,
-                                plugin.MainOpenFileSlot)
+                                                        plugin.MainOpenWildcard[
+                                                            i],
+                                                        plugin.PluginApplication,
+                                                        plugin.MainOpenFileSlot)
                     else:
                         self.registerOpenFileSuffix(plugin.MainOpenFileSuffix,
                                                     plugin.MainOpenWildcard,
@@ -350,8 +363,8 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
         self._rendererSlot = QtGui.QFrame(self)
         self._rendererSlot.setBaseSize(800, 600)
         #self._rendererSlot = QtGui.QMdiainWindow(self)
-        #self._rendererSlot.setCentralWidget(QtGui.QWidget(self._rendererSlot))
-        #self._rendererSlot.setSize(800,600)
+        # self._rendererSlot.setCentralWidget(QtGui.QWidget(self._rendererSlot))
+        # self._rendererSlot.setSize(800,600)
 
         self._rendererSlot.setLayout(QtGui.QVBoxLayout())
         print("isDockNestingEnabled: ", self.isDockNestingEnabled())
@@ -393,31 +406,32 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
     def _onIdle(self):
         """
         """
-        if QtCore.QAbstractEventDispatcher.instance().hasPendingEvents() == True:
+        if QtCore.QAbstractEventDispatcher.instance(
+        ).hasPendingEvents() == True:
             return
         if len(self._onIdleCmdQueue) > 0:
             print("_onIdle")
             #gauge = xrc.XRCCTRL(self.idleProzessPanel, 'IdleGauge' )
 
-            #if not self.idleProzessPanel.IsShown():
-                #gauge.SetRange(len(self.onIdleCmdQueue_) -1)
-                #gauge.SetValue(0)
-                #self.idleProzessPanel.Layout()
-                #self.idleProzessPanel.Show()
+            # if not self.idleProzessPanel.IsShown():
+            #gauge.SetRange(len(self.onIdleCmdQueue_) -1)
+            # gauge.SetValue(0)
+            # self.idleProzessPanel.Layout()
+            # self.idleProzessPanel.Show()
 
-                #wx.BeginBusyCursor(wx.StockCursor(wx.CURSOR_WAIT))
-            #else:
-                #try:
-                    #gauge.SetValue(gauge.GetValue() +1)
-                #except:
-                    #pass
+            # wx.BeginBusyCursor(wx.StockCursor(wx.CURSOR_WAIT))
+            # else:
+            # try:
+            #gauge.SetValue(gauge.GetValue() +1)
+            # except:
+            # pass
 
             [cmd, args, name] = self._onIdleCmdQueue[0]
 
             #label = xrc.XRCCTRL(self.idleProzessPanel, 'IdleLabel' )
             #print(gauge.GetValue(), ": ", name)
-            #label.SetLabel("Prozessing: " + str(gauge.GetValue()) +
-                            #"/" + str(gauge.GetRange())+ " ... " + name)
+            # label.SetLabel("Prozessing: " + str(gauge.GetValue()) +
+            #"/" + str(gauge.GetRange())+ " ... " + name)
 
             try:
                 if len(args) == 0:
@@ -434,31 +448,32 @@ class PyGUISystemMainFrame(QtGui.QMainWindow):
 
             self._onIdleCmdQueue.pop(0)
         else:
-            #if self.idleProzessPanel.IsShown():
-                #wx.EndBusyCursor()
-                #self.idleProzessPanel.Hide()
-            #elif wx.IsBusy() and not self.busyCursorWarning:
+            # if self.idleProzessPanel.IsShown():
+                # wx.EndBusyCursor()
+                # self.idleProzessPanel.Hide()
+            # elif wx.IsBusy() and not self.busyCursorWarning:
                 #self.busyCursorWarning = True
-                #self.idleProzessPanel.Hide()
-                #wx.EndBusyCursor()
-                #err = wx.MessageDialog(self
+                # self.idleProzessPanel.Hide()
+                # wx.EndBusyCursor()
+                # err = wx.MessageDialog(self
                 #, 'Hanging busy cursor found, probably something goes wrong.
                 # Please refer to the error log.'
                 #, 'Something goes wrong.'
                 #, wx.OK | wx.ICON_WARNING)
-                ##err.ShowModal()
-                #if err.ShowModal() == wx.ID_OK:
+                # err.ShowModal()
+                # if err.ShowModal() == wx.ID_OK:
                     #self.busyCursorWarning = False
             pass
 
 
 class PyGIMLIApp(QtGui.QApplication):
+
     def __init__(self, options=None, args=None, ws=None):
         super().__init__(sys.argv)
 
         import argparse
         parser = argparse.ArgumentParser(description="GUI for Bert")
-    
+
         parser.add_argument("--debug", dest="debug", action="store_true",
                             help="Debug mode.", default=False)
         args = parser.parse_args()

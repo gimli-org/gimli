@@ -392,7 +392,7 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
         if i > start:
             A.addVal(i, i - 1, l)
 
-        if i < end-1:
+        if i < end - 1:
             A.addVal(i, i + 1, r)
     return A
 
@@ -751,7 +751,7 @@ def createMassMatrix(mesh, b=None):
 
 
 def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
-                 verbose=False, stats=None,  **kwargs):
+                 verbose=False, stats=None, **kwargs):
     """
     WRITEME short
 
@@ -886,7 +886,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             print("6b: ", swatch2.duration(True))
         if 'uBoundary' in kwargs:
             assembleDirichletBC(S,
-                                parseArgToBoundaries(kwargs['uBoundary'], mesh),
+                                parseArgToBoundaries(
+                                    kwargs['uBoundary'],
+                                    mesh),
                                 rhs, time=0.0,
                                 userData=userData,
                                 verbose=False)
@@ -997,12 +999,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             #print ('a',swatch.duration(True))
             # b = M * U[n - 1] - (A * U[n - 1]) * (dt*(1.0 - theta)) + \
-                #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
             #print ('b',swatch.duration(True))
 
             # b = M * U[n - 1] - (dt*(1.0 - theta)) * A * U[n - 1] + \
-                #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
             #print ('c',swatch.duration(True))
 
             measure += swatch.duration()
@@ -1030,12 +1032,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             if 'progress' in kwargs:
                 if kwargs['progress']:
-                    print(("\t" + str(n) + "/" + str(len(times)-1) +
-                          ": " + str(t_prep) + "/" + str(swatch.duration())))
+                    print(("\t" + str(n) + "/" + str(len(times) - 1) +
+                           ": " + str(t_prep) + "/" + str(swatch.duration())))
 
         if debug:
-            print("Measure("+str(len(times))+"): ",
-                  measure, measure/len(times))
+            print("Measure(" + str(len(times)) + "): ",
+                  measure, measure / len(times))
         return U
 
 
@@ -1075,11 +1077,11 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
         b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
-        timeIter1[n-1] = time.time()-tic
+        timeIter1[n - 1] = time.time() - tic
 
         tic = time.time()
         u[n, :] = solver.solve(b)
-        timeIter2[n-1] = time.time()-tic
+        timeIter2[n - 1] = time.time() - tic
 
         #A = (I + dt * theta * S)
         #u[n, : ] = linsolve(A, b)

@@ -20,8 +20,8 @@ def plotLines(ax, line_filename, step=1):
     n_points = xz.shape[0]
     if step == 2:
         for i in range(0, n_points, step):
-            x = xz[i:i+step, 0]
-            z = xz[i:i+step, 1]
+            x = xz[i:i + step, 0]
+            z = xz[i:i + step, 1]
             ax.plot(x, z, 'k-')
     if step == 1:
         ax.plot(xz[:, 0], xz[:, 1], 'k-')
@@ -73,7 +73,7 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     if tt is None:
         tt = np.array(data("t"))
     if plotva:
-        tt = np.absolute(gx-sx) / tt
+        tt = np.absolute(gx - sx) / tt
 
     uns = np.unique(sx)
     cols = 'brgcmyk'
@@ -92,7 +92,7 @@ def showVA(ax, data, usepos=True):
     px = pg.x(data.sensorPositions())
     gx = np.asarray([px[int(g)] for g in data("g")])
     sx = np.asarray([px[int(s)] for s in data("s")])
-    va = np.absolute(gx-sx) / data('t')
+    va = np.absolute(gx - sx) / data('t')
     A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
     for i in range(data.size()):
         A[int(data('s')[i]), int(data('g')[i])] = va[i]
@@ -146,13 +146,14 @@ def createGradientModel2D(data, mesh, VTop, VBot):
     x = pg.x(mesh.cellCenters())
     z = pg.y(mesh.cellCenters())
     pos = np.column_stack((x, z))
-    d = np.array([np.abs(np.dot(pos[i, :], n) - p[1])/nLen
+    d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen
                   for i in range(pos.shape[0])])
 
-    return np.interp(d, [min(d), max(d)], [1.0/VTop, 1.0/VBot])
+    return np.interp(d, [min(d), max(d)], [1.0 / VTop, 1.0 / VBot])
 
 
 class Refraction():
+
     """ Class for managing a refraction seismics"""
 
     def __init__(self, data=None, verbose=True, **kwargs):
@@ -187,7 +188,7 @@ class Refraction():
         self.data = pg.DataContainer(filename, 's g')
         self.basename = filename[:filename.rfind('.')]
         self.checkData()
-        
+
     def checkData(self):
         """ check data w.r.t. shot/geophone identity and zero/negative
         traveltimes, plus check y/z sensor positions """
@@ -197,12 +198,12 @@ class Refraction():
         self.data.removeInvalid()
         newsize = self.data.size()
         if newsize < oldsize:
-            print('Removed ' + str(oldsize-newsize) + ' values.')
+            print('Removed ' + str(oldsize - newsize) + ' values.')
         maxyabs = max(pg.abs(pg.y(self.data.sensorPositions())))
         maxzabs = max(pg.abs(pg.z(self.data.sensorPositions())))
         if maxzabs > 0 and maxyabs == 0:
             for i in range(self.data.sensorCount()):
-                pos = self.data.sensorPosition(i).rotateX(-pi/2)
+                pos = self.data.sensorPosition(i).rotateX(-pi / 2)
                 self.data.setSensorPosition(i, pos)
 
         print(self.data)
@@ -237,13 +238,13 @@ class Refraction():
         px = pg.x(self.data.sensorPositions())
         gx = np.array([px[int(g)] for g in self.data("g")])
         sx = np.array([px[int(s)] for s in self.data("s")])
-        return np.absolute(gx-sx)
+        return np.absolute(gx - sx)
 
     def makeMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
                  paraBoundary=5):
         """ create (inversion) """
         if depth is None:
-            depth = max(self.getOffset())/3.
+            depth = max(self.getOffset()) / 3.
         self.poly = createParaDomain2D(self.data.sensorPositions(),
                                        paraDepth=depth, paraDX=paraDX,
                                        paraBoundary=paraBoundary,

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import sys, traceback
-    
+import sys
+import traceback
+
 try:
     from . testapp import *
 except Exception as e:
@@ -18,4 +19,3 @@ MainOpenFileSuffix = ['.tt', '.ttt']
 MainOpenFileSlot = TestApp.openFile
 MainOpenWildcard = ["TestApp test suffix1 (*.tt)",
                     "TestApp test suffix2 (*.ttt)"]
-
