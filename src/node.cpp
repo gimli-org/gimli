@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -69,10 +69,12 @@ Node::~Node(){
 }
 
 void Node::changed_(){
-    for (std::set < Boundary * >::iterator it = boundSet_.begin(); it!= boundSet_.end(); it ++){
+    for (std::set < Boundary * >::iterator it = boundSet_.begin();
+         it!= boundSet_.end(); it ++){
         (*it)->shape().changed();        
     }
-    for (std::set < Cell * >::iterator it = cellSet_.begin(); it!= cellSet_.end(); it ++){
+    for (std::set < Cell * >::iterator it = cellSet_.begin();
+         it!= cellSet_.end(); it ++){
         (*it)->shape().changed();        
     }
 }

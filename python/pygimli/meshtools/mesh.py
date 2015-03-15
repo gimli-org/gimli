@@ -4,6 +4,7 @@ import os
 import pygimli as pg
 import numpy as np
 
+from pygimli.polytools import *
 
 def createMesh(poly, quality=30, area=0.0,
                smooth=None, switches=None,
@@ -24,11 +25,12 @@ def createMesh(poly, quality=30, area=0.0,
 
     Parameters
     ----------
-    poly: :gimliapi:`GIMLI::Mesh`
-        2D or 3D gimli mesh that contains the PLC.
-        2D mesh needs edges
-        3D mesh needs ... to be implemented
-        List of x y pairs [[x0, y0], ... ,[xN, yN]]
+    poly: :gimliapi:`GIMLI::Mesh` or list
+        * 2D or 3D gimli mesh that contains the PLC.
+        * 2D mesh needs edges
+        * 3D mesh needs ... to be implemented
+        * List of x y pairs [[x0, y0], ... ,[xN, yN]]
+        * PLC or list of PLC
     quality: float
         2D triangle quality sets a minimum angle constraint.
         Be careful with values above 34 degrees
@@ -45,16 +47,21 @@ def createMesh(poly, quality=30, area=0.0,
     Returns
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
-
-
     """
-
-    if isinstance(poly, list) or isinstance(poly, zip):
+    
+    #poly == [pg.Mesh, ]
+    if isinstance(poly, list):
+        if isinstance(poly[0], pg.Mesh):
+            return createMesh(mergePolygons(poly),
+                              quality, area, smooth, switches, verbose)
+    #poly == [pos, pos, ]    
+    if isinstance(poly, list) or isinstance(poly, type(zip)):
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
         return createMesh(delPLC, switches='-zeY')
 
+    #poly == Mesh
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
             raise Exception("No nodes in poly to create a valid mesh")
@@ -88,7 +95,6 @@ def createMesh(poly, quality=30, area=0.0,
 
     else:
         raise('not yet implemented')
-
 
 def readGmsh(fname, verbose=False):
     """

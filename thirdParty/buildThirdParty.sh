@@ -12,8 +12,9 @@ SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=git://github.com/gccxml/gccxml.git
 
-PYGCCXML_URL=https://github.com/gccxml/pygccxml
-PYGCCXML_REV=36234fd
+PYGCCXML_URL=https://github.com/gccxml/pygccxml 
+PYGCCXML_REV=594d71d
+#PYGCCXML_REV=36234fd
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
@@ -228,6 +229,9 @@ getWITH_GIT(){
 	if ( [ -d $_SRC_ ] ); then 
 		pushd $_SRC_
             "$GIT" pull
+            if [ -z $_BRANCH_ ]; then
+                "$GIT" checkout $_BRANCH_ .
+            fi
 		popd
 	else
         pushd $SRC_DIR

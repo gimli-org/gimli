@@ -4,58 +4,216 @@
 import os
 from os import system
 
+import numpy as np
 import pygimli as pg
 
-
-class Rectangle():
-
+def polyCreateDefaultEdges_(poly, marker=1, closed=True):
+    """ INTERNAL """
+    for i in range(poly.nodeCount() - 1):
+        poly.createEdge(poly.node(i), poly.node(i+1), marker)
+    if closed:
+        poly.createEdge(poly.node(poly.nodeCount()-1), 
+                    poly.node(0), marker)
+        
+def createRectanglePolygon(pos, size, marker=1, area=0, 
+                           boundaryMarker=1, isHole=False):
     """
-    Simple Rectangle that can be written to a xy file.
+    Create rectangle polygon.
+        
+    Create rectangle with start position and a given size.
+        
+    Parameters
+    ----------
+    pos : [x, y]
+        Center position
+    size : [x, y]
+        width and height
+    marker : int
+        Marker for the resulting triangle cells after mesh generation
+    area : float
+        Maximum cell size for the resulting triangle cells after mesh generation
+    boundaryMarker : int
+        Marker for the resulting boundary edges
+    isHole :
+        The Polygone will become a hole instead of a triangulation
 
-    Nothing else.
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+        
+    Examples
+    --------
+    TODO
     """
+    poly = pg.Mesh(2)
+    
+    poly.createNode([-0.5,  0.5])
+    poly.createNode([-0.5, -0.5])
+    poly.createNode([ 0.5, -0.5])
+    poly.createNode([ 0.5,  0.5])
+    poly.scale(size)
+    poly.translate(pos)
+    
+    if isHole:
+        poly.addHoleMarker(poly.nodes()[0].pos() + [0.001, -0.001])
+    else:
+        poly.addRegionMarker(poly.nodes()[0].pos() + [0.001, -0.001], 
+                             marker=marker, area=area)
+    polyCreateDefaultEdges_(poly, marker=boundaryMarker, closed=True)
+    return poly
 
-    def __init__(self, start, size):
-        """Initialize rectangle with start position and a given size."""
-        self.start = start
-        self.size = size
-        self.points = []
+def createWorldPolygon(start, end, marker=1, area=0):
+    """
+    Create simple rectangular world.
+        
+    Create simple rectangular world with appropriate boundary conditions.
+    Surface boundary is set do pg.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and 
+    inner surface is set to pg.MARKER_BOUND_MIXED, i.e., -2
+        
+    Parameters
+    ----------
+    start : [x, y]
+        Upper/Left Corner
+    end : [x, y]
+        Lower/Right Corner
+    marker : int
+        Marker for the resulting triangle cells after mesh generation
+    area : float
+        Maximum cell size for the resulting triangle cells after mesh generation
+        
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+        
+    Examples
+    --------
+    TODO
+    """
+    
+    poly = pg.Mesh(2)    
+    
+    poly.createNode(start)
+    poly.createNode([start[0], end[1]])
+    poly.createNode(end)
+    poly.createNode([end[0], start[1]])
 
-        self.points.append([self.start[0] -
-                            self.size[0] /
-                            2.0, self.start[1] -
-                            self.size[1] /
-                            2.0])
-        self.points.append([self.start[0] +
-                            self.size[0] /
-                            2.0, self.start[1] -
-                            self.size[1] /
-                            2.0])
-        self.points.append([self.start[0] +
-                            self.size[0] /
-                            2.0, self.start[1] +
-                            self.size[1] /
-                            2.0])
-        self.points.append([self.start[0] -
-                            self.size[0] /
-                            2.0, self.start[1] +
-                            self.size[1] /
-                            2.0])
+    poly.addRegionMarker(poly.nodes()[0].pos() + [0.001, -0.001], 
+                         marker=marker, area=area)
 
-    def writeXY(self, filename, close=False):
-        """ Write coordinates to a file """
-        fi = open(filename, 'w')
-        for p in self.points:
-            fi.write(str(p[0]) + "\t" + str(p[1]) + "\n")
-        if close:
-            p = self.points[0]
-            fi.write(str(p[0]) + "\t" + str(p[1]) + "\n")
-        fi.close()
+    for i in range(poly.nodeCount() - 1):
+        poly.createEdge(poly.node(i), poly.node(i+1), 
+                        pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
-    def area(self):
-        """ Return size of the Rectangle"""
-        return self.size[0] * self.size[1]
+    poly.createEdge(poly.node(poly.nodeCount()-1), 
+                    poly.node(0), pg.MARKER_BOUND_MIXED)
+    return poly
 
+def createCirclePolygon(pos, radius, segments=12, marker=1, area=0,
+                        boundaryMarker=1, leftDirection=True, isHole=False):
+    """
+    Create simple circle polygon.
+        
+    Parameters
+    ----------
+    pos : [x, y]
+        Center position
+    radius : float | [a,b]
+        radius or halfaxes of the circle
+    segments : int
+        Discrete amount of segmens for the circle
+    marker : int
+        Marker for the resulting triangle cells after mesh generation
+    area : float
+        Maximum cell size for the resulting triangle cells after mesh generation
+    boundaryMarker : int
+        Marker for the resulting boundary edges
+    leftDirection : bool
+        Rotational direction
+    isHole :
+        The Polygone will become a hole instead of a triangulation
+        
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    
+    Examples
+    --------
+    TODO
+    """
+    poly = pg.Mesh(2)    
+    poly.createNode([0, 1.0])
+    for i in range(1, segments):
+        if leftDirection:
+            xp = np.sin(-i * (2. * np.pi) / segments)
+        else:
+            xp = np.sin(i * (2. * np.pi) / segments)
+
+        yp = np.cos(i * (2. * np.pi) / segments)
+        poly.createNode([xp, yp])
+    
+    if hasattr(radius, '__len__'):
+        poly.scale(radius)
+    else:
+        poly.scale([radius, radius])
+    poly.translate(pos)
+    if isHole:
+        poly.addHoleMarker(poly.nodes()[0].pos() + [0.0, -0.001])
+    else:
+        poly.addRegionMarker(poly.nodes()[0].pos() + [0.0, -0.001], 
+                             marker=marker, area=area)
+    
+    polyCreateDefaultEdges_(poly, boundaryMarker, closed=True)
+    return poly
+
+def mergePolygons(pols):
+    """
+    Merge multiply polygons into a single polygon
+            
+    Common nodes will be checked and removed.
+    
+    Crossing or touching edges or Node/Edge intersections will NOT be 
+    recognized yet. -> TODO
+    
+    Parameters
+    ----------
+    pols: [gimliapi:`GIMLI::Mesh`]
+        List of polygons that need to be merged
+    
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    
+    Examples
+    --------
+    >>> world = createWorldPolygon(start=[-10, 0], end=[10, -10], marker=1)
+    >>> c1 = createCirclePolygon([-1, -3], radius=1.5, area=0.1, marker=2)
+    >>> c2 = createCirclePolygon([-6, -5], radius=[1.5, 3.5], isHole=1)
+    >>> r1 = createRectanglePolygon([3, -5], size=[2, 2], marker=3)
+    >>> r2 = createRectanglePolygon([5, -5], size=[2, 2], marker=4, area=0.1)
+
+    >>> plc = mergePolygons([world, c1, c2, r1, r2])
+    >>> pg.show(plc, showLater=1)
+    >>> pg.show(createMesh(plc))
+    """
+    poly = pg.Mesh(2)
+    
+    for p in pols:
+        nodes = [poly.createNodeWithCheck(n.pos()) for n in p.nodes()]
+        for e in p.boundaries():
+            poly.createEdge(nodes[e.node(0).id()],
+                            nodes[e.node(1).id()],
+                            e.marker())
+        
+        if len(p.regionMarker()) > 0:
+            poly.addRegionMarker(p.regionMarker()[0])
+    
+        if len(p.holeMarker()) > 0:
+            poly.addHoleMarker(p.holeMarker()[0])
+    return poly
 
 def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     """
@@ -78,7 +236,7 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
 
     Returns
     -------
-    mesh: gimliapi:`GIMLI::Mesh`
+    mesh : gimliapi:`GIMLI::Mesh`
     """
 
     filebody = filename.replace('.poly', '')
@@ -170,7 +328,7 @@ def polyAddRectangle(filename, rect, marker=0, depth=0, clean=True):
     system("polyCreateFacet -o __pad3d -m " + str(marker) + " __pad.bms")
     system("polyTranslate -z " + str(depth) + " __pad3d")
 
-    # add node to the center of the recangle
+    # add node to the center of the rectangle
 #    system("polyAddVIP -x " + str(rect.start[0])
 #                    + " -y " + str(rect.start[1])
 #                    + " -m -1 __pad3d")
@@ -250,3 +408,4 @@ def polyTranslate(filename, x=0.0, y=0.0, z=0.0, verbose=True):
            " -x " + str(x) +
            " -y " + str(y) +
            " -z " + str(z) + " " + filename)
+

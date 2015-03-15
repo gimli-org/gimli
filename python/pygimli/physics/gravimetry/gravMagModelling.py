@@ -590,8 +590,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
-
-#    upoly = np.zeros(len(pnts))
+    mesh.createNeighbourInfos()
 
     Gdg = None
     Gdgz = None
@@ -611,20 +610,21 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
 
     dgi = None
     dgzi = None
-
+    
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
 
         for b in mesh.boundaries():
-            if b.marker() != 0 or hasattr(
-                    dDensity, '__len__') or dDensity is None:
+            if b.marker() != 0 or \
+                hasattr(dDensity, '__len__') or \
+                dDensity is None:
 
                 if mesh.dimension() == 2:
                     #tic = time.time()
                     if complete:
                         dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                            b.node(1).pos())
-                        times.append(time.time() - tic)
+                        #times.append(time.time() - tic)
                         dgi *= -2.0
                         dgzi *= -2.0
                     else:
@@ -680,25 +680,6 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     if complete:
         return dg, dgz
     return dg
-
-
-def buildCircle(pos, radius, segments=12, leftDirection=True):
-    """
-    """
-    poly = np.zeros((segments, 2))
-    poly[0, :] = (0, radius)
-    for i in range(1, segments):
-        if leftDirection:
-            xp = np.sin(-i * (2. * np.pi) / segments)
-        else:
-            xp = np.sin(i * (2. * np.pi) / segments)
-
-        yp = np.cos(i * (2. * np.pi) / segments)
-        poly[i, :] = (xp * radius, yp * radius)
-
-    poly = poly + pos
-    return poly
-# def buildCircle(pos, radius, segments)
 
 if __name__ == "__main__":
     import sys
