@@ -169,6 +169,8 @@ find_package_handle_standard_args(CHOLMOD
   "CHOLMOD could not be found. Be sure to set EXTERNAL_DIR."
   CHOLMOD_LIBRARIES CHOLMOD_INCLUDE_DIRS)
 
+message(STATUS "CHOLMOD_LIBRARIES: ${CHOLMOD_LIBRARIES}")
+
 mark_as_advanced(
   CHOLMOD_INCLUDE_DIRS
   CHOLMOD_LIBRARY

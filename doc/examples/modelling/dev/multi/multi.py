@@ -473,7 +473,7 @@ def permeabiltyEngelhardtPitter(porosity, q=3.5, s=5e-3,
     * :math:`q` - (3 for spheres, > 3 shape differ from sphere)
         3.5 sand
     * :math:`s` - in cm^-1 (s = 1/r for particles with homogeneous radii r)
-    * :math:`P_i` - Particle ration with radii :math:`r_i` on 1cm³ Sample
+    * :math:`P_i` - Particle ration with radii :math:`r_i` on 1cm^3 Sample
     
     Returns
     -------
@@ -623,7 +623,7 @@ def calcGravKernel(mesh):
     return gravPointsX, Gdg
 
 def calcApparentResistivities(mesh, resistivities):
-    ert = ERT(verbose=False)
+    ert = ERT(verbose=True)
     ertPointsX = [pg.RVector3(x,0) for x in np.arange(-19, 19.1, 1)]
     ertScheme = ert.createData(ertPointsX, scheme="Dipole Dipole (CC-PP)")
     
@@ -644,7 +644,8 @@ def calcApparentResistivities(mesh, resistivities):
         voltage = ertData('rhoa') / ertData('k')
         ertData.set('err', pg.abs(errVolt / voltage) + errPerc / 100.0)
         print('err min:', min(ertData('err'))*100, 'max:', max(ertData('err'))*100)
-        
+        ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
+        sys.exit()
         for i in range(0, len(resistivities)):
             tic =  time.time()
             rhoa[i] = ert.fop.response(resistivities[i])
@@ -659,7 +660,7 @@ def calcApparentResistivities(mesh, resistivities):
                   "min:", min(rhoa[i]), "max:", max(rhoa[i]) )
 
         np.save(solutionName + '.bmat', rhoa)
-        ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
+        
         
     return rhoa, ert, ertData
 
@@ -771,13 +772,8 @@ permeabilty = permeabiltyEngelhardtPitter(porosity, mesh=mesh)
 
 vP = velocityVp(porosity, mesh=mesh)
 
-
 #calcSeismics(mesh, vP)
-
-
-
-print("Seismcs:", swatch.duration(True))
-
+print("Seismics:", swatch.duration(True))
 
 vel = calcVelocity(mesh, permeabilty, velBoundary, preBoundary)
 print("vel:", swatch.duration(True))
@@ -801,7 +797,6 @@ meshERT_FOP = appendTriangleBoundary(meshD,
                                     xbound=50, ybound=50, marker=1,
                                     quality=34.0, smooth=False, markerBoundary=1,
                                     isSubSurface=False, verbose=False)
-print("res:", swatch.duration(True))
 resistivities = resistivityArchie(rBrine=1./(1./20. + abs(1.*conc)),
                                   porosity=porosity, S=1, 
                                   mesh=mesh, meshI=meshERT_FOP)
@@ -847,7 +842,6 @@ if vis:
     axERT = fig.add_subplot(4,4,15)
     axERR = fig.add_subplot(4,4,16)
         
-
     # ** Porosity **
     show(mesh, data=porosity, colorBar=1, 
          orientation=orientation, label='Porosity', axes=axPor)
@@ -910,7 +904,7 @@ if vis:
     # ** Apparent resistivities (data) **
     gciARes = ert.show(ertScheme, values=rhoa[0], axes=axReA, 
                        scheme='DipoleDipole',
-                       cMin=100, cMax=300, 
+                       #cMin=100, cMax=300, 
                        orientation=orientation)
 
     # ** ERT (model) **
@@ -941,7 +935,7 @@ def animate(i):
     
     axReA.clear()
     ert.show(ertScheme, values=rhoa[i], axes=axReA, scheme='DipoleDipole',
-             cMin=100, cMax=300, 
+             #cMin=100, cMax=300, 
              colorBar=0)
      
     if vis:
@@ -974,12 +968,13 @@ def animate(i):
           "dsum:", (sum(conc[i])-sum(conc[i-1])),
           )
     if mp4 or vis:
+        pass
         plt.pause(0.001)
 
-animate(50)
-
-#for i in range(len(times)*2-1):
-    #animate(i)
+#animate(50)
+plt.show()
+for i in range(1, len(times)*2-1):
+    animate(i)
 
 #anim = animation.FuncAnimation(fig, animate,
                                #frames=int(len(conc)),

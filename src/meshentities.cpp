@@ -310,9 +310,7 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
     gr[0] = sum(up * MdNdL.transMult(shape_->invJacobian().col(0)));
     gr[1] = sum(up * MdNdL.transMult(shape_->invJacobian().col(1)));
     gr[2] = sum(up * MdNdL.transMult(shape_->invJacobian().col(2)));
-
     return gr;
-    //return grad_(shapeFunctionsDerive(xyz), u);
 }
 
 //############### Cell ##################

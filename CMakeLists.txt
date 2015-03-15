@@ -158,6 +158,8 @@ find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_or_build_package(UMFPACK umfpack)
 
+
+
 find_package(CppUnit)
 if (CPPUNIT_FOUND)
     option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
