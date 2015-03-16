@@ -31,14 +31,6 @@ Documentation
 
             Interesting examples
 
-        * - :ref:`sec:tools`
-
-            Handy applications and tools shipped with GIMLi
-
-          - `PDF Manual <GIMLi_Documentation.pdf>`_
-
-            Printable version of this documentation
-
         * - :doc:`pygimliapi/index`
 
             Reference for Python modules
@@ -46,6 +38,14 @@ Documentation
           - :gimliapi:`GIMLI`
 
             Reference for C++ modules
+
+        * - :ref:`sec:tools`
+
+            Handy applications and tools shipped with GIMLi
+
+          - `PDF Manual <GIMLi_Documentation.pdf>`_
+
+            Printable version of this documentation
 
         * - :ref:`sec:publications`
 

@@ -7,25 +7,26 @@ Prerequisites
 -------------
 
 We need some more or less important tools to build libgimli
- 
-    * subversion, git(gccxml), mercurial(pygccxml), wget, tar
-    * cmake >= 2.8.10
-    * gcc >= 4.4
 
-        tested: 
+* subversion, git(gccxml), mercurial(pygccxml), wget, tar
+* cmake >= 2.8.10
+* gcc >= 4.4
 
-        * gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
-        *        Debian 3.2.46-1 x86_64: gcc-4.7.2
-        *        Ubuntu 
-        *        Arch Linux
-        *        CentOS
-        *        MinGW32: gcc-4.6.2/4, gcc-4.7.2
-        *        MinGW64: gcc-4.5.4 (without python bindings)
+    tested:
 
-    * libboost >=1.46 (thread, [python])
+    * gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
+    * Debian 3.2.46-1 x86_64: gcc-4.7.2
+    * Ubuntu
+    * Arch Linux
+    * CentOS
+    * MinGW32: gcc-4.6.2/4, gcc-4.7.2
+    * MinGW64: gcc-4.5.4 (without python bindings)
 
-        tested: 1.46, 1.48, 1.49, 1.51, 1.52, 1.53, 1.57
-                
+* libboost >=1.46 (thread, [python])
+
+    tested: 1.46, 1.48, 1.49, 1.51, 1.52, 1.53, 1.57
+
+
 Optional Prerequisites -- some can be installed via provided scripts
 ....................................................................
 
@@ -38,7 +39,7 @@ Optional Prerequisites -- some can be installed via provided scripts
     * procps
     * gccxml, pygccxml and pyplusplus (auto via cmake)
     * matplotlib >=1.1.0
-    * doxygen        
+    * doxygen
 
 
 Example Installation on Vanilla Debian
@@ -69,7 +70,7 @@ Create a directory for your installation, e.g., $HOME/src
     cd gimli
 
 Checkout the current sources for libgimli:
-    
+
 .. code-block:: bash
 
     svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
@@ -83,7 +84,7 @@ In the first, cmake provide out of source build so we recommend using a build di
 .. code-block:: bash
 
     mkdir -p build
-    
+
 the main directory structure should looks like this:
 
 .. code-block:: bash
@@ -98,15 +99,15 @@ change to the build path:
     cd build
 
 and configure the build:
-    
+
 .. code-block:: bash
 
     cmake ../trunk
 
-If the output complains some missing dependencies you want to install .. just install these and repeat the the last step. 
+If the output complains some missing dependencies you want to install .. just install these and repeat the the last step.
 
 To build the library just run make
-    
+
 .. code-block:: bash
 
     make
@@ -114,12 +115,12 @@ To build the library just run make
 The libraries will be installed in build/lib and some test applications are installed in build/bin
 
 If you want to build the python bindings call
-    
+
 .. code-block:: bash
 
     make pygimli
 
-the _pygimli_.so library will be copied into the source path ../trunk/python/pygimli. 
+the _pygimli_.so library will be copied into the source path ../trunk/python/pygimli.
 To use the gimli installation there have to be set some environment variables:
 
 .. code-block:: bash
@@ -157,13 +158,13 @@ Windows using MinGW systems
 First install :term:`MinGW` and :term:`MSYS` to get a proper :term:`gcc` and a nice console
 
     * mingw-4.5.0 & msys-1.0.15 automatic installer: http://sourceforge.net/projects/mingw/files/
-    
+
         tested: mingw-get-inst-20100909.exe
 
 There is a new graphical installation and maintenance tool for MinGW which you should check out
         http://sourceforge.net/p/mingw/news/2013/07/graphical-installer-interface----new-snapshot-available/
 
-    
+
 The installation is common to the linux way with some small differences.
 
 Prepare the directory structure like described above:
@@ -190,10 +191,10 @@ cmake provide an interactive configuration and fine tuning, e.g., for adjusting 
 
 .. code-block:: bash
 
-    cmake-gui ../trunk 
+    cmake-gui ../trunk
 
 To build the library just run make
-    
+
 .. code-block:: bash
 
     make
@@ -214,7 +215,7 @@ Windows using CodeBlocks
 ........................
 
 First, for sure, you need codeblocks from: http://www.codeblocks.org/downloads/26
-    
+
     * codeblocks-10.05-setup.exe
 
 to come ....
@@ -233,7 +234,7 @@ Example Installation on Ubuntu
     mkdir -p ~/src/gimli
     cd ~/src/gimli
     svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
-    
+
     mkdir -p build
     cd build
     cmake ../trunk

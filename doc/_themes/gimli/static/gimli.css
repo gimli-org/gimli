@@ -3,6 +3,10 @@ html {
     background: url("bg.png") repeat fixed;
 }
 
+ul {
+padding-left: 10px;
+}
+
 .container {
     padding-left: 30px;
     padding-right: 30px;
@@ -189,11 +193,14 @@ blockquote em{
 }
 
 /* master content table */
-.doc-index.docutils .first em {
+.doc-index.docutils .first a {
     font-style: normal;
-    font-size: 18px;
+    font-size: 17px;
 }
 
+.doc-index.docutils .first em {
+    font-style: normal;
+}
 .doc-index.docutils .last {
     padding-left: 10px;
 }
