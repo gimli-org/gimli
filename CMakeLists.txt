@@ -230,14 +230,13 @@ if (SPHINX_FOUND)
     add_subdirectory(doc EXCLUDE_FROM_ALL)
     file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
     file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
-    file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "tutorial/*.png")
+    file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/*.png")
     list(APPEND DOCFILES ${BIBFILES} ${PNGFILES})
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
 
-#     message(${RSTFILES})
-#     foreach(file ${RSTFILES})
-#         message(${file})
-#     endforeach()
+    #foreach(file ${DOCFILES})
+        #message(${file})
+    #endforeach()
 
 endif()
 
