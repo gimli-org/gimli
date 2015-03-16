@@ -130,8 +130,8 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data)
     else:
-        if hasattr(data[0], '__len__') and not isinstance(
-                data, np.ma.core.MaskedArray):
+        if hasattr(data[0], '__len__') and not isinstance(data, 
+                                                        np.ma.core.MaskedArray):
 
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, **kwargs)
@@ -139,16 +139,22 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
                 print("No valid stream data:", data)
                 drawMesh(ax, mesh)
 
-        elif (min(data) == max(data)) or pg.haveInfNaN(data):
+        elif (min(data) == max(data)): #or pg.haveInfNaN(data):
 
             print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh)
         else:
             validData = True
-            if len(data) == mesh.cellCount():
-                gci = drawModel(ax, mesh, data, **kwargs)
-            elif len(data) == mesh.nodeCount():
-                gci = drawField(ax, mesh, data, **kwargs)
+            try:
+                if len(data) == mesh.cellCount():
+                    gci = drawModel(ax, mesh, data, **kwargs)
+                elif len(data) == mesh.nodeCount():
+                    gci = drawField(ax, mesh, data, **kwargs)
+            except Exception as e:
+                print("Exception occured: " + e)
+                print("Data: ", min(data), max(data), pg.haveInfNaN(data))
+                print("Mesh: ", mesh)
+                drawMesh(ax, mesh)
 
     ax.set_aspect('equal')
 
