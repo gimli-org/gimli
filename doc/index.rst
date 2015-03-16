@@ -30,7 +30,7 @@ Documentation
 
         Getting started
 
-    - :ref:`sec:design`
+      - :ref:`sec:design`
 
         Software design
 
@@ -38,7 +38,7 @@ Documentation
 
         How to install GIMLi on different platforms
 
-    - :ref:`sec:faq`
+      - :ref:`sec:faq`
 
         Frequently asked questions (with anwers!)
 
@@ -46,7 +46,7 @@ Documentation
 
         How to use GIMLi
 
-    - :ref:`chapt:examples`
+      - :ref:`chapt:examples`
 
         Interesting examples
 
@@ -54,7 +54,7 @@ Documentation
 
         Handy applications and tools shipped with GIMLi
 
-    - `PDF Manual <GIMLi_Documentation.pdf>`_
+      - `PDF Manual <GIMLi_Documentation.pdf>`_
 
         Printable version of this documentation
 
@@ -62,7 +62,7 @@ Documentation
 
         Reference for Python modules
 
-    - :gimliapi:`GIMLI`
+      - :gimliapi:`GIMLI`
 
         Reference for C++ modules
 
@@ -70,7 +70,7 @@ Documentation
 
         Papers and talks about (or using) GIMLi
 
-    - :ref:`sec:license`
+      - :ref:`sec:license`
 
         Terms of use and redistribution
 
@@ -86,7 +86,7 @@ Indices and tables
 
         All functions, classes and terms
 
-    - :ref:`modindex`
+      - :ref:`modindex`
 
         Quick access to all modules
 
@@ -94,6 +94,6 @@ Indices and tables
 
         Search this documentation
 
-    - :ref:`sec:glossary`
+      - :ref:`sec:glossary`
 
         Important terms explained
