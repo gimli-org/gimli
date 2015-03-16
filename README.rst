@@ -74,5 +74,5 @@ References
 ----------
 
 .. bibliography:: doc/biblio.bib
-    :style: alpha
+    :style: mystyle
     :all:

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-These are the python bindings for libgimli
+pyGIMLi - Python package for GIMLi including bindings to C++ library.
 
-import pygimli
+Usage:
 
-or
+.. code-block:: python
 
-import pygimli as pg
+    import pygimli as pg
+
 """
 
 from __future__ import print_function
@@ -457,7 +458,7 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pg.abs(v[i])
         return v
-    
+
     return _pygimli_.fabs(v)
 
 
