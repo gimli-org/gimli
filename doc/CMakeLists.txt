@@ -1,6 +1,6 @@
 
 if (DOXYGEN_FOUND)
-    set(DOXYGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/html/doc/gimliapi")
+    set(DOXYGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/doxygen")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/doxygen/doxyfile.in"
                     ${DOXYGEN_BUILD_DIR}/doxyfile)
     add_custom_target(doxygen
@@ -59,15 +59,14 @@ endforeach()
 add_custom_target(sphinxapi
     ALL
         # Copy build scripts for API doc generation
-        cp -f ${SPHINX_SRC_DIR}/doc/apigen.py ${SPHINX_SRCBUILD_DIR} &&
-        cp -f ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR} &&
+        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/apigen.py ${SPHINX_SRCBUILD_DIR} &&
+        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR} &&
         python ${SPHINX_SRCBUILD_DIR}/build_api.py
     COMMENT "Building pygimli api doc")
 
 add_custom_target(sphinxpdf
     ALL
         ${SPHINX_EXECUTABLE}
-        -q
         -T
         -b latex
         -c "${SPHINX_BINARY_BUILD_DIR}"
@@ -75,7 +74,7 @@ add_custom_target(sphinxpdf
         "${SPHINX_SRCBUILD_DIR}"
         "${SPHINX_PDF_DIR}" &&
         cd ${SPHINX_PDF_DIR} && make &&
-        cp gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
+        cmake -E copy_if_different gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
     COMMENT 
         "Building PDF documentation with sphinx"
     DEPENDS
@@ -85,8 +84,9 @@ add_custom_target(sphinxpdf
 
 add_custom_target(sphinxhtml
     ALL
+        cmake -E copy_directory
+        ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/doc/gimliapi &&
         ${SPHINX_EXECUTABLE}
-            -q
             -T
             -b html
             -c "${SPHINX_BINARY_BUILD_DIR}"
@@ -106,10 +106,11 @@ add_custom_target(sphinxhtml
 #add_dependencies(sphinx sphinx_check_sources)
 
 add_custom_target(doc
+    COMMENT
+        "Building HTML, API and PDF Documentation"
     DEPENDS
-        sphinxpdf
         sphinxhtml
-    
+        sphinxpdf
 )
 # 
 # add_custom_target(sphinxdoc
