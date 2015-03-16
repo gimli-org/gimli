@@ -24,8 +24,8 @@ What do you need to use GIMLi?:
 
 .. _sec:authors
 
-Authors aka GIMLi Group
------------------------
+Authors
+-------
 
 * **Carsten Rücker**
 

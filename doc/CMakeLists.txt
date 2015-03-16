@@ -26,6 +26,9 @@ set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
+# PDF output directory
+set(SPHINX_PDF_DIR "${CMAKE_CURRENT_BINARY_DIR}/pdf")
+
 configure_file(
      "${SPHINX_SRC_DIR}/doc/conf.py.in"
      "${SPHINX_BINARY_BUILD_DIR}/conf.py"
@@ -61,22 +64,43 @@ add_custom_target(sphinxapi
         python ${SPHINX_SRCBUILD_DIR}/build_api.py
     COMMENT "Building pygimli api doc")
 
+add_custom_target(sphinxpdf
+    ALL
+        ${SPHINX_EXECUTABLE}
+        -q
+        -T
+        -b latex
+        -c "${SPHINX_BINARY_BUILD_DIR}"
+        -d "${SPHINX_CACHE_DIR}"
+        "${SPHINX_SRCBUILD_DIR}"
+        "${SPHINX_PDF_DIR}" &&
+        cd ${SPHINX_PDF_DIR} && make
+    COMMENT 
+        "Building PDF documentation with sphinx"
+    DEPENDS
+        sphinx_check_sources
+)
+
 
 add_custom_target(sphinx
     ALL
         ${SPHINX_EXECUTABLE}
             -q
+            -T
             -b html
             -c "${SPHINX_BINARY_BUILD_DIR}"
             -d "${SPHINX_CACHE_DIR}"
             "${SPHINX_SRCBUILD_DIR}"
-            "${SPHINX_HTML_DIR}"
+            "${SPHINX_HTML_DIR}" &&
+        cd ${SPHINX_PDF_DIR} &&
+        cp gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
     COMMENT
-        "Building HTML documentation with Sphinx"
+        "Building HTML documentation with sphinx"
     DEPENDS
         sphinx_check_sources
         sphinxapi
         doxygen
+        sphinxpdf
 )
 
 #add_dependencies(sphinx pygimli)

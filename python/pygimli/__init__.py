@@ -257,7 +257,7 @@ def __setVal(self, idx, val):
             self.setVal(float(val), int(idx.start), int(idx.stop))
             return
         else:
-            "not yet implemented"
+            print("not yet implemented")
     elif isinstance(idx, tuple):
         #print(idx, type(idx))
         self.rowR(int(idx[0])).setVal(val, int(idx[1]))
@@ -479,11 +479,11 @@ def __CMP_stdVectorI__(self, val):
 def __EQ_stdVectorI__(self, val):
     raise Exception("__EQ_stdVectorI__ do not use")
 
-    ret = _pygimli_.BVector(len(self))
-    for i, v in enumerate(ret):
-        print(self[i] == val, int(self[i] == val))
-        #v = self[i] == val
-    print(ret)
+    #ret = _pygimli_.BVector(len(self))
+    # for i, v in enumerate(ret):
+    #    print(self[i] == val, int(self[i] == val))
+    #    v = self[i] == val
+    # print(ret)
 
 _pygimli_.stdVectorI.__cmp__ = __CMP_stdVectorI__
 _pygimli_.stdVectorI.__eq__ = __EQ_stdVectorI__
@@ -528,7 +528,7 @@ def asvector(array):
 def __svnversion__(path=__path__[0]):
     p = subprocess.Popen("svnversion -n %s" % path, shell=True,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, stderr) = p.communicate()
+    (stdout, _) = p.communicate()
     version = str(stdout)
     if version == "Nicht versioniertes Verzeichnis":
         return ""
@@ -559,7 +559,7 @@ _pygimli_.RQuaternion.rotMatrix = __getRotMatrix__
 # some rvector helpers
 
 
-def randN(self, n):
+def randN(n):
     """Create RVector of length n with normally distributed random numbers"""
     r = _pygimli_.RVector(n)
     _pygimli_.randn(r)
