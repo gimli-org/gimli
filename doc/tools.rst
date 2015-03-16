@@ -1,7 +1,7 @@
 .. _sec:tools:
 
-GIMLI Tools
-===========
+Tools
+=====
 
 Mesh manipulation
 -----------------
