@@ -31,7 +31,7 @@ The GIMLi library is structured into four layers (Fig. :ref:`fig:gimliblock`)
 that are based on each other:
 
 .. _fig:gimliblock:
-.. figure:: tutorial/pics/gimliblock.*
+.. figure:: tutorial/pics/gimliblock.png
     :align: center
 
     Scheme of the GIMLi library

@@ -37,7 +37,7 @@ sys.path.append(os.path.abspath('@SPHINX_SRC_DIR@/python/apps'))
 needs_sphinx = '1.2'
 
 # Check for external sphinx extensions
-deps = ['pybtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-bibtex']
+deps = ['sphinxcontrib-programoutput', 'sphinxcontrib-bibtex', 'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 
 req = []
@@ -54,6 +54,8 @@ if req:
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
+              'sphinx.ext.pngmath',
+              'sphinx.ext.doctest',
               'matplotlib.sphinxext.plot_directive',
               'matplotlib.sphinxext.only_directives',
               #'matplotlib.sphinxext.mathmpl',
@@ -61,8 +63,6 @@ extensions = ['sphinx.ext.autodoc',
               'myliterate_directive',
               'plot2rst',
               # 'sphinx.ext.mathjax', # nicer html output than pngmath
-              'sphinx.ext.pngmath',
-              'numpydoc',
               'doxylink'
               ]
 
