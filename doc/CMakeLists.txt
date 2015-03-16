@@ -74,7 +74,8 @@ add_custom_target(sphinxpdf
         -d "${SPHINX_CACHE_DIR}"
         "${SPHINX_SRCBUILD_DIR}"
         "${SPHINX_PDF_DIR}" &&
-        cd ${SPHINX_PDF_DIR} && make
+        cd ${SPHINX_PDF_DIR} && make &&
+        cp gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
     COMMENT 
         "Building PDF documentation with sphinx"
     DEPENDS
@@ -82,7 +83,7 @@ add_custom_target(sphinxpdf
 )
 
 
-add_custom_target(sphinx
+add_custom_target(sphinxhtml
     ALL
         ${SPHINX_EXECUTABLE}
             -q
@@ -91,16 +92,13 @@ add_custom_target(sphinx
             -c "${SPHINX_BINARY_BUILD_DIR}"
             -d "${SPHINX_CACHE_DIR}"
             "${SPHINX_SRCBUILD_DIR}"
-            "${SPHINX_HTML_DIR}" &&
-        cd ${SPHINX_PDF_DIR} &&
-        cp gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
+            "${SPHINX_HTML_DIR}"
     COMMENT
         "Building HTML documentation with sphinx"
     DEPENDS
         sphinx_check_sources
-        sphinxapi
         doxygen
-        sphinxpdf
+        sphinxapi
 )
 
 #add_dependencies(sphinx pygimli)
@@ -109,7 +107,8 @@ add_custom_target(sphinx
 
 add_custom_target(doc
     DEPENDS
-        sphinx
+        sphinxpdf
+        sphinxhtml
     
 )
 # 
