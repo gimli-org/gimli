@@ -56,24 +56,9 @@ Documentation
             Terms of use and redistribution
 
 
-    ##################
-    Indices and tables
-    ##################
-
-    .. list-table::
-        :class: doc-index
-
         * - :ref:`genindex`
 
             All functions, classes and terms
-
-          - :ref:`modindex`
-
-            Quick access to all modules
-
-        * - :ref:`search`
-
-            Search this documentation
 
           - :ref:`sec:glossary`
 
