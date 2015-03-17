@@ -123,8 +123,10 @@ from matplotlib import image
 
 
 CODE_LINK = """
+.. only:: html
 
-**Python source code:** :download:`download <{0}>` (generated using ``mpltools`` and |version|)
+    **Python source code:** :download:`download <{0}>`
+    (generated using |version|)
 
 """
 
@@ -327,14 +329,6 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
         sub_dir_list = src_dir.psplit()[-depth:]
         sub_dir = Path('/'.join(sub_dir_list) + '/')
 
-    #gallery_index.write(TOCTREE_TEMPLATE % (sub_dir + '\n   '.join(ex_names)))
-
-    tempex_names = str()
-    for ex_name in ex_names:
-        tempex_names += sub_dir + ex_name + "\n   "
-        #print(tempex_names)
-    gallery_index.write(TOCTREE_TEMPLATE % (tempex_names))
-
     for src_name in examples:
         write_example(src_name, src_dir, rst_dir, cfg)
 
@@ -356,9 +350,12 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
         elif gallery_style == 'list':
             gallery_index.write(GALLERY_LIST_TEMPLATE % info)
 
+    tempex_names = str()
+    for ex_name in ex_names:
+        tempex_names += sub_dir + ex_name + "\n   "
+    gallery_index.write(TOCTREE_TEMPLATE % (tempex_names))
+
     # update _templates/gallery.html
-    #print('/'*100)
-    #os.system(os.getcwd())
     BUILDDIR='_build/'
     os.system("python " + BUILDDIR + "sidebar_gallery.py")
 

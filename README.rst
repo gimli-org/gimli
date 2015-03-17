@@ -3,8 +3,12 @@
 About GIMLi
 ===========
 
-GIMLi is an open-source multi-method library for solving :ref:`inverse<sec:about_gimli_inversion>` 
-and :ref:`forward<sec:about_gimli_modelling>` modelling tasks.
+Introduction
+------------
+
+GIMLi is an open-source multi-method library for solving
+:ref:`inverse<sec:about_gimli_inversion>` and
+:ref:`forward<sec:about_gimli_modelling>` modelling tasks.
 
 What GIMLi is good for?:
 
@@ -76,3 +80,13 @@ References
 .. bibliography:: doc/biblio.bib
     :style: mystyle
     :all:
+
+.. only:: latex
+
+    License
+    -------
+    GIMLi is distributed under the terms of the **GNU GENERAL PUBLIC LICENSE**
+    of the Free Software Foundation, Inc. (http://fsf.org/)
+
+    Details can be found on the `GIMLi website
+    <http://www.pygimli.org/COPYING.html>`_.

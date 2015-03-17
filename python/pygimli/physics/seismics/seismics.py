@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Full waveform seismics and utilities
+Full waveform seismics and utilities
 """
 import pygimli as pg
 import numpy as np
@@ -83,7 +83,7 @@ def drawWiggle(axes, x, t, xoffset=0.0,
 
     Examples
     --------
-    >>> from pygimli.physics.seismics import ricker, wiggle
+    >>> from pygimli.physics.seismics import ricker, drawWiggle
     >>> import matplotlib.pyplot as plt
     >>> import numpy as np
     >>> t = np.arange(0, 0.02, 1./5000)
@@ -117,9 +117,9 @@ def drawWiggle(axes, x, t, xoffset=0.0,
 def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
     r"""
     Extract and show time series from wave field
-        
+
     Extract and show time series from wave field
-        
+
     Parameters
     ----------
     """
@@ -131,24 +131,24 @@ def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
     if i is None:
         i = len(u)-1
     t=np.linspace(0, i*dt*1000, i+1)
-        
+
     for iw, n in enumerate(ids):
         pos = mesh.node(n).pos()
         print(pos)
         axes.plot(pos[0], 0.05, '^', color='black')
-        
+
         trace = pg.cat(pg.RVector(0), u[:(i+1), n])
         #print(i+1, n)
         #print(trace, (max(pg.abs(trace))))
-        
+
         #if max(pg.abs(trace)) > 1e-8:
-        
+
         trace *= np.exp(0.5*t)
         trace /= (max(pg.abs(trace))*1.5)
-        
+
         drawWiggle(axes, trace, t=t, xoffset=pos[0])
-            
-        
+
+
 def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     r"""
     Solve pressure wave equation.

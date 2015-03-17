@@ -30,16 +30,14 @@ We need some more or less important tools to build libgimli
 Optional Prerequisites -- some can be installed via provided scripts
 ....................................................................
 
-    * blas and lapack for suitesparse (system or auto via cmake)
-    * SuiteSparse http://www.cise.ufl.edu/research/sparse/SuiteSparse/
-      tested: SuiteSparse-4.2.1.tar.gz (system or auto via cmake)
-
-    * triangle http://www.cs.cmu.edu/~quake/triangle.html (auto via cmake)
-    * cppunit
-    * procps
-    * gccxml, pygccxml and pyplusplus (auto via cmake)
-    * matplotlib >=1.1.0
-    * doxygen
+* blas and lapack for suitesparse (system or auto via cmake)
+* SuiteSparse http://www.cise.ufl.edu/research/sparse/SuiteSparse (system or auto via cmake)
+* triangle http://www.cs.cmu.edu/~quake/triangle.html (auto via cmake)
+* cppunit
+* procps
+* gccxml, pygccxml and pyplusplus (auto via cmake)
+* numpy
+* matplotlib >=1.1.0
 
 
 Example Installation on Vanilla Debian
