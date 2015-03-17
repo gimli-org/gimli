@@ -262,7 +262,13 @@ class ApiDocWriter(object):
             Contents of API doc
         """
         # get the names of all classes and functions
+
+        # FW: the following parses via import, i.e. with c++ extensions
         functions, classes = self._parse_module_with_import(uri)
+
+        # this one without
+        #functions, classes = self._parse_module(uri)
+
         if not len(functions) and not len(classes) and DEBUG:
             print('WARNING: Empty -', uri)  # dbg
             return ''
@@ -283,12 +289,14 @@ class ApiDocWriter(object):
 
         ad += '\n.. automodule:: ' + uri + '\n'
         ad += '\n.. currentmodule:: ' + uri + '\n'
-        ad += '.. autosummary::\n\n'
+        ad += '\n.. only:: html\n\n'
+        ide = '    ' # 4 spaces indent
+        ad += ide + '.. autosummary::\n\n'
         for f in functions:
-            ad += '   ' + uri + '.' + f + '\n'
+            ad += 2 * ide + uri + '.' + f + '\n'
         ad += '\n'
         for c in classes:
-            ad += '   ' + uri + '.' + c + '\n'
+            ad += 2 * ide + uri + '.' + c + '\n'
         ad += '\n'
 
         for f in functions:
@@ -461,11 +469,13 @@ class ApiDocWriter(object):
         w('.. _sec:pygimliapi:\n\n')
         w('.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n')
 
-        title = "pyGIMLi API"
+        title = "Documentation of Python modules"
 
         w(title + "\n")
         w("=" * len(title) + "\n\n")
         w('.. toctree::\n   :maxdepth: 1\n\n')
         for f in self.written_modules:
-            w('   %s\n' % os.path.join(relpath,f))
+            # XXX: Leave out C++ part for the time being.
+            if not f is "pygimli":
+                w('   %s\n' % os.path.join(relpath,f))
         idx.close()

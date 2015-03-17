@@ -31,7 +31,7 @@ Documentation
 
             Interesting examples
 
-        * - :doc:`pygimliapi/index`
+        * - :doc:`pyGIMLi API <pygimliapi/index>`
 
             Reference for Python modules
 
@@ -90,4 +90,5 @@ Documentation
         _examples_auto/index.rst
         _tutorials_auto/index.rst
         tools.rst
+        pygimliapi/index.rst
         glossary.rst

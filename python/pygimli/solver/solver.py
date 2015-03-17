@@ -57,7 +57,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
     if hasattr(arg, '__len__'):
         if type(arg) == np.ndarray:
             return arg
-            
+
         for n in nDofs:
             if len(arg) == n:
                 return arg
@@ -120,7 +120,7 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
         and should return an appropriate value.
 
     Returns
-    -------S
+    -------
     val : float or list of ..
     """
     if hasattr(boundary, '__len__'):
@@ -250,7 +250,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
 
     default : float [0.0]
         Fill all unmapped atts to this default.
-        
+
     Returns
     -------
     atts : array
