@@ -1,7 +1,7 @@
 .. _sec:faq:
 
-FAQs
-====
+Frequently asked questions
+==========================
 
 How do subsection...
 --------------------

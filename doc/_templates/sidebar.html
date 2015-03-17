@@ -1,3 +1,9 @@
+{%- if display_toc %}
+<h4 class="sidebar-box-heading">Contents</h4>
+<div class="well sidebar-box toc">
+    {{ toc|replace('<ul>', '<ul class="nav nav-list">') }}
+</div>
+{%- endif %}
 {% if pagename != 'index' %}
 <h4 class="sidebar-box-heading">{{ _('Navigation') }}</h4>
 <div class="well sidebar-box">
@@ -15,12 +21,6 @@
     </ul>
 </div>
 {% endif %}
-{%- if display_toc %}
-<h4 class="sidebar-box-heading">Contents</h4>
-<div class="well sidebar-box toc">
-    {{ toc|replace('<ul>', '<ul class="nav nav-list">') }}
-</div>
-{%- endif %}
 
 <h4 class="sidebar-box-heading">Gallery</h4>
 <div>

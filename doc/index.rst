@@ -19,7 +19,7 @@ Documentation
 
             How to install GIMLi on different platforms
 
-          - :ref:`sec:faq`
+          - :ref:`FAQs <sec:faq>`
 
             Frequently asked questions (with anwers!)
 
@@ -35,7 +35,7 @@ Documentation
 
             Reference for Python modules
 
-          - :gimliapi:`GIMLI`
+          - :gimliapi:`GIMLi API <GIMLI>`
 
             Reference for C++ modules
 
@@ -56,13 +56,27 @@ Documentation
             Terms of use and redistribution
 
 
-        * - :ref:`genindex`
+    ##################
+    Indices and tables
+    ##################
 
-            All functions, classes and terms
+    .. list-table::
+        :class: doc-index
+
+        * - :ref:`search`
+
+            Search this documentation
 
           - :ref:`sec:glossary`
 
             Important terms explained
+
+        * - :ref:`genindex`
+
+            All functions, classes and terms
+
+          -
+
 
 .. only:: latex
 
@@ -70,14 +84,10 @@ Documentation
         :maxdepth: 4
 
         ../README.rst
-        ../INSTALL.rst
         design.rst
+        ../INSTALL.rst
         faq.rst
         _examples_auto/index.rst
         _tutorials_auto/index.rst
         tools.rst
-        pygimli.rst
-        api/pygimli/modules.rst
-        publist.rst
-        ../COPYING.rst
         glossary.rst
