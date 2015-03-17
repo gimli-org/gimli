@@ -8,6 +8,8 @@ Mesh manipulation
 
 meshconvert
 ...........
+.. program-output:: meshconvert -h
+    :nostderr: 
 
 dctriangle
 ..........
@@ -17,6 +19,8 @@ Polytools
 
 meshmerge
 .........
+.. program-output:: meshmerge -h
+    :nostderr: 
 
 Data manipulation
 -----------------

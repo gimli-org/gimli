@@ -298,6 +298,8 @@ def findVelocity(mesh, v, b, c, nc=None):
 
 def findDiffusion(mesh, a, b, c, nc=None):
     """
+    TODO
+
     Parameters
     ----------
     a :
@@ -343,9 +345,9 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
                               scheme='CDS', sparse=False, time=0.0,
                               userData=None):
     """
-        Peclet Number - ratio between convection/diffusion * Length
+    Peclet Number - ratio between convection/diffusion * Length
 
-        Advection .. forced convection
+    Advection .. forced convection
     """
     if a is None:
         a = pg.RVector(mesh.boundaryCount(), 1.0)
@@ -648,15 +650,15 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
 
 def createFVPostProzessMesh(mesh, u, uDirichlet):
     """
-        Create a mesh suitable for node based post processing of cell
-        centered Finite Volume solutions.
-        This is something like cellDataToPointData with extra Dirichlet points
-        but without smoothing due to interpolation.
+    Create a mesh suitable for node based post processing of cell
+    centered Finite Volume solutions.
+    This is something like cellDataToPointData with extra Dirichlet points
+    but without smoothing due to interpolation.
 
-        IMPROVE DOC!!
+    IMPROVE DOC!!
 
-        Parameters
-        ----------
+    Parameters
+    ----------
 
 
     """
@@ -740,9 +742,9 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
     """
     """
     ws=kwargs.pop('ws', None)
-    
-    velocityRelaxation = kwargs.pop('vRelax', 0.5) 
-    pressureRelaxation = kwargs.pop('pRelax', 0.8) 
+
+    velocityRelaxation = kwargs.pop('vRelax', 0.5)
+    pressureRelaxation = kwargs.pop('pRelax', 0.8)
 
     pressureCoeff = None
     preCNorm = []
@@ -843,7 +845,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
 
         preCNorm.append(pg.norm(pressureCorrection))
         divVNorm.append(pg.norm(div))
-        
+
         if ws:
             ws.div=div
 #        __d('div', div)

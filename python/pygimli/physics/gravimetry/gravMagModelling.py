@@ -21,21 +21,23 @@ adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__])
 
 def magnetization(lat, lon, suszept, dat=(2010, 1, 1)):
     """
+    TODO
     """
     T0, I, D = GeoMagT0(lat, lon, 0, dat)
-    """indizierte Magnetisierung"""
+    # indizierte Magnetisierung
     Mi = 1. / mu0 * suszept * T0
-    """remanente Magnetisierung"""
+    # remanente Magnetisierung
     Mr = 0.
 
     print(T0, I, D, "abs: ", np.sqrt(T0.dot(T0)))
 
     return Mr + Mi
-# magnetization(...)
 
 
 def BZPoly(pnts, poly, M, openPoly=False):
     """
+    TODO
+
     Parameters
     ----------
 
@@ -74,13 +76,16 @@ def BaZSphere(pnts, R, pos, M):
 
 
 def BaZCylinderHoriz(pnts, R, pos, M):
-    """"""
+    """
+    TODO
+    """
     return poissonEoetvoes(adot(
         M, gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
 
 
 def poissonEoetvoes(dg):
     """
+    TODO
     """
     return mu0 / (4.0 * np.pi * G) * dg
 
@@ -123,6 +128,8 @@ def gradUSphere(r, R, rho, pos=(0., 0., 0.)):
 
 def gradGZSphere(r, R, rho, pos=(0., 0., 0.)):
     """
+    TODO
+
     .. math:: g = -\\nabla u
 
     Parameters
@@ -142,6 +149,8 @@ def gradGZSphere(r, R, rho, pos=(0., 0., 0.)):
 
 def uCylinderHoriz(pnts, R, rho, pos=(0., 0.)):
     """
+    TODO
+
     Parameters
     ----------
 
@@ -187,6 +196,8 @@ def gradUCylinderHoriz(r, R, rho, pos=(0., 0.)):
 
 def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
     """
+    TODO
+
     .. math:: g = -grad u(r), with r = [x,z], |r| = \sqrt(x^2+z^2)
 
     Parameters
@@ -248,6 +259,8 @@ def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
 
 def gradGZHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
     """
+    TODO
+
     .. math:: g = -\\nabla u
 
     Parameters
@@ -386,8 +399,8 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
     pnts must be numbered clockwise. Else change the sign of the result.
     Return values are in mGal.
 
-    Bei der magnetischen Lösung fehlt vermutlich ein 1/4.Pi im won & Bevis
-    (ötvös beziehung gl (9) ..... !!check this!!
+    Bei der magnetischen Loesung fehlt vermutlich ein 1/4.Pi im won & Bevis
+    (oetvoes beziehung gl (9) ..... !!check this!!
     """
 
     qpnts = pnts
@@ -610,7 +623,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
 
     dgi = None
     dgzi = None
-    
+
     for i, p in enumerate(pnts):
         mesh.translate(-pg.RVector3(p))
 

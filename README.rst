@@ -74,12 +74,15 @@ Currently there is a Finite Element Framework for solving partial differential e
 
 Please see :ref:`modelling tutorial<tut:modelling>` for examples and more details.
 
-References
-----------
+.. References are not displayed correctly in tex, so we leave this out for the moment
+.. only:: html
 
-.. bibliography:: doc/biblio.bib
-    :style: mystyle
-    :all:
+    References
+    ----------
+
+    .. bibliography:: doc/biblio.bib
+        :style: mystyle
+        :all:
 
 .. only:: latex
 
