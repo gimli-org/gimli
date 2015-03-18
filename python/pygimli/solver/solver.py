@@ -284,7 +284,7 @@ def fillEmptyToCellArray(mesh, vals):
     """
     Prolongate empty cell values to complete cell attributes.
 
-    Its is possible that you have zero values that need to be filled with
+    It is possible that you have zero values that need to be filled with
     appropriate attributes.
     This function tries to fill the empty values successive prolongation of the
     non zeros.
@@ -305,11 +305,40 @@ def fillEmptyToCellArray(mesh, vals):
     atts = pg.RVector(mesh.cellCount(), 0.0)
     oldAtts = mesh.cellAttributes()
     mesh.setCellAttributes(vals)
-
+    mesh.createNeighbourInfos()
     # std::vector< Cell * >
     #empties = []
-
-    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1)
+    
+    #! search all cells with empty neighbours
+    ids = pg.find(mesh.cellAttributes() != 0.0)
+       
+    for c in mesh.cells(ids):
+        for i in range(c.neighbourCellCount()):
+            nc = c.neighbourCell(i)
+            
+            if nc:
+                if nc.attribute() == 0.0:
+                    #c.setAttribute(99999)
+                    
+                    b = pg.findCommonBoundary(c, nc)
+                    ### search along a slope 
+                    pos = b.center() - b.norm()*1000.
+                    sf = pg.RVector()
+                    startCell = c
+                                        
+                    while startCell:
+                    
+                        startCell.shape().isInside(pos, sf, False)
+                        nextC = startCell.neighbourCell(sf)
+                        if nextC:
+                            if nextC.attribute()==0.0:
+                                nextC.setAttribute(c.attribute())
+                            else:
+                                break
+                        
+                        startCell = nextC
+    
+    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1 )
     atts = mesh.cellAttributes()
     mesh.setCellAttributes(oldAtts)
     return atts

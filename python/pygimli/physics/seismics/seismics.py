@@ -90,10 +90,10 @@ def drawWiggle(axes, x, t, xoffset=0.0,
     >>> r = ricker(100., t, 1./100)
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(1,1,1)
-    >>>
-    >>> drawWiggle(ax, r, t, 0, posColor='red', negColor='blue', alpha=0.2)
+    >>> drawWiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue', alpha=0.2)
     >>> drawWiggle(ax, r, t, xoffset=1)
-    >>> drawWiggle(ax, r, t, 2, posColor='black', negColor='white', alpha=1.0)
+    >>> drawWiggle(ax, r, t, xoffset=2, posColor='black', negColor='white', alpha=1.0)
+    >>> ax.invert_yaxis()
     >>> plt.show()
 
     """

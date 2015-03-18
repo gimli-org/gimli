@@ -597,6 +597,24 @@ std::vector < Cell * > Mesh::findCellByAttribute(double from, double to) const {
     return vCell;
 }
 
+std::vector< Cell * > Mesh::cells(const IndexArray & ids) const {
+    std::vector < Cell * > v(ids.size());
+    for (Index i = 0; i < ids.size(); i ++) v[i] = cellVector_[ids[i]];
+    return v;
+}
+
+std::vector< Node * > Mesh::nodes(const IndexArray & ids) const{
+    std::vector < Node * > v(ids.size());
+    for (Index i = 0; i < ids.size(); i ++) v[i] = nodeVector_[ids[i]];
+    return v;
+}
+    
+std::vector< Boundary * > Mesh::boundaries(const IndexArray & ids) const{
+    std::vector < Boundary * > v(ids.size());
+    for (Index i = 0; i < ids.size(); i ++) v[i] = boundaryVector_[ids[i]];
+    return v;
+}
+    
 void Mesh::setCellMarker(const IndexArray & ids, int marker){
     for(IndexArray::const_iterator it = ids.begin(); it != ids.end(); it++){
         if (*it < cellCount()){

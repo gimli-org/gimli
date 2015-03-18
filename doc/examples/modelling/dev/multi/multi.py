@@ -285,6 +285,16 @@ class ERT(MethodManager):
         data.set('rhoa', res)
         return data
     
+class Gravimetry(MethodManager):
+    """
+        General Gravimetry Method Manager
+    """
+    
+    def __init__(self, verbose=False):
+        """Default constructor."""
+        super(type(Gravimetry), self).__init__(verbose)
+        
+
 def createTestWorld1(maxArea=0.2, verbose=0):
     boundary = []
     boundary.append([-20.0,   0.0]) #0
@@ -561,13 +571,13 @@ def calcVelocity(mesh, permeabilty, velBoundary, preBoundary):
     
         #plt.semilogy(divVNorm)
         #pg.show(mesh, pg.cellDataToPointData(mesh, pres), cmap='b2r')
-        data=pg.cellDataToPointData(mesh,
-                                    np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1]))
+        #data=pg.cellDataToPointData(mesh,
+                                    #np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1]))
         
-        ax, cbar = pg.show(mesh, ws.div, colorBar=1, label='divergence')
-        ax, cbar = pg.show(mesh, data, colorBar=1, label='Velocity')
-        pg.show(mesh, vel, axes=ax)
-        pg.showNow()
+        #ax, cbar = pg.show(mesh, ws.div, colorBar=1, label='divergence')
+        #ax, cbar = pg.show(mesh, data, colorBar=1, label='Velocity')
+        #pg.show(mesh, vel, axes=ax)
+        #pg.showNow()
         
     return vel
 
@@ -623,7 +633,7 @@ def calcGravKernel(mesh):
     return gravPointsX, Gdg
 
 def calcApparentResistivities(mesh, resistivities):
-    ert = ERT(verbose=True)
+    ert = ERT(verbose=False)
     ertPointsX = [pg.RVector3(x,0) for x in np.arange(-19, 19.1, 1)]
     ertScheme = ert.createData(ertPointsX, scheme="Dipole Dipole (CC-PP)")
     
@@ -645,7 +655,7 @@ def calcApparentResistivities(mesh, resistivities):
         ertData.set('err', pg.abs(errVolt / voltage) + errPerc / 100.0)
         print('err min:', min(ertData('err'))*100, 'max:', max(ertData('err'))*100)
         ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
-        sys.exit()
+        #sys.exit()
         for i in range(0, len(resistivities)):
             tic =  time.time()
             rhoa[i] = ert.fop.response(resistivities[i])
@@ -688,18 +698,18 @@ def calcSeismics(mesh, vP):
                                       markerBoundary=1,
                                       isSubSurface=False, verbose=False)
     print(meshSeis)
-    meshSeis = meshSeis.createH2()
+    meshSeis = meshSeis.createP2()
     vP = pg.interpolate(mesh, vP, meshSeis.cellCenters())
     #mesh = meshSeis.createH2()
     mesh = meshSeis
     vP = pg.solver.fillEmptyToCellArray(mesh, vP)
     print(mesh)
-    #ax, cbar = pg.show(mesh, data=vP)
-    #pg.show(mesh, axes=ax)
-    #pg.showNow()
+    ax, cbar = pg.show(mesh, data=vP)
+    pg.show(mesh, axes=ax)
+    pg.showNow()
     
-    h = pg.median(mesh.boundarySizes())/2
-    dt = h * 0.5/max(vP)
+    h = pg.median(mesh.boundarySizes())
+    dt = 0.5 * h /max(vP)
     tmax = 50./min(vP)
     times = np.arange(0.0, tmax, dt)
         
@@ -709,10 +719,11 @@ def calcSeismics(mesh, vP):
     solutionName = createCacheName('seis', mesh, times)
     try:   
         u = pg.load(solutionName + '.bmat')
+        uI = pg.load(solutionName + 'I.bmat')
     except Exception as e:
         print(e)
         print("Building .... ")
-        f0 = 1/dt/10
+        f0 = 1./dt*0.1
         
         print("h:", round(h,2), "dt:", round(dt,5), "1/dt:", round(1/dt,1), "f0", round(f0,2))
         
@@ -722,7 +733,12 @@ def calcSeismics(mesh, vP):
         plt.show()
         u = solvePressureWave(mesh, vP, times, sourcePos=geophPoints[38],
                             uSource=uSource, verbose=10)
+        
         u.save(solutionName)
+        uI = pg.RMatrix()
+        pg.interpolate(mesh, u, mesh.cellCenters(), uI)
+        uI.save(solutionName+'I')
+        
         
     nodes = [mesh.findNearestNode(p) for p in geophPoints]
     
@@ -732,21 +748,28 @@ def calcSeismics(mesh, vP):
     plt.show()
         
     fig = plt.figure()
-    
-    ax, cbar = pg.show(mesh, data=vP)
+    fig, ax = fig, ax = plt.subplots()
+    gci = pg.mplviewer.drawModel(ax, mesh, data=uI[0], cmap='b2r')
+        
+    #ax, cbar = pg.show(mesh, data=vP)
     #pg.showNow()
     #ax = fig.add_subplot(1,1,1)
     for i in range(1, len(u), 5):
-        ui = u[i]
+        ui = uI[i]
         ui = ui / max(pg.abs(ui))
         ui = pg.logDropTol(ui, 1e-2)
         cMax = max(pg.abs(ui))
         
-        ax.clear()
-        #pg.show(mesh, axes=ax)
-        drawField(ax, mesh, data=ui,
-                  cMin=-cMax, cMax=cMax,
-                  cmap='RdBu')
+        pg.mplviewer.setMappableData(gci, 
+                                    ui,
+                                    cMin=-cMax, cMax=cMax,
+                                    logScale=False
+                                    )
+        #ax.clear()
+        ##pg.show(mesh, axes=ax)
+        #drawField(ax, mesh, data=ui,
+                  #cMin=-cMax, cMax=cMax,
+                  #cmap='RdBu')
         #ax.set_xlim((-25, 25))
         #ax.set_ylim((-25, 0))
         plt.pause(0.001)
@@ -772,7 +795,7 @@ permeabilty = permeabiltyEngelhardtPitter(porosity, mesh=mesh)
 
 vP = velocityVp(porosity, mesh=mesh)
 
-#calcSeismics(mesh, vP)
+calcSeismics(mesh, vP)
 print("Seismics:", swatch.duration(True))
 
 vel = calcVelocity(mesh, permeabilty, velBoundary, preBoundary)
@@ -899,7 +922,7 @@ if vis:
                                     )
     cbar = createColorbar(gciRes, orientation=orientation, label='Resistivity')
     axRes.set_xlim((-20, 20))
-    axRes.set_ylim((-20, 00))
+    axRes.set_ylim((-14, 00))
     
     # ** Apparent resistivities (data) **
     gciARes = ert.show(ertScheme, values=rhoa[0], axes=axReA, 
