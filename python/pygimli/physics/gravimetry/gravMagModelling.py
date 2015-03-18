@@ -41,11 +41,11 @@ def BZPoly(pnts, poly, M, openPoly=False):
     Parameters
     ----------
 
-    pnts :
-        Measurment points = [[p1x, p1z], [p2x, p2z],...]
-    poly :
-        Polygon = [[p1x, p1z], [p2x, p2z],...]
-    M :
+    pnts : list
+        Measurement points [[p1x, p1z], [p2x, p2z],...]
+    poly : list
+        Polygon [[p1x, p1z], [p2x, p2z],...]
+    M : [M_x, M_y, M_z]
         Magnetization = [M_x, M_y, M_z]
 
     """
@@ -55,6 +55,8 @@ def BZPoly(pnts, poly, M, openPoly=False):
 
 def BaZSphere(pnts, R, pos, M):
     """
+    Analytical solution
+    
     Calculate the vertical component of the anomalous magnetic field Bz for a
     buried sphere at position pos with radius R for a given magnetization M at
     measurement points pnts.
@@ -170,6 +172,8 @@ def uCylinderHoriz(pnts, R, rho, pos=(0., 0.)):
 
 def gradUCylinderHoriz(r, R, rho, pos=(0., 0.)):
     """
+    Analytical solution
+    
     Calculate horizontal component of gravimetric field in mGal
 
     .. math::
@@ -225,6 +229,8 @@ def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
 
 def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
     """
+    Analytical solution
+    
     g = -grad u,
 
     Parameters

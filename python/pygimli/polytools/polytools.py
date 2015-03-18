@@ -189,15 +189,20 @@ def mergePolygons(pols):
     
     Examples
     --------
+    >>> from pygimli.polytools import *
+    >>> from pygimli.meshtools import createMesh
+    >>> from pygimli.mplviewer import drawMesh
+    >>> import matplotlib.pyplot as plt
     >>> world = createWorldPolygon(start=[-10, 0], end=[10, -10], marker=1)
     >>> c1 = createCirclePolygon([-1, -3], radius=1.5, area=0.1, marker=2)
     >>> c2 = createCirclePolygon([-6, -5], radius=[1.5, 3.5], isHole=1)
     >>> r1 = createRectanglePolygon([3, -5], size=[2, 2], marker=3)
     >>> r2 = createRectanglePolygon([5, -5], size=[2, 2], marker=4, area=0.1)
-
     >>> plc = mergePolygons([world, c1, c2, r1, r2])
-    >>> pg.show(plc, showLater=1)
-    >>> pg.show(createMesh(plc))
+    >>> fig, ax = plt.subplots()
+    >>> drawMesh(ax, plc)
+    >>> drawMesh(ax, createMesh(plc))
+    >>> plt.show()
     """
     poly = pg.Mesh(2)
     
@@ -409,3 +414,18 @@ def polyTranslate(filename, x=0.0, y=0.0, z=0.0, verbose=True):
            " -y " + str(y) +
            " -z " + str(z) + " " + filename)
 
+if __name__ == "__main__":
+    from pygimli.polytools import *
+    from pygimli.meshtools import createMesh
+    from pygimli.mplviewer import drawMesh
+    import matplotlib.pyplot as plt
+    world = createWorldPolygon(start=[-10, 0], end=[10, -10], marker=1)
+    c1 = createCirclePolygon([-1, -3], radius=1.5, area=0.1, marker=2)
+    c2 = createCirclePolygon([-6, -5], radius=[1.5, 3.5], isHole=1)
+    r1 = createRectanglePolygon([3, -5], size=[2, 2], marker=3)
+    r2 = createRectanglePolygon([5, -5], size=[2, 2], marker=4, area=0.1)
+    plc = mergePolygons([world, c1, c2, r1, r2])
+    fig, ax = plt.subplots()
+    drawMesh(ax, plc)
+    drawMesh(ax, createMesh(plc))
+    plt.show()

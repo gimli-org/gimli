@@ -256,9 +256,21 @@ public:
     const std::vector< Node * > & nodes() const { return nodeVector_; }
 
     const std::vector< Cell * > & cells() const { return cellVector_; }
-
+    
+    /*! Return const reference to all boundaries*/
     const std::vector< Boundary * > & boundaries() const { return boundaryVector_; }
 
+    /*! Return vector of node from index list */
+    std::vector< Node * > nodes(const IndexArray & ids) const;
+    
+    /*! Return vector of cells from index list */
+    std::vector< Cell * > cells(const IndexArray & ids) const;
+    
+    /*! Return vector of boundaries from index list */
+    std::vector< Boundary * > boundaries(const IndexArray & ids) const;
+    
+    
+    
     inline uint nodeCount() const { return nodeVector_.size(); }
     Node & node(uint i) const;
     Node & node(uint i);

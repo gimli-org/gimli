@@ -101,19 +101,19 @@ def readSIP256file(resfile, verbose=False):
     """
     read SIP256 file (RES format) - can be used for 2d SIP by pybert/sip
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
         filename - *.RES file (SIP256 raw output file)
         verbose - do some output [False]
 
-    Returns:
-    --------
+    Returns
+    -------
         header - dictionary of measuring setup
         DATA - data matrix
         AB - list of current injection
         RU - list of remote units
 
-    Examples:
+    Examples
     --------
         header, DATA, AB, RU = readSIP256file(filename, TrueS)
     """
@@ -235,8 +235,8 @@ class SIPSpectrum():
                  f=None, amp=None, phi=None, basename='new'):
         """init SIP class with either filename to read or data vectors
 
-        Examples:
-        ---------
+        Examples
+        --------
         >>> sip = SIPSpectrum('myfilename.txt', unify=True) # unique f values
         >>> sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
         """

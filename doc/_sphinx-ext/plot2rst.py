@@ -184,7 +184,8 @@ class RedirectOutput:
     def write(self, what):
         ##Do not put a print statement here!!##
         #self.logFile.write( what )
-        self.buff.append(what)
+        pass
+        #self.buff.append(what)
 
 
 
@@ -612,17 +613,22 @@ def process_blocks(blocks, src_path, image_path, cfg):
     anim_num = 1
     lastCoutBuff = []
 
+    tmpSysOut = sys.stdout
+    tmpSysErr = sys.stderr
+            
     print("Processing:", src_path)
     plt.ion()
     for i, (blabel, brange, bcontent) in enumerate(blocks):
         if blabel == 'code':
 
-            #print(bcontent, example_globals)
+            print('-'*100)
+            print(bcontent, example_globals)
 
-            tmpSysOut = sys.stdout
-            tmpSysErr = sys.stderr
-            sys.stdout = RedirectOutput( "cout" )
-            sys.stderr = RedirectOutput( "cerr" )
+            #tmpSysOut = sys.stdout
+            #tmpSysErr = sys.stderr
+            
+            sys.stdout = RedirectOutput("cout")
+            sys.stderr = RedirectOutput("cerr")
 
             exec(bcontent, example_globals)
             rst_blocks.append(codestr2rst(bcontent))
@@ -635,15 +641,16 @@ def process_blocks(blocks, src_path, image_path, cfg):
             sys.stdout = tmpSysOut
             sys.stderr = tmpSysErr
 
-            #print('##########################################################')
-            #print coutbuff
-            #print len(cerrbuff), cerrbuff
+            print('#'*100)
+            print("coutbuf:", coutbuff)
+            print("cerrbuf:", cerrbuff)
 
-            #if len(coutbuff) > 0:
-                #rst_blocks.append(printcout2rst(coutbuff))
+            if len(coutbuff) > 0:
+                rst_blocks.append(printcout2rst(coutbuff))
 
             if len(cerrbuff) > 0:
                 rst_blocks.append(printcerr2rst(cerrbuff))
+            print('-'*100)
 
         else:
             if i in idx_inline_plot:

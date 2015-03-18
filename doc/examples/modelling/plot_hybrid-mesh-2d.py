@@ -23,7 +23,7 @@ from pygimli.meshtools import merge2Meshes, appendTriangleBoundary
 """
 We continue by building a regular grid and assign the marker 2 to all cells.
 """
-
+print("-4")
 xmin, xmax = 0., 50.
 zmin, zmax = -50., -25.
 
@@ -36,6 +36,7 @@ mesh1.create2DGrid(xreg, zreg, 0)
 for c in mesh1.cells():
     c.setMarker(2)
 
+print("-3")
 print(mesh1)
 
 """
@@ -60,7 +61,7 @@ poly.createEdge(n1, n2)
 n1 = poly.createNode(xmin, z2, 0.0)
 poly.createEdge(n1, n2)
 poly.createEdge(n1, n0)
-
+print("-2")
 tri = pg.TriangleWrapper(poly)
 tri.setSwitches('-pzeAfaq31')
 
@@ -72,7 +73,7 @@ Now we can generate the unstructured mesh.
 """
 mesh2 = pg.Mesh(2)
 tri.generate(mesh2)
-
+print("-1")
 for cell in mesh2.cells():
     cell.setMarker(1)
 
@@ -82,7 +83,7 @@ for cell in mesh2.cells():
 Finally, the grid and the unstrcutured mesh can be merged to single mesh for further
 modelling.
 """
-
+print("0")
 mesh3 = merge2Meshes(mesh1, mesh2)
 
 """
