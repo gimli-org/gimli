@@ -4,7 +4,7 @@ import os
 import pygimli as pg
 import numpy as np
 
-from pygimli.polytools import *
+import pygimli.polytools as plc
 
 def createMesh(poly, quality=30, area=0.0,
                smooth=None, switches=None,
@@ -52,7 +52,7 @@ def createMesh(poly, quality=30, area=0.0,
     #poly == [pg.Mesh, ]
     if isinstance(poly, list):
         if isinstance(poly[0], pg.Mesh):
-            return createMesh(mergePolygons(poly),
+            return createMesh(plc.mergePLC(poly),
                               quality, area, smooth, switches, verbose)
     #poly == [pos, pos, ]    
     if isinstance(poly, list) or isinstance(poly, type(zip)):
@@ -637,8 +637,11 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
 #    sys.exit()
     return poly
 
+def createParaMesh2dGrid(*args, **kwargs):
+    print("API change here .. use createParaMesh2DGrid instead")
+    return createParaMesh2DGrid(*args, **kwargs)
 
-def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
+def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
                          boundary=-1, paraBoundary=2, verbose=False, *args,
                          **kwargs):
     """
@@ -649,7 +652,7 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     Parameters
     ----------
     sensors : list of RVector3 objects
-        Sensor positions. Must be sorted in positve x direction
+        Sensor positions. Must be sorted in positive x direction
     paraDX : float, optional
         Horizontal distance between sensors, relative regarding sensor
         distance. Value must be greater than 0 otherwise 1 is assumed.
@@ -675,12 +678,26 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
 
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import matplotlib.pyplot as plt
+    >>> 
+    >>> from pygimli.meshtools import createParaMesh2DGrid
+    >>> from pygimli.mplviewer import drawMesh
+    >>> x = pg.RVector(range(10))
+    >>> mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
+    >>>                             paraDZ=1, paraDepth=5)
+    >>> fig, ax = plt.subplots()
+    >>> #pg.show(mesh, axex=ax)
+    >>> drawMesh(ax, mesh)
+    >>> plt.show()
     """
 
     mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort
-    if isinstance(sensors, np.ndarray):
+    if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.RVector):
         sensors = [pg.RVector3(s, 0) for s in sensors]
 
     sensorX = pg.x(sensors)
@@ -721,3 +738,17 @@ def createParaMesh2dGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
                                                marker=1, *args, **kwargs)
 
     return mesh
+
+if __name__ == "__main__":
+    import pygimli as pg
+    import matplotlib.pyplot as plt
+
+    from pygimli.meshtools import createParaMesh2DGrid
+    from pygimli.mplviewer import drawMesh
+    x = pg.RVector(range(10))
+    mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
+                                paraDZ=1, paraDepth=5)
+    fig, ax = plt.subplots()
+    #pg.show(mesh, axex=ax)
+    drawMesh(ax, mesh)
+    plt.show()

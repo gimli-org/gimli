@@ -23,10 +23,10 @@ circ = createCirclePolygon([0, -5], radius=3, area=0.1, marker=2)
 
 mesh = createMesh([world, circ], quality=34)
 mesh = mesh.createP2()
-print mesh
+print(mesh)
 density=solver.parseMapToCellArray([[1, 0.0], [2, 1000.0]], mesh)
 
-u = solve(mesh, a=1, f=density, uBoundary=[[-2,0], [-1,0]]) * G
+u = solve(mesh, a=1, f=density, uB=[[-2,0], [-1,0]]) * pg.physics.constants.G
 
 pnts = [pg.RVector3(x,0) for x in np.arange(-19, 19.1, 1)]
 
@@ -40,7 +40,7 @@ dux = np.zeros(len(pnts))
 for i,p in enumerate(pnts):
     c = mesh.findCell(p)
     g = c.grad(p, u)
-    print c, p, g
+    print(c, p, g)
     dux[i] =  g[0]*4.0*np.pi # wo kommen die 4 pi her?
     duz[i] = -g[1]*4.0*np.pi # wo kommen die 4 pi her?
 

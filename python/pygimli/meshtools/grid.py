@@ -23,9 +23,9 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     mesh : mesh object
         Mesh to which the triangle boundary should be appended.
     xbound : float, optional
-        Horizontal prolongation distance.
+        Horizontal prolongation distance. Minimal mesh x extension.
     ybound : float, optional
-        Vertical prolongation distance.
+        Vertical prolongation distance. Minimal mesh y extension.
     marker : int, optional
         Marker of new cells.
     markerBoundary : int, optional
@@ -41,6 +41,11 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         mesh to the surface if necessary.
     verbose : boolean, optional
         Be verbose.
+
+    Examples
+    --------
+    
+    
 
     See Also
     --------
@@ -146,22 +151,26 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         poly.createEdge(n4, n1, pg.MARKER_BOUND_MIXED)
 
     else:  # no isSubSurface
+        xbound = max(xbound, mesh.xmax()-mesh.xmin())
+        ybound = max(ybound, mesh.ymax()-mesh.ymin())
         # add top right node and boundary nodes
+        
         dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.1
-        xtLen = int(xbound / dxMin / 2.)
+        xtLen = max(5, int(xbound / dxMin / 2.))
 
         # x top boundary sampling points
         xTop = pg.increasingRange(dxMin, xbound, xtLen)
         # y boundary sampling points
-
         yLeft = pg.increasingRange(xTop[len(xTop) - 1] - xTop[len(xTop) - 2],
                                    abs(mesh.ymin() - ybound),
                                    xtLen)
 
+        xtLen = max(5, int((mesh.xmax()-mesh.xmin())/ dxMin / 2.))
+
         # x bottom boundary sampling points
         xBottom = pg.RVector(np.linspace(mesh.xmin() - xbound,
                                          mesh.xmax() + xbound,
-                                         xtLen))
+                                         2*xtLen))
 
         for i, val in enumerate(pg.fliplr(xTop)(0, len(xTop) - 1)):
             poly.createNode([mesh.xmax() + val, mesh.ymax(), 0.0])
@@ -362,3 +371,6 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         None
 
     return boundMesh
+
+if __name__ == "__main__":
+    pass

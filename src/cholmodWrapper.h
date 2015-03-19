@@ -74,6 +74,8 @@ protected:
     void *NumericD_;
     int * Ap_;
     int * Ai_;
+    int * ApR_;
+    int * AiR_;
         
     RVector *AxV_;
     RVector *AzV_;

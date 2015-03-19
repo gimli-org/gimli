@@ -288,7 +288,7 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
     axes.add_collection(collection)
 
 
-def drawMeshBoundaries(axes, mesh, fitView=True):
+def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
     """
     Draw mesh on axes with boundary conditions colorized.
 
@@ -326,7 +326,8 @@ def drawMeshBoundaries(axes, mesh, fitView=True):
 #    swatch = pg.Stopwatch(True)
     mesh.createNeighbourInfos()
 
-    drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(0),
+    if not hideMesh:
+        drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(0),
                                color=(0.0, 0.0, 0.0, 1.0), linewidth=0.3)
 #    return
     drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(

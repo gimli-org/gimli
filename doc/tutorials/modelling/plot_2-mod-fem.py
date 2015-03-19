@@ -58,7 +58,7 @@ default material values and global homogeneous Dirichlet boundary conditions.
 """
 
 u = pg.solver.solve(grid, f=1.,
-                    uBoundary=[grid.findBoundaryByMarker(1, 5), 0.0],
+                    uB=[grid.findBoundaryByMarker(1, 5), 0.0],
                     verbose=True)
 
 """
@@ -80,7 +80,7 @@ def uAna(r):
     return (1. - x**2)/2 - 16./(np.pi**3) * ret
 
 ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$',
-                   showLater=True)
+                   hold=0)
 """
 Show is just a shortcut for various routines that can also be called directly.
 
@@ -98,11 +98,11 @@ grid.
 gridh2 = grid.createH2()
 
 uh = pg.solver.solve(gridh2, f=1.,
-                     uBoundary=[gridh2.findBoundaryByMarker(1, 5), 0.0],
+                     uB=[gridh2.findBoundaryByMarker(1, 5), 0.0],
                      verbose=True)
 
 ax, cbar = pg.show(gridh2, data=uh, colorBar=True, label='H2 Solution $u$',
-                   showLater=True)
+                   hold=0)
 
 pg.mplviewer.drawMesh(ax, gridh2)
 
@@ -116,7 +116,7 @@ We do the same using a quadratic (P) refinement, i.e. the same number of nodes.
 gridp2 = grid.createP2()
 
 up = pg.solver.solve(gridp2, f=1.,
-                     uBoundary=[gridp2.findBoundaryByMarker(1, 5), 0.0],
+                     uB=[gridp2.findBoundaryByMarker(1, 5), 0.0],
                      verbose=True)
 
 """

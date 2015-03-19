@@ -54,10 +54,10 @@ def show(mesh, *args, **kwargs):
             return showMesh3D(mesh, *args, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
-    plt.pause(0.001)
+    #plt.pause(0.001)
 
 
-def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
+def showMesh(mesh, data=None, hold=False, colorBar=False, coverage=None,
              axes=None, **kwargs):
     """
     2D Mesh visualization.
@@ -89,9 +89,9 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
         . pg.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.mplviewer.meshview.drawSensors`
 
-    showLater : bool [false]
+    hold : bool [true]
         Set interactive plot mode for matplotlib.
-        If this is set to false [default] your script will stop to open
+        If this is set to true [default] your script will stop to open
         a window with the figure and halted until you close this windows.
         You can set pg.showLater(1) to change this default behavior and
         pg.showNow() to force all pending figures to draw.
@@ -171,7 +171,11 @@ def showMesh(mesh, data=None, showLater=False, colorBar=False, coverage=None,
             raise('toImplement')
             addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
 
-    if not showLater:
+    if showLater in kwargs:
+        hold = showLater
+        print("showLater will be removed in the future. use hold instead")
+        
+    if not hold:
         plt.show()
 
     # fig.canvas.draw()

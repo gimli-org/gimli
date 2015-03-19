@@ -6,10 +6,8 @@ import pygimli as pg
 import time
 # from geomagnetics import GeoMagT0  # , date
 
-mu0 = 4.0 * np.pi * 1e-7
-
-G = 6.6742e-11  # [m^3/(kg s^2)]
-G = 6.6742e-11 / 1e-5  # mGal
+mu0 = pg.physics.constants.mu0
+G = pg.physics.constants.GmGal # mGal
 
 deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__
 # [m^2 kg/m^3]=[kg/m]
@@ -700,6 +698,34 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         return dg, dgz
     return dg
 
+class GravimetryModelling(pg.ModellingBase):
+    """ Gravimetry modelling operator."""
+    def __init__(self, verbose):
+        super(GravimetryModelling, self).__init__(verbose)
+        self._J = pg.RMatrix()
+        #until reference counting we need to hold the reference here
+        self.setJacobian(self._J)
+
+    def createStartmodel(self):
+        return pg.RVector(self.regionManger().parameterCount(), 0.0)
+        
+    def setSensorPositions(self, pnts):
+        self.sensorPositions = pnts
+        
+    def response(self, dDensity):
+        return solveGravimetry(self.regionManager().paraDomain(),
+                               dDensity, pnts=self.sensorPositions,
+                               complete=False)
+    
+    def createJacobian(self, model):
+        Gdz = solveGravimetry(self.regionManager().paraDomain(),
+                               dDensity=None,
+                               pnts=self.sensorPositions,
+                               complete=False)
+        self._J.resize(len(Gdz), len(Gdz[0]))
+        for i in range(len(Gdz)):
+            self._J.setVal(Gdz[i], i)
+            
 if __name__ == "__main__":
     import sys
     print(sys.argv[1:])

@@ -61,11 +61,11 @@ created figure axes ax while drawMesh plots on it and it can also be used as
 a class with plotting or decoration methods.
 """
 u = solve(grid, f=1.,
-          uBoundary=dirichletBC)
+          uB=dirichletBC)
 
 ax = show(grid, data=u, colorBar=True,
           orientation='vertical', label='Solution $u$',
-          levels=np.linspace(1.0, 4.0, 17), showLater=True)[0]
+          levels=np.linspace(1.0, 4.0, 17), hold=0)[0]
 
 show(grid, axes=ax, showLater=1)
 
@@ -94,8 +94,8 @@ neumannBC = [[1, -0.5],  # left
 dirichletBC = [3, 1.0]  # top
 
 u = solve(grid, f=0.,
-          duBoundary=neumannBC,
-          uBoundary=dirichletBC)
+          duB=neumannBC,
+          uB=dirichletBC)
 
 """
 Note that on boundary 4 (right) no BC is explicitly applied leading to default
@@ -105,7 +105,7 @@ or natural BC that are of homogeneous Neumann type
 
 ax = show(grid, data=u, filled=True, colorBar=True,
           orientation='vertical', label='Solution $u$',
-          levels=np.linspace(min(u), max(u), 14), showLater=True)[0]
+          levels=np.linspace(min(u), max(u), 14), hold=0)[0]
 
 """
 Instead of the grid we now want to add streamlines to the plot to show the

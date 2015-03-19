@@ -621,8 +621,8 @@ def process_blocks(blocks, src_path, image_path, cfg):
     for i, (blabel, brange, bcontent) in enumerate(blocks):
         if blabel == 'code':
 
-            print('-'*100)
-            print(bcontent, example_globals)
+            #print('-'*100)
+            #print(bcontent, example_globals)
 
             #tmpSysOut = sys.stdout
             #tmpSysErr = sys.stderr
@@ -641,16 +641,16 @@ def process_blocks(blocks, src_path, image_path, cfg):
             sys.stdout = tmpSysOut
             sys.stderr = tmpSysErr
 
-            print('#'*100)
-            print("coutbuf:", coutbuff)
-            print("cerrbuf:", cerrbuff)
+            #print('#'*100)
+            #print("coutbuf:", coutbuff)
+            #print("cerrbuf:", cerrbuff)
 
             if len(coutbuff) > 0:
                 rst_blocks.append(printcout2rst(coutbuff))
 
             if len(cerrbuff) > 0:
                 rst_blocks.append(printcerr2rst(cerrbuff))
-            print('-'*100)
+            #print('-'*100)
 
         else:
             if i in idx_inline_plot:
