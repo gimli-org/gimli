@@ -196,7 +196,7 @@ public:
     /*!
      * Construct vector from file. Shortcut for Vector::load
      */
-    Vector(const std::string & filename, IOFormat format = Ascii)
+    Vector(const std::string & filename, IOFormat format=Ascii)
         : size_(0), data_(0){
         this->load(filename, format);
     }
@@ -231,7 +231,7 @@ public:
     /*!
      * Copy constructor. Create new vector as a deep copy of std::vector(Valuetype)
      */
-    template < class U > Vector(const std::vector< U > & v)
+    template < class ValueType2 > Vector(const std::vector< ValueType2 > & v)
         : size_(0), data_(0){
         allocate_(v.size());
         for (Index i = 0; i < v.size(); i ++) data_[i] = ValueType(v[i]);
@@ -283,6 +283,9 @@ public:
         return getVal(p.first, p.second);
     }
         
+    Vector < ValueType > operator () (std::vector < int > & idx) const {
+        return get_(idx);
+    }
     /*!
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound
