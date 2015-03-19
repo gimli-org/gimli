@@ -370,7 +370,7 @@ public:
 
     void recountNodes();
 
-    void sortNodes(const std::vector < int > & perm);
+    void sortNodes(const std::vector < Index > & perm);
 
     /*! Return true if createNeighbourInfos is called once */
     inline bool neighboursKnown() const { return neighboursKnown_; }
@@ -535,7 +535,7 @@ public:
 
     void mapCellAttributes(const std::map < float, float > & aMap);
     
-    void mapAttributeToParameter(const std::vector< int > & cellMapIndex,
+    void mapAttributeToParameter(const IndexArray & cellMapIndex,
                                  const RVector & attributeMap, double defaultVal);
 
     //void mapParameterToAttribute(const std::vector< int > & cellMapIndex);

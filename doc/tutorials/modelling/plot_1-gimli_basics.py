@@ -136,3 +136,5 @@ pg.viewer.show(grid)
 
 For more control you can also use the appropriate draw methods :py:mod:`pygimli.mplviewer.drawMesh`.
 """
+
+pg.wait()

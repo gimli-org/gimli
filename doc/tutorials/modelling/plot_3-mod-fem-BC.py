@@ -13,8 +13,6 @@ functionality.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-
 import pygimli as pg
 
 from pygimli.solver import solve
@@ -60,14 +58,13 @@ The BC are passed using the uBoundary keyword. Note that showMesh returns the
 created figure axes ax while drawMesh plots on it and it can also be used as
 a class with plotting or decoration methods.
 """
-u = solve(grid, f=1.,
-          uB=dirichletBC)
+u = solve(grid, f=1., uB=dirichletBC)
 
 ax = show(grid, data=u, colorBar=True,
           orientation='vertical', label='Solution $u$',
-          levels=np.linspace(1.0, 4.0, 17), hold=0)[0]
+          levels=np.linspace(1.0, 4.0, 17), hold=1)[0]
 
-show(grid, axes=ax, showLater=1)
+show(grid, axes=ax)
 
 ax.text(0, 1.01, '$u=3+x$', ha='center')
 ax.text(-1.01, 0, '$u=1$', va='center', ha='right', rotation='vertical')
@@ -93,9 +90,7 @@ neumannBC = [[1, -0.5],  # left
 
 dirichletBC = [3, 1.0]  # top
 
-u = solve(grid, f=0.,
-          duB=neumannBC,
-          uB=dirichletBC)
+u = solve(grid, f=0., duB=neumannBC, uB=dirichletBC)
 
 """
 Note that on boundary 4 (right) no BC is explicitly applied leading to default
@@ -105,7 +100,7 @@ or natural BC that are of homogeneous Neumann type
 
 ax = show(grid, data=u, filled=True, colorBar=True,
           orientation='vertical', label='Solution $u$',
-          levels=np.linspace(min(u), max(u), 14), hold=0)[0]
+          levels=np.linspace(min(u), max(u), 14), hold=1)[0]
 
 """
 Instead of the grid we now want to add streamlines to the plot to show the
@@ -134,4 +129,4 @@ ax.set_ylim([-1.1, 1.1])
 
 """
 
-plt.show()
+pg.wait()

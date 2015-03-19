@@ -60,6 +60,7 @@
 namespace GIMLI{
 
 typedef std::vector < Index > IndexArray;
+typedef std::vector < SIndex > SIndexArray;
 
 template < class ValueType, class A > class __VectorExpr;
 
@@ -293,7 +294,7 @@ public:
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound 
      */
-    Vector < ValueType > operator () (const std::vector < int > & idx) const {
+    Vector < ValueType > operator () (const SIndexArray & idx) const {
         return get_(idx);
     }
     Vector < ValueType > operator () (const IVector & idx) const {
@@ -348,7 +349,18 @@ public:
         this->fill(val);
         return *this;
     }
-
+    /*! Set a value at index i. Throws out of range exception if index check fails. */
+    inline Vector< ValueType > & setVal(const ValueType & val, const BVector & bv) {
+        if (bv.size() == this->size()) {
+            for (Index i = 0; i < bv.size(); i ++ ){
+                if (bv[i]) data_[i] = val;
+            }
+        } else {
+            throwRangeError(1, WHERE_AM_I, bv.size(), 0, this->size());
+        }
+        return *this;
+    }
+    
     /*! Set a value at index i. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const ValueType & val, Index i) {
         if (i >= 0 && i < this->size()) {
@@ -359,6 +371,7 @@ public:
         return *this;
     }
 
+    
     /*! Set a value at slice index [start, end). Throws out of range exception if index check fails.
         end will set to this->size() if larger or -1. */
     inline Vector< ValueType > & setVal(const ValueType & val, Index start, SIndex end) {

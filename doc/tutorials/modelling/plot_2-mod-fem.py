@@ -79,8 +79,7 @@ def uAna(r):
         ret += s
     return (1. - x**2)/2 - 16./(np.pi**3) * ret
 
-ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$',
-                   hold=0)
+ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$', hold=1)
 """
 Show is just a shortcut for various routines that can also be called directly.
 
@@ -101,8 +100,7 @@ uh = pg.solver.solve(gridh2, f=1.,
                      uB=[gridh2.findBoundaryByMarker(1, 5), 0.0],
                      verbose=True)
 
-ax, cbar = pg.show(gridh2, data=uh, colorBar=True, label='H2 Solution $u$',
-                   hold=0)
+ax, cbar = pg.show(gridh2, data=uh, colorBar=True, label='H2 Solution $u$')
 
 pg.mplviewer.drawMesh(ax, gridh2)
 
@@ -120,9 +118,6 @@ up = pg.solver.solve(gridp2, f=1.,
                      verbose=True)
 
 """
-.. image:: PLOT2RST.current_figure
-    :scale: 50
-
 To compare the different results the in detail we interpolate our solution
 along a probe line through our domain.
 

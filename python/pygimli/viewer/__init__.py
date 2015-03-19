@@ -4,3 +4,5 @@
 """
 from . showmesh import *
 from . modelview import *
+
+from pygimli.mplviewer import wait

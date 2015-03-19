@@ -9,13 +9,20 @@ import pygimli as pg
 
 def polyCreateDefaultEdges_(poly, marker=1, closed=True):
     """ INTERNAL """
+    
+    nEdges = poly.nodeCount()-1 + closed
+    bm = [marker]*nEdges
+    if hasattr(marker, '__len__'):
+        if len(marker) == nEdges:
+            bm = marker
+            
     for i in range(poly.nodeCount() - 1):
-        poly.createEdge(poly.node(i), poly.node(i+1), marker)
+        poly.createEdge(poly.node(i), poly.node(i+1), bm[i])
     if closed:
         poly.createEdge(poly.node(poly.nodeCount()-1), 
-                    poly.node(0), marker)
+                        poly.node(0), bm[-1])
         
-def createRectangle(pos, size, marker=1, area=0, 
+def createRectangle(start=None, end=None, pos=None, size=None, marker=1, area=0, 
                     boundaryMarker=1, isHole=False):
     """
     Create rectangle polygon.
@@ -24,10 +31,14 @@ def createRectangle(pos, size, marker=1, area=0,
         
     Parameters
     ----------
+    start : [x, y]
+        Left upper corner. Default [-0.5, 0.5]
+    end : [x, y] 
+        Right lower corner. Default [0.5, -0.5]
     pos : [x, y]
-        Center position
+        Center position. The rectangle will be moved.
     size : [x, y]
-        width and height
+        width and height. The rectangle will be scaled.
     marker : int
         Marker for the resulting triangle cells after mesh generation
     area : float
@@ -46,14 +57,22 @@ def createRectangle(pos, size, marker=1, area=0,
     --------
     TODO
     """
+    
+    if start is None:
+        start = [-0.5, 0.5]
+    if end is None:
+        end = [0.5, -0.5]
     poly = pg.Mesh(2)
     
-    poly.createNode([-0.5,  0.5])
-    poly.createNode([-0.5, -0.5])
-    poly.createNode([ 0.5, -0.5])
-    poly.createNode([ 0.5,  0.5])
-    poly.scale(size)
-    poly.translate(pos)
+    poly.createNode(start)
+    poly.createNode([start[0], end[1]])
+    poly.createNode(end)
+    poly.createNode([end[0], start[1]])
+    
+    if size is not None:
+        poly.scale(size)
+    if pos is not None:
+        poly.translate(pos)
     
     if isHole:
         poly.addHoleMarker(poly.nodes()[0].pos() + [0.001, -0.001])
@@ -91,24 +110,28 @@ def createWorld(start, end, marker=1, area=0):
     --------
     TODO
     """
+    return createRectangle(start, end, marker=marker, area=area,
+                           boundaryMarker = [pg.MARKER_BOUND_MIXED,
+                                             pg.MARKER_BOUND_MIXED,
+                                             pg.MARKER_BOUND_MIXED,
+                                             pg.MARKER_BOUND_HOMOGEN_NEUMANN])
+    #poly = pg.Mesh(2)    
     
-    poly = pg.Mesh(2)    
-    
-    poly.createNode(start)
-    poly.createNode([start[0], end[1]])
-    poly.createNode(end)
-    poly.createNode([end[0], start[1]])
+    #poly.createNode(start)
+    #poly.createNode([start[0], end[1]])
+    #poly.createNode(end)
+    #poly.createNode([end[0], start[1]])
 
-    poly.addRegionMarker(poly.nodes()[0].pos() + [0.001, -0.001], 
-                         marker=marker, area=area)
+    #poly.addRegionMarker(poly.nodes()[0].pos() + [0.001, -0.001], 
+                         #marker=marker, area=area)
 
-    for i in range(poly.nodeCount() - 1):
-        poly.createEdge(poly.node(i), poly.node(i+1), 
-                        pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    #for i in range(poly.nodeCount() - 1):
+        #poly.createEdge(poly.node(i), poly.node(i+1), 
+                        #pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
-    poly.createEdge(poly.node(poly.nodeCount()-1), 
-                    poly.node(0), pg.MARKER_BOUND_MIXED)
-    return poly
+    #poly.createEdge(poly.node(poly.nodeCount()-1), 
+                    #poly.node(0), pg.MARKER_BOUND_MIXED)
+    #return poly
 
 def createCircle(pos, radius, segments=12, marker=1, area=0,
                  boundaryMarker=1, leftDirection=True, isHole=False):
@@ -172,7 +195,7 @@ def mergePLC(pols):
     """
     Merge multiply polygons into a single polygon
             
-    Common nodes will be checked and removed.
+    Common nodes and common edges will be checked and removed.
     
     Crossing or touching edges or Node/Edge intersections will NOT be 
     recognized yet. -> TODO
@@ -194,7 +217,7 @@ def mergePLC(pols):
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
     >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-    >>> c1 = plc.createCircle([-1, -3], radius=1.5, area=0.1, marker=2)
+    >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2)
     >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
     >>> r1 = plc.createRectangle([3, -5], size=[2, 2], marker=3)
     >>> r2 = plc.createRectangle([5, -5], size=[2, 2], marker=4, area=0.1)

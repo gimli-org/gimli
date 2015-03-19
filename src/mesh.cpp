@@ -734,16 +734,16 @@ std::vector< RVector3 > & Mesh::boundarySizedNormals() const {
     return boundarySizedNormCache_;
 }
 
-void Mesh::sortNodes(const std::vector < int > & perm){
+void Mesh::sortNodes(const IndexArray & perm){
 
-    for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(perm[i]);
+    for (Index i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(perm[i]);
   //    sort(nodeVector_.begin(), nodeVector_.end(), std::less< int >(mem_fun(&BaseEntity::id)));
     sort(nodeVector_.begin(), nodeVector_.end(), lesserId< Node >);
     recountNodes();
 }
 
 void Mesh::recountNodes(){
-    for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(i);
+    for (Index i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(i);
 }
 
 void Mesh::createClosedGeometry(const std::vector < RVector3 > & vPos, int nSegments, double dxInner){
@@ -1579,7 +1579,7 @@ IVector Mesh::cellMarker() const{
 
 RVector Mesh::cellAttributes() const{
     #ifdef _MSC_VER
-	std::vector< double > tmp(cellCount());
+	std::vector < double > tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
                     std::mem_fun(&Cell::attribute));
 	return tmp;
@@ -1613,7 +1613,7 @@ void Mesh::mapCellAttributes(const std::map < float, float > & aMap){
     }
 }
 
-void Mesh::mapAttributeToParameter(const std::vector< int > & cellMapIndex,
+void Mesh::mapAttributeToParameter(const IndexArray & cellMapIndex,
                                     const RVector & attributeMap, double defaultVal){
     DEPRECATED
 //     RVector mapModel(attributeMap.size() + 2);

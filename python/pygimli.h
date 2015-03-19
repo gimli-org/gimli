@@ -294,6 +294,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template CSparseMatrix operator * (const Complex & b, const CSparseMatrix & A);
     template CSparseMatrix operator * (const CSparseMatrix & A, const Complex & b);
 
+
     template class ElementMatrix< double >;
     template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
 
@@ -541,7 +542,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::CubicFunct >         stdVectorCubicFunct;
 
     typedef std::map< std::string, GIMLI::Vector< double > > stdMapStringRVector;
-    typedef std::map< int, GIMLI::Region * >            stdMapRegion;
+    typedef std::map< GIMLI::SIndex, GIMLI::Region * >         stdMapRegion;
     typedef std::map< float, float >                    stdMapF_F;
     typedef std::map< float, Complex >                  stdMapF_C;
     typedef std::map< int, double >                     stdMapI_D;
@@ -552,12 +553,14 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map< std::string, std::string >        stdMapS_S;
     
     typedef std::vector< std::string >                  stdVectorString;
-    typedef std::vector< int >                          stdVectorI;
-    typedef std::vector< long int >                     stdVectorLI;
-    typedef std::vector< unsigned int >                 stdVectorUI;
-    typedef std::vector< GIMLI::Index >                 stdVectorUL;
+//     typedef std::vector< int >                          stdVectorI;
+//     typedef std::vector< long int >                     stdVectorLI;
+//     typedef std::vector< unsigned int >                 stdVectorUI;
+    typedef std::vector< GIMLI::SIndex >                stdVectorSIndex;
+    typedef std::vector< GIMLI::Index >                 stdVectorIndex;
     typedef std::vector< double >                       stdVectorR;
     typedef std::vector< std::complex < double > >      stdVectorC;
+    
     typedef std::vector< std::pair< GIMLI::Index, GIMLI::Index > > stdVectorPairLongLong;
     typedef std::vector< std::pair< unsigned int, unsigned int> >      stdVectorPairUintUint;
     

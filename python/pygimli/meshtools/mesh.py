@@ -748,7 +748,7 @@ if __name__ == "__main__":
     x = pg.RVector(range(10))
     mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
                                 paraDZ=1, paraDepth=5)
-    fig, ax = plt.subplots()
-    #pg.show(mesh, axex=ax)
-    drawMesh(ax, mesh)
+    #fig, ax = plt.subplots()
+    pg.show(mesh)
+    #drawMesh(ax, mesh)
     plt.show()

@@ -48,7 +48,7 @@ void Dijkstra::setGraph(const Graph & graph) {
     pathMatrix_.resize(graph.size());
 }
 
-void Dijkstra::setStartNode(uint startNode) {
+void Dijkstra::setStartNode(Index startNode) {
     distances_.clear();
     root_ = startNode;
     std::priority_queue< distancePair_, 
@@ -85,8 +85,8 @@ void Dijkstra::setStartNode(uint startNode) {
     }
 }
 
-std::vector < uint > Dijkstra::shortestPathTo(uint node) const {
-    std::vector < uint > way;
+std::vector < Index > Dijkstra::shortestPathTo(Index node) const {
+    std::vector < Index > way;
 
     int parentNode = -1, endNode = node;
 
@@ -98,8 +98,8 @@ std::vector < uint > Dijkstra::shortestPathTo(uint node) const {
 
     way.push_back(root_);
 
-    std::vector < uint > rway(way.size());
-    for (uint i = 0; i < way.size(); i ++) rway[i] = way[way.size() - i - 1];
+    std::vector < Index > rway(way.size());
+    for (Index i = 0; i < way.size(); i ++) rway[i] = way[way.size() - i - 1];
 
     return rway;
 }
@@ -188,12 +188,12 @@ double TravelTimeDijkstraModelling::findMedianSlowness() const {
 }
 
 RVector TravelTimeDijkstraModelling::getApparentSlowness() const {
-    uint nData = dataContainer_->size();
+    Index nData = dataContainer_->size();
     SIndex s = 0, g = 0;
     double edgeLength = 0.0;
     RVector apparentSlowness(nData);
 
-    for (uint dataIdx = 0; dataIdx < nData; dataIdx ++) {
+    for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
         s = (SIndex)(*dataContainer_)("s")[dataIdx];
         g = (SIndex)(*dataContainer_)("g")[dataIdx];
         if (s == g){
@@ -250,7 +250,7 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     shotNodeId_.resize(shots.size()) ;
     shotsInv_.clear();
     
-    for (uint i = 0; i < shots.size(); i ++){
+    for (Index i = 0; i < shots.size(); i ++){
         shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
         if ( mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
         }
@@ -262,7 +262,7 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     receNodeId_.resize(receiver.size()) ;
     receiInv_.clear();
     
-    for (uint i = 0; i < receiver.size(); i ++){
+    for (Index i = 0; i < receiver.size(); i ++){
         receNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition(Index(receiver[i])));
         receiInv_[Index(receiver[i])] = i;
     }
@@ -277,13 +277,13 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
     this->mapModel(slowness, background_);
     dijkstra_.setGraph(createGraph());
 
-    uint nShots = shotNodeId_.size();
-    uint nRecei = receNodeId_.size();
+    Index nShots = shotNodeId_.size();
+    Index nRecei = receNodeId_.size();
     RMatrix dMap(nShots, nRecei);
 
-    for (uint shot = 0; shot < nShots; shot ++) {
+    for (Index shot = 0; shot < nShots; shot ++) {
         dijkstra_.setStartNode(shotNodeId_[shot]);
-        for (uint i = 0; i < nRecei; i ++) {
+        for (Index i = 0; i < nRecei; i ++) {
             dMap[shot][i] = dijkstra_.distance(receNodeId_[i]);
         }
     }
@@ -327,22 +327,22 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian, co
     this->mapModel(slowness, background_);
     dijkstra_.setGraph(createGraph());
 
-    uint nShots = shotNodeId_.size();
-    uint nRecei = receNodeId_.size();
-    uint nData = dataContainer_->size();
-    uint nModel = slowness.size();
+    Index nShots = shotNodeId_.size();
+    Index nRecei = receNodeId_.size();
+    Index nData = dataContainer_->size();
+    Index nModel = slowness.size();
 
     jacobian.clear();
     jacobian.setRows(nData);
     jacobian.setCols(nModel);
 
     //** for each shot: vector<  way(shot->geoph) >;
-    std::vector < std::vector < std::vector < uint > > > wayMatrix(nShots);
+    std::vector < std::vector < std::vector < Index > > > wayMatrix(nShots);
 
-    for (uint shot = 0; shot < nShots; shot ++) {
+    for (Index shot = 0; shot < nShots; shot ++) {
         dijkstra_.setStartNode(shotNodeId_[shot]);
 
-        for (uint i = 0; i < nRecei; i ++) {
+        for (Index i = 0; i < nRecei; i ++) {
             wayMatrix[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
         }
     }    
@@ -350,14 +350,14 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian, co
     std::fstream file;
         if (verbose_) openOutFile("jacobian.way", &file);
 
-        for (uint dataIdx = 0; dataIdx < nData; dataIdx ++) {
+        for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
             Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
             Index g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
             std::set < Cell * > neighborCells;
 
-            for (uint i = 0; i < wayMatrix[s][g].size()-1; i ++) {
-                uint aId = wayMatrix[s][g][i];
-                uint bId = wayMatrix[s][g][i + 1];
+            for (Index i = 0; i < wayMatrix[s][g].size()-1; i ++) {
+                Index aId = wayMatrix[s][g][i];
+                Index bId = wayMatrix[s][g][i + 1];
                 double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
                 double slo = 0.0;
 

@@ -14,6 +14,7 @@ from .colorbar import cmapFromName, autolevel
 import pygimli as pg
 from pygimli.misc import streamline
 
+from pygimli.mplviewer import updateAxes as updateAxes_
 
 class CellBrowser(object):
 
@@ -170,7 +171,8 @@ def drawMesh(axes, mesh):
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
-
+    
+    updateAxes_(axes)
 
 def drawModel(axes, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cmap=None,
@@ -242,6 +244,7 @@ def drawModel(axes, mesh, data=None,
     if ylabel is not None:
         axes.set_ylabel(ylabel)
 
+    updateAxes_(axes)
     return gci
 
 
@@ -261,7 +264,8 @@ def drawSelectedMeshBoundaries(axes, boundaries,
     lineCollection.set_color(color)
     lineCollection.set_linewidth(linewidth)
     axes.add_collection(lineCollection)
-
+    
+    updateAxes_(axes)
     return lineCollection
 
 
@@ -286,7 +290,9 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
     collection.set_edgecolor(color)
     collection.set_linewidth(0.2)
     axes.add_collection(collection)
-
+    
+    updateAxes_(axes)
+    return collection
 
 def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
     """
@@ -354,11 +360,12 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
             cols.append(col)
         p = mpl.collections.PatchCollection(eCircles, color=cols)
         axes.add_collection(p)
-
+        
         for reg in mesh.regionMarker():
             axes.text(reg.pos()[0], reg.pos()[1],
                       str(reg.marker()) + ": " + str(reg.area()))
-
+    
+    updateAxes_(axes)
 
 def createMeshPatches(axes, mesh, verbose=True, **kwargs):
     """
@@ -401,6 +408,8 @@ def createMeshPatches(axes, mesh, verbose=True, **kwargs):
 #    patches.set_linewidth(1.001)
     axes.add_collection(patches)
 
+    updateAxes_(axes)
+    
     if verbose:
         print(("plotting time = ", swatch.duration(True)))
     return patches
@@ -481,7 +490,7 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
             z = pg.cellDataToPointData(mesh, data)
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              **kwargs)
-
+        
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
 
@@ -512,6 +521,7 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
 
+    updateAxes_(axes)
     return gci
 
 
@@ -573,11 +583,13 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
             U[i, j] = -gr[0]
             V[i, j] = -gr[1]
 
-    axes.streamplot(X, Y, U, V, **kwargs)
+    gci = axes.streamplot(X, Y, U, V, **kwargs)
+    
+    updateAxes_(axes)
 # def drawStreamLines(...)
 
 
-def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
+def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
     """
     Draw a single streamline into a given mesh for given data stating at
     the center of cell c.
@@ -616,7 +628,8 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
         kwargs['color'] = 'black'
 
     if len(x) > 2:
-        axes.plot(x, y, **kwargs)
+        lines = axes.plot(x, y, **kwargs)
+    #    updateAxes_(axes, lines)
 #        print( x, y)
 #        axes.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
@@ -630,7 +643,6 @@ def drawStreamLine(axes, mesh, c, data, dataMesh=None, **kwargs):
         axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
                    head_starts_at_zero=True,
                    **kwargs)
-
 
 def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     """
@@ -682,7 +694,7 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
                 [(viewMesh.xmax() - viewMesh.xmax()) / 2.0, y])
             if c is not None:
                 if c.valid():
-                    drawStreamLine(axes, viewMesh, c, data, dataMesh,
+                    drawStreamLine_(axes, viewMesh, c, data, dataMesh,
                                    **kwargs)
 
     elif startStream == 2:
@@ -692,7 +704,7 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
                 [x, (viewMesh.ymax() - viewMesh.ymax()) / 2.0])
             if c is not None:
                 if c.valid():
-                    drawStreamLine(axes, viewMesh, c, data, dataMesh,
+                    drawStreamLine_(axes, viewMesh, c, data, dataMesh,
                                    **kwargs)
 
     elif startStream == 3:
@@ -703,17 +715,19 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
                 c = b.rightCell()
 
             if c.valid():
-                drawStreamLine(axes, viewMesh, c, data, dataMesh,
+                drawStreamLine_(axes, viewMesh, c, data, dataMesh,
                                **kwargs)
 
     # start a stream from each unused cell
     for c in viewMesh.cells():
         if c.valid():
-            drawStreamLine(axes, viewMesh, c, data, dataMesh,
+            drawStreamLine_(axes, viewMesh, c, data, dataMesh,
                            **kwargs)
 
     for c in viewMesh.cells():
         c.setValid(True)
+        
+    updateAxes_(axes)
 # def drawStreamLines2(...)
 
 
@@ -749,7 +763,8 @@ def drawSensors(axes, sensors, diam=None, koords=None):
 
     p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
     axes.add_collection(p)
-
+    
+    updateAxes_(axes)
 
 def createParameterContraintsLines(mesh, cMat, cWeight=None):
     """
@@ -818,7 +833,8 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
         start.append(pa)
         end.append(pb)
 
-    print(("createParameterContsraintLines t = ", swatch.duration(True)))
+    updateAxes_(axes)
+    
     return start, end
 
 
@@ -845,7 +861,8 @@ def drawParameterConstraints(axes, mesh, cMat, cWeight=None):
     linCol.set_color(colors)
     linCol.set_linewidth(linewidths)
     axes.add_collection(linCol)
-
+    
+    updateAxes_(axes)
 
 def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
                  cmap=None, name=None):
@@ -870,6 +887,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
 
     pp = PatchCollection(recs)
     col = ax.add_collection(pp)
+        
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
     if cmap is not None:
@@ -880,4 +898,6 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     if name:
         ax.text(x, ztopo, name, ha='center', va='bottom')
 
+    updateAxes_(axes)
+    
     return col

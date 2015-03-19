@@ -69,8 +69,9 @@ checkAndFixLocaleDecimal_point(verbose=True)
 
 _pygimli_.load = None
 from pygimli.ioutils import load
-from pygimli.viewer import show, showLater, plt
+from pygimli.viewer import show, showLater, plt, wait
 from pygimli.solver import solve
+
 
 def showNow():
     showLater(0)
@@ -159,8 +160,8 @@ _pygimli_.CMatrix.__str__ = CMatrix_str
 _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
-#_pygimli_.stdVectorUL.size = _pygimli_.stdVectorUL.__len__
-#_pygimli_.stdVectorUL.__str__ = RVector_str
+#_pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
+#_pygimli_.stdVectorIndex.__str__ = RVector_str
 
 ############################
 # compatibility stuff
@@ -197,10 +198,10 @@ _pygimli_.RVector.__pow__ = __RVectorPower
 #ret.append(r + val)
 # return ret
 
-#_pygimli_.stdVectorUL.__add__ = __ADD
+#_pygimli_.stdVectorIndex.__add__ = __ADD
 
 
-#_pygimli_.stdVectorUL = _pygimli_.stdVectorI
+#_pygimli_.stdVectorIndex = _pygimli_.stdVectorSIndex
 
 ############################
 # Indexing [] operator for RVector, CVector, RVector3, RMatrix, CMatrix
@@ -213,7 +214,7 @@ def __getVal(self, idx):
     
     if isinstance(idx, BVector) or isinstance(idx, IVector):
         return self(idx)
-    elif isinstance(idx, stdVectorI) or isinstance(idx, stdVectorUL):
+    elif isinstance(idx, stdVectorSIndex) or isinstance(idx, stdVectorIndex):
         return self(idx)
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         idxL = _pygimli_.IVector(len(idx))
@@ -264,7 +265,6 @@ def __setVal(self, idx, val):
         self.rowR(int(idx[0])).setVal(val, int(idx[1]))
         return
 
-    #print(idx, type(idx))
     self.setVal(val, idx)
 
 
@@ -466,10 +466,10 @@ def abs(v):
 # compare operators for stdVector
 ########################################################
 
-def __CMP_stdVectorI__(self, val):
-    raise Exception("__CMP_stdVectorI__ do not use")
+def __CMP_stdVectorSIndex__(self, val):
+    raise Exception("__CMP_stdVectorSIndex__ do not use")
     return 0
-    print("__CMP_stdVectorI__")
+    print("__CMP_stdVectorSIndex__")
     ret = _pygimli_.BVector(len(self))
     for i, v in enumerate(ret):
         print(self[i] < val, int(self[i] < val))
@@ -477,8 +477,8 @@ def __CMP_stdVectorI__(self, val):
     print(ret)
 
 
-def __EQ_stdVectorI__(self, val):
-    raise Exception("__EQ_stdVectorI__ do not use")
+def __EQ_stdVectorSIndex__(self, val):
+    raise Exception("__EQ_stdVectorSIndex__ do not use")
 
     #ret = _pygimli_.BVector(len(self))
     # for i, v in enumerate(ret):
@@ -486,8 +486,8 @@ def __EQ_stdVectorI__(self, val):
     #    v = self[i] == val
     # print(ret)
 
-_pygimli_.stdVectorI.__cmp__ = __CMP_stdVectorI__
-_pygimli_.stdVectorI.__eq__ = __EQ_stdVectorI__
+_pygimli_.stdVectorSIndex.__cmp__ = __CMP_stdVectorSIndex__
+_pygimli_.stdVectorSIndex.__eq__ = __EQ_stdVectorSIndex__
 
 
 ############################
