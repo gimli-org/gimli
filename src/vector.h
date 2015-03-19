@@ -349,18 +349,18 @@ public:
         this->fill(val);
         return *this;
     }
-//     /*! Set a value at index i. Throws out of range exception if index check fails. */
-//     inline Vector< ValueType > & setVal(const ValueType & val, const BVector & bv) {
-//         if (bv.size() == this->size()) {
-//             for (Index i = 0; i < bv.size(); i ++ ){
-//                 if (bv[i]) data_[i] = val;
-//             }
-//         } else {
-//             throwRangeError(1, WHERE_AM_I, bv.size(), 0, this->size());
-//         }
-//         return *this;
-//     }
-//     
+    /*! Set a value at index i. Throws out of range exception if index check fails. */
+    inline Vector< ValueType > & setVal(const ValueType & val, const BVector & bv) {
+        if (bv.size() == this->size()) {
+            for (Index i = 0; i < bv.size(); i ++ ){
+                if (bv[i]) data_[i] = val;
+            }
+        } else {
+            throwRangeError(1, WHERE_AM_I, bv.size(), 0, this->size());
+        }
+        return *this;
+    }
+    
     /*! Set a value at index i. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const ValueType & val, Index i) {
         if (i >= 0 && i < this->size()) {
