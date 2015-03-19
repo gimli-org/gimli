@@ -4,11 +4,15 @@
 Test multi
 """
 
+import os
 import sys
 import time
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib
+#matplotlib.use('pdf')
+import matplotlib.pyplot as plt
 
 import pygimli as pg
 import pygimli.polytools as pt
@@ -28,7 +32,7 @@ def savefig(mesh, plc, data, label, out=None, showMesh=0):
             pg.show(plc, axes=ax, savefig=out + '.pdf')
             try:
                 print("trying pdf2pdfS ... ")
-                os.system('pdf2pdfS ' + savefig)
+                os.system('pdf2pdfS ' + out + '.pdf')
             except:
                 pass
         else:
@@ -101,7 +105,7 @@ if grav:
     savefig(Grav.fop.regionManager().paraDomain(), plc,
             Grav.inv.model(), 'Delta Density [kg$/$m$^3$]', 'densGrav')
 
-seis = 1 # geht noch nicht
+seis = 0 # geht noch nicht
 if seis:
     seismics.calcSeismics(mesh, vP)
 
