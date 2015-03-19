@@ -733,23 +733,19 @@ def simulateGravimetry(mesh, dDens):
     
     dz = np.zeros((len(dDens), len(gravPoints)))
     for i in range(len(dDens)):
-        dzerr = np.random.randn(len(gravPoints)) * 1.
-        dz[i] = Gdg.dot(dDens[i]) * (1 + dzerr/100.)
+        dzerr = np.random.randn(len(gravPoints)) * 0.01
+        dz[i] = Gdg.dot(dDens[i]) + dzerr
      
     print(Gdg.shape, dDens.shape, dz.shape)
     return gravPoints, dz
 
 def invertGravimetry(gravPoints, dz):
     
-    
-    dzerr = np.random.randn(len(gravPoints)) * 0.01
+    dzerr = np.random.randn(len(gravPoints)) * 0.0001
     dz = dz + dzerr
-    
-    
     
     mesh = pg.createGrid(x=np.linspace(-20, 20, 41), 
                          y=np.linspace(-20, 0, 21))
-   
     
     grav = Gravimetry(verbose=True)
         
@@ -760,8 +756,6 @@ def invertGravimetry(gravPoints, dz):
     
     paraDomain=grav.fop.regionManager().paraDomain()
     pg.show(paraDomain, model, colorBar=1, hold=1)
-    
-    
     
     pg.showNow()
     plt.show()
@@ -949,7 +943,6 @@ vis = 1
 mp4 = 1
 
 swatch = pg.Stopwatch(True)
-pg.showLater(1)
 
 modelFkt = createTestWorld1
 
@@ -984,7 +977,17 @@ gravPoints, dz = simulateGravimetry(mesh, dDens)
 print("grav:", swatch.duration(True))
 
 #gravPoints, dz = simulateGravimetry(mesh, dens0)
-Gdg = solveGravimetry(mesh, dens0, pnts=gravPoints, complete=False) 
+
+densBlock = pg.RVector(dens0)
+
+densBlock[pg.find(mesh.cellMarker() < 4)] = 0.0
+#densBlock[mesh.cellMarker() < 4] = 0.0
+
+#ax, _ =pg.show(mesh, densBlock, hold=1, colorBar=1)
+#pg.show(mesh, axes=ax, hold=1)
+
+Gdg = solveGravimetry(mesh, densBlock, pnts=gravPoints, complete=False) 
+
 invertGravimetry(gravPoints, Gdg)
 #animateGravimetry(mesh, dDens, gravPoints, dz)
 
