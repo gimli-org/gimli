@@ -21,7 +21,7 @@ Fourier-Cosine-Transform
 
 import pygimli as pg
 
-from pygimli.solver import solvePoisson
+from pygimli.solver import solve
 
 from pygimli.viewer import show
 from pygimli.mplviewer import *
@@ -104,15 +104,15 @@ neumannBC = [[1, mixedBC], #left boundary
 
 """
 k = 1e-3
-u = solvePoisson(grid, a=1, b=k*k, f=pointSource,
-                 duBoundary=neumannBC,
-                 userData={'sourcePos': sourcePosA, 'k': k},
-                 verbose=True)
+u = solve(grid, a=1, b=k*k, f=pointSource,
+          duB=neumannBC,
+          userData={'sourcePos': sourcePosA, 'k': k},
+          verbose=True)
 
-u -= solvePoisson(grid, a=1, b=k*k, f=pointSource,
-                  duBoundary=neumannBC,
-                  userData={'sourcePos': sourcePosB, 'k': k},
-                  verbose=True)
+u -= solve(grid, a=1, b=k*k, f=pointSource,
+           duB=neumannBC,
+           userData={'sourcePos': sourcePosB, 'k': k},
+           verbose=True)
 
 #uAna = pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosA, k), grid.positions()))
 #uAna -= pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosB, k), grid.positions()))
@@ -123,8 +123,7 @@ u -= solvePoisson(grid, a=1, b=k*k, f=pointSource,
 pg.showLater(1)
 
 ax = show(grid, data=u, filled=True, colorBar=True,
-          orientation='horizontal', label='Solution $u$',
-          showLater=True)[0]
+          orientation='horizontal', label='Solution $u$')[0]
 show(grid, axes=ax)
 
 """

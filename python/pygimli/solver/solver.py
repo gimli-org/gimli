@@ -62,8 +62,12 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
             if len(arg) == n:
                 return arg
 
-        raise Exception("Array 'arg' has the wrong size: " +
-                        str(len(arg)) + " != " + str(ndof))
+        try:
+            # [marker, val] || [[marker, val]]
+            return parseMapToCellArray(arg, mesh)
+        except:
+            raise Exception("Array 'arg' has the wrong size: " +
+                            str(len(arg)) + " != " + str(ndof))
     elif hasattr(arg, '__call__'):
         ret = pg.RVector(nDofs[0], 0.0)
 
@@ -240,13 +244,17 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     """
     Parse a value map to cell attributes.
 
+    A map should consist out of pairs of marker and value. 
+    A marker is an integer and corresponds to the cell.marker().
+    
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
         For each cell of mesh a value will be returned.
 
     attributeMap : list | dict
-        List of pairs [[int, float]], or dictionary with integer keys
+        List of pairs [marker, value] ] || [[marker, value]], 
+        or dictionary with marker keys
 
     default : float [0.0]
         Fill all unmapped atts to this default.
@@ -262,6 +270,10 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     if isinstance(attributeMap, dict):
         raise Exception("Please implement me!")
     elif hasattr(attributeMap, '__len__'):
+        if not hasattr(attributeMap[0], '__len__'):
+            # assuming [marker, value]
+            attributeMap = [attributeMap]
+        
         for pair in attributeMap:
             if hasattr(pair, '__len__'):
                 idx = pg.find(mesh.cellMarker() == pair[0])
@@ -516,8 +528,8 @@ def assembleForceVector(mesh, f, userData=None):
 
     rhs = pg.RVector(mesh.nodeCount(), 0)
 
-    b_l = pg.ElementMatrix()
-
+    
+    
     if hasattr(f, '__call__') and not isinstance(f, pg.RVector):
         for c in mesh.cells():
             if userData is not None:
@@ -525,13 +537,11 @@ def assembleForceVector(mesh, f, userData=None):
             else:
                 f(c, rhs)
     else:
-
-        if isinstance(f, float) or isinstance(f, int):
-            fArray = pg.RVector(mesh.cellCount(), f)
-        else:
-            fArray = f
-
+        fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
+        
         if len(fArray) == mesh.cellCount():
+            b_l = pg.ElementMatrix()
+            
             for c in mesh.cells():
                 b_l.u(c)
                 for i, idx in enumerate(b_l.idx()):
@@ -838,6 +848,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     u0 : value | array | callable(pos, userData)
         Node values
+    
+    ub : value | array | callable(pos, userData)
+        Dirichlet values for u at the boundary
+        
+    dub : value | array | callable(pos, userData)
+        Neumann values for du/dn at the boundary
 
     f : value | array(cells) | array(nodes) | callable(args, kwargs)
         force values
@@ -867,11 +883,29 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         Returns the solution u either 1,n array for stationary problems or
         for m,n array for m time steps
 
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.polytools as plc
+    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
+    >>> c1 = plc.createCircle(pos=[0.0, -3.0], radius=1.0, area=0.01, marker=2)
+    >>> mesh = pg.meshtools.createMesh([world, c1])
+    >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 1], [2, 0.1]], uB=[[1, 1], [-2, 0]])
+    >>> ax, cbar = pg.show(mesh, u, colorBar=1, hold=0)
+    >>> pg.show(mesh, axes=ax)
+    
     See Also
     --------
 
     other solver TODO
     """
+    
+    if 'uDirichlet' in kwargs or 'uBoundary' in kwargs:
+        raise("use uB instead")
+            
+    if 'uBoundary' in kwargs:
+        raise("use duB instead")
+        
     debug = kwargs.pop('debug', False)
 
     if verbose:
@@ -885,7 +919,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     # check for material parameter
     a = parseArgToArray(a, ndof=mesh.cellCount(), mesh=mesh, userData=userData)
     b = parseArgToArray(b, ndof=mesh.cellCount(), mesh=mesh, userData=userData)
-
+    
     if debug:
         print("2: ", swatch2.duration(True))
     # assemble the stiffness matrix
@@ -908,20 +942,20 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if debug:
             print("6a: ", swatch2.duration(True))
 
-        if 'duBoundary' in kwargs:
+        if 'duB' in kwargs:
             print(userData)
             assembleNeumannBC(S,
-                              parseArgToBoundaries(kwargs['duBoundary'], mesh),
+                              parseArgToBoundaries(kwargs['duB'], mesh),
                               time=0.0,
                               userData=userData,
                               verbose=False)
 
         if debug:
             print("6b: ", swatch2.duration(True))
-        if 'uBoundary' in kwargs:
+        if 'uB' in kwargs:
             assembleDirichletBC(S,
                                 parseArgToBoundaries(
-                                    kwargs['uBoundary'],
+                                    kwargs['uB'],
                                     mesh),
                                 rhs, time=0.0,
                                 userData=userData,
@@ -929,11 +963,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         if debug:
             print("6c: ", swatch2.duration(True))
-        if 'uDirichlet' in kwargs:
-            raise("use uBoundary instead")
-            assembleUDirichlet_(S, rhs,
-                                kwargs['uDirichlet'][0],
-                                kwargs['uDirichlet'][1])
+        
+        
+            
 
         u = None
 
@@ -955,7 +987,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         # showSparseMatrix(S)
 
-        solver = pg.LinSolver(True)
+        solver = pg.LinSolver(False)
         solver.setMatrix(S, 0)
 
         u = solver.solve(rhs)
@@ -980,12 +1012,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         theta = kwargs.pop('theta', 1)
 
-        if not 'duBoundary' in kwargs:
+        if not 'duB' in kwargs:
             A = createStiffnessMatrix(mesh, a)
 
-            if 'uBoundary' in kwargs:
+            if 'uB' in kwargs:
                 assembleDirichletBC(A,
-                                    parseArgToBoundaries(kwargs['uBoundary'],
+                                    parseArgToBoundaries(kwargs['uB'],
                                                          mesh),
                                     rhs=F)
 
@@ -1015,12 +1047,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             # previous timestep
             # print "i: ", i, dt, U[i - 1]
 
-            if 'duBoundary' in kwargs:
+            if 'duB' in kwargs:
                 # aufschreiben und checken ob neumann auf A oder auf S mit
                 # skaliertem val*dt angewendet wird
                 A = createStiffnessMatrix(mesh, a)
                 assembleNeumannBC(A,
-                                  parseArgToBoundaries(kwargs['duBoundary'],
+                                  parseArgToBoundaries(kwargs['duB'],
                                                        mesh),
                                   time=times[n],
                                   userData=userData,
@@ -1045,9 +1077,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             S = M + A * dt * theta
 
-            if 'uBoundary' in kwargs:
+            if 'uB' in kwargs:
                 assembleDirichletBC(S,
-                                    parseArgToBoundaries(kwargs['uBoundary'],
+                                    parseArgToBoundaries(kwargs['uB'],
                                                          mesh),
                                     rhs=b,
                                     time=times[n],
@@ -1133,3 +1165,18 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
             np.mean(timeIter1))
 
     return u
+
+
+if __name__ == "__main__":
+
+    import pygimli as pg
+    import pygimli.polytools as plc
+    world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
+    c1 = plc.createCircle(pos=[0.0, -3.0], radius=1.0, area=0.01, marker=2)
+    mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
+    u = pg.solver.solveFiniteElements(mesh, a=[[1, 1], [2, 100]], uB=[[-1, 1.0], [-2, 0.0]])
+    ax, cbar = pg.show(mesh, u, colorBar=1, hold=1)
+    pg.show(mesh, axes=ax)
+    
+
+

@@ -72,7 +72,6 @@ from pygimli.ioutils import load
 from pygimli.viewer import show, showLater, plt
 from pygimli.solver import solve
 
-
 def showNow():
     showLater(0)
 
@@ -211,6 +210,7 @@ def __getVal(self, idx):
         Hell slow
     """
     # print("__getVal")
+    
     if isinstance(idx, BVector) or isinstance(idx, IVector):
         return self(idx)
     elif isinstance(idx, stdVectorI) or isinstance(idx, stdVectorUL):

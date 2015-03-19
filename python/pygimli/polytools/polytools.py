@@ -15,8 +15,8 @@ def polyCreateDefaultEdges_(poly, marker=1, closed=True):
         poly.createEdge(poly.node(poly.nodeCount()-1), 
                     poly.node(0), marker)
         
-def createRectanglePolygon(pos, size, marker=1, area=0, 
-                           boundaryMarker=1, isHole=False):
+def createRectangle(pos, size, marker=1, area=0, 
+                    boundaryMarker=1, isHole=False):
     """
     Create rectangle polygon.
         
@@ -63,7 +63,7 @@ def createRectanglePolygon(pos, size, marker=1, area=0,
     polyCreateDefaultEdges_(poly, marker=boundaryMarker, closed=True)
     return poly
 
-def createWorldPolygon(start, end, marker=1, area=0):
+def createWorld(start, end, marker=1, area=0):
     """
     Create simple rectangular world.
         
@@ -110,8 +110,8 @@ def createWorldPolygon(start, end, marker=1, area=0):
                     poly.node(0), pg.MARKER_BOUND_MIXED)
     return poly
 
-def createCirclePolygon(pos, radius, segments=12, marker=1, area=0,
-                        boundaryMarker=1, leftDirection=True, isHole=False):
+def createCircle(pos, radius, segments=12, marker=1, area=0,
+                 boundaryMarker=1, leftDirection=True, isHole=False):
     """
     Create simple circle polygon.
         
@@ -168,7 +168,7 @@ def createCirclePolygon(pos, radius, segments=12, marker=1, area=0,
     polyCreateDefaultEdges_(poly, boundaryMarker, closed=True)
     return poly
 
-def mergePolygons(pols):
+def mergePLC(pols):
     """
     Merge multiply polygons into a single polygon
             
@@ -189,16 +189,16 @@ def mergePolygons(pols):
     
     Examples
     --------
-    >>> from pygimli.polytools import *
+    >>> import pygimli.polytools as plc
     >>> from pygimli.meshtools import createMesh
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
-    >>> world = createWorldPolygon(start=[-10, 0], end=[10, -10], marker=1)
-    >>> c1 = createCirclePolygon([-1, -3], radius=1.5, area=0.1, marker=2)
-    >>> c2 = createCirclePolygon([-6, -5], radius=[1.5, 3.5], isHole=1)
-    >>> r1 = createRectanglePolygon([3, -5], size=[2, 2], marker=3)
-    >>> r2 = createRectanglePolygon([5, -5], size=[2, 2], marker=4, area=0.1)
-    >>> plc = mergePolygons([world, c1, c2, r1, r2])
+    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
+    >>> c1 = plc.createCircle([-1, -3], radius=1.5, area=0.1, marker=2)
+    >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
+    >>> r1 = plc.createRectangle([3, -5], size=[2, 2], marker=3)
+    >>> r2 = plc.createRectangle([5, -5], size=[2, 2], marker=4, area=0.1)
+    >>> plc = plc.mergePLC([world, c1, c2, r1, r2])
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, plc)
     >>> drawMesh(ax, createMesh(plc))

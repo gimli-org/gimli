@@ -72,8 +72,8 @@ CHOLMODWrapper::~CHOLMODWrapper(){
     if (AxV_) delete AxV_;
     if (AzV_) delete AzV_;
     
-    if (Ap_) delete [] Ap_;
-    if (Ai_) delete [] Ai_;
+    if (ApR_) delete [] ApR_;
+    if (AiR_) delete [] AiR_;
 
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
@@ -93,6 +93,8 @@ void CHOLMODWrapper::init_(SparseMatrix < ValueType > & S, int stype){
     AzV_ = NULL;
     Ap_ = NULL;
     Ai_ = NULL;
+    ApR_ = NULL;
+    AiR_ = NULL;
     
     if (stype == -2){
         stype_ = S.stype();
@@ -197,13 +199,13 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
             
             double * null = (double *) NULL;
 
-            Ap_ = new int[S.vecColPtr().size()];
-            Ai_ = new int[S.vecRowIdx().size()];
+            ApR_ = new int[S.vecColPtr().size()];
+            AiR_ = new int[S.vecRowIdx().size()];
             double *Ax_ =  new double[S.vecVals().size()];
             //our crs format need to be transposed first
             
             int *P=0, *Q=0;
-            (void) umfpack_di_transpose(S.nRows(), S.nCols(), ApT, AiT, AxT, P, Q, Ap_, Ai_, Ax_);
+            (void) umfpack_di_transpose(S.nRows(), S.nCols(), ApT, AiT, AxT, P, Q, ApR_, AiR_, Ax_);
             
             for (uint i = 0; i < S.vecVals().size(); i++) (*AxV_)[i] = Ax_[i];
             
@@ -212,8 +214,8 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
         
             if (verbose_) std::cout << "Using umfpack .. " << std::endl;        
             // beware transposed matrix here
-            (void) umfpack_di_symbolic(S.nCols(), S.nRows(), Ap_, Ai_, Ax_, &Symbolic, null, null) ;
-            (void) umfpack_di_numeric(Ap_, Ai_, Ax_, Symbolic, &NumericD_, null, null) ;
+            (void) umfpack_di_symbolic(S.nCols(), S.nRows(), ApR_, AiR_, Ax_, &Symbolic, null, null) ;
+            (void) umfpack_di_numeric(ApR_, AiR_, Ax_, Symbolic, &NumericD_, null, null) ;
             umfpack_di_free_symbolic (&Symbolic);
             return 1;
 #else
@@ -338,7 +340,7 @@ int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
         
             double *null = (double *) NULL ;
         
-            (void) umfpack_di_solve(UMFPACK_A, Ap_, Ai_, Ax_,
+            (void) umfpack_di_solve(UMFPACK_A, ApR_, AiR_, Ax_,
                                     &solution[0], &rhs[0],
                                     NumericD_, null, null) ;
                              
@@ -356,19 +358,7 @@ int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
 // (void) umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, &solution[0], &rhs[0], Numeric, null, null) ;
 // umfpack_di_free_numeric (&Numeric) ;
 // 
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
+
                              
             return 1;
 #endif
@@ -398,10 +388,9 @@ int CHOLMODWrapper::solve(const CVector & rhs, CVector & solution){
                              &xx[0], &xz[0], &bx[0], &bz[0],
                              Numeric_, null, null) ;
         
-            // set booth to NULL or they will be wrongly deleted .. 
             // fix crs->ccs sparseformat and cleanup/unify umfpackwrapper for this
-            Ap_ = 0;
-            Ai_ = 0;
+                             
+            // set booth to NULL or they will be wrongly deleted .. 
             
             solution = toComplex(xx, xz);
             return 1;

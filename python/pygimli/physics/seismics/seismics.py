@@ -147,7 +147,7 @@ def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
         trace /= (max(pg.abs(trace))*1.5)
 
         drawWiggle(axes, trace, t=t, xoffset=pos[0])
-
+    axes.invert_yaxis()
 
 def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     r"""

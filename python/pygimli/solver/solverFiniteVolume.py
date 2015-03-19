@@ -340,7 +340,7 @@ def findDiffusion(mesh, a, b, c, nc=None):
 
 
 def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
-                              uBoundaries=None, duBoundaries=None,
+                              uB=None, duB=None,
                               fn=None, vel=0, u0=0,
                               scheme='CDS', sparse=False, time=0.0,
                               userData=None):
@@ -384,10 +384,10 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
 
     dof = mesh.cellCount()
 
-    if not uBoundaries:
-        uBoundaries = []
-    if not duBoundaries:
-        duBoundaries = []
+    if not uB:
+        uB = []
+    if not duB:
+        duB = []
 
     if useHalfBoundaries:
         dof = mesh.cellCount() + len(uBoundaries)
@@ -405,14 +405,14 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
     # we need this to fast identify uBoundary and value by boundary
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
-    for i, [boundary, val] in enumerate(uBoundaries):
+    for i, [boundary, val] in enumerate(uB):
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
         uBoundaryID.append(boundary.id())
         uBoundaryVals[boundary.id()] = val
     duBoundaryID = []
     duBoundaryVals = [None] * mesh.boundaryCount()
-    for i, [boundary, val] in enumerate(duBoundaries):
+    for i, [boundary, val] in enumerate(duB):
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
         duBoundaryID.append(boundary.id())
@@ -538,17 +538,15 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
 
     if not hasattr(workspace, 'S'):
 
-        if 'uBoundary' in kwargs:
-            boundsDirichlet = pg.solver.parseArgToBoundaries(
-                kwargs['uBoundary'], mesh)
+        if 'uB' in kwargs:
+            boundsDirichlet = pg.solver.parseArgToBoundaries(kwargs['uB'], mesh)
 
-        if 'duBoundary' in kwargs:
-            boundsNeumann = pg.solver.parseArgToBoundaries(
-                kwargs['duBoundary'], mesh)
+        if 'duB' in kwargs:
+            boundsNeumann = pg.solver.parseArgToBoundaries(kwargs['duB'], mesh)
 
         workspace.S, workspace.rhsBCScales = diffusionConvectionKernel(
-            mesh=mesh, a=a, b=b, f=f, uBoundaries=boundsDirichlet,
-            duBoundaries=boundsNeumann, u0=u0, fn=fn, vel=vel, scheme=scheme,
+            mesh=mesh, a=a, b=b, f=f, uB=boundsDirichlet,
+            duB=boundsNeumann, u0=u0, fn=fn, vel=vel, scheme=scheme,
             sparse=sparse, userData=kwargs.pop('userData', None))
         print('FVM kernel 1:', swatch.duration(True))
         dof = len(workspace.rhsBCScales)
@@ -785,7 +783,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
         velocity[:, 0] = solveFiniteVolume(mesh,
                                            a=viscosity,
                                            f=-pressureGrad[:, 0],
-                                           uBoundary=velBoundaryX,
+                                           uB=velBoundaryX,
                                            uL=velocity[:, 0],
                                            relax=velocityRelaxation,
                                            ws=wsux)
@@ -798,7 +796,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
         velocity[:, 1] = solveFiniteVolume(mesh,
                                            a=viscosity,
                                            f=-pressureGrad[:, 1],
-                                           uBoundary=velBoundaryY,
+                                           uB=velBoundaryY,
                                            uL=velocity[:, 1],
                                            relax=velocityRelaxation,
                                            ws=wsuy)
@@ -832,7 +830,7 @@ def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
         pressureCorrection = solveFiniteVolume(mesh,
                                                a=pressureCoeff,
                                                f=div,
-                                               uBoundary=preBoundary,
+                                               uB=preBoundary,
                                                ws=wsp)
 
         pressure += pressureCorrection * pressureRelaxation

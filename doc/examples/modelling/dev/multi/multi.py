@@ -109,6 +109,7 @@ class MethodManager(object):
     # Work related methods
     def invert(self, data, values=None, verbose=0, **kwargs):
         """ Invert the data and fill the parametrization. """ 
+        raise('implement me')
         pass
              
     def simulate(self, mesh, values, data=None):
@@ -252,7 +253,7 @@ class ERT(MethodManager):
         Parameters
         ----------
         """
-        self.fop.setMesh(self.paraMesh)
+        self.fop.setMesh(mesh)
         self.fop.regionManager().region(1).setBackground(True)
         self.fop.createRefinedForwardMesh(refine=True, pRefine=False)
         
@@ -292,8 +293,93 @@ class Gravimetry(MethodManager):
     
     def __init__(self, verbose=False):
         """Default constructor."""
-        super(type(Gravimetry), self).__init__(verbose)
+        super(Gravimetry, self).__init__(verbose)
         
+    def createFOP(self, verbose):
+        return pg.physics.gravimetry.GravimetryModelling(verbose=verbose)
+        
+    def createInv(self, verbose):
+        self.tD = pg.RTrans()
+        self.tM = pg.RTrans()
+        inv = pg.RInversion(verbose=verbose, dosave=False)
+        inv.setTransData(self.tD)
+        inv.setTransModel(self.tM)
+        return inv
+    
+    def setParaMesh(self, mesh):
+        """
+        Set the parameter mesh for any inversion.
+            
+        Parameters
+        ----------
+        """
+        self.fop.setMesh(mesh)
+        self.fop.createRefinedForwardMesh(refine=False, pRefine=False)
+        
+    def invert(self, sensorPositions, values=None, verbose=0, **kwargs):
+        """
+        """
+        self.fop.setVerbose(verbose)
+        self.inv.setMaxIter(kwargs.pop('maxiter', 10))
+        self.inv.setLambda(kwargs.pop('lambd', 10))
+        
+        self.fop.setSensorPositions(sensorPositions)
+        mesh = kwargs.pop('mesh', None)
+        if mesh is None:
+            raise('implement me')
+        
+        self.setParaMesh(mesh)
+        
+        data = values
+        startModel = pg.RVector(self.fop.regionManager().parameterCount(),
+                                0.0)
+
+        print("nModel:", self.fop.regionManager().parameterCount())
+        #self.fop.setData(data)
+        self.inv.setForwardOperator(self.fop)
+        
+        self.fop.regionManager().setConstraintType(10)
+        # check err here 
+        self.inv.setData(data)
+        self.inv.setAbsoluteError(0.01)
+        self.inv.setModel(startModel)
+                
+        model = self.inv.run()
+        return model
+        if values is not None:
+            
+            if isinstance(values, pg.RVector):
+                values = [values]
+            elif isinstance(values, np.ndarray):
+                if values.ndim == 1:
+                    values = [values]
+            
+            allModel = pg.RMatrix(len(values)+1, len(model))
+            allModel[0] = model
+            self.inv.setVerbose(False)
+            for i in range(1, len(values)):
+                tic=time.time()
+                self.inv.setModel(model)
+                self.inv.setReferenceModel(model)
+                dData = pg.abs(values[i] - data)
+                
+                #relModel = self.inv.invSubStep(pg.log(dData))
+                #allModel[i] = model * pg.exp(relModel)
+                
+                relModel = self.inv.invSubStep(dData)
+                allModel[i] = model + relModel
+                
+                print(i, "/", len(values), " : ", time.time()-tic, "s")
+                
+            return allModel
+        
+        
+        return model
+    
+    def simulate(self, mesh, dDensity):
+        self.fop.setMesh(mesh)
+        TODO
+
 
 def createTestWorld1(maxArea=0.2, verbose=0):
     boundary = []
@@ -338,13 +424,13 @@ def createTestWorld1(maxArea=0.2, verbose=0):
     
     velBoundary=[[2, [1.0, 0.0]],
                  [6, [1.0, 0.0]],
-                 [3, [1./3., 0.0]],
+                 [3, [1./2., 0.0]],
                  [8, [0.0, 0.0]],
-                 [5, [1./3, 0.0]],
-                 [4, [1./3, 0.0]]
+                 [5, [1./2, 0.0]],
+                 [4, [1./2, 0.0]]
                 ]
     preBoundary=[[1, 0.0],
-                 #[4, 0.0], // bottom
+                 #[4, 0.0], # bottom
                  #[5, 0.0],
                  [7, 0.0]]
     
@@ -468,7 +554,7 @@ def velocityVp(porosity, vMatrix=5000, vFluid=1442, S=1,
               porosity * (1.-S)/vAir)
     return vel
 
-def permeabiltyEngelhardtPitter(porosity, q=3.5, s=5e-3,
+def permeabiltyEngelhardtPitter(poro, q=3.5, s=5e-3,
                                 mesh=None, meshI=None):
     r"""
     For sand and sandstones
@@ -478,7 +564,7 @@ def permeabiltyEngelhardtPitter(porosity, q=3.5, s=5e-3,
         S & = q\cdot s \\
         s & = \sum_{i=1}(\frac{P_i}{r_i})
         
-    * :math:`\phi` - porosity 0.0 --1.0
+    * :math:`\phi` - poro 0.0 --1.0
     * :math:`S` - in cm^-1  specific surface in cm^2/cm^3
     * :math:`q` - (3 for spheres, > 3 shape differ from sphere)
         3.5 sand
@@ -490,19 +576,32 @@ def permeabiltyEngelhardtPitter(porosity, q=3.5, s=5e-3,
     k :
         in Darcy
     """
-    porosity = parseArgToArray(porosity, mesh.cellCount(), mesh)
+    poro = parseArgToArray(poro, mesh.cellCount(), mesh)
     q = parseArgToArray(q, mesh.cellCount(), mesh)
     s = parseArgToArray(s, mesh.cellCount(), mesh)
     
     S = q * s
-    k = 2e-7 * (porosity**2 / (1.0-porosity)**2) * 1.0/ S**2
-    
+    k = 2e7 * (poro**2 / (1.0-poro)**2) * 1.0/S**2 * pg.physics.constants.Darcy
+        
     if meshI:
         k = pg.interpolate(mesh, k, meshI.cellCenters()) 
         k = pg.solver.fillEmptyToCellArray(meshI, k)
     return k
         
-        
+def hydraulicConductivity(perm, visc=1.0, dens=1.0,
+                          mesh=None, meshI=None):
+    perm = parseArgToArray(perm, mesh.cellCount(), mesh)
+    visc = parseArgToArray(visc, mesh.cellCount(), mesh)
+    dens = parseArgToArray(dens, mesh.cellCount(), mesh)
+    
+    k = perm * dens/visc * pg.physics.constants.g
+    
+    if meshI:
+        k = pg.interpolate(mesh, k, meshI.cellCenters()) 
+        k = pg.solver.fillEmptyToCellArray(meshI, k)
+    return k
+    
+
 def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
                       mesh=None, meshI=None):
     """
@@ -570,14 +669,14 @@ def calcVelocity(mesh, permeabilty, velBoundary, preBoundary):
         np.save(solutionName + '.bmat', vel)
     
         #plt.semilogy(divVNorm)
-        #pg.show(mesh, pg.cellDataToPointData(mesh, pres), cmap='b2r')
-        #data=pg.cellDataToPointData(mesh,
-                                    #np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1]))
+        pg.show(mesh, pg.cellDataToPointData(mesh, pres), cmap='bwr', colorBar=1)
+        data=pg.cellDataToPointData(mesh,
+                                    np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1]))
         
-        #ax, cbar = pg.show(mesh, ws.div, colorBar=1, label='divergence')
-        #ax, cbar = pg.show(mesh, data, colorBar=1, label='Velocity')
-        #pg.show(mesh, vel, axes=ax)
-        #pg.showNow()
+        ax, cbar = pg.show(mesh, ws.div, colorBar=1, label='divergence')
+        ax, cbar = pg.show(mesh, data, colorBar=1, label='Velocity')
+        pg.show(mesh, vel, axes=ax)
+        pg.showNow()
         
     return vel
 
@@ -615,7 +714,7 @@ def calcConcentration(mesh, vel, times):
 
     return conc
 
-def calcGravKernel(mesh):
+def simulateGravimetry(mesh, dDens):
     gravPointsX = np.arange(-19, 19.1, 1)
     gravPoints = np.vstack((gravPointsX, np.zeros(len(gravPointsX)))).T
     solutionName = createCacheName('grav', mesh, times)
@@ -629,8 +728,78 @@ def calcGravKernel(mesh):
         #Gdg, Gdgz = solveGravimetry(mesh, None, pnts=gravPoints, complete=True) 
         Gdg = solveGravimetry(mesh, None, pnts=gravPoints) 
         np.save(solutionName + '.bmat', Gdg)
+
+    #dz = Gdg.dot(dDens.transpose([1,0])).T
+    
+    dz = np.zeros((len(dDens), len(gravPoints)))
+    for i in range(len(dDens)):
+        dzerr = np.random.randn(len(gravPoints)) * 1.
+        dz[i] = Gdg.dot(dDens[i]) * (1 + dzerr/100.)
+     
+    print(Gdg.shape, dDens.shape, dz.shape)
+    return gravPoints, dz
+
+def invertGravimetry(gravPoints, dz):
+    
+    
+    dzerr = np.random.randn(len(gravPoints)) * 0.01
+    dz = dz + dzerr
+    
+    
+    
+    mesh = pg.createGrid(x=np.linspace(-20, 20, 41), 
+                         y=np.linspace(-20, 0, 21))
+   
+    
+    grav = Gravimetry(verbose=True)
         
-    return gravPointsX, Gdg
+    model = grav.invert(gravPoints, dz, verbose=1, mesh=mesh)
+    
+    plt.plot(pg.x(gravPoints), dz)
+    plt.plot(pg.x(gravPoints), grav.inv.response())
+    
+    paraDomain=grav.fop.regionManager().paraDomain()
+    pg.show(paraDomain, model, colorBar=1, hold=1)
+    
+    
+    
+    pg.showNow()
+    plt.show()
+    pass
+    
+def animateGravimetry(mesh, dDens, gravPoints, dz):
+    dpi=92
+    orientation = 'horizontal'
+    fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi) 
+        
+    axDDe = fig.add_subplot(3,1,1)
+    axGra = fig.add_subplot(3,1,2)
+    
+    #axGra = fig.fig.add_subplot(1,3,2)
+        # ** Density **
+    
+    gciDDe = pg.mplviewer.drawModel(axDDe, mesh, data=dDens[1],
+                                    cMin=0, cMax=20, 
+                                    )
+    cbar = createColorbar(gciDDe, orientation=orientation,
+                          label='Delta density in kg/m$^3$')
+    
+    def ani(i):
+        axGra.clear()
+        axGra.plot(pg.x(gravPoints), dz[i])
+        axGra.plot(pg.x(gravPoints), pg.y(gravPoints), 'v', color='black')
+        axGra.set_ylabel('Grav in mGal')
+        axGra.set_xlim((-20, 20))
+        axGra.set_ylim((0, 0.001))
+        axGra.grid()
+        
+        pg.mplviewer.setMappableData(gciDDe, abs(dDens[i]), 
+                                     cMin=0, cMax=20,
+                                     logScale=False)
+    for i in range(len(dz)):
+        ani(i)
+        plt.pause(0.001)
+
 
 def calcApparentResistivities(mesh, resistivities):
     ert = ERT(verbose=False)
@@ -683,7 +852,7 @@ def calcERT(ert, ertScheme, rhoa):
         print(e)
         print("Building .... ")
         ertModels = ert.invert(ertScheme, values=rhoa, maxiter=10, 
-                               paraDX=0.5, paraDZ= 0.5, nLayers=20, paraDepth=20,
+                               paraDX=0.5, paraDZ= 0.5, nLayers=20, paraDepth=15,
                                lambd=50, verbose=1)
         ertMesh=ert.fop.regionManager().paraDomain()
         ertModels.save(solutionName + '.bmat')
@@ -698,7 +867,7 @@ def calcSeismics(mesh, vP):
                                       markerBoundary=1,
                                       isSubSurface=False, verbose=False)
     print(meshSeis)
-    meshSeis = meshSeis.createP2()
+    meshSeis = meshSeis.createH2()
     vP = pg.interpolate(mesh, vP, meshSeis.cellCenters())
     #mesh = meshSeis.createH2()
     mesh = meshSeis
@@ -709,7 +878,7 @@ def calcSeismics(mesh, vP):
     pg.showNow()
     
     h = pg.median(mesh.boundarySizes())
-    dt = 0.5 * h /max(vP)
+    dt = 0.25 * h /max(vP)
     tmax = 50./min(vP)
     times = np.arange(0.0, tmax, dt)
         
@@ -723,13 +892,13 @@ def calcSeismics(mesh, vP):
     except Exception as e:
         print(e)
         print("Building .... ")
-        f0 = 1./dt*0.1
+        f0 = 1./dt*0.2
         
         print("h:", round(h,2), "dt:", round(dt,5), "1/dt:", round(1/dt,1), "f0", round(f0,2))
         
         uSource = ricker(f0, times, t0=1./f0)
     
-        plt.plot(times, uSource)
+        plt.plot(times, uSource, '-*')
         plt.show()
         u = solvePressureWave(mesh, vP, times, sourcePos=geophPoints[38],
                             uSource=uSource, verbose=10)
@@ -792,10 +961,11 @@ times = np.linspace(0, 50, 51)
 densityBrine = 1.2 * 1000 # kg/m^3
  
 permeabilty = permeabiltyEngelhardtPitter(porosity, mesh=mesh)    
+hydCond = hydraulicConductivity(permeabilty, mesh=mesh)
 
 vP = velocityVp(porosity, mesh=mesh)
 
-calcSeismics(mesh, vP)
+#calcSeismics(mesh, vP)
 print("Seismics:", swatch.duration(True))
 
 vel = calcVelocity(mesh, permeabilty, velBoundary, preBoundary)
@@ -810,8 +980,22 @@ densC = density(porosity, rhoMatrix=2510,
 dDens = densC - dens0
 
 
-gravPointsX, Gdg = calcGravKernel(mesh)
+gravPoints, dz = simulateGravimetry(mesh, dDens)
 print("grav:", swatch.duration(True))
+
+#gravPoints, dz = simulateGravimetry(mesh, dens0)
+Gdg = solveGravimetry(mesh, dens0, pnts=gravPoints, complete=False) 
+invertGravimetry(gravPoints, Gdg)
+#animateGravimetry(mesh, dDens, gravPoints, dz)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -820,10 +1004,11 @@ meshERT_FOP = appendTriangleBoundary(meshD,
                                     xbound=50, ybound=50, marker=1,
                                     quality=34.0, smooth=False, markerBoundary=1,
                                     isSubSurface=False, verbose=False)
+print("res 1:", swatch.duration(True))
 resistivities = resistivityArchie(rBrine=1./(1./20. + abs(1.*conc)),
                                   porosity=porosity, S=1, 
                                   mesh=mesh, meshI=meshERT_FOP)
-print("res:", swatch.duration(True))
+print("res 2:", swatch.duration(True))
 
 rhoa, ert, ertScheme = calcApparentResistivities(meshERT_FOP, resistivities)
 print("rhoa:", swatch.duration(True))
@@ -866,18 +1051,26 @@ if vis:
     axERR = fig.add_subplot(4,4,16)
         
     # ** Porosity **
-    show(mesh, data=porosity, colorBar=1, 
-         orientation=orientation, label='Porosity', axes=axPor)
+    axPor, _= show(mesh, data=porosity, colorBar=1, 
+                orientation=orientation, label='Porosity', axes=axPor)
     show(mesh, axes=axPor)
+    #axPor.figure.savefig("poro.pdf",bbox_inches='tight')
     
     # ** Permeabilty **
-    show(mesh, data=permeabilty, colorBar=1, 
-         orientation=orientation, label='Permeabilty', axes=axPer)
+    axPer,_ = show(mesh, data=permeabilty, colorBar=1, 
+         orientation=orientation, label='Permeabilty [m$^2$]', axes=axPer)
     show(mesh, axes=axPer)
+    #axPer.figure.savefig("perm.pdf",bbox_inches='tight')
+    
+    
+    axPer,_ = show(mesh, data=hydCond, colorBar=1, 
+         orientation=orientation, label='Hydraulic conductivity [m/s]', axes=axPer)
+    show(mesh, axes=axPer)
+    #axPer.figure.savefig("hydCond.pdf",bbox_inches='tight')
     
     # ** Density **
     show(mesh, data=dens0, colorBar=1, 
-         orientation=orientation, label='Density in kg/m$^3$', axes=axDen)
+         orientation=orientation, label='Density [kg/m$^3$]', axes=axDen)
     show(mesh, axes=axPer)
     
     # ** Velocity abs **
@@ -889,11 +1082,13 @@ if vis:
                        )
 
     # ** Velocity vector **
-    pg.mplviewer.drawMeshBoundaries(axVel, mesh, fitView=True)
+    pg.mplviewer.drawMeshBoundaries(axVel, mesh, fitView=True, hideMesh=1)
     pg.viewer.showBoundaryNorm(mesh, velBoundary, color='red', axes=axVel)
     
     meshC, tmp, tmp, tmp=modelFkt(maxArea=1, verbose=0)
     show(mesh, data=vel, axes=axVel, coarseMesh=meshC)
+    
+    #axVel.figure.savefig("velocity.pdf",bbox_inches='tight')
     
     # ** vP **
     show(mesh, data=vP, colorBar=1, 
@@ -946,14 +1141,11 @@ def animate(i):
     tic = time.time()
         
     axGra.clear()
-    dz = Gdg.dot(dDens[i])
-    
-    axGra.clear()
-    axGra.plot(gravPointsX, dz)
-    axGra.plot(gravPointsX, gravPointsX*0.0, 'v', color='black')
+    axGra.plot(pg.x(gravPoints), dz[i])
+    axGra.plot(pg.x(gravPoints), pg.y(gravPoints), 'v', color='black')
     axGra.set_ylabel('Grav in mGal')
     axGra.set_xlim((-20, 20))
-    axGra.set_ylim((0, 0.003))
+    axGra.set_ylim((0, 0.001))
     axGra.grid()
     
     axReA.clear()
@@ -995,19 +1187,19 @@ def animate(i):
         plt.pause(0.001)
 
 #animate(50)
-plt.show()
-for i in range(1, len(times)*2-1):
-    animate(i)
+#plt.show()
+#for i in range(1, len(times)*2-1):
+    #animate(i)
 
-#anim = animation.FuncAnimation(fig, animate,
-                               #frames=int(len(conc)),
-                               #interval=1)#, blit=True)
+anim = animation.FuncAnimation(fig, animate,
+                               frames=int(len(conc)),
+                               interval=1)#, blit=True)
 
-#solutionName = createCacheName('all', mesh, times)+ "-" + str(ertScheme.size())
+solutionName = createCacheName('all', mesh, times)+ "-" + str(ertScheme.size())
 
-#if mp4:
-    #anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
-          #bitrate=24*1024, extra_args=None, metadata=None,
-          #extra_anim=None, savefig_kwargs=None)
+if mp4:
+    anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
+          bitrate=24*1024, extra_args=None, metadata=None,
+          extra_anim=None, savefig_kwargs=None)
 
 pg.showNow()
