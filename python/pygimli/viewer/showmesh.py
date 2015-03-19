@@ -4,6 +4,8 @@
 Generic mesh visualization tools.
 """
 
+import os
+
 try:
     import pygimli as pg
     from pygimli.mplviewer import drawMesh, drawModel, drawField
@@ -43,7 +45,6 @@ def show(mesh, *args, **kwargs):
 
     Return the results from the show functions.
     """
-
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
             return showMesh(mesh, *args, **kwargs)
@@ -57,8 +58,9 @@ def show(mesh, *args, **kwargs):
     #plt.pause(0.001)
 
 
-def showMesh(mesh, data=None, hold=False, colorBar=False, coverage=None,
-             axes=None, **kwargs):
+def showMesh(mesh, data=None, hold=False, block=False, 
+             colorBar=False, coverage=None,
+             axes=None, savefig=None, **kwargs):
     """
     2D Mesh visualization.
 
@@ -89,13 +91,18 @@ def showMesh(mesh, data=None, hold=False, colorBar=False, coverage=None,
         . pg.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.mplviewer.meshview.drawSensors`
 
-    hold : bool [true]
+    hold : bool [false]
         Set interactive plot mode for matplotlib.
-        If this is set to true [default] your script will stop to open
-        a window with the figure and halted until you close this windows.
-        You can set pg.showLater(1) to change this default behavior and
-        pg.showNow() to force all pending figures to draw.
-
+        If this is set to false [default] your script will open
+        a window with the figure and draw your content. 
+        If set to true nothing happens until you either force another show with
+        hold=False, you call plt.show() or pg.wait(). 
+        If you want show with stopping your script set block = True.
+        
+    block : bool [false]
+        Force show drawing your content and block the script until you 
+        close the current figure.
+        
     colorBar : bool [false]
         Create and show a colorbar.
 
@@ -106,6 +113,11 @@ def showMesh(mesh, data=None, hold=False, colorBar=False, coverage=None,
         Instead of create a new and empty axes, just draw into the a given.
         Useful to combine draws.
 
+    savefig: string
+        Filename for a direct save to disc.
+        The matplotlib pdf-output is a little bit big so we try 
+        an epstopdf if the .eps suffix is found in savefig
+        
     **kwargs :
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
@@ -116,7 +128,14 @@ def showMesh(mesh, data=None, hold=False, colorBar=False, coverage=None,
 
     colobar : matplotlib.colobar
     """
+    
     ax = axes
+    if block:
+        hold=1
+
+    if hold:
+        lastHoldStatus = pg.mplviewer.holdAxes_
+        pg.mplviewer.holdAxes_ = 1
 
     if ax is None:
         fig, ax = plt.subplots()
@@ -175,8 +194,28 @@ def showMesh(mesh, data=None, hold=False, colorBar=False, coverage=None,
         hold = showLater
         print("showLater will be removed in the future. use hold instead")
         
-    if not hold:
-        plt.show()
+    if not hold or block is not False:
+        plt.show(block=block)
+        try:
+            plt.pause(0.1)
+        except:
+            pass
+        
+    if hold:
+        pg.mplviewer.holdAxes_ = lastHoldStatus
+        
+        
+    if savefig:
+        print('saving: ' + savefig + ' ...')
+        ax.figure.savefig(savefig, bbox_inches='tight')
+            
+        if '.eps' in savefig:
+            try:
+                print("trying eps2pdf ... ")
+                os.system('epstopdf ' + savefig)
+            except:
+                pass
+        print('..done')
 
     # fig.canvas.draw()
     return ax, cbar

@@ -44,9 +44,9 @@ public:
 
     void setGraph(const Graph & graph);
 
-    void setStartNode(uint startNode);
+    void setStartNode(Index startNode);
 
-    std::vector < uint > shortestPathTo(uint node) const;
+    std::vector < Index > shortestPathTo(Index node) const;
 
     inline double distance(int node) { return distances_[node]; }
 
@@ -124,16 +124,16 @@ protected:
     double background_;
     
     /*! Nearest nodes for the current mesh for all shot points.*/
-    std::vector < uint > shotNodeId_;
+    std::vector < Index > shotNodeId_;
     
     /*! Map shot id to sequential shot node number of shotNodeId_ */
-    std::map< uint, uint > shotsInv_;
+    std::map< Index, Index > shotsInv_;
     
     /*! Nearest nodes for the current mesh for all receiver points.*/
-    std::vector < uint > receNodeId_;
+    std::vector < Index > receNodeId_;
     
     /*! Map receiver id to sequential receiver node number of receNodeId_ */
-    std::map< uint, uint > receiInv_;
+    std::map< Index, Index > receiInv_;
     
 };
 

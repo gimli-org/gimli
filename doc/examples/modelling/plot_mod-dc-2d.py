@@ -120,7 +120,6 @@ u -= solve(grid, a=1, b=k*k, f=pointSource,
 #err = (1.0 -u/uAna)*100.0
 
 #print "error min max", min(err), max(err)
-pg.showLater(1)
 
 ax = show(grid, data=u, filled=True, colorBar=True,
           orientation='horizontal', label='Solution $u$')[0]
@@ -142,4 +141,4 @@ drawStreams(ax, grid, u, coarseMesh=gridCoarse, color='Black')
 
 """
 
-pg.showNow()
+pg.wait()

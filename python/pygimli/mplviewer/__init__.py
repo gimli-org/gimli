@@ -3,8 +3,21 @@
     Viewer interface .. dependents on matplotlib
 """
 
-from .dataview import *
+holdAxes_ = 0
 
+def updateAxes(ax, a=None):
+    """
+        for internal use
+    """
+    if not holdAxes_:
+        try:
+            mpl.pyplot.pause(0.01)
+        except Exception as e:
+            #print(e)
+            pass
+
+
+from .dataview import *
 from .meshview import *
 from .colorbar import *
 from .overlayimage import *
@@ -14,12 +27,16 @@ import numpy as np
 
 
 def showLater(val=1):
+    raise('do not use')
     import matplotlib.pyplot as plt
     if val == 1:
         plt.ion()
     else:
         plt.ioff()
         plt.show()
+
+def wait():
+    plt.show()
 
 goldenMean = 1.618  # (1.0 + math.sqrt(5.0)) / 2.0
 

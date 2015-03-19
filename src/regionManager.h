@@ -83,32 +83,32 @@ public:
     inline bool isSingle() const { return isSingle_ ; }
 
     /*! Return amount of parameter for this region, 1 on single region */
-    inline uint parameterCount() const { return parameterCount_; }
+    inline Index parameterCount() const { return parameterCount_; }
 
     /*! Returns the first parameter id by means of a global count, defined in countParameter called from RegionManager */
-    inline uint startParameter() const { return startParameter_; }
+    inline Index startParameter() const { return startParameter_; }
     
     /*! Returns the last parameter id by means of a global count, defined in countParameter called from RegionManager */
-    inline uint endParameter() const { return endParameter_; }
+    inline Index endParameter() const { return endParameter_; }
 
     /*! Set the constrainst-type for this region available(0, 1) */
-    void setConstraintType(uint type);
+    void setConstraintType(Index type);
     
     /*! Return constrainst-type for this region. */
-    inline uint constraintType() const { return constraintType_; }
+    inline Index constraintType() const { return constraintType_; }
 
     /*! Returns amount if constraints defined for this region,
         For single region return 1,\n
         for constraintstype == 0 return amount of parameter cells,\n
         else return amount of inner boundaries */
-    uint constraintCount() const;
+    Index constraintCount() const;
     
     /*! Fill given constraints matrix with local constraints. 
         For single region (startConstraintsID, startParameter_) = 1, \n
         for constraintstype == 0 fill  (startConstraintsID + i, startParameter_ + i) = 1, i=1..constraintCount()\n
         else fill (startConstraintsID + i, Boundary_i_leftNeightbourParameterID) = 1, 
                   (startConstraintsID + i, Boundary_i_rightNeightbourParameterID) = -1, i = 1..nBoundaries.*/
-    void fillConstraints(RSparseMapMatrix & C, uint startConstraintsID);
+    void fillConstraints(RSparseMapMatrix & C, Index startConstraintsID);
 
     /*! Set region wide constant constraints weight, (default = 1). If this method is called background is forced to false. */
     void setConstraintsWeight(double bc);
@@ -120,7 +120,7 @@ public:
     inline const RVector & constraintsWeight() const { return constraintsWeight_; }
     
     /*! Fill global constraints weight vector started at constraintStart. */ 
-    void fillConstraintsWeight(RVector & vec, uint constraintStart );
+    void fillConstraintsWeight(RVector & vec, Index constraintStart );
     
     /*! Set Region-Wide horizontal(z) weighting parameter for anisotropic smoothing \n
         1 - isotrope, 0 -- no vertical smoothing
@@ -145,9 +145,9 @@ public:
 //DEPRECATED ??
 //      inline RVector * constraintsWeight() { return & boundaryControl_; }
 
-    void fillBoundaryNorm(std::vector< RVector3 > & vnorm, uint boundCount);
+    void fillBoundaryNorm(std::vector< RVector3 > & vnorm, Index boundCount);
  
-    void fillBoundarySize(RVector & vec, uint boundStart);
+    void fillBoundarySize(RVector & vec, Index boundStart);
     
     void fillStartVector(RVector & vec);
 
@@ -157,7 +157,7 @@ public:
 
     std::vector < Cell * > & cells() { return cells_; }
 
-    void countParameter(uint start);
+    void countParameter(Index start);
 
     /*! Set the values of start for the start model of this region. */
     void setStartModel(const RVector & start);
@@ -215,11 +215,11 @@ protected:
     bool isBackground_;
     bool isSingle_;
 
-    uint parameterCount_;
-    uint startParameter_;
-    uint endParameter_;
+    Index parameterCount_;
+    Index startParameter_;
+    Index endParameter_;
 
-    uint constraintType_;
+    Index constraintType_;
 
     RVector startVector_;
     RVector modelControl_;
@@ -260,20 +260,20 @@ public:
     /*!
      * Add a external region to the RegionManager. 
      */
-    Region * addRegion(int marker, const Mesh & mesh);
+    Region * addRegion(SIndex marker, const Mesh & mesh);
     
-    const std::map < int, Region * > & regions() const { return regionMap_; }
+    const std::map < SIndex, Region * > & regions() const { return regionMap_; }
 
-    std::map < int, Region * >  * regions() { return &regionMap_; }
+    std::map < SIndex, Region * >  * regions() { return &regionMap_; }
 
-    uint regionCount() const { return regionMap_.size(); }
+    Index regionCount() const { return regionMap_.size(); }
 
     /*! Returns a ptr to the region with the given marker. If no region exist an exception is thrown. */
-    Region * region(int marker);
+    Region * region(SIndex marker);
 
-    inline bool regionExists(int marker) { return (regionMap_.count(marker) > 0); }
+    inline bool regionExists(SIndex marker) { return (regionMap_.count(marker) > 0); }
 
-    void setInterRegionConstraint(int a, int b, double c);
+    void setInterRegionConstraint(SIndex a, SIndex b, double c);
 
     /*! load region parameters from region control file */
     void loadMap(const std::string & fname);
@@ -282,15 +282,15 @@ public:
     void saveMap(const std::string & fname);
 
     /*! Set the amount of parameter, will be override if regions are defined */
-    inline void setParameterCount(uint count) { parameterCount_ = count; }
+    inline void setParameterCount(Index count) { parameterCount_ = count; }
 
     /*! Return global amount of parameter */
-    uint parameterCount() const;
+    Index parameterCount() const;
 
     /*! Return global amount of constraints */
-    uint constraintCount() const;
+    Index constraintCount() const;
 
-    uint interRegionConstraintsCount() const;
+    Index interRegionConstraintsCount() const;
 
     void fillStartVector(RVector & vec);
 
@@ -315,7 +315,7 @@ public:
     /*! Syntactic sugar: set zweight/constraintType to all regions. */
     void setZWeight(double z);
 
-    void setConstraintType(uint type);
+    void setConstraintType(Index type);
 
     void fillBoundarySize(RVector & vec);
 
@@ -345,18 +345,18 @@ protected:
     /*!
      * Internal method to create a region. The method is called from \ref setMesh()
      */
-    Region * createRegion_(int marker, const Mesh & mesh);
+    Region * createRegion_(SIndex marker, const Mesh & mesh);
     
     /*!
      * Internal method to create a single parameter region. The method is called from \ref setMesh()
      */
-    Region * createSingleRegion_(int marker, const std::vector < Cell * > & cells);
+    Region * createSingleRegion_(SIndex marker, const std::vector < Cell * > & cells);
 
 
-    std::vector < int > allRegionMarker_(bool exludeBoundary = false){
-        std::vector < int > tmp;
-        for (std::map < int, Region * > ::const_iterator it  = regionMap_.begin();
-                                                          it != regionMap_.end(); it++){
+    std::vector < SIndex > allRegionMarker_(bool exludeBoundary=false){
+        std::vector < SIndex > tmp;
+        for (std::map < SIndex, Region * > ::const_iterator
+                it = regionMap_.begin(); it != regionMap_.end(); it++){
             if (!it->second->isBackground()) tmp.push_back(it->first);
         }
         return tmp;
@@ -365,15 +365,15 @@ protected:
 
     bool verbose_;
 
-    uint parameterCount_;
+    Index parameterCount_;
 
     Mesh * mesh_;
     Mesh * paraDomain_;
 
-    std::map < int, Region * > regionMap_;
-    std::map< std::pair< int, int >, std::list < Boundary * > > interRegionInterfaceMap_;
-    std::map< std::pair< int, int >, double > interRegionConstraints_;
-    std::map< int, double > interfaceConstraint_;
+    std::map < SIndex, Region * > regionMap_;
+    std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > > interRegionInterfaceMap_;
+    std::map< std::pair< SIndex, SIndex >, double > interRegionConstraints_;
+    std::map< SIndex, double > interfaceConstraint_;
 
     double interRegionConstraintsZWeight_;
 

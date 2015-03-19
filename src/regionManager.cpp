@@ -154,18 +154,18 @@ void Region::resize(const std::vector < Cell * > & cells){
     }
 }
 
-void Region::countParameter(uint start){
+void Region::countParameter(Index start){
     startParameter_ = start;
     if (isBackground_) {
-        for (uint i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(-1);
+        for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(-1);
         bounds_.clear();
         parameterCount_ = 0;
     } else if (isSingle_) {
-        for (uint i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start);
+        for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start);
         bounds_.clear();
         parameterCount_ = 1;
     } else {
-        for (uint i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start + i);
+        for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start + i);
         parameterCount_ = cells_.size();
     }
     endParameter_ = start + parameterCount_;
@@ -207,7 +207,7 @@ void Region::fillStartVector(RVector & vec){
         if (isSingle_){
             vec[startParameter_] = startVector_[0];
         } else {
-            for (uint i = 0, imax = cells_.size(); i < imax; i ++) {
+            for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
                 vec[cells_[i]->marker()] = startVector_[i];
             }
         }
@@ -247,14 +247,14 @@ void Region::fillModelControl(RVector & vec){
     if (isSingle_){
         vec[startParameter_] = modelControl_[0];
     } else{
-        for (uint i = 0, imax = cells_.size(); i < imax; i ++) {
+        for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
             vec[cells_[i]->marker()] = modelControl_[i];
         }
     }
 }
 
 //################ constraints behaviour
-uint Region::constraintCount() const {
+Index Region::constraintCount() const {
     if (isSingle_ && constraintType_ == 1) return 0;
 
     if (constraintType_ == 0 || constraintType_ == 2 || constraintType_ == 20) return parameterCount();
@@ -262,7 +262,7 @@ uint Region::constraintCount() const {
     return bounds_.size();
 }
 
-void Region::fillConstraints(RSparseMapMatrix & C, uint startConstraintsID){
+void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
     if (isBackground_) return;
 
     if (isSingle_ && constraintType_ == 1) return;
@@ -296,7 +296,7 @@ void Region::fillConstraints(RSparseMapMatrix & C, uint startConstraintsID){
         return;
     }
     //** 1st order constraints (opt. combined with 0th order)
-    uint cID = startConstraintsID;
+    Index cID = startConstraintsID;
          for (std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
         it != itmax; it ++){
 
@@ -323,7 +323,7 @@ void Region::fillConstraints(RSparseMapMatrix & C, uint startConstraintsID){
     }
 }
 
-void Region::setConstraintType(uint type) {
+void Region::setConstraintType(Index type) {
     constraintType_ = type;
     constraintsWeight_.resize(this->constraintCount(), 1);
 }
@@ -346,10 +346,10 @@ void Region::setConstraintsWeight(const RVector & sw){
     }
 }
 
-void Region::fillConstraintsWeight(RVector & vec, uint constraintStart){
+void Region::fillConstraintsWeight(RVector & vec, Index constraintStart){
     if (isBackground_) return;
 
-    for (uint i = 0, imax = constraintCount(); i < imax; i ++) {
+    for (Index i = 0, imax = constraintCount(); i < imax; i ++) {
         //std::cout << i << " " << constraintsWeight_[i] << std::endl;
         vec[constraintStart + i] = constraintsWeight_[i];
     }
@@ -359,7 +359,7 @@ void Region::fillConstraintsWeightWithFlatWeight(){
     if (isBackground_ || isSingle_ || (constraintType() == 0) || (constraintType() == 2)) return;
     constraintsWeight_.resize(constraintCount(), 1.0);
 
-    for (uint i = 0, imax = bounds_.size(); i < imax; i ++) {
+    for (Index i = 0, imax = bounds_.size(); i < imax; i ++) {
 
         double zDir = std::fabs(bounds_[i]->norm()[parent_->mesh().dim() -1]); //! z-component
 //        double horizDir = std::sqrt(1.0 - zDir * zDir); //! horizontal component
@@ -377,18 +377,18 @@ void Region::fillConstraintsWeightWithFlatWeight(){
     }
 }
 
-void Region::fillBoundaryNorm(std::vector< RVector3 > & vnorm, uint boundStart){
+void Region::fillBoundaryNorm(std::vector< RVector3 > & vnorm, Index boundStart){
     if (isBackground_ || isSingle_ || (constraintType() == 0)) return;
 
-    for (uint i = 0, imax = bounds_.size(); i < imax; i ++) {
+    for (Index i = 0, imax = bounds_.size(); i < imax; i ++) {
         vnorm[i + boundStart] = bounds_[i]->norm();
     }
 }
 
-void Region::fillBoundarySize(RVector & vec, uint boundStart){
+void Region::fillBoundarySize(RVector & vec, Index boundStart){
     if (isBackground_ || isSingle_ || (constraintType() == 0)) return;
 
-    for (uint i = 0, imax = bounds_.size(); i < imax; i ++) {
+    for (Index i = 0, imax = bounds_.size(); i < imax; i ++) {
         vec[i + boundStart] = bounds_[i]->shape().domainSize();
     }
 }
@@ -463,7 +463,7 @@ RegionManager::~RegionManager(){
     if (paraDomain_) delete paraDomain_;
 }
 
-Region * RegionManager::region(int marker){
+Region * RegionManager::region(SIndex marker){
     if (regionMap_.count(marker) == 0){
         throwError(EXIT_DEFAULT, WHERE_AM_I + " no region with marker " + toStr(marker));
     } else {
@@ -473,7 +473,7 @@ Region * RegionManager::region(int marker){
 }
 
 void RegionManager::clear(){
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         delete it->second;
     }
@@ -530,7 +530,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
         }
     }
 
-    for (uint i = 0; i < regions.size(); i ++){
+    for (Index i = 0; i < regions.size(); i ++){
         if (singleOnly){
             createSingleRegion_(regions[i], markerCellVectorMap[regions[i]]);
         } else {
@@ -546,7 +546,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     this->createParaDomain_();
 }
 
-Region * RegionManager::createSingleRegion_(int marker, const std::vector < Cell * > & cells){
+Region * RegionManager::createSingleRegion_(SIndex marker, const std::vector < Cell * > & cells){
     Stopwatch swatch(true);
     Region * region = NULL;
     if (regionMap_.count(marker) == 0){
@@ -561,7 +561,7 @@ Region * RegionManager::createSingleRegion_(int marker, const std::vector < Cell
     return region;
 }
 
-Region * RegionManager::createRegion_(int marker, const Mesh & mesh){
+Region * RegionManager::createRegion_(SIndex marker, const Mesh & mesh){
     Region * region = NULL;
 
     if (regionMap_.count(marker) == 0){
@@ -575,7 +575,7 @@ Region * RegionManager::createRegion_(int marker, const Mesh & mesh){
     return region;
 }
 
-Region * RegionManager::addRegion(int marker, const Mesh & mesh){
+Region * RegionManager::addRegion(SIndex marker, const Mesh & mesh){
     Region * region = createRegion_(marker, mesh);
     recountParaMarker_(); //** make sure the counter is right
     return region;
@@ -587,7 +587,7 @@ void RegionManager::createParaDomain_(){
     IndexArray cellIdx;
     cellIdx.reserve(mesh_->cellCount());
 
-    for (std::map< int, Region* >::const_iterator
+    for (std::map< SIndex, Region* >::const_iterator
          it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
         
         if (!it->second->isBackground()){
@@ -601,9 +601,9 @@ void RegionManager::createParaDomain_(){
 }
 
 void RegionManager::recountParaMarker_(){
-    uint count = 0;
+    Index count = 0;
 
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         it->second->countParameter(count);
         count += it->second->parameterCount();
@@ -615,7 +615,7 @@ void RegionManager::findInterRegionInterfaces_(){
     interRegionInterfaceMap_.clear();
     Boundary * bound;
     //** having fun with stl
-    std::map< std::pair< int, int >, std::list < Boundary * > > ::iterator iRMapIter;
+    std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > > ::iterator iRMapIter;
 
     for (std::vector < Boundary * >::const_iterator
             iBound  = mesh_->boundaries().begin();
@@ -623,20 +623,20 @@ void RegionManager::findInterRegionInterfaces_(){
         bound = (*iBound);
         if (bound->leftCell() && bound->rightCell()){
             if (bound->leftCell()->marker() != bound->rightCell()->marker()){
-                int minMarker = min(bound->leftCell()->marker(), bound->rightCell()->marker());
-                int maxMarker = max(bound->leftCell()->marker(), bound->rightCell()->marker());
+                SIndex minMarker = min(bound->leftCell()->marker(), bound->rightCell()->marker());
+                SIndex maxMarker = max(bound->leftCell()->marker(), bound->rightCell()->marker());
 
-                iRMapIter = interRegionInterfaceMap_.find(std::pair< int, int >(minMarker, maxMarker));
+                iRMapIter = interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(minMarker, maxMarker));
                 if (iRMapIter == interRegionInterfaceMap_.end()){
-                    interRegionInterfaceMap_.insert(std::pair< std::pair< int, int >,
-                                      std::list < Boundary * > > (std::pair< int, int>(minMarker, maxMarker), std::list< Boundary* >()));
+                    interRegionInterfaceMap_.insert(std::pair< std::pair< SIndex, SIndex >,
+                                      std::list < Boundary * > > (std::pair< SIndex, SIndex>(minMarker, maxMarker), std::list< Boundary* >()));
                 }
-                interRegionInterfaceMap_[std::pair< int, int > (minMarker, maxMarker)].push_back(bound);
+                interRegionInterfaceMap_[std::pair< SIndex, SIndex > (minMarker, maxMarker)].push_back(bound);
             }
         }
     }
 //     if (verbose_ && interRegionInterfaceMap_.size()){
-//         for (std::map< std::pair< int, int >, std::list < Boundary * > >::iterator
+//         for (std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::iterator
 //                 it  = interRegionInterfaceMap_.begin();
 //                 it != interRegionInterfaceMap_.end(); it ++){
 //             std::cout << "(" << it->first.first << "," << it->first.second << ") "
@@ -647,7 +647,7 @@ void RegionManager::findInterRegionInterfaces_(){
 
 void RegionManager::fillStartVector(RVector & vec){
     if (vec.size() != parameterCount()) vec.resize(parameterCount());
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         it->second->fillStartVector(vec);
     }
@@ -668,7 +668,7 @@ void RegionManager::fillModelControl(RVector & vec){
 
     if (vec.size() != parameterCount()) vec.resize(parameterCount(), 1.0);
 
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         it->second->fillModelControl(vec);
     }
@@ -697,8 +697,8 @@ void RegionManager::fillConstraintsWeight(RVector & vec){
     if (vec.size() != constraintCount()) vec.resize(constraintCount(), 1.0);
 
     //!** fill constraints weights from individual regions
-    uint cID = 0;
-    for (std::map< int, Region* >::const_iterator
+    Index cID = 0;
+    for (std::map< SIndex, Region* >::const_iterator
             it  = regionMap_.begin(); it != regionMap_.end(); it ++){
         it->second->fillConstraintsWeight(vec, cID);
         cID += it->second->constraintCount();
@@ -708,11 +708,11 @@ void RegionManager::fillConstraintsWeight(RVector & vec){
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "apply inter region constraints weights " << std::endl;
 
-        for (std::map< std::pair< int, int >, double >::iterator
+        for (std::map< std::pair< SIndex, SIndex >, double >::iterator
                         it = interRegionConstraints_.begin();
                         it != interRegionConstraints_.end(); it ++){
 
-            std::map< std::pair< int, int >, std::list < Boundary * > >::const_iterator iRMapIter = interRegionInterfaceMap_.find(it->first);
+            std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::const_iterator iRMapIter = interRegionInterfaceMap_.find(it->first);
 
 //             if (verbose_) {
 //                 std::cout << "regions: " << it->first.first << " " << it->first.second;
@@ -787,8 +787,8 @@ void RegionManager::fillConstraintsWeight(RVector & vec){
 
 void RegionManager::fillBoundarySize(RVector & vec){
     if (vec.size() != constraintCount()) vec.resize(constraintCount(), 1.0);
-    uint boundCount = 0;
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    Index boundCount = 0;
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         it->second->fillBoundarySize(vec, boundCount);
         boundCount += it->second->constraintCount();
@@ -796,7 +796,7 @@ void RegionManager::fillBoundarySize(RVector & vec){
 
 }
 
-uint RegionManager::parameterCount() const {
+Index RegionManager::parameterCount() const {
     if (regionMap_.empty()) {
         if (parameterCount_ == 0){
             //return parameterCount_;
@@ -806,7 +806,7 @@ uint RegionManager::parameterCount() const {
     }
 
     int count = 0;
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         count += it->second->parameterCount();
     }
@@ -820,13 +820,13 @@ uint RegionManager::parameterCount() const {
 //                             std::mem_fun(&Region::modelCount));
 }
 
-uint RegionManager::constraintCount() const {
+Index RegionManager::constraintCount() const {
     if (regionMap_.empty()) {
         return parameterCount_;
     }
 
     int count = 0;
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         count += it->second->constraintCount();
 //         std::cout << count << std::endl;
@@ -836,10 +836,10 @@ uint RegionManager::constraintCount() const {
     return count + interRegionConstraintsCount();
 }
 
-uint RegionManager::interRegionConstraintsCount() const {
-    uint count = 0;
+Index RegionManager::interRegionConstraintsCount() const {
+    Index count = 0;
 
-    for (std::map< std::pair< int, int >, double >::const_iterator
+    for (std::map< std::pair< SIndex, SIndex >, double >::const_iterator
             it = interRegionConstraints_.begin();
             it != interRegionConstraints_.end(); it ++){
 
@@ -860,8 +860,8 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
 //     __MS(&C)
 //     __MS(C.rtti())
     
-    uint nModel  = parameterCount();
-    uint nConstr = constraintCount();
+    Index nModel  = parameterCount();
+    Index nConstr = constraintCount();
 
     C.clear();
 
@@ -877,9 +877,9 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     C.setRows(nConstr);
     C.setCols(nModel);
 
-    uint consCount = 0;
+    Index consCount = 0;
 
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         it->second->fillConstraints(C, consCount);
         consCount += it->second->constraintCount();
@@ -888,12 +888,12 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "apply inter region constraints " << std::endl;
 
-        for (std::map< std::pair< int, int >, double >::iterator
+        for (std::map< std::pair< SIndex, SIndex >, double >::iterator
                 it  = interRegionConstraints_.begin();
                 it != interRegionConstraints_.end(); it ++){
 //             if (verbose_) std::cout << "regions: " << it->first.first << " "
 //                                       << it->first.second << std::endl;
-            std::map< std::pair< int, int >, std::list < Boundary * > >::const_iterator iRMapIter;
+            std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::const_iterator iRMapIter;
             iRMapIter = interRegionInterfaceMap_.find(it->first);
 
             Region * lR = region(it->first.first);
@@ -941,9 +941,9 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
 
 std::vector < RVector3 > RegionManager::boundaryNorm() const {
     std::vector < RVector3 > vnorm(constraintCount(), RVector3(0.0, 0.0, 0.0));
-    uint consCount = 0;
+    Index consCount = 0;
 
-    for (std::map< int, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
         it->second->fillBoundaryNorm(vnorm, consCount);
         consCount += it->second->constraintCount();
@@ -1009,7 +1009,7 @@ void RegionManager::loadMap(const std::string & fname){
                 token.push_back(row[0].substr(1, row[0].size()));
             }
 
-            for (uint i = 1; i < row.size(); i ++) {
+            for (Index i = 1; i < row.size(); i ++) {
                 token.push_back(row[i]);
             }
 
@@ -1028,14 +1028,14 @@ void RegionManager::loadMap(const std::string & fname){
 
             if (verbose_){
                 if (verbose_) std::cout << "Get region property tokens: " << std::endl;
-                for (uint i = 0; i < token.size(); i ++) {
+                for (Index i = 0; i < token.size(); i ++) {
                     if (verbose_) std::cout << token[i] << ", ";
                 }
                 if (verbose_) std::cout << std::endl;
             }
 
             if (token.size() >= row.size()){
-                std::vector < int > regionMarker;
+                std::vector < SIndex > regionMarker;
 
                 if (row[0] != "*"){
                     //std::cout << row[0] << std::endl;
@@ -1048,8 +1048,8 @@ void RegionManager::loadMap(const std::string & fname){
                     regionMarker = allRegionMarker_();
                 }
 
-                for (uint j = 0; j < regionMarker.size(); j ++){
-                    for (uint i = 1; i < row.size(); i ++){
+                for (Index j = 0; j < regionMarker.size(); j ++){
+                    for (Index i = 1; i < row.size(); i ++){
                         if (regionAttributeMap.count(lower(token[i]))){
                             if (verbose_) std::cout << regionMarker[j] << " : " << token[i]
                                                       << " " << row[i] << std::endl;
@@ -1071,15 +1071,15 @@ void RegionManager::loadMap(const std::string & fname){
         } else if (lower(token[0]) == "inter-region" || lower(token[0]) == "interregion") {
             if (verbose_){
                 if (verbose_) std::cout << "Get inter-region properties" << std::endl;
-                for (uint i = 0; i < token.size(); i ++) {
+                for (Index i = 0; i < token.size(); i ++) {
                     if (verbose_) std::cout << token[i] << " ";
                 }
                 if (verbose_) std::cout << std::endl;
             }
 
             if (row.size() == 3){
-                std::vector < int > minRegion;
-                std::vector < int > maxRegion;
+                std::vector < SIndex > minRegion;
+                std::vector < SIndex > maxRegion;
                 if (row[0] != "*"){
                     minRegion.push_back(toInt(row[0]));
                 } else {
@@ -1091,11 +1091,11 @@ void RegionManager::loadMap(const std::string & fname){
                     maxRegion = allRegionMarker_(true);
                 }
 
-                for (uint i = 0; i < minRegion.size(); i ++){
-                    for (uint j = 0; j < maxRegion.size(); j ++){
+                for (Index i = 0; i < minRegion.size(); i ++){
+                    for (Index j = 0; j < maxRegion.size(); j ++){
                         if (minRegion[i] != maxRegion[j]){
                             setInterRegionConstraint(minRegion[i], maxRegion[j],
-                                                        toDouble(row[2]));
+                                                     toDouble(row[2]));
                         }
                     }
                 }
@@ -1112,9 +1112,9 @@ void RegionManager::loadMap(const std::string & fname){
             if (row.size() == 2){ // interface constraint
                 if (row[0] == "*"){
                     THROW_TO_IMPL
-                    for (std::map < int, Region * > ::const_iterator it  = regionMap_.begin();
+                    for (std::map < SIndex, Region * > ::const_iterator it  = regionMap_.begin();
                                                           it != regionMap_.end(); it++){
-                        for (uint i = 0; i < it->second->boundaries().size(); i ++){
+                        for (Index i = 0; i < it->second->boundaries().size(); i ++){
                             if (verbose_) std::cout << it->second->boundaries()[i]->marker() << std::endl;
                             if (it->second->boundaries()[i]->marker() != 0){
                                 interfaceConstraint_[it->second->boundaries()[i]->marker()] = toDouble(row[1]);
@@ -1125,7 +1125,7 @@ void RegionManager::loadMap(const std::string & fname){
                     interfaceConstraint_[toInt(row[0])] = toDouble(row[1]);
                 }
             } else {
-                for (uint i = 0; i < row.size(); i ++){
+                for (Index i = 0; i < row.size(); i ++){
                     if (verbose_) std::cout << row[i] << " ";
                 }
                 if (verbose_) std::cout << std::endl;
@@ -1147,18 +1147,18 @@ void RegionManager::loadMap(const std::string & fname){
     this->createParaDomain_();
 }
 
-void RegionManager::setInterRegionConstraint(int aIn, int bIn, double c){
-    int a = min(aIn, bIn);
-    int b = max(aIn, bIn);
+void RegionManager::setInterRegionConstraint(SIndex aIn, SIndex bIn, double c){
+    SIndex a = min(aIn, bIn);
+    SIndex b = max(aIn, bIn);
 
     if (a == b){
         std::cerr << WHERE_AM_I << " ignoring inter-region constraints "
                 << a << " == " << b << std::endl;
     } else {
 
-        if (interRegionInterfaceMap_.find(std::pair< int, int >(a, b))
+        if (interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(a, b))
              != interRegionInterfaceMap_.end()){
-            interRegionConstraints_[std::pair< int, int >(a, b)] = c;
+            interRegionConstraints_[std::pair< SIndex, SIndex >(a, b)] = c;
 //             if (verbose_){
 //                 std::cout << "regions: " << a << " " << b << " " << c << std::endl;
 //             }
@@ -1178,7 +1178,7 @@ TransCumulative < RVector > * RegionManager::transModel(){
     if (localTrans_.size() != allRegionMarker_(true).size()){
         localTrans_.clear();
         
-        for (std::map< int, Region* >::const_iterator 
+        for (std::map< SIndex, Region* >::const_iterator 
              it = regionMap_.begin(); it != regionMap_.end(); it ++){
 
             if (!it->second->isBackground()){
@@ -1194,15 +1194,15 @@ TransCumulative < RVector > * RegionManager::transModel(){
 
 
 void RegionManager::setZWeight(double z){
-    for (std::map< int, Region* >::const_iterator it  = regionMap_.begin();
+    for (std::map< SIndex, Region * >::const_iterator it  = regionMap_.begin();
          it != regionMap_.end(); it ++){
         it->second->setZWeight(z);
     }
     interRegionConstraintsZWeight_ = z;
 }
 
-void RegionManager::setConstraintType(uint type){
-    for (std::map< int, Region* >::const_iterator it  = regionMap_.begin();
+void RegionManager::setConstraintType(Index type){
+    for (std::map< SIndex, Region * >::const_iterator it  = regionMap_.begin();
                                                    it != regionMap_.end(); it ++){
         it->second->setConstraintType(type);
     }
