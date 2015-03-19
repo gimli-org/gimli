@@ -191,8 +191,8 @@ DEFINE_PY_VEC_UNARY_OPERATOR__(tanh,  TANH)
 #undef DEFINE_PY_VEC_UNARY_OPERATOR__
 
 #define DEFINE_COMPARE_OPERATOR__(OP) \
-template BVector operator OP (const std::vector < int > & vec, const int & v); \
-template BVector operator OP (const std::vector < uint > & vec, const uint & v); \
+template BVector operator OP (const std::vector < GIMLI::SIndex > & vec, const GIMLI::SIndex & v); \
+template BVector operator OP (const std::vector < GIMLI::Index > & vec, const GIMLI::Index & v); \
 
 DEFINE_COMPARE_OPERATOR__(<)
 DEFINE_COMPARE_OPERATOR__(<=)
