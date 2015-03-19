@@ -283,7 +283,7 @@ public:
         return getVal(p.first, p.second);
     }
         
-    Vector < ValueType > operator () (std::vector < int > & idx) const {
+    Vector < ValueType > operator () (const std::vector < int > & idx) const {
         return get_(idx);
     }
     /*!
