@@ -23,9 +23,9 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     mesh : mesh object
         Mesh to which the triangle boundary should be appended.
     xbound : float, optional
-        Horizontal prolongation distance. Minimal mesh x extension.
+        Horizontal prolongation distance. Minimal mesh 0.5 x extension.
     ybound : float, optional
-        Vertical prolongation distance. Minimal mesh y extension.
+        Vertical prolongation distance. Minimal mesh 0.5 y extension.
     marker : int, optional
         Marker of new cells.
     markerBoundary : int, optional
@@ -151,8 +151,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         poly.createEdge(n4, n1, pg.MARKER_BOUND_MIXED)
 
     else:  # no isSubSurface
-        xbound = max(xbound, mesh.xmax()-mesh.xmin())
-        ybound = max(ybound, mesh.ymax()-mesh.ymin())
+        xbound = max(xbound, 0.5 * (mesh.xmax()-mesh.xmin()))
+        ybound = max(ybound, 0.5 * (mesh.ymax()-mesh.ymin()))
         # add top right node and boundary nodes
         
         dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.1

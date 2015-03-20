@@ -183,6 +183,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
         # , *args, **kwargs) # causes problems!
         cbar = createColorbar(gci, label=label, **kwargs)
 
+    plt.tight_layout()
+
     if coverage is not None:
         if len(data) == mesh.cellCount():
             addCoverageAlpha(gci, coverage)
@@ -217,7 +219,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
                 pass
         print('..done')
 
-    # fig.canvas.draw()
     return ax, cbar
 # def showMesh(...)
 

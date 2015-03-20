@@ -19,8 +19,11 @@ import pybert as pb
 import pybert.dataview
 
 
-def createCacheName(base, mesh):
-    return 'cache-' + base + "-" + str(mesh.nodeCount())
+def createCacheName(base, mesh=None):
+    nc = ''
+    if mesh:
+        nc = str(mesh.nodeCount())
+    return 'cache-' + base + "-" + nc
 
 class ERT():
     
@@ -131,10 +134,11 @@ class ERT():
                 if values.ndim == 1:
                     values = [values]
             
-            allModel = pg.RMatrix(len(values)+1, len(model))
-            allModel[0] = model
+            allModel = pg.RMatrix(len(values), len(model))
+            
             self.inv.setVerbose(False)
-            for i in range(1, len(values)):
+            for i in range(len(values)):
+                print(i)
                 tic=time.time()
                 self.inv.setModel(model)
                 self.inv.setReferenceModel(model)
@@ -142,7 +146,8 @@ class ERT():
                 
                 relModel = self.inv.invSubStep(pg.log(dData))
                 allModel[i] = model * pg.exp(relModel)
-                print(i, "/", len(values), " : ", time.time()-tic, "s")
+                print(i, "/", len(values), " : ", time.time()-tic, "s min/max: ", 
+                      min(allModel[i]), max(allModel[i]))
                 
             return allModel
         return model
@@ -232,6 +237,8 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     return rI
 
 def calcApparentResistivities(mesh, meshERT, poro, rhoBrine):
+    ert = ERT(verbose=False)
+    
     meshFOP = appendTriangleBoundary(meshERT, 
                                      xbound=50, ybound=50, marker=1,
                                      quality=34.0, smooth=False,
@@ -243,11 +250,10 @@ def calcApparentResistivities(mesh, meshERT, poro, rhoBrine):
     print("res 1:", swatch.duration(True))
 
     resis = resistivityArchie(rBrine=rhoBrine, porosity=poro, S=1.0, 
-                                      mesh=mesh, meshI=meshFOP)
+                              mesh=mesh, meshI=meshFOP)
     
     print("res 2:", swatch.duration(True))
-
-    ert = ERT(verbose=False)
+    
     ertPointsX = [pg.RVector3(x,0) for x in np.arange(-19, 19.1, 1)]
     ertScheme = ert.createData(ertPointsX, scheme="Dipole Dipole (CC-PP)")
     
@@ -286,23 +292,31 @@ def calcApparentResistivities(mesh, meshERT, poro, rhoBrine):
         np.save(solutionName + '.bmat', rhoa)
         
         
-    return resis, rhoa, ert, ertData
+    return meshFOP, resis, ertData, rhoa
 
-def calcERT(ert, ertScheme, rhoa):
-    solutionName = createCacheName('ERT', mesh, times)+ "-" + str(ertScheme.size())
+def calcERT(ertScheme, rhoa):
+    ert = ERT(verbose=False)
+    
+    solutionName = createCacheName('ERT')+ "-" + str(ertScheme.size())+ "-" + str(len(rhoa))
     try:   
         ertModels = pg.load(solutionName + '.bmat')
         ertMesh = pg.load(solutionName + '.bms')
     except Exception as e:
         print(e)
         print("Building .... ")
-        ertModels = ert.invert(ertScheme, values=rhoa, maxiter=10, 
-                               paraDX=0.5, paraDZ= 0.5, nLayers=20, paraDepth=15,
-                               lambd=50, verbose=1)
+        ertModels = ert.invert(ertScheme, values=rhoa, maxiter=10, lambd=50, 
+                               paraDX=0.5, paraDZ= 0.5, 
+                               nLayers=20, paraDepth=15,
+                               verbose=1)
         ertMesh=ert.fop.regionManager().paraDomain()
         ertModels.save(solutionName + '.bmat')
         ertMesh.save(solutionName)
-    return ertModels, ertMesh
+        
+    ertRatioModels = pg.RMatrix(ertModels)
+    for i in range(len(ertModels)):
+        ertRatioModels[i] /= ertModels[0]
+    
+    return ertMesh, ertModels, ertRatioModels
 
 
 if __name__ == "__main__":
