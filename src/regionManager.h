@@ -261,11 +261,11 @@ public:
      * Add a external region to the RegionManager. 
      */
     Region * addRegion(SIndex marker, const Mesh & mesh);
-    
+#ifndef PYGIMLI
     const std::map < SIndex, Region * > & regions() const { return regionMap_; }
 
     std::map < SIndex, Region * >  * regions() { return &regionMap_; }
-
+#endif
     Index regionCount() const { return regionMap_.size(); }
 
     /*! Returns a ptr to the region with the given marker. If no region exist an exception is thrown. */
