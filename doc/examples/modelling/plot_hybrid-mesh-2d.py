@@ -84,8 +84,9 @@ Finally, the grid and the unstrcutured mesh can be merged to single mesh for fur
 modelling.
 """
 print("0")
-#mesh3 = merge2Meshes(mesh1, mesh2)
+mesh3 = merge2Meshes(mesh1, mesh2)
 
+pg.show(mesh3)
 """
 .. lastcout::
 
