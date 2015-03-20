@@ -11,11 +11,12 @@ from pygimli.viewer import show1dmodel, drawModel1D
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 try:
-    from pyproj import Proj
+    import pyproj
 except ImportError:
-    pass
+    pyproj = None
 
 
 class NDMatrix(pg.RBlockMatrix):
@@ -38,6 +39,21 @@ class NDMatrix(pg.RBlockMatrix):
         print(self.rows(), self.cols())
 
 
+def cmapDAERO():
+    """standardized colormap from A-AERO projects (purple=0.3 to red=500)"""
+    CMY = np.array([
+        [127, 255, 31], [111, 255, 47], [95, 255, 63], [79, 255, 79],
+        [63, 255, 95], [47, 255, 111], [31, 255, 127], [16, 255, 159],
+        [0, 223, 159], [0, 191, 159], [0, 159, 207], [0, 127, 175],
+        [0, 95, 175], [0, 63, 175], [0, 47, 175], [0, 31, 191], [0, 0, 255],
+        [0, 0, 159], [15, 0, 127], [47, 0, 143], [79, 0, 143], [111, 0, 143],
+        [143, 0, 127], [159, 31, 63], [175, 47, 31], [207, 63, 0],
+        [223, 111, 0], [231, 135, 0], [239, 159, 0], [255, 191, 47],
+        [239, 199, 63], [223, 207, 79], [207, 239, 111]], dtype=float)
+    RGB = 1.0 - CMY/255
+    return LinearSegmentedColormap.from_list('D-AERO', RGB)
+
+
 def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
     """ Plots a matrix according to x and frequencies """
     nt = list(range(0, len(x), everyx))
@@ -54,9 +70,7 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
 
 
 class FDEM2dFOPold(pg.ModellingBase):
-
     """ old variant of 2D FOP (to be deleted) """
-
     def __init__(self, data, nlay=2, verbose=False):
         """ constructor with data and (optionally) number of layers """
         pg.ModellingBase.__init__(self, verbose)
@@ -78,9 +92,7 @@ class FDEM2dFOPold(pg.ModellingBase):
 
 
 class FDEM2dFOP(pg.ModellingBase):
-
     """ FDEM 2d-LCI modelling class based on BlockMatrices """
-
     def __init__(self, data, nlay=2, verbose=False):
         """ Parameters: FDEM data class and number of layers """
         super(FDEM2dFOP, self).__init__(verbose)
@@ -280,24 +292,13 @@ class FDEMData():
         else:
             ivcp = range(len(self.header['FREQUENCY']))
 
-        lon, lat, z = np.loadtxt(filename, skiprows=sr, usecols=(2, 3, 8),
-                                 comments='/', unpack=True)
-        utm = Proj(proj='utm', zone=32, ellps='WGS84')  # projection
-        x, y = utm(lon, lat)
-        IP = np.loadtxt(
-            filename,
-            skiprows=sr,
-            usecols=ivcp *
-            2 +
-            11,
-            comments='/')
-        OP = np.loadtxt(
-            filename,
-            skiprows=sr,
-            usecols=ivcp *
-            2 +
-            12,
-            comments='/')
+        x, y, lon, lat, z = np.loadtxt(filename, skiprows=sr, comments='/',
+                                       usecols=(0, 1, 2, 3, 8), unpack=True)
+        if pyproj is not None:
+            utm = pyproj.Proj(proj='utm', zone=32, ellps='WGS84')  # projection
+            x, y = utm(lon, lat)
+        IP = np.loadtxt(filename, skiprows=sr, usecols=ivcp*2+11, comments='/')
+        OP = np.loadtxt(filename, skiprows=sr, usecols=ivcp*2+12, comments='/')
         # better do a decimation or running average here
         self.IP = IP[::takeevery, :]
         self.OP = OP[::takeevery, :]

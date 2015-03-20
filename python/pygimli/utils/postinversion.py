@@ -61,13 +61,29 @@ def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
 
 
 def modCovar(inv):
-    """
-    model covariance matrix from inversion (variances and scaled matrix)
+    """formal model covariance matrix (MCM) from inversion
+
     var, MCMs = modCovar(inv)
 
     Parameters
     ----------
-    inv - pygimli inversion object
+    inv : pygimli inversion object
+
+    Returns
+    -------
+    var  : variances (inverse square roots of MCM matrix)
+    MCMs : scaled MCM (such that diagonals are 1.0)
+
+    Example
+    -------
+    >>> import pygimli as pg
+    >>> import matplotlib.pyplot as plt
+    >>> from matplotlib.cm import bwr
+    >>> INV = pg.RInversion(data, f)
+    >>> par = INV.run()
+    >>> var, MCM = modCovar(INV)
+    >>> i = plt.imshow(MCM, interpolation='nearest', cmap=bwr, vmin=-1, vmax=1)
+    >>> plt.colorbar(i)
     """
     td = np.asarray(inv.transData().deriv(inv.response()))
     tm = np.asarray(inv.transModel().deriv(inv.model()))
@@ -78,15 +94,17 @@ def modCovar(inv):
 
     DJ = d.reshape(len(d), 1) * J
     JTJ = DJ.T.dot(DJ)
-    MCM = scipy.linalg.inv(JTJ)   # model covariance matrix
+    try:
+        MCM = scipy.linalg.inv(JTJ)   # model covariance matrix
 
-    varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
-    di = (1.0 / varVG)  # variances as column vector
+        varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
+        di = (1.0 / varVG)  # variances as column vector
 
-    # scaled model covariance (=correlation) matrix
-    MCMs = di.reshape(len(di), 1) * MCM * di
-
-    return varVG, MCMs
+        # scaled model covariance (=correlation) matrix
+        MCMs = di.reshape(len(di), 1) * MCM * di
+        return varVG, MCMs
+    except:
+        return np.zeros(len(inv.model()),), 0
 
 
 def print1dBlockVar(var, thk, xpos=None):
