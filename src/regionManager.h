@@ -39,9 +39,9 @@ public:
 
 class DLLEXPORT Region{
 public:
-    Region(int marker, RegionManager * parent, bool single = false);
+    Region(SIndex marker, RegionManager * parent, bool single=false);
 
-    Region(int marker, const Mesh & mesh, RegionManager * parent);
+    Region(SIndex marker, const Mesh & mesh, RegionManager * parent);
 
     Region(const Region & region);
 
@@ -50,10 +50,10 @@ public:
     ~Region();
 
     /*! Set the region marker id */
-    inline void setMarker(int marker) { marker_ = marker; }
+    inline void setMarker(SIndex marker) { marker_ = marker; }
 
     /*! Return the region marker id. */
-    inline int marker() const { return marker_; }
+    inline SIndex marker() const { return marker_; }
 
     /*! Returns read_only acccess to the boundaries of this region */
     const std::vector < Boundary * > & boundaries() const { return bounds_; }
@@ -206,7 +206,7 @@ protected:
     void init_();
     void copy_(const Region & region);
 
-    int marker_;
+    SIndex marker_;
     RegionManager * parent_;
 
     std::vector < Cell * > cells_;
