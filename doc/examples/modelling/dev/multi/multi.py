@@ -12,6 +12,7 @@ import numpy as np
 
 import matplotlib
 #matplotlib.use('pdf')
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
 import pygimli as pg
@@ -38,6 +39,52 @@ def savefig(mesh, plc, data, label, out=None, showMesh=0):
         else:
             pg.show(plc, axes=ax)
 
+def createAnimation(fig, animate, nFrames, dpi, out):
+    anim = animation.FuncAnimation(fig, animate,
+                                   frames=nFrames,
+                                   interval=0.001, repeat=False)
+    anim.save(out + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
+              bitrate=24*1024, extra_args=None, metadata=None,
+              extra_anim=None, savefig_kwargs=None)
+    try:
+        print("create frames ... ")
+        os.system('mkdir -p anim-' + out)
+        os.system('ffmpeg -i ' + out + '.mp4 anim-' + out + '/movie%d.jpg')
+    except:
+        pass
+
+
+def saveani(mesh, plc, data, label, out,
+            cMin=None, cMax=None, logScale=False, cmap=None):
+    """
+    """
+    dpi=92
+    scale=1
+    fig = plt.figure(facecolor='white',
+                     figsize=(scale*800/dpi, scale*490/dpi), dpi=dpi)  
+    ax = fig.add_subplot(1,1,1)
+        
+    gci = pg.mplviewer.drawModel(ax, mesh, data=data[0],
+                                 cMin=cMin, cMax=cMax, cmap=cmap,
+                                 logScale=logScale)
+    
+    cbar = pg.mplviewer.createColorbar(gci, label=label)
+    pg.show(plc, axes=ax)
+    
+    plt.tight_layout()
+    plt.pause(0.001)
+    
+    def animate(i):
+        print(out + ": Frame:", i, "/", len(data))
+        pg.mplviewer.setMappableData(gci, pg.abs(data[i]), 
+                                     cMin=cMin, cMax=cMax,
+                                     logScale=logScale)
+        #plt.pause(0.001)
+    createAnimation(fig, animate, int(len(data)), dpi, out)
+    
+    
+   
+    
 def createTestWorld1(maxArea=0.2, verbose=0):
     
     #  ___________________8___________________
@@ -57,7 +104,8 @@ def createTestWorld1(maxArea=0.2, verbose=0):
                                  marker=2, boundaryMarker=[2, 10, 6, 9])
     layer3 = pt.createRectangle(start=[-20, -8], end=[20, -15], 
                                  marker=3, boundaryMarker=[3, 4, 5, 10])
-    block = pt.createRectangle(start=[-6, -3.5], end=[6, -6.0], marker=4)
+    block = pt.createRectangle(start=[-6, -3.5], end=[6, -6.0], marker=4,
+                               boundaryMarker=10)
     
     plc = pt.mergePLC([layer1, layer2, layer3, block])
     
@@ -89,32 +137,32 @@ hydr = fluidFlow.hydraulicConductivity(perm, mesh=mesh)
 vP   = seismics.velocityVp(poro, mesh=mesh)
 dens = gravimetry.density(poro, densMatrix=2510, densFluid=1000, mesh=mesh)
 
-savefigs_ = 1
-savefig(mesh, plc, mesh.cellMarker(), 'Marker', 'marker')
-savefig(mesh, plc, mesh.cellMarker(), 'Marker', 'mesh', 1)
-savefig(mesh, plc, poro, 'Porosity', 'poro')
-savefig(mesh, plc, perm, 'Permeabilty [m$^2$]', 'perm')
-savefig(mesh, plc, hydr, 'Hydraulic conductivity [m$/$s]', 'hydr')
-savefig(mesh, plc, vP, 'Seismic velocity [m$/$s]', 'vP')
-savefig(mesh, plc, dens, 'Density [kg$/$m$^3$]', 'dens')
+savefigs_ = 0
+if savefigs_:
+    savefig(mesh, plc, mesh.cellMarker(), 'Marker', 'marker')
+    savefig(mesh, plc, mesh.cellMarker(), 'Marker', 'mesh', 1)
+    savefig(mesh, plc, poro, 'Porosity', 'poro')
+    savefig(mesh, plc, perm, 'Permeabilty [m$^2$]', 'perm')
+    savefig(mesh, plc, hydr, 'Hydraulic conductivity [m$/$s]', 'hydr')
+    savefig(mesh, plc, vP, 'Seismic velocity [m$/$s]', 'vP')
+    savefig(mesh, plc, dens, 'Density [kg$/$m$^3$]', 'dens')
 
-grav = 1
+grav = 0
 if grav:
     Grav, densBlock = gravimetry.calcInvBlock(mesh, dens, 'gravInv.pdf')
     savefig(mesh, plc, densBlock, 'Delta Density [kg$/$m$^3$]', 'ddens')
     savefig(Grav.fop.regionManager().paraDomain(), plc,
             Grav.inv.model(), 'Delta Density [kg$/$m$^3$]', 'densGrav')
 
-seis = 0 # geht noch nicht
+seis = 0
 if seis:
     seismics.calcSeismics(mesh, vP)
 
-# vel brauchen wir ab hier immer
 visc = 1./perm
 vel = fluidFlow.calcStokesVelocity(mesh, visc, velBoundary, preBoundary)
 print("vel:", swatch.duration(True))
 
-showVel = 1
+showVel = 0
 if showVel:
     axVel, _ = pg.show(mesh, data=pg.cellDataToPointData(mesh,
                               np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1])),
@@ -128,248 +176,56 @@ if showVel:
     pg.show(mesh, data=vel, axes=axVel, coarseMesh=meshC, savefig='velocity.pdf')
     
 
-################## TIMELAPSE Starts here 
+################## TIMELAPSE Starts here                  ######################
 timeSteps = np.linspace(0, 50, 20) 
 
-
-################## Concentration ######################
+################## TIMELAPSE Concentration                ######################
 conc = fluidFlow.calcConcentration(mesh, vel, timeSteps, 
                                    injectPos=[-18., -6], scale=1, peclet=50)
+
 print("conc:", swatch.duration(True))
 
 
-################## TIMELAPSE ERT           ######################
-ertMesh, _ = createTestWorld1(maxArea=0.1, verbose=0)
+################## TIMELAPSE ERT                          ######################
+rhoaMesh, _ = createTestWorld1(maxArea=0.1, verbose=0)
 
-resis, rhoa, ert, ertData = ert.calcApparentResistivities(mesh, ertMesh, poro,
+rhoaMesh, resis, ertData, rhoa = ert.calcApparentResistivities(mesh, 
+                                                                 rhoaMesh, poro,
                                           rhoBrine=1./(1./20. + abs(1.*conc)))
+ertMesh, ertMod, ertRat = ert.calcERT(ertData, rhoa)
 
-# ert inversion als nächstes
+print("ert:", swatch.duration(True))
+saveanim = 0:
+if saveanim:
+    saveani(mesh, plc, conc, 'Concentration [kg/m$^3$]', 'conc', cMin=0, cMax=0.1)
+    saveani(rhoaMesh, plc, resis, 'Resistivity [$\Omega$ m]', 'resis', logScale=1)
+    saveani(ertMesh, plc, ertMod, 'Resistivity [$\Omega$ m]', 'ert', logScale=1, cMin=100, cMax=1000)
+    saveani(ertMesh, plc, ertRat, 'Ratio', 'ratio', logScale=1, cMin=0.5, cMax=2, cmap='bwr')
+
+
+# ** make Apparent resistivities animations (data) **
+Ert = ert.ERT()
+fig, ax = plt.subplots()
+gci = Ert.show(ertData, values=rhoa[0], axes=ax, scheme='DipoleDipole', cMin=150, cMax=350)
+
+def animate(i):
+    print("rhoa: Frame:", i, "/", len(rhoa))
+    ax.clear()
+    Ert.show(ertData, values=rhoa[i], axes=ax, scheme='DipoleDipole', cMin=150, cMax=350, 
+             colorBar=0)
+    plt.tight_layout()
+createAnimation(fig, animate, int(len(rhoa)), 92, 'rhoa')   
+
+fig, ax = plt.subplots()
+gci = Ert.show(ertData, values=rhoa[0], axes=ax, scheme='DipoleDipole', cMin=0.5, cMax=2)
+def animate(i):
+    print("rhoaR: Frame:", i, "/", len(rhoa))
+    ax.clear()
+    Ert.show(ertData, values=rhoa[i]/rhoa[0], axes=ax, scheme='DipoleDipole', cMin=0.5, cMax=2, 
+             colorBar=0, cmap='bwr')
+    plt.tight_layout()
+createAnimation(fig, animate, int(len(rhoa)), 92, 'rhoaR')   
 
 pg.wait()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-print("rhoa:", swatch.duration(True))
-
-ertModels, meshERT = calcERT(ert, ertScheme, rhoa)
-print("ert:", swatch.duration(True))
-
-vP = velocityVp(porosity, mesh=mesh)
-print("vp:", swatch.duration(True))
-
-
-
-
-dpi=92
-fig = None
-
-orientation = 'horizontal'
-
-if vis:
-
-    if mp4:
-        fig = plt.figure(facecolor='white', figsize=(2*800/dpi, 2*490/dpi), dpi=dpi)  
-    else:
-        fig = plt.figure() 
-    
-    axPor = fig.add_subplot(4,4,1)
-    axPer = fig.add_subplot(4,4,2)
-    axDen = fig.add_subplot(4,4,3)
-    axVp  = fig.add_subplot(4,4,4)
-    
-    axVel = fig.add_subplot(4,4,5)
-    axCon = fig.add_subplot(4,4,6)
-    axDDe = fig.add_subplot(4,4,7)
-    axRes = fig.add_subplot(4,4,8)
-    
-    axGra = fig.add_subplot(4,4,11)
-    axReA = fig.add_subplot(4,4,12)
-    
-    axERT = fig.add_subplot(4,4,15)
-    axERR = fig.add_subplot(4,4,16)
-        
-    # ** Porosity **
-    axPor, _= show(mesh, data=porosity, colorBar=1, 
-                orientation=orientation, label='Porosity', axes=axPor)
-    show(mesh, axes=axPor)
-    #axPor.figure.savefig("poro.pdf",bbox_inches='tight')
-    
-    # ** Permeabilty **
-    axPer,_ = show(mesh, data=permeabilty, colorBar=1, 
-         orientation=orientation, label='Permeabilty [m$^2$]', axes=axPer)
-    show(mesh, axes=axPer)
-    #axPer.figure.savefig("perm.pdf",bbox_inches='tight')
-    
-    
-    axPer,_ = show(mesh, data=hydCond, colorBar=1, 
-         orientation=orientation, label='Hydraulic conductivity [m/s]', axes=axPer)
-    show(mesh, axes=axPer)
-    #axPer.figure.savefig("hydCond.pdf",bbox_inches='tight')
-    
-    # ** Density **
-    show(mesh, data=dens0, colorBar=1, 
-         orientation=orientation, label='Density [kg/m$^3$]', axes=axDen)
-    show(mesh, axes=axPer)
-    
-    # ** Velocity abs **
-    axVel, cbar = show(mesh, data=pg.cellDataToPointData(mesh,
-                                np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1])),
-                       logScale=0, colorBar=1,
-                       orientation=orientation, label='|Velocity| in m/s',
-                       axes=axVel
-                       )
-
-    # ** Velocity vector **
-    pg.mplviewer.drawMeshBoundaries(axVel, mesh, fitView=True, hideMesh=1)
-    pg.viewer.showBoundaryNorm(mesh, velBoundary, color='red', axes=axVel)
-    
-    meshC, tmp, tmp, tmp=modelFkt(maxArea=1, verbose=0)
-    show(mesh, data=vel, axes=axVel, coarseMesh=meshC)
-    
-    #axVel.figure.savefig("velocity.pdf",bbox_inches='tight')
-    
-    # ** vP **
-    show(mesh, data=vP, colorBar=1, 
-         orientation=orientation, label='Vp m/s', axes=axVp)
-    show(mesh, axes=axVp)
-    
-    # Prepare time lapse figures
-    # ** Concentration **
-    gciCon= pg.mplviewer.drawModel(axCon, mesh, data=conc[1],
-                                   cMin=0, cMax=0.1, 
-                                   logScale=False
-                                   #cmap='b2r'
-                                   )
-    cbar = createColorbar(gciCon, orientation=orientation, label='Concentration')
-    
-    gciDDe = pg.mplviewer.drawModel(axDDe, mesh, data=dDens[1],
-                                    cMin=0, cMax=20, 
-                                    #cmap='b2r'
-                                   )
-    cbar = createColorbar(gciDDe, orientation=orientation, label='Delta density in kg/m$^3$')
-    
-    # ** Resistivity (model) **
-    gciRes = pg.mplviewer.drawModel(axRes, meshERT_FOP, 
-                                    data=resistivities[0],
-                                    cMin=20, cMax=700,
-                                    )
-    cbar = createColorbar(gciRes, orientation=orientation, label='Resistivity')
-    axRes.set_xlim((-20, 20))
-    axRes.set_ylim((-14, 00))
-    
-    # ** Apparent resistivities (data) **
-    gciARes = ert.show(ertScheme, values=rhoa[0], axes=axReA, 
-                       scheme='DipoleDipole',
-                       #cMin=100, cMax=300, 
-                       orientation=orientation)
-
-    # ** ERT (model) **
-    gciERT = pg.mplviewer.drawModel(axERT, meshERT, 
-                                    data=ertModels[0],
-                                    cMin=20, cMax=700)
-    cbar = createColorbar(gciERT, orientation=orientation, label='Resistivity')
-    # ** ERT ratio (model) **
-    gciERR = pg.mplviewer.drawModel(axERR, meshERT, 
-                                    data=ertModels[0]/ertModels[0],
-                                    cMin=1/4, cMax=4, cmap='b2r')
-    cbar = createColorbar(gciERR, orientation=orientation, label='Ratio')
-
-
-def animate(i):
-    tic = time.time()
-        
-    axGra.clear()
-    axGra.plot(pg.x(gravPoints), dz[i])
-    axGra.plot(pg.x(gravPoints), pg.y(gravPoints), 'v', color='black')
-    axGra.set_ylabel('Grav in mGal')
-    axGra.set_xlim((-20, 20))
-    axGra.set_ylim((0, 0.001))
-    axGra.grid()
-    
-    axReA.clear()
-    ert.show(ertScheme, values=rhoa[i], axes=axReA, scheme='DipoleDipole',
-             #cMin=100, cMax=300, 
-             colorBar=0)
-     
-    if vis:
-        
-        pg.mplviewer.setMappableData(gciCon, conc[i], 
-                                     #cMin=0, cMax=0.03,
-                                     logScale=False)
-        gciCon.set_clim(0, 0.1)
-        pg.mplviewer.setMappableData(gciDDe, dDens[i], 
-                                     cMin=0, cMax=20,
-                                     logScale=False)
-        pg.mplviewer.setMappableData(gciRes, 
-                                     resistivities[i],
-                                     cMin=20, cMax=700,
-                                     logScale=True)
-        pg.mplviewer.setMappableData(gciERT, 
-                                     ertModels[i+1],
-                                     cMin=20, cMax=700,
-                                     logScale=True)
-        pg.mplviewer.setMappableData(gciERR, 
-                                     ertModels[i+1]/ertModels[0],
-                                     cMin=1/4, cMax=4,
-                                     logScale=True)
-        
-    print(i, round(time.time()-tic, 2),
-          "t=", round(i *(times[1]-times[0]),1),
-          "dt:", round(times[1]-times[0],1),
-          "sum mass:", round(sum(dDens[i]*mesh.cellSizes()),1), "kg/m "
-          "sum:", sum(conc[i]),
-          "dsum:", (sum(conc[i])-sum(conc[i-1])),
-          )
-    if mp4 or vis:
-        pass
-        plt.pause(0.001)
-
-#animate(50)
-#plt.show()
-#for i in range(1, len(times)*2-1):
-    #animate(i)
-
-anim = animation.FuncAnimation(fig, animate,
-                               frames=int(len(conc)),
-                               interval=1)#, blit=True)
-
-solutionName = createCacheName('all', mesh, times)+ "-" + str(ertScheme.size())
-
-if mp4:
-    anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
-          bitrate=24*1024, extra_args=None, metadata=None,
-          extra_anim=None, savefig_kwargs=None)
-
-pg.showNow()

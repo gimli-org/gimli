@@ -254,6 +254,10 @@ def drawSelectedMeshBoundaries(axes, boundaries,
 
     drawAA = True
     lines = []
+    
+    if hasattr(boundaries, '__len__'):
+        if len(boundaries) == 0:
+            return
 
     for bound in boundaries:
         lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
@@ -335,7 +339,7 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
     if not hideMesh:
         drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(0),
                                color=(0.0, 0.0, 0.0, 1.0), linewidth=0.3)
-#    return
+
     drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(
                                pg.MARKER_BOUND_HOMOGEN_NEUMANN),
                                color=(0.0, 1.0, 0.0, 1.0), linewidth=1.0)
@@ -344,10 +348,10 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
                                color=(1.0, 0.0, 0.0, 1.0), linewidth=1.0)
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
     drawSelectedMeshBoundaries(axes, b0, color=(0.0, 0.0, 0.0, 1.0),
-                               linewidth=1.0)
+                               linewidth=1.5)
     b4 = [b for b in mesh.boundaries() if b.marker() < -4]
     drawSelectedMeshBoundaries(axes, b4, color=(0.0, 0.0, 0.0, 1.0),
-                               linewidth=1.0)
+                               linewidth=1.5)
 
     if mesh.cellCount() == 0:
         eCircles = []

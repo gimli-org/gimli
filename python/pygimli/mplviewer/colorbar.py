@@ -197,7 +197,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
             cbarLevelsString.append("%.0f" % i)
 
     if hasattr(cbar, 'mappable'):
-        cbar.mappable.set_clim(cMin + 1e-6, cMax)
+        cbar.mappable.set_clim(cMin, cMax)
 
     # print ticks, cbarLevels, cbarLevelsString
     # if cbar.orientation == 'vertical':
@@ -235,18 +235,17 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if not cMax:
         cMax = data.max()
 
-    
-
     if cMin > 0.0 and logScale:
         mappable.set_norm(mpl.colors.LogNorm())
     else:
+        #pass
         mappable.set_norm(mpl.colors.Normalize())
 
     #print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
     mappable.set_array(data)
     # mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
-
+    
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """
