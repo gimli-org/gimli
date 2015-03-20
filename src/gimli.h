@@ -100,7 +100,8 @@ typedef int64_t int64;
 #else
     #include <sys/types.h>
     typedef size_t Index;
-    typedef ssize_t SIndex;
+    typedef signed long SIndex;
+    //typedef ssize_t SIndex; // strange pygimli conversion into int on jenkins
 #endif
 
 #ifndef __ASSERT_FUNCTION
