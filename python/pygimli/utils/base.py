@@ -2,16 +2,16 @@
 """
 pygimli base functions
 """
+import time
 
 import numpy as np
 import pygimli as pg
+from pygimli.mplviewer.colorbar import setMappableData
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 from matplotlib.cm import jet
-from pygimli.mplviewer.colorbar import setMappableData
-#from math import sqrt, floor, ceil
 
 
 def gmat2numpy(mat):
@@ -38,11 +38,14 @@ def rndig(a, ndig=3):
         return np.around(a, ndig - int(np.ceil(np.log10(np.abs(a) + 1e-4))))
 
 
-def num2str(a):
-    s = []
-    for ai in a:
-        s.append('%g' % rndig(ai))
-    return s
+def roundTo(arr, n_digits=3):
+    """ return ndarray of rounded elements (obsolete due to np.round) """
+    return np.asarray([rndig(a, ndig=n_digits) for a in arr])
+
+
+def num2str(a, fmtstr='%g%'):
+    """ list of strings (deprecated, for backward-compatibility) """
+    return [fmtstr % rndig(ai) for ai in a]
 
 
 def inthist(a, vals, bins=None, islog=False):
@@ -67,6 +70,22 @@ def interperc(a, trimval=3.0, islog=False, bins=None):
         a, np.array([trimval, 100. - trimval]), bins=bins, islog=islog)
 
 
+def interpExtrap(x, xp, yp):
+    """np.interp function with linear extrapolation"""
+    y = np.interp(x, xp, yp)
+    y = np.where(x < xp[0], yp[0]+(x-xp[0])*(yp[0]-yp[1])/(xp[0]-xp[1]), y)
+    return np.where(x > xp[-1], yp[-1]+(x-xp[-1])*(yp[-1]-yp[-2]) /
+                    (xp[-1]-xp[-2]), y)
+
+
+def arrayToStdVectorUL(theArray):
+    """Converts a 'ndarray' to pygimli.stdVectorUL."""
+    vec = pg.stdVectorUL()
+    for i in theArray:
+        vec.append(int(i))
+    return vec
+
+
 def jetmap(m=64):
     """ jet color map """
     n = int(np.ceil(m / 4))
@@ -87,18 +106,8 @@ def jetmap(m=64):
 
 def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     plt.imshow(A, interpolation='nearest')
-    plt.xticks(
-        np.arange(
-            0, len(x), dx), [
-            "%g" %
-            rndig(
-                xi, 2) for xi in x])  # ,b
-    plt.yticks(
-        np.arange(
-            0, len(y), dy), [
-            "%g" %
-            rndig(
-                yi, 2) for yi in y])  # ,a
+    plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
+    plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])
     plt.ylim((len(y) - 0.5, -0.5))
     if xlab is not None:
         plt.xlabel(xlab)
@@ -110,8 +119,8 @@ def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     return
 
 
-def draw1dmodel(
-        x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, z0=0, **kwargs):
+def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, z0=0,
+                **kwargs):
     """draw 1d block model defined by value and thickness vectors."""
 #    if xlab is None:
 #        xlab = "$\\rho$ in $\\Omega$m"
@@ -177,9 +186,9 @@ def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
         xL = np.asarray(xL)[nlay - 1:nlay * 2 - 1]
         xU = np.asarray(xU)[nlay - 1:nlay * 2 - 1]
 
-    thk0 = np.hstack((thk, 0.))
-    thkL0 = np.hstack((thkL, 0.))
-    thkU0 = np.hstack((thkU, 0.))
+#    thk0 = np.hstack((thk, 0.))
+#    thkL0 = np.hstack((thkL, 0.))
+#    thkU0 = np.hstack((thkU, 0.))
     zm = np.hstack((np.cumsum(thk) - thk / 2, np.sum(thk) * 1.2))  # midpoint
     zc = np.cumsum(thk)  # cumulative
     draw1dmodel(x, thk, **kwargs)
@@ -243,7 +252,7 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
     if cmin is not None:
         p.set_clim(cmin, cmax)
 
-    #p.set_array( np.log10( vals.ravel() ) )
+#    p.set_array( np.log10( vals.ravel() ) )
     setMappableData(p, vals.ravel(), logScale=True)
     ax.add_collection(p)
 
@@ -345,3 +354,114 @@ def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):
         ax.append(ax3)
 
     return ax
+
+
+def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
+    """ replaces the last-but-one tick label by unit symbol """
+    if xlabel:
+        labels = ax.get_xticks().tolist()
+        labels[position] = unit
+        ax.set_xticklabels(labels)
+    else:
+        labels = ax.get_yticks().tolist()
+        labels[position] = unit
+        ax.set_yticklabels(labels)
+
+
+def plotLines(ax, line_filename, linewidth=1.0, step=1):
+    """ load lines from file and plot them into axes """
+    xz = np.loadtxt(line_filename)
+    n_points = xz.shape[0]
+    if step == 2:
+        for i in range(0, n_points, step):
+            x = xz[i:i+step, 0]
+            z = xz[i:i+step, 1]
+            ax.plot(x, z, 'k-', linewidth=linewidth)
+    if step == 1:
+        ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)
+
+
+def saveResult(fname, data, rrms=None, chi2=None, mode='w'):
+    """ save rms/chi2 results into filename """
+    with open(fname, mode) as f:
+        np.savetxt(f, data)
+        if rrms is not None:
+            f.write('\nrrms:{}\n'.format(rrms))
+        if chi2 is not None:
+            f.write('\nchi2:{}\n'.format(chi2))
+
+
+def createfolders(foldername_list):
+    """
+    Creates the folder structure specified by the list.
+    """
+
+    path = ''
+
+    for s in foldername_list:
+        if s != '/':
+            path = path + s + '/'
+
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if os.path.exists(path):
+            print('Path "{}" already exists.'.format(path))
+        else:
+            print('Unable to create path "{}".'.format(path))
+            raise(e)
+
+    return path
+
+
+def getSavePath(folder=None, subfolder='', now=None):
+    if folder is None:
+        path = createResultFolder(subfolder, now)
+    else:
+        path = createfolders([folder, subfolder])
+    return path
+
+
+def createResultFolder(subfolder, now=None):
+    """ create a result Folder """
+    result = createDateTimeString(now)
+    return createfolders(['./', result, subfolder])
+
+
+def createDateTimeString(now=None):
+    """ returns datetime as string (e.g. for saving results) """
+    if now is None:
+        now = time.localtime()
+    return str(now.tm_year) + str(now.tm_mon).zfill(2) + \
+        str(now.tm_mday).zfill(2) + '-' + \
+        str(now.tm_hour).zfill(2) + '.' + \
+        str(now.tm_min).zfill(2)
+
+
+def setPlotStuff(fontsize=7, dpi=None):
+    """ set up rcParams (fontsize and dpi) for later plotting """
+    from matplotlib import rcParams
+
+    rcParams['axes.labelsize'] = fontsize
+    rcParams['xtick.labelsize'] = fontsize
+    rcParams['ytick.labelsize'] = fontsize
+    rcParams['legend.fontsize'] = fontsize
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['font.sans-serif'] = ['Times New Roman']
+    rcParams['text.usetex'] = False
+    rcParams['font.size'] = 0.6*fontsize
+#    rcParams['figure.figsize'] = 7.3, 4.2
+    rcParams['axes.titlesize'] = fontsize
+    rcParams['axes.linewidth'] = 0.3
+    rcParams['xtick.major.size'] = 3
+    rcParams['xtick.major.width'] = 0.3
+    rcParams['xtick.minor.size'] = 1.5
+    rcParams['xtick.minor.width'] = 0.3
+    rcParams['ytick.major.size'] = rcParams['xtick.major.size']
+    rcParams['ytick.major.width'] = rcParams['xtick.major.width']
+    rcParams['ytick.minor.size'] = rcParams['xtick.minor.size']
+    rcParams['ytick.minor.width'] = rcParams['xtick.minor.width']
+
+    if dpi is not None:
+        rcParams['figure.dpi'] = dpi
+        rcParams['savefig.dpi'] = dpi

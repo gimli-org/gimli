@@ -95,33 +95,39 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     return
 
 
-def showStitchedModels(models, x=None, cmin=None, cmax=None,
-                       islog=True, cmap=None, title=None):
+def showStitchedModels(mods, x=None, cmin=None, cmax=None, islog=True, zm=None,
+                       axes=None, cmap=None, title=None, edgecolors='none'):
     """
         Show several 1d block models as (stitched) section.
     """
     if x is None:
-        x = np.arange(len(models))
+        x = np.arange(len(mods))
 
-    nlay = int(np.floor((len(models[0]) - 1) / 2.)) + 1
+    nlay = int(np.floor((len(mods[0]) - 1) / 2.)) + 1
     if cmin is None or cmax is None:
         cmin = 1e9
         cmax = 1e-9
-        for model in models:
+        for model in mods:
             res = np.asarray(model)[nlay - 1:nlay * 2 - 1]
             cmin = min(cmin, min(res))
             cmax = max(cmax, max(res))
 
-    dx = np.diff(x)
+    dx = np.diff(x) * 1.05
     dx = np.hstack((dx, dx[-1]))
     x1 = x - dx / 2
-    fig, ax = plt.subplots()
+    if axes is None:
+        fig, ax = plt.subplots()
+    else:
+        ax = axes
+        fig = ax.figure
 
-    ax.plot(x, x * 0., 'k.')
+#    ax.plot(x, x * 0., 'k.')
     maxz = 0.
+    if zm is not None:
+        maxz = zm
     recs = []
     RES = []
-    for i, mod in enumerate(models):
+    for i, mod in enumerate(mods):
         mod1 = np.asarray(mod)
         res = mod1[nlay - 1:]
         RES.extend(res)
@@ -129,26 +135,37 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
         thk = mod1[:nlay - 1]
         thk = np.hstack((thk, thk[-1]))
         z = np.hstack((0., np.cumsum(thk)))
-        maxz = max(maxz, z[-1])
+        if zm is not None:
+            thk[-1] = zm - z[-2]
+            z[-1] = zm
+        else:
+            maxz = max(maxz, z[-1])
+
         for j in range(len(thk)):
             recs.append(Rectangle((x1[i], z[j]), dx[i], thk[j]))
 
-    pp = PatchCollection(recs)
+    pp = PatchCollection(recs, edgecolors=edgecolors)
     ax.add_collection(pp)
-    pp.set_edgecolor(None)
+    pp.set_edgecolors(None)
     pp.set_linewidths(0.0)
     if cmap is not None:
         pp.set_cmap(cmap)
 
-    pp.set_norm(LogNorm(cmin, cmax))
+    print(cmin, cmax)
+    norm = LogNorm(cmin, cmax)
+    pp.set_norm(norm)
     pp.set_array(np.array(RES))
-    pp.set_clim(cmin, cmax)
+#    pp.set_clim(cmin, cmax)
     ax.set_ylim((maxz, 0.))
     ax.set_xlim((x1[0], x1[-1] + dx[-1]))
 
-    plt.colorbar(pp, ax=ax, orientation='horizontal')
-
-    return fig, ax
+    cbar = plt.colorbar(pp, ax=ax, norm=norm, orientation='horizontal',
+                        aspect=60)  # , ticks=[.3, 1, 3, 10, 30, 100, 300])
+#    cbar.autoscale_None()
+    if axes is None:  # newly created fig+ax
+        return fig, ax
+    else:  # already given, better give back color bar
+        return cbar
 
 
 def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):

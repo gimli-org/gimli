@@ -6,6 +6,7 @@ import numpy as np
 
 import pygimli.polytools as plc
 
+
 def createMesh(poly, quality=30, area=0.0,
                smooth=None, switches=None,
                regions=None, holes=None,
@@ -48,20 +49,20 @@ def createMesh(poly, quality=30, area=0.0,
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
     """
-    
-    #poly == [pg.Mesh, ]
+
+#    poly == [pg.Mesh, ]
     if isinstance(poly, list):
         if isinstance(poly[0], pg.Mesh):
             return createMesh(plc.mergePLC(poly),
                               quality, area, smooth, switches, verbose)
-    #poly == [pos, pos, ]    
+#    poly == [pos, pos, ]
     if isinstance(poly, list) or isinstance(poly, type(zip)):
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
         return createMesh(delPLC, switches='-zeY')
 
-    #poly == Mesh
+#    poly == Mesh
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
             raise Exception("No nodes in poly to create a valid mesh")
@@ -95,6 +96,7 @@ def createMesh(poly, quality=30, area=0.0,
 
     else:
         raise('not yet implemented')
+
 
 def readGmsh(fname, verbose=False):
     """
