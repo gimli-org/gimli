@@ -167,11 +167,12 @@ def drawMesh(axes, mesh):
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, mesh)
     """
+
     pg.mplviewer.drawMeshBoundaries(axes, mesh)
     axes.set_aspect('equal')
     axes.set_xlim(mesh.xmin(), mesh.xmax())
     axes.set_ylim(mesh.ymin(), mesh.ymax())
-    
+
     updateAxes_(axes)
 
 def drawModel(axes, mesh, data=None,
@@ -268,7 +269,7 @@ def drawSelectedMeshBoundaries(axes, boundaries,
     lineCollection.set_color(color)
     lineCollection.set_linewidth(linewidth)
     axes.add_collection(lineCollection)
-    
+
     updateAxes_(axes)
     return lineCollection
 
@@ -279,7 +280,7 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
         What is this?
     """
     polys = []
-    
+
     for cell in boundaries:
         polys.append(list(zip([getattr(cell.node(0), first)(),
                                getattr(cell.node(1), first)(),
@@ -294,7 +295,7 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
     collection.set_edgecolor(color)
     collection.set_linewidth(0.2)
     axes.add_collection(collection)
-    
+
     updateAxes_(axes)
     return collection
 
@@ -364,11 +365,11 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
             cols.append(col)
         p = mpl.collections.PatchCollection(eCircles, color=cols)
         axes.add_collection(p)
-        
+
         for reg in mesh.regionMarker():
             axes.text(reg.pos()[0], reg.pos()[1],
                       str(reg.marker()) + ": " + str(reg.area()))
-    
+
     updateAxes_(axes)
 
 def createMeshPatches(axes, mesh, verbose=True, **kwargs):
@@ -413,7 +414,7 @@ def createMeshPatches(axes, mesh, verbose=True, **kwargs):
     axes.add_collection(patches)
 
     updateAxes_(axes)
-    
+
     if verbose:
         print(("plotting time = ", swatch.duration(True)))
     return patches
@@ -494,7 +495,7 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
             z = pg.cellDataToPointData(mesh, data)
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              **kwargs)
-        
+
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
 
@@ -588,7 +589,7 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
             V[i, j] = -gr[1]
 
     gci = axes.streamplot(X, Y, U, V, **kwargs)
-    
+
     updateAxes_(axes)
 # def drawStreamLines(...)
 
@@ -730,7 +731,7 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
 
     for c in viewMesh.cells():
         c.setValid(True)
-        
+
     updateAxes_(axes)
 # def drawStreamLines2(...)
 
@@ -767,7 +768,7 @@ def drawSensors(axes, sensors, diam=None, koords=None):
 
     p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
     axes.add_collection(p)
-    
+
     updateAxes_(axes)
 
 def createParameterContraintsLines(mesh, cMat, cWeight=None):
@@ -838,7 +839,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
         end.append(pb)
 
     updateAxes_(axes)
-    
+
     return start, end
 
 
@@ -865,7 +866,7 @@ def drawParameterConstraints(axes, mesh, cMat, cWeight=None):
     linCol.set_color(colors)
     linCol.set_linewidth(linewidths)
     axes.add_collection(linCol)
-    
+
     updateAxes_(axes)
 
 def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
@@ -891,7 +892,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
 
     pp = PatchCollection(recs)
     col = ax.add_collection(pp)
-        
+
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
     if cmap is not None:
@@ -902,6 +903,6 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     if name:
         ax.text(x, ztopo, name, ha='center', va='bottom')
 
-    updateAxes_(axes)
-    
+    updateAxes_(ax)
+
     return col
