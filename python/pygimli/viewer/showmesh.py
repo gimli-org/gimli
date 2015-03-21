@@ -44,6 +44,7 @@ def show(mesh, *args, **kwargs):
     -------
 
     Return the results from the show functions.
+
     """
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
@@ -149,7 +150,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data)
     else:
-        if hasattr(data[0], '__len__') and not isinstance(data, 
+        if hasattr(data[0], '__len__') and not isinstance(data,
                                                         np.ma.core.MaskedArray):
 
             if sum(data[:, 0]) != sum(data[:, 1]):
@@ -195,7 +196,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
     if showLater in kwargs:
         hold = showLater
         print("showLater will be removed in the future. use hold instead")
-        
+
     if not hold or block is not False:
         plt.show(block=block)
         try:

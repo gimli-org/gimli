@@ -56,13 +56,13 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.pngmath',
               'sphinx.ext.doctest',
-              'matplotlib.sphinxext.plot_directive',
               'matplotlib.sphinxext.only_directives',
               #'matplotlib.sphinxext.mathmpl',
               'myexec_directive',
               'myliterate_directive',
               'plot2rst',
               # 'sphinx.ext.mathjax', # nicer html output than pngmath
+              'plot_directive',
               'doxylink'
               ]
 
