@@ -187,10 +187,10 @@ def readGmsh(fname, verbose=False):
 
     # check dimension
     if len(tets) == 0:
-        dim, bounds, cells = 2, lines, triangles
+        dim, bounds, cells=2, lines, triangles
         zero_dim = np.abs(nodes.sum(0)).argmin()  # identify zero dimension
     else:
-        dim, bounds, cells = 3, triangles, tets
+        dim, bounds, cells=3, triangles, tets
     if verbose:
         print('  Dimension: %s-D' % dim)
 

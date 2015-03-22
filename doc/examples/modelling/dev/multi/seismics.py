@@ -35,8 +35,8 @@ def velocityVp(porosity, vMatrix=5000, vFluid=1442, S=1,
 
 def calcSeismics(meshIn, vP):
     
-    #meshSeis = meshIn.createH2()
-    meshSeis = meshIn
+    meshSeis = meshIn.createH2()
+    #meshSeis = meshIn
     meshSeis = appendTriangleBoundary(meshSeis, 
                                       xbound=25, ybound=22.0, marker=1,
                                       quality=32.0, area=0.3, smooth=True, 
@@ -45,7 +45,9 @@ def calcSeismics(meshIn, vP):
     print(meshSeis)
     meshSeis = meshSeis.createH2()
     meshSeis = meshSeis.createH2()
+    #meshSeis = meshSeis.createH2()
     #meshSeis = meshSeis.createP2()
+    
     meshSeis.smooth(1, 1, 1, 4)
     vP = pg.interpolate(meshIn, vP, meshSeis.cellCenters())
     
@@ -68,30 +70,29 @@ def calcSeismics(meshIn, vP):
     h = pg.median([h1, h2, h3])
     
     #h = pg.median(mesh.boundarySizes())
-    dt = 0.5 * h /max(vP)
-    cfl = max(vP)*dt/h
+    f0scale = 0.25
+    cfl = 0.5
+    dt = cfl * h /max(vP)
     print("Courant-Friedrich-Lewy-Zahl:", cfl)
     
     tmax = 50./min(vP)
     times = np.arange(0.0, tmax, dt)
-        
     
-    
-    solutionName = createCacheName('seis', mesh, times)
+    solutionName = createCacheName('seis', mesh, times) + "cfl-" + str(cfl)
     try:   
         U = None
         #u = pg.load(solutionName + '.bmat')
         uI = pg.load(solutionName + 'I.bmat')
     except Exception as e:
         print(e)
-        f0 = 1./dt*0.2 
+        f0 = f0scale * 1./dt
         print("h:", round(h,2),
               "dt:", round(dt,5),
               "1/dt:", round(1/dt,1),
               "f0", round(f0,2),
               "Wavelength: ", round(max(vP)/f0, 2), " m")
         
-        uSource = ricker(f0, times, t0=1./f0)
+        uSource = ricker(times, f0, t0=1./f0)
     
         plt.figure()
         plt.plot(times, uSource, '-*')
@@ -122,8 +123,19 @@ def calcSeismics(meshIn, vP):
     gci = pg.mplviewer.drawModel(ax, mesh, data=uI[0],
                                  cMin=-1, cMax=1, cmap='bwr')
     pg.mplviewer.drawMeshBoundaries(ax, meshIn, hideMesh=1)
-    ax.set_xlim((-21, 21))
-    ax.set_ylim((-16, 0))
+    ax.set_xlim((-20, 20))
+    ax.set_ylim((-15, 0))
+    ax.set_ylabel('Depth [m]')
+    ax.set_xlabel('$x$ [m]')
+        
+    ticks = ax.yaxis.get_majorticklocs()
+    tickLabels = []
+    for t in ticks:
+        tickLabels.append(str(int(abs(t))))
+
+    ax.set_yticklabels(tickLabels)
+    
+    
     plt.tight_layout()
     #ax, cbar = pg.show(mesh, data=vP)
     #pg.showNow()
@@ -149,7 +161,7 @@ def calcSeismics(meshIn, vP):
     anim = animation.FuncAnimation(fig, animate,
                                    frames=int(len(uI)/5),
                                    interval=0.001, repeat=0)#, blit=True)
-    out = 'seis'
+    out = 'seis' + str(f0scale) + "cfl-" + str(cfl)
     anim.save(out + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
               bitrate=24*1024, extra_args=None, metadata=None,
               extra_anim=None, savefig_kwargs=None)

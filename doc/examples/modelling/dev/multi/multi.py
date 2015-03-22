@@ -24,20 +24,40 @@ import seismics
 import gravimetry
 import ert
 
-def savefig(mesh, plc, data, label, out=None, showMesh=0):
-    if savefigs_:
-        ax, _ = pg.show(mesh, data, hold=1, colorBar=1, label=label)
-        if showMesh:
-            pg.show(mesh, axes=ax, hold=1)
-        if out:
-            pg.show(plc, axes=ax, savefig=out + '.pdf')
-            try:
-                print("trying pdf2pdfS ... ")
-                os.system('pdf2pdfS ' + out + '.pdf')
-            except:
-                pass
-        else:
-            pg.show(plc, axes=ax)
+def savefig(mesh, plc, data=None, label='', out=None, showMesh=0):
+
+    ax = None
+    if data is not None:
+        ax, _ = pg.show(mesh, data, hold=1, colorBar=1, pad=0.55, label=label)
+    if showMesh:
+        ax, _ = pg.show(mesh, axes=ax, hold=1)
+    if out:
+        ax, _ = pg.show(plc, axes=ax)
+        
+        adjustAxes(ax)
+        plt.pause(0.01)
+        ax.figure.savefig(out + '.pdf', bbox_inches='tight')
+
+        try:
+            print("trying pdf2pdfS ... ")
+            os.system('pdf2pdfBB ' + out + '.pdf')
+            os.system('pdf2pdfS ' + out + '.pdf')
+        except:
+            pass
+    else:
+        ax, _ = pg.show(plc, axes=ax)
+    return ax
+
+def adjustAxes(ax):
+    ax.set_ylabel('Depth [m]')
+    ax.set_xlabel('$x$ [m]')
+        
+    ticks = ax.yaxis.get_majorticklocs()
+    tickLabels = []
+    for t in ticks:
+        tickLabels.append(str(int(abs(t))))
+
+    ax.set_yticklabels(tickLabels)
 
 def createAnimation(fig, animate, nFrames, dpi, out):
     anim = animation.FuncAnimation(fig, animate,
@@ -68,7 +88,17 @@ def saveani(mesh, plc, data, label, out,
                                  cMin=cMin, cMax=cMax, cmap=cmap,
                                  logScale=logScale)
     
-    cbar = pg.mplviewer.createColorbar(gci, label=label)
+    cbar = pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
+    ax.set_ylabel('Depth [m]')
+    ax.set_xlabel('$x$ [m]')
+        
+    ticks = ax.yaxis.get_majorticklocs()
+    tickLabels = []
+    for t in ticks:
+        tickLabels.append(str(int(abs(t))))
+
+    ax.set_yticklabels(tickLabels)
+    
     pg.show(plc, axes=ax)
     
     plt.tight_layout()
@@ -105,7 +135,7 @@ def createTestWorld1(maxArea=0.2, verbose=0):
     layer3 = pt.createRectangle(start=[-20, -8], end=[20, -15], 
                                  marker=3, boundaryMarker=[3, 4, 5, 10])
     block = pt.createRectangle(start=[-6, -3.5], end=[6, -6.0], marker=4,
-                               boundaryMarker=10)
+                               boundaryMarker=10, area=0.1)
     
     plc = pt.mergePLC([layer1, layer2, layer3, block])
     
@@ -132,99 +162,11 @@ velBoundary=[[2, [1.0, 0.0]],
 preBoundary=[[1, 0.0],
              [7, 0.0]]
 
-perm = fluidFlow.permeabiltyEngelhardtPitter(poro, mesh=mesh)    
-hydr = fluidFlow.hydraulicConductivity(perm, mesh=mesh)
 vP   = seismics.velocityVp(poro, mesh=mesh)
-dens = gravimetry.density(poro, densMatrix=2510, densFluid=1000, mesh=mesh)
 
-savefigs_ = 0
-if savefigs_:
-    savefig(mesh, plc, mesh.cellMarker(), 'Marker', 'marker')
-    savefig(mesh, plc, mesh.cellMarker(), 'Marker', 'mesh', 1)
-    savefig(mesh, plc, poro, 'Porosity', 'poro')
-    savefig(mesh, plc, perm, 'Permeabilty [m$^2$]', 'perm')
-    savefig(mesh, plc, hydr, 'Hydraulic conductivity [m$/$s]', 'hydr')
-    savefig(mesh, plc, vP, 'Seismic velocity [m$/$s]', 'vP')
-    savefig(mesh, plc, dens, 'Density [kg$/$m$^3$]', 'dens')
-
-grav = 0
-if grav:
-    Grav, densBlock = gravimetry.calcInvBlock(mesh, dens, 'gravInv.pdf')
-    savefig(mesh, plc, densBlock, 'Delta Density [kg$/$m$^3$]', 'ddens')
-    savefig(Grav.fop.regionManager().paraDomain(), plc,
-            Grav.inv.model(), 'Delta Density [kg$/$m$^3$]', 'densGrav')
-
-seis = 0
+seis = 1
 if seis:
     seismics.calcSeismics(mesh, vP)
-
-visc = 1./perm
-vel = fluidFlow.calcStokesVelocity(mesh, visc, velBoundary, preBoundary)
-print("vel:", swatch.duration(True))
-
-showVel = 0
-if showVel:
-    axVel, _ = pg.show(mesh, data=pg.cellDataToPointData(mesh,
-                              np.sqrt(vel[:,0]*vel[:,0] + vel[:,1]*vel[:,1])),
-                       logScale=0, colorBar=1,
-                       label='|Velocity| in m/s', hold=1)
-
-    pg.viewer.showBoundaryNorm(mesh, velBoundary, color='red', axes=axVel)
-    pg.show(plc, axes=axVel)
-    
-    meshC, _ = createTestWorld1(maxArea=1, verbose=0)
-    pg.show(mesh, data=vel, axes=axVel, coarseMesh=meshC, savefig='velocity.pdf')
-    
-
-################## TIMELAPSE Starts here                  ######################
-timeSteps = np.linspace(0, 50, 20) 
-
-################## TIMELAPSE Concentration                ######################
-conc = fluidFlow.calcConcentration(mesh, vel, timeSteps, 
-                                   injectPos=[-18., -6], scale=1, peclet=50)
-
-print("conc:", swatch.duration(True))
-
-
-################## TIMELAPSE ERT                          ######################
-rhoaMesh, _ = createTestWorld1(maxArea=0.1, verbose=0)
-
-rhoaMesh, resis, ertData, rhoa = ert.calcApparentResistivities(mesh, 
-                                                                 rhoaMesh, poro,
-                                          rhoBrine=1./(1./20. + abs(1.*conc)))
-ertMesh, ertMod, ertRat = ert.calcERT(ertData, rhoa)
-
-print("ert:", swatch.duration(True))
-saveanim = 0:
-if saveanim:
-    saveani(mesh, plc, conc, 'Concentration [kg/m$^3$]', 'conc', cMin=0, cMax=0.1)
-    saveani(rhoaMesh, plc, resis, 'Resistivity [$\Omega$ m]', 'resis', logScale=1)
-    saveani(ertMesh, plc, ertMod, 'Resistivity [$\Omega$ m]', 'ert', logScale=1, cMin=100, cMax=1000)
-    saveani(ertMesh, plc, ertRat, 'Ratio', 'ratio', logScale=1, cMin=0.5, cMax=2, cmap='bwr')
-
-
-# ** make Apparent resistivities animations (data) **
-Ert = ert.ERT()
-fig, ax = plt.subplots()
-gci = Ert.show(ertData, values=rhoa[0], axes=ax, scheme='DipoleDipole', cMin=150, cMax=350)
-
-def animate(i):
-    print("rhoa: Frame:", i, "/", len(rhoa))
-    ax.clear()
-    Ert.show(ertData, values=rhoa[i], axes=ax, scheme='DipoleDipole', cMin=150, cMax=350, 
-             colorBar=0)
-    plt.tight_layout()
-createAnimation(fig, animate, int(len(rhoa)), 92, 'rhoa')   
-
-fig, ax = plt.subplots()
-gci = Ert.show(ertData, values=rhoa[0], axes=ax, scheme='DipoleDipole', cMin=0.5, cMax=2)
-def animate(i):
-    print("rhoaR: Frame:", i, "/", len(rhoa))
-    ax.clear()
-    Ert.show(ertData, values=rhoa[i]/rhoa[0], axes=ax, scheme='DipoleDipole', cMin=0.5, cMax=2, 
-             colorBar=0, cmap='bwr')
-    plt.tight_layout()
-createAnimation(fig, animate, int(len(rhoa)), 92, 'rhoaR')   
 
 pg.wait()
 

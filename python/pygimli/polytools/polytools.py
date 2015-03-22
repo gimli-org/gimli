@@ -77,7 +77,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, marker=1, area=0,
     if isHole:
         poly.addHoleMarker(poly.nodes()[0].pos() + [0.001, -0.001])
     else:
-        poly.addRegionMarker(poly.nodes()[0].pos() + [0.001, -0.001], 
+        poly.addRegionMarker(poly.nodes()[1].pos() + [0.2, 0.2], 
                              marker=marker, area=area)
     polyCreateDefaultEdges_(poly, marker=boundaryMarker, closed=True)
     return poly
