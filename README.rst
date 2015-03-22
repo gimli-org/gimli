@@ -26,7 +26,7 @@ What do you need to use GIMLi?:
 * either the source code and some time to build the system or binaries
 * preferrably Python with numpy and matplotlib, or a C++ compiler
 
-.. _sec:authors
+.. _sec:authors:
 
 Authors
 -------

@@ -70,7 +70,7 @@ add_custom_target(sphinxpdf
         -T
         -b latex
         -c "${SPHINX_BINARY_BUILD_DIR}"
-        -d "${SPHINX_CACHE_DIR}"
+        -d "${SPHINX_CACHE_DIR}/pdf"
         "${SPHINX_SRCBUILD_DIR}"
         "${SPHINX_PDF_DIR}" &&
         cd ${SPHINX_PDF_DIR} && make &&
@@ -87,12 +87,12 @@ add_custom_target(sphinxhtml
         cmake -E copy_directory
         ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/doc/gimliapi &&
         ${SPHINX_EXECUTABLE}
-            -T
-            -b html
-            -c "${SPHINX_BINARY_BUILD_DIR}"
-            -d "${SPHINX_CACHE_DIR}"
-            "${SPHINX_SRCBUILD_DIR}"
-            "${SPHINX_HTML_DIR}"
+        -T
+        -b html
+        -c "${SPHINX_BINARY_BUILD_DIR}"
+        -d "${SPHINX_CACHE_DIR}/html"
+        "${SPHINX_SRCBUILD_DIR}"
+        "${SPHINX_HTML_DIR}"
     COMMENT
         "Building HTML documentation with sphinx"
     DEPENDS

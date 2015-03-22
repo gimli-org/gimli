@@ -27,10 +27,11 @@ import re
 from types import BuiltinFunctionType, FunctionType
 
 # suppress print statements (warnings for empty files)
-DEBUG = True
+DEBUG = False
 
 
 class ApiDocWriter(object):
+
     """ Class for automatic detection and parsing of API docs
     to Sphinx-parsable reST format"""
 
@@ -159,7 +160,7 @@ class ApiDocWriter(object):
         path = path.replace('.', os.path.sep)
         path = os.path.join(self.root_path, path)
         # XXX maybe check for extensions as well?
-        if os.path.exists(path + '.py'): # file
+        if os.path.exists(path + '.py'):  # file
             path += '.py'
         elif os.path.exists(os.path.join(path, '__init__.py')):
             path = os.path.join(path, '__init__.py')
@@ -181,7 +182,7 @@ class ApiDocWriter(object):
         if filename is None:
             print(filename, 'erk')
             # nothing that we could handle here.
-            return ([],[])
+            return ([], [])
         f = open(filename, 'rt')
         functions, classes = self._parse_lines(f)
         f.close()
@@ -275,7 +276,7 @@ class ApiDocWriter(object):
 
         # Make a shorter version of the uri that omits the package name for
         # titles
-        uri_short = re.sub(r'^%s\.' % self.package_name,'',uri)
+        uri_short = re.sub(r'^%s\.' % self.package_name, '', uri)
 
         ad = '.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n'
 
@@ -290,7 +291,7 @@ class ApiDocWriter(object):
         ad += '\n.. automodule:: ' + uri + '\n'
         ad += '\n.. currentmodule:: ' + uri + '\n'
         ad += '\n.. only:: html\n\n'
-        ide = '    ' # 4 spaces indent
+        ide = '    '  # 4 spaces indent
         ad += ide + '.. autosummary::\n\n'
         for f in functions:
             ad += 2 * ide + uri + '.' + f + '\n'
@@ -389,10 +390,10 @@ class ApiDocWriter(object):
             # Check directory names for packages
             root_uri = self._path2uri(os.path.join(self.root_path,
                                                    dirpath))
-            for dirname in dirnames[:]: # copy list - we modify inplace
+            for dirname in dirnames[:]:  # copy list - we modify inplace
                 package_uri = '.'.join((root_uri, dirname))
                 if (self._uri2path(package_uri) and
-                    self._survives_exclude(package_uri, 'package')):
+                        self._survives_exclude(package_uri, 'package')):
                     modules.append(package_uri)
                 else:
                     dirnames.remove(dirname)
@@ -435,7 +436,7 @@ class ApiDocWriter(object):
             os.mkdir(outdir)
         # compose list of modules
         modules = self.discover_modules()
-        self.write_modules_api(modules,outdir)
+        self.write_modules_api(modules, outdir)
 
     def write_index(self, outdir, froot='gen', relative_to=None):
         """Make a reST API index file from written files
@@ -461,10 +462,15 @@ class ApiDocWriter(object):
         path = os.path.join(outdir, froot+self.rst_extension)
         # Path written into index is relative to rootpath
         if relative_to is not None:
-            relpath = (outdir + os.path.sep).replace(relative_to + os.path.sep, '')
+            relpath = (
+                outdir +
+                os.path.sep).replace(
+                relative_to +
+                os.path.sep,
+                '')
         else:
             relpath = outdir
-        idx = open(path,'wt')
+        idx = open(path, 'wt')
         w = idx.write
         w('.. _sec:pygimliapi:\n\n')
         w('.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n')
@@ -477,5 +483,5 @@ class ApiDocWriter(object):
         for f in self.written_modules:
             # XXX: Leave out C++ part for the time being.
             if not f is "pygimli":
-                w('   %s\n' % os.path.join(relpath,f))
+                w('   %s\n' % os.path.join(relpath, f))
         idx.close()

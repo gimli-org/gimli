@@ -3,11 +3,7 @@
 Frequently asked questions
 ==========================
 
-How do subsection...
---------------------
+.. note::
 
-How do subsubsection ...
-........................
-
-How do subsubsubsection ...
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    This section is still under construction. If you have a have a question
+    about GIMLi, write a mail to mail@pygimli.org.

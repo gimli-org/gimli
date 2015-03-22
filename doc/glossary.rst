@@ -12,7 +12,7 @@ Glossary
         The eponymous software package. See :ref:`sec:GIMLi`
 
     pyGIMLi
-        The eponymous software package. See :ref:`sec:pygimli`
+        The eponymous software package. See :ref:`sec:pygimliapi`
 
     libGIMLi
         The eponymous software package. See :ref:`sec:GIMLi`
@@ -21,7 +21,7 @@ Glossary
         Gmsh: a three-dimensional finite element mesh generator with built-in
         pre- and post-processing facilities
         :cite:`GeuzaineRemacle2009`
-        http://geuz.org/gmsh/. 
+        http://geuz.org/gmsh/.
         See: :py:func:`pygimli.meshtools.mesh.readGmsh`
 
     BERT
@@ -51,7 +51,7 @@ Glossary
 
     NumPy
         The :mod:`numpy` :term:`Python` package provides array arithmetic
-        facilities. See: http://docs.scipy.org/doc/numpy 
+        facilities. See: http://docs.scipy.org/doc/numpy
 
     Paraview
         Is an open-source, multi-platform data analysis and visualization
@@ -60,8 +60,8 @@ Glossary
     Python
         The programming language that :term:`pyGIMLi` (and your scripts) are
         written in. See: http://www.python.org/
-    
-    Pylab 
+
+    Pylab
         At the moment, the current combination of :term:`Python`,
         :term:`NumPy`, :term:`SciPy`, :term:`Matplotlib`, and IPython provide a
         compelling environment for numerical analysis and computation. See:
@@ -81,7 +81,7 @@ Glossary
         http://www.cise.ufl.edu/research/sparse/SuiteSparse/
 
     Triangle
-        A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator. 
+        A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator.
         :cite:`Shewchuk96b`
         http://www.cs.cmu.edu/~quake/triangle.html
         See: :py:func:`pygimli.meshtools.mesh.readTriangle`
