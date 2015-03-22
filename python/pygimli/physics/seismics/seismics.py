@@ -9,7 +9,7 @@ import numpy as np
 import pygimli.solver
 
 
-def ricker(f, t, t0=0.0):
+def ricker(t, f, t0=0.0):
     """
     Create Ricker wavelet.
 
@@ -17,11 +17,11 @@ def ricker(f, t, t0=0.0):
 
     Parameters
     ----------
-    f : float
-        Frequency of the wavelet in Hz
-
     t : array [float]
         Time base definition
+        
+    f : float
+        Frequency of the wavelet in Hz
 
     t0 : float
         Offset time. Use 1/f to move the wavelet to start nearly from zero.
@@ -87,7 +87,7 @@ def drawWiggle(axes, x, t, xoffset=0.0,
     >>> import matplotlib.pyplot as plt
     >>> import numpy as np
     >>> t = np.arange(0, 0.02, 1./5000)
-    >>> r = ricker(100., t, 1./100)
+    >>> r = ricker(t, 100., 1./100)
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(1,1,1)
     >>> drawWiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue', alpha=0.2)
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     import numpy as np
     t = np.arange(0, 0.02, 1. / 5000)
-    r = ricker(100., t, 1. / 100)
+    r = ricker(t, 100., 1. / 100)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
 

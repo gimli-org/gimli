@@ -367,8 +367,12 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
         axes.add_collection(p)
 
         for reg in mesh.regionMarker():
+            #axes.text(reg.pos()[0], reg.pos()[1],
+                      #str(reg.marker()) + ": " + str(reg.area()), 
+                      #color='white')
             axes.text(reg.pos()[0], reg.pos()[1],
-                      str(reg.marker()) + ": " + str(reg.area()))
+                      str(reg.marker()) + ": " + str(reg.area()), 
+                      color='black')
 
     updateAxes_(axes)
 

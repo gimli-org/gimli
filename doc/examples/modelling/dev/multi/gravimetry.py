@@ -155,6 +155,8 @@ def calcInvBlock(mesh, dens, out='gravInv'):
     ax.plot(pg.x(sensorPositions), Grav.inv.response(), label='response')
     ax.legend()
     ax.grid()
+    ax.set_xlabel('$x$ [m]')
+    ax.set_ylabel('$\partial u / \partial z$ [mGal]')
     plt.show(block=False)
     ax.figure.savefig(out, bbox_inches='tight')
 
