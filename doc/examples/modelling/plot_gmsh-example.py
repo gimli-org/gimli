@@ -178,8 +178,7 @@ from matplotlib import pyplot as plt
 import pygimli as pg
 from pygimli.meshtools import readGmsh
 
-# Downloading gmsh file externally (pygimli still password protected)
-subprocess.call(["wget", "http://www.fwagner.info/mesh.geo"])
+subprocess.call(["wget", "http://www.pygimli.org/_downloads/mesh.geo"])
 
 try:
     subprocess.call(["gmsh", "-2", "-o", "mesh.msh", "mesh.geo"])

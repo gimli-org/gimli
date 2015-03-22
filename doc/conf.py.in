@@ -54,20 +54,19 @@ if req:
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.mathjax', # nicer html output than pngmath
+              #'sphinx.ext.pngmath',
               'sphinx.ext.doctest',
               'matplotlib.sphinxext.only_directives',
               #'matplotlib.sphinxext.mathmpl',
               'myexec_directive',
               'myliterate_directive',
               'plot2rst',
-              # 'sphinx.ext.mathjax', # nicer html output than pngmath
               'plot_directive',
               'doxylink'
               ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@SPHINX_SRC_DIR@/doc/_templates']
