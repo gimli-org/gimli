@@ -11,11 +11,15 @@ def polyCreateDefaultEdges_(poly, marker=1, closed=True):
     """ INTERNAL """
     
     nEdges = poly.nodeCount()-1 + closed
-    bm = [marker]*nEdges
+    bm = None
     if hasattr(marker, '__len__'):
         if len(marker) == nEdges:
             bm = marker
-            
+        else:
+            raise Exception("marker length != nEdges", len(marker), nEdges)
+    else:
+        bm = [marker] * nEdges        
+        
     for i in range(poly.nodeCount() - 1):
         poly.createEdge(poly.node(i), poly.node(i+1), bm[i])
     if closed:
@@ -82,7 +86,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, marker=1, area=0,
     polyCreateDefaultEdges_(poly, marker=boundaryMarker, closed=True)
     return poly
 
-def createWorld(start, end, marker=1, area=0):
+def createWorld(start, end, marker=1, area=0, layers=None):
     """
     Create simple rectangular world.
         
@@ -100,6 +104,8 @@ def createWorld(start, end, marker=1, area=0):
         Marker for the resulting triangle cells after mesh generation
     area : float
         Maximum cell size for the resulting triangle cells after mesh generation
+    layers : [float]
+        Add some layers to the world.
         
     Returns
     -------
@@ -110,28 +116,34 @@ def createWorld(start, end, marker=1, area=0):
     --------
     TODO
     """
-    return createRectangle(start, end, marker=marker, area=area,
-                           boundaryMarker = [pg.MARKER_BOUND_MIXED,
-                                             pg.MARKER_BOUND_MIXED,
-                                             pg.MARKER_BOUND_MIXED,
-                                             pg.MARKER_BOUND_HOMOGEN_NEUMANN])
-    #poly = pg.Mesh(2)    
     
-    #poly.createNode(start)
-    #poly.createNode([start[0], end[1]])
-    #poly.createNode(end)
-    #poly.createNode([end[0], start[1]])
+    z = [start[1]]
+    
+    if layers is not None:
+        z = z + layers
+    
+    z.append(end[1])
+    rs = []
+    poly = pg.Mesh(2)    
+    
+    for i, depth in enumerate(z):
+        n = poly.createNode([start[0], depth])
+        if i > 0:
+            poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=i, area=area)
+        
+    for i, depth in enumerate(z[::-1]):
+        poly.createNode([end[0], depth])
+        
+        
+    polyCreateDefaultEdges_(poly, 
+                            marker=[1]*(len(z)-1) + [3] + [2]*(len(z)-1) + [4])
+          
+    if layers is not None:
+        for i in range(len(layers)):
+            poly.createEdge(poly.node(i + 1), 
+                            poly.node(poly.nodeCount() - i - 2), 4 + i)
 
-    #poly.addRegionMarker(poly.nodes()[0].pos() + [0.001, -0.001], 
-                         #marker=marker, area=area)
-
-    #for i in range(poly.nodeCount() - 1):
-        #poly.createEdge(poly.node(i), poly.node(i+1), 
-                        #pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-
-    #poly.createEdge(poly.node(poly.nodeCount()-1), 
-                    #poly.node(0), pg.MARKER_BOUND_MIXED)
-    #return poly
+    return poly
 
 def createCircle(pos, radius, segments=12, marker=1, area=0,
                  boundaryMarker=1, leftDirection=True, isHole=False):
