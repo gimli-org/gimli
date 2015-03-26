@@ -3,6 +3,27 @@
 Installation
 ============
 
+.. note::
+
+    Binary installers for different platforms will be available for download
+    soon. See below to build GIMLi from source.
+
+Quick Installation
+------------------
+
+The following should suffice to build GIMLi from source on most Linux Platforms:
+
+    .. code-block:: bash
+
+        mkdir -p ~/src/gimli && cd ~/src/gimli
+        svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
+
+        mkdir -p build && cd build
+        cmake ../trunk
+        make pygimli
+
+See below for more detailed compilation instructions.
+
 Prerequisites
 -------------
 
@@ -43,20 +64,18 @@ Optional Prerequisites -- some can be installed via provided scripts
 Example Installation on Vanilla Debian
 --------------------------------------
 
-First install some of the necessary stuff. For sure you will need subversion to get the source files and some things for the tool-chain
+First install some of the necessary stuff. For sure you will need subversion to get the source files and some things for the tool-chain:
 
 .. code-block:: bash
 
     sudo apt-get install subversion git cmake mercurial
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
 
-Optional install useful stuff:
+If you want to use the pyGIMLi (Python scripts, bindings and apps):
 
 .. code-block:: bash
 
-    sudo apt-get install libcppunit-dev libprocps0-dev
     sudo apt-get install python-numpy python-matplotlib
-    sudo apt-get install doxygen
 
 Create a directory for your installation, e.g., $HOME/src
 
@@ -73,24 +92,21 @@ Checkout the current sources for libgimli:
 
     svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
 
-Building with cmake
--------------------
-
-We test a new build system using cmake http://www.cmake.org/ that hopefully avoid a lot of problems from the past.
-In the first, cmake provide out of source build so we recommend using a build directory beside the trunk path:
+We use cmake (http://www.cmake.org/) for compilation. We recommend using a
+build directory parallel to the trunk path:
 
 .. code-block:: bash
 
     mkdir -p build
 
-the main directory structure should looks like this:
+The main directory structure should looks like this:
 
 .. code-block:: bash
 
     gimli/trunk
     gimli/build
 
-change to the build path:
+Change to the build path
 
 .. code-block:: bash
 
@@ -102,13 +118,20 @@ and configure the build:
 
     cmake ../trunk
 
-If the output complains some missing dependencies you want to install .. just install these and repeat the the last step.
+If the output complains some missing dependencies you should install, just
+install these and repeat the the last step.
 
 To build the library just run make
 
 .. code-block:: bash
 
     make
+
+To speed up the build process using more CPUs, use the -j flag, e.g.:
+
+.. code-block:: bash
+
+    make -j 8
 
 The libraries will be installed in build/lib and some test applications are installed in build/bin
 
@@ -118,8 +141,9 @@ If you want to build the python bindings call
 
     make pygimli
 
-the _pygimli_.so library will be copied into the source path ../trunk/python/pygimli.
-To use the gimli installation there have to be set some environment variables:
+The _pygimli_.so library will be copied into the source path
+../trunk/python/pygimli. To use the gimli installation there have to be set
+some environment variables:
 
 .. code-block:: bash
 
@@ -131,7 +155,7 @@ You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as pg; print pg.__version__'
+    python -c 'import pygimli as pg; print(pg.__version)'
 
 You can test your libgimli build with:
 
@@ -140,12 +164,6 @@ You can test your libgimli build with:
     make check
 
 Of course the test will be very silent if you don't have cppunit installed.
-
-If you have doxygen installed, you can create the api documentation:
-
-.. code-block:: bash
-
-    make html
 
 Installation on Windows
 -----------------------
@@ -205,19 +223,6 @@ just need to set the environment:
     export PATH=$PATH:$(HOME)/src/gimli/build/lib
     export PATH=$PATH:$(HOME)/src/gimli/build/bin
 
-Windows using MSVC
-..................
-
-
-Windows using CodeBlocks
-........................
-
-First, for sure, you need codeblocks from: http://www.codeblocks.org/downloads/26
-
-    * codeblocks-10.05-setup.exe
-
-to come ....
-
 Example Installation on Ubuntu
 ..............................
 
@@ -225,9 +230,7 @@ Example Installation on Ubuntu
 
     sudo apt-get install subversion git cmake mercurial
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
-    sudo apt-get install libcppunit-dev
-    sudo apt-get install python-matplotlib
-    sudo apt-get install doxygen
+    sudo apt-get install python-matplotlib python-numpy
 
     mkdir -p ~/src/gimli
     cd ~/src/gimli
@@ -236,5 +239,5 @@ Example Installation on Ubuntu
     mkdir -p build
     cd build
     cmake ../trunk
-    make
+    make gimli
     make pygimli

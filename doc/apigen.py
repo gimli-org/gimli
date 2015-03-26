@@ -23,7 +23,6 @@ https://github.com/scikit-image/scikit-image/blob/master/doc/tools/apigen.py
 # Stdlib imports
 import os
 import re
-
 from types import BuiltinFunctionType, FunctionType
 
 # suppress print statements (warnings for empty files)
