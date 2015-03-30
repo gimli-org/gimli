@@ -68,6 +68,9 @@ extensions = ['sphinx.ext.autodoc',
 
 extensions += [dep.replace('-', '.') for dep in deps]
 
+# Get mathjax from GIMLi server (public one is very slow)
+mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS_HTML"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@SPHINX_SRC_DIR@/doc/_templates']
 
