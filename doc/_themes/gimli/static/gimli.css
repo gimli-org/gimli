@@ -135,11 +135,23 @@ h6 {
 table {
     border-collapse: collapse;
     margin: 0 -0.5em 0 -0.5em;
-    border: 0px none #fff;
+    border: 0px;
 }
 
-table td, table th {
+/*table in doc/index.html*/
+table.docutils.doc-index td, table th {
     padding: 0.2em 0.5em 0.2em 0.5em;
+    border: 0px;
+}
+
+/*table in pygimliapi function overview*/
+table.longtable.docutils td, table th {
+    padding: 0.2em 0.5em 0.2em 0.5em;
+    border-top: 1px solid #dddddd;
+}
+
+table.longtable.docutils tbody > tr:nth-child(odd) > td, table.longtable.docutils tbody > tr:nth-child(odd) > th {
+  background-color: #f9f9f9;
 }
 
 table th {
