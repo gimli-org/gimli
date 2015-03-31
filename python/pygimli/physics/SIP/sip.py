@@ -410,13 +410,13 @@ class SIPSpectrum():
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=False,
-                      showFit=False):
+                      showFit=False, cType=1):
         """ fit a (smooth) continuous Debye model (Debye decomposition) """
         nf = len(self.f)
         if mint is None:
             mint = .1 / max(self.f)
         if maxt is None:
-            maxt = .5 / min(self.f)
+            maxt = .5 / min(self.f) * 30
         if nt is None:
             nt = nf*2
         # %% discretize tau, setup DD and perform DD inversion
@@ -428,12 +428,13 @@ class SIPSpectrum():
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
             IDD = pg.RInversion(Znorm, fDD, tLog, tM, False)
-            IDD.setAbsoluteError(max(Znorm)*0.003)
+            IDD.setAbsoluteError(max(Znorm)*0.003+0.01)
         else:
             fDD = DebyePhi(self.f, self.tau)
             IDD = pg.RInversion(phi, fDD, tLin, tM, False)
             IDD.setAbsoluteError(ePhi)  # 1 mrad
 
+        fDD.regionManager().setConstraintType(cType)
         IDD.stopAtChi1(False)
         startModel = pg.RVector(nt, 0.01)
         IDD.setModel(startModel)
@@ -445,7 +446,7 @@ class SIPSpectrum():
             resp = np.array(IDD.response())
             respRe = resp[:nf]
             respIm = resp[nf:]
-            respC = ( (1 - respRe) + respIm * 1j ) * max(self.amp)
+            respC = ((1 - respRe) + respIm * 1j) * max(self.amp)
             self.phiDD = np.angle(respC)
             self.ampDD = np.abs(respC)
             if showFit:
@@ -481,7 +482,7 @@ class SIPSpectrum():
             mCC = self.mCC
             tCC = tstr.format(mCC[0], mCC[1], mCC[2], mCC[3])
         tDD = r'DD: m={:.3f} $\tau$={:.1e}s'.format(mtot, lmtau)
-        fig, ax = plt.subplots(nrows=3, figsize=(12, 16))
+        fig, ax = plt.subplots(nrows=3, figsize=(12, 12))
         fig.subplots_adjust(hspace=0.25)
         showAmplitudeSpectrum(ax[0], self.f, self.amp)
         if hasattr(self, 'ampDD'):
@@ -506,7 +507,7 @@ class SIPSpectrum():
         ax[2].set_title(tDD)
         fig.savefig(self.basename + '.pdf', bbox_inches='tight')
         plt.show(block=False)
-
+        return fig, ax
 
 if __name__ == "__main__":
     # %%
