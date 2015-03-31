@@ -11,42 +11,26 @@ converting 3D data to a 2D mesh for instance.
 """
 
 import numpy as np
-import pygimli as pg
 import matplotlib.pyplot as plt
 
-from pygimli.meshtools import createParaMesh2dGrid
+import pygimli as pg
 from pygimli.mplviewer import drawMesh, drawModel
 
-
 """
-Create coarse mesh
-------------------
-"""
-
-n = 5
-nc = np.linspace(0, -2, n)
-coarse = pg.createMesh2D(nc, nc)
-mcx = pg.x(coarse.cellCenter())
-mcy = pg.y(coarse.cellCenter())
-coarse_data = np.cos(1.5 * mcx) * np.sin(1.5 * mcy)
-fig, ax = plt.subplots()
-drawModel(ax, coarse, coarse_data)
-drawMesh(ax, coarse)
-
-"""
-Create fine mesh
-----------------
+Create coarse and fine mesh with data
+-------------------------------------
 """
 
-nf = np.linspace(0, -2, 4*n)
-fine = pg.createMesh2D(nf, nf)
-mfx = pg.x(fine.cellCenter())
-mfy = pg.y(fine.cellCenter())
-fine_data = np.cos(1.5 * mfx) * np.sin(1.5 * mfy)
-fig, ax = plt.subplots()
-drawModel(ax, fine, fine_data)
-drawMesh(ax, fine)
+def create_mesh_and_data(n):
+    nc = np.linspace(-2, 0, n)
+    mesh = pg.createMesh2D(nc, nc)
+    mcx = pg.x(mesh.cellCenter())
+    mcy = pg.y(mesh.cellCenter())
+    data = np.cos(1.5 * mcx) * np.sin(1.5 * mcy)
+    return mesh, data
 
+coarse, coarse_data = create_mesh_and_data(5)
+fine, fine_data = create_mesh_and_data(20)
 
 """
 Interpolate data to different meshes
@@ -103,3 +87,4 @@ for a, title in zip(axes.flat, titles):
     a.set_title(title + "\n")
 
 fig.tight_layout()
+plt.show()
