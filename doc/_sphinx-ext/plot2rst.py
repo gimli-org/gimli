@@ -468,9 +468,10 @@ def write_example(src_name, src_dir, rst_dir, cfg):
 
     thumb_path = thumb_dir.pjoin(src_name[:-3] + '.png')
 
-    # Modified by FW to take last image rather than first
+    # Modified to take last image rather than first
     if figure_list:
         last_image_file = image_dir.pjoin(figure_list[-1].lstrip('/'))
+        print(last_image_file)
         if last_image_file.exists:
             thumb_scale = cfg.plot2rst_thumb_scale
             image.thumbnail(last_image_file, thumb_path, thumb_scale)
