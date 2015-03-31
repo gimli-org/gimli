@@ -211,7 +211,7 @@ def __getVal(self, idx):
         Hell slow
     """
     # print("__getVal")
-    
+
     if isinstance(idx, BVector) or isinstance(idx, IVector):
         return self(idx)
     elif isinstance(idx, stdVectorSIndex) or isinstance(idx, stdVectorIndex):

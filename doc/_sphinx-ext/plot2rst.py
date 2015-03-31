@@ -467,11 +467,13 @@ def write_example(src_name, src_dir, rst_dir, cfg):
     f.flush()
 
     thumb_path = thumb_dir.pjoin(src_name[:-3] + '.png')
+
+    # Modified by FW to take last image rather than first
     if figure_list:
-        first_image_file = image_dir.pjoin(figure_list[0].lstrip('/'))
-        if first_image_file.exists:
+        last_image_file = image_dir.pjoin(figure_list[-1].lstrip('/'))
+        if last_image_file.exists:
             thumb_scale = cfg.plot2rst_thumb_scale
-            image.thumbnail(first_image_file, thumb_path, thumb_scale)
+            image.thumbnail(last_image_file, thumb_path, thumb_scale)
 
     if not thumb_path.exists:
         if cfg.plot2rst_default_thumb is None:
@@ -615,7 +617,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
 
     tmpSysOut = sys.stdout
     tmpSysErr = sys.stderr
-            
+
     print("Processing:", src_path)
     plt.ion()
     for i, (blabel, brange, bcontent) in enumerate(blocks):
@@ -626,7 +628,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
 
             #tmpSysOut = sys.stdout
             #tmpSysErr = sys.stderr
-            
+
             sys.stdout = RedirectOutput("cout")
             sys.stderr = RedirectOutput("cerr")
 
