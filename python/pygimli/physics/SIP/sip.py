@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from importexport import readTXTSpectrum
 from plotting import showAmplitudeSpectrum, showSpectrum
 from models import DebyePhi, DebyeComplex, relaxationTerm
-from tools import KramersKronig, fitCCEMPhi, fitCCC
+from tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC
 import pygimli as pg
 
 
@@ -59,6 +59,13 @@ class SIPSpectrum():
                 self.amp = amp
                 self.phi = phi
 
+    def sortData(self):
+        """ sort data along increasing frequency (e.g. useful for KK) """
+        ind = np.argsort(self.f)
+        self.amp = self.amp[ind]
+        self.phi = self.phi[ind]
+        self.f = self.f[ind]
+
     def realimag(self, cond=False):
         """real and imaginary part"""
         if cond:
@@ -105,10 +112,11 @@ class SIPSpectrum():
         """show data as real/imag subplots along with Kramers-Kronig curves"""
         fig, ax = self.showData(reim=True)
         re, im = self.realimag()
-        reKK, imKK = KramersKronig(self.f, re, im)
+        ind = np.argsort(self.f)
+        reKK, imKK = KramersKronig(self.f[ind], re[ind], im[ind])
 
-        ax[0].plot(self.f, reKK, label='KK')
-        ax[1].plot(self.f, imKK, label='KK')
+        ax[0].plot(self.f[ind], reKK, label='KK')
+        ax[1].plot(self.f[ind], imKK, label='KK')
         for i in (0, 1):
             ax[i].set_yscale('linear')
             ax[i].legend()
@@ -151,6 +159,7 @@ class SIPSpectrum():
             print(er)
 
         ECi -= er * we0
+        self.phiOrg = self.phi
         self.phi = np.arctan(ECi/ECr)
         self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
 
@@ -166,9 +175,15 @@ class SIPSpectrum():
             self.phi = self.phi + \
                 np.angle(relaxationTerm(self.f, self.mCC[3]))
 
-    def fitColeCole(self, **kwargs):
-        self.mCC, self.ampCC, self.phiCC = fitCCC(self.f, self.amp, self.phi,
-                                                  **kwargs)
+    def fitColeCole(self, useCond=False, **kwargs):
+        """ fit a Cole-Cole model to the data """
+        if useCond:  # use conductivity formulation instead of resistivity
+            self.mCC, self.ampCC, self.phiCC = fitCCCC(self.f, self.amp,
+                                                       self.phi, **kwargs)
+            self.mCC[0] = 1. / self.mCC[0]
+        else:
+            self.mCC, self.ampCC, self.phiCC = fitCCC(self.f, self.amp,
+                                                      self.phi, **kwargs)
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=True,
@@ -293,7 +308,8 @@ if __name__ == "__main__":
 #    sip.showData(znorm=True)
 #    sip.fitCCEM()
     sip.removeEpsilonEffect()
-    sip.fitColeCole()
+#    sip.showDataKK()
+    sip.fitColeCole(useCond=False)
     # %%
     sip.fitDebyeModel(new=True)  # , showFit=True)
     # %% create titles and plot data, fit and model

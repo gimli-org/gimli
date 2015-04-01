@@ -8,7 +8,7 @@ from math import pi
 import numpy as np
 from scipy.integrate import simps
 import pygimli as pg
-from models import ColeColeComplex, PeltonPhiEM
+from models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
 
 
 def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000.,
@@ -34,7 +34,7 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000.):
     """ fit complex spectrum by Cole-Cole model """
     fCC = ColeColeComplex(f)
     tLog = pg.RTransLog()
-    fCC.region(0).setStartValue(max(amp))    # m (start,lower,upper)
+    fCC.region(0).setStartValue(max(amp))
     mstart = 1. - min(amp)/max(amp)
     fCC.region(1).setParameters(mstart, 0, 1)    # m (start,lower,upper)
     fCC.region(2).setParameters(1e-2, 1e-5, 100)  # tau
@@ -42,14 +42,37 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000.):
     data = pg.cat(amp, phi)
     ICC = pg.RInversion(data, fCC, False)  # set up inversion class
     ICC.setTransModel(tLog)
-    error = pg.cat(eRho/amp, pg.RVector(len(f), ePhi))
+    error = pg.cat(eRho*amp, pg.RVector(len(f), ePhi))
     ICC.setAbsoluteError(error)  # perr + ePhi/data)
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
-    model = ICC.run()  # run inversion
+    model = np.asarray(ICC.run())  # run inversion
     ICC.echoStatus()
     response = np.asarray(ICC.response())
     return model, response[:len(f)], response[len(f):]
+
+
+def fitCCCC(f, amp, phi, error=0.01, lam=10.):
+    """ fit complex spectrum by Cole-Cole model based on sigma """
+    fCC = ColeColeComplexSigma(f)
+    tLog = pg.RTransLog()
+    fCC.region(0).setStartValue(1./max(amp))
+    mstart = 1. - min(amp)/max(amp)
+    fCC.region(1).setParameters(mstart, 0, 1)    # m (start,lower,upper)
+    fCC.region(2).setParameters(1e-2, 1e-5, 100)  # tau
+    fCC.region(3).setParameters(0.25, 0, 1)   # c
+    data = pg.cat(1./amp * np.cos(phi), 1./amp * np.sin(phi))
+    ICC = pg.RInversion(data, fCC, False)  # set up inversion class
+    ICC.setTransModel(tLog)
+    ICC.setAbsoluteError(data*error+max(data)*0.0001)  # perr + ePhi/data)
+    ICC.setLambda(lam)  # start with large damping and cool later
+    ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
+    model = np.asarray(ICC.run())  # run inversion
+    ICC.echoStatus()
+    response = np.asarray(ICC.response())
+    rRe, rIm = response[:len(f)], response[len(f):]
+    rAmp = 1./np.sqrt(rRe**2+rIm**2)
+    return model, rAmp, np.arctan(rIm/rRe)
 
 
 def KramersKronig(f, re, im, usezero=False):
