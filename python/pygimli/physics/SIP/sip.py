@@ -1,10 +1,16 @@
-from math import log10, exp
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+    Spectral induced polarisation (SIP) module
+"""
+
+from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
 from importexport import readTXTSpectrum
 from plotting import showAmplitudeSpectrum, showSpectrum
-from models import PeltonPhiEM, DebyePhi, DebyeComplex, relaxationTerm
-from models import KramersKronig
+from models import DebyePhi, DebyeComplex, relaxationTerm
+from tools import KramersKronig, fitCCEMPhi, fitCCC
 import pygimli as pg
 
 
@@ -16,7 +22,7 @@ class SIPSpectrum():
 
         Examples
         --------
-        >>> sip = SIPSpectrum('myfilename.txt', unify=True) # unique f values
+        >>> sip = SIPSpectrum('sipexample.txt', unify=True) # unique f values
         >>> sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
         """
         self.basename = basename
@@ -53,9 +59,13 @@ class SIPSpectrum():
                 self.amp = amp
                 self.phi = phi
 
-    def realimag(self):
+    def realimag(self, cond=False):
         """real and imaginary part"""
-        return self.amp * np.cos(self.phi), self.amp * np.sin(self.phi)
+        if cond:
+            amp = 1. / self.amp
+        else:
+            amp = self.amp
+        return amp * np.cos(self.phi), amp * np.sin(self.phi)
 
     def zNorm(self):
         """ normalized real (difference) and imag. z (Nordsiek&Weller, 2008)"""
@@ -117,38 +127,58 @@ class SIPSpectrum():
 
         return fig, ax
 
+    def epsilonR(self):
+        """ calculate relative permittivity from imaginary conductivity """
+        ECr, ECi = self.realimag(cond=True)
+        eps0 = 8.854e-12
+        we0 = self.f*2*pi*eps0  # Omega epsilon_0
+        return ECi/we0
+
+    def removeEpsilonEffect(self, er=None, mode=0):
+        """ remove effect of (constant high-frequency) epsilon from sigma """
+        ECr, ECi = self.realimag(cond=True)
+        we0 = self.f*2*pi*8.854e-12  # Omega epsilon_0
+        if er is None:  #
+            epsr = ECi / we0
+            nmax = np.argmax(self.f)
+            if mode == 0:
+                f1 = self.f * 1
+                f1[nmax] = 0
+                nmax1 = np.argmax(f1)
+                er = 2*epsr[nmax] - epsr[nmax1]
+            else:
+                er = epsr[nmax]
+            print(er)
+
+        ECi -= er * we0
+        self.phi = np.arctan(ECi/ECr)
+        self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
+
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                 cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
         """ fit a Cole-Cole term with additional EM term to phase """
-        # %% Cole-Cole forward model
-        fCCEM = PeltonPhiEM(self.f)
-        fCCEM.region(0).setParameters(*mpar)    # m (start,lower,upper)
-        fCCEM.region(1).setParameters(*taupar)  # tau
-        fCCEM.region(2).setParameters(*cpar)   # c
-        fCCEM.region(3).setParameters(*empar)   # tau-EM
-        ICC = pg.RInversion(self.phi, fCCEM, False)  # set up inversion class
-        ICC.setAbsoluteError(ePhi)  # 1 mrad
-        ICC.setLambda(1000.)  # start with large damping and cool later
-        ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
-        self.mCC = ICC.run()  # run inversion
-        ICC.echoStatus()
-        self.rCC = np.asarray(ICC.response())  # get model response for display
+        self.mCC, self.phiCC = fitCCEMPhi(self.f, self.phi, ePhi, lam, mpar,
+                                          taupar, cpar, empar)
         # %% correct EM term from data
         if remove:
             self.phiOrg = self.phi
             self.phi = self.phi + \
                 np.angle(relaxationTerm(self.f, self.mCC[3]))
 
+    def fitColeCole(self, **kwargs):
+        self.mCC, self.ampCC, self.phiCC = fitCCC(self.f, self.amp, self.phi,
+                                                  **kwargs)
+
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
-                      mint=None, maxt=None, nt=None, new=False,
+                      mint=None, maxt=None, nt=None, new=True,
                       showFit=False, cType=1):
         """ fit a (smooth) continuous Debye model (Debye decomposition) """
         nf = len(self.f)
         if mint is None:
             mint = .1 / max(self.f)
         if maxt is None:
-            maxt = .5 / min(self.f) * 30
+            maxt = .5 / min(self.f)
         if nt is None:
             nt = nf*2
         # %% discretize tau, setup DD and perform DD inversion
@@ -163,7 +193,7 @@ class SIPSpectrum():
             IDD.setAbsoluteError(max(Znorm)*0.003+0.01)
         else:
             fDD = DebyePhi(self.f, self.tau)
-            IDD = pg.RInversion(phi, fDD, tLin, tM, False)
+            IDD = pg.RInversion(phi, fDD, tLin, tM, True)
             IDD.setAbsoluteError(ePhi)  # 1 mrad
 
         fDD.regionManager().setConstraintType(cType)
@@ -205,39 +235,54 @@ class SIPSpectrum():
         """ mean logarithmic relaxation time as 50% cumulative log curve """
         return exp(np.sum(np.log(self.tau) * self.mDD) / sum(self.mDD))
 
-    def showAll(self):
+    def showAll(self, save=False):
         """ plot spectrum, Cole-Cole fit and Debye distribution """
         mtot = self.totalChargeability()
         lmtau = self.logMeanTau()
+        # generate title strings
         if hasattr(self, 'mCC'):
             tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f} $\tau_2$={:.1e}s'
             mCC = self.mCC
-            tCC = tstr.format(mCC[0], mCC[1], mCC[2], mCC[3])
+            if mCC[0] > 1:
+                tstr = r'CC: $\rho$={:.1f} m={:.3f} $\tau$={:.1e}s c={:.2f}'
+            tCC = tstr.format(*mCC)
         tDD = r'DD: m={:.3f} $\tau$={:.1e}s'.format(mtot, lmtau)
         fig, ax = plt.subplots(nrows=3, figsize=(12, 12))
         fig.subplots_adjust(hspace=0.25)
-        showAmplitudeSpectrum(ax[0], self.f, self.amp)
+        # amplitude
+        showAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
         if hasattr(self, 'ampDD'):
-            ax[0].plot(self.f, self.ampDD, 'r-')
+            ax[0].plot(self.f, self.ampDD, 'm-', label='DD response')
+        if hasattr(self, 'ampCC'):
+            ax[0].semilogx(self.f, self.ampCC, 'r-', label='CC+E model')
+        ax[0].legend(loc='best')
+        # phase
         if hasattr(self, 'phiOrg'):
             ax[1].semilogx(self.f, self.phiOrg * 1e3, 'c+-', label='org. data')
         ax[1].semilogx(self.f, self.phi * 1e3, 'b+-', label='data')
-        if hasattr(self, 'rCC'):
-            ax[1].semilogx(self.f, self.rCC * 1e3, 'r-', label='CC+EM model')
-        ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
+        if hasattr(self, 'phiCC'):
+            ax[1].semilogx(self.f, self.phiCC * 1e3, 'r-', label='CC+E model')
+        if hasattr(self, 'phiDD'):
+            ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
         ax[1].grid(True)
         ax[1].legend(loc='best')
         ax[1].set_xlabel('f [Hz]')
         ax[1].set_ylabel('-phi [mrad]')
         if hasattr(self, 'mCC'):
-            ax[1].set_title(tCC)
+            ax[1].set_title(tCC, loc='left')
+        # relaxation time
         ax[2].semilogx(self.tau, self.mDD * 1e3)
         ax[2].set_xlim(ax[2].get_xlim()[::-1])
         ax[2].grid(True)
         ax[2].set_xlabel(r'$\tau$ [ms]')
         ax[2].set_ylabel('m [mV/V]')
-        ax[2].set_title(tDD)
-        fig.savefig(self.basename + '.pdf', bbox_inches='tight')
+        ax[2].set_title(tDD, loc='left')
+        if save:
+            if isinstance(save, str):
+                savename = save
+            else:
+                savename = self.basename + '.pdf'
+            fig.savefig(savename, bbox_inches='tight')
         plt.show(block=False)
         return fig, ax
 
@@ -246,9 +291,11 @@ if __name__ == "__main__":
     filename = 'sipexample.txt'
     sip = SIPSpectrum(filename)
 #    sip.showData(znorm=True)
-    sip.fitCCEM()
+#    sip.fitCCEM()
+    sip.removeEpsilonEffect()
+    sip.fitColeCole()
     # %%
     sip.fitDebyeModel(new=True)  # , showFit=True)
     # %% create titles and plot data, fit and model
-    sip.showAll()
+    sip.showAll(save=True)
     plt.show()

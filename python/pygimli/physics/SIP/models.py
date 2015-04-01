@@ -1,9 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+    Spectral induced polarisation (SIP) relaxations models
+"""
+
 from math import pi
 import numpy as np
 from scipy.integrate import simps
 import pygimli as pg
 
 
+# basic functions used by the modelling operators
 def relaxationTerm(f, tau, c=1., a=1.):
     """ auxiliary function for Debye type relaxation term """
     return 1. / ((f * 2. * pi * tau * 1j)**c + 1)**a
@@ -14,9 +21,46 @@ def DebyeRelaxation(f, tau, m):
     return 1. - (1.-relaxationTerm(f, tau))*m
 
 
-def ColeCole(f, R, m, tau, c, a=1):
+def ColeColeRho(f, R, m, tau, c, a=1):
     """ Complex valued Cole-Cole model """
     return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * R
+
+
+def ColeColeSigma(f, R, m, tau, c, a=1):
+    """ Complex valued Cole-Cole model """
+    return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * R
+
+
+def ColeCole(f, R, m, tau, c, a=1):
+    """ for backward compatibility """
+    return ColeColeRho(f, R, m, tau, c, a)
+
+
+# modelling operators for use with pygimli inversion
+class ColeColePhi(pg.ModellingBase):
+    """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+    def __init__(self, f, verbose=False):  # initialize class
+        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        self.f_ = f                               # save frequencies
+        self.setMesh(pg.createMesh1D(1, 3))       # 4 single parameters
+
+    def response(self, par):
+        """ phase angle of the model """
+        spec = ColeCole(self.f_, 1.0, par[0], par[1], par[2])
+        return -np.angle(spec)
+
+
+class ColeColeComplex(pg.ModellingBase):
+    """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+    def __init__(self, f, verbose=False):  # initialize class
+        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        self.f_ = f                               # save frequencies
+        self.setMesh(pg.createMesh1D(1, 4))       # 4 single parameters
+
+    def response(self, par):
+        """ phase angle of the model """
+        spec = ColeColeRho(self.f_, *par)
+        return pg.cat(np.abs(spec), -np.angle(spec))
 
 
 class PeltonPhiEM(pg.ModellingBase):
@@ -83,38 +127,6 @@ class DebyeComplex(pg.ModellingBase):
     def createJacobian(self, par):
         """ linear jacobian after Nordsiek&Weller (2008) """
         pass
-
-
-def KramersKronig(f, re, im, usezero=False):
-    """ return real/imaginary parts retrieved by Kramers-Kronig relations
-
-        formulas including singularity removal according to Boukamp (1993)
-    """
-    x = f * 2. * pi
-    im2 = np.zeros(im.shape)
-    re2 = np.zeros(im.shape)
-    re3 = np.zeros(im.shape)
-    drdx = np.diff(re) / np.diff(x)
-    dredx = np.hstack((drdx[0], (drdx[:-1] + drdx[1:]) / 2, drdx[-1]))
-    didx = np.diff(im) / np.diff(x)
-    dimdx = np.hstack((didx[0], (didx[:-1] + didx[1:]) / 2, didx[-1]))
-    for num in range(len(x)):
-        w = x[num]
-        x2w2 = x**2 - w**2
-        x2w2[num] = 1e-12
-        fun1 = (re - re[num]) / x2w2
-        fun1[num] = dredx[num] / 2 / w
-        im2[num] = -simps(fun1, x) * 2. * w / pi
-        fun2 = (im * w / x - im[num]) / x2w2
-        re2[num] = simps(fun2, x) * 2. * w / pi + re[0]
-        fun3 = (im * x - im[num] * w) / x2w2
-        fun3[num] = (im[num] / w + dimdx[num]) / 2
-        re3[num] = simps(fun3, x) * 2. / pi + re[-1]
-
-    if usezero:
-        return re2, im2
-    else:
-        return re3, im2
 
 
 if __name__ == "__main__":
