@@ -21,7 +21,8 @@ try:
     import pygimli as pg
 except ImportError:
     raise Exception(
-        """ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH """)
+        """ERROR: cannot import the library 'pygimli'.
+        Ensure that pygimli is in your PYTHONPATH """)
 
 import pygimli.mplviewer
 from pygimli.mplviewer.colorbar import cmapFromName
@@ -29,12 +30,13 @@ from pygimli.mplviewer import drawParameterConstraints, CellBrowser
 from pygimli.utils.base import interperc
 
 import matplotlib as mpl
-#from matplotlib import colors, ticker
 from matplotlib import pyplot as plt
 import matplotlib.transforms as mtransforms
 
 
-def sign(i): return abs(i) / i
+def sign(i):
+    return abs(i) / i  # really good? better where or pg.sign, do we need it?
+    # return i / (abs(i) + 1e-16)
 
 
 def applyPublishStyle(style):
@@ -101,9 +103,11 @@ class MyLinearSegmentedColormapAlpha(mpl.colors.LinearSegmentedColormap):
         self._set_extremes()
 
 
-def showTriMesh(meshname, modelname, contour=False, constraintMat=None, cWeight=None, cMin=None, drawEdges=False,
-                cMax=None, coverage=None, showCbar=True, label="", linear=False, offset=pg.RVector3(0.0, 0.0),
-                cmapname=None):
+def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
+                cWeight=None, cMin=None, drawEdges=False, cMax=None,
+                coverage=None, showCbar=True, label="", linear=False,
+                offset=pg.RVector3(0.0, 0.0), cmapname=None):
+    """ show triangle mesh """
     mesh = pg.Mesh()
     if (meshname.rfind('.vtk') != -1):
         mesh.importVTK(meshname)
@@ -126,9 +130,10 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None, cWeight=
 
     axis = fig.add_subplot(111)
 
-    # overide default draw function that ignore zorder of images, what we need for coverage image overlay
-    #mypa = MPLAxesPatch(axis)
-    #axis.draw = mypa.draw
+    # overides default draw function that ignores zorder of images,
+    # which is needed for coverage image overlay
+#    mypa = MPLAxesPatch(axis)
+#    axis.draw = mypa.draw
     patches = None
     axis.set_aspect('equal')
 
@@ -161,7 +166,6 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None, cWeight=
 #                    if coverage.find('log10') > 0:
 #                        cov = pg.exp10(cov)
                 else:
-                    #cov = pg.load(coverage)
                     cov = pg.RVector(coverage)
                 print("coverage min/max:", min(cov), max(cov))
             except Exception as e:
@@ -170,30 +174,24 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None, cWeight=
                 cov = None
 
         if (contour):
-            patches = showMeshInterpolated(
-                axis,
-                mesh,
-                data,
-                cov=cov,
-                cMin=cMin,
-                cMax=cMax,
-                linear=linear)
+            patches = showMeshInterpolated(axis, mesh, data, cov=cov,
+                                           cMin=cMin, cMax=cMax, linear=linear)
         else:
-            patches = showMeshPatch(axis, mesh, data, cov=cov, cMin=cMin, cMax=cMax,
-                                    showCbar=showCbar,
-                                    label=label, linear=linear, cmapname=cmapname)
+            patches = showMeshPatch(axis, mesh, data, cov=cov, cMin=cMin,
+                                    cMax=cMax, showCbar=showCbar, label=label,
+                                    linear=linear, cmapname=cmapname)
     else:
         pg.mplviewer.drawMeshBoundaries(axis, mesh)
         pass
 
-    #ol = pg.Mesh()
-    # ol.createEdge(ol.createNode(148.5,   0.0, 0.0),
-        # ol.createNode(0.0, -100.0, 0.0))
-    #overlaysLines = ol.boundaries()
-    # overlaysLines.append(pg.Edge())
-
-    # pg.mplviewer.drawSelectedMeshBoundaries(axis, overlaysLines, color = (0.0, 0.0, 0.0, 1.0),
-        # linewidth = 2.0)
+#    ol = pg.Mesh()
+#     ol.createEdge(ol.createNode(148.5,   0.0, 0.0),
+#         ol.createNode(0.0, -100.0, 0.0))
+#    overlaysLines = ol.boundaries()
+#     overlaysLines.append(pg.Edge())
+#
+#     pg.mplviewer.drawSelectedMeshBoundaries(axis, overlaysLines, linewidth=2,
+#                                             color = (0.0, 0.0, 0.0, 1.0))
 
     m = mesh.findBoundaryByMarker(1)
     print("boundary > 2 ", len(m))
@@ -201,7 +199,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None, cWeight=
         pass
         pg.mplviewer.drawSelectedMeshBoundaries(axis,
                                                 filter(
-                                                    lambda b: b.marker() == 1,
+                                                    lambda b: b.marker() >= 1,
                                                     mesh.boundaries()),
                                                 color=(0, 0.0, 0.0, 1.0),
                                                 linewidth=2.0)
@@ -240,9 +238,10 @@ def showMeshPatch(axis, mesh, data,
                   showCbar=True, label="", linear=False, nLevs=5,
                   orientation='horizontal', cmapname=None):
 
-    patches = pygimli.mplviewer.drawModel(axis, mesh, data, cMin=cMin, cMax=cMax,
-                                          logScale=not linear, label=label,
-                                          nLevs=nLevs, orientation=orientation)
+    patches = pygimli.mplviewer.drawModel(axis, mesh, data, cMin=cMin,
+                                          cMax=cMax, logScale=not linear,
+                                          label=label, nLevs=nLevs,
+                                          orientation=orientation)
 
     if showCbar:
         pg.mplviewer.createColorbar(patches, cMin=cMin, cMax=cMax,
@@ -263,41 +262,42 @@ def showMeshPatch(axis, mesh, data,
         if alphaPatch:
             pg.mplviewer.addCoverageAlpha(patches, cov)
 
-            # patches.set_antialiaseds(True)
-            # patches.set_linewidth(0.000)
-
-            # generate individual color values here
-            # patches.update_scalarmappable()
-
-            #cols = patches.get_facecolor()
-
-            #C = np.asarray(cov)
-            #print(np.min(C), np.max(C))
-
-            # if (np.min(C) < 0.) | (np.max (C) > 1.) | (np.max(C) < 0.5): # not already alpha map
-            #(nn, hh) = np.histogram(C, 50)
-            #nnn = nn.cumsum(axis = 0) / float(len(C))
-            #print("min-max nnn ", min(nnn), max(nnn))
-            #mi = hh[min(np.where(nnn > 0.02)[0])]
-            # if min(nnn)>0.4:
-            #ma = max(C)
-            # else:
-            #ma = hh[max(np.where(nnn < 0.4)[0])]
-
-            ##mi = hh[min(np.where(nnn > 0.2)[0])]
-            ##ma = hh[max(np.where(nnn < 0.7)[0])]
-            #C = (C - mi) / (ma - mi)
-            #C[np.where(C < 0.)] = 0.0
-            #C[np.where(C > 1.)] = 1.0
-
-            # add alpha value to the color values
-            #cols[:, 3] = C
-
-            #patches._facecolors = cols
-            #patches._edgecolor = 'None'
-
-            # delete patch data to avoid automatically rewrite of _facecolors
-            #patches._A = None
+#             patches.set_antialiaseds(True)
+#             patches.set_linewidth(0.000)
+#
+#             generate individual color values here
+#             patches.update_scalarmappable()
+#
+#            cols = patches.get_facecolor()
+#
+#            C = np.asarray(cov)
+#            print(np.min(C), np.max(C))
+#
+#            check if already an alpha map
+#             if (np.min(C) < 0.) | (np.max (C) > 1.) | (np.max(C) < 0.5):
+#            (nn, hh) = np.histogram(C, 50)
+#            nnn = nn.cumsum(axis = 0) / float(len(C))
+#            print("min-max nnn ", min(nnn), max(nnn))
+#            mi = hh[min(np.where(nnn > 0.02)[0])]
+#             if min(nnn)>0.4:
+#            ma = max(C)
+#             else:
+#            ma = hh[max(np.where(nnn < 0.4)[0])]
+#
+#            #mi = hh[min(np.where(nnn > 0.2)[0])]
+#            #ma = hh[max(np.where(nnn < 0.7)[0])]
+#            C = (C - mi) / (ma - mi)
+#            C[np.where(C < 0.)] = 0.0
+#            C[np.where(C > 1.)] = 1.0
+#
+#             add alpha value to the color values
+#            cols[:, 3] = C
+#
+#            patches._facecolors = cols
+#            patches._edgecolor = 'None'
+#
+#             delete patch data to avoid automatically rewrite of _facecolors
+#            patches._A = None
         else:
             addCoverageImageOverlay(axis, mesh, cov)
 
@@ -337,11 +337,11 @@ def addCoverageImageOverlay(axis, mesh, cov):
     C[np.where(C < 0)] = 0.0
     C[np.where(C > 1)] = 1.0
 
-    #(Nhist , xHist) = np.histogram(c, bins = 100);
-    #covMin = xHist[0];
-    #covMax = xHist[80];
-    ##covMin = -3.51
-    ##covMax = -3.5
+#    (Nhist , xHist) = np.histogram(c, bins = 100);
+#    covMin = xHist[0];
+#    covMax = xHist[80];
+#    #covMin = -3.51
+#    #covMax = -3.5
 
     covColors = np.ones((Ny, Nx, 4))
 
@@ -350,8 +350,8 @@ def addCoverageImageOverlay(axis, mesh, cov):
             covColors[i, j] = [1.0, 1.0, 1.0, 1.0 - C[i, j]]
 
     # zorder default for patches = 1, axis = 2.5
-    cso = axis.imshow(covColors, extent=extent, origin='lower', zorder=1.5, alpha=1.0
-                      )
+    cso = axis.imshow(covColors, extent=extent, origin='lower', zorder=1.5,
+                      alpha=1.0)
     return cso
 
 
@@ -368,28 +368,29 @@ def showConstrainMat(axes, mesh, constraintMat, cWeight=None):
     drawParameterConstraints(axes, mesh, C, cw)
 
 
-def showMeshInterpolated(
-        axis, mesh, data, cov=None, cMin=None, cMax=None, linear=False, cmapName='jet'):
-    withCoverageOverlayImage = True
+def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
+                         linear=False, cmapName='jet'):
+    # withCoverageOverlayImage = True
     swatch = pg.Stopwatch(True)
     Nx = 200
     Ny = 100
     nLevels = 12
 
-    dropColLimitsPerc = 5
+    # dropColLimitsPerc = 5
     axis.set_xlim(mesh.xmin(), mesh.xmax())
     axis.set_ylim(mesh.ymin(), mesh.ymax())
 
     tix = np.linspace(mesh.xmin(), mesh.xmax(), Nx)
     tiy = np.linspace(mesh.ymin(), mesh.ymax(), Ny)
     (X, Y) = np.meshgrid(tix, tiy)
-    extent = X.min(), X.max(), Y.min(), Y.max()
+    # extent = X.min(), X.max(), Y.min(), Y.max()
     print("interpolate prep t = ", swatch.duration(True))
 
     z = np.arange(0, Nx * Ny)
 
     if (data.size() > 0):
-        z = pg.interpolate(mesh, data, pg.asvector(X.flat[:]), pg.asvector(Y.flat[:]), pg.RVector(len(Y.flat), 0.0)
+        z = pg.interpolate(mesh, data, pg.asvector(X.flat[:]),
+                           pg.asvector(Y.flat[:]), pg.RVector(len(Y.flat), 0.0)
                            )
         z = np.asarray(z)
 
@@ -438,7 +439,7 @@ def showMeshInterpolated(
 def main(argv):
     global __verbose__
 
-    #!!!!use argparse!!!
+    # !!!!use argparse!!!
     from optparse import OptionParser
 
     parser = OptionParser(
@@ -494,14 +495,20 @@ def main(argv):
     parser.add_option("-d", "--data", dest="datafile",
                             help="data file", metavar="File")
     parser.add_option("-o", "--output", dest="outFileName",
-                            help="filename for the resulting picture. Suffix define fileformat (.pdf|.png|.svg)", metavar="File")
+                            help="filename for the resulting picture. " +
+                            "Suffix define fileformat (.pdf|.png|.svg)",
+                            metavar="File")
     parser.add_option("-c", "--constraintMat", dest="constraintMat",
-                            help="show mesh constraints connections", metavar="File", default='')
+                            help="show mesh constraints connections",
+                            metavar="File", default='')
     parser.add_option("-e", "--electrodes", dest="electrodes",
-                            help="Show electrode positions as black dots. Give datafile.", metavar="File")
+                            help="Show electrodes from datafile as black dots",
+                            metavar="File")
     parser.add_option("", "--check", dest="check", action="store_true",
-                      help="Check the mesh consistency and show free, unassigned, nodes, if there are any.")
-    parser.add_option("", "--cellBrowser", dest="cellBrowser", action="store_true",
+                      help="Check the mesh consistency and show free, " +
+                      "unassigned, nodes, if there are any.")
+    parser.add_option("", "--cellBrowser", dest="cellBrowser",
+                      action="store_true",
                       help="Open an interactive cell browser for the model.")
     parser.add_option("", "--cMin", dest="cMin",
                       help="minimum colour", type="float")
@@ -618,10 +625,12 @@ def main(argv):
         default=600,
         type="float",
         help="set the dpi for pixel output or preview")
-    parser.add_option("", "--publish", dest="publish", default=None, type="string", help="set output style for publishing " +
-                      " dominant-dim:paperSize:margin:wScale:hScale:Fontsize:scale:wOffset:hOffset" +
-                      " e.g., w:a4:5:0.5:0.2:9:2:0.05:0.1 (size:width of a4-5cm*0.5 plus 9pt Font scale everything by 2)"
-                      )
+    parser.add_option(
+        "", "--publish", dest="publish", default=None,
+        type="string", help="set output style for publishing " +
+        "dim:paperSize:margin:wScale:hScale:Fontsize:scale:wOffset:hOffset" +
+        " e.g., w:a4:5:0.5:0.2:9:2:0.05:0.1 " +
+        "(size:width of a4-5cm*0.5 plus 9pt Font scale everything by 2)")
 
     (options, args) = parser.parse_args()
 
@@ -630,7 +639,8 @@ def main(argv):
         print("matplotlib-", mpl.__version__)
         print(options, args)
 
-    if options.interperc > 0.0 and options.cMin is None and options.cMax is None:
+    if options.interperc > 0.0 and options.cMin is None and \
+       options.cMax is None:
         if options.datafile is not None:
             if os.path.exists(options.datafile):
                 a = np.loadtxt(options.datafile)
@@ -652,7 +662,7 @@ def main(argv):
         print("cbar only")
 
         fig = plt.figure()
-        #axes = fig.add_axes([0.023, 0.25, 0.967, 0.1])
+#        axes = fig.add_axes([0.023, 0.25, 0.967, 0.1])
 
         # Horizontal
         axes = fig.add_axes([0.035, 0.6, 0.93, 0.05])
@@ -676,13 +686,13 @@ def main(argv):
 
         cmap = cmapFromName(options.cmapname)
 
-        cbar = mpl.colorbar.ColorbarBase(axes, norm=norm, cmap=cmap, orientation=orientation
-                                         #                               ,drawedges='True'
-                                         )
+        cbar = mpl.colorbar.ColorbarBase(axes, norm=norm, cmap=cmap,
+                                         orientation=orientation)
+#                                          ,drawedges='True'
         pg.mplviewer.setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5)
 
-        #cbar.labelpad = -20
-        # cbar.ax.yaxis.set_label_position('left')
+#        cbar.labelpad = -20
+#        cbar.ax.yaxis.set_label_position('left')
         cbar.set_label(options.label)
 
     else:
@@ -718,19 +728,23 @@ def main(argv):
             else:
                 options.label = options.datafile
         try:
-            if (meshname.rfind('.mod') != -1):
-                axes, patches, mesh, data = showDC2DInvResMod(meshname,
-                                                              options.contourplot,
-                                                              cMin=options.cMin,
-                                                              cMax=options.cMax,
-                                                              label=options.label)
+            if meshname.rfind('.mod') != -1:
+                axes, patches, mesh, data = showDC2DInvResMod(
+                    meshname, options.contourplot, cMin=options.cMin,
+                    cMax=options.cMax, label=options.label)
 
-            elif ((meshname.rfind('.bms') != -1) | (meshname.rfind('.vtk') != -1)):
-                axes, patches, mesh, data = showTriMesh(meshname, options.datafile, options.contourplot, options.constraintMat, cWeight=options.cWeight, cMin=options.cMin, cMax=options.cMax, coverage=options.coverage, showCbar=options.showCbar, label=options.label, linear=options.linear, drawEdges=options.drawEdges, offset=pg.RVector3(options.xoffset, options.zoffset), cmapname=options.cmapname
-                                                        )
+            elif meshname.rfind('.bms') != -1 or meshname.rfind('.vtk') != -1:
+                axes, patches, mesh, data = showTriMesh(
+                    meshname, options.datafile, options.contourplot,
+                    options.constraintMat, cWeight=options.cWeight,
+                    cMin=options.cMin, cMax=options.cMax,
+                    coverage=options.coverage, showCbar=options.showCbar,
+                    label=options.label, linear=options.linear,
+                    drawEdges=options.drawEdges, cmapname=options.cmapname,
+                    offset=pg.RVector3(options.xoffset, options.zoffset))
             else:
-                print(
-                    "Cannot determine format for input mesh. Available are *.bms, *.mod")
+                print("""Cannot determine format for input mesh.
+                      Available are *.bms, *.mod""")
                 exit(2)
         except RuntimeError as err:
             print(err)
@@ -743,7 +757,7 @@ def main(argv):
                 if len(n.cellSet()) == 0:
                     print("Node ", n.id(), " at: ", n.pos(), " have no cells.")
                     for nt in mesh.nodes():
-                        #print(nt.pos(), nt.pos().distance(n.pos()))
+                        # print(nt.pos(), nt.pos().distance(n.pos()))
                         if nt.id() != n.id() and nt.pos().distance(
                                 n.pos()) < 1e-4:
                             print("\t duplicate with ", nt.id())
@@ -885,8 +899,8 @@ def main(argv):
                     print(
                         "\rWriting multipage pdf %d/%d" %
                         (i + 1, len(A)), end=' ')
-                    patches.set_array(
-                        np.asarray(a))  # necessary due to non existing functin .ndim
+                    patches.set_array(np.asarray(a))
+                    # necessary due to non-existing function .ndim
                     fig.savefig(pdf, format='pdf', bbox_inches='tight')
 
                 pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'

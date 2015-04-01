@@ -54,7 +54,7 @@ def BZPoly(pnts, poly, M, openPoly=False):
 def BaZSphere(pnts, R, pos, M):
     """
     Analytical solution
-    
+
     Calculate the vertical component of the anomalous magnetic field Bz for a
     buried sphere at position pos with radius R for a given magnetization M at
     measurement points pnts.
@@ -171,7 +171,7 @@ def uCylinderHoriz(pnts, R, rho, pos=(0., 0.)):
 def gradUCylinderHoriz(r, R, rho, pos=(0., 0.)):
     """
     Analytical solution
-    
+
     Calculate horizontal component of gravimetric field in mGal
 
     .. math::
@@ -228,7 +228,7 @@ def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
 def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
     """
     Analytical solution
-    
+
     g = -grad u,
 
     Parameters
@@ -700,7 +700,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
 
 class GravimetryModelling(pg.ModellingBase):
     """ Gravimetry modelling operator."""
-    def __init__(self, verbose):
+    def __init__(self, verbose=True):
         super(GravimetryModelling, self).__init__(verbose)
         self._J = pg.RMatrix()
         #until reference counting we need to hold the reference here
@@ -708,15 +708,15 @@ class GravimetryModelling(pg.ModellingBase):
 
     def createStartmodel(self):
         return pg.RVector(self.regionManger().parameterCount(), 0.0)
-        
+
     def setSensorPositions(self, pnts):
         self.sensorPositions = pnts
-        
+
     def response(self, dDensity):
         return solveGravimetry(self.regionManager().paraDomain(),
                                dDensity, pnts=self.sensorPositions,
                                complete=False)
-    
+
     def createJacobian(self, model):
         Gdz = solveGravimetry(self.regionManager().paraDomain(),
                                dDensity=None,
@@ -725,7 +725,7 @@ class GravimetryModelling(pg.ModellingBase):
         self._J.resize(len(Gdz), len(Gdz[0]))
         for i in range(len(Gdz)):
             self._J.setVal(Gdz[i], i)
-            
+
 if __name__ == "__main__":
     import sys
     print(sys.argv[1:])
