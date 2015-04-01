@@ -1,10 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+    Spectral induced polarisation (SIP) plotting tools
+"""
+
 import matplotlib.pyplot as plt
 
 
 def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho_a$ in $\Omega$m',
                           grid=True, marker='+', ylog=True, **kwargs):
     """ show amplitude spectrum """
-    ax.semilogx(freq, amp, marker=marker, label='obs', **kwargs)
+    lab = kwargs.pop('label', 'obs')
+    ax.semilogx(freq, amp, marker=marker, label=lab, **kwargs)
     if ylog:
         ax.set_yscale('log')
     ax.set_ylim(min(amp) * .99, max(amp * 1.01))
