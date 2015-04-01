@@ -244,7 +244,7 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid='',
     ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
     wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
     ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
-                            service=wms[mode], usetls=usetls)
+                            service=wms[mode], usetls=usetls, uuid=uuid)
     imname = mode + box + ext[mode]
     if not os.path.isfile(imname):  # not already existing
         print('Retrieving file from geodatenzentrum.de')
