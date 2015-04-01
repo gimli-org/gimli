@@ -31,9 +31,9 @@ namespace GIMLI{
 template < class Vec >
 int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
                         const Vec & dWeight, const Vec & b, Vec & x,
-                        const Vec & wc, const Vec & wm, 
+                        const Vec & wc, const Vec & wm,
                         const Vec & tm, const Vec & td,
-                        double lambda, const Vec & roughness, 
+                        double lambda, const Vec & roughness,
                         int maxIter=200, double tol=-1.0,
                         bool verbose=false){ //ALLOW_PYTHON_THREADS
 
@@ -43,7 +43,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 
 //     __MS(S.rtti())
 //     __MS(C.rtti())
-    
+
     if (S.rows() != nData)  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
     if (S.cols() != nModel) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
     if (C.cols() != nModel) std::cerr << "C.cols != nModel " << C.cols() << " / " << nModel << std::endl;
@@ -53,7 +53,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     if (tm.size() != nModel) std::cerr << "tm.size() != nModel " << tm.size() << " / " << nModel << std::endl;
     if (td.size() != nData) std::cerr << "td.size() != nData " << td.size() << " / " << nData << std::endl;
     if (roughness.size() != nConst) std::cerr << "roughness.size != nConst " << roughness.size() << " / " << nConst << std::endl;
-  
+
 //Ch  Vec cdx(transMult(C, Vec(wc * wc * (C * Vec(wm * deltaX)))) * wm * lambda); // nModel
     Vec cdx(transMult(C, Vec(wc * roughness)) * wm * lambda); // nModel
     Vec z((b - S * Vec(x / tm) * td) * dWeight); // nData
@@ -71,10 +71,10 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 
     Vec q(nData);
     Vec wcp(nConst); // nBounds
-    
+
 //     std::cout.precision(14);
 //     std::cout << 0 << "  " << accuracy << std::endl;
-    
+
     while (count < maxIter && normR2 > accuracy){
         count ++;
         q = S * Vec(p / tm) * dWeight * td;
@@ -94,16 +94,16 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
         normR2 = dot(r, r);
         beta = normR2 / normR2old;
         p = r + p * beta;
-        
-//         if((count < 200)) { 
+
+//         if((count < 200)) {
 //             std::cout << count << "  " << normR2 << std::endl;
 //         }
 
-#ifndef MINGW
+#ifndef _WIN32
         if (verbose) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
 #endif
     }
-#ifdef MINGW
+#ifdef _WIN32
     if (verbose) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
 #endif
     return 1;
@@ -164,11 +164,11 @@ int solveCGLSCDWWtrans(const MatrixBase & S, const MatrixBase & C, const Vec & d
     normR2 = dot(r, r);
     beta = normR2 / normR2old;
     p = r + p * beta;
-    #ifndef MINGW
+    #ifndef _WIN32
     if (verbose) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
     #endif
   }
-  #ifdef MINGW
+  #ifdef _WIN32
   if (verbose) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
   #endif
   return 1;
@@ -227,7 +227,7 @@ int solveCGLSCDWW(const Mat & S, const CMatrix & C, const Vec & dWeight,
     normR2 = dot(r, r);
     beta = normR2 / normR2old;
     p = r + p * beta;
-    #ifndef MINGW
+    #ifndef _WIN32
     if (verbose)  std::cout << "\r[ " << count << "/" << normR2 << "]\t";
     #endif
   }
@@ -264,7 +264,7 @@ int solveCGLSCDWtrans(const Mat & S, const CMatrix & C, const Vec & dWeight,
   double alpha = 0.0, beta = 0.0;
 
   int count = 0;
-  
+
   Vec q(nData);
   Vec wcp(nBounds); // nBounds
   Vec pbytm(nModel);
@@ -294,7 +294,7 @@ int solveCGLSCDWtrans(const Mat & S, const CMatrix & C, const Vec & dWeight,
     normR2 = dot(r, r);
     beta = normR2 / normR2old;
     p = r + p * beta;
-    #ifndef MINGW
+    #ifndef _WIN32
     if (verbose) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
     #endif
   }
@@ -361,7 +361,7 @@ int solveCGLSCDW(const Mat & S, const CMatrix & C, const Vec & dWeight,
     normR2 = dot(r, r);
     beta = normR2 / normR2old;
     p = r + p * beta;
-#ifndef MINGW
+#ifndef _WIN32
     if (verbose)  std::cout << "\r[ " << count << "/" << normR2 << "]\t";
 #endif
   }
