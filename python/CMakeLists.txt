@@ -1,15 +1,15 @@
 ADD_CUSTOM_TARGET(pggen ALL)
 ADD_CUSTOM_COMMAND(
-    COMMAND 
+    COMMAND
         #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${PYTHON_EXECUTABLE} will work on cmake3.1
         ${PYTHON_EXECUTABLE}
-    ARGS 
+    ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR} --gccxml=${GCCXML_EXECUTABLE}
     TARGET
         pggen
-    DEPENDS 
+    DEPENDS
         #set(ENV{PYTHONPATH} $ENV{PYTHONPATH}${PYGCCXML_PATH})
-        #${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py 
+        #${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py
         #${CMAKE_CURRENT_SOURCE_DIR}/pygimli.h
         #ENV PYTHONPATH $ENV{PYTHONPATH}${PYGCCXML_PATH} APPEND
    )
@@ -17,17 +17,16 @@ ADD_CUSTOM_COMMAND(
 #HACK!! but we need this to force cmake looking for our generated binding files
 ADD_CUSTOM_TARGET(fixpygimlisrc ALL)
 ADD_CUSTOM_COMMAND(
-    COMMAND 
+    COMMAND
         ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     TARGET
         fixpygimlisrc
    )
 
-#[ -z "$J" ] && echo ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
 ADD_CUSTOM_TARGET(pgbuild ALL)
 ADD_CUSTOM_COMMAND(
-    COMMAND 
-        [ -z "$J" ] && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
+    COMMAND
+        test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
     TARGET
         pgbuild
    )
@@ -39,11 +38,11 @@ endif()
 
 
 # if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
-#     set (EXTRA_OPTIONS "-Wno-uninitialized -Wno-reorder 
-#                         -Wno-unused-but-set-variable") 
-#     
+#     set (EXTRA_OPTIONS "-Wno-uninitialized -Wno-reorder
+#                         -Wno-unused-but-set-variable")
+#
 #     set_source_files_properties(${SOURCE_FILES}
-#         PROPERTIES 
+#         PROPERTIES
 #         COMPILE_FLAGS  "${EXTRA_OPTIONS}")
 # endif()
 
