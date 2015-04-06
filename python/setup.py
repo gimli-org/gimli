@@ -11,7 +11,6 @@ Usage:
 
 import os
 from setuptools import setup, find_packages
-import pygimli as pg
 
 apps = ["apps/" + app for app in os.listdir('apps') if not "template" in app]
 
@@ -19,7 +18,7 @@ with open(os.path.join("../README.rst"), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name="pygimli",
-      version=pg.__version__,
+      version="1.0rc",
       description="Geophysical Inversion and Modelling Library",
       long_description=long_description,
       author="Carsten Rücker, Thomas Günther, Florian Wagner",
