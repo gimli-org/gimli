@@ -4,7 +4,7 @@
 Module containing submodules for various geophysical methods.
 """
 
-from . em import FDEMData, TDEMData
+from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
 from . traveltime import Refraction
