@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .fdem import *
-from .tdem import *
+from .fdem import FDEM
+from .tdem import TDEM

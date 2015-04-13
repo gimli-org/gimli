@@ -6,9 +6,8 @@
 
 from math import pi
 import numpy as np
-from scipy.integrate import simps
 import pygimli as pg
-from models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
+from . models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
 
 
 def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000.,
@@ -30,15 +29,17 @@ def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000.,
     return model, response
 
 
-def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000.):
+def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
+           taupar=(1e-2, 1e-5, 100), cpar=(0.5, 0, 1)):
     """ fit complex spectrum by Cole-Cole model """
     fCC = ColeColeComplex(f)
     tLog = pg.RTransLog()
     fCC.region(0).setStartValue(max(amp))
-    mstart = 1. - min(amp)/max(amp)
+    if mstart is None:  # compute from amplitude decay
+        mstart = 1. - min(amp) / max(amp)
     fCC.region(1).setParameters(mstart, 0, 1)    # m (start,lower,upper)
-    fCC.region(2).setParameters(1e-2, 1e-5, 100)  # tau
-    fCC.region(3).setParameters(0.25, 0, 1)   # c
+    fCC.region(2).setParameters(*taupar)  # tau
+    fCC.region(3).setParameters(*cpar)   # c
     data = pg.cat(amp, phi)
     ICC = pg.RInversion(data, fCC, False)  # set up inversion class
     ICC.setTransModel(tLog)
@@ -80,6 +81,8 @@ def KramersKronig(f, re, im, usezero=False):
 
         formulas including singularity removal according to Boukamp (1993)
     """
+    from scipy.integrate import simps
+
     x = f * 2. * pi
     im2 = np.zeros(im.shape)
     re2 = np.zeros(im.shape)

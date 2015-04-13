@@ -226,7 +226,7 @@ def readSiroTEMData(fname):
     return DATA
 
 
-class TDEMData():
+class TDEM():
 
     """ TEM class mainly for holding data etc. """
 
@@ -299,7 +299,7 @@ class TDEMData():
 
 if __name__ == '__main__':
     print("print do some tests here")
-    tem = TDEMData(sys.argv[1])
+    tem = TDEM(sys.argv[1])
     print(tem)
     tem.plotTransients()
     tem.plotRhoa()
