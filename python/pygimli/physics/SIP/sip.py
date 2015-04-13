@@ -7,17 +7,17 @@
 from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
-from importexport import readTXTSpectrum
-from plotting import showAmplitudeSpectrum, showSpectrum
-from models import DebyePhi, DebyeComplex, relaxationTerm
-from tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC
 import pygimli as pg
+from . importexport import readTXTSpectrum
+from . plotting import showAmplitudeSpectrum, showSpectrum
+from . models import DebyePhi, DebyeComplex, relaxationTerm
+from . tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC
 
 
 class SIPSpectrum():
     """ SIP spectrum data analysis """
     def __init__(self, filename=None, unify=False, onlydown=True,
-                 f=None, amp=None, phi=None, basename='new'):
+                 f=None, amp=None, phi=None, k=1, basename='new'):
         """init SIP class with either filename to read or data vectors
 
         Examples
@@ -30,6 +30,7 @@ class SIPSpectrum():
             if filename.rfind('.txt') > 0:
                 self.basename = filename[:-4]
                 self.f, self.amp, self.phi = readTXTSpectrum(filename)
+                self.amp *= k
         if f is not None:
             self.f = f
         if amp is not None:
@@ -161,6 +162,7 @@ class SIPSpectrum():
         ECi -= er * we0
         self.phiOrg = self.phi
         self.phi = np.arctan(ECi/ECr)
+        self.ampOrg = self.amp
         self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
 
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
@@ -306,10 +308,12 @@ if __name__ == "__main__":
     filename = 'sipexample.txt'
     sip = SIPSpectrum(filename)
 #    sip.showData(znorm=True)
-#    sip.fitCCEM()
-    sip.removeEpsilonEffect()
+    if True:  # Pelton
+        sip.fitCCEM()
+    else:
+        sip.removeEpsilonEffect()
+        sip.fitColeCole(useCond=False)
 #    sip.showDataKK()
-    sip.fitColeCole(useCond=False)
     # %%
     sip.fitDebyeModel(new=True)  # , showFit=True)
     # %% create titles and plot data, fit and model

@@ -4,4 +4,7 @@
     What we have here?
 """
 
-from . sip import *
+from . sip import SIPSpectrum
+from . models import ColeCole
+# from . tools import *
+# from . plotting import *

@@ -8,15 +8,13 @@
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import loadmat  # loading Matlab mat files
-from scipy.linalg import inv  # inverse matrix for model covariance
 # pygimli main package and specific functions
 import pygimli as pg
 from pygimli.utils import iterateBounds
 from pygimli.utils.base import gmat2numpy
 # local functions in package
-from modelling import MRS1dBlockQTModelling
-from plotting import showErrorBars, showWC, showT2, drawModel1D
+from . modelling import MRS1dBlockQTModelling
+from . plotting import showErrorBars, showWC, showT2, drawModel1D
 
 
 class MRS():
@@ -56,6 +54,8 @@ class MRS():
     def loadMRSI(self, filename, defaultNoise=100e-9, usereal=False,
                  mint=0., maxt=2.0):
         """ load data, error and kernel from mrsi file """
+        from scipy.io import loadmat  # loading Matlab mat files
+
         idata = loadmat(filename, struct_as_record=False,
                         squeeze_me=True)['idata']
         ttmp = idata.data.t + idata.data.effDead
@@ -114,11 +114,11 @@ class MRS():
 
     def loadKernel(self, name=''):
         """ load kernel matrix from mrsk or two bmat files """
+        from scipy.io import loadmat  # loading Matlab mat files
+
         if name[-5:].lower() == '.mrsk':
-            kdata = loadmat(
-                name,
-                struct_as_record=False,
-                squeeze_me=True)['kdata']
+            kdata = loadmat(name, struct_as_record=False,
+                            squeeze_me=True)['kdata']
             self.K = kdata.K
             self.z = np.hstack((0., kdata.model.z))
         else:  # try load real/imag parts (backward compat.)
@@ -346,7 +346,7 @@ class MRS():
         D = np.diag(1 / self.error)
         DJ = D.dot(J)
         JTJ = DJ.T.dot(DJ)
-        MCM = inv(JTJ)   # model covariance matrix
+        MCM = np.linalg.inv(JTJ)   # model covariance matrix
         varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
         di = (1. / varVG)  # variances as column vector
         # scaled model covariance (=correlation) matrix

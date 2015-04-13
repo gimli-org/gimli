@@ -110,7 +110,8 @@ class FDEM2dFOP(pg.ModellingBase):
         self.FOP1d = []
         for i in range(self.nx):
             self.FOP1d.append(pg.FDEM1dModelling(nlay, data.freq(),
-                                                 data.coilSpacing, -data.height))
+                                                 data.coilSpacing,
+                                                 -data.height))
             n = self.J.addMatrix(self.FOP1d[-1].jacobian())
             self.J.addMatrixEntry(n, self.nf * 2 * i, npar * i)
 
@@ -154,7 +155,7 @@ class HEM1dWithElevation(pg.ModellingBase):
         return self.FOP_.response(pg.cat(thk, res))
 
 
-class FDEMData():
+class FDEM():
 
     """ Class for managing Frequency Domain EM data and their inversions """
 
@@ -757,7 +758,7 @@ if __name__ == "__main__":
 
     A = NDMatrix(13, 6, 5)
 
-    fdem = FDEMData('example.xyz')
+    fdem = FDEM('example.xyz')
     print(fdem)
 #    fop2d = FDEM2dFOP(fdem, nlay=3)
 #    raise SystemExit
@@ -772,7 +773,7 @@ if __name__ == "__main__":
     nlay = options.nlay
     xpos = options.xpos
     name = datafile.lower().rstrip('.xyz')
-    fdem = FDEMData(datafile)
+    fdem = FDEM(datafile)
     print(fdem)
     fdem.deactivate(56320.)  # do not use highest frequency
     fdem.plotAllData(outname=name + '-alldata.pdf')

@@ -6,7 +6,6 @@
 
 from math import pi
 import numpy as np
-from scipy.integrate import simps
 import pygimli as pg
 
 
@@ -17,23 +16,38 @@ def relaxationTerm(f, tau, c=1., a=1.):
 
 
 def DebyeRelaxation(f, tau, m):
-    """ complex-valued single Debye relaxation term """
-    return 1. - (1.-relaxationTerm(f, tau))*m
+    """ complex-valued single Debye relaxation term with chargeability """
+    return 1. - (1. - relaxationTerm(f, tau)) * m
+
+
+def WarbugRelaxation(f, tau, m):
+    """ complex-valued single Debye relaxation term with chargeability """
+    return 1. - (1. - relaxationTerm(f, tau, c=0.5)) * m
+
+
+def ColeColeEpsilon(f, e0, eInf, tau, alpha):
+    """ Original complex-valued permittivity formulation (Cole&Cole, 1941) """
+    return (e0 - eInf) * relaxationTerm(f, tau, c=1./alpha) + eInf
 
 
 def ColeColeRho(f, R, m, tau, c, a=1):
-    """ Complex valued Cole-Cole model """
+    """ Complex-valued impedance Cole-Cole model after Pelton et al. (1978) """
     return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * R
 
 
 def ColeColeSigma(f, R, m, tau, c, a=1):
-    """ Complex valued Cole-Cole model """
+    """ Complex-valued conductivity Cole-Cole model """
     return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * R
 
 
 def ColeCole(f, R, m, tau, c, a=1):
     """ for backward compatibility """
     return ColeColeRho(f, R, m, tau, c, a)
+
+
+def ColeDavidson(f, R, m, tau, a=1):
+    """ for backward compatibility """
+    return ColeCole(f, R, m, tau, c=1, a=1)
 
 
 # modelling operators for use with pygimli inversion

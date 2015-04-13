@@ -1,8 +1,4 @@
-from math import pi, log10, exp
 import numpy as np
-from scipy.integrate import simps
-import matplotlib.pyplot as plt
-import pygimli as pg
 
 
 def readTXTSpectrum(filename):
