@@ -16,6 +16,7 @@ from pygimli.misc import streamline
 
 from pygimli.mplviewer import updateAxes as updateAxes_
 
+
 class CellBrowser(object):
 
     """
@@ -114,7 +115,7 @@ class CellBrowser(object):
         """
             Docstring
         """
-        #print(event, event.key)
+        # print(event, event.key)
         if self.data is None:
             return
         if event.key not in ('up', 'down', 'escape'):
@@ -174,6 +175,7 @@ def drawMesh(axes, mesh):
     axes.set_ylim(mesh.ymin(), mesh.ymax())
 
     updateAxes_(axes)
+
 
 def drawModel(axes, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cmap=None,
@@ -255,7 +257,7 @@ def drawSelectedMeshBoundaries(axes, boundaries,
 
     drawAA = True
     lines = []
-    
+
     if hasattr(boundaries, '__len__'):
         if len(boundaries) == 0:
             return
@@ -299,6 +301,7 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
     updateAxes_(axes)
     return collection
 
+
 def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
     """
     Draw mesh on axes with boundary conditions colorized.
@@ -339,7 +342,7 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
 
     if not hideMesh:
         drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(0),
-                               color=(0.0, 0.0, 0.0, 1.0), linewidth=0.3)
+                                   color=(0.0, 0.0, 0.0, 1.0), linewidth=0.3)
 
     drawSelectedMeshBoundaries(axes, mesh.findBoundaryByMarker(
                                pg.MARKER_BOUND_HOMOGEN_NEUMANN),
@@ -367,14 +370,12 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
         axes.add_collection(p)
 
         for reg in mesh.regionMarker():
-            #axes.text(reg.pos()[0], reg.pos()[1],
-                      #str(reg.marker()) + ": " + str(reg.area()), 
-                      #color='white')
             axes.text(reg.pos()[0], reg.pos()[1],
-                      str(reg.marker()) + ": " + str(reg.area()), 
-                      color='black')
+                      str(reg.marker()) + ": " + str(reg.area()),
+                      color='black')  # 'white'
 
     updateAxes_(axes)
+
 
 def createMeshPatches(axes, mesh, verbose=True, **kwargs):
     """
@@ -595,6 +596,7 @@ def drawStreamLines(axes, mesh, u, nx=25, ny=25, **kwargs):
     gci = axes.streamplot(X, Y, U, V, **kwargs)
 
     updateAxes_(axes)
+    return gci
 # def drawStreamLines(...)
 
 
@@ -638,7 +640,8 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
 
     if len(x) > 2:
         lines = axes.plot(x, y, **kwargs)
-    #    updateAxes_(axes, lines)
+#        updateAxes_(axes, lines)
+        return lines
 #        print( x, y)
 #        axes.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
@@ -652,6 +655,7 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
         axes.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
                    head_starts_at_zero=True,
                    **kwargs)
+
 
 def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     """
@@ -704,7 +708,7 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
             if c is not None:
                 if c.valid():
                     drawStreamLine_(axes, viewMesh, c, data, dataMesh,
-                                   **kwargs)
+                                    **kwargs)
 
     elif startStream == 2:
         # start a stream from each boundary cell
@@ -714,7 +718,7 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
             if c is not None:
                 if c.valid():
                     drawStreamLine_(axes, viewMesh, c, data, dataMesh,
-                                   **kwargs)
+                                    **kwargs)
 
     elif startStream == 3:
         # start a stream from each boundary cell
@@ -725,13 +729,13 @@ def drawStreams(axes, mesh, data, startStream=3, **kwargs):
 
             if c.valid():
                 drawStreamLine_(axes, viewMesh, c, data, dataMesh,
-                               **kwargs)
+                                **kwargs)
 
     # start a stream from each unused cell
     for c in viewMesh.cells():
         if c.valid():
             drawStreamLine_(axes, viewMesh, c, data, dataMesh,
-                           **kwargs)
+                            **kwargs)
 
     for c in viewMesh.cells():
         c.setValid(True)
@@ -774,6 +778,7 @@ def drawSensors(axes, sensors, diam=None, koords=None):
     axes.add_collection(p)
 
     updateAxes_(axes)
+
 
 def createParameterContraintsLines(mesh, cMat, cWeight=None):
     """
@@ -842,7 +847,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
         start.append(pa)
         end.append(pb)
 
-    updateAxes_(axes)
+#    updateAxes_(axes)  # not existing
 
     return start, end
 
@@ -872,6 +877,7 @@ def drawParameterConstraints(axes, mesh, cMat, cWeight=None):
     axes.add_collection(linCol)
 
     updateAxes_(axes)
+
 
 def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
                  cmap=None, name=None):
