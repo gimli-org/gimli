@@ -4,4 +4,5 @@
     What we have here?
 """
 
-from . mrs import MRS, MRS1dBlockQTModelling
+from . mrs import MRS
+from . modelling import MRS1dBlockQTModelling
