@@ -215,7 +215,7 @@ def readGeoRefTIF(file_name):
 
 
 def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
-                  usetls=False, uuid='', fmt='jpeg'):
+                  usetls=False, uuid='', fmt='image/jpeg'):
     """
         Generate address for rendering web service image from BKG.
         Assumes UTM in given zone.
@@ -226,8 +226,11 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
     stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT=' + fmt
     srsstr = 'SRS=EPSG:' + str(25800 + zone)  # EPSG definition of UTM
 
+    if imsize is None or imsize <= 1:
+        imsize = int((xlim[1] - xlim[0])/0.4) + 1  # take 40cm DOP resolution
+        print('choose image size ', imsize)
     box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
-    ysize = imsize * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])
+    ysize = int((imsize - 1.) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
     sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
     addr = url + '__' + uuid + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
         '&' + 'BBOX=' + box + '&' + sizestr
@@ -247,7 +250,7 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid='',
                             service=wms[mode], usetls=usetls, uuid=uuid)
     imname = mode + box + ext[mode]
     if not os.path.isfile(imname):  # not already existing
-        print('Retrieving file from geodatenzentrum.de')
+        print('Retrieving file from geodatenzentrum.de using URL:')
         print(ad)
         url = urllib.URLopener()
         url.retrieve(ad, imname)

@@ -56,10 +56,10 @@ def show(mesh, *args, **kwargs):
             return showMesh3D(mesh, *args, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
-    #plt.pause(0.001)
+    # plt.pause(0.001)
 
 
-def showMesh(mesh, data=None, hold=False, block=False, 
+def showMesh(mesh, data=None, hold=False, block=False,
              colorBar=False, coverage=None,
              axes=None, savefig=None, **kwargs):
     """
@@ -95,15 +95,15 @@ def showMesh(mesh, data=None, hold=False, block=False,
     hold : bool [false]
         Set interactive plot mode for matplotlib.
         If this is set to false [default] your script will open
-        a window with the figure and draw your content. 
+        a window with the figure and draw your content.
         If set to true nothing happens until you either force another show with
-        hold=False, you call plt.show() or pg.wait(). 
+        hold=False, you call plt.show() or pg.wait().
         If you want show with stopping your script set block = True.
-        
+
     block : bool [false]
-        Force show drawing your content and block the script until you 
+        Force show drawing your content and block the script until you
         close the current figure.
-        
+
     colorBar : bool [false]
         Create and show a colorbar.
 
@@ -116,9 +116,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     savefig: string
         Filename for a direct save to disc.
-        The matplotlib pdf-output is a little bit big so we try 
+        The matplotlib pdf-output is a little bit big so we try
         an epstopdf if the .eps suffix is found in savefig
-        
+
     **kwargs :
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
@@ -129,10 +129,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     colobar : matplotlib.colobar
     """
-    
+
     ax = axes
     if block:
-        hold=1
+        hold = 1
 
     if hold:
         lastHoldStatus = pg.mplviewer.holdAxes_
@@ -151,7 +151,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
         drawSensors(ax, data)
     else:
         if hasattr(data[0], '__len__') and not isinstance(data,
-                                                        np.ma.core.MaskedArray):
+                                                          np.ma.core.MaskedArray):
 
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, **kwargs)
@@ -159,7 +159,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
                 print("No valid stream data:", data)
                 drawMesh(ax, mesh)
 
-        elif (min(data) == max(data)): #or pg.haveInfNaN(data):
+        elif (min(data) == max(data)):  # or pg.haveInfNaN(data):
 
             print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh)
@@ -203,15 +203,14 @@ def showMesh(mesh, data=None, hold=False, block=False,
             plt.pause(0.1)
         except:
             pass
-        
+
     if hold:
         pg.mplviewer.holdAxes_ = lastHoldStatus
-        
-        
+
     if savefig:
         print('saving: ' + savefig + ' ...')
         ax.figure.savefig(savefig, bbox_inches='tight')
-            
+
         if '.eps' in savefig:
             try:
                 print("trying eps2pdf ... ")
