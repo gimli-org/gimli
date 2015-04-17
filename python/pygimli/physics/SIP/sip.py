@@ -32,11 +32,11 @@ class SIPSpectrum():
                 self.f, self.amp, self.phi = readTXTSpectrum(filename)
                 self.amp *= k
         if f is not None:
-            self.f = f
+            self.f = np.asarray(f)
         if amp is not None:
-            self.amp = amp
+            self.amp = np.asarray(amp)
         if phi is not None:
-            self.phi = phi
+            self.phi = np.asarray(phi)
         if unify:
             self.unifyData()
 
@@ -109,18 +109,45 @@ class SIPSpectrum():
         plt.show(block=False)
         return fig, ax
 
-    def showDataKK(self):
-        """show data as real/imag subplots along with Kramers-Kronig curves"""
-        fig, ax = self.showData(reim=True)
+    def getKK(self, use0=False):
+        """ retrieve Kramers-Kronig values (re->im and im->re) """
         re, im = self.realimag()
         ind = np.argsort(self.f)
-        reKK, imKK = KramersKronig(self.f[ind], re[ind], im[ind])
+        reKK, imKK = KramersKronig(self.f[ind], re[ind], im[ind], usezero=use0)
+        re[ind] = reKK  # sort back
+        im[ind] = imKK
+        return re, im
 
-        ax[0].plot(self.f[ind], reKK, label='KK')
-        ax[1].plot(self.f[ind], imKK, label='KK')
+    def getPhiKK(self, use0=False):
+        re, im = self.realimag()
+        reKK, imKK = self.getKK(use0)
+        return np.arctan2(imKK, re)
+
+    def showDataKK(self, use0=False):
+        """show data as real/imag subplots along with Kramers-Kronig curves"""
+        fig, ax = self.showData(reim=True)
+        reKK, imKK = self.KK(use0)
+        ax[0].plot(self.f, reKK, label='KK')
+        ax[1].plot(self.f, imKK, label='KK')
         for i in (0, 1):
             ax[i].set_yscale('linear')
             ax[i].legend()
+
+    def checkCRKK(self, useEps=False, use0=False, ax=None):
+        """ check coupling removal (CR) by Kramers-Kronig (KK) relation """
+        if ax is None:
+            fig, ax = plt.subplots()
+        ax.semilogx(self.f, self.phi*1000, label='org')
+        ax.semilogx(self.f, self.getPhiKK(use0)*1000, label='orgKK')
+        if useEps:
+            self.removeEpsilonEffect()
+        else:
+            self.fitCCEM()
+        ax.semilogx(self.f, self.phi*1000, label='corr')
+        ax.semilogx(self.f, self.getPhiKK(use0)*1000, label='corrKK')
+        ax.grid(True)
+        ax.legend(loc='best')
+
 
     def showPolarPlot(self):
         """ show data in a polar plot (real against imaginary parts) """
@@ -254,8 +281,6 @@ class SIPSpectrum():
 
     def showAll(self, save=False):
         """ plot spectrum, Cole-Cole fit and Debye distribution """
-        mtot = self.totalChargeability()
-        lmtau = self.logMeanTau()
         # generate title strings
         if hasattr(self, 'mCC'):
             tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f} $\tau_2$={:.1e}s'
@@ -263,8 +288,7 @@ class SIPSpectrum():
             if mCC[0] > 1:
                 tstr = r'CC: $\rho$={:.1f} m={:.3f} $\tau$={:.1e}s c={:.2f}'
             tCC = tstr.format(*mCC)
-        tDD = r'DD: m={:.3f} $\tau$={:.1e}s'.format(mtot, lmtau)
-        fig, ax = plt.subplots(nrows=3, figsize=(12, 12))
+        fig, ax = plt.subplots(nrows=2+hasattr(self, 'mDD'), figsize=(12, 12))
         fig.subplots_adjust(hspace=0.25)
         # amplitude
         showAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
@@ -287,13 +311,16 @@ class SIPSpectrum():
         ax[1].set_ylabel('-phi [mrad]')
         if hasattr(self, 'mCC'):
             ax[1].set_title(tCC, loc='left')
-        # relaxation time
-        ax[2].semilogx(self.tau, self.mDD * 1e3)
-        ax[2].set_xlim(ax[2].get_xlim()[::-1])
-        ax[2].grid(True)
-        ax[2].set_xlabel(r'$\tau$ [ms]')
-        ax[2].set_ylabel('m [mV/V]')
-        ax[2].set_title(tDD, loc='left')
+        if hasattr(self, 'mDD'):  # relaxation time
+            mtot = self.totalChargeability()
+            lmtau = self.logMeanTau()
+            tDD = r'DD: m={:.3f} $\tau$={:.1e}s'.format(mtot, lmtau)
+            ax[2].semilogx(self.tau, self.mDD * 1e3)
+            ax[2].set_xlim(ax[2].get_xlim()[::-1])
+            ax[2].grid(True)
+            ax[2].set_xlabel(r'$\tau$ [ms]')
+            ax[2].set_ylabel('m [mV/V]')
+            ax[2].set_title(tDD, loc='left')
         if save:
             if isinstance(save, str):
                 savename = save
