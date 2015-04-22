@@ -21,6 +21,7 @@
 #include "mesh.h"
 
 #include "kdtreeWrapper.h"
+#include "memwatch.h"
 #include "meshentities.h"
 #include "node.h"
 #include "shape.h"
@@ -1135,17 +1136,20 @@ void Mesh::cleanNeighbourInfos(){
 
 void Mesh::createNeighbourInfos(bool force){
 //     double med = 0.;
+//     __MS(neighboursKnown_ << " " <<force)
     if (!neighboursKnown_ || force){
         this->cleanNeighbourInfos();
 
 //         Stopwatch sw(true);
         
         for (uint i = 0; i < cellCount(); i ++){
-            
+//            if (i%10000 ==0) __MS(i); 
             createNeighbourInfosCell_(&cell(i));
 //             med+=sw.duration(true);
         }
         neighboursKnown_ = true;
+    } else {
+//         __M
     }
     
 //     std::cout << med << " " << med/cellCount() << std::endl;
@@ -1664,12 +1668,15 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
     
     createNeighbourInfos();
     if (emptyList.size() > 0){
-//         std::cout << "Prolongate " << emptyList.size() << " empty cells." << std::endl;
+        if (debug())std::cout << "Prolongate " << emptyList.size() << " empty cells. (" << this->cellCount() << ")" << std::endl;
         std::vector< Cell * > nextVector;
         Cell * cell;
 
         std::map< Cell*, double > prolongationMap;
 
+        RVector3 XY(1., 1., 0.);
+        if (this->dim() == 2) XY[1] = 0.0;
+        
         for (size_t i = 0; i < emptyList.size(); i ++){
             cell = emptyList[i];
 
@@ -1682,7 +1689,7 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
                         if (horizontalWeight){
                             Boundary * b=findCommonBoundary(*nCell, *cell);
                             if (b){
-                                double zWeight = abs(b->norm()[0]);
+                                double zWeight = (b->norm()*XY).abs() + 1e-6;
                                 val += nCell->attribute() * zWeight;
                                 weight += zWeight;
                             }
@@ -1711,8 +1718,8 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
             }
         }
         if (emptyList.size() == nextVector.size()){
-            save("fillEmptyCellsFail.bms");
-            std::cerr << WHERE_AM_I << " WARNING!! cannot fill emptyList: see fillEmptyCellsFail.bms"<< std::endl;
+            this->exportVTK("fillEmptyCellsFail");
+            std::cerr << WHERE_AM_I << " WARNING!! cannot fill emptyList: see fillEmptyCellsFail.vtk"<< std::endl;
             std::cerr << "trying to fix"<< std::endl;
 
             for (size_t i = 0; i < emptyList.size(); i ++) emptyList[i]->setAttribute(mean(this->cellAttributes()));
@@ -1793,6 +1800,7 @@ void Mesh::smooth(bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint 
 }
 
 void Mesh::fillKDTree_() const {
+MEMINFO
     if (!tree_) tree_ = new KDTreeWrapper();
 
     if (tree_->size() != nodeCount()){
@@ -1806,6 +1814,7 @@ void Mesh::fillKDTree_() const {
                                       + " tree-size() " + toStr(tree_->size()));
         }
     }
+MEMINFO
 }
 
 void Mesh::addRegionMarker(const RegionMarker & reg){

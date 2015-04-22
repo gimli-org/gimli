@@ -34,10 +34,13 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
     std::vector< RVector3 > pos(ipos);
     
     if (mesh.dim() == 2){
-        if (verbose) std::cout << "Warning! swap YZ coordinates for query "
-            "positions to meet mesh dimensions." << std::endl;
         if ((zVari(pos) || max(abs(z(pos))) > 0.) && 
-            (!yVari(pos) && max(abs(y(pos))) < 1e-8)) swapYZ(pos);
+            (!yVari(pos) && max(abs(y(pos))) < 1e-8)) {
+            if (verbose) 
+                std::cout << "Warning! swap YZ coordinates for query "
+                            "positions to meet mesh dimensions." << std::endl;
+            swapYZ(pos);
+        }
     }
         
     if (iData.rows() != vData.rows()){
@@ -48,7 +51,6 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
     size_t count = 0;
     
     for (uint i = 0; i < pos.size(); i ++) {
-
         cells[i] = mesh.findCell(pos[i], count, false);
 
         if (verbose) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
@@ -192,7 +194,7 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose){
                 it->second.size()<< std::endl;
         }
     }
-
+    
     if (cellData.rows() > 0){
         RMatrix qCellData;
         interpolate(mesh, cellData, qmesh.cellCenter(), qCellData, verbose) ;

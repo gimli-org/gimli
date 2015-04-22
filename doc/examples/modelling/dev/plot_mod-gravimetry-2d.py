@@ -41,8 +41,8 @@ for i,p in enumerate(pnts):
     c = mesh.findCell(p)
     g = c.grad(p, u)
     print(c, p, g)
-    dux[i] =  g[0]*4.0*np.pi # wo kommen die 4 pi her?
-    duz[i] = -g[1]*4.0*np.pi # wo kommen die 4 pi her?
+    dux[i] =  g[0] * 4.0 * np.pi # wo kommen die 4 pi her?
+    duz[i] = -g[1] * 4.0 * np.pi # wo kommen die 4 pi her?
 
 uI = pg.interpolate(mesh, u, pnts)
 
@@ -56,7 +56,7 @@ dgz, dggz = solveGravimetry(circ, dDensity=1000,
     
 plt.plot(pg.x(pnts), dgz[:,0], label='dgx')
 plt.plot(pg.x(pnts), dgz[:,2], label='dgz')
-plt.plot(pg.x(pnts), np.sqrt(dgz[:,0]**2 + dgz[:,1]**2+ dgz[:,2]**2), label='dg')
+plt.plot(pg.x(pnts), np.sqrt(dgz[:,0]**2 + dgz[:,1]**2 + dgz[:,2]**2), label='dg')
 
 
 print(dux/dgz[:,0])

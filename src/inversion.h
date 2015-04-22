@@ -897,7 +897,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     DOSAVE save(response_ , "response_0");
     DOSAVE save(modelRef_ , "modelRef_0");
     DOSAVE save(RVector(response_ / data_ -1.0), "deltaData_0");
-//     DOSAVE forward_->constraints().save("constraint.matrix");
+    DOSAVE forward_->constraints()->save("constraint.matrix");
     DOSAVE save(constraintsWeight_, "cweight_0");
     DOSAVE save(modelWeight_, "mweight_0");
     DOSAVE save(*forward_->jacobian(), "sens.bmat");

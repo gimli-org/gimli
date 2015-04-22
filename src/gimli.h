@@ -185,10 +185,6 @@ static const uint8 GIMLI_MATRIX_RTTI            = 1;
 static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
 static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 3;
 
-
-extern DLLEXPORT bool __SAVE_PYTHON_GIL__;
-extern DLLEXPORT bool __GIMLI_DEBUG__;
-
 /*! Flag load/save Ascii or binary */
 enum IOFormat{ Ascii, Binary };
 
@@ -259,16 +255,16 @@ template < class Vec > class Trans;
 
 //** end forward declaration
 
+static bool __SAVE_PYTHON_GIL__ = false;
+static bool __GIMLI_DEBUG__ = false;
+
 /*! */
-inline void savePythonGIL(bool s){
-    __SAVE_PYTHON_GIL__ = s;
-}
+inline void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }
+inline bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
 
-/*! set global gimli debug flag on or off */
-inline void setGimliDebug(bool s){
-    __GIMLI_DEBUG__ = s;
-}
-
+/*! Set global gimli debug flag on or off */
+inline void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
+inline bool debug(){ return __GIMLI_DEBUG__;}
 
 class PythonGILSave {
 public:

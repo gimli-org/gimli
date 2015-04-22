@@ -638,10 +638,11 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
 
+    #print(len(x))
     if len(x) > 2:
         lines = axes.plot(x, y, **kwargs)
 #        updateAxes_(axes, lines)
-        return lines
+        
 #        print( x, y)
 #        axes.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
@@ -656,6 +657,7 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
                    head_starts_at_zero=True,
                    **kwargs)
 
+    return lines
 
 def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     """
