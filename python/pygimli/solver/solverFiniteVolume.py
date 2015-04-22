@@ -733,10 +733,10 @@ def __d(name, v, showAll=False):
         print(v)
 
 
-def solveStokes_NEEDNAME(mesh, velBoundary, preBoundary=[],
-                         viscosity=1, pre0=None, vel0=None,
-                         tol=1e-4, maxIter=1000,
-                         verbose=1, **kwargs):
+def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
+                pre0=None, vel0=None,
+                tol=1e-4, maxIter=1000,
+                verbose=1, **kwargs):
     """
     """
     ws=kwargs.pop('ws', None)
@@ -899,11 +899,10 @@ if __name__ == '__main__':
 
     preBoundary = [[7, 0.0]]
 
-    vel, pres, pCNorm, divVNorm = solveStokes_NEEDNAME(grid, velBoundary,
-                                                       preBoundary,
-                                                       viscosity=a,
-                                                       maxIter=maxIter,
-                                                       verbose=1)
+    vel, pres, pCNorm, divVNorm = solveStokes(grid, a,
+                                              velBoundary, preBoundary,
+                                              maxIter=maxIter,
+                                              verbose=1)
 
     print("time", len(pCNorm), swatch.duration(True))
     referencesolution = 1.2889506342694153

@@ -379,7 +379,7 @@ public:
     void cleanNeighbourInfos();
 
     /*! Search and set to each boundary the corresponding left and right cell.*/
-    void createNeighbourInfos(bool force = false);
+    void createNeighbourInfos(bool force=false);
 
     /*! Create and store boundaries and neighboring information for this cell.*/
     void createNeighbourInfosCell_(Cell *c);

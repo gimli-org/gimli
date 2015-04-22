@@ -75,7 +75,7 @@ def calcSeismics(meshIn, vP):
     dt = cfl * h /max(vP)
     print("Courant-Friedrich-Lewy-Zahl:", cfl)
     
-    tmax = 50./min(vP)
+    tmax = 40./min(vP)
     times = np.arange(0.0, tmax, dt)
     
     solutionName = createCacheName('seis', mesh, times) + "cfl-" + str(cfl)

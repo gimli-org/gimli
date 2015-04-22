@@ -153,6 +153,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
         if hasattr(data[0], '__len__') and not isinstance(data,
                                                           np.ma.core.MaskedArray):
 
+            if len(data) == 2: # [u,v]
+                data = np.array(data).T
+                
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, **kwargs)
             else:

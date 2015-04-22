@@ -249,10 +249,13 @@ def mergePLC(pols):
                             e.marker())
         
         if len(p.regionMarker()) > 0:
-            poly.addRegionMarker(p.regionMarker()[0])
+            for rm in p.regionMarker():
+                poly.addRegionMarker(rm)
     
         if len(p.holeMarker()) > 0:
-            poly.addHoleMarker(p.holeMarker()[0])
+            for hm in p.holeMarker():
+                poly.addRegionMarker(hm)
+            
     return poly
 
 def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):

@@ -276,7 +276,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
     std::vector< Cell * > emptyList;
     mesh_->createNeighbourInfos();
 
-    for (uint i = 0, imax = mesh_->cellCount(); i < imax; i ++){
+    for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
         marker = mesh_->cell(i).marker();
         if (marker >= 0) {
             if ((size_t)marker >= model.size()){

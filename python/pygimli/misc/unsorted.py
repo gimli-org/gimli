@@ -65,12 +65,13 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
     isVectorData = False
 
     if hasattr(field[0], '__len__'):
-        if min(field[:, 0]) == max(field[:, 0]) and min(
-                field[:, 1]) == max(field[:, 1]):
+        if min(field[:, 0]) == max(field[:, 0]) and \
+           min(field[:, 1]) == max(field[:, 1]):
             raise BaseException(
                 "No data range streamline: min/max == ", min(field[:, 0]))
         vx = pg.RVector(field[:, 0])
         vy = pg.RVector(field[:, 1])
+
         isVectorData = True
     else:
         if min(field) == max(field):
@@ -124,6 +125,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
             u = 0.
             if len(vx) == mesh.cellCount():
                 d = pg.RVector3(vx[c.id()], vy[c.id()])
+            elif len(vx) == mesh.nodeCount():
+                d = pg.RVector3(c.pot(pos, vx), c.pot(pos, vy))
             elif dataMesh:
                 cd = dataMesh.findCell(pos)
                 if cd is None:
