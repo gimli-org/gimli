@@ -254,7 +254,7 @@ def mergePLC(pols):
     
         if len(p.holeMarker()) > 0:
             for hm in p.holeMarker():
-                poly.addRegionMarker(hm)
+                poly.addHoleMarker(hm)
             
     return poly
 
