@@ -10,7 +10,7 @@ SUITESPARSE_VERSION=4.4.1
 SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 
 TRIANGLE_URL=http://www.netlib.org/voronoi/
-GCCXML_URL=git://github.com/gccxml/gccxml.git
+GCCXML_URL=https://github.com/gccxml/gccxml.git
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml 
 PYGCCXML_REV=594d71d
