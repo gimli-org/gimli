@@ -68,6 +68,8 @@ extensions = ['sphinx.ext.autodoc',
 
 extensions += [dep.replace('-', '.') for dep in deps]
 
+autoclass_content = "both"
+
 # Get mathjax from GIMLi server (public one is very slow)
 mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 

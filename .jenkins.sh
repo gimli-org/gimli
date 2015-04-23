@@ -1,5 +1,5 @@
 # This script is for continuous integration using Jenkins (http://jenkins-ci.org/)
-# It is called from the parent directory, i.e. bash trunk/.jenkins.sh
+# It is called from the parent directory, i.e. bash -xe trunk/.jenkins.sh
 
 echo "Starting automatic build #$BUILD_NUMBER on" `date`
 start=$(date +"%s")
@@ -10,7 +10,7 @@ cmake --version
 python -c "import numpy; print(numpy.__version__)"
 
 # Main build
-#rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
+rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
 mkdir -p build
 cd build
 cmake ../trunk

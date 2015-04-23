@@ -9,13 +9,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 modified by CR
 
 """
-from functools import reduce
 import sys
 import traceback
-import codecs
 
 
-class doxygen_doc_extractor:
+class doxygen_doc_extractor(object):
 
     """
     Extracts Doxygen styled documentation from source or generates it from description.
@@ -26,7 +24,6 @@ class doxygen_doc_extractor:
         self.file_name = None
         self.source = None
         self.hasError = False
-    #__init__
 
     def __call__(self, declaration):
         doc_lines = []
@@ -256,7 +253,7 @@ class doxygen_doc_extractor:
             #           "~",
             #           "<",
             #           ">",
-            #           "#",
+            # "#",
             #           "%",
         ]
 
