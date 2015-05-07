@@ -378,7 +378,7 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
         axes.add_collection(p)
 
         for reg in mesh.regionMarker():
-            axes.text(reg.pos()[0], reg.pos()[1],
+            axes.text(reg[0], reg[1],
                       str(reg.marker()) + ": " + str(reg.area()),
                       color='black')  # 'white'
 

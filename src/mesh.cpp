@@ -1732,7 +1732,11 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
 Mesh & Mesh::scale(const RVector3 & s){
     std::for_each(nodeVector_.begin(), nodeVector_.end(),
                   boost::bind(& Node::scale, _1, boost::ref(s)));
-   //for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->scale(s);
+    std::for_each(holeMarker_.begin(), holeMarker_.end(),
+                  boost::bind(& RVector3::scale, _1, boost::ref(s)));
+    std::for_each(regionMarker_.begin(), regionMarker_.end(),
+                  boost::bind(& RVector3::scale, _1, boost::ref(s)));
+    
     rangesKnown_ = false;
     return *this;
 }
@@ -1740,7 +1744,11 @@ Mesh & Mesh::scale(const RVector3 & s){
 Mesh & Mesh::translate(const RVector3 & t){
     std::for_each(nodeVector_.begin(), nodeVector_.end(),
                    boost::bind(& Node::translate, _1, boost::ref(t)));
-    //for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->pos().translate(t);
+    std::for_each(holeMarker_.begin(), holeMarker_.end(),
+                  boost::bind(& RVector3::translate, _1, boost::ref(t)));
+    std::for_each(regionMarker_.begin(), regionMarker_.end(),
+                  boost::bind(& RVector3::translate, _1, boost::ref(t)));
+    
     rangesKnown_ = false;
     return *this;
 }
@@ -1748,7 +1756,11 @@ Mesh & Mesh::translate(const RVector3 & t){
 Mesh & Mesh::rotate(const RVector3 & r){
     std::for_each(nodeVector_.begin(), nodeVector_.end(),
                    boost::bind(& Node::rotate, _1, boost::ref(r)));
-    //for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->pos().rotate(r);
+    std::for_each(holeMarker_.begin(), holeMarker_.end(),
+                  boost::bind(& RVector3::rotate, _1, boost::ref(r)));
+    std::for_each(regionMarker_.begin(), regionMarker_.end(),
+                  boost::bind(& RVector3::rotate, _1, boost::ref(r)));
+    
     rangesKnown_ = false;
     return *this;
 }

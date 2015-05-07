@@ -4,7 +4,7 @@ from os import system
 
 import pygimli as pg
 
-from pygimli.polytools import *
+from . polytools import *
 
 import numpy as np
 
@@ -44,8 +44,6 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     Examples
     --------
-    
-    
 
     See Also
     --------
