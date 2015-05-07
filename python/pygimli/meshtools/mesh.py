@@ -4,8 +4,7 @@ import os
 import pygimli as pg
 import numpy as np
 
-import pygimli.polytools as plc
-
+from . import polytools as plc
 
 def createMesh(poly, quality=30, area=0.0,
                smooth=None, switches=None,

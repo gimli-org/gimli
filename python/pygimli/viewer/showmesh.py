@@ -47,7 +47,8 @@ def show(mesh, *args, **kwargs):
 
     """
     if isinstance(mesh, list):
-        ax, cbar = show(mesh[0], hold=1, *args, **kwargs)
+        ax = kwargs.pop('axes', None)
+        ax, cbar = show(mesh[0], hold=1, axes=ax, *args, **kwargs)
         xmin = mesh[0].xmin()
         xmax = mesh[0].xmax()
         ymin = mesh[0].ymin()

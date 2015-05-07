@@ -31,7 +31,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     """
     Create rectangle polygon.
         
-    Create rectangle with start position and a given size.
+    Create rectangle with start position and a given size. 
+    Give either start and end OR pos and size.
         
     Parameters
     ----------
@@ -69,28 +70,36 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     TODO
     """
     
+    if not ((start and end) or (pos and size)):
+        raise BaseException("createRectangle pls. give either start and end" 
+                            "OR pos and size." )
     if start is None:
         start = [-0.5, 0.5]
     if end is None:
         end = [0.5, -0.5]
     poly = pg.Mesh(2)
     
-    poly.createNode(start)
-    poly.createNode([start[0], end[1]])
-    poly.createNode(end)
-    poly.createNode([end[0], start[1]])
+    sPos = pg.RVector3(start)
+    ePos = pg.RVector3(end)
     
+    poly.createNode(sPos)
+    poly.createNode([sPos[0], ePos[1]])
+    poly.createNode(ePos)
+    poly.createNode([ePos[0], sPos[1]])
+    
+    if kwargs.pop('isHole', False):
+        poly.addHoleMarker(sPos + (ePos-sPos)*0.2)
+    else:
+        poly.addRegionMarker(sPos + (ePos-sPos)*0.2, 
+                             marker=kwargs.pop('marker', 1),
+                             area=kwargs.pop('area', 0))
+        
     if size is not None:
         poly.scale(size)
     if pos is not None:
         poly.translate(pos)
     
-    if kwargs.pop('isHole', False):
-        poly.addHoleMarker(poly.nodes()[0].pos() + [0.001, -0.001])
-    else:
-        poly.addRegionMarker(poly.nodes()[1].pos() + [0.2, 0.2], 
-                             marker=kwargs.pop('marker', 1),
-                             area=kwargs.pop('area', 0))
+    
         
     polyCreateDefaultEdges_(poly, **kwargs)
     
@@ -154,7 +163,7 @@ def createWorld(start, end, marker=1, area=0, layers=None):
 
     return poly
 
-def createCircle(pos, radius, segments=12, start=0, end=2.*math.pi,
+def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
                  **kwargs):
                  
     """
@@ -162,9 +171,9 @@ def createCircle(pos, radius, segments=12, start=0, end=2.*math.pi,
         
     Parameters
     ----------
-    pos : [x, y]
+    pos : [x, y] [[0.0, 0.0]]
         Center position
-    radius : float | [a,b]
+    radius : float | [a,b] [1]
         radius or halfaxes of the circle
     segments : int
         Discrete amount of segments for the circle
@@ -195,22 +204,33 @@ def createCircle(pos, radius, segments=12, start=0, end=2.*math.pi,
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from pygimli.mplviewer import drawMesh
     >>> import pygimli as pg
     >>> import math
-    >>> from pygimli.polytools import polytools as plc
+    >>> from pygimli.meshtools import polytools as plc
     >>> c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
     >>> c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
     >>> c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
     >>>                       end=1.5*math.pi, isClosed=False)
-    >>>  pg.show([c0, c1, c2])
+    >>> plc = plc.mergePLC([c0, c1, c2])
+    >>> 
+    >>> fig, ax = plt.subplots()
+    >>> drawMesh(ax, plc)
+    >>> plt.show()
     """
+    
+    if pos == None:
+        pos = [0.0, 0.0]
+    
     poly = pg.Mesh(2)    
         
     dPhi = (end - start) / (segments)
     nPhi = segments +1
-    if end%2.*math.pi == start:
+    
+    if abs((end%(2.*math.pi) - start)) < 1e-6:
         nPhi = segments
-        
+    
     for i in range(0, nPhi):
         if kwargs.pop('leftDirection', True):
             phi = start + i * dPhi
@@ -221,18 +241,19 @@ def createCircle(pos, radius, segments=12, start=0, end=2.*math.pi,
         yp = np.sin(phi)
         poly.createNode([xp, yp])
     
+    if kwargs.pop('isHole', False):
+        poly.addHoleMarker([0.0, 0.0])
+    else:
+        poly.addRegionMarker([0.0, 0.0], 
+                             marker=kwargs.pop('marker', 1),
+                             area=kwargs.pop('area', 0))
+        
     if hasattr(radius, '__len__'):
         poly.scale(radius)
     else:
         poly.scale([radius, radius])
+        
     poly.translate(pos)
-    
-    if kwargs.pop('isHole', False):
-        poly.addHoleMarker(poly.nodes()[0].pos() + [0.0, -0.001])
-    else:
-        poly.addRegionMarker(poly.nodes()[0].pos() + [0.0, -0.001], 
-                             marker=kwargs.pop('marker', 1),
-                             area=kwargs.pop('area', 0))
     
     polyCreateDefaultEdges_(poly, **kwargs)
     return poly
@@ -304,16 +325,17 @@ def mergePLC(pols):
     
     Examples
     --------
-    >>> import pygimli.polytools as plc
+    >>> from pygimli.meshtools import polytools as plc
     >>> from pygimli.meshtools import createMesh
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
     >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-    >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2)
+    >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2, segments=4)
     >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
-    >>> r1 = plc.createRectangle([3, -5], size=[2, 2], marker=3)
-    >>> r2 = plc.createRectangle([5, -5], size=[2, 2], marker=4, area=0.1)
+    >>> r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
+    >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
     >>> plc = plc.mergePLC([world, c1, c2, r1, r2])
+    >>> 
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, plc)
     >>> drawMesh(ax, createMesh(plc))
@@ -323,6 +345,7 @@ def mergePLC(pols):
     
     for p in pols:
         nodes = [poly.createNodeWithCheck(n.pos()) for n in p.nodes()]
+        
         for e in p.boundaries():
             poly.createEdge(nodes[e.node(0).id()],
                             nodes[e.node(1).id()],
@@ -533,17 +556,30 @@ def polyTranslate(filename, x=0.0, y=0.0, z=0.0, verbose=True):
            " -z " + str(z) + " " + filename)
 
 if __name__ == "__main__":
-    from pygimli.polytools import *
-    from pygimli.meshtools import createMesh
-    from pygimli.mplviewer import drawMesh
+    #from pygimli.meshtools import polytools as plc
+    #from pygimli.meshtools import createMesh
+    #from pygimli.mplviewer import drawMesh
+    #import matplotlib.pyplot as plt
+    #world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
+    #c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2, segments=4)
+    #c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
+    #r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
+    #r2 = plc.createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
+    #plc = plc.mergePLC([world, c1, c2, r1, r2])
+    
+    #fig, ax = plt.subplots()
+    #drawMesh(ax, plc)
+    #drawMesh(ax, createMesh(plc))
+    #plt.show()
+    
     import matplotlib.pyplot as plt
-    world = createWorldPolygon(start=[-10, 0], end=[10, -10], marker=1)
-    c1 = createCirclePolygon([-1, -3], radius=1.5, area=0.1, marker=2)
-    c2 = createCirclePolygon([-6, -5], radius=[1.5, 3.5], isHole=1)
-    r1 = createRectanglePolygon([3, -5], size=[2, 2], marker=3)
-    r2 = createRectanglePolygon([5, -5], size=[2, 2], marker=4, area=0.1)
-    plc = mergePolygons([world, c1, c2, r1, r2])
+    import pygimli as pg
+    import math
+    from pygimli.meshtools import polytools as plc
+    c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
+    c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
+    c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
+                          end=1.5*math.pi, isClosed=False)
     fig, ax = plt.subplots()
-    drawMesh(ax, plc)
-    drawMesh(ax, createMesh(plc))
+    pg.show([c0, c1, c2], axes=ax)
     plt.show()

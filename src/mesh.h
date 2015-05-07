@@ -110,19 +110,17 @@ template < class ValueType > std::ostream & operator << (std::ostream & str, con
 DLLEXPORT std::ostream & operator << (std::ostream & str, const Mesh & mesh);
 
 
-class DLLEXPORT RegionMarkerPLC {
+class DLLEXPORT RegionMarkerPLC : public RVector3{
 public:
     RegionMarkerPLC(const RVector3 & pos, int marker, double area=0.0)
-    : pos_(pos), marker_(marker), area_(area){}
+    : RVector3(pos), marker_(marker), area_(area){}
     
     ~RegionMarkerPLC(){}
     
-    inline const RVector3 & pos() const {return pos_;}
     inline int marker() const {return marker_;}
     inline double area() const {return area_;}
     
 protected:
-    RVector3 pos_;
     int marker_;
     double area_;
 };
