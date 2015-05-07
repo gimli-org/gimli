@@ -4,30 +4,30 @@
 import os
 from os import system
 
+import math
 import numpy as np
 import pygimli as pg
 
-def polyCreateDefaultEdges_(poly, marker=1, closed=True):
+def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
     """ INTERNAL """
-    
-    nEdges = poly.nodeCount()-1 + closed
+                            
+    nEdges = poly.nodeCount()-1 + isClosed
     bm = None
-    if hasattr(marker, '__len__'):
-        if len(marker) == nEdges:
-            bm = marker
+    if hasattr(boundaryMarker, '__len__'):
+        if len(boundaryMarker) == nEdges:
+            bm = boundaryMarker
         else:
             raise Exception("marker length != nEdges", len(marker), nEdges)
     else:
-        bm = [marker] * nEdges        
+        bm = [boundaryMarker] * nEdges        
         
     for i in range(poly.nodeCount() - 1):
         poly.createEdge(poly.node(i), poly.node(i+1), bm[i])
-    if closed:
+    if isClosed:
         poly.createEdge(poly.node(poly.nodeCount()-1), 
                         poly.node(0), bm[-1])
         
-def createRectangle(start=None, end=None, pos=None, size=None, marker=1, area=0, 
-                    boundaryMarker=1, isHole=False):
+def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     """
     Create rectangle polygon.
         
@@ -43,14 +43,21 @@ def createRectangle(start=None, end=None, pos=None, size=None, marker=1, area=0,
         Center position. The rectangle will be moved.
     size : [x, y]
         width and height. The rectangle will be scaled.
-    marker : int
-        Marker for the resulting triangle cells after mesh generation
-    area : float
-        Maximum cell size for the resulting triangle cells after mesh generation
-    boundaryMarker : int
-        Marker for the resulting boundary edges
-    isHole :
-        The Polygone will become a hole instead of a triangulation
+
+    **kwargs:
+        
+        marker : int [1]
+            Marker for the resulting triangle cells after mesh generation
+        area : float [0]
+            Maximum cell size for the resulting triangle cells after mesh generation
+        boundaryMarker : int [1]
+            Marker for the resulting boundary edges
+        leftDirection : bool [True]
+            TODO Rotational direction 
+        isHole : bool [False]
+            The Polygone will become a hole instead of a triangulation
+        isClosed : bool [True]
+            Add closing edge between last and first node. 
 
     Returns
     -------
@@ -78,12 +85,15 @@ def createRectangle(start=None, end=None, pos=None, size=None, marker=1, area=0,
     if pos is not None:
         poly.translate(pos)
     
-    if isHole:
+    if kwargs.pop('isHole', False):
         poly.addHoleMarker(poly.nodes()[0].pos() + [0.001, -0.001])
     else:
         poly.addRegionMarker(poly.nodes()[1].pos() + [0.2, 0.2], 
-                             marker=marker, area=area)
-    polyCreateDefaultEdges_(poly, marker=boundaryMarker, closed=True)
+                             marker=kwargs.pop('marker', 1),
+                             area=kwargs.pop('area', 0))
+        
+    polyCreateDefaultEdges_(poly, **kwargs)
+    
     return poly
 
 def createWorld(start, end, marker=1, area=0, layers=None):
@@ -134,9 +144,8 @@ def createWorld(start, end, marker=1, area=0, layers=None):
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
         
-        
     polyCreateDefaultEdges_(poly, 
-                            marker=[1]*(len(z)-1) + [3] + [2]*(len(z)-1) + [4])
+                            boundaryMarker=[1]*(len(z)-1) + [3] + [2]*(len(z)-1) + [4])
           
     if layers is not None:
         for i in range(len(layers)):
@@ -145,8 +154,9 @@ def createWorld(start, end, marker=1, area=0, layers=None):
 
     return poly
 
-def createCircle(pos, radius, segments=12, marker=1, area=0,
-                 boundaryMarker=1, leftDirection=True, isHole=False):
+def createCircle(pos, radius, segments=12, start=0, end=2.*math.pi,
+                 **kwargs):
+                 
     """
     Create simple circle polygon.
         
@@ -157,17 +167,26 @@ def createCircle(pos, radius, segments=12, marker=1, area=0,
     radius : float | [a,b]
         radius or halfaxes of the circle
     segments : int
-        Discrete amount of segmens for the circle
-    marker : int
-        Marker for the resulting triangle cells after mesh generation
-    area : float
-        Maximum cell size for the resulting triangle cells after mesh generation
-    boundaryMarker : int
-        Marker for the resulting boundary edges
-    leftDirection : bool
-        Rotational direction
-    isHole :
-        The Polygone will become a hole instead of a triangulation
+        Discrete amount of segments for the circle
+    start : double [0]
+        Starting angle in radians
+    end : double [2*pi]
+        Ending angle in radians
+        
+    **kwargs:
+        
+        marker : int [1]
+            Marker for the resulting triangle cells after mesh generation
+        area : float [0]
+            Maximum cell size for the resulting triangle cells after mesh generation
+        boundaryMarker : int [1]
+            Marker for the resulting boundary edges
+        leftDirection : bool [True]
+            Rotational direction
+        isHole : bool [False]
+            The Polygone will become a hole instead of a triangulation
+        isClosed : bool [True]
+            Add closing edge between last and first node.
         
     Returns
     -------
@@ -176,17 +195,30 @@ def createCircle(pos, radius, segments=12, marker=1, area=0,
     
     Examples
     --------
-    TODO
+    >>> import pygimli as pg
+    >>> import math
+    >>> from pygimli.polytools import polytools as plc
+    >>> c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
+    >>> c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
+    >>> c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
+    >>>                       end=1.5*math.pi, isClosed=False)
+    >>>  pg.show([c0, c1, c2])
     """
     poly = pg.Mesh(2)    
-    poly.createNode([0, 1.0])
-    for i in range(1, segments):
-        if leftDirection:
-            xp = np.sin(-i * (2. * np.pi) / segments)
-        else:
-            xp = np.sin(i * (2. * np.pi) / segments)
-
-        yp = np.cos(i * (2. * np.pi) / segments)
+        
+    dPhi = (end - start) / (segments)
+    nPhi = segments +1
+    if end%2.*math.pi == start:
+        nPhi = segments
+        
+    for i in range(0, nPhi):
+        if kwargs.pop('leftDirection', True):
+            phi = start + i * dPhi
+        else: 
+            phi = start - i * dPhi
+            
+        xp = np.cos(phi)
+        yp = np.sin(phi)
         poly.createNode([xp, yp])
     
     if hasattr(radius, '__len__'):
@@ -194,13 +226,61 @@ def createCircle(pos, radius, segments=12, marker=1, area=0,
     else:
         poly.scale([radius, radius])
     poly.translate(pos)
-    if isHole:
+    
+    if kwargs.pop('isHole', False):
         poly.addHoleMarker(poly.nodes()[0].pos() + [0.0, -0.001])
     else:
         poly.addRegionMarker(poly.nodes()[0].pos() + [0.0, -0.001], 
-                             marker=marker, area=area)
+                             marker=kwargs.pop('marker', 1),
+                             area=kwargs.pop('area', 0))
     
-    polyCreateDefaultEdges_(poly, boundaryMarker, closed=True)
+    polyCreateDefaultEdges_(poly, **kwargs)
+    return poly
+
+def createLine(start, end, segments, **kwargs):
+    """
+    Create simple line polygon.
+        
+    Parameters
+    ----------
+    start : [x, y]
+        start position
+    end : [x, y]
+        end position
+    segments : int
+        Discrete amount of segments for the line
+            
+    **kwargs:
+
+        boundaryMarker : int [1]
+            Marker for the resulting boundary edges
+        leftDirection : bool [True]
+            Rotational direction
+        
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    
+    Examples
+    --------
+    """
+    poly = pg.Mesh(2)
+    startPos = pg.RVector3(start)
+    endPos = pg.RVector3(end)
+    a = endPos - startPos
+    
+    dt = 1 / segments
+    for i in range(0, segments + 1):
+        if kwargs.pop('leftDirection', True):
+            p = startPos + a * (dt * i)
+        else: 
+            p = endPos -  a * (dt * i)
+            
+        print(p)
+        poly.createNode(p)
+        
+    polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
 
 def mergePLC(pols):

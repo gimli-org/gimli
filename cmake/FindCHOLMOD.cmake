@@ -133,6 +133,7 @@ if (CHOLMOD_LIBRARY)
     # Don't link against system-wide blas when making conda package
     if (NOT ENV{CONDA_BUILD})
         message(STATUS "adding LAPACK_LIBRARIES to CHOLMOD PATH: ${LAPACK_LIBRARIES}")
+
         if (PARMETIS_FOUND)
             set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${PARMETIS_LIBRARIES})
         endif()

@@ -34,7 +34,7 @@ def show(mesh, *args, **kwargs):
     Parameters
     ----------
 
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh : :gimliapi:`GIMLI::Mesh` or list of meshes
         2D or 3D GIMLi mesh
 
     *args, **kwargs :
@@ -46,6 +46,29 @@ def show(mesh, *args, **kwargs):
     Return the results from the show functions.
 
     """
+    if isinstance(mesh, list):
+        ax, cbar = show(mesh[0], hold=1, *args, **kwargs)
+        xmin = mesh[0].xmin()
+        xmax = mesh[0].xmax()
+        ymin = mesh[0].ymin()
+        ymax = mesh[0].ymax()
+        
+        for m in mesh[1:]:
+            ax, cbar = show(m, axes=ax, hold=1, fitView=False, *args, **kwargs)
+            xmin = min(xmin, m.xmin())
+            xmax = max(xmax, m.xmax())
+            ymin = min(ymin, m.ymin())
+            ymax = max(ymax, m.ymax())
+        
+        #ax.relim()
+        #ax.autoscale_view(tight=True)
+        ax.set_xlim([xmin,xmax])
+        ax.set_ylim([ymin,ymax])
+        #print(ax.get_data_interval()) 
+        plt.pause(0.01)
+        return
+    
+    
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
             return showMesh(mesh, *args, **kwargs)
@@ -56,6 +79,7 @@ def show(mesh, *args, **kwargs):
             return showMesh3D(mesh, *args, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
+                
     # plt.pause(0.001)
 
 
@@ -203,7 +227,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
     if not hold or block is not False:
         plt.show(block=block)
         try:
-            plt.pause(0.1)
+            plt.pause(0.01)
         except:
             pass
 
@@ -277,7 +301,7 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
         ax.plot([c1[0], c2[0]],
                 [c1[1], c2[1]], color=col, **kwargs)
 
-    if not showLater:
-        plt.show()
+    
+    plt.pause(0.01)
 
     return ax

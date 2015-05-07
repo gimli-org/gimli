@@ -73,7 +73,7 @@ Now we can generate the unstructured mesh.
 """
 mesh2 = pg.Mesh(2)
 tri.generate(mesh2)
-print("-1")
+
 for cell in mesh2.cells():
     cell.setMarker(1)
 
@@ -83,10 +83,11 @@ for cell in mesh2.cells():
 Finally, the grid and the unstrcutured mesh can be merged to single mesh for further
 modelling.
 """
-print("0")
-mesh3 = merge2Meshes(mesh1, mesh2)
+pg.show(mesh1)
 
-pg.show(mesh3)
+# looking for *** Error in `/usr/bin/python3.3': corrupted double-linked list: 0x00000000022a0ac0 ***
+#mesh3 = merge2Meshes(mesh1, mesh2)
+#pg.show(mesh3)
 """
 .. lastcout::
 
