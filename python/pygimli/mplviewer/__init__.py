@@ -36,6 +36,7 @@ def showLater(val=1):
         plt.show()
 
 def wait():
+    plt.pause(0.01)
     plt.show()
 
 goldenMean = 1.618  # (1.0 + math.sqrt(5.0)) / 2.0

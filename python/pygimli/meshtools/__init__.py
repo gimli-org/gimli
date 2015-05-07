@@ -12,3 +12,10 @@ This package provides functions for mesh generation and modification.
 
 from .grid import *
 from .mesh import *
+
+from . polytools import createRectangle
+from . polytools import createWorld
+from . polytools import createCircle
+from . polytools import createLine
+from . polytools import mergePLC
+

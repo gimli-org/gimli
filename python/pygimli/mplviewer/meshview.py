@@ -151,7 +151,7 @@ class CellBrowser(object):
         self.fig.canvas.draw()
 
 
-def drawMesh(axes, mesh):
+def drawMesh(axes, mesh, **kwargs):
     """
     Draw a 2d mesh into a given axes.
 
@@ -169,10 +169,12 @@ def drawMesh(axes, mesh):
     >>> drawMesh(ax, mesh)
     """
 
-    pg.mplviewer.drawMeshBoundaries(axes, mesh)
-    axes.set_aspect('equal')
-    axes.set_xlim(mesh.xmin(), mesh.xmax())
-    axes.set_ylim(mesh.ymin(), mesh.ymax())
+    pg.mplviewer.drawMeshBoundaries(axes, mesh, fitView=False)
+    
+    if kwargs.pop('fitView', True):
+        axes.set_aspect('equal')
+        axes.set_xlim(mesh.xmin(), mesh.xmax())
+        axes.set_ylim(mesh.ymin(), mesh.ymax())
 
     updateAxes_(axes)
 
@@ -302,10 +304,16 @@ def drawSelectedMeshBoundariesShadow(axes, boundaries, first='x', second='y',
     return collection
 
 
-def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
+def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
     """
     Draw mesh on axes with boundary conditions colorized.
 
+    Parameters
+    ----------
+    
+    **kwargs:
+        fitView : bool [True]
+        
     Examples
     --------
     >>> import numpy as np
@@ -332,7 +340,7 @@ def drawMeshBoundaries(axes, mesh, fitView=True, hideMesh=False):
         raise Exception("drawMeshBoundaries(axes, mesh): to few nodes",
                         mesh.nodeCount())
 
-    if fitView:
+    if kwargs.pop('fitView', True):
         axes.set_xlim(mesh.xmin() - 0.05, mesh.xmax() + 0.05)
         axes.set_ylim(mesh.ymin() - 0.05, mesh.ymax() + 0.05)
 
@@ -391,8 +399,9 @@ def createMeshPatches(axes, mesh, verbose=True, **kwargs):
 
     swatch = pg.Stopwatch(True)
 
-    axes.set_xlim(mesh.xmin(), mesh.xmax())
-    axes.set_ylim(mesh.ymin(), mesh.ymax())
+    if kwargs.pop('fitView', True):
+        axes.set_xlim(mesh.xmin(), mesh.xmax())
+        axes.set_ylim(mesh.ymin(), mesh.ymax())
 
     polys = []
 
@@ -511,7 +520,8 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
             gci = axes.tricontourf(x, y, triangles, z, levels,
                                    **kwargs)
             if not omitLines:
-                axes.tricontour(x, y, triangles, z, levels, colors=['0.5'],
+                axes.tricontour(x, y, triangles, z, levels,
+                                colors=kwargs.pop('colors', ['0.5']),
                                 **kwargs)
     else:
         gci = None
@@ -528,8 +538,10 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
             gci.set_cmap(cmap)
 
     axes.set_aspect('equal')
-    axes.set_xlim(mesh.xmin(), mesh.xmax())
-    axes.set_ylim(mesh.ymin(), mesh.ymax())
+    
+    if kwargs.pop('fitView', True):
+        axes.set_xlim(mesh.xmin(), mesh.xmax())
+        axes.set_ylim(mesh.ymin(), mesh.ymax())
 
     updateAxes_(axes)
     return gci
