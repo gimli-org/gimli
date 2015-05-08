@@ -8,9 +8,10 @@ from math import pi
 import numpy as np
 import pygimli as pg
 from . models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
+from . models import ColeColeAbs, ColeColePhi
 
 
-def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000.,
+def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True,
                mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
     """ fit a Cole-Cole term with additional EM term to phase """
@@ -24,8 +25,47 @@ def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000.,
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
     model = ICC.run()  # run inversion
+    if verbose:
+        ICC.echoStatus()
+    return model, np.asarray(ICC.response())
+
+
+def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
+             mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100), cpar=(0.25, 0, 1)):
+    """ fit a Cole-Cole term with additional EM term to phase """
+    fCCEM = ColeColePhi(f)
+    fCCEM.region(0).setParameters(*mpar)    # m (start,lower,upper)
+    fCCEM.region(1).setParameters(*taupar)  # tau
+    fCCEM.region(2).setParameters(*cpar)   # c
+    ICC = pg.RInversion(phi, fCCEM, False)  # set up inversion class
+    ICC.setAbsoluteError(ePhi)  # 1 mrad
+    ICC.setLambda(lam)  # start with large damping and cool later
+    ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
+    ICC.setRobustData(robust)
+    model = ICC.run()  # run inversion
+    if verbose:
+        ICC.echoStatus()
+    return model, np.asarray(ICC.response())
+
+
+def fitCCAbs(f, amp, error=0.01, lam=1000., mstart=None,
+             taupar=(1e-2, 1e-5, 100), cpar=(0.5, 0, 1)):
+    """ fit amplitude spectrum by Cole-Cole model """
+    fCC = ColeColeAbs(f)
+    tLog = pg.RTransLog()
+    fCC.region(0).setStartValue(max(amp))
+    if mstart is None:  # compute from amplitude decay
+        mstart = 1. - min(amp) / max(amp)
+    fCC.region(1).setParameters(mstart, 0, 1)    # m (start,lower,upper)
+    fCC.region(2).setParameters(*taupar)  # tau
+    fCC.region(3).setParameters(*cpar)   # c
+    ICC = pg.RInversion(amp, fCC, tLog, tLog, False)  # set up inversion class
+    ICC.setRelativeError(error)  # perr + ePhi/data)
+    ICC.setLambda(lam)  # start with large damping and cool later
+    ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
+    model = np.asarray(ICC.run())  # run inversion
     ICC.echoStatus()
-    response = np.asarray(ICC.response())  # get model response for display
+    response = np.asarray(ICC.response())
     return model, response
 
 
