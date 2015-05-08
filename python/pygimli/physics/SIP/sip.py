@@ -11,7 +11,7 @@ import pygimli as pg
 from . importexport import readTXTSpectrum
 from . plotting import showAmplitudeSpectrum, showSpectrum
 from . models import DebyePhi, DebyeComplex, relaxationTerm
-from . tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC
+from . tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi
 
 
 class SIPSpectrum():
@@ -191,6 +191,12 @@ class SIPSpectrum():
         self.phi = np.arctan(ECi/ECr)
         self.ampOrg = self.amp
         self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
+
+    def fitCCPhi(self, ePhi=0.001, lam=1000., remove=True,
+                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100), cpar=(0.3, 0, 1)):
+        """ fit a Cole-Cole term to phase """
+        self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
+                                        taupar=taupar, cpar=cpar)
 
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),

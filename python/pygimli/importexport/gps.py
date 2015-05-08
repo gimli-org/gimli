@@ -134,10 +134,10 @@ def GK2toUTM(R, H=None, zone=32):
     return utm(lon, lat)
 
 
-def GK3toUTM(R, H=None, zone=33):
+def GK3toUTM(R, H=None, zone=32):
     """ transform Gauss-Krueger zone 3 into UTM """
     """ note the double transformation (1-ellipsoid,2-projection) """
-    """ default zone is 33 """
+    """ default zone is 32 """
 
     utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
@@ -149,10 +149,10 @@ def GK3toUTM(R, H=None, zone=33):
     return utm(lon, lat)
 
 
-def GK4toUTM(R, H=None, zone=33):
+def GK4toUTM(R, H=None, zone=32):
     """ transform Gauss-Krueger zone 3 into UTM """
     """ note the double transformation (1-ellipsoid,2-projection) """
-    """ default zone is 33 """
+    """ default zone is 32 """
 
     utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
@@ -164,22 +164,28 @@ def GK4toUTM(R, H=None, zone=33):
     return utm(lon, lat)
 
 
-def GKtoUTM(R, H=None):
+def GKtoUTM(R, H=None, zone=32):
     """ transforms any Gauss-Krueger to UTM """
     """ autodetect GK zone from offset """
     if H is None:
         rr = R[0][0]
     else:
-        rr = R[0]
+        if isinstance(R, list) or isinstance(R, tuple):
+            rr = R[0]
+        else:
+            rr = R
 
-    if floor(rr * 1e-6) == 2.:
-        return GK2toUTM(R, H)
-    elif floor(rr * 1e-6) == 3.:
-        return GK3toUTM(R, H)
-    elif floor(rr * 1e-6) == 4.:
-        return GK4toUTM(R, H)
-    else:
+    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+    gkzone = int(floor(rr * 1e-6))
+    print(gkzone)
+    if gkzone <= 0 or gkzone >= 5:
         print("cannot detect valid GK zone")
+    gk = Proj(init="epsg:"+str(31464+gkzone))
+    if H is None:  # two-column matrix
+        lon, lat = transform(gk, wgs84, R[0], R[1])
+    else:
+        lon, lat = transform(gk, wgs84, R, H)
+    return utm(lon, lat)
 
 
 def convddmm(num):
