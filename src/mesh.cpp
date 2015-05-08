@@ -1789,7 +1789,7 @@ void Mesh::relax(){
 //     }
   }
 
-void Mesh::smooth(bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint smoothIteration){
+void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint smoothIteration){
     createNeighbourInfos();
 
     for (Index j = 0; j < smoothIteration; j++){
@@ -1800,12 +1800,55 @@ void Mesh::smooth(bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint 
             for (Index i = 0; i < nodeCount(); i++) {
                 bool forbidMove = (node(i).marker() != 0);
 
+                std::pair < Boundary *, Boundary * > slide(0, 0);
+                bool noSlide = false;
                 for (std::set< Boundary * >::iterator it = node(i).boundSet().begin();
                      it != node(i).boundSet().end(); it ++){
-                    forbidMove = forbidMove || (*it)->marker() != 0;
-                    forbidMove = forbidMove || ((*it)->leftCell() == NULL || (*it)->rightCell() == NULL);
+                   
+                    if ((*it)->marker() != 0){
+                        if (slide.first == 0){
+                            slide.first = (*it);
+                        } else {
+                            
+                            if (slide.second == 0){
+                                if (slide.first->norm() == (*it)->norm()){
+                                    slide.second = (*it);
+                                } else {
+                                    // two marker bounds with different norm -> corner
+                                    noSlide = true;
+                                }
+                            } else {
+                                // more than two marker bounds -> corner
+                                noSlide = true;
+                            }
+                        }
+                    }
+                
+                    if (edgeSliding) {
+                        forbidMove = forbidMove || noSlide;
+                    }else {
+                        forbidMove = forbidMove || (*it)->marker() != 0;
+                    }
+                
+                    if (!edgeSliding){
+                        forbidMove = forbidMove || ((*it)->leftCell() == NULL || (*it)->rightCell() == NULL);
+                    }
+                    
+                    if (forbidMove) break;
                 }
-                if (!forbidMove) node(i).smooth(smoothFunction);
+                    
+                if (!forbidMove) {
+                    if (slide.first && slide.second){
+                    // move weighted with itself as double weight .. results in slight slide
+                        node(i).setPos((
+                                slide.first->node(0).pos() + 
+                                slide.first->node(1).pos() +
+                                slide.second->node(0).pos() +
+                                slide.second->node(1).pos()) / 4.0);
+                    } else {
+                        node(i).smooth(smoothFunction);
+                    }
+                }
             }
         }
     }

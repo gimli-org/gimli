@@ -412,9 +412,13 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
 
     Parameters
     ----------
-    mesh: GIMLi::Mesh
-    x,y: array of x/y positions along 2d profile
-    z: optional height to add (topographical correction if computed flat earth)
+    mesh: :gimliapi:`GIMLI::Mesh`
+    
+    x,y: [float]
+        array of x/y positions along 2d profile
+    
+    z: [float]
+        optional height to add (topographical correction if computed flat earth)
 
     See Also
     --------

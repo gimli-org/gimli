@@ -95,7 +95,7 @@ template< class Ex > double sum(Expr< Ex > expr, double start, double end){
 #endif
 
 #define DEFINE_BINARY_OPERATOR__(OP, FUNCT) \
-struct OP { template < class T > inline T operator()(const T & a, const T & b) const { return a FUNCT b; } };\
+struct OP { template < class T1, class T2 > inline T1 operator()(const T1 & a, const T2 & b) const { return a FUNCT b; } };\
 
 DEFINE_BINARY_OPERATOR__(PLUS, +)
 DEFINE_BINARY_OPERATOR__(MINUS, -)
