@@ -61,11 +61,24 @@ DLLEXPORT Mesh createMesh3D(const RVector & x, const RVector & y, const RVector 
 DLLEXPORT bool addTriangleBoundary(Mesh & mesh, 
                                     double xBoundary, double yBoundary, int cellMarker, bool save = false);
 
+/*! Generate a simple 2D dimensional mesh by extruding a one dimensional 
+ * polygone into RVector y using quads. 
+ * We assume a two-dimension mesh here consisting on nodes and edge boundaries 
+ * as one dimensional instead of a pure 1D mesh with edgeCells.
+ * 2D cell marker are set from edge marker. 
+ * Nodes with marker are extruded as edges with marker.
+ * Top and fron and back boundary marker are set from parameter front and back. 
+ * All back y-coordinates are adjusted if adjustBack is set. */
+DLLEXPORT Mesh createMesh2D(const Mesh & mesh, const RVector & y,
+                            int front=0, int back=0, bool adjustBack=false);
+
 /*! Generate a simple three dimensional mesh by extruding a two dimensional mesh into RVector z using triangle prism or hexahedrons or both.
  * 3D cell marker are set from 2D cell marker. 
  * The boundary marker for the side boundaries are set from edge marker in mesh. 
  * Top and bottomLayer boundary marker are set from parameter topLayer and bottomLayer. */
 DLLEXPORT Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer=0, int bottomLayer=0);
+
+
 
 // 
 // /*! Shortcut */

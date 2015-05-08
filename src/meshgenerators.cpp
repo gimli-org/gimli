@@ -120,6 +120,48 @@ Mesh createMesh3D(const RVector & x, const RVector & y, const RVector & z, int m
     return mesh;
 }
 
+Mesh createMesh2D(const Mesh & mesh, const RVector & y, 
+                  int front, int back, bool adjustBack){
+    Mesh mesh2(2);
+    
+    bool first = true;
+    for (Index iy = 0; iy < y.size(); iy ++){
+        for (Index in = 0; in < mesh.nodeCount(); in ++){
+            int marker = 0;
+            if (first) marker = mesh.node(in).marker();
+            
+            mesh2.createNode(mesh.node(in).pos() + RVector3(0.0, y[iy]), marker);
+        }
+        first = false;
+    }
+    std::vector < Node * > nodes;
+    for (Index iy = 1; iy < y.size(); iy ++){
+        first = true;
+        for (Index in = 0; in < mesh.boundaryCount(); in ++){
+            uint nn = mesh.boundary(in).nodeCount();
+            nodes.resize(nn * 2) ;
+            
+            nodes[0] = & mesh2.node((iy - 1) * mesh.nodeCount() + mesh.boundary(in).node(0).id());
+            nodes[1] = & mesh2.node((iy - 1) * mesh.nodeCount() + mesh.boundary(in).node(1).id());
+            nodes[2] = & mesh2.node((iy * mesh.nodeCount() + mesh.boundary(in).node(1).id()));
+            nodes[3] = & mesh2.node((iy * mesh.nodeCount() + mesh.boundary(in).node(0).id()));
+            
+            mesh2.createCell(nodes, mesh.boundary(in).marker());
+            
+            if (iy == 1){
+                // create top layer boundaries // in revers direction so the outer normal shows downward into the mesh
+            }
+            if (iy == y.size()-1){
+                // create bottom layer boundaries
+            }
+        }
+        first = false;
+    }
+    
+    
+    return mesh;
+}
+
 Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottomLayer){
     Mesh mesh3(3);
     

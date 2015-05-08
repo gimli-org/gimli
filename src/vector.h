@@ -1442,6 +1442,33 @@ std::ostream & operator << (std::ostream & str, const Vector < T > & vec){
 }
 
 /*!
+Return a RVector with increasing values of size(n+1) filled with : [0, i*a + (i-1)*x, .. ,last]
+*/
+template < class ValueType >
+Vector< ValueType > increasingRange2(const ValueType & a, const ValueType & last, Index n){
+    if (abs(a) < 1e-12){
+        throwError(1, "Can't create increasing range for DX value of: " + toStr(a) );
+    }
+    
+    if (sign(a) != sign(last)){
+        throwError(1, "Can't create increasing range from [0 " + toStr(a) + " to " + toStr(last) + "]");
+    }
+    
+    if (n < 3){
+        throwError(1, "need at least n > 2" + toStr(a) + " n(" + toStr(n) +") "+ toStr(last));
+    }
+     
+    
+    ValueType x = (last- (n-1) * a) / (n-2);
+    
+    Placeholder x__;
+    RVector y(n); y.fill(x__ * a);
+    for (Index i = 2; i < n; i ++ ) y[i] += x*(i-1);
+
+    return y;
+}
+
+/*!
 Return a RVector with increasing values of size(n+1) filled with : 0, first, ... ,last
 */
 template < class ValueType >
