@@ -418,12 +418,7 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
     cmap.set_over(color='#001111', alpha=0.5)
     cmap.set_under(color=(1.0, 1.0, 0.0), alpha=0.5)
 
-    cs = axis.contourf(
-        X,
-        Y,
-        Z,
-        levs,
-        cmap=cmap)  # , norm   = mpl.colors.LogNorm()
+    cs = axis.contourf(X, Y, Z, levs, cmap=cmap)  # , norm=mpl.colors.LogNorm()
     cs.set_clim(cMin, cMax)
 
     if __verbose__:
