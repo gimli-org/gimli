@@ -413,10 +413,10 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
     Parameters
     ----------
     mesh: :gimliapi:`GIMLI::Mesh`
-    
+
     x,y: [float]
         array of x/y positions along 2d profile
-    
+
     z: [float]
         optional height to add (topographical correction if computed flat earth)
 
@@ -687,14 +687,13 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     --------
     >>> import pygimli as pg
     >>> import matplotlib.pyplot as plt
-    >>> 
+    >>>
     >>> from pygimli.meshtools import createParaMesh2DGrid
     >>> from pygimli.mplviewer import drawMesh
     >>> x = pg.RVector(range(10))
     >>> mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
-    >>>                             paraDZ=1, paraDepth=5)
+    ...                             paraDZ=1, paraDepth=5)
     >>> fig, ax = plt.subplots()
-    >>> #pg.show(mesh, axex=ax)
     >>> drawMesh(ax, mesh)
     >>> plt.show()
     """

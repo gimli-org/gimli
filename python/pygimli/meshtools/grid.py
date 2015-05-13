@@ -44,6 +44,21 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     Examples
     --------
+    >>> from pygimli.meshtools import appendTriangleBoundary
+
+    >>> from matplotlib import pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawMesh, drawModel
+
+    >>> inner = pg.createGrid(range(5), range(5))
+    >>> mesh = appendTriangleBoundary(inner, xbound=3, ybound=6, marker=1)
+
+    >>> fig, (ax1, ax2) = plt.subplots(1,2)
+    >>> p1 = drawMesh(ax1, inner)
+    >>> p2 = drawModel(ax2, mesh, mesh.cellMarker())
+    >>> p3 = drawMesh(ax2, mesh)
+    >>> txt1 = ax1.set_title("a) Input grid")
+    >>> txt2 = ax2.set_title("b) With triangle boundary")
 
     See Also
     --------
@@ -152,7 +167,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         xbound = max(xbound, 0.5 * (mesh.xmax()-mesh.xmin()))
         ybound = max(ybound, 0.5 * (mesh.ymax()-mesh.ymin()))
         # add top right node and boundary nodes
-        
+
         dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.1
         xtLen = max(5, int(xbound / dxMin / 2.))
 
@@ -204,10 +219,10 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     # call triangle mesh generation
     triswitches = '-pzeAfa' + preserveSwitch + 'q' + str(quality)
 
-    
+
     if area > 0:
         triswitches += 'a'+str(area)
-        
+
     if not verbose:
         triswitches += 'Q'
 

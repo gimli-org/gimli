@@ -18,7 +18,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 
         If arg is a callable with it must fulfill:
 
-        >>> arg(MeshEntity, userData=None)
+        :: arg(MeshEntity, userData=None)
 
         Where MeshEntity is one of
         :gimliapi:`GIMLI::Cell` ,
@@ -119,7 +119,7 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
 
         If arg is a callable with it must fulfill:
 
-        >>> arg(:gimliapi:`GIMLI::Boundary`, time=0.0, userData=None)
+        :: arg(:gimliapi:`GIMLI::Boundary`, time=0.0, userData=None)
 
         and should return an appropriate value.
 
@@ -244,16 +244,16 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     """
     Parse a value map to cell attributes.
 
-    A map should consist out of pairs of marker and value. 
+    A map should consist out of pairs of marker and value.
     A marker is an integer and corresponds to the cell.marker().
-    
+
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
         For each cell of mesh a value will be returned.
 
     attributeMap : list | dict
-        List of pairs [marker, value] ] || [[marker, value]], 
+        List of pairs [marker, value] ] || [[marker, value]],
         or dictionary with marker keys
 
     default : float [0.0]
@@ -273,7 +273,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
         if not hasattr(attributeMap[0], '__len__'):
             # assuming [marker, value]
             attributeMap = [attributeMap]
-        
+
         for pair in attributeMap:
             if hasattr(pair, '__len__'):
                 idx = pg.find(mesh.cellMarker() == pair[0])
@@ -320,26 +320,26 @@ def fillEmptyToCellArray(mesh, vals):
     mesh.createNeighbourInfos()
     # std::vector< Cell * >
     #empties = []
-    
+
     #! search all cells with empty neighbours
     ids = pg.find(mesh.cellAttributes() != 0.0)
-       
+
     for c in mesh.cells(ids):
         for i in range(c.neighbourCellCount()):
             nc = c.neighbourCell(i)
-            
+
             if nc:
                 if nc.attribute() == 0.0:
                     #c.setAttribute(99999)
-                    
+
                     b = pg.findCommonBoundary(c, nc)
-                    ### search along a slope 
+                    ### search along a slope
                     pos = b.center() - b.norm()*1000.
                     sf = pg.RVector()
                     startCell = c
-                                        
+
                     while startCell:
-                    
+
                         startCell.shape().isInside(pos, sf, False)
                         nextC = startCell.neighbourCell(sf)
                         if nextC:
@@ -347,9 +347,9 @@ def fillEmptyToCellArray(mesh, vals):
                                 nextC.setAttribute(c.attribute())
                             else:
                                 break
-                        
+
                         startCell = nextC
-    
+
     mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1 )
     atts = mesh.cellAttributes()
     mesh.setCellAttributes(oldAtts)
@@ -528,8 +528,8 @@ def assembleForceVector(mesh, f, userData=None):
 
     rhs = pg.RVector(mesh.nodeCount(), 0)
 
-    
-    
+
+
     if hasattr(f, '__call__') and not isinstance(f, pg.RVector):
         for c in mesh.cells():
             if userData is not None:
@@ -538,10 +538,10 @@ def assembleForceVector(mesh, f, userData=None):
                 f(c, rhs)
     else:
         fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
-        
+
         if len(fArray) == mesh.cellCount():
             b_l = pg.ElementMatrix()
-            
+
             for c in mesh.cells():
                 b_l.u(c)
                 for i, idx in enumerate(b_l.idx()):
@@ -848,10 +848,10 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     u0 : value | array | callable(pos, userData)
         Node values
-    
+
     ub : value | array | callable(pos, userData)
         Dirichlet values for u at the boundary
-        
+
     dub : value | array | callable(pos, userData)
         Neumann values for du/dn at the boundary
 
@@ -893,22 +893,21 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 1], [2, 100]], uB=[[-1, 1.0], [-2, 0.0]])
     >>> ax, cbar = pg.show(mesh, u, colorBar=1, hold=1)
-    >>> pg.show(mesh, axes=ax)
+    >>> ax = pg.show(mesh, axes=ax)
     >>> plt.show()
-    
-    
+
     See Also
     --------
 
     other solver TODO
     """
-    
+
     if 'uDirichlet' in kwargs or 'uBoundary' in kwargs:
         raise("use uB instead")
-            
+
     if 'uBoundary' in kwargs:
         raise("use duB instead")
-        
+
     debug = kwargs.pop('debug', False)
 
     if verbose:
@@ -922,7 +921,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     # check for material parameter
     a = parseArgToArray(a, ndof=mesh.cellCount(), mesh=mesh, userData=userData)
     b = parseArgToArray(b, ndof=mesh.cellCount(), mesh=mesh, userData=userData)
-    
+
     if debug:
         print("2: ", swatch2.duration(True))
     # assemble the stiffness matrix
@@ -966,9 +965,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         if debug:
             print("6c: ", swatch2.duration(True))
-        
-        
-            
+
+
+
 
         u = None
 
@@ -1181,6 +1180,6 @@ if __name__ == "__main__":
     ax, cbar = pg.show(mesh, u, colorBar=1, hold=1)
     pg.show(mesh, axes=ax)
     pg.wait()
-    
+
 
 
