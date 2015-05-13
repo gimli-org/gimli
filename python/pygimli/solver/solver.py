@@ -887,13 +887,15 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     --------
     >>> import pygimli as pg
     >>> from pygimli.meshtools import polytools as plc
+    >>> from pygimli.mplviewer import drawModel, drawMesh
     >>> import matplotlib.pyplot as plt
     >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
     >>> c1 = plc.createCircle(pos=[0.0, -3.0], radius=1.0, area=0.01, marker=2)
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 1], [2, 100]], uB=[[-1, 1.0], [-2, 0.0]])
-    >>> ax, cbar = pg.show(mesh, u, colorBar=1, hold=1)
-    >>> ax = pg.show(mesh, axes=ax)
+    >>> fig, ax = plt.subplots()
+    >>> pc = drawModel(ax, mesh, u)
+    >>> drawMesh(ax, mesh)
     >>> plt.show()
 
     See Also
