@@ -19,7 +19,7 @@ def ricker(t, f, t0=0.0):
     ----------
     t : array [float]
         Time base definition
-        
+
     f : float
         Frequency of the wavelet in Hz
 
@@ -41,7 +41,7 @@ def ricker(t, f, t0=0.0):
     >>> sampleFrequenz = 1000 # Hz
     >>> t = np.arange(0, 0.1, 1./sampleFrequenz)
     >>> r = ricker(100., t, 1./100)
-    >>> plt.plot(t,r,'-x')
+    >>> lines = plt.plot(t,r,'-x')
     >>> plt.show()
 
     """

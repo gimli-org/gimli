@@ -36,8 +36,14 @@ class CellBrowser(object):
     Examples
     --------
 
+    >>> from matplotlib import pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import CellBrowser
+    >>> mesh = pg.createGrid(range(5), range(5))
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
+    ('Interactive cell browser activated on Fig.', ...)
+    >>> plt.show()
     """
 
     def __init__(self, mesh, data=None, ax=None):
@@ -167,10 +173,11 @@ def drawMesh(axes, mesh, **kwargs):
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, mesh)
+    >>> plt.show()
     """
 
     pg.mplviewer.drawMeshBoundaries(axes, mesh, fitView=False)
-    
+
     if kwargs.pop('fitView', True):
         axes.set_aspect('equal')
         axes.set_xlim(mesh.xmin(), mesh.xmax())
@@ -204,6 +211,7 @@ def drawModel(axes, mesh, data=None,
     >>> data = np.cos(1.5 * mx) * np.sin(1.5 * my)
     >>> fig, ax = plt.subplots()
     >>> drawModel(ax, mesh, data)
+    <matplotlib.collections.PolyCollection object at ...>
     """
     if mesh.nodeCount() == 0:
         raise "drawModel: The mesh is empty."
@@ -310,10 +318,10 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
 
     Parameters
     ----------
-    
+
     **kwargs:
         fitView : bool [True]
-        
+
     Examples
     --------
     >>> import numpy as np
@@ -323,10 +331,10 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
     >>> n = np.linspace(0,-2,11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> for bound in mesh.boundaries():
-    >>>     if not bound.rightCell():
-    >>>         bound.setMarker(pg.MARKER_BOUND_MIXED)
-    >>>     if bound.center().y() == 0:
-    >>>         bound.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    ...     if not bound.rightCell():
+    ...         bound.setMarker(pg.MARKER_BOUND_MIXED)
+    ...     if bound.center().y() == 0:
+    ...         bound.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
     >>> fig, ax = plt.subplots()
     >>> drawMeshBoundaries(ax, mesh)
     """
@@ -538,7 +546,7 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
             gci.set_cmap(cmap)
 
     axes.set_aspect('equal')
-    
+
     if kwargs.pop('fitView', True):
         axes.set_xlim(mesh.xmin(), mesh.xmax())
         axes.set_ylim(mesh.ymin(), mesh.ymax())
@@ -567,6 +575,7 @@ def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
     >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
     >>> drawField(ax, mesh, data)
+    <matplotlib.tri.tricontour.TriContourSet object ...>
     """
     cMin = kwargs.pop('cMin', None)
     cMax = kwargs.pop('cMax', None)
@@ -654,7 +663,7 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
     if len(x) > 2:
         lines = axes.plot(x, y, **kwargs)
 #        updateAxes_(axes, lines)
-        
+
 #        print( x, y)
 #        axes.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
@@ -907,7 +916,9 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     >>> val = thk
     >>> fig, ax = plt.subplots()
     >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")
+    <matplotlib.collections.PatchCollection object at ...>
     >>> ax.set_ylim(-np.sum(thk), 0)
+    (-10, 0)
     """
     z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
     recs = []

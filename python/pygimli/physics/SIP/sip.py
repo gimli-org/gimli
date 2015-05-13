@@ -22,8 +22,8 @@ class SIPSpectrum():
 
         Examples
         --------
-        >>> sip = SIPSpectrum('sipexample.txt', unify=True) # unique f values
-        >>> sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
+        >>> #sip = SIPSpectrum('sipexample.txt', unify=True) # unique f values
+        >>> #sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
         """
         self.basename = basename
         if filename is not None:

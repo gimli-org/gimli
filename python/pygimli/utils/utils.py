@@ -1,18 +1,61 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-pygimli.utils - compilation of several utility functions
+pygimli.utils - Collection of several utility functions.
 """
 
+from importlib import import_module
 import pygimli as pg
-
 from math import sqrt, floor, ceil
 
+def opt_import(module, requiredTo="use the full functionality"):
+    """
+    Import and return module only if it exists.
+
+    If `module` can be cannot be imported, a warning is printed followed by the
+    `requiredFor` string. Otherwise, the imported `module` will be returned.
+    This function should be used to import optional dependencies to avoid
+    repeated try/except statements.
+
+    Parameters
+    ----------
+    module : str
+        Name of the module to be imported.
+    requiredFor : str, optional
+        Info string for the purpose of the dependency.
+
+    Examples
+    --------
+    >>> from pygimli.utils import opt_import
+    >>> pg = opt_import("pygimli")
+    >>> pg.__name__
+    'pygimli'
+    >>> opt_import("doesNotExist", requiredTo="do something special")
+    No module named 'doesNotExist'.
+    You need to install this optional dependency to do something special.
+    """
+
+    # set default message for common imports
+    if not requiredTo and "matplotlib" in module:
+        requiredTo = "visualize 2D content"
+
+    if module.count(".") > 2:
+        raise ImportError("Can only import modules and sub-packages.")
+
+    try:
+        mod = import_module(module)
+    except ImportError:
+        msg = ("No module named \'%s\'.\nYou need to install this optional "
+               "dependency to %s.")
+        print(msg % (module, requiredTo))
+        mod = None
+
+    return mod
 
 def trimDocString(docstring):
     """
-        Handling Docstring Indentation.
-        From: https://www.python.org/dev/peps/pep-0257/
+    Handling Docstring Indentation.
+    From: https://www.python.org/dev/peps/pep-0257/
     """
     if not docstring:
         return ''
@@ -53,21 +96,17 @@ def logDropTol(p, droptol=1e-3):
     tmp = pg.abs(tmp / droptol)
     tmp.setVal(1.0, pg.find(tmp < 1.0))
 
-    # for i, v in enumerate(tmp):
-    #tmp[ i ] = abs(tmp[ i ] / droptol);
-    #if tmp[ i ] < 1.0: tmp[ i ] = 1.0;
-
     tmp = pg.log10(tmp)
     tmp *= pg.sign(p)
     return tmp
-# def logDropTol
 
 
 def grange(start, end, dx=0, n=0, log=False, verbose=False):
     """
-        Create either an array from start step-wise filled with dx until end reached [start, end] (like np.array with defined end)\\n
-        or an array that is filled from start to end with n steps. [start, end] (like np.linespace) \\n
-        or an array with with logarithmic spacing if n is given, dx will be ignored.
+    Create either an array from start step-wise filled with dx until end reached
+    [start, end] (like np.array with defined end) n or an array that is filled
+    from start to end with n steps. [start, end] (like np.linespace) n or an
+    array with with logarithmic spacing if n is given, dx will be ignored.
 
     Parameters
     ----------
@@ -80,6 +119,16 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
     n: int
         Amount of steps
     log: bool
+
+    Examples
+    --------
+    >>> from pygimli.utils import grange
+    >>> v1 = grange(start=0, end=10, dx=3)
+    >>> v2 = grange(start=0, end=10, n=3)
+    >>> print(v1)
+    <class 'pygimli._pygimli_.RVector'> 4 [0.0, 3.0, 6.0, 9.0]
+    >>> print(v2)
+    <class 'pygimli._pygimli_.RVector'> 3 [0.0, 5.0, 10.0]
 
     Returns
     -------
@@ -110,12 +159,12 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
             raise Exception('not yet implemented.')
 
     else:
-        raise Exception('Either dx or nSteps have to be given.')
+        raise Exception('Either dx or n have to be given.')
 
 
 def diff(v):
     """
-        Return RVector as approximate derivative from v as r[v_1-v_0, v2-v_1,...]
+    Return RVector as approximate derivative from v as r[v_1-v_0, v2-v_1,...]
     """
     r = pg.RVector(len(v) - 1)
     for i in range(len(r)):

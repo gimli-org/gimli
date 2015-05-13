@@ -51,10 +51,22 @@ foreach(file ${RSTFILES})
             TARGET
                 sphinx_check_sources
             VERBATIM
-            COMMENT 
+            COMMENT
                 "Updating documentation sources files into build path: ${file}"
     )
 endforeach()
+
+add_custom_target(doctests
+    ALL
+        ${SPHINX_EXECUTABLE}
+        -b doctest
+        ${SPHINX_SRCBUILD_DIR}
+        ${SPHINX_CACHE_DIR}/doctests
+    COMMENT "Running doctests"
+    DEPENDS
+        sphinx_check_sources
+        sphinxapi
+    )
 
 add_custom_target(sphinxapi
     ALL
@@ -75,12 +87,11 @@ add_custom_target(sphinxpdf
         "${SPHINX_PDF_DIR}" &&
         cd ${SPHINX_PDF_DIR} && make &&
         cmake -E copy_if_different gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
-    COMMENT 
+    COMMENT
         "Building PDF documentation with sphinx"
     DEPENDS
         sphinx_check_sources
 )
-
 
 add_custom_target(sphinxhtml
     ALL
@@ -112,7 +123,7 @@ add_custom_target(doc
         sphinxhtml
         sphinxpdf
 )
-# 
+#
 # add_custom_target(sphinxdoc
 #     ALL
 #         sphinx
