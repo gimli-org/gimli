@@ -575,7 +575,7 @@ def drawField(axes, mesh, data=None, omitLines=False, cmap=None,
     >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
     >>> drawField(ax, mesh, data)
-    <matplotlib.tri.tricontour.TriContourSet object ...>
+    <matplotlib.tri.tricontour.TriContourSet ...>
     """
     cMin = kwargs.pop('cMin', None)
     cMax = kwargs.pop('cMax', None)
