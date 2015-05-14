@@ -76,14 +76,14 @@ def modCovar(inv):
 
     Example
     -------
-    >>> import pygimli as pg
-    >>> import matplotlib.pyplot as plt
-    >>> from matplotlib.cm import bwr
-    >>> INV = pg.RInversion(data, f)
-    >>> par = INV.run()
-    >>> var, MCM = modCovar(INV)
-    >>> i = plt.imshow(MCM, interpolation='nearest', cmap=bwr, vmin=-1, vmax=1)
-    >>> plt.colorbar(i)
+    import pygimli as pg
+    import matplotlib.pyplot as plt
+    from matplotlib.cm import bwr
+    INV = pg.RInversion(data, f)
+    par = INV.run()
+    var, MCM = modCovar(INV)
+    i = plt.imshow(MCM, interpolation='nearest', cmap=bwr, vmin=-1, vmax=1)
+    plt.colorbar(i)
     """
     td = np.asarray(inv.transData().deriv(inv.response()))
     tm = np.asarray(inv.transModel().deriv(inv.model()))

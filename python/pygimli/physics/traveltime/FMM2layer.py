@@ -6,7 +6,7 @@ import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from pygimli.mplviewer import drawMesh, drawField, drawStreamLine
+from pygimli.mplviewer import drawMesh, drawField, drawStreamLines
 #import heapq
 from math import asin, tan
 
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     a = fig.add_subplot(211)
     drawMesh(a, mesh)
     drawField(a, mesh, times, True, 20)
-    drawStreamLine(
+    drawStreamLines(
         a, mesh, times, pg.RVector3(-100., -10.0), pg.RVector3(100., -10.0),
         nLines=50, step=0.01, showStartPos=True)
 

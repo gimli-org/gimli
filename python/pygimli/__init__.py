@@ -565,3 +565,28 @@ def randN(n):
     r = _pygimli_.RVector(n)
     _pygimli_.randn(r)
     return r
+
+def test(show=False):
+    """Test all code examples in docstrings using pytest."""
+    try:
+        import pytest
+    except ImportError:
+        raise ImportError("pytest is required to run test suite. " + \
+                          "Try 'sudo pip install pytest'.")
+    import os
+    from matplotlib import pyplot as plt
+    old_backend = plt.get_backend()
+    if not show:
+        plt.switch_backend("Agg")
+
+    cwd = __path__[0]
+    cfg = os.path.join(cwd, '../tests/setup.cfg')
+    if os.path.exists(cfg):
+        print("Found configuration file: %s\n" % cfg)
+        cmd = "-c %s %s" % (cfg, cwd)
+    else:
+        cmd = "%s" % cwd
+    try:
+        pytest.main(cmd)
+    finally:
+        plt.switch_backend(old_backend)
