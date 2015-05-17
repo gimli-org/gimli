@@ -244,7 +244,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     """
     Parse a value map to cell attributes.
 
-    A map should consist out of pairs of marker and value.
+    A map should consist of pairs of marker and value.
     A marker is an integer and corresponds to the cell.marker().
 
     Parameters
@@ -297,9 +297,8 @@ def fillEmptyToCellArray(mesh, vals):
     Prolongate empty cell values to complete cell attributes.
 
     It is possible that you have zero values that need to be filled with
-    appropriate attributes.
-    This function tries to fill the empty values successive prolongation of the
-    non zeros.
+    appropriate attributes. This function tries to fill the empty values
+    successive prolongation of the non zeros.
 
     Parameters
     ----------
@@ -1182,6 +1181,3 @@ if __name__ == "__main__":
     ax, cbar = pg.show(mesh, u, colorBar=1, hold=1)
     pg.show(mesh, axes=ax)
     pg.wait()
-
-
-
