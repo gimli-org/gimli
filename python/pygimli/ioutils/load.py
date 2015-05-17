@@ -16,6 +16,19 @@ def load(fname, verbose=False):
         Filename or folder of files to load.
     verbose : bool
         Be verbose.
+
+    Examples
+    --------
+    >>> import os, tempfile
+    >>> import pygimli as pg
+    >>> from pygimli.ioutils import load
+    >>> fname = tempfile.mktemp(suffix=".bms")
+    >>> pg.createGrid(range(3), range(3)).save(fname)
+    1
+    >>> mesh = load(fname)
+    >>> os.remove(fname)
+    >>> mesh.cellCount()
+    4
     """
 
     import_routines = {
@@ -35,6 +48,9 @@ def load(fname, verbose=False):
         ".poly": pg.Mesh,
         ".vtk": pg.Mesh
     }
+
+    if not os.path.exists(fname):
+        raise Exception("File or directory named %s does not exist." % fname)
 
     # recursive function call if fname is a folder of files
     if os.path.isdir(fname):

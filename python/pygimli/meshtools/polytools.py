@@ -67,7 +67,14 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     Examples
     --------
-    TODO
+    >>> from pygimli.meshtools import createRectangle
+    >>> from pygimli.mplviewer import drawMesh
+    >>> import matplotlib.pyplot as plt
+    >>> rectangle = createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
+    >>>
+    >>> fig, ax = plt.subplots()
+    >>> drawMesh(ax, rectangle)
+    >>> plt.show()
     """
 
     if not ((start and end) or (pos and size)):
@@ -133,7 +140,14 @@ def createWorld(start, end, marker=1, area=0, layers=None):
 
     Examples
     --------
-    TODO
+    >>> from pygimli.meshtools import createWorld
+    >>> from pygimli.mplviewer import drawMesh
+    >>> import matplotlib.pyplot as plt
+    >>> world = createWorld(start=[-5, 0], end=[5, -5], layers=[1,3,2,5])
+    >>>
+    >>> fig, ax = plt.subplots()
+    >>> drawMesh(ax, world)
+    >>> plt.show()
     """
 
     z = [start[1]]

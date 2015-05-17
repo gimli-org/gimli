@@ -124,6 +124,38 @@ def readGmsh(fname, verbose=False):
         - Physical Number 1: No inversion region
         - Physical Number >= 2: Inversion region
 
+    Examples
+    --------
+    >>> import tempfile, os
+    >>> from pygimli.meshtools import readGmsh
+    >>> gmsh = '''
+    ... $MeshFormat
+    ... 2.2 0 8
+    ... $EndMeshFormat
+    ... $Nodes
+    ... 3
+    ... 1 0 0 0
+    ... 2 0 1 0
+    ... 3 1 1 0
+    ... $EndNodes
+    ... $Elements
+    ... 7
+    ... 1 15 2 0 1 1
+    ... 2 15 2 0 2 2
+    ... 3 15 2 0 3 3
+    ... 4 1 2 0 1 2 3
+    ... 5 1 2 0 2 3 1
+    ... 6 1 2 0 3 1 2
+    ... 7 2 2 0 5 1 2 3
+    ... $EndElements
+    ... '''
+    >>> fname = tempfile.mktemp()
+    >>> with open(fname, "w") as f:
+    ...     f.writelines(gmsh)
+    >>> mesh = readGmsh(fname)
+    >>> print(mesh)
+    Mesh: Nodes: 3 Cells: 1 Boundaries: 3
+    >>> os.remove(fname)
     """
     inNodes, inElements, ncount, ecount = 0, 0, 0, 0
     fid = open(fname)

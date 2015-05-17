@@ -23,8 +23,17 @@ blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
 
 def autolevel(z, N, logscale=None):
-    """
-        Create N levels for the data array z based on matplotlib ticker.
+    """Create N levels for the data array z based on matplotlib ticker.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pygimli.mplviewer import autolevel
+    >>> x = np.linspace(1,10,100)
+    >>> autolevel(x, 3)
+    array([  0. ,   2.5,   5. ,   7.5,  10. ])
+    >>> autolevel(x, 3, logscale=True)
+    array([   0.1,    1. ,   10. ,  100. ])
     """
     locator = None
     if logscale:
@@ -36,10 +45,6 @@ def autolevel(z, N, logscale=None):
     zmax = max(z)
 
     return locator.tick_values(zmin, zmax)
-
-    # For line contours, drop levels outside the data range.
-    # return lev[(lev > zmin) & (lev < zmax)]
-# def autolevel()
 
 
 def cmapFromName(cmapname, ncols=256, bad=None):
@@ -110,7 +115,7 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
     Shortcut to create a matplotlib colorbar within the axes for a given
     patchset.
-    
+
     Parameters
     ----------
     **kwargs :
@@ -245,7 +250,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     mappable.set_array(data)
     # mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
-    
+
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """

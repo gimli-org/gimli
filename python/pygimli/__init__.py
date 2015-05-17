@@ -566,7 +566,7 @@ def randN(n):
     _pygimli_.randn(r)
     return r
 
-def test(show=False):
+def test(show=False, coverage=False):
     """Test all code examples in docstrings using pytest."""
     try:
         import pytest
@@ -575,17 +575,21 @@ def test(show=False):
                           "Try 'sudo pip install pytest'.")
     import os
     from matplotlib import pyplot as plt
+    from pygimli.utils import opt_import
+    pc = opt_import("pytest_cov", "create a coverage report")
+
     old_backend = plt.get_backend()
     if not show:
         plt.switch_backend("Agg")
-
     cwd = __path__[0]
     cfg = os.path.join(cwd, '../tests/setup.cfg')
+    cmd = ""
     if os.path.exists(cfg):
-        print("Found configuration file: %s\n" % cfg)
-        cmd = "-c %s %s" % (cfg, cwd)
-    else:
-        cmd = "%s" % cwd
+        cmd += "-c %s " % cfg
+    if pc and coverage:
+        cmd += "--cov pygimli --cov-report coveralls --cov-report html " + \
+               "--cov-config %s " % cfg.replace("setup.cfg", ".coveragerc")
+    cmd += "%s" % cwd
     try:
         pytest.main(cmd)
     finally:

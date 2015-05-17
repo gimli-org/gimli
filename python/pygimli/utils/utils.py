@@ -54,8 +54,16 @@ def opt_import(module, requiredTo="use the full functionality"):
 
 def trimDocString(docstring):
     """
-    Handling Docstring Indentation.
+    Return properly formatted docstring.
+
     From: https://www.python.org/dev/peps/pep-0257/
+
+    Examples
+    --------
+    >>> from pygimli.utils import trimDocString
+    >>> docstring = '    This is a string with indention and whitespace.   '
+    >>> trimDocString(docstring).replace('with', 'without')
+    'This is a string without indention and whitespace.'
     """
     if not docstring:
         return ''
@@ -90,7 +98,13 @@ def unicodeToAscii(text):
 
 
 def logDropTol(p, droptol=1e-3):
-    """"""
+    """
+    Example
+    -------
+    >>> x = logDropTol((-10,-1,0,1,100))
+    >>> print(x.array())
+    [-4. -3.  0.  3.  5.]
+    """
     tmp = pg.RVector(p)
 
     tmp = pg.abs(tmp / droptol)
@@ -230,13 +244,24 @@ def findNearest(x, y, xp, yp, radius=-1):
 
 def unique_everseen(iterable, key=None):
     """
-    List unique elements, preserving order.
+    Return iterator of unique elements ever seen with preserving order.
 
-    Remember all elements ever seen.
-    http://docs.python.org/library/itertools.html#recipes
+    From: http://docs.python.org/library/itertools.html#recipes
+
+    Examples
+    --------
+    >>> from pygimli.utils import unique_everseen
+    >>> s1 = 'AAAABBBCCDAABBB'
+    >>> s2 = 'ABBCcAD'
+    >>> list(unique_everseen(s1))
+    ['A', 'B', 'C', 'D']
+    >>> list(unique_everseen(s2, key=str.lower))
+    ['A', 'B', 'C', 'D']
+
+    See also
+    --------
+    unique
     """
-    # unique_everseen('AAAABBBCCDAABBB') --> A B C D
-    # unique_everseen('ABBCcAD', str.lower) --> A B C D
     try:
         from itertools import ifilterfalse
     except:
@@ -262,4 +287,17 @@ def unique_everseen(iterable, key=None):
 
 
 def unique(a):
+    """
+    Return list of unique elements ever seen with preserving order.
+
+    Examples
+    --------
+    >>> from pygimli.utils import unique
+    >>> unique((1,1,2,2,3,1))
+    [1, 2, 3]
+
+    See also
+    --------
+    unique_everseen
+    """
     return list(unique_everseen(a))

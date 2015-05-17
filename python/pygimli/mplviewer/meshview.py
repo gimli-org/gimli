@@ -18,7 +18,6 @@ from pygimli.mplviewer import updateAxes as updateAxes_
 
 
 class CellBrowser(object):
-
     """
     Interactive cell browser on current or specified axes for a given mesh.
     Cell information can be displayed by mouse picking. Arrow keys up and down
@@ -27,7 +26,6 @@ class CellBrowser(object):
 
     Parameters
     ----------
-
     mesh : 2D pygimli.Mesh instance
         The plotted mesh to browse through.
     ax : mpl axis instance, optional
@@ -35,15 +33,12 @@ class CellBrowser(object):
 
     Examples
     --------
-
-    >>> from matplotlib import pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import CellBrowser
     >>> mesh = pg.createGrid(range(5), range(5))
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
     ('Interactive cell browser activated on Fig.', ...)
-    >>> plt.show()
     """
 
     def __init__(self, mesh, data=None, ax=None):
@@ -659,7 +654,7 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
 
-    #print(len(x))
+    # print(len(x))
     if len(x) > 2:
         lines = axes.plot(x, y, **kwargs)
 #        updateAxes_(axes, lines)
@@ -679,6 +674,7 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
                    **kwargs)
 
     return lines
+
 
 def drawStreams(axes, mesh, data, startStream=3, **kwargs):
     """
@@ -870,7 +866,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
         start.append(pa)
         end.append(pb)
 
-#    updateAxes_(axes)  # not existing
+# updateAxes_(axes)  # not existing
 
     return start, end
 

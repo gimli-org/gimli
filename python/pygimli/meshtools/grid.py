@@ -45,20 +45,18 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     Examples
     --------
     >>> from pygimli.meshtools import appendTriangleBoundary
-
     >>> from matplotlib import pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawMesh, drawModel
-
     >>> inner = pg.createGrid(range(5), range(5))
     >>> mesh = appendTriangleBoundary(inner, xbound=3, ybound=6, marker=1)
-
     >>> fig, (ax1, ax2) = plt.subplots(1,2)
     >>> p1 = drawMesh(ax1, inner)
     >>> p2 = drawModel(ax2, mesh, mesh.cellMarker())
     >>> p3 = drawMesh(ax2, mesh)
     >>> txt1 = ax1.set_title("a) Input grid")
     >>> txt2 = ax2.set_title("b) With triangle boundary")
+    >>> plt.show()
 
     See Also
     --------
@@ -384,6 +382,3 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         None
 
     return boundMesh
-
-if __name__ == "__main__":
-    pass
