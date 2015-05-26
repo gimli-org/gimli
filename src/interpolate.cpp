@@ -50,9 +50,15 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
     std::vector < Cell * > cells(pos.size());
     size_t count = 0;
     
+    Cell * c = 0;
     for (uint i = 0; i < pos.size(); i ++) {
-        cells[i] = mesh.findCell(pos[i], count, false);
-
+        
+        c = mesh.findCell(pos[i], count, false);
+//         if (!c) {__MS(pos[i])
+//             c = mesh.findCell(pos[i], count, true);
+//             if (!c) exit(0);
+//         }
+        cells[i] = c;
         if (verbose) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
 //                             << "\t searched: " << count << std::endl;
     }
@@ -190,7 +196,7 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose){
             cellData.push_back(it->second);
             cellDataNames.push_back(it->first);
         } else {
-            if (verbose) std::cout << " omiting unknonw data: " << it->first << " " <<
+            if (verbose) std::cout << " omit unknown data: " << it->first << " " <<
                 it->second.size()<< std::endl;
         }
     }

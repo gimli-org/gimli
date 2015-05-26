@@ -28,48 +28,51 @@
 namespace GIMLI{
 
 /*! Convert byte into KByte. */
-inline double kByte( long byte ){ return double( byte / 1024.0 ); }
+inline double kByte(long byte){ return double(byte / 1024.0); }
 
 /*! Convert byte into MByte */
-inline double mByte( long byte ){ return double( byte / ( 1024.0 * 1024.0 ) ); }
+inline double mByte(long byte){ return double(byte / (1024.0 * 1024.0)); }
 
 //! Memory watch.
 /*! Class that might help debugging memory usage.
  * Informations are taken from /proc system, so only available for linux systems.
  * This is a singleton class to ensure a single instance.
- * To call it use e.g.: MemWatch::instance().info( WHERE );*/
-
+ * To call it use e.g.: MemWatch::instance().info(WHERE);*/
 class DLLEXPORT MemWatch : public Singleton< MemWatch > {
 public:
     friend class Singleton< MemWatch >;
 
     /*! Return the current memory usage of the process. Values are in MByte. */
-    double inUse( );
+    double inUse();
 
     /*! Return the current memory usage relative to the last call of this method. Values are in MByte. */
-    double current( );
+    double current();
 
     /*! Shows the current and the relative memory usage. */
-    void info( const std::string & str = "" );
+    void info(const std::string & str = "");
 
 protected:
     double last_;
 
 private:
     /*! Private so that it can not be called */
-    MemWatch( );
+    MemWatch();
     /*! Private so that it can not be called */
-    virtual ~MemWatch( );
+    virtual ~MemWatch();
     /*! Copy constructor is private, so don't use it */
-    MemWatch( const MemWatch & ){};
+    MemWatch(const MemWatch &){};
     /*! Assignment operator is private, so don't use it */
-    void operator = ( const MemWatch & ){ };
+    void operator = (const MemWatch &){ };
 
     Stopwatch * swatchAll_;
     Stopwatch * swatchDur_;
 
 };
 
+/*! Utility so we can use it from python. */
+inline DLLEXPORT double memoryInUse(){
+    return GIMLI::MemWatch::instance().inUse();
+}
 
 } // namespace GIMLI
 
