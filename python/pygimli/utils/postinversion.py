@@ -9,7 +9,8 @@ Created on Thu Feb 02 14:15:13 2012
 import pygimli as pg
 from pygimli.utils import gmat2numpy
 import numpy as np
-import scipy.linalg
+# is there a way using numpy.linalg instead to avoid default scipy dependency?
+#import scipy.linalg
 
 
 def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
@@ -103,7 +104,12 @@ def modCovar(inv):
         # scaled model covariance (=correlation) matrix
         MCMs = di.reshape(len(di), 1) * MCM * di
         return varVG, MCMs
-    except:
+    except Exception as e:
+        print(e)
+        import traceback
+        import sys
+
+        traceback.print_exc(file=sys.stdout)
         return np.zeros(len(inv.model()),), 0
 
 

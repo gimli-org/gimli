@@ -14,6 +14,7 @@ try:
 except ImportError as e:
     print(e)
     import traceback
+    import sys
 
     traceback.print_exc(file=sys.stdout)
     raise Exception('''ERROR: cannot import the library 'pygimli'.
