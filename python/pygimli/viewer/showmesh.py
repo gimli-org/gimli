@@ -11,14 +11,16 @@ try:
     from pygimli.mplviewer import drawMesh, drawModel, drawField
     from pygimli.mplviewer import drawSensors, showLater
     from pygimli.mplviewer import createColorbar, drawStreams, addCoverageAlpha
+except ImportError as e:
+    print(e)
+    import traceback
 
-except ImportError:
+    traceback.print_exc(file=sys.stdout)
     raise Exception('''ERROR: cannot import the library 'pygimli'.
         Ensure that pygimli is in your PYTHONPATH ''')
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 
 def show(mesh, *args, **kwargs):
     """

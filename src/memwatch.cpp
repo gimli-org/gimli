@@ -43,42 +43,42 @@ namespace GIMLI {
 // Global static pointer used to ensure a single instance of the class.
 template < > DLLEXPORT MemWatch * Singleton < MemWatch>::pInstance_ = NULL;
 
-MemWatch::MemWatch( ){
+MemWatch::MemWatch(){
     last_ = inUse();
-    swatchAll_ = new Stopwatch( true );
-    swatchDur_ = new Stopwatch( true );
+    swatchAll_ = new Stopwatch(true);
+    swatchDur_ = new Stopwatch(true);
 }
 
-MemWatch::~MemWatch( ){
+MemWatch::~MemWatch(){
     delete swatchAll_; swatchAll_ = NULL;
     delete swatchDur_; swatchDur_ = NULL;
 }
 
-double MemWatch::current( ){
+double MemWatch::current(){
     double ret = inUse() - last_;
     last_ = inUse();
     return ret;
 }
 
-double MemWatch::inUse( ) {
+double MemWatch::inUse() {
 #if USE_BOOST_THREAD
-    boost::mutex::scoped_lock lock( __readproc__mutex__ );
+    boost::mutex::scoped_lock lock(__readproc__mutex__);
 #endif
 
 #ifdef WIN32_LEAN_AND_MEAN
 
     PROCESS_MEMORY_COUNTERS pmc;
 
-    if ( GetProcessMemoryInfo( GetCurrentProcess(), &pmc, sizeof(pmc) ) ){
-        double ret = mByte( pmc.WorkingSetSize );
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))){
+        double ret = mByte(pmc.WorkingSetSize);
         return ret;
     } else { return 0; }
 
 #else
     #if USE_PROC_READPROC
     struct proc_t usage;
-    look_up_our_self( & usage );
-    double ret = mByte( usage.vsize );
+    look_up_our_self(& usage);
+    double ret = mByte(usage.vsize);
     return ret;
     #else // no windows and no libproc
 
@@ -89,14 +89,14 @@ double MemWatch::inUse( ) {
 
 void MemWatch::info(const std::string & str){
     if (__GIMLI_DEBUG__){
-#if defined( WIN32_LEAN_AND_MEAN ) || USE_PROC_READPROC
+#if defined(WIN32_LEAN_AND_MEAN) || USE_PROC_READPROC
         std::cout << "\t" << str << " Memory "
 #if USE_BOOST_THREAD
                     << "(mt)"
 #endif // HAVE_BOOST_THREAD_HPP
                     << " in use: abs: " << inUse() << " rel: "
                     << current() << " MByte. t = "
-                    << swatchAll_->duration() << "/" << swatchDur_->duration( true ) << " s " <<  std::endl;
+                    << swatchAll_->duration() << "/" << swatchDur_->duration(true) << " s " <<  std::endl;
     #else
         std::cout << "\t" << str << " Memory no info"  <<  std::endl;
     #endif
