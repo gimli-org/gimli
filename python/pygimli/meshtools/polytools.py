@@ -312,7 +312,6 @@ def createLine(start, end, segments, **kwargs):
         else:
             p = endPos -  a * (dt * i)
 
-        print(p)
         poly.createNode(p)
 
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
@@ -374,6 +373,121 @@ def mergePLC(pols):
                 poly.addHoleMarker(hm)
 
     return poly
+
+def readPLC(filename):
+    """
+    Read 2D triangle POLY or 3D Tetgen PLC files.
+    
+    TODO 3D Tetgen PLC
+     
+    Parameters
+    ----------
+    filename: str
+        Filename *.poly
+
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+        
+    """
+    with open(filename, 'r') as fi:
+        content = fi.readlines()
+    fi.close()
+    
+    # Read header
+    headerLine = content[0].split()
+  
+    if len(headerLine) != 4:
+        raise Exception("Format unknown! header size != 4", headerLine)
+
+    fromOne = 0
+    nVerts = int(headerLine[0])
+    dimension = int(headerLine[1])
+    nPointsAttributes = int(headerLine[2])
+    haveNodeMarker = int(headerLine[3])
+  
+    poly = pg.Mesh(dimension)
+    
+    # Nodes section
+    for i in range(nVerts):
+        row = content[1 + i].split()
+
+        if len(row) == (1 + dimension + nPointsAttributes + haveNodeMarker):
+            if i == 0:
+                fromOne = int(row[0])
+            if dimension == 2:
+                n = poly.createNode((float(row[1]), float(row[2])))
+            elif dimension == 3:
+                n = poly.createNode((float(row[1]), float(row[2]), float(row[3])))
+            if haveNodeMarker:
+                n.setMarker(int(row[-1]))
+
+        else:
+            raise Exception("Poly file seams corrupt: node section line: "
+                            + str(i) + " " + row)
+      
+    # Segment section
+    row = content[1 + nVerts].split()
+
+    if len(row) != 2:
+        raise Exception("Format unknown for segment section " + row)
+    
+    nSegments = int(row[0])
+    haveBoundaryMarker = int(row[1]);
+
+    
+    if dimension == 2:
+        for i in range(nSegments):
+            row = content[2 + nVerts + i].split()
+    
+            if len(row) == (3 + haveBoundaryMarker):
+                marker = 0
+                if haveBoundaryMarker:
+                    marker = int(row[3])
+                
+                poly.createEdge(poly.node(int(row[1]) - fromOne),
+                                poly.node(int(row[2]) - fromOne),
+                                marker)
+    else:
+        raise Exception("Read segments for 3D tetgen format not yet supported")
+    
+    # Hole section
+    row = content[2 + nVerts + nSegments].split()
+    
+    if len(row) != 1:
+        raise Exception("Format unknown for hole section " + row)
+    
+    nHoles = int(row[0])
+    for i in range(nHoles):
+        row = content[3 + nVerts + nVerts].split()
+
+        if len(row) == 3:
+            poly.addHoleMarker([float(row[1]), float(row[2])])
+        else:
+            raise Exception("Poly file seams corrupt: hole section line (3): "
+                            + str(i) + " " + str(len(row)))
+      
+    if (3 + nVerts + nSegments + nHoles) < len(content):
+        # Region section
+        row = content[3 + nVerts + nSegments + nHoles].split()
+        
+        if len(row) != 1:
+            raise Exception("Format unknown for region section " + row)
+    
+        nRegions = int(row[0])
+        
+        for i in range(nRegions):
+            row = content[4 + nVerts + nSegments + nHoles + i].split()
+            if len(row) == 5:
+                poly.addRegionMarker([float(row[1]), float(row[2])], 
+                                     marker=int(float(row[3])), area=float(row[4]))
+            else:
+                raise Exception("Poly file seams corrupt: region section line (5): "
+                                + str(i) + " " + str(len(row)))
+    
+    return poly
+    
 
 def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     """

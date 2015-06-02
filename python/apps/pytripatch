@@ -437,24 +437,14 @@ def main(argv):
     # !!!!use argparse!!!
     from optparse import OptionParser
 
-    parser = OptionParser(
-        "usage: %prog [options] mesh|mod",
-        version="%prog: " +
-        pg.__version__)
-    parser.add_option(
-        "-v",
-        "--verbose",
-        dest="verbose",
-        action="store_true",
-        help="be verbose",
-        default=False)
-    parser.add_option(
-        "-S",
-        "--silent",
-        dest="silent",
-        action="store_true",
-        help="set viewer silent mode",
-        default=False)
+    parser = OptionParser("usage: %prog [options] mesh|mod",
+                          version="%prog: " + pg.__version__)
+    parser.add_option("-v", "--verbose", 
+                      dest="verbose", action="store_true",
+                      help="be verbose", default=False)
+    parser.add_option("-S", "--silent",
+                      dest="silent", action="store_true",
+                      help="set viewer silent mode", default=False)
     parser.add_option(
         "-L",
         "--linear",
@@ -513,13 +503,9 @@ def main(argv):
                       help="coverage vector", metavar="File")
     parser.add_option("", "--cWeight", dest="cWeight",
                       help="constraint weight vector", metavar="File")
-    parser.add_option(
-        "",
-        "--no-cbar",
-        dest="showCbar",
-        default=True,
-        help="show colorbar",
-        action="store_false")
+    parser.add_option("", "--no-cbar",
+                      dest="showCbar", action="store_false",
+                      help="show colorbar", default=True)
     parser.add_option(
         "",
         "--cbar-only",
@@ -636,6 +622,7 @@ def main(argv):
 
     if options.interperc > 0.0 and options.cMin is None and \
        options.cMax is None:
+           
         if options.datafile is not None:
             if os.path.exists(options.datafile):
                 a = np.loadtxt(options.datafile)
@@ -737,9 +724,11 @@ def main(argv):
                     label=options.label, linear=options.linear,
                     drawEdges=options.drawEdges, cmapname=options.cmapname,
                     offset=pg.RVector3(options.xoffset, options.zoffset))
+            elif meshname.rfind('.poly') != -1:
+                axes, _ = pg.show(pg.load(meshname, options.verbose))
             else:
                 print("""Cannot determine format for input mesh.
-                      Available are *.bms, *.mod""")
+                      Available are *.bms, *.mod, *.poly""")
                 exit(2)
         except RuntimeError as err:
             print(err)

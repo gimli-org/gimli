@@ -375,7 +375,9 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
             col = (0.0, 0.0, 0.0)
             if n.marker() == pg.MARKER_NODE_SENSOR:
                 col = (1.0, 0.0, 0.0)
-            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
+            #eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
+            axes.plot(n.pos()[0], n.pos()[1], 'bo', markersize=5, color='black')
+            #eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
             cols.append(col)
         p = mpl.collections.PatchCollection(eCircles, color=cols)
         axes.add_collection(p)
@@ -385,6 +387,9 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
                       str(reg.marker()) + ": " + str(reg.area()),
                       color='black')  # 'white'
 
+        for hole in mesh.holeMarker():
+            axes.text(hole[0], hole[1], 'H', color='black')
+            
     updateAxes_(axes)
 
 

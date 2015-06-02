@@ -13,8 +13,9 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=https://github.com/gccxml/gccxml.git
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml 
-PYGCCXML_REV=594d71d
-#PYGCCXML_REV=36234fd
+#PYGCCXML_REV=594d71d # old but functional
+#PYGCCXML_REV=09fe928 # current functional
+
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
