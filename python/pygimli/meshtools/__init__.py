@@ -18,4 +18,5 @@ from . polytools import createWorld
 from . polytools import createCircle
 from . polytools import createLine
 from . polytools import mergePLC
+from . polytools import readPLC
 

@@ -43,6 +43,12 @@ public:
 
     virtual ~ModellingBase();
 
+    /*! Set verbose state. */
+    inline void setVerbose(bool verbose) {verbose_=verbose;}
+    
+    /*! Get verbose state. */
+    inline bool verbose() const {return verbose_;}
+    
     virtual RVector response(const RVector & model)=0;
 
     inline RVector operator() (const RVector & model){ return response(model); }
@@ -139,8 +145,6 @@ public:
     const RegionManager & regionManager() const;
 
     RegionManager & regionManager();
-
-    void setVerbose(bool verbose) { verbose_=verbose; }
 
     Region * region(int marker);
 

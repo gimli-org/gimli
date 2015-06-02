@@ -3,7 +3,7 @@
 import os.path
 
 import pygimli as pg
-from pygimli.meshtools import readGmsh
+from pygimli.meshtools import readGmsh, readPLC
 
 
 def load(fname, verbose=False):
@@ -43,9 +43,9 @@ def load(fname, verbose=False):
         ".bmat": pg.RMatrix,
         ".mat": pg.RMatrix,
         # Meshes
+        ".poly": readPLC,
         ".bms": pg.Mesh,
         ".msh": readGmsh,
-        ".poly": pg.Mesh,
         ".vtk": pg.Mesh
     }
 
@@ -64,11 +64,14 @@ def load(fname, verbose=False):
     if suffix in import_routines:
         try:
             return import_routines[suffix](fname)
-        except:
+        except Exception as e:
             if verbose:
-                print(
-                    "File extension %s seems to be not correct. Trying auto-detect." %
-                    suffix)
+                import sys
+                import traceback
+                traceback.print_exc(file=sys.stdout)
+                print(e)
+                print("File extension %s seems to be not correct. "
+                    "Trying auto-detect." % suffix)
     else:
         if verbose:
             print(
