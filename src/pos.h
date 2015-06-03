@@ -47,9 +47,21 @@ DLLEXPORT void swapXY(std::vector < RVector3 > & rv);
 DLLEXPORT void swapXZ(std::vector < RVector3 > & rv);
 DLLEXPORT void swapYZ(std::vector < RVector3 > & rv);
 
-
 DLLEXPORT std::vector < RVector3 > loadRVector3(const std::string & fileName);
 DLLEXPORT void saveRVector3(const std::vector < RVector3 > l, const std::string & fileName);
+
+/*! Create one dimensional array from R3Vector
+ * return = [vev[0][0], vev[0][1], vev[0][2], vev[1][0] .. ] */
+DLLEXPORT RVector toArray(const R3Vector & vec);
+
+/*! Create two dimensional [n x 3] array from R3Vector */
+DLLEXPORT RMatrix toMatrix(const R3Vector & vec);
+
+/*! Temporary transformation vor R3Vector until std::vector < RVector3 > will be removed. */
+DLLEXPORT R3Vector stdVectorRVector3ToR3Vector(const std::vector < RVector3 > & rv);
+
+/*! Temporary transformation vor R3Vector until std::vector < RVector3 > will be removed. */
+DLLEXPORT std::vector < RVector3 > R3VectorTostdVectorRVector3(const R3Vector & rv);
 
 //! 3 dimensional vector
 /*! 3 dimensional vector */

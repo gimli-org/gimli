@@ -23,7 +23,6 @@ from pygimli.meshtools import merge2Meshes, appendTriangleBoundary
 """
 We continue by building a regular grid and assign the marker 2 to all cells.
 """
-print("-4")
 xmin, xmax = 0., 50.
 zmin, zmax = -50., -25.
 
@@ -36,7 +35,6 @@ mesh1.create2DGrid(xreg, zreg, 0)
 for c in mesh1.cells():
     c.setMarker(2)
 
-print("-3")
 print(mesh1)
 
 """
@@ -61,7 +59,7 @@ poly.createEdge(n1, n2)
 n1 = poly.createNode(xmin, z2, 0.0)
 poly.createEdge(n1, n2)
 poly.createEdge(n1, n0)
-print("-2")
+
 tri = pg.TriangleWrapper(poly)
 tri.setSwitches('-pzeAfaq31')
 
@@ -80,40 +78,41 @@ for cell in mesh2.cells():
 """
 .. lastcout::
 
-Finally, the grid and the unstrcutured mesh can be merged to single mesh for further
+Finally, the grid and the unstructured mesh can be merged to single mesh for further
 modelling.
 """
 pg.show(mesh1)
 
 # looking for *** Error in `/usr/bin/python3.3': corrupted double-linked list: 0x00000000022a0ac0 ***
-#mesh3 = merge2Meshes(mesh1, mesh2)
-#pg.show(mesh3)
+mesh3 = merge2Meshes(mesh1, mesh2)
+pg.show(mesh3)
+
 """
 .. lastcout::
 
 Of course, you can treat the hybrid mesh like any other mesh and append a triangle
 boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
 """
-#print("1")
-#mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
-                              #smooth=True, marker=3, isSubSurface=True)
-#print("2")
-#ax, cbar = showMesh(mesh, mesh.cellMarker(), 
-                    #cmap="summer",
-                    #label="Region marker", 
-                    #showLater=True)
-#print("3")
-#drawMesh(ax, mesh)
-#print("4")
-#ax, _ = showMesh(mesh, mesh.cellMarker(),
-                 #logScale=False,
-                 #label="Region marker",
-                 #showLater=True)
-#print("5")
-#drawMesh(ax, mesh)
-#print("6")
-#plt.xlim(40,60)
-#plt.ylim(-30, -20)
-#plt.show()
-#print("7")
+
+mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
+                              smooth=True, marker=3, isSubSurface=True)
+
+ax, cbar = showMesh(mesh, mesh.cellMarker(), 
+                    cmap="summer",
+                    label="Region marker", 
+                    showLater=True)
+
+drawMesh(ax, mesh)
+
+ax, _ = showMesh(mesh, mesh.cellMarker(),
+                 logScale=False,
+                 label="Region marker",
+                 showLater=True)
+
+drawMesh(ax, mesh)
+
+plt.xlim(40,60)
+plt.ylim(-30, -20)
+plt.show()
+
 

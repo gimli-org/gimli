@@ -72,14 +72,12 @@ from pygimli.ioutils import load
 from pygimli.viewer import show, showLater, plt, wait
 from pygimli.solver import solve
 
-
 def showNow():
     showLater(0)
 
 ############################
 # print function for gimli stuff
 ############################
-
 
 def RVector_str(self, valsOnly=False):
     s = str()
@@ -103,13 +101,12 @@ def RVector_str(self, valsOnly=False):
         " [" + str(self[0]) + ",...," + str(self[self.size() - 1]) + "]"
     )
 
-
 def RVector3_str(self):
-    return (
-        "RVector3: (" + str(self.x()) + ", " +
-        str(self.y()) + ", " + str(self.z()) + ")"
-    )
+    return ("RVector3: (" + str(self.x()) + ", " +
+            str(self.y()) + ", " + str(self.z()) + ")" )
 
+def R3Vector_str(self):
+    return ("R3Vector: n=" + str(self.size()))
 
 def RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
@@ -120,7 +117,6 @@ def RMatrix_str(self):
             s += self[v].__str__(True) + '\n'
     return s
 
-
 def CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
@@ -130,10 +126,8 @@ def CMatrix_str(self):
             s += self[v].__str__(True) + '\n'
     return s
 
-
 def Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
-
 
 def Mesh_str(self):
     return (
@@ -142,18 +136,18 @@ def Mesh_str(self):
         str(self.boundaryCount())
     )
 
-
 def Data_str(self):
     return (
         "Data: Sensors: " +
         str(self.sensorCount()) + " data: " + str(self.size())
     )
 
-_pygimli_.RVector3.__str__ = RVector3_str
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
 _pygimli_.IVector.__str__ = RVector_str
+_pygimli_.RVector3.__str__ = RVector3_str
+_pygimli_.R3Vector.__str__ = R3Vector_str
 
 _pygimli_.RMatrix.__str__ = RMatrix_str
 _pygimli_.CMatrix.__str__ = CMatrix_str
@@ -167,7 +161,6 @@ _pygimli_.DataContainer.__str__ = Data_str
 # compatibility stuff
 ############################
 
-
 def nonzero_test(self):
     raise BaseException("Warning! there is no 'and' and 'or' for "
                         "BVector and RVector. " +
@@ -176,6 +169,8 @@ def nonzero_test(self):
 
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.RVector.__bool__ = nonzero_test
+_pygimli_.R3Vector.__nonzero__ = nonzero_test
+_pygimli_.R3Vector.__bool__ = nonzero_test
 _pygimli_.BVector.__nonzero__ = nonzero_test
 _pygimli_.BVector.__bool__ = nonzero_test
 _pygimli_.CVector.__nonzero__ = nonzero_test
@@ -183,28 +178,13 @@ _pygimli_.CVector.__bool__ = nonzero_test
 _pygimli_.IVector.__nonzero__ = nonzero_test
 _pygimli_.IVector.__bool__ = nonzero_test
 
-
 def __RVectorPower(self, m):
     return pow(self, m)
 _pygimli_.RVector.__pow__ = __RVectorPower
 
 ############################
-# allow:
-############################
-
-# def __ADD(self, val):
-#ret = type(self)()
-# for i, r in enumerate(self):
-#ret.append(r + val)
-# return ret
-
-#_pygimli_.stdVectorIndex.__add__ = __ADD
-
-
-#_pygimli_.stdVectorIndex = _pygimli_.stdVectorSIndex
-
-############################
-# Indexing [] operator for RVector, CVector, RVector3, RMatrix, CMatrix
+# Indexing [] operator for RVector, CVector, 
+#                          RVector3, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
     """
@@ -251,7 +231,6 @@ def __getVal(self, idx):
 
     return self.getVal(int(idx))
 
-
 def __setVal(self, idx, val):
 
     if isinstance(idx, slice):
@@ -266,7 +245,6 @@ def __setVal(self, idx, val):
         return
 
     self.setVal(val, idx)
-
 
 def __getValMatrix(self, idx):
 
@@ -329,10 +307,10 @@ def PGVector_len(self):
     return self.size()
 
 _pygimli_.RVector.__len__ = PGVector_len
+_pygimli_.R3Vector.__len__ = PGVector_len
 _pygimli_.BVector.__len__ = PGVector_len
 _pygimli_.CVector.__len__ = PGVector_len
 _pygimli_.IVector.__len__ = PGVector_len
-
 
 def RMatrix_len(self):
     return self.rows()
@@ -368,10 +346,10 @@ def __VectorIterCall__(self):
     # return _pygimli_.RVectorIter(self.beginPyIter())
 
 _pygimli_.RVector.__iter__ = __VectorIterCall__
+_pygimli_.R3Vector.__iter__ = __VectorIterCall__
 _pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.IVector.__iter__ = __VectorIterCall__
 _pygimli_.CVector.__iter__ = __VectorIterCall__
-
 
 class DefaultContainerIter:
 
@@ -394,21 +372,17 @@ class DefaultContainerIter:
         else:
             return self.vec[self.pos]
 
-
 def __MatIterCall__(self):
     return DefaultContainerIter(self)
 
 _pygimli_.RMatrix.__iter__ = __MatIterCall__
 _pygimli_.CMatrix.__iter__ = __MatIterCall__
 
-
 class Vector3Iter (VectorIter):
-
     def __init__(self, vec):
         self.vec = vec
         self.length = 3
         self.pos = -1
-
 
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
@@ -434,15 +408,28 @@ def __RVectorArrayCall__(self, idx=None):
         print(self)
         print(idx)
         raise Exception("we need to fix this")
-    import numpy as np
+    # probably fixed!!!
+    #import numpy as np
     # we need to copy the array until we can handle increasing the reference
     # counter in self.array() else it leads to strange behaviour
     # test in testRValueConverter.py:testNumpyFromRVec()
-    return np.array(self.array())
-    # return self.array()
+    #return np.array(self.array())
+    return self.array()
 
 _pygimli_.RVector.__array__ = __RVectorArrayCall__
+_pygimli_.R3Vector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
+
+# hackish until stdVectorRVector3 will be removed
+def __stdVectorRVector3ArrayCall(self, idx=None):
+    if idx:
+        print(self)
+        print(idx)
+        raise Exception("we need to fix this")
+    return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
+    
+_pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
+
 #_pygimli_.RVector3.__array__ = _pygimli_.RVector3.array
 #del _pygimli_.RVector.__array__
 

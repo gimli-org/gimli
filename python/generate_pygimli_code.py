@@ -163,16 +163,11 @@ def generate(defined_symbols, extraIncludes):
     sourcedir = os.path.dirname(os.path.abspath(__file__))
     sourceHeader = os.path.abspath(sourcedir + "/" + r"pygimli.h")
     gimliInclude = os.path.dirname(
-        os.path.abspath(
-            sourcedir +
-            "/../src/" +
-            r"gimli.h"))
+                         os.path.abspath(sourcedir + "/../src/" + r"gimli.h"))
     settings.includesPaths.append(gimliInclude)
 
     xml_cached_fc = parser.create_cached_source_fc(
-        sourceHeader,
-        settings.module_name +
-        '.cache')
+        sourceHeader, settings.module_name + '.cache')
     #xml_cached_fc = parser.create_cached_source_fc(os.path.join(r"pygimli.h"), settings.module_name + '.cache')
 
     import platform
@@ -226,12 +221,12 @@ def generate(defined_symbols, extraIncludes):
     mb.classes().always_expose_using_scope = True
     mb.calldefs().create_with_signature = True
 
-    hand_made_wrappers.apply(mb)
-
     global_ns = mb.global_ns
     global_ns.exclude()
     main_ns = global_ns.namespace(MAIN_NAMESPACE)
     main_ns.include()
+
+    hand_made_wrappers.apply(mb)
 
     # START manual r-value converters
     rvalue_converters = [
@@ -248,9 +243,7 @@ def generate(defined_symbols, extraIncludes):
     # END manual r-value converters
 
     custom_rvalue_path = os.path.join(
-        os.path.abspath(
-            os.path.dirname(__file__)),
-        'custom_rvalue.cpp')
+        os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp')
 
     exclude(
         main_ns.variables,
@@ -328,13 +321,10 @@ def generate(defined_symbols, extraIncludes):
                                '::GIMLI::__VectorValExprOp<double, GIMLI::__VectorExpr<double, GIMLI::__ValVectorExprOp<double, GIMLI::__VectorIterator<double >, GIMLI::MULT > >, GIMLI::MULT >.pypp.hpp',
                                'GIMLI::Expr<GIMLI::ExprIdentity>'])
 
-    exclude(
-        main_ns.member_functions,
-        name=[
-            'begin',
-            'end',
-            'val'],
-        return_type=[''])
+    exclude(main_ns.member_functions,
+            name=['begin',
+                  'end',
+                  'val'], return_type=[''])
 
     exclude(main_ns.member_operators, symbol=[''])
 
@@ -455,7 +445,6 @@ def generate(defined_symbols, extraIncludes):
         if not samefile(sourcefile, destfile):
             shutil.copy(sourcefile, './generated')
             print("Updated ", filename, "as it was missing or out of date")
-
 
 if __name__ == '__main__':
 
