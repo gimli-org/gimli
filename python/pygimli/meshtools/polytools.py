@@ -17,7 +17,8 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
         if len(boundaryMarker) == nEdges:
             bm = boundaryMarker
         else:
-            raise Exception("marker length != nEdges", len(marker), nEdges)
+            raise Exception("marker length != nEdges",
+                            len(boundaryMarker), nEdges)
     else:
         bm = [boundaryMarker] * nEdges
 
@@ -700,14 +701,15 @@ if __name__ == "__main__":
     #drawMesh(ax, createMesh(plc))
     #plt.show()
 
-    import matplotlib.pyplot as plt
-    import pygimli as pg
-    import math
-    from pygimli.meshtools import polytools as plc
-    c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
-    c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
-    c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
-                          end=1.5*math.pi, isClosed=False)
-    fig, ax = plt.subplots()
-    pg.show([c0, c1, c2], axes=ax)
-    plt.show()
+    #import matplotlib.pyplot as plt
+    #import pygimli as pg
+    #import math
+    #from pygimli.meshtools import polytools as plc
+    #c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
+    #c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
+    #c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
+                          #end=1.5*math.pi, isClosed=False)
+    #fig, ax = plt.subplots()
+    #pg.show([c0, c1, c2], axes=ax)
+    #plt.show()
+    pass

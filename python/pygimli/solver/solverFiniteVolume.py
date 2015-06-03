@@ -390,7 +390,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
         duB = []
 
     if useHalfBoundaries:
-        dof = mesh.cellCount() + len(uBoundaries)
+        dof = mesh.cellCount() + len(uB)
 
     S = None
     if sparse:
@@ -487,7 +487,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
                 S[cell.id(), cell.id()] -= fn[cell.id()]
 
     if useHalfBoundaries:
-        for i, [b, val] in enumerate(uDirBounds):  # not defined!!!
+        for i, [b, val] in enumerate(duB):  # not defined!!!
             bIdx = mesh.cellCount() + i
 
             c = b.leftCell()

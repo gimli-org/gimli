@@ -2,6 +2,7 @@
 """
 pygimli base functions
 """
+import os
 import time
 
 import numpy as np
@@ -15,7 +16,10 @@ from matplotlib.cm import jet
 
 
 def gmat2numpy(mat):
-    """convert pygimli matrix into numpy.array."""
+    """convert pygimli matrix into numpy.array.
+    
+    TODO implement correct rval 
+    """
     nmat = np.zeros((len(mat), len(mat[0])))
     for i, row in enumerate(mat):
         nmat[i] = row
@@ -23,7 +27,9 @@ def gmat2numpy(mat):
 
 
 def numpy2gmat(nmat):
-    """convert numpy.array into pygimli RMatrix."""
+    """convert numpy.array into pygimli RMatrix.
+    TODO implement correct rval 
+    """
     gmat = pg.RMatrix()
     for arr in nmat:
         gmat.push_back(pg.asvector(arr))
@@ -105,6 +111,7 @@ def jetmap(m=64):
 
 
 def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
+    """ """
     plt.imshow(A, interpolation='nearest')
     plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
     plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])
@@ -439,7 +446,10 @@ def createDateTimeString(now=None):
 
 
 def setPlotStuff(fontsize=7, dpi=None):
-    """ set up rcParams (fontsize and dpi) for later plotting """
+    """ set up rcParams (fontsize and dpi) for later plotting 
+    
+    TODO move to mplviewer __init__.py
+    """
     from matplotlib import rcParams
 
     rcParams['axes.labelsize'] = fontsize

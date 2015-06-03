@@ -776,15 +776,16 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     return mesh
 
 if __name__ == "__main__":
-    import pygimli as pg
-    import matplotlib.pyplot as plt
+    #import pygimli as pg
+    #import matplotlib.pyplot as plt
 
-    from pygimli.meshtools import createParaMesh2DGrid
-    from pygimli.mplviewer import drawMesh
-    x = pg.RVector(range(10))
-    mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
-                                paraDZ=1, paraDepth=5)
-    #fig, ax = plt.subplots()
-    pg.show(mesh)
-    #drawMesh(ax, mesh)
-    plt.show()
+    #from pygimli.meshtools import createParaMesh2DGrid
+    #from pygimli.mplviewer import drawMesh
+    #x = pg.RVector(range(10))
+    #mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
+                                #paraDZ=1, paraDepth=5)
+    ##fig, ax = plt.subplots()
+    #pg.show(mesh)
+    ##drawMesh(ax, mesh)
+    #plt.show()
+    pass
