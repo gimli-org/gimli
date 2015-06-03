@@ -437,13 +437,12 @@ _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 # non automatic exposed functions
 ############################
 
-
 def abs(v):
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
     elif type(v) == _pygimli_.RMatrix:
         for i in range(len(v)):
-            v[i] = pg.abs(v[i])
+            v[i] = _pygimli_.abs(v[i])
         return v
 
     return _pygimli_.fabs(v)
@@ -539,10 +538,10 @@ _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 # define template void Quaternion< double >::rotMatrix(Matrix < double > &
 # mat) const;
 
-
-def __getRotMatrix__(self, mat):
-    getRotMatrix__(self, mat)
-_pygimli_.RQuaternion.rotMatrix = __getRotMatrix__
+# CR: What was this good for??
+#def __getRotMatrix__(self, mat):
+    #getRotMatrix__(self, mat)
+#_pygimli_.RQuaternion.rotMatrix = __getRotMatrix__
 
 # some rvector helpers
 
@@ -560,7 +559,7 @@ def test(show=False, coverage=False):
     except ImportError:
         raise ImportError("pytest is required to run test suite. " + \
                           "Try 'sudo pip install pytest'.")
-    import os
+
     from matplotlib import pyplot as plt
     from pygimli.utils import opt_import
     pc = opt_import("pytest_cov", "create a coverage report")
