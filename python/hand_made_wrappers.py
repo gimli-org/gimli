@@ -13,7 +13,12 @@ WRAPPER_DEFINITION_RVector3 =\
 PyObject * RVector3_getArray(GIMLI::RVector3 & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = 3;
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, &vec[0]);
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
+    std::memcpy(PyArray_DATA(ret), (void *)(&vec[0]), length * sizeof(double));
+
+    // ** possible fixed due to memcpy here
+    //PyArray_XINCREF(ret);
+    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
     //Py_DECREF(ret);
     return ret;
 }
@@ -38,9 +43,13 @@ boost::python::tuple RVector_getData(GIMLI::RVector & vec){
 PyObject * RVector_getArray(GIMLI::RVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = vec.size();
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, &vec[0]);
+    //PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, &vec[0]);
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
+    std::memcpy(PyArray_DATA(ret), (void *)(&vec[0]), length * sizeof(double));
+                
+    // ** possible fixed due to memcpy here                
     //PyArray_XINCREF(ret);
-    Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
+    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
     //Py_DECREF(ret);
     return ret;
 }
@@ -49,10 +58,38 @@ PyObject * RVector_getArray(GIMLI::RVector & vec){
 WRAPPER_REGISTRATION_RVector = [
     """def("getData", &RVector_getData,
                 "PyGIMLI Helper Function: extract an python object from a RVector ");""",
-    """def("array",
-       &RVector_getArray,
+    """def("array", &RVector_getArray,
        "PyGIMLI Helper Function: extract a numpy array object from a RVector ");""",
 ]
+
+WRAPPER_DEFINITION_R3Vector =\
+    """
+#include <numpy/arrayobject.h>
+
+PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    npy_intp length = vec.size();
+      
+    long int dim2 [] = {length, 3};
+    PyObject * ret = PyArray_SimpleNew(2, dim2, NPY_DOUBLE);
+
+    std::memcpy(PyArray_DATA(ret),
+                (void *) &GIMLI::toArray(vec)[0],
+                (length * 3) * sizeof(double));
+    
+    // ** possible fixed due to memcpy here                
+    //PyArray_XINCREF(ret);
+    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
+    //Py_DECREF(ret);
+    return ret;
+}
+
+"""
+WRAPPER_REGISTRATION_R3Vector = [
+    """def("array", &R3Vector_getArray,
+       "PyGIMLI Helper Function: extract a numpy array object from a R3Vector ");""",
+]
+
 
 WRAPPER_DEFINITION_General = \
     """
@@ -106,7 +143,11 @@ def apply(mb):
     rt = mb.class_('Vector<double>')
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
-
+    
+    rt = mb.class_('Vector< GIMLI::Pos< double > >')
+    rt.add_declaration_code(WRAPPER_DEFINITION_R3Vector)
+    apply_reg(rt, WRAPPER_REGISTRATION_R3Vector)
+    
     try:
         rt = mb.class_('Pos<double>')
         rt.add_declaration_code(WRAPPER_DEFINITION_RVector3)

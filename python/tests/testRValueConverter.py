@@ -65,7 +65,23 @@ def testNumpyFromRVec3():
     print(sys.getrefcount(x))
     print(sys.getrefcount(a))
 
-
+def testNumpyFromR3Vec():
+    mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2])
+    print(mesh)
+    print(mesh.nodeCenters())
+    for i in mesh.nodeCenters():
+        print(i)
+        
+    x = np.asarray(mesh.nodeCenters())
+    print(x)
+    x = np.array(mesh.nodeCenters())
+    print(x)
+    x = np.array(mesh.cellCenter())
+    print(x)
+    print(mesh.cell(0).center())
+    print(np.array(mesh.cell(0).center()))
+    
+    
 def testRValNumpyArray():
     x = np.arange(0, 1., 0.2)
     print(sys.getrefcount(x))
@@ -117,5 +133,6 @@ if __name__ == '__main__':
     # testRValSequenz()
     # testNumpyFromRVec()
     # testNumpyFromRVec3()
-    testRValNumpyArray()
+    # testRValNumpyArray()
+    testNumpyFromR3Vec()
     # testSlices()

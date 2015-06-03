@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "pos.h"
+#include "matrix.h"
 //#include "vectortemplates.h"
 
 namespace GIMLI{
@@ -122,6 +123,34 @@ template < class ValueType > void swap(ValueType & v1, ValueType & v2){ ValueTyp
 void swapXY(std::vector < RVector3 > & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][1]); }
 void swapXZ(std::vector < RVector3 > & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][2]); }
 void swapYZ(std::vector < RVector3 > & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][1], rv[i][2]); }
+
+RVector toArray(const R3Vector & vec){
+    RVector ret(vec.size() * 3);
+    for (Index i = 0; i < vec.size(); i ++) {
+        std::copy(&vec[i][0], &vec[i][2], &ret[i*3]);
+    }
+    return ret;
+}
+
+RMatrix toMatrix(const R3Vector & vec){
+    RMatrix ret(vec.size(), 3);
+    for (Index i = 0; i < vec.size(); i ++) {
+        std::copy(&vec[i][0], &vec[i][2], &ret[i][0]);
+    }
+    return ret;
+}
+
+R3Vector stdVectorRVector3ToR3Vector(const std::vector < RVector3 > & rv){
+    R3Vector ret(rv.size());
+    for (Index i = 0; i < rv.size(); i ++) ret[i] = rv[i];
+    return ret;
+}
+
+std::vector < RVector3 > R3VectorTostdVectorRVector3(const R3Vector & rv){
+    std::vector < RVector3 > ret(rv.size());
+    for (Index i = 0; i < rv.size(); i ++) ret[i] = rv[i];
+    return ret;
+}
 
 template <> RVector3 RVector3::cross(const RVector3 & p) const{
 //     r[0] = (a2 * b3 - a3 * b2);
