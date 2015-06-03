@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+    Utility methods to read GPS data and convert them via pyproj.
+"""
 
 import sys
-from xml.dom.minidom import parse
 
 import matplotlib.image as mpimg
 from math import floor
@@ -20,9 +22,7 @@ except ImportError:
 
 
 def handleWPTS(wpts):
-    """
-    Handler for Waypoints in gpx xml-dom
-    """
+    """ Handler for Waypoints in gpx xml-dom """
     w = []
 
     for wpt in wpts:
@@ -49,7 +49,8 @@ def readGPX(filename):
 
     Currently only simple waypoint extraction is supported.
     """
-
+    from xml.dom.minidom import parse
+    
     dom = parse(filename)
     wpts = dom.getElementsByTagName("wpt")
 
@@ -71,7 +72,6 @@ def readSimpleLatLon(filename, verbose=False):
         return list:
             lon lat name time
     """
-
     def conv_(deg):
         """convert degree into floating vpoint."""
         ret = 0.0
@@ -120,85 +120,97 @@ def readSimpleLatLon(filename, verbose=False):
 
 
 def GK2toUTM(R, H=None, zone=32):
-    """ transform Gauss-Krueger zone 2 into UTM """
-    """ note the double transformation (1-ellipsoid,2-projection) """
-    """ default zone is 32 """
+    """ Transform Gauss-Krueger zone 2 into UTM 
+        
+        Note the double transformation (1-ellipsoid, 2-projection)
+        default zone is 32 
+    """
+    return GKtoUTM(R, H=None, zone=32, gk=gk2)
+    #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
-    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+    #if H is None:  # two-column matrix
+        #lon, lat = transform(gk2, wgs84, R[0], R[1])
+    #else:
+        #lon, lat = transform(gk2, wgs84, R, H)
 
-    if H is None:  # two-column matrix
-        lon, lat = transform(gk2, wgs84, R[0], R[1])
-    else:
-        lon, lat = transform(gk2, wgs84, R, H)
-
-    return utm(lon, lat)
+    #return utm(lon, lat)
 
 
 def GK3toUTM(R, H=None, zone=32):
-    """ transform Gauss-Krueger zone 3 into UTM """
-    """ note the double transformation (1-ellipsoid,2-projection) """
-    """ default zone is 32 """
+    """ Transform Gauss-Krueger zone 3 into UTM 
+        
+        Note the double transformation (1-ellipsoid, 2-projection)
+        default zone is 32 
+    """
+    return GKtoUTM(R, H=None, zone=32, gk=gk3)
+    #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
-    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+    #if H is None:  # two-column matrix
+        #lon, lat = transform(gk3, wgs84, R[0], R[1])
+    #else:
+        #lon, lat = transform(gk3, wgs84, R, H)
 
-    if H is None:  # two-column matrix
-        lon, lat = transform(gk3, wgs84, R[0], R[1])
-    else:
-        lon, lat = transform(gk3, wgs84, R, H)
-
-    return utm(lon, lat)
+    #return utm(lon, lat)
 
 
 def GK4toUTM(R, H=None, zone=32):
-    """ transform Gauss-Krueger zone 3 into UTM """
-    """ note the double transformation (1-ellipsoid,2-projection) """
-    """ default zone is 32 """
+    """ Transform Gauss-Krueger zone 4 into UTM 
+        
+        Note the double transformation (1-ellipsoid, 2-projection)
+        default zone is 32.
+    """
+    return GKtoUTM(R, H=None, zone=32, gk=gk4)
+    #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
 
-    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+    #if H is None:  # two-column matrix
+        #lon, lat = transform(gk4, wgs84, R[0], R[1])
+    #else:
+        #lon, lat = transform(gk4, wgs84, R, H)
 
-    if H is None:  # two-column matrix
-        lon, lat = transform(gk4, wgs84, R[0], R[1])
-    else:
-        lon, lat = transform(gk4, wgs84, R, H)
-
-    return utm(lon, lat)
+    #return utm(lon, lat)
 
 
-def GKtoUTM(R, H=None, zone=32):
-    """ transforms any Gauss-Krueger to UTM """
-    """ autodetect GK zone from offset """
-    if H is None:
-        rr = R[0][0]
-    else:
-        if isinstance(R, list) or isinstance(R, tuple):
-            rr = R[0]
+def GKtoUTM(R, H=None, zone=32, gk=None):
+    """ Transforms any Gauss-Krueger to UTM autodetect GK zone from offset. """
+    if gk is None:
+        
+        if H is None:
+            rr = R[0][0]
         else:
-            rr = R
+            if isinstance(R, list) or isinstance(R, tuple):
+                rr = R[0]
+            else:
+                rr = R
 
-    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
-    gkzone = int(floor(rr * 1e-6))
-    print(gkzone)
-    if gkzone <= 0 or gkzone >= 5:
-        print("cannot detect valid GK zone")
-    gk = Proj(init="epsg:"+str(31464+gkzone))
+        gkzone = int(floor(rr * 1e-6))
+        print(gkzone)
+    
+        if gkzone <= 0 or gkzone >= 5:
+            print("cannot detect valid GK zone")
+    
+        gk = Proj(init="epsg:"+str(31464+gkzone))
+        
     if H is None:  # two-column matrix
         lon, lat = transform(gk, wgs84, R[0], R[1])
     else:
         lon, lat = transform(gk, wgs84, R, H)
+        
+    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+        
     return utm(lon, lat)
 
 
 def convddmm(num):
-    """convert numeric position into degree and minute"""
+    """ Convert numeric position into degree and minute. """
     dd = np.floor(num / 100.)
     r1 = num - dd * 100.
     return dd + r1 / 60.
 
 
 def readGeoRefTIF(file_name):
-    """Read geo-referenced TIFF file and return image and bbox
+    """ Read geo-referenced TIFF file and return image and bbox.
 
-    plt.imshow(im, ext = bbox.ravel()), bbox might need transform.
+        plt.imshow(im, ext = bbox.ravel()), bbox might need transform.
     """
     try:
         import gdal
@@ -222,8 +234,8 @@ def readGeoRefTIF(file_name):
 
 def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
                   usetls=False, uuid='', fmt='image/jpeg'):
-    """
-        Generate address for rendering web service image from BKG.
+    """ Generate address for rendering web service image from BKG.
+    
         Assumes UTM in given zone.
     """
     url = 'http://sg.geodatenzentrum.de/wms_' + service
@@ -246,8 +258,8 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
 
 def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid='',
                    usetls=False):
-    """
-        Underlay digital orthophoto or topographic (mode='DTK') map under axes
+    """ Underlay digital orthophoto or topographic (mode='DTK') map under axes.
+    
         At first access, the image is retrieved from BKG and saved then loaded.
     """
     ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
