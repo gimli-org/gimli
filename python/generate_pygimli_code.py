@@ -199,6 +199,7 @@ def generate(defined_symbols, extraIncludes):
 
         else:
             gccxmlpath = settings.gccxml_path
+            gccxmlpath = '/home/carsten/local/CastXML/build/bin/castxml'
     except Exception as e:
         print(str(e))
         raise Exception("Problems determine gccxml binary")
@@ -216,7 +217,8 @@ def generate(defined_symbols, extraIncludes):
                                          working_directory=settings.gimli_path,
                                          include_paths=settings.includesPaths,
                                          define_symbols=defines,
-                                         indexing_suite_version=2)
+                                         indexing_suite_version=2,
+                                         )
 
     mb.classes().always_expose_using_scope = True
     mb.calldefs().create_with_signature = True

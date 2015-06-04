@@ -135,7 +135,7 @@ public:
     typedef std::vector< RVector3 > HoleMarkerList;
     
     /*! Default constructor, create empty mesh with dimension dim */
-    Mesh(uint dim=2);
+    Mesh(Index dim=2);
 
     /*! Constructor, read mesh from filename */
     Mesh(const std::string & filename);
@@ -269,17 +269,17 @@ public:
     
     
     
-    inline uint nodeCount() const { return nodeVector_.size(); }
-    Node & node(uint i) const;
-    Node & node(uint i);
+    inline Index nodeCount() const { return nodeVector_.size(); }
+    Node & node(Index i) const;
+    Node & node(Index i);
 
-    uint cellCount() const { return cellVector_.size(); }
-    Cell & cell(uint i) const;
-    Cell & cell(uint i);
+    Index cellCount() const { return cellVector_.size(); }
+    Cell & cell(Index i) const;
+    Cell & cell(Index i);
 
-    uint boundaryCount() const { return boundaryVector_.size(); }
-    Boundary & boundary(uint i) const;
-    Boundary & boundary(uint i);
+    Index boundaryCount() const { return boundaryVector_.size(); }
+    Boundary & boundary(Index i) const;
+    Boundary & boundary(Index i);
 
     /*! Return a vector of all node positions */
     std::vector < RVector3 > positions() const;
@@ -324,7 +324,7 @@ public:
     IndexArray findNodesIdxByMarker(int marker) const;
 
 //     /*! Return an index list of all nodes that match the marker */
-//     std::list < uint > findListNodesIdxByMarker(int marker) const;
+//     std::list < Index > findListNodesIdxByMarker(int marker) const;
 
     /*! Return a vector of boundary ptrs with the boundary marker equal marker.*/
     std::vector < Boundary * > findBoundaryByMarker(int marker) const;
@@ -346,7 +346,7 @@ public:
         size_t counter; return findCell(pos, counter, extensive); }
 
     /*! Return the index to the node of this mesh with the smallest distance to pos. */
-    uint findNearestNode(const RVector3 & pos);
+    Index findNearestNode(const RVector3 & pos);
     
     /*! Return vector of cell ptrs with marker match the range [from .. to). \n
         For single marker match to is set to 0, for open end set to = -1 */

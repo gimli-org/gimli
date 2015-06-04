@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -167,13 +167,13 @@ public:
     uint nodeCount() const { return nodeVector_.size(); }
 
     /*! Set the i-th \ref Node. */
-    void setNode(uint i, Node & n);
+    void setNode(Index i, Node & n);
 
     /*! Return a read only reference to the i-th \ref Node of this shape. */
-    const Node & node(uint i) const;
+    const Node & node(Index i) const;
 
     /*! Return a reference to the i-th \ref Node of this shape. */
-    Node & node(uint i);
+    Node & node(Index i);
 
     /*! Return a read only reference to all nodes. */
     const std::vector< Node * > & nodes() const { return nodeVector_; }
@@ -254,7 +254,7 @@ public:
     virtual RVector3 rst(const RVector3 & xyz) const;
 
     /*! Return local coordinates for node i. */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
     /*! Return derivative from local coordinates to Cartesian coordinates.
      * These are the elements of the inverse Jacobian matrix.
@@ -314,7 +314,7 @@ public:
 
     virtual std::string name() const { return "NodeShape"; }
 
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
     virtual double domainSize_() const { return 1.0; }
 
@@ -344,7 +344,7 @@ public:
     virtual std::string name() const { return "EdgeShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
 //     /*! See Shape::N. */
 //     virtual void N(const RVector3 & L, RVector & n) const;
@@ -403,7 +403,7 @@ public:
     virtual std::string name() const { return "TriangleShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
     /*! See Shape::xyz2rst. this is a specialized override for speedup. */
     virtual void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
@@ -454,7 +454,7 @@ public:
     virtual std::string name() const { return "QuadrangleShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
     double area() const;
 
@@ -496,7 +496,7 @@ public:
     virtual std::string name() const { return "TetrahedronShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
     /*! See Shape::xyz2rst. Specialization for speedup */
     void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
@@ -569,7 +569,7 @@ public:
     virtual int dim() const { return 3; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
     virtual std::string name() const { return "HexahedronShape"; }
 
@@ -626,7 +626,7 @@ public:
     virtual std::string name() const { return "TriagonalPrismShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -664,7 +664,7 @@ public:
     virtual int dim() const { return 3; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(uint i) const;
+    virtual RVector3 rst(Index i) const;
 
 //     /*! See Shape::N. */
 //     virtual void N(const RVector3 & L, RVector & n) const;

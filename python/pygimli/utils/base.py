@@ -28,6 +28,7 @@ def gmat2numpy(mat):
 
 def numpy2gmat(nmat):
     """convert numpy.array into pygimli RMatrix.
+    
     TODO implement correct rval 
     """
     gmat = pg.RMatrix()
@@ -46,15 +47,17 @@ def rndig(a, ndig=3):
 
 def roundTo(arr, n_digits=3):
     """ return ndarray of rounded elements (obsolete due to np.round) """
+    raise Exception('remove me')
     return np.asarray([rndig(a, ndig=n_digits) for a in arr])
 
 
 def num2str(a, fmtstr='%g%'):
-    """ list of strings (deprecated, for backward-compatibility) """
+    """List of strings (deprecated, for backward-compatibility) """
     return [fmtstr % rndig(ai) for ai in a]
 
 
 def inthist(a, vals, bins=None, islog=False):
+    """What is this good for?"""
     if bins is None:
         bins = np.min((np.round(len(a) / 20), 10))
 
@@ -72,6 +75,7 @@ def inthist(a, vals, bins=None, islog=False):
 
 
 def interperc(a, trimval=3.0, islog=False, bins=None):
+    """What is this good for?"""
     return inthist(
         a, np.array([trimval, 100. - trimval]), bins=bins, islog=islog)
 
@@ -111,7 +115,7 @@ def jetmap(m=64):
 
 
 def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
-    """ """
+    """What is this good for?"""
     plt.imshow(A, interpolation='nearest')
     plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
     plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])
