@@ -540,7 +540,7 @@ _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
 # CR: What was this good for??
 #def __getRotMatrix__(self, mat):
-    #getRotMatrix__(self, mat)
+#   getRotMatrix__(self, mat)
 #_pygimli_.RQuaternion.rotMatrix = __getRotMatrix__
 
 # some rvector helpers

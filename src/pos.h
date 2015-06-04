@@ -141,8 +141,8 @@ public:
     inline void setZ(ValueType z) { mat_[2] = z; }
 
     /*! Set a value. Throws out of range exception if index check fails. */
-    inline void setVal(const ValueType & val, size_t i) {
-        if (i >= 0 && i < 3) {
+    inline void setVal(const ValueType & val, Index i) {
+        if (i < 3) {
             mat_[i] = val;
         } else {
             throwRangeError(1, WHERE_AM_I, i, 0, 3);
@@ -150,8 +150,8 @@ public:
     }
 
     /*! Get a value. Throws out of range exception if index check fails. */
-    inline const ValueType & getVal(size_t i) const {
-        if (i >= 0 && i < 3) {
+    inline const ValueType & getVal(Index i) const {
+        if (i < 3) {
             return mat_[i];
         } else {
             throwRangeError(1, WHERE_AM_I, i, 0, 3);

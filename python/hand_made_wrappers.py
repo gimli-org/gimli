@@ -14,8 +14,10 @@ PyObject * RVector3_getArray(GIMLI::RVector3 & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = 3;
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
-    std::memcpy(PyArray_DATA(ret), (void *)(&vec[0]), length * sizeof(double));
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+                (void *)(&vec[0]), length * sizeof(double));
 
+    // check if array is contiguous here
     // ** possible fixed due to memcpy here
     //PyArray_XINCREF(ret);
     //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
@@ -43,9 +45,11 @@ boost::python::tuple RVector_getData(GIMLI::RVector & vec){
 PyObject * RVector_getArray(GIMLI::RVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = vec.size();
-    //PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, &vec[0]);
+
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
-    std::memcpy(PyArray_DATA(ret), (void *)(&vec[0]), length * sizeof(double));
+    // check if array is contiguous here
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+                (void *)(&vec[0]), length * sizeof(double));
                 
     // ** possible fixed due to memcpy here                
     //PyArray_XINCREF(ret);
@@ -73,7 +77,9 @@ PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
     long int dim2 [] = {length, 3};
     PyObject * ret = PyArray_SimpleNew(2, dim2, NPY_DOUBLE);
 
-    std::memcpy(PyArray_DATA(ret),
+    // check if array is contiguous here
+
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *) &GIMLI::toArray(vec)[0],
                 (length * 3) * sizeof(double));
     

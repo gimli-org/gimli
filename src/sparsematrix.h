@@ -61,7 +61,7 @@ public:
      described together with the above assignment operator, so that
      here it is simply called: */
 
-    Reference operator = (const Reference rhs) {
+    Reference operator = (Reference rhs) {
         if (this != & rhs) {    // not identical?
             return operator = (rhs.asValue());  // see above
         } return *this;

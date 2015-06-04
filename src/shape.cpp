@@ -107,24 +107,24 @@ void Shape::changed(){
     hasDomSize_ = false;
 }
 
-Node & Shape::node(uint i) {
-    if (i < 0 || i > nodeCount() - 1){
+Node & Shape::node(Index i) {
+    if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
     }
     return *nodeVector_[i];
 }
 
-const Node & Shape::node(uint i) const {
-    if (i < 0 || i > nodeCount() - 1){
+const Node & Shape::node(Index i) const {
+    if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
     }
     return *nodeVector_[i];
 }
 
-void Shape::setNode(uint i, Node & n) {
-    if (i < 0 || i > nodeCount() - 1){
+void Shape::setNode(Index i, Node & n) {
+    if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
     }
@@ -336,7 +336,7 @@ RVector3 Shape::rst(const RVector3 & xyz) const{
     return rst;
 }
 
-RVector3 Shape::rst(uint i) const {
+RVector3 Shape::rst(Index i) const {
     std::cout << "shape: " << rtti() << std::endl;
     THROW_TO_IMPL
 
@@ -378,7 +378,7 @@ RVector3 NodeShape::norm() const {
     return RVector3(0.0, 0.0, 0.0);
 }
 
-RVector3 NodeShape::rst(uint i) const {
+RVector3 NodeShape::rst(Index i) const {
     return RVector3(0.0, 0.0, 0.0);
 }
 
@@ -392,8 +392,8 @@ RVector3 EdgeShape::norm() const {
     return nodeVector_[0]->pos().normXY(nodeVector_[1]->pos());
 }
 
-RVector3 EdgeShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount())
+RVector3 EdgeShape::rst(Index i) const{
+    if (i < nodeCount())
         return RVector3(EdgeCoordinates[i][0],
                         EdgeCoordinates[i][1],
                         EdgeCoordinates[i][2]);
@@ -426,8 +426,8 @@ RVector3 TriangleShape::norm() const{
     return n.norm();
 }
 
-RVector3 TriangleShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount()) return RVector3(TriCoordinates[i][0], TriCoordinates[i][1], TriCoordinates[i][2]);
+RVector3 TriangleShape::rst(Index i) const{
+    if (i < nodeCount()) return RVector3(TriCoordinates[i][0], TriCoordinates[i][1], TriCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
 }
 
@@ -458,8 +458,8 @@ void TriangleShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
     rst[1] = (x21 * yp1 - y21 * xp1) / J; // s
 }
 
-RVector3 QuadrangleShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount()) return RVector3(QuadCoordinates[i][0], QuadCoordinates[i][1], QuadCoordinates[i][2]);
+RVector3 QuadrangleShape::rst(Index i) const{
+    if (i < nodeCount()) return RVector3(QuadCoordinates[i][0], QuadCoordinates[i][1], QuadCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
 }
 
@@ -491,8 +491,8 @@ RVector3 QuadrangleShape::norm() const {
     return tri.norm();
 }
 
-RVector3 TetrahedronShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount()) return RVector3(TetCoordinates[i][0], TetCoordinates[i][1], TetCoordinates[i][2]);
+RVector3 TetrahedronShape::rst(Index i) const{
+    if (i < nodeCount()) return RVector3(TetCoordinates[i][0], TetCoordinates[i][1], TetCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
 }
 
@@ -559,8 +559,8 @@ void TetrahedronShape::setNodes(Node * n0, Node * n1, Node * n2, Node * n3){
     setNode(0, *n0); setNode(1, *n1); setNode(2, *n2); setNode(3, *n3);
 }
 
-RVector3 HexahedronShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount()) return RVector3(HexCoordinates[i][0], HexCoordinates[i][1], HexCoordinates[i][2]);
+RVector3 HexahedronShape::rst(Index i) const{
+    if (i < nodeCount()) return RVector3(HexCoordinates[i][0], HexCoordinates[i][1], HexCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
 }
 
@@ -576,8 +576,8 @@ double HexahedronShape::volume() const {
     return sum;
 }
 
-RVector3 TriPrismShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount()) return RVector3(PrismCoordinates[i][0], PrismCoordinates[i][1], PrismCoordinates[i][2]);
+RVector3 TriPrismShape::rst(Index i) const{
+    if (i < nodeCount()) return RVector3(PrismCoordinates[i][0], PrismCoordinates[i][1], PrismCoordinates[i][2]);
     THROW_TO_IMPL;
     return RVector3(0.0, 0.0, 0.0);
 }
@@ -620,8 +620,8 @@ std::vector < PolynomialFunction < double > > TriPrismShape::createShapeFunction
     return ret;
 }
 
-RVector3 PyramidShape::rst(uint i) const{
-    if (i >= 0 && i < nodeCount()) return RVector3(PyramidCoordinates[i][0],
+RVector3 PyramidShape::rst(Index i) const{
+    if (i < nodeCount()) return RVector3(PyramidCoordinates[i][0],
                                                       PyramidCoordinates[i][1],
                                                       PyramidCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
