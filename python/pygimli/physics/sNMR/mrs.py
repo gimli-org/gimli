@@ -28,8 +28,9 @@ class MRS():
         self.t, self.q, self.z = None, None, None
         self.data, self.error = None, None
         self.K, self.f, self.INV = None, None, None
+        self.nlay = 0
         self.model, self.modelL, self.modelU = None, None, None
-        self.lowerBound = [1.0, 0.05, 0.02]  # d, theta, T2*
+        self.lowerBound = [1.0, 0.0, 0.02]  # d, theta, T2*
         self.upperBound = [30., 0.45, 1.00]  # d, theta, T2*
         self.startval = [10., 0.30, 0.20]  # d, theta, T2*
         self.logpar = False
@@ -38,7 +39,7 @@ class MRS():
             # check for mrsi/d/k
             if name[-5:].lower() == '.mrsi':
                 self.loadMRSI(name, **kwargs)
-                self.basename = datafile.rstrip('.mrsi')
+                self.basename = name.rstrip('.mrsi')
             else:  # else mrsd+k?
                 self.loadDir(name)
 
@@ -64,23 +65,23 @@ class MRS():
         self.q = idata.data.q
         self.K = idata.kernel.K
         self.z = np.hstack((0., idata.kernel.z))
-        dcube = idata.data.dcube[:, good]
-        if len(dcube) == len(self.q) and len(dcube[0]) == len(self.t):
+        self.dcube = idata.data.dcube[:, good]
+        if len(self.dcube) == len(self.q) and len(self.dcube[0]) == len(self.t):
             if usereal:
-                self.data = np.abs(np.real(dcube.flat))
+                self.data = np.abs(np.real(self.dcube.flat))
             else:
-                self.data = np.abs(dcube.flat)
+                self.data = np.abs(self.dcube.flat)
 
-        ecube = idata.data.ecube[:, good]
+        self.ecube = idata.data.ecube[:, good]
         if self.verbose:
             print("loaded file: " + filename)
-        if ecube[0][0] == 0:
+        if self.ecube[0][0] == 0:
             if self.verbose:
                 print("no errors in file, assuming", defaultNoise * 1e9, "nV")
-            ecube = np.ones((len(self.q), len(self.t))) * defaultNoise
-            ecube /= np.sqrt(idata.data.gateL)
-        if len(ecube) == len(self.q) and len(ecube[0]) == len(self.t):
-            self.error = ecube.ravel()
+            self.ecube = np.ones((len(self.q), len(self.t))) * defaultNoise
+            self.ecube /= np.sqrt(idata.data.gateL)
+        if len(self.ecube) == len(self.q) and len(self.ecube[0]) == len(self.t):
+            self.error = self.ecube.ravel()
 
         if min(self.error) < 0.:
             if self.verbose:
@@ -91,6 +92,12 @@ class MRS():
             if self.verbose:
                 print("Warning: zero error, assuming", defaultNoise)
             self.error[self.error == 0.] = defaultNoise
+
+        if hasattr(idata, 'inv1Dqt'):
+            if hasattr(idata.inv1Dqt, 'blockMono'):
+                sol = idata.inv1Dqt.blockMono.solution[0]
+                self.model = np.hstack((sol.thk, sol.w, sol.T2))
+                self.nlay = len(sol.w)
 
         if self.verbose:
             print(self)
@@ -193,8 +200,17 @@ class MRS():
             plt.show()
         return fig, ax
 
+    def showKernel(self, ax=None):
+        """ show the kernel """
+        if ax is None:
+            fig, ax = plt.subplots()
+        ax.imshow(self.K.T, interpolation='nearest')
+        return ax
+
     def createFOP(self, nlay=3, verbose=True, **kwargs):
         """ create forward operator instance """
+        if verbose:
+            print('creating FOP with '+str(nlay)+' layers')
         self.nlay = nlay
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
         self.f.region(0).setStartValue(self.startval[0])
@@ -210,7 +226,7 @@ class MRS():
 
     def createInv(self, nlay=3, lam=10., verbose=True, robust=False, **kwargs):
         """ create inversion instance """
-        if self.f is None:
+        if self.f is None or self.nlay != nlay:
             self.createFOP(nlay)
         self.INV = pg.RInversion(self.data, self.f, verbose)
         self.INV.setLambda(lam)
@@ -225,8 +241,9 @@ class MRS():
     def run(self, nlay=3, lam=10., startvec=None,
             verbose=True, uncertainty=False, **kwargs):
         """ even easier variant returning all in one call """
-        if self.INV is None:
+        if self.INV is None or self.nlay != nlay:
             self.INV = self.createInv(nlay, lam, verbose, **kwargs)
+        self.INV.setVerbose(verbose)
         if startvec is not None:
             self.INV.setModel(pg.asvector(startvec))
         if verbose:
@@ -271,7 +288,7 @@ class MRS():
         return fig, ax
 
     def showResultAndFit(self, figsize=(12, 10), save='', plotmisfit=False,
-                         maxdep=None, show=False):
+                         maxdep=None, show=False, clim=None):
         """ show theta(z), T2*(z), data and model response """
         fig, ax = plt.subplots(2, 2 + plotmisfit, figsize=figsize)
         thk, wc, t2 = self.splitModel()
@@ -290,7 +307,7 @@ class MRS():
         if maxdep > 0.:
             ax[0, 0].set_ylim([maxdep, 0.])
             ax[0, 1].set_ylim([maxdep, 0.])
-        clim = self.showCube(ax[1, 0], self.data * 1e9, islog=False)
+        clim = self.showCube(ax[1, 0], self.data * 1e9, islog=False, clim=clim)
         ax[1, 0].set_title('measured data [nV]')  # log10
         self.showCube(
             ax[1, 1], self.INV.response() * 1e9, clim=clim, islog=False)

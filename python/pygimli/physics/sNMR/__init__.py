@@ -6,3 +6,4 @@
 
 from . mrs import MRS
 from . modelling import MRS1dBlockQTModelling
+from . mrsprofile import MRSprofile
