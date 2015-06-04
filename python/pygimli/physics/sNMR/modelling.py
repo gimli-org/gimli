@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Modelling classes for magnetic resonance sounding 
+    Modelling classes for magnetic resonance sounding
 """
 
 # general modules to import according to standards
@@ -29,9 +29,9 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
     def response(self, par):
         """ yield model response cube as vector """
         nl = self.nl_
-        thk = par(0, nl - 1)
-        wc = par(nl - 1, 2 * nl - 1)
-        t2 = par(2 * nl - 1, 3 * nl - 1)
+        thk = par[0:nl-1]  # (0, nl - 1)
+        wc = par[nl-1:2*nl-1]  # (nl - 1, 2 * nl - 1)
+        t2 = par[2*nl-1:3*nl-1]  # par(2 * nl - 1, 3 * nl - 1)
         zthk = np.cumsum(thk)
         zv = self.zv_
         lzv = len(zv)
