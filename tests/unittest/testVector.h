@@ -11,7 +11,15 @@
 
 #include <stdexcept>
 
+// namespace std{
+// bool operator<(const std::complex<double> & a, const std::complex<double> & b){
+//     return false;
+// }
+// }
+
 using namespace GIMLI;
+
+
 
 class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(VectorTest);
@@ -355,6 +363,11 @@ public:
         CPPUNIT_ASSERT(find(isNaN(x)).size() == 1);
         CPPUNIT_ASSERT(find(isInfNaN(x)).size() == 2);
         //CPPUNIT_ASSERT(find(isnan(x+x)).size() == 0);
+        
+        GIMLI::CVector c(10);
+        CPPUNIT_ASSERT(find(c < Complex(.0, 0.0)).size() == 0);
+//         std::less< std::complex<double> > l;
+//         std::cout << l(Complex(.0, 0.0), Complex(.0, 0.0)) << std::endl;
     }
     
     void testMatrix(){

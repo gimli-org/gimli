@@ -36,6 +36,27 @@
 #include <iostream>
 #include <cmath>
 
+namespace std{
+    // make std::less happy .. this wont work without this namespace
+    inline bool operator < (const std::complex< double > & a, 
+                            const std::complex< double > & b){ 
+        return a.real() < b.real() || (!(b.real() < a.real()) && a.imag() < b.imag());
+    }
+    
+    inline bool operator > (const std::complex< double > & a,
+                            const std::complex< double > & b){
+        return !(a < b);
+    }
+    inline bool operator >= (const std::complex< double > & a,
+                             const std::complex< double > & b){
+        return (a > b) || (a==b);
+    }
+    inline bool operator <= (const std::complex< double > & a,
+                             const std::complex< double > & b){
+        return (a < b) || (a==b);
+    }
+}
+
 namespace GIMLI{
 
 class ExprIdentity;
@@ -132,14 +153,6 @@ inline bool isInf(const Complex & a){ return (std::isinf(a.real()) || std::isinf
 #endif
 
 inline bool isInfNaN(const Complex & a){ return (isInfNaN(a.real()) || isInfNaN(a.imag())); }
-
-inline bool operator < (const Complex & a, const Complex & b) { 
-    double aa(abs(a)), ab(abs(b));
-    if (aa == ab) return std::arg(a) < std::arg(b); else return aa < ab; }
-    
-inline bool operator > (const Complex & a, const Complex & b) {
-    double aa(abs(a)), ab(abs(b));
-    if (aa == ab) return std::arg(a) > std::arg(b); else return aa > ab; }
 
 inline double abs(const double & a) { return std::fabs(a); }
 inline double abs(const Complex & a) { return std::abs(a); }

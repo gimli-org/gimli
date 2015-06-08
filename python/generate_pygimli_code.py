@@ -27,6 +27,8 @@ if options.extraPath:
 import hand_made_wrappers
 
 from pygccxml import parser
+import logging
+from pygccxml import utils
 from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
 from pyplusplus import code_creators, module_builder, messages, decl_wrappers
@@ -212,12 +214,17 @@ def generate(defined_symbols, extraIncludes):
     print("define_symbols=%s" % defines)
     print("indexing_suite_version=2")
 
+    logger = utils.loggers.cxx_parser
+    print(logger)
+    logger.setLevel(logging.DEBUG)
+
     mb = module_builder.module_builder_t([xml_cached_fc],
                                          gccxml_path=gccxmlpath,
                                          working_directory=settings.gimli_path,
                                          include_paths=settings.includesPaths,
                                          define_symbols=defines,
                                          indexing_suite_version=2
+                                         #, caster='gccxml'
                                          )
 
     mb.classes().always_expose_using_scope = True

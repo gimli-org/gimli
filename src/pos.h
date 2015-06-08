@@ -316,7 +316,13 @@ inline bool operator != (const RVector3 & a , const RVector3 & b){
 inline bool operator < (const RVector3 & a , const RVector3 & b){
     std::cout << WHERE_AM_I << std::endl; return true;
 }
+inline bool operator <= (const RVector3 & a , const RVector3 & b){
+    std::cout << WHERE_AM_I << std::endl; return true;
+}
 inline bool operator > (const RVector3 & a , const RVector3 & b){
+    std::cout << WHERE_AM_I << std::endl; return true;
+}
+inline bool operator >= (const RVector3 & a , const RVector3 & b){
     std::cout << WHERE_AM_I << std::endl; return true;
 }
 inline RVector3 RINT(const RVector3 & a) {
