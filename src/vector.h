@@ -524,13 +524,14 @@ public:
     bool operator < (const Vector< ValueType > & v) const { return false; }
 #else
     BVector operator < (const Vector< ValueType > & v) const {
-	BVector ret(this->size(), 0);
+        BVector ret(this->size(), 0);
 	    if (this->size() != v.size()) {
 		throwLengthError(1, WHERE_AM_I + " array size unequal" +
                                 toStr(this->size()) + " != " + toStr(v.size()));
 	    }
-	for (Index i = 0; i < v.size(); i ++) ret[i] = isLesser(data_[i], v[i]);
-	return ret;
+	    std::less<ValueType> l;
+        for (Index i = 0; i < v.size(); i ++) ret[i] = l(data_[i], v[i]);
+        return ret;
     }
 #endif
 
@@ -541,29 +542,31 @@ public:
             throwLengthError(1, WHERE_AM_I + " array size unequal " + \
                                 toStr(this->size()) + " != " + toStr(v.size())); \
         } \
-        for (Index i = 0; i < v.size(); i ++) ret[i] = FUNCT(data_[i], v[i]); \
+        FUNCT<ValueType> f; \
+        for (Index i = 0; i < v.size(); i ++) ret[i] = f(data_[i], v[i]); \
         return ret; \
     } \
 
-DEFINE_COMPARE_OPERATOR_VEC__(<=, isLesserEqual)
-DEFINE_COMPARE_OPERATOR_VEC__(>=, isGreaterEqual)
-DEFINE_COMPARE_OPERATOR_VEC__(>, isGreater)
+DEFINE_COMPARE_OPERATOR_VEC__(<=, std::less_equal)
+DEFINE_COMPARE_OPERATOR_VEC__(>=, std::greater_equal)
+DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
 
 #undef DEFINE_COMPARE_OPERATOR_VEC__
    
 #define DEFINE_COMPARE_OPERATOR__(OP, FUNCT) \
     inline BVector operator OP (const ValueType & v) const { \
         BVector ret(this->size(), 0); \
-        for (Index i = 0; i < this->size(); i ++){ ret[i] = FUNCT(data_[i], v); } \
+        FUNCT<ValueType> f; \
+        for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], v); } \
         return ret;\
     } \
 
-DEFINE_COMPARE_OPERATOR__(<, isLesser)
-DEFINE_COMPARE_OPERATOR__(<=, isLesserEqual)
-DEFINE_COMPARE_OPERATOR__(>=, isGreaterEqual)
-DEFINE_COMPARE_OPERATOR__(==, isEqual)
-DEFINE_COMPARE_OPERATOR__(!=, isNonEqual)
-DEFINE_COMPARE_OPERATOR__(>, isGreater)
+DEFINE_COMPARE_OPERATOR__(<, std::less)
+DEFINE_COMPARE_OPERATOR__(<=, std::less_equal)
+DEFINE_COMPARE_OPERATOR__(>=, std::greater_equal)
+DEFINE_COMPARE_OPERATOR__(==, std::equal_to)
+DEFINE_COMPARE_OPERATOR__(!=, std::not_equal_to)
+DEFINE_COMPARE_OPERATOR__(>, std::greater)
 
 #undef DEFINE_COMPARE_OPERATOR__
 
