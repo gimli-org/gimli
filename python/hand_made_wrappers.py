@@ -44,7 +44,7 @@ boost::python::tuple RVector_getData(GIMLI::RVector & vec){
 
 PyObject * RVector_getArray(GIMLI::RVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
-    npy_intp length = vec.size();
+    npy_intp length = (size_t)vec.size();
 
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
     // check if array is contiguous here
@@ -72,7 +72,7 @@ WRAPPER_DEFINITION_R3Vector =\
 
 PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
-    npy_intp length = vec.size();
+    npy_intp length = (size_t)vec.size();
       
     long int dim2 [] = {length, 3};
     PyObject * ret = PyArray_SimpleNew(2, dim2, NPY_DOUBLE);
