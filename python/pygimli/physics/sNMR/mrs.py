@@ -53,7 +53,7 @@ class MRS():
         return out + ">"
 
     def loadMRSI(self, filename, defaultNoise=100e-9, usereal=False,
-                 mint=0., maxt=2.0):
+                 mint=0., maxt=2.0, **kwargs):
         """ load data, error and kernel from mrsi file """
         from scipy.io import loadmat  # loading Matlab mat files
 
@@ -68,7 +68,8 @@ class MRS():
         self.dcube = idata.data.dcube[:, good]
         if len(self.dcube) == len(self.q) and len(self.dcube[0]) == len(self.t):
             if usereal:
-                self.data = np.abs(np.real(self.dcube.flat))
+#                self.data = np.abs(np.real(self.dcube.flat))
+                self.data = np.real(self.dcube.flat)
             else:
                 self.data = np.abs(self.dcube.flat)
 
@@ -92,6 +93,15 @@ class MRS():
             if self.verbose:
                 print("Warning: zero error, assuming", defaultNoise)
             self.error[self.error == 0.] = defaultNoise
+        # clip data if desired
+        if "vmax" in kwargs:
+            vmax = kwargs['vmax']
+            self.error[self.data > vmax] = max(self.error)*3
+            self.data[self.data > vmax] = vmax
+        if "vmin" in kwargs:
+            vmin = kwargs['vmin']
+            self.error[self.data < vmin] = max(self.error)*3
+            self.data[self.data < vmin] = vmin
 
         if hasattr(idata, 'inv1Dqt'):
             if hasattr(idata.inv1Dqt, 'blockMono'):
@@ -150,16 +160,20 @@ class MRS():
         self.dirname = dirname  # to save results etc.
 
     def showCube(self, ax=None, vec=None, islog=None, clim=None, clab=None):
-        """ plot a data cube nicely """
+        """ plot data (or response, error, misfit) cube nicely """
         if vec is None:
             vec = np.array(self.data).flat
+            print(len(vec))
+        mul = 1.0
+        if max(vec) < 1e-3:  # Volts
+            mul = 1e9
         if ax is None:
             fig, ax = plt.subplots(1, 1)
         if islog is None:
             islog = (min(vec) > 0.)
         negative = (min(vec) < 0)
         if islog:
-            vec = np.log10(vec)
+            vec = np.log10(np.abs(vec))
         if clim is None:
             if negative:
                 cmax = max(max(vec), -min(vec))
@@ -176,7 +190,7 @@ class MRS():
         xtl = [str(ti) for ti in np.round(self.t[xt] * 1000.)]
         qt = range(0, len(self.q), 5)
         qtl = [str(qi) for qi in np.round(np.asarray(self.q)[qt] * 10.) / 10.]
-        mat = np.array(vec).reshape((len(self.q), len(self.t)))
+        mat = np.array(vec).reshape((len(self.q), len(self.t)))*mul
         im = ax.imshow(mat, interpolation='nearest', aspect='auto')
         im.set_clim(clim)
         ax.set_xticks(xt)
@@ -195,50 +209,67 @@ class MRS():
         """ show data cube and error cube """
         fig, ax = plt.subplots(1, 2, figsize=figsize)
         self.showCube(ax[0], self.data * 1e9, islog=False)
-        self.showCube(ax[1], self.error * 1e9, islog=False)
+        self.showCube(ax[1], self.error * 1e9, islog=True)
         if show:
             plt.show()
         return fig, ax
 
     def showKernel(self, ax=None):
-        """ show the kernel """
+        """ show the kernel as matrix """
         if ax is None:
             fig, ax = plt.subplots()
-        ax.imshow(self.K.T, interpolation='nearest')
-        return ax
+        ax.imshow(self.K.T, interpolation='nearest', aspect='auto')
+        yt = ax.get_yticks()
+        maxzi = self.K.shape[1]
+        yt = yt[(yt >= 0) & (yt < maxzi)]
+        if yt[-1] < maxzi-2:
+            yt = np.hstack((yt, maxzi))
+        ytl = [str(self.z[int(yti)]) for yti in yt]
+        zl = self.z[[int(yti) for yti in yt]]
+        ytl = [str(zi) for zi in np.round(zl, 1)]
+        ax.set_yticks(yt)
+        ax.set_yticklabels(ytl)
+        return fig, ax
 
     def createFOP(self, nlay=3, verbose=True, **kwargs):
         """ create forward operator instance """
-        if verbose:
-            print('creating FOP with '+str(nlay)+' layers')
+#        if verbose:
+#            print('creating FOP with '+str(nlay)+' layers')
         self.nlay = nlay
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
-        self.f.region(0).setStartValue(self.startval[0])
-        self.f.region(1).setStartValue(self.startval[1])
-        self.f.region(2).setStartValue(self.startval[2])
-        # Model transformation instances saved in class
-        self.transTH = pg.RTransLogLU(self.lowerBound[0], self.upperBound[0])
-        self.transWC = pg.RTransLogLU(self.lowerBound[1], self.upperBound[1])
-        self.transT2 = pg.RTransLogLU(self.lowerBound[2], self.upperBound[2])
-        self.f.region(0).setTransModel(self.transTH)
-        self.f.region(1).setTransModel(self.transWC)
-        self.f.region(2).setTransModel(self.transT2)
+        if True:
+            for i in range(3):
+                self.f.region(i).setParameters(self.startval[i],
+                                               self.lowerBound[i],
+                                               self.upperBound[i])
+        else:
+            self.f.region(0).setStartValue(self.startval[0])
+            self.f.region(1).setStartValue(self.startval[1])
+            self.f.region(2).setStartValue(self.startval[2])
+            # Model transformation instances saved in class
+            self.trTH = pg.RTransLogLU(self.lowerBound[0], self.upperBound[0])
+            self.trWC = pg.RTransLogLU(self.lowerBound[1], self.upperBound[1])
+            self.trT2 = pg.RTransLogLU(self.lowerBound[2], self.upperBound[2])
+            self.f.region(0).setTransModel(self.trTH)
+            self.f.region(1).setTransModel(self.trWC)
+            self.f.region(2).setTransModel(self.trT2)
 
-    def createInv(self, nlay=3, lam=10., verbose=True, robust=False, **kwargs):
-        """ create inversion instance """
+    def createInv(self, nlay=3, lam=100., verbose=True, **kwargs):
+        """ create inversion instance
+            Parameters: nlay, lam, verbose, robust
+        """
         if self.f is None or self.nlay != nlay:
             self.createFOP(nlay)
         self.INV = pg.RInversion(self.data, self.f, verbose)
         self.INV.setLambda(lam)
-        self.INV.setMarquardtScheme(0.8)
+        self.INV.setMarquardtScheme(kwargs.pop('lambdaFactor', 0.8))
         self.INV.stopAtChi1(False)  # now in MarquardtScheme
         self.INV.setDeltaPhiAbortPercent(0.5)
         self.INV.setAbsoluteError(self.error)
-        if robust:
-            self.INV.setRobustData(True)
+        self.INV.setRobustData(kwargs.pop('robust', False))
         return self.INV
 
-    def run(self, nlay=3, lam=10., startvec=None,
+    def run(self, nlay=3, lam=100., startvec=None,
             verbose=True, uncertainty=False, **kwargs):
         """ even easier variant returning all in one call """
         if self.INV is None or self.nlay != nlay:
