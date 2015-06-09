@@ -4,3 +4,4 @@
 #from . gravMagModelling import Gravimetry
 from . gravMagModelling import GravimetryModelling
 from . gravMagModelling import solveGravimetry
+from . gravMagModelling import BaZCylinderHoriz

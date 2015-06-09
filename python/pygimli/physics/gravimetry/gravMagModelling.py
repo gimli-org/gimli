@@ -53,7 +53,7 @@ def BZPoly(pnts, poly, M, openPoly=False):
 
 def BaZSphere(pnts, R, pos, M):
     """
-    Analytical solution
+    Magnetic anomaly for a sphere.
 
     Calculate the vertical component of the anomalous magnetic field Bz for a
     buried sphere at position pos with radius R for a given magnetization M at
@@ -61,26 +61,45 @@ def BaZSphere(pnts, R, pos, M):
 
     Parameters
     ----------
-
-    pnts :
+    pnts : [[x,y,z], ]
         measurement points -- array[x,y,z]
-    R :
-        radius -- float
-    pos :
-        sphere center -- [x,y,z]
-    M :
-        magnetization -- [Mx, My, Mz]
+    R : float
+        radius
+    pos : [float, float, float]
+        [x,y,z] -- sphere center
+    M : [float, float, float]
+        [Mx, My, Mz] -- magnetization
 
     """
-    return poissonEoetvoes(adot(M, gradGZSphere(pnts, R, rho=1.0, pos=pos)))
+    return poissonEoetvoes(adot(M,
+                                gradGZSphere(pnts, R, rho=1.0, pos=pos)))
 
 
 def BaZCylinderHoriz(pnts, R, pos, M):
     """
-    TODO
+    Magnetic anomaly for a horizontal cylinder.
+    
+    Calculate the vertical component of the anomalous magnetic field Bz for a
+    buried horizontal cylinder at position pos with radius R for a given magnetization M at
+    measurement points pnts.
+
+    Parameters
+    ----------
+    
+    Parameters
+    ----------
+    pnts : [[x,y,z], ]
+        measurement points -- array[x,y,z]
+    R : float
+        radius
+    pos : [float, float, float]
+        [x,y,z] -- sphere center
+    M : [float, float, float]
+        [Mx, My, Mz] -- magnetization
+
     """
-    return poissonEoetvoes(adot(
-        M, gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
+    return poissonEoetvoes(adot(M, 
+                                gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
 
 
 def poissonEoetvoes(dg):
