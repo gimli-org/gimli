@@ -17,8 +17,8 @@ from matplotlib.cm import jet
 
 def gmat2numpy(mat):
     """convert pygimli matrix into numpy.array.
-    
-    TODO implement correct rval 
+
+    TODO implement correct rval
     """
     nmat = np.zeros((len(mat), len(mat[0])))
     for i, row in enumerate(mat):
@@ -29,7 +29,7 @@ def gmat2numpy(mat):
 def numpy2gmat(nmat):
     """convert numpy.array into pygimli RMatrix.
     
-    TODO implement correct rval 
+    TODO implement correct rval
     """
     gmat = pg.RMatrix()
     for arr in nmat:
@@ -227,16 +227,17 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
     return li
 
 
-def showStitchedModels(models, x=None, cmin=None, cmax=None,
-                       islog=True, title=None):
+def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
+                       islog=True, title=None, cmap=jet):
     """ show several 1d block models as (stitched) section """
     if x is None:
         x = np.arange(len(models))
 
     nlay = int(np.floor((len(models[0]) + 1) / 2.))
 
-    ax = plt.gcf().add_subplot(111)
-    ax.cla()
+    fig = None
+    if ax is None:
+        fig, ax = plt.subplots()
 
     dxmed2 = np.median(np.diff(x)) / 2.
     vals = np.zeros((len(models), nlay))
@@ -258,19 +259,19 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
             rect = Rectangle((x[i] - dxmed2, z[j]), dxmed2 * 2, thk[j])
             patches.append(rect)
 
-    p = PatchCollection(patches, cmap=jet, linewidths=0)
+    p = PatchCollection(patches, cmap=cmap, linewidths=0)
 
     if cmin is not None:
         p.set_clim(cmin, cmax)
 
 #    p.set_array( np.log10( vals.ravel() ) )
-    setMappableData(p, vals.ravel(), logScale=True)
+    setMappableData(p, vals.ravel(), logScale=islog)
     ax.add_collection(p)
 
     ax.set_ylim((maxz, 0.))
     ax.set_xlim((min(x) - dxmed2, max(x) + dxmed2))
     if title is not None:
-        plt.title(title)
+        ax.set_title(title)
 
     pg.mplviewer.createColorbar(p, cMin=cmin, cMax=cmax, nLevs=5)
 
@@ -279,7 +280,7 @@ def showStitchedModels(models, x=None, cmin=None, cmax=None,
 #    cb.set_ticks( xt, [str(xti) for xti in xt] )
 
     plt.draw()
-    return
+    return fig, ax
 
 
 def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
@@ -450,8 +451,8 @@ def createDateTimeString(now=None):
 
 
 def setPlotStuff(fontsize=7, dpi=None):
-    """ set up rcParams (fontsize and dpi) for later plotting 
-    
+    """ set up rcParams (fontsize and dpi) for later plotting
+
     TODO move to mplviewer __init__.py
     """
     from matplotlib import rcParams
