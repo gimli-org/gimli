@@ -2,6 +2,10 @@
 
 cmake_minimum_required(VERSION 2.8.8)
 
+if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include(GIMLImacros)
 
@@ -70,8 +74,9 @@ if(NOT THIRDPARTY_DIR)
     set(TARGETNAME "-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-${ADDRESSMODEL}")
     set(ENV{TARGETNAME} ${TARGETNAME})
     set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/../thirdParty/)
-    set(EXTERNAL_DIR ${THIRDPARTY_DIR}/dist${TARGETNAME})
-    get_filename_component(EXTERNAL_DIR "${EXTERNAL_DIR}" ABSOLUTE)
+    
+    get_filename_component(EXTERNAL_DIR "${THIRDPARTY_DIR}/dist${TARGETNAME}" ABSOLUTE)
+    get_filename_component(EXTERNAL_BUILD_DIR "${THIRDPARTY_DIR}/build${TARGETNAME}" ABSOLUTE)
     message(STATUS "ThirdParty set to: ${THIRDPARTY_DIR}")
     message(STATUS "External set to: ${EXTERNAL_DIR}")
 endif()
@@ -151,14 +156,34 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
+ADD_CUSTOM_TARGET(rebuild_thirdparty ALL)
+ADD_CUSTOM_COMMAND(
+    COMMAND
+        ${CMAKE_COMMAND} -E echo "remove ${EXTERNAL_DIR}"
+    COMMAND
+        ${CMAKE_COMMAND} -E remove_directory ${EXTERNAL_DIR}
+    COMMAND
+        ${CMAKE_COMMAND} -E echo "remove ${EXTERNAL_BUILD_DIR}"
+    COMMAND
+        ${CMAKE_COMMAND} -E remove_directory ${EXTERNAL_BUILD_DIR}
+    COMMAND
+        ${CMAKE_COMMAND} -E echo "remove ${CMAKE_BINARY_DIR}/CMakeCache.txt"
+    COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/CMakeCache.txt
+    COMMAND
+        ${CMAKE_MAKE_PROGRAM} rebuild_cache
+    TARGET
+        rebuild_thirdparty
+)
+
+#add_dependencies(rebuild_thirdparty rebuild_cache )
+
 find_or_build_package(Triangle triangle)
 
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_or_build_package(UMFPACK umfpack)
-
-
 
 find_package(CppUnit)
 if (CPPUNIT_FOUND)
@@ -219,6 +244,22 @@ else()
 Check above for python, gccxml, pygccxml, pyplusplus, boost_python, numpy")
     
 endif ()
+
+message(STATUS "**********************************************************************")
+message(STATUS "************************* Dependencies found *************************")
+message(STATUS "**********************************************************************")
+message(STATUS "Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
+message(STATUS "UMFPACK_LIBRARIES: ${UMFPACK_LIBRARIES}")
+message(STATUS "CHOLMOD_LIBRARIES: ${CHOLMOD_LIBRARIES}")
+message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
+message(STATUS "PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
+message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
+message(STATUS "GCCXML_EXECUTABLE: ${GCCXML_EXECUTABLE}" )
+message(STATUS "PYGCCXML: ${PYGCCXML_PATH}" )
+message(STATUS "PYPLUSPLUS: ${PYPLUSPLUS_PATH}" )
+message(STATUS "PY_NUMPY: ${PY_NUMPY}" )
+message(STATUS "**********************************************************************")
+
 
 configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)

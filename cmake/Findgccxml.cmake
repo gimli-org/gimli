@@ -9,12 +9,7 @@ find_program(GCCXML_EXECUTABLE
 		gccxml
 		../GCC_XML/gccxml
 	PATHS
-		[HKEY_CURRENT_USER\\Software\\Kitware\\GCC_XML;loc]
-  		${EXTERNAL_DIR}/bin
-        "$ENV{ProgramFiles}/GCC_XML"
-        "C:/Program Files/GCC_XML"
-		${GCCXML_ROOT}/bin
-        "${PROJECT_SOURCE_DIR}/../../gccxml-bin/bin"
+        ${EXTERNAL_DIR}/bin
 	NO_DEFAULT_PATH
 )
 

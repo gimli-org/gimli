@@ -517,20 +517,12 @@ def main(argv):
                       help="Label to be displayed on colorbar. " +
                       "Resistivity or Velocity is set automatically.",
                       default="auto")
-    parser.add_option(
-        "",
-        "--xLabel",
-        dest="xlabel",
-        help="label to x-axes",
-        metavar="String",
-        default=None)
-    parser.add_option(
-        "",
-        "--yLabel",
-        dest="ylabel",
-        help="label to y-axes",
-        metavar="String",
-        default=None)
+    parser.add_option("", "--xLabel", dest="xlabel",
+                      metavar="String", default=None,
+                      help="Label to the x-axis.")
+    parser.add_option("", "--yLabel", dest="ylabel",
+                      metavar="String", default=None,
+                      help="Label to the y-axis.")
     parser.add_option(
         "",
         "--title",
