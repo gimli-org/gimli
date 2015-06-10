@@ -7,8 +7,7 @@
 
 find_path(PYPLUSPLUS_PATH pyplusplus/__init__.py
     HINTS 
-		${EXTERNAL_DIR}
-        ${PROJECT_SOURCE_DIR}/../../pyplusplus/
+        ${EXTERNAL_DIR}
     NO_DEFAULT_PATH
 )
 

@@ -7,8 +7,7 @@
 
 find_path(PYGCCXML_PATH pygccxml/__init__.py
     HINTS 
-		${EXTERNAL_DIR}
-        ${PROJECT_SOURCE_DIR}/../../pygccxml/
+        ${EXTERNAL_DIR}
     NO_DEFAULT_PATH
 )
 
