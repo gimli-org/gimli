@@ -473,6 +473,9 @@ buildPYGCCXML(){
 		python setup.py build
 		echo "copy build->dist"
 		cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
+        pushd $PYPLUSPLUS_DIST
+            patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch
+        popd
 		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
 		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
