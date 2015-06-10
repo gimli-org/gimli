@@ -14,6 +14,8 @@ rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
 mkdir -p build
 cd build
 cmake ../trunk
+# this we need only once the deps needs to be updated
+make rebuild_thirdparty
 make -j 8 gimli
 make pygimli J=8
 

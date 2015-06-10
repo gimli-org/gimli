@@ -156,7 +156,7 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
-ADD_CUSTOM_TARGET(rebuild_thirdparty ALL)
+ADD_CUSTOM_TARGET(rebuild_thirdparty)
 ADD_CUSTOM_COMMAND(
     COMMAND
         ${CMAKE_COMMAND} -E echo "remove ${EXTERNAL_DIR}"
