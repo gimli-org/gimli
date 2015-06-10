@@ -33,9 +33,14 @@ class CellBrowser(object):
 
     Examples
     --------
+    >>> from matplotlib import pyplot as plt
     >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawModel
     >>> from pygimli.mplviewer import CellBrowser
+    >>>
     >>> mesh = pg.createGrid(range(5), range(5))
+    >>> fig, ax = plt.subplots()
+    >>> plc = drawModel(ax, mesh, mesh.cellMarker())
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
     ('Interactive cell browser activated on Fig.', ...)

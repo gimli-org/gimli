@@ -26,12 +26,11 @@ chmod +x ../trunk/python/apps/*
 export PATH=`pwd`/../trunk/python/apps:$PATH
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 python -c "import pygimli; print(pygimli.__version__)"
-# We need more tests here
+make doctests # run all examples in docstrings and verify output
 
 # Build documentation
 export PATH=/opt/texbin:$PATH # for building pdf
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
-make doctests # run all examples in docstrings and verify output
 make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
