@@ -12,10 +12,10 @@ def opt_import(module, requiredTo="use the full functionality"):
     """
     Import and return module only if it exists.
 
-    If `module` can be cannot be imported, a warning is printed followed by the
+    If `module` cannot be imported, a warning is printed followed by the
     `requiredFor` string. Otherwise, the imported `module` will be returned.
-    This function should be used to import optional dependencies to avoid
-    repeated try/except statements.
+    This function should be used to import optional dependencies in order to
+    avoid repeated try/except statements.
 
     Parameters
     ----------
