@@ -9,6 +9,9 @@ python --version
 cmake --version
 python -c "import numpy; print(numpy.__version__)"
 
+# just do this if something is wrong with the thirdparty sources
+rm -rf thirdParty/src
+
 # Main build
 rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
 mkdir -p build
