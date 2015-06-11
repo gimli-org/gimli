@@ -46,7 +46,7 @@ def rndig(a, ndig=3):
 
 
 def roundTo(arr, n_digits=3):
-    """ return ndarray of rounded elements (obsolete due to np.round) """
+    """Return ndarray of rounded elements (obsolete due to np.round)."""
     raise Exception('remove me')
     #return np.asarray([rndig(a, ndig=n_digits) for a in arr])
 
@@ -97,7 +97,7 @@ def arrayToStdVectorUL(theArray):
 
 
 def jetmap(m=64):
-    """ jet color map """
+    """jet color map"""
     n = int(np.ceil(m / 4))
     u = np.hstack(((np.arange(1. * n) + 1) / n, np.ones(n - 1),
                    np.arange(1. * n, 0, -1) / n))
@@ -213,7 +213,7 @@ def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
 
 
 def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
-    """ draw 1d model with lower and upper bounds """
+    """draw 1d model with lower and upper bounds"""
     draw1dmodel(x, thk, color='red', **kwargs)
     for i in range(len(x)):
         x1 = np.array(x)
@@ -229,7 +229,7 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
                        islog=True, title=None, cmap=jet):
-    """ show several 1d block models as (stitched) section """
+    """show several 1d block models as (stitched) section"""
     if x is None:
         x = np.arange(len(models))
 
@@ -285,7 +285,7 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
 
 def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
                           islog=True, title=None):
-    """ show several 1d block models as (stitched) section """
+    """show several 1d block models as (stitched) section"""
     if x is None:
         x = np.arange(len(models))
 
@@ -369,7 +369,7 @@ def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):
 
 
 def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
-    """ replaces the last-but-one tick label by unit symbol """
+    """replaces the last-but-one tick label by unit symbol"""
     if xlabel:
         labels = ax.get_xticks().tolist()
         labels[position] = unit
@@ -381,7 +381,7 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
 
 
 def plotLines(ax, line_filename, linewidth=1.0, step=1):
-    """ load lines from file and plot them into axes """
+    """load lines from file and plot them into axes"""
     xz = np.loadtxt(line_filename)
     n_points = xz.shape[0]
     if step == 2:
@@ -394,7 +394,7 @@ def plotLines(ax, line_filename, linewidth=1.0, step=1):
 
 
 def saveResult(fname, data, rrms=None, chi2=None, mode='w'):
-    """ save rms/chi2 results into filename """
+    """save rms/chi2 results into filename"""
     with open(fname, mode) as f:
         np.savetxt(f, data)
         if rrms is not None:
@@ -435,13 +435,13 @@ def getSavePath(folder=None, subfolder='', now=None):
 
 
 def createResultFolder(subfolder, now=None):
-    """ create a result Folder """
+    """create a result Folder"""
     result = createDateTimeString(now)
     return createfolders(['./', result, subfolder])
 
 
 def createDateTimeString(now=None):
-    """ returns datetime as string (e.g. for saving results) """
+    """returns datetime as string (e.g. for saving results)"""
     if now is None:
         now = time.localtime()
     return str(now.tm_year) + str(now.tm_mon).zfill(2) + \
@@ -451,10 +451,10 @@ def createDateTimeString(now=None):
 
 
 def setPlotStuff(fontsize=7, dpi=None):
-    """ set up rcParams (fontsize and dpi) for later plotting
+    """set up rcParams (fontsize and dpi) for later plotting
 
-    TODO move to mplviewer __init__.py
-    """
+    TODO move to mplviewer __init__.py"""
+    
     from matplotlib import rcParams
 
     rcParams['axes.labelsize'] = fontsize

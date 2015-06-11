@@ -14,7 +14,7 @@ from . models import ColeColeAbs, ColeColePhi
 def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True,
                mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
-    """ fit a Cole-Cole term with additional EM term to phase """
+    """fit a Cole-Cole term with additional EM term to phase"""
     fCCEM = PeltonPhiEM(f)
     fCCEM.region(0).setParameters(*mpar)    # m (start,lower,upper)
     fCCEM.region(1).setParameters(*taupar)  # tau
@@ -32,7 +32,7 @@ def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True,
 
 def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
              mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100), cpar=(0.25, 0, 1)):
-    """ fit a Cole-Cole term with additional EM term to phase """
+    """fit a Cole-Cole term with additional EM term to phase"""
     fCCEM = ColeColePhi(f)
     fCCEM.region(0).setParameters(*mpar)    # m (start,lower,upper)
     fCCEM.region(1).setParameters(*taupar)  # tau
@@ -50,7 +50,7 @@ def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
 
 def fitCCAbs(f, amp, error=0.01, lam=1000., mstart=None,
              taupar=(1e-2, 1e-5, 100), cpar=(0.5, 0, 1)):
-    """ fit amplitude spectrum by Cole-Cole model """
+    """fit amplitude spectrum by Cole-Cole model"""
     fCC = ColeColeAbs(f)
     tLog = pg.RTransLog()
     fCC.region(0).setStartValue(max(amp))
@@ -71,7 +71,7 @@ def fitCCAbs(f, amp, error=0.01, lam=1000., mstart=None,
 
 def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
            taupar=(1e-2, 1e-5, 100), cpar=(0.5, 0, 1)):
-    """ fit complex spectrum by Cole-Cole model """
+    """fit complex spectrum by Cole-Cole model"""
     fCC = ColeColeComplex(f)
     tLog = pg.RTransLog()
     fCC.region(0).setStartValue(max(amp))
@@ -94,7 +94,7 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
 
 
 def fitCCCC(f, amp, phi, error=0.01, lam=10.):
-    """ fit complex spectrum by Cole-Cole model based on sigma """
+    """fit complex spectrum by Cole-Cole model based on sigma"""
     fCC = ColeColeComplexSigma(f)
     tLog = pg.RTransLog()
     fCC.region(0).setStartValue(1./max(amp))
@@ -117,9 +117,9 @@ def fitCCCC(f, amp, phi, error=0.01, lam=10.):
 
 
 def KramersKronig(f, re, im, usezero=False):
-    """ return real/imaginary parts retrieved by Kramers-Kronig relations
+    """Return real/imaginary parts retrieved by Kramers-Kronig relations
 
-        formulas including singularity removal according to Boukamp (1993)
+       formulas including singularity removal according to Boukamp (1993)
     """
     from scipy.integrate import simps
 

@@ -51,10 +51,10 @@ class MRSVESBlockModelling(pg.ModellingBase):
 
 class MRSVES(MRS):
 
-    """ class for joint MRS/VES inversion using LS or GA """
+    """class for joint MRS/VES inversion using LS or GA"""
 
     def __init__(self, mrsfile, vesfile=None, correctbranch=False):
-        """ init class and load MRS (*.mrsi) (and VES data *.ves) """
+        """init class and load MRS (*.mrsi) (and VES data *.ves)"""
         MRS.__init__(self, mrsfile)
         self.lowerBound.append(1.)
         self.upperBound.append(3000.)
@@ -79,7 +79,7 @@ class MRSVES(MRS):
             correctBranches(self.ab2, self.mn2, self.rhoa)
 
     def createFOP(self, nlay, verbose=False):
-        """ creates forward operator for given number of layers """
+        """creates forward operator for given number of layers"""
         self.nlay = nlay
         self.f = MRSVESBlockModelling(
             nlay,
@@ -99,7 +99,7 @@ class MRSVES(MRS):
             self.f.region(i).setTransModel(self.trans[-1])
 
     def createInv(self, nlay, lam=100., errVES=3, verbose=True):
-        """ Create Marquardt type inversion instance with data transformation"""
+        """Create Marquardt type inversion instance with data transformatio"""
         self.createFOP(nlay)
         self.tMod = pg.RTransLog()
         self.tMRS = pg.RTrans()
@@ -118,14 +118,14 @@ class MRSVES(MRS):
         self.INV.setAbsoluteError(error)
 
     def runInv(self, uncertainty=False):
-        """ run actual inversion (assumes one was created before) """
+        """run actual inversion (assumes one was created before)"""
         self.model = np.array(mrsves.INV.run())
         if uncertainty:
             self.modelL, self.modelU = iterateBounds(self.INV,
                                                      dchi2=self.INV.chi2() / 2, change=1.2)
 
     def plotResult(self, filename=None, nrows=1, figsize=(10, 6)):
-        """ plot Result as three (time 1 or more) plots """
+        """plot Result as three (time 1 or more) plots"""
         nl = self.nlay
         thk = self.model[:nl - 1]
         wc = self.model[nl - 1:2 * nl - 1]
@@ -196,7 +196,7 @@ class MRSVES(MRS):
         return fig, ax
 
     def plotResultAndFit(self, filename=None, figsize=(10, 10)):
-        """ Whats this? """
+        """Whats this?"""
         fig, ax = self.plotResult(nrows=2, figsize=figsize)
         clim = self.showCube(ax[1, 0], self.data * 1e9, islog=False)
         resp = np.array(self.INV.response())
@@ -212,7 +212,7 @@ class MRSVES(MRS):
         return fig, ax
 
     def exportResult(self, basename):
-        """ export result in column file (z,thk,wc,t2,res) """
+        """export result in column file (z,thk,wc,t2,res)"""
         nl = self.nlay
         thk = self.model[:nl - 1]
         wc = self.model[nl - 1:2 * nl - 1]
@@ -280,7 +280,7 @@ class MRSVES(MRS):
         import inspyred
 
         def genMods(individual):
-            """ generate MRS and VES models from unit vector """
+            """generate MRS and VES models from unit vector"""
             model = pg.asvector(individual) * (self.lUB - self.lLB) + self.lLB
             if self.logpar:
                 model = pg.exp(model)
@@ -301,12 +301,12 @@ class MRSVES(MRS):
             return modMRS, modVES
 
         def mygenerate(random, args):
-            """ generate a random vector of model size """
+            """generate a random vector of model size"""
             return [random.random() for i in range(nlay * 4 - 1)]
 
         @inspyred.ec.evaluators.evaluator
         def datafit(individual, args):
-            """ return data fits for MRS and VES as Pareto object """
+            """return data fits for MRS and VES as Pareto object"""
             modMRS, modVES = genMods(individual)
             MRSmisfit = (self.data - self.f(modMRS)) / self.error
             VESmisfit = (

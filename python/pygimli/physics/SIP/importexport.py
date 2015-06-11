@@ -2,7 +2,7 @@ import numpy as np
 
 
 def readTXTSpectrum(filename):
-    """ read spectrum from ZEL device output (txt) data file """
+    """read spectrum from ZEL device output (txt) data file"""
     fid = open(filename)
     lines = fid.readlines()
     fid.close()

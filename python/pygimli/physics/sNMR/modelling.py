@@ -16,7 +16,7 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
     f=MRS1dBlockQTModelling(lay, KR, KI, zvec, t, verbose = False )
     """
     def __init__(self, nlay, K, zvec, t, verbose=False):
-        """ constructor with number of layers, kernel, z and t vectors """
+        """constructor with number of layers, kernel, z and t vectors"""
         mesh = pg.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
         pg.ModellingBase.__init__(self, mesh)
         self.K_ = K
@@ -27,7 +27,7 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
         self.nt_ = len(t)
 
     def response(self, par):
-        """ yield model response cube as vector """
+        """yield model response cube as vector"""
         nl = self.nl_
         thk = par[0:nl-1]  # (0, nl - 1)
         wc = par[nl-1:2*nl-1]  # (nl - 1, 2 * nl - 1)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-""" Overlay / Underlay an image or a geo referenced map to mpl.axes."""
+"""Overlay / Underlay an image or a geo referenced map to mpl.axes"""
 import os
 
 import math
@@ -14,7 +14,7 @@ import urllib
 
 class OverlayImageMPL(object):
 
-    """ What is this? """
+    """What is this?"""
 
     def __init__(self, imageFileName, axes):
         self.axes = axes
@@ -23,12 +23,12 @@ class OverlayImageMPL(object):
         self.figure = self.axes.get_figure()
 
     def clear(self):
-        """ What is this? """
+        """What is this?"""
         if self.imAxes in self.figure.axes:
             self.figure.delaxes(self.imAxes)
 
     def setPosition(self, posX, posY, axes=None):
-        """ What is this? """
+        """What is this?"""
         if axes is not None:
             self.axes = axes
         self.dx = float(self.image.size[0]) / \
@@ -82,7 +82,7 @@ class OverlayImageMPL(object):
 
 
 def deg2MapTile(lon_deg, lat_deg, zoom):
-    """ What is this? """
+    """What is this?"""
     lat_rad = math.radians(lat_deg)
     n = 2.0 ** zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)
@@ -106,7 +106,7 @@ def mapTile2deg(xtile, ytile, zoom):
 
 
 def cacheFileName(fullname, vendor):
-    """ Utility. Create filename and path to cache download data. """
+    """ Utility. Createfilename and path to cache download data."""
     (dirName, fileName) = os.path.split(fullname)
 
     path = './' + vendor + '/' + dirName

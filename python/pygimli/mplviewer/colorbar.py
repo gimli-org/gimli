@@ -72,7 +72,7 @@ def cmapFromName(cmapname, ncols=256, bad=None):
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
                         dropColLimitsPerc=5, logScale=True):
-    """ What is this? """
+    """What is this?"""
     data = np.asarray(dataIn)
 
     # if type( dataIn ) == g.RVector:
@@ -155,7 +155,7 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
-    """ What's that?"""
+    """What's that"""
 
     # print "setCbarLevels", cMin, cMax
 

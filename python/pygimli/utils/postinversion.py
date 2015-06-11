@@ -9,8 +9,6 @@ Created on Thu Feb 02 14:15:13 2012
 import pygimli as pg
 from pygimli.utils import gmat2numpy
 import numpy as np
-# is there a way using numpy.linalg instead to avoid default scipy dependency?
-#import scipy.linalg
 
 
 def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
@@ -96,7 +94,7 @@ def modCovar(inv):
     DJ = d.reshape(len(d), 1) * J
     JTJ = DJ.T.dot(DJ)
     try:
-        MCM = scipy.linalg.inv(JTJ)   # model covariance matrix
+        MCM = np.linalg.inv(JTJ)   # model covariance matrix
 
         varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
         di = (1.0 / varVG)  # variances as column vector
@@ -114,8 +112,7 @@ def modCovar(inv):
 
 
 def print1dBlockVar(var, thk, xpos=None):
-    """ does not belong here as it is a plotting function
-    """
+    """does not belong here as it is a plotting function"""
     raise('fixme')
     # welches plt??
     # if xpos is None:

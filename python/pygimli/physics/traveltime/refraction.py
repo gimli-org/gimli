@@ -66,7 +66,7 @@ def getSavePath(folder=None, subfolder=''):
 
 
 def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
-    """ plot first arrivals as lines """
+    """plot first arrivals as lines"""
     px = pg.x(data.sensorPositions())
     gx = np.array([px[int(g)] for g in data("g")])
     sx = np.array([px[int(s)] for s in data("s")])
@@ -88,7 +88,7 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
 
 
 def showVA(ax, data, usepos=True):
-    """ show apparent velocity as image plot """
+    """show apparent velocity as image plot"""
     px = pg.x(data.sensorPositions())
     gx = np.asarray([px[int(g)] for g in data("g")])
     sx = np.asarray([px[int(s)] for s in data("s")])
@@ -157,7 +157,7 @@ class Refraction(object):
     """ Class for managing a refraction seismics"""
 
     def __init__(self, data=None, verbose=True, **kwargs):
-        """ Init function with optional data load """
+        """Init function with optional data load"""
         self.figs = {}
         self.axs = {}
         if isinstance(data, str):
@@ -170,7 +170,7 @@ class Refraction(object):
         return self.__repr__()
 
     def __repr__(self):
-        """ string representation of the class """
+        """string representation of the class"""
         out = "Refraction object"
         if hasattr(self, 'data'):
             out += "\n" + self.data.__str__()
@@ -183,7 +183,7 @@ class Refraction(object):
         self.checkData()
 
     def load(self, filename):
-        """" load data from file """
+        """load data from file"""
         # check for file formats and import if necessary
         self.data = pg.DataContainer(filename, 's g')
         self.basename = filename[:filename.rfind('.')]
@@ -209,7 +209,7 @@ class Refraction(object):
         print(self.data)
 
     def showData(self, ax=None, response=None):
-        """ show data in form of travel time curves """
+        """show data in form of travel time curves"""
         if ax is None:
             fig, ax = plt.subplots()
             self.figs['data'] = fig
@@ -224,7 +224,7 @@ class Refraction(object):
         plt.show(block=False)
 
     def showVA(self, ax=None):
-        """ show apparent velocity as image plot """
+        """show apparent velocity as image plot"""
         if ax is None:
             fig, ax = plt.subplots()
             self.figs['va'] = fig
@@ -234,7 +234,7 @@ class Refraction(object):
         plt.show(block=False)
 
     def getOffset(self):
-        """ return vector of offsets (in m) between shot and receiver """
+        """return vector of offsets (in m) between shot and receiver"""
         px = pg.x(self.data.sensorPositions())
         gx = np.array([px[int(g)] for g in self.data("g")])
         sx = np.array([px[int(s)] for s in self.data("s")])
@@ -242,7 +242,7 @@ class Refraction(object):
 
     def makeMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
                  paraBoundary=5):
-        """ create (inversion) """
+        """create (inversion)"""
         if depth is None:
             depth = max(self.getOffset()) / 3.
         self.poly = createParaDomain2D(self.data.sensorPositions(),
@@ -253,7 +253,7 @@ class Refraction(object):
         self.mesh.createNeighbourInfos()
 
     def showMesh(self, ax=None):
-        """ show mesh in given axes or in a new figure """
+        """show mesh in given axes or in a new figure"""
         if ax is None:
             fig, ax = plt.subplots()
             self.figs['mesh'] = fig
@@ -263,7 +263,7 @@ class Refraction(object):
         plt.show(block=False)
 
     def createFOP(self, refine=True):  # Dijkstra, later FMM
-        """ create forward operator working on refined mesh """
+        """create forward operator working on refined mesh"""
         if not hasattr(self, 'mesh'):  # self.mesh is None:
             self.makeMesh()
         self.f = pg.TravelTimeDijkstraModelling(self.mesh, self.data, True)
@@ -272,7 +272,7 @@ class Refraction(object):
         self.pd = self.f.regionManager().paraDomain()  # no idea why needed
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
-        """ estimate error composed of an absolute and a relative part """
+        """estimate error composed of an absolute and a relative part"""
         if relativeError > 1:  # obviously in %
             relativeError /= 100.
         self.error = absoluteError / self.data('t') + relativeError
@@ -280,7 +280,7 @@ class Refraction(object):
             self.INV.setRelativeError(self.error)
 
     def createInv(self, verbose=True, dosave=False):
-        """ create inversion instance """
+        """create inversion instance"""
         if not hasattr(self, 'f'):
             self.createFOP()
         if not hasattr(self, 'error'):
@@ -294,7 +294,7 @@ class Refraction(object):
         self.INV.setRelativeError(self.error)
 
     def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30.):
-        """ run inversion """
+        """run inversion"""
         if not hasattr(self, 'INV'):  # self.f is None:
             self.createInv()
 
@@ -307,18 +307,18 @@ class Refraction(object):
         self.velocity = 1. / slowness
 
     def rayCoverage(self):
-        """ return ray coverage """
+        """return ray coverage"""
         return self.f.jacobian().transMult(pg.RVector(self.data.size(), 1.))
 
     def standardizedCoverage(self):
-        """ return standardized coverage vector (0|1) using neighbor info """
+        """return standardized coverage vector (0|1) using neighbor info"""
         coverage = self.rayCoverage()
         C = self.f.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
 
     def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
                    **kwargs):
-        """ show resulting velocity vector """
+        """show resulting velocity vector"""
         if cMin is None or cMax is None:
             cMin, cMax = interperc(self.velocity, 3)
         if ax is None:

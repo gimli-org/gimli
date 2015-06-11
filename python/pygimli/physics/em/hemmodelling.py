@@ -24,7 +24,7 @@ def cmapDAERO():
 
 
 class HEMmodelling(pg.ModellingBase):
-    """ HEM Airborne modelling class """
+    """HEM Airborne modelling class"""
     # Konstanten
     ep0 = 8.8542e-12
     mu0 = 4e-7 * np.pi

@@ -44,7 +44,7 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
 
 
 def showErrorBars(ax, thk, val, thkL, thkU, valL, valU, *args, **kwargs):
-    """ plot error bars into a plot """
+    """plot error bars into a plot"""
     zb = np.cumsum(thk)
     zm = np.hstack((zb - thk / 2, zb[-1] * 1.2))  # zb[-1]+thk[-1]/2))
     valm = (val[:-1] + val[1:]) / 2
@@ -56,7 +56,7 @@ def showErrorBars(ax, thk, val, thkL, thkU, valL, valU, *args, **kwargs):
 
 
 def showWC(ax, thk, wc, wmin=0., wmax=0.45, maxdep=0., dw=0.05, **kwargs):
-    """ show water content function nicely """
+    """show water content function nicely"""
     drawModel1D(ax, thk, wc, xlabel=r'$\theta$')
     ax.set_xlim(0., 0.45)
     if maxdep > 0.:
@@ -67,7 +67,7 @@ def showWC(ax, thk, wc, wmin=0., wmax=0.45, maxdep=0., dw=0.05, **kwargs):
 
 
 def showT2(ax, thk, t2, maxdep=0., **kwargs):
-    """ show T2 function nicely """
+    """show T2 function nicely"""
     drawModel1D(
         ax,
         thk,

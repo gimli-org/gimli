@@ -8,12 +8,12 @@ from __future__ import print_function
 import sys
 from importlib import import_module
 import pygimli as pg
-from math import sqrt, floor, ceil
+from math import sqrt, floor
 
 
-class ProgressBar():
+class ProgressBar(object):
 
-    """
+    r"""
     Animated text-based progressbar for intensive loops. Should work in the
     console and in the IPython Notebook.
 
@@ -43,14 +43,10 @@ class ProgressBar():
 
     def update(self, iteration):
         """Update ProgressBar by iteration number starting at 0."""
-        self._setbar(iteration + 1)
+        self._amount((iteration + 1 / float(self.its)) * 100.0)
+        self.pbar += '  %d of %s complete' % (iteration + 1, self.its)
         print("\r" + self.pbar, end='')
         sys.stdout.flush()
-
-    def _setbar(self, elapsed_it):
-        """Reset pbar based on current iteration number."""
-        self._amount((elapsed_it / float(self.its)) * 100.0)
-        self.pbar += '  %d of %s complete' % (elapsed_it, self.its)
 
     def _amount(self, new_amount):
         """Calculate amount by which to update the pbar."""
@@ -159,6 +155,7 @@ def logDropTol(p, droptol=1e-3):
     """
     Example
     -------
+    >>> from pygimli.utils import logDropTol
     >>> x = logDropTol((-10,-1,0,1,100))
     >>> print(x.array())
     [-4. -3.  0.  3.  5.]

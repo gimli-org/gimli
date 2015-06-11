@@ -29,9 +29,9 @@ class NDMatrix(pg.RBlockMatrix):  # to be moved to a better place
 
 
 class JointMRSModelling(MRS1dBlockQTModelling):
-    """ MRS Laterally constrained modelling based on BlockMatrices """
+    """MRS Laterally constrained modelling based on BlockMatrices"""
     def __init__(self, mrs, nlay=2, verbose=False):
-        """ Parameters: FDEM data class and number of layers """
+        """Parameters: FDEM data class and number of layers"""
         super(JointMRSModelling, self).__init__(nlay, mrs[0].K, mrs[0].z,
                                                 mrs[0].t, verbose)
         self.mrs = mrs
@@ -39,16 +39,16 @@ class JointMRSModelling(MRS1dBlockQTModelling):
             mrsi.createFOP(nlay)
 
     def response(self, model):
-        """ response function (all responses together) """
+        """response function (all responses together)"""
         response = pg.RVector()
         for mrs in self.mrs:
             response = pg.cat(response, mrs.f(model))
 
 
 class MRSLCI(pg.ModellingBase):
-    """ MRS Laterally constrained modelling based on BlockMatrices """
+    """MRS Laterally constrained modelling based on BlockMatrices"""
     def __init__(self, profile, nlay=2, verbose=False):
-        """ Parameters: FDEM data class and number of layers """
+        """Parameters: FDEM data class and number of layers"""
         super(MRSLCI, self).__init__(verbose)
         self.nlay = nlay
         self.nx = len(profile)
@@ -73,7 +73,7 @@ class MRSLCI(pg.ModellingBase):
         self.setJacobian(self.J)
 
     def response(self, model):
-        """ cut-together forward responses of all soundings """
+        """cut-together forward responses of all soundings"""
         modA = np.reshape(model, (self.nx, self.nlay * 3 - 1))
         resp = pg.RVector(0)
         for i, modi in enumerate(modA):
@@ -106,7 +106,7 @@ class MRSprofile():
         return "MRS profile with "+str(len(self.mrs))+" soundings"
 
     def setX(self, x=None, x0=0, dx=1):
-        """ define positions for soundings and sort accordingly """
+        """define positions for soundings and sort accordingly"""
         if x is None:
             x = np.arange(len(self.mrs)) * dx + x0
             print(x)
@@ -122,7 +122,7 @@ class MRSprofile():
         self.mrs = [MRS(filename, **kwargs) for filename in filenames]
 
     def showData(self, figsize=(15, 10), clim=None):
-        """ show all data cubes in subplots """
+        """show all data cubes in subplots"""
         from math import sqrt, ceil
         nsond = len(self.mrs)
         nc = ceil(sqrt(nsond*3))
@@ -155,7 +155,7 @@ class MRSprofile():
                                 np.array(self.nData)) / sum(self.nData))
 
     def block1dInversion(self, nlay=2, startModel=None, verbose=True):
-        """ invert all data together by one 1D model (variant 1 - all equal)"""
+        """invert all data together by one 1D model (variant 1 - all equal)"""
         self.mrsall = MRS()
         self.mrsall.z = self.mrs[0].z
         self.mrsall.t = self.mrs[0].t
@@ -173,7 +173,7 @@ class MRSprofile():
         return self.mrsall.model
 
     def block1dInversionNew(self, nlay=2, lam=100., verbose=True):
-        """ invert all data together by a 1D model (more general solution) """
+        """invert all data together by a 1D model (more general solution)"""
         data, error = pg.RVector(), pg.RVector()
         for mrs in self.mrs:
             data = pg.cat(data, mrs.data)
@@ -204,7 +204,7 @@ class MRSprofile():
         return model
 
     def blockLCInversion(self, nlay=2, startModel=None, lam=100., cType=1):
-        """ laterally constrained (piece-wise 1D) block inversion """
+        """laterally constrained (piece-wise 1D) block inversion"""
         data, error, self.nData = pg.RVector(), pg.RVector(), []
         for mrs in self.mrs:
             data = pg.cat(data, mrs.data)
@@ -242,7 +242,7 @@ class MRSprofile():
             self.Chi2vec.append(np.mean(emisfit[ind[i]:ind[i+1]]**2))
 
     def showFits(self):
-        """ show single fits and total fit """
+        """show single fits and total fit"""
         np.set_printoptions(precision=2)
         print("Single RMS [nV]:")
         print(np.array(self.RMSvec))
