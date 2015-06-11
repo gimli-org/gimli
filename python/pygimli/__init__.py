@@ -183,7 +183,7 @@ def __RVectorPower(self, m):
 _pygimli_.RVector.__pow__ = __RVectorPower
 
 ############################
-# Indexing [] operator for RVector, CVector, 
+# Indexing [] operator for RVector, CVector,
 #                          RVector3, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
@@ -427,7 +427,7 @@ def __stdVectorRVector3ArrayCall(self, idx=None):
         print(idx)
         raise Exception("we need to fix this")
     return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
-    
+
 _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
 #_pygimli_.RVector3.__array__ = _pygimli_.RVector3.array
