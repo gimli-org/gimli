@@ -226,7 +226,7 @@ def boundaryPlaneIntersectionLines(boundaries, plane):
 def number_of_processors():
     import sys
     import os
-    """ number of virtual processors on the computer """
+    """number of virtual processors on the computer"""
     # Windows
     if os.name == 'nt':
         return int(os.getenv('NUMBER_OF_PROCESSORS'))

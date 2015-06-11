@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" Tools to create or manage PLC """
+"""Tools to create or manage PLC"""
 
 import os
 from os import system
@@ -9,7 +9,7 @@ import numpy as np
 import pygimli as pg
 
 def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
-    """ INTERNAL """
+    """INTERNAL"""
 
     nEdges = poly.nodeCount()-1 + isClosed
     bm = None

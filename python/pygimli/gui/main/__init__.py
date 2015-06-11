@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-""" Main gui application. """
+"""Main gui application."""
 
 from . guiMainFrameQt import *
 

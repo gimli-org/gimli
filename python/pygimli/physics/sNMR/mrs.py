@@ -23,7 +23,7 @@ class MRS():
     """
 
     def __init__(self, name=None, verbose=True, **kwargs):
-        """ init function with optional data load from mrsi file """
+        """init function with optional data load from mrsi file"""
         self.verbose = verbose
         self.t, self.q, self.z = None, None, None
         self.data, self.error = None, None
@@ -54,7 +54,7 @@ class MRS():
 
     def loadMRSI(self, filename, defaultNoise=100e-9, usereal=False,
                  mint=0., maxt=2.0, **kwargs):
-        """ load data, error and kernel from mrsi file """
+        """load data, error and kernel from mrsi file"""
         from scipy.io import loadmat  # loading Matlab mat files
 
         idata = loadmat(filename, struct_as_record=False,
@@ -113,14 +113,14 @@ class MRS():
             print(self)
 
     def loadDataCube(self, filename='datacube.dat'):
-        """ load data cube from single ascii file """
+        """load data cube from single ascii file"""
         A = np.loadtxt(filename).T
         self.q = A[1:, 0]
         self.t = A[0, 1:]
         self.data = A[1:, 1:].ravel()
 
     def loadErrorCube(self, filename='errorcube.dat'):
-        """ load error cube from a single ascii file """
+        """load error cube from a single ascii file"""
         A = np.loadtxt(filename).T
         if len(A) == len(self.q) and len(A[0]) == len(self.t):
             self.error = A.ravel()
@@ -130,7 +130,7 @@ class MRS():
             self.error = np.ones(len(self.q) * len(self.t)) * 100e-9
 
     def loadKernel(self, name=''):
-        """ load kernel matrix from mrsk or two bmat files """
+        """load kernel matrix from mrsk or two bmat files"""
         from scipy.io import loadmat  # loading Matlab mat files
 
         if name[-5:].lower() == '.mrsk':
@@ -146,11 +146,11 @@ class MRS():
                 self.K[i] = np.array(KR[i]) + np.array(KI[i]) * 1j
 
     def loadZVector(self, filename='zkernel.vec'):
-        """ load the kernel discretisation """
+        """load the kernel discretisation"""
         self.z = pg.RVector(filename)
 
     def loadDir(self, dirname):
-        """ load several files from dir (old Borkum stage) """
+        """load several files from dir (old Borkum stage)"""
         if not dirname[-1] == '/':
             dirname += '/'
         self.loadDataCube(dirname + 'datacube.dat')
@@ -160,7 +160,7 @@ class MRS():
         self.dirname = dirname  # to save results etc.
 
     def showCube(self, ax=None, vec=None, islog=None, clim=None, clab=None):
-        """ plot data (or response, error, misfit) cube nicely """
+        """plot data (or response, error, misfit) cube nicely"""
         if vec is None:
             vec = np.array(self.data).flat
             print(len(vec))
@@ -206,7 +206,7 @@ class MRS():
         return clim
 
     def showDataAndError(self, figsize=(10, 8), show=False):
-        """ show data cube and error cube """
+        """show data cube and error cube"""
         fig, ax = plt.subplots(1, 2, figsize=figsize)
         self.showCube(ax[0], self.data * 1e9, islog=False)
         self.showCube(ax[1], self.error * 1e9, islog=True)
@@ -215,7 +215,7 @@ class MRS():
         return fig, ax
 
     def showKernel(self, ax=None):
-        """ show the kernel as matrix """
+        """show the kernel as matrix"""
         if ax is None:
             fig, ax = plt.subplots()
         ax.imshow(self.K.T, interpolation='nearest', aspect='auto')
@@ -232,7 +232,7 @@ class MRS():
         return fig, ax
 
     def createFOP(self, nlay=3, verbose=True, **kwargs):
-        """ create forward operator instance """
+        """create forward operator instance"""
 #        if verbose:
 #            print('creating FOP with '+str(nlay)+' layers')
         self.nlay = nlay
@@ -271,7 +271,7 @@ class MRS():
 
     def run(self, nlay=3, lam=100., startvec=None,
             verbose=True, uncertainty=False, **kwargs):
-        """ even easier variant returning all in one call """
+        """even easier variant returning all in one call"""
         if self.INV is None or self.nlay != nlay:
             self.INV = self.createInv(nlay, lam, verbose, **kwargs)
         self.INV.setVerbose(verbose)
@@ -289,7 +289,7 @@ class MRS():
                 print("ready")
 
     def splitModel(self, model=None):
-        """ split model vector into d, theta and T2* """
+        """split model vector into d, theta and T2*"""
         if model is None:
             model = self.model
         nl = self.nlay
@@ -299,11 +299,11 @@ class MRS():
         return thk, wc, t2
 
     def result(self):
-        """ return block model results """
+        """return block model results"""
         return self.splitModel()
 
     def showResult(self, figsize=(10, 8), save=''):
-        """ show theta(z) and T2*(z) (+uncertainties if there) """
+        """show theta(z) and T2*(z) (+uncertainties if there)"""
         fig, ax = plt.subplots(1, 2, sharey=True, figsize=figsize)
         thk, wc, t2 = self.splitModel()
         showWC(ax[0], thk, wc)
@@ -320,7 +320,7 @@ class MRS():
 
     def showResultAndFit(self, figsize=(12, 10), save='', plotmisfit=False,
                          maxdep=None, show=False, clim=None):
-        """ show theta(z), T2*(z), data and model response """
+        """show theta(z), T2*(z), data and model response"""
         fig, ax = plt.subplots(2, 2 + plotmisfit, figsize=figsize)
         thk, wc, t2 = self.splitModel()
         showWC(ax[0, 0], thk, wc, maxdep=maxdep)
@@ -356,7 +356,7 @@ class MRS():
         return fig, ax
 
     def saveResult(self, filename):
-        """ save inversion result to column text file """
+        """save inversion result to column text file"""
         thk, wc, t2 = self.splitModel()
         z = np.hstack((0., np.cumsum(thk)))
         ALL = np.column_stack((z, wc, t2))
@@ -372,7 +372,7 @@ class MRS():
         np.savetxt(filename, ALL, fmt='%.3f')
 
     def loadResult(self, filename):
-        """ load inversion result from column file """
+        """load inversion result from column file"""
         A = np.loadtxt(filename)
         z, wc, t2 = A[:, 0], A[:, 1], A[:, 2]
         thk = np.diff(z)
@@ -389,7 +389,7 @@ class MRS():
             self.modelU = np.hstack((thkU, wcU, t2U))
 
     def calcMCM(self):
-        """ compute model covariance matrix """
+        """compute model covariance matrix"""
         J = gmat2numpy(self.f.jacobian())  # (linear) jacobian matrix
         D = np.diag(1 / self.error)
         DJ = D.dot(J)
@@ -410,12 +410,12 @@ class MRS():
 
     def runEA(self, nlay=None, type='GA', pop_size=100,
               max_evaluations=10000, **kwargs):
-        """ Whats this """
+        """Whats this"""
         import inspyred
         import random
 
         def mygenerate(random, args):
-            """ generate a random vector of model size """
+            """generate a random vector of model size"""
             return [random.random() for i in range(nlay * 3 - 1)]
 
         def my_observer(population, num_generations, num_evaluations, args):

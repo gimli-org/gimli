@@ -55,7 +55,7 @@ def cmapDAERO():
 
 
 def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
-    """ Plots a matrix according to x and frequencies """
+    """Plots a matrix according to x and frequencies"""
     nt = list(range(0, len(x), everyx))
     im = ax.imshow(DATA.T, interpolation='nearest')
     ax.set_ylim(plt.ylim()[::-1])
@@ -70,9 +70,9 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
 
 
 class FDEM2dFOPold(pg.ModellingBase):
-    """ old variant of 2D FOP (to be deleted) """
+    """old variant of 2D FOP (to be deleted)"""
     def __init__(self, data, nlay=2, verbose=False):
-        """ constructor with data and (optionally) number of layers """
+        """constructor with data and (optionally) number of layers"""
         pg.ModellingBase.__init__(self, verbose)
         self.nlay = nlay
         self.FOP1d = data.FOP(nlay)
@@ -82,7 +82,7 @@ class FDEM2dFOPold(pg.ModellingBase):
         self.setMesh(self.mesh_)
 
     def response(self, model):
-        """ yields forward model response """
+        """yields forward model response"""
         modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
         resp = pg.RVector(0)
         for modi in modA:
@@ -92,9 +92,9 @@ class FDEM2dFOPold(pg.ModellingBase):
 
 
 class FDEM2dFOP(pg.ModellingBase):
-    """ FDEM 2d-LCI modelling class based on BlockMatrices """
+    """FDEM 2d-LCI modelling class based on BlockMatrices"""
     def __init__(self, data, nlay=2, verbose=False):
-        """ Parameters: FDEM data class and number of layers """
+        """Parameters: FDEM data class and number of layers"""
         super(FDEM2dFOP, self).__init__(verbose)
         self.nlay = nlay
         self.FOP = data.FOP(nlay)
@@ -119,7 +119,7 @@ class FDEM2dFOP(pg.ModellingBase):
         print(self.J.rows(), self.J.cols())
 
     def response(self, model):
-        """ cut-together forward responses of all soundings """
+        """cut-together forward responses of all soundings"""
         modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
         resp = pg.RVector(0)
         for modi in modA:
@@ -140,7 +140,7 @@ class HEM1dWithElevation(pg.ModellingBase):
     """
 
     def __init__(self, frequencies, coilspacing, nlay=2, verbose=False):
-        """ Set up class by frequencies and geometries """
+        """Set up class by frequencies and geometries"""
         pg.ModellingBase.__init__(self, verbose)
         self.nlay_ = nlay  # real layers (actually one more!)
         self.FOP_ = pg.FDEM1dModelling(nlay + 1, frequencies, coilspacing, 0.0)
@@ -157,7 +157,7 @@ class HEM1dWithElevation(pg.ModellingBase):
 
 class FDEM():
 
-    """ Class for managing Frequency Domain EM data and their inversions """
+    """Class for managing Frequency Domain EM data and their inversions"""
 
     def __init__(self, x=None, freqs=None,
                  coilSpacing=None, inphase=None, outphase=None,
@@ -261,7 +261,7 @@ class FDEM():
             self.ERR[nx[i], nf[i]] = err[i]
 
     def readHEMData(self, filename, takeevery=1, choosevcp=True):
-        """ read RESOLVE type airborne EM data from .XYZ file """
+        """read RESOLVE type airborne EM data from .XYZ file"""
         self.header = {}
         keyword = ''
         with open(filename) as f:
@@ -313,7 +313,7 @@ class FDEM():
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
 
     def importMaxminData(self, filename, verbose=False):
-        """ Import MaxMin IPX format with pos, data, frequencies & geometry """
+        """Import MaxMin IPX format with pos, data, frequencies & geometry"""
         delim = None
         fid = open(filename)
 
@@ -347,13 +347,13 @@ class FDEM():
             self.x = x
 
     def deactivate(self, fr):
-        """ Deactivate a single frequency """
+        """Deactivate a single frequency"""
         fi = np.nonzero(np.absolute(self.frequencies / fr - 1.) < 0.1)
         self.isActiveFreq[fi] = False
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
 
     def freq(self):
-        """ Return active (i.e., non-deactivated) frequencies """
+        """Return active (i.e., non-deactivated) frequencies"""
         return self.frequencies[self.activeFreq]
 
     def FOP(self, nlay=2):
@@ -667,7 +667,7 @@ class FDEM():
     def plotModelAndData(self, model, xpos, response,
                          modelL=None, modelU=None):
         self.plotData(xpos, response, nv=3)
-        show1dmodel(model, color='blue')
+        show1dmodel(model)
         if modelL is not None and modelU is not None:
             pass
             # draw1dmodelErr(model, modelL, modelU)  # !!!!
@@ -675,7 +675,7 @@ class FDEM():
         return
 
     def FOP2d(self, nlay):
-        """ 2d forward modelling operator """
+        """2d forward modelling operator"""
         return FDEM2dFOP(self, nlay)
 
     def inv2D(self, nlay, lam=100., resL=1., resU=1000., thkL=1.,

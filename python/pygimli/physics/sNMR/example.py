@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Example for MRS inversion """
+"""Example for MRS inversion"""
 
 from .mrs import MRS  # change to pygimli.physics.mrs
 

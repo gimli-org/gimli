@@ -137,7 +137,7 @@ class CellBrowser(object):
         self.update()
 
     def update(self):
-        """ Docstring """
+        """Docstring"""
         center = self.mesh.cellCenter()[self.cell]
         x, y = center[0], center[1]
         marker = self.mesh.cells()[self.cell].marker()

@@ -58,7 +58,7 @@ def readusffile(filename, data=None):
     return data
 
 
-def readusffiles(filenames, DATA=[]):
+def readusffiles(filenames):
     """ read all soundings data from a list of usf files
         DATA = readusffiles( filenames ) """
     DATA = []

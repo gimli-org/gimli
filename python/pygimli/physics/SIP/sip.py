@@ -15,7 +15,7 @@ from . tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi
 
 
 class SIPSpectrum():
-    """ SIP spectrum data analysis """
+    """SIP spectrum data analysis"""
     def __init__(self, filename=None, unify=False, onlydown=True,
                  f=None, amp=None, phi=None, k=1, basename='new'):
         """init SIP class with either filename to read or data vectors
@@ -61,7 +61,7 @@ class SIPSpectrum():
                 self.phi = phi
 
     def sortData(self):
-        """ sort data along increasing frequency (e.g. useful for KK) """
+        """sort data along increasing frequency (e.g. useful for KK)"""
         ind = np.argsort(self.f)
         self.amp = self.amp[ind]
         self.phi = self.phi[ind]
@@ -76,7 +76,7 @@ class SIPSpectrum():
         return amp * np.cos(self.phi), amp * np.sin(self.phi)
 
     def zNorm(self):
-        """ normalized real (difference) and imag. z (Nordsiek&Weller, 2008)"""
+        """normalized real (difference) and imag. z (Nordsiek&Weller, 2008)"""
         re, im = self.realimag()
         R0 = max(self.amp)
         zNormRe = 1. - re / R0
@@ -84,7 +84,7 @@ class SIPSpectrum():
         return zNormRe, zNormIm
 
     def showData(self, reim=False, znorm=False, nrows=2):
-        """ show amplitude and phase spectrum in two subplots
+        """Show amplitude and phase spectrum in two subplots
 
         Parameters
         ----------
@@ -110,7 +110,7 @@ class SIPSpectrum():
         return fig, ax
 
     def getKK(self, use0=False):
-        """ retrieve Kramers-Kronig values (re->im and im->re) """
+        """retrieve Kramers-Kronig values (re->im and im->re)"""
         re, im = self.realimag()
         ind = np.argsort(self.f)
         reKK, imKK = KramersKronig(self.f[ind], re[ind], im[ind], usezero=use0)
@@ -134,7 +134,7 @@ class SIPSpectrum():
             ax[i].legend()
 
     def checkCRKK(self, useEps=False, use0=False, ax=None):
-        """ check coupling removal (CR) by Kramers-Kronig (KK) relation """
+        """check coupling removal (CR) by Kramers-Kronig (KK) relation"""
         if ax is None:
             fig, ax = plt.subplots()
         ax.semilogx(self.f, self.phi*1000, label='org')
@@ -150,7 +150,7 @@ class SIPSpectrum():
 
 
     def showPolarPlot(self):
-        """ show data in a polar plot (real against imaginary parts) """
+        """show data in a polar plot (real against imaginary parts)"""
         re, im = self.realimag()
         fig, ax = plt.subplots()
         ax.plot(re, im, 'b.')
@@ -164,14 +164,14 @@ class SIPSpectrum():
         return fig, ax
 
     def epsilonR(self):
-        """ calculate relative permittivity from imaginary conductivity """
+        """calculate relative permittivity from imaginary conductivity"""
         ECr, ECi = self.realimag(cond=True)
         eps0 = 8.854e-12
         we0 = self.f*2*pi*eps0  # Omega epsilon_0
         return ECi/we0
 
     def removeEpsilonEffect(self, er=None, mode=0):
-        """ remove effect of (constant high-frequency) epsilon from sigma """
+        """remove effect of (constant high-frequency) epsilon from sigma"""
         ECr, ECi = self.realimag(cond=True)
         we0 = self.f*2*pi*8.854e-12  # Omega epsilon_0
         if er is None:  #
@@ -194,14 +194,14 @@ class SIPSpectrum():
 
     def fitCCPhi(self, ePhi=0.001, lam=1000., remove=True,
                  mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100), cpar=(0.3, 0, 1)):
-        """ fit a Cole-Cole term to phase """
+        """fit a Cole-Cole term to phase"""
         self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
                                         taupar=taupar, cpar=cpar)
 
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                 cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
-        """ fit a Cole-Cole term with additional EM term to phase """
+        """fit a Cole-Cole term with additional EM term to phase"""
         self.mCC, self.phiCC = fitCCEMPhi(self.f, self.phi, ePhi, lam, mpar,
                                           taupar, cpar, empar)
         # %% correct EM term from data
@@ -211,7 +211,7 @@ class SIPSpectrum():
                 np.angle(relaxationTerm(self.f, self.mCC[3]))
 
     def fitColeCole(self, useCond=False, **kwargs):
-        """ fit a Cole-Cole model to the data """
+        """fit a Cole-Cole model to the data"""
         if useCond:  # use conductivity formulation instead of resistivity
             self.mCC, self.ampCC, self.phiCC = fitCCCC(self.f, self.amp,
                                                        self.phi, **kwargs)
@@ -223,7 +223,7 @@ class SIPSpectrum():
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=True,
                       showFit=False, cType=1):
-        """ fit a (smooth) continuous Debye model (Debye decomposition) """
+        """fit a (smooth) continuous Debye model (Debye decomposition)"""
         nf = len(self.f)
         if mint is None:
             mint = .1 / max(self.f)
@@ -278,15 +278,15 @@ class SIPSpectrum():
                 ax[2].semilogx(self.tau, self.mDD, 'r-')
 
     def totalChargeability(self):
-        """ total chargeability from as Debye curve as curve integral """
+        """total chargeability from as Debye curve as curve integral"""
         return sum(self.mDD)
 
     def logMeanTau(self):
-        """ mean logarithmic relaxation time as 50% cumulative log curve """
+        """mean logarithmic relaxation time as 50% cumulative log curve"""
         return exp(np.sum(np.log(self.tau) * self.mDD) / sum(self.mDD))
 
     def showAll(self, save=False):
-        """ plot spectrum, Cole-Cole fit and Debye distribution """
+        """plot spectrum, Cole-Cole fit and Debye distribution"""
         # generate title strings
         if hasattr(self, 'mCC'):
             tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f} $\tau_2$={:.1e}s'

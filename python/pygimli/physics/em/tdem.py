@@ -34,7 +34,7 @@ def rhoafromB(B, t, Tx, I=1):
 
 
 def get_rhoa(snd, cal=260e-9, corrramp=True):
-    """ compute apparent resistivity from sounding (usf) dict """
+    """compute apparent resistivity from sounding (usf) dict"""
     Tx = np.prod([float(a) for a in snd['LOOP_SIZE'].split()])
     if 'COIL_SIZE' in snd:
         Rx = snd['COIL_SIZE']
@@ -228,10 +228,10 @@ def readSiroTEMData(fname):
 
 class TDEM():
 
-    """ TEM class mainly for holding data etc. """
+    """TEM class mainly for holding data etc."""
 
     def __init__(self, filename=None):
-        """ Initialize class and (optionally) load data """
+        """Initialize class and (optionally) load data"""
         self.DATA = []
         self.names = []
 
@@ -239,7 +239,7 @@ class TDEM():
             self.load(filename)
 
     def load(self, filename):
-        """ load data from usf (e.g. terraTEM) or txt (siroTEM) file """
+        """load data from usf (e.g. terraTEM) or txt (siroTEM) file"""
         # check if filename extension is usf
         if filename.lower().rfind('.usf') > 0:
             if filename.find('*') >= 0:
@@ -257,7 +257,7 @@ class TDEM():
         print(self.__repr__)
 
     def plotTransients(self, ax=None):
-        """ plot all transients into one window """
+        """plot all transients into one window"""
         if ax is None:
             fig, ax = plt.subplots()
 
@@ -278,7 +278,7 @@ class TDEM():
         ax.grid(True)
 
     def plotRhoa(self, ax=None, ploterror=False):
-        """ Plot all apparent resistivity curves into one window """
+        """Plot all apparent resistivity curves into one window"""
         if ax is None:
             fig, ax = plt.subplots()
 

@@ -11,116 +11,116 @@ import pygimli as pg
 
 # basic functions used by the modelling operators
 def relaxationTerm(f, tau, c=1., a=1.):
-    """ auxiliary function for Debye type relaxation term """
+    """auxiliary function for Debye type relaxation term"""
     return 1. / ((f * 2. * pi * tau * 1j)**c + 1)**a
 
 
 def DebyeRelaxation(f, tau, m):
-    """ complex-valued single Debye relaxation term with chargeability """
+    """complex-valued single Debye relaxation term with chargeability"""
     return 1. - (1. - relaxationTerm(f, tau)) * m
 
 
 def WarbugRelaxation(f, tau, m):
-    """ complex-valued single Debye relaxation term with chargeability """
+    """complex-valued single Debye relaxation term with chargeability"""
     return 1. - (1. - relaxationTerm(f, tau, c=0.5)) * m
 
 
 def ColeColeEpsilon(f, e0, eInf, tau, alpha):
-    """ Original complex-valued permittivity formulation (Cole&Cole, 1941) """
+    """Original complex-valued permittivity formulation (Cole&Cole, 1941)"""
     return (e0 - eInf) * relaxationTerm(f, tau, c=1./alpha) + eInf
 
 
 def ColeColeRho(f, R, m, tau, c, a=1):
-    """ Complex-valued impedance Cole-Cole model after Pelton et al. (1978) """
+    """Complex-valued impedance Cole-Cole model after Pelton et al. (1978)"""
     return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * R
 
 
 def ColeColeSigma(f, R, m, tau, c, a=1):
-    """ Complex-valued conductivity Cole-Cole model """
+    """Complex-valued conductivity Cole-Cole model"""
     return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * R
 
 
 def ColeCole(f, R, m, tau, c, a=1):
-    """ for backward compatibility """
+    """for backward compatibility"""
     return ColeColeRho(f, R, m, tau, c, a)
 
 
 def ColeDavidson(f, R, m, tau, a=1):
-    """ for backward compatibility """
+    """for backward compatibility"""
     return ColeCole(f, R, m, tau, c=1, a=1)
 
 
 # modelling operators for use with pygimli inversion
 class ColeColePhi(pg.ModellingBase):
-    """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+    """"Cole-Cole model with EM term after Pelton et al. (1978)"""
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
         self.setMesh(pg.createMesh1D(1, 3))       # 4 single parameters
 
     def response(self, par):
-        """ phase angle of the model """
+        """phase angle of the model"""
         spec = ColeCole(self.f_, 1.0, par[0], par[1], par[2])
         return -np.angle(spec)
 
 
 class ColeColeAbs(pg.ModellingBase):
-    """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+    """"Cole-Cole model with EM term after Pelton et al. (1978)"""
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
         self.setMesh(pg.createMesh1D(1, 4))       # 3 single parameters
 
     def response(self, par):
-        """ phase angle of the model """
+        """phase angle of the model"""
         spec = ColeCole(self.f_, par[0], par[1], par[2], par[3])
         return np.abs(spec)
 
 
 class ColeColeComplex(pg.ModellingBase):
-    """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+    """"Cole-Cole model with EM term after Pelton et al. (1978)"""
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
         self.setMesh(pg.createMesh1D(1, 4))       # 4 single parameters
 
     def response(self, par):
-        """ phase angle of the model """
+        """phase angle of the model"""
         spec = ColeColeRho(self.f_, *par)
         return pg.cat(np.abs(spec), -np.angle(spec))
 
 
 class ColeColeComplexSigma(pg.ModellingBase):
-    """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+    """Cole-Cole model with EM term after Pelton et al. (1978)"""
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
         self.setMesh(pg.createMesh1D(1, 4))       # 4 single parameters
 
     def response(self, par):
-        """ phase angle of the model """
+        """phase angle of the model"""
         spec = ColeColeSigma(self.f_, *par)
         return pg.cat(np.real(spec), np.imag(spec))
 
 
 class PeltonPhiEM(pg.ModellingBase):
-    """" Cole-Cole model with EM term after Pelton et al. (1978)"""
+    """Cole-Cole model with EM term after Pelton et al. (1978)"""
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
         self.setMesh(pg.createMesh1D(1, 4))       # 4 single parameters
 
     def response(self, par):
-        """ phase angle of the model """
+        """phase angle of the model"""
         spec = ColeCole(self.f_, 1.0, par[0], par[1], par[2]) * \
             relaxationTerm(self.f_, par[3])  # pure EM has c=1
         return -np.angle(spec)
 
 
 class DebyePhi(pg.ModellingBase):
-    """ Debye decomposition (smooth Debye relaxations) phase only """
+    """Debye decomposition (smooth Debye relaxations) phase only"""
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
-        """ constructor with frequecy and tau vector """
+        """constructor with frequecy and tau vector"""
         self.f_ = fvec
         self.nf_ = len(fvec)
         self.t_ = tvec
@@ -128,7 +128,7 @@ class DebyePhi(pg.ModellingBase):
         pg.ModellingBase.__init__(self, mesh, verbose)
 
     def response(self, par):
-        """ amplitude/phase spectra as function of spectral chargeabilities """
+        """amplitude/phase spectra as function of spectral chargeabilities"""
         y = np.ones(self.nf_, dtype=np.complex)  # 1 -
         for (tau, mk) in zip(self.t_, par):
             y -= (1. - relaxationTerm(self.f_, tau)) * mk
@@ -137,9 +137,9 @@ class DebyePhi(pg.ModellingBase):
 
 
 class DebyeComplex(pg.ModellingBase):
-    """ Debye decomposition (smooth Debye relaxations) of complex data """
+    """Debye decomposition (smooth Debye relaxations) of complex data"""
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
-        """ constructor with frequecy and tau vector """
+        """constructor with frequecy and tau vector"""
         self.f = fvec
         self.nf = len(fvec)
         self.t = tvec
@@ -161,11 +161,11 @@ class DebyeComplex(pg.ModellingBase):
         self.setJacobian(self.J)
 
     def response(self, par):
-        """ amplitude/phase spectra as function of spectral chargeabilities """
+        """amplitude/phase spectra as function of spectral chargeabilities"""
         return self.J * par
 
     def createJacobian(self, par):
-        """ linear jacobian after Nordsiek&Weller (2008) """
+        """linear jacobian after Nordsiek&Weller (2008)"""
         pass
 
 

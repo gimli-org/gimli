@@ -426,7 +426,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
 
 
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
-    """ WHATSTHIS? """
+    """WHATSTHIS?"""
     A = pg.RSparseMapMatrix(dom, dom)
 
     if end == -1:
@@ -443,7 +443,7 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
 
 
 def identity(dom, start=0, end=-1):
-    """ WHATSTHIS? """
+    """WHATSTHIS?"""
     A = pg.RSparseMapMatrix(dom, dom)
 
     if end == -1:
@@ -455,7 +455,7 @@ def identity(dom, start=0, end=-1):
 
 
 def showSparseMatrix(A):
-    """ helper function """
+    """helper function"""
     S = A
     #S = pg.RSparseMatrix(A)
     rows = S.vecRowIdx()
@@ -607,7 +607,7 @@ def assembleNeumannBC(S,
 
 
 def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
-    """ This should be moved directly into gimli """
+    """This should be moved directly into gimli"""
     udirTmp = pg.RVector(S.rows(), 0.0)
     udirTmp.setVal(uDirchlet, uDirIndex)
 

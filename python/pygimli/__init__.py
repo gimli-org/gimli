@@ -40,8 +40,6 @@ import locale
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):
-    """
-    """
     if locale.localeconv()['decimal_point'] == ',':
         if verbose:
             print("Found locale decimal_point ',' "
@@ -187,9 +185,7 @@ _pygimli_.RVector.__pow__ = __RVectorPower
 #                          RVector3, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
-    """
-        Hell slow
-    """
+    """Hell slow"""
     # print("__getVal")
 
     if isinstance(idx, BVector) or isinstance(idx, IVector):
@@ -547,7 +543,7 @@ _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
 
 def randN(n):
-    """Create RVector of length n with normally distributed random numbers"""
+    """Create RVector of length n with normally distributed random numbers."""
     r = _pygimli_.RVector(n)
     _pygimli_.randn(r)
     return r

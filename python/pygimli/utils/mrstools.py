@@ -133,9 +133,8 @@ def qtblockmodelling(mydir, nlay,
 
 def showqtresultfit(thk, wc, t2, datvec, resp, t,
                     islog=True, clim=None, nu=3, nv=2):
-    """ show mrs qt result and data fit
-    showqtresultfit(thk,wc,t2,datvec,resp,t,islog=True,clim=None,nu=3,nv=2)
-    """
+    """show mrs qt result and data fit
+    showqtresultfit(thk,wc,t2,datvec,resp,t,islog=True,clim=None,nu=3,nv=2)"""
     if clim is None:
         cma = max(datvec)
         cmi = min(datvec)
