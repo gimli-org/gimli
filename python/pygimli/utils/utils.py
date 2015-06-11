@@ -4,9 +4,65 @@
 pygimli.utils - Collection of several utility functions.
 """
 
+import sys
 from importlib import import_module
 import pygimli as pg
 from math import sqrt, floor, ceil
+
+
+class ProgressBar():
+
+    """
+    Animated text-based progressbar for intensive loops. Should work in the
+    console and in the IPython Notebook.
+
+    Parameters
+    ----------
+    its : int
+        Number of iterations of the process.
+    width : int
+        Width of the ProgressBar, default is 80.
+    sign : str
+        Sign used to fill the bar.
+
+    Examples
+    --------
+    >>> from pygimli.utils import ProgressBar
+    >>> pbar = ProgressBar(its=20, width=40, sign='+')
+    >>> pbar.update(5)
+    \r[+++++++++++      30%                  ]  6 of 20 complete
+    """
+
+    def __init__(self, its, width=80, sign=":"):
+        self.its = int(its)
+        self.width = width
+        self.sign = sign[0]  # take first character only if sign is longer
+        self.pbar = '[]'
+        self._amount(0)
+
+    def update(self, iteration):
+        """Update ProgressBar by iteration number starting at 0."""
+        self._setbar(iteration + 1)
+        print("\r" + self.pbar, end='')
+        sys.stdout.flush()
+
+    def _setbar(self, elapsed_it):
+        """Reset pbar based on current iteration number."""
+        self._amount((elapsed_it / float(self.its)) * 100.0)
+        self.pbar += '  %d of %s complete' % (elapsed_it, self.its)
+
+    def _amount(self, new_amount):
+        """Calculate amount by which to update the pbar."""
+        pct_done = int(round((new_amount / 100.0) * 100.0))
+        full_width = self.width - 2
+        num_signs = int(round((pct_done / 100.0) * full_width))
+        self.pbar = '[' + self.sign * num_signs + \
+            ' ' * (full_width - num_signs) + ']'
+        pct_place = (len(self.pbar) // 2) - len(str(pct_done))
+        pct_string = '%d%%' % pct_done
+        self.pbar = self.pbar[0:pct_place] + \
+            (pct_string + self.pbar[pct_place + len(pct_string):])
+
 
 def opt_import(module, requiredTo="use the full functionality"):
     """
@@ -51,6 +107,7 @@ def opt_import(module, requiredTo="use the full functionality"):
         mod = None
 
     return mod
+
 
 def trimDocString(docstring):
     """
