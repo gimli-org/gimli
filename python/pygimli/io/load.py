@@ -21,7 +21,7 @@ def load(fname, verbose=False):
     --------
     >>> import os, tempfile
     >>> import pygimli as pg
-    >>> from pygimli.ioutils import load
+    >>> from pygimli.io import load
     >>> fname = tempfile.mktemp(suffix=".bms")
     >>> pg.createGrid(range(3), range(3)).save(fname)
     1

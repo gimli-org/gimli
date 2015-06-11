@@ -10,7 +10,7 @@ cmake --version
 python -c "import numpy; print(numpy.__version__)"
 
 # just do this if something is wrong with the thirdparty sources
-rm -rf thirdParty/src
+# rm -rf thirdParty/src
 
 # Main build
 rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
@@ -18,7 +18,7 @@ mkdir -p build
 cd build
 cmake ../trunk
 # this we need only once the deps needs to be updated
-make rebuild_thirdparty
+# make rebuild_thirdparty
 make -j 8 gimli
 make pygimli J=8
 
@@ -27,15 +27,15 @@ make check
 ./bin/gimliUnitTest
 
 # Test pygimli
-chmod +x ../trunk/python/apps/*
-export PATH=`pwd`/../trunk/python/apps:$PATH
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 python -c "import pygimli; print(pygimli.__version__)"
-make doctests # run all examples in docstrings and verify output
+python -c "import pygimli; pygimli.test()"
 
 # Build documentation
 export PATH=/opt/texbin:$PATH # for building pdf
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
+export PATH=`pwd`/../trunk/python/apps:$PATH
+chmod +x ../trunk/python/apps/*
 make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
