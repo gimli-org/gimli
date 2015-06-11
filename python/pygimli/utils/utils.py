@@ -3,6 +3,7 @@
 """
 pygimli.utils - Collection of several utility functions.
 """
+from __future__ import print_function
 
 import sys
 from importlib import import_module
