@@ -743,7 +743,7 @@ public:
     const Vec & run();
 
     /*! Specialized run function that tries to reach a datafit chi^2=1 by varying the regularization paramater lambda */
-    Vec runChi1(double acc = 0.01) {
+    Vec runChi1(double acc = 0.01, int maxiter = 50){
         stopAtChi1(false);
         Vec model = run();
 
@@ -756,8 +756,8 @@ public:
         forward_->setVerbose(false);
         if (verbose) std::cout << "Optimizing lambda subject to chi^2=1." << std::endl;
         if (verbose) std::cout << "chi^2 = " << chi2 << " lambda = " << lambda << " dir = " << dir << std::endl;
-
-        while (std::fabs(chi2 - 1.0) > acc){
+        int iter = 0;
+        while (std::fabs(chi2 - 1.0) > acc and iter < maxiter){
             dir = - sign(chi2 - 1.0);                           //** direction: up (1) or down (-1)
             if (dir * olddir == -1) fak = std::pow(fak, 0.6); //** change direction: decrease step
             lambda *= std::pow(fak, dir);                       //** increase or decrease lambda
@@ -766,6 +766,7 @@ public:
             chi2 = getChi2();
             if(verbose) std::cout << "chi^2 = " << chi2 << " lambda = " << lambda << " dir = " << dir << std::endl;
             olddir = dir;                                         //** save old direction for step length
+            iter++;
         }
         return model;
     }
