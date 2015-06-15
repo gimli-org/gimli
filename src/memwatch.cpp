@@ -61,11 +61,16 @@ double MemWatch::current(){
 }
 
 double MemWatch::inUse() {
-#if USE_BOOST_THREAD
-    boost::mutex::scoped_lock lock(__readproc__mutex__);
-#endif
+ #if USE_BOOST_THREAD
+    #ifdef WIN32_LEAN_AND_MEAN
+        __MS("pls check missing mutex")
+        //boost::mutex::scoped_lock lock(__readproc__mutex__);
+    #else
+        boost::mutex::scoped_lock lock(__readproc__mutex__);
+    #endif
+ #endif
 
-#ifdef WIN32_LEAN_AND_MEAN
+ #ifdef WIN32_LEAN_AND_MEAN
 
     PROCESS_MEMORY_COUNTERS pmc;
 

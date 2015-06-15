@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.57.0
+BOOST_VERSION_DEFAULT=1.58.0
 BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 
 LAPACK_VERSION=3.4.2
 LAPACK_URL=http://www.netlib.org/lapack/
 
-SUITESPARSE_VERSION=4.4.1
+SUITESPARSE_VERSION=4.4.4
 SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 
 TRIANGLE_URL=http://www.netlib.org/voronoi/
@@ -72,11 +72,12 @@ SetGCC_TOOLSET(){
     MAKE=make
 	
 	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
-		#CMAKE_GENERATOR='MSYS Makefiles'
-        CMAKE_GENERATOR='MinGW Makefiles'
+		CMAKE_GENERATOR='MSYS Makefiles'
+        #CMAKE_GENERATOR='MinGW Makefiles'
 		SYSTEM=WIN
 		B2TOOLSET=mingw
-        MAKE=mingw32-make 
+        B2TOOLSET=gcc
+        #MAKE=mingw32-make 
 	elif [ "$OSTYPE" == "darwin13" ]; then
 		CMAKE_GENERATOR='Unix Makefiles'
 		SYSTEM=MAC
@@ -93,7 +94,7 @@ SetGCC_TOOLSET(){
 	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
     [ "$CPUCOUNT" == 0 ] && CPUCOUNT=$PARALLEL_BUILD
 
-	if [ "$GCCARCH" == "mingw32" -o "$GCCARCH" == "i686" ]; then
+    if [ "$GCCARCH" == "mingw32" -o "$GCCARCH" == "i686" -o "$GCCARCH" == "i686-pc-msys" ]; then
 		ADDRESSMODEL=32
 	else
 		ADDRESSMODEL=64
@@ -278,6 +279,7 @@ needPYTHON(){
 	PYTHON_HOME=`which python`
 	PYTHON_HOME=${PYTHON_HOME%/*}
 	
+    echo "PYTHON HOME: $PYTHON_HOME"
     if [ $SYSTEM == "win" ]; then
         PYTHONBASE=python$PYTHONMAJOR$PYTHONMINOR
         PYTHONDLL=$PYTHON_HOME/$PYTHONBASE.dll
@@ -290,7 +292,7 @@ needPYTHON(){
             dlltool.exe --dllname $PYTHONDLL --def $PYTHONBASE.def --output-lib $PYTHONLIB
             rm $PYTHONBASE.def
         else
-            echo "found, ok"
+            echo "found, ok: $PYTHONLIB "
         fi
     fi
 	
@@ -367,13 +369,15 @@ buildBOOST(){
 	getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
 	
 	pushd $BOOST_SRC
-        
+        echo "Try to build b2 for TOOLSET: $B2TOOLSET"
+                        
 		if [ "$SYSTEM" == "WIN" ]; then
 			if [ ! -f ./b2.exe ]; then
-			
+                echo "Try with cmd /c \"bootstrap.bat $B2TOOLSET\""
 				cmd /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
 				
 				if [ ! -f ./b2.exe ]; then
+                    echo "Try with ./bootstrap.sh --with-toolset=$B2TOOLSET"
 					./bootstrap.sh --with-toolset=$B2TOOLSET # only mingw does not work either
 				fi
 				#sed -e s/gcc/mingw/ project-config.jam > project-config.jam
@@ -385,11 +389,19 @@ buildBOOST(){
 		fi
 		
 		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
-		
+		#--layout=tagged 
+        
+        #"$B2" toolset=$COMPILER --verbose-test test
+        
+        #quit
+        
+        echo "Build with python: $WITHPYTHON"
+        
 		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL install \
         -j $PARALLEL_BUILD \
 		--prefix=$BOOST_DIST \
-		--layout=tagged \
+        --platform=msys \
+        --debug-configuration \
 		$WITHPYTHON \
 		--with-system \
 		--with-thread \
@@ -423,14 +435,14 @@ buildGCCXML(){
 
     if [ "$SYSTEM" == "WIN" ]; then
         # on windows system gccxml with 64bit seems to be broken so we build with default 32 bit compiler
-        cp /etc/fstab /etc/fstab_back
-        OLDPATH=$PATH
-        umount /mingw
-        mount c:\\MINGW/ /mingw
-        export PATH=/c/MINGW/bin:$PATH
+        #cp /etc/fstab /etc/fstab_back
+        #OLDPATH=$PATH
+        #umount /mingw
+        #mount c:\\MINGW/ /mingw
+        #export PATH=/c/MINGW/bin:$PATH
         cmakeBuild $GCCXML_SRC $GCCXML_BUILD $GCCXML_DIST $EXTRA
-        cp /etc/fstab_back /etc/fstab
-        export PATH=$OLDPATH
+        #cp /etc/fstab_back /etc/fstab
+        #export PATH=$OLDPATH
     else
         cmakeBuild $GCCXML_SRC $GCCXML_BUILD $GCCXML_DIST $EXTRA
     fi
@@ -547,9 +559,10 @@ buildSUITESPARSE(){
 	
 	pushd $SUITESPARSE_BUILD
 		if [ "$SYSTEM" == "WIN" ]; then 
-			patch -p1 < $SRC_DIR/patches/SuiteSparse-4.4.1.patch
+			#patch -p1 < $BUILDSCRIPT_HOME/patches/SuiteSparse-4.4.1.patch
 			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
 			echo "CC = gcc" >> SuiteSparse_config/SuiteSparse_config.mk
+            echo "CFLAGS=-std=c90" >> SuiteSparse_config/SuiteSparse_config.mk
 			echo "BLAS = -L$TRIANGLE_DIST -lblas" >> SuiteSparse_config/SuiteSparse_config.mk
 		elif [ "$OSTYPE" == "darwin13" ]; then
 			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
@@ -569,7 +582,7 @@ buildSUITESPARSE(){
 		fi
 		echo "Installing $MODULES"
 		pushd $MODULE
-            		"$MAKE" -j$PARALLEL_BUILD library
+            		CFLAGS='-std=c90' "$MAKE" -j$PARALLEL_BUILD library
 		        "$MAKE" install
 		popd 
 	popd

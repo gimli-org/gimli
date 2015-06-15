@@ -27,9 +27,9 @@
 
 #include "inversion.h"
 
-#if USE_BOOST_THREAD
-boost::mutex writeCacheMutex__;
-#endif // USE_BOOST_THREAD
+// #if USE_BOOST_THREAD
+// static boost::mutex writeCacheMutex__;
+// #endif // USE_BOOST_THREAD
 
 namespace GIMLI{
 
