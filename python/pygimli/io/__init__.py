@@ -10,6 +10,6 @@ automatic filetype detection.
 """
 
 from . load import load
-from . gps import *
+#from . gps import *
 #from . em import *
 
