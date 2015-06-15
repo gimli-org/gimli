@@ -27,7 +27,7 @@
 
 #if USE_BOOST_THREAD
     #include <boost/thread.hpp>
-    extern boost::mutex writeCacheMutex__;
+    static boost::mutex writeCacheMutex__;
 #endif
 
 namespace GIMLI{
@@ -96,7 +96,13 @@ private:
     /*! probably threading problems .. pls check*/
     template < class Ent > void createShapeFunctions_(const Ent & e) const {
         #if USE_BOOST_THREAD
-            boost::mutex::scoped_lock lock(writeCacheMutex__);
+        #ifdef WIN32_LEAN_AND_MEAN
+                __MS("pls check missing mutex")
+            //boost::mutex::scoped_lock lock(writeCacheMutex__);
+        #else
+            boost::mutex::scoped_lock lock(writeCacheMutex__); 
+        #endif
+            
         #else
             #error "No boost threading"
         #endif

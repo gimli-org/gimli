@@ -116,6 +116,8 @@ endif()
 
 message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
 
+set(Boost_LIB_PREFIX 'cyg')
+
 if (MSVC)
 	find_package(Boost 1.46.0 COMPONENTS system thread)
 	
@@ -179,7 +181,6 @@ ADD_CUSTOM_COMMAND(
 #add_dependencies(rebuild_thirdparty rebuild_cache )
 
 find_or_build_package(Triangle triangle)
-
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
