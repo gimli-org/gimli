@@ -302,6 +302,13 @@ latex_elements = {
     \\usepackage{pslatex}\n'
 }
 
+# This fixes https://github.com/gimli-org/gimli/issues/11
+import sphinx
+if sphinx.__version__.startswith('1.3'):
+    latex_elements['preamble'] += \
+    '\\RequirePackage{fixltx2e}\n\
+     \\MakeRobust\\DUspan\n'
+
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [('doc/index', 'gimli.tex', 'GIMLi Documentation',
