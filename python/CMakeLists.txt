@@ -2,7 +2,8 @@ ADD_CUSTOM_TARGET(pggen ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND
         #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${PYTHON_EXECUTABLE} will work on cmake3.1
-        ${PYTHON_EXECUTABLE}
+        #${PYTHON_EXECUTABLE}
+        python
     ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR} --gccxml=${GCCXML_EXECUTABLE}
     TARGET
@@ -26,6 +27,8 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(pgbuild ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND
+        #test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || echo "-j" $J
+        #test -z "$J" && echo -j1 || echo "-j" $J
         test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
     TARGET
         pgbuild
@@ -60,7 +63,6 @@ add_dependencies(pygimli pgbuild)
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
 include_directories(${PY_NUMPY}/core/include/)
-
 
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
 

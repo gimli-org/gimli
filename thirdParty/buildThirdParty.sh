@@ -94,7 +94,7 @@ SetGCC_TOOLSET(){
 	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
     [ "$CPUCOUNT" == 0 ] && CPUCOUNT=$PARALLEL_BUILD
 
-    if [ "$GCCARCH" == "mingw32" -o "$GCCARCH" == "i686" -o "$GCCARCH" == "i686-pc-msys" ]; then
+    if [ "$GCCARCH" == "mingw32" -o "$GCCARCH" == "i686" -o "$GCCARCH" == "i686-pc-msys" -o "$GCCARCH" == "i686-w64-mingw32" ]; then
 		ADDRESSMODEL=32
 	else
 		ADDRESSMODEL=64
@@ -389,8 +389,7 @@ buildBOOST(){
 		fi
 		
 		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
-		#--layout=tagged 
-        
+		        
         #"$B2" toolset=$COMPILER --verbose-test test
         
         #quit
@@ -401,6 +400,7 @@ buildBOOST(){
         -j $PARALLEL_BUILD \
 		--prefix=$BOOST_DIST \
         --platform=msys \
+        --layout=tagged \
         --debug-configuration \
 		$WITHPYTHON \
 		--with-system \
