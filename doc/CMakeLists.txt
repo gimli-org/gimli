@@ -80,6 +80,7 @@ add_custom_target(sphinxpdf
     ALL
         ${SPHINX_EXECUTABLE}
         -T
+        -q
         -b latex
         -c "${SPHINX_BINARY_BUILD_DIR}"
         -d "${SPHINX_CACHE_DIR}/pdf"
