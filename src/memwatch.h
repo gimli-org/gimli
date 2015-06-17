@@ -70,7 +70,7 @@ private:
 };
 
 /*! Utility so we can use it from python. */
-inline DLLEXPORT double memoryInUse(){
+inline double memoryInUse(){
     return GIMLI::MemWatch::instance().inUse();
 }
 
