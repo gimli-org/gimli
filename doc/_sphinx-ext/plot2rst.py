@@ -251,8 +251,15 @@ def setup(app):
 def generate_example_galleries(app):
     cfg = app.builder.config
 
+    # FW: Since sphinx 1.3.1 the source suffix(es) can be a list
+    if type(cfg.source_suffix) is list:
+        cfg.main_source_suffix = cfg.source_suffix[0]
+    else:
+        cfg.main_source_suffix = cfg.source_suffix
+
     default_flags = {'auto_plots': True,
                      'gallery_style': 'thumbnail'}
+
     default_flags.update(cfg.plot2rst_flags)
     cfg.plot2rst_flags = default_flags
 
@@ -275,7 +282,7 @@ def generate_examples_and_gallery(example_dir, rst_dir, cfg):
     rst_dir.makedirs()
 
     # we create an index.rst with all examples
-    gallery_index = open(rst_dir.pjoin('index.rst'), 'w')
+    gallery_index = open(rst_dir.pjoin('index'+cfg.main_source_suffix), 'w')
 
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
@@ -304,7 +311,7 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
     cfg : config object
         Sphinx config object created by Sphinx.
     """
-    index_name = cfg.plot2rst_index_name + '.rst'
+    index_name = cfg.plot2rst_index_name + cfg.main_source_suffix
     gallery_template = src_dir.pjoin(index_name)
     if not os.path.exists(gallery_template):
         print(src_dir)
@@ -428,7 +435,7 @@ def write_example(src_name, src_dir, rst_dir, cfg):
     image_path = image_dir.pjoin(base_image_name + '_{0}.png')
 
     basename, py_ext = os.path.splitext(src_name)
-    rst_path = rst_dir.pjoin(basename + '.rst')
+    rst_path = rst_dir.pjoin(basename + cfg.main_source_suffix)
 
     if _plots_are_current(src_path, image_path) and rst_path.exists:
         return
@@ -471,7 +478,6 @@ def write_example(src_name, src_dir, rst_dir, cfg):
     # Modified to take last image rather than first
     if figure_list:
         last_image_file = image_dir.pjoin(figure_list[-1].lstrip('/'))
-        print(last_image_file)
         if last_image_file.exists:
             thumb_scale = cfg.plot2rst_thumb_scale
             image.thumbnail(last_image_file, thumb_path, thumb_scale)
