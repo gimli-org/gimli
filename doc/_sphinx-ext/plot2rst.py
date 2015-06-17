@@ -663,9 +663,8 @@ def process_blocks(blocks, src_path, image_path, cfg):
 
         else:
             if i in idx_inline_plot:
-                plt.savefig(image_path.format(fig_num))
+                plt.savefig(image_path.format(fig_num), bbox_inches='tight', dpi=150)
                 figure_name = image_fmt_str.format(fig_num)
-                fig_num += 1
                 figure_list.append(figure_name)
                 figure_link = os.path.join('images', figure_name)
                 bcontent = bcontent.replace(inline_tag, figure_link)
@@ -787,7 +786,7 @@ def save_all_figures(image_path):
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         plt.figure(fig_num)
-        plt.savefig(image_path.format(fig_num))
+        plt.savefig(image_path.format(fig_num), bbox_inches='tight', dpi=150)
         figure_list.append(image_fmt_str.format(fig_num))
     return figure_list
 
