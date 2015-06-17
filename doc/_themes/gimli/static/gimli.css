@@ -179,10 +179,22 @@ h6:hover .headerlink {
     text-decoration: none;
 }
 
+input#url.security {
+    display: none
+}
+
 /*format of code cells lastcout directive*/
+}
 pre, code, blockquote {
     font-family: "Inconsolata";
     font-size: 15px;  
+}
+
+code {
+    padding: 1px 1px; 
+    color: #002b36; 
+    font-size: large;
+    white-space: nowrap; 
 }
 
 blockquote {

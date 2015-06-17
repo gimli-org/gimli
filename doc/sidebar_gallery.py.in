@@ -51,7 +51,6 @@ tut_titles = [readRSTSecTitles(tut)[0] for tut in tutorials]
 titles = ex_titles + tut_titles
 
 # Adjust paths to output directory for html links
-# TODO: Account for true path structure once uploaded to gimli.org
 examples = [e.replace("@SPHINX_SRC_DIR@/doc/examples", join(build_dir, "doc/_examples_auto"))
             for e in examples]
 
@@ -91,11 +90,9 @@ for ix, (item, title) in enumerate(zip(gallery, titles)):
     name = basename(item)
     url = join(dir, name.replace(".py", ".html"))
     img = join(img_dir, name.replace(".py", "_1.png"))
-    #print(url, img)
     item = html_item.format(url, img, title)
 
     if ix == id:
-        #print("Selected %s as first active item.\n" % name)
         item = item.replace("item", "active item")
 
     items.append(item)

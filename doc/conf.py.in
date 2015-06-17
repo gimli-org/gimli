@@ -224,7 +224,7 @@ html_use_smartypants = True
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-html_additional_pages = {'index': 'index.html'}
+html_additional_pages = {'index': 'index.html', 'contact': 'contact.html'}
 
 # If false, no module index is generated.
 html_domain_indices = True
