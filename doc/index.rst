@@ -85,7 +85,7 @@ Documentation
 
         ../README.rst
         design.rst
-        ../INSTALL.rst
+        installation.rst
         faq.rst
         _examples_auto/index.rst
         _tutorials_auto/index.rst

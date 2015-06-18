@@ -10,7 +10,8 @@ padding-left: 10px;
 .container {
     padding-left: 30px;
     padding-right: 30px;
-    width: 1000px;
+    width: auto;
+    max-width: 1000px;
     box-shadow:   2px  0  10px  #aaa,
                  -2px  0  10px  #aaa;
     -moz-box-shadow:  2px  0  10px  #aaa,
@@ -190,11 +191,24 @@ pre, code, blockquote {
     font-size: 15px;  
 }
 
-code {
+/*Display >>> toggle button in small code examples*/
+span.copybutton {
+    display: inline;
+}
+
+/*API module headers*/
+code.xref.py.py-mod.docutils.literal {
+    font-size: 30px;
+    line-height: 36px;
+}
+
+code, span.pre {
     padding: 1px 1px; 
     color: #002b36; 
-    font-size: large;
     white-space: nowrap; 
+    background-color: transparent;
+    border: none;
+    font-size: medium;
 }
 
 blockquote {

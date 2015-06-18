@@ -24,7 +24,7 @@ $(document).ready(function() {
         'border-color': border_color, 'border-style': border_style,
         'border-width': border_width, 'color': border_color, 'text-size': '75%',
         'font-family': 'monospace', 'padding-left': '0.2em', 'padding-right': '0.2em',
-        'border-radius': '0 3px 0 0'
+        'border-radius': '0 3px 0 0', 'display': 'inline'
     }
 
     // create and add the button to all the code blocks that contain >>>
