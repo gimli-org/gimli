@@ -10,7 +10,7 @@ recommend WinPython: http://winpython.github.io/#releases
 After you installed the msys2 32bit environment start the console once so it
 builds your personal home directory where you find a .bashrc. Probably under:
 
-.. code-block::
+.. code-block:: bash
 
     c:/msys32/home/YOUR_USERNAME.
 

@@ -277,7 +277,7 @@ class ApiDocWriter(object):
         # titles
         uri_short = re.sub(r'^%s\.' % self.package_name, '', uri)
 
-        ad = '.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n'
+        add = '.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n'
 
         # Set the chapter title to read 'module' for all modules except for the
         # main packages
@@ -285,38 +285,38 @@ class ApiDocWriter(object):
             title = 'Module: :mod:`' + uri_short + '`'
         else:
             title = ':mod:`' + uri_short + '`'
-        ad += title + '\n' + self.rst_section_levels[1] * len(title)
+        add += title + '\n' + self.rst_section_levels[1] * len(title)
 
-        ad += '\n.. automodule:: ' + uri + '\n'
-        ad += '\n.. currentmodule:: ' + uri + '\n'
-        ad += '\n.. only:: html\n\n'
+        add += '\n.. automodule:: ' + uri + '\n'
+        add += '\n.. currentmodule:: ' + uri + '\n'
+        add += '\n.. only:: html\n\n'
         ide = '    '  # 4 spaces indent
-        ad += ide + '.. autosummary::\n\n'
+        add += ide + '.. autosummary::\n\n'
         for f in functions:
-            ad += 2 * ide + uri + '.' + f + '\n'
-        ad += '\n'
+            add += 2 * ide + uri + '.' + f + '\n'
+        add += '\n'
         for c in classes:
-            ad += 2 * ide + uri + '.' + c + '\n'
-        ad += '\n'
+            add += 2 * ide + uri + '.' + c + '\n'
+        add += '\n'
 
         for f in functions:
             # must NOT exclude from index to keep cross-refs working
             full_f = uri + '.' + f
-            ad += f + '\n'
-            ad += self.rst_section_levels[2] * len(f) + '\n'
-            ad += '\n.. autofunction:: ' + full_f + '\n\n'
+            add += f + '\n'
+            add += self.rst_section_levels[2] * len(f) + '\n'
+            add += '\n.. autofunction:: ' + full_f + '\n\n'
         for c in classes:
-            ad += '\n:class:`' + c + '`\n' \
+            add += '\n:class:`' + c + '`\n' \
                   + self.rst_section_levels[2] * \
                   (len(c)+9) + '\n\n'
-            ad += '\n.. autoclass:: ' + c + '\n'
+            add += '\n.. autoclass:: ' + c + '\n'
             # must NOT exclude from index to keep cross-refs working
-            ad += '  :members:\n' \
+            add += '  :members:\n' \
                   '  :undoc-members:\n' \
                   '  :show-inheritance:\n' \
                   '\n' \
                   '  .. automethod:: __init__\n'
-        return ad
+        return add
 
     def _survives_exclude(self, matchstr, match_type):
         """ Returns True if *matchstr* does not match patterns
