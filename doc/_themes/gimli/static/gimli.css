@@ -32,7 +32,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Open Sans" 
+    font-family: "Open Sans"
 }
 
 
@@ -86,7 +86,7 @@ img.align-center {
 }
 
 /*examples/tutorials gallery in sidebar*/
-.carousel-control { 
+.carousel-control {
     font-size: 20px;
     line-height: 15px;
     height: 20px;
@@ -156,7 +156,7 @@ table.longtable.docutils tbody > tr:nth-child(odd) > td, table.longtable.docutil
 }
 
 table th {
-    background-color: #eee; 
+    background-color: #eee;
     width: 7.5em;
 }
 
@@ -188,27 +188,27 @@ input#url.security {
 }
 pre, code, blockquote {
     font-family: "Inconsolata";
-    font-size: 15px;  
+    font-size: 15px;
 }
 
-/*Display >>> toggle button in small code examples*/
-span.copybutton {
-    display: inline;
-}
 
 /*API module headers*/
+code, span.pre {
+    padding: 1px 1px;
+    color: #002b36;
+    white-space: nowrap;
+    background-color: transparent;
+    border: none;
+}
+
 code.xref.py.py-mod.docutils.literal {
     font-size: 30px;
     line-height: 36px;
 }
 
-code, span.pre {
-    padding: 1px 1px; 
-    color: #002b36; 
-    white-space: nowrap; 
-    background-color: transparent;
-    border: none;
-    font-size: medium;
+/*Display >>> toggle button in small code examples*/
+span.copybutton {
+    display: inline;
 }
 
 blockquote {
