@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2015 by the resistivity.net development team       *
  *   Thomas Günther  thomas@resistivity.net                                *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -36,14 +36,13 @@ namespace GIMLI{
 //! Block matrices for easier inversion, see appendix E in GIMLi tutorial
 template < class ValueType >
 class DLLEXPORT BlockMatrix : public MatrixBase{
-private:
+public:
     struct BlockMatrixEntry {
         Index rowStart;
         Index colStart;
         Index matrixID;
         ValueType scale;
     };
-public:
 
     BlockMatrix(bool verbose=false)
         : MatrixBase(verbose), rows_(0), cols_(0) {
@@ -103,7 +102,7 @@ public:
 
 
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
-                        ValueType scale = ValueType(1.0)){
+                        ValueType scale=ValueType(1.0)){
         if (matrixID > matrices_.size()){
             throwLengthError(1, WHERE_AM_I + " matrix entry to large: " +
             str(matrixID) + " " + str(matrices_.size()));

@@ -12,6 +12,9 @@ SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=https://github.com/gccxml/gccxml.git
 
+CASTXML_URL=https://github.com/CastXML/CastXML.git
+CASTXML_REV=b40df94
+
 PYGCCXML_URL=https://github.com/gccxml/pygccxml 
 #PYGCCXML_REV=594d71d # old but functional
 #PYGCCXML_REV=09fe928 # current functional
@@ -136,9 +139,9 @@ needSED(){
     fi; 
 }
 getWITH_WGET(){
-    needWGET
-	needTAR
-	needZIP
+    #needWGET # checked by cmake
+	#needTAR  # checked by cmake
+	#needZIP # checked by cmake
 	_URL_=$1
 	_SRC_=$2
 	_PAC_=$3
@@ -149,9 +152,12 @@ getWITH_WGET(){
         pushd $SRC_DIR
             wget -nc -nd $_URL_/$_PAC_
 			if [ "${_PAC_##*.}" = "zip" ]; then
-				unzip -o -d $_SRC_ $_PAC_ 
+                mkdir -p $_SRC_
+                pushd $_SRC_
+                    cmake -E tar -xz ../$_PAC_ 
+                popd
 			else
-				tar -xzvf $_PAC_
+				cmake -E tar -xzvf $_PAC_
 			fi
         popd
     else 
@@ -448,6 +454,23 @@ buildGCCXML(){
     fi
 	 
 }
+prepCASTXML(){
+    CASTXML_VER=castXML
+    CASTXML_SRC=$SRC_DIR/$CASTXML_VER
+    CASTXML_BUILD=$BUILD_DIR/$CASTXML_VER
+    CASTXML_DIST=$DIST_DIR
+}
+buildCASTXML(){
+    checkTOOLSET
+    prepCASTXML
+    needCMAKE
+    
+    getWITH_GIT $CASTXML_URL $CASTXML_SRC $CASTXML_REV
+    export CC=clang
+    export CXX=clang++
+    cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
+}
+
 prepPYGCCXML(){
 	PYGCCXML_VER=pygccxml
 	PYGCCXML_SRC=$SRC_DIR/$PYGCCXML_VER
@@ -518,7 +541,8 @@ buildTRIANGLE(){
 	checkTOOLSET
 	prepTRIANGLE
 	getWITH_WGET $TRIANGLE_URL $TRIANGLE_SRC $TRIANGLE_VER.zip
-	needSED
+
+	# needSED checked by cmake
 	rm -rf $TRIANGLE_BUILD
 	mkBuildDIR $TRIANGLE_BUILD $TRIANGLE_SRC
 	
@@ -747,6 +771,8 @@ do
         buildSUITESPARSE UMFPACK;;
 	gccxml)
 		buildGCCXML;;
+    castxml)
+        buildCASTXML;;
 	pygccxml)
 		buildPYGCCXML;;
     cppunit)

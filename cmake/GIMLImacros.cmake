@@ -50,12 +50,16 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 #     endif(OUTDIR)
     
     if (CMAKE_COMPILER_IS_GNUCXX)
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
+        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value")
+    endif()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        #     using regular Clang or AppleClang
+        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value")
     endif()
 
     #--copy pattern files to build folder--
     set(PYTHON_IN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-    set(PYTHON_OUT_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+    set(PYTHON_OUT_PATH "${CMAKE_BINARY_DIR}/package")
 
     file(GLOB_RECURSE PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" 
                     "${PYTHON_MODULE_NAME}/*.py" 
@@ -63,39 +67,38 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
                     "${PYTHON_MODULE_NAME}/*.xrc"
                     "${PYTHON_MODULE_NAME}/*.fbp")
 
+    add_custom_target(copy_python ALL) #DEPENDS ${python_files_dest})
     
     foreach(file ${PYTHON_FILES})
         
         #message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
         add_custom_command(
-            OUTPUT "${PYTHON_OUT_PATH}/${file}"
-            COMMAND cmake -E copy_if_different
-                "${PYTHON_IN_PATH}/${file}"
-                "${PYTHON_OUT_PATH}/${file}"
+            COMMAND 
+                cmake -E copy_if_different
+                ${PYTHON_IN_PATH}/${file}
+                ${PYTHON_OUT_PATH}/${file}
             DEPENDS "${PYTHON_IN_PATH}/${file}"
+            TARGET
+                copy_python
+            VERBATIM
+            COMMENT
+                "Updating python file: ${file}"
         )
-
-#         add_custom_command(
-#             OUTPUT "${PYTHON_OUT_PATH}/${file}"
-#             COMMAND cmake -E copy
-#                 "${PYTHON_IN_PATH}/${file}"
-#                 "${PYTHON_OUT_PATH}/${file}"
-#             DEPENDS "${PYTHON_IN_PATH}/${file}"
-#         )
-        list(APPEND python_files_dest "${PYTHON_OUT_PATH}/${file}")
     endforeach(file)
 
-    add_custom_target(CopyPython ALL DEPENDS ${python_files_dest})
+   
 #----install-----------------------
-
-    foreach(file ${PYTHON_FILES})
-        get_filename_component( path_name "${file}" PATH )
-        #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pygimli/${file} DESTINATION ${path_name})
-        install( FILES "${file}" DESTINATION ${path_name} )
-    endforeach(file)
-
-    install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION "${PYTHON_MODULE_NAME}/")
+#     foreach(file ${PYTHON_FILES})
+#         get_filename_component( path_name "${file}" PATH )
+#         #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pygimli/${file} DESTINATION ${path_name})
+#         install( FILES "${file}" DESTINATION ${path_name} )
+#     endforeach(file)
+# 
+#     install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION "${PYTHON_MODULE_NAME}/")
 endmacro()
+
+
+
 
 function(find_python_module module)
     string(TOUPPER ${module} module_upper)
@@ -138,6 +141,17 @@ function(find_python_module module)
    
 endfunction(find_python_module)
 
+macro(findBuildTools)
+    #unzip try cmake -E tar
+    #find_package(Tar REQUIRED)  ${CMAKE_COMMAND} -E tar "cfvz" 
+    find_program(PATCH_TOOL NAMES patch  REQUIRED)
+    find_program(SED_TOOL NAMES sed REQUIRED)
+    find_package(Wget REQUIRED)
+    find_package(Subversion REQUIRED)
+    find_package(Git REQUIRED) 
+    find_package(Hg REQUIRED) 
+endmacro(findBuildTools)
+
 macro(find_or_build_package package get_package)
 
     string(TOUPPER ${package} upper_package)
@@ -151,6 +165,9 @@ macro(find_or_build_package_check package get_package checkVar)
     string(TOLOWER ${package} lower_package)
     
     if (NOT ${checkVar})
+        
+        findBuildTools()
+
         message(STATUS "${package} NOT found .. building version from foreign sources into ${THIRDPARTY_DIR}" )
 
         file(MAKE_DIRECTORY ${THIRDPARTY_DIR})

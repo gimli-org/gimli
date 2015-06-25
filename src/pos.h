@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -108,9 +108,9 @@ public:
         
     }
 
-    inline ValueType & operator [] (uint i) { return mat_[i]; }
+    inline ValueType & operator [] (Index i) { return mat_[i]; }
 
-    inline const ValueType & operator [] (uint i) const { return mat_[i]; }
+    inline const ValueType & operator [] (Index i) const { return mat_[i]; }
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP) \
     inline Pos < double > & operator OP##= (const double & b){ mat_[0] OP##= b; mat_[1] OP##= b; mat_[2] OP##= b; return *this; }\

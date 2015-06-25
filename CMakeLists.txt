@@ -18,7 +18,7 @@ endif()
 
 project(libgimli)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     
     if (APPLE)
         set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
@@ -223,11 +223,24 @@ else()
     find_package(Boost 1.46.0 COMPONENTS python)
 endif()
 
-find_or_build_package(gccxml gccxml)
+
+if (NOT CASTER)
+    set(CASTER "gccxml")
+endif (CASTER)
+
+if (CASTER STREQUAL "gccxml")
+    find_or_build_package(gccxml gccxml)
+    set(CASTER_EXECUTABLE ${GCCXML_EXECUTABLE})
+else()
+    find_or_build_package(castxml castxml)
+    set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
+endif()
+
 find_or_build_package(pygccxml pygccxml)
 find_or_build_package(pyplusplus pygccxml)
 
-if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND AND GCCXML_FOUND
+if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND 
+    AND (GCCXML_FOUND OR CASTXML_FOUND)
     AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
     AND Boost_PYTHON_LIBRARIES AND numpy_FOUND)
     set (PYGIMLI 1)
@@ -237,12 +250,13 @@ else()
     message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
     message(STATUS "PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}" )
     message(STATUS "GCCXML_EXECUTABLE: ${GCCXML_EXECUTABLE}" )
+    message(STATUS "CASTXML_EXECUTABLE: ${CASTXML_EXECUTABLE}" )
     message(STATUS "PYPLUSPLUS_FOUND: ${PYPLUSPLUS_FOUND}" )
     message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
     message(STATUS "numpy_FOUND: ${numpy_FOUND}" )
 
     message (STATUS "pygimli cannot be build due to some missing packages. 
-Check above for python, gccxml, pygccxml, pyplusplus, boost_python, numpy")
+Check above for python, gccxml|castxml, pygccxml, pyplusplus, boost_python, numpy")
     
 endif ()
 
@@ -256,6 +270,8 @@ message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
 message(STATUS "PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
 message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
 message(STATUS "GCCXML_EXECUTABLE: ${GCCXML_EXECUTABLE}" )
+message(STATUS "CASTXML_EXECUTABLE: ${CASTXML_EXECUTABLE}" )
+message(STATUS "XML Caster: ${CASTER_EXECUTABLE}")
 message(STATUS "PYGCCXML: ${PYGCCXML_PATH}" )
 message(STATUS "PYPLUSPLUS: ${PYPLUSPLUS_PATH}" )
 message(STATUS "PY_NUMPY: ${PY_NUMPY}" )
@@ -338,7 +354,7 @@ set( GIMLI_PKGCONFIG_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/pkgconfig" )
 set( GIMLI_MODULE_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}.${GIMLI_VERSION_MINOR}" )
 set( GIMLI_SAMPLE_INSTALL_DIR "${GIMLI_MODULE_INSTALL_DIR}" ) # TODO: put into /samples subdir!
 set( GIMLI_INCLUDE_INSTALL_DIR "include${GIMLI_VER_INSTALL_SUBDIR}" )
-set( GIMLI_PYTHON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/python/pygimli)
+#set( GIMLI_PYTHON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/python/pygimli)
 
 ################################################################################
 # Add main header locations (for everything we build)
@@ -359,47 +375,16 @@ add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(apps)
 
 if (PYGIMLI)
+#     set( PYGIMLI_SOURCE_DIR ${CMAKE_SOURCE_DIR}/python/pygimli )
+#     set( PYGIMLI_BUILD_DIR ${CMAKE_BINARY_DIR}/package/pygimli )
+# 
+#     file(GLOB_RECURSE PYFILES RELATIVE "${PYGIMLI_SOURCE_DIR}" "python/pygimli/*.py")
+#     set(PYGIMLI_FILES ${PYFILES} CACHE INTERNAL "pygimli source files that we need to copy")
+
     add_subdirectory(python EXCLUDE_FROM_ALL)
 endif (PYGIMLI)
 
 #CR what is this good for?
-export(TARGETS gimli
-       FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
+# export(TARGETS gimli
+#        FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
 
-################################################################################
-# CPack (mostly for source tarballs)
-################################################################################
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "GIMLi")
-set(CPACK_PACKAGE_VENDOR ${PACKAGE_AUTHORS})
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.rst")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING.rst")
-set(CPACK_PACKAGE_VERSION_MAJOR "${GIMLI_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${GIMLI_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${GIMLI_VERSION_PATCH}")
-
-set(CPACK_SOURCE_GENERATOR TBZ2 ZIP)
-
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "gimlib-${GIMLI_VERSION}" CACHE INTERNAL "tarball basename")
-
-set(CPACK_SOURCE_IGNORE_FILES
-# repository history should not be in source tarballs
-"\\\\.svn.*"
-# most likely not needed in the tarball
-"cppcheck-output"
-"perform-cppcheck"
-
-# the rest is modeled after .hgignore
-"build/"
-"~$"
-
-"Thumbs.db"
-"\\\\.directory"
-
-"\\\\.kdev4"
-"\\\\.settings"
-"\\\\.project"
-"\\\\.cproject"
-"\\\\.pydevproject"
-)
-
-include(CPack)
