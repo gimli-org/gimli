@@ -29,9 +29,10 @@ namespace GIMLI{
 //! Inversion base template
 /*! Inversion base template, provide inversion interface. */
 template < class ModelValType > class InversionBase {
-    typedef Vector < ModelValType > ModelVector;
-
 public:
+    
+    typedef Vector < ModelValType > ModelVector;
+    
     /*! Default constructor*/
     InversionBase(){
     }

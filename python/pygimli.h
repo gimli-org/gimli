@@ -12,12 +12,12 @@
 #endif
 #define BOOST_ATOMIC_FORCE_FALLBACK
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <set>
-#include <list>
-#include <map>
+// #include <iostream>
+// #include <string>
+// #include <vector>
+// #include <set>
+// #include <list>
+// #include <map>
 
 // #ifndef PACKAGE_NAME
 // #define PACKAGE_NAME "gimli (python build)"
@@ -25,65 +25,55 @@
 // #define PACKAGE_BUGREPORT "carsten@resistivity.net"
 // #endif // PACKAGE_NAME
 
-//#define PYTEST
+// #define PYTEST
 #ifdef PYTEST
 
-#include "stopwatch.h"
-#include "vector.h"
-#include "blockmatrix.h"
-#include "vectortemplates.h"
+// #include "stopwatch.h"
+// #include "vector.h"
+// #include "blockmatrix.h"
+// #include "vectortemplates.h"
 
 namespace GIMLI{
 
-	template class Vector< double >;
-    template class VectorIterator< double >;
-    template class Vector< Complex >;
-    template class Vector< int >;
-    template class BlockMatrix< double >;
+// 	template class Vector< double >;
+//     template class VectorIterator< double >;
+//     template class Vector< Complex >;
+//     template class Vector< int >;
+//     template class BlockMatrix< double >;
 
-    inline void ___instantiation___(){
-        sizeof(::GIMLI::Index *);
-		sizeof(::GIMLI::Index &);
-		sizeof(::GIMLI::Index);
-		sizeof(::GIMLI::IndexArray *);
-		sizeof(::GIMLI::IndexArray &);
-		sizeof(::GIMLI::IndexArray);
-		sizeof(int *);
-        sizeof(int &);
-        sizeof(int);
-        sizeof(long unsigned int *);
-        sizeof(long unsigned int &);
-        sizeof(long unsigned int);
-		sizeof(long long unsigned int *);
-        sizeof(long long unsigned int &);
-        sizeof(long long unsigned int);
-		sizeof(long long int *);
-        sizeof(long long int &);
-        sizeof(long long int);
-        sizeof(double *);
-        sizeof(double);
-        sizeof(double &);
-     }
+//     inline void ___instantiation___(){
+//         sizeof(::GIMLI::Index *);
+// 		sizeof(::GIMLI::Index &);
+// 		sizeof(::GIMLI::Index);
+// 		sizeof(::GIMLI::IndexArray *);
+// 		sizeof(::GIMLI::IndexArray &);
+// 		sizeof(::GIMLI::IndexArray);
+// 		sizeof(int *);
+//         sizeof(int &);
+//         sizeof(int);
+//         sizeof(long unsigned int *);
+//         sizeof(long unsigned int &);
+//         sizeof(long unsigned int);
+// 		sizeof(long long unsigned int *);
+//         sizeof(long long unsigned int &);
+//         sizeof(long long unsigned int);
+// 		sizeof(long long int *);
+//         sizeof(long long int &);
+//         sizeof(long long int);
+//         sizeof(double *);
+//         sizeof(double);
+//         sizeof(double &);
+//      }
 
 } // namespace GIMLI
 
 namespace pyplusplus{ namespace aliases{
     //typedef std::complex< double >                  Complex;
 
-    typedef GIMLI::Vector< double >                 RVector;
-    typedef GIMLI::VectorIterator< double >              RVectorIter;
-    typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
-    //  typedef GIMLI::Vector< Complex >                CVector;
-//    typedef GIMLI::Pos< double >                    RVector3;
-
-//    typedef GIMLI::Matrix< double >                 RMatrix;
-
-    //typedef std::vector< double >                   stdVectorR;
-
-    //typedef std::vector< std::complex< double > >   stdVectorC;
-
-//     typedef std::vector< std::string > stdVectorString;
-    //typedef std::map< float, float > stdMapF_F;
+//     typedef GIMLI::Vector< double >                 RVector;
+//     typedef GIMLI::VectorIterator< double >              RVectorIter;
+//     typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
+    
 }
 } //pyplusplus::aliases
 
@@ -207,15 +197,15 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     template class Vector< bool >;
     template class Vector< double >;
-    template class Vector< RVector3 >;
+    template class Vector< GIMLI::RVector3 >;
     template class Vector< GIMLI::SIndex >;
-    template class Vector< Complex >;
+    template class Vector< GIMLI::Complex >;
        
     template class VectorIterator< bool >;
     template class VectorIterator< double >;
-    template class VectorIterator< RVector3 >;
+    template class VectorIterator< GIMLI::RVector3 >;
     template class VectorIterator< GIMLI::SIndex >;
-    template class VectorIterator< Complex >;
+    template class VectorIterator< GIMLI::Complex >;
     
     template class Matrix< double >;
     template class Matrix< std::complex< double > >;
@@ -284,7 +274,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template Pos< double > & Pos< double >::transform(const Matrix < double > & mat);
 
     template class SparseMatrix< double >;
-    template class SparseMatrix< Complex >;
+    template class SparseMatrix< GIMLI::Complex >;
     
     template RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B);
     template RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B);
@@ -293,8 +283,8 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
     template CSparseMatrix operator + (const CSparseMatrix & A, const CSparseMatrix & B);
     template CSparseMatrix operator - (const CSparseMatrix & A, const CSparseMatrix & B);
-    template CSparseMatrix operator * (const Complex & b, const CSparseMatrix & A);
-    template CSparseMatrix operator * (const CSparseMatrix & A, const Complex & b);
+    template CSparseMatrix operator * (const GIMLI::Complex & b, const CSparseMatrix & A);
+    template CSparseMatrix operator * (const CSparseMatrix & A, const GIMLI::Complex & b);
 
 
     template class ElementMatrix< double >;
@@ -471,6 +461,9 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
 } // namespace GIMLI
 
+// needed for castxml caster .. need to check .. the name Complex seems not enrolled in CMatrix generate code
+typedef std::complex< double >                       Complex;
+ 
 //** define some aliases to avoid insane method names
 namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
@@ -553,9 +546,10 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map< unsigned long, double >           stdMapUL_D;
     typedef std::map< int, int >                        stdMapI_I;
     typedef std::map< std::string, std::string >        stdMapS_S;
+    typedef std::map<std::pair<unsigned long, unsigned long>, double > stdMapL_L_D;
     
     typedef std::vector< std::string >                  stdVectorString;
-//     typedef std::vector< int >                          stdVectorI;
+    typedef std::vector< int >                          stdVectorI;
 //     typedef std::vector< long int >                     stdVectorLI;
 //     typedef std::vector< unsigned int >                 stdVectorUI;
     typedef std::vector< GIMLI::SIndex >                stdVectorSIndex;

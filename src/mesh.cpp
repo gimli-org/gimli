@@ -330,6 +330,11 @@ Boundary * Mesh::copyBoundary(const Boundary & bound){
     return b;
 }
 
+
+void Mesh::deleteCells(const std::vector < Cell * > & cells){
+    THROW_TO_IMPL
+}
+    
 Node & Mesh::node(Index i) {
     if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
@@ -1430,7 +1435,7 @@ void Mesh::createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundar
 
 }
 
-void Mesh::createMeshByCellIdx(const Mesh & mesh, IndexArray & idxListIn){
+void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
     this->clear();
     this->setDimension(mesh.dim());
 
@@ -1763,6 +1768,18 @@ Mesh & Mesh::rotate(const RVector3 & r){
     
     rangesKnown_ = false;
     return *this;
+}
+
+void Mesh::swapCoordinates(Index i, Index j){
+    if (i != j){
+        if (i < dimension_ && i < dimension_){
+            for (Index n = 0; n < nodeVector_.size(); n++){
+                double tmp = nodeVector_[n]->at(i);
+                nodeVector_[n]->at(i) = nodeVector_[n]->at(j);
+                nodeVector_[n]->at(j) = tmp;
+            }
+        }
+    }
 }
 
 void Mesh::relax(){

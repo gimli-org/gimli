@@ -35,7 +35,7 @@ def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
 
     if dataID == -1:
         for i in range(0, S.rows()):
-            d = b.prepExportSensitivityData(mesh, S[i], tol)
+            d = b.prepExportSensitivityData(mesh, S[i](mesh.cellMarker()), tol)
 
             name = os.path.join(savePath, outFilename + "-" + str(i) + ".vec")
 
@@ -44,7 +44,7 @@ def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
                 g.save(d, name)
             mesh.addExportData(name, d)
     else:
-        d = b.prepExportSensitivityData(mesh, S[dataID], tol)
+        d = b.prepExportSensitivityData(mesh, S[dataID](mesh.cellMarker()), tol)
         name = os.path.join(savePath, outFilename + "-" + str(dataID) + ".vec")
         if save:
             print(name)

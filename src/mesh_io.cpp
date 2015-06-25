@@ -1133,7 +1133,7 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
     
     if (!boundData.count("_BoundaryMarker")) boundData.insert(std::make_pair("_BoundaryMarker",  tmp));
     
-    boundMesh.exportVTK(fbody, boundData);
+    //boundMesh.exportVTK(fbody, boundData);
     addVTUPiece_(file, boundMesh, boundData);
 
     file << "</UnstructuredGrid>" << std::endl;

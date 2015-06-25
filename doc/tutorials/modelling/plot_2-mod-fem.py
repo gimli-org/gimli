@@ -34,9 +34,7 @@ Let :math:`A=1,\,B=0\,` and :math:`C = 1` we get the simplest Poisson equation:
 
 Model domain is the unit square: :math:`\Omega=[-1, 1]^2`
 
-We start by importing  the pygimli package
-Additionally we import the default solver that performs finite element solution
-plus our generalized viewer routine.
+We start by importing the pygimli package.
 """
 
 import pygimli as pg
@@ -53,7 +51,7 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
                      y=np.linspace(-1.0, 1.0, 10))
 
 """
-Now we can call the solver :py:mod:`pygimli.solver.solver.solve`  for some
+Now we can call the solver :py:mod:`pygimli.solver.solve`  for some
 default material values and global homogeneous Dirichlet boundary conditions.
 """
 
@@ -62,26 +60,13 @@ u = pg.solver.solve(grid, f=1.,
                     verbose=True)
 
 """
-The result is drawn with the function :py:mod:`pygimli.viewer.showmesh.show`
+The result is drawn with the function :py:mod:`pygimli.show`. 
 """
-
-
-def uAna(r):
-    x = r[0]
-    y = r[1]
-
-    ret = 0
-    for k in range(1, 151, 2):
-        kp = k*np.pi
-        s = np.sin(kp * (1. + x)/2) / (k**3 * np.sinh(kp)) * \
-            (np.sinh(kp * (1. + y)/2) + np.sinh(kp * (1. - y)/2))
-#        print(k, s)
-        ret += s
-    return (1. - x**2)/2 - 16./(np.pi**3) * ret
 
 ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$', hold=1)
+
 """
-Show is just a shortcut for various routines that can also be called directly.
+:py:mod:`pygimli.show` is just a shortcut for various routines that can also be called directly.
 
 """
 pg.mplviewer.drawMesh(ax, grid)
@@ -116,6 +101,23 @@ gridp2 = grid.createP2()
 up = pg.solver.solve(gridp2, f=1.,
                      uB=[gridp2.findBoundaryByMarker(1, 5), 0.0],
                      verbose=True)
+
+"""
+Fortunately there exist an analytical solution for this example.
+"""
+
+def uAna(r):
+    x = r[0]
+    y = r[1]
+
+    ret = 0
+    for k in range(1, 151, 2):
+        kp = k*np.pi
+        s = np.sin(kp * (1. + x)/2) / (k**3 * np.sinh(kp)) * \
+            (np.sinh(kp * (1. + y)/2) + np.sinh(kp * (1. - y)/2))
+        ret += s
+    return (1. - x**2)/2 - 16./(np.pi**3) * ret
+
 
 """
 To compare the different results the in detail we interpolate our solution

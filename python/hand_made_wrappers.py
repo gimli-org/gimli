@@ -123,7 +123,7 @@ WRAPPER_REGISTRATION_General = [
 
 
 def iter_as_generator_vector(cls):
-    print("ITER:", cls.name)
+    #print("ITER:", cls.name)
 
     try:
         code = os.linesep.join([
@@ -131,10 +131,10 @@ def iter_as_generator_vector(cls):
         cls.add_registration_code(
             code % {'cls': cls.decl_string, 'call_policies': cls.mem_fun('nextVal').call_policies.create_type(), 'exposer_name': cls.class_var_name}, works_on_instance=False)
         cls.include_files.append('generators.h')
-        print("OK")
+        #print("OK")
     except:
         raise
-        print("FAILED ")
+        #print("FAILED ")
 
 ##########################################################################
 ##########################################################################

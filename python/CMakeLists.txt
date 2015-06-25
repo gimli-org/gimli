@@ -5,7 +5,7 @@ ADD_CUSTOM_COMMAND(
         #${PYTHON_EXECUTABLE}
         python
     ARGS
-        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR} --gccxml=${GCCXML_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR} --caster=${CASTER_EXECUTABLE}
     TARGET
         pggen
     DEPENDS
@@ -29,7 +29,7 @@ ADD_CUSTOM_COMMAND(
     COMMAND
         #test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || echo "-j" $J
         #test -z "$J" && echo -j1 || echo "-j" $J
-        test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
+        test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $[ 1 + J ] -C ${CMAKE_BINARY_DIR} pg
     TARGET
         pgbuild
    )
@@ -56,13 +56,32 @@ add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
 add_dependencies(pygimli pgbuild)
 
-#ADD_CUSTOM_TARGET(pgrebuild ALL)
-#add_dependencies(pgrebuild pggen _pygimli_)
-
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
 include_directories(${PY_NUMPY}/core/include/)
+
+#ADD_CUSTOM_TARGET(pgrebuild ALL)
+#add_dependencies(pgrebuild pggen _pygimli_)
+
+#ADD_CUSTOM_TARGET(pygimli_check_sources ALL)
+
+# foreach(file ${PYGIMLI_FILES})
+#     add_custom_command(
+#             COMMAND
+#                 #echo ${PYGIMLI_SOURCE_DIR}/${file} ${PYGIMLI_BUILD_DIR}/${file}
+#                 cmake -E copy_if_different ${PYGIMLI_SOURCE_DIR}/${file} ${PYGIMLI_BUILD_DIR}/${file}
+#             TARGET
+#                 pygimli_check_sources
+#             VERBATIM
+#             COMMENT
+#                 "Updating python file: ${file}"
+#     )
+# endforeach()
+
+## prepare installation
+
+
 
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
 

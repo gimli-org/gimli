@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -49,7 +49,7 @@ public:
     Node(const RVector3 & pos);
 
     /*! Construct node from RVector3 with marker and optional id */
-    Node(const RVector3 & pos, int marker, int id = -1);
+    Node(const RVector3 & pos, int marker, int id=-1);
 
     /*! Copy constructor */
     Node(const Node & node);
@@ -59,6 +59,12 @@ public:
 
     /*! Destruct the node and all containing informations */
     ~Node();
+    
+    /*! Unchecked index operator to pos */
+    inline double & operator [] (const Index i) { return this->at(i); }
+
+    /*! Unchecked index operator to pos */
+    inline const double & operator [] (const Index i) const { return this->at(i); }
     
     inline uint rtti() const { return MESH_NODE_RTTI; }
 
@@ -76,13 +82,13 @@ public:
 
     inline void eraseCell(Cell & cell){ cellSet_.erase(&cell); }
 
-    const std::set < Boundary * > & boundSet() const { return boundSet_; }
+    inline const std::set < Boundary * > & boundSet() const { return boundSet_; }
 
-    std::set < Boundary * > & boundSet() { return boundSet_; }
+    inline std::set < Boundary * > & boundSet() { return boundSet_; }
 
-    const std::set < Cell * > & cellSet() const { return cellSet_; }
+    inline const std::set < Cell * > & cellSet() const { return cellSet_; }
 
-    std::set < Cell * > & cellSet() { return cellSet_; }
+    inline std::set < Cell * > & cellSet() { return cellSet_; }
 
     inline void scale(const RVector3 & s) { changed_(); pos_.scale(s); }
 
@@ -90,12 +96,16 @@ public:
 
     inline void rotate(const RVector3 & r) { changed_(); pos_.rotate(r); }
 
-    inline double x() const { return pos_[ 0 ]; }
+    inline double x() const { return pos_[0]; }
 
-    inline double y() const { return pos_[ 1 ]; }
+    inline double y() const { return pos_[1]; }
 
-    inline double z() const { return pos_[ 2 ]; }
+    inline double z() const { return pos_[2]; }
 
+    inline double & at(Index i) { return pos_[i]; }
+    
+    inline const double & at(Index i) const { return pos_[i]; }
+    
     inline double dist(const Node & n) const { return pos_.dist(n.pos()); }
 
     /*!*/

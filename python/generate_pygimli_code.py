@@ -6,23 +6,22 @@ import shutil
 import sys
 import string
 
-from optparse import OptionParser
 
 from environment_for_pygimli_build import settings
 
+from optparse import OptionParser
 optionParser = OptionParser("usage: %prog [options]")
 optionParser.add_option("", "--extra-includes", dest="extraIncludes")
 optionParser.add_option("", "--extra-path", dest="extraPath")
-optionParser.add_option("", "--gccxml", dest="gccxml")
+optionParser.add_option("", "--caster", dest="caster")
 
 (options, args) = optionParser.parse_args()
 
-if options.gccxml:
-    settings.gccxml_path = options.gccxml
+if options.caster:
+    settings.caster_path = options.caster
 
 if options.extraPath:
     sys.path.append(options.extraPath)
-
 
 import hand_made_wrappers
 
@@ -81,7 +80,7 @@ def exclude(method, return_type='', name='', symbol=''):
             fun = method(return_type=funct, allow_empty=True)
 
             for f in fun:
-                print("exclude return type", f)
+                #print("exclude return type", f)
                 f.exclude()
 
     for funct in name:
@@ -89,7 +88,7 @@ def exclude(method, return_type='', name='', symbol=''):
             fun = method(name=funct, allow_empty=True)
 
             for f in fun:
-                print("exclude name", f)
+                #print("exclude name", f)
                 f.exclude()
 
     for funct in symbol:
@@ -97,7 +96,7 @@ def exclude(method, return_type='', name='', symbol=''):
             fun = method(symbol=funct, allow_empty=True)
 
             for f in fun:
-                print("exclude symbol", f)
+                #print("exclude symbol", f)
                 f.exclude()
 
 
@@ -106,7 +105,7 @@ def setMemberFunctionCallPolicieByReturn(mb, MemberRetRef, callPolicie):
         memFuns = mb.global_ns.member_functions(
             return_type=ref,
             allow_empty=True)
-        print(ref, len(memFuns))
+        #print(ref, len(memFuns))
 
         for memFun in memFuns:
             if memFun.call_policies:
@@ -132,32 +131,45 @@ class docExtractor(doc_extractor_i):
         return '"' + doc + '"'
 
     def extract(self, decl):
-        print(decl.location.file_name)
-        print(decl.location.line)
-        print("extract(self, decl):", decl)
+        #print(decl.location.file_name)
+        #print(decl.location.line)
+        #print("extract(self, decl):", decl)
         return "Doku coming soon"
 
 
 def generate(defined_symbols, extraIncludes):
-    #    messages.disable(
-    # messages.W1005 # using a non public variable type for argucments or returns
-    # Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-    # , messages.W1009 # check this
-    # , messages.W1014 # check this
-    #        , messages.W1020
-    #        , messages.W1021
-    #        , messages.W1022
-    #        , messages.W1023
-    #        , messages.W1024
-    #        , messages.W1025
-    #        , messages.W1026
-    #        , messages.W1027
-    #        , messages.W1028
-    #        , messages.W1029
-    #        , messages.W1030
-    #        , messages.W1031
-    # , messages.W1036 # check this
-    #)
+    messages.disable(
+        messages.W1005 # using a non public variable type for arguments or returns
+        , messages.W1006 # `Py++` need your
+                         # help to expose function that takes > as argument/returns C++ arrays.
+                         # Take a look on "Function Transformation" > functionality and define
+                         # the transformation.
+        , messages.W1007 # more than 10 args -> BOOST_PYTHON_MAX_ARITY is set
+        , messages.W1009 # execution error W1009: The function takes as argument (name=pFunIdx, pos=1) >
+                         # non-const reference to Python immutable type - function could not be called > from Python
+        , messages.W1014 # "operator*" is not supported. See
+        , messages.W1016 # `Py++` does not exports non-const casting operators
+        # Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+        , messages.W1023 # Py++` will generate class wrapper - there are few functions that should be
+                         # redefined in class wrapper
+        , messages.W1025 # `Py++` will generate class wrapper - class contains "c_" - T* > member variable
+        , messages.W1026 # `Py++` will generate class wrapper - class contains "arr_" - T& > member variable
+        , messages.W1027 # `Py++` will generate class wrapper - class contains "mat_" - > array member variable
+        , messages.W1035 # error. `Py++` can not expose static pointer member variables.
+        , messages.W1036 # error. `Py++` can not expose pointer to Python immutable > member variables. This
+                         # could be changed in future.
+        , messages.W1040 # error. The declaration is unexposed, but there are other > declarations, which
+                         # refer to it. This could cause "no to_python converter > found" run
+                         # time error
+        # This is serious and lead to RuntimeError: `Py++` is going to write different content to the same file
+        #, messages.W1047 # There are two or more classes that use same > alias("MatElement"). Duplicated aliases causes
+                         # few problems, but the main one > is that some of the classes will not
+                         # be exposed to Python.Other classes : >
+        , messages.W1049 # This method could not be overriden in Python - method returns >
+                         # reference to local variable!
+        , messages.W1052 # `Py++` will not expose free operator      
+        
+    )
 
     print("Install SRC:  ", os.path.abspath(__file__))
     print("Execute from: ", os.getcwd())
@@ -175,6 +187,7 @@ def generate(defined_symbols, extraIncludes):
     import platform
 
     defines = ['PYGIMLI_GCCXML', 'HAVE_BOOST_THREAD_HPP']
+    caster = 'gccxml'
 
     if platform.architecture()[
             0] == '64bit' and platform.system() == 'Windows':
@@ -194,39 +207,47 @@ def generate(defined_symbols, extraIncludes):
             # os.name == 'nt' (default on my mingw) results in wrong commandline
             # for gccxml
             os.name = 'mingw'
-            gccxmlpath = settings.gccxml_path.replace('\\', '\\\\')
-            gccxmlpath = settings.gccxml_path.replace('/', '\\')
-            if not '.exe' in gccxmlpath:
-                gccxmlpath += '\\gccxml.exe'
+            casterpath = settings.caster_path.replace('\\', '\\\\')
+            casterpath = settings.caster_path.replace('/', '\\')
+            
+            if not 'gccxml' in casterpath:
+                caster = 'castxml'
+            
+            if not '.exe' in casterpath:
+                casterpath += '\\' + caster + '.exe'
 
         else:
-            gccxmlpath = settings.gccxml_path
-            #gccxmlpath = '/home/carsten/local/CastXML/build/bin/castxml'
+            casterpath = settings.caster_path
+            if not 'gccxml' in casterpath:
+                caster = 'castxml'
+            
     except Exception as e:
+        print("caster_path=%s" % casterpath)
         print(str(e))
-        raise Exception("Problems determine gccxml binary")
+        raise Exception("Problems determine castxml binary")
 
     settings.includesPaths.insert(0, os.path.abspath(extraIncludes))
 
-    print("gccxml_path=%s" % gccxmlpath)
+    print("caster_path=%s" % casterpath)
     print("working_directory=%s" % settings.gimli_path)
     print("include_paths=%s" % settings.includesPaths)
     print("define_symbols=%s" % defines)
     print("indexing_suite_version=2")
 
     logger = utils.loggers.cxx_parser
-    print(logger)
-    logger.setLevel(logging.DEBUG)
+    #logger.setLevel(logging.DEBUG)
 
     mb = module_builder.module_builder_t([xml_cached_fc],
-                                         gccxml_path=gccxmlpath,
+                                         gccxml_path=casterpath,
                                          working_directory=settings.gimli_path,
                                          include_paths=settings.includesPaths,
                                          define_symbols=defines,
-                                         indexing_suite_version=2
-                                         , caster='gccxml'
+                                         indexing_suite_version=2,
+                                         caster=caster
                                          )
 
+    logger.info("Reading of c++ sources done.")
+        
     mb.classes().always_expose_using_scope = True
     mb.calldefs().create_with_signature = True
 
@@ -234,9 +255,27 @@ def generate(defined_symbols, extraIncludes):
     global_ns.exclude()
     main_ns = global_ns.namespace(MAIN_NAMESPACE)
     main_ns.include()
+    
 
+    #for c in main_ns.classes():
+        #if c.decl_string.startswith('::GIMLI::BlockMatrix'):
+            #print(c)
+            #print(c.member_functions())
+            #for m in c.member_functions():
+                #if m.name.startswith("addMatrixEntry"):
+                    #print(m.name)
+                    #print(m)
+                    #print(dir(m))
+            #"addMatrixEntry"
+    #sys.exit()
+                
+                
+                
+                
+    logger.info("Apply handmade wrappers.")
     hand_made_wrappers.apply(mb)
 
+    logger.info("Apply custom rvalues.")
     # START manual r-value converters
     rvalue_converters = [
         'register_pysequence_to_StdVectorUL_conversion',
@@ -254,89 +293,106 @@ def generate(defined_symbols, extraIncludes):
     custom_rvalue_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp')
 
-    exclude(
-        main_ns.variables,
-        name=[
-            'Triangle6_S1',
-            'Triangle6_S2',
-            'Triangle6_S3',
-            'HexahedronFacesID',
-            'Hexahedron20FacesID',
-            'TetrahedronFacesID',
-            'HexahedronSplit5TetID',
-            'HexahedronSplit6TetID',
-            'TriPrismFacesID',
-            'TriPrimSplit3TetID',
-            'NodeCoordinates',
-            'EdgeCoordinates',
-            'TriCoordinates',
-            'QuadCoordinates',
-            'TetCoordinates',
-            'HexCoordinates',
-            'PrismCoordinates',
-            'PyramidCoordinates',
-            'PyramidFacesID',
-            'Tet10NodeSplit',
-            'Tet10NodeSplitZienk',
-            'Hex20NodeSplit',
-            'Prism15NodeSplit',
-            'Pyramid13NodeSplit'])
+    logger.info("Start exclude stuff that we don't need or that is non to be spurious.")
+    
+    exclude(main_ns.variables,
+            name=[
+                'Triangle6_S1',
+                'Triangle6_S2',
+                'Triangle6_S3',
+                'HexahedronFacesID',
+                'Hexahedron20FacesID',
+                'TetrahedronFacesID',
+                'HexahedronSplit5TetID',
+                'HexahedronSplit6TetID',
+                'TriPrismFacesID',
+                'TriPrimSplit3TetID',
+                'NodeCoordinates',
+                'EdgeCoordinates',
+                'TriCoordinates',
+                'QuadCoordinates',
+                'TetCoordinates',
+                'HexCoordinates',
+                'PrismCoordinates',
+                'PyramidCoordinates',
+                'PyramidFacesID',
+                'Tet10NodeSplit',
+                'Tet10NodeSplitZienk',
+                'Hex20NodeSplit',
+                'Prism15NodeSplit',
+                'Pyramid13NodeSplit'
+                ]
+            )
 
-    for f in main_ns.declarations:
-        if isinstance(f, decl_wrappers.calldef_wrapper.free_function_t):
-            if (str(f.return_type).find('GIMLI::VectorExpr') != -1):
-                f.exclude()
+    exclude(main_ns.free_functions,
+            return_type=[
+                'float *',
+                'float &',
+                "::GIMLI::__VectorExpr< double, GIMLI::__VectorUnaryExprOp< double, GIMLI::VectorIterator< double >, GIMLI::ABS_ > >"],
+            name=[
+                'strReplaceBlankWithUnderscore',
+                'toStr',
+                'toInt',
+                'toFloat',
+                'toDouble',
+                'str',
+                'getRowSubstrings',
+                'getNonEmptyRow',
+                'getSubstrings',
+                'abs',
+                'type']
+            )
 
-    exclude(
-        main_ns.free_functions,
-        return_type=[
-            'float *',
-            'float &',
-            "::GIMLI::__VectorExpr< double, GIMLI::__VectorUnaryExprOp< double, GIMLI::VectorIterator< double >, GIMLI::ABS_ > >"],
-        name=[
-            'strReplaceBlankWithUnderscore',
-            'toStr',
-            'toInt',
-            'toFloat',
-            'toDouble',
-            'str',
-            'getRowSubstrings',
-            'getNonEmptyRow',
-            'getSubstrings',
-            'abs',
-            'type'])
+    exclude(main_ns.free_operators,
+            name=[''],
+            return_type=['::std::ostream &', '::std::istream &']
+        )
 
-    exclude(main_ns.free_operators, name=[''],
-            return_type=['::std::ostream &', '::std::istream &'])
-
-    exclude(
-        main_ns.classes, name=['ABS_', 'ACOT', 'ATAN', 'COS', 'COT', 'EXP',
-                               'ABS_', 'LOG', 'LOG10', 'SIGN', 'SIN', 'SQRT', 'SQR', 'TAN', 'TANH',
-                               'PLUS', 'MINUS', 'MULT', 'DIVID', 'BINASSIGN', 'cerrPtr',
-                               'cerrPtrObject', 'coutPtr', 'coutPtrObject', 'deletePtr', 'edge_',
-                               'distancePair_', 'IPCMessage', 'PythonGILSave', '__VectorExpr',
-                               '__VectorUnaryExprOp', '__VectorBinaryExprOp', '__VectorValExprOp',
-                               '__ValVectorExprOp',
-                               'GIMLI::__ValVectorExprOp< double, GIMLI::VectorIterator< double >, GIMLI::MULT > >',
-                               '::GIMLI::__VectorValExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::MULT >',
-                               '::GIMLI::__VectorBinaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::__VectorIterator< double >, GIMLI::MULT>',
-                               '::GIMLI::__VectorExpr< double, GIMLI::__VectorBinaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::__VectorIterator< double >, GIMLI::MULT > >',
-                               '::GIMLI::__VectorExpr< double, GIMLI::__VectorValExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::MULT > >',
-                               '::GIMLI::__VectorExpr< double, GIMLI::__VectorUnaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::LOG10 > >',
-                               '::GIMLI::__VectorExpr< double, GIMLI::__VectorUnaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::LOG > >',
-                               '::GIMLI::__VectorUnaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::LOG10 >',
-                               '::GIMLI::__VectorUnaryExprOp< double, GIMLI::__VectorIterator< double >, GIMLI::LOG >',
-                               '::GIMLI::__VectorExpr<double, GIMLI::__VectorValExprOp<double, GIMLI::__VectorExpr<double, GIMLI::__ValVectorExprOp<double, GIMLI::__VectorIterator<double >, GIMLI::MULT > >, GIMLI::MULT > >',
-                               '::GIMLI::__VectorValExprOp<double, GIMLI::__VectorExpr<double, GIMLI::__ValVectorExprOp<double, GIMLI::__VectorIterator<double >, GIMLI::MULT > >, GIMLI::MULT >.pypp.hpp',
-                               'GIMLI::Expr<GIMLI::ExprIdentity>'])
+    exclude(main_ns.classes,
+            name=['ABS_', 'ACOT', 'ATAN', 'COS', 'COT', 'EXP',
+                  'ABS_', 'LOG', 'LOG10', 'SIGN', 'SIN', 'SQRT', 'SQR', 'TAN', 'TANH',
+                  'PLUS', 'MINUS', 'MULT', 'DIVID', 'BINASSIGN', 'cerrPtr',
+                  'cerrPtrObject', 'coutPtr', 'coutPtrObject', 'deletePtr', 'edge_',
+                  'distancePair_', 'IPCMessage', 'PythonGILSave',
+                  ]
+            )
 
     exclude(main_ns.member_functions,
             name=['begin',
                   'end',
-                  'val'], return_type=[''])
+                  'val'],
+            return_type=['']
+        )
 
-    exclude(main_ns.member_operators, symbol=[''])
-
+    exclude(main_ns.member_operators, 
+            symbol=[''])
+    
+    
+    for f in main_ns.declarations:
+        if isinstance(f, decl_wrappers.calldef_wrapper.free_function_t):
+            if (str(f.return_type).find('GIMLI::VectorExpr') != -1):
+                f.exclude()
+    
+    ex = ['::GIMLI::MatrixElement',
+          '::GIMLI::__VectorUnaryExprOp',
+          '::GIMLI::__VectorBinaryExprOp',
+          '::GIMLI::__ValVectorExprOp',
+          '::GIMLI::__VectorValExprOp',
+          '::GIMLI::__VectorExpr',
+          '::GIMLI::Expr',
+          '::GIMLI::InversionBase',
+          ]
+    
+    for c in main_ns.classes():
+        for e in ex:
+            if c.decl_string.startswith(e):
+                try:
+                    c.exclude()
+                    logger.debug("Exclude: " + c.name)
+                except:
+                    logger.debug("Fail to exclude: " + c.name)
+                    
+                
     mb.calldefs(access_type_matcher_t('protected')).exclude()
     mb.calldefs(access_type_matcher_t('private')).exclude()
 
@@ -421,10 +477,12 @@ def generate(defined_symbols, extraIncludes):
                 # mem_fun.call_policies = \
                 #   call_policies.return_value_policy(call_policies.copy_non_const_reference)
 
+    logger.info("Create api documentation from Doxgen comments.")
     # Now it is the time to give a name to our module
     from doxygen import doxygen_doc_extractor
     extractor = doxygen_doc_extractor()
 
+    logger.info("Create code creator.")
     mb.build_code_creator(settings.module_name, doc_extractor=extractor)
 
     # It is common requirement in software world - each file should have license
@@ -436,6 +494,7 @@ def generate(defined_symbols, extraIncludes):
     # And finally we can write code to the disk
     def ignore(val):
         pass
+    logger.info("Create bindings code.")
     mb.split_module('./generated', on_unused_file_found=ignore)
 
     additional_files = [
@@ -447,30 +506,18 @@ def generate(defined_symbols, extraIncludes):
             os.path.abspath(
                 os.path.dirname(__file__)), 'tuples.hpp')]
 
+    logger.info("Add additional files.")
     for sourcefile in additional_files:
         p, filename = os.path.split(sourcefile)
         destfile = os.path.join('./generated', filename)
 
         if not samefile(sourcefile, destfile):
             shutil.copy(sourcefile, './generated')
-            print("Updated ", filename, "as it was missing or out of date")
+            logger.info("Updated " +  filename + "as it was missing or out of date")
 
 if __name__ == '__main__':
 
+
     defined_symbols = ''
-
-    #from optparse import OptionParser
-
-    #optionParser = OptionParser("usage: %prog [options]")
-    #optionParser.add_option("", "--extra-includes", dest="extraIncludes")
-    #optionParser.add_option("", "--extra-path", dest="extraPath")
-    #optionParser.add_option("", "--gccxml", dest="gccxml")
-
-    #(options, args) = optionParser.parse_args()
-    # if options.gccxml:
-    #settings.gccxml_path = options.gccxml
-
-    # if options.extraPath:
-    # sys.path.append(options.extraPath)
 
     generate(defined_symbols, options.extraIncludes)

@@ -200,11 +200,15 @@ public:
     /*! Create a boundary as a copy of a boundary from an alternative mesh. Each Node of cell will be created with check. */
     Boundary * copyBoundary(const Boundary & bound);
 
+    /*! Delete all given cells from the given mesh. Warning will be really deleted.*/
+    void deleteCells(const std::vector < Cell * > & cells);
+    
     void create1DGrid(const RVector & x);
 
-    void create2DGrid(const RVector & x, const RVector & y, int markerType = 0);
+    void create2DGrid(const RVector & x, const RVector & y, int markerType=0);
 
-    void create3DGrid(const RVector & x, const RVector & y, const RVector & z, int markerType = 0);
+    void create3DGrid(const RVector & x, const RVector & y, const RVector & z,
+                      int markerType=0);
 
     /*! Create one dimensional grid. 
      * Boundary on the domain border will get 
@@ -239,7 +243,7 @@ public:
     Mesh createP2() const;
 
     /*! Create a partly mesh from mesh, based on cell-ids */
-    void createMeshByCellIdx(const Mesh & mesh, IndexArray & idxList);
+    void createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxList);
 
     /*! Create a partly mesh without cells from mesh, based on a vector of ptrs to boundaries */
     void createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds);
@@ -397,6 +401,10 @@ public:
     Mesh & rotate(const RVector3 & r);
     //** end mesh modification stuff
 
+    /*! Swap coordinate i with j for i and j lower then dimension of the mesh*/
+    void swapCoordinates(Index i, Index j);
+    //** end mesh modification stuff
+    
     /*! apply a 4x4 transformation matrix to the whole mesh*/
     template < class Matrix > Mesh & transform(const Matrix & mat){
 //         std::for_each(nodeVector_.begin(), nodeVector_.end(),
