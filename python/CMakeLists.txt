@@ -29,7 +29,7 @@ ADD_CUSTOM_COMMAND(
     COMMAND
         #test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || echo "-j" $J
         #test -z "$J" && echo -j1 || echo "-j" $J
-        test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $[ 1 + J ] -C ${CMAKE_BINARY_DIR} pg
+        test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
     TARGET
         pgbuild
    )
