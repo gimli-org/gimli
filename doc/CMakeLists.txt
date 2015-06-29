@@ -94,10 +94,12 @@ add_custom_target(sphinxpdf
         sphinx_check_sources
 )
 
-add_custom_target(sphinxhtml
-    ALL
-        cmake -E copy_directory
-        ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/doc/gimliapi &&
+ADD_CUSTOM_TARGET(sphinxhtml)
+#add_custom_target(sphinxhtml
+add_custom_command(
+    COMMAND
+        cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/doc/gimliapi
+    COMMAND
         ${SPHINX_EXECUTABLE}
         -T
         -b html
@@ -107,10 +109,8 @@ add_custom_target(sphinxhtml
         "${SPHINX_HTML_DIR}"
     COMMENT
         "Building HTML documentation with sphinx"
-    DEPENDS
-        sphinx_check_sources
-        doxygen
-        sphinxapi
+    TARGET
+        sphinxhtml
 )
 
 #add_dependencies(sphinx pygimli)
@@ -121,6 +121,9 @@ add_custom_target(doc
     COMMENT
         "Building HTML, API and PDF Documentation"
     DEPENDS
+        sphinx_check_sources
+        doxygen
+        sphinxapi
         sphinxhtml
         sphinxpdf
 )
