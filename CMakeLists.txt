@@ -226,7 +226,7 @@ endif()
 
 if (NOT CASTER)
     set(CASTER "gccxml")
-endif (CASTER)
+endif()
 
 if (CASTER STREQUAL "gccxml")
     find_or_build_package(gccxml gccxml)

@@ -175,17 +175,42 @@ FLAG_PREFIX = '#PLOT2RST:'
 class RedirectOutput:
     def __init__(self, console):
         self.buff = []
-
+        self.original = None
+        self.console = console
         if console == "cout": #sys.stdout
             self.style = 1 #black
+            self.original = sys.stdout
         elif console == "cerr": #sys.stderr
             self.style = 2 #red
+            self.original = sys.stderr
+    
+    def getSys(self):
+        if self.console == "cout":
+            return sys.stdout
+        if self.console == "cerr":
+            return sys.stderr
+
+    def setSys(self, buff):
+        if self.console == "cout":
+            sys.stdout = buff
+        if self.console == "cerr":
+            sys.stderr = buff
+        
+    def clear(self):
+        self.buff = []
+        
+    def start(self):
+        self.clear()
+        self.setSys(self)
+    
+    def release(self):
+        self.setSys(self.original)
 
     def write(self, what):
         ##Do not put a print statement here!!##
         #self.logFile.write( what )
         pass
-        #self.buff.append(what)
+        self.buff.append(what)
 
 
 
@@ -622,43 +647,41 @@ def process_blocks(blocks, src_path, image_path, cfg):
     anim_num = 1
     lastCoutBuff = []
 
-    tmpSysOut = sys.stdout
-    tmpSysErr = sys.stderr
+    #tmpSysOut = sys.stdout
+    #tmpSysErr = sys.stderr
 
     print("Processing:", src_path)
     plt.ion()
+       
+    coutRedirect = RedirectOutput("cout")
+    cerrRedirect = RedirectOutput("cerr")
+                
     for i, (blabel, brange, bcontent) in enumerate(blocks):
         if blabel == 'code':
-
-            #print('-'*100)
+            #print('start' + '-'*100)
             #print(bcontent, example_globals)
 
-            #tmpSysOut = sys.stdout
-            #tmpSysErr = sys.stderr
-
-            sys.stdout = RedirectOutput("cout")
-            sys.stderr = RedirectOutput("cerr")
+            coutRedirect.start()
+            cerrRedirect.start()
 
             exec(bcontent, example_globals)
             rst_blocks.append(codestr2rst(bcontent))
 
-            if len(sys.stdout.buff) > 0:
-                lastCoutBuff = sys.stdout.buff
-            coutbuff = sys.stdout.buff
-            cerrbuff = sys.stderr.buff
+            #print('end' + '_'*100)
+            coutRedirect.release()
+            cerrRedirect.release()
 
-            sys.stdout = tmpSysOut
-            sys.stderr = tmpSysErr
+            if len(coutRedirect.buff) > 0:
+                #print('out' + '_'*100)
+                #print(coutRedirect.buff)
+                #print('out' + '_'*100)
+                rst_blocks.append(printcout2rst(coutRedirect.buff))
 
-            #print('#'*100)
-            #print("coutbuf:", coutbuff)
-            #print("cerrbuf:", cerrbuff)
-
-            if len(coutbuff) > 0:
-                rst_blocks.append(printcout2rst(coutbuff))
-
-            if len(cerrbuff) > 0:
-                rst_blocks.append(printcerr2rst(cerrbuff))
+            if len(cerrRedirect.buff) > 0:
+                #print('cerr' + '_'*100)
+                #print(cerrRedirect.buff)
+                #print('cerr' + '_'*100)
+                rst_blocks.append(printcerr2rst(cerrRedirect.buff))
             #print('-'*100)
 
         else:
@@ -668,7 +691,6 @@ def process_blocks(blocks, src_path, image_path, cfg):
                 figure_list.append(figure_name)
                 figure_link = os.path.join('images', figure_name)
                 bcontent = bcontent.replace(inline_tag, figure_link)
-
 
             if '.. lastcout::' in bcontent:
                 bcontent = bcontent.replace('.. lastcout::',
@@ -682,7 +704,7 @@ def process_blocks(blocks, src_path, image_path, cfg):
                 animator = vals[2]
                 anim_name = image_path.format(anim_num).replace('.png', '.mp4')
                 args = vals[3:]
-                print(args)
+                #print(args)
                 exec(animator + '.save("'+anim_name+'", ' + \
                     ','.join(args) + ' ,extra_args=["-vcodec", "libx264"])', example_globals)
                 rst_blocks.append(ANIMATION_TEMPLATE % (anim_name))
