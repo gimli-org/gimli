@@ -27,6 +27,9 @@ class TestRVectorMethods(unittest.TestCase):
 
     def test_RVectorOP(self):
         v = pg.RVector(5, 1.0)
+
+        print(v - 2)
+
         
         self.assertEqual(sum(v + 1), 10)
         self.assertEqual(sum(v - 2), -5)
