@@ -38,7 +38,6 @@ except ImportError as e:
 
 import locale
 
-
 def checkAndFixLocaleDecimal_point(verbose=False):
     if locale.localeconv()['decimal_point'] == ',':
         if verbose:
@@ -180,6 +179,19 @@ def __RVectorPower(self, m):
     return pow(self, m)
 _pygimli_.RVector.__pow__ = __RVectorPower
 
+
+# RVector + int fails .. so we need to tweak this command
+__oldRVectorAdd__ = _pygimli_.RVector.__add__
+def __newRVectorAdd__(a, b):
+    if type(b) == int:
+        return __oldRVectorAdd__(a, float(b))
+    if type(a) == int:
+        return __oldRVectorAdd__(float(a), b)
+    return __oldRVectorAdd__(a, b)
+_pygimli_.RVector.__add__ = __newRVectorAdd__
+
+
+
 ############################
 # Indexing [] operator for RVector, CVector,
 #                          RVector3, R3Vector, RMatrix, CMatrix
@@ -206,17 +218,26 @@ def __getVal(self, idx):
         return self(idxL)
 
     elif isinstance(idx, slice):
+        s = idx.start
+        e = idx.stop
+        if s is None:
+            s = 0
+        if e is None:
+            e = len(self)
+                
         if idx.step is None:
-            s = idx.start
-            e = idx.stop
-            if s is None:
-                s = 0
-            if e is None:
-                e = len(self)
+            
 # print('#'*100, s, e)
             return self.getVal(int(s), int(e))
         else:
-            ids = range(idx.start, idx.stop, idx.step)
+            #print(s,e,idx.step)
+            step = idx.step
+            if step < 0:
+                ids = range(e-1, s-1, idx.step)
+            else:
+                ids = range(s, e, idx.step)
+                
+            #print(ids)
             if len(ids):
                 return self(ids)
             else:

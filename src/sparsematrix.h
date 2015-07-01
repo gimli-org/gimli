@@ -489,9 +489,9 @@ protected:
 };// class SparseMapMatrix
 
 template < class ValueType, class IndexType >
-int save(const SparseMapMatrix< ValueType, IndexType > & S,
+void save(const SparseMapMatrix< ValueType, IndexType > & S,
          const std::string & fname){
-    return S.save(fname);
+    S.save(fname);
 }
 
 template < class ValueType, class IndexType >
@@ -1024,21 +1024,21 @@ public:
     inline Index nCols() const { return size(); }
     inline Index nRows() const { return size(); }
     
-    int save(const std::string & fileName){
+    void save(const std::string & fileName) const {
         if (!valid_) SPARSE_NOT_VALID;
-        std::fstream file; if (!openOutFile(fileName, & file)) return 0;
+        std::fstream file; 
+        openOutFile(fileName, & file);
 
         file.setf(std::ios::scientific, std::ios::floatfield);
         file.precision(14);
 
-        for (uint i = 0; i < size(); i++){
+        for (Index i = 0; i < size(); i++){
             for (SIndex j = colPtr_[i]; j < colPtr_[i + 1]; j ++){
                 file << i << "\t" << rowIdx_[j] 
                           << "\t" << vals_[j] << std::endl;
             }
         }
         file.close();
-        return 1;
     }
 
     bool valid() const { return valid_; }

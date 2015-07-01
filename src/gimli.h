@@ -135,6 +135,7 @@ typedef int64_t int64;
     
 #define __M std::cout << "*** " << WHERE << std::endl;
 #define __MS(str) std::cout << "*** " <<str << " " << WHERE << std::endl;
+#define __DS(str) if (__GIMLI_DEBUG__) std::cout << "Debug: " << str << std::endl;
 
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
@@ -254,9 +255,9 @@ template < class ValueType > class ElementMatrix;
 template < class Vec > class Trans;
 
 //** end forward declaration
-
-static bool __SAVE_PYTHON_GIL__ = false;
-static bool __GIMLI_DEBUG__ = false;
+// static here gives every .cpp its own static bool
+extern bool __SAVE_PYTHON_GIL__;
+extern bool __GIMLI_DEBUG__;
 
 /*! */
 inline void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }

@@ -293,7 +293,7 @@ def generate(defined_symbols, extraIncludes):
     custom_rvalue_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp')
 
-    logger.info("Start exclude stuff that we don't need or that is non to be spurious.")
+    logger.info("Start exclude stuff that we don't need or that is known to be spurious.")
     
     exclude(main_ns.variables,
             name=[

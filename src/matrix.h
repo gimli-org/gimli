@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -174,10 +174,32 @@ public:
        return RVector(rows());
     }
 
+    /*! Return this * a  */
+    virtual CVector mult(const CVector & a) const {
+       THROW_TO_IMPL
+       return CVector(rows());
+    }
+    
+    virtual RVector mult(const RVector & b, Index startI, Index endI) const {
+        THROW_TO_IMPL
+        return RVector(rows());
+    }
+    virtual CVector mult(const CVector & b, Index startI, Index endI) const {
+        THROW_TO_IMPL
+        return CVector(rows());
+    }
+    
+    
     /*! Return this.T * a */
     virtual RVector transMult(const RVector & a) const {
         THROW_TO_IMPL
         return RVector(cols());
+    }
+
+    /*! Return this.T * a */
+    virtual CVector transMult(const CVector & a) const {
+        THROW_TO_IMPL
+        return CVector(cols());
     }
 
     /*! Save this matrix into the file filename given. */

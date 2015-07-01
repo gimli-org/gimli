@@ -133,12 +133,12 @@ namespace pyplusplus{ namespace aliases{
 namespace GIMLI{
     
 #define DEFINE_PY_VEC_OPERATOR__(OP)                      \
+    inline RVector operator OP (const RVector & a, const double & b){ \
+        RVector ret(a);   ret OP##=b; return ret; }                           \
+    inline RVector operator OP (const double & a, const RVector & b){ \
+        RVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
-        RVector c(a);   c OP##=b; return c; }                           \
-    inline RVector operator OP (const RVector & a, double v){ \
-        RVector b(a);   b OP##=v; return b; }                           \
-    inline RVector operator OP (double v, const RVector & a){ \
-        RVector b(a.size());   for (Index i = 0; i < b.size(); i ++) b[i] = v OP a[i]; return b; } \
+         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline CVector operator OP (const CVector & a, const CVector & b){ \
         CVector c(a);   c OP##=b; return c; }                           \
     inline CVector operator OP (const CVector & a, const Complex & b){ \
@@ -383,50 +383,50 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template std::set< Node * > commonNodes(const std::set < Boundary * > &);
     template std::set< Node * > commonNodes(const std::set < Cell * > &);
 
-    inline void ___instantiation___(){
-        sizeof(bool);
-        sizeof(bool *);
-        sizeof(bool &);
-        sizeof(char);
-        sizeof(char *);
-        sizeof(char &);
-        sizeof(false);
-        sizeof(true);
-        sizeof(int *);
-        sizeof(int &);
-        sizeof(int);
-        sizeof(uint8 *);
-        sizeof(uint8 &);
-        sizeof(uint8);
-        sizeof(unsigned char);
-        sizeof(long unsigned int *);
-        sizeof(long unsigned int &);
-        sizeof(long unsigned int);
-        sizeof(long *);
-        sizeof(long &);
-        sizeof(long);
-		sizeof(long long unsigned int *);
-		sizeof(long long unsigned int &);
-		sizeof(long long unsigned int);
-        sizeof(double *);
-        sizeof(double &);
-        sizeof(double  );
-        sizeof(GIMLI::Complex *);
-        sizeof(GIMLI::Complex &);
-        sizeof(GIMLI::Complex );
-        sizeof(GIMLI::SparseMatrix<double> &);
-        sizeof(GIMLI::SparseMatrix<double> *);
-        sizeof(GIMLI::SparseMatrix<double>);
-		sizeof(::GIMLI::Index *);
-		sizeof(::GIMLI::Index &);
-		sizeof(::GIMLI::Index);
-        sizeof(::GIMLI::SIndex *);
-        sizeof(::GIMLI::SIndex &);
-        sizeof(::GIMLI::SIndex);
-		sizeof(::GIMLI::IndexArray *);
-		sizeof(::GIMLI::IndexArray &);
-		sizeof(::GIMLI::IndexArray);
-    }
+//     inline void ___instantiation___(){
+//         sizeof(bool);
+//         sizeof(bool *);
+//         sizeof(bool &);
+//         sizeof(char);
+//         sizeof(char *);
+//         sizeof(char &);
+//         sizeof(false);
+//         sizeof(true);
+//         sizeof(int *);
+//         sizeof(int &);
+//         sizeof(int);
+//         sizeof(uint8 *);
+//         sizeof(uint8 &);
+//         sizeof(uint8);
+//         sizeof(unsigned char);
+//         sizeof(long unsigned int *);
+//         sizeof(long unsigned int &);
+//         sizeof(long unsigned int);
+//         sizeof(long *);
+//         sizeof(long &);
+//         sizeof(long);
+// 		sizeof(long long unsigned int *);
+// 		sizeof(long long unsigned int &);
+// 		sizeof(long long unsigned int);
+//         sizeof(double *);
+//         sizeof(double &);
+//         sizeof(double  );
+//         sizeof(GIMLI::Complex *);
+//         sizeof(GIMLI::Complex &);
+//         sizeof(GIMLI::Complex );
+//         sizeof(GIMLI::SparseMatrix<double> &);
+//         sizeof(GIMLI::SparseMatrix<double> *);
+//         sizeof(GIMLI::SparseMatrix<double>);
+// 		sizeof(::GIMLI::Index *);
+// 		sizeof(::GIMLI::Index &);
+// 		sizeof(::GIMLI::Index);
+//         sizeof(::GIMLI::SIndex *);
+//         sizeof(::GIMLI::SIndex &);
+//         sizeof(::GIMLI::SIndex);
+// 		sizeof(::GIMLI::IndexArray *);
+// 		sizeof(::GIMLI::IndexArray &);
+// 		sizeof(::GIMLI::IndexArray);
+//     }
 
     /*! Temporary workaround until there is as solution for
         http://www.mail-archive.com/cplusplus-sig@python.org/msg00333.html/
@@ -462,7 +462,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 } // namespace GIMLI
 
 // needed for castxml caster .. need to check .. the name Complex seems not enrolled in CMatrix generate code
-typedef std::complex< double >                       Complex;
+// typedef std::complex< double >                       Complex;
  
 //** define some aliases to avoid insane method names
 namespace pyplusplus{ namespace aliases{
@@ -481,7 +481,7 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::VectorIterator< GIMLI::SIndex >       IVectorIter;
     typedef GIMLI::VectorIterator< Complex >             CVectorIter;
 
-    
+        
     typedef GIMLI::Matrix< double >                      RMatrix;
     typedef GIMLI::Matrix3< double >                     RMatrix3;
     typedef GIMLI::Matrix< std::complex< double > >      CMatrix;
