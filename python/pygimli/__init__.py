@@ -190,7 +190,32 @@ def __newRVectorAdd__(a, b):
     return __oldRVectorAdd__(a, b)
 _pygimli_.RVector.__add__ = __newRVectorAdd__
 
+__oldRVectorSub__ = _pygimli_.RVector.__sub__
+def __newRVectorSub__(a, b):
+    if type(b) == int:
+        return __oldRVectorSub__(a, float(b))
+    if type(a) == int:
+        return __oldRVectorSub__(float(a), b)
+    return __oldRVectorSub__(a, b)
+_pygimli_.RVector.__sub__ = __newRVectorSub__
 
+__oldRVectorMul__ = _pygimli_.RVector.__mul__
+def __newRVectorMul__(a, b):
+    if type(b) == int:
+        return __oldRVectorMul__(a, float(b))
+    if type(a) == int:
+        return __oldRVectorMul__(float(a), b)
+    return __oldRVectorMul__(a, b)
+_pygimli_.RVector.__mul__ = __newRVectorMul__
+
+__oldRVectorTrueDiv__ = _pygimli_.RVector.__truediv__
+def __newRVectorTrueDiv__(a, b):
+    if type(b) == int:
+        return __oldRVectorTrueDiv__(a, float(b))
+    if type(a) == int:
+        return __oldRVectorTrueDiv__(float(a), b)
+    return __oldRVectorTrueDiv__(a, b)
+_pygimli_.RVector.__truediv__ = __newRVectorTrueDiv__
 
 ############################
 # Indexing [] operator for RVector, CVector,
