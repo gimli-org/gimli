@@ -208,14 +208,24 @@ def __newRVectorMul__(a, b):
     return __oldRVectorMul__(a, b)
 _pygimli_.RVector.__mul__ = __newRVectorMul__
 
-__oldRVectorTrueDiv__ = _pygimli_.RVector.__truediv__
-def __newRVectorTrueDiv__(a, b):
-    if type(b) == int:
-        return __oldRVectorTrueDiv__(a, float(b))
-    if type(a) == int:
-        return __oldRVectorTrueDiv__(float(a), b)
-    return __oldRVectorTrueDiv__(a, b)
-_pygimli_.RVector.__truediv__ = __newRVectorTrueDiv__
+try:
+    __oldRVectorTrueDiv__ = _pygimli_.RVector.__truediv__
+    def __newRVectorTrueDiv__(a, b):
+        if type(b) == int:
+            return __oldRVectorTrueDiv__(a, float(b))
+        if type(a) == int:
+            return __oldRVectorTrueDiv__(float(a), b)
+        return __oldRVectorTrueDiv__(a, b)
+    _pygimli_.RVector.__truediv__ = __newRVectorTrueDiv__
+except:
+    __oldRVectorTrueDiv__ = _pygimli_.RVector.__div__
+    def __newRVectorTrueDiv__(a, b):
+        if type(b) == int:
+            return __oldRVectorTrueDiv__(a, float(b))
+        if type(a) == int:
+            return __oldRVectorTrueDiv__(float(a), b)
+        return __oldRVectorTrueDiv__(a, b)
+    _pygimli_.RVector.__div__ = __newRVectorTrueDiv__
 
 ############################
 # Indexing [] operator for RVector, CVector,
