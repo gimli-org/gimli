@@ -13,7 +13,7 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=https://github.com/gccxml/gccxml.git
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
-CASTXML_REV=b40df94
+#CASTXML_REV=b40df94
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml 
 #PYGCCXML_REV=594d71d # old but functional

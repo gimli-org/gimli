@@ -29,6 +29,10 @@
 
 namespace GIMLI{
 
+bool __SAVE_PYTHON_GIL__ = false;
+bool __GIMLI_DEBUG__ = false;
+
+
 std::string authors(){
     return (std::string)("bugs and suggestions to:") + PACKAGE_AUTHORS;
 }

@@ -67,7 +67,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
                     "${PYTHON_MODULE_NAME}/*.xrc"
                     "${PYTHON_MODULE_NAME}/*.fbp")
 
-    add_custom_target(copy_python ALL) #DEPENDS ${python_files_dest})
+    add_custom_target(copy_python ALL)
     
     foreach(file ${PYTHON_FILES})
         

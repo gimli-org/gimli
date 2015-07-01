@@ -19,32 +19,26 @@ endif()
 project(libgimli)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    
-    if (APPLE)
-        set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
-        set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
-    else (APPLE)
-        if(WIN32)
-            #set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
-			set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
-        else(WIN32)
-            # 4.9.1
-            #set(CMAKE_CXX_FLAGS_RELEASE "-g -O2 -Os -pipe -ansi -pedantic -Wall -Wno-long-long -Wno-unused-value -Wno-strict-aliasing")
-            set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -Wall -Wno-long-long -Wno-unused-value -Wno-strict-aliasing ")
-        endif(WIN32)
 
-        set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-        #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os ")
-    endif(APPLE)
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+ 
+    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") 
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
+    endif()
+
+    if(WIN32)
+    endif(WIN32)
 
     #-stdlib=libc++
-endif ()
-
-if(MSVC)
+elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-endif(MSVC)
+endif()
  
 set(LIBGIMLI_VERSION_MAJOR 0)
 set(LIBGIMLI_VERSION_MINOR 9)
@@ -115,8 +109,6 @@ if (NOT Boost_INCLUDE_DIR)
 endif()
 
 message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
-
-set(Boost_LIB_PREFIX 'cyg')
 
 if (MSVC)
 	find_package(Boost 1.46.0 COMPONENTS system thread)
@@ -201,8 +193,13 @@ ENDIF(WIN32)
 # Check for python stuff
 ################################################################################
 
-set(Python_ADDITIONAL_VERSIONS 3.4 3.3 3.2 2.7) # need better test for pyexe version
-find_package(PythonInterp)
+if (PYVERSION)
+    set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
+    #set(Python_ADDITIONAL_VERSIONS 3.4 3.3 3.2 2.7)
+endif()
+
+find_package(PythonInterp) # find version belongs to the active python command
+
 if (WIN32)
 	get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
 	set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)

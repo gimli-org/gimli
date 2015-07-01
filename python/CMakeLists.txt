@@ -26,10 +26,9 @@ ADD_CUSTOM_COMMAND(
 
 ADD_CUSTOM_TARGET(pgbuild ALL)
 ADD_CUSTOM_COMMAND(
+    #test -z $J && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg  || echo "no 1"
     COMMAND
-        #test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || echo "-j" $J
-        #test -z "$J" && echo -j1 || echo "-j" $J
-        test -z "$J" && ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg || ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg
+        if [ -z $J ]; then ${CMAKE_MAKE_PROGRAM} -j 1 -C ${CMAKE_BINARY_DIR} pg \; else ${CMAKE_MAKE_PROGRAM} -j $J -C ${CMAKE_BINARY_DIR} pg \; fi
     TARGET
         pgbuild
    )
@@ -52,6 +51,7 @@ endif()
 add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_CURRENT_SOURCE_DIR}/pygimli/")
 
 add_dependencies(pggen gimli)
+add_dependencies(copy_python pggen)
 add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
 add_dependencies(pygimli pgbuild)

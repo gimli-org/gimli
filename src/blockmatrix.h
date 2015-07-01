@@ -102,7 +102,7 @@ public:
 
 
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
-                        ValueType scale=ValueType(1.0)){
+                        ValueType scale=(ValueType)(1.0)){
         if (matrixID > matrices_.size()){
             throwLengthError(1, WHERE_AM_I + " matrix entry to large: " +
             str(matrixID) + " " + str(matrices_.size()));

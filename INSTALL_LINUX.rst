@@ -140,3 +140,39 @@ Example Installation on Ubuntu
     cmake ../trunk
     make gimli
     make pygimli
+
+
+Usefull cmake settings
+^^^^^^^^^^^^^^^^^^^^^^
+.. code-block::bash 
+
+    CC=clang CXX=clang++ cmake ..
+
+Build everything with clang instead of gcc.
+
+.. code-block::bash 
+
+    cmake -DPYVERSION=3.3 ..
+    
+Define alternativ python version. On default the version of your active python version will be choosen.
+You will need numpy and boost-python builds with your desired python version.
+
+.. code-block::bash 
+
+    cmake -DCASTER='gccxml' ..
+
+Caster for the python bindings. Either gccxml (default for linux and gcc < 5) or castxml else.
+
+
+Usefull make commands
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block::bash 
+
+    make rebuild_thirdparty
+
+Update and rebuild and all needed third party packages.
+
+
+
+

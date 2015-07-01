@@ -106,7 +106,7 @@ struct PySequence2RVector{
     static void construct(PyObject* obj, bpl::converter::rvalue_from_python_stage1_data * data){
         // check tests/testPerf.py
         // check tests/RValueConverter.py
-        
+        __M
         typedef bpl::converter::rvalue_from_python_storage< GIMLI::Vector< double > > storage_t;
         storage_t* the_storage = reinterpret_cast<storage_t*>(data);
         void* memory_chunk = the_storage->storage.bytes;
