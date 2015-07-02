@@ -14,16 +14,16 @@ class TestMatrix(pg.MatrixBase):
 
     def mult(self, b):
         ret = pg.RVector(self.rows())
-        print "TestMatrix::mult"
+        print("TestMatrix::mult")
         return ret
 
     def transMult(self, b):
         ret = pg.RVector(self.cols())
-        print "TestMatrix::transMult"
+        print("TestMatrix::transMult")
         return ret
 
     def save(self, name):
-        print "TestMatrix::save", name
+        print("TestMatrix::save", name)
 
 
 class TestModelling(pg.ModellingBase):
@@ -34,16 +34,16 @@ class TestModelling(pg.ModellingBase):
         self.mat = TestMatrix()
 
     def response(self, model):
-        print "TestModelling::response"
+        print("TestModelling::response")
         res = pg.RVector(1, 1.0)
         return res
 
     def jacobian(self):
-        print "TestModelling::jacobian()"
+        print("TestModelling::jacobian()")
         return self.mat
 
     def createJacobian(self, model):
-        print "TestModelling::createJacobian"
+        print("TestModelling::createJacobian")
 
 F = TestModelling()
 

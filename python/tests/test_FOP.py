@@ -12,4 +12,4 @@ model = pg.RVector(3, 10.)
 
 F = pg.DC1dModelling(nlay, ab2, mn2)
 
-print F.response(model)
+print(F.response(model))

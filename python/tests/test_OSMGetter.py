@@ -27,7 +27,7 @@ proj = pyproj.Proj(proj='tmerc', init='epsg:31468', ellps='WGS84')
 
 for p in pnts:
     x, y = proj(p[0], p[1])
-    print x, y
+    print(x, y)
     plt.plot(x, y, '.', markersize=18)
     plt.text(x, y, p[2])
 
