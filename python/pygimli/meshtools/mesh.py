@@ -597,7 +597,7 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
 
     """
 
-    eSpacing = sensors[0].distance(sensors[1])
+    eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
 
     xmin, ymin = sensors[0][0], sensors[0][1]
     xmax = xmin

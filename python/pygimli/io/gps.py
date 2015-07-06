@@ -6,7 +6,7 @@ import sys
 import matplotlib.image as mpimg
 from math import floor
 import numpy as np
-import urllib
+import urllib2
 import os
 
 try:
@@ -46,7 +46,7 @@ def readGPX(filename):
     Currently only simple waypoint extraction is supported.
     """
     from xml.dom.minidom import parse
-    
+
     dom = parse(filename)
     wpts = dom.getElementsByTagName("wpt")
 
@@ -55,7 +55,7 @@ def readGPX(filename):
 
 def readSimpleLatLon(filename, verbose=False):
     """Read Lat Lon coordinates from file.
-    
+
     Try converting automatic.
     To be sure, provide format without "d" to ensure floating point format:
 
@@ -118,10 +118,10 @@ def readSimpleLatLon(filename, verbose=False):
 
 
 def GK2toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 2 into UTM 
-        
+    """Transform Gauss-Krueger zone 2 into UTM
+
     Note the double transformation (1-ellipsoid, 2-projection)
-    default zone is 32 
+    default zone is 32
     """
     return GKtoUTM(R, H, zone, gk=gk2)
     #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
@@ -135,10 +135,10 @@ def GK2toUTM(R, H=None, zone=32):
 
 
 def GK3toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 3 into UTM 
-        
+    """Transform Gauss-Krueger zone 3 into UTM
+
     Note the double transformation (1-ellipsoid, 2-projection)
-    default zone is 32 
+    default zone is 32
     """
     return GKtoUTM(R, H, zone, gk=gk3)
     #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
@@ -152,8 +152,8 @@ def GK3toUTM(R, H=None, zone=32):
 
 
 def GK4toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 4 into UTM 
-        
+    """Transform Gauss-Krueger zone 4 into UTM
+
     Note the double transformation (1-ellipsoid, 2-projection)
     default zone is 32.
     """
@@ -171,7 +171,7 @@ def GK4toUTM(R, H=None, zone=32):
 def GKtoUTM(R, H=None, zone=32, gk=None):
     """Transforms any Gauss-Krueger to UTM autodetect GK zone from offset."""
     if gk is None:
-        
+
         if H is None:
             rr = R[0][0]
         else:
@@ -182,19 +182,19 @@ def GKtoUTM(R, H=None, zone=32, gk=None):
 
         gkzone = int(floor(rr * 1e-6))
         print(gkzone)
-    
+
         if gkzone <= 0 or gkzone >= 5:
             print("cannot detect valid GK zone")
-    
+
         gk = Proj(init="epsg:"+str(31464+gkzone))
-        
+
     if H is None:  # two-column matrix
         lon, lat = transform(gk, wgs84, R[0], R[1])
     else:
         lon, lat = transform(gk, wgs84, R, H)
-        
+
     utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
-        
+
     return utm(lon, lat)
 
 
@@ -231,16 +231,19 @@ def readGeoRefTIF(file_name):
 
 
 def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
-                  usetls=False, uuid='', fmt='image/jpeg'):
+                  usetls=False, epsg=0, uuid='', fmt='image/jpeg'):
     """Generate address for rendering web service image from BKG.
-    
+
     Assumes UTM in given zone.
     """
-    url = 'http://sg.geodatenzentrum.de/wms_' + service
+    url = 'https://sg.geodatenzentrum.de/wms_' + service
     if usetls:
         url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
     stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT=' + fmt
-    srsstr = 'SRS=EPSG:' + str(25800 + zone)  # EPSG definition of UTM
+    if epsg == 0:
+        epsg = 32600 + zone  # WGS 84 / UTM zone 32N
+#        epsg = 25800 + zone  # ETRS89 / UTM zone 32N
+    srsstr = 'SRS=EPSG:' + str(epsg)  # EPSG definition of UTM
 
     if imsize is None or imsize <= 1:
         imsize = int((xlim[1] - xlim[0])/0.4) + 1  # take 40cm DOP resolution
@@ -254,10 +257,10 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
     return addr, box
 
 
-def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid='',
+def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
                    usetls=False):
     """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
-    
+
     At first access, the image is retrieved from BKG and saved then loaded.
     """
     ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
@@ -265,13 +268,18 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, imsize=2500, uuid='',
     fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
     ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
                             service=wms[mode], usetls=usetls, uuid=uuid,
-                            fmt=fmt[mode])
+                            fmt=fmt[mode], epsg=epsg)
     imname = mode + box + ext[mode]
     if not os.path.isfile(imname):  # not already existing
         print('Retrieving file from geodatenzentrum.de using URL:')
         print(ad)
-        url = urllib.URLopener()
-        url.retrieve(ad, imname)
+        # old (urllib) style (not working through proxy anymore)
+#        url = urllib.URLopener()
+#        url.retrieve(ad, imname)
+        req = urllib2.Request(ad)
+        response = urllib2.urlopen(req)
+        with open(imname, 'wb') as output:
+            output.write(response.read())
 
     im = mpimg.imread(imname)
     bb = [int(bi) for bi in box.split(',')]  # bounding box

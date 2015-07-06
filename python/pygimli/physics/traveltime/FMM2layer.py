@@ -10,7 +10,7 @@ from pygimli.mplviewer import drawMesh, drawField, drawStreamLines
 #import heapq
 from math import asin, tan
 
-from . fastMarchingTest import fastMarch
+from fastMarchingTest import fastMarch
 
 """
 Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal equation
@@ -119,13 +119,10 @@ if __name__ == '__main__':
 
     PLC.createEdge(nodes[5], nodes[0])
     PLC.createEdge(nodes[5], nodes[2])
-
+    PLC.addRegionMarker(pg.RVector3(0., -zlay + .1), 0, 10.)
+    PLC.addRegionMarker(pg.RVector3(0., -zlay - .1), 1, 10.)
     # insert region markers into the two layers and make mesh
     tri = pg.TriangleWrapper(PLC)
-    tri.addRegionMarkerTmp(
-        0, pg.RVector3(
-            0., -zlay + .1), 10.)  # 10m^2 max area
-    tri.addRegionMarkerTmp(1, pg.RVector3(0., -zlay - .1), 10.)
     tri.setSwitches('-pzeAfaq34.5')
     mesh = pg.Mesh(2)
     tri.generate(mesh)
@@ -169,29 +166,20 @@ if __name__ == '__main__':
     print(time.time() - tic, "s")
 
     # compare with analytical solution along the x axis
-    x = np.arange(0., 100., 0.5)
+    x = np.arange(-20., 150., 0.5)
     t = pg.interpolate(mesh, times, pg.asvector(x), x * 0., x * 0.)
-    tdirect = x / v[0]  # direct wave
+    tdirect = np.abs(x) / v[0]  # direct wave
     alfa = asin(v[0] / v[1])  # critically refracted wave angle
     xreflec = tan(alfa) * zlay * 2.  # first critically refracted
-    trefrac = (x - xreflec) / v[1] + xreflec * v[1] / v[0]**2
+    trefrac = (np.abs(x) - xreflec) / v[1] + xreflec * v[1] / v[0]**2
     tana = np.where(trefrac < tdirect, trefrac, tdirect)  # minimum of both
-    print("min(dt)=",
-          min(t - tana) * 1000,
-          "ms max(dt)=",
-          max(t - tana) * 1000,
-          "ms")
+    print("min(dt)=", min(t-tana)*1e3, "ms max(dt)=", max(t-tana)*1e3, "ms")
 
-    # plot traveltime field, a few lines
-    fig = plt.figure()
-    a = fig.add_subplot(211)
-    drawMesh(a, mesh)
-    drawField(a, mesh, times, True, 20)
-    drawStreamLines(
-        a, mesh, times, pg.RVector3(-100., -10.0), pg.RVector3(100., -10.0),
-        nLines=50, step=0.01, showStartPos=True)
-
+    # %% plot traveltime field, a few lines
+    fig, ax = plt.subplots(nrows=2, sharex=True)
+    drawMesh(ax[0], mesh)
+    drawField(ax[0], mesh, times, True)
+    drawStreamLines(ax[0], mesh, times, color='white')
     # plot calculated and measured travel times
-    a2 = fig.add_subplot(212)
-    plt.plot(x, t, 'b.-', x, tdirect, 'r-', x, trefrac, 'g-')
+    ax[1].plot(x, t, 'b.-', x, tdirect, 'r-', x, trefrac, 'g-')
     plt.show()

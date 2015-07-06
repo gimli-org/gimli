@@ -56,23 +56,22 @@ def show(mesh, *args, **kwargs):
         xmax = mesh[0].xmax()
         ymin = mesh[0].ymin()
         ymax = mesh[0].ymax()
-        
+
         for m in mesh[1:]:
             ax, cbar = show(m, axes=ax, hold=1, fitView=False, *args, **kwargs)
             xmin = min(xmin, m.xmin())
             xmax = max(xmax, m.xmax())
             ymin = min(ymin, m.ymin())
             ymax = max(ymax, m.ymax())
-        
-        #ax.relim()
-        #ax.autoscale_view(tight=True)
-        ax.set_xlim([xmin,xmax])
-        ax.set_ylim([ymin,ymax])
-        #print(ax.get_data_interval()) 
+
+#        ax.relim()
+#        ax.autoscale_view(tight=True)
+        ax.set_xlim([xmin, xmax])
+        ax.set_ylim([ymin, ymax])
+#        print(ax.get_data_interval())
         plt.pause(0.01)
         return
-    
-    
+
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
             return showMesh(mesh, *args, **kwargs)
@@ -83,7 +82,7 @@ def show(mesh, *args, **kwargs):
             return showMesh3D(mesh, *args, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
-                
+
     # plt.pause(0.001)
 
 
@@ -181,9 +180,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
         if hasattr(data[0], '__len__') and not isinstance(data,
                                                           np.ma.core.MaskedArray):
 
-            if len(data) == 2: # [u,v]
+            if len(data) == 2:  # [u,v]
                 data = np.array(data).T
-                
+
             if sum(data[:, 0]) != sum(data[:, 1]):
                 drawStreams(ax, mesh, data, **kwargs)
             else:
@@ -305,7 +304,6 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
         ax.plot([c1[0], c2[0]],
                 [c1[1], c2[1]], color=col, **kwargs)
 
-    
     plt.pause(0.01)
 
     return ax
