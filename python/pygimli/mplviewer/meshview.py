@@ -839,7 +839,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
     nConstraints = C[0].size()
     start = []
     end = []
-    swatch = pg.Stopwatch(True)
+#    swatch = pg.Stopwatch(True)  # not used
     for i in range(0, nConstraints / 2):
         # print i
         # if i == 1000: break;
@@ -876,7 +876,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
         start.append(pa)
         end.append(pb)
 
-# updateAxes_(axes)  # not existing
+#    updateAxes_(axes)  # not existing
 
     return start, end
 
