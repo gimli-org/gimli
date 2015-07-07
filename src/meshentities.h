@@ -179,7 +179,7 @@ protected:
     //mutable ElementMatrix < double > uxCache_; // to expensive maybe, lightweight baseclass here
     mutable RMatrix uxCache_;
     
-private:
+protected:
     /*! do not copy a mesh entity at all */
     MeshEntity(const MeshEntity & ent){
         THROW_TO_IMPL
@@ -263,13 +263,17 @@ protected:
 
     double attribute_;
 
-private:
+protected:
     /*! Don't call this class directly */
-    Cell(const Cell & cell){ std::cerr << "cell(const cell & cell)" << std::endl; }
+    Cell(const Cell & cell){ 
+        std::cerr << "cell(const cell & cell)" << std::endl;
+        THROW_TO_IMPL
+    }
     
     /*! Don't call this class directly */
     Cell & operator = (const Cell & cell){
         if (this != &cell) {
+            THROW_TO_IMPL
             std::cerr << "cell=cell" << std::endl; 
         }
         return *this;
@@ -328,15 +332,17 @@ protected:
     Cell *leftCell_;
     Cell *rightCell_;
 
-private:
+protected:
     /*! Don't call this class directly */
     Boundary(const Boundary & bound){
+        THROW_TO_IMPL
         std::cerr << "Boundary(const Boundary & bound)" << std::endl;
     }
         
     /*! Don't call this class directly */
     Boundary & operator = (const Boundary & boundary){
         if (this != &boundary) {
+            THROW_TO_IMPL
             std::cerr << "boundary=boundary" << std::endl; 
         }
         return *this;
@@ -442,18 +448,18 @@ public:
     
 protected:
     
-     /*! Don't call this class directly */
-    TriangleFace(const TriangleFace & bound){
-        std::cerr << "TriangleFace(const Boundary & bound)" << std::endl;
-    }
+     // /*! Don't call this class directly */
+    // TriangleFace(const TriangleFace & bound){
+        // std::cerr << "TriangleFace(const Boundary & bound)" << std::endl;
+    // }
         
-    /*! Don't call this class directly */
-    TriangleFace & operator = (const TriangleFace & boundary){
-        if (this != &boundary) {
-            std::cerr << "TriangleFace boundary=boundary" << std::endl; 
-        }
-        return *this;
-    }
+    // /*! Don't call this class directly */
+    // TriangleFace & operator = (const TriangleFace & boundary){
+        // if (this != &boundary) {
+            // std::cerr << "TriangleFace boundary=boundary" << std::endl; 
+        // }
+        // return *this;
+    // }
 };
 
 class DLLEXPORT Triangle6Face : public TriangleFace{
@@ -493,8 +499,7 @@ public:
     friend std::ostream & operator << (std::ostream & str, const TriangleFace & e);
 
 protected:
-    
-private:
+
     QuadrangleFace(const QuadrangleFace & quad){
         std::cerr << "QuadrangleFace(const QuadrangleFace & quad)" << std::endl;
     }
@@ -743,7 +748,6 @@ public:
     
 protected:
     
-private:
     /*! Don't call this class directly */
     Tetrahedron(const Tetrahedron& cell){ std::cerr << "Tetrahedron cell(const cell & cell)" << std::endl; }
     

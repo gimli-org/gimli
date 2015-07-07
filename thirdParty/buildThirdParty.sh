@@ -31,7 +31,9 @@ checkTOOLSET(){
 		echo "No TOOLSET set .. using default gcc"
 		SYSTEM=UNIX
 		SetGCC_TOOLSET
-	fi
+	elif [ "$TOOLSET" == "clang" ]; then
+        SetCLANG_TOOLSET
+    fi
 
 	needPYTHON
 
@@ -93,6 +95,38 @@ SetGCC_TOOLSET(){
 	COMPILER='gcc'
 	GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
 	GCCARCH=`gcc -dumpmachine`
+	CPUCOUNT=$PARALLEL_BUILD
+	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
+    [ "$CPUCOUNT" == 0 ] && CPUCOUNT=$PARALLEL_BUILD
+
+    if [ "$GCCARCH" == "mingw32" -o "$GCCARCH" == "i686" -o "$GCCARCH" == "i686-pc-msys" -o "$GCCARCH" == "i686-w64-mingw32" ]; then
+		ADDRESSMODEL=32
+	else
+		ADDRESSMODEL=64
+	fi
+}
+SetCLANG_TOOLSET(){
+	#needGCC
+	TOOLSET=clang-`clang -dumpversion`
+	B2TOOLSET='clang'
+    MAKE=make
+	
+    
+	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
+		CMAKE_GENERATOR='MSYS Makefiles'
+        SYSTEM=WIN
+    elif [ "$OSTYPE" == "darwin13" ]; then
+		CMAKE_GENERATOR='Unix Makefiles'
+		SYSTEM=MAC
+	else
+		CMAKE_GENERATOR='Unix Makefiles'
+		SYSTEM=UNIX
+	fi
+	 
+    CMAKE_MAKE=$MAKE
+	COMPILER='clang'
+	GCCVER=`clang -dumpmachine`-`gcc -dumpversion`
+	GCCARCH=`clang -dumpmachine`
 	CPUCOUNT=$PARALLEL_BUILD
 	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
     [ "$CPUCOUNT" == 0 ] && CPUCOUNT=$PARALLEL_BUILD
@@ -402,8 +436,9 @@ buildBOOST(){
         
         echo "Build with python: $WITHPYTHON"
         
-		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL install \
+		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL  define=BOOST_USE_WINDOWS_H install \
         -j $PARALLEL_BUILD \
+        -d 1 \
 		--prefix=$BOOST_DIST \
         --platform=msys \
         --layout=tagged \
@@ -724,7 +759,10 @@ showHelp(){
 }
 
 # script starts here 
-TOOLSET=none
+if [ -z "$TOOLSET" ]; then
+    TOOLSET=none
+fi
+echo "TOOLSET set to: " $TOOLSET
 
 if [ -n "$BOOST_VERSION" ]; then
 	BOOST_VERSION=$BOOST_VERSION
