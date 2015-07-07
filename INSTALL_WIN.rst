@@ -12,7 +12,7 @@ builds your personal home directory where you find a .bashrc. Probably under:
 
 .. code-block:: bash
 
-    c:/msys32/home/YOUR_USERNAME.
+    c:/msys32/home/YOUR_USERNAME
 
 Edit .bashrc and add the winpython
 installationpath to your default PATH.
@@ -24,8 +24,15 @@ installationpath to your default PATH.
 This is nessary since the gimli installation needs to know your valid python
 installation.
 
-To get a complete working toolchain you need some packages installed.
+Be sure to have an updated msys environment. Run at least:
 
+.. code-block:: bash
+    pacman -Sy
+    
+to update your local package databases. See: https://sourceforge.net/p/msys2/wiki/MSYS2%20installation/
+for further update instructions.
+
+To get a complete working toolchain you need some packages installed.
 .. code-block:: bash
 
     pacman -S make tar git subversion mercurial unzip wget patch

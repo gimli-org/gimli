@@ -29,8 +29,8 @@
 
 namespace GIMLI{
 
-bool __SAVE_PYTHON_GIL__ = false;
-bool __GIMLI_DEBUG__ = false;
+DLLEXPORT bool __SAVE_PYTHON_GIL__ = false;
+DLLEXPORT bool __GIMLI_DEBUG__ = false;
 
 
 std::string authors(){
