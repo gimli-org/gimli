@@ -48,7 +48,7 @@ void saveRVector3(const std::vector < RVector3 > l, const std::string & fileName
     file.close();
 }
 
-RVector3 center(const std::vector < RVector3 > & vPos){
+RVector3 center(const R3Vector & vPos){
   RVector3 pos(0.0, 0.0, 0.0);
 
   //  std::cout << WHERE_AM_I << vPos.size() << std::endl;
@@ -75,7 +75,7 @@ double angle(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3){
   return angle;
 }
 
-bool xVari(const std::vector < RVector3 > & electrodeList){
+bool xVari(const R3Vector & electrodeList){
     if (electrodeList.empty()) return false;
     double start = electrodeList[0].x();
     for (size_t i = 1; i < electrodeList.size(); i ++){
@@ -83,7 +83,7 @@ bool xVari(const std::vector < RVector3 > & electrodeList){
     }
     return false;
 }
-bool yVari(const std::vector < RVector3 > & electrodeList){
+bool yVari(const R3Vector & electrodeList){
     if (electrodeList.empty()) return false;
     double start = electrodeList[0].y();
     for (size_t i = 1; i < electrodeList.size(); i ++){
@@ -91,7 +91,7 @@ bool yVari(const std::vector < RVector3 > & electrodeList){
     }
     return false;
 }
-bool zVari(const std::vector < RVector3 > & electrodeList){
+bool zVari(const R3Vector & electrodeList){
     if (electrodeList.empty()) return false;
     double start = electrodeList[0].z();
     for (size_t i = 1; i < electrodeList.size(); i ++){
@@ -100,29 +100,29 @@ bool zVari(const std::vector < RVector3 > & electrodeList){
     return false;
 }
 
-RVector x(const std::vector < RVector3 > & rv){
+RVector x(const R3Vector & rv){
     RVector t(rv.size());
     //std::copy(rv.begin(), rv.end(), &t[0], std::mem_fun_ref(&Pos< double >::x));
     for (uint i = 0, imax = rv.size(); i < imax; i ++) t[i] = rv[i].x();
     return t;
 }
 
-RVector y(const std::vector < RVector3 > & rv){
+RVector y(const R3Vector & rv){
     RVector t(rv.size());
     for (uint i = 0, imax = rv.size(); i < imax; i ++) t[i] = rv[i].y();
     return t;
 }
 
-RVector z(const std::vector < RVector3 > & rv){
+RVector z(const R3Vector & rv){
     RVector t(rv.size());
     for (uint i = 0, imax = rv.size(); i < imax; i ++) t[i] = rv[i].z();
     return t;
 }
 template < class ValueType > void swap(ValueType & v1, ValueType & v2){ ValueType tmp = v1; v1 = v2; v2 = tmp; }
 
-void swapXY(std::vector < RVector3 > & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][1]); }
-void swapXZ(std::vector < RVector3 > & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][2]); }
-void swapYZ(std::vector < RVector3 > & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][1], rv[i][2]); }
+void swapXY(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][1]); }
+void swapXZ(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][2]); }
+void swapYZ(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][1], rv[i][2]); }
 
 RVector toArray(const R3Vector & vec){
     RVector ret(vec.size() * 3);

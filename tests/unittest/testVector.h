@@ -56,6 +56,11 @@ public:
         CPPUNIT_ASSERT(i == 10);
         
         CPPUNIT_ASSERT(v(0,10).beginPyIter()[0] == v[0]);
+        i = 0;
+        for (RVector::iterator it = v.begin(); it != v.end(); it++, i ++){
+//             __MS(v[i] << " " << *it)
+            CPPUNIT_ASSERT(v[i] == *it);
+        }
     }
     
     void testEquality(){

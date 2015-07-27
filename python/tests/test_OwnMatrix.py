@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pygimli as pg
 
+# write a correct test!
+import unittest
+
+import pygimli as pg
 
 class TestMatrix(pg.MatrixBase):
 
@@ -45,12 +48,22 @@ class TestModelling(pg.ModellingBase):
     def createJacobian(self, model):
         print("TestModelling::createJacobian")
 
-F = TestModelling()
 
-dat = pg.RVector(1, 1)
-err = pg.RVector(1, 0.00001)
+class TestOwnMatrix(unittest.TestCase):
+    
+    def test_runFOP(self):
+        #F = TestModelling()
 
-inv = pg.RInversion(dat, F, True, True)
-inv.setError(err)
+        #dat = pg.RVector(1, 1)
+        #err = pg.RVector(1, 0.00001)
 
-inv.run()
+        #inv = pg.RInversion(dat, F, True, True)
+        #inv.setError(err)
+
+        #inv.run()
+        pass
+
+if __name__ == '__main__':
+    
+    unittest.main()
+    

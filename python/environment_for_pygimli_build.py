@@ -18,8 +18,8 @@ complete_path = lambda *args: os.path.join(project_root, *args)
 
 import distutils.sysconfig
 # Get the major Python version without patchlevel
-print("Python version:", distutils.sysconfig.get_python_version())
-print("Python lib:", distutils.sysconfig.get_python_lib(standard_lib=True))
+#print("Python version:", distutils.sysconfig.get_python_version())
+#print("Python lib:", distutils.sysconfig.get_python_lib(standard_lib=True))
 
 class settings(object):
     module_name = '_pygimli_'
@@ -39,8 +39,6 @@ class settings(object):
 
         sys.path.append(settings.pygccxml_path)
         sys.path.append(settings.pyplusplus_path)
-
-        print(sys.path)
 
 if sys.platform == 'linux2' or sys.platform == 'linux':
     pass

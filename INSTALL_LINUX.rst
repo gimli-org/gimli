@@ -144,20 +144,20 @@ Example Installation on Ubuntu
 
 Usefull cmake settings
 ^^^^^^^^^^^^^^^^^^^^^^
-.. code-block::bash 
+.. code-block:: bash 
 
     CC=clang CXX=clang++ cmake ..
 
 Build everything with clang instead of gcc.
 
-.. code-block::bash 
+.. code-block:: bash 
 
     cmake -DPYVERSION=3.3 ..
     
 Define alternativ python version. On default the version of your active python version will be choosen.
 You will need numpy and boost-python builds with your desired python version.
 
-.. code-block::bash 
+.. code-block:: bash 
 
     cmake -DCASTER='gccxml' ..
 
@@ -167,7 +167,7 @@ Caster for the python bindings. Either gccxml (default for linux and gcc < 5) or
 Usefull make commands
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block::bash 
+.. code-block:: bash 
 
     make rebuild_thirdparty
 

@@ -79,9 +79,9 @@ templates_path = ['@SPHINX_SRC_DIR@/doc/_templates']
 # Numpydoc/plot settings
 plot2rst_paths = [
     ('@SPHINX_SRC_DIR@/doc/tutorials',
-     '@SPHINX_BINARY_BUILD_DIR@/doc/_tutorials_auto'),
+     '@SPHINX_BUILD_DIR@/doc/_tutorials_auto'),
     ('@SPHINX_SRC_DIR@/doc/examples',
-     '@SPHINX_BINARY_BUILD_DIR@/doc/_examples_auto')]
+     '@SPHINX_BUILD_DIR@/doc/_examples_auto')]
 
 numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False

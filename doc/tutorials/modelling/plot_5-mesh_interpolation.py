@@ -22,7 +22,7 @@ Create coarse and fine mesh with data
 """
 
 def create_mesh_and_data(n):
-    nc = np.linspace(-2, 0, n)
+    nc = np.linspace(-2.0, 0.0, n)
     mesh = pg.createMesh2D(nc, nc)
     mcx = pg.x(mesh.cellCenter())
     mcy = pg.y(mesh.cellCenter())
@@ -54,7 +54,8 @@ def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
 def linear_interpolation(inmesh, indata, outmesh):
     """ Linear interpolation using `pg.interpolate()` """
     outdata = pg.RVector() # empty
-    pg.interpolate(inmesh, indata, outmesh.cellCenters(), outdata)
+    pg.interpolate(srcMesh=inmesh, inVec=indata, 
+                   destPos=outmesh.cellCenters(), outVec=outdata)
     return outdata
 
 """
@@ -64,15 +65,16 @@ Visualization
 
 meshes = [coarse, fine]
 datasets = [coarse_data, fine_data]
-ints = [nearest_neighbor_interpolation, linear_interpolation]
+ints = [nearest_neighbor_interpolation,
+        linear_interpolation]
 
-fig, axes = plt.subplots(2,2, figsize=(5,5))
+fig, axes = plt.subplots(2, 2, figsize=(5,5))
 
 # Coarse data to fine mesh
-drawModel(axes[0,0], fine, ints[0](coarse, coarse_data, fine), showCbar=False)
-drawMesh(axes[0,0], fine)
-drawModel(axes[0,1], fine, ints[1](coarse, coarse_data, fine), showCbar=False)
-drawMesh(axes[0,1], fine)
+drawModel(axes[0, 0], fine, ints[0](coarse, coarse_data, fine), showCbar=False)
+drawMesh(axes[0, 0], fine)
+drawModel(axes[0, 1], fine, ints[1](coarse, coarse_data, fine), showCbar=False)
+drawMesh(axes[0, 1], fine)
 
 # Fine data to coarse mesh
 drawModel(axes[1,0], coarse, ints[0](fine, fine_data, coarse), showCbar=False)
@@ -80,8 +82,10 @@ drawMesh(axes[1,0], coarse)
 drawModel(axes[1,1], coarse, ints[1](fine, fine_data, coarse), showCbar=False)
 drawMesh(axes[1,1], coarse)
 
-titles = ["Coarse to fine\nwith nearest neighbors", "Coarse to fine\nwith linear interpolation",
-          "Fine to coarse\nwith nearest neighbors", "Fine to coarse\nwith linear interpolation"]
+titles = ["Coarse to fine\nwith nearest neighbors",
+          "Coarse to fine\nwith linear interpolation",
+          "Fine to coarse\nwith nearest neighbors", 
+          "Fine to coarse\nwith linear interpolation"]
 
 for a, title in zip(axes.flat, titles):
     a.set_title(title + "\n")

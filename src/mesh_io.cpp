@@ -649,7 +649,7 @@ void Mesh::exportVTK(const std::string & fbody,
 void Mesh::exportVTK(const std::string & fbody,
                      const std::map< std::string, RVector > & dataMap, 
                      const std::vector < RVector3 > & vec, bool cells) const {
-    bool verbose = false;
+    bool verbose = debug();
     
     if (verbose){
         std::cout << "Write vtk " << fbody + ".vtk" << std::endl;
@@ -782,6 +782,7 @@ void Mesh::exportVTK(const std::string & fbody,
                     }
                 }
                 file << std::endl;
+                data.erase(it);
             }
         }
     } else {  //   if !(cells && cellCount() > 0){
@@ -859,6 +860,7 @@ void Mesh::exportVTK(const std::string & fbody,
                         }
                     }
                     file << std::endl;
+                    data.erase(it);
                 }
             }
             
@@ -889,7 +891,9 @@ void Mesh::exportVTK(const std::string & fbody,
                 file << it->second[i] << " ";
             }
             file << std::endl;
+            data.erase(it);
         }
+        
     }
         
     //** write point vector data
@@ -905,6 +909,12 @@ void Mesh::exportVTK(const std::string & fbody,
     } else {
         if (vec.size() > 0){
             std::cerr << "Vector data size does not match node size: " << vec.size() << " " << nodeCount() << std::endl;
+        }
+    }
+    
+    if (!data.empty()){
+        for (std::map < std::string, RVector >::iterator it = data.begin(); it != data.end(); it ++){
+            std::cout << "Warning! data: " << it->first << " not writen to vtk. " << it->second.size() << std::endl;
         }
     }
     

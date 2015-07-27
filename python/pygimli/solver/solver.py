@@ -182,6 +182,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     """
     boundaries = []
     bounds = []
+    
     if isinstance(pair[0], int):
         bounds = mesh.findBoundaryByMarker(pair[0])
     elif isinstance(pair[0], pg.stdVectorBounds):
@@ -281,6 +282,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                     print("Warning! parseMapToCellArray: cannot find marker " +
                           str(pair[0]) + " within mesh.")
                 else:
+                    #print(atts, idx, pair[1], float(pair[1]))
                     atts[idx] = float(pair[1])
             else:
                 raise Exception("Please provide a list of [int, value] pairs!" +
@@ -387,7 +389,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
 
         if directionCheck:
             if b.leftCell() is None and b.rightCell() is None:
-                print(b.id(), b.leftCell(), b.rightCell())
+                #print(b.id(), b.leftCell(), b.rightCell())
                 sw = pg.Stopwatch(True)
                 mesh.createNeighbourInfos()
                 print("NeighbourInfos()", sw.duration(True))
@@ -527,8 +529,6 @@ def assembleForceVector(mesh, f, userData=None):
 
     rhs = pg.RVector(mesh.nodeCount(), 0)
 
-
-
     if hasattr(f, '__call__') and not isinstance(f, pg.RVector):
         for c in mesh.cells():
             if userData is not None:
@@ -545,6 +545,7 @@ def assembleForceVector(mesh, f, userData=None):
                 b_l.u(c)
                 for i, idx in enumerate(b_l.idx()):
                     rhs[idx] += b_l.row(0)[i] * fArray[c.id()]
+
         elif len(fArray) == mesh.nodeCount():
             rhs = pg.RVector(fArray)
         else:
@@ -886,14 +887,14 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     --------
     >>> import pygimli as pg
     >>> from pygimli.meshtools import polytools as plc
-    >>> from pygimli.mplviewer import drawModel, drawMesh
+    >>> from pygimli.mplviewer import drawField, drawMesh
     >>> import matplotlib.pyplot as plt
-    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-    >>> c1 = plc.createCircle(pos=[0.0, -3.0], radius=1.0, area=0.01, marker=2)
+    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1, worldMarker=False)
+    >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
-    >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 1], [2, 100]], uB=[[-1, 1.0], [-2, 0.0]])
+    >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]], uB=[[4, 1.0], [3, 0.0]])
     >>> fig, ax = plt.subplots()
-    >>> pc = drawModel(ax, mesh, u)
+    >>> pc = drawField(ax, mesh, u)
     >>> drawMesh(ax, mesh)
     >>> plt.show()
 
@@ -957,18 +958,13 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             print("6b: ", swatch2.duration(True))
         if 'uB' in kwargs:
             assembleDirichletBC(S,
-                                parseArgToBoundaries(
-                                    kwargs['uB'],
-                                    mesh),
+                                parseArgToBoundaries(kwargs['uB'], mesh),
                                 rhs, time=0.0,
                                 userData=userData,
                                 verbose=False)
 
         if debug:
             print("6c: ", swatch2.duration(True))
-
-
-
 
         u = None
 
@@ -1020,8 +1016,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             if 'uB' in kwargs:
                 assembleDirichletBC(A,
-                                    parseArgToBoundaries(kwargs['uB'],
-                                                         mesh),
+                                    parseArgToBoundaries(kwargs['uB'], mesh),
                                     rhs=F)
 
             return crankNicolson(times, theta, A, M, F, u0=u0, verbose=verbose)
@@ -1082,8 +1077,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             if 'uB' in kwargs:
                 assembleDirichletBC(S,
-                                    parseArgToBoundaries(kwargs['uB'],
-                                                         mesh),
+                                    parseArgToBoundaries(kwargs['uB'], mesh),
                                     rhs=b,
                                     time=times[n],
                                     userData=userData,
@@ -1173,12 +1167,16 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
 if __name__ == "__main__":
 
     #import pygimli as pg
-    #import pygimli.polytools as plc
-    #world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-    #c1 = plc.createCircle(pos=[0.0, -3.0], radius=1.0, area=0.01, marker=2)
+    #from pygimli.meshtools import polytools as plc
+    #from pygimli.mplviewer import drawField, drawMesh
+    #import matplotlib.pyplot as plt
+    #world = plc.createWorld(start=[-10, 0], end=[10, -10], 
+                            #marker=1, worldMarker=False)
+    #c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
     #mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
-    #u = pg.solver.solveFiniteElements(mesh, a=[[1, 1], [2, 100]], uB=[[-1, 1.0], [-2, 0.0]])
-    #ax, cbar = pg.show(mesh, u, colorBar=1, hold=1)
-    #pg.show(mesh, axes=ax)
-    #pg.wait()
+    #u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]], uB=[[4, 1.0], [3, 0.0]])
+    #fig, ax = plt.subplots()
+    #pc = drawField(ax, mesh, u)
+    #drawMesh(ax, mesh)
+    #plt.show()
     pass

@@ -11,25 +11,36 @@ import pygimli as pg
 
 
 def main(argv):
-    from optparse import OptionParser
+    
+    import argparse
 
-    parser = OptionParser("usage: %prog [options] mesh1 mesh2")
-    parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
-                      help="be verbose", default=False)
-    parser.add_option("-o", "--output", dest="outFileName", default='merge',
-                      help="Filename for the resulting mesh.", metavar="File")
+    # intialisize parser
+    parser = argparse.ArgumentParser(description="Merge two meshes")
 
-    (options, args) = parser.parse_args()
+    # define some options (better import from defaultParser)
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
+                        help="Be verbose")
+    parser.add_argument("--debug", dest="debug", action="store_true",
+                        help="debug mode")
+    parser.add_argument("-o", dest="outFileName", type=str,
+                        help="Filename for the resulting mesh.",
+                        default='none')
+      
+    parser.add_argument('mesh1')
+    parser.add_argument('mesh2')
 
-    if len(args) < 2:
-        parser.print_help()
-        print("Please add a mesh or model name.")
-        sys.exit(2)
-    else:
-        meshname1 = args[0]
-        meshname2 = args[1]
+    args = parser.parse_args()
+    if args.debug:
+        pg.setDebug(args.debug)
+        
+    if args.verbose:
+        print(args)
+    
+    meshname1 = args.mesh1
+    meshname2 = args.mesh2
 
-    (outfileBody, fileExtension) = os.path.splitext(options.outFileName)
+
+    (outfileBody, fileExtension) = os.path.splitext(args.outFileName)
 
     # 2d should default here, since most users will merge 2d meshes. for 3d we
     # need an option here->Ca
@@ -38,7 +49,15 @@ def main(argv):
     m2 = pg.Mesh(2)
     m2.load(meshname2)
 
-    if options.verbose:
+    #if args.localCoordinates:
+        #xmin=min(m1.xmin(), m2.xmin())
+        #ymin=min(m1.ymin(), m2.ymin())
+        #zmin=min(m1.zmin(), m2.zmin())
+
+        #m1.translate((-xmin, -ymin, -zmin))
+        #m2.translate((-xmin, -ymin, -zmin))
+
+    if args.verbose:
         print(meshname1, m1)
         print(meshname2, m2)
 
@@ -49,15 +68,19 @@ def main(argv):
 
     for key in list(mesh.exportDataMap().keys()):
         d = mesh.exportDataMap()[key]
-        print(d)
+        if args.verbose:
+            print(d)
+            
         d.resize(mesh.cellCount())
         d.setVal(m1.exportDataMap()[key], 0, m1.cellCount())
         d.setVal(m2.exportDataMap()[key], m1.cellCount(),
                  m1.cellCount() + m2.cellCount())
         mesh.addExportData(key, d)
 
-    print(mesh)
-    if options.verbose:
+    #mesh.translate((xmin, ymin, zmin))
+    
+    if args.verbose:
+        print(mesh)
         print("write bms: ", outfileBody + ".bms")
 
     if outfileBody.find('.vtk'):

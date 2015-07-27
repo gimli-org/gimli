@@ -46,11 +46,10 @@ def uDirichlet(b):
     """
     return 4.0
 
-dirichletBC = [[1, 1.0],  # left
-               [grid.findBoundaryByMarker(2), 2.0],  # right
+dirichletBC = [[1, 1.0],                                    # left
+               [grid.findBoundaryByMarker(2), 2.0],         # right
                [grid.findBoundaryByMarker(3),
-                lambda p: 3.0 + p.center()[0]],
-               # top
+                            lambda p: 3.0 + p.center()[0]], # top
                [grid.findBoundaryByMarker(4), uDirichlet]]  # bottom
 
 """
@@ -106,7 +105,6 @@ ax = show(grid, data=u, filled=True, colorBar=True,
 Instead of the grid we now want to add streamlines to the plot to show the
 gradients of the solution (i.e., the flow direction).
 """
-
 drawStreams(ax, grid, u)
 
 ax.text(0.0, 1.01, '$u=1$',

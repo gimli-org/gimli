@@ -30,27 +30,31 @@
     #define BOOST_USE_WINDOWS_H
     //#define BOOST_PLAT_WINDOWS_RUNTIME
     
-#if defined(DLL_EXPORT) || defined(gimli_EXPORTS)
-    //* We are building this library
-    //#warning (We are building this library)
-    #define DLLEXPORT __declspec(dllexport)
-#else
-    //* We are using this library
-    //#warning (We are using this library)
-    #define DLLEXPORT __declspec(dllimport)
-#endif
+    #if defined(DLL_EXPORT) || defined(gimli_EXPORTS)
+        //* We are building this library
+        //#warning (We are building this library)
+        #define DLLEXPORT __declspec(dllexport)
+    #else
+        //* We are using this library
+        //#warning (We are using this library)
+        #define DLLEXPORT __declspec(dllimport)
+    #endif
 
     // Don't let win32api windef.h define min and max as macros
     // if included after c++config.h.
     #ifndef NOMINMAX
-    #define NOMINMAX
-#endif
+        #define NOMINMAX
+    #endif
+    
     #include <stddef.h>
-#ifndef PYGIMLI_GCCXML
-    #include <windows.h>
-#endif
+    
+    #ifndef PYGIMLI_CAST
+        #include <windows.h>
+    #endif
+    
     #undef near
     #undef far
+
 #else /* ELSE NO WINDOWS */
     #define PATHSEPARATOR "/"
     #define DLLEXPORT

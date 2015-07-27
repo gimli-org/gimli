@@ -591,8 +591,12 @@ void RegionManager::createParaDomain_(){
          it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
         
         if (!it->second->isBackground()){
-            std::transform(it->second->cells().begin(), it->second->cells().end(),
-                            std::back_inserter(cellIdx), std::mem_fun(&Cell::id));
+            for (std::vector < Cell * >::const_iterator itc = it->second->cells().begin();
+                 itc != it->second->cells().end(); itc++){
+                cellIdx.push_back((*itc)->id());
+            }
+//             std::transform(it->second->cells().begin(), it->second->cells().end(),
+//                             std::back_inserter(cellIdx), std::mem_fun(&Cell::id));
         }
     }
 
