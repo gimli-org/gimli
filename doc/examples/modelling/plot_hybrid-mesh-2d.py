@@ -45,23 +45,23 @@ triangle via pygimli's TriangleWrapper.
 """
 
 # append rectangle above, search upper lines
-poly = pg.Mesh(2)  # empty 2d mesh
-n1 = poly.createNode(xmin, zmax, 0.0)
-n0 = pg.Node(n1)  # make a copy for later
-for x in xreg[1:]:
-    n2 = poly.createNode(x, zmax, 0.0)
-    poly.createEdge(n1, n2)
-    n1 = n2
+#poly = pg.Mesh(2)  # empty 2d mesh
+#n1 = poly.createNode(xmin, zmax, 0.0)
+#n0 = pg.Node(n1)  # make a copy for later
+#for x in xreg[1:]:
+    #n2 = poly.createNode(x, zmax, 0.0)
+    #poly.createEdge(n1, n2)
+    #n1 = n2
 
-z2 = 0.
-n2 = poly.createNode(xmax, z2, 0.0)
-poly.createEdge(n1, n2)
-n1 = poly.createNode(xmin, z2, 0.0)
-poly.createEdge(n1, n2)
-poly.createEdge(n1, n0)
+#z2 = 0.
+#n2 = poly.createNode(xmax, z2, 0.0)
+#poly.createEdge(n1, n2)
+#n1 = poly.createNode(xmin, z2, 0.0)
+#poly.createEdge(n1, n2)
+#poly.createEdge(n1, n0)
 
-tri = pg.TriangleWrapper(poly)
-tri.setSwitches('-pzeAfaq31')
+#tri = pg.TriangleWrapper(poly)
+#tri.setSwitches('-pzeAfaq31')
 
 """
 For more information on the triangle switches and the corresponding settings,

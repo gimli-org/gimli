@@ -561,14 +561,14 @@ def generate(defined_symbols, extraIncludes):
 
     additional_files = [
         os.path.join(
-            os.path.abspath(
-                os.path.dirname(__file__)), 'custom_rvalue.cpp'), os.path.join(
-            os.path.abspath(
-                os.path.dirname(__file__)), 'generators.h'), os.path.join(
-            os.path.abspath(
-                os.path.dirname(__file__)), 'tuples.hpp')]
+               os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp'), 
+        os.path.join(
+                os.path.abspath(os.path.dirname(__file__)), 'generators.h'),
+        os.path.join(
+                os.path.abspath(os.path.dirname(__file__)), 'tuples.hpp')]
 
     logger.info("Add additional files.")
+    
     for sourcefile in additional_files:
         p, filename = os.path.split(sourcefile)
         destfile = os.path.join('./generated', filename)
