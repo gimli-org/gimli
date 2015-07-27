@@ -199,9 +199,7 @@ public:
         
         Vec r;
         r = GIMLI::increasingRange(0.1, 1.0, 3);
-        __MS(r)
         r = GIMLI::increasingRange(0.1, 3.3, 5);
-        __MS(r)
     }
         
     void testStdVectorTemplates(){
