@@ -36,7 +36,6 @@ for c in mesh1.cells():
     c.setMarker(2)
 
 print(mesh1)
-
 """
 .. lastcout::
 
@@ -44,24 +43,25 @@ Next, we build an unstructured region on top by creating the polygon and calling
 triangle via pygimli's TriangleWrapper.
 """
 
-# append rectangle above, search upper lines
-#poly = pg.Mesh(2)  # empty 2d mesh
-#n1 = poly.createNode(xmin, zmax, 0.0)
-#n0 = pg.Node(n1)  # make a copy for later
-#for x in xreg[1:]:
-    #n2 = poly.createNode(x, zmax, 0.0)
-    #poly.createEdge(n1, n2)
-    #n1 = n2
+poly = pg.Mesh(2)  # empty 2d mesh
+n1 = poly.createNode(xmin, zmax, 0.0)
+# n0 = pg.Node(n1)  # this will lead to problems because this node is not part of poly but will be used by poly later
+n0 = poly.createNode(n1)
 
-#z2 = 0.
-#n2 = poly.createNode(xmax, z2, 0.0)
-#poly.createEdge(n1, n2)
-#n1 = poly.createNode(xmin, z2, 0.0)
-#poly.createEdge(n1, n2)
-#poly.createEdge(n1, n0)
+for x in xreg[1:]:
+    n2 = poly.createNode(x, zmax, 0.0)
+    poly.createEdge(n1, n2)
+    n1 = n2
 
-#tri = pg.TriangleWrapper(poly)
-#tri.setSwitches('-pzeAfaq31')
+z2 = 0.
+n2 = poly.createNode(xmax, z2, 0.0)
+poly.createEdge(n1, n2)
+n1 = poly.createNode(xmin, z2, 0.0)
+poly.createEdge(n1, n2)
+poly.createEdge(n1, n0)
+
+tri = pg.TriangleWrapper(poly)
+tri.setSwitches('-pzeAfaq31')
 
 """
 For more information on the triangle switches and the corresponding settings,
@@ -69,11 +69,11 @@ the reader is referred to `the triangle website <http://www.cs.cmu.edu/~quake/tr
 
 Now we can generate the unstructured mesh.
 """
-#mesh2 = pg.Mesh(2)
-#tri.generate(mesh2)
+mesh2 = pg.Mesh(2)
+tri.generate(mesh2)
 
-#for cell in mesh2.cells():
-    #cell.setMarker(1)
+for cell in mesh2.cells():
+    cell.setMarker(1)
 
 """
 .. lastcout::
@@ -83,36 +83,35 @@ modelling.
 """
 pg.show(mesh1)
 
-# looking for *** Error in `/usr/bin/python3.3': corrupted double-linked list: 0x00000000022a0ac0 ***
-#mesh3 = merge2Meshes(mesh1, mesh2)
-#pg.show(mesh3)
+mesh3 = merge2Meshes(mesh1, mesh2)
+pg.show(mesh3)
 
-#"""
-#.. lastcout::
+"""
+.. lastcout::
 
-#Of course, you can treat the hybrid mesh like any other mesh and append a triangle
-#boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
-#"""
+Of course, you can treat the hybrid mesh like any other mesh and append a triangle
+boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
+"""
 
-#mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
-                              #smooth=True, marker=3, isSubSurface=True)
+mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
+                              smooth=True, marker=3, isSubSurface=True)
 
-#ax, cbar = showMesh(mesh, mesh.cellMarker(), 
-                    #cmap="summer",
-                    #label="Region marker", 
-                    #showLater=True)
+ax, cbar = showMesh(mesh, mesh.cellMarker(), 
+                    cmap="summer",
+                    label="Region marker", 
+                    showLater=True)
 
-#drawMesh(ax, mesh)
+drawMesh(ax, mesh)
 
-#ax, _ = showMesh(mesh, mesh.cellMarker(),
-                 #logScale=False,
-                 #label="Region marker",
-                 #showLater=True)
+ax, _ = showMesh(mesh, mesh.cellMarker(),
+                 logScale=False,
+                 label="Region marker",
+                 showLater=True)
 
-#drawMesh(ax, mesh)
+drawMesh(ax, mesh)
 
-#plt.xlim(40,60)
-#plt.ylim(-30, -20)
-#plt.show()
+plt.xlim(40,60)
+plt.ylim(-30, -20)
+plt.show()
 
 
