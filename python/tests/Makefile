@@ -8,5 +8,5 @@ test:
 	echo "Running all tests..."
 	echo "####################"
 	sleep 1
-	python -c "import pygimli; pygimli.test(show=True)"
+	python -c "import pygimli; pygimli.test(show=False)"
 	py.test .

@@ -286,20 +286,20 @@ public:
     Boundary & boundary(Index i);
 
     /*! Return a vector of all node positions */
-    std::vector < RVector3 > positions() const;
+    R3Vector positions() const;
     
     /*! Return a vector of node positions for an index vector */
-    std::vector < RVector3 > positions(const IndexArray & idx) const;
+    R3Vector positions(const IndexArray & idx) const;
     
     /*! Return all node positions. */
     R3Vector nodeCenters() const;
 
     /*! Return a vector of all cell center positions*/
-    std::vector < RVector3 > cellCenters() const;
-    std::vector < RVector3 > cellCenter() const { return cellCenters(); }
+    R3Vector cellCenters() const;
+    R3Vector cellCenter() const { return cellCenters(); }
 
     /*! Return a vector of all center positions for all boundaries */
-    std::vector < RVector3 > boundaryCenters() const;
+    R3Vector boundaryCenters() const;
         
     /*! Return the reference to a RVector of all cell sizes. Cached for static geometry.*/
     RVector & cellSizes() const;
@@ -315,9 +315,7 @@ public:
      For the left cell neighbor the normal direction should be always the outer normal.*/
     std::vector< RVector3 > & boundarySizedNormals() const;
     
-    /*! Return a vector of all cell marker */
-    IVector cellMarker() const;
-
+    
     /*! Return a vector of all boundary marker */
     IVector boundaryMarker() const;
 
@@ -372,7 +370,7 @@ public:
 
     void recountNodes();
 
-    void sortNodes(const std::vector < Index > & perm);
+    void sortNodes(const IndexArray & perm);
 
     /*! Return true if createNeighbourInfos is called once */
     inline bool neighboursKnown() const { return neighboursKnown_; }
@@ -563,6 +561,9 @@ public:
     /*! Set all cell marker the values in attribute (casting to int)*/
     void setCellMarker(const RVector & attribute);
     
+    /*! Return a vector of all cell marker */
+    IVector cellMarker() const;
+
     //** probably deprecated
     double xmin() const { findRange_(); return minRange_[0]; }
     double ymin() const { findRange_(); return minRange_[1]; }

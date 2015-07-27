@@ -199,6 +199,9 @@ class RedirectOutput:
     def clear(self):
         self.buff = []
         
+    def flush(self):
+        self.buff = []
+        
     def start(self):
         self.clear()
         self.setSys(self)
@@ -647,9 +650,6 @@ def process_blocks(blocks, src_path, image_path, cfg):
     anim_num = 1
     lastCoutBuff = []
 
-    #tmpSysOut = sys.stdout
-    #tmpSysErr = sys.stderr
-
     print("Processing:", src_path)
     plt.ion()
        
@@ -662,25 +662,23 @@ def process_blocks(blocks, src_path, image_path, cfg):
             #print(bcontent, example_globals)
 
             coutRedirect.start()
-            cerrRedirect.start()
+            #cerrRedirect.start() // this redirect eats any exception ??
 
-            exec(bcontent, example_globals)
             rst_blocks.append(codestr2rst(bcontent))
+            exec(bcontent, example_globals)
 
-            #print('end' + '_'*100)
             coutRedirect.release()
             cerrRedirect.release()
-
+            #print('start' + '+'*100)
+            #print('cout:', len(coutRedirect.buff))
+            #if len(coutRedirect.buff): print(coutRedirect.buff)
+            #print('cerr:', len(cerrRedirect.buff))
+            #if len(cerrRedirect.buff): print(cerrRedirect.buff)
+            
             if len(coutRedirect.buff) > 0:
-                #print('out' + '_'*100)
-                #print(coutRedirect.buff)
-                #print('out' + '_'*100)
                 rst_blocks.append(printcout2rst(coutRedirect.buff))
 
             if len(cerrRedirect.buff) > 0:
-                #print('cerr' + '_'*100)
-                #print(cerrRedirect.buff)
-                #print('cerr' + '_'*100)
                 rst_blocks.append(printcerr2rst(cerrRedirect.buff))
             #print('-'*100)
 

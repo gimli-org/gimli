@@ -28,6 +28,10 @@ import hand_made_wrappers
 from pygccxml import parser
 import logging
 from pygccxml import utils
+logger = utils.loggers.cxx_parser
+#logger.setLevel(logging.DEBUG)
+    
+
 from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
 from pyplusplus import code_creators, module_builder, messages, decl_wrappers
@@ -162,7 +166,7 @@ def generate(defined_symbols, extraIncludes):
                          # refer to it. This could cause "no to_python converter > found" run
                          # time error
         # This is serious and lead to RuntimeError: `Py++` is going to write different content to the same file
-        #, messages.W1047 # There are two or more classes that use same > alias("MatElement"). Duplicated aliases causes
+        , messages.W1047 # There are two or more classes that use same > alias("MatElement"). Duplicated aliases causes
                          # few problems, but the main one > is that some of the classes will not
                          # be exposed to Python.Other classes : >
         , messages.W1049 # This method could not be overriden in Python - method returns >
@@ -171,8 +175,8 @@ def generate(defined_symbols, extraIncludes):
         
     )
 
-    print("Install SRC:  ", os.path.abspath(__file__))
-    print("Execute from: ", os.getcwd())
+    logger.debug("Install SRC:  ", os.path.abspath(__file__))
+    logger.debug("Execute from: ", os.getcwd())
 
     sourcedir = os.path.dirname(os.path.abspath(__file__))
     sourceHeader = os.path.abspath(sourcedir + "/" + r"pygimli.h")
@@ -186,7 +190,7 @@ def generate(defined_symbols, extraIncludes):
 
     import platform
 
-    defines = ['PYGIMLI_GCCXML', 'HAVE_BOOST_THREAD_HPP']
+    defines = ['PYGIMLI_CAST', 'HAVE_BOOST_THREAD_HPP']
     caster = 'gccxml'
 
     if platform.architecture()[
@@ -196,7 +200,7 @@ def generate(defined_symbols, extraIncludes):
             pass
         else:
             defines.append('_WIN64')
-            print('Marking win64 for gccxml')
+            logger.info('Marking win64 for gccxml')
 
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:
@@ -222,20 +226,18 @@ def generate(defined_symbols, extraIncludes):
                 caster = 'castxml'
             
     except Exception as e:
-        print("caster_path=%s" % casterpath)
-        print(str(e))
+        logger.info("caster_path=%s" % casterpath)
+        logger.info(str(e))
         raise Exception("Problems determine castxml binary")
 
     settings.includesPaths.insert(0, os.path.abspath(extraIncludes))
 
-    print("caster_path=%s" % casterpath)
-    print("working_directory=%s" % settings.gimli_path)
-    print("include_paths=%s" % settings.includesPaths)
-    print("define_symbols=%s" % defines)
-    print("indexing_suite_version=2")
+    logger.info("caster_path=%s" % casterpath)
+    logger.info("working_directory=%s" % settings.gimli_path)
+    logger.info("include_paths=%s" % settings.includesPaths)
+    logger.info("define_symbols=%s" % defines)
+    logger.info("indexing_suite_version=2")
 
-    logger = utils.loggers.cxx_parser
-    #logger.setLevel(logging.DEBUG)
 
     mb = module_builder.module_builder_t([xml_cached_fc],
                                          gccxml_path=casterpath,
@@ -257,20 +259,16 @@ def generate(defined_symbols, extraIncludes):
     main_ns.include()
     
 
-    #for c in main_ns.classes():
-        #if c.decl_string.startswith('::GIMLI::BlockMatrix'):
+    #for c in main_ns.free_functions():
+        ##print(c)
+        #if 'pow' in c.name:
             #print(c)
-            #print(c.member_functions())
-            #for m in c.member_functions():
-                #if m.name.startswith("addMatrixEntry"):
-                    #print(m.name)
-                    #print(m)
-                    #print(dir(m))
-            #"addMatrixEntry"
+            #print(c.name)
+        ##if c.decl_string.startswith('::GIMLI::pow'):
+            ##print(c)
+            ##print(c.name)
+            
     #sys.exit()
-                
-                
-                
                 
     logger.info("Apply handmade wrappers.")
     hand_made_wrappers.apply(mb)
@@ -278,11 +276,16 @@ def generate(defined_symbols, extraIncludes):
     logger.info("Apply custom rvalues.")
     # START manual r-value converters
     rvalue_converters = [
-        'register_pysequence_to_StdVectorUL_conversion',
         'register_pytuple_to_rvector3_conversion',
         'register_pysequence_to_rvector_conversion',
-        'register_pysequence_to_StdVectorRVector3_conversion'
+        #'register_pysequence_to_bvector_conversion',
+        'register_pysequence_to_indexvector_conversion',
+        'register_pysequence_to_r3vector_conversion',
+        'register_pysequence_to_StdVectorRVector3_conversion',
+        #'register_rvector_to_ndarray_conversion',
     ]
+    
+
 
     for converter in rvalue_converters:
         mb.add_declaration_code('void %s();' % converter)
@@ -381,8 +384,26 @@ def generate(defined_symbols, extraIncludes):
           '::GIMLI::__VectorExpr',
           '::GIMLI::Expr',
           '::GIMLI::InversionBase',
+          'GIMLI::MatrixElement',
+          'GIMLI::__VectorUnaryExprOp',
+          'GIMLI::__VectorBinaryExprOp',
+          'GIMLI::__ValVectorExprOp',
+          'GIMLI::__VectorValExprOp',
+          'GIMLI::__VectorExpr',
+          'GIMLI::Expr',
+          'GIMLI::InversionBase',
+          'std::vector<unsigned long',
           ]
     
+    for c in main_ns.free_functions():
+        for e in ex:
+            if c.decl_string.find(e) > -1:
+                try:
+                    c.exclude()
+                    logger.debug("Exclude: " + str(c))
+                except:
+                    logger.debug("Fail to exclude: " + str(c))
+                    
     for c in main_ns.classes():
         for e in ex:
             if c.decl_string.startswith(e):
@@ -391,8 +412,41 @@ def generate(defined_symbols, extraIncludes):
                     logger.debug("Exclude: " + c.name)
                 except:
                     logger.debug("Fail to exclude: " + c.name)
-                    
+          
+        try:
+            for mem in c.constructors():
+                for e in ex:
+                    if mem.decl_string.find(e) > -1:
+                        try:
+                            mem.exclude()
+                            #logger.info("Exclude: " + str(mem))
+                        except:
+                            logger.debug("Fail to exclude: " + str(mem))
+                            
+            for mem in c.member_functions():
+                for e in ex:
+                    if mem.decl_string.find(e) > -1:
+                        try:
+                            mem.exclude()
+                            #logger.info("Exclude: " + str(mem))
+                        except:
+                            logger.debug("Fail to exclude: " + str(mem))
+        except:
+            #print(c, "has no member functions")
+            pass
+        
+        #print('#'*100)
+        #print(c, c.name)
+        if c.name.startswith('Vector<unsigned long>'):
+            #print('         ', c.name)
+            for mem in c.constructors():
+                #print("mem", mem, mem.decl_string)
+                if mem.decl_string.find('( ::GIMLI::Index )') > -1:
+                    logger.debug("Exclude: " + str(mem))
+                    mem.exclude()
                 
+                #print("mem", mem)
+            
     mb.calldefs(access_type_matcher_t('protected')).exclude()
     mb.calldefs(access_type_matcher_t('private')).exclude()
 
@@ -409,8 +463,14 @@ def generate(defined_symbols, extraIncludes):
 
     setMemberFunctionCallPolicieByReturn(
         mb,
-        ['::std::string *', 'float *', 'double *', 'int *', 'long *',
-         'long int *', 'long long int *', 'unsigned long long int *',
+        ['::std::string *', 'float *', 'double *',
+         'int *',
+         'long *',
+         'long int *', 
+         'long long int *',
+         'unsigned int *',
+         'long unsigned int *', 
+         'unsigned long long int *',
          '::GIMLI::Index *', '::GIMLI::SIndex *', 'bool *'],
         call_policies.return_pointee_value)
 
@@ -421,6 +481,8 @@ def generate(defined_symbols, extraIncludes):
                                               'long &',
                                               'long int &',
                                               'long long int &',
+                                              'unsigned int &',
+                                              'long unsigned int &',
                                               'unsigned long long int &',
                                               '::GIMLI::Index &',
                                               '::GIMLI::SIndex &',
@@ -516,7 +578,6 @@ def generate(defined_symbols, extraIncludes):
             logger.info("Updated " +  filename + "as it was missing or out of date")
 
 if __name__ == '__main__':
-
 
     defined_symbols = ''
 

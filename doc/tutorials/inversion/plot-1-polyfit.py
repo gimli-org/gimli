@@ -84,9 +84,11 @@ class FunctionModelling(pg.ModellingBase):
         self.regionManager().setParameterCount(nc)
 
     def response(self, par):
-        y = pg.RVector(self.x_.size(), par[0])
+        y = pg.RVector(len(self.x_), par[0])
+        
         for i in range(1, self.nc_):
             y += pg.pow(self.x_, i) * par[i]
+            
         return y
 
     def startModel(self):
@@ -107,7 +109,7 @@ We now start by setting up the modelling operator, and inversion and run it.
 nP = 3
 
 # two coefficients and x-vector (first data column)
-fop = FunctionModelling(nP, pg.asvector(x))
+fop = FunctionModelling(nP, x)
 
 # initialize inversion with data and forward operator and set options
 inv = pg.RInversion(y, fop)

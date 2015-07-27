@@ -537,7 +537,7 @@ public:
     Vec modelCellResolution(const RVector3 & pos){
         Index ipos = 0;
         double mindist = 9e99;
-        std::vector< RVector3 > cellCenters = forward_->mesh()->cellCenter();
+        R3Vector cellCenters = forward_->mesh()->cellCenter();
         
         for (Index i = 0 ; i < model_.size() ; i++){
             double dist = cellCenters[i].distance(pos);

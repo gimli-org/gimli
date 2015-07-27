@@ -671,7 +671,7 @@ void DataContainer::resize(uint size) {
 }
 
 void DataContainer::removeInvalid(){
-    std::vector< size_t > validIdx(find(get("valid") == 1));
+    IndexArray validIdx(find(get("valid") == 1));
 
     for (std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         dataMap_[it->first] = it->second(validIdx);
@@ -714,7 +714,7 @@ void DataContainer::removeSensorIdx(uint idx){
 void DataContainer::removeSensorIdx(const IndexArray & idx){
     for (std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if (isSensorIndex(it->first)){
-            for (IndexArray::const_iterator id = idx.begin(); id != idx.end(); id ++){
+            for (IndexArray::iterator id = idx.begin(); id != idx.end(); id ++){
                 this->markValid(find(it->second == *id), false);
             }
         }

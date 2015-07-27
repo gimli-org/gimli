@@ -8,6 +8,8 @@
 #include <mesh.h>
 #include <meshgenerators.h>
 
+using namespace GIMLI;
+
 class ShapeTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(ShapeTest);
     CPPUNIT_TEST(testNorm);
@@ -32,8 +34,8 @@ public:
     
     void testShapeFunctions(){
 
-        RVector e1(2); e1[0] = 1; e1[1] = -1; // 1-x
-        RVector e2(2); e2[0] = 0; e2[1] =  1; // x
+        GIMLI::RVector e1(2); e1[0] = 1; e1[1] = -1; // 1-x
+        GIMLI::RVector e2(2); e2[0] = 0; e2[1] =  1; // x
         
         GIMLI::RPolynomialFunction E2_1_R(e1);// 1-x
         GIMLI::RPolynomialFunction E2_2_R(e2);// x
@@ -93,13 +95,12 @@ public:
         CPPUNIT_ASSERT(tet1_->shape().isInside(tet1_->shape().center()));
     }
     void testTouch1(){
-        RVector sf;
+        GIMLI::RVector sf;
 //         __MS(*t1_)
 //         __MS(t1_->node(0))
 //         __MS(t1_->node(1))
 //         __MS(t1_->node(2))
         t1_->shape().isInside(GIMLI::RVector3(-0.1,  0.0), sf, false); 
-//         __MS(sf)
         CPPUNIT_ASSERT(sortIdx(sf)[0] == 1);
         
         t1_->shape().isInside(GIMLI::RVector3(0.5,  1.0), sf, false);
@@ -133,7 +134,7 @@ public:
     void testInterpolate(){
         GIMLI::Triangle tri(*n1_, *n2_, *n4_);
 
-        RVector u(5, 0.0);
+        GIMLI::RVector u(5, 0.0);
         u[0] = 1.0;
         CPPUNIT_ASSERT(::fabs(tri.shape().rst(tri.center())[0] - 1.0/3.0) < TOLERANCE);
         CPPUNIT_ASSERT(::fabs(tri.shape().rst(tri.center())[1] - 1.0/3.0) < TOLERANCE);
@@ -231,16 +232,16 @@ public:
     }
 
     void testGridGen(){
-        RVector x(2); x[0]=0; x[1]=1;
-        RVector y(2); y[0]=0; y[1]=1;
-        Mesh mesh(createMesh2D(x, y));
+        GIMLI::RVector x(2); x[0]=0; x[1]=1;
+        GIMLI::RVector y(2); y[0]=0; y[1]=1;
+        GIMLI::Mesh mesh(GIMLI::createMesh2D(x, y));
         for (size_t i = 0; i < mesh.cellCount(); i ++){
             CPPUNIT_ASSERT(det(inv(mesh.cell(i).shape().createJacobian())) > 1e-12);
         }
         
-        RVector x1(2); x1[0]=-1; x1[1]=1;
-        RVector y1(2); y1[0]=-2; y1[1]=-1;
-        Mesh mesh1(createMesh2D(x1, y1));
+        GIMLI::RVector x1(2); x1[0]=-1; x1[1]=1;
+        GIMLI::RVector y1(2); y1[0]=-2; y1[1]=-1;
+        GIMLI::Mesh mesh1(GIMLI::createMesh2D(x1, y1));
         for (size_t i = 0; i < mesh1.cellCount(); i ++){
             CPPUNIT_ASSERT(det(inv(mesh1.cell(i).shape().createJacobian())) > 1e-12);
         }
@@ -250,7 +251,7 @@ public:
     template < class cell > void checkCellBoundNorms_(cell & c){
         for (Index i = 0; i < c.boundaryCount(); i ++ ){
             
-            std::vector < Node * > nodes; nodes = c.boundaryNodes(i);
+            std::vector < GIMLI::Node * > nodes; nodes = c.boundaryNodes(i);
 //             std::cout << i << " " << c << " " << nodes.size() << std::endl;
             
             GIMLI::Boundary *b =0;

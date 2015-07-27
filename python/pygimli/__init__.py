@@ -143,6 +143,7 @@ _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
 _pygimli_.IVector.__str__ = RVector_str
+_pygimli_.IndexArray.__str__ = RVector_str
 _pygimli_.RVector3.__str__ = RVector3_str
 _pygimli_.R3Vector.__str__ = R3Vector_str
 
@@ -174,11 +175,54 @@ _pygimli_.CVector.__nonzero__ = nonzero_test
 _pygimli_.CVector.__bool__ = nonzero_test
 _pygimli_.IVector.__nonzero__ = nonzero_test
 _pygimli_.IVector.__bool__ = nonzero_test
+_pygimli_.IndexArray.__nonzero__ = nonzero_test
+_pygimli_.IndexArray.__bool__ = nonzero_test
 
-def __RVectorPower(self, m):
-    return pow(self, m)
-_pygimli_.RVector.__pow__ = __RVectorPower
+######################
+# special constructors
+######################
 
+# Overwrite constructor for IndexArray
+# This seams ugly but necessary until we can recognize numpy array in 
+# custom_rvalue 
+__origIndexArrayInit__ = _pygimli_.IndexArray.__init__
+def __newIndexArrayInit__(self, arr, val=None):
+    #print("Custom IndexArray", arr, val)
+    if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
+        __origIndexArrayInit__(self, [int(a) for a in arr])
+    else:
+        if val:
+            __origIndexArrayInit__(self, arr, val)
+        else:
+            __origIndexArrayInit__(self, arr)
+            
+_pygimli_.IndexArray.__init__ = __newIndexArrayInit__
+
+# Overwrite constructor for BVector
+# This seams ugly but necessary until we can recognize numpy array in 
+# custom_rvalue 
+__origBVectorInit__ = _pygimli_.BVector.__init__
+def __newBVectorInit__(self, arr, val=None):
+    if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
+        # this is hell slow .. better in custom_rvalue.cpp or in vector.h directly from pyobject
+        __origBVectorInit__(self, len(arr))
+        for i, a in enumerate(arr):
+            self.setVal(bool(a), i)
+    else:
+        if val:
+            __origBVectorInit__(self, arr, val)
+        else:
+            __origBVectorInit__(self, arr)
+            
+_pygimli_.BVector.__init__ = __newBVectorInit__
+
+
+
+
+
+######################
+# special overwrites
+######################
 
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = _pygimli_.RVector.__add__
@@ -227,32 +271,72 @@ except:
         return __oldRVectorTrueDiv__(a, b)
     _pygimli_.RVector.__div__ = __newRVectorTrueDiv__
 
+
+#########
+# override wrong default conversion from int to IndexArray(int) for setVal
+######
+#__origRVectorSetVal__ = _pygimli_.RVector.setVal
+#def __newRVectorSetVal__(self, *args, **kwargs):
+    #if len(args)==2:
+        #if isinstance(args[1], int):
+            #return __origRVectorSetVal__(self, args[0], i=args[1])
+    #return __origRVectorSetVal__(self, *args, **kwargs)
+#_pygimli_.RVector.setVal = __newRVectorSetVal__
+
+#__origBVectorSetVal__ = _pygimli_.BVector.setVal
+#def __newBVectorSetVal__(self, *args, **kwargs):
+    #if len(args)==2:
+        #if isinstance(args[1], int):
+            #return __origBVectorSetVal__(self, args[0], i=args[1])
+    #return __origBVectorSetVal__(self, *args, **kwargs)
+#_pygimli_.BVector.setVal = __newBVectorSetVal__
+
+#__origCVectorSetVal__ = _pygimli_.CVector.setVal
+#def __newCVectorSetVal__(self, *args, **kwargs):
+    #if len(args)==2:
+        #if isinstance(args[1], int):
+            #return __origCVectorSetVal__(self, args[0], i=args[1])
+    #return __origCVectorSetVal__(self, *args, **kwargs)
+#_pygimli_.CVector.setVal = __newCVectorSetVal__
+
+#__origIVectorSetVal__ = _pygimli_.IVector.setVal
+#def __newIVectorSetVal__(self, *args, **kwargs):
+    #if len(args)==2:
+        #if isinstance(args[1], int):
+            #return __origIVectorSetVal__(self, args[0], i=args[1])
+    #return __origIVectorSetVal__(self, *args, **kwargs)
+#_pygimli_.IVector.setVal = __newIVectorSetVal__
+
+#__origIndexArraySetVal__ = _pygimli_.IndexArray.setVal
+#def __newIndexArraySetVal__(self, *args, **kwargs):
+    #if len(args)==2:
+        #if isinstance(args[1], int):
+            #return __origIndexArraySetVal__(self, args[0], i=args[1])
+    #return __origIndexArraySetVal__(self, *args, **kwargs)
+#_pygimli_.IndexArray.setVal = __newIndexArraySetVal__
+
+
+
+
+
+
 ############################
 # Indexing [] operator for RVector, CVector,
 #                          RVector3, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
     """Hell slow"""
-    # print("__getVal")
 
-    if isinstance(idx, BVector) or isinstance(idx, IVector):
+    #print("getval", type(idx), idx)
+    #print(dir(idx))
+    if isinstance(idx, BVector) or isinstance(idx, IVector) or isinstance(idx, IndexArray):
+        #print("BVector, IVector, IndexArray", idx)
         return self(idx)
-    elif isinstance(idx, stdVectorSIndex) or isinstance(idx, stdVectorIndex):
+    elif isinstance(idx, stdVectorSIndex): # // or isinstance(idx, stdVectorIndex):
+        #print("stdVectorSIndex", idx)
         return self(idx)
-    elif isinstance(idx, list) or hasattr(idx, '__iter__'):
-        idxL = _pygimli_.IVector(len(idx))
-        for i, ix in enumerate(idx):
-            if hasattr(ix, 'dtype'):
-                if ix.dtype == bool:
-                    idxL[i] = int(i)
-                else:
-                    idxL[i] = int(ix)
-            else:
-                idxL[i] = int(ix)
-
-        return self(idxL)
-
     elif isinstance(idx, slice):
+        
         s = idx.start
         e = idx.stop
         if s is None:
@@ -261,33 +345,42 @@ def __getVal(self, idx):
             e = len(self)
                 
         if idx.step is None:
-            
-# print('#'*100, s, e)
             return self.getVal(int(s), int(e))
         else:
             #print(s,e,idx.step)
             step = idx.step
-            if step < 0:
+            if step < 0 and idx.start is None and idx.stop is None:
                 ids = range(e-1, s-1, idx.step)
             else:
                 ids = range(s, e, idx.step)
-                
-            #print(ids)
+            
             if len(ids):
                 return self(ids)
             else:
-                raise Exception("slice invalid")
-
+                return self(0)
+                #raise Exception("slice invalid")
+    
+    elif isinstance(idx, list) or hasattr(idx, '__iter__'):
+        if isinstance(idx[0], int):
+            return self(idx)
+        elif hasattr(idx[0], 'dtype'):
+            #print("numpy: ", idx[0].dtype.str, idx[0].dtype ,type(idx[0]))
+            if idx[0].dtype == 'bool':
+                return self([i for i, x in enumerate(idx) if x])
+                #return self[np.nonzero(idx)[0]]
+        #print("default")
+        return self([int(a) for a in idx])
+           
     elif idx == -1:
         idx = len(self) - 1
 
     return self.getVal(int(idx))
 
 def __setVal(self, idx, val):
-
+    #print("__setVal", self, idx, val)
     if isinstance(idx, slice):
         if idx.step is None:
-            self.setVal(float(val), int(idx.start), int(idx.stop))
+            self.setVal(val, int(idx.start), int(idx.stop))
             return
         else:
             print("not yet implemented")
@@ -295,7 +388,6 @@ def __setVal(self, idx, val):
         #print(idx, type(idx))
         self.rowR(int(idx[0])).setVal(val, int(idx[1]))
         return
-
     self.setVal(val, idx)
 
 def __getValMatrix(self, idx):
@@ -343,6 +435,9 @@ _pygimli_.BVector.__getitem__ = __getVal  # very slow -- inline is better
 _pygimli_.IVector.__setitem__ = __setVal
 _pygimli_.IVector.__getitem__ = __getVal  # very slow -- inline is better
 
+_pygimli_.IndexArray.__setitem__ = __setVal
+_pygimli_.IndexArray.__getitem__ = __getVal  # very slow -- inline is better
+
 _pygimli_.RVector3.__setitem__ = __setVal
 
 _pygimli_.RMatrix.__getitem__ = __getValMatrix  # very slow -- inline is better
@@ -363,6 +458,7 @@ _pygimli_.R3Vector.__len__ = PGVector_len
 _pygimli_.BVector.__len__ = PGVector_len
 _pygimli_.CVector.__len__ = PGVector_len
 _pygimli_.IVector.__len__ = PGVector_len
+_pygimli_.IndexArray.__len__ = PGVector_len
 
 def RMatrix_len(self):
     return self.rows()
@@ -378,7 +474,7 @@ class VectorIter:
     def __init__(self, vec):
         self.it = vec.beginPyIter()
         self.vec = vec
-
+                
     def __iter__(self):
         return self
 
@@ -401,6 +497,7 @@ _pygimli_.RVector.__iter__ = __VectorIterCall__
 _pygimli_.R3Vector.__iter__ = __VectorIterCall__
 _pygimli_.BVector.__iter__ = __VectorIterCall__
 _pygimli_.IVector.__iter__ = __VectorIterCall__
+_pygimli_.IndexArray.__iter__ = __VectorIterCall__
 _pygimli_.CVector.__iter__ = __VectorIterCall__
 
 class DefaultContainerIter:
@@ -454,7 +551,6 @@ def __RVector3ArrayCall__(self, idx=None):
 
 # default converter from RVector to numpy array
 
-
 def __RVectorArrayCall__(self, idx=None):
     if idx:
         print(self)
@@ -468,7 +564,23 @@ def __RVectorArrayCall__(self, idx=None):
     #return np.array(self.array())
     return self.array()
 
+#def __BVectorArrayCall__(self, idx=None):
+    #if idx:
+        #print(self)
+        #print(idx)
+        #raise Exception("we need to fix this")
+    #import numpy as np
+    #print('hack', self)
+    ## hack until handmade_wrappers.py fixed
+    #return np.asarray(list(self), dtype='bool')
+
+# default converter from RVector to numpy array
+
 _pygimli_.RVector.__array__ = __RVectorArrayCall__
+#not yet ready handmade_wrappers.py
+_pygimli_.BVector.__array__ = __RVectorArrayCall__
+#not yet ready handmade_wrappers.py
+#_pygimli_.IndexArray.__array__ = __RVectorArrayCall__
 _pygimli_.R3Vector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 
@@ -484,6 +596,33 @@ _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
 #_pygimli_.RVector3.__array__ = _pygimli_.RVector3.array
 #del _pygimli_.RVector.__array__
+
+
+##################################
+# custom rvalues for special cases
+##################################
+
+def find(v):
+    if hasattr(v, 'dtype') and hasattr(v, '__iter__'):
+        #print('new find', v, _pygimli_.BVector(v))
+        return _pygimli_.find(_pygimli_.BVector(v))
+    else:
+        #print('orig find')
+        return _pygimli_.find(v)
+
+def pow(v, p):
+    """
+        pow(v, int) is misinterpreted as pow(v, rvec(int)) so we need to fix this
+    """
+    if isinstance(p, int):
+        return _pygimli_.pow(v, float(p))
+    return _pygimli_.pow(v, p)
+    
+
+def __RVectorPower(self, m):
+    return pow(self, m)
+_pygimli_.RVector.__pow__ = __RVectorPower
+
 
 ############################
 # non automatic exposed functions
@@ -532,6 +671,8 @@ _pygimli_.stdVectorSIndex.__eq__ = __EQ_stdVectorSIndex__
 # usefull stuff
 ############################
 def toIVector(v):
+    print("do not use toIVector(v) use ndarray directly .. "
+        "this method will be removed soon")
     ret = _pygimli_.IVector(len(v), 0)
     for i, r in enumerate(v):
         ret[i] = int(r)
@@ -540,28 +681,10 @@ def toIVector(v):
 
 # DEPRECATED for backward compatibility should be removed
 def asvector(array):
+    print("do not use asvector(ndarray) use ndarray directly .. "
+        "this method will be removed soon")
     return _pygimli_.RVector(array)
 
-
-############################
-# ???
-############################
-# def RVector_ArrayInit(self):
-    ##self.ndim = [1, self.size()]
-    #self.ndim = 1
-#_pygimli_.RVector.isArray = RVector_ArrayInit
-
-
-#
-# Construct RVector from numpy array , opposite to asarray(RVector)
-#
-# def asvector(arr):
-    #r = _pygimli_.RVector(len(arr))
-
-    # for i, v in enumerate(arr):
-    #r[i] = v
-
-    # return r
 
 # PEP conform version str with SVN revision number
 def __svnversion__(path=__path__[0]):

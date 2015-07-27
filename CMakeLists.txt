@@ -22,8 +22,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+#     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -rdynamic")
  
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+#     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") 
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
@@ -266,8 +268,6 @@ message(STATUS "CHOLMOD_LIBRARIES: ${CHOLMOD_LIBRARIES}")
 message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
 message(STATUS "PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
 message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
-message(STATUS "GCCXML_EXECUTABLE: ${GCCXML_EXECUTABLE}" )
-message(STATUS "CASTXML_EXECUTABLE: ${CASTXML_EXECUTABLE}" )
 message(STATUS "XML Caster: ${CASTER_EXECUTABLE}")
 message(STATUS "PYGCCXML: ${PYGCCXML_PATH}" )
 message(STATUS "PYPLUSPLUS: ${PYPLUSPLUS_PATH}" )

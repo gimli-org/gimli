@@ -6,7 +6,9 @@ import sys
 import matplotlib.image as mpimg
 from math import floor
 import numpy as np
-import urllib2
+# there is no urllib2 in py3
+# import urllib2
+import urllib
 import os
 
 try:

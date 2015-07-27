@@ -28,10 +28,10 @@
 namespace GIMLI{
 
 void interpolate(const Mesh & mesh, const RMatrix & vData,
-                 const std::vector< RVector3 > & ipos, RMatrix & iData,
+                 const R3Vector & ipos, RMatrix & iData,
                  bool verbose){
 
-    std::vector< RVector3 > pos(ipos);
+    R3Vector pos(ipos);
     
     if (mesh.dim() == 2){
         if ((zVari(pos) || max(abs(z(pos))) > 0.) && 
@@ -124,7 +124,7 @@ void interpolate(const Mesh & mesh, const RVector & data,
 }
 
 RVector interpolate(const Mesh & mesh, const RVector & data,
-                    const std::vector< RVector3 > & pos, bool verbose){
+                    const R3Vector & pos, bool verbose){
     
     RMatrix vData; vData.push_back(data);
     RMatrix viData;
@@ -141,7 +141,7 @@ void interpolate(const Mesh & mesh, const std::string & dataName, Mesh & pos,
 }
 
 void interpolate(const Mesh & mesh, const RVector & data,
-                 const std::vector< RVector3 > & pos,
+                 const R3Vector & pos,
                  RVector & iData, bool verbose){
     RMatrix vData; vData.push_back(data);
     RMatrix viData;

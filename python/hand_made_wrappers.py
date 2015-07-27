@@ -66,6 +66,70 @@ WRAPPER_REGISTRATION_RVector = [
        "PyGIMLI Helper Function: extract a numpy array object from a RVector ");""",
 ]
 
+WRAPPER_DEFINITION_BVector =\
+    """
+#include <numpy/arrayobject.h>
+
+boost::python::tuple BVector_getData(GIMLI::BVector & vec){
+    std::cout << "HEREAM_I boost::python::tuple BVector_getData(Gimli::RVector & vec )" << std::endl;
+    if (!vec.size()) return boost::python::make_tuple( "none", 0 );
+    return boost::python::make_tuple( "none", 0 );
+}
+
+PyObject * BVector_getArray(GIMLI::BVector & vec){
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    npy_intp length = (ssize_t)vec.size();
+
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
+    // check if array is contiguous here
+    char * cout = (char *)PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret));
+ 
+    for (ssize_t i=0; i<length; i++)  {
+        cout[i] = vec[i];
+    }
+  
+    // ** possible fixed due to memcpy here                
+    // PyArray_XINCREF(ret);
+    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
+    //Py_DECREF(ret);
+    // return scalar if length = 0;
+    // return PyArray_Return(reinterpret_cast<PyArrayObject*>(ret));
+    return ret;
+}
+
+"""
+WRAPPER_REGISTRATION_BVector = [
+    """def("array", &BVector_getArray,
+       "PyGIMLI Helper Function: extract a numpy array object from a BVector ");""",
+]
+
+WRAPPER_DEFINITION_IndexArray =\
+    """
+#include <numpy/arrayobject.h>
+
+PyObject * IndexArray_getArray(GIMLI::IndexArray & vec){
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    npy_intp length = (ssize_t)vec.size();
+
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_LONG);
+    // check if array is contiguous here
+__M    
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+                (void *)(&vec[0]), length * sizeof(NPY_LONG));
+                
+    // ** possible fixed due to memcpy here                
+    //PyArray_XINCREF(ret);
+    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
+    //Py_DECREF(ret);
+    return ret;
+}
+
+"""
+WRAPPER_REGISTRATION_IndexArray = [
+    """def("array", &IndexArray_getArray,
+       "PyGIMLI Helper Function: extract a numpy array object from a IndexArray ");""",
+]
+
 WRAPPER_DEFINITION_R3Vector =\
     """
 #include <numpy/arrayobject.h>
@@ -149,6 +213,18 @@ def apply(mb):
     rt = mb.class_('Vector<double>')
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
+    
+    rt = mb.class_('Vector<bool>')
+    rt.add_declaration_code(WRAPPER_DEFINITION_BVector)
+    apply_reg(rt, WRAPPER_REGISTRATION_BVector)
+    
+    #rt = mb.class_('IndexArray')
+    #rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
+    #apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+    
+    #rt = mb.class_('Vector<GIMLI::Index>')
+    #rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
+    #apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
     
     rt = mb.class_('Vector< GIMLI::Pos< double > >')
     rt.add_declaration_code(WRAPPER_DEFINITION_R3Vector)

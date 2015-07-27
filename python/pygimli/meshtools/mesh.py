@@ -4,7 +4,8 @@ import os
 import pygimli as pg
 import numpy as np
 
-from . import polytools as plc
+if __name__ != "__main__":
+    from . import polytools as plc
 
 def createMesh(poly, quality=30, area=0.0,
                smooth=None, switches=None,
@@ -509,7 +510,6 @@ def merge2Meshes(m1, m2):
 
     for key in list(mesh.exportDataMap().keys()):
         d = mesh.exportDataMap()[key]
-        print(d)
         d.resize(mesh.cellCount())
         d.setVal(m1.exportDataMap()[key], 0, m1.cellCount())
         d.setVal(
@@ -778,14 +778,13 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 if __name__ == "__main__":
     #import pygimli as pg
     #import matplotlib.pyplot as plt
-
+    
     #from pygimli.meshtools import createParaMesh2DGrid
     #from pygimli.mplviewer import drawMesh
     #x = pg.RVector(range(10))
     #mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
                                 #paraDZ=1, paraDepth=5)
-    ##fig, ax = plt.subplots()
-    #pg.show(mesh)
-    ##drawMesh(ax, mesh)
+    #fig, ax = plt.subplots()
+    #drawMesh(ax, mesh)
     #plt.show()
     pass

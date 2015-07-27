@@ -113,13 +113,14 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     return poly
 
-def createWorld(start, end, marker=1, area=0, layers=None):
+def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     """
     Create simple rectangular world.
 
     Create simple rectangular world with appropriate boundary conditions.
     Surface boundary is set do pg.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and
-    inner surface is set to pg.MARKER_BOUND_MIXED, i.e., -2
+    inner subsurface is set to pg.MARKER_BOUND_MIXED, i.e., -2 or 
+    Left=1, Right=2, Bottom=3 and Top=4 if worldMarker is set to false.
 
     Parameters
     ----------
@@ -133,7 +134,9 @@ def createWorld(start, end, marker=1, area=0, layers=None):
         Maximum cell size for the resulting triangle cells after mesh generation
     layers : [float]
         Add some layers to the world.
-
+    worldMarker : [bool]
+        Specify kind of preset boundary marker [-1, -2] or [1 2 3 4]
+    
     Returns
     -------
     poly : gimliapi:`GIMLI::Mesh`
@@ -170,6 +173,13 @@ def createWorld(start, end, marker=1, area=0, layers=None):
 
     polyCreateDefaultEdges_(poly,
                             boundaryMarker=[1]*(len(z)-1) + [3] + [2]*(len(z)-1) + [4])
+
+    if worldMarker:
+        for b in poly.boundaries():
+            if b.marker() == 4:
+                b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+            else:
+                b.setMarker(pg.MARKER_BOUND_MIXED)
 
     if layers is not None:
         for i in range(len(layers)):

@@ -59,9 +59,6 @@
 
 namespace GIMLI{
 
-typedef std::vector < Index > IndexArray;
-typedef std::vector < SIndex > SIndexArray;
-
 template < class ValueType, class A > class __VectorExpr;
 
 IndexArray find(const BVector & v);
@@ -113,7 +110,13 @@ public:
         
         //Dump(val_, sizeof(ValueType));
     }
-
+ 
+//     operator VectorIterator<ValueType const>() const{
+//         __M
+//         // Dunno how to implement this .. needet for const_iterator
+//         //return (*this);
+//     }
+ 
     VectorIterator < ValueType > & operator = (const VectorIterator < ValueType > & iter){
         if (this != & iter){
 //             __M
@@ -132,11 +135,30 @@ public:
     inline ValueType & operator [] (const Index i) { //__MS(this) __MS(val_) __MS(*val_) Dump(val_, sizeof(ValueType)); 
         return val_[i]; }
 
-    inline VectorIterator< ValueType > & operator ++ () { ++val_; return *this; }
-    inline VectorIterator< ValueType > & operator -- () { --val_; return *this; }
+    inline VectorIterator< ValueType > & operator ++ () { // prefix ++A
+        ++val_; return *this; 
+    }
+    inline VectorIterator< ValueType > & operator -- () { // prefix ++A
+        --val_; return *this; 
+    }
+    
+    inline VectorIterator< ValueType > operator ++ (int) { // postfix A++
+         VectorIterator< ValueType > old(*this); // make a copy for result
+//          TO_IMPL
+         ++(*this);            // Now use the prefix version to do the work
+         return old;        // return the copy (the old) value.
+    }
+    
+    inline VectorIterator< ValueType > operator -- (int) { // postfix A++
+         VectorIterator< ValueType > old(*this); // make a copy for result
+//          TO_IMPL
+         --(*this);                // Now use the prefix version to do the work
+         return old;           // return the copy (the old) value.
+    }
+    
 	
-    inline bool operator == (const VectorIterator< ValueType > & a){ return val_ == a.val_; }
-    inline bool operator != (const VectorIterator< ValueType > & a){ return val_ != a.val_; }
+    inline bool operator == (const VectorIterator< ValueType > & a) const { return val_ == a.val_; }
+    inline bool operator != (const VectorIterator< ValueType > & a) const { return val_ != a.val_; }
  
     inline Index size() const { return maxSize_; }
 
@@ -174,22 +196,28 @@ One dimensional array aka Vector of limited size. Size limit depends on platform
 template< class ValueType > class DLLEXPORT Vector {
 public:
     typedef ValueType ValType;
+//    typedef VectorIterator< ValueType const > const_iterator;
+    typedef VectorIterator< ValueType > iterator;
+    
     /*!
      * Construct one-dimensional array of size n. The vector is cleaned (filled with zero)
      */
+// #ifndef PYGIMLI_CAST    
+// this constructor is dangerous for IndexArray in pygimli .. 
+// there is an autocast from int -> IndexArray(int) 
     Vector(Index n=0) 
-        : size_(0), data_(0){
+        : size_(0), data_(0), capacity_(0){
     // explicit Vector(Index n = 0) : data_(NULL), begin_(NULL), end_(NULL) {
-        allocate_(n);
+        resize(n);
         clean();
     }
-
+// #endif
     /*!
      * Construct one-dimensional array of size n, and fill it with val
      */
     Vector(Index n, const ValueType & val)
-        : size_(0), data_(0){
-        allocate_(n);
+        : size_(0), data_(0), capacity_(0){
+        resize(n);
         fill(val);
     }
 
@@ -197,7 +225,7 @@ public:
      * Construct vector from file. Shortcut for Vector::load
      */
     Vector(const std::string & filename, IOFormat format=Ascii)
-        : size_(0), data_(0){
+        : size_(0), data_(0), capacity_(0){
         this->load(filename, format);
     }
 
@@ -205,8 +233,8 @@ public:
      * Copy constructor. Create new vector as a deep copy of v.
      */
     Vector(const Vector< ValueType > & v) 
-        : size_(0), data_(0){
-        allocate_(v.size());
+        : size_(0), data_(0), capacity_(0){
+        resize(v.size());
         copy_(v);
     }
 
@@ -214,8 +242,8 @@ public:
      * Copy constructor. Create new vector as a deep copy of the slice v[start, end)
      */
     Vector(const Vector< ValueType > & v, Index start, Index end)
-        : size_(0), data_(0){
-        allocate_(end - start);
+        : size_(0), data_(0), capacity_(0){
+        resize(end - start);
         std::copy(&v[start], &v[end], data_);
     }
 
@@ -223,20 +251,28 @@ public:
      * Copy constructor. Create new vector from expression
      */
     template < class A > Vector(const __VectorExpr< ValueType, A > & v) 
-        : size_(0), data_(0){
-        allocate_(v.size());
+        : size_(0), data_(0), capacity_(0){
+        resize(v.size());
         assign_(v);
     }
 
     /*!
      * Copy constructor. Create new vector as a deep copy of std::vector(Valuetype)
      */
-    template < class ValueType2 > Vector(const std::vector< ValueType2 > & v)
-        : size_(0), data_(0){
-        allocate_(v.size());
+    Vector(const std::vector< ValueType > & v)
+        : size_(0), data_(0), capacity_(0){
+        resize(v.size());
+        for (Index i = 0; i < v.size(); i ++) data_[i] = v[i];
+        //std::copy(&v[0], &v[v.size()], data_);
+    }
+#ifndef PYGIMLI_CAST    
+    template < class ValueType2 > Vector(const Vector< ValueType2 > & v)
+        : size_(0), data_(0), capacity_(0){
+        resize(v.size());
         for (Index i = 0; i < v.size(); i ++) data_[i] = ValueType(v[i]);
         //std::copy(&v[0], &v[v.size()], data_);
     }
+#endif
 
     /*! Default destructor. */
     ~Vector() { free_(); }
@@ -279,31 +315,34 @@ public:
       */
     inline Vector < ValueType > operator () (Index start, SIndex end) const { return getVal(start, end);}
     
-    inline Vector < ValueType > operator () (const std::pair< Index, SIndex > & p) const {
-        return getVal(p.first, p.second);
+    inline Vector < ValueType > operator () (const std::pair< Index, SIndex > & pair) const {
+        return getVal(pair.first, pair.second);
     }
         
-    Vector < ValueType > operator () (const std::vector < int > & idx) const {
-        return get_(idx);
-    }
+//     inline Vector < ValueType > operator () (const std::vector < int > & idx) const {
+//         return get_(idx);
+//     }
     /*!
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound
      */
-    Vector < ValueType > operator () (const IndexArray & idx) const {
-        return get_(idx);
+    inline Vector < ValueType > operator () (const IndexArray & iArray) const {
+        return get_(iArray);
     }
     /*!
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound 
      */
-    Vector < ValueType > operator () (const SIndexArray & idx) const {
-        return get_(idx);
+    inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
+        return get_(siArray);
     }
-    Vector < ValueType > operator () (const IVector & idx) const {
-        return get_(idx);
+    inline Vector < ValueType > operator () (const IVector & iVec) const {
+        return get_(iVec);
     }
     template < class IndexContainer > Vector < ValueType > get_(const IndexContainer & idx) const {
+//         __MS(&idx)
+//         __MS(idx.size())
+//         //__MS(idx)
         Vector < ValueType > v(idx.size());
         Index id;
         for (Index i = 0; i < idx.size(); i ++){
@@ -319,13 +358,14 @@ public:
     }
     
     /*! */
-    Vector < ValueType > operator () (const BVector & b) const {
-        return (*this)(GIMLI::find(b));
+    Vector < ValueType > operator () (const BVector & bv) const {
+        return (*this)(GIMLI::find(bv));
     }
-        
+       
+#ifndef PYGIMLI_CAST
     /*!
-    Implicite type converter
-     */
+        Implicit converter for Vector< T > = Vector< ValueType > 
+    */
 //     template < class T > operator Vector< T >() const {
 //         //COUTMARKER
 //         Vector< T > f(this->size());
@@ -333,12 +373,22 @@ public:
 //         return f;
 //     }
 
-    template < class T > operator const Vector< T >(){
-        //COUTMARKER
-        Vector< T > f(this->size());
+    /*! 
+     *  Implicit converter for std::vector < T > = Vector< ValueType > 
+     */
+    template < class T > operator std::vector< T >() {
+        std::vector< T > f(this->size());
         for (Index i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
         return f;
     }
+#endif
+    
+//         template < class T > operator const Vector< T >(){
+//         //COUTMARKER
+//         Vector< T > f(this->size());
+//         for (Index i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
+//         return f;
+//     }
     
 //     template < > operator Vector< double >(){
 //         COUTMARKER
@@ -364,7 +414,7 @@ public:
         return *this;
     }
     
-    /*! Set a value at index i. Throws out of range exception if index check fails. */
+    /*! Set the value val at index i. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const ValueType & val, Index i) {
         if (i >= 0 && i < this->size()) {
             data_[i] = val;
@@ -377,7 +427,8 @@ public:
     
     /*! Set a value at slice index [start, end). Throws out of range exception if index check fails.
         end will set to this->size() if larger or -1. */
-    inline Vector< ValueType > & setVal(const ValueType & val, Index start, SIndex end) {
+    inline Vector< ValueType > & setVal(const ValueType & val,
+                                        Index start, SIndex end) {
         Index e = (Index)end;
         if (end == -1) e = this->size();
         else if (e > this->size()) e = this->size();
@@ -392,27 +443,28 @@ public:
         return *this;
     }
 
-    inline Vector< ValueType > & setVal(const ValueType & v, 
-                                        const std::pair< Index, SIndex > & p) {
-        return setVal(v, p.first, p.second);
+    /*!Set value val from pair.start to pair.end*/
+    inline Vector< ValueType > & setVal(const ValueType & val, 
+                                        const std::pair< Index, SIndex > & pair) {
+        return setVal(val, pair.first, pair.second);
     }
     
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const ValueType & val,
-                                        const std::vector < Index > & idx) {
-        for (Index i = 0; i < idx.size(); i ++) setVal(val, idx[i]);
+                                        const IndexArray & iArray) {
+        for (Index i = 0; i < iArray.size(); i ++) setVal(val, iArray[i]);
         return *this;
     }
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
-                                        const std::vector < Index > & idx) {
-        if (idx.size() != vals.size()){
+                                        const IndexArray & iArray) {
+        if (iArray.size() != vals.size()){
             throwLengthError(1, WHERE_AM_I + " idx.size() != vals.size() " +
-                                toStr(idx.size()) + " " + toStr(vals.size()));
+                                toStr(iArray.size()) + " " + toStr(vals.size()));
         }
-        for (Index i = 0; i < idx.size(); i ++){
-           data_[idx[i]] = vals[i];
+        for (Index i = 0; i < iArray.size(); i ++){
+           data_[iArray[i]] = vals[i];
 //            setVal(vals[i], idx[i]);
         }
         return *this;
@@ -444,11 +496,16 @@ public:
         return *this;
     }
 
-    inline Vector< ValueType > & setVal(const Vector < ValueType > & v,
-                                        const std::pair< Index, SIndex > & p) {
-        return setVal(v, p.first, p.second);
+    /*! Set all vals from pair.start to pair.end */
+    inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
+                                        const std::pair< Index, SIndex > & pair) {
+        return setVal(vals, pair.first, pair.second);
     }
 
+    inline Vector< ValueType > & push_back(const ValueType & v) {
+        resize(size_ + 1);
+        return setVal(v, size_ -1);
+    }
     
     /*! Like setVal(vals, start, end) instead copy use += */
     inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
@@ -470,9 +527,9 @@ public:
         return *this;
     }
 
-    inline Vector< ValueType > & addVal(const Vector < ValueType > & v,
-                                        const std::pair< Index, SIndex > & p) {
-        return addVal(v, p.first, p.second);
+    inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
+                                        const std::pair< Index, SIndex > & pair) {
+        return addVal(vals, pair.first, pair.second);
     }
     
     /*! Add values from vals id index idx.
@@ -515,8 +572,8 @@ public:
         return v;
     }
 
-    Vector < ValueType > getVal(const std::pair< Index, SIndex > & p) const {
-        return getVal(p.first, p.second);
+    Vector < ValueType > getVal(const std::pair< Index, SIndex > & pair) const {
+        return getVal(pair.first, pair.second);
     }
     
 #ifdef PYGIMLI
@@ -594,16 +651,36 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     inline Vector < ValueType > operator - () const { return *this * -1.0; }
 
     /*! Resize if n differs size() and fill new with val. Old data are preserved. */
-    void resize(Index n, ValueType val=0){
-        if (n != size_) {
-            Vector < ValueType > tmp(*this);
-            free_();
-            allocate_(n);
-            fill(val);
-            std::copy(&tmp[0], &tmp[min(tmp.size(), n)], data_);
+    void resize(Index n, ValueType fill=0){
+        if (n != size_){
+            reserve(n);
+            for (Index i = size_; i < n; i ++) data_[i]=fill;
+            size_ = n;
+            
         }
     }
-
+    
+    /*! Reserve memory. Old data are preserved*/
+    void reserve(Index n){
+        Index newCapacity = n;
+        if (capacity_ != 0){
+            int exp;
+            frexp(n, &exp);
+            newCapacity = pow(2, exp);
+        }           
+//         __MS(n << " " << capacity_ << " " << newCapacity)
+        
+        if (newCapacity != capacity_) {
+            ValueType * buffer = new ValueType[newCapacity];
+            
+            std::memcpy(buffer, data_, sizeof(ValueType) * min(capacity_, newCapacity));
+            if (data_)  delete [] data_;
+            data_  = buffer;
+            capacity_ = newCapacity;
+            //std::copy(&tmp[0], &tmp[min(tmp.size(), n)], data_);
+        }
+     }
+    
     /*! Fill the whole vector from the pointer of val. 
      *  CAUTION!! There is no boundary check. 
      * Val must be properly ([val, val+this->size()))assigned.  */
@@ -652,6 +729,8 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     inline bool empty() const { return size() == 0; }
 
     inline Index size() const { return size_; }
+    
+    inline Index capacity() const { return capacity_; }
 
     inline Index nThreads() const { return nThreads_; }
 
@@ -778,21 +857,10 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 protected:
 
     void free_(){
-        //    std::cout << "free: " << begin_ << std::endl;
         size_ = 0;
-//         if (data_)  free(data_);
+        capacity_ = 0;
         if (data_)  delete [] data_;
         data_  = NULL;
-    }
-
-    void allocate_(Index n){
-        size_  = n;
-//         data_  = (ValueType*)malloc(size_ * sizeof(ValueType));
-        data_  = new ValueType[size_];
-
-        nThreads_ = std::min((int)ceil((float)size_ / (float)minSizePerThread), (int)maxThreads);
-        singleCalcCount_ = (Index)ceil((double)size_ / (double)nThreads_);
-        //std::cout << "alloc: " << begin_ << std::endl;
     }
 
     void copy_(const Vector< ValueType > & v){
@@ -817,7 +885,8 @@ protected:
 
     Index size_;
     ValueType * data_;
-
+    Index capacity_;
+    
     static const Index minSizePerThread = 10000;
     static const int maxThreads = 8;
     int nThreads_;
@@ -1113,7 +1182,14 @@ DEFINE_EXPR_OPERATOR__(/, DIVID)
 // inline bool operator < (const GIMLI::Vector<double>&a, const GIMLI::Vector<double> &b) {
 //     return false;
 // }
+#define __CheckRVectorEqualLength__(a, b) \
+    if (a.size() != b.size()){ \
+        __MS(a.size() << "!=" <<b.size()) \
+        throwLengthError(1, WHERE_AM_I); \
+    } \
 
+    
+    
 template < class ValueType >
 bool operator == (const Vector< ValueType > & v1, const Vector< ValueType > & v2){
     if (v1.size() != v2.size()) return false;
@@ -1357,16 +1433,24 @@ template < class T, class A, class T2 > Vector < T > pow(const __VectorExpr< T, 
     return pow(Vector< T >(a), power);
 }
 
-template < class T, class T2 > Vector < T > pow(const Vector < T > & v, T2 npower){
-    Vector < T > r(v.size());
-    for (Index i = 0; i < v.size(); i ++) r[i] = std::pow(v[i], T(npower));
-    return r;
-}
-
-template < class T, class T2 > Vector < T > pow(const Vector < T > & v, const Vector < T2 > & npower){
+template < class T > Vector < T > pow(const Vector < T > & v, const Vector < T > & npower){
+    __CheckRVectorEqualLength__(v, npower)
     Vector < T > r(v.size());
     for (Index i = 0; i < v.size(); i ++) r[i] = std::pow(v[i], T(npower[i]));
     return r;
+}
+
+template < class T > Vector < T > pow(const Vector < T > & v, double npower){
+    Vector < T > r(v.size());
+    for (Index i = 0; i < v.size(); i ++){
+        r[i] = std::pow(v[i], T(npower));
+    }
+    return r;
+}
+
+// no template < int|double > since castxml interprets it as pow(vec,vec(int))
+template < class T > Vector < T > pow(const Vector < T > & v, int npower){
+    return pow(v, (double)npower);
 }
 
 template < class T > Vector< T > sort(const Vector < T > & a){
@@ -1408,12 +1492,15 @@ void sort(const Vector < ValueType > & unsorted,
   
     indexMap.resize(unsorted.size());
   
-    for (Index i=0; i < unsorted.size(); i++){
-        indexMap[i] = i;
-    }
-  
+    for (Index i=0; i < unsorted.size(); i++) indexMap[i] = i;
+        
     // Sort the index map, using unsorted for comparison
-    sort(indexMap.begin(), indexMap.end(), indexCmp< ValueType >(unsorted));
+    
+    std::vector < Index > tmp(indexMap.size(), 0.0) ;
+    for (Index i = 0; i < indexMap.size(); i ++) tmp[i] = indexMap[i];
+    std::sort(tmp.begin(), tmp.end(), indexCmp< ValueType >(unsorted));
+    for (Index i = 0; i < indexMap.size(); i ++) indexMap[i] = tmp[i];
+    
     sorted = unsorted(indexMap);
 }
 

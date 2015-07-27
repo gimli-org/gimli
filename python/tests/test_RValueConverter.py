@@ -4,135 +4,198 @@ import pygimli as pg
 
 import numpy as np
 import sys
-import gc  # for reference counter
+#import gc  # for reference counter
 
+import unittest
 
-def testRVector():
-    a = pg.RVector(10)
+class TestRVectorMethods(unittest.TestCase):
 
+    def test_RVector(self):
+        a = pg.RVector(10)
+        self.assertEqual(a.size(), 10.0)
+        self.assertEqual(sum(a), 0.0)
 
-def testRValSeqRVector3():
-    x = [0.0, 1.0, 0.0]
-    p = pg.RVector3(x)
-    print((p, p.dist(x)))
-
-
-def testRValSequenz():
-    a = pg.RVector([1.0, 2.0, 3.0, 4.0])
-    print(a)
-
-
-def testRVecIter():
-    a = pg.RVector(10, 1.1)
-    print((sum(a)))
-
-
-def testFunct(a):
-    if a[0] != 1.1:
-        print(('#' * 40 + ' Fail: check __RVectorArrayCall__'))
-
-    print(("testFunct", a))
-
-
-def testNumpyFromRVec():
-    a = pg.RVector(10, 1.1)
-    print((type(a), sys.getrefcount(a), a))
-    a = np.asarray(a)
-    print((type(a), sys.getrefcount(a), a))
-    testFunct(a)
-    print((type(a), sys.getrefcount(a), a))
-
-    a = pg.RVector(10, 1.1)
-    a = np.array(a)
-    testFunct(a)
-
-    print((sys.getrefcount(a)))
-    print(a)
-    x = np.array(a)
-    print((type(x)))
-    print(x)
-    print((sys.getrefcount(x)))
-    print((sys.getrefcount(a)))
-
-
-def testNumpyFromRVec3():
-    a = pg.RVector3()
-    print((sys.getrefcount(a)))
-    print((a.array()))
-    x = np.array(a)
-    print((type(x)))
-    print(x)
-    print((sys.getrefcount(x)))
-    print((sys.getrefcount(a)))
-
-def testNumpyFromR3Vec():
-    mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2])
-    print(mesh)
-    print((mesh.nodeCenters()))
-    for i in mesh.nodeCenters():
-        print(i)
+    def test_ListToRVector3(self):
+        '''
+            custom_rvalue.cpp
+        '''
+        x = [0.0, 1.0, 0.0]
+        p = pg.RVector3(x)
+        self.assertEqual(p.dist(x), 00.0)
+        self.assertEqual(p.dist([1.0, 1.0]), 1.0)
         
-    x = np.asarray(mesh.nodeCenters())
-    print(x)
-    x = np.array(mesh.nodeCenters())
-    print(x)
-    x = np.array(mesh.cellCenter())
-    print(x)
-    print((mesh.cell(0).center()))
-    print((np.array(mesh.cell(0).center())))
-    
-    
-def testRValNumpyArray():
-    x = np.arange(0, 1., 0.2)
-    print((sys.getrefcount(x)))
+        p = pg.RVector3((0.0, 1.0, 0.0))
+        self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
-    a = pg.RVector(x)
-    print(a)
-    # should return 2 (self & counter) since the counter is not increased
-    # while conversion
-    print((sys.getrefcount(x)))
+    def test_ListToIndexArray(self):
+        '''
+            custom_rvalue.cpp
+        '''
+        idx = [0, 1, 1, 0]
+  
+        I = pg.IndexArray(idx)
+        self.assertEqual(pg.sum(I), sum(idx))
+          
+        bn = (np.array(idx) > 0) #numpy bool
+        idx = np.nonzero(bn)[0]  #numpy int64
+         
+        # numyp int64 -> IndexArray
+        I = pg.IndexArray(idx)
+               
+        self.assertEqual(I.size(), 2)
+        self.assertEqual(pg.sum(I), sum(idx))
 
-    x = np.arange(0, 1., 0.2, dtype=np.float64)
-    a = pg.RVector(x)
-    print(('pg.RVector(x):', a))
+    def test_ListToRVector(self):
+        '''
+            custom_rvalue.cpp
+        '''
+        l = [1.0, 2.0, 3.0, 4.0]
+        a = pg.RVector(l)
+        self.assertEqual(a.size(), len(l))
+        self.assertEqual(pg.sum(a), sum(l))
 
-    x = np.array(a)
-    a = pg.RVector(x)
-    print(('pg.RVector(array):', a))
+        l = (0.2, 0.3, 0.4, 0.5, 0.6)
+        x = pg.RVector(l)
+        self.assertEqual(x.size(), len(l))
 
-    a = pg.RVector([0.2, 0.3, 0.4, 0.5, 0.6])
-    print(('pg.RVector(list[float]):', a))
+    def test_ListToR3Vector(self):
+        '''
+            custom_rvalue.cpp
+        '''
+        x = [0.0, 1.0, 0.0]
+        p = pg.RVector3(x)
+        pl = [p, p, p]
+        t = pg.R3Vector(pl)
+        
+    def test_NumpyToRVector(self):
+        '''
+            custom_rvalue.cpp
+        '''
+        x = np.arange(0, 1., 0.2)
+        
+        a = pg.RVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        
+        x = np.arange(0, 1., 0.2, dtype=np.float64)
+        a = pg.RVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        
+    def test_NumpyToIndexArray(self):
+        '''
+            custom_rvalue.cpp
+        '''
+        x = np.arange(0, 1., 0.2)
+        
+        a = pg.RVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        
+        x = np.arange(0, 1., 0.2, dtype=np.float64)
+        a = pg.RVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
 
-    a = pg.RVector((0.2, 0.3, 0.4, 0.5, 0.6))
-    print(('pg.RVector(tuple(float,)):', a))
+    def test_RVectorToNumpy(self):
+        '''
+            implemented through hand_made_wrapper.py
+        '''
+        #check ob wirklich from array genommen wird!
+        v = pg.RVector(10, 1.1)
 
-    a = pg.RVector(np.arange(0, 1., 0.2))
-    print(a)
-    a = pg.RVector(np.arange(10.))
-    print(a)
-    print((pg.norm(np.arange(10.))))
+        a = np.asarray(v)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(len(a), 10)
+        
+        a = np.array(v)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(len(a), 10)
+                
+                
+    def test_BVectorToNumpy(self):
+        '''
+            implemented through hand_made_wrapper.py
+        '''
+        #check ob wirklich from array genommen wird!
+        # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
+        v = pg.RVector(10, 1.1)
+        b = (v == 1.1)
 
+        self.assertEqual(type(b), pg.BVector)
 
-def testSlices():
-    a = pg.RVector(np.arange(10.))
-    print((a[0:3:1], np.arange(10.)[0:3:1]))
-    print((np.arange(10.)[0:3:-1]))
-    try:
-        print((a[0:3:-1]))
-    except:
-        print("oki")
-        pass
-    print((a[3:0:-2]))
-    print((pg.norm(a[0:3:1])))
+        a = np.asarray(b)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(a.dtype, 'bool')
+        self.assertEqual(len(a), 10)
+        self.assertEqual(sum(a), 10)
+        
+        a = np.array(b)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(len(a), 10)
+        self.assertEqual(sum(a), 10)
+        
+    def test_IndexArrayToNumpy(self):
+        '''
+            implemented through hand_made_wrapper.py
+        '''
+        #check ob wirklich from array genommen wird!
+        # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
+        v = pg.IndexArray(10, 2)
+        self.assertEqual(type(v), pg.IndexArray)
 
+        a = np.asarray(v)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(a.dtype, 'int64')
+        self.assertEqual(len(a), 10)
+        self.assertEqual(sum(a), 20)
+        
+        a = np.array(v)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(len(a), 10)
+        self.assertEqual(sum(a), 20)
+        
+    def test_RVector3ToNumpy(self):
+        '''
+            implemented through hand_made_wrapper.py
+        '''
+        v = pg.RVector3()
+        
+        a = np.array(v)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(len(a), 3)
+        
+        
+    def test_R3VectorToNumpy(self):
+        '''
+            implemented through hand_made_wrapper.py
+        '''
+        mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2])
+            
+        v = np.asarray(mesh.nodeCenters())
 
+        self.assertEqual(type(v), np.ndarray)
+        self.assertEqual(len(v), mesh.nodeCount())
+        
+        a = np.array(mesh.cellCenter())
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(len(a), mesh.cellCount())
+        
 if __name__ == '__main__':
-    print("start tests")
-    # testRVector()
-    # testRValSeqRVector3()
-    # testRValSequenz()
-    # testNumpyFromRVec()
-    # testNumpyFromRVec3()
-    # testRValNumpyArray()
-    testNumpyFromR3Vec()
-    # testSlices()
+    #pg.setDebug(True)
+    unittest.main()
+    # do we need Implicit converter .. currently deactivated in vector.h
+    
+    #suite = unittest.TestSuite()
+    
+    ##suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
+    
+    ##suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
+    ##suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
+    ##suite.addTest(TestRVectorMethods("test_ListToIndexArray"))
+    ##suite.addTest(TestRVectorMethods("test_ListToRVector"))
+    ##suite.addTest(TestRVectorMethods("test_NumpyToRVector"))
+    
+    #runner = unittest.TextTestRunner()
+    #runner.run(suite)
+    

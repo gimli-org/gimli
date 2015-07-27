@@ -552,11 +552,13 @@ std::vector < Boundary * > Mesh::findBoundaryByMarker(int marker) const {
 }
 
 std::vector < Boundary * > Mesh::findBoundaryByMarker(int from, int to) const {
+//     __MS(from)
     std::vector < Boundary * > vBounds;
     vBounds.reserve(boundaryCount());
 
-    for(std::vector< Boundary * >::const_iterator it = boundaryVector_.begin();
-                                               it != boundaryVector_.end(); it++){
+    for (std::vector< Boundary * >::const_iterator it = boundaryVector_.begin();
+         it != boundaryVector_.end(); it++){
+        
         if ((*it)->marker() >= from && (*it)->marker() < to) vBounds.push_back((*it));
     }
 
@@ -564,7 +566,7 @@ std::vector < Boundary * > Mesh::findBoundaryByMarker(int from, int to) const {
 }
 
 void Mesh::setBoundaryMarker(const IndexArray & ids, int marker){
-    for(IndexArray::const_iterator it = ids.begin(); it != ids.end(); it++){
+    for (IndexArray::iterator it = ids.begin(); it != ids.end(); it++){
         if (*it < boundaryCount()){
             boundaryVector_[*it]->setMarker(marker);
         }
@@ -622,7 +624,7 @@ std::vector< Boundary * > Mesh::boundaries(const IndexArray & ids) const{
 }
     
 void Mesh::setCellMarker(const IndexArray & ids, int marker){
-    for(IndexArray::const_iterator it = ids.begin(); it != ids.end(); it++){
+    for(IndexArray::iterator it = ids.begin(); it != ids.end(); it++){
         if (*it < cellCount()){
             cellVector_[*it]->setMarker(marker);
         }
@@ -652,13 +654,13 @@ IndexArray Mesh::findNodesIdxByMarker(int marker) const {
 //     return idx;
 // }
 
-std::vector < RVector3 > Mesh::positions() const {
+R3Vector Mesh::positions() const {
     IndexArray idx(this->nodeCount());
     std::generate(idx.begin(), idx.end(), IncrementSequence< Index >(0));
     return this->positions(idx);
 }
 
-std::vector < RVector3 > Mesh::positions(const IndexArray & idx) const {
+R3Vector Mesh::positions(const IndexArray & idx) const {
     std::vector < RVector3 > pos; pos.reserve(idx.size());
     for (Index i = 0; i < idx.size(); i ++) {
         pos.push_back(node(idx[i]).pos());
@@ -667,21 +669,20 @@ std::vector < RVector3 > Mesh::positions(const IndexArray & idx) const {
 }
 
 R3Vector Mesh::nodeCenters() const {
+    R3Vector p(this->nodeCount());
+    for (Index i = 0; i < nodeVector_.size(); i ++ ) p[i] = nodeVector_[i]->pos();
+    return p;
+}
+
+R3Vector Mesh::cellCenters() const {
     R3Vector pos(this->cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), pos.begin(),
                    std::mem_fun(&Cell::center));
     return pos;
 }
 
-std::vector < RVector3 > Mesh::cellCenters() const {
-    std::vector < RVector3 > pos(this->cellCount());
-    std::transform(cellVector_.begin(), cellVector_.end(), pos.begin(),
-                   std::mem_fun(&Cell::center));
-    return pos;
-}
-
-std::vector < RVector3 > Mesh::boundaryCenters() const {
-    std::vector < RVector3 > pos(this->boundaryCount());
+R3Vector Mesh::boundaryCenters() const {
+    R3Vector pos(this->boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), pos.begin(),
                    std::mem_fun(&Boundary::center));
     return pos;
@@ -1872,7 +1873,7 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
 }
 
 void Mesh::fillKDTree_() const {
-MEMINFO
+
     if (!tree_) tree_ = new KDTreeWrapper();
 
     if (tree_->size() != nodeCount()){
@@ -1886,7 +1887,7 @@ MEMINFO
                                       + " tree-size() " + toStr(tree_->size()));
         }
     }
-MEMINFO
+
 }
 
 void Mesh::addRegionMarker(const RegionMarker & reg){

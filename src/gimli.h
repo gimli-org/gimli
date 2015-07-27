@@ -45,7 +45,7 @@
 #if BOOST_BIND_FOUND || defined(HAVE_BOOST_BIND_HPP)
 	#define USE_BOOST_BIND TRUE
 #endif
-
+                
 #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "gimli"
         #define PACKAGE_VERSION "0.9.0-win"
@@ -228,8 +228,13 @@ template < class ValueType > class Vector;
 typedef Vector < double > RVector;
 typedef Vector < Complex > CVector;
 typedef Vector < RVector3 > R3Vector;
-typedef Vector< bool > BVector;
-typedef Vector< SIndex > IVector;
+typedef Vector < bool > BVector;
+typedef Vector < SIndex > IVector;
+typedef Vector < Index > IndexArray;
+//typedef std::vector < Index > IndexArray;
+// typedef IVector IndexArray;
+typedef std::vector < SIndex > SIndexArray;
+
 
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;

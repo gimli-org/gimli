@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,10 +23,13 @@
 
 // http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00653.html
 // here we will define some std::exception instead if exit codes
+
 #include <stdexcept>
 
 namespace GIMLI {
     
+extern bool __GIMLI_DEBUG__;
+
 inline void throwToImplement(const std::string & errString){
   #ifndef USE_EXIDCODES
   throw std::length_error(errString);
@@ -57,7 +60,7 @@ inline void throwLengthError(int exitCode, const std::string & errString){
 
 inline void throwError(int exitCode, const std::string & errString){
 #ifndef USE_EXIDCODES
-    throw std::length_error(errString);
+    if (!__GIMLI_DEBUG__) throw std::length_error(errString);
 #else
     std::cout << errString << std::endl;
     exit(exitCode);
