@@ -50,9 +50,6 @@ def createMesh(poly, quality=30, area=0.0,
     mesh: :gimliapi:`GIMLI::Mesh`
     """
 
-    print("poly", poly)
-    print(*args)
-    print(**kwargs)
 #    poly == [pg.Mesh, ]
     if isinstance(poly, list):
         if isinstance(poly[0], pg.Mesh):
