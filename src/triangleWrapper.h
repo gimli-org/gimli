@@ -47,7 +47,7 @@ public:
     virtual ~TriangleWrapper();
 
     /*! Set the triangle commandline switches */
-    void setSwitches(const std::string & s){ switches_ = s; }
+    void setSwitches(const std::string & s);
     
     /*! Return the triangle switches. */
     inline const std::string & switches() const { return switches_; }

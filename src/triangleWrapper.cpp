@@ -119,6 +119,11 @@ void TriangleWrapper::init_(){
 #endif
 }
 
+
+void TriangleWrapper::setSwitches(const std::string & s){ 
+    switches_ = s; 
+}
+
 void TriangleWrapper::generate(Mesh & mesh){
 #if USE_LIBTRIANGLE
 
@@ -249,29 +254,30 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
                                                triangulateio & trimesh){
 #if USE_LIBTRIANGLE
     //! node section
-    int nVerts = mesh.nodeCount();
-
+    Index nVerts = mesh.nodeCount();
+    
     trimesh.numberofpoints = nVerts;
     trimesh.numberofpointattributes = 0;  // only one Parameter
 
     trimesh.pointlist = new double[2 * nVerts];
     trimesh.pointmarkerlist = new int[nVerts];
 
-    for (int i = 0; i < nVerts; i ++){
+    for (Index i = 0; i < nVerts; i ++){
+//         __MS(mesh.node(i).x() << " " << mesh.node(i).y())
         trimesh.pointlist[i * 2]      = mesh.node(i).x();
-        trimesh.pointlist[i * 2 + 1]   = mesh.node(i).y();
+        trimesh.pointlist[i * 2 + 1]  = mesh.node(i).y();
         trimesh.pointmarkerlist[i]    = mesh.node(i).marker();
     }
 
     //! edge section;
-    int nEdges      = mesh.boundaryCount();
-    int edgeCounter = 0;
+    Index nEdges      = mesh.boundaryCount();
+    Index edgeCounter = 0;
 
     trimesh.numberofsegments    = nEdges;
     trimesh.segmentlist         = new int[2 * nEdges];
     trimesh.segmentmarkerlist   = new int[nEdges];
 
-    for (int i = 0; i < nEdges; i ++){
+    for (Index i = 0; i < nEdges; i ++){
         Boundary * edge = &mesh.boundary(i);
         trimesh.segmentlist[edgeCounter * 2]      = edge->node(0).id();
         trimesh.segmentlist[edgeCounter * 2 + 1]  = edge->node(1).id();
@@ -280,21 +286,21 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
     }
 
     //! Holes;
-    uint nHoles = mesh.holeMarker().size();//domain.holeCount();
+    Index nHoles = mesh.holeMarker().size();//domain.holeCount();
     trimesh.numberofholes = nHoles;
     trimesh.holelist = new double[2 * nHoles + 1];
 
-    for (uint i = 0; i < nHoles; i ++){
+    for (Index i = 0; i < nHoles; i ++){
         trimesh.holelist[i * 2] = mesh.holeMarker()[i].x();
         trimesh.holelist[i * 2 + 1] = mesh.holeMarker()[i].y();
      }
 
     //! Regions;
-    int nRegions = mesh.regionMarker().size();//domain.regionCount();
+    Index nRegions = mesh.regionMarker().size();//domain.regionCount();
     trimesh.numberofregions = nRegions;
     trimesh.regionlist = new double[4 * nRegions + 1];
 
-    uint count = 0;
+    Index count = 0;
     for (Mesh::RegionMarkerList::const_iterator
         it = mesh.regionMarker().begin(); it != mesh.regionMarker().end(); it ++){
 
@@ -307,7 +313,6 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
         trimesh.regionlist[count * 4 + 3] = it->area();
         count ++;
     }
-
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;
 #endif

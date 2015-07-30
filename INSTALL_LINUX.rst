@@ -142,37 +142,57 @@ Example Installation on Ubuntu
     make pygimli
 
 
+Note for gcc version > 5.0
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+gccxml will not support gcc versions above 5.0 so we have to switch the xml caster to castxml to build pygimli. 
+This should be done via cmake automatically.
+As an additional prerequisite castxml needs > clang-3.6.0 and > llvm-3.6.0 installed. 
+castxml will be installed automatically.
+
+
 Usefull cmake settings
 ^^^^^^^^^^^^^^^^^^^^^^
-.. code-block:: bash 
-
-    CC=clang CXX=clang++ cmake ..
 
 Build everything with clang instead of gcc.
 
 .. code-block:: bash 
 
-    cmake -DPYVERSION=3.3 ..
-    
-Define alternativ python version. On default the version of your active python version will be choosen.
+    CC=clang CXX=clang++ cmake ../trunk
+
+
+Define alternative python version. 
+On default the version of your active python version will be chosen.
 You will need numpy and boost-python builds with your desired python version.
 
 .. code-block:: bash 
 
-    cmake -DCASTER='gccxml' ..
+    cmake ../trunk -DPYVERSION=3.3
+    
 
-Caster for the python bindings. Either gccxml (default for linux and gcc < 5) or castxml else.
+If you experience runtime problems on starting pygimli it may happen that CMake 
+estimates the wrong libboost_python version by choosing py2 version instead of py3.
+You can force cmake to select the correct version with: 
+
+.. code-block:: bash 
+
+    cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
+
+Chose a xml caster for the python bindings. 
+Either gccxml (default for linux and gcc < 5) or castxml else.
+
+.. code-block:: bash 
+
+    cmake ../trunk -DCASTER='gccxml'
 
 
 Usefull make commands
 ^^^^^^^^^^^^^^^^^^^^^
 
+Update and rebuild and all needed third party packages.
+
 .. code-block:: bash 
 
     make rebuild_thirdparty
-
-Update and rebuild and all needed third party packages.
-
-
 
 

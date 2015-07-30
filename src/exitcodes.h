@@ -41,7 +41,7 @@ inline void throwToImplement(const std::string & errString){
 inline void throwRangeError(int exitCode, const std::string & errString, int idx, int low, int high){
 #ifndef USE_EXIDCODES
     std::stringstream str(errString);
-    str << " " << idx << "(range: " << low << ".." << high << "] ";
+    str << " " << idx << " [" << low << ".." << high << ")" << std::endl;
     throw std::out_of_range(str.str());
 #else
   std::cerr << str.str() << std::endl;

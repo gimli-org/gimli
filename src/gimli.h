@@ -137,12 +137,20 @@ typedef int64_t int64;
 #define __MS(str) std::cout << "*** " <<str << " " << WHERE << std::endl;
 #define __DS(str) if (__GIMLI_DEBUG__) std::cout << "Debug: " << str << std::endl;
 
+#define ASSERT_EQUAL(m, n) if (m != n) \
+    throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));
+#define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
+    throwRangeError(1, WHERE_AM_I, i, start, end);
+
+    
+        
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
 static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;
 static const int MARKER_BOUND_DIRICHLET = -4;
 static const int MARKER_CELL_PARAMETER = 2;
 static const int MARKER_NODE_SENSOR = -99;
+static const int MARKER_FIXEDVALUE_REGION = -1000000;
 
 static const uint8 MESH_BASEENTITY_RTTI      = 00;
 static const uint8 MESH_MESHENTITY_RTTI      = 01;

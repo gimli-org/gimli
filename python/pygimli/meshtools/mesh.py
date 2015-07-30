@@ -10,7 +10,7 @@ if __name__ != "__main__":
 def createMesh(poly, quality=30, area=0.0,
                smooth=None, switches=None,
                regions=None, holes=None,
-               verbose=False):
+               verbose=False, *args, **kwargs):
     """
     Create a mesh for a given PLC mesh.
 
@@ -50,6 +50,9 @@ def createMesh(poly, quality=30, area=0.0,
     mesh: :gimliapi:`GIMLI::Mesh`
     """
 
+    print("poly", poly)
+    print(*args)
+    print(**kwargs)
 #    poly == [pg.Mesh, ]
     if isinstance(poly, list):
         if isinstance(poly[0], pg.Mesh):
@@ -549,9 +552,16 @@ def mergeMeshes(meshlist):
     return mesh
 
 
-def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
-                       paraBoundary=2, paraMaxCellSize=0, boundary=-1,
-                       verbose=False, *args, **kwargs):
+def createParaDomain2D(*args, **kwargs):
+    """
+        API change here .. use createParaMeshPLC instead
+    """
+    print("createParaDomain2D: API change here .. use createParaMeshPLC instead")
+    return createParaMeshPLC(*args, **kwargs)
+
+def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
+                      paraBoundary=2, paraMaxCellSize=0, boundary=-1,
+                      verbose=False, *args, **kwargs):
     """
     Create a PLC mesh for an inversion parameter mesh.
 
@@ -674,8 +684,20 @@ def createParaDomain2D(sensors, paraDX=1, paraDepth=0,
 #    sys.exit()
     return poly
 
+def createParaMesh(*args, **kwargs):
+    """
+    """
+    plc = createParaMeshPLC(*args, **kwargs)
+    kwargs.pop('paraMaxCellSize')
+    mesh = createMesh(plc, **kwargs)
+    return mesh
+
+
 def createParaMesh2dGrid(*args, **kwargs):
-    print("API change here .. use createParaMesh2DGrid instead")
+    """
+        API change here .. use createParaMesh2DGrid instead
+    """
+    print("createParaMesh2dGrid: API change here .. use createParaMesh2DGrid instead")
     return createParaMesh2DGrid(*args, **kwargs)
 
 def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,

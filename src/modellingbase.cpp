@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2005-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -139,8 +139,8 @@ void ModellingBase::setRefinedMesh(const Mesh & mesh){
     if (verbose_) {
         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
         IVector m(unique(sort(mesh_->cellMarker())));
-        std::cout << "secMesh marker = [ " << m[0] <<", " << m[1] << ", " << m[2]  
-         << ", ... ,  " << m[-1] << " ]" << std::endl;
+        std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]  
+         << ", ... ,  " << m[-1] << "]" << std::endl;
     }
     updateMeshDependency_();
 }
@@ -203,14 +203,14 @@ void ModellingBase::createJacobian(const RVector & model){
     double fak = 1.05;
     for (size_t i = 0; i < model.size(); i++) {
         RVector modelChange(model);
-        modelChange[ i ] *= fak;
+        modelChange[i] *= fak;
         RVector respChange(response(modelChange));
 
         for (size_t j = 0; j < resp.size(); j++){
-            if (::fabs(modelChange[ i ] - model[ i ]) > TOLERANCE){
-                (*J)[ j ][ i ] = (respChange[ j ] - resp[ j ]) / (modelChange[ i ] - model[ i ]);
+            if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
+                (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
             } else {
-                (*J)[ j ][ i ] = 0.0;
+                (*J)[j][i] = 0.0;
             }
         }
     }
@@ -244,19 +244,10 @@ void ModellingBase::clearConstraints(){
 }
     
 MatrixBase * ModellingBase::constraints() { 
-//     __M
-//     __MS(constraints_)
-//     __MS(constraints_->rtti())
-//     __MS(constraints_->cols())
-//     __MS(constraints_->rows())
     return constraints_;
 }
     
 MatrixBase * ModellingBase::constraints() const { 
-//     __M
-//     __MS(constraints_)
-//     __MS(constraints_->rtti())
-//__MS(constraints_->rows())
     return constraints_;
 }
     
@@ -294,8 +285,11 @@ void ModellingBase::mapModel(const RVector & model, double background){
             mesh_->cell(i).setAttribute(model[marker]);
 
         } else {
-            mesh_->cell(i).setAttribute(0.0);
-            emptyList.push_back(&mesh_->cell(i));
+            // general background without fixed values, fixed values will be set at the end
+            if (marker == -1) { 
+                mesh_->cell(i).setAttribute(0.0);
+                emptyList.push_back(&mesh_->cell(i));
+            }
         }
     }
 
@@ -307,6 +301,20 @@ void ModellingBase::mapModel(const RVector & model, double background){
 
     if (background != 0.0){
         mesh_->fillEmptyCells(emptyList, background);
+    }
+    
+    // setting fixed values
+    if (regionManagerInUse_){
+        for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
+            if (abs(mesh_->cell(i).attribute()) < TOLERANCE){
+                if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
+                    SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
+                    double val = regionManager_->region(regionMarker)->fixValue();
+                    __DS("fixing region: " << regionMarker << " to: " << val)
+                    mesh_->cell(i).setAttribute(val);
+                }
+            }
+        }
     }
 }
 

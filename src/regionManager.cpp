@@ -71,6 +71,7 @@ void Region::init_() {
     parameterCount_ = 0;
     zPower_         = 0.0;
     zWeight_        = 1.0;
+    fixValue_       = 0.0;
     lowerBound_     = 0.0;
     upperBound_     = 0.0;
     mcDefault_      = 1.0;
@@ -157,7 +158,15 @@ void Region::resize(const std::vector < Cell * > & cells){
 void Region::countParameter(Index start){
     startParameter_ = start;
     if (isBackground_) {
-        for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(-1);
+        for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
+            if (abs(fixValue_) > TOLERANCE) {
+                if (cells_[i]->marker() >= 0) {
+                    cells_[i]->setMarker(MARKER_FIXEDVALUE_REGION - marker());
+                }
+            } else {
+                cells_[i]->setMarker(-1);
+            }
+        }
         bounds_.clear();
         parameterCount_ = 0;
     } else if (isSingle_) {
@@ -607,7 +616,8 @@ void RegionManager::createParaDomain_(){
 void RegionManager::recountParaMarker_(){
     Index count = 0;
 
-    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(),
+        end = regionMap_.end();
           it != end; it ++){
         it->second->countParameter(count);
         count += it->second->parameterCount();
@@ -982,6 +992,7 @@ void RegionManager::loadMap(const std::string & fname){
     regionAttributeMap[lower("start")]    = &Region::setStartModelStr_;
     regionAttributeMap[lower("zPower")]   = &Region::setZPowerStr_;
     regionAttributeMap[lower("zWeight")]  = &Region::setZWeightStr_;
+    regionAttributeMap[lower("fix")]      = &Region::setFixValueStr_;
     regionAttributeMap[lower("Ctype")]    = &Region::setConstraintTypeStr_;
     regionAttributeMap[lower("Trans")]    = &Region::setModelTransStr_;
     regionAttributeMap[lower("lBound")]   = &Region::setLowerBoundStr_;

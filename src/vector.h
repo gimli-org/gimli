@@ -313,7 +313,9 @@ public:
       *  end == -1 or larger size() sets end = size.
       * Throws exception on violating boundaries. 
       */
-    inline Vector < ValueType > operator () (Index start, SIndex end) const { return getVal(start, end);}
+    inline Vector < ValueType > operator () (Index start, SIndex end) const { 
+        return getVal(start, end); 
+    }
     
     inline Vector < ValueType > operator () (const std::pair< Index, SIndex > & pair) const {
         return getVal(pair.first, pair.second);
@@ -397,49 +399,48 @@ public:
 //         return f;
 //     }
     
-    /*! Set a value. Same as fill(val) */
+    /*! Set the value to the whole array. Same as fill(val) */
     inline Vector< ValueType > & setVal(const ValueType & val) {
         this->fill(val);
         return *this;
     }
-    /*! Set a value at index i. Throws out of range exception if index check fails. */
+    
+    /*! Set the val where bv is true.
+     * Throws out of length exception if sizes dismatch. 
+     * Same as setVal(val, find(bv)) but faster. */
     inline Vector< ValueType > & setVal(const ValueType & val, const BVector & bv) {
-        if (bv.size() == this->size()) {
-            for (Index i = 0; i < bv.size(); i ++ ){
-                if (bv[i]) data_[i] = val;
-            }
-        } else {
-            throwRangeError(1, WHERE_AM_I, bv.size(), 0, this->size());
-        }
+        ASSERT_EQUAL(this->size(), bv.size())
+        for (Index i = 0; i < bv.size(); i ++ ) if (bv[i]) data_[i] = val;
+                    
+//         if (bv.size() == this->size()) {
+//             for (Index i = 0; i < bv.size(); i ++ ){
+//                 if (bv[i]) data_[i] = val;
+//             }
+//         } else {
+//             throwRangeError(1, WHERE_AM_I, bv.size(), 0, this->size());
+//         }
         return *this;
     }
     
-    /*! Set the value val at index i. Throws out of range exception if index check fails. */
+    /*! Set the value val at index i.
+     * Throws out of range exception if index is not in [0, size). */
     inline Vector< ValueType > & setVal(const ValueType & val, Index i) {
-        if (i >= 0 && i < this->size()) {
-            data_[i] = val;
-        } else {
-            throwRangeError(1, WHERE_AM_I, i, 0, this->size());
-        }
+        ASSERT_RANGE(i, 0, this->size())
+        data_[i] = val;
         return *this;
     }
 
     
-    /*! Set a value at slice index [start, end). Throws out of range exception if index check fails.
-        end will set to this->size() if larger or -1. */
+    /*! Set a value at slice range from [start, end).
+     * end will set to this->size() for < 0 or greater size().
+     * start will set to end for < 0 or greater end */
     inline Vector< ValueType > & setVal(const ValueType & val,
                                         Index start, SIndex end) {
         Index e = (Index)end;
-        if (end == -1) e = this->size();
-        else if (e > this->size()) e = this->size();
-
+        if (e > this->size()) e = this->size();
         if (start > e) start = e;
-
-        if (start >= 0 && start < this->size()) {
-            std::fill(data_+ start, data_ + e, val);
-        } else {
-            throwRangeError(1, WHERE_AM_I, start, 0, this->size());
-        }
+        
+        std::fill(data_+ start, data_ + e, val);
         return *this;
     }
 
@@ -456,16 +457,14 @@ public:
         return *this;
     }
 
-    /*! Set multiple values. Throws out of range exception if index check fails. */
+    /*! Set multiple values from vals at index position iArray.
+     * Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
                                         const IndexArray & iArray) {
-        if (iArray.size() != vals.size()){
-            throwLengthError(1, WHERE_AM_I + " idx.size() != vals.size() " +
-                                toStr(iArray.size()) + " " + toStr(vals.size()));
-        }
+        ASSERT_EQUAL(vals.size(), iArray.size())
         for (Index i = 0; i < iArray.size(); i ++){
-           data_[iArray[i]] = vals[i];
-//            setVal(vals[i], idx[i]);
+//            data_[iArray[i]] = vals[i];
+           setVal(vals[i], iArray[i]);
         }
         return *this;
     }
@@ -533,26 +532,20 @@ public:
     }
     
     /*! Add values from vals id index idx.
-     * Throws out of range exception if index check fails. */
+     * Throws length exception if sizes of vals and idx mismatch. */
     inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
                                         const std::vector < Index > & idx) {
-        if (idx.size() != vals.size()){
-            throwLengthError(1, WHERE_AM_I + " idx.size() != vals.size() " +
-                                toStr(idx.size()) + " " + toStr(vals.size()));
-        }
+        ASSERT_EQUAL(idx.size(), vals.size())
         for (Index i = 0; i < idx.size(); i ++) data_[idx[i]] += vals[i];
         
         return *this;
     }
     
-    /*! Get a value. Throws out of range exception if index check fails. */
+    /*! Get value for index i. 
+     * Throws out of range exception if index check fails. */
     inline const ValueType & getVal(Index i) const {
-        if (i >= 0 && i < this->size()) {
-            return data_[i];
-        } else {
-            throwRangeError(1, WHERE_AM_I, i, 0, this->size());
-        }
-        return data_[0];
+        ASSERT_RANGE(i, 0, this->size())
+        return data_[i];
     }
 
     Vector < ValueType > getVal(Index start, SIndex end) const {
@@ -581,12 +574,11 @@ public:
     bool operator < (const Vector< ValueType > & v) const { return false; }
 #else
     BVector operator < (const Vector< ValueType > & v) const {
+        ASSERT_EQUAL(this->size(), v.size())
+        
         BVector ret(this->size(), 0);
-	    if (this->size() != v.size()) {
-		throwLengthError(1, WHERE_AM_I + " array size unequal" +
-                                toStr(this->size()) + " != " + toStr(v.size()));
-	    }
-	    std::less<ValueType> l;
+        
+        std::less<ValueType> l;
         for (Index i = 0; i < v.size(); i ++) ret[i] = l(data_[i], v[i]);
         return ret;
     }
@@ -594,11 +586,8 @@ public:
 
 #define DEFINE_COMPARE_OPERATOR_VEC__(OP, FUNCT) \
     BVector operator OP (const Vector< ValueType > & v) const { \
+        ASSERT_EQUAL(this->size(), v.size()) \
         BVector ret(this->size(), 0); \
-        if (this->size() != v.size()) { \
-            throwLengthError(1, WHERE_AM_I + " array size unequal " + \
-                                toStr(this->size()) + " != " + toStr(v.size())); \
-        } \
         FUNCT<ValueType> f; \
         for (Index i = 0; i < v.size(); i ++) ret[i] = f(data_[i], v[i]); \
         return ret; \
@@ -1182,13 +1171,7 @@ DEFINE_EXPR_OPERATOR__(/, DIVID)
 // inline bool operator < (const GIMLI::Vector<double>&a, const GIMLI::Vector<double> &b) {
 //     return false;
 // }
-#define __CheckRVectorEqualLength__(a, b) \
-    if (a.size() != b.size()){ \
-        __MS(a.size() << "!=" <<b.size()) \
-        throwLengthError(1, WHERE_AM_I); \
-    } \
-
-    
+   
     
 template < class ValueType >
 bool operator == (const Vector< ValueType > & v1, const Vector< ValueType > & v2){
@@ -1434,7 +1417,8 @@ template < class T, class A, class T2 > Vector < T > pow(const __VectorExpr< T, 
 }
 
 template < class T > Vector < T > pow(const Vector < T > & v, const Vector < T > & npower){
-    __CheckRVectorEqualLength__(v, npower)
+    ASSERT_EQUAL(v.size(), npower.size())
+    
     Vector < T > r(v.size());
     for (Index i = 0; i < v.size(); i ++) r[i] = std::pow(v[i], T(npower[i]));
     return r;
