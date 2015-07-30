@@ -107,8 +107,6 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     if pos is not None:
         poly.translate(pos)
 
-
-
     polyCreateDefaultEdges_(poly, **kwargs)
 
     return poly
@@ -471,13 +469,13 @@ def readPLC(filename):
     
     nHoles = int(row[0])
     for i in range(nHoles):
-        row = content[3 + nVerts + nVerts].split()
-
+        row = content[3 + nVerts + nSegments + i].split()
+        print(content[3 + nVerts + nSegments + i].split())
         if len(row) == 3:
             poly.addHoleMarker([float(row[1]), float(row[2])])
         else:
             raise Exception("Poly file seams corrupt: hole section line (3): "
-                            + str(i) + " " + str(len(row)))
+                            + row + " : " + str(i) + " " + str(len(row)))
       
     if (3 + nVerts + nSegments + nHoles) < len(content):
         # Region section

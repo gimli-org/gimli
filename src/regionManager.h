@@ -139,6 +139,11 @@ public:
     }
     inline double zPower() const { return zPower_; }
     
+    /*! Set fixed value for background regions that will not 
+     * part of any value prolongation.*/
+    inline void setFixValue(double val){ fixValue_ = val;}
+    inline double fixValue() const { return fixValue_;}
+    
     /*! Helper method that convert cweight parameter into individual constraintsWeights depending on the associated boundary norm. At the moment only zWeight is considered. */
     void fillConstraintsWeightWithFlatWeight();
     
@@ -196,6 +201,7 @@ public:
     void setStartModelStr_(    const std::string & val){ setStartModel(toDouble(val)); }
     void setZPowerStr_(        const std::string & val){ setZPower(toDouble(val)); }
     void setZWeightStr_(       const std::string & val){ setZWeight(toDouble(val)); }
+    void setFixValueStr_(         const std::string & val){ setFixValue(toDouble(val)); }
     void setConstraintTypeStr_(const std::string & val){ setConstraintType(toInt(val)); }
     void setLowerBoundStr_(    const std::string & val){ setLowerBound(toDouble(val)); }
     void setUpperBoundStr_(    const std::string & val){ setUpperBound(toDouble(val)); }
@@ -227,6 +233,7 @@ protected:
 
     double zPower_;
     double zWeight_;
+    double fixValue_;
     
     double mcDefault_;
     double startDefault_;
@@ -251,7 +258,7 @@ public:
 
     void clear();
 
-    void setMesh(const Mesh & mesh, bool holdRegionInfos = false);
+    void setMesh(const Mesh & mesh, bool holdRegionInfos=false);
 
     const Mesh & mesh() const { return *mesh_; }
 

@@ -60,6 +60,11 @@ checkAndFixLocaleDecimal_point(verbose=True)
 # except:
 #    print('cannot set locale to decimal point')
 
+
+if '--debug' in sys.argv:
+    print("set debugmode")
+    _pygimli_.setDebug(True)
+
 ###########################
 ###  Global shortcuts #####
 ###########################
