@@ -12,11 +12,11 @@ fitting a polynomial of degree :math:`P`
 .. math::
 
     f(x) = p_0 + p_1 x + \ldots + p_P x^P = \sum\limits_{i=0}^{P} p_i x^i
-
+    
 to some existing data :math:`y`.
 The unknown model is the coefficient vector :math:`\m=[p_0,\ldots,p_P]`.
 The vectorized function for a vector
-:math:`\arr{x}=\transpose{[x_1,\ldots,x_N]}`
+:math:`\arr{x}=\transpose{[x_1,\ldots,x_N]} \grad \u{1}`
 can be written as matrix-vector product
 
 .. _eq:yAx:
