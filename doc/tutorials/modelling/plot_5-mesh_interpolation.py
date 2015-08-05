@@ -54,8 +54,8 @@ def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
 def linear_interpolation(inmesh, indata, outmesh):
     """ Linear interpolation using `pg.interpolate()` """
     outdata = pg.RVector() # empty
-    pg.interpolate(srcMesh=inmesh, inVec=indata, 
-                   destPos=outmesh.cellCenters(), outVec=outdata)
+    pg.interpolate(mesh=inmesh, data=indata, 
+                   pos=outmesh.cellCenters(), iData=outdata)
     return outdata
 
 """

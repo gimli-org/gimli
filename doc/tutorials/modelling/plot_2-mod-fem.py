@@ -130,9 +130,9 @@ x = np.linspace(-1.0, 1.0, 100)
 probe = np.zeros((len(x), 3))
 probe[:, 0] = x
 
-uH1 = pg.interpolate(srcMesh=grid, inVec=u, destPos=probe)
-uH2 = pg.interpolate(srcMesh=gridh2, inVec=uh, destPos=probe)
-uP2 = pg.interpolate(srcMesh=gridp2, inVec=up, destPos=probe)
+uH1 = pg.interpolate(mesh=grid, data=u, pos=probe)
+uH2 = pg.interpolate(mesh=gridh2, data=uh, pos=probe)
+uP2 = pg.interpolate(mesh=gridp2, data=up, pos=probe)
 
 plt.figure()
 plt.plot(x, np.array(list(map(uAna, probe))), 'black', linewidth=2,
