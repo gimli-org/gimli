@@ -44,21 +44,20 @@ triangle via pygimli's TriangleWrapper.
 """
 
 poly = pg.Mesh(2)  # empty 2d mesh
-n1 = poly.createNode(xmin, zmax, 0.0)
-# n0 = pg.Node(n1)  # this will lead to problems because this node is not part of poly but will be used by poly later
-n0 = poly.createNode(n1)
+nStart = poly.createNode(xmin, zmax, 0.0)
 
+nA = nStart
 for x in xreg[1:]:
-    n2 = poly.createNode(x, zmax, 0.0)
-    poly.createEdge(n1, n2)
-    n1 = n2
+    nB = poly.createNode(x, zmax, 0.0)
+    poly.createEdge(nA, nB)
+    nA = nB
 
 z2 = 0.
-n2 = poly.createNode(xmax, z2, 0.0)
-poly.createEdge(n1, n2)
-n1 = poly.createNode(xmin, z2, 0.0)
-poly.createEdge(n1, n2)
-poly.createEdge(n1, n0)
+nA = poly.createNode(xmax, z2, 0.0)
+poly.createEdge(nB, nA)
+nB = poly.createNode(xmin, z2, 0.0)
+poly.createEdge(nA, nB)
+poly.createEdge(nB, nStart)
 
 tri = pg.TriangleWrapper(poly)
 tri.setSwitches('-pzeAfaq31')
