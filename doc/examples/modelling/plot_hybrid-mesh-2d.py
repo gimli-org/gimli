@@ -14,9 +14,6 @@ spaced quadrilaterals and a region with unstructured triangles."""
 # We start by importing numpy, matplotlib and pygimli with its required components.
 
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
 
 import pygimli as pg
 from pygimli.viewer import showMesh
@@ -44,22 +41,20 @@ print(mesh1)
 # triangle via pygimli's TriangleWrapper.
 
 poly = pg.Mesh(2)  # empty 2d mesh
-n1 = poly.createNodeWithCheck(xmin, zmax, 0.0)
-# n0 = pg.Node(n1)  # this will lead to problems because this node is not part of poly but will be used by poly later
-n0 = n1
-
+nStart = poly.createNode(xmin, zmax, 0.0)
+ 
 nA = nStart
 for x in xreg[1:]:
-    n2 = poly.createNodeWithCheck(x, zmax, 0.0)
-    poly.createEdge(n1, n2)
-    n1 = n2
-
+    nB = poly.createNode(x, zmax, 0.0)
+    poly.createEdge(nA, nB)
+    nA = nB
+ 
 z2 = 0.
-n2 = poly.createNodeWithCheck(xmax, z2, 0.0)
-poly.createEdge(n1, n2)
-n1 = poly.createNodeWithCheck(xmin, z2, 0.0)
-poly.createEdge(n1, n2)
-poly.createEdge(n1, n0)
+nA = poly.createNode(xmax, z2, 0.0)
+poly.createEdge(nB, nA)
+nB = poly.createNode(xmin, z2, 0.0)
+poly.createEdge(nA, nB)
+poly.createEdge(nB, nStart)
 
 tri = pg.TriangleWrapper(poly)
 tri.setSwitches('-pzeAfaq31')
@@ -79,9 +74,9 @@ for cell in mesh2.cells():
 # Finally, the grid and the unstructured mesh can be merged to single mesh for further
 # modelling.
 
-#pg.show(mesh2) # show() got an unexpected keyword argument 'block'
+pg.show(mesh2)
 mesh3 = merge2Meshes(mesh1, mesh2)
-#pg.show(mesh2) # show() got an unexpected keyword argument 'block'
+pg.show(mesh3)
 
 ###############################################################################
 # Of course, you can treat the hybrid mesh like any other mesh and append a triangle
@@ -90,20 +85,18 @@ mesh3 = merge2Meshes(mesh1, mesh2)
 mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
                               smooth=True, marker=3, isSubSurface=True)
 
-#ax, cbar = showMesh(mesh, mesh.cellMarker(),
-#                    cmap="summer",
-#                    label="Region marker")
+ax, cbar = showMesh(mesh, mesh.cellMarker(),
+                   cmap="summer",
+                   label="Region marker")
 
-#drawMesh(ax, mesh)
+drawMesh(ax, mesh)
 
-#ax, _ = showMesh(mesh, mesh.cellMarker(),
-#                 logScale=False,
-#                 label="Region marker")
+ax, _ = showMesh(mesh, mesh.cellMarker(),
+                logScale=False,
+                label="Region marker")
 
-#drawMesh(ax, mesh)
+drawMesh(ax, mesh)
 
-plt.xlim(40,60)
-plt.ylim(-30, -20)
-plt.show()
+pg.wait()
 
 

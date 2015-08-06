@@ -16,7 +16,7 @@ fitting a polynomial of degree :math:`P`
 to some existing data :math:`y`.
 The unknown model is the coefficient vector :math:`\m=[p_0,\ldots,p_P]`.
 The vectorized function for a vector
-:math:`\arr{x}=\transpose{[x_1,\ldots,x_N]} \grad \u{1}`
+:math:`\arr{x}=\transpose{[x_1,\ldots,x_N]}`
 can be written as matrix-vector product
 
 .. _eq:yAx:

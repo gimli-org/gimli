@@ -770,17 +770,20 @@ def docstr2rst(docstr, cfg):
     for x in mathDictionary:
         current = re.sub('\\\\' + x + '(?!\w)',
                          '\\operatorname{' + mathDictionary[x] + '}', current)
+        
     for x in commandDictionary:
         current = re.sub('\\\\' + x + '(?!\w)', commandDictionary[x], current)
+        
     for x in command1Dictionary:
         n=1
+        print("search for: ", x)
         while n > 0:
             sub = re.search('\\\\'+ x +'{([A-Za-z]*)}', current)
             if sub:
                 (current,n) = re.subn('\\\\' + x + '{([A-Za-z]*)}',
                              command1Dictionary[x].replace('#1',sub.group(1)),
                              current,count=1)
-                #print(x, current, n, sub.group(1))
+                print('found', n, sub.group(1))
             else:
                 n = 0
     docstr = current
