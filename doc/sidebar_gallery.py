@@ -99,6 +99,5 @@ items.insert(0, html_top)
 items.append(html_bottom)
 html = "\n".join(items)
 
-#don't write over src files
 with open("_templates/gallery.html", "w") as file:
    file.write(html)
