@@ -49,9 +49,9 @@ clean:
 	rm -rf _tutorials_auto
 	rm -rf _function_examples
 	rm -rf pygimliapi
-	rm -f _templates/gallery.html
 	rm -rf examples/modelling/*.geo*
 	rm -rf examples/modelling/*.msh*
+	rm -f _templates/gallery.html
 
 api:
 	python ./build_api.py
@@ -109,7 +109,7 @@ latex:
 	      "(use \`make latexpdf' here to do that automatically)."
 
 pdf:
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/pdf && make gallery
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/pdf
 	@echo "Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/pdf all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/pdf."

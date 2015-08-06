@@ -23,7 +23,11 @@ matplotlib.use("Agg")
 try:
     import sphinxgallery
 except ImportError:
-    raise ImportError("sphinxgallery is needed. Try pip install sphinxgallery")
+    err = """
+    sphinxgallery is needed. Try:
+    pip install git+https://github.com/sphinx-gallery/sphinx-gallery
+    """
+    raise ImportError(err)
 
 import pygimli as pg
 
@@ -457,3 +461,5 @@ for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
 doxylink = {
     'gimliapi': ('gimli.tag', 'doc/gimliapi/html/')
 }
+
+os.system("python ./sidebar_gallery.py")
