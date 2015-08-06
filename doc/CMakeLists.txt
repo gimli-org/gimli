@@ -45,8 +45,7 @@ add_custom_target(sphinxapi
 
 add_custom_target(sphinxpdf ALL
     COMMAND
-    cd ${SPHINX_SRC_DIR}/doc && make pdf BUILDDIR=${SPHINX_BUILD_DIR} &&
-    cd ${SPHINX_BUILD_DIR}/pdf && cp gimli.pdf ../html/GIMLi_Documentation.pdf
+    cd ${SPHINX_SRC_DIR}/doc && make pdf BUILDDIR=${SPHINX_BUILD_DIR}
     COMMENT
         "Building PDF documentation with sphinx"
     DEPENDS
@@ -55,7 +54,8 @@ add_custom_target(sphinxpdf ALL
 
 add_custom_target(sphinxhtml ALL
     COMMAND
-        cd ${SPHINX_SRC_DIR}/doc && make html BUILDDIR=${SPHINX_BUILD_DIR}
+        cd ${SPHINX_SRC_DIR}/doc && make html BUILDDIR=${SPHINX_BUILD_DIR} &&
+        cd ${SPHINX_BUILD_DIR} && cp -f pdf/gimli.pdf html/GIMLi_Documentation.pdf
     COMMENT
         "Building HTML documentation with sphinx"
     DEPENDS

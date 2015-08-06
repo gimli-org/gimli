@@ -13,7 +13,7 @@ python -c "import numpy; print(numpy.__version__)"
 # rm -rf thirdParty/src
 
 # Main build
-rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
+#rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
 mkdir -p build
 cd build
 cmake ../trunk
