@@ -13,6 +13,8 @@ Usage:
 
 from __future__ import print_function
 
+import matplotlib.pyplot as plt
+
 import os
 try:
     import subprocess  # check for 3.4
@@ -348,7 +350,7 @@ def __getVal(self, idx):
             s = 0
         if e is None:
             e = len(self)
-                
+
         if idx.step is None:
             return self.getVal(int(s), int(e))
         else:

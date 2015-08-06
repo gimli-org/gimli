@@ -7,8 +7,7 @@ Mesh interpolation
 
 In this tutorial, we look at the mesh interpolation options in GIMLi. Although,
 the example shown here is in 2D, the same routines can be applied when
-converting 3D data to a 2D mesh for instance.
-"""
+converting 3D data to a 2D mesh for instance."""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,10 +15,9 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.mplviewer import drawMesh, drawModel
 
-"""
-Create coarse and fine mesh with data
--------------------------------------
-"""
+###############################################################################
+# Create coarse and fine mesh with data
+# -------------------------------------
 
 def create_mesh_and_data(n):
     nc = np.linspace(-2.0, 0.0, n)
@@ -32,13 +30,12 @@ def create_mesh_and_data(n):
 coarse, coarse_data = create_mesh_and_data(5)
 fine, fine_data = create_mesh_and_data(20)
 
-"""
-Interpolate data to different meshes
-------------------------------------
-
-We define two functions that take the input mesh, the input data and the output
-mesh as parameters and return the input data interpolated to the output mesh.
-"""
+###############################################################################
+# Interpolate data to different meshes
+# ------------------------------------
+#
+# We define two functions that take the input mesh, the input data and the output
+# mesh as parameters and return the input data interpolated to the output mesh.
 
 def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
     """ Nearest neighbor interpolation. """
@@ -54,14 +51,13 @@ def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
 def linear_interpolation(inmesh, indata, outmesh):
     """ Linear interpolation using `pg.interpolate()` """
     outdata = pg.RVector() # empty
-    pg.interpolate(srcMesh=inmesh, inVec=indata, 
+    pg.interpolate(srcMesh=inmesh, inVec=indata,
                    destPos=outmesh.cellCenters(), outVec=outdata)
     return outdata
 
-"""
-Visualization
--------------
-"""
+###############################################################################
+# Visualization
+# -------------
 
 meshes = [coarse, fine]
 datasets = [coarse_data, fine_data]
@@ -84,7 +80,7 @@ drawMesh(axes[1,1], coarse)
 
 titles = ["Coarse to fine\nwith nearest neighbors",
           "Coarse to fine\nwith linear interpolation",
-          "Fine to coarse\nwith nearest neighbors", 
+          "Fine to coarse\nwith nearest neighbors",
           "Fine to coarse\nwith linear interpolation"]
 
 for a, title in zip(axes.flat, titles):

@@ -11,22 +11,22 @@ import unittest
 class TestRVectorMethods(unittest.TestCase):
 
     def test_XVectorBasics(self):
-        
+
         def testVector(v):
-            
+
             for t in v:
                 self.assertEqual(t, 1.0)
-                            
+
             self.assertEqual(sum(v), 5.0)
             self.assertFalse(pg.haveInfNaN(v))
-                
+
             v[1] = 0
             self.assertEqual(v[1], 0)                         
                 
             v[1] = 1
             self.assertEqual(v[1], 1)                         
             #print(v/v)
-        
+
         testVector(pg.RVector(5, 1.0))
         testVector(pg.CVector(5, 1.0))
         testVector(pg.BVector(5, True))
@@ -51,7 +51,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(-1.0 - v), -10)
         self.assertEqual(sum(2.0 * v), 10)
         self.assertEqual(sum(1.0 / v), 5)
-        
+
         #v = pg.CVector(5, 1.0)
 
         #self.assertEqual(sum(v + 1), 10)

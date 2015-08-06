@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+r"""
 
 Heat equation in 1D
 -------------------
@@ -39,25 +39,20 @@ dirichletBC = [[1, 0],  # top
 
 probeID = int(grid.nodeCount() / 2)
 
-"""
-Fortunately we have an analytical solution:
-
-.. math::
-
-    u(t,x) = \e^{-\pi^2 t} \sin(\pi x)
-
-
-"""
+###############################################################################
+# Fortunately we have an analytical solution:
+#
+# .. math::
+#
+#     u(t,x) = \e^{-\pi^2 t} \sin(\pi x)
+#
+#
 
 
 def uAna(t, x):
     return np.exp(-np.pi**2. * t) * np.sin(np.pi * x)
 
 plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='Analytical')
-
-"""
-
-"""
 
 # u = solvePoisson(grid, times=times, theta=0.0,
 #                 u0=lambda r: np.sin(np.pi * r[0]),
@@ -101,10 +96,6 @@ for n in range(1, len(times)):
 plt.plot(times, u[:, probeID], label='Explicit Euler')
 
 
-"""
-
-
-"""
 theta = 1
 
 for n in range(1, len(times)):
@@ -143,11 +134,7 @@ plt.xlim(0.0, 0.5)
 plt.legend()
 plt.grid()
 
-"""
-.. image:: PLOT2RST.current_figure
-    :scale: 75
-
-Explicit Euler scheme is unstable at higher times.
-"""
+###############################################################################
+# Explicit Euler scheme is unstable at higher times.
 
 plt.show()

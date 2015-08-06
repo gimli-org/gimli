@@ -6,6 +6,7 @@ Usage:
 
     python setup.py install --user # for local installation
     sudo python setup.py install # for system-wide installation
+    python setup.py develop # for developers (creates symlinks to source)
 
 """
 
@@ -23,7 +24,7 @@ setup(name="pygimli",
       long_description=long_description,
       author="Carsten Rücker, Thomas Günther, Florian Wagner",
       author_email="mail@pygimli.org",
-      license="LPGL",
+      license="GPL",
       url="http://www.pygimli.org",
       packages=find_packages(),
       package_data={'': ['*.so']},

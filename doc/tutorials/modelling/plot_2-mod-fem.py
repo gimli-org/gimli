@@ -1,6 +1,6 @@
 #!/ussr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+r"""
 
 Modelling
 ---------
@@ -42,42 +42,35 @@ import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
 
-"""
-We create a grid for our modelling domain with equidistant spacing in x
-and y direction.
-"""
+###############################################################################
+# We create a grid for our modelling domain with equidistant spacing in x
+# and y direction.
 
 grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
                      y=np.linspace(-1.0, 1.0, 10))
 
-"""
-Now we can call the solver :py:mod:`pygimli.solver.solve`  for some
-default material values and global homogeneous Dirichlet boundary conditions.
-"""
+###############################################################################
+# Now we can call the solver :py:mod:`pygimli.solver.solve`  for some
+# default material values and global homogeneous Dirichlet boundary conditions.
 
 u = pg.solver.solve(grid, f=1.,
                     uB=[grid.findBoundaryByMarker(1, 5), 0.0],
                     verbose=True)
 
-"""
-The result is drawn with the function :py:mod:`pygimli.show`. 
-"""
+###############################################################################
+# The result is drawn with the function :py:mod:`pygimli.show`.
 
 ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$', hold=1)
 
-"""
-:py:mod:`pygimli.show` is just a shortcut for various routines that can also be called directly.
-
-"""
+###############################################################################
+# :py:mod:`pygimli.show` is just a shortcut for various routines that can also be called directly.
+#
 pg.mplviewer.drawMesh(ax, grid)
 
-"""
-.. image:: PLOT2RST.current_figure
-    :scale: 50
-
-We repeat the computation with a spatially (H) refined version of the original
-grid.
-"""
+###############################################################################
+#
+# We repeat the computation with a spatially (H) refined version of the original
+# grid.
 
 gridh2 = grid.createH2()
 
@@ -89,12 +82,9 @@ ax, cbar = pg.show(gridh2, data=uh, colorBar=True, label='H2 Solution $u$')
 
 pg.mplviewer.drawMesh(ax, gridh2)
 
-"""
-.. image:: PLOT2RST.current_figure
-    :scale: 50
-
-We do the same using a quadratic (P) refinement, i.e. the same number of nodes.
-"""
+###############################################################################
+#
+# We do the same using a quadratic (P) refinement, i.e. the same number of nodes.
 
 gridp2 = grid.createP2()
 
@@ -102,9 +92,8 @@ up = pg.solver.solve(gridp2, f=1.,
                      uB=[gridp2.findBoundaryByMarker(1, 5), 0.0],
                      verbose=True)
 
-"""
-Fortunately there exist an analytical solution for this example.
-"""
+###############################################################################
+# Fortunately there exist an analytical solution for this example.
 
 def uAna(r):
     x = r[0]
@@ -119,11 +108,10 @@ def uAna(r):
     return (1. - x**2)/2 - 16./(np.pi**3) * ret
 
 
-"""
-To compare the different results the in detail we interpolate our solution
-along a probe line through our domain.
-
-"""
+###############################################################################
+# To compare the different results the in detail we interpolate our solution
+# along a probe line through our domain.
+#
 
 x = np.linspace(-1.0, 1.0, 100)
 
@@ -145,11 +133,5 @@ plt.xlim([-0.4, 0.4])
 plt.ylim([0.25, 0.3])
 plt.legend()
 
-
-"""
-.. image:: PLOT2RST.current_figure
-    :scale: 50
-
-"""
 
 plt.show()

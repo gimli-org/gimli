@@ -1,23 +1,26 @@
 #!/usr/bin/env python
-# encoding: UTF-8
+# encoding: utf-8
 
 """
 Geoelectric in 2.5d
 -------------------
 
-Let us start with a mathematical formulation ...
+Geoelectrical modeling example in 2.5D."""
 
-.. math::
 
-    \nabla\cdot( \sigma \nabla u ) = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
-
-Fourier-Cosine-Transform
-
-.. math::
-    \nabla\cdot( \sigma \nabla u ) & = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
-    \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
-
-"""
+###############################################################################
+# Let us start with a mathematical formulation ...
+#
+# .. math::
+#
+#     \nabla\cdot( \sigma \nabla u ) = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
+#
+# Fourier-Cosine-Transform
+#
+# .. math::
+#     \nabla\cdot( \sigma \nabla u ) & = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
+#     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
+#
 
 import pygimli as pg
 
@@ -26,9 +29,8 @@ from pygimli.solver import solve
 from pygimli.viewer import show
 from pygimli.mplviewer import *
 
-"""
-Maybe this is usefully. The analytical solution for one source location.
-"""
+###############################################################################
+# Maybe this is usefully. The analytical solution for one source location.
 
 def uAnalytical(p, sourcePos, k):
     r1A = (p - sourcePos).abs()
@@ -42,13 +44,12 @@ def uAnalytical(p, sourcePos, k):
     else:
         return 0.
 
-"""
-
-Define the derivative of the analytical solution regarding the outer normal direction
-:math:`\vec{n}`. So we can define the value for the Neumann type Boundary
-conditions for the boundaries in the subsurface.
-
-"""
+###############################################################################
+#
+# Define the derivative of the analytical solution regarding the outer normal direction
+# :math:`\vec{n}`. So we can define the value for the Neumann type Boundary
+# conditions for the boundaries in the subsurface.
+#
 
 def mixedBC(boundary, userData):
     sourcePos = userData['sourcePos']
@@ -70,23 +71,18 @@ def mixedBC(boundary, userData):
         return 0.
 
 
-"""
-
-Define function for the current source term
-:math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
-Right hand side entries will be shape functions(pos)
-
-"""
+###############################################################################
+#
+# Define function for the current source term
+# :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
+# Right hand side entries will be shape functions(pos)
+#
 
 def pointSource(cell, f, userData):
     sourcePos = userData['sourcePos']
 
     if cell.shape().isInside(sourcePos):
         f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
-
-"""
-
-"""
 
 grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21), y=np.linspace(-15.0, .0, 16))
 
@@ -100,9 +96,6 @@ neumannBC = [[1, mixedBC], #left boundary
              [2, mixedBC], #right boundary
              [4, mixedBC]] #bottom boundary
 
-"""
-
-"""
 k = 1e-3
 u = solve(grid, a=1, b=k*k, f=pointSource,
           duB=neumannBC,
@@ -122,23 +115,16 @@ u -= solve(grid, a=1, b=k*k, f=pointSource,
 #print "error min max", min(err), max(err)
 
 ax = show(grid, data=u, filled=True, colorBar=True,
-          orientation='horizontal', label='Solution $u$')[0]
+          orientation='horizontal', label='Solution u')[0]
 show(grid, axes=ax)
 
-"""
-Instead of the grid we want to add streamlines to the plot to show the gradients
-of the solution.
-"""
+###############################################################################
+# Instead of the grid we want to add streamlines to the plot to show the gradients
+# of the solution.
 
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, .0, 20))
 
 drawStreams(ax, grid, u, coarseMesh=gridCoarse, color='Black')
 #pg.show(gridCoarse,  axes=ax)
-
-"""
-.. image:: PLOT2RST.current_figure
-    :scale: 75
-
-"""
 
 pg.wait()
