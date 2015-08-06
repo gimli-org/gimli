@@ -5,6 +5,8 @@
 TUTORIAL NAME
 -------------
 
+:math:`\arr{x}=\transpose{[x_1,\ldots,x_N]} \grad \u{1} \arr{m} \unit{m}`
+
 *This introductory sentence should state the intent and goal of the tutorial. Keep it brief.*
 
 *This next block should state any assumptions that you the writer are making. Present them in list form.*
