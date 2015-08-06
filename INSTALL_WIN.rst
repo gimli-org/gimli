@@ -29,7 +29,7 @@ Be sure to have an updated msys environment. Run at least:
 .. code-block:: bash
 
     pacman -Sy
-    
+
 to update your local package databases. See: https://sourceforge.net/p/msys2/wiki/MSYS2%20installation/
 for further update instructions.
 

@@ -28,6 +28,16 @@ from types import BuiltinFunctionType, FunctionType
 # suppress print statements (warnings for empty files)
 DEBUG = False
 
+def usage_examples(uri, f):
+    """Find and include usage examples/tutorials to include in API."""
+    text = ""
+    usage = "./_function_examples/%s.%s.examples" % (uri, f)
+    if os.path.exists(usage):
+        print("Adding usage examples for:", f)
+        text += ".. include:: .%s\n\n" % usage
+        text += ".. raw:: html\n\n"
+        text += "    <div style='clear:both'></div>\n\n"
+    return text
 
 class ApiDocWriter(object):
 
@@ -305,6 +315,8 @@ class ApiDocWriter(object):
             add += f + '\n'
             add += self.rst_section_levels[2] * len(f) + '\n'
             add += '\n.. autofunction:: ' + full_f + '\n\n'
+            add += usage_examples(uri, f)
+
         for c in classes:
             add += '\n:class:`' + c + '`\n' \
                   + self.rst_section_levels[2] * \
@@ -316,6 +328,7 @@ class ApiDocWriter(object):
                   '  :show-inheritance:\n' \
                   '\n' \
                   '  .. automethod:: __init__\n'
+            add += usage_examples(uri, c)
         return add
 
     def _survives_exclude(self, matchstr, match_type):
@@ -344,8 +357,7 @@ class ApiDocWriter(object):
         elif match_type == 'package':
             patterns = self.package_skip_patterns
         else:
-            raise ValueError('Cannot interpret match type "%s"'
-                             % match_type)
+            raise ValueError('Cannot interpret match type "%s"' % match_type)
         # Match to URI without package name
         L = len(self.package_name)
         if matchstr[:L] == self.package_name:
@@ -387,8 +399,7 @@ class ApiDocWriter(object):
         # raw directory parsing
         for dirpath, dirnames, filenames in os.walk(self.root_path):
             # Check directory names for packages
-            root_uri = self._path2uri(os.path.join(self.root_path,
-                                                   dirpath))
+            root_uri = self._path2uri(os.path.join(self.root_path, dirpath))
             for dirname in dirnames[:]:  # copy list - we modify inplace
                 package_uri = '.'.join((root_uri, dirname))
                 if (self._uri2path(package_uri) and
@@ -406,8 +417,7 @@ class ApiDocWriter(object):
             if not api_str:
                 continue
             # write out to file
-            outfile = os.path.join(outdir,
-                                   m + self.rst_extension)
+            outfile = os.path.join(outdir, m + self.rst_extension)
             fileobj = open(outfile, 'wt')
             fileobj.write(api_str)
             fileobj.close()

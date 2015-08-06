@@ -1,24 +1,24 @@
 """
 Meshing the Omega aka. BERT logo
 ================================
+
+This is an example illustrating the possibility to hand over matplotlib path
+objects to the TriangleWrapper.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.textpath
 import pygimli as pg
 
-"""
-We start by generating a matplotlib path respresenting the :math:`\Omega`
-character.
-"""
+###############################################################################
+# We start by generating a matplotlib path respresenting the :math:`\Omega`
+# character.
 
 logo_path = matplotlib.textpath.TextPath((0,0), '$\Omega$', size=1)
 patch = matplotlib.patches.PathPatch(logo_path)
 
-"""
-The vertices of the path are defined as mesh nodes and connected with edges.
-"""
+###############################################################################
+# The vertices of the path are defined as mesh nodes and connected with edges.
 
 nodes = patch.get_verts() * 50
 poly = pg.Mesh(2)
@@ -31,10 +31,9 @@ for i in range(poly.nodeCount() - 1):
 
 poly.createEdge(poly.node(poly.nodeCount() - 1), poly.node(0))
 
-"""
-We call the TriangleWrapper to generate the mesh and set the x values as the
-data for a color transition.
-"""
+###############################################################################
+# We call the TriangleWrapper to generate the mesh and set the x values as the
+# data for a color transition.
 
 tri = pg.TriangleWrapper(poly)
 mesh = pg.Mesh(2)

@@ -16,9 +16,14 @@ import os
 import pip
 import re
 
-# For doc build on headless machines
+# for doc rendering on headless machines (jenkins server)
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use("Agg")
+
+try:
+    import sphinxgallery
+except ImportError:
+    raise ImportError("sphinxgallery is needed. Try pip install sphinxgallery")
 
 import pygimli as pg
 
@@ -26,10 +31,10 @@ import pygimli as pg
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
-sys.path.append(os.path.abspath('@SPHINX_SRC_DIR@/doc/_sphinx-ext'))
+sys.path.append(os.path.abspath('./_sphinx-ext'))
 
 # The following line is necessary for the Tools section
-sys.path.append(os.path.abspath('@SPHINX_SRC_DIR@/python/apps'))
+sys.path.append(os.path.abspath('../python/apps'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -54,19 +59,38 @@ if req:
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
-              'sphinx.ext.mathjax', # nicer html output than pngmath
-              #'sphinx.ext.pngmath',
+              'sphinx.ext.mathjax',
               'sphinx.ext.doctest',
+              'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.only_directives',
-              #'matplotlib.sphinxext.mathmpl',
+              'matplotlib.sphinxext.plot_directive',
               'myexec_directive',
               'myliterate_directive',
-              'plot2rst',
-              'plot_directive',
-              'doxylink'
-              ]
+              'doxylink',
+              'sphinxgallery.gen_gallery']
 
 extensions += [dep.replace('-', '.') for dep in deps]
+
+intersphinx_mapping = {'http://docs.python.org/': None}
+
+# Setup automatic gallery generation
+sphinxgallery_conf = {
+    'examples_dir': ['examples', 'tutorials'],
+    'gallery_dir': ['_examples_auto', '_tutorials_auto'],
+    'reference_url': {
+            # The module you locally document uses a None
+            'pygimli': None,
+
+            # External python modules use their documentation websites
+            'matplotlib': 'http://matplotlib.org',
+            'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
+
+    # path where to store your example linker templates
+    'mod_example_dir'     : '_function_examples',
+
+    # Your documented modules. You can use a string or a list of strings
+    'doc_module'          : ('pygimli')
+}
 
 autoclass_content = "both"
 
@@ -74,14 +98,7 @@ autoclass_content = "both"
 mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['@SPHINX_SRC_DIR@/doc/_templates']
-
-# Numpydoc/plot settings
-plot2rst_paths = [
-    ('@SPHINX_SRC_DIR@/doc/tutorials',
-     '@SPHINX_BUILD_DIR@/doc/_tutorials_auto'),
-    ('@SPHINX_SRC_DIR@/doc/examples',
-     '@SPHINX_BUILD_DIR@/doc/_examples_auto')]
+templates_path = ['_templates']
 
 numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
@@ -93,12 +110,12 @@ import math
 phi = (math.sqrt(5) + 1)/2
 
 plot_rcparams = {
-    'font.size': 8,
-    'axes.titlesize': 8,
-    'axes.labelsize': 8,
-    'xtick.labelsize': 8,
-    'ytick.labelsize': 8,
-    'legend.fontsize': 8,
+    'font.size': 7,
+    'axes.titlesize': 7,
+    'axes.labelsize': 7,
+    'xtick.labelsize': 7,
+    'ytick.labelsize': 7,
+    'legend.fontsize': 7,
     'text.usetex': False,
     'figure.subplot.bottom': 0.2,
     'figure.subplot.left': 0.2,
@@ -106,7 +123,10 @@ plot_rcparams = {
     'figure.subplot.top': 0.85,
     'figure.subplot.wspace': 0.4,
     'figure.figsize': (3 * phi, 3),
+    'figure.dpi': 100,
     }
+
+matplotlib.rcParams.update(plot_rcparams)
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -115,7 +135,7 @@ source_suffix = '.rst'
 source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'doc/index'
+master_doc = 'documentation'
 
 # General information about the project.
 project = 'GIMLi'
@@ -144,14 +164,13 @@ release = release.replace('_', '\\_')
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['doc/_build',
-                    'doc/_sphinx-ext',
-                    'doc/_templates',
-                    'doc/tmp',
-                    'doc/examples',
-                    'doc/tutorials',
-                    'doc/tutorial',
-                    './python/pygimli/gui']
+exclude_patterns = ['_build',
+                    '_sphinx-ext',
+                    '_templates',
+                    'tmp',
+                    'examples',
+                    'tutorials',
+                    'tutorial']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -177,7 +196,7 @@ pygments_style = 'default'
 # -- Options for HTML output ---------------------------------------------------
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['@SPHINX_SRC_DIR@/doc/_themes']
+html_theme_path = ['_themes']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -204,7 +223,7 @@ html_short_title = "GIMLi"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = '@SPHINX_SRC_DIR@/doc/_static/G.ico'
+html_favicon = '_static/G.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -264,7 +283,7 @@ htmlhelp_basename = 'gimlidoc'
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = "@SPHINX_SRC_DIR@/doc/_themes/gimli/static/gimli.png"
+latex_logo = "_themes/gimli/static/gimli.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -284,7 +303,7 @@ latex_show_pagerefs = True
 
 from os import environ, path
 
-extradir = path.abspath('@SPHINX_SRC_DIR@/doc/_static').replace('\\', '/')
+extradir = path.abspath('_static').replace('\\', '/')
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -311,11 +330,8 @@ if sphinx.__version__.startswith('1.3'):
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [('doc/index', 
-                    'gimli.tex',
-                    'GIMLi Documentation',
-                    'GIMLi Group', 
-                    'manual')]
+latex_documents = [('documentation', 'gimli.tex', 'GIMLi Documentation',
+                    'GIMLi Group', 'manual')]
 
 try:
     pngmath_latex_preamble  # check whether this is already defined
@@ -331,10 +347,9 @@ pngmath_latex_preamble = '\
 
 # latex.add_macro("\\newcommand{\\arr}[1]{\\ensuremath{\\textbf{#1}}}")
 
-_mathpng_tempdir = '@DOXYGEN_BUILD_DIR@/mathtmp'
+_mathpng_tempdir = 'mathtmp'
 
-latex_additional_macros = open(
-    '@SPHINX_SRC_DIR@/doc/_static/mylatex-commands.sty')
+latex_additional_macros = open('_static/mylatex-commands.sty')
 
 mathjax_latex_preamble = ""
 
@@ -433,12 +448,12 @@ texinfo_show_urls = 'footnote'
 import pkg_resources
 
 # temporary disable due to python3 pybtex quirks
-for dist in pkg_resources.find_distributions("@SPHINX_SRC_DIR@/doc/_templates/pybtex_plugins/"):
+for dist in pkg_resources.find_distributions("_templates/pybtex_plugins/"):
     pkg_resources.working_set.add(dist)
 
 
 # End pybtex stuff
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-    'gimliapi': ('@DOXYGEN_BUILD_DIR@/gimli.tag', 'doc/gimliapi/html/')
+    'gimliapi': ('gimli.tag', 'doc/gimliapi/html/')
 }
