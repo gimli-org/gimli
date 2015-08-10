@@ -1,5 +1,3 @@
-.. _sec:license:
-
 License
 =======
 

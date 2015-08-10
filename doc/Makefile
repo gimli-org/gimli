@@ -64,7 +64,7 @@ html-nogallery:
 	@echo
 	@echo "Build finished without gallery. The HTML pages are in $(BUILDDIR)/html."
 
-html:
+html: api
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

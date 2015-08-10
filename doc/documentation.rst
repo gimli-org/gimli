@@ -41,7 +41,7 @@ Documentation
 
         * - :ref:`sec:tools`
 
-            Handy applications and tools shipped with GIMLi
+            Handy tools shipped with GIMLi
 
           - `PDF Manual <GIMLi_Documentation.pdf>`_
 
@@ -83,7 +83,7 @@ Documentation
     .. toctree::
         :maxdepth: 4
 
-        ../README.rst
+        about.rst
         design.rst
         installation.rst
         faq.rst
