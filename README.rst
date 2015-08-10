@@ -1,5 +1,3 @@
-.. _sec:GIMLI:
-
 About GIMLi
 ===========
 

@@ -13,11 +13,11 @@ Additional information
     **Restructured Text (reST) and Sphinx CheatSheets**
 
     :ref:`rst-basics`
- 
+
     http://docs.geoserver.org/trunk/en/docguide/sphinx.html
 
     http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html
-        
+
     http://packages.python.org/an_example_pypi_project/sphinx.html
 
 
@@ -30,7 +30,7 @@ Additional information
     Numpy/Scipy Docstring convention:
 
     https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#docstring-standard
-   
+
     Matplotlib naming convention:
 
     http://matplotlib.org/1.3.0/faq/usage_faq.html#coding-styles
@@ -39,7 +39,7 @@ Additional information
 
 Needed external extensions for building this docu
 
-:: 
+::
 
     pip install numpydoc pybtex sphinxcontrib-programoutput
 
@@ -47,13 +47,13 @@ Linking to Gimli API
 ---------------------
 
 To link to a specific class defintion the C++ API from the docs,
-you can use 
+you can use
 
 ::
 
     See: :gimliapi:`GIMLI::Mesh`
 
-Which results in 
+Which results in
 
 See: :gimliapi:`GIMLI::Mesh`
 

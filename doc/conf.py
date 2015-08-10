@@ -24,8 +24,8 @@ try:
     import sphinxgallery
 except ImportError:
     err = """
-    sphinxgallery is needed. Try:
-    pip install git+https://github.com/sphinx-gallery/sphinx-gallery
+    sphinxgallery is required to build the documentation. Try to run:
+    sudo pip install git+https://github.com/sphinx-gallery/sphinx-gallery
     """
     raise ImportError(err)
 
