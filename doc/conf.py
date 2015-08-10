@@ -82,7 +82,8 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'doxylink',
-              'sphinxgallery.gen_gallery']
+              #'sphinxgallery.gen_gallery',
+              ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
 
@@ -93,12 +94,11 @@ sphinxgallery_conf = {
     'examples_dir': ['examples', 'tutorials'],
     'gallery_dir': ['_examples_auto', '_tutorials_auto'],
     'reference_url': {
-            # The module you locally document uses a None
-            'pygimli': None,
-
-            # External python modules use their documentation websites
-            'matplotlib': 'http://matplotlib.org',
-            'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
+    # The module you locally document uses a None
+    'pygimli': None,
+    # External python modules use their documentation websites
+    'matplotlib': 'http://matplotlib.org',
+    'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
 
     # path where to store your example linker templates
     'mod_example_dir'     : '_function_examples',
@@ -150,7 +150,7 @@ source_suffix = '.rst'
 source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'documentation'
+master_doc = EXCLUDEBASE_PATH + 'documentation'
 
 # General information about the project.
 project = 'GIMLi'
