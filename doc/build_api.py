@@ -11,8 +11,10 @@ if __name__ == '__main__':
     except ImportError as e:
         print("Can not import pygimli")
         exit()
-
-    outdir = 'pygimliapi'
+    
+    buildpath = os.path.abspath(os.path.dirname(sys.modules[__name__].__file__))
+    outdir = os.path.abspath(buildpath + '/pygimliapi')
+    
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
