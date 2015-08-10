@@ -14,6 +14,18 @@ from glob import glob
 from os.path import abspath, join, dirname, basename
 import random
 
+
+SPHINXDOC_PATH='.'
+TRUNK_PATH='..'
+EXCLUDEBASE_PATH=''
+DOC_BUILD_DIR=''
+
+try:
+    from _build.conf_environment import *
+except:
+    pass
+
+
 ###################
 #  Path settings  #
 ###################
