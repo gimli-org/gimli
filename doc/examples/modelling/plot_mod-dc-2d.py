@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""
+r"""
 Geoelectric in 2.5d
 -------------------
 
