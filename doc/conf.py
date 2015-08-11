@@ -36,13 +36,12 @@ import pygimli as pg
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-SPHINXDOC_PATH='.'
 TRUNK_PATH='..'
-EXCLUDEBASE_PATH=''
+SPHINXDOC_PATH='.'
 DOC_BUILD_DIR=''
 
 try:
-    from _build.conf_environment import *
+    from _build.doc.conf_environment import *
 except:
     pass
 
@@ -150,7 +149,7 @@ source_suffix = '.rst'
 source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = EXCLUDEBASE_PATH + 'documentation'
+master_doc = 'documentation'
 
 # General information about the project.
 project = 'GIMLi'
@@ -179,13 +178,14 @@ release = release.replace('_', '\\_')
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = [EXCLUDEBASE_PATH + '_build',
-                    EXCLUDEBASE_PATH + '_sphinx-ext',
-                    EXCLUDEBASE_PATH + '_templates',
-                    EXCLUDEBASE_PATH + 'tmp',
-                    EXCLUDEBASE_PATH + 'examples',
-                    EXCLUDEBASE_PATH + 'tutorials',
-                    EXCLUDEBASE_PATH + 'tutorial']
+exclude_patterns = ['_build',
+                    '_sphinx-ext',
+                    '_templates',
+                    'tmp',
+                    'examples',
+                    'tutorials',
+                    'tutorial'
+                    ]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -473,7 +473,7 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH + "/_templates/pybte
 
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-    'gimliapi': (DOC_BUILD_DIR + '/gimli.tag', 'doc/gimliapi/html/')
+    'gimliapi': (DOC_BUILD_DIR + '/gimli.tag', 'gimliapi/html/')
 }
 
 #os.system("python ./sidebar_gallery.py")
