@@ -84,7 +84,9 @@ add_custom_target(sphinxapi
     COMMAND
         cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR}/doc
     COMMAND
-        python ${SPHINX_SRCBUILD_DIR}/doc/build_api.py
+        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/sidebar_gallery.py ${SPHINX_SRCBUILD_DIR}/doc
+    COMMAND
+        #python ${SPHINX_SRCBUILD_DIR}/doc/build_api.py
     COMMENT
         "Building pygimli api doc"
     DEPENDS
@@ -92,6 +94,8 @@ add_custom_target(sphinxapi
 )
 
 add_custom_target(sphinxhtml ALL
+     WORKING_DIRECTORY 
+        ${SPHINX_BUILD_DIR}/doc
      COMMAND
         cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
      COMMAND

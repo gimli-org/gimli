@@ -39,9 +39,11 @@ import pygimli as pg
 TRUNK_PATH='..'
 SPHINXDOC_PATH='.'
 DOC_BUILD_DIR=''
+DOXY_BUILD_DIR=''
 
 try:
-    from _build.doc.conf_environment import *
+    #from _build.doc.conf_environment import *
+    from conf_environment import *
 except:
     pass
 
@@ -81,7 +83,7 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'doxylink',
-              #'sphinxgallery.gen_gallery',
+              'sphinxgallery.gen_gallery',
               ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
@@ -90,8 +92,10 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 # Setup automatic gallery generation
 sphinxgallery_conf = {
-    'examples_dir': ['examples', 'tutorials'],
-    'gallery_dir': ['_examples_auto', '_tutorials_auto'],
+    'examples_dir': [SPHINXDOC_PATH + 'examples/',
+                     SPHINXDOC_PATH + 'tutorials/'],
+    'gallery_dir': ['_examples_auto',
+                    '_tutorials_auto'],
     'reference_url': {
     # The module you locally document uses a None
     'pygimli': None,
@@ -112,7 +116,8 @@ autoclass_content = "both"
 mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = [SPHINXDOC_PATH + '/_templates']
+templates_path = [SPHINXDOC_PATH + '/_templates',
+                  DOC_BUILD_DIR + '/_templates' ]
 
 numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
@@ -473,7 +478,11 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH + "/_templates/pybte
 
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-    'gimliapi': (DOC_BUILD_DIR + '/gimli.tag', 'gimliapi/html/')
+    'gimliapi': (DOXY_BUILD_DIR + '/gimli.tag', 'gimliapi/html/')
 }
 
-#os.system("python ./sidebar_gallery.py")
+from sidebar_gallery import make_gallery
+
+make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
+        
+    

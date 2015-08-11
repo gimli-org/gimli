@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""
+r"""
 Flexible mesh generation using Gmsh
 ===================================
 

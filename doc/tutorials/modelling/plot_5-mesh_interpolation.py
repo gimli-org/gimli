@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
-"""
+r"""
 Mesh interpolation
 ==================
 

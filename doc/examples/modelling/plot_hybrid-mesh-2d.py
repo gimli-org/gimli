@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""
+r"""
 Building a hybrid mesh in 2-D
 -----------------------------
 

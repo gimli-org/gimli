@@ -1,4 +1,7 @@
-"""
+#!/usr/bin/env python
+# encoding: utf-8
+
+r"""
 Meshing the Omega aka. BERT logo
 ================================
 
