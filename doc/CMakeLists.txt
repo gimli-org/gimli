@@ -28,14 +28,14 @@ endif()
 
 set(SPHINX_SRC_DIR         ${CMAKE_SOURCE_DIR}) # configured documentation tools and intermediate build results
 set(SPHINX_BUILD_DIR       ${CMAKE_CURRENT_BINARY_DIR}/_build) # HERE we export our rst. either copied or the original
-set(SPHINX_SRCBUILD_DIR    ${SPHINX_BUILD_DIR} ) # Sphinx cache with pickled ReST documents
+set(SPHINX_SRCBUILD_DIR    ${SPHINX_BUILD_DIR}) # Sphinx cache with pickled ReST documents
 set(SPHINX_CACHE_DIR       ${CMAKE_CURRENT_BINARY_DIR}/_doctrees) # HTML output directory
 set(SPHINX_HTML_DIR        ${CMAKE_CURRENT_BINARY_DIR}/html) # PDF output directory
 set(SPHINX_PDF_DIR         ${CMAKE_CURRENT_BINARY_DIR}/pdf)
 
 configure_file(
      "${SPHINX_SRC_DIR}/doc/conf_environment.py.in"
-     "${SPHINX_BUILD_DIR}/conf_environment.py"
+     "${SPHINX_BUILD_DIR}/doc/conf_environment.py"
      @ONLY)
 
 # this will ONLY cover files in the CMAKE_CURRENT_SOURCE_DIR .. maybee a cmake bug check with cmake 3
@@ -48,8 +48,6 @@ foreach(file ${RSTFILES})
     add_custom_command(
             COMMAND
                 cmake -E copy_if_different ${CMAKE_SOURCE_DIR}/${file} ${SPHINX_SRCBUILD_DIR}/${file}
-            COMMAND
-                cmake -E copy_if_different ${CMAKE_SOURCE_DIR}/doc/conf.py ${SPHINX_SRCBUILD_DIR}
             TARGET
                 sphinx_check_sources
             VERBATIM
@@ -57,6 +55,16 @@ foreach(file ${RSTFILES})
                 "Updating documentation sources files into build path: ${file}"
     )
 endforeach()
+
+add_custom_command(
+    COMMAND
+        cmake -E copy_if_different ${CMAKE_SOURCE_DIR}/doc/conf.py ${SPHINX_SRCBUILD_DIR}/doc
+    TARGET
+        sphinx_check_sources
+    VERBATIM
+        COMMENT
+        "Updating documentation sources files into build path: conf.py"
+)
 
 add_custom_target(doctests
     ALL
@@ -72,11 +80,11 @@ add_custom_target(sphinxapi
     ALL
         # Copy build scripts for API doc generation
     COMMAND
-        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/apigen.py ${SPHINX_SRCBUILD_DIR}
+        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/apigen.py ${SPHINX_SRCBUILD_DIR}/doc
     COMMAND
-        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR}
+        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR}/doc
     COMMAND
-        python ${SPHINX_SRCBUILD_DIR}/build_api.py
+        python ${SPHINX_SRCBUILD_DIR}/doc/build_api.py
     COMMENT
         "Building pygimli api doc"
     DEPENDS
@@ -85,14 +93,14 @@ add_custom_target(sphinxapi
 
 add_custom_target(sphinxhtml ALL
      COMMAND
-        cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/doc/gimliapi
+        cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
      COMMAND
         ${SPHINX_EXECUTABLE}
         -T
         -b html
-        -c "${SPHINX_BUILD_DIR}"
+        -c "${SPHINX_BUILD_DIR}/doc"
         -d "${SPHINX_CACHE_DIR}/html"
-        "${SPHINX_SRCBUILD_DIR}"
+        "${SPHINX_BUILD_DIR}/doc"
         "${SPHINX_HTML_DIR}"
      COMMENT
          "Building HTML documentation with sphinx"
@@ -108,7 +116,7 @@ add_custom_target(sphinxpdf ALL
         -T
         -q
         -b latex
-        -c "${SPHINX_BUILD_DIR}"
+        -c "${SPHINX_BUILD_DIR}/doc"
         -d "${SPHINX_CACHE_DIR}/pdf"
         "${SPHINX_SRCBUILD_DIR}"
         "${SPHINX_PDF_DIR}" 
