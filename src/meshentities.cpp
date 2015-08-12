@@ -427,12 +427,16 @@ Boundary * Cell::boundaryTo(const RVector & sf){
 }
 
 Cell * Cell::neighbourCell(const RVector & sf){
+    if (haveInfNaN(sf)){
+        __MS("fixme " << sf)
+        return NULL;
+    }
+        
     //** hack for edge, triangle and tetrahedron. pls refactor
     if (((sf.size() == 2) && (shape_->dim() == 1)) ||
         ((sf.size() == 3) && (shape_->dim() == 2)) 
         //|| ((sf.size() == 4) && (shape_->dim() == 3))
     ){
-        
         Index minId = find(sf == min(sf))[0];
     
 //         Boundary * b = boundaryTo(sf);
