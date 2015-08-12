@@ -1,4 +1,5 @@
 if (DOXYGEN_FOUND)
+
     set(DOXYGEN_BUILD_DIR    ${CMAKE_CURRENT_BINARY_DIR}/doxygen )
     set(DOXYFILE_IN          ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/doxyfile.in )
     set(DOXYFILE             ${DOXYGEN_BUILD_DIR}/doxyfile )
@@ -86,7 +87,7 @@ add_custom_target(sphinxapi
     COMMAND
         cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/sidebar_gallery.py ${SPHINX_SRCBUILD_DIR}/doc
     COMMAND
-        #python ${SPHINX_SRCBUILD_DIR}/doc/build_api.py
+        python ${SPHINX_SRCBUILD_DIR}/doc/build_api.py
     COMMENT
         "Building pygimli api doc"
     DEPENDS
@@ -94,7 +95,7 @@ add_custom_target(sphinxapi
 )
 
 add_custom_target(sphinxhtml ALL
-     WORKING_DIRECTORY 
+     WORKING_DIRECTORY
         ${SPHINX_BUILD_DIR}/doc
      COMMAND
         cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
@@ -115,17 +116,19 @@ add_custom_target(sphinxhtml ALL
 
 
 add_custom_target(sphinxpdf ALL
+    WORKING_DIRECTORY
+        ${SPHINX_BUILD_DIR}/doc
     COMMAND
-        ${SPHINX_EXECUTABLE}
+        ${SPHINX_EXECUTABLE} -vvv
         -T
         -q
         -b latex
         -c "${SPHINX_BUILD_DIR}/doc"
         -d "${SPHINX_CACHE_DIR}/pdf"
         "${SPHINX_SRCBUILD_DIR}"
-        "${SPHINX_PDF_DIR}" 
+        "${SPHINX_PDF_DIR}"
     COMMAND
-        cd ${SPHINX_PDF_DIR} 
+        cd ${SPHINX_PDF_DIR}
     COMMAND
         make
     COMMAND
@@ -133,6 +136,7 @@ add_custom_target(sphinxpdf ALL
     COMMENT
         "Building PDF documentation with sphinx"
     DEPENDS
+        sphinx_check_sources
         sphinxapi
 )
 

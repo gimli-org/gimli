@@ -121,7 +121,7 @@ if (MSVC)
 	link_directories(${BOOST_LIBRARYDIR})
 	
 else(MSVC)
-	find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
+    find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
 	link_directories(${BOOST_LIBRARYDIR})
 endif(MSVC)
 
@@ -299,8 +299,7 @@ if (SPHINX_FOUND)
     add_subdirectory(doc EXCLUDE_FROM_ALL)
     file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
     file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
-    file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/*.png")
-    list(APPEND DOCFILES ${BIBFILES} ${PNGFILES})
+    list(APPEND DOCFILES ${BIBFILES})
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
 
     #foreach(file ${DOCFILES})

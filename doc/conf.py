@@ -51,7 +51,7 @@ except ImportError:
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
 # The following line is necessary for the Tools section
-sys.path.append(os.path.abspath(join(TRUNK_PATH, '/python/apps')))
+sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/apps')))
 
 # -- General configuration -----------------------------------------------------
 
@@ -249,7 +249,7 @@ html_favicon = join(SPHINXDOC_PATH, '_static/G.ico')
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = [join(SPHINXDOC_PATH, '_static')]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -324,7 +324,7 @@ latex_show_pagerefs = True
 
 from os import environ, path
 
-extradir = path.abspath(join(SPHINXDOC_PATH, '_static')).replace('\\', '/')
+extradir = path.abspath(join(SPHINXDOC_PATH, '_static'))#.replace('\\', '/')
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -373,7 +373,10 @@ pngmath_latex_preamble = '\
 
 _mathpng_tempdir = DOC_BUILD_DIR + 'mathtmp'
 
-latex_additional_macros = open(SPHINXDOC_PATH + '/_static/mylatex-commands.sty')
+staticpath = os.path.abspath(join(SPHINXDOC_PATH, '_static'))
+boxprint(staticpath)
+os.listdir(staticpath)
+latex_additional_macros = open(join(staticpath, 'mylatex-commands.sty'))
 
 mathjax_latex_preamble = ""
 
