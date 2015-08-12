@@ -13,6 +13,7 @@
 
 import sys
 import os
+from os.path import join
 import pip
 import re
 
@@ -30,27 +31,27 @@ except ImportError:
     raise ImportError(err)
 
 import pygimli as pg
+from pygimli.utils import boxprint
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-TRUNK_PATH='..'
-SPHINXDOC_PATH='.'
-DOC_BUILD_DIR=''
-DOXY_BUILD_DIR=''
-
 try:
     #from _build.doc.conf_environment import *
     from conf_environment import *
-except:
-    pass
+except ImportError:
+    TRUNK_PATH = '..'
+    SPHINXDOC_PATH = '.'
+    DOC_BUILD_DIR = ''
+    DOXY_BUILD_DIR = ''
+    boxprint("Building documentation in-source. Don't forget to make clean.")
 
-sys.path.append(os.path.abspath(SPHINXDOC_PATH + '/_sphinx-ext'))
+sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
 # The following line is necessary for the Tools section
-sys.path.append(os.path.abspath(TRUNK_PATH + '/python/apps'))
+sys.path.append(os.path.abspath(join(TRUNK_PATH, '/python/apps')))
 
 # -- General configuration -----------------------------------------------------
 
@@ -92,22 +93,22 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 # Setup automatic gallery generation
 sphinxgallery_conf = {
-    'examples_dir': [SPHINXDOC_PATH + 'examples/',
-                     SPHINXDOC_PATH + 'tutorials/'],
+    'examples_dir': [join(SPHINXDOC_PATH, 'examples'),
+                     join(SPHINXDOC_PATH, 'tutorials')],
     'gallery_dir': ['_examples_auto',
                     '_tutorials_auto'],
     'reference_url': {
-    # The module you locally document uses a None
-    'pygimli': None,
-    # External python modules use their documentation websites
-    'matplotlib': 'http://matplotlib.org',
-    'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
+        # The module you locally document uses a None
+        'pygimli': None,
+        # External python modules use their documentation websites
+        'matplotlib': 'http://matplotlib.org',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
 
     # path where to store your example linker templates
-    'mod_example_dir'     : '_function_examples',
+    'mod_example_dir': '_function_examples',
 
     # Your documented modules. You can use a string or a list of strings
-    'doc_module'          : ('pygimli')
+    'doc_module': 'pygimli'
 }
 
 autoclass_content = "both"
@@ -116,8 +117,8 @@ autoclass_content = "both"
 mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = [SPHINXDOC_PATH + '/_templates',
-                  DOC_BUILD_DIR + '/_templates' ]
+templates_path = [join(SPHINXDOC_PATH, '_templates'),
+                  join(DOC_BUILD_DIR, '_templates')]
 
 numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
@@ -216,7 +217,7 @@ pygments_style = 'default'
 # -- Options for HTML output ---------------------------------------------------
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [SPHINXDOC_PATH + '/_themes']
+html_theme_path = [join(SPHINXDOC_PATH, '_themes')]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -243,7 +244,7 @@ html_short_title = "GIMLi"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = SPHINXDOC_PATH + '/_static/G.ico'
+html_favicon = join(SPHINXDOC_PATH, '_static/G.ico')
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -303,7 +304,7 @@ htmlhelp_basename = 'gimlidoc'
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = SPHINXDOC_PATH + "/_themes/gimli/static/gimli.png"
+latex_logo = join(SPHINXDOC_PATH, "_themes/gimli/static/gimli.png")
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -323,7 +324,7 @@ latex_show_pagerefs = True
 
 from os import environ, path
 
-extradir = path.abspath(SPHINXDOC_PATH + '/_static').replace('\\', '/')
+extradir = path.abspath(join(SPHINXDOC_PATH, '_static')).replace('\\', '/')
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -350,7 +351,7 @@ if sphinx.__version__.startswith('1.3'):
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [('documentation', 
+latex_documents = [('documentation',
                     'gimli.tex',
                     'GIMLi Documentation',
                     'GIMLi Group',
@@ -478,11 +479,10 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH + "/_templates/pybte
 
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-    'gimliapi': (DOXY_BUILD_DIR + '/gimli.tag', 'gimliapi/html/')
+    'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi/html/')
 }
 
+# Create small gallery of all tutorials and examples in the sidebar.
 from sidebar_gallery import make_gallery
 
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
-        
-    
