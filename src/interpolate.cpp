@@ -52,15 +52,16 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
     
     Cell * c = 0;
     for (uint i = 0; i < pos.size(); i ++) {
-        
+//         __MS(pos[i])
         c = mesh.findCell(pos[i], count, false);
-//         if (!c) {__MS(pos[i])
-//             c = mesh.findCell(pos[i], count, true);
-//             if (!c) exit(0);
+//         if (!c) {
+//             __MS(pos[i])
+// //             c = mesh.findCell(pos[i], count, true);
+// //             if (!c) exit(0);
 //         }
         cells[i] = c;
         if (verbose) std::cout << "\r" << i + 1 << " \t/ " << pos.size();
-//                             << "\t searched: " << count << std::endl;
+                               //<< "\t searched: " << count << std::endl;
     }
     if (verbose) std::cout << std::endl;
 
