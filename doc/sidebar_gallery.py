@@ -26,13 +26,14 @@ def make_gallery(src_path, out_path):
     else:
         build_dir = ""
 
-    example_dir = src_path + "examples"
-    tutorial_dir = src_path + "tutorials"
+    example_dir = join(src_path, "examples")
+    tutorial_dir = join(src_path, "tutorials")
     img_dir = join(build_dir, "_images")
 
     # Get examples/tutorials
     examples = glob(join(example_dir, "*/*plot*.py"))
     tutorials = glob(join(tutorial_dir, "*/*plot*.py"))
+    print(examples, tutorials)
 
     # Get captions
     def readRSTSecTitles(fname, verbose=False):
@@ -101,9 +102,13 @@ def make_gallery(src_path, out_path):
     items.append(html_bottom)
     html = "\n".join(items)
 
-    if not os.path.exists(out_path + "_templates/"):
-        os.mkdir(out_path + "_templates/")
-    
-    
-    with open(out_path + "_templates/gallery.html", "w") as file: 
+    if not os.path.exists(join(out_path, "_templates/")):
+        os.mkdir(join(out_path, "_templates/"))
+
+
+    with open(join(out_path, "_templates/gallery.html"), "w") as file:
         file.write(html)
+
+if __name__ == '__main__':
+    # to allow 'make gallery' to be called in-source
+    make_gallery('.', '.')

@@ -64,6 +64,20 @@ class ProgressBar(object):
         self.pbar = self.pbar[0:pct_place] + \
             (pct_string + self.pbar[pct_place + len(pct_string):])
 
+def boxprint(s, width=80, sym="#"):
+    """Print string centered in a box.
+
+    Examples
+    --------
+    >>> from pygimli.utils import boxprint
+    >>> boxprint("This is centered in a box.", width=40, sym='+')
+    ++++++++++++++++++++++++++++++++++++++++
+    +      This is centered in a box.      +
+    ++++++++++++++++++++++++++++++++++++++++
+    """
+    row = sym * width
+    centered = s.center(width - 2)
+    print("\n".join((row, centered.join((sym, sym)), row)))
 
 def opt_import(module, requiredTo="use the full functionality"):
     """
