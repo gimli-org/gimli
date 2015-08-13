@@ -78,7 +78,7 @@ Please see :ref:`modelling tutorial<tut:modelling>` for examples and more detail
     References
     ----------
 
-    .. bibliography:: doc/biblio.bib
+    .. bibliography:: biblio.bib
         :style: mystyle
         :all:
 

@@ -101,6 +101,7 @@ add_custom_target(sphinxhtml ALL
         cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
      COMMAND
         ${SPHINX_EXECUTABLE}
+        -D plot_gallery=1
         -T
         -b html
         -c "${SPHINX_BUILD_DIR}/doc"
@@ -114,6 +115,26 @@ add_custom_target(sphinxhtml ALL
         sphinx_check_sources
 )
 
+add_custom_target(sphinxhtml-nogallery ALL
+     WORKING_DIRECTORY
+        ${SPHINX_BUILD_DIR}/doc
+     COMMAND
+        cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
+     COMMAND
+        ${SPHINX_EXECUTABLE}
+        -D plot_gallery=0
+        -T
+        -b html
+        -c "${SPHINX_BUILD_DIR}/doc"
+        -d "${SPHINX_CACHE_DIR}/html"
+        "${SPHINX_BUILD_DIR}/doc"
+        "${SPHINX_HTML_DIR}"
+     COMMENT
+         "Building HTML documentation with sphinx"
+     DEPENDS
+        sphinxapi
+        sphinx_check_sources
+)
 
 add_custom_target(sphinxpdf ALL
     WORKING_DIRECTORY

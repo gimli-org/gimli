@@ -94,7 +94,8 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 # Setup automatic gallery generation
 sphinxgallery_conf = {
     'examples_dir': [join(SPHINXDOC_PATH, 'examples'),
-                     join(SPHINXDOC_PATH, 'tutorials')],
+                     join(SPHINXDOC_PATH, 'tutorials'),
+                     ],
     'gallery_dir': ['_examples_auto',
                     '_tutorials_auto'],
     'reference_url': {

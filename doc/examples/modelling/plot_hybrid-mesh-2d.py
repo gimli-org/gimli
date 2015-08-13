@@ -96,7 +96,6 @@ ax, _ = showMesh(mesh, mesh.cellMarker(),
                 label="Region marker")
 
 drawMesh(ax, mesh)
-
 pg.wait()
 
 
