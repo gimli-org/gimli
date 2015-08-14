@@ -95,13 +95,12 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     return
 
 
-def showStitchedModels(mods, x=None, cmin=None, cmax=None, islog=True, zm=None,
-                       axes=None, cmap=None, title=None, edgecolors='none'):
+def showStitchedModels(mods, axes=None, cmin=None, cmax=None, **kwargs):
     """
         Show several 1d block models as (stitched) section.
     """
-    if x is None:
-        x = np.arange(len(mods))
+    x = kwargs.pop('x', np.arange(len(mods)))
+    topo = kwargs.pop('topo', x*0)
 
     nlay = int(np.floor((len(mods[0]) - 1) / 2.)) + 1
     if cmin is None or cmax is None:
@@ -122,6 +121,7 @@ def showStitchedModels(mods, x=None, cmin=None, cmax=None, islog=True, zm=None,
         fig = ax.figure
 
 #    ax.plot(x, x * 0., 'k.')
+    zm = kwargs.pop('zm', None)
     maxz = 0.
     if zm is not None:
         maxz = zm
@@ -142,21 +142,21 @@ def showStitchedModels(mods, x=None, cmin=None, cmax=None, islog=True, zm=None,
             maxz = max(maxz, z[-1])
 
         for j in range(len(thk)):
-            recs.append(Rectangle((x1[i], z[j]), dx[i], thk[j]))
+            recs.append(Rectangle((x1[i], topo[i]-z[j]), dx[i], -thk[j]))
 
-    pp = PatchCollection(recs, edgecolors=edgecolors)
-    ax.add_collection(pp)
-    pp.set_edgecolors(None)
+    pp = PatchCollection(recs, edgecolors=kwargs.pop('edgecolors', 'none'))
+    pp.set_edgecolor(kwargs.pop('edgecolors', 'none'))
     pp.set_linewidths(0.0)
-    if cmap is not None:
-        pp.set_cmap(cmap)
+    ax.add_collection(pp)
+    if 'cmap' in kwargs:
+        pp.set_cmap(kwargs['cmap'])
 
     print(cmin, cmax)
     norm = LogNorm(cmin, cmax)
     pp.set_norm(norm)
     pp.set_array(np.array(RES))
 #    pp.set_clim(cmin, cmax)
-    ax.set_ylim((maxz, 0.))
+    ax.set_ylim((-maxz, max(topo)))
     ax.set_xlim((x1[0], x1[-1] + dx[-1]))
 
     cbar = plt.colorbar(pp, ax=ax, norm=norm, orientation='horizontal',
