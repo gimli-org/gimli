@@ -291,6 +291,11 @@ public:
     /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */
     void changed();
 
+    /*! Reverse node sequence order to enforce positive Jacobian determinant. 
+     * Please use with care! Return True if the order has been changed.*/
+    virtual bool enforcePositiveDirection();
+//     double jacobianDeterminant() const { return det(this->createJacobian()); }
+    
 protected:
 
     inline void resizeNodeSize_(uint n) { nodeVector_.resize(n, NULL);  }
@@ -581,6 +586,10 @@ public:
 
     double volume() const;
 
+    /*! Special version of since simple order reverse isn't enough here. 
+     * We try to simple swap up and down side. */
+    virtual bool enforcePositiveDirection();
+        
 //     /*! See Shape::N. */
 //     virtual void N(const RVector3 & L, RVector & n) const;
 //

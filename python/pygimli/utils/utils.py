@@ -171,10 +171,11 @@ def unicodeToAscii(text):
 
 def logDropTol(p, droptol=1e-3):
     """
-    Example
-    -------
+    
+    Examples
+    --------
     >>> from pygimli.utils import logDropTol
-    >>> x = logDropTol((-10,-1,0,1,100))
+    >>> x = logDropTol((-10, -1, 0, 1, 100))
     >>> print(x.array())
     [-4. -3.  0.  3.  5.]
     """

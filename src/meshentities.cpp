@@ -429,6 +429,7 @@ Boundary * Cell::boundaryTo(const RVector & sf){
 Cell * Cell::neighbourCell(const RVector & sf){
     if (haveInfNaN(sf)){
         __MS("fixme " << sf)
+        exit(0);
         return NULL;
     }
         

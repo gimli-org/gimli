@@ -67,15 +67,15 @@ add_custom_command(
         "Updating documentation sources files into build path: conf.py"
 )
 
-add_custom_target(doctests
-    ALL
-        ${SPHINX_EXECUTABLE} -b doctest  ${SPHINX_SRCBUILD_DIR}
-        ${SPHINX_CACHE_DIR}/doctests
-    COMMENT "Running doctests"
-    DEPENDS
-        sphinx_check_sources
-        sphinxapi
-    )
+# add_custom_target(doctests
+#     ALL
+#         ${SPHINX_EXECUTABLE} -b doctest  ${SPHINX_SRCBUILD_DIR}
+#         ${SPHINX_CACHE_DIR}/doctests
+#     COMMENT "Running doctests"
+#     DEPENDS
+#         sphinx_check_sources
+#         sphinxapi
+# )
 
 add_custom_target(sphinxapi
     ALL
@@ -100,7 +100,7 @@ add_custom_target(sphinxhtml ALL
      COMMAND
         cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
      COMMAND
-        ${SPHINX_EXECUTABLE}
+        ${SPHINX_EXECUTABLE} -v
         -D plot_gallery=1
         -T
         -b html
@@ -121,7 +121,7 @@ add_custom_target(sphinxhtml-nogallery ALL
      COMMAND
         cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
      COMMAND
-        ${SPHINX_EXECUTABLE}
+        ${SPHINX_EXECUTABLE} -v
         -D plot_gallery=0
         -T
         -b html
@@ -136,24 +136,20 @@ add_custom_target(sphinxhtml-nogallery ALL
         sphinx_check_sources
 )
 
-add_custom_target(sphinxpdf ALL
+add_custom_target(sphinxlatex ALL
     WORKING_DIRECTORY
         ${SPHINX_BUILD_DIR}/doc
     COMMAND
-        ${SPHINX_EXECUTABLE} -vvv
+        ${SPHINX_EXECUTABLE} -v
+        -D plot_gallery=1
         -T
         -q
         -b latex
         -c "${SPHINX_BUILD_DIR}/doc"
         -d "${SPHINX_CACHE_DIR}/pdf"
-        "${SPHINX_SRCBUILD_DIR}"
+        "${SPHINX_SRCBUILD_DIR}/doc"
         "${SPHINX_PDF_DIR}"
     COMMAND
-        cd ${SPHINX_PDF_DIR}
-    COMMAND
-        make
-    COMMAND
-        cmake -E copy_if_different gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
     COMMENT
         "Building PDF documentation with sphinx"
     DEPENDS
@@ -161,25 +157,21 @@ add_custom_target(sphinxpdf ALL
         sphinxapi
 )
 
-add_custom_target(doc
+add_custom_target(sphinxpdf ALL
+    WORKING_DIRECTORY
+        ${SPHINX_PDF_DIR}
     COMMAND
-        # redundant, but necessary for now. Builds html pages again with API and
-        # sidebar gallery without running all examples again.
-#         cd ${SPHINX_SRC_DIR}/doc
-#         && make api
-#         && make html-nogallery BUILDDIR=${SPHINX_BUILD_DIR}
+        make
+    COMMAND
+        cmake -E copy_if_different gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
+    DEPENDS
+        sphinxlatex
+)
+
+add_custom_target(doc
     COMMENT
         "Building HTML, API and PDF Documentation"
     DEPENDS
-        sphinxpdf
         sphinxhtml
+        sphinxpdf
 )
-
-# inplace build is not the "official" way
-# add_custom_target(sphinxclean
-#     COMMAND
-#         cd ${SPHINX_SRC_DIR}/doc && make clean
-#     COMMENT
-#         "Cleaning PDF, HTML and API Documentation"
-# )
-

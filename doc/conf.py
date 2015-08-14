@@ -340,7 +340,8 @@ latex_elements = {
     \\usepackage{amssymb}\n\
     \\usepackage{amsmath}\n\
     \\usepackage{bm}\n\
-    \\usepackage{pslatex}\n'
+    \\usepackage{pslatex}\n\
+    \\graphicspath{{' + SPHINXDOC_PATH + '}}'
 }
 
 # This fixes https://github.com/gimli-org/gimli/issues/11

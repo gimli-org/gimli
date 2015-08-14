@@ -72,6 +72,8 @@ public:
         mat_[3] = 0.0; mat_[4] = 0.0; mat_[5] = 0.0;
         mat_[6] = 0.0; mat_[7] = 0.0; mat_[8] = 0.0;
     }
+    inline Index rows() const { return 3; }
+    inline Index cols() const { return 3; }
     
     inline const Vector < ValueType > col(Index i) const { 
         Vector < ValueType >ret(3);
@@ -93,6 +95,12 @@ public:
     
     inline bool valid() const {return valid_;}
 
+    inline ValueType det() const {
+        return mat_[0] * (mat_[4] * mat_[8] - mat_[5] * mat_[7]) -
+               mat_[1] * (mat_[3] * mat_[8] - mat_[5] * mat_[6]) +
+               mat_[2] * (mat_[3] * mat_[7] - mat_[4] * mat_[6]);
+    }
+    
 protected:
     
     bool valid_;
@@ -924,11 +932,6 @@ template < class T > inline T det(const T & a, const T & b, const T & c, const T
     return a * d - b * c;
 }
 
-template < class ValueType > inline ValueType det(const Matrix3 < ValueType > & A){
-    return A[0] * (A[4] * A[8] - A[5] * A[7]) -
-           A[1] * (A[3] * A[8] - A[5] * A[6]) +
-           A[2] * (A[3] * A[7] - A[4] * A[6]);
-}
     
 /*! Return determinant for Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > double det(const Matrix & A){
