@@ -56,7 +56,7 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
             for ii, a in enumerate(A):
                 a += np.exp(-self.t_ / t2[i]) * amps[ii]
 
-        return pg.asvector(np.abs(A).ravel())
+        return np.abs(A).ravel()  # formerly pg as vector
 
 if __name__ == "__main__":
     pass

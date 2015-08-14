@@ -10,24 +10,6 @@ from . modelling import MRS1dBlockQTModelling
 from matplotlib.cm import Spectral
 
 
-class NDMatrix(pg.RBlockMatrix):  # to be moved to a better place
-    """
-    Diagonal block (block-Jacobi) matrix derived from pg.BlockMatrix
-    (to be moved to a better place at a later stage)
-    """
-    def __init__(self, num, nrows, ncols):
-        super(type(self), self).__init__()  # call inherited init function
-        self.Ji = []  # list of individual block matrices
-        for i in range(num):
-            self.Ji.append(pg.RMatrix())
-            self.Ji[-1].resize(nrows, ncols)
-            n = self.addMatrix(self.Ji[-1])
-            self.addMatrixEntry(n, nrows * i, ncols * i)
-
-        self.recalcMatrixSize()
-        print(self.rows(), self.cols())
-
-
 class JointMRSModelling(MRS1dBlockQTModelling):
     """MRS Laterally constrained modelling based on BlockMatrices"""
     def __init__(self, mrs, nlay=2, verbose=False):
@@ -52,12 +34,12 @@ class MRSLCI(pg.ModellingBase):
         super(MRSLCI, self).__init__(verbose)
         self.nlay = nlay
         self.nx = len(profile)
-        npar = 3 * nlay - 1
-        self.mesh2d = pg.Mesh()
-        self.mesh2d.create2DGrid(range(npar+1), range(self.nx+1))
+        self.np = 3 * nlay - 1
+#        self.mesh2d = pg.createMesh2D(npar, self.nx)
+#        self.mesh2d = pg.createMesh2D(self.nx, self.np)
+        self.mesh2d = pg.createMesh2D(self.np, self.nx)
+        self.mesh2d.rotate(pg.RVector3(0, 0, -np.pi/2))
         self.setMesh(self.mesh2d)
-
-        # self.J = NDMatrix(self.nx, self.nf*2, npar)
         self.J = pg.RBlockMatrix()
         self.FOP1d = []
         ipos = 0
@@ -65,7 +47,7 @@ class MRSLCI(pg.ModellingBase):
             mrs.createFOP(nlay, verbose=False)
             self.FOP1d.append(mrs.f)
             n = self.J.addMatrix(self.FOP1d[-1].jacobian())
-            self.J.addMatrixEntry(n, ipos, npar * i)
+            self.J.addMatrixEntry(n, ipos, self.np * i)
             ipos += len(mrs.data)
 
         self.J.recalcMatrixSize()
@@ -74,7 +56,8 @@ class MRSLCI(pg.ModellingBase):
 
     def response(self, model):
         """cut-together forward responses of all soundings"""
-        modA = np.reshape(model, (self.nx, self.nlay * 3 - 1))
+        modA = np.asarray(model).reshape(self.nx, self.np)
+#        modA = np.reshape(model, (self.nx, self.np))
         resp = pg.RVector(0)
         for i, modi in enumerate(modA):
             resp = pg.cat(resp, self.FOP1d[i].response(modi))
@@ -82,7 +65,9 @@ class MRSLCI(pg.ModellingBase):
         return resp
 
     def createJacobian(self, model):
-        modA = np.reshape(model, (self.nx, self.nlay * 3 - 1))
+        """ fill individual blocks of Block-Jacobian matrix """
+        modA = np.asarray(model).reshape(self.nx, self.np)
+#        modA = np.reshape(model, (self.nx, self.np))
         for i in range(self.nx):
             self.FOP1d[i].createJacobian(modA[i])
 
@@ -91,16 +76,17 @@ class MRSprofile():
     """ manager class for several MRS data along a profile
         see code in the main function below for how to use it
     """
-    def __init__(self, filename, x=None, **kwargs):
+    def __init__(self, filename, x=None, dx=1, x0=0, **kwargs):
         self.mrs = []
         if '*' in filename:
             filename = glob.glob(filename)
         elif os.path.isdir(filename):
             filename = glob.glob(filename+'/*.mrsi')
         self.load(filename, **kwargs)
-        self.x = range(len(self.mrs))
         if x is not None:
             self.setX(x)
+        else:
+            self.x = np.arange(len(self.mrs)) * dx + x0
 
     def __repr__(self):
         return "MRS profile with "+str(len(self.mrs))+" soundings"
@@ -152,7 +138,7 @@ class MRSprofile():
         self.totalChi2 = sum(np.array(self.Chi2vec)*np.array(self.nData)) / \
             sum(self.nData)
         self.totalRMS = np.sqrt(sum(np.array(self.RMSvec)**2 *
-                                np.array(self.nData)) / sum(self.nData))
+                                    np.array(self.nData)) / sum(self.nData))
 
     def block1dInversion(self, nlay=2, startModel=None, verbose=True):
         """invert all data together by one 1D model (variant 1 - all equal)"""
@@ -184,26 +170,17 @@ class MRSprofile():
         for i in range(3):
             f.region(i).setParameters(mrsobj.startval[i], mrsobj.lowerBound[i],
                                       mrsobj.upperBound[i])
-#        f.region(0).setStartValue(mrsobj.startval[0])
-#        f.region(1).setStartValue(mrsobj.startval[1])
-#        f.region(2).setStartValue(mrsobj.startval[2])
-#        # Model transformation instances saved in class
-#        transTH = pg.RTransLogLU(mrsobj.lowerBound[0], mrsobj.upperBound[0])
-#        transWC = pg.RTransLogLU(mrsobj.lowerBound[1], mrsobj.upperBound[1])
-#        transT2 = pg.RTransLogLU(mrsobj.lowerBound[2], mrsobj.upperBound[2])
-#        f.region(0).setTransModel(transTH)
-#        f.region(1).setTransModel(transWC)
-#        f.region(2).setTransModel(transT2)
+
         INV = pg.RInversion(data, f, verbose)
         INV.setLambda(lam)
         INV.setMarquardtScheme(0.8)
-        INV.stopAtChi1(False)  # now in MarquardtScheme
+#        INV.stopAtChi1(False)  # should be already in MarquardtScheme
         INV.setDeltaPhiAbortPercent(0.5)
         INV.setAbsoluteError(error)
         model = INV.run()
         return model
 
-    def blockLCInversion(self, nlay=2, startModel=None, lam=100., cType=1):
+    def blockLCInversion(self, nlay=2, startModel=None, **kwargs):
         """laterally constrained (piece-wise 1D) block inversion"""
         data, error, self.nData = pg.RVector(), pg.RVector(), []
         for mrs in self.mrs:
@@ -212,8 +189,8 @@ class MRSprofile():
             self.nData.append(len(mrs.data))
 
         fop = MRSLCI(self.mrs, nlay=nlay)
-        fop.region(0).setZWeight(0.01)
-        fop.region(0).setConstraintType(cType)
+        fop.region(0).setZWeight(kwargs.pop('zWeight', 0))
+        fop.region(0).setConstraintType(kwargs.pop('cType', 1))
         transData, transMod = pg.RTrans(), pg.RTransLog()  # LU(1., 500.)
         if startModel is None:
             startModel = self.block1dInversion(nlay, verbose=False)
@@ -222,11 +199,12 @@ class MRSprofile():
         INV.setModel(model)
         INV.setReferenceModel(model)
         INV.setAbsoluteError(error)
-        INV.setLambda(lam)
+        INV.setLambda(kwargs.pop('lam', 100))
+        INV.setMaxIter(kwargs.pop('maxIter', 20))
         INV.stopAtChi1(False)
         model = INV.run()
         self.WMOD, self.TMOD = [], []
-        for par in np.reshape(model, (len(self.mrs), nlay*3-1)):
+        for par in np.reshape(model, (len(self.mrs), 3*nlay-1)):
                 thk = par[0:nlay-1]
                 self.WMOD.append(np.hstack((thk, par[nlay-1:2*nlay-1])))
                 self.TMOD.append(np.hstack((thk, par[2*nlay-1:3*nlay-1])))
@@ -236,12 +214,14 @@ class MRSprofile():
         misfit = data - resp
         emisfit = misfit / error
         misfit *= 1e9
+        self.totalChi2 = INV.chi2()
+        self.totalRMS = INV.absrms()*1e9
         self.RMSvec, self.Chi2vec = [], []
         for i in range(len(self.mrs)):
             self.RMSvec.append(np.sqrt(np.mean(misfit[ind[i]:ind[i+1]]**2)))
             self.Chi2vec.append(np.mean(emisfit[ind[i]:ind[i+1]]**2))
 
-    def showFits(self):
+    def printFits(self):
         """show single fits and total fit"""
         np.set_printoptions(precision=2)
         print("Single RMS [nV]:")
@@ -251,10 +231,10 @@ class MRSprofile():
         print('Total RMS/Chi^2 value:')
         print(np.round(self.totalRMS, 2), np.round(self.totalChi2, 2))
 
-    def showModel(self, showFit=0, cmap=Spectral,
+    def showModel(self, showFit=0, cmap=Spectral, figsize=(13, 12),
                   wlim=[None, None], tlim=[None, None]):
         """ show 2d model as stitched 1d models along with fit"""
-        fig, ax = plt.subplots(nrows=2+showFit, figsize=(14, 11), sharex=True)
+        fig, ax = plt.subplots(nrows=2+showFit, figsize=figsize, sharex=True)
         showStitchedModels(self.WMOD, x=self.x, ax=ax[-2], islog=False,
                            cmap=cmap, cmin=wlim[0], cmax=wlim[1],
                            title=r'$\theta$ [-]')
@@ -277,13 +257,15 @@ class MRSprofile():
 if __name__ == "__main__":
     name = sys.argv[-1]
     nlay = 3
-    profile = MRSprofile(name)
+    profile = MRSprofile(name)  # directory or list of names
     print(profile)
-    model = profile.block1dInversion(nlay=nlay)
-    profile.independentBlock1dInversion(nlay=2)
-    profile.showFits()
-    fig, ax = profile.showModel()
+    fig, ax = profile.showData()  # subplots with data cubes
+    model = profile.block1dInversion(nlay=nlay)  # all in one model
+    profile.independentBlock1dInversion(nlay=2)  # each separately
+    profile.printFits()
+    fig, ax = profile.showModel(showFit=1)
     fig.savefig(name+'-Ind-N'+str(nlay)+'.pdf', bbox_inches='tight')
     profile.blockLCInversion(nlay=nlay, lam=100, startModel=model)
-    fig, ax = profile.showModel()
+    profile.printFits()
+    fig, ax = profile.showModel(showFit=1)
     fig.savefig(name+'-LCI-N'+str(nlay)+'.pdf', bbox_inches='tight')

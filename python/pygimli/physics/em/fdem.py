@@ -432,7 +432,8 @@ class FDEM():
             Extract error vector for a give position or sounding number
         """
         ip, op, err = self.selectData(xpos)
-        return pg.asvector(np.tile(np.maximum(err * 0.7071, minvalue), 2))
+        return np.tile(np.maximum(err * 0.7071, minvalue), 2)
+#        return pg.asvector(np.tile(np.maximum(err * 0.7071, minvalue), 2))
 
     def invBlock(self, xpos=0, nlay=2, noise=1.0,
                  stmod=30., lam=100., lBound=0., uBound=0., verbose=False):

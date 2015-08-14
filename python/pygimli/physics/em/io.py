@@ -175,7 +175,7 @@ class FDEMData():
             model[0] = 2.
         else:
             if len(stmod) == nlay * 2 - 1:
-                model = pg.asvector(stmod)
+                model = stmod  # formerly as vector
             else:
                 model = pg.RVector(nlay * 2 - 1, 30.)
 

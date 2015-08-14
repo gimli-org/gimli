@@ -52,8 +52,7 @@ class MRS():
             out += ", %d layers" % len(self.z)
         return out + ">"
 
-    def loadMRSI(self, filename, defaultNoise=100e-9, usereal=False,
-                 mint=0., maxt=2.0, **kwargs):
+    def loadMRSI(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
         """load data, error and kernel from mrsi file"""
         from scipy.io import loadmat  # loading Matlab mat files
 
@@ -66,22 +65,25 @@ class MRS():
         self.K = idata.kernel.K
         self.z = np.hstack((0., idata.kernel.z))
         self.dcube = idata.data.dcube[:, good]
-        if len(self.dcube) == len(self.q) and len(self.dcube[0]) == len(self.t):
+        ndcubet = len(self.dcube[0])
+        if len(self.dcube) == len(self.q) and ndcubet == len(self.t):
             if usereal:
-#                self.data = np.abs(np.real(self.dcube.flat))
                 self.data = np.real(self.dcube.flat)
+#                self.data = np.abs(np.real(self.dcube.flat))
             else:
                 self.data = np.abs(self.dcube.flat)
 
         self.ecube = idata.data.ecube[:, good]
+        necubet = len(self.dcube[0])
         if self.verbose:
             print("loaded file: " + filename)
         if self.ecube[0][0] == 0:
             if self.verbose:
-                print("no errors in file, assuming", defaultNoise * 1e9, "nV")
+                defaultNoise = kwargs.pop("defaultNoise", 100e-9)
+                print("no errors in file, assuming", defaultNoise*1e9, "nV")
             self.ecube = np.ones((len(self.q), len(self.t))) * defaultNoise
             self.ecube /= np.sqrt(idata.data.gateL)
-        if len(self.ecube) == len(self.q) and len(self.ecube[0]) == len(self.t):
+        if len(self.ecube) == len(self.q) and necubet == len(self.t):
             self.error = self.ecube.ravel()
 
         if min(self.error) < 0.:
@@ -93,7 +95,7 @@ class MRS():
             if self.verbose:
                 print("Warning: zero error, assuming", defaultNoise)
             self.error[self.error == 0.] = defaultNoise
-        # clip data if desired
+        # clip data if desired (using vmin and vmax keywords)
         if "vmax" in kwargs:
             vmax = kwargs['vmax']
             self.error[self.data > vmax] = max(self.error)*3
@@ -102,13 +104,12 @@ class MRS():
             vmin = kwargs['vmin']
             self.error[self.data < vmin] = max(self.error)*3
             self.data[self.data < vmin] = vmin
-
+        # load model from matlab file (result of MRSQTInversion)
         if hasattr(idata, 'inv1Dqt'):
             if hasattr(idata.inv1Dqt, 'blockMono'):
                 sol = idata.inv1Dqt.blockMono.solution[0]
                 self.model = np.hstack((sol.thk, sol.w, sol.T2))
                 self.nlay = len(sol.w)
-
         if self.verbose:
             print(self)
 
@@ -233,31 +234,15 @@ class MRS():
 
     def createFOP(self, nlay=3, verbose=True, **kwargs):
         """create forward operator instance"""
-#        if verbose:
-#            print('creating FOP with '+str(nlay)+' layers')
         self.nlay = nlay
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
-        if True:
-            for i in range(3):
-                self.f.region(i).setParameters(self.startval[i],
-                                               self.lowerBound[i],
-                                               self.upperBound[i])
-        else:
-            self.f.region(0).setStartValue(self.startval[0])
-            self.f.region(1).setStartValue(self.startval[1])
-            self.f.region(2).setStartValue(self.startval[2])
-            # Model transformation instances saved in class
-            self.trTH = pg.RTransLogLU(self.lowerBound[0], self.upperBound[0])
-            self.trWC = pg.RTransLogLU(self.lowerBound[1], self.upperBound[1])
-            self.trT2 = pg.RTransLogLU(self.lowerBound[2], self.upperBound[2])
-            self.f.region(0).setTransModel(self.trTH)
-            self.f.region(1).setTransModel(self.trWC)
-            self.f.region(2).setTransModel(self.trT2)
+        for i in range(3):
+            self.f.region(i).setParameters(self.startval[i],
+                                           self.lowerBound[i],
+                                           self.upperBound[i], "log")
 
     def createInv(self, nlay=3, lam=100., verbose=True, **kwargs):
-        """ create inversion instance
-            Parameters: nlay, lam, verbose, robust
-        """
+        """ create inversion instance (and fop if necessary with nlay) """
         if self.f is None or self.nlay != nlay:
             self.createFOP(nlay)
         self.INV = pg.RInversion(self.data, self.f, verbose)
@@ -271,12 +256,12 @@ class MRS():
 
     def run(self, nlay=3, lam=100., startvec=None,
             verbose=True, uncertainty=False, **kwargs):
-        """even easier variant returning all in one call"""
+        """ easiest variant doing all (create fop and inv) in one call """
         if self.INV is None or self.nlay != nlay:
             self.INV = self.createInv(nlay, lam, verbose, **kwargs)
         self.INV.setVerbose(verbose)
         if startvec is not None:
-            self.INV.setModel(pg.asvector(startvec))
+            self.INV.setModel(startvec)
         if verbose:
             print("Doing inversion...")
         self.model = np.array(self.INV.run())
@@ -319,7 +304,7 @@ class MRS():
         return fig, ax
 
     def showResultAndFit(self, figsize=(12, 10), save='', plotmisfit=False,
-                         maxdep=None, show=False, clim=None):
+                         maxdep=None, clim=None):
         """show theta(z), T2*(z), data and model response"""
         fig, ax = plt.subplots(2, 2 + plotmisfit, figsize=figsize)
         thk, wc, t2 = self.splitModel()
@@ -402,15 +387,23 @@ class MRS():
         return varVG, MCMs
 
     def genMod(self, individual):
-        model = pg.asvector(individual) * (self.lUB - self.lLB) + self.lLB
+        """ generate (GA) model from random vector (0-1) using model bounds """
+        model = individual * (self.lUB - self.lLB) + self.lLB  # fasv
         if self.logpar:
             return pg.exp(model)
         else:
             return model
 
-    def runEA(self, nlay=None, type='GA', pop_size=100,
+    def runEA(self, nlay=None, eatype='GA', pop_size=100,
               max_evaluations=10000, **kwargs):
-        """Whats this"""
+        """ Run evolutionary algorithm using inspyred library, eatype can be:
+            GA..Genetic Algorithm
+            SA..Simulated Annealing
+            DEA..Discrete Evolutionary Algorithm
+            PSO..Particle Swarm Optimization
+            ACS..Ant Colony Strategy
+            ES..Evolutionary Strategy
+        """
         import inspyred
         import random
 
@@ -419,11 +412,13 @@ class MRS():
             return [random.random() for i in range(nlay * 3 - 1)]
 
         def my_observer(population, num_generations, num_evaluations, args):
+            """ print fitness over generation number """
             best = min(population)
             print('{0:6} -- {1}'.format(num_generations, best.fitness))
 
         @inspyred.ec.evaluators.evaluator
         def datafit(individual, args):
+            """ error-weighted data misfit as basis for evaluating fitness """
             misfit = (self.data - self.f.response(self.genMod(individual))) / \
                 self.error
             return np.mean(misfit**2)
@@ -451,22 +446,22 @@ class MRS():
         rand = random.Random()
         rand.seed(int(time.time()))
         # choose among different evolution algorithms
-        if type == 'GA':
+        if eatype == 'GA':
             ea = inspyred.ec.GA(rand)
             ea.variator = [
                 inspyred.ec.variators.blend_crossover,
                 inspyred.ec.variators.gaussian_mutation]
             ea.selector = inspyred.ec.selectors.tournament_selection
             ea.replacer = inspyred.ec.replacers.generational_replacement
-        if type == 'SA':
+        if eatype == 'SA':
             ea = inspyred.ec.SA(rand)
-        if type == 'DEA':
+        if eatype == 'DEA':
             ea = inspyred.ec.DEA(rand)
-        if type == 'PSO':
+        if eatype == 'PSO':
             ea = inspyred.swarm.PSO(rand)
-        if type == 'ACS':
+        if eatype == 'ACS':
             ea = inspyred.swarm.ACS(rand, [])
-        if type == 'ES':
+        if eatype == 'ES':
             ea = inspyred.ec.ES(rand)
             ea.terminator = [inspyred.ec.terminators.evaluation_termination,
                              inspyred.ec.terminators.diversity_termination]
@@ -484,8 +479,8 @@ class MRS():
         self.pop.sort(reverse=True)
         self.fits = [ind.fitness for ind in self.pop]
 
-    def plotPop(self, maxfitness=None, savefile=True):
-        """Whats this?"""
+    def plotPopulation(self, maxfitness=None, savefile=True):
+        """ Plot fittest individuals (fitness<maxfitness) as 1d models """
         if maxfitness is None:
             maxfitness = self.pop[0].fitness * 2
         fig, ax = plt.subplots(1, 2, sharey=True)

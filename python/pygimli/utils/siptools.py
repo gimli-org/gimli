@@ -28,7 +28,7 @@ def astausgleich(ab2org, mn2org, rhoaorg):
             if P.isfinite(fak) and fak > 0.:
                 rhoa[mn2 == um[i + 1]] *= fak
 
-    return pg.asvector(rhoa)
+    return rhoa  # formerly pg as vector
 
 
 def loadSIPallData(filename, outnumpy=False):
