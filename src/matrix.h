@@ -932,6 +932,11 @@ template < class T > inline T det(const T & a, const T & b, const T & c, const T
     return a * d - b * c;
 }
 
+/*! Return determinant for Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
+template < class ValueType > double det(const Matrix3< ValueType > & A){
+    return A.det();
+}
+
     
 /*! Return determinant for Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > double det(const Matrix & A){

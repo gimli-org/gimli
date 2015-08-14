@@ -322,7 +322,7 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
     RVector3 drst(0.0, 0.0, 0.0);
 
     double dErr = 10.0;
-    double lastdErr = 0.0;
+//     double lastdErr = 0.0;
     double damping = 1.0;
     
     while (abs(dErr) > tol && iter < maxiter){
@@ -338,25 +338,23 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
         drst = invJacobian() * dxyz;
         
         rst += drst * damping;
-        lastdErr = dErr;
+//         lastdErr = dErr;
         dErr = err - drst.abs();
         err = drst.abs();
         
-//      __MS(iter << " " << err << " " << damping << " " << dErr)
+//       __MS(iter << " " << err << " " << damping << " " << dErr)
     }
     
-    if (err> 1){
+//     if (err> 1){
 //         __MS(iter << " " << err << " " << damping << " " << dErr)
 //         for (Index i = 0; i < nodeCount(); i ++){
 //             __MS(nodeVector_[i]->pos());
 //         }
 //             __MS(this->createJacobian().det())
 //         std::cout << xyz << " " << rst << std::endl;
-//exit(0);
-        
-    }
-    
-    
+// exit(0);
+//         
+//     }
 }
 
 RVector3 Shape::rst(const RVector3 & xyz) const{
