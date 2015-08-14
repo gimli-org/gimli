@@ -210,6 +210,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     
     template class Matrix< double >;
     template class Matrix< std::complex< double > >;
+    template class Matrix3< double >;
     
     template class BlockMatrix< double >;
     
@@ -308,6 +309,9 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
     template RMatrix real(const CMatrix & a);
     template RMatrix imag(const CMatrix & a);
+    
+    template double det(const RMatrix & a);
+        
     
     template double sum(const RVector & v);
     template Complex sum(const CVector & v);

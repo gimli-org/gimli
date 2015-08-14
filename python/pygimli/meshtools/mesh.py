@@ -570,8 +570,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     two region markers, one for the parameters domain (marker=2) and
     a larger boundary around the outside (marker=1)
 
-    TODO
-    ----
+    TODO:
+    
         * closed domains (boundary == 0)
         * additional topopoints
         * spline interpolations between sensorpoints or addpoints

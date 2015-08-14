@@ -615,7 +615,9 @@ protected:
 
     Node * createNode_(const RVector3 & pos, int marker, int id);
 
-    template < class B > Boundary * createBoundary_(std::vector < Node * > & nodes, int marker, int id){
+    template < class B > Boundary * createBoundary_(
+        std::vector < Node * > & nodes, int marker, int id){
+        
         if (id == -1) id = boundaryCount();
         boundaryVector_.push_back(new B(nodes));
         boundaryVector_.back()->setMarker(marker);
@@ -623,7 +625,9 @@ protected:
         return boundaryVector_.back();
     }
 
-    template < class B > Boundary * createBoundaryChecked_(std::vector < Node * > & nodes, int marker){
+    template < class B > Boundary * createBoundaryChecked_(
+        std::vector < Node * > & nodes, int marker){
+        
         Boundary * b = findBoundary(nodes);
         if (!b) {
             b = createBoundary_< B >(nodes, marker, boundaryCount());
@@ -633,7 +637,9 @@ protected:
         return b;
     }
 
-    template < class C > Cell * createCell_(std::vector < Node * > & nodes, int marker, int id){
+    template < class C > Cell * createCell_(
+        std::vector < Node * > & nodes, int marker, int id){
+        
         if (id == -1) id = cellCount();
         cellVector_.push_back(new C(nodes));
         cellVector_.back()->setMarker(marker);

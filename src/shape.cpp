@@ -132,6 +132,15 @@ void Shape::setNode(Index i, Node & n) {
     this->changed();
 }
 
+bool Shape::enforcePositiveDirection(){
+    if (createJacobian().det() < 0){
+        std::reverse(nodeVector_.begin(), nodeVector_.end());
+        this->changed();
+        return true;
+    } 
+    return false;
+}
+
 RVector3 Shape::center() const {
     RVector3 center(0.0, 0.0, 0.0);
     for (uint i = 0; i < nodeVector_.size(); i ++) {
@@ -280,7 +289,7 @@ RVector3 Shape::xyz(const RVector3 & rst) const{
 void Shape::rst2xyz(const RVector3 & rst, RVector3 & xyz) const{
     RVector sf(this->N(rst));
 
-    for (uint i = 0; i < nodeCount(); i ++){
+    for (Index i = 0; i < nodeCount(); i ++){
         xyz += nodeVector_[i]->pos() * sf[i];
     }
 }
@@ -306,28 +315,48 @@ const RMatrix3 & Shape::invJacobian() const {
 
 void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
 
-    double err = 1., tol = TOLERANCE;
+    double err = 1., tol = 1e-10;
     uint maxiter = 200;
     uint iter = 0;
     RVector3 dxyz(0.0, 0.0, 0.0);
     RVector3 drst(0.0, 0.0, 0.0);
 
-    while (err > tol && iter < maxiter){
+    double dErr = 10.0;
+    double lastdErr = 0.0;
+    double damping = 1.0;
+    
+    while (abs(dErr) > tol && iter < maxiter){
+        if (err > 1000 && iter > 1){
+            damping *= 0.9;
+            rst = RVector3(0.0, 0.0, 0.0);
+            err = 1;
+            iter = 0;
+        }
+        
         iter ++;
         dxyz = xyz - this->xyz(rst);
         drst = invJacobian() * dxyz;
-        rst += drst;
+        
+        rst += drst * damping;
+        lastdErr = dErr;
+        dErr = err - drst.abs();
         err = drst.abs();
+        
+//      __MS(iter << " " << err << " " << damping << " " << dErr)
     }
-// __M
-//     std::cout << xyz << " " << rst << std::endl;
-//     if (err > tol) {
+    
+    if (err> 1){
+//         __MS(iter << " " << err << " " << damping << " " << dErr)
+//         for (Index i = 0; i < nodeCount(); i ++){
+//             __MS(nodeVector_[i]->pos());
+//         }
+//             __MS(this->createJacobian().det())
 //         std::cout << xyz << " " << rst << std::endl;
-// //         std::cout << this->createJacobian() << std::endl;
-// //         std::cout << iInv << std::endl;
-//         std::cerr << WHERE_AM_I << " Warning" << std::endl;
-//         exit(0);
-//     }
+//exit(0);
+        
+    }
+    
+    
 }
 
 RVector3 Shape::rst(const RVector3 & xyz) const{
@@ -574,6 +603,23 @@ double HexahedronShape::volume() const {
     }
 
     return sum;
+}
+
+bool HexahedronShape::enforcePositiveDirection(){
+    if (createJacobian().det() < 0){
+//         std::reverse(nodeVector_.begin(), nodeVector_.end());
+        
+        //swap up and down side
+        if (createJacobian().det() < 0){
+            std::swap(nodeVector_[0], nodeVector_[4]);
+            std::swap(nodeVector_[1], nodeVector_[5]);
+            std::swap(nodeVector_[2], nodeVector_[6]);
+            std::swap(nodeVector_[3], nodeVector_[7]);
+        }
+        this->changed();
+        return true;
+    } 
+    return false;
 }
 
 RVector3 TriPrismShape::rst(Index i) const{

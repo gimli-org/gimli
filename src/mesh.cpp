@@ -456,7 +456,7 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 //                 std::cout << "neighCell " << cell << std::endl;
             }
             count++;
-            if (count == 1000){
+            if (count == 50){
 //                 std::cout << "testpos: " << pos << std::endl;
 //                 std::cout << "cell: " << this->cell(cellIDX__.back()) << std::endl;
 //                 for (Index i = 0;
