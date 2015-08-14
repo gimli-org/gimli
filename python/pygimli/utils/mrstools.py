@@ -58,7 +58,7 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
             for ii in range(len(A)):
                 A += N.exp(-self.t_ / t2[i]) * amps[ii]
 
-        return pg.asvector(N.abs(A).ravel())
+        return N.abs(A).ravel()  # formerly pg as vector
 
 
 def loadmrsproject(mydir):

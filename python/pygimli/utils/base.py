@@ -33,7 +33,7 @@ def numpy2gmat(nmat):
     """
     gmat = pg.RMatrix()
     for arr in nmat:
-        gmat.push_back(pg.asvector(arr))
+        gmat.push_back(arr)  # pg.asvector(arr))
     return gmat
 
 

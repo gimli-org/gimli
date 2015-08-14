@@ -281,7 +281,8 @@ class MRSVES(MRS):
 
         def genMods(individual):
             """generate MRS and VES models from unit vector"""
-            model = pg.asvector(individual) * (self.lUB - self.lLB) + self.lLB
+            model = individual * (self.lUB - self.lLB) + self.lLB
+#            model = pg.asvector(individual) * (self.lUB - self.lLB) + self.lLB
             if self.logpar:
                 model = pg.exp(model)
 
