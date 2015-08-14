@@ -6,7 +6,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.cm import register_cmap
 
 
-def cmapDAERO():
+def registerDAEROcmap():
     """standardized colormap from A-AERO projects (purple=0.3 to red=500)"""
     CMY = np.array([
         [127, 255, 31], [111, 255, 47], [95, 255, 63], [79, 255, 79],
@@ -24,7 +24,7 @@ def cmapDAERO():
 
 
 class HEMmodelling(pg.ModellingBase):
-    """HEM Airborne modelling class"""
+    """ HEM Airborne modelling class """
     # Konstanten
     ep0 = 8.8542e-12
     mu0 = 4e-7 * np.pi
@@ -56,14 +56,14 @@ class HEMmodelling(pg.ModellingBase):
         # Vorwärtsrechnung
         # für Hintergrundmodell
         if d.size:
-            for m in xrange(x.size):
+            for m in range(x.size):
                 field[:, m] = self.vmd_hem(np.array([h[m]], np.float),
                                            rho[:, m], d[:, m], epr[:, m],
                                            mur[:, m], quasistatic).T[:, 0]
         # für jede Frequenz
         else:
-            for n in xrange(self.f.size):
-                for m in xrange(x.size):
+            for n in range(self.f.size):
+                for m in range(x.size):
                     field[n, m] = self.vmd_hem(np.array([h[n, m]], np.float),
                                                np.array([rho[n, m]], np.float),
                                                d,
@@ -106,7 +106,7 @@ class HEMmodelling(pg.ModellingBase):
             b[-1, :, :] = np.copy(alpha[-1, :, :])
             # rekursive Berechnung der Admittanzen an der Oberkante der Schicht
             # von unten nach oben, für nl-1 Schichten
-            for n in xrange(nl-2, -1, -1):
+            for n in range(nl-2, -1, -1):
                 b[n, :, :] = alpha[n, :, :] * (b[n+1, :, :] + alpha[n, :, :] *
                                                talphad[n, :, :]) / (
                     alpha[n, :, :] + b[n+1, :, :] * talphad[n, :, :])
@@ -115,7 +115,7 @@ class HEMmodelling(pg.ModellingBase):
             # b1 == 1. row in b (nl, 100, nfreq)
             b1 = np.copy(b[0, :, :][np.newaxis, :, :])  # (1, 100, nfreq)
             # Variation from one layer boundary to the other
-            for n in xrange(0, nl-1):
+            for n in range(0, nl-1):
                 aa[n, :, :] = (b[n, :, :] + alpha[n, :, :]) / (
                     b[n+1, :, :] + alpha[n, :, :]) * \
                     np.exp(-alpha[n, :, :] * d[n, :, :])
@@ -123,7 +123,7 @@ class HEMmodelling(pg.ModellingBase):
                     1.0 + alpha[n, :, :] * c[n+1, :, :]) * \
                     np.exp(-alpha[n, :, :] * d[n, :, :])
             # Determin layer Index where z is
-            for n in xrange(0, nl-1):
+            for n in range(0, nl-1):
                 if np.logical_and(z >= h[n], z < h[n+1]):
                     ind = n
             try:
@@ -232,8 +232,8 @@ class HEMmodelling(pg.ModellingBase):
         # vollständige Lösung
         if np.any(index):
             Z[:, index] = (-self.r[index]**3 * aux1[:, index] +
-                           self.r[index]**3 * aux2[:, index] - self.r[index]**4
-                           * aux3[:, index]) * 1e6
+                           self.r[index]**3 * aux2[:, index] -
+                           self.r[index]**4 * aux3[:, index]) * 1e6
         return np.real(Z[0]), np.imag(Z[0])
 
     def vmd_total_Ef(self, h, z, rho, d, epr, mur, tm):
@@ -406,6 +406,101 @@ def hankelfc(order):
         nc = np.int(100)
         nc0 = np.int(60)
     return (np.reshape(fc, (-1, 1)), nc, nc0)  # (100,) -> (100, 1)
+
+
+class HEMRhomodelling(HEMmodelling):
+    """ Airborne EM (HEM) Forward modelling class for Occam inversion """
+    def __init__(self, dvec, height, verbose):
+        """ not yet working! """
+        nlay = len(dvec)
+        self.height = height
+        self.wem = (2.0 * pi * self.f) ** 2 * self.ep0 * self.mu0
+        self.iwm = np.complex(0, 1) * 2.0 * pi * self.f * self.mu0
+        mesh = pg.createMesh1D(nlay)
+        pg.ModellingBase.__init__(self, mesh)
+
+    def response(self, par):
+        ip, op = self.vmd_hem(self.height, par)
+
+
+class FDEMLCIFOP(pg.ModellingBase):
+    """ FDEM 2d-LCI modelling class based on BlockMatrices """
+    def __init__(self, data, nlay=2, verbose=False):
+        """ Parameters: FDEM data class and number of layers """
+        super(FDEMLCIFOP, self).__init__(verbose)
+        self.nlay = nlay
+        self.FOP = data.FOP(nlay)
+        self.nx = len(data.x)
+        self.nf = len(data.freq())
+        self.np = 2 * nlay - 1
+        self.mesh2d = pg.createMesh2D(self.np, self.nx)
+        self.mesh2d.rotate(pg.RVector3(0, 0, -np.pi/2))
+        self.setMesh(self.mesh2d)
+
+        self.J = pg.RBlockMatrix()
+        self.FOP1d = []
+        for i in range(self.nx):
+            self.FOP1d.append(HEMmodelling(nlay, data.z[i]))
+            n = self.J.addMatrix(self.FOP1d[-1].jacobian())
+            self.J.addMatrixEntry(n, self.nf*2*i, self.np*i)
+
+        self.setJacobian(self.J)
+
+    def response(self, model):
+        """ cut-together forward responses of all soundings """
+        modA = np.reshape(model, (self.nx, self.np))  # tile
+        resp = pg.RVector(0)
+        for i, modi in enumerate(modA):
+            resp = pg.cat(resp, self.FOP1d[i].response(modi))
+
+        return resp
+
+    def createJacobian(self, model):
+        """ fill the individual blocks of the Block-Jacobi matrix """
+        modA = np.reshape(model, (self.nx, self.np))  # tile
+        for i, modi in enumerate(modA):
+            self.FOP1d[i].createJacobian(modi)
+
+
+class FDEM2dFOP(pg.ModellingBase):
+    """ FDEM 2d-LCI modelling class based on BlockMatrices """
+    def __init__(self, data, nlay=2, verbose=False):
+        """ Parameters: FDEM data class and number of layers """
+        super(FDEM2dFOP, self).__init__(verbose)
+        self.nlay = nlay
+        self.FOP = data.FOP(nlay)
+        self.nx = len(data.x)
+        self.nf = len(data.freq())
+        npar = 2 * nlay - 1
+        self.mesh2d = pg.Mesh()
+        self.mesh2d.create2DGrid(range(npar+1), range(self.nx+1))
+        self.setMesh(self.mesh2d)
+
+        self.J = pg.RBlockMatrix()
+        self.FOP1d = []
+        for i in range(self.nx):
+            self.FOP1d.append(HEMmodelling(nlay, data.z[i]))
+            n = self.J.addMatrix(self.FOP1d[-1].jacobian())
+            self.J.addMatrixEntry(n, self.nf*2*i, npar*i)
+
+        self.J.recalcMatrixSize()
+        print(self.J.rows(), self.J.cols())
+        self.setJacobian(self.J)
+
+    def response(self, model):
+        """ cut-together forward responses of all soundings """
+        modA = np.reshape(model, (self.nx, self.nlay*2-1))
+        resp = pg.RVector(0)
+        for i, modi in enumerate(modA):
+            resp = pg.cat(resp, self.FOP1d[i].response(modi))
+
+        return resp
+
+    def createJacobian(self, model):
+        modA = np.reshape(model, (self.nx, self.nlay*2-1))
+        for i in range(self.nx):
+            self.FOP1d[i].createJacobian(modA[i])
+
 
 if __name__ == '__main__':
     nlay = 3
