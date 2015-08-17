@@ -298,8 +298,11 @@ find_package(Sphinx 1.2.0)
 if (SPHINX_FOUND)
     add_subdirectory(doc EXCLUDE_FROM_ALL)
     file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
+    file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.png")
+    list(APPEND DOCFILES ${PNGFILES})
     file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
     list(APPEND DOCFILES ${BIBFILES})
+    
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
 
     #foreach(file ${DOCFILES})
