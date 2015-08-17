@@ -32,6 +32,32 @@ class TestRVectorMethods(unittest.TestCase):
         testVector(pg.BVector(5, True))
         testVector(pg.IVector(5, 1))
 
+    def test_XVectorSetVal(self):
+        """
+        """
+        # 
+        vec = pg.RVector(5, 1.0)
+        self.assertEqual(vec[0], 1.0)
+        
+        vec[0] += 1.0
+        self.assertEqual(vec[0], 2.0)
+        
+        vec[0] = vec[0] + 1.0
+        self.assertEqual(vec[0], 3.0)
+        
+        vec.setVal(4.0, 0)
+        self.assertEqual(vec[0], 4.0)
+        
+        vec.setVal(5.0, 0, 1)
+        self.assertEqual(vec[0], 5.0)
+    
+        vec.setVal(6.0)
+        self.assertEqual(vec[0], 6.0)
+        
+        vec.setVal(7.0, vec > 0.0)
+        self.assertEqual(vec[0], 7.0)
+
+        
     def test_RVectorOP(self):
         v = pg.RVector(5, 1.0)
 
