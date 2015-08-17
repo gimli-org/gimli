@@ -342,7 +342,7 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
         dErr = err - drst.abs();
         err = drst.abs();
         
-//       __MS(iter << " " << err << " " << damping << " " << dErr)
+//        __MS(iter << " " << err << " " << damping << " " << dErr)
     }
     
 //     if (err> 1){
@@ -353,7 +353,6 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
 //             __MS(this->createJacobian().det())
 //         std::cout << xyz << " " << rst << std::endl;
 // exit(0);
-//         
 //     }
 }
 

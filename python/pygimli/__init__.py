@@ -279,52 +279,58 @@ except:
     _pygimli_.RVector.__div__ = __newRVectorTrueDiv__
 
 
-#########
-# override wrong default conversion from int to IndexArray(int) for setVal
-######
-#__origRVectorSetVal__ = _pygimli_.RVector.setVal
-#def __newRVectorSetVal__(self, *args, **kwargs):
-    #if len(args)==2:
-        #if isinstance(args[1], int):
-            #return __origRVectorSetVal__(self, args[0], i=args[1])
-    #return __origRVectorSetVal__(self, *args, **kwargs)
-#_pygimli_.RVector.setVal = __newRVectorSetVal__
+################################################################################
+# override wrong default conversion from int to IndexArray(int) for setVal     #
+################################################################################
+__origRVectorSetVal__ = _pygimli_.RVector.setVal
+def __newRVectorSetVal__(self, *args, **kwargs):
+    if len(args)==2:
+        if isinstance(args[1], int):
+            return __origRVectorSetVal__(self, args[0], i=args[1])
+        if isinstance(args[1], BVector):
+            return __origRVectorSetVal__(self, args[0], bv=args[1])
+    return __origRVectorSetVal__(self, *args, **kwargs)
+_pygimli_.RVector.setVal = __newRVectorSetVal__
 
-#__origBVectorSetVal__ = _pygimli_.BVector.setVal
-#def __newBVectorSetVal__(self, *args, **kwargs):
-    #if len(args)==2:
-        #if isinstance(args[1], int):
-            #return __origBVectorSetVal__(self, args[0], i=args[1])
-    #return __origBVectorSetVal__(self, *args, **kwargs)
-#_pygimli_.BVector.setVal = __newBVectorSetVal__
+__origBVectorSetVal__ = _pygimli_.BVector.setVal
+def __newBVectorSetVal__(self, *args, **kwargs):
+    if len(args)==2:
+        if isinstance(args[1], int):
+            return __origBVectorSetVal__(self, args[0], i=args[1])
+        if isinstance(args[1], BVector):
+            return __origBVectorSetVal__(self, args[0], bv=args[1])
+    return __origBVectorSetVal__(self, *args, **kwargs)
+_pygimli_.BVector.setVal = __newBVectorSetVal__
 
-#__origCVectorSetVal__ = _pygimli_.CVector.setVal
-#def __newCVectorSetVal__(self, *args, **kwargs):
-    #if len(args)==2:
-        #if isinstance(args[1], int):
-            #return __origCVectorSetVal__(self, args[0], i=args[1])
-    #return __origCVectorSetVal__(self, *args, **kwargs)
-#_pygimli_.CVector.setVal = __newCVectorSetVal__
+__origCVectorSetVal__ = _pygimli_.CVector.setVal
+def __newCVectorSetVal__(self, *args, **kwargs):
+    if len(args)==2:
+        if isinstance(args[1], int):
+            return __origCVectorSetVal__(self, args[0], i=args[1])
+        if isinstance(args[1], BVector):
+            return __origCVectorSetVal__(self, args[0], bv=args[1])
+    return __origCVectorSetVal__(self, *args, **kwargs)
+_pygimli_.CVector.setVal = __newCVectorSetVal__
 
-#__origIVectorSetVal__ = _pygimli_.IVector.setVal
-#def __newIVectorSetVal__(self, *args, **kwargs):
-    #if len(args)==2:
-        #if isinstance(args[1], int):
-            #return __origIVectorSetVal__(self, args[0], i=args[1])
-    #return __origIVectorSetVal__(self, *args, **kwargs)
-#_pygimli_.IVector.setVal = __newIVectorSetVal__
+__origIVectorSetVal__ = _pygimli_.IVector.setVal
+def __newIVectorSetVal__(self, *args, **kwargs):
+    if len(args)==2:
+        if isinstance(args[1], int):
+            return __origIVectorSetVal__(self, args[0], i=args[1])
+        if isinstance(args[1], BVector):
+            return __origIVectorSetVal__(self, args[0], bv=args[1])
+    return __origIVectorSetVal__(self, *args, **kwargs)
+_pygimli_.IVector.setVal = __newIVectorSetVal__
 
-#__origIndexArraySetVal__ = _pygimli_.IndexArray.setVal
-#def __newIndexArraySetVal__(self, *args, **kwargs):
-    #if len(args)==2:
-        #if isinstance(args[1], int):
-            #return __origIndexArraySetVal__(self, args[0], i=args[1])
-    #return __origIndexArraySetVal__(self, *args, **kwargs)
-#_pygimli_.IndexArray.setVal = __newIndexArraySetVal__
-
-
-
-
+__origIndexArraySetVal__ = _pygimli_.IndexArray.setVal
+def __newIndexArraySetVal__(self, *args, **kwargs):
+    if len(args)==2:
+        if isinstance(args[1], int):
+            return __origIndexArraySetVal__(self, args[0], i=args[1])
+        if isinstance(args[1], BVector):
+            return __origIndexArraySetVal__(self, args[0], bv=args[1])
+    return __origIndexArraySetVal__(self, *args, **kwargs)
+_pygimli_.IndexArray.setVal = __newIndexArraySetVal__
 
 
 ############################
@@ -384,6 +390,9 @@ def __getVal(self, idx):
     return self.getVal(int(idx))
 
 def __setVal(self, idx, val):
+    """
+        Index write access []
+    """
     #print("__setVal", self, idx, val)
     if isinstance(idx, slice):
         if idx.step is None:
