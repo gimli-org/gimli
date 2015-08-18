@@ -533,6 +533,10 @@ buildPYGCCXML(){
     pushd $PYGCCXML_BUILD
 		python setup.py build
 		echo "copy build->dist"
+        if [ -n "$CLEAN" ]; then
+            rm -rf $PYGCCXML_DIST
+        fi 
+
 		cp -rf $PYGCCXML_BUILD/build/lib*/pygccxml $PYGCCXML_DIST
 		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
 		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
@@ -542,6 +546,10 @@ buildPYGCCXML(){
 	pushd $PYPLUSPLUS_BUILD
 		python setup.py build
 		echo "copy build->dist"
+        if [ -n "$CLEAN" ]; then
+            rm -rf $PYPLUSPLUS_DIST
+        fi 
+        
 		cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
             patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch

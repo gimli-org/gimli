@@ -152,28 +152,6 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
-ADD_CUSTOM_TARGET(rebuild_thirdparty)
-ADD_CUSTOM_COMMAND(
-    COMMAND
-        ${CMAKE_COMMAND} -E echo "remove ${EXTERNAL_DIR}"
-    COMMAND
-        ${CMAKE_COMMAND} -E remove_directory ${EXTERNAL_DIR}
-    COMMAND
-        ${CMAKE_COMMAND} -E echo "remove ${EXTERNAL_BUILD_DIR}"
-    COMMAND
-        ${CMAKE_COMMAND} -E remove_directory ${EXTERNAL_BUILD_DIR}
-    COMMAND
-        ${CMAKE_COMMAND} -E echo "remove ${CMAKE_BINARY_DIR}/CMakeCache.txt"
-    COMMAND
-        ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/CMakeCache.txt
-    COMMAND
-        ${CMAKE_MAKE_PROGRAM} rebuild_cache
-    TARGET
-        rebuild_thirdparty
-)
-
-#add_dependencies(rebuild_thirdparty rebuild_cache )
-
 find_or_build_package(Triangle triangle)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
@@ -287,7 +265,6 @@ message(STATUS "PYGCCXML: ${PYGCCXML_PATH}" )
 message(STATUS "PYPLUSPLUS: ${PYPLUSPLUS_PATH}" )
 message(STATUS "PY_NUMPY: ${PY_NUMPY}" )
 message(STATUS "**********************************************************************")
-
 
 configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
