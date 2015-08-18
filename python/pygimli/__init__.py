@@ -52,6 +52,11 @@ def checkAndFixLocaleDecimal_point(verbose=False):
         print(e)
         print('cannot set locale to decimal point')
 
+    # check for encoding setting zu utf-8
+    #export PYTHONIOENCODING=utf-8
+    #python -c 'import sys; print(sys.stdout.encoding)'
+
+
 checkAndFixLocaleDecimal_point(verbose=True)
 # print(locale.localeconv()['decimal_point'])
 # if locale.localeconv()['decimal_point'] == ',':
@@ -64,7 +69,7 @@ checkAndFixLocaleDecimal_point(verbose=True)
 
 
 if '--debug' in sys.argv:
-    print("set debugmode")
+    print("set debug mode")
     _pygimli_.setDebug(True)
 
 ###########################

@@ -29,7 +29,7 @@ from pygccxml import parser
 import logging
 from pygccxml import utils
 logger = utils.loggers.cxx_parser
-#logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
     
 
 from pygccxml import declarations

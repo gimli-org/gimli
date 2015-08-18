@@ -186,8 +186,10 @@ Either gccxml (default for linux and gcc < 5) or castxml else.
 Usefull make commands
 ^^^^^^^^^^^^^^^^^^^^^
 
+You can rebuild and update all local generated third party software by setting the CLEAN environment variable:
+
 .. code-block:: bash
 
-    make rebuild_thirdparty
+    CLEAN=1 cmake ../trunk 
 
 

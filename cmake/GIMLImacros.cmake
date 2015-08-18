@@ -97,9 +97,6 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 #     install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION "${PYTHON_MODULE_NAME}/")
 endmacro()
 
-
-
-
 function(find_python_module module)
     string(TOUPPER ${module} module_upper)
     if(NOT PY_${module_upper})
@@ -164,7 +161,12 @@ macro(find_or_build_package_check package get_package checkVar)
     string(TOUPPER ${package} upper_package)
     string(TOLOWER ${package} lower_package)
     
-    if (NOT ${checkVar})
+    set (FORCE_LOCAL_REBUILD 0)
+    if ($ENV{CLEAN})
+        set(FORCE_LOCAL_REBUILD 1)
+    endif()
+    
+    if (NOT ${checkVar} OR (${FORCE_LOCAL_REBUILD} AND ${package}_LOCAL))
         
         findBuildTools()
 
@@ -187,6 +189,9 @@ macro(find_or_build_package_check package get_package checkVar)
 				${THIRDPARTY_DIR}
         )
 		
+        set(${package}_LOCAL 1 
+            CACHE INTERNAL "This package is build from local cmake call")
+
 		find_package(${package})
     else()
         message(STATUS "${package} found" )
