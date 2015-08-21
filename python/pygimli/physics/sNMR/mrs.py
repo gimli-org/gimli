@@ -18,12 +18,55 @@ from . plotting import showErrorBars, showWC, showT2, drawModel1D
 
 
 class MRS():
-    """
-    magnetic resonance sounding (MRS) manager class
+    """magnetic resonance sounding (MRS) manager class
+
+    Attributes
+    ----------
+    t, q : ndarray - time and pulse moment vectors
+
+    data, error : 2d ndarray - data and error cubes
+
+    K, z : ndarray - (complex) kernel and its vertical discretization
+
+    model, modelL, modelU : vectors - model vector and lower/upper bound to it
+
+    Methods
+    -------
+    loadMRSI - load MRSI (MRSmatlab format) data
+
+    showCube - show any data/error/misfit as data cube (over q and t)
+
+    showDataAndError - show data and error cubes
+
+    showKernel - show Kernel matrix
+
+    createFOP - create forward operator
+
+    createInv - create pygimli Inversion instance
+
+    run - run block-mono (alternatively smooth-mono) inversion (with bootstrap)
+
+    calcMCM - compute model covariance matrix and thus uncertainties
+
+    splitModel - return thickness, water content and T2* time from vector
+
+    showResult/showResultAndFit - show inversion result (with fit)
+
+    runEA - run evolutionary algorithm (GA, PSO etc.) using inspyred
+
+    plotPopulation - plot final population of an EA run
     """
 
     def __init__(self, name=None, verbose=True, **kwargs):
-        """init function with optional data load from mrsi file"""
+        """MRS init with optional data load from mrsi file
+
+        Parameters
+        ----------
+        name : string
+            Filename with load data and kernel (*.mrsi) or just data (*.mrsd)
+        verbose : bool
+            be verbose
+        """
         self.verbose = verbose
         self.t, self.q, self.z = None, None, None
         self.data, self.error = None, None
@@ -53,7 +96,13 @@ class MRS():
         return out + ">"
 
     def loadMRSI(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
-        """load data, error and kernel from mrsi file"""
+        """load data, error and kernel from mrsi file
+
+        Parameters
+        ----------
+        usereal : bool [False]
+            use real parts (after data rotation) instead of amplitudes
+        """
         from scipy.io import loadmat  # loading Matlab mat files
 
         idata = loadmat(filename, struct_as_record=False,
@@ -287,9 +336,10 @@ class MRS():
         """return block model results"""
         return self.splitModel()
 
-    def showResult(self, figsize=(10, 8), save=''):
+    def showResult(self, figsize=(10, 8), save='', fig=None, ax=None):
         """show theta(z) and T2*(z) (+uncertainties if there)"""
-        fig, ax = plt.subplots(1, 2, sharey=True, figsize=figsize)
+        if ax is None:
+            fig, ax = plt.subplots(1, 2, sharey=True, figsize=figsize)
         thk, wc, t2 = self.splitModel()
         showWC(ax[0], thk, wc)
         showT2(ax[1], thk, t2)
@@ -299,12 +349,13 @@ class MRS():
             showErrorBars(ax[0], thk, wc, thkL, thkU, wcL, wcU)
             showErrorBars(ax[1], thk, t2*1e3, thkL, thkU, t2L*1e3, t2U*1e3)
 
-        if save:
-            fig.savefig(save, bbox_inches='tight')
-        return fig, ax
+        if fig is not None:
+            if save:
+                fig.savefig(save, bbox_inches='tight')
+            return fig, ax
 
     def showResultAndFit(self, figsize=(12, 10), save='', plotmisfit=False,
-                         maxdep=None, clim=None):
+                         maxdep=0, clim=None):
         """show theta(z), T2*(z), data and model response"""
         fig, ax = plt.subplots(2, 2 + plotmisfit, figsize=figsize)
         thk, wc, t2 = self.splitModel()
@@ -380,15 +431,21 @@ class MRS():
         DJ = D.dot(J)
         JTJ = DJ.T.dot(DJ)
         MCM = np.linalg.inv(JTJ)   # model covariance matrix
-        varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
-        di = (1. / varVG)  # variances as column vector
+        var = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
+        di = (1. / var)  # variances as column vector
         # scaled model covariance (=correlation) matrix
         MCMs = di.reshape(len(di), 1) * MCM * di
-        return varVG, MCMs
+        return var, MCMs
+
+    def calcMCMbounds(self):
+        """comute model bounds using covariance matrix diagonals"""
+        self.mcm = self.calcMCM()[0]
+        self.modelL = self.model - self.mcm
+        self.modelU = self.model + self.mcm
 
     def genMod(self, individual):
         """ generate (GA) model from random vector (0-1) using model bounds """
-        model = individual * (self.lUB - self.lLB) + self.lLB  # fasv
+        model = np.asarray(individual) * (self.lUB - self.lLB) + self.lLB
         if self.logpar:
             return pg.exp(model)
         else:
