@@ -73,8 +73,32 @@ class MRSLCI(pg.ModellingBase):
 
 
 class MRSprofile():
-    """ manager class for several MRS data along a profile
-        see code in the main function below for how to use it
+    """manager class for several MRS data along a profile for joint inversion
+
+    Attributes
+    ----------
+    mrs : list of MRS objects (single soundings)
+
+    x : list of positions for the soundings
+
+
+    Methods
+    -------
+    load - load mrs files from a directory
+
+    set X - set x vector
+
+    showData - show MRS data
+
+    independentBlock1dInversion - perform independent 1D block inversion
+
+    block1dInversion - 1D block inversion of all data sets together
+
+    blockLCInversion - 1D block laterally constrained inversion of all data
+
+    printFits - print total misfit (chi^2, rms) and individual values
+
+    showModel - show LCI model
     """
     def __init__(self, filename, x=None, dx=1, x0=0, **kwargs):
         self.mrs = []
