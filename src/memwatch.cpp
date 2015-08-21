@@ -35,7 +35,7 @@
 #if USE_BOOST_THREAD
     #include <boost/thread.hpp>
     /*! Lock proc reading to be thread safe */
-    boost::mutex __readproc__mutex__;
+    static boost::mutex __readproc__mutex__;
 #endif
 
 namespace GIMLI {
@@ -62,12 +62,7 @@ double MemWatch::current(){
 
 double MemWatch::inUse() {
  #if USE_BOOST_THREAD
-    #ifdef WIN32_LEAN_AND_MEAN
-        __MS("pls check missing mutex")
-        //boost::mutex::scoped_lock lock(__readproc__mutex__);
-    #else
         boost::mutex::scoped_lock lock(__readproc__mutex__);
-    #endif
  #endif
 
  #ifdef WIN32_LEAN_AND_MEAN

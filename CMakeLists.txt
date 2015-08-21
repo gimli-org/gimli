@@ -20,7 +20,7 @@ project(libgimli)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
 #     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -rdynamic")
  
@@ -84,6 +84,12 @@ endif()
 
 include(CheckIncludeFileCXX)
 
+if (PYVERSION)
+    set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
+    #set(Python_ADDITIONAL_VERSIONS 3.4 3.3 3.2 2.7)
+endif()
+find_package(PythonInterp) # find version belongs to the active python command
+
 if (NOT Boost_INCLUDE_DIR)
     if (BOOST_ROOT)
         get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
@@ -92,12 +98,12 @@ if (NOT Boost_INCLUDE_DIR)
         find_or_build_package_check(Boost boost Boost_INCLUDE_DIR)
         # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
         if (NOT Boost_INCLUDE_DIR)
-            FILE(READ "${EXTERNAL_DIR}/.boost.dist" BOOST_DIST_NAME)
+            FILE(READ "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
             STRING(REGEX REPLACE "\n" "" BOOST_DIST_NAME "${BOOST_DIST_NAME}")
 
             get_filename_component(BOOST_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
 
-            message(STATUS "BOOST_ROOT from ${EXTERNAL_DIR}/.boost.dist: ${BOOST_ROOT}")
+            message(STATUS "BOOST_ROOT from ${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist: ${BOOST_ROOT}")
 
             set(BOOST_ROOT ${BOOST_ROOT}  CACHE FILEPATH "Boost root distribution")
 	
@@ -173,17 +179,15 @@ ENDIF(WIN32)
 # Check for python stuff
 ################################################################################
 
-if (PYVERSION)
-    set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
-    #set(Python_ADDITIONAL_VERSIONS 3.4 3.3 3.2 2.7)
-endif()
-
-find_package(PythonInterp) # find version belongs to the active python command
-
 if (WIN32)
 	get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
-	set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
+    if (${ADDRESSMODEL} EQUAL 32)
+        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
+    else()
+        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll.a)
+    endif()
 	#set (PYTHON_LIBRARY ${PYTHONPATH}/libs/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib)
+    #set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
 	set (PYTHON_INCLUDE_DIR ${PYTHONPATH}/include)
 else()
 	set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})

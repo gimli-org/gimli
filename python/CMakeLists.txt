@@ -38,23 +38,26 @@ if (NOT HAVE_DUMMY)
     file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/generated/dummy.cpp "")
 endif()
 
-
-# if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
-#     set (EXTRA_OPTIONS "-Wno-uninitialized -Wno-reorder
-#                         -Wno-unused-but-set-variable")
-#
-#     set_source_files_properties(${SOURCE_FILES}
-#         PROPERTIES
-#         COMPILE_FLAGS  "${EXTRA_OPTIONS}")
-# endif()
+ADD_CUSTOM_TARGET(pgcopydll ALL)
+ADD_CUSTOM_COMMAND(
+    COMMAND
+        cp ${CMAKE_BINARY_DIR}/bin/*.dll ${CMAKE_CURRENT_SOURCE_DIR}/pygimli
+    TARGET
+        pgcopydll
+    COMMENT
+        "Updating needed dll. build/bin/*dll -> trunk/python/pygimli"
+)
 
 add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_CURRENT_SOURCE_DIR}/pygimli/")
+
 
 add_dependencies(pggen gimli)
 add_dependencies(copy_python pggen)
 add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
-add_dependencies(pygimli pgbuild)
+add_dependencies(pgcopydll pgbuild)
+add_dependencies(pygimli pgcopydll)
+
 
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
@@ -81,8 +84,6 @@ include_directories(${PY_NUMPY}/core/include/)
 
 ## prepare installation
 
-
-
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
 
 foreach(program ${SCRIPTS})
@@ -91,5 +92,7 @@ endforeach(program)
 
 if (WIN32)
 	file(COPY ${Boost_PYTHON_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+    #file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+	#file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 	install(PROGRAMS ${Boost_PYTHON_LIBRARIES} DESTINATION bin)
 endif()

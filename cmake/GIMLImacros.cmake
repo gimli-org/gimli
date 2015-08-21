@@ -32,11 +32,11 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES SUFFIX ".pyd")
     endif()
 
-    if (NOT APPLE AND BERT_INSTALL_WITH_RPATH)
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
-            INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${BERT_LIB_INSTALL_DIR}"
-        )
-    endif()
+    #if (NOT APPLE AND BERT_INSTALL_WITH_RPATH)
+    #    set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
+    #        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${BERT_LIB_INSTALL_DIR}"
+    #    )
+    #endif()
 
 #     if (OUTDIR)
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES 
@@ -162,8 +162,9 @@ macro(find_or_build_package_check package get_package checkVar)
     string(TOLOWER ${package} lower_package)
     
     set (FORCE_LOCAL_REBUILD 0)
-    if ($ENV{CLEAN})
+    if ($ENV{CLEAN} OR ${CLEAN})
         set(FORCE_LOCAL_REBUILD 1)
+        set(ENV{CLEAN} 1)
     endif()
     
     if (NOT ${checkVar} OR (${FORCE_LOCAL_REBUILD} AND ${package}_LOCAL))

@@ -13,12 +13,11 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=https://github.com/gccxml/gccxml.git
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
-#CASTXML_REV=b40df94
+CASTXML_REV=7bbb9a0 # current functional
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml 
 #PYGCCXML_REV=594d71d # old but functional
-#PYGCCXML_REV=09fe928 # current functional
-
+PYGCCXML_REV=f8cfd81 # current functional
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
@@ -52,13 +51,15 @@ checkTOOLSET(){
 		
     BUILDSCRIPT_HOME=${0%/*}
     
-	echo "-----------------------------------------------------------"
+	echo "##################################################################################################"
 	echo "SYSTEM: $SYSTEM"
 	echo "USING TOOLSET=$TOOLSET and CMAKE_GENERATOR=$CMAKE_GENERATOR, PARRALELBUILD: $PARALLEL_BUILD"
-	echo "ADDRESSMODEL=$ADDRESSMODEL"
-	echo "PYTHON=$PYTHONVERSION"
-	echo "SRCPATH=$SRC_DIR, BUILD=$BUILD_DIR, DISTRIBUTION=$DIST_DIR"
-	echo "-----------------------------------------------------------"
+	echo "ADDRESSMODEL = $ADDRESSMODEL"
+	echo "PYTHON       = $PYTHONVERSION"
+	echo "SRC_DIR      = $SRC_DIR"
+    echo "BUILD_DIR    = $BUILD_DIR"
+    echo "DIST_DIR     = $DIST_DIR"
+	echo "##################################################################################################"
 }
 SetMSVC_TOOLSET(){
 	TOOLSET=vc10
@@ -137,45 +138,8 @@ SetCLANG_TOOLSET(){
 		ADDRESSMODEL=64
 	fi
 }
-needWGET(){
-    if ( which wget ); then 
-        echo "########### wget found: ok" ; 
-    else 
-        echo "########### Installing wget" ; 
-        mingw-get.exe install msys-wget ; 
-    fi; 
-}
-needTAR(){
-	if ( which tar ); then 
-        echo "########### tar found: ok" ; 
-    else 
-        echo "########### Install tar" ; 
-		  exit
-        #mingw-get.exe install msys-wget ; 
-    fi; 
-}
-needZIP(){
-	if ( which unzip ); then 
-        echo "########### unzip found: ok" ; 
-    else 
-        echo "########### Install unzip" ;
-		  exit
-        #mingw-get.exe install msys-wget ; 
-    fi; 
-}
-needSED(){
-	if ( which sed ); then 
-        echo "########### sed found: ok" ; 
-    else 
-        echo "########### Install sed" ;
-		  exit
-        #mingw-get.exe install msys-wget ; 
-    fi; 
-}
+
 getWITH_WGET(){
-    #needWGET # checked by cmake
-	#needTAR  # checked by cmake
-	#needZIP # checked by cmake
 	_URL_=$1
 	_SRC_=$2
 	_PAC_=$3
@@ -200,11 +164,8 @@ getWITH_WGET(){
 
 }
     
-needSVN(){
-    SVN="svn"
-}
 getWITH_SVN(){
-	needSVN
+	SVN="svn"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
@@ -222,12 +183,9 @@ getWITH_SVN(){
         popd
 	fi
 }
-needHG(){
-    echo "Toolcheck for mecurial here"
-    HG="hg"
-}
+
 getWITH_HG(){
-	needHG
+    HG="hg"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
@@ -245,22 +203,9 @@ getWITH_HG(){
         popd
 	fi
 }
-needGIT(){
-    if ( (git --version) ); then
-        GIT="git"
-    echo "... found $GIT_EXE, good"
-    elif ( (/c/Program\ Files\ \(x86\)/Git/bin/git --version) );then
-        GIT="/c/Program Files (x86)/Git/bin/git"
-        echo "... found $GITEXE, good"
-    else
-        echo "need git client"
-        echo "get one from http://msysgit.github.io/"
-        echo "if already .. ensure git installation directory is in your PATH"
-        exit
-    fi
-}
+
 getWITH_GIT(){
-	needGIT
+	GIT="git"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
@@ -290,27 +235,29 @@ getWITH_GIT(){
 
 }
 needGCC(){
-    echo "looking for gcc ..."
-    if ( (gcc --version) );then
-        echo "... found, good"
-        HAVEGCC=1
-    else
-        echo "need a working gcc installation"
-        exit
-    fi
+    HAVEGCC=1
+    # echo "looking for gcc ..."
+    # if ( (gcc --version) );then
+        # echo "... found, good"
+        # HAVEGCC=1
+    # else
+        # echo "need a working gcc installation"
+        # exit
+    # fi
 }
 needPYTHON(){
-    echo ""
-    echo "looking for python ..."
-    if ( (python --version) );then
-		HAVEPYTHON=1
-        echo "... found, good"
-    else
-        echo "need python2.7 installation"
-        echo "get one from http://www.python.org/"
-        echo "if already .. ensure python27 installation directory is in your PATH"
-        exit
-    fi
+    # echo ""
+    # echo "looking for python ..."
+    # if ( (python --version) );then
+		# HAVEPYTHON=1
+        # echo "... found, good"
+    # else
+        # echo "need python2.7 installation"
+        # echo "get one from http://www.python.org/"
+        # echo "if already .. ensure python27 installation directory is in your PATH"
+        # exit
+    # fi
+    HAVEPYTHON=1
 	PYTHONVERSION=`python -c 'import sys; print(sys.version)'`
 	PYTHONMAJOR=`python -c 'import sys; print(sys.version_info.major)'`
 	PYTHONMINOR=`python -c 'import sys; print(sys.version_info.minor)'`
@@ -337,20 +284,8 @@ needPYTHON(){
     fi
 	
 }
-needCMAKE(){
-    echo ""
-    echo "looking for cmake ..."
-    if ( (cmake --version) );then
-        echo "... found, good"
-    else
-        echo "need cmake"
-        echo "get one from http://www.cmake.org/cmake/resources/software.html"
-        echo "if already .. ensure cmake installation directory is in your PATH"
-        exit
-    fi
-}
+
 cmakeBuild(){
-	needCMAKE
 	_SRC_=$1
 	_BUILD_=$2
 	_DIST_=$3
@@ -387,15 +322,13 @@ mkBuildDIR(){
 			[ -d $_SRCMB_ ] && cp -rf $_SRCMB_/* $_BUILDMB_
 		fi
 	fi
-	
-	
 }
 prepBOOST(){
     BOOST_VER=boost_${BOOST_VERSION//./_}
 	BOOST_SRC=$SRC_DIR/$BOOST_VER
-	BOOST_DIST_NAME=$BOOST_VER-$TOOLSET-$ADDRESSMODEL-py$PYTHONMAJOR$PYTHONMINOR
+	BOOST_DIST_NAME=$BOOST_VER-$TOOLSET-$ADDRESSMODEL-'py'$PYTHONMAJOR$PYTHONMINOR
 	BOOST_DIST=$DIST_DIR/$BOOST_DIST_NAME
-	
+	BOOST_BUILD=$BUILD_DIR/$BOOST_VER-'py'$PYTHONMAJOR$PYTHONMINOR
 	export BOOST_ROOT=$BOOST_DIST
 	
 	BOOST_ROOT_WIN=${BOOST_ROOT/\/c\//C:\/}
@@ -408,7 +341,11 @@ buildBOOST(){
 
 	getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
 	
-	pushd $BOOST_SRC
+    if [ ! -d $BOOST_BUILD ]; then 
+        echo "copying sourcetree into build: $BOOST_BUILD"
+        cp -r $BOOST_SRC $BOOST_BUILD
+    fi 
+	pushd $BOOST_BUILD
         echo "Try to build b2 for TOOLSET: $B2TOOLSET"
                         
 		if [ "$SYSTEM" == "WIN" ]; then
@@ -433,12 +370,17 @@ buildBOOST(){
         #"$B2" toolset=$COMPILER --verbose-test test
         
         #quit
-        
+        if [ $SYSTEM == 'WIN' -a $ADDRESSMODEL == '64' ]; then
+         #BOOST_USE_WINDOWS_H,
+            EXTRADEFINES=': '
+            EXTRADEFINES='define=BOOST_USE_WINDOWS_H define=MS_WIN64'
+            echo "+++++++++++++++++++ :$EXTRADEFINES"
+        fi
         echo "Build with python: $WITHPYTHON"
         
-		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL  define=BOOST_USE_WINDOWS_H install \
+		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
         -j $PARALLEL_BUILD \
-        -d 1 \
+        -d 2 \
 		--prefix=$BOOST_DIST \
         --platform=msys \
         --layout=tagged \
@@ -452,7 +394,7 @@ buildBOOST(){
 		--with-filesystem \
 		--with-atomic 
 	popd
-	echo $BOOST_DIST_NAME > $DIST_DIR/.boost.dist
+	echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR.dist
 }
 
 prepGCCXML(){
@@ -464,7 +406,6 @@ prepGCCXML(){
 buildGCCXML(){
 	checkTOOLSET
 	prepGCCXML
-    needCMAKE
     
  	getWITH_GIT $GCCXML_URL $GCCXML_SRC
 	
@@ -498,12 +439,34 @@ prepCASTXML(){
 buildCASTXML(){
     checkTOOLSET
     prepCASTXML
-    needCMAKE
-    
+        
     getWITH_GIT $CASTXML_URL $CASTXML_SRC $CASTXML_REV
-    export CC=clang
-    export CXX=clang++
-    cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
+
+    if [ "$SYSTEM" == "WIN" ]; then 
+    
+        mkBuildDIR $CASTXML_BUILD
+        pushd $CASTXML_BUILD
+            if [ $ADDRESSMODEL == '32' ]; then
+                CC=/mingw32/bin/gcc CXX=/mingw32/bin/g++ cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                    -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
+                    -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
+            
+                sed -i -e 's/\/mingw32/C:\/msys32\/mingw32/g' src/CMakeFiles/castxml.dir/linklibs.rsp        
+            else
+                CC=/mingw64/bin/gcc CXX=/mingw64/bin/g++ cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                    -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
+                    -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
+            
+                sed -i -e 's/\/mingw64/C:\/msys64\/mingw64/g' src/CMakeFiles/castxml.dir/linklibs.rsp
+            fi 
+            
+            #make -j$PARALLEL_BUILD install
+            cmake --build . --config release --target install -- -j$PARALLEL_BUILD 
+        popd
+    else
+        cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
+    fi
+ 
 }
 
 prepPYGCCXML(){
@@ -585,7 +548,6 @@ buildTRIANGLE(){
 	prepTRIANGLE
 	getWITH_WGET $TRIANGLE_URL $TRIANGLE_SRC $TRIANGLE_VER.zip
 
-	# needSED checked by cmake
 	rm -rf $TRIANGLE_BUILD
 	mkBuildDIR $TRIANGLE_BUILD $TRIANGLE_SRC
 	
@@ -678,80 +640,6 @@ buildCPPUNIT(){
     popd
     
 }
-# prepGIMLI(){
-	# GIMLI_VER=gimli
-	# GIMLI_SRC=$SRC_DIR/$GIMLI_VER
-	# GIMLI_BUILD=$BUILD_DIR/$GIMLI_VER
-	# GIMLI_DIST=$DIST_DIR/$GIMLI_VER-py$PYTHONMAJOR$PYTHONMINOR
-# }
-
-# buildGIMLI(){
-	# checkTOOLSET
-	# prepGIMLI
-	# prepBOOST
-	# prepLAPACK
-    # prepGCCXML
-	# prepSUITESPARSE
-
-	# getWITH_SVN $GIMLI_URL $GIMLI_SRC 
-	# mkBuildDIR $GIMLI_BUILD
-
-	# pushd $GIMLI_BUILD
-		# echo "cmake $GIMLI_SRC -G "$CMAKE_GENERATOR" \
-			# -DCMAKE_INSTALL_PREFIX=$GIMLI_DIST \
-			# -DBOOST_ROOT=$BOOST_ROOT \
-			# -DEXTERNAL_DIR=$DIST_DIR \
-			# -DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe"
-		# cmake $GIMLI_SRC -G "$CMAKE_GENERATOR" \
-            # -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
-			# -DCMAKE_INSTALL_PREFIX=$GIMLI_DIST \
-			# -DBOOST_ROOT=$BOOST_ROOT \
-			# -DEXTERNAL_DIR=$DIST_DIR \
-			# -DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe	
-		# "$MAKE" -j$PARALLEL_BUILD 
-		
-        # OLDPATH=$PATH
-		# export PATH=/c/mingw/bin:$PATH
-		# export PYTHONPATH=$PYTHONPATH:$DIST_DIR
-		# "$MAKE" pygimli J=$PARALLEL_BUILD
-        # export PATH=$OLDPATH
-		
-		# #	-DLAPACK_LIBRARIES=C:/Users/CarstenRuecker/src/gimli/trunk/external/lib/liblapack.dll
-	# popd
-# }
-# prepBERT(){
-	# BERT_VER=bert
-	# BERT_SRC=$SRC_DIR/$BERT_VER
-	# BERT_BUILD=$BUILD_DIR/$BERT_VER
-	# BERT_DIST=$DIST_DIR/$BERT_VER-py$PYTHONMAJOR$PYTHONMINOR
-# }
-# buildBERT(){
-	# checkTOOLSET
-	# prepBERT
-	# prepGIMLI
-	# prepBOOST
-    # prepGCCXML
-	
-	# getWITH_SVN $BERT_URL $BERT_SRC 
-	# mkBuildDIR $BERT_BUILD
-
-	# pushd $BERT_BUILD
-		# cmake $BERT_SRC/trunk -G "$CMAKE_GENERATOR" \
-			# -DCMAKE_INSTALL_PREFIX=$BERT_DIST \
-            # -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
-			# -DGIMLI_SRC=$GIMLI_SRC \
-			# -DGIMLI_BUILD=$GIMLI_BUILD \
-			# -DBOOST_ROOT=$BOOST_ROOT \
-			# -DEXTERNAL_DIR=$DIST_DIR \
-			# -DGCCXML_EXECUTABLE=$GCCXML_DIST/bin/gccxml.exe
-		
-		# "$MAKE" -j$PARALLEL_BUILD
-		# export PATH=$PATH:/c/mingw/bin
-		# export PYTHONPATH=$PYTHONPATH:$DIST_DIR
-		# "$MAKE" pybert J=$PARALLEL_BUILD
-
-	# popd
-# }
 
 slotAll(){
 	buildBOOST

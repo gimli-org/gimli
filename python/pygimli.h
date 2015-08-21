@@ -4,13 +4,13 @@
 //See best practices section in Py++ documentation
 
 //# gcc 4.8 with linux complains about a couple of atomic problems
-#ifdef __GCC_ATOMIC_BOOL_LOCK_FREE
-    #if __GCC_ATOMIC_BOOL_LOCK_FREE == 2
-        #undef __GCC_ATOMIC_BOOL_LOCK_FREE
-        #define __GCC_ATOMIC_BOOL_LOCK_FREE 1
-    #endif        
-#endif
-#define BOOST_ATOMIC_FORCE_FALLBACK
+// #ifdef __GCC_ATOMIC_BOOL_LOCK_FREE
+    // #if __GCC_ATOMIC_BOOL_LOCK_FREE == 2
+        // #undef __GCC_ATOMIC_BOOL_LOCK_FREE
+        // #define __GCC_ATOMIC_BOOL_LOCK_FREE 1
+    // #endif        
+// #endif
+// #define BOOST_ATOMIC_FORCE_FALLBACK
 
 // #include <iostream>
 // #include <string>
@@ -25,7 +25,7 @@
 // #define PACKAGE_BUGREPORT "carsten@resistivity.net"
 // #endif // PACKAGE_NAME
 
-// #define PYTEST
+//#define PYTEST
 #ifdef PYTEST
 
 // #include "stopwatch.h"
@@ -530,32 +530,10 @@ namespace pyplusplus{ namespace aliases{
     
     typedef GIMLI::Expr< GIMLI::ExprIdentity >              ExprExprIdent;
 
-    
-    typedef std::vector< GIMLI::Vector< std::complex< double > > > stdVectorCVector;
-
-    typedef std::vector< GIMLI::Boundary * >         stdVectorBounds;
-    typedef std::vector< GIMLI::Cell * >             stdVectorCells;
-    typedef std::vector< GIMLI::Node * >             stdVectorNodes;
-//     typedef std::vector< GIMLI::ElectrodeShape * >   stdVectorElectrodeShape;
-//     typedef std::vector< GIMLI::Electrode >          stdVectorElectrode;
-//     typedef std::vector< GIMLI::Electrode  * >       stdVectorpElectrode;
-    typedef std::vector< GIMLI::MeshEntity * >       stdVectorMeshEntity;
-    typedef std::vector< GIMLI::CubicFunct >         stdVectorCubicFunct;
-
-    typedef std::map< std::string, GIMLI::Vector< double > > stdMapStringRVector;
-    typedef std::map< GIMLI::SIndex, GIMLI::Region * >         stdMapRegion;
-    typedef std::map< float, float >                    stdMapF_F;
-    typedef std::map< float, Complex >                  stdMapF_C;
-    typedef std::map< int, double >                     stdMapI_D;
-    typedef std::map< long, long >                      stdMapL_L;
-    typedef std::map< long, unsigned long >             stdMapL_UL;
-    typedef std::map< unsigned long, double >           stdMapUL_D;
-    typedef std::map< int, int >                        stdMapI_I;
-    typedef std::map< std::string, std::string >        stdMapS_S;
-    typedef std::map<std::pair<unsigned long, unsigned long>, double > stdMapL_L_D;
-    
     typedef std::vector< std::string >                  stdVectorString;
     typedef std::vector< int >                          stdVectorI;
+    typedef std::vector< bool >                         stdVectorB;
+
 //     typedef std::vector< long int >                     stdVectorLI;
 //     typedef std::vector< unsigned int >                 stdVectorUI;
     typedef std::vector< GIMLI::SIndex >                stdVectorSIndex;
@@ -577,7 +555,37 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::Trans < GIMLI::Vector < double > > * > stdVectorTrans;
     typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
     typedef std::vector< GIMLI::Vector< std::complex< double > > > stdVectorCVector;
+    typedef std::vector< GIMLI::Vector< std::complex< double > > > stdVectorCVector;
 
+    typedef std::vector< GIMLI::Boundary * >         stdVectorBounds;
+    typedef std::vector< GIMLI::Cell * >             stdVectorCells;
+    typedef std::vector< GIMLI::Node * >             stdVectorNodes;
+    typedef std::vector< GIMLI::MeshEntity * >       stdVectorMeshEntity;
+    typedef std::vector< GIMLI::CubicFunct >         stdVectorCubicFunct;
+    typedef std::vector< GIMLI::RegionMarkerPLC >    stdVectorRegionMarkerPLC;
+
+    typedef std::map< std::string, GIMLI::Vector< double > > stdMapStringRVector;
+    typedef std::map< GIMLI::SIndex, GIMLI::Region * >         stdMapRegion;
+    typedef std::map< float, float >                    stdMapF_F;
+    typedef std::map< float, Complex >                  stdMapF_C;
+    typedef std::map< int, double >                     stdMapI_D;
+    typedef std::map< long, long >                      stdMapL_L;
+    typedef std::map< long, unsigned long >             stdMapL_UL;
+    typedef std::map< unsigned long, double >           stdMapUL_D;
+    typedef std::map< int, int >                        stdMapI_I;
+    typedef std::map< std::string, std::string >        stdMapS_S;
+    
+    typedef std::map<std::pair<unsigned long, unsigned long>, double > stdMapL_L_D;
+    typedef std::map<std::pair<unsigned long, unsigned long>, std::complex< double > > stdMapL_L_C;
+    
+    #ifdef _WIN64
+        typedef std::map<std::pair<unsigned long long, unsigned long long>, double > stdMapLL_LL_D;
+        typedef std::map<std::pair<unsigned long long, unsigned long long>, std::complex< double > > stdMapLL_LL_C;
+    #elif _WIN32
+        typedef std::map<std::pair<unsigned int, unsigned int>, double > stdMapI_I_D;
+        typedef std::map<std::pair<unsigned int, unsigned int>, std::complex< double > > stdMapI_I_C;
+    #endif
+    
     typedef std::list< long unsigned int >              stdListUL;
 
     typedef std::set< long int >                        stdSetL;
@@ -585,8 +593,6 @@ namespace pyplusplus{ namespace aliases{
     typedef std::set< GIMLI::Node * >                 stdSetNodes;
     typedef std::set< GIMLI::Boundary * >             stdSetBoundary;
     typedef std::set< GIMLI::Cell * >                 stdSetCell;
-    
-    
 
 }} //pyplusplus::aliases
 

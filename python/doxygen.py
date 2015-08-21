@@ -32,8 +32,7 @@ class doxygen_doc_extractor(object):
             if self.file_name != declaration.location.file_name:
                 self.file_name = declaration.location.file_name
                 self.source = open(
-                    declaration.location.file_name,
-                    encoding='utf-8').readlines()
+                    declaration.location.file_name, encoding='utf-8').readlines()
             find_block_end = False
 
             # search backward until file begin
