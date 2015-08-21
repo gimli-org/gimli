@@ -38,15 +38,17 @@ if (NOT HAVE_DUMMY)
     file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/generated/dummy.cpp "")
 endif()
 
-ADD_CUSTOM_TARGET(pgcopydll ALL)
-ADD_CUSTOM_COMMAND(
-    COMMAND
-        cp ${CMAKE_BINARY_DIR}/bin/*.dll ${CMAKE_CURRENT_SOURCE_DIR}/pygimli
-    TARGET
-        pgcopydll
-    COMMENT
-        "Updating needed dll. build/bin/*dll -> trunk/python/pygimli"
-)
+if(WIN32)
+    ADD_CUSTOM_TARGET(pgcopydll ALL)
+    ADD_CUSTOM_COMMAND(
+        COMMAND
+            cp ${CMAKE_BINARY_DIR}/bin/*.dll ${CMAKE_CURRENT_SOURCE_DIR}/pygimli
+        TARGET
+            pgcopydll
+        COMMENT
+            "Updating needed dll. build/bin/*dll -> trunk/python/pygimli"
+    )
+endif(WIN32)
 
 add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_CURRENT_SOURCE_DIR}/pygimli/")
 
@@ -55,8 +57,12 @@ add_dependencies(pggen gimli)
 add_dependencies(copy_python pggen)
 add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
-add_dependencies(pgcopydll pgbuild)
-add_dependencies(pygimli pgcopydll)
+if(WIN32)
+    add_dependencies(pgcopydll pgbuild)
+    add_dependencies(pygimli pgcopydll)
+else(WIN32)
+    add_dependencies(pygimli pgbuild)
+endif(WIN32)
 
 
 # for calling the build only
