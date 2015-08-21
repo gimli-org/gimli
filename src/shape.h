@@ -25,9 +25,11 @@
 #include "polynomial.h"
 #include "curvefitting.h"
 
-#if USE_BOOST_THREAD
-    #include <boost/thread.hpp>
-    static boost::mutex writeCacheMutex__;
+#ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
+    #if USE_BOOST_THREAD 
+        #include <boost/thread.hpp>
+        static boost::mutex writeCacheMutex__;
+    #endif
 #endif
 
 namespace GIMLI{
@@ -96,12 +98,14 @@ private:
     /*! probably threading problems .. pls check*/
     template < class Ent > void createShapeFunctions_(const Ent & e) const {
         #if USE_BOOST_THREAD
-        #ifdef WIN32_LEAN_AND_MEAN
-                __MS("pls check missing mutex")
+        //#ifdef WIN32_LEAN_AND_MEAN
+        //        __MS("pls check missing mutex")
             //boost::mutex::scoped_lock lock(writeCacheMutex__);
-        #else
+        //#else
+            #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
             boost::mutex::scoped_lock lock(writeCacheMutex__); 
-        #endif
+            #endif
+        //#endif
             
         #else
             #error "No boost threading"

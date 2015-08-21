@@ -6,7 +6,6 @@ import shutil
 import sys
 import string
 
-
 from environment_for_pygimli_build import settings
 
 from optparse import OptionParser
@@ -29,8 +28,7 @@ from pygccxml import parser
 import logging
 from pygccxml import utils
 logger = utils.loggers.cxx_parser
-logger.setLevel(logging.DEBUG)
-    
+#logger.setLevel(logging.DEBUG)
 
 from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
@@ -192,16 +190,19 @@ def generate(defined_symbols, extraIncludes):
 
     defines = ['PYGIMLI_CAST', 'HAVE_BOOST_THREAD_HPP']
     caster = 'gccxml'
-
-    if platform.architecture()[
-            0] == '64bit' and platform.system() == 'Windows':
-
-        if sys.platform == 'darwin':
-            pass
+    compiler_path = None
+    
+    if platform.system() == 'Windows':
+        if platform.architecture()[0] == '64bit': 
+            compiler_path='C:/msys64/mingw64/bin/clang++'
+            if sys.platform == 'darwin':
+                pass
+            else:
+                defines.append('_WIN64')
+                logger.info('Marking win64 for gccxml')
         else:
-            defines.append('_WIN64')
-            logger.info('Marking win64 for gccxml')
-
+            compiler_path='C:/msys32/mingw32/bin/clang++'
+            
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:
             defines.append(define)
@@ -213,6 +214,7 @@ def generate(defined_symbols, extraIncludes):
             os.name = 'mingw'
             casterpath = settings.caster_path.replace('\\', '\\\\')
             casterpath = settings.caster_path.replace('/', '\\')
+            
             
             if not 'gccxml' in casterpath:
                 caster = 'castxml'
@@ -245,6 +247,7 @@ def generate(defined_symbols, extraIncludes):
                                          include_paths=settings.includesPaths,
                                          define_symbols=defines,
                                          indexing_suite_version=2,
+                                         compiler_path=compiler_path,
                                          caster=caster
                                          )
 
@@ -271,7 +274,10 @@ def generate(defined_symbols, extraIncludes):
     #sys.exit()
                 
     logger.info("Apply handmade wrappers.")
-    hand_made_wrappers.apply(mb)
+    try:
+        hand_made_wrappers.apply(mb)
+    except Exception as e:
+        print(e)
 
     logger.info("Apply custom rvalues.")
     # START manual r-value converters
@@ -444,9 +450,12 @@ def generate(defined_symbols, extraIncludes):
                     mem.exclude()
                 
                 #print("mem", mem)
-            
-    mb.calldefs(access_type_matcher_t('protected')).exclude()
-    mb.calldefs(access_type_matcher_t('private')).exclude()
+     
+    try:
+        mb.calldefs(access_type_matcher_t('protected')).exclude()
+        mb.calldefs(access_type_matcher_t('private')).exclude()
+    except:
+        pass
 
     # setMemberFunctionCallPolicieByReturn(mb, [ '::GIMLI::Node &'
     #, '::GIMLI::Cell &'
@@ -469,6 +478,7 @@ def generate(defined_symbols, extraIncludes):
          'unsigned int *',
          'long unsigned int *', 
          'unsigned long long int *',
+         'long long unsigned int *',
          '::GIMLI::Index *', '::GIMLI::SIndex *', 'bool *'],
         call_policies.return_pointee_value)
 
@@ -481,6 +491,7 @@ def generate(defined_symbols, extraIncludes):
                                               'long long int &',
                                               'unsigned int &',
                                               'long unsigned int &',
+                                              'long long unsigned int &',
                                               'unsigned long long int &',
                                               '::GIMLI::Index &',
                                               '::GIMLI::SIndex &',

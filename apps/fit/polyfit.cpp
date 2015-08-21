@@ -60,6 +60,20 @@ protected:
 
 int main( int argc, char *argv [] ){
     /*! parse command line: data file and number of coefficents */
+    std::cout << "size_t" << sizeof(size_t) << std::endl;
+    std::cout << "ssize_t" << sizeof(ssize_t) << std::endl;
+    std::cout << "Index" << sizeof(GIMLI::Index) << std::endl;
+    std::cout << "Sindex" << sizeof(GIMLI::SIndex) << std::endl;
+   
+    std::cout << "8" << sizeof(GIMLI::int8) << std::endl;
+    std::cout << "16" << sizeof(GIMLI::int16) << std::endl;
+    std::cout << "32" << sizeof(GIMLI::int32) << std::endl;
+    std::cout << "64" << sizeof(GIMLI::int64) << std::endl;
+    
+    std::cout << "8" << sizeof(GIMLI::uint8) << std::endl;
+    std::cout << "16" << sizeof(GIMLI::uint16) << std::endl;
+    std::cout << "32" << sizeof(GIMLI::uint32) << std::endl;
+    std::cout << "64" << sizeof(GIMLI::uint64) << std::endl;
     std::string datafile;
     int np = 1;
     double lambda = 0.001;

@@ -11,16 +11,10 @@ Usage:
 
 """
 
-from __future__ import print_function
-
-import matplotlib.pyplot as plt
+#from __future__ import print_function
+#import matplotlib.pyplot as plt
 
 import os
-try:
-    import subprocess  # check for 3.4
-except ImportError:
-    pass
-
 import sys
 
 if sys.platform == 'win32':
@@ -38,6 +32,8 @@ except ImportError as e:
     traceback.print_exc(file=sys.stdout)
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
+#print(_pygimli_.authors())
+#print(dir(_pygimli_))
 import locale
 
 def checkAndFixLocaleDecimal_point(verbose=False):
@@ -709,6 +705,11 @@ def asvector(array):
 
 # PEP conform version str with SVN revision number
 def __svnversion__(path=__path__[0]):
+    try:
+        import subprocess  # check for 3.4
+    except ImportError:
+        pass
+    
     p = subprocess.Popen("svnversion -n %s" % path, shell=True,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, _) = p.communicate()

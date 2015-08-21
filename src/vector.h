@@ -205,7 +205,13 @@ public:
 // #ifndef PYGIMLI_CAST    
 // this constructor is dangerous for IndexArray in pygimli .. 
 // there is an autocast from int -> IndexArray(int) 
-    Vector(Index n=0) 
+    Vector() 
+        : size_(0), data_(0), capacity_(0){
+    // explicit Vector(Index n = 0) : data_(NULL), begin_(NULL), end_(NULL) {
+        resize(0);
+        clean();
+    }
+    Vector(Index n) 
         : size_(0), data_(0), capacity_(0){
     // explicit Vector(Index n = 0) : data_(NULL), begin_(NULL), end_(NULL) {
         resize(n);
@@ -640,13 +646,16 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     inline Vector < ValueType > operator - () const { return *this * -1.0; }
 
     /*! Resize if n differs size() and fill new with val. Old data are preserved. */
-    void resize(Index n, ValueType fill=0){
+    void resize(Index n, ValueType fill){
         if (n != size_){
             reserve(n);
             for (Index i = size_; i < n; i ++) data_[i]=fill;
             size_ = n;
-            
         }
+    }
+    // default args lead win64 pygimli segfault .. WTF??
+    void resize(Index n){
+        resize(n,0);
     }
     
     /*! Reserve memory. Old data are preserved*/
