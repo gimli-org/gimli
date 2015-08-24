@@ -35,7 +35,7 @@ and compile the necessary components.
   tested: 1.46, 1.48, 1.49, 1.51, 1.52, 1.53, 1.57
 
 * blas and lapack for suitesparse (system or auto via cmake)
-* SuiteSparse (http://www.cise.ufl.edu/research/sparse/SuiteSparse)
+* SuiteSparse (http://faculty.cse.tamu.edu/davis/suitesparse.html)
 * cppunit
 * procps
 * triangle (http://www.cs.cmu.edu/~quake/triangle.html)

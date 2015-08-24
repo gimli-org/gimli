@@ -98,7 +98,7 @@ add_custom_target(sphinxhtml ALL
      WORKING_DIRECTORY
         ${SPHINX_BUILD_DIR}/doc
      COMMAND
-        cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
+        cmake -E copy_directory ${DOXYGEN_BUILD_DIR}/html ${SPHINX_HTML_DIR}/gimliapi
      COMMAND
         ${SPHINX_EXECUTABLE} -v
         -D plot_gallery=1
