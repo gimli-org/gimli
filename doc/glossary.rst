@@ -35,7 +35,7 @@ Glossary
         Matplotlib :term:`Python` package displays publication quality results.
         It displays both 1D X-Y type plots and 2D contour plots for structured
         and unstructured data. It works on all common platforms and produces
-        publication quality hard copies. http://matplotlib.sourceforge.net
+        publication quality hard copies. http://matplotlib.org
 
     MinGW
         MinGW, a contraction of "Minimalist GNU for Windows", is a minimalist
@@ -73,12 +73,12 @@ Glossary
 
     Sphinx
         The tools used to generate the :term:`GIMLi` documentation. See:
-        http://sphinx.pocoo.org/
+        http://sphinx-doc.org
 
     SuiteSparse
         SuiteSparse is a single archive that contains packages for solving
         large sparse problems using Sparse Cholesky factorization.
-        http://www.cise.ufl.edu/research/sparse/SuiteSparse/
+        http://faculty.cse.tamu.edu/davis/suitesparse.html
 
     Triangle
         A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator.

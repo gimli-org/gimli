@@ -484,7 +484,7 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH + "/_templates/pybte
 
 # -- Options for doxylink ------------------------------------------------------
 doxylink = {
-    'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi/html/')
+    'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi')
 }
 
 # Create small gallery of all tutorials and examples in the sidebar.
