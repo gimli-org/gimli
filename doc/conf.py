@@ -305,7 +305,7 @@ htmlhelp_basename = 'gimlidoc'
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = join(SPHINXDOC_PATH, "_themes/gimli/static/gimli.png")
+latex_logo = join(SPHINXDOC_PATH, "_static/gimli.png")
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
