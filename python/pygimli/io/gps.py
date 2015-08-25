@@ -2,15 +2,11 @@
 """Utility methods to read GPS data and convert them via pyproj."""
 
 import sys
+import os
 
 import matplotlib.image as mpimg
 from math import floor
 import numpy as np
-# there is no urllib2 in py3
-# import urllib2
-import urllib
-import os
-
 try:
     from pyproj import Proj, transform
     gk2 = Proj(init="epsg:31466")  # GK zone 2
@@ -263,11 +259,31 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
                    usetls=False):
     """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
 
-    At first access, the image is retrieved from BKG and saved then loaded.
+    First accessed, the image is obtained from BKG, saved and later loaded.
+
+    Parameters
+    ----------
+    mode : str
+        'DOP' (digital orthophoto 40cm) or
+        'DTK' (digital topo map 1:25000)
+
+    imsize : int
+        image width in pixels (height will be automatically determined
+
     """
+    try:
+        import urllib.request as urllib2
+    except ImportError:
+        import urllib2
+
     ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
     wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
     fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
+    if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
+        ax = ax.get_xlim()
+        imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
+        if imsize > 5000:  # limit overly sized images
+            imsize = 2500  # default value
     ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
                             service=wms[mode], usetls=usetls, uuid=uuid,
                             fmt=fmt[mode], epsg=epsg)
