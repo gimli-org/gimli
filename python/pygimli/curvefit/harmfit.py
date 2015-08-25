@@ -95,37 +95,45 @@ def harmfitNative(y, x=None, nc=None, xc=None, err=None):
     return sum((B * coeff).T), harmFunctor(A, coeff, xmi, xspan)
 
 
-def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
+def harmfit(y, x=None, error=None, nc=42, resample=None,
             window=None, verbose=False, dosave=False,
             lineSearch=True, robust=False, maxiter=20):
-    """
-        HARMFIT - GIMLi based curve-fit by harmonic functions
-        y .. 1d-array(len(y)) values to be fitted
-        x .. 1d-array(len(y)) abscissa data spacing. if not given: 1 * [0 .. len(y))
-        error .. 1d-array(len(y))  data error of y (fit y into the range of error). if not given (absolute err = 1%)
-        nCoefficients .. int Number of harmonic coefficients
-        resample .. 1d-array(len(resample)) resample y based on fitting coeffients
-        window .. just fit data inside window bounds
-        return response, coefficients
+    """HARMFIT - GIMLi based curve-fit by harmonic functions
+        Parameters
+        ----------
+        y : 1d-array - values to be fitted
 
-        response .. 1d-array(len(y)) if no resample given, else 1d-array(len(resample))
-        coefficients .. coefficients for harmic functions that fit y
+        x : 1d-array(len(y)) - data abscissa data. default: [0 .. len(y))
+
+        error : 1d-array(len(y)) error of y. default (absolute error = 0.01)
+
+        nc : int - Number of harmonic coefficients
+
+        resample : 1d-array - resample y to x using fitting coeffients
+
+        window : int - just fit data inside window bounds
+
+        Returns
+        -------
+        response : 1d-array(len(resample) or len(x)) - smoothed values
+
+        coefficients : 1d-array - fitting coefficients
     """
     if x is None:
-        x = pg.asvector(np.arange(len(y)))
-    else:
-        if not isinstance(x, pg.RVector):
-            x = pg.asvector(x)
-
-    if not isinstance(y, pg.RVector):
-        y = pg.asvector(y)
+        x = np.arange(len(y))
+#    else:
+#        if not isinstance(x, pg.RVector):
+#            x = pg.asvector(x)
+#
+#    if not isinstance(y, pg.RVector):
+#        y = pg.asvector(y)
 
     xToFit = None
     yToFit = None
 
     if window is not None:
         idx = pg.find((x >= window[0]) & (x < window[1]))
-        #idx = getIndex(x , lambda v: v > window[0] and v < window[1])
+#        idx = getIndex(x , lambda v: v > window[0] and v < window[1])
 
         xToFit = x(idx)
         yToFit = y(idx)
@@ -138,7 +146,7 @@ def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
 
 #    print xToFit
 #    print yToFit
-    fop = pg.HarmonicModelling(nCoefficients, xToFit, verbose)
+    fop = pg.HarmonicModelling(nc, xToFit, verbose)
     inv = pg.RInversion(yToFit, fop, verbose, dosave)
     if error is not None:
         if not isinstance(error, pg.RVector):
@@ -163,20 +171,13 @@ def harmfit(y, x=None, error=None, nCoefficients=42, resample=None,
 
         ret = fop.response(coeff, resample)
 
-#        print ret
-
         if window is not None:
-            #            print resample
-            #            print window[0], window[1]
             # print pg.find((resample < window[0]) | (resample >= window[1]))
-            ret.setVal(
-                0.0, pg.find(
-                    (resample < window[0]) | (
-                        resample >= window[1])))
-#            idx = getIndex(resample, lambda v: v <= window[0] or v >= window[1])
+            ret.setVal(0.0, pg.find((resample < window[0]) |
+                                    (resample >= window[1])))
+#            idx = getIndex(resample,
+#                           lambda v: v <= window[0] or v >= window[1])
 #            for i in idx: ret[i] = 0.0
-#        print ret
-        # sys.exit
         return ret, coeff
     else:
         return inv.response(), coeff
