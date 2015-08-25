@@ -151,23 +151,43 @@ endmacro(findBuildTools)
 
 macro(find_or_build_package package get_package)
 
+    set (extraMacroArgs ${ARGN})
+
+    # Did we get any optional args?
+    list(LENGTH extraMacroArgs numExtraArgs)
+    if (${numExtraArgs} GREATER 0)
+        list(GET extraMacroArgs 0 optionalArg)
+        set(foceLocal True)
+    else()
+        set(foceLocal False)
+    endif()
+    
+
+
     string(TOUPPER ${package} upper_package)
-    find_or_build_package_check(${package} ${get_package} ${upper_package}_FOUND)
+    find_or_build_package_check(${package} ${get_package} ${upper_package}_FOUND ${foceLocal})
 endmacro()
 
-macro(find_or_build_package_check package get_package checkVar)
+macro(find_or_build_package_check package get_package checkVar forceLocal)
+
     find_package(${package})
     
     string(TOUPPER ${package} upper_package)
     string(TOLOWER ${package} lower_package)
     
     set (FORCE_LOCAL_REBUILD 0)
-    if ($ENV{CLEAN} OR ${CLEAN})
-        set(FORCE_LOCAL_REBUILD 1)
-        set(ENV{CLEAN} 1)
+
+    message(STATUS "${package} is local ${forceLocal}")
+
+    if ($ENV{CLEAN})
+        if(${forceLocal} OR ${package}_LOCAL)
+            set(FORCE_LOCAL_REBUILD 1)
+            set(ENV{CLEAN} 1)
+            message(STATUS "Rebuild forced for: ${package}")
+        endif()
     endif()
     
-    if (NOT ${checkVar} OR (${FORCE_LOCAL_REBUILD} AND ${package}_LOCAL))
+    if (NOT ${checkVar} OR ${FORCE_LOCAL_REBUILD})
         
         findBuildTools()
 
@@ -189,11 +209,10 @@ macro(find_or_build_package_check package get_package checkVar)
             WORKING_DIRECTORY 
 				${THIRDPARTY_DIR}
         )
-		
-        set(${package}_LOCAL 1 
-            CACHE INTERNAL "This package is build from local cmake call")
 
 		find_package(${package})
+
+        set(${package}_LOCAL 1 CACHE INTERNAL "this package was build local")
     else()
         message(STATUS "${package} found" )
     endif()

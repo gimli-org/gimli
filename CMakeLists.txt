@@ -95,7 +95,7 @@ if (NOT Boost_INCLUDE_DIR)
         get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
         set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
     else()
-        find_or_build_package_check(Boost boost Boost_INCLUDE_DIR)
+        find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
         # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
         if (NOT Boost_INCLUDE_DIR)
             FILE(READ "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
@@ -158,7 +158,7 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
-find_or_build_package(Triangle triangle)
+find_or_build_package(Triangle triangle LOCAL)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
@@ -221,19 +221,19 @@ if (NOT CASTER)
 endif()
 
 if (CASTER STREQUAL "gccxml")
-    find_or_build_package(gccxml gccxml)
+    find_or_build_package(gccxml gccxml LOCAL)
     set(CASTER_EXECUTABLE ${GCCXML_EXECUTABLE})
 else()
     find_program(CLANG clang REQUIRED)
     find_program(CLANGXX clang++ REQUIRED)
     find_package(LLVM REQUIRED)
 
-    find_or_build_package(castxml castxml)
+    find_or_build_package(castxml castxml LOCAL)
     set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
 endif()
 
-find_or_build_package(pygccxml pygccxml)
-find_or_build_package(pyplusplus pygccxml)
+find_or_build_package(pygccxml pygccxml LOCAL)
+find_or_build_package(pyplusplus pygccxml LOCAL)
 
 if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND 
     AND (GCCXML_FOUND OR CASTXML_FOUND)

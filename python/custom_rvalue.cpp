@@ -8,6 +8,8 @@
 // #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#include <Python.h>
+
 #include "gimli.h"
 #include "pos.h"
 #include "vector.h"
@@ -22,42 +24,6 @@ namespace bpl = boost::python;
 
 namespace r_values_impl{
  
-    inline NPY_TYPES get_typenum(bool) { return NPY_BOOL; }
-  // inline NPY_TYPES get_typenum(npy_bool) { return NPY_BOOL; }
-  inline NPY_TYPES get_typenum(npy_byte) { return NPY_BYTE; }
-  inline NPY_TYPES get_typenum(npy_ubyte) { return NPY_UBYTE; }
-  inline NPY_TYPES get_typenum(npy_short) { return NPY_SHORT; }
-  inline NPY_TYPES get_typenum(npy_ushort) { return NPY_USHORT; }
-  inline NPY_TYPES get_typenum(npy_int) { return NPY_INT; }
-  inline NPY_TYPES get_typenum(npy_uint) { return NPY_UINT; }
-  inline NPY_TYPES get_typenum(npy_long) { return NPY_LONG; }
-  inline NPY_TYPES get_typenum(npy_ulong) { return NPY_ULONG; }
-  inline NPY_TYPES get_typenum(npy_longlong) { return NPY_LONGLONG; }
-  inline NPY_TYPES get_typenum(npy_ulonglong) { return NPY_ULONGLONG; }
-  inline NPY_TYPES get_typenum(npy_float) { return NPY_FLOAT; }
-  inline NPY_TYPES get_typenum(npy_double) { return NPY_DOUBLE; }
-  inline NPY_TYPES get_typenum(npy_cfloat) { return NPY_CFLOAT; }
-  inline NPY_TYPES get_typenum(npy_cdouble) { return NPY_CDOUBLE; }
-  inline NPY_TYPES get_typenum(std::complex<float>) { return NPY_CFLOAT; }
-  inline NPY_TYPES get_typenum(std::complex<double>) { return NPY_CDOUBLE; }
-#if HAVE_LONG_DOUBLE && (NPY_SIZEOF_LONGDOUBLE > NPY_SIZEOF_DOUBLE)
-  inline NPY_TYPES get_typenum(npy_longdouble) { return NPY_LONGDOUBLE; }
-  inline NPY_TYPES get_typenum(npy_clongdouble) { return NPY_CLONGDOUBLE; }
-  inline NPY_TYPES get_typenum(std::complex<long double>) { return NPY_CLONGDOUBLE; }
-#endif
-  inline NPY_TYPES get_typenum(boost::python::object) { return NPY_OBJECT; }
-  inline NPY_TYPES get_typenum(boost::python::handle<>) { return NPY_OBJECT; }
-  
-template <class T> const PyTypeObject * get_array_scalar_typeobj() {
-    return (PyTypeObject *) PyArray_TypeObjectFromType(get_typenum(T()));
-}
-  
-template <class T> void * check_array_scalar(PyObject *obj) {
-    __MS(obj->ob_type << " " << get_array_scalar_typeobj<T>() )
-    if (obj->ob_type == get_array_scalar_typeobj<T>()) return obj;
-    else return 0;
-}
-  
 template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     //     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     // is obj is a sequence
@@ -159,19 +125,16 @@ struct PySequence2RVector{
         bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
         GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
         data->convertible = memory_chunk;
-            
-        __DC("len : "<< len(py_sequence))
-        __DC("PyList: "<<PyList_Check(obj))
-        __DC("PyTup: "<< PyTuple_Check(obj))
-        __DC("Base: "<< PyArray_BASE(obj))
-        __DC("Desc: "<<PyArray_DESCR(obj))
-        __DC("OneS: "<< PyArray_ISONESEGMENT(obj))
         
-//         std::cout << "size: " << PyArray_DIM(obj,0) << std::endl;
-//          std::cout << "type: " << PyArray_TYPE(obj) << std::endl;
-        // type 12 = float64
-        if (PyArray_ISONESEGMENT(obj) && PyArray_DESCR(obj) && !(PyList_Check(obj) or PyTuple_Check(obj))){
-            if (PyArray_TYPE(obj) == 12){
+       __DC("isvector<>: " << PyObject_HasAttrString(obj, "singleCalcCount"))
+       __DC("isndarray<>: " << PyObject_HasAttrString(obj, "flatten"))
+       __DC("len :   " << len(py_sequence))
+       __DC("PyList: " << PyList_Check(obj))
+       __DC("PyTup:  " << PyTuple_Check(obj))
+       __DC("OneS:   " << PyArray_ISONESEGMENT(obj))
+        
+        if (PyObject_HasAttrString(obj, "flatten")){ // probably numpy ndarray
+            if (PyArray_TYPE(obj) == 12 && PyArray_ISONESEGMENT(obj)){
                 // convert from numpy array
                 __DC(obj << " ** from array")
 //                 GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(PyArray_DIM(obj,0));
@@ -193,68 +156,6 @@ struct PySequence2RVector{
     }
 private:    
 };
-
-// struct PySequence2BVector{
-// 
-//     /*! Check if the object is convertible */
-//     static void * convertible(PyObject * obj){
-//            __DC(obj << " -> BVector")
-//            return checkConvertibleSequenz<bool>(obj);
-//     }
-// 
-//     /*! Convert List[] or ndarray into RVector */
-//     static void construct(PyObject* obj, bpl::converter::rvalue_from_python_stage1_data * data){
-//         // check tests/testPerf.py
-//         // check tests/RValueConverter.py
-//        __MS(obj)
-//         typedef bpl::converter::rvalue_from_python_storage< GIMLI::Vector< bool > > storage_t;
-//         storage_t* the_storage = reinterpret_cast<storage_t*>(data);
-//         void* memory_chunk = the_storage->storage.bytes;
-//         
-//         __M
-// //         std::cout << "size: " << PyArray_DIM(obj,0) << std::endl;
-// //         std::cout << "type: " << PyArray_TYPE(obj) << std::endl;
-//         // type 12 = float64
-//         
-//         if (PyList_Check(obj) or PyTuple_Check(obj)){
-//             __MS(obj)
-//               // convert from list
-//             bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
-//             GIMLI::Vector< bool > * vec = new (memory_chunk) GIMLI::Vector< bool >(len(py_sequence));
-//             data->convertible = memory_chunk;
-//             
-//             for (GIMLI::Index i = 0; i < vec->size(); i ++){
-//                  (*vec)[i]= bpl::extract< bool >(py_sequence[i]);
-//             }
-//         } else if (PyArray_ISONESEGMENT(obj) && PyArray_TYPE(obj) == 0){
-//             __MS(obj)
-//             // convert from numpy array
-//             GIMLI::Vector< bool > * vec = new (memory_chunk) GIMLI::Vector< bool >(PyArray_DIM(obj,0));
-//             data->convertible = memory_chunk;
-//             void * arrData = PyArray_DATA(obj);
-// 
-// // //         std::cout << "PyArray_NDIM(obj) " << PyArray_NDIM(obj) << std::endl;
-// // //         std::cout << "PyArray_NDIM(arrData) " << PyArray_NDIM(arrData) << std::endl;
-// // //         std::cout << "PyArray_ISONESEGMENT(obj) " << PyArray_ISONESEGMENT(obj) << std::endl;
-// //         
-//             std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(char));
-//             
-//         } else {
-//             __MS(obj)
-//               // extra implementation since PyArray_TYPE(PyList) segfaults
-//             bpl::object py_sequence(bpl::handle<>(bpl::borrowed(obj)));
-//             GIMLI::Vector< bool > * vec = new (memory_chunk) GIMLI::Vector< bool >(len(py_sequence));
-//             data->convertible = memory_chunk;
-//             
-//             for (GIMLI::Index i = 0; i < vec->size(); i ++){
-//                  (*vec)[i]= bpl::extract< bool >(py_sequence[i]);
-//             }
-//             //std::cout << "not yet implemented" << std::endl;
-//         }
-//     }
-// private:    
-// };
-
 
 struct PySequence2IndexArray{
 

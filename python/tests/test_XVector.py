@@ -227,6 +227,13 @@ class TestRVectorMethods(unittest.TestCase):
         
         # RVector(IndexArray) ==  RVector(nd.array(int))
 
+    def test_IndexAccess(self):
+        I = pg.IndexArray([0,1,1,0])
+        np.testing.assert_array_equal(pg.sum(I), 2)
+        np.testing.assert_array_equal(sum(I), 2)
+        np.testing.assert_array_equal(np.sum(I), 2)
+        
+
 
 if __name__ == '__main__':
     

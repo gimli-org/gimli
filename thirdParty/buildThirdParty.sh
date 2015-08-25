@@ -13,7 +13,8 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 GCCXML_URL=https://github.com/gccxml/gccxml.git
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
-CASTXML_REV=7bbb9a0 # current functional
+#CASTXML_REV=8a08a44ffee70f71bdb7d8bee90e325dafbfeae4 last functional
+#CASTXML_REV=7bbb9a0 # current functional
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml 
 #PYGCCXML_REV=594d71d # old but functional
@@ -466,7 +467,7 @@ buildCASTXML(){
     else
         cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
     fi
- 
+     
 }
 
 prepPYGCCXML(){

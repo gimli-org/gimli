@@ -294,6 +294,9 @@ inline bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
 inline void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
 inline bool debug(){ return __GIMLI_DEBUG__;}
 
+/*! For some debug purposes only */
+void showSizes();
+
 class PythonGILSave {
 public:
     PythonGILSave(): saved_(false) { save(); }
