@@ -2,11 +2,11 @@
 Readme for Github repository only. (Get's selected before *.rst file)
 -->
 
-![GIMLi](https://raw.githubusercontent.com/gimli-org/gimli/master/doc/_themes/gimli/static/gimli.png)
+![GIMLi](https://raw.githubusercontent.com/gimli-org/gimli/master/doc/_static/gimli.png)
 
 # GIMLi - Geophysical Inversion and Modelling Library
 
-[![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.log)
+[![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 
 
@@ -37,7 +37,3 @@ make pygimli
 import pygimli as pg
 print(pg.__version__)
 ```
-
-<!---
-Link to www.gimli.org at some point
--->

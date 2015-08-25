@@ -67,8 +67,9 @@ for dep in deps:
     if dep not in modules:
         req.append(dep)
 if req:
-    msg = "Sorry, there are missing dependencies to build the docs. Try: sudo pip install %s." \
-        % (' '.join(req))
+    msg = "Sorry, there are missing dependencies to build the docs.\n" + \
+          "Try: sudo pip install %s.\n" % (' '.join(req)) + \
+          "Or install all dependencies with: pip install -r requirements.txt"
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions

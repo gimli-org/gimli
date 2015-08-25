@@ -23,7 +23,7 @@ class TestRVectorMethods(unittest.TestCase):
         p = pg.RVector3(x)
         self.assertEqual(p.dist(x), 00.0)
         self.assertEqual(p.dist([1.0, 1.0]), 1.0)
-        
+
         p = pg.RVector3((0.0, 1.0, 0.0))
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
@@ -32,16 +32,16 @@ class TestRVectorMethods(unittest.TestCase):
             custom_rvalue.cpp
         '''
         idx = [0, 1, 1, 0]
-  
+
         I = pg.IndexArray(idx)
         self.assertEqual(pg.sum(I), sum(idx))
-          
+
         bn = (np.array(idx) > 0) #numpy bool
         idx = np.nonzero(bn)[0]  #numpy int64
-         
+
         # numyp int64 -> IndexArray
         I = pg.IndexArray(idx)
-               
+
         self.assertEqual(I.size(), 2)
         self.assertEqual(pg.sum(I), sum(idx))
 
@@ -66,32 +66,32 @@ class TestRVectorMethods(unittest.TestCase):
         p = pg.RVector3(x)
         pl = [p, p, p]
         t = pg.R3Vector(pl)
-        
+
     def test_NumpyToRVector(self):
         '''
             custom_rvalue.cpp
         '''
         x = np.arange(0, 1., 0.2)
-        
+
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
-        
+
         x = np.arange(0, 1., 0.2, dtype=np.float64)
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
-        
+
     def test_NumpyToIndexArray(self):
         '''
             custom_rvalue.cpp
         '''
         x = np.arange(0, 1., 0.2)
-        
+
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
-        
+
         x = np.arange(0, 1., 0.2, dtype=np.float64)
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
@@ -107,12 +107,12 @@ class TestRVectorMethods(unittest.TestCase):
         a = np.asarray(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
-        
+
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
-                
-                
+
+
     def test_BVectorToNumpy(self):
         '''
             implemented through hand_made_wrapper.py
@@ -129,12 +129,12 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.dtype, 'bool')
         self.assertEqual(len(a), 10)
         self.assertEqual(sum(a), 10)
-        
+
         a = np.array(b)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
         self.assertEqual(sum(a), 10)
-        
+
     def test_IndexArrayToNumpy(self):
         '''
             implemented through hand_made_wrapper.py
@@ -149,53 +149,53 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.dtype, 'int64')
         self.assertEqual(len(a), 10)
         self.assertEqual(sum(a), 20)
-        
+
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
         self.assertEqual(sum(a), 20)
-        
+
     def test_RVector3ToNumpy(self):
         '''
             implemented through hand_made_wrapper.py
         '''
         v = pg.RVector3()
-        
+
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 3)
-        
-        
+
+
     def test_R3VectorToNumpy(self):
         '''
             implemented through hand_made_wrapper.py
         '''
         mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2])
-            
+
         v = np.asarray(mesh.nodeCenters())
 
         self.assertEqual(type(v), np.ndarray)
         self.assertEqual(len(v), mesh.nodeCount())
-        
+
         a = np.array(mesh.cellCenter())
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), mesh.cellCount())
-        
+
 if __name__ == '__main__':
     #pg.setDebug(True)
     unittest.main()
     # do we need Implicit converter .. currently deactivated in vector.h
-    
+
     #suite = unittest.TestSuite()
-    
+
     ##suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
-    
+
     ##suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
     ##suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
     ##suite.addTest(TestRVectorMethods("test_ListToIndexArray"))
     ##suite.addTest(TestRVectorMethods("test_ListToRVector"))
     ##suite.addTest(TestRVectorMethods("test_NumpyToRVector"))
-    
+
     #runner = unittest.TextTestRunner()
     #runner.run(suite)
-    
+

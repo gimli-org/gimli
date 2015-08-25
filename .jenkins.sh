@@ -17,10 +17,8 @@ python -c "import numpy; print(numpy.__version__)"
 mkdir -p build
 cd build
 cmake ../trunk
-# this we need only once the deps needs to be updated
-# make rebuild_thirdparty
-make -j 8 gimli
-make pygimli J=8
+make -j 16 gimli
+make pygimli J=12
 
 # Test gimli
 make check
@@ -29,7 +27,7 @@ make check
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 python -c "import pygimli; print(pygimli.__version__)"
-python -c "import pygimli; pygimli.test()"
+python -c "import pygimli; pygimli.test(onlydoctests=False, coverage=True)"
 
 # Build documentation
 export PATH=/opt/texbin:$PATH # for building pdf

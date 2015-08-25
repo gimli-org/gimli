@@ -11,9 +11,6 @@ Usage:
 
 """
 
-#from __future__ import print_function
-#import matplotlib.pyplot as plt
-
 import os
 import sys
 
@@ -191,8 +188,8 @@ _pygimli_.IndexArray.__bool__ = nonzero_test
 ######################
 
 # Overwrite constructor for IndexArray
-# This seams ugly but necessary until we can recognize numpy array in 
-# custom_rvalue 
+# This seams ugly but necessary until we can recognize numpy array in
+# custom_rvalue
 __origIndexArrayInit__ = _pygimli_.IndexArray.__init__
 def __newIndexArrayInit__(self, arr, val=None):
     #print("Custom IndexArray", arr, val)
@@ -203,12 +200,12 @@ def __newIndexArrayInit__(self, arr, val=None):
             __origIndexArrayInit__(self, arr, val)
         else:
             __origIndexArrayInit__(self, arr)
-            
+
 _pygimli_.IndexArray.__init__ = __newIndexArrayInit__
 
 # Overwrite constructor for BVector
-# This seams ugly but necessary until we can recognize numpy array in 
-# custom_rvalue 
+# This seams ugly but necessary until we can recognize numpy array in
+# custom_rvalue
 __origBVectorInit__ = _pygimli_.BVector.__init__
 def __newBVectorInit__(self, arr, val=None):
     if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
@@ -221,7 +218,7 @@ def __newBVectorInit__(self, arr, val=None):
             __origBVectorInit__(self, arr, val)
         else:
             __origBVectorInit__(self, arr)
-            
+
 _pygimli_.BVector.__init__ = __newBVectorInit__
 
 
@@ -350,7 +347,7 @@ def __getVal(self, idx):
         #print("stdVectorSIndex", idx)
         return self(idx)
     elif isinstance(idx, slice):
-        
+
         s = idx.start
         e = idx.stop
         if s is None:
@@ -367,13 +364,13 @@ def __getVal(self, idx):
                 ids = range(e-1, s-1, idx.step)
             else:
                 ids = range(s, e, idx.step)
-            
+
             if len(ids):
                 return self(ids)
             else:
                 return self(0)
                 #raise Exception("slice invalid")
-    
+
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         if isinstance(idx[0], int):
             return self(idx)
@@ -384,7 +381,7 @@ def __getVal(self, idx):
                 #return self[np.nonzero(idx)[0]]
         #print("default")
         return self([int(a) for a in idx])
-           
+
     elif idx == -1:
         idx = len(self) - 1
 
@@ -491,7 +488,7 @@ class VectorIter:
     def __init__(self, vec):
         self.it = vec.beginPyIter()
         self.vec = vec
-                
+
     def __iter__(self):
         return self
 
@@ -634,7 +631,7 @@ def pow(v, p):
     if isinstance(p, int):
         return _pygimli_.pow(v, float(p))
     return _pygimli_.pow(v, p)
-    
+
 
 def __RVectorPower(self, m):
     return pow(self, m)
@@ -709,7 +706,7 @@ def __svnversion__(path=__path__[0]):
         import subprocess  # check for 3.4
     except ImportError:
         pass
-    
+
     p = subprocess.Popen("svnversion -n %s" % path, shell=True,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, _) = p.communicate()
@@ -749,7 +746,7 @@ def randN(n):
     _pygimli_.randn(r)
     return r
 
-def test(show=False, coverage=False):
+def test(show=False, onlydoctests=True, coverage=False):
     """Test all code examples in docstrings using pytest."""
     try:
         import pytest
@@ -764,16 +761,20 @@ def test(show=False, coverage=False):
     old_backend = plt.get_backend()
     if not show:
         plt.switch_backend("Agg")
-    cwd = __path__[0]
-    cfg = os.path.join(cwd, '../tests/setup.cfg')
+    cwd = os.path.realpath(__path__[0])
+    cfg = os.path.join(cwd, "../tests/setup.cfg")
     cmd = ""
     if os.path.exists(cfg):
         cmd += "-c %s " % cfg
     if pc and coverage:
-        cmd += "--cov pygimli --cov-report coveralls --cov-report html " + \
+        cmd += "--cov pygimli --cov-report term " + \
                "--cov-config %s " % cfg.replace("setup.cfg", ".coveragerc")
-    cmd += "%s" % cwd
+
+    cmd += "%s " % cwd
+    if not onlydoctests:
+        cmd += os.path.join(cwd, "../tests")
     try:
         pytest.main(cmd)
     finally:
         plt.switch_backend(old_backend)
+        plt.close('all')
