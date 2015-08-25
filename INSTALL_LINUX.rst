@@ -191,6 +191,5 @@ You can rebuild and update all local generated third party software by setting t
 .. code-block:: bash
 
     CLEAN=1 cmake ../trunk 
-    cmake ../trunk -DCLEAN=1
 
 

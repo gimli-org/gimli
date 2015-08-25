@@ -32,22 +32,27 @@ namespace GIMLI{
 DLLEXPORT bool __SAVE_PYTHON_GIL__ = false;
 DLLEXPORT bool __GIMLI_DEBUG__ = false;
 
+void showSizes(){
+    std::cout << "size_t: " << sizeof(size_t) << std::endl;
+    std::cout << "ssize_t: " << sizeof(ssize_t) << std::endl;
+    std::cout << "Index: " << sizeof(GIMLI::Index) << std::endl;
+    std::cout << "Sindex: " << sizeof(GIMLI::SIndex) << std::endl;
+   
+    std::cout << "int8: " << sizeof(GIMLI::int8) << std::endl;
+    std::cout << "int16: " << sizeof(GIMLI::int16) << std::endl;
+    std::cout << "int32: " << sizeof(GIMLI::int32) << std::endl;
+    std::cout << "int64: " << sizeof(GIMLI::int64) << std::endl;
+    
+    std::cout << "uint8: " << sizeof(GIMLI::uint8) << std::endl;
+    std::cout << "uint16: " << sizeof(GIMLI::uint16) << std::endl;
+    std::cout << "uint32: " << sizeof(GIMLI::uint32) << std::endl;
+    std::cout << "uint64: " << sizeof(GIMLI::uint64) << std::endl;
+    
+    std::cout << "float: " << sizeof(float) << std::endl;
+    std::cout << "double: " << sizeof(double) << std::endl;
+}
 
 std::string authors(){
-    std::cout << "size_t" << sizeof(size_t) << std::endl;
-    std::cout << "ssize_t" << sizeof(ssize_t) << std::endl;
-    std::cout << "Index" << sizeof(GIMLI::Index) << std::endl;
-    std::cout << "Sindex" << sizeof(GIMLI::SIndex) << std::endl;
-   
-    std::cout << "8" << sizeof(GIMLI::int8) << std::endl;
-    std::cout << "16" << sizeof(GIMLI::int16) << std::endl;
-    std::cout << "32" << sizeof(GIMLI::int32) << std::endl;
-    std::cout << "64" << sizeof(GIMLI::int64) << std::endl;
-    
-    std::cout << "8" << sizeof(GIMLI::uint8) << std::endl;
-    std::cout << "16" << sizeof(GIMLI::uint16) << std::endl;
-    std::cout << "32" << sizeof(GIMLI::uint32) << std::endl;
-    std::cout << "64" << sizeof(GIMLI::uint64) << std::endl;
     return (std::string)("bugs and suggestions to:") + PACKAGE_AUTHORS;
 }
 

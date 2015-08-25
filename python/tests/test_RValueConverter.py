@@ -183,10 +183,11 @@ class TestRVectorMethods(unittest.TestCase):
 
 if __name__ == '__main__':
     #pg.setDebug(True)
+    
     unittest.main()
     # do we need Implicit converter .. currently deactivated in vector.h
 
-    #suite = unittest.TestSuite()
+    ##suite = unittest.TestSuite()
 
     ##suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
 

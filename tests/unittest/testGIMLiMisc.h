@@ -32,10 +32,7 @@ public:
         std::cout << "I'm calling from" << WHERE_AM_I << std::endl;
 // 		CPPUNIT_ASSERT(GIMLI::fileExist("unittest.sh") == true);
         std::cout << "number of CPU: " << GIMLI::numberOfCPU() << std::endl;
-        std::cout << "sizes: int" << " " << sizeof(int) 
-                  << " long" << " " << sizeof(long)
-                  << " size_t" << " " << sizeof(size_t)
-                  << " ptr"<< " " << sizeof(void *)<< std::endl;
+        GIMLI::showSizes();
     }
 
     void testBooleanLogic(){
