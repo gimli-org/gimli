@@ -450,7 +450,7 @@ public:
     }
     
     /*! Import columnwise from bmat starting at offset */
-    void importCol(const std::string & filename, double dropTol = 1e-3, Index colOffset = 0){
+    void importCol(const std::string & filename, double dropTol, Index colOffset){
     //std::cout << "rows: " << Jcluster.rows() << " cols: " << Jcluster.cols()<< std::endl;
         
         FILE *file; file = fopen(filename.c_str(), "r+b");
@@ -477,7 +477,10 @@ public:
         
         fclose(file);
     }
-
+    // no default arg here .. pygimli@win64 linker bug
+    void importCol(const std::string & filename, double dropTol=1e-3){
+        importCol(filename, dropTol, 0);
+    }
 protected:
 
   IndexType rows_, cols_;

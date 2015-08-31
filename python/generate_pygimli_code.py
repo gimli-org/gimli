@@ -199,6 +199,8 @@ def generate(defined_symbols, extraIncludes):
                 pass
             else:
                 defines.append('_WIN64')
+                defines.append('MS_WIN64')
+                
                 logger.info('Marking win64 for gccxml')
         else:
             compiler_path='C:/msys32/mingw32/bin/clang++'

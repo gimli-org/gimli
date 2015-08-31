@@ -138,11 +138,12 @@ PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = (ssize_t)vec.size();
     
-#ifdef _WIN32
-    int dim2 [] = {length, 3};
+#ifdef MS_WIN64
+    long long int dim2 [] = {length, 3};
 #else
-    long int dim2 [] = {length, 3};
+    int dim2 [] = {length, 3};
 #endif
+
     PyObject * ret = PyArray_SimpleNew(2, dim2, NPY_DOUBLE);
 
     // check if array is contiguous here

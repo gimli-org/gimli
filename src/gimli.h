@@ -93,19 +93,12 @@ typedef int64_t int64;
 #ifdef _WIN64
     // for some magic reasons gccxml ignores the size_t = __int64 typedef under win64, so this helps let the python bindings through
 //#warning WIN64
-    // typedef uint64 Index;
-    // typedef int64 SIndex;
-    typedef unsigned __int64 Index;
-    typedef __int64 SIndex;
-    // very strange thing .. pygimli conversion from any defaultparameter (Index)0 .. leads to segfault while importing pygimli
-    //typedef size_t Index;
-    // WARNING!! signed long is 4byte under win64
-    // typedef signed long SIndex;
-    //typedef ssize_t SIndex;
-#elif defined(__WIN32)
+    typedef uint64 Index;
+    typedef int64 SIndex;
+#elif defined(_WIN32)
 //#warning WIN32
-	typedef unsigned __int32 Index;
-    typedef __int32 SIndex;
+    typedef uint32 Index;
+    typedef int32 SIndex;
 #elif defined(_MSC_VER)
 //#warning WINMSC
 	typedef unsigned __int32 Index;
@@ -295,7 +288,7 @@ inline void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
 inline bool debug(){ return __GIMLI_DEBUG__;}
 
 /*! For some debug purposes only */
-void showSizes();
+DLLEXPORT void showSizes();
 
 class PythonGILSave {
 public:

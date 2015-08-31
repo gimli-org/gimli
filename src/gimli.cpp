@@ -38,6 +38,10 @@ void showSizes(){
     std::cout << "Index: " << sizeof(GIMLI::Index) << std::endl;
     std::cout << "Sindex: " << sizeof(GIMLI::SIndex) << std::endl;
    
+    std::cout << "int: " << sizeof(int) << std::endl;
+    std::cout << "long: " << sizeof(long) << std::endl;
+    std::cout << "long long int: " << sizeof(long long int) << std::endl;
+    
     std::cout << "int8: " << sizeof(GIMLI::int8) << std::endl;
     std::cout << "int16: " << sizeof(GIMLI::int16) << std::endl;
     std::cout << "int32: " << sizeof(GIMLI::int32) << std::endl;

@@ -455,9 +455,13 @@ public:
         x_n y_n [z_n] data1_n [data2]_n \n
         with n = number of cells, and x y [z] == cell center
     */
-    int exportMidCellValue(const std::string & fileName, const RVector & data1,
-                            const RVector & data2 = RVector(0)) const ;
-
+    int exportMidCellValue(const std::string & fileName, const RVector & data1, const RVector & data2) const ;
+    // no default arg here .. pygimli@win64 linker bug
+    int exportMidCellValue(const std::string & fileName, const RVector & data1) const{
+        RVector data2(0);
+        return exportMidCellValue(fileName, data1, data2);
+    }
+    
     void exportVTK(const std::string & fbody,
                    const std::map< std::string, RVector > & data,
                    const std::vector < RVector3 > & vec,

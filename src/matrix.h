@@ -227,7 +227,7 @@ public:
         : MatrixBase(), nrows_(0), val_(0.0){}
 
     /*! Constructor with number of rows/colums. */
-    IdentityMatrix(Index nrows, double val = 1.0)
+    IdentityMatrix(Index nrows, double val=1.0)
         : MatrixBase(), nrows_(nrows), val_(val){}
 
     /*! Default destructor. */
@@ -267,11 +267,19 @@ protected:
 template < class ValueType > class DLLEXPORT Matrix : public MatrixBase {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols. Content of the matrix is zero. */
-    Matrix(Index rows=0, Index cols=0)
+    Matrix()
+        : MatrixBase() {
+        resize(0, 0);
+    }
+     Matrix(Index rows)
+        : MatrixBase() {
+        resize(rows, 0);
+    }
+    // no default arg here .. pygimli@win64 linker bug
+    Matrix(Index rows, Index cols)
         : MatrixBase() {
         resize(rows, cols);
     }
-
     /*! Copy constructor */
 
     Matrix(const std::vector < Vector< ValueType > > & mat)
