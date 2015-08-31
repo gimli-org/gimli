@@ -139,9 +139,10 @@ PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
     npy_intp length = (ssize_t)vec.size();
     
 #ifdef MS_WIN64
-    long long int dim2 [] = {length, 3};
+    //long long int dim2 [] = {length, 3};
+    npy_intp dim2 [] = {length, 3};
 #else
-    int dim2 [] = {length, 3};
+    npy_intp dim2 [] = {length, 3};
 #endif
 
     PyObject * ret = PyArray_SimpleNew(2, dim2, NPY_DOUBLE);
