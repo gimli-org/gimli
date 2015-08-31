@@ -120,7 +120,7 @@ class DLLEXPORT PolynomialModelling : public ModellingBase {
 public:
 
     PolynomialModelling(uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints,
-                        const RVector & startModel = RVector(0));
+                        const RVector & startModel);
 
     virtual RVector response(const RVector & par);
 

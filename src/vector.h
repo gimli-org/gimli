@@ -655,7 +655,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     }
     // default args lead win64 pygimli segfault .. WTF??
     void resize(Index n){
-        resize(n,0);
+        resize(n, 0);
     }
     
     /*! Reserve memory. Old data are preserved*/
@@ -707,7 +707,9 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 //     }
 
     /*! Fill Vector with 0.0. Don't change size.*/
-    void clean(){ std::memset(data_, '\0', sizeof(ValueType) * size_); }
+    void clean(){ 
+        if (size_ > 0) std::memset(data_, '\0', sizeof(ValueType) * size_); 
+    }
 
     /*! Empty the vector. Frees memory and resize to 0.*/
     void clear(){ free_(); }

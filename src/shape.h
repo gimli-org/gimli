@@ -38,12 +38,13 @@ DLLEXPORT std::vector < PolynomialFunction < double > >
 createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
                                uint dim, uint nCoeff,
                                bool pascale, bool serendipity,
-                               const RVector & startVector=RVector(0));
+                               const RVector & startVector);
+
 
 template < class Ent > std::vector < PolynomialFunction < double > >
     createPolynomialShapeFunctions(const Ent & ent, uint nCoeff,
                                    bool pascale, bool serendipity, 
-                                   const RVector & startVector=RVector(0)){
+                                   const RVector & startVector){
 // __MS(ent)
     std::vector < RVector3 > pnts;
     for (Index i = 0; i < ent.nodeCount(); i ++){
@@ -52,6 +53,14 @@ template < class Ent > std::vector < PolynomialFunction < double > >
 
     return createPolynomialShapeFunctions(pnts, ent.dim(), nCoeff, pascale,
                                           serendipity, startVector);
+}
+
+// no default arg here .. pygimli@win64 linker bug
+template < class Ent > std::vector < PolynomialFunction < double > >
+    createPolynomialShapeFunctions(const Ent & ent, uint nCoeff,
+                                   bool pascale, bool serendipity){
+    RVector start(0);
+    return createPolynomialShapeFunctions(ent, nCoeff, pascale, serendipity, start);
 }
 
 class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {

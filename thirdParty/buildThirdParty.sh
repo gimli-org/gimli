@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.58.0
+BOOST_VERSION_DEFAULT=1.59.0
 BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 
 LAPACK_VERSION=3.4.2
@@ -372,8 +372,6 @@ buildBOOST(){
         
         #quit
         if [ $SYSTEM == 'WIN' -a $ADDRESSMODEL == '64' ]; then
-         #BOOST_USE_WINDOWS_H,
-            EXTRADEFINES=': '
             EXTRADEFINES='define=BOOST_USE_WINDOWS_H define=MS_WIN64'
             echo "+++++++++++++++++++ :$EXTRADEFINES"
         fi
@@ -387,7 +385,7 @@ buildBOOST(){
         --layout=tagged \
         --debug-configuration \
 		$WITHPYTHON \
-		--with-system \
+        --with-system \
 		--with-thread \
 		--with-date_time \
 		--with-chrono \

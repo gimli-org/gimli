@@ -51,6 +51,9 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     
     if (CMAKE_COMPILER_IS_GNUCXX)
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value")
+        if (WIN32 AND ADDRESSMODEL EQUAL "64")
+            set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES DEFINE_SYMBOL "MS_WIN64")
+        endif()
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         #     using regular Clang or AppleClang
