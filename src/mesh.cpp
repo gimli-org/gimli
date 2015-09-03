@@ -50,7 +50,7 @@ Mesh::Mesh(Index dim)
     cellToBoundaryInterpolationCache_ = 0;
 }
 
-Mesh::Mesh(const std::string & filename)
+Mesh::Mesh(const std::string & filename, bool createNeighbourInfos)
     : rangesKnown_(false),
     neighboursKnown_(false),
     tree_(NULL),
@@ -59,7 +59,7 @@ Mesh::Mesh(const std::string & filename)
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
-    load(filename);
+    load(filename, createNeighbourInfos);
 }
 
 Mesh::Mesh(const Mesh & mesh)
@@ -1168,8 +1168,11 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
         
         c->findNeighbourCell(j);
         std::vector < Node * > nodes(c->boundaryNodes(j));
-//                 std::cout << findBoundary(nodes) << std::endl;
-
+//         __M
+//         std::cout << *c << std::endl;
+//             
+//         std::cout << findBoundary(nodes) << std::endl;
+//         __M
         Boundary * bound = createBoundary(nodes, 0);
 
 //         Boundary * bound = findBoundary(*nodes[0], *nodes[1], *nodes[2]);
@@ -1218,18 +1221,18 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
         //** cross check;
         if (((bound->leftCell() != c) && (bound->rightCell() != c)) || 
             (bound->leftCell() == bound->rightCell())){
-            std::cerr << *c << std::endl;
-            std::cerr << *bound << std::endl;
-            std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
-            if (bound->leftCell()){
-                std::cerr << *bound->leftCell() << std::endl;
-            }
-            if (bound->rightCell()){
-                std::cerr << *bound->rightCell() << std::endl;
-            }
+//             std::cerr << *c << std::endl;
+//             std::cerr << *bound << std::endl;
+//             std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
+//             if (bound->leftCell()){
+//                 std::cerr << *bound->leftCell() << std::endl;
+//             }
+//             if (bound->rightCell()){
+//                 std::cerr << *bound->rightCell() << std::endl;
+//             }
                 
             
-            throwError(1, WHERE + " Ooops, crosscheck --this should not happen.");
+            //throwError(1, WHERE + " Ooops, crosscheck --this should not happen.");
         } else {
 //                     std::cout << nBounds << std::endl;
 //                     std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;

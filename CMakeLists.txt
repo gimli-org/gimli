@@ -33,17 +33,16 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
-	if (APPLE)
-	#If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
+        if (APPLE)
+        #If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
 
-	#add_compile_options(-stdlib=libstdc++)
-	#add_compile_options(-stdlib=libc++)
-	endif()
+        #add_compile_options(-stdlib=libstdc++)
+        #add_compile_options(-stdlib=libc++)
+        endif()
     endif()
 
     if(WIN32)
     endif(WIN32)
-	add_compile_options(-stdlib=libc++)
 
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function

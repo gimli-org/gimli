@@ -25,6 +25,9 @@ def main(argv):
     parser.add_argument("-o", dest="outFileName", type=str,
                         help="Filename for the resulting mesh.",
                         default='none')
+    parser.add_argument("--omitConsistencyCheck", dest="omitConsistencyCheck", type=str,
+                        help="Filename for the resulting mesh.",
+                        default='none')
       
     parser.add_argument('mesh1')
     parser.add_argument('mesh2')
@@ -39,30 +42,21 @@ def main(argv):
     meshname1 = args.mesh1
     meshname2 = args.mesh2
 
-
     (outfileBody, fileExtension) = os.path.splitext(args.outFileName)
 
     # 2d should default here, since most users will merge 2d meshes. for 3d we
     # need an option here->Ca
     m1 = pg.Mesh(2)
-    m1.load(meshname1)
+    m1.load(meshname1, 0)
     m2 = pg.Mesh(2)
-    m2.load(meshname2)
-
-    #if args.localCoordinates:
-        #xmin=min(m1.xmin(), m2.xmin())
-        #ymin=min(m1.ymin(), m2.ymin())
-        #zmin=min(m1.zmin(), m2.zmin())
-
-        #m1.translate((-xmin, -ymin, -zmin))
-        #m2.translate((-xmin, -ymin, -zmin))
-
+    m2.load(meshname2, 0)
+    
     if args.verbose:
         print(meshname1, m1)
         print(meshname2, m2)
-
+           
     mesh = pg.Mesh(m1)
-
+    
     for c in m2.cells():
         mesh.copyCell(c)
 
@@ -81,12 +75,14 @@ def main(argv):
     
     if args.verbose:
         print(mesh)
-        print("write bms: ", outfileBody + ".bms")
+        
 
     if outfileBody.find('.vtk'):
         mesh.exportVTK(outfileBody)
+        if args.verbose: print("write out: ", outfileBody + ".vtk")
     else:
         mesh.saveBinaryV2(outfileBody)
+        if args.verbose: print("write out: ", outfileBody + ".bms")
 
 
 if __name__ == "__main__":

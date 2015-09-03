@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -42,7 +42,10 @@ Boundary * findBoundary_(const std::set < Boundary *> & common){
     return NULL;
 }
 
-Boundary * findBoundary(const Node & n1) { return findBoundary_(n1.boundSet()); }
+Boundary * findBoundary(const Node & n1) { 
+    if (n1.boundSet().size()) return *n1.boundSet().begin(); 
+    return NULL;; 
+}
 
 Boundary * findBoundary(const Node & n1, const Node & n2) {
     std::set < Boundary * > common;

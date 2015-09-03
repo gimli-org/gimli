@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -29,7 +29,7 @@
 
 namespace GIMLI{
 
-void Mesh::load(const std::string & fbody, IOFormat format){
+void Mesh::load(const std::string & fbody, bool createNeighbours, IOFormat format){
     if (fbody.find(".mod") != std::string::npos){
         importMod(fbody);
     } else if (fbody.find(".vtk") != std::string::npos){
@@ -47,7 +47,7 @@ void Mesh::load(const std::string & fbody, IOFormat format){
     } else {
         loadAscii(fbody);
     }
-    createNeighbourInfos();
+    if (createNeighbours) createNeighbourInfos();
 }
 
 void Mesh::loadAscii(const std::string & fbody){
