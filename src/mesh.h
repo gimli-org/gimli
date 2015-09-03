@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Carsten Rücker carsten@resistivity.net                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -138,7 +138,7 @@ public:
     Mesh(Index dim=2);
 
     /*! Constructor, read mesh from filename */
-    Mesh(const std::string & filename);
+    Mesh(const std::string & filename, bool createNeighbourInfos=true);
 
     /*! Copy constructor. */
     Mesh(const Mesh & mesh);
@@ -416,12 +416,16 @@ public:
     int save(const std::string & fileName, IOFormat format = Binary) const;
     int saveAscii(const std::string & fileName) const;
 
-    /*! Be carefull with interchanging binary meshs between 32-64bit architecture. Atm we save fixed int for counter and idx.
-  We have to replace and test it with uint32 or uint16 */
+    /*! Be carefull with interchanging binary meshs between 32-64bit architecture. 
+     * Atm we save fixed int for counter and idx.
+     * We have to replace and test it with uint32 or uint16 */
     int saveBinary(const std::string & fileName) const;
 
-    /*! Load Mesh from file and try to import fileformat regarding file suffix.*/
-    void load(const std::string & fileName, IOFormat format = Binary);
+    /*! Load Mesh from file and try to import fileformat regarding file suffix.
+     * If createNeighbourInfos if set, the mesh is checked for consistency and 
+     * missing boundaries will be created. */
+    void load(const std::string & fileName, 
+              bool createNeighbours=true, IOFormat format=Binary);
 
     void loadAscii(const std::string & fileName);
 

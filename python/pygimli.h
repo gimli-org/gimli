@@ -535,7 +535,6 @@ namespace pyplusplus{ namespace aliases{
 
     typedef std::vector< std::string >                  stdVectorString;
     typedef std::vector< int >                          stdVectorI;
-   // typedef std::vector< bool >                         stdVectorB;
 
 //     typedef std::vector< long int >                     stdVectorLI;
 //     typedef std::vector< unsigned int >                 stdVectorUI;

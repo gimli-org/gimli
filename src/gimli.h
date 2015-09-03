@@ -433,20 +433,6 @@ template < typename T > inline void swapVal(T & a, T & m){
     T tmp(a); a = m; m = tmp;
 }
 
-template < typename T > void test(T a, T b, std::vector < bool > & success){
-    success.push_back(a == b);
-    if (!success.back()){
-        std::cout << "test " << success.size() << " ist: " << a << " soll: " << b << std::endl;
-    }
-}
-
-template < typename T > bool test(T a, T b, bool verbose = false){
-    if (verbose){
-        std::cout << "ist: " << a << " soll: " << b << std::endl;
-    }
-    return a == b;
-}
-
 /*! General template for deleting an object. This is not exception-safe unless you use some kind of smart pointer.\n
 Example: Delete all objects in a container.
 vector < ptr * > vP;
