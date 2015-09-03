@@ -28,7 +28,10 @@
 //#define PYTEST
 #ifdef PYTEST
 
-// #include "stopwatch.h"
+
+ #include <iostream>
+ #include <fstream>
+ #include "stopwatch.h"
 // #include "vector.h"
 // #include "blockmatrix.h"
 // #include "vectortemplates.h"
@@ -532,7 +535,7 @@ namespace pyplusplus{ namespace aliases{
 
     typedef std::vector< std::string >                  stdVectorString;
     typedef std::vector< int >                          stdVectorI;
-    typedef std::vector< bool >                         stdVectorB;
+   // typedef std::vector< bool >                         stdVectorB;
 
 //     typedef std::vector< long int >                     stdVectorLI;
 //     typedef std::vector< unsigned int >                 stdVectorUI;

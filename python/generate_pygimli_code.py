@@ -20,7 +20,7 @@ if options.caster:
     settings.caster_path = options.caster
 
 if options.extraPath:
-    sys.path.append(options.extraPath)
+    sys.path.insert(0,options.extraPath)
 
 import hand_made_wrappers
 

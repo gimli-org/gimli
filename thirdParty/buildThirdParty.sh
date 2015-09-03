@@ -463,7 +463,7 @@ buildCASTXML(){
             cmake --build . --config release --target install -- -j$PARALLEL_BUILD 
         popd
     else
-        cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
+        CC=clang CXX=clang++ cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
     fi
      
 }
