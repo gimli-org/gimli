@@ -14,6 +14,17 @@ class TestRVectorMethods(unittest.TestCase):
         a = pg.RVector(10)
         self.assertEqual(a.size(), 10.0)
         self.assertEqual(sum(a), 0.0)
+        
+        mesh = pg.createMesh1D(10, 1)
+        self.assertEqual(mesh.cellCount(), 10.0)
+        
+        mesh = pg.createMesh1D(nCells=10)
+        self.assertEqual(mesh.cellCount(), 10.0)
+        
+        mesh = pg.createMesh1D(10)
+        self.assertEqual(mesh.cellCount(), 10.0)
+        
+        print(mesh)
 
     def test_ListToRVector3(self):
         '''
