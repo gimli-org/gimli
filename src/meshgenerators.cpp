@@ -43,23 +43,18 @@ Mesh createGrid(const RVector & x, const RVector & y, const RVector & z){
     return mesh;
 }
 
+Mesh createMesh1D(Index nCells, Index nClones){
+    RVector x(nCells * nClones + 1);
 
-Mesh createMesh1D(uint nCells, uint nClones){
-    RVector pos(nCells * nClones + 1);
-
-    std::generate(pos.begin(), pos.end(), IncrementSequence< double >(0.0));
-    Mesh mesh(createMesh1D(pos));
-    for (uint i = 0; i < nClones; i ++) {
-        for (uint j = 0; j < nCells; j ++) {
+    std::generate(x.begin(), x.end(), IncrementSequence< double >(0.0));
+    Mesh mesh(createMesh1D(x));
+    for (Index i = 0; i < nClones; i ++) {
+        for (Index j = 0; j < nCells; j ++) {
             mesh.cell((i * nCells) + j).setMarker(i);
         }
     }
 
   return mesh;
-}
-
-Mesh createMesh1D(const std::vector < double > & x){
-    return createMesh1D(RVector(x));
 }
 
 Mesh createMesh1D(const RVector & x){
@@ -68,23 +63,23 @@ Mesh createMesh1D(const RVector & x){
     return mesh;
 }
 
-Mesh createMesh1DBlock(uint nLayers, uint nProperties){
-    uint nPar = nLayers * (nProperties + 1);
-    RVector pos(nPar);
-    std::generate(pos.begin(), pos.end(), IncrementSequence< double>(0.0));
-    Mesh mesh(createMesh1D(pos));
+Mesh createMesh1DBlock(Index nLayers, Index nProperties){
+    Index nPar = nLayers * (nProperties + 1);
+    RVector x(nPar);
+    std::generate(x.begin(), x.end(), IncrementSequence< double>(0.0));
+    Mesh mesh(createMesh1D(x));
     /*! Thicknesses have marker 0 */
-    for (uint i = 0; i < nLayers - 1; i++) mesh.cell(i).setMarker(0);
+    for (Index i = 0; i < nLayers - 1; i++) mesh.cell(i).setMarker(0);
     /*! Properties have markers 1,2,... */
-    for (uint i = 0; i < nProperties; i ++) {
-        for (uint j = 0; j < nLayers; j ++) {
+    for (Index i = 0; i < nProperties; i ++) {
+        for (Index j = 0; j < nLayers; j ++) {
             mesh.cell((i + 1) * nLayers + j -1).setMarker(i + 1);
         }
     }
     return mesh;
 }
 
-Mesh createMesh2D(uint xDim, uint yDim, int markerType){
+Mesh createMesh2D(Index xDim, Index yDim, int markerType){
     RVector x(xDim + 1); std::generate(x.begin(), x.end(), IncrementSequence< double >(0.0));
     RVector y(yDim + 1); std::generate(y.begin(), y.end(), IncrementSequence< double >(0.0));
     return createMesh2D(x, y, markerType);
@@ -93,7 +88,7 @@ Mesh createMesh2D(uint xDim, uint yDim, int markerType){
 Mesh createMesh2D(const RVector & x, const RVector & y, int markerType){
     Mesh mesh(2);
     mesh.create2DGrid(x, y, markerType);
-    for (uint i = 0; i < mesh.boundaryCount(); i ++){
+    for (Index i = 0; i < mesh.boundaryCount(); i ++){
         if (!mesh.boundary(i).leftCell() || !mesh.boundary(i).rightCell()){
             mesh.boundary(i).setMarker(1);
         }
@@ -101,7 +96,7 @@ Mesh createMesh2D(const RVector & x, const RVector & y, int markerType){
     return mesh;
 }
 
-Mesh createMesh3D(uint xDim, uint yDim, uint zDim, int markerType){
+Mesh createMesh3D(Index xDim, Index yDim, Index zDim, int markerType){
     RVector x(xDim + 1); std::generate(x.begin(), x.end(), IncrementSequence< double >(0.0));
     RVector y(yDim + 1); std::generate(y.begin(), y.end(), IncrementSequence< double >(0.0));
     RVector z(zDim + 1); std::generate(z.begin(), z.end(), IncrementSequence< double >(0.0));
@@ -112,7 +107,7 @@ Mesh createMesh3D(const RVector & x, const RVector & y, const RVector & z, int m
     Mesh mesh(3);
     mesh.create3DGrid(x, y, z, markerType);
     int marker = 1;
-    for (uint i = 0; i < mesh.boundaryCount(); i ++){
+    for (Index i = 0; i < mesh.boundaryCount(); i ++){
         if (!mesh.boundary(i).leftCell() || !mesh.boundary(i).rightCell()){
             mesh.boundary(i).setMarker(marker);
         }
@@ -138,7 +133,7 @@ Mesh createMesh2D(const Mesh & mesh, const RVector & y,
     for (Index iy = 1; iy < y.size(); iy ++){
         first = true;
         for (Index in = 0; in < mesh.boundaryCount(); in ++){
-            uint nn = mesh.boundary(in).nodeCount();
+            Index nn = mesh.boundary(in).nodeCount();
             nodes.resize(nn * 2) ;
             
             nodes[0] = & mesh2.node((iy - 1) * mesh.nodeCount() + mesh.boundary(in).node(0).id());
@@ -185,7 +180,7 @@ Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottom
     for (Index iz = 1; iz < z.size(); iz ++){
         first = true;
         for (Index ic = 0; ic < mesh.cellCount(); ic ++){
-            uint nC = mesh.cell(ic).nodeCount();
+            Index nC = mesh.cell(ic).nodeCount();
             nodes.resize(nC * 2) ;
             
             for (Index k = 0; k < nC; k ++){
@@ -338,37 +333,37 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
     outerBound.push_back(upperLeftSurface);   
     RVector dx(increasingRange(4.0, xBoundary, 20));
     
-    for (uint i = 1; i < dx.size()-1; i ++) {
+    for (Index i = 1; i < dx.size()-1; i ++) {
         outerBound.push_back(poly.createNode(upperLeftSurface->pos() 
                             + RVector3(-dx[i], 0)));
     }
     outerBound.push_back(n1);   
-    for (uint i = 0; i < 9; i ++) {
+    for (Index i = 0; i < 9; i ++) {
         outerBound.push_back(poly.createNode(n1->pos() 
                             + (n2->pos() - n1->pos()) / 10 * (i + 1)));
     }
     outerBound.push_back(n2);   
-    for (uint i = 0; i < 9; i ++) {
+    for (Index i = 0; i < 9; i ++) {
         outerBound.push_back(poly.createNode(n2->pos() 
                             + (n3->pos() - n2->pos()) / 10 * (i + 1)));
     }
     outerBound.push_back(n3);   
-    for (uint i = 0; i < 9; i ++) {
+    for (Index i = 0; i < 9; i ++) {
         outerBound.push_back(poly.createNode(n3->pos() 
                             + (n4->pos() - n3->pos()) / 10 * (i + 1)));
     }
     outerBound.push_back(n4);   
-    for (uint i = dx.size()-2; i > 0; i --) {
+    for (Index i = dx.size()-2; i > 0; i --) {
         outerBound.push_back(poly.createNode(upperRightSurface->pos() 
                             + RVector3(dx[i], 0)));
     }
     outerBound.push_back(upperRightSurface);   
     
-    for (uint i = 0; i < outerBound.size() -1; i ++){
+    for (Index i = 0; i < outerBound.size() -1; i ++){
         poly.createEdge(*outerBound[i], *outerBound[i + 1], -1);
     }
     
-    for (uint i = 0; i < innerBound.size() -1; i ++){
+    for (Index i = 0; i < innerBound.size() -1; i ++){
         poly.createEdge(*innerBound[i], *innerBound[i + 1], boundMarker);
     }
     
