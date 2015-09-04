@@ -24,6 +24,9 @@ class TestRVectorMethods(unittest.TestCase):
         mesh = pg.createMesh1D(10)
         self.assertEqual(mesh.cellCount(), 10.0)
         
+        mesh = pg.createMesh2D(5, 2)
+        self.assertEqual(mesh.cellCount(), 10.0)
+        
         print(mesh)
 
     def test_ListToRVector3(self):

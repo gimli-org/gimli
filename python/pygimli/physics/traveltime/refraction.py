@@ -382,7 +382,6 @@ if __name__ == '__main__':
     datafile = sys.argv[1]
     ra = Refraction(datafile)
     print(ra)
-    pg.showLater(True)
     ra.showData()
     ra.showVA()
     ra.makeMesh(depth=100)

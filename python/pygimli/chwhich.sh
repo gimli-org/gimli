@@ -1,1 +1,6 @@
-sh chdll.sh |tail -n +3|while read eins zwei dll;do which $dll;done
+for dll in *.dll *.pyd;do 
+objdump.exe -p $dll |grep DLL
+done|sort|uniq|tail -n +3|
+while read eins zwei dll;do 
+which $dll
+done
