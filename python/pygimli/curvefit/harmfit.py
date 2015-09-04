@@ -95,7 +95,7 @@ def harmfitNative(y, x=None, nc=None, xc=None, err=None):
     return sum((B * coeff).T), harmFunctor(A, coeff, xmi, xspan)
 
 
-def harmfit(y, x=None, error=None, nc=42, resample=None,
+def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
             window=None, verbose=False, dosave=False,
             lineSearch=True, robust=False, maxiter=20):
     """HARMFIT - GIMLi based curve-fit by harmonic functions
@@ -149,21 +149,21 @@ def harmfit(y, x=None, error=None, nc=42, resample=None,
     fop = pg.HarmonicModelling(nc, xToFit, verbose)
     inv = pg.RInversion(yToFit, fop, verbose, dosave)
     if error is not None:
-        if not isinstance(error, pg.RVector):
-            error = pg.asvector(error)
-
-        inv.setRelativeError(error)
+        inv.setAbsoluteError(error)
     else:
         inv.setAbsoluteError(0.01)
 
-    inv.setLambda(000.0)
-    inv.setLocalRegularization(True)
+    inv.setMarquardtScheme(0.8)
+    if error is not None:
+        inv.stopAtChi1(True)
+    inv.setLambda(lam)
     inv.setMaxIter(maxiter)
     inv.setLineSearch(lineSearch)
     inv.setRobustData(robust)
     # inv.setConstraintType(0)
 
     coeff = inv.run()
+    print(inv.chi2())
 
     if resample is not None:
         if not isinstance(resample, pg.RVector):

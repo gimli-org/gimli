@@ -28,7 +28,7 @@ def gmat2numpy(mat):
 
 def numpy2gmat(nmat):
     """convert numpy.array into pygimli RMatrix.
-    
+
     TODO implement correct rval
     """
     gmat = pg.RMatrix()
@@ -48,7 +48,7 @@ def rndig(a, ndig=3):
 def roundTo(arr, n_digits=3):
     """Return ndarray of rounded elements (obsolete due to np.round)."""
     raise Exception('remove me')
-    #return np.asarray([rndig(a, ndig=n_digits) for a in arr])
+#    return np.asarray([rndig(a, ndig=n_digits) for a in arr])
 
 
 def num2str(a, fmtstr='%g%'):
@@ -251,7 +251,7 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
             vals[i, :] = imod[nlay - 1:2 * nlay - 1]
             thk = imod[:nlay - 1]
 
-        thk = np.hstack((thk, thk[-1]))
+        thk = np.hstack((thk, thk[-1]*3))
         z = np.hstack((0., np.cumsum(thk)))
         maxz = max(maxz, z[-1])
 
@@ -454,7 +454,7 @@ def setPlotStuff(fontsize=7, dpi=None):
     """set up rcParams (fontsize and dpi) for later plotting
 
     TODO move to mplviewer __init__.py"""
-    
+
     from matplotlib import rcParams
 
     rcParams['axes.labelsize'] = fontsize

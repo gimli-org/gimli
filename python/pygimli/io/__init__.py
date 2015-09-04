@@ -10,6 +10,4 @@ automatic filetype detection.
 """
 
 from . load import load
-#from . gps import *
-#from . em import *
-
+from . gps import underlayBKGMap, GKtoUTM

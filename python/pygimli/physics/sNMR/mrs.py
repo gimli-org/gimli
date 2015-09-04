@@ -66,6 +66,7 @@ class MRS():
             Filename with load data and kernel (*.mrsi) or just data (*.mrsd)
         verbose : bool
             be verbose
+        kwargs - see :func:`MRS.loadMRSI`.
         """
         self.verbose = verbose
         self.t, self.q, self.z = None, None, None
@@ -102,6 +103,8 @@ class MRS():
         ----------
         usereal : bool [False]
             use real parts (after data rotation) instead of amplitudes
+        mint/maxt : float [0.0/2.0]
+
         """
         from scipy.io import loadmat  # loading Matlab mat files
 
@@ -451,15 +454,23 @@ class MRS():
         else:
             return model
 
-    def runEA(self, nlay=None, eatype='GA', pop_size=100,
-              max_evaluations=10000, **kwargs):
-        """ Run evolutionary algorithm using inspyred library, eatype can be:
-            GA..Genetic Algorithm
-            SA..Simulated Annealing
-            DEA..Discrete Evolutionary Algorithm
-            PSO..Particle Swarm Optimization
-            ACS..Ant Colony Strategy
-            ES..Evolutionary Strategy
+    def runEA(self, nlay=None, eatype='GA', pop_size=100, num_gen=100,
+              runs=1, mp_num_cpus=8, **kwargs):
+        """ Run evolutionary algorithm using inspyred library
+
+            Parameters
+            ----------
+            nlay : int - number of layers\n
+            pop_size : int - population size\n
+            num_gen : int - number of generations\n
+            runs : int - number of independent runs (with random population)\n
+            eatype : string - algorithm, choose among:\n
+            'GA' - Genetic Algorithm [default]\n
+            'SA' - Simulated Annealing\n
+            'DEA' - Discrete Evolutionary Algorithm\n
+            'PSO' - Particle Swarm Optimization\n
+            'ACS' - Ant Colony Strategy\n
+            'ES' - Evolutionary Strategy
         """
         import inspyred
         import random
@@ -501,7 +512,6 @@ class MRS():
 #        self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
         # setup random generator
         rand = random.Random()
-        rand.seed(int(time.time()))
         # choose among different evolution algorithms
         if eatype == 'GA':
             ea = inspyred.ec.GA(rand)
@@ -529,17 +539,39 @@ class MRS():
         ea.observer = [
             inspyred.ec.observers.stats_observer,
             inspyred.ec.observers.file_observer]
-        self.pop = ea.evolve(evaluator=datafit, generator=mygenerate,
-                             maximize=False, pop_size=pop_size,
-                             max_evaluations=max_evaluations, num_elites=1,
-                             bounder=inspyred.ec.Bounder(0., 1.), **kwargs)
+        tstr = '{0}'.format(time.strftime('%y%m%d-%H%M%S'))
+        self.EAstatfile = self.basename + '-' + eatype + 'stat' + tstr + '.csv'
+        with open(self.EAstatfile, 'w') as fid:
+            self.pop = []
+            for i in range(runs):
+                rand.seed(int(time.time()))
+                self.pop.extend(ea.evolve(
+                    evaluator=datafit, generator=mygenerate, maximize=False,
+                    pop_size=pop_size, max_evaluations=pop_size*num_gen,
+                    bounder=inspyred.ec.Bounder(0., 1.), num_elites=1,
+                    statistics_file=fid, **kwargs))
+#                self.pop.extend(ea.evolve(
+#                    generator=mygenerate, maximize=False,
+#                    evaluator=inspyred.ec.evaluators.parallel_evaluation_mp,
+#                    mp_evaluator=datafit, mp_num_cpus=mp_num_cpus,
+#                    pop_size=pop_size, max_evaluations=pop_size*num_gen,
+#                    bounder=inspyred.ec.Bounder(0., 1.), num_elites=1,
+#                    statistics_file=fid, **kwargs))
         self.pop.sort(reverse=True)
         self.fits = [ind.fitness for ind in self.pop]
+        print('minimum fitness of ' + str(min(self.fits)))
 
-    def plotPopulation(self, maxfitness=None, savefile=True):
-        """ Plot fittest individuals (fitness<maxfitness) as 1d models """
+    def plotPopulation(self, maxfitness=None, fitratio=1.05, savefile=True):
+        """ Plot fittest individuals (fitness<maxfitness) as 1d models
+
+        Parameters
+        ----------
+        maxfitness : float - maximum fitness value (absolute) OR
+
+        fitratio : float [1.05] - maximum ratio to minimum fitness
+        """
         if maxfitness is None:
-            maxfitness = self.pop[0].fitness * 2
+            maxfitness = min(self.fits) * fitratio
         fig, ax = plt.subplots(1, 2, sharey=True)
         maxz = 0
         for ind in self.pop:
@@ -556,18 +588,50 @@ class MRS():
         thk = model[:self.nlay - 1]
         wc = model[self.nlay - 1:self.nlay * 2 - 1]
         t2 = model[self.nlay * 2 - 1:]
-        drawModel1D(ax[0], thk, wc * 100, color='black', linewidth=5)
-        drawModel1D(ax[1], thk, t2 * 1000, color='black', linewidth=5)
+        drawModel1D(ax[0], thk, wc * 100, color='black', linewidth=3)
+        drawModel1D(ax[1], thk, t2 * 1000, color='black', linewidth=3,
+                    plotfunction='semilogx')
 
         ax[0].set_xlim(self.lowerBound[1] * 100, self.upperBound[1] * 100)
         ax[0].set_ylim((maxz * 1.2, 0))
         ax[1].set_xlim(self.lowerBound[2] * 1000, self.upperBound[2] * 1000)
         ax[1].set_ylim((maxz * 1.2, 0))
+        xt = [10, 20, 50, 100, 200, 500, 1000]
+        ax[1].set_xticks(xt)
+        ax[1].set_xticklabels([str(xti) for xti in xt])
         if savefile:
-            fig.savefig(time.strftime('%y%m%d-%H%M%S') + '.pdf',
+            fig.savefig(self.EAstatfile.replace('.csv', '.pdf'),
                         bbox_inches='tight')
 
         plt.show()
+
+    def plotEAstatistics(self, fname=None):
+        """plot Evolutionary Algorithm statistics (best, worst, ...) over time
+        """
+        if fname is None:
+            fname = self.EAstatfile
+        gen, psize, worst, best, med, avg, std = np.genfromtxt(
+            fname, unpack=True, usecols=range(7), delimiter=',')
+        stderr = std / np.sqrt(psize)
+
+        data = [avg, med, best, worst]
+        colors = ['black', 'blue', 'green', 'red']
+        labels = ['average', 'median', 'best', 'worst']
+
+        fig, ax = plt.subplots()
+        ax.errorbar(gen, avg, stderr, color=colors[0], label=labels[0])
+        ax.set_yscale('log')
+        for d, col, lab in zip(data[1:], colors[1:], labels[1:]):
+            ax.plot(gen, d, color=col, label=lab)
+        ax.fill_between(gen, data[2], data[3], color='#e6f2e6')
+        ax.grid(True)
+        ymin = min([min(d) for d in data])
+        ymax = max([max(d) for d in data])
+        yrange = ymax - ymin
+        ax.set_ylim((ymin - 0.1*yrange, ymax + 0.1*yrange))
+        ax.legend(loc='upper left')  # , prop=prop)
+        ax.set_xlabel('Generation')
+        ax.set_ylabel('Fitness')
 
 if __name__ == "__main__":
     datafile = 'example.mrsi'

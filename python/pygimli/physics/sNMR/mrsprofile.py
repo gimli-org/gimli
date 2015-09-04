@@ -37,7 +37,7 @@ class MRSLCI(pg.ModellingBase):
         self.np = 3 * nlay - 1
 #        self.mesh2d = pg.createMesh2D(npar, self.nx)
 #        self.mesh2d = pg.createMesh2D(self.nx, self.np)
-        self.mesh2d = pg.createMesh2D(self.np, self.nx)
+        self.mesh2d = pg.createMesh2D(range(self.np+1), range(self.nx+1))
         self.mesh2d.rotate(pg.RVector3(0, 0, -np.pi/2))
         self.setMesh(self.mesh2d)
         self.J = pg.RBlockMatrix()
@@ -149,8 +149,12 @@ class MRSprofile():
         """
         self.WMOD, self.TMOD = [], []
         self.RMSvec, self.Chi2vec, self.nData = [], [], []
-        for mrs in self.mrs:
-            mrs.run(nlay=nlay, startvec=startModel, lam=lam, verbose=False)
+        for i, mrs in enumerate(self.mrs):
+            if hasattr(startModel[0], '__iter__'):
+                startvec = startModel[i]
+            else:
+                startvec = startModel
+            mrs.run(nlay=nlay, startvec=startvec, lam=lam, verbose=False)
             mrs.INV.echoStatus()
             thk, wc, t2 = mrs.result()
             self.WMOD.append(np.hstack((thk, wc)))
@@ -218,7 +222,7 @@ class MRSprofile():
         transData, transMod = pg.RTrans(), pg.RTransLog()  # LU(1., 500.)
         if startModel is None:
             startModel = self.block1dInversion(nlay, verbose=False)
-        model = np.tile(startModel, len(self.mrs))
+        model = kwargs.pop('startvec', np.tile(startModel, len(self.mrs)))
         INV = pg.RInversion(data, fop, transData, transMod, True, False)
         INV.setModel(model)
         INV.setReferenceModel(model)
@@ -226,6 +230,8 @@ class MRSprofile():
         INV.setLambda(kwargs.pop('lam', 100))
         INV.setMaxIter(kwargs.pop('maxIter', 20))
         INV.stopAtChi1(False)
+        INV.setLambdaFactor(0.9)
+        INV.setDeltaPhiAbortPercent(0.1)
         model = INV.run()
         self.WMOD, self.TMOD = [], []
         for par in np.reshape(model, (len(self.mrs), 3*nlay-1)):
@@ -261,15 +267,19 @@ class MRSprofile():
         fig, ax = plt.subplots(nrows=2+showFit, figsize=figsize, sharex=True)
         showStitchedModels(self.WMOD, x=self.x, ax=ax[-2], islog=False,
                            cmap=cmap, cmin=wlim[0], cmax=wlim[1],
-                           title=r'$\theta$ [-]')
+                           title=r'$\theta$ (-)')
         showStitchedModels(self.TMOD, x=self.x, ax=ax[-1], cmap=cmap,
-                           cmin=tlim[0], cmax=tlim[1], title=r'$T_2^*$ [s]')
+                           cmin=tlim[0], cmax=tlim[1], title=r'$T_2^*$ (s)')
         xl = ax[-1].get_xlim()
-        ax[-1].set_xlabel('x [m]')
+        ax[0].set_xlabel('x (m)')
+        ax[0].xaxis.set_label_position('top')
+        ax[0].xaxis.tick_top()
+        ax[0].set_ylabel(r'$\chi^2$ (-)')
         for axi in ax[-2:]:
-            axi.set_ylabel('z [m]')
+            axi.set_ylabel('z (m)')
         if showFit > 0:
             ax0b = ax[0].twinx()
+            ax0b.set_ylabel('rms (nV)')
             ax[0].plot(self.x, self.Chi2vec, 'rx', label=r'$\chi^2$')
             ax0b.plot(self.x, self.RMSvec, 'bx', label='rms [nV]')
             ax[0].legend(numpoints=1, loc=2)
