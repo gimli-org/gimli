@@ -5,7 +5,7 @@ r"""
 Heat equation in 1D
 -------------------
 
-Isotropic and homogeneous heat equation in one dimension with test case:
+Assume isotropic and homogeneous heat equation in one dimension:
 
 .. math::
 
@@ -19,8 +19,8 @@ temporal :math:`k=0.04\text{s}` & spatial discretization :math:`h=0.1\text{m}`
 
 See: :py:mod:`pygimli.viewer`
 
-Discuss: FEM less suited for problems with piece-wise (element) constant
-solutions, because linear shape functions demand twice differentiable.
+Discussion: FEM is less suited for problems with piece-wise (element) constant
+solutions, because linear shape functions demand twice differentiable solution.
 For diffusion and wave equation with partially starting gradients = 0 you can
 obtain numeric undulations (acausal overshoots) caused by the shape functions.
 
@@ -40,7 +40,7 @@ dirichletBC = [[1, 0],  # top
 probeID = int(grid.nodeCount() / 2)
 
 ###############################################################################
-# Fortunately we have an analytical solution:
+# For this case we have an analytical solution:
 #
 # .. math::
 #
@@ -73,7 +73,6 @@ theta = 0
 boundUdir = solver.parseArgToBoundaries(dirichletBC, grid)
 
 for n in range(1, len(times)):
-
     b = (M - A * dt) * u[n - 1] + rhs * dt
     S = M
 
@@ -99,7 +98,6 @@ plt.plot(times, u[:, probeID], label='Explicit Euler')
 theta = 1
 
 for n in range(1, len(times)):
-
     b = (M + A * (dt*(theta - 1.0))) * u[n-1] + \
         rhs * (dt*(1.0 - theta)) + \
         rhs * dt * theta
@@ -135,6 +133,6 @@ plt.legend()
 plt.grid()
 
 ###############################################################################
-# Explicit Euler scheme is unstable at higher times.
+# Explicit Euler scheme is unstable at progressing time.
 
 plt.show()
