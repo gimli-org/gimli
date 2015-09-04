@@ -13,7 +13,7 @@ fitting a polynomial of degree :math:`P`
 
     f(x) = p_0 + p_1 x + \ldots + p_P x^P = \sum\limits_{i=0}^{P} p_i x^i
 
-to some existing data :math:`y`.
+to given data :math:`y`.
 The unknown model is the coefficient vector :math:`\m=[p_0,\ldots,p_P]`.
 The vectorized function for a vector
 :math:`\arr{x}=\transpose{[x_1,\ldots,x_N]}`
@@ -22,13 +22,13 @@ can be written as matrix-vector product
 .. _eq:yAx:
 .. math::
 
-  \f(\arr{x}) = \A \arr{x} \quad\mbox{with}\quad \A=\left[ \begin{array}{cccc}
+  {\bf f\({\bf x}) = {\bf A} {\bf x} \quad\mbox{with}\quad {\bf A}=\left[ \begin{array}{cccc}
   1 & x_1 & \ldots & x_1^P \\
   \vdots & \vdots & \ddots & \vdots \\ 1 & x_N & \ldots & x_N^P
   \end{array} \right] =
-  [ {\bf 1}\quad \arr{x} \quad \arr{x}^2 \ldots \arr{x}^P ] \;.
+  [ {\bf 1}\quad {\bf x} \quad {\bf x}^2 \ldots {\bf x}^P ] \;.
 
-We set up the modelling operator, i.e. to return :math:`\f(\arr{x})` for given
+We set up the modelling operator, i.e. to return :math:`{\bf f}({\bf x})` for given
 :math:`p_i`, as a class derived from the modelling base class.
 The latter holds the main mimic of generating Jacobian, gradients by brute
 force. The only function to overwrite is \cw{response()}.
@@ -54,8 +54,8 @@ import matplotlib.pyplot as plt
 print(pg.__version__)
 
 ###############################################################################
-# As a result, all :ref:`sec:api` objects (classes and functions) can be referred
-# to with a preceding `pg.`, e.g., printing the version string for gimli.
+# As a result, all :ref:`sec:api` objects (classes and functions) can be refer-
+# red to with a preceding `pg.`, e.g., printing the version string for gimli.
 #
 # Next, the modelling class is derived from ModellingBase, a constructor is
 # defined and the response function is defined.
@@ -70,9 +70,9 @@ print(pg.__version__)
 # That's it.
 #
 # As a main advantage of Python, the actual computations can be easily combined
-# with post-processing or visualization, even building graphical user-interfaces.
-# In this code example we use matplotlib, a plotting library inside of pylab, a
-# compound of different routines for numerics and plotting, comparable to MatLab.
+# with post-processing or visualization, or building graphical user-interfaces.
+# In this code example we use matplotlib, a plotting library providing a
+# functionality known from Matlab, but more thorough and flexible.
 
 
 class FunctionModelling(pg.ModellingBase):

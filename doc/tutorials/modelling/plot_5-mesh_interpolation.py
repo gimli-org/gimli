@@ -4,9 +4,10 @@ r"""
 Mesh interpolation
 ==================
 
-In this tutorial, we look at the mesh interpolation options in GIMLi. Although,
+In this tutorial, we look at the mesh interpolation options in GIMLi. Although
 the example shown here is in 2D, the same routines can be applied when
-converting 3D data to a 2D mesh for instance."""
+converting 3D data to a 2D mesh for instance.
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ from pygimli.mplviewer import drawMesh, drawModel
 ###############################################################################
 # Create coarse and fine mesh with data
 # -------------------------------------
+
 
 def create_mesh_and_data(n):
     nc = np.linspace(-2.0, 0.0, n)
@@ -33,8 +35,9 @@ fine, fine_data = create_mesh_and_data(20)
 # Interpolate data to different meshes
 # ------------------------------------
 #
-# We define two functions that take the input mesh, the input data and the output
+# We define two functions taking the input mesh, the input data and the output
 # mesh as parameters and return the input data interpolated to the output mesh.
+
 
 def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
     """ Nearest neighbor interpolation. """
@@ -47,9 +50,10 @@ def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
             outdata.append(nan)
     return outdata
 
+
 def linear_interpolation(inmesh, indata, outmesh):
     """ Linear interpolation using `pg.interpolate()` """
-    outdata = pg.RVector() # empty
+    outdata = pg.RVector()  # empty
     pg.interpolate(srcMesh=inmesh, inVec=indata,
                    destPos=outmesh.cellCenters(), outVec=outdata)
     return outdata
@@ -63,7 +67,7 @@ datasets = [coarse_data, fine_data]
 ints = [nearest_neighbor_interpolation,
         linear_interpolation]
 
-fig, axes = plt.subplots(2, 2, figsize=(5,5))
+fig, axes = plt.subplots(2, 2, figsize=(5, 5))
 
 # Coarse data to fine mesh
 drawModel(axes[0, 0], fine, ints[0](coarse, coarse_data, fine), showCbar=False)
@@ -72,10 +76,10 @@ drawModel(axes[0, 1], fine, ints[1](coarse, coarse_data, fine), showCbar=False)
 drawMesh(axes[0, 1], fine)
 
 # Fine data to coarse mesh
-drawModel(axes[1,0], coarse, ints[0](fine, fine_data, coarse), showCbar=False)
-drawMesh(axes[1,0], coarse)
-drawModel(axes[1,1], coarse, ints[1](fine, fine_data, coarse), showCbar=False)
-drawMesh(axes[1,1], coarse)
+drawModel(axes[1, 0], coarse, ints[0](fine, fine_data, coarse), showCbar=False)
+drawMesh(axes[1, 0], coarse)
+drawModel(axes[1, 1], coarse, ints[1](fine, fine_data, coarse), showCbar=False)
+drawMesh(axes[1, 1], coarse)
 
 titles = ["Coarse to fine\nwith nearest neighbors",
           "Coarse to fine\nwith linear interpolation",

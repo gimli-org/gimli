@@ -1,6 +1,6 @@
 #!/ussr/bin/env python
 # -*- coding: utf-8 -*-
-r"""
+"""
 
 Modelling with Boundary Conditions
 ----------------------------------
@@ -27,9 +27,8 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
 
 ###############################################################################
 # We start considering inhomogeneous Dirchlet boundary conditions (BC).
-# There are different ways of specifying BCs. They can be
-# maps from markers to values, explicit functions or implicit (lambda) functions
-# as exemplified in the next example.
+# There are different ways of specifying BCs. They can be maps from markers to
+# values, explicit functions or implicit (lambda) functions.
 #
 # The boundary 1 (top) and 2 (left) are directly mapped to the values 1 and 2.
 # On side 3 (bottom) a lambda function 3+x is used (p is the boundary position
@@ -47,7 +46,7 @@ def uDirichlet(b):
 dirichletBC = [[1, 1.0],                                    # left
                [grid.findBoundaryByMarker(2), 2.0],         # right
                [grid.findBoundaryByMarker(3),
-                            lambda p: 3.0 + p.center()[0]], # top
+                lambda p: 3.0 + p.center()[0]],  # top
                [grid.findBoundaryByMarker(4), uDirichlet]]  # bottom
 
 ###############################################################################
@@ -75,8 +74,8 @@ ax.set_ylim([-1.1, 1.1])
 ###############################################################################
 #
 # Alternatively we can define the gradients of the solution on the boundary,
-# i.e., Neumann type BC. This is done with another map
-# (marker, right-hand-side value) and passed by the keyword duBoundary.
+# i.e., Neumann type BC. This is done with another map (marker, value) and
+# passed by the keyword duBoundary.
 neumannBC = [[1, -0.5],  # left
              [grid.findBoundaryByMarker(4), 2.5]]  # bottom
 
@@ -85,8 +84,8 @@ dirichletBC = [3, 1.0]  # top
 u = solve(grid, f=0., duB=neumannBC, uB=dirichletBC)
 
 ###############################################################################
-# Note that on boundary 4 (right) no BC is explicitly applied leading to default
-# or natural BC that are of homogeneous Neumann type
+# Note that on boundary 4 (right) no BC is explicitly applied leading to
+# default (natural) BC that are of homogeneous Neumann type
 # :math:`\frac{\partial u}{\partial n}=0`
 
 ax = show(grid, data=u, filled=True, colorBar=True,
@@ -94,8 +93,8 @@ ax = show(grid, data=u, filled=True, colorBar=True,
           levels=np.linspace(min(u), max(u), 14), hold=1)[0]
 
 ###############################################################################
-# Instead of the grid we now want to add streamlines to the plot to show the
-# gradients of the solution (i.e., the flow direction).
+# Instead of the grid we now want to add streamlines to show the gradients of
+# the solution (i.e., the flow direction).
 drawStreams(ax, grid, u)
 
 ax.text(0.0, 1.01, '$u=1$',

@@ -60,17 +60,18 @@ u = pg.solver.solve(grid, f=1.,
 ###############################################################################
 # The result is drawn with the function :py:mod:`pygimli.show`.
 
-ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$', hold=1)
+ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$')
 
 ###############################################################################
-# :py:mod:`pygimli.show` is just a shortcut for various routines that can also be called directly.
+# :py:mod:`pygimli.show` is just a shortcut for various routines that can also
+# be called directly.
 #
 pg.mplviewer.drawMesh(ax, grid)
 
 ###############################################################################
 #
-# We repeat the computation with a spatially (H) refined version of the original
-# grid.
+# We repeat the computation with a spatially (H) refined version of the
+# original grid.
 
 gridh2 = grid.createH2()
 
@@ -84,7 +85,7 @@ pg.mplviewer.drawMesh(ax, gridh2)
 
 ###############################################################################
 #
-# We do the same using a quadratic (P) refinement, i.e. the same number of nodes.
+# We do the same using quadratic (P) refinement, i.e. the same number of nodes.
 
 gridp2 = grid.createP2()
 
@@ -94,6 +95,7 @@ up = pg.solver.solve(gridp2, f=1.,
 
 ###############################################################################
 # Fortunately there exist an analytical solution for this example.
+
 
 def uAna(r):
     x = r[0]
@@ -110,7 +112,7 @@ def uAna(r):
 
 ###############################################################################
 # To compare the different results the in detail we interpolate our solution
-# along a probe line through our domain.
+# along a probe line through the domain.
 #
 
 x = np.linspace(-1.0, 1.0, 100)
