@@ -34,13 +34,12 @@ DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y);
 /*! Unified interface. Generate simple grid with nodes at the given positions */
 DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, const RVector & z);
 
-
 /*! Generate simple one dimensional mesh with nodes at position in RVector pos. */
 DLLEXPORT Mesh createMesh1D(const RVector & x);
 
-/*! Generate simple one dimensional mesh with nCells cells with length = 1.0, and nCells + 1 nodes.
-What does nClones do?? Please comment*/
-DLLEXPORT Mesh createMesh1D(Index nCells, Index nClones=1);
+/*! Generate simple one dimensional mesh with nCells cells with length = 1.0,
+ * and nCells + 1 nodes. What does nClones do?? Please comment.*/
+DLLEXPORT Mesh createMesh1D(uint nCells, uint nClones=1);
 
 /*! Generate 1D block model of thicknesses and properties */
 DLLEXPORT Mesh createMesh1DBlock(Index nLayers, Index nProperties=1);
@@ -59,7 +58,8 @@ DLLEXPORT Mesh createMesh3D(const RVector & x, const RVector & y, const RVector 
 
 /*! Add triangle boundary to the mesh. Return false on failors. */
 DLLEXPORT bool addTriangleBoundary(Mesh & mesh, 
-                                    double xBoundary, double yBoundary, int cellMarker, bool save = false);
+                                   double xBoundary, double yBoundary, int cellMarker,
+                                   bool save=false);
 
 /*! Generate a simple 2D dimensional mesh by extruding a one dimensional 
  * polygone into RVector y using quads. 
