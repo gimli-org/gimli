@@ -18,6 +18,7 @@ mkdir -p build
 cd build
 cmake ../trunk
 make -j 16 gimli
+rm -rf python/_pygimli_.cache
 make pygimli J=12
 
 # Test gimli
