@@ -113,8 +113,11 @@ class CellBrowser(object):
             self.data = self.artist.get_array()
             self.edgeColors = self.artist.get_edgecolors()
 
-        # better!! find pick position and check for every cell if pos is inside
-        self.cell = event.ind[0]
+        if 'mouseevent' in event.__dict__.keys():
+            pos = pg.RVector3(event.mouseevent.xdata, event.mouseevent.ydata)
+            self.cell = self.mesh.findCell(pos, True).id()
+        else:  # variant before (seemed inaccurate)
+            self.cell = event.ind[0]
         self.update()
 
     def onpress(self, event):
@@ -138,17 +141,13 @@ class CellBrowser(object):
 
     def update(self):
         """Docstring"""
-        center = self.mesh.cellCenter()[self.cell]
-        x, y = center[0], center[1]
+        center = self.mesh.cell(self.cell).center()
+        x, y = center.x(), center.y()
         marker = self.mesh.cells()[self.cell].marker()
         data = self.data[self.cell]
         header = "Cell %d:\n" % self.cell
         header += "-" * (len(header) - 1)
-        info = """
-             x: %.2f
-             y: %.2f
-          data: %.2e
-        marker: %d """ % (x, y, data, marker)
+        info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(x, y, data, marker)
         text = header + textwrap.dedent(info)
         self.text.set_text(text)
         self.text.xy = x, y
