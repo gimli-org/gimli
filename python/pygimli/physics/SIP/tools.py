@@ -7,8 +7,8 @@
 from math import pi
 import numpy as np
 import pygimli as pg
-from . models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
-from . models import ColeColeAbs, ColeColePhi
+from .models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
+from .models import ColeColeAbs, ColeColePhi
 
 
 def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True,

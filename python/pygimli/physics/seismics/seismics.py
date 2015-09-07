@@ -90,9 +90,11 @@ def drawWiggle(axes, x, t, xoffset=0.0,
     >>> r = ricker(t, 100., 1./100)
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(1,1,1)
-    >>> drawWiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue', alpha=0.2)
+    >>> drawWiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue',
+                   alpha=0.2)
     >>> drawWiggle(ax, r, t, xoffset=1)
-    >>> drawWiggle(ax, r, t, xoffset=2, posColor='black', negColor='white', alpha=1.0)
+    >>> drawWiggle(ax, r, t, xoffset=2, posColor='black', negColor='white',
+                   alpha=1.0)
     >>> ax.invert_yaxis()
     >>> plt.show()
 
@@ -114,6 +116,7 @@ def drawWiggle(axes, x, t, xoffset=0.0,
         fill, = axes.fill(tracefill + xoffset, t, color=posColor,
                           alpha=alpha, linewidth=0)
 
+
 def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
     r"""
     Extract and show time series from wave field
@@ -130,7 +133,8 @@ def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
 
     if i is None:
         i = len(u)-1
-    t=np.linspace(0, i*dt*1000, i+1)
+
+    t = np.linspace(0, i*dt*1000, i+1)
 
     for iw, n in enumerate(ids):
         pos = mesh.node(n).pos()
@@ -138,16 +142,17 @@ def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
         axes.plot(pos[0], 0.05, '^', color='black')
 
         trace = pg.cat(pg.RVector(0), u[:(i+1), n])
-        #print(i+1, n)
-        #print(trace, (max(pg.abs(trace))))
+#        print(i+1, n)
+#        print(trace, (max(pg.abs(trace))))
 
-        #if max(pg.abs(trace)) > 1e-8:
+#        if max(pg.abs(trace)) > 1e-8:
 
         trace *= np.exp(0.5*t)
         trace /= (max(pg.abs(trace))*1.5)
 
         drawWiggle(axes, trace, t=t, xoffset=pos[0])
     axes.invert_yaxis()
+
 
 def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     r"""
@@ -191,7 +196,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     A = pg.RSparseMatrix()
     M = pg.RSparseMatrix()
 
-    F = pg.RVector(mesh.nodeCount(), 0.0)
+#    F = pg.RVector(mesh.nodeCount(), 0.0)
     rhs = pg.RVector(mesh.nodeCount(), 0.0)
     u = pg.RMatrix(len(times), mesh.nodeCount())
     v = pg.RMatrix(len(times), mesh.nodeCount())
@@ -204,7 +209,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
 
     A.fillStiffnessMatrix(mesh, velocities * velocities)
     M.fillMassMatrix(mesh)
-    #M.fillMassMatrix(mesh, velocities)
+#    M.fillMassMatrix(mesh, velocities)
 
     FV = 0
     if FV:
@@ -233,8 +238,8 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     solver2 = pg.LinSolver(S2, verbose=False)
     swatch = pg.Stopwatch(True)
 
-    ut = pg.RVector(mesh.nodeCount(), .0)
-    vt = pg.RVector(mesh.nodeCount(), .0)
+#    ut = pg.RVector(mesh.nodeCount(), .0)
+#    vt = pg.RVector(mesh.nodeCount(), .0)
 
     timeIter1 = np.zeros(len(times))
     timeIter2 = np.zeros(len(times))
@@ -265,9 +270,9 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
         v[n] = solver2.solve(rhs)
         timeIter4[n - 1] = time.time() - tic
 
-        # same as above
-        #rhs = M * v[n-1] - dt * A * u[n-1] + dt * F
-        #v[n] = solver1.solve(rhs)
+#         same as above
+#        rhs = M * v[n-1] - dt * A * u[n-1] + dt * F
+#        v[n] = solver1.solve(rhs)
 
         t1 = swatch.duration(True)
 
@@ -289,15 +294,16 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     return u
 
 if __name__ == "__main__":
-    from pygimli.physics.seismics import ricker, wiggle
+    # from pygimli.physics.seismics import drawWiggle  # alternatively ricker
     import matplotlib.pyplot as plt
-    import numpy as np
+
     t = np.arange(0, 0.02, 1. / 5000)
     r = ricker(t, 100., 1. / 100)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
 
-    wiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue', alpha=0.2)
-    wiggle(ax, r, t, xoffset=1)
-    wiggle(ax, r, t, xoffset=2, posColor='black', negColor='white', alpha=1.0)
+    drawWiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue', alpha=0.2)
+    drawWiggle(ax, r, t, xoffset=1)
+    drawWiggle(ax, r, t, xoffset=2, posColor='black', negColor='white',
+               alpha=1.0)
     plt.show()
