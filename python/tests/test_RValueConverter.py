@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import unittest
+import numpy as np
 import pygimli as pg
 
-import numpy as np
-import sys
-#import gc  # for reference counter
-
-import unittest
 
 class TestRVectorMethods(unittest.TestCase):
 
@@ -14,20 +11,6 @@ class TestRVectorMethods(unittest.TestCase):
         a = pg.RVector(10)
         self.assertEqual(a.size(), 10.0)
         self.assertEqual(sum(a), 0.0)
-        
-        mesh = pg.createMesh1D(10, 1)
-        self.assertEqual(mesh.cellCount(), 10.0)
-        
-        mesh = pg.createMesh1D(nCells=10)
-        self.assertEqual(mesh.cellCount(), 10.0)
-        
-        mesh = pg.createMesh1D(10)
-        self.assertEqual(mesh.cellCount(), 10.0)
-        
-        mesh = pg.createMesh2D(5, 2)
-        self.assertEqual(mesh.cellCount(), 10.0)
-        
-        print(mesh)
 
     def test_ListToRVector3(self):
         '''
@@ -50,8 +33,8 @@ class TestRVectorMethods(unittest.TestCase):
         I = pg.IndexArray(idx)
         self.assertEqual(pg.sum(I), sum(idx))
 
-        bn = (np.array(idx) > 0) #numpy bool
-        idx = np.nonzero(bn)[0]  #numpy int64
+        bn = (np.array(idx) > 0)  # numpy bool
+        idx = np.nonzero(bn)[0]  # numpy int64
 
         # numyp int64 -> IndexArray
         I = pg.IndexArray(idx)
@@ -80,6 +63,7 @@ class TestRVectorMethods(unittest.TestCase):
         p = pg.RVector3(x)
         pl = [p, p, p]
         t = pg.R3Vector(pl)
+        self.assertEqual(t.size(), len(pl))
 
     def test_NumpyToRVector(self):
         '''
@@ -115,7 +99,7 @@ class TestRVectorMethods(unittest.TestCase):
         '''
             implemented through hand_made_wrapper.py
         '''
-        #check ob wirklich from array genommen wird!
+        # check ob wirklich from array genommen wird!
         v = pg.RVector(10, 1.1)
 
         a = np.asarray(v)
@@ -126,12 +110,11 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
 
-
     def test_BVectorToNumpy(self):
         '''
             implemented through hand_made_wrapper.py
         '''
-        #check ob wirklich from array genommen wird!
+        # check ob wirklich from array genommen wird!
         # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
         v = pg.RVector(10, 1.1)
         b = (v == 1.1)
@@ -180,7 +163,6 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 3)
 
-
     def test_R3VectorToNumpy(self):
         '''
             implemented through hand_made_wrapper.py
@@ -197,21 +179,20 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(len(a), mesh.cellCount())
 
 if __name__ == '__main__':
-    #pg.setDebug(True)
-    
+    # pg.setDebug(True)
+
     unittest.main()
     # do we need Implicit converter .. currently deactivated in vector.h
 
-    ##suite = unittest.TestSuite()
-
-    ##suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
-
-    ##suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
-    ##suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
-    ##suite.addTest(TestRVectorMethods("test_ListToIndexArray"))
-    ##suite.addTest(TestRVectorMethods("test_ListToRVector"))
-    ##suite.addTest(TestRVectorMethods("test_NumpyToRVector"))
-
-    #runner = unittest.TextTestRunner()
-    #runner.run(suite)
-
+#    suite = unittest.TestSuite()
+#
+#    suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
+#
+#    suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
+#    suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
+#    suite.addTest(TestRVectorMethods("test_ListToIndexArray"))
+#    suite.addTest(TestRVectorMethods("test_ListToRVector"))
+#    suite.addTest(TestRVectorMethods("test_NumpyToRVector"))
+#
+#    runner = unittest.TextTestRunner()
+#    runner.run(suite)
