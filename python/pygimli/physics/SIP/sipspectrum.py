@@ -8,10 +8,10 @@ from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
-from . importexport import readTXTSpectrum
-from . plotting import showAmplitudeSpectrum, showSpectrum
-from . models import DebyePhi, DebyeComplex, relaxationTerm
-from . tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi
+from .importexport import readTXTSpectrum
+from .plotting import showAmplitudeSpectrum, showSpectrum
+from .models import DebyePhi, DebyeComplex, relaxationTerm
+from .tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi
 
 
 class SIPSpectrum():
@@ -126,7 +126,7 @@ class SIPSpectrum():
     def showDataKK(self, use0=False):
         """show data as real/imag subplots along with Kramers-Kronig curves"""
         fig, ax = self.showData(reim=True)
-        reKK, imKK = self.KK(use0)
+        reKK, imKK = self.getKK(use0)
         ax[0].plot(self.f, reKK, label='KK')
         ax[1].plot(self.f, imKK, label='KK')
         for i in (0, 1):
@@ -147,7 +147,6 @@ class SIPSpectrum():
         ax.semilogx(self.f, self.getPhiKK(use0)*1000, label='corrKK')
         ax.grid(True)
         ax.legend(loc='best')
-
 
     def showPolarPlot(self):
         """show data in a polar plot (real against imaginary parts)"""
@@ -221,7 +220,7 @@ class SIPSpectrum():
                                                       self.phi, **kwargs)
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
-                      mint=None, maxt=None, nt=None, new=True,
+                      mint=None, maxt=None, nt=None, new=False,
                       showFit=False, cType=1):
         """fit a (smooth) continuous Debye model (Debye decomposition)"""
         nf = len(self.f)
@@ -337,7 +336,6 @@ class SIPSpectrum():
         return fig, ax
 
 if __name__ == "__main__":
-    # %%
     filename = 'sipexample.txt'
     sip = SIPSpectrum(filename)
 #    sip.showData(znorm=True)
@@ -348,7 +346,7 @@ if __name__ == "__main__":
         sip.fitColeCole(useCond=False)
 #    sip.showDataKK()
     # %%
-    sip.fitDebyeModel(new=True)  # , showFit=True)
+    sip.fitDebyeModel()  # , showFit=True)
     # %% create titles and plot data, fit and model
     sip.showAll(save=True)
     plt.show()

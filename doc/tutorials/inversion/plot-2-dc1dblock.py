@@ -54,7 +54,6 @@ model = f.createStartVector()  # creates from region start value
 model[nlay] *= 1.5
 inv.setModel(model)  #
 # run actual inversion
-#model = np.array(inv.run())
 model = inv.run()  # result is a pg.RVector, but compatible to numpy array
 res, thk = model[nlay-1:nlay*2-1], model[0:nlay-1]
 # %% show everything

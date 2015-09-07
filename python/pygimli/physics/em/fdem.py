@@ -109,9 +109,8 @@ class FDEM2dFOP(pg.ModellingBase):
         self.J = pg.RBlockMatrix()
         self.FOP1d = []
         for i in range(self.nx):
-            self.FOP1d.append(pg.FDEM1dModelling(nlay, data.freq(),
-                                                 data.coilSpacing,
-                                                 -data.height))
+            self.FOP1d.append(pg.FDEM1dModelling(
+                nlay, data.freq(), data.coilSpacing, -data.height))
             n = self.J.addMatrix(self.FOP1d[-1].jacobian())
             self.J.addMatrixEntry(n, self.nf * 2 * i, npar * i)
 
@@ -156,9 +155,7 @@ class HEM1dWithElevation(pg.ModellingBase):
 
 
 class FDEM():
-
     """ Class for managing Frequency Domain EM data and their inversions """
-
     def __init__(self, x=None, freqs=None,
                  coilSpacing=None, inphase=None, outphase=None,
                  filename=None, scaleFreeAir=False):
@@ -226,16 +223,20 @@ class FDEM():
         else:
             part1 = "<FDEMdata: {:d} soundings with {:d} frequencies".format(
                     len(self.x), len(self.frequencies))
-        cs = self.coilSpacing
-        if len(cs) > 1:
-            part2 = "coil spacing is {:f}-{:f} m>".format(min(cs), max(cs))
+        if self.coilSpacing:
+            cs = self.coilSpacing
+            if hasattr(cs, '__iter__'):
+                if len(cs) > 1:
+                    part2 = "coil spacing is {:f}-{:f} m>".format(min(cs),
+                                                                  max(cs))
+            else:
+                part2 = "coil spacing is {:f} m".format(cs)
+            return part1 + ' , ' + part2
         else:
-            part2 = "coil spacing is {:f} m".format(cs)
-        return part1 + ' , ' + part2
+            return part1
 
     def importEmsysAsciiData(self, filename, verbose=False):
-        """
-            Import data from emsys text export:
+        """Import data from emsys text export:
             yields: positions, data, frequencies, error and geometry
         """
         cols = (1, 4, 6, 8, 9, 12, 15, 16)
@@ -331,8 +332,8 @@ class FDEM():
             if aline.split()[0][0].isdigit():  # number found
                 break
             elif aline.find('COIL') > 0:  # [:6] == '/ COIL':
-                pass
-#                self.coilSpacing = float(aline.replace(':', ': ').split()[-2])
+                self.coilSpacing = float(aline.replace(':', ': ').split()[-2])
+#                pass
             elif aline.find('FREQ') > 0:  # [:6] == '/ FREQ':
                 mya = aline[aline.find(':') + 1:].replace(',', ' ').split()
                 myf = [float(aa) for aa in mya if aa[0].isdigit()]
@@ -636,7 +637,7 @@ class FDEM():
         return fig, ax
 
     def plotAllData(self, allF=True, orientation='horizontal', aspect=1000,
-                    outname=None, show=False, figsize=(11, 6), everyx=None):
+                    outname=None, show=False, figsize=(11, 6), everyx=1):
         """
             Plot data along a profile as image plots for IP and OP
         """
@@ -769,17 +770,15 @@ if __name__ == "__main__":
 
     A = NDMatrix(13, 6, 5)
 
-    fdem = FDEM('example.xyz')
-    print(fdem)
-#    fop2d = FDEM2dFOP(fdem, nlay=3)
-#    raise SystemExit
-
     if len(args) == 0:
         parser.print_help()
-        print("Please add a mesh or model name.")
+        print("Please add a data file name.")
         sys.exit(2)
     else:
         datafile = args[0]
+
+    fdem = FDEM(datafile)
+    print(fdem)
 
     nlay = options.nlay
     xpos = options.xpos

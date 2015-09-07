@@ -374,7 +374,7 @@ endif(LIBGIMLI_BUILD_TESTS)
 
 add_subdirectory(src)
 add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(apps)
+add_subdirectory(apps EXCLUDE_FROM_ALL)
 
 if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND 
     AND (GCCXML_FOUND OR CASTXML_FOUND)

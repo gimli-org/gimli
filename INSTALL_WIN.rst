@@ -43,10 +43,6 @@ To get a complete working toolchain you need some packages installed.
     pacman -S mingw-w64-i686-cmake mingw-w64-i686-gcc mingw-w64-i686-gcc-fortran
     pacman -S mingw-w64-i686-openblas mingw-w64-i686-doxygen
     
-.. code-block:: bash    
-
-    pacman -S mingw-w64-i686-llvm mingw-w64-i686-clang
-
 .. code-block:: bash
 
     pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-fortran

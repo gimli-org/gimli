@@ -7,7 +7,7 @@ import time
 # from geomagnetics import GeoMagT0  # , date
 
 mu0 = pg.physics.constants.mu0
-G = pg.physics.constants.GmGal # mGal
+G = pg.physics.constants.GmGal  # gravitation constant in mGal
 
 deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__
 # [m^2 kg/m^3]=[kg/m]
@@ -78,14 +78,11 @@ def BaZSphere(pnts, R, pos, M):
 def BaZCylinderHoriz(pnts, R, pos, M):
     """
     Magnetic anomaly for a horizontal cylinder.
-    
-    Calculate the vertical component of the anomalous magnetic field Bz for a
-    buried horizontal cylinder at position pos with radius R for a given magnetization M at
-    measurement points pnts.
 
-    Parameters
-    ----------
-    
+    Calculate the vertical component of the anomalous magnetic field Bz for a
+    buried horizontal cylinder at position pos with radius R for a given
+    magnetization M at measurement points pnts.
+
     Parameters
     ----------
     pnts : [[x,y,z], ]
@@ -98,8 +95,8 @@ def BaZCylinderHoriz(pnts, R, pos, M):
         [Mx, My, Mz] -- magnetization
 
     """
-    return poissonEoetvoes(adot(M, 
-                                gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
+    return poissonEoetvoes(
+        adot(M, gradGZCylinderHoriz(pnts, R, rho=1.0, pos=pos)))
 
 
 def poissonEoetvoes(dg):
@@ -111,12 +108,21 @@ def poissonEoetvoes(dg):
 
 def uSphere(r, R, rho, pos=(0., 0., 0.)):
     """
-    Gravitationspotential einer Sphere mit Radius R und Dichte rho an pos.
+    Gravitational potential of a sphere with radius R and density rho at pos.
 
-    .. math:: u = -G * dM * \frec{1}{r}
+    .. math:: u = -G * dM * \frac{1}{r}
 
     Parameters
     ----------
+    r : [float, float, float]
+        position vector
+    R : float
+        radius of the sphere
+    rho : float
+        density
+    pos : [float, float, float]
+        position of sphere
+
 
     """
     return -G * deltaMSph(R, rho) * 1. / rabs(r - pos)
@@ -132,10 +138,17 @@ def gradUSphere(r, R, rho, pos=(0., 0., 0.)):
 
     Parameters
     ----------
+    r : [float, float, float]
+        position vector
+    R : float
+        radius of the sphere
+    rho : float
+        density in [kg/m^3]
 
     Returns
     -------
-    [gx, gy, gz] :
+    [gx, gy, gz] : [float*3]
+        gravitational acceleration (note that gz points negative)
 
     """
 
@@ -153,6 +166,12 @@ def gradGZSphere(r, R, rho, pos=(0., 0., 0.)):
 
     Parameters
     ----------
+    r : [float, float, float]
+        position vector
+    R : float
+        radius of the sphere
+    rho : float
+        density in [kg/m^3]
 
     Returns
     -------
@@ -167,7 +186,7 @@ def gradGZSphere(r, R, rho, pos=(0., 0., 0.)):
 
 
 def uCylinderHoriz(pnts, R, rho, pos=(0., 0.)):
-    """
+    """ gravitational potential of horizonzal cylinder
     TODO
 
     Parameters
@@ -618,7 +637,8 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         * None -- return per cell kernel matrix G TOIMPL
 
     complete : bool [False]
-        If True return whole solution or matrix for [dgx, dgy, dgz] and ... TODO
+        If True return whole solution or matrix for [dgx, dgy, dgz] and ...
+        TODO
 
     Returns
     -------
@@ -642,8 +662,6 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         dg = np.zeros(len(pnts))
         Gdg = np.zeros((len(pnts), mesh.cellCount()))
 
-    #times = []
-
     dgi = None
     dgzi = None
 
@@ -651,16 +669,15 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         mesh.translate(-pg.RVector3(p))
 
         for b in mesh.boundaries():
-            if b.marker() != 0 or \
-                hasattr(dDensity, '__len__') or \
-                dDensity is None:
+            if b.marker() != 0 or hasattr(dDensity, '__len__') or \
+                    dDensity is None:
 
                 if mesh.dimension() == 2:
-                    #tic = time.time()
+                    # tic = time.time()
                     if complete:
                         dgi, dgzi = lineIntegralZ_WonBevis(b.node(0).pos(),
                                                            b.node(1).pos())
-                        #times.append(time.time() - tic)
+#                        times.append(time.time() - tic)
                         dgi *= -2.0
                         dgzi *= -2.0
                     else:
@@ -697,9 +714,9 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
 
         mesh.translate(pg.RVector3(p))
 
-    #import matplotlib.pyplot as plt
-    #print("times:", sum(times), np.mean(times))
-    #plt.plot(times)
+#    import matplotlib.pyplot as plt
+#    print("times:", sum(times), np.mean(times))
+#    plt.plot(times)
 
     if dDensity is None:
         if complete:
@@ -717,12 +734,13 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         return dg, dgz
     return dg
 
+
 class GravimetryModelling(pg.ModellingBase):
     """Gravimetry modelling operator"""
     def __init__(self, verbose=True):
         super(GravimetryModelling, self).__init__(verbose)
         self._J = pg.RMatrix()
-        #until reference counting we need to hold the reference here
+        # unless doing reference counting we need to hold the reference here
         self.setJacobian(self._J)
 
     def createStartmodel(self):
@@ -738,9 +756,9 @@ class GravimetryModelling(pg.ModellingBase):
 
     def createJacobian(self, model):
         Gdz = solveGravimetry(self.regionManager().paraDomain(),
-                               dDensity=None,
-                               pnts=self.sensorPositions,
-                               complete=False)
+                              dDensity=None,
+                              pnts=self.sensorPositions,
+                              complete=False)
         self._J.resize(len(Gdz), len(Gdz[0]))
         for i in range(len(Gdz)):
             self._J.setVal(Gdz[i], i)
