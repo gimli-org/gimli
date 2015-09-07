@@ -32,13 +32,13 @@ namespace GIMLI{
 
 class DLLEXPORT TriangleWrapper{
 public:
-    /*! Construct a PLC from nodes and edges in inMesh and inititialize 
+    /*! Construct a PLC from nodes and edges in inMesh and initialize
      * the trianglewrapper. Add region and hole marker later.*/
     TriangleWrapper(const Mesh & inMesh);
-    
-    /*! Constructor inititialize with input mesh 
-     * (nodes and edges where used for input and also regionmarker,
-     * if added to the mesh) and generate the 2d mesh with corresponding 
+
+    /*! Constructor initialize with input mesh
+     * (nodes and edges where used for input and also region marker,
+     * if added to the mesh) and generate the 2d mesh with corresponding
      * triSwitches */
     TriangleWrapper(const Mesh & inMesh, Mesh & outMesh,
                     const std::string & triSwitches);
@@ -48,13 +48,13 @@ public:
 
     /*! Set the triangle commandline switches */
     void setSwitches(const std::string & s);
-    
+
     /*! Return the triangle switches. */
     inline const std::string & switches() const { return switches_; }
 
     /*! Generate the mesh and store in mesh. */
     void generate(Mesh & mesh);
-    
+
     /*! Generate and return the new mesh. */
     Mesh generate();
 
@@ -64,24 +64,24 @@ protected:
 
     /*! For internal use only. */
     void transformTriangleToMesh_(const triangulateio & trimesh, Mesh & mesh);
-    
+
     /*! For internal use only. Only Edges and nodes(x,y) from mesh are used. */
     void transformMeshToTriangle_(const Mesh & mesh, triangulateio & trimesh);
-  
+
     /*! For internal use only. */
     void allocateOutMemory_();
-  
+
     /*! For internal use only. */
     void freeMemory_();
-    
+
     struct triangulateio * mesh_input_;
     struct triangulateio * mesh_output_;
     struct triangulateio * mesh_voronoi_output_;
 
     std::string switches_;
-    
+
     const Mesh * inMesh_;
-   
+
 };
 
 }  // namespace GIMLI

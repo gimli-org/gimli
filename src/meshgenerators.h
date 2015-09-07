@@ -37,18 +37,18 @@ DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, const RVector & 
 /*! Generate simple one dimensional mesh with nodes at position in RVector pos. */
 DLLEXPORT Mesh createMesh1D(const RVector & x);
 
-/*! Generate simple one dimensional mesh with nCells cells with length = 1.0,
- * and nCells + 1 nodes. What does nClones do?? Please comment.*/
-DLLEXPORT Mesh createMesh1D(uint nCells, uint nClones=1);
+/*! Generate simple 1D mesh with nCells cells of length 1, and nCells + 1 nodes.
+ * In case of more than one property quasi-2d mesh with regions is generated.*/
+DLLEXPORT Mesh createMesh1D(uint nCells, uint nProperties=1);
 
 /*! Generate 1D block model of thicknesses and properties */
 DLLEXPORT Mesh createMesh1DBlock(Index nLayers, Index nProperties=1);
 
-/*! Generate simple two dimensional mesh with nRows x nCols cells with each length = 1.0 */
-DLLEXPORT Mesh createMesh2D(Index xDim, Index yDim, int markerType=0);
-
 /*! Generate simple two dimensional mesh with nodes at position in RVector x and y. */
 DLLEXPORT Mesh createMesh2D(const RVector & x, const RVector & y, int markerType=0);
+
+/*! Generate simple two dimensional mesh with nRows x nCols cells with each length = 1.0 */
+DLLEXPORT Mesh createMesh2D(Index xDim, Index yDim, int markerType=0);
 
 /*! Generate simple three dimensional mesh with nx x nx x nz cells with each length = 1.0 */
 DLLEXPORT Mesh createMesh3D(Index xDim, Index yDim, Index zDim, int markerType=0);
@@ -57,35 +57,35 @@ DLLEXPORT Mesh createMesh3D(Index xDim, Index yDim, Index zDim, int markerType=0
 DLLEXPORT Mesh createMesh3D(const RVector & x, const RVector & y, const RVector & z, int markerType=0);
 
 /*! Add triangle boundary to the mesh. Return false on failors. */
-DLLEXPORT bool addTriangleBoundary(Mesh & mesh, 
+DLLEXPORT bool addTriangleBoundary(Mesh & mesh,
                                    double xBoundary, double yBoundary, int cellMarker,
                                    bool save=false);
 
-/*! Generate a simple 2D dimensional mesh by extruding a one dimensional 
- * polygone into RVector y using quads. 
- * We assume a two-dimension mesh here consisting on nodes and edge boundaries 
+/*! Generate a simple 2D dimensional mesh by extruding a one dimensional
+ * polygone into RVector y using quads.
+ * We assume a two-dimension mesh here consisting on nodes and edge boundaries
  * as one dimensional instead of a pure 1D mesh with edgeCells.
- * 2D cell marker are set from edge marker. 
+ * 2D cell marker are set from edge marker.
  * Nodes with marker are extruded as edges with marker.
- * Top and fron and back boundary marker are set from parameter front and back. 
+ * Top and fron and back boundary marker are set from parameter front and back.
  * All back y-coordinates are adjusted if adjustBack is set. */
 DLLEXPORT Mesh createMesh2D(const Mesh & mesh, const RVector & y,
                             int front=0, int back=0, bool adjustBack=false);
 
 /*! Generate a simple three dimensional mesh by extruding a two dimensional mesh into RVector z using triangle prism or hexahedrons or both.
- * 3D cell marker are set from 2D cell marker. 
- * The boundary marker for the side boundaries are set from edge marker in mesh. 
+ * 3D cell marker are set from 2D cell marker.
+ * The boundary marker for the side boundaries are set from edge marker in mesh.
  * Top and bottomLayer boundary marker are set from parameter topLayer and bottomLayer. */
 DLLEXPORT Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer=0, int bottomLayer=0);
 
 
 
-// 
+//
 // /*! Shortcut */
 // DLLEXPORT Mesh createMesh3D(const Mesh & mesh, const RVector & z);
 
 
-    
+
 } // namespace GIMLI
 
 #endif // GIMLI_MESHGENERATORS__H

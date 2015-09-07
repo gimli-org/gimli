@@ -87,13 +87,13 @@ public:
 
     /*! Returns the first parameter id by means of a global count, defined in countParameter called from RegionManager */
     inline Index startParameter() const { return startParameter_; }
-    
+
     /*! Returns the last parameter id by means of a global count, defined in countParameter called from RegionManager */
     inline Index endParameter() const { return endParameter_; }
 
     /*! Set the constrainst-type for this region available(0, 1) */
     void setConstraintType(Index type);
-    
+
     /*! Return constrainst-type for this region. */
     inline Index constraintType() const { return constraintType_; }
 
@@ -102,58 +102,58 @@ public:
         for constraintstype == 0 return amount of parameter cells,\n
         else return amount of inner boundaries */
     Index constraintCount() const;
-    
-    /*! Fill given constraints matrix with local constraints. 
+
+    /*! Fill given constraints matrix with local constraints.
         For single region (startConstraintsID, startParameter_) = 1, \n
         for constraintstype == 0 fill  (startConstraintsID + i, startParameter_ + i) = 1, i=1..constraintCount()\n
-        else fill (startConstraintsID + i, Boundary_i_leftNeightbourParameterID) = 1, 
+        else fill (startConstraintsID + i, Boundary_i_leftNeightbourParameterID) = 1,
                   (startConstraintsID + i, Boundary_i_rightNeightbourParameterID) = -1, i = 1..nBoundaries.*/
     void fillConstraints(RSparseMapMatrix & C, Index startConstraintsID);
 
     /*! Set region wide constant constraints weight, (default = 1). If this method is called background is forced to false. */
     void setConstraintsWeight(double bc);
-    
+
     /*! Set region wide variable constraints weight from RVector cw. If this method is called background is forced to false. */
     void setConstraintsWeight(const RVector & cw);
-    
+
     /*! Return Read-only vector of given constraints weights as RVector (default RVector(constraintCount, 1.0) */
     inline const RVector & constraintsWeight() const { return constraintsWeight_; }
-    
-    /*! Fill global constraints weight vector started at constraintStart. */ 
+
+    /*! Fill global constraints weight vector started at constraintStart. */
     void fillConstraintsWeight(RVector & vec, Index constraintStart );
-    
+
     /*! Set Region-Wide horizontal(z) weighting parameter for anisotropic smoothing \n
         1 - isotrope, 0 -- no vertical smoothing
     */
-    inline void setZWeight(double zw){ 
-        zWeight_ = zw; 
-        this->fillConstraintsWeightWithFlatWeight(); 
+    inline void setZWeight(double zw){
+        zWeight_ = zw;
+        this->fillConstraintsWeightWithFlatWeight();
     }
     /*! Return Region-Wide horizontal(z)-weighting parameter*/
     inline double zWeight() const { return zWeight_; }
-    
+
     /*! Possible DEPRECATED ?? */
-    inline void setZPower(double zp){ 
-        zPower_ = zp; zWeight_ = 0.01; 
+    inline void setZPower(double zp){
+        zPower_ = zp; zWeight_ = 0.01;
         fillConstraintsWeightWithFlatWeight();
     }
     inline double zPower() const { return zPower_; }
-    
-    /*! Set fixed value for background regions that will not 
+
+    /*! Set fixed value for background regions that will not
      * part of any value prolongation.*/
     inline void setFixValue(double val){ fixValue_ = val;}
     inline double fixValue() const { return fixValue_;}
-    
+
     /*! Helper method that convert cweight parameter into individual constraintsWeights depending on the associated boundary norm. At the moment only zWeight is considered. */
     void fillConstraintsWeightWithFlatWeight();
-    
+
 //DEPRECATED ??
 //      inline RVector * constraintsWeight() { return & boundaryControl_; }
 
     void fillBoundaryNorm(std::vector< RVector3 > & vnorm, Index boundCount);
- 
+
     void fillBoundarySize(RVector & vec, Index boundStart);
-    
+
     void fillStartVector(RVector & vec);
 
     void fillModelControl(RVector & vec);
@@ -168,7 +168,7 @@ public:
     void setStartModel(const RVector & start);
     /*! Set the value of start into the start model vector for this region. */
     void setStartModel(double start);
-    
+
     /*! DEPRECATED use setStartModel */
     void setStartVector(const RVector & start);
     /*! DEPRECATED use setStartModel */
@@ -191,9 +191,9 @@ public:
     void setLowerBound(double lb);
     /*! set lower parameter bound for region */
     void setUpperBound(double ub);
-    
+
     /*! set start and upper/lower bounds for region */
-    void setParameters(double start, double lb, double ub);
+    void setParameters(double start, double lb, double ub, std::string transString = "");
 
     void setModelTransStr_(const std::string & val);
 
@@ -217,7 +217,7 @@ protected:
 
     std::vector < Cell * > cells_;
     mutable std::vector < Boundary * > bounds_;
-    
+
     bool isBackground_;
     bool isSingle_;
 
@@ -234,7 +234,7 @@ protected:
     double zPower_;
     double zWeight_;
     double fixValue_;
-    
+
     double mcDefault_;
     double startDefault_;
 
@@ -265,7 +265,7 @@ public:
     //inline Mesh * mesh() { return mesh_; }
 
     /*!
-     * Add a external region to the RegionManager. 
+     * Add a external region to the RegionManager.
      */
     Region * addRegion(SIndex marker, const Mesh & mesh);
 #ifndef PYGIMLI_CAST
@@ -308,13 +308,13 @@ public:
 
     /*! Fill global model-weight vector */
     void fillModelControl(RVector & vec);
-    
+
     /*! Create and fill global constraints-weight vector */
     RVector createConstraintsWeight();
 
     /*! Fill global constraints-weight vector */
     void fillConstraintsWeight(RVector & vec);
-    
+
     /*! Fill global constraints-matrix
         no regions: fill with 0th-order constraints */
     void fillConstraints(RSparseMapMatrix & C);
@@ -353,7 +353,7 @@ protected:
      * Internal method to create a region. The method is called from \ref setMesh()
      */
     Region * createRegion_(SIndex marker, const Mesh & mesh);
-    
+
     /*!
      * Internal method to create a single parameter region. The method is called from \ref setMesh()
      */

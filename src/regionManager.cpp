@@ -198,7 +198,7 @@ void Region::setStartModel(double start){
     startDefault_ = start;
     this->setStartModel(RVector(parameterCount_, start));
 }
-    
+
 void Region::setStartVector(const RVector & start){
     return setStartModel(start);
 }
@@ -437,14 +437,21 @@ void Region::setUpperBound(double ub){
     setModelTransStr_(transString_);
 }
 
-void Region::setParameters(double start, double lb, double ub){
+void Region::setParameters(double start, double lb, double ub, std::string transString){
     if (lb < ub) {
         if ((start <= lb) | (start >= ub)) {
             std::cout << "WARNING! starting model not within bounds! readjusting" << std::endl;
             setStartModel(std::sqrt(lb * ub));
-        } else setStartModel(start);
-        setLowerBound(lb);
-        setUpperBound(ub);
+        } else {
+            setStartModel(start);
+        }
+        lowerBound_ = lb;
+        upperBound_ = ub;
+        if (transString.size() > 0) { // any given
+            setModelTransStr_(transString);
+        } else { // use preset otherwise
+            setModelTransStr_(transString_);
+        }
     } else {
         throwError(EXIT_FAILURE, WHERE_AM_I + " bounds not matching: " + toStr(lb) + ">=" + toStr(ub));
     }
@@ -598,7 +605,7 @@ void RegionManager::createParaDomain_(){
 
     for (std::map< SIndex, Region* >::const_iterator
          it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
-        
+
         if (!it->second->isBackground()){
             for (std::vector < Cell * >::const_iterator itc = it->second->cells().begin();
                  itc != it->second->cells().end(); itc++){
@@ -873,7 +880,7 @@ Index RegionManager::interRegionConstraintsCount() const {
 void RegionManager::fillConstraints(RSparseMapMatrix & C){
 //     __MS(&C)
 //     __MS(C.rtti())
-    
+
     Index nModel  = parameterCount();
     Index nConstr = constraintCount();
 
@@ -1192,8 +1199,8 @@ TransCumulative < RVector > * RegionManager::transModel(){
 
     if (localTrans_.size() != allRegionMarker_(true).size()){
         localTrans_.clear();
-        
-        for (std::map< SIndex, Region* >::const_iterator 
+
+        for (std::map< SIndex, Region* >::const_iterator
              it = regionMap_.begin(); it != regionMap_.end(); it ++){
 
             if (!it->second->isBackground()){

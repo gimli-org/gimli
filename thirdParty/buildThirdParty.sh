@@ -160,7 +160,7 @@ getWITH_WGET(){
 			fi
         popd
     else 
-        echo "skipping .. sourcetree allready exist."
+        echo "skipping .. sourcetree already exists."
     fi
 
 }

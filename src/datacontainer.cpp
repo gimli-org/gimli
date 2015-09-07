@@ -39,8 +39,8 @@ DataContainer::DataContainer(const std::string & fileName,
     //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
 
-DataContainer::DataContainer(const std::string & fileName, 
-                             const std::string & sensorTokens, 
+DataContainer::DataContainer(const std::string & fileName,
+                             const std::string & sensorTokens,
                              bool sensorIndicesFromOne,
                              bool removeInvalid){
     initDefaults();
@@ -179,15 +179,15 @@ bool DataContainer::isSensorIndex(const std::string & token) const {
     return dataSensorIdx_.find(token) != dataSensorIdx_.end();
 }
 
-int DataContainer::load(const std::string & fileName, 
-                        bool sensorIndicesFromOne, 
+int DataContainer::load(const std::string & fileName,
+                        bool sensorIndicesFromOne,
                         bool removeInvalid){
     setSensorIndexOnFileFromOne(sensorIndicesFromOne);
-    
+
 	std::fstream file; openInFile(fileName, & file, true);
 
     std::vector < std::string > row(getNonEmptyRow(file));
-	
+
     if (row.size() != 1){
         throwError(EXIT_DATACONTAINER_NELECS, WHERE_AM_I + " cannot determine data format. " + str(row.size()));
     }
@@ -222,9 +222,9 @@ int DataContainer::load(const std::string & fileName,
     //** read sensor
     for (int i = 0; i < nSensors; i ++){
         row = getNonEmptyRow(file);
-        
+
         if (row.empty()){
-            throwError(EXIT_DATACONTAINER_NELECS, 
+            throwError(EXIT_DATACONTAINER_NELECS,
                        WHERE_AM_I + "To few sensor data. " +
                        str(nSensors) + " Sensors expected but " +
                        str(i) + " found.");
@@ -288,8 +288,8 @@ int DataContainer::load(const std::string & fileName,
         row = getNonEmptyRow(file);
 
         if (row.empty()){
-            throwError(EXIT_DATACONTAINER_DATASIZE, 
-                       WHERE_AM_I + " To few data. " + str(nData) + 
+            throwError(EXIT_DATACONTAINER_DATASIZE,
+                       WHERE_AM_I + " To few data. " + str(nData) +
                        " data expected and " + str(data) + " data found.");
         }
 
@@ -320,7 +320,7 @@ int DataContainer::load(const std::string & fileName,
             if (it->first.rfind("%") != std::string::npos ){
                 scale = 1.0 / 100.0;
             }
-            
+
 // 	    std::cout << min(it->second) <<  " " << max(it->second) << std::endl;
 
 //std::cout << "Insert translated:-" << tT_[it->first] << "-" << it->second.size() << std::endl;
@@ -330,7 +330,7 @@ int DataContainer::load(const std::string & fileName,
             dataMap_[it->first] = it->second;
         }
     }
-    
+
     inputFormatString_.clear();
     for (uint i = 0; i < format.size(); i ++) {
         if (haveTranslationForAlias(format[i])){
@@ -339,7 +339,7 @@ int DataContainer::load(const std::string & fileName,
             inputFormatString_ += format[i] + " ";
         }
     }
-        
+
     if (sensorIndexOnFileFromOne_){
         for (std::map< std::string, RVector >::iterator it = dataMap_.begin();
              it!= dataMap_.end(); it ++){
@@ -372,15 +372,16 @@ int DataContainer::load(const std::string & fileName,
                 //** if no electrodes format is given (no x after comment symbol) take defaults;
                 format = getSubstrings(topoFormatDefault);
             }
+        } else {
+            file.unget();
         }
-        file.unget();
 
         //** read topography points;
         for (int i = 0; i < nSensors; i ++){
             row = getNonEmptyRow(file);
 
             if (row.empty()) {
-                throwError(EXIT_DATACONTAINER_NTOPO, WHERE_AM_I 
+                throwError(EXIT_DATACONTAINER_NTOPO, WHERE_AM_I
                            + "To few topo data. " + str(nSensors)
                            + " Topopoints expected and " + str(i) + " found.");
             }
@@ -452,7 +453,7 @@ int DataContainer::save(const std::string & fileName,
                         const std::string & formatSensor,
                         bool noFilter,
                         bool verbose) const {
-    
+
     std::fstream file; if (!openOutFile(fileName, & file)) return 0;
 
     file.precision(14);
@@ -560,7 +561,7 @@ int DataContainer::save(const std::string & fileName,
 std::string DataContainer::tokenList(bool withAnnotation) const {
     std::string tokenList;
     if (withAnnotation) tokenList += "SensorIdx: ";
-    
+
     for (std::map< std::string, RVector >::const_iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if (isSensorIndex(it->first)){
             tokenList += it->first;
@@ -617,18 +618,18 @@ const IndexArray DataContainer::id(const std::string & token) const {
     if (!dataMap_.count(token)) {
         throwError(1, WHERE_AM_I + " unknown token data for get: " + token + " available are: " + tokenList() );
     }
-        
+
     if (!isSensorIndex(token)) {
         throwError(1, WHERE_AM_I + " token: " + token + " is not an index list: " + tokenList() );
     }
-        
+
     //RVector idx = dataMap_.find(token)->second;
     IndexArray ret(dataMap_.find(token)->second.size());
-    
+
     for (uint i = 0; i < ret.size(); i ++){
         ret[i] = Index(dataMap_.find(token)->second[i]);
     }
-            
+
     return ret;
 }
 
@@ -697,9 +698,9 @@ IndexArray DataContainer::findSensorIndex(const RVector & d) const{
         if (d[i] > -1 && d[i] < sensorCount()) {
             ret[i] = Index(d[i]);
         } else {
-            throwError(1, WHERE_AM_I + " Sensor index value out of range 0--" 
+            throwError(1, WHERE_AM_I + " Sensor index value out of range 0--"
                         + str(sensorCount()) + " " + str(Index(d[i])));
-            
+
         }
     }
     return ret;
