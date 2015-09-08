@@ -7,7 +7,7 @@
 import matplotlib.pyplot as plt
 
 
-def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho_a$ in $\Omega$m',
+def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
                           grid=True, marker='+', ylog=True, **kwargs):
     """show amplitude spectrum"""
     lab = kwargs.pop('label', 'obs')
@@ -20,7 +20,7 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho_a$ in $\Omega$m',
     ax.grid(grid)
 
 
-def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi_a$ in mrad',
+def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi$ in mrad',
                       grid=True, marker='+', ylog=False, **kwargs):
     """show phase spectrum"""
     ax.semilogx(freq, phi, marker=marker, label='obs', **kwargs)
@@ -31,7 +31,7 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi_a$ in mrad',
     ax.grid(grid)
 
 
-def plotSpectrum(ax, freq, vals, ylabel=r'$\phi_a$ in mrad',
+def plotSpectrum(ax, freq, vals, ylabel=r'$\phi$ in mrad',
                  grid=True, marker='+', ylog=True, **kwargs):
     """show phase spectrum"""
     ax.loglog(freq, vals, marker=marker, label='obs', **kwargs)
