@@ -41,6 +41,7 @@ class SIPSpectrum():
             self.unifyData()
 
     def unifyData(self, onlydown=False):
+        """ unify data (only one value per frequency) by mean or selection"""
         fu = np.unique(self.f)
         if len(fu) < len(self.f):
             if onlydown:
@@ -88,9 +89,17 @@ class SIPSpectrum():
 
         Parameters
         ----------
-        reim - show real/imaginary part instead of amplitude/phase
-        znorm - use normalized real/imag parts after Nordsiek&Weller (2008)
+        reim : bool
+            show real/imaginary part instead of amplitude/phase
+
+        znorm : bool (true forces reim)
+            use normalized real/imag parts after Nordsiek&Weller (2008)
+
         nrows - use nrows subplots (default=2)
+
+        Returns
+        -------
+        fig, ax : mpl.figure, mpl.axes array
         """
         if reim or znorm:
             addstr = ''
@@ -119,6 +128,7 @@ class SIPSpectrum():
         return re, im
 
     def getPhiKK(self, use0=False):
+        """ get phase from Kramers-Kronig relations """
         re, im = self.realimag()
         reKK, imKK = self.getKK(use0)
         return np.arctan2(imKK, re)
@@ -170,7 +180,18 @@ class SIPSpectrum():
         return ECi/we0
 
     def removeEpsilonEffect(self, er=None, mode=0):
-        """remove effect of (constant high-frequency) epsilon from sigma"""
+        """remove effect of (constant high-frequency) epsilon from sigma
+
+        Parameters
+        ----------
+        er : float
+            relative epsilon to correct for (else automatically determined)
+
+        Returns
+        -------
+        er : float
+            determined er
+        """
         ECr, ECi = self.realimag(cond=True)
         we0 = self.f*2*pi*8.854e-12  # Omega epsilon_0
         if er is None:  #
@@ -183,34 +204,66 @@ class SIPSpectrum():
                 er = 2*epsr[nmax] - epsr[nmax1]
             else:
                 er = epsr[nmax]
-            print(er)
+            print("detected epsilon of ", er)
 
         ECi -= er * we0
         self.phiOrg = self.phi
         self.phi = np.arctan(ECi/ECr)
         self.ampOrg = self.amp
         self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
+        return er
 
-    def fitCCPhi(self, ePhi=0.001, lam=1000., remove=True,
-                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100), cpar=(0.3, 0, 1)):
-        """fit a Cole-Cole term to phase"""
+    def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0.2, 0, 1),
+                 taupar=(1e-2, 1e-5, 100), cpar=(0.3, 0, 1)):
+        """fit a Cole-Cole term to phase only
+
+        Parameters
+        ----------
+        ePhi : float
+            absolute error of phase angle
+        lam : float
+            regularization parameter
+        mpar, taupar, cpar : list[3]
+            inversion parameters (starting value, lower bound, upper bound)
+            for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
+
+        """
         self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
                                         taupar=taupar, cpar=cpar)
 
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                 cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
-        """fit a Cole-Cole term with additional EM term to phase"""
+        """fit a Cole-Cole term with additional EM term to phase
+
+        Parameters
+        ----------
+        ePhi : float
+            absolute error of phase angle
+        lam : float
+            regularization parameter
+        remove: bool
+            remove EM term from data
+        mpar, taupar, cpar, empar : list[3]
+            inversion parameters (starting value, lower bound, upper bound)
+            for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
+        """
         self.mCC, self.phiCC = fitCCEMPhi(self.f, self.phi, ePhi, lam, mpar,
                                           taupar, cpar, empar)
-        # %% correct EM term from data
+        # correct EM term from data
         if remove:
             self.phiOrg = self.phi
             self.phi = self.phi + \
                 np.angle(relaxationTerm(self.f, self.mCC[3]))
 
     def fitColeCole(self, useCond=False, **kwargs):
-        """fit a Cole-Cole model to the data"""
+        """fit a Cole-Cole model to the data
+
+        Parameters
+        ----------
+        useCond : bool
+            use conductivity form of Cole-Cole model instead of resistivity
+        """
         if useCond:  # use conductivity formulation instead of resistivity
             self.mCC, self.ampCC, self.phiCC = fitCCCC(self.f, self.amp,
                                                        self.phi, **kwargs)
@@ -222,7 +275,27 @@ class SIPSpectrum():
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=False,
                       showFit=False, cType=1):
-        """fit a (smooth) continuous Debye model (Debye decomposition)"""
+        """fit a (smooth) continuous Debye model (Debye decomposition)
+
+        Parameters
+        ----------
+        ePhi : float
+            absolute error of phase angle
+        lam : float
+            regularization parameter
+        lamFactor : float
+            regularization factor for subsequent iterations
+        mint/maxt : float
+            minimum/maximum tau values to use (else automatically from f)
+        nt : int
+            number of tau values (default number of frequencies * 2)
+        new : bool
+            new implmentation (experimental)
+        showFit : bool
+            show fit
+        cType : int
+            constraint type (1/2=smoothness 1st/2nd order, 0=minimum norm)
+        """
         nf = len(self.f)
         if mint is None:
             mint = .1 / max(self.f)
@@ -230,10 +303,11 @@ class SIPSpectrum():
             maxt = .5 / min(self.f)
         if nt is None:
             nt = nf*2
-        # %% discretize tau, setup DD and perform DD inversion
+        # discretize tau, setup DD and perform DD inversion
         self.tau = np.logspace(log10(mint), log10(maxt), nt)
         phi = self.phi
-        tLin, tLog, tM = pg.RTrans(), pg.RTransLog(), pg.RTransLogLU(0., 1.)
+        tLin, tLog, tM = pg.RTrans(), pg.RTransLog(), pg.RTransLog()
+        # pg.RTransLogLU(0., 1.)
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)

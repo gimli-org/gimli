@@ -4,157 +4,20 @@
 """ Class for managing seismic refraction data and doing inversions"""
 
 import sys
+from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.meshtools import createParaDomain2D, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc
-from math import pi
-import time
-import os
-
-
-def plotLines(ax, line_filename, step=1):
-    xz = np.loadtxt(line_filename)
-    n_points = xz.shape[0]
-    if step == 2:
-        for i in range(0, n_points, step):
-            x = xz[i:i + step, 0]
-            z = xz[i:i + step, 1]
-            ax.plot(x, z, 'k-')
-    if step == 1:
-        ax.plot(xz[:, 0], xz[:, 1], 'k-')
-
-
-def createResultFolder(subfolder):
-    now = time.localtime()
-    results = str(now.tm_year) + str(now.tm_mon).zfill(2) + \
-        str(now.tm_mday).zfill(2) + '-' + str(now.tm_hour).zfill(2) + '.' + \
-        str(now.tm_min).zfill(2)
-
-    return createfolders(['./', results, subfolder])
-
-
-def createfolders(foldername_list):
-    """
-
-    """
-    path = ''
-
-    for s in foldername_list:
-        path = path + s + '/'
-
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if os.path.exists(path):
-            print('Path "{}" already exists.'.format(path))
-        else:
-            print('Unable to create path "{}".'.format(path))
-            raise(e)
-
-    return path
-
-
-def getSavePath(folder=None, subfolder=''):
-    if folder is None:
-        path = createResultFolder(subfolder)
-    else:
-        path = createfolders([folder, subfolder])
-    return path
-
-
-def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
-    """plot first arrivals as lines"""
-    px = pg.x(data.sensorPositions())
-    gx = np.array([px[int(g)] for g in data("g")])
-    sx = np.array([px[int(s)] for s in data("s")])
-    if tt is None:
-        tt = np.array(data("t"))
-    if plotva:
-        tt = np.absolute(gx - sx) / tt
-
-    uns = np.unique(sx)
-    cols = 'brgcmyk'
-    for i, si in enumerate(uns):
-        ti = tt[sx == si]
-        gi = gx[sx == si]
-        ii = gi.argsort()
-        ax.plot(gi[ii], ti[ii], marker, color=cols[i % 7])
-        ax.plot(si, 0., 's', color=cols[i % 7], markersize=8)
-
-    ax.grid(True)
-
-
-def showVA(ax, data, usepos=True):
-    """show apparent velocity as image plot"""
-    px = pg.x(data.sensorPositions())
-    gx = np.asarray([px[int(g)] for g in data("g")])
-    sx = np.asarray([px[int(s)] for s in data("s")])
-    va = np.absolute(gx - sx) / data('t')
-    A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
-    for i in range(data.size()):
-        A[int(data('s')[i]), int(data('g')[i])] = va[i]
-
-    gci = ax.imshow(A, interpolation='nearest')
-    ax.grid(True)
-    xt = np.arange(0, data.sensorCount(), 50)
-    if usepos:
-        ax.set_xticks(xt)
-        ax.set_xticklabels([str(int(px[xti])) for xti in xt])
-        ax.set_yticks(xt)
-        ax.set_yticklabels([str(int(px[xti])) for xti in xt])
-
-    plt.colorbar(gci, ax=ax)
-    return va
-
-
-def createGradientModel2D(data, mesh, VTop, VBot):
-    """
-    Create 2D velocity gradient model.
-
-    Creates a smooth, linear, starting model that takes the slope
-    of the topography into account. This is done by fitting a straight line
-    and using the distance to that as the depth value.
-    Known as "The Marcus method"
-
-
-    Parameters
-    ----------
-    data : pygimli DataContainer
-        The topography list is in here.
-    mesh : pygimli.Mesh
-        The parametric mesh used for the inversion
-    VTop : float
-        The velocity at the surface of the mesh
-    VBot : float
-        The velocity at the bottom of the mesh
-
-    Returns
-    -------
-    model : pygimli Vector, length M
-        A numpy array with slowness values that can be used to start
-        the inversion.
-    """
-
-    p = np.polyfit(pg.x(data.sensorPositions()), pg.y(data.sensorPositions()),
-                   deg=1)  # slope-intercept form
-    n = np.asarray([-p[0], 1.0])  # normal vector
-    nLen = np.sqrt(np.dot(n, n))
-
-    x = pg.x(mesh.cellCenters())
-    z = pg.y(mesh.cellCenters())
-    pos = np.column_stack((x, z))
-    d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen
-                  for i in range(pos.shape[0])])
-
-    return np.interp(d, [min(d), max(d)], [1.0 / VTop, 1.0 / VBot])
+from .ratools import createGradientModel2D, getSavePath
+from .raplot import plotFirstPicks, showVA, plotLines
 
 
 class Refraction(object):
 
-    """ Class for managing a refraction seismics"""
+    """ Class for managing refraction seismics data"""
 
     def __init__(self, data=None, verbose=True, **kwargs):
         """Init function with optional data load"""
@@ -167,10 +30,11 @@ class Refraction(object):
             self.basename = 'new'
 
     def __str__(self):
+        """string representation of the class"""
         return self.__repr__()
 
     def __repr__(self):
-        """string representation of the class"""
+        """string representation of the class for the print function"""
         out = "Refraction object"
         if hasattr(self, 'data'):
             out += "\n" + self.data.__str__()
@@ -179,6 +43,7 @@ class Refraction(object):
         return out
 
     def setData(self, data):
+        """ set data container from outside """
         self.data = data
         self.checkData()
 
@@ -242,7 +107,7 @@ class Refraction(object):
 
     def makeMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
                  paraBoundary=5):
-        """create (inversion)"""
+        """create (inversion) mesh using createParaDomain2D"""
         if depth is None:
             depth = max(self.getOffset()) / 3.
         self.poly = createParaDomain2D(self.data.sensorPositions(),
@@ -273,14 +138,14 @@ class Refraction(object):
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
         """estimate error composed of an absolute and a relative part"""
-        if relativeError > 1:  # obviously in %
+        if relativeError >= 0.5:  # obviously in %
             relativeError /= 100.
         self.error = absoluteError / self.data('t') + relativeError
         if hasattr(self, 'INV'):  # self.INV is not None:
             self.INV.setRelativeError(self.error)
 
     def createInv(self, verbose=True, dosave=False):
-        """create inversion instance"""
+        """create inversion instance (typically done by run)"""
         if not hasattr(self, 'f'):
             self.createFOP()
         if not hasattr(self, 'error'):
@@ -294,7 +159,21 @@ class Refraction(object):
         self.INV.setRelativeError(self.error)
 
     def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30.):
-        """run inversion"""
+        """run actual inversion (first creating inversion object if not there)
+
+        result/response is stored in the class attribute velocity/response
+
+        Parameters
+        ----------
+        vtop, vbottom : float
+            starting model velocities on top/bottom of the mesh
+
+        lam : float
+            regularization parameter describing the strength of smoothness
+
+        zweight : float
+            relative weight for purely vertical boundaries
+        """
         if not hasattr(self, 'INV'):  # self.f is None:
             self.createInv()
 
@@ -305,6 +184,7 @@ class Refraction(object):
         self.INV.setModel(self.start)
         slowness = self.INV.run()
         self.velocity = 1. / slowness
+        self.response = self.INV.response()
 
     def rayCoverage(self):
         """return ray coverage"""
@@ -329,7 +209,7 @@ class Refraction(object):
         else:
             gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
-            cbar = createColorbar(gci, **kwargs)
+            createColorbar(gci, **kwargs)
             browser = CellBrowser(self.mesh, self.velocity, ax)
             browser.connect()
             plt.show()  # block=False)
