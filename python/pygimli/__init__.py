@@ -746,7 +746,7 @@ def randN(n):
     _pygimli_.randn(r)
     return r
 
-def test(show=False, onlydoctests=True, coverage=False):
+def test(show=False, onlydoctests=False, coverage=False):
     """Test all code examples in docstrings using pytest."""
     try:
         import pytest
@@ -771,10 +771,10 @@ def test(show=False, onlydoctests=True, coverage=False):
                "--cov-config %s " % cfg.replace("setup.cfg", ".coveragerc")
 
     cmd += "%s " % cwd
-    if not onlydoctests:
+    if not onlydoctests and os.path.exists(cfg):
         cmd += os.path.join(cwd, "../tests")
-    try:
-        pytest.main(cmd)
-    finally:
-        plt.switch_backend(old_backend)
-        plt.close('all')
+
+    exitcode = pytest.main(cmd)
+    plt.switch_backend(old_backend)
+    plt.close('all')
+    sys.exit(exitcode)
