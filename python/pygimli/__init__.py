@@ -746,8 +746,22 @@ def randN(n):
     _pygimli_.randn(r)
     return r
 
-def test(show=False, onlydoctests=False, coverage=False):
-    """Test all code examples in docstrings using pytest."""
+def test(show=False, onlydoctests=False, coverage=False, htmlreport=False):
+    """Run docstring examples and additional tests.
+
+    Parameters
+    ----------
+    show : boolean, optional
+        Show matplotlib windows during test run. They will be closed
+        automatically.
+    onlydoctests : boolean, optional
+        Run test files in ../tests as well.
+    coverage : boolean, optional
+        Create a coverage report. Requires the pytest-cov plugin.
+    htmlreport : str, optional
+        Filename for HTML report such as www.pygimli.org/tests.html. Requires
+        pytest-html plugin.
+    """
     try:
         import pytest
     except ImportError:
@@ -756,7 +770,8 @@ def test(show=False, onlydoctests=False, coverage=False):
 
     from matplotlib import pyplot as plt
     from pygimli.utils import opt_import
-    pc = opt_import("pytest_cov", "create a coverage report")
+    pc = opt_import("pytest_cov", "create a code coverage report")
+    ph = opt_import("pytest_html", "create a html report")
 
     old_backend = plt.get_backend()
     if not show:
@@ -769,7 +784,8 @@ def test(show=False, onlydoctests=False, coverage=False):
     if pc and coverage:
         cmd += "--cov pygimli --cov-report term " + \
                "--cov-config %s " % cfg.replace("setup.cfg", ".coveragerc")
-
+    if ph and htmlreport:
+        cmd += "--html %s " % htmlreport
     cmd += "%s " % cwd
     if not onlydoctests and os.path.exists(cfg):
         cmd += os.path.join(cwd, "../tests")

@@ -16,6 +16,7 @@ python -c "import numpy; print(numpy.__version__)"
 #rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
 mkdir -p build
 cd build
+rm -f build_tests.html # remove old test report
 cmake ../trunk
 make -j 16 gimli
 rm -rf python/_pygimli_.cache
@@ -27,8 +28,11 @@ make check
 
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
-python -c "import pygimli; print(pygimli.__version__)"
-python -c "import pygimli; pygimli.test(onlydoctests=False, coverage=True)"
+python << END
+import pygimli as pg
+print(pg.__version__)
+pg.test(onlydoctests=False, htmlreport='build_tests.html')
+END
 
 # Build documentation
 export PATH=/opt/texbin:$PATH # for building pdf
