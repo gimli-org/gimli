@@ -18,7 +18,7 @@ class TestRVectorMethods(unittest.TestCase):
         '''
         x = [0.0, 1.0, 0.0]
         p = pg.RVector3(x)
-        self.assertEqual(p.dist(x), 00.0)
+        self.assertEqual(p.dist(x), 0.0)
         self.assertEqual(p.dist([1.0, 1.0]), 1.0)
 
         p = pg.RVector3((0.0, 1.0, 0.0))
