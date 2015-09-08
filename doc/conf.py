@@ -377,8 +377,6 @@ pngmath_latex_preamble = '\
 _mathpng_tempdir = DOC_BUILD_DIR + 'mathtmp'
 
 staticpath = os.path.abspath(join(SPHINXDOC_PATH, '_static'))
-boxprint(staticpath)
-os.listdir(staticpath)
 latex_additional_macros = open(join(staticpath, 'mylatex-commands.sty'))
 
 mathjax_latex_preamble = ""

@@ -163,7 +163,7 @@ add_custom_target(sphinxpdf ALL
     COMMAND
         make
     COMMAND
-        cmake -E copy_if_different gimli.pdf ${SPHINX_HTML_DIR}/doc/GIMLi_Documentation.pdf
+        cmake -E copy_if_different gimli.pdf ${SPHINX_HTML_DIR}/GIMLi_Documentation.pdf
     DEPENDS
         sphinxlatex
 )
