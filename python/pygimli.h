@@ -446,9 +446,9 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     }
 
     inline void interpolate_GILsave__(const Mesh & mesh, const RMatrix & data,
-                                       const std::vector< RVector3 > & pos, RMatrix & iData,
-                                       bool verbose = false){
-        std::cout << "interpolate_GILsave__ 1" << std::endl;
+                                      const R3Vector & pos, RMatrix & iData,
+                                      bool verbose=false){
+        __MS("interpolate_GILsave__ 1")
         ALLOW_PYTHON_THREADS
         return interpolate(mesh, data, pos, iData, verbose);
     }

@@ -242,6 +242,9 @@ public:
     /*! Create and copy global P2 mesh of this mesh.*/
     Mesh createP2() const;
 
+    /*! Create a new mesh that is a part from this mesh, based on cell-ids */
+    Mesh createMeshByCellIdx(const IndexArray & idxList);
+    
     /*! Create a partly mesh from mesh, based on cell-ids */
     void createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxList);
 
@@ -249,7 +252,7 @@ public:
     void createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds);
 
     /*! Create a partly mesh from mesh, based on meshs attributes. For a single attribute set to to 0, for unlimited set to to -1 */
-    void createMeshByMarker(const Mesh & mesh, int from, int to = -1);
+    void createMeshByMarker(const Mesh & mesh, int from, int to=-1);
     //** end creation stuff
 
     //! Show some infos
@@ -389,13 +392,14 @@ public:
     /*! Smooth the mesh via moving all free nodes into the average of all neighboring nodes. Repeat this smoothIteration times. There is currently only this smoothFunction. EdgeSwapping is deactivated.*/
     void smooth(bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint smoothIteration);
 
-    /*! Scale mesh with \ref RVector3 s*/
+    /*! Scale the mesh with \ref RVector3 s. And return a reference to the mesh (no copy)*/
     Mesh & scale(const RVector3 & s);
 
-    /*! Translate mesh with \ref RVector3 t*/
+    /*! Translate the mesh with \ref RVector3 t. And return a reference to the mesh (no copy)*/
     Mesh & translate(const RVector3 & t);
 
-    /*! Rotate mesh with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg). */
+    /*! Rotate mesh teh with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg). 
+     And return a reference to the mesh (no copy)*/
     Mesh & rotate(const RVector3 & r);
     //** end mesh modification stuff
 

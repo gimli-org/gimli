@@ -1,6 +1,8 @@
 ADD_CUSTOM_TARGET(pggen ALL)
 ADD_CUSTOM_COMMAND(
     COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/_pygimli_.cache
+    COMMAND
         #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${PYTHON_EXECUTABLE} will work on cmake3.1
         #${PYTHON_EXECUTABLE}
         python

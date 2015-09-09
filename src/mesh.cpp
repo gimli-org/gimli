@@ -1522,6 +1522,12 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
     createNeighbourInfos();
 }
 
+Mesh Mesh::createMeshByCellIdx(const IndexArray & idxList){
+    Mesh mesh(dimension());
+    mesh.createMeshByCellIdx(*this, idxList);
+    return mesh;
+}
+    
 void Mesh::createMeshByMarker(const Mesh & mesh, int from, int to){
     if (to == -1) to = MAX_INT;
     else if (to == 0) to = from + 1;

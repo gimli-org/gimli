@@ -449,6 +449,9 @@ _pygimli_.BVector.__getitem__ = __getVal  # very slow -- inline is better
 _pygimli_.IVector.__setitem__ = __setVal
 _pygimli_.IVector.__getitem__ = __getVal  # very slow -- inline is better
 
+_pygimli_.R3Vector.__setitem__ = __setVal
+_pygimli_.R3Vector.__getitem__ = __getVal  # very slow -- inline is better
+
 _pygimli_.IndexArray.__setitem__ = __setVal
 _pygimli_.IndexArray.__getitem__ = __getVal  # very slow -- inline is better
 

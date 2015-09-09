@@ -34,21 +34,21 @@ DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y);
 /*! Unified interface. Generate simple grid with nodes at the given positions */
 DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, const RVector & z);
 
-/*! Generate simple one dimensional mesh with nodes at position in RVector pos. */
-DLLEXPORT Mesh createMesh1D(const RVector & x);
-
 /*! Generate simple 1D mesh with nCells cells of length 1, and nCells + 1 nodes.
  * In case of more than one property quasi-2d mesh with regions is generated.*/
 DLLEXPORT Mesh createMesh1D(uint nCells, uint nProperties=1);
 
+/*! Generate simple one dimensional mesh with nodes at position in RVector pos. */
+DLLEXPORT Mesh createMesh1D(const RVector & x);
+
 /*! Generate 1D block model of thicknesses and properties */
 DLLEXPORT Mesh createMesh1DBlock(Index nLayers, Index nProperties=1);
 
-/*! Generate simple two dimensional mesh with nodes at position in RVector x and y. */
-DLLEXPORT Mesh createMesh2D(const RVector & x, const RVector & y, int markerType=0);
-
 /*! Generate simple two dimensional mesh with nRows x nCols cells with each length = 1.0 */
 DLLEXPORT Mesh createMesh2D(Index xDim, Index yDim, int markerType=0);
+
+/*! Generate simple two dimensional mesh with nodes at position in RVector x and y. */
+DLLEXPORT Mesh createMesh2D(const RVector & x, const RVector & y, int markerType=0);
 
 /*! Generate simple three dimensional mesh with nx x nx x nz cells with each length = 1.0 */
 DLLEXPORT Mesh createMesh3D(Index xDim, Index yDim, Index zDim, int markerType=0);

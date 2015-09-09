@@ -399,6 +399,7 @@ def generate(defined_symbols, extraIncludes):
           'GIMLI::Expr',
           'GIMLI::InversionBase',
           'std::vector<unsigned long',
+          'std::vector<bool',
           ]
     
     for c in main_ns.free_functions():

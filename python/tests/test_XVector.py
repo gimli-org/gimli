@@ -56,7 +56,6 @@ class TestRVectorMethods(unittest.TestCase):
         
         vec.setVal(7.0, vec > 0.0)
         self.assertEqual(vec[0], 7.0)
-
         
     def test_RVectorOP(self):
         v = pg.RVector(5, 1.0)
@@ -124,6 +123,13 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(pg.pow(v, 2.0)), 20)
         self.assertEqual(sum(pg.pow(v, v)), 20)
         
+    def test_R3VectorIndex(self):
+        r3 = pg.R3Vector(10)
+        
+        self.assertEqual(r3[0], pg.RVector3(0))
+        np.testing.assert_array_equal(r3[0], pg.RVector3(0))
+               
+            
     def test_Slices(self):
         a = pg.RVector(np.arange(10.))
 
@@ -233,17 +239,17 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_array_equal(sum(I), 2)
         np.testing.assert_array_equal(np.sum(I), 2)
         
-
-
 if __name__ == '__main__':
     
     unittest.main()
    
     #suite = unittest.TestSuite()
     
-    ##suite.addTest(TestRVectorMethods("test_RVectorOP"))
-    #suite.addTest(TestRVectorMethods("test_IndexAccess"))
-    ##suite.addTest(TestRVectorMethods("test_Slices"))
+    #suite.addTest(TestRVectorMethods("test_R3VectorIndex"))
+    
+    ###suite.addTest(TestRVectorMethods("test_RVectorOP"))
+    ##suite.addTest(TestRVectorMethods("test_IndexAccess"))
+    ###suite.addTest(TestRVectorMethods("test_Slices"))
         
     #runner = unittest.TextTestRunner()
     #runner.run(suite)
