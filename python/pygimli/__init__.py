@@ -759,8 +759,8 @@ def test(show=False, onlydoctests=False, coverage=False, htmlreport=False):
     coverage : boolean, optional
         Create a coverage report. Requires the pytest-cov plugin.
     htmlreport : str, optional
-        Filename for HTML report such as www.pygimli.org/tests.html. Requires
-        pytest-html plugin.
+        Filename for HTML report such as www.pygimli.org/build_tests.html.
+        Requires pytest-html plugin.
     """
     try:
         import pytest
