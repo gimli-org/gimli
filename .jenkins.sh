@@ -7,7 +7,6 @@ uname -a
 gcc --version
 python --version
 cmake --version
-df -h
 python -c "import numpy; print(numpy.__version__)"
 
 # just do this if something is wrong with the thirdparty sources
@@ -18,8 +17,8 @@ python -c "import numpy; print(numpy.__version__)"
 mkdir -p build
 cd build
 rm -f build_tests.html # remove old test report
-#cmake ../trunk -DPYVERSION=3
-cmake ../trunk -DCASTER=castxml -DPYVERSION=3
+cmake ../trunk 
+# cmake ../trunk -DCASTER=castxml -DPYVERSION=3
 make -j 16 gimli
 rm -rf python/_pygimli_.cache
 make pygimli J=12
