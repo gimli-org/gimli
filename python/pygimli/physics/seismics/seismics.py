@@ -91,13 +91,12 @@ def drawWiggle(axes, x, t, xoffset=0.0,
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(1,1,1)
     >>> drawWiggle(ax, r, t, xoffset=0, posColor='red', negColor='blue',
-                   alpha=0.2)
+    ...            alpha=0.2)
     >>> drawWiggle(ax, r, t, xoffset=1)
     >>> drawWiggle(ax, r, t, xoffset=2, posColor='black', negColor='white',
-                   alpha=1.0)
+    ...            alpha=1.0)
     >>> ax.invert_yaxis()
     >>> plt.show()
-
     """
     wiggle, = axes.plot(x + xoffset, t, color='black', **kwargs)
 
@@ -118,10 +117,7 @@ def drawWiggle(axes, x, t, xoffset=0.0,
 
 
 def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
-    r"""
-    Extract and show time series from wave field
-
-    Extract and show time series from wave field
+    r"""Extract and show time series from wave field
 
     Parameters
     ----------
