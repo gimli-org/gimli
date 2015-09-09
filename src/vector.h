@@ -262,6 +262,7 @@ public:
         assign_(v);
     }
 
+#ifndef PYGIMLI_CAST 
     /*!
      * Copy constructor. Create new vector as a deep copy of std::vector(Valuetype)
      */
@@ -271,7 +272,7 @@ public:
         for (Index i = 0; i < v.size(); i ++) data_[i] = v[i];
         //std::copy(&v[0], &v[v.size()], data_);
     }
-#ifndef PYGIMLI_CAST    
+   
     template < class ValueType2 > Vector(const Vector< ValueType2 > & v)
         : size_(0), data_(0), capacity_(0){
         resize(v.size());
@@ -1449,12 +1450,14 @@ template < class T > Vector < T > pow(const Vector < T > & v, int npower){
 }
 
 template < class T > Vector< T > sort(const Vector < T > & a){
+ #ifndef PYGIMLI_CAST 
     std::vector < T > tmp(a.size(), 0.0) ;
     for (Index i = 0; i < a.size(); i ++) tmp[i] = a[i];
     std::sort(tmp.begin(), tmp.end());
 
     Vector < T > ret(tmp);
     return ret;
+#endif // fixme .. implement me without std::vector
 //     Vector < T > t(a);
 //     std::sort(t.begin(), t.end());
 //     return t;
@@ -1462,12 +1465,14 @@ template < class T > Vector< T > sort(const Vector < T > & a){
 
 /*! Returning a copy of the vector and replacing all consecutive occurrences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1]. To remove all double values from the vector use an additionally sorting. e.g. unique(sort(v)) gets you [0 1 2]. */
 template < class T > Vector< T > unique(const Vector < T > & a){
+    #ifndef PYGIMLI_CAST 
     std::vector < T > tmp(a.size()), u;
     for (Index i = 0; i < a.size(); i ++) tmp[i] = a[i];
     std::unique_copy(tmp.begin(), tmp.end(), back_inserter(u));
 
     Vector < T > ret(u);
     return ret;
+    #endif // fixme .. implement me without std::vector
 }
 
 
