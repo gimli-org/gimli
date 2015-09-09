@@ -17,7 +17,7 @@ python -c "import numpy; print(numpy.__version__)"
 mkdir -p build
 cd build
 rm -f build_tests.html # remove old test report
-rm -f CMakeLists.txt # clean old cache
+rm -f CMakeCache.txt # clean old cache
 #
 cmake ../trunk 
 # cmake ../trunk -DCASTER=castxml -DPYVERSION=3
