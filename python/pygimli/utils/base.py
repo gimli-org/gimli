@@ -48,7 +48,7 @@ def rndig(a, ndig=3):
 def roundTo(arr, n_digits=3):
     """Return ndarray of rounded elements (obsolete due to np.round)."""
     raise Exception('remove me')
-#    return np.asarray([rndig(a, ndig=n_digits) for a in arr])
+    #return np.asarray([rndig(a, ndig=n_digits) for a in arr])
 
 
 def num2str(a, fmtstr='%g%'):

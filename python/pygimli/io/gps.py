@@ -7,14 +7,7 @@ import os
 import matplotlib.image as mpimg
 from math import floor
 import numpy as np
-try:
-    from pyproj import Proj, transform
-    gk2 = Proj(init="epsg:31466")  # GK zone 2
-    gk3 = Proj(init="epsg:31467")  # GK zone 3
-    gk4 = Proj(init="epsg:31468")  # GK zone 3
-    wgs84 = Proj(init="epsg:4326")  # pure ellipsoid for step-wise change
-except ImportError:
-    sys.stderr.write("no module pyproj\n")
+from pygimli.utils import opt_import
 
 
 def handleWPTS(wpts):
@@ -116,60 +109,23 @@ def readSimpleLatLon(filename, verbose=False):
 
 
 def GK2toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 2 into UTM
-
-    Note the double transformation (1-ellipsoid, 2-projection)
-    default zone is 32
-    """
-    return GKtoUTM(R, H, zone, gk=gk2)
-    #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
-
-    #if H is None:  # two-column matrix
-    #   lon, lat = transform(gk2, wgs84, R[0], R[1])
-    #else:
-    #   lon, lat = transform(gk2, wgs84, R, H)
-
-    #return utm(lon, lat)
+    """Transform Gauss-Krueger zone 2 into UTM (for backward compatibility)"""
+    return GKtoUTM(R, H, zone, gkzone=2)
 
 
 def GK3toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 3 into UTM
-
-    Note the double transformation (1-ellipsoid, 2-projection)
-    default zone is 32
-    """
-    return GKtoUTM(R, H, zone, gk=gk3)
-    #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
-
-    #if H is None:  # two-column matrix
-    #   lon, lat = transform(gk3, wgs84, R[0], R[1])
-    #else:
-    #   lon, lat = transform(gk3, wgs84, R, H)
-
-    #return utm(lon, lat)
+    """Transform Gauss-Krueger zone 3 into UTM (for backward compatibility)"""
+    return GKtoUTM(R, H, zone, gkzone=3)
 
 
 def GK4toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 4 into UTM
-
-    Note the double transformation (1-ellipsoid, 2-projection)
-    default zone is 32.
-    """
-    return GKtoUTM(R, H, zone, gk=gk4)
-    #utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
-
-    #if H is None:  # two-column matrix
-    #   lon, lat = transform(gk4, wgs84, R[0], R[1])
-    #else:
-    #   lon, lat = transform(gk4, wgs84, R, H)
-
-    #return utm(lon, lat)
+    """Transform Gauss-Krueger zone 4 into UTM (for backward compatibility)"""
+    return GKtoUTM(R, H, zone, gkzone=4)
 
 
-def GKtoUTM(R, H=None, zone=32, gk=None):
+def GKtoUTM(R, H=None, zone=32, gk=None, gkzone=None):
     """Transforms any Gauss-Krueger to UTM autodetect GK zone from offset."""
-    if gk is None:
-
+    if gk is None and gkzone is None:
         if H is None:
             rr = R[0][0]
         else:
@@ -184,14 +140,17 @@ def GKtoUTM(R, H=None, zone=32, gk=None):
         if gkzone <= 0 or gkzone >= 5:
             print("cannot detect valid GK zone")
 
-        gk = Proj(init="epsg:"+str(31464+gkzone))
+    pyproj = opt_import('pyproj', 'coordinate transformations')
+    if pyproj is None:
+        return None
 
+    gk = pyproj.Proj(init="epsg:"+str(31464+gkzone))
+    wgs84 = pyproj.Proj(init="epsg:4326")  # pure ellipsoid to doubel transform
+    utm = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
     if H is None:  # two-column matrix
-        lon, lat = transform(gk, wgs84, R[0], R[1])
+        lon, lat = pyproj.transform(gk, wgs84, R[0], R[1])
     else:
-        lon, lat = transform(gk, wgs84, R, H)
-
-    utm = Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+        lon, lat = pyproj.transform(gk, wgs84, R, H)
 
     return utm(lon, lat)
 
