@@ -28,14 +28,12 @@
 
 namespace GIMLI {
     
-extern bool __GIMLI_DEBUG__;
-
 inline void throwToImplement(const std::string & errString){
-  #ifndef USE_EXIDCODES
-  throw std::length_error(errString);
-  #else
-  std::cerr << errString << std::endl;
-  #endif
+#ifndef USE_EXIDCODES
+    throw std::length_error(errString);
+#else
+    std::cerr << errString << std::endl;
+#endif
 }
 
 inline void throwRangeError(int exitCode, const std::string & errString, int idx, int low, int high){
@@ -44,28 +42,35 @@ inline void throwRangeError(int exitCode, const std::string & errString, int idx
     str << " " << idx << " [" << low << ".." << high << ")" << std::endl;
     throw std::out_of_range(str.str());
 #else
-  std::cerr << str.str() << std::endl;
-  exit(exitCode);
+    std::cerr << str.str() << std::endl;
+    exit(exitCode);
 #endif
 }
 
 inline void throwLengthError(int exitCode, const std::string & errString){
 #ifndef USE_EXIDCODES
-  throw std::length_error(errString);
+    throw std::length_error(errString);
 #else
-  std::cerr << errString << std::endl;
-  exit(exitCode);
-#endif
-}
-
-inline void throwError(int exitCode, const std::string & errString){
-#ifndef USE_EXIDCODES
-    if (!__GIMLI_DEBUG__) throw std::length_error(errString);
-#else
-    std::cout << errString << std::endl;
+    std::cerr << errString << std::endl;
     exit(exitCode);
 #endif
 }
+
+DLLEXPORT bool debug();
+
+inline void throwError(int exitCode, const std::string & errString){
+#ifndef USE_EXIDCODES
+    if (!debug()){
+        throw std::length_error(errString);
+    } else {
+        std::cerr << "Debug: " << errString << std::endl;
+    }
+#else
+    std::cerr << errString << std::endl;
+    exit(exitCode);
+#endif
+}
+
 
 
 // the following may be DEPRECATED

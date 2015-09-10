@@ -29,11 +29,11 @@ OptionMap::OptionMap(const std::string & description)
     lastArgString_  = "";
     lastOption_     = NULL;
     bool help;
-    showVersion_ = false;
-
+    showVersion_    = false;
+    debug_          = false;
     add(help,              "h" , "help"    , "Show this help.");
     add(showVersion_,      ""  , "version" , "Show library version and exit programm.");
-    add(GIMLI::__GIMLI_DEBUG__,   ""  , "debug"   , "Enable global debug mode.");
+    add(debug_,            ""  , "debug"   , "Enable global debug mode.");
 }
 
 OptionMap::~OptionMap(){
@@ -87,7 +87,8 @@ void OptionMap::parse(int argc, char * argv[]){
         std::cout << versionStr() << std::endl;
         exit(EXIT_SUCCESS);
     }
-
+    GIMLI::setDebug(debug_);
+    
     std::string lastString;
     for (int index = optind; index < argc; index++){
         lastString += std::string(argv[index]);

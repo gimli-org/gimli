@@ -205,6 +205,7 @@ protected:
     LongOptionMap                 lMap_;
     CharOptionMap                 cMap_;
     bool                          showVersion_;
+    bool                          debug_;
 };
 
 } // namespace GIMLI

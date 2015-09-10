@@ -36,8 +36,10 @@
 #define GIMLI_VECTOR__H
 
 #define EXPRVEC_USE_TEMPORARY_EXPRESSION
-//#define EXPRVEC_USE_STD_ALGORITHM
-#define EXPRVEC_USE_INDIRECTION
+
+//#define EXPRVEC_USE_BOOST_THREAD // case 1
+//#define EXPRVEC_USE_STD_ALGORITHM // case 2
+#define EXPRVEC_USE_INDIRECTION // case 3 #current default
 
 #include "gimli.h"
 #include "expressions.h"
@@ -305,7 +307,7 @@ public:
         return *this;
     }
 
-    inline const ValueType & operator[](const Index i) const { return data_[i]; }
+    inline const ValueType & operator[](const Index i) const { __DS(data_[i]); return data_[i]; }
 
     inline ValueType & operator[](const Index i) { return data_[i]; }
 
@@ -896,8 +898,8 @@ protected:
 
 template< class ValueType, class Iter > class AssignResult{
 public:
-    AssignResult(Vector< ValueType > & a, const Iter & result, Index start, Index end) :
-        a_(&a), iter_(result), start_(start), end_(end){
+    AssignResult(Vector< ValueType > & a, const Iter & result, Index start, Index end) 
+     : a_(&a), iter_(result), start_(start), end_(end){
     }
     void operator()() {
         ValueType * iter = a_->begin().ptr();
@@ -938,27 +940,30 @@ template< class ValueType, class Iter > void assignResult(Vector< ValueType > & 
       }
       threads.join_all();
     }
-#else
-#ifdef EXPRVEC_USE_STD_ALGORITHM
+#else // no boost thread
+    #ifdef EXPRVEC_USE_STD_ALGORITHM
 
-    std::transform(v.begin().ptr(), v.end().ptr(), result, v.begin().ptr(), BINASSIGN());
+    std::transform(v.begin().ptr(), 
+                   v.end().ptr(), 
+                   result, 
+                   v.begin().ptr(), BINASSIGN());
 
-#else
-#ifdef EXPRVEC_USE_INDIRECTION
-    ValueType * iter = v.begin().ptr();
+    #else  // no std algo
+        #ifdef EXPRVEC_USE_INDIRECTION
+            ValueType * iter = v.begin().ptr();
 
-    // Inlined expression
-    for (register Index i = v.size(); i--;) iter[i] = result2[i];
-#else
-    ValueType * iter = v.begin().ptr();
-    ValueType * end  = v.end().ptr();
+            // Inlined expression
+            for (register Index i = v.size(); i--;) iter[i] = result2[i];
+        #else
+            ValueType * iter = v.begin().ptr();
+            ValueType * end  = v.end().ptr();
 
-    do {
-        *iter = *result2;       // Inlined expression
-        ++result2;
-    } while (++iter != end);
-#endif
-#endif
+            do {
+                *iter = *result2;       // Inlined expression
+                ++result2;
+            } while (++iter != end);
+        #endif
+    #endif
 #endif
 }
 
@@ -1001,53 +1006,53 @@ private:
 
 template< class ValueType, class A, class B, class Op > class __VectorBinaryExprOp {
 public:
-  __VectorBinaryExprOp(const A & a, const B & b) : iter1_(a), iter2_(b) { }
+    __VectorBinaryExprOp(const A & a, const B & b) : iter1_(a), iter2_(b) { }
 
-  inline ValueType operator [] (Index i) const { return Op()(iter1_[i], iter2_[i]); }
+    inline ValueType operator [] (Index i) const { return Op()(iter1_[i], iter2_[i]); }
 
-  inline ValueType operator * () const { return Op()(*iter1_, *iter2_); }
+    inline ValueType operator * () const { return Op()(*iter1_, *iter2_); }
 
-  inline void operator ++ () { ++iter1_; ++iter2_; }
+    inline void operator ++ () { ++iter1_; ++iter2_; }
 
-  inline Index size() const { return iter2_.size(); }
+    inline Index size() const { return iter2_.size(); }
 
 private:
-  A iter1_;
-  B iter2_;
+    A iter1_;
+    B iter2_;
 };
 
 template< class ValueType, class A, class Op > class __VectorValExprOp {
 public:
-  __VectorValExprOp(const A & a, const ValueType & val) : iter_(a), val_(val) { }
+    __VectorValExprOp(const A & a, const ValueType & val) : iter_(a), val_(val) { __DS(val << " " << &val)}
 
-  inline ValueType operator [] (Index i) const { return Op()(iter_[i], val_); }
+    inline ValueType operator [] (Index i) const { return Op()(iter_[i], val_); }
 
-  inline ValueType operator * () const { return Op()(*iter_, val_); }
+    inline ValueType operator * () const { return Op()(*iter_, val_); }
 
-  inline void operator ++ () { ++iter_; }
+    inline void operator ++ () { ++iter_; }
 
-  inline Index size() const { return iter_.size(); }
+    inline Index size() const { return iter_.size(); }
 
 private:
-  A iter_;
-  ValueType val_;
+    A iter_;
+    ValueType val_;
 };
 
 template< class ValueType, class A, class Op > class __ValVectorExprOp {
 public:
-  __ValVectorExprOp(const ValueType & val, const A & a) : iter_(a), val_(val) { }
+    __ValVectorExprOp(const ValueType & val, const A & a) : iter_(a), val_(val) { }
 
-  inline ValueType operator [] (Index i) const { return Op()(val_, iter_[i]); }
+    inline ValueType operator [] (Index i) const { return Op()(val_, iter_[i]); }
 
-  inline ValueType operator * () const { return Op()(val_, *iter_); }
+    inline ValueType operator * () const { return Op()(val_, *iter_); }
 
-  inline void operator ++ () { ++iter_; }
+    inline void operator ++ () { ++iter_; }
 
-  inline Index size() const { return iter_.size(); }
+    inline Index size() const { return iter_.size(); }
 
 private:
-  A iter_;
-  ValueType val_;
+    A iter_;
+    ValueType val_;
 };
 
 #define DEFINE_UNARY_EXPR_OPERATOR__(OP, FUNCT)\
@@ -1095,77 +1100,78 @@ operator OP (const Vector< T > & a, const Vector< T > & b){		\
 template < class T >							\
 __VectorExpr< T, __VectorValExprOp< T, VectorIterator< T >, FUNCT > >	\
 operator OP (const Vector< T > & a, const T & val){			\
-  typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;        \
+  typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;  __DS(2)      \
   return __VectorExpr< T, ExprT >(ExprT(a.begin(), val));		\
 }                                                                       \
                                                                         \
 template < class T >							\
 __VectorExpr< T, __ValVectorExprOp< T, VectorIterator< T >, FUNCT > >	\
 operator OP (const T & val, const Vector< T > & a){			\
-  typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;        \
+  typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;   __DS(3)     \
   return __VectorExpr< T, ExprT >(ExprT(val, a.begin()));		\
 }									\
     									\
 template< class T, class A >						\
 __VectorExpr< T, __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > > \
 operator OP (const __VectorExpr< T, A > & a, const Vector< T > & b){	\
-  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > ExprT; \
+  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > ExprT;__DS(4) \
   return __VectorExpr< T, ExprT >(ExprT(a, b.begin()));		\
 }									\
     									\
 template< class T, class A >					\
 __VectorExpr< T, __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > > \
 operator OP (const Vector< T > & a, const __VectorExpr< T, A > & b){	\
-  typedef __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > ExprT; \
+  typedef __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > ExprT; __DS(5)\
   return __VectorExpr< T, ExprT >(ExprT(a.begin(), b));		\
 }									\
 									\
 template< class T, class A >					\
 __VectorExpr< T, __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
-operator OP (const __VectorExpr< T, A > & a, const T & val){	\
-  typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	\
-  return __VectorExpr< T, ExprT >(ExprT(a, val));		\
+        operator OP (const __VectorExpr< T, A > & a, const T & val){	\
+            typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	__DS(6)\
+            __DS("(exp, val) " << T(val) << " " << &val) \
+            return __VectorExpr< T, ExprT >(ExprT(a, val));		\
 }								\
         \
 template< class T, class A >				\
 __VectorExpr< T, __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
 operator OP (const T & val, const __VectorExpr< T, A > & a){	\
-  typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	\
+  typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;__DS(7)	\
   return __VectorExpr< T, ExprT >(ExprT(val, a));		\
 }								\
                                                                 \
 template< class T, class A, class B >				\
 __VectorExpr< T, __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > > \
 operator OP (const __VectorExpr< T, A > & a, const __VectorExpr< T, B > & b){ \
-  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > ExprT; \
+  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > ExprT;__DS(8) \
   return __VectorExpr< T, ExprT >(ExprT(a, b));			\
 }									\
 \
 template< class T, class T2, class A >					\
         __VectorExpr< T, __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
         operator OP (const __VectorExpr< T, A > & a, const T2 & val){	\
-        typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	\
+        typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	__DS(9)\
         return __VectorExpr< T, ExprT >(ExprT(a, (T)val));		\
 }								\
         \
 template< class T, class T2, class A >				\
         __VectorExpr< T, __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
         operator OP (const T2 & val, const __VectorExpr< T, A > & a){	\
-        typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	\
+        typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	__DS(10)\
         return __VectorExpr< T, ExprT >(ExprT((T)val, a));		\
 }								\
         \
 template < class T, class T2 >					        \
         __VectorExpr< T, __ValVectorExprOp< T, VectorIterator< T >, FUNCT > >	\
         operator OP (const T2 & val, const Vector< T > & a){			\
-        typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;        \
+        typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;    __DS(10)    \
         return __VectorExpr< T, ExprT >(ExprT((T)val, a.begin()));		\
 }									\
         \
 template < class T, class T2 >						\
         __VectorExpr< T, __VectorValExprOp< T, VectorIterator< T >, FUNCT > >	\
         operator OP (const Vector< T > & a, const T2 & val){			\
-        typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;      \
+        typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;   __DS(11)   \
         return __VectorExpr< T, ExprT >(ExprT(a.begin(), (T)val));	\
 }                                                                       \
         \
@@ -1385,17 +1391,18 @@ template < class T > T max(const Vector < T > & v){
     return *std::max_element(&v[0], &v[0] + v.size());
 }
 
-template < class ValueType > ValueType mean(const Vector < ValueType > & a){
-    return sum(a) / a.size();
+template < class ValueType > 
+    ValueType mean(const Vector < ValueType > & a){
+        return sum(a) / ValueType(a.size());
 }
 
 template < class ValueType, class A> 
     ValueType mean(const __VectorExpr< ValueType, A > & a){
-    return sum(a) / a.size();
+        return sum(a) / a.size();
 }
 
 template < class ValueType > ValueType stdDev(const Vector < ValueType > & a){
-    return std::sqrt(sum(square(a - mean(a))) / (a.size() - 1));
+    return std::sqrt(sum(square(a - mean(a))) / (double)(a.size() - 1));
 }
 
 template < class ValueType > bool haveInfNaN(const Vector < ValueType > & v){

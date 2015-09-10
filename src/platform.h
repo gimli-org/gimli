@@ -29,15 +29,16 @@
 	#define WIN32_LEAN_AND_MEAN
     #define BOOST_USE_WINDOWS_H
     //#define BOOST_PLAT_WINDOWS_RUNTIME
-    
-    #if defined(DLL_EXPORT) || defined(gimli_EXPORTS)
-        //* We are building this library
-        //#warning (We are building this library)
-        #define DLLEXPORT __declspec(dllexport)
-    #else
-        //* We are using this library
-        //#warning (We are using this library)
-        #define DLLEXPORT __declspec(dllimport)
+    #ifndef DLLEXPORT
+        #if defined(DLL_EXPORT) || defined(gimli_EXPORTS)
+            //* We are building this library
+            //#warning (GIMLI We are building this library)
+            #define DLLEXPORT __declspec(dllexport)
+        #else
+            //* We are using this library
+            //#warning (GIMLI We are using this library)
+            #define DLLEXPORT __declspec(dllimport)
+        #endif
     #endif
 
     // Don't let win32api windef.h define min and max as macros

@@ -28,7 +28,7 @@
 #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
     #if USE_BOOST_THREAD 
         #include <boost/thread.hpp>
-        static boost::mutex writeCacheMutex__;
+        extern boost::mutex writeCacheMutex__;
     #endif
 #endif
 
@@ -117,7 +117,7 @@ private:
         //#endif
             
         #else
-            #error "No boost threading"
+            __MS("#warning! No boost threading")
         #endif
 
         std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();

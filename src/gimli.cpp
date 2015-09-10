@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -29,8 +29,37 @@
 
 namespace GIMLI{
 
-DLLEXPORT bool __SAVE_PYTHON_GIL__ = false;
-DLLEXPORT bool __GIMLI_DEBUG__ = false;
+static bool __SAVE_PYTHON_GIL__ = false;
+static bool __GIMLI_DEBUG__ = false;
+// //** end forward declaration
+// // static here gives every .cpp its own static bool
+// extern static bool __SAVE_PYTHON_GIL__;
+// extern static bool __GIMLI_DEBUG__;
+
+void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }
+bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
+
+void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
+bool debug(){ return __GIMLI_DEBUG__;}
+
+void PythonGILSave::save() { 
+    if (!saved_) {
+#ifdef PYGIMLI
+//#warning  "save_ = PyEval_SaveThread();"
+        if (__SAVE_PYTHON_GIL__) save_ =  PyEval_SaveThread();
+#endif
+        saved_ = true;
+    } 
+}
+void PythonGILSave::restore() { if (saved_) {
+#ifdef PYGIMLI
+    if (__SAVE_PYTHON_GIL__) PyEval_RestoreThread(save_);
+#endif
+        saved_ = false; 
+    } 
+}
+
+
 
 void showSizes(){
     std::cout << "size_t: " << sizeof(size_t) << std::endl;
