@@ -8,15 +8,11 @@ import sys
 
 import pygimli as pg
 from pygimli.viewer import show1dmodel, drawModel1D
+from pygimli.utils import opt_import
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-
-try:
-    import pyproj
-except ImportError:
-    pyproj = None
 
 
 class NDMatrix(pg.RBlockMatrix):
@@ -305,6 +301,7 @@ class FDEM():
         self.coilSpacing = np.array(self.header['COILSEPERATION'])[ivcp]
         # read properties from data block
         names = tmp.dtype.names
+        pyproj = opt_import('pyproj', 'coordinate transformations EM lon,lat values')
         if 'lon' in names and 'lat' in names and pyproj is not None:
             utm = pyproj.Proj(proj='utm', zone=32, ellps='WGS84')  # projection
             x, y = utm(tmp['lon'], tmp['lat'])
