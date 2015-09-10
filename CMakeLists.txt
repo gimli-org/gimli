@@ -22,7 +22,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
-#     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -rdynamic")
+
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fno-omit-frame-pointer -g -fsanitize=address")
+
+    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -rdynamic")
 
     #-Wl,--no-undefined 
     #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
