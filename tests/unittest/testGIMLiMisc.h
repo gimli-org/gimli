@@ -106,7 +106,7 @@ public:
     
     void testMemWatch(){
         std::cout << "MemWatch" << std::endl;
-        GIMLI::__GIMLI_DEBUG__ = true;
+        GIMLI::setDebug(true);
         GIMLI::MemWatch::instance().info(WHERE);
         double * mat2 = new double[10000 * 10000];
         GIMLI::MemWatch::instance().info(WHERE);

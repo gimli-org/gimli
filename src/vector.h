@@ -307,7 +307,7 @@ public:
         return *this;
     }
 
-    inline const ValueType & operator[](const Index i) const { __DS(data_[i]); return data_[i]; }
+    inline const ValueType & operator[](const Index i) const { return data_[i]; }
 
     inline ValueType & operator[](const Index i) { return data_[i]; }
 
