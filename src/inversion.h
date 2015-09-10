@@ -413,7 +413,7 @@ public:
         Stopwatch swatch(true);
         if (verbose_) std::cout << "calculating sensitivity matrix ...";
         forward_->createJacobian(model_);
-        if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
+        if (verbose_) std::cout << "... " << swatch.duration(true) << " s" << std::endl;
     }
 
     /*! Define and find out whether Jacobian is recalculated in each iteration */

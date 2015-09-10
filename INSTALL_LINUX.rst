@@ -182,6 +182,18 @@ Either gccxml (default for linux and gcc < 5) or castxml else.
 
     cmake ../trunk -DCASTER='gccxml'
 
+Build the library with debug and profiling flags
+
+.. code-block:: bash
+
+    cmake ../trunk -DCMAKE_BUILD_TYPE=Debug
+
+Build the library with gcc build.in sanitiy check 
+
+.. code-block:: bash
+
+    cmake ../trunk -DCMAKE_BUILD_TYPE=Debug -DASAN=1
+
 
 Usefull make commands
 ^^^^^^^^^^^^^^^^^^^^^
@@ -190,6 +202,13 @@ You can rebuild and update all local generated third party software by setting t
 
 .. code-block:: bash
 
-    CLEAN=1 cmake ../trunk 
+    CLEAN=1 cmake ../trunk
+
+More verbose build output to view the complete command line:
+
+.. code-block:: bash
+
+    cmake ../trunk VERBOSE=1
+ 
 
 
