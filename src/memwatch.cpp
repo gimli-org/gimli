@@ -88,7 +88,7 @@ double MemWatch::inUse() {
 }
 
 void MemWatch::info(const std::string & str){
-    if (__GIMLI_DEBUG__){
+    if (debug()){
 #if defined(WIN32_LEAN_AND_MEAN) || USE_PROC_READPROC
         std::cout << "\t" << str << " Memory "
 #if USE_BOOST_THREAD

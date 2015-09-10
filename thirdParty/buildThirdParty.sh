@@ -237,27 +237,9 @@ getWITH_GIT(){
 }
 needGCC(){
     HAVEGCC=1
-    # echo "looking for gcc ..."
-    # if ( (gcc --version) );then
-        # echo "... found, good"
-        # HAVEGCC=1
-    # else
-        # echo "need a working gcc installation"
-        # exit
-    # fi
 }
 needPYTHON(){
-    # echo ""
-    # echo "looking for python ..."
-    # if ( (python --version) );then
-		# HAVEPYTHON=1
-        # echo "... found, good"
-    # else
-        # echo "need python2.7 installation"
-        # echo "get one from http://www.python.org/"
-        # echo "if already .. ensure python27 installation directory is in your PATH"
-        # exit
-    # fi
+
     HAVEPYTHON=1
 	PYTHONVERSION=`python -c 'import sys; print(sys.version)'`
 	PYTHONMAJOR=`python -c 'import sys; print(sys.version_info.major)'`

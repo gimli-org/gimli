@@ -30,6 +30,7 @@ class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testSetVal);
     CPPUNIT_TEST(testUnaryOperations);
     CPPUNIT_TEST(testBinaryOperations);
+    CPPUNIT_TEST(testExpressionOperators);
     CPPUNIT_TEST(testFunctions);
     CPPUNIT_TEST(testStdVectorTemplates);
     CPPUNIT_TEST(testCVector);
@@ -122,6 +123,21 @@ public:
         v /= v2;  CPPUNIT_ASSERT(v == Vec(v1.size(), fac));
         v = -v2;  CPPUNIT_ASSERT(v == v2 * -1.);   
     }
+    
+    void testExpressionOperators(){
+        
+        RVector m(10, 2.0);
+        RVector t(10, 2.0);
+        
+        RVector t1((m * m) / t[0]);
+        RVector t2(RVector(m * m) / t[0]);
+        
+        __MS(t1)
+        __MS(t2)
+        CPPUNIT_ASSERT(t1 == t2);
+        exit(0);
+    }
+    
     void testSetVal(){
         typedef Vector < double > Vec;
         Vec v1(10);

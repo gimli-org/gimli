@@ -131,12 +131,12 @@ protected:
 class DLLEXPORT FDEM1dRhoModelling : public FDEM1dModelling {
 public:
     //! default constructor creating a block model
-    FDEM1dRhoModelling(RVector & thk, const RVector & freq, const RVector & coilspacing, double z = 0.0, bool verbose = false)
+    FDEM1dRhoModelling(const RVector & thk, const RVector & freq, const RVector & coilspacing, double z=0.0, bool verbose=false)
         : FDEM1dModelling(thk.size(), freq, coilspacing, z, verbose), thk_(thk) { 
             setMesh(createMesh1D(thk.size() + 1, 1));
         }
         
-    FDEM1dRhoModelling(RVector & thk, const RVector & freq, double coilspacing, double z = 0.0, bool verbose = false)
+    FDEM1dRhoModelling(const RVector & thk, const RVector & freq, double coilspacing, double z=0.0, bool verbose=false)
         : FDEM1dModelling(thk.size(), freq, coilspacing, z, verbose), thk_(thk) { 
             setMesh(createMesh1D(thk.size() + 1, 1));
         }
@@ -146,7 +146,7 @@ public:
     RVector response(const RVector & model){ return calc(model, thk_); }
 
 protected:
-    RVector & thk_;
+    RVector thk_;
 };
 
 /*! Magnetic Resonance Sounding (MRS) modelling */

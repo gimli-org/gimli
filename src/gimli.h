@@ -122,6 +122,12 @@ typedef int64_t int64;
 #define WHERE GIMLI::str(__FILE__) + ": " + GIMLI::str(__LINE__) + "\t"
 #define WHERE_AM_I WHERE + "\t" + GIMLI::str(__ASSERT_FUNCTION) + " "
 #define TO_IMPL WHERE_AM_I + " not yet implemented\n " + GIMLI::versionStr() + "\nPlease send the messages above, the commandline and all necessary data to the author."
+
+#define __M std::cout << "*** " << WHERE << std::endl;
+#define __MS(str) std::cout << "*** " <<str << " " << WHERE << std::endl;
+#define __D if (debug()) std::cout << "Debug: " << WHERE << std::endl;
+#define __DS(str) if (debug()) std::cout << "Debug: " << str << " " << WHERE << std::endl;
+
 #define THROW_TO_IMPL throwToImplement(TO_IMPL);
 #define CERR_TO_IMPL std::cerr << TO_IMPL << std::endl;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
@@ -140,16 +146,12 @@ typedef int64_t int64;
 #define VECTORASCSUFFIX ".vector"
 #define NOT_DEFINED "notDefined"
     
-#define __M std::cout << "*** " << WHERE << std::endl;
-#define __MS(str) std::cout << "*** " <<str << " " << WHERE << std::endl;
-#define __DS(str) if (__GIMLI_DEBUG__) std::cout << "Debug: " << str << std::endl;
+
 
 #define ASSERT_EQUAL(m, n) if (m != n) \
     throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
     throwRangeError(1, WHERE_AM_I, i, start, end);
-
-    
         
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
@@ -274,37 +276,23 @@ template < class ValueType > class ElementMatrix;
 
 template < class Vec > class Trans;
 
-//** end forward declaration
-// static here gives every .cpp its own static bool
-extern bool __SAVE_PYTHON_GIL__;
-extern bool __GIMLI_DEBUG__;
-
 /*! */
-inline void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }
-inline bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
+DLLEXPORT void savePythonGIL(bool s);
+DLLEXPORT bool pythonGIL();
 
 /*! Set global gimli debug flag on or off */
-inline void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
-inline bool debug(){ return __GIMLI_DEBUG__;}
+DLLEXPORT void setDebug(bool s);
+DLLEXPORT bool debug();
 
 /*! For some debug purposes only */
 DLLEXPORT void showSizes();
 
-class PythonGILSave {
+class DLLEXPORT PythonGILSave {
 public:
-    PythonGILSave(): saved_(false) { save(); }
+    PythonGILSave() : saved_(false) { save(); }
     ~PythonGILSave() { restore(); }
-    void save() { if(!saved_) {
-#ifdef PYGIMLI
-//#warning  "save_ = PyEval_SaveThread();"
-        if (__SAVE_PYTHON_GIL__) save_ =  PyEval_SaveThread();
-#endif
-        saved_ = true; } }
-    void restore() { if (saved_) {
-#ifdef PYGIMLI
-        if (__SAVE_PYTHON_GIL__) PyEval_RestoreThread(save_);
-#endif
-        saved_ = false; } }
+    void save() ;
+    void restore();
 private:
     bool saved_;
 #ifdef PYGIMLI
@@ -536,12 +524,12 @@ public:
 protected:
     /*! Protected so it can only be called from derived classes */
     Singleton(){ }
-
+    Singleton(const Singleton &){__M};
 private:
     /*! Private so that it can not be called */
 
     /*! Copy constructor is private, so don't use it */
-    Singleton(const Singleton &){};
+
 
     static Classname * pInstance_;
 };
