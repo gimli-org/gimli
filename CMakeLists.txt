@@ -178,10 +178,11 @@ find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_or_build_package(UMFPACK umfpack)
 
-
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
     set(OPENBLAS_FOUND TRUE)
+else()
+    set(OPENBLAS_FOUND FALSE)
 endif()
 
 #find_package(openblas)
