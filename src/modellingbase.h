@@ -160,7 +160,7 @@ public:
 
     /*! Return the maximum number of allowed threads for MT calculation */
     inline Index threadCount() const { return nThreads_; }
-
+    
 protected:
 
     virtual void init_();
