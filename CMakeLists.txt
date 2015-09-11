@@ -181,7 +181,7 @@ find_or_build_package(UMFPACK umfpack)
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
-    set(OPENBLAS_FOUND, TRUE)
+    set(OPENBLAS_FOUND TRUE)
 endif()
 
 #find_package(openblas)
