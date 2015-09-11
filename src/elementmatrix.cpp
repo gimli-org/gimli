@@ -139,13 +139,14 @@ ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
-                                const RVector & w,
-                                const std::vector < RVector3 > & integrationPnts,
-                                bool verbose){
+template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(
+        const MeshEntity & ent,
+        const RVector & w,
+        const std::vector < RVector3 > & integrationPnts,
+        bool verbose){
 
-    uint nVerts = ent.nodeCount();
-    uint nRules = w.size();
+    Index nVerts = ent.nodeCount();
+    Index nRules = w.size();
 
     if (dNdr_.rows() != nVerts){
         dNdr_.resize(nVerts, nRules);
@@ -166,15 +167,17 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(const M
     double drdy = ent.shape().drstdxyz(0, 1);
     double dsdx = ent.shape().drstdxyz(1, 0);
     double dsdy = ent.shape().drstdxyz(1, 1);
-    
+
     double A = ent.shape().domainSize();
-    for (uint i = 0; i < nVerts; i ++){
-        for (uint j = i; j < nVerts; j ++){
+    for (Index i = 0; i < nVerts; i ++){
+        for (Index j = i; j < nVerts; j ++){
+
             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
                                       (drdy * dNdr_[i] + dsdy * dNds_[i]) * (drdy * dNdr_[j] + dsdy * dNds_[j])));
             mat_[j][i] = mat_[i][j];
         }
     }
+    
     if (verbose) std::cout << "int ux2uy2 " << *this << std::endl;
     return *this;
 }
@@ -184,8 +187,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
                                                                             const std::vector < RVector3 > & integrationPnts, 
                                                                             bool verbose){
 
-    uint nVerts = ent.nodeCount();
-    uint nRules = w.size();
+    Index nVerts = ent.nodeCount();
+    Index nRules = w.size();
 
     if (dNdr_.rows() != nVerts){
         dNdr_.resize(nVerts, nRules);
@@ -224,8 +227,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
 //     double dtdz = ent.shape().invJacobian()[8];
     
     double A = ent.shape().domainSize();
-    for (uint i = 0; i < nVerts; i ++){
-        for (uint j = i; j < nVerts; j ++){
+    for (Index i = 0; i < nVerts; i ++){
+        for (Index j = i; j < nVerts; j ++){
             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i] + dtdx * dNdt_[i]) *
                                       (drdx * dNdr_[j] + dsdx * dNds_[j] + dtdx * dNdt_[j]) +
                                       (drdy * dNdr_[i] + dsdy * dNds_[i] + dtdy * dNdt_[i]) *

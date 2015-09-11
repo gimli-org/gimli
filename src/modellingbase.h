@@ -154,11 +154,12 @@ public:
 
     void initRegionManager();
 
-    /*! Set the maximum number of allowed threads for MT calculation. Have to be greater than 0 */
-    void setThreadCount(uint nThreads) { nThreads_=max(1, (int)nThreads); }
+    /*! Set the maximum number of allowed threads for MT calculation. 
+     * Have to be greater than 0. Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
+    void setThreadCount(Index nThreads);
 
     /*! Return the maximum number of allowed threads for MT calculation */
-    uint threadCount() const { return nThreads_; }
+    inline Index threadCount() const { return nThreads_; }
 
 protected:
 
@@ -190,7 +191,7 @@ protected:
 
     bool                    regionManagerInUse_;
 
-    uint nThreads_;
+    Index                   nThreads_;
 
 private:
     RegionManager            * regionManager_;

@@ -23,7 +23,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
 
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2 -Wall -ansi -pedantic -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     
     if(NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
@@ -48,11 +48,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
         #add_compile_options(-stdlib=libc++)
         endif()
     else() # if gcc
-        
             
     endif()
-    
-    
 
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
@@ -180,6 +177,15 @@ find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_or_build_package(UMFPACK umfpack)
+
+
+if (";${BLAS_LIBRARIES};" MATCHES "openblas")
+    message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
+    set(OPENBLAS_FOUND, TRUE)
+endif()
+
+#find_package(openblas)
+
 
 find_package(CppUnit)
 if (CPPUNIT_FOUND)

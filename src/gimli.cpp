@@ -27,10 +27,16 @@
 #include <cstdio>
 #include <cstdlib>
 
+#ifdef OPENBLAS_FOUND
+    #include <openblas/cblas.h>
+#endif
+
 namespace GIMLI{
 
 static bool __SAVE_PYTHON_GIL__ = false;
 static bool __GIMLI_DEBUG__ = false;
+static Index __GIMLI_THREADCOUNT__ = numberOfCPU();
+
 // //** end forward declaration
 // // static here gives every .cpp its own static bool
 // extern static bool __SAVE_PYTHON_GIL__;
@@ -41,6 +47,18 @@ bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
 
 void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
 bool debug(){ return __GIMLI_DEBUG__;}
+
+
+void setThreadCount(Index nThreads){
+#ifdef OPENBLAS_FOUND    
+    openblas_set_num_threads(nThreads);
+#endif
+}
+
+Index threadCount(){
+    return __GIMLI_THREADCOUNT__; 
+}
+
 
 void PythonGILSave::save() { 
     if (!saved_) {

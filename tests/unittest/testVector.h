@@ -11,15 +11,7 @@
 
 #include <stdexcept>
 
-// namespace std{
-// bool operator<(const std::complex<double> & a, const std::complex<double> & b){
-//     return false;
-// }
-// }
-
 using namespace GIMLI;
-
-
 
 class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(VectorTest);
@@ -94,7 +86,6 @@ public:
         CPPUNIT_ASSERT(fliplr(v1)[ 0 ] == 4.0);
         CPPUNIT_ASSERT(fliplr(v1)[ 4 ] == 0.0);
         CPPUNIT_ASSERT(fliplr(fliplr(v1)) == v1);
-        
     }
      
     void testUnaryOperations(){
@@ -132,10 +123,10 @@ public:
         RVector t1((m * m) / t[0]);
         RVector t2(RVector(m * m) / t[0]);
         
-        __MS(t1)
-        __MS(t2)
+//         __MS(t1)
+//         __MS(t2)
         CPPUNIT_ASSERT(t1 == t2);
-        exit(0);
+//         exit(0);
     }
     
     void testSetVal(){
