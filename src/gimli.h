@@ -65,6 +65,7 @@
 #include <map>
 #include <sstream>
 #include <cstdlib>
+#include <cerrno>
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
@@ -284,6 +285,11 @@ DLLEXPORT bool pythonGIL();
 DLLEXPORT void setDebug(bool s);
 DLLEXPORT bool debug();
 
+/*! Set maximum amount of threads used by thirdparty software (e.g. openblas).
+Default is number of CPU. */
+DLLEXPORT void setThreadCount(Index nThreads);
+DLLEXPORT Index threadCount();
+
 /*! For some debug purposes only */
 DLLEXPORT void showSizes();
 
@@ -384,8 +390,10 @@ inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); 
 inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }
 inline double toDouble(const std::string & str){ return std::strtod(str.c_str(), NULL); }
 
-/*! Read value from environment variable. Return default value if environment not set.
- Environment var can be set in sh via: export name=val, or simple passing name=val in front of executable.*/
+/*! Read value from environment variable. 
+ * Return default value if environment not set.
+ * Environment var can be set in sh via: 
+ * export name=val, or simple passing name=val in front of executable. */
 template < typename ValueType > ValueType getEnvironment(const std::string & name,
                                                          ValueType def, 
                                                          bool verbose=false){
@@ -399,6 +407,26 @@ template < typename ValueType > ValueType getEnvironment(const std::string & nam
     return var;
 }
 
+/*! Set environment variable. Probably only for internal use and maybe only 
+ * for posix systems*/
+template < typename ValueType > void setEnvironment(const std::string & name,
+                                                    ValueType val, 
+                                                    bool verbose=false){
+    int ret = setenv(name.c_str(), str(val).c_str(), 1);
+    switch(ret){
+        case EINVAL:
+            __MS(name << " " << val)
+            throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
+        case ENOMEM:
+            __MS(name << " " << val)
+            throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
+    }
+//     EINVAL 
+// 
+//     ENOMEM Insufficient memory to add a new variable to the environment.
+
+    if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
+}
 
 // //! Deprecated! use str() instead, General template for conversion to string, should supersede all sprintf etc.
 // template< typename T > inline std::string toStr(const T & value){

@@ -70,13 +70,20 @@ void ModellingBase::init_() {
     constraints_        = 0;
     dataContainer_      = 0;
     
+    nThreads_           = numberOfCPU();
+    
     ownJacobian_        = false;
     ownConstraints_     = false;
     
     initJacobian();
     initConstraints();
 }
-
+  
+void ModellingBase::setThreadCount(Index nThreads) { 
+    nThreads_=max(1, (int)nThreads); 
+    GIMLI::setThreadCount(nThreads);
+}
+  
 void ModellingBase::setData(DataContainer & data){
     //if (dataContainer_) {
     dataContainer_ = &data;

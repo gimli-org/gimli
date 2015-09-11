@@ -1023,7 +1023,7 @@ private:
 
 template< class ValueType, class A, class Op > class __VectorValExprOp {
 public:
-    __VectorValExprOp(const A & a, const ValueType & val) : iter_(a), val_(val) { __DS(val << " " << &val)}
+    __VectorValExprOp(const A & a, const ValueType & val) : iter_(a), val_(val) { }//__DS(val << " " << &val)}
 
     inline ValueType operator [] (Index i) const { return Op()(iter_[i], val_); }
 
@@ -1100,78 +1100,77 @@ operator OP (const Vector< T > & a, const Vector< T > & b){		\
 template < class T >							\
 __VectorExpr< T, __VectorValExprOp< T, VectorIterator< T >, FUNCT > >	\
 operator OP (const Vector< T > & a, const T & val){			\
-  typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;  __DS(2)      \
+  typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;     \
   return __VectorExpr< T, ExprT >(ExprT(a.begin(), val));		\
 }                                                                       \
                                                                         \
 template < class T >							\
 __VectorExpr< T, __ValVectorExprOp< T, VectorIterator< T >, FUNCT > >	\
 operator OP (const T & val, const Vector< T > & a){			\
-  typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;   __DS(3)     \
+  typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;     \
   return __VectorExpr< T, ExprT >(ExprT(val, a.begin()));		\
 }									\
     									\
 template< class T, class A >						\
 __VectorExpr< T, __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > > \
 operator OP (const __VectorExpr< T, A > & a, const Vector< T > & b){	\
-  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > ExprT;__DS(4) \
+  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > ExprT; \
   return __VectorExpr< T, ExprT >(ExprT(a, b.begin()));		\
 }									\
     									\
 template< class T, class A >					\
 __VectorExpr< T, __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > > \
 operator OP (const Vector< T > & a, const __VectorExpr< T, A > & b){	\
-  typedef __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > ExprT; __DS(5)\
+  typedef __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > ExprT; \
   return __VectorExpr< T, ExprT >(ExprT(a.begin(), b));		\
 }									\
 									\
 template< class T, class A >					\
 __VectorExpr< T, __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
         operator OP (const __VectorExpr< T, A > & a, const T & val){	\
-            typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	__DS(6)\
-            __DS("(exp, val) " << T(val) << " " << &val) \
-            return __VectorExpr< T, ExprT >(ExprT(a, val));		\
+            typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT; \
+            return __VectorExpr< T, ExprT >(ExprT(a, val));	\
 }								\
         \
 template< class T, class A >				\
 __VectorExpr< T, __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
 operator OP (const T & val, const __VectorExpr< T, A > & a){	\
-  typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;__DS(7)	\
+  typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT; \
   return __VectorExpr< T, ExprT >(ExprT(val, a));		\
 }								\
                                                                 \
 template< class T, class A, class B >				\
 __VectorExpr< T, __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > > \
 operator OP (const __VectorExpr< T, A > & a, const __VectorExpr< T, B > & b){ \
-  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > ExprT;__DS(8) \
+  typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > ExprT; \
   return __VectorExpr< T, ExprT >(ExprT(a, b));			\
 }									\
 \
 template< class T, class T2, class A >					\
         __VectorExpr< T, __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
         operator OP (const __VectorExpr< T, A > & a, const T2 & val){	\
-        typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	__DS(9)\
+        typedef __VectorValExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT; \
         return __VectorExpr< T, ExprT >(ExprT(a, (T)val));		\
 }								\
         \
 template< class T, class T2, class A >				\
         __VectorExpr< T, __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > >	\
         operator OP (const T2 & val, const __VectorExpr< T, A > & a){	\
-        typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	__DS(10)\
+        typedef __ValVectorExprOp< T, __VectorExpr< T, A >, FUNCT > ExprT;	\
         return __VectorExpr< T, ExprT >(ExprT((T)val, a));		\
 }								\
         \
 template < class T, class T2 >					        \
         __VectorExpr< T, __ValVectorExprOp< T, VectorIterator< T >, FUNCT > >	\
         operator OP (const T2 & val, const Vector< T > & a){			\
-        typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;    __DS(10)    \
+        typedef __ValVectorExprOp< T, VectorIterator< T >, FUNCT > ExprT;  \
         return __VectorExpr< T, ExprT >(ExprT((T)val, a.begin()));		\
 }									\
         \
 template < class T, class T2 >						\
         __VectorExpr< T, __VectorValExprOp< T, VectorIterator< T >, FUNCT > >	\
         operator OP (const Vector< T > & a, const T2 & val){			\
-        typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;   __DS(11)   \
+        typedef __VectorValExprOp< T, VectorIterator< T >, FUNCT > ExprT;  \
         return __VectorExpr< T, ExprT >(ExprT(a.begin(), (T)val));	\
 }                                                                       \
         \
