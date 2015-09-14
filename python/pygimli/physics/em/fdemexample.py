@@ -1,8 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+    Some additional infos here?
+"""
+import os
+
 import numpy as np
 from pygimli.physics import FDEM
 
 
-datafile = 'example.xyz'
+datafile = os.path.dirname(__file__) + '/example.xyz'
 fdem = FDEM(datafile)
 print(fdem)
 nlay = 4

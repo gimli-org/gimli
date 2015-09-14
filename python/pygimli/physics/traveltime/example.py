@@ -1,7 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+    Some additional infos here?
+"""
+import os
 from pygimli.physics import Refraction
 
 
-ra = Refraction('example_topo.sgt')
+ra = Refraction(os.path.dirname(__file__) + '/example_topo.sgt')
 print(ra)
 ra.showData()
 ra.showVA()
