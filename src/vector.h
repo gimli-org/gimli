@@ -86,38 +86,17 @@ public:
     bool operator < (const VectorIterator< ValueType > & a) const { return val_ < a.val_; }
     #endif
         
-//     VectorIterator() : val_(NULL), maxSize_(0){ }
     VectorIterator()
         : val_(0), maxSize_(0), end_(0){
-//         __MS(this)
     }
 
     VectorIterator(ValueType * v, Index size)
-        : val_(v), maxSize_(size){
-        end_ = v + size;
-//         __MS(this)
-//         __MS(val_)
-        //if ( size) {__MS(*val_)}
+        : val_(v), maxSize_(size), end_(v + size){
     }
 
     VectorIterator(const VectorIterator < ValueType > & iter) 
-        : val_(0), maxSize_(0), end_(0){ 
-        val_ = iter.val_;
-        maxSize_ = iter.maxSize_;
-        end_ = iter.val_ + iter.maxSize_;
-        
-//         __MS(this)
-//         __MS(val_)
-        //if (iter.maxSize_) {__MS(*val_)}
-        
-        //Dump(val_, sizeof(ValueType));
+        : val_(iter.val_), maxSize_(iter.maxSize_), end_(iter.val_ + iter.maxSize_){ 
     }
- 
-//     operator VectorIterator<ValueType const>() const{
-//         __M
-//         // Dunno how to implement this .. needet for const_iterator
-//         //return (*this);
-//     }
  
     VectorIterator < ValueType > & operator = (const VectorIterator < ValueType > & iter){
         if (this != & iter){
@@ -130,16 +109,19 @@ public:
     }
 
     inline const ValueType & operator * () const { return * val_; }
+    
     inline ValueType & operator * () { return * val_; }
 
     inline const ValueType & operator [] (const Index i) const { //__MS(this) __MS(val_) __MS(*val_) Dump(val_, sizeof(ValueType)); 
         return val_[i]; }
+        
     inline ValueType & operator [] (const Index i) { //__MS(this) __MS(val_) __MS(*val_) Dump(val_, sizeof(ValueType)); 
         return val_[i]; }
 
     inline VectorIterator< ValueType > & operator ++ () { // prefix ++A
         ++val_; return *this; 
     }
+    
     inline VectorIterator< ValueType > & operator -- () { // prefix ++A
         --val_; return *this; 
     }
