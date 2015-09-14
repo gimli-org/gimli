@@ -76,11 +76,11 @@ public:
 
     #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
 
-    inline uint idx(uint i) const { return idx_[i]; }
-    inline uint size() const { return mat_.rows(); }
-    inline const ValueType getVal(uint i, uint j) const { return mat_[i][j]; }
+    inline const Index idx(Index i) const { return idx_[i]; }
+    inline Index size() const { return mat_.rows(); }
+    inline const ValueType & getVal(Index i, Index j) const { return mat_[i][j]; }
 
-    inline const Vector < ValueType > & row(uint i) const { return mat_[i]; }
+    inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
     inline const Matrix < ValueType > & mat() const { return mat_; }
     inline const IndexArray & idx() const { return idx_; }
 

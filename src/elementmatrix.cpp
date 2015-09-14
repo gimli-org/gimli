@@ -139,11 +139,11 @@ ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(
-        const MeshEntity & ent,
-        const RVector & w,
-        const std::vector < RVector3 > & integrationPnts,
-        bool verbose){
+template < > ElementMatrix < double > & 
+ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
+                                 const RVector & w,
+                                 const std::vector < RVector3 > & integrationPnts,
+                                 bool verbose){
 
     Index nVerts = ent.nodeCount();
     Index nRules = w.size();
@@ -171,7 +171,6 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(
     double A = ent.shape().domainSize();
     for (Index i = 0; i < nVerts; i ++){
         for (Index j = i; j < nVerts; j ++){
-
             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
                                       (drdy * dNdr_[i] + dsdy * dNds_[i]) * (drdy * dNdr_[j] + dsdy * dNds_[j])));
             mat_[j][i] = mat_[i][j];
@@ -182,10 +181,11 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2(
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
-                                                                            const RVector & w, 
-                                                                            const std::vector < RVector3 > & integrationPnts, 
-                                                                            bool verbose){
+template < > ElementMatrix < double > & 
+ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
+                                    const RVector & w, 
+                               const std::vector < RVector3 > & integrationPnts, 
+                               bool verbose){
 
     Index nVerts = ent.nodeCount();
     Index nRules = w.size();
@@ -195,7 +195,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
         dNds_.resize(nVerts, nRules);
         dNdt_.resize(nVerts, nRules);
 
-        for (uint i = 0; i < nRules; i ++){
+        for (Index i = 0; i < nRules; i ++){
             dNdr_.setCol(i, ent.dNdL(integrationPnts[i], 0));
             dNds_.setCol(i, ent.dNdL(integrationPnts[i], 1));
             dNdt_.setCol(i, ent.dNdL(integrationPnts[i], 2));
@@ -432,33 +432,45 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
         ux2(cell, IntegrationRules::instance().edgWeights(2),
             IntegrationRules::instance().edgAbscissa(2), false); break;
     case MESH_TRIANGLE_RTTI: {
+        double J = cell.size()*2.;
     ////////////////////////////////////////////////////////////////////
-/*        double dN1dx = cell.shape().deriveCoordinates(0, 0);
-        double dN2dx = cell.shape().deriveCoordinates(1, 0);
-        double dN3dx = cell.shape().deriveCoordinates(2, 0);
-        double dN1dy = cell.shape().deriveCoordinates(0, 1);
-        double dN2dy = cell.shape().deriveCoordinates(1, 1);
-        double dN3dy = cell.shape().deriveCoordinates(2, 1);
-        mat_[0][0] = J / 2.0 * (dN1dx * dN1dx + dN1dy * dN1dy);
-        mat_[1][0] = J / 2.0 * (dN2dx * dN1dx + dN2dy * dN1dy);
-        mat_[2][0] = J / 2.0 * (dN3dx * dN1dx + dN3dy * dN1dy);
-        mat_[0][1] = J / 2.0 * (dN1dx * dN2dx + dN1dy * dN2dy);
-        mat_[1][1] = J / 2.0 * (dN2dx * dN2dx + dN2dy * dN2dy);
-        mat_[2][1] = J / 2.0 * (dN3dx * dN2dx + dN3dy * dN2dy);
-        mat_[0][2] = J / 2.0 * (dN1dx * dN3dx + dN1dy * dN3dy);
-        mat_[1][2] = J / 2.0 * (dN2dx * dN3dx + dN2dy * dN3dy);
-        mat_[2][2] = J / 2.0 * (dN3dx * dN3dx + dN3dy * dN3dy);*/
+//         double dN1dx = cell.shape().deriveCoordinates(0, 0);
+//         double dN2dx = cell.shape().deriveCoordinates(1, 0);
+//         double dN3dx = cell.shape().deriveCoordinates(2, 0);
+//         double dN1dy = cell.shape().deriveCoordinates(0, 1);
+//         double dN2dy = cell.shape().deriveCoordinates(1, 1);
+//         double dN3dy = cell.shape().deriveCoordinates(2, 1);
+//         mat_[0][0] = J / 2.0 * (dN1dx * dN1dx + dN1dy * dN1dy);
+//         mat_[1][0] = J / 2.0 * (dN2dx * dN1dx + dN2dy * dN1dy);
+//         mat_[2][0] = J / 2.0 * (dN3dx * dN1dx + dN3dy * dN1dy);
+//         mat_[1][1] = J / 2.0 * (dN2dx * dN2dx + dN2dy * dN2dy);
+//         mat_[2][1] = J / 2.0 * (dN3dx * dN2dx + dN3dy * dN2dy);
+//         mat_[2][2] = J / 2.0 * (dN3dx * dN3dx + dN3dy * dN3dy);
+//         mat_[0][1] = mat_[1][0];
+//         mat_[0][2] = mat_[2][0];
+//         mat_[1][2] = mat_[2][1];
 ////////////////////////////////////////////////////////////////////
-/*        double x1 = cell.node(0).x();
+        // this is much faster than numerical integration
+                
+//         double x21 = cell.node(1).x()-cell.node(0).x();
+//         double x31 = cell.node(2).x()-cell.node(0).x();
+//         double y21 = cell.node(1).y()-cell.node(0).y();
+//         double y31 = cell.node(2).y()-cell.node(0).y();
+// 
+//         double a =   ((x31) * (x31) + (y31) * (y31)) / J;
+//         double b = - ((x31) * (x21) + (y31) * (y21)) / J;
+//         double c =   ((x21) * (x21) + (y21) * (y21)) / J;
+
+        double x1 = cell.node(0).x();
         double x2 = cell.node(1).x();
         double x3 = cell.node(2).x();
         double y1 = cell.node(0).y();
         double y2 = cell.node(1).y();
         double y3 = cell.node(2).y();
 
-        double a = ((x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1)) / J;
+        double a =   ((x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1)) / J;
         double b = - ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / J;
-        double c = ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) / J;
+        double c =   ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) / J;
 
         mat_[0][0] = a *  0.5 + b        + c *  0.5 ;
         mat_[1][0] = a * -0.5 + b * -0.5            ;
@@ -471,8 +483,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
         mat_[0][2] = mat_[2][0];
         mat_[1][2] = mat_[2][1];
 
-        std::cout << "2" << *this << std::endl;*/
-        ux2uy2(cell, IntegrationRules::instance().triWeights(1), IntegrationRules::instance().triAbscissa(1), false);
+        //std::cout << "2" << *this << std::endl;*/
+        //ux2uy2(cell, IntegrationRules::instance().triWeights(1), IntegrationRules::instance().triAbscissa(1), false);
     } break;
     case MESH_TRIANGLE6_RTTI: {
 ///////////////////////////////////////////////////////////////////////////////////

@@ -96,11 +96,11 @@ public:
 
     inline void rotate(const RVector3 & r) { changed_(); pos_.rotate(r); }
 
-    inline double x() const { return pos_[0]; }
+    inline const double & x() const { return pos_[0]; }
 
-    inline double y() const { return pos_[1]; }
+    inline const double & y() const { return pos_[1]; }
 
-    inline double z() const { return pos_[2]; }
+    inline const double & z() const { return pos_[2]; }
 
     inline double & at(Index i) { return pos_[i]; }
     

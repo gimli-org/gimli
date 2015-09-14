@@ -23,7 +23,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
 
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     
     if(NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
