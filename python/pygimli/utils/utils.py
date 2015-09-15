@@ -64,6 +64,7 @@ class ProgressBar(object):
         self.pbar = self.pbar[0:pct_place] + \
             (pct_string + self.pbar[pct_place + len(pct_string):])
 
+
 def boxprint(s, width=80, sym="#"):
     """Print string centered in a box.
 
@@ -78,6 +79,7 @@ def boxprint(s, width=80, sym="#"):
     row = sym * width
     centered = s.center(width - 2)
     print("\n".join((row, centered.join((sym, sym)), row)))
+
 
 def opt_import(module, requiredTo="use the full functionality"):
     """
@@ -171,7 +173,7 @@ def unicodeToAscii(text):
 
 def logDropTol(p, droptol=1e-3):
     """
-    
+
     Examples
     --------
     >>> from pygimli.utils import logDropTol
@@ -191,9 +193,9 @@ def logDropTol(p, droptol=1e-3):
 
 def grange(start, end, dx=0, n=0, log=False, verbose=False):
     """
-    Create either an array from start step-wise filled with dx until end reached
-    [start, end] (like np.array with defined end) n or an array that is filled
-    from start to end with n steps. [start, end] (like np.linespace) n or an
+    Create either array from start step-wise filled with dx until end reached
+    [start, end] (like np.array with defined end) n or array filled from
+    start to end with n steps. [start, end] (like np.linespace) n or an
     array with with logarithmic spacing if n is given, dx will be ignored.
 
     Parameters
@@ -230,10 +232,10 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
 
     if dx != 0:
         if end < start and dx > 0:
-            #print("grange: decreasing range but increasing dx, swap dx sign")
+            # print("grange: decreasing range but increasing dx, swap dx sign")
             d = -d
         if end > start and dx < 0:
-            #print("grange: increasing range but decreasing dx, swap dx sign")
+            # print("grange: increasing range but decreasing dx, swap dx sign")
             d = -d
         ret = pg.RVector(range(int(floor(abs((e - s) / d)) + 1)))
         ret *= d
@@ -270,7 +272,7 @@ def xyToLength(x, y):
         dy = y[i + 1] - y[i]
 
         ret[i + 1] = ret[i] + sqrt(dx * dx + dy * dy)
-        #ret[ i + 1 ] = ret[ i ] + abs(l[ i + 1 ] - l[ i ])
+        # ret[ i + 1 ] = ret[ i ] + abs(l[ i + 1 ] - l[ i ])
 
     return ret
 
@@ -375,3 +377,11 @@ def unique(a):
     unique_everseen
     """
     return list(unique_everseen(a))
+
+
+def arrayToStdVectorUL(theArray):
+    """Converts a 'ndarray' to pygimli.stdVectorUL."""
+    vec = pg.stdVectorUL()
+    for i in theArray:
+        vec.append(int(i))
+    return vec

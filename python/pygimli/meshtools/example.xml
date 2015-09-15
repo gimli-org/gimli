@@ -1,0 +1,596 @@
+<?xml version="1.0"?>
+<lines>
+	<line name="surface" type="open" bc="hom_neumann" id="2" paradepth="0.0" paradx="0.5" maxcellsize="0.0" paraboundary="2.0" boundary="-1.0" meshquality="34.2">
+		<point type="node"> 
+			<x>0.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>5.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>10.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>15.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>20.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>25.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>30.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>35.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>40.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>45.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>50.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>55.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>60.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>65.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>70.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>75.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>80.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>85.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>90.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>95.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>100.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>105.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>110.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>115.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>120.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>125.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>130.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>135.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>140.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>145.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>150.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>155.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>160.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>165.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>170.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>175.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>180.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>185.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>190.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>195.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>200.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>205.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>210.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>215.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>220.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>225.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>230.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>235.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>240.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>245.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>250.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>255.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>260.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>265.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>270.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>275.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>280.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>285.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>290.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>295.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>300.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>305.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>310.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>315.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>320.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>325.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>330.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>335.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>340.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>345.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>350.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>355.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>360.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>365.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>370.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>375.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>380.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>385.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>390.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>395.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		<point type="node"> 
+			<x>400.0</x>
+			<y>0.0</y>
+			<z>0.0</z>
+		</point>
+		
+		<point type="marker"> 
+			<x>10.0</x>
+			<y>0.0</y>
+			<z>-2.0</z>
+			<id>2</id>
+		</point>
+	</line>
+	
+	<line name="intermediate_top" type="layer" bc="zero" id="3">
+		<point type="node"> 
+			<x>-10.0</x>
+			<y>0.0</y>
+			<z>-10.0</z>
+		</point>
+		<point type="node"> 
+			<x>410.0</x>
+			<y>0.0</y>
+			<z>-10.0</z>
+		</point>
+
+		<point type="marker">
+			<x>10.0</x>
+			<y>0.0</y>
+			<z>-12.0</z>
+			<id>3</id>
+		</point>
+	</line>
+
+	<line name="bedrock_top" type="layer" bc="zero" id="4">
+		<point type="node"> 
+			<x>-15.0</x>
+			<y>0.0</y>
+			<z>-14.0</z>
+		</point>
+		<point type="node"> 
+			<x>6.0</x>
+			<y>0.0</y>
+			<z>-20.0</z>
+		</point>
+		<point type="node"> 
+			<x>15.0</x>
+			<y>0.0</y>
+			<z>-26.0</z>
+		</point>
+		<point type="node"> 
+			<x>26.0</x>
+			<y>0.0</y>
+			<z>-28.0</z>
+		</point>
+		<point type="node">
+			<x>38.0</x>
+			<y>0.0</y>
+			<z>-31.0</z>
+		</point>
+		<point type="node"> 
+			<x>54.0</x>
+			<y>0.0</y>
+			<z>-32.0</z>
+		</point>
+		<point type="node"> 
+			<x>66.0</x>
+			<y>0.0</y>
+			<z>-35.0</z>
+		</point>
+		<point type="node"> 
+			<x>74.0</x>
+			<y>0.0</y>
+			<z>-30.0</z>
+		</point>
+		<point type="node"> 
+			<x>88.0</x>
+			<y>0.0</y>
+			<z>-27.0</z>
+		</point>
+		<point type="node">
+			<x>100.0</x>
+			<y>0.0</y>
+			<z>-24.0</z>
+		</point>
+		<point type="node"> 
+			<x>112.0</x>
+			<y>0.0</y>
+			<z>-27.0</z>
+		</point>
+		<point type="node"> 
+			<x>124.0</x>
+			<y>0.0</y>
+			<z>-30.0</z>
+		</point>
+		<point type="node"> 
+			<x>142.0</x>
+			<y>0.0</y>
+			<z>-35.0</z>
+		</point>
+		<point type="node"> 
+			<x>162.0</x>
+			<y>0.0</y>
+			<z>-36.0</z>
+		</point>
+		<point type="node">
+			<x>174.0</x>
+			<y>0.0</y>
+			<z>-30.0</z>
+		</point>
+		<point type="node"> 
+			<x>200.0</x>
+			<y>0.0</y>
+			<z>-23.0</z>
+		</point>
+		<point type="node"> 
+			<x>220.0</x>
+			<y>0.0</y>
+			<z>-15.0</z>
+		</point>
+		<point type="node"> 
+			<x>230.0</x>
+			<y>0.0</y>
+			<z>-18.0</z>
+		</point>
+		<point type="node"> 
+			<x>245.0</x>
+			<y>0.0</y>
+			<z>-22.0</z>
+		</point>
+		<point type="node">
+			<x>265.0</x>
+			<y>0.0</y>
+			<z>-26.0</z>
+		</point>
+		<point type="node"> 
+			<x>280.0</x>
+			<y>0.0</y>
+			<z>-28.0</z>
+		</point>
+		<point type="node"> 
+			<x>292.0</x>
+			<y>0.0</y>
+			<z>-31.0</z>
+		</point>
+		<point type="node"> 
+			<x>302.0</x>
+			<y>0.0</y>
+			<z>-28.0</z>
+		</point>
+		<point type="node"> 
+			<x>312.0</x>
+			<y>0.0</y>
+			<z>-22.0</z>
+		</point>
+		<point type="node">
+			<x>324.0</x>
+			<y>0.0</y>
+			<z>-16.0</z>
+		</point>
+		<point type="node"> 
+			<x>340.0</x>
+			<y>0.0</y>
+			<z>-22.0</z>
+		</point>
+		<point type="node"> 
+			<x>352.0</x>
+			<y>0.0</y>
+			<z>-26.0</z>
+		</point>
+		<point type="node"> 
+			<x>364.0</x>
+			<y>0.0</y>
+			<z>-31.0</z>
+		</point>
+		<point type="node"> 
+			<x>371.0</x>
+			<y>0.0</y>
+			<z>-34.0</z>
+		</point>
+		<point type="node">
+			<x>415.0</x>
+			<y>0.0</y>
+			<z>-40.0</z>
+		</point>
+		<point type="marker">
+			<x>10.0</x>
+			<y>0.0</y>
+			<z>-40.0</z>
+			<id>4</id>
+		</point>
+	</line>
+</lines>

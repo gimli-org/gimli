@@ -403,29 +403,6 @@ def saveResult(fname, data, rrms=None, chi2=None, mode='w'):
             f.write('\nchi2:{}\n'.format(chi2))
 
 
-def createfolders(foldername_list):
-    """
-    Creates the folder structure specified by the list.
-    """
-
-    path = ''
-
-    for s in foldername_list:
-        if s != '/':
-            path = path + s + '/'
-
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if os.path.exists(path):
-            print('Path "{}" already exists.'.format(path))
-        else:
-            print('Unable to create path "{}".'.format(path))
-            raise(e)
-
-    return path
-
-
 def getSavePath(folder=None, subfolder='', now=None):
     if folder is None:
         path = createResultFolder(subfolder, now)
@@ -450,33 +427,24 @@ def createDateTimeString(now=None):
         str(now.tm_min).zfill(2)
 
 
-def setPlotStuff(fontsize=7, dpi=None):
-    """set up rcParams (fontsize and dpi) for later plotting
+def createfolders(foldername_list):
+    """
+    Creates the folder structure specified by the list.
+    """
 
-    TODO move to mplviewer __init__.py"""
+    path = ''
 
-    from matplotlib import rcParams
+    for s in foldername_list:
+        if s != '/':
+            path = path + s + '/'
 
-    rcParams['axes.labelsize'] = fontsize
-    rcParams['xtick.labelsize'] = fontsize
-    rcParams['ytick.labelsize'] = fontsize
-    rcParams['legend.fontsize'] = fontsize
-    rcParams['font.family'] = 'sans-serif'
-    rcParams['font.sans-serif'] = ['Times New Roman']
-    rcParams['text.usetex'] = False
-    rcParams['font.size'] = 0.6*fontsize
-#    rcParams['figure.figsize'] = 7.3, 4.2
-    rcParams['axes.titlesize'] = fontsize
-    rcParams['axes.linewidth'] = 0.3
-    rcParams['xtick.major.size'] = 3
-    rcParams['xtick.major.width'] = 0.3
-    rcParams['xtick.minor.size'] = 1.5
-    rcParams['xtick.minor.width'] = 0.3
-    rcParams['ytick.major.size'] = rcParams['xtick.major.size']
-    rcParams['ytick.major.width'] = rcParams['xtick.major.width']
-    rcParams['ytick.minor.size'] = rcParams['xtick.minor.size']
-    rcParams['ytick.minor.width'] = rcParams['xtick.minor.width']
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if os.path.exists(path):
+            print('Path "{}" already exists.'.format(path))
+        else:
+            print('Unable to create path "{}".'.format(path))
+            raise(e)
 
-    if dpi is not None:
-        rcParams['figure.dpi'] = dpi
-        rcParams['savefig.dpi'] = dpi
+    return path
