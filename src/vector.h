@@ -1448,7 +1448,7 @@ template < class T > Vector< T > sort(const Vector < T > & a){
 #endif // fixme .. implement me without std::vector
 //     Vector < T > t(a);
 //     std::sort(t.begin(), t.end());
-//     return t;
+    return Vector < T > (0);
 }
 
 /*! Returning a copy of the vector and replacing all consecutive occurrences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1]. To remove all double values from the vector use an additionally sorting. e.g. unique(sort(v)) gets you [0 1 2]. */
@@ -1461,6 +1461,7 @@ template < class T > Vector< T > unique(const Vector < T > & a){
     Vector < T > ret(u);
     return ret;
     #endif // fixme .. implement me without std::vector
+    return Vector < T >(0);
 }
 
 
