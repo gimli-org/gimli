@@ -147,7 +147,8 @@ class CellBrowser(object):
         data = self.data[self.cell]
         header = "Cell %d:\n" % self.cell
         header += "-" * (len(header) - 1)
-        info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(x, y, data, marker)
+        info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
+            x, y, data, marker)
         text = header + textwrap.dedent(info)
         self.text.set_text(text)
         self.text.xy = x, y
@@ -241,10 +242,10 @@ def drawModel(axes, mesh, data=None,
             data = pg.RVector(mesh.cellCount())
 
         if len(data) != mesh.cellCount():
-            
+
             print(data, mesh)
-            print("INFO: drawModel have wrong data length .. "
-                    " indexing data from cellMarker()")
+            print("INFO: drawModel have wrong data length .. " +
+                  " indexing data from cellMarker()")
             viewdata = data(mesh.cellMarker())
         else:
             viewdata = data
@@ -383,9 +384,10 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
             col = (0.0, 0.0, 0.0)
             if n.marker() == pg.MARKER_NODE_SENSOR:
                 col = (1.0, 0.0, 0.0)
-            #eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
-            axes.plot(n.pos()[0], n.pos()[1], 'bo', markersize=5, color='black')
-            #eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
+#            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
+            axes.plot(n.pos()[0], n.pos()[1], 'bo', markersize=5,
+                      color='black')
+#            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
             cols.append(col)
         p = mpl.collections.PatchCollection(eCircles, color=cols)
         axes.add_collection(p)
@@ -397,7 +399,7 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
 
         for hole in mesh.holeMarker():
             axes.text(hole[0], hole[1], 'H', color='black')
-            
+
     updateAxes_(axes)
 
 
@@ -912,7 +914,7 @@ def drawParameterConstraints(axes, mesh, cMat, cWeight=None):
 
 
 def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
-                 cmap=None, name=None):
+                 cmap=None, name=None, textoffset=0.0):
     """
     Draw a 1D column (e.g., from a 1D inversion) on a given axes.
 
@@ -945,8 +947,61 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     pp.set_array(np.array(val))
     pp.set_clim(cmin, cmax)
     if name:
-        ax.text(x, ztopo, name, ha='center', va='bottom')
+        ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
 
     updateAxes_(ax)
 
     return col
+
+
+def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
+    """replace the last-but-one tick label by unit symbol"""
+    if xlabel:
+        labels = ax.get_xticks().tolist()
+        labels[position] = unit
+        ax.set_xticklabels(labels)
+    else:
+        labels = ax.get_yticks().tolist()
+        labels[position] = unit
+        ax.set_yticklabels(labels)
+
+
+def plotLines(ax, line_filename, linewidth=1.0, step=1):
+    """read lines from file and plot over model"""
+    xz = np.loadtxt(line_filename)
+    n_points = xz.shape[0]
+    if step == 2:
+        for i in range(0, n_points, step):
+            x = xz[i:i+step, 0]
+            z = xz[i:i+step, 1]
+            ax.plot(x, z, 'k-', linewidth=linewidth)
+    if step == 1:
+        ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)
+
+
+def setPlotStuff(fontsize=7, dpi=None):
+    from matplotlib import rcParams
+
+    rcParams['axes.labelsize'] = fontsize
+    rcParams['xtick.labelsize'] = fontsize
+    rcParams['ytick.labelsize'] = fontsize
+    rcParams['legend.fontsize'] = fontsize
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['font.sans-serif'] = ['Times New Roman']
+    rcParams['text.usetex'] = False
+    rcParams['font.size'] = 0.6*fontsize
+#    rcParams['figure.figsize'] = 7.3, 4.2
+    rcParams['axes.titlesize'] = fontsize
+    rcParams['axes.linewidth'] = 0.3
+    rcParams['xtick.major.size'] = 3
+    rcParams['xtick.major.width'] = 0.3
+    rcParams['xtick.minor.size'] = 1.5
+    rcParams['xtick.minor.width'] = 0.3
+    rcParams['ytick.major.size'] = rcParams['xtick.major.size']
+    rcParams['ytick.major.width'] = rcParams['xtick.major.width']
+    rcParams['ytick.minor.size'] = rcParams['xtick.minor.size']
+    rcParams['ytick.minor.width'] = rcParams['xtick.minor.width']
+
+    if dpi is not None:
+        rcParams['figure.dpi'] = dpi
+        rcParams['savefig.dpi'] = dpi

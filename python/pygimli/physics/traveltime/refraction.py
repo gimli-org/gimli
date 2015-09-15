@@ -204,8 +204,8 @@ class Refraction(object):
         if ax is None:
             ax, cbar = pg.show(self.mesh, self.velocity, logScale=logScale,
                                colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
-            fig, ax = plt.subplots()
-            self.figs['result'] = fig
+#            fig, ax = plt.subplots()
+            self.figs['result'] = plt.gcf()
         else:
             gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
@@ -217,6 +217,15 @@ class Refraction(object):
         self.axs['result'] = ax
         if 'lines' in kwargs:
             plotLines(ax, kwargs['lines'])
+
+    def saveFigures(self, name=None, ext='pdf'):
+        """save all existing figures to files"""
+        if name is None:
+            name = self.basename
+        if name is None or not any(name):
+            name = 'out'
+        for key in self.figs:
+            self.figs[key].savefig(name+'-'+key+'.'+ext, bbox_inches='tight')
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """
