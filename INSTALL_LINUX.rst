@@ -141,6 +141,20 @@ Example Installation on Ubuntu
     make gimli
     make pygimli
 
+Troubleshooting
+^^^^^^^^^^^^^^^
+
+If you experience runtime problems on starting pygimli like:
+
+    ImportError: /usr/lib/libboost_python.so: undefined symbol: PyClass_Type
+
+It may happen that CMake estimates the wrong libboost_python version by choosing py2 version instead of py3.
+You can force cmake to select the correct version with:
+
+.. code-block:: bash
+
+    cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
+
 
 Note for gcc version > 5.0
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -165,15 +179,6 @@ You will need numpy and boost-python builds with your desired python version.
 .. code-block:: bash
 
     cmake ../trunk -DPYVERSION=3.3
-
-
-If you experience runtime problems on starting pygimli it may happen that CMake
-estimates the wrong libboost_python version by choosing py2 version instead of py3.
-You can force cmake to select the correct version with:
-
-.. code-block:: bash
-
-    cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
 
 Chose a xml caster for the python bindings.
 Either gccxml (default for linux and gcc < 5) or castxml else.

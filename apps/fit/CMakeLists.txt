@@ -3,6 +3,7 @@
 set( PROGRAMS polyfit harmfit )
 
 foreach(program ${PROGRAMS})
+    add_dependencies(apps ${program})
     add_executable(${program} ${program}.cpp)
     target_link_libraries(${program} gimli)
     install(TARGETS ${program}
