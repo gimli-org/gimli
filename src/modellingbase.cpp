@@ -117,6 +117,10 @@ RVector ModellingBase::startModel() {
     return startModel_;
 }
 
+void ModellingBase::setStartModel(const RVector & startModel){
+    startModel_=startModel; 
+}
+        
 void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
 	this->initRegionManager();
 

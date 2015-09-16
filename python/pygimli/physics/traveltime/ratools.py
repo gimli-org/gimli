@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import time
 import os
 import numpy as np
 import pygimli as pg
-
 
 
 def createGradientModel2D(data, mesh, VTop, VBot):

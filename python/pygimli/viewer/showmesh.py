@@ -46,7 +46,7 @@ def show(mesh, *args, **kwargs):
     Returns
     -------
 
-    Return the results from the show functions.
+    Return the results from the showMesh* functions.
 
     """
     if isinstance(mesh, list):
@@ -70,7 +70,7 @@ def show(mesh, *args, **kwargs):
         ax.set_ylim([ymin, ymax])
 #        print(ax.get_data_interval())
         plt.pause(0.01)
-        return
+        return ax, cbar
 
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
@@ -83,9 +83,8 @@ def show(mesh, *args, **kwargs):
         else:
             print("ERROR: Mesh not valid.")
 
-    # plt.pause(0.001)
-
-
+    return None, None
+    
 def showMesh(mesh, data=None, hold=False, block=False,
              colorBar=False, coverage=None,
              axes=None, savefig=None, **kwargs):
@@ -177,8 +176,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data)
     else:
-        if hasattr(data[0], '__len__') and not isinstance(data,
-                                                         p.ma.core.MaskedArray):
+        if hasattr(data[0], '__len__') and \
+            not isinstance(data, np.ma.core.MaskedArray):
 
             if len(data) == 2:  # [u,v]
                 data = np.array(data).T

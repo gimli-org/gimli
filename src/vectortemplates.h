@@ -196,13 +196,17 @@ template < class Vec > void echoMinMax(const Vec & vec, const std::string & name
 }
 
 template < class Vec > double median(const Vec & a) {
-    int dim = a.size();
-    Vec tmp(sort(a));
-    if (std::fabs(dim / 2.0 - rint(dim / 2.0)) < 1e-12){ // even
-        return (tmp[dim / 2] + tmp[dim / 2 - 1]) / 2.0;
-    } else { // odd
-        return tmp[(dim - 1)/ 2];
+    Index dim = a.size();
+    if (dim == 1) return a[0];
+    if (dim > 1){
+        Vec tmp(sort(a));
+        if (std::fabs(dim / 2.0 - rint(dim / 2.0)) < 1e-12){ // even
+            return (tmp[dim / 2] + tmp[dim / 2 - 1]) / 2.0;
+        } else { // odd
+            return tmp[(dim - 1)/ 2];
+        }
     }
+    return 0.0;
 }
 
 // template < class Vec > double mean(const Vec & a) { return sum(a) / a.size(); }

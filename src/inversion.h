@@ -181,7 +181,7 @@ public:
 
     /*! Set data vector */
     inline void setData(const Vec & data) {
-        data_     = data;
+        data_ = data;
         //** maybe a data validation here
     }
 
@@ -848,7 +848,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     this->checkTransFunctions();
 
     //! calculation of initial modelresponse
-    response_ = forward_->response(model_);
+    response_ = forward_->response(forward_->startModel());
 
     //! () clear the model history
     modelHist_.clear();

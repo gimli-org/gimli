@@ -70,8 +70,7 @@ public:
      !*/
     virtual RVector startModel();
 
-    virtual void setStartModel(const RVector & startModel){
-        startModel_=startModel; }
+    virtual void setStartModel(const RVector & startModel);
 
     /*! Set new mesh to the forward operator, optionally hold region parameter
      * for the new mesh (i.e. for roll a long) */

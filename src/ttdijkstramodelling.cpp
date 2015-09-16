@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014     by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -45,6 +45,7 @@ Dijkstra::Dijkstra(const Graph & graph) : graph_(graph) {
 
 void Dijkstra::setGraph(const Graph & graph) {
     graph_ = graph;
+    pathMatrix_.clear();
     pathMatrix_.resize(graph.size());
 }
 
@@ -109,6 +110,11 @@ std::vector < Index > Dijkstra::shortestPathTo(Index node) const {
 //        return response(slowness, background);
 //    }
 
+TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(bool verbose)
+: ModellingBase(verbose), background_(1e16){
+    this->initJacobian();
+}
+
 TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(Mesh & mesh,
                                                          DataContainer & dataContainer, 
                                                          bool verbose)
@@ -120,8 +126,7 @@ TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(Mesh & mesh,
 }
 
 RVector TravelTimeDijkstraModelling::createDefaultStartModel() {
-    RVector vec(this->regionManager().parameterCount(), findMedianSlowness());
-    return vec;
+    return RVector(this->regionManager().parameterCount(), findMedianSlowness());
 }
 
 Graph TravelTimeDijkstraModelling::createGraph() {
@@ -188,6 +193,8 @@ double TravelTimeDijkstraModelling::findMedianSlowness() const {
 }
 
 RVector TravelTimeDijkstraModelling::getApparentSlowness() const {
+    if (!dataContainer_) return 0.0;
+
     Index nData = dataContainer_->size();
     SIndex s = 0, g = 0;
     double edgeLength = 0.0;
@@ -273,8 +280,11 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
         std::cout << "Background: " << background_ << "->" << 1e16 << std::endl;
         background_ = 1e16;
     }
-
+// __MS(background_)
+// __MS(min(slowness))
+// __MS(max(slowness))
     this->mapModel(slowness, background_);
+    
     dijkstra_.setGraph(createGraph());
 
     Index nShots = shotNodeId_.size();
@@ -288,18 +298,21 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
         }
     }
 
-    int nData = dataContainer_->size();
+    Index nData = dataContainer_->size();
     Index s = 0, g = 0;
 
     RVector resp(nData);
 
-    for (int dataIdx = 0; dataIdx < nData; dataIdx ++) {
+    for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
         s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
         g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
-//         std::cout << s << " " << (*dataContainer_)("s")[dataIdx] << " " 
-//                   << g << " " << (*dataContainer_)("g")[dataIdx] << std::endl;
+//         if (dataIdx < 10 ) std::cout << s << " " << (*dataContainer_)("s")[dataIdx] << " " 
+//                    << g << " " << (*dataContainer_)("g")[dataIdx] << " " << dMap[s][g] << std::endl;
         resp[dataIdx] = dMap[s][g];
     }
+
+//     __MS(min(resp))
+//     __MS(max(resp))
 
     return  resp;
 }
