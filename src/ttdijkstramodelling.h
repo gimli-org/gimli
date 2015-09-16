@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -86,13 +86,15 @@ protected:
 /*! TravelTimeDijkstraModelling(mesh, datacontainer) */
 class DLLEXPORT TravelTimeDijkstraModelling : public ModellingBase {
 public:
+    TravelTimeDijkstraModelling(bool verbose=false);
+    
     TravelTimeDijkstraModelling(Mesh & mesh,
                                 DataContainer & dataContainer,
                                 bool verbose=false);
 
     virtual ~TravelTimeDijkstraModelling() { }
 
-    RVector createDefaultStartModel();
+    virtual RVector createDefaultStartModel();
 
     RVector createGradientModel(double lBound, double uBound);
     

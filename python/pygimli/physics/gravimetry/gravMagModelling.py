@@ -17,19 +17,19 @@ gradR = lambda r__: (r__.T / rabs(r__))
 adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__])
 
 
-def magnetization(lat, lon, suszept, dat=(2010, 1, 1)):
-    """
-    TODO
-    """
-    T0, I, D = GeoMagT0(lat, lon, 0, dat)
-    # indizierte Magnetisierung
-    Mi = 1. / mu0 * suszept * T0
-    # remanente Magnetisierung
-    Mr = 0.
+#def magnetization(lat, lon, suszept, dat=(2010, 1, 1)):
+    #"""
+    #TODO
+    #"""
+    #T0, I, D = GeoMagT0(lat, lon, 0, dat)
+    ## indizierte Magnetisierung
+    #Mi = 1. / mu0 * suszept * T0
+    ## remanente Magnetisierung
+    #Mr = 0.
 
-    print(T0, I, D, "abs: ", np.sqrt(T0.dot(T0)))
+    #print(T0, I, D, "abs: ", np.sqrt(T0.dot(T0)))
 
-    return Mr + Mi
+    #return Mr + Mi
 
 
 def BZPoly(pnts, poly, M, openPoly=False):
@@ -735,7 +735,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     return dg
 
 
-class GravimetryModelling(pg.ModellingBase):
+class GravimetryModelling(object, pg.ModellingBase):
     """Gravimetry modelling operator"""
     def __init__(self, verbose=True):
         super(GravimetryModelling, self).__init__(verbose)
@@ -744,17 +744,27 @@ class GravimetryModelling(pg.ModellingBase):
         self.setJacobian(self._J)
 
     def createStartmodel(self):
+        """
+        """
         return pg.RVector(self.regionManger().parameterCount(), 0.0)
 
     def setSensorPositions(self, pnts):
+        """Set measurement locations. [[x,y,z],...]"""
         self.sensorPositions = pnts
 
     def response(self, dDensity):
+        """
+            Calculate response for a given density deviation.
+        """
         return solveGravimetry(self.regionManager().paraDomain(),
                                dDensity, pnts=self.sensorPositions,
                                complete=False)
 
     def createJacobian(self, model):
+        """
+            Create Jacobian matrix for a density distribution model and
+            store it internal.
+        """
         Gdz = solveGravimetry(self.regionManager().paraDomain(),
                               dDensity=None,
                               pnts=self.sensorPositions,

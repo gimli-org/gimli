@@ -820,15 +820,17 @@ void RegionManager::fillBoundarySize(RVector & vec){
 Index RegionManager::parameterCount() const {
     if (regionMap_.empty()) {
         if (parameterCount_ == 0){
-            //return parameterCount_;
+            return parameterCount_;
+            
+            // zero should be possible
             throwLengthError(1, WHERE_AM_I + " neither region defined nor parameterCount set.");
         }
         return parameterCount_;
     }
 
     Index count = 0;
-    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
-          it != end; it ++){
+    for (std::map< SIndex, Region* >::const_iterator
+        it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
         count += it->second->parameterCount();
     }
     return count;

@@ -54,7 +54,8 @@ public:
                   bool sensorIndicesFromOne=true,
                   bool removeInvalid=true);
 
-    /*! Constructor, builds a data container, registers sensor indices and fills the data from a file.
+    /*! Constructor, builds a data container, registers sensor 
+     * indices and fills the data from a file.
         See \ref load. \param fileName String of the file name */
     DataContainer(const std::string & fileName,
                   const std::string & sensorTokens,
