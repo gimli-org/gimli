@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.meshtools import createParaDomain2D, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
-from pygimli.utils.base import interperc
-from .ratools import createGradientModel2D, getSavePath
+from pygimli.utils.base import interperc, getSavePath
+from .ratools import createGradientModel2D
 from .raplot import plotFirstPicks, showVA, plotLines
 
 
