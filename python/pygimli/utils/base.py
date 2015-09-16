@@ -380,19 +380,6 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def plotLines(ax, line_filename, linewidth=1.0, step=1):
-    """load lines from file and plot them into axes"""
-    xz = np.loadtxt(line_filename)
-    n_points = xz.shape[0]
-    if step == 2:
-        for i in range(0, n_points, step):
-            x = xz[i:i+step, 0]
-            z = xz[i:i+step, 1]
-            ax.plot(x, z, 'k-', linewidth=linewidth)
-    if step == 1:
-        ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)
-
-
 def saveResult(fname, data, rrms=None, chi2=None, mode='w'):
     """save rms/chi2 results into filename"""
     with open(fname, mode) as f:

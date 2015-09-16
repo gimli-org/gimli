@@ -57,11 +57,12 @@ class TestMeshGenerator(unittest.TestCase):
     def test_createPartMesh(self):
         mesh = pg.createMesh1D(np.linspace(0, 1, 10))
         self.assertEqual(mesh.cellCount(), 9)
-        
-        mesh2 = mesh.createMeshByCellIdx(pg.find(pg.x(mesh.cellCenters()) < 0.5)) 
+
+        mesh2 = mesh.createMeshByCellIdx(
+            pg.find(pg.x(mesh.cellCenters()) < 0.5))
         self.assertEqual(mesh2.cellCount(), 4)
         self.assertEqual(mesh2.cellCenters()[-1][0] < 0.5, True)
-        
-    
+
+
 if __name__ == '__main__':
     unittest.main()

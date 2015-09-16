@@ -74,7 +74,7 @@ class Refraction(object):
         print(self.data)
 
     def showData(self, ax=None, response=None):
-        """show data in form of travel time curves"""
+        """show data in form of travel time curves (optional with response)"""
         if ax is None:
             fig, ax = plt.subplots()
             self.figs['data'] = fig
@@ -84,6 +84,8 @@ class Refraction(object):
             plotFirstPicks(ax, self.data)
         else:
             plotFirstPicks(ax, self.data, marker='x')
+            if response is True:
+                response = self.response
             plotFirstPicks(ax, self.data, np.asarray(response), marker='-')
 
         plt.show(block=False)
@@ -204,15 +206,14 @@ class Refraction(object):
         if ax is None:
             ax, cbar = pg.show(self.mesh, self.velocity, logScale=logScale,
                                colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
-#            fig, ax = plt.subplots()
             self.figs['result'] = plt.gcf()
         else:
             gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
             createColorbar(gci, **kwargs)
-            browser = CellBrowser(self.mesh, self.velocity, ax)
-            browser.connect()
-            plt.show()  # block=False)
+        browser = CellBrowser(self.mesh, self.velocity, ax)
+        browser.connect()
+        plt.show()  # block=False)
 
         self.axs['result'] = ax
         if 'lines' in kwargs:
