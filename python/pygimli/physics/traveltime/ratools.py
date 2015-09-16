@@ -4,43 +4,6 @@ import numpy as np
 import pygimli as pg
 
 
-def createResultFolder(subfolder):
-    now = time.localtime()
-    results = str(now.tm_year) + str(now.tm_mon).zfill(2) + \
-        str(now.tm_mday).zfill(2) + '-' + str(now.tm_hour).zfill(2) + '.' + \
-        str(now.tm_min).zfill(2)
-
-    return createfolders(['./', results, subfolder])
-
-
-def createfolders(foldername_list):
-    """
-
-    """
-    path = ''
-
-    for s in foldername_list:
-        path = path + s + '/'
-
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if os.path.exists(path):
-            print('Path "{}" already exists.'.format(path))
-        else:
-            print('Unable to create path "{}".'.format(path))
-            raise(e)
-
-    return path
-
-
-def getSavePath(folder=None, subfolder=''):
-    if folder is None:
-        path = createResultFolder(subfolder)
-    else:
-        path = createfolders([folder, subfolder])
-    return path
-
 
 def createGradientModel2D(data, mesh, VTop, VBot):
     """
