@@ -62,7 +62,7 @@ class CellBrowser(object):
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
         kwargs = dict(fontproperties='monospace', visible=False,
-                      fontsize=mpl.rcParams['text.fontsize'] - 2,
+                      fontsize=mpl.rcParams['font.size'] - 2,
                       weight='bold', xytext=(50, 20), arrowprops=arrowprops,
                       textcoords='offset points', bbox=bbox, va='center')
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
