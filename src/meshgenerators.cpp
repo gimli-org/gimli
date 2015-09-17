@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -43,7 +43,7 @@ Mesh createGrid(const RVector & x, const RVector & y, const RVector & z){
     return mesh;
 }
 
-Mesh createMesh1D(uint nCells, uint nClones){
+Mesh createMesh1D(Index nCells, Index nClones){
     RVector x(nCells * nClones + 1);
 
     std::generate(x.begin(), x.end(), IncrementSequence< double >(0.0));
@@ -223,7 +223,7 @@ Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottom
 
 bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int cellMarker, 
                           bool save){
-
+    DEPRECATED //17.09.215
     int boundMarker = -5;
     
     mesh.createNeighbourInfos(true);
