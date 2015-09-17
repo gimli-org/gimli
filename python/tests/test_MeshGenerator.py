@@ -49,6 +49,10 @@ class TestMeshGenerator(unittest.TestCase):
         mesh = pg.createMesh2D(5, 2)
         self.assertEqual(mesh.cellCount(), 10.0)
 
+        mesh = pg.createMesh2D(np.linspace(0, 1, 6),np.linspace(0, 1, 3))
+        self.assertEqual(mesh.cellCount(), 10.0) 
+        
+        
     def test_createMesh3D(self):
 
         mesh = pg.createMesh3D(xDim=5, yDim=3, zDim=2)
