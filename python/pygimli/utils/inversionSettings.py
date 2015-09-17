@@ -1,4 +1,9 @@
-import cPickle as pickle
+import sys
+
+if int(sys.version[0]) >= 3:
+    import pickle
+else:
+    import cPickle as pickle
 
 
 class InversionSettings(dict):
