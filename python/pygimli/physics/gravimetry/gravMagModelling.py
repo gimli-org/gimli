@@ -735,7 +735,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     return dg
 
 
-class GravimetryModelling(object, pg.ModellingBase):
+class GravimetryModelling(pg.ModellingBase):
     """Gravimetry modelling operator"""
     def __init__(self, verbose=True):
         super(GravimetryModelling, self).__init__(verbose)
