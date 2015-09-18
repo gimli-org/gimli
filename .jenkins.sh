@@ -13,14 +13,15 @@ python -c "import numpy; print(numpy.__version__)"
 # rm -rf thirdParty/src
 
 # Main build
-#rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
+rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
 mkdir -p build
 cd build
 rm -f build_tests.html # remove old test report
 rm -f CMakeCache.txt # clean old cache
 #
-cmake ../trunk 
-# cmake ../trunk -DCASTER=castxml -DPYVERSION=3
+#cmake ../trunk 
+CLEAN=1 cmake ../trunk -DCASTER=castxml
+#cmake ../trunk -DCASTER=castxml -DPYVERSION=3
 make -j 16 gimli
 make pygimli J=12
 
