@@ -228,7 +228,7 @@ else()
 endif()
 
 if (NOT CASTER)
-    set(CASTER "gccxml")
+    set(CASTER "castxml")
 
     if (CMAKE_COMPILER_IS_GNUCC)
         string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${CMAKE_CXX_COMPILER_VERSION})
