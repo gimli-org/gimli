@@ -212,15 +212,17 @@ class Poly2D(object):
 
         return m_with_bg
 
-    def show(self, ax=None):
+    def show(self, ax=None, **kwargs):
         """
         Diplays the polygon model.
         """
 
         if ax is None:
-            f, ax = plt.subplots()
+            figkeys = ('nrows', 'ncols', 'sharex', 'sharey', 'figsize')
+            figargs = dict((k, kwargs.pop(k)) for k in figkeys if k in kwargs)
+            f, ax = plt.subplots(**figargs)
 
-        drawMesh(ax, self.poly)
+        drawMesh(ax, self.poly, **kwargs)
 
 
 if __name__ == '__main__':
