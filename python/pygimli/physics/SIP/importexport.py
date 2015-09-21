@@ -1,6 +1,17 @@
 import numpy as np
 
 
+def fstring(fri):
+    """ format frequency to human-readable (mHz or kHz) """
+    if fri > 1e3:
+        fstr = '{:d}kHzt'.format(int(np.round(fri/1e3)))
+    elif fri < 1.:
+        fstr = '{:d}mHz'.format(int(np.round(fri*1e3)))
+    else:
+        fstr = '{:d}Hz'.format(int(np.round(fri)))
+    return fstr
+
+
 def readTXTSpectrum(filename):
     """read spectrum from ZEL device output (txt) data file"""
     fid = open(filename)

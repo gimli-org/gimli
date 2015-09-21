@@ -7,6 +7,7 @@ import numpy as np
 if __name__ != "__main__":
     from . import polytools as plc
 
+
 def createMesh(poly, quality=30, area=0.0,
                smooth=None, switches=None,
                regions=None, holes=None,
@@ -158,7 +159,7 @@ def readGmsh(fname, verbose=False):
     Mesh: Nodes: 3 Cells: 1 Boundaries: 3
     >>> os.remove(fname)
     """
-    inNodes, inElements, ncount, ecount = 0, 0, 0, 0
+    inNodes, inElements, ncount = 0, 0, 0
     fid = open(fname)
     if verbose:
         print('Reading %s... \n' % fname)
@@ -219,10 +220,10 @@ def readGmsh(fname, verbose=False):
 
     # check dimension
     if len(tets) == 0:
-        dim, bounds, cells=2, lines, triangles
+        dim, bounds, cells = 2, lines, triangles
         zero_dim = np.abs(nodes.sum(0)).argmin()  # identify zero dimension
     else:
-        dim, bounds, cells=3, triangles, tets
+        dim, bounds, cells = 3, triangles, tets
     if verbose:
         print('  Dimension: %s-D' % dim)
 
@@ -451,7 +452,7 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
         array of x/y positions along 2d profile
 
     z: [float]
-        optional height to add (topographical correction if computed flat earth)
+        optional height to add (topographical correction on top of flat earth)
 
     See Also
     --------
@@ -553,8 +554,9 @@ def createParaDomain2D(*args, **kwargs):
     """
         API change here .. use createParaMeshPLC instead
     """
-    print("createParaDomain2D: API change here .. use createParaMeshPLC instead")
+    print("createParaDomain2D: API change: use createParaMeshPLC instead")
     return createParaMeshPLC(*args, **kwargs)
+
 
 def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                       paraBoundary=2, paraMaxCellSize=0, boundary=-1,
@@ -571,7 +573,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     a larger boundary around the outside (marker=1)
 
     TODO:
-    
+
         * closed domains (boundary == 0)
         * additional topopoints
         * spline interpolations between sensorpoints or addpoints
@@ -603,6 +605,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     poly: :gimliapi:`GIMLI::Mesh`
 
     """
+
+    if hasattr(sensors, 'sensorPositions'):
+        sensors = sensors.sensorPositions()
 
     eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
 
@@ -681,11 +686,12 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 #    sys.exit()
     return poly
 
+
 def createParaMesh(*args, **kwargs):
     """
     """
     plc = createParaMeshPLC(*args, **kwargs)
-    kwargs.pop('paraMaxCellSize')
+    kwargs.pop('paraMaxCellSize', 0)
     mesh = createMesh(plc, **kwargs)
     return mesh
 
@@ -694,8 +700,9 @@ def createParaMesh2dGrid(*args, **kwargs):
     """
         API change here .. use createParaMesh2DGrid instead
     """
-    print("createParaMesh2dGrid: API change here .. use createParaMesh2DGrid instead")
+    print("createParaMesh2dGrid: API change: use createParaMesh2DGrid instead")
     return createParaMesh2DGrid(*args, **kwargs)
+
 
 def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
                          boundary=-1, paraBoundary=2, verbose=False, *args,
@@ -795,15 +802,15 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     return mesh
 
 if __name__ == "__main__":
-    #import pygimli as pg
-    #import matplotlib.pyplot as plt
-    
-    #from pygimli.meshtools import createParaMesh2DGrid
-    #from pygimli.mplviewer import drawMesh
-    #x = pg.RVector(range(10))
-    #mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
-                                #paraDZ=1, paraDepth=5)
-    #fig, ax = plt.subplots()
-    #drawMesh(ax, mesh)
-    #plt.show()
     pass
+#    import pygimli as pg
+#    import matplotlib.pyplot as plt
+#
+#    from pygimli.meshtools import createParaMesh2DGrid
+#    from pygimli.mplviewer import drawMesh
+#    x = pg.RVector(range(10))
+#    mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
+#                                paraDZ=1, paraDepth=5)
+#    fig, ax = plt.subplots()
+#    drawMesh(ax, mesh)
+#    plt.show()

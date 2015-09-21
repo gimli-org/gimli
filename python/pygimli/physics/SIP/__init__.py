@@ -6,6 +6,6 @@
 
 from .sipspectrum import SIPSpectrum
 from .models import ColeCole
-from .importexport import readSIP256file
+from .importexport import readSIP256file, fstring
 # from . tools import *
 # from . plotting import *

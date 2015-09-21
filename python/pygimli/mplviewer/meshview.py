@@ -385,7 +385,8 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
             if n.marker() == pg.MARKER_NODE_SENSOR:
                 col = (1.0, 0.0, 0.0)
 #            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
-            axes.plot(n.pos()[0], n.pos()[1], 'bo', markersize=5,
+            ms = kwargs.pop('markersize', 5)
+            axes.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
                       color='black')
 #            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
             cols.append(col)
