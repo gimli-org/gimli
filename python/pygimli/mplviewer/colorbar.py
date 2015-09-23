@@ -2,18 +2,12 @@
 """
     Define special colorbar behavior.
 """
-#import pygimli as pg
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 import matplotlib as mpl
 import matplotlib.ticker as ticker
-#import matplotlib.colors as colors
-#import matplotlib.cbook as cbook
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-#import math
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
@@ -243,10 +237,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if cMin > 0.0 and logScale:
         mappable.set_norm(mpl.colors.LogNorm())
     else:
-        #pass
         mappable.set_norm(mpl.colors.Normalize())
 
-    #print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
+#    print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
     mappable.set_array(data)
     # mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
@@ -277,14 +270,14 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     cols = patches.get_facecolor()
 
     C = np.asarray(coverage)
-    #print(np.min(C), np.max(C))
+#    print(np.min(C), np.max(C))
 
     if (np.min(C) < 0.) | (np.max(C) > 1.) | (np.max(C) < 0.5):
 
         nn, hh = np.histogram(C, 50)
         nnn = nn.cumsum(axis=0) / float(len(C))
 
-        #print("min-max nnn ", min(nnn), max(nnn))
+#        print("min-max nnn ", min(nnn), max(nnn))
         mi = hh[min(np.where(nnn > 0.02)[0])]
 
         if min(nnn) > dropThreshold:
@@ -292,8 +285,8 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         else:
             ma = hh[max(np.where(nnn < dropThreshold)[0])]
 
-            #mi = hh[min(np.where(nnn > 0.2)[0])]
-            #ma = hh[max(np.where(nnn < 0.7)[0])]
+#            mi = hh[min(np.where(nnn > 0.2)[0])]
+#            ma = hh[max(np.where(nnn < 0.7)[0])]
             C = (C - mi) / (ma - mi)
             C[np.where(C < 0.)] = 0.0
             C[np.where(C > 1.)] = 1.0
@@ -302,7 +295,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
             cols[:, 3] = C
 
             patches._facecolors = cols
-            #patches._edgecolor = 'None'
+            # patches._edgecolor = 'None'
 
             # delete patch data to avoid automatically rewrite of _facecolors
             patches._A = None

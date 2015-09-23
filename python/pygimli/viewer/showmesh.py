@@ -23,6 +23,7 @@ except ImportError as e:
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def show(mesh, *args, **kwargs):
     """
     Mesh and model visualization.
@@ -84,7 +85,8 @@ def show(mesh, *args, **kwargs):
             print("ERROR: Mesh not valid.")
 
     return None, None
-    
+
+
 def showMesh(mesh, data=None, hold=False, block=False,
              colorBar=False, coverage=None,
              axes=None, savefig=None, **kwargs):
@@ -176,8 +178,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data)
     else:
-        if hasattr(data[0], '__len__') and \
-            not isinstance(data, np.ma.core.MaskedArray):
+        if hasattr(data[0], '__len__') and not isinstance(
+            data, np.ma.core.MaskedArray):
 
             if len(data) == 2:  # [u,v]
                 data = np.array(data).T

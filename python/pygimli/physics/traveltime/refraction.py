@@ -261,7 +261,7 @@ class Refraction(object):
             print(self.dataContainer)
 
     def showData(self, ax=None, response=None):
-        """show data in form of travel time curves (optional with response)"""
+        """show data as travel time curves (optionally with response)"""
         if ax is None:
             fig, ax = plt.subplots()
             self.figs['data'] = fig
@@ -393,6 +393,13 @@ class Refraction(object):
         self.axs['result'] = ax
         if 'lines' in kwargs:
             plotLines(ax, kwargs['lines'])
+
+    def showResultAndFit(self, **kwargs):
+        """show two vertical subplots with result and data (with response)"""
+        fig, ax = plt.subplots(nrows=2)
+        self.figs['resultfit'] = ax
+        ra.showResult(ax=ax[0], **kwargs)
+        ra.showData(ax=ax[1], response=self.response)
 
     def saveFigures(self, name=None, ext='pdf'):
         """save all existing figures to files"""
