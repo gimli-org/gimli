@@ -830,13 +830,16 @@ public:
         }
     }
 
-    ValueType getVal(int i, int j) const {
+    /*!Get matrix value at i,j. If i and j is not part of the matrix 
+     * sparsity pattern return 0 and print a warning. 
+     * This warning can be disabled by setting warn to false.*/
+    ValueType getVal(int i, int j, bool warn=true) const {
         for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
             if (rowIdx_[k] == j) {
                 return vals_[k];
             }
         }
-        std::cerr << WHERE_AM_I << " pos " << i << " "
+        if (warn) std::cerr << WHERE_AM_I << " pos " << i << " "
                     << j << " is not part of the sparsity pattern " << std::endl;
         return ValueType(0);
     }

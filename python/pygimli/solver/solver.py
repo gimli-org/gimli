@@ -1110,6 +1110,10 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
         f = const over time
 
     """
+    
+    if len(times) < 2:
+        raise Exception("We need at least 2 times for Crank "
+            "Nicolsen time discretization." + str(len(times)))
     sw = pg.Stopwatch(True)
     swi = pg.Stopwatch(True)
 
@@ -1129,8 +1133,9 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     rhs[:] = f
 
     A = (I + dt * theta * S)
-    solver = pg.LinSolver(A, True)
-
+    
+    solver = pg.LinSolver(A, verbose=verbose)
+    
     timeIter1 = np.zeros(len(times))
     timeIter2 = np.zeros(len(times))
     for n in range(1, len(times)):
@@ -1154,12 +1159,8 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     # plt.plot(timeIter2)
     # plt.figure()
     if verbose and (n % verbose == 0):
-        print(
-            "timesteps: ",
-            len(times),
-            sw.duration(),
-            "s ()",
-            np.mean(timeIter1))
+        print("timesteps:", len(times), 'duration:', sw.duration(), "s",
+              'itertime:', np.mean(timeIter1))
 
     return u
 

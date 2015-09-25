@@ -282,6 +282,7 @@ except:
 ################################################################################
 __origRVectorSetVal__ = _pygimli_.RVector.setVal
 def __newRVectorSetVal__(self, *args, **kwargs):
+    #print('__newRVectorSetVal__', *args, **kwargs)
     if len(args)==2:
         if isinstance(args[1], int):
             return __origRVectorSetVal__(self, args[0], i=args[1])
@@ -391,7 +392,7 @@ def __setVal(self, idx, val):
     """
         Index write access []
     """
-    #print("__setVal", self, idx, val)
+    #print("__setVal", self, 'idx', idx, 'val:', val)
     if isinstance(idx, slice):
         if idx.step is None:
             self.setVal(val, int(idx.start), int(idx.stop))
@@ -402,6 +403,10 @@ def __setVal(self, idx, val):
         #print(idx, type(idx))
         self.rowR(int(idx[0])).setVal(val, int(idx[1]))
         return
+    #if isinstance(idx, _pygimli_.BVector):
+        #print("__setVal", self, idx, 'val:', val)
+        #self.setVal(val, bv=idx)
+        #return 
     self.setVal(val, idx)
 
 def __getValMatrix(self, idx):
