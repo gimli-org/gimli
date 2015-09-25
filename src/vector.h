@@ -402,14 +402,6 @@ public:
     inline Vector< ValueType > & setVal(const ValueType & val, const BVector & bv) {
         ASSERT_EQUAL(this->size(), bv.size())
         for (Index i = 0; i < bv.size(); i ++ ) if (bv[i]) data_[i] = val;
-                    
-//         if (bv.size() == this->size()) {
-//             for (Index i = 0; i < bv.size(); i ++ ){
-//                 if (bv[i]) data_[i] = val;
-//             }
-//         } else {
-//             throwRangeError(1, WHERE_AM_I, bv.size(), 0, this->size());
-//         }
         return *this;
     }
     
@@ -597,7 +589,7 @@ DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
         for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], v); } \
         return ret;\
     } \
-
+    
 DEFINE_COMPARE_OPERATOR__(<, std::less)
 DEFINE_COMPARE_OPERATOR__(<=, std::less_equal)
 DEFINE_COMPARE_OPERATOR__(>=, std::greater_equal)

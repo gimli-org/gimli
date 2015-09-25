@@ -153,7 +153,7 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
             umfpack_zi_free_symbolic (&Symbolic);
             return 1;
 #else
-        std::cerr << WHERE_AM_I << " umfpack not installed" << std::endl;
+            std::cerr << WHERE_AM_I << " umfpack not installed" << std::endl;
 #endif
         } else {
 #if USE_CHOLMOD
@@ -173,8 +173,8 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
                 for (int j = S.vecColPtr()[i]; j < S.vecColPtr()[i + 1]; j ++){
 //                     __MS(i << " " << j << " " << S.vecColPtr()[i] << " " << S.vecColPtr()[i + 1] << " " << S.vecRowIdx()[j])
                     if (S.vecVals()[j] != 0.0){
-                //__MS(S.vecVals()[j] << " "  << S.getVal(S.vecRowIdx()[j], i))
-                        if (S.vecVals()[j] != S.getVal(S.vecRowIdx()[j], i)){
+//                 __MS(S.vecVals()[j] << " "  << S.getVal(S.vecRowIdx()[j], i))
+                        if (S.vecVals()[j] != S.getVal(S.vecRowIdx()[j], i, false)){
                             // non-symmetric
                             if (verbose_) std::cout << "non-symmetric matrix found .. switching to umfpack." << std::endl;
                             useUmfpack_ = true;

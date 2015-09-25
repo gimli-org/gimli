@@ -3,6 +3,9 @@
 Created on Fri Jun 12 15:48:00 2015
 
 @author: Marcus
+
+No official maintenance by the GIMLi team. 
+
 """
 
 import numpy as np
@@ -17,6 +20,8 @@ class Poly2D(object):
     """
     Utility class to create polygon model that can be meshed and used
     for synthetic modelling.
+    
+    ca: This class can currently read a given geometry from xml file and create a mesh.
     """
 
     def __init__(self, polyfile):

@@ -253,14 +253,16 @@ def cellDataToCellGrad(mesh, v, CtB):
 
 def findVelocity(mesh, v, b, c, nc=None):
     """
-    Find velocity for boundary b based on vector field v
+    Find velocity for boundary b based on vector field v.
 
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
 
-    v :
-        Vector field [[x,y,z]] Cell based or Boundary based
+    v : array [(N,dim)]
+        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension 
+        and j = [0 .. N-1] per Cell or per Node so N is either 
+        mesh.cellCount() or mesh.nodeCount()
 
     b : :gimliapi:`GIMLI::Boundary`
         Boundary
@@ -339,42 +341,83 @@ def findDiffusion(mesh, a, b, c, nc=None):
     return D
 
 
-def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
+def diffusionConvectionKernel(mesh, a=None, b=0.0, 
                               uB=None, duB=None,
-                              fn=None, vel=0, u0=0,
+                              vel=0, 
+                              #u0=0,
+                              fn=None,
                               scheme='CDS', sparse=False, time=0.0,
                               userData=None):
     """
-    Peclet Number - ratio between convection/diffusion * Length
-
-    Advection .. forced convection
+    Generate system matrix for diffusion and convection in a velocity field.
+    
+    Particle concentration u inside a velocity field.
+    
+    Peclet Number - ratio between convection/diffusion = F/D 
+        F = velocity flow trough volume boundary,
+        D = diffusion coefficient
+        
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh represents spatial discretization of the calculation domain
+    
+    a   : value | array | callable(cell, userData)
+        Diffusion coefficient per cell
+    
+    b   : value | array | callable(cell, userData)
+        TODO What is b
+        
+    fn   : iterable(cell)
+        TODO What is fn
+        
+    vel : ndarray (N,dim) | RMatrix(N,dim)
+        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension 
+        and j = [0 .. N-1] per Cell or per Node so N is either 
+        mesh.cellCount() or mesh.nodeCount()
+        
+    scheme : str [CDS]
+        Finite volume scheme
+        
+        * CDS -- Central Difference Scheme.
+            maybe irregular for Peclet no. |F/D| > 2
+            Diffusion dominant. Error of order 2
+        * UDS -- Upwind Scheme.
+            Convection dominant. Error of order 1
+        * HS -- Hybrid Scheme.
+            Diffusion dominant for Peclet-number |(F/D)| < 2
+            Convection dominant else.
+        * PS -- Power Law Scheme.
+            Identical to HS for Peclet-number |(F/D)| > 10 and near to ES else
+            Convection dominant.
+        * ES -- Exponential scheme
+            Only stationary one-dimensional but exact solution
+            
+    Returns
+    -------
+    
+    S : :gimliapi:`GIMLI::SparseMatrix` | numpy.ndarray(nCells, nCells)
+        Kernel matrix, depends on vel, a, b, scheme, uB, duB .. if some of this
+        has been changed you cannot cache these matrix
+    
+    rhsBoundaryScales : ndarray(nCells)
+        RHS offset vector
+    
+    
     """
     if a is None:
         a = pg.RVector(mesh.boundaryCount(), 1.0)
 
     AScheme = None
     if scheme == 'CDS':
-        # CDS - central diff. scheme .. maybe irregular for Peclet no. |F/D|>2
-        # diffusion dominant
-        # Error of order 2
         AScheme = lambda peclet_: 1.0 - 0.5 * abs(peclet_)
     elif scheme == 'UDS':
-        # UDS - upwind scheme
-        # Convection dominant
-        # Error of order 1
         AScheme = lambda peclet_: 1.0
     elif scheme == 'HS':
-        # HS - hybrid scheme.
-        # Diffusion dominant for Peclet-number |(F/D)| < 2
-        # Convection dominant else
         AScheme = lambda peclet_: max(0.0, 1.0 - 0.5 * abs(peclet_))
     elif scheme == 'PS':
-        # PS - power-law scheme.
-        # Identical to HS for Peclet-number |(F/D)| > 10 and near to ES else
         AScheme = lambda peclet_: max(0.0, (1.0 - 0.1 * abs(peclet_))**5.0)
     elif scheme == 'ES':
-        # ES - exponential scheme
-        # Only stationary one-dimensional but exact solution
         AScheme = lambda peclet_: (peclet_) / (np.exp(abs(peclet_)) - 1.0) \
             if peclet_ != 0.0 else 1
     else:
@@ -405,6 +448,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
     # we need this to fast identify uBoundary and value by boundary
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
+    
     for i, [boundary, val] in enumerate(uB):
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
@@ -412,14 +456,16 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
         uBoundaryVals[boundary.id()] = val
     duBoundaryID = []
     duBoundaryVals = [None] * mesh.boundaryCount()
+    
     for i, [boundary, val] in enumerate(duB):
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
         duBoundaryID.append(boundary.id())
         duBoundaryVals[boundary.id()] = val
 
+    # iterate over all cells 
     for cell in mesh.cells():
-
+        cID = cell.id()
         for bi in range(cell.boundaryCount()):
             boundary = pg.findBoundary(cell.boundaryNodes(bi))
 
@@ -443,40 +489,42 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
             if ncell:
                 # no boundary
                 if sparse:
-                    S.addVal(cell.id(), ncell.id(), -aB)
-                    S.addVal(cell.id(), cell.id(), +aB)
+                    S.addVal(cID, ncell.id(), -aB)
+                    S.addVal(cID, cID, +aB)
                 else:
-                    S[cell.id(), ncell.id()] -= aB
-                    S[cell.id(), cell.id()] += aB
+                    S[cID, ncell.id()] -= aB
+                    S[cID, cID] += aB
 
             elif not useHalfBoundaries:
 
                 if boundary.id() in uBoundaryID:
-                    val = pg.solver.generateBoundaryValue(boundary,
-                                                          uBoundaryVals[
-                                                              boundary.id()],
-                                                          time=time,
-                                                          userData=userData)
+                    val = pg.solver.generateBoundaryValue(
+                                                   boundary,
+                                                   uBoundaryVals[boundary.id()],
+                                                   time=time,
+                                                   userData=userData)
 
                     if sparse:
-                        S.addVal(cell.id(), cell.id(), aB)
+                        S.addVal(cID, cID, aB)
                     else:
-                        S[cell.id(), cell.id()] += aB
+                        S[cID, cID] += aB
 
-                    rhsBoundaryScales[cell.id()] += aB * val
+                    rhsBoundaryScales[cID] += aB * val
 
                 if boundary.id() in duBoundaryID:
                     # Neumann boundary condition
                     val = pg.solver.generateBoundaryValue(
-                        boundary, duBoundaryVals[boundary.id()], time=time,
-                        userData=userData)
+                                                 boundary,
+                                                 duBoundaryVals[boundary.id()],
+                                                 time=time,
+                                                 userData=userData)
+                    
+                    # amount of flow through the boundary
+                    outflow = val * boundary.size() / cell.size()
                     if sparse:
-                        # amount of flow through the boundary
-                        S.addVal(cell.id(), cell.id(), val *
-                                 boundary.size() / cell.size())
+                        S.addVal(cID, cID, outflow)
                     else:
-                        S[cell.id(), cell.id()] += val * \
-                            boundary.size() / cell.size()
+                        S[cID, cID] += outflow
 
         if fn is not None:
             if sparse:
@@ -487,28 +535,29 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0, f=None,
                 S[cell.id(), cell.id()] -= fn[cell.id()]
 
     if useHalfBoundaries:
-        for i, [b, val] in enumerate(duB):  # not defined!!!
+        raise("is this really used")
+        for i, [bound, val] in enumerate(duB):  # not defined!!!
             bIdx = mesh.cellCount() + i
 
-            c = b.leftCell()
+            bCell = bound.leftCell()
             if not c:
-                c = b.rightCell()
+                bCell = bound.rightCell()
 
-            if c:
-                n = b.norm(c)
-                v = findVelocity(mesh, vel, b, c, nc=None)
-                F = n.dot(v) * b.size()
+            if bCell:
+                n = bound.norm(bCell)
+                v = findVelocity(mesh, vel, bound, bCell, nc=None)
+                F = n.dot(v) * bound.size()
 
-                D = findDiffusion(mesh, a, b, c)
+                D = findDiffusion(mesh, a, bound, bCell)
                 aB = D * AScheme(F / D) + max(-F, 0.0)
 
                 if useHalfBoundaries:
                     if sparse:
-                        S.setVal(c.id(), c.id(), 1.)
-                        S.addVal(c.id(), bIdx, -aB)
+                        S.setVal(bCell.id(), bCell.id(), 1.)
+                        S.addVal(bCell.id(), bIdx, -aB)
                     else:
                         S[bIdx, bIdx] = 1.
-                        S[c.id(), bIdx] -= aB
+                        S[bCell.id(), bIdx] -= aB
 
                     rhsBoundaryScales[bIdx] = aB
 
@@ -520,7 +569,57 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
                       uL=None, relax=1.0,
                       ws=None, scheme='CDS', **kwargs):
     """
+    Calculate for u
+    
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh represents spatial discretization of the calculation domain
+    
+    a   : value | array | callable(cell, userData)
+        cell values
+    
+    b   : value | array | callable(cell, userData)
+        TODO What is b
+        
+    f   : iterable(cell)
+        TODO What is f
+    fn   : iterable(cell)
+    
+        TODO What is fn
+        
+    vel : ndarray (N,dim) | RMatrix(N,dim)
+        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension 
+        and j = [0 .. N-1] per Cell or per Node so N is either 
+        mesh.cellCount() or mesh.nodeCount()
+        
+    u0 : value | array | callable(cell, userData)
+        Starting field
+        
+    ws : Workspace 
+        This can be an empty class that will used as an Workspace to store and
+        cache data. 
+        
+        If ws is given: The system matrix is taken from ws or 
+        calculated once and stored in ws for further usage. 
+        
+        The system matrix is cached in this Workspace as ws.S
+        The LinearSolver with the factorized matrix is cached in 
+        this Workspace as ws.solver
+        The rhs vector is only stored in this Workspace as ws.rhs
+        
+    scheme : str [CDS]
+        Finite volume scheme:        
+        :py:mod:`pygimli.solver.diffusionConvectionKernel`
+            
+    Returns
+    -------
+    
+    u : ndarray(nTimes, nCells)
+        solution field for all time steps
+    
     """
+    verbose = kwargs.pop('verbose', False)
     # The Workspace is to hold temporary data or preserve matrix rebuild
     swatch = pg.Stopwatch(True)
     sparse = True
@@ -545,10 +644,19 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
             boundsNeumann = pg.solver.parseArgToBoundaries(kwargs['duB'], mesh)
 
         workspace.S, workspace.rhsBCScales = diffusionConvectionKernel(
-            mesh=mesh, a=a, b=b, f=f, uB=boundsDirichlet,
-            duB=boundsNeumann, u0=u0, fn=fn, vel=vel, scheme=scheme,
-            sparse=sparse, userData=kwargs.pop('userData', None))
-        print('FVM kernel 1:', swatch.duration(True))
+                                                            mesh=mesh, 
+                                                            a=a, 
+                                                            b=b, 
+                                                            uB=boundsDirichlet,
+                                                            duB=boundsNeumann, 
+                                                            #u0=u0, 
+                                                            fn=fn, 
+                                                            vel=vel, 
+                                                            scheme=scheme,
+                                                            sparse=sparse, 
+                                        userData=kwargs.pop('userData', None))
+        
+        #print('FVM kernel 1:', swatch.duration(True))
         dof = len(workspace.rhsBCScales)
 
 #        workspace.uDir = np.zeros(dof)
@@ -578,7 +686,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
 
                 workspace.ap[i] = val
 
-        print('FVM kernel 2:', swatch.duration(True))
+       # print('FVM kernel 2:', swatch.duration(True))
     # endif: not hasattr(workspace, 'S'):
 
     workspace.rhs = np.zeros(len(workspace.rhsBCScales))
@@ -599,7 +707,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
             # hold Sm until we have reference counting,
             # loosing Sm here will kill LinSolver later
             workspace.Sm = Sm
-            workspace.solver = pg.LinSolver(Sm, True)
+            workspace.solver = pg.LinSolver(Sm, verbose=verbose)
 
         u = None
         if sparse:
@@ -609,42 +717,18 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
         #print('FVM solve:', swatch.duration(True))
         return u[0:mesh.cellCount():1]
     else:
-        theta = kwargs.pop('theta', 0.5)
-        verbose = kwargs.pop('verbose', False)
+        theta = kwargs.pop('theta', 0.5 + 1e-6)
 
         if sparse:
             I = pg.solver.identity(len(workspace.rhs))
         else:
             I = np.diag(np.ones(len(workspace.rhs)))
 
-        print("solve cN")
+        if verbose:
+            print("Solve timesteps with Crank-Nicolson.")
+            
         return pg.solver.crankNicolson(times, theta, workspace.S, I,
                                        f=workspace.rhs, u0=u0, verbose=verbose)
-
-#        if not u0:
-#            u0 = np.zeros(len(workspace.rhs))
-#
-#        u = np.zeros((len(times), len(workspace.rhs)))
-#        u[0, :] = u0
-#        dt = (times[1] - times[0])
-#        I = np.diag(np.ones(len(S)))
-#
-#        rhs = np.zeros((len(times), dof))
-#
-#        rhs[:] = workspace.rhs
-#
-#        for n in range(1, len(times)):
-#
-#            b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
-#                dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-#
-#            A = (I + dt * theta * S)
-#
-#            ut = solver.linsolve(A, b)
-#            u[n, 0:mesh.cellCount()] = ut[0:mesh.cellCount():1]
-#
-#        return u[:,0:mesh.cellCount()]
-
 
 def createFVPostProzessMesh(mesh, u, uDirichlet):
     """
@@ -739,8 +823,32 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
                 verbose=1, **kwargs):
     """
     """
-    ws=kwargs.pop('ws', None)
-
+    
+    workspace = WorkSpace()
+    wsux = WorkSpace()
+    wsuy = WorkSpace()
+    wsp = WorkSpace()
+    
+    # get cache values if given
+    ws = kwargs.pop('ws', None)
+    if ws:
+        workspace = ws
+        
+        if hasattr(workspace, 'wsux'):
+            wsux = workspace.wsux
+        else:
+            workspace.wsux = wsux
+            
+        if hasattr(workspace, 'wsuy'):
+            wsuy = workspace.wsuy
+        else:
+            workspace.wsuy = wsuy
+            
+        if hasattr(workspace, 'wsp'):
+            wsp = workspace.wsp
+        else:
+            workspace.wsp = wsp
+            
     velocityRelaxation = kwargs.pop('vRelax', 0.5)
     pressureRelaxation = kwargs.pop('pRelax', 0.8)
 
@@ -750,14 +858,7 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
 
     velBoundaryX = [[marker, vel[0]] for marker, vel in velBoundary]
     velBoundaryY = [[marker, vel[1]] for marker, vel in velBoundary]
-
-    class WS:
-        pass
-
-    wsux = WS()
-    wsuy = WS()
-    wsp = WS()
-
+   
     pressure = None
     if pre0 is None:
         pressure = np.zeros(mesh.cellCount())
@@ -773,8 +874,14 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
     mesh.createNeighbourInfos()
 
     CtB = mesh.cellToBoundaryInterpolation()
-
     controlVolumes = CtB * mesh.cellSizes()
+
+    density = kwargs.pop('density', 1.0)
+    force = kwargs.pop('f', [0.0, 0.0])
+    density = pg.solver.parseArgToArray(density, ndof=mesh.cellCount())
+    forceX = pg.solver.parseArgToArray(force[0], ndof=mesh.cellCount())
+    forceY = pg.solver.parseArgToArray(force[1], ndof=mesh.cellCount())
+
 
     for i in range(maxIter):
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)
@@ -782,7 +889,7 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
 
         velocity[:, 0] = solveFiniteVolume(mesh,
                                            a=viscosity,
-                                           f=-pressureGrad[:, 0],
+                                           f=-pressureGrad[:, 0]/density+forceX,
                                            uB=velBoundaryX,
                                            uL=velocity[:, 0],
                                            relax=velocityRelaxation,
@@ -795,7 +902,7 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
 
         velocity[:, 1] = solveFiniteVolume(mesh,
                                            a=viscosity,
-                                           f=-pressureGrad[:, 1],
+                                           f=-pressureGrad[:, 1]/density+forceY,
                                            uB=velBoundaryY,
                                            uL=velocity[:, 1],
                                            relax=velocityRelaxation,
@@ -844,8 +951,8 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
         preCNorm.append(pg.norm(pressureCorrection))
         divVNorm.append(pg.norm(div))
 
-        if ws:
-            ws.div=div
+        if workspace:
+            workspace.div=div
 #        __d('div', div)
 #        if ( i == 1):
 #            sd

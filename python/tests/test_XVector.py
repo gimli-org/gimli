@@ -97,25 +97,50 @@ class TestRVectorMethods(unittest.TestCase):
         #self.assertEqual(sum(1.0 / v), 5)
      
     def test_RVectorIndexRW(self):
-        v = pg.RVector(5, 2.0)
         
-        self.assertEqual(v[0], 2.0)
+        v = pg.RVector(5, 2.0)
+        np.testing.assert_array_equal(v, [2, 2, 2, 2, 2])
+        
         v += 1.0
-        self.assertEqual(v[0], 3.0)         
-        v += 1
-        self.assertEqual(v[0], 4.0)         
-        v[1] = 1.0
-        self.assertEqual(v[1], 1.0)
-        v[1] += 1.0
-        self.assertEqual(v[1], 2.0)  
-        v[[1,2]] = 2.0
-        self.assertEqual(v[1], 2.0)
+        np.testing.assert_array_equal(v, [3, 3, 3, 3, 3])         
 
+        v += 1
+        np.testing.assert_array_equal(v, [4, 4, 4, 4, 4])         
+        
+        v[1] = 1.0
+        np.testing.assert_array_equal(v, [4, 1, 4, 4, 4])         
+        
+        v[1] += 1.0
+        np.testing.assert_array_equal(v, [4, 2, 4, 4, 4])         
+        
+        v[[1,2]] = 2.0
+        np.testing.assert_array_equal(v, [4, 2, 2, 4, 4])         
+        
         v[pg.IVector(1,3)] = 3.0
-        self.assertEqual(v[3], 3.0)
+        np.testing.assert_array_equal(v, [4, 2, 2, 3, 4])         
+        
+        v[pg.IVector(5,2)] = 1.0
+        np.testing.assert_array_equal(v, [4, 2, 1, 3, 4])         
+        
+        v[pg.find(v==4.0)] = 5.0
+        np.testing.assert_array_equal(v, [5, 2, 1, 3, 5])         
+        
+        v[v==5.0] = 4.0
+        np.testing.assert_array_equal(v, [4, 2, 1, 3, 4])
+        
+        v[v==4.0] = 5.0
+        np.testing.assert_array_equal(v, [5, 2, 1, 3, 5])         
+        
+        #this will work only if we overwrite __iadd__
+        #v[v==4.0] += 1.0
+        #np.testing.assert_array_equal(v, [6, 2, 1, 3, 6])         
         
         v.setVal(1.0, 1)
-        self.assertEqual(v[1], 1.0)
+        np.testing.assert_array_equal(v, [5, 1, 1, 3, 5])         
+        
+        
+        
+        
          
     def test_RVectorFuncts(self):
         v = pg.RVector(5, 2.0)

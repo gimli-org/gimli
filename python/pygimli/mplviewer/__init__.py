@@ -102,3 +102,78 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0,
     plt.rcParams.update(params)
 
 # def setOutPutStyle
+
+def createAnimation(fig, animate, nFrames, dpi, out):
+    """
+        Create animation for the content of a given matplotlib figure.
+    
+        Until I know a better place.
+    """
+    anim = animation.FuncAnimation(fig, animate,
+                                   frames=nFrames,
+                                   interval=0.001, repeat=False)
+    anim.save(out + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
+              bitrate=24*1024, extra_args=None, metadata=None,
+              extra_anim=None, savefig_kwargs=None)
+    try:
+        print("Create frames ... ")
+        os.system('mkdir -p anim-' + out)
+        os.system('ffmpeg -i ' + out + '.mp4 anim-' + out + '/movie%d.jpg')
+    except:
+        pass
+
+
+import matplotlib.animation as animation
+
+def saveAnimation(mesh, data, out, vData=None, plc=None, label='',
+                  cMin=None, cMax=None, logScale=False, cmap=None, **kwargs):
+    """
+        Create and save an animation for a given mesh with a set of field data.
+        
+        Until I know a better place.
+    """
+    dpi=92
+    scale=1
+    fig = plt.figure(facecolor='white',
+                     figsize=(scale*800/dpi, scale*490/dpi), dpi=dpi)  
+    ax = fig.add_subplot(1,1,1)
+        
+    gci = pg.mplviewer.drawModel(ax, mesh, data=data[0],
+                                 cMin=cMin, cMax=cMax, cmap=cmap,
+                                 logScale=logScale)
+    
+    cbar = pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
+    ax.set_ylabel('Depth [m]')
+    ax.set_xlabel('$x$ [m]')
+        
+    ticks = ax.yaxis.get_majorticklocs()
+    tickLabels = []
+    for t in ticks:
+        tickLabels.append(str(int(abs(t))))
+
+    ax.set_yticklabels(tickLabels)
+    
+    if plc:
+        pg.show(plc, axes=ax)
+    
+    plt.tight_layout()
+    plt.pause(0.001)
+    
+    def animate(i):
+        print(out + ": Frame:", i, "/", len(data))
+        
+        if not vData is None:
+            ax.clear()
+            pg.mplviewer.holdAxes_ = 1
+            pg.mplviewer.drawModel(ax, mesh, data=data[i],
+                                 cMin=cMin, cMax=cMax, cmap=cmap,
+                                 logScale=logScale)
+            pg.mplviewer.drawStreams(ax, mesh, vData[i], **kwargs)
+        else:
+            pg.mplviewer.setMappableData(gci, data[i], 
+                                     cMin=cMin, cMax=cMax,
+                                     logScale=logScale)
+            
+        #plt.pause(0.001)
+    createAnimation(fig, animate, int(len(data)), dpi, out)
+    

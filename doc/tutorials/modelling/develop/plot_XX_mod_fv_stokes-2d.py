@@ -7,8 +7,8 @@ import sys
 
 import pygimli as pg
 import pygimli.solver as solver
-from pygimli.viewer import show
 
+from pygimli.meshtools import polyCreateDefaultEdges_
 from pygimli.meshtools import createMesh
 
 import matplotlib.pyplot as plt
@@ -16,13 +16,7 @@ import numpy as np
 
 from solverFVM import solveStokes_NEEDNAME
 
-from solverFVM import solveFiniteVolume, createFVPostProzessMesh, diffusionConvectionKernel, cellToFace
-from solverFVM import boundaryToCellDistances
-from solverFVM import cellDataToCellGrad, cellDataToCellGrad2, divergence
-from solverFVM import cellDataToBoundaryDataMatrix, cellDataToBoundaryGrad
-
-
-def modelCavity():
+def modelCavity(maxArea=0.0025):
     boundary = []
     boundary.append([-1.0, -1.0])
     boundary.append([ -0.5, -1.0])
@@ -36,21 +30,11 @@ def modelCavity():
     poly = pg.Mesh(2)
     nodes = [poly.createNode(b) for b in boundary]
 
-    poly.createEdge(nodes[0], nodes[1], 4) # bottom
-    poly.createEdge(nodes[1], nodes[2], 4) # bottom
-    poly.createEdge(nodes[2], nodes[3], 4) # bottom
-    poly.createEdge(nodes[3], nodes[4], 4) # bottom
-    poly.createEdge(nodes[4], nodes[5], 4) # bottom
-
-    poly.createEdge(nodes[5], nodes[6], 2) # right
-    poly.createEdge(nodes[6], nodes[7], 3) # top
-    poly.createEdge(nodes[7], nodes[0], 1) # left
-
-    mesh = createMesh(poly, quality=33.4, area=0.0025, smooth=[0,10])
+    polyCreateDefaultEdges_(poly, boundaryMarker=[4,4,4,4,4,2,3,1])
+    mesh = createMesh(poly, quality=33.4, area=maxArea, smooth=[0,10])
 
     # Diffusions coefficient, viscosity
-    
-
+ 
     b7 = mesh.findBoundaryByMarker(1)[0]
     for b in mesh.findBoundaryByMarker(1):
         if b.center()[1] < b.center()[1]:
@@ -85,7 +69,6 @@ def modelCavity2(area, refine=True):
     boundary.append([ 0.2, -0.2]) #9
     boundary.append([-0.2, -0.2]) #10
     boundary.append([-0.2, 0.0]) #11
-    
     
     poly = pg.Mesh(2)
     nodes = [poly.createNode(b) for b in boundary]
@@ -162,34 +145,36 @@ def modelPipe():
     a=1
     return mesh, velBoundary, preBoundary, a, 400
 
-def modelPlume():
+def modelPlume(maxArea=0.1):
     boundary = []
     
-    boundary.append([-100.,    0.0])#0
-    boundary.append([-100., -100.0])#1
+    boundary.append([-1.,   0.0])#0
+    boundary.append([-1., -1.0])#1
     
-    boundary.append([-10.,  -100.0])#2
-    boundary.append([ 10.,  -100.0])#3
+    boundary.append([-0.1,  -1.0])#2
+    boundary.append([ 0.1,  -1.0])#3
     
-    boundary.append([ 100., -100.0])#4
-    boundary.append([ 100.,    0.0])#5
-    boundary.append([ 10. ,    0.0])#6
-    boundary.append([ -10. ,   0.0])#7
-    
+    boundary.append([ 1., -1.0])#4
+    boundary.append([ 1.,    0.0])#5
+    boundary.append([ 0.1,    0.0])#6
+    boundary.append([ -0.1,   0.0])#7
     
     poly = pg.Mesh(2)
     nodes = [poly.createNode(b) for b in boundary]
     
-    poly.createEdge(nodes[0], nodes[1], 1) # left
-    poly.createEdge(nodes[1], nodes[2], 2) # bottom1
-    poly.createEdge(nodes[2], nodes[3], 3) # bottom2
-    poly.createEdge(nodes[3], nodes[4], 2) # bottom3
-    poly.createEdge(nodes[4], nodes[5], 4) # right
-    poly.createEdge(nodes[5], nodes[6], 5) # top1
-    poly.createEdge(nodes[6], nodes[7], 6) # topcenter
-    poly.createEdge(nodes[7], nodes[0], 7) # top2
+    polyCreateDefaultEdges_(poly, boundaryMarker=[1,2,3,2,4,5,6,7])
     
-    mesh = createMesh(poly, quality=33.4, area=20., smooth=[0,10], verbose=False)
+    #poly.createEdge(nodes[0], nodes[1], 1) # left
+    #poly.createEdge(nodes[1], nodes[2], 2) # bottom1
+    #poly.createEdge(nodes[2], nodes[3], 3) # bottom2
+    #poly.createEdge(nodes[3], nodes[4], 2) # bottom3
+    #poly.createEdge(nodes[4], nodes[5], 4) # right
+    #poly.createEdge(nodes[5], nodes[6], 5) # top1
+    #poly.createEdge(nodes[6], nodes[7], 6) # topcenter
+    #poly.createEdge(nodes[7], nodes[0], 7) # top2
+    
+    mesh = createMesh(poly, quality=33.4, area=maxArea,
+                      smooth=[0,10], verbose=False)
     
     velBoundary=[#[1, [0.0,  0.0]],
  #                [2, [0.0,  0.0]],
@@ -208,30 +193,35 @@ def modelPlume():
     a=1
     return mesh, velBoundary, preBoundary, a, 100
 
+
+
+modelBuilder = modelPlume
+
 #mesh, velBoundary, preBoundary, a, maxIter = modelCavity()
-mesh, velBoundary, preBoundary, a, maxIter = modelCavity2(0.10001101937239093957)
+#mesh, velBoundary, preBoundary, a, maxIter = modelCavity2(0.10001101937239093957)
 #mesh, velBoundary, preBoundary, a, maxIter= modelPipe()
 #mesh, velBoundary, preBoundary, a, maxIter= modelPlume()
 
-
-modelBuilder = modelCavity2
+#modelBuilder = modelCavity2
 
 swatchG = pg.Stopwatch(True)
 swatch = pg.Stopwatch(True)
 
-nSteps = 3
-aRange = (10.**(np.linspace(np.log10(0.0005), np.log10(0.1), nSteps)))[::-1]
-print( aRange)
+nSteps = 1
+multigridArea = (10.**(np.linspace(np.log10(0.001), np.log10(0.1), nSteps)))[::-1]
+print(multigridArea)
 
-pre = np.zeros(mesh.cellCount())
-vel = np.zeros((mesh.cellCount(), 3))
+pre = None
+vel = None
     
-for i in range(0, len(aRange)):
+for i in range(0, len(multigridArea)):
     if i == 0:
-        mesh, velBoundary, preBoundary, a, maxIter = modelCavity2(aRange[0])
+        mesh, velBoundary, preBoundary, a, maxIter = modelBuilder(multigridArea[0])
+        pre = np.zeros(mesh.cellCount())
+        vel = np.zeros((mesh.cellCount(), 3))
     else:
         #mesh1 = mesh.createH2()
-        mesh1, velBoundary, preBoundary, a, maxIter = modelBuilder(aRange[i])
+        mesh1, velBoundary, preBoundary, a, maxIter = modelBuilder(multigridArea[i])
         a = pg.RVector(mesh1.cellCount(), 1.0)
          
         pre = pg.interpolate(mesh, pre, mesh1.cellCenter())
@@ -240,7 +230,7 @@ for i in range(0, len(aRange)):
         vel = np.vstack([vx0, vy0]).T
         mesh = mesh1
     
-    print("Cells: ", mesh.cellCount(), aRange[i])
+    print("Cells: ", mesh.cellCount(), multigridArea[i])
     vel, pre, pCNorm, divVNorm = solveStokes_NEEDNAME(mesh, velBoundary, preBoundary,
                                             viscosity=a,
                                             pre0=pre,
@@ -255,24 +245,21 @@ for i in range(0, len(aRange)):
 print("OverallTime:", swatchG.duration(True))
 fig = plt.figure()
 ax1 = fig.add_subplot(1, 1, 1)
-plt.ion()
-ax, cbar = show(mesh, data=pg.cellDataToPointData(mesh, np.sqrt(vel[:,0]*vel[:,0] +vel[:,1]*vel[:,1])),
-     logScale=False, colorBar=True, axes=ax1, cbar='b2r')
+ax, cbar = pg.show(mesh, data=pg.cellDataToPointData(mesh,
+                                np.sqrt(vel[:,0]*vel[:,0] +vel[:,1]*vel[:,1])),
+                logScale=False, colorBar=True, axes=ax1, cbar='b2r')
 cbar.ax.set_xlabel('Geschwindigkeit in m$/$s')
      
-meshC, velBoundary, preBoundary, a, maxIter = modelCavity2(0.001, False)
+meshC, velBoundary, preBoundary, a, maxIter = modelBuilder(0.01)
 
-show(mesh, data=vel, coarseMesh=meshC, axes=ax1)
-#show(mesh, data=vel, axes=ax1)
+pg.show(mesh, data=vel, coarseMesh=meshC, axes=ax1)
+#show(meshC, axes=ax1)
 
-show(meshC, axes=ax1)
-#show(mesh, axes=ax1)
         
 plt.figure()
 plt.semilogy(pCNorm, label='norm')
-plt.semilogy(divVNorm, label='norm')
+plt.semilogy(divVNorm, label='norm div v')
 plt.legend()
 
-plt.ioff()
-plt.show()
+pg.wait()
 #drawMesh(ax, mesh)

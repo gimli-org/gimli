@@ -67,7 +67,7 @@ def createAnimation(fig, animate, nFrames, dpi, out):
               bitrate=24*1024, extra_args=None, metadata=None,
               extra_anim=None, savefig_kwargs=None)
     try:
-        print("create frames ... ")
+        print("Create frames ... ")
         os.system('mkdir -p anim-' + out)
         os.system('ffmpeg -i ' + out + '.mp4 anim-' + out + '/movie%d.jpg')
     except:
