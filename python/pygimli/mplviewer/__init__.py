@@ -171,9 +171,10 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='',
             pg.mplviewer.drawStreams(ax, mesh, vData[i], **kwargs)
         else:
             pg.mplviewer.setMappableData(gci, data[i], 
-                                     cMin=cMin, cMax=cMax,
-                                     logScale=logScale)
+                                         cMin=cMin, cMax=cMax,
+                                         logScale=logScale)
             
-        #plt.pause(0.001)
+            
+        plt.pause(0.1)
     createAnimation(fig, animate, int(len(data)), dpi, out)
     

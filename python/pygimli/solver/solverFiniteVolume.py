@@ -437,7 +437,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
     S = None
     if sparse:
-        S = pg.RSparseMapMatrix(dof, dof, 0) + identity(dof) * b
+        S = pg.RSparseMapMatrix(dof, dof, 0) + identity(dof, scale=b)
     else:
         S = np.zeros((dof, dof))
 
@@ -481,6 +481,8 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
             # Diffusion part
             D = findDiffusion(mesh, a, boundary, cell, ncell)
 
+            #print(F, D, F/D)
+            #print((1.0 - 0.1 * abs(F/D))**5.0)
             aB = D * AScheme(F / D) + max(-F, 0.0)
 
             aB /= cell.size()
@@ -856,8 +858,14 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
     preCNorm = []
     divVNorm = []
 
-    velBoundaryX = [[marker, vel[0]] for marker, vel in velBoundary]
-    velBoundaryY = [[marker, vel[1]] for marker, vel in velBoundary]
+    velBoundaryX = []
+    velBoundaryY = []
+    for marker, vel in velBoundary:
+        if not isinstance(vel[0], str):
+            velBoundaryX.append([marker, vel[0]])
+        if not isinstance(vel[1], str):
+            velBoundaryY.append([marker, vel[1]])
+
    
     pressure = None
     if pre0 is None:
@@ -969,6 +977,10 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
         if verbose:
             print("\r" + str(i) + " div V=" + str(divVNorm[-1]) +
                   " ddiv V=" + str(convergenceTest))
+        if divVNorm[-1] > 1e6:
+            print("\r" + str(i) + " div V=" + str(divVNorm[-1]) +
+                  " ddiv V=" + str(convergenceTest))
+            raise BaseException("Stokes solver seams to diverging")
 
         if i == maxIter or divVNorm[-1] < tol or \
             abs(convergenceTest * divVNorm[-1]) < tol:
