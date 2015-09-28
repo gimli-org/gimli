@@ -58,25 +58,24 @@ def createModel2(maxArea=0.2, nx=20, grid=True):
         mesh = createMesh([layer1, layer2], quality=32, area=maxArea,
                           smooth=[1,10])
         
-    density = mesh.cellAttributes()*0.0 + 1.0
+    density = mesh.cellAttributes()*0.0 + 0.4
     
     for c in mesh.cells():
         if c.center().y() > 10:
-            density[c.id()] = 2.0
+            density[c.id()] = 1.0
     
     
     return mesh, density
 
-
-def calc(out, *args):
-    mesh, density = args[0]
-    
+def calc(out, mesh, density, viscosity):
     print(mesh)
             
-    velBoundary=[[1, [0.0,  0.0]],
-                [2, [0.0,  0.0]],
-                [3, [0.0,  0.0]],
-                [4, [0.0,  0.0]]]
+    velBoundary=[
+                [1, [0.0,  'nan']],
+                [2, [0.0,  'nan']],
+                [3, ['nan',  0.0]],
+                [4, ['nan',  0.0]]
+                ]
     preBoundary=[[1, 0.0],
                 [2, 0.0],
                 [3, 0.0],
@@ -96,11 +95,11 @@ def calc(out, *args):
     ax,_ = pg.show(mesh, density)
 
     nSteps = 300
-    dt = 0.01
+    dt = 0.1
     dtSteps = 10
 
     meshC = pg.createGrid(x=np.linspace(-10, 10, 41),
-                        y=np.linspace(-10, 0, 21))
+                          y=np.linspace(0, 20, 41))
 
     vel=None
     pre=None
@@ -111,37 +110,43 @@ def calc(out, *args):
         vel, pre, pCNorm, divVNorm = solver.solveStokes(mesh, 
                                                         velBoundary=velBoundary,
                                                         preBoundary=preBoundary,
-                                                        viscosity=0.1,
+                                                        viscosity=viscosity/density,
                                                         density=density,
                                                         pre0 = pre,
                                                         vel0 = vel,
                                                         f=[0,-9.81],
-                                                        maxIter=100,
+                                                        maxIter=1000,
                                                         tol=1e-4,
-                                                        verbose=0,
+                                                        verbose=1,
+                                                        vRelax=0.1,
+                                                        pRelax=0.1,
                                                         ws=wsfv)
         vels.append(vel)
         
-        print("stokes:" , swatch.duration(True))
-        dens2 = solver.solveFiniteVolume(mesh, a=1./5000, u0=density, vel=vel,
+        print("stokes:" , swatch.duration(True), "div V: ", divVNorm[-1])
+        dens2 = solver.solveFiniteVolume(mesh, a=1./50, b=viscosity/density, u0=density, vel=vel,
                                         times=np.linspace(0, dt, dtSteps), 
                                         #uBoundary=[4, 0],
                                         scheme='PS', verbose=0)
         print("Convekt:" , swatch.duration(True))
         density=dens2[-1]
         
-        
-        
         ax.clear()
         pg.show(mesh, density, axes=ax)
-        #pg.show(mesh, vel, coarseMesh=meshC, axes=ax, color='white')
+        pg.show(mesh, vel, coarseMesh=meshC, axes=ax, color='white')
 
     mesh.save(out)
-    meshC.save(out+'C')
-    densMatrix.save(out+'density')
+    meshC.save(out + 'C')
+    densMatrix.save(out + 'density.bmat')
     np.save(out+'velo.bmat', vels)
+    
+def calcAndSave(out, model, viscosity=1.0):
+    out = out + "_visDens-" + str(viscosity)
+    mesh, density = model
+    calc(out, mesh, density, viscosity)
+    
     createAnimation(out)
-    createAnimation(out, stream=True)
+    #createAnimation(out, stream=True)
 
 def createAnimation(out, stream=False):
     mesh = pg.load(out + '.bms')
@@ -149,25 +154,34 @@ def createAnimation(out, stream=False):
     densMatrix = pg.load(out + 'density.bmat')
     vels = np.load(out+'velo.bmat.npy')
     
+    cMin= 9e99
+    cMax= -9e99
+    for d in densMatrix:
+        cMin = min(cMin, pg.min(d))
+        cMax = max(cMax, pg.max(d))
+        
+        
     if stream:
         pg.mplviewer.saveAnimation(mesh, densMatrix, out + '-stream',
                                plc=None, label='',
-                               cMin=2, cMax=3, logScale=True, cmap=None,
+                               cMin=cMin, cMax=cMax, logScale=False, cmap=None,
                                vData=vels, coarseMesh=meshC, color='white'
                                )
     else:
         pg.mplviewer.saveAnimation(mesh, densMatrix, out,
                                plc=None, label='',
-                               cMin=2, cMax=3, logScale=True, cmap=None)
+                               cMin=cMin, cMax=cMax, logScale=False, cmap=None)
 
 
 if __name__ == "__main__":
+    calcAndSave('two-grid_d0.1-1-v2', model=createModel2(nx=150, grid=True), viscosity=0.1)
+    #for v in [0.1, 0.01, 0.0001, 0.00001]:
+        #calcAndSave('two-grid', model=createModel2(nx=80, grid=True), viscosity=v)
+
+    #calcAndSave('two-mesh', createModel2(maxArea=0.005, grid=False))
     
-    calc('two-grid', createModel2(nx=250, grid=True))
-    calc('two-mesh', createModel2(maxArea=0.005, grid=False))
-    
-    calc('omega-grid', createModel(nx=200, grid=True))
-    calc('omega-mesh', createModel(maxArea=0.008, grid=False))
+    #calcAndSave('omega-grid', createModel(nx=200, grid=True))
+    #calcAndSave('omega-mesh', createModel(maxArea=0.008, grid=False))
     
 
 

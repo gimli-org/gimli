@@ -444,7 +444,7 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
     return A
 
 
-def identity(dom, start=0, end=-1):
+def identity(dom, start=0, end=-1, scale=1):
     """WHATSTHIS?"""
     A = pg.RSparseMapMatrix(dom, dom)
 
@@ -452,7 +452,10 @@ def identity(dom, start=0, end=-1):
         end = dom
 
     for i in range(start, end):
-        A.addVal(i, i, 1)
+        if hasattr(scale, '__len__'):
+            A.addVal(i, i, scale[i])
+        else:
+            A.addVal(i, i, scale)
     return A
 
 
