@@ -85,6 +85,14 @@ If it finishs without any errors you just need to set the environment:
     export PATH=$PATH:$HOME/src/gimli/build/lib
     export PATH=$PATH:$HOME/src/gimli/build/bin
 
+If you want to use the C++ commandline applications, call
+
+.. code-block:: bash
+
+    make apps
+
+Compiled binaries will be written to `build/bin`.
+
 You can test the pygimli build with:
 
 .. code-block:: bash
