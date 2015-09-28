@@ -3,27 +3,38 @@
 
 echo "Starting automatic build #$BUILD_NUMBER on" `date`
 start=$(date +"%s")
+
+# Show last change to repo in build log
+echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
+
+# Show system information
+lsb_release -d
 uname -a
 gcc --version
-python --version
 cmake --version
+python --version
 python -c "import numpy; print(numpy.__version__)"
 
-# just do this if something is wrong with the thirdparty sources
-# rm -rf thirdParty/src
+################
+#  Main build  #
+################
 
-# Main build
-rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
+# just do this if something is wrong with the thirdparty sources
+#rm -rf thirdParty/src
+#rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
+rm -f build/build_tests.html # remove old test report
+rm -f build/CMakeCache.txt # clean old cache
+
 mkdir -p build
 cd build
-rm -f build_tests.html # remove old test report
-rm -f CMakeCache.txt # clean old cache
-#
-#cmake ../trunk 
-CLEAN=1 cmake ../trunk -DCASTER=castxml
-#cmake ../trunk -DCASTER=castxml -DPYVERSION=3
+cmake ../trunk -DCASTER=castxml #-DPYVERSION=3
+
 make -j 16 gimli
 make pygimli J=12
+
+#############################
+#  Testing & documentation  #
+#############################
 
 # Test gimli
 make check

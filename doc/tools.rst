@@ -8,7 +8,7 @@ Mesh manipulation
 
 meshConvert
 ...........
-.. program-output:: meshConvert -h
+.. program-output:: convertMesh -h
     :nostderr:
 
 meshMerge

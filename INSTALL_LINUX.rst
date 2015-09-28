@@ -10,7 +10,7 @@ The following should suffice to build GIMLi from source on most Linux Platforms:
 
     mkdir -p build && cd build
     cmake ../trunk
-    make pygimli
+    make gimli pygimli apps
 
 See below for more detailed compilation instructions.
 
@@ -106,6 +106,14 @@ some environment variables:
     export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/trunk/python
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
     export PATH=$PATH:$HOME/src/gimli/build/bin
+
+If you want to use the C++ commandline applications, call
+
+.. code-block:: bash
+
+    make apps
+
+Compiled binaries will be written to `build/bin`.
 
 You can test the pygimli build with:
 
