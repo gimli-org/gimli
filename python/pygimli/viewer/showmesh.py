@@ -174,9 +174,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
     validData = False
 
     if data is None:
-        drawMesh(ax, mesh)
+        drawMesh(ax, mesh, **kwargs)
     elif isinstance(data, pg.stdVectorRVector3):
-        drawSensors(ax, data)
+        drawSensors(ax, data, **kwargs)
     else:
         if hasattr(data[0], '__len__') and not isinstance(
             data, np.ma.core.MaskedArray):
@@ -188,12 +188,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
                 drawStreams(ax, mesh, data, **kwargs)
             else:
                 print("No valid stream data:", data)
-                drawMesh(ax, mesh)
+                drawMesh(ax, mesh, **kwargs)
 
         elif (min(data) == max(data)):  # or pg.haveInfNaN(data):
 
             print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
-            drawMesh(ax, mesh)
+            drawMesh(ax, mesh, **kwargs)
         else:
             validData = True
             try:
@@ -205,7 +205,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
                 print("Exception occured: " + e)
                 print("Data: ", min(data), max(data), pg.haveInfNaN(data))
                 print("Mesh: ", mesh)
-                drawMesh(ax, mesh)
+                drawMesh(ax, mesh, **kwargs)
 
     ax.set_aspect('equal')
 

@@ -176,7 +176,7 @@ def drawMesh(axes, mesh, **kwargs):
     >>> plt.show()
     """
 
-    pg.mplviewer.drawMeshBoundaries(axes, mesh, fitView=False)
+    pg.mplviewer.drawMeshBoundaries(axes, mesh, fitView=False, **kwargs)
 
     if kwargs.pop('fitView', True):
         axes.set_aspect('equal')
@@ -188,7 +188,7 @@ def drawMesh(axes, mesh, **kwargs):
 
 def drawModel(axes, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cmap=None,
-              alpha=1, xlabel=None, ylabel=None, verbose=False,
+              xlabel=None, ylabel=None, verbose=False,
               **kwargs):
     """
     Draw a 2d mesh and color the cell by the data.
@@ -224,7 +224,7 @@ def drawModel(axes, mesh, data=None,
 
     else:
 
-        gci = pg.mplviewer.createMeshPatches(axes, mesh, alpha=alpha,
+        gci = pg.mplviewer.createMeshPatches(axes, mesh, 
                                              verbose=verbose, **kwargs)
 
         if cmap is not None:
@@ -323,6 +323,10 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
     Parameters
     ----------
 
+    hideMesh: bool [False]
+        Show only the boundary of the mesh and omit inner edges that 
+        separate the cells.
+
     **kwargs:
         fitView : bool [True]
 
@@ -378,32 +382,79 @@ def drawMeshBoundaries(axes, mesh, hideMesh=False, **kwargs):
                                linewidth=1.5)
 
     if mesh.cellCount() == 0:
-        eCircles = []
-        cols = []
-        for n in mesh.nodes():
-            col = (0.0, 0.0, 0.0)
-            if n.marker() == pg.MARKER_NODE_SENSOR:
-                col = (1.0, 0.0, 0.0)
-#            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
-            ms = kwargs.pop('markersize', 5)
-            axes.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
-                      color='black')
-#            eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
-            cols.append(col)
-        p = mpl.collections.PatchCollection(eCircles, color=cols)
-        axes.add_collection(p)
-
-        for reg in mesh.regionMarker():
-            axes.text(reg[0], reg[1],
-                      str(reg.marker()) + ": " + str(reg.area()),
-                      color='black')  # 'white'
-
-        for hole in mesh.holeMarker():
-            axes.text(hole[0], hole[1], 'H', color='black')
-
+        drawPLC(axes, mesh, **kwargs)
+        
     updateAxes_(axes)
 
+def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
+    """
+    Draw 2D PLC into the given axes.
+    
+    Parameters
+    ----------
 
+    fillRegion: bool [True]
+        Fill the regions with default colormap.
+        
+    boundaryMarker: bool [False]
+        show boundary marker
+        
+    **kwargs
+
+    Examples
+    --------
+    """
+    
+    eCircles = []
+    cols = []
+    
+    if fillRegion:
+        tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
+        drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarker(),
+                nLevs=3, levels=pg.utils.unique(tmpMesh.cellMarker()), 
+                tri=True, alpha=0.5,
+                linewidth = 0.000, edgecolors='k', snap=False,
+                )
+    
+    for n in mesh.nodes():
+        col = (0.0, 0.0, 0.0)
+        if n.marker() == pg.MARKER_NODE_SENSOR:
+            col = (1.0, 0.0, 0.0)
+
+#        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
+        ms = kwargs.pop('markersize', 5)
+        axes.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
+                  color='black')
+#        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
+        cols.append(col)
+
+    if boundaryMarker:
+        for b in mesh.boundaries():
+            axes.text(b.center()[0], b.center()[1],
+                    str(b.marker()),
+                    color='red',
+                    verticalalignment='center',
+                    horizontalalignment='center'
+                    )  # 'white'
+            
+        
+    p = mpl.collections.PatchCollection(eCircles, color=cols)
+    axes.add_collection(p)
+
+    for reg in mesh.regionMarker():
+        axes.text(reg[0], reg[1],
+                  str(reg.marker()) + ": " + str(reg.area()),
+                  color='black', 
+                  verticalalignment='center',
+                  horizontalalignment='center'
+                  )  # 'white'
+
+    for hole in mesh.holeMarker():
+        axes.text(hole[0], hole[1], 'H', color='black')
+
+    updateAxes_(axes)
+    
+    
 def createMeshPatches(axes, mesh, verbose=True, **kwargs):
     """
        Utility function to create 2d mesh patches in a axes
@@ -526,6 +577,7 @@ def drawMPLTri(axes, mesh, data=None, cMin=None, cMax=None, logScale=True,
         shading = kwargs.pop('shading', 'flat')
         if shading == 'gouraud':
             z = pg.cellDataToPointData(mesh, data)
+ 
         gci = axes.tripcolor(x, y, triangles, z, levels, shading=shading,
                              **kwargs)
 
