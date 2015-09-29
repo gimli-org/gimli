@@ -31,6 +31,8 @@ If you want to use the pyGIMLi (Python scripts, bindings and apps):
 .. code-block:: bash
 
     sudo apt-get install python-numpy python-matplotlib
+    sudo apt-get install libedit-dev clang-3.6-dev llvm-3.6-dev
+
 
 Create a directory for your installation, e.g., $HOME/src
 
@@ -163,18 +165,16 @@ You can force cmake to select the correct version with:
 
     cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
 
-
-Note for gcc version > 5.0
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-gccxml will not support gcc versions above 5.0 so we have to switch the xml caster to castxml to build pygimli.
-This should be done via cmake automatically.
-As an additional prerequisite castxml needs > clang-3.6.0 and > llvm-3.6.0 installed.
-castxml will be installed automatically.
-
-
 Usefull cmake settings
 ^^^^^^^^^^^^^^^^^^^^^^
+
+You can rebuild and update all local generated third party software by setting the CLEAN environment variable:
+
+.. code-block:: bash
+
+    CLEAN=1 cmake ../trunk
+
+Use alternative c++ compiler.
 
 .. code-block:: bash
 
@@ -188,20 +188,13 @@ You will need numpy and boost-python builds with your desired python version.
 
     cmake ../trunk -DPYVERSION=3.3
 
-Chose a xml caster for the python bindings.
-Either gccxml (default for linux and gcc < 5) or castxml else.
-
-.. code-block:: bash
-
-    cmake ../trunk -DCASTER='gccxml'
-
 Build the library with debug and profiling flags
 
 .. code-block:: bash
 
     cmake ../trunk -DCMAKE_BUILD_TYPE=Debug
 
-Build the library with gcc build.in sanitiy check 
+Build the library with gcc build.in sanity check 
 
 .. code-block:: bash
 
@@ -211,17 +204,11 @@ Build the library with gcc build.in sanitiy check
 Usefull make commands
 ^^^^^^^^^^^^^^^^^^^^^
 
-You can rebuild and update all local generated third party software by setting the CLEAN environment variable:
-
-.. code-block:: bash
-
-    CLEAN=1 cmake ../trunk
-
 More verbose build output to view the complete command line:
 
 .. code-block:: bash
 
-    cmake ../trunk VERBOSE=1
+    make VERBOSE=1
  
 
 
