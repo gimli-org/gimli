@@ -287,15 +287,19 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
 #            mi = hh[min(np.where(nnn > 0.2)[0])]
 #            ma = hh[max(np.where(nnn < 0.7)[0])]
-            C = (C - mi) / (ma - mi)
-            C[np.where(C < 0.)] = 0.0
-            C[np.where(C > 1.)] = 1.0
 
-            # add alpha value to the color values
-            cols[:, 3] = C
+        C = (C - mi) / (ma - mi)
+        C[np.where(C < 0.)] = 0.0
+        C[np.where(C > 1.)] = 1.0
 
-            patches._facecolors = cols
-            # patches._edgecolor = 'None'
+#    else:
+#        print('taking the values directly')
 
-            # delete patch data to avoid automatically rewrite of _facecolors
-            patches._A = None
+    # add alpha value to the color values
+    cols[:, 3] = C
+
+    patches._facecolors = cols
+    # patches._edgecolor = 'None'
+
+    # delete patch data to avoid automatically rewrite of _facecolors
+    patches._A = None

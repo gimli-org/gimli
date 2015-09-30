@@ -1,9 +1,10 @@
 import sys
+from pygimli.utils import opt_import
 
 if int(sys.version[0]) >= 3:
-    import pickle
+    pickle = opt_import("pickle", "read and write inversion settings")
 else:
-    import cPickle as pickle
+    pickle = opt_import("cPickle", "read and write inversion settings")
 
 
 class InversionSettings(dict):
