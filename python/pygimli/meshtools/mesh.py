@@ -298,8 +298,8 @@ def readTriangle(fname, verbose=False):
     """
     Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
 
-    Read :term:`Triangle` :cite:`Shewchuk96b` ASCII mesh files and return a instance
-    of GIMLI::Mesh class.
+    Read :term:`Triangle` :cite:`Shewchuk96b` ASCII mesh files and return an
+    instance of GIMLI::Mesh class.
     See: ://www.cs.cmu.edu/~quake/triangle.html
 
     Parameters
@@ -315,6 +315,7 @@ def readTriangle(fname, verbose=False):
     raise("implement me!")
     os.system('meshconvert -d2 ' + fname)
     return pg.Mesh(2)
+
 
 def readTetgen(fname, verbose=False):
     """

@@ -8,6 +8,7 @@ import math
 import numpy as np
 import pygimli as pg
 
+
 def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
     """INTERNAL"""
 
@@ -27,6 +28,7 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
     if isClosed:
         poly.createEdge(poly.node(poly.nodeCount()-1),
                         poly.node(0), bm[-1])
+
 
 def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     """
@@ -51,7 +53,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
         area : float [0]
-            Maximum cell size for the resulting triangle cells after mesh generation
+            Maximum cell size for resulting triangles after mesh generation
         boundaryMarker : int [1]
             Marker for the resulting boundary edges
         leftDirection : bool [True]
@@ -80,7 +82,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     if not ((start and end) or (pos and size)):
         raise BaseException("createRectangle pls. give either start and end"
-                            "OR pos and size." )
+                            "OR pos and size.")
     if start is None:
         start = [-0.5, 0.5]
     if end is None:
@@ -111,13 +113,14 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     return poly
 
+
 def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     """
     Create simple rectangular world.
 
     Create simple rectangular world with appropriate boundary conditions.
     Surface boundary is set do pg.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and
-    inner subsurface is set to pg.MARKER_BOUND_MIXED, i.e., -2 or 
+    inner subsurface is set to pg.MARKER_BOUND_MIXED, i.e., -2 or
     Left=1, Right=2, Bottom=3 and Top=4 if worldMarker is set to false.
 
     Parameters
@@ -129,12 +132,12 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     marker : int
         Marker for the resulting triangle cells after mesh generation
     area : float
-        Maximum cell size for the resulting triangle cells after mesh generation
+        Maximum cell size for resulting triangles after mesh generation
     layers : [float]
         Add some layers to the world.
     worldMarker : [bool]
         Specify kind of preset boundary marker [-1, -2] or [1 2 3 4]
-    
+
     Returns
     -------
     poly : gimliapi:`GIMLI::Mesh`
@@ -158,7 +161,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
         z = z + layers
 
     z.append(end[1])
-    rs = []
+#    rs = []
     poly = pg.Mesh(2)
 
     for i, depth in enumerate(z):
@@ -169,8 +172,8 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
 
-    polyCreateDefaultEdges_(poly,
-                            boundaryMarker=[1]*(len(z)-1) + [3] + [2]*(len(z)-1) + [4])
+    polyCreateDefaultEdges_(
+        poly, boundaryMarker=[1]*(len(z)-1) + [3] + [2]*(len(z)-1) + [4])
 
     if worldMarker:
         for b in poly.boundaries():
@@ -185,6 +188,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
                             poly.node(poly.nodeCount() - i - 2), 4 + i)
 
     return poly
+
 
 def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
                  **kwargs):
@@ -210,7 +214,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
         area : float [0]
-            Maximum cell size for the resulting triangle cells after mesh generation
+            Maximum cell size for resulting triangles after mesh generation
         boundaryMarker : int [1]
             Marker for the resulting boundary edges
         leftDirection : bool [True]
@@ -243,15 +247,15 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     >>> plt.show()
     """
 
-    if pos == None:
+    if pos is None:
         pos = [0.0, 0.0]
 
     poly = pg.Mesh(2)
 
     dPhi = (end - start) / (segments)
-    nPhi = segments +1
+    nPhi = segments + 1
 
-    if abs((end%(2.*math.pi) - start)) < 1e-6:
+    if abs((end % (2. * math.pi) - start)) < 1e-6:
         nPhi = segments
 
     for i in range(0, nPhi):
@@ -280,6 +284,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
 
     polyCreateDefaultEdges_(poly, **kwargs)
     return poly
+
 
 def createLine(start, end, segments, **kwargs):
     """
@@ -319,12 +324,13 @@ def createLine(start, end, segments, **kwargs):
         if kwargs.pop('leftDirection', True):
             p = startPos + a * (dt * i)
         else:
-            p = endPos -  a * (dt * i)
+            p = endPos - a * (dt * i)
 
         poly.createNode(p)
 
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
+
 
 def mergePLC(pols):
     """
@@ -383,12 +389,13 @@ def mergePLC(pols):
 
     return poly
 
+
 def readPLC(filename):
     """
     Read 2D triangle POLY or 3D Tetgen PLC files.
-    
+
     TODO 3D Tetgen PLC
-     
+
     Parameters
     ----------
     filename: str
@@ -398,15 +405,15 @@ def readPLC(filename):
     -------
     poly : gimliapi:`GIMLI::Mesh`
         The resulting polygon is a gimliapi:`GIMLI::Mesh`.
-        
+
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
     fi.close()
-    
+
     # Read header
     headerLine = content[0].split()
-  
+
     if len(headerLine) != 4:
         raise Exception("Format unknown! header size != 4", headerLine)
 
@@ -415,9 +422,9 @@ def readPLC(filename):
     dimension = int(headerLine[1])
     nPointsAttributes = int(headerLine[2])
     haveNodeMarker = int(headerLine[3])
-  
+
     poly = pg.Mesh(dimension)
-    
+
     # Nodes section
     for i in range(nVerts):
         row = content[1 + i].split()
@@ -428,45 +435,45 @@ def readPLC(filename):
             if dimension == 2:
                 n = poly.createNode((float(row[1]), float(row[2])))
             elif dimension == 3:
-                n = poly.createNode((float(row[1]), float(row[2]), float(row[3])))
+                n = poly.createNode((float(row[1]), float(row[2]),
+                                     float(row[3])))
             if haveNodeMarker:
                 n.setMarker(int(row[-1]))
 
         else:
-            raise Exception("Poly file seams corrupt: node section line: "
-                            + str(i) + " " + row)
-      
+            raise Exception("Poly file seams corrupt: node section line: " +
+                            str(i) + " " + row)
+
     # Segment section
     row = content[1 + nVerts].split()
 
     if len(row) != 2:
         raise Exception("Format unknown for segment section " + row)
-    
-    nSegments = int(row[0])
-    haveBoundaryMarker = int(row[1]);
 
-    
+    nSegments = int(row[0])
+    haveBoundaryMarker = int(row[1])
+
     if dimension == 2:
         for i in range(nSegments):
             row = content[2 + nVerts + i].split()
-    
+
             if len(row) == (3 + haveBoundaryMarker):
                 marker = 0
                 if haveBoundaryMarker:
                     marker = int(row[3])
-                
+
                 poly.createEdge(poly.node(int(row[1]) - fromOne),
                                 poly.node(int(row[2]) - fromOne),
                                 marker)
     else:
         raise Exception("Read segments for 3D tetgen format not yet supported")
-    
+
     # Hole section
     row = content[2 + nVerts + nSegments].split()
-    
+
     if len(row) != 1:
         raise Exception("Format unknown for hole section " + row)
-    
+
     nHoles = int(row[0])
     for i in range(nHoles):
         row = content[3 + nVerts + nSegments + i].split()
@@ -474,53 +481,55 @@ def readPLC(filename):
         if len(row) == 3:
             poly.addHoleMarker([float(row[1]), float(row[2])])
         else:
-            raise Exception("Poly file seams corrupt: hole section line (3): "
-                            + row + " : " + str(i) + " " + str(len(row)))
-      
+            raise Exception("Poly file seams corrupt: hole section line (3):" +
+                            row + " : " + str(i) + " " + str(len(row)))
+
     if (3 + nVerts + nSegments + nHoles) < len(content):
         # Region section
         row = content[3 + nVerts + nSegments + nHoles].split()
-        
+
         if len(row) != 1:
             raise Exception("Format unknown for region section " + row)
-    
+
         nRegions = int(row[0])
-        
+
         for i in range(nRegions):
             row = content[4 + nVerts + nSegments + nHoles + i].split()
             if len(row) == 5:
-                poly.addRegionMarker([float(row[1]), float(row[2])], 
-                                     marker=int(float(row[3])), area=float(row[4]))
+                poly.addRegionMarker([float(row[1]), float(row[2])],
+                                     marker=int(float(row[3])),
+                                     area=float(row[4]))
             else:
-                raise Exception("Poly file seams corrupt: region section line (5): "
-                                + str(i) + " " + str(len(row)))
-    
+                raise Exception("Poly file seams corrupt: region section " +
+                                "line (5): " + str(i) + " " + str(len(row)))
+
     return poly
+
 
 def writePLC(poly, fname, **kwargs):
     """
     Generic PLC writer.
-    
-    Choose from poly.dimension() and forward appropriate to 
+
+    Choose from poly.dimension() and forward appropriate to
     gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
-    and 
+    and
     :py:mod:`pygimli.meshtool.writeTrianglePoly`
-    
+
     Parameters
     ----------
-    
+
     poly : gimliapi:`GIMLI::Mesh`
         The polygon to be written.
     fname : string
         Filename of the file to read (\\*.n, \\*.e)
     """
 
-    if mesh.dimension() == 2:
+    if poly.dimension() == 2:
         pg.meshtools.writeTrianglePoly(poly, fname, **kwargs)
     else:
         poly.exportAsTetgenPolyFile(fname)
-            
-        
+
+
 def writeTrianglePoly(poly, fname, pfmt='{:.15e}', verbose=False):
     """
     Write :term:`Triangle` :cite:`Shewchuk96b` poly file.
@@ -536,7 +545,7 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}', verbose=False):
         Filename of the file to read (\\*.n, \\*.e)
     pfmt : string
         format string for floats according to str.format()
-    
+
     verbose : boolean [False]
         Be verbose during import.
 
@@ -551,12 +560,12 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}', verbose=False):
         for i, p in enumerate(poly.positions()):
             fid.write(fmt.format(i, p.x(), p.y(), nm[i]))
         fid.write('{:d}\t1\n'.format(poly.boundaryCount()))
-        
+
         for i, b in enumerate(poly.boundaries()):
             fid.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(
                 i, b.node(0).id(), b.node(1).id(), bm[i]))
         fid.write('{:d}\n'.format(len(poly.holeMarker())))
-        
+
         fmt = '{:d}'+('\t'+pfmt)*2+'\n'
         for i, h in enumerate(poly.holeMarker()):
             fid.write(fmt.format(i, h.x(), h.y()))
@@ -764,31 +773,31 @@ def polyTranslate(filename, x=0.0, y=0.0, z=0.0, verbose=True):
            " -z " + str(z) + " " + filename)
 
 if __name__ == "__main__":
-    #from pygimli.meshtools import polytools as plc
-    #from pygimli.meshtools import createMesh
-    #from pygimli.mplviewer import drawMesh
-    #import matplotlib.pyplot as plt
-    #world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-    #c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2, segments=4)
-    #c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
-    #r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
-    #r2 = plc.createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
-    #plc = plc.mergePLC([world, c1, c2, r1, r2])
-
-    #fig, ax = plt.subplots()
-    #drawMesh(ax, plc)
-    #drawMesh(ax, createMesh(plc))
-    #plt.show()
-
-    #import matplotlib.pyplot as plt
-    #import pygimli as pg
-    #import math
-    #from pygimli.meshtools import polytools as plc
-    #c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
-    #c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
-    #c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
-    #                      end=1.5*math.pi, isClosed=False)
-    #fig, ax = plt.subplots()
-    #pg.show([c0, c1, c2], axes=ax)
-    #plt.show()
     pass
+#    from pygimli.meshtools import polytools as plc
+#    from pygimli.meshtools import createMesh
+#    from pygimli.mplviewer import drawMesh
+#    import matplotlib.pyplot as plt
+#    world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
+#    c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2, segments=4)
+#    c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
+#    r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
+#    r2 = plc.createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
+#    plc = plc.mergePLC([world, c1, c2, r1, r2])
+#
+#    fig, ax = plt.subplots()
+#    drawMesh(ax, plc)
+#    drawMesh(ax, createMesh(plc))
+#    plt.show()
+#
+#    import matplotlib.pyplot as plt
+#    import pygimli as pg
+#    import math
+#    from pygimli.meshtools import polytools as plc
+#    c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
+#    c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
+#    c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
+#                          end=1.5*math.pi, isClosed=False)
+#    fig, ax = plt.subplots()
+#    pg.show([c0, c1, c2], axes=ax)
+#    plt.show()
