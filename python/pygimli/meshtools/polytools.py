@@ -496,7 +496,78 @@ def readPLC(filename):
                                 + str(i) + " " + str(len(row)))
     
     return poly
+
+def writePLC(poly, fname, **kwargs):
+    """
+    Generic PLC writer.
     
+    Choose from poly.dimension() and forward appropriate to 
+    gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
+    and 
+    :py:mod:`pygimli.meshtool.writeTrianglePoly`
+    
+    Parameters
+    ----------
+    
+    poly : gimliapi:`GIMLI::Mesh`
+        The polygon to be written.
+    fname : string
+        Filename of the file to read (\\*.n, \\*.e)
+    """
+
+    if mesh.dimension() == 2:
+        pg.meshtools.writeTrianglePoly(poly, fname, **kwargs)
+    else:
+        poly.exportAsTetgenPolyFile(fname)
+            
+        
+def writeTrianglePoly(poly, fname, pfmt='{:.15e}', verbose=False):
+    """
+    Write :term:`Triangle` :cite:`Shewchuk96b` poly file.
+
+    Write :term:`Triangle` :cite:`Shewchuk96b` ASCII file.
+    See: ://www.cs.cmu.edu/~quake/triangle.html
+
+    Parameters
+    ----------
+    poly : gimliapi:`GIMLI::Mesh`
+        mesh PLC holding nodes, edges, holes & regions
+    fname : string
+        Filename of the file to read (\\*.n, \\*.e)
+    pfmt : string
+        format string for floats according to str.format()
+    
+    verbose : boolean [False]
+        Be verbose during import.
+
+    """
+
+    with open(fname, 'w') as fid:
+        fid.write('{:d}\t2\t0\t1\n'.format(poly.nodeCount()))
+        nm = poly.nodeMarker()
+        bm = poly.boundaryMarker()
+
+        fmt = '{:d}'+('\t'+pfmt)*2+'\t{:d}\n'
+        for i, p in enumerate(poly.positions()):
+            fid.write(fmt.format(i, p.x(), p.y(), nm[i]))
+        fid.write('{:d}\t1\n'.format(poly.boundaryCount()))
+        
+        for i, b in enumerate(poly.boundaries()):
+            fid.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                i, b.node(0).id(), b.node(1).id(), bm[i]))
+        fid.write('{:d}\n'.format(len(poly.holeMarker())))
+        
+        fmt = '{:d}'+('\t'+pfmt)*2+'\n'
+        for i, h in enumerate(poly.holeMarker()):
+            fid.write(fmt.format(i, h.x(), h.y()))
+        fid.write('{:d}\n'.format(len(poly.regionMarker())))
+
+        fmt = '{:d}'+('\t'+pfmt)*3+'\t{:.15e}\n'
+        for i, r in enumerate(poly.regionMarker()):
+            fid.write(fmt.format(i, r.x(), r.y(), r.marker(), r.area()))
+
+    return
+
 
 def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     """
