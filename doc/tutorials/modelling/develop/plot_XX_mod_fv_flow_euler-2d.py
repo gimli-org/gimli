@@ -94,10 +94,19 @@ def calc(out, mesh, density, viscosity):
 
     ax,_ = pg.show(mesh, density)
 
+    v = 0.5
     nSteps = 300
-    dt = 0.03
+        
+    dt = 0.01 * v
     dtSteps = 10
 
+    if v < 1:
+        out += "-v2"
+    elif v > 1:
+        out += "-v3"
+    else:
+        out += "-v1"
+            
     meshC = pg.createGrid(x=np.linspace(-10, 10, 41),
                           y=np.linspace(0, 20, 41))
 
@@ -107,11 +116,18 @@ def calc(out, mesh, density, viscosity):
         print(i, 'dens', min(density), max(density))
         
         densMatrix.push_back(density)
+        
+        if v < 1:
+            viscosity=1.0 / density #v3
+        elif v > 1:
+            viscosity=1.0 * density #v3
+        else:
+            viscosity=1.0
+            
         vel, pre, pCNorm, divVNorm = solver.solveStokes(mesh, 
                                                         velBoundary=velBoundary,
                                                         preBoundary=preBoundary,
-                                                        #viscosity=1.0*density, #v2
-                                                        viscosity=1.0/density, #v3
+                                                        viscosity=viscosity,
                                                         density=density,
                                                         pre0 = pre,
                                                         vel0 = vel,
@@ -142,7 +158,7 @@ def calc(out, mesh, density, viscosity):
     np.save(out+'velo.bmat', vels)
     
 def calcAndSave(out, model, viscosity=1.0):
-    out = out + "_visDens-" + str(viscosity)
+    out = out + str(viscosity)
     mesh, density = model
     calc(out, mesh, density, viscosity)
     
@@ -175,7 +191,7 @@ def createAnimation(out, stream=False):
 
 if __name__ == "__main__":
     
-    calcAndSave('two-grid_1-10-v3', model=createModel2(nx=100, grid=True), viscosity=1)
+    calcAndSave('two-grid_1-10', model=createModel2(nx=100, grid=True), viscosity=1)
     #for v in [0.1, 0.01, 0.0001, 0.00001]:
 
 
