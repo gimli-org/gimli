@@ -58,11 +58,11 @@ def createModel2(maxArea=0.2, nx=20, grid=True):
         mesh = createMesh([layer1, layer2], quality=32, area=maxArea,
                           smooth=[1,10])
         
-    density = mesh.cellAttributes()*0.0 + 1
+    density = mesh.cellAttributes()*0.0 + 2.0
     
     for c in mesh.cells():
-        if c.center().y() > 10:
-            density[c.id()] = 10.0
+        if c.center().y() > 0 and c.center().x() < 0:
+            density[c.id()] = 1.0
     
     
     return mesh, density
@@ -94,33 +94,28 @@ def calc(out, mesh, density, viscosity):
 
     ax,_ = pg.show(mesh, density)
 
-    v = 0.5
-    nSteps = 300
+    v = 1
+    nSteps = 3000
         
-    dt = 0.01 * v
-    dtSteps = 10
-
-    if v < 1:
-        out += "-v2"
-    elif v > 1:
-        out += "-v3"
-    else:
-        out += "-v1"
-            
-    meshC = pg.createGrid(x=np.linspace(-10, 10, 41),
-                          y=np.linspace(0, 20, 41))
+    dt = 0.1 * v
+    dtSteps = 20
+    
+    meshC = pg.createGrid(x=np.linspace(-10, 10, 21),
+                          y=np.linspace(0, 20, 21))
 
     vel=None
     pre=None
+    
+    
     for i in range(nSteps):
-        print(i, 'dens', min(density), max(density))
+        print(i, 'dens', min(density), max(density), "t:", dt*i)
         
         densMatrix.push_back(density)
         
-        if v < 1:
-            viscosity=1.0 / density #v3
-        elif v > 1:
+        if v > 1:
             viscosity=1.0 * density #v3
+        elif v < 1:
+            viscosity=1.0 / density #v3
         else:
             viscosity=1.0
             
@@ -131,9 +126,9 @@ def calc(out, mesh, density, viscosity):
                                                         density=density,
                                                         pre0 = pre,
                                                         vel0 = vel,
-                                                        f=[0,-9.81],
+                                                        f=[density*0, (density-1.0)*-9.81],
                                                         maxIter=1000,
-                                                        tol=1e-4,
+                                                        tol=1e-6,
                                                         verbose=1,
                                                         vRelax=0.1,
                                                         pRelax=0.1,
@@ -141,7 +136,7 @@ def calc(out, mesh, density, viscosity):
         vels.append(vel)
         
         print("stokes:" , swatch.duration(True), "div V: ", divVNorm[-1])
-        dens2 = solver.solveFiniteVolume(mesh, a=1./50, b=0.0, u0=density, vel=vel,
+        dens2 = solver.solveFiniteVolume(mesh, a=1./500, b=0.0, u0=density, vel=vel,
                                         times=np.linspace(0, dt, dtSteps), 
                                         #uBoundary=[4, 0],
                                         scheme='PS', verbose=0)
@@ -191,7 +186,7 @@ def createAnimation(out, stream=False):
 
 if __name__ == "__main__":
     
-    calcAndSave('two-grid_1-10', model=createModel2(nx=100, grid=True), viscosity=1)
+    calcAndSave('two-grid_1-2-D500', model=createModel2(nx=140, grid=True), viscosity=1)
     #for v in [0.1, 0.01, 0.0001, 0.00001]:
 
 

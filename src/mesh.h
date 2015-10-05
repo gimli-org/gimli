@@ -596,14 +596,14 @@ public:
     RVector divergence(const std::vector < RVector3 > & V) const;
 
     /*! Interpolate boundary based values to cell based gradients. */
-    std::vector< RVector3 > boundaryDataToCellGradient(const RVector & boundaryData) const;
+    R3Vector boundaryDataToCellGradient(const RVector & boundaryData) const;
     
     /*! Interpolate cell based values to boundary based gradients. */
-    std::vector< RVector3 > cellDataToBoundaryGradient(const RVector & cellData) const;
+    R3Vector cellDataToBoundaryGradient(const RVector & cellData) const;
         
     /*! Interpolate cell based values to boundary based gradients with a given cell Gradient.*/
-    std::vector< RVector3 > cellDataToBoundaryGradient(const RVector & cellData,
-        const std::vector< RVector3 > & cellGradient) const;
+    R3Vector cellDataToBoundaryGradient(const RVector & cellData,
+                                        const R3Vector & cellGradient) const;
 
     /*! Add a region marker for tetgen or triangle creation if the mesh 
      *is a PLC, if area is < 0 a hole is added. */    

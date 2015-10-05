@@ -414,11 +414,12 @@ IndexArray cellIDX__;
 
 Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start, 
                                     size_t & count, bool useTagging) const {
+    
     Cell * cell = start;
     
     Index cellCounter = 0; //** for avoiding infinite loop
     do {
-        if (cell->tagged() && useTagging) {
+        if (useTagging && cell->tagged()) {
             cell = NULL;
         } else {
             cell->tag();
@@ -490,7 +491,6 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
             count++;
             if (cellVector_[i]->shape().isInside(pos)){
                 cell = cellVector_[i];
-                
 //                 std::cout << "testpos: " << pos << std::endl;
 //                 std::cout << "cell: " << *cell<< std::endl;
                 break;
@@ -513,11 +513,17 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
             throwError(1, WHERE_AM_I + 
                        " no cells for this node. This is a corrupt mesh");
         }
-            //std::cout << "Node: " << *refNode << std::endl;
-//         for (std::set< Cell * >::iterator it = refNode->cellSet().begin();
-//              it != refNode->cellSet().end(); it ++){
+//         std::cout << "Node: " << *refNode << std::endl;
+        
+        // small fast precheck to avoid strange behaviour for symmetric SF.
+        for (std::set< Cell * >::iterator it = refNode->cellSet().begin();
+             it != refNode->cellSet().end(); it ++){
 //             std::cout << (*it)->id() << std::endl;
-//         }
+            
+           if ((*it)->shape().isInside(pos, false)) return *it;
+
+        }
+        
         cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
                                       count, false);
         if (cell) return cell;
@@ -1959,19 +1965,17 @@ RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
     return *cellToBoundaryInterpolationCache_;
 }
 
-std::vector< RVector3 > 
-Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
+R3Vector Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
     return cellDataToBoundaryGradient(cellData, 
       boundaryDataToCellGradient(this->cellToBoundaryInterpolation()*cellData));
 }
 
-std::vector< RVector3 > 
-Mesh::cellDataToBoundaryGradient(const RVector & cellData,
-        const std::vector< RVector3 > & cellGrad) const{
+R3Vector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
+                                          const R3Vector & cellGrad) const{
     if (!neighboursKnown_){
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
-    std::vector< RVector3 > ret(boundaryCount());
+    R3Vector ret(boundaryCount());
     
     for (Index i = 0; i < boundaryCount(); i ++){
         Boundary * b = boundaryVector_[i];
@@ -1996,14 +2000,13 @@ Mesh::cellDataToBoundaryGradient(const RVector & cellData,
     return ret;
 }
 
-std::vector< RVector3 > 
-Mesh::boundaryDataToCellGradient(const RVector & v) const{
+R3Vector Mesh::boundaryDataToCellGradient(const RVector & v) const{
     if (!neighboursKnown_){
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
-    std::vector < RVector3 > ret(this->cellCount());
+    R3Vector ret(this->cellCount());
 
-    const std::vector < RVector3 > & flow = this->boundarySizedNormals();
+    const R3Vector & flow = this->boundarySizedNormals();
     RVector3 vec(0.0, 0.0, 0.0);
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
