@@ -12,10 +12,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-class WorkSpace:
-    pass
-
-
 def boundaryToCellDistances(mesh):
     return np.array(list(map(lambda b__: boundaryToCellDistancesBound(b__),
                              mesh.boundaries())))
@@ -448,12 +444,12 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     # we need this to fast identify uBoundary and value by boundary
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
-    
     for i, [boundary, val] in enumerate(uB):
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
         uBoundaryID.append(boundary.id())
         uBoundaryVals[boundary.id()] = val
+
     duBoundaryID = []
     duBoundaryVals = [None] * mesh.boundaryCount()
     
@@ -626,7 +622,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     swatch = pg.Stopwatch(True)
     sparse = True
 
-    workspace = WorkSpace()
+    workspace = pg.solver.WorkSpace()
     if ws:
         workspace = ws
 
@@ -819,17 +815,17 @@ def __d(name, v, showAll=False):
         print(v)
 
 
-def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
+def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
                 pre0=None, vel0=None,
                 tol=1e-4, maxIter=1000,
                 verbose=1, **kwargs):
     """
     """
     
-    workspace = WorkSpace()
-    wsux = WorkSpace()
-    wsuy = WorkSpace()
-    wsp = WorkSpace()
+    workspace = pg.solver.WorkSpace()
+    wsux = pg.solver.WorkSpace()
+    wsuy = pg.solver.WorkSpace()
+    wsp = pg.solver.WorkSpace()
     
     # get cache values if given
     ws = kwargs.pop('ws', None)
@@ -941,15 +937,25 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
 
 #        div = -divergence(mesh, np.vstack([velXF, velYF]).T)
         div = -mesh.divergence(np.vstack([velXF, velYF]).T)
-
+ 
+        #boundsDirichlet = pg.solver.parseArgToBoundaries(preBoundary, mesh)
+        #pB = CtB * pressure
+        #for ix, [boundary, val] in enumerate(boundsDirichlet):
+            #boundsDirichlet[ix][1] = -(-pg.solver.generateBoundaryValue(boundary, val) + pB[boundary.id()])
+             
         pressureCorrection = solveFiniteVolume(mesh,
                                                a=pressureCoeff,
                                                f=div,
                                                uB=preBoundary,
+                                               #uB=boundsDirichlet,
                                                ws=wsp)
 
+        #print(i, pg.solver.generateBoundaryValue(mesh.boundary(58), val),
+              #pB[58], boundsDirichlet[-1][1],
+              #(CtB*pressureCorrection)[58])
+              
         pressure += pressureCorrection * pressureRelaxation
-
+        
         pressureCorrectionGrad = cellDataToCellGrad(mesh, pressureCorrection,
                                                     CtB)
 
@@ -973,7 +979,7 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
                               (divVNorm[-4] - divVNorm[-5]) + \
                               (divVNorm[-5] - divVNorm[-6])
             convergenceTest /= 5
-
+            
         if verbose:
             print("\r" + str(i) + " div V=" + str(divVNorm[-1]) +
                   " ddiv V=" + str(convergenceTest))
@@ -982,9 +988,10 @@ def solveStokes(mesh, viscosity, velBoundary, preBoundary=[],
                   " ddiv V=" + str(convergenceTest))
             raise BaseException("Stokes solver seams to diverging")
 
-        if i == maxIter or divVNorm[-1] < tol or \
-            abs(convergenceTest * divVNorm[-1]) < tol:
-            break
+        if i > 2:
+            if i == maxIter or divVNorm[-1] < tol or \
+                abs(convergenceTest * divVNorm[-1]) < tol:
+                break
 
     if verbose:
         print(str(i) + ": " + str(preCNorm[-1]))

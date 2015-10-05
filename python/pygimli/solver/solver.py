@@ -164,6 +164,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     pair : tuple
 
         - [marker, arg]
+        - [boundary, arg]
         - [[boundary,...], arg]
 
         arg will be parsed by
@@ -187,7 +188,12 @@ def parseArgPairToBoundaryArray(pair, mesh):
         bounds = mesh.findBoundaryByMarker(pair[0])
     elif isinstance(pair[0], pg.stdVectorBounds):
         bounds = pair[0]
-
+    elif isinstance(pair[0], pg.Boundary):
+        boundaries.append(pair)
+        return boundaries
+    
+        
+        
     for b in bounds:
         val = None
         if hasattr(pair[1], '__call__'):
@@ -356,6 +362,94 @@ def fillEmptyToCellArray(mesh, vals):
     mesh.setCellAttributes(oldAtts)
     return atts
 
+def grad(mesh, u, r=None):
+    r"""
+    Return the discrete interpolated gradient :math:`\mathbf{v}` for a given scalar field :math:`\mathbf{u}`.
+    
+    .. math::
+        \mathbf{v}(\mathbf{r}_{\mathcal{C}}) 
+        &=
+        \nabla u(\mathbf{r}_{\mathcal{N}})
+        \\
+        (\mathbf{v_x}(\mathbf{r}_{\mathcal{C}}), 
+         \mathbf{v_y}(\mathbf{r}_{\mathcal{C}}), 
+         \mathbf{v_z}(\mathbf{r}_{\mathcal{C}}))^{\text{T}}
+        &=
+        \left(\frac{\partial u}{\partial x},
+         \frac{\partial u}{\partial y},
+         \frac{\partial u}{\partial z}\right)^{\text{T}}
+        
+    With :math:`\mathcal{N}=\cup_{i=0}^{N} \text{Node}_i`,
+    :math:`\mathcal{C}=\cup_{j=0}^{M} \text{Cell}_j`, 
+    :math:`\mathbf{u}=\{u(\mathbf{r}_{i})\}\in I\!R` and 
+    :math:`\mathbf{r}_{i} = (x_i, y_i, z_i)^{\text{T}}` 
+    
+    The discrete scalar field 
+    :math:`\mathbf{u}(\mathbf{r}_{\mathcal{N}})` 
+    need to be defined for each node position :math:`\mathbf{r}_{\mathcal{N}}`.
+    The resulting vector field :math:`\mathbf{v}(\mathbf{r}_{\mathcal{C}})` 
+    is defined for each cell center position :math:`\mathbf{r}_{\mathcal{C}}`.
+    If you need other positions than the cell center, 
+    provide an appropriate array of coordinates :math:`\mathbf{r}`.
+      
+    See also
+    --------
+    GIMLI::Mesh::cellDataToBoundaryGradient
+    GIMLI::Mesh::cellDataToBoundaryGradient
+    GIMLI::Mesh::boundaryDataToCellGradient
+    
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Discretization base, interpolation will be performed via finite element 
+        base shape functions.
+        
+    u : array | callable
+        Scalar field per mesh node position or an appropriate callable([[x,y,z]])
+        
+    r : ndarray((M, 3)) [mesh.cellCenter()]
+        Alternatic target coordinates :math:`\mathbf{r} for the resulting 
+        gradient field. i.e., the positions where the vector field is defined.
+        Default are all cell centers.
+        
+    Returns
+    -------
+    v : ndarray((M, 3))
+        Resulting vector field defined on 
+        :math:`\mathbf{v}(\mathbf{r}_{\mathcal{C}})`. 
+        M is number of cells or length of given alternative coordinates r.
+        
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> fig, ax = plt.subplots()
+    >>> mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
+    >>> u = lambda p: pg.x(p)**2 * pg.y(p)
+    >>> pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
+    >>> pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
+    >>>                  pg.x(mesh.cellCenters())**2 ], axes=ax)
+    >>> pg.show(mesh, pg.solver.grad(mesh, u), axes=ax, color='w',
+    >>>         linewidth=0.4)
+    >>> plt.show()
+    """
+
+    if r is None:
+        r = mesh.cellCenters()
+    
+    uv = u
+    if callable(u) and not isinstance(u, pg.RVector):
+        uv = u(mesh.nodeCenters())
+    
+    v = np.ndarray((len(r), 3))
+    
+    for i, vi in enumerate(v):
+        c = mesh.findCell(r[i])
+        if c:
+            v[i] = c.grad(r[i], uv)
+           
+    return v
 
 def divergence(mesh, F=None, normMap=None, order=1):
     """
@@ -383,7 +477,13 @@ def divergence(mesh, F=None, normMap=None, order=1):
         for pair in normMap:
             bounds = mesh.findBoundaryByMarker(pair[0])
             for b in bounds:
-                bNorms[b.id()] = pair[1]
+                bN = [0.0, 0.0]
+                if not isinstance(pair[1][0], str):
+                    bN[0] = pair[1][0]
+                if not isinstance(pair[1][1], str):
+                    bN[1] = pair[1][1]
+                
+                bNorms[b.id()] = bN
 
     for b in mesh.boundaries():
 
@@ -1169,6 +1269,18 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
 
 
 if __name__ == "__main__":
+    #import pygimli as pg
+    #import matplotlib.pyplot as plt
+    #import numpy as np
+    #fig, ax = plt.subplots()
+    #mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
+    #u = lambda p: pg.x(p)**2 * pg.y(p)
+    #pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
+    #pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
+    #pg.x(mesh.cellCenters())**2 ], axes=ax)
+    #pg.show(mesh, pg.solver.gradient(mesh, u), axes=ax, color='w', linewidth=0.4)
+    #plt.show()
+
 
     #import pygimli as pg
     #from pygimli.meshtools import polytools as plc
