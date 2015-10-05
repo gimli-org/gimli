@@ -1,0 +1,52 @@
+GitHub notes for core developers
+================================
+
+.. note::
+
+    These steps are only relevant, if you have write privileges to the main
+    GitHub repository. A more general contribution guide will follow soon.
+
+1. Clone the GIMLi repository:
+
+    .. code-block:: bash
+
+        git clone https://github.com/gimli-org/gimli gimli-src && cd gimli-src
+
+You should be on the master branch by default. Check by calling `git status`.
+GIMLi encourages developers to keep the `master branch` clean. So please use
+the default development branch called `dev`.
+
+2. Checkout the the dev branch:
+
+    .. code-block:: bash
+
+        git checkout dev
+
+3. Make changes in your favorite editor.
+
+4. Add new files to the staging area:
+
+    .. code-block:: bash
+
+       git add new_file1 new_file2
+
+5. Make a commit with a *meaningful* message:
+
+    .. code-block:: bash
+
+       git commit -a -m "Added important new feature."
+
+6. Pull the latest developments from GitHub:
+
+    .. code-block:: bash
+
+       git pull
+
+7. Push to the origin development branch:
+
+    .. code-block:: bash
+
+       git push origin dev
+
+Note that if you are on the `dev` branch, a `git push` should suffice, but the
+command above is more explicit about the branch which should be pushed.
