@@ -754,13 +754,6 @@ _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
 # some rvector helpers
 
-
-def randN(n):
-    """Create RVector of length n with normally distributed random numbers."""
-    r = _pygimli_.RVector(n)
-    _pygimli_.randn(r)
-    return r
-
 def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport=False):
     """Run docstring examples and additional tests.
 

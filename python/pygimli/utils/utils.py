@@ -369,6 +369,12 @@ def cumDist(p):
     d[1:] = np.cumsum(dist(diff(p)))
     return d
     
+def randN(n, minVal=0.0, maxVal=1.0):
+    """Create RVector of length n with normally distributed random numbers."""
+    r = _pygimli_.RVector(n)
+    _pygimli_.randn(r, minVal, maxVal)
+    return r
+
 def getIndex(seq, f):
     # DEPRECATED_SLOW
     idx = []
@@ -382,7 +388,6 @@ def getIndex(seq, f):
             if f(d):
                 idx.append(i)
     return idx
-
 
 def filterIndex(seq, idx):
     if isinstance(seq, pg.RVector):
