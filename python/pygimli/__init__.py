@@ -749,11 +749,18 @@ def randN(n):
     _pygimli_.randn(r)
     return r
 
-def test(show=False, onlydoctests=False, coverage=False, htmlreport=False):
+def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport=False):
     """Run docstring examples and additional tests.
+
+    Examples
+    --------
+    >>> from pygimli.utils import boxprint
+    >>> test(target=boxprint)
 
     Parameters
     ----------
+    target : function, optional
+        Function or method to test. By default everything is tested.
     show : boolean, optional
         Show matplotlib windows during test run. They will be closed
         automatically.
@@ -765,6 +772,11 @@ def test(show=False, onlydoctests=False, coverage=False, htmlreport=False):
         Filename for HTML report such as www.pygimli.org/build_tests.html.
         Requires pytest-html plugin.
     """
+    if target:
+        import doctest
+        doctest.run_docstring_examples(target, globals())
+        return
+
     try:
         import pytest
     except ImportError:
@@ -790,8 +802,9 @@ def test(show=False, onlydoctests=False, coverage=False, htmlreport=False):
     if ph and htmlreport:
         cmd += "--html %s " % htmlreport
     cmd += "%s " % cwd
-    if not onlydoctests and os.path.exists(cfg):
+    if not onlydoctests and os.path.exists(cfg) and target == "all":
         cmd += os.path.join(cwd, "../tests")
+    target = os.path.join(cwd, "meshtools/mesh.py::readGmsh")
 
     exitcode = pytest.main(cmd)
     plt.switch_backend(old_backend)
