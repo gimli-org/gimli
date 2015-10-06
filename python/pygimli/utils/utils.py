@@ -272,13 +272,13 @@ def diff(v):
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(diff(p)[0], diff(p)[1], diff(p)[2])    
-    >>> 
+    RVector3: (0.0, 1.0, 0.0) RVector3: (0.0, -1.0, 0.0) RVector3: (0.0, 0.0, 0.0)
     >>> p = pg.RVector(3)
     >>> p[0] = 0.0
     >>> p[1] = 1.0
     >>> p[2] = 2.0
     >>> print(diff(p))    
-    
+    <class 'pygimli._pygimli_.RVector'> 2 [1.0, 1.0]
     """
     d = None
     
@@ -315,10 +315,11 @@ def dist(p):
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(dist(p))
-    >>> 
+    [ 0.  1.  0.  0.]
     >>> x = pg.RVector(4, 0)
     >>> y = pg.RVector(4, 1)
     >>> print(dist(np.array([x, y]).T))
+    [ 1.  1.  1.  1.]
     """
     
     d = np.zeros(len(p))
@@ -361,7 +362,8 @@ def cumDist(p):
     >>> p[1] = [0.0, 1.0]
     >>> p[2] = [0.0, 1.0]
     >>> p[3] = [0.0, 0.0]
-    >>> print(cumDist(p), [0, 1, 1, 2])    
+    >>> print(cumDist(p))  
+    [ 0.  1.  1.  2.]
     """
     d = np.zeros(len(p))
     d[1:] = np.cumsum(dist(diff(p)))
