@@ -190,7 +190,8 @@ def logDropTol(p, droptol=1e-3):
 
 
 def grange(start, end, dx=0, n=0, log=False, verbose=False):
-    """
+    """Create array with possible increasing spacing.
+       
     Create either array from start step-wise filled with dx until end reached
     [start, end] (like np.array with defined end) n or array filled from
     start to end with n steps. [start, end] (like np.linespace) n or an
