@@ -12,9 +12,11 @@ GitHub notes for core developers
 
         git clone https://github.com/gimli-org/gimli gimli-src && cd gimli-src
 
-You should be on the master branch by default. Check by calling `git status`.
-GIMLi encourages developers to keep the `master branch` clean. So please use
-the default development branch called `dev`.
+You should be on the master branch by default. Check by calling *git status*.
+GIMLi encourages developers to keep the *master branch* clean. So please use
+the default development branch called *dev*. Save `this script
+<https://gist.github.com/florian-wagner/0be0b09bbabec6791ed3>` in .git/hooks
+for automatic warnings in case you are about to push to the master branch.
 
 2. Checkout the the dev branch:
 
