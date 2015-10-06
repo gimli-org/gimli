@@ -807,9 +807,8 @@ def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport
     if ph and htmlreport:
         cmd += "--html %s " % htmlreport
     cmd += "%s " % cwd
-    if not onlydoctests and os.path.exists(cfg) and target == "all":
+    if not onlydoctests and os.path.exists(cfg):
         cmd += os.path.join(cwd, "../tests")
-    target = os.path.join(cwd, "meshtools/mesh.py::readGmsh")
 
     exitcode = pytest.main(cmd)
     plt.switch_backend(old_backend)
