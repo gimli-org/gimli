@@ -125,8 +125,7 @@ def opt_import(module, requiredTo="use the full functionality"):
 
 
 def trimDocString(docstring):
-    """
-    Return properly formatted docstring.
+    """Return properly formatted docstring.
 
     From: https://www.python.org/dev/peps/pep-0257/
 
