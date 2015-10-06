@@ -4,6 +4,7 @@
 # Customizations
 *.log
 command.history
+*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
