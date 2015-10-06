@@ -8,6 +8,8 @@ Readme for Github repository only. (Get's selected before *.rst file)
 
 [![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
+[![Issue Stats](http://issuestats.com/github/gimli-org/gimli/badge/issue?style=flat-square)](http://issuestats.com/github/gimli-org/gimli)
+[![Code Issues](https://www.quantifiedcode.com/api/v1/project/d0d835a5d75e4334a1c58389cafccaa0/badge.svg)](https://www.quantifiedcode.com/app/project/d0d835a5d75e4334a1c58389cafccaa0)
 
 
 GIMLi is an open-source multi-method library for solving inverse
@@ -37,3 +39,5 @@ make pygimli
 import pygimli as pg
 print(pg.__version__)
 ```
+
+Check www.pygimli.org for additional information.

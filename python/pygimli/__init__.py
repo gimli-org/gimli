@@ -714,7 +714,7 @@ def __gitversion__(path=__path__[0]):
     try:
         v = subprocess.check_output(['git', '-C', path, 'describe', '--always',
                                      '--tags', '--dirty=-modified', '--long'])
-        return v.decode('ascii')
+        return v.decode('ascii').strip()
     except:
         return "unknown"
 

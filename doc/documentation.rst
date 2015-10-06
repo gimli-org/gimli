@@ -23,11 +23,11 @@ Documentation
 
             Frequently asked questions (with anwers!)
 
-        * - :doc:`Tutorials <_tutorials_auto/index>`
+        * - `Tutorials <_tutorials_auto/index>`_
 
             How to use GIMLi
 
-          - :doc:`Examples <_examples_auto/index>`
+          - `Examples <_examples_auto/index>`_
 
             Interesting examples
 
