@@ -42,11 +42,11 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     //         std::cout << "here am i 1 " << len(py_sequence) << std::endl;
 
     if (len(py_sequence) > 0) {
-        
+        __DC(obj << "len: " << len(py_sequence) << " type:" << type(ValueType(0)))
         bpl::object element = py_sequence[0];
         bpl::extract< ValueType > type_checker(element);
         
-        if(type_checker.check()){
+        if (type_checker.check()){
             __DC(obj << "->construct: " << len(py_sequence))
             return obj;
         } else {

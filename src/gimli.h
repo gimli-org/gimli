@@ -385,6 +385,10 @@ inline std::string type(float         & var) { return "float"; }
 inline std::string type(double        & var) { return "double"; }
 inline std::string type(std::string   & var) { return "string"; }
 inline std::string type(std::vector < std::string >  & var) { return "string"; }
+inline std::string type(RVector & var) { return "RVector"; }
+inline std::string type(RVector3 & var) { return "RVector3"; }
+inline std::string type(R3Vector & var) { return "R3Vector"; }
+
 
 inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }
 inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }

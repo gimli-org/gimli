@@ -292,6 +292,18 @@ def __newRVectorSetVal__(self, *args, **kwargs):
     return __origRVectorSetVal__(self, *args, **kwargs)
 _pygimli_.RVector.setVal = __newRVectorSetVal__
 
+__origR3VectorSetVal__ = _pygimli_.R3Vector.setVal
+def __newR3VectorSetVal__(self, *args, **kwargs):
+    #print('__newRVectorSetVal__', *args, **kwargs)
+    if len(args)==2:
+        if isinstance(args[1], int):
+            return __origR3VectorSetVal__(self, args[0], i=args[1])
+        if isinstance(args[1], _pygimli_.BVector):
+            return __origR3VectorSetVal__(self, args[0], bv=args[1])
+    return __origR3VectorSetVal__(self, *args, **kwargs)
+_pygimli_.R3Vector.setVal = __newR3VectorSetVal__
+
+
 __origBVectorSetVal__ = _pygimli_.BVector.setVal
 def __newBVectorSetVal__(self, *args, **kwargs):
     if len(args)==2:

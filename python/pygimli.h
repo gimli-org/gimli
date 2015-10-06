@@ -156,7 +156,13 @@ namespace GIMLI{
         CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return c; } \
     inline CVector operator OP (const RVector & a, const CVector & b){ \
         CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = a[i] OP b[i]; return c; } \
-    
+    inline RMatrix operator OP (const RMatrix & a, const double & b){ \
+        RMatrix ret(a);   ret OP##=b; return ret; } \
+    inline RMatrix operator OP (const double & a, const RMatrix & b){ \
+        RMatrix ret(b.rows()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline RMatrix operator OP (const RMatrix & a, const RMatrix & b){ \
+         RMatrix ret(a);   ret OP##=b; return ret; } \
+         
 DEFINE_PY_VEC_OPERATOR__(+)
 DEFINE_PY_VEC_OPERATOR__(-)
 DEFINE_PY_VEC_OPERATOR__(*)

@@ -153,7 +153,18 @@ class TestRVectorMethods(unittest.TestCase):
         
         self.assertEqual(r3[0], pg.RVector3(0))
         np.testing.assert_array_equal(r3[0], pg.RVector3(0))
+        
+        r3[1] = pg.RVector3(0.0, 1.0, 0.0)
+        np.testing.assert_array_equal(r3[1], pg.RVector3(0.0, 1.0, 0.0))
+        
+        r3[2] = (0.0, 2.0, 0.0)
+        np.testing.assert_array_equal(r3[2], pg.RVector3(0.0, 2.0, 0.0))
                
+        r3[3] = (0.0, 3.0, 0.0)
+        np.testing.assert_array_equal(r3[3], pg.RVector3(0.0, 3.0, 0.0))
+        
+        d = pg.utils.dist(r3)
+        self.assertEqual(sum(d), 1+2+3)
             
     def test_Slices(self):
         a = pg.RVector(np.arange(10.))

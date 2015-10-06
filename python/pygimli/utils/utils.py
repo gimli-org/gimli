@@ -3,13 +3,11 @@
 """
 pygimli.utils - Collection of several utility functions.
 """
-from __future__ import print_function
-
 import sys
-from importlib import import_module
 import pygimli as pg
+from importlib import import_module
+import numpy as np
 from math import sqrt, floor
-
 
 class ProgressBar(object):
 
@@ -253,30 +251,116 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
 
 
 def diff(v):
+    """Calculate approximate derivative from v as d = [v_1-v_0, v2-v_1, ...]
+    
+    Parameters
+    ----------
+    v : array(N) | pg.R3Vector(N)
+        
+        Array of double values or positions
+    
+    Returns
+    -------
+    d : [type(v)](N-1) | 
+        derivative array
+        
+    Examples
+    --------
+    >>> p = pg.R3Vector(4)
+    >>> p[0] = [0.0, 0.0]
+    >>> p[1] = [0.0, 1.0]
+    >>> print(diff(p)[0], diff(p)[1], diff(p)[2])    
+    >>> 
+    >>> p = pg.RVector(3)
+    >>> p[0] = 0.0
+    >>> p[1] = 1.0
+    >>> p[2] = 2.0
+    >>> print(diff(p))    
+    
     """
-    Return RVector as approximate derivative from v as r[v_1-v_0, v2-v_1,...]
-    """
-    r = pg.RVector(len(v) - 1)
-    for i in range(len(r)):
-        r[i] = v[i + 1] - v[i]
-    return r
+    d = None
+    
+    if isinstance(v, pg.R3Vector):
+        d = pg.R3Vector(len(v) - 1)
+    else:
+        d = pg.RVector(len(v) - 1)
+        
+    for i in range(len(d)):
+        d[i] = v[i + 1] - v[i]
+    return d
 
+
+def dist(p):
+    """Calculate the distance for each position in p to the origin.
+       
+    Parameters
+    ----------
+    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector 
+        
+        Position array 
+    
+    Returns
+    -------
+    d : ndarray(N)
+        Distance array
+        
+    Examples
+    --------
+    >>> p = pg.R3Vector(4)
+    >>> p[0] = [0.0, 0.0]
+    >>> p[1] = [0.0, 1.0]
+    >>> print(dist(p))
+    >>> 
+    >>> x = pg.RVector(4, 0)
+    >>> y = pg.RVector(4, 1)
+    >>> print(dist(np.array([x, y]).T))
+    """
+    
+    d = np.zeros(len(p))
+    pi = None
+    for i in range(len(p)):
+        if isinstance(pi, pg.RVector3):
+            pi = p[i]
+        else:
+            pi = pg.RVector3(p[i])
+        d[i] = pi.abs()
+        
+    return d
 
 def xyToLength(x, y):
-    """return RVector of lengths from two RVectors x and y starting from 0 to
-    end."""
-    ret = pg.RVector(len(x), 0.0)
+    raise("please use utils.distSum")
+    
+def distSum(p):
+    """The progressive length for the path p.
+    
+    d = [0.0, d[0]+ |p[1]-p[0]|, d[1] + |p[2]-p[1]| + ...]
+    
+    Parameters
+    ----------
+    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector 
+        
+        Position array 
+    
+    Returns
+    -------
+    d : ndarray(N)
+        Distance array
 
-    for i in range(len(ret) - 1):
-        dx = x[i + 1] - x[i]
-        dy = y[i + 1] - y[i]
-
-        ret[i + 1] = ret[i] + sqrt(dx * dx + dy * dy)
-        # ret[ i + 1 ] = ret[ i ] + abs(l[ i + 1 ] - l[ i ])
-
-    return ret
-
-
+    Examples
+    --------    
+    >>> p = pg.R3Vector(4)
+    >>> p[0] = [0.0, 0.0]
+    >>> p[1] = [0.0, 1.0]
+    >>> p[2] = [0.0, 1.0]
+    >>> p[3] = [0.0, 0.0]
+    >>> print(distSum(p), [0, 1, 1, 2])    
+    
+        
+    """
+    d = np.zeros(len(p))
+    d[1:] = np.cumsum(dist(diff(p)))
+    return d
+    
 def getIndex(seq, f):
     # DEPRECATED_SLOW
     idx = []
@@ -361,7 +445,6 @@ def unique_everseen(iterable, key=None):
                 seen_add(k)
                 yield element
 
-
 def unique(a):
     """
     Return list of unique elements ever seen with preserving order.
@@ -385,3 +468,10 @@ def arrayToStdVectorUL(theArray):
     for i in theArray:
         vec.append(int(i))
     return vec
+
+if __name__ == '__main__':
+    #import doctest
+    #doctest.testmod()
+    
+    
+    

@@ -145,6 +145,8 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
                                  const std::vector < RVector3 > & integrationPnts,
                                  bool verbose){
 
+//     __MS(w)
+    
     Index nVerts = ent.nodeCount();
     Index nRules = w.size();
 
@@ -155,6 +157,8 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
         for (uint i = 0; i < nRules; i ++){
             dNdr_.setCol(i, ent.dNdL(integrationPnts[i], 0));
             dNds_.setCol(i, ent.dNdL(integrationPnts[i], 1));
+            
+//             __MS(i << " " << dNdr_[i])
         }
     }
    
@@ -170,6 +174,7 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
 
     double A = ent.shape().domainSize();
     for (Index i = 0; i < nVerts; i ++){
+        
         for (Index j = i; j < nVerts; j ++){
             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
                                       (drdy * dNdr_[i] + dsdy * dNds_[i]) * (drdy * dNdr_[j] + dsdy * dNds_[j])));
