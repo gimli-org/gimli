@@ -13,6 +13,7 @@ Usage:
 
 import os
 import sys
+import subprocess
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
@@ -406,7 +407,7 @@ def __setVal(self, idx, val):
     #if isinstance(idx, _pygimli_.BVector):
         #print("__setVal", self, idx, 'val:', val)
         #self.setVal(val, bv=idx)
-        #return 
+        #return
     self.setVal(val, idx)
 
 def __getValMatrix(self, idx):
@@ -708,23 +709,17 @@ def asvector(array):
     return _pygimli_.RVector(array)
 
 
-# PEP conform version str with SVN revision number
-def __svnversion__(path=__path__[0]):
+def __gitversion__(path=__path__[0]):
+    """Return version str based on git tags and commits."""
     try:
-        import subprocess  # check for 3.4
-    except ImportError:
-        pass
+        v = subprocess.check_output(['git', '-C', path, 'describe', '--always',
+                                     '--tags', '--dirty=-modified', '--long'])
+        return v.decode('ascii')
+    except:
+        return "unknown"
 
-    p = subprocess.Popen("svnversion -n %s" % path, shell=True,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, _) = p.communicate()
-    version = str(stdout)
-    if version == "Nicht versioniertes Verzeichnis":
-        return ""
-    else:
-        return "_rev" + version
-
-__version__ = _pygimli_.versionStr() + __svnversion__()
+#__version__ = _pygimli_.versionStr()
+__version__ = __gitversion__()
 
 ###########################
 # unsorted stuff

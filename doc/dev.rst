@@ -1,6 +1,9 @@
 GitHub notes for core developers
 ================================
 
+Contributing to the code
+------------------------
+
 .. note::
 
     These steps are only relevant, if you have write privileges to the main
@@ -52,3 +55,35 @@ for automatic warnings in case you are about to push to the master branch.
 
 Note that if you are on the `dev` branch, a `git push` should suffice, but the
 command above is more explicit about the branch which should be pushed.
+
+Version numbering
+-----------------
+
+Following the PEP conventions, pygimli holds a `__version__` string.
+
+.. code-block:: python
+
+    import pygimli as pg
+    print(pg.__version__)
+    v0.9-0-gf5a6772-modified
+
+This string consists of:
+
+    *Last git tag*-*Number of commits since last tag*-*last commit hash*
+
+The string has a *-modified* suffix if pygimli has uncommitted changes.
+
+To produce a new version, type:
+
+.. code-block:: bash
+
+   git tag -a -m "First official release" "v1.0" # tags last commit as v1.0
+   git push --tags # pushes tags to GitHub
+
+
+
+
+
+
+
+
