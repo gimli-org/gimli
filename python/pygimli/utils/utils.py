@@ -42,7 +42,7 @@ class ProgressBar(object):
     def update(self, iteration):
         """Update ProgressBar by iteration number starting at 0."""
         self._setbar(iteration + 1)
-        print("\r" + self.pbar, end='')
+        print("\r" + self.pbar)
         sys.stdout.flush()
 
     def _setbar(self, elapsed_it):
@@ -292,14 +292,16 @@ def diff(v):
     return d
 
 
-def dist(p):
-    """Calculate the distance for each position in p to the origin.
+def dist(p, c=None):
+    """Calculate the distance for each position in p relative to pos c(x,y,z).
        
     Parameters
     ----------
     p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector 
         
         Position array 
+    c : [x,y,z] [None]
+        relative origin. default = [0, 0, 0]
     
     Returns
     -------
@@ -322,6 +324,8 @@ def dist(p):
     [ 1.  1.  1.  1.]
     """
     
+    if c is None:
+        c = pg.RVector3(0.0, 0.0, 0.0)
     d = np.zeros(len(p))
     pi = None
     for i in range(len(p)):
@@ -329,7 +333,7 @@ def dist(p):
             pi = p[i]
         else:
             pi = pg.RVector3(p[i])
-        d[i] = pi.abs()
+        d[i] = (pi-c).abs()
         
     return d
 
@@ -371,8 +375,16 @@ def cumDist(p):
     
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
-    r = _pygimli_.RVector(n)
-    _pygimli_.randn(r, minVal, maxVal)
+    r = pg.RVector(n)
+    pg.randn(r)
+    r *= (maxVal-minVal)
+    r += minVal
+    return r
+
+def rand(n, minVal=0.0, maxVal=1.0):
+    """Create RVector of length n with normally distributed random numbers."""
+    r = pg.RVector(n)
+    pg.rand(r, minVal, maxVal)
     return r
 
 def getIndex(seq, f):
