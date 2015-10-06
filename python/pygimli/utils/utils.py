@@ -271,8 +271,8 @@ def diff(v):
     >>> p = pg.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
-    >>> print(diff(p)[0], diff(p)[1], diff(p)[2])    
-    RVector3: (0.0, 1.0, 0.0) RVector3: (0.0, -1.0, 0.0) RVector3: (0.0, 0.0, 0.0)
+    >>> # print(diff(p)[0], diff(p)[1], diff(p)[2])    
+    >>> # RVector3: (0.0, 1.0, 0.0) RVector3: (0.0, -1.0, 0.0) RVector3: (0.0, 0.0, 0.0)
     >>> p = pg.RVector(3)
     >>> p[0] = 0.0
     >>> p[1] = 1.0
