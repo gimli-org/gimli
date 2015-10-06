@@ -266,6 +266,8 @@ def diff(v):
         
     Examples
     --------
+    >>> import pygimli as pg
+    >>> from pygimli.utils import diff
     >>> p = pg.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
@@ -306,6 +308,9 @@ def dist(p):
         
     Examples
     --------
+    >>> import pygimli as pg
+    >>> from pygimli.utils import dist
+    >>> import numpy as np
     >>> p = pg.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
@@ -319,7 +324,7 @@ def dist(p):
     d = np.zeros(len(p))
     pi = None
     for i in range(len(p)):
-        if isinstance(pi, pg.RVector3):
+        if isinstance(p[i], pg.RVector3):
             pi = p[i]
         else:
             pi = pg.RVector3(p[i])
@@ -330,8 +335,8 @@ def dist(p):
 def xyToLength(x, y):
     raise("please use utils.distSum")
     
-def distSum(p):
-    """The progressive length for the path p.
+def cumDist(p):
+    """The progressive i.e, cumulative length for the path p.
     
     d = [0.0, d[0]+ |p[1]-p[0]|, d[1] + |p[2]-p[1]| + ...]
     
@@ -348,14 +353,15 @@ def distSum(p):
 
     Examples
     --------    
+    >>> import pygimli as pg
+    >>> from pygimli.utils import cumDist
+    >>> import numpy as np
     >>> p = pg.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> p[2] = [0.0, 1.0]
     >>> p[3] = [0.0, 0.0]
-    >>> print(distSum(p), [0, 1, 1, 2])    
-    
-        
+    >>> print(cumDist(p), [0, 1, 1, 2])    
     """
     d = np.zeros(len(p))
     d[1:] = np.cumsum(dist(diff(p)))
@@ -470,8 +476,4 @@ def arrayToStdVectorUL(theArray):
     return vec
 
 if __name__ == '__main__':
-    #import doctest
-    #doctest.testmod()
-    
-    
-    
+    pass
