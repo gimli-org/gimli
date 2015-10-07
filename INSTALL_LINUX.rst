@@ -31,7 +31,7 @@ If you want to use the pyGIMLi (Python scripts, bindings and apps):
 .. code-block:: bash
 
     sudo apt-get install python-numpy python-matplotlib
-    sudo apt-get install libedit-dev clang-3.6-dev llvm-3.6-dev
+    sudo apt-get install libedit-dev clang-3.6-dev llvm-3.6-dev python3-dev
 
 
 Create a directory for your installation, e.g., $HOME/src

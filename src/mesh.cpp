@@ -729,7 +729,7 @@ RVector & Mesh::boundarySizes() const{
     return boundarySizesCache_;
 }
 
-std::vector< RVector3 > & Mesh::boundarySizedNormals() const {
+R3Vector & Mesh::boundarySizedNormals() const {
     if (boundarySizedNormCache_.size() != boundaryCount()){
         boundarySizedNormCache_.resize(boundaryCount());
         
@@ -2025,17 +2025,19 @@ R3Vector Mesh::boundaryDataToCellGradient(const RVector & v) const{
     return ret;
 }
         
-RVector Mesh::divergence(const std::vector < RVector3 > & V) const{
+RVector Mesh::divergence(const R3Vector & V) const{
     RVector ret(this->cellCount());
     if (!neighboursKnown_){
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
     
-    const std::vector < RVector3 > & flow = this->boundarySizedNormals();
-    double vec = 0;
+    ASSERT_EQUAL(V.size(), this->boundaryCount());
+    
+    const R3Vector & flow = this->boundarySizedNormals();
+    
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
-        vec = flow[b->id()].dot(V[b->id()]);
+        double vec = flow[b->id()].dot(V[b->id()]);
         
         if (b->leftCell()){
             ret[b->leftCell()->id()] += vec;

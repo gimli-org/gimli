@@ -316,7 +316,7 @@ public:
      Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary. 
      If you want to use this, i.e. for the calculation of inside or outside flow through the boundary, you need to recognize the orientation of this boundary to the cell the flow goes into or comes from.
      For the left cell neighbor the normal direction should be always the outer normal.*/
-    std::vector< RVector3 > & boundarySizedNormals() const;
+    R3Vector & boundarySizedNormals() const;
     
     
     /*! Return a vector of all boundary marker */
@@ -355,11 +355,11 @@ public:
     
     /*! Return vector of cell ptrs with marker match the range [from .. to). \n
         For single marker match to is set to 0, for open end set to = -1 */
-    std::vector < Cell * > findCellByMarker(int from, int to = 0) const;
+    std::vector < Cell * > findCellByMarker(int from, int to=0) const;
 
     /*! Return vector of cell ptrs with attribute match the range [from .. to). \n
         For single attribute match to is set to 0.0, for open end set to = -1.0 */
-    std::vector < Cell * > findCellByAttribute(double from, double to = 0.0) const;
+    std::vector < Cell * > findCellByAttribute(double from, double to=0.0) const;
 
     //** end get infos stuff
 
@@ -590,10 +590,14 @@ public:
     /*! Return the reference to the matrix for cell value to boundary value interpolation matrix. */
     RSparseMapMatrix & cellToBoundaryInterpolation() const;
 
-    /*!Return the divergence of a given vector field for each cell.
-     *The divergence is calculated by simple 1 point boundary integration over each cells. 
-     * Higher order integration needs to be implemented. Contact the author if you need this.*/
-    RVector divergence(const std::vector < RVector3 > & V) const;
+    /*!Return the divergence for each cell of a given vector field for each 
+     * boundary.
+     * The divergence is calculated by simple 1 point boundary integration 
+     * over each cell. 
+     * \f$ d(cell) = \sum_boundaries V(boundary center) \cdot n(boundary)\f$
+     * Higher order integration needs to be implemented. 
+     * Contact the author if you need this.*/
+    RVector divergence(const R3Vector & V) const;
 
     /*! Interpolate boundary based values to cell based gradients. */
     R3Vector boundaryDataToCellGradient(const RVector & boundaryData) const;
@@ -686,7 +690,7 @@ protected:
     bool staticGeometry_;
     mutable RVector cellSizesCache_;
     mutable RVector boundarySizesCache_;
-    mutable std::vector< RVector3 > boundarySizedNormCache_;
+    mutable R3Vector boundarySizedNormCache_;
     
     mutable RSparseMapMatrix * cellToBoundaryInterpolationCache_;
     

@@ -454,6 +454,8 @@ def grad(mesh, u, r=None):
 def divergence(mesh, F=None, normMap=None, order=1):
     """
     MOVE THIS to a better place
+    
+    Divergence for callable function F((x,y,z)). Return sum div over boundary.
 
     Parameters
     ----------
