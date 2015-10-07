@@ -734,7 +734,13 @@ R3Vector & Mesh::boundarySizedNormals() const {
         boundarySizedNormCache_.resize(boundaryCount());
         
         for (Index i = 0; i < boundaryCount(); i ++){
-            boundarySizedNormCache_[i] = boundaryVector_[i]->norm() * boundaryVector_[i]->size();
+            if (dim()==1){
+                Cell *c = boundaryVector_[i]->leftCell();
+                if (!c) c = boundaryVector_[i]->rightCell();
+                boundarySizedNormCache_[i] = boundaryVector_[i]->norm(*c);
+            } else {
+                boundarySizedNormCache_[i] = boundaryVector_[i]->norm() * boundaryVector_[i]->size();
+            }
         }
         
     } else {
@@ -1944,6 +1950,7 @@ RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
             
             if (lC && rC){
                 if (harmonic){
+                    THROW_TO_IMPL
                 } else {
                     cellToBoundaryInterpolationCache_->addVal(b->id(), lC->id(), df2/d12);
                     cellToBoundaryInterpolationCache_->addVal(b->id(), rC->id(), -df2/d12 + 1.0);
@@ -2027,16 +2034,18 @@ R3Vector Mesh::boundaryDataToCellGradient(const RVector & v) const{
         
 RVector Mesh::divergence(const R3Vector & V) const{
     RVector ret(this->cellCount());
+    
     if (!neighboursKnown_){
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
-    
+
     ASSERT_EQUAL(V.size(), this->boundaryCount());
     
     const R3Vector & flow = this->boundarySizedNormals();
     
-    for (Index i = 0; i < this->boundaryCount(); i ++ ){
+    for (Index i = 0; i < this->boundaryCount(); i ++){
         Boundary * b = this->boundaryVector_[i];
+//         __MS(flow[b->id()] << " " << V[b->id()])
         double vec = flow[b->id()].dot(V[b->id()]);
         
         if (b->leftCell()){

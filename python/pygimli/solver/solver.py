@@ -364,7 +364,8 @@ def fillEmptyToCellArray(mesh, vals):
 
 def grad(mesh, u, r=None):
     r"""
-    Return the discrete interpolated gradient :math:`\mathbf{v}` for a given scalar field :math:`\mathbf{u}`.
+    Return the discrete interpolated gradient :math:`\mathbf{v}` 
+    for a given scalar field :math:`\mathbf{u}`.
 
     .. math::
         \mathbf{v}(\mathbf{r}_{\mathcal{C}})
@@ -408,7 +409,7 @@ def grad(mesh, u, r=None):
         Scalar field per mesh node position or an appropriate callable([[x,y,z]])
 
     r : ndarray((M, 3)) [mesh.cellCenter()]
-        Alternatic target coordinates :math:`\mathbf{r} for the resulting
+        Alternative target coordinates :math:`\mathbf{r} for the resulting
         gradient field. i.e., the positions where the vector field is defined.
         Default are all cell centers.
 
@@ -451,6 +452,72 @@ def grad(mesh, u, r=None):
 
     return v
 
+def div(mesh, v):
+    """
+    Return the discrete interpolated divergence field :math:`\mathbf{u}` 
+    at each cell for a given vector field :math:`\mathbf{v}`.
+    First order integration via boundary center.
+        
+    .. math::
+        d(cells) & = \nabla\cdot\vec{v} \\
+        d(c_i) & = \sum_{j=0}^{N_B}\vec{v}_{B_j} \cdot \vec{n}_{B_j}
+        
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Discretization base, interpolation will be performed via finite element
+        base shape functions.
+
+    V : array(N,3) | R3Vector
+        Vector field at cell centers or boundary centers
+        
+    Returns
+    -------
+    d : array(M)
+        Array of divergence values for each cell in the given mesh.    
+        
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import numpy as np
+    >>> v = lambda p: p
+    >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4))
+    >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
+    <class 'pygimli._pygimli_.RVector'> 3 [1.0, 1.0, 1.0]
+    >>> print(pg.round(pg.solver.div(mesh, v(mesh.cellCenters())), 1e-5))
+    <class 'pygimli._pygimli_.RVector'> 3 [0.5, 1.0, 0.5]
+    >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
+    ...                      y=np.linspace(0, 1, 4))
+    >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
+    <class 'pygimli._pygimli_.RVector'> 9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+    >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
+    >>> #divergence from boundary values are exact where the divergence from 
+    >>> #interpolated cell center values are wrong due to boundary interpolation
+    >>> print(sum(divCells))
+    12.0
+    >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
+    ...                      y=np.linspace(0, 1, 4),
+    ...                      z=np.linspace(0, 1, 4))
+    >>> print(sum(pg.solver.div(mesh, v(mesh.boundaryCenters()))))
+    81.0
+    >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
+    >>> print(sum(divCells))
+    54.0
+    """
+
+    d = None
+    if hasattr(v, '__len__'):
+        if len(v) == mesh.boundaryCount():
+            d = mesh.divergence(v)
+        if len(v) == mesh.cellCount():
+            CtB = mesh.cellToBoundaryInterpolation()
+            d = mesh.divergence(np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
+    elif callable(v):        
+        raise("implement me")
+    
+            
+    return d
+                
 def divergence(mesh, F=None, normMap=None, order=1):
     """
     MOVE THIS to a better place
@@ -463,7 +530,6 @@ def divergence(mesh, F=None, normMap=None, order=1):
     Returns
     -------
     """
-
     if F is None:
         F = lambda r: r
 

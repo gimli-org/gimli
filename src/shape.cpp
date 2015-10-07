@@ -401,7 +401,7 @@ double Shape::domainSize() const {
 //** Start Node specific implementation
 
 RVector3 NodeShape::norm() const {
-    return RVector3(0.0, 0.0, 0.0);
+    return RVector3(1.0, 0.0, 0.0);
 }
 
 RVector3 NodeShape::rst(Index i) const {
