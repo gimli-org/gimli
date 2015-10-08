@@ -459,19 +459,18 @@ def test_Refraction():
     ra.createMesh(depth=80)
     ra.inv.setMaxIter(1)
 
-    ra.run()
+    ra.start()
     m1 = ra.model()
     mesh = pg.Mesh(ra.mesh)
 
     ra.setMesh(mesh)
-    ra.run()
+    ra.start()
     m2 = ra.model()
 
     np.testing.assert_array_equal(m1, m2)
 
     ra.setData(pg.DataContainer(datafile, 's g'))
-    ra.run()
-    m3 = ra.model()
+    m3 = ra.start()
 
     np.testing.assert_array_equal(m1, m3)
 

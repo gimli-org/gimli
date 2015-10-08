@@ -846,7 +846,7 @@ protected:
 template < class ModelValType >
 const Vector < ModelValType > & Inversion< ModelValType >::start(){ ALLOW_PYTHON_THREADS
     setModel(forward_->startModel());
-    return run;
+    return run();
 }
     
 /*! Run inversion with current model. */
