@@ -739,7 +739,10 @@ public:
     /*! One iteration step. Return true if the step can be calculated successfully else false is returned. */
     bool oneStep();
 
-    /*! Start the inversion procedure and return the final model vector.*/
+    /*! Start the inversion procedure from staring model.*/
+    const Vec & start();
+    
+    /*! Start the inversion procedure from the last model and return the final model vector.*/
     const Vec & run();
 
     /*! Specialized run function that tries to reach a datafit chi^2=1 by varying the regularization paramater lambda */
@@ -839,6 +842,14 @@ protected:
     IPCClientSHM ipc_;
 };
 
+/*! Start inversion from starting model. */
+template < class ModelValType >
+const Vector < ModelValType > & Inversion< ModelValType >::start(){ ALLOW_PYTHON_THREADS
+    setModel(forward_->startModel());
+    return run;
+}
+    
+/*! Run inversion with current model. */
 template < class ModelValType >
 const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_THREADS
     abort_ = false;
@@ -848,7 +859,8 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     this->checkTransFunctions();
 
     //! calculation of initial modelresponse
-    response_ = forward_->response(forward_->startModel());
+    response_ = forward_->response(model_);
+    //response_ = forward_->response(forward_->startModel());
 
     //! () clear the model history
     modelHist_.clear();

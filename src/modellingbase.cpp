@@ -101,19 +101,16 @@ DataContainer & ModellingBase::data() const{
 }
     
 RVector ModellingBase::startModel() {
-    //*! Return startmodel if it exist
-    if (startModel_.size() > 0) return startModel_;
-
     //*! Create startmodel from default builder (abstract may be overloaded)
-    if (startModel_.size() == 0){
-        setStartModel(createDefaultStartModel());
-    }
-    
     //*! Create startmodel from regionManger
-    if (startModel_.size() == 0){
+    if (startModel_.size() == 0 && regionManager_){
         setStartModel(regionManager_->createStartVector());
     }
     
+    if (startModel_.size() == 0){
+        setStartModel(createDefaultStartModel());
+    }
+
     return startModel_;
 }
 
