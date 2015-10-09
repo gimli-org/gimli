@@ -219,7 +219,7 @@ class FDEM():
         else:
             part1 = "<FDEMdata: {:d} soundings with {:d} frequencies".format(
                     len(self.x), len(self.frequencies))
-        if self.coilSpacing:
+        if self.coilSpacing is not None:
             cs = self.coilSpacing
             if hasattr(cs, '__iter__'):
                 if len(cs) > 1:
