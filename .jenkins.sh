@@ -7,14 +7,17 @@ start=$(date +"%s")
 # Show last change to repo in build log
 echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
 
+# link python to python3
+ln -sf /usr/bin/python3 python
+
 # Show system information
 lsb_release -d
 uname -a
 gcc --version
 cmake --version
-python3 --version
-python3 -c "import numpy; print(numpy.__version__)"
-python3 -c "import matplotlib; print(matplotlib.__version__)"
+python --version
+python -c "import numpy; print(numpy.__version__)"
+python -c "import matplotlib; print(matplotlib.__version__)"
 
 ################
 #  Main build  #
@@ -48,7 +51,7 @@ make check
 
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
-python3 << END
+python << END
 import pygimli as pg
 print(pg.__version__)
 pg.test(onlydoctests=False, htmlreport='build_tests.html')
@@ -59,7 +62,7 @@ export PATH=/opt/texbin:$PATH # for building pdf
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
 export PATH=`pwd`/../trunk/python/apps:$PATH
 chmod +x ../trunk/python/apps/*
-python=/usr/bin/pyhon3 make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
+make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
 diff=$(($end-$start))
