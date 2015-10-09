@@ -9,6 +9,7 @@ echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
 
 # link python to python3
 ln -sf /usr/bin/python3 python
+export PATH=`pwd`:$PATH
 
 # Show system information
 lsb_release -d
