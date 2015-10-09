@@ -7,6 +7,9 @@ start=$(date +"%s")
 # Show last change to repo in build log
 echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
 
+# Force use of python3
+alias python="python3"
+
 # Show system information
 lsb_release -d
 uname -a
