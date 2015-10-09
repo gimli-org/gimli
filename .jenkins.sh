@@ -7,16 +7,13 @@ start=$(date +"%s")
 # Show last change to repo in build log
 echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
 
-# Force use of python3
-alias python="python3"
-
 # Show system information
 lsb_release -d
 uname -a
 gcc --version
 cmake --version
-python --version
-python -c "import numpy; print(numpy.__version__)"
+python3 --version
+python3 -c "import numpy; print(numpy.__version__)"
 
 ################
 #  Main build  #
@@ -50,7 +47,7 @@ make check
 
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
-python << END
+python3 << END
 import pygimli as pg
 print(pg.__version__)
 pg.test(onlydoctests=False, htmlreport='build_tests.html')
