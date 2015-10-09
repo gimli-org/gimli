@@ -111,6 +111,9 @@ RVector ModellingBase::startModel() {
         setStartModel(createDefaultStartModel());
     }
 
+    if (startModel_.size() == 0){
+        std::cout << "Warning! there is no startmodel defined." << std::endl;
+    }
     return startModel_;
 }
 

@@ -31,7 +31,7 @@ namespace GIMLI{
 template < > ElementMatrix < double > & 
 ElementMatrix < double >::u(const MeshEntity & ent,
                             const RVector & w,
-                            const std::vector < RVector3 > & integrationPnts,
+                            const R3Vector & integrationPnts,
                             bool verbose){
 
     uint nVerts = ent.nodeCount();
@@ -67,7 +67,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
 template < > 
 ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
                                const RVector & w,
-                               const std::vector < RVector3 > & integrationPnts,
+                               const R3Vector & integrationPnts,
                                bool verbose){
 
     uint nVerts = ent.nodeCount();
@@ -111,7 +111,7 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
 template < > 
 ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
                                 const RVector & w,
-                                const std::vector < RVector3 > & integrationPnts,
+                                const R3Vector & integrationPnts,
                                 bool verbose){
 
     uint nVerts = ent.nodeCount();
@@ -142,7 +142,7 @@ ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
 template < > ElementMatrix < double > & 
 ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
                                  const RVector & w,
-                                 const std::vector < RVector3 > & integrationPnts,
+                                 const R3Vector & integrationPnts,
                                  bool verbose){
 
 //     __MS(w)
@@ -189,7 +189,7 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
 template < > ElementMatrix < double > & 
 ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
                                     const RVector & w, 
-                               const std::vector < RVector3 > & integrationPnts, 
+                               const R3Vector & integrationPnts, 
                                bool verbose){
 
     Index nVerts = ent.nodeCount();

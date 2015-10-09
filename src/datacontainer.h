@@ -123,7 +123,7 @@ public:
     /*!
      * Add data to this DataContainer and snap new sensor positions by tolerance snap. Data fields from this data are preserved.
      */
-    void add(const DataContainer & data, double snap = 1e-3);
+    void add(const DataContainer & data, double snap=1e-3);
 
     // START Sensor related section
     /*! Set the positions for all sensors. */
@@ -132,8 +132,8 @@ public:
     /*! Return the complete sensor positions as read-only. */
     inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
 
-    /*! Set the position for the i-th sensor. */
-    inline void setSensorPosition(uint i, const RVector3 & pos) { sensorPoints_[i ] = pos; }
+    /*! Set the position for the i-th sensor. Resize sensors if necessary.*/
+    void setSensorPosition(uint i, const RVector3 & pos);
 
     /*! Return a single sensor position. */
     inline const RVector3 & sensorPosition(uint i) const { return sensorPoints_[i]; }
@@ -244,8 +244,8 @@ public:
         \param formatSensor String to specify the tokens of the sensor format to be save
         \param noFilter ignore invalid and save all */
     virtual int save(const std::string & fileName,
-                     const std::string & formatData,
-                     const std::string & formatSensor,
+                     const std::string & fmtData,
+                     const std::string & fmtSensor,
                      bool noFilter=false,
                      bool verbose=false) const;
 

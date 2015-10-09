@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2012 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -31,7 +31,7 @@ public:
     friend class Singleton< IntegrationRules >;
     
     /*! Return Gauss-Legendre quadrature point upto order <10. */
-    inline const std::vector < RVector3 > & gauAbscissa(uint order) const { return gauAbscissa_[order]; }
+    inline const R3Vector & gauAbscissa(uint order) const { return gauAbscissa_[order]; }
     
     /*! Return Gauss-Legendre quadrature weights upto order <10. */
     inline const RVector & gauWeights(uint order) const { return gauWeights_[order]; }
@@ -41,7 +41,7 @@ public:
      H. T. RATHOD1*, K. V. NAGARAJA2, B. VENKATESUDU3 AND N. L. RAMESH4. Gauss Legendre quadrature over a triangle.
      J. Indian Inst. Sci., Sept.-Oct. 2004, 84, 183-188
     */
-    inline const std::vector < RVector3 > & triGLAbscissa(uint order) const { return triGLAbscissa_[order]; }
+    inline const R3Vector & triGLAbscissa(uint order) const { return triGLAbscissa_[order]; }
     /*!
      * Generic quadrature weights for a triangle based on Gauss-Legendre quadrature
      H.T. RATHOD, K. V. NAGARAJA, B. VENKATESUDU AND N. L. RAMESH. Gauss Legendre quadrature over a triangle.
@@ -49,27 +49,27 @@ public:
     */
     inline const RVector & triGLWeights(uint order) const { return triGLWeights_[order]; }
 
-    inline const std::vector < RVector3 > & edgAbscissa(uint order) const { return edgAbscissa_[order]; }
+    inline const R3Vector & edgAbscissa(uint order) const { return edgAbscissa_[order]; }
     inline const RVector & edgWeights(uint order) const { return edgWeights_[order]; }
 
-    inline const std::vector < RVector3 > & triAbscissa(uint order) const { return triAbscissa_[order]; }
+    inline const R3Vector & triAbscissa(uint order) const { return triAbscissa_[order]; }
     inline const RVector & triWeights(uint order) const { return triWeights_[order]; }
 
-    inline const std::vector < RVector3 > & tetAbscissa(uint order) const { return tetAbscissa_[order]; }
+    inline const R3Vector & tetAbscissa(uint order) const { return tetAbscissa_[order]; }
     inline const RVector & tetWeights(uint order) const { return tetWeights_[order]; }
 
-    inline const std::vector < RVector3 > & quaAbscissa(uint order) const { return quaAbscissa_[order]; }
+    inline const R3Vector & quaAbscissa(uint order) const { return quaAbscissa_[order]; }
     inline const RVector & quaWeights(uint order) const { return quaWeights_[order]; }
 
-    inline const std::vector < RVector3 > & hexAbscissa(uint order) const { return hexAbscissa_[order]; }
+    inline const R3Vector & hexAbscissa(uint order) const { return hexAbscissa_[order]; }
     inline const RVector & hexWeights(uint order) const { return hexWeights_[order]; }
 
-    inline const std::vector < RVector3 > & priAbscissa(uint order) const { return priAbscissa_[order]; }
+    inline const R3Vector & priAbscissa(uint order) const { return priAbscissa_[order]; }
     inline const RVector & priWeights(uint order) const { return priWeights_[order]; }
     /*! 
      * Return Gauss-Legendre quadrature positions for a given shape of the \ref MeshEntity upto order 10
      */
-    const std::vector < RVector3 > & abscissa(const Shape & shape, uint order) const;
+    const R3Vector & abscissa(const Shape & shape, uint order) const;
     /*!
      * Return Gauss-Legendre quadrature weights for a given shape of the \ref MeshEntity upto order 10
      */
@@ -101,26 +101,31 @@ protected:
 
     bool triUseGaussLegendre_;
     
-    std::vector < std::vector < RVector3 > > gauAbscissa_;
-    std::vector < RVector > gauWeights_;
+    std::vector < R3Vector > gauAbscissa_;
+    std::vector < RVector  > gauWeights_;
 
     /*!Quadrature positions for a triangle based on Gauss-Legendre quadrature */
-    std::vector < std::vector < RVector3 > > triGLAbscissa_;
+    std::vector < R3Vector > triGLAbscissa_;
     /*!Quadrature weight for a triangle based on Gauss-Legendre quadrature */
-    std::vector < RVector > triGLWeights_;
+    std::vector < RVector  > triGLWeights_;
     
-    std::vector < std::vector < RVector3 > > edgAbscissa_;
-    std::vector < RVector > edgWeights_;
-    std::vector < std::vector < RVector3 > > triAbscissa_;
-    std::vector < RVector > triWeights_;
-    std::vector < std::vector < RVector3 > > tetAbscissa_;
-    std::vector < RVector > tetWeights_;
-    std::vector < std::vector < RVector3 > > quaAbscissa_;
-    std::vector < RVector > quaWeights_;
-    std::vector < std::vector < RVector3 > > hexAbscissa_;
-    std::vector < RVector > hexWeights_;
-    std::vector < std::vector < RVector3 > > priAbscissa_;
-    std::vector < RVector > priWeights_;
+    std::vector < R3Vector > edgAbscissa_;
+    std::vector < RVector  > edgWeights_;
+    
+    std::vector < R3Vector > triAbscissa_;
+    std::vector < RVector  > triWeights_;
+    
+    std::vector < R3Vector > tetAbscissa_;
+    std::vector < RVector  > tetWeights_;
+    
+    std::vector < R3Vector > quaAbscissa_;
+    std::vector < RVector  > quaWeights_;
+    
+    std::vector < R3Vector > hexAbscissa_;
+    std::vector < RVector  > hexWeights_;
+    
+    std::vector < R3Vector > priAbscissa_;
+    std::vector < RVector  > priWeights_;
     
 };
 

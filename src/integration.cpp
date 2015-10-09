@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2013 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2015 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,6 +23,8 @@
 #include "shape.h"
 #include "pos.h"
 
+// #include <boost/math/special_functions/gamma.hpp>
+
 namespace GIMLI{
 
 template <> DLLEXPORT IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
@@ -44,7 +46,7 @@ IntegrationRules::~IntegrationRules(){
 // std::cout << " delete IntegrationRules" << std::endl;
 }
 
-const std::vector < RVector3 > & IntegrationRules::abscissa(const Shape & shape, uint order) const {
+const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) const {
     switch(shape.rtti()){
         case MESH_SHAPE_EDGE_RTTI: return edgAbscissa_[order];
         case MESH_SHAPE_TRIANGLE_RTTI: 
@@ -76,27 +78,27 @@ const RVector & IntegrationRules::weights(const Shape & shape, uint order) const
 
 void IntegrationRules::initGau_(){
     //** 0.Order, n=1 -- just placeholder
-    gauAbscissa_.push_back(std::vector < RVector3 > (0));
+    gauAbscissa_.push_back(R3Vector (0));
     gauWeights_.push_back(RVector(0, 0.0));
     //** 1.Order, n=1
-    gauAbscissa_.push_back(std::vector < RVector3 > (1));
+    gauAbscissa_.push_back(R3Vector (1));
     gauAbscissa_.back()[0] = RVector3(0.0, 0.0);
     gauWeights_.push_back(RVector(1, 2.0));
 
     //** 2.Order, n=2
-    gauAbscissa_.push_back(std::vector < RVector3 > (2));
+    gauAbscissa_.push_back(R3Vector (2));
     gauAbscissa_.back()[0] = RVector3(-::sqrt(1.0 / 3.0), 0.0); // ~ -0.577350269189626
     gauWeights_.push_back(RVector(2, 1.0));
 
     //** 3.Order, n=3
-    gauAbscissa_.push_back(std::vector < RVector3 > (3));
+    gauAbscissa_.push_back(R3Vector (3));
     gauAbscissa_.back()[0] = RVector3(-::sqrt(3.0 / 5.0), 0.0); // -0.774596669241483
     gauAbscissa_.back()[1] = RVector3(0.0, 0.0);
     gauWeights_.push_back(RVector(3, 5.0 / 9.0));
     gauWeights_.back()[1] = 8.0 / 9.0;
 
     //** 4.Order, n=4
-    gauAbscissa_.push_back(std::vector < RVector3 > (4));
+    gauAbscissa_.push_back(R3Vector (4));
     gauAbscissa_.back()[0] = RVector3(-::sqrt(3.0 / 7.0 + 2.0 / 7.0 * ::sqrt(6.0 / 5.0)), 0.0); // -0.861136311594053
     gauAbscissa_.back()[1] = RVector3(-::sqrt(3.0 / 7.0 - 2.0 / 7.0 * ::sqrt(6.0 / 5.0)), 0.0); // -0.339981043584856
 
@@ -105,7 +107,7 @@ void IntegrationRules::initGau_(){
     gauWeights_.back()[1] = (18.0 + ::sqrt(30.0)) / 36.0; // 0.652145154862546;
 
     //** 5.Order, n=5
-    gauAbscissa_.push_back(std::vector < RVector3 > (5));
+    gauAbscissa_.push_back(R3Vector (5));
     gauAbscissa_.back()[0] = RVector3(-1.0 / 3.0 * ::sqrt(5.0 + 2.0 * ::sqrt(10.0 / 7.0)), 0.0); // -0.906179845938664
     gauAbscissa_.back()[1] = RVector3(-1.0 / 3.0 * ::sqrt(5.0 - 2.0 * ::sqrt(10.0 / 7.0)), 0.0);
     gauAbscissa_.back()[2] = RVector3(0.000000000000000, 0.0);
@@ -115,7 +117,7 @@ void IntegrationRules::initGau_(){
     gauWeights_.back()[2] = 128.0 / 225.0;//0.568888888888889;
 
     //** 6.Order, n=6
-    gauAbscissa_.push_back(std::vector < RVector3 > (6));
+    gauAbscissa_.push_back(R3Vector (6));
     gauAbscissa_.back()[0] = RVector3(-0.9324695142031520278123016, 0.0);
     gauAbscissa_.back()[1] = RVector3(-0.6612093864662645136613996, 0.0);
     gauAbscissa_.back()[2] = RVector3(-0.2386191860831969086305017, 0.0);
@@ -125,7 +127,7 @@ void IntegrationRules::initGau_(){
     gauWeights_.back()[2] = 0.4679139345726910473898703;
 
     //** 7.Order, n=7
-    gauAbscissa_.push_back(std::vector < RVector3 > (7));
+    gauAbscissa_.push_back(R3Vector (7));
     gauAbscissa_.back()[0] = RVector3(-0.9491079123427585245261897, 0.0);
     gauAbscissa_.back()[1] = RVector3(-0.7415311855993944398638648, 0.0);
     gauAbscissa_.back()[2] = RVector3(-0.4058451513773971669066064, 0.0);
@@ -137,7 +139,7 @@ void IntegrationRules::initGau_(){
     gauWeights_.back()[3] = 0.4179591836734693877551020;
 
     //** 8.Order, n=8
-    gauAbscissa_.push_back(std::vector < RVector3 > (8));
+    gauAbscissa_.push_back(R3Vector (8));
     gauAbscissa_.back()[0] = RVector3(-0.9602898564975362316835609, 0.0);
     gauAbscissa_.back()[1] = RVector3(-0.7966664774136267395915539, 0.0);
     gauAbscissa_.back()[2] = RVector3(-0.5255324099163289858177390, 0.0);
@@ -149,7 +151,7 @@ void IntegrationRules::initGau_(){
     gauWeights_.back()[3] = 0.3626837833783619829651504;
 
     //** 9.Order, n=9
-    gauAbscissa_.push_back(std::vector < RVector3 > (9));
+    gauAbscissa_.push_back(R3Vector (9));
     gauAbscissa_.back()[0] = RVector3(-0.9681602395076260898355762, 0.0);
     gauAbscissa_.back()[1] = RVector3(-0.8360311073266357942994298, 0.0);
     gauAbscissa_.back()[2] = RVector3(-0.6133714327005903973087020, 0.0);
@@ -177,11 +179,11 @@ void IntegrationRules::initGau_(){
 
 void IntegrationRules::initEdg_(){
     /* just transform \int_-1^1 to \int_0^1 */
-    edgAbscissa_.push_back(std::vector < RVector3 > (0));
+    edgAbscissa_.push_back(R3Vector (0));
     edgWeights_.push_back(RVector(0, 0.0));
 
     for (uint i = 1; i < gauAbscissa_.size(); i ++){
-        edgAbscissa_.push_back(std::vector < RVector3 > (gauAbscissa_[i].size()));
+        edgAbscissa_.push_back(R3Vector (gauAbscissa_[i].size()));
         edgWeights_.push_back(0.5 * gauWeights_[i]);
 
         for (uint j = 0; j < gauAbscissa_[i].size(); j ++){
@@ -358,14 +360,14 @@ void IntegrationRules::initTet_(){
 
 void IntegrationRules::initQua_(){
 
-    quaAbscissa_.push_back(std::vector < RVector3 > (0));
+    quaAbscissa_.push_back(R3Vector (0));
     quaWeights_.push_back(RVector(0, 0.0));
 
     for (uint order = 1; order < edgAbscissa_.size(); order ++){
 
         uint nK = edgAbscissa_[order].size();
 
-        quaAbscissa_.push_back(std::vector < RVector3 > (nK * nK));
+        quaAbscissa_.push_back(R3Vector (nK * nK));
         quaWeights_.push_back(RVector(nK * nK));
 
         for (uint i = 0; i < nK; i ++){
@@ -374,22 +376,22 @@ void IntegrationRules::initQua_(){
                 uint k = i * nK + j;
 
                 quaAbscissa_[order][k] = RVector3(edgAbscissa_[order][i][0],
-                                                       edgAbscissa_[order][j][0]);
-                quaWeights_[order][k] = edgWeights_[order][i] *
-                                            edgWeights_[order][j];
+                                                  edgAbscissa_[order][j][0]);
+                quaWeights_[order][k] = edgWeights_[order][i] * 
+                                        edgWeights_[order][j];
             }
         }
     }
 }
 
 void IntegrationRules::initHex_(){
-    hexAbscissa_.push_back(std::vector < RVector3 > (0));
+    hexAbscissa_.push_back(R3Vector (0));
     hexWeights_.push_back(RVector(0, 0.0));
 
     for (uint order = 1; order < edgAbscissa_.size(); order ++){
         uint nK = edgAbscissa_[order].size();
 
-        hexAbscissa_.push_back(std::vector < RVector3 > (nK * nK * nK));
+        hexAbscissa_.push_back(R3Vector (nK * nK * nK));
         hexWeights_.push_back(RVector(nK * nK * nK));
 
         for (uint i = 0; i < nK; i ++){
@@ -411,7 +413,7 @@ void IntegrationRules::initHex_(){
 }
 
 void IntegrationRules::initPri_(){
-    priAbscissa_.push_back(std::vector < RVector3 > (0));
+    priAbscissa_.push_back(R3Vector (0));
     priWeights_.push_back(RVector(0, 0.0));
 
     for (Index order = 1; order < triAbscissa_.size(); order ++){
@@ -419,7 +421,7 @@ void IntegrationRules::initPri_(){
         Index nTri = triAbscissa_[order].size();
         Index nEdg = edgAbscissa_[order].size();
 
-        priAbscissa_.push_back(std::vector < RVector3 > (nTri * nEdg));
+        priAbscissa_.push_back(R3Vector(nTri * nEdg));
         priWeights_.push_back(RVector(nTri * nEdg));
 
 //         std::cout << order << " " << nTri << " " << nEdg << std::endl;
@@ -429,10 +431,9 @@ void IntegrationRules::initPri_(){
                 uint k = i * nEdg + j;
 //                 std::cout << order << " " << i << " " << j << " "<< triAbscissa_[order][i] << std::endl;
                 priAbscissa_[order][k] = RVector3(triAbscissa_[order][i][0],
-                                                       triAbscissa_[order][i][1],
-                                                       edgAbscissa_[order][j][0]);
-                priWeights_[order][k] = triWeights_[order][i] *
-                                            edgWeights_[order][j];
+                                                  triAbscissa_[order][i][1],
+                                                  edgAbscissa_[order][j][0]);
+                priWeights_[order][k] = triWeights_[order][i] * edgWeights_[order][j];
             }
         }
     }
