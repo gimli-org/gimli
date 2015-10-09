@@ -156,6 +156,7 @@ class Refraction(object):
         self.poly = None
         self.velocity = None
         self.response = None
+        self.start = []
 
         self.fop = self.createFop(verbose=self.verbose)
         self.inv = self.createInv(self.fop,
@@ -166,6 +167,8 @@ class Refraction(object):
         elif isinstance(data, pg.DataContainer):
             self.setData(data)
             self.basename = 'new'
+        if self.dataContainer is not None:
+            self.createMesh()
 
     def __str__(self):
         """string representation of the class"""
@@ -260,17 +263,19 @@ class Refraction(object):
         if self.verbose:
             print(self.dataContainer)
 
-    def showData(self, ax=None, response=None):
+    def showData(self, ax=None, response=None, name='data'):
         """show data as travel time curves (optionally with response)"""
+        if response is not None:
+            name = 'datafit'
         if ax is None:
             fig, ax = plt.subplots()
-            self.figs['data'] = fig
+            self.figs[name] = fig
 
-        self.axs['data'] = ax
+        self.axs[name] = ax
         if response is None:
             plotFirstPicks(ax, self.dataContainer)
         else:
-            plotFirstPicks(ax, self.dataContainer, marker='x')
+            plotFirstPicks(ax, self.dataContainer, marker='+')
             if response is True:
                 response = self.response
             plotFirstPicks(ax, self.dataContainer, np.asarray(response),
@@ -315,9 +320,15 @@ class Refraction(object):
         """estimate error composed of an absolute and a relative part"""
         if relativeError >= 0.5:  # obviously in %
             relativeError /= 100.
-        self.error = absoluteError / self.dataContainer('t') + relativeError
+#        self.error = absoluteError / self.dataContainer('t') + relativeError
+#        self.inv.setRelativeError(self.error)
+        self.error = absoluteError + self.dataContainer('t') * relativeError
+        self.inv.setAbsoluteError(self.error)
 
-        self.inv.setRelativeError(self.error)
+    def createStartModel(self, vtop=500., vbottom=5000.):
+        """create (gradient) starting model with vtop/vbottom bounds"""
+        self.start = createGradientModel2D(self.dataContainer, self.mesh,
+                                           vtop, vbottom)
 
     def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30.):
         """run actual inversion (first creating inversion object if not there)
@@ -327,7 +338,7 @@ class Refraction(object):
         Parameters
         ----------
         vtop, vbottom : float
-            starting model velocities on top/bottom of the mesh
+            starting (gradient) model velocities on top/at bottom of the mesh
 
         lam : float
             regularization parameter describing the strength of smoothness
@@ -335,12 +346,14 @@ class Refraction(object):
         zweight : float
             relative weight for purely vertical boundaries
         """
-        self.start = createGradientModel2D(self.dataContainer, self.mesh,
-                                           vtop, vbottom)
+#        self.start = createGradientModel2D(self.dataContainer, self.mesh,
+#                                           vtop, vbottom)
+        if self.fop.regionManager().parameterCount() != len(self.start):
+            self.createStartModel(vtop, vbottom)
         self.fop.setStartModel(self.start)
         self.fop.regionManager().setZWeight(zweight)
         self.inv.setLambda(lam)
-        self.inv.setModel(self.start)
+        self.inv.setModel(self.start)  # somehow doubled with 3 lines above
         self.fop.jacobian().clear()
         slowness = self.inv.run()
         self.velocity = 1. / slowness
@@ -397,9 +410,9 @@ class Refraction(object):
     def showResultAndFit(self, **kwargs):
         """show two vertical subplots with result and data (with response)"""
         fig, ax = plt.subplots(nrows=2)
-        self.figs['resultfit'] = ax
-        ra.showResult(ax=ax[0], **kwargs)
-        ra.showData(ax=ax[1], response=self.response)
+        self.figs['resultfit'] = fig
+        self.showResult(ax=ax[0], **kwargs)
+        self.showData(ax=ax[1], response=self.response)
 
     def saveFigures(self, name=None, ext='pdf'):
         """save all existing figures to files"""
@@ -411,8 +424,7 @@ class Refraction(object):
             self.figs[key].savefig(name+'-'+key+'.'+ext, bbox_inches='tight')
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
-        """
-        Saves the results in the specified folder.
+        """Save the results in the specified folder.
 
         Saved items are:
             Inverted profile
