@@ -14,6 +14,7 @@ gcc --version
 cmake --version
 python3 --version
 python3 -c "import numpy; print(numpy.__version__)"
+python3 -c "import matplotlib; print(matplotlib.__version__)"
 
 ################
 #  Main build  #
