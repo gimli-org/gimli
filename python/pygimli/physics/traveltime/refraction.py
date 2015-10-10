@@ -298,7 +298,7 @@ class Refraction(object):
                    paraBoundary=5):
         """Create (inversion) mesh using createParaDomain2D"""
         if depth is None:
-            depth = max(self.getOffset()) / 3.
+            depth = self.getDepth()
         self.poly = createParaMeshPLC(self.dataContainer.sensorPositions(),
                                       paraDepth=depth, paraDX=paraDX,
                                       paraBoundary=paraBoundary,
@@ -330,7 +330,7 @@ class Refraction(object):
         self.start = createGradientModel2D(self.dataContainer, self.mesh,
                                            vtop, vbottom)
 
-    def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30.):
+    def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30., max_iter=20):
         """run actual inversion (first creating inversion object if not there)
 
         result/response is stored in the class attribute velocity/response
@@ -353,6 +353,7 @@ class Refraction(object):
         self.fop.setStartModel(self.start)
         self.fop.regionManager().setZWeight(zweight)
         self.inv.setLambda(lam)
+        self.inv.setMaxIter(max_iter)
         self.inv.setModel(self.start)  # somehow doubled with 3 lines above
         self.fop.jacobian().clear()
         slowness = self.inv.run()
@@ -376,16 +377,26 @@ class Refraction(object):
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         return np.absolute(gx - sx)
 
+    def getDepth(self):
+        """return a (a-priori guessed) depth of investigation"""
+        return max(self.getOffset()) / 3.0  # rule of thumb
+
     def rayCoverage(self):
         """return ray coverage"""
         one = pg.RVector(self.dataContainer.size(), 1.)
-        return self.fopjacobian().transMult(one)
+        return self.fop.jacobian().transMult(one)
 
     def standardizedCoverage(self):
         """return standardized coverage vector (0|1) using neighbor info"""
         coverage = self.rayCoverage()
-        C = self.fopconstraintsRef()
+        C = self.fop.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
+
+    def showCoverage(self, ax=None):
+        """shows the ray coverage in logscale"""
+        cov = self.rayCoverage()
+        pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), axes=ax,
+                coverage=self.standardizedCoverage())
 
     def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
                    **kwargs):
@@ -399,13 +410,16 @@ class Refraction(object):
         else:
             gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
-            createColorbar(gci, **kwargs)
+            labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
+            subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
+            cbar = createColorbar(gci, **subkwargs)
         browser = CellBrowser(self.mesh, self.velocity, ax)
         browser.connect()
 
         self.axs['result'] = ax
         if 'lines' in kwargs:
             plotLines(ax, kwargs['lines'])
+        return ax, cbar
 
     def showResultAndFit(self, **kwargs):
         """show two vertical subplots with result and data (with response)"""

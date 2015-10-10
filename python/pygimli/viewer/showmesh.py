@@ -179,7 +179,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
         drawSensors(ax, data, **kwargs)
     else:
         if hasattr(data[0], '__len__') and not isinstance(
-            data, np.ma.core.MaskedArray):
+                data, np.ma.core.MaskedArray):
 
             if len(data) == 2:  # [u,v]
                 data = np.array(data).T
@@ -213,7 +213,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if colorBar and validData:
         # , *args, **kwargs) # causes problems!
-        cbar = createColorbar(gci, label=label, **kwargs)
+        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
+        subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
+        cbar = createColorbar(gci, label=label, **subkwargs)
 
     plt.tight_layout()
 
