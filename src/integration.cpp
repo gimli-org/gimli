@@ -23,7 +23,7 @@
 #include "shape.h"
 #include "pos.h"
 
-// #include <boost/math/special_functions/gamma.hpp>
+//#include <boost/math/special_functions/gamma.hpp>
 
 namespace GIMLI{
 
@@ -77,6 +77,7 @@ const RVector & IntegrationRules::weights(const Shape & shape, uint order) const
 }
 
 void IntegrationRules::initGau_(){
+    // Gauss quadrature points and weights with the Jacobi polynomials.
     //** 0.Order, n=1 -- just placeholder
     gauAbscissa_.push_back(R3Vector (0));
     gauWeights_.push_back(RVector(0, 0.0));

@@ -146,8 +146,6 @@ typedef int64_t int64;
 #define VECTORBINSUFFIX ".bvec"
 #define VECTORASCSUFFIX ".vector"
 #define NOT_DEFINED "notDefined"
-    
-
 
 #define ASSERT_EQUAL(m, n) if (m != n) \
     throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));

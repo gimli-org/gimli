@@ -1335,32 +1335,64 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
 
     return u
 
+class RungeKutta(object):
+    #% Low storage Runge-Kutta coefficients
+    rk4a = [            0.0, 
+        -567301805773.0/1357537059087.0, 
+        -2404267990393.0/2016746695238.0, 
+        -3550918686646.0/2091501179385.0 , 
+        -1275806237668.0/842570457699.0]
+    rk4b = [ 1432997174477.0/9575080441755.0, 
+         5161836677717.0/13612068292357.0, 
+         1720146321549.0/2090206949498.0 , 
+         3134564353537.0/4481467310338.0 , 
+         2277821191437.0/14882151754819.0]
+    rk4c = [             0.0 , 
+         1432997174477.0/9575080441755.0, 
+         2526269341429.0/6820363962896.0, 
+         2006345519317.0/3224310063776.0, 
+         2802321613138.0/2924317926251.0]
+
+    def __init__(self, solver, verbose=False):
+        self.solver = solver
+        self.verbose = verbose
+        
+    def run(self, u0, dt, tMax=1):
+        """
+        """
+        self.start(u0, dt, tMax)
+        
+        for i in range(self.Nsteps):
+            self.step()
+        return self.u
+
+    def start(self, u0, dt, tMax=1):
+        """
+        """
+        self.Nsteps = int(np.ceil(tMax/dt))
+        self.dt = tMax / self.Nsteps 
+        
+        self.time = 0
+        self.u = u0.copy()
+        self.resu = u0.copy() * 0.0
+
+    def step(self):
+        """
+        """
+        for jRK in range(5):
+            tLocal = self.time + self.rk4c[jRK] * self.dt
+                
+            rhs = self.solver.explicitRHS(self.u, tLocal)
+        
+            self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
+            self.u = self.u + self.rk4b[jRK] * self.resu 
+            #print(jRK)
+            #print(u)
+
+        self.time += self.dt
+        return self.u
+        
+    
 
 if __name__ == "__main__":
-    #import pygimli as pg
-    #import matplotlib.pyplot as plt
-    #import numpy as np
-    #fig, ax = plt.subplots()
-    #mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
-    #u = lambda p: pg.x(p)**2 * pg.y(p)
-    #pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
-    #pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
-    #pg.x(mesh.cellCenters())**2 ], axes=ax)
-    #pg.show(mesh, pg.solver.gradient(mesh, u), axes=ax, color='w', linewidth=0.4)
-    #plt.show()
-
-
-    #import pygimli as pg
-    #from pygimli.meshtools import polytools as plc
-    #from pygimli.mplviewer import drawField, drawMesh
-    #import matplotlib.pyplot as plt
-    #world = plc.createWorld(start=[-10, 0], end=[10, -10],
-                            #marker=1, worldMarker=False)
-    #c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
-    #mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
-    #u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]], uB=[[4, 1.0], [3, 0.0]])
-    #fig, ax = plt.subplots()
-    #pc = drawField(ax, mesh, u)
-    #drawMesh(ax, mesh)
-    #plt.show()
     pass

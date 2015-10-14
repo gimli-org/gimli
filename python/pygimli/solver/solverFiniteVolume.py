@@ -473,7 +473,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
             # Convection part
             F = boundary.norm(cell).dot(v) * boundary.size()
-
+            print(F)
             # Diffusion part
             D = findDiffusion(mesh, a, boundary, cell, ncell)
 
@@ -532,32 +532,32 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
                 # * cell.shape().domainSize()
                 S[cell.id(), cell.id()] -= fn[cell.id()]
 
-    if useHalfBoundaries:
-        raise("is this really used")
-        for i, [bound, val] in enumerate(duB):  # not defined!!!
-            bIdx = mesh.cellCount() + i
+    #if useHalfBoundaries:
+        #raise("is this really used")
+        #for i, [bound, val] in enumerate(duB):  # not defined!!!
+            #bIdx = mesh.cellCount() + i
 
-            bCell = bound.leftCell()
-            if not c:
-                bCell = bound.rightCell()
+            #bCell = bound.leftCell()
+            #if not c:
+                #bCell = bound.rightCell()
 
-            if bCell:
-                n = bound.norm(bCell)
-                v = findVelocity(mesh, vel, bound, bCell, nc=None)
-                F = n.dot(v) * bound.size()
+            #if bCell:
+                #n = bound.norm(bCell)
+                #v = findVelocity(mesh, vel, bound, bCell, nc=None)
+                #F = n.dot(v) * bound.size()
 
-                D = findDiffusion(mesh, a, bound, bCell)
-                aB = D * AScheme(F / D) + max(-F, 0.0)
+                #D = findDiffusion(mesh, a, bound, bCell)
+                #aB = D * AScheme(F / D) + max(-F, 0.0)
 
-                if useHalfBoundaries:
-                    if sparse:
-                        S.setVal(bCell.id(), bCell.id(), 1.)
-                        S.addVal(bCell.id(), bIdx, -aB)
-                    else:
-                        S[bIdx, bIdx] = 1.
-                        S[bCell.id(), bIdx] -= aB
+                #if useHalfBoundaries:
+                    #if sparse:
+                        #S.setVal(bCell.id(), bCell.id(), 1.)
+                        #S.addVal(bCell.id(), bIdx, -aB)
+                    #else:
+                        #S[bIdx, bIdx] = 1.
+                        #S[bCell.id(), bIdx] -= aB
 
-                    rhsBoundaryScales[bIdx] = aB
+                    #rhsBoundaryScales[bIdx] = aB
 
     return S, rhsBoundaryScales
 
@@ -567,7 +567,11 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
                       uL=None, relax=1.0,
                       ws=None, scheme='CDS', **kwargs):
     """
-    Calculate for u
+    Calculate for u.
+    
+    NOTE works only for steady boundary conditions!!! 
+    
+    !!Refactor with solver class and Runga-Kutte solver!!
     
     Parameters
     ----------

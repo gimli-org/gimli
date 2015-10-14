@@ -215,6 +215,7 @@ void ModellingBase::createJacobian(const RVector & model){
     for (size_t i = 0; i < model.size(); i++) {
         RVector modelChange(model);
         modelChange[i] *= fak;
+        
         RVector respChange(response(modelChange));
 
         for (size_t j = 0; j < resp.size(); j++){

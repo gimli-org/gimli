@@ -429,6 +429,11 @@ Boundary * Cell::boundaryTo(const RVector & sf){
     return (*common.begin());
 }
 
+Boundary * Cell::boundary(Index i){
+    ASSERT_RANGE(i, 0, boundaryCount())
+    return findBoundary(boundaryNodes(i));
+}
+
 Cell * Cell::neighbourCell(const RVector & sf){
     if (haveInfNaN(sf)){
         __MS("fixme " << sf)
