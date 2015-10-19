@@ -473,7 +473,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
             # Convection part
             F = boundary.norm(cell).dot(v) * boundary.size()
-            print(F)
+            #print(F, boundary.size(), v, vel)
             # Diffusion part
             D = findDiffusion(mesh, a, boundary, cell, ncell)
 
@@ -562,7 +562,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     return S, rhsBoundaryScales
 
 
-def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
+def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
                       times=None,
                       uL=None, relax=1.0,
                       ws=None, scheme='CDS', **kwargs):
@@ -633,6 +633,8 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
     f = pg.solver.parseArgToArray(f, mesh.cellCount())
     fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
+    if type(vel) == float:
+        print("Warning! .. velocity is float and no vector field")
 
     boundsDirichlet = None
     boundsNeumann = None

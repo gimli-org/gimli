@@ -1335,6 +1335,8 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
 
     return u
 
+from copy import deepcopy
+
 class RungeKutta(object):
     #% Low storage Runge-Kutta coefficients
     rk4a = [            0.0, 
@@ -1371,10 +1373,15 @@ class RungeKutta(object):
         """
         self.Nsteps = int(np.ceil(tMax/dt))
         self.dt = tMax / self.Nsteps 
-        
         self.time = 0
-        self.u = u0.copy()
-        self.resu = u0.copy() * 0.0
+        self.u = deepcopy(u0)
+        self.resu = deepcopy(u0)
+        
+        if type(self.resu) is list:
+            for r in self.resu:
+                r *= 0.0
+        else:
+            self.resu *= 0.0
 
     def step(self):
         """
@@ -1383,9 +1390,14 @@ class RungeKutta(object):
             tLocal = self.time + self.rk4c[jRK] * self.dt
                 
             rhs = self.solver.explicitRHS(self.u, tLocal)
-        
-            self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
-            self.u = self.u + self.rk4b[jRK] * self.resu 
+            
+            if type(self.resu) is list:
+                for i in range(len(self.resu)):
+                    self.resu[i] = self.rk4a[jRK] * self.resu[i] + self.dt * rhs[i]
+                    self.u[i] += self.rk4b[jRK] * self.resu[i] 
+            else:
+                self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
+                self.u += self.rk4b[jRK] * self.resu 
             #print(jRK)
             #print(u)
 

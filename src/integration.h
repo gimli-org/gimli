@@ -38,13 +38,15 @@ public:
 
     /*!
      * Generic quadrature positions for a triangle based on Gauss-Legendre quadrature
-     H. T. RATHOD1*, K. V. NAGARAJA2, B. VENKATESUDU3 AND N. L. RAMESH4. Gauss Legendre quadrature over a triangle.
+     H. T. RATHOD1*, K. V. NAGARAJA2, B. VENKATESUDU3 AND N. L. RAMESH4.
+     Gauss Legendre quadrature over a triangle.
      J. Indian Inst. Sci., Sept.-Oct. 2004, 84, 183-188
     */
     inline const R3Vector & triGLAbscissa(uint order) const { return triGLAbscissa_[order]; }
     /*!
      * Generic quadrature weights for a triangle based on Gauss-Legendre quadrature
-     H.T. RATHOD, K. V. NAGARAJA, B. VENKATESUDU AND N. L. RAMESH. Gauss Legendre quadrature over a triangle.
+     H.T. RATHOD, K. V. NAGARAJA, B. VENKATESUDU AND N. L. RAMESH. 
+     Gauss Legendre quadrature over a triangle.
      J. Indian Inst. Sci., Sept.-Oct. 2004, 84, 183-188
     */
     inline const RVector & triGLWeights(uint order) const { return triGLWeights_[order]; }
@@ -76,7 +78,7 @@ public:
     const RVector & weights(const Shape & shape, uint order) const;
 
     /*! Set whether triangle integration use Gauss Legendre polynomials (up to order 9) or 
-     * native triangle coordinates (up to order 5). Default is true. */
+     * native triangle coordinates (up to order 5). Default is GL == true. */
     inline void setTriUseGaussLegendre(bool use){ triUseGaussLegendre_ = use;}
     inline bool triUseGaussLegendre() const { return triUseGaussLegendre_; }
         

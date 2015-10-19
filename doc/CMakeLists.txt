@@ -168,6 +168,11 @@ add_custom_target(sphinxpdf ALL
         sphinxlatex
 )
 
+add_custom_target(html
+    DEPENDS
+        sphinxhtml
+)
+
 add_custom_target(doc
     COMMENT
         "Building HTML, API and PDF Documentation"

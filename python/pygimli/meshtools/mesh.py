@@ -440,6 +440,60 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
     return mesh
 
 
+def readGambitNeutral(filename, verbose=False):
+    """
+    Import Gambit Neutral meshes *.neu
+        
+    See. https://www.sharcnet.ca/Software/Gambit/html/users_guide/ug01.htm
+    
+    Not fully implemented. If needed, we can improve this importer just send us
+    an example file.
+    
+    Parameters
+    ----------
+    fname : string
+        Filename of the file to read (\\*.n, \\*.e \\*.f)
+
+    verbose : boolean, optional
+        Be verbose during import.
+
+    """
+    with open(filename, 'r') as fi:
+        content = fi.readlines()
+    fi.close()
+    
+    mesh = pg.Mesh(2)
+    
+    for i, line in enumerate(content):
+        if 'ENDOFSECTION' in line: break
+    
+    try:
+        nVerts = int(content[i-1].split()[0])
+        nElements = int(content[i-1].split()[1])
+    except:
+        raise BaseException("Cannot interpret GAMBIT Neutral header: " + content[0:i])
+    
+    for i, line in enumerate(content):
+        if 'NODAL COORDINATES' in line: break
+    for j in range(nVerts):
+        vertx = float(content[i+j+1].split()[1])
+        verty = float(content[i+j+1].split()[2])
+        mesh.createNode((vertx, verty))
+
+    for i, line in enumerate(content):
+        if 'ELEMENTS/CELLS' in line: break
+    for j in range(nElements):
+        nNodes = int(content[i+j+1].split()[1])
+        nodes = []
+        for k in range(nNodes):
+            nodes.append(int(content[i+1+j].split()[3 + k])-1)
+        mesh.createCell(nodes)
+   
+    if verbose:
+        print("Gambit neutral file imported: ", mesh)
+    return mesh
+
+
 def transform2DMeshTo3D(mesh, x, y, z=None):
     """
     Transform a 2D mesh into 3D coordinates using a point list (e.g. from GPS)

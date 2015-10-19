@@ -196,12 +196,12 @@ void IntegrationRules::initEdg_(){
 void IntegrationRules::initTriGL_(){
 
     //** 0.Order, n=1, Error: O(h1) -- just placeholder
-    triGLAbscissa_.push_back(std::vector< RVector3 >(0));
+    triGLAbscissa_.push_back(R3Vector(0));
     triGLWeights_.push_back(RVector(0, 0.0));
 
     for (uint i = 1; i < 10; i ++){
 //         std::cout << "i" << i << std::endl;
-        triGLAbscissa_.push_back(std::vector< RVector3 >(i*i));
+        triGLAbscissa_.push_back(R3Vector(i*i));
          triGLWeights_.push_back(RVector(i*i, 0.0));
 
         for (uint j = 0; j < i; j ++){
@@ -219,23 +219,23 @@ void IntegrationRules::initTriGL_(){
 
 void IntegrationRules::initTri_(){
     //** 0.Order, n=1, Error: O(h1) -- just placeholder
-    triAbscissa_.push_back(std::vector< RVector3 >(0));
+    triAbscissa_.push_back(R3Vector(0));
     triWeights_.push_back(RVector(0, 0.0));
 
     //** 1.Order, n=1, Error: O(h2)
-    triAbscissa_.push_back(std::vector< RVector3 >(1));
+    triAbscissa_.push_back(R3Vector(1));
     triAbscissa_.back()[0] = RVector3(1.0/3.0, 1.0/3.0);
     triWeights_.push_back(RVector(1, 1.0));
 
         //** 2.Order, n=3, Error: O(h3)
-    triAbscissa_.push_back(std::vector< RVector3 >(3));
+    triAbscissa_.push_back(R3Vector(3));
     triAbscissa_.back()[0] = RVector3(0.5, 0.0);
     triAbscissa_.back()[1] = RVector3(0.5, 0.5);
     triAbscissa_.back()[2] = RVector3(0.0, 0.5);
     triWeights_.push_back(RVector(3, 1.0/3.0));
 
     //** 3.Order, n=4, Error: O(h4)
-    triAbscissa_.push_back(std::vector< RVector3 >(4));
+    triAbscissa_.push_back(R3Vector(4));
     triAbscissa_.back()[0] = RVector3(1.0/3.0, 1.0/3.0) ;
     triAbscissa_.back()[1] = RVector3(0.2, 0.2);
     triAbscissa_.back()[2] = RVector3(0.6, 0.2);
@@ -245,7 +245,7 @@ void IntegrationRules::initTri_(){
 
     //** 4.Order, n=6, Error: O(h5)
     //**    Joseph E. Flaherty -- Finite Element Analysis CSCI-6860 / MATH-6860
-    triAbscissa_.push_back(std::vector< RVector3 >(6));
+    triAbscissa_.push_back(R3Vector(6));
     double a = 0.816847572980459, b = 0.091576213509771;
     triAbscissa_.back()[0] = RVector3(b, b);
     triAbscissa_.back()[1] = RVector3(a, b);
@@ -259,7 +259,7 @@ void IntegrationRules::initTri_(){
 
     //** 5.Order, n=7, Error: O(h6)
     //** pls check this
-    triAbscissa_.push_back(std::vector< RVector3 >(7));
+    triAbscissa_.push_back(R3Vector(7));
     double sqrt15 = std::sqrt(15.0);
     triAbscissa_.back()[0] = RVector3(1.0/3.0, 1.0/3.0);
     b = 2.0 / 7.0 + sqrt15 / 21.0, a = 1.0 - 2.0 * b;
@@ -282,16 +282,16 @@ void IntegrationRules::initTri_(){
 void IntegrationRules::initTet_(){
     //**    Joseph E. Flaherty -- Finite Element Analysis CSCI-6860 / MATH-6860
     //** 0.Order, n=1, Error: O(h0) -- just placeholder
-    tetAbscissa_.push_back(std::vector< RVector3 >(0));
+    tetAbscissa_.push_back(R3Vector(0));
     tetWeights_.push_back(RVector(0, 0.0));
 
     //** 1.Order, n=1, Error: O(h2)
-    tetAbscissa_.push_back(std::vector< RVector3 >(1));
+    tetAbscissa_.push_back(R3Vector(1));
     tetAbscissa_.back()[0] = RVector3(0.25, 0.25, 0.25);
     tetWeights_.push_back(RVector(1, 1.0));
 
     //** 2.Order, n=4, Error: O(h3)
-    tetAbscissa_.push_back(std::vector< RVector3 >(4));
+    tetAbscissa_.push_back(R3Vector(4));
     double a = 0.585410196624969, b = 0.138196601125011;
     tetAbscissa_.back()[0] = RVector3(b, b, b);
     tetAbscissa_.back()[1] = RVector3(a, b, b);
@@ -300,7 +300,7 @@ void IntegrationRules::initTet_(){
     tetWeights_.push_back(RVector(4, 0.25));
 
     //** 3.Order, n=5, Error: O(h4)
-    tetAbscissa_.push_back(std::vector< RVector3 >(5));
+    tetAbscissa_.push_back(R3Vector(5));
     tetAbscissa_.back()[0] = RVector3(0.25, 0.25, 0.25);
     a = 0.5, b = 1.0 / 6.0;
     tetAbscissa_.back()[1] = RVector3(b, b, b);
@@ -311,7 +311,7 @@ void IntegrationRules::initTet_(){
     tetWeights_.back()[0] = -4.0 / 5.0;
 
     //** 4.Order, n=11, Error: O(h?)
-    tetAbscissa_.push_back(std::vector< RVector3 >(11));
+    tetAbscissa_.push_back(R3Vector(11));
     tetAbscissa_.back()[0] = RVector3(0.25, 0.25, 0.25);
     a = 0.785714285714286; b = 0.071428571428571;
     tetAbscissa_.back()[1] = RVector3(b, b, b);
@@ -332,7 +332,7 @@ void IntegrationRules::initTet_(){
     tetWeights_.back() *= 6.0;
 
     //** 5.Order, n=15, Error: O(h?)
-    tetAbscissa_.push_back(std::vector< RVector3 >(15));
+    tetAbscissa_.push_back(R3Vector(15));
     tetAbscissa_.back()[0] = RVector3(0.25, 0.25, 0.25);
     a = 0.0; b = 1.0 / 3.0;
     tetAbscissa_.back()[1] = RVector3(b, b, b);
