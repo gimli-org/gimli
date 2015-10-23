@@ -6,7 +6,7 @@ The following should suffice to build GIMLi from source on most Linux Platforms:
 .. code-block:: bash
 
     mkdir -p ~/src/gimli && cd ~/src/gimli
-    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
+    git clone https://github.com/gimli-org/gimli.git trunk
 
     mkdir -p build && cd build
     cmake ../trunk
