@@ -78,6 +78,22 @@ from pygimli.solver import solve
 def showNow():
     showLater(0)
 
+__swatch__ = _pygimli_.Stopwatch()
+
+def tic():
+    """Start global stopwatch."""
+    __swatch__.start()
+    
+def toc():
+    """Print elapsed time since stopwatch was started."""
+    print('Elapsed time is:', dur(), "s")
+
+def dur():
+    """Return time since the stopwatch was started."""
+    return __swatch__.duration()
+
+
+
 ############################
 # print function for gimli stuff
 ############################

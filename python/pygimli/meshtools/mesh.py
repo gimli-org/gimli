@@ -98,6 +98,49 @@ def createMesh(poly, quality=30, area=0.0,
     else:
         raise('not yet implemented')
 
+def refineQuad2Tri(mesh, style=1):
+    """Refine mesh out of quadrangles into a triangle mesh.
+    
+        TODO mixed meshes
+        TODO preserve boundary conditions
+        
+    Parameters
+    ----------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        mesh containing quadrangle cells
+        
+    style: int [1]
+        * 1 bisect each quadrangle into 2 triangles
+        * 2 bisect each quadrangle into 4 triangles
+        
+    Returns
+    ----------
+    triMesh: :gimliapi:`GIMLI::Mesh`
+        mesh containing triangle cells
+        
+    """
+    out = pg.Mesh(2)
+    nodes = [None]*5
+    
+    for c in mesh.cells():
+        for i in range(4):
+            nodes[i] = out.createNodeWithCheck(c.node(i).pos())
+                
+        if style == 1:
+            out.createCell([nodes[0].id(), nodes[1].id(), nodes[2].id()])
+            out.createCell([nodes[0].id(), nodes[2].id(), nodes[3].id()])
+                
+        elif style == 2:
+            nodes[4] = out.createNodeWithCheck(c.center())
+            trinodes = [None]*3
+            
+            for i in range(4):
+                tri = [nodes[i].id(), nodes[(i+1)%4].id(), nodes[4].id()]
+                out.createCell(tri)
+    
+    out.createNeighbourInfos()
+
+    return out
 
 def readGmsh(fname, verbose=False):
     """
@@ -383,6 +426,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
                 mesh.node(int(line[3]) - 1), mesh.node(int(line[4]) - 1), 1)
 
     fid.close()
+    mesh.createNeighbourInfos()
     return mesh
 
 
@@ -437,6 +481,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
         cells.append(c)
 
     f.close()
+    mesh.createNeighbourInfos()
     return mesh
 
 
@@ -491,6 +536,8 @@ def readGambitNeutral(filename, verbose=False):
    
     if verbose:
         print("Gambit neutral file imported: ", mesh)
+    
+    mesh.createNeighbourInfos()
     return mesh
 
 

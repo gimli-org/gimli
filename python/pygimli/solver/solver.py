@@ -1372,8 +1372,9 @@ class RungeKutta(object):
         """
         """
         self.Nsteps = int(np.ceil(tMax/dt))
-        self.dt = tMax / self.Nsteps 
+        self.dt = dt
         self.time = 0
+        self.tMax = tMax
         self.u = deepcopy(u0)
         self.resu = deepcopy(u0)
         
@@ -1383,23 +1384,36 @@ class RungeKutta(object):
         else:
             self.resu *= 0.0
 
-    def step(self):
+    def step(self, count):
         """
         """
+        if self.time + self.dt > self.tMax:
+            self.dt = self.tMax - self.time
+
+        #print('#'*100)
+        #print(self.time, self.dt)
+        
+        
         for jRK in range(5):
+            #print(jRK)
             tLocal = self.time + self.rk4c[jRK] * self.dt
-                
-            rhs = self.solver.explicitRHS(self.u, tLocal)
+
+            rhs = self.solver.explicitRHS(self.u, tLocal, jRK, count)
             
             if type(self.resu) is list:
                 for i in range(len(self.resu)):
                     self.resu[i] = self.rk4a[jRK] * self.resu[i] + self.dt * rhs[i]
+                    
                     self.u[i] += self.rk4b[jRK] * self.resu[i] 
             else:
                 self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
                 self.u += self.rk4b[jRK] * self.resu 
-            #print(jRK)
-            #print(u)
+                
+            #print(jRK, self.dt, self.rk4a[jRK], self.rk4b[jRK])
+            #print(self.u[2])
+            #rhs = self.solver.explicitRHS(self.u, tLocal)
+            #print(rhs[0])
+            #exit()
 
         self.time += self.dt
         return self.u
