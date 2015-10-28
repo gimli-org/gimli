@@ -176,7 +176,7 @@ def drawMesh(axes, mesh, **kwargs):
     >>> plt.show()
     """
 
-    pg.mplviewer.drawMeshBoundaries(axes, mesh, fitView=False, **kwargs)
+    pg.mplviewer.drawMeshBoundaries(axes, mesh, **kwargs)
 
     if kwargs.pop('fitView', True):
         axes.set_aspect('equal')
