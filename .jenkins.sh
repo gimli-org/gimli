@@ -32,8 +32,7 @@ rm -f build/CMakeCache.txt # clean old cache
 
 mkdir -p build
 cd build
-cmake ../trunk \
-    -DCASTER=castxml \
+CLEAN=1 cmake ../trunk \
     -DPYVERSION=3 \
     -DPYTHON_EXECUTABLE=/usr/bin/python3 \
     -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so \
