@@ -6,7 +6,7 @@ The following should suffice to build GIMLi from source on most Linux Platforms:
 .. code-block:: bash
 
     mkdir -p ~/src/gimli && cd ~/src/gimli
-    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
+    git clone https://github.com/gimli-org/gimli.git trunk
 
     mkdir -p build && cd build
     cmake ../trunk
@@ -47,7 +47,7 @@ Checkout the current sources for libgimli:
 
 .. code-block:: bash
 
-    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
+    git clone https://github.com/gimli-org/gimli.git trunk
 
 We use cmake (http://www.cmake.org/) for compilation. We recommend using a
 build directory parallel to the trunk path:
@@ -165,8 +165,8 @@ You can force cmake to select the correct version with:
 
     cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
 
-Usefull cmake settings
-^^^^^^^^^^^^^^^^^^^^^^
+Useful cmake settings
+^^^^^^^^^^^^^^^^^^^^^
 
 You can rebuild and update all local generated third party software by setting the CLEAN environment variable:
 

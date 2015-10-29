@@ -732,7 +732,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
             print("Solve timesteps with Crank-Nicolson.")
             
         return pg.solver.crankNicolson(times, theta, workspace.S, I,
-                                       f=workspace.rhs, u0=u0, verbose=verbose)
+                                       f=workspace.rhs, 
+                                 u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
+                                       verbose=verbose)
 
 def createFVPostProzessMesh(mesh, u, uDirichlet):
     """

@@ -4,7 +4,7 @@ Created on Fri Jun 12 15:48:00 2015
 
 @author: Marcus
 
-No official maintenance by the GIMLi team. 
+No official maintenance by the GIMLi team.
 
 """
 
@@ -20,7 +20,7 @@ class Poly2D(object):
     """
     Utility class to create polygon model that can be meshed and used
     for synthetic modelling.
-    
+
     ca: This class can currently read a given geometry from xml file and create a mesh.
     """
 
@@ -229,6 +229,11 @@ class Poly2D(object):
 
         drawMesh(ax, self.poly, **kwargs)
 
+    def drawLines(self, ax=None, color='white'):
+        """ just draw edges of a mesh as lines (e.g. onto a model)"""
+        for b in self.poly.boundaries():
+            ax.plot([b.node(0).x(), b.node(1).x()],
+                    [b.node(0).y(), b.node(1).y()], color=color)
 
 if __name__ == '__main__':
     p = Poly2D('example.xml')  # Poly2D handles loading/creating a 2D-PLCs

@@ -1,28 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Some additional infos here?
+    Example refraction script applied to an example file
+    (shaly bedrock detection from Günther&Rücker (2006), EAGE Near Surface)
 """
 import os
-import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.physics import Refraction
 
+# load example file explicitly from same directory (if called from elsewhere)
 ra = Refraction(os.path.dirname(__file__) + '/example_topo.sgt')
 print(ra)
-ra.showVA()
+if False:  # possible (typical) actions
+    ra.showData()  # show only data (right after init)
+    ra.showVA()  # show apparent velocity image
+    ra.createMesh(depth=10.)  # pass non-default meshing options
+    ra.createStartModel(vtop=500, vbottom=2000)
 
-ra.createMesh()
-ra.inv.setMaxIter(20)
-ra.run(lam=300)
-
-print("model:", ra.model())
-print("paraDomain:", ra.paraDomain())
-
-fig, ax = plt.subplots(nrows=2)
-ra.showResult(ax=ax[0], cMin=300, cMax=1500)
-ra.showData(ax=ax[1], response=ra.response)
-
+ra.run(lam=300)  # use vtop/vbottom for startmodel
+ra.showResultAndFit()  # typical output: model and data with response
 pg.wait()
-

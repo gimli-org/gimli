@@ -56,7 +56,11 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 
     if hasattr(arg, '__len__'):
         if type(arg) == np.ndarray:
-            return arg
+            if len(arg) == ndof:
+                return arg
+            else:
+                raise BaseException('Given array does not have requested (' + 
+                                    str(ndof) + ') size (' + str(len(arg)) + ')')
 
         for n in nDofs:
             if len(arg) == n:
@@ -707,7 +711,13 @@ def assembleForceVector(mesh, f, userData=None):
             else:
                 f(c, rhs)
     else:
-        fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
+        fArray = None
+        if hasattr(f, '__len__'):
+            if len(f) == mesh.cellCount() or len(f) == mesh.nodeCount():
+                fArray = f
+        
+        if fArray is None:
+            fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
 
         if len(fArray) == mesh.cellCount():
             b_l = pg.ElementMatrix()
@@ -718,7 +728,13 @@ def assembleForceVector(mesh, f, userData=None):
                     rhs[idx] += b_l.row(0)[i] * fArray[c.id()]
 
         elif len(fArray) == mesh.nodeCount():
-            rhs = pg.RVector(fArray)
+            b_l = pg.ElementMatrix()
+            for c in mesh.cells():
+                b_l.u(c)
+                for i, idx in enumerate(b_l.idx()):
+                    rhs[idx] += b_l.row(0)[i] * fArray[idx]
+            
+            #rhs = pg.RVector(fArray)
         else:
             raise Exception("Forcevector have the wrong size: " +
                             str(len(fArray)))
@@ -1358,6 +1374,7 @@ class RungeKutta(object):
     def __init__(self, solver, verbose=False):
         self.solver = solver
         self.verbose = verbose
+        self.order = 5
         
     def run(self, u0, dt, tMax=1):
         """
@@ -1384,37 +1401,46 @@ class RungeKutta(object):
         else:
             self.resu *= 0.0
 
-    def step(self, count):
+    def step(self):
         """
         """
         if self.time + self.dt > self.tMax:
             self.dt = self.tMax - self.time
-
-        #print('#'*100)
-        #print(self.time, self.dt)
         
-        
-        for jRK in range(5):
-            #print(jRK)
-            tLocal = self.time + self.rk4c[jRK] * self.dt
-
-            rhs = self.solver.explicitRHS(self.u, tLocal, jRK, count)
+        if self.order == 1: 
+            # explicit Euler
+            k1 = self.solver.explicitRHS(self.u, 
+                                         self.time)
+            self.u += self.dt * k1 
             
-            if type(self.resu) is list:
-                for i in range(len(self.resu)):
-                    self.resu[i] = self.rk4a[jRK] * self.resu[i] + self.dt * rhs[i]
-                    
-                    self.u[i] += self.rk4b[jRK] * self.resu[i] 
-            else:
-                self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
-                self.u += self.rk4b[jRK] * self.resu 
-                
-            #print(jRK, self.dt, self.rk4a[jRK], self.rk4b[jRK])
-            #print(self.u[2])
-            #rhs = self.solver.explicitRHS(self.u, tLocal)
-            #print(rhs[0])
-            #exit()
+        elif self.order == 4: 
+            # classical 4 step Runga-Kutta rk4
+            k1 = self.solver.explicitRHS(self.u, 
+                                         self.time)
+            k2 = self.solver.explicitRHS(self.u + self.dt/2 * k1, 
+                                         self.time + self.dt/2)
+            k3 = self.solver.explicitRHS(self.u + self.dt/2 * k2, 
+                                         self.time + self.dt/2)
+            k4 = self.solver.explicitRHS(self.u + self.dt * k3, 
+                                         self.time + self.dt)
+            self.u += 1./6. * self.dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+            
+        elif self.order == 5:
+            # low storage Version of rk4
+            for jRK in range(5):
+                tLocal = self.time + self.rk4c[jRK] * self.dt
 
+                rhs = self.solver.explicitRHS(self.u, tLocal)
+                
+                if type(self.resu) is list:
+                    for i in range(len(self.resu)):
+                        self.resu[i] = self.rk4a[jRK] * self.resu[i] + self.dt * rhs[i]
+                        
+                        self.u[i] += self.rk4b[jRK] * self.resu[i] 
+                else:
+                    self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
+                    self.u += self.rk4b[jRK] * self.resu 
+                
         self.time += self.dt
         return self.u
         

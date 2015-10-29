@@ -99,14 +99,13 @@ def createMesh(poly, quality=30, area=0.0,
         raise('not yet implemented')
 
 def refineQuad2Tri(mesh, style=1):
-    """Refine mesh out of quadrangles into a triangle mesh.
+    """Refine mesh of quadrangles into a mesh of triangle cells.
     
         TODO mixed meshes
-        TODO preserve boundary conditions
         
     Parameters
     ----------
-    mesh: :gimliapi:`GIMLI::Mesh`
+    mesh : :gimliapi:`GIMLI::Mesh`
         mesh containing quadrangle cells
         
     style: int [1]
@@ -114,29 +113,39 @@ def refineQuad2Tri(mesh, style=1):
         * 2 bisect each quadrangle into 4 triangles
         
     Returns
-    ----------
-    triMesh: :gimliapi:`GIMLI::Mesh`
+    -------
+    ret : :gimliapi:`GIMLI::Mesh`
         mesh containing triangle cells
         
     """
     out = pg.Mesh(2)
-    nodes = [None]*5
+    newNode = None
     
+    for n in mesh.nodes():
+        out.createNode(n.pos())
+        
     for c in mesh.cells():
-        for i in range(4):
-            nodes[i] = out.createNodeWithCheck(c.node(i).pos())
-                
+                        
         if style == 1:
-            out.createCell([nodes[0].id(), nodes[1].id(), nodes[2].id()])
-            out.createCell([nodes[0].id(), nodes[2].id(), nodes[3].id()])
+            out.createCell([c.node(0).id(),
+                            c.node(1).id(),
+                            c.node(2).id()])
+            out.createCell([c.node(0).id(),
+                            c.node(2).id(),
+                            c.node(3).id()])
                 
         elif style == 2:
-            nodes[4] = out.createNodeWithCheck(c.center())
-            trinodes = [None]*3
-            
+            newNode = out.createNodeWithCheck(c.center())
+                        
             for i in range(4):
-                tri = [nodes[i].id(), nodes[(i+1)%4].id(), nodes[4].id()]
-                out.createCell(tri)
+                out.createCell([c.node(i).id(),
+                                c.node((i+1)%4).id(),
+                                newNode.id()])
+
+        for i in range(c.boundaryCount()):
+            b = c.boundary(i)
+            if b.marker() != 0:
+                out.createBoundary([b.node(0).id(), b.node(1).id()], b.marker())
     
     out.createNeighbourInfos()
 

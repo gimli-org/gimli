@@ -7,6 +7,10 @@ start=$(date +"%s")
 # Show last change to repo in build log
 echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
 
+# link python to python3
+ln -sf /usr/bin/python3 python
+export PATH=`pwd`:$PATH
+
 # Show system information
 lsb_release -d
 uname -a
@@ -14,6 +18,7 @@ gcc --version
 cmake --version
 python --version
 python -c "import numpy; print(numpy.__version__)"
+python -c "import matplotlib; print(matplotlib.__version__)"
 
 ################
 #  Main build  #
@@ -27,7 +32,12 @@ rm -f build/CMakeCache.txt # clean old cache
 
 mkdir -p build
 cd build
-cmake ../trunk -DCASTER=castxml #-DPYVERSION=3
+cmake ../trunk \
+    -DCASTER=castxml \
+    -DPYVERSION=3 \
+    -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so \
+    -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
 
 make -j 16 gimli
 make pygimli J=12

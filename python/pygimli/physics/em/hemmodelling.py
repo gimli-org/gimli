@@ -29,13 +29,20 @@ class HEMmodelling(pg.ModellingBase):
     ep0 = 8.8542e-12
     mu0 = 4e-7 * np.pi
     c0 = sqrt(1. / ep0 / mu0)
-    f = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0])
-    r = np.array([7.94, 7.93, 7.93, 7.91, 7.92])
+    fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0])
+    rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92])
 
-    def __init__(self, nlay, height):
+    def __init__(self, nlay, height, f=None, r=None):
         # Attribute
         self.nlay = nlay
         self.height = height
+        self.f = f
+        self.r = r
+        if self.f is None:
+            self.f = self.fdefault
+        if self.r is None:
+            self.r = self.rdefault
+
         self.wem = (2.0 * pi * self.f) ** 2 * self.ep0 * self.mu0
         self.iwm = np.complex(0, 1) * 2.0 * pi * self.f * self.mu0
         mesh = pg.createMesh1DBlock(nlay)
@@ -425,7 +432,7 @@ class HEMRhomodelling(HEMmodelling):
 
 class FDEMLCIFOP(pg.ModellingBase):
     """ FDEM 2d-LCI modelling class based on BlockMatrices """
-    def __init__(self, data, nlay=2, verbose=False):
+    def __init__(self, data, nlay=2, verbose=False, f=None, r=None):
         """ Parameters: FDEM data class and number of layers """
         super(FDEMLCIFOP, self).__init__(verbose)
         self.nlay = nlay
@@ -440,7 +447,7 @@ class FDEMLCIFOP(pg.ModellingBase):
         self.J = pg.RBlockMatrix()
         self.FOP1d = []
         for i in range(self.nx):
-            self.FOP1d.append(HEMmodelling(nlay, data.z[i]))
+            self.FOP1d.append(HEMmodelling(nlay, data.z[i], f, r))
             n = self.J.addMatrix(self.FOP1d[-1].jacobian())
             self.J.addMatrixEntry(n, self.nf*2*i, self.np*i)
 
@@ -448,7 +455,7 @@ class FDEMLCIFOP(pg.ModellingBase):
 
     def response(self, model):
         """ cut-together forward responses of all soundings """
-        modA = np.reshape(model, (self.nx, self.np))  # tile
+        modA = np.reshape(model, (self.nx, self.np))
         resp = pg.RVector(0)
         for i, modi in enumerate(modA):
             resp = pg.cat(resp, self.FOP1d[i].response(modi))
@@ -457,7 +464,7 @@ class FDEMLCIFOP(pg.ModellingBase):
 
     def createJacobian(self, model):
         """ fill the individual blocks of the Block-Jacobi matrix """
-        modA = np.reshape(model, (self.nx, self.np))  # tile
+        modA = np.reshape(model, (self.nx, self.np))
         for i, modi in enumerate(modA):
             self.FOP1d[i].createJacobian(modi)
 
