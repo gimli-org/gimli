@@ -28,112 +28,6 @@ def throw(*args, **kwargs):
     pass
 
 
-class BaseMethodeManager(object):
-    '''Diskusionsgrundlage. Ich glaub den kann man soweit als Default
-    auffüllen das im Grunde nur noch Transen und FOP erzwungen werden muessen.
-    Die setter sollten als einzige automatisch mit inv und fop interagieren ..
-    also load, create etc. sollten immer mit set enden. DRY.
-
-    Es sollte immer ein self.model() geben
-    '''
-    def __init__(self, **kwargs):
-        # defaults that are always useful
-        self.dataContainer = None
-        self.mesh = None
-        self.response = None
-        self.transData = None
-        self.transModel = None
-
-        self.fop = self.createFop()
-        self.inv = self.createInv(self.fop)
-
-    def createFop(self, verbose=True):  # needs always to be overloaded
-        """
-        """
-        fop = None
-        throw('abstract need to be overloaded')
-        return fop
-
-    def checkData(self):
-        """
-            Check data validity
-        """
-        # check self.dataContainer here
-        throw('should be overloaded')
-
-    def model(self):  # optional need default
-        throw('abstract need to be overloaded')
-
-    def data(self):
-        """
-            Return pure data Array .. e.g. data('r') or data('rhoa')
-        """
-        throw('need to be overloaded')
-
-    def createInv(self, fop, verbose=True, dosave=False):
-        """
-        """
-        self.transData = pg.RTrans()
-        self.transModel = pg.RTransLog()
-
-        inv = pg.RInversion(verbose, dosave)
-        inv.setTransData(self.transDat)
-        inv.setTransModel(self.transModel)
-        inv.setForwardOperator(fop)
-        return inv
-
-    def setData(self, data):
-        """
-        """
-        self.dataContainer = data
-        self.checkData()
-        self.fop.setData(self.dataContainer)
-        self.inv.setData(self.data())
-
-        if not self.dataContainer.allNonZero('err'):
-            self.setDataError(self.estimateError())
-        else:
-            self.setDataError(self.dataContainer('err'))
-
-    def setDataError(self, err):
-        """
-            Set data Error array
-        """
-        self.inv.setRelativeError(err)
-
-    def estimateError(self, absoluteError=0.001, relativeError=0.001):
-        """
-            Estimate current data error
-        """
-        if relativeError >= 0.5:  # obviously in %
-            relativeError /= 100.
-        error = absoluteError / self.data() + relativeError
-        return error
-
-    def setMesh(self, mesh, refine):  # guter default möglich
-        """
-        """
-        self.mesh = mesh
-        self.mesh.createNeighbourInfos()
-        self.fop.setMesh(self.mesh)
-
-        # hier weiß ich nicht ob man das nachträglich ändern kann ..
-        # vielleicht im Überladenen
-        self.fop.regionManager().setConstraintType(1)
-
-        self.fop.createRefinedForwardMesh(refine)
-        self.inv.setForwardOperator(self.fop)
-
-    def run(self, **kwargs):
-        """
-        """
-        throw('abstract need to be overloaded')
-
-    def paraDomain(self):  # useful defaults
-        """ Create and return parametric mesh for further processing. """
-        return self.fop.regionManager().paraDomain()
-
-
 class Refraction(object):
 
     """ Class for managing refraction seismics data
@@ -154,10 +48,11 @@ class Refraction(object):
         self.dataContainer = None
         self.mesh = None
         self.poly = None
+        self.error = None
         self.velocity = None
         self.response = None
         self.start = []
-
+        self.pd = None
         self.fop = self.createFop(verbose=self.verbose)
         self.inv = self.createInv(self.fop,
                                   verbose=self.verbose, doSave=self.doSave)
@@ -165,7 +60,7 @@ class Refraction(object):
         if isinstance(data, str):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
-            self.setData(data)
+            self.setDataContainer(data)
             self.basename = 'new'
         if self.dataContainer is not None:
             self.createMesh()
@@ -176,7 +71,7 @@ class Refraction(object):
 
     def __repr__(self):
         """string representation of the class for the print function"""
-        out = "Refraction object"
+        out = type(self).__name__ + " object"
         if hasattr(self, 'data'):
             out += "\n" + self.dataContainer.__str__()
         if hasattr(self, 'mesh'):
@@ -228,7 +123,9 @@ class Refraction(object):
         self.checkData()
         self.fop.setData(self.dataContainer)
         self.inv.setData(self.dataContainer('t'))
-        if not self.dataContainer.allNonZero('error'):
+        if self.dataContainer.allNonZero('err'):
+            self.error = self.dataContainer('err')
+        else:
             self.estimateError()
 
     def loadData(self, filename):
@@ -320,8 +217,6 @@ class Refraction(object):
         """estimate error composed of an absolute and a relative part"""
         if relativeError >= 0.5:  # obviously in %
             relativeError /= 100.
-#        self.error = absoluteError / self.dataContainer('t') + relativeError
-#        self.inv.setRelativeError(self.error)
         self.error = absoluteError + self.dataContainer('t') * relativeError
         self.inv.setAbsoluteError(self.error)
 
@@ -330,7 +225,7 @@ class Refraction(object):
         self.start = createGradientModel2D(self.dataContainer, self.mesh,
                                            vtop, vbottom)
 
-    def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30., max_iter=20):
+    def run(self, **kwargs):
         """run actual inversion (first creating inversion object if not there)
 
         result/response is stored in the class attribute velocity/response
@@ -349,11 +244,16 @@ class Refraction(object):
 #        self.start = createGradientModel2D(self.dataContainer, self.mesh,
 #                                           vtop, vbottom)
         if self.fop.regionManager().parameterCount() != len(self.start):
-            self.createStartModel(vtop, vbottom)
+            self.createStartModel(kwargs.pop('vtop', 5000.),
+                                  kwargs.pop('vbottom', 500.))
         self.fop.setStartModel(self.start)
-        self.fop.regionManager().setZWeight(zweight)
-        self.inv.setLambda(lam)
-        self.inv.setMaxIter(max_iter)
+        self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
+        self.inv.setLambda(kwargs.pop('lam', 30.))
+        self.inv.setMaxIter(kwargs.pop('max_iter', 20))
+        self.inv.setRobustData(kwargs.pop('setRobust', False))
+        if not hasattr(self.error, '__iter__'):
+            self.estimateError(kwargs.pop('error', 0.003))  # abs. error in ms
+        self.inv.setAbsoluteError(self.error)
         self.inv.setModel(self.start)  # somehow doubled with 3 lines above
         self.fop.jacobian().clear()
         slowness = self.inv.run()
@@ -398,22 +298,24 @@ class Refraction(object):
         pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), axes=ax,
                 coverage=self.standardizedCoverage())
 
-    def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
-                   **kwargs):
+    def showResult(self, val=None, ax=None, cMin=None, cMax=None,
+                   logScale=False, **kwargs):
         """show resulting velocity vector"""
+        if val is None:
+            val = self.velocity
         if cMin is None or cMax is None:
-            cMin, cMax = interperc(self.velocity, 3)
+            cMin, cMax = interperc(val, 3)
         if ax is None:
-            ax, cbar = pg.show(self.mesh, self.velocity, logScale=logScale,
+            ax, cbar = pg.show(self.mesh, val, logScale=logScale,
                                colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
             self.figs['result'] = plt.gcf()
         else:
-            gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
+            gci = drawModel(ax, self.mesh, val, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
             labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
             cbar = createColorbar(gci, **subkwargs)
-        browser = CellBrowser(self.mesh, self.velocity, ax)
+        browser = CellBrowser(self.mesh, val, ax)
         browser.connect()
 
         self.axs['result'] = ax
