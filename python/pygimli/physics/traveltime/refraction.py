@@ -244,8 +244,8 @@ class Refraction(object):
 #        self.start = createGradientModel2D(self.dataContainer, self.mesh,
 #                                           vtop, vbottom)
         if self.fop.regionManager().parameterCount() != len(self.start):
-            self.createStartModel(kwargs.pop('vtop', 5000.),
-                                  kwargs.pop('vbottom', 500.))
+            self.createStartModel(kwargs.pop('vtop', 500.),
+                                  kwargs.pop('vbottom', 5000.))
         self.fop.setStartModel(self.start)
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
         self.inv.setLambda(kwargs.pop('lam', 30.))
@@ -307,11 +307,13 @@ class Refraction(object):
             cMin, cMax = interperc(val, 3)
         if ax is None:
             ax, cbar = pg.show(self.mesh, val, logScale=logScale,
-                               colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
+                               colorBar=True, cMin=cMin, cMax=cMax,
+                               coverage=self.standardizedCoverage(), **kwargs)
             self.figs['result'] = plt.gcf()
         else:
             gci = drawModel(ax, self.mesh, val, logScale=logScale,
-                            colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
+                            colorBar=True, cMin=cMin, cMax=cMax,
+                            coverage=self.standardizedCoverage(), **kwargs)
             labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
             cbar = createColorbar(gci, **subkwargs)

@@ -408,13 +408,8 @@ def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
     eCircles = []
     cols = []
-<<<<<<< HEAD
-    
-    if fillRegion and mesh.boundaryCount() > 0:
-=======
 
-    if fillRegion:
->>>>>>> 9074d5e982fda239bf1189ae076612aef67c6c69
+    if fillRegion and mesh.boundaryCount() > 0:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
         drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarker(),
                   nLevs=3, levels=pg.utils.unique(tmpMesh.cellMarker()),
