@@ -46,8 +46,8 @@ def checkAndFixLocaleDecimal_point(verbose=False):
         print(e)
         print('cannot set locale to decimal point')
 
-    # check for encoding setting zu utf-8
-    #export PYTHONIOENCODING=utf-8
+    #LC_CTYPE should be something with UTF-8
+    # export LC_CTYPE="de_DE.UTF-8"
     #python -c 'import sys; print(sys.stdout.encoding)'
 
 

@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
+# annoyed from repeating your passwd:
+# git config credential.helper store
+#
+#
+
 SRC=$pwd
 PARALELL=2
+
+if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
+    CMAKE_GENERATOR='MSYS Makefiles'
+else
+    CMAKE_GENERATOR='Unix Makefiles'
+fi
 
 buildGIMLI(){
     mkdir -p gimli
@@ -20,7 +31,7 @@ buildGIMLI(){
         rm -rf build/
         mkdir build
         pushd build
-            cmake -G'MSYS Makefiles' ../gimli
+            cmake -G "$CMAKE_GENERATOR" ../gimli
             make -j$PARALELL && make pygimli J=$PARALELL 
             #python -c 'import pygimli as pg; pg.test()'
         popd
@@ -44,7 +55,7 @@ buildBert(){
         rm -rf build/
         mkdir build
         pushd build
-            cmake -G'MSYS Makefiles' ../bert
+            cmake -G "$CMAKE_GENERATOR" ../bert
             make -j$PARALELL && make pybert J=$PARALELL
         popd
     popd

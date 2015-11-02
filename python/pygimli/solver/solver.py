@@ -1412,7 +1412,18 @@ class RungeKutta(object):
             k1 = self.solver.explicitRHS(self.u, 
                                          self.time)
             self.u += self.dt * k1 
-            
+
+        elif self.order == 3: 
+            k1 = self.solver.explicitRHS(self.u, self.time)
+            k1 = self.u + dt * k1
+  
+            k2 = self.solver.explicitRHS(k1, self.time)
+            k2 = (3*self.u + k1 + dt*k2)/4
+  
+            k3 = self.solver.explicitRHS(k2, self.time)
+  
+            self.u = (self.u + 2*k2 + 2*dt*k3)/3
+
         elif self.order == 4: 
             # classical 4 step Runga-Kutta rk4
             k1 = self.solver.explicitRHS(self.u, 
