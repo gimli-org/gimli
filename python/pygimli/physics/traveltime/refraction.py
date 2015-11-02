@@ -267,8 +267,9 @@ class Refraction(object):
             self.figs['va'] = fig
 
         self.axs['va'] = ax
-        showVA(ax, self.dataContainer)
+        va = showVA(ax, self.dataContainer)
         plt.show(block=False)
+        return va
 
     def getOffset(self):
         """return vector of offsets (in m) between shot and receiver"""
