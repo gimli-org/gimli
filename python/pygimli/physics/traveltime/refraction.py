@@ -36,7 +36,7 @@ class Refraction(object):
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, **kwargs):
+    def __init__(self, data=None, name='new', **kwargs):
         """Init function with optional data load"""
         self.figs = {}
         self.axs = {}
@@ -61,7 +61,7 @@ class Refraction(object):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
-            self.basename = 'new'
+            self.basename = name
         if self.dataContainer is not None:
             self.createMesh()
 
@@ -248,6 +248,7 @@ class Refraction(object):
                                   kwargs.pop('vbottom', 5000.))
         self.fop.setStartModel(self.start)
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
+        self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
         self.inv.setMaxIter(kwargs.pop('max_iter', 20))
         self.inv.setRobustData(kwargs.pop('setRobust', False))
@@ -300,7 +301,7 @@ class Refraction(object):
                 coverage=self.standardizedCoverage())
 
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
-                   logScale=False, **kwargs):
+                   logScale=False, name='result', **kwargs):
         """show resulting velocity vector"""
         if val is None:
             val = self.velocity
@@ -310,7 +311,7 @@ class Refraction(object):
             ax, cbar = pg.show(self.mesh, val, logScale=logScale,
                                colorBar=True, cMin=cMin, cMax=cMax,
                                coverage=self.standardizedCoverage(), **kwargs)
-            self.figs['result'] = plt.gcf()
+            self.figs[name] = plt.gcf()
         else:
             gci = drawModel(ax, self.mesh, val, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax,

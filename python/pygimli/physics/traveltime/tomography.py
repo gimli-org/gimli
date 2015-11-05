@@ -30,14 +30,16 @@ def readTOMfile(filename):
 
 class Tomography(Refraction):
     """traveltime tomography for tomographic (e.g. crosshole) measurements"""
-    def __init__(self, data=None, **kwargs):
+    def __init__(self, data=None, tcorr=0, name='new', **kwargs):
         """Init function with optional data load"""
         if isinstance(data, str):
+            name = data[:data.rfind('.')]
             if data.lower()[-4:] == '.tom':
                 data = readTOMfile(data)
             else:
                 data = pg.DataContainer(data, 's g')
-        super(type(self), self).__init__(data, **kwargs)
+        data.set('t', data('t') + tcorr)
+        super(type(self), self).__init__(data, name=name, **kwargs)
 
     def createMesh(self, quality=34.6, maxarea=0.1, addpoints=[]):
         """Create (inversion) mesh by circumventing PLC"""
@@ -64,9 +66,11 @@ class Tomography(Refraction):
                          data.sensorPosition(int(data('s')[i])))
                          for i in range(data.size())])
 
-    def getVA(self):
+    def getVA(self, vals=None):
         """return apparent velocity"""
-        return self.offset() / self.dataContainer('t')
+        if vals is None:
+            vals = self.dataContainer('t')
+        return self.offset() / vals
 
     def createStartModel(self, *args, **kwargs):
         """create (gradient) starting model with vtop/vbottom bounds"""
@@ -74,9 +78,9 @@ class Tomography(Refraction):
         nModel = self.fop.regionManager().parameterCount()
         self.start = pg.RVector(nModel, 1./np.mean(va))
 
-    def showVA(self, ax=None, usepos=True):
+    def showVA(self, vals=None, ax=None, usepos=True, name='va'):
         """show apparent velocity as image plot"""
-        va = self.getVA()
+        va = self.getVA(vals=vals)
         data = self.dataContainer
         A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
         for i in range(data.size()):
@@ -84,6 +88,7 @@ class Tomography(Refraction):
 
         if ax is None:
             fig, ax = plt.subplots()
+            self.figs[name] = fig
 
         gci = ax.imshow(A, interpolation='nearest')
         ax.grid(True)
