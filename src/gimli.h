@@ -377,15 +377,21 @@ inline void convert(float         & var, char * opt) { if (!opt) var = 0.0f; els
 inline void convert(double        & var, char * opt) { if (!opt) var = 0.0; else var = atof(opt); }
 inline void convert(std::string   & var, char * opt) { if (!opt) var = "";  else var = opt ; }
 inline void convert(std::vector < std::string >  & var, char * opt) { if (opt) var.push_back(opt); }
-inline std::string type(bool          & var) { return "bool"; }
-inline std::string type(int           & var) { return "int"; }
-inline std::string type(float         & var) { return "float"; }
-inline std::string type(double        & var) { return "double"; }
-inline std::string type(std::string   & var) { return "string"; }
-inline std::string type(std::vector < std::string >  & var) { return "string"; }
-inline std::string type(RVector & var) { return "RVector"; }
-inline std::string type(RVector3 & var) { return "RVector3"; }
-inline std::string type(R3Vector & var) { return "R3Vector"; }
+inline std::string type(const bool          & var) { return "bool"; }
+// inline std::string type(const int           & var) { return "int"; }
+inline std::string type(const int32         & var) { return "int32"; }
+inline std::string type(const int64         & var) { return "int64"; }
+// inline std::string type(const uint          & var) { return "uint"; }
+inline std::string type(const uint32         & var) { return "uint32"; }
+inline std::string type(const uint64         & var) { return "uint64"; }
+inline std::string type(const float         & var) { return "float"; }
+inline std::string type(const double        & var) { return "double"; }
+inline std::string type(const std::string   & var) { return "string"; }
+inline std::string type(const std::vector < std::string >  & var) { return "string"; }
+inline std::string type(const RVector & var) { return "RVector"; }
+inline std::string type(const RVector3 & var) { return "RVector3"; }
+inline std::string type(const R3Vector & var) { return "R3Vector"; }
+inline std::string type(const CVector & var) { return "CVector"; }
 
 
 inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }

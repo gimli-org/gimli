@@ -4,7 +4,6 @@ import unittest
 import numpy as np
 import pygimli as pg
 
-
 class TestRVectorMethods(unittest.TestCase):
 
     def test_RVector(self):
@@ -84,14 +83,16 @@ class TestRVectorMethods(unittest.TestCase):
         '''
             custom_rvalue.cpp
         '''
-        x = np.arange(0, 1., 0.2)
+        x = np.array(range(10))
 
-        a = pg.RVector(x)
+        a = pg.IndexArray(x)
+        print(a)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        x = np.arange(0, 1., 0.2, dtype=np.float64)
-        a = pg.RVector(x)
+        x = np.arange(0, 10, dtype=np.int64)
+        a = pg.IndexArray(x)
+        print(a)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
@@ -179,14 +180,14 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(len(a), mesh.cellCount())
 
 if __name__ == '__main__':
-    # pg.setDebug(True)
-
+    pg.setDebug(1)
     unittest.main()
     # do we need Implicit converter .. currently deactivated in vector.h
 
-#    suite = unittest.TestSuite()
+    #suite = unittest.TestSuite()
 #
-#    suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
+   #suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
+    #suite.addTest(TestRVectorMethods("test_NumpyToIndexArray"))
 #
 #    suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
 #    suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
@@ -194,5 +195,6 @@ if __name__ == '__main__':
 #    suite.addTest(TestRVectorMethods("test_ListToRVector"))
 #    suite.addTest(TestRVectorMethods("test_NumpyToRVector"))
 #
-#    runner = unittest.TextTestRunner()
-#    runner.run(suite)
+    
+    #unittest.TextTestRunner().run(suite)
+    
