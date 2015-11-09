@@ -833,17 +833,16 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         Vertical distance to the first depth layer, relative regarding sensor
         distance. Value must be greater than 0 otherwise 1 is assumed.
     paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maxmimum
+        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
-    nLayers : int, optional
+    nLayers : int, optional [11]
         Number of depth layers.
-    boundary : int, optional
+    boundary : int, optional [-1]
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
-        Values lover 0 force the boundary to be 4 times para domain width.
-    paraBoundary : int, optional
-        Offset for parameter domain boundary in absolute sensor distance.
-        2 (default).
+        Values lower than 0 force the boundary to be 4 times para domain width.
+    paraBoundary : int, optional [2]
+        Offset to the parameter domain boundary in absolute sensor spacing.
     verbose : boolean, optional
         Be verbose.
 
@@ -857,13 +856,12 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> import matplotlib.pyplot as plt
     >>>
     >>> from pygimli.meshtools import createParaMesh2DGrid
-    >>> from pygimli.mplviewer import drawMesh
     >>> x = pg.RVector(range(10))
     >>> mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
-    >>> fig, ax = plt.subplots()
-    >>> drawMesh(ax, mesh)
-    >>> plt.show()
+    >>> ax, _ = pg.show(mesh, mesh.cellMarker(), alpha=0.3, tri=True)
+    >>> ax, _ = pg.show(mesh, axes=ax)
+    >>> pg.wait()
     """
 
     mesh = pg.Mesh(2)
