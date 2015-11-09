@@ -785,10 +785,15 @@ def assembleNeumannBC(S,
 
     for pair in boundaryPairs:
         boundary = pair[0]
+        
         val = pair[1]
+        
+        #if hasattr(val, '__len__'):
+            #if len(val) = 
+            
         g = generateBoundaryValue(boundary, val, time, userData)
 
-        if g is not 0.0:
+        if g is not 0.0 and g is not None:
             Se.u2(boundary)
             Se *= g
             S += Se
@@ -860,9 +865,10 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0,
         val = pair[1]
         uD = generateBoundaryValue(boundary, val, time, userData)
 
-        for n in boundary.nodes():
-            uDirNodes.append(n)
-            uDirVal[n.id()] = uD
+        if uD is not None:
+            for n in boundary.nodes():
+                uDirNodes.append(n)
+                uDirVal[n.id()] = uD
 
     if len(uDirNodes) == 0:
         return
