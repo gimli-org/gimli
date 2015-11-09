@@ -1451,7 +1451,7 @@ class RungeKutta(object):
                 else:
                     self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
                     self.u += self.rk4b[jRK] * self.resu 
-                
+                          
         self.time += self.dt
         return self.u
         

@@ -782,6 +782,7 @@ public:
     const RVector & deltaModelIter() const { return deltaModelIter_; }
 
     IPCClientSHM & ipc() { return ipc_; }
+    
 protected:
 
     Vec                   data_;
