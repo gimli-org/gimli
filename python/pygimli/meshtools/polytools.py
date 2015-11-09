@@ -331,7 +331,41 @@ def createLine(start, end, segments, **kwargs):
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
 
+def createPolygon(verts, isClosed=False, **kwargs):
+    """ 
+        Create a polygon from list of vertices. 
+    
+    Parameters
+    ----------
+    verts : []
+        * List of x y pairs [[x0, y0], ... ,[xN, yN]]
+    
+    **kwargs:
 
+        boundaryMarker : int [1]
+            Marker for the resulting boundary edges
+        leftDirection : bool [True]
+            Rotational direction
+    
+    isClosed : bool [True]
+        Add closing edge between last and first node.
+            
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    
+    """
+    poly = pg.Mesh(2)
+    
+    for v in verts:
+        poly.createNode(v)
+        
+    polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
+    
+    return poly
+    
+    
 def mergePLC(pols):
     """
     Merge multiply polygons into a single polygon
