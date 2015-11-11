@@ -613,7 +613,12 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
     scheme : str [CDS]
         Finite volume scheme:        
         :py:mod:`pygimli.solver.diffusionConvectionKernel`
-            
+           
+    **kwargs:
+    
+        * uB : Dirichlet boundary conditions
+        * duB : Neumann boundary conditions
+           
     Returns
     -------
     
@@ -633,6 +638,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
     a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
     f = pg.solver.parseArgToArray(f, mesh.cellCount())
     fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
+    
     if type(vel) == float:
         print("Warning! .. velocity is float and no vector field")
 
@@ -828,6 +834,7 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
                 tol=1e-4, maxIter=1000,
                 verbose=1, **kwargs):
     """
+        Steady Navier-Stokes
     """
     
     workspace = pg.solver.WorkSpace()

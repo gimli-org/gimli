@@ -10,5 +10,10 @@ try:
 except:
     pass
 
+try:
+    from . solverFenics import *
+except:
+    pass
+
 class WorkSpace:
     pass

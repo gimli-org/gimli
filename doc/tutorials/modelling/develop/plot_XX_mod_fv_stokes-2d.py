@@ -14,9 +14,30 @@ from pygimli.meshtools import createMesh
 import matplotlib.pyplot as plt
 import numpy as np
 
-from solverFVM import solveStokes_NEEDNAME
+#from solverFVM import solveStokes_NEEDNAME
 
-def modelCavity(maxArea=0.0025):
+def modelCavity0(maxArea=0.0025):
+    mesh = pg.createGrid(x=np.linspace(.0, 1.0, 17),
+                         y=np.linspace(.0, 1.0, 17))
+    mesh = pg.meshtools.refineQuad2Tri(mesh, style=2)
+    
+    velBoundary=[[1,[0.0, 0.0]],
+                 [2,[0.0, 0.0]],
+                 [3,[1.0, 0.0]],
+                 [4,[0.0, 0.0]],
+                ]
+
+    c = mesh.findCell((0.0, 0.0))
+    for b in range(c.boundaryCount()):
+        if c.boundary(b).marker()==4:
+            c.boundary(b).setMarker(7)
+    
+    preBoundary=[[7, 0.0],]
+    
+    a = pg.RVector(mesh.cellCount(), 1.0)
+    return mesh, velBoundary, preBoundary, a, 100
+
+def modelCavity1(maxArea=0.0025):
     boundary = []
     boundary.append([-1.0, -1.0])
     boundary.append([ -0.5, -1.0])
@@ -195,14 +216,12 @@ def modelPlume(maxArea=0.1):
 
 
 
-modelBuilder = modelPlume
-
-#mesh, velBoundary, preBoundary, a, maxIter = modelCavity()
-#mesh, velBoundary, preBoundary, a, maxIter = modelCavity2(0.10001101937239093957)
-#mesh, velBoundary, preBoundary, a, maxIter= modelPipe()
-#mesh, velBoundary, preBoundary, a, maxIter= modelPlume()
-
+modelBuilder = modelCavity0
+#modelBuilder = modelCavity1
 #modelBuilder = modelCavity2
+#modelBuilder = modelPipe
+#modelBuilder = modelPlume
+
 
 swatchG = pg.Stopwatch(True)
 swatch = pg.Stopwatch(True)
@@ -231,29 +250,39 @@ for i in range(0, len(multigridArea)):
         mesh = mesh1
     
     print("Cells: ", mesh.cellCount(), multigridArea[i])
-    vel, pre, pCNorm, divVNorm = solveStokes_NEEDNAME(mesh, velBoundary, preBoundary,
-                                            viscosity=a,
-                                            pre0=pre,
-                                            vel0=vel,
-                                            maxIter=maxIter,
-                                            tol=1e-2,
-                                            verbose=1)
+    vel, pre, pCNorm, divVNorm = pg.solver.solveStokes(mesh, 
+                                                       viscosity=a,
+                                                       velBoundary=velBoundary, 
+                                                       preBoundary=preBoundary,
+                                                       pre0=pre,
+                                                       vel0=vel,
+                                                       maxIter=maxIter,
+                                                       tol=1e-2,
+                                                       verbose=1)
     print(" Time: ", swatch.duration(True))
     
    
 
 print("OverallTime:", swatchG.duration(True))
-fig = plt.figure()
-ax1 = fig.add_subplot(1, 1, 1)
-ax, cbar = pg.show(mesh, data=pg.cellDataToPointData(mesh,
-                                np.sqrt(vel[:,0]*vel[:,0] +vel[:,1]*vel[:,1])),
-                logScale=False, colorBar=True, axes=ax1, cbar='b2r')
-cbar.ax.set_xlabel('Geschwindigkeit in m$/$s')
-     
-meshC, velBoundary, preBoundary, a, maxIter = modelBuilder(0.01)
 
+fig = plt.figure()
+ax1 = fig.add_subplot(1, 2, 1)
+ax, cbar = pg.show(mesh, 
+                   data=pg.cellDataToPointData(mesh, pre),
+                   logScale=False, colorBar=True, axes=ax1)
+cbar.ax.set_xlabel('Pressure in ??')
+meshC, velBoundary, preBoundary, a, maxIter = modelBuilder(0.01)
 pg.show(mesh, data=vel, coarseMesh=meshC, axes=ax1)
-#show(meshC, axes=ax1)
+pg.show(mesh, axes=ax1)
+
+ax2 = fig.add_subplot(1, 2, 2)
+ax, cbar = pg.show(mesh, 
+                   data=pg.cellDataToPointData(mesh,
+                                    np.sqrt(vel[:,0]*vel[:,0] +vel[:,1]*vel[:,1])),
+                   logScale=False, colorBar=True, axes=ax2)
+cbar.ax.set_xlabel('Geschwindigkeit in m$/$s')
+pg.show(mesh, data=vel, coarseMesh=meshC, axes=ax2)
+pg.show(mesh, axes=ax2)
 
         
 plt.figure()

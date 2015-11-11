@@ -56,7 +56,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 
     if hasattr(arg, '__len__'):
         if type(arg) == np.ndarray:
-            if len(arg) == ndof:
+            if len(arg) == nDofs[0]:
                 return arg
             else:
                 raise BaseException('Given array does not have requested (' + 
