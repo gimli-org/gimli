@@ -670,6 +670,7 @@ def createParaDomain2D(*args, **kwargs):
 
 def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                       paraBoundary=2, paraMaxCellSize=0, boundary=-1,
+                      boundaryMaxCellSize=0,
                       verbose=False, *args, **kwargs):
     """
     Create a PLC mesh for an inversion parameter mesh.
@@ -705,6 +706,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
         Margin for parameter domain in absolute sensor distances. 2 (default).
     paraMaxCellSize: double, optional
         Maximum size for parametric size in m*m
+    boundaryMaxCellSize: double, optional
+        Maximum cells size in the boundary region in m*m
     boundary : float, optional
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
@@ -758,7 +761,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
         poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
         poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
         poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1)
+        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1, boundaryMaxCellSize)
 
     poly.createEdge(n1, n2, 1)
     poly.createEdge(n2, n3, 1)
@@ -802,6 +805,7 @@ def createParaMesh(*args, **kwargs):
     """
     plc = createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
+    kwargs.pop('boundaryMaxCellSize', 0)
     mesh = createMesh(plc, **kwargs)
     return mesh
 

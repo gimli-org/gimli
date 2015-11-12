@@ -106,7 +106,7 @@ public:
 
     inline Shape * pShape() { return shape_; }
 
-    /*! See Shape::rst */
+    /*! Return rst-coordinates for the i-th node. See Shape::rst. */
     RVector3 rst(uint i) const;
     
     /*! Return the center coordinates of this MeshEntity. */

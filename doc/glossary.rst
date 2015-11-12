@@ -4,6 +4,11 @@ Glossary
 ========
 
 .. glossary::
+    Dolfin
+        DOLFIN is a C++/Python library that functions as the main user interface 
+        of FEniCS
+        http://fenicsproject.org/about/components.html#about-components-dolfin
+
     GCC
         The GNU Compiler Collection (GCC). Default compiler for most linux
         systems. The Windows port is :term:`MinGW` See: http://gcc.gnu.org/

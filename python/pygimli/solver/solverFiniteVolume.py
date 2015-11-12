@@ -26,6 +26,7 @@ def cellDataToBoundaryData(mesh, v):
 
 
 def boundaryNormals(mesh):
+    #implement with    return mesh.boundaryNorms()
     gB = np.zeros((mesh.boundaryCount(), 3))
     for i, b in enumerate(mesh.boundaries()):
         gB[i] = b.norm()
@@ -43,6 +44,32 @@ def boundaryToCellDistancesBound(b):
         df2 = b.center().distance(rightCell.center())
     return df1 + df2
 
+def pointDataToBoundaryData(mesh, data):
+    """
+        Assuming [NodeCount, dim] data
+    """
+    
+    if len(data) != mesh.nodeCount():
+        raise BaseException("Dimension mismatch, expecting nodeCount(): " 
+                            + str(mesh.NodeCount()) 
+                            + "got: " + str(data.size()[0]))
+    dim = len(data[0])
+    ret = np.zeros((mesh.boundaryCount(), dim))
+    if dim == 1:
+        for b in mesh.boundaries():
+            ret[b.id()] = b.pot(b.center(), data)# / b.nodeCount()
+    elif dim == 2:
+        for b in mesh.boundaries():
+            #v = b.vec(b.center(), data)
+            #interpolation is hell slow here .. check!!!!!!
+            v2 = (data[b.node(0).id()] + data[b.node(1).id()])*0.5 
+            #print(v -v2)
+            ret[b.id()] = [v2[0], v2[1]]
+    else:
+        for b in mesh.boundaries():
+            ret[b.id()] = b.vec(b.center(), data)# / b.nodeCount()
+
+    return ret
 
 def cellDataToBoundaryGrad(mesh, v, vGrad):
     """
@@ -562,7 +589,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     return S, rhsBoundaryScales
 
 
-def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
+def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
                       times=None,
                       uL=None, relax=1.0,
                       ws=None, scheme='CDS', **kwargs):
@@ -591,9 +618,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
         TODO What is fn
         
     vel : ndarray (N,dim) | RMatrix(N,dim)
-        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension 
-        and j = [0 .. N-1] per Cell or per Node so N is either 
-        mesh.cellCount() or mesh.nodeCount()
+        velocity field [[v_j,]_i,] with i=[1..3] for the mesh dimension 
+        and j = [0 .. N-1] with N either Amount of Cells, Nodes or Boundaries.
+        Velocity per boundary is preferred.
         
     u0 : value | array | callable(cell, userData)
         Starting field
@@ -613,7 +640,12 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
     scheme : str [CDS]
         Finite volume scheme:        
         :py:mod:`pygimli.solver.diffusionConvectionKernel`
-            
+           
+    **kwargs:
+    
+        * uB : Dirichlet boundary conditions
+        * duB : Neumann boundary conditions
+           
     Returns
     -------
     
@@ -633,8 +665,20 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
     a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
     f = pg.solver.parseArgToArray(f, mesh.cellCount())
     fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
+    
     if type(vel) == float:
         print("Warning! .. velocity is float and no vector field")
+    
+    if len(vel) != mesh.cellCount() and \
+        len(vel) != mesh.nodeCount() and \
+        len(vel) != mesh.boundaryCount():
+            
+        print("mesh:", mesh)
+        print("vel:", vel.shape)
+        raise BaseException("Velocity field has wrong dimension.")
+                
+    if len(vel) is not mesh.nodeCount():
+        vel = pointDataToBoundaryData(mesh, vel)
 
     boundsDirichlet = None
     boundsNeumann = None
@@ -733,7 +777,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=None,
             
         return pg.solver.crankNicolson(times, theta, workspace.S, I,
                                        f=workspace.rhs, 
-                                 u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
+                     u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
                                        verbose=verbose)
 
 def createFVPostProzessMesh(mesh, u, uDirichlet):
@@ -828,6 +872,7 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
                 tol=1e-4, maxIter=1000,
                 verbose=1, **kwargs):
     """
+        Steady Navier-Stokes
     """
     
     workspace = pg.solver.WorkSpace()

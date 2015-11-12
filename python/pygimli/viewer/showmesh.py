@@ -134,7 +134,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     colorBar : bool [false]
         Create and show a colorbar.
-
+        
     coverage : iterable [None]
         Weight data by the given coverage array and fadeout the color.
 
@@ -148,6 +148,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
         an epstopdf if the .eps suffix is found in savefig
 
     **kwargs :
+    
+        * label : str [None]
+            Add label to the colorbar
+        
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
 
@@ -210,6 +214,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
     ax.set_aspect('equal')
 
     label = kwargs.pop('label', None)
+    if label is not None:
+        colorBar = 1
 
     if colorBar and validData:
         # , *args, **kwargs) # causes problems!
