@@ -12,7 +12,7 @@ def permeabiltyEngelhardtPitter(poro, q=3.5, s=5e-3,
     r"""
     Empirical model for porosity to hydraulic permeability.
     
-    Postulated for sand and sandstones. [EngelhardtPit1955]
+    Postulated for sand and sandstones. :cite:`EngelhardtPit1955`
     
     .. math:: 
         k & = 2\cdot 10^7 \frac{\phi^2}{(1-\phi)^2}* \frac{1}{S^2} \\
