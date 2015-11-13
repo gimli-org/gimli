@@ -11,6 +11,7 @@ import pygimli as pg
 from pygimli.meshtools import createParaMeshPLC, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc, getSavePath
+from pygimli.mplviewer.dataview import plotVecMatrix
 
 if __name__ == 'refraction':
     # keine Ahnung wie das eleganter geht
@@ -18,10 +19,10 @@ if __name__ == 'refraction':
     # python -c 'import refraction; refraction.test_Refraction()'
 
     from ratools import createGradientModel2D
-    from raplot import plotFirstPicks, showVA, plotLines
+    from raplot import plotFirstPicks, plotLines
 else:
     from . ratools import createGradientModel2D
-    from . raplot import plotFirstPicks, showVA, plotLines
+    from . raplot import plotFirstPicks, plotLines
 
 
 def throw(*args, **kwargs):
@@ -72,7 +73,7 @@ class Refraction(object):
     def __repr__(self):
         """string representation of the class for the print function"""
         out = type(self).__name__ + " object"
-        if hasattr(self, 'data'):
+        if hasattr(self, 'dataContainer'):
             out += "\n" + self.dataContainer.__str__()
         if hasattr(self, 'mesh'):
             out += "\n" + self.mesh.__str__()
@@ -261,23 +262,43 @@ class Refraction(object):
         self.velocity = 1. / slowness
         self.response = self.inv.response()
 
-    def showVA(self, ax=None):
-        """show apparent velocity as image plot"""
-        if ax is None:
-            fig, ax = plt.subplots()
-            self.figs['va'] = fig
-
-        self.axs['va'] = ax
-        va = showVA(ax, self.dataContainer)
-        plt.show(block=False)
-        return va
-
     def getOffset(self):
         """return vector of offsets (in m) between shot and receiver"""
         px = pg.x(self.dataContainer.sensorPositions())
         gx = np.array([px[int(g)] for g in self.dataContainer("g")])
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         return np.absolute(gx - sx)
+
+    def getMidpoint(self):
+        """return vector of offsets (in m) between shot and receiver"""
+        px = pg.x(self.dataContainer.sensorPositions())
+        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+        return (gx + sx) / 2
+
+    def showVA(self, ax=None, t=None, name='va', pseudosection=False,
+               squeeze=True):
+        """show apparent velocity as image plot"""
+        if ax is None:
+            fig, ax = plt.subplots()
+            self.figs[name] = fig
+
+        self.axs[name] = ax
+        if t is None:
+            t = self.dataContainer('t')
+        px = pg.x(self.dataContainer.sensorPositions())
+        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+        offset = np.absolute(gx - sx)
+        va = offset / t
+        if pseudosection:
+            midpoint = (gx + sx) / 2
+            plotVecMatrix(midpoint, offset, va, squeeze=True)
+        else:
+            plotVecMatrix(gx, sx, va, squeeze=squeeze)
+#        va = showVA(ax, self.dataContainer)
+#        plt.show(block=False)
+        return va
 
     def getDepth(self):
         """return a (a-priori guessed) depth of investigation"""
@@ -322,7 +343,7 @@ class Refraction(object):
         browser = CellBrowser(self.mesh, val, ax)
         browser.connect()
 
-        self.axs['result'] = ax
+        self.axs[name] = ax
         if 'lines' in kwargs:
             plotLines(ax, kwargs['lines'])
         return ax, cbar

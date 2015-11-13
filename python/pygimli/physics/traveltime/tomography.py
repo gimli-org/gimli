@@ -2,14 +2,19 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
+from pygimli.mplviewer.dataview import plotVecMatrix
 from . refraction import Refraction
 
 
-def readTOMfile(filename):
+def readTOMfile(filename, ndig=2, roundto=0, **kwargs):
     """ read Reflex tomography (*.TOM) file"""
     t, xT, zT, xR, zR = np.loadtxt(filename, usecols=(0, 2, 3, 4, 5), unpack=1)
-    pT = xT - zT * 1j
-    pR = xR - zR * 1j
+    if roundto > 0:
+        pT = (np.round(xT/roundto) - np.round(zT/roundto) * 1j) * roundto
+        pR = (np.round(xR/roundto) - np.round(zR/roundto) * 1j) * roundto
+    else:
+        pT = xT.round(ndig) - zT.round(ndig) * 1j
+        pR = xR.round(ndig) - zR.round(ndig) * 1j
     pU = np.unique(np.hstack((pT, pR)))
     iT = np.array([np.nonzero(pU == pi)[0][0] for pi in pT], dtype=float)
     iR = np.array([np.nonzero(pU == pi)[0][0] for pi in pR], dtype=float)
@@ -31,11 +36,28 @@ def readTOMfile(filename):
 class Tomography(Refraction):
     """traveltime tomography for tomographic (e.g. crosshole) measurements"""
     def __init__(self, data=None, tcorr=0, name='new', **kwargs):
-        """Init function with optional data load"""
+        """Init function with optional data load
+
+        Parameters
+        ----------
+        data : pg.DataContainer or string
+
+        tcorr : float [0]
+            correct travel times by common shift
+
+        name : str [data if being string, otherwise 'new']
+            basename for saving Figures, results etc.
+
+        ndig : int [2]
+            number of digits to round positions (e.g. 2=cm), alternatively:
+
+        roundto : float [0]
+            unit spacing to round positions on
+        """
         if isinstance(data, str):
             name = data[:data.rfind('.')]
             if data.lower()[-4:] == '.tom':
-                data = readTOMfile(data)
+                data = readTOMfile(data, **kwargs)
             else:
                 data = pg.DataContainer(data, 's g')
         data.set('t', data('t') + tcorr)
@@ -66,11 +88,11 @@ class Tomography(Refraction):
                          data.sensorPosition(int(data('s')[i])))
                          for i in range(data.size())])
 
-    def getVA(self, vals=None):
+    def getVA(self, t=None):
         """return apparent velocity"""
-        if vals is None:
-            vals = self.dataContainer('t')
-        return self.offset() / vals
+        if t is None:
+            t = self.dataContainer('t')
+        return self.offset() / t
 
     def createStartModel(self, *args, **kwargs):
         """create (gradient) starting model with vtop/vbottom bounds"""
@@ -78,8 +100,25 @@ class Tomography(Refraction):
         nModel = self.fop.regionManager().parameterCount()
         self.start = pg.RVector(nModel, 1./np.mean(va))
 
-    def showVA(self, vals=None, ax=None, usepos=True, name='va'):
+    def showVA(self, t=None, ax=None, usepos=True, name='va', squeeze=True):
         """show apparent velocity as image plot"""
+        va = self.getVA(vals=vals)
+        xvec = self.dataContainer('g')
+        yvec = self.dataContainer('s')
+        if usepos:
+            pz = pg.y(Tomo.dataContainer.sensorPositions())
+            if squeeze:
+                xvec = pz[xvec]
+                yvec = pz[yvec]
+            else:
+                pz = pg.y(Tomo.dataContainer.sensorPositions())
+                xvec = px[xvec]*1000 + pz[xvec]
+                xvec = px[yvec]*1000 + pz[yvec]
+
+        plotVecMatrix(xvec, yvec, squeeze=squeeze)
+
+    def showVAold(self, vals=None, ax=None, usepos=True, name='va'):
+        """show apparent velocity as image plot (old style)"""
         va = self.getVA(vals=vals)
         data = self.dataContainer
         A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
