@@ -11,6 +11,7 @@ import pygimli as pg
 from pygimli.meshtools import createParaMeshPLC, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc, getSavePath
+from pygimli.mplviewer.dataview import plotVecMatrix
 
 if __name__ == 'refraction':
     # keine Ahnung wie das eleganter geht
@@ -18,10 +19,10 @@ if __name__ == 'refraction':
     # python -c 'import refraction; refraction.test_Refraction()'
 
     from ratools import createGradientModel2D
-    from raplot import plotFirstPicks, showVA, plotLines
+    from raplot import plotFirstPicks, plotLines
 else:
     from . ratools import createGradientModel2D
-    from . raplot import plotFirstPicks, showVA, plotLines
+    from . raplot import plotFirstPicks, plotLines
 
 
 def throw(*args, **kwargs):
@@ -36,7 +37,7 @@ class Refraction(object):
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, **kwargs):
+    def __init__(self, data=None, name='new', **kwargs):
         """Init function with optional data load"""
         self.figs = {}
         self.axs = {}
@@ -61,7 +62,7 @@ class Refraction(object):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
-            self.basename = 'new'
+            self.basename = name
         if self.dataContainer is not None:
             self.createMesh()
 
@@ -72,7 +73,7 @@ class Refraction(object):
     def __repr__(self):
         """string representation of the class for the print function"""
         out = type(self).__name__ + " object"
-        if hasattr(self, 'data'):
+        if hasattr(self, 'dataContainer'):
             out += "\n" + self.dataContainer.__str__()
         if hasattr(self, 'mesh'):
             out += "\n" + self.mesh.__str__()
@@ -244,10 +245,11 @@ class Refraction(object):
 #        self.start = createGradientModel2D(self.dataContainer, self.mesh,
 #                                           vtop, vbottom)
         if self.fop.regionManager().parameterCount() != len(self.start):
-            self.createStartModel(kwargs.pop('vtop', 5000.),
-                                  kwargs.pop('vbottom', 500.))
+            self.createStartModel(kwargs.pop('vtop', 500.),
+                                  kwargs.pop('vbottom', 5000.))
         self.fop.setStartModel(self.start)
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
+        self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
         self.inv.setMaxIter(kwargs.pop('max_iter', 20))
         self.inv.setRobustData(kwargs.pop('setRobust', False))
@@ -260,22 +262,43 @@ class Refraction(object):
         self.velocity = 1. / slowness
         self.response = self.inv.response()
 
-    def showVA(self, ax=None):
-        """show apparent velocity as image plot"""
-        if ax is None:
-            fig, ax = plt.subplots()
-            self.figs['va'] = fig
-
-        self.axs['va'] = ax
-        showVA(ax, self.dataContainer)
-        plt.show(block=False)
-
     def getOffset(self):
         """return vector of offsets (in m) between shot and receiver"""
         px = pg.x(self.dataContainer.sensorPositions())
         gx = np.array([px[int(g)] for g in self.dataContainer("g")])
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         return np.absolute(gx - sx)
+
+    def getMidpoint(self):
+        """return vector of offsets (in m) between shot and receiver"""
+        px = pg.x(self.dataContainer.sensorPositions())
+        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+        return (gx + sx) / 2
+
+    def showVA(self, ax=None, t=None, name='va', pseudosection=False,
+               squeeze=True):
+        """show apparent velocity as image plot"""
+        if ax is None:
+            fig, ax = plt.subplots()
+            self.figs[name] = fig
+
+        self.axs[name] = ax
+        if t is None:
+            t = self.dataContainer('t')
+        px = pg.x(self.dataContainer.sensorPositions())
+        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+        offset = np.absolute(gx - sx)
+        va = offset / t
+        if pseudosection:
+            midpoint = (gx + sx) / 2
+            plotVecMatrix(midpoint, offset, va, squeeze=True)
+        else:
+            plotVecMatrix(gx, sx, va, squeeze=squeeze)
+#        va = showVA(ax, self.dataContainer)
+#        plt.show(block=False)
+        return va
 
     def getDepth(self):
         """return a (a-priori guessed) depth of investigation"""
@@ -299,7 +322,7 @@ class Refraction(object):
                 coverage=self.standardizedCoverage())
 
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
-                   logScale=False, **kwargs):
+                   logScale=False, name='result', **kwargs):
         """show resulting velocity vector"""
         if val is None:
             val = self.velocity
@@ -307,18 +330,20 @@ class Refraction(object):
             cMin, cMax = interperc(val, 3)
         if ax is None:
             ax, cbar = pg.show(self.mesh, val, logScale=logScale,
-                               colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
-            self.figs['result'] = plt.gcf()
+                               colorBar=True, cMin=cMin, cMax=cMax,
+                               coverage=self.standardizedCoverage(), **kwargs)
+            self.figs[name] = plt.gcf()
         else:
             gci = drawModel(ax, self.mesh, val, logScale=logScale,
-                            colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
+                            colorBar=True, cMin=cMin, cMax=cMax,
+                            coverage=self.standardizedCoverage(), **kwargs)
             labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
             cbar = createColorbar(gci, **subkwargs)
         browser = CellBrowser(self.mesh, val, ax)
         browser.connect()
 
-        self.axs['result'] = ax
+        self.axs[name] = ax
         if 'lines' in kwargs:
             plotLines(ax, kwargs['lines'])
         return ax, cbar

@@ -98,34 +98,35 @@ def createMesh(poly, quality=30, area=0.0,
     else:
         raise('not yet implemented')
 
+
 def refineQuad2Tri(mesh, style=1):
     """Refine mesh of quadrangles into a mesh of triangle cells.
-    
+
         TODO mixed meshes
-        
+
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
         mesh containing quadrangle cells
-        
+
     style: int [1]
         * 1 bisect each quadrangle into 2 triangles
         * 2 bisect each quadrangle into 4 triangles
-        
+
     Returns
     -------
     ret : :gimliapi:`GIMLI::Mesh`
         mesh containing triangle cells
-        
+
     """
     out = pg.Mesh(2)
     newNode = None
-    
+
     for n in mesh.nodes():
         out.createNode(n.pos())
-        
+
     for c in mesh.cells():
-                        
+
         if style == 1:
             out.createCell([c.node(0).id(),
                             c.node(1).id(),
@@ -133,10 +134,10 @@ def refineQuad2Tri(mesh, style=1):
             out.createCell([c.node(0).id(),
                             c.node(2).id(),
                             c.node(3).id()])
-                
+
         elif style == 2:
             newNode = out.createNodeWithCheck(c.center())
-                        
+
             for i in range(4):
                 out.createCell([c.node(i).id(),
                                 c.node((i+1)%4).id(),
@@ -146,7 +147,7 @@ def refineQuad2Tri(mesh, style=1):
             b = c.boundary(i)
             if b.marker() != 0:
                 out.createBoundary([b.node(0).id(), b.node(1).id()], b.marker())
-    
+
     out.createNeighbourInfos()
 
     return out
@@ -497,12 +498,12 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 def readGambitNeutral(filename, verbose=False):
     """
     Import Gambit Neutral meshes *.neu
-        
+
     See. https://www.sharcnet.ca/Software/Gambit/html/users_guide/ug01.htm
-    
+
     Not fully implemented. If needed, we can improve this importer just send us
     an example file.
-    
+
     Parameters
     ----------
     fname : string
@@ -515,18 +516,18 @@ def readGambitNeutral(filename, verbose=False):
     with open(filename, 'r') as fi:
         content = fi.readlines()
     fi.close()
-    
+
     mesh = pg.Mesh(2)
-    
+
     for i, line in enumerate(content):
         if 'ENDOFSECTION' in line: break
-    
+
     try:
         nVerts = int(content[i-1].split()[0])
         nElements = int(content[i-1].split()[1])
     except:
         raise BaseException("Cannot interpret GAMBIT Neutral header: " + content[0:i])
-    
+
     for i, line in enumerate(content):
         if 'NODAL COORDINATES' in line: break
     for j in range(nVerts):
@@ -542,10 +543,10 @@ def readGambitNeutral(filename, verbose=False):
         for k in range(nNodes):
             nodes.append(int(content[i+1+j].split()[3 + k])-1)
         mesh.createCell(nodes)
-   
+
     if verbose:
         print("Gambit neutral file imported: ", mesh)
-    
+
     mesh.createNeighbourInfos()
     return mesh
 
@@ -802,6 +803,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 
 def createParaMesh(*args, **kwargs):
     """
+    create parameter mesh from list of sensor positions
+
+    see createParaMeshPLC and createMesh documentation for keyword options
     """
     plc = createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
@@ -828,7 +832,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     Parameters
     ----------
-    sensors : list of RVector3 objects
+    sensors : list of RVector3 objects or data container with sensorPositions
         Sensor positions. Must be sorted in positive x direction
     paraDX : float, optional
         Horizontal distance between sensors, relative regarding sensor
