@@ -58,9 +58,6 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
 
 def simulateERTData(saturation, meshSat, cache=False, verbose=0):
     swatch = pg.Stopwatch(True)
-    if verbose:
-        print("res 1:", swatch.duration(True))
-    
     ertScheme = pb.DataContainerERT('20dd.shm')
     
     meshERT = pg.meshtools.createParaMesh(ertScheme, quality=34,

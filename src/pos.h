@@ -166,6 +166,10 @@ public:
         return *this;
     }
 
+    Pos< ValueType > & round(double tol) const {
+        return Pos< ValueType >(*this).round(tol);
+    }
+    
     inline double distSquared(const Pos < ValueType > & p) const {
         return  ((mat_[0] - p[0]) * (mat_[0] - p[0]) +
                    (mat_[1] - p[1]) * (mat_[1] - p[1]) +
