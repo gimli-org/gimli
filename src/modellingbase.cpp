@@ -136,10 +136,10 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
         } else {
             *mesh_ = regionManager_->mesh().createH2();
         }
+        updateMeshDependency_();
     } else {
         setMesh_(regionManager_->mesh());
     }
-    updateMeshDependency_();
 }
  
 void ModellingBase::setRefinedMesh(const Mesh & mesh){
@@ -153,7 +153,6 @@ void ModellingBase::setRefinedMesh(const Mesh & mesh){
         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]  
          << ", ... ,  " << m[-1] << "]" << std::endl;
     }
-    updateMeshDependency_();
 }
  
 void ModellingBase::setMesh(const Mesh & mesh, bool holdRegionInfos) {

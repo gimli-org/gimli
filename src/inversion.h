@@ -258,7 +258,7 @@ public:
 
         //! Always use a region manager
         forward_->initRegionManager();
-        model_ = forward_->startModel();
+//         model_ = forward_->startModel();
     }
 
     /*! Return forward operator.*/
@@ -782,6 +782,7 @@ public:
     const RVector & deltaModelIter() const { return deltaModelIter_; }
 
     IPCClientSHM & ipc() { return ipc_; }
+    
 protected:
 
     Vec                   data_;
@@ -852,6 +853,13 @@ const Vector < ModelValType > & Inversion< ModelValType >::start(){ ALLOW_PYTHON
 /*! Run inversion with current model. */
 template < class ModelValType >
 const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_THREADS
+    
+    if (model_.size() == 0 ) setModel(forward_->startModel());
+    
+    if (data_.size() == 0 ) {
+        throwError(1, WHERE_AM_I + " no data given");
+    }
+    
     abort_ = false;
     ipc_.setBool("abort", false);
 

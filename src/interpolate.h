@@ -27,16 +27,6 @@
 
 namespace GIMLI{
 
-/*!Interpolate a given input data regarding the mesh srcMesh to a set of positions 
- * and write the interpolated data to outMat. outMat will resized if necessary.
- * Each data vector in inMat have to correspond to mesh.nodeCount().
- * If data length is mesh.cellCount() \ref cellDataToPointData will performed. 
- * The interpolation rule depend on the shape functions of mesh cells. 
- * Several utility or shortcut functions are defined. */
-DLLEXPORT void interpolate(const Mesh & srcMesh, const RMatrix & inMat,
-                           const R3Vector & destPos, RMatrix & outMat,
-                           bool verbose=false);
-
 /*! Utility function for interpolation. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, const RVector & inVec,
                            const R3Vector & destPos, RVector & outVec,
@@ -76,6 +66,16 @@ DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
  * Interpolate all export data from srcMesh to the destination mesh. 
  * Point and Cell based. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, Mesh & destMesh,
+                           bool verbose=false);
+
+/*!Interpolate a given input data regarding the mesh srcMesh to a set of positions 
+ * and write the interpolated data to outMat. outMat will resized if necessary.
+ * Each data vector in inMat have to correspond to mesh.nodeCount().
+ * If data length is mesh.cellCount() \ref cellDataToPointData will performed. 
+ * The interpolation rule depend on the shape functions of mesh cells. 
+ * Several utility or shortcut functions are defined. */
+DLLEXPORT void interpolate(const Mesh & srcMesh, const RMatrix & inMat,
+                           const R3Vector & destPos, RMatrix & outMat,
                            bool verbose=false);
 
 /*! Utility function for interpolation. 

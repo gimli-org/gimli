@@ -13,15 +13,19 @@ class MyMatrix(pg.MatrixBase):
         super().__init__(verbose)
 
     def rows(self):
+        """ Return amount of rows """
         print('musthave rows')
         return 0
 
     def cols(self):
+        """ Return amount of columns """
         print('musthave cols')
         return 0
 
     def save(self, name):
-        print('musthave save')
+        """ Save this matrix (optional) but mandatory if used inf inversion
+        that is called with dosave=True. """
+        print('musthave save if inversion is called with dosave ')
         return 0
 
 
@@ -43,6 +47,8 @@ fop = TestModelling(verbose=True)
 fop.setStartModel([0, 0])
 
 inv = pg.RInversion(verbose=True, dosave=False)
+
+#fixme!!!!!!!! .. segfault if one of the following is unset
 inv.setForwardOperator(fop)
 inv.setData([0.0, 0.0])
 

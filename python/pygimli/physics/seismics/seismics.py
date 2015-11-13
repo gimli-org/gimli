@@ -33,7 +33,7 @@ def ricker(t, f, t0=0.0):
 
     Examples
     --------
-    Create 100 Hz Wavelet inside 1000 Hz sampled signla of length 0.1s.
+    Create 100 Hz Wavelet inside 1000 Hz sampled signal of length 0.1s.
 
     >>> from pygimli.physics.seismics import ricker
     >>> import matplotlib.pyplot as plt
@@ -226,7 +226,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
 
     dt = times[1] - times[0]
 
-    theta = 0.71
+    theta = 0.51
     S1 = M + dt * dt * theta * theta * A
     S2 = M
 
@@ -248,8 +248,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
         # solve for u
         tic = time.time()
         # + * dt*dt * F
-        rhs = dt * M * v[n - 1] + \
-            (M - dt * dt * theta * (1. - theta) * A) * u[n - 1]
+        rhs = dt * M * v[n-1] + (M - dt*dt * theta * (1. - theta) * A) * u[n-1] 
         timeIter1[n - 1] = time.time() - tic
 
         tic = time.time()
@@ -280,13 +279,13 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
                   min(u[n]),
                   max(u[n]))
 
-    plt.figure()
-    plt.plot(timeIter1, label='Ass:1')
-    plt.plot(timeIter2, label='Sol:1')
-    plt.plot(timeIter3, label='Ass:2')
-    plt.plot(timeIter4, label='Sol:2')
-    plt.legend()
-    plt.figure()
+    #plt.figure()
+    #plt.plot(timeIter1, label='Ass:1')
+    #plt.plot(timeIter2, label='Sol:1')
+    #plt.plot(timeIter3, label='Ass:2')
+    #plt.plot(timeIter4, label='Sol:2')
+    #plt.legend()
+    #plt.figure()
     return u
 
 if __name__ == "__main__":

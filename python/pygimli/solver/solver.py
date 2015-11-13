@@ -56,7 +56,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 
     if hasattr(arg, '__len__'):
         if type(arg) == np.ndarray:
-            if len(arg) == ndof:
+            if len(arg) == nDofs[0]:
                 return arg
             else:
                 raise BaseException('Given array does not have requested (' + 
@@ -785,10 +785,15 @@ def assembleNeumannBC(S,
 
     for pair in boundaryPairs:
         boundary = pair[0]
+        
         val = pair[1]
+        
+        #if hasattr(val, '__len__'):
+            #if len(val) = 
+            
         g = generateBoundaryValue(boundary, val, time, userData)
 
-        if g is not 0.0:
+        if g is not 0.0 and g is not None:
             Se.u2(boundary)
             Se *= g
             S += Se
@@ -860,9 +865,10 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0,
         val = pair[1]
         uD = generateBoundaryValue(boundary, val, time, userData)
 
-        for n in boundary.nodes():
-            uDirNodes.append(n)
-            uDirVal[n.id()] = uD
+        if uD is not None:
+            for n in boundary.nodes():
+                uDirNodes.append(n)
+                uDirVal[n.id()] = uD
 
     if len(uDirNodes) == 0:
         return
@@ -1307,6 +1313,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     import matplotlib.pyplot as plt
     import numpy as np
     import time
+            
 
     if u0 is None:
         u0 = np.zeros(len(f))
@@ -1326,8 +1333,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     timeIter1 = np.zeros(len(times))
     timeIter2 = np.zeros(len(times))
     for n in range(1, len(times)):
-        # if verbose:
-            # print(n)
+        
         tic = time.time()
         b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
@@ -1345,9 +1351,10 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     # plt.plot(timeIter1)
     # plt.plot(timeIter2)
     # plt.figure()
-    if verbose and (n % verbose == 0):
-        print("timesteps:", len(times), 'duration:', sw.duration(), "s",
-              'itertime:', np.mean(timeIter1))
+    
+        if verbose and (n % verbose == 0):
+            print("timesteps:", n, "/", len(times), 'duration:', sw.duration(), "s",
+                  'itertime:', np.mean(timeIter1))
 
     return u
 
@@ -1451,7 +1458,7 @@ class RungeKutta(object):
                 else:
                     self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
                     self.u += self.rk4b[jRK] * self.resu 
-                
+                          
         self.time += self.dt
         return self.u
         

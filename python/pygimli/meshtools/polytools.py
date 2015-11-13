@@ -331,7 +331,41 @@ def createLine(start, end, segments, **kwargs):
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
 
+def createPolygon(verts, isClosed=False, **kwargs):
+    """ 
+        Create a polygon from list of vertices. 
+    
+    Parameters
+    ----------
+    verts : []
+        * List of x y pairs [[x0, y0], ... ,[xN, yN]]
+    
+    **kwargs:
 
+        boundaryMarker : int [1]
+            Marker for the resulting boundary edges
+        leftDirection : bool [True]
+            Rotational direction
+    
+    isClosed : bool [True]
+        Add closing edge between last and first node.
+            
+    Returns
+    -------
+    poly : gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    
+    """
+    poly = pg.Mesh(2)
+    
+    for v in verts:
+        poly.createNode(v)
+        
+    polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
+    
+    return poly
+    
+    
 def mergePLC(pols):
     """
     Merge multiply polygons into a single polygon
@@ -774,30 +808,3 @@ def polyTranslate(filename, x=0.0, y=0.0, z=0.0, verbose=True):
 
 if __name__ == "__main__":
     pass
-#    from pygimli.meshtools import polytools as plc
-#    from pygimli.meshtools import createMesh
-#    from pygimli.mplviewer import drawMesh
-#    import matplotlib.pyplot as plt
-#    world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-#    c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2, segments=4)
-#    c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
-#    r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
-#    r2 = plc.createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
-#    plc = plc.mergePLC([world, c1, c2, r1, r2])
-#
-#    fig, ax = plt.subplots()
-#    drawMesh(ax, plc)
-#    drawMesh(ax, createMesh(plc))
-#    plt.show()
-#
-#    import matplotlib.pyplot as plt
-#    import pygimli as pg
-#    import math
-#    from pygimli.meshtools import polytools as plc
-#    c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
-#    c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
-#    c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
-#                          end=1.5*math.pi, isClosed=False)
-#    fig, ax = plt.subplots()
-#    pg.show([c0, c1, c2], axes=ax)
-#    plt.show()

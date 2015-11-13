@@ -213,6 +213,7 @@ def drawModel(axes, mesh, data=None,
     >>> drawModel(ax, mesh, data)
     <matplotlib.collections.PolyCollection object at ...>
     """
+    
     if mesh.nodeCount() == 0:
         raise "drawModel: The mesh is empty."
 
@@ -412,7 +413,8 @@ def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
     if fillRegion and mesh.boundaryCount() > 0:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
         drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarker(),
-                  nLevs=3, levels=pg.utils.unique(tmpMesh.cellMarker()),
+                  nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarker()))),
+                  levels=pg.utils.unique(tmpMesh.cellMarker()),
                   tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
                   snap=False)
 
@@ -486,7 +488,8 @@ def createMeshPatches(axes, mesh, verbose=True, **kwargs):
                    cell.shape().nodeCount()))
 
     patches = mpl.collections.PolyCollection(polys, antialiaseds=False,
-                                             lod=True, picker=True)
+                                             #lod=True, 
+                                             picker=True)
 
 #    patches.set_edgecolor(None)
     patches.set_edgecolor('face')
