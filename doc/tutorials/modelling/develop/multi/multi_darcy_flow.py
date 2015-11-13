@@ -32,7 +32,12 @@ def darcyFlow(model, verbose=0):
 
     # Create mesh and define function space
     #mesh = dlf.UnitSquareMesh(16, 16, 'crossed')
-    mesh = dlf.RectangleMesh(dlf.Point(0, -5), dlf.Point(10, 0), 41, 21, "crossed")
+    mesh = None
+    try:
+        mesh = dlf.RectangleMesh(dlf.Point(0, -5), dlf.Point(10, 0), 41, 21, "crossed")
+    except:
+        # vor older fenics versions 
+        mesh = dlf.RectangleMesh(0, -5, 10, 0, 41, 21, "crossed")
 
     class PermeabiltyInv(dlf.Expression):
         def eval(self, values, r):
