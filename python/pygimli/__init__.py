@@ -720,19 +720,6 @@ def asvector(array):
         "this method will be removed soon")
     return _pygimli_.RVector(array)
 
-
-def __gitversion__(path=__path__[0]):
-    """Return version str based on git tags and commits."""
-    try:
-        v = subprocess.check_output(['git', '-C', path, 'describe', '--always',
-                                     '--tags', '--dirty=-modified', '--long'])
-        return v.decode('ascii').strip()
-    except:
-        return "unknown"
-
-#__version__ = _pygimli_.versionStr()
-__version__ = __gitversion__()
-
 ###########################
 # unsorted stuff
 ###########################
@@ -814,3 +801,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport
     plt.switch_backend(old_backend)
     plt.close('all')
     sys.exit(exitcode)
+
+# provide __version__ string
+from ._version import get_versions
+__version__ = get_versions()['version']
