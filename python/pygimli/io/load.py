@@ -35,6 +35,8 @@ def load(fname, verbose=False):
         # Data
         ".data": pg.DataContainer,
         ".ohm": pg.DataContainer,  # BERT compatibility
+        ".shm": pg.DataContainer,  # BERT compatibility
+        ".sgt": pg.DataContainer,  
         # Vectors
         ".dat": pg.RVector,
         ".vector": pg.RVector,

@@ -106,7 +106,7 @@ public:
 
     inline Shape * pShape() { return shape_; }
 
-    /*! See Shape::rst */
+    /*! Return rst-coordinates for the i-th node. See Shape::rst. */
     RVector3 rst(uint i) const;
     
     /*! Return the center coordinates of this MeshEntity. */
@@ -246,6 +246,9 @@ public:
      * responsible for the shape function. */
     Boundary * boundaryTo(const RVector & sf);
     
+    /*! Return the i'th boundary. Experimental! */
+    Boundary * boundary(Index i);
+    
     /*! Experimental */
     virtual std::vector < Node * > boundaryNodes(Index i) const{
         CERR_TO_IMPL
@@ -364,6 +367,8 @@ public:
 
     void setNodes(Node & n1, bool changed=true);
 
+    virtual double size() const { return 1.0; }
+    
     friend std::ostream & operator << (std::ostream & str, const NodeBoundary & e);
 
     /*!Returns the normal vector for this boundary that shows outside along the 

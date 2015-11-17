@@ -2,24 +2,23 @@ Installation on Windows
 -----------------------
 
 First, install the msys2 environment to get a proper gcc an and the msys
-console (currently 32bit only): http://msys2.github.io/
+console (should be 64bit on most systems): http://msys2.github.io/
 
 You will also need a native python installation if you want to use pygimli. We
 recommend WinPython: http://winpython.github.io/#releases
 
-After you installed the msys2 32bit environment start the console once so it
+After you installed the msys2 64bit environment start the console once so it
 builds your personal home directory where you find a .bashrc. Probably under:
 
 .. code-block:: bash
 
-    c:/msys32/home/YOUR_USERNAME
+    c:/msys64/home/YOUR_USERNAME
 
-Edit .bashrc and add the winpython
-installationpath to your default PATH.
+Edit .bashrc and add the winpython installation path to your default PATH.
 
 .. code-block:: bash
 
-    export PATH=$PATH:/c/PATH_TO_YOUR_WINPYTHON/WinPython-32bit-3.4.3.3/python-3.4.3/
+    export PATH=$PATH:/c/PATH_TO_YOUR_WINPYTHON/WinPython-64bit-3.4.3.3/python-3.4.3/
 
 This is necessary since the gimli installation needs to know your valid python
 installation.

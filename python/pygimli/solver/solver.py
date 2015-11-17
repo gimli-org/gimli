@@ -56,7 +56,11 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 
     if hasattr(arg, '__len__'):
         if type(arg) == np.ndarray:
-            return arg
+            if len(arg) == nDofs[0]:
+                return arg
+            else:
+                raise BaseException('Given array does not have requested (' + 
+                                    str(ndof) + ') size (' + str(len(arg)) + ')')
 
         for n in nDofs:
             if len(arg) == n:
@@ -707,7 +711,13 @@ def assembleForceVector(mesh, f, userData=None):
             else:
                 f(c, rhs)
     else:
-        fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
+        fArray = None
+        if hasattr(f, '__len__'):
+            if len(f) == mesh.cellCount() or len(f) == mesh.nodeCount():
+                fArray = f
+        
+        if fArray is None:
+            fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
 
         if len(fArray) == mesh.cellCount():
             b_l = pg.ElementMatrix()
@@ -718,7 +728,13 @@ def assembleForceVector(mesh, f, userData=None):
                     rhs[idx] += b_l.row(0)[i] * fArray[c.id()]
 
         elif len(fArray) == mesh.nodeCount():
-            rhs = pg.RVector(fArray)
+            b_l = pg.ElementMatrix()
+            for c in mesh.cells():
+                b_l.u(c)
+                for i, idx in enumerate(b_l.idx()):
+                    rhs[idx] += b_l.row(0)[i] * fArray[idx]
+            
+            #rhs = pg.RVector(fArray)
         else:
             raise Exception("Forcevector have the wrong size: " +
                             str(len(fArray)))
@@ -769,10 +785,15 @@ def assembleNeumannBC(S,
 
     for pair in boundaryPairs:
         boundary = pair[0]
+        
         val = pair[1]
+        
+        #if hasattr(val, '__len__'):
+            #if len(val) = 
+            
         g = generateBoundaryValue(boundary, val, time, userData)
 
-        if g is not 0.0:
+        if g is not 0.0 and g is not None:
             Se.u2(boundary)
             Se *= g
             S += Se
@@ -844,9 +865,10 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0,
         val = pair[1]
         uD = generateBoundaryValue(boundary, val, time, userData)
 
-        for n in boundary.nodes():
-            uDirNodes.append(n)
-            uDirVal[n.id()] = uD
+        if uD is not None:
+            for n in boundary.nodes():
+                uDirNodes.append(n)
+                uDirVal[n.id()] = uD
 
     if len(uDirNodes) == 0:
         return
@@ -1291,6 +1313,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     import matplotlib.pyplot as plt
     import numpy as np
     import time
+            
 
     if u0 is None:
         u0 = np.zeros(len(f))
@@ -1310,8 +1333,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     timeIter1 = np.zeros(len(times))
     timeIter2 = np.zeros(len(times))
     for n in range(1, len(times)):
-        # if verbose:
-            # print(n)
+        
         tic = time.time()
         b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
@@ -1329,38 +1351,118 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     # plt.plot(timeIter1)
     # plt.plot(timeIter2)
     # plt.figure()
-    if verbose and (n % verbose == 0):
-        print("timesteps:", len(times), 'duration:', sw.duration(), "s",
-              'itertime:', np.mean(timeIter1))
+    
+        if verbose and (n % verbose == 0):
+            print("timesteps:", n, "/", len(times), 'duration:', sw.duration(), "s",
+                  'itertime:', np.mean(timeIter1))
 
     return u
 
+from copy import deepcopy
+
+class RungeKutta(object):
+    #% Low storage Runge-Kutta coefficients
+    rk4a = [            0.0, 
+        -567301805773.0/1357537059087.0, 
+        -2404267990393.0/2016746695238.0, 
+        -3550918686646.0/2091501179385.0 , 
+        -1275806237668.0/842570457699.0]
+    rk4b = [ 1432997174477.0/9575080441755.0, 
+         5161836677717.0/13612068292357.0, 
+         1720146321549.0/2090206949498.0 , 
+         3134564353537.0/4481467310338.0 , 
+         2277821191437.0/14882151754819.0]
+    rk4c = [             0.0 , 
+         1432997174477.0/9575080441755.0, 
+         2526269341429.0/6820363962896.0, 
+         2006345519317.0/3224310063776.0, 
+         2802321613138.0/2924317926251.0]
+
+    def __init__(self, solver, verbose=False):
+        self.solver = solver
+        self.verbose = verbose
+        self.order = 5
+        
+    def run(self, u0, dt, tMax=1):
+        """
+        """
+        self.start(u0, dt, tMax)
+        
+        for i in range(self.Nsteps):
+            self.step()
+        return self.u
+
+    def start(self, u0, dt, tMax=1):
+        """
+        """
+        self.Nsteps = int(np.ceil(tMax/dt))
+        self.dt = dt
+        self.time = 0
+        self.tMax = tMax
+        self.u = deepcopy(u0)
+        self.resu = deepcopy(u0)
+        
+        if type(self.resu) is list:
+            for r in self.resu:
+                r *= 0.0
+        else:
+            self.resu *= 0.0
+
+    def step(self):
+        """
+        """
+        if self.time + self.dt > self.tMax:
+            self.dt = self.tMax - self.time
+        
+        if self.order == 1: 
+            # explicit Euler
+            k1 = self.solver.explicitRHS(self.u, 
+                                         self.time)
+            self.u += self.dt * k1 
+
+        elif self.order == 3: 
+            k1 = self.solver.explicitRHS(self.u, self.time)
+            k1 = self.u + dt * k1
+  
+            k2 = self.solver.explicitRHS(k1, self.time)
+            k2 = (3*self.u + k1 + dt*k2)/4
+  
+            k3 = self.solver.explicitRHS(k2, self.time)
+  
+            self.u = (self.u + 2*k2 + 2*dt*k3)/3
+
+        elif self.order == 4: 
+            # classical 4 step Runga-Kutta rk4
+            k1 = self.solver.explicitRHS(self.u, 
+                                         self.time)
+            k2 = self.solver.explicitRHS(self.u + self.dt/2 * k1, 
+                                         self.time + self.dt/2)
+            k3 = self.solver.explicitRHS(self.u + self.dt/2 * k2, 
+                                         self.time + self.dt/2)
+            k4 = self.solver.explicitRHS(self.u + self.dt * k3, 
+                                         self.time + self.dt)
+            self.u += 1./6. * self.dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+            
+        elif self.order == 5:
+            # low storage Version of rk4
+            for jRK in range(5):
+                tLocal = self.time + self.rk4c[jRK] * self.dt
+
+                rhs = self.solver.explicitRHS(self.u, tLocal)
+                
+                if type(self.resu) is list:
+                    for i in range(len(self.resu)):
+                        self.resu[i] = self.rk4a[jRK] * self.resu[i] + self.dt * rhs[i]
+                        
+                        self.u[i] += self.rk4b[jRK] * self.resu[i] 
+                else:
+                    self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
+                    self.u += self.rk4b[jRK] * self.resu 
+                          
+        self.time += self.dt
+        return self.u
+        
+    
 
 if __name__ == "__main__":
-    #import pygimli as pg
-    #import matplotlib.pyplot as plt
-    #import numpy as np
-    #fig, ax = plt.subplots()
-    #mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
-    #u = lambda p: pg.x(p)**2 * pg.y(p)
-    #pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
-    #pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
-    #pg.x(mesh.cellCenters())**2 ], axes=ax)
-    #pg.show(mesh, pg.solver.gradient(mesh, u), axes=ax, color='w', linewidth=0.4)
-    #plt.show()
-
-
-    #import pygimli as pg
-    #from pygimli.meshtools import polytools as plc
-    #from pygimli.mplviewer import drawField, drawMesh
-    #import matplotlib.pyplot as plt
-    #world = plc.createWorld(start=[-10, 0], end=[10, -10],
-                            #marker=1, worldMarker=False)
-    #c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
-    #mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
-    #u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]], uB=[[4, 1.0], [3, 0.0]])
-    #fig, ax = plt.subplots()
-    #pc = drawField(ax, mesh, u)
-    #drawMesh(ax, mesh)
-    #plt.show()
     pass

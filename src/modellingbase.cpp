@@ -111,6 +111,9 @@ RVector ModellingBase::startModel() {
         setStartModel(createDefaultStartModel());
     }
 
+    if (startModel_.size() == 0){
+        std::cout << "Warning! there is no startmodel defined." << std::endl;
+    }
     return startModel_;
 }
 
@@ -133,10 +136,10 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
         } else {
             *mesh_ = regionManager_->mesh().createH2();
         }
+        updateMeshDependency_();
     } else {
         setMesh_(regionManager_->mesh());
     }
-    updateMeshDependency_();
 }
  
 void ModellingBase::setRefinedMesh(const Mesh & mesh){
@@ -150,7 +153,6 @@ void ModellingBase::setRefinedMesh(const Mesh & mesh){
         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]  
          << ", ... ,  " << m[-1] << "]" << std::endl;
     }
-    updateMeshDependency_();
 }
  
 void ModellingBase::setMesh(const Mesh & mesh, bool holdRegionInfos) {
@@ -194,6 +196,8 @@ void ModellingBase::setJacobian(MatrixBase * J){
     ownJacobian_ = false;
 }
 
+
+
 void ModellingBase::createJacobian(const RVector & model){
     if (verbose_) std::cout << "Create Jacobian matrix (brute force) ...";
 
@@ -212,6 +216,7 @@ void ModellingBase::createJacobian(const RVector & model){
     for (size_t i = 0; i < model.size(); i++) {
         RVector modelChange(model);
         modelChange[i] *= fak;
+        
         RVector respChange(response(modelChange));
 
         for (size_t j = 0; j < resp.size(); j++){

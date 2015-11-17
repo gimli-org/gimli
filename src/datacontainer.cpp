@@ -769,6 +769,14 @@ bool idPosLesserX(const std::pair < RVector3, Index > & a, const std::pair < RVe
     return posLesserX(a.first, b.first);
 }
 
+void DataContainer::setSensorPosition(uint i, const RVector3 & pos) {
+    if (i >= sensorPoints_.size()) {
+        std::cout << "Warning! .. sensor count was " << sensorCount() << " resize to " << i+1 << std::endl;
+        sensorPoints_.resize((i+1));
+    }
+    sensorPoints_[i] = pos; 
+}
+        
 void DataContainer::sortSensorsX(){
     std::vector < std::pair < RVector3, Index > > permSens(sensorCount());
     for (uint i = 0; i < sensorCount(); i ++) permSens[i] = std::pair< RVector3, Index >(sensorPoints_[i], i);

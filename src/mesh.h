@@ -179,6 +179,8 @@ public:
     Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6);
 
     Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0);
+    /*! Create a boundary from the given node indieces */
+    Boundary * createBoundary(const IndexArray & nodes, int marker=0);
     Boundary * createBoundary(const Boundary & bound);
     Boundary * createBoundary(const Cell & cell);
     Boundary * createNodeBoundary(Node & n1, int marker = 0);
@@ -189,11 +191,13 @@ public:
 
     /*! Create empty cell without a node or a shape. */
     Cell * createCell(int marker = 0);
-    Cell * createCell(std::vector < Node * > & nodes, int marker = 0);
+    Cell * createCell(std::vector < Node * > & nodes, int marker=0);
+    /*! Create a cell from the given node indieces */
+    Cell * createCell(const IndexArray & nodes, int marker=0);
     Cell * createCell(const Cell & cell);
-    Cell * createTriangle(Node & n1, Node & n2, Node & n3, int marker = 0);
-    Cell * createQuadrangle(Node & n1, Node & n2, Node & n3, Node & n4, int marker = 0);
-    Cell * createTetrahedron(Node & n1, Node & n2, Node & n3, Node & n4, int marker = 0);
+    Cell * createTriangle(Node & n1, Node & n2, Node & n3, int marker=0);
+    Cell * createQuadrangle(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0);
+    Cell * createTetrahedron(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0);
 
     /*! Create a cell as a copy of a cell from an alternative mesh. Each Node of cell will be created with check. */
     Cell * copyCell(const Cell & cell);

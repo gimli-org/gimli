@@ -445,34 +445,18 @@ def main(argv):
     parser.add_option("-S", "--silent",
                       dest="silent", action="store_true",
                       help="set viewer silent mode", default=False)
-    parser.add_option(
-        "-L",
-        "--linear",
-        dest="linear",
-        action="store_true",
-        help="set linear color scale",
-        default=False)
-    parser.add_option(
-        "-C",
-        "--contour",
-        dest="contourplot",
-        action="store_true",
-        help="Create contourplot instead of simple patch",
-        default=False)
-    parser.add_option(
-        "-B",
-        "--b2r",
-        dest="b2r",
-        action="store_true",
-        help="Use blue-white-red color scale",
-        default=False)
-    parser.add_option(
-        "-E",
-        "--drawEdges",
-        dest="drawEdges",
-        action="store_true",
-        help="Force drawing all edges independent on marker",
-        default=False)
+    parser.add_option("-L", "--linear", dest="linear",
+                            action="store_true", default=False,
+                            help="set linear color scale")
+    parser.add_option("-C", "--contour", dest="contourplot", default=False,
+                            action="store_true", 
+                            help="Create contourplot instead of simple patch")
+    parser.add_option("-B", "--b2r", dest="b2r",
+                            action="store_true", default=False,
+                            help="Use blue-white-red color scale")
+    parser.add_option("-E", "--drawEdges", dest="drawEdges", 
+                            action="store_true", default=False,
+                           help="Force drawing all edges independent on marker")
     parser.add_option("-i", "--interperc", dest="interperc",
                             help="interpecentile", type="float", default="0.0")
     parser.add_option("-m", "--cmap", dest="cmapname",
@@ -825,6 +809,9 @@ def main(argv):
                 axes.set_xticklabels(tickLabels)
 
     # else not cbar only
+    # force update 
+    if not options.silent:
+        axes.figure.canvas.draw()
 
     if options.cellBrowser:
         browser = CellBrowser(mesh, data, axes)

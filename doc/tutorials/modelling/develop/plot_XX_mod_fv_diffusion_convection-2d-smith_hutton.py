@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 
+Solve Smith-Hutton reference example
+    
+.. math :: 
+    \vector{v}\cdot\nabla u = \frac{1}{P}\delta u
+    
 """
 
 import pygimli as pg
@@ -48,7 +53,7 @@ for b in bounds:
 print(vC.shape)
 
 neumannBC = [[5, 0]]
-Peclet = 5000 # vel/diffus
+Peclet = 500 # vel/diffus
 scheme='UDS'
 dirichletBC = [[1, lambda b_: 1. - np.tanh(10.)],
                [2, lambda b_: 1. - np.tanh(10.)],
@@ -63,7 +68,6 @@ uGrid = solveFiniteVolume(grid, a=1./Peclet, f=f, vel=vB,
                           scheme=scheme)
             
 
-pg.showLater(1)
 ax1,cb = show(grid)
 
 
@@ -131,5 +135,4 @@ plt.plot(-x, 1. + np.tanh(10 * (2 * x + 1.)), label='inlet-exact')
 plt.legend()
 plt.xlim([0,1])
 
-
-pg.showNow()
+pg.wait()

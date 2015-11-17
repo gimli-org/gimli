@@ -11,6 +11,7 @@ import pygimli as pg
 from pygimli.meshtools import createParaMeshPLC, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc, getSavePath
+from pygimli.mplviewer.dataview import plotVecMatrix
 
 if __name__ == 'refraction':
     # keine Ahnung wie das eleganter geht
@@ -18,120 +19,14 @@ if __name__ == 'refraction':
     # python -c 'import refraction; refraction.test_Refraction()'
 
     from ratools import createGradientModel2D
-    from raplot import plotFirstPicks, showVA, plotLines
+    from raplot import plotFirstPicks, plotLines
 else:
     from . ratools import createGradientModel2D
-    from . raplot import plotFirstPicks, showVA, plotLines
+    from . raplot import plotFirstPicks, plotLines
 
 
 def throw(*args, **kwargs):
     pass
-
-
-class BaseMethodeManager(object):
-    '''Diskusionsgrundlage. Ich glaub den kann man soweit als Default
-    auffüllen das im Grunde nur noch Transen und FOP erzwungen werden muessen.
-    Die setter sollten als einzige automatisch mit inv und fop interagieren ..
-    also load, create etc. sollten immer mit set enden. DRY.
-
-    Es sollte immer ein self.model() geben
-    '''
-    def __init__(self, **kwargs):
-        # defaults that are always useful
-        self.dataContainer = None
-        self.mesh = None
-        self.response = None
-        self.transData = None
-        self.transModel = None
-
-        self.fop = self.createFop()
-        self.inv = self.createInv(self.fop)
-
-    def createFop(self, verbose=True):  # needs always to be overloaded
-        """
-        """
-        fop = None
-        throw('abstract need to be overloaded')
-        return fop
-
-    def checkData(self):
-        """
-            Check data validity
-        """
-        # check self.dataContainer here
-        throw('should be overloaded')
-
-    def model(self):  # optional need default
-        throw('abstract need to be overloaded')
-
-    def data(self):
-        """
-            Return pure data Array .. e.g. data('r') or data('rhoa')
-        """
-        throw('need to be overloaded')
-
-    def createInv(self, fop, verbose=True, dosave=False):
-        """
-        """
-        self.transData = pg.RTrans()
-        self.transModel = pg.RTransLog()
-
-        inv = pg.RInversion(verbose, dosave)
-        inv.setTransData(self.transDat)
-        inv.setTransModel(self.transModel)
-        inv.setForwardOperator(fop)
-        return inv
-
-    def setData(self, data):
-        """
-        """
-        self.dataContainer = data
-        self.checkData()
-        self.fop.setData(self.dataContainer)
-        self.inv.setData(self.data())
-
-        if not self.dataContainer.allNonZero('err'):
-            self.setDataError(self.estimateError())
-        else:
-            self.setDataError(self.dataContainer('err'))
-
-    def setDataError(self, err):
-        """
-            Set data Error array
-        """
-        self.inv.setRelativeError(err)
-
-    def estimateError(self, absoluteError=0.001, relativeError=0.001):
-        """
-            Estimate current data error
-        """
-        if relativeError >= 0.5:  # obviously in %
-            relativeError /= 100.
-        error = absoluteError / self.data() + relativeError
-        return error
-
-    def setMesh(self, mesh, refine):  # guter default möglich
-        """
-        """
-        self.mesh = mesh
-        self.mesh.createNeighbourInfos()
-        self.fop.setMesh(self.mesh)
-
-        # hier weiß ich nicht ob man das nachträglich ändern kann ..
-        # vielleicht im Überladenen
-        self.fop.regionManager().setConstraintType(1)
-
-        self.fop.createRefinedForwardMesh(refine)
-        self.inv.setForwardOperator(self.fop)
-
-    def run(self, **kwargs):
-        """
-        """
-        throw('abstract need to be overloaded')
-
-    def paraDomain(self):  # useful defaults
-        """ Create and return parametric mesh for further processing. """
-        return self.fop.regionManager().paraDomain()
 
 
 class Refraction(object):
@@ -142,7 +37,7 @@ class Refraction(object):
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, **kwargs):
+    def __init__(self, data=None, name='new', **kwargs):
         """Init function with optional data load"""
         self.figs = {}
         self.axs = {}
@@ -154,10 +49,11 @@ class Refraction(object):
         self.dataContainer = None
         self.mesh = None
         self.poly = None
+        self.error = None
         self.velocity = None
         self.response = None
         self.start = []
-
+        self.pd = None
         self.fop = self.createFop(verbose=self.verbose)
         self.inv = self.createInv(self.fop,
                                   verbose=self.verbose, doSave=self.doSave)
@@ -165,8 +61,8 @@ class Refraction(object):
         if isinstance(data, str):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
-            self.setData(data)
-            self.basename = 'new'
+            self.setDataContainer(data)
+            self.basename = name
         if self.dataContainer is not None:
             self.createMesh()
 
@@ -176,8 +72,8 @@ class Refraction(object):
 
     def __repr__(self):
         """string representation of the class for the print function"""
-        out = "Refraction object"
-        if hasattr(self, 'data'):
+        out = type(self).__name__ + " object"
+        if hasattr(self, 'dataContainer'):
             out += "\n" + self.dataContainer.__str__()
         if hasattr(self, 'mesh'):
             out += "\n" + self.mesh.__str__()
@@ -228,7 +124,9 @@ class Refraction(object):
         self.checkData()
         self.fop.setData(self.dataContainer)
         self.inv.setData(self.dataContainer('t'))
-        if not self.dataContainer.allNonZero('error'):
+        if self.dataContainer.allNonZero('err'):
+            self.error = self.dataContainer('err')
+        else:
             self.estimateError()
 
     def loadData(self, filename):
@@ -320,8 +218,6 @@ class Refraction(object):
         """estimate error composed of an absolute and a relative part"""
         if relativeError >= 0.5:  # obviously in %
             relativeError /= 100.
-#        self.error = absoluteError / self.dataContainer('t') + relativeError
-#        self.inv.setRelativeError(self.error)
         self.error = absoluteError + self.dataContainer('t') * relativeError
         self.inv.setAbsoluteError(self.error)
 
@@ -330,7 +226,7 @@ class Refraction(object):
         self.start = createGradientModel2D(self.dataContainer, self.mesh,
                                            vtop, vbottom)
 
-    def run(self, vtop=500., vbottom=5000., zweight=0.2, lam=30., max_iter=20):
+    def run(self, **kwargs):
         """run actual inversion (first creating inversion object if not there)
 
         result/response is stored in the class attribute velocity/response
@@ -349,26 +245,22 @@ class Refraction(object):
 #        self.start = createGradientModel2D(self.dataContainer, self.mesh,
 #                                           vtop, vbottom)
         if self.fop.regionManager().parameterCount() != len(self.start):
-            self.createStartModel(vtop, vbottom)
+            self.createStartModel(kwargs.pop('vtop', 500.),
+                                  kwargs.pop('vbottom', 5000.))
         self.fop.setStartModel(self.start)
-        self.fop.regionManager().setZWeight(zweight)
-        self.inv.setLambda(lam)
-        self.inv.setMaxIter(max_iter)
+        self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
+        self.inv.setData(self.dataContainer('t'))
+        self.inv.setLambda(kwargs.pop('lam', 30.))
+        self.inv.setMaxIter(kwargs.pop('max_iter', 20))
+        self.inv.setRobustData(kwargs.pop('setRobust', False))
+        if not hasattr(self.error, '__iter__'):
+            self.estimateError(kwargs.pop('error', 0.003))  # abs. error in ms
+        self.inv.setAbsoluteError(self.error)
         self.inv.setModel(self.start)  # somehow doubled with 3 lines above
         self.fop.jacobian().clear()
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
-
-    def showVA(self, ax=None):
-        """show apparent velocity as image plot"""
-        if ax is None:
-            fig, ax = plt.subplots()
-            self.figs['va'] = fig
-
-        self.axs['va'] = ax
-        showVA(ax, self.dataContainer)
-        plt.show(block=False)
 
     def getOffset(self):
         """return vector of offsets (in m) between shot and receiver"""
@@ -376,6 +268,37 @@ class Refraction(object):
         gx = np.array([px[int(g)] for g in self.dataContainer("g")])
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         return np.absolute(gx - sx)
+
+    def getMidpoint(self):
+        """return vector of offsets (in m) between shot and receiver"""
+        px = pg.x(self.dataContainer.sensorPositions())
+        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+        return (gx + sx) / 2
+
+    def showVA(self, ax=None, t=None, name='va', pseudosection=False,
+               squeeze=True):
+        """show apparent velocity as image plot"""
+        if ax is None:
+            fig, ax = plt.subplots()
+            self.figs[name] = fig
+
+        self.axs[name] = ax
+        if t is None:
+            t = self.dataContainer('t')
+        px = pg.x(self.dataContainer.sensorPositions())
+        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+        offset = np.absolute(gx - sx)
+        va = offset / t
+        if pseudosection:
+            midpoint = (gx + sx) / 2
+            plotVecMatrix(midpoint, offset, va, squeeze=True)
+        else:
+            plotVecMatrix(gx, sx, va, squeeze=squeeze)
+#        va = showVA(ax, self.dataContainer)
+#        plt.show(block=False)
+        return va
 
     def getDepth(self):
         """return a (a-priori guessed) depth of investigation"""
@@ -398,25 +321,29 @@ class Refraction(object):
         pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), axes=ax,
                 coverage=self.standardizedCoverage())
 
-    def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
-                   **kwargs):
+    def showResult(self, val=None, ax=None, cMin=None, cMax=None,
+                   logScale=False, name='result', **kwargs):
         """show resulting velocity vector"""
+        if val is None:
+            val = self.velocity
         if cMin is None or cMax is None:
-            cMin, cMax = interperc(self.velocity, 3)
+            cMin, cMax = interperc(val, 3)
         if ax is None:
-            ax, cbar = pg.show(self.mesh, self.velocity, logScale=logScale,
-                               colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
-            self.figs['result'] = plt.gcf()
+            ax, cbar = pg.show(self.mesh, val, logScale=logScale,
+                               colorBar=True, cMin=cMin, cMax=cMax,
+                               coverage=self.standardizedCoverage(), **kwargs)
+            self.figs[name] = plt.gcf()
         else:
-            gci = drawModel(ax, self.mesh, self.velocity, logScale=logScale,
-                            colorBar=True, cMin=cMin, cMax=cMax, **kwargs)
+            gci = drawModel(ax, self.mesh, val, logScale=logScale,
+                            colorBar=True, cMin=cMin, cMax=cMax,
+                            coverage=self.standardizedCoverage(), **kwargs)
             labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
             cbar = createColorbar(gci, **subkwargs)
-        browser = CellBrowser(self.mesh, self.velocity, ax)
+        browser = CellBrowser(self.mesh, val, ax)
         browser.connect()
 
-        self.axs['result'] = ax
+        self.axs[name] = ax
         if 'lines' in kwargs:
             plotLines(ax, kwargs['lines'])
         return ax, cbar

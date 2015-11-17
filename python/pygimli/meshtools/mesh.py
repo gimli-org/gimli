@@ -99,6 +99,59 @@ def createMesh(poly, quality=30, area=0.0,
         raise('not yet implemented')
 
 
+def refineQuad2Tri(mesh, style=1):
+    """Refine mesh of quadrangles into a mesh of triangle cells.
+
+        TODO mixed meshes
+
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        mesh containing quadrangle cells
+
+    style: int [1]
+        * 1 bisect each quadrangle into 2 triangles
+        * 2 bisect each quadrangle into 4 triangles
+
+    Returns
+    -------
+    ret : :gimliapi:`GIMLI::Mesh`
+        mesh containing triangle cells
+
+    """
+    out = pg.Mesh(2)
+    newNode = None
+
+    for n in mesh.nodes():
+        out.createNode(n.pos())
+
+    for c in mesh.cells():
+
+        if style == 1:
+            out.createCell([c.node(0).id(),
+                            c.node(1).id(),
+                            c.node(2).id()])
+            out.createCell([c.node(0).id(),
+                            c.node(2).id(),
+                            c.node(3).id()])
+
+        elif style == 2:
+            newNode = out.createNodeWithCheck(c.center())
+
+            for i in range(4):
+                out.createCell([c.node(i).id(),
+                                c.node((i+1)%4).id(),
+                                newNode.id()])
+
+        for i in range(c.boundaryCount()):
+            b = c.boundary(i)
+            if b.marker() != 0:
+                out.createBoundary([b.node(0).id(), b.node(1).id()], b.marker())
+
+    out.createNeighbourInfos()
+
+    return out
+
 def readGmsh(fname, verbose=False):
     """
     Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
@@ -383,6 +436,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
                 mesh.node(int(line[3]) - 1), mesh.node(int(line[4]) - 1), 1)
 
     fid.close()
+    mesh.createNeighbourInfos()
     return mesh
 
 
@@ -437,6 +491,63 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
         cells.append(c)
 
     f.close()
+    mesh.createNeighbourInfos()
+    return mesh
+
+
+def readGambitNeutral(filename, verbose=False):
+    """
+    Import Gambit Neutral meshes *.neu
+
+    See. https://www.sharcnet.ca/Software/Gambit/html/users_guide/ug01.htm
+
+    Not fully implemented. If needed, we can improve this importer just send us
+    an example file.
+
+    Parameters
+    ----------
+    fname : string
+        Filename of the file to read (\\*.n, \\*.e \\*.f)
+
+    verbose : boolean, optional
+        Be verbose during import.
+
+    """
+    with open(filename, 'r') as fi:
+        content = fi.readlines()
+    fi.close()
+
+    mesh = pg.Mesh(2)
+
+    for i, line in enumerate(content):
+        if 'ENDOFSECTION' in line: break
+
+    try:
+        nVerts = int(content[i-1].split()[0])
+        nElements = int(content[i-1].split()[1])
+    except:
+        raise BaseException("Cannot interpret GAMBIT Neutral header: " + content[0:i])
+
+    for i, line in enumerate(content):
+        if 'NODAL COORDINATES' in line: break
+    for j in range(nVerts):
+        vertx = float(content[i+j+1].split()[1])
+        verty = float(content[i+j+1].split()[2])
+        mesh.createNode((vertx, verty))
+
+    for i, line in enumerate(content):
+        if 'ELEMENTS/CELLS' in line: break
+    for j in range(nElements):
+        nNodes = int(content[i+j+1].split()[1])
+        nodes = []
+        for k in range(nNodes):
+            nodes.append(int(content[i+1+j].split()[3 + k])-1)
+        mesh.createCell(nodes)
+
+    if verbose:
+        print("Gambit neutral file imported: ", mesh)
+
+    mesh.createNeighbourInfos()
     return mesh
 
 
@@ -560,6 +671,7 @@ def createParaDomain2D(*args, **kwargs):
 
 def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                       paraBoundary=2, paraMaxCellSize=0, boundary=-1,
+                      boundaryMaxCellSize=0,
                       verbose=False, *args, **kwargs):
     """
     Create a PLC mesh for an inversion parameter mesh.
@@ -595,6 +707,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
         Margin for parameter domain in absolute sensor distances. 2 (default).
     paraMaxCellSize: double, optional
         Maximum size for parametric size in m*m
+    boundaryMaxCellSize: double, optional
+        Maximum cells size in the boundary region in m*m
     boundary : float, optional
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
@@ -648,7 +762,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
         poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
         poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
         poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1)
+        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1, boundaryMaxCellSize)
 
     poly.createEdge(n1, n2, 1)
     poly.createEdge(n2, n3, 1)
@@ -689,9 +803,13 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 
 def createParaMesh(*args, **kwargs):
     """
+    create parameter mesh from list of sensor positions
+
+    see createParaMeshPLC and createMesh documentation for keyword options
     """
     plc = createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
+    kwargs.pop('boundaryMaxCellSize', 0)
     mesh = createMesh(plc, **kwargs)
     return mesh
 
@@ -714,7 +832,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     Parameters
     ----------
-    sensors : list of RVector3 objects
+    sensors : list of RVector3 objects or data container with sensorPositions
         Sensor positions. Must be sorted in positive x direction
     paraDX : float, optional
         Horizontal distance between sensors, relative regarding sensor
@@ -723,17 +841,16 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         Vertical distance to the first depth layer, relative regarding sensor
         distance. Value must be greater than 0 otherwise 1 is assumed.
     paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maxmimum
+        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
-    nLayers : int, optional
+    nLayers : int, optional [11]
         Number of depth layers.
-    boundary : int, optional
+    boundary : int, optional [-1]
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
-        Values lover 0 force the boundary to be 4 times para domain width.
-    paraBoundary : int, optional
-        Offset for parameter domain boundary in absolute sensor distance.
-        2 (default).
+        Values lower than 0 force the boundary to be 4 times para domain width.
+    paraBoundary : int, optional [2]
+        Offset to the parameter domain boundary in absolute sensor spacing.
     verbose : boolean, optional
         Be verbose.
 
@@ -747,13 +864,12 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> import matplotlib.pyplot as plt
     >>>
     >>> from pygimli.meshtools import createParaMesh2DGrid
-    >>> from pygimli.mplviewer import drawMesh
     >>> x = pg.RVector(range(10))
     >>> mesh = createParaMesh2DGrid(x, boundary=1, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
-    >>> fig, ax = plt.subplots()
-    >>> drawMesh(ax, mesh)
-    >>> plt.show()
+    >>> ax, _ = pg.show(mesh, mesh.cellMarker(), alpha=0.3, tri=True)
+    >>> ax, _ = pg.show(mesh, axes=ax)
+    >>> pg.wait()
     """
 
     mesh = pg.Mesh(2)

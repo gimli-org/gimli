@@ -92,19 +92,19 @@ public:
 
     ElementMatrix < ValueType > & u(const MeshEntity & ent, 
                             const RVector & w,
-                            const std::vector < RVector3 > & integrationPnts,
+                            const R3Vector & integrationPnts,
                             bool verbose = false);
     ElementMatrix < ValueType > & u2(const MeshEntity & ent, const RVector & w, 
-                                     const std::vector < RVector3 > & integrationPnts,
+                                     const R3Vector & integrationPnts,
                                      bool verbose = false);
     ElementMatrix < ValueType > & ux2(const MeshEntity & ent, const RVector & w, 
-                               const std::vector < RVector3 > & integrationPnts,
+                               const R3Vector & integrationPnts,
                               bool verbose = false);
     ElementMatrix < ValueType > & ux2uy2(const MeshEntity & ent, const RVector & w, 
-                                  const std::vector < RVector3 > & integrationPnts,
+                                  const R3Vector & integrationPnts,
                                  bool verbose = false);
     ElementMatrix < ValueType > & ux2uy2uz2(const MeshEntity & ent, const RVector & w, 
-                                    const std::vector < RVector3 > & integrationPnts, 
+                                    const R3Vector & integrationPnts, 
                                     bool verbose = false);
 
 protected:

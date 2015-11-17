@@ -3,8 +3,95 @@
 """
     Some data related viewer
 """
-import pygimli as pg
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm, Normalize
+import pygimli as pg
+
+
+def generateMatrix(xvec, yvec, vals, squeeze=False):
+    """ return data matrix from x/y and value vector """
+    if squeeze:
+        xmap = {xx: ii for ii, xx in enumerate(np.unique(xvec))}
+        ymap = {yy: ii for ii, yy in enumerate(np.unique(yvec))}
+    else:
+        xymap = {xy: ii for ii, xy in enumerate(np.unique(np.hstack((xvec,
+                                                                     yvec))))}
+        xmap = xymap
+        ymap = xymap
+    A = np.zeros((len(ymap), len(xmap)))
+    inot = []
+    nshow = min([len(xvec), len(yvec), len(vals)])
+    for i in range(nshow):
+        xi, yi = xvec[i], yvec[i]
+        if A[ymap[yi], xmap[xi]]:
+            inot.append(i)
+        A[ymap[yi], xmap[xi]] = vals[i]
+    if len(inot) > 0:
+        print(len(inot), "data of", nshow, "not shown")
+        if len(inot) < 30:
+            print(inot)
+    return A, xmap, ymap
+
+
+def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
+               logScale=None, label=None, **kwargs):
+    """ plot previously generated matrix """
+    if xmap is None:
+        xmap = {i: i for i in range(A.shape[0])}
+    if ymap is None:
+        ymap = {i: i for i in range(A.shape[1])}
+    mat = np.ma.masked_where(A == 0.0, A, False)
+    if cMin is None:
+        cMin = np.min(mat)
+    if cMax is None:
+        cMax = np.max(mat)
+    if logScale is None:
+        logScale = (cMin > 0.0)
+    if logScale:
+        norm = LogNorm(vmin=cMin, vmax=cMax)
+    else:
+        norm = Normalize(vmin=cMin, vmax=cMax)
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    im = ax.imshow(mat, norm=norm, interpolation='nearest')
+    pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5, label=label)
+    ax.grid(True)
+    xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
+    yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
+    xx = [k for k in xmap]
+    ax.set_xticks(xt)
+    ax.set_xticklabels(['{:g}'.format(round(xx[int(ti)], 2)) for ti in xt])
+    yy = [k for k in ymap]
+    ax.set_yticks(yt)
+    ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
+    return ax
+
+
+def plotVecMatrix(xvec, yvec, vals, squeeze=True, **kwargs):
+    """ plot three vectors as matrix """
+    A, xmap, ymap = generateMatrix(xvec, yvec, vals, squeeze)
+    return plotMatrix(A, xmap, ymap, **kwargs)
+
+
+def plotDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
+    """ plot data container as matrix
+
+    for each x, y and v token strings or vectors should be given
+    """
+    if isinstance(x, str):
+        x = data(x)
+    if isinstance(y, str):
+        y = data(y)
+    if isinstance(v, str):
+        v = data(v)
+    if x is None or y is None or v is None:
+        raise Exception("Vectors or strings must be given")
+    if len(x) != len(y) or len(x) != len(v):
+        raise Exception("lengths x/y/v not matching: {:d}!={:d}!={:d}".format(
+            len(x), len(y), len(v)))
+    return plotVecMatrix(x, y, v, **kwargs)
 
 
 def drawSensorAsMarker(ax, data):

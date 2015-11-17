@@ -37,17 +37,17 @@ Node::Node(){
 }
 
 Node::Node(double x, double y, double z)
-: pos_(RVector3(x, y, z)) {
+: pos_(RVector3(x, y, z).round(1e-12)) {
     init_();
 }
 
 Node::Node(const RVector3 & pos)
-: pos_(pos) {
+: pos_(pos.round(1e-12)) {
     init_();
 }
 
 Node::Node(const RVector3 & pos, int marker, int id)
-: pos_(pos) {
+: pos_(pos.round(1e-12)) {
     init_();
     setMarker(marker);
     setId(id);

@@ -130,7 +130,7 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
     if divider:
         if orientation == 'horizontal':
             size = kwargs.pop('size', 0.2)
-            pad = kwargs.pop('pad', 0.35)
+            pad = kwargs.pop('pad', 0.5)
             cax = divider.append_axes("bottom", size=size, pad=pad)
         else:
             size = kwargs.pop('size', 0.2)

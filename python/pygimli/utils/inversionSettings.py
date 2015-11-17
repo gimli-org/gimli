@@ -1,10 +1,6 @@
-import sys
 from pygimli.utils import opt_import
 
-if int(sys.version[0]) >= 3:
-    pickle = opt_import("pickle", "read and write inversion settings")
-else:
-    pickle = opt_import("cPickle", "read and write inversion settings")
+json = opt_import("json", "read and write inversion settings")
 
 
 class InversionSettings(dict):
@@ -30,7 +26,7 @@ class InversionSettings(dict):
         if hasattr(self, 'filename'):
             self.update(InversionSettings.loadtxt(self.filename))
 
-    def savetxt(self, f):
+    def save(self, f):
         """
         Saves the settings object to disk.
 
@@ -39,10 +35,10 @@ class InversionSettings(dict):
         """
 
         with open(f, 'w') as thefile:
-            pickle.dump(self, thefile)
+            json.dump(self, thefile)
 
     @classmethod
-    def loadtxt(cls, f):
+    def load(cls, f):
         """
         Class method that loads a saved settings object from disk.
 
@@ -51,4 +47,4 @@ class InversionSettings(dict):
         """
 
         with open(f, 'r') as thefile:
-            return pickle.load(thefile)
+            return json.load(thefile)

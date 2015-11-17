@@ -6,7 +6,7 @@
 import pygimli as pg
 import pygimli.solver as solver
 from pygimli.viewer import show
-from pygimli.mplviewer import drawMesh, drawStreamLines2
+from pygimli.mplviewer import drawMesh, drawStreams
 from pygimli.meshtools import createMesh
 
 import matplotlib.pyplot as plt
@@ -127,7 +127,7 @@ show(grid, ul, logScale=False, showLater=True, colorBar=True, axes=ax2)
 show(grid, vl, logScale=False, showLater=True, colorBar=True, axes=ax3)
 
 vel = np.vstack([np.array((u.T).flat), np.array((v.T).flat)]).T    
-drawStreamLines2(ax1, grid, vel)
+drawStreams(ax1, grid, vel)
     
 #im1 = ax1.contourf(X,Y,p,alpha=0.5)    ###plnttong the pressure field as a contour
 #divider1 = make_axes_locatable(ax1)

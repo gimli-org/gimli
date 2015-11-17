@@ -295,8 +295,9 @@ double MeshEntity::pot(const RVector3 & xyz, const RVector & u) const {
     return sum(u(this->ids()) * this->N(shape().rst(xyz)));
 }
 
-RVector3 MeshEntity::vec(const RVector3 & xyz, const std::vector < RVector3 > & v) const{
-    return RVector3(pot(xyz,x(v)), pot(xyz,y(v)), pot(xyz, z(v)));
+RVector3 MeshEntity::vec(const RVector3 & xyz,
+                         const std::vector < RVector3 > & v) const{
+    return RVector3(pot(xyz, x(v)), pot(xyz, y(v)), pot(xyz, z(v)));
 }
 
 RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
@@ -427,6 +428,11 @@ Boundary * Cell::boundaryTo(const RVector & sf){
 //     std::cout << "common.size() remove sub: " << common.size()<< std::endl;
 
     return (*common.begin());
+}
+
+Boundary * Cell::boundary(Index i){
+    ASSERT_RANGE(i, 0, boundaryCount())
+    return findBoundary(boundaryNodes(i));
 }
 
 Cell * Cell::neighbourCell(const RVector & sf){

@@ -185,6 +185,13 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol){
     return newNode;
 }
 
+Boundary * Mesh::createBoundary(const IndexArray & idx, int marker){
+    std::vector < Node * > nodes(idx.size());
+    for (Index i = 0; i < idx.size(); i ++ ) nodes[i] = &this->node(idx[i]);
+    return createBoundary(nodes, marker);
+}
+
+
 Boundary * Mesh::createBoundary(std::vector < Node * > & nodes, int marker){
     switch (nodes.size()){
       case 1: return createBoundaryChecked_< NodeBoundary >(nodes, marker); break;
@@ -241,6 +248,12 @@ Boundary * Mesh::createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4
 Cell * Mesh::createCell(int marker){
     std::vector < Node * > nodes(0);
     return createCell_< Cell >(nodes, marker, cellCount());
+}
+
+Cell * Mesh::createCell(const IndexArray & idx, int marker){
+    std::vector < Node * > nodes(idx.size());
+    for (Index i = 0; i < idx.size(); i ++ ) nodes[i] = &this->node(idx[i]);
+    return createCell(nodes, marker);
 }
 
 Cell * Mesh::createCell(std::vector < Node * > & nodes, int marker){
