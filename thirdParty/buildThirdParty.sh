@@ -206,11 +206,12 @@ getWITH_HG(){
         popd
 	fi
     if [ -n $_BRANCH_ ]; then
-        pushd $_SRC_
-          echo $_SRC_ $_BRANCH_
-          echo $HG checkout $_BRANCH_ .
-          "$HG" checkout $_BRANCH_ .
-        popd
+    echo "ignoring branch $_BRANCH_ setting"
+#         pushd $_SRC_
+#           echo $_SRC_ $_BRANCH_
+#           echo $HG checkout $_BRANCH_ .
+#           "$HG" checkout $_BRANCH_ .
+#         popd
     fi
 }
 

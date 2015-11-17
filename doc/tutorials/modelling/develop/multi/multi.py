@@ -10,7 +10,7 @@ from multi_advection import calcSaturation
 from multi_ert import simulateERTData, showERTData
 
 from multiprocessing import Process, Queue
-
+from multiprocessing import Pool
 
 class WorkSpace():
     pass
@@ -51,43 +51,57 @@ class MulitFOP(pg.ModellingBase):
         fak = 1.05
 
         pg.tic()
-        q = Queue()
-        for i in range(nModel):
-            #self.createResponseProc(model, fak, i, q)
-            p = Process(target=self.createResponseProc, args=(model, fak, i, q))
-            p.start()
-        p.join()
-        pg.toc()
+        pool = Pool(processes=2)
         
+        output = Queue()
+        procs = []
         for i in range(nModel):
-            Imodel, respChange, dModel, p = q.get()
+            self.createResponseProc(model, fak, i, output)
+            #procs.append(Process(target=self.createResponseProc, args=(model, fak, i, output)))
+
+        for p in procs:
+            p.start()
+            
+        for p in procs:
+            p.join()
+        pg.toc()
+
+        print('#'*100)
+        for i in range(nModel):
+            Imodel, respChange, dModel = output.get()
             dData = respChange - resp
-            print(i, Imodel, dModel, min(respChange), max(respChange), min(p), max(p))
+            print(i, Imodel, dModel, min(respChange), max(respChange))
             self._J.setCol(Imodel, dData/dModel)
         for i in range(nModel):
             
             print(i, min(self._J.col(i)), max(self._J.col(i)), min(pg.abs(self._J.col(i))))
             if min(pg.abs(self._J.col(i))) < 1e-10:
                 raise 
+        exit()
     
-    def createResponseProc(self, model, fak, i, q):
+    def createResponseProc(self, model, fak, i, output):
         print("proc:", i)
         modelChange = pg.RVector(model)
         modelChange[i] *= fak
+        dModel = modelChange[i]-model[i]
                 
         meshIn = pg.Mesh(self.mesh())
         meshIn.setCellAttributes(modelChange[meshIn.cellMarker()])
-                
+        
         mesh, vel, p, k = darcyFlow(meshIn, verbose=0)
+        
+        print(i, min(p), max(p), max(vel[0,:]), max(vel[1,:]))
         sat = calcSaturation(mesh, vel.T, self.timesAdvection, 
                              injectPos=[2., -2.], peclet=self.peclet, verbose=0)
+        
         
         sampleTime = [0, self.tSteps/2, self.tSteps-1]
         meshERT, dataERT, res, rhoa, err = simulateERTData(sat[sampleTime], mesh, verbose=0)
 
-        q.put([i, rhoa.flatten(), modelChange[i]-model[i], p])
-        #return rhoa.flatten(), modelChange[i]-model[i]
-                
+        output.put([i, rhoa.flatten(), dModel ])#, np.array(p)])
+        #output.put([i, rhoa.flatten(), modelChange[i]-model[i], np.array(p)])
+        print(i, '-')
+                        
                 
     def response(self, par):
         ws = self.ws

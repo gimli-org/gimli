@@ -138,7 +138,7 @@ def darcyFlow(model, verbose=0):
     kinv = dlf.Function(Q)                                                                 
     kinv.interpolate(PermeabiltyInv())
 
-    return gimlimesh, vel, pre, 1./np.array(kinv.vector())
+    return gimlimesh, np.array(vel), np.array(pre), np.array(1./np.array(kinv.vector()))
 
 if __name__ == '__main__':
     mesh, vel, p, k = darcyFlow(model=[1, 0.01, 0.001])

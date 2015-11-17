@@ -72,62 +72,44 @@ def simulateERTData(saturation, meshSat, cache=False, verbose=0):
     resis = resistivityArchie(rBrine=1./conductivity,
                               porosity=0.3, S=1.0, 
                               mesh=meshSat, meshI=meshERT)
-    if verbose:
-        print("res 2:", swatch.duration(True))
+
     #pg.show(meshERT, resis[-1], colorBar=1)
 
     ert = pb.manager.Resistivity(verbose=False)
     
-    solutionName = createCacheName('appRes', meshERT) + \
-            "-" + str(ertScheme.size()) + \
-            "-" + str(len(saturation)) + \
-            "-" + str(len(saturation[0]))   
+    rhoa = np.zeros((len(resis), ertScheme.size()))
+    err = np.zeros((len(resis), ertScheme.size()))
     
-    try:
-        if cache:
-            rhoa = np.load(solutionName + '.bmat.npy')
-            ertData = pb.DataContainerERT(solutionName + '.dat')
-        else:
-            raise Exception("no cacheing")
-    except Exception as e:
+    ertScheme.set('k', pb.geometricFactor(ertScheme))
+    
+    ertData = ert.simulate(meshERT, resis[0], ertScheme)
+    #ertData.estimateError(errPerc=1, errVolt=1e-5, verbose=1) would be nice??
+    errPerc = 1
+    errVolt = 1e-5
+    voltage = ertData('rhoa') / ertData('k')
+    ertData.set('err', pg.abs(errVolt / voltage) + errPerc / 100.0)
+    if verbose:
+        print('err min:', min(ertData('err'))*100, 'max:', max(ertData('err'))*100)
+    ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
+    
+    #sys.exit()
+    for i in range(0, len(resis)):
+        pg.tic()
+        rhoa[i] = ert.fop.response(resis[i])
+                    
+        #rand = pg.RVector(len(rhoa[i]))
+        #pg.randn(rand)
+        err[i] = ertData('err')
+        #rhoa[i] *= (1.0 + rand * ertData('err'))
+        
         if verbose:
-            print(e)
-            print("Building .... ")
-        rhoa = np.zeros((len(resis), ertScheme.size()))
-        err = np.zeros((len(resis), ertScheme.size()))
-        
-        ertScheme.set('k', pb.geometricFactor(ertScheme))
-        
-        ertData = ert.simulate(meshERT, resis[0], ertScheme)
-        #ertData.estimateError(errPerc=1, errVolt=1e-5, verbose=1) would be nice??
-        errPerc = 1
-        errVolt = 1e-5
-        voltage = ertData('rhoa') / ertData('k')
-        ertData.set('err', pg.abs(errVolt / voltage) + errPerc / 100.0)
-        if verbose:
-            print('err min:', min(ertData('err'))*100, 'max:', max(ertData('err'))*100)
-        ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
-        
-        #sys.exit()
-        for i in range(0, len(resis)):
-            pg.tic()
-            rhoa[i] = ert.fop.response(resis[i])
-                        
-            #rand = pg.RVector(len(rhoa[i]))
-            #pg.randn(rand)
-            err[i] = ertData('err')
-            #rhoa[i] *= (1.0 + rand * ertData('err'))
-            
-            if verbose:
-                print(i, "/", len(resis), " : ", pg.dur(), "s",
-                  "min r:", min(resis[i]), "max r:", max(resis[i]),
-                  "min r_a:", min(rhoa[i]), "max r_a:", max(rhoa[i]) )
+            print(i, "/", len(resis), " : ", pg.dur(), "s",
+              "min r:", min(resis[i]), "max r:", max(resis[i]),
+              "min r_a:", min(rhoa[i]), "max r_a:", max(rhoa[i]) )
 
-        np.save(solutionName + '.bmat', rhoa)
-        
-        dRhoa = rhoa[1:len(rhoa)]/rhoa[0]
-        dErr = err[1:len(err)]
-        #print(dRhoa.shape)
+    dRhoa = rhoa[1:len(rhoa)]/rhoa[0]
+    dErr = err[1:len(err)]
+    #print(dRhoa.shape)
         
     return meshERT, ertData, resis, dRhoa, dErr
 
