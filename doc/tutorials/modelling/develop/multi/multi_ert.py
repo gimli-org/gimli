@@ -58,8 +58,9 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
 
 def simulateERTData(saturation, meshSat, cache=False, verbose=0):
     swatch = pg.Stopwatch(True)
-    ertScheme = pb.DataContainerERT('20dd.shm')
-    
+    #ertScheme = pb.DataContainerERT('20dd.shm')
+    ertScheme = pb.createData(10, schemeName='dd')
+        
     meshERT = pg.meshtools.createParaMesh(ertScheme, quality=34,
                                           paraMaxCellSize=0.1, 
                                           boundaryMaxCellSize=10)
@@ -94,6 +95,7 @@ def simulateERTData(saturation, meshSat, cache=False, verbose=0):
             print("Building .... ")
         rhoa = np.zeros((len(resis), ertScheme.size()))
         err = np.zeros((len(resis), ertScheme.size()))
+        
         ertScheme.set('k', pb.geometricFactor(ertScheme))
         
         ertData = ert.simulate(meshERT, resis[0], ertScheme)
@@ -111,10 +113,10 @@ def simulateERTData(saturation, meshSat, cache=False, verbose=0):
             pg.tic()
             rhoa[i] = ert.fop.response(resis[i])
                         
-            rand = pg.RVector(len(rhoa[i]))
-            pg.randn(rand)
+            #rand = pg.RVector(len(rhoa[i]))
+            #pg.randn(rand)
             err[i] = ertData('err')
-            rhoa[i] *= (1.0 + rand * ertData('err'))
+            #rhoa[i] *= (1.0 + rand * ertData('err'))
             
             if verbose:
                 print(i, "/", len(resis), " : ", pg.dur(), "s",
@@ -126,6 +128,17 @@ def simulateERTData(saturation, meshSat, cache=False, verbose=0):
         
     return meshERT, ertData, resis, rhoa, err
 
+
+def showERTData(scheme, ert):
+    s = pb.DataContainerERT(scheme)
+    s1 = pb.DataContainerERT(scheme)
+    s1.translate([20, 0])
+    s.add(s1)
+    s1.translate([20, 0])
+    s.add(s1)
+    s.save('s.shm')
+    pb.show(s, vals=ert, schemeName='dd', colorBar=1)
+    
 
 if __name__ == '__main__':
     pass

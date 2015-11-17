@@ -34,19 +34,27 @@ def darcyFlow(model, verbose=0):
     #mesh = dlf.UnitSquareMesh(16, 16, 'crossed')
     mesh = None
     try:
-        mesh = dlf.RectangleMesh(dlf.Point(0, -5), dlf.Point(10, 0), 41, 21, "crossed")
+        mesh = dlf.RectangleMesh(dlf.Point(0, -5), dlf.Point(10, 0), 40, 20, "crossed")
     except:
         # vor older fenics versions 
-        mesh = dlf.RectangleMesh(0, -5, 10, 0, 41, 21, "crossed")
+        mesh = dlf.RectangleMesh(0, -5, 10, 0, 40, 20, "crossed")
+
+    #print(paraDomain)
+    #print(paraDomain.cellAttributes())
 
     class PermeabiltyInv(dlf.Expression):
+        
         def eval(self, values, r):
-            if r[1] < -3.6:
-                values[:] = 1./model[2]#0.01
-            elif r[1] < -0.5 - dlf.DOLFIN_EPS:
-                values[:] = 1./model[1]
+            if hasattr(model, '__iter__'):
+                if r[1] < -3.5:
+                    values[:] = 1./model[0]#Bottom
+                elif r[1] < -0.5 - dlf.DOLFIN_EPS:
+                    values[:] = 1./model[1]
+                else:
+                    values[:] = 1./model[2]#Top
             else:
-                values[:] = 1./model[0]#0.001
+                c = model.findCell(r)
+                values[:] = 1./c.attribute()
             #print(values[:])
 
     kinv11 = PermeabiltyInv()

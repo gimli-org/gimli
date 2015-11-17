@@ -302,7 +302,10 @@ def __newRVectorSetVal__(self, *args, **kwargs):
     #print('__newRVectorSetVal__', *args, **kwargs)
     if len(args)==2:
         if isinstance(args[1], int):
-            return __origRVectorSetVal__(self, args[0], i=args[1])
+            if args[1] < 0:
+                return __origRVectorSetVal__(self, args[0], i=len(self)+args[1])
+            else:
+                return __origRVectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origRVectorSetVal__(self, args[0], bv=args[1])
     return __origRVectorSetVal__(self, *args, **kwargs)

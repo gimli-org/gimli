@@ -376,6 +376,7 @@ RVector LinearModelling::response(const RVector & model) {
 }
 
 RVector LinearModelling::createDefaultStartModel() {
+    __M
     return RVector(jacobian_->cols(), 1.0);
 }
 
