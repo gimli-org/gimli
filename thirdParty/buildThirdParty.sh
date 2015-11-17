@@ -21,7 +21,7 @@ PYGCCXML_URL=https://github.com/gccxml/pygccxml
 PYGCCXML_REV=bffa6e0 # current functional
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 #PYPLUSPLUS_REV=78f5b0f # pre apichange
-PYPLUSPLUS_REV=58f5443 # post apichange
+#PYPLUSPLUS_REV=58f5443 # post apichange
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
