@@ -117,14 +117,8 @@ u -= solve(grid, a=1, b=k*k, f=pointSource,
 ax = show(grid, data=u, filled=True, colorBar=True,
           orientation='horizontal', label='Solution u')[0]
 show(grid, axes=ax)
-
-###############################################################################
+gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, .0, 20))
 # Instead of the grid we want to add streamlines to the plot to show the gradients
 # of the solution.
-
-gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, .0, 20))
-
 drawStreams(ax, grid, u, coarseMesh=gridCoarse, color='Black')
-#pg.show(gridCoarse,  axes=ax)
-
 pg.wait()

@@ -190,7 +190,7 @@ def logDropTol(p, droptol=1e-3):
 
 def grange(start, end, dx=0, n=0, log=False, verbose=False):
     """Create array with possible increasing spacing.
-       
+
     Create either array from start step-wise filled with dx until end reached
     [start, end] (like np.array with defined end) n or array filled from
     start to end with n steps. [start, end] (like np.linespace) n or an
@@ -252,18 +252,18 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
 
 def diff(v):
     """Calculate approximate derivative from v as d = [v_1-v_0, v2-v_1, ...]
-    
+
     Parameters
     ----------
     v : array(N) | pg.R3Vector(N)
-        
+
         Array of double values or positions
-    
+
     Returns
     -------
-    d : [type(v)](N-1) | 
+    d : [type(v)](N-1) |
         derivative array
-        
+
     Examples
     --------
     >>> import pygimli as pg
@@ -271,22 +271,22 @@ def diff(v):
     >>> p = pg.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
-    >>> # print(diff(p)[0], diff(p)[1], diff(p)[2])    
+    >>> # print(diff(p)[0], diff(p)[1], diff(p)[2])
     >>> # RVector3: (0.0, 1.0, 0.0) RVector3: (0.0, -1.0, 0.0) RVector3: (0.0, 0.0, 0.0)
     >>> p = pg.RVector(3)
     >>> p[0] = 0.0
     >>> p[1] = 1.0
     >>> p[2] = 2.0
-    >>> print(diff(p))    
+    >>> print(diff(p))
     <class 'pygimli._pygimli_.RVector'> 2 [1.0, 1.0]
     """
     d = None
-    
+
     if isinstance(v, pg.R3Vector):
         d = pg.R3Vector(len(v) - 1)
     else:
         d = pg.RVector(len(v) - 1)
-        
+
     for i in range(len(d)):
         d[i] = v[i + 1] - v[i]
     return d
@@ -294,20 +294,20 @@ def diff(v):
 
 def dist(p, c=None):
     """Calculate the distance for each position in p relative to pos c(x,y,z).
-       
+
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector 
-        
-        Position array 
+    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector
+
+        Position array
     c : [x,y,z] [None]
         relative origin. default = [0, 0, 0]
-    
+
     Returns
     -------
     d : ndarray(N)
         Distance array
-        
+
     Examples
     --------
     >>> import pygimli as pg
@@ -323,7 +323,7 @@ def dist(p, c=None):
     >>> print(dist(np.array([x, y]).T))
     [ 1.  1.  1.  1.]
     """
-    
+
     if c is None:
         c = pg.RVector3(0.0, 0.0, 0.0)
     d = np.zeros(len(p))
@@ -334,30 +334,30 @@ def dist(p, c=None):
         else:
             pi = pg.RVector3(p[i])
         d[i] = (pi-c).abs()
-        
+
     return d
 
 def xyToLength(x, y):
     raise("please use utils.distSum")
-    
+
 def cumDist(p):
     """The progressive i.e, cumulative length for the path p.
-    
+
     d = [0.0, d[0]+ |p[1]-p[0]|, d[1] + |p[2]-p[1]| + ...]
-    
+
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector 
-        
-        Position array 
-    
+    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector
+
+        Position array
+
     Returns
     -------
     d : ndarray(N)
         Distance array
 
     Examples
-    --------    
+    --------
     >>> import pygimli as pg
     >>> from pygimli.utils import cumDist
     >>> import numpy as np
@@ -366,13 +366,12 @@ def cumDist(p):
     >>> p[1] = [0.0, 1.0]
     >>> p[2] = [0.0, 1.0]
     >>> p[3] = [0.0, 0.0]
-    >>> print(cumDist(p))  
+    >>> print(cumDist(p))
     [ 0.  1.  1.  2.]
     """
     d = np.zeros(len(p))
     d[1:] = np.cumsum(dist(diff(p)))
     return d
-    
 
 def chi2(a, b, err, trans=None):
     """ Return chi square value. 
@@ -382,8 +381,6 @@ def chi2(a, b, err, trans=None):
     d = (trans(a) - trans(b)) / trans.error(a, err)
     return pg.dot(d,d) / len(d)
     
-        
-
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
     r = pg.RVector(n)
@@ -456,7 +453,7 @@ def unique_everseen(iterable, key=None):
 
     See also
     --------
-    unique
+    unique, unique_rows
     """
     try:
         from itertools import ifilterfalse
@@ -493,10 +490,25 @@ def unique(a):
 
     See also
     --------
-    unique_everseen
+    unique_everseen, unique_rows
     """
     return list(unique_everseen(a))
 
+def unique_rows(arr):
+    """Return unique rows in a 2D array.
+
+    Examples
+    --------
+    >>> from pygimli.utils import unique_rows
+    >>> import numpy as np
+    >>> A = np.array(([1,2,3],[3,2,1],[1,2,3]))
+    >>> unique_rows(A)
+    array([[1, 2, 3],
+           [3, 2, 1]])
+    """
+    arr = np.ascontiguousarray(arr)
+    unique_a = np.unique(arr.view([('', arr.dtype)]*arr.shape[1]))
+    return unique_a.view(arr.dtype).reshape((unique_a.shape[0], arr.shape[1]))
 
 def arrayToStdVectorUL(theArray):
     """Converts a 'ndarray' to pygimli.stdVectorUL."""
@@ -504,6 +516,3 @@ def arrayToStdVectorUL(theArray):
     for i in theArray:
         vec.append(int(i))
     return vec
-
-if __name__ == '__main__':
-    pass

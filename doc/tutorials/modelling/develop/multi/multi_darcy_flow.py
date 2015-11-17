@@ -36,25 +36,33 @@ def darcyFlow(model, verbose=0):
     try:
         mesh = dlf.RectangleMesh(dlf.Point(0, -5), dlf.Point(10, 0), 40, 20, "crossed")
     except:
-        # vor older fenics versions 
+        # for older fenics versions 
         mesh = dlf.RectangleMesh(0, -5, 10, 0, 40, 20, "crossed")
-
-    #print(paraDomain)
-    #print(paraDomain.cellAttributes())
 
     class PermeabiltyInv(dlf.Expression):
         
-        def eval(self, values, r):
+        def eval_cell(self, values, r, cell):
             if hasattr(model, '__iter__'):
                 if r[1] < -3.5:
-                    values[:] = 1./model[0]#Bottom
+                    values[:] = 1./model[2]
                 elif r[1] < -0.5 - dlf.DOLFIN_EPS:
                     values[:] = 1./model[1]
                 else:
-                    values[:] = 1./model[2]#Top
+                    values[:] = 1./model[0]
             else:
-                c = model.findCell(r)
+                #print(cell)
+                #print(dir(cell))
+                cMid = dlf.Cell(mesh, cell.index).midpoint()
+                
+                #print(r, cMid[0], cMid[1])
+                #print(cell.get_vertex_coordinates())
+                
+                #print(dlf.Cell(cell))
+                #print(dir(cell.this.midpoint()))
+                #print(cell, cell.midpoint())
+                c = model.findCell((cMid[0], cMid[1]))
                 values[:] = 1./c.attribute()
+            #print(r, cell, values)
             #print(values[:])
 
     kinv11 = PermeabiltyInv()
@@ -133,7 +141,7 @@ def darcyFlow(model, verbose=0):
     return gimlimesh, vel, pre, 1./np.array(kinv.vector())
 
 if __name__ == '__main__':
-    mesh, vel, p, k = darcyFlow(model=[0.001, 1, 0.01])
+    mesh, vel, p, k = darcyFlow(model=[1, 0.01, 0.001])
 
     fig = pg.plt.figure()
     ax1 = fig.add_subplot(1, 2, 1)

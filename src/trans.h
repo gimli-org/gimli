@@ -42,7 +42,7 @@ public:
     virtual ~Trans() { }
     
     /*! Default call operator */
-    virtual Vec operator(const Vec & a) const { return trans(a); }
+    virtual Vec operator()(const Vec & a) const { return trans(a); }
 
     /*! Default call operator */
     virtual Vec inv(const Vec & a) const { return invTrans(a); }

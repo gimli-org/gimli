@@ -49,19 +49,26 @@ class MulitFOP(pg.ModellingBase):
         dModel = pg.RVector(len(model))
 
         fak = 1.05
-        q = Queue()
-         
+
         pg.tic()
+        q = Queue()
         for i in range(nModel):
+            #self.createResponseProc(model, fak, i, q)
             p = Process(target=self.createResponseProc, args=(model, fak, i, q))
             p.start()
         p.join()
         pg.toc()
         
         for i in range(nModel):
-            Imodel, respChange, dModel = q.get()
+            Imodel, respChange, dModel, p = q.get()
             dData = respChange - resp
+            print(i, Imodel, dModel, min(respChange), max(respChange), min(p), max(p))
             self._J.setCol(Imodel, dData/dModel)
+        for i in range(nModel):
+            
+            print(i, min(self._J.col(i)), max(self._J.col(i)), min(pg.abs(self._J.col(i))))
+            if min(pg.abs(self._J.col(i))) < 1e-10:
+                raise 
     
     def createResponseProc(self, model, fak, i, q):
         print("proc:", i)
@@ -78,7 +85,7 @@ class MulitFOP(pg.ModellingBase):
         sampleTime = [0, self.tSteps/2, self.tSteps-1]
         meshERT, dataERT, res, rhoa, err = simulateERTData(sat[sampleTime], mesh, verbose=0)
 
-        q.put([i, rhoa.flatten(), modelChange[i]-model[i]])
+        q.put([i, rhoa.flatten(), modelChange[i]-model[i], p])
         #return rhoa.flatten(), modelChange[i]-model[i]
                 
                 
@@ -95,7 +102,6 @@ class MulitFOP(pg.ModellingBase):
         
         print(".. darcy step")
         ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, verbose=0)
-    
         #pg.show(ws.mesh, ws.k, label='Permeabilty iter:' + str(self.iter))
         #pg.wait()
   
@@ -140,12 +146,14 @@ def test(model, tMax=5000, tSteps=40, peclet=50000):
 if __name__ == '__main__':
     
     #test(model=[0.0001, 0.01, 1e-7], tMax=5000, tSteps=10, peclet=500000)
+    paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
     
-    fop = MulitFOP(verbose=1, tMax=5000, tSteps=10, peclet=500000)
+    fop = MulitFOP(paraMesh, verbose=1, tMax=5000, tSteps=10, peclet=500000)
     
     rhoa = fop.response([0.001, 0.01, 1e-7]); np.save('rhoa', rhoa)
     err = fop.ws.err.flatten()
-    rand = pg.RVector(len(rhoa));  pg.randn(rand)
+    #rand = pg.RVector(len(rhoa)); pg.randn(rand)
+    rand = pg.RVector(len(rhoa), 1.)
     rhoa *= (1.0 + rand * err)
 
     ##### create paramesh and startmodel
@@ -154,6 +162,7 @@ if __name__ == '__main__':
     paraMesh.cell(1).setMarker(1) # center
     paraMesh.cell(2).setMarker(2) # top
     paraMesh = paraMesh.createH2()
+    #paraMesh = paraMesh.createH2()
     
     fop.setMesh(paraMesh)
     fop.regionManager().region(0).setSingle(True)
@@ -162,42 +171,36 @@ if __name__ == '__main__':
     
     paraDomain = fop.regionManager().paraDomain()
     
-    startModel = pg.RVector(fop.regionManager().parameterCount(), 0.01) # else
+    startModel = pg.RVector(fop.regionManager().parameterCount(), 0.02) # else
     startModel[0] = 0.001 # bottom
     startModel[-1] = 1e-7 # top
     fop.setStartModel(startModel) 
     
-    
-    rhoa2 = fop.response(startModel)
-    
-    print('norm: ', np.linalg.norm(np.log10(rhoa)-np.log10(rhoa2), ord=2))
-    print('rms: ' , pg.rms(np.log10(rhoa)-np.log10(rhoa2)))
-    print('chi: ' , pg.rms((np.log10(rhoa)-np.log10(rhoa2))/err))
-    print('chi²(lin): ' , pg.utils.chi2(rhoa, rhoa2, err))
-    print('chi²(log): ' , pg.utils.chi2(rhoa, rhoa2, err, pg.RTransLog()))
+    #rhoa2 = fop.response(startModel)
+    #print('norm: ', np.linalg.norm(np.log10(rhoa)-np.log10(rhoa2), ord=2))
+    #print('rms: ' , pg.rms(np.log10(rhoa)-np.log10(rhoa2)))
+    #print('chi: ' , pg.rms( (np.log10(rhoa)-np.log10(rhoa2)) / err ))
+    #print('chi²(lin): ' , pg.utils.chi2(rhoa, rhoa2, err))
+    #print('chi²(log): ' , pg.utils.chi2(rhoa, rhoa2, err, pg.RTransLog()))
       
-    pg.wait()
-    
-    
-    pg.show(paraDomain, paraDomain.cellMarker())        
-    pg.show(paraDomain, startModel[paraDomain.cellMarker()], label='Permeabilty')    
+    #pg.show(paraDomain, startModel[paraDomain.cellMarker()], label='Permeabilty START')    
     #pg.wait()
     
     inv = pg.RInversion(rhoa, fop, verbose=1, dosave=1)
-    
      
     tD = pg.RTransLog()
-    tM = pg.RTransLog()
+    tM = pg.RTransLogLU(1e-8, 0.1)
     inv.setTransData(tD)
     inv.setTransModel(tM)
     
     inv.setRelativeError(err)
     #inv.setLambda(0)
     inv.setLineSearch(True)
-    inv.setLambda(1e-4)
+    inv.setLambda(1e-2)
     inv.setMarquardtScheme(0.5)
     
     coeff = inv.run()
+    #pg.show(paraDomain, coeff[paraDomain.cellMarker()], label='Permeabilty INV')    
     print(coeff)
 
 # actual inversion run yielding coefficient model

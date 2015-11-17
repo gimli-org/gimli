@@ -125,8 +125,11 @@ def simulateERTData(saturation, meshSat, cache=False, verbose=0):
 
         np.save(solutionName + '.bmat', rhoa)
         
+        dRhoa = rhoa[1:len(rhoa)]/rhoa[0]
+        dErr = err[1:len(err)]
+        #print(dRhoa.shape)
         
-    return meshERT, ertData, resis, rhoa, err
+    return meshERT, ertData, resis, dRhoa, dErr
 
 
 def showERTData(scheme, ert):
@@ -134,8 +137,8 @@ def showERTData(scheme, ert):
     s1 = pb.DataContainerERT(scheme)
     s1.translate([20, 0])
     s.add(s1)
-    s1.translate([20, 0])
-    s.add(s1)
+    #s1.translate([20, 0])
+    #s.add(s1)
     s.save('s.shm')
     pb.show(s, vals=ert, schemeName='dd', colorBar=1)
     
