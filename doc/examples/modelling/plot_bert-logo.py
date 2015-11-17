@@ -24,6 +24,7 @@ patch = matplotlib.patches.PathPatch(logo_path)
 # The vertices of the path are defined as mesh nodes and connected with edges.
 
 nodes = patch.get_verts() * 50
+nodes = pg.utils.unique_rows(nodes) # remove duplicate nodes
 poly = pg.Mesh(2)
 
 for node in nodes:

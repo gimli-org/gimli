@@ -156,6 +156,8 @@ Troubleshooting
 
 If you experience runtime problems on starting pygimli like:
 
+.. code-block:: bash
+
     ImportError: /usr/lib/libboost_python.so: undefined symbol: PyClass_Type
 
 It may happen that CMake estimates the wrong libboost_python version by choosing py2 version instead of py3.
@@ -164,6 +166,14 @@ You can force cmake to select the correct version with:
 .. code-block:: bash
 
     cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
+
+If the build misses libedit:
+
+.. code-block:: bash
+
+    /usr/bin/ld: cannot find -ledit
+
+Install *libedit*, e.g. 'apt-get install libedit' on Debian/Ubuntu.
 
 Useful cmake settings
 ^^^^^^^^^^^^^^^^^^^^^
