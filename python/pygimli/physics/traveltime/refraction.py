@@ -25,10 +25,6 @@ else:
     from . raplot import plotFirstPicks, plotLines
 
 
-def throw(*args, **kwargs):
-    pass
-
-
 class Refraction(object):
 
     """ Class for managing refraction seismics data

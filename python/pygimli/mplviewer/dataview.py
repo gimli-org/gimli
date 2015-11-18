@@ -9,16 +9,32 @@ from matplotlib.colors import LogNorm, Normalize
 import pygimli as pg
 
 
-def generateMatrix(xvec, yvec, vals, squeeze=False):
-    """ return data matrix from x/y and value vector """
-    if squeeze:
-        xmap = {xx: ii for ii, xx in enumerate(np.unique(xvec))}
-        ymap = {yy: ii for ii, yy in enumerate(np.unique(yvec))}
-    else:
+def generateMatrix(xvec, yvec, vals, full=False):
+    """ generate a data matrix from x/y and value vectors
+
+    Parameters
+    ----------
+    xvec, yvec, vals : iterables (list, np.array, pg.RVector) of same length
+
+    full: bool [False]
+        generate a fully symmetric matrix containing all unique xvec+yvec
+        otherwise A is squeezed to the individual unique vectors
+
+    Returns
+    -------
+    A : np.ndarray(2d)
+        matrix containing the values sorted according to unique xvec/yvec
+    xmap/ymap : dict {key: num}
+        dictionaries for accessing matrix position (row/col number from x/y[i])
+    """
+    if full:
         xymap = {xy: ii for ii, xy in enumerate(np.unique(np.hstack((xvec,
                                                                      yvec))))}
         xmap = xymap
         ymap = xymap
+    else:
+        xmap = {xx: ii for ii, xx in enumerate(np.unique(xvec))}
+        ymap = {yy: ii for ii, yy in enumerate(np.unique(yvec))}
     A = np.zeros((len(ymap), len(xmap)))
     inot = []
     nshow = min([len(xvec), len(yvec), len(vals)])
@@ -36,7 +52,25 @@ def generateMatrix(xvec, yvec, vals, squeeze=False):
 
 def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
                logScale=None, label=None, **kwargs):
-    """ plot previously generated matrix """
+    """ plot previously generated (generateVecMatrix) matrix
+
+    Parameters
+    ----------
+    A : numpy.array2d
+        matrix to show
+    xmap : dict {i:num}
+        dict (must match A.shape[0])
+    ymap : iterable
+        vector for x axis (must match A.shape[0])
+    ax : mpl.axis
+        axis to plot, if not given a new figure is created
+    cMin/cMax : float
+        minimum/maximum color values
+    logScale : bool
+        logarithmic colour scale [min(A)>0]
+    label : string
+        colorbar label
+    """
     if xmap is None:
         xmap = {i: i for i in range(A.shape[0])}
     if ymap is None:
@@ -60,18 +94,40 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
+    if kwargs.pop('showally', False):
+        yt = np.arange(len(ymap))
     xx = [k for k in xmap]
     ax.set_xticks(xt)
     ax.set_xticklabels(['{:g}'.format(round(xx[int(ti)], 2)) for ti in xt])
-    yy = [k for k in ymap]
+    yy = np.unique([k for k in ymap])
     ax.set_yticks(yt)
     ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
+#    ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
     return ax
 
 
-def plotVecMatrix(xvec, yvec, vals, squeeze=True, **kwargs):
-    """ plot three vectors as matrix """
-    A, xmap, ymap = generateMatrix(xvec, yvec, vals, squeeze)
+def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
+    """ plot three vectors as matrix
+
+    Parameters
+    ----------
+    xvec, yvec : iterable (e.g. list, np.array, pg.RVector) of identical length
+        vectors defining the indices into the matrix
+    vals : iterable of same length as xvec/yvec
+        vactor containing the values to show
+    full: bool [False]
+        use a fully symmetric matrix containing all unique xvec+yvec
+        otherwise A is squeezed to the individual unique xvec/yvec values
+    ax : mpl.axis
+        axis to plot, if not given a new figure is created
+    cMin/cMax : float
+        minimum/maximum color values
+    logScale : bool
+        logarithmic colour scale [min(A)>0]
+    label : string
+        colorbar label
+    """
+    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full)
     return plotMatrix(A, xmap, ymap, **kwargs)
 
 
