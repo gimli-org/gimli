@@ -373,6 +373,14 @@ def cumDist(p):
     d[1:] = np.cumsum(dist(diff(p)))
     return d
 
+def chi2(a, b, err, trans=None):
+    """ Return chi square value. 
+    """
+    if trans is None:
+        trans = pg.RTrans()
+    d = (trans(a) - trans(b)) / trans.error(a, err)
+    return pg.dot(d,d) / len(d)
+    
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
     r = pg.RVector(n)

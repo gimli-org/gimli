@@ -411,7 +411,7 @@ public:
             std::cout << "jacobian size invalid, forced recalc" << std::endl;
         }
         Stopwatch swatch(true);
-        if (verbose_) std::cout << "calculating sensitivity matrix ...";
+        if (verbose_) std::cout << "calculating jacobian matrix ...";
         forward_->createJacobian(model_);
         if (verbose_) std::cout << "... " << swatch.duration(true) << " s" << std::endl;
     }
@@ -1017,7 +1017,7 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
 
     if (recalcJacobian_ && iter_ > 1) {
         Stopwatch swatch(true);
-        if (verbose_) std::cout << "recalculating sensitivity matrix ...";
+        if (verbose_) std::cout << "recalculating jacobian matrix ...";
         forward_->createJacobian(model_);
         if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
     }
