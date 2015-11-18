@@ -20,6 +20,8 @@ PYGCCXML_URL=https://github.com/gccxml/pygccxml
 #PYGCCXML_REV=f8cfd81 # old functional
 PYGCCXML_REV=bffa6e0 # current functional
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
+#PYPLUSPLUS_REV=78f5b0f # pre apichange
+#PYPLUSPLUS_REV=58f5443 # post apichange
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -203,6 +205,14 @@ getWITH_HG(){
             "$HG" clone $_URL_ $_SRC_
         popd
 	fi
+    if [ -n $_BRANCH_ ]; then
+    echo "ignoring branch $_BRANCH_ setting"
+#         pushd $_SRC_
+#           echo $_SRC_ $_BRANCH_
+#           echo $HG checkout $_BRANCH_ .
+#           "$HG" checkout $_BRANCH_ .
+#         popd
+    fi
 }
 
 getWITH_GIT(){
@@ -217,10 +227,7 @@ getWITH_GIT(){
 	if ( [ -d $_SRC_ ] ); then 
 		pushd $_SRC_
             "$GIT" pull
-            if [ -z $_BRANCH_ ]; then
-                "$GIT" checkout $_BRANCH_ .
-            fi
-		popd
+ 		popd
 	else
         pushd $SRC_DIR
             "$GIT" clone $_URL_ $_SRC_
@@ -445,7 +452,7 @@ buildCASTXML(){
             cmake --build . --config release --target install -- -j$PARALLEL_BUILD 
         popd
     else
-        CC=clang CXX=clang++ cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
+        CC=clang-3.6 CXX=clang++-3.6 cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
     fi
      
 }
@@ -471,7 +478,7 @@ buildPYGCCXML(){
 	prepPYGCCXML
 
 	getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
-	getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC
+	getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
 	
 	mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC
     pushd $PYGCCXML_BUILD
@@ -486,7 +493,7 @@ buildPYGCCXML(){
 		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
 	
-	mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC
+	mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC 
 	pushd $PYPLUSPLUS_BUILD
 		python setup.py build
 		echo "copy build->dist"
@@ -496,7 +503,7 @@ buildPYGCCXML(){
         
 		cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
-            patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch
+            #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch
         popd
 		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
 		#python setup.py install --prefix=$PYGCCXML_DIST_WIN

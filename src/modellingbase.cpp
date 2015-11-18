@@ -196,6 +196,8 @@ void ModellingBase::setJacobian(MatrixBase * J){
     ownJacobian_ = false;
 }
 
+
+
 void ModellingBase::createJacobian(const RVector & model){
     if (verbose_) std::cout << "Create Jacobian matrix (brute force) ...";
 
@@ -374,6 +376,7 @@ RVector LinearModelling::response(const RVector & model) {
 }
 
 RVector LinearModelling::createDefaultStartModel() {
+    __M
     return RVector(jacobian_->cols(), 1.0);
 }
 

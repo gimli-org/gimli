@@ -411,7 +411,7 @@ public:
             std::cout << "jacobian size invalid, forced recalc" << std::endl;
         }
         Stopwatch swatch(true);
-        if (verbose_) std::cout << "calculating sensitivity matrix ...";
+        if (verbose_) std::cout << "calculating jacobian matrix ...";
         forward_->createJacobian(model_);
         if (verbose_) std::cout << "... " << swatch.duration(true) << " s" << std::endl;
     }
@@ -972,11 +972,6 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
             break;
         }
 
-        if (stopAtChi1_ && (phiD_ < data_.size())) {
-            if (verbose_) std::cout << "Reached data fit criteria (chi^2 <= 1). Stop." << std::endl;
-            break;
-        }
-
         double phi = getPhi();
         if (phi / oldphi > (1.0 - dPhiAbortPercent_ / 100.0) && iter_ > 2) {
             if (verbose_) std::cout << "Reached data fit criteria (delta phi < " << dPhiAbortPercent_
@@ -1017,7 +1012,7 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
 
     if (recalcJacobian_ && iter_ > 1) {
         Stopwatch swatch(true);
-        if (verbose_) std::cout << "recalculating sensitivity matrix ...";
+        if (verbose_) std::cout << "recalculating jacobian matrix ...";
         forward_->createJacobian(model_);
         if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
     }

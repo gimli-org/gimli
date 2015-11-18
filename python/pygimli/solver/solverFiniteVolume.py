@@ -660,6 +660,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     workspace = pg.solver.WorkSpace()
     if ws:
+        print("reuse Workspace")
         workspace = ws
 
     a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])

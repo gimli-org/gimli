@@ -103,7 +103,7 @@ public:
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart){
         addMatrixEntry(matrixID, rowStart, colStart, ValueType(1.0));
     }
-                            
+
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart, ValueType scale){
         if (matrixID > matrices_.size()){
             throwLengthError(1, WHERE_AM_I + " matrix entry to large: " +
@@ -118,6 +118,9 @@ public:
         entries_.push_back(entry);
         recalcMatrixSize();
     }
+
+//    void addMatrixWithEntry(MatrixBase * matrix, Index rowStart, Index colStart)
+//    TODO
 
     virtual Vector < ValueType > mult(const Vector < ValueType > & b) const{
         if (b.size() != this->cols()){

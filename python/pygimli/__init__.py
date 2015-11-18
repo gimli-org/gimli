@@ -239,9 +239,6 @@ def __newBVectorInit__(self, arr, val=None):
 _pygimli_.BVector.__init__ = __newBVectorInit__
 
 
-
-
-
 ######################
 # special overwrites
 ######################
@@ -302,7 +299,10 @@ def __newRVectorSetVal__(self, *args, **kwargs):
     #print('__newRVectorSetVal__', *args, **kwargs)
     if len(args)==2:
         if isinstance(args[1], int):
-            return __origRVectorSetVal__(self, args[0], i=args[1])
+            if args[1] < 0:
+                return __origRVectorSetVal__(self, args[0], i=len(self)+args[1])
+            else:
+                return __origRVectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origRVectorSetVal__(self, args[0], bv=args[1])
     return __origRVectorSetVal__(self, *args, **kwargs)
@@ -832,3 +832,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport
     plt.switch_backend(old_backend)
     plt.close('all')
     sys.exit(exitcode)
+
+# provide __version__ string
+from ._version import get_versions
+__version__ = get_versions()['version']

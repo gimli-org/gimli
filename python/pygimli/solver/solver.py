@@ -1332,6 +1332,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
 
     timeIter1 = np.zeros(len(times))
     timeIter2 = np.zeros(len(times))
+    #print('0', min(u[0]), max(u[0]), min(f), max(f))
     for n in range(1, len(times)):
         
         tic = time.time()
@@ -1353,7 +1354,8 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     # plt.figure()
     
         if verbose and (n % verbose == 0):
-            print("timesteps:", n, "/", len(times), 'duration:', sw.duration(), "s",
+            #print(min(u[n]), max(u[n]))
+            print("timesteps:", n, "/", len(times), 'runtime:', sw.duration(), "s",
                   'itertime:', np.mean(timeIter1))
 
     return u

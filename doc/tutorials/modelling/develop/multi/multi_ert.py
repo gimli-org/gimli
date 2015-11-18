@@ -58,77 +58,53 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
 
 def simulateERTData(saturation, meshSat, cache=False, verbose=0):
     swatch = pg.Stopwatch(True)
-    if verbose:
-        print("res 1:", swatch.duration(True))
+    #ertScheme = pb.DataContainerERT('20dd.shm')
     
-    ertScheme = pb.DataContainerERT('20dd.shm')
-    
+    ertScheme = pb.createData(np.arange(-5, 15.001, 1), schemeName='dd')
+        
     meshERT = pg.meshtools.createParaMesh(ertScheme, quality=34,
                                           paraMaxCellSize=0.1, 
                                           boundaryMaxCellSize=10)
     
-    conductivityBack = 1./100.
-    conductivityBrine = 100.
-    conductivity = saturation * conductivityBrine + conductivityBack
+    conductivityBack = 1./10.
+    conductivityBrine = 10.
+    conductivity = saturation * conductivityBrine + (1-saturation ) * conductivityBack
     
     resis = resistivityArchie(rBrine=1./conductivity,
                               porosity=0.3, S=1.0, 
                               mesh=meshSat, meshI=meshERT)
-    if verbose:
-        print("res 2:", swatch.duration(True))
+
     #pg.show(meshERT, resis[-1], colorBar=1)
 
     ert = pb.manager.Resistivity(verbose=False)
+    rhoa = ert.simulate(meshERT, resis, ertScheme, verbose=0)
+        
+    ertScheme.set('k', pb.geometricFactor(ertScheme))
     
-    solutionName = createCacheName('appRes', meshERT) + \
-            "-" + str(ertScheme.size()) + \
-            "-" + str(len(saturation)) + \
-            "-" + str(len(saturation[0]))   
+    errPerc = 1
+    errVolt = 1e-5
+    voltage = rhoa / ertScheme('k')
+    err = np.abs(errVolt / voltage) + errPerc / 100.0
+
+    if verbose:
+        print('err min:', min(err)*100, 'max:', max(err)*100)
     
-    try:
-        if cache:
-            rhoa = np.load(solutionName + '.bmat.npy')
-            ertData = pb.DataContainerERT(solutionName + '.dat')
-        else:
-            raise Exception("no cacheing")
-    except Exception as e:
-        if verbose:
-            print(e)
-            print("Building .... ")
-        rhoa = np.zeros((len(resis), ertScheme.size()))
-        err = np.zeros((len(resis), ertScheme.size()))
-        ertScheme.set('k', pb.geometricFactor(ertScheme))
-        
-        ertData = ert.simulate(meshERT, resis[0], ertScheme)
-        #ertData.estimateError(errPerc=1, errVolt=1e-5, verbose=1) would be nice??
-        errPerc = 1
-        errVolt = 1e-5
-        voltage = ertData('rhoa') / ertData('k')
-        ertData.set('err', pg.abs(errVolt / voltage) + errPerc / 100.0)
-        if verbose:
-            print('err min:', min(ertData('err'))*100, 'max:', max(ertData('err'))*100)
-        ertData.save(solutionName + '.dat', 'a b m n rhoa err k')
-        
-        #sys.exit()
-        for i in range(0, len(resis)):
-            pg.tic()
-            rhoa[i] = ert.fop.response(resis[i])
-                        
-            rand = pg.RVector(len(rhoa[i]))
-            pg.randn(rand)
-            err[i] = ertData('err')
-            rhoa[i] *= (1.0 + rand * ertData('err'))
-            
-            if verbose:
-                print(i, "/", len(resis), " : ", pg.dur(), "s",
-                  "min r:", min(resis[i]), "max r:", max(resis[i]),
-                  "min r_a:", min(rhoa[i]), "max r_a:", max(rhoa[i]) )
+    dRhoa = rhoa[1:]/rhoa[0]
+    dErr = err[1:]
+    return meshERT, ertScheme, resis, dRhoa, dErr
 
-        np.save(solutionName + '.bmat', rhoa)
-        
-        
-    return meshERT, ertData, resis, rhoa, err
 
+def showERTData(scheme, ert):
+    s = pb.DataContainerERT(scheme)
+    s1 = pb.DataContainerERT(scheme)
+    
+    for i in range(1, int(len(ert)/s.size())):
+        s1.translate([20, 0])
+        s.add(s1)
+    
+    s.save('s.shm')
+    pb.showData(s, vals=ert, schemeName='dd', colorBar=1)
+    
 
 if __name__ == '__main__':
     pass

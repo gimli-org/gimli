@@ -242,16 +242,30 @@ def generate(defined_symbols, extraIncludes):
     logger.info("define_symbols=%s" % defines)
     logger.info("indexing_suite_version=2")
 
-
-    mb = module_builder.module_builder_t([xml_cached_fc],
-                                         gccxml_path=casterpath,
-                                         working_directory=settings.gimli_path,
-                                         include_paths=settings.includesPaths,
-                                         define_symbols=defines,
+    xml_generator_config = parser.xml_generator_configuration_t( 
+                                                xml_generator=caster,
+                                                xml_generator_path=casterpath,
+                                                working_directory=settings.gimli_path,
+                                                include_paths=settings.includesPaths,
+                                                define_symbols=defines,
+                                                ignore_gccxml_output=False,
+                                                cflags="",
+                                                compiler_path=compiler_path)
+    
+    mb = module_builder.module_builder_t([xml_cached_fc], 
                                          indexing_suite_version=2,
-                                         compiler_path=compiler_path,
-                                         caster=caster
+                                         xml_generator_config=xml_generator_config
                                          )
+
+    #mb = module_builder.module_builder_t([xml_cached_fc],
+                                         #xml_generator_path=casterpath,
+                                         #working_directory=settings.gimli_path,
+                                         #include_paths=settings.includesPaths,
+                                         #define_symbols=defines,
+                                         #indexing_suite_version=2,
+                                         #compiler_path=compiler_path,
+                                         #caster=caster
+                                         #)
 
     logger.info("Reading of c++ sources done.")
         

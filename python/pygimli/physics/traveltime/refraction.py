@@ -423,6 +423,11 @@ def test_Refraction():
 
     np.testing.assert_array_equal(m1, m3)
 
+def main(argv):
+    """
+    """
+    implementme()
+
 
 if __name__ == '__main__':
     datafile = sys.argv[1]
