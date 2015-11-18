@@ -138,16 +138,16 @@ Example Installation on Ubuntu
 .. code-block:: bash
 
     sudo apt-get install subversion git cmake mercurial
-    sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
+    sudo apt-get install libboost-all-dev libblas-dev liblapack-dev libedit-dev
     sudo apt-get install python-matplotlib python-numpy
 
     mkdir -p ~/src/gimli
     cd ~/src/gimli
-    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
+    git clone https://github.com/gimli-org/gimli.git
 
     mkdir -p build
     cd build
-    cmake ../trunk
+    cmake ../gimli
     make gimli
     make pygimli
 
@@ -174,6 +174,14 @@ If the build misses libedit:
     /usr/bin/ld: cannot find -ledit
 
 Install *libedit*, e.g. 'apt-get install libedit' on Debian/Ubuntu.
+
+If castXML complains about missing clang command, please go into 
+$(GIMLISRC)/../thirdParty/build-XXX-XXX/castXML and try configure and build cmake manually
+
+.. code-block:: bash
+    CC=clang-3.6 CXX=clang++-3.6 cmake ../../src/castXML/
+    make
+
 
 Useful cmake settings
 ^^^^^^^^^^^^^^^^^^^^^

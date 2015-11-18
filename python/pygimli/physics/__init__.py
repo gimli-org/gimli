@@ -42,11 +42,15 @@ class MethodManager(object):
     def __init__(self, verbose=False, **kwargs):
         self.verbose = verbose
         self.fop = self.createFOP(verbose)
+        if self.fop is None:
+            raise Exception("createFOP does not return a valid forward operator.")
         self.tD = None
         self.tM = None
         self.inv = self.createInv(self.fop, verbose, 
                                   dosave = kwargs.pop('dosave', False))
-
+        if self.inv is None:
+            raise Exception("createINV does not return a valid inversion instance.")
+    
     def __str__(self):
         return self.__repr__()
 

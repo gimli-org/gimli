@@ -11,16 +11,18 @@ def createCacheName(base, mesh, timeSteps=[], dt=None, peclet=0):
             + '-' + str(peclet)
 
 
-def calcSaturation(mesh, vel, times, injectPos, peclet=5, scale=1, cache=False, verbose=False):
+def calcSaturation(mesh, vel, times, peclet=5, scale=1, cache=False, verbose=False):
     r"""
     .. math::
         
     """
+    injectPos=[1.01, -1.31]
     
     f = pg.RVector(mesh.cellCount(), 0.0)
     sourceCell=mesh.findCell(injectPos)
     
     f[sourceCell.id()] = scale*sourceCell.size()
+    
     
     uMesh1 = pg.solver.solveFiniteVolume(mesh, a=1./peclet, f=f, vel=vel,
                                          times=times, 
@@ -32,7 +34,6 @@ def calcSaturation(mesh, vel, times, injectPos, peclet=5, scale=1, cache=False, 
                       #scheme='PS', verbose=10)
     saturation = uMesh1
     #saturation = np.vstack((uMesh1, uMesh2[1:]))
-    np.save(solutionName + '.bmat', saturation)
 
     return saturation
 

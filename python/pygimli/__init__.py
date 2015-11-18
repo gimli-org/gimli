@@ -239,9 +239,6 @@ def __newBVectorInit__(self, arr, val=None):
 _pygimli_.BVector.__init__ = __newBVectorInit__
 
 
-
-
-
 ######################
 # special overwrites
 ######################

@@ -972,11 +972,6 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
             break;
         }
 
-        if (stopAtChi1_ && (phiD_ < data_.size())) {
-            if (verbose_) std::cout << "Reached data fit criteria (chi^2 <= 1). Stop." << std::endl;
-            break;
-        }
-
         double phi = getPhi();
         if (phi / oldphi > (1.0 - dPhiAbortPercent_ / 100.0) && iter_ > 2) {
             if (verbose_) std::cout << "Reached data fit criteria (delta phi < " << dPhiAbortPercent_

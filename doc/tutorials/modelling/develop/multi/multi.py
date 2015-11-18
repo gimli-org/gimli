@@ -10,7 +10,6 @@ from multi_advection import calcSaturation
 from multi_ert import simulateERTData, showERTData
 
 from multiprocessing import Process, Queue
-from multiprocessing import Pool
 
 class WorkSpace():
     pass
@@ -26,8 +25,6 @@ class MulitFOP(pg.ModellingBase):
         else:
             self.regionManager().setParameterCount(3)
         
-        self.setStartModel([1e-7, 0.01, 0.001])
-            
         self.ws = WorkSpace()
         self.timesAdvection = np.linspace(1, tMax, tSteps)
         self.peclet = peclet
@@ -51,69 +48,68 @@ class MulitFOP(pg.ModellingBase):
         fak = 1.05
 
         pg.tic()
-        pool = Pool(processes=2)
-        
         output = Queue()
         procs = []
         for i in range(nModel):
-            self.createResponseProc(model, fak, i, output)
-            #procs.append(Process(target=self.createResponseProc, args=(model, fak, i, output)))
+            #self.createResponseProc(model, fak, i, output) # fails reprodu
+            procs.append(Process(target=self.createResponseProc, args=(model, fak, i, output)))
 
         for p in procs:
             p.start()
-            
+                        
         for p in procs:
             p.join()
         pg.toc()
 
-        print('#'*100)
         for i in range(nModel):
             Imodel, respChange, dModel = output.get()
             dData = respChange - resp
-            print(i, Imodel, dModel, min(respChange), max(respChange))
             self._J.setCol(Imodel, dData/dModel)
+        
+        print('#'*40 + 'Jac:')
         for i in range(nModel):
+            print(i, sum(pg.abs(self._J.col(i))))
             
-            print(i, min(self._J.col(i)), max(self._J.col(i)), min(pg.abs(self._J.col(i))))
-            if min(pg.abs(self._J.col(i))) < 1e-10:
-                raise 
-        exit()
     
-    def createResponseProc(self, model, fak, i, output):
+    def createResponseProc(self, par, fak, i, output):
         print("proc:", i)
-        modelChange = pg.RVector(model)
+        modelChange = pg.RVector(par)
         modelChange[i] *= fak
-        dModel = modelChange[i]-model[i]
+        dModel = modelChange[i]-par[i]
                 
-        meshIn = pg.Mesh(self.mesh())
-        meshIn.setCellAttributes(modelChange[meshIn.cellMarker()])
+        model = par
+        if self.mesh():
+            meshIn = pg.Mesh(self.mesh())
+            meshIn.setCellAttributes(modelChange[meshIn.cellMarker()])
+            model = meshIn
         
-        mesh, vel, p, k = darcyFlow(meshIn, verbose=0)
+        mesh, vel, p, k = darcyFlow(model, verbose=0)
         
-        print(i, min(p), max(p), max(vel[0,:]), max(vel[1,:]))
-        sat = calcSaturation(mesh, vel.T, self.timesAdvection, 
-                             injectPos=[2., -2.], peclet=self.peclet, verbose=0)
+        sat = calcSaturation(mesh, vel.T, 
+                             self.timesAdvection, 
+                             peclet=self.peclet, 
+                             verbose=0)
         
-        
-        sampleTime = [0, self.tSteps/2, self.tSteps-1]
+        sampleTime = [0, self.tSteps/4, self.tSteps/2, 3*self.tSteps/4, self.tSteps-1]
         meshERT, dataERT, res, rhoa, err = simulateERTData(sat[sampleTime], mesh, verbose=0)
 
-        output.put([i, rhoa.flatten(), dModel ])#, np.array(p)])
-        #output.put([i, rhoa.flatten(), modelChange[i]-model[i], np.array(p)])
-        print(i, '-')
-                        
+        output.put([i, rhoa.flatten(), dModel])
+                                
                 
     def response(self, par):
         ws = self.ws
         print('create response for: ' + str(par))
-        
         model = par
 
         if self.mesh():
             self.mapModel(model)
             model = self.mesh()
+            
+            if len(par) == model.cellCount():
+                model.setCellAttributes(par)
         
-        
+        #pg.show(model, model.cellAttributes(), label='Permeabilty (model)')
+        #pg.wait()
         print(".. darcy step")
         ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, verbose=0)
         #pg.show(ws.mesh, ws.k, label='Permeabilty iter:' + str(self.iter))
@@ -122,74 +118,110 @@ class MulitFOP(pg.ModellingBase):
         print(".. advection step")
         ws.saturation = calcSaturation(ws.mesh, ws.vel.T,
                                        self.timesAdvection, 
-                                       injectPos=[2., -2.],
                                        peclet=self.peclet, verbose=0)
         
         print(".. dc step")
-        sampleTime = [0, self.tSteps/2, self.tSteps-1]
+        sampleTime = [0, self.tSteps/4, self.tSteps/2, 3*self.tSteps/4, self.tSteps-1]
         ws.meshERT, ws.dataERT, ws.res, ws.rhoa, ws.err = simulateERTData(ws.saturation[sampleTime], ws.mesh, verbose=0)
 
+        print(".. resp min/max", min(ws.rhoa.flat), max(ws.rhoa.flat))
         return ws.rhoa.flatten()
     
     
-def test(model, tMax=5000, tSteps=40, peclet=50000):
+def test(tMax=5000, tSteps=40, peclet=50000, show=True):
+    
+    model=[0.001, 0.01, 1e-7]
+    
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
+    paraMesh.cell(0).setMarker(0) # bottom
+    paraMesh.cell(1).setMarker(1) # center
+    paraMesh.cell(2).setMarker(2) # top
+    
+    paraMesh = paraMesh.createH2()
+    paraMesh = paraMesh.createH2()
+    paraMesh = paraMesh.createH2()
+    paraMesh = paraMesh.createH2()
+    paraMesh = paraMesh.createH2()
+    
+    for c in paraMesh.cells():
+        if c.center()[0] > 3 and c.center()[0] < 7 and \
+            c.center()[1] > -2.5 and c.center()[1] < -1.0:
+            c.setMarker(3)
+    
+    model=[0.001, 0.01, 1e-7, 0.001]
+    
+    pg.show(paraMesh, np.array(model)[paraMesh.cellMarker()], label='Permeabilty Model')
+        
     
     fop = MulitFOP(paraMesh, tMax=tMax, tSteps=tSteps, peclet=peclet, verbose=1)
     
-    ert = fop.response(model)
+    rhoa = fop.response(np.array(model)[paraMesh.cellMarker()])
 
-    ws = fop.ws
-    mesh = ws.mesh
-    ax, _ = pg.show(mesh)
-    pg.show(mesh, fop.ws.p, label='Pressure in ??', axes=ax)
-    ax, _ = pg.show(mesh)
-    pg.show(mesh, fop.ws.k, label='Permeabilty in ??', axes=ax)
+    err = fop.ws.err.flatten()
+    rand = pg.RVector(len(rhoa)); pg.randn(rand)
+    rhoa *= (1.0 + rand * err)
     
-    ax, _ = pg.show(mesh)
-    pg.show(mesh, np.sqrt(fop.ws.vel[0]**2+fop.ws.vel[1]**2), label='velocity in m/s', axes=ax)
-    pg.show(mesh, fop.ws.vel, axes=ax)
+    if show:
+        ws = fop.ws
+        mesh = ws.mesh
+        ax, _ = pg.show(mesh)
+        pg.show(mesh, fop.ws.p, label='Pressure in ??', axes=ax)
+        ax, _ = pg.show(mesh)
+        pg.show(mesh, fop.ws.k, label='Permeabilty in ??', axes=ax)
+        
+        ax, _ = pg.show(mesh)
+        pg.show(mesh, np.sqrt(fop.ws.vel[0]**2+fop.ws.vel[1]**2), label='velocity in m/s', axes=ax)
+        pg.show(mesh, fop.ws.vel, axes=ax)
 
-    pg.show(mesh, fop.ws.saturation[-1]+1e-3, label='brine saturation')
-    pg.show(ws.meshERT, fop.ws.res[-1], label='resistivity in Ohm m')
+        pg.show(mesh, fop.ws.saturation[-1]+1e-3, label='brine saturation')
+        pg.show(ws.meshERT, fop.ws.res[-1], label='resistivity in Ohm m')
 
-    showERTData(fop.ws.dataERT, fop.ws.rhoa.flatten())
+        showERTData(fop.ws.dataERT, fop.ws.rhoa.flatten())
+        
+        pg.wait()
     
-    pg.wait()
+    return rhoa, err
     
 if __name__ == '__main__':
     
-    #test(model=[0.0001, 0.01, 1e-7], tMax=5000, tSteps=10, peclet=500000)
-    paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
+    rhoa, err = test(tMax=5000, tSteps=40, peclet=500000, show=0)
     
-    fop = MulitFOP(paraMesh, verbose=1, tMax=5000, tSteps=10, peclet=500000)
+    #paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
+    #fop = MulitFOP(paraMesh, verbose=1, tMax=5000, tSteps=10, peclet=500000)
     
-    rhoa = fop.response([0.001, 0.01, 1e-7]); np.save('rhoa', rhoa)
-    err = fop.ws.err.flatten()
-    #rand = pg.RVector(len(rhoa)); pg.randn(rand)
-    rand = pg.RVector(len(rhoa), 1.)
-    rhoa *= (1.0 + rand * err)
+    fop = MulitFOP(verbose=1, tMax=5000, tSteps=40, peclet=500000)
+    
+    #rhoa = fop.response([0.001, 0.01, 1e-7]); np.save('rhoa', rhoa)
+   
+    
+    #startModel = [0.001, 0.01, 1e-7]
 
-    ##### create paramesh and startmodel
+    #### create paramesh and startmodel
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom
     paraMesh.cell(1).setMarker(1) # center
     paraMesh.cell(2).setMarker(2) # top
     paraMesh = paraMesh.createH2()
-    #paraMesh = paraMesh.createH2()
+    paraMesh = paraMesh.createH2()
     
     fop.setMesh(paraMesh)
     fop.regionManager().region(0).setSingle(True)
     fop.regionManager().region(2).setSingle(True)
+    #fop.regionManager().region(2).setFixValue(True)
     fop.createRefinedForwardMesh(refine=False, pRefine=False)
     
     paraDomain = fop.regionManager().paraDomain()
     
-    startModel = pg.RVector(fop.regionManager().parameterCount(), 0.02) # else
-    startModel[0] = 0.001 # bottom
+    startModel = pg.RVector(fop.regionManager().parameterCount(), 0.007) # else
+    startModel[0] = 0.0006 # bottom
     startModel[-1] = 1e-7 # top
     fop.setStartModel(startModel) 
-    
+    ##### create paramesh and startmodel
+    #0.000609525030457, 0.00695938025714, 2.15533816606e-07
+    #[0.000609525030503, 0.0069593802455, 2.15534036123e-07]
+
+
+
     #rhoa2 = fop.response(startModel)
     #print('norm: ', np.linalg.norm(np.log10(rhoa)-np.log10(rhoa2), ord=2))
     #print('rms: ' , pg.rms(np.log10(rhoa)-np.log10(rhoa2)))
@@ -197,24 +229,24 @@ if __name__ == '__main__':
     #print('chi²(lin): ' , pg.utils.chi2(rhoa, rhoa2, err))
     #print('chi²(log): ' , pg.utils.chi2(rhoa, rhoa2, err, pg.RTransLog()))
       
-    #pg.show(paraDomain, startModel[paraDomain.cellMarker()], label='Permeabilty START')    
+    pg.show(paraDomain, startModel[paraDomain.cellMarker()], label='Permeabilty START', cMin=1e-7, cMax=0.02)    
     #pg.wait()
     
     inv = pg.RInversion(rhoa, fop, verbose=1, dosave=1)
      
     tD = pg.RTransLog()
-    tM = pg.RTransLogLU(1e-8, 0.1)
+    tM = pg.RTransLogLU(1e-8,1)
     inv.setTransData(tD)
     inv.setTransModel(tM)
     
     inv.setRelativeError(err)
     #inv.setLambda(0)
     inv.setLineSearch(True)
-    inv.setLambda(1e-2)
-    inv.setMarquardtScheme(0.5)
+    inv.setLambda(1e-2*100)
+    #inv.setMarquardtScheme(0.8)
     
     coeff = inv.run()
-    #pg.show(paraDomain, coeff[paraDomain.cellMarker()], label='Permeabilty INV')    
+    pg.show(paraDomain, coeff[paraDomain.cellMarker()], label='Permeabilty INV', cMin=1e-7, cMax=0.02)    
     print(coeff)
 
 # actual inversion run yielding coefficient model

@@ -141,7 +141,7 @@ public:
 
     /*! Set fixed value for background regions that will not
      * part of any value prolongation.*/
-    inline void setFixValue(double val){ fixValue_ = val; }
+    inline void setFixValue(double val){ setBackground(1); fixValue_ = val; }
     inline double fixValue() const { return fixValue_;}
 
     /*! Helper method that convert cweight parameter into individual 
