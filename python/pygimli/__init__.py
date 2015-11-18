@@ -741,13 +741,15 @@ def __gitversion__(path=__path__[0]):
     """Return version str based on git tags and commits."""
     try:
         v = subprocess.check_output(['git', '-C', path, 'describe', '--always',
-                                     '--tags', '--dirty=-modified', '--long'])
+                                     '--tags', '--dirty=-modified', '--long'],
+                                     stderr=subprocess.STDOUT)
         return v.decode('ascii').strip()
     except:
         return "unknown"
 
-#__version__ = _pygimli_.versionStr()
 __version__ = __gitversion__()
+if __version__ == "unknown":
+    __version__ = _pygimli_.versionStr()
 
 ###########################
 # unsorted stuff
