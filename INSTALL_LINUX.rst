@@ -143,7 +143,7 @@ Example Installation on Ubuntu
 
     mkdir -p ~/src/gimli
     cd ~/src/gimli
-    svn checkout https://svn.code.sf.net/p/libgimli/code/trunk
+    git clone https://github.com/gimli-org/gimli.git trunk
 
     mkdir -p build
     cd build
