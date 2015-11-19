@@ -53,10 +53,12 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     for i in range(len(rI)):
         rI[i] = pg.solver.fillEmptyToCellArray(meshI, rI[i])
         
+    rI.round(1e-6)
+    #print(rI)
     return rI
 
 
-def simulateERTData(saturation, meshSat, cache=False, verbose=0):
+def simulateERTData(saturation, meshSat, cache=False, i=-1, j=0, verbose=0):
     swatch = pg.Stopwatch(True)
     #ertScheme = pb.DataContainerERT('20dd.shm')
     
@@ -68,20 +70,29 @@ def simulateERTData(saturation, meshSat, cache=False, verbose=0):
     
     conductivityBack = 1./10.
     conductivityBrine = 10.
-    conductivity = saturation * conductivityBrine + (1-saturation ) * conductivityBack
+    conductivity = saturation * conductivityBrine + (1. - saturation) * conductivityBack
     
     resis = resistivityArchie(rBrine=1./conductivity,
                               porosity=0.3, S=1.0, 
                               mesh=meshSat, meshI=meshERT)
 
     #pg.show(meshERT, resis[-1], colorBar=1)
-
+    
     ert = pb.manager.Resistivity(verbose=False)
-    rhoa = ert.simulate(meshERT, resis, ertScheme, verbose=0)
+    
+    #if i > 0:
+        ##np.save('resis' + str(i) + '-' + str(j), resis)
+        #rt = np.load('resis' + str(i) + '-' + str(j) + ".npy")
+        #print("rt:", i, j, np.sum(rt-resis))
+        #np.testing.assert_array_equal(resis, rt)
         
+    rhoa = ert.simulate(meshERT, resis, ertScheme, verbose=0)
+    
+    np.round(rhoa)
+    
     ertScheme.set('k', pb.geometricFactor(ertScheme))
     
-    errPerc = 1
+    errPerc = 1.
     errVolt = 1e-5
     voltage = rhoa / ertScheme('k')
     err = np.abs(errVolt / voltage) + errPerc / 100.0
@@ -103,7 +114,7 @@ def showERTData(scheme, rhoa):
         s1.translate([float(scheme.sensorCount()+1), 0])
         s.add(s1)
     
-    s.save('s.shm')
+    #s.save('s.shm')
     pb.showData(s, vals=rhoa.flatten(), schemeName='dd', colorBar=1)
     
 

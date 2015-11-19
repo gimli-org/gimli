@@ -9,31 +9,77 @@ from multi_darcy_flow import darcyFlow
 from multi_advection import calcSaturation
 from multi_ert import simulateERTData, showERTData
 
-from multiprocessing import Process, Queue
+from multiprocessing import Process, JoinableQueue
+import copy
 
+from math import ceil
+import time
 class WorkSpace():
     pass
 
-class MulitFOP(pg.ModellingBase):
-    def __init__(self, paraMesh=None, tMax=5000, tSteps=10, peclet=500, verbose=False):
-        pg.ModellingBase.__init__(self, verbose=verbose)
+def responseProc(model, peclet, timesAdvection, tSteps, i, j, outQueue=None, ws=None):
+    
+    if outQueue is not None: print("proc:", i)
+            
+    if ws is None:
+        ws = WorkSpace()
 
-        self.tSteps = tSteps
-        if paraMesh:
-            self.setMesh(paraMesh)
-            self.createRefinedForwardMesh(refine=False, pRefine=False)
-        else:
-            self.regionManager().setParameterCount(3)
+    if outQueue is None: print(".. darcy step")
+
+    ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, verbose=0)
+
+    #pg.show(model, model.cellAttributes(), label='cell cellAttributes'); pg.wait()
+    #pg.show(ws.mesh, ws.vel.T, label='velocity'); pg.wait()
+    #pg.show(ws.mesh, ws.k, label='Permeabilty'); pg.wait()
+    
+    if outQueue is None: print(".. saturation step")        
         
-        self.ws = WorkSpace()
+    ws.sat = calcSaturation(ws.mesh, ws.vel.T, 
+                            timesAdvection, 
+                            peclet=peclet, 
+                            verbose=0)
+    iProc = i
+    
+    if outQueue is None: print(".. ert step")
+        
+        
+    sampleTime = [0, tSteps/4, tSteps/2, 3*tSteps/4, tSteps-1]
+    #sampleTime = [0, tSteps-1]
+    ws.meshERT, ws.dataERT, ws.res, ws.rhoa, ws.err = simulateERTData(ws.sat[sampleTime],
+                                                                      ws.mesh, i=iProc, j=j, verbose=0)
+
+    if outQueue:
+        #print(i, ws.rhoa.shape, np.min(ws.rhoa.flatten()), np.max(ws.rhoa.flatten()))
+        outQueue.put([i, ws.rhoa])
+        
+    else:
+        return ws.rhoa
+    
+class MulitFOP(pg.ModellingBase):
+    def __init__(self, verbose=False, **kwargs):
+
+        pg.ModellingBase.__init__(self, verbose=verbose)
+        self.init(kwargs.pop('mesh', None), 
+                  kwargs.pop('tMax', 50000),
+                  kwargs.pop('tSteps', 10),
+                  kwargs.pop('peclet', 50000))
+        self.iter = 0
+        
+    def init(self, mesh, tMax, tSteps, peclet):
+    
+        self.parMesh = pg.Mesh(mesh)
+        self.setMesh(mesh)
+        self.createRefinedForwardMesh(refine=False, pRefine=False)
+        
+        self.tMax = tMax
+        self.tSteps = tSteps
         self.timesAdvection = np.linspace(1, tMax, tSteps)
         self.peclet = peclet
         self._J = pg.RMatrix()
         self.setJacobian(self._J)   
-        self.iter = 0
+        self.ws = WorkSpace()
         
     def createJacobian(self, model):
-        self.iter += 1  
         print("Create Jacobian for", str(model))
         nModel = len(model)
         resp = self.response(model)
@@ -42,98 +88,72 @@ class MulitFOP(pg.ModellingBase):
         self._J.resize(nData, nModel)
         self._J *= 0.
         
-        respChange = pg.RMatrix(nModel, nData)
         dModel = pg.RVector(len(model))
+        rhoaJ = np.zeros((len(model), len(resp)))
 
         fak = 1.05
+        self.iter += 1
 
         pg.tic()
-        output = Queue()
-        procs = []
-        for i in range(nModel):
-            #self.createResponseProc(model, fak, i, output) # fails reprodu
-            procs.append(Process(target=self.createResponseProc, args=(model, fak, i, output)))
-
-        for p in procs:
-            p.start()
+        output = JoinableQueue()
+        
+        nProcs = float(pg.numberOfCPU())
                         
-        for p in procs:
-            p.join()
+        for pCount in range(int(np.ceil(nModel/nProcs))):
+            procs = []
+            print(pCount*nProcs, "/" ,nModel)
+            for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
+
+                if i < nModel:
+                    modelChange = pg.RVector(model)
+                    modelChange[i] *= fak
+                    dModel[i] = modelChange[i]-model[i]
+                
+                    self.mapModel(modelChange)
+                    modelMesh = pg.Mesh(self.mesh())
+            
+                    #rhoaJ[i] = responseProc(modelMesh, self.peclet, self.timesAdvection, self.tSteps, i, self.iter).flatten()
+            
+                    procs.append(Process(target=responseProc, args=(modelMesh, 
+                                                                    self.peclet, self.timesAdvection, self.tSteps,
+                                                                    i, self.iter, output)))
+
+            for i, p in enumerate(procs):
+                p.start()
+                
+            for i, p in enumerate(procs):
+                p.join()
+                iModel, rhoa = output.get()
+                #print(iModel, rhoa.shape, np.min(rhoa.flatten()), np.max(rhoa.flatten()))
+                rhoaJ[iModel] = rhoa.flatten()
         pg.toc()
 
+        self._J *= 0.0
         for i in range(nModel):
-            Imodel, respChange, dModel = output.get()
-            dData = respChange - resp
-            self._J.setCol(Imodel, dData/dModel)
-        
-        print('#'*40 + 'Jac:')
-        for i in range(nModel):
-            print(i, sum(pg.abs(self._J.col(i))))
+            dData = rhoaJ[i] - resp
+            self._J.setCol(i, dData/dModel[i])
             
-    
-    def createResponseProc(self, par, fak, i, output):
-        print("proc:", i)
-        modelChange = pg.RVector(par)
-        modelChange[i] *= fak
-        dModel = modelChange[i]-par[i]
-                
-        model = par
-        if self.mesh():
-            meshIn = pg.Mesh(self.mesh())
-            meshIn.setCellAttributes(modelChange[meshIn.cellMarker()])
-            model = meshIn
+        #print('#'*40 + 'Jac:')
+        #for i in range(nModel):
+            #print(i, sum(pg.abs(self._J.col(i))))
         
-        mesh, vel, p, k = darcyFlow(model, verbose=0)
-        
-        sat = calcSaturation(mesh, vel.T, 
-                             self.timesAdvection, 
-                             peclet=self.peclet, 
-                             verbose=0)
-        
-        sampleTime = [0, self.tSteps/4, self.tSteps/2, 3*self.tSteps/4, self.tSteps-1]
-        meshERT, dataERT, res, rhoa, err = simulateERTData(sat[sampleTime], mesh, verbose=0)
-
-        output.put([i, rhoa.flatten(), dModel])
-                                
-                
+        #exit()
     def response(self, par):
-        ws = self.ws
-        print('create response for: ' + str(par))
         model = par
-
         if self.mesh():
-            self.mapModel(model)
-            model = self.mesh()
-            
-            #if len(par) == model.cellCount():
-                #model.setCellAttributes(par)
+            if len(par) == self.mesh().cellCount():
+                self.mesh().setCellAttributes(par)
+            else:
+                self.mapModel(par)
+        model = self.mesh()
         
+        rhoa = responseProc(model, self.peclet, self.timesAdvection, self.tSteps,
+                     0, 0, None, self.ws)
+                
+        return rhoa.flatten()   
         
-        print(self.mesh())
-        print(self.mesh().cellMarker())
-        print(self.mesh().cellAttributes())
-        print(min(model.cellAttributes()), max(model.cellAttributes()))
-        pg.show(model, model.cellAttributes(), label='Permeabilty (model)')
-        #pg.wait()
-        print(".. darcy step")
-        ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, verbose=0)
-        #pg.show(ws.mesh, ws.k, label='Permeabilty iter:' + str(self.iter))
-        #pg.wait()
-  
-        print(".. advection step")
-        ws.saturation = calcSaturation(ws.mesh, ws.vel.T,
-                                       self.timesAdvection, 
-                                       peclet=self.peclet, verbose=0)
-        
-        print(".. dc step")
-        sampleTime = [0, self.tSteps/4, self.tSteps/2, 3*self.tSteps/4, self.tSteps-1]
-        ws.meshERT, ws.dataERT, ws.res, ws.rhoa, ws.err = simulateERTData(ws.saturation[sampleTime], ws.mesh, verbose=0)
-
-        print(".. resp min/max", min(ws.rhoa.flat), max(ws.rhoa.flat))
-        return ws.rhoa.flatten()
     
-    
-def simulateSynth(tMax=5000, tSteps=40, peclet=50000, show=True, load=False):
+def simulateSynth(tMax=5000, tSteps=40, peclet=50000, show=False, load=False):
     
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom
@@ -155,7 +175,7 @@ def simulateSynth(tMax=5000, tSteps=40, peclet=50000, show=True, load=False):
     
     #pg.show(paraMesh, np.array(model)[paraMesh.cellMarker()], label='Permeabilty Model')
         
-    fop = MulitFOP(paraMesh, tMax=tMax, tSteps=tSteps, peclet=peclet, verbose=1)
+    fop = MulitFOP(mesh=paraMesh, tMax=tMax, tSteps=tSteps, peclet=peclet, verbose=1)
 
     if load:
         rhoa = np.load('synthRhoa.npy') 
@@ -188,7 +208,7 @@ def simulateSynth(tMax=5000, tSteps=40, peclet=50000, show=True, load=False):
         pg.show(mesh, np.sqrt(fop.ws.vel[0]**2+fop.ws.vel[1]**2), label='velocity in m/s', axes=ax)
         pg.show(mesh, fop.ws.vel, axes=ax)
 
-        pg.show(mesh, fop.ws.saturation[-1]+1e-3, label='brine saturation')
+        pg.show(mesh, fop.ws.sat[-1]+1e-3, label='brine saturation')
         pg.show(ws.meshERT, fop.ws.res[-1], label='resistivity in Ohm m')
 
         showERTData(scheme, rhoa)
@@ -199,7 +219,7 @@ def simulateSynth(tMax=5000, tSteps=40, peclet=50000, show=True, load=False):
     
 if __name__ == '__main__':
     
-    rhoa, err, fop = simulateSynth(tMax=5000, tSteps=40, peclet=500000, show=0, load=1)
+    rhoa, err, fop = simulateSynth(tMax=5000, tSteps=10, peclet=500000, show=0, load=1)
     
     #### create paramesh and startmodel
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
@@ -207,7 +227,8 @@ if __name__ == '__main__':
     paraMesh.cell(1).setMarker(1) # center
     paraMesh.cell(2).setMarker(2) # top
     paraMesh = paraMesh.createH2()
-    #paraMesh = paraMesh.createH2()
+    paraMesh = paraMesh.createH2()
+    paraMesh = paraMesh.createH2()
     
     fop.setMesh(paraMesh)
     fop.regionManager().region(0).setFixValue(0.001)
@@ -217,16 +238,10 @@ if __name__ == '__main__':
     
     paraDomain = fop.regionManager().paraDomain()
     
-    startModel = pg.RVector(fop.regionManager().parameterCount(), 0.007) # else
-    #startModel[0] = 0.001 # bottom
-    #startModel[-1] = 1e-7 # top
+    startModel = pg.RVector(fop.regionManager().parameterCount(), 0.007)
     fop.setStartModel(startModel) 
     
     ##### create paramesh and startmodel
-    #0.000609525030457, 0.00695938025714, 2.15533816606e-07
-    #[0.000609525030503, 0.0069593802455, 2.15534036123e-07]
-
-
 
     #rhoa2 = fop.response(startModel)
     #print('norm: ', np.linalg.norm(np.log10(rhoa)-np.log10(rhoa2), ord=2))
@@ -247,13 +262,14 @@ if __name__ == '__main__':
     
     inv.setRelativeError(err.flatten())
     #inv.setLambda(0)
+    inv.setMaxIter(20)
     inv.setLineSearch(True)
     inv.setLambda(100)
     #inv.setMarquardtScheme(0.8)
     
     coeff = inv.run()
-    pg.show(paraDomain, coeff[paraDomain.cellMarker()], label='Permeabilty INV', cMin=1e-7, cMax=0.02)    
-    print(coeff)
+    pg.show(paraDomain, coeff[paraDomain.cellMarker()], label='Permeabilty INV')    
+    coeff.save("permModel.vector")
 
 # actual inversion run yielding coefficient model
 
