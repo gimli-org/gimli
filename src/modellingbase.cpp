@@ -277,7 +277,7 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
     
 void ModellingBase::mapModel(const RVector & model, double background){
     
-    mesh_->setCellAttributes(mesh_->cellCount(), 0.0);
+    mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
     
     int marker = -1;
     std::vector< Cell * > emptyList;
