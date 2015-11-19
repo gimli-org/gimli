@@ -323,7 +323,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
                 if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
                     SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
                     double val = regionManager_->region(regionMarker)->fixValue();
-                    __DS("fixing region: " << regionMarker << " to: " << val)
+//                     __MS("fixing region: " << regionMarker << " to: " << val)
                     mesh_->cell(i).setAttribute(val);
                 }
             }

@@ -156,11 +156,14 @@ void Region::resize(const std::vector < Cell * > & cells){
 }
 
 void Region::countParameter(Index start){
+//     __MS(marker()<< " " << fixValue())
     startParameter_ = start;
     if (isBackground_) {
         for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
+//             __MS(cells_[i]->marker() << " " << fixValue_)
             if (abs(fixValue_) > TOLERANCE) {
-                if (cells_[i]->marker() >= 0) {
+                if (cells_[i]->marker() >= 0) { 
+                    // set only for positive marker that not allready fixed regions
                     cells_[i]->setMarker(MARKER_FIXEDVALUE_REGION - marker());
                 }
             } else {
@@ -177,6 +180,10 @@ void Region::countParameter(Index start){
         for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start + i);
         parameterCount_ = cells_.size();
     }
+    
+    // reset attributes to allow for clean mapping
+    for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setAttribute(0.0);
+    
     endParameter_ = start + parameterCount_;
     modelControl_.resize(parameterCount_, mcDefault_);
     startVector_.resize(parameterCount_, startDefault_);
@@ -224,6 +231,11 @@ void Region::fillStartVector(RVector & vec){
 }
 
 //################ Model behaviour
+
+void Region::setFixValue(double val){
+    fixValue_ = val; 
+    setBackground(1);
+}
 
 void Region::setModelControl(double val){
     if (val < TOLERANCE) val = 1.0;
@@ -626,6 +638,7 @@ void RegionManager::recountParaMarker_(){
     for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(),
         end = regionMap_.end();
           it != end; it ++){
+//         __MS(it->second->marker() << "  " << it->second->fixValue())
         it->second->countParameter(count);
         count += it->second->parameterCount();
     }

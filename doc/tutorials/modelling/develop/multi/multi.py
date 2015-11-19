@@ -105,10 +105,15 @@ class MulitFOP(pg.ModellingBase):
             self.mapModel(model)
             model = self.mesh()
             
-            if len(par) == model.cellCount():
-                model.setCellAttributes(par)
+            #if len(par) == model.cellCount():
+                #model.setCellAttributes(par)
         
-        #pg.show(model, model.cellAttributes(), label='Permeabilty (model)')
+        
+        print(self.mesh())
+        print(self.mesh().cellMarker())
+        print(self.mesh().cellAttributes())
+        print(min(model.cellAttributes()), max(model.cellAttributes()))
+        pg.show(model, model.cellAttributes(), label='Permeabilty (model)')
         #pg.wait()
         print(".. darcy step")
         ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, verbose=0)
@@ -128,9 +133,7 @@ class MulitFOP(pg.ModellingBase):
         return ws.rhoa.flatten()
     
     
-def test(tMax=5000, tSteps=40, peclet=50000, show=True):
-    
-    model=[0.001, 0.01, 1e-7]
+def simulateSynth(tMax=5000, tSteps=40, peclet=50000, show=True, load=False):
     
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom
@@ -150,17 +153,29 @@ def test(tMax=5000, tSteps=40, peclet=50000, show=True):
     
     model=[0.001, 0.01, 1e-7, 0.001]
     
-    pg.show(paraMesh, np.array(model)[paraMesh.cellMarker()], label='Permeabilty Model')
+    #pg.show(paraMesh, np.array(model)[paraMesh.cellMarker()], label='Permeabilty Model')
         
-    
     fop = MulitFOP(paraMesh, tMax=tMax, tSteps=tSteps, peclet=peclet, verbose=1)
-    
-    rhoa = fop.response(np.array(model)[paraMesh.cellMarker()])
 
-    err = fop.ws.err.flatten()
-    rand = pg.RVector(len(rhoa)); pg.randn(rand)
-    rhoa *= (1.0 + rand * err)
+    if load:
+        rhoa = np.load('synthRhoa.npy') 
+        err = np.load('synthErr.npy') 
+        scheme = pb.DataContainerERT('synth.shm')
+    else:
+        
+        rhoa = fop.response(np.array(model)[paraMesh.cellMarker()])
+
+        err = fop.ws.err
+        rand = pg.RVector(len(rhoa)); pg.randn(rand)
+        rhoa *= (1.0 + rand * err.flatten())
+        rhoa = rhoa.reshape(err.shape)
+        scheme = fop.ws.dataERT
     
+        np.save('synthRhoa', rhoa) 
+        np.save('synthErr', err) 
+        scheme.save('synth.shm', 'a b m n')
+        model=[0.001, 0.01, 1e-7]
+        
     if show:
         ws = fop.ws
         mesh = ws.mesh
@@ -176,46 +191,37 @@ def test(tMax=5000, tSteps=40, peclet=50000, show=True):
         pg.show(mesh, fop.ws.saturation[-1]+1e-3, label='brine saturation')
         pg.show(ws.meshERT, fop.ws.res[-1], label='resistivity in Ohm m')
 
-        showERTData(fop.ws.dataERT, fop.ws.rhoa.flatten())
+        showERTData(scheme, rhoa)
         
         pg.wait()
     
-    return rhoa, err
+    return rhoa, err, fop
     
 if __name__ == '__main__':
     
-    rhoa, err = test(tMax=5000, tSteps=40, peclet=500000, show=0)
+    rhoa, err, fop = simulateSynth(tMax=5000, tSteps=40, peclet=500000, show=0, load=1)
     
-    #paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
-    #fop = MulitFOP(paraMesh, verbose=1, tMax=5000, tSteps=10, peclet=500000)
-    
-    fop = MulitFOP(verbose=1, tMax=5000, tSteps=40, peclet=500000)
-    
-    #rhoa = fop.response([0.001, 0.01, 1e-7]); np.save('rhoa', rhoa)
-   
-    
-    #startModel = [0.001, 0.01, 1e-7]
-
     #### create paramesh and startmodel
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom
     paraMesh.cell(1).setMarker(1) # center
     paraMesh.cell(2).setMarker(2) # top
     paraMesh = paraMesh.createH2()
-    paraMesh = paraMesh.createH2()
+    #paraMesh = paraMesh.createH2()
     
     fop.setMesh(paraMesh)
-    fop.regionManager().region(0).setSingle(True)
-    fop.regionManager().region(2).setSingle(True)
-    #fop.regionManager().region(2).setFixValue(True)
+    fop.regionManager().region(0).setFixValue(0.001)
+    fop.regionManager().region(2).setFixValue(1e-7)
+    
     fop.createRefinedForwardMesh(refine=False, pRefine=False)
     
     paraDomain = fop.regionManager().paraDomain()
     
     startModel = pg.RVector(fop.regionManager().parameterCount(), 0.007) # else
-    startModel[0] = 0.0006 # bottom
-    startModel[-1] = 1e-7 # top
+    #startModel[0] = 0.001 # bottom
+    #startModel[-1] = 1e-7 # top
     fop.setStartModel(startModel) 
+    
     ##### create paramesh and startmodel
     #0.000609525030457, 0.00695938025714, 2.15533816606e-07
     #[0.000609525030503, 0.0069593802455, 2.15534036123e-07]
@@ -229,20 +235,20 @@ if __name__ == '__main__':
     #print('chi²(lin): ' , pg.utils.chi2(rhoa, rhoa2, err))
     #print('chi²(log): ' , pg.utils.chi2(rhoa, rhoa2, err, pg.RTransLog()))
       
-    pg.show(paraDomain, startModel[paraDomain.cellMarker()], label='Permeabilty START', cMin=1e-7, cMax=0.02)    
+    #pg.show(paraDomain, startModel[paraDomain.cellMarker()], label='Permeabilty START', cMin=1e-7, cMax=0.02)    
     #pg.wait()
     
-    inv = pg.RInversion(rhoa, fop, verbose=1, dosave=1)
+    inv = pg.RInversion(rhoa.flatten(), fop, verbose=1, dosave=1)
      
     tD = pg.RTransLog()
     tM = pg.RTransLogLU(1e-8,1)
     inv.setTransData(tD)
     inv.setTransModel(tM)
     
-    inv.setRelativeError(err)
+    inv.setRelativeError(err.flatten())
     #inv.setLambda(0)
     inv.setLineSearch(True)
-    inv.setLambda(1e-2*100)
+    inv.setLambda(100)
     #inv.setMarquardtScheme(0.8)
     
     coeff = inv.run()

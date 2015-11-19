@@ -94,16 +94,17 @@ def simulateERTData(saturation, meshSat, cache=False, verbose=0):
     return meshERT, ertScheme, resis, dRhoa, dErr
 
 
-def showERTData(scheme, ert):
+def showERTData(scheme, rhoa):
     s = pb.DataContainerERT(scheme)
     s1 = pb.DataContainerERT(scheme)
     
-    for i in range(1, int(len(ert)/s.size())):
-        s1.translate([20, 0])
+    print(rhoa.shape)
+    for i in range(1, len(rhoa)):
+        s1.translate([float(scheme.sensorCount()+1), 0])
         s.add(s1)
     
     s.save('s.shm')
-    pb.showData(s, vals=ert, schemeName='dd', colorBar=1)
+    pb.showData(s, vals=rhoa.flatten(), schemeName='dd', colorBar=1)
     
 
 if __name__ == '__main__':

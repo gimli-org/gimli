@@ -28,7 +28,7 @@ def calcSaturation(mesh, vel, times, peclet=5, scale=1, cache=False, verbose=Fal
                                          times=times, 
                                          uB=[1, 0],
                                          scheme='PS',
-                                         verbose=verbose*len(times)/10)
+                                         verbose=0)#verbose*len(times)/10)
     #uMesh2 = solveFiniteVolume(mesh, a=1./peclet, f=0, vel=vel, times=times, 
                       #uBoundary=[2, 0], u0=uMesh1[-1],
                       #scheme='PS', verbose=10)

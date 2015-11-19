@@ -141,7 +141,7 @@ public:
 
     /*! Set fixed value for background regions that will not
      * part of any value prolongation.*/
-    inline void setFixValue(double val){ setBackground(1); fixValue_ = val; }
+    void setFixValue(double val);
     inline double fixValue() const { return fixValue_;}
 
     /*! Helper method that convert cweight parameter into individual 
@@ -176,8 +176,8 @@ public:
     /*! DEPRECATED use setStartModel */
     void setStartValue(double start);
 
-    void setModelControl(double mc);
-    void setModelControl(const RVector & mc);
+    void setModelControl(double val);
+    void setModelControl(const RVector & vec);
     void setModelControl(PosFunctor * mcF);
 
     inline const RVector & modelControl() const { return modelControl_; }
