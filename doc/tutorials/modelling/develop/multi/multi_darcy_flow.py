@@ -86,8 +86,8 @@ def darcyFlow(model, p0, verbose=0):
 
     class pBoundaryDir(dlf.Expression):
         def eval(self, values, r):
-            x = r[0]; y = r[1]
-            if x == 0 and y < -0.5 - dlf.DOLFIN_EPS:
+            values[:] = 0.0
+            if r[0] < 1e-7 and r[1] < -0.49:
                 values[:] = p0
             
             

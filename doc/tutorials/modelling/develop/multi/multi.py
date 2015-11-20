@@ -137,10 +137,12 @@ class MulitFOP(pg.ModellingBase):
             dData = rhoaShm[i] - resp
             self._J.setCol(i, dData/dModel[i])
             
+        self._J.save('jacobi' + str(self.iter))
         print('#'*40 + 'Jac:')
         self.cov = np.zeros(nModel)
         for i in range(nModel):
             self.cov[i] = sum(pg.abs(self._J.col(i))) 
+            
             
         print(self.cov)
         #exit()
@@ -228,12 +230,12 @@ def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, sho
     return rhoa, err, fop
     
 if __name__ == '__main__':
-    paraRefine = 1
+    paraRefine = 2
     show = 1
     load = 0
         
-    rhoa, err, fop = simulateSynth(model=[1e-4, 5e-3, 1e-8, 3e-3],
-                                   tMax=72000, satSteps=40, ertSteps=3,
+    rhoa, err, fop = simulateSynth(model=[1e-4, 5e-3, 1e-8, 2.5e-3],
+                                   tMax=72000, satSteps=50, ertSteps=10,
                                    peclet=5e6,
                                    show=show, load=load)
     paraMesh = pg.createGrid(x=[0, 5, 10], y=[-5, -3.5, -0.5, 0])
@@ -243,23 +245,6 @@ if __name__ == '__main__':
     paraMesh.cell(3).setMarker(1) # center
     paraMesh.cell(4).setMarker(2) # top
     paraMesh.cell(5).setMarker(2) # top
-    
-    #rhoa, err, fop = simulateSynth(model=[1e-4, 0.01, 1e-8, 0.008],
-                                   #tMax=10000, satSteps=40, ertSteps=3,
-                                   #peclet=5e5, 
-                                   #show=show, load=load)
-    #paraMesh = pg.createGrid(x=[0, 5, 10], y=[-5, -3.5, -0.5, 0])
-    #paraMesh.cell(0).setMarker(0) # bottom
-    #paraMesh.cell(1).setMarker(0) # bottom
-    #paraMesh.cell(2).setMarker(1) # center
-    #paraMesh.cell(3).setMarker(1) # center
-    #paraMesh.cell(4).setMarker(2) # top
-    #paraMesh.cell(5).setMarker(2) # top
-    
-    #paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
-    #paraMesh.cell(0).setMarker(0) # bottom
-    #paraMesh.cell(1).setMarker(1) # center
-    #paraMesh.cell(2).setMarker(2) # top
     
     
     for i in range(paraRefine):
