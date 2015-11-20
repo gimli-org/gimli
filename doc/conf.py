@@ -22,10 +22,10 @@ import matplotlib
 matplotlib.use("Agg")
 
 try:
-    import sphinxgallery
+    import sphinx_gallery
 except ImportError:
     err = """
-    sphinxgallery is required to build the documentation. Try to run:
+    sphinx_gallery is required to build the documentation. Try to run:
     sudo pip install git+https://github.com/sphinx-gallery/sphinx-gallery
     """
     raise ImportError(err)
@@ -85,7 +85,7 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'doxylink',
-              'sphinxgallery.gen_gallery',
+              'sphinx_gallery.gen_gallery',
               ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
@@ -93,7 +93,7 @@ extensions += [dep.replace('-', '.') for dep in deps]
 intersphinx_mapping = {'http://docs.python.org/': None}
 
 # Setup automatic gallery generation
-sphinxgallery_conf = {
+sphinx_gallery_conf = {
     'examples_dir': [join(SPHINXDOC_PATH, 'examples'),
                      join(SPHINXDOC_PATH, 'tutorials'),
                      ],

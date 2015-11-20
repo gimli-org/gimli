@@ -42,13 +42,13 @@ print(mesh1)
 
 poly = pg.Mesh(2)  # empty 2d mesh
 nStart = poly.createNode(xmin, zmax, 0.0)
- 
+
 nA = nStart
 for x in xreg[1:]:
     nB = poly.createNode(x, zmax, 0.0)
     poly.createEdge(nA, nB)
     nA = nB
- 
+
 z2 = 0.
 nA = poly.createNode(xmax, z2, 0.0)
 poly.createEdge(nB, nA)
@@ -76,7 +76,6 @@ for cell in mesh2.cells():
 
 pg.show(mesh2)
 mesh3 = merge2Meshes(mesh1, mesh2)
-pg.show(mesh3)
 
 ###############################################################################
 # Of course, you can treat the hybrid mesh like any other mesh and append a triangle

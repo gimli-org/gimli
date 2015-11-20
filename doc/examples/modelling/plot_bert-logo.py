@@ -17,14 +17,14 @@ import pygimli as pg
 # We start by generating a matplotlib path respresenting the :math:`\Omega`
 # character.
 
-logo_path = matplotlib.textpath.TextPath((0,0), '$\Omega$', size=1)
+logo_path = matplotlib.textpath.TextPath((0,0), r'$\Omega$', size=1)
 patch = matplotlib.patches.PathPatch(logo_path)
 
 ################################################################################
 # The vertices of the path are defined as mesh nodes and connected with edges.
 
 nodes = patch.get_verts() * 50
-nodes = pg.utils.unique_rows(nodes) # remove duplicate nodes
+nodes2 = pg.utils.unique_rows(nodes) # remove duplicate nodes
 poly = pg.Mesh(2)
 
 for node in nodes:
