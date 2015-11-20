@@ -94,7 +94,7 @@ def darcyFlow(model, verbose=0):
         def eval(self, values, r):
             x = r[0]; y = r[1]
             if x == 0 and y < -0.5 - dlf.DOLFIN_EPS:
-                values[:]=1
+                values[:] = 0.25
             
             
     class vBoundaryDir(dlf.Expression):
