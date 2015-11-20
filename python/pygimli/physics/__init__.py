@@ -4,30 +4,30 @@
 Module containing submodules for various geophysical methods.
 """
 
+from math import pi
 from . em import FDEM, TDEM
-from . sNMR import MRS, MRSprofile
+from . sNMR import MRS
 from . SIP import SIPSpectrum
 from . traveltime import Refraction
-#from . gravimetry import Gravimetry
+# from . gravimetry import Gravimetry
 # from . seismics import *
 
-__all__ = ("FDEMData", "TDEMData", "MRS", "SIPSpectrum", "Refraction")
+__all__ = ("FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction")
 
-from math import pi
 
 class constants:
     # magnetic constant, vacuum permeability
-    mu0 = 4.0 * pi * 1e-7 #[(kg * m) / (A^2 * s^2)]
+    mu0 = 4.0 * pi * 1e-7  # [(kg * m) / (A^2 * s^2)]
 
     # electric constant, vacuum permittivity
-    e0 = 8.85418781762e-12  #[(A^2 * s^4)/(kg m^3)]
+    e0 = 8.85418781762e-12  # [(A^2 * s^4)/(kg m^3)]
 
     G = 6.6742e-11  # [m^3/(kg s^2)]
     GmGal = G / 1e-5  # mGal
 
-    Darcy = 9.86923e-13 #[m^2]
+    Darcy = 9.86923e-13  # [m^2]
 
-    g = 9.798 #[m/s^2]
+    g = 9.798  # [m/s^2]
 
 
 class MethodManager(object):
@@ -39,25 +39,24 @@ class MethodManager(object):
         common geophysical problems.
 
     """
-    def __init__(self, verbose=False, **kwargs):
+    def __init__(self, verbose=True, debug=False, **kwargs):
         self.verbose = verbose
-        self.fop = self.createFOP(verbose)
+        self.debug = debug
+        self.fop = self.createFOP(debug)
         if self.fop is None:
-            raise Exception("createFOP does not return a valid forward operator.")
+            raise Exception("createFOP does not return valid forward operator")
         self.tD = None
         self.tM = None
-        self.inv = self.createInv(self.fop, verbose, 
-                                  dosave = kwargs.pop('dosave', False))
+        self.inv = self.createInv(self.fop, verbose, debug)
         if self.inv is None:
-            raise Exception("createINV does not return a valid inversion instance.")
-    
+            raise Exception("createINV does not return valid inversion")
+
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
         """ String representation of the class """
-        out = "Abstract MethodManager."
-        pass
+        return "Methode Manager: " + str(self.__class__)
 
     def createFOP(self, refine=True):
         """ Create forward operator working on refined mesh """
