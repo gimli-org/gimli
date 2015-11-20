@@ -74,7 +74,6 @@ for cell in mesh2.cells():
 # Finally, the grid and the unstructured mesh can be merged to single mesh for further
 # modelling.
 
-pg.show(mesh2)
 mesh3 = merge2Meshes(mesh1, mesh2)
 
 ###############################################################################

@@ -94,10 +94,10 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 # Setup automatic gallery generation
 sphinx_gallery_conf = {
-    'examples_dir': [join(SPHINXDOC_PATH, 'examples'),
+    'examples_dirs': [join(SPHINXDOC_PATH, 'examples'),
                      join(SPHINXDOC_PATH, 'tutorials'),
                      ],
-    'gallery_dir': ['_examples_auto',
+    'gallery_dirs': ['_examples_auto',
                     '_tutorials_auto'],
     'reference_url': {
         # The module you locally document uses a None
