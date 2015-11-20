@@ -17,7 +17,7 @@ import time
 class WorkSpace():
     pass
 
-def responseProc(model, peclet, timesAdvection, tSteps,  i, j, resShm=None, ws=None):
+def responseProc(model, peclet, timesAdvection, tSteps,  i, j, halfInjection=0, resShm=None, ws=None):
     
     if resShm is not None: print("proc:", i)
             
@@ -37,6 +37,7 @@ def responseProc(model, peclet, timesAdvection, tSteps,  i, j, resShm=None, ws=N
     ws.sat = calcSaturation(ws.mesh, ws.vel.T, 
                             timesAdvection, 
                             peclet=peclet, 
+                            halfInjection=halfInjection,
                             verbose=0)
     iProc = i
     
@@ -81,6 +82,7 @@ class MulitFOP(pg.ModellingBase):
         self.ertSteps = ertSteps
         self.timesAdvection = np.linspace(1, tMax, satSteps)
         self.peclet = peclet
+        self.halfInjection = 0
         self._J = pg.RMatrix()
         self.setJacobian(self._J)   
         self.ws = WorkSpace()
@@ -122,7 +124,7 @@ class MulitFOP(pg.ModellingBase):
                     rhoaShm.append(Array('d', len(resp)))
                     procs.append(Process(target=responseProc, args=(modelMesh, 
                                                                     self.peclet, self.timesAdvection, self.ertSteps,
-                                                                    i, self.iter, rhoaShm[i])))
+                                                                    i, self.iter, self.halfInjection, rhoaShm[i])))
 
             for i, p in enumerate(procs):
                 p.start()
@@ -156,12 +158,12 @@ class MulitFOP(pg.ModellingBase):
         model = self.mesh()
         
         rhoa = responseProc(model, self.peclet, self.timesAdvection, self.ertSteps,
-                     0, 0, None, self.ws)
+                     0, 0, self.halfInjection, None, self.ws)
                 
         return rhoa.flatten()   
         
     
-def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, show=False, load=False):
+def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, halfInjection=0, show=False, load=False):
     
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom
@@ -187,6 +189,8 @@ def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, sho
                    satSteps=satSteps,
                    ertSteps=ertSteps, 
                    peclet=peclet, verbose=1)
+    
+    fop.halfInjection = halfInjection
     
     if load:
         rhoa = np.load('synthRhoa.npy') 
@@ -233,10 +237,11 @@ if __name__ == '__main__':
     paraRefine = 2
     show = 1
     load = 0
+    halfInjection=1
         
     rhoa, err, fop = simulateSynth(model=[1e-4, 5e-3, 1e-8, 2.5e-3],
                                    tMax=72000, satSteps=50, ertSteps=10,
-                                   peclet=5e6,
+                                   peclet=5e6, halfInjection=halfInjection,
                                    show=show, load=load)
     paraMesh = pg.createGrid(x=[0, 5, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom

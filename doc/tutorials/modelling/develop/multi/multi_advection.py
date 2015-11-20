@@ -11,7 +11,7 @@ def createCacheName(base, mesh, timeSteps=[], dt=None, peclet=0):
             + '-' + str(peclet)
 
 
-def calcSaturation(mesh, vel, times, peclet=5, scale=1, cache=False, verbose=False):
+def calcSaturation(mesh, vel, times, peclet=5, scale=1, halfInjection=0, cache=False, verbose=False):
     r"""
     .. math::
         
@@ -22,24 +22,32 @@ def calcSaturation(mesh, vel, times, peclet=5, scale=1, cache=False, verbose=Fal
     sourceCell=mesh.findCell(injectPos)
     
     f[sourceCell.id()] = scale*sourceCell.size()
-    t = times[:len(times)/2]
-    uMesh1 = pg.solver.solveFiniteVolume(mesh, a=1./peclet, f=f, vel=vel,
+    
+    if halfInjection:
+        t = times[:len(times)/2]
+        uMesh1 = pg.solver.solveFiniteVolume(mesh, a=1./peclet, f=f, vel=vel,
                                          times=t, 
                                          uB=[1, 0],
                                          scheme='PS',
                                          verbose=0)
-    t = times[:len(times)/2+1]
+        t = times[:len(times)/2+1]
     
-    uMesh2 = pg.solver.solveFiniteVolume(mesh, a=1./peclet, f=0, vel=vel,
+        uMesh2 = pg.solver.solveFiniteVolume(mesh, a=1./peclet, f=0, vel=vel,
                                          times=t, 
                                          uB=[1, 0],
                                          u0=uMesh1[-1],
                                          scheme='PS',
                                          verbose=0)
 
-    #saturation = uMesh1
-    saturation = np.vstack((uMesh1, uMesh2[1:]))
-
+        
+        saturation = np.vstack((uMesh1, uMesh2[1:]))
+    else:
+        uMesh1 = pg.solver.solveFiniteVolume(mesh, a=1./peclet, f=f, vel=vel,
+                                         times=times, 
+                                         uB=[1, 0],
+                                         scheme='PS',
+                                         verbose=0)
+        saturation = uMesh1
     return saturation
 
 if __name__ == '__main__':
