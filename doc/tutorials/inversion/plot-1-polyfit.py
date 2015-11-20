@@ -22,10 +22,14 @@ can be written as matrix-vector product
 .. _eq:yAx:
 .. math::
 
-  {\bf f\({\bf x}) = {\bf A} {\bf x} \quad\mbox{with}\quad {\bf A}=\left[ \begin{array}{cccc}
-  1 & x_1 & \ldots & x_1^P \\
-  \vdots & \vdots & \ddots & \vdots \\ 1 & x_N & \ldots & x_N^P
-  \end{array} \right] =
+  {\bf f} ({\bf x}) = {\bf A} {\bf x} \quad\mbox{with}\quad {\bf A}=
+  \left[ 
+    \begin{array}{cccc}
+        1 & x_1    & \ldots & x_1^P \\
+   \vdots & \vdots & \ddots & \vdots \\ 
+        1 & x_N    & \ldots & x_N^P
+  \end{array} 
+  \right] =
   [ {\bf 1}\quad {\bf x} \quad {\bf x}^2 \ldots {\bf x}^P ] \;.
 
 We set up the modelling operator, i.e. to return :math:`{\bf f}({\bf x})` for given

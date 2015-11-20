@@ -16,7 +16,7 @@ def calcSaturation(mesh, vel, times, peclet=5, scale=1, cache=False, verbose=Fal
     .. math::
         
     """
-    injectPos=[1.01, -1.31]
+    injectPos=[0.21, -1.61]
     
     f = pg.RVector(mesh.cellCount(), 0.0)
     sourceCell=mesh.findCell(injectPos)

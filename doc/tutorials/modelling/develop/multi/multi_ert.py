@@ -68,7 +68,12 @@ def simulateERTData(saturation, meshSat, cache=False, i=-1, j=0, verbose=0):
                                           paraMaxCellSize=0.1, 
                                           boundaryMaxCellSize=10)
     
-    conductivityBack = 1./10.
+    
+    #pg.show(meshSat, meshSat.cellMarker())
+    #pg.wait()
+    conductivityBack = 1./100#np.array([1./4, 1./100, 1./10])[meshSat.cellMarker()]
+    
+    #1./10.
     conductivityBrine = 10.
     conductivity = saturation * conductivityBrine + (1. - saturation) * conductivityBack
     
@@ -77,6 +82,7 @@ def simulateERTData(saturation, meshSat, cache=False, i=-1, j=0, verbose=0):
                               mesh=meshSat, meshI=meshERT)
 
     #pg.show(meshERT, resis[-1], colorBar=1)
+    #pg.wait()
     
     ert = pb.manager.Resistivity(verbose=False)
     
@@ -105,7 +111,7 @@ def simulateERTData(saturation, meshSat, cache=False, i=-1, j=0, verbose=0):
     return meshERT, ertScheme, resis, dRhoa, dErr
 
 
-def showERTData(scheme, rhoa):
+def showERTData(scheme, rhoa, axes):
     s = pb.DataContainerERT(scheme)
     s1 = pb.DataContainerERT(scheme)
     
@@ -115,7 +121,7 @@ def showERTData(scheme, rhoa):
         s.add(s1)
     
     #s.save('s.shm')
-    pb.showData(s, vals=rhoa.flatten(), schemeName='dd', colorBar=1)
+    pb.showData(s, vals=rhoa.flatten(), schemeName='dd', colorBar=1, axes=axes)
     
 
 if __name__ == '__main__':

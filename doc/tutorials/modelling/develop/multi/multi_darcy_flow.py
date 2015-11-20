@@ -23,7 +23,7 @@ import pygimli.solver.fenics
 from pygimli.solver.fenics import dolfin as dlf
 
 
-def darcyFlow(model, verbose=0):
+def darcyFlow(model, p0, verbose=0):
     if verbose:
         dlf.set_log_level(dlf.INFO)
     else:
@@ -78,12 +78,6 @@ def darcyFlow(model, verbose=0):
     DG = dlf.FunctionSpace(mesh, "DG", order-1)
     W = BDM * DG
 
-
-    class PressureBC(dlf.Expression):
-        def eval(self, values, x):
-            values[0] = 1.0
-            #print('Bound', values[:])
-            
     def topBoundary(r, on_boundary):
         return on_boundary and r[1] == 0.0# - dlf.DOLFIN_EPS
         
@@ -94,7 +88,7 @@ def darcyFlow(model, verbose=0):
         def eval(self, values, r):
             x = r[0]; y = r[1]
             if x == 0 and y < -0.5 - dlf.DOLFIN_EPS:
-                values[:] = 0.25
+                values[:] = p0
             
             
     class vBoundaryDir(dlf.Expression):
@@ -128,7 +122,7 @@ def darcyFlow(model, verbose=0):
     dlf.solve(A == L, w, bc)
     (v, p) = w.split()
 
-
+    #dlf.plot(mesh, Kinv)
     #pygimli part starts here
     gimlimesh = pg.solver.fenics.convertDolfinMesh(mesh)
     pre = p.compute_vertex_values()
@@ -137,6 +131,10 @@ def darcyFlow(model, verbose=0):
     Q = dlf.FunctionSpace(mesh,"DG",0) 
     kinv = dlf.Function(Q)                                                                 
     kinv.interpolate(PermeabiltyInv())
+
+    #pg.show(model, model.cellMarker(), label='marker')
+    #pg.wait()
+    #gimlimesh.setCellMarker(pg.interpolate(model, model.cellMarker(), gimlimesh.cellCenters()))
 
     return gimlimesh, np.array(vel), np.array(pre), np.array(1./np.array(kinv.vector()))
 

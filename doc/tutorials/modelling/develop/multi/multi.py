@@ -26,7 +26,7 @@ def responseProc(model, peclet, timesAdvection, tSteps,  i, j, resShm=None, ws=N
 
     if resShm is None: print(".. darcy step")
 
-    ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, verbose=0)
+    ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, p0=0.25, verbose=0)
 
     #pg.show(model, model.cellAttributes(), label='cell cellAttributes'); pg.wait()
     #pg.show(ws.mesh, ws.vel.T, label='velocity'); pg.wait()
@@ -102,10 +102,10 @@ class MulitFOP(pg.ModellingBase):
 
         pg.tic()
         nProcs = float(pg.numberOfCPU())
-                        
+            
+        rhoaShm = []
         for pCount in range(int(np.ceil(nModel/nProcs))):
             procs = []
-            rhoaShm = []
             print(pCount*nProcs, "/" ,nModel)
             for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
 
@@ -129,13 +129,12 @@ class MulitFOP(pg.ModellingBase):
                 
             for i, p in enumerate(procs):
                 p.join()
-                rhoaJ[i][:] = rhoaShm[i]
                 
         pg.toc()
 
         self._J *= 0.0
         for i in range(nModel):
-            dData = rhoaJ[i] - resp
+            dData = rhoaShm[i] - resp
             self._J.setCol(i, dData/dModel[i])
             
         print('#'*40 + 'Jac:')
@@ -160,7 +159,7 @@ class MulitFOP(pg.ModellingBase):
         return rhoa.flatten()   
         
     
-def simulateSynth(tMax=5000, satSteps=50, ertSteps=10, peclet=500000, show=False, load=False):
+def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, show=False, load=False):
     
     paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom
@@ -177,16 +176,16 @@ def simulateSynth(tMax=5000, satSteps=50, ertSteps=10, peclet=500000, show=False
         if c.center()[0] > 3 and c.center()[0] < 7 and \
             c.center()[1] > -2.5 and c.center()[1] < -1.0:
             c.setMarker(3)
-    
-    model=[1e-4, 5e-3, 1e-8, 1e-3]
-    
+            
     #pg.show(paraMesh, np.array(model)[paraMesh.cellMarker()], label='Permeabilty Model')
-        
+    #pg.show(paraMesh, paraMesh.cellMarker(), label='marker')
+    #pg.wait()
+    
     fop = MulitFOP(mesh=paraMesh, tMax=tMax, 
                    satSteps=satSteps,
                    ertSteps=ertSteps, 
                    peclet=peclet, verbose=1)
-
+    
     if load:
         rhoa = np.load('synthRhoa.npy') 
         err = np.load('synthErr.npy') 
@@ -208,19 +207,21 @@ def simulateSynth(tMax=5000, satSteps=50, ertSteps=10, peclet=500000, show=False
     if show:
         ws = fop.ws
         mesh = ws.mesh
-        ax, _ = pg.show(mesh)
-        pg.show(mesh, fop.ws.p, label='Pressure in ??', axes=ax)
-        ax, _ = pg.show(mesh)
-        pg.show(mesh, fop.ws.k, label='Permeabilty in ??', axes=ax)
+        ax = [pg.plt.subplot(2,3,i+1) for i in range(6)]
         
-        ax, _ = pg.show(mesh)
-        pg.show(mesh, np.sqrt(fop.ws.vel[0]**2+fop.ws.vel[1]**2), label='velocity in m/s', axes=ax)
-        pg.show(mesh, fop.ws.vel, axes=ax)
+        pg.show(mesh, axes=ax[0])
+        pg.show(mesh, fop.ws.p, label='Pressure in ??', axes=ax[0])
+        
+        pg.show(mesh, fop.ws.k, label='Permeabilty in ??', axes=ax[1])
+        
+        pg.show(mesh, np.sqrt(fop.ws.vel[0]**2+fop.ws.vel[1]**2), label='Velocity in m/s', axes=ax[2])
+        pg.show(mesh, fop.ws.vel, axes=ax[2])
 
-        pg.show(mesh, fop.ws.sat[-1]+1e-3, label='brine saturation')
-        pg.show(ws.meshERT, fop.ws.res[-1], label='resistivity in Ohm m')
-
-        showERTData(scheme, rhoa)
+        pg.show(mesh, fop.ws.sat[-1]+1e-3, label='Brine concentration for t=' + str(int(tMax/3600)) + "h",  axes=ax[3])
+        pg.show(ws.meshERT, fop.ws.res[-1], label='Resistivity in Ohm m', axes=ax[4])
+        ax[4].set_xlim([-1, 11])
+        ax[4].set_ylim([-6, 0])
+        showERTData(scheme, rhoa, axes=ax[5])
         
         pg.wait()
     
@@ -228,30 +229,50 @@ def simulateSynth(tMax=5000, satSteps=50, ertSteps=10, peclet=500000, show=False
     
 if __name__ == '__main__':
     paraRefine = 1
-    
-    rhoa, err, fop = simulateSynth(tMax=72000, satSteps=50, ertSteps=3,
+    show = 1
+    load = 0
+        
+    rhoa, err, fop = simulateSynth(model=[1e-4, 5e-3, 1e-8, 3e-3],
+                                   tMax=72000, satSteps=40, ertSteps=3,
                                    peclet=5e6,
-                                   show=0, load=0)
-    
-    #### create paramesh and startmodel
-    paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
+                                   show=show, load=load)
+    paraMesh = pg.createGrid(x=[0, 5, 10], y=[-5, -3.5, -0.5, 0])
     paraMesh.cell(0).setMarker(0) # bottom
-    paraMesh.cell(1).setMarker(1) # center
-    paraMesh.cell(2).setMarker(2) # top
+    paraMesh.cell(1).setMarker(0) # bottom
+    paraMesh.cell(2).setMarker(1) # center
+    paraMesh.cell(3).setMarker(1) # center
+    paraMesh.cell(4).setMarker(2) # top
+    paraMesh.cell(5).setMarker(2) # top
+    
+    #rhoa, err, fop = simulateSynth(model=[1e-4, 0.01, 1e-8, 0.008],
+                                   #tMax=10000, satSteps=40, ertSteps=3,
+                                   #peclet=5e5, 
+                                   #show=show, load=load)
+    #paraMesh = pg.createGrid(x=[0, 5, 10], y=[-5, -3.5, -0.5, 0])
+    #paraMesh.cell(0).setMarker(0) # bottom
+    #paraMesh.cell(1).setMarker(0) # bottom
+    #paraMesh.cell(2).setMarker(1) # center
+    #paraMesh.cell(3).setMarker(1) # center
+    #paraMesh.cell(4).setMarker(2) # top
+    #paraMesh.cell(5).setMarker(2) # top
+    
+    #paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
+    #paraMesh.cell(0).setMarker(0) # bottom
+    #paraMesh.cell(1).setMarker(1) # center
+    #paraMesh.cell(2).setMarker(2) # top
+    
     
     for i in range(paraRefine):
         paraMesh = paraMesh.createH2()
-    
-    
+        
     fop.setMesh(paraMesh)
     fop.regionManager().region(0).setFixValue(1e-4)
     fop.regionManager().region(2).setFixValue(1e-8)
     
     fop.createRefinedForwardMesh(refine=False, pRefine=False)
     
-    paraDomain = fop.regionManager().paraDomain()
-    
-    startModel = pg.RVector(fop.regionManager().parameterCount(), 0.007)
+    startModel = pg.RVector(fop.regionManager().parameterCount(), 4e-3)
+
     fop.setStartModel(startModel) 
     
     inv = pg.RInversion(rhoa.flatten(), fop, verbose=1, dosave=1)
@@ -263,9 +284,9 @@ if __name__ == '__main__':
     
     inv.setRelativeError(err.flatten())
     #inv.setLambda(0)
-    inv.setMaxIter(2)
+    inv.setMaxIter(20)
     inv.setLineSearch(True)
-    inv.setLambda(200)
+    inv.setLambda(100)
     #inv.setMarquardtScheme(0.8)
     
     coeff = inv.run()
