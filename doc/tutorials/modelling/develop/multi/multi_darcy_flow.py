@@ -32,17 +32,21 @@ def darcyFlow(model, p0, verbose=0):
 
     # Create mesh and define function space
     #mesh = dlf.UnitSquareMesh(16, 16, 'crossed')
+    
+    #pg.show(model, model.cellAttributes(), label='perm')
+    
     mesh = None
     try:
-        mesh = dlf.RectangleMesh(dlf.Point(0, -5), dlf.Point(10, 0), 40, 20, "crossed")
+        mesh = dlf.RectangleMesh(dlf.Point(-20, -16), dlf.Point(20, 0), 40, 32, "crossed")
     except:
         # for older fenics versions 
-        mesh = dlf.RectangleMesh(0, -5, 10, 0, 40, 20, "crossed")
+        mesh = dlf.RectangleMesh(-20, -16, 20, 0, 40, 32, "crossed")
 
     class PermeabiltyInv(dlf.Expression):
         
         def eval_cell(self, values, r, cell):
             if hasattr(model, '__iter__'):
+                raise()
                 if r[1] < -3.5:
                     values[:] = 1./model[2]
                 elif r[1] < -0.5 - dlf.DOLFIN_EPS:
@@ -50,20 +54,11 @@ def darcyFlow(model, p0, verbose=0):
                 else:
                     values[:] = 1./model[0]
             else:
-                #print(cell)
-                #print(dir(cell))
                 cMid = dlf.Cell(mesh, cell.index).midpoint()
-                
-                #print(r, cMid[0], cMid[1])
-                #print(cell.get_vertex_coordinates())
-                
-                #print(dlf.Cell(cell))
-                #print(dir(cell.this.midpoint()))
-                #print(cell, cell.midpoint())
                 c = model.findCell((cMid[0], cMid[1]))
+                
                 values[:] = 1./c.attribute()
-            #print(r, cell, values)
-            #print(values[:])
+            
 
     kinv11 = PermeabiltyInv()
     kinv12 = dlf.Constant(0.0)
@@ -85,10 +80,16 @@ def darcyFlow(model, p0, verbose=0):
         return on_boundary #and r[0] < 0.0 + dlf.DOLFIN_EPS
 
     class pBoundaryDir(dlf.Expression):
-        def eval(self, values, r):
-            values[:] = 0.0
-            if r[0] < 1e-7 and r[1] < -0.49:
+        def eval_cell(self, values, r, cell):
+            values[:] = 0
+            cMid = dlf.Cell(mesh, cell.index).midpoint()
+            if cMid[0] < -19.5+0.1 and cMid[1] < -2.0:
                 values[:] = p0
+            
+        #def eval(self, values, r):
+            #values[:] = 0.0
+            #if r[0] < 1e-7 and r[1] < -1.9:
+                #values[:] = p0
             
             
     class vBoundaryDir(dlf.Expression):

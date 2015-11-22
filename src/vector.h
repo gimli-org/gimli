@@ -289,6 +289,11 @@ public:
         return *this;
     }
 
+    /*! Return a deep copy. For numpy compatibility.*/
+    inline Vector < ValueType > copy() const {
+        return *this;
+    }
+    
     inline const ValueType & operator[](const Index i) const { return data_[i]; }
 
     inline ValueType & operator[](const Index i) { return data_[i]; }

@@ -16,12 +16,15 @@ def calcSaturation(mesh, vel, times, peclet=5, scale=1, halfInjection=0, cache=F
     .. math::
         
     """
-    injectPos=[0.21, -1.61]
+    injectPos=[-19.1, -4.6]
     
     f = pg.RVector(mesh.cellCount(), 0.0)
     sourceCell=mesh.findCell(injectPos)
     
-    f[sourceCell.id()] = scale*sourceCell.size()
+    dt = times[1]-times[0]
+    #print(sourceCell.size())
+    f[sourceCell.id()] = scale/dt
+    #f[sourceCell.id()] = scale*sourceCell.size()/dt
     
     if halfInjection:
         t = times[:len(times)/2]

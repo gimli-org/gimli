@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pygimli as pg
+from pygimli.meshtools import plc
 import pybert as pb
 import numpy as np
 
@@ -11,6 +12,8 @@ from multi_ert import simulateERTData, showERTData
 
 from multiprocessing import Process, Array
 import copy
+
+
 
 from math import ceil
 import time
@@ -26,7 +29,7 @@ def responseProc(model, peclet, timesAdvection, tSteps,  i, j, halfInjection=0, 
 
     if resShm is None: print(".. darcy step")
 
-    ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, p0=0.25, verbose=0)
+    ws.mesh, ws.vel, ws.p, ws.k = darcyFlow(model, p0=0.25*3, verbose=0)
 
     #pg.show(model, model.cellAttributes(), label='cell cellAttributes'); pg.wait()
     #pg.show(ws.mesh, ws.vel.T, label='velocity'); pg.wait()
@@ -163,27 +166,18 @@ class MulitFOP(pg.ModellingBase):
         return rhoa.flatten()   
         
     
-def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, halfInjection=0, show=False, load=False):
+def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, peclet=500000, halfInjection=0, show=False, load=False):
+    world = plc.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8])
+    block = plc.createRectangle(start=[-6, -3.5], end=[6, -6.0], marker=4, area=0.1)
+    geom = plc.mergePLC([world, block])
     
-    paraMesh = pg.createGrid(x=[0, 10], y=[-5, -3.5, -0.5, 0])
-    paraMesh.cell(0).setMarker(0) # bottom
-    paraMesh.cell(1).setMarker(1) # center
-    paraMesh.cell(2).setMarker(2) # top
+    paraMesh = pg.meshtools.createMesh(geom, quality=33, area=0.2, smooth=[1,10])
     
-    paraMesh = paraMesh.createH2()
-    paraMesh = paraMesh.createH2()
-    paraMesh = paraMesh.createH2()
-    paraMesh = paraMesh.createH2()
-    paraMesh = paraMesh.createH2()
+    mapMarker = np.array([0, 2, 1, 0, 3])
+    paraMesh.setCellMarker(mapMarker[np.array(paraMesh.cellMarker())])
     
-    for c in paraMesh.cells():
-        if c.center()[0] > 3 and c.center()[0] < 7 and \
-            c.center()[1] > -2.5 and c.center()[1] < -1.0:
-            c.setMarker(3)
-            
-    #pg.show(paraMesh, np.array(model)[paraMesh.cellMarker()], label='Permeabilty Model')
     #pg.show(paraMesh, paraMesh.cellMarker(), label='marker')
-    #pg.wait()
+    #pg.show(paraMesh, pg.RVector(model)[paraMesh.cellMarker()], label='attr')
     
     fop = MulitFOP(mesh=paraMesh, tMax=tMax, 
                    satSteps=satSteps,
@@ -221,12 +215,12 @@ def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, hal
         pg.show(mesh, fop.ws.k, label='Permeabilty in ??', axes=ax[1])
         
         pg.show(mesh, np.sqrt(fop.ws.vel[0]**2+fop.ws.vel[1]**2), label='Velocity in m/s', axes=ax[2])
-        pg.show(mesh, fop.ws.vel, axes=ax[2])
+        #pg.show(mesh, fop.ws.vel, axes=ax[2])
 
         pg.show(mesh, fop.ws.sat[-1]+1e-3, label='Brine concentration for t=' + str(int(tMax/3600)) + "h",  axes=ax[3])
         pg.show(ws.meshERT, fop.ws.res[-1], label='Resistivity in Ohm m', axes=ax[4])
-        ax[4].set_xlim([-1, 11])
-        ax[4].set_ylim([-6, 0])
+        ax[4].set_xlim([-21, 21])
+        ax[4].set_ylim([-17, 0])
         showERTData(scheme, rhoa, axes=ax[5])
         
         pg.wait()
@@ -234,22 +228,32 @@ def simulateSynth(model, tMax=5000, satSteps=50, ertSteps=10, peclet=500000, hal
     return rhoa, err, fop
     
 if __name__ == '__main__':
-    paraRefine = 2
-    show = 1
+    paraRefine = 1
+    show = 0
     load = 0
     halfInjection=1
         
-    rhoa, err, fop = simulateSynth(model=[1e-4, 5e-3, 1e-8, 2.5e-3],
-                                   tMax=72000, satSteps=50, ertSteps=10,
+    rhoa, err, fop = simulateSynth(model=[1e-4, 5e-3, 1e-8, 1.5e-3],
+                                   tMax=345600, satSteps=100, ertSteps=2,
                                    peclet=5e6, halfInjection=halfInjection,
                                    show=show, load=load)
-    paraMesh = pg.createGrid(x=[0, 5, 10], y=[-5, -3.5, -0.5, 0])
+    paraMesh = pg.createGrid(x=[-20, -6.6, 6.6, 20], y=[-16, -8, -5, -2, 0])
+    print(paraMesh)
     paraMesh.cell(0).setMarker(0) # bottom
     paraMesh.cell(1).setMarker(0) # bottom
-    paraMesh.cell(2).setMarker(1) # center
+    paraMesh.cell(2).setMarker(0) # bottom
+    
     paraMesh.cell(3).setMarker(1) # center
-    paraMesh.cell(4).setMarker(2) # top
-    paraMesh.cell(5).setMarker(2) # top
+    paraMesh.cell(4).setMarker(1) # center
+    paraMesh.cell(5).setMarker(1) # center
+    
+    paraMesh.cell(6).setMarker(1) # center
+    paraMesh.cell(7).setMarker(1) # center
+    paraMesh.cell(8).setMarker(1) # center
+    
+    paraMesh.cell(9).setMarker(2) # top
+    paraMesh.cell(10).setMarker(2) # top
+    paraMesh.cell(11).setMarker(2) # top
     
     
     for i in range(paraRefine):
@@ -274,7 +278,7 @@ if __name__ == '__main__':
     
     inv.setRelativeError(err.flatten())
     #inv.setLambda(0)
-    inv.setMaxIter(20)
+    inv.setMaxIter(50)
     inv.setLineSearch(True)
     inv.setLambda(100)
     #inv.setMarquardtScheme(0.8)
