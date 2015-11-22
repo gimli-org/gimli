@@ -11,6 +11,7 @@ try:
     from pygimli.mplviewer import drawMesh, drawModel, drawField
     from pygimli.mplviewer import drawSensors, showLater
     from pygimli.mplviewer import createColorbar, drawStreams, addCoverageAlpha
+    from pygimli.mplviewer.colorbar import cmapFromName
 except ImportError as e:
     print(e)
     import traceback
@@ -134,7 +135,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     colorBar : bool [false]
         Create and show a colorbar.
-        
+
     coverage : iterable [None]
         Weight data by the given coverage array and fadeout the color.
 
@@ -148,10 +149,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
         an epstopdf if the .eps suffix is found in savefig
 
     **kwargs :
-    
+
         * label : str [None]
             Add label to the colorbar
-        
+
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
 
@@ -193,9 +194,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
             else:
                 print("No valid stream data:", data)
                 drawMesh(ax, mesh, **kwargs)
-
         elif (min(data) == max(data)):  # or pg.haveInfNaN(data):
-
             print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh, **kwargs)
         else:
@@ -205,6 +204,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
                     gci = drawModel(ax, mesh, data, **kwargs)
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
+                if 'cmap' in kwargs:
+                    if isinstance(kwargs['cmap'], str):
+                        cmap = cmapFromName(kwargs['cmap'])
+                    else:
+                        cmap = kwargs['cmap']
+                    gci.set_cmap(cmap)
             except Exception as e:
                 print("Exception occured: " + e)
                 print("Data: ", min(data), max(data), pg.haveInfNaN(data))
