@@ -114,7 +114,7 @@ def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     xvec, yvec : iterable (e.g. list, np.array, pg.RVector) of identical length
         vectors defining the indices into the matrix
     vals : iterable of same length as xvec/yvec
-        vactor containing the values to show
+        vector containing the values to show
     full: bool [False]
         use a fully symmetric matrix containing all unique xvec+yvec
         otherwise A is squeezed to the individual unique xvec/yvec values
