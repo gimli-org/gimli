@@ -229,7 +229,7 @@ def drawModel(axes, mesh, data=None,
                                              verbose=verbose, **kwargs)
 
         if cmap is not None:
-            if cmap == 'b2r':
+            if type(cmap) is str:
                 gci.set_cmap(cmapFromName('b2r'))
             else:
                 gci.set_cmap(cmap)
@@ -444,7 +444,7 @@ def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
                   str(reg.marker()) + ": " + str(reg.area()),
                   color='black',
                   verticalalignment='center',
-                  horizontalalignment='center'
+                  horizontalalignment='left'
                   )  # 'white'
 
     for hole in mesh.holeMarker():

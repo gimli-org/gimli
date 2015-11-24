@@ -12,7 +12,7 @@ def createCacheName(base, mesh=None):
     return 'cache-' + base + "-" + nc
 
 def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
-                      mesh=None, meshI=None):
+                      mesh=None, meshI=None, fill=None):
     """
     .. math:: 
         \rho = a\rho_{\text{Brine}}\phi^{-m}\S_w^{-n}
@@ -30,7 +30,7 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     
     if rBrine.ndim == 1:
         rB = pg.RMatrix(1, len(rBrine))
-        rB[0] = parseArgToArray(rBrine, mesh.cellCount(), mesh)
+        rB[0] = pg.solver.parseArgToArray(rBrine, mesh.cellCount(), mesh)
     elif rBrine.ndim == 2:
         rB = pg.RMatrix(len(rBrine), len(rBrine[0]))
         for i in range(len(rBrine)):
@@ -42,16 +42,20 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     S = pg.solver.parseArgToArray(S, mesh.cellCount(), mesh)
     n = pg.solver.parseArgToArray(n, mesh.cellCount(), mesh)
     
-    r = pg.RMatrix(len(rBrine), len(rBrine[0]))
+    r = pg.RMatrix(len(rB), len(rB[0]))
     for i in range(len(r)):
         r[i] = rB[i] * a * porosity**(-m) * S**(-n)
-            
+        
+    if meshI == None:
+        return r
+    
     rI = pg.RMatrix(len(r), meshI.cellCount())
     if meshI:
         pg.interpolate(mesh, r, meshI.cellCenters(), rI) 
         
-    for i in range(len(rI)):
-        rI[i] = pg.solver.fillEmptyToCellArray(meshI, rI[i])
+    if fill:
+        for i in range(len(rI)):
+            rI[i] = pg.solver.fillEmptyToCellArray(meshI, rI[i])
         
     rI.round(1e-6)
     #print(rI)
@@ -59,42 +63,60 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
 
 
 def simulateERTData(saturation, meshSat, cache=False, i=-1, j=0, verbose=0):
-    swatch = pg.Stopwatch(True)
+    
+    pg.tic()
     #ertScheme = pb.DataContainerERT('20dd.shm')
     
-    ertScheme = pb.createData(np.arange(-5, 15.001, 1), schemeName='dd')
+    ertScheme = pb.createData(np.arange(-20, 20.001, 2.0), schemeName='dd')
         
-    meshERT = pg.meshtools.createParaMesh(ertScheme, quality=34,
-                                          paraMaxCellSize=0.1, 
-                                          boundaryMaxCellSize=10)
+    meshERT = pg.meshtools.createParaMesh(ertScheme, quality=33,
+                                          paraMaxCellSize=0.2, 
+                                          boundaryMaxCellSize=50, smooth=[1,2])
     
     
-    #pg.show(meshSat, meshSat.cellMarker())
+    #print(meshERT)
+    
     #pg.wait()
-    conductivityBack = 1./100#np.array([1./4, 1./100, 1./10])[meshSat.cellMarker()]
+    conductivityBack = np.zeros(meshERT.cellCount())
+    for c in meshERT.cells():
+        if c.center()[1] < -8:
+            conductivityBack[c.id()] = 1./20
+        elif c.center()[1] < -2:
+            conductivityBack[c.id()] = 1./100
+        else:
+            conductivityBack[c.id()] = 1./5 #500
+    
+    #1./100#np.array([1./4, 1./100, 1./10])[meshSat.cellMarker()]
+    #conductivityBack = 1./100#np.array([1./4, 1./100, 1./10])[meshSat.cellMarker()]
     
     #1./10.
+    conductivityBack0 = 1/100.
     conductivityBrine = 10.
-    conductivity = saturation * conductivityBrine + (1. - saturation) * conductivityBack
+    conductivity = saturation * conductivityBrine + (1. - saturation) * conductivityBack0
     
-    resis = resistivityArchie(rBrine=1./conductivity,
+    resisBrin = resistivityArchie(rBrine=1./conductivity,
                               porosity=0.3, S=1.0, 
-                              mesh=meshSat, meshI=meshERT)
+                              mesh=meshSat, meshI=meshERT, fill=1)
 
-    #pg.show(meshERT, resis[-1], colorBar=1)
+    resisBack = resistivityArchie(rBrine=1./conductivityBack,
+                                  porosity=0.3, S=1.0, 
+                                  mesh=meshERT, fill=0)
+
+    resis = pg.RMatrix(resisBrin)
+    for i in range(len(resisBrin)):
+        resis[i] = 1./( 1./resisBrin[i] + 1./resisBack[0])
+    
+    #pg.show(meshERT, resisBack[0], colorBar=1, label='back')
+    #pg.show(meshERT, resisBrin[-1], colorBar=1, label='brin')
+    #pg.show(meshERT, resis[-1], colorBar=1, label='res')
     #pg.wait()
     
     ert = pb.manager.Resistivity(verbose=False)
     
-    #if i > 0:
-        ##np.save('resis' + str(i) + '-' + str(j), resis)
-        #rt = np.load('resis' + str(i) + '-' + str(j) + ".npy")
-        #print("rt:", i, j, np.sum(rt-resis))
-        #np.testing.assert_array_equal(resis, rt)
-        
     rhoa = ert.simulate(meshERT, resis, ertScheme, verbose=0)
     
-    np.round(rhoa)
+    
+    #np.round(rhoa)
     
     ertScheme.set('k', pb.geometricFactor(ertScheme))
     

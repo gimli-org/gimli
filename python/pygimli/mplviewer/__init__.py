@@ -25,9 +25,11 @@ from .overlayimage import *
 import matplotlib.pyplot as plt
 import numpy as np
 
+def hold(val=1):
+    pg.mplviewer.holdAxes_ = val
 
 def showLater(val=1):
-    raise('do not use')
+    raise('do not use .. use show(hold=1) to keep pics in background')
     import matplotlib.pyplot as plt
     if val == 1:
         plt.ion()
