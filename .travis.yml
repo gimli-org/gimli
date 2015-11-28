@@ -2,7 +2,7 @@
 # See build results on http://travis-ci.org/gimli-org/gimli
 # Before commiting changes to this file, check consistency on http://lint.travis-ci.org/
 
-language: cpp
+language: python
 compiler: clang
 python: 3.4
 os: linux
