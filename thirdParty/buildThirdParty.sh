@@ -109,6 +109,22 @@ SetGCC_TOOLSET(){
 		ADDRESSMODEL=64
 	fi
 }
+
+getCLANG_NAME() {
+    if command -v clang-3.6 2>/dev/null; then
+        CLANG="clang-3.6"
+        CLANGPP="clang++-3.6"
+    elif command -v clang-3.6.1 2>/dev/null; then
+        CLANG="clang-3.6.1"
+        CLANGPP="clang++-3.6.1"
+    else
+        CLANG="clang"
+        CLANGPP="clang++"
+    fi
+    
+    echo "Setting clang to: " $CLANG
+}
+
 SetCLANG_TOOLSET(){
 	#needGCC
 	TOOLSET=clang-`clang -dumpversion`
@@ -198,7 +214,9 @@ getWITH_HG(){
 		
 	if ( [ -d $_SRC_ ] ); then 
 		pushd $_SRC_
-            "$HG" pull
+#            "$HG" fetch 
+            "$HG" pull -u
+            "$HG" up
 		popd
 	else
         pushd $SRC_DIR
@@ -206,12 +224,10 @@ getWITH_HG(){
         popd
 	fi
     if [ -n $_BRANCH_ ]; then
-    echo "ignoring branch $_BRANCH_ setting"
-#         pushd $_SRC_
-#           echo $_SRC_ $_BRANCH_
-#           echo $HG checkout $_BRANCH_ .
-#           "$HG" checkout $_BRANCH_ .
-#         popd
+        pushd $_SRC_
+          echo $_SRC_ $_BRANCH_
+          #"$HG" revert -r $_BRANCH_ --all
+        popd
     fi
 }
 
@@ -226,6 +242,7 @@ getWITH_GIT(){
 		
 	if ( [ -d $_SRC_ ] ); then 
 		pushd $_SRC_
+            "$GIT" stash
             "$GIT" pull
  		popd
 	else
@@ -452,7 +469,8 @@ buildCASTXML(){
             cmake --build . --config release --target install -- -j$PARALLEL_BUILD 
         popd
     else
-        CC=clang-3.6 CXX=clang++-3.6 cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
+        getCLANG_NAME
+        CC=$CLANG CXX=$CLANGPP cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
     fi
      
 }
