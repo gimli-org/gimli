@@ -4,7 +4,9 @@
 
 language: python
 
-os: linux
+os:
+    #- linux
+    - osx
 
 sudo: required
 
@@ -28,23 +30,27 @@ addons:
     - liblapack-dev
     - libsuitesparse-dev
     - libedit-dev
+    - libboost-all-dev
 
 cache:
     directories:
     - thirdParty
 
 before_install:
+    - if [[ "${TRAVIS_OS_NAME}" == 'osx' ]]; then brew install llvm boost boost-python; fi
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+        export PYLIB="/home/travis/miniconda/envs/gimli/lib/libpython2.so"
         else
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+        export PYLIB="/home/travis/miniconda/envs/gimli/lib/libpython3.so"
         fi
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - DEPS="cmake boost numpy matplotlib sphinx"
+    - DEPS="cmake numpy matplotlib sphinx"
     - conda create -q -n gimli python=$TRAVIS_PYTHON_VERSION $DEPS
     - source activate gimli
     - pip install -r doc/requirements.txt # documentation requirements
@@ -64,7 +70,7 @@ install:
     - cd build
     - export CXX="clang++-3.6"
     - export CC="clang-3.6"
-    - cmake ../trunk -DPYTHON_LIBRARY=/home/travis/miniconda/envs/gimli/lib/libpython3.so
+    - cmake ../trunk -DPYTHON_LIBRARY=$PYLIB
     - make -j 4 gimli
     - make pygimli J=4
 
