@@ -2,7 +2,7 @@
 # See build results on http://travis-ci.org/gimli-org/gimli
 # Before commiting changes to this file, check consistency on http://lint.travis-ci.org/
 
-language: python
+language: cpp
 
 os: linux
 
@@ -11,8 +11,6 @@ compiler: clang
 python:
     - "2.7"
     - "3.4"
-
-sudo: false # activates new container-based infrastructure (faster)
 
 addons:
   apt:
