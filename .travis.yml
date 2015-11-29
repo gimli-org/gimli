@@ -17,7 +17,7 @@ matrix:
       os: linux
     - env: PYVERSION=3.4
       os: linux
-    - env: PYVERSION=3.4 BEFORE_INSTALL="brew install cmake llvm36 boost boost-python"
+    - env: PYVERSION=3.4
       os: osx
       osx_image: xcode7.1
 
@@ -43,8 +43,9 @@ cache:
 
 before_install:
     - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew update; brew --version; fi
-    - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew install llvm36 cmake boost boost-python; fi
-    - if [[ "PYVERSION" == "2.7" ]]; then
+    - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew unlink boost; fi
+    - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install llvm36 cmake boost boost-python; fi
+    - if [ "PYVERSION" == "2.7" ]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
         else
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
