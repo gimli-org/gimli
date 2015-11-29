@@ -55,7 +55,7 @@ before_install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - DEPS="cmake numpy matplotlib sphinx"
-    - conda create -q -n gimli python=$TRAVIS_PYTHON_VERSION $DEPS
+    - conda create -q -n gimli python=$PYVERSION $DEPS
     - source activate gimli
     - pip install -r doc/requirements.txt # documentation requirements
 
