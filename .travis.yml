@@ -6,6 +6,8 @@ language: cpp
 
 os: linux
 
+sudo: required
+
 compiler: clang
 
 python:
