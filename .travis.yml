@@ -39,6 +39,7 @@ before_install:
     - conda create -q -n gimli python=$TRAVIS_PYTHON_VERSION $DEPS
     - source activate gimli
     - pip install -r doc/requirements.txt
+    - conda install -c http://conda.anaconda.org/numba llvmdev
 
 install:
     # Show Infos
