@@ -2,19 +2,24 @@
 # See build results on http://travis-ci.org/gimli-org/gimli
 # Before commiting changes to this file, check consistency on http://lint.travis-ci.org/
 
-language: python
+language: cpp
 
 os:
-    #- linux
+    - linux
     - osx
 
 sudo: required
 
 compiler: clang
-
-python:
-    - "2.7"
-    - "3.4"
+matrix:
+  include:
+    - env: PYVERSION=2.7
+      os: linux
+    - env: PYVERSION=3.4
+      os: linux
+    - env: PYVERSION=3.4 BEFORE_INSTALL="brew install cmake llvm36 boost boost-python"
+      os: osx
+      osx_image: xcode7.1
 
 addons:
   apt:
@@ -37,13 +42,12 @@ cache:
     - thirdParty
 
 before_install:
-    - if [[ "${TRAVIS_OS_NAME}" == 'osx' ]]; then brew install llvm boost boost-python; fi
-    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+    - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew update; brew --version; fi
+    - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew install llvm36 cmake boost boost-python; fi
+    - if [[ "PYVERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-        export PYLIB="/home/travis/miniconda/envs/gimli/lib/libpython2.so"
         else
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-        export PYLIB="/home/travis/miniconda/envs/gimli/lib/libpython3.so"
         fi
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
@@ -70,7 +74,7 @@ install:
     - cd build
     - export CXX="clang++-3.6"
     - export CC="clang-3.6"
-    - cmake ../trunk -DPYTHON_LIBRARY=$PYLIB
+    - cmake ../trunk
     - make -j 4 gimli
     - make pygimli J=4
 
