@@ -12,7 +12,7 @@ python:
     - "2.7"
     - "3.4"
 
-#sudo: false # activates new container-based infrastructure (faster)
+sudo: false # activates new container-based infrastructure (faster)
 
 addons:
   apt:
@@ -23,18 +23,16 @@ addons:
     - llvm-3.6-dev
     - clang-3.6-dev
     - libclang-3.6-dev
+    - libblas-dev
+    - liblapack-dev
+    - libsuitesparse-dev
+    - libedit
 
 cache:
     directories:
     - thirdParty
 
 before_install:
-    # APT-GET (should be reduced or better removed completely)
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq libblas-dev liblapack-dev
-    - sudo apt-get install -qq libsuitesparse-dev
-
-    # CONDA
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
         else
