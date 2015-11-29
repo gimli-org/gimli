@@ -253,7 +253,7 @@ getWITH_GIT(){
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_
-          echo $GIT checkout $_BRANCH_ .
+          echo $GIT checkout --force $_BRANCH_ .
           "$GIT" checkout $_BRANCH_ .
         popd
     fi
@@ -458,11 +458,17 @@ buildCASTXML(){
             
                 sed -i -e 's/\/mingw32/C:\/msys32\/mingw32/g' src/CMakeFiles/castxml.dir/linklibs.rsp        
             else
-                CC=/mingw64/bin/gcc CXX=/mingw64/bin/g++ cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                                #CC=/mingw64/bin/gcc CXX=/mingw64/bin/g++ cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                #    -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
+                #    -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
+                #sed -i -e 's/\/mingw64/C:\/msys64\/mingw64/g' src/CMakeFiles/castxml.dir/linklibs.rsp
+                
+                sed -i 's/if(DEFINED LLVM_BUILD_BINARY_DIR)/if(DEFINED LLVM_BUILD_BINARY_DIR_)/' $CASTXML_SRC/CMakeLists.txt
+                
+                cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                    -DCLANG_RESOURCE_DIR=/mingw64/lib/clang/3.7.0/ \
                     -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
                     -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
-            
-                sed -i -e 's/\/mingw64/C:\/msys64\/mingw64/g' src/CMakeFiles/castxml.dir/linklibs.rsp
             fi 
             
             #make -j$PARALLEL_BUILD install
