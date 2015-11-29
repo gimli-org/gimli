@@ -51,7 +51,6 @@ before_install:
         OSNAME="MacOSX";
         brew update;
         brew unlink boost cmake;
-        #brew install llvm36 --with-clang;
         brew install cmake boost boost-python libconfig;
       elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         OSNAME="Linux";
