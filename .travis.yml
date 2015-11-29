@@ -20,9 +20,10 @@ addons:
     - ubuntu-toolchain-r-test
     - llvm-toolchain-precise-3.6
     packages:
-    - llvm-3.6
     - clang-3.6
     - libclang-3.6-dev
+    - llvm-3.6
+    - libllvm-3.6-ocaml-dev
     - libblas-dev
     - liblapack-dev
     - libsuitesparse-dev
