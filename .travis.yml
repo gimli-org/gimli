@@ -17,13 +17,12 @@ python:
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.7
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-3.7
     packages:
-      - llvm-3.7
-      - clang-3.7
-      - libclang1-3.7
-      - libclang-3.7-dev
+    - llvm-3.7-dev
+    - clang-3.7-dev
+    - libclang-3.7-dev
 
 cache:
     directories:
@@ -54,7 +53,6 @@ before_install:
 install:
     # Show Infos
     - uname -a
-    - clang --version
     - python --version
     - cmake --version
     - python -c "import numpy; print(numpy.__version__)"
@@ -65,6 +63,8 @@ install:
     - mv !(trunk) trunk # necessary because of lib and thirdParty backcopying
     - mkdir build
     - cd build
+    - export CXX="clang++-3.7"
+    - export CC="clang-3.7"
     - cmake ../trunk -DPYTHON_LIBRARY=/home/travis/miniconda/envs/gimli/lib/libpython3.so
     - make -j 4 gimli
     - make pygimli J=4
