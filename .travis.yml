@@ -3,35 +3,42 @@
 # Before commiting changes to this file, check consistency on http://lint.travis-ci.org/
 
 language: python
-compiler: clang
-python: 3.4
+
 os: linux
 
-virtualenv:
-    system_site_packages: true
+compiler: clang
+
+python:
+    - "2.7"
+    - "3.4"
+
+#sudo: false # activates new container-based infrastructure (faster)
 
 cache:
-    - pip
     directories:
     - thirdParty
-
+    
 before_install:
-    # We use apt-get to save time, because travis' free build time limit is 50 min.
+    # APT-GET (should be reduced or better removed completely)
     - sudo apt-get update -qq
-    - sudo apt-get install -qq cmake
-    - sudo apt-get install -qq libboost-system-dev libboost-thread-dev libboost-python-dev
-
-    # Main build dependencies
-    - sudo apt-get install -qq build-essential libcppunit-dev
-    - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then sudo apt-get install -qq python-dev python-numpy; fi
-    - if [[ $TRAVIS_PYTHON_VERSION == "3.2" ]]; then sudo apt-get install -qq python3-dev python3-numpy; fi
     - sudo apt-get install -qq libblas-dev liblapack-dev
     - sudo apt-get install -qq libsuitesparse-dev
 
-    # Documentation dependencies
-    - sudo apt-get install -qq doxygen doxygen-latex dvipng python-scipy
-    - sudo apt-get build-dep -qq python-matplotlib python-sphinx
-    - sudo pip install -q -U sphinx numpydoc pybtex sphinxcontrib-programoutput sphinxcontrib-bibtex matplotlib
+    # CONDA
+    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+        wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+        else
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+        fi
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - hash -r
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    - DEPS="cmake boost numpy matplotlib sphinx"
+    - conda create -q -n gimli python=$TRAVIS_PYTHON_VERSION $DEPS
+    - source activate gimli
+    - pip install -r doc/requirements.txt
 
 install:
     # Show Infos
@@ -47,7 +54,7 @@ install:
     - mv !(trunk) trunk # necessary because of lib and thirdParty backcopying
     - mkdir build
     - cd build
-    - cmake ../trunk
+    - cmake ../trunk -DPYTHON_LIBRARY=/home/travis/miniconda/envs/gimli/lib/libpython3.so
     - make -j 4 gimli
     - make pygimli J=4
 
