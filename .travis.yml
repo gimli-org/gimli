@@ -8,15 +8,20 @@ sudo: required
 
 compiler: clang
 
+os:
+    #- linux
+    - osx
+
+env:
+    - PYVERSION=2.7
+    - PYVERSION=3.4
+
+
+# Don't try py2 build on MacOSX
 matrix:
-  include:
-    - env: PYVERSION=2.7
-      os: linux
-    - env: PYVERSION=3.4
-      os: linux
-    - env: PYVERSION=3.4
-      os: osx
-      osx_image: xcode7.1
+  exclude:
+    - os: osx
+      env: PYVERSION=2.7
 
 addons:
   apt:
