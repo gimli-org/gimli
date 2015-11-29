@@ -6,7 +6,7 @@ language: cpp
 
 os: linux
 
-sudo: required
+sudo: false
 
 compiler: clang
 
@@ -18,11 +18,11 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.6
+    - llvm-toolchain-precise-3.5
     packages:
-    - llvm-3.6-dev
-    - clang-3.6-dev
-    - libclang-3.6-dev
+    - llvm-3.5-dev
+    - clang-3.5-dev
+    - libclang-3.5-dev
     - libblas-dev
     - liblapack-dev
     - libsuitesparse-dev
@@ -61,8 +61,8 @@ install:
     - mv !(trunk) trunk # necessary because of lib and thirdParty backcopying
     - mkdir build
     - cd build
-    - export CXX="clang++-3.6"
-    - export CC="clang-3.6"
+    - export CXX="clang++-3.5"
+    - export CC="clang-3.5"
     - cmake ../trunk -DPYTHON_LIBRARY=/home/travis/miniconda/envs/gimli/lib/libpython3.so
     - make -j 4 gimli
     - make pygimli J=4
