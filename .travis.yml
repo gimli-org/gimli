@@ -43,13 +43,11 @@ cache:
     - thirdParty
 
 before_install:
-    #- if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew update; brew --version; fi
-    #- if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew unlink boost cmake; fi
-    #- if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install llvm36 cmake boost boost-python; fi
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         OSNAME="MacOSX";
         brew update;
-        brew install llvm36;
+        brew unlink boost cmake;
+        brew install llvm36 cmake boost boost-python;
       elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         OSNAME="Linux";
       fi
@@ -58,6 +56,7 @@ before_install:
         else
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-$OSNAME-x86_64.sh -O miniconda.sh;
         fi
+
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
