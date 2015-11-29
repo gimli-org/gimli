@@ -13,6 +13,10 @@ os:
     - osx
 
 env:
+    global:
+    - CXX="clang++-3.6"
+    - CC="clang-3.6"
+    matrix:
     - PYVERSION=2.7
     - PYVERSION=3.4
 
@@ -47,7 +51,7 @@ before_install:
         OSNAME="MacOSX";
         brew update;
         brew unlink boost cmake;
-        brew install llvm36 cmake boost boost-python;
+        brew install llvm36 cmake boost boost-python libconfig;
       elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         OSNAME="Linux";
       fi
@@ -80,9 +84,7 @@ install:
     - mv !(trunk) trunk # necessary because of lib and thirdParty backcopying
     - mkdir build
     - cd build
-    - export CXX="clang++-3.6"
-    - export CC="clang-3.6"
-    - cmake ../trunk
+    - cmake -DLLVM_CONFIG=$(which ${LLVM_CONFIG}) ../trunk
     - make -j 4 gimli
     - make pygimli J=4
 
