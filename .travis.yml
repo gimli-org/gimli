@@ -51,7 +51,8 @@ before_install:
         OSNAME="MacOSX";
         brew update;
         brew unlink boost cmake;
-        brew install llvm36 cmake boost boost-python libconfig;
+        brew install llvm36 --with-clang --with-asan;
+        brew install cmake boost boost-python libconfig;
       elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         OSNAME="Linux";
       fi
@@ -69,6 +70,7 @@ before_install:
     - DEPS="cmake numpy matplotlib sphinx"
     - conda create -q -n gimli python=$PYVERSION $DEPS
     - source activate gimli
+    - conda install -c http://conda.anaconda.org/numba llvmdev
     - pip install -r doc/requirements.txt # documentation requirements
 
 install:
@@ -84,7 +86,7 @@ install:
     - mv !(trunk) trunk # necessary because of lib and thirdParty backcopying
     - mkdir build
     - cd build
-    - cmake -DLLVM_CONFIG=$(which ${LLVM_CONFIG}) ../trunk
+    - cmake ../trunk
     - make -j 4 gimli
     - make pygimli J=4
 
