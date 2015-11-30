@@ -58,12 +58,13 @@ before_install:
 
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
+    - export LD_LIBRARY_PATH="$HOME/miniconda/lib:$LD_LIBRARY_PATH"
+    - export CMAKE_PREFIX_PATH="$HOME/miniconda/"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - DEPS="numpy matplotlib sphinx"
-    - conda create -q -n gimli python=$PYVERSION $DEPS
-    - source activate gimli
+    - conda install $DEPS
     - conda install -c https://conda.anaconda.org/menpo suitesparse boost metis
     - pip install -r doc/requirements.txt # documentation requirements
 
