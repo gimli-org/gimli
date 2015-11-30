@@ -36,6 +36,8 @@ addons:
     - ppa:kalakris/cmake
     - ppa:boost-latest/ppa
     packages:
+    - build-essential
+    - libcppunit-dev
     - clang-3.6
     - libclang-3.6-dev
     - llvm-3.6
@@ -44,9 +46,6 @@ addons:
     - liblapack-dev
     - libsuitesparse-dev
     - libedit-dev
-    - libboost-system1.55-dev
-    - libboost-thread1.55-dev
-    - libboost-python1.55-dev
 
 cache:
     directories:
@@ -56,10 +55,19 @@ before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         OSNAME="MacOSX";
         brew update;
-        brew unlink boost cmake;
-        brew install cmake boost boost-python libconfig;
+        brew unlink cmake;
+        brew install cmake boost-python libconfig;
       elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         OSNAME="Linux";
+        # Travis uses cmake 2.8.7 by default (too old for gimli)
+        sudo add-apt-repository ppa:kalakris/cmake -y
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo add-apt-repository --yes ppa:boost-latest/ppa
+        sudo apt-get update -qq
+        sudo apt-get install -qq cmake
+
+        # Boost 1.55
+        sudo apt-get install -qq libboost-system1.55-dev libboost-thread1.55-dev libboost-python1.55-dev
       fi
     - if [ "PYVERSION" == "2.7" ]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-$OSNAME-x86_64.sh -O miniconda.sh;
@@ -96,6 +104,10 @@ install:
     - make pygimli J=4
 
 script:
+    # Test gimli
+    - make check
+    - ./bin/gimliUnitTest
+
     # Make sure that interactive matplotlib backends work
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
