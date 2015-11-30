@@ -19,22 +19,13 @@ env:
     - PYVERSION=2.7
     - PYVERSION=3.4
 
-# Don't try py2 build on MacOSX
-#matrix:
-  #exclude:
-    #- os: osx
-      #env: PYVERSION=2.7
-
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
     - llvm-toolchain-precise-3.6
-    - ppa:kalakris/cmake
-    - ppa:boost-latest/ppa
     packages:
     - build-essential
-    - libcppunit-dev
     - clang-3.6
     - libclang-3.6-dev
     - llvm-3.6
@@ -44,17 +35,13 @@ addons:
     - libsuitesparse-dev
     - libedit-dev
 
-#cache:
-    #directories:
-    #- thirdParty
-
 before_install:
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
         OSNAME="MacOSX";
         brew update;
         brew unlink cmake;
         brew install cmake boost-python;
-      elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      elif [ "$TRAVIS_OS_NAME" == "linux" ]; then
         OSNAME="Linux";
         sudo add-apt-repository ppa:kalakris/cmake -y;
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y;
@@ -62,8 +49,8 @@ before_install:
         sudo apt-get update -qq;
         sudo apt-get install -qq cmake;
         sudo apt-get install -qq libboost-system1.55-dev libboost-thread1.55-dev libboost-python1.55-dev;
-        export CXX="clang++-3.6"
-        export CC="clang-3.6"
+        export CXX="clang++-3.6";
+        export CC="clang-3.6";
       fi
     - if [ "PYVERSION" == "2.7" ]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-$OSNAME-x86_64.sh -O miniconda.sh;
@@ -100,10 +87,6 @@ install:
     - make pygimli J=4
 
 script:
-    # Test gimli
-    - make check
-    - ./bin/gimliUnitTest
-
     # Make sure that interactive matplotlib backends work
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
