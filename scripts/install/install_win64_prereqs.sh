@@ -1,6 +1,9 @@
 #!/bin/env bash
 
 pacman -Sy
+echo "#########################################################################"
+echo "*** Maybe you need to restart msys after update of system components! ***"
+echo "#########################################################################"
 
 pacman -S --needed --noconfirm \
         make \

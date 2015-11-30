@@ -1,4 +1,12 @@
 #!/bin/env bash
+
+
+if [ $# -lt 1 ]; then
+    PYTHON_MAJOR_REQ=3
+else
+    PYTHON_MAJOR_REQ=$1
+fi
+
 WINPYTHON_DOWNLOAD=winPython_3.4/3.4.3.6/WinPython-64bit-3.4.3.6Qt5
 WINPYTHON_VERSION=python-3.4.3.amd64
 
@@ -14,7 +22,7 @@ searchPython(){
         
         if [ -z "$FindRunDone" ]; then
             # obvious the python is allready path
-            rm -rf .bash_hint_python
+            rm -rf $GIMLI_ROOT/.bash_hint_python
         fi
     else
         if [ -z "$FindRunDone" ]; then
@@ -32,20 +40,19 @@ searchPython(){
                 echo "You need to paste the following into your $HOME/.bashrc "
                 echo "-----------------------------------------------"
                 echo "export PATH=\$PATH:$ar"
-                echo "export PATH=\$PATH:$ar" > .bash_hint_python
+                echo "export PATH=\$PATH:$ar" > $GIMLI_ROOT/.bash_hint_python
                 echo "-----------------------------------------------"
                 export PATH=$PATH:$ar
             fi
             searchPython 1
         else
-            
+  
             echo "-----------------------------------------------------------------------------------"
             echo "No suiteable python version found .. you need to install winpython"
             echo "http://sourceforge.net/projects/winpython/files/$WINPYTHON_DOWNLOAD'.exe'/download"
             echo "Please install winpython"
             echo "You can the simple rerun this script and find you Python installation temporarily, "
             echo "or set your PATH variable to your winpython installation directory."
-            exit()
         fi
     fi
 }
