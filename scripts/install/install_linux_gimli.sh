@@ -3,7 +3,7 @@
 ROOT=$PWD
 PARALELL=2
 
-CMAKE_GENERATOR='MSYS Makefiles'
+CMAKE_GENERATOR='Unix Makefiles'
 
 buildGIMLI(){
         if [ -d "gimli" ]; then
@@ -21,7 +21,7 @@ buildGIMLI(){
         rm -rf build/
         mkdir -p build
     pushd build
-            cmake -G "$CMAKE_GENERATOR" ../gimli -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
+            cmake -G "$CMAKE_GENERATOR" ../gimli 
 
             make -j$PARALELL && make pygimli J=$PARALELL 
             echo ""
