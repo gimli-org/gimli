@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-[ -z $GIMLI_ROOT ] && GIMLI_ROOT=$PWD/gimli
+[ -z "$GIMLI_ROOT" ] && GIMLI_ROOT=$PWD/gimli
 
-echo "GIMLI_ROOT=", $GIMLI_ROOT
+echo "GIMLI_ROOT="$GIMLI_ROOT
 
-SCRIPT_REPO=https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install
-GET="curl -Ls"
+SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
+GET="curl" 
 
 #SCRIPT_REPO=$PREFIX/gimli/scripts/install
 #GET="cat"
