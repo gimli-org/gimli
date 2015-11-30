@@ -15,9 +15,6 @@ os:
 osx_image: xcode7.1
 
 env:
-    global:
-    - CXX="clang++-3.6"
-    - CC="clang-3.6"
     matrix:
     - PYVERSION=2.7
     - PYVERSION=3.4
@@ -47,16 +44,16 @@ addons:
     - libsuitesparse-dev
     - libedit-dev
 
-cache:
-    directories:
-    - thirdParty
+#cache:
+    #directories:
+    #- thirdParty
 
 before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         OSNAME="MacOSX";
         brew update;
         brew unlink cmake;
-        brew install cmake boost-python libconfig;
+        brew install cmake boost-python;
       elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         OSNAME="Linux";
         sudo add-apt-repository ppa:kalakris/cmake -y;
@@ -65,6 +62,8 @@ before_install:
         sudo apt-get update -qq;
         sudo apt-get install -qq cmake;
         sudo apt-get install -qq libboost-system1.55-dev libboost-thread1.55-dev libboost-python1.55-dev;
+        export CXX="clang++-3.6"
+        export CC="clang-3.6"
       fi
     - if [ "PYVERSION" == "2.7" ]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-$OSNAME-x86_64.sh -O miniconda.sh;
@@ -77,7 +76,7 @@ before_install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - DEPS="cmake numpy matplotlib sphinx"
+    - DEPS="numpy matplotlib sphinx"
     - conda create -q -n gimli python=$PYVERSION $DEPS
     - source activate gimli
     - conda install -c http://conda.anaconda.org/numba llvmdev
