@@ -1,0 +1,18 @@
+ARCH: "x86_64"
+version: 1.0.{build}
+branches:
+  only:
+  - dev
+build:
+  verbosity: minimal
+notifications:
+- provider: Email
+  to:
+  - mail@pygimli.org
+  on_build_success: false
+  on_build_failure: true
+  on_build_status_changed: true
+build_script:
+    - set PATH=C:\MinGW\bin;%PATH%
+    - set PATH=C:\MinGW\msys\1.0\bin;%PATH%
+    - C:\MinGW\msys\1.0\bin\sh --login -c "curl -sL http://install.pygimli.org | bash"
