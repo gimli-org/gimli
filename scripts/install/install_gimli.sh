@@ -51,6 +51,7 @@ echo "=========================================="
 echo "Install gimli for" $SYSTEM
 echo "------------------------------------------"
 
+mkdir -p $GIMLI_ROOT
 pushd $GIMLI_ROOT
     "$GET" $SCRIPT_REPO/install_$SYSTEM'_gimli.sh' | bash
 popd
