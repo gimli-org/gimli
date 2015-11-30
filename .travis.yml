@@ -59,21 +59,18 @@ before_install:
         brew install cmake boost-python libconfig;
       elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         OSNAME="Linux";
-        # Travis uses cmake 2.8.7 by default (too old for gimli)
-        sudo add-apt-repository ppa:kalakris/cmake -y
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        sudo add-apt-repository --yes ppa:boost-latest/ppa
-        sudo apt-get update -qq
-        sudo apt-get install -qq cmake
-
-        # Boost 1.55
-        sudo apt-get install -qq libboost-system1.55-dev libboost-thread1.55-dev libboost-python1.55-dev
+        sudo add-apt-repository ppa:kalakris/cmake -y;
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y;
+        sudo add-apt-repository --yes ppa:boost-latest/ppa;
+        sudo apt-get update -qq;
+        sudo apt-get install -qq cmake;
+        sudo apt-get install -qq libboost-system1.55-dev libboost-thread1.55-dev libboost-python1.55-dev;
       fi
     - if [ "PYVERSION" == "2.7" ]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-$OSNAME-x86_64.sh -O miniconda.sh;
-        else
+      else
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-$OSNAME-x86_64.sh -O miniconda.sh;
-        fi
+      fi
 
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
