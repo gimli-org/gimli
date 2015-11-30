@@ -64,7 +64,7 @@ before_install:
     - DEPS="numpy matplotlib sphinx"
     - conda create -q -n gimli python=$PYVERSION $DEPS
     - source activate gimli
-    - conda install -c https://conda.anaconda.org/gimli boost
+    - conda install -c https://conda.anaconda.org/menpo suitesparse boost metis
     - pip install -r doc/requirements.txt # documentation requirements
 
 install:
