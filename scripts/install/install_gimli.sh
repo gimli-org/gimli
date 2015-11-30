@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
-[ -z "$GIMLI_ROOT" ] && GIMLI_ROOT=$PWD/gimli
+if [ $# -lt 1 ]; then
+    GIMLI_ROOT=$PWD/gimli
+else
+    GIMLI_ROOT=$1
+fi
+# echo $GIMLI_ROOT
+# [ -z "$GIMLI_ROOT" ] && GIMLI_ROOT=$PWD/gimli
 
+echo " "
 echo "GIMLI_ROOT="$GIMLI_ROOT
 
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
