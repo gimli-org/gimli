@@ -1,5 +1,7 @@
 #!/bin/env bash
 
+SCRIPT_REPO=https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install
+
 echo "=========================================="
 if [ $(uname -o) == "Msys" ]; then
     if [ $(uname -m) == "x86_64" ]; then
@@ -15,7 +17,7 @@ if [ $(uname -o) == "Msys" ]; then
         export PATH=/mingw32/bin:$PATH
     fi
     # check for winpython
-    curl -s www.resistivity.net/download/scripts/install_$SYSTEM'_winpython.sh' | bash
+    curl -s $SCRIPT_REPO/install_$SYSTEM'_winpython.sh' | bash
     [ -f .bash_hint_python ] && source .bash_hint_python        
     
 elif [ $(uname -o) == "GNU/Linux" ]; then
@@ -27,12 +29,12 @@ echo "------------------------------------------"
 echo "=========================================="
 echo "Install system prerequisites for" $SYSTEM
 echo "------------------------------------------"
-curl -s www.resistivity.net/download/scripts/install_$SYSTEM'_prereqs.sh' | bash
+curl -s $SCRIPT_REPO/install_$SYSTEM'_prereqs.sh' | bash
 
 echo "=========================================="
 echo "Install gimli for" $SYSTEM
 echo "------------------------------------------"
-curl -s www.resistivity.net/download/scripts/install_$SYSTEM'_gimli.sh' | bash
+curl -s $SCRIPT_REPO/install_$SYSTEM'_gimli.sh' | bash
 
 echo ""
 echo "=========================================="

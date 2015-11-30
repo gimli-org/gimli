@@ -19,6 +19,9 @@ searchPython(){
     else
         if [ -z "$FindRunDone" ]; then
             echo "---------------------------------------------------------------------------------------------------"
+            echo "Please install http://sourceforge.net/projects/winpython/files/$WINPYTHON_DOWNLOAD'.exe'/download"
+            echo "We try to find it if you already have but forget to set a proper path" 
+            echo "---------------------------------------------------------------------------------------------------"
             echo "No suiteable python version found .. trying to find one .......... find /C -name $WINPYTHON_VERSION"
             
             ar=($(find /C -name "$WINPYTHON_VERSION" 2>/dev/null))
@@ -42,6 +45,7 @@ searchPython(){
             echo "Please install winpython"
             echo "You can the simple rerun this script and find you Python installation temporarily, "
             echo "or set your PATH variable to your winpython installation directory."
+            exit()
         fi
     fi
 }
