@@ -32,7 +32,6 @@ addons:
     - libllvm-3.6-ocaml-dev
     - libblas-dev
     - liblapack-dev
-    - libsuitesparse-dev
     - libedit-dev
 
 before_install:
@@ -40,7 +39,7 @@ before_install:
         OSNAME="MacOSX";
         brew update;
         brew unlink cmake;
-        brew install cmake boost-python libconfig;
+        brew install cmake llvm boost-python libconfig;
       elif [ "$TRAVIS_OS_NAME" == "linux" ]; then
         OSNAME="Linux";
         sudo add-apt-repository ppa:kalakris/cmake -y;
