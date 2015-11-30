@@ -12,7 +12,7 @@ os:
     - linux
     - osx
 
-osx_image: xcode7.1
+osx_image: xcode7.2b3
 
 env:
     matrix:
@@ -40,7 +40,7 @@ before_install:
         OSNAME="MacOSX";
         brew update;
         brew unlink cmake;
-        brew install cmake boost-python;
+        brew install cmake boost-python libconfig;
       elif [ "$TRAVIS_OS_NAME" == "linux" ]; then
         OSNAME="Linux";
         sudo add-apt-repository ppa:kalakris/cmake -y;
@@ -66,7 +66,6 @@ before_install:
     - DEPS="numpy matplotlib sphinx"
     - conda create -q -n gimli python=$PYVERSION $DEPS
     - source activate gimli
-    - conda install -c http://conda.anaconda.org/numba llvmdev
     - pip install -r doc/requirements.txt # documentation requirements
 
 install:
