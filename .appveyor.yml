@@ -13,6 +13,5 @@ notifications:
   on_build_failure: true
   on_build_status_changed: true
 build_script:
-    - set PATH=C:\MinGW\bin;%PATH%
-    - set PATH=C:\MinGW\msys\1.0\bin;%PATH%
-    - C:\MinGW\msys\1.0\bin\sh --login -c "curl -sL http://install.pygimli.org | bash"
+    - set PATH=C:\msys64\bin;%PATH%
+    - C:\msys64\bin\sh --login -c "curl -sL http://install.pygimli.org | bash"
