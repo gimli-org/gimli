@@ -96,7 +96,7 @@ popd
 
 echo ""
 echo "=========================================="
-echo "set the followng setting to use pygimli, either local per session or permanently in your $HOME/.bashrc"
+echo "set the following setting to use pygimli, either local per session or permanently in your $HOME/.bashrc"
 echo "------------------------------------------"
 echo ""
 [ -f $GIMLI_ROOT/.bash_hint_python ] && cat $GIMLI_ROOT/.bash_hint_python
