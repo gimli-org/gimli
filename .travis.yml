@@ -13,6 +13,24 @@ python:
 
 osx_image: xcode7.2b2
 
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-3.6
+    packages:
+    - build-essential
+    - clang-3.6
+    - libclang-3.6-dev
+    - llvm-3.6
+    - libllvm-3.6-ocaml-dev
+    - libblas-dev
+    - liblapack-dev
+    - libsuitesparse-dev
+    - libedit-dev
+    - coreutils
+    - python3-dev
+
 before_install:
     # hack automatic OS detection
     - echo 'NAME="Ubuntu"' | sudo tee /etc/os-release
@@ -28,10 +46,14 @@ before_install:
     - sudo apt-get update -qq
     - sudo apt-get install cmake
 
+    # pre-install boost
+    - sudo add-apt-repository --yes ppa:boost-latest/ppa
+    - sudo apt-get install libboost-all-dev
+
 install:
     - curl -sL http://install.pygimli.org | bash -s py=3
 
-notifications:
-email:
-    recipients:
-    - mail@pygimli.org
+#notifications:
+#email:
+    #recipients:
+    #- mail@pygimli.org
