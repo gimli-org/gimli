@@ -16,7 +16,7 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 CASTXML_REV=8a08a44ffee70f71bdb7d8bee90e325dafbfeae4 #last functional
 #CASTXML_REV=7bbb9a0 # current functional
 
-PYGCCXML_URL=https://github.com/gccxml/pygccxml 
+PYGCCXML_URL=https://github.com/gccxml/pygccxml
 #PYGCCXML_REV=f8cfd81 # old functional
 PYGCCXML_REV=bffa6e0 # current functional
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
@@ -38,7 +38,7 @@ checkTOOLSET(){
 
     SRC_DIR=$PREFIX/src
     mkdir -p $SRC_DIR
-    
+
     if [ -z "$TARGETNAME" ]; then
         TARGETNAME=-$TOOLSET-$ADDRESSMODEL
     fi
@@ -48,9 +48,9 @@ checkTOOLSET(){
 
 	DIST_DIR=$PREFIX/dist$TARGETNAME
 	mkdir -p $DIST_DIR
-		
+
     BUILDSCRIPT_HOME=${0%/*}
-    
+
 	echo "##################################################################################################"
 	echo "SYSTEM: $SYSTEM"
 	echo "USING TOOLSET=$TOOLSET and CMAKE_GENERATOR=$CMAKE_GENERATOR, PARRALELBUILD: $PARALLEL_BUILD"
@@ -76,14 +76,14 @@ SetGCC_TOOLSET(){
 	TOOLSET=gcc-`gcc -dumpversion`
 	B2TOOLSET=''
     MAKE=make
-	
+
 	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
 		CMAKE_GENERATOR='MSYS Makefiles'
         #CMAKE_GENERATOR='MinGW Makefiles'
 		SYSTEM=WIN
 		B2TOOLSET=mingw
         B2TOOLSET=gcc
-        #MAKE=mingw32-make 
+        #MAKE=mingw32-make
 	elif [ "$OSTYPE" == "darwin13" ]; then
 		CMAKE_GENERATOR='Unix Makefiles'
 		SYSTEM=MAC
@@ -91,7 +91,7 @@ SetGCC_TOOLSET(){
 		CMAKE_GENERATOR='Unix Makefiles'
 		SYSTEM=UNIX
 	fi
-	 
+
     CMAKE_MAKE=$MAKE
 	COMPILER='gcc'
 	GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
@@ -106,13 +106,29 @@ SetGCC_TOOLSET(){
 		ADDRESSMODEL=64
 	fi
 }
+
+getCLANG_NAME() {
+    if command -v clang-3.6 2>/dev/null; then
+        CLANG="clang-3.6"
+        CLANGPP="clang++-3.6"
+    elif command -v clang-3.6.1 2>/dev/null; then
+        CLANG="clang-3.6.1"
+        CLANGPP="clang++-3.6.1"
+    else
+        CLANG="clang"
+        CLANGPP="clang++"
+    fi
+
+    echo "Setting clang to: " $CLANG
+}
+
 SetCLANG_TOOLSET(){
 	#needGCC
 	TOOLSET=clang-`clang -dumpversion`
 	B2TOOLSET='clang'
     MAKE=make
-	
-    
+
+
 	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
 		CMAKE_GENERATOR='MSYS Makefiles'
         SYSTEM=WIN
@@ -123,7 +139,7 @@ SetCLANG_TOOLSET(){
 		CMAKE_GENERATOR='Unix Makefiles'
 		SYSTEM=UNIX
 	fi
-	 
+
     CMAKE_MAKE=$MAKE
 	COMPILER='clang'
 	GCCVER=`clang -dumpmachine`-`gcc -dumpversion`
@@ -144,7 +160,7 @@ getWITH_WGET(){
 	_SRC_=$2
 	_PAC_=$3
     echo "wget $_URL_/$_PAC_"
-    
+
 	if [ ! -d $_SRC_ ]; then
         echo "Copying sources into $_SRC_"
         pushd $SRC_DIR
@@ -152,28 +168,28 @@ getWITH_WGET(){
 			if [ "${_PAC_##*.}" = "zip" ]; then
                 mkdir -p $_SRC_
                 pushd $_SRC_
-                    cmake -E tar -xz ../$_PAC_ 
+                    cmake -E tar -xz ../$_PAC_
                 popd
 			else
 				cmake -E tar -xzvf $_PAC_
 			fi
         popd
-    else 
+    else
         echo "skipping .. sourcetree already exists."
     fi
 
 }
-    
+
 getWITH_SVN(){
 	SVN="svn"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
-	
+
 	echo "----SVN--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
 	echo "--------------------------------------------------"
-		
-	if ( [ -d $_SRC_ ] ); then 
+
+	if ( [ -d $_SRC_ ] ); then
 		pushd $_SRC_
             "$SVN" up
 		popd
@@ -189,13 +205,15 @@ getWITH_HG(){
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
-	
+
 	echo "----HG--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
 	echo "--------------------------------------------------"
-		
-	if ( [ -d $_SRC_ ] ); then 
+
+	if ( [ -d $_SRC_ ] ); then
 		pushd $_SRC_
-            "$HG" pull
+#            "$HG" fetch
+            "$HG" pull -u
+            "$HG" up
 		popd
 	else
         pushd $SRC_DIR
@@ -203,12 +221,10 @@ getWITH_HG(){
         popd
 	fi
     if [ -n $_BRANCH_ ]; then
-    echo "ignoring branch $_BRANCH_ setting"
-#         pushd $_SRC_
-#           echo $_SRC_ $_BRANCH_
-#           echo $HG checkout $_BRANCH_ .
-#           "$HG" checkout $_BRANCH_ .
-#         popd
+        pushd $_SRC_
+          echo $_SRC_ $_BRANCH_
+          #"$HG" revert -r $_BRANCH_ --all
+        popd
     fi
 }
 
@@ -217,12 +233,13 @@ getWITH_GIT(){
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
-	
+
 	echo "----GIT--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
 	echo "--------------------------------------------------"
-		
-	if ( [ -d $_SRC_ ] ); then 
+
+	if ( [ -d $_SRC_ ] ); then
 		pushd $_SRC_
+            "$GIT" stash
             "$GIT" pull
  		popd
 	else
@@ -233,7 +250,7 @@ getWITH_GIT(){
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_
-          echo $GIT checkout $_BRANCH_ .
+          echo $GIT checkout --force $_BRANCH_ .
           "$GIT" checkout $_BRANCH_ .
         popd
     fi
@@ -249,10 +266,10 @@ needPYTHON(){
 	PYTHONMAJOR=`python -c 'import sys; print(sys.version_info.major)'`
 	PYTHONMINOR=`python -c 'import sys; print(sys.version_info.minor)'`
 	#echo $PYTHONVERSION $PYTHONMAJOR
-	
+
 	PYTHON_HOME=`which python`
 	PYTHON_HOME=${PYTHON_HOME%/*}
-	
+
     echo "PYTHON HOME: $PYTHON_HOME"
     if [ $SYSTEM == "win" ]; then
         PYTHONBASE=python$PYTHONMAJOR$PYTHONMINOR
@@ -269,7 +286,7 @@ needPYTHON(){
             echo "found, ok: $PYTHONLIB "
         fi
     fi
-	
+
 }
 
 cmakeBuild(){
@@ -277,7 +294,7 @@ cmakeBuild(){
 	_BUILD_=$2
 	_DIST_=$3
 	_EXTRA_=$4
-	
+
 	echo "SRC" $_SRC_
 	mkBuildDIR $_BUILD_
     pushd $_BUILD_
@@ -285,10 +302,10 @@ cmakeBuild(){
 		cmake $_SRC_ -G "$CMAKE_GENERATOR" \
              -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
 			-DCMAKE_INSTALL_PREFIX=$_DIST_ $_EXTRA_
-            
-        
+
+
         #make -j$PARALLEL_BUILD install
-		cmake --build . --config release --target install -- -j$PARALLEL_BUILD 
+		cmake --build . --config release --target install -- -j$PARALLEL_BUILD
     popd
 }
 mkBuildDIR(){
@@ -300,7 +317,7 @@ mkBuildDIR(){
         rm -rf $_BUILDMB_
     fi
 	mkdir -p $_BUILDMB_
-	
+
 	if [ -n "$_SRCMB_" ]; then # if nonzero
 		echo "copy $_SRCMB_ to $_BUILDMB_"
 		if [ "$(ls -A $_BUILDMB_)" ]; then
@@ -317,7 +334,7 @@ prepBOOST(){
 	BOOST_DIST=$DIST_DIR/$BOOST_DIST_NAME
 	BOOST_BUILD=$BUILD_DIR/$BOOST_VER-'py'$PYTHONMAJOR$PYTHONMINOR
 	export BOOST_ROOT=$BOOST_DIST
-	
+
 	BOOST_ROOT_WIN=${BOOST_ROOT/\/c\//C:\/}
 	BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/d\//D:\/}
 	BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/e\//E:\/}
@@ -327,19 +344,19 @@ buildBOOST(){
 	prepBOOST
 
 	getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
-	
-    if [ ! -d $BOOST_BUILD ]; then 
+
+    if [ ! -d $BOOST_BUILD ]; then
         echo "copying sourcetree into build: $BOOST_BUILD"
         cp -r $BOOST_SRC $BOOST_BUILD
-    fi 
+    fi
 	pushd $BOOST_BUILD
         echo "Try to build b2 for TOOLSET: $B2TOOLSET"
-                        
+
 		if [ "$SYSTEM" == "WIN" ]; then
 			if [ ! -f ./b2.exe ]; then
                 echo "Try with cmd /c \"bootstrap.bat $B2TOOLSET\""
 				cmd /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
-				
+
 				if [ ! -f ./b2.exe ]; then
                     echo "Try with ./bootstrap.sh --with-toolset=$B2TOOLSET"
 					./bootstrap.sh --with-toolset=$B2TOOLSET # only mingw does not work either
@@ -351,18 +368,18 @@ buildBOOST(){
 			sh bootstrap.sh
             B2="./b2"
 		fi
-		
+
 		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
-		        
+
         #"$B2" toolset=$COMPILER --verbose-test test
-        
+
         #quit
         if [ $SYSTEM == 'WIN' -a $ADDRESSMODEL == '64' ]; then
             EXTRADEFINES='define=BOOST_USE_WINDOWS_H define=MS_WIN64'
             echo "+++++++++++++++++++ :$EXTRADEFINES"
         fi
         echo "Build with python: $WITHPYTHON"
-        
+
 		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
         -j $PARALLEL_BUILD \
         -d 2 \
@@ -377,7 +394,7 @@ buildBOOST(){
 		--with-chrono \
 		--with-regex \
 		--with-filesystem \
-		--with-atomic 
+		--with-atomic
 	popd
 	echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR.dist
 }
@@ -391,9 +408,9 @@ prepGCCXML(){
 buildGCCXML(){
 	checkTOOLSET
 	prepGCCXML
-    
+
  	getWITH_GIT $GCCXML_URL $GCCXML_SRC
-	
+
 	EXTRA=''
 	if [ "$OSTYPE" == "darwin13" ]; then
 			# on APPLE will wrong insert -no-cpp-precomp, avoid it with -DCMAKE_C_COMPILER_ID=GNUAPPLE \
@@ -413,7 +430,7 @@ buildGCCXML(){
     else
         cmakeBuild $GCCXML_SRC $GCCXML_BUILD $GCCXML_DIST $EXTRA
     fi
-	 
+
 }
 prepCASTXML(){
     CASTXML_VER=castXML
@@ -424,34 +441,41 @@ prepCASTXML(){
 buildCASTXML(){
     checkTOOLSET
     prepCASTXML
-        
+
     getWITH_GIT $CASTXML_URL $CASTXML_SRC $CASTXML_REV
 
-    if [ "$SYSTEM" == "WIN" ]; then 
-    
+    if [ "$SYSTEM" == "WIN" ]; then
+
         mkBuildDIR $CASTXML_BUILD
         pushd $CASTXML_BUILD
             if [ $ADDRESSMODEL == '32' ]; then
                 CC=/mingw32/bin/gcc CXX=/mingw32/bin/g++ cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
                     -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
                     -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
-            
-                sed -i -e 's/\/mingw32/C:\/msys32\/mingw32/g' src/CMakeFiles/castxml.dir/linklibs.rsp        
+
+                sed -i -e 's/\/mingw32/C:\/msys32\/mingw32/g' src/CMakeFiles/castxml.dir/linklibs.rsp
             else
-                CC=/mingw64/bin/gcc CXX=/mingw64/bin/g++ cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                                #CC=/mingw64/bin/gcc CXX=/mingw64/bin/g++ cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                #    -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
+                #    -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
+                #sed -i -e 's/\/mingw64/C:\/msys64\/mingw64/g' src/CMakeFiles/castxml.dir/linklibs.rsp
+
+                sed -i 's/if(DEFINED LLVM_BUILD_BINARY_DIR)/if(DEFINED LLVM_BUILD_BINARY_DIR_)/' $CASTXML_SRC/CMakeLists.txt
+
+                cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
+                    -DCLANG_RESOURCE_DIR=/mingw64/lib/clang/3.7.0/ \
                     -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
                     -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
-            
-                sed -i -e 's/\/mingw64/C:\/msys64\/mingw64/g' src/CMakeFiles/castxml.dir/linklibs.rsp
-            fi 
-            
+            fi
+
             #make -j$PARALLEL_BUILD install
-            cmake --build . --config release --target install -- -j$PARALLEL_BUILD 
+            cmake --build . --config release --target install -- -j$PARALLEL_BUILD
         popd
     else
-        CC=clang-3.6 CXX=clang++-3.6 cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST 
+        getCLANG_NAME
+        CC=$CLANG CXX=$CLANGPP cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
     fi
-     
+
 }
 
 prepPYGCCXML(){
@@ -459,12 +483,12 @@ prepPYGCCXML(){
 	PYGCCXML_SRC=$SRC_DIR/$PYGCCXML_VER
 	PYGCCXML_BUILD=$BUILD_DIR/$PYGCCXML_VER
 	PYGCCXML_DIST=$DIST_DIR/$PYGCCXML_VER
-    
+
     PYPLUSPLUS_VER=pyplusplus
     PYPLUSPLUS_SRC=$SRC_DIR/$PYPLUSPLUS_VER
 	PYPLUSPLUS_BUILD=$BUILD_DIR/$PYPLUSPLUS_VER
 	PYPLUSPLUS_DIST=$DIST_DIR/$PYPLUSPLUS_VER
-        
+
     PYGCCXML_DIST_WIN=${PYGCCXML_DIST/\/c\//C:\\/}
 	PYGCCXML_DIST_WIN=${PYGCCXML_DIST_WIN/\/d\//D:\\/}
     PYGCCXML_DIST_WIN=${PYGCCXML_DIST_WIN/\/e\//E:\\/}
@@ -476,28 +500,28 @@ buildPYGCCXML(){
 
 	getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
 	getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
-	
+
 	mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC
     pushd $PYGCCXML_BUILD
 		python setup.py build
 		echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYGCCXML_DIST
-        fi 
+        fi
 
 		cp -rf $PYGCCXML_BUILD/build/lib*/pygccxml $PYGCCXML_DIST
 		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
 		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
-	
-	mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC 
+
+	mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC
 	pushd $PYPLUSPLUS_BUILD
 		python setup.py build
 		echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYPLUSPLUS_DIST
-        fi 
-        
+        fi
+
 		cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
             #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch
@@ -535,19 +559,19 @@ buildTRIANGLE(){
 
 	rm -rf $TRIANGLE_BUILD
 	mkBuildDIR $TRIANGLE_BUILD $TRIANGLE_SRC
-	
+
 	pushd $TRIANGLE_BUILD
-		if [ "$SYSTEM" == "WIN" ]; then 
+		if [ "$SYSTEM" == "WIN" ]; then
 			sed -i -e 's/-DLINUX/-DCPU86/g' makefile ;
 			patch triangle.c -i $BUILDSCRIPT_HOME/patches/triangle-mingw-win64.patch
 		fi
-	
+
 		if [ "$ADDRESSMODEL" == "64" ]; then
 			sed -i -e 's/CC = cc/CC = gcc -fPIC/g' makefile;
 		else
 			sed -i -e 's/CC = cc/CC = gcc/g' makefile;
 		fi
-	
+
 		make trilibrary
 		mkdir -p $TRIANGLE_DIST
 		ar cqs $TRIANGLE_DIST/libtriangle.a triangle.o
@@ -565,14 +589,14 @@ buildSUITESPARSE(){
 	checkTOOLSET
 	prepLAPACK
 	prepSUITESPARSE
-	
+
 	getWITH_WGET $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_VER.tar.gz
 	[ -d $SRC_DIR/SuiteSparse ] && mv $SRC_DIR/SuiteSparse $SUITESPARSE_SRC
-	
+
 	mkBuildDIR $SUITESPARSE_BUILD $SUITESPARSE_SRC 1
-	
+
 	pushd $SUITESPARSE_BUILD
-		if [ "$SYSTEM" == "WIN" ]; then 
+		if [ "$SYSTEM" == "WIN" ]; then
 			#patch -p1 < $BUILDSCRIPT_HOME/patches/SuiteSparse-4.4.1.patch
 			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
 			echo "CC = gcc" >> SuiteSparse_config/SuiteSparse_config.mk
@@ -581,10 +605,10 @@ buildSUITESPARSE(){
 		elif [ "$OSTYPE" == "darwin13" ]; then
 			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
 			echo "CC = gcc -fPIC" >> SuiteSparse_config/SuiteSparse_config.mk
-		else 
+		else
 			echo "CC = gcc " >> SuiteSparse_config/SuiteSparse_config.mk
 		fi
-	
+
 		mkdir -p $SUITESPARSE_DIST/lib
 		mkdir -p $SUITESPARSE_DIST/include
 		echo "INSTALL_LIB = $SUITESPARSE_DIST/lib" >> SuiteSparse_config/SuiteSparse_config.mk;
@@ -598,7 +622,7 @@ buildSUITESPARSE(){
 		pushd $MODULE
             		CFLAGS='-std=c90' "$MAKE" -j$PARALLEL_BUILD library
 		        "$MAKE" install
-		popd 
+		popd
 	popd
 }
 
@@ -611,19 +635,19 @@ prepCPPUNIT(){
 buildCPPUNIT(){
     checkTOOLSET
     prepCPPUNIT
-    getWITH_SVN $CPPUNIT_URL $CPPUNIT_SRC 
+    getWITH_SVN $CPPUNIT_URL $CPPUNIT_SRC
 	mkBuildDIR $CPPUNIT_BUILD $CPPUNIT_SRC
-    
+
     pushd $CPPUNIT_SRC
         pushd cppunit
-            ./autogen.sh 
+            ./autogen.sh
             ./configure --prefix=$CPPUNIT_DIST
             make -j $PARALLEL_BUILD
             make install
-            
+
         popd
     popd
-    
+
 }
 
 slotAll(){
@@ -639,7 +663,7 @@ showHelp(){
 	echo "boost | lapack | triangle | suitesparse | gccxml | pygccxml | all"
 }
 
-# script starts here 
+# script starts here
 if [ -z "$TOOLSET" ]; then
     TOOLSET=none
 fi
@@ -653,7 +677,7 @@ fi
 
 if [ -n "$PREFIX" ]; then
     PREFIX=`readlink -m $PREFIX`
-else 
+else
     PREFIX=`pwd`
 fi
 
@@ -669,11 +693,11 @@ for arg in $@
 do
 	echo $arg
     case $arg in
-    msvc) 
+    msvc)
         SetMSVC_TOOLSET;;
-	mingw) 
+	mingw)
         SetMINGW_TOOLSET;;
-    all) 
+    all)
         slotAll;;
     help)
         showHelp
@@ -696,8 +720,8 @@ do
 		buildPYGCCXML;;
     cppunit)
 		buildCPPUNIT;;
-	
-    *) 
+
+    *)
         echo "Don't know what to do."
         showHelp;;
     esac

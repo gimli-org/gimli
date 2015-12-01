@@ -208,7 +208,7 @@ macro(find_or_build_package_check package get_package checkVar forceLocal)
 
         execute_process(
             COMMAND 
-				bash ${PROJECT_SOURCE_DIR}/thirdParty/buildThirdParty.sh ${get_package}
+				bash ${PROJECT_SOURCE_DIR}/scripts/buildThirdParty.sh ${get_package}
             WORKING_DIRECTORY 
 				${THIRDPARTY_DIR}
         )
