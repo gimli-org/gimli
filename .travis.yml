@@ -59,6 +59,7 @@ before_install:
 
     # pre-install boost
     - sudo apt-get install -qq libboost-system1.55-dev libboost-thread1.55-dev libboost-python1.55-dev
+    - sudo apt-get install -qq python3-numpy python3-matplotlib
 
 install:
     - curl -sL http://install.pygimli.org | bash -s py=3 j=4
