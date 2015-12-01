@@ -2,23 +2,18 @@
 # See build results on http://travis-ci.org/gimli-org/gimli
 # Before commiting changes to this file, check consistency on http://lint.travis-ci.org/
 
-language: python
+language: cpp
 sudo: required
 compiler: clang
 os:
     - linux
     #- osx
-python:
-    - "3.4"
 
 branches:
   only:
     - dev
 
 osx_image: xcode7.2b2
-
-virtualenv:
-  system_site_packages: true
 
 addons:
   apt:

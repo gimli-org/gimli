@@ -1,8 +1,38 @@
 #!/usr/bin/env bash
 
+# Default values
 GIMLI_ROOT=$PWD/gimli
-PARALLEL_BUILD=1
+PARALLEL_BUILD=2
 PYTHON_MAJOR=3
+
+# Utility functions
+expand_tilde()
+# Better handling of ~ character in path argument
+{
+    case "$1" in
+    (\~)        echo "$HOME";;
+    (\~/*)      echo "$HOME/${1#\~/}";;
+    (\~[^/]*/*) local user=$(eval echo ${1%%/*})
+                echo "$user/${1#*/}";;
+    (\~[^/]*)   eval echo ${1};;
+    (*)         echo "$1";;
+    esac
+}
+
+function boxprint()
+# Print arguments in colored box
+{
+  local s="$*"
+  tput setaf 3
+  echo " -${s//?/-}-
+| ${s//?/ } |
+| $(tput setaf 4)$s$(tput setaf 3) |
+| ${s//?/ } |
+ -${s//?/-}-"
+  tput sgr 0
+}
+
+boxprint "Geophysical Inversion and Modeling Library (www.gimli.org)"
 
 help(){
     echo "====================================================================="
@@ -26,7 +56,7 @@ help(){
 for i in "$@"; do
     case "$i" in
         *gimli_root=*|*path=*)
-            GIMLI_ROOT=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+            GIMLI_ROOT=$(expand_tilde `echo $i | sed 's/[-a-zA-Z0-9]*=//'`)
         ;;
         *j=*)
             PARALLEL_BUILD=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
@@ -47,7 +77,7 @@ export PARALLEL_BUILD=$PARALLEL_BUILD
 
 echo "Installing at "$GIMLI_ROOT
 echo "Build for Python="$PYTHON_MAJOR
-echo "Parallelize with j="$PARALLEL_BUILD
+echo "Parallelize build with j="$PARALLEL_BUILD
 
 #SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
