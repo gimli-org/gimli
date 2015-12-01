@@ -12,9 +12,14 @@ case "$(grep "ID=" /etc/os-release)" in
     ;;
     *"debian"*)
         echo "Debian system found"
-        PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
-                    -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so 
-                    -DPYTHON_EXECUTABLE=/usr/bin/python3'
+        if [ $PYREQEST -eq 3 ] ; then
+            PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
+                        -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so 
+                        -DPYTHON_EXECUTABLE=/usr/bin/python3'
+        else
+            PYTHONSPECS=''
+        fi
+
     ;;
     *"arch"*)
         echo "Arch Linux system found"

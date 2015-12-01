@@ -1,15 +1,39 @@
 #!/usr/bin/env bash
 
-if [ $# -lt 1 ]; then
-    GIMLI_ROOT=$PWD/gimli
-else
-    GIMLI_ROOT=$1
-fi
-# echo $GIMLI_ROOT
-# [ -z "$GIMLI_ROOT" ] && GIMLI_ROOT=$PWD/gimli
+GIMLI_ROOT=$PWD/gimli
+PARALLEL_BUILD=1
 
-echo " "
-echo "GIMLI_ROOT="$GIMLI_ROOT
+help(){
+    echo "==============================================================="
+    echo "Command line options:"
+    echo "---------------------------------------------------------------"
+    echo " add these option with out - at the end of the command line    "
+    echo "---------------------------------------------------------------"
+    echo "h"
+    echo "      This help"
+    echo "path=GIMLI_ROOT "
+    echo "      Path for the gimli root dir. Default path=$GIMLI_ROOT"
+    echo "j=PARALLEL_BUILD"
+    echo "      Number of parallel compiler jobs. Default j=$PARALLEL_BUILD"
+    exit
+}
+
+for i in "$@"; do
+    case "$i" in
+        *gimli_root=*|*path=*)
+            GIMLI_ROOT=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        ;;
+        *j=*)
+            PARALLEL_BUILD=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        ;;
+        *h*|*help*)
+            help
+        ;;
+    esac
+done
+
+echo "Installing at "$GIMLI_ROOT
+echo "Parallelize with j="$PARALLEL_BUILD
 
 #SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
