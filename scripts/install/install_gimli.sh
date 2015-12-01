@@ -125,13 +125,14 @@ pushd $GIMLI_ROOT
 popd
 
 echo ""
-echo "=========================================="
-echo "set the following setting to use pygimli, either local per session or permanently in your $HOME/.bashrc"
-echo "------------------------------------------"
+echo "========================================================================"
+echo "Set the following setting to use pygimli, either locally"
+echo "per session or permanently in your $HOME/.bashrc"
+echo "------------------------------------------------------------------------"
 echo ""
 [ -f $GIMLI_ROOT/.bash_hint_python ] && cat $GIMLI_ROOT/.bash_hint_python
 [ -f $GIMLI_ROOT/.bash_hint_pygimli ] && cat $GIMLI_ROOT/.bash_hint_pygimli
 echo ""
-echo "------------------------------------------"
+echo "------------------------------------------------------------------------"
 
 #https://raw.githubusercontent.com/gimli-org/gimli/master/scripts/install/install**
