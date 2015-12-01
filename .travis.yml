@@ -43,14 +43,22 @@ before_install:
     - echo 'VERSION_ID="14.04"' | sudo tee -a /etc/os-release
     - echo 'HOME_URL="http://www.ubuntu.com/"' | sudo tee -a /etc/os-release
 
-    # update cmake
+    # Some custom sources
+    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo add-apt-repository --yes ppa:kalakris/cmake
+    - sudo add-apt-repository --yes ppa:boost-latest/ppa
     - sudo apt-get update -qq
-    - sudo apt-get install cmake
+
+      # newer gcc
+    - sudo apt-get install g++-4.8
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
+
+    # update cmake
+    - sudo apt-get install -qq cmake
 
     # pre-install boost
-    - sudo add-apt-repository --yes ppa:boost-latest/ppa
-    - sudo apt-get install libboost1.55-all-dev
+    - sudo apt-get install -qq libboost-system1.55-dev libboost-thread1.55-dev libboost-python1.55-dev
 
 install:
     - curl -sL http://install.pygimli.org | bash -s py=3 j=4
