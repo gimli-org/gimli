@@ -2,16 +2,34 @@
 # See build results on http://travis-ci.org/gimli-org/gimli
 # Before commiting changes to this file, check consistency on http://lint.travis-ci.org/
 
-language: cpp
+language: python
+sudo: required
 compiler: clang
 os:
     - linux
-    - osx
+    #- osx
+python:
+    - "3.4"
 
 osx_image: xcode7.2b2
 
+before_install:
+    # hack automatic OS detection
+    - echo 'NAME="Ubuntu"' | sudo tee /etc/os-release
+    - echo 'VERSION="14.04.2 LTS, Trusty Tahr"' | sudo tee -a /etc/os-release
+    - echo 'ID=ubuntu' | sudo tee -a /etc/os-release
+    - echo 'ID_LIKE=debian' | sudo tee -a /etc/os-release
+    - echo 'PRETTY_NAME="Ubuntu 14.04.2 LTS"' | sudo tee -a /etc/os-release
+    - echo 'VERSION_ID="14.04"' | sudo tee -a /etc/os-release
+    - echo 'HOME_URL="http://www.ubuntu.com/"' | sudo tee -a /etc/os-release
+
+    # update cmake
+    - sudo add-apt-repository --yes ppa:kalakris/cmake
+    - sudo apt-get update -qq
+    - sudo apt-get install cmake
+
 install:
-    - curl -sL http://install.pygimli.org | bash
+    - curl -sL http://install.pygimli.org | bash -s py=3
 
 notifications:
 email:

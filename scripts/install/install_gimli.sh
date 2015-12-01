@@ -51,7 +51,7 @@ echo "Parallelize with j="$PARALLEL_BUILD
 
 #SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
-GET="curl" 
+GET="curl"
 
 # SCRIPT_REPO=$GIMLI_ROOT/gimli/scripts/install
 # GET="cat"
@@ -72,8 +72,8 @@ if [ $(uname -o) == "Msys" ]; then
     fi
     # check for winpython
     "$GET" $SCRIPT_REPO/install_$SYSTEM'_winpython.sh' | bash
-    [ -f $GIMLI_ROOT/.bash_hint_python ] && source $GIMLI_ROOT/.bash_hint_python        
-    
+    [ -f $GIMLI_ROOT/.bash_hint_python ] && source $GIMLI_ROOT/.bash_hint_python
+
 elif [ $(uname -o) == "GNU/Linux" ]; then
     SYSTEM='linux'
     echo "Determining system ... LINUX system found"
@@ -83,7 +83,7 @@ echo "------------------------------------------"
 echo "=========================================="
 echo "Installing system prerequisites for" $SYSTEM
 echo "------------------------------------------"
-"$GET" $SCRIPT_REPO/install_$SYSTEM'_prereqs.sh' | bash 
+"$GET" $SCRIPT_REPO/install_$SYSTEM'_prereqs.sh' | bash
 
 echo "=========================================="
 echo "Installing gimli for" $SYSTEM
@@ -99,7 +99,7 @@ echo "=========================================="
 echo "set the followng setting to use pygimli, either local per session or permanently in your $HOME/.bashrc"
 echo "------------------------------------------"
 echo ""
-[ -f $GIMLI_ROOT./bash_hint_python ] && cat $GIMLI_ROOT/.bash_hint_python 
+[ -f $GIMLI_ROOT/.bash_hint_python ] && cat $GIMLI_ROOT/.bash_hint_python
 [ -f $GIMLI_ROOT/.bash_hint_pygimli ] && cat $GIMLI_ROOT/.bash_hint_pygimli
 echo ""
 echo "------------------------------------------"
