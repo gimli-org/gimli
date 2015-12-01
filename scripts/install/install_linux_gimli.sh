@@ -50,11 +50,11 @@ buildGIMLI(){
         echo ""
         echo "============================================================================"
         echo "---  try some basic test: calling pygimli once------------------------------"
-        export PYTHONPATH=$PYTHONPATH:$ROOT/gimli/python
+        export PYTHONPATH=$ROOT/gimli/python:$PYTHONPATH
         python -c 'import pygimli as pg; print("pygimli version:", pg.__version__)'
         echo "--- ------------------------------------------------------------------------"
-        echo "export PYTHONPATH=\$PYTHONPATH:$ROOT/gimli/python" > $ROOT/.bash_hint_pygimli
-        echo "export PATH=\$PATH:$ROOT/gimli/python/apps" >> $ROOT/.bash_hint_pygimli
+        echo "export PYTHONPATH=$ROOT/gimli/python:\$PYTHONPATH" > $ROOT/.bash_hint_pygimli
+        echo "export PATH=$ROOT/gimli/python/apps:\$PATH" >> $ROOT/.bash_hint_pygimli
            
     popd
 }

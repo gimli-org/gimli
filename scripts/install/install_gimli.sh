@@ -11,6 +11,7 @@ fi
 echo " "
 echo "GIMLI_ROOT="$GIMLI_ROOT
 
+#SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 GET="curl" 
 
