@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 ROOT=$PWD
-PARALELL=2
+
+[ -z $PARALLEL_BUILD ] && PARALLEL_BUILD=1
+[ -z $PYTHON_MAJOR ] && PYTHON_MAJOR=3
 
 CMAKE_GENERATOR='Unix Makefiles'
 
@@ -12,7 +14,7 @@ case "$(grep "ID=" /etc/os-release)" in
     ;;
     *"debian"*)
         echo "Debian system found"
-        if [ $PYREQEST -eq 3 ] ; then
+        if [ $PYTHON_MAJOR -eq 3 ] ; then
             PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
                         -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so 
                         -DPYTHON_EXECUTABLE=/usr/bin/python3'
@@ -50,7 +52,7 @@ buildGIMLI(){
     pushd build
         cmake -G "$CMAKE_GENERATOR" ../gimli $PYTHONSPECS
 
-        make -j$PARALELL && make pygimli J=$PARALELL 
+        make -j$PARALLEL_BUILD && make pygimli J=$PARALLEL_BUILD 
         echo ""
         echo ""
         echo "============================================================================"
