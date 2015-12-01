@@ -27,6 +27,12 @@ case "$(grep "ID=" /etc/os-release)" in
         echo "Arch Linux system found"
         PYTHONSPECS='-DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so'
     ;;
+    *"ubuntu"*)
+        echo "Ubuntu Linux system found"
+        PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
+                     -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so 
+                     -DPYTHON_EXECUTABLE=/usr/bin/python3'
+    ;;
     *) 
         echo $(grep "ID=" /etc/os-release) "system found: trying defaults"
         PYTHONSPECS=''

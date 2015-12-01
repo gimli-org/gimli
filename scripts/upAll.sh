@@ -2,6 +2,7 @@
 
 # annoyed from repeating your passwd:
 # git config credential.helper store
+# git config --global credential.helper 'cache --timeout 3600'
 #
 #
 
