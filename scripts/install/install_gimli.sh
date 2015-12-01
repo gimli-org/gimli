@@ -41,7 +41,7 @@ for i in "$@"; do
 done
 
 # set these for current shell and all processes started from current shell
-export GIMLI_ROOT=$(realpath $GIMLI_ROOT)
+export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
 export PYTHON_MAJOR=$PYTHON_MAJOR
 export PARALLEL_BUILD=$PARALLEL_BUILD
 

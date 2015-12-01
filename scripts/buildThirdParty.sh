@@ -174,7 +174,7 @@ getWITH_WGET(){
                     cmake -E tar -xz ../$_PAC_
                 popd
 			else
-				cmake -E tar -xzvf $_PAC_
+				cmake -E tar -xzf $_PAC_
 			fi
         popd
     else
