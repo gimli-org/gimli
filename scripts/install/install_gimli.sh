@@ -68,6 +68,7 @@ for i in "$@"; do
         ;;
         *py=*)
             PYTHON_MAJOR=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        ;;
         *u*|*update*)
             UPDATE_ONLY=1
         ;;
