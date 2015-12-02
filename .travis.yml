@@ -2,14 +2,17 @@
 # See build results on http://travis-ci.org/gimli-org/gimli
 # Before commiting changes to this file, check consistency on http://lint.travis-ci.org/
 
-language: python
+# Most explicit routing to GCE Precise
 sudo: required
+dist: precise
+group: edge
+
+language: cpp
+
 compiler: clang
 os:
     - linux
     #- osx
-python:
-    - "3.4"
 
 branches:
   only:
@@ -17,14 +20,8 @@ branches:
 
 osx_image: xcode7.2b2
 
-virtualenv:
-  system_site_packages: true
-
 addons:
   apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.6
     packages:
     - build-essential
     - clang-3.6
@@ -37,6 +34,9 @@ addons:
     - libedit-dev
     - coreutils
     - python3-dev
+    - python3-numpy
+    - cmake
+    - liboost-all-dev
 
 before_install:
     # hack automatic OS detection
@@ -47,15 +47,6 @@ before_install:
     - echo 'PRETTY_NAME="Ubuntu 14.04.2 LTS"' | sudo tee -a /etc/os-release
     - echo 'VERSION_ID="14.04"' | sudo tee -a /etc/os-release
     - echo 'HOME_URL="http://www.ubuntu.com/"' | sudo tee -a /etc/os-release
-
-    # update cmake
-    - sudo add-apt-repository --yes ppa:kalakris/cmake
-    - sudo apt-get update -qq
-    - sudo apt-get install cmake
-
-    # pre-install boost
-    - sudo add-apt-repository --yes ppa:boost-latest/ppa
-    - sudo apt-get install libboost1.55-all-dev
 
 install:
     - curl -sL http://install.pygimli.org | bash -s py=3 j=4

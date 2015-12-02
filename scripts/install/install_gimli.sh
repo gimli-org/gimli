@@ -1,9 +1,39 @@
 #!/usr/bin/env bash
 
+# Default values
 GIMLI_ROOT=$PWD/gimli
-PARALLEL_BUILD=1
+PARALLEL_BUILD=2
 PYTHON_MAJOR=3
 UPDATE_ONLY=0
+
+# Utility functions
+expand_tilde()
+# Better handling of ~ character in path argument
+{
+    case "$1" in
+    (\~)        echo "$HOME";;
+    (\~/*)      echo "$HOME/${1#\~/}";;
+    (\~[^/]*/*) local user=$(eval echo ${1%%/*})
+                echo "$user/${1#*/}";;
+    (\~[^/]*)   eval echo ${1};;
+    (*)         echo "$1";;
+    esac
+}
+
+function boxprint()
+# Print arguments in colored box
+{
+  local s="$*"
+  tput setaf 3
+  echo " -${s//?/-}-
+| ${s//?/ } |
+| $(tput setaf 4)$s$(tput setaf 3) |
+| ${s//?/ } |
+ -${s//?/-}-"
+  tput sgr 0
+}
+
+boxprint "Geophysical Inversion and Modeling Library (www.gimli.org)"
 
 help(){
     echo "====================================================================="
@@ -31,7 +61,7 @@ help(){
 for i in "$@"; do
     case "$i" in
         *gimli_root=*|*path=*)
-            GIMLI_ROOT=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+            GIMLI_ROOT=$(expand_tilde `echo $i | sed 's/[-a-zA-Z0-9]*=//'`)
         ;;
         *j=*)
             PARALLEL_BUILD=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
@@ -104,13 +134,14 @@ pushd $GIMLI_ROOT
 popd
 
 echo ""
-echo "=========================================="
-echo "set the following setting to use pygimli, either local per session or permanently in your $HOME/.bashrc"
-echo "------------------------------------------"
+echo "========================================================================"
+echo "Set the following setting to use pygimli, either locally"
+echo "per session or permanently in your $HOME/.bashrc"
+echo "------------------------------------------------------------------------"
 echo ""
 [ -f $GIMLI_ROOT/.bash_hint_python ] && cat $GIMLI_ROOT/.bash_hint_python
 [ -f $GIMLI_ROOT/.bash_hint_pygimli ] && cat $GIMLI_ROOT/.bash_hint_pygimli
 echo ""
-echo "------------------------------------------"
+echo "------------------------------------------------------------------------"
 
 #https://raw.githubusercontent.com/gimli-org/gimli/master/scripts/install/install**
