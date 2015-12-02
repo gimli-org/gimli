@@ -171,7 +171,7 @@ getWITH_WGET(){
                     cmake -E tar -xz ../$_PAC_
                 popd
 			else
-				cmake -E tar -xzvf $_PAC_
+				cmake -E tar -xzf $_PAC_
 			fi
         popd
     else
@@ -382,7 +382,7 @@ buildBOOST(){
 
 		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
         -j $PARALLEL_BUILD \
-        -d 2 \
+        -d 0 \
 		--prefix=$BOOST_DIST \
         --platform=msys \
         --layout=tagged \
