@@ -50,6 +50,13 @@ public:
     inline bool verbose() const {return verbose_;}
     
     virtual RVector response(const RVector & model)=0;
+    
+    /*!Read only response function for multi threading purposes.*/
+    virtual void response_mt(const RVector & model, RVector & response) const {
+        throwError(1, WHERE_AM_I + " if you want to use read only response "
+        "function to use in multi threading environment .. you need to "
+        " implement me");
+    }
 
     inline RVector operator() (const RVector & model){ return response(model); }
 
@@ -140,6 +147,10 @@ public:
     void setRefinedMesh(const Mesh & mesh);
 
     void mapModel(const RVector & model, double background=0);
+    
+    /*! Read only extrapolation of model values given per cell marker to 
+     values given per cell. Exterior values will be prolongated. */
+    RVector mapModel(const RVector & model, double background=0) const;
 
     const RegionManager & regionManager() const;
 
@@ -154,11 +165,22 @@ public:
     void initRegionManager();
 
     /*! Set the maximum number of allowed threads for MT calculation. 
-     * Have to be greater than 0. Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
+     * Have to be greater than 0. 
+     * Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
     void setThreadCount(Index nThreads);
 
     /*! Return the maximum number of allowed threads for MT calculation */
     inline Index threadCount() const { return nThreads_; }
+    
+    /*! Set number of threads used for brute force Jacobian generation. 
+     *1 is default. If nThreads is greater than 1 you need to implement 
+     * \ref response_mt with a read only response function. 
+     * Maybe its worth set the single setThreadCount to 1 than,
+     * that you don't find yourself in a threading overkill.*/
+    void setMultiThreadJacobian(Index nThreads);
+    
+    /*! Return number of threads used for Jacobian generation. */
+    inline Index multiThreadJacobian() const { return nThreadsJacobian_; }
     
 protected:
 
@@ -191,6 +213,7 @@ protected:
     bool                    regionManagerInUse_;
 
     Index                   nThreads_;
+    Index                   nThreadsJacobian_;
 
 private:
     RegionManager            * regionManager_;

@@ -71,6 +71,7 @@ void ModellingBase::init_() {
     dataContainer_      = 0;
     
     nThreads_           = numberOfCPU();
+    nThreadsJacobian_   = 1;
     
     ownJacobian_        = false;
     ownConstraints_     = false;
@@ -196,7 +197,9 @@ void ModellingBase::setJacobian(MatrixBase * J){
     ownJacobian_ = false;
 }
 
-
+void ModellingBase::setMultiThreadJacobian(Index nThreads){
+    nThreadsJacobian_ = max(1, nThreads);
+}
 
 void ModellingBase::createJacobian(const RVector & model){
     if (verbose_) std::cout << "Create Jacobian matrix (brute force) ...";
@@ -274,8 +277,13 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
     return *dynamic_cast < RSparseMapMatrix *>(constraints_); 
 }
         
+RVector ModellingBase::mapModel(const RVector & model, double background) const{
+    THROW_TO_IMPL
+    return RVector(0);
+}
     
 void ModellingBase::mapModel(const RVector & model, double background){
+    // implement "readonly version"!!!!!!!!!!!
     
     mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
     
@@ -379,7 +387,6 @@ RVector LinearModelling::response(const RVector & model) {
 }
 
 RVector LinearModelling::createDefaultStartModel() {
-    __M
     return RVector(jacobian_->cols(), 1.0);
 }
 

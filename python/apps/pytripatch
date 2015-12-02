@@ -615,6 +615,7 @@ def main(argv):
         wOffset, hOffset = applyPublishStyle(options.publish)
 
     axes = None
+    pg.mplviewer.hold(1)
 
     if options.cbarOnly:
         print("cbar only")
