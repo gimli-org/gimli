@@ -51,7 +51,7 @@ buildGIMLI(){
 
     chmod +x gimli/python/apps/*
     
-    if [ $UPDATE_ONLY -eq 0 ] && rm -rf build/
+    [ $UPDATE_ONLY -eq 0 ] && rm -rf build/
     mkdir -p build
 
     pushd build
