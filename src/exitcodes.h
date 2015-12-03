@@ -65,6 +65,7 @@ inline void throwError(int exitCode, const std::string & errString){
     } else {
         std::cerr << "Debug: " << errString << std::endl;
     }
+    throw std::length_error(errString);
 #else
     std::cerr << errString << std::endl;
     exit(exitCode);
