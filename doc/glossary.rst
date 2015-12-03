@@ -93,6 +93,6 @@ Glossary
 
     Tetgen
         A Quality Tetrahedral Mesh Generator and a 3D Delaunay Triangulator.
-        :cite:`Si2004`
+        :cite:`Si2015`
         http://tetgen.org/
         See: :py:func:`pygimli.meshtools.mesh.readTetgen`
