@@ -28,6 +28,8 @@
 #include "vectortemplates.h"
 #include "sparsematrix.h"
 
+#include "calculateMultiThread.h"
+
 namespace GIMLI{
 
 ModellingBase::ModellingBase(bool verbose)
@@ -201,6 +203,23 @@ void ModellingBase::setMultiThreadJacobian(Index nThreads){
     nThreadsJacobian_ = max(1, nThreads);
 }
 
+template < class ValueType > class JacobianBaseMT : public GIMLI::BaseCalcMT{
+public:
+    JacobianBaseMT(MatrixBase & J, const ModellingBase & fop, bool verbose)
+    : BaseCalcMT(verbose), J_(&J), fop_(&fop){}
+
+    virtual ~JacobianBaseMT(){}
+
+    virtual void calc(uint tNr=0){
+        
+    }
+
+protected:
+    Matrix < ValueType >    * J_;
+    const ModellingBase     * fop_;
+};
+
+
 void ModellingBase::createJacobian(const RVector & model){
     if (verbose_) std::cout << "Create Jacobian matrix (brute force) ...";
 
@@ -216,19 +235,25 @@ void ModellingBase::createJacobian(const RVector & model){
     if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
 
     double fak = 1.05;
-    for (size_t i = 0; i < model.size(); i++) {
-        RVector modelChange(model);
-        modelChange[i] *= fak;
-        
-        RVector respChange(response(modelChange));
+    
+    if (nThreadsJacobian_ == 1){
+    
+        for (size_t i = 0; i < model.size(); i++) {
+            RVector modelChange(model);
+            modelChange[i] *= fak;
+            
+            RVector respChange(response(modelChange));
 
-        for (size_t j = 0; j < resp.size(); j++){
-            if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
-                (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
-            } else {
-                (*J)[j][i] = 0.0;
+            for (size_t j = 0; j < resp.size(); j++){
+                if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
+                    (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
+                } else {
+                    (*J)[j][i] = 0.0;
+                }
             }
         }
+    } else {
+        
     }
 
     swatch.stop();
