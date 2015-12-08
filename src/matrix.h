@@ -209,7 +209,15 @@ public:
         THROW_TO_IMPL
         return CVector(cols());
     }
-
+/*
+    virtual void setCol(Index col, const RVector & v) const {
+        THROW_TO_IMPL
+    }
+     
+    virtual void setCol(Index col, const CVector & v) const {
+        THROW_TO_IMPL
+    }*/
+    
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
         THROW_TO_IMPL
@@ -420,6 +428,16 @@ public:
     /*! Return last row vector. */
     inline Vector< ValueType > & back() { return mat_.back(); }
 
+//     /*! Set one specific column */
+//     virtual void setCol(Index col, const RVector & v){
+//         return setCol_(col, v);
+//     }
+//     
+//     /*! Set one specific column */
+//     virtual void setCol(Index col, const CVector & v){
+//         return setCol_(col, v);
+//     }
+    
     /*! Set one specific column */
     inline void setCol(uint col, const Vector < ValueType > & v){
         if (col < 0 || col > this->cols()-1) {

@@ -4,6 +4,18 @@
 import unittest
 
 import pygimli as pg
+import numpy as np
+
+class ModellingMT(pg.ModellingBase):
+    def __init__(self, nPars, verbose):
+        pg.ModellingBase.__init__(self, verbose)
+        self.regionManager().setParameterCount(nPars)
+
+    def response(self, par):
+        return par * 1.0
+    
+    def response_mt(self, par):
+        return par * 2.0
 
 class TestFOP(unittest.TestCase):
     
@@ -23,6 +35,25 @@ class TestFOP(unittest.TestCase):
         #print(F.response(model))
 
         pass
+    
+    def test_MT(self):
+        nPars = 4    
+        m=pg.RVector(nPars, 1)
+        
+        fop = ModellingMT(nPars, verbose=False)
+        fop.setMultiThreadJacobian(1)
+        fop.createJacobian(m)
+        J1 = pg.RMatrix(fop.jacobian())
+
+        fop.setMultiThreadJacobian(4)
+        fop.createJacobian(m)
+        J2 = fop.jacobian()
+
+        np.testing.assert_array_equal(J1*2.0, J2)         
+
+        #for i in range(J1.rows()):
+            #print(np.array(J1[i]), np.array(J2[i]))
+            #np.testing.assert_array_equal(np.array(J1[i]), np.array(J2[i]))         
 
 if __name__ == '__main__':
     

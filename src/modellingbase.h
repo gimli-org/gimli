@@ -49,13 +49,18 @@ public:
     /*! Get verbose state. */
     inline bool verbose() const {return verbose_;}
     
-    virtual RVector response(const RVector & model)=0;
+    virtual RVector response(const RVector & model) { 
+        throwError(1, WHERE_AM_I + " you need to implement a response "
+        "function.");
+        return RVector(0);
+    }
     
     /*!Read only response function for multi threading purposes.*/
-    virtual void response_mt(const RVector & model, RVector & response) const {
+    virtual RVector response_mt(const RVector & model) const {
         throwError(1, WHERE_AM_I + " if you want to use read only response "
         "function to use in multi threading environment .. you need to "
         " implement me");
+        return RVector(0);
     }
 
     inline RVector operator() (const RVector & model){ return response(model); }
@@ -91,6 +96,19 @@ public:
     /*! Create and fill the Jacobian matrix with a given model vector. */
     virtual void createJacobian(const RVector & model);
 
+    /*! Create and fill the Jacobian matrix with a given model vector and 
+     * a prior calculated response for this model. 
+     * The Jacobian matrix need to by initialized and resized. 
+     * If unsure take createJacobian(const RVector & model).*/
+    virtual void createJacobian(const RVector & model, const RVector & resp);
+    
+    /*! Create and fill the Jacobian matrix with a given model vector. 
+     * Multi-threaded version. 
+     * Will be called if setMultiThreadJacobian has been set > 1. 
+     * For thread safe reasons response_mt, a read only variant of the response 
+     * method need to be implemented. */
+    virtual void createJacobian_mt(const RVector & model, const RVector & resp);
+    
     /*! Here you should initialize your Jacobian matrix. Default is RMatrix()*/
     virtual void initJacobian();
 
@@ -101,7 +119,8 @@ public:
     MatrixBase * jacobian() const { return jacobian_; }
 
     /*! Return the Jacobian Matrix (read only) associated with this forward operator.
-     *  Throws an exception if the jacobian is not initialized. Cannot yet be overloaded py pyplusplus (return virtual reference)(Warning 1049). */
+     *  Throws an exception if the jacobian is not initialized. 
+     * Cannot yet be overloaded by pyplusplus (return virtual reference)(Warning 1049). */
     virtual RMatrix & jacobianRef() const {
         if (! jacobian_) {
             throwError(1, WHERE_AM_I + " Jacobian matrix is not initialized.");

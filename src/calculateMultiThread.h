@@ -54,7 +54,7 @@ protected:
     Index threadNumber_;
 };
 
-template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, bool verbose = false){
+template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, bool verbose=false){
     if (nThreads == 1){
         calc.setRange(0, nCalcs);
         calc();
@@ -67,13 +67,13 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
             Index start = singleCalcCount * i;
             Index end   = singleCalcCount * (i + 1);
             if (i == nThreads -1) end = nCalcs;
-//             if (verbose) std::cout << "Threaded calculation: " << i << ": " << start <<" " << end << std::endl;
+            if (debug()) std::cout << "Threaded calculation: " << i << ": " << start <<" " << end << std::endl;
             calcObjs.back().setRange(start, end, i);
         }
 #if USE_BOOST_THREAD
         boost::thread_group threads;
         for (uint i = 0; i < nThreads; i++) {
-//             std::cout << "start thread: " << i << std::endl;
+            if (debug()) std::cout << "start thread: " << i << std::endl;
             threads.create_thread(calcObjs[i]);
         }
         threads.join_all();
