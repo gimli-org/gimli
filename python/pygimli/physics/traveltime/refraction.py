@@ -21,15 +21,15 @@ if __name__ == 'refraction':
     from ratools import createGradientModel2D
     from raplot import plotFirstPicks, plotLines
 else:
-    from . ratools import createGradientModel2D
-    from . raplot import plotFirstPicks, plotLines
+    from ratools import createGradientModel2D
+    from raplot import plotFirstPicks, plotLines
 
 
 class Refraction(object):
 
     """ Class for managing refraction seismics data
 
-        Document main members or use default MethodeManager interface
+        TODO Document main members and use default MethodeManager interface
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
@@ -208,7 +208,9 @@ class Refraction(object):
 
         self.axs['mesh'] = ax
         drawMesh(ax, self.mesh)
-        plt.show(block=False)
+        #plt.show(block=False)
+        ax.set_aspect(1)
+        return ax
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
         """estimate error composed of an absolute and a relative part"""
@@ -274,7 +276,12 @@ class Refraction(object):
 
     def showVA(self, ax=None, t=None, name='va', pseudosection=False,
                squeeze=True):
-        """show apparent velocity as image plot"""
+        """show apparent velocity as image plot
+        
+        TODO showXXX commands need to return axes and cbar .. if there is one
+        
+        """
+        
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
@@ -426,11 +433,11 @@ def test_Refraction():
 def main(argv):
     """
     """
-    implementme()
-
-
-if __name__ == '__main__':
-    datafile = sys.argv[1]
+    if len(argv) == 1:
+        datafile = 'example.sgt'
+    else:
+        datafile = argv[1]
+        
     ra = Refraction(datafile)
     print(ra)
     ra.showData()
@@ -439,4 +446,7 @@ if __name__ == '__main__':
     ra.showMesh()
     ra.run()
     ax, cbar = ra.showResult()
-#    pg.showNow()
+
+if __name__ == '__main__':
+    main(sys.argv)
+    pg.wait()
