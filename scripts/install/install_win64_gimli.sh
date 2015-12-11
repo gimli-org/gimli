@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ROOT=$PWD
-PARALELL=2
+PARALLEL=2
 
 CMAKE_GENERATOR='MSYS Makefiles'
 
@@ -23,7 +23,7 @@ buildGIMLI(){
     pushd build
             cmake -G "$CMAKE_GENERATOR" ../gimli -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
 
-            make -j$PARALELL && make pygimli J=$PARALELL 
+            make -j$PARALLEL && make pygimli J=$PARALLEL 
             echo ""
             echo ""
             echo "============================================================================"

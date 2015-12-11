@@ -90,13 +90,15 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         fig, ax = plt.subplots()
 
     im = ax.imshow(mat, norm=norm, interpolation='nearest')
-    pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5, label=label)
+    if kwargs.pop('colorBar', True):
+        pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5,
+                                    label=label)
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
     if kwargs.pop('showally', False):
         yt = np.arange(len(ymap))
-    xx = [k for k in xmap]
+    xx = np.sort([k for k in xmap])
     ax.set_xticks(xt)
     ax.set_xticklabels(['{:g}'.format(round(xx[int(ti)], 2)) for ti in xt])
     yy = np.unique([k for k in ymap])

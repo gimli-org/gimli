@@ -18,6 +18,7 @@ if False:  # possible (typical) actions
     ra.createMesh(depth=10.)  # pass non-default meshing options
     ra.createStartModel(vtop=500, vbottom=2000)
 
-ra.run(lam=300)  # use vtop/vbottom for startmodel
+ra.createMesh(depth=25., paraDX=0.2)  # pass non-default meshing options
+ra.run(lam=300, zweight=0.1)  # use vtop/vbottom for startmodel
 ra.showResultAndFit()  # typical output: model and data with response
 pg.wait()

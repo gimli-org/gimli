@@ -25,8 +25,7 @@ else:
     from . raplot import plotFirstPicks, plotLines
 
 
-class Refraction(object):
-
+class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
     """ Class for managing refraction seismics data
 
         Document main members or use default MethodeManager interface
