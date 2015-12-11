@@ -285,8 +285,8 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         else:
             ma = hh[max(np.where(nnn < dropThreshold)[0])]
 
-            mi = hh[min(np.where(nnn > 0.5)[0])]
-            ma = hh[max(np.where(nnn < 0.7)[0])]
+#            mi = hh[min(np.where(nnn > 0.2)[0])]
+#            ma = hh[max(np.where(nnn < 0.7)[0])]
 
         C = (C - mi) / (ma - mi)
         C[np.where(C < 0.)] = 0.0
