@@ -21,8 +21,8 @@ if __name__ == 'refraction':
     from ratools import createGradientModel2D
     from raplot import plotFirstPicks, plotLines
 else:
-    from ratools import createGradientModel2D
-    from raplot import plotFirstPicks, plotLines
+    from . ratools import createGradientModel2D
+    from . raplot import plotFirstPicks, plotLines
 
 
 class Refraction(object):
