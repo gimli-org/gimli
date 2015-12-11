@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 ROOT=$PWD
-
 [ -z $PARALLEL_BUILD ] && PARALLEL_BUILD=1
 [ -z $PYTHON_MAJOR ] && PYTHON_MAJOR=3
 
@@ -51,8 +50,10 @@ buildGIMLI(){
     [ -n "$BRANCH" ] && git checkout $BRANCH
 
     chmod +x gimli/python/apps/*
-
-    rm -rf build/
+    
+    if [ $UPDATE_ONLY -eq 0 ] ; then
+        rm -rf build/
+    fi
     mkdir -p build
 
     pushd build

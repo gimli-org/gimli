@@ -49,7 +49,19 @@ public:
     /*! Get verbose state. */
     inline bool verbose() const {return verbose_;}
     
-    virtual RVector response(const RVector & model)=0;
+    virtual RVector response(const RVector & model) { 
+        throwError(1, WHERE_AM_I + " you need to implement a response "
+        "function.");
+        return RVector(0);
+    }
+    
+    /*!Read only response function for multi threading purposes.*/
+    virtual RVector response_mt(const RVector & model) const {
+        throwError(1, WHERE_AM_I + " if you want to use read only response "
+        "function to use in multi threading environment .. you need to "
+        " implement me");
+        return RVector(0);
+    }
 
     inline RVector operator() (const RVector & model){ return response(model); }
 
@@ -84,6 +96,19 @@ public:
     /*! Create and fill the Jacobian matrix with a given model vector. */
     virtual void createJacobian(const RVector & model);
 
+    /*! Create and fill the Jacobian matrix with a given model vector and 
+     * a prior calculated response for this model. 
+     * The Jacobian matrix need to by initialized and resized. 
+     * If unsure take createJacobian(const RVector & model).*/
+    virtual void createJacobian(const RVector & model, const RVector & resp);
+    
+    /*! Create and fill the Jacobian matrix with a given model vector. 
+     * Multi-threaded version. 
+     * Will be called if setMultiThreadJacobian has been set > 1. 
+     * For thread safe reasons response_mt, a read only variant of the response 
+     * method need to be implemented. */
+    virtual void createJacobian_mt(const RVector & model, const RVector & resp);
+    
     /*! Here you should initialize your Jacobian matrix. Default is RMatrix()*/
     virtual void initJacobian();
 
@@ -94,7 +119,8 @@ public:
     MatrixBase * jacobian() const { return jacobian_; }
 
     /*! Return the Jacobian Matrix (read only) associated with this forward operator.
-     *  Throws an exception if the jacobian is not initialized. Cannot yet be overloaded py pyplusplus (return virtual reference)(Warning 1049). */
+     *  Throws an exception if the jacobian is not initialized. 
+     * Cannot yet be overloaded by pyplusplus (return virtual reference)(Warning 1049). */
     virtual RMatrix & jacobianRef() const {
         if (! jacobian_) {
             throwError(1, WHERE_AM_I + " Jacobian matrix is not initialized.");
@@ -140,6 +166,10 @@ public:
     void setRefinedMesh(const Mesh & mesh);
 
     void mapModel(const RVector & model, double background=0);
+    
+    /*! Read only extrapolation of model values given per cell marker to 
+     values given per cell. Exterior values will be prolongated. */
+    RVector mapModel(const RVector & model, double background=0) const;
 
     const RegionManager & regionManager() const;
 
@@ -154,11 +184,22 @@ public:
     void initRegionManager();
 
     /*! Set the maximum number of allowed threads for MT calculation. 
-     * Have to be greater than 0. Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
+     * Have to be greater than 0. 
+     * Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
     void setThreadCount(Index nThreads);
 
     /*! Return the maximum number of allowed threads for MT calculation */
     inline Index threadCount() const { return nThreads_; }
+    
+    /*! Set number of threads used for brute force Jacobian generation. 
+     *1 is default. If nThreads is greater than 1 you need to implement 
+     * \ref response_mt with a read only response function. 
+     * Maybe its worth set the single setThreadCount to 1 than,
+     * that you don't find yourself in a threading overkill.*/
+    void setMultiThreadJacobian(Index nThreads);
+    
+    /*! Return number of threads used for Jacobian generation. */
+    inline Index multiThreadJacobian() const { return nThreadsJacobian_; }
     
 protected:
 
@@ -191,6 +232,7 @@ protected:
     bool                    regionManagerInUse_;
 
     Index                   nThreads_;
+    Index                   nThreadsJacobian_;
 
 private:
     RegionManager            * regionManager_;

@@ -751,9 +751,77 @@ __version__ = __gitversion__()
 if __version__ == "unknown":
     __version__ = _pygimli_.versionStr()
 
+
+
+###########################
+# We want ModellingBase with multi threading jacobian brute force
+###########################
+
+def __GLOBAL__response_mt_shm_(fop, model, shm):
+    resp = fop.response_mt(model)
+           
+    for j in range(len(resp)):
+        shm[j] = resp[j]
+    
+def __ModellingBase__createJacobian_mt__(self, model, resp):
+    from math import ceil
+    from multiprocessing import Process, Array
+    import numpy as np
+
+    nModel = len(model)
+    nData = len(resp)
+        
+    dModel = _pygimli_.RVector(len(model))
+    nProcs = self.multiThreadJacobian()
+    fak = 1.05
+    shm = []
+    
+    oldBertThread = self.threadCount()
+    self.setThreadCount(1)
+        
+    for pCount in range(int(ceil(nModel/nProcs))):
+        procs = []
+        if self.verbose():
+            print(pCount*nProcs, "/" ,nModel)
+        for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
+
+            if i < nModel:
+                modelChange = _pygimli_.RVector(model)
+                modelChange[i] *= fak
+                dModel[i] = modelChange[i]-model[i]
+
+                shm.append(Array('d', len(resp)))
+                procs.append(Process(target=__GLOBAL__response_mt_shm_,
+                                     args=(self, modelChange, shm[i])))
+
+        for i, p in enumerate(procs):
+            p.start()
+            
+        for i, p in enumerate(procs):
+            p.join()
+
+    self.setThreadCount(oldBertThread)
+
+    for i in range(nModel):
+        dData = np.array(shm[i]) - resp
+        self._J.setCol(i, dData/dModel[i])
+    
+class ModellingBaseMT(_pygimli_.ModellingBase):
+    def __init__(self, verbose):
+        _pygimli_.ModellingBase.__init__(self, verbose)
+        self._J = _pygimli_.RMatrix()
+        self.setJacobian(self._J)  
+   
+ModellingBaseMT.createJacobian_mt = __ModellingBase__createJacobian_mt__
+
+ModellingBase = ModellingBaseMT
+
+
+
 ###########################
 # unsorted stuff
 ###########################
+
 
 # def __interpolate__cmd(self):
 # print "my interpolate"

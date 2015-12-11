@@ -28,6 +28,8 @@
 #include "vectortemplates.h"
 #include "sparsematrix.h"
 
+#include "calculateMultiThread.h"
+
 namespace GIMLI{
 
 ModellingBase::ModellingBase(bool verbose)
@@ -71,6 +73,7 @@ void ModellingBase::init_() {
     dataContainer_      = 0;
     
     nThreads_           = numberOfCPU();
+    nThreadsJacobian_   = 1;
     
     ownJacobian_        = false;
     ownConstraints_     = false;
@@ -196,40 +199,118 @@ void ModellingBase::setJacobian(MatrixBase * J){
     ownJacobian_ = false;
 }
 
+void ModellingBase::setMultiThreadJacobian(Index nThreads){
+    nThreadsJacobian_ = max(1, nThreads);
+}
+
+class JacobianBaseMT : public GIMLI::BaseCalcMT{
+public:
+    JacobianBaseMT(MatrixBase * J, 
+                   const ModellingBase & fop, 
+                   const RVector & resp, 
+                   const RVector & model, 
+                   bool verbose)
+    : BaseCalcMT(verbose), J_(J), fop_(&fop), resp_(&resp), model_(&model){}
+
+    virtual ~JacobianBaseMT(){}
+
+    virtual void calc(uint tNr=0){
+        RVector modelChange(*model_);
+        modelChange[tNr] *= 1.05;
+        __MS(tNr)
+        fop_->response_mt(modelChange);
+//         RVector respChange();
+                    
+        //J_->setCol(tNr, (respChange - *resp_)/(modelChange[tNr] - (*model_)[tNr]));
+    }
+
+protected:
+    MatrixBase              * J_;
+    const ModellingBase     * fop_;
+    const RVector           * resp_;
+    const RVector           * model_;
+};
 
 
-void ModellingBase::createJacobian(const RVector & model){
+void ModellingBase::createJacobian_mt(const RVector & model, 
+                                      const RVector & resp){
+    THROW_TO_IMPL
+    if (verbose_) std::cout << "Create Jacobian matrix (brute force, mt) ...";
+
+    Stopwatch swatch(true);
+    double fak = 1.05;
+    
+    if (!jacobian_){
+        this->initJacobian();
+    }
+    RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
+    if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
+
+    
+    ALLOW_PYTHON_THREADS   
+    distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, verbose_),
+                   jacobian_->rows(), nThreadsJacobian_, verbose_);
+    swatch.stop();
+    if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
+}
+    
+void ModellingBase::createJacobian(const RVector & model, 
+                                   const RVector & resp){
     if (verbose_) std::cout << "Create Jacobian matrix (brute force) ...";
 
     Stopwatch swatch(true);
-    RVector resp(response(model));
+    double fak = 1.05;
 
     if (!jacobian_){
         this->initJacobian();
     }
- 
     RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
-    
     if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
-
-    double fak = 1.05;
+    
     for (size_t i = 0; i < model.size(); i++) {
         RVector modelChange(model);
         modelChange[i] *= fak;
         
         RVector respChange(response(modelChange));
 
-        for (size_t j = 0; j < resp.size(); j++){
-            if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
-                (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
-            } else {
-                (*J)[j][i] = 0.0;
-            }
+        if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
+            J->setCol(i, (respChange - resp) / (modelChange[i] - model[i]));
+        } else {
+            J->setCol(i, RVector(resp.size(), 0.0));
         }
+         
+//         for (size_t j = 0; j < resp.size(); j++){
+//             if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
+//                 (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
+//             } else {
+//                 (*J)[j][i] = 0.0;
+//             }
+//         }
     }
-
+        
     swatch.stop();
     if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
+}
+    
+void ModellingBase::createJacobian(const RVector & model){
+    RVector resp;
+    if (nThreadsJacobian_ > 1){
+        resp = response_mt(model);
+    } else {
+        resp = response(model);
+    }
+    
+    if (!jacobian_){
+        this->initJacobian();
+    }
+    RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
+    if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
+
+    if (nThreadsJacobian_ > 1){
+        return createJacobian_mt(model, resp);
+    } else {
+        return createJacobian(model, resp);
+    }
 }
     
 void ModellingBase::initConstraints(){
@@ -274,8 +355,13 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
     return *dynamic_cast < RSparseMapMatrix *>(constraints_); 
 }
         
+RVector ModellingBase::mapModel(const RVector & model, double background) const{
+    THROW_TO_IMPL
+    return RVector(0);
+}
     
 void ModellingBase::mapModel(const RVector & model, double background){
+    // implement "readonly version"!!!!!!!!!!!
     
     mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
     
@@ -379,7 +465,6 @@ RVector LinearModelling::response(const RVector & model) {
 }
 
 RVector LinearModelling::createDefaultStartModel() {
-    __M
     return RVector(jacobian_->cols(), 1.0);
 }
 

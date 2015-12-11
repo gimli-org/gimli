@@ -81,9 +81,17 @@ To produce a new version, type:
    git push --tags # pushes tags to GitHub
 
 
+Read api documentation from shell:
 
+.. code-block:: bash
 
+    python -c "import pygimli as pg; help(pg.test)
 
+Run api examples from shell:
+
+.. code-block:: bash
+
+    python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle)"
 
 
 

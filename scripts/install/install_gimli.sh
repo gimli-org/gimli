@@ -4,6 +4,7 @@
 GIMLI_ROOT=$PWD/gimli
 PARALLEL_BUILD=2
 PYTHON_MAJOR=3
+UPDATE_ONLY=0
 
 # Utility functions
 expand_tilde()
@@ -42,7 +43,7 @@ help(){
     echo " e.g.    "
     echo " curl -Ls install.pygimli.org | bash -s py=3 path=./gimli-root j=8"
     echo "---------------------------------------------------------------------"
-    echo "h"
+    echo "h|help"
     echo "      This help"
     echo "path=GIMLI_ROOT "
     echo "      Path for the gimli root dir. Default path=$GIMLI_ROOT"
@@ -50,6 +51,10 @@ help(){
     echo "      Build for Python 2 or 3. Default py=$PYTHON_MAJOR"
     echo "j=PARALLEL_BUILD"
     echo "      Number of parallel compiler jobs. Default j=$PARALLEL_BUILD"
+    echo "u|update"
+    echo "      Just update your gimli installation. "
+    echo "      The build path will not be removed in the first."
+    echo "      This may work or may not work .. please use at own risk"
     exit
 }
 
@@ -64,6 +69,9 @@ for i in "$@"; do
         *py=*)
             PYTHON_MAJOR=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         ;;
+        *u*|*update*)
+            UPDATE_ONLY=1
+        ;;
         *h*|*help*)
             help
         ;;
@@ -74,10 +82,12 @@ done
 export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
 export PYTHON_MAJOR=$PYTHON_MAJOR
 export PARALLEL_BUILD=$PARALLEL_BUILD
+export UPDATE_ONLY=$UPDATE_ONLY
 
 echo "Installing at "$GIMLI_ROOT
 echo "Build for Python="$PYTHON_MAJOR
-echo "Parallelize build with j="$PARALLEL_BUILD
+echo "Parallelize with j="$PARALLEL_BUILD
+echo "Update only" $UPDATE_ONLY
 
 #SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
