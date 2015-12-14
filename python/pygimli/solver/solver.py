@@ -1157,6 +1157,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                 rhs, time=0.0,
                                 userData=userData,
                                 verbose=False)
+        print(rhs)
 
         if debug:
             print("6c: ", swatch2.duration(True))

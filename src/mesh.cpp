@@ -642,7 +642,7 @@ std::vector< Boundary * > Mesh::boundaries(const IndexArray & ids) const{
     return v;
 }
     
-void Mesh::setCellMarker(const IndexArray & ids, int marker){
+void Mesh::setCellMarkers(const IndexArray & ids, int marker){
     for(IndexArray::iterator it = ids.begin(); it != ids.end(); it++){
         if (*it < cellCount()){
             cellVector_[*it]->setMarker(marker);
@@ -650,7 +650,7 @@ void Mesh::setCellMarker(const IndexArray & ids, int marker){
     }
 }
 
-void Mesh::setCellMarker(const RVector & attribute){
+void Mesh::setCellMarkers(const RVector & attribute){
     if (attribute.size() >= cellVector_.size()){
         for (Index i = 0; i < cellVector_.size(); i ++){
             cellVector_[i]->setMarker(int(attribute[i]));
@@ -660,7 +660,14 @@ void Mesh::setCellMarker(const RVector & attribute){
             str(attribute.size()) + " < " + str(cellCount()));
     }
 }
-    
+  
+IVector Mesh::cellMarkers() const{
+    IVector tmp(cellCount());
+    std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
+                    std::mem_fun(&Cell::marker));
+    return tmp;
+}
+
 IndexArray Mesh::findNodesIdxByMarker(int marker) const {
     return find(this->nodeMarker() == marker);
 }
@@ -804,7 +811,7 @@ void Mesh::createClosedGeometryParaMesh(const std::vector < RVector3 > & vPos, i
 Mesh Mesh::createH2() const {
     Mesh ret(this->dimension());
     ret.createRefined_(*this, false, true);
-    ret.setCellAttributes(ret.cellMarker());
+    ret.setCellAttributes(ret.cellMarkers());
     return ret;
 }
 
@@ -1142,7 +1149,7 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
          it = mesh.dataMap().begin(); it != mesh.dataMap().end(); it ++){
         
         if (it->second.size() == mesh.cellCount()){
-            addData(it->first, it->second(this->cellMarker()));
+            addData(it->first, it->second(this->cellMarkers()));
         } else if (it->second.size() == mesh.nodeCount()){
             THROW_TO_IMPL
         } else if (it->second.size() == mesh.boundaryCount()){
@@ -1150,7 +1157,7 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
         }
     }
     //! copy original marker into the new mesh
-    this->setCellMarker(RVector(mesh.cellMarker())(this->cellMarker()));
+    this->setCellMarkers(RVector(mesh.cellMarkers())(this->cellMarkers()));
         
 }
     
@@ -1611,13 +1618,6 @@ IVector Mesh::boundaryMarker() const {
     IVector tmp(boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), tmp.begin(),
                    std::mem_fun(&Boundary::marker));
-    return tmp;
-}
-
-IVector Mesh::cellMarker() const{
-    IVector tmp(cellCount());
-    std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
-                    std::mem_fun(&Cell::marker));
     return tmp;
 }
 

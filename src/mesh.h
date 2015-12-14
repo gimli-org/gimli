@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2006-2015 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                               *
+ *   Carsten Rücker carsten@gimli.org                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -127,8 +127,8 @@ protected:
     
 
 class DLLEXPORT Mesh {
-public:
 
+public:
     typedef RegionMarkerPLC RegionMarker;
     typedef std::vector< RegionMarker > RegionMarkerList;
     typedef RVector3 HoleMarker;
@@ -572,13 +572,26 @@ public:
     RVector cellAttributes() const;
 
     /*! Set the cell marker of all indices in ids to marker. */
-    void setCellMarker(const IndexArray & ids, int marker);
+    void setCellMarkers(const IndexArray & ids, int marker);
 
     /*! Set all cell marker the values in attribute (casting to int)*/
-    void setCellMarker(const RVector & attribute);
+    void setCellMarkers(const RVector & attribute);
     
     /*! Return a vector of all cell marker */
-    IVector cellMarker() const;
+    IVector cellMarkers() const;
+    
+    /*! DEPRECATED Set the cell marker of all indices in ids to marker. */
+    void setCellMarker(const IndexArray & ids, int marker){ 
+        return setCellMarkers(ids, marker); }
+        
+    /*! DEPRECATED  all cell marker the values in attribute (casting to int)*/
+    void setCellMarker(const RVector & attribute){
+        return setCellMarkers(attribute); }
+        
+    /*! DEPRECATED Return a vector of all cell marker */
+    IVector cellMarker() const{
+        return cellMarkers(); }
+    
 
     //** probably deprecated
     double xmin() const { findRange_(); return minRange_[0]; }
