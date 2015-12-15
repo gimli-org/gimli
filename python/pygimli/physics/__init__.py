@@ -8,7 +8,6 @@ from math import pi
 from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
-from . traveltime import Refraction
 # from . gravimetry import Gravimetry
 # from . seismics import *
 
@@ -56,7 +55,7 @@ class MethodManager(object):
 
     def __repr__(self):
         """ String representation of the class """
-        return "Methode Manager: " + str(self.__class__)
+        return "Method Manager: " + str(self.__class__)
 
     def createFOP(self, refine=True):
         """ Create forward operator working on refined mesh """
@@ -157,3 +156,5 @@ class MethodManager(object):
         parser.add_argument('dataFileName')
         return parser
         
+
+from . traveltime import Refraction
