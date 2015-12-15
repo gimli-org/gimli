@@ -13,13 +13,15 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
+from pygimli.physics import MethodManager
+
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py 
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
 
 
-class Refraction(object):
+class Refraction(MethodManager):
 
     """ Class for managing refraction seismics data
 
@@ -27,8 +29,9 @@ class Refraction(object):
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, name='new', **kwargs):
+    def __init__(self, filename=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
+        MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
         self.axs = {}
 
@@ -44,9 +47,12 @@ class Refraction(object):
         self.response = None
         self.start = []
         self.pd = None
-        self.fop = self.createFop(verbose=self.verbose)
-        self.inv = self.createInv(self.fop,
-                                  verbose=self.verbose, doSave=self.doSave)
+        #self.fop = self.createFop(verbose=self.verbose)
+        #self.inv = self.createInv(self.fop,
+                                  #verbose=self.verbose, doSave=self.doSave)
+
+        data = kwargs.pop('data', None)
+        name = kwargs.pop('name', 'new')
 
         if isinstance(data, str):
             self.loadData(data)
@@ -55,6 +61,8 @@ class Refraction(object):
             self.basename = name
         if self.dataContainer is not None:
             self.createMesh()
+
+
 
     def __str__(self):
         """string representation of the class"""
@@ -68,7 +76,7 @@ class Refraction(object):
         if hasattr(self, 'mesh'):
             out += "\n" + self.mesh.__str__()
         return out
-
+ 
     def paraDomain(self):
         """ base api """
         return self.fop.regionManager().paraDomain()
@@ -204,6 +212,7 @@ class Refraction(object):
         drawMesh(ax, self.mesh)
         #plt.show(block=False)
         ax.set_aspect(1)
+        
         return ax
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
@@ -404,7 +413,9 @@ class Refraction(object):
 
 
 def test_Refraction():
-
+    """
+        Test Refraction manager stability some data/mesh set / data update
+    """
     import os
     datafile = os.path.dirname(__file__) + '/example_topo.sgt'
 
@@ -430,19 +441,21 @@ def test_Refraction():
 def main(argv):
     """
     """
-    if len(argv) == 1:
-        datafile = 'example.sgt'
-    else:
-        datafile = argv[1]
-        
-    ra = Refraction(datafile)
-    print(ra)
+    
+    ra = Refraction()
+    ra.createArgParser()
+    options = parser.parse_args()
+
+    if options.verbose: print(options)
+    
+    ra = Refraction(options.dataFileName, verbose=options.verbose)
+
     ra.showData()
     ra.showVA()
-    ra.createMesh(depth=100)
+    ra.createMesh(depth=options.depth)
     ra.showMesh()
-    ra.run()
-    ax, cbar = ra.showResult()
+    #ra.run()
+    #ax, cbar = ra.showResult()
 
 if __name__ == '__main__':
     main(sys.argv)

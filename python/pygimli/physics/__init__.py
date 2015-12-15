@@ -131,3 +131,29 @@ class MethodManager(object):
         Saves the results in the specified folder.
         """
         pass
+
+    def createArgParser(self, dataSuffix='dat'):
+        """
+            Create default argument parser for the following options:
+            
+            -Q, --quiet
+            
+            --depth
+            
+            --lambda
+        """
+        import argparse
+    
+        parser = argparse.ArgumentParser(description="usage: %prog [options] *." + dataSuffix)
+        parser.add_argument("-Q", "--quiet", dest="verbose", 
+                            action="store_false", default=False,
+                            help="Be verbose.")
+        parser.add_argument("--depth", dest="depth", type=float,
+                            default=100,
+                            help="Depth of the inversion domain.")
+        parser.add_argument("--lambda", dest="lambda", type=float,
+                            default=100,
+                            help="Regularization strength.")
+        parser.add_argument('dataFileName')
+        return parser
+        

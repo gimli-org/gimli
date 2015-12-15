@@ -179,10 +179,10 @@ def drawMesh(axes, mesh, **kwargs):
     pg.mplviewer.drawMeshBoundaries(axes, mesh, **kwargs)
 
     if kwargs.pop('fitView', True):
-        axes.set_aspect('equal')
         axes.set_xlim(mesh.xmin(), mesh.xmax())
         axes.set_ylim(mesh.ymin(), mesh.ymax())
 
+    axes.set_aspect('equal')
     updateAxes_(axes)
 
 
