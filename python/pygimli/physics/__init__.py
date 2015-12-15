@@ -141,9 +141,13 @@ class MethodManager(object):
             
             -Q, --quiet
             
-            --depth
+            -l, --lambda: options.lam
             
-            --lambda
+            -i, --maxIter: options.depth
+            
+            --depth: options.depth
+            
+            
         """
         import argparse
     
@@ -151,15 +155,15 @@ class MethodManager(object):
         parser.add_argument("-Q", "--quiet", dest="quiet", 
                             action="store_true", default=False,
                             help="Be verbose.")
-        parser.add_argument("--depth", dest="depth", type=float,
-                            default=100,
-                            help="Depth of the inversion domain.")
         parser.add_argument('-l', "--lambda", dest="lam", type=float,
                             default=100,
                             help="Regularization strength.")
         parser.add_argument('-i', "--maxIter", dest="maxIter", type=int,
                             default=20,
                             help="Maximum iteration count.")
+        parser.add_argument("--depth", dest="depth", type=float,
+                            default=None,
+                            help="Depth of the inversion domain. [None] None means automatic")
         parser.add_argument('dataFileName')
         return parser
         
