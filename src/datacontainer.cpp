@@ -82,6 +82,16 @@ void DataContainer::init(){
 
 void DataContainer::initTokenTranslator(){
     std::map< std::string, std::string > l;
+
+    l["err"] = "err std error err/%";
+    l["t"] = "t t/s t/ms t/(ms)";
+
+    for (std::map< std::string, std::string >::iterator it = l.begin(); it != l.end(); it ++){
+        std::vector< std::string> row(getSubstrings(it->second));
+        for (uint i = 0; i < row.size(); i ++){
+            tT_.insert(std::pair< std::string, std::string >(row[i], it->first));
+        }
+    }
 }
 
 bool DataContainer::haveTranslationForAlias(const std::string & alias) const {
@@ -311,11 +321,12 @@ int DataContainer::load(const std::string & fileName,
         if (haveTranslationForAlias(it->first)){
 
             double scale = 1.0;
- // should only used in speccialication
+            // should only used in specialization
             if (it->first.rfind("mV") != std::string::npos ||
                 it->first.rfind("mA") != std::string::npos ||
                 it->first.rfind("ms") != std::string::npos){
                 scale = 1.0 / 1000.0;
+            __M
             }
             if (it->first.rfind("%") != std::string::npos ){
                 scale = 1.0 / 100.0;

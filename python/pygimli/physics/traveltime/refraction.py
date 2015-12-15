@@ -13,16 +13,10 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
-if __name__ == 'refraction':
-    # keine Ahnung wie das eleganter geht
-    # nur dafür:
-    # python -c 'import refraction; refraction.test_Refraction()'
-
-    from ratools import createGradientModel2D
-    from raplot import plotFirstPicks, plotLines
-else:
-    from . ratools import createGradientModel2D
-    from . raplot import plotFirstPicks, plotLines
+# the explicit import with full name allow for:
+# python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py 
+from pygimli.physics.traveltime.ratools import createGradientModel2D
+from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
 
 
 class Refraction(object):
@@ -294,11 +288,14 @@ class Refraction(object):
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         offset = np.absolute(gx - sx)
         va = offset / t
+        
         if pseudosection:
             midpoint = (gx + sx) / 2
-            plotVecMatrix(midpoint, offset, va, squeeze=True)
+            plotVecMatrix(midpoint, offset, va, squeeze=True, 
+                          label='Apparent velocity [s/m]')
         else:
-            plotVecMatrix(gx, sx, va, squeeze=squeeze)
+            plotVecMatrix(gx, sx, va, squeeze=squeeze,
+                          label='Apparent velocity [m/s]')
 #        va = showVA(ax, self.dataContainer)
 #        plt.show(block=False)
         return va
