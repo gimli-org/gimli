@@ -326,7 +326,6 @@ int DataContainer::load(const std::string & fileName,
                 it->first.rfind("mA") != std::string::npos ||
                 it->first.rfind("ms") != std::string::npos){
                 scale = 1.0 / 1000.0;
-            __M
             }
             if (it->first.rfind("%") != std::string::npos ){
                 scale = 1.0 / 100.0;

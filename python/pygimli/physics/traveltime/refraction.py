@@ -13,25 +13,28 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
+from pygimli.physics import MethodManager
+
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py 
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
 
 
-class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
+class Refraction(MethodManager):
+
     """ Class for managing refraction seismics data
 
         TODO Document main members and use default MethodeManager interface
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, name='new', **kwargs):
+    def __init__(self, filename=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
+        MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
         self.axs = {}
 
-        self.verbose = kwargs.pop('verbose', True)
         self.doSave = kwargs.pop('doSave', False)
 
         # should be forwarded so it can be accessed from outside
@@ -43,9 +46,12 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
         self.response = None
         self.start = []
         self.pd = None
-        self.fop = self.createFop(verbose=self.verbose)
-        self.inv = self.createInv(self.fop,
-                                  verbose=self.verbose, doSave=self.doSave)
+        #self.fop = self.createFop(verbose=self.verbose)
+        #self.inv = self.createInv(self.fop,
+                                  #verbose=self.verbose, doSave=self.doSave)
+
+        data = kwargs.pop('data', None)
+        name = kwargs.pop('name', 'new')
 
         if isinstance(data, str):
             self.loadData(data)
@@ -67,7 +73,7 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
         if hasattr(self, 'mesh'):
             out += "\n" + self.mesh.__str__()
         return out
-
+ 
     def paraDomain(self):
         """ base api """
         return self.fop.regionManager().paraDomain()
@@ -76,15 +82,15 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
         """ base api """
         return self.velocity
 
-    def createFop(self, verbose=False):
+    def createFOP(self, verbose=False):
         """Create default forward operator for Traveltime modelling.
         base api
 
         Dijkstra, later FMM.
         """
-        if not hasattr(self, 'mesh'):  # self.mesh is None:
-            self.makeMesh()
-        fop = pg.TravelTimeDijkstraModelling(verbose=True)
+        #if not hasattr(self, 'mesh'):  # self.mesh is None:
+        #self.createMesh()
+        fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
         return fop
 
     def createInv(self, fop, verbose=True, doSave=False):
@@ -170,6 +176,22 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
 
         plt.show(block=False)
 
+    def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
+                   paraBoundary=5):
+        """Create (inversion) mesh using createParaDomain2D"""
+        
+        if self.dataContainer is None:
+            raise('Cannot create mesh without dataContainer.')
+                    
+        if depth is None:
+            depth = self.getDepth()
+        self.poly = createParaMeshPLC(self.dataContainer.sensorPositions(),
+                                      paraDepth=depth, paraDX=paraDX,
+                                      paraBoundary=paraBoundary,
+                                      boundary=boundary)
+        mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
+        self.setMesh(mesh)
+
     def setMesh(self, mesh, refine=True):
         """
         base api
@@ -181,18 +203,6 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
         self.fop.createRefinedForwardMesh(refine)
         self.inv.setForwardOperator(self.fop)
 
-    def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5):
-        """Create (inversion) mesh using createParaDomain2D"""
-        if depth is None:
-            depth = self.getDepth()
-        self.poly = createParaMeshPLC(self.dataContainer.sensorPositions(),
-                                      paraDepth=depth, paraDX=paraDX,
-                                      paraBoundary=paraBoundary,
-                                      boundary=boundary)
-        mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
-        self.setMesh(mesh)
-
     def showMesh(self, ax=None):
         """show mesh in given axes or in a new figure"""
         if ax is None:
@@ -203,6 +213,7 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
         drawMesh(ax, self.mesh)
         #plt.show(block=False)
         ax.set_aspect(1)
+        
         return ax
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
@@ -218,7 +229,7 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
                                            vtop, vbottom)
 
     def run(self, **kwargs):
-        """run actual inversion (first creating inversion object if not there)
+        """Run actual inversion (first creating inversion object if not there)
 
         result/response is stored in the class attribute velocity/response
 
@@ -238,14 +249,17 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
         if self.fop.regionManager().parameterCount() != len(self.start):
             self.createStartModel(kwargs.pop('vtop', 500.),
                                   kwargs.pop('vbottom', 5000.))
+            
         self.fop.setStartModel(self.start)
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
         self.inv.setMaxIter(kwargs.pop('max_iter', 20))
         self.inv.setRobustData(kwargs.pop('setRobust', False))
+        
         if not hasattr(self.error, '__iter__'):
             self.estimateError(kwargs.pop('error', 0.003))  # abs. error in ms
+            
         self.inv.setAbsoluteError(self.error)
         self.inv.setModel(self.start)  # somehow doubled with 3 lines above
         self.fop.jacobian().clear()
@@ -378,6 +392,7 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
         subfolder = '/' + self.__class__.__name__
         path = getSavePath(folder, subfolder)
 
+        if self.verbose:
         print('Saving refraction data to: {}'.format(path))
 
         np.savetxt(path + '/velocity.vector',
@@ -403,7 +418,9 @@ class Refraction(object):  # to be derived from MethodManager(ND/Mesh)
 
 
 def test_Refraction():
-
+    """
+        Test Refraction manager stability some data/mesh set / data update
+    """
     import os
     datafile = os.path.dirname(__file__) + '/example_topo.sgt'
 
@@ -429,18 +446,20 @@ def test_Refraction():
 def main(argv):
     """
     """
-    if len(argv) == 1:
-        datafile = 'example.sgt'
-    else:
-        datafile = argv[1]
+    parser = MethodManager.createArgParser(dataSuffix='sgt')
+    options = parser.parse_args()
         
-    ra = Refraction(datafile)
-    print(ra)
+    ra = Refraction(verbose=not options.quiet, debug=pg.debug())
+    
+    ra.loadData(options.dataFileName)
+    
     ra.showData()
     ra.showVA()
-    ra.createMesh(depth=100)
+    ra.createMesh(depth=options.depth)
     ra.showMesh()
-    ra.run()
+    ra.run(lam=options.lam, 
+           max_iter=options.maxIter
+           )
     ax, cbar = ra.showResult()
 
 if __name__ == '__main__':
