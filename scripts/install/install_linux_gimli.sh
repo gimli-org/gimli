@@ -47,7 +47,12 @@ buildGIMLI(){
         git clone https://github.com/gimli-org/gimli.git
     fi
 
-    [ -n "$BRANCH" ] && git checkout $BRANCH
+    echo $(pwd)
+    pushd gimli
+        echo "switching to branch: " $BRANCH
+        [ -n "$BRANCH" ] && git checkout $BRANCH
+    popd
+    
 
     chmod +x gimli/python/apps/*
     
