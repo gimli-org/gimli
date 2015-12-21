@@ -56,7 +56,7 @@ help(){
     echo "      Just update your gimli installation. "
     echo "      The build path will not be removed in the first."
     echo "      This may work or may not work .. please use at own risk"
-    echo "b|branch"
+    echo "b|branch=branch"
     echo "      Checkout with a given git branch name."
     exit
 }
