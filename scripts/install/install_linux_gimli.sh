@@ -47,7 +47,9 @@ buildGIMLI(){
         git clone https://github.com/gimli-org/gimli.git
     fi
 
+    echo $(pwd)
     pushd gimli
+        echo "switching to branch: " $BRANCH
         [ -n "$BRANCH" ] && git checkout $BRANCH
     popd
     

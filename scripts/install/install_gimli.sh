@@ -101,8 +101,8 @@ echo "branch" $BRANCH
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 GET="curl"
 
-# SCRIPT_REPO=$GIMLI_ROOT/gimli/scripts/install
-# GET="cat"
+#SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
+#GET="cat"
 
 
 echo "=========================================="
