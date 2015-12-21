@@ -24,7 +24,7 @@ pacman -S --needed --noconfirm \
         mingw-w64-x86_64-llvm \
         mingw-w64-x86_64-clang
 
-# we need to replace these hardcodet paths from the LLVM cmake config
+# we need to replace these hard coded paths from the LLVM cmake config
 sed -i 's/C:\/repo\/mingw-w64-clang\/src\/build-x86_64/C:\/msys64\/mingw64/'  C:/msys64/mingw64/share/llvm/cmake/LLVMConfig.cmake
 sed -i 's/C:\/repo\/mingw-w64-clang\/src\/llvm-3.7.0.src\/cmake\/modules/C:\/msys64\/mingw64\/share\/llvm\/cmake/' C:/msys64/mingw64/share/llvm/cmake/LLVMConfig.cmake
 
