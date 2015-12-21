@@ -77,7 +77,6 @@ void DataContainer::initDefaults(){
 }
 
 void DataContainer::init(){
-
 }
 
 void DataContainer::initTokenTranslator(){

@@ -163,7 +163,7 @@ class MethodManager(object):
                             help="Maximum iteration count.")
         parser.add_argument("--depth", dest="depth", type=float,
                             default=None,
-                            help="Depth of the inversion domain. [None] None means automatic")
+                            help="Depth of the inversion domain. [None] None means automatic.")
         parser.add_argument('dataFileName')
         return parser
         
