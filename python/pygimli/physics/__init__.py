@@ -97,11 +97,11 @@ class MethodManager(object):
     def createMesh(self, ):
         """ Create a mesh aka the parametrization """
         pass
-    
+
     def setMesh(self, ):
         """ Create a mesh aka the parametrization """
         pass
-    
+
     def showMesh(self, ax=None):
         """ show mesh in given axes or in a new figure """
         pass
@@ -138,23 +138,29 @@ class MethodManager(object):
     def createArgParser(dataSuffix='dat'):
         """
             Create default argument parser for the following options:
-            
+
             -Q, --quiet
-            
+
             -l, --lambda: options.lam
-            
+
             -i, --maxIter: options.depth
-            
+
             --depth: options.depth
-            
-            
+
+
         """
         import argparse
-    
+
         parser = argparse.ArgumentParser(description="usage: %prog [options] *." + dataSuffix)
-        parser.add_argument("-Q", "--quiet", dest="quiet", 
+        parser.add_argument("-Q", "--quiet", dest="quiet",
                             action="store_true", default=False,
                             help="Be verbose.")
+        parser.add_argument("-R", "--robustData", dest="robustData",
+                            action="store_true", default=False,
+                            help="Robust data (L1 norm) minimization.")
+        parser.add_argument("-B", "--blockyModel", dest="blockyModel",
+                            action="store_true", default=False,
+                            help="Blocky model (L1 norm) regularization.")
         parser.add_argument('-l', "--lambda", dest="lam", type=float,
                             default=100,
                             help="Regularization strength.")
@@ -166,6 +172,6 @@ class MethodManager(object):
                             help="Depth of the inversion domain. [None] None means automatic.")
         parser.add_argument('dataFileName')
         return parser
-        
+
 
 from . traveltime import Refraction

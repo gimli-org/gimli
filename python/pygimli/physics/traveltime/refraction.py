@@ -28,7 +28,7 @@ class Refraction(MethodManager):
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, filename=None, verbose=True, debug=False, **kwargs):
+    def __init__(self, data=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
@@ -46,7 +46,6 @@ class Refraction(MethodManager):
         self.start = []
         self.pd = None
 
-        data = kwargs.pop('data', None)
         name = kwargs.pop('name', 'new')
 
         if isinstance(data, str):
@@ -54,11 +53,11 @@ class Refraction(MethodManager):
         elif isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
             self.basename = name
-        if self.dataContainer is not None:
-            self.createMesh()
-        self.fop = self.createFOP(verbose=self.verbose)
-        self.inv = self.createInv(self.fop,
-                                  verbose=self.verbose, doSave=self.doSave)
+#        if self.dataContainer is not None:
+#            self.createMesh()
+#        self.fop = self.createFOP(verbose=self.verbose)
+#        self.inv = self.createInv(self.fop,
+#                                  verbose=self.verbose, doSave=self.doSave)
 
     def __str__(self):
         """string representation of the class"""
@@ -176,8 +175,18 @@ class Refraction(MethodManager):
         plt.show(block=False)
 
     def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5):
-        """Create (inversion) mesh using createParaDomain2D"""
+                   paraBoundary=5, apply=True, **kwargs):
+        """Create (inversion) mesh using createParaDomain2D
+
+        Parameters
+        ----------
+
+
+
+        apply : bool
+            set Mesh property of the underlying forward operator
+
+        """
 
         if self.dataContainer is None:
             raise('Cannot create mesh without dataContainer.')
@@ -189,7 +198,9 @@ class Refraction(MethodManager):
                                       paraBoundary=paraBoundary,
                                       boundary=boundary)
         mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
-        self.setMesh(mesh)
+        if apply:
+            self.setMesh(mesh)
+        return mesh
 
     def setMesh(self, mesh, refine=True):
         """
@@ -222,11 +233,6 @@ class Refraction(MethodManager):
         self.error = absoluteError + self.dataContainer('t') * relativeError
         self.inv.setAbsoluteError(self.error)
 
-    def createStartModel(self, vtop=500., vbottom=5000.):
-        """create (gradient) starting model with vtop/vbottom bounds"""
-        self.start = createGradientModel2D(self.dataContainer, self.mesh,
-                                           vtop, vbottom)
-
     def invert(self, **kwargs):
         """Run actual inversion (first creating inversion object if not there)
 
@@ -243,13 +249,12 @@ class Refraction(MethodManager):
         zweight : float
             relative weight for purely vertical boundaries
         """
-#        self.start = createGradientModel2D(self.dataContainer, self.mesh,
-#                                           vtop, vbottom)
-        if self.fop.regionManager().parameterCount() != len(self.start):
-            self.createStartModel(kwargs.pop('vtop', 500.),
-                                  kwargs.pop('vbottom', 5000.))
+        if self.mesh is None:
+            self.createMesh(**kwargs)
+        self.fop.setStartModel(createGradientModel2D(
+            self.dataContainer, self.fop.regionManager().paraDomain(),
+            kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
 
-        self.fop.setStartModel(self.start)
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
@@ -261,7 +266,6 @@ class Refraction(MethodManager):
             self.estimateError(kwargs.pop('error', 0.003))  # abs. error in ms
 
         self.inv.setAbsoluteError(self.error)
-        self.inv.setModel(self.start)  # somehow doubled with 3 lines above
         self.fop.jacobian().clear()
         slowness = self.inv.run()
         self.velocity = 1. / slowness
