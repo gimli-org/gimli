@@ -5,7 +5,7 @@ GIMLI_ROOT=$PWD/gimli
 PARALLEL_BUILD=2
 PYTHON_MAJOR=3
 UPDATE_ONLY=0
-BRANCH='master'
+BRANCH=''
 
 # Utility functions
 expand_tilde()
@@ -57,7 +57,7 @@ help(){
     echo "      The build path will not be removed in the first."
     echo "      This may work or may not work .. please use at own risk"
     echo "b|branch=branch"
-    echo "      Checkout with a given git branch name."
+    echo "      Checkout with a given git branch name. Default=''"
     exit
 }
 
