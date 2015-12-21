@@ -90,9 +90,10 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         fig, ax = plt.subplots()
 
     im = ax.imshow(mat, norm=norm, interpolation='nearest')
+    cbar = None
     if kwargs.pop('colorBar', True):
-        pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5,
-                                    label=label)
+        cbar = pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5,
+                                           label=label)
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
@@ -105,7 +106,7 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     ax.set_yticks(yt)
     ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
 #    ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
-    return ax
+    return ax, cbar
 
 
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
