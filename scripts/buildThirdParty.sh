@@ -25,9 +25,6 @@ PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
-GIMLI_URL=http://svn.code.sf.net/p/libgimli/code/trunk
-BERT_URL=http://geo27.geo.tu-berlin.de/svn/bert
-
 checkTOOLSET(){
 	if [ "$TOOLSET" == "none" ]; then
 		echo "No TOOLSET set .. using default gcc"

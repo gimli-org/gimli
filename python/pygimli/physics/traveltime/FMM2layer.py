@@ -7,13 +7,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from pygimli.mplviewer import drawMesh, drawField, drawStreamLines
-#import heapq
+# import heapq
 from math import asin, tan
 
 from pygimli.physics.traveltime.fastMarchingTest import fastMarch
 
 """
-Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal equation
+Solve the Hamilton-Jacobi (HJ) equation, known as the Eikonal equation
 .. math::
     |\grad u(x)| & = f(x) \\
     ||\grad t||_2 &= s
@@ -21,7 +21,7 @@ Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal equatio
 
 where :math:`t` denote traveltime for a spatial distributed slowness :math:`s`
 
-In the special case when f(x) = 1, the solution gives the signed distance from the boundary
+In case f(x) = 1, the solution gives the distance from the boundary
 """
 
 # def fastMarch(mesh, downwind, times, upTags, downTags):

@@ -16,20 +16,19 @@ from pygimli.mplviewer.dataview import plotVecMatrix
 from pygimli.physics import MethodManager
 
 # the explicit import with full name allow for:
-# python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py 
+# python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
 
 
 class Refraction(MethodManager):
-
     """ Class for managing refraction seismics data
 
         TODO Document main members and use default MethodeManager interface
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, filename=None, verbose=True, debug=False, **kwargs):
+    def __init__(self, data=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
@@ -46,11 +45,7 @@ class Refraction(MethodManager):
         self.response = None
         self.start = []
         self.pd = None
-        #self.fop = self.createFop(verbose=self.verbose)
-        #self.inv = self.createInv(self.fop,
-                                  #verbose=self.verbose, doSave=self.doSave)
 
-        data = kwargs.pop('data', None)
         name = kwargs.pop('name', 'new')
 
         if isinstance(data, str):
@@ -58,8 +53,11 @@ class Refraction(MethodManager):
         elif isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
             self.basename = name
-        if self.dataContainer is not None:
-            self.createMesh()
+#        if self.dataContainer is not None:
+#            self.createMesh()
+#        self.fop = self.createFOP(verbose=self.verbose)
+#        self.inv = self.createInv(self.fop,
+#                                  verbose=self.verbose, doSave=self.doSave)
 
     def __str__(self):
         """string representation of the class"""
@@ -73,7 +71,7 @@ class Refraction(MethodManager):
         if hasattr(self, 'mesh'):
             out += "\n" + self.mesh.__str__()
         return out
- 
+
     def paraDomain(self):
         """ base api """
         return self.fop.regionManager().paraDomain()
@@ -88,8 +86,8 @@ class Refraction(MethodManager):
 
         Dijkstra, later FMM.
         """
-        #if not hasattr(self, 'mesh'):  # self.mesh is None:
-        #self.createMesh()
+#        if not hasattr(self, 'mesh'):  # self.mesh is None:
+#        self.createMesh()
         fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
         return fop
 
@@ -177,12 +175,22 @@ class Refraction(MethodManager):
         plt.show(block=False)
 
     def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5):
-        """Create (inversion) mesh using createParaDomain2D"""
-        
+                   paraBoundary=5, apply=True, **kwargs):
+        """Create (inversion) mesh using createParaDomain2D
+
+        Parameters
+        ----------
+
+
+
+        apply : bool
+            set Mesh property of the underlying forward operator
+
+        """
+
         if self.dataContainer is None:
             raise('Cannot create mesh without dataContainer.')
-                    
+
         if depth is None:
             depth = self.getDepth()
         self.poly = createParaMeshPLC(self.dataContainer.sensorPositions(),
@@ -190,7 +198,9 @@ class Refraction(MethodManager):
                                       paraBoundary=paraBoundary,
                                       boundary=boundary)
         mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
-        self.setMesh(mesh)
+        if apply:
+            self.setMesh(mesh)
+        return mesh
 
     def setMesh(self, mesh, refine=True):
         """
@@ -211,9 +221,9 @@ class Refraction(MethodManager):
 
         self.axs['mesh'] = ax
         drawMesh(ax, self.mesh)
-        #plt.show(block=False)
+#        plt.show(block=False)
         ax.set_aspect(1)
-        
+
         return ax
 
     def estimateError(self, absoluteError=0.001, relativeError=0.001):
@@ -223,12 +233,7 @@ class Refraction(MethodManager):
         self.error = absoluteError + self.dataContainer('t') * relativeError
         self.inv.setAbsoluteError(self.error)
 
-    def createStartModel(self, vtop=500., vbottom=5000.):
-        """create (gradient) starting model with vtop/vbottom bounds"""
-        self.start = createGradientModel2D(self.dataContainer, self.mesh,
-                                           vtop, vbottom)
-
-    def run(self, **kwargs):
+    def invert(self, **kwargs):
         """Run actual inversion (first creating inversion object if not there)
 
         result/response is stored in the class attribute velocity/response
@@ -244,24 +249,23 @@ class Refraction(MethodManager):
         zweight : float
             relative weight for purely vertical boundaries
         """
-#        self.start = createGradientModel2D(self.dataContainer, self.mesh,
-#                                           vtop, vbottom)
-        if self.fop.regionManager().parameterCount() != len(self.start):
-            self.createStartModel(kwargs.pop('vtop', 500.),
-                                  kwargs.pop('vbottom', 5000.))
-            
-        self.fop.setStartModel(self.start)
+        if self.mesh is None:
+            self.createMesh(**kwargs)
+        self.fop.setStartModel(createGradientModel2D(
+            self.dataContainer, self.fop.regionManager().paraDomain(),
+            kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
+
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
         self.inv.setMaxIter(kwargs.pop('max_iter', 20))
-        self.inv.setRobustData(kwargs.pop('setRobust', False))
-        
+        self.inv.setRobustData(kwargs.pop('robustData', False))
+        self.inv.setBlockyModel(kwargs.pop('blockyModel', False))
+
         if not hasattr(self.error, '__iter__'):
             self.estimateError(kwargs.pop('error', 0.003))  # abs. error in ms
-            
+
         self.inv.setAbsoluteError(self.error)
-        self.inv.setModel(self.start)  # somehow doubled with 3 lines above
         self.fop.jacobian().clear()
         slowness = self.inv.run()
         self.velocity = 1. / slowness
@@ -284,11 +288,11 @@ class Refraction(MethodManager):
     def showVA(self, ax=None, t=None, name='va', pseudosection=False,
                squeeze=True):
         """show apparent velocity as image plot
-        
+
         TODO showXXX commands need to return axes and cbar .. if there is one
-        
+
         """
-        
+
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
@@ -301,13 +305,13 @@ class Refraction(MethodManager):
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         offset = np.absolute(gx - sx)
         va = offset / t
-        
+
         if pseudosection:
             midpoint = (gx + sx) / 2
-            plotVecMatrix(midpoint, offset, va, squeeze=True, 
+            plotVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
                           label='Apparent velocity [s/m]')
         else:
-            plotVecMatrix(gx, sx, va, squeeze=squeeze,
+            plotVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
                           label='Apparent velocity [m/s]')
 #        va = showVA(ax, self.dataContainer)
 #        plt.show(block=False)
@@ -443,23 +447,23 @@ def test_Refraction():
 
     np.testing.assert_array_equal(m1, m3)
 
+
 def main(argv):
     """
     """
     parser = MethodManager.createArgParser(dataSuffix='sgt')
     options = parser.parse_args()
-    
+
     ra = Refraction(verbose=not options.quiet, debug=pg.debug())
-    
+
     ra.loadData(options.dataFileName)
-    
+
     ra.showData()
     ra.showVA()
     ra.createMesh(depth=options.depth)
     ra.showMesh()
-    ra.run(lam=options.lam, 
-           max_iter=options.maxIter
-           )
+    ra.invert(lam=options.lam, max_iter=options.maxIter,
+              robustData=options.robustData, blockyModel=options.blockyModel)
     ax, cbar = ra.showResult()
 
 if __name__ == '__main__':

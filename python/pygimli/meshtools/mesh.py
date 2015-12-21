@@ -693,13 +693,13 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 
     Parameters
     ----------
-    sensors : list of RVector3 objects
+    sensors : list of RVector3 objects | DataContainer with sensorPositions()
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
-    paraDX : float
-        Relativ distance for refinement nodes between two electrodes,
-        e.g., 0.5 means 1 additional node in the middle between two electrodes
-        e.g., 0.33 means 2 additional node evenly spaced between two electrodes
+    paraDX : float [1]
+        Relativ distance for refinement nodes between two electrodes (1=none),
+        e.g., 0.5 means 1 additional node between two neighboring electrodes
+        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
@@ -717,10 +717,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
-
+        piecewise linear complex (PLC) containing nodes and edges
     """
 
-    if hasattr(sensors, 'sensorPositions'):
+    if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
 
     eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
@@ -805,7 +805,33 @@ def createParaMesh(*args, **kwargs):
     """
     create parameter mesh from list of sensor positions
 
-    see createParaMeshPLC and createMesh documentation for keyword options
+    Parameters
+    ----------
+    sensors : list of RVector3 objects
+        Sensor positions. Must be sorted and unique in positive x direction.
+        Depth need to be y-coordinate.
+    paraDX : float
+        Relativ distance for refinement nodes between two electrodes (1=none),
+        e.g., 0.5 means 1 additional node between two neighboring electrodes
+        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
+    paraDepth : float, optional
+        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
+        sensor range.
+    paraBoundary : float, optional
+        Margin for parameter domain in absolute sensor distances. 2 (default).
+    paraMaxCellSize: double, optional
+        Maximum size for parametric size in m*m
+    boundaryMaxCellSize: double, optional
+        Maximum cells size in the boundary region in m*m
+    boundary : float, optional
+        Boundary width to be appended for domain prolongation in absolute
+        para domain width.
+        Values lover 0 force the boundary to be 4 times para domain width.
+
+    Returns
+    -------
+    poly: :gimliapi:`GIMLI::Mesh`
+
     """
     plc = createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
@@ -818,7 +844,7 @@ def createParaMesh2dGrid(*args, **kwargs):
     """
         API change here .. use createParaMesh2DGrid instead
     """
-    print("createParaMesh2dGrid: API change: use createParaMesh2DGrid instead")
+    print("createParaMesh2dGrid: API change: pls use createParaMesh2DGrid")
     return createParaMesh2DGrid(*args, **kwargs)
 
 

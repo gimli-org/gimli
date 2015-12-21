@@ -9,7 +9,6 @@ import pygimli as pg
 import numpy as np
 from pygimli.physics.traveltime.fastMarchingTest import fastMarch
 import matplotlib.pyplot as plt
-import time as time
 from pygimli.mplviewer import drawMesh  # , drawField, drawStreamLines
 
 
@@ -456,15 +455,17 @@ if __name__ == '__main__':
     mesh.createNeighbourInfos()
     data = pg.DataContainer('vagnh_NONOISE.sgt', 's g')
     vel = [1400., 1700., 5000.]
+    slo = np.array([0, 0, 1./1400., 1./1700., 1./5000.])
+    cslo = slo.take(mesh.cellMarker())
     print(mesh)
     print(data)
 
     fwd = TravelTimeFMM(mesh, data, True)
-    tic = time.time()
-    t_fmm = fwd.response(1.0/np.array(vel))
-    print("Forward calculation time: {} seconds.".format(time.time()-tic))
-
-    delta_t = np.array(data("t")) - t_fmm
+    pg.tic()
+    t_fmm = fwd.response(cslo)
+#    t_fmm = fwd.response(1.0/np.array(vel))
+    pg.toc()
+#    delta_t = np.array(data("t")) - t_fmm
 #    f, ax = plt.subplots()
 #    x = pg.x(data.sensorPositions())
 #    ax.plot(abs(delta_t), 'r-.', label='abs. diff')
@@ -502,6 +503,7 @@ if __name__ == '__main__':
 #    drawStreamLines(a, mesh, fwd.timefields[0], nx=50, ny=50)
 
     # some stats:
+    delta_t = np.array(data("t")) - t_fmm
     diff_rms = np.sqrt(np.sum(delta_t**2)/len(delta_t))
     print("RMS of difference: {}".format(diff_rms))
     print("Mean of difference: {}".format(np.mean(delta_t)))

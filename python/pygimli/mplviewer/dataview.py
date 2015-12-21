@@ -90,20 +90,23 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         fig, ax = plt.subplots()
 
     im = ax.imshow(mat, norm=norm, interpolation='nearest')
-    pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5, label=label)
+    cbar = None
+    if kwargs.pop('colorBar', True):
+        cbar = pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5,
+                                           label=label)
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
     if kwargs.pop('showally', False):
         yt = np.arange(len(ymap))
-    xx = [k for k in xmap]
+    xx = np.sort([k for k in xmap])
     ax.set_xticks(xt)
     ax.set_xticklabels(['{:g}'.format(round(xx[int(ti)], 2)) for ti in xt])
     yy = np.unique([k for k in ymap])
     ax.set_yticks(yt)
     ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
 #    ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
-    return ax
+    return ax, cbar
 
 
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
@@ -114,7 +117,7 @@ def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     xvec, yvec : iterable (e.g. list, np.array, pg.RVector) of identical length
         vectors defining the indices into the matrix
     vals : iterable of same length as xvec/yvec
-        vactor containing the values to show
+        vector containing the values to show
     full: bool [False]
         use a fully symmetric matrix containing all unique xvec+yvec
         otherwise A is squeezed to the individual unique xvec/yvec values
