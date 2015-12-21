@@ -5,6 +5,7 @@ GIMLI_ROOT=$PWD/gimli
 PARALLEL_BUILD=2
 PYTHON_MAJOR=3
 UPDATE_ONLY=0
+BRANCH='master'
 
 # Utility functions
 expand_tilde()
@@ -55,6 +56,8 @@ help(){
     echo "      Just update your gimli installation. "
     echo "      The build path will not be removed in the first."
     echo "      This may work or may not work .. please use at own risk"
+    echo "b|branch"
+    echo "      Checkout with a given git branch name."
     exit
 }
 
@@ -72,6 +75,9 @@ for i in "$@"; do
         *u*|*update*)
             UPDATE_ONLY=1
         ;;
+        *b*|*branch*)
+            BRANCH=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        ;;
         *h*|*help*)
             help
         ;;
@@ -83,11 +89,13 @@ export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
 export PYTHON_MAJOR=$PYTHON_MAJOR
 export PARALLEL_BUILD=$PARALLEL_BUILD
 export UPDATE_ONLY=$UPDATE_ONLY
+export BRANCH=$BRANCH
 
 echo "Installing at "$GIMLI_ROOT
 echo "Build for Python="$PYTHON_MAJOR
 echo "Parallelize with j="$PARALLEL_BUILD
 echo "Update only" $UPDATE_ONLY
+echo "branch" $BRANCH
 
 #SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
