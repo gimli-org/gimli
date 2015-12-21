@@ -97,11 +97,11 @@ class MethodManager(object):
     def createMesh(self, ):
         """ Create a mesh aka the parametrization """
         pass
-
+    
     def setMesh(self, ):
         """ Create a mesh aka the parametrization """
         pass
-
+    
     def showMesh(self, ax=None):
         """ show mesh in given axes or in a new figure """
         pass
@@ -138,43 +138,34 @@ class MethodManager(object):
     def createArgParser(dataSuffix='dat'):
         """
             Create default argument parser for the following options:
-
+            
             -Q, --quiet
-
-            -R, --robustData
-
-            -B, --blockyModel
-
+            
             -l, --lambda: options.lam
-
+            
             -i, --maxIter: options.depth
-
+            
             --depth: options.depth
-
-
+            
+            
         """
         import argparse
-
-        parser = argparse.ArgumentParser(
-            description="usage: %prog [options] *." + dataSuffix)
-        parser.add_argument("-Q", "--quiet", dest="quiet",
+    
+        parser = argparse.ArgumentParser(description="usage: %prog [options] *." + dataSuffix)
+        parser.add_argument("-Q", "--quiet", dest="quiet", 
                             action="store_true", default=False,
                             help="Be verbose.")
-        parser.add_argument("-R", "--robustData", dest="robustData",
-                            action="store_true", default=False,
-                            help="Robust misfit minimization (L1-norm based).")
-        parser.add_argument("-B", "--blockyMOdel", dest="blockyModel",
-                            action="store_true", default=False,
-                            help="Blocky model constraints (L1-norm based).")
         parser.add_argument('-l', "--lambda", dest="lam", type=float,
                             default=100,
                             help="Regularization strength.")
         parser.add_argument('-i', "--maxIter", dest="maxIter", type=int,
                             default=20,
                             help="Maximum iteration count.")
-        parser.add_argument("--depth", dest="depth", type=float, default=None,
-                            help="Depth of inversion domain. None=automatic")
+        parser.add_argument("--depth", dest="depth", type=float,
+                            default=None,
+                            help="Depth of the inversion domain. [None] None means automatic.")
         parser.add_argument('dataFileName')
         return parser
+        
 
 from . traveltime import Refraction

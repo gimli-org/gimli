@@ -473,7 +473,8 @@ buildCASTXML(){
         popd
     else
         getCLANG_NAME
-        CC=$CLANG CXX=$CLANGPP cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
+        #CC=$CLANG CXX=$CLANGPP cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
+        cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
     fi
 
 }
