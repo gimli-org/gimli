@@ -140,6 +140,10 @@ class MethodManager(object):
             Create default argument parser for the following options:
 
             -Q, --quiet
+            
+            -R, --robustData
+            
+            -B, --blockyModel
 
             -l, --lambda: options.lam
 
