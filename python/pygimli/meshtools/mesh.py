@@ -84,12 +84,13 @@ def createMesh(poly, quality=30, area=0.0,
         if not verbose:
             switches += 'Q'
 
-        # print(switches)
+        if verbose:
+            print(switches)
         tri.setSwitches(switches)
         mesh = tri.generate()
 
         if smooth is not None:
-            mesh.smooth(nodeMoving=True,
+            mesh.smooth(nodeMoving=kwargs.pop('node_move', False),
                         edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
