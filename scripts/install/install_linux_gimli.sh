@@ -1,85 +1,61 @@
 #!/usr/bin/env bash
 
-ROOT=$PWD
+[ -z $GIMLI_ROOT ] && $(pwd)
+[ -z $GIMLI_SOURCE ] && GIMLI_SOURCE=$GIMLI_ROOT/gimli
+[ -z $GIMLI_BUILD ] && GIMLI_BUILD=$GIMLI_ROOT/build
 [ -z $PARALLEL_BUILD ] && PARALLEL_BUILD=1
 [ -z $PYTHON_MAJOR ] && PYTHON_MAJOR=3
 
 CMAKE_GENERATOR='Unix Makefiles'
 
-case "$(grep "ID=" /etc/os-release)" in
-    *"gentoo"*)
-        echo "Gentoo system found"
-        PYTHONSPECS=''
-    ;;
-    *"debian"*)
-        echo "Debian system found"
-        if [ $PYTHON_MAJOR -eq 3 ] ; then
+if [ -z $PYTHONSPECS ]; then
+
+    case "$(grep "ID=" /etc/os-release)" in
+        *"gentoo"*)
+            echo "Gentoo system found"
+            PYTHONSPECS=''
+        ;;
+        *"debian"*)
+            echo "Debian system found"
+            if [ $PYTHON_MAJOR -eq 3 ] ; then
+                PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
+                            -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
+                            -DPYTHON_EXECUTABLE=/usr/bin/python3'
+            else
+                PYTHONSPECS=''
+            fi
+
+        ;;
+        *"arch"*)
+            echo "Arch Linux system found"
+            PYTHONSPECS='-DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so'
+        ;;
+        *"ubuntu"*)
+            echo "Ubuntu Linux system found"
             PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
                         -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
                         -DPYTHON_EXECUTABLE=/usr/bin/python3'
-        else
+        ;;
+        *)
+            echo $(grep "ID=" /etc/os-release) "system found: trying defaults"
             PYTHONSPECS=''
-        fi
-
-    ;;
-    *"arch"*)
-        echo "Arch Linux system found"
-        PYTHONSPECS='-DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so'
-    ;;
-    *"ubuntu"*)
-        echo "Ubuntu Linux system found"
-        PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
-                     -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
-                     -DPYTHON_EXECUTABLE=/usr/bin/python3'
-    ;;
-    *)
-        echo $(grep "ID=" /etc/os-release) "system found: trying defaults"
-        PYTHONSPECS=''
-    ;;
-esac
+        ;;
+    esac
+fi
 
 buildGIMLI(){
-    if [ -d "gimli" ]; then
-        pushd gimli
-            git pull
-        popd
-    else
-        git clone https://github.com/gimli-org/gimli.git
-    fi
 
-    echo $(pwd)
-    pushd gimli
-        echo "switching to branch: " $BRANCH
-        [ -n "$BRANCH" ] && git checkout $BRANCH
-    popd
-    
+    mkdir -p $GIMLI_BUILD
 
-    chmod +x gimli/python/apps/*
-    
-    if [ $UPDATE_ONLY -eq 0 ] ; then
-        rm -rf build/
-    fi
-    mkdir -p build
+    pushd $GIMLI_BUILD
 
-    pushd build
-        cmake -G "$CMAKE_GENERATOR" ../gimli $PYTHONSPECS
+        [ -n $CASTXML ] && CASTXML="-DCASTER_EXECUTABLE=$CASTXML"
+
+        cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE $PYTHONSPECS $CASTXML
 
         make -j$PARALLEL_BUILD && make pygimli J=$PARALLEL_BUILD
-        echo ""
-        echo ""
-        echo "============================================================================"
-        echo "------------------------  TEST pyGIMLi installation ------------------------"
-        export PYTHONPATH=$ROOT/gimli/python:$PYTHONPATH
-        python -c 'import pygimli as pg; print("pygimli version:", pg.__version__)'
-        if [ -x "$(command -v pytest)" ]; then
-            python -c 'import pygimli as pg; pg.test()'
-        fi
-        echo "--- ------------------------------------------------------------------------"
-        echo "export PYTHONPATH=$ROOT/gimli/python:\$PYTHONPATH" > $ROOT/.bash_hint_pygimli
-        echo "export PATH=$ROOT/gimli/python/apps:\$PATH" >> $ROOT/.bash_hint_pygimli
 
     popd
 }
-
 
 buildGIMLI

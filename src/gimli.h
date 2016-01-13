@@ -388,6 +388,9 @@ inline std::string type(const float         & var) { return "float"; }
 inline std::string type(const double        & var) { return "double"; }
 inline std::string type(const std::string   & var) { return "string"; }
 inline std::string type(const std::vector < std::string >  & var) { return "string"; }
+#if defined ( __APPLE__ )
+inline std::string type(const long unsigned int & var) { return "long unsigned int"; }
+#endif
 inline std::string type(const RVector & var) { return "RVector"; }
 inline std::string type(const RVector3 & var) { return "RVector3"; }
 inline std::string type(const R3Vector & var) { return "R3Vector"; }
