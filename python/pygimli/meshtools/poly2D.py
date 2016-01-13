@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from pygimli.meshtools import createMesh, createParaDomain2D
 from pygimli.mplviewer.meshview import drawMesh
 from pygimli.utils import opt_import
+from pygimli.meshtools import writeTrianglePoly
 
 
 class Poly2D(object):
@@ -189,7 +190,7 @@ class Poly2D(object):
                 "Boundary marker '{}' not implemented!".format(bc_marker))
         return pg_marker
 
-    def create_mesh(self, only_pd_mesh=False, **kwargs):
+    def create_mesh(self, only_pd_mesh=False, verbose=False, **kwargs):
         """Generate a mesh from the polygon.
         Use the supplied quality if not already specified in the XML.
 
@@ -206,7 +207,7 @@ class Poly2D(object):
         area = kwargs.pop('area', 0.0)
 
         m_with_bg = createMesh(self.poly, qual, smooth=smooth,
-                               node_move=False, area=area)
+                               node_move=False, area=area, verbose=verbose)
 
         if only_pd_mesh:
             pd = pg.Mesh(2)
@@ -228,6 +229,12 @@ class Poly2D(object):
             f, ax = plt.subplots(**figargs)
 
         drawMesh(ax, self.poly, **kwargs)
+
+    def export(self, filename):
+        """
+        Export Triangle poly file
+        """
+        writeTrianglePoly(self.poly, filename)
 
     def drawLines(self, ax=None, color='white'):
         """ just draw edges of a mesh as lines (e.g. onto a model)"""
