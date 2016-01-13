@@ -9,32 +9,45 @@
 CMAKE_GENERATOR='Unix Makefiles'
 
 if [ -z $PYTHONSPECS ]; then
-
     case "$(grep "ID=" /etc/os-release)" in
         *"gentoo"*)
-            echo "Gentoo system found"
-            PYTHONSPECS=''
+            echo "Gentoo system found py-" $PYTHON_MAJOR
+            if [ $PYTHON_MAJOR -eq 2 ] ; then
+                PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython2.7.so
+                            -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-2.7.so
+                            -DPYTHON_EXECUTABLE=/usr/bin/python2'
+            else
+                PYTHONSPECS=''
+            fi
         ;;
         *"debian"*)
             echo "Debian system found"
-            if [ $PYTHON_MAJOR -eq 3 ] ; then
+            if [ $PYTHON_MAJOR -eq 2 ] ; then
+                PYTHONSPECS=''                
+            else
                 PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
                             -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
                             -DPYTHON_EXECUTABLE=/usr/bin/python3'
-            else
-                PYTHONSPECS=''
             fi
 
         ;;
         *"arch"*)
             echo "Arch Linux system found"
-            PYTHONSPECS='-DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so'
+            if [ $PYTHON_MAJOR -eq 2 ] ; then
+                PYTHONSPECS=''
+            else
+                PYTHONSPECS='-DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so'
+            fi
         ;;
         *"ubuntu"*)
             echo "Ubuntu Linux system found"
-            PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
+            if [ $PYTHON_MAJOR -eq 2 ] ; then
+                PYTHONSPECS=''
+            else
+                PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
                         -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
                         -DPYTHON_EXECUTABLE=/usr/bin/python3'
+            fi
         ;;
         *)
             echo $(grep "ID=" /etc/os-release) "system found: trying defaults"
@@ -50,6 +63,8 @@ buildGIMLI(){
     pushd $GIMLI_BUILD
 
         [ -n $CASTXML ] && CASTXML="-DCASTER_EXECUTABLE=$CASTXML"
+
+        echo $PYTHONSPECS
 
         cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE $PYTHONSPECS $CASTXML
 

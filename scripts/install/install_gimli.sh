@@ -4,8 +4,8 @@
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 GET="curl"
 
-# SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
-# GET="cat"
+#SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
+#GET="cat"
 
 # Default values
 GIMLI_ROOT=$PWD/gimli

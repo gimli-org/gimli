@@ -364,11 +364,9 @@ DLLEXPORT std::vector < std::string > getCommentLine(std::fstream & file, char c
 DLLEXPORT std::vector < std::string > getSubstrings(const std::string & str);
 DLLEXPORT std::vector < std::string > split(const std::string & str, char delimiter = ':');
 
-
 DLLEXPORT std::map < float, Complex > loadCFloatMap(const std::string & filename);
 DLLEXPORT std::map < float, float > loadFloatMap(const std::string & filename);
 DLLEXPORT std::map < int, int > loadIntMap(const std::string & filename);
-
 
 inline void convert(bool          & var, char * opt) { var = true; }
 inline void convert(int           & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
