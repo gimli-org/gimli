@@ -10,7 +10,6 @@ SUITESPARSE_VERSION=4.4.4
 SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 
 TRIANGLE_URL=http://www.netlib.org/voronoi/
-GCCXML_URL=https://github.com/gccxml/gccxml.git
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=8a08a44ffee70f71bdb7d8bee90e325dafbfeae4 #last functional
@@ -18,6 +17,7 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 #PYGCCXML_REV=f8cfd81 # old functional
 PYGCCXML_REV=bffa6e0 # current functional
+
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 #PYPLUSPLUS_REV=78f5b0f # pre apichange
 #PYPLUSPLUS_REV=58f5443 # post apichange
@@ -25,15 +25,15 @@ PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
 checkTOOLSET(){
-	if [ "$TOOLSET" == "none" ]; then
-		echo "No TOOLSET set .. using default gcc"
-		SYSTEM=UNIX
-		SetGCC_TOOLSET
-	elif [ "$TOOLSET" == "clang" ]; then
+    if [ "$TOOLSET" == "none" ]; then
+        echo "No TOOLSET set .. using default gcc"
+        SYSTEM=UNIX
+        SetGCC_TOOLSET
+    elif [ "$TOOLSET" == "clang" ]; then
         SetCLANG_TOOLSET
     fi
 
-	needPYTHON
+    needPYTHON
 
     SRC_DIR=$PREFIX/src
     mkdir -p $SRC_DIR
@@ -42,68 +42,68 @@ checkTOOLSET(){
         TARGETNAME=-$TOOLSET-$ADDRESSMODEL
     fi
 
-	BUILD_DIR=$PREFIX/build$TARGETNAME
-	mkdir -p $BUILD_DIR
+    BUILD_DIR=$PREFIX/build$TARGETNAME
+    mkdir -p $BUILD_DIR
 
-	DIST_DIR=$PREFIX/dist$TARGETNAME
-	mkdir -p $DIST_DIR
+    DIST_DIR=$PREFIX/dist$TARGETNAME
+    mkdir -p $DIST_DIR
 
     BUILDSCRIPT_HOME=${0%/*}
 
-	echo "##################################################################################################"
-	echo "SYSTEM: $SYSTEM"
-	echo "USING TOOLSET=$TOOLSET and CMAKE_GENERATOR=$CMAKE_GENERATOR, PARRALELBUILD: $PARALLEL_BUILD"
-	echo "ADDRESSMODEL = $ADDRESSMODEL"
-	echo "PYTHON       = $PYTHONVERSION"
-	echo "SRC_DIR      = $SRC_DIR"
+    echo "##################################################################################################"
+    echo "SYSTEM: $SYSTEM"
+    echo "USING TOOLSET=$TOOLSET and CMAKE_GENERATOR=$CMAKE_GENERATOR, PARRALELBUILD: $PARALLEL_BUILD"
+    echo "ADDRESSMODEL = $ADDRESSMODEL"
+    echo "PYTHON       = $PYTHONVERSION"
+    echo "SRC_DIR      = $SRC_DIR"
     echo "BUILD_DIR    = $BUILD_DIR"
     echo "DIST_DIR     = $DIST_DIR"
-	echo "##################################################################################################"
+    echo "##################################################################################################"
 }
 SetMSVC_TOOLSET(){
-	TOOLSET=vc10
-	SYSTEM=WIN
-	export PATH=/C/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 10.0/VC/bin/:$PATH
-	export PATH=/C/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 10.0/Common7/IDE/:$PATH
-	CMAKE_GENERATOR='Visual Studio 10'
-	COMPILER='msvc-10.0'
-	ADDRESSMODEL=32
+    TOOLSET=vc10
+    SYSTEM=WIN
+    export PATH=/C/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 10.0/VC/bin/:$PATH
+    export PATH=/C/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 10.0/Common7/IDE/:$PATH
+    CMAKE_GENERATOR='Visual Studio 10'
+    COMPILER='msvc-10.0'
+    ADDRESSMODEL=32
     CPUCOUNT=1
 }
 SetGCC_TOOLSET(){
-	needGCC
-	TOOLSET=gcc-`gcc -dumpversion`
-	B2TOOLSET=''
+    needGCC
+    TOOLSET=gcc-`gcc -dumpversion`
+    B2TOOLSET=''
     MAKE=make
 
-	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
-		CMAKE_GENERATOR='MSYS Makefiles'
+    if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
+        CMAKE_GENERATOR='MSYS Makefiles'
         #CMAKE_GENERATOR='MinGW Makefiles'
-		SYSTEM=WIN
-		B2TOOLSET=mingw
+        SYSTEM=WIN
+        B2TOOLSET=mingw
         B2TOOLSET=gcc
         #MAKE=mingw32-make
-	elif [ "$OSTYPE" == "darwin13" ]; then
-		CMAKE_GENERATOR='Unix Makefiles'
-		SYSTEM=MAC
-	else
-		CMAKE_GENERATOR='Unix Makefiles'
-		SYSTEM=UNIX
-	fi
+    elif [ $(uname) == "Darwin" ]; then
+        CMAKE_GENERATOR='Unix Makefiles'
+        SYSTEM=MAC
+    else
+        CMAKE_GENERATOR='Unix Makefiles'
+        SYSTEM=UNIX
+    fi
 
     CMAKE_MAKE=$MAKE
-	COMPILER='gcc'
-	GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
-	GCCARCH=`gcc -dumpmachine`
-	CPUCOUNT=$PARALLEL_BUILD
-	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
+    COMPILER='gcc'
+    GCCVER=`gcc -dumpmachine`-`gcc -dumpversion`
+    GCCARCH=`gcc -dumpmachine`
+    CPUCOUNT=$PARALLEL_BUILD
+    [ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
     [ "$CPUCOUNT" == 0 ] && CPUCOUNT=$PARALLEL_BUILD
 
     if [ "$GCCARCH" == "mingw32" -o "$GCCARCH" == "i686" -o "$GCCARCH" == "i686-pc-msys" -o "$GCCARCH" == "i686-w64-mingw32" ]; then
-		ADDRESSMODEL=32
-	else
-		ADDRESSMODEL=64
-	fi
+        ADDRESSMODEL=32
+    else
+        ADDRESSMODEL=64
+    fi
 }
 
 getCLANG_NAME() {
@@ -122,56 +122,56 @@ getCLANG_NAME() {
 }
 
 SetCLANG_TOOLSET(){
-	#needGCC
-	TOOLSET=clang-`clang -dumpversion`
-	B2TOOLSET='clang'
+    #needGCC
+    TOOLSET=clang-`clang -dumpversion`
+    B2TOOLSET='clang'
     MAKE=make
 
 
-	if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
-		CMAKE_GENERATOR='MSYS Makefiles'
+    if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
+        CMAKE_GENERATOR='MSYS Makefiles'
         SYSTEM=WIN
-    elif [ "$OSTYPE" == "darwin13" ]; then
-		CMAKE_GENERATOR='Unix Makefiles'
-		SYSTEM=MAC
-	else
-		CMAKE_GENERATOR='Unix Makefiles'
-		SYSTEM=UNIX
-	fi
+    elif [ $(uname) == "Darwin" ]; then
+        CMAKE_GENERATOR='Unix Makefiles'
+        SYSTEM=MAC
+    else
+        CMAKE_GENERATOR='Unix Makefiles'
+        SYSTEM=UNIX
+    fi
 
     CMAKE_MAKE=$MAKE
-	COMPILER='clang'
-	GCCVER=`clang -dumpmachine`-`gcc -dumpversion`
-	GCCARCH=`clang -dumpmachine`
-	CPUCOUNT=$PARALLEL_BUILD
-	[ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
+    COMPILER='clang'
+    GCCVER=`clang -dumpmachine`-`gcc -dumpversion`
+    GCCARCH=`clang -dumpmachine`
+    CPUCOUNT=$PARALLEL_BUILD
+    [ -f /proc/cpuinfo ] && CPUCOUNT=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | tail -1`
     [ "$CPUCOUNT" == 0 ] && CPUCOUNT=$PARALLEL_BUILD
 
     if [ "$GCCARCH" == "mingw32" -o "$GCCARCH" == "i686" -o "$GCCARCH" == "i686-pc-msys" -o "$GCCARCH" == "i686-w64-mingw32" ]; then
-		ADDRESSMODEL=32
-	else
-		ADDRESSMODEL=64
-	fi
+        ADDRESSMODEL=32
+    else
+        ADDRESSMODEL=64
+    fi
 }
 
 getWITH_WGET(){
-	_URL_=$1
-	_SRC_=$2
-	_PAC_=$3
+    _URL_=$1
+    _SRC_=$2
+    _PAC_=$3
     echo "wget $_URL_/$_PAC_"
 
-	if [ ! -d $_SRC_ ]; then
+    if [ ! -d $_SRC_ ]; then
         echo "Copying sources into $_SRC_"
         pushd $SRC_DIR
             wget -nc -nd $_URL_/$_PAC_
-			if [ "${_PAC_##*.}" = "zip" ]; then
+            if [ "${_PAC_##*.}" = "zip" ]; then
                 mkdir -p $_SRC_
                 pushd $_SRC_
                     cmake -E tar -xz ../$_PAC_
                 popd
-			else
-				cmake -E tar -xzf $_PAC_
-			fi
+            else
+                cmake -E tar -xzf $_PAC_
+            fi
         popd
     else
         echo "skipping .. sourcetree already exists."
@@ -180,23 +180,23 @@ getWITH_WGET(){
 }
 
 getWITH_SVN(){
-	SVN="svn"
+    SVN="svn"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
 
-	echo "----SVN--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
-	echo "--------------------------------------------------"
+    echo "----SVN--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
+    echo "--------------------------------------------------"
 
-	if ( [ -d $_SRC_ ] ); then
-		pushd $_SRC_
+    if ( [ -d $_SRC_ ] ); then
+        pushd $_SRC_
             "$SVN" up
-		popd
-	else
+        popd
+    else
         pushd $SRC_DIR
             "$SVN" co $_URL_ $_SRC_
         popd
-	fi
+    fi
 }
 
 getWITH_HG(){
@@ -205,20 +205,20 @@ getWITH_HG(){
     _SRC_=$2
     _BRANCH_=$3
 
-	echo "----HG--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
-	echo "--------------------------------------------------"
+    echo "----HG--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
+    echo "--------------------------------------------------"
 
-	if ( [ -d $_SRC_ ] ); then
-		pushd $_SRC_
+    if ( [ -d $_SRC_ ] ); then
+        pushd $_SRC_
 #            "$HG" fetch
             "$HG" pull -u
             "$HG" up
-		popd
-	else
+        popd
+    else
         pushd $SRC_DIR
             "$HG" clone $_URL_ $_SRC_
         popd
-	fi
+    fi
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_
@@ -228,24 +228,24 @@ getWITH_HG(){
 }
 
 getWITH_GIT(){
-	GIT="git"
+    GIT="git"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
 
-	echo "----GIT--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
-	echo "--------------------------------------------------"
+    echo "----GIT--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
+    echo "--------------------------------------------------"
 
-	if ( [ -d $_SRC_ ] ); then
-		pushd $_SRC_
+    if ( [ -d $_SRC_ ] ); then
+        pushd $_SRC_
             "$GIT" stash
             "$GIT" pull
- 		popd
-	else
+         popd
+    else
         pushd $SRC_DIR
             "$GIT" clone $_URL_ $_SRC_
         popd
-	fi
+    fi
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_
@@ -261,13 +261,13 @@ needGCC(){
 needPYTHON(){
 
     HAVEPYTHON=1
-	PYTHONVERSION=`python -c 'import sys; print(sys.version)'`
-	PYTHONMAJOR=`python -c 'import sys; print(sys.version_info.major)'`
-	PYTHONMINOR=`python -c 'import sys; print(sys.version_info.minor)'`
-	#echo $PYTHONVERSION $PYTHONMAJOR
+    PYTHONVERSION=`python -c 'import sys; print(sys.version)'`
+    PYTHONMAJOR=`python -c 'import sys; print(sys.version_info.major)'`
+    PYTHONMINOR=`python -c 'import sys; print(sys.version_info.minor)'`
+    #echo $PYTHONVERSION $PYTHONMAJOR
 
-	PYTHON_HOME=`which python`
-	PYTHON_HOME=${PYTHON_HOME%/*}
+    PYTHON_HOME=`which python`
+    PYTHON_HOME=${PYTHON_HOME%/*}
 
     echo "PYTHON HOME: $PYTHON_HOME"
     if [ $SYSTEM == "win" ]; then
@@ -289,86 +289,86 @@ needPYTHON(){
 }
 
 cmakeBuild(){
-	_SRC_=$1
-	_BUILD_=$2
-	_DIST_=$3
-	_EXTRA_=$4
+    _SRC_=$1
+    _BUILD_=$2
+    _DIST_=$3
+    _EXTRA_=$4
 
-	echo "SRC" $_SRC_
-	mkBuildDIR $_BUILD_
+    echo "SRC" $_SRC_
+    mkBuildDIR $_BUILD_
     pushd $_BUILD_
-		echo "SRC" $_SRC_
-		cmake $_SRC_ -G "$CMAKE_GENERATOR" \
+        echo "SRC" $_SRC_
+        cmake $_SRC_ -G "$CMAKE_GENERATOR" \
              -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
-			-DCMAKE_INSTALL_PREFIX=$_DIST_ $_EXTRA_
+            -DCMAKE_INSTALL_PREFIX=$_DIST_ $_EXTRA_
 
 
         #make -j$PARALLEL_BUILD install
-		cmake --build . --config release --target install -- -j$PARALLEL_BUILD
+        cmake --build . --config release --target install -- -j$PARALLEL_BUILD
     popd
 }
 mkBuildDIR(){
-	_BUILDMB_=$1
-	_SRCMB_=$2
+    _BUILDMB_=$1
+    _SRCMB_=$2
     _FORCEMB_=$3
-	if [ -n "$CLEAN" -o -n "$_FORCEMB_" ]; then
+    if [ -n "$CLEAN" -o -n "$_FORCEMB_" ]; then
         echo " Cleaning $_BUILDMB_"
         rm -rf $_BUILDMB_
     fi
-	mkdir -p $_BUILDMB_
+    mkdir -p $_BUILDMB_
 
-	if [ -n "$_SRCMB_" ]; then # if nonzero
-		echo "copy $_SRCMB_ to $_BUILDMB_"
-		if [ "$(ls -A $_BUILDMB_)" ]; then
-			echo " $_BUILDMB_ not empty ... do nothing"
-		else
-			[ -d $_SRCMB_ ] && cp -rf $_SRCMB_/* $_BUILDMB_
-		fi
-	fi
+    if [ -n "$_SRCMB_" ]; then # if nonzero
+        echo "copy $_SRCMB_ to $_BUILDMB_"
+        if [ "$(ls -A $_BUILDMB_)" ]; then
+            echo " $_BUILDMB_ not empty ... do nothing"
+        else
+            [ -d $_SRCMB_ ] && cp -rf $_SRCMB_/* $_BUILDMB_
+        fi
+    fi
 }
 prepBOOST(){
     BOOST_VER=boost_${BOOST_VERSION//./_}
-	BOOST_SRC=$SRC_DIR/$BOOST_VER
-	BOOST_DIST_NAME=$BOOST_VER-$TOOLSET-$ADDRESSMODEL-'py'$PYTHONMAJOR$PYTHONMINOR
-	BOOST_DIST=$DIST_DIR/$BOOST_DIST_NAME
-	BOOST_BUILD=$BUILD_DIR/$BOOST_VER-'py'$PYTHONMAJOR$PYTHONMINOR
-	export BOOST_ROOT=$BOOST_DIST
+    BOOST_SRC=$SRC_DIR/$BOOST_VER
+    BOOST_DIST_NAME=$BOOST_VER-$TOOLSET-$ADDRESSMODEL-'py'$PYTHONMAJOR$PYTHONMINOR
+    BOOST_DIST=$DIST_DIR/$BOOST_DIST_NAME
+    BOOST_BUILD=$BUILD_DIR/$BOOST_VER-'py'$PYTHONMAJOR$PYTHONMINOR
+    export BOOST_ROOT=$BOOST_DIST
 
-	BOOST_ROOT_WIN=${BOOST_ROOT/\/c\//C:\/}
-	BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/d\//D:\/}
-	BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/e\//E:\/}
+    BOOST_ROOT_WIN=${BOOST_ROOT/\/c\//C:\/}
+    BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/d\//D:\/}
+    BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/e\//E:\/}
 }
 buildBOOST(){
-	checkTOOLSET
-	prepBOOST
+    checkTOOLSET
+    prepBOOST
 
-	getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
+    getWITH_WGET $BOOST_URL/$BOOST_VERSION $BOOST_SRC $BOOST_VER'.tar.gz'
 
     if [ ! -d $BOOST_BUILD ]; then
         echo "copying sourcetree into build: $BOOST_BUILD"
         cp -r $BOOST_SRC $BOOST_BUILD
     fi
-	pushd $BOOST_BUILD
+    pushd $BOOST_BUILD
         echo "Try to build b2 for TOOLSET: $B2TOOLSET"
 
-		if [ "$SYSTEM" == "WIN" ]; then
-			if [ ! -f ./b2.exe ]; then
+        if [ "$SYSTEM" == "WIN" ]; then
+            if [ ! -f ./b2.exe ]; then
                 echo "Try with cmd /c \"bootstrap.bat $B2TOOLSET\""
-				cmd /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
+                cmd /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
 
-				if [ ! -f ./b2.exe ]; then
+                if [ ! -f ./b2.exe ]; then
                     echo "Try with ./bootstrap.sh --with-toolset=$B2TOOLSET"
-					./bootstrap.sh --with-toolset=$B2TOOLSET # only mingw does not work either
-				fi
-				#sed -e s/gcc/mingw/ project-config.jam > project-config.jam
-			fi
+                    ./bootstrap.sh --with-toolset=$B2TOOLSET # only mingw does not work either
+                fi
+                #sed -e s/gcc/mingw/ project-config.jam > project-config.jam
+            fi
             B2="./b2.exe"
-		elif [ "$SYSTEM" == "UNIX" ]; then
-			sh bootstrap.sh
+        elif [ "$SYSTEM" == "UNIX" ]; then
+            sh bootstrap.sh
             B2="./b2"
-		fi
+        fi
 
-		[ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
+        [ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
 
         #"$B2" toolset=$COMPILER --verbose-test test
 
@@ -379,58 +379,25 @@ buildBOOST(){
         fi
         echo "Build with python: $WITHPYTHON"
 
-		"$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
+        "$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
         -j $PARALLEL_BUILD \
         -d 0 \
-		--prefix=$BOOST_DIST \
+        --prefix=$BOOST_DIST \
         --platform=msys \
         --layout=tagged \
         --debug-configuration \
-		$WITHPYTHON \
+        $WITHPYTHON \
         --with-system \
-		--with-thread \
-		--with-date_time \
-		--with-chrono \
-		--with-regex \
-		--with-filesystem \
-		--with-atomic
-	popd
-	echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR.dist
+        --with-thread \
+        --with-date_time \
+        --with-chrono \
+        --with-regex \
+        --with-filesystem \
+        --with-atomic
+    popd
+    echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR.dist
 }
 
-prepGCCXML(){
-	GCCXML_VER=gccxml
-	GCCXML_SRC=$SRC_DIR/$GCCXML_VER
-	GCCXML_BUILD=$BUILD_DIR/$GCCXML_VER
-	GCCXML_DIST=$DIST_DIR
-}
-buildGCCXML(){
-	checkTOOLSET
-	prepGCCXML
-
- 	getWITH_GIT $GCCXML_URL $GCCXML_SRC
-
-	EXTRA=''
-	if [ "$OSTYPE" == "darwin13" ]; then
-			# on APPLE will wrong insert -no-cpp-precomp, avoid it with -DCMAKE_C_COMPILER_ID=GNUAPPLE \
-		EXTRA='-DCMAKE_C_COMPILER_ID=GNUAPPLE'
-	fi
-
-    if [ "$SYSTEM" == "WIN" ]; then
-        # on windows system gccxml with 64bit seems to be broken so we build with default 32 bit compiler
-        #cp /etc/fstab /etc/fstab_back
-        #OLDPATH=$PATH
-        #umount /mingw
-        #mount c:\\MINGW/ /mingw
-        #export PATH=/c/MINGW/bin:$PATH
-        cmakeBuild $GCCXML_SRC $GCCXML_BUILD $GCCXML_DIST $EXTRA
-        #cp /etc/fstab_back /etc/fstab
-        #export PATH=$OLDPATH
-    else
-        cmakeBuild $GCCXML_SRC $GCCXML_BUILD $GCCXML_DIST $EXTRA
-    fi
-
-}
 prepCASTXML(){
     CASTXML_VER=castXML
     CASTXML_SRC=$SRC_DIR/$CASTXML_VER
@@ -470,173 +437,179 @@ buildCASTXML(){
             #make -j$PARALLEL_BUILD install
             cmake --build . --config release --target install -- -j$PARALLEL_BUILD
         popd
+    elif [ "$SYSTEM" == "MAC" ]; then 
+        CC=/usr/bin/gcc CXX=/usr/bin/g++ cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST \
+          "-DLLVM_DIR=/usr/local/Cellar/llvm/HEAD/share/llvm/cmake/"
     else
         getCLANG_NAME
         #CC=$CLANG CXX=$CLANGPP cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
         cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
+
     fi
 
 }
 
 prepPYGCCXML(){
-	PYGCCXML_VER=pygccxml
-	PYGCCXML_SRC=$SRC_DIR/$PYGCCXML_VER
-	PYGCCXML_BUILD=$BUILD_DIR/$PYGCCXML_VER
-	PYGCCXML_DIST=$DIST_DIR/$PYGCCXML_VER
+    PYGCCXML_VER=pygccxml
+    PYGCCXML_SRC=$SRC_DIR/$PYGCCXML_VER
+    PYGCCXML_BUILD=$BUILD_DIR/$PYGCCXML_VER
+    PYGCCXML_DIST=$DIST_DIR/$PYGCCXML_VER
 
     PYPLUSPLUS_VER=pyplusplus
     PYPLUSPLUS_SRC=$SRC_DIR/$PYPLUSPLUS_VER
-	PYPLUSPLUS_BUILD=$BUILD_DIR/$PYPLUSPLUS_VER
-	PYPLUSPLUS_DIST=$DIST_DIR/$PYPLUSPLUS_VER
+    PYPLUSPLUS_BUILD=$BUILD_DIR/$PYPLUSPLUS_VER
+    PYPLUSPLUS_DIST=$DIST_DIR/$PYPLUSPLUS_VER
 
     PYGCCXML_DIST_WIN=${PYGCCXML_DIST/\/c\//C:\\/}
-	PYGCCXML_DIST_WIN=${PYGCCXML_DIST_WIN/\/d\//D:\\/}
+    PYGCCXML_DIST_WIN=${PYGCCXML_DIST_WIN/\/d\//D:\\/}
     PYGCCXML_DIST_WIN=${PYGCCXML_DIST_WIN/\/e\//E:\\/}
 }
 
 buildPYGCCXML(){
-	checkTOOLSET
-	prepPYGCCXML
+    checkTOOLSET
+    prepPYGCCXML
 
-	getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
-	getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
+    getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
+    getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
 
-	mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC
+    mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC
     pushd $PYGCCXML_BUILD
-		python setup.py build
-		echo "copy build->dist"
+        python setup.py build
+        echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYGCCXML_DIST
         fi
 
-		cp -rf $PYGCCXML_BUILD/build/lib*/pygccxml $PYGCCXML_DIST
-		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
-		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
+        cp -rf $PYGCCXML_BUILD/build/lib*/pygccxml $PYGCCXML_DIST
+        #export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
+        #python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
 
-	mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC
-	pushd $PYPLUSPLUS_BUILD
-		python setup.py build
-		echo "copy build->dist"
+    mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC
+    pushd $PYPLUSPLUS_BUILD
+        python setup.py build
+        echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYPLUSPLUS_DIST
         fi
 
-		cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
+        cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
             #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch
         popd
-		#export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
-		#python setup.py install --prefix=$PYGCCXML_DIST_WIN
+        #export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
+        #python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
 }
 
 prepLAPACK(){
-	LAPACK_VER=lapack-$LAPACK_VERSION
-	LAPACK_SRC=$SRC_DIR/$LAPACK_VER
-	LAPACK_BUILD=$BUILD_DIR/$LAPACK_VER
-	LAPACK_DIST=$DIST_DIR
+    LAPACK_VER=lapack-$LAPACK_VERSION
+    LAPACK_SRC=$SRC_DIR/$LAPACK_VER
+    LAPACK_BUILD=$BUILD_DIR/$LAPACK_VER
+    LAPACK_DIST=$DIST_DIR
 }
 buildLAPACK(){
-	echo "############### LAPACK ##########################"
-	checkTOOLSET
-	prepLAPACK
-	getWITH_WGET $LAPACK_URL $LAPACK_SRC $LAPACK_VER.tgz
-	EXTRA="-DBUILD_SHARED_LIBS=ON"
-	cmakeBuild $LAPACK_SRC $LAPACK_BUILD $LAPACK_DIST $EXTRA
+    echo "############### LAPACK ##########################"
+    checkTOOLSET
+    prepLAPACK
+    getWITH_WGET $LAPACK_URL $LAPACK_SRC $LAPACK_VER.tgz
+    EXTRA="-DBUILD_SHARED_LIBS=ON"
+    cmakeBuild $LAPACK_SRC $LAPACK_BUILD $LAPACK_DIST $EXTRA
 }
 prepTRIANGLE(){
-	TRIANGLE_VER=triangle
-	TRIANGLE_SRC=$SRC_DIR/$TRIANGLE_VER
-	TRIANGLE_BUILD=$BUILD_DIR/$TRIANGLE_VER
-	TRIANGLE_DIST=$DIST_DIR/lib
+    TRIANGLE_VER=triangle
+    TRIANGLE_SRC=$SRC_DIR/$TRIANGLE_VER
+    TRIANGLE_BUILD=$BUILD_DIR/$TRIANGLE_VER
+    TRIANGLE_DIST=$DIST_DIR/lib
 }
 buildTRIANGLE(){
-	echo "############### TRIANGLE ##########################"
-	checkTOOLSET
-	prepTRIANGLE
-	getWITH_WGET $TRIANGLE_URL $TRIANGLE_SRC $TRIANGLE_VER.zip
+    echo "############### TRIANGLE ##########################"
+    checkTOOLSET
+    prepTRIANGLE
+    getWITH_WGET $TRIANGLE_URL $TRIANGLE_SRC $TRIANGLE_VER.zip
 
-	rm -rf $TRIANGLE_BUILD
-	mkBuildDIR $TRIANGLE_BUILD $TRIANGLE_SRC
+    rm -rf $TRIANGLE_BUILD
+    mkBuildDIR $TRIANGLE_BUILD $TRIANGLE_SRC
 
-	pushd $TRIANGLE_BUILD
-		if [ "$SYSTEM" == "WIN" ]; then
-			sed -i -e 's/-DLINUX/-DCPU86/g' makefile ;
-			patch triangle.c -i $BUILDSCRIPT_HOME/patches/triangle-mingw-win64.patch
-		fi
+    pushd $TRIANGLE_BUILD
+        if [ "$SYSTEM" == "WIN" ]; then
+            sed -i -e 's/-DLINUX/-DCPU86/g' makefile ;
+            patch triangle.c -i $BUILDSCRIPT_HOME/patches/triangle-mingw-win64.patch
+        elif [ "$SYSTEM" == "MAC" ]; then
+            sed -i -e 's/-DLINUX//g' makefile ;
+        fi
 
-		if [ "$ADDRESSMODEL" == "64" ]; then
-			sed -i -e 's/CC = cc/CC = gcc -fPIC/g' makefile;
-		else
-			sed -i -e 's/CC = cc/CC = gcc/g' makefile;
-		fi
+        if [ "$ADDRESSMODEL" == "64" ]; then
+            sed -i -e 's/CC = cc/CC = gcc -fPIC/g' makefile;
+        else
+            sed -i -e 's/CC = cc/CC = gcc/g' makefile;
+        fi
 
-		make trilibrary
-		mkdir -p $TRIANGLE_DIST
-		ar cqs $TRIANGLE_DIST/libtriangle.a triangle.o
+        make trilibrary
+        mkdir -p $TRIANGLE_DIST
+        ar cqs $TRIANGLE_DIST/libtriangle.a triangle.o
         mkdir -p $DIST_DIR/include
         cp triangle.h $DIST_DIR/include
-	popd
+    popd
 }
 prepSUITESPARSE(){
-	SUITESPARSE_VER=SuiteSparse-$SUITESPARSE_VERSION
-	SUITESPARSE_SRC=$SRC_DIR/$SUITESPARSE_VER
-	SUITESPARSE_BUILD=$BUILD_DIR/$SUITESPARSE_VER
-	SUITESPARSE_DIST=$DIST_DIR
+    SUITESPARSE_VER=SuiteSparse-$SUITESPARSE_VERSION
+    SUITESPARSE_SRC=$SRC_DIR/$SUITESPARSE_VER
+    SUITESPARSE_BUILD=$BUILD_DIR/$SUITESPARSE_VER
+    SUITESPARSE_DIST=$DIST_DIR
 }
 buildSUITESPARSE(){
-	checkTOOLSET
-	prepLAPACK
-	prepSUITESPARSE
+    checkTOOLSET
+    prepLAPACK
+    prepSUITESPARSE
 
-	getWITH_WGET $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_VER.tar.gz
-	[ -d $SRC_DIR/SuiteSparse ] && mv $SRC_DIR/SuiteSparse $SUITESPARSE_SRC
+    getWITH_WGET $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_VER.tar.gz
+    [ -d $SRC_DIR/SuiteSparse ] && mv $SRC_DIR/SuiteSparse $SUITESPARSE_SRC
 
-	mkBuildDIR $SUITESPARSE_BUILD $SUITESPARSE_SRC 1
+    mkBuildDIR $SUITESPARSE_BUILD $SUITESPARSE_SRC 1
 
-	pushd $SUITESPARSE_BUILD
-		if [ "$SYSTEM" == "WIN" ]; then
-			#patch -p1 < $BUILDSCRIPT_HOME/patches/SuiteSparse-4.4.1.patch
-			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
-			echo "CC = gcc" >> SuiteSparse_config/SuiteSparse_config.mk
+    pushd $SUITESPARSE_BUILD
+        if [ "$SYSTEM" == "WIN" ]; then
+            #patch -p1 < $BUILDSCRIPT_HOME/patches/SuiteSparse-4.4.1.patch
+            echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
+            echo "CC = gcc" >> SuiteSparse_config/SuiteSparse_config.mk
             echo "CFLAGS=-std=c90" >> SuiteSparse_config/SuiteSparse_config.mk
-			echo "BLAS = -L$TRIANGLE_DIST -lblas" >> SuiteSparse_config/SuiteSparse_config.mk
-		elif [ "$OSTYPE" == "darwin13" ]; then
-			echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
-			echo "CC = gcc -fPIC" >> SuiteSparse_config/SuiteSparse_config.mk
-		else
-			echo "CC = gcc " >> SuiteSparse_config/SuiteSparse_config.mk
-		fi
+            echo "BLAS = -L$TRIANGLE_DIST -lblas" >> SuiteSparse_config/SuiteSparse_config.mk
+        elif [ "$SYSTEM" == "MAC" ]; then
+            echo "LIB = -lm" >> SuiteSparse_config/SuiteSparse_config.mk
+            echo "CC = gcc -fPIC" >> SuiteSparse_config/SuiteSparse_config.mk
+        else
+            echo "CC = gcc " >> SuiteSparse_config/SuiteSparse_config.mk
+        fi
 
-		mkdir -p $SUITESPARSE_DIST/lib
-		mkdir -p $SUITESPARSE_DIST/include
-		echo "INSTALL_LIB = $SUITESPARSE_DIST/lib" >> SuiteSparse_config/SuiteSparse_config.mk;
-		echo "INSTALL_INCLUDE = $SUITESPARSE_DIST/include" >> SuiteSparse_config/SuiteSparse_config.mk;
+        mkdir -p $SUITESPARSE_DIST/lib
+        mkdir -p $SUITESPARSE_DIST/include
+        echo "INSTALL_LIB = $SUITESPARSE_DIST/lib" >> SuiteSparse_config/SuiteSparse_config.mk;
+        echo "INSTALL_INCLUDE = $SUITESPARSE_DIST/include" >> SuiteSparse_config/SuiteSparse_config.mk;
 
-		MODULE='.'
-		if [ -n "$1" ]; then
-			MODULES=$1
-		fi
-		echo "Installing $MODULES"
-		pushd $MODULE
-            		CFLAGS='-std=c90' "$MAKE" -j$PARALLEL_BUILD library
-		        "$MAKE" install
-		popd
-	popd
+        MODULE='.'
+        if [ -n "$1" ]; then
+            MODULES=$1
+        fi
+        echo "Installing $MODULES"
+        pushd $MODULE
+                    CFLAGS='-std=c90' "$MAKE" -j$PARALLEL_BUILD library
+                "$MAKE" install
+        popd
+    popd
 }
 
 prepCPPUNIT(){
     CPPUNIT_VER=cppunit
-	CPPUNIT_SRC=$SRC_DIR/$CPPUNIT_VER
-	CPPUNIT_BUILD=$BUILD_DIR/$CPPUNIT_VER
-	CPPUNIT_DIST=$DIST_DIR
+    CPPUNIT_SRC=$SRC_DIR/$CPPUNIT_VER
+    CPPUNIT_BUILD=$BUILD_DIR/$CPPUNIT_VER
+    CPPUNIT_DIST=$DIST_DIR
 }
 buildCPPUNIT(){
     checkTOOLSET
     prepCPPUNIT
     getWITH_SVN $CPPUNIT_URL $CPPUNIT_SRC
-	mkBuildDIR $CPPUNIT_BUILD $CPPUNIT_SRC
+    mkBuildDIR $CPPUNIT_BUILD $CPPUNIT_SRC
 
     pushd $CPPUNIT_SRC
         pushd cppunit
@@ -651,16 +624,16 @@ buildCPPUNIT(){
 }
 
 slotAll(){
-	buildBOOST
-	buildLAPACK
-	buildTRIANGLE
-	buildSUITESPARSE
-	buildGCCXML
-	buildPYGCCXML
+    buildBOOST
+    buildLAPACK
+    buildTRIANGLE
+    buildSUITESPARSE
+    buildCASTXML
+    buildPYGCCXML
 }
 
 showHelp(){
-	echo "boost | lapack | triangle | suitesparse | gccxml | pygccxml | all"
+    echo "boost | lapack | triangle | suitesparse | castxml | pygccxml | all"
 }
 
 # script starts here
@@ -670,9 +643,9 @@ fi
 echo "TOOLSET set to: " $TOOLSET
 
 if [ -n "$BOOST_VERSION" ]; then
-	BOOST_VERSION=$BOOST_VERSION
+    BOOST_VERSION=$BOOST_VERSION
 else
-	BOOST_VERSION=$BOOST_VERSION_DEFAULT
+    BOOST_VERSION=$BOOST_VERSION_DEFAULT
 fi
 
 if [ -n "$PREFIX" ]; then
@@ -691,35 +664,33 @@ CMAKE_BUILD_TYPE=Release
 
 for arg in $@
 do
-	echo $arg
+    echo $arg
     case $arg in
     msvc)
         SetMSVC_TOOLSET;;
-	mingw)
+    mingw)
         SetMINGW_TOOLSET;;
     all)
         slotAll;;
     help)
         showHelp
-		exit;;
-	boost)
-		buildBOOST;;
-	lapack)
-		buildLAPACK;;
-	triangle)
-		buildTRIANGLE;;
-	suitesparse)
-		buildSUITESPARSE;;
+        exit;;
+    boost)
+        buildBOOST;;
+    lapack)
+        buildLAPACK;;
+    triangle)
+        buildTRIANGLE;;
+    suitesparse)
+        buildSUITESPARSE;;
     umfpack)
         buildSUITESPARSE UMFPACK;;
-	gccxml)
-		buildGCCXML;;
     castxml)
         buildCASTXML;;
-	pygccxml)
-		buildPYGCCXML;;
+    pygccxml)
+        buildPYGCCXML;;
     cppunit)
-		buildCPPUNIT;;
+        buildCPPUNIT;;
 
     *)
         echo "Don't know what to do."

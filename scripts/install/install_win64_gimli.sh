@@ -7,21 +7,8 @@ ROOT=$PWD
 CMAKE_GENERATOR='MSYS Makefiles'
 
 buildGIMLI(){
-    if [ -d "gimli" ]; then
-        pushd gimli
-            git pull   
-        popd  
-    else
-        git clone https://github.com/gimli-org/gimli.git
-    fi
-      
-    [ -n "$BRANCH" ] && git checkout $BRANCH  
-    
-    chmod +x gimli/python/apps/*
         
-    if [ $UPDATE_ONLY -eq 0 ] && rm -rf build/
     mkdir -p build
-
     pushd build
         cmake -G "$CMAKE_GENERATOR" ../gimli -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
 

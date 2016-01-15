@@ -364,11 +364,9 @@ DLLEXPORT std::vector < std::string > getCommentLine(std::fstream & file, char c
 DLLEXPORT std::vector < std::string > getSubstrings(const std::string & str);
 DLLEXPORT std::vector < std::string > split(const std::string & str, char delimiter = ':');
 
-
 DLLEXPORT std::map < float, Complex > loadCFloatMap(const std::string & filename);
 DLLEXPORT std::map < float, float > loadFloatMap(const std::string & filename);
 DLLEXPORT std::map < int, int > loadIntMap(const std::string & filename);
-
 
 inline void convert(bool          & var, char * opt) { var = true; }
 inline void convert(int           & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
@@ -388,6 +386,9 @@ inline std::string type(const float         & var) { return "float"; }
 inline std::string type(const double        & var) { return "double"; }
 inline std::string type(const std::string   & var) { return "string"; }
 inline std::string type(const std::vector < std::string >  & var) { return "string"; }
+#if defined ( __APPLE__ )
+inline std::string type(const long unsigned int & var) { return "long unsigned int"; }
+#endif
 inline std::string type(const RVector & var) { return "RVector"; }
 inline std::string type(const RVector3 & var) { return "RVector3"; }
 inline std::string type(const R3Vector & var) { return "R3Vector"; }

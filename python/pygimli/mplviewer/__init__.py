@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Viewer interface .. dependents on matplotlib
+    Viewer interface .. depends on matplotlib
 """
 
 holdAxes_ = 0

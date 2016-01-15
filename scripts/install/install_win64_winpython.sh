@@ -1,6 +1,5 @@
 #!/bin/env bash
 
-
 if [ $# -lt 1 ]; then
     PYTHON_MAJOR_REQ=3
 else

@@ -9,26 +9,7 @@ CMAKE_GENERATOR='Unix Makefiles'
 PYTHONSPECS=''
 
 buildGIMLI(){
-    if [ -d "gimli" ]; then
-        pushd gimli
-            git pull
-        popd
-    else
-        git clone https://github.com/gimli-org/gimli.git
-    fi
-
-    echo $(pwd)
-    pushd gimli
-        echo "switching to branch: " $BRANCH
-        [ -n "$BRANCH" ] && git checkout $BRANCH
-    popd
     
-
-    chmod +x gimli/python/apps/*
-    
-    if [ $UPDATE_ONLY -eq 0 ] ; then
-        rm -rf build/
-    fi
     mkdir -p build
 
     pushd build

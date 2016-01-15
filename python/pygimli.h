@@ -297,7 +297,6 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template CSparseMatrix operator * (const GIMLI::Complex & b, const CSparseMatrix & A);
     template CSparseMatrix operator * (const CSparseMatrix & A, const GIMLI::Complex & b);
 
-
     template class ElementMatrix< double >;
     template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
 

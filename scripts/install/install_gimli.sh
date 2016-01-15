@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+#SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
+SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
+GET="curl"
+
+#SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
+#GET="cat"
+
 # Default values
 GIMLI_ROOT=$PWD/gimli
 PARALLEL_BUILD=2
@@ -84,29 +91,11 @@ for i in "$@"; do
     esac
 done
 
-# set these for current shell and all processes started from current shell
-export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
-export PYTHON_MAJOR=$PYTHON_MAJOR
-export PARALLEL_BUILD=$PARALLEL_BUILD
-export UPDATE_ONLY=$UPDATE_ONLY
-export BRANCH=$BRANCH
-
-echo "Installing at "$GIMLI_ROOT
-echo "Build for Python="$PYTHON_MAJOR
-echo "Parallelize with j="$PARALLEL_BUILD
-echo "Update only" $UPDATE_ONLY
-echo "branch" $BRANCH
-
-#SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
-SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
-GET="curl"
-
-#SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
-#GET="cat"
-
-
 echo "=========================================="
-if [ $(uname -o) == "Msys" ]; then
+if [ $(uname) == "Darwin" ]; then
+    SYSTEM='mac'
+    echo "Determining system ... DARWIN system found"
+elif [ $(uname -o) == "Msys" ]; then
     if [ $(uname -m) == "x86_64" ]; then
         SYSTEM='win64'
         echo "Determining system ... Msys WIN64 system found"
@@ -128,6 +117,19 @@ elif [ $(uname -o) == "GNU/Linux" ]; then
 fi
 echo "------------------------------------------"
 
+# mac lacks readlink -f
+#export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
+export GIMLI_ROOT=$(python -c "import os; print(os.path.realpath('"${GIMLI_ROOT//\'/\\\'}"'))")
+export PYTHON_MAJOR=$PYTHON_MAJOR
+export PARALLEL_BUILD=$PARALLEL_BUILD
+export UPDATE_ONLY=$UPDATE_ONLY
+
+echo "Installing at "$GIMLI_ROOT
+echo "Build for Python="$PYTHON_MAJOR
+echo "Parallelize with j="$PARALLEL_BUILD
+echo "Update only" $UPDATE_ONLY
+echo "Branch:" $BRANCH
+
 echo "=========================================="
 echo "Installing system prerequisites for" $SYSTEM
 echo "------------------------------------------"
@@ -139,8 +141,45 @@ echo "------------------------------------------"
 
 mkdir -p $GIMLI_ROOT
 pushd $GIMLI_ROOT
+
+    if [ -d "gimli" ]; then
+        pushd gimli
+            git pull
+        popd
+    else
+        git clone https://github.com/gimli-org/gimli.git
+    fi
+
+    if [ -n "$BRANCH" ]; then
+        pushd gimli
+            echo "Switching to branch: " $BRANCH
+            git checkout $BRANCH
+        popd
+    fi
+    
+    chmod +x gimli/python/apps/*
+
+    [ $UPDATE_ONLY -eq 0 ] && rm -rf build/
+    mkdir -p build
+
     "$GET" $SCRIPT_REPO/install_$SYSTEM'_gimli.sh' | bash
 popd
+
+testPYGIMLI(){
+    echo ""
+    echo "============================================================================"
+    echo "------------------------  TEST pyGIMLi installation ------------------------"
+    export PYTHONPATH=$GIMLI_ROOT/gimli/python:$PYTHONPATH
+    python -c 'import pygimli as pg; print("pygimli version:", pg.__version__)'
+    if [ -x "$(command -v pytest)" ]; then
+        python -c 'import pygimli as pg; pg.test()'
+    fi
+    echo "--- ------------------------------------------------------------------------"
+    echo "export PYTHONPATH=$GIMLI_ROOT/gimli/python:\$PYTHONPATH" > $GIMLI_ROOT/.bash_hint_pygimli
+    echo "export PATH=$GIMLI_ROOT/gimli/python/apps:\$PATH" >> $GIMLI_ROOT/.bash_hint_pygimli
+}
+
+testPYGIMLI
 
 echo ""
 echo "========================================================================"

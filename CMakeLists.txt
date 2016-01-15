@@ -265,19 +265,21 @@ if (CASTER STREQUAL "gccxml")
     find_or_build_package(gccxml gccxml LOCAL)
     set(CASTER_EXECUTABLE ${GCCXML_EXECUTABLE})
 else()
-    find_program(CLANG clang REQUIRED)
-    find_program(CLANGXX clang++ REQUIRED)
-    find_package(LLVM REQUIRED)
+    if (NOT CASTER_EXECUTABLE)
+#         find_program(CLANG clang REQUIRED)
+#         find_program(CLANGXX clang++ REQUIRED)
+#         find_package(LLVM REQUIRED)
 
-    find_or_build_package(castxml castxml LOCAL)
-    set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
+        find_or_build_package(castxml castxml LOCAL)
+        set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
+    endif()
 endif()
 
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
 if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND 
-    AND (GCCXML_FOUND OR CASTXML_FOUND)
+    AND CASTER_EXECUTABLE
     AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
     AND Boost_PYTHON_LIBRARIES AND numpy_FOUND)
     set (PYGIMLI 1)
@@ -305,7 +307,7 @@ message(STATUS "CHOLMOD_LIBRARIES: ${CHOLMOD_LIBRARIES}")
 message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
 message(STATUS "PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
 message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
-message(STATUS "XML Caster: ${CASTER_EXECUTABLE}")
+message(STATUS "Caster: ${CASTER_EXECUTABLE}")
 message(STATUS "PYGCCXML: ${PYGCCXML_PATH}" )
 message(STATUS "PYPLUSPLUS: ${PYPLUSPLUS_PATH}" )
 message(STATUS "PY_NUMPY: ${PY_NUMPY}" )
@@ -408,25 +410,6 @@ endif(LIBGIMLI_BUILD_TESTS)
 add_subdirectory(src)
 add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(apps EXCLUDE_FROM_ALL)
-
-if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND 
-    AND (GCCXML_FOUND OR CASTXML_FOUND)
-    AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
-    AND Boost_PYTHON_LIBRARIES AND numpy_FOUND)
-    set (PYGIMLI 1)
-    message (STATUS "pygimli can be build.")
-else()
-    message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
-    message(STATUS "PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}" )
-    message(STATUS "XML Caster: ${CASTER_EXECUTABLE}")
-    message(STATUS "PYPLUSPLUS_FOUND: ${PYPLUSPLUS_FOUND}" )
-    message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
-    message(STATUS "numpy_FOUND: ${numpy_FOUND}" )
-
-    message (STATUS "pygimli cannot be build due to some missing packages. 
-Check above for python, gccxml|castxml, pygccxml, pyplusplus, boost_python, numpy")
-    
-endif ()
 
 if (PYGIMLI)
 #     set( PYGIMLI_SOURCE_DIR ${CMAKE_SOURCE_DIR}/python/pygimli )
