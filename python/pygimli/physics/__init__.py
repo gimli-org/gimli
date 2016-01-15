@@ -42,6 +42,7 @@ class MethodManager(object):
         self.verbose = verbose
         self.debug = debug
         self.fop = self.createFOP(verbose)
+        self.figs = {}
         if self.fop is None:
             raise Exception("createFOP does not return valid forward operator")
         self.tD = None
