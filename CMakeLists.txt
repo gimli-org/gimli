@@ -107,14 +107,14 @@ find_package(PythonInterp) # find version belongs to the active python command
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
             
-            IF (EXISTS ${BOOST_DIST_NAME_FILE})
+            if (EXISTS ${BOOST_DIST_NAME_FILE})
                 message(STATUS "reading ${BOOST_DIST_NAME_FILE}")
                 FILE(READ "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
                 STRING(REGEX REPLACE "\n" "" BOOST_DIST_NAME "${BOOST_DIST_NAME}")
                 get_filename_component(BOOST_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
             endif()
 
-            IF (EXISTS ${BOOST_ROOT})
+            if (EXISTS ${BOOST_ROOT})
                 message(STATUS "BOOST_ROOT from ${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist: ${BOOST_ROOT}")
 
                 set(BOOST_ROOT ${BOOST_ROOT}  CACHE FILEPATH "Boost root distribution")
@@ -124,7 +124,7 @@ function(find_boost_from_distname_file)
                 message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")	
             else()
                 message(STATUS "BOOST_ROOT does not exist: ${BOOST_ROOT}")	
-            ENDIF()
+            endif()
 endfunction(find_boost_from_distname_file)
 
 if (NOT Boost_INCLUDE_DIR)
@@ -190,6 +190,15 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
+# set(OPTIONAL_PACKAGES "")
+# list(APPEND OPTIONAL_PACKAGES "Triangle")
+# list(APPEND OPTIONAL_PACKAGES "UMFPACK")
+# list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
+# list(APPEND OPTIONAL_PACKAGES "readproc")
+# list(APPEND OPTIONAL_PACKAGES "cppunit")
+# list(APPEND OPTIONAL_PACKAGES "Python")
+# list(APPEND OPTIONAL_PACKAGES "Sphinx")
+
 find_or_build_package(Triangle triangle LOCAL)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
@@ -205,17 +214,22 @@ endif()
 
 #find_package(openblas)
 
+if (NOT AVOID_CPPUNIT)
+    find_package(CppUnit)
+    if (CPPUNIT_FOUND)
+        option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
+    endif (CPPUNIT_FOUND)
+endif()
 
-find_package(CppUnit)
-if (CPPUNIT_FOUND)
-    option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
-endif (CPPUNIT_FOUND)
-
-IF(WIN32)
-	set(READPROC_FOUND FALSE)
-ELSE(WIN32)
-    find_package(readproc)
-ENDIF(WIN32)
+if (NOT AVOID_READPROC)
+    if(WIN32)
+        set(READPROC_FOUND FALSE)
+    else(WIN32)
+        find_package(readproc)
+    endif(WIN32)
+else()
+    set(READPROC_FOUND FALSE)
+endif()
 
 ################################################################################
 # Check for python stuff

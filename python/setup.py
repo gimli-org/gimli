@@ -15,8 +15,12 @@ from setuptools import setup, find_packages
 
 apps = ["apps/" + app for app in os.listdir('apps') if not "template" in app]
 
-with open(os.path.join("../README.rst")) as f:
-    long_description = f.read()
+try:
+    # fails with py3 due to ascii encoding problem.
+    with open(os.path.join("../README.rst")) as f:
+        long_description = f.read()
+except:
+    long_description = "Geophysical Inversion and Modelling Library"
 
 setup(name="pygimli",
       version="1.0rc",

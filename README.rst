@@ -53,7 +53,7 @@ Inversion
 ---------
 
 One main task of GIMli is to carry out inversion, i.e. error-weighted minimization, for given forward routines and data.
-Various types of regularization on meshes (1D,2D,3D) with regular or irregular arrangement are available.
+Various types of regularization on meshes (1D, 2D, 3D) with regular or irregular arrangement are available.
 There is a flexible control of all inversion parameters.
 
 Please see :ref:`inversion tutorial<tut:inversion>` for examples and more details.
