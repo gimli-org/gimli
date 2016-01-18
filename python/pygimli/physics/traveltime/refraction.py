@@ -341,17 +341,18 @@ class Refraction(MethodManager):
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
                    logScale=False, name='result', **kwargs):
         """show resulting velocity vector"""
+        mesh = self.paraDomain()
         if val is None:
             val = self.velocity
         if cMin is None or cMax is None:
             cMin, cMax = interperc(val, 3)
         if ax is None:
-            ax, cbar = pg.show(self.mesh, val, logScale=logScale,
+            ax, cbar = pg.show(mesh, val, logScale=logScale,
                                colorBar=True, cMin=cMin, cMax=cMax,
                                coverage=self.standardizedCoverage(), **kwargs)
             self.figs[name] = plt.gcf()
         else:
-            gci = drawModel(ax, self.mesh, val, logScale=logScale,
+            gci = drawModel(ax, mesh, val, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax,
                             coverage=self.standardizedCoverage(), **kwargs)
             labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
