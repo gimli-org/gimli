@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2005-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -355,13 +355,70 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
     return *dynamic_cast < RSparseMapMatrix *>(constraints_); 
 }
         
-RVector ModellingBase::mapModel(const RVector & model, double background) const{
-    THROW_TO_IMPL
-    return RVector(0);
+RVector ModellingBase::createMappedModel(const RVector & model, double background) const{
+    RVector mappedModel(mesh_->cellCount());
+
+    int marker = -1;
+    std::vector< Cell * > emptyList;
+    mesh_->createNeighbourInfos();
+
+    for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
+        marker = mesh_->cell(i).marker();
+        if (marker >= 0) {
+            if ((size_t)marker >= model.size()){
+                mesh_->exportVTK("mapModelfail");
+                std::cerr << WHERE_AM_I << std::endl
+                          << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
+                          << *mesh_ << std::endl
+                          << "mesh contains " << unique(sort(mesh_->cellMarker())).size() << " unique marker. " << std::endl;
+                throwLengthError(1, WHERE_AM_I + " marker greater = then model.size() " + toStr(marker)
+                       + " >= " + toStr(model.size()));
+            }
+            if (model[marker] < TOLERANCE){
+                emptyList.push_back(&mesh_->cell(i));
+            }
+            mappedModel[i] = model[marker];
+
+        } else {
+            // general background without fixed values, fixed values will be set at the end
+            if (marker == -1) { 
+                mappedModel[i] = 0.0;
+                emptyList.push_back(&mesh_->cell(i));
+            }
+        }
+    }
+    
+        // if background == 0.0 .. empty cells are allowed
+    if (emptyList.size() == mesh_->cellCount() && background != 0.0){
+        throwLengthError(1, WHERE_AM_I + " too many empty cells" + toStr(emptyList.size())
+                       + " == " + toStr(mesh_->cellCount()));
+    }
+
+    if (background != 0.0){
+        mesh_->prolongateEmptyCellsValues(mappedModel, background);
+    }
+    
+    // setting fixed values
+    if (regionManagerInUse_){
+        for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
+            if (abs(mappedModel[i]) < TOLERANCE){
+                if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
+                    SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
+                    double val = regionManager_->region(regionMarker)->fixValue();
+//                     __MS("fixing region: " << regionMarker << " to: " << val)
+                    mappedModel[i] = val;
+                }
+            }
+        }
+    }
+    
+    return mappedModel;
 }
     
 void ModellingBase::mapModel(const RVector & model, double background){
     // implement "readonly version"!!!!!!!!!!!
+    mesh_->setCellAttributes(createMappedModel(model, background));
+    return;
     
     mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
     

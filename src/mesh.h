@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@gimli.org                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -368,13 +368,23 @@ public:
     //** end get infos stuff
 
     //** start mesh modification stuff
-    /*! Prolongate the attribute of each cell in emptyList by the attribute 
+    /*! DEPRECATED Prolongate the attribute of each cell in emptyList by the attribute 
      * from neighbouring cells.
      * The attributes have to be lower than \ref TOLERANCE.
-     * This function is called recursivly until all zero-attribute-cells in
-     * emptyList are filles with an attribute greater than Zero. */
-    void fillEmptyCells(const std::vector< Cell * > & emptyList, double background = -1.0);
+     * This function is called recursively until all zero-attribute-cells in
+     * emptyList are filled with an attribute greater than Zero. */
+    void fillEmptyCells(const std::vector< Cell * > & emptyList, 
+                        double background=-1.0);
 
+    /*! Prolongate the empty (lower than \ref TOLERANCE.) cell values in vals 
+     * from its neighbouring cells.
+     * This function is called recursively until all zero-attribute-values in
+     * vals are filled with an attribute greater than Zero. 
+     * RVector vals need to be of size \ref cellCount().
+     * If Background is unequal -1.0 all empty values will be set to background.
+     */
+    void prolongateEmptyCellsValues(RVector & vals, double background=-1.0) const;
+                            
     void recountNodes();
 
     void sortNodes(const IndexArray & perm);

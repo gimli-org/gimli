@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -65,6 +65,7 @@ template < class ValueType, class A > class __VectorExpr;
 
 IndexArray find(const BVector & v);
 
+#ifndef PYGIMLI_CAST
 inline void Dump(const void * mem, unsigned int n) {
     const char * p = reinterpret_cast< const char *>( mem );
     for (unsigned int i = 0; i < n; i++) {
@@ -72,6 +73,7 @@ inline void Dump(const void * mem, unsigned int n) {
     }
     std::cout << std::endl;
 }
+#endif 
 
 template < class ValueType > class DLLEXPORT VectorIterator {
 public:

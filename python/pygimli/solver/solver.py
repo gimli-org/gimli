@@ -361,7 +361,7 @@ def fillEmptyToCellArray(mesh, vals):
 
                         startCell = nextC
 
-    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1 )
+    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1)
     atts = mesh.cellAttributes()
     mesh.setCellAttributes(oldAtts)
     return atts
