@@ -35,17 +35,17 @@ checkTOOLSET(){
 
     needPYTHON
 
-    SRC_DIR=$PREFIX/src
+    SRC_DIR=$GIMLI_PREFIX/src
     mkdir -p $SRC_DIR
 
     if [ -z "$TARGETNAME" ]; then
         TARGETNAME=-$TOOLSET-$ADDRESSMODEL
     fi
 
-    BUILD_DIR=$PREFIX/build$TARGETNAME
+    BUILD_DIR=$GIMLI_PREFIX/build$TARGETNAME
     mkdir -p $BUILD_DIR
 
-    DIST_DIR=$PREFIX/dist$TARGETNAME
+    DIST_DIR=$GIMLI_PREFIX/dist$TARGETNAME
     mkdir -p $DIST_DIR
 
     BUILDSCRIPT_HOME=${0%/*}
@@ -648,16 +648,16 @@ else
     BOOST_VERSION=$BOOST_VERSION_DEFAULT
 fi
 
-if [ -n "$PREFIX" ]; then
-    PREFIX=`readlink -m $PREFIX`
+if [ -n "$GIMLI_PREFIX" ]; then
+    GIMLI_PREFIX=`readlink -m $GIMLI_PREFIX`
 else
-    PREFIX=`pwd`
+    GIMLI_PREFIX=`pwd`
 fi
 
 if [ -z "$PARALLEL_BUILD" ]; then
     PARALLEL_BUILD=1
 fi
-echo "Installing at " $PREFIX
+echo "Installing at " $GIMLI_PREFIX
 
 
 CMAKE_BUILD_TYPE=Release

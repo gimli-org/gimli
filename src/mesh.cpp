@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -1692,6 +1692,79 @@ void Mesh::mapBoundaryMarker(const std::map < int, int > & aMap){
 	       boundary(i).setMarker((*itm).second);
             }
         }
+    }
+}
+
+void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
+    IndexArray emptyList(find(abs(vals) < TOLERANCE));
+    if (emptyList.size() == 0) return;
+    
+    if (background != -1.0){
+        vals[emptyList] = background;
+        return;
+    }
+    bool smooth = false;
+    bool horizontalWeight = true;
+    Index prolongatedValues = 0;
+    
+    if (emptyList.size() > 0){
+        if (debug()) {
+            std::cout << "Prolongate " << emptyList.size() << " empty cells. (" 
+            << this->cellCount() << ")" << std::endl;
+        }
+        
+        std::map< Cell*, double > prolongationMap;
+        Cell * cell;
+        RVector3 XY(1., 1., 0.);
+        if (this->dim() == 2) XY[1] = 0.0;
+        
+        for (Index i = 0; i < emptyList.size(); i ++){
+            cell = &this->cell(emptyList[i]);
+
+            double weight = 0.0;
+            double val = 0.0;
+            for (Index j = 0; j < cell->neighbourCellCount(); j ++){
+                Cell * nCell = cell->neighbourCell(j);
+                if (nCell){
+                    if (vals[nCell->id()] > TOLERANCE){
+                        if (horizontalWeight){
+                            Boundary * b=findCommonBoundary(*nCell, *cell);
+                            if (b){
+                                double zWeight = (b->norm()*XY).abs() + 1e-6;
+                                val += vals[nCell->id()] * zWeight;
+                                weight += zWeight;
+                            }
+                        } else {
+                            val += vals[nCell->id()];
+                            weight += 1.0;
+                        }
+                    }
+                }
+            }
+            if (weight > 1e-8) {
+                prolongatedValues ++;
+                if (smooth){
+                    vals[cell->id()] = val / weight;
+                } else {
+                    prolongationMap[cell] = val / weight;
+                }
+            }
+        }
+
+        if (!smooth){//**apply std::map< uint, val > prolongationMap;
+            for (std::map< Cell *, double >::iterator it= prolongationMap.begin();
+                it != prolongationMap.end(); it ++){
+                vals[it->first->id()] = it->second;
+            }
+        }
+        if (!prolongatedValues){
+            this->exportVTK("fillEmptyCellsFail");
+            std::cerr << WHERE_AM_I << " WARNING!! cannot fill emptyList: see fillEmptyCellsFail.vtk"<< std::endl;
+            std::cerr << "trying to fix"<< std::endl;
+
+            vals[emptyList] = mean(vals);
+        }
+        prolongateEmptyCellsValues(vals, background);
     }
 }
 

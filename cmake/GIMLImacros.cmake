@@ -164,8 +164,6 @@ macro(find_or_build_package package get_package)
     else()
         set(foceLocal False)
     endif()
-    
-
 
     string(TOUPPER ${package} upper_package)
     find_or_build_package_check(${package} ${get_package} ${upper_package}_FOUND ${foceLocal})

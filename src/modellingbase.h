@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2005-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -169,7 +169,7 @@ public:
     
     /*! Read only extrapolation of model values given per cell marker to 
      values given per cell. Exterior values will be prolongated. */
-    RVector mapModel(const RVector & model, double background=0) const;
+    RVector createMappedModel(const RVector & model, double background=0) const;
 
     const RegionManager & regionManager() const;
 
