@@ -374,13 +374,13 @@ def cumDist(p):
     return d
 
 def chi2(a, b, err, trans=None):
-    """ Return chi square value. 
+    """ Return chi square value.
     """
     if trans is None:
         trans = pg.RTrans()
     d = (trans(a) - trans(b)) / trans.error(a, err)
     return pg.dot(d,d) / len(d)
-    
+
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
     r = pg.RVector(n)
@@ -494,7 +494,7 @@ def unique(a):
     """
     return list(unique_everseen(a))
 
-def unique_rows(arr):
+def unique_rows(array):
     """Return unique rows in a 2D array.
 
     Examples
@@ -506,9 +506,14 @@ def unique_rows(arr):
     array([[1, 2, 3],
            [3, 2, 1]])
     """
-    arr = np.ascontiguousarray(arr)
-    unique_a = np.unique(arr.view([('', arr.dtype)]*arr.shape[1]))
-    return unique_a.view(arr.dtype).reshape((unique_a.shape[0], arr.shape[1]))
+    b = array.ravel().view(np.dtype((np.void, array.dtype.itemsize*array.shape[1])))
+    _, unique_idx = np.unique(b, return_index=True)
+
+    return array[np.sort(unique_idx)]
+    A_1D = A.dot(np.append(A.max(0)[::-1].cumprod()[::-1][1:],1))
+    sort_idx = A_1D.argsort()
+    mask = np.append(True,np.diff(A_1D[sort_idx])!=0)
+    return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
 
 def arrayToStdVectorUL(theArray):
     """Converts a 'ndarray' to pygimli.stdVectorUL."""
