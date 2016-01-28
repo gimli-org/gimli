@@ -1,8 +1,14 @@
 Installation on MAC OS
 ----------------------
 
+In most cases, the following will suffice to compile pyGIMLi in the current
+directory.
+
+.. code:: bash
+
+    curl -Ls install.pygimli.org | bash
+
+
 .. note::
 
-    Installation instructions for Mac OS will follow soon. If you have
-    successfully installed GIMLi on your Mac, please send a working
-    installation script to mail@pygimli.org.
+    Detailed installation instructions for Mac OS will follow soon.
