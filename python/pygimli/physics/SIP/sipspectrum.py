@@ -242,8 +242,8 @@ class SIPSpectrum():
         self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
         return er
 
-    def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0.2, 0, 1),
-                 taupar=(1e-2, 1e-5, 100), cpar=(0.3, 0, 1)):
+    def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=[0, 0, 1],
+                 taupar=[0, 1e-5, 100], cpar=[0.3, 0, 1]):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -257,6 +257,12 @@ class SIPSpectrum():
             for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
 
         """
+        if taupar[0] == 0:
+            taupar[0] = 1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi
+            print("taupar", taupar)
+        if mpar[0] == 0:
+            mpar[0] = 1. - min(self.amp)/max(self.amp)
+            print("mpar", mpar)
         self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
                                         taupar=taupar, cpar=cpar)
 
@@ -405,14 +411,14 @@ class SIPSpectrum():
         if hasattr(self, 'ampDD'):
             ax[0].plot(self.f, self.ampDD, 'm-', label='DD response')
         if hasattr(self, 'ampCC'):
-            ax[0].semilogx(self.f, self.ampCC, 'r-', label='CC+E model')
+            ax[0].semilogx(self.f, self.ampCC, 'r-', label='CC model')
         ax[0].legend(loc='best')
         # phase
         if hasattr(self, 'phiOrg'):
             ax[1].semilogx(self.f, self.phiOrg * 1e3, 'c+-', label='org. data')
         ax[1].semilogx(self.f, self.phi * 1e3, 'b+-', label='data')
         if hasattr(self, 'phiCC'):
-            ax[1].semilogx(self.f, self.phiCC * 1e3, 'r-', label='CC+E model')
+            ax[1].semilogx(self.f, self.phiCC * 1e3, 'r-', label='CC model')
         if hasattr(self, 'phiDD'):
             ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
         ax[1].grid(True)
