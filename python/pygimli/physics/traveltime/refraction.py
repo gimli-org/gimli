@@ -59,11 +59,11 @@ class Refraction(MethodManager):
 #        self.inv = self.createInv(self.fop,
 #                                  verbose=self.verbose, doSave=self.doSave)
 
-    def __str__(self):
-        """string representation of the class"""
-        return self.__repr__()
-
-    def __repr__(self):
+#    def __str__(self):  # no need to overwrite with identical content
+#        """string representation of the class"""
+#        return self.__repr__()
+#
+    def __repr__(self):  # to be moved to Mesh/Data Method manager
         """string representation of the class for the print function"""
         out = type(self).__name__ + " object"
         if hasattr(self, 'dataContainer'):
@@ -417,7 +417,7 @@ class Refraction(MethodManager):
         fig, ax = plt.subplots()
         self.showResult(ax=ax, cov=self.standardizedCoverage(), **kwargs)
         fig.set_size_inches(size)
-        fig.savefig(path + '/velocity.pdf')
+        fig.savefig(path + '/velocity.pdf', bbox_inches='tight')
 
         return path, fig, ax
 
