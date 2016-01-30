@@ -81,10 +81,12 @@ class MRS():
         self.basename = 'new'
         if name is not None:  # load data and kernel
             # check for mrsi/d/k
-            if name[-5:].lower() == '.mrsi':
+            if name[-5:-1].lower() == '.mrs':  # mrsi or mrsd
                 self.loadMRSI(name, **kwargs)
                 self.basename = name.rstrip('.mrsi')
-            else:  # else mrsd+k?
+#            elif name[-5:].lower() == '.mrsd':
+#                self.loadMRSD(name, **kwargs)
+            else:
                 self.loadDir(name)
 
     def __repr__(self):  # for print function
@@ -92,7 +94,7 @@ class MRS():
         if len(self.t) > 0 and len(self.q) > 0:
             out = "<MRSdata: %d qs, %d times" % \
                 (len(self.q), len(self.t))
-        if len(self.z) > 0:
+        if hasattr(self.z, '__iter__') and len(self.z) > 0:
             out += ", %d layers" % len(self.z)
         return out + ">"
 
@@ -108,15 +110,31 @@ class MRS():
         """
         from scipy.io import loadmat  # loading Matlab mat files
 
-        idata = loadmat(filename, struct_as_record=False,
-                        squeeze_me=True)['idata']
-        ttmp = idata.data.t + idata.data.effDead
-        good = (ttmp <= maxt) & (ttmp >= mint)
-        self.t = ttmp[good]
-        self.q = idata.data.q
-        self.K = idata.kernel.K
-        self.z = np.hstack((0., idata.kernel.z))
-        self.dcube = idata.data.dcube[:, good]
+        if filename[-5:].lower() == '.mrsd':
+            pl = loadmat(filename, struct_as_record=False,
+                         squeeze_me=True)['proclog']
+            self.q = np.array([q.q for q in pl.Q])
+            self.t = pl.Q[0].rx.sig[0].t + pl.Q[0].timing.tau_dead1
+            nq = len(pl.Q)
+            nt = len(self.t)
+            self.dcube = np.zeros((nq, nt))
+            for i in range(nq):
+                self.dcube[i, :] = np.abs(pl.Q[i].rx.sig[1].V)
+            self.ecube = np.ones((nq, nt))*20e-9
+        else:
+            idata = loadmat(filename, struct_as_record=False,
+                            squeeze_me=True)['idata']
+            self.t = idata.data.t + idata.data.effDead
+            self.q = idata.data.q
+            self.K = idata.kernel.K
+            self.z = np.hstack((0., idata.kernel.z))
+            self.dcube = idata.data.dcube
+            self.ecube = idata.data.ecube
+
+        good = (self.t <= maxt) & (self.t >= mint)
+        self.t = self.t[good]
+        self.dcube = self.dcube[:, good]
+
         ndcubet = len(self.dcube[0])
         if len(self.dcube) == len(self.q) and ndcubet == len(self.t):
             if usereal:
@@ -124,8 +142,8 @@ class MRS():
 #                self.data = np.abs(np.real(self.dcube.flat))
             else:
                 self.data = np.abs(self.dcube.flat)
+                self.ecube = self.ecube[:, good]
 
-        self.ecube = idata.data.ecube[:, good]
         necubet = len(self.dcube[0])
         if self.verbose:
             print("loaded file: " + filename)
@@ -157,7 +175,7 @@ class MRS():
             self.error[self.data < vmin] = max(self.error)*3
             self.data[self.data < vmin] = vmin
         # load model from matlab file (result of MRSQTInversion)
-        if hasattr(idata, 'inv1Dqt'):
+        if filename[-5:].lower() == '.mrsi' and hasattr(idata, 'inv1Dqt'):
             if hasattr(idata.inv1Dqt, 'blockMono'):
                 sol = idata.inv1Dqt.blockMono.solution[0]
                 self.model = np.hstack((sol.thk, sol.w, sol.T2))
@@ -165,15 +183,30 @@ class MRS():
         if self.verbose:
             print(self)
 
+    def loadMRSD(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
+        """ load mrsd (MRS data) file: not really used as in MRSD """
+        from scipy.io import loadmat  # loading Matlab mat files
+
+        pl = loadmat(filename, struct_as_record=False,
+                     squeeze_me=True)['proclog']
+        self.q = np.array([q.q for q in pl.Q])
+        self.t = pl.Q[0].rx.sig[0].t + pl.Q[0].timing.tau_dead1
+        nq = len(pl.Q)
+        nt = len(self.t)
+        self.dcube = np.zeros((nq, nt))
+        for i in range(nq):
+            self.dcube[i, :] = np.abs(pl.Q[i].rx.sig[1].V)
+        self.ecube = np.ones((nq, nt))*20e-9
+
     def loadDataCube(self, filename='datacube.dat'):
-        """load data cube from single ascii file"""
+        """ load data cube from single ascii file (old stuff)"""
         A = np.loadtxt(filename).T
         self.q = A[1:, 0]
         self.t = A[0, 1:]
         self.data = A[1:, 1:].ravel()
 
     def loadErrorCube(self, filename='errorcube.dat'):
-        """load error cube from a single ascii file"""
+        """ load error cube from a single ascii file (old stuff) """
         A = np.loadtxt(filename).T
         if len(A) == len(self.q) and len(A[0]) == len(self.t):
             self.error = A.ravel()
@@ -282,6 +315,13 @@ class MRS():
         ytl = [str(zi) for zi in np.round(zl, 1)]
         ax.set_yticks(yt)
         ax.set_yticklabels(ytl)
+        xt = ax.get_xticks()
+        maxqi = self.K.shape[0]
+        xt = xt[(xt >= 0) & (xt < maxqi)]
+        xtl = [np.round(self.q[iq], 2) for iq in xt]
+        ax.set_xticks(xt)
+        ax.set_xticklabels(xtl)
+
         return fig, ax
 
     def createFOP(self, nlay=3, verbose=True, **kwargs):

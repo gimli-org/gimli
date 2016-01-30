@@ -27,6 +27,7 @@ class constants:
     Darcy = 9.86923e-13  # [m^2]
 
     g = 9.798  # [m/s^2]
+    # also a g function of latitude (and altitude)?
 
 
 class MethodManager(object):
@@ -58,9 +59,17 @@ class MethodManager(object):
 
     def __repr__(self):
         """ String representation of the class """
-        return "Method Manager: " + str(self.__class__)
+        out = type(self).__name__ + " object"
+        if hasattr(self, 'dataContainer'):
+            out += "\n" + self.dataContainer.__str__()
+        if hasattr(self, 'mesh'):
+            out += "\n" + self.mesh.__str__()
+        # some other stuff (data and model size)?
+        return out
+#        return "Method Manager: " + str(self.__class__)
 
     def setVerbose(self, verbose):
+        """ make the class verbose (put output to the console) """
         self.verbose = verbose
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
@@ -141,9 +150,9 @@ class MethodManager(object):
             Create default argument parser for the following options:
 
             -Q, --quiet
-            
+
             -R, --robustData
-            
+
             -B, --blockyModel
 
             -l, --lambda: options.lam
@@ -156,7 +165,8 @@ class MethodManager(object):
         """
         import argparse
 
-        parser = argparse.ArgumentParser(description="usage: %prog [options] *." + dataSuffix)
+        parser = argparse.ArgumentParser(
+            description="usage: %prog [options] *." + dataSuffix)
         parser.add_argument("-Q", "--quiet", dest="quiet",
                             action="store_true", default=False,
                             help="Be verbose.")
@@ -174,7 +184,7 @@ class MethodManager(object):
                             help="Maximum iteration count.")
         parser.add_argument("--depth", dest="depth", type=float,
                             default=None,
-                            help="Depth of the inversion domain. [None] None means automatic.")
+                            help="Depth of inversion domain. [None=auto].")
         parser.add_argument('dataFileName')
         return parser
 

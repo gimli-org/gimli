@@ -1,6 +1,6 @@
 import sys
-import glob
 import os
+from glob import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
@@ -103,10 +103,12 @@ class MRSprofile():
     def __init__(self, filename, x=None, dx=1, x0=0, **kwargs):
         self.mrs = []
         if '*' in filename:
-            filename = glob.glob(filename)
+            files = glob(filename)
         elif os.path.isdir(filename):
-            filename = glob.glob(filename+'/*.mrsi')
-        self.load(filename, **kwargs)
+            files = glob(filename+'/*.mrsi')
+            if len(files) == 0:
+                files = glob(filename+'/*.mrsd')
+        self.load(files, **kwargs)
         if x is not None:
             self.setX(x)
         else:
@@ -131,12 +133,21 @@ class MRSprofile():
         """
         self.mrs = [MRS(filename, **kwargs) for filename in filenames]
 
-    def showData(self, figsize=(15, 10), clim=None):
+    def loadKernel(self, kernelfile):
+        """ load one kernel file for all soundings """
+        self.mrs[0].loadKernel(kernelfile)
+        for mrsi in self.mrs:
+            mrsi.z = self.mrs[0].z
+            mrsi.K = self.mrs[0].K
+
+    def showData(self, figsize=(15, 10), nc=0, nr=0, clim=None):
         """show all data cubes in subplots"""
         from math import sqrt, ceil
         nsond = len(self.mrs)
-        nc = ceil(sqrt(nsond*3))
-        nr = ceil(nsond/nc)
+        if nc == 0:
+            nc = ceil(sqrt(nsond*3))
+        if nr == 0:
+            nr = ceil(nsond/nc)
         fig, ax = plt.subplots(nrows=int(nr), ncols=int(nc), figsize=figsize)
         for i, mrs in enumerate(self.mrs):
             mrs.showCube(ax=ax.flat[i], vec=mrs.data*1e9, islog=False,
@@ -168,7 +179,8 @@ class MRSprofile():
         self.totalRMS = np.sqrt(sum(np.array(self.RMSvec)**2 *
                                     np.array(self.nData)) / sum(self.nData))
 
-    def block1dInversion(self, nlay=2, startModel=None, verbose=True):
+    def block1dInversion(self, nlay=2, startModel=None, verbose=True,
+                         **kwargs):
         """invert all data together by one 1D model (variant 1 - all equal)"""
         self.mrsall = MRS()
         self.mrsall.z = self.mrs[0].z
@@ -181,7 +193,7 @@ class MRSprofile():
             self.mrsall.q = np.hstack((self.mrsall.q, mrs.q))
             self.mrsall.K = np.vstack((self.mrsall.K, mrs.K))
 
-        self.mrsall.run(nlay, stvec=startModel, verbose=verbose)
+        self.mrsall.run(nlay, stvec=startModel, verbose=verbose, **kwargs)
         if verbose:
             self.mrsall.showResult()
         return self.mrsall.model
@@ -229,7 +241,7 @@ class MRSprofile():
         INV.setAbsoluteError(error)
         INV.setLambda(kwargs.pop('lam', 100))
         INV.setMaxIter(kwargs.pop('maxIter', 20))
-        INV.stopAtChi1(False)
+#        INV.stopAtChi1(False)
         INV.setLambdaFactor(0.9)
         INV.setDeltaPhiAbortPercent(0.1)
         model = INV.run()
