@@ -6,7 +6,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, Normalize
+from matplotlib.patches import Rectangle
+from matplotlib.collections import PatchCollection
 import pygimli as pg
+from pygimli.mplviewer import updateAxes as updateAxes_
 
 
 def generateMatrix(xvec, yvec, vals, full=False):
@@ -48,6 +51,66 @@ def generateMatrix(xvec, yvec, vals, full=False):
         if len(inot) < 30:
             print(inot)
     return A, xmap, ymap
+
+
+def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
+                logScale=None, label=None, dx=1, **kwargs):
+    """ plot previously generated (generateVecMatrix) matrix
+
+    Parameters
+    ----------
+    A : numpy.array2d
+        matrix to show
+    xmap : dict {i:num}
+        dict (must match A.shape[0])
+    ymap : iterable
+        vector for x axis (must match A.shape[0])
+    ax : mpl.axis
+        axis to plot, if not given a new figure is created
+    cMin/cMax : float
+        minimum/maximum color values
+    logScale : bool
+        logarithmic colour scale [min(A)>0]
+    label : string
+        colorbar label
+    """
+    mat = np.ma.masked_where(A == 0.0, A, False)
+    if cMin is None:
+        cMin = np.min(mat)
+    if cMax is None:
+        cMax = np.max(mat)
+    if logScale is None:
+        logScale = (cMin > 0.0)
+    if logScale:
+        norm = LogNorm(vmin=cMin, vmax=cMax)
+    else:
+        norm = Normalize(vmin=cMin, vmax=cMax)
+    if 'ax' is None:
+        fig, ax = plt.subplots()
+
+    iy, ix = np.nonzero(A != 0)
+    recs = []
+    vals = []
+    for i in range(len(ix)):
+        recs.append(Rectangle((ix[i]-dx/2, iy[i]-0.5), dx, 1))
+        vals.append(A[iy[i], ix[i]])
+
+    pp = PatchCollection(recs)
+    col = ax.add_collection(pp)
+    pp.set_edgecolor(None)
+    pp.set_linewidths(0.0)
+    if 'cmap' in kwargs:
+        pp.set_cmap(kwargs.pop('cmap'))
+    pp.set_norm(norm)
+    pp.set_array(np.array(vals))
+    pp.set_clim(cMin, cMax)
+
+    updateAxes_(ax)
+    cbar = None
+    if kwargs.pop('colorBar', True):
+        cbar = pg.mplviewer.createColorbar(col, cMin=cMin, cMax=cMax, nLevs=5,
+                                           label=label)
+    return ax, cbar
 
 
 def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
@@ -99,6 +162,9 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
     if kwargs.pop('showally', False):
         yt = np.arange(len(ymap))
+    else:
+        yt = np.round(np.linspace(0, len(ymap)-1, 5))
+    print(yt)
     xx = np.sort([k for k in xmap])
     ax.set_xticks(xt)
     ax.set_xticklabels(['{:g}'.format(round(xx[int(ti)], 2)) for ti in xt])
