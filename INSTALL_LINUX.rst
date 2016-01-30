@@ -1,16 +1,12 @@
 Installation on Linux
 ---------------------
 
-The following should suffice to build GIMLi from source on most Linux Platforms:
+On most Linux platforms, the following will suffice to compile pyGIMLi in the
+current directory.
 
-.. code-block:: bash
+.. code:: bash
 
-    mkdir -p ~/src/gimli && cd ~/src/gimli
-    git clone https://github.com/gimli-org/gimli.git trunk
-
-    mkdir -p build && cd build
-    cmake ../trunk
-    make gimli pygimli apps
+    curl -Ls install.pygimli.org | bash
 
 See below for more detailed compilation instructions.
 
