@@ -45,7 +45,7 @@ def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
     model = ICC.run()  # run inversion
     if verbose:
         ICC.echoStatus()
-    return model, np.asarray(ICC.response())
+    return np.asarray(model), np.asarray(ICC.response())
 
 
 def fitCCAbs(f, amp, error=0.01, lam=1000., mstart=None,
@@ -93,15 +93,17 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
     return model, response[:len(f)], response[len(f):]
 
 
-def fitCCCC(f, amp, phi, error=0.01, lam=10.):
+def fitCCCC(f, amp, phi, error=0.01, lam=10., taupar=(1e-2, 1e-5, 100),
+            cpar=(0.25, 0, 1), mpar=[0, 0, 1]):
     """fit complex spectrum by Cole-Cole model based on sigma"""
     fCC = ColeColeComplexSigma(f)
     tLog = pg.RTransLog()
     fCC.region(0).setStartValue(1./max(amp))
-    mstart = 1. - min(amp)/max(amp)
-    fCC.region(1).setParameters(mstart, 0, 1)    # m (start,lower,upper)
-    fCC.region(2).setParameters(1e-2, 1e-5, 100)  # tau
-    fCC.region(3).setParameters(0.25, 0, 1)   # c
+    if mpar[0] == 0:
+        mpar[0] = 1. - min(amp)/max(amp)
+    fCC.region(1).setParameters(*mpar)    # m (start,lower,upper)
+    fCC.region(2).setParameters(*taupar)  # tau
+    fCC.region(3).setParameters(*cpar)   # c
     data = pg.cat(1./amp * np.cos(phi), 1./amp * np.sin(phi))
     ICC = pg.RInversion(data, fCC, False)  # set up inversion class
     ICC.setTransModel(tLog)

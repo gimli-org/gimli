@@ -38,17 +38,31 @@ class SIPSpectrum():
         if phi is not None:
             self.phi = np.asarray(phi)
         if unify:
-            self.unifyData()
+            self.unifyData(onlydown)
+
+    def __repr__(self):
+        """String representation of the class."""
+        return self.__str__()
+
+    def __str__(self):
+        """Human readable string representation of the class."""
+        out = self.__class__.__name__ + " object"
+        if hasattr(self, 'f'):
+            if hasattr(self.f, '__iter__'):
+                out += "\nnf=" + str(len(self.f)) + " min/max="
+                out += str(min(self.f)) + "/" + str(max(self.f))
+        return out
 
     def unifyData(self, onlydown=False):
         """ unify data (only one value per frequency) by mean or selection"""
         fu = np.unique(self.f)
-        if len(fu) < len(self.f):
+        if len(fu) < len(self.f) or onlydown:
             if onlydown:
                 wende = min(np.nonzero(np.diff(self.f) > 0)[0])
-                self.f = self.f[wende::-1]
-                self.amp = self.amp[wende::-1]
-                self.phi = self.phi[wende::-1]
+                if wende > 0:
+                    self.f = self.f[wende::-1]
+                    self.amp = self.amp[wende::-1]
+                    self.phi = self.phi[wende::-1]
             else:
                 amp = np.zeros(fu.shape)
                 phi = np.zeros(fu.shape)
@@ -67,6 +81,15 @@ class SIPSpectrum():
         self.amp = self.amp[ind]
         self.phi = self.phi[ind]
         self.f = self.f[ind]
+
+    def cutF(self, fcut=1e99):
+        """ cut frequencies above a certain value """
+        self.amp = self.amp[self.f <= fcut]
+        self.phi = self.phi[self.f <= fcut]
+        if hasattr(self, 'phiOrg'):
+            self.phiOrg = self.phiOrg[self.f <= fcut]
+        # finally cut f
+        self.f = self.f[self.f <= fcut]
 
     def realimag(self, cond=False):
         """real and imaginary part"""
@@ -121,8 +144,14 @@ class SIPSpectrum():
     def getKK(self, use0=False):
         """retrieve Kramers-Kronig values (re->im and im->re)"""
         re, im = self.realimag()
-        ind = np.argsort(self.f)
-        reKK, imKK = KramersKronig(self.f[ind], re[ind], im[ind], usezero=use0)
+        if False:
+            ind = np.argsort(self.f)
+            reKK, imKK = KramersKronig(self.f[ind], re[ind], im[ind],
+                                       usezero=use0)
+        else:
+            fsort, ind = np.unique(self.f, return_index=True)
+
+        reKK, imKK = KramersKronig(fsort, re[ind], im[ind], usezero=use0)
         re[ind] = reKK  # sort back
         im[ind] = imKK
         return re, im
@@ -213,8 +242,8 @@ class SIPSpectrum():
         self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
         return er
 
-    def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0.2, 0, 1),
-                 taupar=(1e-2, 1e-5, 100), cpar=(0.3, 0, 1)):
+    def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=[0, 0, 1],
+                 taupar=[0, 1e-5, 100], cpar=[0.3, 0, 1]):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -228,6 +257,12 @@ class SIPSpectrum():
             for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
 
         """
+        if taupar[0] == 0:
+            taupar[0] = 1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi
+            print("taupar", taupar)
+        if mpar[0] == 0:
+            mpar[0] = 1. - min(self.amp)/max(self.amp)
+            print("mpar", mpar)
         self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
                                         taupar=taupar, cpar=cpar)
 
@@ -362,8 +397,10 @@ class SIPSpectrum():
         """plot spectrum, Cole-Cole fit and Debye distribution"""
         # generate title strings
         if hasattr(self, 'mCC'):
-            tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f} $\tau_2$={:.1e}s'
+            tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f}'
             mCC = self.mCC
+            if len(mCC) > 3:
+                tstr += ' $\tau_2$={:.1e}s'
             if mCC[0] > 1:
                 tstr = r'CC: $\rho$={:.1f} m={:.3f} $\tau$={:.1e}s c={:.2f}'
             tCC = tstr.format(*mCC)
@@ -374,14 +411,14 @@ class SIPSpectrum():
         if hasattr(self, 'ampDD'):
             ax[0].plot(self.f, self.ampDD, 'm-', label='DD response')
         if hasattr(self, 'ampCC'):
-            ax[0].semilogx(self.f, self.ampCC, 'r-', label='CC+E model')
+            ax[0].semilogx(self.f, self.ampCC, 'r-', label='CC model')
         ax[0].legend(loc='best')
         # phase
         if hasattr(self, 'phiOrg'):
             ax[1].semilogx(self.f, self.phiOrg * 1e3, 'c+-', label='org. data')
         ax[1].semilogx(self.f, self.phi * 1e3, 'b+-', label='data')
         if hasattr(self, 'phiCC'):
-            ax[1].semilogx(self.f, self.phiCC * 1e3, 'r-', label='CC+E model')
+            ax[1].semilogx(self.f, self.phiCC * 1e3, 'r-', label='CC model')
         if hasattr(self, 'phiDD'):
             ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
         ax[1].grid(True)
