@@ -309,7 +309,7 @@ class Refraction(MethodManager):
         if pseudosection:
             midpoint = (gx + sx) / 2
             plotVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
-                          label='Apparent velocity [s/m]')
+                          label='Apparent slowness [s/m]')
         else:
             plotVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
                           label='Apparent velocity [m/s]')

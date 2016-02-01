@@ -721,6 +721,7 @@ def drawStreamLine_(axes, mesh, c, data, dataMesh=None, **kwargs):
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
 
+    lines = None
     # print(len(x))
     if len(x) > 2:
         lines = axes.plot(x, y, **kwargs)

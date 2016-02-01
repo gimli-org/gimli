@@ -52,7 +52,7 @@ def generateMatrix(xvec, yvec, vals, full=False):
 
 def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
                logScale=None, label=None, **kwargs):
-    """ plot previously generated (generateVecMatrix) matrix
+    """ Plot previously generated (generateVecMatrix) matrix
 
     Parameters
     ----------
@@ -97,8 +97,10 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
+    
     if kwargs.pop('showally', False):
         yt = np.arange(len(ymap))
+    
     xx = np.sort([k for k in xmap])
     ax.set_xticks(xt)
     ax.set_xticklabels(['{:g}'.format(round(xx[int(ti)], 2)) for ti in xt])
@@ -110,7 +112,7 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
 
 
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
-    """ plot three vectors as matrix
+    """Plot three vectors as matrix.
 
     Parameters
     ----------
@@ -121,14 +123,16 @@ def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     full: bool [False]
         use a fully symmetric matrix containing all unique xvec+yvec
         otherwise A is squeezed to the individual unique xvec/yvec values
-    ax : mpl.axis
-        axis to plot, if not given a new figure is created
-    cMin/cMax : float
-        minimum/maximum color values
-    logScale : bool
-        logarithmic colour scale [min(A)>0]
-    label : string
-        colorbar label
+        
+    **kwargs: forwarded to plotMatrix
+        *   ax : mpl.axis
+            Axis to plot, if not given a new figure is created
+        * cMin/cMax : float
+            Minimum/maximum color values    
+        * logScale : bool
+            Lgarithmic colour scale [min(A)>0]
+        * label : string
+            Colorbar label
     """
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full)
     return plotMatrix(A, xmap, ymap, **kwargs)

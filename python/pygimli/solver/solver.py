@@ -219,8 +219,10 @@ def parseArgToBoundaries(args, mesh):
     Parameters
     ----------
 
-    args : pair | [pair, ...]
-        see :py:mod:`pygimli.solver.solver.parseArgPairToBoundaryArray`
+    args : callable | pair | [pair, ...]
+        If args is just a callable than every boundary will be evaluated 
+        at runtime with this function as args(boundary).
+        Else see :py:mod:`pygimli.solver.solver.parseArgPairToBoundaryArray`
 
     mesh : :gimliapi:`GIMLI::Mesh`
         Used to find boundaries by marker
@@ -248,7 +250,12 @@ def parseArgToBoundaries(args, mesh):
             #[[,], [,], ...]
             for arg in args:
                 boundaries += parseArgPairToBoundaryArray(arg, mesh)
-
+    
+    elif hasattr(args, '__call__'):
+        for b in mesh.boundaries():
+            if not b.leftCell() or not b.rightCell():
+                if args(b) is not None:
+                    boundaries.append([b, args])
     return boundaries
 
 def parseMapToCellArray(attributeMap, mesh, default=0.0):
@@ -365,6 +372,70 @@ def fillEmptyToCellArray(mesh, vals):
     atts = mesh.cellAttributes()
     mesh.setCellAttributes(oldAtts)
     return atts
+
+def pointDataToBoundaryData(mesh, vec):
+    """
+        Assuming [NodeCount, dim] data
+        DOCUMENT_ME
+    """
+    print(mesh)
+    if len(vec) != mesh.nodeCount():
+        raise BaseException("Dimension mismatch, expecting nodeCount(): " 
+                            + str(mesh.nodeCount()) 
+                            + " got: " + str(len(vec)), str(len(vec[0])))
+    dim = len(vec[0])
+    ret = np.zeros((mesh.boundaryCount(), dim))
+    if dim == 1:
+        for b in mesh.boundaries():
+            ret[b.id()] = b.pot(b.center(), vec)# / b.nodeCount()
+    elif dim == 2:
+        for b in mesh.boundaries():
+            #v = b.vec(b.center(), vec)
+            #interpolation is hell slow here .. check!!!!!!
+            v2 = (vec[b.node(0).id()] + vec[b.node(1).id()])*0.5 
+            #print(v -v2)
+            ret[b.id()] = [v2[0], v2[1]]
+    else:
+        for b in mesh.boundaries():
+            ret[b.id()] = b.vec(b.center(), vec)# / b.nodeCount()
+
+    return ret
+
+def cellDataToBoundaryData(mesh, vec):
+    """
+        DOCUMENT_ME
+    """
+    if len(data) != mesh.cellCount():
+        raise BaseException("Dimension mismatch, expecting cellCount(): " 
+                            + str(mesh.cellCount()) 
+                            + "got: " + str(len(vec)), str(len(vec[0])))
+    
+    CtB = mesh.cellToBoundaryInterpolation()
+    
+    if type(vec) == pg.R3Vector():
+        return np.array([CtB*pg.x(vec), CtB*pg.y(vec), CtB*pg.z(vec)]).T
+    else:
+        return CtB*vec
+
+def cellDataToPointData(mesh, vec):
+    """
+        DOCUMENT_ME
+    """
+    if len(vec) != mesh.cellCount():
+        raise BaseException("Dimension mismatch, expecting cellCount(): " 
+                            + str(mesh.cellCount()) 
+                            + "got: " + str(len(vec)), str(len(vec[0])))
+    
+    if mesh.dim() == 1:
+        return pg.cellDataToPointData(mesh, vec[0])
+    elif mesh.dim() == 2:
+        return np.array([pg.cellDataToPointData(mesh, vec[:,0]),
+                         pg.cellDataToPointData(mesh, vec[:,1])])
+    elif mesh.dim() == 3:
+        return np.array([pg.cellDataToPointData(mesh, vec[0]),
+                         pg.cellDataToPointData(mesh, vec[1]),
+                         pg.cellDataToPointData(mesh, vec[2])])
+    
 
 def grad(mesh, u, r=None):
     r"""
@@ -513,11 +584,15 @@ def div(mesh, v):
     if hasattr(v, '__len__'):
         if len(v) == mesh.boundaryCount():
             d = mesh.divergence(v)
-        if len(v) == mesh.cellCount():
+        elif len(v) == mesh.nodeCount():
+            d = mesh.divergence(pointDataToBoundaryData(mesh, v))
+        elif len(v) == mesh.cellCount():
             CtB = mesh.cellToBoundaryInterpolation()
             d = mesh.divergence(np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
+        else:
+            raise BaseException("implement me")
     elif callable(v):        
-        raise("implement me")
+        raise BaseException("implement me")
     
             
     return d
