@@ -14,17 +14,17 @@ def createMesh(poly, quality=30, area=0.0,
                regions=None, holes=None,
                verbose=False, *args, **kwargs):
     """
-    Create a mesh for a given PLC mesh.
+    Create a mesh for a given geometry polygon.
 
-    Create a mesh for a given PLC using
-    :term:`triangle` or :term:`tetgen` if the gimli support for the
-    meshgenerator is installed.
-    The mesh poly need to be a valid PLC.
+    The mesh is created by :term:`triangle` or :term:`tetgen` if the 
+    gimli support for these mesh generators are installed.
+    The geometry needs to contain nodes and boundaries and should be valid 
+    in the sense that the boundaries are non intersecting.
 
-    If poly is a list coordinates a simple Delaunay mesh of the convex hull
+    If poly is a list of coordinates a simple Delaunay mesh of the convex hull
     will be created.
 
-    Tetgen support need to be implemented
+    TODO: Tetgen support need to be implemented
 
     Parameters
     ----------
@@ -36,7 +36,7 @@ def createMesh(poly, quality=30, area=0.0,
         * PLC or list of PLC
     quality: float
         2D triangle quality sets a minimum angle constraint.
-        Be careful with values above 34 degrees
+        Be careful with values above 34 degrees.
     area: float
         2D maximum triangle size in m*m
     smooth: tuple
@@ -45,7 +45,7 @@ def createMesh(poly, quality=30, area=0.0,
         1, node center
         2, weighted node center
     switches: str
-        force triangle to use the gives command switches
+        Force triangle to use the gives command switches.
 
     Returns
     -------

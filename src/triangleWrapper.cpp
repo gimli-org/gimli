@@ -295,23 +295,39 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
         trimesh.holelist[i * 2 + 1] = mesh.holeMarker()[i].y();
      }
 
-    //! Regions;
-    Index nRegions = mesh.regionMarker().size();//domain.regionCount();
-    trimesh.numberofregions = nRegions;
-    trimesh.regionlist = new double[4 * nRegions + 1];
+    if (mesh.cellCount() > 0){
+        //! Cell Regions;
+        Index nRegions = mesh.cellCount();//domain.regionCount();
+        trimesh.numberofregions = nRegions;
+        trimesh.regionlist = new double[4 * nRegions + 1];
 
-    Index count = 0;
-    for (Mesh::RegionMarkerList::const_iterator
-        it = mesh.regionMarker().begin(); it != mesh.regionMarker().end(); it ++){
+        Index count = 0;
+        for (Index i = 0; i < mesh.cellCount(); i ++ ){
+            trimesh.regionlist[count * 4] = mesh.cell(i).center().x();
+            trimesh.regionlist[count * 4 + 1] = mesh.cell(i).center().y();
+            trimesh.regionlist[count * 4 + 2] = mesh.cell(i).marker();
+            trimesh.regionlist[count * 4 + 3] = 0.0;
+            count ++;
+        }
+    } else {
+        //! Regions;
+        Index nRegions = mesh.regionMarker().size();//domain.regionCount();
+        trimesh.numberofregions = nRegions;
+        trimesh.regionlist = new double[4 * nRegions + 1];
 
-//         std::cout << it->pos().x() << " " << it->pos().y() << " " 
-//                   << it->marker() << " "
-//                   << it->area() << std::endl;
-        trimesh.regionlist[count * 4] = it->x();
-        trimesh.regionlist[count * 4 + 1] = it->y();
-        trimesh.regionlist[count * 4 + 2] = it->marker();
-        trimesh.regionlist[count * 4 + 3] = it->area();
-        count ++;
+        Index count = 0;
+        for (Mesh::RegionMarkerList::const_iterator
+            it = mesh.regionMarker().begin(); it != mesh.regionMarker().end(); it ++){
+
+    //         std::cout << it->pos().x() << " " << it->pos().y() << " " 
+    //                   << it->marker() << " "
+    //                   << it->area() << std::endl;
+            trimesh.regionlist[count * 4] = it->x();
+            trimesh.regionlist[count * 4 + 1] = it->y();
+            trimesh.regionlist[count * 4 + 2] = it->marker();
+            trimesh.regionlist[count * 4 + 3] = it->area();
+            count ++;
+        }
     }
 #else
     std::cerr << WHERE_AM_I << " Triangle not installed" << std::endl;

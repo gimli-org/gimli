@@ -363,6 +363,9 @@ def createPolygon(verts, isClosed=False, **kwargs):
         
     polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
     
+    
+    # set a regionmarker here .. somewhere
+    
     return poly
     
     

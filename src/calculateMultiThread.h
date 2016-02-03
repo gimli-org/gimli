@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -31,8 +31,8 @@ namespace GIMLI{
 
 class BaseCalcMT{
 public:
-    BaseCalcMT(bool verbose=false)
-        : verbose_(verbose), start_(0), end_(0), threadNumber_(0) {
+    BaseCalcMT(Index count=0, bool verbose=false)
+        : verbose_(verbose), start_(0), end_(0), threadNumber_(count){
     }
 
     virtual ~BaseCalcMT(){ }
@@ -42,10 +42,12 @@ public:
     void setRange(Index start, Index end, Index threadNumber=0){
         start_ = start; 
         end_ = end; 
-        threadNumber_ = threadNumber;
+        if (threadNumber_ > 0){
+            threadNumber_ = threadNumber;
+        }
     }
 
-    virtual void calc(uint tNr=0)=0;
+    virtual void calc(Index tNr=0)=0;
 
 protected:
     bool verbose_;

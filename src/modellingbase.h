@@ -55,8 +55,9 @@ public:
         return RVector(0);
     }
     
-    /*!Read only response function for multi threading purposes.*/
-    virtual RVector response_mt(const RVector & model) const {
+    /*!Read only response function for multi threading purposes. 
+     * Index i is use thread counter. */
+    virtual RVector response_mt(const RVector & model, Index i=0) const {
         throwError(1, WHERE_AM_I + " if you want to use read only response "
         "function to use in multi threading environment .. you need to "
         " implement me");

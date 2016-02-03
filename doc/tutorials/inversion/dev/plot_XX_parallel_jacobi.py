@@ -20,13 +20,13 @@ class TestModelling(pg.ModellingBase):
         time.sleep(1)
         return par * 3.0
     
-    def response_mt(self, par):
+    def response_mt(self, par, i=0):
         """
             this need to be implemented as read only function!
             don't use self.mapModel until this is changed into a read only 
             version
         """
-        print('Create response_mt', str(par))
+        print('Create response_mt(' +str(i) +')', str(par))
         time.sleep(1)
         return par * 2.0
 
