@@ -102,6 +102,7 @@ class MRSprofile():
     """
     def __init__(self, filename, x=None, dx=1, x0=0, **kwargs):
         self.mrs = []
+        self.figs = {}
         if '*' in filename:
             files = glob(filename)
         elif os.path.isdir(filename):
@@ -148,10 +149,24 @@ class MRSprofile():
             nc = ceil(sqrt(nsond*3))
         if nr == 0:
             nr = ceil(nsond/nc)
-        fig, ax = plt.subplots(nrows=int(nr), ncols=int(nc), figsize=figsize)
+        fig, ax = plt.subplots(nrows=int(nr), ncols=int(nc),
+                               figsize=figsize)
         for i, mrs in enumerate(self.mrs):
             mrs.showCube(ax=ax.flat[i], vec=mrs.data*1e9, islog=False,
                          clim=clim)
+        self.figs['data'] = fig
+        return fig, ax
+
+    def showInitialValues(self):
+        """ show initial values of whole profile """
+        IVI = np.zeros((len(self.mrs[0].q), len(self.mrs)))
+        for i, mrs in enumerate(self.mrs):
+            IVI[:, i] = mrs.dcube[:, 0]
+
+        fig, ax = plt.subplots(figsize=(15, 10))
+        im = ax.imshow(IVI*1e9, interpolation='nearest')
+        plt.colorbar(im, ax=ax, orientation='horizontal')
+        self.figs['ivi'] = fig
         return fig, ax
 
     def independentBlock1dInversion(self, nlay=2, lam=100, startModel=None):
@@ -273,15 +288,47 @@ class MRSprofile():
         print('Total RMS/Chi^2 value:')
         print(np.round(self.totalRMS, 2), np.round(self.totalChi2, 2))
 
+    def showWC(self, wlim=[0, 0.5], ax=None, cmap=Spectral,
+               title=r'$\theta$ (-)'):
+        """ show water content distribution as stitched model section """
+        fig = None
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(10, 5))
+            self.figs['wc'] = fig
+
+        showStitchedModels(self.WMOD, ax=ax, x=self.x, islog=False, cmap=cmap,
+                           title=title, cmin=wlim[0], cmax=wlim[1])
+        return fig, ax
+
+    def showT2(self, tlim=[0.05, 0.5], ax=None, cmap=Spectral,
+               title=r'$T_2^*$ (s)'):
+        """ show relaxation time distribution as stitched model section """
+        fig = None
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(10, 5))
+            self.figs['t2'] = fig
+
+        showStitchedModels(self.TMOD, ax=ax, x=self.x, islog=True, cmap=cmap,
+                           cmin=tlim[0], cmax=tlim[1], title=title)
+        return fig, ax
+
+    def showFits(self, ax=None):
+        """ show chi-square and rms fits of individual soundings """
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(10, 5))
+        axb = ax.twinx()
+        axb.set_ylabel('rms (nV)')
+        ax.plot(self.x, self.Chi2vec, 'rx', label=r'$\chi^2$')
+        axb.plot(self.x, self.RMSvec, 'bx', label='rms [nV]')
+        ax.legend(numpoints=1, loc=2)
+        axb.legend(numpoints=1, loc=1)
+
     def showModel(self, showFit=0, cmap=Spectral, figsize=(13, 12),
-                  wlim=[None, None], tlim=[None, None]):
+                  wlim=[0, 0.5], tlim=[0.05, 0.5]):
         """ show 2d model as stitched 1d models along with fit"""
         fig, ax = plt.subplots(nrows=2+showFit, figsize=figsize, sharex=True)
-        showStitchedModels(self.WMOD, x=self.x, ax=ax[-2], islog=False,
-                           cmap=cmap, cmin=wlim[0], cmax=wlim[1],
-                           title=r'$\theta$ (-)')
-        showStitchedModels(self.TMOD, x=self.x, ax=ax[-1], cmap=cmap,
-                           cmin=tlim[0], cmax=tlim[1], title=r'$T_2^*$ (s)')
+        self.showWC(wlim, ax=ax[-2], cmap=cmap)
+        self.showT2(tlim, ax=ax[-1], cmap=cmap)
         xl = ax[-1].get_xlim()
         ax[0].set_xlabel('x (m)')
         ax[0].xaxis.set_label_position('top')
@@ -290,12 +337,7 @@ class MRSprofile():
         for axi in ax[-2:]:
             axi.set_ylabel('z (m)')
         if showFit > 0:
-            ax0b = ax[0].twinx()
-            ax0b.set_ylabel('rms (nV)')
-            ax[0].plot(self.x, self.Chi2vec, 'rx', label=r'$\chi^2$')
-            ax0b.plot(self.x, self.RMSvec, 'bx', label='rms [nV]')
-            ax[0].legend(numpoints=1, loc=2)
-            ax0b.legend(numpoints=1, loc=1)
+            self.showFits(ax[0])
             ax[0].set_xlim(xl)
 
         return fig, ax

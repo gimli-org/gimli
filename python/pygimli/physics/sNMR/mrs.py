@@ -99,7 +99,7 @@ class MRS():
         return out + ">"
 
     def loadMRSI(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
-        """load data, error and kernel from mrsi file
+        """load data, error and kernel from mrsi or mrsd file
 
         Parameters
         ----------
@@ -111,6 +111,7 @@ class MRS():
         from scipy.io import loadmat  # loading Matlab mat files
 
         if filename[-5:].lower() == '.mrsd':
+            idata = None
             pl = loadmat(filename, struct_as_record=False,
                          squeeze_me=True)['proclog']
             self.q = np.array([q.q for q in pl.Q])
@@ -118,9 +119,11 @@ class MRS():
             nq = len(pl.Q)
             nt = len(self.t)
             self.dcube = np.zeros((nq, nt))
+            self.ecube = np.zeros((nq, nt))
+#            self.ecube = np.ones((nq, nt))*20e-9
             for i in range(nq):
-                self.dcube[i, :] = np.abs(pl.Q[i].rx.sig[1].V)
-            self.ecube = np.ones((nq, nt))*20e-9
+                self.dcube[i, :] = pl.Q[i].rx.sig[1].V
+                self.ecube[i, :] = np.real(pl.Q[i].rx.sig[1].E)
         else:
             idata = loadmat(filename, struct_as_record=False,
                             squeeze_me=True)['idata']
@@ -134,15 +137,14 @@ class MRS():
         good = (self.t <= maxt) & (self.t >= mint)
         self.t = self.t[good]
         self.dcube = self.dcube[:, good]
+        self.ecube = self.ecube[:, good]
 
         ndcubet = len(self.dcube[0])
         if len(self.dcube) == len(self.q) and ndcubet == len(self.t):
             if usereal:
                 self.data = np.real(self.dcube.flat)
-#                self.data = np.abs(np.real(self.dcube.flat))
             else:
                 self.data = np.abs(self.dcube.flat)
-                self.ecube = self.ecube[:, good]
 
         necubet = len(self.dcube[0])
         if self.verbose:
@@ -152,7 +154,8 @@ class MRS():
                 defaultNoise = kwargs.pop("defaultNoise", 100e-9)
                 print("no errors in file, assuming", defaultNoise*1e9, "nV")
             self.ecube = np.ones((len(self.q), len(self.t))) * defaultNoise
-            self.ecube /= np.sqrt(idata.data.gateL)
+            if idata is not None:
+                self.ecube /= np.sqrt(idata.data.gateL)
         if len(self.ecube) == len(self.q) and necubet == len(self.t):
             self.error = self.ecube.ravel()
 
