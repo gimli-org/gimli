@@ -5,14 +5,16 @@ Module containing submodules for various geophysical methods.
 """
 
 from math import pi
+
 from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
+from . ert import resistivityArchie
+
 # from . gravimetry import Gravimetry
 # from . seismics import *
 
 __all__ = ("FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction")
-
 
 class constants:
     # magnetic constant, vacuum permeability
@@ -42,16 +44,19 @@ class MethodManager(object):
     def __init__(self, verbose=True, debug=False, **kwargs):
         self.verbose = verbose
         self.debug = debug
-        self.fop = self.createFOP(verbose)
         self.figs = {}
+
+        self.fop = self.createFOP(verbose)
         if self.fop is None:
             raise Exception("createFOP does not return valid forward operator")
+        
         self.tD = None
         self.tM = None
+
         self.inv = self.createInv(self.fop, verbose, debug)
         if self.inv is None:
             raise Exception("createINV does not return valid inversion")
-
+        
         self.setVerbose(verbose)
 
     def __str__(self):
@@ -187,6 +192,5 @@ class MethodManager(object):
                             help="Depth of inversion domain. [None=auto].")
         parser.add_argument('dataFileName')
         return parser
-
-
+    
 from . traveltime import Refraction

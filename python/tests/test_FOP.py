@@ -14,7 +14,7 @@ class ModellingMT(pg.ModellingBase):
     def response(self, par):
         return par * 1.0
     
-    def response_mt(self, par):
+    def response_mt(self, par, i=0):
         return par * 2.0
 
 class TestFOP(unittest.TestCase):

@@ -428,7 +428,8 @@ def main(argv):
     parser.add_option("-i", "--interperc", dest="interperc",
                             help="interpecentile", type="float", default="0.0")
     parser.add_option("-m", "--cmap", dest="cmapname",
-                            help="color map name", metavar="File")
+                            help="Use custom color map name. "
+                            "http://matplotlib.org/examples/color/colormaps_reference.html", metavar="File")
     parser.add_option("-d", "--data", dest="datafile",
                             help="data file", metavar="File")
     parser.add_option("-o", "--output", dest="outFileName",
@@ -460,13 +461,8 @@ def main(argv):
     parser.add_option("", "--no-cbar",
                       dest="showCbar", action="store_false",
                       help="show colorbar", default=True)
-    parser.add_option(
-        "",
-        "--cbar-only",
-        dest="cbarOnly",
-        default=False,
-        help="show colorbar only",
-        action="store_true")
+    parser.add_option("", "--cbar-only", dest="cbarOnly", default=False,
+                      help="show colorbar only", action="store_true")
     parser.add_option("", "--label", dest="label", metavar="String",
                       help="Label to be displayed on colorbar. " +
                       "Resistivity or Velocity is set automatically.",
@@ -477,53 +473,22 @@ def main(argv):
     parser.add_option("", "--yLabel", dest="ylabel",
                       metavar="String", default=None,
                       help="Label to the y-axis.")
-    parser.add_option(
-        "",
-        "--title",
-        dest="title",
-        default="",
-        help="draw title")
-    parser.add_option(
-        "",
-        "--aspect",
-        dest="aspect",
-        default="equal",
-        help="set aspect ratio 'auto' or 'equal' [equal] ")
-    parser.add_option(
-        "",
-        "--xlim",
-        dest="xlim",
-        default='',
-        type="string",
-        help="set x limits for plot (: separated) ")
-    parser.add_option(
-        "",
-        "--ylim",
-        dest="ylim",
-        default='',
-        type="string",
-        help="set y limits for plot (: separated) ")
-    parser.add_option(
-        "",
-        "--reverseX",
-        dest="reverseX",
-        default=False,
-        help="Reverse the x axis",
-        action="store_true")
-    parser.add_option(
-        "",
-        "--xOffset",
-        dest="xoffset",
-        default=0.0,
-        type="float",
-        help="set x-coordinate offset for first electrode [0.0] ")
-    parser.add_option(
-        "",
-        "--zOffset",
-        dest="zoffset",
-        default=0.0,
-        type="float",
-        help="set z-coordinate offset for first electrode [0.0] ")
+    parser.add_option("", "--title", dest="title", default="",
+                      help="draw title")
+    parser.add_option("", "--aspect", dest="aspect", default="equal",
+                      help="set aspect ratio 'auto' or 'equal' [equal] ")
+    parser.add_option("", "--xlim", dest="xlim", default='', type="string",
+                      help="set x limits for plot (: separated) ")
+    parser.add_option("", "--ylim", dest="ylim", default='', type="string",
+                      help="set y limits for plot (: separated) ")
+    parser.add_option("", "--reverseX", dest="reverseX", default=False,
+                      help="Reverse the x axis", action="store_true")
+    parser.add_option("", "--xOffset", dest="xoffset", 
+                      default=0.0, type="float",
+                      help="set x-coordinate offset for first electrode [0.0] ")
+    parser.add_option("", "--zOffset", dest="zoffset",
+                      default=0.0, type="float",
+                      help="set z-coordinate offset for first electrode [0.0] ")
     parser.add_option(
         "",
         "--maxDepth",
@@ -705,7 +670,6 @@ def main(argv):
             try:
                 elPos = None
                 koords = [0, 2]
-                print(options.electrodes)
                 if options.electrodes == 'mesh':
                     mesh = pg.Mesh(meshname)
                     elPos = mesh.positions(mesh.findNodesIdxByMarker(-99))

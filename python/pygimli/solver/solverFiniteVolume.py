@@ -44,32 +44,6 @@ def boundaryToCellDistancesBound(b):
         df2 = b.center().distance(rightCell.center())
     return df1 + df2
 
-def pointDataToBoundaryData(mesh, data):
-    """
-        Assuming [NodeCount, dim] data
-    """
-    
-    if len(data) != mesh.nodeCount():
-        raise BaseException("Dimension mismatch, expecting nodeCount(): " 
-                            + str(mesh.NodeCount()) 
-                            + "got: " + str(data.size()[0]))
-    dim = len(data[0])
-    ret = np.zeros((mesh.boundaryCount(), dim))
-    if dim == 1:
-        for b in mesh.boundaries():
-            ret[b.id()] = b.pot(b.center(), data)# / b.nodeCount()
-    elif dim == 2:
-        for b in mesh.boundaries():
-            #v = b.vec(b.center(), data)
-            #interpolation is hell slow here .. check!!!!!!
-            v2 = (data[b.node(0).id()] + data[b.node(1).id()])*0.5 
-            #print(v -v2)
-            ret[b.id()] = [v2[0], v2[1]]
-    else:
-        for b in mesh.boundaries():
-            ret[b.id()] = b.vec(b.center(), data)# / b.nodeCount()
-
-    return ret
 
 def cellDataToBoundaryGrad(mesh, v, vGrad):
     """
@@ -679,8 +653,8 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         raise BaseException("Velocity field has wrong dimension.")
                 
     if len(vel) is not mesh.nodeCount():
-        vel = pointDataToBoundaryData(mesh, vel)
-
+        vel = pg.solver.pointDataToBoundaryData(mesh, vel)
+    
     boundsDirichlet = None
     boundsNeumann = None
 

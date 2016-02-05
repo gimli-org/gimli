@@ -60,8 +60,8 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
 // //             if (!c) exit(0);
 //         }
         cells[i] = c;
-        if (verbose) std::cout << "\r" << i + 1 << " \t/ " << pos.size()
-                               << "\t searched: " << count << std::endl;
+//         if (verbose) std::cout << "\r" << i + 1 << " \t/ " << pos.size()
+//                                << "\t searched: " << count << std::endl;
     }
     if (verbose) std::cout << std::endl;
 

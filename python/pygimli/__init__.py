@@ -757,8 +757,8 @@ if __version__ == "unknown":
 # We want ModellingBase with multi threading jacobian brute force
 ###########################
 
-def __GLOBAL__response_mt_shm_(fop, model, shm):
-    resp = fop.response_mt(model)
+def __GLOBAL__response_mt_shm_(fop, model, shm, i):
+    resp = fop.response_mt(model, i)
            
     for j in range(len(resp)):
         shm[j] = resp[j]
@@ -792,7 +792,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
 
                 shm.append(Array('d', len(resp)))
                 procs.append(Process(target=__GLOBAL__response_mt_shm_,
-                                     args=(self, modelChange, shm[i])))
+                                     args=(self, modelChange, shm[i], i)))
 
         for i, p in enumerate(procs):
             p.start()

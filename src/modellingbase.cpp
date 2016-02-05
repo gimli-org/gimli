@@ -162,7 +162,8 @@ void ModellingBase::setMesh(const Mesh & mesh, bool holdRegionInfos) {
     deleteMeshDependency_();
 
     Stopwatch swatch(true);
-    if (regionManagerInUse_){
+    if (regionManagerInUse_ && !holdRegionInfos){ 
+        // && holdRegionInfos e.g., just give it a try to ignore the regionmanager if necessary
         regionManager_->setMesh(mesh, holdRegionInfos);
         if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
         this->setMesh_(regionManager_->mesh());
@@ -209,16 +210,20 @@ public:
                    const ModellingBase & fop, 
                    const RVector & resp, 
                    const RVector & model, 
+                   Index count,
                    bool verbose)
-    : BaseCalcMT(verbose), J_(J), fop_(&fop), resp_(&resp), model_(&model){}
+    : BaseCalcMT(count, verbose), J_(J), fop_(&fop), resp_(&resp), 
+    model_(&model) {
+        
+    }
 
     virtual ~JacobianBaseMT(){}
 
-    virtual void calc(uint tNr=0){
+    virtual void calc(Index tNr=0){
         RVector modelChange(*model_);
         modelChange[tNr] *= 1.05;
         __MS(tNr)
-        fop_->response_mt(modelChange);
+        fop_->response_mt(modelChange, tNr);
 //         RVector respChange();
                     
         //J_->setCol(tNr, (respChange - *resp_)/(modelChange[tNr] - (*model_)[tNr]));
@@ -248,7 +253,7 @@ void ModellingBase::createJacobian_mt(const RVector & model,
 
     
     ALLOW_PYTHON_THREADS   
-    distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, verbose_),
+    distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, 0, verbose_),
                    jacobian_->rows(), nThreadsJacobian_, verbose_);
     swatch.stop();
     if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
@@ -484,7 +489,7 @@ void ModellingBase::initRegionManager() {
             regionManager_->setMesh(*mesh_);
             this->setMesh_(regionManager_->mesh());
         }
-        regionManagerInUse_   = true;
+        regionManagerInUse_ = true;
     }
 }
 
