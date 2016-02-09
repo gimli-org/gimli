@@ -142,6 +142,19 @@ def readusffiles(filenames):
     return DATA
 
 
+def readUniKTEMData(filename):
+    """ read TEM data format of University of Cologne """
+    DATA = []
+    snd = {}
+    snd['FILENAME'] = filename
+    A = np.loadtxt(filename)
+    snd['TIME'] = A[:, 1]
+    snd['VOLTAGE'] = A[:, 2]
+    snd['ST_DEV'] = A[:, 4]
+    DATA.append(snd)
+    return DATA
+
+
 def readSiroTEMData(fname):
     """
         read TEM data from siroTEM instrument dump
@@ -178,7 +191,7 @@ def readSiroTEMData(fname):
         header = line[1:-6].split(',')
 
         snd = {}  # dictionary, uppercase corresponds to USF format keys
-        snd['INSRTUMENT'] = 'siroTEM'
+        snd['INSTRUMENT'] = 'siroTEM'
         snd['dtype'] = int(header[3])
         dstring = header[1]
         snd['DATE'] = int('20' + dstring[6:8] + dstring[3:4] + dstring[0:1])
@@ -222,7 +235,7 @@ def readSiroTEMData(fname):
         line = fid.readline()
 
     fid.close()
-    DATA['FILENAME'] = fname
+#    DATA['FILENAME'] = fname  # makes no sense as DATA is an array->snd?
     return DATA
 
 
@@ -249,6 +262,8 @@ class TDEM():
                 self.DATA.append(readusffile(filename))
         elif filename.lower().rfind('.txt') > 0:
             self.DATA = readSiroTEMData(filename)
+        elif filename.lower().rfind('.dat') > 0:  # dangerous
+            self.DATA = readUniKTEMData(filename)
 
     def __repr__(self):
         return "<TDEMdata: %d soundings>" % (len(self.DATA))
@@ -267,8 +282,12 @@ class TDEM():
             t = data['TIME']
             u = data['VOLTAGE']
 #            du = data['ST_DEV']
-
-            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
+#            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
+            name = 'new'
+            if 'FILENAME' in data:
+                name = data['FILENAME'][:-4]
+            if 'STACK_SIZE' in data:
+                name += '-' + str(int(data['STACK_SIZE']))
             ax.loglog(t, u, label=name)
 
         ax.set_xlabel('t [s]')
@@ -284,7 +303,12 @@ class TDEM():
 
         cols = 'rgbmcyk'
         for i, data in enumerate(self.DATA):
-            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
+#            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
+            name = 'new'
+            if 'FILENAME' in data:
+                name = data['FILENAME'][:-4]
+            if 'STACK_SIZE' in data:
+                name += '-' + str(int(data['STACK_SIZE']))
             rhoa, t, err = get_rhoa(data)
             err[err > .99] = .99
             ax.loglog(t, rhoa, marker='+', label=name, color=cols[i % 7])
