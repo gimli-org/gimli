@@ -349,7 +349,7 @@ if (SPHINX_FOUND)
 
 endif()
 
-ADD_CUSTOM_TARGET(checkall ALL)
+ADD_CUSTOM_TARGET(checkall)
 add_dependencies(checkall doc)
 add_dependencies(checkall pgtest)
 add_dependencies(checkall gtest)

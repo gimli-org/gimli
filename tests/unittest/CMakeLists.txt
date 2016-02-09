@@ -11,40 +11,41 @@ if (CPPUNIT_FOUND)
     add_definitions(-DHAVE_UNITTEST)
 	include_directories(${CPPUNIT_INCLUDE_DIR})
     target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
-endif (CPPUNIT_FOUND)
 
-if (CHOLMOD_FOUND)
-    target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
-endif (CHOLMOD_FOUND)
 
-target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY})
-target_link_libraries(gimliUnitTest gimli)
-target_link_libraries(gimliUnitTest pthread)
-target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
+    if (CHOLMOD_FOUND)
+        target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
+    endif (CHOLMOD_FOUND)
 
-add_dependencies(check gimliUnitTest)
+    target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY})
+    target_link_libraries(gimliUnitTest gimli)
+    target_link_libraries(gimliUnitTest pthread)
+    target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
 
-ADD_CUSTOM_TARGET(gtest ALL)
-ADD_CUSTOM_COMMAND(
-    COMMAND
-        ${CMAKE_BINARY_DIR}/bin/gimliUnitTest
-    TARGET
-        gtest
-    DEPENDS
-        check
-   )
+    add_dependencies(check gimliUnitTest)
 
-add_test(
-    NAME
-        gtest:gimli_unit_tests
-    COMMAND
-        #cmake "--build . --target gtest"
-        make gtest
+    ADD_CUSTOM_TARGET(gtest)
+    ADD_CUSTOM_COMMAND(
+        COMMAND
+            ${CMAKE_BINARY_DIR}/bin/gimliUnitTest
+        TARGET
+            gtest
     )
 
+    add_dependencies(gtest gimliUnitTest)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/unittest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-#file(COPY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/gimliUnitTest DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    add_test(
+        NAME
+            gtest:gimli_unit_tests
+        COMMAND
+            #cmake "--build . --target gtest"
+            make gtest
+        )
 
-INSTALL_FILES(${CMAKE_CURRENT_SOURCE_DIR} unittest.sh)
 
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/unittest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    #file(COPY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/gimliUnitTest DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+    INSTALL_FILES(${CMAKE_CURRENT_SOURCE_DIR} unittest.sh)
+
+endif (CPPUNIT_FOUND)
