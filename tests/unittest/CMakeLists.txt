@@ -1,4 +1,3 @@
-
 file (GLOB unitTest_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
 
 #PURIFYCOMMAND:FILEPATH=c:/Progra~1/Rational/common/purify.exe
@@ -9,7 +8,7 @@ file (GLOB unitTest_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
 add_executable(gimliUnitTest unitTest.cpp ${unitTest_HEADERS})
 
 if (CPPUNIT_FOUND)
-    add_definitions( -DHAVE_UNITTEST )
+    add_definitions(-DHAVE_UNITTEST)
 	include_directories(${CPPUNIT_INCLUDE_DIR})
     target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
 endif (CPPUNIT_FOUND)
@@ -23,10 +22,29 @@ target_link_libraries(gimliUnitTest gimli)
 target_link_libraries(gimliUnitTest pthread)
 target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
 
-add_test(unitTest unittest.sh)
-
 add_dependencies(check gimliUnitTest)
+
+ADD_CUSTOM_TARGET(gtest ALL)
+ADD_CUSTOM_COMMAND(
+    COMMAND
+        ${CMAKE_BINARY_DIR}/bin/gimliUnitTest
+    TARGET
+        gtest
+    DEPENDS
+        check
+   )
+
+add_test(
+    NAME
+        gtest:gimli_unit_tests
+    COMMAND
+        #cmake "--build . --target gtest"
+        make gtest
+    )
+
+
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/unittest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #file(COPY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/gimliUnitTest DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 INSTALL_FILES(${CMAKE_CURRENT_SOURCE_DIR} unittest.sh)
+
