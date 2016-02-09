@@ -73,7 +73,7 @@ add_dependencies(pg _pygimli_)
 include_directories(${PY_NUMPY}/core/include/)
 
 
-ADD_CUSTOM_TARGET(pgtest ALL)
+ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
     COMMAND
         ${PYTHON_EXECUTABLE}
