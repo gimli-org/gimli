@@ -349,6 +349,12 @@ if (SPHINX_FOUND)
 
 endif()
 
+ADD_CUSTOM_TARGET(checkall ALL)
+add_dependencies(checkall doc)
+add_dependencies(checkall pgtest)
+add_dependencies(checkall gtest)
+
+
 
 ################################################################################
 # Define the configurable options
