@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-# write a correct test!
 import unittest
 
 import pygimli as pg
 import numpy as np
+
+import time
 
 class ModellingMT(pg.ModellingBase):
     def __init__(self, nPars, verbose):
@@ -15,6 +16,7 @@ class ModellingMT(pg.ModellingBase):
         return par * 1.0
     
     def response_mt(self, par, i=0):
+        time.sleep(0.1)
         return par * 2.0
 
 class TestFOP(unittest.TestCase):
@@ -36,6 +38,23 @@ class TestFOP(unittest.TestCase):
 
         pass
     
+    def test_multiResponseMT(self):
+        
+        nPars = 4    
+        m = pg.RVector(nPars, 1)
+        fop = ModellingMT(nPars, verbose=True)
+         
+        ms = np.array([m*2, m*3, m*4, m*5])
+        fop.setMultiThreadJacobian(1)
+        ds1 = np.zeros((len(ms), len(ms[0])))
+        fop.responses(ms, ds1)
+        
+        fop.setMultiThreadJacobian(4)
+        ds2 = np.zeros((len(ms), len(ms[0])))
+        fop.responses(ms, ds2)
+        
+        np.testing.assert_array_equal(ds1, ds2)         
+        
     def test_MT(self):
         nPars = 4    
         m=pg.RVector(nPars, 1)
@@ -50,6 +69,8 @@ class TestFOP(unittest.TestCase):
         J2 = fop.jacobian()
 
         np.testing.assert_array_equal(J1*2.0, J2)         
+
+        
 
         #for i in range(J1.rows()):
             #print(np.array(J1[i]), np.array(J2[i]))

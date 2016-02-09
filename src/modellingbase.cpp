@@ -185,6 +185,11 @@ void ModellingBase::setMesh_(const Mesh & mesh){
     (*mesh_) = mesh;
 }
 
+void ModellingBase::deleteMesh(){
+    if (mesh_) delete mesh_;
+    mesh_ = 0;
+}
+    
 void ModellingBase::initJacobian(){
     if (!jacobian_){
         jacobian_ = new RMatrix();

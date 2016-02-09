@@ -72,6 +72,19 @@ ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
 include_directories(${PY_NUMPY}/core/include/)
 
+
+ADD_CUSTOM_TARGET(pgtest ALL)
+ADD_CUSTOM_COMMAND(
+    COMMAND
+        ${PYTHON_EXECUTABLE}
+        #python -c "import pygimli; pygimli.test(show=False)"
+        #python 
+    ARGS 
+        -c 'import pygimli\; pygimli.test(show=False)'
+    TARGET
+        pgtest
+   )
+
 #ADD_CUSTOM_TARGET(pgrebuild ALL)
 #add_dependencies(pgrebuild pggen _pygimli_)
 

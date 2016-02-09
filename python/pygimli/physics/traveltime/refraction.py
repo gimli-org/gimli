@@ -80,7 +80,8 @@ class Refraction(MethodManager):
         """ base api """
         return self.velocity
 
-    def createFOP(self, verbose=False):
+    @staticmethod
+    def createFOP(verbose=False):
         """Create default forward operator for Traveltime modelling.
         base api
 

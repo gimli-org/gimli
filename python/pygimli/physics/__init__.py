@@ -46,14 +46,14 @@ class MethodManager(object):
         self.debug = debug
         self.figs = {}
 
-        self.fop = self.createFOP(verbose)
+        self.fop = self.createFOP_(verbose)
         if self.fop is None:
             raise Exception("createFOP does not return valid forward operator")
         
         self.tD = None
         self.tM = None
 
-        self.inv = self.createInv(self.fop, verbose, debug)
+        self.inv = self.createInv_(self.fop, verbose, debug)
         if self.inv is None:
             raise Exception("createINV does not return valid inversion")
         
@@ -79,13 +79,15 @@ class MethodManager(object):
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
 
-    def createFOP(self, verbose=True):
+    @classmethod
+    def createFOP_(cls, verbose=True):
         """ Create forward operator working on refined mesh """
-        raise Exception("Overload me!")
+        return cls.createFOP(verbose)
 
-    def createInv(self, fop, verbose=True, dosave=False):
+    def createInv_(self, fop, verbose=True, dosave=False):
         """ Create inversion instance, data- and model transformations. """
-        raise Exception("Overload me!")
+        return self.createInv(fop, verbose, dosave)
+        
 
     # Data related methods
     def createData(self, sensors, scheme):

@@ -771,9 +771,11 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     nModel = len(model)
     nData = len(resp)
         
+    fak = 1.05
+         
     dModel = _pygimli_.RVector(len(model))
     nProcs = self.multiThreadJacobian()
-    fak = 1.05
+    
     shm = []
     
     oldBertThread = self.threadCount()
@@ -806,6 +808,48 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
         dData = np.array(shm[i]) - resp
         self._J.setCol(i, dData/dModel[i])
     
+def __ModellingBase__responses_mt__(self, models, respos):
+    from math import ceil
+    from multiprocessing import Process, Array
+    import numpy as np
+    
+    if models.ndim != 2:
+        raise BaseException("models need to be a matrix(N, nModel):" + str(models.shape) )
+    if respos.ndim != 2:
+        raise BaseException("respos need to be a matrix(N, nData):" + str(respos.shape) )
+    
+    nProcs = self.multiThreadJacobian()
+    nModel = len(models)
+    nData = len(respos[0])
+    shm = []
+    
+    oldBertThread = self.threadCount()
+    self.setThreadCount(1)
+    
+    for pCount in range(int(ceil(nModel/nProcs))):
+        procs = []
+        if self.verbose():
+            print(pCount*nProcs, "/" ,nModel)
+        for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
+
+            if i < nModel:
+                shm.append(Array('d', nData))
+                procs.append(Process(target=__GLOBAL__response_mt_shm_,
+                                     args=(self, models[i], shm[i], i)))
+
+        for i, p in enumerate(procs):
+            p.start()
+            
+        for i, p in enumerate(procs):
+            p.join()
+
+    self.setThreadCount(oldBertThread)
+    
+    for i in range(nModel):
+        resp = np.array(shm[i])
+        respos[i] = resp
+    
+    
 class ModellingBaseMT(_pygimli_.ModellingBase):
     def __init__(self, verbose):
         _pygimli_.ModellingBase.__init__(self, verbose)
@@ -813,6 +857,7 @@ class ModellingBaseMT(_pygimli_.ModellingBase):
         self.setJacobian(self._J)  
    
 ModellingBaseMT.createJacobian_mt = __ModellingBase__createJacobian_mt__
+ModellingBaseMT.responses = __ModellingBase__responses_mt__
 
 ModellingBase = ModellingBaseMT
 

@@ -47,7 +47,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
      
     """
     
-    if mesh==None:
+    if mesh == None:
         return rFluid * a * porosity**(-m) * S**(-n)
     
     rB = None
@@ -73,7 +73,8 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     r.round(1e-6)
     if meshI == None:
         if len(r) == 1:
-            return r[0]
+            print(r[0].copy())
+            return r[0].copy()
         return r
     
     rI = pg.RMatrix(len(r), meshI.cellCount())

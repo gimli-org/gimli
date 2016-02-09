@@ -148,7 +148,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     >>> from pygimli.meshtools import createWorld
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
-    >>> world = createWorld(start=[-5, 0], end=[5, -5], layers=[1,3,2,5])
+    >>> world = createWorld(start=[-5, 0], end=[5, -5], layers=[-1,-2,-3])
     >>>
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, world)

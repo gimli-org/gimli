@@ -91,6 +91,9 @@ public:
 
     inline Mesh * mesh() { return mesh_; }
 
+    /*! Delete the actual mesh. */ 
+    void deleteMesh();
+
     /*! Set external Jacobian matrix*/
     virtual void setJacobian(MatrixBase * J);
 
