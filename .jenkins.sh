@@ -46,11 +46,12 @@ make pygimli J=12
 #############################
 
 # Test gimli
-make check
-./bin/gimliUnitTest
+make gtest
 
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
+make pgtest
+
 python << END
 import pygimli as pg
 print(pg.__version__)
