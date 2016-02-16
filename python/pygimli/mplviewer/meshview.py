@@ -163,6 +163,17 @@ def drawMesh(axes, mesh, **kwargs):
 
     Set the limits of the axes tor the mesh extent.
 
+    Parameters
+    ----------
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        The plotted mesh to browse through.
+    ax : mpl axis instance, optional
+        Axis instance where the mesh is plotted (default is current axis).
+    fitView: bool [True]
+        Adjust axes limits to mesh bounding box.
+        
+
     Examples
     --------
     >>> import numpy as np

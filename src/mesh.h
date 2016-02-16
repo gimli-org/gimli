@@ -412,8 +412,8 @@ public:
     /*! Translate the mesh with \ref RVector3 t. And return a reference to the mesh (no copy)*/
     Mesh & translate(const RVector3 & t);
 
-    /*! Rotate mesh teh with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg). 
-     And return a reference to the mesh (no copy)*/
+    /*! Rotate mesh the with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg). 
+     And return a reference to the mesh (no copy) */
     Mesh & rotate(const RVector3 & r);
     //** end mesh modification stuff
 

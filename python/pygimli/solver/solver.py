@@ -378,7 +378,7 @@ def pointDataToBoundaryData(mesh, vec):
         Assuming [NodeCount, dim] data
         DOCUMENT_ME
     """
-    print(mesh)
+    
     if len(vec) != mesh.nodeCount():
         raise BaseException("Dimension mismatch, expecting nodeCount(): " 
                             + str(mesh.nodeCount()) 
