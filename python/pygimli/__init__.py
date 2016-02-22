@@ -781,12 +781,13 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     oldBertThread = self.threadCount()
     self.setThreadCount(1)
         
-    for pCount in range(int(ceil(nModel/nProcs))):
+    #print("Model/Data/nProcs", nModel, nData, nProcs, int(ceil(float(nModel)/nProcs)))
+    for pCount in range(int(ceil(float(nModel)/nProcs))):
         procs = []
         if self.verbose():
             print(pCount*nProcs, "/" ,nModel)
+            
         for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
-
             if i < nModel:
                 modelChange = _pygimli_.RVector(model)
                 modelChange[i] *= fak
