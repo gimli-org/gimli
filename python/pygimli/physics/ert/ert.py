@@ -55,6 +55,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     if rFluid.ndim == 1:
         rB = pg.RMatrix(1, len(rFluid))
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
+        
     elif rFluid.ndim == 2:
         rB = pg.RMatrix(len(rFluid), len(rFluid[0]))
         for i in range(len(rFluid)):
@@ -71,6 +72,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
         r[i] = rB[i] * a * porosity**(-m) * S**(-n)
         
     r.round(1e-6)
+    #print('rc:', min(np.array(r).flatten()), max(np.array(r).flatten()), np.mean(np.array(r).flatten()))        
     if meshI == None:
         if len(r) == 1:
             return r[0].copy()
@@ -80,11 +82,18 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     if meshI:
         pg.interpolate(mesh, r, meshI.cellCenters(), rI) 
         
+    #print('rd0:', min(np.array(rI).flatten()), max(np.array(rI).flatten()), np.mean(np.array(rI).flatten()))        
+    
     if fill:
         for i in range(len(rI)):
-            rI[i] = pg.solver.fillEmptyToCellArray(meshI, rI[i])
+            # slope == True produce unstable behavior .. check!!!!!!
+            
+            rI[i] = pg.solver.fillEmptyToCellArray(meshI, rI[i], slope=False)
         
+    #print('rd1:', min(np.array(rI).flatten()), max(np.array(rI).flatten()), np.mean(np.array(rI).flatten()))        
     rI.round(1e-6)
+    
+    #print('rd2:', min(np.array(rI).flatten()), max(np.array(rI).flatten()), np.mean(np.array(rI).flatten()))        
     #print(rI)
     if len(rI) == 1:
         return rI[0]

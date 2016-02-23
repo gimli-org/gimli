@@ -288,7 +288,9 @@ void ModellingBase::createJacobian(const RVector & model,
         } else {
             J->setCol(i, RVector(resp.size(), 0.0));
         }
-         
+        
+//         __MS(i << " " << min(J->col(i)) << " " << max(J->col(i)))
+        
 //         for (size_t j = 0; j < resp.size(); j++){
 //             if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
 //                 (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
