@@ -246,4 +246,4 @@ if __name__ == '__main__':
     p = Poly2D('example.xml')  # Poly2D handles loading/creating a 2D-PLCs
     p.show()
     mesh = p.create_mesh()
-    pg.show(mesh, mesh.cellMarker())
+    pg.show(mesh, mesh.cellMarkers())

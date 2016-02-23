@@ -911,7 +911,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> mesh = createParaMesh2DGrid(sensors=pg.RVector(range(10)),
     ...                             boundary=1, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
-    >>> ax, _ = pg.show(mesh, mesh.cellMarker(), alpha=0.3, tri=True)
+    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), alpha=0.3, tri=True)
     >>> ax, _ = pg.show(mesh, axes=ax)
     >>> plt.show()
     """

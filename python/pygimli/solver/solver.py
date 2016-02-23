@@ -294,7 +294,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
 
         for pair in attributeMap:
             if hasattr(pair, '__len__'):
-                idx = pg.find(mesh.cellMarker() == pair[0])
+                idx = pg.find(mesh.cellMarkers() == pair[0])
                 if len(idx) == 0:
                     print("Warning! parseMapToCellArray: cannot find marker " +
                           str(pair[0]) + " within mesh.")
