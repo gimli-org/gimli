@@ -84,7 +84,7 @@ ADD_CUSTOM_COMMAND(
     TARGET
         pgtest
    )
-
+add_dependencies(pgtest pygimli)
 add_test(
     NAME
         pgtest:pygimli_tests

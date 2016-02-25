@@ -25,16 +25,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show(mesh, *args, **kwargs):
+def show(mesh=None, *args, **kwargs):
     """
     Mesh and model visualization.
 
     Syntactic sugar to show a mesh with data.
     Forwards to
-    :py:mod:`pygimli.viewer.showmesh.showMesh` or
+    :py:mod:`pygimli.viewer.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the
     possible 2D and 3D content.
     See tutorials and examples for usage hints.
+    An empty show call create an empty axes window.
 
     Parameters
     ----------
@@ -43,7 +44,7 @@ def show(mesh, *args, **kwargs):
         2D or 3D GIMLi mesh
 
     *args, **kwargs :
-        Will be forwarded to the show functions.
+        Will be forwarded to the appropriate show functions.
 
     Returns
     -------
@@ -84,8 +85,13 @@ def show(mesh, *args, **kwargs):
             return showMesh3D(mesh, *args, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
-
-    return None, None
+ 
+    ax = kwargs.pop('axes', None)
+    
+    if ax is None:
+        fig, ax = plt.subplots()
+        
+    return ax, None
 
 
 def showMesh(mesh, data=None, hold=False, block=False,
@@ -94,8 +100,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
     """
     2D Mesh visualization.
 
-    Create an axes and plot node or cell values for the given 2d mesh.
-    Returns the axes and the color bar.
+    Create an axes and plot a 2D mesh with given node or cell data.
+    Returns the axes and the color bar. The type of data determine the 
+    appropriate draw method.
 
     Parameters
     ----------
@@ -107,19 +114,21 @@ def showMesh(mesh, data=None, hold=False, block=False,
         Optionally data to visualize.
 
         . None (draw mesh only)
-            forward to :py:mod:`pygimli.mplviewer.meshview.drawMesh`
+            forward to :py:mod:`pygimli.mplviewer.drawMesh`
+            or if no cells are given:
+            forward to :py:mod:`pygimli.mplviewer.drawPLC`
 
         . float per cell -- model, patch
-            forward to :py:mod:`pygimli.mplviewer.meshview.drawModel`
+            forward to :py:mod:`pygimli.mplviewer.drawModel`
 
         . float per node -- scalar field
-            forward to :py:mod:`pygimli.mplviewer.meshview.drawField`
+            forward to :py:mod:`pygimli.mplviewer.drawField`
 
         . iterable of type [float, float] -- vector field
-            forward to :py:mod:`pygimli.mplviewer.meshview.drawStreams`
+            forward to :py:mod:`pygimli.mplviewer.drawStreams`
 
         . pg.stdVectorRVector3 -- sensor positions
-            forward to :py:mod:`pygimli.mplviewer.meshview.drawSensors`
+            forward to :py:mod:`pygimli.mplviewer.drawSensors`
 
     hold : bool [false]
         Set interactive plot mode for matplotlib.

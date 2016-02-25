@@ -8,7 +8,16 @@ current directory.
 
     curl -Ls install.pygimli.org | bash
 
-See below for more detailed compilation instructions.
+This script accept a few more options. See for help:
+
+.. code:: bash
+
+    curl -Ls install.pygimli.org | bash -s help
+
+If there goes something wrong ensure to take a look on the error message. 
+In the most cases there is are missing or outdated packages.
+
+See below for more detailed compilation instructions and prerequisites. 
 
 
 Detailed Installation on Vanilla Debian

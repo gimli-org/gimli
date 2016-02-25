@@ -537,7 +537,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     }
 
     //** looking for and create regions
-    IVector regions(unique(sort(mesh_->cellMarker())));
+    IVector regions(unique(sort(mesh_->cellMarkers())));
 
     if (verbose_) std::cout << regions.size() << " regions." << std::endl;
 

@@ -294,7 +294,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
 
         for pair in attributeMap:
             if hasattr(pair, '__len__'):
-                idx = pg.find(mesh.cellMarker() == pair[0])
+                idx = pg.find(mesh.cellMarkers() == pair[0])
                 if len(idx) == 0:
                     print("Warning! parseMapToCellArray: cannot find marker " +
                           str(pair[0]) + " within mesh.")
@@ -311,7 +311,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     return atts
 
 
-def fillEmptyToCellArray(mesh, vals):
+def fillEmptyToCellArray(mesh, vals, slope=True):
     """
     Prolongate empty cell values to complete cell attributes.
 
@@ -339,34 +339,35 @@ def fillEmptyToCellArray(mesh, vals):
     # std::vector< Cell * >
     #empties = []
 
-    #! search all cells with empty neighbours
-    ids = pg.find(mesh.cellAttributes() != 0.0)
+    if slope:
+        #! search all cells with empty neighbours
+        ids = pg.find(mesh.cellAttributes() != 0.0)
 
-    for c in mesh.cells(ids):
-        for i in range(c.neighbourCellCount()):
-            nc = c.neighbourCell(i)
+        for c in mesh.cells(ids):
+            for i in range(c.neighbourCellCount()):
+                nc = c.neighbourCell(i)
 
-            if nc:
-                if nc.attribute() == 0.0:
-                    #c.setAttribute(99999)
+                if nc:
+                    if nc.attribute() == 0.0:
+                        #c.setAttribute(99999)
 
-                    b = pg.findCommonBoundary(c, nc)
-                    ### search along a slope
-                    pos = b.center() - b.norm()*1000.
-                    sf = pg.RVector()
-                    startCell = c
+                        b = pg.findCommonBoundary(c, nc)
+                        ### search along a slope
+                        pos = b.center() - b.norm()*1000.
+                        sf = pg.RVector()
+                        startCell = c
 
-                    while startCell:
+                        while startCell:
 
-                        startCell.shape().isInside(pos, sf, False)
-                        nextC = startCell.neighbourCell(sf)
-                        if nextC:
-                            if nextC.attribute()==0.0:
-                                nextC.setAttribute(c.attribute())
-                            else:
-                                break
+                            startCell.shape().isInside(pos, sf, False)
+                            nextC = startCell.neighbourCell(sf)
+                            if nextC:
+                                if nextC.attribute()==0.0:
+                                    nextC.setAttribute(c.attribute())
+                                else:
+                                    break
 
-                        startCell = nextC
+                            startCell = nextC
 
     mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1)
     atts = mesh.cellAttributes()
@@ -378,7 +379,7 @@ def pointDataToBoundaryData(mesh, vec):
         Assuming [NodeCount, dim] data
         DOCUMENT_ME
     """
-    print(mesh)
+    
     if len(vec) != mesh.nodeCount():
         raise BaseException("Dimension mismatch, expecting nodeCount(): " 
                             + str(mesh.nodeCount()) 

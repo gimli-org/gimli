@@ -45,7 +45,7 @@ class TravelTimeFMM(pg.ModellingBase):
         """
 
         mesh = self.mesh()
-        param_markers = np.unique(mesh.cellMarker())
+        param_markers = np.unique(mesh.cellMarkers())
         param_count = len(param_markers)
         if len(slowness) == mesh.cellCount():
             self.mapModel(slowness)
@@ -456,7 +456,7 @@ if __name__ == '__main__':
     data = pg.DataContainer('vagnh_NONOISE.sgt', 's g')
     vel = [1400., 1700., 5000.]
     slo = np.array([0, 0, 1./1400., 1./1700., 1./5000.])
-    cslo = slo.take(mesh.cellMarker())
+    cslo = slo.take(mesh.cellMarkers())
     print(mesh)
     print(data)
 

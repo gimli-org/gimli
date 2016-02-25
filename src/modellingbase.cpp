@@ -152,7 +152,7 @@ void ModellingBase::setRefinedMesh(const Mesh & mesh){
     setMesh_(mesh);
     if (verbose_) {
         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
-        IVector m(unique(sort(mesh_->cellMarker())));
+        IVector m(unique(sort(mesh_->cellMarkers())));
         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]  
          << ", ... ,  " << m[-1] << "]" << std::endl;
     }
@@ -288,7 +288,9 @@ void ModellingBase::createJacobian(const RVector & model,
         } else {
             J->setCol(i, RVector(resp.size(), 0.0));
         }
-         
+        
+//         __MS(i << " " << min(J->col(i)) << " " << max(J->col(i)))
+        
 //         for (size_t j = 0; j < resp.size(); j++){
 //             if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
 //                 (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
@@ -380,7 +382,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                 std::cerr << WHERE_AM_I << std::endl
                           << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
                           << *mesh_ << std::endl
-                          << "mesh contains " << unique(sort(mesh_->cellMarker())).size() << " unique marker. " << std::endl;
+                          << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique marker. " << std::endl;
                 throwLengthError(1, WHERE_AM_I + " marker greater = then model.size() " + toStr(marker)
                        + " >= " + toStr(model.size()));
             }
@@ -444,7 +446,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
                 std::cerr << WHERE_AM_I << std::endl
                           << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
                           << *mesh_ << std::endl
-                          << "mesh contains " << unique(sort(mesh_->cellMarker())).size() << " unique marker. " << std::endl;
+                          << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique marker. " << std::endl;
                 throwLengthError(1, WHERE_AM_I + " marker greater = then model.size() " + toStr(marker)
                        + " >= " + toStr(model.size()));
             }

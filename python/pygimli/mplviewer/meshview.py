@@ -40,7 +40,7 @@ class CellBrowser(object):
     >>>
     >>> mesh = pg.createGrid(range(5), range(5))
     >>> fig, ax = plt.subplots()
-    >>> plc = drawModel(ax, mesh, mesh.cellMarker())
+    >>> plc = drawModel(ax, mesh, mesh.cellMarkers())
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
     ('Interactive cell browser activated on Fig.', ...)
@@ -163,6 +163,17 @@ def drawMesh(axes, mesh, **kwargs):
 
     Set the limits of the axes tor the mesh extent.
 
+    Parameters
+    ----------
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        The plotted mesh to browse through.
+    ax : mpl axis instance, optional
+        Axis instance where the mesh is plotted (default is current axis).
+    fitView: bool [True]
+        Adjust axes limits to mesh bounding box.
+        
+
     Examples
     --------
     >>> import numpy as np
@@ -246,8 +257,8 @@ def drawModel(axes, mesh, data=None,
 
             print(data, mesh)
             print("INFO: drawModel have wrong data length .. " +
-                  " indexing data from cellMarker()")
-            viewdata = data(mesh.cellMarker())
+                  " indexing data from cellMarkers()")
+            viewdata = data(mesh.cellMarkers())
         else:
             viewdata = data
 
@@ -412,9 +423,9 @@ def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
     if fillRegion and mesh.boundaryCount() > 0:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
-        drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarker(),
-                  nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarker()))),
-                  levels=pg.utils.unique(tmpMesh.cellMarker()),
+        drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
+                  nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
+                  levels=pg.utils.unique(tmpMesh.cellMarkers()),
                   tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
                   snap=False)
 
@@ -877,7 +888,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
     else:
         C = cMat
 
-    paraMarker = mesh.cellMarker()
+    paraMarker = mesh.cellMarkers()
     cellList = dict()
 
     for cID in range(len(paraMarker)):

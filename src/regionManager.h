@@ -252,12 +252,15 @@ protected:
 
 class DLLEXPORT RegionManager{
 public:
-    RegionManager(bool verbose = true);
+    RegionManager(bool verbose=true);
 
     RegionManager & operator = (const RegionManager & rm);
 
     ~RegionManager();
 
+    void setVerbose(bool verbose){ verbose_ = verbose; }
+    bool verbose() const { return verbose_; }
+    
     void clear();
 
     void setMesh(const Mesh & mesh, bool holdRegionInfos=false);

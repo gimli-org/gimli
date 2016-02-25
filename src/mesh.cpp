@@ -650,6 +650,14 @@ void Mesh::setCellMarkers(const IndexArray & ids, int marker){
     }
 }
 
+void Mesh::setCellMarkers(const IVector & markers){
+    if (markers.size() >= cellVector_.size()){
+        for (Index i = 0; i < cellVector_.size(); i ++){
+            cellVector_[i]->setMarker(markers[i]);
+        }
+    }
+}
+
 void Mesh::setCellMarkers(const RVector & attribute){
     if (attribute.size() >= cellVector_.size()){
         for (Index i = 0; i < cellVector_.size(); i ++){

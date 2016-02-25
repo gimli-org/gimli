@@ -412,8 +412,8 @@ public:
     /*! Translate the mesh with \ref RVector3 t. And return a reference to the mesh (no copy)*/
     Mesh & translate(const RVector3 & t);
 
-    /*! Rotate mesh teh with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg). 
-     And return a reference to the mesh (no copy)*/
+    /*! Rotate mesh the with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg). 
+     And return a reference to the mesh (no copy) */
     Mesh & rotate(const RVector3 & r);
     //** end mesh modification stuff
 
@@ -584,23 +584,14 @@ public:
     /*! Set the cell marker of all indices in ids to marker. */
     void setCellMarkers(const IndexArray & ids, int marker);
 
+    /*! Set all cell marker the values in attribute. */
+    void setCellMarkers(const IVector & marker);
+    
     /*! Set all cell marker the values in attribute (casting to int)*/
     void setCellMarkers(const RVector & attribute);
     
     /*! Return a vector of all cell marker */
     IVector cellMarkers() const;
-    
-    /*! DEPRECATED Set the cell marker of all indices in ids to marker. */
-    void setCellMarker(const IndexArray & ids, int marker){ 
-        return setCellMarkers(ids, marker); }
-        
-    /*! DEPRECATED  all cell marker the values in attribute (casting to int)*/
-    void setCellMarker(const RVector & attribute){
-        return setCellMarkers(attribute); }
-        
-    /*! DEPRECATED Return a vector of all cell marker */
-    IVector cellMarker() const{
-        return cellMarkers(); }
     
 
     //** probably deprecated

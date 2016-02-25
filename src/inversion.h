@@ -243,7 +243,7 @@ public:
             DOSAVE save(error_,               "Nan_dataWeight_error");
             DOSAVE save(data_,                 "Nan_dataWeight_data");
 
-            throwError(1, WHERE_AM_I + " dataWeight_ contains inf or nan" );
+            throwError(1, WHERE_AM_I + " dataWeight_ contains inf or nan");
         }
 
     }
@@ -617,8 +617,6 @@ public:
     /*! Shortcut for \ref getPhiM(model_) necessary ? */
     inline double getPhiM() const { return getPhiM(model_); }
 
-
-
     /*! Shortcut for \ref getPhi(model_, response_) necessary ? */
     inline double getPhi() const { return getPhiD() + getPhiM() * lambda_ * (1.0 - double(localRegularization_)); }
 
@@ -783,6 +781,11 @@ public:
 
     IPCClientSHM & ipc() { return ipc_; }
     
+    /*! Resets this inversion to the given startmodel. */
+    void reset(){ 
+        this->setModel(forward_->startModel());
+    }
+    
 protected:
 
     Vec                   data_;
@@ -843,10 +846,11 @@ protected:
     IPCClientSHM ipc_;
 };
 
+
 /*! Start inversion from starting model. */
 template < class ModelValType >
 const Vector < ModelValType > & Inversion< ModelValType >::start(){ ALLOW_PYTHON_THREADS
-    setModel(forward_->startModel());
+    this->reset();
     return run();
 }
     
@@ -854,9 +858,9 @@ const Vector < ModelValType > & Inversion< ModelValType >::start(){ ALLOW_PYTHON
 template < class ModelValType >
 const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_THREADS
     
-    if (model_.size() == 0 ) setModel(forward_->startModel());
+    if (model_.size() == 0) setModel(forward_->startModel());
     
-    if (data_.size() == 0 ) {
+    if (data_.size() == 0) {
         throwError(1, WHERE_AM_I + " no data given");
     }
     
@@ -914,7 +918,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
 
     //** End preparation
 
-    if (saveModelHistory_) { save(model_    , "model_0"   ); }
+    if (saveModelHistory_) { save(model_    , "model_0"  ); }
     DOSAVE save(response_ , "response_0");
     DOSAVE save(modelRef_ , "modelRef_0");
     DOSAVE save(RVector(response_ / data_ -1.0), "deltaData_0");
