@@ -3,9 +3,10 @@
 """
 Time Domain Electromagnetics (TDEM) functions and class
 """
-import matplotlib.pyplot as plt
-import numpy as np
 import sys
+from math import pi
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def rhoafromU(UbyI, t, Tx, Rx=None):
@@ -17,9 +18,9 @@ def rhoafromU(UbyI, t, Tx, Rx=None):
     if Rx is None:
         Rx = Tx  # assume single/coincident loop
 
-    mu0 = 4e-7 * np.pi
+    mu0 = 4e-7 * pi
     rhoa = (Rx * Tx * mu0 / 20. / UbyI)**(2. / 3.) * \
-        t**(-5. / 3.) * mu0 / np.pi
+        t**(-5. / 3.) * mu0 / pi
     return rhoa
 
 
@@ -28,14 +29,38 @@ def rhoafromB(B, t, Tx, I=1):
 
     .. math:: \rho_a = ( (A_{Tx}*I*\mu_0 ) / (30B) )^2/3 * 4e-7 / t
     """
-    mu0 = 4e-7 * np.pi
-    rhoa = (I * Tx * mu0 / 30. / B)**(2. / 3.) * mu0 / np.pi / t
+    mu0 = 4e-7 * pi
+    rhoa = (I * Tx * mu0 / 30. / B)**(2. / 3.) * mu0 / pi / t
     return rhoa
+
+
+# TODO: better derive a class TEMsounding from dict and put functions in there
+def TxArea(snd):
+    """ return effective transmitter area """
+    if isinstance(snd['LOOP_SIZE'], str):
+        Tx = np.prod([float(a) for a in snd['LOOP_SIZE'].split()])
+    else:
+        Tx = snd['LOOP_SIZE']
+
+    return Tx
+
+
+def RxArea(snd):
+    """ return effective receiver area """
+    Rx = 0  # just in case of error
+    if 'COIL_SIZE' in snd:
+        Rx = snd['COIL_SIZE']
+        if Rx == 700.:
+            Rx = 100.  # hack for wrong turns in NMR noise loop
+    else:  # no coil size given ==> COI or SIN ==> take loop size
+        Rx = TxArea(snd)
+    return Rx
 
 
 def get_rhoa(snd, cal=260e-9, corrramp=True):
     """compute apparent resistivity from sounding (usf) dict"""
-    Tx = np.prod([float(a) for a in snd['LOOP_SIZE'].split()])
+    Tx = TxArea(snd)
+    Rx = RxArea(snd)
     if 'COIL_SIZE' in snd:
         Rx = snd['COIL_SIZE']
     else:
@@ -95,6 +120,10 @@ def readusffile(filename):
                             sounding[cn] = columns[:, i]
 
                         sounding['FILENAME'] = filename
+                        if 'INSTRUMENT' in sounding and 'ST_DEV' in sounding:
+                            if 'terraTEM' in sounding['INSTRUMENT']:
+                                sounding['ST_DEV'] *= 0.01
+                                print('taking default stdev')
                         DATA.append(sounding)
                         sounding = {}
 
@@ -131,9 +160,12 @@ def readusffiles(filenames):
 
         DATA = readusffiles(filenames)
     """
-    import glob
-    if filenames.find('*') >= 0:
-        filenames = glob.glob(filenames)
+    from glob import glob
+    if isinstance(filenames, str):
+        if filenames.find('*') >= 0:
+            filenames = glob(filenames)
+        else:
+            filenames = [filenames]
 
     DATA = []
     for onefile in filenames:
@@ -142,16 +174,48 @@ def readusffiles(filenames):
     return DATA
 
 
+def readTEMfastFile(temfile):
+    ''' readTEMfastFile(filename) reads TEM-fast file into usf sounding '''
+    snd = {}
+    snd['FILENAME'] = temfile
+    fid = open(temfile)
+    for i in range(4):
+        zeile = fid.readline()
+    snd['STACK_SIZE'] = int(zeile.split()[3])
+    snd['RAMP_TIME'] = float(zeile.split()[5])*1e-6
+    snd['CURRENT'] = float(zeile.split()[7][2:])
+    zeile = fid.readline()
+    fid.close()
+    snd['LOOP_SIZE'] = float(zeile.split()[2])**2
+    snd['COIL_SIZE'] = float(zeile.split()[5])**2
+    t, v, e, r = np.loadtxt(temfile, skiprows=8, usecols=(1, 2, 3, 4),
+                            unpack=True)
+    ind = np.nonzero((r > 0) * (v > 0) * (t > snd['RAMP_TIME']*1.2e6))  # us
+    snd['TIME'] = t[ind] * 1e-6  # us
+    snd['VOLTAGE'] = v[ind]
+    snd['ST_DEV'] = e[ind]
+    snd['RHOA'] = r[ind]
+
+    return snd
+
+
 def readUniKTEMData(filename):
     """ read TEM data format of University of Cologne """
+    if '*' in filename:
+        from glob import glob
+        allfiles = glob(filename)
+    else:
+        allfiles = [filename]
+
     DATA = []
-    snd = {}
-    snd['FILENAME'] = filename
-    A = np.loadtxt(filename)
-    snd['TIME'] = A[:, 1]
-    snd['VOLTAGE'] = A[:, 2]
-    snd['ST_DEV'] = A[:, 4]
-    DATA.append(snd)
+    for filename in allfiles:
+        snd = {}
+        snd['FILENAME'] = filename
+        A = np.loadtxt(filename)
+        snd['TIME'] = A[:, 1]
+        snd['VOLTAGE'] = A[:, 2]
+        snd['ST_DEV'] = A[:, 4] / 100 * A[:, 2]
+        DATA.append(snd)
     return DATA
 
 
@@ -239,6 +303,16 @@ def readSiroTEMData(fname):
     return DATA
 
 
+def getname(snd):
+    """ generate label name from filename entry """
+    fname = snd['FILENAME']
+    name = fname[fname.rfind('\\')+1:-4]
+    if 'STACK_SIZE' in snd:
+        name += '-' + str(int(snd['STACK_SIZE']))
+
+    return name
+
+
 class TDEM():
 
     """TEM class mainly for holding data etc."""
@@ -253,16 +327,19 @@ class TDEM():
 
     def load(self, filename):
         """load data from usf (e.g. terraTEM) or txt (siroTEM) file"""
-        # check if filename extension is usf
-        if filename.lower().rfind('.usf') > 0:
-            if filename.find('*') >= 0:
-                DATA = readusffiles(filename)
-                self.DATA.extend(DATA)
-            else:
-                self.DATA.append(readusffile(filename))
-        elif filename.lower().rfind('.txt') > 0:
+#        if filename.lower().rfind('.usf') > 0:
+#            if filename.find('*') >= 0:
+#                DATA = readusffiles(filename)
+#                self.DATA.extend(DATA)
+#            else:
+#                self.DATA.append(readusffile(filename))
+        if filename.lower().endswith('.usf'):
+            self.DATA.append(readusffiles(filename))
+        elif filename.lower().endswith('.txt'):
             self.DATA = readSiroTEMData(filename)
-        elif filename.lower().rfind('.dat') > 0:  # dangerous
+        elif filename.lower().endswith('.tem'):
+            self.DATA = readTEMfastFile(filename)
+        elif filename.lower().endswith('.dat'):  # dangerous
             self.DATA = readUniKTEMData(filename)
 
     def __repr__(self):
@@ -271,55 +348,60 @@ class TDEM():
     def showInfos(self):  # only for old scripts using it
         print(self.__repr__)
 
-    def plotTransients(self, ax=None):
+    def plotTransients(self, ax=None, **kwargs):
         """plot all transients into one window"""
         if ax is None:
             fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
 
-#        cols = 'rgbmcyk'
-#        pl = []
+        cols = 'rgbmcyk'
+        pl = []
         for i, data in enumerate(self.DATA):
             t = data['TIME']
-            u = data['VOLTAGE']
-#            du = data['ST_DEV']
-#            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
-            name = 'new'
-            if 'FILENAME' in data:
-                name = data['FILENAME'][:-4]
-            if 'STACK_SIZE' in data:
-                name += '-' + str(int(data['STACK_SIZE']))
-            ax.loglog(t, u, label=name)
+            u = data['VOLTAGE'] / RxArea(data)
+            col = cols[i % len(cols)]
+            pl.append(ax.loglog(t, u, marker='.', label=getname(data),
+                                color=col), **kwargs)
+            if 'ST_DEV' in data:
+                err = data['ST_DEV'] / RxArea(data)
+                ax.errorbar(t, u, yerr=err, color=col)
+#                uU = u + err
+#                uL = u - err
+#                ax.errorbar(t, u, yerr=[uL, uU], color=col)
+
+            if 'RAMP_TIME' in data:
+                ax.vlines(data['RAMP_TIME'], min(u), max(u), colors=col)
 
         ax.set_xlabel('t [s]')
         ax.set_ylabel('U/I [V/A]')
         ax.legend(loc='best')
 #        xlim = [10e-6, 2e-3]
         ax.grid(True)
+        return fig, ax
 
-    def plotRhoa(self, ax=None, ploterror=False):
+    def plotRhoa(self, ax=None, ploterror=False, **kwargs):
         """Plot all apparent resistivity curves into one window"""
         if ax is None:
             fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
 
         cols = 'rgbmcyk'
         for i, data in enumerate(self.DATA):
-#            name = data['FILENAME'][8:-4] + '-' + str(int(data['STACK_SIZE']))
-            name = 'new'
-            if 'FILENAME' in data:
-                name = data['FILENAME'][:-4]
-            if 'STACK_SIZE' in data:
-                name += '-' + str(int(data['STACK_SIZE']))
             rhoa, t, err = get_rhoa(data)
             err[err > .99] = .99
-            ax.loglog(t, rhoa, marker='+', label=name, color=cols[i % 7])
+            col = cols[i % len(cols)]
+            ax.loglog(t, rhoa, marker='.', label=getname(data), color=col,
+                      **kwargs)
             if ploterror:
-                ax.errorbar(t, rhoa, yerr=rhoa * err, color=cols[i % 7])
+                ax.errorbar(t, rhoa, yerr=rhoa * err, color=col)
 
         ax.set_xlabel('t [s]')
         ax.set_ylabel(r'$\rho_a$ [$\Omega$m]')
         ax.legend(loc='best')
         ax.grid(True)
-
+        return fig, ax
 
 if __name__ == '__main__':
     print("print do some tests here")

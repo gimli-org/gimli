@@ -9,12 +9,13 @@ from math import pi
 from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
-from . ert import resistivityArchie
+# from . ert import resistivityArchie
 
 # from . gravimetry import Gravimetry
 # from . seismics import *
 
 __all__ = ("FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction")
+
 
 class constants:
     # magnetic constant, vacuum permeability
@@ -49,14 +50,14 @@ class MethodManager(object):
         self.fop = self.createFOP_(verbose)
         if self.fop is None:
             raise Exception("createFOP does not return valid forward operator")
-        
+
         self.tD = None
         self.tM = None
 
         self.inv = self.createInv_(self.fop, verbose, debug)
         if self.inv is None:
             raise Exception("createINV does not return valid inversion")
-        
+
         self.setVerbose(verbose)
 
     def __str__(self):
@@ -80,16 +81,15 @@ class MethodManager(object):
         self.fop.setVerbose(verbose)
 
     @classmethod
-    def createFOP_(cls, verbose=True):
+    def createFOP_(cls, verbose=False):
         """ Create forward operator working on refined mesh """
         return cls.createFOP(verbose)
 
     def createInv_(self, fop, verbose=True, dosave=False):
         """ Create inversion instance, data- and model transformations. """
         return self.createInv(fop, verbose, dosave)
-        
 
-    # Data related methods
+    # Data-related methods
     def createData(self, sensors, scheme):
         """ Create an empty data set """
         pass
@@ -194,5 +194,5 @@ class MethodManager(object):
                             help="Depth of inversion domain. [None=auto].")
         parser.add_argument('dataFileName')
         return parser
-    
+
 from . traveltime import Refraction

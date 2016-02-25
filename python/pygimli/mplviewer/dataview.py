@@ -160,12 +160,12 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
-    
+
     if kwargs.pop('showally', False):
         yt = np.arange(len(ymap))
     else:
         yt = np.round(np.linspace(0, len(ymap)-1, 5))
-    #print(yt)
+#    print(yt)
 
     xx = np.sort([k for k in xmap])
     ax.set_xticks(xt)
@@ -189,12 +189,12 @@ def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     full: bool [False]
         use a fully symmetric matrix containing all unique xvec+yvec
         otherwise A is squeezed to the individual unique xvec/yvec values
-        
+
     **kwargs: forwarded to plotMatrix
         *   ax : mpl.axis
             Axis to plot, if not given a new figure is created
         * cMin/cMax : float
-            Minimum/maximum color values    
+            Minimum/maximum color values
         * logScale : bool
             Lgarithmic colour scale [min(A)>0]
         * label : string

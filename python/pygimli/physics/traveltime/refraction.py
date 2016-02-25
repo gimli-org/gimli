@@ -214,13 +214,13 @@ class Refraction(MethodManager):
         self.fop.createRefinedForwardMesh(refine)
         self.inv.setForwardOperator(self.fop)
 
-    def showMesh(self, ax=None):
+    def showMesh(self, ax=None, name='mesh'):
         """show mesh in given axes or in a new figure"""
         if ax is None:
             fig, ax = plt.subplots()
-            self.figs['mesh'] = fig
+            self.figs[name] = fig
 
-        self.axs['mesh'] = ax
+        self.axs[name] = ax
         drawMesh(ax, self.mesh)
 #        plt.show(block=False)
         ax.set_aspect(1)
@@ -333,8 +333,13 @@ class Refraction(MethodManager):
         C = self.fop.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
 
-    def showCoverage(self, ax=None):
+    def showCoverage(self, ax=None, name='coverage'):
         """shows the ray coverage in logscale"""
+        if ax is None:
+            fig, ax = plt.subplots()
+            self.figs[name] = fig
+
+        self.axs[name] = ax
         cov = self.rayCoverage()
         pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), axes=ax,
                 coverage=self.standardizedCoverage())
@@ -348,7 +353,9 @@ class Refraction(MethodManager):
         if cMin is None or cMax is None:
             cMin, cMax = interperc(val, 3)
         if ax is None:
-            ax, cbar = pg.show(mesh, val, logScale=logScale,
+            fig, ax = plt.subplots()
+            self.figs[name] = fig
+            ax, cbar = pg.show(mesh, val, logScale=logScale, axes=ax,
                                colorBar=True, cMin=cMin, cMax=cMax,
                                coverage=self.standardizedCoverage(), **kwargs)
             self.figs[name] = plt.gcf()
@@ -367,10 +374,10 @@ class Refraction(MethodManager):
             plotLines(ax, kwargs['lines'])
         return ax, cbar
 
-    def showResultAndFit(self, **kwargs):
+    def showResultAndFit(self, name='resultfit', **kwargs):
         """show two vertical subplots with result and data (with response)"""
         fig, ax = plt.subplots(nrows=2)
-        self.figs['resultfit'] = fig
+        self.figs[name] = fig
         self.showResult(ax=ax[0], **kwargs)
         self.showData(ax=ax[1], response=self.response)
 

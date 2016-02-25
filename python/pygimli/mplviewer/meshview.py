@@ -230,7 +230,7 @@ def drawModel(axes, mesh, data=None,
 
         if cmap is not None:
             if type(cmap) is str:
-                gci.set_cmap(cmapFromName('b2r'))
+                gci.set_cmap(cmapFromName(cmap))
             else:
                 gci.set_cmap(cmap)
 
