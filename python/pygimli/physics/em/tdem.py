@@ -334,7 +334,7 @@ class TDEM():
 #            else:
 #                self.DATA.append(readusffile(filename))
         if filename.lower().endswith('.usf'):
-            self.DATA.append(readusffiles(filename))
+            self.DATA.extend(readusffiles(filename))
         elif filename.lower().endswith('.txt'):
             self.DATA = readSiroTEMData(filename)
         elif filename.lower().endswith('.tem'):
