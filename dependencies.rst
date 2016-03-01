@@ -9,7 +9,7 @@ To build GIMLi from source, the following tools are required:
 
     tested on:
 
-    * gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4
+    * gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4, gcc-4.9.2 gcc-5.3.0
     * Debian 3.2.46-1 x86_64: gcc-4.7.2
     * Ubuntu
     * Arch Linux gcc-5.2.0
@@ -19,11 +19,13 @@ To build GIMLi from source, the following tools are required:
 
 For pygimli you additionally need:
 
-* >=Python-3.3
-* numpy
+* >=Python-3.3 | >=Python-2.7
+* numpy-dev
 * >=matplotlib-1.1.0
 * >=clang++-3.6.0
 * >=llvm-3.6.0
+* libz-dev
+* python-setuptools
 
 Optional Prerequisites
 ^^^^^^^^^^^^^^^^^^^^^^

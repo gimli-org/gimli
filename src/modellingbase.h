@@ -44,7 +44,7 @@ public:
     virtual ~ModellingBase();
 
     /*! Set verbose state. */
-    inline void setVerbose(bool verbose) {verbose_=verbose;}
+    void setVerbose(bool verbose);
     
     /*! Get verbose state. */
     inline bool verbose() const {return verbose_;}

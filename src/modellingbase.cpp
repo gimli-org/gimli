@@ -82,6 +82,11 @@ void ModellingBase::init_() {
     initConstraints();
 }
   
+void ModellingBase::setVerbose(bool verbose) {
+    regionManager_->setVerbose(verbose);
+    verbose_=verbose;
+}
+  
 void ModellingBase::setThreadCount(Index nThreads) { 
     nThreads_=max(1, (int)nThreads); 
     GIMLI::setThreadCount(nThreads);
@@ -368,6 +373,9 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
 }
         
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const{
+    
+    if (model.size() == mesh_->cellCount()) return model;
+    
     RVector mappedModel(mesh_->cellCount());
 
     int marker = -1;
