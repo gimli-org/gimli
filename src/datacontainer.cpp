@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -339,7 +339,6 @@ int DataContainer::load(const std::string & fileName,
             dataMap_[it->first] = it->second;
         }
     }
-
     inputFormatString_.clear();
     for (uint i = 0; i < format.size(); i ++) {
         if (haveTranslationForAlias(format[i])){
@@ -352,12 +351,12 @@ int DataContainer::load(const std::string & fileName,
     if (sensorIndexOnFileFromOne_){
         for (std::map< std::string, RVector >::iterator it = dataMap_.begin();
              it!= dataMap_.end(); it ++){
-            if (isSensorIndex(it->first)){
+            
+            if (isSensorIndex(it->first) && size() > 0){
                 it->second -= RVector(size(), 1.);
             }
         }
     }
-
 
     dataMap_["valid"] = 1;
 
