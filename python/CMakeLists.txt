@@ -79,7 +79,7 @@ ADD_CUSTOM_COMMAND(
         ${PYTHON_EXECUTABLE}
         #python -c "import pygimli; pygimli.test(show=False)"
         #python 
-    ARGS 
+    ARGS
         -c 'import pygimli\; pygimli.test(show=False)'
     TARGET
         pgtest
@@ -88,7 +88,7 @@ add_dependencies(pgtest pygimli)
 add_test(
     NAME
         pgtest:pygimli_tests
-    COMMAND 
+    COMMAND
         make pgtest
     )
 

@@ -236,7 +236,7 @@ endif()
 ################################################################################
 if (WIN32)
 	get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
-    if (${ADDRESSMODEL} EQUAL 32)
+    if (${ADDRESSMODEL} EQUAL 32 OR ${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} GREATER 34) # works at least for WinPython3.5
         set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
     else()
         set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll.a)

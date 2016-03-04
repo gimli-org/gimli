@@ -23,7 +23,9 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
 def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi$ in mrad',
                       grid=True, marker='+', ylog=False, **kwargs):
     """show phase spectrum"""
-    ax.semilogx(freq, phi, marker=marker, label='obs', **kwargs)
+    if 'label' not in kwargs:
+        kwargs['label'] = 'obs'
+    ax.semilogx(freq, phi, marker=marker, **kwargs)
     if ylog:
         ax.set_yscale('log')
     ax.set_xlabel('f in Hz')
@@ -34,7 +36,9 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi$ in mrad',
 def plotSpectrum(ax, freq, vals, ylabel=r'$\phi$ in mrad',
                  grid=True, marker='+', ylog=True, **kwargs):
     """show phase spectrum"""
-    ax.loglog(freq, vals, marker=marker, label='obs', **kwargs)
+    if 'label' not in kwargs:
+        kwargs['label'] = 'obs'
+    ax.loglog(freq, vals, marker=marker, **kwargs)
     if ylog:
         ax.set_yscale('log')
     ax.set_xlabel('f in Hz')

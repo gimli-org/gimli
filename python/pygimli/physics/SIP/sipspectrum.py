@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 from .importexport import readTXTSpectrum
-from .plotting import showAmplitudeSpectrum, showSpectrum
+from .plotting import showAmplitudeSpectrum, showSpectrum, showPhaseSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi
 
@@ -27,7 +27,8 @@ class SIPSpectrum():
         """
         self.basename = basename
         if filename is not None:
-            if filename.rfind('.txt') > 0:
+            flow = filename.lower()
+            if flow.endswith('.txt') or flow.endswith('.csv'):
                 self.basename = filename[:-4]
                 self.f, self.amp, self.phi = readTXTSpectrum(filename)
                 self.amp *= k
@@ -107,6 +108,13 @@ class SIPSpectrum():
         zNormIm = im / R0
         return zNormRe, zNormIm
 
+    def showPhase(self, ax=None, **kwargs):
+        """ plot phase spectrum """
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        showPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
+
     def showData(self, reim=False, znorm=False, nrows=2):
         """Show amplitude and phase spectrum in two subplots
 
@@ -136,7 +144,7 @@ class SIPSpectrum():
             ax[0].set_ylabel('real part'+addstr)
             ax[1].set_ylabel('imaginary part'+addstr)
         else:
-            fig, ax = showSpectrum(self.f, self.amp, self.phi)
+            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000)
 
         plt.show(block=False)
         return fig, ax
