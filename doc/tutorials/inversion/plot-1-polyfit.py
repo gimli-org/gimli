@@ -14,9 +14,9 @@ fitting a polynomial of degree :math:`P`
     f(x) = p_0 + p_1 x + \ldots + p_P x^P = \sum\limits_{i=0}^{P} p_i x^i
 
 to given data :math:`y`.
-The unknown model is the coefficient vector :math:`\m=[p_0,\ldots,p_P]`.
+The unknown model is the coefficient vector :math:`{\bf m}=[p_0,\ldots,p_P]`.
 The vectorized function for a vector
-:math:`\arr{x}=\transpose{[x_1,\ldots,x_N]}`
+:math:`{\bf x}=[x_1,\ldots,x_N]^T`
 can be written as matrix-vector product
 
 .. _eq:yAx:
