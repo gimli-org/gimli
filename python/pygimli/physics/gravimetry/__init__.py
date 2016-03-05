@@ -5,3 +5,4 @@
 from . gravMagModelling import GravimetryModelling
 from . gravMagModelling import solveGravimetry
 from . gravMagModelling import BaZCylinderHoriz
+from . gravMagModelling import uCylinderHoriz, gradUCylinderHoriz

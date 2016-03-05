@@ -3,7 +3,7 @@
 """
 Simple gravimetry field solution
 
-# calculate dgdz at a profile for a cylindrical heterogeneity with different approaches
+Calculate dgdz at a profile for a cylindrical heterogeneity with different approaches
 
 """
 
@@ -21,7 +21,7 @@ depth = 5 # [m]
 x = np.arange(-20, 20.1, 1)
 pnts = np.array([x, np.zeros(len(x))]).T
 pos = [0, -depth]
-dRho = 1000
+dRho = 10
 
 ax1 = pg.plt.subplot(2,1,1)
 ax2 = pg.plt.subplot(2,1,2)
@@ -39,33 +39,35 @@ mesh = createMesh([world, circ])
 dRhoC = pg.solver.parseMapToCellArray([[1, 0.0], [2, dRho]], mesh)
 ax1.plot(x, solveGravimetry(mesh, dRhoC, pnts), label='Mesh')
 
-pg.show([world, circ], axes=ax2)
+pg.show([world,  circ], axes=ax2)
 
 # Finite Element way
-world = createWorld(start=[-200, 200], end=[200, -100], marker=1)
+world = createWorld(start=[-200, 200], end=[200, -200], marker=1)
+# add some nodes to the measurement points to increase accuracy a bit
+[world.createNode(x_,0.0,  1) for x_ in x]
+
 circ = createCircle([0, -depth], radius=radius, area=0.1, marker=2, segments=16)
 mesh = createMesh([world, circ], quality=34)
 mesh = mesh.createP2()
 print(mesh)
-density=solver.parseMapToCellArray([[1, 0.0], [2, 1000.0]], mesh)
 
-u = solve(mesh, a=1, f=density, uB=[[-2,0], [-1,0]]) * pg.physics.constants.G
+#pg.show(mesh,  axes=ax2)
 
-pg.show(mesh,u)
-#print(min(dgz), max(dgz))
+density=solver.parseMapToCellArray([[1, 0.0], [2, dRho]], mesh)
 
+# Calculate gravimetry potential u
+u = solve(mesh, a=1, f=density, uB=[[-2,0], [-1,0]])
+
+# Calculate gradient of gravimetry potential du/d(x,z)
 duz = np.zeros(len(pnts))
 
 for i, p in enumerate(pnts):
     c = mesh.findCell(p)
     g = c.grad(p, u)
     
-    duz[i] = -g[1] * 4.0 * np.pi # wo kommen die 4 pi her?
-    print(p, duz[i])
-#uI = pg.interpolate(mesh, u, pnts)
+    duz[i] = -g[1] * 4 * np.pi * pg.physics.constants.GmGal# wo kommen die 4 pi her?
 
-ax1.plot(x, duz, label='duz-fem')
-
+ax1.plot(x, duz, label='duz-FEM')
 ax1.legend()
 
 pg.wait()
