@@ -3,7 +3,7 @@
 
 import numpy as np
 import pygimli as pg
-import time
+
 # from geomagnetics import GeoMagT0  # , date
 
 mu0 = pg.physics.constants.mu0
