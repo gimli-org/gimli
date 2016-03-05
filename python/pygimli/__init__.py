@@ -66,6 +66,10 @@ if '--debug' in sys.argv:
     print("set debug mode")
     _pygimli_.setDebug(True)
 
+def warnNonEmptyArgs(kwargs):
+    if len(kwargs) > 0:
+        print("Warning! unrecognized keyword arguments", kwargs)
+        
 ###########################
 ###  Global shortcuts #####
 ###########################

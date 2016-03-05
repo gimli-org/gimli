@@ -187,6 +187,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
             poly.createEdge(poly.node(i + 1),
                             poly.node(poly.nodeCount() - i - 2), 4 + i)
 
+    #pg.warnNonEmptyArgs(kwargs)
     return poly
 
 
@@ -283,6 +284,9 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     poly.translate(pos)
 
     polyCreateDefaultEdges_(poly, **kwargs)
+    
+    pg.warnNonEmptyArgs(kwargs)
+    
     return poly
 
 
