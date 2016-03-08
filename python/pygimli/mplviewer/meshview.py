@@ -208,6 +208,9 @@ def drawModel(axes, mesh, data=None,
 
     Parameters
     ----------
+    **kwargs:
+        * tri - use tripcolor (experimental)
+            
 
     Examples
     --------
@@ -272,6 +275,10 @@ def drawModel(axes, mesh, data=None,
         axes.set_xlabel(xlabel)
     if ylabel is not None:
         axes.set_ylabel(ylabel)
+
+    showMesh = kwargs.pop('showMesh', False)
+    if showMesh:
+        drawMesh(axes, mesh)
 
     updateAxes_(axes)
     return gci

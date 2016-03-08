@@ -21,7 +21,7 @@ depth = 5 # [m]
 x = np.arange(-20, 20.1, 1)
 pnts = np.array([x, np.zeros(len(x))]).T
 pos = [0, -depth]
-dRho = 10
+dRho = 100
 
 ax1 = pg.plt.subplot(2,1,1)
 ax2 = pg.plt.subplot(2,1,2)

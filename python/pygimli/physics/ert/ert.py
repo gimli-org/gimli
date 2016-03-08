@@ -52,7 +52,11 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     
     rB = None
     
-    if rFluid.ndim == 1:
+    if type(rFluid) == float:
+        rB = pg.RMatrix(1, mesh.cellCount())
+        rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
+        
+    elif rFluid.ndim == 1:
         rB = pg.RMatrix(1, len(rFluid))
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
         
