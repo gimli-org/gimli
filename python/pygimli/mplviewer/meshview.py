@@ -234,17 +234,18 @@ def drawModel(axes, mesh, data=None,
     useTri = kwargs.pop('tri', False)
 
     if useTri:
-        gci = drawMPLTri(axes, mesh, data, cmap=cmap,
-                         **kwargs)
-
+        gci = drawMPLTri(axes, mesh, data, cmap=cmap, **kwargs)
     else:
+        gci = pg.mplviewer.createMeshPatches(axes, mesh, verbose=verbose,
+                                             **kwargs)
 
-        gci = pg.mplviewer.createMeshPatches(axes, mesh,
-                                             verbose=verbose, **kwargs)
-
+        cMap = kwargs.pop('cMap', None)
+        if cMap is not None:
+            cmap = cMap
+        
         if cmap is not None:
             if type(cmap) is str:
-                gci.set_cmap(cmapFromName('b2r'))
+                gci.set_cmap(cmapFromName(cmap))
             else:
                 gci.set_cmap(cmap)
 
@@ -1011,8 +1012,10 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
 
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
+    
     if cmap is not None:
         pp.set_cmap(cmap)
+    
     pp.set_norm(LogNorm(cmin, cmax))
     pp.set_array(np.array(val))
     pp.set_clim(cmin, cmax)
