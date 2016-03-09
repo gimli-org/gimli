@@ -122,9 +122,9 @@ if __name__ == '__main__':
 
     # insert region markers into the two layers and make mesh
     tri = pg.TriangleWrapper(PLC)
-    PLC.addRegionMarker(pg.RVector3(0., -zlay + .1), 0, 10.)  # 10m^2 max area
+    PLC.addRegionMarker(pg.RVector3(0., -zlay + .1), 0, 3.)  # 10m^2 max area
     PLC.addRegionMarker(pg.RVector3(0., -zlay - .1), 1, 10.)
-    tri.setSwitches('-pzeAfaq34.5')
+    tri.setSwitches('-pzeAfaq34.6')
     mesh = pg.Mesh(2)
     tri.generate(mesh)
     mesh.createNeighbourInfos()

@@ -153,6 +153,9 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         fig, ax = plt.subplots()
 
     im = ax.imshow(mat, norm=norm, interpolation='nearest')
+    if 'cmap' in kwargs:
+        im.set_cmap(kwargs.pop('cmap'))
+    ax.set_aspect(kwargs.pop('aspect', 1))
     cbar = None
     if kwargs.pop('colorBar', True):
         cbar = pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5,
