@@ -19,11 +19,11 @@ To build GIMLi from source, the following tools are required:
 
 For pygimli you additionally need:
 
-* >=Python-3.3 | >=Python-2.7
+* >=Python-3.5 | >=Python-2.7
 * numpy-dev
-* >=matplotlib-1.1.0
-* >=clang++-3.6.0
-* >=llvm-3.6.0
+* >=matplotlib-1.1.0, 1.5.0
+* >=clang++-3.6.0, 3.7.0, 3.8.0
+* >=llvm-3.6.0, 3.7.0, 3.8.0
 * libz-dev
 * python-setuptools
 

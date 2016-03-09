@@ -545,6 +545,11 @@ public:
     /*! Empty the data map.*/
     void clearExportData();
 
+    void addData(const std::string & name, const CVector & data){ 
+        addExportData(name+"-Re", real(data));
+        addExportData(name+"-Im", imag(data));
+    }
+    
     /*!*/
     void addData(const std::string & name, const RVector & data){ addExportData(name, data); }
     /*!*/
