@@ -32,7 +32,9 @@ if (CPPUNIT_FOUND)
             gtest
     )
 
+    add_dependencies(gimliUnitTest gimli)
     add_dependencies(gtest gimliUnitTest)
+    
 
     add_test(
         NAME

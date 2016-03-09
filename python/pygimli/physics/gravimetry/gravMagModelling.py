@@ -3,7 +3,7 @@
 
 import numpy as np
 import pygimli as pg
-import time
+
 # from geomagnetics import GeoMagT0  # , date
 
 mu0 = pg.physics.constants.mu0
@@ -208,9 +208,9 @@ def uCylinderHoriz(pnts, R, rho, pos=(0., 0.)):
 
 def gradUCylinderHoriz(r, R, rho, pos=(0., 0.)):
     """
-    Analytical solution
+    2D Gradient of gravimetric potential of horizontal cylinder.
 
-    Calculate horizontal component of gravimetric field in mGal
+    Calculate .. in mGal at position pos
 
     .. math::
         g = -G[m^3/(kg s^2)] * dM[kg/m] * 1/r[1/m] * grad(r)[1/1] =
@@ -218,20 +218,26 @@ def gradUCylinderHoriz(r, R, rho, pos=(0., 0.)):
 
     Parameters
     ----------
-    R   :
+    r : list[[x, z]]
+        Observation positions
+    R : float
         Cylinder radius in [meter]
-    p   :
-        Cylinder center (x, z)
-    rho :
-        Density in [kg/m^3]
+    pos : [x,z]
+        Center position of cylinder.
+    rho : float
+        Delta density in [kg/m^3]
 
     Returns
     -------
+    
+    g : [dudx, dudz]
+        Gradient of gravimetry potential.
 
     """
-    return [1., -1.0] * (gradR(r - pos) * -G *
-                         deltaACyl(R, rho) * 1. / (rabs(r - pos))).T
-# def gZylinderHoriz():
+    p = np.array(pos)
+    ra = np.array(r)
+    return [1., -1.0] * (gradR(ra - p) * -G *
+                         deltaACyl(R, rho) * 1. / (rabs(ra - p))).T
 
 
 def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
@@ -254,12 +260,13 @@ def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
     grad gz, [gz_x, gz_z]
 
     """
+    p = np.array(pos)
     t = pos[1]
 
     gz_xz = np.asarray([-2.0 * r[:, 0] * (t - r[:, 1]),
                         1.0 * (- r[:, 0]**2 + (t - r[:, 1])**2)])
 
-    return (G * deltaACyl(R, rho) / rabs(r - pos)**4. * gz_xz).T
+    return (G * deltaACyl(R, rho) / rabs(r - p)**4. * gz_xz).T
 # def gZSphere(...)
 
 
@@ -636,6 +643,9 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         * array -- solve for one delta density value per cell
         * None -- return per cell kernel matrix G TOIMPL
 
+    pnts : [[x_i, y_i]]
+        List of measurement positions.
+
     complete : bool [False]
         If True return whole solution or matrix for [dgx, dgy, dgz] and ...
         TODO
@@ -729,6 +739,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
             return dg, dgz
         else:
             return Gdg.dot(dDensity)
+        
 
     if complete:
         return dg, dgz

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -151,7 +151,9 @@ typedef int64_t int64;
     throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
     throwRangeError(1, WHERE_AM_I, i, start, end);
-        
+#define ASSERT_EMPTY(v) if (v.size()==0) \
+    throwLengthError(1, WHERE_AM_I + " array size is zero.");
+    
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
 static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;

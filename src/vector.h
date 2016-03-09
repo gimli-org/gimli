@@ -615,6 +615,7 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
 
 #define DEFINE_UNARY_MOD_OPERATOR__(OP, FUNCT) \
   inline Vector< ValueType > & operator OP##= (const Vector < ValueType > & v) { \
+        ASSERT_EMPTY(v) \
         std::transform(data_, data_ + size_, &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \
         for (register Index i = 0; i < size_; i ++) data_[i] OP##= val; return *this; } \
@@ -644,7 +645,8 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     
     /*! Reserve memory. Old data are preserved*/
     void reserve(Index n){
-        Index newCapacity = n;
+        
+        Index newCapacity = max(1,n);
         if (capacity_ != 0){
             int exp;
             frexp(n, &exp);
@@ -1353,21 +1355,25 @@ template < class T, class A > T min(const __VectorExpr< T, A > & a){ return min(
 template < class T, class A > T max(const __VectorExpr< T, A > & a){ return max(Vector< T >(a)); }
 
 inline Complex max(const CVector & v){
+    ASSERT_EMPTY(v)
     Complex ret=v[0];
     for (Index i = 1; i < v.size(); i ++ ) if (v[i] > ret) ret = v[i];
     return ret;
 }
 
 inline Complex min(const CVector & v){
+    ASSERT_EMPTY(v)
     Complex ret=v[0];
     for (Index i = 1; i < v.size(); i ++ ) if (v[i] < ret) ret = v[i];
     return ret;
 }
 
 template < class T > T min(const Vector < T > & v){
+    ASSERT_EMPTY(v)
     return *std::min_element(&v[0], &v[0] + v.size());
 }
 template < class T > T max(const Vector < T > & v){
+    ASSERT_EMPTY(v)
     return *std::max_element(&v[0], &v[0] + v.size());
 }
 

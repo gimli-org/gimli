@@ -355,7 +355,6 @@ add_dependencies(checkall pgtest)
 add_dependencies(checkall gtest)
 
 
-
 ################################################################################
 # Define the configurable options
 ################################################################################

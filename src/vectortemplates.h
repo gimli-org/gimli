@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -301,6 +301,14 @@ void randn(Vector< ValueType > & vec){
         vec[i] = (sum - 0x8000) * (1.0 / 4729.7);
     }
 }
+
+/*!Create a array of len n with normal distributed randomized values.*/
+inline RVector randn(Index n){
+    RVector r(n);
+    randn(r);
+    return r;
+}
+
 
 // //*!Position of the minimum Value position as IndexArray */
 // template < class ValueType >

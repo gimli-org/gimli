@@ -118,8 +118,9 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
     if __verbose__:
         print(mesh)
         print("mesh data are:")
-    for key, val in mesh.exportDataMap():
-        print(key, val)
+
+        for key, val in mesh.exportDataMap():
+            print(key, val)
 
     mesh.translate(offset)
     data = pg.RVector()
@@ -376,7 +377,7 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
         levs = pg.mplviewer.createLogLevs(cMin, cMax, nLevels + 1)
 
     # print np.min(Z)
-    print(levs)
+    # print(levs)
 
     levs[0] = levs[0] * 0.999
     levs[len(levs) - 1] = levs[len(levs) - 1] * 1.001
@@ -647,8 +648,8 @@ def main(argv):
             elif meshname.rfind('.poly') != -1:
                 axes, _ = pg.show(pg.load(meshname, options.verbose))
             else:
-                print("""Cannot determine format for input mesh.
-                      Available are *.bms, *.mod, *.poly""")
+                print('Cannot determine format for input mesh.'+
+                      'Available are *.bms, *.mod, *.poly')
                 exit(2)
         except RuntimeError as err:
             print(err)
@@ -737,11 +738,11 @@ def main(argv):
                 ticks = axes.yaxis.get_majorticklocs()
                 tickLabels = []
                 for t in ticks:
-                    print(t)
+                    #print(t)
                     tickLabels.append(str(int(abs(t))))
 
                 axes.set_yticklabels(tickLabels)
-                print(tickLabels)
+                #print(tickLabels)
 
                 # redraw x-Ticks
                 ticks = axes.xaxis.get_majorticklocs()
@@ -802,9 +803,7 @@ def main(argv):
                 A = pg.RMatrix(options.datafile)
                 pdf = PdfPages(options.outFileName)
                 for i, a in enumerate(A):
-                    print(
-                        "\rWriting multipage pdf %d/%d" %
-                        (i + 1, len(A)), end=' ')
+                    print("\rWriting multipage pdf %d/%d" % (i + 1, len(A)))
                     patches.set_array(np.asarray(a))
                     # necessary due to non-existing function .ndim
                     fig.savefig(pdf, format='pdf', bbox_inches='tight')

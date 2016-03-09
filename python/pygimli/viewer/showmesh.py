@@ -213,12 +213,15 @@ def showMesh(mesh, data=None, hold=False, block=False,
                     gci = drawModel(ax, mesh, data, **kwargs)
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
-                if 'cmap' in kwargs:
-                    if isinstance(kwargs['cmap'], str):
-                        cmap = cmapFromName(kwargs['cmap'])
-                    else:
-                        cmap = kwargs['cmap']
-                    gci.set_cmap(cmap)
+                    
+                cmap = kwargs.pop('cmap', None)
+                cMap = kwargs.pop('cMap', None)
+                if cMap is not None:
+                    cmap = cMap
+                    
+                if cmap is not None:
+                    gci.set_cmap(cmapFromName(cmap))
+                    
             except Exception as e:
                 print("Exception occured: " + e)
                 print("Data: ", min(data), max(data), pg.haveInfNaN(data))

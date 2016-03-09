@@ -440,7 +440,7 @@ public:
     int saveBinary(const std::string & fileName) const;
 
     /*! Load Mesh from file and try to import fileformat regarding file suffix.
-     * If createNeighbourInfos if set, the mesh is checked for consistency and 
+     * If createNeighbourInfos is set, the mesh is checked for consistency and 
      * missing boundaries will be created. */
     void load(const std::string & fileName, 
               bool createNeighbours=true, IOFormat format=Binary);

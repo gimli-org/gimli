@@ -10,6 +10,8 @@ import matplotlib.ticker as ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import LinearSegmentedColormap
 
+from distutils.version import StrictVersion
+
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
          'blue': ((0.0, 1.0, 1.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0))}
@@ -52,10 +54,15 @@ def cmapFromName(cmapname, ncols=256, bad=None):
     cmap = mpl.cm.get_cmap('jet', ncols)
 
     if cmapname is not None:
+        
         if cmapname == 'b2r':
             cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
                                                       cdict, ncols)
-        elif cmapname == 'viridis':
+        elif cmapname == 'viridis' and StrictVersion(mpl.__version__) < StrictVersion('1.5'):
+            print(mpl.__version__)
+            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data[::1])
+        elif cmapname == 'viridis_r':
+            print(mpl.__version__)
             cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
         else:
             try:

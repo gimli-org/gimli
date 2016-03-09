@@ -84,13 +84,15 @@ ADD_CUSTOM_COMMAND(
     TARGET
         pgtest
    )
-add_dependencies(pgtest pygimli)
+
 add_test(
     NAME
         pgtest:pygimli_tests
     COMMAND
         make pgtest
     )
+
+add_dependencies(pgtest pygimli)
 
 #ADD_CUSTOM_TARGET(pgrebuild ALL)
 #add_dependencies(pgrebuild pggen _pygimli_)

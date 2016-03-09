@@ -25,6 +25,7 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
 
     for i in range(poly.nodeCount() - 1):
         poly.createEdge(poly.node(i), poly.node(i+1), bm[i])
+        
     if isClosed:
         poly.createEdge(poly.node(poly.nodeCount()-1),
                         poly.node(0), bm[-1])
@@ -187,6 +188,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
             poly.createEdge(poly.node(i + 1),
                             poly.node(poly.nodeCount() - i - 2), 4 + i)
 
+    #pg.warnNonEmptyArgs(kwargs)
     return poly
 
 
@@ -283,6 +285,10 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     poly.translate(pos)
 
     polyCreateDefaultEdges_(poly, **kwargs)
+    
+    ## need a better way mess with these or wrong kwargs
+    ## pg.warnNonEmptyArgs(kwargs)
+    
     return poly
 
 

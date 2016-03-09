@@ -663,7 +663,8 @@ void RegionManager::findInterRegionInterfaces_(){
                 iRMapIter = interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(minMarker, maxMarker));
                 if (iRMapIter == interRegionInterfaceMap_.end()){
                     interRegionInterfaceMap_.insert(std::pair< std::pair< SIndex, SIndex >,
-                                      std::list < Boundary * > > (std::pair< SIndex, SIndex>(minMarker, maxMarker), std::list< Boundary* >()));
+                                      std::list < Boundary * > > (std::pair< SIndex, SIndex>(minMarker, maxMarker), 
+                                                                  std::list< Boundary* >()));
                 }
                 interRegionInterfaceMap_[std::pair< SIndex, SIndex > (minMarker, maxMarker)].push_back(bound);
             }
