@@ -34,19 +34,19 @@ namespace GIMLI{
 that means it do nothing. Just for prototyping f(a). */
 template< class Vec > class Trans {
 public:
-//         
+//
     /*! Default constructur. */
     Trans() { }
 
     /*! Default destructor.*/
     virtual ~Trans() { }
-    
+
     /*! Default call operator */
     virtual Vec operator()(const Vec & a) const { return trans(a); }
 
     /*! Default call operator */
     virtual Vec inv(const Vec & a) const { return invTrans(a); }
-    
+
     /*! Return a. */
     virtual Vec trans(const Vec & a) const { return a; }
 
@@ -82,7 +82,7 @@ template< class Vec > class TransNewton : public Trans < Vec >{
 public:
     TransNewton(const int maxiter=10)
     : maxiter_(maxiter) { }
-    
+
     virtual ~TransNewton(){ }
 
     virtual Vec trans(const Vec & a) const { }
@@ -107,28 +107,48 @@ protected:
 
 //** Fundamental transformation operations: linear, inverse, log, power, exp:
 
-/*! Linear multiplication (e.g. geometric factor) and addition 
+/*! Linear multiplication (e.g. geometric factor) and addition
    f(a) = a * factor + offset. */
 template< class Vec > class TransLinear : public Trans < Vec > {
 public:
-    TransLinear(const Vec & factor=1.0, double offset=0.0) 
+    TransLinear(const Vec & factor=1.0, double offset=0.0)
         : factor_(factor), offset_(Vec(factor.size(), offset)) {}
-        
+
     virtual ~TransLinear() { }
 
     virtual Vec trans(const Vec & a) const {
-//        std::cout << a.size() << " " << factor_.size() << " " 
+//        std::cout << a.size() << " " << factor_.size() << " "
 //        << offset_.size()<< std::endl;
         return a * factor_ + offset_;
     }
-    
+
     virtual Vec invTrans(const Vec & a) const { return (a - offset_) / factor_;}
-    
+
     virtual Vec deriv(const Vec & a) const { return factor_; }
 
 protected:
     Vec factor_;
     Vec offset_;
+};
+
+/*! Linear multiplication (e.g. geometric factor) and addition
+   f(a) = a * factor + offset. implementation with double */
+template< class Vec > class TransLin : public Trans < Vec > {
+public:
+    TransLin(double factor=1.0, double offset=0.0)
+        : factor_(factor), offset_(offset) {}
+
+    virtual ~TransLin() { }
+
+    virtual Vec trans(const Vec & a) const { return a * factor_ + offset_; }
+
+    virtual Vec invTrans(const Vec & a) const { return (a - offset_) / factor_;}
+
+    virtual Vec deriv(const Vec & a) const { return factor_; }
+
+protected:
+    double factor_;
+    double offset_;
 };
 
 /*! power transformation f(a) = pow(a / a_0, n). */
@@ -140,10 +160,10 @@ public:
 
     virtual Vec trans(const Vec & a) const {
         return pow(a / a0_, npower_);}
-    
+
     virtual Vec invTrans(const Vec & f) const {
         return pow(f, 1.0 / npower_) * a0_;}
-    
+
     virtual Vec deriv(const Vec & a) const {
         return pow(a / a0_, npower_ - 1.0) * npower_ / a0_;}
 protected:
@@ -157,18 +177,18 @@ public:
     /*!*/
     TransExp(const double a0=1.0, const double f0=1.0)
         : a0_(a0), f0_(f0) {}
-    
-    /*!*/        
+
+    /*!*/
     virtual ~TransExp() {}
 
     /*!*/
     virtual Vec trans(const Vec & a) const {
         return exp(a / a0_ * (-1.0)) * f0_; }
-    
+
     /*!*/
     virtual Vec invTrans(const Vec & f) const {
         return log(f / f0_) * a0_ * (-1.0); }
-        
+
     /*! */
     virtual Vec deriv(const Vec & a) const {
         return trans(a) / a0_ * (-1.0); }
@@ -194,7 +214,7 @@ template< class Vec > class TransLog : public Trans < Vec > {
 public:
     TransLog(double lowerbound = 0.0) : lowerbound_(lowerbound) { }
     virtual ~TransLog() { }
-    
+
     virtual Vec trans(const Vec & a) const {
         double lb1 = lowerbound_ * (1.0 + TRANSTOL);
         if (min(a) < lb1) {
@@ -211,7 +231,7 @@ public:
 
     virtual Vec invTrans(const Vec & f) const { return exp(f) + lowerbound_; }
 
-    virtual Vec deriv(const Vec & a) const { 
+    virtual Vec deriv(const Vec & a) const {
         double lb1 = lowerbound_ * (1.0 + TRANSTOL);
         if (min(a) < lb1) {
             std::cerr << WHERE_AM_I << " Warning! " << min(a)
@@ -220,12 +240,12 @@ public:
             for (uint i = 0; i < a.size(); i ++){
                 tmp[i] = max(a[i], lb1 );
             }
-            return 1.0 / (tmp - lowerbound_); 
+            return 1.0 / (tmp - lowerbound_);
         }
-        return 1.0 / (a - lowerbound_); 
+        return 1.0 / (a - lowerbound_);
     }
 
-    //** suggested by Friedel(2003), but deactivated since inherited by transLogLU 
+    //** suggested by Friedel(2003), but deactivated since inherited by transLogLU
 //    virtual Vec error(const Vec & a, const Vec & daBya) const { return log(1.0 + daBya); }
 
     inline void setLowerBound(double lb) { lowerbound_ = lb; }
@@ -266,7 +286,7 @@ public:
         }
         return tmp;
     }
-    
+
     virtual Vec trans(const Vec & a) const {
         if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::trans(a);
 
@@ -298,7 +318,7 @@ public:
 
     TransCotLU(double lowerbound = 0.0, double upperbound = 0.0)
         : lowerbound_(lowerbound), upperbound_(upperbound) { }
-        
+
     virtual ~TransCotLU() { }
 
     virtual Vec trans(const Vec & a) const {
@@ -491,17 +511,17 @@ public:
                    double lowerbound=0.0,
                    double upperbound=0.0)
         : TransLogLU< Vec >(lowerbound, upperbound), factor_(factor){ }
-        
+
     virtual ~TransLogLUMult() { }
 
     virtual Vec trans(const Vec & a) const {
         return TransLogLU< Vec >::trans(a * factor_);
     }
-    
+
     virtual Vec invTrans(const Vec & a) const {
         return TransLogLU< Vec >::invTrans(a) / factor_ ;
     }
-    
+
     virtual Vec deriv(const Vec & a) const {
         return TransLogLU< Vec >::deriv(a * factor_) * factor_;
     }
@@ -541,23 +561,23 @@ public:
     virtual Vec deriv(const Vec & a) const {
         Vec tmp(a.size());
         for (Index i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[i]->deriv(a(bounds_[i].first, 
+            tmp.setVal(transVec_[i]->deriv(a(bounds_[i].first,
                                            bounds_[i].second)),
                        bounds_[i]);
         }
         return tmp;
     }
-    
+
     Index size() const { return transVec_.size(); }
-    
+
     void clear() { transVec_.clear(); bounds_.clear(); }
-    
+
     void add(Trans< Vec > & trans, Index size) {
         Index start = 0;
         if (!bounds_.empty()) start = bounds_.back().second;
         this->add(trans, start, start + size);
     }
-    
+
     void add(Trans< Vec > & trans, Index start, Index end) {
         transVec_.push_back(&trans);
         bounds_.push_back(std::pair< Index, Index >(start, end));
@@ -570,6 +590,7 @@ protected:
 
 typedef Trans < RVector > RTrans;
 typedef TransLinear < RVector > RTransLinear;
+typedef TransLin < RVector > RTransLin;
 typedef TransPower < RVector > RTransPower;
 typedef TransLog < RVector > RTransLog;
 typedef TransLogLU < RVector > RTransLogLU;

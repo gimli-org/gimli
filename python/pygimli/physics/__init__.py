@@ -9,7 +9,7 @@ from math import pi
 from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
-# from . ert import resistivityArchie
+from . ert import resistivityArchie
 
 # from . gravimetry import Gravimetry
 # from . seismics import *

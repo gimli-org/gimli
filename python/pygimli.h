@@ -253,6 +253,7 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     template class Trans< RVector >;
     template class TransLinear< RVector >;
+    template class TransLin< RVector >;
     template class TransPower< RVector >;
     template class TransLog< RVector >;
     template class TransLogLU< RVector >;
@@ -520,6 +521,7 @@ namespace pyplusplus{ namespace aliases{
 
     typedef GIMLI::Trans< GIMLI::RVector >        RTrans;
     typedef GIMLI::TransLinear< GIMLI::RVector >  RTransLinear;
+    typedef GIMLI::TransLin< GIMLI::RVector >     RTransLin;
     typedef GIMLI::TransPower< GIMLI::RVector >   RTransPower;
     typedef GIMLI::TransLog< GIMLI::RVector >     RTransLog;
     typedef GIMLI::TransLogLU< GIMLI::RVector >   RTransLogLU;
