@@ -111,8 +111,12 @@ def showStitchedModels(mods, axes=None, cmin=None, cmax=None, **kwargs):
             cmin = min(cmin, min(res))
             cmax = max(cmax, max(res))
 
-    dx = np.diff(x) * 1.05
-    dx = np.hstack((dx, dx[-1]))
+    if kwargs.pop('sameSize', True):  # all having the same width
+        dx = np.ones_like(x)*np.median(np.diff(x))
+    else:
+        dx = np.diff(x) * 1.05
+        dx = np.hstack((dx, dx[-1]))
+
     x1 = x - dx / 2
     if axes is None:
         fig, ax = plt.subplots()
@@ -159,9 +163,13 @@ def showStitchedModels(mods, axes=None, cmin=None, cmax=None, **kwargs):
     ax.set_ylim((-maxz, max(topo)))
     ax.set_xlim((x1[0], x1[-1] + dx[-1]))
 
-    cbar = plt.colorbar(pp, ax=ax, norm=norm, orientation='horizontal',
-                        aspect=60)  # , ticks=[.3, 1, 3, 10, 30, 100, 300])
-#    cbar.autoscale_None()
+    cbar = None
+    if kwargs.pop('colorBar', True):
+        cbar = plt.colorbar(pp, ax=ax, norm=norm, orientation='horizontal',
+                            aspect=60)  # , ticks=[1, 3, 10, 30, 100, 300])
+        if 'ticks' in kwargs:
+            cbar.set_ticks(kwargs['ticks'])
+#        cbar.autoscale_None()
     if axes is None:  # newly created fig+ax
         return fig, ax
     else:  # already given, better give back color bar
