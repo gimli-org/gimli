@@ -52,7 +52,7 @@ def load(fname, verbose=False):
     }
 
     if not os.path.exists(fname):
-        raise Exception("File or directory named %s does not exist." % fname)
+        raise Exception("File or directory named %s does not exist." % (fname))
 
     # recursive function call if fname is a folder of files
     if os.path.isdir(fname):

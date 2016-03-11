@@ -3,6 +3,72 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 
 
+def drawFirstPicks(axes, data, tt=None, plotva=False, marker='x-'):
+    """
+        name convention
+    """
+    return plotFirstPicks(ax=axes, data=data, tt=tt, plotva=plotva, marker=marker)
+    
+def drawVA(axes, data, usePos=True):
+    """
+        name convention
+    """
+    return showVA(ax=axes, data=data, usepos=usePos)
+
+
+def drawTravelTimeData(axes, data, t=None):
+    """
+        Draw first arrival traveltime data into mpl axes a.
+        data of type \ref DataContainer must contain sensorIdx 's' and 'g'
+        and thus being numbered internally [0..n)
+    """
+
+    x = pg.x(data.sensorPositions())
+#    z = pg.z(data.sensorPositions())
+
+    shots = pg.unique(pg.sort(data('s')))
+    geoph = pg.unique(pg.sort(data('g')))
+
+    startOffsetIDX = 0
+
+    if min(min(shots), min(geoph)) == 1:
+        startOffsetIDX = 1
+
+    tShow = data('t')
+    if t is not None:
+        tShow = t
+
+    axes.set_xlim([min(x), max(x)])
+    axes.set_ylim([max(tShow), -0.002])
+    axes.figure.show()
+
+    for shot in shots:
+        gIdx = pg.find(data('s') == shot)
+        sensorIdx = [int(i__ - startOffsetIDX) for i__ in data('g')[gIdx]]
+        axes.plot(x[sensorIdx], tShow[gIdx], 'x-')
+
+    yPixel = axes.transData.inverted().transform_point((1, 1))[1] - \
+        axes.transData.inverted().transform_point((0, 0))[1]
+    xPixel = axes.transData.inverted().transform_point((1, 1))[0] - \
+        axes.transData.inverted().transform_point((0, 0))[0]
+
+    # draw shot points
+    axes.plot(x[[int(i__ - startOffsetIDX) for i__ in shots]],
+           np.zeros(len(shots)) + 8. * yPixel, 'gv', markersize=8)
+
+    # draw geophone points
+    axes.plot(x[[int(i__ - startOffsetIDX) for i__ in geoph]],
+           np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
+
+    axes.grid()
+    axes.set_ylim([max(tShow), +16. * yPixel])
+    axes.set_xlim([min(x) - 5. * xPixel, max(x) + 5. * xPixel])
+
+    axes.set_xlabel('x-Coordinate [m]')
+    axes.set_ylabel('Traveltime [ms]')
+# def drawTravelTimeData(...)
+
+    
 def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     """plot first arrivals as lines"""
     px = pg.x(data.sensorPositions())
@@ -23,6 +89,7 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
         ax.plot(si, 0., 's', color=cols[i % 7], markersize=8)
 
     ax.grid(True)
+    
 
 
 def showVA(ax, data, usepos=True):

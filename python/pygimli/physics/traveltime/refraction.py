@@ -20,6 +20,8 @@ from pygimli.physics import MethodManager
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
 
+from  . raplot import drawTravelTimeData
+
 
 class Refraction(MethodManager):
     """ Class for managing refraction seismics data
@@ -121,7 +123,7 @@ class Refraction(MethodManager):
         if self.dataContainer.allNonZero('err'):
             self.error = self.dataContainer('err')
         else:
-            self.estimateError()
+            self.error = Refraction.estimateError(self.dataContainer)
 
     def loadData(self, filename):
         """load data from file"""
@@ -227,14 +229,24 @@ class Refraction(MethodManager):
 
         return ax
 
-    def estimateError(self, absoluteError=0.001, relativeError=0.001):
-        """estimate error composed of an absolute and a relative part"""
+    @staticmethod
+    def estimateError(data, absoluteError=0.001, relativeError=0.001):
+        """Estimate error composed of an absolute and a relative part
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        err : array
+        """
         if relativeError >= 0.5:  # obviously in %
             relativeError /= 100.
-        self.error = absoluteError + self.dataContainer('t') * relativeError
-        self.inv.setAbsoluteError(self.error)
+        
+        error = absoluteError + data('t') * relativeError
+        return error
 
-    def invert(self, **kwargs):
+    def invert(self, data=None, t=None, err=None, mesh=None, **kwargs):
         """Run actual inversion (first creating inversion object if not there)
 
         result/response is stored in the class attribute velocity/response
@@ -250,8 +262,24 @@ class Refraction(MethodManager):
         zweight : float
             relative weight for purely vertical boundaries
         """
+        if data is not None:
+            #setDataContainer would be better
+            if t is not None:
+                data.set('t', t)
+            self.setDataContainer(data)
+
+        if t is not None:
+            self.dataContainer.set('t', t)
+
+        if err is not None:
+            self.error = err
+
+        if mesh is not None:
+            self.setMesh(mesh)
+        
         if self.mesh is None:
             self.createMesh(**kwargs)
+            
         self.fop.setStartModel(createGradientModel2D(
             self.dataContainer, self.fop.regionManager().paraDomain(),
             kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
@@ -264,14 +292,85 @@ class Refraction(MethodManager):
         self.inv.setBlockyModel(kwargs.pop('blockyModel', False))
 
         if not hasattr(self.error, '__iter__'):
-            self.estimateError(kwargs.pop('error', 0.003))  # abs. error in ms
+            self.error = Refraction.estimateError(self.dataContainer,
+                                                  kwargs.pop('error', 0.003))  # abs. error in ms
 
         self.inv.setAbsoluteError(self.error)
         self.fop.jacobian().clear()
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
+   
+    @staticmethod
+    def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
+        """
+        Simulate an Traveltime measurement.
 
+        Perform the forward task for a given mesh, 
+        a slowness distribution (per cell) and return data 
+        (Traveltime) for a measurement scheme.
+        This is a static method since it does not interfere with the Managers 
+        inversion approaches. 
+
+        Parameters
+        ----------
+        mesh : :gimliapi:`GIMLI::Mesh`
+            Mesh to calculate for.
+        slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
+            slowness distribution for the given mesh cells can be:
+                * a single array of len mesh.cellCount()
+                * a matrix of N slowness distributions of len mesh.cellCount()
+                * a res map as [[marker0, res0], [marker1, res1], ...]
+        scheme : :gimliapi:`GIMLI::DataContainer`
+            data measurement scheme
+
+        **kwargs :
+            * noisify : add normal distributed noise based on scheme('err')
+                IMPLEMENTME
+
+        Returns
+        -------
+        t : array(N, data.size())
+            The resulting simulated travel time values.
+            Either one column array or matrix in case of slowness matrix.
+
+        Examples
+        --------
+        >>> 
+        >>> IMPLEMENTME
+        
+        """
+        
+        fop = Refraction.createFOP(verbose=verbose)
+        
+        fop.setData(scheme)
+        fop.setMesh(mesh, holdRegionInfos=True)
+
+        if len(slowness) == mesh.cellCount():
+                
+            t = fop.response(slowness)
+        else:
+            print(mesh)
+            print("slowness: ", slowness)
+            raise BaseException("Simulate called with wrong slowness array.")
+            
+        return t
+      
+    @staticmethod      
+    def drawTravelTimeData(axes, data, t=None):
+        """
+        """
+        drawTravelTimeData(axes, data, t)
+        
+    @staticmethod      
+    def drawApparentVelocities(axes, data, t=None, **kwargs):
+        """
+        """
+        tt = Refraction()
+        tt.setDataContainer(data)
+        tt.showVA(ax=axes, t=t, **kwargs)
+
+      
     def getOffset(self):
         """return vector of offsets (in m) between shot and receiver"""
         px = pg.x(self.dataContainer.sensorPositions())
@@ -285,6 +384,7 @@ class Refraction(MethodManager):
         gx = np.array([px[int(g)] for g in self.dataContainer("g")])
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         return (gx + sx) / 2
+
 
     def showVA(self, ax=None, t=None, name='va', pseudosection=False,
                squeeze=True):
@@ -343,7 +443,10 @@ class Refraction(MethodManager):
         cov = self.rayCoverage()
         pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), axes=ax,
                 coverage=self.standardizedCoverage())
-
+    
+    def showModel(self, axes=None, vals=None, **kwargs):
+        self.showResult(ax=axes, val=vals, **kwargs)
+    
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
                    logScale=False, name='result', **kwargs):
         """show resulting velocity vector"""
