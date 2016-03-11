@@ -144,7 +144,7 @@ public:
 
     virtual Vec invTrans(const Vec & a) const { return (a - offset_) / factor_;}
 
-    virtual Vec deriv(const Vec & a) const { return factor_; }
+    virtual Vec deriv(const Vec & a) const { return Vec(a.size(), factor_); }
 
 protected:
     double factor_;
