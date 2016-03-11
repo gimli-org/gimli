@@ -334,11 +334,6 @@ class Refraction(MethodManager):
             The resulting simulated travel time values.
             Either one column array or matrix in case of slowness matrix.
 
-        Examples
-        --------
-        >>> 
-        >>> IMPLEMENTME
-        
         """
         
         fop = Refraction.createFOP(verbose=verbose)
