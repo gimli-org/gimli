@@ -351,8 +351,11 @@ endif()
 
 ADD_CUSTOM_TARGET(checkall)
 add_dependencies(checkall doc)
+# Add if pytest found?
 add_dependencies(checkall pgtest)
-add_dependencies(checkall gtest)
+if (CPPUNIT_FOUND)
+    add_dependencies(checkall gtest)
+endif (CPPUNIT_FOUND)
 
 
 ################################################################################
