@@ -149,7 +149,6 @@ add_custom_target(sphinxlatex ALL
         -d "${SPHINX_CACHE_DIR}/pdf"
         "${SPHINX_SRCBUILD_DIR}/doc"
         "${SPHINX_PDF_DIR}"
-    COMMAND
     COMMENT
         "Building PDF documentation with sphinx"
     DEPENDS
