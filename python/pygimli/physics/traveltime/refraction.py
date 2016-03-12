@@ -232,17 +232,17 @@ class Refraction(MethodManager):
     @staticmethod
     def estimateError(data, absoluteError=0.001, relativeError=0.001):
         """Estimate error composed of an absolute and a relative part
-        
+
         Parameters
         ----------
-        
+
         Returns
         -------
         err : array
         """
         if relativeError >= 0.5:  # obviously in %
             relativeError /= 100.
-        
+
         error = absoluteError + data('t') * relativeError
         return error
 
@@ -276,10 +276,10 @@ class Refraction(MethodManager):
 
         if mesh is not None:
             self.setMesh(mesh)
-        
+
         if self.mesh is None:
             self.createMesh(**kwargs)
-            
+
         self.fop.setStartModel(createGradientModel2D(
             self.dataContainer, self.fop.regionManager().paraDomain(),
             kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
@@ -300,17 +300,17 @@ class Refraction(MethodManager):
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
-   
+
     @staticmethod
     def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
         """
         Simulate an Traveltime measurement.
 
-        Perform the forward task for a given mesh, 
-        a slowness distribution (per cell) and return data 
+        Perform the forward task for a given mesh,
+        a slowness distribution (per cell) and return data
         (Traveltime) for a measurement scheme.
-        This is a static method since it does not interfere with the Managers 
-        inversion approaches. 
+        This is a static method since it does not interfere with the Managers
+        inversion approaches.
 
         Parameters
         ----------
@@ -335,29 +335,29 @@ class Refraction(MethodManager):
             Either one column array or matrix in case of slowness matrix.
 
         """
-        
+
         fop = Refraction.createFOP(verbose=verbose)
-        
+
         fop.setData(scheme)
         fop.setMesh(mesh, holdRegionInfos=True)
 
         if len(slowness) == mesh.cellCount():
-                
+
             t = fop.response(slowness)
         else:
             print(mesh)
             print("slowness: ", slowness)
             raise BaseException("Simulate called with wrong slowness array.")
-            
+
         return t
-      
-    @staticmethod      
+
+    @staticmethod
     def drawTravelTimeData(axes, data, t=None):
         """
         """
         drawTravelTimeData(axes, data, t)
-        
-    @staticmethod      
+
+    @staticmethod
     def drawApparentVelocities(axes, data, t=None, **kwargs):
         """
         """
@@ -365,13 +365,19 @@ class Refraction(MethodManager):
         tt.setDataContainer(data)
         tt.showVA(ax=axes, t=t, **kwargs)
 
-      
-    def getOffset(self):
+    def getOffset(self, full=False):
         """return vector of offsets (in m) between shot and receiver"""
-        px = pg.x(self.dataContainer.sensorPositions())
-        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
-        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
-        return np.absolute(gx - sx)
+        if full:
+            pos = self.dataContainer.sensorPositions()
+            s, g = self.dataContainer('s'), self.dataContainer('g')
+            nd = self.dataContainer.size()
+            off = [pos[int(s[i])].distance(pos[int(g[i])]) for i in range(nd)]
+            return np.absolute(off)
+        else:
+            px = pg.x(self.dataContainer.sensorPositions())
+            gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+            sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+            return np.absolute(gx - sx)
 
     def getMidpoint(self):
         """return vector of offsets (in m) between shot and receiver"""
@@ -380,9 +386,8 @@ class Refraction(MethodManager):
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         return (gx + sx) / 2
 
-
     def showVA(self, ax=None, t=None, name='va', pseudosection=False,
-               squeeze=True):
+               squeeze=True, full=True):
         """show apparent velocity as image plot
 
         TODO showXXX commands need to return axes and cbar .. if there is one
@@ -396,10 +401,11 @@ class Refraction(MethodManager):
         self.axs[name] = ax
         if t is None:
             t = self.dataContainer('t')
+
         px = pg.x(self.dataContainer.sensorPositions())
         gx = np.array([px[int(g)] for g in self.dataContainer("g")])
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
-        offset = np.absolute(gx - sx)
+        offset = self.getOffset(full=full)
         va = offset / t
 
         if pseudosection:
@@ -438,10 +444,10 @@ class Refraction(MethodManager):
         cov = self.rayCoverage()
         pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), axes=ax,
                 coverage=self.standardizedCoverage())
-    
+
     def showModel(self, axes=None, vals=None, **kwargs):
         self.showResult(ax=axes, val=vals, **kwargs)
-    
+
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
                    logScale=False, name='result', **kwargs):
         """show resulting velocity vector"""
