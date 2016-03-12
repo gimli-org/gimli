@@ -427,11 +427,11 @@ def grad(mesh, u, r=None):
     >>> fig, ax = plt.subplots()
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
     >>> u = lambda p: pg.x(p)**2 * pg.y(p)
-    >>> pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
-    >>> pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
-    >>>                  pg.x(mesh.cellCenters())**2 ], axes=ax)
-    >>> pg.show(mesh, pg.solver.grad(mesh, u), axes=ax, color='w',
-    >>>         linewidth=0.4)
+    >>> _ = pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
+    >>> _ = pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
+    >>>             pg.x(mesh.cellCenters())**2 ], axes=ax)
+    >>> _ = pg.show(mesh, pg.solver.grad(mesh, u), axes=ax, color='w',
+    >>>             linewidth=0.4)
     >>> plt.show()
     """
 
