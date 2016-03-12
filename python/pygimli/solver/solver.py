@@ -429,9 +429,9 @@ def grad(mesh, u, r=None):
     >>> u = lambda p: pg.x(p)**2 * pg.y(p)
     >>> _ = pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
     >>> _ = pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
-    >>>             pg.x(mesh.cellCenters())**2 ], axes=ax)
+    ...             pg.x(mesh.cellCenters())**2], axes=ax)
     >>> _ = pg.show(mesh, pg.solver.grad(mesh, u), axes=ax, color='w',
-    >>>             linewidth=0.4)
+    ...             linewidth=0.4)
     >>> plt.show()
     """
 
