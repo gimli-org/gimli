@@ -77,7 +77,10 @@ ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
     COMMAND
         ${PYTHON_EXECUTABLE}
-        -c "import pygimli; pygimli.test(show=False)"
+        #python -c "import pygimli; pygimli.test(show=False)"
+        #python 
+    ARGS
+        -c 'import pygimli\; pygimli.test(show=False)'
     TARGET
         pgtest
    )
