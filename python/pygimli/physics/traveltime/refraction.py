@@ -280,11 +280,16 @@ class Refraction(MethodManager):
         if self.mesh is None:
             self.createMesh(**kwargs)
             
-        self.fop.setStartModel(createGradientModel2D(
-            self.dataContainer, self.fop.regionManager().paraDomain(),
-            kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
+        useGradient = kwargs.pop('useGradient', True)
+        if useGradient:
+            self.fop.setStartModel(createGradientModel2D(
+                self.dataContainer, self.fop.regionManager().paraDomain(),
+                kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
+        else:
+            self.fop.setStartModel(self.fop.createDefaultStartModel())
 
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
+        
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
         self.inv.setMaxIter(kwargs.pop('max_iter', 20))
@@ -300,6 +305,8 @@ class Refraction(MethodManager):
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
+        
+        return self.velocity
    
     @staticmethod
     def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
@@ -316,11 +323,14 @@ class Refraction(MethodManager):
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
             Mesh to calculate for.
+            
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
             slowness distribution for the given mesh cells can be:
-                * a single array of len mesh.cellCount()
-                * a matrix of N slowness distributions of len mesh.cellCount()
-                * a res map as [[marker0, res0], [marker1, res1], ...]
+            
+            * a single array of len mesh.cellCount()
+            * a matrix of N slowness distributions of len mesh.cellCount()
+            * a res map as [[marker0, res0], [marker1, res1], ...]
+                
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
