@@ -54,16 +54,16 @@ def cmapFromName(cmapname, ncols=256, bad=None):
     cmap = mpl.cm.get_cmap('jet', ncols)
 
     if cmapname is not None:
-        
+
         if cmapname == 'b2r':
             cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
                                                       cdict, ncols)
         elif cmapname == 'viridis' and StrictVersion(mpl.__version__) < StrictVersion('1.5'):
             print(mpl.__version__)
-            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data[::1])
+            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
         elif cmapname == 'viridis_r':
             print(mpl.__version__)
-            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
+            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data[::-1])
         else:
             try:
                 cmap = mpl.cm.get_cmap(cmapname, ncols)

@@ -16,7 +16,7 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 #PYGCCXML_REV=f8cfd81 # old functional
-PYGCCXML_REV=bffa6e0 # current functional
+#PYGCCXML_REV=bffa6e0 # current functional
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 #PYPLUSPLUS_REV=78f5b0f # pre apichange
