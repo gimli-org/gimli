@@ -279,7 +279,6 @@ class Refraction(MethodManager):
 
         if self.mesh is None:
             self.createMesh(**kwargs)
-<<<<<<< HEAD
             
         useGradient = kwargs.pop('useGradient', True)
         if useGradient:
@@ -288,12 +287,6 @@ class Refraction(MethodManager):
                 kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
         else:
             self.fop.setStartModel(self.fop.createDefaultStartModel())
-=======
-
-        self.fop.setStartModel(createGradientModel2D(
-            self.dataContainer, self.fop.regionManager().paraDomain(),
-            kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
->>>>>>> a29090e8f26fb98b92a3c9560265e155d5f4f622
 
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
         
@@ -312,13 +305,9 @@ class Refraction(MethodManager):
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
-<<<<<<< HEAD
         
         return self.velocity
    
-=======
-
->>>>>>> a29090e8f26fb98b92a3c9560265e155d5f4f622
     @staticmethod
     def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
         """
@@ -336,19 +325,12 @@ class Refraction(MethodManager):
             Mesh to calculate for.
             
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
-<<<<<<< HEAD
             slowness distribution for the given mesh cells can be:
             
             * a single array of len mesh.cellCount()
             * a matrix of N slowness distributions of len mesh.cellCount()
             * a res map as [[marker0, res0], [marker1, res1], ...]
                 
-=======
-            Slowness distribution for the given mesh cells can be:
-            * a single array of len mesh.cellCount()
-            * a matrix of N slowness distributions of len mesh.cellCount()
-            * a res map as [[marker0, res0], [marker1, res1], ...]
->>>>>>> a29090e8f26fb98b92a3c9560265e155d5f4f622
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
