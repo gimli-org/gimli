@@ -431,6 +431,11 @@ def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
     if fillRegion and mesh.boundaryCount() > 0:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
+        print(tmpMesh)
+        
+        print(tmpMesh.cellMarkers())
+        
+        
         drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
                   nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
                   levels=pg.utils.unique(tmpMesh.cellMarkers()),
