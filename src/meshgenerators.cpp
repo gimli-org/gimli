@@ -153,8 +153,7 @@ Mesh createMesh2D(const Mesh & mesh, const RVector & y,
         first = false;
     }
     
-    
-    return mesh;
+    return mesh2;
 }
 
 Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottomLayer){

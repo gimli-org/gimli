@@ -431,16 +431,14 @@ def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
     if fillRegion and mesh.boundaryCount() > 0:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
-        print(tmpMesh)
-        
-        print(tmpMesh.cellMarkers())
-        
-        
-        drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
-                  nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
-                  levels=pg.utils.unique(tmpMesh.cellMarkers()),
-                  tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
-                  snap=False)
+        if tmpMesh.cellCount() == 0:
+            pass
+        else:
+            drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
+                    nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
+                    levels=pg.utils.unique(tmpMesh.cellMarkers()),
+                    tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
+                    snap=False)
 
     for n in mesh.nodes():
         col = (0.0, 0.0, 0.0)
