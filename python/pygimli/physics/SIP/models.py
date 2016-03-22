@@ -124,8 +124,9 @@ class DebyePhi(pg.ModellingBase):
         self.f_ = fvec
         self.nf_ = len(fvec)
         self.t_ = tvec
-        mesh = pg.createMesh1D(len(tvec))  # standard 1d discretization
-        pg.ModellingBase.__init__(self, mesh, verbose)
+        pg.ModellingBase.__init__(self, verbose)
+        self.mesh = pg.createMesh1D(len(tvec))  # standard 1d discretization
+        self.setMesh(self.mesh)
 
     def response(self, par):
         """amplitude/phase spectra as function of spectral chargeabilities"""

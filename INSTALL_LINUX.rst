@@ -126,7 +126,7 @@ You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as pg; print(pg.__version)'
+    python -c 'import pygimli as pg; print(pg.__version__)'
 
 You can test your libgimli build with:
 
