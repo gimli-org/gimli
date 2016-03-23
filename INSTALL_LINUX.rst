@@ -17,7 +17,9 @@ This script accept a few more options. See for help:
 If there goes something wrong ensure to take a look on the error message. 
 In the most cases there is are missing or outdated packages.
 
-See below for more detailed compilation instructions and prerequisites. 
+Please see first in prerequisites :link here .. how?: for all needed packages. 
+
+If the installation fails you can try the following instructions for manual installation. 
 
 
 Detailed Installation on Vanilla Debian
@@ -65,7 +67,7 @@ The main directory structure should looks like this:
 
 .. code-block:: bash
 
-    gimli/trunk
+    gimli/gimli
     gimli/build
 
 Change to the build path
@@ -78,7 +80,7 @@ and configure the build:
 
 .. code-block:: bash
 
-    cmake ../trunk
+    cmake ../gimli
 
 If the output complains some missing dependencies you should install, just
 install these and repeat the the last step.
@@ -105,12 +107,12 @@ If you want to build the python bindings call
     make pygimli
 
 The _pygimli_.so library will be copied into the source path
-../trunk/python/pygimli. To use the gimli installation there have to be set
+../gimli/python/pygimli. To use the gimli installation there have to be set
 some environment variables:
 
 .. code-block:: bash
 
-    export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/trunk/python
+    export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/gimli/python
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
     export PATH=$PATH:$HOME/src/gimli/build/bin
 
@@ -126,7 +128,7 @@ You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as pg; print(pg.__version)'
+    python -c 'import pygimli as pg; print(pg.__version__)'
 
 You can test your libgimli build with:
 
@@ -170,7 +172,7 @@ You can force cmake to select the correct version with:
 
 .. code-block:: bash
 
-    cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
+    cmake ../gimli -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
 
 If the build misses libedit:
 
@@ -180,13 +182,24 @@ If the build misses libedit:
 
 Install *libedit*, e.g. 'apt-get install libedit' on Debian/Ubuntu.
 
-If castXML complains about missing clang command, please go into 
+
+castXML
+.......
+
+If castXML (https://github.com/CastXML/CastXML/) complains about missing clang or llvm command, please go into 
 $(GIMLISRC)/../thirdParty/build-XXX-XXX/castXML and try configure and build cmake manually
 
 .. code-block:: bash
+    
     CC=clang-3.6 CXX=clang++-3.6 cmake ../../src/castXML/
     make
 
+If you build castXML manually you can provide this binary to cmake via
+
+.. code-block:: bash
+    
+    cmake ../gimli -DCASTER_EXECUTABLE=$(PATH_TO_CASTXML)
+    
 
 Useful cmake settings
 ^^^^^^^^^^^^^^^^^^^^^
@@ -195,13 +208,13 @@ You can rebuild and update all local generated third party software by setting t
 
 .. code-block:: bash
 
-    CLEAN=1 cmake ../trunk
+    CLEAN=1 cmake ../gimli
 
 Use alternative c++ compiler.
 
 .. code-block:: bash
 
-    CC=clang CXX=clang++ cmake ../trunk
+    CC=clang CXX=clang++ cmake ../gimli
 
 Define alternative python version.
 On default the version of your active python version will be chosen.
@@ -209,19 +222,19 @@ You will need numpy and boost-python builds with your desired python version.
 
 .. code-block:: bash
 
-    cmake ../trunk -DPYVERSION=3.3
+    cmake ../gimli -DPYVERSION=3.3
 
 Build the library with debug and profiling flags
 
 .. code-block:: bash
 
-    cmake ../trunk -DCMAKE_BUILD_TYPE=Debug
+    cmake ../gimli -DCMAKE_BUILD_TYPE=Debug
 
 Build the library with gcc build.in sanity check 
 
 .. code-block:: bash
 
-    cmake ../trunk -DCMAKE_BUILD_TYPE=Debug -DASAN=1
+    cmake ../gimli -DCMAKE_BUILD_TYPE=Debug -DASAN=1
 
 
 Usefull make commands
