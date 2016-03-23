@@ -9,7 +9,8 @@ from math import pi
 from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
-from . ert import resistivityArchie
+# from . ert import resistivityArchie  # not in git yet (no ERT module)
+# should rather be in pygimli/petrophysics as resistivity is not only ERT
 
 # from . gravimetry import Gravimetry
 # from . seismics import *
