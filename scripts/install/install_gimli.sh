@@ -4,11 +4,13 @@
 SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
 GET="curl"
 
+LOCALSCRIPTS=0
+# set this via 'L' option
 #SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
 #GET="cat"
 
 # Default values
-GIMLI_ROOT=$PWD/gimli
+GIMLI_ROOT=$(pwd)/gimli
 PARALLEL_BUILD=2
 PYTHON_MAJOR=3
 UPDATE_ONLY=0
@@ -65,6 +67,8 @@ help(){
     echo "      This may work or may not work .. please use at own risk"
     echo "b|branch=branch"
     echo "      Checkout with a given git branch name. Default=''"
+    echo "L|localScripts"
+    echo "      Use local scripts int $GIMLI_ROOT/gimli/scripts instead of remote versions downloaded by curl"
     exit
 }
 
@@ -85,11 +89,19 @@ for i in "$@"; do
         *b*|*branch*)
             BRANCH=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         ;;
+        *L*|*localScripts*)
+            LOCALSCRIPTS=1
+        ;;
         *h*|*help*)
             help
         ;;
     esac
 done
+
+if [ $LOCALSCRIPTS -eq 1 ]; then
+    SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
+    GET="cat"
+fi
 
 echo "=========================================="
 if [ $(uname) == "Darwin" ]; then
@@ -117,9 +129,13 @@ elif [ $(uname -o) == "GNU/Linux" ]; then
 fi
 echo "------------------------------------------"
 
-# mac lacks readlink -f
-#export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
-export GIMLI_ROOT=$(python -c "import os; print(os.path.realpath('"${GIMLI_ROOT//\'/\\\'}"'))")
+if [ $(uname) == "Darwin" ]; then
+    # mac lacks readlink -f
+    export GIMLI_ROOT=$(python -c "import os; print(os.path.realpath('"${GIMLI_ROOT//\'/\\\'}"'))")
+else
+    # python way creates wrong leading /c/ for mysys
+    export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
+fi
 export PYTHON_MAJOR=$PYTHON_MAJOR
 export PARALLEL_BUILD=$PARALLEL_BUILD
 export UPDATE_ONLY=$UPDATE_ONLY
