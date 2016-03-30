@@ -821,20 +821,7 @@ ModellingBase = ModellingBaseMT__
 # unsorted stuff
 ###########################
 
-
-# def __interpolate__cmd(self):
-# print "my interpolate"
-# return _pygimli_.interpolate_GILsave__
-#_pygimli_.interpolate = __interpolate__cmd
-
 _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
-# define template void Quaternion< double >::rotMatrix(Matrix < double > &
-# mat) const;
+from . matrix import *
 
-# CR: What was this good for??
-#def __getRotMatrix__(self, mat):
-#   getRotMatrix__(self, mat)
-#_pygimli_.RQuaternion.rotMatrix = __getRotMatrix__
-
-# some rvector helpers
