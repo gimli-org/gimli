@@ -58,12 +58,12 @@ def cmapFromName(cmapname, ncols=256, bad=None):
         if cmapname == 'b2r':
             cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
                                                       cdict, ncols)
-        elif cmapname == 'viridis' and StrictVersion(mpl.__version__) < StrictVersion('1.5'):
-            print(mpl.__version__)
-            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
-        elif cmapname == 'viridis_r':
-            print(mpl.__version__)
+        elif cmapname == 'viridis' and StrictVersion(mpl.__version__) < StrictVersion('1.5.0'):
+            print("Mpl:", mpl.__version__, " using HB viridis")
             cmap = LinearSegmentedColormap.from_list('viridis', viridis_data[::-1])
+        elif cmapname == 'viridis_r':
+            print("Using HB viridis_r")
+            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
         else:
             try:
                 cmap = mpl.cm.get_cmap(cmapname, ncols)

@@ -823,5 +823,4 @@ ModellingBase = ModellingBaseMT__
 
 _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
-from . matrix import *
-
+from .matrix import *

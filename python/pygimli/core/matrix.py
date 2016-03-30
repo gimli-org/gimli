@@ -4,7 +4,9 @@
 Some matrix specialization.
 """
 
-class RMultRMatrix(pg.MatrixBase):
+from pygimli.core import _pygimli_
+
+class RMultRMatrix(_pygimli_.MatrixBase):
     """ Matrix A to be multiplied by a right hand side vector r. """
     def __init__(self, A, r):
         super().__init__()
