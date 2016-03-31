@@ -6,19 +6,33 @@
 import sys
 import os
 import subprocess
+import traceback
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
 
 _pygimli_ = None
 
+
+###############################################################################
+# TEMP: Avoid import errors for py bindings built before core submodule
+def bindingpath(relpath):
+    path = os.path.join(os.path.dirname(__file__), relpath)
+    return os.path.abspath(os.path.join(path, "_pygimli_.so"))
+
+new = bindingpath(".")
+old = bindingpath("..")
+
+if not os.path.isfile(new) and os.path.isfile(old):
+    print("INFO: Moving %s to %s" % (old, new))
+    os.rename(old, new)
+###############################################################################
+
 try:
     from . import _pygimli_
     from . _pygimli_ import *
 except ImportError as e:
     print(e)
-    import traceback
-
     traceback.print_exc(file=sys.stdout)
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
