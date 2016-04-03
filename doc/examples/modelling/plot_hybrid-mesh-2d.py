@@ -83,15 +83,15 @@ mesh3 = merge2Meshes(mesh1, mesh2)
 mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
                               smooth=True, marker=3, isSubSurface=True)
 
-ax, cbar = showMesh(mesh, mesh.cellMarker(),
-                   cmap="summer",
-                   label="Region marker")
+ax, cbar = showMesh(mesh, mesh.cellMarkers(),
+                    cmap="summer",
+                    label="Region marker")
 
 drawMesh(ax, mesh)
 
-ax, _ = showMesh(mesh, mesh.cellMarker(),
-                logScale=False,
-                label="Region marker")
+ax, _ = showMesh(mesh, mesh.cellMarkers(),
+                 logScale=False,
+                 label="Region marker")
 
 drawMesh(ax, mesh)
 pg.wait()
