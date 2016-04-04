@@ -824,3 +824,21 @@ ModellingBase = ModellingBaseMT__
 _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
 from .matrix import *
+
+############################
+# some backward compatibility
+############################
+
+def deprecated(msg, hint):
+    print("Warning! "+ msg + ", is deprecated, use:" + hint+ " instead.")
+
+def __MeshGetCellMarker__(self):
+    deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
+    return self.cellMarkers()
+
+def __MeshSetCellMarker__(self, m):
+    deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
+    return self.setCellMarkers(m)
+
+_pygimli_.Mesh.cellMarker = __MeshGetCellMarker__
+_pygimli_.Mesh.setCellMarker = __MeshSetCellMarker__
