@@ -4,14 +4,18 @@
 Some matrix specialization.
 """
 
-from pygimli.core import _pygimli_
+from pygimli.core import _pygimli_ as pg
 
-class RMultRMatrix(_pygimli_.MatrixBase):
+class RMultRMatrix(pg.MatrixBase):
     """ Matrix A to be multiplied by a right hand side vector r. """
-    def __init__(self, A, r):
+    def __init__(self, A, r=None):
         super().__init__()
         self.A = A
-        self.r = r
+        
+        if r is None:
+            self.r = pg.RVector(A.cols(), 1.0)
+        else:
+            self.r = r
 
     def mult(self, x):
         """ return M*x = A*(r*x) """
