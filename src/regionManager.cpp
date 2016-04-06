@@ -469,6 +469,7 @@ void Region::setParameters(double start, double lb, double ub, std::string trans
     }
 }
 
+//******************************************************************************
 RegionManager::RegionManager(bool verbose) : verbose_(verbose), mesh_(NULL){
     paraDomain_ = new Mesh();
     parameterCount_ = 0;
@@ -491,6 +492,13 @@ RegionManager::~RegionManager(){
     if (paraDomain_) delete paraDomain_;
 }
 
+const Mesh & RegionManager::mesh() const { 
+    if (mesh_== 0){
+        throwError(1, "RegionManager knows no mesh.");
+    }
+    return *mesh_; 
+}
+    
 Region * RegionManager::region(SIndex marker){
     if (regionMap_.count(marker) == 0){
         throwError(EXIT_DEFAULT, WHERE_AM_I + " no region with marker " + toStr(marker));

@@ -81,10 +81,10 @@ class MethodManager(object):
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
 
-    @classmethod
-    def createFOP_(cls, verbose=False):
+    #@classmethod
+    def createFOP_(self, verbose=False):
         """ Create forward operator working on refined mesh """
-        return cls.createFOP(verbose)
+        return self.createFOP(verbose)
 
     def createInv_(self, fop, verbose=True, dosave=False):
         """ Create inversion instance, data- and model transformations. """
