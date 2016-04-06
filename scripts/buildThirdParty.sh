@@ -428,8 +428,9 @@ buildCASTXML(){
 
                 sed -i 's/if(DEFINED LLVM_BUILD_BINARY_DIR)/if(DEFINED LLVM_BUILD_BINARY_DIR_)/' $CASTXML_SRC/CMakeLists.txt
 
+                #-DCLANG_RESOURCE_DIR=/mingw64/lib/clang/3.7.0/ 
+                
                 cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
-                    -DCLANG_RESOURCE_DIR=/mingw64/lib/clang/3.7.0/ \
                     -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
                     -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
             fi
