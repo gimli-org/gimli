@@ -265,9 +265,9 @@ public:
 
     void setMesh(const Mesh & mesh, bool holdRegionInfos=false);
 
-    const Mesh & mesh() const { return *mesh_; }
-
-    //inline Mesh * mesh() { return mesh_; }
+    const Mesh & mesh() const;
+     
+    inline Mesh * pMesh() { return mesh_; }
 
     /*!
      * Add a external region to the RegionManager.

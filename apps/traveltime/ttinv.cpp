@@ -115,7 +115,7 @@ int main(int argc, char *argv []) {
         // assume bert meshParaDomain.bms
         vcout << "assume bert meshParaDomain.bms. Recount cell marker" << std::endl;
         paraMesh.setCellAttributes(RVector(paraMesh.cellCount(), 2));
-        paraMesh.setCellMarker(RVector(paraMesh.cellCount(), 2));
+        paraMesh.setCellMarkers(RVector(paraMesh.cellCount(), 2));
     }
         
     //!** set up TT modeling class;

@@ -6,19 +6,33 @@
 import sys
 import os
 import subprocess
+import traceback
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
 
 _pygimli_ = None
 
+
+###############################################################################
+# TEMP: Avoid import errors for py bindings built before core submodule
+def bindingpath(relpath):
+    path = os.path.join(os.path.dirname(__file__), relpath)
+    return os.path.abspath(os.path.join(path, "_pygimli_.so"))
+
+new = bindingpath(".")
+old = bindingpath("..")
+
+if not os.path.isfile(new) and os.path.isfile(old):
+    print("INFO: Moving %s to %s" % (old, new))
+    os.rename(old, new)
+###############################################################################
+
 try:
     from . import _pygimli_
     from . _pygimli_ import *
 except ImportError as e:
     print(e)
-    import traceback
-
     traceback.print_exc(file=sys.stdout)
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
@@ -824,3 +838,21 @@ ModellingBase = ModellingBaseMT__
 _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
 from .matrix import *
+
+############################
+# some backward compatibility
+############################
+
+def deprecated(msg, hint):
+    print("Warning! "+ msg + ", is deprecated, use:" + hint+ " instead.")
+
+def __MeshGetCellMarker__(self):
+    deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
+    return self.cellMarkers()
+
+def __MeshSetCellMarker__(self, m):
+    deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
+    return self.setCellMarkers(m)
+
+_pygimli_.Mesh.cellMarker = __MeshGetCellMarker__
+_pygimli_.Mesh.setCellMarker = __MeshSetCellMarker__

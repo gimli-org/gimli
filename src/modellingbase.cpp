@@ -138,15 +138,22 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
         mesh_->clear();
     }
     
-    if (refine){
-        if (pRefine){
-            *mesh_ = regionManager_->mesh().createP2();
+    if (regionManager_->pMesh()){
+        if (refine){
+            if (pRefine){
+//                 *mesh_ = regionManager_->mesh().createP2();
+                setMesh_(regionManager_->mesh().createP2());
+            } else {
+//                 *mesh_ = regionManager_->mesh().createH2();
+                setMesh_(regionManager_->mesh().createH2());
+            }
+//             updateMeshDependency_();
         } else {
-            *mesh_ = regionManager_->mesh().createH2();
+            setMesh_(regionManager_->mesh());
+//             updateMeshDependency_();
         }
-        updateMeshDependency_();
     } else {
-        setMesh_(regionManager_->mesh());
+        throwError(1, "Cannot create a refined forward mesh since I have none.");
     }
 }
  
@@ -180,14 +187,14 @@ void ModellingBase::setMesh(const Mesh & mesh, bool holdRegionInfos) {
 
     if (verbose_) std::cout << "FOP updating mesh dependencies ... ";
     startModel_.clear();
-    updateMeshDependency_();
-    
+        
     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
 }
 
 void ModellingBase::setMesh_(const Mesh & mesh){
     if (!mesh_) mesh_ = new Mesh();
     (*mesh_) = mesh;
+    updateMeshDependency_();
 }
 
 void ModellingBase::deleteMesh(){
@@ -525,7 +532,6 @@ Region * ModellingBase::region(int marker){
 RVector ModellingBase::createStartVector() {
     return regionManager().createStartVector();
 }
-
 
 LinearModelling::LinearModelling(MatrixBase & A, bool verbose)
     : ModellingBase(verbose){//, A_(& A) {

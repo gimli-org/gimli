@@ -18,10 +18,36 @@ Edit .bashrc and add the winpython installation path to your default PATH.
 
 .. code-block:: bash
 
-    export PATH=$PATH:/c/PATH_TO_YOUR_WINPYTHON/WinPython-64bit-3.4.3.3/python-3.4.3/
+    export PATH=$PATH:/c/PATH_TO_YOUR_WINPYTHON/WinPython-64bit-3.5.1.2/python-3.5.1/
 
 This is necessary since the gimli installation needs to know your valid python
 installation.
+
+Ideally the following one-liner will suffice to compile pyGIMLi in the current directory.
+
+**Note: The script will automatic take care any needs or updates of the msys environment. 
+And also needs to modify some of the llvm system files.**
+
+.. code:: bash
+
+    curl -Ls install.pygimli.org | bash 
+
+This script accept a few more options. See for help:
+
+.. code:: bash
+
+    curl -Ls install.pygimli.org | bash -s help
+
+If everything runs fine, inclusive some tests, the script will tell you some 
+additional PATH and PYTHONPATH settings for your .bashrc to use pygimli inside
+the console or any IDEs like spyder.
+
+If there goes something wrong ensure to take a look on the error message. 
+
+You can alse try the following instructions for manual installation. 
+
+Manual installation
+...................
 
 Be sure to have an updated msys environment. Run at least:
 
@@ -101,7 +127,7 @@ You can test the pygimli build with:
 
 
 Using cmake with CodeBlocks
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...........................
 
 First, for sure, you need codeblocks from: http://www.codeblocks.org/downloads/26
 
