@@ -8,16 +8,16 @@ current directory.
 
     curl -Ls install.pygimli.org | bash
 
-This script accept a few more options. See for help:
+This script accepts a few more options. For help see
 
 .. code:: bash
 
     curl -Ls install.pygimli.org | bash -s help
 
-If there goes something wrong ensure to take a look on the error message. 
-In the most cases there is are missing or outdated packages.
+If something goes wrong please take a look at the error message. 
+In most cases there is are missing or outdated packages.
 
-Please see first in prerequisites :link here .. how?: for all needed packages. 
+Please look first in prerequisites :link here .. how?: on needed packages. 
 
 If the installation fails you can try the following instructions for manual installation. 
 
@@ -25,8 +25,8 @@ If the installation fails you can try the following instructions for manual inst
 Detailed Installation on Vanilla Debian
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First install some of the necessary stuff. For sure you will need subversion to
-get the source files and some things for the tool-chain:
+First install some of the necessary stuff. You will need subversion, git and hg to
+retrieve the source files and some things for the tool-chain:
 
 .. code-block:: bash
 
@@ -54,10 +54,10 @@ Checkout the current sources for libgimli:
 
 .. code-block:: bash
 
-    git clone https://github.com/gimli-org/gimli.git trunk
+    git clone https://github.com/gimli-org/gimli.git
 
 We use cmake (http://www.cmake.org/) for compilation. We recommend using a
-build directory parallel to the trunk path:
+build directory parallel to the gimli (trunk) path:
 
 .. code-block:: bash
 
@@ -82,7 +82,7 @@ and configure the build:
 
     cmake ../gimli
 
-If the output complains some missing dependencies you should install, just
+If the output complains some missing dependencies,
 install these and repeat the the last step.
 
 To build the library just run make
@@ -100,15 +100,16 @@ To speed up the build process using more CPUs, use the -j flag, e.g.:
 The libraries will be installed in build/lib and some test applications are
 installed in build/bin
 
-If you want to build the python bindings call
+If you want to build the python bindings, call
 
 .. code-block:: bash
 
     make pygimli
 
-The _pygimli_.so library will be copied into the source path
-../gimli/python/pygimli. To use the gimli installation there have to be set
-some environment variables:
+You might add J=8 for using 8 jobs in parallel to speed up the build.
+The library _pygimli_.so library will be copied into the source path
+../gimli/python/pygimli in the subdirectory core.
+To use the gimli installation there have to be set some environment variables:
 
 .. code-block:: bash
 
@@ -116,7 +117,7 @@ some environment variables:
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
     export PATH=$PATH:$HOME/src/gimli/build/bin
 
-If you want to use the C++ commandline applications, call
+If you want to use the C++ command line applications, call
 
 .. code-block:: bash
 
@@ -130,13 +131,13 @@ You can test the pygimli build with:
 
     python -c 'import pygimli as pg; print(pg.__version__)'
 
-You can test your libgimli build with:
+You can test your gimli build with:
 
 .. code-block:: bash
 
     make check
 
-Of course the test will be very silent if you don't have cppunit installed.
+Note that the test will be very silent if you don't have cppunit installed.
 
 
 Example Installation on Ubuntu
@@ -237,7 +238,7 @@ Build the library with gcc build.in sanity check
     cmake ../gimli -DCMAKE_BUILD_TYPE=Debug -DASAN=1
 
 
-Usefull make commands
+Useful make commands
 ^^^^^^^^^^^^^^^^^^^^^
 
 More verbose build output to view the complete command line:
@@ -246,5 +247,3 @@ More verbose build output to view the complete command line:
 
     make VERBOSE=1
  
-
-

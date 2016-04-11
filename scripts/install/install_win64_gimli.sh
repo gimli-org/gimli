@@ -12,7 +12,7 @@ buildGIMLI(){
     pushd build
         cmake -G "$CMAKE_GENERATOR" ../gimli -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
 
-        make -j$PARALELL && make pygimli J=$PARALELL 
+        make -j$PARALLEL_BUILD && make pygimli J=$PARALLEL_BUILD
         echo ""
         echo ""
         echo "============================================================================"
