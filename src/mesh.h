@@ -500,7 +500,10 @@ public:
     void exportVTK(const std::string & fbody,
                    const std::vector < RVector3 > & vec,
                    bool writeCells=true) const;
-
+    
+    /*! Export mesh with one additional array that will called 'arr' */
+    void exportVTK(const std::string & fbody, const RVector & arr) const;
+    
     void readVTKPoints_(std::fstream & file, const std::vector < std::string > & row);
     void readVTKCells_(std::fstream & file, const std::vector < std::string > & row);
     void readVTKScalars_(std::fstream & file, const std::vector < std::string > & row);
