@@ -280,13 +280,10 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
         std::cout << "Background: " << background_ << "->" << 1e16 << std::endl;
         background_ = 1e16;
     }
-// __MS(background_)
-// __MS(min(slowness))
-// __MS(max(slowness))
-    this->mapModel(slowness, background_);
-    
-    dijkstra_.setGraph(createGraph());
 
+    this->mapModel(slowness, background_);
+
+    dijkstra_.setGraph(createGraph());
     Index nShots = shotNodeId_.size();
     Index nRecei = receNodeId_.size();
     RMatrix dMap(nShots, nRecei);
@@ -310,9 +307,6 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
 //                    << g << " " << (*dataContainer_)("g")[dataIdx] << " " << dMap[s][g] << std::endl;
         resp[dataIdx] = dMap[s][g];
     }
-
-//     __MS(min(resp))
-//     __MS(max(resp))
 
     return  resp;
 }
