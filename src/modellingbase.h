@@ -87,13 +87,19 @@ public:
 
     /*! Set new mesh to the forward operator, optionally hold region parameter
      * for the new mesh (i.e. for roll a long) */
-    void setMesh(const Mesh & mesh, bool holdRegionInfos=false);
+    void setMesh(const Mesh & mesh, bool ignoreRegionManager=false);
 
     inline Mesh * mesh() { return mesh_; }
+
+    void createRefinedForwardMesh(bool refine=true, bool pRefine=false);
+
+    /*!DEPRECATED Set refined mesh for forward calculation. */
+    void setRefinedMesh(const Mesh & mesh);
 
     /*! Delete the actual mesh. */ 
     void deleteMesh();
 
+    
     /*! Set external Jacobian matrix*/
     virtual void setJacobian(MatrixBase * J);
 
@@ -163,21 +169,20 @@ public:
     virtual RSparseMapMatrix & constraintsRef();
 
     const RMatrix & solution() const { return solutions_; }
-
-    void createRefinedForwardMesh(bool refine=true, bool pRefine=false);
-
-    /*! Set refined mesh for forward calculation. */
-    void setRefinedMesh(const Mesh & mesh);
-
+    
     void mapModel(const RVector & model, double background=0);
     
     /*! Read only extrapolation of model values given per cell marker to 
      values given per cell. Exterior values will be prolongated. */
     RVector createMappedModel(const RVector & model, double background=0) const;
 
+    void setRegionManager(RegionManager * reg){ regionManager_ = reg; }
+
     const RegionManager & regionManager() const;
 
     RegionManager & regionManager();
+    
+    RegionManager & regionManagerRef(){ return regionManager(); }
 
     bool verbose() { return verbose_; }
 
@@ -215,7 +220,7 @@ protected:
 
     virtual void updateDataDependency_(){}
 
-    void setMesh_(const Mesh & mesh);
+    void setMesh_(const Mesh & mesh, bool update=true);
 
     Mesh                    * mesh_;
 

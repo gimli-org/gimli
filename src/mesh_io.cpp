@@ -645,6 +645,12 @@ void Mesh::exportVTK(const std::string & fbody,
                      RVector > & dataMap, bool writeCells) const {
     return exportVTK(fbody, dataMap, std::vector < RVector3 >(0), writeCells);
 }
+
+void Mesh::exportVTK(const std::string & fbody, const RVector & arr) const {
+    std::map< std::string, RVector > m(exportDataMap_);
+    m.insert(std::pair< std::string, RVector >("arr", arr));
+    return exportVTK(fbody, m, std::vector < RVector3 >(0), true);
+}
                         
 void Mesh::exportVTK(const std::string & fbody,
                      const std::map< std::string, RVector > & dataMap, 
