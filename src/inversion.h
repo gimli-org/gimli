@@ -963,8 +963,8 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
         if (ipc_.getBool("abort")) break;
 
         if (!oneStep()) break;
-
-        DOSAVE save(*forward_->jacobian() * model_, "dataJac_"  + toStr(iter_) PLUS_TMP_VECSUFFIX);
+        //** no idea why this should be saved
+        //DOSAVE save(*forward_->jacobian() * model_, "dataJac_"  + toStr(iter_) PLUS_TMP_VECSUFFIX);
         DOSAVE save(response_,    "response_" + toStr(iter_) PLUS_TMP_VECSUFFIX);
 
         modelHist_.push_back(model_);
