@@ -81,10 +81,11 @@ using the MSYS makefile generator:
 
 .. code-block:: bash
 
-    cmake -G 'MSYS Makefiles' ../trunk
+    cmake  ../trunk -G 'MSYS Makefiles' -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
 
 If cmake complains about missing python stuff, make sure the Python interpreter
-is in your execution path.
+is in your execution path. If openblas is not installed you should of course omit 
+the last directive, then built-int lapack/blas are used or they are build from source.
 
 To build the library, just run
 
