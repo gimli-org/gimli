@@ -20,7 +20,7 @@ from pygimli.physics import MethodManager
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
 
-from  . raplot import drawTravelTimeData
+from . raplot import drawTravelTimeData
 
 
 class Refraction(MethodManager):
@@ -48,13 +48,11 @@ class Refraction(MethodManager):
         self.start = []
         self.pd = None
 
-        name = kwargs.pop('name', 'new')
-
         if isinstance(data, str):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
-            self.basename = name
+            self.basename = kwargs.pop('name', 'new')
 #        if self.dataContainer is not None:
 #            self.createMesh()
 #        self.fop = self.createFOP(verbose=self.verbose)
@@ -123,7 +121,7 @@ class Refraction(MethodManager):
         if self.dataContainer.allNonZero('err'):
             self.error = self.dataContainer('err')
         else:
-            self.error = Refraction.estimateError(self.dataContainer)
+            self.error = Refraction.estimateError(data)
 
     def loadData(self, filename):
         """load data from file"""
@@ -176,6 +174,7 @@ class Refraction(MethodManager):
                            marker='-')
 
         plt.show(block=False)
+        return ax
 
     def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
                    paraBoundary=5, apply=True, **kwargs):
@@ -230,11 +229,15 @@ class Refraction(MethodManager):
         return ax
 
     @staticmethod
-    def estimateError(data, absoluteError=0.001, relativeError=0.001):
+    def estimateError(data=None, absoluteError=0.001, relativeError=0.001):
         """Estimate error composed of an absolute and a relative part
 
         Parameters
         ----------
+        absoluteError : float
+            absolute error of traveltimes (usually in s)
+        relativeError : float
+            relative error of traveltimes in 1 (e.g. 0.01 is 1%)
 
         Returns
         -------
@@ -263,7 +266,7 @@ class Refraction(MethodManager):
             relative weight for purely vertical boundaries
         """
         if data is not None:
-            #setDataContainer would be better
+            # setDataContainer would be better
             if t is not None:
                 data.set('t', t)
             self.setDataContainer(data)
@@ -279,7 +282,7 @@ class Refraction(MethodManager):
 
         if self.mesh is None:
             self.createMesh(**kwargs)
-            
+
         useGradient = kwargs.pop('useGradient', True)
         if useGradient:
             self.fop.setStartModel(createGradientModel2D(
@@ -289,25 +292,30 @@ class Refraction(MethodManager):
             self.fop.setStartModel(self.fop.createDefaultStartModel())
 
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
-        
+
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
-        self.inv.setMaxIter(kwargs.pop('max_iter', 20))
-        self.inv.setRobustData(kwargs.pop('robustData', False))
-        self.inv.setBlockyModel(kwargs.pop('blockyModel', False))
+        if 'max_iter' in kwargs:  # just for backward compatibility
+            self.inv.setMaxIter(kwargs.pop('max_iter'))
+        if 'maxIter' in kwargs:  # the better way
+            self.inv.setMaxIter(kwargs.pop('maxIter'))
+        if 'robustData' in kwargs:
+            self.inv.setRobustData(kwargs.pop('robustData'))
+        if 'blockyModel' in kwargs:
+            self.inv.setBlockyModel(kwargs.pop('blockyModel'))
 
         if not hasattr(self.error, '__iter__'):
-            self.error = Refraction.estimateError(self.dataContainer,
-                                                  kwargs.pop('error', 0.003))  # abs. error in ms
+            self.error = Refraction.estimateError(
+                self.dataContainer, kwargs.pop('error', 0.003))  # abs err in s
 
         self.inv.setAbsoluteError(self.error)
         self.fop.jacobian().clear()
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
-        
+
         return self.velocity
-   
+
     @staticmethod
     def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
         """
@@ -323,14 +331,14 @@ class Refraction(MethodManager):
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
             Mesh to calculate for.
-            
+
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
             slowness distribution for the given mesh cells can be:
-            
+
             * a single array of len mesh.cellCount()
             * a matrix of N slowness distributions of len mesh.cellCount()
             * a res map as [[marker0, res0], [marker1, res1], ...]
-                
+
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 

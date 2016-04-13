@@ -81,7 +81,7 @@ class MethodManager(object):
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
 
-    #@classmethod
+#    @classmethod
     def createFOP_(self, verbose=False):
         """ Create forward operator working on refined mesh """
         return self.createFOP(verbose)
