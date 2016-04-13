@@ -45,7 +45,7 @@ checkAndFixLocaleDecimal_point(verbose=True)
 
 if '--debug' in sys.argv:
     print("set debug mode")
-    _pygimli_.setDebug(True)
+    core._pygimli_.setDebug(True)
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
