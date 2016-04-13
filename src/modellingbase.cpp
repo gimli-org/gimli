@@ -57,7 +57,7 @@ ModellingBase::ModellingBase(const Mesh & mesh, DataContainer & data, bool verbo
 }
 
 ModellingBase::~ModellingBase() {
-    delete regionManager_;
+    if (ownRegionManager_) delete regionManager_;
     if (mesh_) delete mesh_;
     if (jacobian_ && ownJacobian_) delete jacobian_;
     if (constraints_ && ownConstraints_) delete constraints_;
@@ -77,6 +77,7 @@ void ModellingBase::init_() {
     
     ownJacobian_        = false;
     ownConstraints_     = false;
+    ownRegionManager_   = true;
     
     initJacobian();
     initConstraints();
@@ -513,6 +514,20 @@ void ModellingBase::initRegionManager() {
     }
 }
 
+void ModellingBase::setRegionManager(RegionManager * reg){ 
+    if (reg){
+        regionManagerInUse_ = true;
+        delete regionManager_;
+        regionManager_ = reg; 
+        ownRegionManager_ = false;
+        
+    } else {
+        regionManagerInUse_ = false;
+        regionManager_      = new RegionManager(verbose_);
+        ownRegionManager_   = true; // we really refcounter
+    }
+}
+
 const RegionManager & ModellingBase::regionManager() const {
     if (regionManager_ == 0) throwError(1, "No RegionManager initialized");
     return *regionManager_;
@@ -522,6 +537,7 @@ RegionManager & ModellingBase::regionManager(){
     initRegionManager();
     return *regionManager_;
 }
+
 
 Region * ModellingBase::region(int marker){
     return regionManager().region(marker);
