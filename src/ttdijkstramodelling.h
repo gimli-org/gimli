@@ -107,7 +107,7 @@ public:
     /*! Interface. */
     virtual void initJacobian();
 
-    Graph createGraph();
+    Graph createGraph(const RVector & slownessPerCell) const;
 
 //     RVector calculate();
 

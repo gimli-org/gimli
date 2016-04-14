@@ -431,7 +431,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                 if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
                     SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
                     double val = regionManager_->region(regionMarker)->fixValue();
-//                     __MS("fixing region: " << regionMarker << " to: " << val)
+//                      __MS("fixing region: " << regionMarker << " to: " << val)
                     cellAtts[i] = val;
                 }
             // }
@@ -445,6 +445,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
 void ModellingBase::mapModel(const RVector & model, double background){
     // implement "readonly version"!!!!!!!!!!!
     mesh_->setCellAttributes(createMappedModel(model, background));
+
     return;
     
     mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
