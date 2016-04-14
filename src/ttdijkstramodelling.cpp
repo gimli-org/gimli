@@ -129,7 +129,7 @@ RVector TravelTimeDijkstraModelling::createDefaultStartModel() {
     return RVector(this->regionManager().parameterCount(), findMedianSlowness());
 }
 
-Graph TravelTimeDijkstraModelling::createGraph() {
+Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) const {
     Graph meshGraph;
 
     double dist, oldTime, newTime;
@@ -141,7 +141,7 @@ Graph TravelTimeDijkstraModelling::createGraph() {
             dist = na->pos().distance(nb->pos());
             
             oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * mesh_->cell(i).attribute();
+            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
             
             if (oldTime != 0) {
                 newTime = std::min(newTime, oldTime);
@@ -159,7 +159,7 @@ Graph TravelTimeDijkstraModelling::createGraph() {
         
             dist = na->pos().distance(nb->pos());
             oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * mesh_->cell(i).attribute();
+            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
         
             meshGraph[na->id()][nb->id()] = newTime;
             meshGraph[nb->id()][na->id()] = newTime;
@@ -169,7 +169,7 @@ Graph TravelTimeDijkstraModelling::createGraph() {
             
             dist = na->pos().distance(nb->pos());
             oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * mesh_->cell(i).attribute();
+            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
             meshGraph[na->id()][nb->id()] = newTime;
             meshGraph[nb->id()][na->id()] = newTime;
         }
@@ -283,7 +283,7 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
 
     this->mapModel(slowness, background_);
 
-    dijkstra_.setGraph(createGraph());
+    dijkstra_.setGraph(createGraph(mesh_->cellAttributes()));
     Index nShots = shotNodeId_.size();
     Index nRecei = receNodeId_.size();
     RMatrix dMap(nShots, nRecei);
@@ -325,14 +325,15 @@ void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
     this->createJacobian(*jacobian, slowness);
 }
 
-void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian, const RVector & slowness) {
+void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
+                                                 const RVector & slowness) {
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
         background_ = 1e16;
     }
 
     this->mapModel(slowness, background_);
-    dijkstra_.setGraph(createGraph());
+    dijkstra_.setGraph(createGraph(mesh_->cellAttributes()));
 
     Index nShots = shotNodeId_.size();
     Index nRecei = receNodeId_.size();
@@ -395,7 +396,14 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian, co
                                 if (marker > (int)nModel - 1) {
                                     std::cerr << "Warning! request invalid model cell: " << *(*it) << std::endl;
                                 } else {
-                                    jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin??
+                                    
+                                    if (marker <= MARKER_FIXEDVALUE_REGION){
+                                        // neighbor is fixed region 
+//                                         SIndex regionMarker = -(marker - MARKER_FIXEDVALUE_REGION);
+//                                         double val = regionManager_->region(regionMarker)->fixValue();
+                                    } else {
+                                        jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin?? CA nur wohin was??
+                                    }
                                 }
                             }
                         }

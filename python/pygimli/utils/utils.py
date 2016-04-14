@@ -282,6 +282,10 @@ def diff(v):
     """
     d = None
 
+    if type(v) == np.ndarray:
+        if v.ndim == 2:
+            v = pg.R3Vector(v)
+
     if isinstance(v, pg.R3Vector):
         d = pg.R3Vector(len(v) - 1)
     else:

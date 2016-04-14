@@ -98,7 +98,6 @@ public:
 
     /*! Delete the actual mesh. */ 
     void deleteMesh();
-
     
     /*! Set external Jacobian matrix*/
     virtual void setJacobian(MatrixBase * J);
@@ -176,7 +175,7 @@ public:
      values given per cell. Exterior values will be prolongated. */
     RVector createMappedModel(const RVector & model, double background=0) const;
 
-    void setRegionManager(RegionManager * reg){ regionManager_ = reg; }
+    void setRegionManager(RegionManager * reg);
 
     const RegionManager & regionManager() const;
 
@@ -239,6 +238,7 @@ protected:
     bool                    verbose_;
 
     bool                    regionManagerInUse_;
+    bool                    ownRegionManager_;
 
     Index                   nThreads_;
     Index                   nThreadsJacobian_;
