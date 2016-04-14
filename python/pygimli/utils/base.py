@@ -51,7 +51,7 @@ def roundTo(arr, n_digits=3):
     #return np.asarray([rndig(a, ndig=n_digits) for a in arr])
 
 
-def num2str(a, fmtstr='%g%'):
+def num2str(a, fmtstr='%g'):
     """List of strings (deprecated, for backward-compatibility) """
     return [fmtstr % rndig(ai) for ai in a]
 
