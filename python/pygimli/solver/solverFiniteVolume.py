@@ -1044,16 +1044,10 @@ if __name__ == '__main__':
     show(grid, data=pg.cellDataToPointData(grid, pres),
          logScale=False, showLater=True, colorBar=True, axes=ax1, cbar='b2r')
     show(grid,
-         data=pg.logTransDropTol(
-             pg.cellDataToPointData(
-                 grid, vel[
-                     :, 0]), 1e-2),
+         data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 0]), 1e-2),
          logScale=False, showLater=True, colorBar=True, axes=ax2)
     show(grid,
-         data=pg.logTransDropTol(
-             pg.cellDataToPointData(
-                 grid, vel[
-                     :, 1]), 1e-2),
+         data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 1]), 1e-2),
          logScale=False, showLater=True, colorBar=True, axes=ax3)
 
     show(grid, data=vel, axes=ax1)
