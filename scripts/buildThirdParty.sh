@@ -13,10 +13,12 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=8a08a44ffee70f71bdb7d8bee90e325dafbfeae4 #last functional
+CASTXML_REV=5cfebb0f904131d1df8e36fcb9c290f12c06e9ba
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 #PYGCCXML_REV=f8cfd81 # old functional
 #PYGCCXML_REV=bffa6e0 # current functional
+PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 #PYPLUSPLUS_REV=78f5b0f # pre apichange
