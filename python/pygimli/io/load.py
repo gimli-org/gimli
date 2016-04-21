@@ -36,7 +36,7 @@ def load(fname, verbose=False):
         ".data": pg.DataContainer,
         ".ohm": pg.DataContainer,  # BERT compatibility
         ".shm": pg.DataContainer,  # BERT compatibility
-        ".sgt": pg.DataContainer,  
+        ".sgt": pg.DataContainer,
         # Vectors
         ".dat": pg.RVector,
         ".vector": pg.RVector,
@@ -76,9 +76,7 @@ def load(fname, verbose=False):
                     "Trying auto-detect." % suffix)
     else:
         if verbose:
-            print(
-                "File extension %s is not known. Trying auto-detect." %
-                suffix)
+            print("File extension %s is unknown. Trying auto-detect." % suffix)
 
     for routine in import_routines.values():
         try:

@@ -142,10 +142,7 @@ def main(argv):
     else:
         meshname = args[0]
 
-    if meshname.endswith(".msh"):
-        mesh = readGmsh(meshname, verbose=options.verbose)
-    else:
-        mesh = pg.Mesh(meshname)
+    mesh = pg.load(meshname, verbose=options.verbose)
 
     if options.verbose:
         print(meshname, mesh)
