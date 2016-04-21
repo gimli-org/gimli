@@ -1,14 +1,20 @@
 Installation on Linux
 ---------------------
 
-On most Linux platforms, the following will suffice to compile pyGIMLi in the
-current directory.
+On Linux platforms, the most comfortable way to install pygimli is via the conda package manager contained in the Anaconda distribution (https://docs.continuum.io/anaconda/install#linux-install) or the lightweight alternative Miniconda (http://conda.pydata.org/miniconda.html).
+
+.. code:: bash
+
+    conda install -c gimli pygimli
+    conda update -c gimli -f pygimli # for updates
+
+If you are not using Anaconda, you can build pyGIMLi from source in the current directory via:
 
 .. code:: bash
 
     curl -Ls install.pygimli.org | bash
 
-This script accepts a few more options. For help see
+This script accepts a few more options. For help see:
 
 .. code:: bash
 
