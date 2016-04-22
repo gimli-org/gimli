@@ -347,7 +347,7 @@ def xyToLength(x, y):
 def cumDist(p):
     """The progressive i.e, cumulative length for the path p.
 
-    d = [0.0, d[0]+ |p[1]-p[0]|, d[1] + |p[2]-p[1]| + ...]
+    d = [0.0, d[0]+ | p[1]-p[0] |, d[1] + | p[2]-p[1] | + ...]
 
     Parameters
     ----------
