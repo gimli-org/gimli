@@ -16,6 +16,7 @@ CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #current functional .. late
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 PYGCCXML_REV=6c6e6e038f24cf4accd94a11dabe74e8303e383d # current functional
+PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 PYPLUSPLUS_REV=cfd47042f7a3

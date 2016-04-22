@@ -4,7 +4,7 @@ Readme for Github repository only. (Get's selected before *.rst file)
 
 ![GIMLi](https://raw.githubusercontent.com/gimli-org/gimli/master/doc/_static/gimli.png)
 
-# GIMLi - Geophysical Inversion and Modelling Library
+# Geophysical Inversion and Modelling Library
 
 [![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
@@ -26,12 +26,17 @@ and forward modelling tasks.
 
 - for people that expect a ready-made GUI for interpreting their data
 
-##### Build from source
+##### Install via curl
 ```bash
-git clone https://github.com/gimli-org/gimli.git
-mkdir gimli_build && cd gimli_build
-cmake ../gimli
-make pygimli
+curl -Ls install.pygimli.org | bash
+```
+
+##### For Anaconda users (currently Linux only)
+```bash
+# Installation
+conda install -c gimli pygimli
+# Update
+conda update -c gimli -f pygimli
 ```
 
 ##### Usage
