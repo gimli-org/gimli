@@ -122,11 +122,11 @@ def transFwdArchiePhi(rFluid=20, n=2):
     
     Examples
     --------
-    >>> phi = [0.3]
-    >>> tFAPhi = transFwdArchiePhi(rFluid=20)
-    >>> tFAPhi.trans(phi)
-    >>> resistivityArchie(rFluid=20, porosity=phi, 
-    ...                   a=1.0, m=2.0, S=1.0, n=2.0)
+    #>>> phi = [0.3]
+    #>>> tFAPhi = transFwdArchiePhi(rFluid=20)
+    #>>> tFAPhi.trans(phi)
+    #>>> resistivityArchie(rFluid=20, porosity=phi, 
+    #...                   a=1.0, m=2.0, S=1.0, n=2.0)
     """
     return pg.RTransPower(-n, rFluid**(1./n))
 
