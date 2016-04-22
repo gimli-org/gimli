@@ -12,14 +12,13 @@ SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 TRIANGLE_URL=http://www.netlib.org/voronoi/
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
-#CASTXML_REV=b367e2db71910f088856849fd2990207cf5841c4
-CASTXML_REV=1604e1a7ac8d417509c656135eff489ea970e4d2 #current functional .. later is broken
+CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #current functional .. later is broken
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
-#PYGCCXML_REV=6c6e6e038f24cf4accd94a11dabe74e8303e383d # current functional
+PYGCCXML_REV=6c6e6e038f24cf4accd94a11dabe74e8303e383d # current functional
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-#PYPLUSPLUS_REV=cfd47042f7a3
+PYPLUSPLUS_REV=cfd47042f7a3
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
