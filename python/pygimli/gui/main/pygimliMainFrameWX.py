@@ -22,6 +22,7 @@ import time
 try:
     import pygimli as pg
     import pygimli.misc
+    import pygimli.misc1
 except ImportError:
     sys.stderr.write(
         '''ERROR: cannot import the library 'pygimli'. Ensure that pygimli is in your PYTHONPATH \n''')

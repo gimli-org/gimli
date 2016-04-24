@@ -9,14 +9,12 @@ from math import pi
 from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
-# from . ert import resistivityArchie  # not in git yet (no ERT module)
-# should rather be in pygimli/petrophysics as resistivity is not only ERT
 
+# from . ert import resistivityArchie  # not in git yet (no ERT module)
 # from . gravimetry import Gravimetry
 # from . seismics import *
 
-__all__ = ("FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction")
-
+#__all__ = ["FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction"]
 
 class constants:
     # magnetic constant, vacuum permeability
