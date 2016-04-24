@@ -76,11 +76,11 @@ public:
 
     /*! Check if a point lie inside (with boundary). */
     bool isInside(const Pos < ValueType > & p){
-        return ((p[0] <= max_[0] && p[0] >= min_[0]) && 
-                (p[1] <= max_[1] && p[1] >= min_[1]) && 
+        return ((p[0] <= max_[0] && p[0] >= min_[0]) &&
+                (p[1] <= max_[1] && p[1] >= min_[1]) &&
                 (p[2] <= max_[2] && p[2] >= min_[2]));
     }
-    
+
     /*! Set minimum Position. */
     void setMin(const Pos < ValueType > & min) { min_ = min; }
     /*! Return a copy of the minimum position. */
@@ -114,17 +114,17 @@ class DLLEXPORT RegionMarkerPLC : public RVector3{
 public:
     RegionMarkerPLC(const RVector3 & pos, int marker, double area=0.0)
     : RVector3(pos), marker_(marker), area_(area){}
-    
+
     ~RegionMarkerPLC(){}
-    
+
     inline int marker() const {return marker_;}
     inline double area() const {return area_;}
-    
+
 protected:
     int marker_;
     double area_;
 };
-    
+
 
 class DLLEXPORT Mesh {
 
@@ -133,7 +133,7 @@ public:
     typedef std::vector< RegionMarker > RegionMarkerList;
     typedef RVector3 HoleMarker;
     typedef std::vector< RVector3 > HoleMarkerList;
-    
+
     /*! Default constructor, create empty mesh with dimension dim */
     Mesh(Index dim=2);
 
@@ -152,20 +152,20 @@ public:
     /*! Clear all data, inclusive all caches.*/
     void clear();
 
-    /*!If the mesh is static in geometry and shape some useful informations are cached. 
+    /*!If the mesh is static in geometry and shape some useful informations are cached.
      * (cell sizes, boundary sizes, ...)
      For dynamic meshes, i.e., node positions can be moved, you have to set staticGeometry to false to avoid any caching.*/
     void setStaticGeometry(bool stat);
-    
+
     /*! Return true if this mesh have static geometry. [Default=True]*/
     inline bool staticGeometry() const { return staticGeometry_; }
-        
+
     /*! Set the dimension of the mesh. [Default = 2] */
     void setDimension(uint dim){ dimension_ = dim;}
-    
+
     /*! Return the dimension of this mesh.*/
     uint dimension() const { return dimension_; }
-    
+
     /*! Shortcut for \ref dimension.*/
     uint dim() const { return dimension_; }
 
@@ -206,7 +206,7 @@ public:
 
     /*! Delete all given cells from the given mesh. Warning will be really deleted.*/
     void deleteCells(const std::vector < Cell * > & cells);
-    
+
     void create1DGrid(const RVector & x);
 
     void create2DGrid(const RVector & x, const RVector & y, int markerType=0);
@@ -214,8 +214,8 @@ public:
     void create3DGrid(const RVector & x, const RVector & y, const RVector & z,
                       int markerType=0);
 
-    /*! Create one dimensional grid. 
-     * Boundary on the domain border will get 
+    /*! Create one dimensional grid.
+     * Boundary on the domain border will get
      * marker: 1,2 for: left, right.*/
     void createGrid(const RVector & x) { create1DGrid(x); }
 
@@ -248,7 +248,7 @@ public:
 
     /*! Create a new mesh that is a part from this mesh, based on cell-ids */
     Mesh createMeshByCellIdx(const IndexArray & idxList);
-    
+
     /*! Create a partly mesh from mesh, based on cell-ids */
     void createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxList);
 
@@ -265,21 +265,21 @@ public:
     const std::vector< Node * > & nodes() const { return nodeVector_; }
 
     const std::vector< Cell * > & cells() const { return cellVector_; }
-    
+
     /*! Return const reference to all boundaries*/
     const std::vector< Boundary * > & boundaries() const { return boundaryVector_; }
 
     /*! Return vector of node from index list */
     std::vector< Node * > nodes(const IndexArray & ids) const;
-    
+
     /*! Return vector of cells from index list */
     std::vector< Cell * > cells(const IndexArray & ids) const;
-    
+
     /*! Return vector of boundaries from index list */
     std::vector< Boundary * > boundaries(const IndexArray & ids) const;
-    
-    
-    
+
+
+
     inline Index nodeCount() const { return nodeVector_.size(); }
     Node & node(Index i) const;
     Node & node(Index i);
@@ -294,10 +294,10 @@ public:
 
     /*! Return a vector of all node positions */
     R3Vector positions() const;
-    
+
     /*! Return a vector of node positions for an index vector */
     R3Vector positions(const IndexArray & idx) const;
-    
+
     /*! Return all node positions. */
     R3Vector nodeCenters() const;
 
@@ -307,7 +307,7 @@ public:
 
     /*! Return a vector of all center positions for all boundaries */
     R3Vector boundaryCenters() const;
-        
+
     /*! Return the reference to a RVector of all cell sizes. Cached for static geometry.*/
     RVector & cellSizes() const;
 
@@ -315,14 +315,14 @@ public:
     RVector & boundarySizes() const;
 
     /*! Return the reference to the vector of scaled normal directions for each boundary.
-     * Cached for static geometry and will be build on first call. Not thread safe, perhaps not python GC safe. 
+     * Cached for static geometry and will be build on first call. Not thread safe, perhaps not python GC safe.
      Return \f$ \{A_i \vec{n}_i\} \forall i = [0..N_B]\f$.
-     Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary. 
+     Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary.
      If you want to use this, i.e. for the calculation of inside or outside flow through the boundary, you need to recognize the orientation of this boundary to the cell the flow goes into or comes from.
      For the left cell neighbor the normal direction should be always the outer normal.*/
     R3Vector & boundarySizedNormals() const;
-    
-    
+
+
     /*! Return a vector of all boundary marker */
     IVector boundaryMarker() const;
 
@@ -341,10 +341,10 @@ public:
     /*! Return a vector of boundary ptrs with the boundary marker between [from and to). \n
         for to equal open end set to = MAX_INT */
     std::vector < Boundary * > findBoundaryByMarker(int from, int to) const;
-    
+
     /*! Set the marker to all boundaries in index array. */
     void setBoundaryMarker(const IndexArray & ids, int marker);
-    
+
     /*! Return ptr to the cell that match position pos, counter holds amount of touch tests.
         Searching is done first by nearest-neighbour-kd-tree search,
         followed by slope-search if extensive is set. Return NULL if no cell can be found. */
@@ -356,7 +356,7 @@ public:
 
     /*! Return the index to the node of this mesh with the smallest distance to pos. */
     Index findNearestNode(const RVector3 & pos);
-    
+
     /*! Return vector of cell ptrs with marker match the range [from .. to). \n
         For single marker match to is set to 0, for open end set to = -1 */
     std::vector < Cell * > findCellByMarker(int from, int to=0) const;
@@ -368,30 +368,30 @@ public:
     //** end get infos stuff
 
     //** start mesh modification stuff
-    /*! DEPRECATED Prolongate the attribute of each cell in emptyList by the attribute 
+    /*! DEPRECATED Prolongate the attribute of each cell in emptyList by the attribute
      * from neighbouring cells.
      * The attributes have to be lower than \ref TOLERANCE.
      * This function is called recursively until all zero-attribute-cells in
      * emptyList are filled with an attribute greater than Zero. */
-    void fillEmptyCells(const std::vector< Cell * > & emptyList, 
+    void fillEmptyCells(const std::vector< Cell * > & emptyList,
                         double background=-1.0);
 
-    /*! Prolongate the empty (lower than \ref TOLERANCE.) cell values in vals 
+    /*! Prolongate the empty (lower than \ref TOLERANCE.) cell values in vals
      * from its neighbouring cells.
      * This function is called recursively until all zero-attribute-values in
-     * vals are filled with an attribute greater than Zero. 
+     * vals are filled with an attribute greater than Zero.
      * RVector vals need to be of size \ref cellCount().
      * If Background is unequal -1.0 all empty values will be set to background.
      */
     void prolongateEmptyCellsValues(RVector & vals, double background=-1.0) const;
-                            
+
     void recountNodes();
 
     void sortNodes(const IndexArray & perm);
 
     /*! Return true if createNeighbourInfos is called once */
     inline bool neighboursKnown() const { return neighboursKnown_; }
-    
+
     /*! Remove from each boundary the ptr to the corresponding left and right cell*/
     void cleanNeighbourInfos();
 
@@ -400,11 +400,11 @@ public:
 
     /*! Create and store boundaries and neighboring information for this cell.*/
     void createNeighbourInfosCell_(Cell *c);
-        
+
     void relax();
 
     /*! Smooth the mesh via moving all free nodes into the average of all neighboring nodes. Repeat this smoothIteration times. There is currently only this smoothFunction. EdgeSwapping is deactivated.*/
-    void smooth(bool nodeMoving, bool edgeSwapping, uint smoothFunction, uint smoothIteration);
+    void smooth(bool nodeMoving=true, bool edgeSwapping=true, uint smoothFunction=1, uint smoothIteration=10);
 
     /*! Scale the mesh with \ref RVector3 s. And return a reference to the mesh (no copy)*/
     Mesh & scale(const RVector3 & s);
@@ -412,7 +412,7 @@ public:
     /*! Translate the mesh with \ref RVector3 t. And return a reference to the mesh (no copy)*/
     Mesh & translate(const RVector3 & t);
 
-    /*! Rotate mesh the with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg). 
+    /*! Rotate mesh the with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg).
      And return a reference to the mesh (no copy) */
     Mesh & rotate(const RVector3 & r);
     //** end mesh modification stuff
@@ -420,7 +420,7 @@ public:
     /*! Swap coordinate i with j for i and j lower then dimension of the mesh*/
     void swapCoordinates(Index i, Index j);
     //** end mesh modification stuff
-    
+
     /*! apply a 4x4 transformation matrix to the whole mesh*/
     template < class Matrix > Mesh & transform(const Matrix & mat){
 //         std::for_each(nodeVector_.begin(), nodeVector_.end(),
@@ -434,15 +434,15 @@ public:
     int save(const std::string & fileName, IOFormat format = Binary) const;
     int saveAscii(const std::string & fileName) const;
 
-    /*! Be carefull with interchanging binary meshs between 32-64bit architecture. 
+    /*! Be carefull with interchanging binary meshs between 32-64bit architecture.
      * Atm we save fixed int for counter and idx.
      * We have to replace and test it with uint32 or uint16 */
     int saveBinary(const std::string & fileName) const;
 
     /*! Load Mesh from file and try to import fileformat regarding file suffix.
-     * If createNeighbourInfos is set, the mesh is checked for consistency and 
+     * If createNeighbourInfos is set, the mesh is checked for consistency and
      * missing boundaries will be created. */
-    void load(const std::string & fileName, 
+    void load(const std::string & fileName,
               bool createNeighbours=true, IOFormat format=Binary);
 
     void loadAscii(const std::string & fileName);
@@ -483,7 +483,7 @@ public:
         RVector data2(0);
         return exportMidCellValue(fileName, data1, data2);
     }
-    
+
     void exportVTK(const std::string & fbody,
                    const std::map< std::string, RVector > & data,
                    const std::vector < RVector3 > & vec,
@@ -500,10 +500,10 @@ public:
     void exportVTK(const std::string & fbody,
                    const std::vector < RVector3 > & vec,
                    bool writeCells=true) const;
-    
+
     /*! Export mesh with one additional array that will called 'arr' */
     void exportVTK(const std::string & fbody, const RVector & arr) const;
-    
+
     void readVTKPoints_(std::fstream & file, const std::vector < std::string > & row);
     void readVTKCells_(std::fstream & file, const std::vector < std::string > & row);
     void readVTKScalars_(std::fstream & file, const std::vector < std::string > & row);
@@ -526,14 +526,14 @@ public:
     void exportAsTetgenPolyFile(const std::string & filename);
     //** end I/O stuff
 
-    /*!DEPRECATED will be removed. 
-        Add data to the mesh that will be saved with by using the binary mesh 
+    /*!DEPRECATED will be removed.
+        Add data to the mesh that will be saved with by using the binary mesh
      * format v.2. or exported with the appropriate name in VTK format,
-     * if the size of data equals the amount of nodes, cells or boundaries. 
+     * if the size of data equals the amount of nodes, cells or boundaries.
      */
     void addExportData(const std::string & name, const RVector & data);
 
-    /*! Return the data with a given name. 
+    /*! Return the data with a given name.
      * If there is no such data an exception is thrown.*/
     RVector exportData(const std::string & name) const;
 
@@ -542,17 +542,17 @@ public:
         return exportDataMap_; }
 
     /*! Set the full data map.*/
-    void setExportDataMap(const std::map< std::string, RVector > & eMap) { 
+    void setExportDataMap(const std::map< std::string, RVector > & eMap) {
         exportDataMap_ = eMap; }
 
     /*! Empty the data map.*/
     void clearExportData();
 
-    void addData(const std::string & name, const CVector & data){ 
+    void addData(const std::string & name, const CVector & data){
         addExportData(name+"-Re", real(data));
         addExportData(name+"-Im", imag(data));
     }
-    
+
     /*!*/
     void addData(const std::string & name, const RVector & data){ addExportData(name, data); }
     /*!*/
@@ -561,10 +561,10 @@ public:
     bool haveData(const std::string & name) const { return exportDataMap_.count(name) > 0; }
     /*!*/
     const std::map< std::string, RVector > & dataMap() const { return exportDataMap_; }
-  
+
     /*! Print data map info.*/
     void dataInfo() const;
-  
+
     /*! Set the comment for VTK Ascii export headline.*/
     void setCommentString(const std::string & commentString) {commentString_ = commentString;}
 
@@ -572,7 +572,7 @@ public:
     const std::string & commentString() const {return commentString_;}
 
     void mapCellAttributes(const std::map < float, float > & aMap);
-    
+
     void mapAttributeToParameter(const IndexArray & cellMapIndex,
                                  const RVector & attributeMap, double defaultVal);
 
@@ -594,13 +594,13 @@ public:
 
     /*! Set all cell marker the values in attribute. */
     void setCellMarkers(const IVector & marker);
-    
+
     /*! Set all cell marker the values in attribute (casting to int)*/
     void setCellMarkers(const RVector & attribute);
-    
+
     /*! Return a vector of all cell marker */
     IVector cellMarkers() const;
-    
+
 
     //** probably deprecated
     double xmin() const { findRange_(); return minRange_[0]; }
@@ -616,40 +616,40 @@ public:
     /*! Return the reference to the matrix for cell value to boundary value interpolation matrix. */
     RSparseMapMatrix & cellToBoundaryInterpolation() const;
 
-    /*!Return the divergence for each cell of a given vector field for each 
+    /*!Return the divergence for each cell of a given vector field for each
      * boundary.
-     * The divergence is calculated by simple 1 point boundary integration 
-     * over each cell. 
+     * The divergence is calculated by simple 1 point boundary integration
+     * over each cell.
      * \f$ d(cell) = \sum_boundaries V(boundary center) \cdot n(boundary)\f$
-     * Higher order integration needs to be implemented. 
+     * Higher order integration needs to be implemented.
      * Contact the author if you need this.*/
     RVector divergence(const R3Vector & V) const;
 
     /*! Interpolate boundary based values to cell based gradients. */
     R3Vector boundaryDataToCellGradient(const RVector & boundaryData) const;
-    
+
     /*! Interpolate cell based values to boundary based gradients. */
     R3Vector cellDataToBoundaryGradient(const RVector & cellData) const;
-        
+
     /*! Interpolate cell based values to boundary based gradients with a given cell Gradient.*/
     R3Vector cellDataToBoundaryGradient(const RVector & cellData,
                                         const R3Vector & cellGradient) const;
 
-    /*! Add a region marker for tetgen or triangle creation if the mesh 
-     *is a PLC, if area is < 0 a hole is added. */    
+    /*! Add a region marker for tetgen or triangle creation if the mesh
+     *is a PLC, if area is < 0 a hole is added. */
     void addRegionMarker(const RVector3 & pos, int marker, double area=0);
     void addRegionMarker(const RegionMarker & reg);
 
     const RegionMarkerList & regionMarker() const { return regionMarker_; }
-    
+
     /*! Add a hole marker for tetgen or triangle creation if the mesh
-     * is a PLC */    
+     * is a PLC */
     void addHoleMarker(const RVector3 & pos);
-    
+
     /*!Return read only reference for all defined hole regions. */
     const HoleMarkerList & holeMarker() const { return holeMarker_; }
-    
-    
+
+
 protected:
     void copy_(const Mesh & mesh);
 
@@ -659,7 +659,7 @@ protected:
 
     template < class B > Boundary * createBoundary_(
         std::vector < Node * > & nodes, int marker, int id){
-        
+
         if (id == -1) id = boundaryCount();
         boundaryVector_.push_back(new B(nodes));
         boundaryVector_.back()->setMarker(marker);
@@ -669,7 +669,7 @@ protected:
 
     template < class B > Boundary * createBoundaryChecked_(
         std::vector < Node * > & nodes, int marker){
-        
+
         Boundary * b = findBoundary(nodes);
         if (!b) {
             b = createBoundary_< B >(nodes, marker, boundaryCount());
@@ -681,7 +681,7 @@ protected:
 
     template < class C > Cell * createCell_(
         std::vector < Node * > & nodes, int marker, int id){
-        
+
         if (id == -1) id = cellCount();
         cellVector_.push_back(new C(nodes));
         cellVector_.back()->setMarker(marker);
@@ -709,7 +709,7 @@ protected:
     mutable bool rangesKnown_;
 
     bool neighboursKnown_;
-    
+
     mutable KDTreeWrapper * tree_;
 
     /*! A static geometry mesh caches geometry informations. */
@@ -717,9 +717,9 @@ protected:
     mutable RVector cellSizesCache_;
     mutable RVector boundarySizesCache_;
     mutable R3Vector boundarySizedNormCache_;
-    
+
     mutable RSparseMapMatrix * cellToBoundaryInterpolationCache_;
-    
+
     bool oldTet10NumberingStyle_;
 
     std::map< std::string, RVector > exportDataMap_;
@@ -728,7 +728,7 @@ protected:
     // for PLC creation
     RegionMarkerList regionMarker_;
     HoleMarkerList holeMarker_;
-    
+
 }; // class Mesh
 
 } // namespace GIMLI;

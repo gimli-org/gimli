@@ -42,6 +42,7 @@ def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
     ICC.setRobustData(robust)
+#    ICC.setMaxIter(0)
     model = ICC.run()  # run inversion
     if verbose:
         ICC.echoStatus()
