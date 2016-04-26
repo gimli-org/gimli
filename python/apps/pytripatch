@@ -107,7 +107,8 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
                 cWeight=None, cMin=None, drawEdges=False, cMax=None,
                 coverage=None, covThreshold=0.4,
                 showCbar=True, label="", linear=False,
-                offset=pg.RVector3(0.0, 0.0), cmapname=None):
+                offset=pg.RVector3(0.0, 0.0), cmapname=None, 
+                interfaceThickness=2):
     """ show triangle mesh """
     mesh = pg.Mesh()
     if (meshname.rfind('.vtk') != -1):
@@ -200,13 +201,13 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
     m = mesh.findBoundaryByMarker(1)
     print("boundary > 2 ", len(m))
     if len(m) > 0:
-        pass
-        pg.mplviewer.drawSelectedMeshBoundaries(axis,
+        if interfaceThickness > 0:
+            pg.mplviewer.drawSelectedMeshBoundaries(axis,
                                                 filter(
                                                     lambda b: b.marker() >= 1,
                                                     mesh.boundaries()),
                                                 color=(0, 0.0, 0.0, 1.0),
-                                                linewidth=2.0)
+                                                linewidth=interfaceThickness)
     if drawEdges:
         pg.mplviewer.drawMeshBoundaries(axis, mesh)
 
@@ -490,6 +491,10 @@ def main(argv):
     parser.add_option("", "--zOffset", dest="zoffset",
                       default=0.0, type="float",
                       help="set z-coordinate offset for first electrode [0.0] ")
+    parser.add_option("", "--interfaceLineWidth", dest="interfaceThickness",
+                      default=2.0, type="float",
+                      help="Set the drawing line width for interface lines [2.0] ")
+    
     parser.add_option(
         "",
         "--maxDepth",
@@ -644,7 +649,8 @@ def main(argv):
                     linear=options.linear,
                     drawEdges=options.drawEdges,
                     cmapname=options.cmapname,
-                    offset=pg.RVector3(options.xoffset, options.zoffset))
+                    offset=pg.RVector3(options.xoffset, options.zoffset),
+                    interfaceThickness=options.interfaceThickness)
             elif meshname.rfind('.poly') != -1:
                 axes, _ = pg.show(pg.load(meshname, options.verbose))
             else:
