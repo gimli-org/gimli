@@ -27,10 +27,11 @@ def parseDataStr(s):
     data = pg.RVector(0)
 
     if len(vals) > 0:
-        pg.load(data, vals[0])
+        data.load(vals[0])
         if len(data) == 0:
-            pg.load(data, vals[0], pg.Binary)
-
+            data.load(vals[0], pg.Binary)
+    
+    
     if len(vals) == 1:
         return vals[0], data
     if len(vals) == 2:
