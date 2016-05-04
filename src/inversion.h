@@ -263,6 +263,10 @@ public:
 
     /*! Return forward operator.*/
     inline ModellingBase * forwardOperator() { return forward_; }
+    
+    /*! Return forward operator. Shortcut for forwardOperator() */
+    inline ModellingBase * fop() { return this->forwardOperator(); }
+    
 
     /*TODO Change interface to Trans < vec > *tD, or copy the trans ,giving non const reference is dangerous.*/
     /*! Set and get data transform.
