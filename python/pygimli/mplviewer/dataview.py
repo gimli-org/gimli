@@ -12,7 +12,7 @@ import pygimli as pg
 from pygimli.mplviewer import updateAxes as updateAxes_
 
 
-def generateMatrix(xvec, yvec, vals, full=False):
+def generateMatrix(xvec, yvec, vals, **kwargs):
     """ generate a data matrix from x/y and value vectors
 
     Parameters
@@ -30,14 +30,23 @@ def generateMatrix(xvec, yvec, vals, full=False):
     xmap/ymap : dict {key: num}
         dictionaries for accessing matrix position (row/col number from x/y[i])
     """
-    if full:
+    if kwargs.pop('full', False):
         xymap = {xy: ii for ii, xy in enumerate(np.unique(np.hstack((xvec,
                                                                      yvec))))}
         xmap = xymap
         ymap = xymap
     else:
-        xmap = {xx: ii for ii, xx in enumerate(np.unique(xvec))}
-        ymap = {yy: ii for ii, yy in enumerate(np.unique(yvec))}
+        xu, yu = np.unique(xvec), np.unique(yvec)
+        if kwargs.pop('fillx', False):
+            print('filling x', len(xu))
+            dx = np.median(np.diff(xu)).round(1)
+            xu = np.arange(0, xu[-1] - xu[0] + dx*0.5, dx) + xu[0]
+            print(len(xu))
+        if kwargs.pop('filly', False):
+            dy = np.median(np.diff(yu)).round(1)
+            yu = np.arange(0, yu[-1] - yu[0] + dy*0.5, dy) + yu[0]
+        xmap = {xx: ii for ii, xx in enumerate(xu)}
+        ymap = {yy: ii for ii, yy in enumerate(yu)}
     A = np.zeros((len(ymap), len(xmap)))
     inot = []
     nshow = min([len(xvec), len(yvec), len(vals)])
@@ -51,6 +60,69 @@ def generateMatrix(xvec, yvec, vals, full=False):
         if len(inot) < 30:
             print(inot)
     return A, xmap, ymap
+
+
+def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
+                logScale=None, label=None, dx=1, dy=None, **kwargs):
+    """ plot previously generated (generateVecMatrix) y map (category)
+
+    Parameters
+    ----------
+    A : iterable
+        to show
+    xvec : dict {i:num}
+        dict (must match A.shape[0])
+    ymap : iterable
+        vector for x axis (must match A.shape[0])
+    ax : mpl.axis
+        axis to plot, if not given a new figure is created
+    cMin/cMax : float
+        minimum/maximum color values
+    logScale : bool
+        logarithmic colour scale [min(A)>0]
+    label : string
+        colorbar label
+    """
+    if cMin is None:
+        cMin = np.min(vals)
+    if cMax is None:
+        cMax = np.max(vals)
+    if logScale is None:
+        logScale = (cMin > 0.0)
+    if logScale:
+        norm = LogNorm(vmin=cMin, vmax=cMax)
+    else:
+        norm = Normalize(vmin=cMin, vmax=cMax)
+    if 'ax' is None:
+        fig, ax = plt.subplots()
+
+    recs = []
+    if dy is None:  # map y values to unique
+        ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
+        for i in range(len(vals)):
+            recs.append(Rectangle((xvec[i]-dx/2, ymap[yvec[i]]-0.5), dx, 1))
+    else:
+        for i in range(len(vals)):
+            recs.append(Rectangle((xvec[i]-dx/2, yvec[i]-dy/2), dx, dy))
+
+    pp = PatchCollection(recs)
+    col = ax.add_collection(pp)
+    pp.set_edgecolor(None)
+    pp.set_linewidths(0.0)
+    if 'cmap' in kwargs:
+        pp.set_cmap(kwargs.pop('cmap'))
+    pp.set_norm(norm)
+    pp.set_array(np.array(vals))
+    pp.set_clim(cMin, cMax)
+    ax.set_xlim(min(xvec)-dx/2, max(xvec)+dx/2)
+    ax.set_ylim(len(ymap)+0.5, -0.5)
+
+    updateAxes_(ax)
+    cbar = None
+    if kwargs.pop('colorBar', True):
+        cbar = pg.mplviewer.createColorbar(col, cMin=cMin, cMax=cMax, nLevs=5,
+                                           label=label)
+    return ax, cbar, ymap
 
 
 def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
@@ -88,7 +160,7 @@ def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     if 'ax' is None:
         fig, ax = plt.subplots()
 
-    iy, ix = np.nonzero(A != 0)
+    iy, ix = np.nonzero(A)  # != 0)
     recs = []
     vals = []
     for i in range(len(ix)):
@@ -104,6 +176,9 @@ def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     pp.set_norm(norm)
     pp.set_array(np.array(vals))
     pp.set_clim(cMin, cMax)
+    xval = [k for k in xmap.keys()]
+    ax.set_xlim(min(xval)-dx/2, max(xval)+dx/2)
+    ax.set_ylim(len(ymap)+0.5, -0.5)
 
     updateAxes_(ax)
     cbar = None
@@ -203,7 +278,7 @@ def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
         * label : string
             Colorbar label
     """
-    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full)
+    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
     return plotMatrix(A, xmap, ymap, **kwargs)
 
 
