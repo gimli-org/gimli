@@ -45,6 +45,8 @@ class MethodManager(object):
         self.verbose = verbose
         self.debug = debug
         self.figs = {}
+        self.dataToken_ = 'nan'
+        self.errIsAbsolute = False
 
         self.fop = self.createFOP_(verbose)
         if self.fop is None:
@@ -79,6 +81,14 @@ class MethodManager(object):
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
 
+    def dataToken(self):
+        if self.dataToken_ == 'nan':
+            print("Warning! the Manager don't know the data token")
+        return self.dataToken_
+
+    def apparentData(self):
+        IMPLEMENTME
+    
 #    @classmethod
     def createFOP_(self, verbose=False):
         """ Create forward operator working on refined mesh """

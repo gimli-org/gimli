@@ -37,6 +37,7 @@ class Refraction(MethodManager):
         self.axs = {}
 
         self.doSave = kwargs.pop('doSave', False)
+        self.errIsAbsolute = True
 
         # should be forwarded so it can be accessed from outside
         self.dataContainer = None
@@ -47,6 +48,8 @@ class Refraction(MethodManager):
         self.response = None
         self.start = []
         self.pd = None
+        
+        self.dataToken_ = 't'
 
         if isinstance(data, str):
             self.loadData(data)
@@ -99,7 +102,7 @@ class Refraction(MethodManager):
         (typically done by run)
         """
         self.tD = pg.RTrans()
-        self.tM = pg.RTransLog()
+        self.tM = pg.RTransLogLU()
 
         inv = pg.RInversion(verbose, doSave)
         inv.setTransData(self.tD)
@@ -108,6 +111,22 @@ class Refraction(MethodManager):
 
         return inv
 
+    def createApparentData(self, data):
+        """
+        Create apparent slowness for given data.
+        """
+        # hackish .. dislike!
+        self.setData(data)
+        return 1/(self.getOffset(full=True) / data('t'))
+    
+    def setData(self, data):
+        """ Set data """
+        if issubclass(type(data), pg.DataContainer):
+            self.setDataContainer(data)
+        else:
+            raise BaseException("Implement set data from type:", type(data))
+        
+    
     def setDataContainer(self, data):
         """ set data container from outside
 
@@ -357,7 +376,7 @@ class Refraction(MethodManager):
         fop = Refraction.createFOP(verbose=verbose)
 
         fop.setData(scheme)
-        fop.setMesh(mesh, holdRegionInfos=True)
+        fop.setMesh(mesh, ignoreRegionManager=True)
 
         if len(slowness) == mesh.cellCount():
 
@@ -382,6 +401,7 @@ class Refraction(MethodManager):
         tt = Refraction()
         tt.setDataContainer(data)
         tt.showVA(ax=axes, t=t, **kwargs)
+
 
     def getOffset(self, full=False):
         """return vector of offsets (in m) between shot and receiver"""
