@@ -64,6 +64,21 @@ class ColeColePhi(pg.ModellingBase):
         return -np.angle(spec)
 
 
+class DoubleColeColePhi(pg.ModellingBase):
+    """"Cole-Cole model with EM term after Pelton et al. (1978)"""
+    def __init__(self, f, verbose=False):  # initialize class
+        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        self.f_ = f                               # save frequencies
+        self.setMesh(pg.createMesh1D(1, 6))       # 4 single parameters
+
+    def response(self, par):
+        """phase angle of the model"""
+        spec1 = ColeCole(self.f_, 1.0, par[0], par[1], par[2])
+        spec2 = ColeCole(self.f_, 1.0, par[3], par[4], par[5])
+        return -np.angle(spec1 * spec2)
+#        return -np.angle(spec1) - np.angle(spec2)
+
+
 class ColeColeAbs(pg.ModellingBase):
     """"Cole-Cole model with EM term after Pelton et al. (1978)"""
     def __init__(self, f, verbose=False):  # initialize class
