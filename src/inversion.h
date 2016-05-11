@@ -263,10 +263,10 @@ public:
 
     /*! Return forward operator.*/
     inline ModellingBase * forwardOperator() { return forward_; }
-    
+
     /*! Return forward operator. Shortcut for forwardOperator() */
     inline ModellingBase * fop() { return this->forwardOperator(); }
-    
+
 
     /*TODO Change interface to Trans < vec > *tD, or copy the trans ,giving non const reference is dangerous.*/
     /*! Set and get data transform.
@@ -310,6 +310,7 @@ public:
     /*! Set and get regularization parameter and its change over iteration */
     inline void setLambda(double lambda) { lambda_ = lambda; }
     inline double lambda() const { return lambda_; }
+    inline double getLambda() const { return lambda_; }
     inline void setLambdaFactor(double lambdaFactor) { lambdaFactor_ = lambdaFactor; }
     inline double lambdaFactor() const { return lambdaFactor_; }
 
