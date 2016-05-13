@@ -38,7 +38,7 @@ class SIPSpectrum():
             self.amp = np.asarray(amp)
         if phi is not None:
             self.phi = np.asarray(phi)
-        if unify or onlydown:
+        if unify:
             self.unifyData(onlydown)
 
     def __repr__(self):
