@@ -154,7 +154,7 @@ inline bool isInf(const Complex & a){ return (std::isinf(a.real()) || std::isinf
 
 inline bool isInfNaN(const Complex & a){ return (isInfNaN(a.real()) || isInfNaN(a.imag())); }
 
-inline double abs(const double & a) { return std::fabs(a); }
+inline double abs(const double a) { return std::fabs(a); }
 inline double abs(const Complex & a) { return std::abs(a); }
 
 inline double conj(const double & a) { return a; }
