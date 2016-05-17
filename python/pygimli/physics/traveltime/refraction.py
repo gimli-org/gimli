@@ -329,9 +329,12 @@ class Refraction(MethodManager):
 
         self.inv.setAbsoluteError(self.error)
         self.fop.jacobian().clear()
+        
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
+
+        self.model = self.velocity#(self.paraDomain.cellMarkers())
 
         return self.velocity
 

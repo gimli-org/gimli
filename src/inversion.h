@@ -440,9 +440,11 @@ public:
     }
     inline bool broydenUpdate() const { return doBroydenUpdate_; }
 
-    /*! Set model vector. */
+    /*! Set model vector . 
+     * If you call \ref run() the inversion starts with this model,  
+     * else it will start with fop.startModel(). */
     void setModel(const Vec & model){ model_ = model; }
-
+    
     /*! Return a const reference to the current model vector */
     inline const ModelVector & model() const { return model_; }
 

@@ -724,6 +724,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 
     if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
+    elif type(sensors) == np.ndarray:
+        sensors = [pg.RVector3(s) for s in sensors]
+
 
     eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
 

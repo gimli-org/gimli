@@ -6,7 +6,7 @@ This package contains submodules for various petrophysical models
 
 from .resistivity import *
 from .velocity import *
-#from .modelling import PetroModelling, PetroJointModelling
-#from .modelling import InvertPetro, InvertJointPetro
+from .modelling import PetroModelling, PetroJointModelling
+from .modelling import InvertPetro, InvertJointPetro
 
-#__all__ = []
+__all__ = []
