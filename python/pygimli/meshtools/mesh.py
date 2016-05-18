@@ -299,10 +299,14 @@ def readGmsh(fname, verbose=False):
 
         if verbose:
             bound_types = np.unique(bounds[:, dim])
-            regions = np.unique(cells[:, dim + 1])
-            print('  Regions: %s ' % len(regions) + str(tuple(regions)))
             print('  Boundary types: %s ' % len(bound_types) +
                 str(tuple(bound_types)))
+    else:
+        print("WARNING: No boundary conditions found.")
+
+    if verbose:
+        regions = np.unique(cells[:, dim + 1])
+        print('  Regions: %s ' % len(regions) + str(tuple(regions)))
 
     for node in nodes:
         if dim == 2:
