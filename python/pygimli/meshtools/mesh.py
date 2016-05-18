@@ -16,9 +16,9 @@ def createMesh(poly, quality=30, area=0.0,
     """
     Create a mesh for a given geometry polygon.
 
-    The mesh is created by :term:`triangle` or :term:`tetgen` if the 
+    The mesh is created by :term:`triangle` or :term:`tetgen` if the
     gimli support for these mesh generators are installed.
-    The geometry needs to contain nodes and boundaries and should be valid 
+    The geometry needs to contain nodes and boundaries and should be valid
     in the sense that the boundaries are non intersecting.
 
     If poly is a list of coordinates a simple Delaunay mesh of the convex hull
@@ -289,18 +289,20 @@ def readGmsh(fname, verbose=False):
     bound_marker = (pg.MARKER_BOUND_HOMOGEN_NEUMANN, pg.MARKER_BOUND_MIXED,
                     pg.MARKER_BOUND_HOMOGEN_DIRICHLET,
                     pg.MARKER_BOUND_DIRICHLET)
-    for i in range(4):
-        bounds[:, dim][bounds[:, dim] == i + 1] = bound_marker[i]
 
-    # account for CEM markers
-    bounds[:, dim][bounds[:, dim] >= 10000] *= -1
+    if bounds:
+        for i in range(4):
+            bounds[:, dim][bounds[:, dim] == i + 1] = bound_marker[i]
 
-    if verbose:
-        bound_types = np.unique(bounds[:, dim])
-        regions = np.unique(cells[:, dim + 1])
-        print('  Regions: %s ' % len(regions) + str(tuple(regions)))
-        print('  Boundary types: %s ' % len(bound_types) +
-              str(tuple(bound_types)))
+        # account for CEM markers
+        bounds[:, dim][bounds[:, dim] >= 10000] *= -1
+
+        if verbose:
+            bound_types = np.unique(bounds[:, dim])
+            regions = np.unique(cells[:, dim + 1])
+            print('  Regions: %s ' % len(regions) + str(tuple(regions)))
+            print('  Boundary types: %s ' % len(bound_types) +
+                str(tuple(bound_types)))
 
     for node in nodes:
         if dim == 2:
