@@ -290,7 +290,7 @@ def readGmsh(fname, verbose=False):
                     pg.MARKER_BOUND_HOMOGEN_DIRICHLET,
                     pg.MARKER_BOUND_DIRICHLET)
 
-    if bounds:
+    if len(bounds) == 0:
         for i in range(4):
             bounds[:, dim][bounds[:, dim] == i + 1] = bound_marker[i]
 
