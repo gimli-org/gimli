@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -116,7 +116,8 @@ Mesh createMesh3D(const RVector & x, const RVector & y, const RVector & z, int m
 }
 
 Mesh createMesh2D(const Mesh & mesh, const RVector & y, 
-                  int front, int back, bool adjustBack){
+                  int frontMarker, int backMarker, 
+                  int leftMarker, int rightMarker, bool adjustBack){
     Mesh mesh2(2);
     
     bool first = true;
@@ -131,10 +132,9 @@ Mesh createMesh2D(const Mesh & mesh, const RVector & y,
     }
     std::vector < Node * > nodes;
     for (Index iy = 1; iy < y.size(); iy ++){
-        first = true;
         for (Index in = 0; in < mesh.boundaryCount(); in ++){
             Index nn = mesh.boundary(in).nodeCount();
-            nodes.resize(nn * 2) ;
+            nodes.resize(nn * 2);
             
             nodes[0] = & mesh2.node((iy - 1) * mesh.nodeCount() + mesh.boundary(in).node(0).id());
             nodes[1] = & mesh2.node((iy - 1) * mesh.nodeCount() + mesh.boundary(in).node(1).id());
@@ -142,22 +142,48 @@ Mesh createMesh2D(const Mesh & mesh, const RVector & y,
             nodes[3] = & mesh2.node((iy * mesh.nodeCount() + mesh.boundary(in).node(0).id()));
             
             mesh2.createCell(nodes, mesh.boundary(in).marker());
-            
-            if (iy == 1){
-                // create top layer boundaries // in revers direction so the outer normal shows downward into the mesh
-            }
-            if (iy == y.size()-1){
-                // create bottom layer boundaries
+        }
+    }
+
+    // create top layer boundaries // in revers direction so the outer normal shows downward into the mesh
+    for (Index i = mesh.boundaryCount(); i > 0; i --){
+        nodes.resize(2);    
+        int in = i-1;
+        nodes[0] = & mesh2.node(mesh.boundary(in).node(1).id());
+        nodes[1] = & mesh2.node(mesh.boundary(in).node(0).id());
+        int marker = frontMarker;
+//         __MS(nodes[0]->pos() << " " << mesh.boundary(in).node(0).marker() << ":"<< 
+//              nodes[1]->pos() << " " << mesh.boundary(in).node(1).marker())
+        if (mesh.boundary(in).node(0).marker() == mesh.boundary(in).node(1).marker()){
+            if (mesh.boundary(in).node(1).marker() != 0){
+                marker = mesh.boundary(in).node(1).marker();
             }
         }
-        first = false;
+                            
+        mesh2.createBoundary(nodes, marker);        
+    }
+
+    for (Index iy = 0; iy < y.size()-1; iy ++){
+         mesh2.createEdge(mesh2.node(iy * mesh.nodeCount()), 
+                          mesh2.node((iy+1) * mesh.nodeCount()), leftMarker);
     }
     
-    
-    return mesh;
+    for (Index in = 0; in < mesh.boundaryCount(); in ++){
+        nodes.resize(2);        
+        nodes[0] = & mesh2.node((y.size()-1) * mesh.nodeCount() + mesh.boundary(in).node(0).id());
+        nodes[1] = & mesh2.node((y.size()-1) * mesh.nodeCount() + mesh.boundary(in).node(1).id());
+        int marker = backMarker;
+        mesh2.createBoundary(nodes, marker);        
+    }
+    for (Index iy = y.size()-1; iy > 0; iy --){
+         int i = iy -1;
+         mesh2.createEdge(mesh2.node((iy+1) * mesh.nodeCount()-1), 
+                          mesh2.node((iy)   * mesh.nodeCount()-1), rightMarker);
+    }
+    return mesh2;
 }
 
-Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottomLayer){
+Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topMarker, int bottomMarker){
     Mesh mesh3(3);
     
     if (z.size() < 2){
@@ -194,12 +220,12 @@ Mesh createMesh3D(const Mesh & mesh, const RVector & z, int topLayer, int bottom
             if (iz == 1){
                 // create top layer boundaries // in revers direction so the outer normal shows downward into the mesh
                 std::vector < Node * > nBound(nC); for (Index k = 0; k < nC; k ++) nBound[nC - k - 1] = nodes[k];
-                mesh3.createBoundary(nBound, topLayer);
+                mesh3.createBoundary(nBound, topMarker);
             }
             if (iz == z.size()-1){
                 // create bottom layer boundaries
                 std::vector < Node * > nBound(nC); for (Index k = 0; k < nC; k ++) nBound[k] = nodes[nC + k];
-                mesh3.createBoundary(nBound, bottomLayer);
+                mesh3.createBoundary(nBound, bottomMarker);
             }
         }
         first = false;

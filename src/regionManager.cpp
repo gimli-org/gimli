@@ -98,6 +98,12 @@ void Region::setBackground(bool background){
     }
 }
 
+void Region::setFixValue(double val){
+    fixValue_ = val; 
+    markBackground(false);
+    setBackground(true);
+}
+
 void Region::setSingle(bool single){
     if (single != isSingle_) {
         markSingle(single);
@@ -162,8 +168,8 @@ void Region::countParameter(Index start){
         for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
 //             __MS(cells_[i]->marker() << " " << fixValue_)
             if (abs(fixValue_) > TOLERANCE) {
-                if (cells_[i]->marker() >= 0) { 
-                    // set only for positive marker that not allready fixed regions
+                if (cells_[i]->marker() >= -1) { 
+                    // set only for positive marker that not already fixed regions
                     cells_[i]->setMarker(MARKER_FIXEDVALUE_REGION - marker());
                 }
             } else {
@@ -231,11 +237,6 @@ void Region::fillStartVector(RVector & vec){
 }
 
 //################ Model behaviour
-
-void Region::setFixValue(double val){
-    fixValue_ = val; 
-    setBackground(1);
-}
 
 void Region::setModelControl(double val){
     if (val < TOLERANCE) val = 1.0;
@@ -469,6 +470,7 @@ void Region::setParameters(double start, double lb, double ub, std::string trans
     }
 }
 
+//******************************************************************************
 RegionManager::RegionManager(bool verbose) : verbose_(verbose), mesh_(NULL){
     paraDomain_ = new Mesh();
     parameterCount_ = 0;
@@ -491,6 +493,13 @@ RegionManager::~RegionManager(){
     if (paraDomain_) delete paraDomain_;
 }
 
+const Mesh & RegionManager::mesh() const { 
+    if (mesh_== 0){
+        throwError(1, "RegionManager knows no mesh.");
+    }
+    return *mesh_; 
+}
+    
 Region * RegionManager::region(SIndex marker){
     if (regionMap_.count(marker) == 0){
         throwError(EXIT_DEFAULT, WHERE_AM_I + " no region with marker " + toStr(marker));

@@ -5,10 +5,7 @@ from . solver import *
 from . green import *
 from . solverFiniteVolume import *
 
-try:
-    from . solverDiscontinuousGalerkin import *
-except:
-    pass
+__all__ = []
 
 class WorkSpace:
     pass

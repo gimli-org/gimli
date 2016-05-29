@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *   Thomas Günther thomas@resistivity.net                                 *
  *                                                                         *
@@ -107,7 +107,7 @@ public:
     /*! Interface. */
     virtual void initJacobian();
 
-    Graph createGraph();
+    Graph createGraph(const RVector & slownessPerCell) const;
 
 //     RVector calculate();
 

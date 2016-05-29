@@ -7,8 +7,9 @@ Visit http://www.resistivity.net for further information or the latest version.
 
 import sys
 import os
-import pygimli as pg
 import numpy as np
+import pygimli as pg
+from pygimli.meshtools import readGmsh
 
 
 def strToRVector3(s):
@@ -26,10 +27,11 @@ def parseDataStr(s):
     data = pg.RVector(0)
 
     if len(vals) > 0:
-        pg.load(data, vals[0])
+        data.load(vals[0])
         if len(data) == 0:
-            pg.load(data, vals[0], pg.Binary)
-
+            data.load(vals[0], pg.Binary)
+    
+    
     if len(vals) == 1:
         return vals[0], data
     if len(vals) == 2:
@@ -141,7 +143,7 @@ def main(argv):
     else:
         meshname = args[0]
 
-    mesh = pg.Mesh(meshname)
+    mesh = pg.load(meshname, verbose=options.verbose)
 
     if options.verbose:
         print(meshname, mesh)

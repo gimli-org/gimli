@@ -1,30 +1,38 @@
 Installation on Linux
 ---------------------
 
-On most Linux platforms, the following will suffice to compile pyGIMLi in the
-current directory.
+On Linux platforms, the most comfortable way to install pygimli is via the conda package manager contained in the Anaconda distribution (https://docs.continuum.io/anaconda/install#linux-install) or the lightweight alternative Miniconda (http://conda.pydata.org/miniconda.html).
+
+.. code:: bash
+
+    conda install -c gimli pygimli
+    conda update -c gimli -f pygimli # for updates
+
+If you are not using Anaconda, you can build pyGIMLi from source in the current directory via:
 
 .. code:: bash
 
     curl -Ls install.pygimli.org | bash
 
-This script accept a few more options. See for help:
+This script accepts a few more options. For help see:
 
 .. code:: bash
 
     curl -Ls install.pygimli.org | bash -s help
 
-If there goes something wrong ensure to take a look on the error message. 
-In the most cases there is are missing or outdated packages.
+If something goes wrong please take a look at the error message. 
+In most cases there is are missing or outdated packages.
 
-See below for more detailed compilation instructions and prerequisites. 
+Please look first in prerequisites :link here .. how?: on needed packages. 
+
+If the installation fails you can try the following instructions for manual installation. 
 
 
 Detailed Installation on Vanilla Debian
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First install some of the necessary stuff. For sure you will need subversion to
-get the source files and some things for the tool-chain:
+First install some of the necessary stuff. You will need subversion, git and hg to
+retrieve the source files and some things for the tool-chain:
 
 .. code-block:: bash
 
@@ -52,10 +60,10 @@ Checkout the current sources for libgimli:
 
 .. code-block:: bash
 
-    git clone https://github.com/gimli-org/gimli.git trunk
+    git clone https://github.com/gimli-org/gimli.git
 
 We use cmake (http://www.cmake.org/) for compilation. We recommend using a
-build directory parallel to the trunk path:
+build directory parallel to the gimli (trunk) path:
 
 .. code-block:: bash
 
@@ -65,7 +73,7 @@ The main directory structure should looks like this:
 
 .. code-block:: bash
 
-    gimli/trunk
+    gimli/gimli
     gimli/build
 
 Change to the build path
@@ -78,9 +86,9 @@ and configure the build:
 
 .. code-block:: bash
 
-    cmake ../trunk
+    cmake ../gimli
 
-If the output complains some missing dependencies you should install, just
+If the output complains some missing dependencies,
 install these and repeat the the last step.
 
 To build the library just run make
@@ -98,23 +106,24 @@ To speed up the build process using more CPUs, use the -j flag, e.g.:
 The libraries will be installed in build/lib and some test applications are
 installed in build/bin
 
-If you want to build the python bindings call
+If you want to build the python bindings, call
 
 .. code-block:: bash
 
     make pygimli
 
-The _pygimli_.so library will be copied into the source path
-../trunk/python/pygimli. To use the gimli installation there have to be set
-some environment variables:
+You might add J=8 for using 8 jobs in parallel to speed up the build.
+The library _pygimli_.so library will be copied into the source path
+../gimli/python/pygimli in the subdirectory core.
+To use the gimli installation there have to be set some environment variables:
 
 .. code-block:: bash
 
-    export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/trunk/python
+    export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/gimli/python
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
     export PATH=$PATH:$HOME/src/gimli/build/bin
 
-If you want to use the C++ commandline applications, call
+If you want to use the C++ command line applications, call
 
 .. code-block:: bash
 
@@ -126,15 +135,15 @@ You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as pg; print(pg.__version)'
+    python -c 'import pygimli as pg; print(pg.__version__)'
 
-You can test your libgimli build with:
+You can test your gimli build with:
 
 .. code-block:: bash
 
     make check
 
-Of course the test will be very silent if you don't have cppunit installed.
+Note that the test will be very silent if you don't have cppunit installed.
 
 
 Example Installation on Ubuntu
@@ -170,7 +179,7 @@ You can force cmake to select the correct version with:
 
 .. code-block:: bash
 
-    cmake ../trunk -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
+    cmake ../gimli -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
 
 If the build misses libedit:
 
@@ -180,13 +189,24 @@ If the build misses libedit:
 
 Install *libedit*, e.g. 'apt-get install libedit' on Debian/Ubuntu.
 
-If castXML complains about missing clang command, please go into 
+
+castXML
+.......
+
+If castXML (https://github.com/CastXML/CastXML/) complains about missing clang or llvm command, please go into 
 $(GIMLISRC)/../thirdParty/build-XXX-XXX/castXML and try configure and build cmake manually
 
 .. code-block:: bash
+    
     CC=clang-3.6 CXX=clang++-3.6 cmake ../../src/castXML/
     make
 
+If you build castXML manually you can provide this binary to cmake via
+
+.. code-block:: bash
+    
+    cmake ../gimli -DCASTER_EXECUTABLE=$(PATH_TO_CASTXML)
+    
 
 Useful cmake settings
 ^^^^^^^^^^^^^^^^^^^^^
@@ -195,13 +215,13 @@ You can rebuild and update all local generated third party software by setting t
 
 .. code-block:: bash
 
-    CLEAN=1 cmake ../trunk
+    CLEAN=1 cmake ../gimli
 
 Use alternative c++ compiler.
 
 .. code-block:: bash
 
-    CC=clang CXX=clang++ cmake ../trunk
+    CC=clang CXX=clang++ cmake ../gimli
 
 Define alternative python version.
 On default the version of your active python version will be chosen.
@@ -209,22 +229,22 @@ You will need numpy and boost-python builds with your desired python version.
 
 .. code-block:: bash
 
-    cmake ../trunk -DPYVERSION=3.3
+    cmake ../gimli -DPYVERSION=3.3
 
 Build the library with debug and profiling flags
 
 .. code-block:: bash
 
-    cmake ../trunk -DCMAKE_BUILD_TYPE=Debug
+    cmake ../gimli -DCMAKE_BUILD_TYPE=Debug
 
 Build the library with gcc build.in sanity check 
 
 .. code-block:: bash
 
-    cmake ../trunk -DCMAKE_BUILD_TYPE=Debug -DASAN=1
+    cmake ../gimli -DCMAKE_BUILD_TYPE=Debug -DASAN=1
 
 
-Usefull make commands
+Useful make commands
 ^^^^^^^^^^^^^^^^^^^^^
 
 More verbose build output to view the complete command line:
@@ -233,5 +253,3 @@ More verbose build output to view the complete command line:
 
     make VERBOSE=1
  
-
-

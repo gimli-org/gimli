@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -641,32 +641,38 @@ void Mesh::exportVTK(const std::string & fbody,
 }
 
 void Mesh::exportVTK(const std::string & fbody,
-                     const std::map< std::string, 
+                     const std::map< std::string,
                      RVector > & dataMap, bool writeCells) const {
     return exportVTK(fbody, dataMap, std::vector < RVector3 >(0), writeCells);
 }
-                        
+
+void Mesh::exportVTK(const std::string & fbody, const RVector & arr) const {
+    std::map< std::string, RVector > m(exportDataMap_);
+    m.insert(std::pair< std::string, RVector >("arr", arr));
+    return exportVTK(fbody, m, std::vector < RVector3 >(0), true);
+}
+
 void Mesh::exportVTK(const std::string & fbody,
-                     const std::map< std::string, RVector > & dataMap, 
+                     const std::map< std::string, RVector > & dataMap,
                      const std::vector < RVector3 > & vec, bool cells) const {
     bool verbose = debug();
-    
+
     if (verbose){
         std::cout << "Write vtk " << fbody + ".vtk" << std::endl;
     }
 
-    std::fstream file; 
-    if (!openOutFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", & file)) { 
-        return; 
+    std::fstream file;
+    if (!openOutFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", & file)) {
+        return;
     }
-    
+
     std::map< std::string, RVector > data(dataMap);
 
     if (cellCount() > 0){
         RVector tmp(cellCount());
-        std::transform(cellVector_.begin(), cellVector_.end(), 
+        std::transform(cellVector_.begin(), cellVector_.end(),
                        &tmp[0], std::mem_fun(&Cell::marker));
-        
+
         if (!data.count("_Marker")) data.insert(std::make_pair("_Marker",  tmp));
         if (!data.count("_Attribute")) data.insert(std::make_pair("_Attribute",  cellAttributes()));
     }
@@ -677,7 +683,7 @@ void Mesh::exportVTK(const std::string & fbody,
     if (commentString_.size() > 0) {
         file << "d-" << dimension_ << "__ " << commentString_ << std::endl;
     } else {
-        file << "d-" << dimension_ << "__ created by " 
+        file << "d-" << dimension_ << "__ created by "
              << versionStr() << std::endl;
     }
     if (binary){
@@ -764,17 +770,17 @@ void Mesh::exportVTK(const std::string & fbody,
                     case MESH_PYRAMID13_RTTI: file     << "14 "; break;
                     case MESH_HEXAHEDRON_RTTI: file    << "12 "; break;
                     case MESH_HEXAHEDRON20_RTTI: file  << "25 "; break;
-                    default: 
-                        std::cerr << WHERE_AM_I << " nothing known about." 
+                    default:
+                        std::cerr << WHERE_AM_I << " nothing known about."
                         << cell(i).rtti() << std::endl;
                 }
             }
         }
         file << std::endl;
-        
+
         //** write cell data
         file << "CELL_DATA " << cellCount() << std::endl;
-        for (std::map < std::string, RVector >::iterator 
+        for (std::map < std::string, RVector >::iterator
             it = data.begin(); it != data.end(); ){
 
             if (verbose){
@@ -806,7 +812,7 @@ void Mesh::exportVTK(const std::string & fbody,
             for (Index i = 0; i < boundaryCount(); i ++) {
                 idxCount += boundary(i).nodeCount() + 1;
             }
-            
+
             file << "CELLS " << boundaryCount() << " " << idxCount << std::endl;
 
             long iDummy;
@@ -820,7 +826,7 @@ void Mesh::exportVTK(const std::string & fbody,
 
                 for (Index j = 0, jmax = boundary(i).nodeCount();
                      j < jmax; j ++){
-                    
+
                     if (binary){
 // 	          iDummy = cell(i).node(j).id();
 // 	          file.write((char*)&iDummy, sizeof(iDummy));
@@ -847,35 +853,35 @@ void Mesh::exportVTK(const std::string & fbody,
                         case MESH_QUADRANGLEFACE_RTTI: file    << "9 "; break;
                         case MESH_QUADRANGLEFACE8_RTTI: file   << "23 "; break;
                     default:
-                        std::cerr << WHERE_AM_I 
+                        std::cerr << WHERE_AM_I
                                   << " nothing know about." << boundary(i).rtti()
                                   << std::endl;
                     }
                 }
             }
             file << std::endl;
-        
+
             RVector tmp(boundaryCount());
             std::transform(boundaryVector_.begin(), boundaryVector_.end(),
                            &tmp[0], std::mem_fun(&Boundary::marker));
-        
+
             if (!data.count("_Marker")) {
                 data.insert(std::make_pair("_Marker",  tmp));
             }
-        
+
             //** write boundary data
             file << "CELL_DATA " << boundaryCount() << std::endl;
-            
-            for (std::map < std::string, RVector >::iterator 
+
+            for (std::map < std::string, RVector >::iterator
                 it = data.begin(); it != data.end(); ){
-                
+
                 if (verbose){
-                    std::cout << it->first << " " 
+                    std::cout << it->first << " "
                               << it->second.size() << std::endl;
                 }
-                
+
                 if (it->second.size() == (uint)boundaryCount()){
-                    
+
                     file << "SCALARS " << strReplaceBlankWithUnderscore(it->first)
                          << " double 1" << std::endl;
                     file << "LOOKUP_TABLE default" << std::endl;
@@ -888,36 +894,36 @@ void Mesh::exportVTK(const std::string & fbody,
                         }
                     }
                     file << std::endl;
-                    
+
                     data.erase(it++);
                 } else {
                     ++it;
                 }
             }
-            
+
             //** write boundary vector data
             if (vec.size() == boundaryCount()){
                 if (verbose){
                     std::cout << "write vector field data" << std::endl;
                 }
                 file << "VECTORS vec double" << std::endl;
-            
+
                 for (Index i = 0; i < vec.size(); i ++){
-                    file << vec[i][0] << " " 
+                    file << vec[i][0] << " "
                          << vec[i][1] << " "
                          << vec[i][2] << " " << std::endl;
                 }
             }
         } // if (boundaryCount() > 0)
-        
+
     } // else write boundaries
-    
+
     //** write point data
     file << "POINT_DATA " << nodeCount() << std::endl;
-    
-    for (std::map < std::string, RVector >::iterator 
+
+    for (std::map < std::string, RVector >::iterator
         it = data.begin(); it != data.end(); ){
-        
+
         if (it->second.size() == (uint)nodeCount()){
             file << "SCALARS " << strReplaceBlankWithUnderscore(it->first)
                  << " double 1" << std::endl;
@@ -927,61 +933,61 @@ void Mesh::exportVTK(const std::string & fbody,
                 file << it->second[i] << " ";
             }
             file << std::endl;
-            
+
             data.erase(it++);
         } else {
             ++it;
         }
     }
-        
+
     //** write point vector data
     if (vec.size() == nodeCount()){
         if (verbose){
             std::cout << "write vector field data" << std::endl;
         }
         file << "VECTORS vec double" << std::endl;
-            
+
         for (Index i = 0; i < vec.size(); i ++){
-            file << vec[i][0] << " " 
+            file << vec[i][0] << " "
                  << vec[i][1] << " "
                  << vec[i][2] << " " << std::endl;
         }
     } else {
         if (vec.size() > 0){
-            std::cerr << "Vector data size does not match node size: " 
+            std::cerr << "Vector data size does not match node size: "
                       << vec.size() << " " << nodeCount() << std::endl;
         }
     }
-    
+
     if (!data.empty()){
         for (std::map < std::string, RVector >::iterator
             it = data.begin(); it != data.end(); it ++){
-            std::cout << "Warning! data: " << it->first 
-                      << " not writen to vtk. " << it->second.size() 
+            std::cout << "Warning! data: " << it->first
+                      << " not written to vtk. " << it->second.size()
                       << std::endl;
         }
     }
-    
+
     file.close();
 }
 
 void Mesh::importVTK(const std::string & fbody) {
 //     __MS(dimension_)
     this->clear();
-    std::fstream file; openInFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk", 
+    std::fstream file; openInFile(fbody.substr(0, fbody.rfind(".vtk")) + ".vtk",
                                   &file);
 
     std::vector < std::string > row;
     getline(file, commentString_); //** vtk version line
     getline(file, commentString_); //** comment line
-    
-    
+
+
     if (commentString_.find("d-2__") != std::string::npos){
         dimension_ = 2;
     } else if (commentString_.find("d-3__") != std::string::npos){
         dimension_ = 3;
     }
-        
+
     while (!file.eof()){
         row = getRowSubstrings(file);
       //  std::cout << row.size() << std::endl;
@@ -997,7 +1003,7 @@ void Mesh::importVTK(const std::string & fbody) {
     row = getRowSubstrings(file);
     //std::cout << row.size() << std::endl;
     if (row.back() == "UNSTRUCTURED_GRID"){
-        
+
         //** End reading header
         while (!file.eof()){
             row = getRowSubstrings(file);
@@ -1006,8 +1012,8 @@ void Mesh::importVTK(const std::string & fbody) {
                 else if (row[0] == "CELLS") readVTKCells_(file, row);
                 else if (row[0] == "SCALARS") readVTKScalars_(file, row);
             }
-        } 
-        
+        }
+
     } else if (row.back() == "POLYDATA"){
         while (!file.eof()){
             row = getRowSubstrings(file);
@@ -1015,7 +1021,7 @@ void Mesh::importVTK(const std::string & fbody) {
                 if (row[0] == "POINTS") readVTKPoints_(file, row);
                 else if (row[0] == "POLYGONS") readVTKPolygons_(file, row);
             }
-        } 
+        }
     } else {
             THROW_TO_IMPL
     }
@@ -1033,7 +1039,7 @@ void Mesh::readVTKPoints_(std::fstream & file,
         file >> x >> y >> z;
         this->createNode(x, y, z);
     }
-    
+
 //     std::cout << GIMLI::z(positions()) << std::endl;
 //     std::cout << (min(abs(GIMLI::z(positions()))) << std::endl;
 //     __MS(nonZero(GIMLI::x(positions())))
@@ -1046,11 +1052,11 @@ void Mesh::readVTKPoints_(std::fstream & file,
             nodeVector_[i]->pos()[1] = nodeVector_[i]->pos()[2];
             nodeVector_[i]->pos()[2] = 0.0;
         }
-        
+
     } else if (!nonZero(GIMLI::z(positions()))) dimension_ = 2;
 }
 
-void Mesh::readVTKCells_(std::fstream & file, 
+void Mesh::readVTKCells_(std::fstream & file,
                          const std::vector < std::string > & row){
     uint nCells = toInt(row[1]);
     //std::cout << "nCells: " << nCells << std::endl;
@@ -1184,9 +1190,9 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
     std::transform(boundMesh.boundaries().begin(),
                    boundMesh.boundaries().end(),
                    &tmp[0], std::mem_fun(&Boundary::marker));
-    
+
     if (!boundData.count("_BoundaryMarker")) boundData.insert(std::make_pair("_BoundaryMarker",  tmp));
-    
+
     //boundMesh.exportVTK(fbody, boundData);
     addVTUPiece_(file, boundMesh, boundData);
 
@@ -1241,14 +1247,14 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
     file << std::endl << "</DataArray>" << std::endl;
     file << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << std::endl;
     uint count = 0;
-    
+
     for (uint i = 0; i < nCells; i ++) {
         count += cells[i]->nodeCount();
         file << count << " ";
     }
     file << std::endl << "</DataArray>" << std::endl;
     file << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << std::endl;
-    
+
     for (uint i = 0; i < nCells; i ++) {
         switch (cells[i]->rtti()){
             case MESH_BOUNDARY_NODE_RTTI: file     << "1 "; break;
@@ -1275,12 +1281,12 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
     file << "</Cells>" << std::endl;
 
     uint nodeData = 0, cellData = 0;
-    
-    for (std::map < std::string, RVector >::const_iterator it = data.begin(); 
+
+    for (std::map < std::string, RVector >::const_iterator it = data.begin();
          it != data.end(); it ++){
-        
-        
-        if (it->second.size() == nNodes && !cellsAreBoundaries) { 
+
+
+        if (it->second.size() == nNodes && !cellsAreBoundaries) {
             //NodeCount == Cellcount for cellsAreBoundaries(2d)
             nodeData++;
         } else if (it->second.size() == nCells) {
@@ -1310,7 +1316,7 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
         file << "<CellData>" << std::endl;
         for (std::map < std::string, RVector >::const_iterator it = data.begin();
              it != data.end(); it ++){
-            
+
             if (it->second.size() == nCells) {
                  file << "<DataArray type=\"Float64\" Name=\"" << it->first;
                  if (!binary){
@@ -1348,9 +1354,9 @@ void Mesh::importMod(const std::string & filename){
 
 void Mesh::importSTL(const std::string & fileName, bool isBinary ){
     double tolerance = 1e-3;
-    
+
     std::vector < RVector3 > allVerts;
-    
+
     if (!isBinary){ // try import ascii
         std::fstream file; openInFile(fileName, & file);
 
@@ -1361,7 +1367,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
             file.close();
             importSTL(fileName, true);
         }
-        
+
         bool finish = false;
         while (!finish){
             row = getNonEmptyRow(file);
@@ -1380,14 +1386,14 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
         file.close();
     } else { // import Binary Format
         UNTESTED
-        
+
         FILE * file; file = fopen(fileName.c_str(), "r+b");
 
         char header[80];
-        Index ret = 0; 
+        Index ret = 0;
         ret = fread(&header, 1, 80, file);
         if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
-        
+
         int nFaces = 0;
         ret = fread(&nFaces, 4, 1, file);
         if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
@@ -1399,7 +1405,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
         for (int i = 0; i < nFaces; i ++){
             ret = fread(&rd, 4, 12, file);
             if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
-            
+
             allVerts.push_back(RVector3(rd[3], rd[4],  rd[5]).round(tolerance * 0.01));
             allVerts.push_back(RVector3(rd[6], rd[7],  rd[8]).round(tolerance * 0.01));
             allVerts.push_back(RVector3(rd[9], rd[10], rd[11]).round(tolerance * 0.01));
@@ -1407,10 +1413,10 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
             ret = fread(&padding, 1, 2, file);
             if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
         }
-      
+
         fclose(file);
     } // end import binary STL format
-    
+
     Node *n1, *n2, *n3;
     if (allVerts.size() % 3 == 0 && allVerts.size() > 0){
         for (uint i = 0; i < allVerts.size() / 3; i ++){

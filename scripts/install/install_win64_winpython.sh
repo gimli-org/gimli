@@ -6,8 +6,10 @@ else
     PYTHON_MAJOR_REQ=$1
 fi
 
-WINPYTHON_DOWNLOAD=winPython_3.4/3.4.3.6/WinPython-64bit-3.4.3.6Qt5
-WINPYTHON_VERSION=python-3.4.3.amd64
+WINPYTHON_DOWNLOAD=winPython_3.5/3.5.1.2/WinPython-64bit-3.5.1.2
+WINPYTHON_VERSION=python-3.5.1.amd64
+#WINPYTHON_DOWNLOAD=winPython_3.4/3.4.4.1/WinPython-64bit-3.4.4.1Qt5
+#WINPYTHON_VERSION=python-3.4.4.amd64
 
 searchPython(){
     FindRunDone=$1

@@ -11,7 +11,7 @@ import pygimli as pg
 from .importexport import readTXTSpectrum
 from .plotting import showAmplitudeSpectrum, showSpectrum, showPhaseSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
-from .tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi
+from .tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi, fit2CCPhi
 
 
 class SIPSpectrum():
@@ -274,6 +274,37 @@ class SIPSpectrum():
         self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
                                         taupar=taupar, cpar=cpar)
 
+    def fit2CCPhi(self, ePhi=0.001, lam=1000., mpar=[0, 0, 1],
+                  taupar1=[0, 1e-5, 1], taupar2=[0, 1e-1, 1000],
+                  cpar=[0.5, 0, 1]):
+        """fit a Cole-Cole term to phase only
+
+        Parameters
+        ----------
+        ePhi : float
+            absolute error of phase angle
+        lam : float
+            regularization parameter
+        mpar, taupar, cpar : list[3]
+            inversion parameters (starting value, lower bound, upper bound)
+            for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
+
+        """
+        if taupar1[0] == 0:
+            taupar1[0] = np.sqrt(taupar1[1]*taupar1[2])
+            print("taupar1", taupar1)
+        if taupar2[0] == 0:
+            taupar2[0] = np.sqrt(taupar2[1]*taupar2[2])
+            print("taupar2", taupar2)
+#            taupar1[0] = 1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi
+        if mpar[0] == 0:
+            mpar[0] = 1. - min(self.amp)/max(self.amp)*2
+            print("mpar", mpar)
+        self.mCC, self.phiCC = fit2CCPhi(self.f, self.phi, ePhi, lam,
+                                         mpar1=mpar, mpar2=mpar,
+                                         cpar1=cpar, cpar2=cpar,
+                                         taupar1=taupar1, taupar2=taupar2)
+
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                 cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
@@ -405,12 +436,16 @@ class SIPSpectrum():
         """plot spectrum, Cole-Cole fit and Debye distribution"""
         # generate title strings
         if hasattr(self, 'mCC'):
-            tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f}'
             mCC = self.mCC
-            if len(mCC) > 3:
-                tstr += ' $\tau_2$={:.1e}s'
             if mCC[0] > 1:
                 tstr = r'CC: $\rho$={:.1f} m={:.3f} $\tau$={:.1e}s c={:.2f}'
+            else:
+                tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f}'
+                if len(mCC) == 6:  # double cole cole
+                    tstr = tstr.replace('CC', 'CC1') + '   ' + \
+                        tstr.replace('CC', 'CC2')
+                elif len(mCC) > 3:  # second (EM) tau
+                    tstr += r' $\tau_2$={:.1e}s'
             tCC = tstr.format(*mCC)
         fig, ax = plt.subplots(nrows=2+hasattr(self, 'mDD'), figsize=(12, 12))
         fig.subplots_adjust(hspace=0.25)

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009-2015 by the resistivity.net development team       *
+ *   Copyright (C) 2009-2016 by the resistivity.net development team       *
  *   Thomas Günther thomas@resistivity.net                                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *

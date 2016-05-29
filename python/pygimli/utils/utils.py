@@ -214,9 +214,9 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
     >>> v1 = grange(start=0, end=10, dx=3)
     >>> v2 = grange(start=0, end=10, n=3)
     >>> print(v1)
-    <class 'pygimli._pygimli_.RVector'> 4 [0.0, 3.0, 6.0, 9.0]
+    <class 'pygimli.core._pygimli_.RVector'> 4 [0.0, 3.0, 6.0, 9.0]
     >>> print(v2)
-    <class 'pygimli._pygimli_.RVector'> 3 [0.0, 5.0, 10.0]
+    <class 'pygimli.core._pygimli_.RVector'> 3 [0.0, 5.0, 10.0]
 
     Returns
     -------
@@ -278,9 +278,13 @@ def diff(v):
     >>> p[1] = 1.0
     >>> p[2] = 2.0
     >>> print(diff(p))
-    <class 'pygimli._pygimli_.RVector'> 2 [1.0, 1.0]
+    <class 'pygimli.core._pygimli_.RVector'> 2 [1.0, 1.0]
     """
     d = None
+
+    if type(v) == np.ndarray:
+        if v.ndim == 2:
+            v = pg.R3Vector(v)
 
     if isinstance(v, pg.R3Vector):
         d = pg.R3Vector(len(v) - 1)
@@ -343,7 +347,7 @@ def xyToLength(x, y):
 def cumDist(p):
     """The progressive i.e, cumulative length for the path p.
 
-    d = [0.0, d[0]+ |p[1]-p[0]|, d[1] + |p[2]-p[1]| + ...]
+    d = [0.0, d[0]+ | p[1]-p[0] |, d[1] + | p[2]-p[1] | + ...]
 
     Parameters
     ----------

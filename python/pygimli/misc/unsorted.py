@@ -246,8 +246,12 @@ def number_of_processors():
         raise RuntimeError('unknown platform')
 
 
-def assembleDC(mesh, source=pg.RVector3(0.0, 0.0, 0.0)):
+def assembleDC(mesh, source=None):
     """assemble stiffness matrix for 3d dc forward problem using fem."""
+    WHONEEDSTHIS
+    if source == None:
+       source = pg.RVector3(0.0, 0.0, 0.0)
+       
     S = pg.DSparseMatrix()
     S.buildSparsityPattern(mesh)
 #    se = pg.DElementMatrix()
@@ -265,21 +269,13 @@ def assembleCEM(S, mesh, marker, zi, nodeID=-1, verbose=False):
     """
         add dc-cem to stiffness system, return new Matrix and sum of electrodes surface
     """
-
+    WHONEEDSTHIS
     sumArea = 0
 
     if nodeID == -1:
         for b in mesh.findBoundaryByMarker(marker):
             sumArea += b.shape().domainSize()
-        print(
-            "addCEM: ",
-            marker,
-            sumArea,
-            'm^2',
-            zi /
-            sumArea,
-            'Ohm\n',
-            end=' ')
+        print("addCEM: ", marker, sumArea,'m^2', zi/sumArea, 'Ohm\n')
     else:
         sumArea = 1
         print("addCEM: node")

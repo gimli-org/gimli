@@ -2,6 +2,8 @@
 # Only considers python directory at the moment.
 # E-Mail notifications are sent if score decreases.
 
+python-targets:
+    - 3
 doc-warnings: yes
 test-warnings: no
 #strictness: veryhigh # besser nicht =)

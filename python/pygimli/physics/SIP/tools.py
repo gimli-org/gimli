@@ -8,7 +8,7 @@ from math import pi
 import numpy as np
 import pygimli as pg
 from .models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
-from .models import ColeColeAbs, ColeColePhi
+from .models import ColeColeAbs, ColeColePhi, DoubleColeColePhi
 
 
 def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True,
@@ -42,6 +42,31 @@ def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
     ICC.setRobustData(robust)
+#    ICC.setMaxIter(0)
+    model = ICC.run()  # run inversion
+    if verbose:
+        ICC.echoStatus()
+    return np.asarray(model), np.asarray(ICC.response())
+
+
+def fit2CCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
+              mpar1=(0.2, 0, 1), taupar1=(1e-2, 1e-5, 100), cpar1=(0.2, 0, 1),
+              mpar2=(0.2, 0, 1), taupar2=(1e-2, 1e-5, 100), cpar2=(0.2, 0, 1)):
+    """fit a Cole-Cole term with additional EM term to phase"""
+    f2CC = DoubleColeColePhi(f)
+    f2CC.region(0).setParameters(*mpar1)    # m (start,lower,upper)
+    f2CC.region(1).setParameters(*taupar1)  # tau
+    f2CC.region(2).setParameters(*cpar1)   # c
+    f2CC.region(3).setParameters(*mpar2)    # m (start,lower,upper)
+    f2CC.region(4).setParameters(*taupar2)  # tau
+    f2CC.region(5).setParameters(*cpar2)   # c
+    ICC = pg.RInversion(phi, f2CC, False)  # set up inversion class
+    ICC.setAbsoluteError(ePhi)  # 1 mrad
+    ICC.setLambda(lam)  # start with large damping and cool later
+    ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
+    ICC.setRobustData(robust)
+    ICC.setDeltaPhiAbortPercent(1)
+#    ICC.setMaxIter(0)
     model = ICC.run()  # run inversion
     if verbose:
         ICC.echoStatus()

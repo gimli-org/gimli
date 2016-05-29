@@ -431,11 +431,14 @@ def drawPLC(axes, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
     if fillRegion and mesh.boundaryCount() > 0:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
-        drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
-                  nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
-                  levels=pg.utils.unique(tmpMesh.cellMarkers()),
-                  tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
-                  snap=False)
+        if tmpMesh.cellCount() == 0:
+            pass
+        else:
+            drawModel(axes=axes, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
+                    nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
+                    levels=pg.utils.unique(tmpMesh.cellMarkers()),
+                    tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
+                    snap=False)
 
     for n in mesh.nodes():
         col = (0.0, 0.0, 0.0)
@@ -1060,7 +1063,7 @@ def setPlotStuff(fontsize=7, dpi=None):
     rcParams['ytick.labelsize'] = fontsize
     rcParams['legend.fontsize'] = fontsize
     rcParams['font.family'] = 'sans-serif'
-    rcParams['font.sans-serif'] = ['Times New Roman']
+    rcParams['font.sans-serif'] = ['Helvetica']#['Times New Roman']
     rcParams['text.usetex'] = False
     rcParams['font.size'] = 0.6*fontsize
 #    rcParams['figure.figsize'] = 7.3, 4.2
@@ -1074,7 +1077,7 @@ def setPlotStuff(fontsize=7, dpi=None):
     rcParams['ytick.major.width'] = rcParams['xtick.major.width']
     rcParams['ytick.minor.size'] = rcParams['xtick.minor.size']
     rcParams['ytick.minor.width'] = rcParams['xtick.minor.width']
-
+    
     if dpi is not None:
         rcParams['figure.dpi'] = dpi
         rcParams['savefig.dpi'] = dpi

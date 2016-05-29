@@ -57,7 +57,7 @@ ModellingBase::ModellingBase(const Mesh & mesh, DataContainer & data, bool verbo
 }
 
 ModellingBase::~ModellingBase() {
-    delete regionManager_;
+    if (ownRegionManager_) delete regionManager_;
     if (mesh_) delete mesh_;
     if (jacobian_ && ownJacobian_) delete jacobian_;
     if (constraints_ && ownConstraints_) delete constraints_;
@@ -77,6 +77,7 @@ void ModellingBase::init_() {
     
     ownJacobian_        = false;
     ownConstraints_     = false;
+    ownRegionManager_   = true;
     
     initJacobian();
     initConstraints();
@@ -130,64 +131,65 @@ void ModellingBase::setStartModel(const RVector & startModel){
 }
         
 void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
-	this->initRegionManager();
+    this->initRegionManager();
 
-    if (!mesh_) {
-        mesh_ = new Mesh();
-    } else {
-        mesh_->clear();
-    }
-    
-    if (refine){
-        if (pRefine){
-            *mesh_ = regionManager_->mesh().createP2();
+    if (regionManager_->pMesh()){
+        if (refine){
+            if (pRefine){
+                setMesh_(regionManager_->mesh().createP2());
+            } else {
+                setMesh_(regionManager_->mesh().createH2());
+            }
         } else {
-            *mesh_ = regionManager_->mesh().createH2();
+            setMesh_(regionManager_->mesh());
         }
-        updateMeshDependency_();
     } else {
-        setMesh_(regionManager_->mesh());
+        throwError(1, "Cannot create a refined forward mesh since I have none.");
     }
 }
  
 void ModellingBase::setRefinedMesh(const Mesh & mesh){
-    if (verbose_) {
-        std::cout << "set extenal secondary mesh:" << std::endl;
-    }
-    setMesh_(mesh);
-    if (verbose_) {
-        std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
-        IVector m(unique(sort(mesh_->cellMarkers())));
-        std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]  
-         << ", ... ,  " << m[-1] << "]" << std::endl;
-    }
+    setMesh(mesh, true);
+    DEPRECATED
+    __MS("use setMesh(mesh, false)")
+    
+//     if (verbose_) {
+//         std::cout << "set external secondary mesh:" << std::endl;
+//     }
+//     setMesh_(mesh, true);
+//     if (verbose_) {
+//         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
+//         IVector m(unique(sort(mesh_->cellMarkers())));
+//         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]  
+//          << ", ... ,  " << m[-1] << "]" << std::endl;
+//     }
 }
  
-void ModellingBase::setMesh(const Mesh & mesh, bool holdRegionInfos) {
-    deleteMeshDependency_();
-
+void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
     Stopwatch swatch(true);
-    if (regionManagerInUse_ && !holdRegionInfos){ 
+    if (regionManagerInUse_ && !ignoreRegionManager){ 
         // && holdRegionInfos e.g., just give it a try to ignore the regionmanager if necessary
-        regionManager_->setMesh(mesh, holdRegionInfos);
+        regionManager_->setMesh(mesh);//#, ignoreRegionManger);
         if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
-        this->setMesh_(regionManager_->mesh());
+        setMesh_(regionManager_->mesh());
     } else {
         if (verbose_) std::cout << "ModellingBase::setMesh() copying new mesh ... ";
-        this->setMesh_(mesh);
+        setMesh_(mesh);
         if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
     }
 
     if (verbose_) std::cout << "FOP updating mesh dependencies ... ";
     startModel_.clear();
-    updateMeshDependency_();
-    
+        
     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
 }
 
-void ModellingBase::setMesh_(const Mesh & mesh){
+void ModellingBase::setMesh_(const Mesh & mesh, bool update){
     if (!mesh_) mesh_ = new Mesh();
+
+    if (update) deleteMeshDependency_();
     (*mesh_) = mesh;
+    if (update) updateMeshDependency_();
 }
 
 void ModellingBase::deleteMesh(){
@@ -373,10 +375,12 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
 }
         
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const{
+    if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
     
     if (model.size() == mesh_->cellCount()) return model;
-    
-    RVector mappedModel(mesh_->cellCount());
+//     __M
+//     mesh_->exportVTK("premap");
+    RVector cellAtts(mesh_->cellCount());
 
     int marker = -1;
     std::vector< Cell * > emptyList;
@@ -397,12 +401,12 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
             if (model[marker] < TOLERANCE){
                 emptyList.push_back(&mesh_->cell(i));
             }
-            mappedModel[i] = model[marker];
+            cellAtts[i] = model[marker];
 
         } else {
             // general background without fixed values, fixed values will be set at the end
             if (marker == -1) { 
-                mappedModel[i] = 0.0;
+                cellAtts[i] = 0.0;
                 emptyList.push_back(&mesh_->cell(i));
             }
         }
@@ -414,30 +418,34 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                        + " == " + toStr(mesh_->cellCount()));
     }
 
-    if (background != 0.0){
-        mesh_->prolongateEmptyCellsValues(mappedModel, background);
-    }
+//     
     
+    if (background != 0.0){
+        mesh_->prolongateEmptyCellsValues(cellAtts, background);
+    }
+
     // setting fixed values
     if (regionManagerInUse_){
         for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
-            if (abs(mappedModel[i]) < TOLERANCE){
+            // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation 
                 if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
                     SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
                     double val = regionManager_->region(regionMarker)->fixValue();
-//                     __MS("fixing region: " << regionMarker << " to: " << val)
-                    mappedModel[i] = val;
+//                      __MS("fixing region: " << regionMarker << " to: " << val)
+                    cellAtts[i] = val;
                 }
-            }
+            // }
         }
     }
     
-    return mappedModel;
+//     mesh_->exportVTK("postmap", cellAtts);
+    return cellAtts;
 }
     
 void ModellingBase::mapModel(const RVector & model, double background){
     // implement "readonly version"!!!!!!!!!!!
     mesh_->setCellAttributes(createMappedModel(model, background));
+
     return;
     
     mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
@@ -496,7 +504,6 @@ void ModellingBase::mapModel(const RVector & model, double background){
         }
     }
 }
-
    
 void ModellingBase::initRegionManager() {
     if (!regionManagerInUse_){
@@ -505,6 +512,20 @@ void ModellingBase::initRegionManager() {
             this->setMesh_(regionManager_->mesh());
         }
         regionManagerInUse_ = true;
+    }
+}
+
+void ModellingBase::setRegionManager(RegionManager * reg){ 
+    if (reg){
+        regionManagerInUse_ = true;
+        delete regionManager_;
+        regionManager_ = reg; 
+        ownRegionManager_ = false;
+        
+    } else {
+        regionManagerInUse_ = false;
+        regionManager_      = new RegionManager(verbose_);
+        ownRegionManager_   = true; // we really refcounter
     }
 }
 
@@ -518,6 +539,7 @@ RegionManager & ModellingBase::regionManager(){
     return *regionManager_;
 }
 
+
 Region * ModellingBase::region(int marker){
     return regionManager().region(marker);
 }
@@ -525,7 +547,6 @@ Region * ModellingBase::region(int marker){
 RVector ModellingBase::createStartVector() {
     return regionManager().createStartVector();
 }
-
 
 LinearModelling::LinearModelling(MatrixBase & A, bool verbose)
     : ModellingBase(verbose){//, A_(& A) {

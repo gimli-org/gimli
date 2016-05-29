@@ -20,7 +20,7 @@ from pygimli.physics import MethodManager
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
 
-from  . raplot import drawTravelTimeData
+from . raplot import drawTravelTimeData
 
 
 class Refraction(MethodManager):
@@ -37,6 +37,7 @@ class Refraction(MethodManager):
         self.axs = {}
 
         self.doSave = kwargs.pop('doSave', False)
+        self.errIsAbsolute = True
 
         # should be forwarded so it can be accessed from outside
         self.dataContainer = None
@@ -47,14 +48,14 @@ class Refraction(MethodManager):
         self.response = None
         self.start = []
         self.pd = None
-
-        name = kwargs.pop('name', 'new')
+        
+        self.dataToken_ = 't'
 
         if isinstance(data, str):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
-            self.basename = name
+            self.basename = kwargs.pop('name', 'new')
 #        if self.dataContainer is not None:
 #            self.createMesh()
 #        self.fop = self.createFOP(verbose=self.verbose)
@@ -101,7 +102,7 @@ class Refraction(MethodManager):
         (typically done by run)
         """
         self.tD = pg.RTrans()
-        self.tM = pg.RTransLog()
+        self.tM = pg.RTransLogLU()
 
         inv = pg.RInversion(verbose, doSave)
         inv.setTransData(self.tD)
@@ -110,6 +111,22 @@ class Refraction(MethodManager):
 
         return inv
 
+    def createApparentData(self, data):
+        """
+        Create apparent slowness for given data.
+        """
+        # hackish .. dislike!
+        self.setData(data)
+        return 1/(self.getOffset(full=True) / data('t'))
+    
+    def setData(self, data):
+        """ Set data """
+        if issubclass(type(data), pg.DataContainer):
+            self.setDataContainer(data)
+        else:
+            raise BaseException("Implement set data from type:", type(data))
+        
+    
     def setDataContainer(self, data):
         """ set data container from outside
 
@@ -123,7 +140,7 @@ class Refraction(MethodManager):
         if self.dataContainer.allNonZero('err'):
             self.error = self.dataContainer('err')
         else:
-            self.error = Refraction.estimateError(self.dataContainer)
+            self.error = Refraction.estimateError(data)
 
     def loadData(self, filename):
         """load data from file"""
@@ -176,6 +193,7 @@ class Refraction(MethodManager):
                            marker='-')
 
         plt.show(block=False)
+        return ax
 
     def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
                    paraBoundary=5, apply=True, **kwargs):
@@ -230,11 +248,15 @@ class Refraction(MethodManager):
         return ax
 
     @staticmethod
-    def estimateError(data, absoluteError=0.001, relativeError=0.001):
+    def estimateError(data=None, absoluteError=0.001, relativeError=0.001):
         """Estimate error composed of an absolute and a relative part
 
         Parameters
         ----------
+        absoluteError : float
+            absolute error of traveltimes (usually in s)
+        relativeError : float
+            relative error of traveltimes in 1 (e.g. 0.01 is 1%)
 
         Returns
         -------
@@ -263,7 +285,7 @@ class Refraction(MethodManager):
             relative weight for purely vertical boundaries
         """
         if data is not None:
-            #setDataContainer would be better
+            # setDataContainer would be better
             if t is not None:
                 data.set('t', t)
             self.setDataContainer(data)
@@ -280,26 +302,41 @@ class Refraction(MethodManager):
         if self.mesh is None:
             self.createMesh(**kwargs)
 
-        self.fop.setStartModel(createGradientModel2D(
-            self.dataContainer, self.fop.regionManager().paraDomain(),
-            kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
+        useGradient = kwargs.pop('useGradient', True)
+        if useGradient:
+            self.fop.setStartModel(createGradientModel2D(
+                self.dataContainer, self.fop.regionManager().paraDomain(),
+                kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
+        else:
+            self.fop.setStartModel(self.fop.createDefaultStartModel())
 
         self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
+
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
-        self.inv.setMaxIter(kwargs.pop('max_iter', 20))
-        self.inv.setRobustData(kwargs.pop('robustData', False))
-        self.inv.setBlockyModel(kwargs.pop('blockyModel', False))
+        if 'max_iter' in kwargs:  # just for backward compatibility
+            self.inv.setMaxIter(kwargs.pop('max_iter'))
+        if 'maxIter' in kwargs:  # the better way
+            self.inv.setMaxIter(kwargs.pop('maxIter'))
+        if 'robustData' in kwargs:
+            self.inv.setRobustData(kwargs.pop('robustData'))
+        if 'blockyModel' in kwargs:
+            self.inv.setBlockyModel(kwargs.pop('blockyModel'))
 
         if not hasattr(self.error, '__iter__'):
-            self.error = Refraction.estimateError(self.dataContainer,
-                                                  kwargs.pop('error', 0.003))  # abs. error in ms
+            self.error = Refraction.estimateError(
+                self.dataContainer, kwargs.pop('error', 0.003))  # abs err in s
 
         self.inv.setAbsoluteError(self.error)
         self.fop.jacobian().clear()
+        
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
+
+        self.model = self.velocity#(self.paraDomain.cellMarkers())
+
+        return self.velocity
 
     @staticmethod
     def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
@@ -316,11 +353,14 @@ class Refraction(MethodManager):
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
             Mesh to calculate for.
+
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
-            Slowness distribution for the given mesh cells can be:
-            a single array of len mesh.cellCount()
-            a matrix of N slowness distributions of len mesh.cellCount()
-            a res map as [[marker0, res0], [marker1, res1], ...]
+            slowness distribution for the given mesh cells can be:
+
+            * a single array of len mesh.cellCount()
+            * a matrix of N slowness distributions of len mesh.cellCount()
+            * a res map as [[marker0, res0], [marker1, res1], ...]
+
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
@@ -339,7 +379,7 @@ class Refraction(MethodManager):
         fop = Refraction.createFOP(verbose=verbose)
 
         fop.setData(scheme)
-        fop.setMesh(mesh, holdRegionInfos=True)
+        fop.setMesh(mesh, ignoreRegionManager=True)
 
         if len(slowness) == mesh.cellCount():
 
@@ -366,12 +406,19 @@ class Refraction(MethodManager):
         tt.showVA(ax=axes, t=t, **kwargs)
 
 
-    def getOffset(self):
+    def getOffset(self, full=False):
         """return vector of offsets (in m) between shot and receiver"""
-        px = pg.x(self.dataContainer.sensorPositions())
-        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
-        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
-        return np.absolute(gx - sx)
+        if full:
+            pos = self.dataContainer.sensorPositions()
+            s, g = self.dataContainer('s'), self.dataContainer('g')
+            nd = self.dataContainer.size()
+            off = [pos[int(s[i])].distance(pos[int(g[i])]) for i in range(nd)]
+            return np.absolute(off)
+        else:
+            px = pg.x(self.dataContainer.sensorPositions())
+            gx = np.array([px[int(g)] for g in self.dataContainer("g")])
+            sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+            return np.absolute(gx - sx)
 
     def getMidpoint(self):
         """return vector of offsets (in m) between shot and receiver"""
@@ -380,9 +427,8 @@ class Refraction(MethodManager):
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
         return (gx + sx) / 2
 
-
     def showVA(self, ax=None, t=None, name='va', pseudosection=False,
-               squeeze=True):
+               squeeze=True, full=True):
         """show apparent velocity as image plot
 
         TODO showXXX commands need to return axes and cbar .. if there is one
@@ -396,10 +442,11 @@ class Refraction(MethodManager):
         self.axs[name] = ax
         if t is None:
             t = self.dataContainer('t')
+
         px = pg.x(self.dataContainer.sensorPositions())
         gx = np.array([px[int(g)] for g in self.dataContainer("g")])
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
-        offset = np.absolute(gx - sx)
+        offset = self.getOffset(full=full)
         va = offset / t
 
         if pseudosection:

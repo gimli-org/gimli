@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2011 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2016 by the resistivity.net development team       *
  *   Thomas Günther thomas@resistivity.net                                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
@@ -41,20 +41,32 @@ public:
     /*! Default destructor.*/
     virtual ~Trans() { }
 
-    /*! Default call operator */
+    /*! Default call operator. \ref trans() */
     virtual Vec operator()(const Vec & a) const { return trans(a); }
+    
+    /*! Default call operator. \ref trans() */
+    virtual double operator()(double x) const { return trans(x); }
 
-    /*! Default call operator */
-    virtual Vec inv(const Vec & a) const { return invTrans(a); }
+    /*! For compatibility if trans is called with a single value. */
+    virtual double trans(double x) const { return this->trans(Vec(1, x))[0]; }
+    
+    /*! Apply and return the transformation. Return \f$ f(x) \f$*/
+    virtual Vec trans(const Vec & x) const { return x; }
+    
+    /*! Return inverse transformation \f$ x(f) \f$*/
+    virtual Vec invTrans(const Vec & f) const { return f; }
+    
+    /*! For compatibility if invTrans is called with a single value. */
+    virtual double invTrans(double f) const { return this->invTrans(Vec(1, f))[0]; }
 
-    /*! Return a. */
-    virtual Vec trans(const Vec & a) const { return a; }
+    /*! Return inverse transformation. Shortcut for \ref invTrans .*/
+    virtual Vec inv(const Vec & f) const { return invTrans(f); }
 
-    /*! */
-    virtual Vec invTrans(const Vec & a) const { return a; }
+    /*! For compatibility if inv is called with a single value. */
+    virtual double inv(double f) const { return this->inv(Vec(1, f))[0]; }
 
-    /*! */
-    virtual Vec deriv(const Vec & a) const { return Vec(a.size(), 1.0); }
+    /*! Return derivative \f$ \frac{\partial f}{\partial x}(x) \f$ */
+    virtual Vec deriv(const Vec & x) const { return Vec(x.size(), 1.0); }
 
     /*! Update parameter by df: invTrans(f(a) + df). \n
     intrinsic function that have never to be overloaded. */
@@ -62,7 +74,7 @@ public:
         return (invTrans(trans(a) + b));
     }
 
-    /*! Error of f(a) calculated by a and relative error da/a: df = | da * df/da | \n
+    /*! Error of f(a) calculated by a and relative error \f$ da/a: df = | da * df/da | \f$ \n
     intrinsic function that could be overloaded */
     Vec error(const Vec & a, const Vec & daBya) const {
         if (daBya == Vec(a.size(), 0.0)) return Vec(a.size(), 1.0);
@@ -107,8 +119,8 @@ protected:
 
 //** Fundamental transformation operations: linear, inverse, log, power, exp:
 
-/*! Linear multiplication (e.g. geometric factor) and addition
-   f(a) = a * factor + offset. */
+/*! Linear multiplication and addition
+   \f$ f(x) = b + a \cdot x \f$. With factor \f$ a \f$ and offset \f$ b \f$. */
 template< class Vec > class TransLinear : public Trans < Vec > {
 public:
     TransLinear(const Vec & factor=1.0, double offset=0.0)
@@ -116,22 +128,25 @@ public:
 
     virtual ~TransLinear() { }
 
-    virtual Vec trans(const Vec & a) const {
+    /*! Return \f$ f(x) = b + a \cdot x \f$.  */
+    virtual Vec trans(const Vec & x) const {
 //        std::cout << a.size() << " " << factor_.size() << " "
 //        << offset_.size()<< std::endl;
-        return a * factor_ + offset_;
+        return x * factor_ + offset_;
     }
 
-    virtual Vec invTrans(const Vec & a) const { return (a - offset_) / factor_;}
+    /*! Return \f$ x(f) = (f - b)/a \f$ */
+    virtual Vec invTrans(const Vec & f) const { return (f - offset_) / factor_;}
 
-    virtual Vec deriv(const Vec & a) const { return factor_; }
+    /*! Return \f$ a = \frac{\partial}{\partial x} (b + a * x) \f$ */
+    virtual Vec deriv(const Vec & x) const { return factor_; }
 
 protected:
     Vec factor_;
     Vec offset_;
 };
 
-/*! Linear multiplication (e.g. geometric factor) and addition
+/*! Linear multiplication and addition
    f(a) = a * factor + offset. implementation with double */
 template< class Vec > class TransLin : public Trans < Vec > {
 public:
@@ -151,19 +166,22 @@ protected:
     double offset_;
 };
 
-/*! power transformation f(a) = pow(a / a_0, n). */
+/*! Power transformation f(a) = pow(a / a_0, n). */
 template< class Vec > class TransPower : public Trans < Vec > {
 public:
     TransPower(const double npower=-1.0, const double a0=1.0)
         : npower_(npower), a0_(a0) {}
     virtual ~TransPower() { }
 
-    virtual Vec trans(const Vec & a) const {
-        return pow(a / a0_, npower_);}
+    /*! Return \f$ f(x) = (x/a)^b \f$.  */
+    virtual Vec trans(const Vec & x) const {
+        return pow(x / a0_, npower_);}
 
+    /*! Return \f$ x(f) = f^(1/b) \cdot a \f$. */
     virtual Vec invTrans(const Vec & f) const {
         return pow(f, 1.0 / npower_) * a0_;}
 
+    /*! Return \f$ \f$. */
     virtual Vec deriv(const Vec & a) const {
         return pow(a / a0_, npower_ - 1.0) * npower_ / a0_;}
 protected:
@@ -261,10 +279,11 @@ protected:
 /*! Logarithmic barrier with upper and lower bound f(a) = log(a - a_u) - log(a_u - a). */
 template< class Vec > class TransLogLU : public TransLog < Vec > {
 public:
-    TransLogLU(double lowerbound = 0.0, double upperbound = 0.0)
+    TransLogLU(double lowerbound=0.0, double upperbound=0.0)
         : TransLog< Vec >(lowerbound), upperbound_(upperbound) { }
     virtual ~TransLogLU() { }
 
+    /*!WHAT IS THIS?*/
     Vec rangify(const Vec & a) const {
         Vec tmp(a);
         double lb1 = this->lowerBound() * (1.0 + TRANSTOL);
@@ -307,6 +326,10 @@ public:
         Vec tmp = rangify(a);
         return (1.0 / (tmp - this->lowerBound()) + 1.0 / (upperbound_ - tmp));
     }
+    
+    inline void setUpperBound(double ub) { upperbound_ = ub; }
+
+    inline double upperBound() const { return upperbound_; }
 
 protected:
   double upperbound_;

@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include <gimli.h>
+#include <vector.h>
 #include <vectortemplates.h>
 #include <meshgenerators.h>
 #include <mesh.h>

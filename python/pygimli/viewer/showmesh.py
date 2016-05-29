@@ -265,7 +265,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if savefig:
         print('saving: ' + savefig + ' ...')
+        
+        if not '.' in savefig:
+            savefig += '.pdf'
+            
         ax.figure.savefig(savefig, bbox_inches='tight')
+        #rc params savefig.format=pdf
 
         if '.eps' in savefig:
             try:

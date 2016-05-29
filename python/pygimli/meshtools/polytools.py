@@ -377,7 +377,7 @@ def createPolygon(verts, isClosed=False, **kwargs):
     
 def mergePLC(pols):
     """
-    Merge multiply polygons into a single polygon
+    Merge multiply polygons into a single polygon.
 
     Common nodes and common edges will be checked and removed.
 
@@ -415,7 +415,12 @@ def mergePLC(pols):
     poly = pg.Mesh(2)
 
     for p in pols:
-        nodes = [poly.createNodeWithCheck(n.pos()) for n in p.nodes()]
+        nodes = []
+        for n in p.nodes():
+            nn = poly.createNodeWithCheck(n.pos())
+            if n.marker() != 0:
+                nn.setMarker(n.marker())
+            nodes.append(nn)
 
         for e in p.boundaries():
             poly.createEdge(nodes[e.node(0).id()],

@@ -9,13 +9,12 @@ from math import pi
 from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
-from . ert import resistivityArchie
 
+# from . ert import resistivityArchie  # not in git yet (no ERT module)
 # from . gravimetry import Gravimetry
 # from . seismics import *
 
-__all__ = ("FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction")
-
+#__all__ = ["FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction"]
 
 class constants:
     # magnetic constant, vacuum permeability
@@ -46,6 +45,8 @@ class MethodManager(object):
         self.verbose = verbose
         self.debug = debug
         self.figs = {}
+        self.dataToken_ = 'nan'
+        self.errIsAbsolute = False
 
         self.fop = self.createFOP_(verbose)
         if self.fop is None:
@@ -80,10 +81,18 @@ class MethodManager(object):
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
 
-    @classmethod
-    def createFOP_(cls, verbose=False):
+    def dataToken(self):
+        if self.dataToken_ == 'nan':
+            print("Warning! the Manager don't know the data token")
+        return self.dataToken_
+
+    def apparentData(self):
+        IMPLEMENTME
+    
+#    @classmethod
+    def createFOP_(self, verbose=False):
         """ Create forward operator working on refined mesh """
-        return cls.createFOP(verbose)
+        return self.createFOP(verbose)
 
     def createInv_(self, fop, verbose=True, dosave=False):
         """ Create inversion instance, data- and model transformations. """

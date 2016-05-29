@@ -60,7 +60,7 @@ def loadProjectFile(
     fi.close()
 
     for c in content:
-        row = c.split('\n')[0].split()
+        row = c.split('\n')[0].split('#')[0].split()
         d = None
 
         if len(row) > 0 and row[0] != '#':
