@@ -3,5 +3,6 @@
 Inversion
 ---------
 
-Simple one dimensional inversions with increasing complexity.
+Simple (0D or 1D) inversions with increasing complexity.
+
 
