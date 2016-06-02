@@ -487,6 +487,8 @@ doxylink = {
 }
 
 # Create small gallery of all tutorials and examples in the sidebar.
+# from pygimli.misc.sidebar_gallery import make_gallery
+sys.path.insert(0, os.path.abspath('.'))
 from sidebar_gallery import make_gallery
 
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)

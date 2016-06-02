@@ -5,9 +5,9 @@ r"""
 Polyfit
 =======
 
-This tutorial shows how to treat the simplest inversion case with an own
-forward calculation. As regression is the easiest inverse problem we start with
-fitting a polynomial of degree :math:`P`
+This tutorial shows a flexible inversion with an own forward calculation that
+includes an own jacobian. We start with fitting a polynomial of degree
+:math:`P`
 
 .. math::
 
@@ -23,17 +23,17 @@ can be written as matrix-vector product
 .. math::
 
   {\bf f} ({\bf x}) = {\bf A} {\bf x} \quad\mbox{with}\quad {\bf A}=
-  \left[ 
+  \left[
     \begin{array}{cccc}
         1 & x_1    & \ldots & x_1^P \\
-   \vdots & \vdots & \ddots & \vdots \\ 
+   \vdots & \vdots & \ddots & \vdots \\
         1 & x_N    & \ldots & x_N^P
-  \end{array} 
+  \end{array}
   \right] =
   [ {\bf 1}\quad {\bf x} \quad {\bf x}^2 \ldots {\bf x}^P ] \;.
 
-We set up the modelling operator, i.e. to return :math:`{\bf f}({\bf x})` for given
-:math:`p_i`, as a class derived from the modelling base class.
+We set up the modelling operator, i.e. to return :math:`{\bf f}({\bf x})` for
+given :math:`p_i`, as a class derived from the modelling base class.
 The latter holds the main mimic of generating Jacobian, gradients by brute
 force. The only function to overwrite is \cw{response()}.
 
@@ -55,28 +55,14 @@ import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
 
-print(pg.__version__)
-
 ###############################################################################
-# As a result, all :ref:`sec:api` objects (classes and functions) can be refer-
-# red to with a preceding `pg.`, e.g., printing the version string for gimli.
-#
-# Next, the modelling class is derived from ModellingBase, a constructor is
-# defined and the response function is defined.
-#
-# The pygimli library must once be imported (in this case under the name g) and
-# all classes (e.g. modelling operators) can be used by pg.classname, e.g.
-# pg.RVector is the already known vector of real (double) values.
-#
-# The main program is very easy then and the code is very similar to C++.
-# Data are loaded, both forward operator and inversion are created.
-# Inversion options are set and it the result of run is save to a file.
-# That's it.
-#
-# As a main advantage of Python, the actual computations can be easily combined
-# with post-processing or visualization, or building graphical user-interfaces.
-# In this code example we use matplotlib, a plotting library providing a
-# functionality known from Matlab, but more thorough and flexible.
+# The modelling class is derived from ModellingBase, a constructor is defined
+# and the response function is defined. Due to the linearity of the problem we
+# store the matrix :math:`{\bf A}`, which is also the Jacobian matrix and use
+# it for the forward calculation. A second function is just added as reference.
+# We overwrite the method createJacobian as we know it but do nothing in the
+# actual computation. If :math:`{\bf J}` depends on :math:`{\bf m}` this
+# function must be filled.
 
 
 class FunctionModelling(pg.ModellingBase):
@@ -84,15 +70,25 @@ class FunctionModelling(pg.ModellingBase):
         pg.ModellingBase.__init__(self, verbose)
         self.x_ = xvec
         self.nc_ = nc
+        nx = len(xvec)
         self.regionManager().setParameterCount(nc)
+        self.jacobian().resize(nx, nc)
+        for i in range(self.nc_):
+            self.jacobian().setCol(i, pg.pow(self.x_, i))
 
-    def response(self, par):
-        y = pg.RVector(len(self.x_), par[0])
+    def response(self, model):
+        return self.jacobian() * model
+
+    def responseDirect(self, model):
+        y = pg.RVector(len(self.x_), model[0])
 
         for i in range(1, self.nc_):
-            y += pg.pow(self.x_, i) * par[i]
+            y += pg.pow(self.x_, i) * model[i]
 
         return y
+
+    def createJacobian(self, model):
+        pass  # if J depends on the model you should work here
 
     def startModel(self):
         return pg.RVector(self.nc_, 0.5)
@@ -101,28 +97,29 @@ class FunctionModelling(pg.ModellingBase):
 ###############################################################################
 # Let us create some synthetic data for some x values
 
-x = np.arange(0., 10., 1)
-y = 1.1 + 2.1 * x
+x = np.arange(0., 10., 0.5)
+y = 1.1 + 2.1 * x - 0.2 * x**2
+noise = 0.1
+y += np.random.randn(len(y)) * noise
 
 ###############################################################################
 # We now start by setting up the modelling operator, and inversion and run it.
 
-nP = 3
-
-# two coefficients and x-vector (first data column)
-fop = FunctionModelling(nP, x)
+fop = FunctionModelling(3, x)
 
 # initialize inversion with data and forward operator and set options
 inv = pg.RInversion(y, fop)
 
 # constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
-inv.setAbsoluteError(0.01)
+inv.setAbsoluteError(noise)
 
-# the problem is well-posed and does not need regularization
+# the problem is well-posed and does not need any regularization
 inv.setLambda(0)
 
 # actual inversion run yielding coefficient model
 coeff = inv.run()
+
+inv.echoStatus()
 
 print(coeff)
 
@@ -130,5 +127,4 @@ print(coeff)
 # The result is easily plotted by
 
 plt.plot(x, y, 'rx', x, inv.response(), 'b-')
-
 plt.show()
