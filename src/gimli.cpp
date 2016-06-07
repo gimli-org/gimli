@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#if OPENBLAS_FOUND
+#if OPENBLAS_FOUND && !CONDA_BUILD
     #include <openblas/cblas.h>
 #else
     #include <cblas.h>
@@ -52,31 +52,31 @@ bool debug(){ return __GIMLI_DEBUG__;}
 
 
 void setThreadCount(Index nThreads){
-#if OPENBLAS_FOUND    
+#if OPENBLAS_FOUND
     openblas_set_num_threads(nThreads);
 #endif
 }
 
 Index threadCount(){
-    return __GIMLI_THREADCOUNT__; 
+    return __GIMLI_THREADCOUNT__;
 }
 
 
-void PythonGILSave::save() { 
+void PythonGILSave::save() {
     if (!saved_) {
 #ifdef PYGIMLI
 //#warning  "save_ = PyEval_SaveThread();"
         if (__SAVE_PYTHON_GIL__) save_ =  PyEval_SaveThread();
 #endif
         saved_ = true;
-    } 
+    }
 }
 void PythonGILSave::restore() { if (saved_) {
 #ifdef PYGIMLI
     if (__SAVE_PYTHON_GIL__) PyEval_RestoreThread(save_);
 #endif
-        saved_ = false; 
-    } 
+        saved_ = false;
+    }
 }
 
 
@@ -86,21 +86,21 @@ void showSizes(){
     std::cout << "ssize_t: " << sizeof(ssize_t) << std::endl;
     std::cout << "Index: " << sizeof(GIMLI::Index) << std::endl;
     std::cout << "Sindex: " << sizeof(GIMLI::SIndex) << std::endl;
-   
+
     std::cout << "int: " << sizeof(int) << std::endl;
     std::cout << "long: " << sizeof(long) << std::endl;
     std::cout << "long long int: " << sizeof(long long int) << std::endl;
-    
+
     std::cout << "int8: " << sizeof(GIMLI::int8) << std::endl;
     std::cout << "int16: " << sizeof(GIMLI::int16) << std::endl;
     std::cout << "int32: " << sizeof(GIMLI::int32) << std::endl;
     std::cout << "int64: " << sizeof(GIMLI::int64) << std::endl;
-    
+
     std::cout << "uint8: " << sizeof(GIMLI::uint8) << std::endl;
     std::cout << "uint16: " << sizeof(GIMLI::uint16) << std::endl;
     std::cout << "uint32: " << sizeof(GIMLI::uint32) << std::endl;
     std::cout << "uint64: " << sizeof(GIMLI::uint64) << std::endl;
-    
+
     std::cout << "float: " << sizeof(float) << std::endl;
     std::cout << "double: " << sizeof(double) << std::endl;
 }
@@ -111,7 +111,7 @@ std::string authors(){
 
 int openFile(const std::string & fname, std::fstream * file,
              std::ios_base::openmode farg, bool terminate){
-    
+
     file->open(fname.c_str(), farg);
     if (!*file){
         if (terminate) {
