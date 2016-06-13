@@ -1040,13 +1040,13 @@ void RegionManager::loadMap(const std::string & fname){
 
     while (!file.eof()){
 
-        row = getNonEmptyRow(file, '-');
+        row = getNonEmptyRow(file, '@');
         if (row.empty()){
             continue;
 //             file.close();
 //             return;
         }
-
+                
         if (row[0][0] == '#'){
 
             token.clear();
@@ -1065,7 +1065,7 @@ void RegionManager::loadMap(const std::string & fname){
         }
 
         if (token.size() == 0) {
-             std::cerr << WHERE_AM_I << " not a valid region file. looking for leading #" << fname << std::endl;
+             std::cerr << WHERE_AM_I << " not a valid region file. looking for leading '#' in " << fname << std::endl;
              file.close();
              return;
         }
@@ -1143,6 +1143,9 @@ void RegionManager::loadMap(const std::string & fname){
                         if (minRegion[i] != maxRegion[j]){
                             setInterRegionConstraint(minRegion[i], maxRegion[j],
                                                      toDouble(row[2]));
+                            if (verbose_) std::cout << minRegion[i] << " <-> " 
+                                                    << maxRegion[j] << " weight:" 
+                                                    << toDouble(row[2]) << std::endl;
                         }
                     }
                 }
