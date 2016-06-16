@@ -24,20 +24,20 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
-    
+
     if(NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
     endif()
 
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
 
-    #-Wl,--no-undefined 
+    #-Wl,--no-undefined
     #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
 #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
 #     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") 
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
@@ -48,7 +48,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
         #add_compile_options(-stdlib=libc++)
         endif()
     else() # if gcc
-            
+
     endif()
 
 elseif(MSVC)
@@ -56,16 +56,16 @@ elseif(MSVC)
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
- 
+
 set(LIBGIMLI_VERSION_MAJOR 0)
 set(LIBGIMLI_VERSION_MINOR 9)
 set(LIBGIMLI_VERSION_PATCH 7)
-set(LIBGIMLI_VERSION ${LIBGIMLI_VERSION_MAJOR}.${LIBGIMLI_VERSION_MINOR}.${LIBGIMLI_VERSION_PATCH}) 
+set(LIBGIMLI_VERSION ${LIBGIMLI_VERSION_MAJOR}.${LIBGIMLI_VERSION_MINOR}.${LIBGIMLI_VERSION_PATCH})
 
 set(PACKAGE_NAME \"${PROJECT_NAME}\")
 set(PACKAGE_VERSION \"${LIBGIMLI_VERSION}\")
-set(PACKAGE_BUGREPORT \"carsten@resistivity.net\")
-set(PACKAGE_AUTHORS \"carsten@resistivity.net thomas@resistivity.net\")
+set(PACKAGE_BUGREPORT \"carsten@pygimli.org\")
+set(PACKAGE_AUTHORS \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
 
 ################################################################################
 # Check for libs and other packages we might use.
@@ -85,7 +85,7 @@ if(NOT THIRDPARTY_DIR)
     set(TARGETNAME "-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-${ADDRESSMODEL}")
     set(ENV{TARGETNAME} ${TARGETNAME})
     set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/../thirdParty/)
-    
+
     get_filename_component(EXTERNAL_DIR "${THIRDPARTY_DIR}/dist${TARGETNAME}" ABSOLUTE)
     get_filename_component(EXTERNAL_BUILD_DIR "${THIRDPARTY_DIR}/build${TARGETNAME}" ABSOLUTE)
     message(STATUS "ThirdParty set to: ${THIRDPARTY_DIR}")
@@ -106,7 +106,7 @@ find_package(PythonInterp) # find version belongs to the active python command
 
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
-            
+
     if (EXISTS ${BOOST_DIST_NAME_FILE})
         message(STATUS "reading ${BOOST_DIST_NAME_FILE}")
         FILE(READ "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
@@ -118,12 +118,12 @@ function(find_boost_from_distname_file)
         message(STATUS "BOOST_ROOT from ${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist: ${BOOST_ROOT}")
 
         set(BOOST_ROOT ${BOOST_ROOT}  CACHE FILEPATH "Boost root distribution")
-	
+
         set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
         get_filename_component(Boost_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ABSOLUTE)
-        message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")	
+        message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
     else()
-        message(STATUS "BOOST_ROOT does not exist: ${BOOST_ROOT}")	
+        message(STATUS "BOOST_ROOT does not exist: ${BOOST_ROOT}")
     endif()
 endfunction(find_boost_from_distname_file)
 
@@ -138,11 +138,11 @@ if (NOT Boost_INCLUDE_DIR)
         # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
         if (NOT Boost_INCLUDE_DIR)
             find_boost_from_distname_file()
-           
+
         endif()
         find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
         find_boost_from_distname_file()
-        
+
         #exit()
     endif(BOOST_ROOT)
     message(STATUS "BOOST_ROOT, ${BOOST_ROOT}")
@@ -152,12 +152,12 @@ message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
 
 if (MSVC)
 	find_package(Boost 1.46.0 COMPONENTS system thread)
-	
+
 	if (NOT Boost_THREAD_FOUND)
 		set(Boost_THREAD_FOUND ON)
 	endif (NOT Boost_THREAD_FOUND)
 	link_directories(${BOOST_LIBRARYDIR})
-	
+
 else(MSVC)
     find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
 	link_directories(${BOOST_LIBRARYDIR})
@@ -174,10 +174,10 @@ if (Boost_INCLUDE_DIR)
 		set(BOOST_BIND_FOUND ON)
 	if (HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP)
 		message( STATUS "HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP ${HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP} ${Boost_INCLUDE_DIR}")
-		option (USE_IPC "Use support for interprocess communication" ON) 
+		option (USE_IPC "Use support for interprocess communication" ON)
 	else()
 		message( "HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP 0 ${HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP} ${Boost_INCLUDE_DIR}")
-		set(USE_IPC  OFF) 
+		set(USE_IPC  OFF)
 		set(HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP 0 )
 	endif()
 endif (Boost_INCLUDE_DIR)
@@ -205,6 +205,14 @@ find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_or_build_package(UMFPACK umfpack)
 
+# Check if conda package is created
+if(DEFINED ENV{CONDA_BUILD})
+    message(STATUS "Conda package is being created.")
+    set(CONDA_BUILD TRUE)
+else()
+    set(CONDA_BUILD FALSE)
+endif()
+
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
     message(STATUS "openblas is used: ${PC_BLAS_INCLUDE_DIRS}")
@@ -218,7 +226,7 @@ endif()
 if (NOT AVOID_CPPUNIT)
     find_package(CppUnit)
     if (CPPUNIT_FOUND)
-        option (LIBGIMLI_BUILD_TESTS "Build unittests" ON) 
+        option (LIBGIMLI_BUILD_TESTS "Build unittests" ON)
     endif (CPPUNIT_FOUND)
 endif()
 
@@ -272,7 +280,7 @@ if (NOT CASTER)
             message(STATUS "Found gcc version above 5: choosing castxml")
             set(CASTER "castxml")
         endif()
-            
+
     endif()
 endif()
 
@@ -293,7 +301,7 @@ endif()
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
-if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND 
+if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND
     AND CASTER_EXECUTABLE
     AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
     AND Boost_PYTHON_LIBRARIES AND numpy_FOUND)
@@ -308,9 +316,9 @@ else()
     message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
     message(STATUS "numpy_FOUND: ${numpy_FOUND}" )
 
-    message (STATUS "pygimli cannot be build due to some missing packages. 
+    message (STATUS "pygimli cannot be build due to some missing packages.
 Check above for python, gccxml|castxml, pygccxml, pyplusplus, boost_python, numpy")
-    
+
 endif ()
 
 message(STATUS "**********************************************************************")
@@ -341,7 +349,7 @@ if (SPHINX_FOUND)
     list(APPEND DOCFILES ${PNGFILES})
     file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
     list(APPEND DOCFILES ${BIBFILES})
-    
+
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
 
     #foreach(file ${DOCFILES})
@@ -363,7 +371,7 @@ endif (CPPUNIT_FOUND)
 # Define the configurable options
 ################################################################################
 include(CMakeDependentOption)
-cmake_dependent_option( GIMLI_BUILD_SHARED_LIBS_WITH_STATIC_DEPENDENCIES 
+cmake_dependent_option( GIMLI_BUILD_SHARED_LIBS_WITH_STATIC_DEPENDENCIES
 "For WIN32 and APPLE where the dependency pack is used, prefer the static dependency libs over the shared/dynamic ones.  NOTE: On Windows you also need to be mindful of which C/C++ runtime setting has been used to compile the various
 components - they must all match or you will get crashes, heap corruption and/or
 other issues." FALSE "WIN32 OR APPLE" FALSE)
@@ -371,7 +379,7 @@ other issues." FALSE "WIN32 OR APPLE" FALSE)
 # cmake_dependent_option(GIMLI_BUILD_PYTHON_MODULES "Specifies whether to build the Python extension module(s)" "PYTHONINTERP_FOUND;PYTHONLIBS_FOUND;Boost_PYTHON_FOUND")
 
 ################################################################################
-# 
+#
 ################################################################################
 set (LIBRARY_INSTALL_DIR lib)
 set (INCLUDE_INSTALL_DIR include/gimli/)
@@ -437,7 +445,7 @@ add_subdirectory(apps EXCLUDE_FROM_ALL)
 if (PYGIMLI)
 #     set( PYGIMLI_SOURCE_DIR ${CMAKE_SOURCE_DIR}/python/pygimli )
 #     set( PYGIMLI_BUILD_DIR ${CMAKE_BINARY_DIR}/package/pygimli )
-# 
+#
 #     file(GLOB_RECURSE PYFILES RELATIVE "${PYGIMLI_SOURCE_DIR}" "python/pygimli/*.py")
 #     set(PYGIMLI_FILES ${PYFILES} CACHE INTERNAL "pygimli source files that we need to copy")
 

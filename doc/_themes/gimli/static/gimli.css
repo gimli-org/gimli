@@ -21,8 +21,9 @@ padding-left: 10px;
 }
 
 body {
-    font-family: "Open Sans", sans-serif;
-    font-size: 15px
+    font-family: "Fira Sans", sans-serif;
+    font-size: 15px;
+    font-weight: 400;
 }
 
 a { color: #16540e }
@@ -32,7 +33,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Open Sans"
+    font-family: "Fira Sans"
 }
 
 
@@ -99,8 +100,8 @@ img.align-center {
 }
 /*header format*/
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Open Sans", sans-serif;
-    font-weight: 100;
+    font-family: "Fira Sans", sans-serif;
+    font-weight: 500;
     margin: 0;
     padding: 0.7em 0 0.5em 0em;
     line-height: 1.2em;
@@ -108,12 +109,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-    font-size: 30px;
+    font-size: 28px;
     line-height: 36px;
 }
 h2 {
-    font-size: 24px;
-    line-height: 30px;
+    font-size: 22px;
+    line-height: 28px;
 }
 h3 {
     font-size: 19px;
@@ -482,7 +483,7 @@ dl.class dd, dl.function dd {
 }
 .docutils.field-list td blockquote p {
     font-size: 14px;
-    font-family: "Open Sans";
+    font-family: "Fira Sans";
     line-height: 18px;
     font-weight: normal;
 }
@@ -496,3 +497,17 @@ p.admonition-title {
     font-size: 18px;
     text-decoration: italic;
     }
+
+.navbar-form .input-append, .navbar-form .input-prepend {
+    margin-top: 10px;
+}
+
+.navbar .nav>li>a {
+    float: none;
+    padding: 15px 15px 0px;
+    color: #777777;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #ffffff;
+    font-size: 16px;
+    font-weight: 400;
+}
