@@ -31,6 +31,59 @@ def readTXTSpectrum(filename):
     return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
+def readFuchs3File(resfile):
+    """ Read Fuchs III (SIP spectrum) data file """
+    activeBlock = ''
+    header = {}
+    LINE = []
+    dataAct = False
+    with open(resfile, 'r') as f:
+        for line in f:
+            if dataAct:
+                LINE.append(line)
+                if len(line) < 2:
+                    f, amp, phi = [], [], []
+                    for li in LINE:
+                        sline = li.split()
+                        if len(sline) > 12:
+                            fi = float(sline[11])
+                            if np.isfinite(fi):
+                                f.append(fi)
+                                amp.append(float(sline[12]))
+                                phi.append(float(sline[13]))
+
+                    return np.array(f), np.array(amp), np.array(phi), header
+            elif len(line):
+                if line.rfind('Current') >= 0:
+                    if dataAct:
+                        break
+                    else:
+                        dataAct = True
+                        print(line)
+                if line[0] == '[':
+                    token = line[1:line.rfind(']')].replace(' ', '_')
+                    if token[:3] == 'End':
+                        header[activeBlock] = np.array(header[activeBlock])
+                        activeBlock = ''
+                    elif token[:5] == 'Begin':
+                        activeBlock = token[6:]
+                        header[activeBlock] = []
+                    else:
+                        value = line[line.rfind(']') + 1:]
+                        try:  # direct line information
+                            if '.' in value:
+                                num = float(value)
+                            else:
+                                num = int(value)
+                            header[token] = num
+                        except Exception:  # maybe beginning or end of a block
+                            pass
+                else:
+                    if activeBlock:
+                        nums = np.array(line.split(), dtype=float)
+                        header[activeBlock].append(nums)
+
+
 def readSIP256file(resfile, verbose=False):
     """
     read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip

@@ -8,7 +8,7 @@ from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
-from .importexport import readTXTSpectrum
+from .importexport import readTXTSpectrum, readFuchs3File
 from .plotting import showAmplitudeSpectrum, showSpectrum, showPhaseSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi, fit2CCPhi
@@ -32,6 +32,12 @@ class SIPSpectrum():
                 self.basename = filename[:-4]
                 self.f, self.amp, self.phi = readTXTSpectrum(filename)
                 self.amp *= k
+            elif flow.endswith('.res'):
+                self.basename = filename[:-4]
+                print("Reading SIP Fuchs III file")
+                self.f, self.amp, self.phi, header = readFuchs3File(filename)
+                self.phi *= -1/180
+                print(header)
         if f is not None:
             self.f = np.asarray(f)
         if amp is not None:
