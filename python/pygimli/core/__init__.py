@@ -130,6 +130,18 @@ def Data_str(self):
         str(self.sensorCount()) + " data: " + str(self.size())
     )
 
+def ElementMatrix_str(self):
+    
+    s = ''
+    for i in range(self.size()):
+        s += str(self.idx(i)) + "\t: "
+    
+        for j in range(self.size()):
+            s += str(self.getVal(i , j)) + " "
+        s += '\n'
+    return s
+
+
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
@@ -143,6 +155,7 @@ _pygimli_.CMatrix.__str__ = CMatrix_str
 _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
+_pygimli_.ElementMatrix.__str__ = ElementMatrix_str
 #_pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
 #_pygimli_.stdVectorIndex.__str__ = RVector_str
 
@@ -821,8 +834,20 @@ def __ModellingBase__responses_mt__(self, models, respos):
     
     
 class ModellingBaseMT__(_pygimli_.ModellingBase):
-    def __init__(self, verbose):
-        _pygimli_.ModellingBase.__init__(self, verbose)
+    def __init__(self, mesh=None, dataContainer=None, verbose=False):
+        if mesh and dataContainer:
+            _pygimli_.ModellingBase.__init__(self, mesh=mesh, 
+                                             dataContainer=dataContainer, 
+                                             verbose=verbose)
+        elif type(mesh) is _pygimli_.Mesh:
+            _pygimli_.ModellingBase.__init__(self, mesh=mesh, verbose=verbose)
+        elif dataContainer:
+            _pygimli_.ModellingBase.__init__(self, dataContainer=dataContainer, 
+                                             verbose=verbose)
+        else:
+            _pygimli_.ModellingBase.__init__(self, verbose=verbose)
+        
+        
         self._J = _pygimli_.RMatrix()
         self.setJacobian(self._J)  
    

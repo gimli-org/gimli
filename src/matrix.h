@@ -439,7 +439,7 @@ public:
 //     }
     
     /*! Set one specific column */
-    inline void setCol(uint col, const Vector < ValueType > & v){
+    inline void setCol(Index col, const Vector < ValueType > & v){
         if (col < 0 || col > this->cols()-1) {
             throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
                                 toStr(col) + " " + toStr(this->cols())) ;
@@ -448,9 +448,22 @@ public:
             throwLengthError(1, WHERE_AM_I + " rows bounds out of range " +
                                 toStr(v.size()) + " " + toStr(this->rows())) ;
         }
-        for (uint i = 0; i < v.size(); i ++) mat_[i][col] = v[i];
+        for (Index i = 0; i < v.size(); i ++) mat_[i][col] = v[i];
     }
 
+    /*! Add one specific column */
+    inline void addCol(Index col, const Vector < ValueType > & v){
+        if (col < 0 || col > this->cols()-1) {
+            throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
+                                toStr(col) + " " + toStr(this->cols())) ;
+        }
+        if (v.size() > this->rows()) {
+            throwLengthError(1, WHERE_AM_I + " rows bounds out of range " +
+                                toStr(v.size()) + " " + toStr(this->rows())) ;
+        }
+        for (Index i = 0; i < v.size(); i ++) mat_[i][col] += v[i];
+    }
+    
     /*! Return reference to row flag vector. Maybee you can check if the rows are valid. Size is set automatic to the amount of rows. */
     BVector & rowFlag(){ return rowFlag_; }
 

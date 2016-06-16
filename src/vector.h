@@ -530,6 +530,13 @@ public:
         
         return *this;
     }
+    /*! Add val to index idx.
+     */
+    inline Vector< ValueType > & addVal(const ValueType & val, Index i) {
+        ASSERT_RANGE(i, 0, this->size())
+        data_[i] += val;
+        return *this;
+    }
     
     /*! Get value for index i. 
      * Throws out of range exception if index check fails. */
@@ -686,8 +693,13 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         return *this;
     }
 
-    
-//     /*! Fill the whole vector with function expr(i) */
+    template < class ExprOP > inline void assign(const ExprOP & v){
+        if (v.size()) {
+            resize(v.size());
+            v.assign(*this);
+        }
+    }
+    //     /*! Fill the whole vector with function expr(i) */
 //     template< class V > void fill(const V & val){
 //         for (register Index i = 0; i < size_; i ++) data_[i] = ValueType(val);
 //     }

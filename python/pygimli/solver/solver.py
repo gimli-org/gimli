@@ -254,8 +254,8 @@ def parseArgToBoundaries(args, mesh):
     elif hasattr(args, '__call__'):
         for b in mesh.boundaries():
             if not b.leftCell() or not b.rightCell():
-                if args(b) is not None:
-                    boundaries.append([b, args])
+                #if args(b) is not None:
+                boundaries.append([b, args])
     return boundaries
 
 def parseMapToCellArray(attributeMap, mesh, default=0.0):
@@ -764,13 +764,12 @@ def linsolve(A, b, verbose=False):
 
 def assembleForceVector(mesh, f, userData=None):
     """
-
     Create right hand side vector based on the given mesh and force values.
 
 
     Parameters
     ----------
-    f: float, array, callable(cell, [userData])
+    f: float, array, callable(cell, [userData]), [...]
 
         Force Values
         float -> ones(mesh.nodeCount()) * vals,
@@ -778,6 +777,21 @@ def assembleForceVector(mesh, f, userData=None):
         for each cell [0 .. mesh.cellCount()]
     """
 
+    if type(f) is list or hasattr(f, 'ndim'):
+        
+        if type(f) is list:
+            
+            rhs = np.zeros((len(f), mesh.nodeCount()))
+            for i in range(len(f)):
+                userData['i'] = i
+                rhs[i] = assembleForceVector(mesh, f[i], userData)
+
+            return rhs
+        
+        elif f.ndim == 2:
+            # assume rhs [n, nNodes] array is already a valid
+            return f
+    
     rhs = pg.RVector(mesh.nodeCount(), 0)
 
     if hasattr(f, '__call__') and not isinstance(f, pg.RVector):
@@ -994,7 +1008,6 @@ def createStiffnessMatrix(mesh, a=None):
     if isinstance(a[0], float) or isinstance(a[0], np.float64):
 
         A = pg.RSparseMatrix()
-
         A.fillStiffnessMatrix(mesh, a)
         return A
     else:
@@ -1146,6 +1159,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     progress : bool
         Give some calculation progress.
+        
+    ret : 
+        Workspace for results so no new memory will be allocated.
 
     Returns
     -------
@@ -1207,7 +1223,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     if debug:
         print("4: ", swatch2.duration(True))
     S = A + M
-
+                    
     if debug:
         print("5: ", swatch2.duration(True))
     if times is None:
@@ -1218,7 +1234,6 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             print("6a: ", swatch2.duration(True))
 
         if 'duB' in kwargs:
-            print(userData)
             assembleNeumannBC(S,
                               parseArgToBoundaries(kwargs['duB'], mesh),
                               time=0.0,
@@ -1237,17 +1252,26 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if debug:
             print("6c: ", swatch2.duration(True))
 
-        u = None
-
-        if isinstance(a[0], complex):
-            u = pg.CVector(rhs.size(), 0.0)
-            rhs = pg.toComplex(rhs)
+        # create result array
+        
+        u = kwargs.pop('ret', None)
+        
+        singleForce = True
+        if hasattr(rhs, 'ndim'):
+            if rhs.ndim == 2:
+                singleForce = False
+                if u is None:
+                    u = np.zeros(rhs.shape)
         else:
-            u = pg.RVector(rhs.size(), 0.0)
+            if isinstance(a[0], complex):
+                if u is None:
+                    u = pg.CVector(rhs.size(), 0.0)
+                rhs = pg.toComplex(rhs)
+            else:
+                if u is None:
+                    u = pg.RVector(rhs.size(), 0.0)
 
-        if debug:
-            print("7: ", swatch2.duration(True))
-
+        
         assembleTime = swatch.duration(True)
         if stats:
             stats.assembleTime = assembleTime
@@ -1260,7 +1284,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         solver = pg.LinSolver(False)
         solver.setMatrix(S, 0)
 
-        u = solver.solve(rhs)
+        if singleForce:
+            u = solver.solve(rhs)
+        else:
+            for i, r in enumerate(rhs):
+                solver.solve(r, u[i])
 
         solverTime = swatch.duration(True)
         if verbose:
