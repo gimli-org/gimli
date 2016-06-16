@@ -1,4 +1,5 @@
 import numpy as np
+import re
 
 
 def fstring(fri):
@@ -61,7 +62,7 @@ def readSIP256file(resfile, verbose=False):
             elif len(line):
                 if line[0] == '[':
                     token = line[1:line.rfind(']')].replace(' ', '_')
-                    if token == 'Messdaten_SIP256':
+                    if token.replace(' ', '_') == 'Messdaten_SIP256':
                         dataAct = True
                     elif token[:3] == 'End':
                         header[activeBlock] = np.array(header[activeBlock])
@@ -109,14 +110,17 @@ def readSIP256file(resfile, verbose=False):
         elif line.find('Freq') >= 0:
             pass
         elif len(sline) > 1 and rdno > 0:  # some data present
+            if re.search('[0-9]-', line):  # missing whitespace before -
+                sline = re.sub('[0-9]-', '5 -', line).split()
+
             for c in range(6):
-                if len(sline[c]) > 11:  # too long line / missing space
+                if len(sline[c]) > 15:  # too long line / missing space
                     if c == 0:
                         part1 = sline[c][:-15]
-                        part2 = sline[c][10:]
+                        part2 = sline[c][-15:]   # [10:]
                     else:
                         part1 = sline[c][:-10]
-                        part2 = sline[c][9:]
+                        part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
             data.append(np.array(sline[:5], dtype=float))
 
