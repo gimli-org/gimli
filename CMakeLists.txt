@@ -215,6 +215,7 @@ endif()
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
+    message(STATUS "openblas is used: ${PC_BLAS_INCLUDE_DIRS}")
     set(OPENBLAS_FOUND TRUE)
 else()
     set(OPENBLAS_FOUND FALSE)

@@ -418,8 +418,6 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                        + " == " + toStr(mesh_->cellCount()));
     }
 
-//     
-    
     if (background != 0.0){
         mesh_->prolongateEmptyCellsValues(cellAtts, background);
     }

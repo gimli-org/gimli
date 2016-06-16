@@ -48,6 +48,7 @@ ax = [fig.add_subplot(2,2,i) for i in range(1,5)]
 a, cbar = pg.show(modelMesh, model, axes=ax[0])
 a, cbar = pg.show(modelMesh, model, tri=1, interpolate=1, axes=ax[1])
 a, cbar = pg.show(modelMesh, model, tri=1, interpolate=0, shading='gouraud', axes=ax[2])
+
 sens = pb.prepExportSensitivityData(modelMesh, S[110])
 a, cbar = pg.show(modelMesh, sens, axes=ax[3], cmap='b2r')
                   

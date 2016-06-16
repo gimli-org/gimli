@@ -540,7 +540,8 @@ def angle(p1, p2, p3, Un):
 
 def gravMagBoundarySinghGup(boundary):
     """
-    Calculate [Fx, Fy, FZ] and [Fzx, Fzy, Fzz] at Origin for a given boundary.
+    For U be gravimetric potential.
+    Calculate [dUdx, dUdy, dUdz] and [dUdzdx, dUdzdy, dUdzdz] at Origin for a given boundary.
     After :cite:`SinghGup2001`
 
     """
@@ -676,6 +677,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     dgzi = None
 
     for i, p in enumerate(pnts):
+        print(p)
         mesh.translate(-pg.RVector3(p))
 
         for b in mesh.boundaries():

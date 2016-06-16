@@ -29,8 +29,8 @@
 
 #if OPENBLAS_FOUND && !CONDA_BUILD
     #include <openblas/cblas.h>
-#else
-    #include <cblas.h>
+// #else
+//     #include <cblas.h>
 #endif
 
 namespace GIMLI{
@@ -78,8 +78,6 @@ void PythonGILSave::restore() { if (saved_) {
         saved_ = false;
     }
 }
-
-
 
 void showSizes(){
     std::cout << "size_t: " << sizeof(size_t) << std::endl;

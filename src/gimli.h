@@ -354,17 +354,17 @@ DLLEXPORT uint countColumnsInFile(const std::string & fname, uint & columnCount)
 DLLEXPORT uint countColumnsInFile(const std::string & fname);
 DLLEXPORT uint countRowsInFile(const std::string & fname);
 DLLEXPORT uint fileLength(std::fstream & file);
-DLLEXPORT std::vector < std::string > getRowSubstrings(std::fstream & file, char comment = '#');
+DLLEXPORT std::vector < std::string > getRowSubstrings(std::fstream & file, char comment='#');
 
-inline std::vector < std::string > getRow(std::fstream & file, char comment = '#'){
+inline std::vector < std::string > getRow(std::fstream & file, char comment='#'){
     return getRowSubstrings(file, comment);
 }
 
-DLLEXPORT std::vector < std::string > getNonEmptyRow(std::fstream & file, char comment = '#');
-DLLEXPORT std::vector < std::string > getCommentLine(std::fstream & file, char comment = '#');
+DLLEXPORT std::vector < std::string > getNonEmptyRow(std::fstream & file, char comment='#');
+DLLEXPORT std::vector < std::string > getCommentLine(std::fstream & file, char comment='#');
 
 DLLEXPORT std::vector < std::string > getSubstrings(const std::string & str);
-DLLEXPORT std::vector < std::string > split(const std::string & str, char delimiter = ':');
+DLLEXPORT std::vector < std::string > split(const std::string & str, char delimiter=':');
 
 DLLEXPORT std::map < float, Complex > loadCFloatMap(const std::string & filename);
 DLLEXPORT std::map < float, float > loadFloatMap(const std::string & filename);

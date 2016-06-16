@@ -22,6 +22,19 @@ class TestRVectorMethods(unittest.TestCase):
 
         p = pg.RVector3((0.0, 1.0, 0.0))
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
+        
+    def test_NumpyToRVector3(self):
+        '''
+            custom_rvalue.cpp
+        '''
+        x = np.array([0.0, 1.0, 0.0])
+        p = pg.RVector3(x)
+        self.assertEqual(p.dist(x), 0.0)
+        self.assertEqual(p.dist([1.0, 1.0]), 1.0)
+
+        x = np.array([0.0, 1.0])
+        p = pg.RVector3(x)
+        self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def test_ListToIndexArray(self):
         '''
@@ -180,7 +193,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(len(a), mesh.cellCount())
 
 if __name__ == '__main__':
-    pg.setDebug(1)
+    pg.setDebug(0)
     unittest.main()
     # do we need Implicit converter .. currently deactivated in vector.h
 

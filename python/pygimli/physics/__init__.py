@@ -10,7 +10,7 @@ from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
 
-# from . ert import resistivityArchie  # not in git yet (no ERT module)
+from . ert import ERTModelling 
 # from . gravimetry import Gravimetry
 # from . seismics import *
 
