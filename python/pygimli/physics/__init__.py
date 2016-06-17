@@ -119,19 +119,6 @@ class MethodManager(object):
         """ show data in form of travel time curves """
         pass
 
-    # Mesh related methods
-    def createMesh(self, ):
-        """ Create a mesh aka the parametrization """
-        pass
-
-    def setMesh(self, ):
-        """ Create a mesh aka the parametrization """
-        pass
-
-    def showMesh(self, ax=None):
-        """ show mesh in given axes or in a new figure """
-        pass
-
     # Work related methods
     def invert(self, data, values=None, verbose=0, **kwargs):
         """ Invert the data and fill the parametrization. """
@@ -204,4 +191,34 @@ class MethodManager(object):
         parser.add_argument('dataFileName')
         return parser
 
+
+class MeshMethodManager(MethodManager):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    # Mesh related methods
+    def createMesh(self, ):
+        """ Create a mesh aka the parametrization """
+        pass
+
+    def setMesh(self, ):
+        """ Create a mesh aka the parametrization """
+        pass
+
+    def showMesh(self, ax=None):
+        """ show mesh in given axes or in a new figure """
+        pass
+
+    @staticmethod
+    def createArgParser(dataSuffix='dat'):
+        parser = MethodManager.createArgParser(dataSuffix)
+        
+        parser.add_argument("--paraMaxCellSize", dest="maxCellArea", type=float,
+                            default=None,
+                            help="Maximum cell size for parametric cells in m² [None=auto].")
+        parser.add_argument("--zWeight", dest="zWeight", type=float,
+                            default=0.7,
+                            help="Weight for vertical smoothness (1=isotrope). [0.7]")
+        return parser
+    
 from . traveltime import Refraction

@@ -281,7 +281,7 @@ class Refraction(MethodManager):
         lam : float
             regularization parameter describing the strength of smoothness
 
-        zweight : float
+        zWeight : float
             relative weight for purely vertical boundaries
         """
         if data is not None:
@@ -310,7 +310,11 @@ class Refraction(MethodManager):
         else:
             self.fop.setStartModel(self.fop.createDefaultStartModel())
 
-        self.fop.regionManager().setZWeight(kwargs.pop('zweight', 0.2))
+        if 'zweight' in kwargs:
+            zWeight = kwargs.pop('zweight', 0.2)
+            print("zweight option will be removed soon. Please use zWeight instead.")
+        else:
+            self.fop.regionManager().setZWeight(kwargs.pop('zWeight', 0.2))
 
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))

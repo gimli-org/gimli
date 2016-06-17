@@ -6,6 +6,7 @@
 """
 
 import pygimli as pg
+import numpy as np
 
 class ERTModelling(pg.ModellingBase):
         
@@ -19,21 +20,27 @@ class ERTModelling(pg.ModellingBase):
         self.resistivity = None
         
         self.setMesh(mesh)  
-        self.setDataContainer(data)
-        
-    def setDataContainer(self, data):
+        self.setData(data)
+    
+    def setData(self, data):
         """
         """
         #pg.ModellingBase.setData(data)
-        self.electrodes = data.sensorPositions()
+        if data is not None:
+            self.electrodes = data.sensorPositions()
+            
         self.data = data
                
-    def setMesh(self, mesh):
+    def setMesh(self, mesh, ignoreRegionManager=True):
         """
         """
-
-        pg.ModellingBase.setMesh(self, mesh)
+        if mesh is not None:
+            pg.ModellingBase.setMesh(self, mesh)
+    
+    def calcGeometricFactor(self, data):
+        print("implement me")
         
+                                                           
     def uAnalytical(self, p, sourcePos, k):
         """
             for sigma = 1 [S m]
@@ -137,6 +144,7 @@ class ERTModelling(pg.ModellingBase):
         self.resistivity = res = self.createMappedModel(model, -1)
         
         if self.verbose():
+            print("_"*100)
             print("Calculate response for model:", min(res), max(res))
         
         rMin = self.electrodes[0].dist(self.electrodes[1]) / 2.0
@@ -203,6 +211,7 @@ class ERTModelling(pg.ModellingBase):
         
         pg.tic()
         if self.verbose():
+            print("_"*100)
             print("Calculate sensitivity matrix for model: ",  
                   min(model), max(model))
             
