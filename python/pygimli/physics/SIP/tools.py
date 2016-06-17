@@ -46,7 +46,7 @@ def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
     model = ICC.run()  # run inversion
     if verbose:
         ICC.echoStatus()
-    return np.asarray(model), np.asarray(ICC.response())
+    return np.append(model, ICC.chi2()), np.asarray(ICC.response())
 
 
 def fit2CCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
