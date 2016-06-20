@@ -263,6 +263,14 @@ public:
             (*this)[id][A.idx(i)] += (ValueType)A.getVal(0, i);
         }
     }
+    
+    void add(const ElementMatrix < double > & A){
+        for (Index i = 0, imax = A.size(); i < imax; i++){
+            for (Index j = 0, jmax = A.size(); j < jmax; j++){
+                (*this)[A.idx(i)][A.idx(j)] += (ValueType)A.getVal(i, j);
+            }
+        }
+    }
        
 #define DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(OP) \
     SparseMapMatrix< ValueType, IndexType > & operator OP##= (const ValueType & v){\

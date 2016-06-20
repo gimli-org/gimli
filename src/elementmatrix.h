@@ -52,7 +52,7 @@ public:
 
     ~ElementMatrix() {}
 
-    inline const Vector< ValueType > & operator[](uint row) const { return mat_[row]; }
+    inline const Vector< ValueType > & operator[](Index row) const { return mat_[row]; }
     
     void resize(uint newSize) {
         idx_.resize(newSize);
@@ -91,22 +91,100 @@ public:
     ElementMatrix < ValueType > & ux2uy2uz2(const Cell & cell, bool useCache=false);
 
     ElementMatrix < ValueType > & u(const MeshEntity & ent, 
-                            const RVector & w,
-                            const R3Vector & integrationPnts,
-                            bool verbose = false);
+                                    const RVector & w,
+                                    const R3Vector & integrationPnts,
+                                    bool verbose=false);
     ElementMatrix < ValueType > & u2(const MeshEntity & ent, const RVector & w, 
                                      const R3Vector & integrationPnts,
-                                     bool verbose = false);
+                                     bool verbose=false);
     ElementMatrix < ValueType > & ux2(const MeshEntity & ent, const RVector & w, 
                                const R3Vector & integrationPnts,
-                              bool verbose = false);
+                              bool verbose=false);
     ElementMatrix < ValueType > & ux2uy2(const MeshEntity & ent, const RVector & w, 
                                   const R3Vector & integrationPnts,
-                                 bool verbose = false);
+                                 bool verbose=false);
     ElementMatrix < ValueType > & ux2uy2uz2(const MeshEntity & ent, const RVector & w, 
                                     const R3Vector & integrationPnts, 
-                                    bool verbose = false);
+                                    bool verbose=false);
 
+    ElementMatrix < double > & dudi(const MeshEntity & ent,
+                                  const RVector & w,
+                                  const R3Vector & x,
+                                  Index i, bool verbose=false);
+    
+    ElementMatrix < double > & ux(const MeshEntity & ent,
+                                  const RVector & w,
+                                  const R3Vector & x,
+                                  bool verbose=false){
+        return dudi(ent, w, x, 0, verbose);
+    }
+    ElementMatrix < double > & uy(const MeshEntity & ent,
+                                  const RVector & w,
+                                  const R3Vector & x,
+                                  bool verbose=false){
+        return dudi(ent, w, x, 1, verbose);
+    }
+    ElementMatrix < double > & uz(const MeshEntity & ent,
+                                  const RVector & w,
+                                  const R3Vector & x,
+                                  bool verbose=false){
+        return dudi(ent, w, x, 2, verbose);
+    }
+
+    Vector < ValueType > mult(const Vector < ValueType > & v){
+        Vector < ValueType > ret(this->size());
+        this->mult(v, ret);
+        return ret;
+    }
+    
+    /*! Return S * a */
+    void mult(const Vector < ValueType > & a, Vector < ValueType > & ret){
+        ASSERT_EQUAL(size(), ret.size())
+        for (register Index i = 0; i < size(); i ++) {
+            for (register Index j = 0; j < size(); j ++) {
+                ret[i] += mat_[i][j] * a[idx_[j]];
+            }
+        }
+    }
+    /*! Return (S * a) * b */
+    ValueType mult(const Vector < ValueType > & a, const Vector < ValueType > & b){
+        ValueType ret = 0;
+        for (register Index i = 0; i < size(); i ++) {
+            ValueType t = 0;
+            for (register Index j = 0; j < size(); j ++) {
+                t += mat_[i][j] * a[idx_[j]];
+            }
+            ret += t * b[idx_[i]];
+        }
+        return ret;
+    }
+    
+        /*! Return (S * (a-b)) * (m-n) */
+    template < class Val > Val mult_(const Vector < Val > & a, 
+                   const Vector < Val> & b,
+                   const Vector < Val> & m,
+                   const Vector < Val> & n){
+        Val ret = 0;
+        for (register Index i = 0; i < size(); i ++) {
+            Val t = 0;
+            for (register Index j = 0; j < size(); j ++) {
+                t += mat_[i][j] * (a[idx_[j]]-b[idx_[j]]);
+            }
+            ret += t * (m[idx_[i]]-n[idx_[i]]);
+        }
+        return ret;
+    }
+    
+    double mult(const RVector & a, const RVector & b,
+                const RVector & m, const RVector & n){
+        return mult_(a, b, m, n);
+    }
+    Complex mult(const CVector & a, const CVector & b,
+                const CVector & m, const CVector & n){
+        return mult_(a, b, m, n);
+    }
+        
+    
 protected:
     //RMatrix mat_;
     Matrix < ValueType > mat_;
@@ -122,7 +200,30 @@ protected:
     RMatrix dNdr_;
     RMatrix dNds_;
     RMatrix dNdt_;
+    
+    RMatrix dNdx_; // (nVerts, nRules)
+    RMatrix dNdy_; // (nVerts, nRules)
+    RMatrix dNdz_; // (nVerts, nRules)
+    
+};
 
+class ElementMatrixMap {
+public:
+    
+    void add(Index row, const ElementMatrix < double > & Ai);
+    
+    RVector mult(const RVector & a, const RVector & b,
+                 const RVector & m, const RVector & n) const;
+                 
+    RVector mult(const RVector & a, const RVector & b) const;
+    
+    Index rows() const { return rows_; }
+protected:
+    std::vector< RMatrix > mat_;
+    std::vector< IndexArray > idx_;
+    std::vector< Index > row_;
+    
+    Index rows_;
 };
 
 template < class ValueType > std::ostream & operator << (std::ostream & str, const ElementMatrix< ValueType > & e){

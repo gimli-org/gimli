@@ -64,6 +64,56 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     return *this;
 }
 
+template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const MeshEntity & ent,
+                                                        const RVector & w,
+                                                        const R3Vector & x,
+                                                        Index dim, 
+                                                        bool verbose){
+    uint nVerts = ent.nodeCount();
+    uint nRules = w.size();
+    
+    if (size() != nVerts) resize(nVerts);
+    for (Index i = 0; i < nVerts; i ++) idx_[i] = ent.node(i).id();
+    *this *= 0.0;
+
+    
+    if (dNdr_.rows() != nVerts){
+        dNdr_.resize(nVerts, nRules);
+        for (Index i = 0; i < nRules; i ++){
+            dNdr_.setCol(i, ent.dNdL(x[i], 0));
+            if (ent.dim() > 1){
+                dNds_.resize(nVerts, nRules);
+                dNds_.setCol(i, ent.dNdL(x[i], 1));    
+            } 
+            if (ent.dim() > 2){            
+                dNdt_.resize(nVerts, nRules);
+                dNdt_.setCol(i, ent.dNdL(x[i], 2));
+            } 
+        }
+        dNdx_.resize(nVerts, nRules);
+    }
+    
+    double drdi = ent.shape().drstdxyz(0, dim);
+    double dsdi = ent.shape().drstdxyz(1, dim);
+    double dtdi = ent.shape().drstdxyz(2, dim);
+    
+    double A = ent.shape().domainSize();
+    
+    for (Index i = 0; i < nVerts; i ++){
+        switch (ent.dim()){
+            case 1: dNdx_[i].assign(drdi * dNdr_[i]); break;
+            case 2: dNdx_[i].assign(drdi * dNdr_[i] + dsdi * dNds_[i]); break;
+            case 3: dNdx_[i].assign(drdi * dNdr_[i] + dsdi * dNds_[i] + dtdi * dNdt_[i]); break;
+        }
+         
+        mat_[0][i] = sum(w * dNdx_[i]);
+    }
+    
+    
+    if (verbose) std::cout << "int dudx " << *this << std::endl;
+    return *this;
+}
+
 template < > 
 ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
                                const RVector & w,
@@ -160,6 +210,9 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
             
 //             __MS(i << " " << dNdr_[i])
         }
+        
+        dNdx_.resize(nVerts, nRules);
+        dNdy_.resize(nVerts, nRules);
     }
    
 //     double drdx = ent.shape().invJacobian()[0]; //ent.shape().drstdxyz(0,0)
@@ -174,10 +227,22 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
 
     double A = ent.shape().domainSize();
     for (Index i = 0; i < nVerts; i ++){
+        dNdx_[i].assign(drdx * dNdr_[i] + dsdx * dNds_[i]);
+        dNdy_[i].assign(drdy * dNdr_[i] + dsdy * dNds_[i]);
+    }
+    
         
+    for (Index i = 0; i < nVerts; i ++){
+//         dNidx_.assign(drdx * dNdr_[i] + dsdx * dNds_[i]);
+//         dNidy_.assign(drdy * dNdr_[i] + dsdy * dNds_[i]);
+            
         for (Index j = i; j < nVerts; j ++){
-            mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
-                                      (drdy * dNdr_[i] + dsdy * dNds_[i]) * (drdy * dNdr_[j] + dsdy * dNds_[j])));
+            mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j]));
+            
+//             mat_[i][j] = A * sum(w * (dNidx_ * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
+//                                       dNidy_ * (drdy * dNdr_[j] + dsdy * dNds_[j])));
+//             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
+//                                       (drdy * dNdr_[i] + dsdy * dNds_[i]) * (drdy * dNdr_[j] + dsdy * dNds_[j])));
             mat_[j][i] = mat_[i][j];
         }
     }
@@ -189,8 +254,8 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
 template < > ElementMatrix < double > & 
 ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
                                     const RVector & w, 
-                               const R3Vector & integrationPnts, 
-                               bool verbose){
+                                    const R3Vector & integrationPnts, 
+                                    bool verbose){
 
     Index nVerts = ent.nodeCount();
     Index nRules = w.size();
@@ -205,6 +270,11 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
             dNds_.setCol(i, ent.dNdL(integrationPnts[i], 1));
             dNdt_.setCol(i, ent.dNdL(integrationPnts[i], 2));
         }
+        
+        dNdx_.resize(nVerts, nRules);
+        dNdy_.resize(nVerts, nRules);
+        dNdz_.resize(nVerts, nRules);
+        
     }
 
     double drdx = ent.shape().drstdxyz(0, 0);
@@ -233,13 +303,21 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
     
     double A = ent.shape().domainSize();
     for (Index i = 0; i < nVerts; i ++){
+        dNdx_[i].assign(drdx * dNdr_[i] + dsdx * dNds_[i] + dsdx * dNdt_[i]);
+        dNdy_[i].assign(drdy * dNdr_[i] + dsdy * dNds_[i] + dsdy * dNdt_[i]);
+        dNdz_[i].assign(drdz * dNdr_[i] + dsdz * dNds_[i] + dsdz * dNdt_[i]);
+    }
+    
+    for (Index i = 0; i < nVerts; i ++){
         for (Index j = i; j < nVerts; j ++){
-            mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i] + dtdx * dNdt_[i]) *
-                                      (drdx * dNdr_[j] + dsdx * dNds_[j] + dtdx * dNdt_[j]) +
-                                      (drdy * dNdr_[i] + dsdy * dNds_[i] + dtdy * dNdt_[i]) *
-                                      (drdy * dNdr_[j] + dsdy * dNds_[j] + dtdy * dNdt_[j]) +
-                                      (drdz * dNdr_[i] + dsdz * dNds_[i] + dtdz * dNdt_[i]) *
-                                      (drdz * dNdr_[j] + dsdz * dNds_[j] + dtdz * dNdt_[j])));
+            mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j] + dNdz_[i] * dNdz_[j]));
+            
+//             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i] + dtdx * dNdt_[i]) *
+//                                       (drdx * dNdr_[j] + dsdx * dNds_[j] + dtdx * dNdt_[j]) +
+//                                       (drdy * dNdr_[i] + dsdy * dNds_[i] + dtdy * dNdt_[i]) *
+//                                       (drdy * dNdr_[j] + dsdy * dNds_[j] + dtdy * dNdt_[j]) +
+//                                       (drdz * dNdr_[i] + dsdz * dNds_[i] + dtdz * dNdt_[i]) *
+//                                       (drdz * dNdr_[j] + dsdz * dNds_[j] + dtdz * dNdt_[j])));
 
             mat_[j][i] = mat_[i][j];
         }
@@ -742,5 +820,57 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
   
     return *this;
 }
+
+void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
+    rows_ = max(row + 1, rows_);
+    
+    mat_.push_back(Ai.mat());
+    idx_.push_back(Ai.idx());
+    row_.push_back(row);
+}
+
+RVector ElementMatrixMap::mult(const RVector & a, const RVector & b,
+                               const RVector & m, const RVector & n) const{
+    RVector ret(rows_);
+
+    for (Index r = 0; r < row_.size(); r ++ ){
+        double s = 0.0;
+        const RMatrix & mat = mat_[r];
+        const IndexArray & idx = idx_[r];
+        for (register Index i = 0; i < mat.rows(); i ++) {
+            double t = 0;
+            for (register Index j = 0; j < mat.cols(); j ++) {
+                t += mat[i][j] * (a[idx[j]]-b[idx[j]]);
+            }
+            s += t * (m[idx[i]] - n[idx[i]]);
+        }
+        
+        ret[row_[r]] += s;
+    }
+
+    return ret;
+}
+
+RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
+    RVector ret(rows_);
+
+    for (Index r = 0; r < row_.size(); r ++ ){
+        double s = 0.0;
+        const RMatrix & mat = mat_[r];
+        const IndexArray & idx = idx_[r];
+        for (register Index i = 0; i < mat.rows(); i ++) {
+            double t = 0;
+            for (register Index j = 0; j < mat.cols(); j ++) {
+                t += mat[i][j] * (a[idx[j]]);
+            }
+            s += t * (b[idx[i]]);
+        }
+        
+        ret[row_[r]] += s;
+    }
+
+    return ret;
+}
+
 
 } // namespace GIMLI

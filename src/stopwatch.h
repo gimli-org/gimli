@@ -91,7 +91,7 @@ protected:
 
 #define TIC__ std::cout.precision( 12 ); GIMLI::Stopwatch __swatch__( true );
 #define TOC__ std::cout << __swatch__.duration( true ) << std::endl;
-#define toc__ __swatch__.duration();
+#define toc__ __swatch__.duration()
 
 } // namespace GIMLI
 

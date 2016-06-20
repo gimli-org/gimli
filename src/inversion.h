@@ -440,11 +440,11 @@ public:
     }
     inline bool broydenUpdate() const { return doBroydenUpdate_; }
 
-    /*! Set model vector . 
-     * If you call \ref run() the inversion starts with this model,  
+    /*! Set model vector .
+     * If you call \ref run() the inversion starts with this model,
      * else it will start with fop.startModel(). */
     void setModel(const Vec & model){ model_ = model; }
-    
+
     /*! Return a const reference to the current model vector */
     inline const ModelVector & model() const { return model_; }
 
@@ -744,7 +744,7 @@ public:
     /*! One iteration step. Return true if the step can be calculated successfully else false is returned. */
     bool oneStep();
 
-    /*! Start the inversion procedure from staring model.*/
+    /*! Start the inversion procedure from starting model.*/
     const Vec & start();
 
     /*! Start the inversion procedure from the last model and return the final model vector.*/
@@ -790,7 +790,7 @@ public:
 
     /*! Resets this inversion to the given startmodel. */
     void reset(){
-        this->setModel(forward_->startModel());
+        this->setModel(forward_->startModel());  // should't this be ->createStartVector ?
     }
 
 protected:

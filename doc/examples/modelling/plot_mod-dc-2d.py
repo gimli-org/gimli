@@ -97,12 +97,12 @@ neumannBC = [[1, mixedBC], #left boundary
              [4, mixedBC]] #bottom boundary
 
 k = 1e-3
-u = solve(grid, a=1, b=k*k, f=pointSource,
+u = solve(grid, a=1., b=k*k, f=pointSource,
           duB=neumannBC,
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
-u -= solve(grid, a=1, b=k*k, f=pointSource,
+u -= solve(grid, a=1., b=k*k, f=pointSource,
            duB=neumannBC,
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
