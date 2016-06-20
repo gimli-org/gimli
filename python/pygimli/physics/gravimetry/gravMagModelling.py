@@ -581,7 +581,6 @@ def gravMagBoundarySinghGup(boundary):
         vr2 = shape.node((i + 1) % shape.nodeCount()).pos()
 
         r1 = vr1.abs()
-
         L = (vr2 - vr1).abs()
 
         Lx = vr2[0] - vr1[0]
@@ -590,9 +589,9 @@ def gravMagBoundarySinghGup(boundary):
 
         b = 2. * (vr1[0] * Lx + vr1[1] * Ly + vr1[2] * Lz)
 
-        b2 = b / L / 2.
-        if r1 + b2 == 0:
-            I = (1.0 / L) * np.log((L - r1) / r1)
+        b2 = b / (2.*L)
+        if abs(r1 + b2) < 1e-10:
+            I = (1.0 / L) * np.log(abs(L - r1) / r1)
         else:
             I = (1.0 / L) * \
                 np.log((np.sqrt(L * L + b + r1 * r1) + L + b2) / (r1 + b2))
@@ -738,11 +737,11 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         if complete:
             dg = Gdg.transpose([0, 2, 1]).dot(dDensity)
             dgz = Gdgz.transpose([0, 2, 1]).dot(dDensity)
+            print('*'* 100)
             return dg, dgz
         else:
             return Gdg.dot(dDensity)
-        
-
+ 
     if complete:
         return dg, dgz
     return dg
