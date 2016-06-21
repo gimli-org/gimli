@@ -236,7 +236,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if colorBar and validData:
         # , *args, **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
+        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label', 'pad']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
         cbar = createColorbar(gci, label=label, **subkwargs)
 

@@ -270,7 +270,7 @@ def gradGZCylinderHoriz(r, R, rho, pos=(0., 0.)):
 # def gZSphere(...)
 
 
-def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
+def gradUHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
     """
     Analytical solution
 
@@ -291,7 +291,7 @@ def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
         z-component of g
         .. math:: \\nabla(\\partial u/\\partial \\vec{r})_z
     """
-    gz = np.zeros(len(pnts))
+    gu = np.zeros((len(pnts), 2))
 
     for i, q in enumerate(pnts):
         zz1 = q[1] - pos[1]
@@ -299,10 +299,10 @@ def gzHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
 #        gz[i] = G * rho * (np.pi - 2. * \
 #         np.arctan((q[0] - pos[0]) / (q[2] - pos[2])))
 #         -z direction
-        gz[i] = -G * rho * t * (np.pi + 2.0 * np.arctan2(xx1, zz1)) * -1.
+        gu[i][0] = -G * rho * t * (np.pi + 2.0 * np.arctan2(xx1, zz1)) * -1.
 #        gz[i] = G * rho * np.pi
 
-    return gz
+    return gu
 # def gzPlatteHoriz(...)
 
 
@@ -347,7 +347,9 @@ def gradGZHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
 
 def lineIntegralZ_WonBevis(p1, p2):
     """
-    WonBevis1987.
+
+    :cite:`WonBevis1987`
+    
 
     Returns
     -------
@@ -627,12 +629,17 @@ def gravMagBoundarySinghGup(boundary):
 def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     """
     Solve gravimetric response.
+    
+    2D with :py:mod:`pygimli.physics.gravimetry.lineIntegralZ_WonBevis`
+    
+    3D with :py:mod:`pygimli.physics.gravimetry.gravMagBoundarySinghGup`
 
     TOWRITE
 
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
+        2d or 3d mesh with or without cells.  
 
     dDensity : float | array
         Density difference.
@@ -676,7 +683,6 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     dgzi = None
 
     for i, p in enumerate(pnts):
-        print(p)
         mesh.translate(-pg.RVector3(p))
 
         for b in mesh.boundaries():
@@ -737,7 +743,6 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         if complete:
             dg = Gdg.transpose([0, 2, 1]).dot(dDensity)
             dgz = Gdgz.transpose([0, 2, 1]).dot(dDensity)
-            print('*'* 100)
             return dg, dgz
         else:
             return Gdg.dot(dDensity)
