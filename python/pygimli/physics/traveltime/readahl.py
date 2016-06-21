@@ -42,15 +42,13 @@ class ReadAHL(object):
         return s
 
     def __repr__(self):
-        in_arg = "'" + self.filename + "'" +\
-                ', maxsensorid=' + str(self.maxsensorid) +\
-                ', delimiter=' + "'" + self.delimiter + "'"
+        in_arg = "'" + self.filename + "'" + \
+            ', maxsensorid=' + str(self.maxsensorid) + \
+            ', delimiter=' + "'" + self.delimiter + "'"
         return self.__class__.__name__ + "(" + in_arg + ")"
 
     def _extractlabels(self):
-        """
-        Extract the labels from the header line.
-        """
+        """ Extract the labels from the header line. """
 
         labels = self.header.split(self.delimiter)
         n = 0

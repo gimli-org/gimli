@@ -11,8 +11,8 @@ from pygimli.physics import Refraction
 
 # load example file explicitly from same directory (if called from elsewhere)
 ra = Refraction(os.path.dirname(__file__) + '/example_topo.sgt')
-#ra = Refraction()
-#ra.loadData(os.path.dirname(__file__) + '/example_topo.sgt')
+# ra = Refraction()
+# ra.loadData(os.path.dirname(__file__) + '/example_topo.sgt')
 print(ra)
 if False:  # possible (typical) actions
     ra.showData()  # show only data (right after init)

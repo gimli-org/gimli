@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+""" Tomography Method Manager"""
+
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -102,7 +107,7 @@ class Tomography(Refraction):
 
     def showVA(self, t=None, ax=None, usepos=True, name='va', squeeze=True):
         """show apparent velocity as image plot"""
-        va = self.getVA(vals=vals)
+        # va = self.getVA(vals=vals)
         xvec = self.dataContainer('g')
         yvec = self.dataContainer('s')
         if usepos:
@@ -112,8 +117,9 @@ class Tomography(Refraction):
                 yvec = pz[yvec]
             else:
                 pz = pg.y(Tomo.dataContainer.sensorPositions())
-                xvec = px[xvec]*1000 + pz[xvec]
-                xvec = px[yvec]*1000 + pz[yvec]
+                raise Exception('Implement ME')
+                # xvec = px[xvec]*1000 + pz[xvec]
+                # xvec = px[yvec]*1000 + pz[yvec]
 
         plotVecMatrix(xvec, yvec, squeeze=squeeze)
 

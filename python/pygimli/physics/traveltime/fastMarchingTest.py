@@ -135,8 +135,8 @@ if __name__ is '__main__':
     for n in mesh.nodes():
         anaTimes[n.id()] = source.distance(n.pos())
 
-    #d = pg.DataContainer()
-    #dijk = pg.TravelTimeDijkstraModelling(mesh, d)
+    # d = pg.DataContainer()
+    # dijk = pg.TravelTimeDijkstraModelling(mesh, d)
 
     upwind = set()
     downwind = set()
@@ -162,36 +162,37 @@ if __name__ is '__main__':
     while len(downwind) > 0:
         model = pg.RVector(mesh.cellCount(), 0.0)
 
-        #for c in upwind: model.setVal(2, c.id())
-        #for c in downwind: model.setVal(1, c.id())
-    #    drawMesh(a, mesh)
+        # for c in upwind: model.setVal(2, c.id())
+        # for c in downwind: model.setVal(1, c.id())
+        # drawMesh(a, mesh)
 
-        #a.plot(source[0], source[1], 'x')
+        # a.plot(source[0], source[1], 'x')
 
         # for c in mesh.cells():
-        #a.text(c.center()[0],c.center()[1], str(c.id()))
+        # a.text(c.center()[0],c.center()[1], str(c.id()))
 
         # for n in mesh.nodes():
         # if upTags[n.id()]:
-        #a.plot(n.pos()[0], n.pos()[1], 'o', color='black')
+        # a.plot(n.pos()[0], n.pos()[1], 'o', color='black')
 
-        #mindist = 9e99
+        # mindist = 9e99
         # for n in downwind:
-        #a.plot(n.pos()[0], n.pos()[1], 'o', color='white')
+        # a.plot(n.pos()[0], n.pos()[1], 'o', color='white')
 
         # if n.pos().distance(source) < mindist:
-        #mindist = n.pos().distance(source)
-        #nextPredict = n
+        # mindist = n.pos().distance(source)
+        # nextPredict = n
 
         # print "next predicted ", n.id(), mindist
-        #a.plot(nextPredict.pos()[0], nextPredict.pos()[1], 'o', color='green')
+        # a.plot(nextPredict.pos()[0], nextPredict.pos()[1],
+        # 'o', color='green')
 
-        #drawField(a, mesh, times)
-        ###drawField(a, mesh, anaTimes, colors = 'white')
+        # drawField(a, mesh, times)
+        # drawField(a, mesh, anaTimes, colors = 'white')
         # a.figure.canvas.draw()
 
         # a.figure.show()
-        ##raw_input('Press Enter...')
+        # raw_input('Press Enter...')
         # a.clear()
 
         fastMarch(mesh, downwind, times, upTags, downTags)
@@ -203,11 +204,11 @@ if __name__ is '__main__':
     # drawStreamCircular(a, mesh, times, source, 30.,
     #                nLines = 50, step = 0.1, showStartPos = True)
 
-    #ax1.streamplot(X, Y, U, V, density=[0.5, 1])
+    # ax1.streamplot(X, Y, U, V, density=[0.5, 1])
 
     # drawStreamLinear(a, mesh, times,
-    #pg.RVector3(-100., -10.0),
-    #pg.RVector3(100., -10.0),
+    # pg.RVector3(-100., -10.0),
+    # pg.RVector3(100., -10.0),
     # nLines = 50, step = 0.01,
     # showStartPos = True)
 
