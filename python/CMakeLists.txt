@@ -80,7 +80,7 @@ ADD_CUSTOM_COMMAND(
         #python -c "import pygimli; pygimli.test(show=False)"
         #python 
     ARGS
-        -c 'import pygimli\; pygimli.test(show=False)'
+         -c 'import pygimli\; pygimli.test(show=False)'
     TARGET
         pgtest
    )

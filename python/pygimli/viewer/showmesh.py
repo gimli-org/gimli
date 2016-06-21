@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show(mesh=None, *args, **kwargs):
+def show(mesh=None, data=None, **kwargs):
     """
     Mesh and model visualization.
 
@@ -43,7 +43,7 @@ def show(mesh=None, *args, **kwargs):
     mesh : :gimliapi:`GIMLI::Mesh` or list of meshes
         2D or 3D GIMLi mesh
 
-    *args, **kwargs :
+    **kwargs :
         Will be forwarded to the appropriate show functions.
 
     Returns
@@ -54,14 +54,14 @@ def show(mesh=None, *args, **kwargs):
     """
     if isinstance(mesh, list):
         ax = kwargs.pop('axes', None)
-        ax, cbar = show(mesh[0], hold=1, axes=ax, *args, **kwargs)
+        ax, cbar = show(mesh[0], data, hold=1, axes=ax, **kwargs)
         xmin = mesh[0].xmin()
         xmax = mesh[0].xmax()
         ymin = mesh[0].ymin()
         ymax = mesh[0].ymax()
 
         for m in mesh[1:]:
-            ax, cbar = show(m, axes=ax, hold=1, fitView=False, *args, **kwargs)
+            ax, cbar = show(m, data, axes=ax, hold=1, fitView=False, **kwargs)
             xmin = min(xmin, m.xmin())
             xmax = max(xmax, m.xmax())
             ymin = min(ymin, m.ymin())
@@ -77,12 +77,12 @@ def show(mesh=None, *args, **kwargs):
 
     if isinstance(mesh, pg.Mesh):
         if mesh.dimension() == 2:
-            return showMesh(mesh, *args, **kwargs)
+            return showMesh(mesh, data, **kwargs)
         elif mesh.dimension() == 3:
 
             from .mayaview import showMesh3D
 
-            return showMesh3D(mesh, *args, **kwargs)
+            return showMesh3D(mesh, data, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
  
@@ -235,7 +235,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
         colorBar = 1
 
     if colorBar and validData:
-        # , *args, **kwargs) # causes problems!
+        # , **kwargs) # causes problems!
         labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label', 'pad']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
         cbar = createColorbar(gci, label=label, **subkwargs)
