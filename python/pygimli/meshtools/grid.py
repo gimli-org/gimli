@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from os import system
-
+import os
 import pygimli as pg
 
-from . polytools import *
+from .polytools import polyCreateWorld, polyAddVIP, tetgen
 
 import numpy as np
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
-                           quality=34.0, area=0.0, smooth=False, markerBoundary=1,
-                           isSubSurface=False, verbose=False):
+                           quality=34.0, area=0.0, smooth=False,
+                           markerBoundary=1, isSubSurface=False,
+                           verbose=False):
     """
     Add a triangle mesh boundary to a given mesh.
 
@@ -65,11 +65,11 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     def sortNodeY(n1, n2):
         """function comparing x for using sort."""
-        return cmp(n1.pos().y(), n2.pos().y())
+        return n1.pos().y() < n2.pos().y()
 
     def sortNodeX(n1, n2):
         """function comparing y for using sort."""
-        return cmp(n1.pos().x(), n2.pos().x())
+        return n1.pos().x() < n2.pos().x()
 
     surface = 0.0
 
@@ -176,7 +176,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
                                    abs(mesh.ymin() - ybound),
                                    xtLen)
 
-        xtLen = max(5, int((mesh.xmax()-mesh.xmin())/ dxMin / 2.))
+        xtLen = max(5, int((mesh.xmax() - mesh.xmin()) / dxMin / 2.))
 
         # x bottom boundary sampling points
         xBottom = pg.RVector(np.linspace(mesh.xmin() - xbound,
@@ -216,7 +216,6 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     # call triangle mesh generation
     triswitches = '-pzeAfa' + preserveSwitch + 'q' + str(quality)
-
 
     if area > 0:
         triswitches += 'a'+str(area)
@@ -321,7 +320,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         depth=zbound,
         marker=1,
         verbose=verbose)
-    system('polyMerge -N worldSurface paraBoundary worldSurface')
+    os.system('polyMerge -N worldSurface paraBoundary worldSurface')
     polyAddVIP(
         'worldSurface',
         mesh.cell(0).center(),
@@ -338,7 +337,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
             0))
     worldPoly.exportAsTetgenPolyFile("worldSurface.poly")
 
-    system('polyMerge -N worldSurface paraBoundary boundaryWorld')
+    os.system('polyMerge -N worldSurface paraBoundary boundaryWorld')
 
     # mesh should have to be a hole
     polyAddVIP(

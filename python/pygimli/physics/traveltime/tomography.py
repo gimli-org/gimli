@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" Tomography Method Manager"""
+"""Tomography Method Manager"""
 
 import sys
 import numpy as np
@@ -12,7 +12,7 @@ from . refraction import Refraction
 
 
 def readTOMfile(filename, ndig=2, roundto=0, **kwargs):
-    """ read Reflex tomography (*.TOM) file"""
+    """read Reflex tomography (*.TOM) file"""
     t, xT, zT, xR, zR = np.loadtxt(filename, usecols=(0, 2, 3, 4, 5), unpack=1)
     if roundto > 0:
         pT = (np.round(xT/roundto) - np.round(zT/roundto) * 1j) * roundto

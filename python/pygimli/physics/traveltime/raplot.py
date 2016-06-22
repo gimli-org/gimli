@@ -4,13 +4,13 @@ import pygimli as pg
 
 
 def drawFirstPicks(axes, data, tt=None, plotva=False, marker='x-'):
-    """ name convention """
+    """Naming convention. drawFOO(axes, ... )"""
     return plotFirstPicks(ax=axes, data=data, tt=tt,
                           plotva=plotva, marker=marker)
 
 
 def drawVA(axes, data, usePos=True):
-    """ name convention """
+    """Naming convention. drawFOO(axes, ... )"""
     return showVA(ax=axes, data=data, usepos=usePos)
 
 
@@ -22,7 +22,7 @@ def drawTravelTimeData(axes, data, t=None):
     """
 
     x = pg.x(data.sensorPositions())
-#    z = pg.z(data.sensorPositions())
+    # z = pg.z(data.sensorPositions())
 
     shots = pg.unique(pg.sort(data('s')))
     geoph = pg.unique(pg.sort(data('g')))

@@ -25,7 +25,7 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
 
     for i in range(poly.nodeCount() - 1):
         poly.createEdge(poly.node(i), poly.node(i+1), bm[i])
-        
+
     if isClosed:
         poly.createEdge(poly.node(poly.nodeCount()-1),
                         poly.node(0), bm[-1])
@@ -74,7 +74,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> from pygimli.meshtools import createRectangle
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
-    >>> rectangle = createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
+    >>> rectangle = createRectangle(start=[4, -4],
+    >>>                             end=[6, -6], marker=4, area=0.1)
     >>>
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, rectangle)
@@ -188,11 +189,11 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
             poly.createEdge(poly.node(i + 1),
                             poly.node(poly.nodeCount() - i - 2), 4 + i)
 
-    #pg.warnNonEmptyArgs(kwargs)
+    # pg.warnNonEmptyArgs(kwargs)
     return poly
 
 
-def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
+def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
                  **kwargs):
 
     """
@@ -285,10 +286,10 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     poly.translate(pos)
 
     polyCreateDefaultEdges_(poly, **kwargs)
-    
-    ## need a better way mess with these or wrong kwargs
-    ## pg.warnNonEmptyArgs(kwargs)
-    
+
+    # need a better way mess with these or wrong kwargs
+    # pg.warnNonEmptyArgs(kwargs)
+
     return poly
 
 
@@ -337,44 +338,44 @@ def createLine(start, end, segments, **kwargs):
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
 
+
 def createPolygon(verts, isClosed=False, **kwargs):
-    """ 
-        Create a polygon from list of vertices. 
-    
+    """
+       Create a polygon from list of vertices.
+
     Parameters
     ----------
     verts : []
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
-    
+
     **kwargs:
 
         boundaryMarker : int [1]
             Marker for the resulting boundary edges
         leftDirection : bool [True]
             Rotational direction
-    
+
     isClosed : bool [True]
         Add closing edge between last and first node.
-            
+
     Returns
     -------
     poly : gimliapi:`GIMLI::Mesh`
         The resulting polygon is a gimliapi:`GIMLI::Mesh`.
-    
+
     """
     poly = pg.Mesh(2)
-    
+
     for v in verts:
         poly.createNode(v)
-        
+
     polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
-    
-    
+
     # set a regionmarker here .. somewhere
-    
+
     return poly
-    
-    
+
+
 def mergePLC(pols):
     """
     Merge multiply polygons into a single polygon.
@@ -401,10 +402,12 @@ def mergePLC(pols):
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
     >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-    >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1, marker=2, segments=4)
+    >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1,
+    >>>                       marker=2, segments=4)
     >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
     >>> r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
-    >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6], marker=4, area=0.1)
+    >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6],
+    >>>                          marker=4, area=0.1)
     >>> plc = plc.mergePLC([world, c1, c2, r1, r2])
     >>>
     >>> fig, ax = plt.subplots()
@@ -434,6 +437,161 @@ def mergePLC(pols):
         if len(p.holeMarker()) > 0:
             for hm in p.holeMarker():
                 poly.addHoleMarker(hm)
+
+    return poly
+
+
+def createParaDomain2D(*args, **kwargs):
+    """
+        API change here .. use createParaMeshPLC instead
+    """
+    print("createParaDomain2D: API change: use createParaMeshPLC instead")
+    return createParaMeshPLC(*args, **kwargs)
+
+
+def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
+                      paraBoundary=2, paraMaxCellSize=0, boundary=-1,
+                      boundaryMaxCellSize=0,
+                      verbose=False, *args, **kwargs):
+    """
+    Create a PLC mesh for an inversion parameter mesh.
+
+    Create a PLC mesh for an inversion parameter mesh for a given list of
+    sensor positions.
+    Sensor position assumed on the surface and must be sorted and unique.
+
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
+    two region markers, one for the parameters domain (marker=2) and
+    a larger boundary around the outside (marker=1)
+
+    TODO:
+
+        * closed domains (boundary == 0)
+        * additional topopoints
+        * spline interpolations between sensorpoints or addpoints
+        * subsurface sensors
+
+    Parameters
+    ----------
+    sensors : list of RVector3 objects | DataContainer with sensorPositions()
+        Sensor positions. Must be sorted and unique in positive x direction.
+        Depth need to be y-coordinate.
+    paraDX : float [1]
+        Relativ distance for refinement nodes between two electrodes (1=none),
+        e.g., 0.5 means 1 additional node between two neighboring electrodes
+        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
+    paraDepth : float, optional
+        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
+        sensor range.
+    paraBoundary : float, optional
+        Margin for parameter domain in absolute sensor distances. 2 (default).
+    paraMaxCellSize: double, optional
+        Maximum size for parametric size in m*m
+    boundaryMaxCellSize: double, optional
+        Maximum cells size in the boundary region in m*m
+    boundary : float, optional
+        Boundary width to be appended for domain prolongation in absolute
+        para domain width.
+        Values lover 0 force the boundary to be 4 times para domain width.
+
+    Returns
+    -------
+    poly: :gimliapi:`GIMLI::Mesh`
+        piecewise linear complex (PLC) containing nodes and edges
+    """
+
+    if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
+        sensors = sensors.sensorPositions()
+    elif type(sensors) == np.ndarray:
+        sensors = [pg.RVector3(s) for s in sensors]
+
+    eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
+
+    iz = 1
+    xmin, ymin, zmin = sensors[0][0], sensors[0][1], sensors[0][2]
+    xmax, ymax, zmax = xmin, ymin, zmin
+    for e in sensors:
+        xmin = min(xmin, e[0])
+        xmax = max(xmax, e[0])
+        ymin = min(ymin, e[1])
+        ymax = max(ymax, e[1])
+        zmin = min(zmin, e[2])
+        zmax = max(zmax, e[2])
+
+    if abs(ymin) < 1e-8 and abs(ymax) < 1e-8:
+        iz = 2
+
+    paraBound = eSpacing * paraBoundary
+
+    if paraDepth == 0:
+        paraDepth = 0.4 * (xmax - xmin)
+
+    poly = pg.Mesh(2)
+    # define para domain without surface
+    n1 = poly.createNode([xmin - paraBoundary, sensors[0][iz]])
+    n2 = poly.createNode([xmin - paraBoundary, sensors[0][iz] - paraDepth])
+    n3 = poly.createNode([xmax + paraBoundary, sensors[-1][iz] - paraDepth])
+    n4 = poly.createNode([xmax + paraBoundary, sensors[-1][iz]])
+
+    if boundary < 0:
+        boundary = 4
+
+    bound = abs(xmax - xmin) * boundary
+    if bound > paraBound:
+        # define world without surface
+        n11 = poly.createNode(n1.pos() - [bound, 0.])
+        n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
+        n14 = poly.createNode(n4.pos() + [bound, 0.])
+        n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
+
+        poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
+        poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1, boundaryMaxCellSize)
+
+    poly.createEdge(n1, n2, 1)
+    poly.createEdge(n2, n3, 1)
+    poly.createEdge(n3, n4, 1)
+    poly.addRegionMarker(n2.pos() + [1e-3, 1e-3], 2, paraMaxCellSize)
+
+    # define surface
+    nSurface = []
+    nSurface.append(n1)
+    for i, e in enumerate(sensors):
+        if iz == 2:
+            e.rotateX(-math.pi/2)
+        if paraDX >= 0.5:
+            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
+            if (i < len(sensors) - 1):
+                e1 = sensors[i + 1]
+                if iz == 2:
+                    e1.rotateX(-math.pi/2)
+                nSurface.append(poly.createNode((e + e1) * 0.5))
+            # print("Surface add ", e, el, nSurface[-2].pos(),
+            #        nSurface[-1].pos())
+        elif paraDX < 0.5:
+            if (i > 0):
+                e1 = sensors[i - 1]
+                if iz == 2:
+                    e1.rotateX(-math.pi/2)
+                nSurface.append(
+                    poly.createNode(e - (e - e1) * paraDX))
+            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
+            if (i < len(sensors) - 1):
+                e1 = sensors[i + 1]
+                if iz == 2:
+                    e1.rotateX(-math.pi/2)
+                nSurface.append(
+                    poly.createNode(e + (e1 - e) * paraDX))
+            # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
+            #        nSurface[-1].pos())
+    nSurface.append(n4)
+
+    for i in range(len(nSurface) - 1, 0, -1):
+        poly.createEdge(nSurface[i], nSurface[i - 1],
+                        pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     return poly
 

@@ -22,7 +22,8 @@ class Poly2D(object):
     Utility class to create polygon model that can be meshed and used
     for synthetic modelling.
 
-    ca: This class can currently read a given geometry from xml file and create a mesh.
+    ca: This class can currently read a given geometry from
+    xml file and create a mesh.
     """
 
     def __init__(self, polyfile):
@@ -74,8 +75,10 @@ class Poly2D(object):
 
         idx = 0
         for p in points:
-            x, y, z = float(p.findtext('x')), float(p.findtext('y')),\
-                      float(p.findtext('z'))
+            x = float(p.findtext('x'))
+            y = float(p.findtext('y'))
+            z = float(p.findtext('z'))
+
             if z != 0.0:
                 positions[idx] = pg.RVector3(x, z, 0.0)
             else:

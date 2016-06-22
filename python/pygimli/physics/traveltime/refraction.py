@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" Class for managing seismic refraction data and doing inversions"""
+"""Class for managing seismic refraction data and doing inversions"""
 
 import sys
 from math import pi
@@ -24,7 +24,7 @@ from . raplot import drawTravelTimeData
 
 
 class Refraction(MethodManager):
-    """ Class for managing refraction seismics data
+    """Class for managing refraction seismics data
 
         TODO Document main members and use default MethodeManager interface
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
@@ -76,11 +76,11 @@ class Refraction(MethodManager):
         return out
 
     def paraDomain(self):
-        """ base api """
+        """base api """
         return self.fop.regionManager().paraDomain()
 
     def model(self):
-        """ base api """
+        """base api """
         return self.velocity
 
     @staticmethod
@@ -120,14 +120,14 @@ class Refraction(MethodManager):
         return 1/(self.getOffset(full=True) / data('t'))
 
     def setData(self, data):
-        """ Set data """
+        """Set data """
         if issubclass(type(data), pg.DataContainer):
             self.setDataContainer(data)
         else:
             raise BaseException("Implement set data from type:", type(data))
 
     def setDataContainer(self, data):
-        """ set data container from outside
+        """set data container from outside
 
         base api
 
@@ -149,7 +149,7 @@ class Refraction(MethodManager):
         self.setDataContainer(data)
 
     def checkData(self):
-        """ check data w.r.t. shot/geophone identity and zero/negative
+        """check data w.r.t. shot/geophone identity and zero/negative
         traveltimes, plus check y/z sensor positions """
         oldsize = self.dataContainer.size()
         self.dataContainer.markInvalid(pg.abs(self.dataContainer('s') -

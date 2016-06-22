@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from math import pi
+
 import numpy as np
 import pygimli as pg
 
@@ -142,17 +142,19 @@ def refineQuad2Tri(mesh, style=1):
 
             for i in range(4):
                 out.createCell([c.node(i).id(),
-                                c.node((i+1)%4).id(),
+                                c.node((i + 1) % 4).id(),
                                 newNode.id()])
 
         for i in range(c.boundaryCount()):
             b = c.boundary(i)
             if b.marker() != 0:
-                out.createBoundary([b.node(0).id(), b.node(1).id()], b.marker())
+                out.createBoundary([b.node(0).id(), b.node(1).id()],
+                                   b.marker())
 
     out.createNeighbourInfos()
 
     return out
+
 
 def readGmsh(fname, verbose=False):
     """
@@ -300,7 +302,7 @@ def readGmsh(fname, verbose=False):
         if verbose:
             bound_types = np.unique(bounds[:, dim])
             print('  Boundary types: %s ' % len(bound_types) +
-                str(tuple(bound_types)))
+                  str(tuple(bound_types)))
     else:
         if verbose:
             print("WARNING: No boundary conditions found.")
@@ -529,23 +531,27 @@ def readGambitNeutral(filename, verbose=False):
     mesh = pg.Mesh(2)
 
     for i, line in enumerate(content):
-        if 'ENDOFSECTION' in line: break
+        if 'ENDOFSECTION' in line:
+            break
 
     try:
         nVerts = int(content[i-1].split()[0])
         nElements = int(content[i-1].split()[1])
     except:
-        raise BaseException("Cannot interpret GAMBIT Neutral header: " + content[0:i])
+        raise BaseException("Cannot interpret GAMBIT Neutral header: " +
+                            content[0:i])
 
     for i, line in enumerate(content):
-        if 'NODAL COORDINATES' in line: break
+        if 'NODAL COORDINATES' in line:
+            break
     for j in range(nVerts):
         vertx = float(content[i+j+1].split()[1])
         verty = float(content[i+j+1].split()[2])
         mesh.createNode((vertx, verty))
 
     for i, line in enumerate(content):
-        if 'ELEMENTS/CELLS' in line: break
+        if 'ELEMENTS/CELLS' in line:
+            break
     for j in range(nElements):
         nNodes = int(content[i+j+1].split()[1])
         nodes = []
@@ -670,168 +676,9 @@ def mergeMeshes(meshlist):
     return mesh
 
 
-def createParaDomain2D(*args, **kwargs):
-    """
-        API change here .. use createParaMeshPLC instead
-    """
-    print("createParaDomain2D: API change: use createParaMeshPLC instead")
-    return createParaMeshPLC(*args, **kwargs)
-
-
-def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
-                      paraBoundary=2, paraMaxCellSize=0, boundary=-1,
-                      boundaryMaxCellSize=0,
-                      verbose=False, *args, **kwargs):
-    """
-    Create a PLC mesh for an inversion parameter mesh.
-
-    Create a PLC mesh for an inversion parameter mesh for a given list of
-    sensor positions.
-    Sensor position assumed on the surface and must be sorted and unique.
-
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
-    two region markers, one for the parameters domain (marker=2) and
-    a larger boundary around the outside (marker=1)
-
-    TODO:
-
-        * closed domains (boundary == 0)
-        * additional topopoints
-        * spline interpolations between sensorpoints or addpoints
-        * subsurface sensors
-
-    Parameters
-    ----------
-    sensors : list of RVector3 objects | DataContainer with sensorPositions()
-        Sensor positions. Must be sorted and unique in positive x direction.
-        Depth need to be y-coordinate.
-    paraDX : float [1]
-        Relativ distance for refinement nodes between two electrodes (1=none),
-        e.g., 0.5 means 1 additional node between two neighboring electrodes
-        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
-    paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
-        sensor range.
-    paraBoundary : float, optional
-        Margin for parameter domain in absolute sensor distances. 2 (default).
-    paraMaxCellSize: double, optional
-        Maximum size for parametric size in m*m
-    boundaryMaxCellSize: double, optional
-        Maximum cells size in the boundary region in m*m
-    boundary : float, optional
-        Boundary width to be appended for domain prolongation in absolute
-        para domain width.
-        Values lover 0 force the boundary to be 4 times para domain width.
-
-    Returns
-    -------
-    poly: :gimliapi:`GIMLI::Mesh`
-        piecewise linear complex (PLC) containing nodes and edges
-    """
-
-    if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
-        sensors = sensors.sensorPositions()
-    elif type(sensors) == np.ndarray:
-        sensors = [pg.RVector3(s) for s in sensors]
-
-
-    eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
-
-    iz = 1
-    xmin, ymin, zmin = sensors[0][0], sensors[0][1], sensors[0][2]
-    xmax, ymax, zmax = xmin, ymin, zmin
-    for e in sensors:
-        xmin = min(xmin, e[0])
-        xmax = max(xmax, e[0])
-        ymin = min(ymin, e[1])
-        ymax = max(ymax, e[1])
-        zmin = min(zmin, e[2])
-        zmax = max(zmax, e[2])
-
-    if abs(ymin) < 1e-8 and abs(ymax) < 1e-8:
-        iz = 2
-
-    paraBound = eSpacing * paraBoundary
-
-    if paraDepth == 0:
-        paraDepth = 0.4 * (xmax - xmin)
-
-    poly = pg.Mesh(2)
-    # define para domain without surface
-    n1 = poly.createNode([xmin - paraBoundary, sensors[0][iz]])
-    n2 = poly.createNode([xmin - paraBoundary, sensors[0][iz] - paraDepth])
-    n3 = poly.createNode([xmax + paraBoundary, sensors[-1][iz] - paraDepth])
-    n4 = poly.createNode([xmax + paraBoundary, sensors[-1][iz]])
-
-    if boundary < 0:
-        boundary = 4
-
-    bound = abs(xmax - xmin) * boundary
-    if bound > paraBound:
-        # define world without surface
-        n11 = poly.createNode(n1.pos() - [bound, 0.])
-        n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
-        n14 = poly.createNode(n4.pos() + [bound, 0.])
-        n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
-
-        poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1, boundaryMaxCellSize)
-
-    poly.createEdge(n1, n2, 1)
-    poly.createEdge(n2, n3, 1)
-    poly.createEdge(n3, n4, 1)
-    poly.addRegionMarker(n2.pos() + [1e-3, 1e-3], 2, paraMaxCellSize)
-
-    # define surface
-    nSurface = []
-    nSurface.append(n1)
-    for i, e in enumerate(sensors):
-        if iz == 2:
-            e.rotateX(-pi/2)
-        if paraDX >= 0.5:
-            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors) - 1):
-                e1 = sensors[i + 1]
-                if iz == 2:
-                    e1.rotateX(-pi/2)
-                nSurface.append(poly.createNode((e + e1) * 0.5))
-            # print("Surface add ", e, el, nSurface[-2].pos(),
-            #        nSurface[-1].pos())
-        elif paraDX < 0.5:
-            if (i > 0):
-                e1 = sensors[i - 1]
-                if iz == 2:
-                    e1.rotateX(-pi/2)
-                nSurface.append(
-                    poly.createNode(e - (e - e1) * paraDX))
-            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors) - 1):
-                e1 = sensors[i + 1]
-                if iz == 2:
-                    e1.rotateX(-pi/2)
-                nSurface.append(
-                    poly.createNode(e + (e1 - e) * paraDX))
-            # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
-            #        nSurface[-1].pos())
-    nSurface.append(n4)
-
-    for i in range(len(nSurface) - 1, 0, -1):
-        poly.createEdge(nSurface[i], nSurface[i - 1],
-                        pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-
-#     for n in poly.nodes():
-#        print(n.pos())
-#    sys.exit()
-    return poly
-
-
 def createParaMesh(*args, **kwargs):
     """
-    create parameter mesh from list of sensor positions
+    Create parameter mesh from list of sensor positions.
 
     Parameters
     ----------
@@ -861,7 +708,7 @@ def createParaMesh(*args, **kwargs):
     poly: :gimliapi:`GIMLI::Mesh`
 
     """
-    plc = createParaMeshPLC(*args, **kwargs)
+    plc = pg.meshtools.createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
     kwargs.pop('boundaryMaxCellSize', 0)
     mesh = createMesh(plc, **kwargs)
