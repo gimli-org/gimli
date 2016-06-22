@@ -75,7 +75,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
     >>> rectangle = createRectangle(start=[4, -4],
-    >>>                             end=[6, -6], marker=4, area=0.1)
+    ...                             end=[6, -6], marker=4, area=0.1)
     >>>
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, rectangle)
@@ -407,7 +407,7 @@ def mergePLC(pols):
     >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
     >>> r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
     >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6],
-    >>>                          marker=4, area=0.1)
+    ...                          marker=4, area=0.1)
     >>> plc = plc.mergePLC([world, c1, c2, r1, r2])
     >>>
     >>> fig, ax = plt.subplots()
