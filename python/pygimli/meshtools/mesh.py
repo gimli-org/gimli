@@ -877,7 +877,7 @@ def createParaMesh2dGrid(*args, **kwargs):
 
 
 def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
-                         boundary=-1, paraBoundary=2, verbose=False, *args,
+                         boundary=-1, paraBoundary=2, verbose=False,
                          **kwargs):
     """
     Create a grid style mesh for an inversion parameter mesh.
@@ -967,7 +967,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     mesh = pg.meshtools.appendTriangleBoundary(mesh,
                                                xbound=boundary,
                                                ybound=boundary,
-                                               marker=1, *args, **kwargs)
+                                               marker=1, **kwargs)
 
     return mesh
 

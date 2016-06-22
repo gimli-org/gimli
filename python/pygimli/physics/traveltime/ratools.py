@@ -1,33 +1,33 @@
 # -*- coding: utf-8 -*-
 
-import time
-import os
 import numpy as np
 import pygimli as pg
+
 
 def createRAData(sensors, **kwargs):
     """
     Create a refraction data container.
-    
+
     Default data container for shot and geophon at every sensor position.
-    Predefined sensor indices's 's' as shot position and 'g' as geophon position.
-        
+    Predefined sensor indices's 's' as shot position and 'g' as
+    geophon position.
+
     Parameters
     ----------
     sensors : ndarray | R3Vector
         Geophon and shot positions (same)
-        
+
     Returns
     -------
     data : DataContainer
-        Data container with predefined sensor indieces 's' and 'g' for 
-        
+        Data container with predefined sensor indieces 's' and 'g' for
+
     """
-    
+
     data = pg.DataContainer()
     data.registerSensorIndex('s')
     data.registerSensorIndex('g')
-        
+
     data.setSensorPositions(sensors)
     S, G = [], []
     for s in range(data.sensorCount()):
@@ -42,6 +42,7 @@ def createRAData(sensors, **kwargs):
     data.set('valid', np.abs(np.sign(data('g') - data('s'))))
 
     return data
+
 
 def createGradientModel2D(data, mesh, VTop, VBot):
     """

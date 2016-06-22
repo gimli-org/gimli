@@ -4,15 +4,13 @@ import pygimli as pg
 
 
 def drawFirstPicks(axes, data, tt=None, plotva=False, marker='x-'):
-    """
-        name convention
-    """
-    return plotFirstPicks(ax=axes, data=data, tt=tt, plotva=plotva, marker=marker)
-    
+    """ name convention """
+    return plotFirstPicks(ax=axes, data=data, tt=tt,
+                          plotva=plotva, marker=marker)
+
+
 def drawVA(axes, data, usePos=True):
-    """
-        name convention
-    """
+    """ name convention """
     return showVA(ax=axes, data=data, usepos=usePos)
 
 
@@ -54,11 +52,11 @@ def drawTravelTimeData(axes, data, t=None):
 
     # draw shot points
     axes.plot(x[[int(i__ - startOffsetIDX) for i__ in shots]],
-           np.zeros(len(shots)) + 8. * yPixel, 'gv', markersize=8)
+              np.zeros(len(shots)) + 8. * yPixel, 'gv', markersize=8)
 
     # draw geophone points
     axes.plot(x[[int(i__ - startOffsetIDX) for i__ in geoph]],
-           np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
+              np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
 
     axes.grid()
     axes.set_ylim([max(tShow), +16. * yPixel])
@@ -68,7 +66,7 @@ def drawTravelTimeData(axes, data, t=None):
     axes.set_ylabel('Traveltime [ms]')
 # def drawTravelTimeData(...)
 
-    
+
 def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     """plot first arrivals as lines"""
     px = pg.x(data.sensorPositions())
@@ -89,7 +87,6 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
         ax.plot(si, 0., 's', color=cols[i % 7], markersize=8)
 
     ax.grid(True)
-    
 
 
 def showVA(ax, data, usepos=True):

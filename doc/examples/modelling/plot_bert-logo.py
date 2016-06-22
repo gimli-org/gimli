@@ -57,3 +57,5 @@ t = ax.text(1.5, offset, 'BERT', fontsize=50, fontweight='bold')
 pg.show(mesh, data, axes=ax, cmap='RdBu', logScale=False, showLater=True)
 pg.show(mesh, axes=ax)
 ax.set_ylim(offset, mesh.ymax())
+
+pg.wait()

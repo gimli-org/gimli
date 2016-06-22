@@ -48,7 +48,7 @@ class Refraction(MethodManager):
         self.response = None
         self.start = []
         self.pd = None
-        
+
         self.dataToken_ = 't'
 
         if isinstance(data, str):
@@ -118,15 +118,14 @@ class Refraction(MethodManager):
         # hackish .. dislike!
         self.setData(data)
         return 1/(self.getOffset(full=True) / data('t'))
-    
+
     def setData(self, data):
         """ Set data """
         if issubclass(type(data), pg.DataContainer):
             self.setDataContainer(data)
         else:
             raise BaseException("Implement set data from type:", type(data))
-        
-    
+
     def setDataContainer(self, data):
         """ set data container from outside
 
@@ -310,11 +309,12 @@ class Refraction(MethodManager):
         else:
             self.fop.setStartModel(self.fop.createDefaultStartModel())
 
+        zWeight = kwargs.pop('zWeight', 0.2)
         if 'zweight' in kwargs:
             zWeight = kwargs.pop('zweight', 0.2)
-            print("zweight option will be removed soon. Please use zWeight instead.")
-        else:
-            self.fop.regionManager().setZWeight(kwargs.pop('zWeight', 0.2))
+            print("zweight option will be removed soon. "
+                  "Please use zWeight instead.")
+        self.fop.regionManager().setZWeight(zWeight)
 
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
@@ -333,12 +333,12 @@ class Refraction(MethodManager):
 
         self.inv.setAbsoluteError(self.error)
         self.fop.jacobian().clear()
-        
+
         slowness = self.inv.run()
         self.velocity = 1. / slowness
         self.response = self.inv.response()
 
-        self.model = self.velocity#(self.paraDomain.cellMarkers())
+        self.model = self.velocity  # (self.paraDomain.cellMarkers())
 
         return self.velocity
 
@@ -408,7 +408,6 @@ class Refraction(MethodManager):
         tt = Refraction()
         tt.setDataContainer(data)
         tt.showVA(ax=axes, t=t, **kwargs)
-
 
     def getOffset(self, full=False):
         """return vector of offsets (in m) between shot and receiver"""

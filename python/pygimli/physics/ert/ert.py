@@ -216,14 +216,6 @@ class ERTModelling(pg.ModellingBase):
                   min(model), max(model))
             
         jCol = pg.RVector(self.data.size())
-        
-        va = self.data.findSensorIndex(self.data('a'))
-        vb = self.data.findSensorIndex(self.data('b'))
-        vm = self.data.findSensorIndex(self.data('m'))
-        vn = self.data.findSensorIndex(self.data('n'))
-        
-        A = pg.solver.createStiffnessMatrix(self.mesh())
-        
         Jt = pg.RMatrix(self.data.size(), self.regionManager().parameterCount())
         
         for kIdx, w in enumerate(self.w):
@@ -232,6 +224,7 @@ class ERTModelling(pg.ModellingBase):
             
             Jt *= 0.
             A = pg.ElementMatrixMap()
+            
             for i, c in enumerate(cells):
                 modelIdx = c.marker()
             
