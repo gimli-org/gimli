@@ -4,8 +4,6 @@ Readme for Github repository only. (Get's selected before *.rst file)
 
 ![GIMLi](https://raw.githubusercontent.com/gimli-org/gimli/master/doc/_static/gimli.png)
 
-# Geophysical Inversion and Modelling Library
-
 [![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 [![Issue Stats](http://issuestats.com/github/gimli-org/gimli/badge/issue?style=flat)](http://issuestats.com/github/gimli-org/gimli)

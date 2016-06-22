@@ -403,7 +403,7 @@ def mergePLC(pols):
     >>> import matplotlib.pyplot as plt
     >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
     >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1,
-    >>>                       marker=2, segments=4)
+    ...                       marker=2, segments=4)
     >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
     >>> r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
     >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6],
