@@ -20,6 +20,7 @@ from .mesh import readTetgen
 from .mesh import readHydrus2dMesh
 from .mesh import readHydrus3dMesh
 from .mesh import mergeMeshes
+from .mesh import merge2Meshes
 from .mesh import createParaMesh
 from .mesh import createParaMesh2DGrid
 
@@ -34,7 +35,7 @@ from .polytools import readPLC
 from .polytools import writePLC
 from .polytools import writeTrianglePoly
 # use createParaMeshPLC .. createParaDomain2D will be removed
-from .polytools import createParaDomain2D # keep for backward compatibility 
+from .polytools import createParaDomain2D # keep for backward compatibility
 
 
 __all__ = ['appendTriangleBoundary',
@@ -46,6 +47,7 @@ __all__ = ['appendTriangleBoundary',
            'readHydrus2dMesh',
            'readHydrus3dMesh',
            'mergeMeshes',
+           'merge2Meshes',
            'createParaMesh',
            'createParaMesh2DGrid',
            'createRectangle',

@@ -308,13 +308,14 @@ code.xref.py.py-mod.docutils.literal {
 }
 
 div.highlight-python pre a {
-    font-weight: bold;
-    background-color: #E6F0DE;
-    color: #3C8200;
+    color: #0000ff;
+    text-decoration: underline;
 }
 
-div.highlight-python pre a:hover {
-    background-color: #fff;
+div.highlight-python pre a {
+    font-weight: bold;
+    color: #0000ff;
+    text-decoration: underline;
 }
 
 code.xref.py.py-mod.docutils.literal {
@@ -449,7 +450,7 @@ dd {
 
 /*index page*/
 .hero-unit {
-    padding: 40px;
+    padding: 30px;
 }
 
 .hero-unit h1 {

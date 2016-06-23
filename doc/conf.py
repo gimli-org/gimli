@@ -317,7 +317,7 @@ htmlhelp_basename = 'gimlidoc'
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = join(SPHINXDOC_PATH, "_static/gimli.pdf")
+latex_logo = join(SPHINXDOC_PATH, "_static/gimli_logo.pdf")
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -350,6 +350,7 @@ latex_elements = {
     'preamble':
     '\\usepackage{amsfonts}\n\
     \\usepackage{amssymb}\n\
+    \\usepackage{graphicx}\n\
     \\usepackage{amsmath}\n\
     \\usepackage{bm}\n\
     \\usepackage{pslatex}\n\
@@ -368,7 +369,7 @@ if sphinx.__version__.startswith('1.3'):
 latex_documents = [('documentation',
                     'gimli.tex',
                     'GIMLi Documentation',
-                    'GIMLi Group',
+                    'Carsten Rücker, Thomas Günther \& Florian Wagner',
                     'manual')]
 
 try:
