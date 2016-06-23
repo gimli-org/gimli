@@ -30,6 +30,7 @@ from .polytools import createLine
 from .polytools import createParaMeshPLC
 from .polytools import mergePLC
 from .polytools import readPLC
+from .polytools import createParaDomain2D # keep for backward compatibility
 
 __all__ = ['appendTriangleBoundary',
            'appendTetrahedronBoundary',
@@ -48,4 +49,6 @@ __all__ = ['appendTriangleBoundary',
            'createLine',
            'createParaMeshPLC',
            'mergePLC',
-           'readPLC']
+           'readPLC',
+           'createParaDomain2D' # keep for backward compatibility
+           ]

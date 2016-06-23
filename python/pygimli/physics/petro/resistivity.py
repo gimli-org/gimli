@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """    
-    For the manager look at BERT https://gitlab.com/resistivity-net/bert
+ For the manager look at BERT https://gitlab.com/resistivity-net/bert
     
 """
 
