@@ -11,10 +11,10 @@ No official maintenance by the GIMLi team.
 import numpy as np
 import pygimli as pg
 import matplotlib.pyplot as plt
-from pygimli.meshtools import createMesh, createParaDomain2D
+from pygimli.meshtools import createMesh, createParaMeshPLC
 from pygimli.mplviewer.meshview import drawMesh
 from pygimli.utils import opt_import
-from pygimli.meshtools import writeTrianglePoly
+from pygimli.meshtools import writePLC
 
 
 class Poly2D(object):
@@ -115,9 +115,9 @@ class Poly2D(object):
         boundary = float(surf.get('boundary', -1.0))
         self.paramaxcellsize = float(surf.get('maxcellsize', 0.0))
 
-        self.poly = createParaDomain2D(self.sensors_pos, paradx, paradepth,
-                                       paraboundary, self.paramaxcellsize,
-                                       boundary)
+        self.poly = createParaMeshPLC(self.sensors_pos, paradx, paradepth,
+                                      paraboundary, self.paramaxcellsize,
+                                      boundary)
 
         marker_pos, marker_id = self._extract_marker(surf)
         self.poly.addRegionMarker(marker_pos, marker_id)
@@ -237,7 +237,7 @@ class Poly2D(object):
         """
         Export Triangle poly file
         """
-        writeTrianglePoly(self.poly, filename)
+        writePLC(self.poly, filename)
 
     def drawLines(self, ax=None, color='white'):
         """ just draw edges of a mesh as lines (e.g. onto a model)"""

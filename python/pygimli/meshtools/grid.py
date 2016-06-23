@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+"""Generally grid generation and maintenance."""
 import os
 import pygimli as pg
 
@@ -48,11 +48,11 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     >>> from matplotlib import pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawMesh, drawModel
-    >>> inner = pg.createGrid(range(5), range(5))
-    >>> mesh = appendTriangleBoundary(inner, xbound=3, ybound=6, marker=1)
+    >>> inner = pg.createGrid(range(5), range(5), marker=1)
+    >>> mesh = appendTriangleBoundary(inner, xbound=3, ybound=6, marker=2)
     >>> fig, (ax1, ax2) = plt.subplots(1,2)
     >>> p1 = drawMesh(ax1, inner)
-    >>> p2 = drawModel(ax2, mesh, mesh.cellMarkers())
+    >>> p2 = pg.show(mesh, mesh.cellMarkers(), label='marker', axes=ax2)
     >>> p3 = drawMesh(ax2, mesh)
     >>> txt1 = ax1.set_title("a) Input grid")
     >>> txt2 = ax2.set_title("b) With triangle boundary")
@@ -239,7 +239,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
                      smoothFunction=1,
                      smoothIteration=2)
 
-    list(map(lambda cell: cell.setMarker(marker), mesh2.cells()))
+    mesh2.setCellMarkers([marker]*mesh2.cellCount())
 
     # map copy the cell not the reference, this should not happen
     # map( lambda cell: mesh2.copyCell( cell ), mesh2.cells() )
@@ -295,6 +295,10 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     Boundaries of mesh need marker 1.
     """
     # create boundary for mesh from boundary marker == 1
+
+    if isSubSurface:
+        raise Exception('Implement me')
+
     meshBoundary = pg.Mesh()
     meshBoundary.createH2()
 
@@ -330,28 +334,19 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     # worldBoundary.exportBoundaryVTU('worldSurface')
 
     worldPoly = pg.Mesh()
-    worldPoly.createMeshByBoundaries(
-        worldBoundary,
-        worldBoundary.findBoundaryByMarker(
-            -2,
-            0))
+    worldPoly.createMeshByBoundaries(worldBoundary,
+                                     worldBoundary.findBoundaryByMarker(-2, 0))
     worldPoly.exportAsTetgenPolyFile("worldSurface.poly")
 
     os.system('polyMerge -N worldSurface paraBoundary boundaryWorld')
 
     # mesh should have to be a hole
-    polyAddVIP(
-        'boundaryWorld',
-        mesh.cell(0).center(),
-        isHoleMarker=True,
-        verbose=verbose)
+    polyAddVIP('boundaryWorld', mesh.cell(0).center(), isHoleMarker=True,
+               verbose=verbose)
     # system( 'polyConvert -o world-poly -V boundaryWorld' )
 
-    boundMesh = tetgen(
-        'boundaryWorld',
-        quality=quality,
-        preserveBoundary=True,
-        verbose=verbose)
+    boundMesh = tetgen('boundaryWorld', quality=quality, preserveBoundary=True,
+                       verbose=verbose)
     # boundMesh.exportVTK( 'boundaryWorld' )
 
     # merge mesh and worldBoundary
@@ -364,7 +359,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     swatch = pg.Stopwatch(True)
     for c in meshBoundary.cells():
         nodes = pg.stdVectorNodes()
-        for i, n in enumerate(c.nodes()):
+        for n in c.nodes():
             nodes.append(boundMesh.createNodeWithCheck(n.pos()))
 
         boundMesh.createCell(nodes, c.marker())
@@ -377,7 +372,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         os.remove('boundaryWorld.poly')
         os.remove('paraBoundary.poly')
         os.remove('worldSurface.poly')
-    except:
-        None
+    except BaseException as e:
+        print(e)
 
     return boundMesh

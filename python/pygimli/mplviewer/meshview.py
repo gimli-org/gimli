@@ -1017,8 +1017,11 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     pp.set_linewidths(0.0)
     
     if cmap is not None:
-        pp.set_cmap(cmap)
-    
+        if type(cmap) is str:
+            pp.set_cmap(cmapFromName(cmap))
+        else:
+            pp.set_cmap(cmap)
+                
     pp.set_norm(LogNorm(cmin, cmax))
     pp.set_array(np.array(val))
     pp.set_clim(cmin, cmax)

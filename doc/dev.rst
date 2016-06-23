@@ -93,5 +93,8 @@ Run api examples from shell:
 
     python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle)"
 
+Run pylint from shell to check code:
 
-
+.. code-block:: bash
+        
+    pylint --rcfile $GIMLIROOT/.pylintrc file.py

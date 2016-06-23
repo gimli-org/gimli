@@ -26,13 +26,13 @@
 namespace GIMLI{
 
 /*! Unified interface. Generate simple grid with nodes at the given positions */
-DLLEXPORT Mesh createGrid(const RVector & x);
+DLLEXPORT Mesh createGrid(const RVector & x, int marker=0);
 
 /*! Unified interface. Generate simple grid with nodes at the given positions */
-DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y);
+DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, int marker=0);
 
 /*! Unified interface. Generate simple grid with nodes at the given positions */
-DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, const RVector & z);
+DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, const RVector & z, int marker=0);
 
 /*! Generate simple one dimensional mesh with nodes at position in RVector pos. */
 DLLEXPORT Mesh createMesh1D(const RVector & x); 

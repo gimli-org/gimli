@@ -9,7 +9,7 @@ import numpy as np
 import pygimli as pg
 
 
-def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
+def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True):
     """INTERNAL"""
 
     nEdges = poly.nodeCount()-1 + isClosed
@@ -75,7 +75,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
     >>> rectangle = createRectangle(start=[4, -4],
-    >>>                             end=[6, -6], marker=4, area=0.1)
+    ...                             end=[6, -6], marker=4, area=0.1)
     >>>
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, rectangle)
@@ -166,10 +166,16 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
 #    rs = []
     poly = pg.Mesh(2)
 
+
     for i, depth in enumerate(z):
         n = poly.createNode([start[0], depth])
         if i > 0:
-            poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=i, area=area)
+            if len(z) == 2:
+                poly.addRegionMarker(n.pos() + [0.2, 0.2],
+                                     marker=marker, area=area)
+            else:
+                poly.addRegionMarker(n.pos() + [0.2, 0.2],
+                                     marker=i, area=area)
 
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
@@ -403,11 +409,11 @@ def mergePLC(pols):
     >>> import matplotlib.pyplot as plt
     >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
     >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1,
-    >>>                       marker=2, segments=4)
+    ...                       marker=2, segments=4)
     >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
     >>> r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
     >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6],
-    >>>                          marker=4, area=0.1)
+    ...                          marker=4, area=0.1)
     >>> plc = plc.mergePLC([world, c1, c2, r1, r2])
     >>>
     >>> fig, ax = plt.subplots()
@@ -452,7 +458,7 @@ def createParaDomain2D(*args, **kwargs):
 def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                       paraBoundary=2, paraMaxCellSize=0, boundary=-1,
                       boundaryMaxCellSize=0,
-                      verbose=False, *args, **kwargs):
+                      **kwargs):
     """
     Create a PLC mesh for an inversion parameter mesh.
 
@@ -502,7 +508,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 
     if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
-    elif type(sensors) == np.ndarray:
+    elif isinstance(sensors, np.ndarray):
         sensors = [pg.RVector3(s) for s in sensors]
 
     eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
@@ -564,7 +570,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
             e.rotateX(-math.pi/2)
         if paraDX >= 0.5:
             nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors) - 1):
+            if i < len(sensors) - 1:
                 e1 = sensors[i + 1]
                 if iz == 2:
                     e1.rotateX(-math.pi/2)
@@ -572,14 +578,14 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
             # print("Surface add ", e, el, nSurface[-2].pos(),
             #        nSurface[-1].pos())
         elif paraDX < 0.5:
-            if (i > 0):
+            if i > 0:
                 e1 = sensors[i - 1]
                 if iz == 2:
                     e1.rotateX(-math.pi/2)
                 nSurface.append(
                     poly.createNode(e - (e - e1) * paraDX))
             nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors) - 1):
+            if i < len(sensors) - 1:
                 e1 = sensors[i + 1]
                 if iz == 2:
                     e1.rotateX(-math.pi/2)
@@ -731,12 +737,12 @@ def writePLC(poly, fname, **kwargs):
     """
 
     if poly.dimension() == 2:
-        pg.meshtools.writeTrianglePoly(poly, fname, **kwargs)
+        writeTrianglePoly(poly, fname, **kwargs)
     else:
         poly.exportAsTetgenPolyFile(fname)
 
 
-def writeTrianglePoly(poly, fname, pfmt='{:.15e}', verbose=False):
+def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
     """
     Write :term:`Triangle` :cite:`Shewchuk96b` poly file.
 
@@ -831,8 +837,8 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
         os.remove(filebody + '.1.node')
         os.remove(filebody + '.1.ele')
         os.remove(filebody + '.1.face')
-    except:
-        None
+    except BaseException as e:
+        print(e)
     mesh = pg.Mesh(filebody)
     return mesh
 
@@ -960,7 +966,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     os.system(syscal)
 
 
-def polyTranslate(filename, x=0.0, y=0.0, z=0.0, verbose=True):
+def polyTranslate(filename, x=0.0, y=0.0, z=0.0):
     """
     Translate (move) a PLC
 

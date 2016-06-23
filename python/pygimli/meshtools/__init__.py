@@ -24,12 +24,15 @@ from .mesh import createParaMesh
 from .mesh import createParaMesh2DGrid
 
 from .polytools import createRectangle
+from .polytools import createPolygon
 from .polytools import createWorld
 from .polytools import createCircle
 from .polytools import createLine
 from .polytools import createParaMeshPLC
 from .polytools import mergePLC
 from .polytools import readPLC
+from .polytools import writePLC
+
 
 __all__ = ['appendTriangleBoundary',
            'appendTetrahedronBoundary',
@@ -43,9 +46,11 @@ __all__ = ['appendTriangleBoundary',
            'createParaMesh',
            'createParaMesh2DGrid',
            'createRectangle',
+           'createPolygon',
            'createWorld',
            'createCircle',
            'createLine',
            'createParaMeshPLC',
            'mergePLC',
-           'readPLC']
+           'readPLC',
+           'writePLC']

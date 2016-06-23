@@ -25,21 +25,24 @@
 
 namespace GIMLI{
 
-Mesh createGrid(const RVector & x){
+Mesh createGrid(const RVector & x, int marker){
     Mesh mesh(1);
     mesh.createGrid(x);
+    mesh.setCellMarkers(RVector(mesh.cellCount(), marker));
     return mesh;
 }
 
-Mesh createGrid(const RVector & x, const RVector & y){
+Mesh createGrid(const RVector & x, const RVector & y, int marker){
     Mesh mesh(2);
     mesh.createGrid(x, y);
+    mesh.setCellMarkers(RVector(mesh.cellCount(), marker));
     return mesh;
 }
 
-Mesh createGrid(const RVector & x, const RVector & y, const RVector & z){
+Mesh createGrid(const RVector & x, const RVector & y, const RVector & z, int marker){
     Mesh mesh(3);
     mesh.createGrid(x, y, z);
+    mesh.setCellMarkers(RVector(mesh.cellCount(), marker));
     return mesh;
 }
 
