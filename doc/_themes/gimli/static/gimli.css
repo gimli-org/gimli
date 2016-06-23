@@ -26,8 +26,16 @@ body {
     font-weight: 400;
 }
 
-a { color: #16540e }
-a:hover { color: #3c8732 }
+a { color: #107896 }
+a:hover {
+    text-decoration: none;
+}
+
+/*.navbar a:hover {*/
+    /*color: #43abc9;*/
+    /*border-bottom:3px #43abc9 solid;*/
+    /*padding-bottom: 20px;*/
+/*}*/
 
 input,
 button,
