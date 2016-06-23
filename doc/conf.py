@@ -20,16 +20,6 @@ import re
 # for doc rendering on headless machines (jenkins server)
 import matplotlib
 matplotlib.use("Agg")
-
-try:
-    import sphinx_gallery
-except ImportError:
-    err = """
-    sphinx_gallery is required to build the documentation. Try to run:
-    sudo pip install git+https://github.com/sphinx-gallery/sphinx-gallery
-    """
-    raise ImportError(err)
-
 import pygimli as pg
 from pygimli.utils import boxprint
 
@@ -90,28 +80,46 @@ extensions = ['sphinx.ext.autodoc',
 
 extensions += [dep.replace('-', '.') for dep in deps]
 
+# Sphinx-gallery settinga
+try:
+    import sphinx_gallery
+    extensions += ["sphinx_gallery.gen_gallery"]
+
+    # Setup automatic gallery generation
+    sphinx_gallery_conf = {
+        'examples_dirs': [join(SPHINXDOC_PATH, 'examples'),
+                          join(SPHINXDOC_PATH, 'tutorials')],
+        'gallery_dirs': ['_examples_auto',
+                         '_tutorials_auto'],
+        'reference_url': {
+            # The module you locally document uses a None
+            'pygimli': None,
+            # External python modules use their documentation websites
+            'matplotlib': 'http://matplotlib.org',
+            'numpy': 'http://docs.scipy.org/doc/numpy'},
+
+        # path where to store your example linker templates
+        'mod_example_dir': '_function_examples',
+
+        # Your documented modules. You can use a string or a list of strings
+        'doc_module': 'pygimli'
+    }
+
+except ImportError:
+    err = """
+    The sphinx_gallery extension is not installed, so the tutorials and examples
+    will not be rendered and additional warnings will occur due to missing
+    references.
+
+    Install sphinx_gallery via:
+    sudo pip install sphinx-gallery
+    """
+
+    def setup(app):
+        app.warn(err)
+
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-# Setup automatic gallery generation
-sphinx_gallery_conf = {
-    'examples_dirs': [join(SPHINXDOC_PATH, 'examples'),
-                     join(SPHINXDOC_PATH, 'tutorials'),
-                     ],
-    'gallery_dirs': ['_examples_auto',
-                    '_tutorials_auto'],
-    'reference_url': {
-        # The module you locally document uses a None
-        'pygimli': None,
-        # External python modules use their documentation websites
-        'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
-
-    # path where to store your example linker templates
-    'mod_example_dir': '_function_examples',
-
-    # Your documented modules. You can use a string or a list of strings
-    'doc_module': 'pygimli'
-}
 
 autoclass_content = "both"
 
@@ -164,7 +172,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'GIMLi'
-copyright = u'2016 - GIMLi Group'
+copyright = '2016 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -258,7 +266,7 @@ html_static_path = [join(SPHINXDOC_PATH, '_static')]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'# + ' with ' + version
+html_last_updated_fmt = '%b %d, %Y'  # + ' with ' + version
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -309,7 +317,7 @@ htmlhelp_basename = 'gimlidoc'
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = join(SPHINXDOC_PATH, "_static/gimli.png")
+latex_logo = join(SPHINXDOC_PATH, "_static/gimli.pdf")
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -329,7 +337,7 @@ latex_show_pagerefs = True
 
 from os import environ, path
 
-extradir = path.abspath(join(SPHINXDOC_PATH, '_static'))#.replace('\\', '/')
+extradir = path.abspath(join(SPHINXDOC_PATH, '_static'))  # .replace('\\', '/')
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -352,7 +360,7 @@ latex_elements = {
 import sphinx
 if sphinx.__version__.startswith('1.3'):
     latex_elements['preamble'] += \
-    '\\RequirePackage{fixltx2e}\n\
+        '\\RequirePackage{fixltx2e}\n\
      \\MakeRobust\\DUspan\n'
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -479,7 +487,8 @@ texinfo_show_urls = 'footnote'
 import pkg_resources
 
 # temporary disable due to python3 pybtex quirks
-for dist in pkg_resources.find_distributions(SPHINXDOC_PATH + "/_templates/pybtex_plugins/"):
+for dist in pkg_resources.find_distributions(
+        SPHINXDOC_PATH + "/_templates/pybtex_plugins/"):
     pkg_resources.working_set.add(dist)
 
 # End pybtex stuff
