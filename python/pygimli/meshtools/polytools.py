@@ -719,7 +719,7 @@ def writePLC(poly, fname, **kwargs):
     Choose from poly.dimension() and forward appropriate to
     gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
     and
-    :py:mod:`pygimli.meshtool.writeTrianglePoly`
+    :py:mod:`pygimli.meshtools.writeTrianglePoly`
 
     Parameters
     ----------

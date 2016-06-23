@@ -30,6 +30,10 @@ curl -Ls install.pygimli.org | bash
 ```
 
 ##### For Anaconda users (currently Linux only)
+
+[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/installer/conda.svg)](https://conda.anaconda.org/gimli)
+[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/downloads.svg)](https://anaconda.org/gimli/pygimli)
+
 ```bash
 # Installation
 conda install -c gimli pygimli
