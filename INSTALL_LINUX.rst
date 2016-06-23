@@ -1,7 +1,13 @@
 Installation on Linux
 ---------------------
 
-On Linux platforms, the most comfortable way to install pygimli is via the conda package manager contained in the Anaconda distribution (https://docs.continuum.io/anaconda/install#linux-install) or the lightweight alternative Miniconda (http://conda.pydata.org/miniconda.html).
+.. image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
+   :target: https://conda.anaconda.org/gimli
+
+.. image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
+   :target: https://anaconda.org/gimli/pygimli
+
+On Linux platforms, the most comfortable way to install pygimli is via the conda package manager contained in the `Anaconda distribution <https://docs.continuum.io/anaconda/install#linux-install>`_ or the `lightweight alternative Miniconda <http://conda.pydata.org/miniconda.html>`_.
 
 .. code:: bash
 
@@ -20,19 +26,18 @@ This script accepts a few more options. For help see:
 
     curl -Ls install.pygimli.org | bash -s help
 
-If something goes wrong please take a look at the error message. 
-In most cases there is are missing or outdated packages.
+If something goes wrong please take a look at the error message. In most cases
+there are missing or outdated packages. Please have a look at the prerequisites
+tab.
 
-Please look first in prerequisites :link here .. how?: on needed packages. 
-
-If the installation fails you can try the following instructions for manual installation. 
+If the installation fails you can try the following instructions for manual installation.
 
 
 Detailed Installation on Vanilla Debian
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.......................................
 
-First install some of the necessary stuff. You will need subversion, git and hg to
-retrieve the source files and some things for the tool-chain:
+First install some of the necessary stuff. You will need subversion, git and hg
+to retrieve the source files and some things for the tool-chain:
 
 .. code-block:: bash
 
@@ -88,10 +93,8 @@ and configure the build:
 
     cmake ../gimli
 
-If the output complains some missing dependencies,
-install these and repeat the the last step.
-
-To build the library just run make
+If the output complains some missing dependencies, install these and repeat the
+the last step. To build the library just run ```make```.
 
 .. code-block:: bash
 
@@ -147,7 +150,7 @@ Note that the test will be very silent if you don't have cppunit installed.
 
 
 Example Installation on Ubuntu
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..............................
 
 .. code-block:: bash
 
@@ -166,7 +169,7 @@ Example Installation on Ubuntu
     make pygimli
 
 Troubleshooting
-^^^^^^^^^^^^^^^
+...............
 
 If you experience runtime problems on starting pygimli like:
 
@@ -193,23 +196,23 @@ Install *libedit*, e.g. 'apt-get install libedit' on Debian/Ubuntu.
 castXML
 .......
 
-If castXML (https://github.com/CastXML/CastXML/) complains about missing clang or llvm command, please go into 
+If castXML (https://github.com/CastXML/CastXML/) complains about missing clang or llvm command, please go into
 $(GIMLISRC)/../thirdParty/build-XXX-XXX/castXML and try configure and build cmake manually
 
 .. code-block:: bash
-    
+
     CC=clang-3.6 CXX=clang++-3.6 cmake ../../src/castXML/
     make
 
 If you build castXML manually you can provide this binary to cmake via
 
 .. code-block:: bash
-    
+
     cmake ../gimli -DCASTER_EXECUTABLE=$(PATH_TO_CASTXML)
-    
+
 
 Useful cmake settings
-^^^^^^^^^^^^^^^^^^^^^
+.....................
 
 You can rebuild and update all local generated third party software by setting the CLEAN environment variable:
 
@@ -237,7 +240,7 @@ Build the library with debug and profiling flags
 
     cmake ../gimli -DCMAKE_BUILD_TYPE=Debug
 
-Build the library with gcc build.in sanity check 
+Build the library with gcc build.in sanity check
 
 .. code-block:: bash
 
@@ -245,11 +248,11 @@ Build the library with gcc build.in sanity check
 
 
 Useful make commands
-^^^^^^^^^^^^^^^^^^^^^
+.....................
 
 More verbose build output to view the complete command line:
 
 .. code-block:: bash
 
     make VERBOSE=1
- 
+

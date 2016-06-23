@@ -32,6 +32,9 @@ from .polytools import createParaMeshPLC
 from .polytools import mergePLC
 from .polytools import readPLC
 from .polytools import writePLC
+from .polytools import writeTrianglePoly
+# use createParaMeshPLC .. createParaDomain2D will be removed
+from .polytools import createParaDomain2D # keep for backward compatibility 
 
 
 __all__ = ['appendTriangleBoundary',
@@ -53,4 +56,7 @@ __all__ = ['appendTriangleBoundary',
            'createParaMeshPLC',
            'mergePLC',
            'readPLC',
-           'writePLC']
+           'writePLC',
+           'createParaDomain2D' # keep for backward compatibility .. see above
+           ]
+

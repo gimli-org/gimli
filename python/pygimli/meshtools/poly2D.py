@@ -11,7 +11,9 @@ No official maintenance by the GIMLi team.
 import numpy as np
 import pygimli as pg
 import matplotlib.pyplot as plt
+
 from pygimli.meshtools import createMesh, createParaMeshPLC
+
 from pygimli.mplviewer.meshview import drawMesh
 from pygimli.utils import opt_import
 from pygimli.meshtools import writePLC

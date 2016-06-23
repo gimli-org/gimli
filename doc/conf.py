@@ -115,8 +115,11 @@ sphinx_gallery_conf = {
 
 autoclass_content = "both"
 
-# Get mathjax from GIMLi server (public one is very slow)
-mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+# Get mathjax
+# Formulas disappear after scrolling
+# mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+# Slow, but works
+mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = [join(SPHINXDOC_PATH, '_templates'),
@@ -246,7 +249,7 @@ html_short_title = "GIMLi"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = join(SPHINXDOC_PATH, '_static/G.ico')
+html_favicon = join(SPHINXDOC_PATH, '_static/favicon.ico')
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
