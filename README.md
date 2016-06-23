@@ -2,7 +2,7 @@
 Readme for Github repository only. (Get's selected before *.rst file)
 -->
 
-![GIMLi](https://raw.githubusercontent.com/gimli-org/gimli/master/doc/_static/gimli_logo.svg =550x)
+![GIMLi](http://pygimli.org/_static/gimli_logo.svg =550x)
 
 [![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
