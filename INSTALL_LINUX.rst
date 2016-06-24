@@ -1,13 +1,17 @@
 Installation on Linux
 ---------------------
 
+On Linux platforms, the most comfortable way to install pygimli is via the conda package manager contained in the `Anaconda distribution <https://docs.continuum.io/anaconda/install#linux-install>`_ or the `lightweight alternative Miniconda <http://conda.pydata.org/miniconda.html>`_.
+
 .. image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
-   :target: https://conda.anaconda.org/gimli
+    :target: https://conda.anaconda.org/gimli
 
 .. image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
-   :target: https://anaconda.org/gimli/pygimli
+    :target: https://anaconda.org/gimli/pygimli
 
-On Linux platforms, the most comfortable way to install pygimli is via the conda package manager contained in the `Anaconda distribution <https://docs.continuum.io/anaconda/install#linux-install>`_ or the `lightweight alternative Miniconda <http://conda.pydata.org/miniconda.html>`_.
+.. raw:: html
+
+    <br><br>
 
 .. code:: bash
 
@@ -67,7 +71,7 @@ Checkout the current sources for libgimli:
 
     git clone https://github.com/gimli-org/gimli.git
 
-We use cmake (http://www.cmake.org/) for compilation. We recommend using a
+We use `cmake <http://www.cmake.org>`_ for compilation. We recommend using a
 build directory parallel to the gimli (trunk) path:
 
 .. code-block:: bash
@@ -94,31 +98,29 @@ and configure the build:
     cmake ../gimli
 
 If the output complains some missing dependencies, install these and repeat the
-the last step. To build the library just run ```make```.
+the last step. To build the library just run `make`.
 
 .. code-block:: bash
 
     make
 
-To speed up the build process using more CPUs, use the -j flag, e.g.:
+To speed up the build process using more CPUs, use the `-j` flag, e.g.:
 
 .. code-block:: bash
 
     make -j 8
 
 The libraries will be installed in build/lib and some test applications are
-installed in build/bin
-
-If you want to build the python bindings, call
+installed in build/bin. If you want to build the python bindings, call:
 
 .. code-block:: bash
 
     make pygimli
 
-You might add J=8 for using 8 jobs in parallel to speed up the build.
-The library _pygimli_.so library will be copied into the source path
-../gimli/python/pygimli in the subdirectory core.
-To use the gimli installation there have to be set some environment variables:
+You might add J=8 (`make pygimli J=8`) for using 8 jobs in parallel to
+speed up the build. The library _pygimli_.so library will be copied into the
+source path ../gimli/python/pygimli in the subdirectory core. To use the gimli
+installation there have to be set some environment variables:
 
 .. code-block:: bash
 
@@ -132,9 +134,8 @@ If you want to use the C++ command line applications, call
 
     make apps
 
-Compiled binaries will be written to `build/bin`.
-
-You can test the pygimli build with:
+Compiled binaries will be written to `build/bin`. You can test the pygimli
+build with:
 
 .. code-block:: bash
 
@@ -156,7 +157,7 @@ Example Installation on Ubuntu
 
     sudo apt-get install subversion git cmake mercurial
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev libedit-dev
-    sudo apt-get install python-matplotlib python-numpy
+    sudo apt-get install python3-matplotlib python3-numpy
 
     mkdir -p ~/src/gimli
     cd ~/src/gimli
@@ -214,7 +215,8 @@ If you build castXML manually you can provide this binary to cmake via
 Useful cmake settings
 .....................
 
-You can rebuild and update all local generated third party software by setting the CLEAN environment variable:
+You can rebuild and update all local generated third party software by setting
+the CLEAN environment variable:
 
 .. code-block:: bash
 
@@ -226,9 +228,9 @@ Use alternative c++ compiler.
 
     CC=clang CXX=clang++ cmake ../gimli
 
-Define alternative python version.
-On default the version of your active python version will be chosen.
-You will need numpy and boost-python builds with your desired python version.
+Define alternative python version. On default the version of your active python
+version will be chosen. You will need numpy and boost-python builds with your
+desired python version.
 
 .. code-block:: bash
 

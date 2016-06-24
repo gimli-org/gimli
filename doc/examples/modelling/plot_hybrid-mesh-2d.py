@@ -14,7 +14,6 @@ spaced quadrilaterals and a region with unstructured triangles."""
 # We start by importing numpy, matplotlib and pygimli with its required components.
 
 import numpy as np
-
 import pygimli as pg
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawMesh

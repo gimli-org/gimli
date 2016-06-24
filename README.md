@@ -2,7 +2,9 @@
 Readme for Github repository only. (Get's selected before *.rst file)
 -->
 
-![GIMLi](https://raw.githubusercontent.com/gimli-org/gimli/master/doc/_static/gimli.png)
+<a href="http://www.pygimli.org">
+  <img src="http://www.pygimli.org/_static/gimli_logo.svg" width="50%">
+</a>
 
 [![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
@@ -10,7 +12,7 @@ Readme for Github repository only. (Get's selected before *.rst file)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/d0d835a5d75e4334a1c58389cafccaa0/badge.svg)](https://www.quantifiedcode.com/app/project/d0d835a5d75e4334a1c58389cafccaa0)
 
 
-GIMLi is an open-source multi-method library for solving inverse
+pyGIMLi is an open-source multi-method library for solving inverse
 and forward modelling tasks.
 
 ##### What GIMLi is good for?:
@@ -18,7 +20,7 @@ and forward modelling tasks.
 - creating inversion applications (C++) and scripts (Python) for existing modules
 - add your own forward calculations and build a robust inversion quickly
 - combining different geophysical methods in various ways
-- doing modelling of different PDEs
+- modelling of different PDEs
 
 ##### What GIMLi is **NOT** good for?:
 

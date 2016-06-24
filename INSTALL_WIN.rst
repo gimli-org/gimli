@@ -3,29 +3,30 @@ Installation on Windows
 
 First, you need a Linux-like command shell along with a gcc compiler. 
 Although there might be different solutions (Cygwin, Git Bash, MinGW/MSYS),
-we only support the MSYS2 (Minimal System 2) hosted at http://msys2.github.io/
+we only support the MSYS2 (Minimal System 2) hosted at http://msys2.github.io/.
 As computers and modern Windows (>=7) are 64bit we only test this.
 Avoid installing into strange Windows folders, e.g. c:\msys64 is fine.
 
 You will also need a native python installation if you want to use pygimli. 
-We recommend WinPython: http://winpython.github.io/#releases
+We recommend `WinPython <http://winpython.github.io/#releases>`_.
 
-After installing MSYS, start the console once so it builds your personal home directory
-where you find a .bashrc file, e.g. in
+After installing MSYS, start the console once so it builds your personal home
+directory where you find a .bashrc file, e.g. in
 
 .. code-block:: bash
 
     c:/msys64/home/YOUR_USERNAME
 
-Edit .bashrc so that the WinPython installation path is added to your default PATH.
+Edit .bashrc so that the WinPython installation path is added to your default
+PATH.
 
 .. code-block:: bash
 
     export PATH=$PATH:/c/PATH_TO_YOUR_WINPYTHON/WinPython-64bit-3.5.1.2/python-3.5.1/
 
-This is necessary since gimli needs to know valid python installation and version.
-
-Ideally the following one-liner will suffice to compile pyGIMLi in the current directory.
+This is necessary since gimli needs to know valid python installation and
+version. Ideally the following one-liner will suffice to compile pyGIMLi in the
+current directory.
 
 **Note: The script will automatic take care of requirements and updates of MSYS2. 
 And also needs to modify/patch some of the llvm system files.**
