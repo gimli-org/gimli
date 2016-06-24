@@ -16,7 +16,8 @@ import traceback
 class doxygen_doc_extractor(object):
 
     """
-    Extracts Doxygen styled documentation from source or generates it from description.
+    Extracts Doxygen styled documentation from source or generates it from
+    description.
     """
 
     def __init__(self):
@@ -31,10 +32,10 @@ class doxygen_doc_extractor(object):
         try:
             if self.file_name != declaration.location.file_name:
                 self.file_name = declaration.location.file_name
-                
+
                 if len(self.file_name) == 0:
                     return ""
-                
+
                 self.source = open(
                     declaration.location.file_name, encoding='utf-8').readlines()
             find_block_end = False
@@ -97,7 +98,7 @@ class doxygen_doc_extractor(object):
     #__call__()
 
     def clear_str(self, tmp_str):
-        """
+        r"""
         Replace */! by space and \brief, @fn, \param, etc
         """
         # CR: add

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-
+Simple Finite Volume Solver
 """
 import pygimli as pg
 from pygimli.viewer import show
@@ -257,8 +257,8 @@ def findVelocity(mesh, v, b, c, nc=None):
     mesh : :gimliapi:`GIMLI::Mesh`
 
     v : array [(N,dim)]
-        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension 
-        and j = [0 .. N-1] per Cell or per Node so N is either 
+        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension
+        and j = [0 .. N-1] per Cell or per Node so N is either
         mesh.cellCount() or mesh.nodeCount()
 
     b : :gimliapi:`GIMLI::Boundary`
@@ -338,44 +338,44 @@ def findDiffusion(mesh, a, b, c, nc=None):
     return D
 
 
-def diffusionConvectionKernel(mesh, a=None, b=0.0, 
+def diffusionConvectionKernel(mesh, a=None, b=0.0,
                               uB=None, duB=None,
-                              vel=0, 
+                              vel=0,
                               #u0=0,
                               fn=None,
                               scheme='CDS', sparse=False, time=0.0,
                               userData=None):
     """
     Generate system matrix for diffusion and convection in a velocity field.
-    
+
     Particle concentration u inside a velocity field.
-    
-    Peclet Number - ratio between convection/diffusion = F/D 
+
+    Peclet Number - ratio between convection/diffusion = F/D
         F = velocity flow trough volume boundary,
         D = diffusion coefficient
-        
+
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh represents spatial discretization of the calculation domain
-    
+
     a   : value | array | callable(cell, userData)
         Diffusion coefficient per cell
-    
+
     b   : value | array | callable(cell, userData)
         TODO What is b
-        
+
     fn   : iterable(cell)
         TODO What is fn
-        
+
     vel : ndarray (N,dim) | RMatrix(N,dim)
-        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension 
-        and j = [0 .. N-1] per Cell or per Node so N is either 
+        velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension
+        and j = [0 .. N-1] per Cell or per Node so N is either
         mesh.cellCount() or mesh.nodeCount()
-        
+
     scheme : str [CDS]
         Finite volume scheme
-        
+
         * CDS -- Central Difference Scheme.
             maybe irregular for Peclet no. |F/D| > 2
             Diffusion dominant. Error of order 2
@@ -389,18 +389,18 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
             Convection dominant.
         * ES -- Exponential scheme
             Only stationary one-dimensional but exact solution
-            
+
     Returns
     -------
-    
+
     S : :gimliapi:`GIMLI::SparseMatrix` | numpy.ndarray(nCells, nCells)
         Kernel matrix, depends on vel, a, b, scheme, uB, duB .. if some of this
         has been changed you cannot cache these matrix
-    
+
     rhsBoundaryScales : ndarray(nCells)
         RHS offset vector
-    
-    
+
+
     """
     if a is None:
         a = pg.RVector(mesh.boundaryCount(), 1.0)
@@ -453,14 +453,14 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
     duBoundaryID = []
     duBoundaryVals = [None] * mesh.boundaryCount()
-    
+
     for i, [boundary, val] in enumerate(duB):
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
         duBoundaryID.append(boundary.id())
         duBoundaryVals[boundary.id()] = val
 
-    # iterate over all cells 
+    # iterate over all cells
     for cell in mesh.cells():
         cID = cell.id()
         for bi in range(cell.boundaryCount()):
@@ -517,7 +517,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
                                                  duBoundaryVals[boundary.id()],
                                                  time=time,
                                                  userData=userData)
-                    
+
                     # amount of flow through the boundary
                     outflow = val * boundary.size() / cell.size()
                     if sparse:
@@ -569,63 +569,63 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
                       ws=None, scheme='CDS', **kwargs):
     """
     Calculate for u.
-    
-    NOTE works only for steady boundary conditions!!! 
-    
+
+    NOTE works only for steady boundary conditions!!!
+
     !!Refactor with solver class and Runga-Kutte solver!!
-    
+
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh represents spatial discretization of the calculation domain
-    
+
     a   : value | array | callable(cell, userData)
         cell values
-    
+
     b   : value | array | callable(cell, userData)
         TODO What is b
-        
+
     f   : iterable(cell)
         TODO What is f
     fn   : iterable(cell)
-    
+
         TODO What is fn
-        
+
     vel : ndarray (N,dim) | RMatrix(N,dim)
-        velocity field [[v_j,]_i,] with i=[1..3] for the mesh dimension 
+        velocity field [[v_j,]_i,] with i=[1..3] for the mesh dimension
         and j = [0 .. N-1] with N either Amount of Cells, Nodes or Boundaries.
         Velocity per boundary is preferred.
-        
+
     u0 : value | array | callable(cell, userData)
         Starting field
-        
-    ws : Workspace 
+
+    ws : Workspace
         This can be an empty class that will used as an Workspace to store and
-        cache data. 
-        
-        If ws is given: The system matrix is taken from ws or 
-        calculated once and stored in ws for further usage. 
-        
+        cache data.
+
+        If ws is given: The system matrix is taken from ws or
+        calculated once and stored in ws for further usage.
+
         The system matrix is cached in this Workspace as ws.S
-        The LinearSolver with the factorized matrix is cached in 
+        The LinearSolver with the factorized matrix is cached in
         this Workspace as ws.solver
         The rhs vector is only stored in this Workspace as ws.rhs
-        
+
     scheme : str [CDS]
-        Finite volume scheme:        
+        Finite volume scheme:
         :py:mod:`pygimli.solver.diffusionConvectionKernel`
-           
+
     **kwargs:
-    
+
         * uB : Dirichlet boundary conditions
         * duB : Neumann boundary conditions
-           
+
     Returns
     -------
-    
+
     u : ndarray(nTimes, nCells)
         solution field for all time steps
-    
+
     """
     verbose = kwargs.pop('verbose', False)
     # The Workspace is to hold temporary data or preserve matrix rebuild
@@ -640,21 +640,21 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
     f = pg.solver.parseArgToArray(f, mesh.cellCount())
     fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
-    
+
     if type(vel) == float:
         print("Warning! .. velocity is float and no vector field")
-    
+
     if len(vel) != mesh.cellCount() and \
         len(vel) != mesh.nodeCount() and \
         len(vel) != mesh.boundaryCount():
-            
+
         print("mesh:", mesh)
         print("vel:", vel.shape)
         raise BaseException("Velocity field has wrong dimension.")
-                
+
     if len(vel) is not mesh.nodeCount():
         vel = pg.solver.pointDataToBoundaryData(mesh, vel)
-    
+
     boundsDirichlet = None
     boundsNeumann = None
 
@@ -667,18 +667,18 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
             boundsNeumann = pg.solver.parseArgToBoundaries(kwargs['duB'], mesh)
 
         workspace.S, workspace.rhsBCScales = diffusionConvectionKernel(
-                                                            mesh=mesh, 
-                                                            a=a, 
-                                                            b=b, 
+                                                            mesh=mesh,
+                                                            a=a,
+                                                            b=b,
                                                             uB=boundsDirichlet,
-                                                            duB=boundsNeumann, 
-                                                            #u0=u0, 
-                                                            fn=fn, 
-                                                            vel=vel, 
+                                                            duB=boundsNeumann,
+                                                            #u0=u0,
+                                                            fn=fn,
+                                                            vel=vel,
                                                             scheme=scheme,
-                                                            sparse=sparse, 
+                                                            sparse=sparse,
                                         userData=kwargs.pop('userData', None))
-        
+
         #print('FVM kernel 1:', swatch.duration(True))
         dof = len(workspace.rhsBCScales)
 
@@ -749,9 +749,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
         if verbose:
             print("Solve timesteps with Crank-Nicolson.")
-            
+
         return pg.solver.crankNicolson(times, theta, workspace.S, I,
-                                       f=workspace.rhs, 
+                                       f=workspace.rhs,
                      u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
                                        verbose=verbose)
 
@@ -849,32 +849,32 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
     """
         Steady Navier-Stokes
     """
-    
+
     workspace = pg.solver.WorkSpace()
     wsux = pg.solver.WorkSpace()
     wsuy = pg.solver.WorkSpace()
     wsp = pg.solver.WorkSpace()
-    
+
     # get cache values if given
     ws = kwargs.pop('ws', None)
     if ws:
         workspace = ws
-        
+
         if hasattr(workspace, 'wsux'):
             wsux = workspace.wsux
         else:
             workspace.wsux = wsux
-            
+
         if hasattr(workspace, 'wsuy'):
             wsuy = workspace.wsuy
         else:
             workspace.wsuy = wsuy
-            
+
         if hasattr(workspace, 'wsp'):
             wsp = workspace.wsp
         else:
             workspace.wsp = wsp
-            
+
     velocityRelaxation = kwargs.pop('vRelax', 0.5)
     pressureRelaxation = kwargs.pop('pRelax', 0.8)
 
@@ -890,7 +890,7 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
         if not isinstance(vel[1], str):
             velBoundaryY.append([marker, vel[1]])
 
-   
+
     pressure = None
     if pre0 is None:
         pressure = np.zeros(mesh.cellCount())
@@ -965,12 +965,12 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
 
 #        div = -divergence(mesh, np.vstack([velXF, velYF]).T)
         div = -mesh.divergence(np.vstack([velXF, velYF]).T)
- 
+
         #boundsDirichlet = pg.solver.parseArgToBoundaries(preBoundary, mesh)
         #pB = CtB * pressure
         #for ix, [boundary, val] in enumerate(boundsDirichlet):
             #boundsDirichlet[ix][1] = -(-pg.solver.generateBoundaryValue(boundary, val) + pB[boundary.id()])
-             
+
         pressureCorrection = solveFiniteVolume(mesh,
                                                a=pressureCoeff,
                                                f=div,
@@ -981,9 +981,9 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
         #print(i, pg.solver.generateBoundaryValue(mesh.boundary(58), val),
               #pB[58], boundsDirichlet[-1][1],
               #(CtB*pressureCorrection)[58])
-              
+
         pressure += pressureCorrection * pressureRelaxation
-        
+
         pressureCorrectionGrad = cellDataToCellGrad(mesh, pressureCorrection,
                                                     CtB)
 
@@ -1007,7 +1007,7 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
                               (divVNorm[-4] - divVNorm[-5]) + \
                               (divVNorm[-5] - divVNorm[-6])
             convergenceTest /= 5
-            
+
         if verbose:
             print("\r" + str(i) + " div V=" + str(divVNorm[-1]) +
                   " ddiv V=" + str(convergenceTest))

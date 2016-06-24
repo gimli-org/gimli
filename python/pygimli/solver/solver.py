@@ -59,7 +59,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
             if len(arg) == nDofs[0]:
                 return arg
             else:
-                raise BaseException('Given array does not have requested (' + 
+                raise BaseException('Given array does not have requested (' +
                                     str(ndof) + ') size (' + str(len(arg)) + ')')
 
         for n in nDofs:
@@ -220,7 +220,7 @@ def parseArgToBoundaries(args, mesh):
     ----------
 
     args : callable | pair | [pair, ...]
-        If args is just a callable than every boundary will be evaluated 
+        If args is just a callable than every boundary will be evaluated
         at runtime with this function as args(boundary).
         Else see :py:mod:`pygimli.solver.solver.parseArgPairToBoundaryArray`
 
@@ -250,7 +250,7 @@ def parseArgToBoundaries(args, mesh):
             #[[,], [,], ...]
             for arg in args:
                 boundaries += parseArgPairToBoundaryArray(arg, mesh)
-    
+
     elif hasattr(args, '__call__'):
         for b in mesh.boundaries():
             if not b.leftCell() or not b.rightCell():
@@ -379,10 +379,10 @@ def pointDataToBoundaryData(mesh, vec):
         Assuming [NodeCount, dim] data
         DOCUMENT_ME
     """
-    
+
     if len(vec) != mesh.nodeCount():
-        raise BaseException("Dimension mismatch, expecting nodeCount(): " 
-                            + str(mesh.nodeCount()) 
+        raise BaseException("Dimension mismatch, expecting nodeCount(): "
+                            + str(mesh.nodeCount())
                             + " got: " + str(len(vec)), str(len(vec[0])))
     dim = len(vec[0])
     ret = np.zeros((mesh.boundaryCount(), dim))
@@ -393,7 +393,7 @@ def pointDataToBoundaryData(mesh, vec):
         for b in mesh.boundaries():
             #v = b.vec(b.center(), vec)
             #interpolation is hell slow here .. check!!!!!!
-            v2 = (vec[b.node(0).id()] + vec[b.node(1).id()])*0.5 
+            v2 = (vec[b.node(0).id()] + vec[b.node(1).id()])*0.5
             #print(v -v2)
             ret[b.id()] = [v2[0], v2[1]]
     else:
@@ -407,12 +407,12 @@ def cellDataToBoundaryData(mesh, vec):
         DOCUMENT_ME
     """
     if len(data) != mesh.cellCount():
-        raise BaseException("Dimension mismatch, expecting cellCount(): " 
-                            + str(mesh.cellCount()) 
+        raise BaseException("Dimension mismatch, expecting cellCount(): "
+                            + str(mesh.cellCount())
                             + "got: " + str(len(vec)), str(len(vec[0])))
-    
+
     CtB = mesh.cellToBoundaryInterpolation()
-    
+
     if type(vec) == pg.R3Vector():
         return np.array([CtB*pg.x(vec), CtB*pg.y(vec), CtB*pg.z(vec)]).T
     else:
@@ -423,10 +423,10 @@ def cellDataToPointData(mesh, vec):
         DOCUMENT_ME
     """
     if len(vec) != mesh.cellCount():
-        raise BaseException("Dimension mismatch, expecting cellCount(): " 
-                            + str(mesh.cellCount()) 
+        raise BaseException("Dimension mismatch, expecting cellCount(): "
+                            + str(mesh.cellCount())
                             + "got: " + str(len(vec)), str(len(vec[0])))
-    
+
     if mesh.dim() == 1:
         return pg.cellDataToPointData(mesh, vec[0])
     elif mesh.dim() == 2:
@@ -436,11 +436,11 @@ def cellDataToPointData(mesh, vec):
         return np.array([pg.cellDataToPointData(mesh, vec[0]),
                          pg.cellDataToPointData(mesh, vec[1]),
                          pg.cellDataToPointData(mesh, vec[2])])
-    
+
 
 def grad(mesh, u, r=None):
     r"""
-    Return the discrete interpolated gradient :math:`\mathbf{v}` 
+    Return the discrete interpolated gradient :math:`\mathbf{v}`
     for a given scalar field :math:`\mathbf{u}`.
 
     .. math::
@@ -530,14 +530,14 @@ def grad(mesh, u, r=None):
 
 def div(mesh, v):
     """
-    Return the discrete interpolated divergence field :math:`\mathbf{u}` 
+    Return the discrete interpolated divergence field :math:`\mathbf{u}`
     at each cell for a given vector field :math:`\mathbf{v}`.
     First order integration via boundary center.
-        
+
     .. math::
         d(cells) & = \nabla\cdot\vec{v} \\
         d(c_i) & = \sum_{j=0}^{N_B}\vec{v}_{B_j} \cdot \vec{n}_{B_j}
-        
+
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -546,12 +546,12 @@ def div(mesh, v):
 
     V : array(N,3) | R3Vector
         Vector field at cell centers or boundary centers
-        
+
     Returns
     -------
     d : array(M)
-        Array of divergence values for each cell in the given mesh.    
-        
+        Array of divergence values for each cell in the given mesh.
+
     Examples
     --------
     >>> import pygimli as pg
@@ -567,7 +567,7 @@ def div(mesh, v):
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
     <class 'pygimli.core._pygimli_.RVector'> 9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
-    >>> #divergence from boundary values are exact where the divergence from 
+    >>> #divergence from boundary values are exact where the divergence from
     >>> #interpolated cell center values are wrong due to boundary interpolation
     >>> print(sum(divCells))
     12.0
@@ -592,16 +592,16 @@ def div(mesh, v):
             d = mesh.divergence(np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
         else:
             raise BaseException("implement me")
-    elif callable(v):        
+    elif callable(v):
         raise BaseException("implement me")
-    
-            
+
+
     return d
-                
+
 def divergence(mesh, F=None, normMap=None, order=1):
     """
     MOVE THIS to a better place
-    
+
     Divergence for callable function F((x,y,z)). Return sum div over boundary.
 
     Parameters
@@ -778,20 +778,20 @@ def assembleForceVector(mesh, f, userData=None):
     """
 
     if type(f) is list or hasattr(f, 'ndim'):
-        
+
         if type(f) is list:
-            
+
             rhs = np.zeros((len(f), mesh.nodeCount()))
             for i in range(len(f)):
                 userData['i'] = i
                 rhs[i] = assembleForceVector(mesh, f[i], userData)
 
             return rhs
-        
+
         elif f.ndim == 2:
             # assume rhs [n, nNodes] array is already a valid
             return f
-    
+
     rhs = pg.RVector(mesh.nodeCount(), 0)
 
     if hasattr(f, '__call__') and not isinstance(f, pg.RVector):
@@ -805,7 +805,7 @@ def assembleForceVector(mesh, f, userData=None):
         if hasattr(f, '__len__'):
             if len(f) == mesh.cellCount() or len(f) == mesh.nodeCount():
                 fArray = f
-        
+
         if fArray is None:
             fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
 
@@ -823,7 +823,7 @@ def assembleForceVector(mesh, f, userData=None):
                 b_l.u(c)
                 for i, idx in enumerate(b_l.idx()):
                     rhs[idx] += b_l.row(0)[i] * fArray[idx]
-            
+
             #rhs = pg.RVector(fArray)
         else:
             raise Exception("Forcevector have the wrong size: " +
@@ -875,12 +875,12 @@ def assembleNeumannBC(S,
 
     for pair in boundaryPairs:
         boundary = pair[0]
-        
+
         val = pair[1]
-        
+
         #if hasattr(val, '__len__'):
-            #if len(val) = 
-            
+            #if len(val) =
+
         g = generateBoundaryValue(boundary, val, time, userData)
 
         if g is not 0.0 and g is not None:
@@ -1116,8 +1116,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     WRITEME short
 
     WRITEME long
-    
-    TODO unsteady ub and dub 
+
+    TODO unsteady ub and dub
 
     Parameters
     ----------
@@ -1159,8 +1159,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     progress : bool
         Give some calculation progress.
-        
-    ret : 
+
+    ret :
         Workspace for results so no new memory will be allocated.
 
     Returns
@@ -1223,7 +1223,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     if debug:
         print("4: ", swatch2.duration(True))
     S = A + M
-                    
+
     if debug:
         print("5: ", swatch2.duration(True))
     if times is None:
@@ -1253,9 +1253,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             print("6c: ", swatch2.duration(True))
 
         # create result array
-        
+
         u = kwargs.pop('ret', None)
-        
+
         singleForce = True
         if hasattr(rhs, 'ndim'):
             if rhs.ndim == 2:
@@ -1271,7 +1271,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 if u is None:
                     u = pg.RVector(rhs.size(), 0.0)
 
-        
+
         assembleTime = swatch.duration(True)
         if stats:
             stats.assembleTime = assembleTime
@@ -1419,7 +1419,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     import matplotlib.pyplot as plt
     import numpy as np
     import time
-            
+
 
     if u0 is None:
         u0 = np.zeros(len(f))
@@ -1440,7 +1440,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     timeIter2 = np.zeros(len(times))
     #print('0', min(u[0]), max(u[0]), min(f), max(f))
     for n in range(1, len(times)):
-        
+
         tic = time.time()
         b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
@@ -1458,7 +1458,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     # plt.plot(timeIter1)
     # plt.plot(timeIter2)
     # plt.figure()
-    
+
         if verbose and (n % verbose == 0):
             #print(min(u[n]), max(u[n]))
             print("timesteps:", n, "/", len(times), 'runtime:', sw.duration(), "s",
@@ -1470,32 +1470,32 @@ from copy import deepcopy
 
 class RungeKutta(object):
     #% Low storage Runge-Kutta coefficients
-    rk4a = [            0.0, 
-        -567301805773.0/1357537059087.0, 
-        -2404267990393.0/2016746695238.0, 
-        -3550918686646.0/2091501179385.0 , 
+    rk4a = [            0.0,
+        -567301805773.0/1357537059087.0,
+        -2404267990393.0/2016746695238.0,
+        -3550918686646.0/2091501179385.0 ,
         -1275806237668.0/842570457699.0]
-    rk4b = [ 1432997174477.0/9575080441755.0, 
-         5161836677717.0/13612068292357.0, 
-         1720146321549.0/2090206949498.0 , 
-         3134564353537.0/4481467310338.0 , 
+    rk4b = [ 1432997174477.0/9575080441755.0,
+         5161836677717.0/13612068292357.0,
+         1720146321549.0/2090206949498.0 ,
+         3134564353537.0/4481467310338.0 ,
          2277821191437.0/14882151754819.0]
-    rk4c = [             0.0 , 
-         1432997174477.0/9575080441755.0, 
-         2526269341429.0/6820363962896.0, 
-         2006345519317.0/3224310063776.0, 
+    rk4c = [             0.0 ,
+         1432997174477.0/9575080441755.0,
+         2526269341429.0/6820363962896.0,
+         2006345519317.0/3224310063776.0,
          2802321613138.0/2924317926251.0]
 
     def __init__(self, solver, verbose=False):
         self.solver = solver
         self.verbose = verbose
         self.order = 5
-        
+
     def run(self, u0, dt, tMax=1):
         """
         """
         self.start(u0, dt, tMax)
-        
+
         for i in range(self.Nsteps):
             self.step()
         return self.u
@@ -1509,7 +1509,7 @@ class RungeKutta(object):
         self.tMax = tMax
         self.u = deepcopy(u0)
         self.resu = deepcopy(u0)
-        
+
         if type(self.resu) is list:
             for r in self.resu:
                 r *= 0.0
@@ -1521,56 +1521,56 @@ class RungeKutta(object):
         """
         if self.time + self.dt > self.tMax:
             self.dt = self.tMax - self.time
-        
-        if self.order == 1: 
-            # explicit Euler
-            k1 = self.solver.explicitRHS(self.u, 
-                                         self.time)
-            self.u += self.dt * k1 
 
-        elif self.order == 3: 
+        if self.order == 1:
+            # explicit Euler
+            k1 = self.solver.explicitRHS(self.u,
+                                         self.time)
+            self.u += self.dt * k1
+
+        elif self.order == 3:
             k1 = self.solver.explicitRHS(self.u, self.time)
             k1 = self.u + dt * k1
-  
+
             k2 = self.solver.explicitRHS(k1, self.time)
             k2 = (3*self.u + k1 + dt*k2)/4
-  
+
             k3 = self.solver.explicitRHS(k2, self.time)
-  
+
             self.u = (self.u + 2*k2 + 2*dt*k3)/3
 
-        elif self.order == 4: 
+        elif self.order == 4:
             # classical 4 step Runga-Kutta rk4
-            k1 = self.solver.explicitRHS(self.u, 
+            k1 = self.solver.explicitRHS(self.u,
                                          self.time)
-            k2 = self.solver.explicitRHS(self.u + self.dt/2 * k1, 
+            k2 = self.solver.explicitRHS(self.u + self.dt/2 * k1,
                                          self.time + self.dt/2)
-            k3 = self.solver.explicitRHS(self.u + self.dt/2 * k2, 
+            k3 = self.solver.explicitRHS(self.u + self.dt/2 * k2,
                                          self.time + self.dt/2)
-            k4 = self.solver.explicitRHS(self.u + self.dt * k3, 
+            k4 = self.solver.explicitRHS(self.u + self.dt * k3,
                                          self.time + self.dt)
             self.u += 1./6. * self.dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
-            
+
         elif self.order == 5:
             # low storage Version of rk4
             for jRK in range(5):
                 tLocal = self.time + self.rk4c[jRK] * self.dt
 
                 rhs = self.solver.explicitRHS(self.u, tLocal)
-                
+
                 if type(self.resu) is list:
                     for i in range(len(self.resu)):
                         self.resu[i] = self.rk4a[jRK] * self.resu[i] + self.dt * rhs[i]
-                        
-                        self.u[i] += self.rk4b[jRK] * self.resu[i] 
+
+                        self.u[i] += self.rk4b[jRK] * self.resu[i]
                 else:
                     self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
-                    self.u += self.rk4b[jRK] * self.resu 
-                          
+                    self.u += self.rk4b[jRK] * self.resu
+
         self.time += self.dt
         return self.u
-        
-    
+
+
 
 if __name__ == "__main__":
     pass

@@ -66,7 +66,7 @@ class BoreHole(object):
                                                      return_inverse=True)
             self.class_id = rev_idx
         else:
-            raise(Warning('File "{}" contains no layers!'.format(self.fname)))
+            raise Warning('File "{}" contains no layers!'.format(self._fname))
 
     def plot(self, ax, plot_thickness=1.0,
              cmin=None, cmax=None, cm=None, do_legend=True, **legend_kwargs):

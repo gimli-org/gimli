@@ -12,7 +12,7 @@ from math import asin, tan
 
 from pygimli.physics.traveltime.fastMarchingTest import fastMarch
 
-"""
+r"""
 Solve the Hamilton-Jacobi (HJ) equation, known as the Eikonal equation
 .. math::
     |\grad u(x)| & = f(x) \\

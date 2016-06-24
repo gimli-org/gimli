@@ -23,7 +23,7 @@ class NDMatrix(pg.RBlockMatrix):
     """
 
     def __init__(self, num, nrows, ncols):
-        super(type(self), self).__init__()  # call inherited init function
+        super(NDMatrix, self).__init__()  # call inherited init function
         self.Ji = []  # list of individual block matrices
         for i in range(num):
             self.Ji.append(pg.RMatrix())
@@ -155,7 +155,7 @@ class FDEM():
     def __init__(self, x=None, freqs=None,
                  coilSpacing=None, inphase=None, outphase=None,
                  filename=None, scaleFreeAir=False):
-        """
+        r"""
             Initialize data class and load data. Provide filename or data.
             If filename is given, data is loaded, overwriting settings.
 
@@ -171,10 +171,10 @@ class FDEM():
                 Distance between 2 two coils
 
             inphase : array
-                real part of |amplitude| * \exp^{i phase}
+                real part of :math:`|amplitude| * \exp^{i phase}`
 
             outphase : array
-                imaginary part of |amplitude| * \exp^{i phase}
+                imaginary part of :math:`|amplitude| * \exp^{i phase}`
 
             filename : str
                 Filename to read from. Supported: .xyz (MaxMin), *.txt (Emsys)
@@ -195,6 +195,7 @@ class FDEM():
         self.ERR = None
 
         self.height = 1.0
+        self.fop = None # better apply MethodManger base interface
 
         if filename:
             # check if filename extension is TXT or CSV

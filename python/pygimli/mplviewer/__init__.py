@@ -30,7 +30,7 @@ def hold(val=1):
 
 def showLater(val=1):
     raise('do not use .. use show(hold=1) to keep pics in background')
-    import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
     if val == 1:
         plt.ion()
     else:
@@ -108,7 +108,7 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0,
 def createAnimation(fig, animate, nFrames, dpi, out):
     """
         Create animation for the content of a given matplotlib figure.
-    
+
         Until I know a better place.
     """
     anim = animation.FuncAnimation(fig, animate,
@@ -131,39 +131,39 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='',
                   cMin=None, cMax=None, logScale=False, cmap=None, **kwargs):
     """
         Create and save an animation for a given mesh with a set of field data.
-        
+
         Until I know a better place.
     """
     dpi=92
     scale=1
     fig = plt.figure(facecolor='white',
-                     figsize=(scale*800/dpi, scale*490/dpi), dpi=dpi)  
+                     figsize=(scale*800/dpi, scale*490/dpi), dpi=dpi)
     ax = fig.add_subplot(1,1,1)
-        
+
     gci = pg.mplviewer.drawModel(ax, mesh, data=data[0],
                                  cMin=cMin, cMax=cMax, cmap=cmap,
                                  logScale=logScale)
-    
+
     cbar = pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
     ax.set_ylabel('Depth [m]')
     ax.set_xlabel('$x$ [m]')
-        
+
     ticks = ax.yaxis.get_majorticklocs()
     tickLabels = []
     for t in ticks:
         tickLabels.append(str(int(abs(t))))
 
     ax.set_yticklabels(tickLabels)
-    
+
     if plc:
         pg.show(plc, axes=ax)
-    
+
     plt.tight_layout()
     plt.pause(0.001)
-    
+
     def animate(i):
         print(out + ": Frame:", i, "/", len(data))
-        
+
         if not vData is None:
             ax.clear()
             pg.mplviewer.holdAxes_ = 1
@@ -172,11 +172,10 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='',
                                  logScale=logScale)
             pg.mplviewer.drawStreams(ax, mesh, vData[i], **kwargs)
         else:
-            pg.mplviewer.setMappableData(gci, data[i], 
+            pg.mplviewer.setMappableData(gci, data[i],
                                          cMin=cMin, cMax=cMax,
                                          logScale=logScale)
-            
-            
+
+
         plt.pause(0.1)
     createAnimation(fig, animate, int(len(data)), dpi, out)
-    

@@ -20,7 +20,6 @@ def drawTravelTimeData(axes, data, t=None):
         data of type \ref DataContainer must contain sensorIdx 's' and 'g'
         and thus being numbered internally [0..n)
     """
-
     x = pg.x(data.sensorPositions())
     # z = pg.z(data.sensorPositions())
 

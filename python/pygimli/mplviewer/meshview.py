@@ -88,7 +88,7 @@ class CellBrowser(object):
             Docstring
         """
         self.text.set_visible(False)
-        self.artist.set_edgecolors(self.ec)
+        self.artist.set_edgecolors(self.edgeColors)
         self.fig.canvas.draw()
 
     def highlight(self):
@@ -172,7 +172,7 @@ def drawMesh(axes, mesh, **kwargs):
         Axis instance where the mesh is plotted (default is current axis).
     fitView: bool [True]
         Adjust axes limits to mesh bounding box.
-        
+
 
     Examples
     --------
@@ -210,7 +210,7 @@ def drawModel(axes, mesh, data=None,
     ----------
     **kwargs:
         * tri - use tripcolor (experimental)
-            
+
 
     Examples
     --------
@@ -242,7 +242,7 @@ def drawModel(axes, mesh, data=None,
         cMap = kwargs.pop('cMap', None)
         if cMap is not None:
             cmap = cMap
-        
+
         if cmap is not None:
             if type(cmap) is str:
                 gci.set_cmap(cmapFromName(cmap))
@@ -1015,13 +1015,13 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
 
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
-    
+
     if cmap is not None:
         if type(cmap) is str:
             pp.set_cmap(cmapFromName(cmap))
         else:
             pp.set_cmap(cmap)
-                
+
     pp.set_norm(LogNorm(cmin, cmax))
     pp.set_array(np.array(val))
     pp.set_clim(cmin, cmax)
@@ -1080,7 +1080,7 @@ def setPlotStuff(fontsize=7, dpi=None):
     rcParams['ytick.major.width'] = rcParams['xtick.major.width']
     rcParams['ytick.minor.size'] = rcParams['xtick.minor.size']
     rcParams['ytick.minor.width'] = rcParams['xtick.minor.width']
-    
+
     if dpi is not None:
         rcParams['figure.dpi'] = dpi
         rcParams['savefig.dpi'] = dpi

@@ -7,12 +7,12 @@ import pygimli as pg
 
 
 def rot2DGridToWorld(mesh, start, end):
+    """Rotate 2D grid to the plane (start[-z], end) """
     print(mesh, start, end)
     mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3(
-        0.0, 0.0, 0.0).norm(
-        pg.RVector3(0.0, 0.0, -10.0), pg.RVector3(10.0, 0.0, -10.0))
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0),
+                                          pg.RVector3(10.0, 0.0, -10.0))
     dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 
     q = pg.getRotation(src, dest)
@@ -85,8 +85,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
             elif len(field) == dataMesh.cellCount():
                 pot = pg.cellDataToPointData(dataMesh, field)
             else:
-                raise BaseException(
-                    "Data length (%i) for streamline is neighter nodeCount (%i) nor cellCount (%i)" %
+                raise BaseException("Data length (%i) for streamline is "
+                    "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), dataMesh.nodeCount(), dataMesh.nodeCount()))
         else:
             if len(field) == mesh.nodeCount():
@@ -94,8 +94,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
             elif len(field) == mesh.cellCount():
                 pot = pg.cellDataToPointData(mesh, field)
             else:
-                raise BaseException(
-                    "Data length (%i) for streamline is neighter nodeCount (%i) nor cellCount (%i)" %
+                raise BaseException("Data length (%i) for streamline is "
+                    "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), mesh.nodeCount(), mesh.nodeCount()))
 
     direction = 1
@@ -133,7 +133,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
                     raise BaseException("Cannot find " + str(pos) +" dataMesh")
                 if len(vx) == dataMesh.cellCount():
                     d = pg.RVector3(vx[cd.id()], vy[cd.id()])
-                elif len(vx) == dataMesh.nodeCount() and len(vy) == dataMesh.nodeCount():
+                elif len(vx) == dataMesh.nodeCount() and \
+                    len(vy) == dataMesh.nodeCount():
                     d = pg.RVector3(cd.pot(pos, vx), cd.pot(pos, vy))
                 else:
                     print(dataMesh)
@@ -244,65 +245,3 @@ def number_of_processors():
     # FreeBSD, HPUX, etc.
     else:
         raise RuntimeError('unknown platform')
-
-
-def assembleDC(mesh, source=None):
-    """assemble stiffness matrix for 3d dc forward problem using fem."""
-    WHONEEDSTHIS
-    if source == None:
-       source = pg.RVector3(0.0, 0.0, 0.0)
-       
-    S = pg.DSparseMatrix()
-    S.buildSparsityPattern(mesh)
-#    se = pg.DElementMatrix()
-
-#    for c in mesh.cells():
-#        se.ux2uy2uz2(c)
-#        S += se
-    pg.dcfemDomainAssembleStiffnessMatrix(S, mesh, 0.0, False)
-    pg.dcfemBoundaryAssembleStiffnessMatrix(S, mesh, source, 0.0)
-    return S
-# def assembleDC
-
-
-def assembleCEM(S, mesh, marker, zi, nodeID=-1, verbose=False):
-    """
-        add dc-cem to stiffness system, return new Matrix and sum of electrodes surface
-    """
-    WHONEEDSTHIS
-    sumArea = 0
-
-    if nodeID == -1:
-        for b in mesh.findBoundaryByMarker(marker):
-            sumArea += b.shape().domainSize()
-        print("addCEM: ", marker, sumArea,'m^2', zi/sumArea, 'Ohm\n')
-    else:
-        sumArea = 1
-        print("addCEM: node")
-
-    mapS = pg.DSparseMapMatrix(S)
-    oldSize = S.size()
-
-    se = pg.DElementMatrix()
-
-    mapS.setRows(oldSize + 1)
-    mapS.setCols(oldSize + 1)
-
-    if nodeID == -1:
-        for b in mesh.findBoundaryByMarker(marker):
-            se.u(b)
-            se /= -zi
-            mapS.addToCol(oldSize, se)
-            mapS.addToRow(oldSize, se)
-            se.u2(b)
-            se /= zi
-            mapS += se
-
-        mapS.setVal(oldSize, oldSize, sumArea / zi)
-    else:
-        mapS.addVal(nodeID, nodeID, 1.0)
-        mapS.addVal(oldSize, nodeID, - 1.0)
-        mapS.addVal(nodeID, oldSize, - 1.0)
-        mapS.addVal(oldSize, oldSize, 1.0)
-
-    return pg.DSparseMatrix(mapS), sumArea
