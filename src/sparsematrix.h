@@ -147,7 +147,7 @@ private:
 
 
 //! based on: Ulrich Breymann, Addison Wesley Longman 2000 , revised edition ISBN 0-201-67488-2, Designing Components with the C++ STL
-template< class ValueType, class IndexType > 
+template< class ValueType, class IndexType >
 class SparseMapMatrix : public MatrixBase {
 public:
     typedef std::pair< IndexType, IndexType > IndexPair;
@@ -157,8 +157,8 @@ public:
     typedef MatrixElement< ValueType, IndexType, ContainerType > MatElement;
 
     /*!stype .. symmetric style. stype=0 (full), stype=1 (UpperRight), stype=2 (LowerLeft)*/
-    SparseMapMatrix(IndexType r=0, IndexType c=0, int stype=0) 
-        : MatrixBase(), rows_(r), cols_(c), stype_(stype) {   
+    SparseMapMatrix(IndexType r=0, IndexType c=0, int stype=0)
+        : MatrixBase(), rows_(r), cols_(c), stype_(stype) {
     }
 
     SparseMapMatrix(const std::string & filename)
@@ -172,7 +172,7 @@ public:
         cols_ = S.cols();
         rows_ = S.rows();
         stype_ = S.stype();
-        
+
         for (const_iterator it = S.begin(); it != S.end(); it ++){
             this->setVal(it->first.first, it->first.second, it->second);
         }
@@ -181,7 +181,7 @@ public:
         : MatrixBase(){
         this->copy_(S);
     }
-    
+
     SparseMapMatrix< ValueType, IndexType > & operator = (const SparseMapMatrix< ValueType, IndexType > & S){
         if (this != &S){
             clear();
@@ -199,16 +199,16 @@ public:
         return *this;
     }
 
-    virtual ~SparseMapMatrix() {}    
-    
+    virtual ~SparseMapMatrix() {}
+
     void resize(Index rows, Index cols){
         rows_ = rows;
         cols_ = cols;
     }
-    
+
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_SPARSEMAPMATRIX_RTTI; }
-    
+
     void copy_(const SparseMatrix< ValueType > & S){
         clear();
         cols_ = S.cols();
@@ -230,10 +230,10 @@ public:
         C_.clear();
         cols_ = 0; rows_ = 0; stype_ = 0;
     }
-    
+
     /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
     inline int stype() const {return stype_;}
-    
+
     inline void setRows(IndexType r) { rows_ = r ; }
     virtual IndexType rows()     const { return rows_; }
     virtual IndexType nRows()     const { return rows_; }
@@ -241,7 +241,7 @@ public:
     inline void setCols(IndexType c) { cols_ = c ; }
     virtual IndexType cols()     const { return cols_; }
     virtual IndexType nCols()     const { return cols_; }
-    
+
     inline IndexType size()     const { return C_.size(); }
     inline IndexType max_size() const { return C_.max_size(); }
     inline IndexType nVals()    const { return C_.size(); }
@@ -263,7 +263,7 @@ public:
             (*this)[id][A.idx(i)] += (ValueType)A.getVal(0, i);
         }
     }
-    
+
     void add(const ElementMatrix < double > & A){
         for (Index i = 0, imax = A.size(); i < imax; i++){
             for (Index j = 0, jmax = A.size(); j < jmax; j++){
@@ -271,20 +271,20 @@ public:
             }
         }
     }
-       
+
 #define DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(OP) \
     SparseMapMatrix< ValueType, IndexType > & operator OP##= (const ValueType & v){\
         for (iterator it = begin(); it != end(); it ++) (*it).second OP##= v; \
         return *this; \
     } \
-                       
+
         DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(+)
         DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(-)
         DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(*)
         DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(/)
 
 #undef DEFINE_SPARSEMMAPATRIX_UNARY_MOD_OPERATOR__
-    
+
     SparseMapMatrix< ValueType, IndexType > & operator += (const SparseMapMatrix< ValueType, IndexType > & A){
         for (const_iterator it = A.begin(); it != A.end(); it ++){
             this->addVal(it->first.first, it->first.second, it->second);
@@ -296,8 +296,8 @@ public:
             this->addVal(it->first.first, it->first.second, -it->second);
         }
         return *this;
-    }   
-        
+    }
+
     //SparseMatrix< T > & operator += (const ElementMatrix < T > & A){
     void operator += (const ElementMatrix < double > & A){
         for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -350,7 +350,7 @@ public:
 
     inline void setVal(IndexType i, IndexType j, const ValueType & val) {
         if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return;
-        
+
         if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
             (*this)[i][j] = val;
         } else {
@@ -363,7 +363,7 @@ public:
     }
     inline void addVal(IndexType i, IndexType j, const ValueType & val) {
         if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return;
-        
+
         if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
             (*this)[i][j] += val;
         } else {
@@ -374,7 +374,7 @@ public:
                              );
         }
     }
-    
+
     /*! Return this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->rows(), 0.0);
@@ -384,13 +384,13 @@ public:
                 ret[it->first.first] += a[it->first.second] * it->second;
             }
         } else if (stype_ == -1){
-            
+
             for (const_iterator it = this->begin(); it != this->end(); it ++){
                 IndexType I = it->first.first;
                 IndexType J = it->first.second;
-                
+
                 ret[I] += a[J] * conj(it->second);
-                
+
                 if (J > I){
                     ret[J] += a[I] * it->second;
                 }
@@ -399,9 +399,9 @@ public:
             for (const_iterator it = this->begin(); it != this->end(); it ++){
                 IndexType I = it->first.first;
                 IndexType J = it->first.second;
-                
+
                 ret[I] += a[J] * conj(it->second);
-                
+
                 if (J < I){
                     ret[J] += a[I] * it->second;
                 }
@@ -410,7 +410,7 @@ public:
         }
         return ret;
     }
-    
+
     /*! Return this.T * a */
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->cols(), 0.0);
@@ -426,7 +426,7 @@ public:
         }
         return ret;
     }
-    
+
     void save(const std::string & filename) const {
         std::fstream file; openOutFile(filename, &file);
 
@@ -456,22 +456,22 @@ public:
             (*this)[vi[i]][vj[i]] = vval[i];
         }
     }
-    
+
     /*! Import columnwise from bmat starting at offset */
     void importCol(const std::string & filename, double dropTol, Index colOffset){
     //std::cout << "rows: " << Jcluster.rows() << " cols: " << Jcluster.cols()<< std::endl;
-        
+
         FILE *file; file = fopen(filename.c_str(), "r+b");
         if (!file) {
             throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + filename + ": " + strerror(errno));
         }
         Index ret = 0;
-        
-   
-        uint32 rows = 0; 
+
+
+        uint32 rows = 0;
         ret = fread(&rows, sizeof(uint32), 1, file);
         if (ret == 0) throwError(1, "fail reading file " + filename);
-        uint32 cols = 0; 
+        uint32 cols = 0;
         ret = fread(&cols, sizeof(uint32), 1, file);
         if (ret == 0) throwError(1, "fail reading file " + filename);
         ValueType val;
@@ -482,7 +482,7 @@ public:
                 if (abs(val) > dropTol) this->setVal(i, j + colOffset, val);
             }
         }
-        
+
         fclose(file);
     }
     // no default arg here .. pygimli@win64 linker bug
@@ -495,7 +495,7 @@ protected:
   ContainerType C_;
   // 0 .. nonsymmetric, -1 symmetric lower part, 1 symmetric upper part
   int stype_;
-  
+
 
 };// class SparseMapMatrix
 
@@ -542,18 +542,18 @@ inline CVector transMult(const CSparseMapMatrix & A, const RVector & b){
 inline RSparseMapMatrix operator + (const RSparseMapMatrix & A, const RSparseMapMatrix & B){
     RSparseMapMatrix tmp(A);
     return tmp += B;
-} 
+}
 
 inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMapMatrix & B){
     RSparseMapMatrix tmp(A);
     return tmp -= B;
-} 
+}
 
 #define DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(OP) \
     inline RSparseMapMatrix operator OP (const RSparseMapMatrix & A, const double & v){\
         return RSparseMapMatrix(A) OP##= v; \
     } \
-    
+
     DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(+)
     DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(-)
     DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(*)
@@ -565,7 +565,7 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMap
     inline RSparseMapMatrix operator OP (const double & v, const RSparseMapMatrix & A){\
         return RSparseMapMatrix(A) OP##= v; \
     } \
-    
+
     DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(+)
     DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(*)
 
@@ -575,7 +575,7 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMap
 
 /*! Scales a matrix A from left and right vectors such that A -> diag(l) * A * diag(r) */
 template< class Vec >
-void scaleMatrix (SparseMapMatrix< double, Index > & S, 
+void scaleMatrix (SparseMapMatrix< double, Index > & S,
                   const Vec & l, const Vec & r) {
 
     if (S.cols() != r.size())
@@ -618,7 +618,7 @@ void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec
 // }
 
 //! Sparse matrix in compressed row storage (CRS) form
-/*! Sparse matrix in compressed row storage (CRS) form. 
+/*! Sparse matrix in compressed row storage (CRS) form.
 * IF you need native CCS format you need to transpose CRS
 * Symmetry type: 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
 template < class ValueType > class SparseMatrix : public MatrixBase{
@@ -632,7 +632,7 @@ public:
     SparseMatrix(const SparseMatrix < ValueType > & S)
         : MatrixBase(),
           colPtr_(S.vecColPtr()),
-          rowIdx_(S.vecRowIdx()), 
+          rowIdx_(S.vecRowIdx()),
           vals_(S.vecVals()), valid_(true), stype_(0){
     }
 
@@ -641,7 +641,7 @@ public:
         : MatrixBase(), valid_(true){
         copy_(S);
     }
-    
+
     /*! Create Sparsematrix from c-arrays. Can't check for valid ranges, so please be carefull. */
     SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx,
                  ValueType * vals, int stype=0)
@@ -678,13 +678,13 @@ public:
         this->copy_(S);
         return *this;
     }
-    
+
 //     void copy(const SparseMapMatrix< ValueType, Index > & S){
 //         this->copy_(S);
 //     }
 
-    
-    
+
+
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
         void FUNCT(int i, int j, ValueType val){ \
             if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return; \
@@ -727,14 +727,14 @@ public:
         }
         return *this;
     }
-    
+
     /*! Return this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         if (a.size() < this->cols()){
             throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + toStr(this->cols()) + " a.size(): " +
                                 toStr(a.size())) ;
         }
-    
+
         Vector < ValueType > ret(this->rows(), 0.0);
 
         if (stype_ == 0){
@@ -748,27 +748,27 @@ public:
             for (Index i = 0; i < ret.size(); i++){
                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
                     J = this->vecRowIdx()[j];
-                    
+
 //                     __MS( i << "  " << J << " " << this->vecVals()[j])
                     ret[i] += a[J] * conj(this->vecVals()[j]);
-                    
+
                     if (J > i){
 //                         __MS( J << "  " << i << " " << this->vecVals()[j])
                         ret[J] += a[i] * this->vecVals()[j];
                     }
                 }
             }
-            
+
             //#THROW_TO_IMPL
         } else if (stype_ == 1){
             Index J;
             for (Index i = 0; i < ret.size(); i++){
                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
                     J = this->vecRowIdx()[j];
-                    
+
 //                     __MS( i << "  " << J << " " << this->vecVals()[j])
                     ret[i] += a[J] * conj(this->vecVals()[j]);
-                    
+
                     if (J < i){
 //                         __MS( J << "  " << i << " " << this->vecVals()[j])
                         ret[J] += a[i] * this->vecVals()[j];
@@ -778,7 +778,7 @@ public:
         }
         return ret;
     }
-    
+
     /*! Return this.T * a */
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
 
@@ -786,7 +786,7 @@ public:
             throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + toStr(this->rows()) + " a.size(): " +
                                 toStr(a.size())) ;
         }
-    
+
         Vector < ValueType > ret(this->cols(), 0.0);
 
         if (stype_ == 0){
@@ -795,7 +795,7 @@ public:
                     ret[this->vecRowIdx()[j]] += a[i] * this->vecVals()[j];
                 }
             }
-         
+
         } else if (stype_ == -1){
             THROW_TO_IMPL
         } else if (stype_ ==  1){
@@ -803,11 +803,11 @@ public:
         }
         return ret;
     }
-    
+
     SparseMatrix< ValueType > & add(const ElementMatrix< double > & A){
         return add(A, ValueType(1.0));
     }
-    
+
     SparseMatrix< ValueType > & add(const ElementMatrix< double > & A, ValueType scale){
         if (!valid_) SPARSE_NOT_VALID;
         for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -817,7 +817,7 @@ public:
         }
         return *this;
     }
-    
+
     void clean(){ for (Index i = 0, imax = nVals(); i < imax; i++) vals_[i] = (ValueType)(0); }
 
     void clear(){
@@ -838,8 +838,8 @@ public:
         }
     }
 
-    /*!Get matrix value at i,j. If i and j is not part of the matrix 
-     * sparsity pattern return 0 and print a warning. 
+    /*!Get matrix value at i,j. If i and j is not part of the matrix
+     * sparsity pattern return 0 and print a warning.
      * This warning can be disabled by setting warn to false.*/
     ValueType getVal(int i, int j, bool warn=true) const {
         for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
@@ -869,17 +869,17 @@ public:
     }
 
     void copy_(const SparseMapMatrix< ValueType, Index > & S){
-            
+
         this->clear();
         Index col = 0, row = 0;
         ValueType val;
-        
+
 
         std::vector < std::map < Index, ValueType > > idxMap(S.cols());
 
-        for (typename SparseMapMatrix< ValueType, Index>::const_iterator 
+        for (typename SparseMapMatrix< ValueType, Index>::const_iterator
             it = S.begin(); it != S.end(); it ++){
-            
+
             col = S.idx1(it);
             row = S.idx2(it);
             val = S.val(it);
@@ -898,12 +898,12 @@ public:
         colPtr_[0] = 0;
 
         Index colCounter = 0, rowCounter = 0;
-        for (typename std::vector < std::map < Index, ValueType > >::iterator 
+        for (typename std::vector < std::map < Index, ValueType > >::iterator
             it = idxMap.begin(); it != idxMap.end(); it++){
-            
-            for (typename std::map < Index, ValueType >::iterator 
+
+            for (typename std::map < Index, ValueType >::iterator
                 itR = (*it).begin(); itR != (*it).end(); itR++){
-                
+
                 rowIdx_[rowCounter] = itR->first;
                 vals_[rowCounter] = (ValueType)itR->second;
                 rowCounter ++;
@@ -916,12 +916,12 @@ public:
 
     void buildSparsityPattern(const Mesh & mesh){
         Stopwatch swatch(true);
-        
+
         colPtr_.resize(mesh.nodeCount() + 1);
 
         //*** much to slow
         //RSparseMapMatrix S(mesh.nodeCount(), mesh.nodeCount());
-        
+
         Index col = 0, row = 0;
 
         // need unique(sort) maybe to slow
@@ -932,14 +932,14 @@ public:
 
 // using set is by a factor of approx 5 more expensive
         std::vector < std::set< Index > > idxMap(mesh.nodeCount());
-        
+
         Cell *cell = 0;
         uint nc = 0;
-        
+
         for (uint c = 0; c < mesh.cellCount(); c ++){
             cell = &mesh.cell(c);
             nc = cell->nodeCount();
-            
+
             for (uint i = 0; i < nc; i ++){
                 for (uint j = 0; j < nc; j ++){
                     row = cell->node(i).id();
@@ -985,12 +985,12 @@ public:
         RVector a(mesh.cellCount(), 1.0);
         fillStiffnessMatrix(mesh, a);
     }
-        
+
     void fillStiffnessMatrix(const Mesh & mesh, const RVector & a){
         clean();
         buildSparsityPattern(mesh);
         ElementMatrix < double > A_l;
-        
+
         for (uint i = 0; i < mesh.cellCount(); i ++){
             A_l.ux2uy2uz2(mesh.cell(i));
             A_l *= a[mesh.cell(i).id()];
@@ -1001,22 +1001,22 @@ public:
         RVector a(mesh.cellCount(), 1.0);
         fillMassMatrix(mesh, a);
     }
-    
+
     void fillMassMatrix(const Mesh & mesh, const RVector & a){
         clean();
         buildSparsityPattern(mesh);
         ElementMatrix < double > A_l;
-        
+
         for (uint i = 0; i < mesh.cellCount(); i ++){
             A_l.u2(mesh.cell(i));
             A_l *= a[mesh.cell(i).id()];
             *this += A_l;
         }
     }
-        
+
     /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
     inline int stype() const {return stype_;}
-    
+
     inline int * colPtr() { if (valid_) return &colPtr_[0]; else SPARSE_NOT_VALID;  return 0; }
     inline const int & colPtr() const { if (valid_) return colPtr_[0]; else SPARSE_NOT_VALID; return colPtr_[0]; }
     inline const std::vector < int > & vecColPtr() const { return colPtr_; }
@@ -1037,10 +1037,10 @@ public:
     inline Index rows() const { return size(); }
     inline Index nCols() const { return size(); }
     inline Index nRows() const { return size(); }
-    
+
     void save(const std::string & fileName) const {
         if (!valid_) SPARSE_NOT_VALID;
-        std::fstream file; 
+        std::fstream file;
         openOutFile(fileName, & file);
 
         file.setf(std::ios::scientific, std::ios::floatfield);
@@ -1048,7 +1048,7 @@ public:
 
         for (Index i = 0; i < size(); i++){
             for (SIndex j = colPtr_[i]; j < colPtr_[i + 1]; j ++){
-                file << i << "\t" << rowIdx_[j] 
+                file << i << "\t" << rowIdx_[j]
                           << "\t" << vals_[j] << std::endl;
             }
         }
@@ -1060,7 +1060,7 @@ public:
 protected:
 
     // int to be cholmod compatible!!!!!!!!
-    
+
     std::vector < int > colPtr_;
     std::vector < int > rowIdx_;
     Vector < ValueType > vals_;
@@ -1069,28 +1069,28 @@ protected:
     int stype_;
 };
 
-template < class ValueType > 
+template < class ValueType >
 SparseMatrix< ValueType > operator + (const SparseMatrix< ValueType > & A,
                                       const SparseMatrix< ValueType > & B){
     SparseMatrix< ValueType > ret(A);
     return ret += B;
 }
 
-template < class ValueType > 
+template < class ValueType >
 SparseMatrix< ValueType > operator - (const SparseMatrix< ValueType > & A,
                                       const SparseMatrix< ValueType > & B){
     SparseMatrix< ValueType > ret(A);
     return ret -= B;
 }
 
-template < class ValueType > 
+template < class ValueType >
 SparseMatrix < ValueType > operator * (const SparseMatrix < ValueType > & A,
                                        const ValueType & b){
     SparseMatrix< ValueType > ret(A);
     return ret *= b;
 }
 
-template < class ValueType > 
+template < class ValueType >
 SparseMatrix < ValueType > operator * (const ValueType & b,
                                        const SparseMatrix < ValueType > & A){
     SparseMatrix< ValueType > ret(A);
@@ -1110,7 +1110,7 @@ inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & 
     ret.vecVals() += toComplex(B.vecVals());
     return ret;
 }
-    
+
 } // namespace GIMLI
 
-#endif //GIMLI__H
+#endif //GIMLI_SPARSEMATRIX__H
