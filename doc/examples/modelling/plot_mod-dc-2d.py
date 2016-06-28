@@ -22,15 +22,17 @@ Geoelectrical modeling example in 2.5D."""
 #     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
 #
 
+import numpy as np
 import pygimli as pg
 
 from pygimli.solver import solve
 
 from pygimli.viewer import show
-from pygimli.mplviewer import *
+from pygimli.mplviewer import drawStreams
 
 ###############################################################################
 # Maybe this is usefully. The analytical solution for one source location.
+
 
 def uAnalytical(p, sourcePos, k):
     r1A = (p - sourcePos).abs()
@@ -40,16 +42,16 @@ def uAnalytical(p, sourcePos, k):
     # need rho here!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 
     if r1A > 1e-12 and r2A > 1e-12:
-        return (pg.besselK0(r1A * k) + pg.besselK0(r2A *k)) / (2.0 * np.pi)
+        return (pg.besselK0(r1A * k) + pg.besselK0(r2A * k)) / (2.0 * np.pi)
     else:
         return 0.
 
 ###############################################################################
 #
-# Define the derivative of the analytical solution regarding the outer normal direction
-# :math:`\vec{n}`. So we can define the value for the Neumann type Boundary
-# conditions for the boundaries in the subsurface.
-#
+# Define the derivative of the analytical solution regarding the outer normal
+# direction :math:`\vec{n}`. So we can define the value for the Neumann type
+# Boundary conditions for the boundaries in the subsurface.
+
 
 def mixedBC(boundary, userData):
     sourcePos = userData['sourcePos']
@@ -66,7 +68,7 @@ def mixedBC(boundary, userData):
     if r1A > 1e-12 and r2A > 1e-12:
         return k * ((r1.dot(n)) / r1A * pg.besselK1(r1A * k) +
                     (r2.dot(n)) / r2A * pg.besselK1(r2A * k)) / \
-        (pg.besselK0(r1A * k) + pg.besselK0(r2A * k))
+            (pg.besselK0(r1A * k) + pg.besselK0(r2A * k))
     else:
         return 0.
 
@@ -84,17 +86,18 @@ def pointSource(cell, f, userData):
     if cell.shape().isInside(sourcePos):
         f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
 
-grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21), y=np.linspace(-15.0, .0, 16))
+grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21),
+                     y=np.linspace(-15.0, .0, 16))
 
-#grid = grid.createH2()
+# grid = grid.createH2()
 grid = grid.createP2()
 
 sourcePosA = [-5.0, -4.0]
-sourcePosB = [ 5.0, -4.0]
+sourcePosB = [+5.0, -4.0]
 
-neumannBC = [[1, mixedBC], #left boundary
-             [2, mixedBC], #right boundary
-             [4, mixedBC]] #bottom boundary
+neumannBC = [[1, mixedBC],  # left boundary
+             [2, mixedBC],  # right boundary
+             [4, mixedBC]]  # bottom boundary
 
 k = 1e-3
 u = solve(grid, a=1., b=k*k, f=pointSource,
@@ -107,18 +110,21 @@ u -= solve(grid, a=1., b=k*k, f=pointSource,
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
 
-#uAna = pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosA, k), grid.positions()))
-#uAna -= pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosB, k), grid.positions()))
+# uAna = pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosA, k),
+#                       grid.positions()))
+# uAna -= pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosB, k),
+#                        grid.positions()))
 
-#err = (1.0 -u/uAna)*100.0
+# err = (1.0 -u/uAna) * 100.0
 
-#print "error min max", min(err), max(err)
+# print "error min max", min(err), max(err)
 
 ax = show(grid, data=u, filled=True, colorBar=True,
           orientation='horizontal', label='Solution u')[0]
 show(grid, axes=ax)
-gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, .0, 20))
-# Instead of the grid we want to add streamlines to the plot to show the gradients
-# of the solution.
+gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
+                           y=np.linspace(-15.0, .0, 20))
+# Instead of the grid we want to add streamlines to the plot to show the
+# gradients of the solution.
 drawStreams(ax, grid, u, coarseMesh=gridCoarse, color='Black')
 pg.wait()
