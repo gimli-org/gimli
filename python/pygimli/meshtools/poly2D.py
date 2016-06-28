@@ -9,13 +9,13 @@ No official maintenance by the GIMLi team.
 """
 
 import numpy as np
-import pygimli as pg
 import matplotlib.pyplot as plt
 
+import pygimli as pg
 from pygimli.meshtools import createMesh, createParaMeshPLC
 
 from pygimli.mplviewer.meshview import drawMesh
-from pygimli.utils import opt_import
+from pygimli.io import opt_import
 from pygimli.meshtools import writePLC
 
 
@@ -34,8 +34,10 @@ class Poly2D(object):
 
         The polygons should be specified by an xml file
         """
-
-        self._load(polyfile)
+        self.sensorsPos = None
+        self.poly = None
+        self.paramaxcellsize = 0
+        self.load(polyfile)
 
     def __str__(self):
         pass
@@ -43,7 +45,7 @@ class Poly2D(object):
     def __repr__(self):
         pass
 
-    def _load(self, polyfile):
+    def load(self, polyfile):
         """
         Read polygon info from XML file.
         Example of XML file:
@@ -51,9 +53,9 @@ class Poly2D(object):
         """
         ET = opt_import("xml.etree.cElementTree", "read in XML files")
         self.doc = ET.parse(polyfile)
-        self._parse()
+        self.parse()
 
-    def _parse(self):
+    def parse(self):
         """
         Parses all polygon regions.
         """
@@ -61,11 +63,11 @@ class Poly2D(object):
 
         for region in root.findall("line"):
             if region.get('name') == 'surface':
-                self._parse_surface(region)
+                self.parseSurface(region)
             else:
-                self._parse_region(region)
+                self.parseRegion(region)
 
-    def _extract_points(self, points):
+    def extractPoints(self, points):
         """
         Converts the text from the list of XML 'Elements' to a list of
         RVector3's that can be used for creating the polygon.
@@ -89,17 +91,17 @@ class Poly2D(object):
 
         return positions
 
-    def _extract_marker(self, region):
+    def extractMarker(self, region):
         """
         Extracts the position and marker id from a region and returns them.
         """
 
         marker_id = int(region.get('id'))
-        pos = self._extract_points(region.findall("point[@type='marker']"))[0]
+        pos = self.extractPoints(region.findall("point[@type='marker']"))[0]
 
         return pos, marker_id
 
-    def _parse_surface(self, surf):
+    def parseSurface(self, surf):
         """
         Parses the surface and creates the parametric domain.
 
@@ -109,7 +111,7 @@ class Poly2D(object):
         TODO: Add override capability via **kwargs
         """
 
-        self.sensors_pos = self._extract_points(
+        self.sensorsPos = self.extractPoints(
             surf.findall("point[@type='node']"))
         paradx = float(surf.get('paradx', 0.5))
         paradepth = float(surf.get('paradepth', 0.0))
@@ -117,14 +119,14 @@ class Poly2D(object):
         boundary = float(surf.get('boundary', -1.0))
         self.paramaxcellsize = float(surf.get('maxcellsize', 0.0))
 
-        self.poly = createParaMeshPLC(self.sensors_pos, paradx, paradepth,
+        self.poly = createParaMeshPLC(self.sensorsPos, paradx, paradepth,
                                       paraboundary, self.paramaxcellsize,
                                       boundary)
 
-        marker_pos, marker_id = self._extract_marker(surf)
+        marker_pos, marker_id = self.extractMarker(surf)
         self.poly.addRegionMarker(marker_pos, marker_id)
 
-    def _parse_region(self, region):
+    def parseRegion(self, region):
         """
         Parses a region. Takes care of closing regions if needed and sets
         a marker according to what is specified in the XML.
@@ -132,7 +134,7 @@ class Poly2D(object):
 
         name = region.get('name')
         region_type = region.get('type')  # closed loop or not
-        boundarycond = self._get_bc_marker_type(region.get('bc'))
+        boundarycond = self.getBcMarkerType(region.get('bc'))
         points = region.findall("point[@type='node']")
         node_ids = np.empty(len(points), dtype=int)
 
@@ -140,7 +142,7 @@ class Poly2D(object):
         print('name: {}'.format(name))
         print("num points: {}".format(len(points)))
 
-        point_pos = self._extract_points(points)
+        point_pos = self.extractPoints(points)
 
         idx = 0
         for p in point_pos:
@@ -167,17 +169,17 @@ class Poly2D(object):
             marker_pos /= float(len(node_ids))
 
         if region_type == 'layer':
-            marker_pos, mk = self._extract_marker(region)
-#            mk = region.findall("point[@type='marker']")
-#            marker_pos = self._extract_points(mk)[0]
+            marker_pos, _ = self.extractMarker(region)
+            # mk = region.findall("point[@type='marker']")
+            # marker_pos = self._extract_points(mk)[0]
 
-#        marker = int(region.find("point[@type='marker']").findtext('id'))
+            # marker = int(region.find("point[@type='marker']").findtext('id'))
         marker = int(region.get('id'))
         print(marker)
         if marker > 0:
             self.poly.addRegionMarker(marker_pos, marker, self.paramaxcellsize)
 
-    def _get_bc_marker_type(self, bc_marker):
+    def getBcMarkerType(self, bc_marker):
         """
         Returns a pygimli marker.
         """
@@ -195,7 +197,7 @@ class Poly2D(object):
                 "Boundary marker '{}' not implemented!".format(bc_marker))
         return pg_marker
 
-    def create_mesh(self, only_pd_mesh=False, verbose=False, **kwargs):
+    def createMesh(self, only_pd_mesh=False, verbose=False, **kwargs):
         """Generate a mesh from the polygon.
         Use the supplied quality if not already specified in the XML.
 
@@ -231,7 +233,7 @@ class Poly2D(object):
         if ax is None:
             figkeys = ('nrows', 'ncols', 'sharex', 'sharey', 'figsize')
             figargs = dict((k, kwargs.pop(k)) for k in figkeys if k in kwargs)
-            f, ax = plt.subplots(**figargs)
+            _, ax = plt.subplots(**figargs)
 
         drawMesh(ax, self.poly, **kwargs)
 
@@ -248,7 +250,7 @@ class Poly2D(object):
                     [b.node(0).y(), b.node(1).y()], color=color)
 
 if __name__ == '__main__':
-    p = Poly2D('example.xml')  # Poly2D handles loading/creating a 2D-PLCs
-    p.show()
-    mesh = p.create_mesh()
+    plc = Poly2D('example.xml')  # Poly2D handles loading/creating a 2D-PLCs
+    plc.show()
+    mesh = plc.createMesh()
     pg.show(mesh, mesh.cellMarkers())

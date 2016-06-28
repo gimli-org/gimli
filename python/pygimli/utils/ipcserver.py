@@ -11,6 +11,7 @@ import struct
 
 def parseIPCMessage(data):
     """
+        TODO DOCUMENTME
     """
     (bodyLength, nameLength) = struct.unpack("<HB", data[:3])
 

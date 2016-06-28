@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """Generally grid generation and maintenance."""
 import os
-import pygimli as pg
-
-from .polytools import polyCreateWorld, polyAddVIP, tetgen
 
 import numpy as np
+import pygimli as pg
+
+from pygimli.meshtools.polytools import polyCreateWorld, polyAddVIP, tetgen
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
@@ -62,14 +62,6 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     --------
     appendTetrahedronBoundary
     """
-
-    def sortNodeY(n1, n2):
-        """function comparing x for using sort."""
-        return n1.pos().y() < n2.pos().y()
-
-    def sortNodeX(n1, n2):
-        """function comparing y for using sort."""
-        return n1.pos().x() < n2.pos().x()
 
     surface = 0.0
 

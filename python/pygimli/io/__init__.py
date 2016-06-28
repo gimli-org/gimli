@@ -9,5 +9,6 @@ import and export functionality including a general load and save function with
 automatic filetype detection.
 """
 
-from . load import load
-from . gps import underlayBKGMap, GKtoUTM
+from .load import load
+from .load import opt_import
+from .gps import underlayBKGMap, GKtoUTM

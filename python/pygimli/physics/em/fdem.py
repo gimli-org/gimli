@@ -8,7 +8,7 @@ import sys
 
 import pygimli as pg
 from pygimli.viewer import show1dmodel, drawModel1D
-from pygimli.utils import opt_import
+from pygimli.io import opt_import
 
 import numpy as np
 import matplotlib.pyplot as plt

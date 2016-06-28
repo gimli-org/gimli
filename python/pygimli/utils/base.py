@@ -6,13 +6,12 @@ import os
 import time
 
 import numpy as np
-import pygimli as pg
-from pygimli.mplviewer.colorbar import setMappableData
-
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
-from matplotlib.cm import jet
+
+import pygimli as pg
+from pygimli.mplviewer.colorbar import setMappableData
 
 
 def gmat2numpy(mat):
@@ -43,12 +42,6 @@ def rndig(a, ndig=3):
         return a
     else:
         return np.around(a, ndig - int(np.ceil(np.log10(np.abs(a) + 1e-4))))
-
-
-def roundTo(arr, n_digits=3):
-    """Return ndarray of rounded elements (obsolete due to np.round)."""
-    raise Exception('remove me')
-    #return np.asarray([rndig(a, ndig=n_digits) for a in arr])
 
 
 def num2str(a, fmtstr='%g'):
@@ -88,35 +81,9 @@ def interpExtrap(x, xp, yp):
                     (xp[-1]-xp[-2]), y)
 
 
-def arrayToStdVectorUL(theArray):
-    """Converts a 'ndarray' to pygimli.stdVectorUL."""
-    vec = pg.stdVectorUL()
-    for i in theArray:
-        vec.append(int(i))
-    return vec
-
-
-def jetmap(m=64):
-    """jet color map"""
-    n = int(np.ceil(m / 4))
-    u = np.hstack(((np.arange(1. * n) + 1) / n, np.ones(n - 1),
-                   np.arange(1. * n, 0, -1) / n))
-    g1 = np.arange(len(u), dtype=int) + n / 2
-    r1 = g1 + n
-    b1 = g1 - n
-    gg = g1[g1 < n * 4]
-    rr = r1[r1 < n * 4]
-    bb = b1[b1 >= 0]
-    J = np.zeros((n * 4, 3))
-    J[rr, 0] = u[:len(rr)]
-    J[gg, 1] = u[:len(gg)]
-    J[bb, 2] = u[-len(bb):]
-    return J
-
-
-def showmymatrix(A, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
+def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     """What is this good for?"""
-    plt.imshow(A, interpolation='nearest')
+    plt.imshow(mat, interpolation='nearest')
     plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
     plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])
     plt.ylim((len(y) - 0.5, -0.5))
@@ -188,6 +155,7 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, fs=14, z0=0,
 
 
 def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
+    """TODO"""
     if thk is None:
         nlay = (len(x) + 1) / 2
         thk = np.array(x)[:nlay - 1]
@@ -228,7 +196,7 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 
 def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
-                       islog=True, title=None, cmap=jet):
+                       islog=True, title=None, cmap='jet'):
     """show several 1d block models as (stitched) section"""
     if x is None:
         x = np.arange(len(models))
@@ -306,10 +274,10 @@ def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
     ax = plt.gcf().add_subplot(111)
     ax.cla()
     mapsize = 64
-    cmap = jetmap(mapsize)
+    # cmap = jetmap(mapsize)
     plt.plot(x, np.zeros(len(x)), 'k.')
     maxz = 0.
-    for i, mod in enumerate(models):
+    for mod in models:
         mod1 = np.asarray(mod)
         res = mod1[nlay - 1:]
         if islog:
@@ -328,10 +296,10 @@ def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
         cind = np.around(nres * mapsize)
         cind[cind >= mapsize] = mapsize - 1
         cind[cind < 0] = 0
-        for j in range(len(thk)):
-            fc = cmap[cind[j], :]
-            rect = Rectangle((x1[i], z[j]), dx[i], thk[j], fc=fc)
-            plt.gca().add_patch(rect)
+        # for j in range(len(thk)):
+        #   fc = cmap[cind[j], :]
+        #   rect = Rectangle((x1[i], z[j]), dx[i], thk[j], fc=fc)
+        #   plt.gca().add_patch(rect)
 
     ax.set_ylim((maxz, 0.))
     ax.set_xlim((x1[0], x1[-1] + dx[-1]))
@@ -391,6 +359,7 @@ def saveResult(fname, data, rrms=None, chi2=None, mode='w'):
 
 
 def getSavePath(folder=None, subfolder='', now=None):
+    """TODO"""
     if folder is None:
         path = createResultFolder(subfolder, now)
     else:
@@ -432,6 +401,6 @@ def createfolders(foldername_list):
             print('Path "{}" already exists.'.format(path))
         else:
             print('Unable to create path "{}".'.format(path))
-            raise(e)
+            raise e
 
     return path

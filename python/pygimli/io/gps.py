@@ -4,11 +4,12 @@
 import sys
 import os
 
+import numpy as np
 import matplotlib.image as mpimg
 
 from math import floor
-import numpy as np
-from pygimli.utils import opt_import
+
+from pygimli.io import opt_import
 
 
 def handleWPTS(wpts):

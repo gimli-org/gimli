@@ -4,8 +4,9 @@
 
 import pylab as P
 import numpy as N
+
 import pygimli as pg
-from .base import rndig
+from pygimli.utils import rndig
 import string
 
 

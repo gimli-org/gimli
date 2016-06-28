@@ -18,7 +18,6 @@ def createMesh(poly, quality=30, area=0.0,
 
     If poly is a list of coordinates a simple Delaunay mesh of the convex hull
     will be created.
-
     TODO: Tetgen support need to be implemented
 
     Parameters
@@ -46,6 +45,7 @@ def createMesh(poly, quality=30, area=0.0,
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
     """
+
 
 #    poly == [pg.Mesh, ]
     if isinstance(poly, list):

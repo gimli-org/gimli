@@ -17,7 +17,7 @@ except ImportError:
     sys.exit(1)
 
 import matplotlib.pyplot as plt
-from pygimli.meshtools import createParaMesh2dGrid
+from pygimli.meshtools import createParaMesh2DGrid
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawModel, drawSensors
 

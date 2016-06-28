@@ -1,4 +1,8 @@
-from pygimli.utils import opt_import
+# -*- coding: utf-8 -*-
+"""
+TODO documentme!
+"""
+from pygimli.io import opt_import
 
 json = opt_import("json", "read and write inversion settings")
 
@@ -24,7 +28,7 @@ class InversionSettings(dict):
             super(InversionSettings, self).__init__(*args, **kwargs)
 
         if hasattr(self, 'filename'):
-            self.update(InversionSettings.loadtxt(self.filename))
+            self.update(InversionSettings.load(self.filename))
 
     def save(self, f):
         """

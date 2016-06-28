@@ -1,9 +1,55 @@
 # -*- coding: utf-8 -*-
-
+"""TODO Module docstring"""
 import os.path
+from importlib import import_module
 
 import pygimli as pg
 from pygimli.meshtools import readGmsh, readPLC
+
+
+def opt_import(module, requiredTo="use the full functionality"):
+    """
+    Import and return module only if it exists.
+
+    If `module` cannot be imported, a warning is printed followed by the
+    `requiredFor` string. Otherwise, the imported `module` will be returned.
+    This function should be used to import optional dependencies in order to
+    avoid repeated try/except statements.
+
+    Parameters
+    ----------
+    module : str
+        Name of the module to be imported.
+    requiredFor : str, optional
+        Info string for the purpose of the dependency.
+
+    Examples
+    --------
+    >>> from pygimli.io import opt_import
+    >>> pg = opt_import("pygimli")
+    >>> pg.__name__
+    'pygimli'
+    >>> opt_import("doesNotExist", requiredTo="do something special")
+    No module named 'doesNotExist'.
+    You need to install this optional dependency to do something special.
+    """
+
+    # set default message for common imports
+    if not requiredTo and "matplotlib" in module:
+        requiredTo = "visualize 2D content"
+
+    if module.count(".") > 2:
+        raise ImportError("Can only import modules and sub-packages.")
+
+    try:
+        mod = import_module(module)
+    except ImportError:
+        msg = ("No module named \'%s\'.\nYou need to install this optional "
+               "dependency to %s.")
+        print(msg % (module, requiredTo))
+        mod = None
+
+    return mod
 
 
 def load(fname, verbose=False):
@@ -66,14 +112,14 @@ def load(fname, verbose=False):
     if suffix in import_routines:
         try:
             return import_routines[suffix](fname)
-        except Exception as e:
+        except BaseException as e:
             if verbose:
                 import sys
                 import traceback
                 traceback.print_exc(file=sys.stdout)
                 print(e)
                 print("File extension %s seems to be not correct. "
-                    "Trying auto-detect." % suffix)
+                      "Trying auto-detect." % suffix)
     else:
         if verbose:
             print("File extension %s is unknown. Trying auto-detect." % suffix)
@@ -81,10 +127,11 @@ def load(fname, verbose=False):
     for routine in import_routines.values():
         try:
             return routine(fname)
-        except Exception as e:
+        except BaseException as e:
             # print(e)
             pass
 
     raise Exception(
-        "File type of %s is unknown or file does not exist and could not be imported." %
+        "File type of %s is unknown or file does not exist and "
+        "could not be imported." %
         fname)

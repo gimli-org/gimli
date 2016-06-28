@@ -7,9 +7,6 @@
 # pygtk.require().
 #init-hook=
 
-# Profiled execution.
-profile=no
-
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
 ignore=CVS
@@ -20,14 +17,6 @@ persistent=yes
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
 load-plugins=
-
-# Deprecated. It was used to include message's id in output. Use --msg-template
-# instead.
-include-ids=no
-
-# Deprecated. It was used to include symbolic ids of messages in output. Use
-# --msg-template instead.
-symbols=no
 
 # Use multiple processes to speed up Pylint.
 jobs=1
@@ -70,7 +59,7 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=W1609,W1626,W1617,E1604,W1610,W1606,W1637,W1619,W1615,W1639,W1638,W1612,E1606,W1618,W1630,W1632,I0020,W1622,W1634,W1633,W1640,I0021,E1603,W1635,E1605,W1602,W1614,W1625,W1611,W1604,E1607,W1629,E1602,W1628,W1605,W1608,W1601,W0704,W1607,W1627,W1603,W1624,W1616,W1621,W1623,W1620,E1608,E1601,W1636,W1613
+disable=E0401,W1609,W1626,W1617,E1604,W1610,W1606,W1637,W1619,W1615,W1639,W1638,W1612,E1606,W1618,W1630,W1632,I0020,W1622,W1634,W1633,W1640,I0021,E1603,W1635,E1605,W1602,W1614,W1625,W1611,W1604,E1607,W1629,E1602,W1628,W1605,W1608,W1601,W0704,W1607,W1627,W1603,W1624,W1616,W1621,W1623,W1620,E1608,E1601,W1636,W1613
 
 
 [REPORTS]
@@ -94,10 +83,6 @@ reports=yes
 # number of statements analyzed. This is used by the global evaluation report
 # (RP0004).
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
-
-# Add a comment according to your evaluation note. This is used by the global
-# evaluation report (RP0004).
-comment=no
 
 # Template used to display messages. This is a python new-style format string
 # used to format the message information. See doc for all details
@@ -148,10 +133,6 @@ ignored-modules=numpy,pygimli
 # (useful for classes with attributes dynamically set).
 ignored-classes=SQLObject
 
-# When zope mode is activated, add a predefined set of Zope acquired attributes
-# to generated-members.
-zope=no
-
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E0201 when accessed. Python regular
 # expressions are accepted.
@@ -184,9 +165,6 @@ callbacks=cb_,_cb
 
 [BASIC]
 
-# Required attributes for module, separated by a comma
-required-attributes=
-
 # List of builtins function names that should not be used, separated by a comma
 bad-functions=map,filter
 
@@ -210,7 +188,7 @@ function-rgx=[a-z_][a-zA-Z0-9_]{2,30}$
 function-name-hint=[a-z_][a-z0-9_]{2,30}$
 
 # Regular expression matching correct method names
-method-rgx=[a-z_][a-z0-9_]{2,30}$
+method-rgx=[a-z_][a-zA-Z0-9_]{2,30}$
 
 # Naming hint for method names
 method-name-hint=[a-z_][a-z0-9_]{2,30}$
@@ -234,13 +212,13 @@ class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$
 class-attribute-name-hint=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$
 
 # Regular expression matching correct attribute names
-attr-rgx=[a-z_][a-zA-Z0-9_]{2,30}$
+attr-rgx=[a-z_][a-zA-Z0-9_]{0,30}$
 
 # Naming hint for attribute names
 attr-name-hint=[a-z_][a-z0-9_]{2,30}$
 
 # Regular expression matching correct module names
-module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+module-rgx=(([a-z_][a-zA-Z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
 
 # Naming hint for module names
 module-name-hint=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
@@ -258,7 +236,7 @@ inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 inlinevar-name-hint=[A-Za-z_][A-Za-z0-9_]*$
 
 # Regular expression matching correct variable names
-variable-rgx=(([a-z_][a-zA-Z0-9_]*)|(__.*__))$
+variable-rgx=(([a-zA-Z0-9_]*)|(__.*__))$
 
 # Naming hint for variable names
 variable-name-hint=[a-z_][a-z0-9_]{2,30}$
@@ -313,10 +291,6 @@ spelling-store-unknown-words=no
 
 [CLASSES]
 
-# List of interface methods to ignore, separated by a comma. This is used for
-# instance to not check methods defines in Zope's Interface base class.
-ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
-
 # List of method names used to declare (i.e. assign) instance attributes.
 defining-attr-methods=__init__,__new__,setUp
 
@@ -334,14 +308,14 @@ exclude-protected=_asdict,_fields,_replace,_source,_make
 [DESIGN]
 
 # Maximum number of arguments for function / method [5]
-max-args=10 
+max-args=10
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore
 ignored-argument-names=_.*
 
 # Maximum number of locals for function / method body [25]
-max-locals=50 
+max-locals=50
 
 # Maximum number of return / yield for function / method body
 max-returns=6
@@ -355,8 +329,8 @@ max-statements=100
 # Maximum number of parents for a class (see R0901).
 max-parents=7
 
-# Maximum number of attributes for a class (see R0902).
-max-attributes=7
+# Maximum number of attributes for a class (see R0902).[7]
+max-attributes=10
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=2

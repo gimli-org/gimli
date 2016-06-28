@@ -4,10 +4,10 @@
 pygimli.utils - Collection of several utility functions.
 """
 import sys
-import pygimli as pg
-from importlib import import_module
 import numpy as np
 from math import sqrt, floor
+
+import pygimli as pg
 
 class ProgressBar(object):
 
@@ -77,51 +77,6 @@ def boxprint(s, width=80, sym="#"):
     row = sym * width
     centered = s.center(width - 2)
     print("\n".join((row, centered.join((sym, sym)), row)))
-
-
-def opt_import(module, requiredTo="use the full functionality"):
-    """
-    Import and return module only if it exists.
-
-    If `module` cannot be imported, a warning is printed followed by the
-    `requiredFor` string. Otherwise, the imported `module` will be returned.
-    This function should be used to import optional dependencies in order to
-    avoid repeated try/except statements.
-
-    Parameters
-    ----------
-    module : str
-        Name of the module to be imported.
-    requiredFor : str, optional
-        Info string for the purpose of the dependency.
-
-    Examples
-    --------
-    >>> from pygimli.utils import opt_import
-    >>> pg = opt_import("pygimli")
-    >>> pg.__name__
-    'pygimli'
-    >>> opt_import("doesNotExist", requiredTo="do something special")
-    No module named 'doesNotExist'.
-    You need to install this optional dependency to do something special.
-    """
-
-    # set default message for common imports
-    if not requiredTo and "matplotlib" in module:
-        requiredTo = "visualize 2D content"
-
-    if module.count(".") > 2:
-        raise ImportError("Can only import modules and sub-packages.")
-
-    try:
-        mod = import_module(module)
-    except ImportError:
-        msg = ("No module named \'%s\'.\nYou need to install this optional "
-               "dependency to %s.")
-        print(msg % (module, requiredTo))
-        mod = None
-
-    return mod
 
 
 def trimDocString(docstring):
@@ -518,10 +473,3 @@ def unique_rows(array):
     sort_idx = A_1D.argsort()
     mask = np.append(True,np.diff(A_1D[sort_idx])!=0)
     return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
-
-def arrayToStdVectorUL(theArray):
-    """Converts a 'ndarray' to pygimli.stdVectorUL."""
-    vec = pg.stdVectorUL()
-    for i in theArray:
-        vec.append(int(i))
-    return vec

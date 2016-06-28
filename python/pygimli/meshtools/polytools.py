@@ -166,7 +166,6 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
 #    rs = []
     poly = pg.Mesh(2)
 
-
     for i, depth in enumerate(z):
         n = poly.createNode([start[0], depth])
         if i > 0:

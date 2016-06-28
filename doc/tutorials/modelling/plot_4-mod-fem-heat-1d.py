@@ -48,15 +48,11 @@ probeID = int(grid.nodeCount() / 2)
 #
 #
 
-
 def uAna(t, x):
     return np.exp(-np.pi**2. * t) * np.sin(np.pi * x)
 
 plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='Analytical')
 
-# u = solvePoisson(grid, times=times, theta=0.0,
-#                 u0=lambda r: np.sin(np.pi * r[0]),
-#                 uBoundary=dirichletBC)
 dof = grid.nodeCount()
 u = np.zeros((len(times), dof))
 u[0, :] = list(map(lambda r: np.sin(np.pi * r[0]), grid.positions()))
@@ -78,22 +74,12 @@ for n in range(1, len(times)):
 
     solver.assembleDirichletBC(S, boundUdir, rhs=b)
 
-#    solver.assembleBoundaryConditions(grid, S,
-#                                      rhs=b,
-#                                      boundArgs=dirichletBC,
-#                                      assembler=solver.assembleDirichletBC)
-
     solve = pg.LinSolver(S)
     solve.solve(b, ut)
 
     u[n, :] = ut
 
-# u = solver.solvePoisson(grid, times=times, theta=0.0,
-#                 u0=lambda r: np.sin(np.pi * r[0]),
-#                 uBoundary=dirichletBC)
-
 plt.plot(times, u[:, probeID], label='Explicit Euler')
-
 
 theta = 1
 
@@ -112,10 +98,6 @@ for n in range(1, len(times)):
     solve.solve(b, ut)
 
     u[n, :] = ut
-
-# u = solver.solvePoisson(grid, times=times, theta=1.0,
-#                 u0=lambda r: np.sin(np.pi * r[0]),
-#                 uBoundary=dirichletBC)
 
 plt.plot(times, u[:, probeID], label='Implicit Euler')
 
