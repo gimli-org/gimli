@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -10,13 +11,13 @@ from . em import FDEM, TDEM
 from . sNMR import MRS
 from . SIP import SIPSpectrum
 
-from . ert import ERTModelling 
+from . ert import ERTModelling
 # from . gravimetry import Gravimetry
 # from . seismics import *
 
-#__all__ = ["FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction"]
+# __all__ = ["FDEM", "TDEM", "MRS", "SIPSpectrum", "Refraction"]
 
-class constants:
+class constants(object):
     # magnetic constant, vacuum permeability
     mu0 = 4.0 * pi * 1e-7  # [(kg * m) / (A^2 * s^2)]
 
@@ -88,7 +89,7 @@ class MethodManager(object):
 
     def apparentData(self):
         IMPLEMENTME
-    
+
 #    @classmethod
     def createFOP_(self, verbose=False):
         """ Create forward operator working on refined mesh """
@@ -111,11 +112,12 @@ class MethodManager(object):
         """ Check data validity """
         pass
 
-    def estimateError(self, absoluteError=0.001, relativeError=0.001):
+    @staticmethod
+    def estimateError(data, absoluteError=0.001, relativeError=0.001):
         """ estimate error composed of an absolute and a relative part """
         pass
 
-    def showData(self, ax=None, response=None):
+    def showData(self, axes=None, response=None, name='data'):
         """ show data in form of travel time curves """
         pass
 
@@ -195,7 +197,7 @@ class MethodManager(object):
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-    
+
     # Mesh related methods
     def createMesh(self, ):
         """ Create a mesh aka the parametrization """
@@ -212,7 +214,7 @@ class MeshMethodManager(MethodManager):
     @staticmethod
     def createArgParser(dataSuffix='dat'):
         parser = MethodManager.createArgParser(dataSuffix)
-        
+
         parser.add_argument("--paraMaxCellSize", dest="maxCellArea", type=float,
                             default=None,
                             help="Maximum cell size for parametric cells in m² [None=auto].")
@@ -220,5 +222,5 @@ class MeshMethodManager(MethodManager):
                             default=0.7,
                             help="Weight for vertical smoothness (1=isotrope). [0.7]")
         return parser
-    
+
 from . traveltime import Refraction

@@ -3,43 +3,40 @@
     Viewer interface .. depends on matplotlib
 """
 
+import os
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+import pygimli as pg
+
+
 holdAxes_ = 0
 
+
 def updateAxes(ax, a=None):
-    """
-        for internal use
-    """
+    """For internal use"""
     if not holdAxes_:
         try:
-            mpl.pyplot.pause(0.01)
-        except Exception as e:
-            #print(e)
+            plt.pause(0.01)
+        except BaseException as _:
             pass
 
+
+def hold(val=1):
+    """WRITEME"""
+    pygimli.mplviewer.holdAxes_ = val
+
+
+def wait():
+    """WRITEME"""
+    plt.pause(0.01)
+    plt.show()
 
 from .dataview import *
 from .meshview import *
 from .colorbar import *
 from .overlayimage import *
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-def hold(val=1):
-    pg.mplviewer.holdAxes_ = val
-
-def showLater(val=1):
-    raise('do not use .. use show(hold=1) to keep pics in background')
-    # import matplotlib.pyplot as plt
-    if val == 1:
-        plt.ion()
-    else:
-        plt.ioff()
-        plt.show()
-
-def wait():
-    plt.pause(0.01)
-    plt.show()
 
 goldenMean = 1.618  # (1.0 + math.sqrt(5.0)) / 2.0
 
@@ -77,7 +74,7 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0,
     params = {'backend': 'ps',
               'font.size': fontsize * scale,
               #'font.weight'       : 'bold',
-              'axes.labelsize': fontsize * scale,
+              'ax.labelsize': fontsize * scale,
               'font.size': fontsize * scale,
               'legend.fontsize': fontsize * scale,
               'xtick.labelsize': fontsize * scale,
@@ -156,7 +153,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='',
     ax.set_yticklabels(tickLabels)
 
     if plc:
-        pg.show(plc, axes=ax)
+        pg.show(plc, ax=ax)
 
     plt.tight_layout()
     plt.pause(0.001)

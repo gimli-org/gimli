@@ -43,7 +43,7 @@ except ImportError as e:
 _pygimli_.load = None
 
 from pygimli.io import load
-from pygimli.viewer import show, showLater, plt, wait
+from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
 
 

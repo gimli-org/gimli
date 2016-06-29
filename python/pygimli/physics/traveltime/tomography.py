@@ -6,12 +6,13 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+
 import pygimli as pg
 from pygimli.mplviewer.dataview import plotVecMatrix
 from . refraction import Refraction
 
 
-def readTOMfile(filename, ndig=2, roundto=0, **kwargs):
+def readTOMfile(filename, ndig=2, roundto=0):
     """read Reflex tomography (*.TOM) file"""
     t, xT, zT, xR, zR = np.loadtxt(filename, usecols=(0, 2, 3, 4, 5), unpack=1)
     if roundto > 0:
@@ -66,21 +67,25 @@ class Tomography(Refraction):
             else:
                 data = pg.DataContainer(data, 's g')
         data.set('t', data('t') + tcorr)
-        super(type(self), self).__init__(data, name=name, **kwargs)
+        super(Tomography, self).__init__(data, name=name, **kwargs)
 
-    def createMesh(self, quality=34.6, maxarea=0.1, addpoints=[]):
+    def createMesh(self, quality=34.6, maxarea=0.1, addpoints=None):
         """Create (inversion) mesh by circumventing PLC"""
         data = self.dataContainer
         sx = list(pg.x(data.sensorPositions()))
         sz = list(pg.y(data.sensorPositions()))
-        for po in addpoints:
-            sx.append(po[0])
-            sz.append(po[1])
+
+        if addpoints is not None:
+            for po in addpoints:
+                sx.append(po[0])
+                sz.append(po[1])
 
         iS = np.argsort(np.arctan2(sx-np.mean(sx), sz-np.mean(sz)))
         plc = pg.Mesh(2)
         nodes = [plc.createNode(sx[i], sz[i], 0) for i in iS]
-        [plc.createEdge(nodes[i], nodes[i+1]) for i in range(len(nodes)-1)]
+        for i in range(len(nodes)-1):
+            plc.createEdge(nodes[i], nodes[i+1])
+
         plc.createEdge(nodes[-1], nodes[0])
         tri = pg.TriangleWrapper(plc)
         tri.setSwitches("-pzFq"+str(quality)+"a"+str(maxarea))
@@ -90,8 +95,7 @@ class Tomography(Refraction):
         """return shot-geophone distance"""
         data = self.dataContainer
         return np.array([data.sensorPosition(int(data('g')[i])).distance(
-                         data.sensorPosition(int(data('s')[i])))
-                         for i in range(data.size())])
+          data.sensorPosition(int(data('s')[i]))) for i in range(data.size())])
 
     def getVA(self, t=None):
         """return apparent velocity"""
@@ -99,11 +103,11 @@ class Tomography(Refraction):
             t = self.dataContainer('t')
         return self.offset() / t
 
-    def createStartModel(self, *args, **kwargs):
+    def createStartModel(self):
         """create (gradient) starting model with vtop/vbottom bounds"""
         va = self.getVA()
         nModel = self.fop.regionManager().parameterCount()
-        self.start = pg.RVector(nModel, 1./np.mean(va))
+        return pg.RVector(nModel, 1./np.mean(va))
 
     def showVA(self, t=None, ax=None, usepos=True, name='va', squeeze=True):
         """show apparent velocity as image plot"""
@@ -111,21 +115,21 @@ class Tomography(Refraction):
         xvec = self.dataContainer('g')
         yvec = self.dataContainer('s')
         if usepos:
-            pz = pg.y(Tomo.dataContainer.sensorPositions())
+            pz = pg.y(self.dataContainer.sensorPositions())
             if squeeze:
                 xvec = pz[xvec]
                 yvec = pz[yvec]
             else:
-                pz = pg.y(Tomo.dataContainer.sensorPositions())
+                pz = pg.y(self.dataContainer.sensorPositions())
                 raise Exception('Implement ME')
                 # xvec = px[xvec]*1000 + pz[xvec]
                 # xvec = px[yvec]*1000 + pz[yvec]
 
-        plotVecMatrix(xvec, yvec, squeeze=squeeze)
+        plotVecMatrix(xvec, yvec, vals=t, squeeze=squeeze, ax=ax, name=name)
 
     def showVAold(self, vals=None, ax=None, usepos=True, name='va'):
         """show apparent velocity as image plot (old style)"""
-        va = self.getVA(vals=vals)
+        va = self.getVA(t=vals)
         data = self.dataContainer
         A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
         for i in range(data.size()):
@@ -138,7 +142,8 @@ class Tomography(Refraction):
         gci = ax.imshow(A, interpolation='nearest')
         ax.grid(True)
         if usepos:
-            xt = np.linspace(0, data.sensorCount()-1, 7).round()
+            xt = np.linspace(0, data.sensorCount()-1, 7)
+            xt.round()
             px = pg.abs(pg.y(self.dataContainer.sensorPositions()))
             ax.set_xticks(xt)
             ax.set_xticklabels([str(int(px[int(xti)])) for xti in xt])
@@ -151,10 +156,10 @@ class Tomography(Refraction):
 
 if __name__ == '__main__':
     datafile = sys.argv[1]
-    Tomo = Tomography(datafile)
-    print(Tomo)
-    Tomo.createMesh(addpoints=[[6, -22], [0, -8]])
-    Tomo.showVA()
-    Tomo.estimateError(absoluteError=0.7, relativeError=0.001)
-    Tomo.run()
-    Tomo.showResult()
+    tomo = Tomography(datafile)
+    print(tomo)
+    tomo.createMesh(addpoints=[[6, -22], [0, -8]])
+    tomo.showVA()
+    tomo.estimateError(absoluteError=0.7, relativeError=0.001)
+    tomo.run()
+    tomo.showResult()

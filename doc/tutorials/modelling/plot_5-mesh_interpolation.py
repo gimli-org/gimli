@@ -67,26 +67,26 @@ datasets = [coarse_data, fine_data]
 ints = [nearest_neighbor_interpolation,
         linear_interpolation]
 
-fig, axes = plt.subplots(2, 2, figsize=(5, 5))
+fig, ax = plt.subplots(2, 2, figsize=(5, 5))
 
 # Coarse data to fine mesh
-drawModel(axes[0, 0], fine, ints[0](coarse, coarse_data, fine), showCbar=False)
-drawMesh(axes[0, 0], fine)
-drawModel(axes[0, 1], fine, ints[1](coarse, coarse_data, fine), showCbar=False)
-drawMesh(axes[0, 1], fine)
+drawModel(ax[0, 0], fine, ints[0](coarse, coarse_data, fine), showCbar=False)
+drawMesh(ax[0, 0], fine)
+drawModel(ax[0, 1], fine, ints[1](coarse, coarse_data, fine), showCbar=False)
+drawMesh(ax[0, 1], fine)
 
 # Fine data to coarse mesh
-drawModel(axes[1, 0], coarse, ints[0](fine, fine_data, coarse), showCbar=False)
-drawMesh(axes[1, 0], coarse)
-drawModel(axes[1, 1], coarse, ints[1](fine, fine_data, coarse), showCbar=False)
-drawMesh(axes[1, 1], coarse)
+drawModel(ax[1, 0], coarse, ints[0](fine, fine_data, coarse), showCbar=False)
+drawMesh(ax[1, 0], coarse)
+drawModel(ax[1, 1], coarse, ints[1](fine, fine_data, coarse), showCbar=False)
+drawMesh(ax[1, 1], coarse)
 
 titles = ["Coarse to fine\nwith nearest neighbors",
           "Coarse to fine\nwith linear interpolation",
           "Fine to coarse\nwith nearest neighbors",
           "Fine to coarse\nwith linear interpolation"]
 
-for a, title in zip(axes.flat, titles):
+for a, title in zip(ax.flat, titles):
     a.set_title(title + "\n")
 
 fig.tight_layout()

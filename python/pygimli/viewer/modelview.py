@@ -3,16 +3,16 @@
     pygimli model viewer functions.
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 
+import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import LogNorm
 
 
 def drawModel1D(ax, thickness, values, plotfunction='plot',
-                xlabel='Resistivity $[\Omega$ m$]$', *args, **kwargs):
+                xlabel=r'Resistivity $[\Omega$ m$]$', **kwargs):
     """Draw 1d block model into axis ax defined by values and thickness vectors
     using plotfunction."""
 
@@ -36,8 +36,8 @@ def drawModel1D(ax, thickness, values, plotfunction='plot',
 
     try:
         plot = getattr(ax, plotfunction)
-        plot(px, pz, *args, **kwargs)
-    except Exception as e:
+        plot(px, pz, **kwargs)
+    except BaseException as e:
         print(e)
 
     ax.set_ylabel('Depth [m]')
@@ -95,7 +95,7 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     return
 
 
-def showStitchedModels(mods, axes=None, cmin=None, cmax=None, **kwargs):
+def showStitchedModels(mods, ax=None, cmin=None, cmax=None, **kwargs):
     """
         Show several 1d block models as (stitched) section.
     """
@@ -118,10 +118,10 @@ def showStitchedModels(mods, axes=None, cmin=None, cmax=None, **kwargs):
         dx = np.hstack((dx, dx[-1]))
 
     x1 = x - dx / 2
-    if axes is None:
+    if ax is None:
         fig, ax = plt.subplots()
     else:
-        ax = axes
+        ax = ax
         fig = ax.figure
 
 #    ax.plot(x, x * 0., 'k.')
@@ -170,7 +170,7 @@ def showStitchedModels(mods, axes=None, cmin=None, cmax=None, **kwargs):
         if 'ticks' in kwargs:
             cbar.set_ticks(kwargs['ticks'])
 #        cbar.autoscale_None()
-    if axes is None:  # newly created fig+ax
+    if ax is None:  # newly created fig+ax
         return fig, ax
     else:  # already given, better give back color bar
         return cbar

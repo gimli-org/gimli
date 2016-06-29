@@ -78,7 +78,7 @@ ax1.plot(x, gc_m, label='Integration: Mesh')
 ax1.plot(x, dudz, label=r'FEM: $\frac{\partial u}{\partial z}$')
 
 ax2 = pg.plt.subplot(2, 1, 2)
-pg.show([world,  circ], axes=ax2)
+pg.show([world,  circ], ax=ax2)
 ax2.plot(x, x*0,  'bv')
 
 ax1.set_ylabel(r'$\frac{\partial u}{\partial z}$ [mGal]')

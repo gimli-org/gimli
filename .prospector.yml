@@ -11,3 +11,6 @@ pylint:
         max-branches: 50
         max-statements: 100
         max-attributes: 10
+pyflakes:
+    disable:
+        - F401 # imported module not used (mainly for __init__) pylint also checks this

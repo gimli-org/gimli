@@ -51,7 +51,7 @@ dirichletBC = [[1, 1.0],                                    # left
 
 ###############################################################################
 # The BC are passed using the uBoundary keyword. Note that showMesh returns the
-# created figure axes ax while drawMesh plots on it and it can also be used as
+# created figure ax ax while drawMesh plots on it and it can also be used as
 # a class with plotting or decoration methods.
 u = solve(grid, f=1., uB=dirichletBC)
 
@@ -59,7 +59,7 @@ ax = show(grid, data=u, colorBar=True,
           orientation='vertical', label='Solution $u$',
           levels=np.linspace(1.0, 4.0, 17), hold=1)[0]
 
-show(grid, axes=ax)
+show(grid, ax=ax)
 
 ax.text(0, 1.01, '$u=3+x$', ha='center')
 ax.text(-1.01, 0, '$u=1$', va='center', ha='right', rotation='vertical')

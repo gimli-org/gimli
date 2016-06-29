@@ -54,8 +54,8 @@ fig, ax = plt.subplots(figsize=(4, 3))
 ax.axis('off')
 offset = -10
 t = ax.text(1.5, offset, 'BERT', fontsize=50, fontweight='bold')
-pg.show(mesh, data, axes=ax, cmap='RdBu', logScale=False, showLater=True)
-pg.show(mesh, axes=ax)
+pg.show(mesh, data, ax=ax, cmap='RdBu', logScale=False, showLater=True)
+pg.show(mesh, ax=ax)
 ax.set_ylim(offset, mesh.ymax())
 
 pg.wait()

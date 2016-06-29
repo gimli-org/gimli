@@ -5,24 +5,23 @@ Generic mesh visualization tools.
 """
 
 import os
+import traceback
+import sys
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 try:
     import pygimli as pg
     from pygimli.mplviewer import drawMesh, drawModel, drawField
-    from pygimli.mplviewer import drawSensors, showLater
+    from pygimli.mplviewer import drawSensors
     from pygimli.mplviewer import createColorbar, drawStreams, addCoverageAlpha
     from pygimli.mplviewer.colorbar import cmapFromName
 except ImportError as e:
     print(e)
-    import traceback
-    import sys
-
     traceback.print_exc(file=sys.stdout)
     raise Exception('''ERROR: cannot import the library 'pygimli'.
         Ensure that pygimli is in your PYTHONPATH ''')
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 def show(mesh=None, data=None, **kwargs):
@@ -35,7 +34,7 @@ def show(mesh=None, data=None, **kwargs):
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the
     possible 2D and 3D content.
     See tutorials and examples for usage hints.
-    An empty show call create an empty axes window.
+    An empty show call create an empty ax window.
 
     Parameters
     ----------
@@ -53,15 +52,15 @@ def show(mesh=None, data=None, **kwargs):
 
     """
     if isinstance(mesh, list):
-        ax = kwargs.pop('axes', None)
-        ax, cbar = show(mesh[0], data, hold=1, axes=ax, **kwargs)
+        ax = kwargs.pop('ax', None)
+        ax, cbar = show(mesh[0], data, hold=1, ax=ax, **kwargs)
         xmin = mesh[0].xmin()
         xmax = mesh[0].xmax()
         ymin = mesh[0].ymin()
         ymax = mesh[0].ymax()
 
         for m in mesh[1:]:
-            ax, cbar = show(m, data, axes=ax, hold=1, fitView=False, **kwargs)
+            ax, cbar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
             xmin = min(xmin, m.xmin())
             xmax = max(xmax, m.xmax())
             ymin = min(ymin, m.ymin())
@@ -85,23 +84,23 @@ def show(mesh=None, data=None, **kwargs):
             return showMesh3D(mesh, data, **kwargs)
         else:
             print("ERROR: Mesh not valid.")
- 
-    ax = kwargs.pop('axes', None)
-    
+
+    ax = kwargs.pop('ax', None)
+
     if ax is None:
-        fig, ax = plt.subplots()
-        
+        ax = plt.subplots()[1]
+
     return ax, None
 
 
 def showMesh(mesh, data=None, hold=False, block=False,
              colorBar=False, coverage=None,
-             axes=None, savefig=None, **kwargs):
+             ax=None, savefig=None, **kwargs):
     """
     2D Mesh visualization.
 
-    Create an axes and plot a 2D mesh with given node or cell data.
-    Returns the axes and the color bar. The type of data determine the 
+    Create an ax and plot a 2D mesh with given node or cell data.
+    Returns the ax and the color bar. The type of data determine the
     appropriate draw method.
 
     Parameters
@@ -148,8 +147,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
     coverage : iterable [None]
         Weight data by the given coverage array and fadeout the color.
 
-    axes : matplotlib.Axes [None]
-        Instead of create a new and empty axes, just draw into the a given.
+    ax : matplotlib.Axes [None]
+        Instead of create a new and empty ax, just draw into the a given.
         Useful to combine draws.
 
     savefig: string
@@ -167,12 +166,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     Returns
     -------
-    axes : matplotlib.axes
+    ax : matplotlib.ax
 
     colobar : matplotlib.colobar
     """
 
-    ax = axes
+    ax = ax
     if block:
         hold = 1
 
@@ -181,7 +180,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
         pg.mplviewer.holdAxes_ = 1
 
     if ax is None:
-        fig, ax = plt.subplots()
+        ax = plt.subplots()[1]
 
     gci = None
     cbar = None
@@ -203,7 +202,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
             else:
                 print("No valid stream data:", data)
                 drawMesh(ax, mesh, **kwargs)
-        elif (min(data) == max(data)):  # or pg.haveInfNaN(data):
+        elif min(data) == max(data):  # or pg.haveInfNaN(data):
             print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
             drawMesh(ax, mesh, **kwargs)
         else:
@@ -213,16 +212,16 @@ def showMesh(mesh, data=None, hold=False, block=False,
                     gci = drawModel(ax, mesh, data, **kwargs)
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
-                    
+
                 cmap = kwargs.pop('cmap', None)
                 cMap = kwargs.pop('cMap', None)
                 if cMap is not None:
                     cmap = cMap
-                    
+
                 if cmap is not None:
                     gci.set_cmap(cmapFromName(cmap))
-                    
-            except Exception as e:
+
+            except BaseException as e:
                 print("Exception occured: " + e)
                 print("Data: ", min(data), max(data), pg.haveInfNaN(data))
                 print("Mesh: ", mesh)
@@ -246,18 +245,15 @@ def showMesh(mesh, data=None, hold=False, block=False,
         if len(data) == mesh.cellCount():
             addCoverageAlpha(gci, coverage)
         else:
-            raise('toImplement')
-            addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
-
-    if showLater in kwargs:
-        hold = showLater
-        print("showLater will be removed in the future. use hold instead")
+            raise BaseException('toImplement')
+            # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
 
     if not hold or block is not False:
         plt.show(block=block)
         try:
             plt.pause(0.01)
-        except:
+        except BaseException as _:
+
             pass
 
     if hold:
@@ -265,18 +261,18 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if savefig:
         print('saving: ' + savefig + ' ...')
-        
-        if not '.' in savefig:
+
+        if '.' not in savefig:
             savefig += '.pdf'
-            
+
         ax.figure.savefig(savefig, bbox_inches='tight')
-        #rc params savefig.format=pdf
+        # rc params savefig.format=pdf
 
         if '.eps' in savefig:
             try:
                 print("trying eps2pdf ... ")
                 os.system('epstopdf ' + savefig)
-            except:
+            except BaseException as _:
                 pass
         print('..done')
 
@@ -307,9 +303,9 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 
     Returns
     -------
-    axes : matplotlib.axes
+    ax : matplotlib.ax
     """
-    ax = kwargs.pop('axes', None)
+    ax = kwargs.pop('ax', None)
 
     col = kwargs.pop('color', 'Black')
 
@@ -328,7 +324,7 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
                     ax.plot(c1[0], c1[1], 'o', color=col)
         return
 
-    ax = show(mesh, showLater=True, axes=ax)[0]
+    ax = show(mesh, hold=True, ax=ax)[0]
     for b in mesh.boundaries():
         c1 = b.center()
         c2 = c1 + b.norm()

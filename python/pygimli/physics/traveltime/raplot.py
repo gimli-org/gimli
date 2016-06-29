@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""""WRITEME"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg

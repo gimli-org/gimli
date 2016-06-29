@@ -51,7 +51,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 
     try:
         return pg.RVector(nDofs[0], float(arg))
-    except:
+    except BaseException as _:
         pass
 
     if hasattr(arg, '__len__'):
@@ -60,7 +60,8 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
                 return arg
             else:
                 raise BaseException('Given array does not have requested (' +
-                                    str(ndof) + ') size (' + str(len(arg)) + ')')
+                                    str(ndof) + ') size (' +
+                                    str(len(arg)) + ')')
 
         for n in nDofs:
             if len(arg) == n:
@@ -498,16 +499,16 @@ def grad(mesh, u, r=None):
 
     Examples
     --------
-    >>> import pygimli as pg
-    >>> import matplotlib.pyplot as plt
     >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
     >>> fig, ax = plt.subplots()
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
     >>> u = lambda p: pg.x(p)**2 * pg.y(p)
-    >>> _ = pg.show(mesh, u(mesh.nodeCenters()), axes=ax)
+    >>> _ = pg.show(mesh, u(mesh.nodeCenters()), ax=ax)
     >>> _ = pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
-    ...             pg.x(mesh.cellCenters())**2], axes=ax)
-    >>> _ = pg.show(mesh, pg.solver.grad(mesh, u), axes=ax, color='w',
+    ...             pg.x(mesh.cellCenters())**2], ax=ax)
+    >>> _ = pg.show(mesh, pg.solver.grad(mesh, u), ax=ax, color='w',
     ...             linewidth=0.4)
     >>> plt.show()
     """
@@ -567,8 +568,8 @@ def div(mesh, v):
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
     <class 'pygimli.core._pygimli_.RVector'> 9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
-    >>> #divergence from boundary values are exact where the divergence from
-    >>> #interpolated cell center values are wrong due to boundary interpolation
+    >>> # divergence from boundary values are exact where the divergence from
+    >>> # interpolated cell center values are wrong due to boundary interp
     >>> print(sum(divCells))
     12.0
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
@@ -589,14 +590,16 @@ def div(mesh, v):
             d = mesh.divergence(pointDataToBoundaryData(mesh, v))
         elif len(v) == mesh.cellCount():
             CtB = mesh.cellToBoundaryInterpolation()
-            d = mesh.divergence(np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
+            d = mesh.divergence(np.array([CtB*pg.x(v),
+                                         CtB*pg.y(v),
+                                         CtB*pg.z(v)]).T)
         else:
             raise BaseException("implement me")
     elif callable(v):
         raise BaseException("implement me")
 
-
     return d
+
 
 def divergence(mesh, F=None, normMap=None, order=1):
     """
@@ -637,7 +640,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
 
         if directionCheck:
             if b.leftCell() is None and b.rightCell() is None:
-                #print(b.id(), b.leftCell(), b.rightCell())
+                # print(b.id(), b.leftCell(), b.rightCell())
                 sw = pg.Stopwatch(True)
                 mesh.createNeighbourInfos()
                 print("NeighbourInfos()", sw.duration(True))
@@ -676,7 +679,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
 
 
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
-    """WHATSTHIS?"""
+    """TODO"""
     A = pg.RSparseMapMatrix(dom, dom)
 
     if end == -1:
@@ -693,7 +696,7 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
 
 
 def identity(dom, start=0, end=-1, scale=1):
-    """WHATSTHIS?"""
+    """TODO"""
     A = pg.RSparseMapMatrix(dom, dom)
 
     if end == -1:
@@ -710,7 +713,7 @@ def identity(dom, start=0, end=-1, scale=1):
 def showSparseMatrix(A):
     """helper function"""
     S = A
-    #S = pg.RSparseMatrix(A)
+    # S = pg.RSparseMatrix(A)
     rows = S.vecRowIdx()
     cols = S.vecColPtr()
     vals = S.vecVals()
@@ -731,7 +734,7 @@ def linsolve(A, b, verbose=False):
 
     Parameters
     ----------
-    A : :gimliapi:`GIMLI::RSparseMatrix` | :gimliapi:`GIMLI::RSparseMapMatrix` |
+    A : :gimliapi:`GIMLI::RSparseMatrix` | :gimliapi:`GIMLI::RSparseMapMatrix`|
         numpy.array
         System matrix. Need to be symmetric, sparse and positive definite.
 
@@ -824,7 +827,7 @@ def assembleForceVector(mesh, f, userData=None):
                 for i, idx in enumerate(b_l.idx()):
                     rhs[idx] += b_l.row(0)[i] * fArray[idx]
 
-            #rhs = pg.RVector(fArray)
+            # rhs = pg.RVector(fArray)
         else:
             raise Exception("Forcevector have the wrong size: " +
                             str(len(fArray)))
@@ -832,9 +835,7 @@ def assembleForceVector(mesh, f, userData=None):
     return rhs
 
 
-def assembleNeumannBC(S,
-                      boundaryPairs, time=0.0,
-                      userData=None, verbose=False):
+def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
     r"""
     Apply Neumann condition to the system matrix S.
 

@@ -3,10 +3,10 @@
 
 """Class for managing seismic refraction data and doing inversions"""
 
-import sys
 from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
+
 import pygimli as pg
 from pygimli.meshtools import createParaMeshPLC, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
@@ -46,7 +46,7 @@ class Refraction(MethodManager):
         self.error = None
         self.velocity = None
         self.response = None
-        self.start = []
+        # self.start = []
         self.pd = None
 
         self.dataToken_ = 't'
@@ -81,6 +81,7 @@ class Refraction(MethodManager):
 
     def model(self):
         """base api """
+        # (self.paraDomain.cellMarkers())
         return self.velocity
 
     @staticmethod
@@ -174,7 +175,7 @@ class Refraction(MethodManager):
             print(self.dataContainer)
 
     def showData(self, ax=None, response=None, name='data'):
-        """show data as travel time curves (optionally with response)"""
+        """Show data as travel time curves (optionally with response)"""
         if response is not None:
             name = 'datafit'
         if ax is None:
@@ -201,15 +202,13 @@ class Refraction(MethodManager):
         Parameters
         ----------
 
-
-
         apply : bool
             set Mesh property of the underlying forward operator
 
         """
 
         if self.dataContainer is None:
-            raise('Cannot create mesh without dataContainer.')
+            raise BaseException('Cannot create mesh without dataContainer.')
 
         if depth is None:
             depth = self.getDepth()
@@ -234,7 +233,7 @@ class Refraction(MethodManager):
         self.inv.setForwardOperator(self.fop)
 
     def showMesh(self, ax=None, name='mesh'):
-        """show mesh in given axes or in a new figure"""
+        """show mesh in given ax or in a new figure"""
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
@@ -338,7 +337,7 @@ class Refraction(MethodManager):
         self.velocity = 1. / slowness
         self.response = self.inv.response()
 
-        self.model = self.velocity  # (self.paraDomain.cellMarkers())
+        # use self.model() to access to this self.model = self.velocity
 
         return self.velocity
 
@@ -393,24 +392,26 @@ class Refraction(MethodManager):
             print("slowness: ", slowness)
             raise BaseException("Simulate called with wrong slowness array.")
 
+        noisify = kwargs.pop('noisify', False)
+        if noisify:
+            raise BaseException('IMPLEMENTME')
+
         return t
 
     @staticmethod
-    def drawTravelTimeData(axes, data, t=None):
-        """
-        """
-        drawTravelTimeData(axes, data, t)
+    def drawTravelTimeData(ax, data, t=None):
+        """WRITEME"""
+        drawTravelTimeData(ax, data, t)
 
     @staticmethod
-    def drawApparentVelocities(axes, data, t=None, **kwargs):
-        """
-        """
+    def drawApparentVelocities(ax, data, t=None, **kwargs):
+        """WRITEME"""
         tt = Refraction()
         tt.setDataContainer(data)
-        tt.showVA(ax=axes, t=t, **kwargs)
+        tt.showVA(ax=ax, t=t, **kwargs)
 
     def getOffset(self, full=False):
-        """return vector of offsets (in m) between shot and receiver"""
+        """Return vector of offsets (in m) between shot and receiver."""
         if full:
             pos = self.dataContainer.sensorPositions()
             s, g = self.dataContainer('s'), self.dataContainer('g')
@@ -424,7 +425,7 @@ class Refraction(MethodManager):
             return np.absolute(gx - sx)
 
     def getMidpoint(self):
-        """return vector of offsets (in m) between shot and receiver"""
+        """Return vector of offsets (in m) between shot and receiver."""
         px = pg.x(self.dataContainer.sensorPositions())
         gx = np.array([px[int(g)] for g in self.dataContainer("g")])
         sx = np.array([px[int(s)] for s in self.dataContainer("s")])
@@ -434,7 +435,7 @@ class Refraction(MethodManager):
                squeeze=True, full=True):
         """show apparent velocity as image plot
 
-        TODO showXXX commands need to return axes and cbar .. if there is one
+        TODO showXXX commands need to return ax and cbar .. if there is one
 
         """
 
@@ -486,11 +487,12 @@ class Refraction(MethodManager):
 
         self.axs[name] = ax
         cov = self.rayCoverage()
-        pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), axes=ax,
+        pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
                 coverage=self.standardizedCoverage())
 
-    def showModel(self, axes=None, vals=None, **kwargs):
-        self.showResult(ax=axes, val=vals, **kwargs)
+    def showModel(self, ax=None, vals=None, **kwargs):
+        """WRITEME"""
+        self.showResult(ax=ax, val=vals, **kwargs)
 
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
                    logScale=False, name='result', **kwargs):
@@ -503,7 +505,7 @@ class Refraction(MethodManager):
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
-            ax, cbar = pg.show(mesh, val, logScale=logScale, axes=ax,
+            ax, cbar = pg.show(mesh, val, logScale=logScale, ax=ax,
                                colorBar=True, cMin=cMin, cMax=cMax,
                                coverage=self.standardizedCoverage(), **kwargs)
             self.figs[name] = plt.gcf()
@@ -524,10 +526,10 @@ class Refraction(MethodManager):
 
     def showResultAndFit(self, name='resultfit', **kwargs):
         """show two vertical subplots with result and data (with response)"""
-        fig, ax = plt.subplots(nrows=2)
+        fig, axs = plt.subplots(nrows=2)
         self.figs[name] = fig
-        self.showResult(ax=ax[0], **kwargs)
-        self.showData(ax=ax[1], response=self.response)
+        self.showResult(ax=axs[0], **kwargs)
+        self.showData(ax=axs[1], response=self.response)
 
     def saveFigures(self, name=None, ext='pdf'):
         """save all existing figures to files"""
@@ -548,7 +550,7 @@ class Refraction(MethodManager):
             Standardized coverage vector
             Mesh (bms and vtk with results)
         """
-#        TODO: How to extract the chi2 etc. from each iteration???
+        # TODO: How to extract the chi2 etc. from each iteration???
 
         subfolder = '/' + self.__class__.__name__
         path = getSavePath(folder, subfolder)
@@ -579,9 +581,7 @@ class Refraction(MethodManager):
 
 
 def test_Refraction():
-    """
-        Test Refraction manager stability some data/mesh set / data update
-    """
+    """Test Refraction manager stability some data/mesh set / data update"""
     import os
     datafile = os.path.dirname(__file__) + '/example_topo.sgt'
 
@@ -589,25 +589,24 @@ def test_Refraction():
     ra.createMesh(depth=80)
     ra.inv.setMaxIter(1)
 
-    ra.start()
+    ra.invert()
     m1 = ra.model()
     mesh = pg.Mesh(ra.mesh)
 
     ra.setMesh(mesh)
-    ra.start()
+    ra.invert()
     m2 = ra.model()
 
     np.testing.assert_array_equal(m1, m2)
 
     ra.setData(pg.DataContainer(datafile, 's g'))
-    m3 = ra.start()
+    m3 = ra.invert()
 
     np.testing.assert_array_equal(m1, m3)
 
 
-def main(argv):
-    """
-    """
+def main():
+    """Main"""
     parser = MethodManager.createArgParser(dataSuffix='sgt')
     options = parser.parse_args()
 
@@ -621,8 +620,8 @@ def main(argv):
     ra.showMesh()
     ra.invert(lam=options.lam, max_iter=options.maxIter,
               robustData=options.robustData, blockyModel=options.blockyModel)
-    ax, cbar = ra.showResult()
+    ra.showResult()
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()
     pg.wait()

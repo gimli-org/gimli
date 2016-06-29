@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Thu Dec 04 14:09:36 2014
@@ -84,7 +85,7 @@ class ReadAHL(object):
 
         with open(self.filename, 'r') as f:
             # skip some rows as determined by _extractheader()
-            for i in range(self.skiprows):
+            for _ in range(self.skiprows):
                 f.next()
 
             # build a 2D list where each row is a line from the file
@@ -210,5 +211,5 @@ if __name__ == '__main__':
 
     fname = 'C:/Users/Marcus/Documents/Trust/Varberg/Data/L2_seis/line2-3.ahl'
 
-    data = ReadAHL(fname, maxsensorid=2999, delimiter='|')
-    data()
+    ahl = ReadAHL(fname, maxsensorid=2999, delimiter='|')
+    ahl()
