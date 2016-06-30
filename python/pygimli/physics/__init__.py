@@ -13,8 +13,8 @@ from .SIP import SIPSpectrum
 
 from .ert import ERTModelling
 
-from .methodmanger import MethodManager
-from .methodmanger import MeshMethodManager
+from .methodManager import MethodManager
+from .methodManager import MeshMethodManager
 from .traveltime import Refraction
 
 # from . gravimetry import Gravimetry
