@@ -6,7 +6,7 @@ import numpy as np
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_ax_locatable
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
 
@@ -136,19 +136,19 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 #       cbarTarget = patches.figure
 
     if hasattr(patches, 'ax'):
-        divider = make_ax_locatable(patches.ax)
+        divider = make_axes_locatable(patches.axes)
     elif hasattr(patches, 'get_ax'):
-        divider = make_ax_locatable(patches.get_ax())
+        divider = make_axes_locatable(patches.get_axes())
 
     if divider:
         if orientation == 'horizontal':
             size = kwargs.pop('size', 0.2)
             pad = kwargs.pop('pad', 0.5)
-            cax = divider.append_ax("bottom", size=size, pad=pad)
+            cax = divider.append_axes("bottom", size=size, pad=pad)
         else:
             size = kwargs.pop('size', 0.2)
             pad = kwargs.pop('pad', 0.1)
-            cax = divider.append_ax("right", size=size, pad=pad)
+            cax = divider.append_axes("right", size=size, pad=pad)
 
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
