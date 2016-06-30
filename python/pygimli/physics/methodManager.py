@@ -25,14 +25,15 @@ class MethodManager(object):
 
         self.fop = self.createFOP_(verbose)
         if self.fop is None:
-            raise Exception("createFOP does not return valid forward operator")
+            raise BaseException("createFOP does not return "
+                                "valid forward operator")
 
         self.tD = None
         self.tM = None
 
         self.inv = self.createInv_(self.fop, verbose, debug)
         if self.inv is None:
-            raise Exception("createINV does not return valid inversion")
+            raise BaseException("createINV does not return valid inversion")
 
         self.setVerbose(verbose)
 
@@ -58,11 +59,13 @@ class MethodManager(object):
         self.fop.setVerbose(verbose)
 
     def dataToken(self):
+        """ Token name for the data in a DataContainer """
         if self.dataToken_ == 'nan':
             print("Warning! the Manager don't know the data token")
         return self.dataToken_
 
     def apparentData(self):
+        """ Convert data into apparent data"""
         raise BaseException("IMPLEMENTME in derived class")
 
 #    @classmethod
@@ -97,14 +100,13 @@ class MethodManager(object):
         pass
 
     # Work related methods
-    def invert(self, data, values=None, verbose=0, **kwargs):
+    def invert(self, **kwargs):
         """ Invert the data and fill the parametrization. """
-        raise('implement me')
-        pass
+        raise BaseException('implement me in derived class' + str(**kwargs))
 
-    def simulate(self, mesh, values, data=None):
+    def simulate(self, **kwargs):
         """ Run a simulation aka the forward task. """
-        pass
+        raise BaseException('implement me in derived class' + str(**kwargs))
 
     # Visualization stuff
     def show(self, data, values=None, axes=None,
@@ -170,6 +172,7 @@ class MethodManager(object):
 
 
 class MeshMethodManager(MethodManager):
+    """TODO WRITEME """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

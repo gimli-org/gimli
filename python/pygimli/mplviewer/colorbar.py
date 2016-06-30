@@ -2,13 +2,13 @@
 """
     Define special colorbar behavior.
 """
-import matplotlib.pyplot as plt
 import numpy as np
 
 import matplotlib as mpl
-import matplotlib.ticker as ticker
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_ax_locatable
 from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.ticker as ticker
 
 from distutils.version import StrictVersion
 
@@ -19,7 +19,7 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
 
-def autolevel(z, N, logscale=None):
+def autolevel(z, nLevs, logscale=None):
     """Create N levels for the data array z based on matplotlib ticker.
 
     Examples
@@ -36,7 +36,7 @@ def autolevel(z, N, logscale=None):
     if logscale:
         locator = ticker.LogLocator()
     else:
-        locator = ticker.MaxNLocator(N + 1)
+        locator = ticker.MaxNLocator(nLevs + 1)
 
     zmin = min(z)
     zmax = max(z)
@@ -58,16 +58,19 @@ def cmapFromName(cmapname, ncols=256, bad=None):
         if cmapname == 'b2r':
             cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
                                                       cdict, ncols)
-        elif cmapname == 'viridis' and StrictVersion(mpl.__version__) < StrictVersion('1.5.0'):
+        elif cmapname == 'viridis' and \
+                StrictVersion(mpl.__version__) < StrictVersion('1.5.0'):
+
             print("Mpl:", mpl.__version__, " using HB viridis")
-            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data[::-1])
+            cmap = LinearSegmentedColormap.from_list('viridis',
+                                                     viridis_data[::-1])
         elif cmapname == 'viridis_r':
             print("Using HB viridis_r")
             cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
         else:
             try:
                 cmap = mpl.cm.get_cmap(cmapname, ncols)
-            except Exception as e:
+            except BaseException as e:
                 print("Could not retrieve colormap ", cmapname, e)
 
     cmap.set_bad(bad)
@@ -86,12 +89,12 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
     # else:
     # data = array( dataIn )
 
-    if (min(data) < 0):
+    if min(data) < 0:
         logScale = False
-    if (logScale):
+    if logScale:
         data = np.log10(data)
 
-    Nhist, xHist = np.histogram(data, bins=100)
+    xHist = np.histogram(data, bins=100)[1]
 
     if not cMin:
         cMin = xHist[dropColLimitsPerc]
@@ -103,7 +106,7 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
         if logScale:
             cMax = pow(10.0, cMax)
 
-    if (logScale):
+    if logScale:
         data = pow(10.0, data)
 
     data[np.where(data < cMin)] = cMin
@@ -117,14 +120,14 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
     """
     Create a Colobar.
 
-    Shortcut to create a matplotlib colorbar within the axes for a given
+    Shortcut to create a matplotlib colorbar within the ax for a given
     patchset.
 
     Parameters
     ----------
     **kwargs :
         * size : with or height of the colobar
-        * pad : padding distance from axes
+        * pad : padding distance from ax
     """
     cbarTarget = plt
     cax = None
@@ -133,19 +136,19 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 #       cbarTarget = patches.figure
 
     if hasattr(patches, 'ax'):
-        divider = make_axes_locatable(patches.ax)
-    elif hasattr(patches, 'get_axes'):
-        divider = make_axes_locatable(patches.get_axes())
+        divider = make_ax_locatable(patches.ax)
+    elif hasattr(patches, 'get_ax'):
+        divider = make_ax_locatable(patches.get_ax())
 
     if divider:
         if orientation == 'horizontal':
             size = kwargs.pop('size', 0.2)
             pad = kwargs.pop('pad', 0.5)
-            cax = divider.append_axes("bottom", size=size, pad=pad)
+            cax = divider.append_ax("bottom", size=size, pad=pad)
         else:
             size = kwargs.pop('size', 0.2)
             pad = kwargs.pop('pad', 0.1)
-            cax = divider.append_axes("right", size=size, pad=pad)
+            cax = divider.append_ax("right", size=size, pad=pad)
 
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)

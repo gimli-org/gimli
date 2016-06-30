@@ -193,7 +193,7 @@ class InvertJointPetro(MethodManager):
         """TODO"""
         self.fop.setMesh(mesh)
 
-    def invert(self, data, mesh, lam=20, limits=None):
+    def invert(self, data=None, mesh=None, lam=20, limits=None):
         """TODO"""
         self.setData(data)
         self.setMesh(mesh)
