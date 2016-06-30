@@ -9,6 +9,21 @@ from environment_for_pygimli_build import settings
 
 import hand_made_wrappers
 
+from optparse import OptionParser
+optionParser = OptionParser("usage: %prog [options]")
+optionParser.add_option("", "--extra-includes", dest="extraIncludes")
+optionParser.add_option("", "--extra-path", dest="extraPath")
+optionParser.add_option("", "--caster", dest="caster")
+
+(options, args) = optionParser.parse_args()
+
+if options.caster:
+    settings.caster_path = options.caster
+
+if options.extraPath:
+    print("insert extra path: ", options.extraPath)
+    sys.path.insert(0, options.extraPath)
+
 from pygccxml import parser
 
 import logging
@@ -25,20 +40,6 @@ from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
 
 import hashlib
 
-from optparse import OptionParser
-optionParser = OptionParser("usage: %prog [options]")
-optionParser.add_option("", "--extra-includes", dest="extraIncludes")
-optionParser.add_option("", "--extra-path", dest="extraPath")
-optionParser.add_option("", "--caster", dest="caster")
-
-(options, args) = optionParser.parse_args()
-
-if options.caster:
-    settings.caster_path = options.caster
-
-if options.extraPath:
-    print("insert extra path: ", options.extraPath)
-    sys.path.insert(0, options.extraPath)
 
 MAIN_NAMESPACE = 'GIMLI'
 

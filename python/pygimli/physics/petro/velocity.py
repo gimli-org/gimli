@@ -42,7 +42,6 @@ def slownessWillie(phi, sat=1, vm=4000, vw=1600, va=330,
     raise BaseException('TODO')
 
 
-# Wyllie (time-average) equation
 def wyllie(phi, sat=1, vm=4000, vw=1600, va=330):
     """Return slowness after Wyllie time-average equation"""
     return 1./vm * (1-phi) + phi * sat * 1./vw + phi * (1 - sat) * 1./va
