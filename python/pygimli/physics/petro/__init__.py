@@ -4,9 +4,21 @@
 This package contains submodules for various petrophysical models
 """
 
-from .resistivity import *
-from .velocity import *
-from .modelling import PetroModelling, PetroJointModelling
-from .modelling import InvertPetro, InvertJointPetro
+from .resistivity import resistivityArchie
+from .resistivity import transFwdArchiePhi
+from .resistivity import transInvArchiePhi
+from .resistivity import transFwdArchieS
+from .resistivity import transInvArchieS
 
-__all__ = []
+from .velocity import slownessWillie
+from .velocity import transFwdWylliePhi
+from .velocity import transInvWylliePhi
+from .velocity import transFwdWyllieS
+from .velocity import transInvWyllieS
+
+from .modelling import PetroModelling
+from .modelling import PetroJointModelling
+from .modelling import InvertPetro
+from .modelling import InvertJointPetro
+
+__all__ = [name for name in dir() if '_' not in name]

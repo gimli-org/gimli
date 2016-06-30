@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO DOCUMENT ME"""
+
+from copy import deepcopy
+
+import numpy as np
 
 import pygimli as pg
-
 from pygimli.utils import unique
-import numpy as np
 
 
 def parseArgToArray(arg, ndof, mesh=None, userData=None):
@@ -55,7 +58,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
         pass
 
     if hasattr(arg, '__len__'):
-        if type(arg) == np.ndarray:
+        if isinstance(arg, np.ndarray):
             if len(arg) == nDofs[0]:
                 return arg
             else:
@@ -197,8 +200,6 @@ def parseArgPairToBoundaryArray(pair, mesh):
         boundaries.append(pair)
         return boundaries
 
-
-
     for b in bounds:
         val = None
         if hasattr(pair[1], '__call__'):
@@ -238,26 +239,27 @@ def parseArgToBoundaries(args, mesh):
     if isinstance(args, list):
         if len(args) == 2:
             try:
-                #[[,], [,]]
+                # [[,], [,]]
                 if len(args[0]) == 2 and len(args[1]) == 2:
                     boundaries += parseArgPairToBoundaryArray(args[0], mesh)
                     boundaries += parseArgPairToBoundaryArray(args[1], mesh)
                 else:
                     boundaries += parseArgPairToBoundaryArray(args, mesh)
-            except:
-                #[,]
+            except BaseException as _:
+                # [,]
                 boundaries += parseArgPairToBoundaryArray(args, mesh)
         else:
-            #[[,], [,], ...]
+            # [[,], [,], ...]
             for arg in args:
                 boundaries += parseArgPairToBoundaryArray(arg, mesh)
 
     elif hasattr(args, '__call__'):
         for b in mesh.boundaries():
             if not b.leftCell() or not b.rightCell():
-                #if args(b) is not None:
+                # if args(b) is not None:
                 boundaries.append([b, args])
     return boundaries
+
 
 def parseMapToCellArray(attributeMap, mesh, default=0.0):
     """
@@ -300,10 +302,10 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                     print("Warning! parseMapToCellArray: cannot find marker " +
                           str(pair[0]) + " within mesh.")
                 else:
-                    #print(atts, idx, pair[1], float(pair[1]))
+                    # print(atts, idx, pair[1], float(pair[1]))
                     atts[idx] = float(pair[1])
             else:
-                raise Exception("Please provide a list of [int, value] pairs!" +
+                raise Exception("Please provide a list of [int, value] pairs" +
                                 str(pair))
     else:
         print("attributeMap: ", attributeMap)
@@ -338,10 +340,10 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     mesh.setCellAttributes(vals)
     mesh.createNeighbourInfos()
     # std::vector< Cell * >
-    #empties = []
+    # empties = []
 
     if slope:
-        #! search all cells with empty neighbours
+        # search all cells with empty neighbours
         ids = pg.find(mesh.cellAttributes() != 0.0)
 
         for c in mesh.cells(ids):
@@ -350,10 +352,10 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
 
                 if nc:
                     if nc.attribute() == 0.0:
-                        #c.setAttribute(99999)
+                        # c.setAttribute(99999)
 
                         b = pg.findCommonBoundary(c, nc)
-                        ### search along a slope
+                        # search along a slope
                         pos = b.center() - b.norm()*1000.
                         sf = pg.RVector()
                         startCell = c
@@ -363,7 +365,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
                             startCell.shape().isInside(pos, sf, False)
                             nextC = startCell.neighbourCell(sf)
                             if nextC:
-                                if nextC.attribute()==0.0:
+                                if nextC.attribute() == 0.0:
                                     nextC.setAttribute(c.attribute())
                                 else:
                                     break
@@ -375,6 +377,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     mesh.setCellAttributes(oldAtts)
     return atts
 
+
 def pointDataToBoundaryData(mesh, vec):
     """
         Assuming [NodeCount, dim] data
@@ -382,57 +385,57 @@ def pointDataToBoundaryData(mesh, vec):
     """
 
     if len(vec) != mesh.nodeCount():
-        raise BaseException("Dimension mismatch, expecting nodeCount(): "
-                            + str(mesh.nodeCount())
-                            + " got: " + str(len(vec)), str(len(vec[0])))
+        raise BaseException("Dimension mismatch, expecting nodeCount(): " +
+                            str(mesh.nodeCount()) +
+                            " got: " + str(len(vec)), str(len(vec[0])))
     dim = len(vec[0])
     ret = np.zeros((mesh.boundaryCount(), dim))
     if dim == 1:
         for b in mesh.boundaries():
-            ret[b.id()] = b.pot(b.center(), vec)# / b.nodeCount()
+            ret[b.id()] = b.pot(b.center(), vec)  # / b.nodeCount()
     elif dim == 2:
         for b in mesh.boundaries():
-            #v = b.vec(b.center(), vec)
-            #interpolation is hell slow here .. check!!!!!!
+            # v = b.vec(b.center(), vec)
+            # interpolation is hell slow here .. check!!!!!!
             v2 = (vec[b.node(0).id()] + vec[b.node(1).id()])*0.5
-            #print(v -v2)
+            # print(v -v2)
             ret[b.id()] = [v2[0], v2[1]]
     else:
         for b in mesh.boundaries():
-            ret[b.id()] = b.vec(b.center(), vec)# / b.nodeCount()
+            ret[b.id()] = b.vec(b.center(), vec)  # / b.nodeCount()
 
     return ret
 
+
 def cellDataToBoundaryData(mesh, vec):
-    """
-        DOCUMENT_ME
-    """
-    if len(data) != mesh.cellCount():
-        raise BaseException("Dimension mismatch, expecting cellCount(): "
-                            + str(mesh.cellCount())
-                            + "got: " + str(len(vec)), str(len(vec[0])))
+    """ TODO DOCUMENT_ME """
+    if len(vec) != mesh.cellCount():
+        raise BaseException("Dimension mismatch, expecting cellCount(): " +
+                            str(mesh.cellCount()) +
+                            "got: " + str(len(vec)), str(len(vec[0])))
 
     CtB = mesh.cellToBoundaryInterpolation()
 
-    if type(vec) == pg.R3Vector():
-        return np.array([CtB*pg.x(vec), CtB*pg.y(vec), CtB*pg.z(vec)]).T
+    if isinstance(vec, pg.R3Vector()):
+        return np.array([CtB * pg.x(vec),
+                         CtB * pg.y(vec),
+                         CtB * pg.z(vec)]).T
     else:
-        return CtB*vec
+        return CtB * vec
+
 
 def cellDataToPointData(mesh, vec):
-    """
-        DOCUMENT_ME
-    """
+    """ TODO DOCUMENT_ME """
     if len(vec) != mesh.cellCount():
-        raise BaseException("Dimension mismatch, expecting cellCount(): "
-                            + str(mesh.cellCount())
-                            + "got: " + str(len(vec)), str(len(vec[0])))
+        raise BaseException("Dimension mismatch, expecting cellCount(): " +
+                            str(mesh.cellCount()) +
+                            "got: " + str(len(vec)), str(len(vec[0])))
 
     if mesh.dim() == 1:
         return pg.cellDataToPointData(mesh, vec[0])
     elif mesh.dim() == 2:
-        return np.array([pg.cellDataToPointData(mesh, vec[:,0]),
-                         pg.cellDataToPointData(mesh, vec[:,1])])
+        return np.array([pg.cellDataToPointData(mesh, vec[:, 0]),
+                         pg.cellDataToPointData(mesh, vec[:, 1])])
     elif mesh.dim() == 3:
         return np.array([pg.cellDataToPointData(mesh, vec[0]),
                          pg.cellDataToPointData(mesh, vec[1]),
@@ -483,7 +486,8 @@ def grad(mesh, u, r=None):
         base shape functions.
 
     u : array | callable
-        Scalar field per mesh node position or an appropriate callable([[x,y,z]])
+        Scalar field per mesh node position or an appropriate
+        callable([[x,y,z]])
 
     r : ndarray((M, 3)) [mesh.cellCenter()]
         Alternative target coordinates :math:`\mathbf{r} for the resulting
@@ -522,18 +526,19 @@ def grad(mesh, u, r=None):
 
     v = np.ndarray((len(r), 3))
 
-    for i, vi in enumerate(v):
+    for i, _ in enumerate(v):
         c = mesh.findCell(r[i])
         if c:
             v[i] = c.grad(r[i], uv)
 
     return v
 
+
 def div(mesh, v):
-    """
-    Return the discrete interpolated divergence field :math:`\mathbf{u}`
-    at each cell for a given vector field :math:`\mathbf{v}`.
-    First order integration via boundary center.
+    r"""
+        Return the discrete interpolated divergence field :math:`\mathbf{u}`
+        at each cell for a given vector field :math:`\mathbf{v}`.
+        First order integration via boundary center.
 
     .. math::
         d(cells) & = \nabla\cdot\vec{v} \\
@@ -590,9 +595,8 @@ def div(mesh, v):
             d = mesh.divergence(pointDataToBoundaryData(mesh, v))
         elif len(v) == mesh.cellCount():
             CtB = mesh.cellToBoundaryInterpolation()
-            d = mesh.divergence(np.array([CtB*pg.x(v),
-                                         CtB*pg.y(v),
-                                         CtB*pg.z(v)]).T)
+            d = mesh.divergence(
+                np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
         else:
             raise BaseException("implement me")
     elif callable(v):
@@ -616,7 +620,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
     if F is None:
         F = lambda r: r
 
-    div = 0
+    diverg = 0
     directionCheck = False
 
     if mesh.cellCount() > 0:
@@ -673,9 +677,9 @@ def divergence(mesh, F=None, normMap=None, order=1):
             # raise Exception("invalid mesh: left is None .. every
             # boundary need leftCell")
 
-        div += tmpdiv
+        diverg += tmpdiv
 
-    return div
+    return diverg
 
 
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
@@ -780,14 +784,14 @@ def assembleForceVector(mesh, f, userData=None):
         for each cell [0 .. mesh.cellCount()]
     """
 
-    if type(f) is list or hasattr(f, 'ndim'):
+    if isinstance(f, list) or hasattr(f, 'ndim'):
 
-        if type(f) is list:
+        if isinstance(f, list):
 
             rhs = np.zeros((len(f), mesh.nodeCount()))
-            for i in range(len(f)):
+            for i, fi in enumerate(f):
                 userData['i'] = i
-                rhs[i] = assembleForceVector(mesh, f[i], userData)
+                rhs[i] = assembleForceVector(mesh, fi, userData)
 
             return rhs
 
@@ -872,15 +876,13 @@ def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
     Se = pg.ElementMatrix()
 
     if not hasattr(boundaryPairs, '__getitem__'):
-        raise("Boundary pairs need to be a list of [boundary, value]")
+        raise BaseException("Boundary pairs need to be a list of "
+                            "[boundary, value]")
 
     for pair in boundaryPairs:
         boundary = pair[0]
 
         val = pair[1]
-
-        #if hasattr(val, '__len__'):
-            #if len(val) =
 
         g = generateBoundaryValue(boundary, val, time, userData)
 
@@ -908,8 +910,7 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
         rhs.setVal(uDirchlet, uDirIndex)
 
 
-def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0,
-                        userData=None, verbose=False):
+def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None):
     r"""
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
 
@@ -946,7 +947,8 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0,
     """
 
     if not hasattr(boundaryPairs, '__getitem__'):
-        raise("Boundary pairs need to be a list of [boundary, value]")
+        raise BaseException("Boundary pairs need to be a list of "
+                            "[boundary, value]")
 
     uDirNodes = []
     uDirVal = dict()
@@ -980,8 +982,8 @@ def createStiffnessMatrix(mesh, a=None):
     """
     Assemble the stiffness matrix.
 
-    Calculates the scaled stiffness matrix for the given mesh scaled with the per cell
-    values a.
+    Calculates the scaled stiffness matrix for the given mesh scaled
+    with the per cell values a.
 
     ..math::
             ...
@@ -1021,8 +1023,8 @@ def createStiffnessMatrix(mesh, a=None):
     A_l = pg.ElementMatrix()
     for c in mesh.cells():
         A_l.ux2uy2uz2(c)
-        #A_l *= a[c.id()]
-        #A += A_l
+        # A_l *= a[c.id()]
+        # A += A_l
         A.add(A_l, a[c.id()])
 
     return A
@@ -1030,8 +1032,11 @@ def createStiffnessMatrix(mesh, a=None):
 
 def createMassMatrix(mesh, b=None):
     """
-    TODO remove b .. not necessary .. b should be scaled in final equation not here
     Assemble mass element matrix.
+
+    TODO remove b .. not necessary .. b should be scaled in final equation
+    not here.
+
 
     Calculates the mass element matrix for the given mesh scaled with the
     per cell values b.
@@ -1064,17 +1069,15 @@ def createMassMatrix(mesh, b=None):
     return B
 
     # create matrix structure regarding the mesh
-    B.buildSparsityPattern(mesh)
-
+    # B.buildSparsityPattern(mesh)
     # define a local element matrix
-    B_l = pg.ElementMatrix()
-    for c in mesh.cells():
-        B_l.u2(c)
-        # check if b[i] == B*b
-        B_l *= b[c.id()]
-        B += B_l
-
-    return B
+    # B_l = pg.ElementMatrix()
+    # for c in mesh.cells():
+    #    B_l.u2(c)
+    # # check if b[i] == B*b
+    #    B_l *= b[c.id()]
+    #    B += B_l
+    # return B
 
 
 def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
@@ -1177,10 +1180,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     >>> from pygimli.meshtools import polytools as plc
     >>> from pygimli.mplviewer import drawField, drawMesh
     >>> import matplotlib.pyplot as plt
-    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1, worldMarker=False)
+    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10],
+    ...                         marker=1, worldMarker=False)
     >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
-    >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]], uB=[[4, 1.0], [3, 0.0]])
+    >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
+    ...                                   uB=[[4, 1.0], [3, 0.0]])
     >>> fig, ax = plt.subplots()
     >>> pc = drawField(ax, mesh, u)
     >>> drawMesh(ax, mesh)
@@ -1193,10 +1198,10 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     """
 
     if 'uDirichlet' in kwargs or 'uBoundary' in kwargs:
-        raise("use uB instead")
+        raise BaseException("use uB instead")
 
     if 'uBoundary' in kwargs:
-        raise("use duB instead")
+        raise BaseException("use duB instead")
 
     debug = kwargs.pop('debug', False)
 
@@ -1237,18 +1242,14 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if 'duB' in kwargs:
             assembleNeumannBC(S,
                               parseArgToBoundaries(kwargs['duB'], mesh),
-                              time=0.0,
-                              userData=userData,
-                              verbose=False)
+                              time=0.0, userData=userData)
 
         if debug:
             print("6b: ", swatch2.duration(True))
         if 'uB' in kwargs:
             assembleDirichletBC(S,
                                 parseArgToBoundaries(kwargs['uB'], mesh),
-                                rhs, time=0.0,
-                                userData=userData,
-                                verbose=False)
+                                rhs, time=0.0, userData=userData)
 
         if debug:
             print("6c: ", swatch2.duration(True))
@@ -1271,7 +1272,6 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             else:
                 if u is None:
                     u = pg.RVector(rhs.size(), 0.0)
-
 
         assembleTime = swatch.duration(True)
         if stats:
@@ -1311,7 +1311,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         theta = kwargs.pop('theta', 1)
 
-        if not 'duB' in kwargs:
+        if 'duB' not in kwargs:
             A = createStiffnessMatrix(mesh, a)
 
             if 'uB' in kwargs:
@@ -1352,24 +1352,23 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 assembleNeumannBC(A,
                                   parseArgToBoundaries(kwargs['duB'],
                                                        mesh),
-                                  time=times[n],
-                                  userData=userData,
-                                  verbose=False)
+                                  time=times[n], userData=userData)
 
             swatch.reset()
-            # (A + a*B)u is fastest, followed by A*u + (B*u)*a and finally A*u + a*B*u and
-            b = (M + (dt * (theta - 1.)) * A ) * U[n - 1] + \
+            # (A + a*B)u is fastest,
+            # followed by A*u + (B*u)*a and finally A*u + a*B*u and
+            b = (M + (dt * (theta - 1.)) * A) * U[n - 1] + \
                 dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
-            #print ('a',swatch.duration(True))
+            # print ('a',swatch.duration(True))
             # b = M * U[n - 1] - (A * U[n - 1]) * (dt*(1.0 - theta)) + \
-            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+            # dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
-            #print ('b',swatch.duration(True))
+            # print ('b',swatch.duration(True))
 
             # b = M * U[n - 1] - (dt*(1.0 - theta)) * A * U[n - 1] + \
-            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-            #print ('c',swatch.duration(True))
+            # dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+            # print ('c',swatch.duration(True))
 
             measure += swatch.duration()
 
@@ -1379,11 +1378,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 assembleDirichletBC(S,
                                     parseArgToBoundaries(kwargs['uB'], mesh),
                                     rhs=b,
-                                    time=times[n],
-                                    userData=userData,
-                                    verbose=verbose)
+                                    time=times[n], userData=userData)
 
-            #u = S/b
+            # u = S/b
             t_prep = swatch.duration(True)
             solver = pg.LinSolver(S, verbose)
             solver.solve(b, u)
@@ -1412,15 +1409,9 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     """
 
     if len(times) < 2:
-        raise Exception("We need at least 2 times for Crank "
-            "Nicolsen time discretization." + str(len(times)))
+        raise BaseException("We need at least 2 times for Crank "
+                            "Nicolsen time discretization." + str(len(times)))
     sw = pg.Stopwatch(True)
-    swi = pg.Stopwatch(True)
-
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import time
-
 
     if u0 is None:
         u0 = np.zeros(len(f))
@@ -1439,21 +1430,21 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
 
     timeIter1 = np.zeros(len(times))
     timeIter2 = np.zeros(len(times))
-    #print('0', min(u[0]), max(u[0]), min(f), max(f))
+    # print('0', min(u[0]), max(u[0]), min(f), max(f))
     for n in range(1, len(times)):
 
-        tic = time.time()
-        b = (I + (dt * (theta - 1.)) * S ) * u[n - 1] + \
+        pg.tic()
+        b = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
-        timeIter1[n - 1] = time.time() - tic
+        timeIter1[n - 1] = pg.dur()
 
-        tic = time.time()
+        pg.tic()
         u[n, :] = solver.solve(b)
-        timeIter2[n - 1] = time.time() - tic
+        timeIter2[n - 1] = pg.dur()
 
-        #A = (I + dt * theta * S)
-        #u[n, : ] = linsolve(A, b)
+        # A = (I + dt * theta * S)
+        # u[n, : ] = linsolve(A, b)
 
     # plt.figure()
     # plt.plot(timeIter1)
@@ -1461,65 +1452,71 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
     # plt.figure()
 
         if verbose and (n % verbose == 0):
-            #print(min(u[n]), max(u[n]))
-            print("timesteps:", n, "/", len(times), 'runtime:', sw.duration(), "s",
+            # print(min(u[n]), max(u[n]))
+            print("timesteps:", n, "/", len(times),
+                  'runtime:', sw.duration(), "s",
                   'itertime:', np.mean(timeIter1))
 
     return u
 
-from copy import deepcopy
 
 class RungeKutta(object):
-    #% Low storage Runge-Kutta coefficients
-    rk4a = [            0.0,
-        -567301805773.0/1357537059087.0,
-        -2404267990393.0/2016746695238.0,
-        -3550918686646.0/2091501179385.0 ,
-        -1275806237668.0/842570457699.0]
-    rk4b = [ 1432997174477.0/9575080441755.0,
-         5161836677717.0/13612068292357.0,
-         1720146321549.0/2090206949498.0 ,
-         3134564353537.0/4481467310338.0 ,
-         2277821191437.0/14882151754819.0]
-    rk4c = [             0.0 ,
-         1432997174477.0/9575080441755.0,
-         2526269341429.0/6820363962896.0,
-         2006345519317.0/3224310063776.0,
-         2802321613138.0/2924317926251.0]
+    """TODO DOCUMENT ME"""
+    # Low storage Runge-Kutta coefficients
+    rk4a = [0.0,
+            - 567301805773.0/1357537059087.0,
+            - 2404267990393.0/2016746695238.0,
+            - 3550918686646.0/2091501179385.0,
+            - 1275806237668.0/842570457699.0]
+    rk4b = [1432997174477.0/9575080441755.0,
+            5161836677717.0/13612068292357.0,
+            1720146321549.0/2090206949498.0,
+            3134564353537.0/4481467310338.0,
+            2277821191437.0/14882151754819.0]
+    rk4c = [0.0,
+            1432997174477.0/9575080441755.0,
+            2526269341429.0/6820363962896.0,
+            2006345519317.0/3224310063776.0,
+            2802321613138.0/2924317926251.0]
 
     def __init__(self, solver, verbose=False):
+        """TODO DOCUMENT_ME"""
         self.solver = solver
         self.verbose = verbose
         self.order = 5
+        self.dt = None
+        self.time = 0
+        self.tMax = None
+        self.u = None
+        self.resu = None
+        self.nSteps = 0
 
     def run(self, u0, dt, tMax=1):
-        """
-        """
+        """TODO DOCUMENT_ME"""
         self.start(u0, dt, tMax)
 
-        for i in range(self.Nsteps):
+        for _ in range(self.nSteps):
             self.step()
+
         return self.u
 
     def start(self, u0, dt, tMax=1):
-        """
-        """
-        self.Nsteps = int(np.ceil(tMax/dt))
+        """TODO DOCUMENT_ME"""
+        self.nSteps = int(np.ceil(tMax/dt))
         self.dt = dt
         self.time = 0
         self.tMax = tMax
         self.u = deepcopy(u0)
         self.resu = deepcopy(u0)
 
-        if type(self.resu) is list:
+        if isinstance(self.resu, list):
             for r in self.resu:
                 r *= 0.0
         else:
             self.resu *= 0.0
 
     def step(self):
-        """
-        """
+        """TODO DOCUMENT ME"""
         if self.time + self.dt > self.tMax:
             self.dt = self.tMax - self.time
 
@@ -1559,9 +1556,10 @@ class RungeKutta(object):
 
                 rhs = self.solver.explicitRHS(self.u, tLocal)
 
-                if type(self.resu) is list:
+                if isinstance(self.resu, list):
                     for i in range(len(self.resu)):
-                        self.resu[i] = self.rk4a[jRK] * self.resu[i] + self.dt * rhs[i]
+                        self.resu[i] = self.rk4a[jRK] * self.resu[i] + \
+                                       self.dt * rhs[i]
 
                         self.u[i] += self.rk4b[jRK] * self.resu[i]
                 else:
@@ -1570,7 +1568,6 @@ class RungeKutta(object):
 
         self.time += self.dt
         return self.u
-
 
 
 if __name__ == "__main__":

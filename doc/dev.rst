@@ -77,24 +77,39 @@ To produce a new version, type:
 
 .. code-block:: bash
 
-   git tag -a -m "First official release" "v1.0" # tags last commit as v1.0
-   git push --tags # pushes tags to GitHub
+    git tag -a -m "First official release" "v1.0" # tags last commit as v1.0
+    git push --tags # pushes tags to GitHub
 
 
 Read api documentation from shell:
 
 .. code-block:: bash
 
-    python -c "import pygimli as pg; help(pg.test)
+  python -c "import pygimli as pg; help(pg.test)
+
+Code Quality
+------------
 
 Run api examples from shell:
 
 .. code-block:: bash
 
-    python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle)"
+  python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle)"
+
+Run a specific test from shell.
+
+.. code-block:: bash
+
+  python -c "import pygimli; from pygimli.physics.petro.resistivity import *; test_Archie()"
 
 Run pylint from shell to check code:
 
 .. code-block:: bash
-        
+
     pylint --rcfile $GIMLIROOT/.pylintrc file.py
+
+Run prospector to check code like landscape.io do:
+
+.. code-block:: bash
+
+    prospector --profile=$GIMLIROOT/.prospector.yml file.py
