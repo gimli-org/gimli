@@ -115,7 +115,6 @@ def fastMarch(mesh, downwind, times, upT, downT):
 
 def test():
     """WRITEME"""
-
     mesh = pg.Mesh('mesh/test2d')
     mesh.createNeighbourInfos()
 

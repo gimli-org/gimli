@@ -1,34 +1,35 @@
 # -*- coding: utf-8 -*-
+"""Overlay / Underlay an image or a geo referenced map to mpl.ax."""
 
-"""Overlay / Underlay an image or a geo referenced map to mpl.ax"""
 import os
 
 import math
 import random
-
-import matplotlib.image as mpimg
-import numpy as np
-
 import urllib
+
+import numpy as np
+import matplotlib.image as mpimg
 
 
 class OverlayImageMPL(object):
-
-    """What is this?"""
+    """TODO Documentme."""
 
     def __init__(self, imageFileName, ax):
+        """Constructor."""
         self.ax = ax
         self.imAxes = None
         self.image = mpimg.open(imageFileName)
         self.figure = self.ax.get_figure()
+        self.dx = 0
+        self.dy = 0
 
     def clear(self):
-        """What is this?"""
+        """TODO Documentme."""
         if self.imAxes in self.figure.ax:
             self.figure.delax(self.imAxes)
 
     def setPosition(self, posX, posY, ax=None):
-        """What is this?"""
+        """TODO Documentme."""
         if ax is not None:
             self.ax = ax
         self.dx = float(self.image.size[0]) / \
@@ -66,15 +67,14 @@ class OverlayImageMPL(object):
             self.imAxes = self.figure.add_ax([
                 x + self.ax.get_position().x0 - self.dx / 6.0,
                 y + self.ax.get_position().y0,
-                self.dx, self.dy],
-                frameon=False, axisbg='y')
+                self.dx, self.dy], frameon=False, axisbg='y')
         else:
             self.imAxes.set_position([
                 x + self.ax.get_position().x0 - self.dx / 6.0,
                 y + self.ax.get_position().y0,
                 self.dx, self.dy])
 
-        if (len(self.imAxes.get_xticks()) > 0):
+        if len(self.imAxes.get_xticks()) > 0:
             print("overlay imshow")
             self.imAxes.imshow(self.image, origin='lower')
             self.imAxes.set_xticks([])
@@ -82,7 +82,7 @@ class OverlayImageMPL(object):
 
 
 def deg2MapTile(lon_deg, lat_deg, zoom):
-    """What is this?"""
+    """TODO Documentme."""
     lat_rad = math.radians(lat_deg)
     n = 2.0 ** zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)
@@ -92,8 +92,7 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
 
 
 def mapTile2deg(xtile, ytile, zoom):
-    """
-    Returns the NW-corner of the square.
+    """Calculate the NW-corner of the square.
 
     Use the function with xtile+1 and/or ytile+1 to get the other corners.
     With xtile+0.5  ytile+0.5 it will return the center of the tile.
@@ -106,7 +105,7 @@ def mapTile2deg(xtile, ytile, zoom):
 
 
 def cacheFileName(fullname, vendor):
-    """ Utility. Createfilename and path to cache download data."""
+    """Createfilename and path to cache download data."""
     (dirName, fileName) = os.path.split(fullname)
 
     path = './' + vendor + '/' + dirName
@@ -120,8 +119,7 @@ def cacheFileName(fullname, vendor):
 
 
 def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
-    """
-    Get a map tile from public mapping server.
+    """Get a map tile from public mapping server.
 
     Parameters
     ----------
@@ -195,8 +193,7 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
 
 def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
                 verbose=False, fitMap=False):
-    """
-    Get a map from public mapping server and underlay it on the given ax
+    """Get a map from public mapping server and underlay it on the given ax.
 
     Parameters
     ----------

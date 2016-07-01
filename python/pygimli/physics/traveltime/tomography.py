@@ -40,7 +40,9 @@ def readTOMfile(filename, ndig=2, roundto=0):
 
 
 class Tomography(Refraction):
-    """traveltime tomography for tomographic (e.g. crosshole) measurements"""
+
+    """Traveltime tomography for tomographic (e.g. crosshole) measurements"""
+
     def __init__(self, data=None, tcorr=0, name='new', **kwargs):
         """Init function with optional data load
 

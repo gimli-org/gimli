@@ -59,7 +59,7 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=E0401,W1609,W1626,W1617,E1604,W1610,W1606,W1637,W1619,W1615,W1639,W1638,W1612,E1606,W1618,W1630,W1632,I0020,W1622,W1634,W1633,W1640,I0021,E1603,W1635,E1605,W1602,W1614,W1625,W1611,W1604,E1607,W1629,E1602,W1628,W1605,W1608,W1601,W0704,W1607,W1627,W1603,W1624,W1616,W1621,W1623,W1620,E1608,E1601,W1636,W1613
+disable=R0204,C0413,E0401,W1609,W1626,W1617,E1604,W1610,W1606,W1637,W1619,W1615,W1639,W1638,W1612,E1606,W1618,W1630,W1632,I0020,W1622,W1634,W1633,W1640,I0021,E1603,W1635,E1605,W1602,W1614,W1625,W1611,W1604,E1607,W1629,E1602,W1628,W1605,W1608,W1601,W0704,W1607,W1627,W1603,W1624,W1616,W1621,W1623,W1620,E1608,E1601,W1636,W1613
 
 
 [REPORTS]
@@ -182,7 +182,7 @@ name-group=
 include-naming-hint=no
 
 # Regular expression matching correct function names
-function-rgx=[a-z_][a-zA-Z0-9_]{2,30}$
+function-rgx=[a-z_][a-zA-Z0-9_]{2,40}$
 
 # Naming hint for function names
 function-name-hint=[a-z_][a-z0-9_]{2,30}$

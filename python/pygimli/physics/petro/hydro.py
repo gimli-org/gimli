@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" TODO WRITEME """
+"""TODO WRITEME."""
 
 import pygimli as pg
 
 
 def permeabiltyEngelhardtPitter(poro, q=3.5, s=5e-3,
                                 mesh=None, meshI=None):
-    r"""
-    Empirical model for porosity to hydraulic permeability.
+    r"""Empirical model for porosity to hydraulic permeability.
 
     Postulated for sand and sandstones. :cite:`EngelhardtPit1955`
 

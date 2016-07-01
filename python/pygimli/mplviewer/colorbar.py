@@ -1,7 +1,9 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Define special colorbar behavior.
-"""
+"""Define special colorbar behavior."""
+
+from distutils.version import StrictVersion
+
 import numpy as np
 
 import matplotlib as mpl
@@ -10,7 +12,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
 
-from distutils.version import StrictVersion
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
@@ -45,9 +46,7 @@ def autolevel(z, nLevs, logscale=None):
 
 
 def cmapFromName(cmapname, ncols=256, bad=None):
-    """
-        Do we need this?
-    """
+    """TODO Documentme."""
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
@@ -79,7 +78,7 @@ def cmapFromName(cmapname, ncols=256, bad=None):
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
                         dropColLimitsPerc=5, logScale=True):
-    """What is this?"""
+    """TODO Documentme."""
     data = np.asarray(dataIn)
 
     # if type( dataIn ) == g.RVector:
@@ -117,8 +116,7 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
 def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', **kwargs):
-    """
-    Create a Colobar.
+    """Create a Colobar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
     patchset.
@@ -162,10 +160,7 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
-    """What's that"""
-
-    # print "setCbarLevels", cMin, cMax
-
+    """TODO Documentme."""
     if cMin is None:
         cMin = cbar.get_clim()[0]
     if cMax is None:
@@ -226,10 +221,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
-    """
-        Change the data values for a given mappable.
-    """
-
+    """Change the data values for a given mappable."""
     data = dataIn
 
     if not isinstance(data, np.ma.core.MaskedArray):
@@ -259,8 +251,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
 
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
-    """
-    Add alpha values to the colors of a polygon collection.
+    """Add alpha values to the colors of a polygon collection.
 
     Parameters
     ----------
@@ -273,7 +264,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     dropThreshold : float
         relative minimum coverage
     """
-
     patches.set_antialiaseds(True)
     patches.set_linewidth(0.000)
 

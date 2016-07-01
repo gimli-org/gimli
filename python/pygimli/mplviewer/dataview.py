@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Some data related viewer
-"""
+"""Some data related viewer."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, Normalize
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
+
 import pygimli as pg
 from pygimli.mplviewer import updateAxes as updateAxes_
 
 
 def generateMatrix(xvec, yvec, vals, **kwargs):
-    """ generate a data matrix from x/y and value vectors
+    """Generate a data matrix from x/y and value vectors.
 
     Parameters
     ----------
@@ -64,7 +64,7 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
 
 def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                 logScale=None, label=None, dx=1, dy=None, **kwargs):
-    """ plot previously generated (generateVecMatrix) y map (category)
+    """Plot previously generated (generateVecMatrix) y map (category).
 
     Parameters
     ----------
@@ -89,12 +89,15 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         cMax = np.max(vals)
     if logScale is None:
         logScale = (cMin > 0.0)
+
+    norm = None
     if logScale:
         norm = LogNorm(vmin=cMin, vmax=cMax)
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
+
     if 'ax' is None:
-        fig, ax = plt.subplots()
+        ax = plt.subplots()[1]
 
     recs = []
     if dy is None:  # map y values to unique
@@ -125,13 +128,13 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     return ax, cbar, ymap
 
 
-def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
+def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
                 logScale=None, label=None, dx=1, **kwargs):
-    """ plot previously generated (generateVecMatrix) matrix
+    """Plot previously generated (generateVecMatrix) matrix.
 
     Parameters
     ----------
-    A : numpy.array2d
+    mat : numpy.array2d
         matrix to show
     xmap : dict {i:num}
         dict (must match A.shape[0])
@@ -146,7 +149,7 @@ def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     label : string
         colorbar label
     """
-    mat = np.ma.masked_where(A == 0.0, A, False)
+    mat = np.ma.masked_where(mat == 0.0, mat, False)
     if cMin is None:
         cMin = np.min(mat)
     if cMax is None:
@@ -157,15 +160,16 @@ def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         norm = LogNorm(vmin=cMin, vmax=cMax)
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
-    if 'ax' is None:
-        fig, ax = plt.subplots()
 
-    iy, ix = np.nonzero(A)  # != 0)
+    if 'ax' is None:
+        ax = plt.subplots()[1]
+
+    iy, ix = np.nonzero(mat)  # != 0)
     recs = []
     vals = []
-    for i in range(len(ix)):
+    for i, _ in enumerate(ix):
         recs.append(Rectangle((ix[i]-dx/2, iy[i]-0.5), dx, 1))
-        vals.append(A[iy[i], ix[i]])
+        vals.append(mat[iy[i], ix[i]])
 
     pp = PatchCollection(recs)
     col = ax.add_collection(pp)
@@ -188,13 +192,13 @@ def patchMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     return ax, cbar
 
 
-def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
+def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
                logScale=None, label=None, **kwargs):
-    """ Plot previously generated (generateVecMatrix) matrix
+    """Plot previously generated (generateVecMatrix) matrix.
 
     Parameters
     ----------
-    A : numpy.array2d
+    mat : numpy.array2d
         matrix to show
     xmap : dict {i:num}
         dict (must match A.shape[0])
@@ -210,14 +214,15 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         colorbar label
     """
     if xmap is None:
-        xmap = {i: i for i in range(A.shape[0])}
+        xmap = {i: i for i in range(mat.shape[0])}
     if ymap is None:
-        ymap = {i: i for i in range(A.shape[1])}
-    mat = np.ma.masked_where(A == 0.0, A, False)
+        ymap = {i: i for i in range(mat.shape[1])}
+    mat_ = np.ma.masked_where(mat == 0.0, mat, False)
+
     if cMin is None:
-        cMin = np.min(mat)
+        cMin = np.min(mat_)
     if cMax is None:
-        cMax = np.max(mat)
+        cMax = np.max(mat_)
     if logScale is None:
         logScale = (cMin > 0.0)
     if logScale:
@@ -225,9 +230,9 @@ def plotMatrix(A, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
     if ax is None:
-        fig, ax = plt.subplots()
+        ax = plt.subplots()[1]
 
-    im = ax.imshow(mat, norm=norm, interpolation='nearest')
+    im = ax.imshow(mat_, norm=norm, interpolation='nearest')
     if 'cmap' in kwargs:
         im.set_cmap(kwargs.pop('cmap'))
     ax.set_aspect(kwargs.pop('aspect', 1))
@@ -283,7 +288,7 @@ def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
 
 
 def plotDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
-    """ plot data container as matrix
+    """Plot data container as matrix.
 
     for each x, y and v token strings or vectors should be given
     """
@@ -302,9 +307,7 @@ def plotDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
 
 
 def drawSensorAsMarker(ax, data):
-    """
-        Draw Sensor marker, these marker are pickable
-    """
+    """Draw Sensor marker, these marker are pickable."""
     elecsX = []
     elecsY = []
 
@@ -312,7 +315,7 @@ def drawSensorAsMarker(ax, data):
         elecsX.append(data.sensorPositions()[i][0])
         elecsY.append(data.sensorPositions()[i][1])
 
-    electrodeMarker, =  ax.plot(elecsX, elecsY, 'x', color='black', picker=5.)
+    electrodeMarker, = ax.plot(elecsX, elecsY, 'x', color='black', picker=5.)
 
     ax.set_xlim([data.sensorPositions()[0][0] - 1.,
                  data.sensorPositions()[data.sensorCount() - 1][0] + 1.])

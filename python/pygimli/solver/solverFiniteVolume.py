@@ -1,39 +1,43 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Simple Finite Volume Solver
-"""
+"""Simple Finite Volume Solver."""
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 import pygimli as pg
 from pygimli.viewer import show
 from pygimli.meshtools import createMesh
 from pygimli.solver import identity  # , parseArgToArray, parseArgToBoundaries
 
-import matplotlib.pyplot as plt
-import numpy as np
-
 
 def boundaryToCellDistances(mesh):
-    return np.array(list(map(lambda b__: boundaryToCellDistancesBound(b__),
-                             mesh.boundaries())))
+    """TODO Documentme."""
+    d = [boundaryToCellDistancesBound(b) for b in mesh.boundaries()]
+    return np.array(d)
 
 
 def cellDataToBoundaryData(mesh, v):
+    """TODO Documentme."""
     if len(v) != mesh.cellCount():
         raise Exception("len(v) != mesh.cellCount():", len(v),
                         mesh.cellCount())
-    return np.array(list(map(lambda b__: cellToFace(b__, v),
-                             mesh.boundaries())))
+    return np.array([cellToFace(b, v) for b in mesh.boundaries()])
 
 
 def boundaryNormals(mesh):
-    #implement with    return mesh.boundaryNorms()
+    """TODO Documentme."""
+    # implement with    return mesh.boundaryNorms()
     gB = np.zeros((mesh.boundaryCount(), 3))
-    for i, b in enumerate(mesh.boundaries()):
-        gB[i] = b.norm()
+
+    for b in mesh.boundaries():
+        gB[b.id()] = b.norm()
+
     return gB
 
 
 def boundaryToCellDistancesBound(b):
+    """TODO Documentme."""
     leftCell = b.leftCell()
     rightCell = b.rightCell()
     df1 = 0.
@@ -46,90 +50,46 @@ def boundaryToCellDistancesBound(b):
 
 
 def cellDataToBoundaryGrad(mesh, v, vGrad):
-    """
-    """
+    """TODO Documentme."""
     if len(v) != mesh.cellCount() or len(vGrad) != mesh.cellCount():
-        raise
+        raise BaseException("len(v) dismatch mesh.cellCount()")
+
     gB = mesh.cellDataToBoundaryGradient(v, vGrad)
     return np.vstack([pg.x(gB), pg.y(gB), pg.z(gB)]).T
 
-    gB = np.zeros((mesh.boundaryCount(), 3))
-
-    for b in mesh.boundaries():
-        leftCell = b.leftCell()
-        rightCell = b.rightCell()
-        gr = pg.RVector3(0.0, 0.0, 0.0)
-        t = (b.node(1).pos() - b.node(0).pos()).norm()
-
-        if leftCell and rightCell:
-            df1 = b.center().distance(leftCell.center())
-            df2 = b.center().distance(rightCell.center())
-
-            gr = b.norm() * \
-                (v[rightCell.id()] - v[leftCell.id()]) / (df1 + df2)
-
-            grL = t * t.dot(vGrad[leftCell.id()])
-            grR = t * t.dot(vGrad[rightCell.id()])
-
-            gr += (grL + grR) * 0.5
-
-        elif leftCell:
-            gr = t * t.dot(vGrad[leftCell.id()])
-
-        gB[b.id(), 0] = gr[0]
-        gB[b.id(), 1] = gr[1]
-        gB[b.id(), 2] = gr[2]
-    return gB
-
-
-def divergenceDEPRECATED(mesh, V, span=None):
-    div = mesh.divergence(V)
-    return div
-
-    swatch = pg.Stopwatch(True)
-    ret = np.zeros((mesh.cellCount(), 3))
-
-    for b in mesh.boundaries():
-        leftCell = b.leftCell()
-        rightCell = b.rightCell()
-
-#        flow = b.norm() * b.size()
-        vec = mesh.boundarySizedNormals()[b.id()] * V[b.id()]
-
-#        flow = mesh.boundaryFlow()[b.id()]
-        if b.leftCell():
-            ret[leftCell.id(), :] += vec.array()
-#            ret[leftCell.id(),:] += vec
-#            ret[leftCell.id(), 0] += vec[0]
-#            ret[leftCell.id(), 1] += vec[1]
-#            ret[leftCell.id(), 2] += vec[2]
-#            ret[leftCell.id()] += vec.array()
-#            ret[leftCell.id()] += vec.array()
-
-        if b.rightCell():
-            ret[rightCell.id(), :] -= vec.array()
-#            ret[rightCell.id(), :] -= vec
-#            ret[rightCell.id(), 0] -= vec[0]
-#            ret[rightCell.id(), 1] -= vec[1]
-#            ret[rightCell.id(), 2] -= vec[2]
-
-    print('     C', swatch.duration(True))
-
-    ret[:, 0] /= mesh.cellSizes()
-    ret[:, 1] /= mesh.cellSizes()
-    ret[:, 2] /= mesh.cellSizes()
-    print('     D', swatch.duration(True))
-
-    if isinstance(V[0], float):
-        return ret
-
-    return ret[:, 0] + ret[:, 1] + ret[:, 2]
+    # gB = np.zeros((mesh.boundaryCount(), 3))
+    #
+    # for b in mesh.boundaries():
+    #     leftCell = b.leftCell()
+    #     rightCell = b.rightCell()
+    #     gr = pg.RVector3(0.0, 0.0, 0.0)
+    #     t = (b.node(1).pos() - b.node(0).pos()).norm()
+    #
+    #     if leftCell and rightCell:
+    #         df1 = b.center().distance(leftCell.center())
+    #         df2 = b.center().distance(rightCell.center())
+    #
+    #         gr = b.norm() * \
+    #             (v[rightCell.id()] - v[leftCell.id()]) / (df1 + df2)
+    #
+    #         grL = t * t.dot(vGrad[leftCell.id()])
+    #         grR = t * t.dot(vGrad[rightCell.id()])
+    #
+    #         gr += (grL + grR) * 0.5
+    #
+    #     elif leftCell:
+    #         gr = t * t.dot(vGrad[leftCell.id()])
+    #
+    #     gB[b.id(), 0] = gr[0]
+    #     gB[b.id(), 1] = gr[1]
+    #     gB[b.id(), 2] = gr[2]
+    # return gB
 
 
 def cellToFace(boundary, vec, harmonic=False):
-    """
-    DEPRECATED
-        Interpolate cell to face values by weighted arithmetic/harmonic mean.
+    """DEPRECATED.
+
+    Interpolate cell to face values by weighted arithmetic/harmonic mean.
     """
     leftCell = boundary.leftCell()
     rightCell = boundary.rightCell()
@@ -163,6 +123,7 @@ def cellToFace(boundary, vec, harmonic=False):
 
 
 def cellToFaceArithmetic(boundary, AMM):
+    """TODO Documentme."""
     leftCell = boundary.leftCell()
     rightCell = boundary.rightCell()
     df1 = 0.
@@ -193,6 +154,7 @@ def cellToFaceArithmetic(boundary, AMM):
 
 
 def cellDataToBoundaryDataMatrix(mesh):
+    """TODO Documentme."""
     AMM = pg.RSparseMapMatrix(mesh.boundaryCount(), mesh.cellCount())
 
     for b in mesh.boundaries():
@@ -202,8 +164,10 @@ def cellDataToBoundaryDataMatrix(mesh):
 
 
 def cellDataToCellGrad2(mesh, v):
+    """TODO Documentme."""
     if len(v) != mesh.cellCount():
-        raise
+        print(len(v), mesh.cellCount())
+        raise BaseException("len(v) dismatch mesh.cellCount()")
 
     vN = pg.cellDataToPointData(mesh, v)
     gC = np.zeros((mesh.cellCount(), 3))
@@ -217,40 +181,40 @@ def cellDataToCellGrad2(mesh, v):
 
 
 def cellDataToCellGrad(mesh, v, CtB):
+    """TODO Documentme."""
     if len(v) != mesh.cellCount():
         print(len(v), mesh.cellCount())
-        raise
+        raise BaseException("len of v missmatch mesh.cellCount()")
     div = mesh.boundaryDataToCellGradient(CtB * v)
     return np.vstack([pg.x(div), pg.y(div), pg.z(div)]).T
 
-    vF = cellDataToBoundaryData(mesh, v)
-    gC = np.zeros((mesh.cellCount(), 3))
-
-    for b in mesh.boundaries():
-
-        leftCell = b.leftCell()
-        rightCell = b.rightCell()
-        vec = b.norm() * vF[b.id()] * b.size()
-
-        if leftCell:
-            gC[leftCell.id(), 0] += vec[0]
-            gC[leftCell.id(), 1] += vec[1]
-            gC[leftCell.id(), 2] += vec[2]
-        if rightCell:
-            gC[rightCell.id(), 0] -= vec[0]
-            gC[rightCell.id(), 1] -= vec[1]
-            gC[rightCell.id(), 2] -= vec[2]
-
-    gC[:, 0] /= mesh.cellSizes()
-    gC[:, 1] /= mesh.cellSizes()
-    gC[:, 2] /= mesh.cellSizes()
-
-    return gC
+    # vF = cellDataToBoundaryData(mesh, v)
+    # gC = np.zeros((mesh.cellCount(), 3))
+    #
+    # for b in mesh.boundaries():
+    #
+    #     leftCell = b.leftCell()
+    #     rightCell = b.rightCell()
+    #     vec = b.norm() * vF[b.id()] * b.size()
+    #
+    #     if leftCell:
+    #         gC[leftCell.id(), 0] += vec[0]
+    #         gC[leftCell.id(), 1] += vec[1]
+    #         gC[leftCell.id(), 2] += vec[2]
+    #     if rightCell:
+    #         gC[rightCell.id(), 0] -= vec[0]
+    #         gC[rightCell.id(), 1] -= vec[1]
+    #         gC[rightCell.id(), 2] -= vec[2]
+    #
+    # gC[:, 0] /= mesh.cellSizes()
+    # gC[:, 1] /= mesh.cellSizes()
+    # gC[:, 2] /= mesh.cellSizes()
+    #
+    # return gC
 
 
 def findVelocity(mesh, v, b, c, nc=None):
-    """
-    Find velocity for boundary b based on vector field v.
+    """Find velocity for boundary b based on vector field v.
 
     Parameters
     ----------
@@ -272,16 +236,16 @@ def findVelocity(mesh, v, b, c, nc=None):
         Associated neighbor cell .. if one given
         from flow direction
     """
-
     vel = [0.0, 0.0, 0.0]
+
     if hasattr(v, '__len__'):
         if len(v) == mesh.cellCount():
             if nc:
                 # mean cell based vector-field v[x,y,z] for cell c and cell nc
                 vel = (v[c.id()] + v[nc.id()]) / 2.0
 
-                #vel1 = 1./ (1./v[c.id()] + 1./v[nc.id()])
-                #print("findVel, check:", vel1, vel)
+                # vel1 = 1./ (1./v[c.id()] + 1./v[nc.id()])
+                # print("findVel, check:", vel1, vel)
 
             else:
                 # cell based vector-field v[x,y,z] for cell c
@@ -296,8 +260,7 @@ def findVelocity(mesh, v, b, c, nc=None):
 
 
 def findDiffusion(mesh, a, b, c, nc=None):
-    """
-    TODO
+    """TODO Documentme.
 
     Parameters
     ----------
@@ -324,8 +287,8 @@ def findDiffusion(mesh, a, b, c, nc=None):
             # Diffusion part
             # Interface harmonic median
             # D = (a[c.id()] / c.center().distance(b.center()) +
-                 # a[nc.id()] / nc.center().distance(b.center())) * 0.5 *
-                 # b.size()
+            # a[nc.id()] / nc.center().distance(b.center())) * 0.5 *
+            # b.size()
 
             D = 1. / (c.center().distance(b.center()) / a[c.id()] +
                       nc.center().distance(b.center()) / a[nc.id()]) * b.size()
@@ -341,7 +304,7 @@ def findDiffusion(mesh, a, b, c, nc=None):
 def diffusionConvectionKernel(mesh, a=None, b=0.0,
                               uB=None, duB=None,
                               vel=0,
-                              #u0=0,
+                              # u0=0,
                               fn=None,
                               scheme='CDS', sparse=False, time=0.0,
                               userData=None):
@@ -418,7 +381,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
         AScheme = lambda peclet_: (peclet_) / (np.exp(abs(peclet_)) - 1.0) \
             if peclet_ != 0.0 else 1
     else:
-        raise
+        raise BaseException("Scheme unknwon:" + scheme)
 
     useHalfBoundaries = False
 
@@ -445,18 +408,20 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     # we need this to fast identify uBoundary and value by boundary
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
-    for i, [boundary, val] in enumerate(uB):
+    for [boundary, val] in uB:
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
+
         uBoundaryID.append(boundary.id())
         uBoundaryVals[boundary.id()] = val
 
     duBoundaryID = []
     duBoundaryVals = [None] * mesh.boundaryCount()
 
-    for i, [boundary, val] in enumerate(duB):
+    for [boundary, val] in duB:
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
+
         duBoundaryID.append(boundary.id())
         duBoundaryVals[boundary.id()] = val
 
@@ -474,12 +439,12 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
             # Convection part
             F = boundary.norm(cell).dot(v) * boundary.size()
-            #print(F, boundary.size(), v, vel)
+            # print(F, boundary.size(), v, vel)
             # Diffusion part
             D = findDiffusion(mesh, a, boundary, cell, ncell)
 
-            #print(F, D, F/D)
-            #print((1.0 - 0.1 * abs(F/D))**5.0)
+            # print(F, D, F/D)
+            # print((1.0 - 0.1 * abs(F/D))**5.0)
             aB = D * AScheme(F / D) + max(-F, 0.0)
 
             aB /= cell.size()
@@ -498,10 +463,10 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
                 if boundary.id() in uBoundaryID:
                     val = pg.solver.generateBoundaryValue(
-                                                   boundary,
-                                                   uBoundaryVals[boundary.id()],
-                                                   time=time,
-                                                   userData=userData)
+                        boundary,
+                        uBoundaryVals[boundary.id()],
+                        time=time,
+                        userData=userData)
 
                     if sparse:
                         S.addVal(cID, cID, aB)
@@ -513,10 +478,10 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
                 if boundary.id() in duBoundaryID:
                     # Neumann boundary condition
                     val = pg.solver.generateBoundaryValue(
-                                                 boundary,
-                                                 duBoundaryVals[boundary.id()],
-                                                 time=time,
-                                                 userData=userData)
+                        boundary,
+                        duBoundaryVals[boundary.id()],
+                        time=time,
+                        userData=userData)
 
                     # amount of flow through the boundary
                     outflow = val * boundary.size() / cell.size()
@@ -533,33 +498,6 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
                 # * cell.shape().domainSize()
                 S[cell.id(), cell.id()] -= fn[cell.id()]
 
-    #if useHalfBoundaries:
-        #raise("is this really used")
-        #for i, [bound, val] in enumerate(duB):  # not defined!!!
-            #bIdx = mesh.cellCount() + i
-
-            #bCell = bound.leftCell()
-            #if not c:
-                #bCell = bound.rightCell()
-
-            #if bCell:
-                #n = bound.norm(bCell)
-                #v = findVelocity(mesh, vel, bound, bCell, nc=None)
-                #F = n.dot(v) * bound.size()
-
-                #D = findDiffusion(mesh, a, bound, bCell)
-                #aB = D * AScheme(F / D) + max(-F, 0.0)
-
-                #if useHalfBoundaries:
-                    #if sparse:
-                        #S.setVal(bCell.id(), bCell.id(), 1.)
-                        #S.addVal(bCell.id(), bIdx, -aB)
-                    #else:
-                        #S[bIdx, bIdx] = 1.
-                        #S[bCell.id(), bIdx] -= aB
-
-                    #rhsBoundaryScales[bIdx] = aB
-
     return S, rhsBoundaryScales
 
 
@@ -567,8 +505,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
                       times=None,
                       uL=None, relax=1.0,
                       ws=None, scheme='CDS', **kwargs):
-    """
-    Calculate for u.
+    """Calculate for u.
 
     NOTE works only for steady boundary conditions!!!
 
@@ -629,7 +566,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     """
     verbose = kwargs.pop('verbose', False)
     # The Workspace is to hold temporary data or preserve matrix rebuild
-    swatch = pg.Stopwatch(True)
+    # swatch = pg.Stopwatch(True)
     sparse = True
 
     workspace = pg.solver.WorkSpace()
@@ -641,12 +578,12 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     f = pg.solver.parseArgToArray(f, mesh.cellCount())
     fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
 
-    if type(vel) == float:
+    if isinstance(vel, float):
         print("Warning! .. velocity is float and no vector field")
 
     if len(vel) != mesh.cellCount() and \
-        len(vel) != mesh.nodeCount() and \
-        len(vel) != mesh.boundaryCount():
+       len(vel) != mesh.nodeCount() and \
+       len(vel) != mesh.boundaryCount():
 
         print("mesh:", mesh)
         print("vel:", vel.shape)
@@ -661,35 +598,36 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     if not hasattr(workspace, 'S'):
 
         if 'uB' in kwargs:
-            boundsDirichlet = pg.solver.parseArgToBoundaries(kwargs['uB'], mesh)
+            boundsDirichlet = pg.solver.parseArgToBoundaries(kwargs['uB'],
+                                                             mesh)
 
         if 'duB' in kwargs:
             boundsNeumann = pg.solver.parseArgToBoundaries(kwargs['duB'], mesh)
 
         workspace.S, workspace.rhsBCScales = diffusionConvectionKernel(
-                                                            mesh=mesh,
-                                                            a=a,
-                                                            b=b,
-                                                            uB=boundsDirichlet,
-                                                            duB=boundsNeumann,
-                                                            #u0=u0,
-                                                            fn=fn,
-                                                            vel=vel,
-                                                            scheme=scheme,
-                                                            sparse=sparse,
-                                        userData=kwargs.pop('userData', None))
+            mesh=mesh,
+            a=a,
+            b=b,
+            uB=boundsDirichlet,
+            duB=boundsNeumann,
+            # u0=u0,
+            fn=fn,
+            vel=vel,
+            scheme=scheme,
+            sparse=sparse,
+            userData=kwargs.pop('userData', None))
 
-        #print('FVM kernel 1:', swatch.duration(True))
+        # print('FVM kernel 1:', swatch.duration(True))
         dof = len(workspace.rhsBCScales)
 
-#        workspace.uDir = np.zeros(dof)
+        #        workspace.uDir = np.zeros(dof)
 
-#        if u0 is not None:
-#            workspace.uDir = np.array(u0)
+        #        if u0 is not None:
+        #            workspace.uDir = np.array(u0)
 
-#        if len(boundsDirichlet):
-#            for boundary, val in boundsDirichlet.items():
-#                workspace.uDir[boundary.leftCell().id()] = val
+        #        if len(boundsDirichlet):
+        #            for boundary, val in boundsDirichlet.items():
+        #                workspace.uDir[boundary.leftCell().id()] = val
 
         workspace.ap = np.zeros(dof)
 
@@ -701,15 +639,16 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
                 if sparse:
                     val = workspace.S.getVal(i, i) / relax
                     workspace.S.setVal(i, i, val)
-#                    workspace.S[i, i] /= relax
-#                    workspace.ap[i] = workspace.S[i, i]
+                    #                    workspace.S[i, i] /= relax
+                    #                    workspace.ap[i] = workspace.S[i, i]
                 else:
                     val = workspace.S[i, i] / relax
                     workspace.S[i, i] = val
 
                 workspace.ap[i] = val
 
-       # print('FVM kernel 2:', swatch.duration(True))
+        # print('FVM kernel 2:', swatch.duration(True))
+
     # endif: not hasattr(workspace, 'S'):
 
     workspace.rhs = np.zeros(len(workspace.rhsBCScales))
@@ -737,7 +676,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
             u = workspace.solver.solve(workspace.rhs)
         else:
             u = np.linalg.solve(workspace.S, workspace.rhs)
-        #print('FVM solve:', swatch.duration(True))
+        # print('FVM solve:', swatch.duration(True))
         return u[0:mesh.cellCount():1]
     else:
         theta = kwargs.pop('theta', 0.5 + 1e-6)
@@ -750,13 +689,16 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         if verbose:
             print("Solve timesteps with Crank-Nicolson.")
 
-        return pg.solver.crankNicolson(times, theta, workspace.S, I,
-                                       f=workspace.rhs,
-                     u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
-                                       verbose=verbose)
+        return pg.solver.crankNicolson(
+            times, theta, workspace.S, I,
+            f=workspace.rhs,
+            u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
+            verbose=verbose)
+
 
 def createFVPostProzessMesh(mesh, u, uDirichlet):
-    """
+    """Create node based post processing of cell centered FV solutions.
+
     Create a mesh suitable for node based post processing of cell
     centered Finite Volume solutions.
     This is something like cellDataToPointData with extra Dirichlet points
@@ -767,13 +709,13 @@ def createFVPostProzessMesh(mesh, u, uDirichlet):
     Parameters
     ----------
 
-
     """
     allBounds = pg.solver.parseArgToBoundaries(uDirichlet, mesh)
     bounds, vals = zip(*allBounds)
     uDirVals = pg.solver.generateBoundaryValue(bounds, vals)
 
     def isBoundary(b):
+        """TODO Documentme."""
         return b.rightCell() is None and b.leftCell() is not None
 
     if bounds is None:
@@ -816,13 +758,13 @@ def createFVPostProzessMesh(mesh, u, uDirichlet):
         lastB = newB
 
         if not newB:
-            raise
+            raise BaseException("implement me")
 
         boundSortIdx.append(boundsIdx.index(newB.id()))
 
-    bNodes = list(map(lambda b_: poly2.createNode(b_.center()), boundSort))
+    bNodes = [poly2.createNode(b.center()) for b in boundSort]
 
-    for i in range(len(bNodes)):
+    for i, _ in enumerate(bNodes):
         poly2.createEdge(bNodes[i], bNodes[(i + 1) % len(bNodes)])
 
     mesh2 = createMesh(poly2, switches='-pezY')
@@ -831,25 +773,24 @@ def createFVPostProzessMesh(mesh, u, uDirichlet):
 
 
 def applyBoundaryValues(uB, mesh, uBBC):
+    """TODO Documentme."""
     for marker, val in uBBC:
         for b in mesh.findBoundaryByMarker(marker):
             uB[b.id()] = val
 
 
 def __d(name, v, showAll=False):
+    """TODO Documentme."""
     print(name, np.mean(v), min(v), max(v))
     if showAll:
         print(v)
 
 
-def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
+def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
                 pre0=None, vel0=None,
                 tol=1e-4, maxIter=1000,
                 verbose=1, **kwargs):
-    """
-        Steady Navier-Stokes
-    """
-
+    """Steady Navier-Stokes solver."""
     workspace = pg.solver.WorkSpace()
     wsux = pg.solver.WorkSpace()
     wsuy = pg.solver.WorkSpace()
@@ -884,12 +825,13 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
 
     velBoundaryX = []
     velBoundaryY = []
-    for marker, vel in velBoundary:
-        if not isinstance(vel[0], str):
-            velBoundaryX.append([marker, vel[0]])
-        if not isinstance(vel[1], str):
-            velBoundaryY.append([marker, vel[1]])
 
+    if velBoundary is not None:
+        for marker, vel in velBoundary:
+            if not isinstance(vel[0], str):
+                velBoundaryX.append([marker, vel[0]])
+            if not isinstance(vel[1], str):
+                velBoundaryY.append([marker, vel[1]])
 
     pressure = None
     if pre0 is None:
@@ -914,31 +856,32 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
     forceX = pg.solver.parseArgToArray(force[0], ndof=mesh.cellCount())
     forceY = pg.solver.parseArgToArray(force[1], ndof=mesh.cellCount())
 
-
     for i in range(maxIter):
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)
-#        __d('vx', pressureGrad[:,0])
+        # __d('vx', pressureGrad[:,0])
 
-        velocity[:, 0] = solveFiniteVolume(mesh,
-                                           a=viscosity,
-                                           f=-pressureGrad[:, 0]/density+forceX,
-                                           uB=velBoundaryX,
-                                           uL=velocity[:, 0],
-                                           relax=velocityRelaxation,
-                                           ws=wsux)
+        velocity[:, 0] = solveFiniteVolume(
+            mesh,
+            a=viscosity,
+            f=-pressureGrad[:, 0] / density + forceX,
+            uB=velBoundaryX,
+            uL=velocity[:, 0],
+            relax=velocityRelaxation,
+            ws=wsux)
 
 #        for s in wsux.S:
 #            print(s)
 #        __d('rhs', wsux.rhs, 1)
 #        __d('ux', velocity[:,0])
 
-        velocity[:, 1] = solveFiniteVolume(mesh,
-                                           a=viscosity,
-                                           f=-pressureGrad[:, 1]/density+forceY,
-                                           uB=velBoundaryY,
-                                           uL=velocity[:, 1],
-                                           relax=velocityRelaxation,
-                                           ws=wsuy)
+        velocity[:, 1] = solveFiniteVolume(
+            mesh,
+            a=viscosity,
+            f=-pressureGrad[:, 1] / density + forceY,
+            uB=velBoundaryY,
+            uL=velocity[:, 1],
+            relax=velocityRelaxation,
+            ws=wsuy)
 
         ap = np.array(wsux.ap * mesh.cellSizes())
         apF = CtB * ap
@@ -963,24 +906,24 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
             pressureCoeff = 1. / apF * mesh.boundarySizes() * \
                 boundaryToCellDistances(mesh)
 
-#        div = -divergence(mesh, np.vstack([velXF, velYF]).T)
         div = -mesh.divergence(np.vstack([velXF, velYF]).T)
 
-        #boundsDirichlet = pg.solver.parseArgToBoundaries(preBoundary, mesh)
-        #pB = CtB * pressure
-        #for ix, [boundary, val] in enumerate(boundsDirichlet):
-            #boundsDirichlet[ix][1] = -(-pg.solver.generateBoundaryValue(boundary, val) + pB[boundary.id()])
+        # boundsDirichlet = pg.solver.parseArgToBoundaries(preBoundary, mesh)
+        # pB = CtB * pressure
+        # for ix, [boundary, val] in enumerate(boundsDirichlet):
+        # boundsDirichlet[ix][1] = -(-pg.solver.generateBoundaryValue(boundary,
+        # val) + pB[boundary.id()])
 
         pressureCorrection = solveFiniteVolume(mesh,
                                                a=pressureCoeff,
                                                f=div,
                                                uB=preBoundary,
-                                               #uB=boundsDirichlet,
+                                               # uB=boundsDirichlet,
                                                ws=wsp)
 
-        #print(i, pg.solver.generateBoundaryValue(mesh.boundary(58), val),
-              #pB[58], boundsDirichlet[-1][1],
-              #(CtB*pressureCorrection)[58])
+        # print(i, pg.solver.generateBoundaryValue(mesh.boundary(58), val),
+        # pB[58], boundsDirichlet[-1][1],
+        # (CtB*pressureCorrection)[58])
 
         pressure += pressureCorrection * pressureRelaxation
 
@@ -994,10 +937,10 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
         divVNorm.append(pg.norm(div))
 
         if workspace:
-            workspace.div=div
-#        __d('div', div)
-#        if ( i == 1):
-#            sd
+            workspace.div = div
+        #        __d('div', div)
+        #        if ( i == 1):
+        #            sd
 
         convergenceTest = 100
         if i > 6:
@@ -1018,15 +961,17 @@ def solveStokes(mesh, viscosity, velBoundary=[], preBoundary=[],
 
         if i > 2:
             if i == maxIter or divVNorm[-1] < tol or \
-                abs(convergenceTest * divVNorm[-1]) < tol:
+              abs(convergenceTest * divVNorm[-1]) < tol:
                 break
 
-    if verbose:
-        print(str(i) + ": " + str(preCNorm[-1]))
+        if verbose:
+            print(str(i) + ": " + str(preCNorm[-1]))
+
     return velocity, pressure, preCNorm, divVNorm
 
-if __name__ == '__main__':
 
+def test_ConvectionAdvection():
+    """Test agains a refernce solution."""
     N = 21  # 21 reference
     maxIter = 11  # 11 reference
     Nx = N
@@ -1059,7 +1004,8 @@ if __name__ == '__main__':
                                               verbose=1)
 
     print("time", len(pCNorm), swatch.duration(True))
-    referencesolution = 1.2889506342694153
+
+    # referencesolution = 1.2889506342694153
     referencesolutionDivV = 0.029187181920161752
     print("divNorm: ", divVNorm[-1])
     print("to reference: ", divVNorm[-1] - referencesolutionDivV)
@@ -1087,3 +1033,7 @@ if __name__ == '__main__':
 
     plt.ioff()
     plt.show()
+
+if __name__ == '__main__':
+
+    test_ConvectionAdvection()

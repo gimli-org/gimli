@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
- For the manager look at BERT https://gitlab.com/resistivity-net/bert
-"""
+"""For the manager look at BERT https://gitlab.com/resistivity-net/bert."""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -78,7 +76,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     n = pg.solver.parseArgToArray(n, mesh.cellCount(), mesh)
 
     r = pg.RMatrix(len(rB), len(rB[0]))
-    for i in range(len(r)):
+    for i, _ in enumerate(r):
         r[i] = rB[i] * a * phi**(-m) * S**(-n)
 
     r.round(1e-6)
@@ -93,9 +91,9 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
         pg.interpolate(mesh, r, meshI.cellCenters(), rI)
 
     if fill:
-        for i in range(len(rI)):
+        for i, ri_ in enumerate(rI):
             # slope == True produce unstable behavior .. check!!!!!!
-            rI[i] = pg.solver.fillEmptyToCellArray(meshI, rI[i], slope=False)
+            rI[i] = pg.solver.fillEmptyToCellArray(meshI, ri_, slope=False)
 
     rI.round(1e-6)
 
@@ -105,7 +103,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
 
 
 def transFwdArchiePhi(rFluid=20, n=2):
-    r""" Transformation for
+    r"""Transformation function for resistivity(rFluid).
 
     .. math::
         \rho & = a\rho_{\text{fl}}\phi^{-m}\S_w^{-n} \\
@@ -141,31 +139,31 @@ def transFwdArchiePhi(rFluid=20, n=2):
 
 
 def transInvArchiePhi(rFluid=20, n=2):  # phi(rho)
-    """ Inverse Wyllie transformation function porosity(slowness)
+    """Inverse Wyllie transformation function resistivity(rFluid).
+
     # rFluid/rho = phi^n  ==> phi = (rFluid/rho)^(1/n) = (rho/rFluid)^(-1/n)
     See
     ---
     :py:mod:`pygimli.physics.petro.transFwdArchiePhi`
     """
-
     return pg.RTransPower(-1/n, rFluid)
 
 
 def transFwdArchieS(rFluid=20, phi=0.4, n=2, m=2):  # rho(S)
-    """ inverse Wyllie transformation function slowness(saturation) """
+    """Inverse Wyllie transformation function resistivity(saturation)."""
     # rho = rFluid * phi^(-n) S^(-m)
     return pg.RTransPower(-m, (rFluid*phi**(-n))**(1/m))
 
 
 def transInvArchieS(rFluid=20, phi=0.4, n=2, m=2):  # S(rho)
-    """ inverse Wyllie transformation function slowness(saturation) """
+    """Inverse Wyllie transformation function resistivity(saturation)."""
     # rFluid/rho = phi^n S^m => S=(rFluid/rho/phi^n)^(1/m)
     # =(rho/rFluid/phi^-n)^(-1/m)
     return pg.RTransPower(-1/m, rFluid*phi**(-n))
 
 
 def test_Archie():
-    """Test Archie"""
+    """Test Archie."""
     import unittest
 
     dx = 0.01

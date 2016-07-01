@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""For the manager look at BERT https://gitlab.com/resistivity-net/bert
-"""
+"""For the manager look at BERT https://gitlab.com/resistivity-net/bert."""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,7 +11,7 @@ import pygimli as pg
 def slownessWillie(phi, sat=1, vm=4000, vw=1600, va=330,
                    mesh=None, meshI=None, fill=None):
     r"""
-    Return slowness :math:`s` after Wyllie time-average equation
+    Return slowness :math:`s` after Wyllie time-average equation.
 
     .. math::
         s = (1-\phi) \cdot\frac{1}{v_m} + \phi \cdot S \cdot\frac{1}{v_w} +
@@ -38,39 +37,55 @@ def slownessWillie(phi, sat=1, vm=4000, vw=1600, va=330,
 
 
     """
-    # look at resistivity.py
-    raise BaseException('TODO')
+    if mesh is None:
+        return 1./vm * (1.-phi) + 1./vw * phi * sat + 1./va * phi * (1. - sat)
+    else:
+        raise BaseException('TODO')
+
+    if meshI:
+        raise BaseException('TODO')
+
+    if fill:
+        raise BaseException('TODO')
 
 
 def wyllie(phi, sat=1, vm=4000, vw=1600, va=330):
-    """Return slowness after Wyllie time-average equation"""
+    """Return slowness after Wyllie time-average equation."""
     return 1./vm * (1-phi) + phi * sat * 1./vw + phi * (1 - sat) * 1./va
 
 
-def transFwdWylliePhi(vm=4000, vw=1600, va=330):
-    """Wyllie transformation function porosity(slowness) """
-    return pg.RTransLin(1./vw-1./vm, 1./vm)
+def transFwdWylliePhi(sat=1, vm=4000, vw=1600, va=330):
+    """Wyllie transformation function porosity(slowness)."""
+    if va is not 330 or sat != 1.0:
+        raise BaseException('TODO')
+    return pg.RTransLin(1./vw - 1./vm, 1./vm)
 
 
-def transInvWylliePhi(vm=4000, vw=1600, va=330):
-    """Inverse Wyllie transformation function porosity(slowness) """
-    a1, b1 = 1./vm, 1./vw-1./vm
+def transInvWylliePhi(sat=1, vm=4000, vw=1600, va=330):
+    """Inverse Wyllie transformation function porosity(slowness)."""
+    if va is not 330 or sat != 1.0:
+        raise BaseException('TODO')
+    a1 = 1./vm
+    b1 = 1./vw - 1./vm
     return pg.RTransLin(1./b1, -a1/b1)
 
 
 def transFwdWyllieS(phi, vm=4000, vw=1600, va=330):
-    """Wyllie transformation function slowness(saturation) """
+    """Wyllie transformation function slowness(saturation)."""
+    if va is not 330:
+        raise BaseException('TODO')
     return pg.RTransLin((1/vw-1./va)*phi, (1-phi)/vm+phi/va)
 
 
 def transInvWyllieS(phi, vm=4000, vw=1600, va=330):
-    """Inverse Wyllie transformation function slowness(saturation) """
-    a2, b2 = 1./vm * (1 - phi) + phi * 1./va, phi * (1./vw - 1./va)
+    """Inverse Wyllie transformation function slowness(saturation)."""
+    a2 = 1./vm * (1 - phi) + phi * 1./va
+    b2 = phi * (1./vw - 1./va)
     return pg.RTransLin(1./b2, -a2/b2)
 
 
 def test_Wyllie():
-    """Test Wyllie and Transformations"""
+    """Test Wyllie and Transformations."""
     import unittest
 
     phivec = np.arange(0, 0.5, 0.01)

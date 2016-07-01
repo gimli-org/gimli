@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Special meta forward operator for modelling with petrophysical relations
-"""
+"""Special meta forward operator for modelling with petrophysical relations."""
 
 import pygimli as pg
 from pygimli.physics import MethodManager
@@ -10,13 +8,14 @@ from pygimli.physics import MethodManager
 
 class PetroModelling(pg.ModellingBase):
     """
-    Combine petrophysical relation m(p) with modelling class f(p)
+    Combine petrophysical relation m(p) with modelling class f(p).
 
     Combine petrophysical relation m(p) with modelling class f(p) to invert
     for m (or any inversion transformation) instead of p.
     """
+
     def __init__(self, fop, trans, mesh=None, verbose=False):
-        """ save forward class and transformation, create Jacobian matrix """
+        """Save forward class and transformation, create Jacobian matrix."""
         super().__init__(verbose=verbose)
         self.fop = fop
         self.trans = trans  # class defining m(p)
@@ -26,12 +25,12 @@ class PetroModelling(pg.ModellingBase):
             self.setMesh(mesh)
 
     def setData(self, data):
-        """TODO"""
+        """TODO."""
         pg.ModellingBase.setData(self, data)
         self.fop.setData(data)
 
     def setMesh(self, mesh):
-        """TODO"""
+        """TODO."""
         if mesh is None and self.fop.mesh() is None:
             raise BaseException("Please provide a mesh for "
                                 "this forward operator")
@@ -49,21 +48,23 @@ class PetroModelling(pg.ModellingBase):
         self.setJacobian(self.jac)
 
     def response(self, model):
-        """ use inverse transformation to get p(m) and compute response """
+        """Use inverse transformation to get p(m) and compute response."""
         tModel = self.trans.trans(model)
         ret = self.fop.response(tModel)
         return ret
 
     def createJacobian(self, model):
-        """ fill the individual jacobian matrices"""
+        """Fill the individual jacobian matrices."""
         par = self.trans.trans(model)
         self.fop.createJacobian(par)
         self.jac.r = self.trans.deriv(model)  # set inner derivative
 
 
 class PetroJointModelling(pg.ModellingBase):
-    """ Cumulative (joint) forward operator for petrophysical inversions """
+    """Cumulative (joint) forward operator for petrophysical inversions."""
+
     def __init__(self, f=None, p=None, mesh=None, verbose=True):
+        """Constructor."""
         super().__init__(verbose=verbose)
 
         self.fops = None
@@ -75,12 +76,12 @@ class PetroJointModelling(pg.ModellingBase):
             self.setFopsAndTrans(f, p)
 
     def setFopsAndTrans(self, fops, trans):
-        """TODO"""
+        """TODO."""
         self.fops = [PetroModelling(fi, pi, self.mesh)
                      for fi, pi in zip(fops, trans)]
 
     def setMesh(self, mesh):
-        """TODO"""
+        """TODO."""
         self.mesh = mesh
         for fi in self.fops:
             fi.setMesh(mesh)
@@ -89,14 +90,14 @@ class PetroJointModelling(pg.ModellingBase):
         self.initJacobian()
 
     def setData(self, data):
-        """TODO"""
+        """TODO."""
         for i, fi in enumerate(self.fops):
             fi.setData(data[i])
 
         self.initJacobian()
 
     def initJacobian(self):
-        """TODO"""
+        """TODO."""
         self.jac = pg.RBlockMatrix()
         self.jacI = [self.jac.addMatrix(fi.jacobian()) for fi in self.fops]
         nData = 0
@@ -107,22 +108,23 @@ class PetroJointModelling(pg.ModellingBase):
         self.setJacobian(self.jac)
 
     def response(self, model):
-        """ cumulative response """
+        """Cumulative response."""
         resp = []
         for f in self.fops:
             resp.extend(f.response(model))
         return resp
 
     def createJacobian(self, model):
-        """ just force creating individual Jacobian matrices """
+        """Just force creating individual Jacobian matrices."""
         for f in self.fops:
             f.createJacobian(model)
 
 
 class InvertJointPetro(MethodManager):
-    """TODO"""
+    """TODO."""
+
     def __init__(self, managers, trans, verbose=False, debug=False, **kwargs):
-        """TODO"""
+        """TODO."""
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
 
         self.managers = managers
@@ -145,21 +147,20 @@ class InvertJointPetro(MethodManager):
 
     @staticmethod
     def createFOP(verbose=False):
-        """Create forward operator
-        """
+        """Create forward operator."""
         fop = PetroJointModelling(verbose)
 
         return fop
 
     def createInv(self, fop, verbose=True, doSave=False):
-        """TODO"""
+        """TODO."""
         inv = pg.RInversion(verbose, doSave)
         inv.setForwardOperator(fop)
 
         return inv
 
     def setData(self, data):
-        """TODO"""
+        """TODO."""
         if isinstance(data, list):
             if len(data) == len(self.managers):
                 self.tD.clear()
@@ -190,11 +191,11 @@ class InvertJointPetro(MethodManager):
                 raise BaseException("To few datacontainer given")
 
     def setMesh(self, mesh):
-        """TODO"""
+        """TODO."""
         self.fop.setMesh(mesh)
 
     def invert(self, data=None, mesh=None, lam=20, limits=None):
-        """TODO"""
+        """TODO."""
         self.setData(data)
         self.setMesh(mesh)
 
@@ -230,20 +231,21 @@ class InvertJointPetro(MethodManager):
         return self.model
 
     def showModel(self, **showkwargs):
-        """TODO"""
+        """TODO."""
         if len(showkwargs):
             pg.show(self.fop.regionManager().paraDomain(),
                     self.model, **showkwargs)
 
 
 class InvertPetro(InvertJointPetro):
-    """TODO"""
+    """TODO."""
+
     def __init__(self, manager, trans, **kwargs):
-        """TODO"""
+        """TODO."""
         InvertJointPetro.__init__(self, [manager], [trans], **kwargs)
 
     def invert(self, data, **kwargs):
-        """TODO"""
+        """TODO."""
         return InvertJointPetro.invert(self, [data], **kwargs)
 
 
