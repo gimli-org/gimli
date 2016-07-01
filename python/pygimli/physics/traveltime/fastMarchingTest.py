@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 r"""
+Solve the particular Hamilton-Jacobi (HJ) equation.
+
 Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal
 equation :cite:`SunFomel2000`
 
@@ -31,7 +33,7 @@ from pygimli.mplviewer import drawMesh, drawField
 
 
 def findSlowness(edge):
-    """WRITEME"""
+    """TODO Documentme."""
     if edge.leftCell() is None:
         slowness = edge.rightCell().attribute()
     elif edge.rightCell() is None:
@@ -44,7 +46,7 @@ def findSlowness(edge):
 
 
 def fastMarch(mesh, downwind, times, upT, downT):
-    """WRITEME"""
+    """TODO Documentme."""
     print(mesh)
     upCandidate = []
 
@@ -114,7 +116,7 @@ def fastMarch(mesh, downwind, times, upT, downT):
 
 
 def test():
-    """WRITEME"""
+    """TODO Documentme."""
     mesh = pg.Mesh('mesh/test2d')
     mesh.createNeighbourInfos()
 
