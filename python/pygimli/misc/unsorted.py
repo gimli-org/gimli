@@ -25,33 +25,27 @@ def rot2DGridToWorld(mesh, start, end):
 def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                maxSteps=1000, verbose=False, koords=(0, 1)):
     """
-        Create a streamline from startCoord and following a vector field in up
-        and down direction.
+    Create a streamline from startCoord and following a vector field in up
+    and down direction.
     """
-    xd, yd = streamlineDir(mesh, field, startCoord,
-                           dLengthSteps,
-                           dataMesh=dataMesh,
-                           maxSteps=maxSteps,
-                           down=True, verbose=verbose, koords=koords)
+    xd, yd = streamlineDir(mesh, field, startCoord, dLengthSteps,
+                           dataMesh=dataMesh, maxSteps=maxSteps, down=True,
+                           verbose=verbose, koords=koords)
 
     c = mesh.findCell(startCoord)
 
     if c is not None:
         c.setValid(True)
 
-    xu, yu = streamlineDir(mesh, field, startCoord,
-                           dLengthSteps,
-                           dataMesh=dataMesh,
-                           maxSteps=maxSteps,
-                           down=False, verbose=verbose, koords=koords)
+    xu, yu = streamlineDir(mesh, field, startCoord, dLengthSteps,
+                           dataMesh=dataMesh, maxSteps=maxSteps, down=False,
+                           verbose=verbose, koords=koords)
 
     return xd + xu[1:], yd + yu[1:]
 
 
-def streamlineDir(mesh, field, startCoord, dLengthSteps,
-                  dataMesh=None,
-                  maxSteps=1000, down=True,
-                  verbose=False, koords=(0, 1)):
+def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
+                  maxSteps=1000, down=True, verbose=False, koords=(0, 1)):
     """
         down = -1, up = 1, both = 0
     """
@@ -67,17 +61,16 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
     if hasattr(field[0], '__len__'):
         if min(field[:, 0]) == max(field[:, 0]) and \
            min(field[:, 1]) == max(field[:, 1]):
-            raise BaseException(
-                "No data range streamline: min/max == ", min(field[:, 0]))
+            raise BaseException("No data range streamline: min/max == ",
+                                min(field[:, 0]))
         vx = pg.RVector(field[:, 0])
         vy = pg.RVector(field[:, 1])
 
         isVectorData = True
     else:
         if min(field) == max(field):
-            raise BaseException(
-                "No data range for streamline: min/max == ",
-                min(field))
+            raise BaseException("No data range for streamline: min/max == ",
+                                min(field))
 
         if dataMesh is not None:
             if len(field) == dataMesh.nodeCount():
@@ -85,18 +78,30 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
             elif len(field) == dataMesh.cellCount():
                 pot = pg.cellDataToPointData(dataMesh, field)
             else:
+<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
                 raise BaseException("Data length (%i) for streamline is "
                     "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), dataMesh.nodeCount(), dataMesh.nodeCount()))
+=======
+                raise BaseException(
+                    "Data length (%i) for streamline is neighter nodeCount (%i) nor cellCount (%i)"
+                    % (len(field), dataMesh.nodeCount(), dataMesh.nodeCount()))
+>>>>>>> minor
         else:
             if len(field) == mesh.nodeCount():
                 pot = pg.RVector(field)
             elif len(field) == mesh.cellCount():
                 pot = pg.cellDataToPointData(mesh, field)
             else:
+<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
                 raise BaseException("Data length (%i) for streamline is "
                     "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), mesh.nodeCount(), mesh.nodeCount()))
+=======
+                raise BaseException(
+                    "Data length (%i) for streamline is neighter nodeCount (%i) nor cellCount (%i)"
+                    % (len(field), mesh.nodeCount(), mesh.nodeCount()))
+>>>>>>> minor
 
     direction = 1
     if down:
@@ -130,11 +135,17 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
             elif dataMesh:
                 cd = dataMesh.findCell(pos)
                 if cd is None:
-                    raise BaseException("Cannot find " + str(pos) +" dataMesh")
+                    raise BaseException("Cannot find " + str(pos) +
+                                        " dataMesh")
                 if len(vx) == dataMesh.cellCount():
                     d = pg.RVector3(vx[cd.id()], vy[cd.id()])
+<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
                 elif len(vx) == dataMesh.nodeCount() and \
                     len(vy) == dataMesh.nodeCount():
+=======
+                elif len(vx) == dataMesh.nodeCount() and len(
+                        vy) == dataMesh.nodeCount():
+>>>>>>> minor
                     d = pg.RVector3(cd.pot(pos, vx), cd.pot(pos, vy))
                 else:
                     print(dataMesh)
@@ -156,7 +167,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps,
         # print "cell:", c.id(), u
         # always go u down
         if d.length() == 0.0:
-            print(d, "check this in streamlineDir(", )
+            print(d,
+                  "check this in streamlineDir(",)
             break
 
         if down:
@@ -210,17 +222,15 @@ def boundaryPlaneIntersectionLines(boundaries, plane):
     for b in boundaries:
         ps = []
         for i, n in enumerate(b.shape().nodes()):
-            line = pg.Line(
-                n.pos(), b.shape().node(
-                    (i + 1) %
-                    b.shape().nodeCount()).pos())
+            line = pg.Line(n.pos(), b.shape().node(
+                (i + 1) % b.shape().nodeCount()).pos())
             p = plane.intersect(line, 1e-8, True)
             if p.valid():
                 ps.append(p)
 
         if len(ps) == 2:
-            lines.append(list(zip([ps[0].x(), ps[1].x()],
-                                  [ps[0].z(), ps[1].z()])))
+            lines.append(list(zip([ps[0].x(), ps[1].x()], [ps[0].z(), ps[1].z()
+                                                           ])))
     return lines
 # def intersectionLines
 
@@ -245,3 +255,68 @@ def number_of_processors():
     # FreeBSD, HPUX, etc.
     else:
         raise RuntimeError('unknown platform')
+<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
+=======
+
+
+def assembleDC(mesh, source=None):
+    """assemble stiffness matrix for 3d dc forward problem using fem."""
+    WHONEEDSTHIS
+    if source == None:
+        source = pg.RVector3(0.0, 0.0, 0.0)
+
+    S = pg.DSparseMatrix()
+    S.buildSparsityPattern(mesh)
+    #    se = pg.DElementMatrix()
+
+    #    for c in mesh.cells():
+    #        se.ux2uy2uz2(c)
+    #        S += se
+    pg.dcfemDomainAssembleStiffnessMatrix(S, mesh, 0.0, False)
+    pg.dcfemBoundaryAssembleStiffnessMatrix(S, mesh, source, 0.0)
+    return S
+# def assembleDC
+
+
+def assembleCEM(S, mesh, marker, zi, nodeID=-1, verbose=False):
+    """
+        add dc-cem to stiffness system, return new Matrix and sum of electrodes surface
+    """
+    WHONEEDSTHIS
+    sumArea = 0
+
+    if nodeID == -1:
+        for b in mesh.findBoundaryByMarker(marker):
+            sumArea += b.shape().domainSize()
+        print("addCEM: ", marker, sumArea, 'm^2', zi / sumArea, 'Ohm\n')
+    else:
+        sumArea = 1
+        print("addCEM: node")
+
+    mapS = pg.DSparseMapMatrix(S)
+    oldSize = S.size()
+
+    se = pg.DElementMatrix()
+
+    mapS.setRows(oldSize + 1)
+    mapS.setCols(oldSize + 1)
+
+    if nodeID == -1:
+        for b in mesh.findBoundaryByMarker(marker):
+            se.u(b)
+            se /= -zi
+            mapS.addToCol(oldSize, se)
+            mapS.addToRow(oldSize, se)
+            se.u2(b)
+            se /= zi
+            mapS += se
+
+        mapS.setVal(oldSize, oldSize, sumArea / zi)
+    else:
+        mapS.addVal(nodeID, nodeID, 1.0)
+        mapS.addVal(oldSize, nodeID, -1.0)
+        mapS.addVal(nodeID, oldSize, -1.0)
+        mapS.addVal(oldSize, oldSize, 1.0)
+
+    return pg.DSparseMatrix(mapS), sumArea
+>>>>>>> minor

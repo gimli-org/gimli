@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 """pyGIMLi - Python package for GIMLi including bindings to C++ library.
 
-Usage:
+Import convention:
 
 .. code-block:: python
 
     import pygimli as pg
 """
 
-from . import core
-# need to be imported first . core will overwrite base parts
-from .core._pygimli_ import *
-from .core import *
-
 import locale
+import sys
+
+from . import core
+from ._version import get_versions
+from .core import *
+from .core._pygimli_ import *
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):
@@ -31,6 +32,7 @@ def checkAndFixLocaleDecimal_point(verbose=False):
     # LC_CTYPE should be something with UTF-8
     # export LC_CTYPE="de_DE.UTF-8"
     # python -c 'import sys; print(sys.stdout.encoding)'
+
 
 checkAndFixLocaleDecimal_point(verbose=True)
 # print(locale.localeconv()['decimal_point'])
@@ -114,8 +116,9 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     plt.close('all')
     sys.exit(exitcode)
 
-from ._version import get_versions
+
 __version__ = get_versions()['version']
+
 
 def version():
     """Shortcut to show and return current version."""

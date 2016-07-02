@@ -24,6 +24,7 @@ body {
     font-family: "Fira Sans", sans-serif;
     font-size: 15px;
     font-weight: 400;
+    line-height: 21px;
 }
 
 a { color: #107896 }
@@ -526,4 +527,28 @@ p.admonition-title {
     max-width: 50%;
     margin-bottom: -20px;
     margin-top: 15px;
+}
+
+.well-small {
+    padding-top: 9px;
+    padding-bottom: 8px;
+}
+
+i.icon-search {
+    padding-left: 3px;
+}
+
+.highlight .nn {
+    color: #107896;
+    font-weight: bold;
+}
+
+div.highlight-python pre a {
+    /* font-weight: bold; */
+    color: #107896;
+    text-decoration: underline;
+}
+
+div.highlight-python pre a:hover {
+    font-weight: bold;
 }
