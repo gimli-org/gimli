@@ -5,10 +5,11 @@ Created on Mon Feb 16 09:33:14 2015
 @author: Marcus Wennermark
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from pygimli.mplviewer import draw1DColumn
+import matplotlib.pyplot as plt
+import numpy as np
+
+from .mplviewer import draw1DColumn
 
 
 def create_legend(ax, cmap, ids, classes):
@@ -34,6 +35,7 @@ class BoreHole(object):
         0.0 1.6 clti \n
         1.6 10.0 shale
     """
+
     def __init__(self, fname):
         self._fname = fname
         self._load()
@@ -42,8 +44,8 @@ class BoreHole(object):
         return self.__class__.__name__ + '("{}")'.format(self._fname)
 
     def __str__(self):
-        out = 'Borehole id: {}\n Inline position (x, z): {}\n Layers:'.\
-            format(self.borehole_id, self.inline_pos)
+        out = 'Borehole id: {}\n Inline position (x, z): {}\n Layers:'.format(
+            self.borehole_id, self.inline_pos)
 
         for layer in self.data[1:]:
             out = ''.join([out, '\n ', str(layer)])
@@ -68,8 +70,8 @@ class BoreHole(object):
         else:
             raise Warning('File "{}" contains no layers!'.format(self._fname))
 
-    def plot(self, ax, plot_thickness=1.0,
-             cmin=None, cmax=None, cm=None, do_legend=True, **legend_kwargs):
+    def plot(self, ax, plot_thickness=1.0, cmin=None, cmax=None, cm=None,
+             do_legend=True, **legend_kwargs):
         """
         Plots the data on the specified axis.
         """
@@ -85,9 +87,9 @@ class BoreHole(object):
         if cm is None:
             cm = plt.get_cmap('jet', len(self.unique_classes))
 
-        draw1DColumn(ax, self.inline_pos[0], self.class_id,
-                     thickness, ztopo=self.inline_pos[1], width=plot_thickness,
-                     cmin=cmin, cmax=cmax, name=self.borehole_id, cmap=cm,
+        draw1DColumn(ax, self.inline_pos[0], self.class_id, thickness,
+                     ztopo=self.inline_pos[1], width=plot_thickness, cmin=cmin,
+                     cmax=cmax, name=self.borehole_id, cmap=cm,
                      textoffset=self._textoffset)
 
         if do_legend:
@@ -116,7 +118,7 @@ class BoreHoles(object):
         if len(fnames) > 0:
             self.boreholes = [BoreHole(f) for f in fnames]
         else:
-            raise(Warning('No filenames specified!'))
+            raise (Warning('No filenames specified!'))
 
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self._fnames)
@@ -134,8 +136,9 @@ class BoreHoles(object):
         classification has the same color on all boreholes.
         """
 
-        self.common_unique, rev_idx = np.unique(np.hstack(
-            [b.classes for b in self.boreholes]), return_inverse=True)
+        self.common_unique, rev_idx = np.unique(
+            np.hstack([b.classes for b in self.boreholes]),
+            return_inverse=True)
 
         self.class_id = rev_idx
 
