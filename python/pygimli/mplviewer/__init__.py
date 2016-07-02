@@ -52,6 +52,7 @@ def wait():
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
 
+
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
                    scale=1, usetex=True):
     """Set preferred output style."""
@@ -208,45 +209,17 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
     createAnimation(fig, animate, int(len(data)), dpi, out)
 
+
 __all__ = [
-    "BoreHole",
-    "BoreHoles",
-    "create_legend",
-    "addCoverageAlpha",
-    "autolevel",
-    "cmapFromName",
-    "createColorbar",
-    "findAndMaskBestClim",
-    "setCbarLevels",
-    "setMappableData"
-    "drawSensorAsMarker",
-    "generateMatrix",
-    "patchMatrix",
-    "patchValMap",
-    "plotDataContainerAsMatrix",
-    "plotMatrix",
-    "plotVecMatrix",
-    "CellBrowser",
-    "createMeshPatches",
-    "createParameterContraintsLines",
-    "createTriangles",
-    "draw1DColumn",
-    "drawField",
-    "drawMesh",
-    "drawMeshBoundaries",
-    "drawModel",
-    "drawMPLTri",
-    "drawParameterConstraints",
-    "drawPLC",
-    "drawSelectedMeshBoundaries",
-    "drawSelectedMeshBoundariesShadow",
-    "drawSensors",
-    "drawStreamLines",
-    "drawStreams",
-    "insertUnitAtNextLastTick",
-    "plotLines" "cacheFileName",
-    "deg2MapTile",
-    "getMapTile",
-    "mapTile2deg",
-    "underlayMap"
+    "BoreHole", "BoreHoles", "create_legend", "addCoverageAlpha", "autolevel",
+    "cmapFromName", "createColorbar", "findAndMaskBestClim", "setCbarLevels",
+    "setMappableData", "drawSensorAsMarker", "generateMatrix", "patchMatrix",
+    "patchValMap", "plotDataContainerAsMatrix", "plotMatrix", "plotVecMatrix",
+    "CellBrowser", "createMeshPatches", "createParameterContraintsLines",
+    "createTriangles", "draw1DColumn", "drawField", "drawMesh",
+    "drawMeshBoundaries", "drawModel", "drawMPLTri",
+    "drawParameterConstraints", "drawPLC", "drawSelectedMeshBoundaries",
+    "drawSelectedMeshBoundariesShadow", "drawSensors", "drawStreamLines",
+    "drawStreams", "insertUnitAtNextLastTick", "plotLines", "cacheFileName",
+    "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap"
 ]
