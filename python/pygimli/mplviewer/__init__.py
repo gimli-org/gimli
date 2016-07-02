@@ -221,5 +221,5 @@ __all__ = [
     "drawParameterConstraints", "drawPLC", "drawSelectedMeshBoundaries",
     "drawSelectedMeshBoundariesShadow", "drawSensors", "drawStreamLines",
     "drawStreams", "insertUnitAtNextLastTick", "plotLines", "cacheFileName",
-    "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap"
+    "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap", "updateAxes"
 ]
