@@ -1,40 +1,32 @@
 # -*- coding: utf-8 -*-
 """Viewer interface .. depends on matplotlib."""
 
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
 import os
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-=======
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
-import numpy as np
-
-from .colorbar import *
-from .dataview import *
-from .meshview import *
-from .overlayimage import *
-
-holdAxes_ = 0
-
-
-def updateAxes(ax, a=None):
-    """
-        for internal use
-    """
-    if not holdAxes_:
-        try:
-            mpl.pyplot.pause(0.01)
-        except Exception as e:
-            #print(e)
-            pass
->>>>>>> minor
 
 import pygimli as pg
 
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
+# are the following is suitable for a drawing package?
+from .boreholes import BoreHole, BoreHoles, create_legend
+from .colorbar import (addCoverageAlpha, autolevel, cmapFromName,
+                       createColorbar, findAndMaskBestClim, setCbarLevels,
+                       setMappableData)
+from .dataview import (drawSensorAsMarker, generateMatrix, patchMatrix,
+                       patchValMap, plotDataContainerAsMatrix, plotMatrix,
+                       plotVecMatrix)
+from .meshview import (CellBrowser, createMeshPatches,
+                       createParameterContraintsLines, createTriangles,
+                       draw1DColumn, drawField, drawMesh, drawMeshBoundaries,
+                       drawModel, drawMPLTri, drawParameterConstraints,
+                       drawPLC, drawSelectedMeshBoundaries,
+                       drawSelectedMeshBoundariesShadow, drawSensors,
+                       drawStreamLines, drawStreams, insertUnitAtNextLastTick,
+                       plotLines)
+from .overlayimage import (cacheFileName, deg2MapTile, getMapTile, mapTile2deg,
+                           underlayMap)
+
 holdAxes__ = 0
 
 
@@ -47,24 +39,9 @@ def updateAxes(ax, a=None):
             print(ax, a)
 
 
-=======
->>>>>>> minor
 def hold(val=1):
     """TODO WRITEME."""
     pg.mplviewer.holdAxes__ = val
-
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
-=======
-
-def showLater(val=1):
-    raise ('do not use .. use show(hold=1) to keep pics in background')
-    import matplotlib.pyplot as plt
-    if val == 1:
-        plt.ion()
-    else:
-        plt.ioff()
-        plt.show()
->>>>>>> minor
 
 
 def wait():
@@ -72,72 +49,12 @@ def wait():
     plt.pause(0.01)
     plt.show()
 
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
 
-from .dataview import generateMatrix
-from .dataview import patchValMap
-from .dataview import patchMatrix
-from .dataview import plotMatrix
-from .dataview import plotVecMatrix
-from .dataview import plotDataContainerAsMatrix
-from .dataview import drawSensorAsMarker
-
-from .meshview import CellBrowser
-from .meshview import drawMesh
-from .meshview import drawModel
-from .meshview import drawSelectedMeshBoundaries
-from .meshview import drawSelectedMeshBoundariesShadow
-from .meshview import drawMeshBoundaries
-from .meshview import drawPLC
-from .meshview import createMeshPatches
-from .meshview import createTriangles
-from .meshview import drawMPLTri
-from .meshview import drawField
-from .meshview import drawStreamLines
-from .meshview import drawStreams
-from .meshview import drawSensors
-from .meshview import createParameterContraintsLines
-from .meshview import drawParameterConstraints
-from .meshview import draw1DColumn
-from .meshview import insertUnitAtNextLastTick
-from .meshview import plotLines
-
-from .colorbar import autolevel
-from .colorbar import cmapFromName
-from .colorbar import findAndMaskBestClim
-from .colorbar import createColorbar
-from .colorbar import setCbarLevels
-from .colorbar import setMappableData
-from .colorbar import addCoverageAlpha
-
-from .overlayimage import deg2MapTile
-from .overlayimage import mapTile2deg
-from .overlayimage import cacheFileName
-from .overlayimage import getMapTile
-from .overlayimage import underlayMap
-
-# are the following is suitable for a drawing package?
-from .boreholes import create_legend
-from .boreholes import BoreHole
-from .boreholes import BoreHoles
-
-
-def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0,
-                   fontsize=9, scale=1, usetex=True):
-    """Set preferred output style."""
-=======
-
-goldenMean = 1.618  # (1.0 + math.sqrt(5.0)) / 2.0
-
-
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
                    scale=1, usetex=True):
-    """
-    """
-
->>>>>>> minor
+    """Set preferred output style."""
     if dim == 'w':
         dim = 0
     else:
@@ -157,57 +74,25 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
     fig_size = [fig_width * scale, fig_height * scale]
 
     # print "figsize:", fig_size
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
     # fig.set_size_inches(fig_size)
-=======
-    #    fig.set_size_inches(fig_size)
->>>>>>> minor
 
     # from matplotlib import rc
     # rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
     # rc('font',**{'family':'serif','serif':['Palatino']})
 
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
-    params = {'backend': 'ps',
-              # 'font.weight'       : 'bold',
-              'ax.labelsize': fontsize * scale,
-              'font.size': fontsize * scale,
-              'legend.fontsize': fontsize * scale,
-              'xtick.labelsize': fontsize * scale,
-              'ytick.labelsize': fontsize * scale,
-              # font.sans-serif     : Bitstream Vera Sans, ...
-              # 'font.cmb10'     : 'cmb10',
-              # 'font.family'         : 'cursive',
-              'font.family': 'sans-serif',
-              # 'font.sans-serif'   : 'Helvetica',
-              'text.usetex': usetex,
-              'figure.figsize': fig_size,
-              'xtick.major.pad': 4 * scale,
-              'xtick.minor.pad': 4 * scale,
-              'ytick.major.pad': 4 * scale,
-              'ytick.minor.pad': 4 * scale,
-              'xtick.major.size': 4 * scale,     # major tick size in points
-              'xtick.minor.size': 2 * scale,     # minor tick size in points
-              'ytick.major.size': 4 * scale,     # major tick size in points
-              'ytick.minor.size': 2 * scale,     # minor tick size in points
-              'lines.markersize': 6 * scale,
-              'lines.linewidth': 0.6 * scale
-              }
-=======
     params = {
         'backend': 'ps',
-        'font.size': fontsize * scale,
-        #'font.weight'       : 'bold',
-        'axes.labelsize': fontsize * scale,
+        # 'font.weight'       : 'bold',
+        'ax.labelsize': fontsize * scale,
         'font.size': fontsize * scale,
         'legend.fontsize': fontsize * scale,
         'xtick.labelsize': fontsize * scale,
         'ytick.labelsize': fontsize * scale,
-        # font.sans-serif     : Bitstream Vera Sans, Lucida Grande, Verdana, Geneva, Lucid, Arial, Helvetica
-        #'font.cmb10'     : 'cmb10',
-        #'font.family'         : 'cursive',
+        # font.sans-serif     : Bitstream Vera Sans, ...
+        # 'font.cmb10'     : 'cmb10',
+        # 'font.family'         : 'cursive',
         'font.family': 'sans-serif',
-        #'font.sans-serif'   : 'Helvetica',
+        # 'font.sans-serif'   : 'Helvetica',
         'text.usetex': usetex,
         'figure.figsize': fig_size,
         'xtick.major.pad': 4 * scale,
@@ -221,7 +106,6 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
         'lines.markersize': 6 * scale,
         'lines.linewidth': 0.6 * scale
     }
->>>>>>> minor
 
     plt.rcParams.update(params)
 
@@ -237,8 +121,8 @@ def setPlotStuff(fontsize=7, dpi=None):
     rcParams['font.family'] = 'sans-serif'
     rcParams['font.sans-serif'] = ['Helvetica']  # ['Times New Roman']
     rcParams['text.usetex'] = False
-    rcParams['font.size'] = 0.6*fontsize
-#    rcParams['figure.figsize'] = 7.3, 4.2
+    rcParams['font.size'] = 0.6 * fontsize
+    #    rcParams['figure.figsize'] = 7.3, 4.2
     rcParams['ax.titlesize'] = fontsize
     rcParams['ax.linewidth'] = 0.3
     rcParams['xtick.major.size'] = 3
@@ -253,7 +137,6 @@ def setPlotStuff(fontsize=7, dpi=None):
     if dpi is not None:
         rcParams['figure.dpi'] = dpi
         rcParams['savefig.dpi'] = dpi
-
 
 
 def createAnimation(fig, animate, nFrames, dpi, out):
@@ -275,41 +158,23 @@ def createAnimation(fig, animate, nFrames, dpi, out):
         pass
 
 
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
-def saveAnimation(mesh, data, out, vData=None, plc=None, label='',
-                  cMin=None, cMax=None, logScale=False, cmap=None, **kwargs):
-    """Create and save an animation for a given mesh with a set of field data.
-=======
 def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
                   cMax=None, logScale=False, cmap=None, **kwargs):
-    """
-        Create and save an animation for a given mesh with a set of field data.
->>>>>>> minor
+    """Create and save an animation for a given mesh with a set of field data.
 
         Until I know a better place.
     """
     dpi = 92
     scale = 1
     fig = plt.figure(facecolor='white',
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
-                     figsize=(scale*800/dpi, scale*490/dpi), dpi=dpi)
-    ax = fig.add_subplot(1, 1, 1)
-
-    gci = pg.mplviewer.drawModel(ax, mesh, data=data[0],
-                                 cMin=cMin, cMax=cMax, cmap=cmap,
-                                 logScale=logScale)
-
-    pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
-
-=======
                      figsize=(scale * 800 / dpi, scale * 490 / dpi), dpi=dpi)
     ax = fig.add_subplot(1, 1, 1)
 
     gci = pg.mplviewer.drawModel(ax, mesh, data=data[0], cMin=cMin, cMax=cMax,
                                  cmap=cmap, logScale=logScale)
 
-    cbar = pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
->>>>>>> minor
+    pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
+
     ax.set_ylabel('Depth [m]')
     ax.set_xlabel('$x$ [m]')
 
@@ -321,11 +186,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
     ax.set_yticklabels(tickLabels)
 
     if plc:
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
         pg.show(plc, ax=ax)
-=======
-        pg.show(plc, axes=ax)
->>>>>>> minor
 
     plt.tight_layout()
     plt.pause(0.001)
@@ -333,19 +194,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
     def animate(i):
         print(out + ": Frame:", i, "/", len(data))
 
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
         if vData is not None:
-            ax.clear()
-            pg.mplviewer.holdAxes_ = 1
-            pg.mplviewer.drawModel(ax, mesh, data=data[i],
-                                   cMin=cMin, cMax=cMax, cmap=cmap,
-                                   logScale=logScale)
-            pg.mplviewer.drawStreams(ax, mesh, vData[i], **kwargs)
-        else:
-            pg.mplviewer.setMappableData(gci, data[i],
-                                         cMin=cMin, cMax=cMax,
-=======
-        if not vData is None:
             ax.clear()
             pg.mplviewer.holdAxes_ = 1
             pg.mplviewer.drawModel(ax, mesh, data=data[i], cMin=cMin,
@@ -353,15 +202,11 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
             pg.mplviewer.drawStreams(ax, mesh, vData[i], **kwargs)
         else:
             pg.mplviewer.setMappableData(gci, data[i], cMin=cMin, cMax=cMax,
->>>>>>> minor
                                          logScale=logScale)
 
         plt.pause(0.1)
 
     createAnimation(fig, animate, int(len(data)), dpi, out)
-<<<<<<< 6d832c5ee3c10dfc61d722905840f1e6c78ede57
 
 
 __all__ = [name for name in dir() if '_' not in name]
-=======
->>>>>>> minor
