@@ -41,10 +41,6 @@ pep8:
     disable:
         - E402 # same as pylint C0413
 
-pep257:
-    disable:
-        - D203 # same as pylint https://github.com/PyCQA/pydocstyle/issues/141
-
 pyflakes:
     disable:
         - F401 # imported module not used (mainly for __init__) pylint also checks this
