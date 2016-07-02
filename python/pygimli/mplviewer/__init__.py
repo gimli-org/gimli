@@ -208,5 +208,5 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
     createAnimation(fig, animate, int(len(data)), dpi, out)
 
-
-__all__ = [name for name in dir() if '_' not in name]
+#  not functioning
+#  __all__ = [name for name in dir() if '_' not in name]
