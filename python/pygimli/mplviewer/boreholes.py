@@ -9,7 +9,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .mplviewer import draw1DColumn
+from .meshview import draw1DColumn
 
 
 def create_legend(ax, cmap, ids, classes):
