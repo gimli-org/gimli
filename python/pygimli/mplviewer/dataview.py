@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 """Some data related viewer."""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.collections import PatchCollection
 from matplotlib.colors import LogNorm, Normalize
 from matplotlib.patches import Rectangle
-from matplotlib.collections import PatchCollection
 
 import pygimli as pg
-from pygimli.mplviewer import updateAxes as updateAxes_
+
+from .utils import updateAxes as updateAxes_
 
 
 def generateMatrix(xvec, yvec, vals, **kwargs):
@@ -31,8 +32,8 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
         dictionaries for accessing matrix position (row/col number from x/y[i])
     """
     if kwargs.pop('full', False):
-        xymap = {xy: ii for ii, xy in enumerate(np.unique(np.hstack((xvec,
-                                                                     yvec))))}
+        xymap = {xy: ii
+                 for ii, xy in enumerate(np.unique(np.hstack((xvec, yvec))))}
         xmap = xymap
         ymap = xymap
     else:
@@ -40,11 +41,11 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
         if kwargs.pop('fillx', False):
             print('filling x', len(xu))
             dx = np.median(np.diff(xu)).round(1)
-            xu = np.arange(0, xu[-1] - xu[0] + dx*0.5, dx) + xu[0]
+            xu = np.arange(0, xu[-1] - xu[0] + dx * 0.5, dx) + xu[0]
             print(len(xu))
         if kwargs.pop('filly', False):
             dy = np.median(np.diff(yu)).round(1)
-            yu = np.arange(0, yu[-1] - yu[0] + dy*0.5, dy) + yu[0]
+            yu = np.arange(0, yu[-1] - yu[0] + dy * 0.5, dy) + yu[0]
         xmap = {xx: ii for ii, xx in enumerate(xu)}
         ymap = {yy: ii for ii, yy in enumerate(yu)}
     A = np.zeros((len(ymap), len(xmap)))
@@ -103,10 +104,12 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     if dy is None:  # map y values to unique
         ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
         for i in range(len(vals)):
-            recs.append(Rectangle((xvec[i]-dx/2, ymap[yvec[i]]-0.5), dx, 1))
+            recs.append(Rectangle((xvec[i] - dx / 2, ymap[yvec[i]] - 0.5), dx,
+                                  1))
     else:
         for i in range(len(vals)):
-            recs.append(Rectangle((xvec[i]-dx/2, yvec[i]-dy/2), dx, dy))
+            recs.append(Rectangle((xvec[i] - dx / 2, yvec[i] - dy / 2), dx,
+                                  dy))
 
     pp = PatchCollection(recs)
     col = ax.add_collection(pp)
@@ -117,8 +120,8 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     pp.set_norm(norm)
     pp.set_array(np.array(vals))
     pp.set_clim(cMin, cMax)
-    ax.set_xlim(min(xvec)-dx/2, max(xvec)+dx/2)
-    ax.set_ylim(len(ymap)-0.5, -0.5)
+    ax.set_xlim(min(xvec) - dx / 2, max(xvec) + dx / 2)
+    ax.set_ylim(len(ymap) - 0.5, -0.5)
 
     updateAxes_(ax)
     cbar = None
@@ -168,7 +171,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     recs = []
     vals = []
     for i, _ in enumerate(ix):
-        recs.append(Rectangle((ix[i]-dx/2, iy[i]-0.5), dx, 1))
+        recs.append(Rectangle((ix[i] - dx / 2, iy[i] - 0.5), dx, 1))
         vals.append(mat[iy[i], ix[i]])
 
     pp = PatchCollection(recs)
@@ -181,8 +184,8 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     pp.set_array(np.array(vals))
     pp.set_clim(cMin, cMax)
     xval = [k for k in xmap.keys()]
-    ax.set_xlim(min(xval)-dx/2, max(xval)+dx/2)
-    ax.set_ylim(len(ymap)+0.5, -0.5)
+    ax.set_xlim(min(xval) - dx / 2, max(xval) + dx / 2)
+    ax.set_ylim(len(ymap) + 0.5, -0.5)
 
     updateAxes_(ax)
     cbar = None
@@ -241,13 +244,13 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         cbar = pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5,
                                            label=label)
     ax.grid(True)
-    xt = np.unique(ax.get_xticks().clip(0, len(xmap)-1))
-    yt = np.unique(ax.get_xticks().clip(0, len(ymap)-1))
+    xt = np.unique(ax.get_xticks().clip(0, len(xmap) - 1))
+    yt = np.unique(ax.get_xticks().clip(0, len(ymap) - 1))
 
     if kwargs.pop('showally', False):
         yt = np.arange(len(ymap))
     else:
-        yt = np.round(np.linspace(0, len(ymap)-1, 5))
+        yt = np.round(np.linspace(0, len(ymap) - 1, 5))
 #    print(yt)
 
     xx = np.sort([k for k in xmap])
@@ -256,7 +259,7 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     yy = np.unique([k for k in ymap])
     ax.set_yticks(yt)
     ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
-#    ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
+    #    ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
     return ax, cbar
 
 
