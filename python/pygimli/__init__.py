@@ -14,7 +14,6 @@ import sys
 from . import core
 from ._version import get_versions
 from .core import *
-from .core._pygimli_ import *
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):

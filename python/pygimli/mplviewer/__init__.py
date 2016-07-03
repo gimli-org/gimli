@@ -8,25 +8,6 @@ import matplotlib.pyplot as plt
 
 import pygimli as pg
 
-# are the following is suitable for a drawing package?
-from .boreholes import BoreHole, BoreHoles, create_legend
-from .colorbar import (addCoverageAlpha, autolevel, cmapFromName,
-                       createColorbar, findAndMaskBestClim, setCbarLevels,
-                       setMappableData)
-from .dataview import (drawSensorAsMarker, generateMatrix, patchMatrix,
-                       patchValMap, plotDataContainerAsMatrix, plotMatrix,
-                       plotVecMatrix)
-from .meshview import (CellBrowser, createMeshPatches,
-                       createParameterContraintsLines, createTriangles,
-                       draw1DColumn, drawField, drawMesh, drawMeshBoundaries,
-                       drawModel, drawMPLTri, drawParameterConstraints,
-                       drawPLC, drawSelectedMeshBoundaries,
-                       drawSelectedMeshBoundariesShadow, drawSensors,
-                       drawStreamLines, drawStreams, insertUnitAtNextLastTick,
-                       plotLines)
-from .overlayimage import (cacheFileName, deg2MapTile, getMapTile, mapTile2deg,
-                           underlayMap)
-
 holdAxes__ = 0
 
 
@@ -48,6 +29,26 @@ def wait():
     """TODO WRITEME"""
     plt.pause(0.01)
     plt.show()
+
+
+# are the following is suitable for a drawing package?
+from .boreholes import BoreHole, BoreHoles, create_legend
+from .colorbar import (addCoverageAlpha, autolevel, cmapFromName,
+                       createColorbar, findAndMaskBestClim, setCbarLevels,
+                       setMappableData)
+from .dataview import (drawSensorAsMarker, generateMatrix, patchMatrix,
+                       patchValMap, plotDataContainerAsMatrix, plotMatrix,
+                       plotVecMatrix)
+from .meshview import (CellBrowser, createMeshPatches,
+                       createParameterContraintsLines, createTriangles,
+                       draw1DColumn, drawField, drawMesh, drawMeshBoundaries,
+                       drawModel, drawMPLTri, drawParameterConstraints,
+                       drawPLC, drawSelectedMeshBoundaries,
+                       drawSelectedMeshBoundariesShadow, drawSensors,
+                       drawStreamLines, drawStreams, insertUnitAtNextLastTick,
+                       plotLines)
+from .overlayimage import (cacheFileName, deg2MapTile, getMapTile, mapTile2deg,
+                           underlayMap)
 
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw

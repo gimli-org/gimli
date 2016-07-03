@@ -41,6 +41,10 @@ pep8:
     disable:
         - E402 # same as pylint C0413
 
+pep257:
+    disable:
+        -D203 # conflicts with D211
+
 pyflakes:
     disable:
         - F401 # imported module not used (mainly for __init__) pylint also checks this

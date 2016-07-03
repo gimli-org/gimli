@@ -17,9 +17,9 @@ from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
                    readHydrus3dMesh, readTetgen, readTriangle)
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createLine, createParaMeshPLC,
-                        createRectangle, createWorld, mergePLC, readPLC)
+                        createRectangle, createWorld, mergePLC, readPLC, writePLC)
 
-#  This is neither functional nor good practice
+#  This is neither functional nor good practice  #  why?
 #  __all__ = [name for name in dir() if '_' not in name]
 
 __all__ = ['appendTriangleBoundary',
@@ -41,5 +41,6 @@ __all__ = ['appendTriangleBoundary',
            'createParaMeshPLC',
            'mergePLC',
            'readPLC',
+           'writePLC',
            'createParaDomain2D'  # keep for backward compatibility
            ]
