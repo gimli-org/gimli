@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 """Viewer interface .. depends on matplotlib."""
 
-import os
-
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-
-import pygimli as pg
-
 # are the following is suitable for a drawing package?
 from .boreholes import BoreHole, BoreHoles, create_legend
 from .colorbar import (addCoverageAlpha, autolevel, cmapFromName,

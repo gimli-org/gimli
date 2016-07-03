@@ -1,6 +1,13 @@
 # coding=utf-8
 """Plotting utilities used througout the mplviewer package."""
 
+import os
+
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+
+import pygimli as pg
+
 holdAxes__ = 0
 
 
