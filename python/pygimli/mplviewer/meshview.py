@@ -12,7 +12,7 @@ from matplotlib.colors import LogNorm
 
 import pygimli as pg
 from pygimli.misc import streamline
-from pygimli.mplviewer import updateAxes as updateAxes_
+from .utils import updateAxes as updateAxes_
 
 from .colorbar import cmapFromName, autolevel
 
