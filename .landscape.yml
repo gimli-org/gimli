@@ -43,7 +43,7 @@ pep8:
 
 pep257:
     disable:
-        -D203 # conflicts with D211
+        - D203 # conflicts with D211
 
 pyflakes:
     disable:
