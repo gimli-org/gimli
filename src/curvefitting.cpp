@@ -132,7 +132,7 @@ RVector HarmonicModelling::response( const RVector & par, const RVector tvec ){
 void HarmonicModelling::createJacobian( const RVector & model ) {
     //!! jacobian = transpose( A );
     RMatrix * jacobian = dynamic_cast < RMatrix * > ( jacobian_ );
-    
+
     if ( jacobian->rows() != nt_ || jacobian->cols() != np_ ) {
         jacobian->resize( nt_, np_ );
 
@@ -144,28 +144,28 @@ void HarmonicModelling::createJacobian( const RVector & model ) {
     }
 }
 
-PolynomialModelling::PolynomialModelling( uint dim, uint nCoeffizient, 
+PolynomialModelling::PolynomialModelling( uint dim, uint nCoeffizient,
                                           const std::vector < RVector3 > & referencePoints, const RVector & startModel )
     : dim_( dim ), referencePoints_( referencePoints ), f_( PolynomialFunction < double >( nCoeffizient ) ) {
     pascalTriangle_ = false;
     serendipityStyle_ = false;
     startModel_ = startModel;
     powCombination_ = 0;
-    
+
     this->regionManager().setParameterCount( powInt( nCoeffizient, 3 ) );
 }
-    
-RVector PolynomialModelling::response( const RVector & par ){ 
-    return f_.fill( round( par, TOLERANCE ) )( referencePoints_ ); 
+
+RVector PolynomialModelling::response( const RVector & par ){
+    return f_.fill( round( par, TOLERANCE ) )( referencePoints_ );
 }
-    
+
 RVector PolynomialModelling::startModel( ){
     if ( startModel_.size() == powInt( f_.size(), 3 ) ) return startModel_;
-        
+
     RVector p( powInt( f_.size(), 3 ), 0.0 );
     f_.clear();
-        
-    p.setVal( 1.0, 0, (SIndex)( powInt( f_.size(), dim_ ) ) ); 
+
+    p.setVal( 1.0, 0, (SIndex)( powInt( f_.size(), dim_ ) ) );
 
     if ( pascalTriangle_ ){
         for ( Index k = 0; k < f_.size(); k ++ ){
@@ -181,8 +181,8 @@ RVector PolynomialModelling::startModel( ){
             }
         }
     }
-    
+
     return p;
 }
-    
+
 } // namespace GIMLI{
