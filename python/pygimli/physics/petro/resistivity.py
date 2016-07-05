@@ -10,8 +10,10 @@ import pygimli as pg
 
 def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
                       mesh=None, meshI=None, fill=None):
-    r"""
-    Return resistivity of rock for the petrophysical model from Archies law.
+    r"""Resistivity of rock for the petrophysical model from Archies law.
+
+    Calculates resistivity of rock for the petrophysical model from
+    Archie's law. :cite:`Archie1942`
 
     .. math::
         \rho = a\rho_{\text{fl}}\phi^{-m}\S^{-n}
@@ -27,6 +29,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
      range 1.3 -- 2.5 for sandstones)
     * :math:`n` - is the saturation exponent (usually close to 2)
 
+
     If mesh is not None the resulting values are calculated for each cell of
     the mesh.
     All parameter can be scalar, array of length mesh.cellCount()
@@ -35,17 +38,16 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     If meshI is not None the result is interpolated to meshI.cellCenters()
     and prolonged (if fill ==1).
 
-    Note
-    ----
-    We experience some unstable nonlinear behavior.
-    Until this is clarified all results are rounded to the precision 1e-6.
+    Notes
+    -----
+        We experience some unstable nonlinear behavior.
+        Until this is clarified all results are rounded to the precision 1e-6.
 
     Examples
     --------
+    >>> #
 
     WRITEME
-
-
     """
     phi = porosity
     if isinstance(porosity, list):

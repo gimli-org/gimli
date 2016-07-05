@@ -11,14 +11,15 @@ import pygimli as pg
 from .importexport import readTXTSpectrum, readFuchs3File
 from .plotting import showAmplitudeSpectrum, showSpectrum, showPhaseSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
-from .tools import KramersKronig, fitCCEMPhi, fitCCC, fitCCCC, fitCCPhi, fit2CCPhi
+from .tools import KramersKronig, fitCCEMPhi, fitCCC
+from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 
 
 class SIPSpectrum():
     """SIP spectrum data analysis"""
     def __init__(self, filename=None, unify=False, onlydown=True,
                  f=None, amp=None, phi=None, k=1, basename='new'):
-        """init SIP class with either filename to read or data vectors
+        """Init SIP class with either filename to read or data vectors.
 
         Examples
         --------
@@ -61,7 +62,7 @@ class SIPSpectrum():
         return out
 
     def unifyData(self, onlydown=False):
-        """ unify data (only one value per frequency) by mean or selection"""
+        """Unify data (only one value per frequency) by mean or selection."""
         fu = np.unique(self.f)
         if len(fu) < len(self.f) or onlydown:
             if onlydown:
@@ -83,14 +84,14 @@ class SIPSpectrum():
                 self.phi = phi
 
     def sortData(self):
-        """sort data along increasing frequency (e.g. useful for KK)"""
+        """Sort data along increasing frequency (e.g. useful for KK)."""
         ind = np.argsort(self.f)
         self.amp = self.amp[ind]
         self.phi = self.phi[ind]
         self.f = self.f[ind]
 
     def cutF(self, fcut=1e99):
-        """ cut frequencies above a certain value """
+        """Cut frequencies above a certain value."""
         self.amp = self.amp[self.f <= fcut]
         self.phi = self.phi[self.f <= fcut]
         if hasattr(self, 'phiOrg'):
@@ -99,7 +100,7 @@ class SIPSpectrum():
         self.f = self.f[self.f <= fcut]
 
     def realimag(self, cond=False):
-        """real and imaginary part"""
+        """Real and imaginary part."""
         if cond:
             amp = 1. / self.amp
         else:
@@ -107,7 +108,7 @@ class SIPSpectrum():
         return amp * np.cos(self.phi), amp * np.sin(self.phi)
 
     def zNorm(self):
-        """normalized real (difference) and imag. z (Nordsiek&Weller, 2008)"""
+        """Normalized real (difference) and imag. z :cite:`NordsiekWel2008`"""
         re, im = self.realimag()
         R0 = max(self.amp)
         zNormRe = 1. - re / R0
@@ -115,7 +116,7 @@ class SIPSpectrum():
         return zNormRe, zNormIm
 
     def showPhase(self, ax=None, **kwargs):
-        """ plot phase spectrum """
+        """Plot phase spectrum."""
         if ax is None:
             fig, ax = plt.subplots()
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""TODO Module docstring"""
+"""TODO Module docstring."""
+
 import os.path
 from importlib import import_module
 
@@ -8,8 +9,7 @@ from pygimli.meshtools import readGmsh, readPLC
 
 
 def opt_import(module, requiredTo="use the full functionality"):
-    """
-    Import and return module only if it exists.
+    """Import and return module only if it exists.
 
     If `module` cannot be imported, a warning is printed followed by the
     `requiredFor` string. Otherwise, the imported `module` will be returned.
@@ -33,7 +33,6 @@ def opt_import(module, requiredTo="use the full functionality"):
     No module named 'doesNotExist'.
     You need to install this optional dependency to do something special.
     """
-
     # set default message for common imports
     if not requiredTo and "matplotlib" in module:
         requiredTo = "visualize 2D content"
@@ -53,8 +52,7 @@ def opt_import(module, requiredTo="use the full functionality"):
 
 
 def load(fname, verbose=False):
-    """
-    General import function to load data and meshes from file.
+    """General import function to load data and meshes from file.
 
     Parameters
     ----------
@@ -76,7 +74,6 @@ def load(fname, verbose=False):
     >>> mesh.cellCount()
     4
     """
-
     import_routines = {
         # Data
         ".data": pg.DataContainer,
@@ -127,11 +124,9 @@ def load(fname, verbose=False):
     for routine in import_routines.values():
         try:
             return routine(fname)
-        except BaseException as e:
+        except BaseException as _:
             # print(e)
             pass
 
-    raise Exception(
-        "File type of %s is unknown or file does not exist and "
-        "could not be imported." %
-        fname)
+    raise BaseException("File type of %s is unknown or file does not exist "
+                        "and could not be imported." % fname)

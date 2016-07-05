@@ -13,8 +13,7 @@ from .polytools import polyAddVIP, polyCreateWorld, tetgen
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
                            area=0.0, smooth=False, markerBoundary=1,
                            isSubSurface=False, verbose=False):
-    """
-    Add a triangle mesh boundary to a given mesh.
+    """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
     suitable for geo-simulation (surface boundary at top).

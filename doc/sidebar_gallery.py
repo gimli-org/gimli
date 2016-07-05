@@ -1,25 +1,21 @@
 #!/usr/bin/env python
 # encoding: utf-8
+"""File: sidebar_gallery.py.
 
-"""
-File: sidebar_gallery.py
 Author: Florian Wagner <fwagner@gfz-potsdam.de>
 Description: Add all examples/tutorials to sidebar gallery
 Created on: 2013-10-13
 """
 
-from __future__ import print_function
-import os, re
+import os
+from os.path import join, dirname, basename
+import re
 from glob import glob
-from os.path import abspath, join, dirname, basename
 import random
 
+
 def make_gallery(src_path, out_path):
-
-    ###################
-    #  Path settings  #
-    ###################
-
+    """TODO DOCUMENTME."""
     publish = os.getenv("PUBLISH")
     if publish:
         build_dir = "http://www.pygimli.org"
@@ -47,9 +43,10 @@ def make_gallery(src_path, out_path):
         if not titles:
             print("WARNING: Problem reading section title in", fname)
             with open(fname) as f:
+                title = "unknown"
                 for line in f.readlines():
                     if "---" in line or "===" in line:
-                        titles.append(title)
+                        titles.append(title)  # add the line after
                     title = line
         return titles[0].rstrip()
 
@@ -62,11 +59,12 @@ def make_gallery(src_path, out_path):
                 for e in examples]
 
     tutorials = [t.replace(tutorial_dir, join(build_dir, "_tutorials_auto"))
-                for t in tutorials]
+                 for t in tutorials]
 
     # Create HTML gallery for sidebar with random start item
     gallery = examples + tutorials
-    print("\nAdding %d examples/tutorials to sidebar gallery.\n" % len(gallery))
+    print("\nAdding %d examples/tutorials to sidebar gallery.\n" %
+          len(gallery))
     print("\t{:40}{}\n\t".format("Title", "File") + "-" * 80)
     for line in zip(titles, gallery):
         print("\t{:40}{}".format(*line))
@@ -93,16 +91,16 @@ def make_gallery(src_path, out_path):
     </a>
     </div>"""
 
-    id = random.randint(0, len(gallery) - 1)
+    idx = random.randint(0, len(gallery) - 1)
     items = []
     for ix, (item, title) in enumerate(zip(gallery, titles)):
-        dir = dirname(item)
+        path = dirname(item)
         name = basename(item)
-        url = join(dir, name.replace(".py", ".html"))
+        url = join(path, name.replace(".py", ".html"))
         img = join(img_dir, "sphx_glr_" + name.replace(".py", "_thumb.png"))
         item = html_item.format(url, img, title)
 
-        if ix == id:
+        if ix == idx:
             item = item.replace("item", "active item")
 
         items.append(item)
@@ -117,6 +115,6 @@ def make_gallery(src_path, out_path):
     with open(join(out_path, "_templates/gallery.html"), "w") as file:
         file.write(html)
 
+
 if __name__ == '__main__':
-    # to allow 'make gallery' to be called in-source
     make_gallery('.', '.')

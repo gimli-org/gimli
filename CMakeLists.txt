@@ -360,12 +360,18 @@ endif()
 
 ADD_CUSTOM_TARGET(checkall)
 add_dependencies(checkall doc)
+
 # Add if pytest found?
 add_dependencies(checkall pgtest)
 if (CPPUNIT_FOUND)
     add_dependencies(checkall gtest)
 endif (CPPUNIT_FOUND)
 
+add_custom_target(removedoc
+    COMMAND
+        cmake -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/doc
+)
+add_dependencies(checkall removedoc)
 
 ################################################################################
 # Define the configurable options
@@ -455,4 +461,3 @@ endif (PYGIMLI)
 #CR what is this good for?
 # export(TARGETS gimli
 #        FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
-

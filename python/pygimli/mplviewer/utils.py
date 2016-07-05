@@ -26,12 +26,9 @@ def hold(val=1):
 
 
 def wait():
-    """TODO WRITEME"""
+    """TODO WRITEME."""
     plt.pause(0.01)
     plt.show()
-
-# TODO example scripts for the following and refactor is needed
-# maybe ploter should named show or draw
 
 
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
@@ -122,8 +119,7 @@ def setPlotStuff(fontsize=7, dpi=None):
 
 
 def createAnimation(fig, animate, nFrames, dpi, out):
-    """
-        Create animation for the content of a given matplotlib figure.
+    """Create animation for the content of a given matplotlib figure.
 
         Until I know a better place.
     """
@@ -174,6 +170,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
     plt.pause(0.001)
 
     def animate(i):
+        """TODO WRITEME."""
         print(out + ": Frame:", i, "/", len(data))
 
         if vData is not None:

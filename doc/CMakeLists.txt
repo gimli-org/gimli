@@ -122,6 +122,7 @@ add_custom_target(sphinxhtml-nogallery ALL
         cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
      COMMAND
         ${SPHINX_EXECUTABLE} -v
+        -D abort_on_example_error=1
         -D plot_gallery=0
         -T
         -b html
@@ -142,6 +143,7 @@ add_custom_target(sphinxlatex ALL
     COMMAND
         ${SPHINX_EXECUTABLE} -v
         -D plot_gallery=1
+        -D abort_on_example_error=1
         -T
         -q
         -b latex

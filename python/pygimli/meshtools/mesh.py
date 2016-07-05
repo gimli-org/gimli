@@ -8,8 +8,7 @@ import pygimli as pg
 
 def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
                verbose=False, **kwargs):
-    """
-    Create a mesh for a given geometry polygon.
+    """Create a mesh for a given geometry polygon.
 
     The mesh is created by :term:`triangle` or :term:`tetgen` if the
     gimli support for these mesh generators are installed.
@@ -145,8 +144,7 @@ def refineQuad2Tri(mesh, style=1):
 
 
 def readGmsh(fname, verbose=False):
-    """
-    Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
+    r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 
     Parameters
     ----------
@@ -345,8 +343,7 @@ def readGmsh(fname, verbose=False):
 
 
 def readTriangle(fname, verbose=False):
-    """
-    Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
+    r"""Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
 
     Read :term:`Triangle` :cite:`Shewchuk96b` ASCII mesh files and return an
     instance of GIMLI::Mesh class.
@@ -361,15 +358,13 @@ def readTriangle(fname, verbose=False):
         Be verbose during import.
 
     """
-
     raise Exception("implement me!" + fname + str(verbose))
     # os.system('meshconvert -d2 ' + fname)
     # return pg.Mesh(2)
 
 
 def readTetgen(fname, verbose=False):
-    """
-    Read :term:`Tetgen` :cite:`Si2004` mesh.
+    r"""Read :term:`Tetgen` :cite:`Si2004` mesh.
 
     Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
     of GIMLI::Mesh class.
@@ -404,7 +399,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
 
     References
     ----------
-    .. [1] http://www.pc-progress.com/en/Default.aspx?h3d-description
+    .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
     fid = open(fname)
     line = fid.readline().split()
@@ -436,8 +431,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
 
 
 def readHydrus3dMesh(filename='MESHTRIA.TXT'):
-    """
-    Import mesh from Hydrus3D.
+    """Import mesh from Hydrus3D.
 
     Parameters
     ----------
@@ -450,7 +444,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
     References
     ----------
-    .. [1] http://www.pc-progress.com/en/Default.aspx?h3d-description
+    .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
     f = open(filename, 'r')
     for i in range(6):
@@ -487,8 +481,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
 
 def readGambitNeutral(filename, verbose=False):
-    """
-    Import Gambit Neutral meshes *.neu
+    r"""Import Gambit Neutral meshes *.neu.
 
     See. https://www.sharcnet.ca/Software/Gambit/html/users_guide/ug01.htm
 
@@ -502,7 +495,6 @@ def readGambitNeutral(filename, verbose=False):
 
     verbose : boolean, optional
         Be verbose during import.
-
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -547,7 +539,8 @@ def readGambitNeutral(filename, verbose=False):
 
 
 def transform2DMeshTo3D(mesh, x, y, z=None):
-    """
+    """2D mesh into 3D coordinates.
+
     Transform a 2D mesh into 3D coordinates using a point list (e.g. from GPS)
 
     Parameters
@@ -566,7 +559,6 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
     References
     ----------
     """
-
     # get mesh node positions
     mt, mz = pg.x(mesh.positions()), pg.y(mesh.positions())  # mesh tape and z
     # compute length of reference points along tape
@@ -586,8 +578,7 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
 
 
 def rot2DGridToWorld(mesh, start, end):
-    """
-    ..
+    """Rotate a 2D mesh into 3D world coordinates.
 
     todo:: Complete Documentation. ...rotate a given 2D grid in...
     """
@@ -606,7 +597,6 @@ def rot2DGridToWorld(mesh, start, end):
 
 def merge2Meshes(m1, m2):
     """Merge two meshes into one new mesh and return combined mesh."""
-
     mesh = pg.Mesh(m1)
 
     for c in m2.cells():
@@ -627,7 +617,8 @@ def merge2Meshes(m1, m2):
 
 
 def mergeMeshes(meshlist):
-    """
+    """Merge several meshes into one new mesh and return the new mesh.
+
     Merge several meshes into one new mesh and return the new mesh.
 
     Parameters
@@ -639,7 +630,6 @@ def mergeMeshes(meshlist):
     --------
     merge2Meshes
     """
-
     if not isinstance(meshlist, list):
         raise Exception("argument meshlist is no list")
 
@@ -655,7 +645,8 @@ def mergeMeshes(meshlist):
 
 
 def createParaMesh(*args, **kwargs):
-    """
+    """Create parameter mesh from list of sensor positions.
+
     Create parameter mesh from list of sensor positions.
 
     Parameters
@@ -694,18 +685,16 @@ def createParaMesh(*args, **kwargs):
 
 
 def createParaMesh2dGrid(*args, **kwargs):
-    """
-        API change here .. use createParaMesh2DGrid instead
-    """
+    """API change here .. use createParaMesh2DGrid instead."""
     print("createParaMesh2dGrid: API change: pls use createParaMesh2DGrid")
     return createParaMesh2DGrid(*args, **kwargs)
 
 
 def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
                          boundary=-1, paraBoundary=2, **kwargs):
-    """
-    Create a grid style mesh for an inversion parameter mesh.
+    """Create a grid style mesh for an inversion parameter mesh.
 
+    Create a grid style mesh for an inversion parameter mesh.
     Return parameter grid for a given list of sensor positions.
     Uses and forwards arguments to
     :py:mod:`pygimli.meshtools.appendTriangleBoundary`.
@@ -749,7 +738,6 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> ax, _ = pg.show(mesh, axes=ax)
     >>> plt.show()
     """
-
     mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort

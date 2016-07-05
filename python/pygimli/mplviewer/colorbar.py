@@ -134,9 +134,12 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
 #       cbarTarget = patches.figure
 
     if hasattr(patches, 'ax'):
-        divider = make_axes_locatable(patches.axes)
-    elif hasattr(patches, 'get_ax'):
+        divider = make_axes_locatable(patches.ax)
+    elif hasattr(patches, 'get_axes'):
         divider = make_axes_locatable(patches.get_axes())
+
+    # print('#'*100)
+    # print(divider, patches)
 
     if divider:
         if orientation == 'horizontal':

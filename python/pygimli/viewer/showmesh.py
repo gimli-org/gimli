@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-Generic mesh visualization tools.
-"""
+"""Generic mesh visualization tools."""
 
 import os
 import traceback
@@ -96,8 +94,7 @@ def show(mesh=None, data=None, **kwargs):
 def showMesh(mesh, data=None, hold=False, block=False,
              colorBar=False, coverage=None,
              ax=None, savefig=None, **kwargs):
-    """
-    2D Mesh visualization.
+    """2D Mesh visualization.
 
     Create an ax and plot a 2D mesh with given node or cell data.
     Returns the ax and the color bar. The type of data determine the
@@ -176,8 +173,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
         hold = 1
 
     if hold:
-        lastHoldStatus = pg.mplviewer.holdAxes_
-        pg.mplviewer.holdAxes_ = 1
+        lastHoldStatus = pg.mplviewer.utils.holdAxes__
+        pg.mplviewer.hold(val=1)
 
     if ax is None:
         ax = plt.subplots()[1]
@@ -257,7 +254,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
             pass
 
     if hold:
-        pg.mplviewer.holdAxes_ = lastHoldStatus
+        pg.mplviewer.hold(val=lastHoldStatus)
 
     if savefig:
         print('saving: ' + savefig + ' ...')

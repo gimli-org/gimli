@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tools to create or manage PLC"""
+"""Tools to create or manage PLC."""
 
 import os
 from os import system
@@ -10,8 +10,7 @@ import pygimli as pg
 
 
 def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True):
-    """INTERNAL"""
-
+    """INTERNAL."""
     nEdges = poly.nodeCount()-1 + isClosed
     bm = None
     if hasattr(boundaryMarker, '__len__'):
@@ -32,8 +31,7 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True):
 
 
 def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
-    """
-    Create rectangle polygon.
+    """Create rectangle polygon.
 
     Create rectangle with start position and a given size.
     Give either start and end OR pos and size.
@@ -81,7 +79,6 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> drawMesh(ax, rectangle)
     >>> plt.show()
     """
-
     if not ((start and end) or (pos and size)):
         raise BaseException("createRectangle pls. give either start and end"
                             "OR pos and size.")
@@ -117,8 +114,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
 
 def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
-    """
-    Create simple rectangular world.
+    """Create simple rectangular world.
 
     Create simple rectangular world with appropriate boundary conditions.
     Surface boundary is set do pg.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and
@@ -156,7 +152,6 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     >>> drawMesh(ax, world)
     >>> plt.show()
     """
-
     z = [start[1]]
 
     if layers is not None:
@@ -200,9 +195,9 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
 
 def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
                  **kwargs):
+    """Create simple circle polygon.
 
-    """
-    Create simple circle polygon.
+    Create simple circle polygon with given attributes.
 
     Parameters
     ----------
@@ -254,7 +249,6 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     >>> drawMesh(ax, plc)
     >>> plt.show()
     """
-
     if pos is None:
         pos = [0.0, 0.0]
 
@@ -299,8 +293,9 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
 
 
 def createLine(start, end, segments, **kwargs):
-    """
-    Create simple line polygon.
+    """Create simple line polygon.
+
+    Create simple line polygon from start to end.
 
     Parameters
     ----------
@@ -345,8 +340,9 @@ def createLine(start, end, segments, **kwargs):
 
 
 def createPolygon(verts, isClosed=False, **kwargs):
-    """
-       Create a polygon from list of vertices.
+    """Create a polygon.
+
+    Create a polygon from list of vertices.
 
     Parameters
     ----------
@@ -367,7 +363,6 @@ def createPolygon(verts, isClosed=False, **kwargs):
     -------
     poly : gimliapi:`GIMLI::Mesh`
         The resulting polygon is a gimliapi:`GIMLI::Mesh`.
-
     """
     poly = pg.Mesh(2)
 
@@ -382,9 +377,9 @@ def createPolygon(verts, isClosed=False, **kwargs):
 
 
 def mergePLC(pols):
-    """
-    Merge multiply polygons into a single polygon.
+    """Merge multiply polygons.
 
+    Merge multiply polygons into a single polygon.
     Common nodes and common edges will be checked and removed.
 
     Crossing or touching edges or Node/Edge intersections will NOT be
@@ -447,9 +442,7 @@ def mergePLC(pols):
 
 
 def createParaDomain2D(*args, **kwargs):
-    """
-        API change here .. use createParaMeshPLC instead
-    """
+    """API change here .. use createParaMeshPLC instead."""
     print("createParaDomain2D: API change: use createParaMeshPLC instead")
     return createParaMeshPLC(*args, **kwargs)
 
@@ -458,8 +451,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                       paraBoundary=2, paraMaxCellSize=0, boundary=-1,
                       boundaryMaxCellSize=0,
                       **kwargs):
-    """
-    Create a PLC mesh for an inversion parameter mesh.
+    """Create a PLC mesh for an inversion parameter mesh.
 
     Create a PLC mesh for an inversion parameter mesh for a given list of
     sensor positions.
@@ -504,7 +496,6 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     poly: :gimliapi:`GIMLI::Mesh`
         piecewise linear complex (PLC) containing nodes and edges
     """
-
     if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
     elif isinstance(sensors, np.ndarray):
@@ -602,7 +593,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 
 
 def readPLC(filename):
-    """
+    """Generic PLC reader.
+
     Read 2D triangle POLY or 3D Tetgen PLC files.
 
     TODO 3D Tetgen PLC
@@ -616,7 +608,6 @@ def readPLC(filename):
     -------
     poly : gimliapi:`GIMLI::Mesh`
         The resulting polygon is a gimliapi:`GIMLI::Mesh`.
-
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -718,8 +709,7 @@ def readPLC(filename):
 
 
 def writePLC(poly, fname, **kwargs):
-    """
-    Generic PLC writer.
+    r"""Generic PLC writer.
 
     Choose from poly.dimension() and forward appropriate to
     gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
@@ -734,7 +724,6 @@ def writePLC(poly, fname, **kwargs):
     fname : string
         Filename of the file to read (\\*.n, \\*.e)
     """
-
     if poly.dimension() == 2:
         writeTrianglePoly(poly, fname, **kwargs)
     else:
@@ -742,8 +731,7 @@ def writePLC(poly, fname, **kwargs):
 
 
 def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
-    """
-    Write :term:`Triangle` :cite:`Shewchuk96b` poly file.
+    r"""Write :term:`Triangle` poly.
 
     Write :term:`Triangle` :cite:`Shewchuk96b` ASCII file.
     See: ://www.cs.cmu.edu/~quake/triangle.html
@@ -759,9 +747,7 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
 
     verbose : boolean [False]
         Be verbose during import.
-
     """
-
     with open(fname, 'w') as fid:
         fid.write('{:d}\t2\t0\t1\n'.format(poly.nodeCount()))
         nm = poly.nodeMarker()
@@ -790,7 +776,8 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
 
 
 def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
-    """
+    """Create a mesh with :term:`Tetgen` from file.
+
     Create a :term:`Tetgen` :cite:`Si2004` mesh from a PLC.
 
     Forwards to system call tetgen, which must be known to your system.
@@ -812,7 +799,6 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     -------
     mesh : gimliapi:`GIMLI::Mesh`
     """
-
     filebody = filename.replace('.poly', '')
     syscal = 'tetgen -pazAC'
     syscal += 'q' + str(quality)
@@ -844,10 +830,15 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
 
 def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
                isHoleMarker=False, maxCellSize=0, verbose=False):
-    """
-    Add very important point (VIP) to a PLC.
+    """Add very important point (VIP) to a PLC file.
 
+    Add very important point (VIP) to a PLC.
     Out of core wrapper for dcfemlib::polytools::polyAddVIP.
+
+    If you wan add these points to a plc directly use
+    gimliapi:`GIMLI::Mesh::createNode`,
+    gimliapi:`GIMLI::Mesh::addRegionMarker` or
+    gimliapi:`GIMLI::Mesh::addHoleMarker`.
 
     Parameters
     ----------
@@ -855,34 +846,34 @@ def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
     Returns
     -------
     """
-
-    syscal = "polyAddVIP -x " + str(pos[0]) + \
-        " -y " + str(pos[1]) + \
-        " -z " + str(pos[2])
-
-    if isHoleMarker:
-        syscal += " -H "
-    else:
-        syscal += " -m " + str(marker)
-
-    if isRegionMarker:
-        syscal += " -R "
-
-    if maxCellSize > 0:
-        syscal += " -a " + str(maxCellSize)
-
-    syscal += " " + filename
-
-    if verbose:
-        print(syscal)
-    system(syscal)
-# def polyAddVIP
+    raise BaseException('obsolete use mesh methods directly')
+#     syscal = "polyAddVIP -x " + str(pos[0]) + \
+#         " -y " + str(pos[1]) + \
+#         " -z " + str(pos[2])
+#
+#     if isHoleMarker:
+#         syscal += " -H "
+#     else:
+#         syscal += " -m " + str(marker)
+#
+#     if isRegionMarker:
+#         syscal += " -R "
+#
+#     if maxCellSize > 0:
+#         syscal += " -a " + str(maxCellSize)
+#
+#     syscal += " " + filename
+#
+#     if verbose:
+#         print(syscal)
+#     system(syscal)
+# # def polyAddVIP
 
 
 def polyAddRectangle(filename, rect, marker=0, depth=0, clean=True):
-    """
-    Add horizontal plane to a PLC
+    """Add horizontal plane to a PLC.
 
+    Add horizontal plane to a PLC.
     Out of core wrapper for dcfemlib::polytools::polytools.
     Merge a meshed horizontal Rectangle with given marker[0] to
     a 3D PLC at a given depth [0] clean removes all out of core files
@@ -893,38 +884,38 @@ def polyAddRectangle(filename, rect, marker=0, depth=0, clean=True):
     Returns
     -------
     """
-
-    rect.writeXY("__pad.xy", close=True)
-    system("polyCreateWorld -d2 -t __pad.xy -C __pad")
-    a = rect.area() / 29.0
-
-    system("dctriangle -a " + str(a) + " -q34.0 -S __pad")
-    system("polyCreateFacet -o __pad3d -m " + str(marker) + " __pad.bms")
-    system("polyTranslate -z " + str(depth) + " __pad3d")
-
-    # add node to the center of the rectangle
-#    system("polyAddVIP -x " + str(rect.start[0])
-#                    + " -y " + str(rect.start[1])
-#                    + " -m -1 __pad3d")
-    system("polyMerge " + filename + " __pad3d " + filename)
-
-#    system("polyCreateFacet -o __pad3d -m 1 __pad.bms")
-#    system("polyTranslate -z -0.1 __pad3d")
-#    system("polyMerge " + filename + " __pad3d " + filename)
-
-    if clean:
-        os.remove('__pad.xy')
-        os.remove('__pad.poly')
-        os.remove('__pad.bms')
-        os.remove('__pad3d.poly')
+    raise BaseException('obsolete use mesh methods directly')
+#     rect.writeXY("__pad.xy", close=True)
+#     system("polyCreateWorld -d2 -t __pad.xy -C __pad")
+#     a = rect.area() / 29.0
+#
+#     system("dctriangle -a " + str(a) + " -q34.0 -S __pad")
+#     system("polyCreateFacet -o __pad3d -m " + str(marker) + " __pad.bms")
+#     system("polyTranslate -z " + str(depth) + " __pad3d")
+#
+#     # add node to the center of the rectangle
+# #    system("polyAddVIP -x " + str(rect.start[0])
+# #                    + " -y " + str(rect.start[1])
+# #                    + " -m -1 __pad3d")
+#     system("polyMerge " + filename + " __pad3d " + filename)
+#
+# #    system("polyCreateFacet -o __pad3d -m 1 __pad.bms")
+# #    system("polyTranslate -z -0.1 __pad3d")
+# #    system("polyMerge " + filename + " __pad3d " + filename)
+#
+#     if clean:
+#         os.remove('__pad.xy')
+#         os.remove('__pad.poly')
+#         os.remove('__pad.bms')
+#         os.remove('__pad3d.poly')
 # def polyAddRectangle
 
 
 def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
                     maxCellSize=0, verbose=True):
-    """
-    Create the PLC of a default world.
+    """Create the PLC of a default world.
 
+    Create the PLC of a default world.
     Out of core wrapper for dcfemlib::polytools::polyCreateWorld
 
     Parameters
@@ -933,7 +924,6 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     Returns
     -------
     """
-
     if depth is None:
         print("Please specify worlds depth.")
         return
@@ -966,8 +956,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
 
 
 def polyTranslate(filename, x=0.0, y=0.0, z=0.0):
-    """
-    Translate (move) a PLC
+    """Translate (move) a PLC.
 
     Out of core wrapper for dcfemlib::polytools.
     Spatial translate (move) the PLC (filename) by x, y and z
@@ -978,10 +967,11 @@ def polyTranslate(filename, x=0.0, y=0.0, z=0.0):
     Returns
     -------
     """
-    system("polyTranslate " +
-           " -x " + str(x) +
-           " -y " + str(y) +
-           " -z " + str(z) + " " + filename)
+    raise BaseException('obsolete use mesh methods directly')
+    # system("polyTranslate " +
+    #        " -x " + str(x) +
+    #        " -y " + str(y) +
+    #        " -z " + str(z) + " " + filename)
 
 if __name__ == "__main__":
     pass
