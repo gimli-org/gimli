@@ -13,7 +13,7 @@ try:
     import pygimli as pg
     from pygimli.mplviewer import drawMesh, drawModel, drawField
     from pygimli.mplviewer import drawSensors
-    from pygimli.mplviewer import createColorbar, drawStreams, addCoverageAlpha
+    from pygimli.mplviewer import createColorBar, drawStreams, addCoverageAlpha
     from pygimli.mplviewer.colorbar import cmapFromName
 except ImportError as e:
     print(e)
@@ -23,8 +23,7 @@ except ImportError as e:
 
 
 def show(mesh=None, data=None, **kwargs):
-    """
-    Mesh and model visualization.
+    """Mesh and model visualization.
 
     Syntactic sugar to show a mesh with data.
     Forwards to
@@ -47,7 +46,6 @@ def show(mesh=None, data=None, **kwargs):
     -------
 
     Return the results from the showMesh* functions.
-
     """
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
@@ -167,7 +165,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     colobar : matplotlib.colobar
     """
-
     ax = ax
     if block:
         hold = 1
@@ -234,7 +231,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
         # , **kwargs) # causes problems!
         labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label', 'pad']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
-        cbar = createColorbar(gci, label=label, **subkwargs)
+        cbar = createColorBar(gci, label=label, **subkwargs)
 
     plt.tight_layout()
 
@@ -278,8 +275,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
 
 def showBoundaryNorm(mesh, normMap=None, **kwargs):
-    """
-    Show mesh boundaries normals.
+    """Show mesh boundaries normals.
 
     Show the mesh and draw a black line along the normal direction of all
     boundaries. If you provide a boundary marker vs. norm direction map,

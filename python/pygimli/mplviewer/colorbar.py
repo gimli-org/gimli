@@ -113,25 +113,39 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
     return data, cMin, cMax
 
+
 def findColorBar(ax):
     """Find the colorbar of an axes.
 
-    Find the colorbar of that is associated with given axes or return None.
+    Find the colorbar that is associated with given axes or return None.
     """
-    print(ax.images)
-    print(ax.colorbar)
+    for i, ai in enumerate(ax.figure.axes):
+        print(i, ai)
 
-    return None
+    for c in ax.collections:
+        if isinstance(c, mpl.cm.ScalarMappable):
+            if c.colorbar is not None:
+                print("cbar:,", c.colorbar)
+                return c.colorbar
+
+    raise BaseException("Implement me")
+
+    # print(ax.colorbar)
+    # print(ax.images)
+    # return None
+
 
 def updateColorBar(cbar, cMin=None, cMax=None, nLevs=5, label=None):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
     """
+    # print(cMin,cMax)
     setCbarLevels(cbar, cMin, cMax, nLevs)
 
     if label is not None:
         cbar.set_label(label)
+
 
 def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', **kwargs):

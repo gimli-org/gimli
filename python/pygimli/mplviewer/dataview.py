@@ -112,7 +112,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                                   dx, dy))
 
     pp = PatchCollection(recs)
-    ax.clear()
+    # ax.clear()
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
@@ -126,7 +126,8 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
 
     updateAxes_(ax)
     if kwargs.pop('colorBar', True):
-        cbar = pg.mplviewer.findColorBar(ax)
+        cbar = kwargs.pop('cbar', None)
+        # cbar = pg.mplviewer.findColorBar(ax)
         if cbar is None:
             cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
                                                nLevs=5, label=label)

@@ -62,7 +62,6 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     --------
     appendTetrahedronBoundary
     """
-
     surface = 0.0
 
     # find boundaries on left/right/bottom/top side
