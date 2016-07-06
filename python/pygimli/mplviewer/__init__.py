@@ -3,9 +3,16 @@
 
 # are the following is suitable for a drawing package?
 from .boreholes import BoreHole, BoreHoles, create_legend
-from .colorbar import (addCoverageAlpha, autolevel, cmapFromName,
-                       createColorbar, findAndMaskBestClim, setCbarLevels,
+from .colorbar import (createColorBar,
+                       findColorBar,
+                       updateColorBar,
+                       addCoverageAlpha,
+                       autolevel,
+                       cmapFromName,
+                       findAndMaskBestClim,
+                       setCbarLevels,
                        setMappableData)
+
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
 from .dataview import (drawSensorAsMarker,  # dups to meshview??
@@ -48,7 +55,11 @@ from .utils import (hold,
 
 __all__ = [
     "BoreHole", "BoreHoles", "create_legend", "addCoverageAlpha", "autolevel",
-    "cmapFromName", "createColorbar", "findAndMaskBestClim", "setCbarLevels",
+    "cmapFromName",
+    "createColorBar",
+    "findColorBar",
+    "updateColorBar",
+    "findAndMaskBestClim", "setCbarLevels",
     "setMappableData", "drawSensorAsMarker", "generateMatrix", "patchMatrix",
     "patchValMap", "plotDataContainerAsMatrix", "plotMatrix", "plotVecMatrix",
     "CellBrowser", "createMeshPatches", "createParameterContraintsLines",
@@ -60,3 +71,7 @@ __all__ = [
     "drawStreams", "insertUnitAtNextLastTick", "plotLines", "cacheFileName",
     "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap", "updateAxes"
 ]
+
+def createColorbar(*args, **kwargs):
+    print("createColorbar is DEPRECATED .. please use createColorBar instead.")
+    return createColorBar(*args, **kwargs)

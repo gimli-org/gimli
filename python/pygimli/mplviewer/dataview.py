@@ -69,18 +69,18 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
 
     Parameters
     ----------
-    A : iterable
+    vals : iterable
         to show
     xvec : dict {i:num}
-        dict (must match A.shape[0])
+        dict (must match vals.shape[0])
     ymap : iterable
-        vector for x axis (must match A.shape[0])
+        vector for x axis (must match vals.shape[0])
     ax : mpl.axis
         axis to plot, if not given a new figure is created
     cMin/cMax : float
         minimum/maximum color values
     logScale : bool
-        logarithmic colour scale [min(A)>0]
+        logarithmic colour scale [min(vals)>0]
     label : string
         colorbar label
     """
@@ -104,14 +104,15 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     if dy is None:  # map y values to unique
         ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
         for i in range(len(vals)):
-            recs.append(Rectangle((xvec[i] - dx / 2, ymap[yvec[i]] - 0.5), dx,
-                                  1))
+            recs.append(Rectangle((xvec[i] - dx / 2, ymap[yvec[i]] - 0.5),
+                                  dx, 1))
     else:
         for i in range(len(vals)):
-            recs.append(Rectangle((xvec[i] - dx / 2, yvec[i] - dy / 2), dx,
-                                  dy))
+            recs.append(Rectangle((xvec[i] - dx / 2, yvec[i] - dy / 2),
+                                  dx, dy))
 
     pp = PatchCollection(recs)
+    ax.clear()
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
@@ -124,10 +125,15 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     ax.set_ylim(len(ymap) - 0.5, -0.5)
 
     updateAxes_(ax)
-    cbar = None
     if kwargs.pop('colorBar', True):
-        cbar = pg.mplviewer.createColorbar(col, cMin=cMin, cMax=cMax, nLevs=5,
-                                           label=label)
+        cbar = pg.mplviewer.findColorBar(ax)
+        if cbar is None:
+            cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
+                                               nLevs=5, label=label)
+        else:
+            pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
+                                        nLevs=5, label=label)
+
     return ax, cbar, ymap
 
 

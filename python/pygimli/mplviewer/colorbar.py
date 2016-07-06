@@ -113,10 +113,29 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
 
     return data, cMin, cMax
 
+def findColorBar(ax):
+    """Find the colorbar of an axes.
 
-def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
+    Find the colorbar of that is associated with given axes or return None.
+    """
+    print(ax.images)
+    print(ax.colorbar)
+
+    return None
+
+def updateColorBar(cbar, cMin=None, cMax=None, nLevs=5, label=None):
+    """Update colorbar values.
+
+    Update limits and label of a given colorbar.
+    """
+    setCbarLevels(cbar, cMin, cMax, nLevs)
+
+    if label is not None:
+        cbar.set_label(label)
+
+def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', **kwargs):
-    """Create a Colobar.
+    """Create a Colorbar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
     patchset.
@@ -154,10 +173,7 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
 
-    setCbarLevels(cbar, cMin, cMax, nLevs)
-
-    if label is not None:
-        cbar.set_label(label)
+    updateColorBar(cbar, cMin, cMax, nLevs, label)
 
     return cbar
 
