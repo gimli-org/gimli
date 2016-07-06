@@ -9,7 +9,7 @@ No official maintenance by the GIMLi team.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
+# do not use this here import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.meshtools import createMesh, createParaMeshPLC

@@ -60,3 +60,12 @@ ones:
     export PATH=$PATH:$HOME/src/gimli/build/bin
 
 Make sure to add these settings to your *.bashrc* to make them permanent.
+
+Weird
+-----
+
+My script called sip.py and nothing works
+.........................................
+
+Rename your file to something different. One of the prerequisite library (pyQT)
+import the file sip.py as module for they own and just stuck.

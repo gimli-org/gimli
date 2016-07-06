@@ -3,9 +3,9 @@
 
 import os
 from os import system
-
 import math
 import numpy as np
+
 import pygimli as pg
 
 
