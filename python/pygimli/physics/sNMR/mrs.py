@@ -1,24 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Magnetic resonance sounding module
-"""
+"""Magnetic resonance sounding module."""
 
 # general modules to import according to standards
 import time
 import numpy as np
+
 import matplotlib.pyplot as plt
-# pygimli main package and specific functions
+
 import pygimli as pg
 from pygimli.utils import iterateBounds
 from pygimli.utils.base import gmat2numpy
+from pygimli.mplviewer import drawModel1D
+
 # local functions in package
 from . modelling import MRS1dBlockQTModelling
-from . plotting import showErrorBars, showWC, showT2, drawModel1D
+from . plotting import showErrorBars, showWC, showT2
 
 
 class MRS():
-    """magnetic resonance sounding (MRS) manager class
+    """Magnetic resonance sounding (MRS) manager class.
 
     Attributes
     ----------

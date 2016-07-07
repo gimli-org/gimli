@@ -4,7 +4,7 @@ r"""
 Gravimetry in 2d
 ----------------
 
-Simple gravimetric field solution with Integration after :cite:`WonBevis1987`.
+Simple gravimetric field solution with Integration after :cite:`WonBev1987`.
 
 
 """

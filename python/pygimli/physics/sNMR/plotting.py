@@ -1,46 +1,43 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Plotting functions for magnetic resonance data
-"""
+"""Plotting functions for magnetic resonance data."""
 
 import numpy as np
 
 
-def drawModel1D(ax, thickness, values, plotfunction='plot',
-                xlabel='', *args, **kwargs):
-    """Draw 1d block model into axis ax defined by values and thickness vectors
-    using plotfunction."""
-
-    nLayers = len(thickness) + 1
-    px = np.zeros(nLayers * 2)
-    pz = np.zeros(nLayers * 2)
-    z1 = np.cumsum(thickness)
-
-    for i in range(nLayers):
-        px[2 * i] = values[i]
-        px[2 * i + 1] = values[i]
-
-        if i == nLayers - 1:
-            pz[2 * i + 1] = z1[i - 1] * 1.2
-            pass
-        else:
-            pz[2 * i + 1] = z1[i]
-            pz[2 * i + 2] = z1[i]
-
-    if plotfunction == 'loglog' or plotfunction == 'semilogy':
-        pz[0] = thickness[0] * 0.8
-
-    try:
-        plot = getattr(ax, plotfunction)
-        plot(px, pz, *args, **kwargs)
-    except Exception as e:
-        print(e)
-
-    ax.set_ylabel('Depth [m]')
-    ax.set_xlabel(xlabel)
-    ax.set_ylim(pz[-1], pz[0])
-    ax.grid(True)
+# def drawModel1D(ax, thickness, values, plotfunction='plot',
+#                 xlabel='', *args, **kwargs):
+#  """Draw 1d block model into axis ax defined by values and thickness vectors
+#     using plotfunction."""
+#
+#     nLayers = len(thickness) + 1
+#     px = np.zeros(nLayers * 2)
+#     pz = np.zeros(nLayers * 2)
+#     z1 = np.cumsum(thickness)
+#
+#     for i in range(nLayers):
+#         px[2 * i] = values[i]
+#         px[2 * i + 1] = values[i]
+#
+#         if i == nLayers - 1:
+#             pz[2 * i + 1] = z1[i - 1] * 1.2
+#         else:
+#             pz[2 * i + 1] = z1[i]
+#             pz[2 * i + 2] = z1[i]
+#
+#     if plotfunction == 'loglog' or plotfunction == 'semilogy':
+#         pz[0] = thickness[0] * 0.8
+#
+#     try:
+#         plot = getattr(ax, plotfunction)
+#         plot(px, pz, *args, **kwargs)
+#     except Exception as e:
+#         print(e)
+#
+#     ax.set_ylabel('Depth [m]')
+#     ax.set_xlabel(xlabel)
+#     ax.set_ylim(pz[-1], pz[0])
+#     ax.grid(True)
 
 
 def showErrorBars(ax, thk, val, thkL, thkU, valL, valU, *args, **kwargs):

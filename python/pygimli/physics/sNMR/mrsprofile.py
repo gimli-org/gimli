@@ -1,17 +1,21 @@
+# -*- coding: utf-8 -*-
+"""DOCUMENTME."""
+
 import sys
 import os
 from glob import glob
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.cm import Spectral
+
 import pygimli as pg
-from pygimli.utils import showStitchedModels
+from pygimli.mplviewer import showStitchedModels
 from . mrs import MRS
 from . modelling import MRS1dBlockQTModelling
-from matplotlib.cm import Spectral
 
 
 class JointMRSModelling(MRS1dBlockQTModelling):
-    """MRS Laterally constrained modelling based on BlockMatrices"""
+    """MRS Laterally constrained modelling based on BlockMatrices."""
     def __init__(self, mrs, nlay=2, verbose=False):
         """Parameters: FDEM data class and number of layers"""
         super(JointMRSModelling, self).__init__(nlay, mrs[0].K, mrs[0].z,

@@ -11,7 +11,7 @@ import pygimli as pg
 
 
 class ProgressBar(object):
-    r"""Animated text-based progressbar.
+    """Animated text-based progressbar.
 
     Animated text-based progressbar for intensive loops. Should work in the
     console and in the IPython Notebook.

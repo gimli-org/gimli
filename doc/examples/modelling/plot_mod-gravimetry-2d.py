@@ -34,13 +34,13 @@ pnts = np.array([x, np.zeros(len(x))]).T
 gz_a = gradUCylinderHoriz(pnts, radius, dRho, pos)[:, 1]
 
 ###############################################################################
-# Integration for a 2D polygon after :cite:`WonBevis1987`
+# Integration for a 2D polygon after :cite:`WonBev1987`
 circ = createCircle([0, -depth], radius=radius, marker=2, area=0.1,
                     segments=16)
 gz_p = solveGravimetry(circ, dRho, pnts, complete=False)
 
 ###############################################################################
-# Integration for complete 2D mesh after :cite:`WonBevis1987`
+# Integration for complete 2D mesh after :cite:`WonBev1987`
 world = createWorld(start=[-20, 0], end=[20, -10], marker=1)
 mesh = createMesh([world, circ])
 dRhoC = pg.solver.parseMapToCellArray([[1, 0.0], [2, dRho]], mesh)

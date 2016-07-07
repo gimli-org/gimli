@@ -7,7 +7,7 @@
 import sys
 
 import pygimli as pg
-from pygimli.viewer import show1dmodel, drawModel1D
+from pygimli.mplviewer import show1dmodel, drawModel1D
 from pygimli.io import opt_import
 
 import numpy as np
@@ -16,7 +16,6 @@ from matplotlib.colors import LinearSegmentedColormap
 
 
 class NDMatrix(pg.RBlockMatrix):
-
     """
     Diagonal block (block-Jacobi) matrix derived from pg.BlockMatrix
     (to be moved to a better place at a later stage)
