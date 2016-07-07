@@ -7,6 +7,8 @@ import traceback
 import sys
 
 import numpy as np
+
+# plt should not be used outside of mplviewer
 import matplotlib.pyplot as plt
 
 try:
@@ -81,7 +83,13 @@ def show(mesh=None, data=None, **kwargs):
         else:
             print("ERROR: Mesh not valid.")
 
-    ax = kwargs.pop('ax', None)
+    ax = None
+    if 'axes' in kwargs:
+        print("******* Show axes keyword changed to ax. ******* ")
+        ax = kwargs.pop('axes', None)
+        raise BaseException(DeprecationWarning)
+    else:
+        ax = kwargs.pop('ax', None)
 
     if ax is None:
         ax = plt.subplots()[1]

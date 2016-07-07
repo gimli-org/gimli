@@ -98,6 +98,8 @@ Coding rules
 
 * All class member (self.member) need to be initialized in the Constructor.
 
+* (ugly²) Do not use multi initialize in one line, e.g., a, b, c = 0, 0, 0
+
 Function behaviour by name:
 ...........................
 

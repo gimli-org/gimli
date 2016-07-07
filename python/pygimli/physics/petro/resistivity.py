@@ -114,8 +114,8 @@ def transFwdArchiePhi(rFluid=20, n=2):
 
     See also :py:mod:`pygimli.physics.petro.resistivityArchie`
 
-    Return
-    ------
+    Returns
+    -------
     trans : :gimliapi:`GIMLI::RTransPower`
         Transformation function
 

@@ -10,14 +10,6 @@ from .base import num2str
 from .base import inthist
 from .base import interperc
 from .base import interpExtrap
-from .base import showmymatrix
-from .base import draw1dmodel
-from .base import draw1dmodelErr
-from .base import draw1dmodelLU
-from .base import showStitchedModels
-from .base import showStitchedModelsOld
-from .base import showfdemsounding
-from .base import insertUnitAtNextLastTick
 from .base import saveResult
 from .base import getSavePath
 from .base import createResultFolder
@@ -32,7 +24,6 @@ from .utils import logDropTol
 from .utils import grange
 from .utils import diff
 from .utils import dist
-from .utils import xyToLength
 from .utils import cumDist
 from .utils import chi2
 from .utils import randN
@@ -46,6 +37,5 @@ from .utils import unique_rows
 
 from .postinversion import iterateBounds
 from .postinversion import modCovar
-from .postinversion import print1dBlockVar
 
 __all__ = [name for name in dir() if '_' not in name]

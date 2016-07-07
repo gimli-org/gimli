@@ -2,7 +2,16 @@
 """Viewer interface .. depends on matplotlib."""
 
 # are the following is suitable for a drawing package?
+from .utils import (hold,
+                    wait,
+                    updateAxes,
+                    createAnimation,
+                    saveAnimation,
+                    setOutputStyle,
+                    setPlotStuff)
+
 from .boreholes import BoreHole, BoreHoles, create_legend
+
 from .colorbar import (createColorBar,
                        findColorBar,
                        updateColorBar,
@@ -12,16 +21,6 @@ from .colorbar import (createColorBar,
                        findAndMaskBestClim,
                        setCbarLevels,
                        setMappableData)
-
-# TODO example scripts for the following and refactor is needed
-# maybe ploter should named show or draw
-from .dataview import (drawSensorAsMarker,  # dups to meshview??
-                       generateMatrix,
-                       patchMatrix,
-                       patchValMap,
-                       plotDataContainerAsMatrix,
-                       plotMatrix,
-                       plotVecMatrix)
 
 from .meshview import (CellBrowser,
                        createMeshPatches,
@@ -43,15 +42,34 @@ from .meshview import (CellBrowser,
                        insertUnitAtNextLastTick,
                        plotLines)
 
-from .overlayimage import (cacheFileName, deg2MapTile, getMapTile, mapTile2deg,
+from .overlayimage import (cacheFileName,
+                           deg2MapTile,
+                           getMapTile,
+                           mapTile2deg,
                            underlayMap)
-from .utils import (hold,
-                    wait,
-                    updateAxes,
-                    createAnimation,
-                    saveAnimation,
-                    setOutputStyle,
-                    setPlotStuff)
+
+# TODO example scripts for the following and refactor is needed
+# maybe ploter should named show or draw
+from .dataview import (drawSensorAsMarker,  # dups to meshview??
+                       generateMatrix,
+                       patchMatrix,
+                       patchValMap,
+                       plotDataContainerAsMatrix,
+                       plotMatrix,
+                       plotVecMatrix)
+
+from .modelview import (showmymatrix,
+                        draw1dmodel,
+                        draw1dmodel__Redundant,
+                        show1dmodel,
+                        draw1dmodelErr,
+                        draw1dmodelLU,
+                        showStitchedModels,
+                        showStitchedModelsOld,
+                        showStitchedModels_Redundant,
+                        showfdemsounding,
+                        insertUnitAtNextLastTick)
+
 
 __all__ = [
     "BoreHole", "BoreHoles", "create_legend", "addCoverageAlpha", "autolevel",
@@ -71,6 +89,7 @@ __all__ = [
     "drawStreams", "insertUnitAtNextLastTick", "plotLines", "cacheFileName",
     "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap", "updateAxes"
 ]
+
 
 def createColorbar(*args, **kwargs):
     print("createColorbar is DEPRECATED .. please use createColorBar instead.")
