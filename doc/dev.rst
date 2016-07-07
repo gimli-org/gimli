@@ -87,8 +87,49 @@ Read api documentation from shell:
 
   python -c "import pygimli as pg; help(pg.test)
 
+Coding rules
+------------
+
+* All names should be literally and in CamelShape style.
+
+* Classes starts with Upper Case Letter.
+
+* Members and Methods allways starts with Lower Case Letter.
+
+* All class member (self.member) need to be initialized in the Constructor.
+
+Function behaviour by name:
+...........................
+
+.. code-block:: python
+
+  createFOO(...)
+
+Allways needs to return an instance of FOO.
+
+.. code-block:: python
+
+  showFOO(Bar, ...)
+
+Allways opens a window or optionaly use a given Axes to show us Bar as Foo.
+
+.. code-block:: python
+
+  drawFOO(ax, Bar...)
+
+Allways need an Axes ax and draws Bar as Foo in this Axes
+
+Use pylint or prospector to improve code quality.
+
 Code Quality
 ------------
+
+We use: (You can find exceptions in .landscape.yml)
+
+* pep8
+* pep257
+* pylint
+* pyflake
 
 Run api examples from shell:
 
