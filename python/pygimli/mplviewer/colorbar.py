@@ -12,6 +12,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
 
+from pygimli.mplviewer import updateAxes
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
@@ -340,6 +341,10 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     # delete patch data to avoid automatically rewrite of _facecolors
     patches._A = None
 
+    if hasattr(patches, 'ax'):
+        updateAxes(patches.ax)
+    elif hasattr(patches, 'get_axes'):
+        updateAxes(patches.get_axes())
 
 parameters = {'xp': [22.674387857633945, 11.221508276482126,
                      -14.356589454756971, -47.18817758739222,
