@@ -141,11 +141,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
 
     Update limits and label of a given colorbar.
     """
-    # print(cMin,cMax)
+    #print(cMin, cMax, label)
     # if gci is not None:
     #     cbar.on_mappable_changed(gci)
 
-     setCbarLevels(cbar, cMin, cMax, nLevs)
+    setCbarLevels(cbar, cMin, cMax, nLevs)
 
     if label is not None:
         cbar.set_label(label)
@@ -192,7 +192,8 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
 
-    updateColorBar(cbar, cMin, cMax, nLevs, label)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs,
+                   label=label)
 
     return cbar
 
