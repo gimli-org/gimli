@@ -5,15 +5,14 @@
 
 
 class MethodManager(object):
-    """
-        General manager to maintenance a measurement method.
+    """General manager to maintenance a measurement method.
 
         The method manager holds one instance of a forward operator and a
         appropriate inversion method to handle simulation and reconstruction of
         common geophysical problems.
-
     """
     def __init__(self, verbose=True, debug=False):
+        """Constructor."""
         self.verbose = verbose
         self.debug = debug
         self.figs = {}
@@ -38,11 +37,11 @@ class MethodManager(object):
         self.setVerbose(verbose)
 
     def __str__(self):
-        """"TODO WRITEME"""
+        """TODO WRITEME."""
         return self.__repr__()
 
     def __repr__(self):
-        """ String representation of the class """
+        """String representation of the class."""
         out = type(self).__name__ + " object"
         if hasattr(self, 'dataContainer'):
             out += "\n" + self.dataContainer.__str__()
@@ -53,83 +52,82 @@ class MethodManager(object):
         # return "Method Manager: " + str(self.__class__)
 
     def setVerbose(self, verbose):
-        """ make the class verbose (put output to the console) """
+        """Make the class verbose (put output to the console)"""
         self.verbose = verbose
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
 
     def dataToken(self):
-        """ Token name for the data in a DataContainer """
+        """Token name for the data in a DataContainer."""
         if self.dataToken_ == 'nan':
             print("Warning! the Manager don't know the data token")
         return self.dataToken_
 
     def apparentData(self):
-        """ Convert data into apparent data"""
+        """Convert data into apparent data."""
         raise BaseException("IMPLEMENTME in derived class")
 
 #    @classmethod
     def createFOP_(self, verbose=False):
-        """ Create forward operator working on refined mesh """
+        """Create forward operator working on refined mesh."""
         return self.createFOP(verbose)
 
     def createInv_(self, fop, verbose=True, dosave=False):
-        """ Create inversion instance, data- and model transformations. """
+        """Create inversion instance, data- and model transformations."""
         return self.createInv(fop, verbose, dosave)
 
     # Data-related methods
     def createData(self, sensors, scheme):
-        """ Create an empty data set """
+        """Create an empty data set."""
         pass
 
     def setData(self, data):
-        """ Set data """
+        """Set data."""
         pass
 
     def checkData(self):
-        """ Check data validity """
+        """Check data validity."""
         pass
 
     @staticmethod
     def estimateError(data, absoluteError=0.001, relativeError=0.001):
-        """ estimate error composed of an absolute and a relative part """
+        """Estimate error composed of an absolute and a relative part."""
         pass
 
     def showData(self, axes=None, response=None, name='data'):
-        """ show data in form of travel time curves """
+        """Show data."""
         pass
 
     # Work related methods
     def invert(self, **kwargs):
-        """ Invert the data and fill the parametrization. """
+        """Invert the data and fill the parametrization."""
         raise BaseException('implement me in derived class' + str(**kwargs))
 
     def simulate(self, **kwargs):
-        """ Run a simulation aka the forward task. """
+        """Run a simulation aka the forward task."""
         raise BaseException('implement me in derived class' + str(**kwargs))
 
     # Visualization stuff
     def show(self, data, values=None, axes=None,
              cMin=None, cMax=None, colorBar=1, **kwargs):
-        """ Forward the visualization """
+        """Forward the visualization."""
         pass
 
     def showResult(self, ax=None, cMin=None, cMax=None, logScale=False,
                    **kwargs):
-        """ show resulting velocity vector """
+        """Show resulting vector."""
         pass
 
     def saveResult(self, folder=None, size=(16, 10),
                    **kwargs):
-        """
-        Saves the results in the specified folder.
-        """
+        """Save results in the specified folder."""
         pass
 
     @staticmethod
     def createArgParser(dataSuffix='dat'):
-        """
-            Create default argument parser for the following options:
+        """Create default argument parser.
+
+        Create default argument parser for the following options:
 
             -Q, --quiet
 
@@ -174,23 +172,25 @@ class MethodManager(object):
 class MeshMethodManager(MethodManager):
     """TODO WRITEME """
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        """Conszructor."""
+        super(MeshMethodManager, self).__init__(**kwargs)
 
     # Mesh related methods
     def createMesh(self, ):
-        """ Create a mesh aka the parametrization """
+        """Create a mesh aka the parametrization."""
         pass
 
     def setMesh(self, ):
-        """ Create a mesh aka the parametrization """
+        """Create a mesh aka the parametrization."""
         pass
 
     def showMesh(self, ax=None):
-        """ show mesh in given axes or in a new figure """
+        """Show mesh in given axes or in a new figure."""
         pass
 
     @staticmethod
     def createArgParser(dataSuffix='dat'):
+        """Create argument parser for the manager."""
         parser = MethodManager.createArgParser(dataSuffix)
 
         parser.add_argument("--paraMaxCellSize", dest="maxCellArea",
