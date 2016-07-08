@@ -125,15 +125,14 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     ax.set_ylim(len(ymap) - 0.5, -0.5)
 
     updateAxes_(ax)
-    if kwargs.pop('colorBar', True):
-        cbar = kwargs.pop('cbar', None)
-        # cbar = pg.mplviewer.findColorBar(ax)
-        if cbar is None:
-            cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
+    cbar = kwargs.pop('colorBar', True)
+
+    if cbar is True:
+        cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
                                                nLevs=5, label=label)
-        else:
-            pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
-                                        nLevs=5, label=label)
+    elif cbar is not False:
+        pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
+                                    nLevs=5, label=label)
 
     return ax, cbar, ymap
 

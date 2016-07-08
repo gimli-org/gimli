@@ -15,7 +15,8 @@ try:
     import pygimli as pg
     from pygimli.mplviewer import drawMesh, drawModel, drawField
     from pygimli.mplviewer import drawSensors
-    from pygimli.mplviewer import createColorBar, drawStreams, addCoverageAlpha
+    from pygimli.mplviewer import createColorBar, updateColorBar
+    from pygimli.mplviewer import drawStreams, addCoverageAlpha
     from pygimli.mplviewer.colorbar import cmapFromName
 except ImportError as e:
     print(e)
@@ -144,8 +145,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
         Force show drawing your content and block the script until you
         close the current figure.
 
-    colorBar : bool [false]
-        Create and show a colorbar.
+    colorBar : bool [false], Colorbar
+        Create and show a colorbar. If colorBar is a valid colorbar then only
+        his values will be updated.
 
     coverage : iterable [None]
         Weight data by the given coverage array and fadeout the color.
@@ -185,7 +187,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
         ax = plt.subplots()[1]
 
     gci = None
-    cbar = None
     validData = False
 
     if data is None:
@@ -232,14 +233,20 @@ def showMesh(mesh, data=None, hold=False, block=False,
     ax.set_aspect('equal')
 
     label = kwargs.pop('label', None)
-    if label is not None:
-        colorBar = 1
+
+    cbar = None
+    if label is not None and colorBar is None:
+        colorBar = True
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
         labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label', 'pad']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
-        cbar = createColorBar(gci, label=label, **subkwargs)
+
+        if colorBar is True:
+            cbar = createColorBar(gci, label=label, **subkwargs)
+        elif colorBar is not False:
+            cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
 
     plt.tight_layout()
 

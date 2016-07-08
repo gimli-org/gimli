@@ -136,17 +136,21 @@ def findColorBar(ax):
     # return None
 
 
-def updateColorBar(cbar, cMin=None, cMax=None, nLevs=5, label=None):
+def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
     """
     # print(cMin,cMax)
-    setCbarLevels(cbar, cMin, cMax, nLevs)
+    # if gci is not None:
+    #     cbar.on_mappable_changed(gci)
+
+     setCbarLevels(cbar, cMin, cMax, nLevs)
 
     if label is not None:
         cbar.set_label(label)
 
+    return cbar
 
 def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', **kwargs):
