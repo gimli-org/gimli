@@ -31,6 +31,41 @@ def wait():
     plt.show()
 
 
+def adjustWorldAxes(ax):
+    """Set some common default properties for an axe."""
+    ax.set_ylabel('Depth [m]')
+    ax.set_xlabel('$x$ [m]')
+
+    ticks = ax.yaxis.get_majorticklocs()
+    tickLabels = []
+    for t in ticks:
+        tickLabels.append(str(int(abs(t))))
+
+    ax.set_yticklabels(tickLabels)
+    plt.tight_layout()
+    plt.pause(0.01)
+
+
+def saveFigure(fig, filename, pdfTrim=False):
+    """Save figure as pdf."""
+    fig.savefig(filename + '.pdf', bbox_inches='tight')
+    if pdfTrim:
+        try:
+            print("trying pdf2pdfS ... ")
+            os.system('pdf2pdfBB ' + filename + '.pdf')
+            os.system('pdf2pdfS ' + filename + '.pdf')
+        except BaseException as _:
+            print("fail local convert. Should be no problem.")
+
+
+def saveAxes(ax, filename, adjust=False):
+    """Save axes as pdf."""
+    if adjust:
+        adjustWorldAxes(ax)
+
+    plt.pause(0.01)
+    saveFigure(ax.figure, filename)
+
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
                    scale=1, usetex=True):
     """Set preferred output style."""
@@ -85,25 +120,30 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
         'lines.markersize': 6 * scale,
         'lines.linewidth': 0.6 * scale
     }
-
     plt.rcParams.update(params)
 
 
 def setPlotStuff(fontsize=7, dpi=None):
-    """TODO merge with setOutputStyle."""
+    """TODO merge with setOutputStyle.
+
+    Change ugly name.
+    """
     from matplotlib import rcParams
 
-    rcParams['ax.labelsize'] = fontsize
+    # print(rcParams.keys())
+
+    # rcParams['ax.labelsize'] = fontsize  # REMOVED IN MPL.1.5
+    # rcParams['ax.titlesize'] = fontsize  # REMOVED IN MPL.1.5
+    # rcParams['ax.linewidth'] = 0.3  # REMOVED IN MPL.1.5
+    rcParams['font.size'] = fontsize
     rcParams['xtick.labelsize'] = fontsize
     rcParams['ytick.labelsize'] = fontsize
     rcParams['legend.fontsize'] = fontsize
     rcParams['font.family'] = 'sans-serif'
     rcParams['font.sans-serif'] = ['Helvetica']  # ['Times New Roman']
     rcParams['text.usetex'] = False
-    rcParams['font.size'] = 0.6 * fontsize
+
     #    rcParams['figure.figsize'] = 7.3, 4.2
-    rcParams['ax.titlesize'] = fontsize
-    rcParams['ax.linewidth'] = 0.3
     rcParams['xtick.major.size'] = 3
     rcParams['xtick.major.width'] = 0.3
     rcParams['xtick.minor.size'] = 1.5
@@ -121,7 +161,7 @@ def setPlotStuff(fontsize=7, dpi=None):
 def createAnimation(fig, animate, nFrames, dpi, out):
     """Create animation for the content of a given matplotlib figure.
 
-        Until I know a better place.
+    Until I know a better place.
     """
     anim = animation.FuncAnimation(fig, animate, frames=nFrames,
                                    interval=0.001, repeat=False)
@@ -140,7 +180,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
                   cMax=None, logScale=False, cmap=None, **kwargs):
     """Create and save an animation for a given mesh with a set of field data.
 
-        Until I know a better place.
+    Until I know a better place.
     """
     dpi = 92
     scale = 1
@@ -153,21 +193,10 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
     pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
 
-    ax.set_ylabel('Depth [m]')
-    ax.set_xlabel('$x$ [m]')
-
-    ticks = ax.yaxis.get_majorticklocs()
-    tickLabels = []
-    for t in ticks:
-        tickLabels.append(str(int(abs(t))))
-
-    ax.set_yticklabels(tickLabels)
-
     if plc:
         pg.show(plc, ax=ax)
 
-    plt.tight_layout()
-    plt.pause(0.001)
+    adjustWorldAxes(ax)
 
     def animate(i):
         """TODO WRITEME."""
@@ -180,9 +209,10 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
                                    cMax=cMax, cmap=cmap, logScale=logScale)
             pg.mplviewer.drawStreams(ax, mesh, vData[i], **kwargs)
         else:
+            print(min(data[i]), max(data[i]))
             pg.mplviewer.setMappableData(gci, data[i], cMin=cMin, cMax=cMax,
                                          logScale=logScale)
 
-        plt.pause(0.1)
+        plt.pause(0.001)
 
     createAnimation(fig, animate, int(len(data)), dpi, out)

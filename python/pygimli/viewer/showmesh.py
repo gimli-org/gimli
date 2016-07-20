@@ -243,9 +243,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
         labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label', 'pad']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
 
-        if colorBar is True:
+        if colorBar is True or colorBar is 1:
             cbar = createColorBar(gci, label=label, **subkwargs)
         elif colorBar is not False:
+            print(colorBar)
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
 
     plt.tight_layout()

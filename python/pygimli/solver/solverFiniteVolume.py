@@ -362,8 +362,6 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
     rhsBoundaryScales : ndarray(nCells)
         RHS offset vector
-
-
     """
     if a is None:
         a = pg.RVector(mesh.boundaryCount(), 1.0)
@@ -595,6 +593,27 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     boundsDirichlet = None
     boundsNeumann = None
 
+    # BEGIN check for Courant-Friedrichs-Lewy
+    if vel is not None:
+        vmax = 0
+        if mesh.dimension() == 3:
+            vmax = np.max(np.sqrt(vel[:, 0]**2 + vel[:, 1]**2 + vel[:, 2]**2))
+        else:
+            vmax = np.max(np.sqrt(vel[:, 0]**2 + vel[:, 1]**2))
+        dt = times[1]-times[0]
+        dx = min(mesh.boundarySizes())
+        c = vmax * dt / dx
+        if c > 1:
+            print("Courant-Friedrichs-Lewy Number:", c,
+                  "but sould be lower 1 to ensure movement inside a cell "
+                  "per timestep. ("
+                  "vmax =", vmax,
+                  "dt =", dt,
+                  "dx =", dx,
+                  "dt <", dx/vmax,
+                  " | N > ", int((times[-1]-times[0])/(dx/vmax))+1, ")" )
+    # END check for Courant-Friedrichs-Lewy
+
     if not hasattr(workspace, 'S'):
 
         if 'uB' in kwargs:
@@ -617,30 +636,16 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
             sparse=sparse,
             userData=kwargs.pop('userData', None))
 
-        # print('FVM kernel 1:', swatch.duration(True))
         dof = len(workspace.rhsBCScales)
-
-        #        workspace.uDir = np.zeros(dof)
-
-        #        if u0 is not None:
-        #            workspace.uDir = np.array(u0)
-
-        #        if len(boundsDirichlet):
-        #            for boundary, val in boundsDirichlet.items():
-        #                workspace.uDir[boundary.leftCell().id()] = val
-
         workspace.ap = np.zeros(dof)
 
         # for nonlinears
-
         if uL is not None:
             for i in range(dof):
                 val = 0.0
                 if sparse:
                     val = workspace.S.getVal(i, i) / relax
                     workspace.S.setVal(i, i, val)
-                    #                    workspace.S[i, i] /= relax
-                    #                    workspace.ap[i] = workspace.S[i, i]
                 else:
                     val = workspace.S[i, i] / relax
                     workspace.S[i, i] = val
@@ -648,13 +653,11 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
                 workspace.ap[i] = val
 
         # print('FVM kernel 2:', swatch.duration(True))
-
     # endif: not hasattr(workspace, 'S'):
 
     workspace.rhs = np.zeros(len(workspace.rhsBCScales))
     workspace.rhs[0:mesh.cellCount()] = f  # * mesh.cellSizes()
 
-    # if len(workspace.uDir):
     workspace.rhs += workspace.rhsBCScales
 
     # for nonlinear: relax progress with scaled last result

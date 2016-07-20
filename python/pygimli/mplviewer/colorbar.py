@@ -12,7 +12,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
 
-from pygimli.mplviewer import updateAxes
+from pygimli.mplviewer import updateAxes, saveFigure
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
@@ -46,12 +46,42 @@ def autolevel(z, nLevs, logscale=None):
     return locator.tick_values(zmin, zmax)
 
 
-def cmapFromName(cmapname, ncols=256, bad=None):
-    """TODO Documentme."""
+def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
+    """Get a colormap either from name or from keyworld list.
+
+    See http://matplotlib.org/examples/color/colormaps_reference.html
+
+    Parameters
+    ----------
+    cmapname : str
+        Name for the colormap.
+
+    ncols : int
+        Amount of colors.
+
+    bad : [r,g,b,a]
+        Default color for bad values [nan, inf] [white]
+
+    ** kwargs :
+        cMap : str
+            Name for the colormap
+        cmap : str
+            colormap name (old)
+    Returns
+    -------
+    cmap:
+        matplotlib Colormap
+    """
+
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
-    cmap = mpl.cm.get_cmap('jet', ncols)
+    if 'cmap' in kwargs:
+        cmapname = kwargs.pop('cmap', cmapname)
+    elif 'cMap' in kwargs:
+        cmapname = kwargs.pop('cMap', cmapname)
+
+    cmap = None
 
     if cmapname is not None:
 
@@ -141,9 +171,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
 
     Update limits and label of a given colorbar.
     """
-    #print(cMin, cMax, label)
-    # if gci is not None:
-    #     cbar.on_mappable_changed(gci)
+    print("update cbar:", cMin, cMax, label)
+    if gci is not None:
+        pass
+        # check the following first
+        # cbar.on_mappable_changed(gci)
 
     setCbarLevels(cbar, cMin, cMax, nLevs)
 
@@ -151,6 +183,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
         cbar.set_label(label)
 
     return cbar
+
 
 def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
                    label=None, orientation='horizontal', **kwargs):
@@ -189,6 +222,7 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
             pad = kwargs.pop('pad', 0.1)
             cax = divider.append_axes("right", size=size, pad=pad)
 
+    print(cMin, cMax, patches)
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
 
@@ -196,6 +230,65 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
                    label=label)
 
     return cbar
+
+
+def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
+                       label=None, orientation='horizontal', savefig=None,
+                       **kwargs):
+    """Create figure with a colorbar.
+
+    Create figure with a colorbar.
+
+    Parameters
+    ----------
+    **kwargs:
+        Forwarded to mpl.colorbar.ColorbarBase.
+
+    Returns
+    -------
+    fig:
+        The created figure.
+
+    Examples
+    --------
+    >>> # import pygimli as pg
+    >>> # from pygimli.mplviewer import createColorBarOnly
+    >>> # createColorBarOnly(cMin=0.2, cMax=5, logScale=False,
+    >>> #                   cMap='b2r',
+    >>> #                   nLevs=7,
+    >>> #                   label=r'Ratio',
+    >>> #                   orientation='horizontal')
+    >>> # pg.wait()
+    """
+    fig = plt.figure()
+
+    if orientation is 'horizontal':
+        ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
+    else:
+        ax = fig.add_axes([0.30, 0.02, 0.22, 0.96])
+
+    norm = None
+    if cMin > 0 and logScale is True:
+        norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
+    else:
+        norm = plt.Normalize(vmin=cMin, vmax=cMax)
+
+    cmap = cmapFromName(cMap)
+
+    cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
+                                     orientation=orientation, **kwargs)
+
+    setCbarLevels(cbar, cMin=None, cMax=None, nLevs=nLevs)
+
+#        cbar.labelpad = -20
+#        cbar.ax.yaxis.set_label_position('left')
+    if label is not None:
+        cbar.set_label(label)
+
+    if savefig is not None:
+        saveFigure(fig, savefig)
+
+    return fig
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
@@ -222,7 +315,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     else:
         cbarLevels = np.linspace(cMin, cMax, nLevs)
 
-    # print cbarLevels
+    #print(cbarLevels)
     cbarLevelsString = []
     for i in cbarLevels:
         if abs(i) == 0.0:

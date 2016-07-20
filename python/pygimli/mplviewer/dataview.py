@@ -88,11 +88,12 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         cMin = np.min(vals)
     if cMax is None:
         cMax = np.max(vals)
+
     if logScale is None:
         logScale = (cMin > 0.0)
 
     norm = None
-    if logScale:
+    if logScale and cMin > 0:
         norm = LogNorm(vmin=cMin, vmax=cMax)
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
@@ -116,8 +117,9 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
-    if 'cmap' in kwargs:
-        pp.set_cmap(kwargs.pop('cmap'))
+
+    pp.set_cmap(pg.mplviewer.cmapFromName(**kwargs))
+
     pp.set_norm(norm)
     pp.set_array(np.array(vals))
     pp.set_clim(cMin, cMax)

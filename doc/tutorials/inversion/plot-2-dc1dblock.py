@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.viewer import drawModel1D
+from pygimli.mplviewer import drawModel1D
 
 ###############################################################################
 # some definitions before

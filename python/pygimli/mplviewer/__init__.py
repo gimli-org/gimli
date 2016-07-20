@@ -5,6 +5,9 @@
 from .utils import (hold,
                     wait,
                     updateAxes,
+                    saveFigure,
+                    saveAxes,
+                    adjustWorldAxes,
                     createAnimation,
                     saveAnimation,
                     setOutputStyle,
@@ -13,6 +16,7 @@ from .utils import (hold,
 from .boreholes import BoreHole, BoreHoles, create_legend
 
 from .colorbar import (createColorBar,
+                       createColorBarOnly,
                        findColorBar,
                        updateColorBar,
                        addCoverageAlpha,

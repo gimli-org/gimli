@@ -107,7 +107,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
                 cWeight=None, cMin=None, drawEdges=False, cMax=None,
                 coverage=None, covThreshold=0.4,
                 showCbar=True, label="", linear=False,
-                offset=pg.RVector3(0.0, 0.0), cmapname=None, 
+                offset=pg.RVector3(0.0, 0.0), cmapname=None,
                 interfaceThickness=2):
     """ show triangle mesh """
     mesh = pg.Mesh()
@@ -180,7 +180,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
             patches = showMeshInterpolated(axis, mesh, data, cov=cov,
                                            cMin=cMin, cMax=cMax, linear=linear)
         else:
-            patches = showMeshPatch(axis, mesh, data, 
+            patches = showMeshPatch(axis, mesh, data,
                                     cov=cov, covThreshold=covThreshold,
                                     cMin=cMin,
                                     cMax=cMax, showCbar=showCbar, label=label,
@@ -231,7 +231,7 @@ def showDC2DInvResMod(modfile, contour, cMin=None, cMax=None,
     if (contour):
         patches = showMeshInterpolated(axis, mesh, data, cov=cov)
     else:
-        patches = showMeshPatch(axis, mesh, data, 
+        patches = showMeshPatch(axis, mesh, data,
                                 cov=cov,
                                 cMin=cMin, cMax=cMax, label=label,
                                 cmapname=cmapname)
@@ -409,7 +409,7 @@ def main(argv):
 
     parser = OptionParser("usage: %prog [options] mesh|mod",
                           version="%prog: " + pg.__version__)
-    parser.add_option("-v", "--verbose", 
+    parser.add_option("-v", "--verbose",
                       dest="verbose", action="store_true",
                       help="be verbose", default=False)
     parser.add_option("-S", "--silent",
@@ -419,12 +419,12 @@ def main(argv):
                             action="store_true", default=False,
                             help="set linear color scale")
     parser.add_option("-C", "--contour", dest="contourplot", default=False,
-                            action="store_true", 
+                            action="store_true",
                             help="Create contourplot instead of simple patch")
     parser.add_option("-B", "--b2r", dest="b2r",
                             action="store_true", default=False,
                             help="Use blue-white-red color scale")
-    parser.add_option("-E", "--drawEdges", dest="drawEdges", 
+    parser.add_option("-E", "--drawEdges", dest="drawEdges",
                             action="store_true", default=False,
                            help="Force drawing all edges independent on marker")
     parser.add_option("-i", "--interperc", dest="interperc",
@@ -485,7 +485,7 @@ def main(argv):
                       help="set y limits for plot (: separated) ")
     parser.add_option("", "--reverseX", dest="reverseX", default=False,
                       help="Reverse the x axis", action="store_true")
-    parser.add_option("", "--xOffset", dest="xoffset", 
+    parser.add_option("", "--xOffset", dest="xoffset",
                       default=0.0, type="float",
                       help="set x-coordinate offset for first electrode [0.0] ")
     parser.add_option("", "--zOffset", dest="zoffset",
@@ -494,7 +494,7 @@ def main(argv):
     parser.add_option("", "--interfaceLineWidth", dest="interfaceThickness",
                       default=2.0, type="float",
                       help="Set the drawing line width for interface lines [2.0] ")
-    
+
     parser.add_option(
         "",
         "--maxDepth",
@@ -539,7 +539,7 @@ def main(argv):
 
     if options.interperc > 0.0 and options.cMin is None and \
        options.cMax is None:
-           
+
         if options.datafile is not None:
             if os.path.exists(options.datafile):
                 a = np.loadtxt(options.datafile)
@@ -635,7 +635,7 @@ def main(argv):
 
             elif meshname.rfind('.bms') != -1 or meshname.rfind('.vtk') != -1:
                 axes, patches, mesh, data = showTriMesh(
-                    meshname, 
+                    meshname,
                     options.datafile,
                     options.contourplot,
                     options.constraintMat,
@@ -645,7 +645,7 @@ def main(argv):
                     coverage=options.coverage,
                     covThreshold=options.covThreshold,
                     showCbar=options.showCbar,
-                    label=options.label, 
+                    label=options.label,
                     linear=options.linear,
                     drawEdges=options.drawEdges,
                     cmapname=options.cmapname,
@@ -759,7 +759,7 @@ def main(argv):
                 axes.set_xticklabels(tickLabels)
 
     # else not cbar only
-    # force update 
+    # force update
     if not options.silent:
         axes.figure.canvas.draw()
 

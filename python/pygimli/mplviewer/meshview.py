@@ -201,7 +201,6 @@ def drawModel(ax, mesh, data=None,
     **kwargs:
         * tri - use tripcolor (experimental)
 
-
     Examples
     --------
     >>> import numpy as np
