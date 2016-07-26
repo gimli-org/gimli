@@ -376,7 +376,7 @@ blockquote em{
     float: right;
     font-weight: bold;
 }
-
+l
 /* master content table */
 .doc-index.docutils .first a {
     font-style: normal;
@@ -526,6 +526,7 @@ p.admonition-title {
 
 .logo img {
     max-width: 50%;
+    height: auto;
     margin-bottom: -20px;
     margin-top: 15px;
 }
