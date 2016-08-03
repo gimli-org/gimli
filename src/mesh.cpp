@@ -41,11 +41,11 @@ std::ostream & operator << (std::ostream & str, const Mesh & mesh){
 
 Mesh::Mesh(Index dim)
     : dimension_(dim),
-    rangesKnown_(false), 
-    neighboursKnown_(false), 
+    rangesKnown_(false),
+    neighboursKnown_(false),
     tree_(NULL),
     staticGeometry_(true){
-        
+
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
 }
@@ -55,7 +55,7 @@ Mesh::Mesh(const std::string & filename, bool createNeighbourInfos)
     neighboursKnown_(false),
     tree_(NULL),
     staticGeometry_(true){
-        
+
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
@@ -67,7 +67,7 @@ Mesh::Mesh(const Mesh & mesh)
     neighboursKnown_(false),
     tree_(NULL),
     staticGeometry_(true){
-        
+
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
     copy_(mesh);
@@ -82,11 +82,11 @@ Mesh & Mesh::operator = (const Mesh & mesh){
 void Mesh::copy_(const Mesh & mesh){
     clear();
     rangesKnown_ = false;
-    
+
     setStaticGeometry(mesh.staticGeometry());
     dimension_ = mesh.dim();
     nodeVector_.reserve(mesh.nodeCount());
-    
+
     for (Index i = 0; i < mesh.nodeCount(); i ++){
         this->createNode(mesh.node(i));
     }
@@ -107,10 +107,10 @@ void Mesh::copy_(const Mesh & mesh){
     for (Index i = 0; i < mesh.holeMarker().size(); i ++){
         this->addHoleMarker(mesh.holeMarker()[i]);
     }
-    
+
     setExportDataMap(mesh.exportDataMap());
     setCellAttributes(mesh.cellAttributes());
-    
+
     if (mesh.neighboursKnown()){
         this->createNeighbourInfos(true);
     }
@@ -347,7 +347,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound){
 void Mesh::deleteCells(const std::vector < Cell * > & cells){
     THROW_TO_IMPL
 }
-    
+
 Node & Mesh::node(Index i) {
     if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
@@ -425,11 +425,11 @@ Index Mesh::findNearestNode(const RVector3 & pos){
 
 IndexArray cellIDX__;
 
-Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start, 
+Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
                                     size_t & count, bool useTagging) const {
-    
+
     Cell * cell = start;
-    
+
     Index cellCounter = 0; //** for avoiding infinite loop
     do {
         if (useTagging && cell->tagged()) {
@@ -448,14 +448,14 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
             if (cell->shape().isInside(pos, sf, false)) {
                 return cell;
             } else {
-                
+
                 if (!neighboursKnown_){
                     const_cast<Mesh*>(this)->createNeighbourInfosCell_(cell);
 //                     for (Index j = 0; j < cell->neighbourCellCount(); j++){
 //                          cell->findNeighbourCell(j);
 //                     }
                 }
-                
+
 //                 for (Index i = 0; i < cell->neighbourCellCount(); i ++ ){
 //                     if (cell->neighbourCell(i)){
 //                         std::cout << "\t " << i << " " << *cell->neighbourCell(i) << std::endl;
@@ -463,7 +463,7 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 //                         std::cout << "\t " << i << " " << 0 << std::endl;
 //                     }
 //                 }
-                
+
                 cell = cell->neighbourCell(sf);
 
 //                 std::cout << "sf: " << sf << std::endl;
@@ -480,7 +480,7 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 
                 std::cout << WHERE_AM_I << " exit with submesh " << cellIDX__.size() << std::endl;
                 std::cout << "probably cant find a cell for " << pos << std::endl;
-                
+
                 Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
 
                 subMesh.exportVTK("submesh");
@@ -498,7 +498,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
                       bool extensive) const {
     bool bruteForce = false;
     Cell * cell = NULL;
-            
+
     if (bruteForce){
         for (Index i = 0; i < this->cellCount(); i ++) {
             count++;
@@ -515,28 +515,28 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
         count = 0;
         fillKDTree_();
         Node * refNode = tree_->nearest(pos);
-        
+
         if (!refNode){
             std::cout << "pos: " << pos << std::endl;
-            throwError(1, WHERE_AM_I + 
+            throwError(1, WHERE_AM_I +
                        " no nearest node to pos. This is a empty mesh");
         }
         if (refNode->cellSet().empty()){
             std::cout << "Node: " << *refNode << std::endl;
-            throwError(1, WHERE_AM_I + 
+            throwError(1, WHERE_AM_I +
                        " no cells for this node. This is a corrupt mesh");
         }
 //         std::cout << "Node: " << *refNode << std::endl;
-        
+
         // small fast precheck to avoid strange behaviour for symmetric SF.
         for (std::set< Cell * >::iterator it = refNode->cellSet().begin();
              it != refNode->cellSet().end(); it ++){
 //             std::cout << (*it)->id() << std::endl;
-            
+
            if ((*it)->shape().isInside(pos, false)) return *it;
 
         }
-        
+
         cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
                                       count, false);
         if (cell) return cell;
@@ -554,7 +554,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
                 cell = cellVector_[i];
                 cell = findCellBySlopeSearch_(pos, cell, count, true);
                 if (cell) {
-                    
+
                     break;
                 }
             }
@@ -577,7 +577,7 @@ std::vector < Boundary * > Mesh::findBoundaryByMarker(int from, int to) const {
 
     for (std::vector< Boundary * >::const_iterator it = boundaryVector_.begin();
          it != boundaryVector_.end(); it++){
-        
+
         if ((*it)->marker() >= from && (*it)->marker() < to) vBounds.push_back((*it));
     }
 
@@ -591,7 +591,7 @@ void Mesh::setBoundaryMarker(const IndexArray & ids, int marker){
         }
     }
 }
-    
+
 
 std::vector < Cell * > Mesh::findCellByMarker(int from, int to) const {
     if (to == -1) to = MAX_INT;
@@ -635,13 +635,13 @@ std::vector< Node * > Mesh::nodes(const IndexArray & ids) const{
     for (Index i = 0; i < ids.size(); i ++) v[i] = nodeVector_[ids[i]];
     return v;
 }
-    
+
 std::vector< Boundary * > Mesh::boundaries(const IndexArray & ids) const{
     std::vector < Boundary * > v(ids.size());
     for (Index i = 0; i < ids.size(); i ++) v[i] = boundaryVector_[ids[i]];
     return v;
 }
-    
+
 void Mesh::setCellMarkers(const IndexArray & ids, int marker){
     for(IndexArray::iterator it = ids.begin(); it != ids.end(); it++){
         if (*it < cellCount()){
@@ -664,11 +664,11 @@ void Mesh::setCellMarkers(const RVector & attribute){
             cellVector_[i]->setMarker(int(attribute[i]));
         }
     } else {
-        throwError(1,"Mesh::setCellMarker: attribute size to small: " + 
+        throwError(1,"Mesh::setCellMarker: attribute size to small: " +
             str(attribute.size()) + " < " + str(cellCount()));
     }
 }
-  
+
 IVector Mesh::cellMarkers() const{
     IVector tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
@@ -677,7 +677,7 @@ IVector Mesh::cellMarkers() const{
 }
 
 IndexArray Mesh::findNodesIdxByMarker(int marker) const {
-    return find(this->nodeMarker() == marker);
+    return find(this->nodeMarkers() == marker);
 }
 
 // std::list < Index > Mesh::findListNodesIdxByMarker(int marker) const {
@@ -723,10 +723,10 @@ R3Vector Mesh::boundaryCenters() const {
 }
 
 RVector & Mesh::cellSizes() const{
-    
+
     if (cellSizesCache_.size() != cellCount()){
         cellSizesCache_.resize(cellCount());
-        
+
         std::transform(cellVector_.begin(), cellVector_.end(),
                        cellSizesCache_.begin(),
                        std::mem_fun(&Cell::size));
@@ -736,15 +736,15 @@ RVector & Mesh::cellSizes() const{
             return this->cellSizes();
         }
     }
-    
+
     return cellSizesCache_;
 }
 
 RVector & Mesh::boundarySizes() const{
     if (boundarySizesCache_.size() != boundaryCount()){
         boundarySizesCache_.resize(boundaryCount());
-        
-        std::transform(boundaryVector_.begin(), boundaryVector_.end(), 
+
+        std::transform(boundaryVector_.begin(), boundaryVector_.end(),
                        boundarySizesCache_.begin(),
                        std::mem_fun(&MeshEntity::size));
     } else {
@@ -753,14 +753,14 @@ RVector & Mesh::boundarySizes() const{
             return this->boundarySizes();
         }
     }
-    
+
     return boundarySizesCache_;
 }
 
 R3Vector & Mesh::boundarySizedNormals() const {
     if (boundarySizedNormCache_.size() != boundaryCount()){
         boundarySizedNormCache_.resize(boundaryCount());
-        
+
         for (Index i = 0; i < boundaryCount(); i ++){
             if (dim()==1){
                 Cell *c = boundaryVector_[i]->leftCell();
@@ -770,14 +770,14 @@ R3Vector & Mesh::boundarySizedNormals() const {
                 boundarySizedNormCache_[i] = boundaryVector_[i]->norm() * boundaryVector_[i]->size();
             }
         }
-        
+
     } else {
         if (!staticGeometry_){
             boundarySizedNormCache_.resize(0);
             return this->boundarySizedNormals();
         }
     }
-    
+
     return boundarySizedNormCache_;
 }
 
@@ -965,7 +965,7 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                                                  nodeMatrix);
                 }
                 if (h2){
-/* 27 new nodes 3 x 9 = 8 nodes + 12 edges + 6 facets + 1 center                     
+/* 27 new nodes 3 x 9 = 8 nodes + 12 edges + 6 facets + 1 center
           7-----14------6  \n
          /|            /|  \n
         / |           / |  \n
@@ -1131,9 +1131,9 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                     this->createTriangleFace(*n[3], *n[4], *n[5], b.marker());
                     break;
                 case MESH_QUADRANGLEFACE_RTTI:
-                    /* 
+                    /*
                      * 3---6---2
-                     * |   |   |            
+                     * |   |   |
                      * 7---8---5
                      * |   |   |
                      * 0---4---1
@@ -1151,11 +1151,11 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
             }
         } // if not p2
     } // for_each boundary
-    
+
     //! Copy data if available
-    for (std::map < std::string, RVector >::const_iterator 
+    for (std::map < std::string, RVector >::const_iterator
          it = mesh.dataMap().begin(); it != mesh.dataMap().end(); it ++){
-        
+
         if (it->second.size() == mesh.cellCount()){
             addData(it->first, it->second(this->cellMarkers()));
         } else if (it->second.size() == mesh.nodeCount()){
@@ -1166,9 +1166,9 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
     }
     //! copy original marker into the new mesh
     this->setCellMarkers(RVector(mesh.cellMarkers())(this->cellMarkers()));
-        
+
 }
-    
+
 void Mesh::cleanNeighbourInfos(){
     //std::cout << "Mesh::cleanNeighbourInfos()"<< std::endl;
     for (Index i = 0; i < cellCount(); i ++){
@@ -1187,9 +1187,9 @@ void Mesh::createNeighbourInfos(bool force){
         this->cleanNeighbourInfos();
 
 //         Stopwatch sw(true);
-        
+
         for (Index i = 0; i < cellCount(); i ++){
-//            if (i%10000 ==0) __MS(i); 
+//            if (i%10000 ==0) __MS(i);
             createNeighbourInfosCell_(&cell(i));
 //             med+=sw.duration(true);
         }
@@ -1197,20 +1197,20 @@ void Mesh::createNeighbourInfos(bool force){
     } else {
 //         __M
     }
-    
+
 //     std::cout << med << " " << med/cellCount() << std::endl;
 }
 
 void Mesh::createNeighbourInfosCell_(Cell *c){
-    
+
     for (Index j = 0; j < c->boundaryCount(); j++){
         if (c->neighbourCell(j)) continue;
-        
+
         c->findNeighbourCell(j);
         std::vector < Node * > nodes(c->boundaryNodes(j));
 //         __M
 //         std::cout << *c << std::endl;
-//             
+//
 //         std::cout << findBoundary(nodes) << std::endl;
 //         __M
         Boundary * bound = createBoundary(nodes, 0);
@@ -1220,7 +1220,7 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
 //         if (!bound) {
 //             bound = createBoundary_< TriangleFace >(nodes, 0, boundaryCount());
 //         }
-            
+
         bool cellIsLeft = true;
         if (bound->shape().nodeCount() == 2) {
             cellIsLeft = (c->boundaryNodes(j)[0]->id() == bound->node(0).id());
@@ -1240,26 +1240,26 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
             }
             bound->setLeftCell(c);
             if (c->neighbourCell(j) && bound->rightCell() == NULL) bound->setRightCell(c->neighbourCell(j));
-            
+
         } else if (bound->rightCell() == NULL){
             if (bound->leftCell() == c){
                 //* we were already here .. no need to do it again
                 continue;
-            } else { 
+            } else {
                 bound->setRightCell(c);
                 if (c->neighbourCell(j) && bound->leftCell() == NULL ) bound->setLeftCell(c->neighbourCell(j));
             }
         }
-                   
+
 //         if (!bound->leftCell()){
 //             std::cout << *bound << " " << bound->leftCell() << " " << *bound->rightCell() << std::endl;
 //             throwError(1, WHERE + " Ooops, crosscheck -- every boundary need left cell.");
 //         }
-                   
+
 //         std::cout << bound->id() << " " << bound->leftCell() << " " << bound->rightCell() << std::endl;
-            
+
         //** cross check;
-        if (((bound->leftCell() != c) && (bound->rightCell() != c)) || 
+        if (((bound->leftCell() != c) && (bound->rightCell() != c)) ||
             (bound->leftCell() == bound->rightCell())){
 //             std::cerr << *c << std::endl;
 //             std::cerr << *bound << std::endl;
@@ -1270,8 +1270,8 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
 //             if (bound->rightCell()){
 //                 std::cerr << *bound->rightCell() << std::endl;
 //             }
-                
-            
+
+
             //throwError(1, WHERE + " Ooops, crosscheck --this should not happen.");
         } else {
 //                     std::cout << nBounds << std::endl;
@@ -1340,10 +1340,10 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType){
                     nodes[0] = & node(this->nodeCount() - 2 - x.size());
 
                     this->createCell(nodes, marker);
-                  
+
 //                     this->createTriangle(*nodes[1], *nodes[2], *nodes[3], marker);
 //                     this->createTriangle(*nodes[0], *nodes[1], *nodes[3], marker);
-                    
+
                 }
             }
             if (markerType == 1) marker = 0;
@@ -1388,18 +1388,18 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
     int marker = 0;
     if (x.size() > 1 && y.size() > 1 && z.size() > 1){
         for (Index k = 0; k < z.size(); k ++){
-            
+
             if (k > 0 && markerType == 3) marker++; //** count only increasing z
-            
+
             for (Index j = 0; j < y.size(); j ++){
-                
+
                 if (j > 0 && markerType == 2) marker++;  //** count increasing y or yz
                 if (j > 0 && k > 0 && markerType == 23) marker++;  //** count increasing y or yz
-                
+
                 for (Index i = 0; i < x.size(); i ++){ //**  count increasing x, yz, xz or xyz
-                    
+
                     this->createNode(x[i], y[j], z[k]);
-                    
+
                     if (i > 0 && j > 0 && k > 0){
                         if (markerType == 1 || markerType == 12 || markerType == 13 || markerType == 123) marker++; //** increasing y
 
@@ -1442,7 +1442,7 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
                 else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) boundary(i).setMarker(6);
             }
         }
-        
+
 
     } else {
         std::cerr << WHERE_AM_I << "Warning! there are too few positions given: "
@@ -1484,20 +1484,20 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
     this->setDimension(mesh.dim());
 
     std::map < int, Node* > nodeMap;
-    
+
     IndexArray idxList = unique(sort(idxListIn));
 
     if (idxList.size() != idxListIn.size()){
-        std::cerr << "This should not happen: double values in idxListIn: " 
-                  << str(idxListIn.size()) << " " 
+        std::cerr << "This should not happen: double values in idxListIn: "
+                  << str(idxListIn.size()) << " "
                   << str(idxList.size()) << std::endl;
     }
-    
+
     //** Create new nodes
     for (Index i = 0; i < idxList.size(); i ++){
-        
+
         Cell * cell = & mesh.cell(idxList[i]);
-        
+
         for (Index j = 0; j < cell->nodeCount(); j ++){
             if (nodeMap.count(cell->node(j).id()) == 0){
 
@@ -1516,7 +1516,7 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
         for (Index j = 0; j < nodes.size(); j ++){
             nodes[j] = nodeMap[cell->node(j).id()];
         }
-        
+
         createCell(nodes, cell->marker());
     }
 
@@ -1546,9 +1546,9 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
     }
 
     //! Copy data if available
-    for (std::map < std::string, RVector >::const_iterator 
+    for (std::map < std::string, RVector >::const_iterator
          it = mesh.dataMap().begin(); it != mesh.dataMap().end(); it ++){
-        
+
         if (it->second.size() == mesh.cellCount()){
             addData(it->first, it->second(idxList));
         } else if (it->second.size() == mesh.nodeCount()){
@@ -1557,7 +1557,7 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
             THROW_TO_IMPL
         }
     }
-        
+
     //! Create all remaining boundaries
     createNeighbourInfos();
 }
@@ -1567,7 +1567,7 @@ Mesh Mesh::createMeshByCellIdx(const IndexArray & idxList){
     mesh.createMeshByCellIdx(*this, idxList);
     return mesh;
 }
-    
+
 void Mesh::createMeshByMarker(const Mesh & mesh, int from, int to){
     if (to == -1) to = MAX_INT;
     else if (to == 0) to = from + 1;
@@ -1616,17 +1616,27 @@ void Mesh::dataInfo() const{
     }
 }
 
-IVector Mesh::nodeMarker() const {
+IVector Mesh::nodeMarkers() const {
     IVector tmp(nodeCount());
     std::transform(nodeVector_.begin(), nodeVector_.end(), tmp.begin(), std::mem_fun(& Node::marker));
     return tmp;
 }
 
-IVector Mesh::boundaryMarker() const {
+IVector Mesh::nodeMarker() const {
+    DEPR_STR("nodeMarkers")
+    return nodeMarkers();
+}
+
+IVector Mesh::boundaryMarkers() const {
     IVector tmp(boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), tmp.begin(),
                    std::mem_fun(&Boundary::marker));
     return tmp;
+}
+
+IVector Mesh::boundaryMarker() const {
+    DEPR_STR("boundaryMarkers")
+    return boundaryMarkers();
 }
 
 RVector Mesh::cellAttributes() const{
@@ -1706,7 +1716,7 @@ void Mesh::mapBoundaryMarker(const std::map < int, int > & aMap){
 void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
     IndexArray emptyList(find(abs(vals) < TOLERANCE));
     if (emptyList.size() == 0) return;
-    
+
     if (background != -1.0){
         vals[emptyList] = background;
         return;
@@ -1714,18 +1724,18 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
     bool smooth = false;
     bool horizontalWeight = true;
     Index prolongatedValues = 0;
-    
+
     if (emptyList.size() > 0){
         if (debug()) {
-            std::cout << "Prolongate " << emptyList.size() << " empty cells. (" 
+            std::cout << "Prolongate " << emptyList.size() << " empty cells. ("
             << this->cellCount() << ")" << std::endl;
         }
-        
+
         std::map< Cell*, double > prolongationMap;
         Cell * cell;
         RVector3 XY(1., 1., 0.);
         if (this->dim() == 2) XY[1] = 0.0;
-        
+
         for (Index i = 0; i < emptyList.size(); i ++){
             cell = &this->cell(emptyList[i]);
 
@@ -1786,7 +1796,7 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
 
     bool smooth = false;
     bool horizontalWeight = true;
-    
+
     createNeighbourInfos();
     if (emptyList.size() > 0){
         if (debug())std::cout << "Prolongate " << emptyList.size() << " empty cells. (" << this->cellCount() << ")" << std::endl;
@@ -1797,7 +1807,7 @@ void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double backgr
 
         RVector3 XY(1., 1., 0.);
         if (this->dim() == 2) XY[1] = 0.0;
-        
+
         for (size_t i = 0; i < emptyList.size(); i ++){
             cell = emptyList[i];
 
@@ -1857,7 +1867,7 @@ Mesh & Mesh::scale(const RVector3 & s){
                   boost::bind(& RVector3::scale, _1, boost::ref(s)));
     std::for_each(regionMarker_.begin(), regionMarker_.end(),
                   boost::bind(& RVector3::scale, _1, boost::ref(s)));
-    
+
     rangesKnown_ = false;
     return *this;
 }
@@ -1869,7 +1879,7 @@ Mesh & Mesh::translate(const RVector3 & t){
                   boost::bind(& RVector3::translate, _1, boost::ref(t)));
     std::for_each(regionMarker_.begin(), regionMarker_.end(),
                   boost::bind(& RVector3::translate, _1, boost::ref(t)));
-    
+
     rangesKnown_ = false;
     return *this;
 }
@@ -1881,7 +1891,7 @@ Mesh & Mesh::rotate(const RVector3 & r){
                   boost::bind(& RVector3::rotate, _1, boost::ref(r)));
     std::for_each(regionMarker_.begin(), regionMarker_.end(),
                   boost::bind(& RVector3::rotate, _1, boost::ref(r)));
-    
+
     rangesKnown_ = false;
     return *this;
 }
@@ -1937,12 +1947,12 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
                 bool noSlide = false;
                 for (std::set< Boundary * >::iterator it = node(i).boundSet().begin();
                      it != node(i).boundSet().end(); it ++){
-                   
+
                     if ((*it)->marker() != 0){
                         if (slide.first == 0){
                             slide.first = (*it);
                         } else {
-                            
+
                             if (slide.second == 0){
                                 if (slide.first->norm() == (*it)->norm()){
                                     slide.second = (*it);
@@ -1956,25 +1966,25 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
                             }
                         }
                     }
-                
+
                     if (edgeSliding) {
                         forbidMove = forbidMove || noSlide;
                     }else {
                         forbidMove = forbidMove || (*it)->marker() != 0;
                     }
-                
+
                     if (!edgeSliding){
                         forbidMove = forbidMove || ((*it)->leftCell() == NULL || (*it)->rightCell() == NULL);
                     }
-                    
+
                     if (forbidMove) break;
                 }
-                    
+
                 if (!forbidMove) {
                     if (slide.first && slide.second){
                     // move weighted with itself as double weight .. results in slight slide
                         node(i).setPos((
-                                slide.first->node(0).pos() + 
+                                slide.first->node(0).pos() +
                                 slide.first->node(1).pos() +
                                 slide.second->node(0).pos() +
                                 slide.second->node(1).pos()) / 4.0);
@@ -2008,7 +2018,7 @@ void Mesh::fillKDTree_() const {
 void Mesh::addRegionMarker(const RegionMarker & reg){
     regionMarker_.push_back(reg);
 }
-    
+
 void Mesh::addRegionMarker(const RVector3 & pos, int marker, double area){
     if (area < 0) {
         addHoleMarker(pos);
@@ -2016,32 +2026,32 @@ void Mesh::addRegionMarker(const RVector3 & pos, int marker, double area){
         regionMarker_.push_back(RegionMarker(pos, marker, area));
     }
 }
- 
+
 void Mesh::addHoleMarker(const RVector3 & pos){
     holeMarker_.push_back(pos);
 }
-    
+
 RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
     if (!cellToBoundaryInterpolationCache_){
         if (!neighboursKnown_){
             throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
         }
-        
-        cellToBoundaryInterpolationCache_ = new RSparseMapMatrix(this->boundaryCount(), 
-                                                                 this->cellCount());    
+
+        cellToBoundaryInterpolationCache_ = new RSparseMapMatrix(this->boundaryCount(),
+                                                                 this->cellCount());
         for (Index i = 0; i < boundaryCount(); i ++){
             Boundary * b = boundaryVector_[i];
             Cell * lC = b->leftCell();
             Cell * rC = b->rightCell();
-    
+
             double df1 = 0.0;
             double df2 = 0.0;
-            
+
             bool harmonic = false;
             if (lC) df1 = b->center().distance(lC->center());
             if (rC) df2 = b->center().distance(rC->center());
             double d12 = (df1 + df2);
-            
+
             if (lC && rC){
                 if (harmonic){
                     THROW_TO_IMPL
@@ -2062,12 +2072,12 @@ RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
             return this->cellToBoundaryInterpolation();
         }
     }
-        
+
     return *cellToBoundaryInterpolationCache_;
 }
 
 R3Vector Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
-    return cellDataToBoundaryGradient(cellData, 
+    return cellDataToBoundaryGradient(cellData,
       boundaryDataToCellGradient(this->cellToBoundaryInterpolation()*cellData));
 }
 
@@ -2077,27 +2087,27 @@ R3Vector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
     R3Vector ret(boundaryCount());
-    
+
     for (Index i = 0; i < boundaryCount(); i ++){
         Boundary * b = boundaryVector_[i];
         Cell * lC = b->leftCell();
         Cell * rC = b->rightCell();
-    
+
         RVector3 grad(0.0, 0.0, 0.0);
         RVector3 tangent((b->node(1).pos() - b->node(0).pos()).norm());
-        
+
         if (lC && rC){
             double df1 = b->center().distance(lC->center());
             double df2 = b->center().distance(rC->center());
-                    
+
             ret[b->id()] = b->norm()*(cellData[rC->id()] - cellData[lC->id()]) / (df1+df2);
-                        
-            ret[b->id()] += tangent * (tangent.dot(cellGrad[lC->id()]) + 
+
+            ret[b->id()] += tangent * (tangent.dot(cellGrad[lC->id()]) +
                                        tangent.dot(cellGrad[rC->id()])) * 0.5;
         } else if(lC){
             ret[b->id()] = tangent * tangent.dot(cellGrad[lC->id()]);
         }
-    }                 
+    }
     return ret;
 }
 
@@ -2112,46 +2122,46 @@ R3Vector Mesh::boundaryDataToCellGradient(const RVector & v) const{
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
         vec = flow[b->id()] * v[b->id()];
-        
+
         if (b->leftCell()){
             ret[b->leftCell()->id()] += vec;
-        } 
+        }
         if (b->rightCell()){
             ret[b->rightCell()->id()] -= vec;
-        } 
+        }
     }
     for (Index i = 0; i < ret.size(); i ++ ){
         ret[i] /= cellVector_[i]->size();
     }
     return ret;
 }
-        
+
 RVector Mesh::divergence(const R3Vector & V) const{
     RVector ret(this->cellCount());
-    
+
     if (!neighboursKnown_){
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
 
     ASSERT_EQUAL(V.size(), this->boundaryCount());
-    
+
     const R3Vector & flow = this->boundarySizedNormals();
-    
+
     for (Index i = 0; i < this->boundaryCount(); i ++){
         Boundary * b = this->boundaryVector_[i];
 //         __MS(flow[b->id()] << " " << V[b->id()])
         double vec = flow[b->id()].dot(V[b->id()]);
-        
+
         if (b->leftCell()){
             ret[b->leftCell()->id()] += vec;
-        } 
+        }
         if (b->rightCell()){
             ret[b->rightCell()->id()] -= vec;
-        } 
+        }
     }
     return ret / this->cellSizes();
 }
 
-        
-    
+
+
 } // namespace GIMLI

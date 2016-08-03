@@ -750,8 +750,8 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
     """
     with open(fname, 'w') as fid:
         fid.write('{:d}\t2\t0\t1\n'.format(poly.nodeCount()))
-        nm = poly.nodeMarker()
-        bm = poly.boundaryMarker()
+        nm = poly.nodeMarkers()
+        bm = poly.boundaryMarkers()
 
         fmt = '{:d}'+('\t'+pfmt)*2+'\t{:d}\n'
         for i, p in enumerate(poly.positions()):

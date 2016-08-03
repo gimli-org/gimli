@@ -45,7 +45,7 @@
 #if BOOST_BIND_FOUND || defined(HAVE_BOOST_BIND_HPP)
 	#define USE_BOOST_BIND TRUE
 #endif
-                
+
 #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "gimli"
         #define PACKAGE_VERSION "0.9.0-win"
@@ -132,9 +132,10 @@ typedef int64_t int64;
 #define THROW_TO_IMPL throwToImplement(TO_IMPL);
 #define CERR_TO_IMPL std::cerr << TO_IMPL << std::endl;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
+#define DEPR_STR(s) std::cerr << WHERE_AM_I << " is deprecated. Use: " << s " instead."<< std::endl;
 #define COUTMARKER std::cerr << WHERE_AM_I << std::endl;
 #define UNTESTED std::cerr << "WARNING!" << WHERE_AM_I << " " << "this function is untested" << std::endl;
-    
+
 #define TOLERANCE 1e-12
 #define TOUCH_TOLERANCE 1e-12
 #define MAX_DOUBLE std::numeric_limits<double>::max()
@@ -153,7 +154,7 @@ typedef int64_t int64;
     throwRangeError(1, WHERE_AM_I, i, start, end);
 #define ASSERT_EMPTY(v) if (v.size()==0) \
     throwLengthError(1, WHERE_AM_I + " array size is zero.");
-    
+
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
 static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;
@@ -401,12 +402,12 @@ inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); 
 inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }
 inline double toDouble(const std::string & str){ return std::strtod(str.c_str(), NULL); }
 
-/*! Read value from environment variable. 
+/*! Read value from environment variable.
  * Return default value if environment not set.
- * Environment var can be set in sh via: 
+ * Environment var can be set in sh via:
  * export name=val, or simple passing name=val in front of executable. */
 template < typename ValueType > ValueType getEnvironment(const std::string & name,
-                                                         ValueType def, 
+                                                         ValueType def,
                                                          bool verbose=false){
     ValueType var = def;
 
@@ -418,10 +419,10 @@ template < typename ValueType > ValueType getEnvironment(const std::string & nam
     return var;
 }
 
-/*! Set environment variable. Probably only for internal use and maybe only 
+/*! Set environment variable. Probably only for internal use and maybe only
  * for posix systems*/
 template < typename ValueType > void setEnvironment(const std::string & name,
-                                                    ValueType val, 
+                                                    ValueType val,
                                                     bool verbose=false){
     int ret = setenv(name.c_str(), str(val).c_str(), 1);
     switch(ret){
@@ -432,8 +433,8 @@ template < typename ValueType > void setEnvironment(const std::string & name,
             __MS(name << " " << val)
             throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
     }
-//     EINVAL 
-// 
+//     EINVAL
+//
 //     ENOMEM Insufficient memory to add a new variable to the environment.
 
     if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
@@ -482,40 +483,40 @@ struct DLLEXPORT coutPtrObject{
   template < typename T > void operator() (const T * p) const { std::cout << *p << " " << std::endl; }
 };
 
-template < typename Set > inline void intersectionSet(Set & dest, 
-                                                      const Set & a, 
+template < typename Set > inline void intersectionSet(Set & dest,
+                                                      const Set & a,
                                                       const Set & b){
     dest.clear();
     set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::inserter(dest, dest.begin()));
 }
-template < typename Set > inline void intersectionSet(Set & dest, 
-                                                      const Set & a, 
+template < typename Set > inline void intersectionSet(Set & dest,
+                                                      const Set & a,
                                                       const Set & b,
                                                       const Set & c){
     dest.clear();
-    set_intersection(a.begin(), a.end(), b.begin(), b.end(), 
+    set_intersection(a.begin(), a.end(), b.begin(), b.end(),
                      std::inserter(dest, dest.begin()));
     Set tmp(dest);
     dest.clear();
-    set_intersection(tmp.begin(), tmp.end(), c.begin(), c.end(), 
+    set_intersection(tmp.begin(), tmp.end(), c.begin(), c.end(),
                      std::inserter(dest, dest.begin()));
 }
 
-template < typename Set > inline void intersectionSet(Set & dest, 
-                                                      const Set & a, 
+template < typename Set > inline void intersectionSet(Set & dest,
+                                                      const Set & a,
                                                       const Set & b,
-                                                      const Set & c, 
+                                                      const Set & c,
                                                       const Set & d){
     dest.clear();
-    set_intersection(a.begin(), a.end(), b.begin(), b.end(), 
+    set_intersection(a.begin(), a.end(), b.begin(), b.end(),
                      std::inserter(dest, dest.begin()));
     Set tmp(dest);
     dest.clear();
-    set_intersection(tmp.begin(), tmp.end(), c.begin(), c.end(), 
+    set_intersection(tmp.begin(), tmp.end(), c.begin(), c.end(),
                      std::inserter(dest, dest.begin()));
     tmp = dest;
     dest.clear();
-    set_intersection(tmp.begin(), tmp.end(), d.begin(), d.end(), 
+    set_intersection(tmp.begin(), tmp.end(), d.begin(), d.end(),
                      std::inserter(dest, dest.begin()));
 }
 

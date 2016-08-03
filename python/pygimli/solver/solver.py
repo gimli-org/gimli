@@ -1205,6 +1205,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     debug = kwargs.pop('debug', False)
 
+    mesh.createNeighbourInfos()
     if verbose:
         print("Mesh: ", str(mesh))
 

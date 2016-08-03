@@ -82,26 +82,26 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
         cmapname = kwargs.pop('cMap', cmapname)
 
     cmap = None
+    if cmapname is None:
+        cmapname = 'jet'
 
-    if cmapname is not None:
-
-        if cmapname == 'b2r':
-            cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
+    if cmapname == 'b2r':
+        cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
                                                       cdict, ncols)
-        elif cmapname == 'viridis' and \
-                StrictVersion(mpl.__version__) < StrictVersion('1.5.0'):
+    elif cmapname == 'viridis' and \
+            StrictVersion(mpl.__version__) < StrictVersion('1.5.0'):
 
-            print("Mpl:", mpl.__version__, " using HB viridis")
-            cmap = LinearSegmentedColormap.from_list('viridis',
+        print("Mpl:", mpl.__version__, " using HB viridis")
+        cmap = LinearSegmentedColormap.from_list('viridis',
                                                      viridis_data[::-1])
-        elif cmapname == 'viridis_r':
-            print("Using HB viridis_r")
-            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
-        else:
-            try:
-                cmap = mpl.cm.get_cmap(cmapname, ncols)
-            except BaseException as e:
-                print("Could not retrieve colormap ", cmapname, e)
+    elif cmapname == 'viridis_r':
+        print("Using HB viridis_r")
+        cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
+    else:
+        try:
+            cmap = mpl.cm.get_cmap(cmapname, ncols)
+        except BaseException as e:
+            print("Could not retrieve colormap ", cmapname, e)
 
     cmap.set_bad(bad)
     return cmap
@@ -171,7 +171,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
 
     Update limits and label of a given colorbar.
     """
-    print("update cbar:", cMin, cMax, label)
+    # print("update cbar:", cMin, cMax, label)
     if gci is not None:
         pass
         # check the following first
@@ -222,7 +222,6 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
             pad = kwargs.pop('pad', 0.1)
             cax = divider.append_axes("right", size=size, pad=pad)
 
-    print(cMin, cMax, patches)
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
 

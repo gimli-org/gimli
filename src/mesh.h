@@ -324,9 +324,15 @@ public:
 
 
     /*! Return a vector of all boundary marker */
+    IVector boundaryMarkers() const;
+
+    /*! DEPRECATED */
     IVector boundaryMarker() const;
 
     /*! Return a vector of all node marker */
+    IVector nodeMarkers() const;
+
+    /*! DEPRECATED Return a vector of all node marker */
     IVector nodeMarker() const;
 
     /*! Return an index vector of all nodes that match the marker */
@@ -734,4 +740,3 @@ protected:
 } // namespace GIMLI;
 
 #endif // _GIMLI_MESH__H
-

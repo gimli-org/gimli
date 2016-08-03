@@ -99,7 +99,7 @@ def show(mesh=None, data=None, **kwargs):
 
 
 def showMesh(mesh, data=None, hold=False, block=False,
-             colorBar=False, coverage=None,
+             colorBar=None, coverage=None,
              ax=None, savefig=None, **kwargs):
     """2D Mesh visualization.
 
@@ -145,9 +145,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
         Force show drawing your content and block the script until you
         close the current figure.
 
-    colorBar : bool [false], Colorbar
+    colorBar : bool [None], Colorbar
         Create and show a colorbar. If colorBar is a valid colorbar then only
         his values will be updated.
+
+    label : str
+        Set colorbar label. If set colorbar is toggled to True. [None]
 
     coverage : iterable [None]
         Weight data by the given coverage array and fadeout the color.
@@ -235,6 +238,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
     label = kwargs.pop('label', None)
 
     cbar = None
+
     if label is not None and colorBar is None:
         colorBar = True
 
