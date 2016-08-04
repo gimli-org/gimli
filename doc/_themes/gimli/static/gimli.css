@@ -525,8 +525,8 @@ p.admonition-title {
 }
 
 .logo img {
-    max-width: 50%;
-    height: auto !important;
+    width: 500px;
+    height: 150px;
     margin-bottom: -20px;
     margin-top: 15px;
 }
