@@ -18,7 +18,8 @@ from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 class SIPSpectrum():
     """SIP spectrum data analysis"""
     def __init__(self, filename=None, unify=False, onlydown=True,
-                 f=None, amp=None, phi=None, k=1, basename='new'):
+                 f=None, amp=None, phi=None, k=1, sort=True,
+                 basename='new'):
         """Init SIP class with either filename to read or data vectors.
 
         Examples
@@ -47,6 +48,8 @@ class SIPSpectrum():
             self.phi = np.asarray(phi)
         if unify:
             self.unifyData(onlydown)
+        if sort:
+            self.sortData()
 
     def __repr__(self):
         """String representation of the class."""

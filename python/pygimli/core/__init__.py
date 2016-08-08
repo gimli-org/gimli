@@ -874,7 +874,7 @@ class ModellingBaseMT__(_pygimli_.ModellingBase):
 
         self._J = _pygimli_.RMatrix()
         self.setJacobian(self._J)
-        
+
 ModellingBaseMT__.createJacobian_mt = __ModellingBase__createJacobian_mt__
 ModellingBaseMT__.quatsch = __ModellingBase__createJacobian_mt__
 ModellingBaseMT__.responses = __ModellingBase__responses_mt__

@@ -118,7 +118,11 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
 
-    pp.set_cmap(pg.mplviewer.cmapFromName(**kwargs))
+    cmap = pg.mplviewer.cmapFromName(**kwargs)
+    cmap.set_bad('grey')
+    cmap.set_under('darkgrey')
+    cmap.set_bad('lightgrey')
+    pp.set_cmap(cmap)
 
     pp.set_norm(norm)
     pp.set_array(np.array(vals))
@@ -129,10 +133,10 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     updateAxes_(ax)
     cbar = kwargs.pop('colorBar', True)
 
-    if cbar is True:
+    if cbar is True:  # not for cbar=1, which is really confusing!
         cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
-                                               nLevs=5, label=label)
-    elif cbar is not False:
+                                           nLevs=5, label=label)
+    elif cbar is not False:  # what the hell is this?
         pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
                                     nLevs=5, label=label)
 
@@ -259,7 +263,6 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         yt = np.arange(len(ymap))
     else:
         yt = np.round(np.linspace(0, len(ymap) - 1, 5))
-#    print(yt)
 
     xx = np.sort([k for k in xmap])
     ax.set_xticks(xt)
@@ -267,7 +270,6 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     yy = np.unique([k for k in ymap])
     ax.set_yticks(yt)
     ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
-    #    ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
     return ax, cbar
 
 
