@@ -55,6 +55,12 @@ Documentation
 
             Terms of use and redistribution
 
+        * - :ref:`sec:contributing`
+
+            Information on how to get involved
+
+          - 
+
 
     ##################
     Indices and tables
