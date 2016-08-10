@@ -55,6 +55,12 @@ Documentation
 
             Terms of use and redistribution
 
+        * - :ref:`sec:contributing`
+
+            Information on how to get involved
+
+          -
+
 
     ##################
     Indices and tables
@@ -90,5 +96,6 @@ Documentation
         _examples_auto/index.rst
         _tutorials_auto/index.rst
         tools.rst
+        contrib.rst
         pygimliapi/index.rst
         glossary.rst

@@ -54,10 +54,10 @@ clean:
 	rm -f _templates/gallery.html
 
 api:
-	python ./build_api.py
+	python3 ./build_api.py
 
 gallery:
-	python ./sidebar_gallery.py
+	python3 ./sidebar_gallery.py
 
 html-nogallery:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
