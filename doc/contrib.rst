@@ -68,7 +68,7 @@ advisable to give it a sensible name such as ``adaptive_meshes``.
 Go nuts! Add and modify files and regularly commit your changes with meaningful
 commit messages. Remember that you are working in your own personal copy and in
 case you break something, you can always go back. While coding, we encourage you
-to follow a few :ref:`coding_guidelines`.
+to follow a few :ref:`sec:coding_guidelines`.
 
 .. code:: bash
 
