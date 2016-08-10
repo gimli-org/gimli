@@ -214,10 +214,10 @@ span.pre {
     background-color: transparent;
     border: none;
 }
-code.xref.py.py-mod.docutils.literal {
+/*code.xref.py.py-mod.docutils.literal {
     font-size: 30px;
     line-height: 36px;
-}
+}*/
 .sphx-glr-thumbcontainer {
     background: #fff;
     border: solid #fff 1px;
