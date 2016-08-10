@@ -28,6 +28,7 @@ class SIPSpectrum():
         >>> #sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
         """
         self.basename = basename
+        self.epsilon0 = 8.854e-12
         if filename is not None:
             flow = filename.lower()
             if flow.endswith('.txt') or flow.endswith('.csv'):
@@ -102,6 +103,10 @@ class SIPSpectrum():
         # finally cut f
         self.f = self.f[self.f <= fcut]
 
+    def omega(self):
+        """Angular frequency."""
+        return self.f * 2 * np.pi
+
     def realimag(self, cond=False):
         """Real and imaginary part."""
         if cond:
@@ -125,7 +130,7 @@ class SIPSpectrum():
 
         showPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
 
-    def showData(self, reim=False, znorm=False, nrows=2):
+    def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None):
         """Show amplitude and phase spectrum in two subplots
 
         Parameters
@@ -142,19 +147,20 @@ class SIPSpectrum():
         -------
         fig, ax : mpl.figure, mpl.axes array
         """
-        if reim or znorm:
+        if reim or znorm or cond:
             addstr = ''
             if znorm:
                 re, im = self.zNorm()
                 addstr = ' (norm)'
             else:
-                re, im = self.realimag()
+                re, im = self.realimag(cond=cond)
 
-            fig, ax = showSpectrum(self.f, re, im, ylog=False, nrows=nrows)
+            fig, ax = showSpectrum(self.f, re, im, ylog=cond, nrows=nrows,
+                                   ax=ax)
             ax[0].set_ylabel('real part'+addstr)
             ax[1].set_ylabel('imaginary part'+addstr)
         else:
-            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000)
+            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax)
 
         plt.show(block=False)
         return fig, ax
@@ -222,9 +228,26 @@ class SIPSpectrum():
     def epsilonR(self):
         """calculate relative permittivity from imaginary conductivity"""
         ECr, ECi = self.realimag(cond=True)
-        eps0 = 8.854e-12
-        we0 = self.f*2*pi*eps0  # Omega epsilon_0
+        we0 = self.f * 2 * pi * self.epsilon0  # Omega epsilon_0
         return ECi/we0
+
+    def determineEpsilon(self, mode=0, ECr=None, ECi=None):
+        """Retrieve frequency-independent epsilon for f->Inf."""
+        if ECr is None or ECi is None:
+            ECr, ECi = self.realimag(cond=True)
+        epsr = ECi / self.omega() / self.epsilon0
+        nmax = np.argmax(self.f)
+        if mode == 0:
+            f1 = self.f * 1
+            f1[nmax] = 0
+            nmax1 = np.argmax(f1)
+            er = 2*epsr[nmax] - epsr[nmax1]
+        elif mode > 1:
+            er = np.median(epsr[-mode:])
+        else:
+            er = epsr[nmax]
+
+        return er
 
     def removeEpsilonEffect(self, er=None, mode=0):
         """remove effect of (constant high-frequency) epsilon from sigma
@@ -240,20 +263,11 @@ class SIPSpectrum():
             determined er
         """
         ECr, ECi = self.realimag(cond=True)
-        we0 = self.f*2*pi*8.854e-12  # Omega epsilon_0
         if er is None:  #
-            epsr = ECi / we0
-            nmax = np.argmax(self.f)
-            if mode == 0:
-                f1 = self.f * 1
-                f1[nmax] = 0
-                nmax1 = np.argmax(f1)
-                er = 2*epsr[nmax] - epsr[nmax1]
-            else:
-                er = epsr[nmax]
+            er = self.determineEpsilon(mode=mode, ECr=ECr, ECi=ECi)
             print("detected epsilon of ", er)
 
-        ECi -= er * we0
+        ECi -= er * self.omega() * self.epsilon0
         self.phiOrg = self.phi
         self.phi = np.arctan(ECi/ECr)
         self.ampOrg = self.amp
