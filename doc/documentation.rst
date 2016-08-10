@@ -59,7 +59,7 @@ Documentation
 
             Information on how to get involved
 
-          - 
+          -
 
 
     ##################
@@ -96,5 +96,6 @@ Documentation
         _examples_auto/index.rst
         _tutorials_auto/index.rst
         tools.rst
+        contrib.rst
         pygimliapi/index.rst
         glossary.rst
