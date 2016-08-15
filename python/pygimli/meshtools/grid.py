@@ -52,7 +52,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     >>> mesh = appendTriangleBoundary(inner, xbound=3, ybound=6, marker=2)
     >>> fig, (ax1, ax2) = plt.subplots(1,2)
     >>> p1 = drawMesh(ax1, inner)
-    >>> p2 = pg.show(mesh, mesh.cellMarkers(), label='marker', axes=ax2)
+    >>> p2 = drawModel(ax2, mesh, mesh.cellMarkers(), label='marker')
     >>> p3 = drawMesh(ax2, mesh)
     >>> txt1 = ax1.set_title("a) Input grid")
     >>> txt2 = ax2.set_title("b) With triangle boundary")
