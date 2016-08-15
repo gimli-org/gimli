@@ -322,7 +322,7 @@ class SIPSpectrum():
             print("taupar2", taupar2)
 #            taupar1[0] = 1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi
         if mpar[0] == 0:
-            mpar[0] = 1. - min(self.amp)/max(self.amp)*2
+            mpar[0] = 1. - min(self.amp)/max(self.amp)  # *2
             print("mpar", mpar)
         self.mCC, self.phiCC = fit2CCPhi(self.f, self.phi, ePhi, lam,
                                          mpar1=mpar, mpar2=mpar,

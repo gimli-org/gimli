@@ -133,7 +133,7 @@ We use: (You can find exceptions in .landscape.yml)
 * pep8
 * pep257
 * pylint
-* pyflake
+* pyflakes
 
 .. _sec:testing:
 
