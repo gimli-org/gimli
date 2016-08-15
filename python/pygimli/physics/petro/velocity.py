@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 
 
-def slownessWillie(phi, sat=1, vm=4000, vw=1600, va=330,
+def slownessWillie(phi, sat=1, vm=4000, vw=1484, va=343,
                    mesh=None, meshI=None, fill=None):
     r"""
     Return slowness :math:`s` after Wyllie time-average equation.
@@ -19,9 +19,9 @@ def slownessWillie(phi, sat=1, vm=4000, vw=1600, va=330,
 
     * :math:`\phi` - porosity 0.0 --1.0
     * :math:`S`    - fluid saturation 0.0 --1.0 [sat]
-    * :math:`v_m`  - velocity of matrix
-    * :math:`v_w`  - velocity of water
-    * :math:`v_a`  - velocity of air
+    * :math:`v_m`  - velocity of matrix [4000 m/s]
+    * :math:`v_w`  - velocity of water [1484 m/s]
+    * :math:`v_a`  - velocity of air [343 m/s]
 
     If mesh is not None the resulting values are calculated for each cell of
     the mesh.

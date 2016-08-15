@@ -815,6 +815,15 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
 
 
 def __ModellingBase__responses_mt__(self, models, respos):
+
+    nModel = len(models)
+    nProcs = self.multiThreadJacobian()
+
+    if nProcs == 1:
+        for i in range(nModel):
+            respos[i] = self.response(models[i])
+        return
+
     from math import ceil
     from multiprocessing import Process, Array
     import numpy as np
@@ -826,14 +835,18 @@ def __ModellingBase__responses_mt__(self, models, respos):
         raise BaseException("respos need to be a matrix(N, nData):" +
                             str(respos.shape))
 
-    nProcs = self.multiThreadJacobian()
-    nModel = len(models)
+
+
+
     nData = len(respos[0])
     shm = []
 
     oldBertThread = self.threadCount()
     self.setThreadCount(1)
 
+    # print("*"*100)
+    # print(nModel, nProcs)
+    # print("*"*100)
     for pCount in range(int(ceil(nModel/nProcs))):
         procs = []
         if self.verbose():
@@ -874,9 +887,8 @@ class ModellingBaseMT__(_pygimli_.ModellingBase):
 
         self._J = _pygimli_.RMatrix()
         self.setJacobian(self._J)
-        
+
 ModellingBaseMT__.createJacobian_mt = __ModellingBase__createJacobian_mt__
-ModellingBaseMT__.quatsch = __ModellingBase__createJacobian_mt__
 ModellingBaseMT__.responses = __ModellingBase__responses_mt__
 
 ModellingBase = ModellingBaseMT__

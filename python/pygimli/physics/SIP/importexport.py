@@ -117,7 +117,7 @@ def readSIP256file(resfile, verbose=False):
     header = {}
     LINE = []
     dataAct = False
-    with open(resfile, 'r') as f:
+    with open(resfile, 'r', errors='replace') as f:
         for line in f:
             if dataAct:
                 LINE.append(line)

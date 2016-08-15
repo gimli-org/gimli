@@ -16,7 +16,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     Archie's law. :cite:`Archie1942`
 
     .. math::
-        \rho = a\rho_{\text{fl}}\phi^{-m}\S^{-n}
+        \rho = a\rho_{\text{fl}}\phi^{-m} S^{-n}
 
     * :math:`\rho` - the electrical resistivity of the fluid saturated rock in
     :math:`\Omega\text{m}`
