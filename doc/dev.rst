@@ -123,6 +123,8 @@ Allways need an Axes ax and draws Bar as Foo in this Axes
 
 Use pylint or prospector to improve code quality.
 
+.. _sec:coding_guidelines:
+
 Code Quality
 ------------
 
@@ -131,7 +133,12 @@ We use: (You can find exceptions in .landscape.yml)
 * pep8
 * pep257
 * pylint
-* pyflake
+* pyflakes
+
+.. _sec:testing:
+
+Testing
+-------
 
 Run api examples from shell:
 

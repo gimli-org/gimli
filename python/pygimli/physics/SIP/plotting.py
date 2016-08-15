@@ -46,9 +46,12 @@ def plotSpectrum(ax, freq, vals, ylabel=r'$\phi$ in mrad',
     ax.grid(grid)
 
 
-def showSpectrum(freq, amp, phi, nrows=2, ylog=None):
+def showSpectrum(freq, amp, phi, nrows=2, ylog=None, ax=None):
     """show amplitude and phase spectra in two subplots"""
-    fig, ax = plt.subplots(nrows=nrows, sharex=(nrows == 2))
+    if ax is None:
+        fig, ax = plt.subplots(nrows=nrows, sharex=(nrows == 2))
+    else:
+        fig = ax[0].figure
     showAmplitudeSpectrum(ax[0], freq, amp, ylog=ylog)
     showPhaseSpectrum(ax[1], freq, phi, ylog=ylog)
     return fig, ax
