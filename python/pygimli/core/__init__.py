@@ -766,8 +766,6 @@ def __GLOBAL__response_mt_shm_(fop, model, shm, i):
 
 
 def __ModellingBase__createJacobian_mt__(self, model, resp):
-    print("*"*100)
-    print(self, model, resp)
     from math import ceil
     from multiprocessing import Process, Array
     import numpy as np
@@ -820,8 +818,8 @@ def __ModellingBase__responses_mt__(self, models, respos):
     nProcs = self.multiThreadJacobian()
 
     if nProcs == 1:
-        for i in range(nModel):
-            respos[i] = self.response(models[i])
+        for i, m in enumerate(models):
+            respos[i] = self.response_mt(m, i)
         return
 
     from math import ceil
@@ -834,9 +832,6 @@ def __ModellingBase__responses_mt__(self, models, respos):
     if respos.ndim != 2:
         raise BaseException("respos need to be a matrix(N, nData):" +
                             str(respos.shape))
-
-
-
 
     nData = len(respos[0])
     shm = []
