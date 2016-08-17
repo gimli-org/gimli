@@ -533,7 +533,8 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     Stopwatch swatch(true);
     if (verbose_) std::cout << "RegionManager copying mesh ...";
 
-    if (mesh_) delete mesh_; mesh_ = new Mesh(mesh);
+    if (mesh_) delete mesh_;
+    mesh_ = new Mesh(mesh);
 
     if (verbose_){
         std::cout << swatch.duration(true) << " s " << std::endl;
