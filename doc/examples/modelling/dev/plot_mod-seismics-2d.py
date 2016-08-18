@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# coding=utf-8
 
 """
 Simple 2 layer full waveform pressure wave.
@@ -22,18 +22,18 @@ def drawWaveField(ax, u):
     ui = u / max(pg.abs(u))
     ui = pg.logDropTol(ui, 1e-2)
     cMax = max(pg.abs(ui))
-    
+
     drawField(ax, mesh, data=ui, cMin=-cMax, cMax=cMax, cmap='RdBu',
               #interpolate=0, shading='gouraud'
               )
-  
+
 def createMesh2():
     boundary = []
     boundary.append([-20.0,   0.0])
     boundary.append([-20.0, -20.0])
     boundary.append([ 20.0, -20.0])
     boundary.append([ 20.0,   0.0])
-       
+
     poly = pg.Mesh(2)
     nodes = [poly.createNode(b) for b in boundary]
 
@@ -41,10 +41,10 @@ def createMesh2():
     poly.createEdge(nodes[1], nodes[2], 3) # hom neumann (outflow)
     poly.createEdge(nodes[2], nodes[3], 2) # hom dirichlet (isolation)
     poly.createEdge(nodes[3], nodes[0], 4) # hom dirichlet (isolation)
-        
+
     mesh = createMesh(poly, quality=34, area=0.05, smooth=[0,10])
     return mesh
-  
+
 dx = 0.2
 x = np.arange(-20, 20., dx)
 y = np.arange(-20, 0.0, dx)[::-1]
@@ -75,7 +75,7 @@ print(mesh, "h:", h, "dt:", dt, "n_t", len(times))
 
 uSource = ricker(f0, times, t0=1./f0)
 
-solutionName = 'uGridBig-'+ str(dt) + '-' + str(h) 
+solutionName = 'uGridBig-'+ str(dt) + '-' + str(h)
 
 nx = len(x)
 ny = len(y)
@@ -98,7 +98,7 @@ Ustep = len(u)/2
 field = drawWaveField(ax, u[Ustep, :])
 
 plt.show()
-    
+
 def animate(i):
     if i > 0:
         tic = time.time()
@@ -115,7 +115,7 @@ anim = animation.FuncAnimation(fig, animate,
 anim.save(solutionName + ".mp4", writer=None, fps=20, dpi=92, codec=None,
           bitrate=24*320, extra_args=None, metadata=None,
           extra_anim=None, savefig_kwargs=None)
-          
-          
+
+
 #fig.canvas.draw()
 plt.show()

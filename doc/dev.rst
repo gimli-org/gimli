@@ -125,8 +125,8 @@ Use pylint or prospector to improve code quality.
 
 .. _sec:coding_guidelines:
 
-Code Quality
-------------
+Coding Guidelines
+-----------------
 
 We use: (You can find exceptions in .landscape.yml)
 

@@ -47,14 +47,13 @@ clean:
 	rm -rf $(BUILDDIR)
 	rm -rf _examples_auto
 	rm -rf _tutorials_auto
-	rm -rf _function_examples
-	rm -rf pygimliapi
+	rm -rf pygimliapi/_generated
 	rm -rf examples/modelling/*.geo*
 	rm -rf examples/modelling/*.msh*
 	rm -f _templates/gallery.html
 
 api:
-	python3 ./build_api.py
+	sphinx-autogen pygimliapi/index.rst -t _templates
 
 gallery:
 	python3 ./sidebar_gallery.py

@@ -109,7 +109,7 @@ try:
         },
 
         # path where to store your example linker templates
-        'mod_example_dir': '_function_examples',
+        'mod_example_dir': 'pygimliapi/_generated',
 
         # Your documented modules. You can use a string or a list of strings
         'doc_module': 'pygimli'

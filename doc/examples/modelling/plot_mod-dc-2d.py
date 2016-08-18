@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 r"""
-Geoelectric in 2.5d
+Geoelectric in 2.5D
 -------------------
 
 Geoelectrical modeling example in 2.5D."""
