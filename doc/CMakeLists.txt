@@ -81,13 +81,9 @@ add_custom_target(sphinxapi
     ALL
         # Copy build scripts for API doc generation
     COMMAND
-        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/apigen.py ${SPHINX_SRCBUILD_DIR}/doc
-    COMMAND
-        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR}/doc
-    COMMAND
         cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/sidebar_gallery.py ${SPHINX_SRCBUILD_DIR}/doc
     COMMAND
-        python ${SPHINX_SRCBUILD_DIR}/doc/build_api.py
+	      sphinx-autogen ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/index.rst -t ${SPHINX_SRC_DIR}/doc/_templates
     COMMENT
         "Building pygimli api doc"
     DEPENDS

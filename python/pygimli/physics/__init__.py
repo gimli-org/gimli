@@ -3,6 +3,21 @@
 
 """
 Module containing submodules for various geophysical methods.
+
+.. currentmodule:: pygimli.physics
+
+.. autosummary::
+    :template: module.rst
+    :toctree:
+
+    em
+    ert
+    gravimetry
+    joint
+    petro
+    SIP
+    sNMR
+    seismics
 """
 
 from math import pi
