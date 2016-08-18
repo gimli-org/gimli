@@ -326,7 +326,8 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     show1dmodel(x, thk, xlab, zlab, islog, z0)
 
 
-def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
+def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0,
+                **kwargs):
     """Show 1d block model defined by value and thickness vectors."""
     if xlab is None:
         xlab = "$\\rho$ in $\\Omega$m"
@@ -350,9 +351,9 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
 
     #    plt.cla()
     if islog:
-        plt.semilogx(px, pz)
+        plt.semilogx(px, pz, **kwargs)
     else:
-        plt.plot(px, pz)
+        plt.plot(px, pz, **kwargs)
 
     plt.ion()
     plt.grid(which='both')
