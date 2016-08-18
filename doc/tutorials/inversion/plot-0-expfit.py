@@ -3,7 +3,7 @@
 
 r"""
 Simple fit
-=======
+==========
 
 This tutorial shows how to do the simplest inversion case, a curve fit, by
 setting up an own forward operator. The function to be fitted is`

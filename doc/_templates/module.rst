@@ -1,3 +1,4 @@
+:orphan:
 {{ fullname }}
 {{ underline }}
 {{ '-' * fullname|length }}
@@ -58,10 +59,10 @@
   .. autofunction:: {{ function }}
 
   .. include:: {{fullname}}.{{function}}.examples
-      :end-before: ^^^
+      :end-line: 3
 
   .. include:: {{fullname}}.{{function}}.examples
-      :start-after: ^^^
+      :start-line: 4
 
   .. raw:: html
 
