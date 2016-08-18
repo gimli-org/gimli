@@ -1,10 +1,10 @@
 {{ fullname }}
-{{ underline }}
+{{ '-' * fullname|length }}
 
 .. automodule:: {{ fullname }}
 
   Overview
-  --------
+  ++++++++
 
   {% block functions %}
   {% if functions %}
@@ -49,7 +49,7 @@
   {% if functions %}
 
   Functions
-  ---------
+  +++++++++
 
   {% for function in functions %}
   .. rubric:: {{ function }}
@@ -73,7 +73,7 @@
   {% if classes %}
 
   Classes
-  -------
+  +++++++
 
   {% for class in classes %}
   .. rubric:: {{ class }}
