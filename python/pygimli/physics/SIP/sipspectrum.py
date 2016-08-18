@@ -132,7 +132,8 @@ class SIPSpectrum():
 
         showPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
 
-    def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None):
+    def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None,
+                 **kwargs):
         """Show amplitude and phase spectrum in two subplots
 
         Parameters
@@ -158,12 +159,13 @@ class SIPSpectrum():
                 re, im = self.realimag(cond=cond)
 
             fig, ax = showSpectrum(self.f, re, im, ylog=cond, nrows=nrows,
-                                   ax=ax)
+                                   ax=ax, **kwargs)
             self.fig['data'] = fig
             ax[0].set_ylabel('real part'+addstr)
             ax[1].set_ylabel('imaginary part'+addstr)
         else:
-            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax)
+            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax,
+                                   **kwargs)
             self.fig['data'] = fig
 
         plt.show(block=False)
