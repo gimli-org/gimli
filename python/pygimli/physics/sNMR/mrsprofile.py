@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-"""DOCUMENTME."""
+"""classes for inverting profile data with magnetic resonance soundings (MRS)
+The preferred LCI type of MRS inversion was published in:
+Costabel, S., Günther, T., Dlugosch, R. & Müller-Petke, M. (2016):
+Torus-nuclear magnetic resonance: Quasi-continuous airborne magnetic resonance
+profiling by using a helium-filled balloon. Geophysics 81(4), W119-W129,
+doi:10.1190/geo2015-0467.1."""
 
 import sys
 import os
@@ -16,6 +21,7 @@ from . modelling import MRS1dBlockQTModelling
 
 class JointMRSModelling(MRS1dBlockQTModelling):
     """MRS Laterally constrained modelling based on BlockMatrices."""
+
     def __init__(self, mrs, nlay=2, verbose=False):
         """Parameters: FDEM data class and number of layers"""
         super(JointMRSModelling, self).__init__(nlay, mrs[0].K, mrs[0].z,
@@ -32,7 +38,8 @@ class JointMRSModelling(MRS1dBlockQTModelling):
 
 
 class MRSLCI(pg.ModellingBase):
-    """MRS Laterally constrained modelling based on BlockMatrices"""
+    """MRS Laterally constrained modelling based on BlockMatrices."""
+
     def __init__(self, profile, nlay=2, verbose=False):
         """Parameters: FDEM data class and number of layers"""
         super(MRSLCI, self).__init__(verbose)
@@ -104,9 +111,18 @@ class MRSprofile():
 
     showModel - show LCI model
     """
+
     def __init__(self, filename, x=None, dx=1, x0=0, **kwargs):
         self.mrs = []
+        self.nData = 0
         self.figs = {}
+        self.totalChi2 = None
+        self.totalRMS = None
+        self.WMOD = None
+        self.TMOD = None
+        self.RMSvec = None
+        self.Chi2vec = None
+        self.mrsall = None
         if '*' in filename:
             files = glob(filename)
         elif os.path.isdir(filename):
@@ -174,8 +190,16 @@ class MRSprofile():
         return fig, ax
 
     def independentBlock1dInversion(self, nlay=2, lam=100, startModel=None):
-        """ independent inversion of all soundings
-            Parameters: nlay, lam, startModel (see MRS.run parameters)
+        """Independent inversion of all soundings.
+
+        Parameters
+        ----------
+        nlay : int [2]
+            number of layers
+        lam : float
+            regularisation parameter
+        startModel : array/vector
+            starting model (see MRS.run parameters)
         """
         self.WMOD, self.TMOD = [], []
         self.RMSvec, self.Chi2vec, self.nData = [], [], []
@@ -184,6 +208,8 @@ class MRSprofile():
                 startvec = startModel[i]
             else:
                 startvec = startModel
+            if startvec is not None:
+                nlay = (len(startvec)-1) // 2
             mrs.run(nlay=nlay, startvec=startvec, lam=lam, verbose=False)
             mrs.INV.echoStatus()
             thk, wc, t2 = mrs.result()
@@ -200,7 +226,7 @@ class MRSprofile():
 
     def block1dInversion(self, nlay=2, startModel=None, verbose=True,
                          **kwargs):
-        """invert all data together by one 1D model (variant 1 - all equal)"""
+        """Invert all data together by one 1D model (variant 1 - all equal)."""
         self.mrsall = MRS()
         self.mrsall.z = self.mrs[0].z
         self.mrsall.t = self.mrs[0].t
@@ -218,7 +244,7 @@ class MRSprofile():
         return self.mrsall.model
 
     def block1dInversionNew(self, nlay=2, lam=100., verbose=True):
-        """invert all data together by a 1D model (more general solution)"""
+        """Invert all data together by a 1D model (more general solution)."""
         data, error = pg.RVector(), pg.RVector()
         for mrs in self.mrs:
             data = pg.cat(data, mrs.data)
@@ -240,7 +266,7 @@ class MRSprofile():
         return model
 
     def blockLCInversion(self, nlay=2, startModel=None, **kwargs):
-        """laterally constrained (piece-wise 1D) block inversion"""
+        """Laterally constrained (piece-wise 1D) block inversion."""
         data, error, self.nData = pg.RVector(), pg.RVector(), []
         for mrs in self.mrs:
             data = pg.cat(data, mrs.data)
@@ -266,9 +292,9 @@ class MRSprofile():
         model = INV.run()
         self.WMOD, self.TMOD = [], []
         for par in np.reshape(model, (len(self.mrs), 3*nlay-1)):
-                thk = par[0:nlay-1]
-                self.WMOD.append(np.hstack((thk, par[nlay-1:2*nlay-1])))
-                self.TMOD.append(np.hstack((thk, par[2*nlay-1:3*nlay-1])))
+            thk = par[0:nlay-1]
+            self.WMOD.append(np.hstack((thk, par[nlay-1:2*nlay-1])))
+            self.TMOD.append(np.hstack((thk, par[2*nlay-1:3*nlay-1])))
 
         ind = np.hstack((0, np.cumsum(self.nData)))
         resp = INV.response()
@@ -283,7 +309,7 @@ class MRSprofile():
             self.Chi2vec.append(np.mean(emisfit[ind[i]:ind[i+1]]**2))
 
     def printFits(self):
-        """show single fits and total fit"""
+        """Show single fits and total fit."""
         np.set_printoptions(precision=2)
         print("Single RMS [nV]:")
         print(np.array(self.RMSvec))
@@ -292,9 +318,9 @@ class MRSprofile():
         print('Total RMS/Chi^2 value:')
         print(np.round(self.totalRMS, 2), np.round(self.totalChi2, 2))
 
-    def showWC(self, wlim=[0, 0.5], ax=None, cmap=Spectral,
+    def showWC(self, wlim=(0, 0.5), ax=None, cmap=Spectral,
                title=r'$\theta$ (-)'):
-        """ show water content distribution as stitched model section """
+        """Show water content distribution as stitched model section."""
         fig = None
         if ax is None:
             fig, ax = plt.subplots(figsize=(10, 5))
@@ -304,9 +330,9 @@ class MRSprofile():
                            title=title, cmin=wlim[0], cmax=wlim[1])
         return fig, ax
 
-    def showT2(self, tlim=[0.05, 0.5], ax=None, cmap=Spectral,
+    def showT2(self, tlim=(0.05, 0.5), ax=None, cmap=Spectral,
                title=r'$T_2^*$ (s)'):
-        """ show relaxation time distribution as stitched model section """
+        """Show relaxation time distribution as stitched model section."""
         fig = None
         if ax is None:
             fig, ax = plt.subplots(figsize=(10, 5))
@@ -317,9 +343,10 @@ class MRSprofile():
         return fig, ax
 
     def showFits(self, ax=None):
-        """ show chi-square and rms fits of individual soundings """
+        """Show chi-square and rms fits of individual soundings."""
         if ax is None:
             fig, ax = plt.subplots(figsize=(10, 5))
+            self.figs['fits'] = fig
         axb = ax.twinx()
         axb.set_ylabel('rms (nV)')
         ax.plot(self.x, self.Chi2vec, 'rx', label=r'$\chi^2$')
@@ -328,8 +355,8 @@ class MRSprofile():
         axb.legend(numpoints=1, loc=1)
 
     def showModel(self, showFit=0, cmap=Spectral, figsize=(13, 12),
-                  wlim=[0, 0.5], tlim=[0.05, 0.5]):
-        """ show 2d model as stitched 1d models along with fit"""
+                  wlim=(0, 0.5), tlim=(0.05, 0.5)):
+        """Show 2d model as stitched 1d models along with fit."""
         fig, ax = plt.subplots(nrows=2+showFit, figsize=figsize, sharex=True)
         self.showWC(wlim, ax=ax[-2], cmap=cmap)
         self.showT2(tlim, ax=ax[-1], cmap=cmap)
@@ -348,16 +375,16 @@ class MRSprofile():
 
 if __name__ == "__main__":
     name = sys.argv[-1]
-    nlay = 3
-    profile = MRSprofile(name)  # directory or list of names
-    print(profile)
-    fig, ax = profile.showData()  # subplots with data cubes
-    model = profile.block1dInversion(nlay=nlay)  # all in one model
-    profile.independentBlock1dInversion(nlay=2)  # each separately
-    profile.printFits()
-    fig, ax = profile.showModel(showFit=1)
-    fig.savefig(name+'-Ind-N'+str(nlay)+'.pdf', bbox_inches='tight')
-    profile.blockLCInversion(nlay=nlay, lam=100, startModel=model)
-    profile.printFits()
-    fig, ax = profile.showModel(showFit=1)
-    fig.savefig(name+'-LCI-N'+str(nlay)+'.pdf', bbox_inches='tight')
+    numlay = 3
+    prof = MRSprofile(name)  # directory or list of names
+    print(prof)
+    figure, axes = prof.showData()  # subplots with data cubes
+    mymodel = prof.block1dInversion(nlay=numlay)  # all in one model
+    prof.independentBlock1dInversion(nlay=2)  # each separately
+    prof.printFits()
+    figure, axes = prof.showModel(showFit=1)
+    figure.savefig(name+'-Ind-N'+str(numlay)+'.pdf', bbox_inches='tight')
+    prof.blockLCInversion(nlay=numlay, lam=100, startModel=mymodel)
+    prof.printFits()
+    figure, axes = prof.showModel(showFit=1)
+    figure.savefig(name+'-LCI-N'+str(numlay)+'.pdf', bbox_inches='tight')
