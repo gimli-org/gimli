@@ -28,6 +28,7 @@ class SIPSpectrum():
         >>> #sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
         """
         self.basename = basename
+        self.fig = {}
         self.epsilon0 = 8.854e-12
         if filename is not None:
             flow = filename.lower()
@@ -127,6 +128,7 @@ class SIPSpectrum():
         """Plot phase spectrum."""
         if ax is None:
             fig, ax = plt.subplots()
+            self.fig['phase'] = fig
 
         showPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
 
@@ -157,10 +159,12 @@ class SIPSpectrum():
 
             fig, ax = showSpectrum(self.f, re, im, ylog=cond, nrows=nrows,
                                    ax=ax)
+            self.fig['data'] = fig
             ax[0].set_ylabel('real part'+addstr)
             ax[1].set_ylabel('imaginary part'+addstr)
         else:
             fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax)
+            self.fig['data'] = fig
 
         plt.show(block=False)
         return fig, ax
@@ -189,6 +193,7 @@ class SIPSpectrum():
     def showDataKK(self, use0=False):
         """show data as real/imag subplots along with Kramers-Kronig curves"""
         fig, ax = self.showData(reim=True)
+        self.fig['dataKK'] = fig
         reKK, imKK = self.getKK(use0)
         ax[0].plot(self.f, reKK, label='KK')
         ax[1].plot(self.f, imKK, label='KK')
@@ -200,6 +205,7 @@ class SIPSpectrum():
         """check coupling removal (CR) by Kramers-Kronig (KK) relation"""
         if ax is None:
             fig, ax = plt.subplots()
+            self.fig['dataCRKK'] = fig
         ax.semilogx(self.f, self.phi*1000, label='org')
         ax.semilogx(self.f, self.getPhiKK(use0)*1000, label='orgKK')
         if useEps:
@@ -215,6 +221,7 @@ class SIPSpectrum():
         """show data in a polar plot (real against imaginary parts)"""
         re, im = self.realimag()
         fig, ax = plt.subplots()
+        self.fig['polar'] = fig
         ax.plot(re, im, 'b.')
         ax.set_aspect(1)
         ax.grid(True)
@@ -274,8 +281,8 @@ class SIPSpectrum():
         self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
         return er
 
-    def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=[0, 0, 1],
-                 taupar=[0, 1e-5, 100], cpar=[0.3, 0, 1]):
+    def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
+                 taupar=(0, 1e-5, 100), cpar=(0.3, 0, 1)):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -298,9 +305,9 @@ class SIPSpectrum():
         self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
                                         taupar=taupar, cpar=cpar)
 
-    def fit2CCPhi(self, ePhi=0.001, lam=1000., mpar=[0, 0, 1],
-                  taupar1=[0, 1e-5, 1], taupar2=[0, 1e-1, 1000],
-                  cpar=[0.5, 0, 1]):
+    def fit2CCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
+                  taupar1=(0, 1e-5, 1), taupar2=(0, 1e-1, 1000),
+                  cpar=(0.5, 0, 1)):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -434,6 +441,7 @@ class SIPSpectrum():
             self.ampDD = np.abs(respC)
             if showFit:
                 fig, ax = self.showData(znorm=True, nrows=3)
+                self.fig['DebyeFit'] = fig
                 ax[0].plot(self.f, respRe, 'r-')
                 ax[1].plot(self.f, respIm, 'r-')
                 ax[2].semilogx(self.tau, self.mDD, 'r-')
@@ -446,6 +454,7 @@ class SIPSpectrum():
             self.phiDD = IDD.response()
             if showFit:
                 fig, ax = self.showData(nrows=3)
+                self.fig['DebyeSpectrum'] = fig
                 ax[2].semilogx(self.tau, self.mDD, 'r-')
 
     def totalChargeability(self):
@@ -472,6 +481,7 @@ class SIPSpectrum():
                     tstr += r' $\tau_2$={:.1e}s'
             tCC = tstr.format(*mCC)
         fig, ax = plt.subplots(nrows=2+hasattr(self, 'mDD'), figsize=(12, 12))
+        self.fig['all'] = fig
         fig.subplots_adjust(hspace=0.25)
         # amplitude
         showAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
@@ -513,9 +523,18 @@ class SIPSpectrum():
         plt.show(block=False)
         return fig, ax
 
+    def saveFigures(self, name=None, ext='pdf'):
+        """save all existing figures to files"""
+        if name is None:
+            name = self.basename
+        if name is None or not any(name):
+            name = 'out'
+        for key in self.fig:
+            self.fig[key].savefig(name+'-'+key+'.'+ext, bbox_inches='tight')
+
 if __name__ == "__main__":
-    filename = 'sipexample.txt'
-    sip = SIPSpectrum(filename)
+    myfile = 'sipexample.txt'
+    sip = SIPSpectrum(myfile)
 #    sip.showData(znorm=True)
     if True:  # Pelton
         sip.fitCCEM()
