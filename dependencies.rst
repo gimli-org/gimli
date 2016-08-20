@@ -29,7 +29,7 @@ For pygimli you additionally need:
 * python-setuptools
 
 Optional Prerequisites
-^^^^^^^^^^^^^^^^^^^^^^
+......................
 
 These tools can be installed system-wide with your native package manager (i.e.
 apt-get). If not found, the provided build scripts will automatically download
@@ -43,7 +43,7 @@ and compile the necessary components.
 * triangle (http://www.cs.cmu.edu/~quake/triangle.html)
 
 Prerequisites automatically installed by the installer
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+......................................................
 
 These tools are required to create the Python bindings and are likely to be
 outdated in your distribution and should therefore not be installed

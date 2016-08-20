@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-pygimli.utils - Collection of several utility functions.
-"""
+"""Collection of several utility functions."""
+
 import sys
-import pygimli as pg
-from importlib import import_module
-import numpy as np
 from math import sqrt, floor
 
-class ProgressBar(object):
+import numpy as np
 
-    """
+import pygimli as pg
+
+
+class ProgressBar(object):
+    """Animated text-based progressbar.
+
     Animated text-based progressbar for intensive loops. Should work in the
     console and in the IPython Notebook.
 
@@ -33,6 +34,7 @@ class ProgressBar(object):
     """
 
     def __init__(self, its, width=80, sign=":"):
+        """Constructor."""
         self.its = int(its)
         self.width = width
         self.sign = sign[0]  # take first character only if sign is longer
@@ -79,51 +81,6 @@ def boxprint(s, width=80, sym="#"):
     print("\n".join((row, centered.join((sym, sym)), row)))
 
 
-def opt_import(module, requiredTo="use the full functionality"):
-    """
-    Import and return module only if it exists.
-
-    If `module` cannot be imported, a warning is printed followed by the
-    `requiredFor` string. Otherwise, the imported `module` will be returned.
-    This function should be used to import optional dependencies in order to
-    avoid repeated try/except statements.
-
-    Parameters
-    ----------
-    module : str
-        Name of the module to be imported.
-    requiredFor : str, optional
-        Info string for the purpose of the dependency.
-
-    Examples
-    --------
-    >>> from pygimli.utils import opt_import
-    >>> pg = opt_import("pygimli")
-    >>> pg.__name__
-    'pygimli'
-    >>> opt_import("doesNotExist", requiredTo="do something special")
-    No module named 'doesNotExist'.
-    You need to install this optional dependency to do something special.
-    """
-
-    # set default message for common imports
-    if not requiredTo and "matplotlib" in module:
-        requiredTo = "visualize 2D content"
-
-    if module.count(".") > 2:
-        raise ImportError("Can only import modules and sub-packages.")
-
-    try:
-        mod = import_module(module)
-    except ImportError:
-        msg = ("No module named \'%s\'.\nYou need to install this optional "
-               "dependency to %s.")
-        print(msg % (module, requiredTo))
-        mod = None
-
-    return mod
-
-
 def trimDocString(docstring):
     """Return properly formatted docstring.
 
@@ -162,6 +119,7 @@ def trimDocString(docstring):
 
 
 def unicodeToAscii(text):
+    """TODO DOCUMENTME."""
     if isinstance(text, str):
         return text.encode("iso-8859-1", "ignore")
     else:
@@ -169,7 +127,7 @@ def unicodeToAscii(text):
 
 
 def logDropTol(p, droptol=1e-3):
-    """
+    """Create logarithmic scaled copy of p.
 
     Examples
     --------
@@ -188,7 +146,7 @@ def logDropTol(p, droptol=1e-3):
     return tmp
 
 
-def grange(start, end, dx=0, n=0, log=False, verbose=False):
+def grange(start, end, dx=0, n=0, log=False):
     """Create array with possible increasing spacing.
 
     Create either array from start step-wise filled with dx until end reached
@@ -223,7 +181,6 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
     ret: :gimliapi:`GIMLI::RVector`
         Return resulting array
     """
-
     s = float(start)
     e = float(end)
     d = float(dx)
@@ -251,7 +208,9 @@ def grange(start, end, dx=0, n=0, log=False, verbose=False):
 
 
 def diff(v):
-    """Calculate approximate derivative from v as d = [v_1-v_0, v2-v_1, ...]
+    """Calculate approximate derivative.
+
+    Calculate approximate derivative from v as d = [v_1-v_0, v2-v_1, ...]
 
     Parameters
     ----------
@@ -271,8 +230,12 @@ def diff(v):
     >>> p = pg.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
-    >>> # print(diff(p)[0], diff(p)[1], diff(p)[2])
-    >>> # RVector3: (0.0, 1.0, 0.0) RVector3: (0.0, -1.0, 0.0) RVector3: (0.0, 0.0, 0.0)
+    >>> print(diff(p)[0])
+    RVector3: (0.0, 1.0, 0.0)
+    >>> print(diff(p)[1])
+    RVector3: (0.0, -1.0, 0.0)
+    >>> print(diff(p)[2])
+    RVector3: (0.0, 0.0, 0.0)
     >>> p = pg.RVector(3)
     >>> p[0] = 0.0
     >>> p[1] = 1.0
@@ -282,7 +245,7 @@ def diff(v):
     """
     d = None
 
-    if type(v) == np.ndarray:
+    if isinstance(v, np.ndarray):
         if v.ndim == 2:
             v = pg.R3Vector(v)
 
@@ -291,7 +254,7 @@ def diff(v):
     else:
         d = pg.RVector(len(v) - 1)
 
-    for i in range(len(d)):
+    for i, _ in enumerate(d):
         d[i] = v[i + 1] - v[i]
     return d
 
@@ -327,12 +290,11 @@ def dist(p, c=None):
     >>> print(dist(np.array([x, y]).T))
     [ 1.  1.  1.  1.]
     """
-
     if c is None:
         c = pg.RVector3(0.0, 0.0, 0.0)
     d = np.zeros(len(p))
     pi = None
-    for i in range(len(p)):
+    for i, _ in enumerate(p):
         if isinstance(p[i], pg.RVector3):
             pi = p[i]
         else:
@@ -341,8 +303,6 @@ def dist(p, c=None):
 
     return d
 
-def xyToLength(x, y):
-    raise("please use utils.distSum")
 
 def cumDist(p):
     """The progressive i.e, cumulative length for the path p.
@@ -377,13 +337,14 @@ def cumDist(p):
     d[1:] = np.cumsum(dist(diff(p)))
     return d
 
+
 def chi2(a, b, err, trans=None):
-    """ Return chi square value.
-    """
+    """Return chi square value."""
     if trans is None:
         trans = pg.RTrans()
     d = (trans(a) - trans(b)) / trans.error(a, err)
-    return pg.dot(d,d) / len(d)
+    return pg.dot(d, d) / len(d)
+
 
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
@@ -393,17 +354,20 @@ def randN(n, minVal=0.0, maxVal=1.0):
     r += minVal
     return r
 
+
 def rand(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
     r = pg.RVector(n)
     pg.rand(r, minVal, maxVal)
     return r
 
+
 def getIndex(seq, f):
+    """TODO DOCUMENTME."""
     # DEPRECATED_SLOW
     idx = []
     if isinstance(seq, pg.RVector):
-        for i in range(len(seq)):
+        for i, _ in enumerate(seq):
             v = seq[i]
             if f(v):
                 idx.append(i)
@@ -413,23 +377,27 @@ def getIndex(seq, f):
                 idx.append(i)
     return idx
 
+
 def filterIndex(seq, idx):
+    """TODO DOCUMENTME."""
     if isinstance(seq, pg.RVector):
         # return seq(idx)
         ret = pg.RVector(len(idx))
     else:
         ret = list(range(len(idx)))
 
-    for i, id in enumerate(idx):
-        ret[i] = seq[id]
+    for i, ix in enumerate(idx):
+        ret[i] = seq[ix]
+
     return ret
 
 
 def findNearest(x, y, xp, yp, radius=-1):
+    """TODO DOCUMENTME."""
     idx = 0
     minDist = 1e9
     startPointDist = pg.RVector(len(x))
-    for i in range(len(x)):
+    for i, _ in enumerate(x):
         startPointDist[i] = sqrt(
             (x[i] - xp) * (x[i] - xp) + (y[i] - yp) * (y[i] - yp))
 
@@ -440,7 +408,8 @@ def findNearest(x, y, xp, yp, radius=-1):
 
 
 def unique_everseen(iterable, key=None):
-    """
+    """Return iterator of unique elements ever seen with preserving order.
+
     Return iterator of unique elements ever seen with preserving order.
 
     From: http://docs.python.org/library/itertools.html#recipes
@@ -461,7 +430,7 @@ def unique_everseen(iterable, key=None):
     """
     try:
         from itertools import ifilterfalse
-    except:
+    except BaseException as _:
         from itertools import filterfalse
 
     seen = set()
@@ -471,7 +440,7 @@ def unique_everseen(iterable, key=None):
             for element in ifilterfalse(seen.__contains__, iterable):
                 seen_add(element)
                 yield element
-        except:
+        except BaseException as _:
             for element in filterfalse(seen.__contains__, iterable):
                 seen_add(element)
                 yield element
@@ -482,8 +451,10 @@ def unique_everseen(iterable, key=None):
                 seen_add(k)
                 yield element
 
+
 def unique(a):
-    """
+    """Return list of unique elements ever seen with preserving order.
+
     Return list of unique elements ever seen with preserving order.
 
     Examples
@@ -498,6 +469,7 @@ def unique(a):
     """
     return list(unique_everseen(a))
 
+
 def unique_rows(array):
     """Return unique rows in a 2D array.
 
@@ -510,18 +482,12 @@ def unique_rows(array):
     array([[1, 2, 3],
            [3, 2, 1]])
     """
-    b = array.ravel().view(np.dtype((np.void, array.dtype.itemsize*array.shape[1])))
+    b = array.ravel().view(np.dtype((np.void,
+                                     array.dtype.itemsize*array.shape[1])))
     _, unique_idx = np.unique(b, return_index=True)
 
     return array[np.sort(unique_idx)]
-    A_1D = A.dot(np.append(A.max(0)[::-1].cumprod()[::-1][1:],1))
-    sort_idx = A_1D.argsort()
-    mask = np.append(True,np.diff(A_1D[sort_idx])!=0)
-    return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
-
-def arrayToStdVectorUL(theArray):
-    """Converts a 'ndarray' to pygimli.stdVectorUL."""
-    vec = pg.stdVectorUL()
-    for i in theArray:
-        vec.append(int(i))
-    return vec
+    # A_1D = A.dot(np.append(A.max(0)[::-1].cumprod()[::-1][1:], 1))
+    # sort_idx = A_1D.argsort()
+    # mask = np.append(True, np.diff(A_1D[sort_idx]) !=0 )
+    # return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]

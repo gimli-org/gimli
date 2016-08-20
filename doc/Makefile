@@ -47,17 +47,16 @@ clean:
 	rm -rf $(BUILDDIR)
 	rm -rf _examples_auto
 	rm -rf _tutorials_auto
-	rm -rf _function_examples
-	rm -rf pygimliapi
+	rm -rf pygimliapi/_generated
 	rm -rf examples/modelling/*.geo*
 	rm -rf examples/modelling/*.msh*
 	rm -f _templates/gallery.html
 
 api:
-	python ./build_api.py
+	sphinx-autogen pygimliapi/index.rst -t _templates
 
 gallery:
-	python ./sidebar_gallery.py
+	python3 ./sidebar_gallery.py
 
 html-nogallery:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

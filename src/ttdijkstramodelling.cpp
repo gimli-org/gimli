@@ -52,14 +52,14 @@ void Dijkstra::setGraph(const Graph & graph) {
 void Dijkstra::setStartNode(Index startNode) {
     distances_.clear();
     root_ = startNode;
-    std::priority_queue< distancePair_, 
+    std::priority_queue< distancePair_,
                          std::vector< distancePair_ >,
                          comparePairsClass_< distancePair_ > > priQueue;
 
     edge_ e(startNode, startNode);
     priQueue.push(distancePair_(0.0, e));
     distancePair_ dummy;
-    
+
     while (!priQueue.empty()) {
         dummy = priQueue.top();
 
@@ -116,7 +116,7 @@ TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(bool verbose)
 }
 
 TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(Mesh & mesh,
-                                                         DataContainer & dataContainer, 
+                                                         DataContainer & dataContainer,
                                                          bool verbose)
 : ModellingBase(dataContainer, verbose), background_(1e16) {
 
@@ -133,40 +133,40 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
     Graph meshGraph;
 
     double dist, oldTime, newTime;
-    
+
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
         for (Index j = 0; j < mesh_->cell(i).nodeCount(); j ++) {
             Node *na = &mesh_->cell(i).node(j);
             Node *nb = &mesh_->cell(i).node((j + 1)%mesh_->cell(i).nodeCount());
             dist = na->pos().distance(nb->pos());
-            
+
             oldTime = meshGraph[na->id()][nb->id()];
             newTime = dist * slownessPerCell[mesh_->cell(i).id()];
-            
+
             if (oldTime != 0) {
                 newTime = std::min(newTime, oldTime);
             }
-            
+
             meshGraph[na->id()][nb->id()] = newTime;
             meshGraph[nb->id()][na->id()] = newTime;
         }
-        
+
         if (mesh_->cell(i).rtti() == MESH_TETRAHEDRON_RTTI ||
             mesh_->cell(i).rtti() == MESH_TETRAHEDRON10_RTTI) {
 
             Node *na = &mesh_->cell(i).node(0);
             Node *nb = &mesh_->cell(i).node(2);
-        
+
             dist = na->pos().distance(nb->pos());
             oldTime = meshGraph[na->id()][nb->id()];
             newTime = dist * slownessPerCell[mesh_->cell(i).id()];
-        
+
             meshGraph[na->id()][nb->id()] = newTime;
             meshGraph[nb->id()][na->id()] = newTime;
 
             na = &mesh_->cell(i).node(1);
             nb = &mesh_->cell(i).node(3);
-            
+
             dist = na->pos().distance(nb->pos());
             oldTime = meshGraph[na->id()][nb->id()];
             newTime = dist * slownessPerCell[mesh_->cell(i).id()];
@@ -174,10 +174,10 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
             meshGraph[nb->id()][na->id()] = newTime;
         }
     }
-    
+
     if (meshGraph.size() < mesh_->nodeCount()){
-        std::cerr << WHERE_AM_I << 
-                " there seems to be unassigned nodes within the mesh. Dijkstra Path will be maybe invalid." 
+        std::cerr << WHERE_AM_I <<
+                " there seems to be unassigned nodes within the mesh. Dijkstra Path will be maybe invalid."
                  << meshGraph.size() << " < " << mesh_->nodeCount() << std::endl;
         for (Index i = 0; i < mesh_->nodeCount(); i ++){
             if (mesh_->node(i).cellSet().empty()){
@@ -204,8 +204,8 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness() const {
         s = (SIndex)(*dataContainer_)("s")[dataIdx];
         g = (SIndex)(*dataContainer_)("g")[dataIdx];
         if (s == g){
-            __MS(WHERE_AM_I + ": shot point equals geophon point. " + 
-                  "This lead to an invalid apparent slowness. " + 
+            __MS(WHERE_AM_I + ": shot point equals geophon point. " +
+                  "This lead to an invalid apparent slowness. " +
                   str(s) + "==" + str(g))
             throwError(1, "Aborting" );
         }
@@ -218,12 +218,12 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness() const {
 RVector TravelTimeDijkstraModelling::createGradientModel(double lBound,
                                                          double uBound){
     if (verbose_) std::cout << "Creating Gradient model ..." << std::endl;
-    
+
     RVector appSlowness(getApparentSlowness());
-    
+
     double smi = median(appSlowness);
     if (smi < lBound) smi = lBound * 1.1;
-        
+
     double sma = max(appSlowness) / 2.0;
     if (uBound > 0.0 && sma > uBound) sma = uBound * 0.9;
 
@@ -231,50 +231,50 @@ RVector TravelTimeDijkstraModelling::createGradientModel(double lBound,
 
     RVector zmid(nModel);
     Mesh paraDomain(regionManager().paraDomain());
-    
+
     int dim = paraDomain.dim() - 1;
 
     for (Index i = 0; i < paraDomain.cellCount() ; i++) {
         zmid[i] = paraDomain.cell(i).center()[dim];
     }
-    
+
     double zmi = min(zmid);
     double zma = max(zmid);
-        
+
     RVector gradModel(nModel);
 
     for (Index i = 0; i < gradModel.size(); i++) {
         gradModel[i] = smi * std::exp((zmid[i] - zmi) / (zma - zmi) * std::log(sma / smi));
     }
-    
+
     return gradModel;
 }
 
 void TravelTimeDijkstraModelling::updateMeshDependency_(){
     if (verbose_) std::cout << "... looking for shot and receiver positions." << std::endl;
     RVector shots(unique(sort((*dataContainer_)("s"))));
-    
+
     shotNodeId_.resize(shots.size()) ;
     shotsInv_.clear();
-    
+
     for (Index i = 0; i < shots.size(); i ++){
         shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
         if ( mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
         }
         shotsInv_[Index(shots[i])] = i;
     }
-     
+
     RVector receiver(unique(sort((*dataContainer_)("g"))));
 
     receNodeId_.resize(receiver.size()) ;
     receiInv_.clear();
-    
+
     for (Index i = 0; i < receiver.size(); i ++){
         receNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition(Index(receiver[i])));
         receiInv_[Index(receiver[i])] = i;
     }
 }
-   
+
 RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << "->" << 1e16 << std::endl;
@@ -303,7 +303,7 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
         s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
         g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
-//         if (dataIdx < 10 ) std::cout << s << " " << (*dataContainer_)("s")[dataIdx] << " " 
+//         if (dataIdx < 10 ) std::cout << s << " " << (*dataContainer_)("s")[dataIdx] << " "
 //                    << g << " " << (*dataContainer_)("g")[dataIdx] << " " << dMap[s][g] << std::endl;
         resp[dataIdx] = dMap[s][g];
     }
@@ -353,67 +353,59 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
         for (Index i = 0; i < nRecei; i ++) {
             wayMatrix[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
         }
-    }    
-    
-    std::fstream file;
-        if (verbose_) openOutFile("jacobian.way", &file);
+    }
 
-        for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
-            Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
-            Index g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
-            std::set < Cell * > neighborCells;
+    for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
+        Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
+        Index g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
+        std::set < Cell * > neighborCells;
 
-            for (Index i = 0; i < wayMatrix[s][g].size()-1; i ++) {
-                Index aId = wayMatrix[s][g][i];
-                Index bId = wayMatrix[s][g][i + 1];
-                double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
-                double slo = 0.0;
+        for (Index i = 0; i < wayMatrix[s][g].size()-1; i ++) {
+            Index aId = wayMatrix[s][g][i];
+            Index bId = wayMatrix[s][g][i + 1];
+            double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
+            double slo = 0.0;
 
-                intersectionSet(neighborCells, mesh_->node(aId).cellSet(), mesh_->node(bId).cellSet());
+            intersectionSet(neighborCells, mesh_->node(aId).cellSet(), mesh_->node(bId).cellSet());
 
-                if (verbose_) {
-                    file << wayMatrix[s][g][i] << " " << wayMatrix[s][g][i+1] << " " << dijkstra_.distance(wayMatrix[s][g][i])  << std::endl;
-                }
-
-                if (!neighborCells.empty()) {
-                    double mins = 1e16, dequal = 1e-3;
-                    int nfast = 0;
-                    /*! first detect cells with minimal slowness */
-                    for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
-                        slo = (*it)->attribute();
-                        if (std::fabs(slo / mins -1) < dequal) nfast++; // check for equality
-                        else if (slo < mins) {
-                            nfast = 1;
-                            mins = slo;
-                        }
+            if (!neighborCells.empty()) {
+                double mins = 1e16, dequal = 1e-3;
+                int nfast = 0;
+                /*! first detect cells with minimal slowness */
+                for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
+                    slo = (*it)->attribute();
+                    if (std::fabs(slo / mins -1) < dequal) nfast++; // check for equality
+                    else if (slo < mins) {
+                        nfast = 1;
+                        mins = slo;
                     }
-                    /*! now write edgelength divided by two into jacobian matrix */
-                    for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
-                        int marker = (*it)->marker();
-                        if (nfast > 0) {
-                            slo = (*it)->attribute();
-                            if ((slo > 0.0) && (std::fabs(slo / mins - 1) < dequal)) {
-                                if (marker > (int)nModel - 1) {
-                                    std::cerr << "Warning! request invalid model cell: " << *(*it) << std::endl;
-                                } else {
-                                    
-                                    if (marker <= MARKER_FIXEDVALUE_REGION){
-                                        // neighbor is fixed region 
+                }
+                /*! now write edgelength divided by two into jacobian matrix */
+                for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
+                    int marker = (*it)->marker();
+                    if (nfast > 0) {
+                        slo = (*it)->attribute();
+                        if ((slo > 0.0) && (std::fabs(slo / mins - 1) < dequal)) {
+                            if (marker > (int)nModel - 1) {
+                                std::cerr << "Warning! request invalid model cell: " << *(*it) << std::endl;
+                            } else {
+
+                                if (marker <= MARKER_FIXEDVALUE_REGION){
+                                    // neighbor is fixed region
 //                                         SIndex regionMarker = -(marker - MARKER_FIXEDVALUE_REGION);
 //                                         double val = regionManager_->region(regionMarker)->fixValue();
-                                    } else {
-                                        jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin?? CA nur wohin was??
-                                    }
+                                } else {
+                                    jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin?? CA nur wohin was??
                                 }
                             }
                         }
                     }
-                } else { // neighborCells.empty()
-                    std::cerr << WHERE_AM_I << " no neighbor cells found for edge: " << aId << " " << bId << std::endl;
                 }
+            } else { // neighborCells.empty()
+                std::cerr << WHERE_AM_I << " no neighbor cells found for edge: " << aId << " " << bId << std::endl;
             }
         }
-    if (verbose_) file.close();
+    }
 }
 
 TTModellingWithOffset::TTModellingWithOffset(Mesh & mesh, DataContainer & dataContainer, bool verbose)

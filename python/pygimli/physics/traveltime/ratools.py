@@ -1,10 +1,12 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+""""WRITEME"""
 
 import numpy as np
 import pygimli as pg
 
 
-def createRAData(sensors, **kwargs):
+def createRAData(sensors):
     """
     Create a refraction data container.
 
@@ -44,7 +46,7 @@ def createRAData(sensors, **kwargs):
     return data
 
 
-def createGradientModel2D(data, mesh, VTop, VBot):
+def createGradientModel2D(data, mesh, vTop, vBot):
     """
     Create 2D velocity gradient model.
 
@@ -83,4 +85,4 @@ def createGradientModel2D(data, mesh, VTop, VBot):
     d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen
                   for i in range(pos.shape[0])])
 
-    return np.interp(d, [min(d), max(d)], [1.0 / VTop, 1.0 / VBot])
+    return np.interp(d, [min(d), max(d)], [1.0 / vTop, 1.0 / vBot])

@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 import pygimli as pg
 
+
 class TestRVectorMethods(unittest.TestCase):
 
     def test_RVector(self):
@@ -22,7 +23,7 @@ class TestRVectorMethods(unittest.TestCase):
 
         p = pg.RVector3((0.0, 1.0, 0.0))
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
-        
+
     def test_NumpyToRVector3(self):
         '''
             custom_rvalue.cpp
@@ -150,15 +151,15 @@ class TestRVectorMethods(unittest.TestCase):
         '''
             implemented through hand_made_wrapper.py
         '''
-        #check ob wirklich from array genommen wird!
-        # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
+        # check if array is really taken
+        # not yet taken: .. see __init__.py:__BVectorArrayCall__
         v = pg.IndexArray(10, 2)
         self.assertEqual(type(v), pg.IndexArray)
         # print(type(v[0]))
         # print(pg.showSizes())
         a = np.asarray(v)
         self.assertEqual(type(a), np.ndarray)
-        #self.assertEqual(a.dtype, 'int64')
+        # self.assertEqual(a.dtype, 'int64')
         self.assertEqual(len(a), 10)
         self.assertEqual(sum(a), 20)
 
@@ -197,10 +198,10 @@ if __name__ == '__main__':
     unittest.main()
     # do we need Implicit converter .. currently deactivated in vector.h
 
-    #suite = unittest.TestSuite()
+#    suite = unittest.TestSuite()
 #
-   #suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
-    #suite.addTest(TestRVectorMethods("test_NumpyToIndexArray"))
+#    suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
+#    suite.addTest(TestRVectorMethods("test_NumpyToIndexArray"))
 #
 #    suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
 #    suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
@@ -208,6 +209,5 @@ if __name__ == '__main__':
 #    suite.addTest(TestRVectorMethods("test_ListToRVector"))
 #    suite.addTest(TestRVectorMethods("test_NumpyToRVector"))
 #
-    
-    #unittest.TextTestRunner().run(suite)
-    
+
+#    unittest.TextTestRunner().run(suite)

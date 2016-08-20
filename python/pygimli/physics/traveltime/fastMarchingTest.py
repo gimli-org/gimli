@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+r"""
+Solve the particular Hamilton-Jacobi (HJ) equation (Eikonal equation).
 
-"""
 Solve the particular Hamilton-Jacobi (HJ) equation, known as the Eikonal
 equation :cite:`SunFomel2000`
 
@@ -20,17 +21,18 @@ In the special case when :math:`f(x) = 1`, the solution gives the signed
 distance from the boundary
 """
 
-import numpy as np
 import time
+import heapq
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 import pygimli as pg
-import matplotlib.pyplot as plt
 from pygimli.mplviewer import drawMesh, drawField
-
-import heapq
 
 
 def findSlowness(edge):
+    """WRITEME."""
     if edge.leftCell() is None:
         slowness = edge.rightCell().attribute()
     elif edge.rightCell() is None:
@@ -42,8 +44,9 @@ def findSlowness(edge):
 # def findSlowness(...)
 
 
-def fastMarch(mesh, downwind, times, upTags, downTags):
-
+def fastMarch(mesh, downwind, times, upT, downT):
+    """WRITEME."""
+    print(mesh)
     upCandidate = []
 
     for node in downwind:
@@ -51,7 +54,7 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
 
         upNodes = []
         for n in neighNodes:
-            if upTags[n.id()]:
+            if upT[n.id()]:
                 upNodes.append(n)
 
         if len(upNodes) == 1:
@@ -72,7 +75,7 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
                     ta = times[a.id()]
                     tb = times[b.id()]
 
-                    if upTags[a.id()] and upTags[b.id()]:
+                    if upT[a.id()] and upT[b.id()]:
                         line = pg.Line(a.pos(), b.pos())
                         t = min(1., max(0., line.nearest(node.pos())))
 
@@ -100,19 +103,19 @@ def fastMarch(mesh, downwind, times, upTags, downTags):
     # print candidate
     newUpNode = candidate[1]
     times[newUpNode.id()] = candidate[0]
-    upTags[newUpNode.id()] = 1
+    upT[newUpNode.id()] = 1
     # print newUpNode
     downwind.remove(newUpNode)
 
     newDownNodes = pg.commonNodes(newUpNode.cellSet())
     for nn in newDownNodes:
-        if not upTags[nn.id()] and not downTags[nn.id()]:
+        if not upT[nn.id()] and not downT[nn.id()]:
             downwind.add(nn)
-            downTags[nn.id()] = 1
+            downT[nn.id()] = 1
 
-# def fastMarch(...)
 
-if __name__ is '__main__':
+def test():
+    """WRITEME."""
     mesh = pg.Mesh('mesh/test2d')
     mesh.createNeighbourInfos()
 
@@ -128,7 +131,8 @@ if __name__ is '__main__':
             c.setAttribute(0.5)
         # c.setAttribute(abs(1./c.center()[1]))
 
-    fig, a = plt.add_subplots()
+    fig = plt.figure()
+    ax = fig.subplot(1, 1, 1)
 
     anaTimes = pg.RVector(mesh.nodeCount(), 0.0)
 
@@ -138,7 +142,7 @@ if __name__ is '__main__':
     # d = pg.DataContainer()
     # dijk = pg.TravelTimeDijkstraModelling(mesh, d)
 
-    upwind = set()
+    # upwind = set()
     downwind = set()
     upTags = np.zeros(mesh.nodeCount())
     downTags = np.zeros(mesh.nodeCount())
@@ -146,11 +150,11 @@ if __name__ is '__main__':
     # define initial condition
     cell = mesh.findCell(source)
 
-    for i, n in enumerate(cell.nodes()):
+    for n in cell.nodes():
         times[n.id()] = cell.attribute() * n.pos().distance(source)
         upTags[n.id()] = 1
 
-    for i, n in enumerate(cell.nodes()):
+    for n in cell.nodes():
         tmpNodes = pg.commonNodes(n.cellSet())
         for nn in tmpNodes:
             if not upTags[nn.id()] and not downTags[nn.id()]:
@@ -160,7 +164,7 @@ if __name__ is '__main__':
     # start fast marching
     tic = time.time()
     while len(downwind) > 0:
-        model = pg.RVector(mesh.cellCount(), 0.0)
+        # model = pg.RVector(mesh.cellCount(), 0.0)
 
         # for c in upwind: model.setVal(2, c.id())
         # for c in downwind: model.setVal(1, c.id())
@@ -199,8 +203,8 @@ if __name__ is '__main__':
 
     print(time.time() - tic, "s")
 
-    drawMesh(a, mesh)
-    drawField(a, mesh, times, filled=True)
+    drawMesh(ax, mesh)
+    drawField(ax, mesh, times, filled=True)
     # drawStreamCircular(a, mesh, times, source, 30.,
     #                nLines = 50, step = 0.1, showStartPos = True)
 
@@ -212,4 +216,7 @@ if __name__ is '__main__':
     # nLines = 50, step = 0.01,
     # showStartPos = True)
 
+
+if __name__ is '__main__':
+    test()
     plt.show()

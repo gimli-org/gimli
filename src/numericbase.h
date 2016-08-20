@@ -149,12 +149,9 @@ template < class ValueType > ValueType besselK0(const ValueType & x){
     } else {
         y = 2.0 / x;
         result = (std::exp(-x) / std::sqrt(x)) * (1.25331414
-                       + y * (-0.7832358e-1
-                           + y * (0.2189568e-1
-                               + y * (-0.1062446e-1
-                                   + y * (0.587872e-2
-                                       + y * (-0.251540e-2
-                                           + y * 0.53208e-3))))));
+                            + y * (-0.7832358e-1 + y * (0.2189568e-1 + y * (-0.1062446e-1 + y * (0.587872e-2
+                            + y * (-0.251540e-2
+                            + y * 0.53208e-3))))));
     }
     return result;
 }
@@ -220,7 +217,7 @@ template < class ValueType > ValueType besselK1(const ValueType & x){
 DLLEXPORT RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon);
 
 /*! Lineintegral after WonBevis.*/
-DLLEXPORT void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2, 
+DLLEXPORT void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2,
                                       RVector3 & dg, RVector3 & dgz);
 /*! Lineintegral after WonBevis. Only return dgz.*/
 DLLEXPORT double lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2);

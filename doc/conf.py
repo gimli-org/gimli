@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Gimli documentation build configuration file.
 #
-# gimli documentation build configuration file, created by
+# created by
 # sphinx-quickstart on Wed Apr 11 16:37:21 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -10,28 +12,26 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
+"""
 
-import sys
+import math
 import os
-from os.path import join
-import pip
 import re
+import sys
+from os import path
+from os.path import join
 
-# for doc rendering on headless machines (jenkins server)
 import matplotlib
 matplotlib.use("Agg")
-
-try:
-    import sphinx_gallery
-except ImportError:
-    err = """
-    sphinx_gallery is required to build the documentation. Try to run:
-    sudo pip install git+https://github.com/sphinx-gallery/sphinx-gallery
-    """
-    raise ImportError(err)
+import pip
+import pkg_resources
+import sphinx
 
 import pygimli as pg
 from pygimli.utils import boxprint
+from sidebar_gallery import make_gallery
+
+# for doc rendering on headless machines (jenkins server)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -39,7 +39,7 @@ from pygimli.utils import boxprint
 # sys.path.insert(0, os.path.abspath('.'))
 
 try:
-    #from _build.doc.conf_environment import *
+    # from _build.doc.conf_environment import *
     from conf_environment import *
 except ImportError:
     TRUNK_PATH = '..'
@@ -53,7 +53,7 @@ sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 # The following line is necessary for the Tools section
 sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/apps')))
 
-# -- General configuration -----------------------------------------------------
+# -- General configuration ----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 needs_sphinx = '1.2'
@@ -72,8 +72,9 @@ if req:
           "Or install all dependencies with: pip install -r requirements.txt"
     raise ImportError(msg)
 
-# Add any Sphinx extension module names here, as strings. They can be extensions
-# coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# Add any Sphinx extension module names here, as strings.
+# They can be extensions coming with Sphinx (named 'sphinx.ext.*')
+# or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
@@ -85,38 +86,60 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               'doxylink',
-              'sphinx_gallery.gen_gallery',
-              ]
+              'sphinx_gallery.gen_gallery', ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
 
+# Sphinx-gallery settinga
+try:
+    import sphinx_gallery
+    extensions += ["sphinx_gallery.gen_gallery"]
+
+    # Setup automatic gallery generation
+    sphinx_gallery_conf = {
+        'examples_dirs': [join(SPHINXDOC_PATH, 'examples'),
+                          join(SPHINXDOC_PATH, 'tutorials')],
+        'gallery_dirs': ['_examples_auto', '_tutorials_auto'],
+        'reference_url': {
+            # The module you locally document uses a None
+            'pygimli': None,
+            # External python modules use their documentation websites
+            'matplotlib': 'http://matplotlib.org',
+            'numpy': 'http://docs.scipy.org/doc/numpy'
+        },
+
+        # path where to store your example linker templates
+        'mod_example_dir': 'pygimliapi/_generated',
+
+        # Your documented modules. You can use a string or a list of strings
+        'doc_module': 'pygimli'
+    }
+
+except ImportError:
+    err = """
+    The sphinx_gallery extension is not installed, so the tutorials
+    and examples will not be rendered and additional warnings will occur
+    due to missing references.
+
+    Install sphinx_gallery via:
+    sudo pip install sphinx-gallery
+    """
+
+    def setup(app):
+        app.warn(err)
+
+
 intersphinx_mapping = {'http://docs.python.org/': None}
-
-# Setup automatic gallery generation
-sphinx_gallery_conf = {
-    'examples_dirs': [join(SPHINXDOC_PATH, 'examples'),
-                     join(SPHINXDOC_PATH, 'tutorials'),
-                     ],
-    'gallery_dirs': ['_examples_auto',
-                    '_tutorials_auto'],
-    'reference_url': {
-        # The module you locally document uses a None
-        'pygimli': None,
-        # External python modules use their documentation websites
-        'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
-
-    # path where to store your example linker templates
-    'mod_example_dir': '_function_examples',
-
-    # Your documented modules. You can use a string or a list of strings
-    'doc_module': 'pygimli'
-}
 
 autoclass_content = "both"
 
-# Get mathjax from GIMLi server (public one is very slow)
-mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+# Get mathjax
+# Formulas disappear after scrolling
+# mathjax_path =
+# "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+# Slow, but works
+mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js" +\
+               "?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = [join(SPHINXDOC_PATH, '_templates'),
@@ -128,8 +151,7 @@ numpydoc_use_plots = True
 plot_formats = [('png', 100), ('pdf', 100)]
 plot_include_source = True
 
-import math
-phi = (math.sqrt(5) + 1)/2
+phi = (math.sqrt(5) + 1) / 2
 
 plot_rcparams = {
     'font.size': 7,
@@ -146,7 +168,7 @@ plot_rcparams = {
     'figure.subplot.wspace': 0.4,
     'figure.figsize': (3 * phi, 3),
     'figure.dpi': 100,
-    }
+}
 
 matplotlib.rcParams.update(plot_rcparams)
 
@@ -161,7 +183,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'GIMLi'
-copyright = u'2016 - GIMLi Group'
+copyright = '2016 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -176,47 +198,40 @@ release = release.replace('_', '\\_')
 
 # The language for content autogenerated by Sphinx. Refer to documentation
 # for a list of supported languages.
-#language = None
+# language = None
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
-#today = ''
+# today = ''
 # Else, today_fmt is used as the format for a strftime call.
-#today_fmt = '%B %d, %Y'
+# today_fmt = '%B %d, %Y'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build',
-                    '_sphinx-ext',
-                    '_templates',
-                    'tmp',
-                    'examples',
-                    'tutorials',
-                    'tutorial'
-                    ]
+exclude_patterns = ['_build', '_sphinx-ext', '_templates', 'tmp', 'examples',
+                    'tutorials', 'tutorial']
 
-# The reST default role (used for this markup: `text`) to use for all documents.
-#default_role = None
+# The reST default role (used for this markup: `text`) to use for all documents
+# default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
-#add_function_parentheses = True
+# add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-#add_module_names = True
+# add_module_names = True
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
-#show_authors = False
+# show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'default'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+# modindex_common_prefix = []
 
-
-# -- Options for HTML output ---------------------------------------------------
+# -- Options for HTML output --------------------------------------------------
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = [join(SPHINXDOC_PATH, '_themes')]
@@ -229,8 +244,7 @@ html_theme = 'gimli'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
-
+# html_theme_options = {}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -246,7 +260,7 @@ html_short_title = "GIMLi"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = join(SPHINXDOC_PATH, '_static/G.ico')
+html_favicon = join(SPHINXDOC_PATH, '_static/favicon.ico')
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -255,14 +269,14 @@ html_static_path = [join(SPHINXDOC_PATH, '_static')]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'# + ' with ' + version
+html_last_updated_fmt = '%b %d, %Y'  # + ' with ' + version
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+# html_sidebars = {}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -294,10 +308,10 @@ html_show_copyright = True
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
-#html_use_opensearch = ''
+# html_use_opensearch = ''
 
 # This is the file name suffix for HTML files (e.g. ".xhtml").
-#html_file_suffix = None
+# html_file_suffix = None
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'gimlidoc'
@@ -306,27 +320,26 @@ htmlhelp_basename = 'gimlidoc'
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = join(SPHINXDOC_PATH, "_static/gimli.png")
+latex_logo = join(SPHINXDOC_PATH, "_static/gimli_logo.pdf")
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-#latex_use_parts = False
+# latex_use_parts = False
 
 # If true, show page references after internal links.
 latex_show_pagerefs = True
 
 # If true, show URL addresses after external links.
-#latex_show_urls = False
+# latex_show_urls = False
 
 # Documents to append as an appendix to all manuals.
-#latex_appendices = []
+# latex_appendices = []
 
 # If false, no module index is generated.
-#latex_domain_indices = True
+# latex_domain_indices = True
 
-from os import environ, path
 
-extradir = path.abspath(join(SPHINXDOC_PATH, '_static'))#.replace('\\', '/')
+extradir = path.abspath(join(SPHINXDOC_PATH, '_static'))  # .replace('\\', '/')
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -339,25 +352,22 @@ latex_elements = {
     'preamble':
     '\\usepackage{amsfonts}\n\
     \\usepackage{amssymb}\n\
+    \\usepackage{graphicx}\n\
     \\usepackage{amsmath}\n\
     \\usepackage{bm}\n\
     \\usepackage{pslatex}\n\
     \\graphicspath{{' + SPHINXDOC_PATH + '}}'
 }
 
-# This fixes https://github.com/gimli-org/gimli/issues/11
-import sphinx
 if sphinx.__version__.startswith('1.3'):
     latex_elements['preamble'] += \
-    '\\RequirePackage{fixltx2e}\n\
+        '\\RequirePackage{fixltx2e}\n\
      \\MakeRobust\\DUspan\n'
 
 # Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [('documentation',
-                    'gimli.tex',
-                    'GIMLi Documentation',
-                    'GIMLi Group',
+# (source start file, target name, title, author, documentclass [howto/manual])
+latex_documents = [('documentation', 'gimli.tex', 'GIMLi Documentation',
+                    r'Carsten Rücker, Thomas Günther \& Florian Wagner',
                     'manual')]
 
 try:
@@ -394,101 +404,81 @@ for macro in latex_additional_macros:
     # used when building html version
     pngmath_latex_preamble += macro + '\n'
 
-    mathOperator = re.search(
-        '\\\\DeclareMathOperator{\\\\([A-Za-z]*)}{(.*)}',
-        macro)
+    mathOperator = re.search('\\\\DeclareMathOperator{\\\\([A-Za-z]*)}{(.*)}',
+                             macro)
     if mathOperator:
-        LatexCommandTranslator['mathDictionary'][
-            mathOperator.group(1)] = mathOperator.group(2).replace(
-            "\\",
-            "\\\\")
+        LatexCommandTranslator['mathDictionary'][mathOperator.group(
+            1)] = mathOperator.group(2).replace("\\", "\\\\")
 
     newCommand = re.search('\\\\newcommand{\\\\([A-Za-z]*)}{(.*)}', macro)
     if newCommand:
-        LatexCommandTranslator['commandDictionary'][
-            newCommand.group(1)] = newCommand.group(2).replace(
-            "\\",
-            "\\\\")
+        LatexCommandTranslator['commandDictionary'][newCommand.group(
+            1)] = newCommand.group(2).replace("\\", "\\\\")
     newCommand = re.search('\\\\renewcommand{\\\\([A-Za-z]*)}{(.*)}', macro)
     if newCommand:
-        LatexCommandTranslator['commandDictionary'][
-            newCommand.group(1)] = newCommand.group(2).replace(
-            "\\",
-            "\\\\")
+        LatexCommandTranslator['commandDictionary'][newCommand.group(
+            1)] = newCommand.group(2).replace("\\", "\\\\")
 
-    newCommand = re.search(
-        '\\\\newcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}',
-        macro)
+    newCommand = re.search('\\\\newcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}',
+                           macro)
     if newCommand:
-        LatexCommandTranslator['command1Dictionary'][
-            newCommand.group(1)] = newCommand.group(2).replace(
-            "\\",
-            "\\\\")
-    newCommand = re.search(
-        '\\\\renewcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}',
-        macro)
+        LatexCommandTranslator['command1Dictionary'][newCommand.group(
+            1)] = newCommand.group(2).replace("\\", "\\\\")
+    newCommand = re.search('\\\\renewcommand{\\\\([A-Za-z]*)}\\[1\\]{(.*)}',
+                           macro)
     if newCommand:
-        LatexCommandTranslator['command1Dictionary'][
-            newCommand.group(1)] = newCommand.group(2).replace(
-            "\\",
-            "\\\\")
+        LatexCommandTranslator['command1Dictionary'][newCommand.group(
+            1)] = newCommand.group(2).replace("\\", "\\\\")
 
 latex_additional_macros.close()
 
 plot2rst_commandTranslator = LatexCommandTranslator
 
-
-# -- Options for manual page output --------------------------------------------
+# -- Options for manual page output -------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'GIMLi', 'GIMLi Documentation', ['GIMLi Group'], 1)
-]
+man_pages = [('index', 'GIMLi', 'GIMLi Documentation', ['GIMLi Group'], 1)]
 
 # If true, show URL addresses after external links.
-#man_show_urls = False
+# man_show_urls = False
 
-
-# -- Options for Texinfo output ------------------------------------------------
+# -- Options for Texinfo output -----------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'GIMLi', 'GIMLi Documentation',
-     'GIMLi Group', 'GIMLi',
+    ('index', 'GIMLi', 'GIMLi Documentation', 'GIMLi Group', 'GIMLi',
      'Geophysical Inversion and Modeling Library', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
-#texinfo_appendices = []
+# texinfo_appendices = []
 
 # If false, no module index is generated.
-#texinfo_domain_indices = True
+# texinfo_domain_indices = True
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 texinfo_show_urls = 'footnote'
 
-
-# -- Options for pybtex output -------------------------------------------------
+# -- Options for pybtex output ------------------------------------------------
 # load our plugins for manual bibstyle
-import pkg_resources
+
 
 # temporary disable due to python3 pybtex quirks
-for dist in pkg_resources.find_distributions(SPHINXDOC_PATH + "/_templates/pybtex_plugins/"):
+for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
+                                             "/_templates/pybtex_plugins/"):
     pkg_resources.working_set.add(dist)
 
 # End pybtex stuff
 
-# -- Options for doxylink ------------------------------------------------------
-doxylink = {
-    'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi')
-}
+# -- Options for doxylink -----------------------------------------------------
+doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi')}
 
 # Create small gallery of all tutorials and examples in the sidebar.
 # from pygimli.misc.sidebar_gallery import make_gallery
 sys.path.insert(0, os.path.abspath('.'))
-from sidebar_gallery import make_gallery
+
 
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)

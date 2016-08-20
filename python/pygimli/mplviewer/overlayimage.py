@@ -1,80 +1,80 @@
 # -*- coding: utf-8 -*-
+"""Overlay / Underlay an image or a geo referenced map to mpl.ax."""
 
-"""Overlay / Underlay an image or a geo referenced map to mpl.axes"""
 import os
 
 import math
 import random
-
-import matplotlib.image as mpimg
-import numpy as np
-
 import urllib
+
+import numpy as np
+import matplotlib.image as mpimg
 
 
 class OverlayImageMPL(object):
+    """TODO Documentme."""
 
-    """What is this?"""
-
-    def __init__(self, imageFileName, axes):
-        self.axes = axes
+    def __init__(self, imageFileName, ax):
+        """Constructor."""
+        self.ax = ax
         self.imAxes = None
         self.image = mpimg.open(imageFileName)
-        self.figure = self.axes.get_figure()
+        self.figure = self.ax.get_figure()
+        self.dx = 0
+        self.dy = 0
 
     def clear(self):
-        """What is this?"""
-        if self.imAxes in self.figure.axes:
-            self.figure.delaxes(self.imAxes)
+        """TODO Documentme."""
+        if self.imAxes in self.figure.ax:
+            self.figure.delax(self.imAxes)
 
-    def setPosition(self, posX, posY, axes=None):
-        """What is this?"""
-        if axes is not None:
-            self.axes = axes
+    def setPosition(self, posX, posY, ax=None):
+        """TODO Documentme."""
+        if ax is not None:
+            self.ax = ax
         self.dx = float(self.image.size[0]) / \
             self.figure.get_dpi() / self.figure.get_size_inches()[0]
         self.dy = float(self.image.size[0]) / \
             self.figure.get_dpi() / self.figure.get_size_inches()[1]
 
-        xRange = self.axes.get_xlim()[1] - self.axes.get_xlim()[0]
-        yRange = self.axes.get_ylim()[1] - self.axes.get_ylim()[0]
+        xRange = self.ax.get_xlim()[1] - self.ax.get_xlim()[0]
+        yRange = self.ax.get_ylim()[1] - self.ax.get_ylim()[0]
 
-        x = (posX - self.axes.get_xlim()[0]) / xRange
-        y = (posY - self.axes.get_ylim()[0]) / yRange
+        x = (posX - self.ax.get_xlim()[0]) / xRange
+        y = (posY - self.ax.get_ylim()[0]) / yRange
 
-        x *= (self.axes.get_position().x1 - self.axes.get_position().x0)
-        y *= (self.axes.get_position().y1 - self.axes.get_position().y0)
+        x *= (self.ax.get_position().x1 - self.ax.get_position().x0)
+        y *= (self.ax.get_position().y1 - self.ax.get_position().y0)
 
         # print self.imAxes
-        # print self.figure.axes
-        if self.imAxes not in self.figure.axes:
-            if (x + self.axes.get_position().x0) > 10:
+        # print self.figure.ax
+        if self.imAxes not in self.figure.ax:
+            if (x + self.ax.get_position().x0) > 10:
                 print(("overlay size out of range",
-                       (x + self.axes.get_position().x0)))
+                       (x + self.ax.get_position().x0)))
                 print((posX, posY))
                 print((xRange, yRange))
                 print((x, y))
-                print((self.axes.get_position().x0,
-                       self.axes.get_position().x1))
+                print((self.ax.get_position().x0,
+                       self.ax.get_position().x1))
                 print((self.figure.get_size_inches()))
-                print(("add axes",
-                       [x + self.axes.get_position().x0 - self.dx / 6.0,
-                        y + self.axes.get_position().y0, self.dx, self.dy]))
+                print(("add ax",
+                       [x + self.ax.get_position().x0 - self.dx / 6.0,
+                        y + self.ax.get_position().y0, self.dx, self.dy]))
                 # hackish
                 return
 
-            self.imAxes = self.figure.add_axes([
-                x + self.axes.get_position().x0 - self.dx / 6.0,
-                y + self.axes.get_position().y0,
-                self.dx, self.dy],
-                frameon=False, axisbg='y')
+            self.imAxes = self.figure.add_ax([
+                x + self.ax.get_position().x0 - self.dx / 6.0,
+                y + self.ax.get_position().y0,
+                self.dx, self.dy], frameon=False, axisbg='y')
         else:
             self.imAxes.set_position([
-                x + self.axes.get_position().x0 - self.dx / 6.0,
-                y + self.axes.get_position().y0,
+                x + self.ax.get_position().x0 - self.dx / 6.0,
+                y + self.ax.get_position().y0,
                 self.dx, self.dy])
 
-        if (len(self.imAxes.get_xticks()) > 0):
+        if len(self.imAxes.get_xticks()) > 0:
             print("overlay imshow")
             self.imAxes.imshow(self.image, origin='lower')
             self.imAxes.set_xticks([])
@@ -82,7 +82,7 @@ class OverlayImageMPL(object):
 
 
 def deg2MapTile(lon_deg, lat_deg, zoom):
-    """What is this?"""
+    """TODO Documentme."""
     lat_rad = math.radians(lat_deg)
     n = 2.0 ** zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)
@@ -92,8 +92,7 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
 
 
 def mapTile2deg(xtile, ytile, zoom):
-    """
-    Returns the NW-corner of the square.
+    """Calculate the NW-corner of the square.
 
     Use the function with xtile+1 and/or ytile+1 to get the other corners.
     With xtile+0.5  ytile+0.5 it will return the center of the tile.
@@ -106,7 +105,7 @@ def mapTile2deg(xtile, ytile, zoom):
 
 
 def cacheFileName(fullname, vendor):
-    """ Utility. Createfilename and path to cache download data."""
+    """Createfilename and path to cache download data."""
     (dirName, fileName) = os.path.split(fullname)
 
     path = './' + vendor + '/' + dirName
@@ -120,8 +119,7 @@ def cacheFileName(fullname, vendor):
 
 
 def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
-    """
-    Get a map tile from public mapping server.
+    """Get a map tile from public mapping server.
 
     Parameters
     ----------
@@ -193,14 +191,13 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
 # def getMapTile(...)
 
 
-def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
+def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
                 verbose=False, fitMap=False):
-    """
-    Get a map from public mapping server and underlay it on the given axes
+    """Get a map from public mapping server and underlay it on the given ax.
 
     Parameters
     ----------
-    axes : matplotlib.axes
+    ax : matplotlib.ax
 
     proj : pyproy
 
@@ -224,16 +221,16 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     fitMap : bool
 
-        The axes is resized to fit the whole map.
+        The ax is resized to fit the whole map.
     """
     if pixelLimit is None:
         pixelLimit = [1024, 1024]
 
-    origXLimits = axes.get_xlim()
-    origYLimits = axes.get_ylim()
+    origXLimits = ax.get_xlim()
+    origYLimits = ax.get_ylim()
 
-    ul = proj(axes.get_xlim()[0], axes.get_ylim()[1], inverse=True)
-    lr = proj(axes.get_xlim()[1], axes.get_ylim()[0], inverse=True)
+    ul = proj(ax.get_xlim()[0], ax.get_ylim()[1], inverse=True)
+    lr = proj(ax.get_xlim()[1], ax.get_ylim()[0], inverse=True)
 
     if zoom == -1:
 
@@ -284,8 +281,8 @@ def underlayMap(axes, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     extent = np.asarray([imUL[0], imLR[0], imLR[1], imUL[1]])
 
-    axes.imshow(image, extent=extent)
+    ax.imshow(image, extent=extent)
 
     if not fitMap:
-        axes.set_xlim(origXLimits)
-        axes.set_ylim(origYLimits)
+        ax.set_xlim(origXLimits)
+        ax.set_ylim(origYLimits)

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Plot 3D mesh."""
+
 import sys
 import os
 
@@ -17,10 +19,12 @@ except ImportError:
 
 
 def showMesh3D(mesh, interactive=True):
+    """TODO DOCUMENTME."""
     return globals()[showMesh3DFunct](mesh, interactive)
 
 
 def showMesh3DFallback(mesh, interactive=True):
+    """TODO DOCUMENTME."""
     from mpl_toolkits.mplot3d import Axes3D
     fig = plt.figure()
     ax = Axes3D(fig)
@@ -29,22 +33,20 @@ def showMesh3DFallback(mesh, interactive=True):
         for pos in mesh.positions():
             ax.scatter(pos[0], pos[1], pos[2], 'ko')
             text = ("Proper visualization in 3D requires Mayavi.\n"
-                    """Try 'pip install mayavi' depending on your system.""")
-            ax.set_title(text)
+                    """Try 'pip install mayavi' depending on your system. """)
+            ax.set_title(text + str(interactive))
 
     plt.show()
 
 
 def showMesh3DMayvi(mesh, interactive=True):
-    """
-    Proof of concept for mayavi binding.
+    """Proof of concept for mayavi binding.
 
     Parameters
     ----------
     mesh : pygimli.Mesh
     interactive : bool
     """
-
     # should avoid opening of mayavi window when building documentation
     if not interactive:
         mlab.options.offscreen = True

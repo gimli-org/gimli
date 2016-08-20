@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
+"""Generally mesh generation and maintenance."""
 
-import os
-from math import pi
 import numpy as np
+
 import pygimli as pg
 
-if __name__ != "__main__":
-    from . import polytools as plc
 
-
-def createMesh(poly, quality=30, area=0.0,
-               smooth=None, switches=None,
-               regions=None, holes=None,
-               verbose=False, *args, **kwargs):
-    """
-    Create a mesh for a given geometry polygon.
+def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
+               verbose=False, **kwargs):
+    """Create a mesh for a given geometry polygon.
 
     The mesh is created by :term:`triangle` or :term:`tetgen` if the
     gimli support for these mesh generators are installed.
@@ -23,7 +17,6 @@ def createMesh(poly, quality=30, area=0.0,
 
     If poly is a list of coordinates a simple Delaunay mesh of the convex hull
     will be created.
-
     TODO: Tetgen support need to be implemented
 
     Parameters
@@ -51,20 +44,20 @@ def createMesh(poly, quality=30, area=0.0,
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
     """
-
-#    poly == [pg.Mesh, ]
+    #  poly == [pg.Mesh, ]
     if isinstance(poly, list):
         if isinstance(poly[0], pg.Mesh):
-            return createMesh(plc.mergePLC(poly),
-                              quality, area, smooth, switches, verbose)
-#    poly == [pos, pos, ]
+            return createMesh(
+                pg.meshtools.mergePLC(poly), quality, area, smooth, switches,
+                verbose)
+    # poly == [pos, pos, ]
     if isinstance(poly, list) or isinstance(poly, type(zip)):
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
         return createMesh(delPLC, switches='-zeY')
 
-#    poly == Mesh
+    # poly == Mesh
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
             raise Exception("No nodes in poly to create a valid mesh")
@@ -92,13 +85,12 @@ def createMesh(poly, quality=30, area=0.0,
 
         if smooth is not None:
             mesh.smooth(nodeMoving=kwargs.pop('node_move', False),
-                        edgeSwapping=False,
-                        smoothFunction=smooth[0],
+                        edgeSwapping=False, smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
         return mesh
 
     else:
-        raise('not yet implemented')
+        raise Exception('not yet implemented')
 
 
 def refineQuad2Tri(mesh, style=1):
@@ -130,33 +122,29 @@ def refineQuad2Tri(mesh, style=1):
     for c in mesh.cells():
 
         if style == 1:
-            out.createCell([c.node(0).id(),
-                            c.node(1).id(),
-                            c.node(2).id()])
-            out.createCell([c.node(0).id(),
-                            c.node(2).id(),
-                            c.node(3).id()])
+            out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()])
+            out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()])
 
         elif style == 2:
             newNode = out.createNodeWithCheck(c.center())
 
             for i in range(4):
-                out.createCell([c.node(i).id(),
-                                c.node((i+1)%4).id(),
+                out.createCell([c.node(i).id(), c.node((i + 1) % 4).id(),
                                 newNode.id()])
 
         for i in range(c.boundaryCount()):
             b = c.boundary(i)
             if b.marker() != 0:
-                out.createBoundary([b.node(0).id(), b.node(1).id()], b.marker())
+                out.createBoundary([b.node(0).id(), b.node(1).id()],
+                                   b.marker())
 
     out.createNeighbourInfos()
 
     return out
 
+
 def readGmsh(fname, verbose=False):
-    """
-    Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
+    r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 
     Parameters
     ----------
@@ -248,15 +236,15 @@ def readGmsh(fname, verbose=False):
                     points, lines, triangles, tets = [], [], [], []
 
                 else:
-                    entry = list(map(int, line.split()))[1:]
+                    entry = [int(e_) for e_ in line.split()][1:]
 
                     if entry[0] == 15:
                         points.append((entry[-2], entry[-3]))
                     elif entry[0] == 1:
                         lines.append((entry[-2], entry[-1], entry[2]))
                     elif entry[0] == 2:
-                        triangles.append((entry[-3], entry[-2],
-                                          entry[-1], entry[2]))
+                        triangles.append((entry[-3], entry[-2], entry[-1],
+                                          entry[2]))
                     elif entry[0] == 4:
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
@@ -299,8 +287,8 @@ def readGmsh(fname, verbose=False):
 
         if verbose:
             bound_types = np.unique(bounds[:, dim])
-            print('  Boundary types: %s ' % len(bound_types) +
-                str(tuple(bound_types)))
+            print('  Boundary types: %s ' % len(bound_types) + str(tuple(
+                bound_types)))
     else:
         if verbose:
             print("WARNING: No boundary conditions found.")
@@ -323,8 +311,7 @@ def readGmsh(fname, verbose=False):
         else:
             mesh.createTetrahedron(
                 mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
-                mesh.node(int(cell[2] - 1)), mesh.node(
-                    int(cell[3] - 1)),
+                mesh.node(int(cell[2] - 1)), mesh.node(int(cell[3] - 1)),
                 marker=int(cell[4]))
 
     mesh.createNeighbourInfos()
@@ -332,8 +319,7 @@ def readGmsh(fname, verbose=False):
     for bound in bounds:
         if dim == 2:
             mesh.createEdge(
-                mesh.node(int(bound[0] - 1)),
-                mesh.node(int(bound[1] - 1)),
+                mesh.node(int(bound[0] - 1)), mesh.node(int(bound[1] - 1)),
                 marker=int(bound[2]))
         else:
             mesh.createTriangleFace(
@@ -357,8 +343,7 @@ def readGmsh(fname, verbose=False):
 
 
 def readTriangle(fname, verbose=False):
-    """
-    Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
+    r"""Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
 
     Read :term:`Triangle` :cite:`Shewchuk96b` ASCII mesh files and return an
     instance of GIMLI::Mesh class.
@@ -373,15 +358,13 @@ def readTriangle(fname, verbose=False):
         Be verbose during import.
 
     """
-
-    raise("implement me!")
-    os.system('meshconvert -d2 ' + fname)
-    return pg.Mesh(2)
+    raise Exception("implement me!" + fname + str(verbose))
+    # os.system('meshconvert -d2 ' + fname)
+    # return pg.Mesh(2)
 
 
 def readTetgen(fname, verbose=False):
-    """
-    Read :term:`Tetgen` :cite:`Si2004` mesh.
+    r"""Read :term:`Tetgen` :cite:`Si2004` mesh.
 
     Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
     of GIMLI::Mesh class.
@@ -396,9 +379,9 @@ def readTetgen(fname, verbose=False):
         Be verbose during import.
 
     """
-    raise("implement me!")
-    os.system('meshconvert -d3 -D ..' + fname)
-    return pg.Mesh(3)
+    raise Exception("implement me!" + fname + str(verbose))
+    # os.system('meshconvert -d3 -D ..' + fname)
+    # return pg.Mesh(3)
 
 
 def readHydrus2dMesh(fname='MESHTRIA.TXT'):
@@ -416,29 +399,27 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
 
     References
     ----------
-    .. [1] http://www.pc-progress.com/en/Default.aspx?h3d-description
+    .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
     fid = open(fname)
     line = fid.readline().split()
     nnodes = int(line[1])
     ncells = int(line[3])
     mesh = pg.Mesh()
-    for i in range(nnodes):
+    for _ in range(nnodes):
         line = fid.readline().split()
-        mesh.createNode(
-            pg.RVector3(float(line[1]) / 100., float(line[2]) / 100., 0.))
+        mesh.createNode(pg.RVector3(
+            float(line[1]) / 100., float(line[2]) / 100., 0.))
 
-    for i in range(3):
+    for _ in range(3):
         line = fid.readline()
 
-    for i in range(ncells):
+    for _ in range(ncells):
         line = fid.readline().split()
         if len(line) == 4:
             mesh.createTriangle(
-                mesh.node(int(line[1]) - 1),
-                mesh.node(int(line[2]) - 1),
-                mesh.node(int(line[3]) - 1),
-                1)
+                mesh.node(int(line[1]) - 1), mesh.node(int(line[2]) - 1),
+                mesh.node(int(line[3]) - 1), 1)
         elif len(line) == 5:
             mesh.createTetrahedron(
                 mesh.node(int(line[1]) - 1), mesh.node(int(line[2]) - 1),
@@ -450,8 +431,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
 
 
 def readHydrus3dMesh(filename='MESHTRIA.TXT'):
-    """
-    Import mesh from Hydrus3D.
+    """Import mesh from Hydrus3D.
 
     Parameters
     ----------
@@ -464,7 +444,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
     References
     ----------
-    .. [1] http://www.pc-progress.com/en/Default.aspx?h3d-description
+    .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
     f = open(filename, 'r')
     for i in range(6):
@@ -472,31 +452,27 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
     nnodes = int(line1.split()[0])
     ncells = int(line1.split()[1])
-    print(nnodes, ncells)
+    # print(nnodes, ncells)
+
     line1 = f.readline()
     nodes = []
     dx = 0.01
     mesh = pg.Mesh()
-    for ni in range(nnodes):
+    for _ in range(nnodes):
         pos = f.readline().split()
         p = pg.RVector3(
-            float(pos[1]) * dx,
-            float(pos[2]) * dx,
-            float(pos[3]) * dx * (-1.))
+            float(pos[1]) * dx, float(pos[2]) * dx, float(pos[3]) * dx * (-1.))
         n = mesh.createNode(p)
         nodes.append(n)
 
     line1 = f.readline()
     line1 = f.readline()
     cells = []
-    for ci in range(ncells):
+    for _ in range(ncells):
         pos = f.readline().split()
         i, j, k, l = int(pos[1]), int(pos[2]), int(pos[3]), int(pos[4]),
-        c = mesh.createTetrahedron(
-            nodes[i - 1],
-            nodes[j - 1],
-            nodes[k - 1],
-            nodes[l - 1])
+        c = mesh.createTetrahedron(nodes[i - 1], nodes[j - 1], nodes[k - 1],
+                                   nodes[l - 1])
         cells.append(c)
 
     f.close()
@@ -505,8 +481,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
 
 
 def readGambitNeutral(filename, verbose=False):
-    """
-    Import Gambit Neutral meshes *.neu
+    r"""Import Gambit Neutral meshes *.neu.
 
     See. https://www.sharcnet.ca/Software/Gambit/html/users_guide/ug01.htm
 
@@ -520,7 +495,6 @@ def readGambitNeutral(filename, verbose=False):
 
     verbose : boolean, optional
         Be verbose during import.
-
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -529,28 +503,32 @@ def readGambitNeutral(filename, verbose=False):
     mesh = pg.Mesh(2)
 
     for i, line in enumerate(content):
-        if 'ENDOFSECTION' in line: break
+        if 'ENDOFSECTION' in line:
+            break
 
-    try:
-        nVerts = int(content[i-1].split()[0])
-        nElements = int(content[i-1].split()[1])
-    except:
-        raise BaseException("Cannot interpret GAMBIT Neutral header: " + content[0:i])
+        try:
+            nVerts = int(content[i - 1].split()[0])
+            nElements = int(content[i - 1].split()[1])
+        except:
+            raise Exception("Cannot interpret GAMBIT Neutral header: " +
+                            content[0:i])
 
     for i, line in enumerate(content):
-        if 'NODAL COORDINATES' in line: break
+        if 'NODAL COORDINATES' in line:
+            break
     for j in range(nVerts):
-        vertx = float(content[i+j+1].split()[1])
-        verty = float(content[i+j+1].split()[2])
+        vertx = float(content[i + j + 1].split()[1])
+        verty = float(content[i + j + 1].split()[2])
         mesh.createNode((vertx, verty))
 
     for i, line in enumerate(content):
-        if 'ELEMENTS/CELLS' in line: break
+        if 'ELEMENTS/CELLS' in line:
+            break
     for j in range(nElements):
-        nNodes = int(content[i+j+1].split()[1])
+        nNodes = int(content[i + j + 1].split()[1])
         nodes = []
         for k in range(nNodes):
-            nodes.append(int(content[i+1+j].split()[3 + k])-1)
+            nodes.append(int(content[i + 1 + j].split()[3 + k]) - 1)
         mesh.createCell(nodes)
 
     if verbose:
@@ -561,7 +539,8 @@ def readGambitNeutral(filename, verbose=False):
 
 
 def transform2DMeshTo3D(mesh, x, y, z=None):
-    """
+    """2D mesh into 3D coordinates.
+
     Transform a 2D mesh into 3D coordinates using a point list (e.g. from GPS)
 
     Parameters
@@ -580,7 +559,6 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
     References
     ----------
     """
-
     # get mesh node positions
     mt, mz = pg.x(mesh.positions()), pg.y(mesh.positions())  # mesh tape and z
     # compute length of reference points along tape
@@ -600,15 +578,14 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
 
 
 def rot2DGridToWorld(mesh, start, end):
-    """
-    ..
+    """Rotate a 2D mesh into 3D world coordinates.
 
     todo:: Complete Documentation. ...rotate a given 2D grid in...
     """
     mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0),
-                                          pg.RVector3(10.0, 0.0, -10.0))
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(
+        pg.RVector3(0.0, 0.0, -10.0), pg.RVector3(10.0, 0.0, -10.0))
     dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 
     q = pg.getRotation(src, dest)
@@ -620,7 +597,6 @@ def rot2DGridToWorld(mesh, start, end):
 
 def merge2Meshes(m1, m2):
     """Merge two meshes into one new mesh and return combined mesh."""
-
     mesh = pg.Mesh(m1)
 
     for c in m2.cells():
@@ -633,17 +609,16 @@ def merge2Meshes(m1, m2):
         d = mesh.exportDataMap()[key]
         d.resize(mesh.cellCount())
         d.setVal(m1.exportDataMap()[key], 0, m1.cellCount())
-        d.setVal(
-            m2.exportDataMap()[key],
-            m1.cellCount(),
-            m1.cellCount() + m2.cellCount())
+        d.setVal(m2.exportDataMap()[key], m1.cellCount(),
+                 m1.cellCount() + m2.cellCount())
         mesh.addExportData(key, d)
 
     return mesh
 
 
 def mergeMeshes(meshlist):
-    """
+    """Merge several meshes into one new mesh and return the new mesh.
+
     Merge several meshes into one new mesh and return the new mesh.
 
     Parameters
@@ -655,12 +630,11 @@ def mergeMeshes(meshlist):
     --------
     merge2Meshes
     """
-
     if not isinstance(meshlist, list):
-        raise "argument meshlist is no list"
+        raise Exception("argument meshlist is no list")
 
     if len(meshlist) < 2:
-        raise "to few meshes in meshlist"
+        raise Exception("to few meshes in meshlist")
 
     mesh = meshlist[0]
 
@@ -670,168 +644,10 @@ def mergeMeshes(meshlist):
     return mesh
 
 
-def createParaDomain2D(*args, **kwargs):
-    """
-        API change here .. use createParaMeshPLC instead
-    """
-    print("createParaDomain2D: API change: use createParaMeshPLC instead")
-    return createParaMeshPLC(*args, **kwargs)
-
-
-def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
-                      paraBoundary=2, paraMaxCellSize=0, boundary=-1,
-                      boundaryMaxCellSize=0,
-                      verbose=False, *args, **kwargs):
-    """
-    Create a PLC mesh for an inversion parameter mesh.
-
-    Create a PLC mesh for an inversion parameter mesh for a given list of
-    sensor positions.
-    Sensor position assumed on the surface and must be sorted and unique.
-
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
-    two region markers, one for the parameters domain (marker=2) and
-    a larger boundary around the outside (marker=1)
-
-    TODO:
-
-        * closed domains (boundary == 0)
-        * additional topopoints
-        * spline interpolations between sensorpoints or addpoints
-        * subsurface sensors
-
-    Parameters
-    ----------
-    sensors : list of RVector3 objects | DataContainer with sensorPositions()
-        Sensor positions. Must be sorted and unique in positive x direction.
-        Depth need to be y-coordinate.
-    paraDX : float [1]
-        Relativ distance for refinement nodes between two electrodes (1=none),
-        e.g., 0.5 means 1 additional node between two neighboring electrodes
-        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
-    paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
-        sensor range.
-    paraBoundary : float, optional
-        Margin for parameter domain in absolute sensor distances. 2 (default).
-    paraMaxCellSize: double, optional
-        Maximum size for parametric size in m*m
-    boundaryMaxCellSize: double, optional
-        Maximum cells size in the boundary region in m*m
-    boundary : float, optional
-        Boundary width to be appended for domain prolongation in absolute
-        para domain width.
-        Values lover 0 force the boundary to be 4 times para domain width.
-
-    Returns
-    -------
-    poly: :gimliapi:`GIMLI::Mesh`
-        piecewise linear complex (PLC) containing nodes and edges
-    """
-
-    if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
-        sensors = sensors.sensorPositions()
-    elif type(sensors) == np.ndarray:
-        sensors = [pg.RVector3(s) for s in sensors]
-
-
-    eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
-
-    iz = 1
-    xmin, ymin, zmin = sensors[0][0], sensors[0][1], sensors[0][2]
-    xmax, ymax, zmax = xmin, ymin, zmin
-    for e in sensors:
-        xmin = min(xmin, e[0])
-        xmax = max(xmax, e[0])
-        ymin = min(ymin, e[1])
-        ymax = max(ymax, e[1])
-        zmin = min(zmin, e[2])
-        zmax = max(zmax, e[2])
-
-    if abs(ymin) < 1e-8 and abs(ymax) < 1e-8:
-        iz = 2
-
-    paraBound = eSpacing * paraBoundary
-
-    if paraDepth == 0:
-        paraDepth = 0.4 * (xmax - xmin)
-
-    poly = pg.Mesh(2)
-    # define para domain without surface
-    n1 = poly.createNode([xmin - paraBoundary, sensors[0][iz]])
-    n2 = poly.createNode([xmin - paraBoundary, sensors[0][iz] - paraDepth])
-    n3 = poly.createNode([xmax + paraBoundary, sensors[-1][iz] - paraDepth])
-    n4 = poly.createNode([xmax + paraBoundary, sensors[-1][iz]])
-
-    if boundary < 0:
-        boundary = 4
-
-    bound = abs(xmax - xmin) * boundary
-    if bound > paraBound:
-        # define world without surface
-        n11 = poly.createNode(n1.pos() - [bound, 0.])
-        n12 = poly.createNode(n11.pos() - [0., bound + paraDepth])
-        n14 = poly.createNode(n4.pos() + [bound, 0.])
-        n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
-
-        poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1, boundaryMaxCellSize)
-
-    poly.createEdge(n1, n2, 1)
-    poly.createEdge(n2, n3, 1)
-    poly.createEdge(n3, n4, 1)
-    poly.addRegionMarker(n2.pos() + [1e-3, 1e-3], 2, paraMaxCellSize)
-
-    # define surface
-    nSurface = []
-    nSurface.append(n1)
-    for i, e in enumerate(sensors):
-        if iz == 2:
-            e.rotateX(-pi/2)
-        if paraDX >= 0.5:
-            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors) - 1):
-                e1 = sensors[i + 1]
-                if iz == 2:
-                    e1.rotateX(-pi/2)
-                nSurface.append(poly.createNode((e + e1) * 0.5))
-            # print("Surface add ", e, el, nSurface[-2].pos(),
-            #        nSurface[-1].pos())
-        elif paraDX < 0.5:
-            if (i > 0):
-                e1 = sensors[i - 1]
-                if iz == 2:
-                    e1.rotateX(-pi/2)
-                nSurface.append(
-                    poly.createNode(e - (e - e1) * paraDX))
-            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if (i < len(sensors) - 1):
-                e1 = sensors[i + 1]
-                if iz == 2:
-                    e1.rotateX(-pi/2)
-                nSurface.append(
-                    poly.createNode(e + (e1 - e) * paraDX))
-            # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
-            #        nSurface[-1].pos())
-    nSurface.append(n4)
-
-    for i in range(len(nSurface) - 1, 0, -1):
-        poly.createEdge(nSurface[i], nSurface[i - 1],
-                        pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-
-#     for n in poly.nodes():
-#        print(n.pos())
-#    sys.exit()
-    return poly
-
-
 def createParaMesh(*args, **kwargs):
-    """
-    create parameter mesh from list of sensor positions
+    """Create parameter mesh from list of sensor positions.
+
+    Create parameter mesh from list of sensor positions.
 
     Parameters
     ----------
@@ -861,7 +677,7 @@ def createParaMesh(*args, **kwargs):
     poly: :gimliapi:`GIMLI::Mesh`
 
     """
-    plc = createParaMeshPLC(*args, **kwargs)
+    plc = pg.meshtools.createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
     kwargs.pop('boundaryMaxCellSize', 0)
     mesh = createMesh(plc, **kwargs)
@@ -869,20 +685,19 @@ def createParaMesh(*args, **kwargs):
 
 
 def createParaMesh2dGrid(*args, **kwargs):
-    """
-        API change here .. use createParaMesh2DGrid instead
-    """
+    """API change here .. use createParaMesh2DGrid instead."""
     print("createParaMesh2dGrid: API change: pls use createParaMesh2DGrid")
     return createParaMesh2DGrid(*args, **kwargs)
 
 
 def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
-                         boundary=-1, paraBoundary=2, verbose=False,
-                         **kwargs):
-    """
-    Create a grid style mesh for an inversion parameter mesh.
+                         boundary=-1, paraBoundary=2, **kwargs):
+    """Create a grid style mesh for an inversion parameter mesh.
 
+    Create a grid style mesh for an inversion parameter mesh.
     Return parameter grid for a given list of sensor positions.
+    Uses and forwards arguments to
+    :py:mod:`pygimli.meshtools.appendTriangleBoundary`.
 
     Parameters
     ----------
@@ -905,8 +720,6 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         Values lower than 0 force the boundary to be 4 times para domain width.
     paraBoundary : int, optional [2]
         Offset to the parameter domain boundary in absolute sensor spacing.
-    verbose : boolean, optional
-        Be verbose.
 
     Returns
     -------
@@ -925,7 +738,6 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> ax, _ = pg.show(mesh, axes=ax)
     >>> plt.show()
     """
-
     mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort
@@ -955,21 +767,19 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     y = -pg.increasingRange(dz, paraDepth, nLayers)
 
     mesh.createGrid(x, y)
-
-    list(map(lambda cell: cell.setMarker(2), mesh.cells()))
+    mesh.setCellMarkers([2] * mesh.cellCount())
 
     paraXLimits = [xmin, xmax]
-#    paraYLimits = [min(y), max(y)]  # not used
+    #    paraYLimits = [min(y), max(y)]  # not used
 
     if boundary < 0:
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
-    mesh = pg.meshtools.appendTriangleBoundary(mesh,
-                                               xbound=boundary,
-                                               ybound=boundary,
-                                               marker=1, **kwargs)
+    mesh = pg.meshtools.appendTriangleBoundary(
+        mesh, xbound=boundary, ybound=boundary, marker=1, **kwargs)
 
     return mesh
+
 
 if __name__ == "__main__":
     pass

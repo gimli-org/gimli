@@ -77,21 +77,89 @@ To produce a new version, type:
 
 .. code-block:: bash
 
-   git tag -a -m "First official release" "v1.0" # tags last commit as v1.0
-   git push --tags # pushes tags to GitHub
+    git tag -a -m "First official release" "v1.0" # tags last commit as v1.0
+    git push --tags # pushes tags to GitHub
 
 
 Read api documentation from shell:
 
 .. code-block:: bash
 
-    python -c "import pygimli as pg; help(pg.test)
+  python -c "import pygimli as pg; help(pg.test)
+
+Coding rules
+------------
+
+* All names should be literally and in CamelShape style.
+
+* Classes starts with Upper Case Letter.
+
+* Members and Methods allways starts with Lower Case Letter.
+
+* All class member (self.member) need to be initialized in the Constructor.
+
+* (ugly²) Do not use multi initialize in one line, e.g., a, b, c = 0, 0, 0
+
+Function behaviour by name:
+...........................
+
+.. code-block:: python
+
+  createFOO(...)
+
+Allways needs to return an instance of FOO.
+
+.. code-block:: python
+
+  showFOO(Bar, ...)
+
+Allways opens a window or optionaly use a given Axes to show us Bar as Foo.
+
+.. code-block:: python
+
+  drawFOO(ax, Bar...)
+
+Allways need an Axes ax and draws Bar as Foo in this Axes
+
+Use pylint or prospector to improve code quality.
+
+.. _sec:coding_guidelines:
+
+Coding Guidelines
+-----------------
+
+We use: (You can find exceptions in .landscape.yml)
+
+* pep8
+* pep257
+* pylint
+* pyflakes
+
+.. _sec:testing:
+
+Testing
+-------
 
 Run api examples from shell:
 
 .. code-block:: bash
 
-    python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle)"
+  python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle)"
 
+Run a specific test from shell.
 
+.. code-block:: bash
 
+  python -c "import pygimli; from pygimli.physics.petro.resistivity import *; test_Archie()"
+
+Run pylint from shell to check code:
+
+.. code-block:: bash
+
+    pylint --rcfile $GIMLIROOT/.pylintrc file.py
+
+Run prospector to check code like landscape.io do:
+
+.. code-block:: bash
+
+    prospector --profile=$GIMLIROOT/.prospector.yml file.py

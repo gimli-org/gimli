@@ -66,33 +66,33 @@ ModellingBase::~ModellingBase() {
 void ModellingBase::init_() {
     regionManager_      = new RegionManager(verbose_);
     regionManagerInUse_ = false;
-    
+
     mesh_               = 0;
     jacobian_           = 0;
     constraints_        = 0;
     dataContainer_      = 0;
-    
+
     nThreads_           = numberOfCPU();
     nThreadsJacobian_   = 1;
-    
+
     ownJacobian_        = false;
     ownConstraints_     = false;
     ownRegionManager_   = true;
-    
+
     initJacobian();
     initConstraints();
 }
-  
+
 void ModellingBase::setVerbose(bool verbose) {
     regionManager_->setVerbose(verbose);
     verbose_=verbose;
 }
-  
-void ModellingBase::setThreadCount(Index nThreads) { 
-    nThreads_=max(1, (int)nThreads); 
+
+void ModellingBase::setThreadCount(Index nThreads) {
+    nThreads_=max(1, (int)nThreads);
     GIMLI::setThreadCount(nThreads);
 }
-  
+
 void ModellingBase::setData(DataContainer & data){
     //if (dataContainer_) {
     dataContainer_ = &data;
@@ -108,14 +108,14 @@ DataContainer & ModellingBase::data() const{
     }
     return * dataContainer_;
 }
-    
+
 RVector ModellingBase::startModel() {
     //*! Create startmodel from default builder (abstract may be overloaded)
     //*! Create startmodel from regionManger
     if (startModel_.size() == 0 && regionManager_){
         setStartModel(regionManager_->createStartVector());
     }
-    
+
     if (startModel_.size() == 0){
         setStartModel(createDefaultStartModel());
     }
@@ -127,9 +127,9 @@ RVector ModellingBase::startModel() {
 }
 
 void ModellingBase::setStartModel(const RVector & startModel){
-    startModel_=startModel; 
+    startModel_=startModel;
 }
-        
+
 void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
     this->initRegionManager();
 
@@ -147,12 +147,12 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
         throwError(1, "Cannot create a refined forward mesh since I have none.");
     }
 }
- 
+
 void ModellingBase::setRefinedMesh(const Mesh & mesh){
     setMesh(mesh, true);
     DEPRECATED
-    __MS("use setMesh(mesh, false)")
-    
+    __MS("use setMesh(mesh, true)")
+
 //     if (verbose_) {
 //         std::cout << "set external secondary mesh:" << std::endl;
 //     }
@@ -160,14 +160,14 @@ void ModellingBase::setRefinedMesh(const Mesh & mesh){
 //     if (verbose_) {
 //         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
 //         IVector m(unique(sort(mesh_->cellMarkers())));
-//         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]  
+//         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]
 //          << ", ... ,  " << m[-1] << "]" << std::endl;
 //     }
 }
- 
+
 void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
     Stopwatch swatch(true);
-    if (regionManagerInUse_ && !ignoreRegionManager){ 
+    if (regionManagerInUse_ && !ignoreRegionManager){
         // && holdRegionInfos e.g., just give it a try to ignore the regionmanager if necessary
         regionManager_->setMesh(mesh);//#, ignoreRegionManger);
         if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
@@ -180,7 +180,7 @@ void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
 
     if (verbose_) std::cout << "FOP updating mesh dependencies ... ";
     startModel_.clear();
-        
+
     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
 }
 
@@ -196,7 +196,7 @@ void ModellingBase::deleteMesh(){
     if (mesh_) delete mesh_;
     mesh_ = 0;
 }
-    
+
 void ModellingBase::initJacobian(){
     if (!jacobian_){
         jacobian_ = new RMatrix();
@@ -218,15 +218,15 @@ void ModellingBase::setMultiThreadJacobian(Index nThreads){
 
 class JacobianBaseMT : public GIMLI::BaseCalcMT{
 public:
-    JacobianBaseMT(MatrixBase * J, 
-                   const ModellingBase & fop, 
-                   const RVector & resp, 
-                   const RVector & model, 
+    JacobianBaseMT(MatrixBase * J,
+                   const ModellingBase & fop,
+                   const RVector & resp,
+                   const RVector & model,
                    Index count,
                    bool verbose)
-    : BaseCalcMT(count, verbose), J_(J), fop_(&fop), resp_(&resp), 
+    : BaseCalcMT(count, verbose), J_(J), fop_(&fop), resp_(&resp),
     model_(&model) {
-        
+
     }
 
     virtual ~JacobianBaseMT(){}
@@ -237,7 +237,7 @@ public:
         __MS(tNr)
         fop_->response_mt(modelChange, tNr);
 //         RVector respChange();
-                    
+
         //J_->setCol(tNr, (respChange - *resp_)/(modelChange[tNr] - (*model_)[tNr]));
     }
 
@@ -249,29 +249,29 @@ protected:
 };
 
 
-void ModellingBase::createJacobian_mt(const RVector & model, 
+void ModellingBase::createJacobian_mt(const RVector & model,
                                       const RVector & resp){
     THROW_TO_IMPL
     if (verbose_) std::cout << "Create Jacobian matrix (brute force, mt) ...";
 
     Stopwatch swatch(true);
     double fak = 1.05;
-    
+
     if (!jacobian_){
         this->initJacobian();
     }
     RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
     if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
 
-    
-    ALLOW_PYTHON_THREADS   
+
+    ALLOW_PYTHON_THREADS
     distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, 0, verbose_),
                    jacobian_->rows(), nThreadsJacobian_, verbose_);
     swatch.stop();
     if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
 }
-    
-void ModellingBase::createJacobian(const RVector & model, 
+
+void ModellingBase::createJacobian(const RVector & model,
                                    const RVector & resp){
     if (verbose_) std::cout << "Create Jacobian matrix (brute force) ...";
 
@@ -283,11 +283,11 @@ void ModellingBase::createJacobian(const RVector & model,
     }
     RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
     if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
-    
+
     for (size_t i = 0; i < model.size(); i++) {
         RVector modelChange(model);
         modelChange[i] *= fak;
-        
+
         RVector respChange(response(modelChange));
 
         if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
@@ -295,9 +295,9 @@ void ModellingBase::createJacobian(const RVector & model,
         } else {
             J->setCol(i, RVector(resp.size(), 0.0));
         }
-        
+
 //         __MS(i << " " << min(J->col(i)) << " " << max(J->col(i)))
-        
+
 //         for (size_t j = 0; j < resp.size(); j++){
 //             if (::fabs(modelChange[i] - model[i]) > TOLERANCE){
 //                 (*J)[j][i] = (respChange[j] - resp[j]) / (modelChange[i] - model[i]);
@@ -306,11 +306,11 @@ void ModellingBase::createJacobian(const RVector & model,
 //             }
 //         }
     }
-        
+
     swatch.stop();
     if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
 }
-    
+
 void ModellingBase::createJacobian(const RVector & model){
     RVector resp;
     if (nThreadsJacobian_ > 1){
@@ -318,7 +318,7 @@ void ModellingBase::createJacobian(const RVector & model){
     } else {
         resp = response(model);
     }
-    
+
     if (!jacobian_){
         this->initJacobian();
     }
@@ -331,12 +331,12 @@ void ModellingBase::createJacobian(const RVector & model){
         return createJacobian(model, resp);
     }
 }
-    
+
 void ModellingBase::initConstraints(){
     if (constraints_ == 0){
         constraints_ = new RSparseMapMatrix(0, 0, 0);
         ownConstraints_ = true;
-    } 
+    }
 }
 
 void ModellingBase::setConstraints(MatrixBase * C){
@@ -351,32 +351,32 @@ void ModellingBase::createConstraints(){
 //     __MS(constraints_->rtti())
     this->regionManager().fillConstraints(constraintsRef());
 }
-    
+
 void ModellingBase::clearConstraints(){
     if (constraints_) constraints_->clear();
 }
-    
-MatrixBase * ModellingBase::constraints() { 
+
+MatrixBase * ModellingBase::constraints() {
     return constraints_;
 }
-    
-MatrixBase * ModellingBase::constraints() const { 
+
+MatrixBase * ModellingBase::constraints() const {
     return constraints_;
 }
-    
-RSparseMapMatrix & ModellingBase::constraintsRef() const { 
+
+RSparseMapMatrix & ModellingBase::constraintsRef() const {
     if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
-    return *dynamic_cast < RSparseMapMatrix *>(constraints_); 
+    return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
-    
-RSparseMapMatrix & ModellingBase::constraintsRef() { 
+
+RSparseMapMatrix & ModellingBase::constraintsRef() {
     if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
-    return *dynamic_cast < RSparseMapMatrix *>(constraints_); 
+    return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
-        
+
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const{
     if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
-    
+
     if (model.size() == mesh_->cellCount()) return model;
 //     __M
 //     mesh_->exportVTK("premap");
@@ -405,13 +405,13 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
 
         } else {
             // general background without fixed values, fixed values will be set at the end
-            if (marker == -1) { 
+            if (marker == -1) {
                 cellAtts[i] = 0.0;
                 emptyList.push_back(&mesh_->cell(i));
             }
         }
     }
-    
+
         // if background == 0.0 .. empty cells are allowed
     if (emptyList.size() == mesh_->cellCount() && background != 0.0){
         throwLengthError(1, WHERE_AM_I + " too many empty cells" + toStr(emptyList.size())
@@ -425,7 +425,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
     // setting fixed values
     if (regionManagerInUse_){
         for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
-            // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation 
+            // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation
                 if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
                     SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
                     double val = regionManager_->region(regionMarker)->fixValue();
@@ -435,19 +435,19 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
             // }
         }
     }
-    
+
 //     mesh_->exportVTK("postmap", cellAtts);
     return cellAtts;
 }
-    
+
 void ModellingBase::mapModel(const RVector & model, double background){
     // implement "readonly version"!!!!!!!!!!!
     mesh_->setCellAttributes(createMappedModel(model, background));
 
     return;
-    
+
     mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
-    
+
     int marker = -1;
     std::vector< Cell * > emptyList;
     mesh_->createNeighbourInfos();
@@ -471,7 +471,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
 
         } else {
             // general background without fixed values, fixed values will be set at the end
-            if (marker == -1) { 
+            if (marker == -1) {
                 mesh_->cell(i).setAttribute(0.0);
                 emptyList.push_back(&mesh_->cell(i));
             }
@@ -487,7 +487,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
     if (background != 0.0){
         mesh_->fillEmptyCells(emptyList, background);
     }
-    
+
     // setting fixed values
     if (regionManagerInUse_){
         for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
@@ -502,7 +502,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
         }
     }
 }
-   
+
 void ModellingBase::initRegionManager() {
     if (!regionManagerInUse_){
         if (mesh_){
@@ -513,13 +513,13 @@ void ModellingBase::initRegionManager() {
     }
 }
 
-void ModellingBase::setRegionManager(RegionManager * reg){ 
+void ModellingBase::setRegionManager(RegionManager * reg){
     if (reg){
         regionManagerInUse_ = true;
         delete regionManager_;
-        regionManager_ = reg; 
+        regionManager_ = reg;
         ownRegionManager_ = false;
-        
+
     } else {
         regionManagerInUse_ = false;
         regionManager_      = new RegionManager(verbose_);
@@ -565,4 +565,3 @@ RVector LinearModelling::createDefaultStartModel() {
 }
 
 } // namespace GIMLI
-

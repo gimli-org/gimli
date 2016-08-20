@@ -12,14 +12,17 @@ SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 TRIANGLE_URL=http://www.netlib.org/voronoi/
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
-CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #current functional .. later is broken
+CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
+#CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
-PYGCCXML_REV=6c6e6e038f24cf4accd94a11dabe74e8303e383d # current functional
-PYGCCXML_RV=v1.7.3
+PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
+#PYGCCXML_REV=6c6e6e038f24cf4accd94a11dabe74e8303e383d # last functional
+#PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-PYPLUSPLUS_REV=cfd47042f7a3
+PYPLUSPLUS_REV=2c6c05b7a7d2  # current functional
+#PYPLUSPLUS_REV=cfd47042f7a3 # last functional
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -427,8 +430,8 @@ buildCASTXML(){
 
                 sed -i 's/if(DEFINED LLVM_BUILD_BINARY_DIR)/if(DEFINED LLVM_BUILD_BINARY_DIR_)/' $CASTXML_SRC/CMakeLists.txt
 
-                #-DCLANG_RESOURCE_DIR=/mingw64/lib/clang/3.7.0/ 
-                
+                #-DCLANG_RESOURCE_DIR=/mingw64/lib/clang/3.7.0/
+
                 cmake $CASTXML_SRC -G "$CMAKE_GENERATOR" \
                     -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
                     -DCMAKE_INSTALL_PREFIX=$CASTXML_DIST
@@ -437,7 +440,7 @@ buildCASTXML(){
             #make -j$PARALLEL_BUILD install
             cmake --build . --config release --target install -- -j$PARALLEL_BUILD
         popd
-    elif [ "$SYSTEM" == "MAC" ]; then 
+    elif [ "$SYSTEM" == "MAC" ]; then
         CC=/usr/bin/gcc CXX=/usr/bin/g++ cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST \
           "-DLLVM_DIR=/usr/local/Cellar/llvm/HEAD/share/llvm/cmake/"
     else

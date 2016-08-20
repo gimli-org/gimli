@@ -41,19 +41,19 @@ namespace GIMLI{
 template < class ValueType > class DLLEXPORT Matrix3 {
 public:
     ValueType mat_[9];
-    
+
     Matrix3()
         : valid_(false){}
-        
+
     Matrix3(const Matrix3 < ValueType > & m ){
         mat_[0] = m.mat_[0]; mat_[1] = m.mat_[1]; mat_[2] = m.mat_[2];
         mat_[3] = m.mat_[3]; mat_[4] = m.mat_[4]; mat_[5] = m.mat_[5];
         mat_[6] = m.mat_[6]; mat_[7] = m.mat_[7]; mat_[8] = m.mat_[8];
     }
-     
+
     inline ValueType & operator [](Index i){ return mat_[i];}
     inline const ValueType & operator [](Index i) const { return mat_[i];}
-    
+
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
     inline Matrix3 < ValueType > & operator OP##= (const ValueType & val) { \
         for (register Index i = 0; i < 9; i += 3) {\
@@ -66,7 +66,7 @@ public:
     DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
     #undef DEFINE_UNARY_MOD_OPERATOR__
-    
+
     void clear(){
         mat_[0] = 0.0; mat_[1] = 0.0; mat_[2] = 0.0;
         mat_[3] = 0.0; mat_[4] = 0.0; mat_[5] = 0.0;
@@ -74,25 +74,25 @@ public:
     }
     inline Index rows() const { return 3; }
     inline Index cols() const { return 3; }
-    
-    inline const Vector < ValueType > col(Index i) const { 
+
+    inline const Vector < ValueType > col(Index i) const {
         Vector < ValueType >ret(3);
         ret[0] = mat_[i]; ret[1] = mat_[3 + i]; ret[2] = mat_[6 + i];
         return ret;
     }
-    
-    inline const Vector < ValueType > row(Index i) const { 
+
+    inline const Vector < ValueType > row(Index i) const {
         Vector < ValueType >ret(3);
         ret[0] = mat_[i * 3]; ret[1] = mat_[i * 3 + 1]; ret[2] = mat_[i * 3 + 2];
         return ret;
     }
-    
-    inline void setVal(RVector v, Index i){ 
+
+    inline void setVal(RVector v, Index i){
         mat_[i * 3] = v[0]; mat_[i * 3 + 1] = v[1]; mat_[i * 3 + 2] = v[2];
     }
-    
+
     inline void setValid(bool v){valid_ = v;}
-    
+
     inline bool valid() const {return valid_;}
 
     inline ValueType det() const {
@@ -100,25 +100,31 @@ public:
                mat_[1] * (mat_[3] * mat_[8] - mat_[5] * mat_[6]) +
                mat_[2] * (mat_[3] * mat_[7] - mat_[4] * mat_[6]);
     }
-    
+
 protected:
-    
+
     bool valid_;
 };
 
-template < class ValueType > 
+template < class ValueType >
 std::ostream & operator << (std::ostream & str, const Matrix3 < ValueType > & vec){
-    for (Index i = 0; i < 3; i ++) str << vec[i] << " "; str << std::endl;
-    for (Index i = 0; i < 3; i ++) str << vec[3 + i] << " "; str << std::endl;
-    for (Index i = 0; i < 3; i ++) str << vec[6 + i] << " "; str << std::endl;
+    for (Index i = 0; i < 3; i ++)
+        str << vec[i] << " ";
+    str << std::endl;
+    for (Index i = 0; i < 3; i ++)
+        str << vec[3 + i] << " ";
+    str << std::endl;
+    for (Index i = 0; i < 3; i ++)
+        str << vec[6 + i] << " ";
+    str << std::endl;
     return str;
 }
 
 
 
 template < class ValueType > \
-Pos< ValueType > operator * (const Matrix3 < ValueType > & A, const Pos < ValueType > & b) { 
-    return Pos< ValueType > (A[0] * b[0] + A[1] * b[1] + A[2] * b[2], 
+Pos< ValueType > operator * (const Matrix3 < ValueType > & A, const Pos < ValueType > & b) {
+    return Pos< ValueType > (A[0] * b[0] + A[1] * b[1] + A[2] * b[2],
                              A[3] * b[0] + A[4] * b[1] + A[5] * b[2],
                              A[6] * b[0] + A[7] * b[1] + A[8] * b[2]);
 }
@@ -127,7 +133,7 @@ Pos< ValueType > operator * (const Matrix3 < ValueType > & A, const Pos < ValueT
 /*! Pure virtual interface class for matrices.
  * If you want your own Jacobian matrix to be used in \ref Inversion or \ref ModellingBase
  you have to derive your matrix from this class and implement all necessary members. */
-   
+
 class DLLEXPORT MatrixBase{
 public:
 
@@ -139,11 +145,11 @@ public:
 
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_MATRIXBASE_RTTI; }
-    
+
     void setVerbose(bool verbose){ verbose_ = verbose; }
-    
+
     bool verbose() const { return verbose_; }
-    
+
     /*! Return number of cols */
     virtual Index rows() const {
        THROW_TO_IMPL
@@ -165,7 +171,7 @@ public:
     virtual void clean() {
         THROW_TO_IMPL
     }
-    
+
     /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {
         THROW_TO_IMPL
@@ -175,7 +181,7 @@ public:
     virtual RVector dot(const RVector & a) const {
         return mult(a);
     }
-    
+
     /*! Return this * a  */
     virtual RVector mult(const RVector & a) const {
        THROW_TO_IMPL
@@ -187,7 +193,7 @@ public:
        THROW_TO_IMPL
        return CVector(rows());
     }
-    
+
     virtual RVector mult(const RVector & b, Index startI, Index endI) const {
         THROW_TO_IMPL
         return RVector(rows());
@@ -196,8 +202,8 @@ public:
         THROW_TO_IMPL
         return CVector(rows());
     }
-    
-    
+
+
     /*! Return this.T * a */
     virtual RVector transMult(const RVector & a) const {
         THROW_TO_IMPL
@@ -213,11 +219,11 @@ public:
     virtual void setCol(Index col, const RVector & v) const {
         THROW_TO_IMPL
     }
-     
+
     virtual void setCol(Index col, const CVector & v) const {
         THROW_TO_IMPL
     }*/
-    
+
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
         THROW_TO_IMPL
@@ -231,7 +237,7 @@ protected:
 class DLLEXPORT IdentityMatrix : public MatrixBase {
 public:
     /*! Default constructor (empty matrix). */
-    IdentityMatrix() 
+    IdentityMatrix()
         : MatrixBase(), nrows_(0), val_(0.0){}
 
     /*! Constructor with number of rows/colums. */
@@ -248,8 +254,8 @@ public:
     virtual Index cols() const { return nrows_; }
 
     /*! Return this * a  */
-    virtual RVector mult(const RVector & a) const { 
-        if (a.size() != nrows_) { 
+    virtual RVector mult(const RVector & a) const {
+        if (a.size() != nrows_) {
             throwLengthError(1, WHERE_AM_I + " vector/matrix lengths do not match " +
                                   toStr(nrows_) + " " + toStr(a.size()));
         }
@@ -257,7 +263,7 @@ public:
     }
 
     /*! Return this.T * a */
-    virtual RVector transMult(const RVector & a) const { 
+    virtual RVector transMult(const RVector & a) const {
         if (a.size() != nrows_) {
             throwLengthError(1, WHERE_AM_I + " matrix/vector lengths do not match " +
                                  toStr(a.size()) + " " + toStr(nrows_));
@@ -313,10 +319,10 @@ public:
 
     /*! Force the copy of the matrix entries. */
     inline void copy(const Matrix < ValueType > & mat){ copy_(mat); }
-    
+
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_MATRIX_RTTI; }
-    
+
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
     inline Matrix < ValueType > & operator OP##= (const Matrix < ValueType > & A) { \
         for (register Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= A[i]; return *this; } \
@@ -343,12 +349,12 @@ public:
 //             throwLengthError(1, WHERE_AM_I + " row bounds out of range " +
 //                                 toStr(i) + " " + toStr(this->rows())) ;
 //         }
-//          
+//
         return mat_[i];
     }
 
     /*! Read only C style index operator, without boundary check. */
-    const Vector< ValueType > & operator [] (Index i) const { 
+    const Vector< ValueType > & operator [] (Index i) const {
 //         __MS(this << " " << &mat_[i] << " " << mat_[i].size() )
         return mat_[i];
     }
@@ -367,10 +373,10 @@ public:
     inline void clear() { mat_.clear(); }
 
     /*! Fill Vector with 0.0. Don't change size.*/
-    inline void clean() { 
-        for (Index i = 0; i < mat_.size(); i ++) mat_[i].clear(); 
+    inline void clean() {
+        for (Index i = 0; i < mat_.size(); i ++) mat_[i].clear();
     }
-    
+
     /*! Return number of rows. */
     inline Index rows() const { return mat_.size(); }
 
@@ -432,12 +438,12 @@ public:
 //     virtual void setCol(Index col, const RVector & v){
 //         return setCol_(col, v);
 //     }
-//     
+//
 //     /*! Set one specific column */
 //     virtual void setCol(Index col, const CVector & v){
 //         return setCol_(col, v);
 //     }
-    
+
     /*! Set one specific column */
     inline void setCol(Index col, const Vector < ValueType > & v){
         if (col < 0 || col > this->cols()-1) {
@@ -463,7 +469,7 @@ public:
         }
         for (Index i = 0; i < v.size(); i ++) mat_[i][col] += v[i];
     }
-    
+
     /*! Return reference to row flag vector. Maybee you can check if the rows are valid. Size is set automatic to the amount of rows. */
     BVector & rowFlag(){ return rowFlag_; }
 
@@ -534,7 +540,7 @@ public:
         for (Index i = 0; i < mat_.size(); i ++) mat_[i].round(tolerance);
         // ??? std::for_each(mat_.begin, mat_.end, boost::bind(&Vector< ValueType >::round, tolerance));
     }
-    
+
 protected:
 
     void allocate_(Index rows, Index cols){
@@ -703,7 +709,7 @@ bool saveMatrix(const Matrix < ValueType > & A, const std::string & filename, IO
     if (fname.rfind('.') == std::string::npos) fname += MATRIXBINSUFFIX;
 
     FILE *file; file = fopen(fname.c_str(), "w+b");
-	
+
     if (!file){
 		std::cerr << fname << ": " << strerror(errno) << " " << errno << std::endl;
         return false;
@@ -760,13 +766,13 @@ bool loadMatrixSingleBin(Matrix < ValueType > & A,
                           const std::string & filename){
 
     FILE *file; file = fopen(filename.c_str(), "r+b");
-    
+
     if (!file) {
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + 
+        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " +
                    filename + ": " + strerror(errno));
     }
     Index ret;
-    uint32 rows = 0; 
+    uint32 rows = 0;
     ret = fread(&rows, sizeof(uint32), 1, file);
     if (ret == 0) throwError(1, "fail reading file " + filename);
     uint32 cols = 0;
@@ -976,7 +982,7 @@ template < class ValueType > double det(const Matrix3< ValueType > & A){
     return A.det();
 }
 
-    
+
 /*! Return determinant for Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > double det(const Matrix & A){
     //** das geht viel schoener, aber nicht mehr heute.;
@@ -1036,13 +1042,13 @@ template < class Matrix > Matrix inv(const Matrix & A){
 /*! Return the inverse of Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > void inv(const Matrix & A, Matrix & I){
     //** das geht viel schoener, aber nicht mehr heute.; Wie?
-    
+
     switch (I.rows()){
-        case 2: 
+        case 2:
             I[0][0] =  A[1][1];
             I[1][0] = -A[1][0];
             I[0][1] = -A[0][1];
-            I[1][1] =  A[0][0];            
+            I[1][1] =  A[0][0];
             break;
         case 3:
             I[0][0] =  (A[1][1] * A[2][2] - A[1][2] * A[2][1]);

@@ -1,16 +1,18 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Define special colorbar behavior.
-"""
-import matplotlib.pyplot as plt
+"""Define special colorbar behavior."""
+
+from distutils.version import StrictVersion
+
 import numpy as np
 
 import matplotlib as mpl
-import matplotlib.ticker as ticker
+import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.ticker as ticker
 
-from distutils.version import StrictVersion
+from pygimli.mplviewer import updateAxes, saveFigure
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
@@ -19,7 +21,7 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
 
-def autolevel(z, N, logscale=None):
+def autolevel(z, nLevs, logscale=None):
     """Create N levels for the data array z based on matplotlib ticker.
 
     Examples
@@ -36,7 +38,7 @@ def autolevel(z, N, logscale=None):
     if logscale:
         locator = ticker.LogLocator()
     else:
-        locator = ticker.MaxNLocator(N + 1)
+        locator = ticker.MaxNLocator(nLevs + 1)
 
     zmin = min(z)
     zmax = max(z)
@@ -44,31 +46,62 @@ def autolevel(z, N, logscale=None):
     return locator.tick_values(zmin, zmax)
 
 
-def cmapFromName(cmapname, ncols=256, bad=None):
+def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
+    """Get a colormap either from name or from keyworld list.
+
+    See http://matplotlib.org/examples/color/colormaps_reference.html
+
+    Parameters
+    ----------
+    cmapname : str
+        Name for the colormap.
+
+    ncols : int
+        Amount of colors.
+
+    bad : [r,g,b,a]
+        Default color for bad values [nan, inf] [white]
+
+    ** kwargs :
+        cMap : str
+            Name for the colormap
+        cmap : str
+            colormap name (old)
+    Returns
+    -------
+    cmap:
+        matplotlib Colormap
     """
-        Do we need this?
-    """
+
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
-    cmap = mpl.cm.get_cmap('jet', ncols)
+    if 'cmap' in kwargs:
+        cmapname = kwargs.pop('cmap', cmapname)
+    elif 'cMap' in kwargs:
+        cmapname = kwargs.pop('cMap', cmapname)
 
-    if cmapname is not None:
+    cmap = None
+    if cmapname is None:
+        cmapname = 'jet'
 
-        if cmapname == 'b2r':
-            cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
+    if cmapname == 'b2r':
+        cmap = mpl.colors.LinearSegmentedColormap('my_colormap',
                                                       cdict, ncols)
-        elif cmapname == 'viridis' and StrictVersion(mpl.__version__) < StrictVersion('1.5.0'):
-            print("Mpl:", mpl.__version__, " using HB viridis")
-            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data[::-1])
-        elif cmapname == 'viridis_r':
-            print("Using HB viridis_r")
-            cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
-        else:
-            try:
-                cmap = mpl.cm.get_cmap(cmapname, ncols)
-            except Exception as e:
-                print("Could not retrieve colormap ", cmapname, e)
+    elif cmapname == 'viridis' and \
+            StrictVersion(mpl.__version__) < StrictVersion('1.5.0'):
+
+        print("Mpl:", mpl.__version__, " using HB viridis")
+        cmap = LinearSegmentedColormap.from_list('viridis',
+                                                     viridis_data[::-1])
+    elif cmapname == 'viridis_r':
+        print("Using HB viridis_r")
+        cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
+    else:
+        try:
+            cmap = mpl.cm.get_cmap(cmapname, ncols)
+        except BaseException as e:
+            print("Could not retrieve colormap ", cmapname, e)
 
     cmap.set_bad(bad)
     return cmap
@@ -76,7 +109,7 @@ def cmapFromName(cmapname, ncols=256, bad=None):
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
                         dropColLimitsPerc=5, logScale=True):
-    """What is this?"""
+    """TODO Documentme."""
     data = np.asarray(dataIn)
 
     # if type( dataIn ) == g.RVector:
@@ -86,12 +119,12 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
     # else:
     # data = array( dataIn )
 
-    if (min(data) < 0):
+    if min(data) < 0:
         logScale = False
-    if (logScale):
+    if logScale:
         data = np.log10(data)
 
-    Nhist, xHist = np.histogram(data, bins=100)
+    xHist = np.histogram(data, bins=100)[1]
 
     if not cMin:
         cMin = xHist[dropColLimitsPerc]
@@ -103,7 +136,7 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
         if logScale:
             cMax = pow(10.0, cMax)
 
-    if (logScale):
+    if logScale:
         data = pow(10.0, data)
 
     data[np.where(data < cMin)] = cMin
@@ -112,19 +145,58 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None,
     return data, cMin, cMax
 
 
-def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
-                   label=None, orientation='horizontal', **kwargs):
-    """
-    Create a Colobar.
+def findColorBar(ax):
+    """Find the colorbar of an axes.
 
-    Shortcut to create a matplotlib colorbar within the axes for a given
+    Find the colorbar that is associated with given axes or return None.
+    """
+    for i, ai in enumerate(ax.figure.axes):
+        print(i, ai)
+
+    for c in ax.collections:
+        if isinstance(c, mpl.cm.ScalarMappable):
+            if c.colorbar is not None:
+                print("cbar:,", c.colorbar)
+                return c.colorbar
+
+    raise BaseException("Implement me")
+
+    # print(ax.colorbar)
+    # print(ax.images)
+    # return None
+
+
+def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
+    """Update colorbar values.
+
+    Update limits and label of a given colorbar.
+    """
+    # print("update cbar:", cMin, cMax, label)
+    if gci is not None:
+        pass
+        # check the following first
+        # cbar.on_mappable_changed(gci)
+
+    setCbarLevels(cbar, cMin, cMax, nLevs)
+
+    if label is not None:
+        cbar.set_label(label)
+
+    return cbar
+
+
+def createColorBar(patches, cMin=None, cMax=None, nLevs=5,
+                   label=None, orientation='horizontal', **kwargs):
+    """Create a Colorbar.
+
+    Shortcut to create a matplotlib colorbar within the ax for a given
     patchset.
 
     Parameters
     ----------
     **kwargs :
         * size : with or height of the colobar
-        * pad : padding distance from axes
+        * pad : padding distance from ax
     """
     cbarTarget = plt
     cax = None
@@ -136,6 +208,9 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
         divider = make_axes_locatable(patches.ax)
     elif hasattr(patches, 'get_axes'):
         divider = make_axes_locatable(patches.get_axes())
+
+    # print('#'*100)
+    # print(divider, patches)
 
     if divider:
         if orientation == 'horizontal':
@@ -150,19 +225,73 @@ def createColorbar(patches, cMin=None, cMax=None, nLevs=5,
     cbar = cbarTarget.colorbar(patches, cax=cax,
                                orientation=orientation)
 
-    setCbarLevels(cbar, cMin, cMax, nLevs)
-
-    if label is not None:
-        cbar.set_label(label)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs,
+                   label=label)
 
     return cbar
 
 
+def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
+                       label=None, orientation='horizontal', savefig=None,
+                       **kwargs):
+    """Create figure with a colorbar.
+
+    Create figure with a colorbar.
+
+    Parameters
+    ----------
+    **kwargs:
+        Forwarded to mpl.colorbar.ColorbarBase.
+
+    Returns
+    -------
+    fig:
+        The created figure.
+
+    Examples
+    --------
+    >>> # import pygimli as pg
+    >>> # from pygimli.mplviewer import createColorBarOnly
+    >>> # createColorBarOnly(cMin=0.2, cMax=5, logScale=False,
+    >>> #                   cMap='b2r',
+    >>> #                   nLevs=7,
+    >>> #                   label=r'Ratio',
+    >>> #                   orientation='horizontal')
+    >>> # pg.wait()
+    """
+    fig = plt.figure()
+
+    if orientation is 'horizontal':
+        ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
+    else:
+        ax = fig.add_axes([0.30, 0.02, 0.22, 0.96])
+
+    norm = None
+    if cMin > 0 and logScale is True:
+        norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
+    else:
+        norm = plt.Normalize(vmin=cMin, vmax=cMax)
+
+    cmap = cmapFromName(cMap)
+
+    cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
+                                     orientation=orientation, **kwargs)
+
+    setCbarLevels(cbar, cMin=None, cMax=None, nLevs=nLevs)
+
+#        cbar.labelpad = -20
+#        cbar.ax.yaxis.set_label_position('left')
+    if label is not None:
+        cbar.set_label(label)
+
+    if savefig is not None:
+        saveFigure(fig, savefig)
+
+    return fig
+
+
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
-    """What's that"""
-
-    # print "setCbarLevels", cMin, cMax
-
+    """TODO Documentme."""
     if cMin is None:
         cMin = cbar.get_clim()[0]
     if cMax is None:
@@ -185,7 +314,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     else:
         cbarLevels = np.linspace(cMin, cMax, nLevs)
 
-    # print cbarLevels
+    #print(cbarLevels)
     cbarLevelsString = []
     for i in cbarLevels:
         if abs(i) == 0.0:
@@ -223,10 +352,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
-    """
-        Change the data values for a given mappable.
-    """
-
+    """Change the data values for a given mappable."""
     data = dataIn
 
     if not isinstance(data, np.ma.core.MaskedArray):
@@ -256,8 +382,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
 
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
-    """
-    Add alpha values to the colors of a polygon collection.
+    """Add alpha values to the colors of a polygon collection.
 
     Parameters
     ----------
@@ -270,7 +395,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     dropThreshold : float
         relative minimum coverage
     """
-
     patches.set_antialiaseds(True)
     patches.set_linewidth(0.000)
 
@@ -314,6 +438,10 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     # delete patch data to avoid automatically rewrite of _facecolors
     patches._A = None
 
+    if hasattr(patches, 'ax'):
+        updateAxes(patches.ax)
+    elif hasattr(patches, 'get_axes'):
+        updateAxes(patches.get_axes())
 
 parameters = {'xp': [22.674387857633945, 11.221508276482126,
                      -14.356589454756971, -47.18817758739222,

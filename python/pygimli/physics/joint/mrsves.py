@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Was macht das Ding?
-"""
-import numpy as np
-import matplotlib.pyplot as plt
-import pygimli as pg
-from pygimli.physics.sNMR import MRS, MRS1dBlockQTModelling
-from pygimli.viewer import drawModel1D
-from pygimli.utils import iterateBounds
+"""TODO DOCUMENTME."""
 import time
 import random
 import sys
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+import pygimli as pg
+from pygimli.physics.sNMR import MRS, MRS1dBlockQTModelling
+from pygimli.mplviewer import drawModel1D
+from pygimli.utils import iterateBounds
+
 
 def correctBranches(ab2, mn2, rhoa):
-    """shifts the branches of a dc sounding to generate a matching curve."""
+    """Shifts the branches of a dc sounding to generate a matching curve."""
     um = np.unique(mn2)
     for i in range(len(um) - 1):
         r0, r1 = [], []
@@ -32,9 +32,7 @@ def correctBranches(ab2, mn2, rhoa):
 
 
 class MRSVESBlockModelling(pg.ModellingBase):
-
-    """ Joint MRS(QT) and VES forward modelling """
-
+    """Joint MRS(QT) and VES forward modelling"""
     def __init__(self, nlay, K, z, t, ab2, mn2, verbose=False):
         self.nlay_ = nlay
         mesh = pg.createMesh1DBlock(nlay, 3)  # 3 paramaters: thk,wc,t2,res
@@ -50,9 +48,7 @@ class MRSVESBlockModelling(pg.ModellingBase):
 
 
 class MRSVES(MRS):
-
-    """class for joint MRS/VES inversion using LS or GA"""
-
+    """Class for joint MRS/VES inversion using LS or GA"""
     def __init__(self, mrsfile, vesfile=None, correctbranch=False):
         """init class and load MRS (*.mrsi) (and VES data *.ves)"""
         MRS.__init__(self, mrsfile)

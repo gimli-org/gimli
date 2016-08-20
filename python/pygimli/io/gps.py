@@ -4,15 +4,16 @@
 import sys
 import os
 
+from math import floor
+
+import numpy as np
 import matplotlib.image as mpimg
 
-from math import floor
-import numpy as np
-from pygimli.utils import opt_import
+from pygimli.io import opt_import
 
 
 def handleWPTS(wpts):
-    """Handler for Waypoints in gpx xml-dom"""
+    """Handler for Waypoints in gpx xml-dom."""
     w = []
 
     for wpt in wpts:
@@ -63,7 +64,7 @@ def readSimpleLatLon(filename, verbose=False):
         lon lat name time
     """
     def conv_(deg):
-        """convert degree into floating vpoint."""
+        """Convert degree into floating vpoint."""
         ret = 0.0
         if 'd' in deg:
             # 10d???
@@ -109,31 +110,31 @@ def readSimpleLatLon(filename, verbose=False):
     return w
 
 
-def GK2toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 2 into UTM (for backward compatibility)"""
-    return GKtoUTM(R, H, zone, gkzone=2)
+def GK2toUTM(ea, no=None, zone=32):
+    """Transform Gauss-Krueger zone 2 into UTM (for backward compatibility)."""
+    return GKtoUTM(ea, no, zone, gkzone=2)
 
 
-def GK3toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 3 into UTM (for backward compatibility)"""
-    return GKtoUTM(R, H, zone, gkzone=3)
+def GK3toUTM(ea, no=None, zone=32):
+    """Transform Gauss-Krueger zone 3 into UTM (for backward compatibility)."""
+    return GKtoUTM(ea, no, zone, gkzone=3)
 
 
-def GK4toUTM(R, H=None, zone=32):
-    """Transform Gauss-Krueger zone 4 into UTM (for backward compatibility)"""
-    return GKtoUTM(R, H, zone, gkzone=4)
+def GK4toUTM(ea, no=None, zone=32):
+    """Transform Gauss-Krueger zone 4 into UTM (for backward compatibility)."""
+    return GKtoUTM(ea, no, zone, gkzone=4)
 
 
-def GKtoUTM(R, H=None, zone=32, gk=None, gkzone=None):
-    """Transforms any Gauss-Krueger to UTM autodetect GK zone from offset."""
+def GKtoUTM(ea, no=None, zone=32, gk=None, gkzone=None):
+    """Transform any Gauss-Krueger to UTM autodetect GK zone from offset."""
     if gk is None and gkzone is None:
-        if H is None:
-            rr = R[0][0]
+        if no is None:
+            rr = ea[0][0]
         else:
-            if isinstance(R, list) or isinstance(R, tuple):
-                rr = R[0]
+            if isinstance(ea, list) or isinstance(ea, tuple):
+                rr = ea[0]
             else:
-                rr = R
+                rr = ea
 
         gkzone = int(floor(rr * 1e-6))
         print(gkzone)
@@ -148,10 +149,10 @@ def GKtoUTM(R, H=None, zone=32, gk=None, gkzone=None):
     gk = pyproj.Proj(init="epsg:"+str(31464+gkzone))
     wgs84 = pyproj.Proj(init="epsg:4326")  # pure ellipsoid to doubel transform
     utm = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
-    if H is None:  # two-column matrix
-        lon, lat = pyproj.transform(gk, wgs84, R[0], R[1])
+    if no is None:  # two-column matrix
+        lon, lat = pyproj.transform(gk, wgs84, ea[0], ea[1])
     else:
-        lon, lat = pyproj.transform(gk, wgs84, R, H)
+        lon, lat = pyproj.transform(gk, wgs84, ea, no)
 
     return utm(lon, lat)
 

@@ -1,16 +1,20 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""""WRITEME"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 
 
 def drawFirstPicks(axes, data, tt=None, plotva=False, marker='x-'):
-    """ name convention """
+    """Naming convention. drawFOO(axes, ... )"""
     return plotFirstPicks(ax=axes, data=data, tt=tt,
                           plotva=plotva, marker=marker)
 
 
 def drawVA(axes, data, usePos=True):
-    """ name convention """
+    """Naming convention. drawFOO(axes, ... )"""
     return showVA(ax=axes, data=data, usepos=usePos)
 
 
@@ -20,9 +24,8 @@ def drawTravelTimeData(axes, data, t=None):
         data of type \ref DataContainer must contain sensorIdx 's' and 'g'
         and thus being numbered internally [0..n)
     """
-
     x = pg.x(data.sensorPositions())
-#    z = pg.z(data.sensorPositions())
+    # z = pg.z(data.sensorPositions())
 
     shots = pg.unique(pg.sort(data('s')))
     geoph = pg.unique(pg.sort(data('g')))

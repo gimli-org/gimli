@@ -358,8 +358,16 @@ if (SPHINX_FOUND)
 
 endif()
 
-ADD_CUSTOM_TARGET(checkall)
-add_dependencies(checkall doc)
+add_custom_target(removedoc
+   COMMAND
+       ${CMAKE_MAKE_PROGRAM} clean -f ${CMAKE_CURRENT_BINARY_DIR}/doc/
+)
+add_custom_target(checkall
+    DEPENDS
+      doc
+)
+#add_dependencies(doc removedoc)
+
 # Add if pytest found?
 add_dependencies(checkall pgtest)
 if (CPPUNIT_FOUND)
@@ -455,4 +463,3 @@ endif (PYGIMLI)
 #CR what is this good for?
 # export(TARGETS gimli
 #        FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
-

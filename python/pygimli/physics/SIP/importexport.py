@@ -1,9 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Import/Export for SIP data."""
+
 import numpy as np
 import re
 
 
 def fstring(fri):
-    """ format frequency to human-readable (mHz or kHz) """
+    """Format frequency to human-readable (mHz or kHz)."""
     if fri > 1e3:
         fstr = '{:d}kHzt'.format(int(np.round(fri/1e3)))
     elif fri < 1.:
@@ -14,7 +18,7 @@ def fstring(fri):
 
 
 def readTXTSpectrum(filename):
-    """read spectrum from ZEL device output (txt) data file"""
+    """Read spectrum from ZEL device output (txt) data file."""
     fid = open(filename)
     lines = fid.readlines()
     fid.close()
@@ -32,7 +36,7 @@ def readTXTSpectrum(filename):
 
 
 def readFuchs3File(resfile):
-    """ Read Fuchs III (SIP spectrum) data file """
+    """Read Fuchs III (SIP spectrum) data file."""
     activeBlock = ''
     header = {}
     LINE = []
@@ -76,8 +80,10 @@ def readFuchs3File(resfile):
                             else:
                                 num = int(value)
                             header[token] = num
-                        except Exception:  # maybe beginning or end of a block
-                            pass
+                        except BaseException as e:
+                            # maybe beginning or end of a block
+                            print(e)
+
                 else:
                     if activeBlock:
                         nums = np.array(line.split(), dtype=float)
@@ -85,13 +91,16 @@ def readFuchs3File(resfile):
 
 
 def readSIP256file(resfile, verbose=False):
-    """
-    read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip
+    """Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.
+
+    Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.
 
     Parameters
     ----------
-        filename - *.RES file (SIP256 raw output file)
-        verbose - do some output [False]
+        filename: str
+            *.RES file (SIP256 raw output file)
+        verbose:    bool
+            do some output [False]
 
     Returns
     -------
@@ -108,7 +117,7 @@ def readSIP256file(resfile, verbose=False):
     header = {}
     LINE = []
     dataAct = False
-    with open(resfile, 'r') as f:
+    with open(resfile, 'r', errors='replace') as f:
         for line in f:
             if dataAct:
                 LINE.append(line)
@@ -116,6 +125,10 @@ def readSIP256file(resfile, verbose=False):
                 if line[0] == '[':
                     token = line[1:line.rfind(']')].replace(' ', '_')
                     if token.replace(' ', '_') == 'Messdaten_SIP256':
+                        dataAct = True
+                    elif 'Messdaten' in token:
+                        # res format changed into SIP256D .. so we are a
+                        # little bit more flexible with this.
                         dataAct = True
                     elif token[:3] == 'End':
                         header[activeBlock] = np.array(header[activeBlock])
@@ -131,8 +144,10 @@ def readSIP256file(resfile, verbose=False):
                             else:
                                 num = int(value)
                             header[token] = num
-                        except Exception:  # maybe beginning or end of a block
-                            pass
+                        except BaseException as e:
+                            # maybe beginning or end of a block
+                            print(e)
+
                 else:
                     if activeBlock:
                         nums = np.array(line.split(), dtype=float)

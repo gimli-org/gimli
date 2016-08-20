@@ -14,7 +14,6 @@ spaced quadrilaterals and a region with unstructured triangles."""
 # We start by importing numpy, matplotlib and pygimli with its required components.
 
 import numpy as np
-
 import pygimli as pg
 from pygimli.viewer import showMesh
 from pygimli.mplviewer import drawMesh
@@ -37,8 +36,8 @@ for c in mesh1.cells():
 print(mesh1)
 
 ###############################################################################
-# Next, we build an unstructured region on top by creating the polygon and calling
-# triangle via pygimli's TriangleWrapper.
+# Next, we build an unstructured region on top by creating the polygon and
+# calling triangle via pygimli's TriangleWrapper.
 
 poly = pg.Mesh(2)  # empty 2d mesh
 nStart = poly.createNode(xmin, zmax, 0.0)
@@ -61,7 +60,8 @@ tri.setSwitches('-pzeAfaq31')
 
 ###############################################################################
 # For more information on the triangle switches and the corresponding settings,
-# the reader is referred to `the triangle website <http://www.cs.cmu.edu/~quake/triangle.switch.html>`_.
+# the reader is referred to `the triangle website
+# <http://www.cs.cmu.edu/~quake/triangle.switch.html>`_.
 #
 # Now we can generate the unstructured mesh.
 mesh2 = pg.Mesh(2)
@@ -71,14 +71,15 @@ for cell in mesh2.cells():
     cell.setMarker(1)
 
 ###############################################################################
-# Finally, the grid and the unstructured mesh can be merged to single mesh for further
-# modelling.
+# Finally, the grid and the unstructured mesh can be merged to single mesh for
+# further modelling.
 
 mesh3 = merge2Meshes(mesh1, mesh2)
 
 ###############################################################################
-# Of course, you can treat the hybrid mesh like any other mesh and append a triangle
-# boundary for example with :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
+# Of course, you can treat the hybrid mesh like any other mesh and append a
+# triangle boundary for example with the function
+# :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
 
 mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
                               smooth=True, marker=3, isSubSurface=True)
@@ -95,5 +96,3 @@ ax, _ = showMesh(mesh, mesh.cellMarkers(),
 
 drawMesh(ax, mesh)
 pg.wait()
-
-

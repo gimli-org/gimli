@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
+"""pyGIMLi - Python package for GIMLi including bindings to C++ library.
 
-"""
-pyGIMLi - Python package for GIMLi including bindings to C++ library.
-
-Usage:
+Import convention:
 
 .. code-block:: python
 
     import pygimli as pg
-
 """
 
-from . import core
-from .core import *
-#from .core._pygimli_ import *
-    
 import locale
+import sys
+
+from . import core
+from ._version import get_versions
+from .core import *
+
 
 def checkAndFixLocaleDecimal_point(verbose=False):
     if locale.localeconv()['decimal_point'] == ',':
@@ -29,14 +28,15 @@ def checkAndFixLocaleDecimal_point(verbose=False):
         print(e)
         print('cannot set locale to decimal point')
 
-    #LC_CTYPE should be something with UTF-8
+    # LC_CTYPE should be something with UTF-8
     # export LC_CTYPE="de_DE.UTF-8"
-    #python -c 'import sys; print(sys.stdout.encoding)'
+    # python -c 'import sys; print(sys.stdout.encoding)'
+
 
 checkAndFixLocaleDecimal_point(verbose=True)
 # print(locale.localeconv()['decimal_point'])
 # if locale.localeconv()['decimal_point'] == ',':
-#    print("Found locale decimal_point ',' and change it to: decimal point '.'")
+#   print("Found locale decimal_point ',' and change it to: decimal point '.'")
 # try:
 #    locale.localeconv()['decimal_point']
 #    locale.setlocale(locale.LC_NUMERIC, 'C')
@@ -47,11 +47,14 @@ if '--debug' in sys.argv:
     print("set debug mode")
     core._pygimli_.setDebug(True)
 
+
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
         print("Warning! unrecognized keyword arguments", kwargs)
 
-def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport=False):
+
+def test(target=None, show=False, onlydoctests=False, coverage=False,
+         htmlreport=False):
     """Run docstring examples and additional tests.
 
     Examples
@@ -82,11 +85,11 @@ def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport
     try:
         import pytest
     except ImportError:
-        raise ImportError("pytest is required to run test suite. " + \
+        raise ImportError("pytest is required to run test suite. "
                           "Try 'sudo pip install pytest'.")
 
     from matplotlib import pyplot as plt
-    from pygimli.utils import opt_import
+    from pygimli.io import opt_import
     pc = opt_import("pytest_cov", "create a code coverage report")
     ph = opt_import("pytest_html", "create a html report")
 
@@ -112,14 +115,14 @@ def test(target=None, show=False, onlydoctests=False, coverage=False, htmlreport
     plt.close('all')
     sys.exit(exitcode)
 
-# provide __version__ string
-from ._version import get_versions
+
 __version__ = get_versions()['version']
 
+
 def version():
-    ''' Shortcut to show and return current version. '''
+    """Shortcut to show and return current version."""
     print(__version__)
     return __version__
 
-#__all__ = ['__version__']
-#__all__.extend(core.__all__)  
+# __all__ = ['__version__']
+# __all__.extend(core.__all__)

@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 """pygimli functions for dc resistivity / SIP data."""
 
+# TODO Please sort the content into SIP package!
+
 import pylab as P
 import numpy as N
+
 import pygimli as pg
-from .base import rndig
+from pygimli.utils import rndig
 import string
 
 
@@ -80,7 +83,7 @@ def makeSlmData(ab2, mn2, rhoa=None, filename=None):
         rhoa = N.ones(len(ab2))
 
     for i in range(len(iab)):
-        #print -pos[iab[i]], -pos[imn[i]], pos[imn[i]], pos[iab[i]]
+        # print -pos[iab[i]], -pos[imn[i]], pos[imn[i]], pos[iab[i]]
         k = (ab2[i]**2 - mn2[i]**2) * N.pi / mn2[i] / 2.0
         if filename is not None:
             f.write(str(lpos - iab[i]) + '\t' + str(lpos + iab[i] + 1) + '\t')

@@ -43,7 +43,7 @@ Authors
 
 * **Florian Wagner**
 
-  *Helmholtz Centre Potsdam, GFZ German Research Centre for Geosciences, Potsdam, Germany*
+  *University of Bonn, Department of Geophysics, Bonn, Germany*
 
   florian@pygimli.org
 
@@ -52,18 +52,21 @@ Authors
 Inversion
 ---------
 
-One main task of GIMli is to carry out inversion, i.e. error-weighted minimization, for given forward routines and data.
-Various types of regularization on meshes (1D, 2D, 3D) with regular or irregular arrangement are available.
-There is a flexible control of all inversion parameters.
+One main task of GIMli is to carry out inversion, i.e. error-weighted
+minimization, for given forward routines and data. Various types of
+regularization on meshes (1D, 2D, 3D) with regular or irregular arrangement are
+available. There is a flexible control of all inversion parameters.
 
-Please see :ref:`inversion tutorial<tut:inversion>` for examples and more details.
+Please see :ref:`inversion tutorial<tut:inversion>` for examples and more
+details.
 
 .. _sec:about_gimli_modelling:
 
 Modelling
 ---------
 
-Currently there is a Finite Element Framework for solving partial differential equations (PDE)
+Currently there is a Finite Element Framework for solving partial differential
+equations (PDE)
 
 * 1D, 2D, 3D discretizations
 * linear and quadratic shape functions (automatic shape function generator for possible higher order)

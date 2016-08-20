@@ -99,7 +99,7 @@ void Region::setBackground(bool background){
 }
 
 void Region::setFixValue(double val){
-    fixValue_ = val; 
+    fixValue_ = val;
     markBackground(false);
     setBackground(true);
 }
@@ -168,7 +168,7 @@ void Region::countParameter(Index start){
         for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
 //             __MS(cells_[i]->marker() << " " << fixValue_)
             if (abs(fixValue_) > TOLERANCE) {
-                if (cells_[i]->marker() >= -1) { 
+                if (cells_[i]->marker() >= -1) {
                     // set only for positive marker that not already fixed regions
                     cells_[i]->setMarker(MARKER_FIXEDVALUE_REGION - marker());
                 }
@@ -186,10 +186,10 @@ void Region::countParameter(Index start){
         for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start + i);
         parameterCount_ = cells_.size();
     }
-    
+
     // reset attributes to allow for clean mapping
     for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setAttribute(0.0);
-    
+
     endParameter_ = start + parameterCount_;
     modelControl_.resize(parameterCount_, mcDefault_);
     startVector_.resize(parameterCount_, startDefault_);
@@ -493,13 +493,13 @@ RegionManager::~RegionManager(){
     if (paraDomain_) delete paraDomain_;
 }
 
-const Mesh & RegionManager::mesh() const { 
+const Mesh & RegionManager::mesh() const {
     if (mesh_== 0){
         throwError(1, "RegionManager knows no mesh.");
     }
-    return *mesh_; 
+    return *mesh_;
 }
-    
+
 Region * RegionManager::region(SIndex marker){
     if (regionMap_.count(marker) == 0){
         throwError(EXIT_DEFAULT, WHERE_AM_I + " no region with marker " + toStr(marker));
@@ -533,7 +533,8 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     Stopwatch swatch(true);
     if (verbose_) std::cout << "RegionManager copying mesh ...";
 
-    if (mesh_) delete mesh_; mesh_ = new Mesh(mesh);
+    if (mesh_) delete mesh_;
+    mesh_ = new Mesh(mesh);
 
     if (verbose_){
         std::cout << swatch.duration(true) << " s " << std::endl;
@@ -672,7 +673,7 @@ void RegionManager::findInterRegionInterfaces_(){
                 iRMapIter = interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(minMarker, maxMarker));
                 if (iRMapIter == interRegionInterfaceMap_.end()){
                     interRegionInterfaceMap_.insert(std::pair< std::pair< SIndex, SIndex >,
-                                      std::list < Boundary * > > (std::pair< SIndex, SIndex>(minMarker, maxMarker), 
+                                      std::list < Boundary * > > (std::pair< SIndex, SIndex>(minMarker, maxMarker),
                                                                   std::list< Boundary* >()));
                 }
                 interRegionInterfaceMap_[std::pair< SIndex, SIndex > (minMarker, maxMarker)].push_back(bound);
@@ -844,7 +845,7 @@ Index RegionManager::parameterCount() const {
     if (regionMap_.empty()) {
         if (parameterCount_ == 0){
             return parameterCount_;
-            
+
             // zero should be possible
             throwLengthError(1, WHERE_AM_I + " neither region defined nor parameterCount set.");
         }
@@ -1046,7 +1047,7 @@ void RegionManager::loadMap(const std::string & fname){
 //             file.close();
 //             return;
         }
-                
+
         if (row[0][0] == '#'){
 
             token.clear();
@@ -1143,9 +1144,9 @@ void RegionManager::loadMap(const std::string & fname){
                         if (minRegion[i] != maxRegion[j]){
                             setInterRegionConstraint(minRegion[i], maxRegion[j],
                                                      toDouble(row[2]));
-                            if (verbose_) std::cout << minRegion[i] << " <-> " 
-                                                    << maxRegion[j] << " weight:" 
-                                                    << toDouble(row[2]) << std::endl;
+                            // if (verbose_) std::cout << minRegion[i] << " <-> "
+                            //                         << maxRegion[j] << " weight:"
+                            //                         << toDouble(row[2]) << std::endl;
                         }
                     }
                 }
@@ -1209,9 +1210,9 @@ void RegionManager::setInterRegionConstraint(SIndex aIn, SIndex bIn, double c){
         if (interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(a, b))
              != interRegionInterfaceMap_.end()){
             interRegionConstraints_[std::pair< SIndex, SIndex >(a, b)] = c;
-//             if (verbose_){
-//                 std::cout << "regions: " << a << " " << b << " " << c << std::endl;
-//             }
+            if (verbose_){
+               std::cout << "regions: " << a << "<->" << b << " " << c << std::endl;
+           }
         }
     }
 }
@@ -1259,4 +1260,3 @@ void RegionManager::setConstraintType(Index type){
 }
 
 } // namespace GIMLI
-

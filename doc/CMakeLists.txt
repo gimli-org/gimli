@@ -81,13 +81,9 @@ add_custom_target(sphinxapi
     ALL
         # Copy build scripts for API doc generation
     COMMAND
-        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/apigen.py ${SPHINX_SRCBUILD_DIR}/doc
-    COMMAND
-        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/build_api.py ${SPHINX_SRCBUILD_DIR}/doc
-    COMMAND
         cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/sidebar_gallery.py ${SPHINX_SRCBUILD_DIR}/doc
     COMMAND
-        python ${SPHINX_SRCBUILD_DIR}/doc/build_api.py
+	      sphinx-autogen ${SPHINX_SRC_DIR}/doc/pygimliapi/index.rst -t ${SPHINX_SRC_DIR}/doc/_templates -o ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated
     COMMENT
         "Building pygimli api doc"
     DEPENDS
@@ -122,6 +118,7 @@ add_custom_target(sphinxhtml-nogallery ALL
         cmake -E copy_directory ${DOXYGEN_BUILD_DIR} ${SPHINX_HTML_DIR}/gimliapi
      COMMAND
         ${SPHINX_EXECUTABLE} -v
+        -D abort_on_example_error=1
         -D plot_gallery=0
         -T
         -b html
@@ -132,8 +129,8 @@ add_custom_target(sphinxhtml-nogallery ALL
      COMMENT
          "Building HTML documentation with sphinx"
      DEPENDS
-        sphinxapi
         sphinx_check_sources
+        sphinxapi
 )
 
 add_custom_target(sphinxlatex ALL
@@ -142,6 +139,7 @@ add_custom_target(sphinxlatex ALL
     COMMAND
         ${SPHINX_EXECUTABLE} -v
         -D plot_gallery=1
+        -D abort_on_example_error=1
         -T
         -q
         -b latex
