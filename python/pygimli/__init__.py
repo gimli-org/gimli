@@ -88,7 +88,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         raise ImportError("pytest is required to run test suite. "
                           "Try 'sudo pip install pytest'.")
 
-    from matplotlib import pyplot as plt
+    import matplotlib.pyplot as plt
     from pygimli.io import opt_import
     pc = opt_import("pytest_cov", "create a code coverage report")
     ph = opt_import("pytest_html", "create a html report")

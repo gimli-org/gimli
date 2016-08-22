@@ -170,6 +170,8 @@ plot_rcparams = {
     'figure.dpi': 100,
 }
 
+plot_pre_code = "import matplotlib.pyplot as plt\n"
+
 matplotlib.rcParams.update(plot_rcparams)
 
 # The suffix of source filenames.
