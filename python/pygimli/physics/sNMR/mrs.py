@@ -91,6 +91,7 @@ class MRS():
                 self.loadDir(name)
 
     def __repr__(self):  # for print function
+        """String representation."""
         out = ""
         if len(self.t) > 0 and len(self.q) > 0:
             out = "<MRSdata: %d qs, %d times" % \
@@ -100,14 +101,14 @@ class MRS():
         return out + ">"
 
     def loadMRSI(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
-        """load data, error and kernel from mrsi or mrsd file
+        """Load data, error and kernel from mrsi or mrsd file
 
         Parameters
         ----------
         usereal : bool [False]
             use real parts (after data rotation) instead of amplitudes
         mint/maxt : float [0.0/2.0]
-
+            minimum/maximum time to restrict time series
         """
         from scipy.io import loadmat  # loading Matlab mat files
 
@@ -188,7 +189,7 @@ class MRS():
             print(self)
 
     def loadMRSD(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
-        """ load mrsd (MRS data) file: not really used as in MRSD """
+        """Load mrsd (MRS data) file: not really used as in MRSD."""
         from scipy.io import loadmat  # loading Matlab mat files
 
         pl = loadmat(filename, struct_as_record=False,
@@ -203,14 +204,14 @@ class MRS():
         self.ecube = np.ones((nq, nt))*20e-9
 
     def loadDataCube(self, filename='datacube.dat'):
-        """ load data cube from single ascii file (old stuff)"""
+        """Load data cube from single ascii file (old stuff)"""
         A = np.loadtxt(filename).T
         self.q = A[1:, 0]
         self.t = A[0, 1:]
         self.data = A[1:, 1:].ravel()
 
     def loadErrorCube(self, filename='errorcube.dat'):
-        """ load error cube from a single ascii file (old stuff) """
+        """Load error cube from a single ascii file (old stuff)."""
         A = np.loadtxt(filename).T
         if len(A) == len(self.q) and len(A[0]) == len(self.t):
             self.error = A.ravel()
@@ -220,7 +221,7 @@ class MRS():
             self.error = np.ones(len(self.q) * len(self.t)) * 100e-9
 
     def loadKernel(self, name=''):
-        """load kernel matrix from mrsk or two bmat files"""
+        """Load kernel matrix from mrsk or two bmat files."""
         from scipy.io import loadmat  # loading Matlab mat files
 
         if name[-5:].lower() == '.mrsk':
@@ -236,11 +237,11 @@ class MRS():
                 self.K[i] = np.array(KR[i]) + np.array(KI[i]) * 1j
 
     def loadZVector(self, filename='zkernel.vec'):
-        """load the kernel discretisation"""
+        """Load the kernel vertical discretisation (z) vector."""
         self.z = pg.RVector(filename)
 
     def loadDir(self, dirname):
-        """load several files from dir (old Borkum stage)"""
+        """Load several standard files from dir (old Borkum stage)."""
         if not dirname[-1] == '/':
             dirname += '/'
         self.loadDataCube(dirname + 'datacube.dat')
@@ -250,7 +251,7 @@ class MRS():
         self.dirname = dirname  # to save results etc.
 
     def showCube(self, ax=None, vec=None, islog=None, clim=None, clab=None):
-        """plot data (or response, error, misfit) cube nicely"""
+        """Plot any data (or response, error, misfit) cube nicely."""
         if vec is None:
             vec = np.array(self.data).flat
             print(len(vec))
@@ -296,7 +297,7 @@ class MRS():
         return clim
 
     def showDataAndError(self, figsize=(10, 8), show=False):
-        """show data cube and error cube"""
+        """Show data cube along with error cube."""
         fig, ax = plt.subplots(1, 2, figsize=figsize)
         self.showCube(ax[0], self.data * 1e9, islog=False)
         self.showCube(ax[1], self.error * 1e9, islog=True)
@@ -305,7 +306,7 @@ class MRS():
         return fig, ax
 
     def showKernel(self, ax=None):
-        """show the kernel as matrix"""
+        """Show the kernel as matrix (Q over z)."""
         if ax is None:
             fig, ax = plt.subplots()
         ax.imshow(self.K.T, interpolation='nearest', aspect='auto')
@@ -329,7 +330,7 @@ class MRS():
         return fig, ax
 
     def createFOP(self, nlay=3, verbose=True, **kwargs):
-        """create forward operator instance"""
+        """Create forward operator instance."""
         self.nlay = nlay
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
         for i in range(3):
@@ -338,7 +339,7 @@ class MRS():
                                            self.upperBound[i], "log")
 
     def createInv(self, nlay=3, lam=100., verbose=True, **kwargs):
-        """ create inversion instance (and fop if necessary with nlay) """
+        """Create inversion instance (and fop if necessary with nlay)."""
         if self.f is None or self.nlay != nlay:
             self.createFOP(nlay)
         self.INV = pg.RInversion(self.data, self.f, verbose)
@@ -352,7 +353,7 @@ class MRS():
 
     def run(self, nlay=3, lam=100., startvec=None,
             verbose=True, uncertainty=False, **kwargs):
-        """ easiest variant doing all (create fop and inv) in one call """
+        """Easiest variant doing all (create fop and inv) in one call."""
         if self.INV is None or self.nlay != nlay:
             self.INV = self.createInv(nlay, lam, verbose, **kwargs)
         self.INV.setVerbose(verbose)
@@ -370,7 +371,7 @@ class MRS():
                 print("ready")
 
     def splitModel(self, model=None):
-        """split model vector into d, theta and T2*"""
+        """Split model vector into d, theta and T2*."""
         if model is None:
             model = self.model
         nl = self.nlay
@@ -380,11 +381,11 @@ class MRS():
         return thk, wc, t2
 
     def result(self):
-        """return block model results"""
+        """Return block model results (thk, wc and T2 vectors)."""
         return self.splitModel()
 
     def showResult(self, figsize=(10, 8), save='', fig=None, ax=None):
-        """show theta(z) and T2*(z) (+uncertainties if there)"""
+        """Show theta(z) and T2*(z) (+uncertainties if there)."""
         if ax is None:
             fig, ax = plt.subplots(1, 2, sharey=True, figsize=figsize)
         thk, wc, t2 = self.splitModel()
@@ -403,7 +404,7 @@ class MRS():
 
     def showResultAndFit(self, figsize=(12, 10), save='', plotmisfit=False,
                          maxdep=0, clim=None):
-        """show theta(z), T2*(z), data and model response"""
+        """Show ec(z), T2*(z), data and model response."""
         fig, ax = plt.subplots(2, 2 + plotmisfit, figsize=figsize)
         thk, wc, t2 = self.splitModel()
         showWC(ax[0, 0], thk, wc, maxdep=maxdep)
@@ -439,7 +440,7 @@ class MRS():
         return fig, ax
 
     def saveResult(self, filename):
-        """save inversion result to column text file"""
+        """Save inversion result to column text file for later use."""
         thk, wc, t2 = self.splitModel()
         z = np.hstack((0., np.cumsum(thk)))
         ALL = np.column_stack((z, wc, t2))
@@ -455,7 +456,7 @@ class MRS():
         np.savetxt(filename, ALL, fmt='%.3f')
 
     def loadResult(self, filename):
-        """load inversion result from column file"""
+        """Load inversion result from column file."""
         A = np.loadtxt(filename)
         z, wc, t2 = A[:, 0], A[:, 1], A[:, 2]
         thk = np.diff(z)
@@ -472,7 +473,7 @@ class MRS():
             self.modelU = np.hstack((thkU, wcU, t2U))
 
     def calcMCM(self):
-        """compute model covariance matrix"""
+        """Compute linear model covariance matrix."""
         J = gmat2numpy(self.f.jacobian())  # (linear) jacobian matrix
         D = np.diag(1 / self.error)
         DJ = D.dot(J)
@@ -485,13 +486,13 @@ class MRS():
         return var, MCMs
 
     def calcMCMbounds(self):
-        """comute model bounds using covariance matrix diagonals"""
+        """Compute model bounds using covariance matrix diagonals."""
         self.mcm = self.calcMCM()[0]
         self.modelL = self.model - self.mcm
         self.modelU = self.model + self.mcm
 
     def genMod(self, individual):
-        """ generate (GA) model from random vector (0-1) using model bounds """
+        """Generate (GA) model from random vector (0-1) using model bounds."""
         model = np.asarray(individual) * (self.lUB - self.lLB) + self.lLB
         if self.logpar:
             return pg.exp(model)
@@ -500,21 +501,26 @@ class MRS():
 
     def runEA(self, nlay=None, eatype='GA', pop_size=100, num_gen=100,
               runs=1, mp_num_cpus=8, **kwargs):
-        """ Run evolutionary algorithm using inspyred library
+        """Run evolutionary algorithm using the inspyred library
 
-            Parameters
-            ----------
-            nlay : int - number of layers\n
-            pop_size : int - population size\n
-            num_gen : int - number of generations\n
-            runs : int - number of independent runs (with random population)\n
-            eatype : string - algorithm, choose among:\n
-            'GA' - Genetic Algorithm [default]\n
-            'SA' - Simulated Annealing\n
-            'DEA' - Discrete Evolutionary Algorithm\n
-            'PSO' - Particle Swarm Optimization\n
-            'ACS' - Ant Colony Strategy\n
-            'ES' - Evolutionary Strategy
+        Parameters
+        ----------
+        nlay : int [taken from classic fop if not given]
+            number of layers\n
+        pop_size : int [100]
+            population size\n
+        num_gen : int [100]
+            number of generations\n
+        runs : int [pop_size*num_gen]
+            number of independent runs (with random population)\n
+        eatype : string ['GA']
+            algorithm, choose among:\n
+                'GA' - Genetic Algorithm [default]\n
+                'SA' - Simulated Annealing\n
+                'DEA' - Discrete Evolutionary Algorithm\n
+                'PSO' - Particle Swarm Optimization\n
+                'ACS' - Ant Colony Strategy\n
+                'ES' - Evolutionary Strategy
         """
         import inspyred
         import random
@@ -606,13 +612,14 @@ class MRS():
         print('minimum fitness of ' + str(min(self.fits)))
 
     def plotPopulation(self, maxfitness=None, fitratio=1.05, savefile=True):
-        """ Plot fittest individuals (fitness<maxfitness) as 1d models
+        """Plot fittest individuals (fitness<maxfitness) as 1d models
 
         Parameters
         ----------
-        maxfitness : float - maximum fitness value (absolute) OR
-
-        fitratio : float [1.05] - maximum ratio to minimum fitness
+        maxfitness : float
+            maximum fitness value (absolute) OR
+        fitratio : float [1.05]
+            maximum ratio to minimum fitness
         """
         if maxfitness is None:
             maxfitness = min(self.fits) * fitratio
@@ -650,8 +657,7 @@ class MRS():
         plt.show()
 
     def plotEAstatistics(self, fname=None):
-        """plot Evolutionary Algorithm statistics (best, worst, ...) over time
-        """
+        """Plot EA statistics (best, worst, ...) over time."""
         if fname is None:
             fname = self.EAstatfile
         gen, psize, worst, best, med, avg, std = np.genfromtxt(

@@ -41,7 +41,7 @@ from pygimli.mplviewer import drawModel1D
 
 
 def showErrorBars(ax, thk, val, thkL, thkU, valL, valU, *args, **kwargs):
-    """plot error bars into a plot"""
+    """Plot wc and t2 models with error bars."""
     zb = np.cumsum(thk)
     zm = np.hstack((zb - thk / 2, zb[-1] * 1.2))  # zb[-1]+thk[-1]/2))
     valm = (val[:-1] + val[1:]) / 2
@@ -53,7 +53,7 @@ def showErrorBars(ax, thk, val, thkL, thkU, valL, valU, *args, **kwargs):
 
 
 def showWC(ax, thk, wc, wmin=0., wmax=0.45, maxdep=0., dw=0.05, **kwargs):
-    """show water content function nicely"""
+    """Show water content function nicely."""
     drawModel1D(ax, thk, wc, xlabel=r'$\theta$')
     ax.set_xlim(0., 0.45)
     if maxdep > 0.:
@@ -64,13 +64,9 @@ def showWC(ax, thk, wc, wmin=0., wmax=0.45, maxdep=0., dw=0.05, **kwargs):
 
 
 def showT2(ax, thk, t2, maxdep=0., **kwargs):
-    """show T2 function nicely"""
-    drawModel1D(
-        ax,
-        thk,
-        t2 * 1e3,
-        xlabel=r'$T_2^*$ [ms]',
-        plotfunction='semilogx')
+    """Show T2 function nicely."""
+    drawModel1D(ax, thk, t2*1e3, xlabel=r'$T_2^*$ [ms]',
+                plotfunction='semilogx')
     tmin = min(20, min(t2) * 0.9e3)
     tmax = max(500, max(t2) * 1.1e3)
     ax.set_xlim(tmin, tmax)

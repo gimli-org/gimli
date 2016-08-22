@@ -5,7 +5,6 @@
 from .mrs import MRS  # change to pygimli.physics.mrs
 
 if __name__ == "__main__":
-
     datafile = 'example.mrsi'  # MRSmatlab inversion (data+kernel) file
     mrs = MRS(datafile)  # initialize and read file
     print(mrs)  # displays some parameters
