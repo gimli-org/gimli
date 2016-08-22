@@ -4,7 +4,7 @@
 import sys
 import os
 
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 showMesh3DFunct = 'showMesh3DMayvi'
 

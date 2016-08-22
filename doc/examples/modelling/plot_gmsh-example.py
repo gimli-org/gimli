@@ -176,7 +176,7 @@ regions using an external mesh generator (`Gmsh <http://www.geuz.org/gmsh>`_).
 # saved to the binary format.
 
 import subprocess
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.meshtools import readGmsh

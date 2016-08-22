@@ -207,6 +207,14 @@ code.descname, code.descclassname, code.xref.py.py-mod.docutils.literal, code.xr
     border: none;
 }
 
+table.longtable.docutils a {
+    font-weight: bold;
+}
+
+table.longtable.docutils a:hover {
+    text-decoration: underline;
+}
+
 span.pre {
     padding: 1px 1px;
     color: #002b36;
@@ -306,15 +314,6 @@ span.pre {
 }
 .sphx-glr-script-out+ p {
     margin-top: 1.8em;
-}
-div.highlight-python pre a {
-    color: #0000ff;
-    text-decoration: underline;
-}
-div.highlight-python pre a {
-    font-weight: bold;
-    color: #0000ff;
-    text-decoration: underline;
 }
 
 .sphx-glr-script-out pre {
@@ -525,11 +524,10 @@ i.icon-search {
     font-weight: bold;
 }
 div.highlight-python pre a {
-    /* font-weight: bold; */
-
+    font-weight: bold;
     color: #107896;
     text-decoration: underline;
 }
 div.highlight-python pre a:hover {
-    font-weight: bold;
+    color: #0088cc;
 }

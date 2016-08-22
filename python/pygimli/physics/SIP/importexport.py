@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Import/Export for SIP data."""
 
+import codecs
+
 import numpy as np
 import re
 
@@ -117,7 +119,10 @@ def readSIP256file(resfile, verbose=False):
     header = {}
     LINE = []
     dataAct = False
-    with open(resfile, 'r', errors='replace') as f:
+
+
+    with codecs.open(resfile, 'r', errors = 'replace') as f:
+    #with open(resfile, 'r', errors='replace') as f:
         for line in f:
             if dataAct:
                 LINE.append(line)

@@ -7,9 +7,12 @@
 $(document).ready(function() {
     /* Add a [>>>] button on the top-right corner of code samples to hide
      * the >>> and ... prompts and the output and thus make the code
-     * copyable. */
+     * copyable.
+     * Note: This JS snippet was taken from the official python.org
+     * documentation site.*/
     var div = $('.highlight-python .highlight,' +
-                '.highlight-python3 .highlight')
+                '.highlight-python3 .highlight,' +
+                '.highlight-default .highlight')
     var pre = div.find('pre');
 
     // get the styles from the current theme
@@ -22,9 +25,9 @@ $(document).ready(function() {
     var button_styles = {
         'cursor':'pointer', 'position': 'absolute', 'top': '0', 'right': '0',
         'border-color': border_color, 'border-style': border_style,
-        'border-width': border_width, 'color': border_color, 'text-size': '75%',
-        'font-family': 'monospace', 'padding-left': '0.2em', 'padding-right': '0.2em',
-        'border-radius': '0 3px 0 0'
+        'font-weight': 'bold', 'border-width': border_width, 'color': '#717171',
+        'text-size': '75%', 'font-family': 'monospace', 'padding-left': '0.2em',
+        'padding-right': '0.2em', 'border-radius': '0 3px 0 0'
     }
 
     // create and add the button to all the code blocks that contain >>>
@@ -64,3 +67,4 @@ $(document).ready(function() {
             button.data('hidden', 'false');
         }
     });
+});

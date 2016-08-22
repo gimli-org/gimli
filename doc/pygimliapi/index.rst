@@ -3,6 +3,16 @@
 pyGIMLi API Reference
 =====================
 
+.. only:: latex
+
+  .. note::
+
+    In the following, all Python modules, functions and classes are documented.
+    For a reference of the C++ part of the code, please visit:
+    http://pygimli.org/gimliapi/.
+
+.. rubric:: Module overview
+
 .. currentmodule:: pygimli
 
 .. autosummary::
@@ -18,3 +28,10 @@ pyGIMLi API Reference
   solver
   utils
   viewer
+
+.. only:: latex
+
+  .. toctree::
+    :glob:
+
+    _generated/*

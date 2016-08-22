@@ -22,6 +22,7 @@ from os import path
 from os.path import join
 
 import matplotlib
+matplotlib.use("Agg")
 import pip
 import pkg_resources
 import sphinx
@@ -31,7 +32,6 @@ from pygimli.utils import boxprint
 from sidebar_gallery import make_gallery
 
 # for doc rendering on headless machines (jenkins server)
-matplotlib.use("Agg")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -169,6 +169,8 @@ plot_rcparams = {
     'figure.figsize': (3 * phi, 3),
     'figure.dpi': 100,
 }
+
+plot_pre_code = "import matplotlib.pyplot as plt\n"
 
 matplotlib.rcParams.update(plot_rcparams)
 
