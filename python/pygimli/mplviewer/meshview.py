@@ -33,7 +33,7 @@ class CellBrowser(object):
 
     Examples
     --------
-    >>> from matplotlib import pyplot as plt
+    >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawModel
     >>> from pygimli.mplviewer import CellBrowser

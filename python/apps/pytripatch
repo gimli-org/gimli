@@ -30,7 +30,7 @@ from pygimli.mplviewer import drawParameterConstraints, CellBrowser
 from pygimli.utils.base import interperc
 
 import matplotlib as mpl
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 
 

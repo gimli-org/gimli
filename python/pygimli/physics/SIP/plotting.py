@@ -12,6 +12,8 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
     """show amplitude spectrum"""
     lab = kwargs.pop('label', 'obs')
     ax.semilogx(freq, amp, marker=marker, label=lab, **kwargs)
+    if ylog is None:
+        ylog = (min(amp) > 0)
     if ylog:
         ax.set_yscale('log')
     ax.set_ylim(min(amp) * .99, max(amp * 1.01))

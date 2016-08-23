@@ -29,6 +29,7 @@ class SIPSpectrum():
         """
         self.basename = basename
         self.fig = {}
+        self.f = None
         self.epsilon0 = 8.854e-12
         if filename is not None:
             flow = filename.lower()
@@ -60,7 +61,7 @@ class SIPSpectrum():
     def __str__(self):
         """Human readable string representation of the class."""
         out = self.__class__.__name__ + " object"
-        if hasattr(self, 'f'):
+        if self.f is not None:
             if hasattr(self.f, '__iter__'):
                 out += "\nnf=" + str(len(self.f)) + " min/max="
                 out += str(min(self.f)) + "/" + str(max(self.f))
@@ -96,7 +97,7 @@ class SIPSpectrum():
         self.f = self.f[ind]
 
     def cutF(self, fcut=1e99):
-        """Cut frequencies above a certain value."""
+        """Cut (delete) frequencies above a certain value fcut."""
         self.amp = self.amp[self.f <= fcut]
         self.phi = self.phi[self.f <= fcut]
         if hasattr(self, 'phiOrg'):
@@ -109,7 +110,7 @@ class SIPSpectrum():
         return self.f * 2 * np.pi
 
     def realimag(self, cond=False):
-        """Real and imaginary part."""
+        """Real and imaginary part of resistivity/conductivity (cond=True)."""
         if cond:
             amp = 1. / self.amp
         else:
@@ -125,14 +126,15 @@ class SIPSpectrum():
         return zNormRe, zNormIm
 
     def showPhase(self, ax=None, **kwargs):
-        """Plot phase spectrum."""
+        """Plot phase spectrum (-phi over frequency)."""
         if ax is None:
             fig, ax = plt.subplots()
             self.fig['phase'] = fig
 
         showPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
 
-    def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None):
+    def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None,
+                 **kwargs):
         """Show amplitude and phase spectrum in two subplots
 
         Parameters
@@ -158,19 +160,20 @@ class SIPSpectrum():
                 re, im = self.realimag(cond=cond)
 
             fig, ax = showSpectrum(self.f, re, im, ylog=cond, nrows=nrows,
-                                   ax=ax)
+                                   ax=ax, **kwargs)
             self.fig['data'] = fig
             ax[0].set_ylabel('real part'+addstr)
             ax[1].set_ylabel('imaginary part'+addstr)
         else:
-            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax)
+            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax,
+                                   **kwargs)
             self.fig['data'] = fig
 
         plt.show(block=False)
         return fig, ax
 
     def getKK(self, use0=False):
-        """retrieve Kramers-Kronig values (re->im and im->re)"""
+        """Compute Kramers-Kronig impedance values (re->im and im->re)."""
         re, im = self.realimag()
         if False:
             ind = np.argsort(self.f)
@@ -185,13 +188,13 @@ class SIPSpectrum():
         return re, im
 
     def getPhiKK(self, use0=False):
-        """ get phase from Kramers-Kronig relations """
+        """Compute phase from Kramers-Kronig quantities."""
         re, im = self.realimag()
         reKK, imKK = self.getKK(use0)
         return np.arctan2(imKK, re)
 
     def showDataKK(self, use0=False):
-        """show data as real/imag subplots along with Kramers-Kronig curves"""
+        """Show data as real/imag subplots along with Kramers-Kronig curves"""
         fig, ax = self.showData(reim=True)
         self.fig['dataKK'] = fig
         reKK, imKK = self.getKK(use0)
@@ -202,7 +205,7 @@ class SIPSpectrum():
             ax[i].legend()
 
     def checkCRKK(self, useEps=False, use0=False, ax=None):
-        """check coupling removal (CR) by Kramers-Kronig (KK) relation"""
+        """Check coupling removal (CR) by Kramers-Kronig (KK) relation"""
         if ax is None:
             fig, ax = plt.subplots()
             self.fig['dataCRKK'] = fig
@@ -217,9 +220,9 @@ class SIPSpectrum():
         ax.grid(True)
         ax.legend(loc='best')
 
-    def showPolarPlot(self):
-        """show data in a polar plot (real against imaginary parts)"""
-        re, im = self.realimag()
+    def showPolarPlot(self, cond=False):
+        """Show data in a polar plot (imaginary vs. real parts)."""
+        re, im = self.realimag(cond=cond)
         fig, ax = plt.subplots()
         self.fig['polar'] = fig
         ax.plot(re, im, 'b.')
@@ -233,13 +236,26 @@ class SIPSpectrum():
         return fig, ax
 
     def epsilonR(self):
-        """calculate relative permittivity from imaginary conductivity"""
+        """Calculate relative permittivity from imaginary conductivity"""
         ECr, ECi = self.realimag(cond=True)
         we0 = self.f * 2 * pi * self.epsilon0  # Omega epsilon_0
         return ECi/we0
 
     def determineEpsilon(self, mode=0, ECr=None, ECi=None):
-        """Retrieve frequency-independent epsilon for f->Inf."""
+        """Retrieve frequency-independent epsilon for f->Inf.
+
+        Parameters
+        ----------
+        mode : int
+            Operation mode:
+                =0 - extrapolate using two highest frequencies (default)
+                <0 - take last -n frequencies
+                >0 - take n-th frequency
+        Returns
+        -------
+        er : float
+            relative permittivity (epsilon) value (dimensionless)
+        """
         if ECr is None or ECi is None:
             ECr, ECi = self.realimag(cond=True)
         epsr = ECi / self.omega() / self.epsilon0
@@ -249,8 +265,8 @@ class SIPSpectrum():
             f1[nmax] = 0
             nmax1 = np.argmax(f1)
             er = 2*epsr[nmax] - epsr[nmax1]
-        elif mode > 1:
-            er = np.median(epsr[-mode:])
+        elif mode < 0:
+            er = np.median(epsr[mode:])
         else:
             er = epsr[nmax]
 
@@ -263,11 +279,13 @@ class SIPSpectrum():
         ----------
         er : float
             relative epsilon to correct for (else automatically determined)
+        mode : int
+            automatic epsilon determination mode (see determineEpsilon)
 
         Returns
         -------
         er : float
-            determined er
+            determined permittivity (see determineEpsilon)
         """
         ECr, ECi = self.realimag(cond=True)
         if er is None:  #
@@ -302,8 +320,8 @@ class SIPSpectrum():
         if mpar[0] == 0:
             mpar[0] = 1. - min(self.amp)/max(self.amp)
             print("mpar", mpar)
-        self.mCC, self.phiCC = fitCCPhi(self.f, self.phi, ePhi, lam, mpar=mpar,
-                                        taupar=taupar, cpar=cpar)
+        self.mCC, self.phiCC, self.chi2 = fitCCPhi(
+            self.f, self.phi, ePhi, lam, mpar=mpar, taupar=taupar, cpar=cpar)
 
     def fit2CCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
                   taupar1=(0, 1e-5, 1), taupar2=(0, 1e-1, 1000),
@@ -339,7 +357,7 @@ class SIPSpectrum():
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                 cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
-        """fit a Cole-Cole term with additional EM term to phase
+        """Fit a Cole-Cole term with additional EM term to phase
 
         Parameters
         ----------
@@ -362,12 +380,22 @@ class SIPSpectrum():
                 np.angle(relaxationTerm(self.f, self.mCC[3]))
 
     def fitColeCole(self, useCond=False, **kwargs):
-        """fit a Cole-Cole model to the data
+        """Fit a Cole-Cole model to the phase data
 
         Parameters
         ----------
         useCond : bool
             use conductivity form of Cole-Cole model instead of resistivity
+        error : float [0.01]
+            absolute phase error
+        lam : float [1000]
+            initial regularization parameter
+        mpar : tuple/list (0, 0, 1)
+            inversion parameters for chargeability: start, lower, upper bound
+        taupar : tuple/list (1e-2, 1e-5, 100)
+            inversion parameters for time constant: start, lower, upper bound
+        cpar : tuple/list (0.25, 0, 1)
+            inversion parameters for Cole exponent: start, lower, upper bound
         """
         if useCond:  # use conductivity formulation instead of resistivity
             self.mCC, self.ampCC, self.phiCC = fitCCCC(self.f, self.amp,
@@ -458,15 +486,15 @@ class SIPSpectrum():
                 ax[2].semilogx(self.tau, self.mDD, 'r-')
 
     def totalChargeability(self):
-        """total chargeability from as Debye curve as curve integral"""
+        """Total chargeability (sum) from Debye curve."""
         return sum(self.mDD)
 
     def logMeanTau(self):
-        """mean logarithmic relaxation time as 50% cumulative log curve"""
+        """Mean logarithmic relaxation time (50% cumulative log curve)."""
         return exp(np.sum(np.log(self.tau) * self.mDD) / sum(self.mDD))
 
     def showAll(self, save=False):
-        """plot spectrum, Cole-Cole fit and Debye distribution"""
+        """Plot spectrum, Cole-Cole fit and Debye distribution"""
         # generate title strings
         if hasattr(self, 'mCC'):
             mCC = self.mCC
@@ -524,7 +552,7 @@ class SIPSpectrum():
         return fig, ax
 
     def saveFigures(self, name=None, ext='pdf'):
-        """save all existing figures to files"""
+        """Save all existing figures to files using file basename."""
         if name is None:
             name = self.basename
         if name is None or not any(name):

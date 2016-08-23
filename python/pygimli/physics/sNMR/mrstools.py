@@ -17,7 +17,19 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
     """
 
     def __init__(self, nlay, kr, ki, zvec, t, verbose=False):
-        """constructor."""
+        """Initialize modelling class.
+
+        Parameters
+        ----------
+        nlay : int [3]
+            number of layers
+        kr/ki : RMatrix
+            real/imaginary kernel functions
+        zvec : array
+            vertical discretization of the kernel
+        t : array
+            time discretization
+        """
         mesh = pg.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
         pg.ModellingBase.__init__(self, mesh, verbose)
         self.kr_ = kr
@@ -29,7 +41,7 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
         self.nt_ = len(t)
 
     def response(self, par):
-        """compute response function."""
+        """Compute response function."""
         nl = self.nl_
         thk = par(0, nl - 1)
         wc = par(nl - 1, 2 * nl - 1)
@@ -89,26 +101,36 @@ def loadmrsproject(mydir):
 
 def qtblockmodelling(mydir, nlay,
                      startvec=None, lowerbound=None, upperbound=None):
-    """Loads data from dir, creates forward operator
+    """Loads data from dir, creates forward operator (old style)
 
     Parameters
     ----------
-    mydir :
+    mydir : string
+        directory to load the files (kernel, data) from
+    nlay : int
+        number of layers
+    startvec : array
+        starting vector
+    lowerbound : tuple/list of 3 values
+        lower bound for thickness, water content and relaxation time
+    upperbound : tuple/list of 3 values
+        upper bound for thickness, water content and relaxation time
 
-    nlay :
-
-    startvec :
-
-    lowerbound :
-
-    upperbound :
+    Returns
+    -------
+    t : array
+        time vector
+    datvec : array
+        data cube in a vector
+    f : pygimli modelling class
+        forward operator
 
     Examples
     --------
 
-    t,datvec,f=qtblockmodelling(mydir,nlay,startvec=(10,0.3,0.2),
-                                lowerbound=(0.1,0,0.02),
-                                upperbound(100.,0.45,,0.5))
+    t,datvec,f = qtblockmodelling(mydir,nlay,startvec=(10,0.3,0.2),
+                                  lowerbound=(0.1,0,0.02),
+                                  upperbound(100.,0.45,,0.5))
     """
     KR, KI, zvec, t, datvec = loadmrsproject(mydir)
     if startvec is None:
@@ -134,7 +156,33 @@ def qtblockmodelling(mydir, nlay,
 
 def showqtresultfit(thk, wc, t2, datvec, resp, t,
                     islog=True, clim=None, nu=3, nv=2):
-    """show mrs qt result and data fit
+    """Show mrs qt result and data fit.
+
+    Parameters
+    ----------
+    thk : array of length nlay-1
+        thickness vector
+    wc : array of length nlay
+        water content vector
+    t2 : array of length nlay
+        relaxation time vector
+    datvec : array of length len(t)*len(Q)
+        data vector
+    t : array
+        time vector
+    islog : bool [True]
+        use logarithms for colour scale
+    clim : tuple of 2 floats
+        color scale of data cube (in nV)
+    nu/nv : int
+        number of rows/columns for subplot
+
+    Returns
+    -------
+    ax : mpl.Axes object
+
+    Examples
+    --------
     showqtresultfit(thk,wc,t2,datvec,resp,t,islog=True,clim=None,nu=3,nv=2)"""
     if clim is None:
         cma = max(datvec)
@@ -148,19 +196,14 @@ def showqtresultfit(thk, wc, t2, datvec, resp, t,
     nq = len(datvec) / nt
     si = (nq, nt)
 
-#    plt.clf()
-#    plt.subplot(nu,nv,1)
-
     fig = plt.figure(1)
     ax1 = fig.add_subplot(nu, nv, 1)
 
     draw1dmodel(wc, thk, islog=False, xlab=r'$\theta$')
-#    plt.subplot(nu,nv,3)
     ax3 = fig.add_subplot(nu, nv, 3)
     draw1dmodel(t2, thk, xlab='T2* in ms')
     ax3.set_xticks([0.02, 0.05, 0.1, 0.2, 0.5])
     ax3.set_xticklabels(('0.02', '0.05', '0.1', '0.2', '0.5'))
-#    plt.subplot(nu,nv,2)
     ax2 = fig.add_subplot(nu, nv, 2)
     if islog:
         plt.imshow(np.log10(np.array(datvec).reshape(si)),
@@ -169,7 +212,6 @@ def showqtresultfit(thk, wc, t2, datvec, resp, t,
         plt.imshow(np.array(datvec).reshape(si),
                    interpolation='nearest', aspect='auto')
     plt.clim(clim)
-    # plt.subplot(nu,nv,4)
     ax4 = fig.add_subplot(nu, nv, 4)
     if islog:
         plt.imshow(np.log10(resp.reshape(si)),
@@ -179,14 +221,12 @@ def showqtresultfit(thk, wc, t2, datvec, resp, t,
                    interpolation='nearest', aspect='auto')
     misfit = np.array(datvec - resp)
     plt.clim(clim)
-#    plt.subplot(nu,nv,5)
     ax5 = fig.add_subplot(nu, nv, 5)
     plt.hist(misfit, bins=30)
     plt.axis('tight')
     plt.grid(which='both')
     plt.text(plt.xlim()[0], np.mean(plt.ylim()),
              ' std=%g nV' % rndig(np.std(misfit), 3))
-#    plt.subplot(nu,nv,6)
     ax6 = fig.add_subplot(nu, nv, 6)
     plt.imshow(misfit.reshape(si), interpolation='nearest', aspect='auto')
     ax = [ax1, ax2, ax3, ax4, ax5, ax6]
