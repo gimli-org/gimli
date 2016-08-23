@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Frequency Domain Electromagnetics (FDEM) functions and class
-"""
+"""Frequency Domain Electromagnetics (FDEM) functions and class."""
 
 import pygimli as pg
 from pygimli.mplviewer import show1dmodel, drawModel1D
@@ -88,7 +86,7 @@ class FDEM2dFOP(pg.ModellingBase):
     """FDEM 2d-LCI modelling class based on BlockMatrices."""
 
     def __init__(self, data, nlay=2, verbose=False):
-        """ Parameters: FDEM data class and number of layers """
+        """Parameters: FDEM data class and number of layers."""
         super(FDEM2dFOP, self).__init__(verbose)
         self.nlay = nlay
         self.FOP = data.FOP(nlay)
@@ -112,7 +110,7 @@ class FDEM2dFOP(pg.ModellingBase):
         print(self.J.rows(), self.J.cols())
 
     def response(self, model):
-        """ cut-together forward responses of all soundings """
+        """Cut together forward responses of all soundings."""
         modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
         resp = pg.RVector(0)
         for modi in modA:
@@ -121,6 +119,7 @@ class FDEM2dFOP(pg.ModellingBase):
         return resp
 
     def createJacobian(self, model):
+        """Create Jacobian matrix by creating individual Jacobians."""
         modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
         for i in range(self.nx):
             self.FOP1d[i].createJacobian(modA[i])
@@ -139,6 +138,7 @@ class HEM1dWithElevation(pg.ModellingBase):
         self.setMesh(self.mesh_)
 
     def response(self, model):
+        """Return forward response for a given model."""
         thk = model(0, self.nlay)  # all thicknesses including bird height
         res = model(self.nlay - 1, self.nlay * 2)
         res[0] = 10000.
@@ -151,33 +151,32 @@ class FDEM():
     def __init__(self, x=None, freqs=None,
                  coilSpacing=None, inphase=None, outphase=None,
                  filename=None, scaleFreeAir=False):
-        r"""
-            Initialize data class and load data. Provide filename or data.
-            If filename is given, data is loaded, overwriting settings.
+        r"""Initialize data class and load data. Provide filename or data.
 
-            Parameters
-            ----------
-            x: array
-                Array of measurement positions
+        If filename is given, data is loaded, overwriting settings.
 
-            freq: array
-                Measured frequencies
+        Parameters
+        ----------
+        x: array
+            Array of measurement positions
 
-            coilSpacing : float
-                Distance between 2 two coils
+        freq: array
+            Measured frequencies
 
-            inphase : array
-                real part of :math:`|amplitude| * \exp^{i phase}`
+        coilSpacing : float
+            Distance between 2 two coils
 
-            outphase : array
-                imaginary part of :math:`|amplitude| * \exp^{i phase}`
+        inphase : array
+            real part of :math:`|amplitude| * \exp^{i phase}`
 
-            filename : str
-                Filename to read from. Supported: .xyz (MaxMin), *.txt (Emsys)
+        outphase : array
+            imaginary part of :math:`|amplitude| * \exp^{i phase}`
 
-            scaleFreeAir : bool
-                Scale inphase and outphase data by free air (primary) solution
+        filename : str
+            Filename to read from. Supported: .xyz (MaxMin), *.txt (Emsys)
 
+        scaleFreeAir : bool
+            Scale inphase and outphase data by free air (primary) solution
         """
         if isinstance(x, str) and freqs is None:  # string/file init
             filename = x
@@ -229,9 +228,9 @@ class FDEM():
             return part1
 
     def importEmsysAsciiData(self, filename, verbose=False):
-        """Import data from emsys text export.
+        """Import data from emsys text export file.
 
-            yields: positions, data, frequencies, error and geometry
+        yields: positions, data, frequencies, error and geometry
         """
         cols = (1, 4, 6, 8, 9, 12, 15, 16)
         xx, sep, f, pf, ip, op, hmod, q = np.loadtxt(filename, skiprows=1,
@@ -324,7 +323,7 @@ class FDEM():
         """Import MaxMin IPX format with pos, data, frequencies & geometry."""
         delim = None
         fid = open(filename)
-
+        aline = ''
         for i, aline in enumerate(fid):
             if aline.split()[0][0].isdigit():  # number found
                 break
@@ -360,17 +359,16 @@ class FDEM():
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
 
     def freq(self):
-        """ Return active (i.e., non-deactivated) frequencies """
+        """Return active (i.e., non-deactivated) frequencies."""
         return self.frequencies[self.activeFreq]
 
     def FOP(self, nlay=2):
-        """Forward modelling operator using a block discretization
+        """Forward modelling operator using a block discretization.
 
-            Parameters
-            ----------
-            nlay : int
-                Number of blocks
-
+        Parameters
+        ----------
+        nlay : int
+            Number of blocks
         """
         return pg.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
                                   -self.height)
@@ -378,9 +376,9 @@ class FDEM():
     def FOPsmooth(self, zvec):
         """Forward modelling operator using fixed layers (smooth inversion)
 
-            Parameters
-            ----------
-            zvec : array
+        Parameters
+        ----------
+        zvec : array
         """
         return pg.FDEM1dRhoModelling(zvec, self.freq(), self.coilSpacing,
                                      -self.height)
@@ -388,10 +386,13 @@ class FDEM():
     def selectData(self, xpos=0):
         """Select sounding at a specific position or by number.
 
-            Retrieve inphase, outphase and error(if exist) vector from index
-            or near given position
+        Retrieve inphase, outphase and error(if exist) vector from index
+        or near given position
 
-            Return: array, array, array|None
+        Returns:
+            IP : array
+            OP : array
+            ERR : array or None (if no error is specified)
         """
         # check for index
         if isinstance(xpos, int) and (xpos < len(self.x)) and (xpos >= 0):
@@ -427,34 +428,32 @@ class FDEM():
                  stmod=30., lam=100., lBound=0., uBound=0., verbose=False):
         """Create and return Gimli inversion instance for block inversion.
 
+        Parameters
+        ----------
+        xpos : array
+            position vector
 
-            Parameters
-            ----------
-            xpos : array
-                position vector
+        nLay : int
+            Number of layers of the model to be determined OR
+            vector of layer numbers OR forward operator
 
-            nLay : int
-                Number of layers of the model to be determined OR
-                vector of layer numbers OR
-                forward operator
+        noise : float
+            Absolute data err in percent
 
-            noise : float
-                Absolute data err in percent
+        stmod : float or pg.RVector
+            Starting model
 
-            stmod : float or pg.RVector
-                Starting model
+        lam : float
+            Global regularization parameter lambda.
 
-            lam : float
-                Global regularization parameter lambda.
+        lBound : float
+            Lower boundary for the model
 
-            lBound : float
-                Lower boundary for the model
+        uBound : float
+            Upper boundary for the model. 0 means no upper booundary
 
-            uBound : float
-                Upper boundary for the model. 0 means no upper booundary
-
-            verbose : bool
-                Be verbose
+        verbose : bool
+            Be verbose
         """
 
         self.transThk = pg.RTransLog()
@@ -675,7 +674,6 @@ class FDEM():
     def inv2D(self, nlay, lam=100., resL=1., resU=1000., thkL=1.,
               thkU=100., minErr=1.0):
         """2d LCI inversion class."""
-
         if isinstance(nlay, int):
             modVec = pg.RVector(nlay * 2 - 1, 30.)
             cType = 0  # no reference model
