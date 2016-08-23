@@ -131,7 +131,7 @@ except ImportError:
 
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-autoclass_content = "both"
+autoclass_content = "class"
 
 # Get mathjax
 # Formulas disappear after scrolling
@@ -146,11 +146,12 @@ templates_path = [join(SPHINXDOC_PATH, '_templates'),
                   join(DOC_BUILD_DIR, '_templates')]
 
 numpydoc_class_members_toctree = False
-numpydoc_show_class_members = False
+numpydoc_show_class_members = True
 numpydoc_use_plots = True
-plot_formats = [('png', 100), ('pdf', 100)]
-plot_include_source = True
 
+# MPL plot directive settings
+plot_formats = [('png', 96), ('pdf', 96)]
+plot_include_source = True
 phi = (math.sqrt(5) + 1) / 2
 
 plot_rcparams = {
@@ -167,7 +168,6 @@ plot_rcparams = {
     'figure.subplot.top': 0.85,
     'figure.subplot.wspace': 0.4,
     'figure.figsize': (3 * phi, 3),
-    'figure.dpi': 100,
 }
 
 plot_pre_code = "import matplotlib.pyplot as plt\n"

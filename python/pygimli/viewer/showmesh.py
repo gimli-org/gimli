@@ -50,6 +50,11 @@ def show(mesh=None, data=None, **kwargs):
 
     Return the results from the showMesh* functions.
     """
+    if "axes" in kwargs:
+        print("DeprecationWarning: Please use keyword `ax` instead of `axes`.")
+        kwargs["ax"] = kwargs["axes"]
+        1/0
+
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
         ax, cbar = show(mesh[0], data, hold=1, ax=ax, **kwargs)
@@ -70,13 +75,12 @@ def show(mesh=None, data=None, **kwargs):
         ax.set_xlim([xmin, xmax])
         ax.set_ylim([ymin, ymax])
 #        print(ax.get_data_interval())
-        plt.pause(0.01)
         return ax, cbar
 
     if isinstance(mesh, pg.Mesh):
-        if mesh.dimension() == 2:
+        if mesh.dim() == 2:
             return showMesh(mesh, data, **kwargs)
-        elif mesh.dimension() == 3:
+        elif mesh.dim() == 3:
 
             from .mayaview import showMesh3D
 
@@ -253,8 +257,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
             print(colorBar)
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
 
-    plt.tight_layout()
-
     if coverage is not None:
         if len(data) == mesh.cellCount():
             addCoverageAlpha(gci, coverage)
@@ -291,7 +293,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
         print('..done')
 
     return ax, cbar
-# def showMesh(...)
 
 
 def showBoundaryNorm(mesh, normMap=None, **kwargs):
