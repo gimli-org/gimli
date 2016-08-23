@@ -16,7 +16,7 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
     f=MRS1dBlockQTModelling(lay, kr, ki, zvec, t, verbose = False )
     """
 
-    def __init__(self, nlay=3, kr, ki, zvec, t, verbose=False):
+    def __init__(self, nlay, kr, ki, zvec, t, verbose=False):
         """Initialize modelling class.
 
         Parameters
