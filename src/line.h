@@ -81,8 +81,11 @@ public:
     /*! Returns line parameter t that represents the nearest position to the line for the given point p. Feed it to lineAt and you get the nearest point. */
     double nearest(const RVector3 & p) const;
 
-    /*! Apply the line as function. ret = p0_ + (p1_ - p0_) * t;*/
+    /*! Apply the line as function. ret = p0_ + (p1_ - p0_) * t*/
     inline RVector3 at(double t) const { return p0_ + (p1_ - p0_) * t; }
+
+    /*! DEPRECATED use at instead. */
+    inline RVector3 lineAt(double t) const { return at(t); }
 
     /*!  Return the distance between this line and pos,
     http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html;
