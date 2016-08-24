@@ -85,6 +85,17 @@ public:
         this->init_();
     }
 
+    /*! Contructor for forward operator only */
+    Inversion(ModellingBase & forward,
+              bool verbose=false, bool dosave=false)
+    : InversionBase< ModelValType >(), verbose_(verbose),
+        dosave_(dosave), saveModelHistory_(dosave) {
+        this->init_();
+
+        //** init: model_, modelRef, response_
+        this->setForwardOperator(forward);
+    }
+
     /*! Usual constructor. data -- vector of the given data; forward -- the associated forward operator */
     Inversion(const Vec & data, ModellingBase & forward,
               bool verbose=false, bool dosave=false)
@@ -744,6 +755,9 @@ public:
     /*! One iteration step. Return true if the step can be calculated successfully else false is returned. */
     bool oneStep();
 
+    /*! Start the inversion with specific data.*/
+    const Vec & invert(const Vec & data);
+
     /*! Start the inversion procedure from starting model.*/
     const Vec & start();
 
@@ -856,7 +870,16 @@ protected:
 
 /*! Start inversion from starting model. */
 template < class ModelValType >
-const Vector < ModelValType > & Inversion< ModelValType >::start(){ ALLOW_PYTHON_THREADS
+const Vector < ModelValType > & Inversion< ModelValType >::invert(const Vector < ModelValType > & data){
+    this->reset();
+    this->setData(data);
+    return run();
+}
+
+
+/*! Start inversion from starting model. */
+template < class ModelValType >
+const Vector < ModelValType > & Inversion< ModelValType >::start(){
     this->reset();
     return run();
 }
