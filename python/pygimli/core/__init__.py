@@ -48,7 +48,8 @@ from pygimli.solver import solve
 
 
 def showNow():
-    showLater(0)
+    pass
+#    showLater(0)  # not working anymore
 
 __swatch__ = _pygimli_.Stopwatch()
 
