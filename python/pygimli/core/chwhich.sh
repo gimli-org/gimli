@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 PATH=.:$PATH  # make sure it takes the one here which is installed
 for dll in *.dll *.pyd;do 
 objdump.exe -p $dll |grep DLL

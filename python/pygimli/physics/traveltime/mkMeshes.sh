@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 mkdir -p mesh
 
 MESH=mesh/test2d
