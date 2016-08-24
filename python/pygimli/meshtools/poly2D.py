@@ -29,8 +29,7 @@ class Poly2D(object):
     """
 
     def __init__(self, polyfile):
-        """
-        Read a file that specifies topography and subsurface regions.
+        """Read a file that specifies topography and subsurface regions.
 
         The polygons should be specified by an xml file
         """
@@ -46,19 +45,13 @@ class Poly2D(object):
         pass
 
     def load(self, polyfile):
-        """
-        Read polygon info from XML file.
-        Example of XML file:
-
-        """
+        """Read polygon info from XML file (see example.xml)."""
         ET = opt_import("xml.etree.cElementTree", "read in XML files")
         self.doc = ET.parse(polyfile)
         self.parse()
 
     def parse(self):
-        """
-        Parses all polygon regions.
-        """
+        """Parses all polygon regions."""
         root = self.doc.getroot()
 
         for region in root.findall("line"):
@@ -92,9 +85,7 @@ class Poly2D(object):
         return positions
 
     def extractMarker(self, region):
-        """
-        Extracts the position and marker id from a region and returns them.
-        """
+        """Extract positions and marker id from a region and return them."""
 
         marker_id = int(region.get('id'))
         pos = self.extractPoints(region.findall("point[@type='marker']"))[0]
@@ -102,8 +93,7 @@ class Poly2D(object):
         return pos, marker_id
 
     def parseSurface(self, surf):
-        """
-        Parses the surface and creates the parametric domain.
+        """Parses the surface and creates the parametric domain.
 
         The parameter domain will have marker '2' and the outer region will
         have marker '1'.
@@ -127,8 +117,9 @@ class Poly2D(object):
         self.poly.addRegionMarker(marker_pos, marker_id)
 
     def parseRegion(self, region):
-        """
-        Parses a region. Takes care of closing regions if needed and sets
+        """Parse a region.
+
+        Takes care of closing regions if needed and sets
         a marker according to what is specified in the XML.
         """
 
@@ -180,9 +171,7 @@ class Poly2D(object):
             self.poly.addRegionMarker(marker_pos, marker, self.paramaxcellsize)
 
     def getBcMarkerType(self, bc_marker):
-        """
-        Returns a pygimli marker.
-        """
+        """Returns a pygimli marker."""
 
         if bc_marker == "hom_neumann":
             pg_marker = pg.MARKER_BOUND_HOMOGEN_NEUMANN
@@ -199,6 +188,7 @@ class Poly2D(object):
 
     def createMesh(self, only_pd_mesh=False, verbose=False, **kwargs):
         """Generate a mesh from the polygon.
+
         Use the supplied quality if not already specified in the XML.
 
         TODO: Allow overrides through **kwargs
@@ -226,10 +216,9 @@ class Poly2D(object):
         return m_with_bg
 
     def show(self, ax=None, **kwargs):
-        """
-        Diplays the polygon model.
-        """
+        """Diplays the polygonal model using pg.show()."""
 
+        import matplotlib.pyplot as plt
         if ax is None:
             figkeys = ('nrows', 'ncols', 'sharex', 'sharey', 'figsize')
             figargs = dict((k, kwargs.pop(k)) for k in figkeys if k in kwargs)
@@ -238,13 +227,11 @@ class Poly2D(object):
         drawMesh(ax, self.poly, **kwargs)
 
     def export(self, filename):
-        """
-        Export Triangle poly file
-        """
+        """Export Triangle poly file."""
         writePLC(self.poly, filename)
 
     def drawLines(self, ax=None, color='white'):
-        """ just draw edges of a mesh as lines (e.g. onto a model)"""
+        """Draw edges of a mesh as lines (e.g. onto an inversion result)."""
         for b in self.poly.boundaries():
             ax.plot([b.node(0).x(), b.node(1).x()],
                     [b.node(0).y(), b.node(1).y()], color=color)
