@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    WRITEME
+    Lightweight electrical resistivity tomography
 """
 
 from . ert import *

@@ -19,8 +19,8 @@ class MethodManager(object):
         self.dataToken_ = 'nan'
         self.errIsAbsolute = False
 
-        self.mesh = None
-        self.dataContainer = None
+        self.mesh = None  # to be deleted if MethodManagerMesh is used
+        self.dataContainer = None  # dto.
 
         self.fop = self.createFOP_(verbose)
         if self.fop is None:
@@ -28,7 +28,7 @@ class MethodManager(object):
                                 "valid forward operator")
 
         self.tD = None
-        self.tM = None
+        self.tM = None  # why not using a default RTransLog
 
         self.inv = self.createInv_(self.fop, verbose, debug)
         if self.inv is None:
@@ -37,7 +37,7 @@ class MethodManager(object):
         self.setVerbose(verbose)
 
     def __str__(self):
-        """TODO WRITEME."""
+        """String representation of the class."""
         return self.__repr__()
 
     def __repr__(self):
@@ -131,13 +131,13 @@ class MethodManager(object):
 
             -Q, --quiet
 
-            -R, --robustData
+            -R, --robustData: options.robustData
 
-            -B, --blockyModel
+            -B, --blockyModel: options.blockyModel
 
             -l, --lambda: options.lam
 
-            -i, --maxIter: options.depth
+            -i, --maxIter: options.maxIter
 
             --depth: options.depth
 
@@ -169,18 +169,39 @@ class MethodManager(object):
         return parser
 
 
-class MeshMethodManager(MethodManager):
-    """TODO WRITEME """
+class MethodManager1d(MethodManager):
+    """Method Manager base class for managers on a 1d discretization."""
     def __init__(self, **kwargs):
-        """Conszructor."""
+        """Constructor."""
+        super(MethodManager1d, self).__init__(**kwargs)
+        self.nlay = kwargs.pop('nlay', 2)
+        if 'nLayers' in kwargs:
+            self.nlay = kwargs['nLayers']
+        self.nProperties = kwargs.pop('nProperties', 1)
+        self.Occam = kwargs.pop('Occam', False)
+
+
+class MethodManager1dProfile(MethodManager1d):  # does this make sense?
+    """Method manager base class for 1D methods along a profile."""
+    def __init__(self, **kwargs):
+        """Constructor."""
+        super(MethodManager1dProfile, self).__init__(**kwargs)
+
+
+class MeshMethodManager(MethodManager):
+    """Method Manager base class for managers using a (non-1D) mesh."""
+    def __init__(self, **kwargs):
+        """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
+        self.mesh = None
+        self.dataContainer = None
 
     # Mesh related methods
     def createMesh(self, ):
         """Create a mesh aka the parametrization."""
         pass
 
-    def setMesh(self, ):
+    def setMesh(self, mesh):
         """Create a mesh aka the parametrization."""
         pass
 
