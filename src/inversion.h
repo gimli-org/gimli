@@ -771,7 +771,7 @@ public:
 
         double lambda = lambda_;
         double chi2 = getChi2();
-        double fak(2.0);
+        double fak = 2.0, oldchi2 = chi2;
         double dir = 0, olddir = 0;
         bool verbose = verbose_;
 //        setVerbose(false);
@@ -780,6 +780,7 @@ public:
         if (verbose) std::cout << "chi^2 = " << chi2 << " lambda = " << lambda << " dir = " << dir << std::endl;
         int iter = 0;
         while (std::fabs(chi2 - 1.0) > acc and iter < maxiter){
+            if (dir < 0 && chi2 > oldchi2*1.001) break;
             dir = - sign(chi2 - 1.0);                           //** direction: up (1) or down (-1)
             if (dir * olddir == -1) fak = std::pow(fak, 0.6); //** change direction: decrease step
             lambda *= std::pow(fak, dir);                       //** increase or decrease lambda
@@ -788,6 +789,7 @@ public:
             chi2 = getChi2();
             if(verbose) std::cout << "chi^2 = " << chi2 << " lambda = " << lambda << " dir = " << dir << std::endl;
             olddir = dir;                                         //** save old direction for step length
+            oldchi2 = chi2;
             iter++;
         }
         return model;
