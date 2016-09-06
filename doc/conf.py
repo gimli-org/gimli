@@ -132,11 +132,16 @@ except ImportError:
 intersphinx_mapping = {'http://docs.python.org/': None}
 
 autoclass_content = "class"
+autodoc_default_flags = [
+    'members',
+    'undoc-members',
+    'private-members',
+    'show-inheritance'
+]
 
 # Get mathjax
 # Formulas disappear after scrolling
-# mathjax_path =
-# "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+# mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 # Slow, but works
 mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js" +\
                "?config=TeX-AMS-MML_HTMLorMML"
@@ -168,9 +173,8 @@ plot_rcparams = {
     'figure.subplot.top': 0.85,
     'figure.subplot.wspace': 0.4,
     'figure.figsize': (3 * phi, 3),
+    'figure.dpi': 96
 }
-
-plot_pre_code = "import matplotlib.pyplot as plt\n"
 
 matplotlib.rcParams.update(plot_rcparams)
 

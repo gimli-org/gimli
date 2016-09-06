@@ -47,7 +47,7 @@ class CellBrowser(object):
     """
 
     def __init__(self, mesh, data=None, ax=None):
-        """Constructor."""
+        """Construct CellBrowser on a specific `mesh`."""
         if ax:
             self.ax = ax
         else:
@@ -73,25 +73,25 @@ class CellBrowser(object):
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def connect(self):
-        """TODO Documentme."""
+        """Connect to matplotlib figure canvas."""
         self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
         self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
         print(("Interactive cell browser activated on Fig.", self.fig.number))
 
     def disconnect(self):
-        """TODO Documentme."""
+        """Disconnect from matplotlib figure canvas."""
         self.fig.canvas.mpl_connect(self.pid)
         self.fig.canvas.mpl_connect(self.kid)
         print(("Cell browser disconnected from Figure", self.fig.number))
 
     def hide(self):
-        """TODO Documentme."""
+        """Hide info window."""
         self.text.set_visible(False)
         self.artist.set_edgecolors(self.edgeColors)
         self.fig.canvas.draw()
 
     def highlight(self):
-        """TODO Documentme."""
+        """Highlight selected cell."""
         if self.edgeColors:
             ec = self.edgeColors.copy()
             ec[self.cell] = np.ones(ec.shape[1])
@@ -101,7 +101,7 @@ class CellBrowser(object):
             self.artist.set_linewidths(lw)
 
     def onpick(self, event):
-        """TODO Documentme."""
+        """Call `self.update()` on mouse pick event."""
         self.event = event
         self.artist = event.artist
 
@@ -117,7 +117,7 @@ class CellBrowser(object):
         self.update()
 
     def onpress(self, event):
-        """TODO Documentme."""
+        """Call `self.update()` if up, down, or escape keys are pressed."""
         # print(event, event.key)
         if self.data is None:
             return
@@ -134,7 +134,7 @@ class CellBrowser(object):
         self.update()
 
     def update(self):
-        """TODO Documentme."""
+        """Update the information window."""
         center = self.mesh.cell(self.cell).center()
         x, y = center.x(), center.y()
         marker = self.mesh.cells()[self.cell].marker()

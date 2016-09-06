@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-    Viewer interface .. should be independent from the back-end.
-"""
+"""Viewer interface for 2D visualizations."""
+
 from . showmesh import show
 from . showmesh import plt
 from . showmesh import showMesh

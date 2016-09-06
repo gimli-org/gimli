@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Viewer interface .. depends on matplotlib."""
+"""Matplotlib drawing functions used by `pygimli.viewer`."""
 
 # are the following is suitable for a drawing package?
 from .utils import (hold,
