@@ -27,10 +27,12 @@
 #include <cstdio>
 #include <cstdlib>
 
-#if OPENBLAS_FOUND && !CONDA_BUILD
-    #include <openblas/cblas.h>
-// #else
-//     #include <cblas.h>
+#if OPENBLAS_FOUND
+    #if CONDA_BUILD
+        #include <cblas.h>
+    #else
+        #include <openblas/cblas.h>
+    #endif
 #endif
 
 namespace GIMLI{

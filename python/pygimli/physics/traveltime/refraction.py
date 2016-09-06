@@ -260,6 +260,10 @@ class Refraction(MethodManager):
         -------
         err : array
         """
+        if not data.allNonZero('t'):
+            raise BaseException("We need travel time values (t) " +
+                                "in the data to estimate a data error.")
+
         if relativeError >= 0.5:  # obviously in %
             relativeError /= 100.
 
@@ -282,6 +286,9 @@ class Refraction(MethodManager):
         zWeight : float
             relative weight for purely vertical boundaries
         """
+        if 'verbose' in kwargs:
+            self.setVerbose(kwargs.pop('verbose'))
+
         if data is not None:
             # setDataContainer would be better
             if t is not None:
@@ -373,9 +380,10 @@ class Refraction(MethodManager):
 
         Returns
         -------
-        t : array(N, data.size())
+        t : array(N, data.size()) | DataContainer
             The resulting simulated travel time values.
             Either one column array or matrix in case of slowness matrix.
+            A DataContainer is return if noisify set to True.
 
         """
 
@@ -385,16 +393,30 @@ class Refraction(MethodManager):
         fop.setMesh(mesh, ignoreRegionManager=True)
 
         if len(slowness) == mesh.cellCount():
-
-            t = fop.response(slowness)
+            if max(slowness) > 1.:
+                print('Warning: slowness values larger than 1 (' +
+                      str(max(slowness)) + ').. assuming that are velocity '
+                      'values .. building reciprocity')
+                t = fop.response(1./slowness)
+            else:
+                t = fop.response(slowness)
         else:
             print(mesh)
             print("slowness: ", slowness)
             raise BaseException("Simulate called with wrong slowness array.")
 
         noisify = kwargs.pop('noisify', False)
+
         if noisify:
-            raise BaseException('IMPLEMENTME')
+            if not scheme.allNonZero('err'):
+                scheme.set('t', t)
+                scheme.set('err', pg.physics.Refraction.estimateError(scheme,
+                                  absoluteError=1e-5, relativeError=0.01))
+
+            t += pg.randn(scheme.size()) * scheme('err')
+            scheme.set('t', t)
+
+            return scheme
 
         return t
 

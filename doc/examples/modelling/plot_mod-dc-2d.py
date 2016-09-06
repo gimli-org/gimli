@@ -15,10 +15,18 @@ Geoelectrical modeling example in 2.5D."""
 #
 #     \nabla\cdot( \sigma \nabla u ) = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
 #
-# Fourier-Cosine-Transform
+# The source term is 3 dimensional but the distribution of the electrical
+# conductivity :math:`\sigma(x,y)` should by 2 dimensional so we need a
+# Fourier-Cosine-Transform from :math:`u(x,y,z) \mapsto u(x,y,k)` with the
+# wavenumber :math:`k`
 #
 # .. math::
-#     \nabla\cdot( \sigma \nabla u ) & = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
+#     \nabla\cdot( \sigma \nabla u ) - \sigma k^2 u
+# &=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
+#     \frac{\partial }{\partial x} \left(\cdot( \sigma \frac{\partial
+# u}{\partial x}\right) + \frac{\partial }{\partial y} \left(\cdot(\sigma
+# \frac{\partial u}{\partial y}\right) - \sigma k^2 u & =
+# -I\delta(x-x_{\text{s}})\delta(y-y_{\text{s}}) \in R^2 \\
 #     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
 #
 
@@ -100,12 +108,13 @@ neumannBC = [[1, mixedBC],  # left boundary
              [4, mixedBC]]  # bottom boundary
 
 k = 1e-3
-u = solve(grid, a=1., b=k*k, f=pointSource,
+sigma = 1
+u = solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
           duB=neumannBC,
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
-u -= solve(grid, a=1., b=k*k, f=pointSource,
+u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
            duB=neumannBC,
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)

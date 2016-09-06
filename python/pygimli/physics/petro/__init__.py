@@ -10,7 +10,7 @@ from .resistivity import transInvArchiePhi
 from .resistivity import transFwdArchieS
 from .resistivity import transInvArchieS
 
-from .velocity import slownessWillie
+from .velocity import slownessWyllie
 from .velocity import transFwdWylliePhi
 from .velocity import transInvWylliePhi
 from .velocity import transFwdWyllieS

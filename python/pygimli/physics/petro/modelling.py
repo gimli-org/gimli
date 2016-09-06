@@ -132,7 +132,7 @@ class InvertJointPetro(MethodManager):
         self.fops = []
         self.dataVals = pg.RVector(0)
         self.dataErrs = pg.RVector(0)
-        self.model = pg.RVector(0)
+        self.mod = pg.RVector(0) # resulting model
         self.data = None
 
         self.tD = pg.RTransCumulative()
@@ -158,6 +158,9 @@ class InvertJointPetro(MethodManager):
         inv.setForwardOperator(fop)
 
         return inv
+
+    def model(self):
+        return self.mod
 
     def setData(self, data):
         """TODO."""
@@ -220,21 +223,21 @@ class InvertJointPetro(MethodManager):
 
         startModel /= len(self.managers)
         self.fop.setStartModel(startModel)
+        self.fop.regionManager().setZWeight(1.0)
 
         self.inv.setData(self.dataVals)
         self.inv.setRelativeError(self.dataErrs)
         self.inv.setLambda(lam)
 
-        self.model = self.inv.start()
-        self.model = self.model(
-            self.fop.regionManager().paraDomain().cellMarkers())
-        return self.model
+        self.mod = self.inv.start()
+        self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
+        return self.mod
 
     def showModel(self, **showkwargs):
         """TODO."""
         if len(showkwargs):
             pg.show(self.fop.regionManager().paraDomain(),
-                    self.model, **showkwargs)
+                    self.mod, **showkwargs)
 
 
 class InvertPetro(InvertJointPetro):

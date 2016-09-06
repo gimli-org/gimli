@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 
 
-def slownessWillie(phi, sat=1, vm=4000, vw=1484, va=343,
+def slownessWyllie(phi, sat=1, vm=4000, vw=1484, va=343,
                    mesh=None, meshI=None, fill=None):
     r"""
     Return slowness :math:`s` after Wyllie time-average equation.
@@ -56,14 +56,14 @@ def wyllie(phi, sat=1, vm=4000, vw=1600, va=330):
 
 def transFwdWylliePhi(sat=1, vm=4000, vw=1600, va=330):
     """Wyllie transformation function porosity(slowness)."""
-    if va is not 330 or sat != 1.0:
+    if va != 330 or sat != 1.0:
         raise BaseException('TODO')
     return pg.RTransLin(1./vw - 1./vm, 1./vm)
 
 
 def transInvWylliePhi(sat=1, vm=4000, vw=1600, va=330):
     """Inverse Wyllie transformation function porosity(slowness)."""
-    if va is not 330 or sat != 1.0:
+    if va != 330 or sat != 1.0:
         raise BaseException('TODO')
     a1 = 1./vm
     b1 = 1./vw - 1./vm
@@ -72,7 +72,8 @@ def transInvWylliePhi(sat=1, vm=4000, vw=1600, va=330):
 
 def transFwdWyllieS(phi, vm=4000, vw=1600, va=330):
     """Wyllie transformation function slowness(saturation)."""
-    if va is not 330:
+    if va != 330.0:
+        print(va, va is not 330.0)
         raise BaseException('TODO')
     return pg.RTransLin((1/vw-1./va)*phi, (1-phi)/vm+phi/va)
 

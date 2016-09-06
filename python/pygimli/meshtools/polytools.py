@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
-"""Tools to create or manage PLC."""
+"""Tools to create or manage PLC.
+
+Please note there is currently no collision or intersection check at all.
+
+Volunteers welcome to help creating, adapting or interfacing a basic
+geometry system. A lot of thinks are needed:
+
+    * 2D
+    * 3D
+    * More geometric primitives
+    * Boolean operations (union, intersection, difference)
+    * Collision recognizing
+    * Cubic spline interpolation for polygons (partly done)
+    * GUI .. interactive creation
+    *
+
+"""
 
 import os
 from os import system
@@ -343,6 +359,9 @@ def createPolygon(verts, isClosed=False, **kwargs):
     """Create a polygon.
 
     Create a polygon from list of vertices.
+    If the polygon is closed region attributes can be assigned.
+    The automatic region marker is set in the center of all verts.
+
 
     Parameters
     ----------
@@ -351,10 +370,14 @@ def createPolygon(verts, isClosed=False, **kwargs):
 
     **kwargs:
 
-        boundaryMarker : int [1]
+        * boundaryMarker : int [1]
             Marker for the resulting boundary edges
-        leftDirection : bool [True]
+        * leftDirection : bool [True]
             Rotational direction
+        * marker : int [1]
+            Marker for the resulting triangle cells after mesh generation
+        * area : float [0]
+            Maximum cell size for resulting triangles after mesh generation
 
     isClosed : bool [True]
         Add closing edge between last and first node.
@@ -363,13 +386,34 @@ def createPolygon(verts, isClosed=False, **kwargs):
     -------
     poly : gimliapi:`GIMLI::Mesh`
         The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+
+    Examples
+    --------
+    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as plc
+    >>> p = plc.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
+    ...                       isClosed=1, marker=3, area=0.1)
+    >>> pg.show(p)
+    (<matplotlib.axes._subplots.AxesSubplot object at 0x...>, None)
     """
     poly = pg.Mesh(2)
 
     for v in verts:
         poly.createNode(v)
 
+    marker = kwargs.pop('marker', 0)
+    area = kwargs.pop('area', 0)
+
     polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
+
+    if isClosed and marker is not 0 or area > 0:
+
+        poly.addRegionMarker(pg.center(poly.positions()),
+                             marker=marker,
+                             area=area)
+
+
 
     # set a regionmarker here .. somewhere
 
