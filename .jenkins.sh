@@ -50,12 +50,11 @@ make gtest
 
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
-make pgtest
 
 python << END
 import pygimli as pg
 print(pg.__version__)
-pg.test(onlydoctests=False, htmlreport='build_tests.html')
+pg.test(onlydoctests=False, show=False, htmlreport='build_tests.html')
 END
 
 # Build documentation
@@ -63,6 +62,8 @@ export PATH=/opt/texbin:$PATH # for building pdf
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
 export PATH=`pwd`/../trunk/python/apps:$PATH
 chmod +x ../trunk/python/apps/*
+
+rm -rf doc
 make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".

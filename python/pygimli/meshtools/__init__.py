@@ -1,9 +1,6 @@
 # encoding: utf-8
 """
-meshtools
-=========
-
-This package provides functions for mesh generation and modification.
+Mesh generation and modification.
 
 .. note::
 
@@ -22,14 +19,15 @@ from .mesh import (createMesh,
                    readHydrus3dMesh,
                    readTetgen,
                    readTriangle)
+
 from .polytools import createParaDomain2D  # keep for backward compatibility
+
 from .polytools import (createCircle,
                         createLine,
                         createPolygon,
                         createRectangle,
                         createWorld,
                         createParaMeshPLC,
-
                         mergePLC,
                         readPLC,
                         writePLC)
@@ -49,6 +47,7 @@ __all__ = ['appendTriangleBoundary',
            'merge2Meshes',
            'createParaMesh',
            'createParaMesh2DGrid',
+           'createPolygon',
            'createRectangle',
            'createWorld',
            'createCircle',

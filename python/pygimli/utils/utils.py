@@ -458,8 +458,6 @@ def unique_everseen(iterable, key=None):
 def unique(a):
     """Return list of unique elements ever seen with preserving order.
 
-    Return list of unique elements ever seen with preserving order.
-
     Examples
     --------
     >>> from pygimli.utils import unique

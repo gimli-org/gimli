@@ -81,12 +81,6 @@ To produce a new version, type:
     git push --tags # pushes tags to GitHub
 
 
-Read api documentation from shell:
-
-.. code-block:: bash
-
-  python -c "import pygimli as pg; help(pg.test)
-
 Coding rules
 ------------
 
@@ -140,7 +134,7 @@ We use: (You can find exceptions in .landscape.yml)
 Testing
 -------
 
-Run api examples from shell:
+Run specific API examples from shell:
 
 .. code-block:: bash
 
@@ -151,6 +145,12 @@ Run a specific test from shell.
 .. code-block:: bash
 
   python -c "import pygimli; from pygimli.physics.petro.resistivity import *; test_Archie()"
+
+Run all tests
+
+.. code-block:: bash
+
+  python -c "import pygimli; pygimli.test(show=True)"
 
 Run pylint from shell to check code:
 
@@ -163,3 +163,13 @@ Run prospector to check code like landscape.io do:
 .. code-block:: bash
 
     prospector --profile=$GIMLIROOT/.prospector.yml file.py
+
+Read api documentation from shell:
+
+.. code-block:: bash
+
+  python -c "import pygimli as pg; help(pg.test)"
+
+More information on pygimli's native testing function:
+
+.. autofunction:: pygimli.test
