@@ -50,7 +50,6 @@ make gtest
 
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
-make pgtest
 
 python << END
 import pygimli as pg

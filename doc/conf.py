@@ -132,12 +132,6 @@ except ImportError:
 intersphinx_mapping = {'http://docs.python.org/': None}
 
 autoclass_content = "class"
-autodoc_default_flags = [
-    'members',
-    'undoc-members',
-    'private-members',
-    'show-inheritance'
-]
 
 # Get mathjax
 # Formulas disappear after scrolling

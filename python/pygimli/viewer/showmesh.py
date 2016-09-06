@@ -28,17 +28,14 @@ except ImportError as e:
 def show(mesh=None, data=None, **kwargs):
     """Mesh and model visualization.
 
-    Syntactic sugar to show a mesh with data.
-    Forwards to
+    Syntactic sugar to show a mesh with data. Forwards to
     :py:mod:`pygimli.viewer.showMesh` or
-    :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the
-    possible 2D and 3D content.
-    See tutorials and examples for usage hints.
-    An empty show call create an empty ax window.
+    :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the possible 2D
+    and 3D content. See tutorials and examples for usage hints. An empty show
+    call create an empty ax window.
 
     Parameters
     ----------
-
     mesh : :gimliapi:`GIMLI::Mesh` or list of meshes
         2D or 3D GIMLi mesh
 
@@ -53,7 +50,6 @@ def show(mesh=None, data=None, **kwargs):
     if "axes" in kwargs:
         print("DeprecationWarning: Please use keyword `ax` instead of `axes`.")
         kwargs["ax"] = kwargs["axes"]
-        1/0
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
@@ -88,15 +84,9 @@ def show(mesh=None, data=None, **kwargs):
         else:
             print("ERROR: Mesh not valid.")
 
-    ax = None
-    if 'axes' in kwargs:
-        print("******* Show axes keyword changed to ax. ******* ")
-        ax = kwargs.pop('axes', None)
-        raise BaseException(DeprecationWarning)
-    else:
+    if 'ax' in kwargs:
         ax = kwargs.pop('ax', None)
-
-    if ax is None:
+    elif ax is None:
         ax = plt.subplots()[1]
 
     return ax, None

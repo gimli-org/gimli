@@ -4,7 +4,6 @@
 {{ '-' * fullname|length }}
 
 .. automodule:: {{ fullname }}
-  :members:
 
   Overview
   --------

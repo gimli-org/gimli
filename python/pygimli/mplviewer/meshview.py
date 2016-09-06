@@ -190,14 +190,21 @@ def drawMesh(ax, mesh, **kwargs):
 
 def drawModel(ax, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cmap=None,
-              xlabel=None, ylabel=None, verbose=False,
+              xlabel=None, ylabel=None, verbose=False, grid=False,
               **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
-    Implement this with tripcolor  ..........!!!!!!!!
-
     Parameters
     ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        The plotted mesh to browse through.
+    ax : mpl axis instance, optional
+        Axis instance where the mesh is plotted (default is current axis).
+    data : array, optional
+        Data to draw. Should either equal numbers of cells or nodes of the
+        corresponding `mesh`.
+    grid : boolean, optional
+        Draw cell boundaries.
     **kwargs:
         * tri - use tripcolor (experimental)
 
@@ -240,7 +247,12 @@ def drawModel(ax, mesh, data=None,
         ax.set_aspect('equal')
 
         gci.set_antialiased(True)
-        gci.set_linewidth(None)
+
+        if grid:
+            gci.set_linewidth(0.3)
+            gci.set_edgecolor("0.3")
+        else:
+            gci.set_linewidth(None)
 
         if data is None:
             data = pg.RVector(mesh.cellCount())
