@@ -756,11 +756,31 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     """Draw streamlines based on an unstructured mesh.
 
     Every cell contains only one streamline and every new stream line
-    starts in the center of a cell. Stream density can by chosen by
-    parameter a leading to a new mesh with equidistant maximum cell size a.
+    starts in the center of a cell. You can alternatively provide a second mesh
+    with coarser mesh to draw streams for.
 
     Parameters
     ----------
+
+    ax : matplotlib.ax
+        ax to draw into
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        2d Mesh to draw the streamline
+
+    data : iterable float | [float, float]
+        If data is an array (per cell or node) gradients are calculated
+        otherwise the data will be interpreted as vector field.
+
+    startStream : int
+        variate the start stream drawing, try values from 1 to 3 what every
+        you like more.
+
+    **kwargs:
+        * coarseMesh
+
+            Instead of draw a stream for every cell in mesh, draw a streamline
+            segment for each cell in coarseMesh.
 
     Examples
     --------
