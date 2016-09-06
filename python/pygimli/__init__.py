@@ -54,7 +54,7 @@ def warnNonEmptyArgs(kwargs):
         print("Warning! unrecognized keyword arguments", kwargs)
 
 
-def test(target=None, show=True, onlydoctests=False, coverage=False,
+def test(target=None, show=False, onlydoctests=False, coverage=False,
          htmlreport=False):
     """Run docstring examples and additional tests.
 

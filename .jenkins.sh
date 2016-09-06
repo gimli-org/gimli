@@ -55,7 +55,7 @@ make pgtest
 python << END
 import pygimli as pg
 print(pg.__version__)
-pg.test(onlydoctests=False, htmlreport='build_tests.html')
+pg.test(onlydoctests=False, show=False, htmlreport='build_tests.html')
 END
 
 # Build documentation
