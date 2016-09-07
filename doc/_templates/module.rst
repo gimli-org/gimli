@@ -80,7 +80,10 @@
   {% for class in classes %}
   .. rubric:: {{ class }}
   .. autoclass:: {{ class }}
-      :members:
+    :members:
+    :undoc-members:
+    :special-members: __init__
+    :inherited-members:
 
   {%- endfor %}
   {% endif %}

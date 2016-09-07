@@ -47,7 +47,7 @@ class CellBrowser(object):
     """
 
     def __init__(self, mesh, data=None, ax=None):
-        """Constructor."""
+        """Construct CellBrowser on a specific `mesh`."""
         if ax:
             self.ax = ax
         else:
@@ -73,25 +73,25 @@ class CellBrowser(object):
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def connect(self):
-        """TODO Documentme."""
+        """Connect to matplotlib figure canvas."""
         self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
         self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
         print(("Interactive cell browser activated on Fig.", self.fig.number))
 
     def disconnect(self):
-        """TODO Documentme."""
+        """Disconnect from matplotlib figure canvas."""
         self.fig.canvas.mpl_connect(self.pid)
         self.fig.canvas.mpl_connect(self.kid)
         print(("Cell browser disconnected from Figure", self.fig.number))
 
     def hide(self):
-        """TODO Documentme."""
+        """Hide info window."""
         self.text.set_visible(False)
         self.artist.set_edgecolors(self.edgeColors)
         self.fig.canvas.draw()
 
     def highlight(self):
-        """TODO Documentme."""
+        """Highlight selected cell."""
         if self.edgeColors:
             ec = self.edgeColors.copy()
             ec[self.cell] = np.ones(ec.shape[1])
@@ -101,7 +101,7 @@ class CellBrowser(object):
             self.artist.set_linewidths(lw)
 
     def onpick(self, event):
-        """TODO Documentme."""
+        """Call `self.update()` on mouse pick event."""
         self.event = event
         self.artist = event.artist
 
@@ -117,7 +117,7 @@ class CellBrowser(object):
         self.update()
 
     def onpress(self, event):
-        """TODO Documentme."""
+        """Call `self.update()` if up, down, or escape keys are pressed."""
         # print(event, event.key)
         if self.data is None:
             return
@@ -134,7 +134,7 @@ class CellBrowser(object):
         self.update()
 
     def update(self):
-        """TODO Documentme."""
+        """Update the information window."""
         center = self.mesh.cell(self.cell).center()
         x, y = center.x(), center.y()
         marker = self.mesh.cells()[self.cell].marker()
@@ -190,14 +190,21 @@ def drawMesh(ax, mesh, **kwargs):
 
 def drawModel(ax, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cmap=None,
-              xlabel=None, ylabel=None, verbose=False,
+              xlabel=None, ylabel=None, verbose=False, grid=False,
               **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
-    Implement this with tripcolor  ..........!!!!!!!!
-
     Parameters
     ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        The plotted mesh to browse through.
+    ax : mpl axis instance, optional
+        Axis instance where the mesh is plotted (default is current axis).
+    data : array, optional
+        Data to draw. Should either equal numbers of cells or nodes of the
+        corresponding `mesh`.
+    grid : boolean, optional
+        Draw cell boundaries.
     **kwargs:
         * tri - use tripcolor (experimental)
 
@@ -240,7 +247,12 @@ def drawModel(ax, mesh, data=None,
         ax.set_aspect('equal')
 
         gci.set_antialiased(True)
-        gci.set_linewidth(None)
+
+        if grid:
+            gci.set_linewidth(0.3)
+            gci.set_edgecolor("0.3")
+        else:
+            gci.set_linewidth(None)
 
         if data is None:
             data = pg.RVector(mesh.cellCount())
@@ -744,11 +756,31 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     """Draw streamlines based on an unstructured mesh.
 
     Every cell contains only one streamline and every new stream line
-    starts in the center of a cell. Stream density can by chosen by
-    parameter a leading to a new mesh with equidistant maximum cell size a.
+    starts in the center of a cell. You can alternatively provide a second mesh
+    with coarser mesh to draw streams for.
 
     Parameters
     ----------
+
+    ax : matplotlib.ax
+        ax to draw into
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        2d Mesh to draw the streamline
+
+    data : iterable float | [float, float]
+        If data is an array (per cell or node) gradients are calculated
+        otherwise the data will be interpreted as vector field.
+
+    startStream : int
+        variate the start stream drawing, try values from 1 to 3 what every
+        you like more.
+
+    **kwargs:
+        * coarseMesh
+
+            Instead of draw a stream for every cell in mesh, draw a streamline
+            segment for each cell in coarseMesh.
 
     Examples
     --------

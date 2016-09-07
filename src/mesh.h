@@ -415,6 +415,11 @@ public:
     /*! Scale the mesh with \ref RVector3 s. And return a reference to the mesh (no copy)*/
     Mesh & scale(const RVector3 & s);
 
+    /*! Scale the mesh with s. Shortcut for scale(RVector3(s,s,s)) */
+    Mesh & scale(const double & s){
+        return scale(RVector3(s, s, s));
+    }
+
     /*! Translate the mesh with \ref RVector3 t. And return a reference to the mesh (no copy)*/
     Mesh & translate(const RVector3 & t);
 

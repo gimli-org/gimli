@@ -10,6 +10,7 @@ Import convention:
 
 import locale
 import sys
+import os
 
 from . import core
 from ._version import get_versions
@@ -59,8 +60,9 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
 
     Examples
     --------
+    >>> import pygimli as pg
     >>> from pygimli.utils import boxprint
-    >>> test(target=boxprint)
+    >>> pg.test(boxprint)
 
     Parameters
     ----------
@@ -77,6 +79,13 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         Filename for HTML report such as www.pygimli.org/build_tests.html.
         Requires pytest-html plugin.
     """
+    import matplotlib.pyplot as plt
+    from pygimli.io import opt_import
+
+    old_backend = plt.get_backend()
+    if not show:
+        plt.switch_backend("Agg")
+
     if target:
         import doctest
         doctest.run_docstring_examples(target, globals())
@@ -88,14 +97,9 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         raise ImportError("pytest is required to run test suite. "
                           "Try 'sudo pip install pytest'.")
 
-    import matplotlib.pyplot as plt
-    from pygimli.io import opt_import
     pc = opt_import("pytest_cov", "create a code coverage report")
     ph = opt_import("pytest_html", "create a html report")
 
-    old_backend = plt.get_backend()
-    if not show:
-        plt.switch_backend("Agg")
     cwd = os.path.realpath(__path__[0])
     cfg = os.path.join(cwd, "../tests/setup.cfg")
     cmd = ""

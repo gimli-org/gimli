@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
-"""Tools to create or manage PLC."""
+"""Tools to create or manage PLC.
+
+Please note there is currently no collision or intersection check at all.
+
+Volunteers welcome to help creating, adapting or interfacing a basic
+geometry system. A lot of thinks are needed:
+
+    * 2D
+    * 3D
+    * More geometric primitives
+    * Boolean operations (union, intersection, difference)
+    * Collision recognizing
+    * Cubic spline interpolation for polygons (partly done)
+    * GUI .. interactive creation
+    *
+
+"""
 
 import os
 from os import system
@@ -72,8 +88,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> from pygimli.meshtools import createRectangle
     >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
-    >>> rectangle = createRectangle(start=[4, -4],
-    ...                             end=[6, -6], marker=4, area=0.1)
+    >>> rectangle = createRectangle(start=[4, -4], end=[6, -6],
+    ...                             marker=4, area=0.1)
     >>>
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, rectangle)
@@ -235,16 +251,14 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     Examples
     --------
     >>> import matplotlib.pyplot as plt
-    >>> from pygimli.mplviewer import drawMesh
-    >>> import pygimli as pg
     >>> import math
+    >>> from pygimli.mplviewer import drawMesh
     >>> from pygimli.meshtools import polytools as plc
     >>> c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
     >>> c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
     >>> c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
     ...                       end=1.5*math.pi, isClosed=False)
     >>> plc = plc.mergePLC([c0, c1, c2])
-    >>>
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, plc)
     >>> plt.show()
@@ -343,6 +357,9 @@ def createPolygon(verts, isClosed=False, **kwargs):
     """Create a polygon.
 
     Create a polygon from list of vertices.
+    If the polygon is closed region attributes can be assigned.
+    The automatic region marker is set in the center of all verts.
+
 
     Parameters
     ----------
@@ -351,10 +368,14 @@ def createPolygon(verts, isClosed=False, **kwargs):
 
     **kwargs:
 
-        boundaryMarker : int [1]
+        * boundaryMarker : int [1]
             Marker for the resulting boundary edges
-        leftDirection : bool [True]
+        * leftDirection : bool [True]
             Rotational direction
+        * marker : int [1]
+            Marker for the resulting triangle cells after mesh generation
+        * area : float [0]
+            Maximum cell size for resulting triangles after mesh generation
 
     isClosed : bool [True]
         Add closing edge between last and first node.
@@ -363,13 +384,34 @@ def createPolygon(verts, isClosed=False, **kwargs):
     -------
     poly : gimliapi:`GIMLI::Mesh`
         The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+
+    Examples
+    --------
+    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as plc
+    >>> p = plc.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
+    ...                       isClosed=1, marker=3, area=0.1)
+    >>> pg.show(p)
+    (<matplotlib.axes.AxesSubplot object at 0x...>, None)
     """
     poly = pg.Mesh(2)
 
     for v in verts:
         poly.createNode(v)
 
+    marker = kwargs.pop('marker', 0)
+    area = kwargs.pop('area', 0)
+
     polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
+
+    if isClosed and marker is not 0 or area > 0:
+
+        poly.addRegionMarker(pg.center(poly.positions()),
+                             marker=marker,
+                             area=area)
+
+
 
     # set a regionmarker here .. somewhere
 
@@ -409,7 +451,6 @@ def mergePLC(pols):
     >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6],
     ...                          marker=4, area=0.1)
     >>> plc = plc.mergePLC([world, c1, c2, r1, r2])
-    >>>
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, plc)
     >>> drawMesh(ax, createMesh(plc))

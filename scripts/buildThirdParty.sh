@@ -109,6 +109,7 @@ SetGCC_TOOLSET(){
 }
 
 getCLANG_NAME() {
+    # this is probably not longer used
     if command -v clang-3.6 2>/dev/null; then
         CLANG="clang-3.6"
         CLANGPP="clang++-3.6"
@@ -444,7 +445,7 @@ buildCASTXML(){
         CC=/usr/bin/gcc CXX=/usr/bin/g++ cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST \
           "-DLLVM_DIR=/usr/local/Cellar/llvm/HEAD/share/llvm/cmake/"
     else
-        getCLANG_NAME
+        # getCLANG_NAME not longer used
         #CC=$CLANG CXX=$CLANGPP cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
         cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
 
