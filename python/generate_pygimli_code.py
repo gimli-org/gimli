@@ -14,6 +14,7 @@ optionParser = OptionParser("usage: %prog [options]")
 optionParser.add_option("", "--extra-includes", dest="extraIncludes")
 optionParser.add_option("", "--extra-path", dest="extraPath")
 optionParser.add_option("", "--caster", dest="caster")
+optionParser.add_option("", "--clang", dest="clang")
 
 (options, args) = optionParser.parse_args()
 
@@ -190,11 +191,11 @@ def generate(defined_symbols, extraIncludes):
 
     defines = ['PYGIMLI_CAST', 'HAVE_BOOST_THREAD_HPP']
     caster = 'gccxml'
-    compiler_path = None
+    compiler_path = options.clang
 
     if platform.system() == 'Windows':
         if platform.architecture()[0] == '64bit':
-            compiler_path = 'C:/msys64/mingw64/bin/clang++'
+            #compiler_path = 'C:/msys64/mingw64/bin/clang++'
             if sys.platform == 'darwin':
                 pass
             else:
@@ -203,7 +204,8 @@ def generate(defined_symbols, extraIncludes):
 
                 logger.info('Marking win64 for gccxml')
         else:
-            compiler_path = 'C:/msys32/mingw32/bin/clang++'
+            pass
+            #compiler_path = 'C:/msys32/mingw32/bin/clang++'
 
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:
@@ -239,6 +241,7 @@ def generate(defined_symbols, extraIncludes):
     logger.info("working_directory=%s" % settings.gimli_path)
     logger.info("include_paths=%s" % settings.includesPaths)
     logger.info("define_symbols=%s" % defines)
+    logger.info("compiler_path=%s" % compiler_path)
     logger.info("indexing_suite_version=2")
 
     xml_generator_config = parser.xml_generator_configuration_t(

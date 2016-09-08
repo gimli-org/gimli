@@ -126,12 +126,12 @@ template < class Vec > bool loadVec(Vec & a, const std::string & filename,
         return false;
     }
     uint ret = 0;
-    int size; ret = fread(&size, sizeof(int), 1, file); 
+    int size; ret = fread(&size, sizeof(int), 1, file);
     if (ret){
         a.resize(size);
         ret = fread(&a[0], sizeof(double), size, file);
     }else {
-        
+
     }
     fclose(file);
   }
@@ -173,14 +173,14 @@ template < typename T, class Iter, template < typename, class > class Vec >
 T max(const Vec< T, Iter > & v){
     return *std::max_element(v.begin(), v.end());
 }
-// 
+//
 // template < class T, class Iter, template < class T, class Iter > class Vec > T sum(const Vec< T, Iter > & v){
 //     return std::accumulate(v.begin(), v.end(), 0.0);
-// //     register T sum = 0.0;
-// //     for (register size_t i = v.size(); i--;) sum += v[i];
+// //     T sum = 0.0;
+// //     for (size_t i = v.size(); i--;) sum += v[i];
 // //     return sum;
 // }
-// 
+//
 // template < class ValueType, template < class T > class Vec > T dot(const Vec< T > & a, const Vec < T > & b) {
 //     return sum(a * b);
 // }

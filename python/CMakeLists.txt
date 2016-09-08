@@ -7,7 +7,9 @@ ADD_CUSTOM_COMMAND(
         #${PYTHON_EXECUTABLE}
         python
     ARGS
-        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py --extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR} --caster=${CASTER_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py
+--extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR}
+--caster=${CASTER_EXECUTABLE} --clang=${CLANG_EXECUTABLE}
     TARGET
         pggen
     DEPENDS
