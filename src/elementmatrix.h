@@ -65,7 +65,7 @@ public:
 
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
         ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
-            for (register size_t i = 0; i < size(); i ++) mat_[i] OP##= val; \
+            for ( size_t i = 0; i < size(); i ++) mat_[i] OP##= val; \
             return *this;\
         } \
 
@@ -140,8 +140,8 @@ public:
     /*! Return S * a */
     void mult(const Vector < ValueType > & a, Vector < ValueType > & ret){
         ASSERT_EQUAL(size(), ret.size())
-        for (register Index i = 0; i < size(); i ++) {
-            for (register Index j = 0; j < size(); j ++) {
+        for ( Index i = 0; i < size(); i ++) {
+            for ( Index j = 0; j < size(); j ++) {
                 ret[i] += mat_[i][j] * a[idx_[j]];
             }
         }
@@ -149,9 +149,9 @@ public:
     /*! Return (S * a) * b */
     ValueType mult(const Vector < ValueType > & a, const Vector < ValueType > & b){
         ValueType ret = 0;
-        for (register Index i = 0; i < size(); i ++) {
+        for ( Index i = 0; i < size(); i ++) {
             ValueType t = 0;
-            for (register Index j = 0; j < size(); j ++) {
+            for ( Index j = 0; j < size(); j ++) {
                 t += mat_[i][j] * a[idx_[j]];
             }
             ret += t * b[idx_[i]];
@@ -165,9 +165,9 @@ public:
                    const Vector < Val> & m,
                    const Vector < Val> & n){
         Val ret = 0;
-        for (register Index i = 0; i < size(); i ++) {
+        for ( Index i = 0; i < size(); i ++) {
             Val t = 0;
-            for (register Index j = 0; j < size(); j ++) {
+            for (Index j = 0; j < size(); j ++) {
                 t += mat_[i][j] * (a[idx_[j]]-b[idx_[j]]);
             }
             ret += t * (m[idx_[i]]-n[idx_[i]]);

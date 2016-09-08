@@ -625,7 +625,7 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
         ASSERT_EMPTY(v) \
         std::transform(data_, data_ + size_, &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \
-        for (register Index i = 0; i < size_; i ++) data_[i] OP##= val; return *this; } \
+        for ( Index i = 0; i < size_; i ++) data_[i] OP##= val; return *this; } \
 
 DEFINE_UNARY_MOD_OPERATOR__(+, PLUS)
 DEFINE_UNARY_MOD_OPERATOR__(-, MINUS)
@@ -676,7 +676,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
      *  CAUTION!! There is no boundary check. 
      * Val must be properly ([val, val+this->size()))assigned.  */
     template< class V > Vector< ValueType > & fill(V * val) {
-        for (register Index i = 0; i < size_; i ++) data_[i] = ValueType(val[i]);
+        for ( Index i = 0; i < size_; i ++) data_[i] = ValueType(val[i]);
         //std::copy(val, val + size_, data_);
         return *this;
     }
@@ -687,7 +687,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
     /*! Fill the whole vector with function expr(i) */
     template< class Ex > Vector< ValueType > & fill(Expr< Ex > expr){
-        for (register Index i = 0; i < size_; i ++){
+        for ( Index i = 0; i < size_; i ++){
             data_[i] = expr((ValueType)i);
         }
         return *this;
@@ -701,7 +701,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     }
     //     /*! Fill the whole vector with function expr(i) */
 //     template< class V > void fill(const V & val){
-//         for (register Index i = 0; i < size_; i ++) data_[i] = ValueType(val);
+//         for ( Index i = 0; i < size_; i ++) data_[i] = ValueType(val);
 //     }
 
     /*! Fill Vector with 0.0. Don't change size.*/
@@ -717,7 +717,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 #ifdef USE_BOOST_BIND
         std::transform(data_, data_ + size_, data_, boost::bind(roundTo< ValueType >, _1, tolerance));
 #else
-        for (register Index i = 0; i < size_; i ++) data_[i] = roundTo(data_[i], tolerance);
+        for ( Index i = 0; i < size_; i ++) data_[i] = roundTo(data_[i], tolerance);
 #endif
         return *this;
     }
@@ -899,7 +899,7 @@ public:
     void operator()() {
         ValueType * iter = a_->begin().ptr();
         //std::cout << start_ << " " << end_ << std::endl;
-        for (register Index i = start_; i < end_; i++) iter[i] = iter_[i];
+        for ( Index i = start_; i < end_; i++) iter[i] = iter_[i];
     }
 
     Vector< ValueType > * a_;
@@ -948,7 +948,7 @@ template< class ValueType, class Iter > void assignResult(Vector< ValueType > & 
             ValueType * iter = v.begin().ptr();
 
             // Inlined expression
-            for (register Index i = v.size(); i--;) iter[i] = result2[i];
+            for ( Index i = v.size(); i--;) iter[i] = result2[i];
         #else
             ValueType * iter = v.begin().ptr();
             ValueType * end  = v.end().ptr();
@@ -1334,12 +1334,12 @@ template < class T > Vector < T > cat(const Vector< T > & a, const Vector< T > &
 template < class T, class A > T sum(const __VectorExpr< T, A > & a){
     //std::cout << "sum(vectorExpr)" << std::endl;
     T tmp(0.0);
-    for (register Index i = 0, imax = a.size(); i < imax; i++) tmp += a[i];
+    for ( Index i = 0, imax = a.size(); i < imax; i++) tmp += a[i];
     return tmp;
 
 //     T tmp(0.0);
 //     __VectorExpr< T, A > al = a;
-//     for (register Index i = 0; i < a.size(); i++, ++al) {
+//     for ( Index i = 0; i < a.size(); i++, ++al) {
 //         tmp += *al;
 //     }
 //     return tmp;

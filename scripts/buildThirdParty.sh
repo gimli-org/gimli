@@ -12,7 +12,7 @@ SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 TRIANGLE_URL=http://www.netlib.org/voronoi/
 
 CASTXML_URL=https://github.com/CastXML/CastXML.git
-CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
+# CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
