@@ -48,8 +48,8 @@ def show(mesh=None, data=None, **kwargs):
     Return the results from the showMesh* functions.
     """
     if "axes" in kwargs:
-        print("DeprecationWarning: Please use keyword `ax` instead of `axes`.")
-        kwargs["ax"] = kwargs["axes"]
+        print("Deprecation Warning: Please use keyword `ax` instead of `axes`.")
+        kwargs['ax'] = kwargs.pop('axes', None)
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
@@ -85,13 +85,8 @@ def show(mesh=None, data=None, **kwargs):
             print("ERROR: Mesh not valid.")
 
     if 'ax' in kwargs:
-        print("******* Show axes keyword changed to ax. ******* ")
-        ax = kwargs.pop('axes', None)
-        raise BaseException(DeprecationWarning)
-    else:
         ax = kwargs.pop('ax', None)
-
-    if ax is None:
+    elif ax is None:
         ax = plt.subplots()[1]
 
     return ax, None
@@ -196,8 +191,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     else:
-        if hasattr(data[0], '__len__') and not isinstance(
-                data, np.ma.core.MaskedArray):
+        #print(data, type(data))
+        if hasattr(data[0], '__len__') \
+            and not isinstance(data,np.ma.core.MaskedArray):
 
             if len(data) == 2:  # [u,v]
                 data = np.array(data).T

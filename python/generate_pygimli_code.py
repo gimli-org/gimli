@@ -30,7 +30,7 @@ import logging
 
 from pygccxml import utils
 logger = utils.loggers.cxx_parser
-# logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
 
 from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
@@ -190,7 +190,7 @@ def generate(defined_symbols, extraIncludes):
 
     defines = ['PYGIMLI_CAST', 'HAVE_BOOST_THREAD_HPP']
     caster = 'gccxml'
-    compiler_path = '/usr/bin/clang++-3.8'
+    compiler_path = None
 
     if platform.system() == 'Windows':
         if platform.architecture()[0] == '64bit':

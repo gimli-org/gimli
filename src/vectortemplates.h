@@ -176,8 +176,8 @@ T max(const Vec< T, Iter > & v){
 // 
 // template < class T, class Iter, template < class T, class Iter > class Vec > T sum(const Vec< T, Iter > & v){
 //     return std::accumulate(v.begin(), v.end(), 0.0);
-// //      T sum = 0.0;
-// //     for ( size_t i = v.size(); i--;) sum += v[i];
+// //     register T sum = 0.0;
+// //     for (register size_t i = v.size(); i--;) sum += v[i];
 // //     return sum;
 // }
 // 

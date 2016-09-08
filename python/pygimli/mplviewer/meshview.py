@@ -258,10 +258,11 @@ def drawModel(ax, mesh, data=None,
             data = pg.RVector(mesh.cellCount())
 
         if len(data) != mesh.cellCount():
+
             print(data, mesh)
             print("INFO: drawModel have wrong data length .. " +
                   " indexing data from cellMarkers()")
-            viewdata = data[mesh.cellMarkers()]
+            viewdata = data(mesh.cellMarkers())
         else:
             viewdata = data
 

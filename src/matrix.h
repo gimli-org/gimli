@@ -56,7 +56,7 @@ public:
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
     inline Matrix3 < ValueType > & operator OP##= (const ValueType & val) { \
-        for ( Index i = 0; i < 9; i += 3) {\
+        for (register Index i = 0; i < 9; i += 3) {\
             mat_[i] OP##= val; mat_[i+1] OP##= val; mat_[i+2] OP##= val; } return *this; \
     }
 
@@ -325,9 +325,9 @@ public:
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
     inline Matrix < ValueType > & operator OP##= (const Matrix < ValueType > & A) { \
-        for ( Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= A[i]; return *this; } \
+        for (register Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= A[i]; return *this; } \
     inline Matrix < ValueType > & operator OP##= (const ValueType & val) { \
-        for ( Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= val; return *this; } \
+        for (register Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= val; return *this; } \
 
     DEFINE_UNARY_MOD_OPERATOR__(+, PLUS)
     DEFINE_UNARY_MOD_OPERATOR__(-, MINUS)
@@ -337,7 +337,7 @@ public:
     #undef DEFINE_UNARY_MOD_OPERATOR__
 
 //     Index col = cols();
-//         for ( Index i = 0; i < mat_.size(); i ++) {
+//         for (register Index i = 0; i < mat_.size(); i ++) {
 //             ValueType * Aj = &mat_[i][0];
 //             ValueType * Aje = &mat_[i][col];
 //             for (; Aj != Aje;) *Aj++ OP##= val;
@@ -480,9 +480,9 @@ public:
 
         Vector < ValueType > ret(rows, 0.0);
 
-        // ValueType tmpval = 0;
+        //register ValueType tmpval = 0;
         if (b.size() == cols){
-            for ( Index i = 0; i < rows; ++i){
+            for (register Index i = 0; i < rows; ++i){
                 ret[i] = sum((*this)[i] * b);
             }
         } else {
@@ -501,8 +501,8 @@ public:
             throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " < " + toStr(endI) + "-" + toStr(startI));
         }
         Vector < ValueType > ret(rows, 0.0);
-        for ( Index i = 0; i < rows; ++i){
-            for ( Index j = startI; j < endI; j++) {
+        for (register Index i = 0; i < rows; ++i){
+            for (register Index j = startI; j < endI; j++) {
                 ret[i] += (*this)[i][j] * b[j];
             }
         }
@@ -516,7 +516,7 @@ public:
 
         Vector < ValueType > ret(cols, 0.0);
 
-        // ValueType tmpval = 0;
+        //register ValueType tmpval = 0;
 
         if (b.size() == rows){
             for(Index i = 0; i < rows; i++){
@@ -588,7 +588,7 @@ public:
         x_(&x), b_(&b), A_(&A), start_(start), end_(end){
     }
     void operator()() {
-        for ( Index i = start_; i < end_; i++) (*x_)[i] = sum((*A_)[i] * *b_);
+        for (register Index i = start_; i < end_; i++) (*x_)[i] = sum((*A_)[i] * *b_);
     }
 
     Vector< ValueType > * x_;
