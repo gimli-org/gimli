@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Define special colorbar behavior."""
 
-from distutils.version import LoosLooseon
+from distutils.version import LooseVersion
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
