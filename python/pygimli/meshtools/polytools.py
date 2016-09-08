@@ -393,7 +393,7 @@ def createPolygon(verts, isClosed=False, **kwargs):
     >>> p = plc.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
     ...                       isClosed=1, marker=3, area=0.1)
     >>> pg.show(p)
-    (<matplotlib.axes._subplots.AxesSubplot object at 0x...>, None)
+    (<matplotlib.axes.AxesSubplot object at 0x...>, None)
     """
     poly = pg.Mesh(2)
 
