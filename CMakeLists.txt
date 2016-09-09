@@ -289,9 +289,20 @@ if (CASTER STREQUAL "gccxml")
     set(CASTER_EXECUTABLE ${GCCXML_EXECUTABLE})
 else()
     if (NOT CASTER_EXECUTABLE)
-#         find_program(CLANG clang REQUIRED)
-#         find_program(CLANGXX clang++ REQUIRED)
-#         find_package(LLVM REQUIRED)
+#        find_program(CLANG clang REQUIRED)
+         find_program(CLANG_EXECUTABLE
+            NAMES clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang
+         )
+        if(CLANG_EXECUTABLE)
+            message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
+        else()
+            message(FATAL_ERROR "Can't found program: clang")
+        endif()
+
+
+#        find_program(CLANGXX clang++ REQUIRED)
+#        find_package(CLANG REQUIRED)
+#        find_package(LLVM REQUIRED)
 
         find_or_build_package(castxml castxml LOCAL)
         set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
