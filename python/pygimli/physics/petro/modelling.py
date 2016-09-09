@@ -108,14 +108,14 @@ class PetroJointModelling(pg.ModellingBase):
         self.setJacobian(self.jac)
 
     def response(self, model):
-        """Cumulative response."""
+        """Create concatenated response for fop stack with model."""
         resp = []
         for f in self.fops:
             resp.extend(f.response(model))
         return resp
 
     def createJacobian(self, model):
-        """Just force creating individual Jacobian matrices."""
+        """Creating individual Jacobian matrices."""
         for f in self.fops:
             f.createJacobian(model)
 

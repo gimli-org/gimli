@@ -229,7 +229,8 @@ def drawModel(ax, mesh, data=None,
     useTri = kwargs.pop('tri', False)
 
     if useTri:
-        gci = drawMPLTri(ax, mesh, data, cmap=cmap, **kwargs)
+        gci = drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
+                         cmap=cmap, **kwargs)
     else:
         gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
                                              **kwargs)
