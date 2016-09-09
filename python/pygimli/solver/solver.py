@@ -172,6 +172,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     pair : tuple
 
         - [marker, arg]
+          [[marker, ...], arg]
         - [boundary, arg]
         - [[boundary,...], arg]
 
@@ -192,8 +193,15 @@ def parseArgPairToBoundaryArray(pair, mesh):
     boundaries = []
     bounds = []
 
+    #print('+'*30, pair)
     if isinstance(pair[0], int):
         bounds = mesh.findBoundaryByMarker(pair[0])
+    if isinstance(pair[0], list):
+        # [[,,..], ]
+        for b in pair[0]:
+            for bi in mesh.boundaries(pg.find(mesh.boundaryMarkers() == b)):
+                bounds.append(bi)
+
     elif isinstance(pair[0], pg.stdVectorBounds):
         bounds = pair[0]
     elif isinstance(pair[0], pg.Boundary):
@@ -234,21 +242,60 @@ def parseArgToBoundaries(args, mesh):
 
     boundaries : list()
         [ :gimliapi:`GIMLI::Boundary`, value|callable ]
+
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> mesh = pg.meshtools.createWorld([0, 0], [1, -1], worldMarker=0)
+    >>> ax, _ = pg.show(mesh, boundaryMarker=True)
+    >>> # all edges with marker 1 get value 1.0
+    >>> b = pg.solver.parseArgToBoundaries([1, 1.0], mesh)
+    >>> print(len(b))
+    1
+    >>> # same as above with marker 2 get value 1
+    >>> b = pg.solver.parseArgToBoundaries([[1, 1.0], [2, 2.0]], mesh)
+    >>> print(len(b))
+    2
+    >>> # same as above with marker 3 get value 3
+    >>> b = pg.solver.parseArgToBoundaries([[1, 1.0], [2, 2.0], [3, 3.0]], mesh)
+    >>> print(len(b))
+    3
+    >>> # edges with marker 1 and 2 get value 1
+    >>> b = pg.solver.parseArgToBoundaries([[1, 2], 1.0], mesh)
+    >>> print(len(b))
+    2
+    >>> b = pg.solver.parseArgToBoundaries([[1, 2, 3], 1.0], mesh)
+    >>> print(len(b))
+    3
+    >>> b = pg.solver.parseArgToBoundaries([[[1, 2, 3], 1.0], [4, 4.0]], mesh)
+    >>> print(len(b))
+    4
+    >>> pg.wait()
     """
     boundaries = []
     if isinstance(args, list):
         if len(args) == 2:
+            #if isinstance(args[0], list):
+                #print('~'*10, '[[,],]')
+                #boundaries += parseArgPairToBoundaryArray(args, mesh)
+            #else:
             try:
-                # [[,], [,]]
+                    # [[,], [,]]
                 if len(args[0]) == 2 and len(args[1]) == 2:
+                    #print('~'*10, '[[,],[,]]')
                     boundaries += parseArgPairToBoundaryArray(args[0], mesh)
                     boundaries += parseArgPairToBoundaryArray(args[1], mesh)
                 else:
+                    #print('~'*10, '??[[,]]')
                     boundaries += parseArgPairToBoundaryArray(args, mesh)
             except BaseException as _:
-                # [,]
+                    # [,]
+                #print('~'*10, '[,]')
                 boundaries += parseArgPairToBoundaryArray(args, mesh)
         else:
+            #print('~'*10, '[[,], [,], ...]')
             # [[,], [,], ...]
             for arg in args:
                 boundaries += parseArgPairToBoundaryArray(arg, mesh)
