@@ -560,6 +560,9 @@ RVector LinearModelling::response(const RVector & model) {
     return *jacobian_ * model;
 }
 
+/* dummy function avoiding brute-force Jacobian as J=A is already there */
+void LinearModelling::createJacobian(const RVector & model){}
+
 RVector LinearModelling::createDefaultStartModel() {
     return RVector(jacobian_->cols(), 1.0);
 }

@@ -45,17 +45,17 @@ public:
 
     /*! Set verbose state. */
     void setVerbose(bool verbose);
-    
+
     /*! Get verbose state. */
     inline bool verbose() const {return verbose_;}
-    
-    virtual RVector response(const RVector & model) { 
+
+    virtual RVector response(const RVector & model) {
         throwError(1, WHERE_AM_I + " you need to implement a response "
         "function.");
         return RVector(0);
     }
-    
-    /*!Read only response function for multi threading purposes. 
+
+    /*!Read only response function for multi threading purposes.
      * Index i is use thread counter. */
     virtual RVector response_mt(const RVector & model, Index i=0) const {
         throwError(1, WHERE_AM_I + " if you want to use read only response "
@@ -96,28 +96,28 @@ public:
     /*!DEPRECATED Set refined mesh for forward calculation. */
     void setRefinedMesh(const Mesh & mesh);
 
-    /*! Delete the actual mesh. */ 
+    /*! Delete the actual mesh. */
     void deleteMesh();
-    
+
     /*! Set external Jacobian matrix*/
     virtual void setJacobian(MatrixBase * J);
 
     /*! Create and fill the Jacobian matrix with a given model vector. */
     virtual void createJacobian(const RVector & model);
 
-    /*! Create and fill the Jacobian matrix with a given model vector and 
-     * a prior calculated response for this model. 
-     * The Jacobian matrix need to by initialized and resized. 
+    /*! Create and fill the Jacobian matrix with a given model vector and
+     * a prior calculated response for this model.
+     * The Jacobian matrix need to by initialized and resized.
      * If unsure take createJacobian(const RVector & model).*/
     virtual void createJacobian(const RVector & model, const RVector & resp);
-    
-    /*! Create and fill the Jacobian matrix with a given model vector. 
-     * Multi-threaded version. 
-     * Will be called if setMultiThreadJacobian has been set > 1. 
-     * For thread safe reasons response_mt, a read only variant of the response 
+
+    /*! Create and fill the Jacobian matrix with a given model vector.
+     * Multi-threaded version.
+     * Will be called if setMultiThreadJacobian has been set > 1.
+     * For thread safe reasons response_mt, a read only variant of the response
      * method need to be implemented. */
     virtual void createJacobian_mt(const RVector & model, const RVector & resp);
-    
+
     /*! Here you should initialize your Jacobian matrix. Default is RMatrix()*/
     virtual void initJacobian();
 
@@ -128,7 +128,7 @@ public:
     MatrixBase * jacobian() const { return jacobian_; }
 
     /*! Return the Jacobian Matrix (read only) associated with this forward operator.
-     *  Throws an exception if the jacobian is not initialized. 
+     *  Throws an exception if the jacobian is not initialized.
      * Cannot yet be overloaded by pyplusplus (return virtual reference)(Warning 1049). */
     virtual RMatrix & jacobianRef() const {
         if (! jacobian_) {
@@ -168,11 +168,11 @@ public:
     virtual RSparseMapMatrix & constraintsRef();
 
     const RMatrix & solution() const { return solutions_; }
-    
+
     void mapModel(const RVector & model, double background=0);
-    
-    /*! Read only extrapolation of model values given per cell marker to 
-     values given per cell. Exterior values will be set to background or 
+
+    /*! Read only extrapolation of model values given per cell marker to
+     values given per cell. Exterior values will be set to background or
      prolongated for background != -1.
      */
     RVector createMappedModel(const RVector & model, double background=-1) const;
@@ -182,7 +182,7 @@ public:
     const RegionManager & regionManager() const;
 
     RegionManager & regionManager();
-    
+
     RegionManager & regionManagerRef(){ return regionManager(); }
 
     bool verbose() { return verbose_; }
@@ -193,24 +193,24 @@ public:
 
     void initRegionManager();
 
-    /*! Set the maximum number of allowed threads for MT calculation. 
-     * Have to be greater than 0. 
+    /*! Set the maximum number of allowed threads for MT calculation.
+     * Have to be greater than 0.
      * Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
     void setThreadCount(Index nThreads);
 
     /*! Return the maximum number of allowed threads for MT calculation */
     inline Index threadCount() const { return nThreads_; }
-    
-    /*! Set number of threads used for brute force Jacobian generation. 
-     *1 is default. If nThreads is greater than 1 you need to implement 
-     * \ref response_mt with a read only response function. 
+
+    /*! Set number of threads used for brute force Jacobian generation.
+     *1 is default. If nThreads is greater than 1 you need to implement
+     * \ref response_mt with a read only response function.
      * Maybe its worth set the single setThreadCount to 1 than,
      * that you don't find yourself in a threading overkill.*/
     void setMultiThreadJacobian(Index nThreads);
-    
+
     /*! Return number of threads used for Jacobian generation. */
     inline Index multiThreadJacobian() const { return nThreadsJacobian_; }
-    
+
 protected:
 
     virtual void init_();
@@ -250,8 +250,7 @@ private:
 
 };
 
-//! Simple linear modelling class
-/*! Linear modelling class.
+/*! Linear modelling class (multiplication by a matrix).
     Calculate response from derivative matrix (Jacobian,Sensitivity) * model
 */
 class DLLEXPORT LinearModelling : public ModellingBase {
@@ -272,6 +271,8 @@ public:
 
     /*! Calculate */
     RVector response(const RVector & model);
+
+    virtual void createJacobian(const RVector & model);
 
     RVector createDefaultStartModel();
 
