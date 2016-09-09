@@ -46,7 +46,7 @@ def TxArea(snd):
 
 
 def RxArea(snd):
-    """ return effective receiver area """
+    """Return effective receiver area."""
     Rx = 0  # just in case of error
     if 'COIL_SIZE' in snd:
         Rx = snd['COIL_SIZE']
@@ -58,7 +58,7 @@ def RxArea(snd):
 
 
 def get_rhoa(snd, cal=260e-9, corrramp=True):
-    """compute apparent resistivity from sounding (usf) dict"""
+    """Compute apparent resistivity from sounding (usf) dict."""
     Tx = TxArea(snd)
     Rx = RxArea(snd)
     if 'COIL_SIZE' in snd:
@@ -96,8 +96,10 @@ def get_rhoa(snd, cal=260e-9, corrramp=True):
 
 
 def readusffile(filename):
-    """
-        read data from single USF (universal sounding file) file
+    """Read data from single USF (universal sounding file) file
+
+    Examples
+    --------
         DATA = readusffile(filename)
         DATA = readusffile(filename, DATA) will append to DATA
     """
@@ -155,9 +157,10 @@ def readusffile(filename):
 
 
 def readusffiles(filenames):
-    """
-        read all soundings data from a list of usf files
+    """Read all soundings data from a list of usf files
 
+    Example
+    -------
         DATA = readusffiles(filenames)
     """
     from glob import glob
@@ -175,7 +178,7 @@ def readusffiles(filenames):
 
 
 def readTEMfastFile(temfile):
-    ''' readTEMfastFile(filename) reads TEM-fast file into usf sounding '''
+    """ReadTEMfastFile(filename) reads TEM-fast file into usf sounding."""
     snd = {}
     snd['FILENAME'] = temfile
     fid = open(temfile)
@@ -200,7 +203,7 @@ def readTEMfastFile(temfile):
 
 
 def readUniKTEMData(filename):
-    """ read TEM data format of University of Cologne """
+    """Read TEM data format of University of Cologne."""
     if '*' in filename:
         from glob import glob
         allfiles = glob(filename)
@@ -220,9 +223,10 @@ def readUniKTEMData(filename):
 
 
 def readSiroTEMData(fname):
-    """
-        read TEM data from siroTEM instrument dump
+    """Read TEM data from siroTEM instrument dump.
 
+    Example
+    -------
         DATA = readSiroTEMData(filename)
         .. list of soundings with USF and siro-specific keys
     """
@@ -304,7 +308,7 @@ def readSiroTEMData(fname):
 
 
 def getname(snd):
-    """ generate label name from filename entry """
+    """Generate label name from filename entry."""
     fname = snd['FILENAME']
     name = fname[fname.rfind('\\')+1:-4]
     if 'STACK_SIZE' in snd:
@@ -314,7 +318,6 @@ def getname(snd):
 
 
 class TDEM():
-
     """TEM class mainly for holding data etc."""
 
     def __init__(self, filename=None):
@@ -326,13 +329,7 @@ class TDEM():
             self.load(filename)
 
     def load(self, filename):
-        """load data from usf (e.g. terraTEM) or txt (siroTEM) file"""
-#        if filename.lower().rfind('.usf') > 0:
-#            if filename.find('*') >= 0:
-#                DATA = readusffiles(filename)
-#                self.DATA.extend(DATA)
-#            else:
-#                self.DATA.append(readusffile(filename))
+        """Road data from usf, txt (siroTEM), tem (TEMfast) or UniK file."""
         if filename.lower().endswith('.usf'):
             self.DATA.extend(readusffiles(filename))
         elif filename.lower().endswith('.txt'):
@@ -349,7 +346,7 @@ class TDEM():
         print(self.__repr__)
 
     def plotTransients(self, ax=None, **kwargs):
-        """plot all transients into one window"""
+        """Plot all transients into one window"""
         if ax is None:
             fig, ax = plt.subplots()
         else:
@@ -381,7 +378,7 @@ class TDEM():
         return fig, ax
 
     def plotRhoa(self, ax=None, ploterror=False, **kwargs):
-        """Plot all apparent resistivity curves into one window"""
+        """Plot all apparent resistivity curves into one window."""
         if ax is None:
             fig, ax = plt.subplots()
         else:
@@ -404,7 +401,7 @@ class TDEM():
         return fig, ax
 
 if __name__ == '__main__':
-    print("print do some tests here")
+    print("do some tests here")
     tem = TDEM(sys.argv[1])
     print(tem)
     tem.plotTransients()

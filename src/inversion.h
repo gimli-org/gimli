@@ -43,6 +43,7 @@ namespace GIMLI{
 //#define PLUS_TMP_VECSUFFIX + ".vec"
 #define PLUS_TMP_VECSUFFIX
 
+/*! template function for computing L1 norm (robust/blocky) weightings */
 template < class Vec > Vec getIRLSWeights(const Vec & a, double locut = 0.0, double hicut = 0.0) {
     double suabs = sum(abs(a));
     double suabsq = dot(a, a);
@@ -55,6 +56,7 @@ template < class Vec > Vec getIRLSWeights(const Vec & a, double locut = 0.0, dou
     return tmp;
 }
 
+/*! template function for computing Lp norm (robust/blocky) weightings */
 template < class Vec > Vec getIRLSWeightsP(const Vec & a, int p, double locut = 0.0, double hicut = 0.0) {
     Vec ap = pow(abs(a), p);
     Vec aq = pow(abs(a), 2);
@@ -265,7 +267,7 @@ public:
     /*! Set the forward operator and the model-transform-function derived from fop-regionManager if not set before. */
     inline void setForwardOperator(ModellingBase & forward) {
         forward_   = & forward;
-        forward_->clearConstraints();
+        forward_->clearConstraints();  //! why is this so strictly necessary???
 
         //! Always use a region manager
         forward_->initRegionManager();
@@ -295,7 +297,7 @@ public:
     inline void setTransModel(Trans< Vec > & tM) { tM_ = & tM; }
     inline Trans< Vec > & transModel() { return * tM_; }
 
-    /*! Return number of contraints and data */
+    /*! Return number of constraints and data */
     inline uint constraintsCount() const { return constraintsWeight_.size(); }
     inline uint dataCount()        const { return data_.size(); }
 
@@ -453,8 +455,8 @@ public:
 
     /*! Set model vector .
      * If you call \ref run() the inversion starts with this model,
-     * else it will start with fop.startModel(). */
-    void setModel(const Vec & model){ model_ = model; }
+     * otherwise it will start with fop.startModel(). */
+    void setModel(const Vec & model){ model_ = model; }  //why is there no size check???
 
     /*! Return a const reference to the current model vector */
     inline const ModelVector & model() const { return model_; }
@@ -464,8 +466,11 @@ public:
         haveReferenceModel_ = true; modelRef_ = model;
     }
 
-    /*! Set current model response (e.g. in order to avoid time-consuming forward calculation */
+    /*! Set current model response (e.g. to avoid time-consuming forward calculation, but be careful) */
     inline void setResponse(const Vec & response){ response_ = response; }
+
+    /*! Set constraint right-hand side by hand (very special cases, so be careful) */
+    inline void setConstraintsH(const Vec & constraintsH){ constraintsH_ = constraintsH; }  // size check?
 
     /*! Return a reference to the current response vector */
     inline const Vec & response() const { return response_; }
@@ -771,7 +776,7 @@ public:
 
         double lambda = lambda_;
         double chi2 = getChi2();
-        double fak(2.0);
+        double fak = 2.0, oldchi2 = chi2;
         double dir = 0, olddir = 0;
         bool verbose = verbose_;
 //        setVerbose(false);
@@ -780,6 +785,7 @@ public:
         if (verbose) std::cout << "chi^2 = " << chi2 << " lambda = " << lambda << " dir = " << dir << std::endl;
         int iter = 0;
         while (std::fabs(chi2 - 1.0) > acc and iter < maxiter){
+            if (dir < 0 && chi2 > oldchi2*1.001) break;
             dir = - sign(chi2 - 1.0);                           //** direction: up (1) or down (-1)
             if (dir * olddir == -1) fak = std::pow(fak, 0.6); //** change direction: decrease step
             lambda *= std::pow(fak, dir);                       //** increase or decrease lambda
@@ -788,6 +794,7 @@ public:
             chi2 = getChi2();
             if(verbose) std::cout << "chi^2 = " << chi2 << " lambda = " << lambda << " dir = " << dir << std::endl;
             olddir = dir;                                         //** save old direction for step length
+            oldchi2 = chi2;
             iter++;
         }
         return model;

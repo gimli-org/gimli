@@ -47,7 +47,8 @@ def num2str(a, fmtstr='%g'):
 
 
 def inthist(a, vals, bins=None, islog=False):
-    """What is this good for?."""
+    """Return point of integral (cumulative) histogram, e.g.
+    inthist(a, [25, 50, 75]) provides quartiles and median of an array"""
     if bins is None:
         bins = np.min((np.round(len(a) / 20), 10))
 
@@ -65,13 +66,14 @@ def inthist(a, vals, bins=None, islog=False):
 
 
 def interperc(a, trimval=3.0, islog=False, bins=None):
-    """What is this good for?."""
-    return inthist(
-        a, np.array([trimval, 100. - trimval]), bins=bins, islog=islog)
+    """Return symmetric interpercentiles for alpha-trim outliers, e.g.
+        interperc(a, 3) returns range of inner 94% (useful for colorscales)."""
+    return inthist(a, np.array([trimval, 100. - trimval]),
+                   bins=bins, islog=islog)
 
 
 def interpExtrap(x, xp, yp):
-    """Like np.interp function with linear extrapolation."""
+    """numpy.interp interpolation function extended by linear extrapolation."""
     y = np.interp(x, xp, yp)
     y = np.where(x < xp[0], yp[0]+(x-xp[0])*(yp[0]-yp[1])/(xp[0]-xp[1]), y)
     return np.where(x > xp[-1], yp[-1]+(x-xp[-1])*(yp[-1]-yp[-2]) /

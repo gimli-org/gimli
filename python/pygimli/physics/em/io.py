@@ -63,8 +63,11 @@ def readusffile(filename, data=None):
 
 
 def readusffiles(filenames):
-    """ read all soundings data from a list of usf files
-        DATA = readusffiles( filenames ) """
+    """Read all soundings data from a list of usf files
+
+    Example
+    -------
+        DATA = readusffiles(filenames)"""
     DATA = []
     for onefile in filenames:
         DATA = readusffile(onefile, DATA)
@@ -73,7 +76,7 @@ def readusffiles(filenames):
 
 
 def importMaxminData(filename, verbose=False):
-    """import function reading in positions, data, frequencies, geometry."""
+    """Import function reading in positions, data, frequencies, geometry."""
     delim = None
     fid = open(filename)
     coilspacing = 0.
@@ -102,21 +105,6 @@ def importMaxminData(filename, verbose=False):
 
     return x, freq, coilspacing, IP, OP
 
-# Data file example
-# / MAXMIN ELECTROMAGNETIC SURVEY
-# / FILENAME: Muell150.xyz
-# / PROJECT NUMBER:         1
-# / OPERATOR NUMBER:        3
-# / MAXMIN EQUIPMENT: MMI-9 S/N 3395
-# / SLOPE METHOD: NO SLOPES
-# / COIL SEPARATION:    150.0 METRES
-# / STATION SPACING:     50.0 METRES
-# / MODE: MAX1 (Horizontal Coplanar)
-# / FREQUENCIES ON a.dat FILE: 110, 220, 440, 880, 1760, 3520, 7040, 14080 Hz
-# LINE 1.0 Surveying: N ELEV 110 220 440 880 1760 3520 7040 14080 110C 220C 440C 880C 1760C 3520C 7040C 14080C BFC ERROR
-# 	0	0	6.61	7.97	8.07	12.42	14.14	19.5	27.66	28.03	45.82	23.67	63.08	11.45	68.98	-8.62	58.82	-20.77
-# 20      0       5.04    5.56    7.11    10.31   13.22   16.28   25.06
-# 21.91   37.18   14.17   57.3    4.67    52.07   -17.81  42.18   -31.07
 
 if __name__ == '__main__':
-    print("print do some tests here")
+    print("do some tests here")

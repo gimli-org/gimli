@@ -16,7 +16,7 @@ from .velocity import transInvWylliePhi
 from .velocity import transFwdWyllieS
 from .velocity import transInvWyllieS
 
-from .hydro import permeabiltyEngelhardtPitter
+from .hydro import permeabilityEngelhardtPitter
 
 from .modelling import PetroModelling
 from .modelling import PetroJointModelling

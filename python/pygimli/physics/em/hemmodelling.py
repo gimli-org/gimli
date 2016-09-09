@@ -7,7 +7,7 @@ from matplotlib.cm import register_cmap
 
 
 def registerDAEROcmap():
-    """standardized colormap from A-AERO projects (purple=0.3 to red=500)"""
+    """Standardized colormap from A-AERO projects (purple=0.3 to red=500)."""
     CMY = np.array([
         [127, 255, 31], [111, 255, 47], [95, 255, 63], [79, 255, 79],
         [63, 255, 95], [47, 255, 111], [31, 255, 127], [16, 255, 159],
@@ -24,15 +24,28 @@ def registerDAEROcmap():
 
 
 class HEMmodelling(pg.ModellingBase):
-    """ HEM Airborne modelling class """
+    """HEM Airborne modelling class."""
     # Konstanten
     ep0 = 8.8542e-12
     mu0 = 4e-7 * np.pi
     c0 = sqrt(1. / ep0 / mu0)
-    fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0])
-    rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92])
+    fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], np.float)
+    rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], np.float)
 
     def __init__(self, nlay, height, f=None, r=None):
+        """Initialize class with geometry
+
+        Parameters
+        ----------
+        nlay : int
+            number of layers
+        height : float
+            helicopter
+        f : array [BGR RESOLVE system 387Hz-133kHz]
+            frequency vector
+        r : array [BGR RESOLVE system 7.91-7.94]
+            distance vector
+        """
         # Attribute
         self.nlay = nlay
         self.height = height
@@ -49,6 +62,7 @@ class HEMmodelling(pg.ModellingBase):
         pg.ModellingBase.__init__(self, mesh)
 
     def response(self, par):
+        """Compute response vector by pasting in-phase and out-phase data."""
         ip, op = self.vmd_hem(self.height,
                               np.asarray(par)[self.nlay-1:self.nlay*2-1],
                               np.asarray(par)[:self.nlay-1])
@@ -59,6 +73,7 @@ class HEMmodelling(pg.ModellingBase):
 
     # Methoden
     def calc_forward(self, x, h, rho, d, epr, mur, quasistatic=False):
+        """Calculate forward response."""
         field = np.zeros((self.f.size, x.size), np.complex)
         # Vorwärtsrechnung
         # für Hintergrundmodell
@@ -80,6 +95,7 @@ class HEMmodelling(pg.ModellingBase):
         return field
 
     def downward(self, rho, d, z, epr, mur, lam):
+        """Downward continuation of fields."""
         # Anzahl der Schichten
         nl = rho.size
         # arrays anlegen
@@ -160,6 +176,17 @@ class HEMmodelling(pg.ModellingBase):
             return b1, a, ap
 
     def vmd_hem(self, h, rho, d, epr=1., mur=1., quasistatic=False):
+        """Vertical magnetic dipole (VMD) response.
+
+        Parameters
+        ----------
+        h : float
+            flight height
+        rho : array
+            resistivity vector
+        d : array
+            thickness vector
+        """
         # Filterkoeffizienten
         if isinstance(epr, float):
             epr = np.ones((len(rho),), np.float)*epr
@@ -244,6 +271,7 @@ class HEMmodelling(pg.ModellingBase):
         return np.real(Z[0]), np.imag(Z[0])
 
     def vmd_total_Ef(self, h, z, rho, d, epr, mur, tm):
+        """VMD E-phi field (not used actively)."""
         # nur im HR
         # Filterkoeffizienten
         fc1, nc, nc0 = hankelfc(4)
@@ -280,7 +308,7 @@ class HEMmodelling(pg.ModellingBase):
 
 
 def hankelfc(order):
-    # Filterkoeffizienten für Hankeltransformation
+    """Filter coefficients for Hankel transformation."""
     if order == 1:  # sin
         fc = np.array([
             2.59526236e-7, 3.66544843e-7, 5.17830795e-7, 7.31340622e-7,
@@ -416,7 +444,7 @@ def hankelfc(order):
 
 
 class HEMRhomodelling(HEMmodelling):
-    """ Airborne EM (HEM) Forward modelling class for Occam inversion """
+    """Airborne EM (HEM) Forward modelling class for Occam inversion."""
     def __init__(self, dvec, height, verbose):
         """ not yet working! """
         nlay = len(dvec)
@@ -431,7 +459,7 @@ class HEMRhomodelling(HEMmodelling):
 
 
 class FDEMLCIFOP(pg.ModellingBase):
-    """ FDEM 2d-LCI modelling class based on BlockMatrices """
+    """FDEM 2d-LCI modelling class based on BlockMatrices."""
     def __init__(self, data, nlay=2, verbose=False, f=None, r=None):
         """ Parameters: FDEM data class and number of layers """
         super(FDEMLCIFOP, self).__init__(verbose)
@@ -454,7 +482,7 @@ class FDEMLCIFOP(pg.ModellingBase):
         self.setJacobian(self.J)
 
     def response(self, model):
-        """ cut-together forward responses of all soundings """
+        """Cut together forward responses of all soundings."""
         modA = np.reshape(model, (self.nx, self.np))
         resp = pg.RVector(0)
         for i, modi in enumerate(modA):
@@ -463,16 +491,16 @@ class FDEMLCIFOP(pg.ModellingBase):
         return resp
 
     def createJacobian(self, model):
-        """ fill the individual blocks of the Block-Jacobi matrix """
+        """Fill the individual blocks of the Block-Jacobi matrix."""
         modA = np.reshape(model, (self.nx, self.np))
         for i, modi in enumerate(modA):
             self.FOP1d[i].createJacobian(modi)
 
 
 class FDEM2dFOP(pg.ModellingBase):
-    """ FDEM 2d-LCI modelling class based on BlockMatrices """
+    """FDEM 2d-LCI modelling class based on BlockMatrices."""
     def __init__(self, data, nlay=2, verbose=False):
-        """ Parameters: FDEM data class and number of layers """
+        """Parameters: FDEM data class and number of layers."""
         super(FDEM2dFOP, self).__init__(verbose)
         self.nlay = nlay
         self.FOP = data.FOP(nlay)
@@ -504,6 +532,7 @@ class FDEM2dFOP(pg.ModellingBase):
         return resp
 
     def createJacobian(self, model):
+        """Fill Jacobian (block) matrix by computing each block."""
         modA = np.reshape(model, (self.nx, self.nlay*2-1))
         for i in range(self.nx):
             self.FOP1d[i].createJacobian(modA[i])
@@ -511,8 +540,6 @@ class FDEM2dFOP(pg.ModellingBase):
 
 if __name__ == '__main__':
     nlay = 3
-#    frequency = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], np.float)
-#    separation = np.array([7.94, 7.93, 7.93, 7.91, 7.92], np.float)
     height = np.float(30.0)
     resistivity = np.array([1000.0, 100.0, 1000.0], np.float)
     thickness = np.array([22.0, 29.0], np.float)

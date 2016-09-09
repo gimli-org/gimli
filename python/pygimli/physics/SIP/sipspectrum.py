@@ -315,10 +315,13 @@ class SIPSpectrum():
 
         """
         if taupar[0] == 0:
-            taupar[0] = 1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi
+            taupar = (1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi,
+                      taupar[1], taupar[2])
+#            taupar[0] = 1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi
             print("taupar", taupar)
         if mpar[0] == 0:
-            mpar[0] = 1. - min(self.amp)/max(self.amp)
+            mpar = (1. - min(self.amp)/max(self.amp), mpar[1], mpar[2])
+#            mpar[0] = 1. - min(self.amp)/max(self.amp)
             print("mpar", mpar)
         self.mCC, self.phiCC, self.chi2 = fitCCPhi(
             self.f, self.phi, ePhi, lam, mpar=mpar, taupar=taupar, cpar=cpar)
@@ -340,14 +343,14 @@ class SIPSpectrum():
 
         """
         if taupar1[0] == 0:
-            taupar1[0] = np.sqrt(taupar1[1]*taupar1[2])
+            taupar1 = (np.sqrt(taupar1[1]*taupar1[2]), taupar1[1], taupar1[2])
             print("taupar1", taupar1)
         if taupar2[0] == 0:
-            taupar2[0] = np.sqrt(taupar2[1]*taupar2[2])
+            taupar2 = (np.sqrt(taupar2[1]*taupar2[2]), taupar2[1], taupar2[2])
             print("taupar2", taupar2)
 #            taupar1[0] = 1.0 / self.f[np.argmax(self.phi)] / 2.0 / pi
         if mpar[0] == 0:
-            mpar[0] = 1. - min(self.amp)/max(self.amp)  # *2
+            mpar = (1. - min(self.amp)/max(self.amp), mpar[1], mpar[2])  # *2
             print("mpar", mpar)
         self.mCC, self.phiCC = fit2CCPhi(self.f, self.phi, ePhi, lam,
                                          mpar1=mpar, mpar2=mpar,

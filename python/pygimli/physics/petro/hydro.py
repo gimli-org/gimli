@@ -5,7 +5,7 @@
 import pygimli as pg
 
 
-def permeabiltyEngelhardtPitter(poro, q=3.5, s=5e-3,
+def permeabilityEngelhardtPitter(poro, q=3.5, s=5e-3,
                                 mesh=None, meshI=None):
     r"""Empirical model for porosity to hydraulic permeability.
 

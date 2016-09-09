@@ -663,10 +663,10 @@ def createParaMesh(*args, **kwargs):
         sensor range.
     paraBoundary : float, optional
         Margin for parameter domain in absolute sensor distances. 2 (default).
-    paraMaxCellSize: double, optional
-        Maximum size for parametric size in m*m
-    boundaryMaxCellSize: double, optional
-        Maximum cells size in the boundary region in m*m
+    paraMaxCellSize: double [0], optional
+        Maximum size for parametric size in m*m (0-no constraint)
+    boundaryMaxCellSize: double [0], optional
+        Maximum cells size in the boundary region in m*m (0-no constraint)
     boundary : float, optional
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
