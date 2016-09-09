@@ -30,7 +30,7 @@ def show(mesh=None, data=None, **kwargs):
 
     Syntactic sugar to show a mesh with data. Forwards to
     :py:mod:`pygimli.viewer.showMesh` or
-    :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the possible 2D
+    :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the typical 2D
     and 3D content. See tutorials and examples for usage hints. An empty show
     call create an empty ax window.
 
@@ -48,7 +48,7 @@ def show(mesh=None, data=None, **kwargs):
     Return the results from the showMesh* functions.
     """
     if "axes" in kwargs:
-        print("Deprecation Warning: Please use keyword `ax` instead of `axes`.")
+        print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
     if isinstance(mesh, list):
@@ -191,9 +191,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     else:
-        #print(data, type(data))
+        # print(data, type(data))
         if hasattr(data[0], '__len__') \
-            and not isinstance(data,np.ma.core.MaskedArray):
+            and not isinstance(data, np.ma.core.MaskedArray):
 
             if len(data) == 2:  # [u,v]
                 data = np.array(data).T

@@ -82,22 +82,22 @@ public:
     /*! Return true if this region is a single parameter region */
     inline bool isSingle() const { return isSingle_ ; }
 
-    /*! Return amount of parameter for this region, 1 on single region */
+    /*! Return number of parameters for this region, 1 on single region */
     inline Index parameterCount() const { return parameterCount_; }
 
-    /*! Returns the first parameter id by means of a global count, defined in countParameter called from RegionManager */
+    /*! Return the first parameter id by means of a global count, defined in countParameter called from RegionManager */
     inline Index startParameter() const { return startParameter_; }
 
-    /*! Returns the last parameter id by means of a global count, defined in countParameter called from RegionManager */
+    /*! Return the last parameter id by means of a global count, defined in countParameter called from RegionManager */
     inline Index endParameter() const { return endParameter_; }
 
-    /*! Set the constrainst-type for this region available(0, 1) */
+    /*! Set the constraint type for this region available(0, 1) */
     void setConstraintType(Index type);
 
-    /*! Return constrainst-type for this region. */
+    /*! Return constraint type for this region. */
     inline Index constraintType() const { return constraintType_; }
 
-    /*! Returns amount if constraints defined for this region,
+    /*! Returns number of constraints defined for this region,
         For single region return 1,\n
         for constraintstype == 0 return amount of parameter cells,\n
         else return amount of inner boundaries */
@@ -144,8 +144,8 @@ public:
     void setFixValue(double val);
     inline double fixValue() const { return fixValue_;}
 
-    /*! Helper method that convert cweight parameter into individual 
-     * constraintsWeights depending on the associated boundary norm. 
+    /*! Helper method that convert cweight parameter into individual
+     * constraintsWeights depending on the associated boundary norm.
      * At the moment only zWeight is considered. */
     void fillConstraintsWeightWithFlatWeight();
 
@@ -260,13 +260,13 @@ public:
 
     void setVerbose(bool verbose){ verbose_ = verbose; }
     bool verbose() const { return verbose_; }
-    
+
     void clear();
 
     void setMesh(const Mesh & mesh, bool holdRegionInfos=false);
 
     const Mesh & mesh() const;
-     
+
     inline Mesh * pMesh() { return mesh_; }
 
     /*!
