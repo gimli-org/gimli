@@ -203,7 +203,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     if layers is not None:
         for i in range(len(layers)):
             poly.createEdge(poly.node(i + 1),
-                            poly.node(poly.nodeCount() - i - 2), 4 + i)
+                            poly.node(poly.nodeCount() - i - 2), 5 + i)
 
     # pg.warnNonEmptyArgs(kwargs)
     return poly

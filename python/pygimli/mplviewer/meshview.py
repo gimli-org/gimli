@@ -427,7 +427,11 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
     cols = []
 
     if fillRegion and mesh.boundaryCount() > 0:
-        tmpMesh = pg.meshtools.createMesh(mesh, quality=20)
+        # without the area setting there seems to be a problem with Triangle
+        # check this: world = mt.createWorld([0,0], [500, 1100],
+        #                         worldMarker=1, layers=[500, 600])
+        #
+        tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=1e5)
         if tmpMesh.cellCount() == 0:
             pass
         else:
