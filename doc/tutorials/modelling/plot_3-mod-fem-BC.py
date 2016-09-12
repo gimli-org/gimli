@@ -37,6 +37,13 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
 # of the individual boundaries b.
 
 
+###############################################################################
+# Short test: setting single node dirichlet BC
+u = solve(grid, f=1., uB=[grid.node(2), 0.])
+
+ax, _ = pg.show(grid, u, label='Solution $u$',)
+show(grid, ax=ax)
+
 def uDirichlet(b):
     """
         Return a solution value for coordinate p.

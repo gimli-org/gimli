@@ -878,9 +878,8 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
 #        __d('rhs', wsux.rhs, 1)
 #        __d('ux', velocity[:,0])
 
-        velocity[:, 1] = solveFiniteVolume(
-            mesh,
-            a=viscosity,
+        velocity[:, 1] = solveFiniteVolume(mesh,
+                                           a=viscosity,
             f=-pressureGrad[:, 1] / density + forceY,
             uB=velBoundaryY,
             uL=velocity[:, 1],
@@ -969,7 +968,7 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
                 break
 
         if verbose:
-            print(str(i) + ": " + str(preCNorm[-1]))
+            print(str(i) + ": |pC|" + str(preCNorm[-1]))
 
     return velocity, pressure, preCNorm, divVNorm
 

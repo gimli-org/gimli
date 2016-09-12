@@ -172,9 +172,10 @@ def parseArgPairToBoundaryArray(pair, mesh):
     pair : tuple
 
         - [marker, arg]
-          [[marker, ...], arg]
+        - [[marker, ...], arg]
         - [boundary, arg]
         - [[boundary,...], arg]
+        - [node, arg]
 
         arg will be parsed by
         :py:mod:`pygimli.solver.solver.generateBoundaryValue`
@@ -205,6 +206,9 @@ def parseArgPairToBoundaryArray(pair, mesh):
     elif isinstance(pair[0], pg.stdVectorBounds):
         bounds = pair[0]
     elif isinstance(pair[0], pg.Boundary):
+        boundaries.append(pair)
+        return boundaries
+    elif isinstance(pair[0], pg.Node):
         boundaries.append(pair)
         return boundaries
 
@@ -272,6 +276,9 @@ def parseArgToBoundaries(args, mesh):
     >>> b = pg.solver.parseArgToBoundaries([[[1, 2, 3], 1.0], [4, 4.0]], mesh)
     >>> print(len(b))
     4
+    >>> b = pg.solver.parseArgToBoundaries([mesh.node(0), 0.0], mesh)
+    >>> print(len(b))
+    1
     >>> pg.wait()
     """
     boundaries = []
@@ -941,14 +948,13 @@ def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
 
 def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into gimli"""
-    udirTmp = pg.RVector(S.rows(), 0.0)
-    udirTmp.setVal(uDirchlet, uDirIndex)
 
     if rhs is not None:
+        udirTmp = pg.RVector(S.rows(), 0.0)
+        udirTmp.setVal(uDirchlet, uDirIndex)
         rhs -= S * udirTmp
 
     for i in uDirIndex:
-
         S.cleanRow(i)
         S.cleanCol(i)
         S.setVal(i, i, 1.0)
@@ -1006,9 +1012,15 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None):
         uD = generateBoundaryValue(boundary, val, time, userData)
 
         if uD is not None:
-            for n in boundary.nodes():
+            if isinstance(boundary, pg.Node):
+                n = boundary
                 uDirNodes.append(n)
                 uDirVal[n.id()] = uD
+            else:
+
+                for n in boundary.nodes():
+                    uDirNodes.append(n)
+                    uDirVal[n.id()] = uD
 
     if len(uDirNodes) == 0:
         return
