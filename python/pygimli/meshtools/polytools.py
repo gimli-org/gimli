@@ -135,7 +135,8 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     Create simple rectangular world with appropriate boundary conditions.
     Surface boundary is set do pg.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and
     inner subsurface is set to pg.MARKER_BOUND_MIXED, i.e., -2 or
-    Left=1, Right=2, Bottom=3 and Top=4 if worldMarker is set to false.
+    Numbered in ascending order in left direction starting upper left if
+    worldMarker is set to false.
 
     Parameters
     ----------
@@ -150,7 +151,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     layers : [float]
         Add some layers to the world.
     worldMarker : [bool]
-        Specify kind of preset boundary marker [-1, -2] or [1 2 3 4]
+        Specify kind of preset boundary marker [-1, -2] or [1, 2, 3, 4 ..]
 
     Returns
     -------
@@ -190,12 +191,11 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
 
-    polyCreateDefaultEdges_(
-        poly, boundaryMarker=[1]*(len(z)-1) + [3] + [2]*(len(z)-1) + [4])
+    polyCreateDefaultEdges_(poly, boundaryMarker=range(1, poly.nodeCount()+1))
 
     if worldMarker:
         for b in poly.boundaries():
-            if b.marker() == 4:
+            if b.norm()[1] == 1.0:
                 b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
             else:
                 b.setMarker(pg.MARKER_BOUND_MIXED)
@@ -203,7 +203,8 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     if layers is not None:
         for i in range(len(layers)):
             poly.createEdge(poly.node(i + 1),
-                            poly.node(poly.nodeCount() - i - 2), 4 + i)
+                            poly.node(poly.nodeCount() - i - 2),
+                            poly.boundaryCount() + 1)
 
     # pg.warnNonEmptyArgs(kwargs)
     return poly

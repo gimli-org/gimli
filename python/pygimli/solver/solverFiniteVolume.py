@@ -569,32 +569,33 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     workspace = pg.solver.WorkSpace()
     if ws:
-        print("reuse Workspace")
         workspace = ws
 
     a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
     f = pg.solver.parseArgToArray(f, mesh.cellCount())
     fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
 
-    if isinstance(vel, float):
-        print("Warning! .. velocity is float and no vector field")
-
-    if len(vel) != mesh.cellCount() and \
-       len(vel) != mesh.nodeCount() and \
-       len(vel) != mesh.boundaryCount():
-
-        print("mesh:", mesh)
-        print("vel:", vel.shape)
-        raise BaseException("Velocity field has wrong dimension.")
-
-    if len(vel) is not mesh.nodeCount():
-        vel = pg.solver.pointDataToBoundaryData(mesh, vel)
 
     boundsDirichlet = None
     boundsNeumann = None
 
     # BEGIN check for Courant-Friedrichs-Lewy
     if vel is not None:
+
+        if isinstance(vel, float):
+            print("Warning! .. velocity is float and no vector field")
+
+        if len(vel) != mesh.cellCount() and \
+            len(vel) != mesh.nodeCount() and \
+            len(vel) != mesh.boundaryCount():
+
+            print("mesh:", mesh)
+            print("vel:", vel.shape)
+            raise BaseException("Velocity field has wrong dimension.")
+
+        if len(vel) is not mesh.nodeCount():
+            vel = pg.solver.pointDataToBoundaryData(mesh, vel)
+
         vmax = 0
         if mesh.dimension() == 3:
             vmax = np.max(np.sqrt(vel[:, 0]**2 + vel[:, 1]**2 + vel[:, 2]**2))
@@ -831,10 +832,11 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
 
     if velBoundary is not None:
         for marker, vel in velBoundary:
-            if not isinstance(vel[0], str):
-                velBoundaryX.append([marker, vel[0]])
-            if not isinstance(vel[1], str):
-                velBoundaryY.append([marker, vel[1]])
+            if vel is not None:
+                if not isinstance(vel[0], str):
+                    velBoundaryX.append([marker, vel[0]])
+                if not isinstance(vel[1], str):
+                    velBoundaryY.append([marker, vel[1]])
 
     pressure = None
     if pre0 is None:
@@ -863,23 +865,21 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)
         # __d('vx', pressureGrad[:,0])
 
-        velocity[:, 0] = solveFiniteVolume(
-            mesh,
-            a=viscosity,
-            f=-pressureGrad[:, 0] / density + forceX,
-            uB=velBoundaryX,
-            uL=velocity[:, 0],
-            relax=velocityRelaxation,
-            ws=wsux)
+        velocity[:, 0] = solveFiniteVolume(mesh,
+                                           a=viscosity,
+                       f=-pressureGrad[:, 0] / density + forceX,
+                       uB=velBoundaryX,
+                       uL=velocity[:, 0],
+                       relax=velocityRelaxation,
+                       ws=wsux)
 
 #        for s in wsux.S:
 #            print(s)
 #        __d('rhs', wsux.rhs, 1)
 #        __d('ux', velocity[:,0])
 
-        velocity[:, 1] = solveFiniteVolume(
-            mesh,
-            a=viscosity,
+        velocity[:, 1] = solveFiniteVolume(mesh,
+                                           a=viscosity,
             f=-pressureGrad[:, 1] / density + forceY,
             uB=velBoundaryY,
             uL=velocity[:, 1],
@@ -968,7 +968,7 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
                 break
 
         if verbose:
-            print(str(i) + ": " + str(preCNorm[-1]))
+            print(str(i) + ": |pC|" + str(preCNorm[-1]))
 
     return velocity, pressure, preCNorm, divVNorm
 
@@ -1019,16 +1019,16 @@ def test_ConvectionAdvection():
     ax3 = fig.add_subplot(1, 3, 3)
 
     show(grid, data=pg.cellDataToPointData(grid, pres),
-         logScale=False, showLater=True, colorBar=True, axes=ax1, cbar='b2r')
+         logScale=False, showLater=True, colorBar=True, ax=ax1, cbar='b2r')
     show(grid, data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 0]),
                                        1e-2),
-         logScale=False, showLater=True, colorBar=True, axes=ax2)
+         logScale=False, showLater=True, colorBar=True, ax=ax2)
     show(grid, data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 1]),
                                        1e-2),
-         logScale=False, showLater=True, colorBar=True, axes=ax3)
+         logScale=False, showLater=True, colorBar=True, ax=ax3)
 
-    show(grid, data=vel, axes=ax1)
-    show(grid, showLater=True, axes=ax1)
+    show(grid, data=vel, ax=ax1)
+    show(grid, showLater=True, ax=ax1)
 
     plt.figure()
     plt.semilogy(pCNorm, label='norm')
