@@ -46,8 +46,8 @@ def findSlowness(edge):
 
 def fastMarch(mesh, downwind, times, upT, downT):
     """WRITEME."""
-    print(mesh)
     upCandidate = []
+#    print('.', end='')
 
     for node in downwind:
         neighNodes = pg.commonNodes(node.cellSet())
@@ -57,8 +57,7 @@ def fastMarch(mesh, downwind, times, upT, downT):
             if upT[n.id()]:
                 upNodes.append(n)
 
-        if len(upNodes) == 1:
-            # this is the dijkstra case
+        if len(upNodes) == 1:  # the Dijkstra case
             edge = pg.findBoundary(upNodes[0], node)
             tt = times[upNodes[0].id()] + \
                 findSlowness(edge) * edge.shape().domainSize()
