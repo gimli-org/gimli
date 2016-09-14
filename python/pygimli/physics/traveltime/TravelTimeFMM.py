@@ -35,18 +35,24 @@ class TravelTimeFMM(pg.ModellingBase):
         """
 
         pg.ModellingBase.__init__(self, mesh, data, verbose)
-        self.timefields = dict()
-        self._jac = dict()
-        self.num_sensors = data.sensorCount()
-#        num_shots = len(np.unique(data("s")))
+        super().__init__(verbose=verbose)
+        self.mesh_ = mesh  # better use self.mesh() after refine
+        self.data_ = data
+        self.nSensors = data.sensorCount()
+        self.nModel = self.mesh_.cellCount()
+        self.nNodes = self.mesh_.nodeCount()
+        self.midPoints = self.mesh_.cellCenters()
+        self.dataMatrix = np.zeros((self.nSensors, self.nSensors))
+        self.timeMatrix = np.zeros((self.nSensors, self.nModel))
+        # maybe use pg RMatrix instead?
 
-    def response(self, slowness):
+    def computeTravelTimes(self, slowness, allSensors=True):
+        """Compute the travel times and fill data and time matrix
+        for later use of response and Jacobian, respectively.
+        For response only active sources are needed, for Jacobian we need all.
         """
-        Response function. Returns the result of the forward calculation.
-        Uses the shot- and sensor positions specified in the data container.
-        """
-
-        mesh = self.mesh()
+        # mesh = self.mesh()  # better but for now input mesh
+        mesh = self.mesh_
         param_markers = np.unique(mesh.cellMarkers())
         param_count = len(param_markers)
         if len(slowness) == mesh.cellCount():
@@ -65,26 +71,17 @@ class TravelTimeFMM(pg.ModellingBase):
                              "{}".format(self.mesh().cellCount(), param_count,
                                          len(slowness)))
 
-        data = self.data()
-        n_data = data.size()
-        t_fmm = np.zeros(n_data)
-        idx = 0
-        for source_idx in [0]:  # np.unique(data("s")):
-            # initialize source position and trvel time vector
-            n_sensors = np.sum(data("s") == source_idx)
-            # maybe not always same number of sensors
-            source = data.sensorPosition(int(source_idx))
-            times = pg.RVector(mesh.nodeCount(), 0.)
-
-            # initialize sets and tags
-#            upwind, downwind = set(), set()
+        times = pg.RVector(self.nNodes, 0.)
+        upTags = np.zeros(self.nNodes)
+        downTags = np.zeros(mesh.nodeCount())
+        for iSource in range(self.nSensors):
+            # initial condition (reset vectors)
+            times *= 0.0
+            upTags *= 0
             downwind = set()
-            upTags = np.zeros(mesh.nodeCount())
-            downTags = np.zeros(mesh.nodeCount())
-
-            # define initial condition
-            cell = mesh.findCell(source)
-
+            source = data.sensorPosition(iSource)
+            cell = self.mesh_.findCell(source)
+            # fill in nodes around source using local smoothness
             for i, n in enumerate(cell.nodes()):
                 times[n.id()] = cell.attribute() * n.pos().distance(source)
                 upTags[n.id()] = 1
@@ -95,17 +92,28 @@ class TravelTimeFMM(pg.ModellingBase):
                         downwind.add(nn)
                         downTags[nn.id()] = 1
 
-            # start fast marching
-            while len(downwind) > 0:
-                fastMarch(mesh, downwind, times, upTags, downTags)
-            self.timefields[source_idx] = np.array(times)
+            while len(downwind) > 0:  # start fast marching
+                fastMarch(self.mesh_, downwind, times, upTags, downTags)
+
+            self.dataMatrix[iSource] = pg.interpolate(mesh, times,
+                                                      data.sensorPositions())
+            self.timeMatrix[iSource] = pg.interpolate(mesh, times,
+                                                      self.midPoints)
 
             sensor_idx = data("g")[data("s") == source_idx]
 
-            t_fmm[idx:idx+n_sensors] = np.array(
-                [times[mesh.findNearestNode(data.sensorPosition(int(i)))]
-                 for i in sensor_idx])
-            idx += n_sensors
+    def response(self, slowness):
+        """
+        Response function. Returns the result of the forward calculation.
+        Uses the shot- and sensor positions specified in the data container.
+        """
+        self.computeTravelTimes(slowness, allSources=False)
+        # assembling the local data
+        data = self.data_
+        n_data = .data.size()
+        t_fmm = pg.RVector(n_data)
+        for i in range(n_data):
+            t_fmm[i] = self.dataMatrix[data("s")[i]][data("g")[i]]
 
         return t_fmm
 
@@ -113,6 +121,7 @@ class TravelTimeFMM(pg.ModellingBase):
         """
         Computes the jacobian matrix from the model.
         """
+        # self.computeTravelTimes(slowness, allSources=True)
         pass
 
     def _intersect_lines(self, l1, l2):

@@ -25,79 +25,6 @@ where :math:`t` denote traveltime for a spatial distributed slowness :math:`s`
 In case f(x) = 1, the solution gives the distance from the boundary
 """
 
-# def fastMarch(mesh, downwind, times, upTags, downTags):
-
-# def findSlowness(edge):
-# if edge.leftCell() is None: # outer boundary
-# slowness = edge.rightCell().attribute()
-# elif edge.rightCell() is None: # does not
-# slowness = edge.leftCell().attribute()
-# else: # take fastest (smallest slowness)
-# slowness = min(edge.leftCell().attribute(), edge.rightCell().attribute())
-# return slowness
-# def findSlowness(...)
-
-# upCandidate = []
-
-# for node in downwind:
-# neighNodes = pg.commonNodes(node.cellSet())
-
-# upNodes = []
-# for n in neighNodes:
-# if upTags[ n.id() ]:
-# upNodes.append(n)
-
-# if len(upNodes) == 1:
-# this is the dijkstra case
-# edge = pg.findBoundary(upNodes[0], node)
-# tt = times[ upNodes[0].id() ] + \
-#   findSlowness(edge) * edge.shape().domainSize()
-
-# heapq.heappush(upCandidate, (tt, node))
-# else:
-# cells = node.cellSet()
-# for c in cells:
-# for i in range(c.nodeCount()):
-# edge = pg.findBoundary(c.node(i), c.node((i + 1)%3))
-
-# a = edge.node(0)
-# b = edge.node(1)
-# ta = times[ a.id() ]
-# tb = times[ b.id() ]
-
-# if upTags[ a.id() ] and upTags[ b.id() ]:
-# line = pg.Line(a.pos(), b.pos())
-# t = min(1., max(0., line.nearest(node.pos())))
-
-# ea = pg.findBoundary(a, node)
-# eb = pg.findBoundary(b, node)
-
-# if t == 0:
-# slowness = findSlowness(ea)
-# elif t == 1:
-# slowness = findSlowness(eb)
-# else:
-# slowness = c.attribute()
-
-# ttimeA = (ta               + slowness * a.pos().distance(node.pos()))
-# ttimeQ = (ta + t*(tb-ta)) + slowness * line(t).distance(node.pos())
-# ttimeB = (tb               + slowness * b.pos().distance(node.pos()))
-
-# heapq.heappush(upCandidate, (min(ttimeA,ttimeQ,ttimeB), node))
-
-# candidate = heapq.heappop(upCandidate)
-# newUpNode = candidate[1]
-# times[ newUpNode.id() ] = candidate[0]
-# upTags[ newUpNode.id() ] = 1
-# downwind.remove(newUpNode)
-
-# newDownNodes = pg.commonNodes(newUpNode.cellSet())
-# for nn in newDownNodes:
-# if not upTags[ nn.id() ] and not downTags[ nn.id() ]:
-# downwind.add(nn)
-# downTags[ nn.id() ] = 1
-
-# def fastMarch(...)
 
 if __name__ == '__main__':
     xmin, xmax, zlay = -20., 150., 20.
@@ -170,7 +97,7 @@ if __name__ == '__main__':
 
     # compare with analytical solution along the x axis
     x = np.arange(0., 100., 0.5)
-    t = pg.interpolate(mesh, times, pg.asvector(x), x * 0., x * 0.)
+    t = pg.interpolate(mesh, times, x, x * 0., x * 0.)
     tdirect = x / v[0]  # direct wave
     alfa = asin(v[0] / v[1])  # critically refracted wave angle
     xreflec = tan(alfa) * zlay * 2.  # first critically refracted

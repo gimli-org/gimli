@@ -62,9 +62,9 @@ def createGradientModel2D(data, mesh, vTop, vBot):
         The topography list is in here.
     mesh : pygimli.Mesh
         The parametric mesh used for the inversion
-    VTop : float
+    vTop : float
         The velocity at the surface of the mesh
-    VBot : float
+    vBot : float
         The velocity at the bottom of the mesh
 
     Returns
