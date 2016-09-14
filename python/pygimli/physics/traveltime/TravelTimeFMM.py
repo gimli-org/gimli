@@ -100,17 +100,17 @@ class TravelTimeFMM(pg.ModellingBase):
             self.timeMatrix[iSource] = pg.interpolate(mesh, times,
                                                       self.midPoints)
 
-            sensor_idx = data("g")[data("s") == source_idx]
+            sensor_idx = data("g")[data("s") == iSource]
 
     def response(self, slowness):
         """
         Response function. Returns the result of the forward calculation.
         Uses the shot- and sensor positions specified in the data container.
         """
-        self.computeTravelTimes(slowness, allSources=False)
+        self.computeTravelTimes(slowness, allSensors=False)
         # assembling the local data
         data = self.data_
-        n_data = .data.size()
+        n_data = self.data_.size()
         t_fmm = pg.RVector(n_data)
         for i in range(n_data):
             t_fmm[i] = self.dataMatrix[data("s")[i]][data("g")[i]]
