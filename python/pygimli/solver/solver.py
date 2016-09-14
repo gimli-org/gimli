@@ -1244,7 +1244,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
-    ...                                   uB=[[4, 1.0], [3, 0.0]])
+    ...                                   uB=[[4, 1.0], [2, 0.0]])
     >>> fig, ax = plt.subplots()
     >>> pc = drawField(ax, mesh, u)
     >>> drawMesh(ax, mesh)

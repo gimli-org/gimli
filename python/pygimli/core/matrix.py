@@ -52,7 +52,7 @@ class RMultRMatrix(pg.MatrixBase):
 
     def mult(self, x):
         """ return M*x = A*(r*x) """
-        return self.A.mult(x*self.r)
+        return self.A.mult(x * self.r)
 
     def transMult(self, x):
         """ return (A.T*x)*r """
