@@ -99,10 +99,12 @@ def readSIP256file(resfile, verbose=False):
 
     Parameters
     ----------
-        filename: str
-            *.RES file (SIP256 raw output file)
-        verbose:    bool
-            do some output [False]
+
+    filename: str
+        *.RES file (SIP256 raw output file)
+
+    verbose:    bool
+        do some output [False]
 
     Returns
     -------

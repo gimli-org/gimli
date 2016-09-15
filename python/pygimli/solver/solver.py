@@ -652,6 +652,7 @@ def div(mesh, v):
             d = mesh.divergence(
                 np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
         else:
+            print(len(v), mesh)
             raise BaseException("implement me")
     elif callable(v):
         raise BaseException("implement me")
@@ -1070,8 +1071,8 @@ def createStiffnessMatrix(mesh, a=None):
     if isinstance(a[0], float) or isinstance(a[0], np.float64):
 
         A = pg.RSparseMatrix()
-        A.fillStiffnessMatrix(mesh, a)
-        return A
+        #A.fillStiffnessMatrix(mesh, a)
+        #return A
     else:
         A = pg.CSparseMatrix()
 
@@ -1082,10 +1083,10 @@ def createStiffnessMatrix(mesh, a=None):
     A_l = pg.ElementMatrix()
     for c in mesh.cells():
         A_l.ux2uy2uz2(c)
-        # A_l *= a[c.id()]
-        # A += A_l
-        A.add(A_l, a[c.id()])
+        A.add(A_l, scale=a[c.id()])
 
+        #if c.id() == 0:
+            #print(c.id(), A_l)
     return A
 
 

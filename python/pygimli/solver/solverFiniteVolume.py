@@ -407,6 +407,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
     for [boundary, val] in uB:
+        
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
 
