@@ -106,7 +106,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
         for i in range(len(vals)):
             recs.append(Rectangle((xvec[i] - dx / 2, ymap[yvec[i]] - 0.5),
-                                   dx, 1))
+                                  dx, 1))
     else:
         for i in range(len(vals)):
             recs.append(Rectangle((xvec[i] - dx / 2, yvec[i] - dy / 2),

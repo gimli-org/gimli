@@ -245,7 +245,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
         if colorBar is True or colorBar is 1:
             cbar = createColorBar(gci, label=label, **subkwargs)
         elif colorBar is not False:
-            print(colorBar)
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
 
     if coverage is not None:

@@ -312,13 +312,18 @@ endif()
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
-if (PYTHON_EXECUTABLE AND PYTHONLIBS_FOUND
+if (PYTHON_EXECUTABLE
+    AND TRIANGLE_FOUND
+    AND PYTHONLIBS_FOUND
     AND CASTER_EXECUTABLE
-    AND PYGCCXML_FOUND AND PYPLUSPLUS_FOUND
-    AND Boost_PYTHON_LIBRARIES AND numpy_FOUND)
+    AND PYGCCXML_FOUND
+    AND PYPLUSPLUS_FOUND
+    AND Boost_PYTHON_LIBRARIES
+    AND numpy_FOUND)
     set (PYGIMLI 1)
     message (STATUS "pygimli can be build.")
 else()
+    message(STATUS "Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
     message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
     message(STATUS "PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}" )
     message(STATUS "GCCXML_EXECUTABLE: ${GCCXML_EXECUTABLE}" )
@@ -327,9 +332,8 @@ else()
     message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
     message(STATUS "numpy_FOUND: ${numpy_FOUND}" )
 
-    message (STATUS "pygimli cannot be build due to some missing packages.
-Check above for python, gccxml|castxml, pygccxml, pyplusplus, boost_python, numpy")
-
+    message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
+Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
 endif ()
 
 message(STATUS "**********************************************************************")
