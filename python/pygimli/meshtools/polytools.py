@@ -412,8 +412,6 @@ def createPolygon(verts, isClosed=False, **kwargs):
                              marker=marker,
                              area=area)
 
-
-
     # set a regionmarker here .. somewhere
 
     return poly
@@ -778,7 +776,7 @@ def readPLC(filename):
 
 
 def writePLC(poly, fname, **kwargs):
-    r"""Generic PLC writer.
+    r"""General writer to save piece-wise linear complex (PLC) as poly file.
 
     Choose from poly.dimension() and forward appropriate to
     gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
@@ -792,6 +790,17 @@ def writePLC(poly, fname, **kwargs):
         The polygon to be written.
     fname : string
         Filename of the file to read (\\*.n, \\*.e)
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, 0])
+    >>> pg.meshtools.writePLC(world2d, "world2d.poly")
+    >>> read2d = pg.meshtools.readPLC("world2d.poly")
+    >>> print(read2d)
+    Mesh: Nodes: 4 Cells: 0 Boundaries: 4
+    >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
+    >>> pg.meshtools.writePLC(world3d, "world3d.poly")
     """
     if poly.dimension() == 2:
         writeTrianglePoly(poly, fname, **kwargs)
