@@ -393,8 +393,8 @@ def createPolygon(verts, isClosed=False, **kwargs):
     >>> import pygimli.meshtools as plc
     >>> p = plc.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
     ...                       isClosed=1, marker=3, area=0.1)
-    >>> pg.show(p)
-    (<matplotlib.axes.AxesSubplot object at 0x...>, None)
+    >>> ax,_ = pg.show(p)
+    >>> # (<matplotlib.axes.AxesSubplot object at 0x...>, None)
     """
     poly = pg.Mesh(2)
 
@@ -493,9 +493,12 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                       **kwargs):
     """Create a PLC mesh for an inversion parameter mesh.
 
-    Create a PLC mesh for an inversion parameter mesh for a given list of
+    Create a PLC mesh for an inversion parameter mesh with for a given list of
     sensor positions.
     Sensor position assumed on the surface and must be sorted and unique.
+
+    You can create a parameter mesh without sensors if you just set
+    [xmin, xmax] as sensors.
 
     The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
     two region markers, one for the parameters domain (marker=2) and
@@ -506,11 +509,12 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
         * closed domains (boundary == 0)
         * additional topopoints
         * spline interpolations between sensorpoints or addpoints
-        * subsurface sensors
+        * subsurface sensors (partly .. see example)
 
     Parameters
     ----------
-    sensors : list of RVector3 objects | DataContainer with sensorPositions()
+    sensors : list of RVector3 objects | DataContainer with sensorPositions() |
+[xmin, xmax]
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
     paraDX : float [1]
@@ -535,11 +539,33 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     -------
     poly: :gimliapi:`GIMLI::Mesh`
         piecewise linear complex (PLC) containing nodes and edges
+
+    Examples
+    --------
+    --------
+    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as plc
+    >>> # Create the simplest paramesh PLC with a para box of 10 m without
+    >>> # electrodes
+    >>> p = plc.createParaMeshPLC([0,10])
+    >>> # you can add subsurface electrodes now with
+    >>> for z in range(1,4):
+    ...     n = p.createNode((5,-z), -99)
+    >>> ax,_ = pg.show(p)
     """
+    noSensors = False
     if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
     elif isinstance(sensors, np.ndarray):
         sensors = [pg.RVector3(s) for s in sensors]
+    elif isinstance(sensors, list):
+        if len(sensors) == 2:
+            # guess we have just a desired Pbox with
+            sensors = [pg.RVector3(sensors[0], 0.0),
+                       pg.RVector3(sensors[1], 0.0)]
+            noSensors = True
+            paraBoundary = 0
 
     eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
 
@@ -564,10 +590,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
 
     poly = pg.Mesh(2)
     # define para domain without surface
-    n1 = poly.createNode([xmin - paraBoundary, sensors[0][iz]])
-    n2 = poly.createNode([xmin - paraBoundary, sensors[0][iz] - paraDepth])
-    n3 = poly.createNode([xmax + paraBoundary, sensors[-1][iz] - paraDepth])
-    n4 = poly.createNode([xmax + paraBoundary, sensors[-1][iz]])
+    n1 = poly.createNode([xmin - paraBound, sensors[0][iz]])
+    n2 = poly.createNode([xmin - paraBound, sensors[0][iz] - paraDepth])
+    n3 = poly.createNode([xmax + paraBound, sensors[-1][iz] - paraDepth])
+    n4 = poly.createNode([xmax + paraBound, sensors[-1][iz]])
 
     if boundary < 0:
         boundary = 4
@@ -595,34 +621,35 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     # define surface
     nSurface = []
     nSurface.append(n1)
-    for i, e in enumerate(sensors):
-        if iz == 2:
-            e.rotateX(-math.pi/2)
-        if paraDX >= 0.5:
-            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if i < len(sensors) - 1:
-                e1 = sensors[i + 1]
-                if iz == 2:
-                    e1.rotateX(-math.pi/2)
-                nSurface.append(poly.createNode((e + e1) * 0.5))
-            # print("Surface add ", e, el, nSurface[-2].pos(),
-            #        nSurface[-1].pos())
-        elif paraDX < 0.5:
-            if i > 0:
-                e1 = sensors[i - 1]
-                if iz == 2:
-                    e1.rotateX(-math.pi/2)
-                nSurface.append(
-                    poly.createNode(e - (e - e1) * paraDX))
-            nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
-            if i < len(sensors) - 1:
-                e1 = sensors[i + 1]
-                if iz == 2:
-                    e1.rotateX(-math.pi/2)
-                nSurface.append(
-                    poly.createNode(e + (e1 - e) * paraDX))
-            # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
-            #        nSurface[-1].pos())
+    if not noSensors:
+        for i, e in enumerate(sensors):
+            if iz == 2:
+                e.rotateX(-math.pi/2)
+            if paraDX >= 0.5:
+                nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
+                if i < len(sensors) - 1:
+                    e1 = sensors[i + 1]
+                    if iz == 2:
+                        e1.rotateX(-math.pi/2)
+                    nSurface.append(poly.createNode((e + e1) * 0.5))
+                # print("Surface add ", e, el, nSurface[-2].pos(),
+                #        nSurface[-1].pos())
+            elif paraDX < 0.5:
+                if i > 0:
+                    e1 = sensors[i - 1]
+                    if iz == 2:
+                        e1.rotateX(-math.pi/2)
+                    nSurface.append(
+                        poly.createNode(e - (e - e1) * paraDX))
+                nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
+                if i < len(sensors) - 1:
+                    e1 = sensors[i + 1]
+                    if iz == 2:
+                        e1.rotateX(-math.pi/2)
+                    nSurface.append(
+                        poly.createNode(e + (e1 - e) * paraDX))
+                # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
+                #        nSurface[-1].pos())
     nSurface.append(n4)
 
     for i in range(len(nSurface) - 1, 0, -1):

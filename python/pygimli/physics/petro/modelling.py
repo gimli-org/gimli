@@ -55,8 +55,7 @@ class PetroModelling(pg.ModellingBase):
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        par = self.trans.trans(model)
-        self.fop.createJacobian(par)
+        self.fop.createJacobian(self.trans.trans(model))
         self.jac.r = self.trans.deriv(model)  # set inner derivative
 
 

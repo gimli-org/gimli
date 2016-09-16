@@ -60,7 +60,7 @@ u = pg.solver.solve(grid, f=1.,
 ###############################################################################
 # The result is drawn with the function :py:mod:`pygimli.show`.
 
-ax, cbar = pg.show(grid, data=u, colorBar=True, label='P1 Solution $u$')
+ax, cbar = pg.show(grid, data=u, label='P1 Solution $u$')
 
 ###############################################################################
 # :py:mod:`pygimli.show` is just a shortcut for various routines that can also
@@ -79,7 +79,7 @@ uh = pg.solver.solve(gridh2, f=1.,
                      uB=[gridh2.findBoundaryByMarker(1, 5), 0.0],
                      verbose=True)
 
-ax, cbar = pg.show(gridh2, data=uh, colorBar=True, label='H2 Solution $u$')
+ax, cbar = pg.show(gridh2, data=uh, label='H2 Solution $u$')
 
 pg.mplviewer.drawMesh(ax, gridh2)
 
@@ -92,7 +92,6 @@ gridp2 = grid.createP2()
 up = pg.solver.solve(gridp2, f=1.,
                      uB=[gridp2.findBoundaryByMarker(1, 5), 0.0],
                      verbose=True)
-
 ###############################################################################
 # Fortunately there exist an analytical solution for this example.
 

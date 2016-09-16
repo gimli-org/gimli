@@ -652,6 +652,7 @@ def div(mesh, v):
             d = mesh.divergence(
                 np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
         else:
+            print(len(v), mesh)
             raise BaseException("implement me")
     elif callable(v):
         raise BaseException("implement me")
@@ -1070,8 +1071,8 @@ def createStiffnessMatrix(mesh, a=None):
     if isinstance(a[0], float) or isinstance(a[0], np.float64):
 
         A = pg.RSparseMatrix()
-        A.fillStiffnessMatrix(mesh, a)
-        return A
+        #A.fillStiffnessMatrix(mesh, a)
+        #return A
     else:
         A = pg.CSparseMatrix()
 
@@ -1082,10 +1083,10 @@ def createStiffnessMatrix(mesh, a=None):
     A_l = pg.ElementMatrix()
     for c in mesh.cells():
         A_l.ux2uy2uz2(c)
-        # A_l *= a[c.id()]
-        # A += A_l
-        A.add(A_l, a[c.id()])
+        A.add(A_l, scale=a[c.id()])
 
+        #if c.id() == 0:
+            #print(c.id(), A_l)
     return A
 
 
@@ -1244,7 +1245,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
-    ...                                   uB=[[4, 1.0], [3, 0.0]])
+    ...                                   uB=[[4, 1.0], [2, 0.0]])
     >>> fig, ax = plt.subplots()
     >>> pc = drawField(ax, mesh, u)
     >>> drawMesh(ax, mesh)

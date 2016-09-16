@@ -407,6 +407,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
     for [boundary, val] in uB:
+        
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
 
@@ -693,9 +694,8 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         if verbose:
             print("Solve timesteps with Crank-Nicolson.")
 
-        return pg.solver.crankNicolson(
-            times, theta, workspace.S, I,
-            f=workspace.rhs,
+        return pg.solver.crankNicolson(times, theta, workspace.S, I,
+                                       f=workspace.rhs,
             u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
             verbose=verbose)
 
