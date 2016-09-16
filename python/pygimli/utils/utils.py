@@ -494,7 +494,7 @@ def unique_rows(array):
     # return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
 
 
-def covariance_matrix(x, y, z=None, I=None, dip=0, strike=0, var=1):
+def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
     """Geostatistical covariance matrix.
 
     Parameters
@@ -524,19 +524,40 @@ def covariance_matrix(x, y, z=None, I=None, dip=0, strike=0, var=1):
     return CM
 
 
-def pos_covariance_matrix(pos, **kwargs):
+def covarianceMatrixPos(pos, **kwargs):
     """Position (R3Vector) based covariance matrix"""
-    return covariance_matrix(np.array(pg.x(pos)), np.array(pg.y(pos)),
-                             np.array(pg.z(pos)), **kwargs)
+    return covarianceMatrixVec(np.array(pg.x(pos)), np.array(pg.y(pos)),
+                               np.array(pg.z(pos)), **kwargs)
 
 
-def mesh_covariance_matrix(mesh, nodes=False, **kwargs):
-    """Geostatistical covariance matrix (cell or node) for given mesh."""
+def covarianceMatrix(mesh, nodes=False, **kwargs):
+    """Geostatistical covariance matrix (cell or node) for given mesh.
+
+    Parameters
+    ----------
+    mesh : gimliapi:`GIMLI::Mesh`
+        Mesh
+    nodes : bool [False]
+        use node positions, otherwise (default) cell centers are used
+    **kwargs
+
+        I : float or list of floats
+            correlation lengths (range) in individual directions
+        dip : float
+            dip angle of major axis (I[0])
+        strike : float
+            strike angle (for 3D)
+
+    Returns
+    -------
+    Cm : np.array (square matrix of size cellCount/nodeCount)
+        covariance matrix
+    """
     if nodes:
         pos = mesh.positions()
     else:
         pos = mesh.cellCenters()
-    return pos_covariance_matrix(pos, **kwargs)
+    return covarianceMatrixPos(pos, **kwargs)
 
 
 def computeInverseRootMatrix(CM, thrsh=0.001, verbose=False):
