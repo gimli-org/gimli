@@ -321,7 +321,7 @@ if (PYTHON_EXECUTABLE)
     set (PYTHON_FOUND TRUE)
 endif()
 
-if (Boost_PYTHON_FOUND)
+if (Boost_PYTHON_LIBRARIES)
     set (Boost_PYTHON_FOUND TRUE)
 endif()
 
