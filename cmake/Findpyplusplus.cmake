@@ -6,14 +6,14 @@
 # PYPLUSPLUS_FOUND, If false, do not try to use pyplusplus
 
 find_path(PYPLUSPLUS_PATH pyplusplus/__init__.py
-    HINTS 
+    HINTS
         ${EXTERNAL_DIR}
     NO_DEFAULT_PATH
 )
 
 if (PYPLUSPLUS_PATH)
     message( STATUS "Found pyplusplus path: ${PYPLUSPLUS_PATH}")
-    set(PYPLUSPLUS_FOUND 1)
+    set(PYPLUSPLUS_FOUND TRUE)
 else (PYPLUSPLUS_PATH)
     message( STATUS "NOT Found pyplusplus: cannot build pygimli.")
 endif(PYPLUSPLUS_PATH)

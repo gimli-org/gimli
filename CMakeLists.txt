@@ -309,47 +309,56 @@ else()
     endif()
 endif()
 
+
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
-if (PYTHON_EXECUTABLE
-    AND TRIANGLE_FOUND
-    AND PYTHONLIBS_FOUND
-    AND CASTER_EXECUTABLE
-    AND PYGCCXML_FOUND
-    AND PYPLUSPLUS_FOUND
-    AND Boost_PYTHON_LIBRARIES
-    AND numpy_FOUND)
-    set (PYGIMLI 1)
-    message (STATUS "pygimli can be build.")
-else()
-    message(STATUS "Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-    message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
-    message(STATUS "PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}" )
-    message(STATUS "GCCXML_EXECUTABLE: ${GCCXML_EXECUTABLE}" )
-    message(STATUS "CASTXML_EXECUTABLE: ${CASTXML_EXECUTABLE}" )
-    message(STATUS "PYPLUSPLUS_FOUND: ${PYPLUSPLUS_FOUND}" )
-    message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
-    message(STATUS "numpy_FOUND: ${numpy_FOUND}" )
+if (CASTER_EXECUTABLE)
+    set (CASTER_FOUND TRUE)
+endif()
 
-    message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
-Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
-endif ()
+if (PYTHON_EXECUTABLE)
+    set (PYTHON_FOUND TRUE)
+endif()
+
+if (Boost_PYTHON_FOUND)
+    set (Boost_PYTHON_FOUND TRUE)
+endif()
 
 message(STATUS "**********************************************************************")
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
-message(STATUS "Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-message(STATUS "UMFPACK_LIBRARIES: ${UMFPACK_LIBRARIES}")
-message(STATUS "CHOLMOD_LIBRARIES: ${CHOLMOD_LIBRARIES}")
-message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
-message(STATUS "PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
-message(STATUS "Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
-message(STATUS "Caster: ${CASTER_EXECUTABLE}")
-message(STATUS "PYGCCXML: ${PYGCCXML_PATH}" )
-message(STATUS "PYPLUSPLUS: ${PYPLUSPLUS_PATH}" )
-message(STATUS "PY_NUMPY: ${PY_NUMPY}" )
+message(STATUS "CHOLMOD_LIBRARIES  : ${CHOLMOD_LIBRARIES}")
+message(STATUS "UMFPACK_LIBRARIES  : ${UMFPACK_LIBRARIES}")
+message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
+message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
+message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
+message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARIES: ${Boost_PYTHON_LIBRARIES}" )
+message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
+message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
+message(STATUS "PYGCCXML_FOUND     :${PYGCCXML_FOUND}    PYGCCXML: ${PYGCCXML_PATH}" )
+message(STATUS "PYPLUSPLUS_FOUND   :${PYPLUSPLUS_FOUND}    PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
 message(STATUS "**********************************************************************")
+
+if (PYTHON_EXECUTABLE
+    AND TRIANGLE_FOUND
+    AND PYTHON_FOUND
+    AND PYTHONLIBS_FOUND
+    AND Boost_PYTHON_FOUND
+    AND numpy_FOUND
+    AND CASTER_FOUND
+    AND PYGCCXML_FOUND
+    AND PYPLUSPLUS_FOUND
+)
+    set (PYGIMLI 1)
+    message (STATUS "pygimli can be build. run: make pygimli")
+    message(STATUS "**********************************************************************")
+    message(STATUS "")
+    message(STATUS "")
+else()
+    message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
+Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
+endif ()
 
 configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
