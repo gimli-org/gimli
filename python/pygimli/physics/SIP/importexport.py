@@ -11,7 +11,7 @@ import re
 def fstring(fri):
     """Format frequency to human-readable (mHz or kHz)."""
     if fri > 1e3:
-        fstr = '{:d}kHzt'.format(int(np.round(fri/1e3)))
+        fstr = '{:d}kHz'.format(int(np.round(fri/1e3)))
     elif fri < 1.:
         fstr = '{:d}mHz'.format(int(np.round(fri*1e3)))
     else:
