@@ -57,12 +57,19 @@ class CellBrowser(object):
         self.mesh = mesh
         self.lw = np.ones(mesh.cellCount())
         self.data = data
-        self.cell = None
+        self.cellID = None
         self.edgeColors = None
         self.event = None
         self.artist = None
         self.pid = None
         self.kid = None
+
+        if data is not None:
+            if mesh.cellCount() != len(data):
+                print('data length mismatch mesh.cellCount(): ' +
+                    str(len(data)) + "!=" + str(mesh.cellCount()) +
+                    ". Mapping data to cellMarkers().")
+                self.data = data[mesh.cellMarkers()]
 
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
@@ -94,10 +101,10 @@ class CellBrowser(object):
         """Highlight selected cell."""
         if self.edgeColors:
             ec = self.edgeColors.copy()
-            ec[self.cell] = np.ones(ec.shape[1])
+            ec[self.cellID] = np.ones(ec.shape[1])
             self.artist.set_edgecolors(ec)
             lw = self.lw.copy()
-            lw[self.cell] = 3
+            lw[self.cellID] = 3
             self.artist.set_linewidths(lw)
 
     def onpick(self, event):
@@ -111,9 +118,9 @@ class CellBrowser(object):
 
         if 'mouseevent' in event.__dict__.keys():
             pos = pg.RVector3(event.mouseevent.xdata, event.mouseevent.ydata)
-            self.cell = self.mesh.findCell(pos, True).id()
+            self.cellID = self.mesh.findCell(pos, True).id()
         else:  # variant before (seemed inaccurate)
-            self.cell = event.ind[0]
+            self.cellID = event.ind[0]
         self.update()
 
     def onpress(self, event):
@@ -124,22 +131,22 @@ class CellBrowser(object):
         if event.key not in ('up', 'down', 'escape'):
             return
         if event.key is 'up':
-            self.cell += 1
+            self.cellID += 1
         elif event.key is'down':
-            self.cell -= 1
+            self.cellID -= 1
         else:
             self.hide()
             return
-        self.cell = int(np.clip(self.cell, 0, self.mesh.cellCount() - 1))
+        self.cellID = int(np.clip(self.cellID, 0, self.mesh.cellCount() - 1))
         self.update()
 
     def update(self):
         """Update the information window."""
-        center = self.mesh.cell(self.cell).center()
+        center = self.mesh.cell(self.cellID).center()
         x, y = center.x(), center.y()
-        marker = self.mesh.cells()[self.cell].marker()
-        data = self.data[self.cell]
-        header = "Cell %d:\n" % self.cell
+        marker = self.mesh.cells()[self.cellID].marker()
+        data = self.data[self.cellID]
+        header = "Cell %d:\n" % self.cellID
         header += "-" * (len(header) - 1)
         info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
             x, y, data, marker)

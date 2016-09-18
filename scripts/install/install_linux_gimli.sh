@@ -44,8 +44,8 @@ if [ -z $PYTHONSPECS ]; then
             if [ $PYTHON_MAJOR -eq 2 ] ; then
                 PYTHONSPECS=''
             else
-                PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so.1.0
-                        -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
+                PYTHONSPECS='-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so.1.0
+                        -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
                         -DPYTHON_EXECUTABLE=/usr/bin/python3'
             fi
         ;;

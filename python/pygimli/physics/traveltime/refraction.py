@@ -405,20 +405,24 @@ class Refraction(MethodManager):
             print("slowness: ", slowness)
             raise BaseException("Simulate called with wrong slowness array.")
 
-        noisify = kwargs.pop('noisify', False)
+        ret = pg.DataContainer(scheme)
+        ret.set('t', t)
 
-        if noisify:
-            if not scheme.allNonZero('err'):
-                scheme.set('t', t)
-                scheme.set('err', pg.physics.Refraction.estimateError(scheme,
+        noiseLevel = kwargs.pop('noiseLevel', 0)
+
+        if noiseLevel > 0:
+            if not ret.allNonZero('err'):
+                ret.set('t', t)
+                ret.set('err', pg.physics.Refraction.estimateError(ret,
                                   absoluteError=1e-5, relativeError=0.01))
 
-            t += pg.randn(scheme.size()) * scheme('err')
-            scheme.set('t', t)
+            t += pg.randn(ret.size()) * ret('err')
+            ret.set('t', t)
 
-            return scheme
+        if kwargs.pop('returnArray', False):
+            return t
 
-        return t
+        return ret
 
     @staticmethod
     def drawTravelTimeData(ax, data, t=None):
