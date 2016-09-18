@@ -15,7 +15,7 @@ def updateAxes(ax, a=None):
     """For internal use."""
     if not holdAxes__:
         try:
-            plt.pause(0.01)
+            plt.pause(0.1)
         except BaseException as _:
             print(ax, a)
 
@@ -27,7 +27,7 @@ def hold(val=1):
 
 def wait():
     """TODO WRITEME."""
-    plt.pause(0.01)
+    plt.pause(0.1)
     plt.show()
 
 
