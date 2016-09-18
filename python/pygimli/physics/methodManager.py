@@ -215,9 +215,9 @@ class MeshMethodManager(MethodManager):
         parser = MethodManager.createArgParser(dataSuffix)
 
         parser.add_argument("--paraMaxCellSize", dest="maxCellArea",
-                            type=float, default=None,
+                            type=float, default=0.0,
                             help="Maximum cell size for parametric cells "
-                                 "in m² [None=auto].")
+                                 "in m² [0.0] 0.0 means no restriction.")
         parser.add_argument("--zWeight", dest="zWeight",
                             type=float, default=0.7,
                             help="Weight for vertical smoothness "

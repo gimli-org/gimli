@@ -488,7 +488,7 @@ def createParaDomain2D(*args, **kwargs):
 
 
 def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
-                      paraBoundary=2, paraMaxCellSize=0, boundary=-1,
+                      paraBoundary=2, paraMaxCellSize=0.0, boundary=-1,
                       boundaryMaxCellSize=0,
                       **kwargs):
     """Create a PLC mesh for an inversion parameter mesh.
@@ -621,6 +621,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     # define surface
     nSurface = []
     nSurface.append(n1)
+    if paraDX == 0.0:
+        paraDX = 1.0
+
     if not noSensors:
         for i, e in enumerate(sensors):
             if iz == 2:
@@ -656,6 +659,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
         poly.createEdge(nSurface[i], nSurface[i - 1],
                         pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
+    #print(poly)
+    #pg.meshtools.writePLC(poly, "test.poly")
+    #pg.show(poly)
+    #pg.wait()
     return poly
 
 
