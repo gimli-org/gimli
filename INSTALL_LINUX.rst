@@ -1,7 +1,8 @@
 Installation on Linux
 ---------------------
 
-On Linux platforms, the most comfortable way to install pygimli is via the conda package manager contained in the `Anaconda distribution <https://docs.continuum.io/anaconda/install#linux-install>`_ or the `lightweight alternative Miniconda <http://conda.pydata.org/miniconda.html>`_.
+Install with conda
+..................
 
 .. image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
     :target: https://conda.anaconda.org/gimli
@@ -13,12 +14,40 @@ On Linux platforms, the most comfortable way to install pygimli is via the conda
 
     <br><br>
 
+On Linux platforms, the most comfortable way to install pygimli is via the conda
+package manager contained in the `Anaconda distribution
+<https://docs.continuum.io/anaconda/install#linux-install>`_. Anaconda is
+scientific Python distribution with more than 100 Python packages included
+(~400 Mb). You can also use the `lightweight alternative Miniconda
+<http://conda.pydata.org/miniconda.html>`_ (~35 Mb) and only install the
+packages you like to use.
+
+Install Miniconda:
+
+.. code:: bash
+
+    wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    chmod +x miniconda.sh
+    ./miniconda.sh -b -p $HOME/miniconda
+    export PATH=$HOME/miniconda/bin:$PATH # Note: Add this to your .bashrc for permanent use
+
+Install pygimli (and its dependencies) via:
+
 .. code:: bash
 
     conda install -c gimli pygimli
-    conda update -c gimli -f pygimli # for updates
 
-If you are not using Anaconda, you can build pyGIMLi from source in the current directory via:
+Update your pygimli installation:
+
+.. code:: bash
+
+    conda update -c gimli -f pygimli
+
+Install with the curl installer
+...............................
+
+If you are not using Anaconda, you can build pyGIMLi from source in the current
+directory via:
 
 .. code:: bash
 
@@ -34,11 +63,12 @@ If something goes wrong please take a look at the error message. In most cases
 there are missing or outdated packages. Please have a look at the prerequisites
 tab.
 
-If the installation fails you can try the following instructions for manual installation.
+If the installation fails you can try the following instructions for manual
+installation.
 
 
-Detailed Installation on Vanilla Debian
-.......................................
+Detailed Installation on Ubuntu/Debian systems
+..............................................
 
 First install some of the necessary stuff. You will need subversion, git and hg
 to retrieve the source files and some things for the tool-chain:
@@ -157,7 +187,7 @@ Example Installation on Ubuntu
 
     sudo apt-get install subversion git cmake mercurial
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev libedit-dev
-    sudo apt-get install python3-matplotlib python3-numpy
+    sudo apt-get install python3-dev python3-matplotlib python3-numpy
 
     mkdir -p ~/src/gimli
     cd ~/src/gimli
@@ -166,8 +196,8 @@ Example Installation on Ubuntu
     mkdir -p build
     cd build
     cmake ../gimli
-    make gimli
-    make pygimli
+    make -j 4 gimli
+    make pygimli J=4
 
 Troubleshooting
 ...............
@@ -257,4 +287,3 @@ More verbose build output to view the complete command line:
 .. code-block:: bash
 
     make VERBOSE=1
-
