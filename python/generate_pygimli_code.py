@@ -14,7 +14,7 @@ optionParser = OptionParser("usage: %prog [options]")
 optionParser.add_option("", "--extra-includes", dest="extraIncludes")
 optionParser.add_option("", "--extra-path", dest="extraPath")
 optionParser.add_option("", "--caster", dest="caster")
-optionParser.add_option("", "--clang", dest="clang")
+optionParser.add_option("", "--clang", dest="clang", default="")
 
 (options, args) = optionParser.parse_args()
 
@@ -206,6 +206,9 @@ def generate(defined_symbols, extraIncludes):
         else:
             pass
             #compiler_path = 'C:/msys32/mingw32/bin/clang++'
+
+    if len(compiler_path) == 0:
+        compiler_path = None
 
     for define in [settings.gimli_defines, defined_symbols]:
         if len(define) > 0:
