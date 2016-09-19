@@ -49,6 +49,7 @@ def adjustWorldAxes(ax):
 def saveFigure(fig, filename, pdfTrim=False):
     """Save figure as pdf."""
     fig.savefig(filename + '.pdf', bbox_inches='tight')
+    #pdfTrim=1
     if pdfTrim:
         try:
             print("trying pdf2pdfS ... ")

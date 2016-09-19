@@ -265,6 +265,8 @@ class Refraction(MethodManager):
                                 "in the data to estimate a data error.")
 
         if relativeError >= 0.5:  # obviously in %
+            print("relativeError set to a value > 0.5 .. assuming this "
+                "is a percentile Error level dividing them by 100")
             relativeError /= 100.
 
         error = absoluteError + data('t') * relativeError
@@ -414,7 +416,11 @@ class Refraction(MethodManager):
             if not ret.allNonZero('err'):
                 ret.set('t', t)
                 ret.set('err', pg.physics.Refraction.estimateError(ret,
-                                  absoluteError=1e-5, relativeError=0.01))
+                                  absoluteError=kwargs.pop('noiseAbs', 1e-4),
+                                  relativeError=noiseLevel))
+
+            print("Data error estimates (min:max) ",
+                      min(ret('err')), ":", max(ret('err')))
 
             t += pg.randn(ret.size()) * ret('err')
             ret.set('t', t)
