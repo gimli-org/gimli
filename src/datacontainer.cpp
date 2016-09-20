@@ -351,7 +351,7 @@ int DataContainer::load(const std::string & fileName,
     if (sensorIndexOnFileFromOne_){
         for (std::map< std::string, RVector >::iterator it = dataMap_.begin();
              it!= dataMap_.end(); it ++){
-            
+
             if (isSensorIndex(it->first) && size() > 0){
                 it->second -= RVector(size(), 1.);
             }
@@ -396,7 +396,7 @@ int DataContainer::load(const std::string & fileName,
 
             for (uint j = 0; j < row.size(); j ++){
                 if (j == format.size()) break; // no or to few format defined, ignore
-
+    __MS(j << " "<< format[j]<< " " << row[j] )
                 if (     format[j] == "x" || format[j] == "X") xt[i] = toDouble(row[j]);
                 else if (format[j] == "y" || format[j] == "Y") yt[i] = toDouble(row[j]);
                 else if (format[j] == "z" || format[j] == "Z") zt[i] = toDouble(row[j]);
@@ -550,12 +550,14 @@ int DataContainer::save(const std::string & fileName,
     }
 
     //** START write additional points
-    file << topoPoints_.size() << std::endl;
-    for (uint i = 0; i < topoPoints_.size(); i ++){
-        std::cout   << topoPoints_[i].x() << "\t"
-                    << topoPoints_[i].y() << "\t"
-                    << topoPoints_[i].z() << std::endl;
-    }
+    std::cout << "Additional (topo) points are unhandled and will not be saved." << std::endl;
+    file << 0 << std::endl;
+//     file << topoPoints_.size() << std::endl;
+//     for (uint i = 0; i < topoPoints_.size(); i ++){
+//         std::cout   << topoPoints_[i].x() << "\t"
+//                     << topoPoints_[i].y() << "\t"
+//                     << topoPoints_[i].z() << std::endl;
+//     }
 
     file.close();
 
@@ -782,9 +784,9 @@ void DataContainer::setSensorPosition(uint i, const RVector3 & pos) {
         std::cout << "Warning! .. sensor count was " << sensorCount() << " resize to " << i+1 << std::endl;
         sensorPoints_.resize((i+1));
     }
-    sensorPoints_[i] = pos; 
+    sensorPoints_[i] = pos;
 }
-        
+
 void DataContainer::sortSensorsX(){
     std::vector < std::pair < RVector3, Index > > permSens(sensorCount());
     for (uint i = 0; i < sensorCount(); i ++) permSens[i] = std::pair< RVector3, Index >(sensorPoints_[i], i);
