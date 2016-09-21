@@ -12,7 +12,7 @@ import pygimli as pg
 # basic functions used by the modelling operators
 def relaxationTerm(f, tau, c=1., a=1.):
     """auxiliary function for Debye type relaxation term"""
-    return 1. / ((f * 2. * pi * tau * 1j)**c + 1)**a
+    return 1. / ((f * 2. * pi * tau * 1j)**c + 1.)**a
 
 
 def DebyeRelaxation(f, tau, m):
