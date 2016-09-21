@@ -76,7 +76,7 @@ def main(argv):
     swatch = pg.Stopwatch(True)
     if options.dimension == 2:
 
-        mesh = createParaMesh2dGrid(sensors=sensorPositions,
+        mesh = createParaMesh2DGrid(sensors=sensorPositions,
                                     paraDX=options.paraDX,
                                     paraDZ=options.paraDZ,
                                     paraDepth=options.paraDepth,
