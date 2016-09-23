@@ -117,8 +117,10 @@ class CellBrowser(object):
             self.edgeColors = self.artist.get_edgecolors()
 
         if 'mouseevent' in event.__dict__.keys():
-            pos = pg.RVector3(event.mouseevent.xdata, event.mouseevent.ydata)
-            self.cellID = self.mesh.findCell(pos, True).id()
+            if event.mouseevent.xdata is not None and \
+                event.mouseevent.ydata is not None:
+                    pos = pg.RVector3(event.mouseevent.xdata, event.mouseevent.ydata)
+                    self.cellID = self.mesh.findCell(pos, True).id()
         else:  # variant before (seemed inaccurate)
             self.cellID = event.ind[0]
         self.update()
