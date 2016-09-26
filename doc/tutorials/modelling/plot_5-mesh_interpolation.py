@@ -56,6 +56,10 @@ def linear_interpolation(inmesh, indata, outmesh):
     outdata = pg.RVector()  # empty
     pg.interpolate(srcMesh=inmesh, inVec=indata,
                    destPos=outmesh.cellCenters(), outVec=outdata)
+
+    # alternatively you can use the interpolation matrix
+    outdata = inmesh.interpolationMatrix(outmesh.cellCenters()) * \
+              pg.cellDataToPointData(inmesh, indata)
     return outdata
 
 ###############################################################################
