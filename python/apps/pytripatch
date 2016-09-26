@@ -144,9 +144,9 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
         showConstrainMat(axis, mesh, constraintMat, cWeight)
     elif (modelname):
 
-        if modelname == 'marker':
+        if modelname.lower() == 'marker':
             data = np.asarray(mesh.cellMarker())
-        elif modelname == 'attribute':
+        elif modelname.lower() == 'attribute':
             data = np.asarray(mesh.cellAttributes())
         elif modelname in list(mesh.exportDataMap().keys()):
             data = mesh.exportData(modelname)
