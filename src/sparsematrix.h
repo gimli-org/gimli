@@ -379,6 +379,8 @@ public:
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->rows(), 0.0);
 
+        ASSERT_EQUAL(this->cols(), a.size())
+
         if (stype_ == 0){
             for (const_iterator it = this->begin(); it != this->end(); it ++){
                 ret[it->first.first] += a[it->first.second] * it->second;
@@ -414,6 +416,8 @@ public:
     /*! Return this.T * a */
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->cols(), 0.0);
+
+        ASSERT_EQUAL(this->rows(), a.size())
 
         if (stype_ == 0){
             for (const_iterator it = this->begin(); it != this->end(); it ++){
