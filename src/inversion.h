@@ -750,7 +750,7 @@ public:
                            dataWeight_, rhs, solution, constraintsWeight_,
                            modelWeight_,
                            tM_->deriv(model_), tD_->deriv(response_),
-                           lambda_, deltaModel0, maxCGLSIter_, verbose_);
+                           lambda_, deltaModel0, maxCGLSIter_, dosave_);
         return solution;
     }
 
@@ -1099,7 +1099,7 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
            if (verbose_) std::cout << "solve CGLSCDWW with lambda = " << lambda_ << std::endl;
                 THROW_TO_IMPL
 //                solveCGLSCDWW(*J_, forward_->constraints(), dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
-//                                modelWeight_, lambda_, deltaModel0, maxCGLSIter_, verbose_);
+//                                modelWeight_, lambda_, deltaModel0, maxCGLSIter_, dosave_);
         } else {
             if (verbose_) std::cout << "solve CGLSCDWWtrans with lambda = " << lambda_ << std::endl;
 //             solveCGLSCDWWtrans(*J_, forward_->constraints(), dataWeight_, deltaDataIter_, deltaModelIter_, constraintsWeight_,
@@ -1119,7 +1119,7 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
                                 constraintsWeight_, modelWeight_,
                                 tM_->deriv(model_), tD_->deriv(response_),
                                 lambda_, roughness, maxCGLSIter_, CGLStol_,
-                                verbose_);
+                                dosave_);
         } // else no broyden
     } // else no optimization
 
@@ -1218,7 +1218,7 @@ ALLOW_PYTHON_THREADS
                         dataWeight_, deltaDataIter_, deltaModel,
                         constraintsWeight_, modelWeight_,
                         tM_->deriv(model_), tD_->deriv(response_),
-                        lambda_, roughness, maxCGLSIter_, verbose_);
+                        lambda_, roughness, maxCGLSIter_, dosave_);
 
     Vec appModelStart(tM_->invTrans(tModel + deltaModel));
     DOSAVE save(appModelStart, "appModel");
@@ -1244,7 +1244,7 @@ ALLOW_PYTHON_THREADS
                             dataWeight_, deltaDataIter_, deltaModel,
                             constraintsWeight_, modelWeight_,
                             tM_->deriv(model_), tD_->deriv(response_),
-                            lambda_, roughness, maxCGLSIter_, verbose_);
+                            lambda_, roughness, maxCGLSIter_, dosave_);
 
         Vec appModel(tM_->invTrans(tModel + deltaModel));
         Vec appResponse(tD_->invTrans(tResponse + *forward_->jacobian() * deltaModel));
