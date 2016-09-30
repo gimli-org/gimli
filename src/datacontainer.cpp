@@ -550,8 +550,12 @@ int DataContainer::save(const std::string & fileName,
     }
 
     //** START write additional points
-    std::cout << "Additional (topo) points are unhandled and will not be saved." << std::endl;
+
+    if (topoPoints_.size() > 0){
+        std::cout << "Additional (topo) points are unhandled and will not be saved." << std::endl;
+    }
     file << 0 << std::endl;
+
 //     file << topoPoints_.size() << std::endl;
 //     for (uint i = 0; i < topoPoints_.size(); i ++){
 //         std::cout   << topoPoints_[i].x() << "\t"
