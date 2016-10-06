@@ -676,7 +676,7 @@ def main(argv):
         if options.electrodes:
             try:
                 elPos = None
-                koords = [0, 2]
+                koords = None
                 if options.electrodes == 'mesh':
                     mesh = pg.Mesh(meshname)
                     elPos = mesh.positions(mesh.findNodesIdxByMarker(-99))

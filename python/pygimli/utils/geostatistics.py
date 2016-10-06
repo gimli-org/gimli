@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+"""Some matrix specialization."""
+
 import time
 from math import pi, sin, cos
 
 import numpy as np
-import scipy.linalg
 
 import pygimli as pg
 
@@ -14,6 +16,8 @@ def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
     ----------
 
     """
+    import scipy.linalg
+
     if I is None:
         I = [1, 1, 1]
     elif isinstance(I, (float, int)):
@@ -75,6 +79,8 @@ def covarianceMatrix(mesh, nodes=False, **kwargs):
 
 def computeInverseRootMatrix(CM, thrsh=0.001, verbose=False):
     """Compute inverse square root (C^{-0.5} of matrix."""
+    import scipy.linalg
+
     t = time.time()
     e_vals, e_vecs = scipy.linalg.eigh(CM)
     if verbose:

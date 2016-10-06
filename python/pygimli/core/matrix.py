@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-
-"""
-Some matrix specialization.
-"""
+"""Some matrix specialization."""
 
 import time
 from pygimli.core import _pygimli_ as pg
 import numpy as np
-from scipy.linalg import eigh, get_blas_funcs
 
 
 class LMultRMatrix(pg.MatrixBase):
@@ -102,6 +98,8 @@ class LRMultRMatrix(pg.MatrixBase):
 class Cm05Matrix(pg.MatrixBase):
     """ matrix consisting of actual RMatrix and lef-side vector"""
     def __init__(self, A, verbose=False):
+        from scipy.linalg import eigh, get_blas_funcs
+
         """ constructor saving matrix and vector """
         if A.shape[0] != A.shape[1]:  # rows/cols for pg matrix
             raise Exception("Matrix must by square (and symmetric)!")

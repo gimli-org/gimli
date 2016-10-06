@@ -888,6 +888,8 @@ def drawSensors(ax, sensors, diam=None, koords=None):
     """
     if koords is None:
         koords = [0, 2]
+        if pg.yVari(sensors):
+            koords = [0, 1]
 
     eCircles = []
 
@@ -896,7 +898,9 @@ def drawSensors(ax, sensors, diam=None, koords=None):
         diam = eSpacing / 8.0
 
     for e in sensors:
+        print(e, diam, e[koords[0]], e[koords[1]])
         eCircles.append(mpl.patches.Circle((e[koords[0]], e[koords[1]]), diam))
+
 
     p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
     ax.add_collection(p)
