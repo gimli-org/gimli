@@ -84,9 +84,9 @@ def show(mesh=None, data=None, **kwargs):
         else:
             print("ERROR: Mesh not valid.")
 
-    if 'ax' in kwargs:
-        ax = kwargs.pop('ax', None)
-    elif ax is None:
+    ax = kwargs.pop('ax', None)
+
+    if ax is None:
         ax = plt.subplots()[1]
 
     return ax, None
