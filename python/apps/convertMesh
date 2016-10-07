@@ -96,6 +96,8 @@ def main(argv):
                       help="be verbose", default=False)
     parser.add_option("-V", "--outVTK", dest="outVTK", action="store_true",
                       help="export VTK format", default=False)
+    parser.add_option("-P", "--P2mesh", dest="p2mesh", action="store_true",
+                      help="create quadratic (P2) mesh", default=False)
     parser.add_option("", "--outBoundaryVTU", dest="outBoundaryVTU",
                       action="store_true", default=False,
                       help="export mesh boundary in VTU format")
@@ -222,6 +224,11 @@ def main(argv):
     if options.outBoundaryVTU:
         mesh.exportBoundaryVTU(outfileBody)
 
+    if options.p2mesh:
+        mesh = mesh.createP2()
+    if options.verbose:
+            print("create P2 mesh: ", mesh)
+
     if options.outBMS:
         if options.verbose:
             print("write bms: ", outfileBody + ".vtk")
@@ -231,8 +238,8 @@ def main(argv):
         if options.verbose:
             print("write bms.v2: ", outfileBody + ".bms")
         mesh.saveBinaryV2(outfileBody)
-        mesh.loadBinaryV2(outfileBody)
-        print(mesh)
+#        mesh.loadBinaryV2(outfileBody)
+#        print(mesh)
 
 
 if __name__ == "__main__":

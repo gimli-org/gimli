@@ -5,11 +5,13 @@
 DC1dBlock
 ---------
 
-This tutorial shows how an built-in forward operator is used for inversion.
-A DC 1D (VES) modelling is used to generate data, noisify and invert them."""
+This tutorial shows how an built-in forward operator is used for a typical
+Marquardt-type inversion (no smoothness, only damping with cooling scheme).
+A direct current (DC) one-dimensional (1D) VES (vertical electric sounding)
+modelling operator is used to generate data, add noise and inversion."""
 
 ###############################################################################
-# We import numpy for , mpl plotting, pygimli and the 1D plotting function
+# We import numpy numerics, mpl plotting, pygimli and the 1D plotting function
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -22,9 +24,9 @@ nlay = 4  # number of layers
 lam = 200.  # (initial) regularization parameter
 errPerc = 3.  # relative error of 3 percent
 ###############################################################################
-# generate current and potential length vector
-ab2 = np.logspace(-1, 2, 50)
-mn2 = ab2 / 3.
+# generate geometric definition of sounding
+ab2 = np.logspace(-1, 2, 25)  # 0.1 to 100 in 25 steps (8 points per decade)
+mn2 = ab2 / 3.  # rule from textbook
 ###############################################################################
 # initialize the forward modelling operator
 f = pg.DC1dModelling(nlay, ab2, mn2)
@@ -66,14 +68,17 @@ inv.setModel(model)  #
 ###############################################################################
 # run actual inversion
 model = inv.run()  # result is a pg.RVector, but compatible to numpy array
-res, thk = model[nlay-1:nlay*2-1], model[0:nlay-1]
+thk = model[0:nlay-1]  # thickness is always first (with nlay-1 values)
+res = model[nlay-1:nlay*2-1]  # properties follow
 ###############################################################################
 # show everything
 fig, ax = plt.subplots(ncols=2, figsize=(8, 6))  # two-column figure
 # plot model (inverted and synthetic)
-drawModel1D(ax[0], thk, res, color='r')  # r'\rho in \Omega m')
-drawModel1D(ax[0], synthk, synres, color='b')
+drawModel1D(ax[0], synthk, synres, color='b', label='synthetic')
+drawModel1D(ax[0], thk, res, color='r', label='inversion',
+            plotfunction='semilogx')
 ax[0].grid(True, which='both')
+ax[0].legend(loc='best')
 # plot sounding curve data and model response
 ax[1].loglog(rhoa, ab2, 'rx-', label='measured')
 ax[1].loglog(inv.response(), ab2, 'b-', label='fitted')
