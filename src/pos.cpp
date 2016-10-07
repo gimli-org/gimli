@@ -120,6 +120,13 @@ RVector z(const R3Vector & rv){
 }
 template < class ValueType > void swap(ValueType & v1, ValueType & v2){ ValueType tmp = v1; v1 = v2; v2 = tmp; }
 
+RVector absR3(const R3Vector & vPos){
+    RVector r(vPos.size());
+    for (Index i = 0; i < vPos.size(); i ++ ) r[i] = vPos[i].abs();
+    return r;
+}
+
+
 void swapXY(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][1]); }
 void swapXZ(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][2]); }
 void swapYZ(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][1], rv[i][2]); }

@@ -77,6 +77,10 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     S = pg.solver.parseArgToArray(sat, mesh.cellCount(), mesh)
     n = pg.solver.parseArgToArray(n, mesh.cellCount(), mesh)
 
+    #pg.show(mesh, S, label='S')
+    #pg.show(mesh, phi, label='p')
+    #pg.wait()
+
     r = pg.RMatrix(len(rB), len(rB[0]))
     for i, _ in enumerate(r):
         r[i] = rB[i] * a * phi**(-m) * S**(-n)

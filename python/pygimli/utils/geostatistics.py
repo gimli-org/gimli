@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Some matrix specialization."""
+
 import time
 from math import pi, sin, cos
 
@@ -14,6 +17,8 @@ def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
     ----------
 
     """
+    import scipy.linalg
+
     if I is None:
         I = [1, 1, 1]
     elif isinstance(I, (float, int)):

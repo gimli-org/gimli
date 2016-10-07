@@ -396,7 +396,7 @@ int DataContainer::load(const std::string & fileName,
 
             for (uint j = 0; j < row.size(); j ++){
                 if (j == format.size()) break; // no or to few format defined, ignore
-    __MS(j << " "<< format[j]<< " " << row[j] )
+    //__MS(j << " "<< format[j]<< " " << row[j] )
                 if (     format[j] == "x" || format[j] == "X") xt[i] = toDouble(row[j]);
                 else if (format[j] == "y" || format[j] == "Y") yt[i] = toDouble(row[j]);
                 else if (format[j] == "z" || format[j] == "Z") zt[i] = toDouble(row[j]);
