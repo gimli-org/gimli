@@ -63,12 +63,12 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
                        plotVecMatrix)
 
 from .modelview import (drawModel1D,
-                        drawModel1DErr,
-                        showmymatrix,  # backward compat, tbr
-                        draw1dmodel,   # backward compat, tbr
-                        show1dmodel,  # backward compat, tbr
-                        draw1dmodelErr,  # backward compat, tbr
-                        draw1dmodelLU,  # backward compat, tbr
+                        showmymatrix,  # needed ?
+                        draw1dmodel,   # needed or redundant ?
+                        draw1dmodel__Redundant,  # needed or redundant ?
+                        show1dmodel,  # needed or redundant ?
+                        draw1dmodelErr,  # needed or redundant ?
+                        draw1dmodelLU,  # needed or redundant ?
                         showStitchedModels,
                         showStitchedModelsOld,
                         showStitchedModels_Redundant,

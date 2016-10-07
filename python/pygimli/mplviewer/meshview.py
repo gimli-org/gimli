@@ -179,7 +179,7 @@ def drawMesh(ax, mesh, **kwargs):
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawMesh
-    >>> n = np.linspace(1,2,10)
+    >>> n = np.linspace(1, 2, 10)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, mesh)
@@ -371,7 +371,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, **kwargs):
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawMeshBoundaries
-    >>> n = np.linspace(0,-2,11)
+    >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> for bound in mesh.boundaries():
     ...     if not bound.rightCell():
@@ -662,7 +662,7 @@ def drawField(ax, mesh, data=None, omitLines=False, cmap=None,
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawField
-    >>> n = np.linspace(0,-2,11)
+    >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> nx = pg.x(mesh.positions())
     >>> ny = pg.y(mesh.positions())
@@ -811,7 +811,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawStreams
-    >>> n = np.linspace(1,2,10)
+    >>> n = np.linspace(1, 2, 10)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> nx = pg.x(mesh.positions())
     >>> ny = pg.y(mesh.positions())
@@ -891,9 +891,9 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False):
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> from pygimli.mplviewer import drawSensors
-    >>> sensors = np.random.rand(5,2)
+    >>> sensors = np.random.rand(5, 2)
     >>> fig, ax = plt.subplots()
-    >>> drawSensors(ax, sensors, diam=0.02, koords=[0,1])
+    >>> drawSensors(ax, sensors, diam=0.02, koords=[0, 1])
     >>> ax.set_aspect('equal')
     """
     if koords is None:
@@ -1022,7 +1022,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> from pygimli.mplviewer import draw1DColumn
-    >>> thk = [1,2,3,4]
+    >>> thk = [1, 2, 3, 4]
     >>> val = thk
     >>> fig, ax = plt.subplots()
     >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")

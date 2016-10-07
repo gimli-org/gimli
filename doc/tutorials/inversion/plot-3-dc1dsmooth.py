@@ -32,7 +32,6 @@ rhoa = rhoa * (pg.randn(len(rhoa)) * errPerc / 100. + 1.)
 ###############################################################################
 # %% the forward operator can be called by f.response(model) or simply f(model)
 thk = np.logspace(-0.5, 0.5, 30)
-print(thk, np.cumsum(thk))
 f = pg.DC1dRhoModelling(thk, ab2, ab2/3)
 ###############################################################################
 # %% create some transformations used for inversion
@@ -40,7 +39,7 @@ transRho = pg.RTransLogLU(1, 1000)  # lower and upper bound
 transRhoa = pg.RTransLog()  # log transformation also for data
 ###############################################################################
 # set up inversion
-inv = pg.RInversion(rhoa, f, transRhoa, transRho, True)  # data vector, f, ...
+inv = pg.RInversion(rhoa, f, transRhoa, transRho, False)  # data vector, f, ...
 # The transformations can also be omitted and set individually by
 inv.setTransData(transRhoa)
 inv.setTransModel(transRho)
@@ -53,13 +52,20 @@ model = pg.RVector(len(thk)+1, np.median(rhoa))  # uniform values
 inv.setModel(model)  #
 ###############################################################################
 # set pretty large regularization strength and run inversion
+print("inversion with lam=200")
 inv.setLambda(100)
 res100 = inv.run()  # result is a pg.RVector, but compatible to numpy array
+inv.echoStatus()
 # We now decrease the regularization (smoothness) and start (from old result)
+print("inversion with lam=20")
 inv.setLambda(10)
 res10 = inv.run()  # result is a pg.RVector, but compatible to numpy array
+inv.echoStatus()
 # We now optimize lambda such that data are fitted within noise (chi^2=1)
+print("chi^2=1 optimized inversion")
 resChi = inv.runChi1()  # ends up in a lambda of about 3
+inv.echoStatus()
+print("optimized lambda value:", inv.getLambda())
 ###############################################################################
 # show everything
 fig, ax = plt.subplots(ncols=2, figsize=(8, 6))  # two-column figure
