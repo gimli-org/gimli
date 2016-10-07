@@ -67,8 +67,8 @@ class CellBrowser(object):
         if data is not None:
             if mesh.cellCount() != len(data):
                 print('data length mismatch mesh.cellCount(): ' +
-                    str(len(data)) + "!=" + str(mesh.cellCount()) +
-                    ". Mapping data to cellMarkers().")
+                      str(len(data)) + "!=" + str(mesh.cellCount()) +
+                      ". Mapping data to cellMarkers().")
                 self.data = data[mesh.cellMarkers()]
 
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
@@ -430,7 +430,7 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
     Examples
     --------
     """
-    eCircles = []
+#    eCircles = []
     cols = []
 
     if fillRegion and mesh.boundaryCount() > 0:
@@ -467,8 +467,8 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
                     color='red', verticalalignment='center',
                     horizontalalignment='center')  # 'white'
 
-    #p = mpl.collections.PatchCollection(eCircles, color=cols)
-    #ax.add_collection(p)
+#    p = mpl.collections.PatchCollection(eCircles, color=cols)
+#    ax.add_collection(p)
 
     for reg in mesh.regionMarker():
         ax.text(reg[0], reg[1],
@@ -870,7 +870,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
 # def drawStreamLines2(...)
 
 
-def drawSensors(ax, sensors, diam=None, koords=None):
+def drawSensors(ax, sensors, diam=None, koords=None, verbose=False):
     """Draw sensor positions as black dots with a given diameter.
 
     Parameters
@@ -898,9 +898,9 @@ def drawSensors(ax, sensors, diam=None, koords=None):
         diam = eSpacing / 8.0
 
     for e in sensors:
-        print(e, diam, e[koords[0]], e[koords[1]])
+        if verbose:
+            print(e, diam, e[koords[0]], e[koords[1]])
         eCircles.append(mpl.patches.Circle((e[koords[0]], e[koords[1]]), diam))
-
 
     p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
     ax.add_collection(p)
