@@ -734,7 +734,8 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> mesh = createParaMesh2DGrid(sensors=pg.RVector(range(10)),
     ...                             boundary=1, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
-    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), alpha=0.3, cmap="summer", hold=True)
+    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), alpha=0.3, cmap="summer",
+    ...                 hold=True)
     >>> ax, _ = pg.show(mesh, ax=ax)
     """
     mesh = pg.Mesh(2)
@@ -742,9 +743,10 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     # maybe separate x y z and sort
     if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.RVector):
         sensors = [pg.RVector3(s, 0) for s in sensors]
+    elif hasattr(sensors, 'sensorPositions'):  # DataContainer or derived class
+        sensors = sensors.sensorPositions()
 
     sensorX = pg.x(sensors)
-
     eSpacing = abs(sensorX[1] - sensorX[0])
 
     xmin = min(sensorX) - paraBoundary * eSpacing

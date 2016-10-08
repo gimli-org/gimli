@@ -43,6 +43,8 @@ DLLEXPORT RVector y(const R3Vector & rv);
 /*! Return array of all z-koordinates. [:,2]*/
 DLLEXPORT RVector z(const R3Vector & rv);
 
+DLLEXPORT RVector absR3(const R3Vector & vPos);
+
 DLLEXPORT void swapXY(R3Vector & rv);
 DLLEXPORT void swapXZ(R3Vector & rv);
 DLLEXPORT void swapYZ(R3Vector & rv);
@@ -94,18 +96,18 @@ public:
     /*! Assignment operator */
     Pos < ValueType > & operator = (const Pos < ValueType > & pos){
         if (this != & pos){ copy_(pos); } return *this; }
-        
+
     /*! Assignment operator */
     Pos < ValueType > & operator = (const Vector < ValueType > & v){
         if (v.size() > 2) {
-            mat_[0] = v[0]; 
-            mat_[1] = v[1]; 
+            mat_[0] = v[0];
+            mat_[1] = v[1];
             mat_[2] = v[2];
         } else {
             throwLengthError(1, WHERE_AM_I + " v.size() < 2 " + toStr(v.size()));
         }
-        return *this; 
-        
+        return *this;
+
     }
 
     inline ValueType & operator [] (Index i) { return mat_[i]; }
@@ -166,10 +168,10 @@ public:
         return *this;
     }
 
-    Pos< ValueType > & round(double tol) const {
-        return Pos< ValueType >(*this).round(tol);
-    }
-    
+//     Pos< ValueType > & round(double tol) const {
+//         return Pos< ValueType >(*this).round(tol);
+//     }
+
     inline double distSquared(const Pos < ValueType > & p) const {
         return  ((mat_[0] - p[0]) * (mat_[0] - p[0]) +
                    (mat_[1] - p[1]) * (mat_[1] - p[1]) +
@@ -216,7 +218,7 @@ public:
     inline ValueType sum() const {
         return mat_[0] + mat_[1] + mat_[2];
     }
-    
+
     Pos< ValueType > norm(const Pos< ValueType > & p1, const Pos< ValueType > & p2) const;
 
     /*! Return normalised copy of this Pos. */
@@ -331,7 +333,7 @@ inline bool operator >= (const RVector3 & a , const RVector3 & b){
 }
 inline RVector3 RINT(const RVector3 & a) {
     std::cout << WHERE_AM_I << std::endl;
-    return RVector3(); 
+    return RVector3();
 }
 
 #define DEFINE_POS_BIN_OPERATOR__(OP)                      \
@@ -353,7 +355,7 @@ template < class ValueType > std::istream & operator >> (std::istream & str, Pos
     THROW_TO_IMPL
     return str;
 }
-    
+
 template < class ValueType > std::ostream & operator << (std::ostream & str, const Pos< ValueType > & pos){
   if (pos.valid()){
     str << pos[0] << "\t" << pos[1] << "\t" << pos[2];

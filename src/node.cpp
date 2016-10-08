@@ -37,17 +37,20 @@ Node::Node(){
 }
 
 Node::Node(double x, double y, double z)
-: pos_(RVector3(x, y, z).round(1e-12)) {
+: pos_(RVector3(x, y, z)) {
+    pos_.round(1e-12);
     init_();
 }
 
 Node::Node(const RVector3 & pos)
-: pos_(pos.round(1e-12)) {
+: pos_(pos) {
+    pos_.round(1e-12);
     init_();
 }
 
 Node::Node(const RVector3 & pos, int marker, int id)
-: pos_(pos.round(1e-12)) {
+: pos_(pos) {
+    pos_.round(1e-12);
     init_();
     setMarker(marker);
     setId(id);
@@ -71,11 +74,11 @@ Node::~Node(){
 void Node::changed_(){
     for (std::set < Boundary * >::iterator it = boundSet_.begin();
          it!= boundSet_.end(); it ++){
-        (*it)->shape().changed();        
+        (*it)->shape().changed();
     }
     for (std::set < Cell * >::iterator it = cellSet_.begin();
          it!= cellSet_.end(); it ++){
-        (*it)->shape().changed();        
+        (*it)->shape().changed();
     }
 }
 

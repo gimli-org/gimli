@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+"""Some matrix specialization."""
+
 import time
 from math import pi, sin, cos
 
 import numpy as np
-import scipy.linalg
 
 import pygimli as pg
+from pygimli.io import opt_import
 
 
 def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
@@ -14,6 +17,8 @@ def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
     ----------
 
     """
+    import scipy.linalg
+
     if I is None:
         I = [1, 1, 1]
     elif isinstance(I, (float, int)):
@@ -75,26 +80,30 @@ def covarianceMatrix(mesh, nodes=False, **kwargs):
 
 def computeInverseRootMatrix(CM, thrsh=0.001, verbose=False):
     """Compute inverse square root (C^{-0.5} of matrix."""
+    spl = opt_import('scipy.linalg', 'scipy linear algebra')
+    if spl is None:
+        return None
+
     t = time.time()
-    e_vals, e_vecs = scipy.linalg.eigh(CM)
+    e_vals, e_vecs = spl.eigh(CM)
     if verbose:
         print('(C) Calculation time for eigenvalue decomposition:\n%s sec' %
               (time.time()-t))
 
     t = time.time()
-    A = scipy.linalg.inv(np.diag(np.sqrt(np.real(e_vals))))
+    A = spl.inv(np.diag(np.sqrt(np.real(e_vals))))
     if verbose:
         print('(C) Calculation time for inv(diag(sqrt)):\n%s sec' %
               (time.time()-t))
 
     t = time.time()
-    gemm = scipy.linalg.get_blas_funcs("gemm", [e_vecs, A])
+    gemm = spl.get_blas_funcs("gemm", [e_vecs, A])
     B = gemm(1, e_vecs, A)
     if verbose:
         print('(C) Calculation time for dot 1:\n%s sec' % (time.time()-t))
 
     t = time.time()
-    gemm2 = scipy.linalg.get_blas_funcs("gemm", [B, np.transpose(e_vecs)])
+    gemm2 = spl.get_blas_funcs("gemm", [B, np.transpose(e_vecs)])
     if verbose:
         print('gemm test:\n%s sec' % (time.time()-t))
     CM05 = gemm2(1, B, np.transpose(e_vecs))

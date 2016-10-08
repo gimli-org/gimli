@@ -623,6 +623,14 @@ public:
 
     const RBoundingBox boundingBox() const { findRange_(); return RBoundingBox(minRange_, maxRange_);}
 
+    /*! Return the interpolation matrix I from all node positions
+     * to the query points q. I is a (len(q) x nodeCount()) SparseMapMatrix.
+     * To perform the interpolation just calculate the matrix vector product.
+     * uInterpolated = I.mult(uPerNode) or uInterpolated = I * uPerNode */
+    RSparseMapMatrix interpolationMatrix(const R3Vector & q);
+
+    /*! Inplace version of \ref interpolationMatrix(const R3Vector & q) */
+    void interpolationMatrix(const R3Vector & q, RSparseMapMatrix & I);
 
     /*! Return the reference to the matrix for cell value to boundary value interpolation matrix. */
     RSparseMapMatrix & cellToBoundaryInterpolation() const;

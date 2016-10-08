@@ -2031,6 +2031,32 @@ void Mesh::addHoleMarker(const RVector3 & pos){
     holeMarker_.push_back(pos);
 }
 
+void Mesh::interpolationMatrix(const R3Vector & q, RSparseMapMatrix & I){
+    I.resize(q.size(), this->nodeCount());
+
+    Index count = 0;
+    Cell * c = 0;
+    RVector cI;
+
+    for (Index i = 0; i < q.size(); i ++ ){
+        c = this->findCell(q[i], count, false);
+        if (c){
+            cI.resize(c->nodeCount());
+            c->N(c->shape().rst(q[i]), cI);
+
+            for (Index j = 0; j < c->nodeCount(); j ++){
+                I.addVal(i, c->ids()[j], cI[j]);
+            }
+        }
+    }
+}
+
+RSparseMapMatrix Mesh::interpolationMatrix(const R3Vector & q){
+    RSparseMapMatrix I;
+    interpolationMatrix(q, I);
+    return I;
+}
+
 RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
     if (!cellToBoundaryInterpolationCache_){
         if (!neighboursKnown_){

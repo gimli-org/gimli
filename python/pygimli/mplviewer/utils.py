@@ -49,7 +49,7 @@ def adjustWorldAxes(ax):
 def saveFigure(fig, filename, pdfTrim=False):
     """Save figure as pdf."""
     fig.savefig(filename + '.pdf', bbox_inches='tight')
-    #pdfTrim=1
+    # pdfTrim=1
     if pdfTrim:
         try:
             print("trying pdf2pdfS ... ")
@@ -66,6 +66,7 @@ def saveAxes(ax, filename, adjust=False):
 
     plt.pause(0.01)
     saveFigure(ax.figure, filename)
+
 
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
                    scale=1, usetex=True):

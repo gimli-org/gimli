@@ -46,23 +46,25 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
     ret : :gimliapi:`GIMLI::RVector`
         Array of desired length filled with the appropriate values.
     """
+    nDofs = ndof
 
     if not hasattr(ndof, '__len__'):
         nDofs = [ndof]
-    else:
-        nDofs = ndof
 
     try:
         return pg.RVector(nDofs[0], float(arg))
     except BaseException as _:
         pass
 
+    #print('#'*100)
+    #print(nDofs, arg)
+
     if hasattr(arg, '__len__'):
         if isinstance(arg, np.ndarray):
             if len(arg) == nDofs[0]:
                 return arg
             else:
-                raise BaseException('Given array does not have requested (' +
+                raise Exception('Given array does not have requested (' +
                                     str(ndof) + ') size (' +
                                     str(len(arg)) + ')')
 
