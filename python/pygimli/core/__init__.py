@@ -53,7 +53,6 @@ def showNow():
 
 __swatch__ = _pygimli_.Stopwatch()
 
-
 def tic():
     """Start global stopwatch."""
     __swatch__.start()
