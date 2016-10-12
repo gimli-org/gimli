@@ -1491,34 +1491,59 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
 
     solver = pg.LinSolver(A, verbose=verbose)
 
-    timeIter1 = np.zeros(len(times))
-    timeIter2 = np.zeros(len(times))
+    timeAssemble = []
+    timeSolve = []
     # print('0', min(u[0]), max(u[0]), min(f), max(f))
     for n in range(1, len(times)):
 
-        pg.tic()
-        b = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
+        if verbose:
+            pg.tic()
+
+        #pg.tic()
+        #bRef = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
+            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+        #pg.toc()
+
+        #pg.tic()
+        #b = u[n - 1] + ((dt * (theta - 1.)) * S) * u[n - 1] + \
+            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+        #pg.toc()
+
+        #pg.tic()
+        b = u[n - 1] + S.mult(dt * (theta - 1.) * u[n - 1]) + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+        #pg.toc()
 
-        timeIter1[n - 1] = pg.dur()
+        #print(np.linalg.norm(b-b1))
+        #np.testing.assert_allclose(bRef, b)
 
-        pg.tic()
+        if verbose:
+            timeAssemble.append(pg.dur())
+
+        if verbose:
+            pg.tic()
+
         u[n, :] = solver.solve(b)
-        timeIter2[n - 1] = pg.dur()
+
+        if verbose:
+            timeSolve.append(pg.dur())
 
         # A = (I + dt * theta * S)
         # u[n, : ] = linsolve(A, b)
-
-    # plt.figure()
-    # plt.plot(timeIter1)
-    # plt.plot(timeIter2)
-    # plt.figure()
 
         if verbose and (n % verbose == 0):
             # print(min(u[n]), max(u[n]))
             print("timesteps:", n, "/", len(times),
                   'runtime:', sw.duration(), "s",
-                  'itertime:', np.mean(timeIter1))
+                  'assemble:', np.mean(timeAssemble),
+                  'solve:', np.mean(timeSolve))
+
+    #import matplotlib.pyplot as plt
+    #plt.figure()
+    #plt.plot(timeAssemble)
+    #plt.figure()
+    #plt.plot(timeSolve)
+    #plt.show()
 
     return u
 
