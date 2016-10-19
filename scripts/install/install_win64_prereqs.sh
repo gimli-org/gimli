@@ -15,8 +15,7 @@ pacman -S --needed --noconfirm \
         wget \
         patch
 
-pacman -S --needed --noconfirm \
-        mingw-w64-x86_64-cmake \
+pacman -S --needed --noconfirm --force \
         mingw-w64-x86_64-gcc \
         mingw-w64-x86_64-gcc-fortran \
         mingw-w64-x86_64-openblas \

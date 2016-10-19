@@ -79,7 +79,8 @@ SetGCC_TOOLSET(){
     MAKE=make
 
     if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
-        CMAKE_GENERATOR='MSYS Makefiles'
+        #CMAKE_GENERATOR='MSYS Makefiles'
+        CMAKE_GENERATOR='Unix Makefiles'
         #CMAKE_GENERATOR='MinGW Makefiles'
         SYSTEM=WIN
         B2TOOLSET=mingw
@@ -132,7 +133,7 @@ SetCLANG_TOOLSET(){
 
 
     if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
-        CMAKE_GENERATOR='MSYS Makefiles'
+        CMAKE_GENERATOR='Unix Makefiles'
         SYSTEM=WIN
     elif [ $(uname) == "Darwin" ]; then
         CMAKE_GENERATOR='Unix Makefiles'
@@ -357,7 +358,7 @@ buildBOOST(){
         if [ "$SYSTEM" == "WIN" ]; then
             if [ ! -f ./b2.exe ]; then
                 echo "Try with cmd /c \"bootstrap.bat $B2TOOLSET\""
-                cmd /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
+                cmd.exe /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
 
                 if [ ! -f ./b2.exe ]; then
                     echo "Try with ./bootstrap.sh --with-toolset=$B2TOOLSET"
