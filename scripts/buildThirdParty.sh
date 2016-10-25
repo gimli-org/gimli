@@ -56,7 +56,8 @@ checkTOOLSET(){
     echo "SYSTEM: $SYSTEM"
     echo "USING TOOLSET=$TOOLSET and CMAKE_GENERATOR=$CMAKE_GENERATOR, PARRALELBUILD: $PARALLEL_BUILD"
     echo "ADDRESSMODEL = $ADDRESSMODEL"
-    echo "PYTHON       = $PYTHONVERSION"
+    echo "PYTHON       = $PYTHONEXE"
+    echo "Version      = $PYTHONVERSION"
     echo "SRC_DIR      = $SRC_DIR"
     echo "BUILD_DIR    = $BUILD_DIR"
     echo "DIST_DIR     = $DIST_DIR"
@@ -130,7 +131,6 @@ SetCLANG_TOOLSET(){
     TOOLSET=clang-`clang -dumpversion`
     B2TOOLSET='clang'
     MAKE=make
-
 
     if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
         CMAKE_GENERATOR='Unix Makefiles'
@@ -263,14 +263,22 @@ needGCC(){
     HAVEGCC=1
 }
 needPYTHON(){
-
+    
+    if command -v python 2>/dev/null; then
+        PYTHONEXE=python
+    elif command -v python3 2>/dev/null; then
+        PYTHONEXE=python3
+    else
+        echo "cannot find python interpreter"
+    fi
+    
     HAVEPYTHON=1
-    PYTHONVERSION=`python -c 'import sys; print(sys.version)'`
-    PYTHONMAJOR=`python -c 'import sys; print(sys.version_info.major)'`
-    PYTHONMINOR=`python -c 'import sys; print(sys.version_info.minor)'`
+    PYTHONVERSION=`"$PYTHONEXE" -c 'import sys; print(sys.version)'`
+    PYTHONMAJOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.major)'`
+    PYTHONMINOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.minor)'`
     #echo $PYTHONVERSION $PYTHONMAJOR
 
-    PYTHON_HOME=`which python`
+    PYTHON_HOME=`which $PYTHONEXE`
     PYTHON_HOME=${PYTHON_HOME%/*}
 
     echo "PYTHON HOME: $PYTHON_HOME"
@@ -479,7 +487,7 @@ buildPYGCCXML(){
 
     mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC
     pushd $PYGCCXML_BUILD
-        python setup.py build
+        "$PYTHONEXE" setup.py build
         echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYGCCXML_DIST
@@ -492,7 +500,7 @@ buildPYGCCXML(){
 
     mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC
     pushd $PYPLUSPLUS_BUILD
-        python setup.py build
+        "$PYTHONEXE" setup.py build
         echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYPLUSPLUS_DIST
