@@ -56,7 +56,8 @@ checkTOOLSET(){
     echo "SYSTEM: $SYSTEM"
     echo "USING TOOLSET=$TOOLSET and CMAKE_GENERATOR=$CMAKE_GENERATOR, PARRALELBUILD: $PARALLEL_BUILD"
     echo "ADDRESSMODEL = $ADDRESSMODEL"
-    echo "PYTHON       = $PYTHONVERSION"
+    echo "PYTHON       = $PYTHONEXE"
+    echo "Version      = $PYTHONVERSION"
     echo "SRC_DIR      = $SRC_DIR"
     echo "BUILD_DIR    = $BUILD_DIR"
     echo "DIST_DIR     = $DIST_DIR"
@@ -79,7 +80,8 @@ SetGCC_TOOLSET(){
     MAKE=make
 
     if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
-        CMAKE_GENERATOR='MSYS Makefiles'
+        #CMAKE_GENERATOR='MSYS Makefiles'
+        CMAKE_GENERATOR='Unix Makefiles'
         #CMAKE_GENERATOR='MinGW Makefiles'
         SYSTEM=WIN
         B2TOOLSET=mingw
@@ -130,9 +132,8 @@ SetCLANG_TOOLSET(){
     B2TOOLSET='clang'
     MAKE=make
 
-
     if [ "$OSTYPE" == "msys" -o "$MSYSTEM" == "MINGW32" ]; then
-        CMAKE_GENERATOR='MSYS Makefiles'
+        CMAKE_GENERATOR='Unix Makefiles'
         SYSTEM=WIN
     elif [ $(uname) == "Darwin" ]; then
         CMAKE_GENERATOR='Unix Makefiles'
@@ -262,14 +263,22 @@ needGCC(){
     HAVEGCC=1
 }
 needPYTHON(){
-
+    
+    if command -v python 2>/dev/null; then
+        PYTHONEXE=python
+    elif command -v python3 2>/dev/null; then
+        PYTHONEXE=python3
+    else
+        echo "cannot find python interpreter"
+    fi
+    
     HAVEPYTHON=1
-    PYTHONVERSION=`python -c 'import sys; print(sys.version)'`
-    PYTHONMAJOR=`python -c 'import sys; print(sys.version_info.major)'`
-    PYTHONMINOR=`python -c 'import sys; print(sys.version_info.minor)'`
+    PYTHONVERSION=`"$PYTHONEXE" -c 'import sys; print(sys.version)'`
+    PYTHONMAJOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.major)'`
+    PYTHONMINOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.minor)'`
     #echo $PYTHONVERSION $PYTHONMAJOR
 
-    PYTHON_HOME=`which python`
+    PYTHON_HOME=`which $PYTHONEXE`
     PYTHON_HOME=${PYTHON_HOME%/*}
 
     echo "PYTHON HOME: $PYTHON_HOME"
@@ -357,7 +366,7 @@ buildBOOST(){
         if [ "$SYSTEM" == "WIN" ]; then
             if [ ! -f ./b2.exe ]; then
                 echo "Try with cmd /c \"bootstrap.bat $B2TOOLSET\""
-                cmd /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
+                cmd.exe /c "bootstrap.bat $B2TOOLSET" # try this first .. works for 54 with mingw
 
                 if [ ! -f ./b2.exe ]; then
                     echo "Try with ./bootstrap.sh --with-toolset=$B2TOOLSET"
@@ -478,7 +487,7 @@ buildPYGCCXML(){
 
     mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC
     pushd $PYGCCXML_BUILD
-        python setup.py build
+        "$PYTHONEXE" setup.py build
         echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYGCCXML_DIST
@@ -491,7 +500,7 @@ buildPYGCCXML(){
 
     mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC
     pushd $PYPLUSPLUS_BUILD
-        python setup.py build
+        "$PYTHONEXE" setup.py build
         echo "copy build->dist"
         if [ -n "$CLEAN" ]; then
             rm -rf $PYPLUSPLUS_DIST

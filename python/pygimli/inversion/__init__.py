@@ -2,6 +2,6 @@
 """Inversion related methods."""
 
 from .harmfit import harmFunctor, harmfitNative, harmfit
-from .resolution import computeR, modCovar, iterateBounds
+from .resolution import computeR
 
 __all__ = ['harmFunctor', 'harmfitNative', 'harmfit', 'computeR']

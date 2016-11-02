@@ -185,13 +185,13 @@ testPYGIMLI(){
     echo ""
     echo "============================================================================"
     echo "------------------------  TEST pyGIMLi installation ------------------------"
-    export PYTHONPATH=$GIMLI_ROOT/gimli/python:$PYTHONPATH
+    export PYTHONPATH=$GIMLI_ROOT/gimli/python
     python -c 'import pygimli as pg; print("pygimli version:", pg.__version__)'
     if [ -x "$(command -v pytest)" ]; then
         python -c 'import pygimli as pg; pg.test()'
     fi
     echo "--- ------------------------------------------------------------------------"
-    echo "export PYTHONPATH=$GIMLI_ROOT/gimli/python:\$PYTHONPATH" > $GIMLI_ROOT/.bash_hint_pygimli
+    echo "export PYTHONPATH=$GIMLI_ROOT/gimli/python" > $GIMLI_ROOT/.bash_hint_pygimli
     echo "export PATH=$GIMLI_ROOT/gimli/python/apps:\$PATH" >> $GIMLI_ROOT/.bash_hint_pygimli
 }
 
