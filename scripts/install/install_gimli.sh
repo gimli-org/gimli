@@ -112,12 +112,12 @@ elif [ $(uname -o) == "Msys" ]; then
         SYSTEM='win64'
         echo "Determining system ... Msys WIN64 system found"
         # just run this for the initial call .. after a mingw-shell restart these setting is automatic
-        export PATH=/mingw64/bin:$PATH
+        export PATH=$PATH:/mingw64/bin
     else
         SYSTEM='win32'
         echo "Determining system ... Msys WIN32 system found"
         # just run this for the initial call .. after a mingw-shell restart these setting is automatic
-        export PATH=/mingw32/bin:$PATH
+        export PATH=$PATH:/mingw32/bin
     fi
     # check for winpython
     "$GET" $SCRIPT_REPO/install_$SYSTEM'_winpython.sh' | bash
@@ -172,7 +172,7 @@ pushd $GIMLI_ROOT
             git checkout $BRANCH
         popd
     fi
-    
+
     chmod +x gimli/python/apps/*
 
     [ $UPDATE_ONLY -eq 0 ] && rm -rf build/
