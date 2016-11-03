@@ -182,10 +182,10 @@ class ERTModelling(pg.ModellingBase):
         r = np.zeros(nData)
 
         for i in range(nData):
-            iA = self.data('a')[i]
-            iB = self.data('b')[i]
-            iM = self.data('m')[i]
-            iN = self.data('n')[i]
+            iA = int(self.data('a')[i])
+            iB = int(self.data('b')[i])
+            iM = int(self.data('m')[i])
+            iN = int(self.data('n')[i])
 
             uAB = pM[iA] - pM[iB]
             r[i] = uAB[iM] - uAB[iN]

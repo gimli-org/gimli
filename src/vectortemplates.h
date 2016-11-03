@@ -100,10 +100,10 @@ template < class Vec > bool loadVec(Vec & a, const std::string & filename,
     }
 
     if (format == Ascii){
-        std::vector < double > tmp;
 
+        a.clear();
         std::fstream file; openInFile(filename.c_str(), &file);
-        double val; while(file >> val) tmp.push_back(val);
+        double val; while(file >> val) a.push_back(val);
 
     //so haett ich das gern
 //     std::ifstream file(filename.c_str());
@@ -114,8 +114,8 @@ template < class Vec > bool loadVec(Vec & a, const std::string & filename,
 //std::back_inserter< double > (tmp));
     //std::copy(file.begin(), file.end(), back_inserter< double >(& tmp[0]));
 
-        a.resize(tmp.size());
-        std::copy(tmp.begin(), tmp.end(), &a[0]);
+//         a.resize(tmp.size());
+//         std::copy(tmp.begin(), tmp.end(), &a[0]);
         file.close();
 
   } else {

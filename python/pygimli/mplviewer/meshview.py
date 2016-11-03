@@ -322,9 +322,6 @@ def drawSelectedMeshBoundaries(ax, boundaries,
 
     updateAxes_(ax)
 
-
-
-
     return lineCollection
 
 
@@ -352,7 +349,7 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     return collection
 
 
-def drawMeshBoundaries(ax, mesh, hideMesh=False, **kwargs):
+def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
     """Draw mesh on ax with boundary conditions colorized.
 
     Parameters
@@ -362,8 +359,13 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, **kwargs):
         Show only the boundary of the mesh and omit inner edges that
         separate the cells.
 
+    useColorMap: bool[False]
+        Apply the default colormap to boundaries with marker values > 0
+
     **kwargs:
-        fitView : bool [True]
+        * fitView : bool [True]
+        * linewidth : float [0.3]
+            linewidth for edges with marker == 0 if hideMesh is False.
 
     Examples
     --------
@@ -400,8 +402,10 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, **kwargs):
     mesh.createNeighbourInfos()
 
     if not hideMesh:
+        linewidth = kwargs.pop('linewidth', 0.3)
         drawSelectedMeshBoundaries(ax, mesh.findBoundaryByMarker(0),
-                                   color=(0.0, 0.0, 0.0, 1.0), linewidth=0.3)
+                                   color=(0.0, 0.0, 0.0, 1.0),
+                                   linewidth=linewidth)
 
     drawSelectedMeshBoundaries(ax, mesh.findBoundaryByMarker(
                                      pg.MARKER_BOUND_HOMOGEN_NEUMANN),
@@ -411,7 +415,12 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, **kwargs):
                                color=(1.0, 0.0, 0.0, 1.0), linewidth=1.0)
 
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
-    drawSelectedMeshBoundaries(ax, b0, color=None, linewidth=2)
+    if useColorMap:
+        drawSelectedMeshBoundaries(ax, b0, color=None,
+                                   linewidth=2)
+    else:
+        drawSelectedMeshBoundaries(ax, b0, color=(0.0, 0.0, 0.0, 1.0),
+                                   linewidth=2)
 
     b4 = [b for b in mesh.boundaries() if b.marker() < -4]
     drawSelectedMeshBoundaries(ax, b4, color=(0.0, 0.0, 0.0, 1.0),
