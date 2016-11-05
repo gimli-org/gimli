@@ -412,6 +412,7 @@ def generate(defined_symbols, extraIncludes):
           'GIMLI::InversionBase',
           'std::vector<unsigned long',
           'std::vector<bool',
+          'std::vector<double',
           ]
 
     for c in main_ns.free_functions():
@@ -433,6 +434,17 @@ def generate(defined_symbols, extraIncludes):
                     logger.debug("Fail to exclude: " + c.name)
 
         try:
+            for mem in c.variables():
+                try:
+                    mem.exclude()
+                    # logger.info("Exclude: " + str(mem))
+                except BaseException as _:
+                    logger.debug("Fail to exclude: " + str(mem))
+        except BaseException as _:
+            # print(c, "has no member functions")
+            pass
+
+        try:
             for mem in c.constructors():
                 for e in ex:
                     if mem.decl_string.find(e) > -1:
@@ -450,6 +462,9 @@ def generate(defined_symbols, extraIncludes):
                             # logger.info("Exclude: " + str(mem))
                         except BaseException as _:
                             logger.debug("Fail to exclude: " + str(mem))
+
+
+
         except BaseException as _:
             # print(c, "has no member functions")
             pass

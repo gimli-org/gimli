@@ -882,7 +882,7 @@ bool loadMatrixCol(Matrix < ValueType > & A, const std::string & filename,
 //     delete buffer;
 //     return true;
 
-    std::vector < double > tmp;
+    Vector < ValueType > tmp;
     Vector < ValueType > row(cols);
     std::fstream file; openInFile(filename, & file, true);
     for (uint i = 0; i < commentCount; i ++) {
@@ -957,7 +957,7 @@ bool loadMatrixRow(Matrix < ValueType > & A,
     }
 
     double val;
-    std::vector < double > tmp;
+    Vector < ValueType > tmp;
     while(file >> val) tmp.push_back(val);
 
     file.close();

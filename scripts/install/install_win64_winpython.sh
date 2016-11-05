@@ -22,7 +22,7 @@ searchPython(){
         echo "VERSION:" $PYTHONMAJOR.$PYTHONMINOR
         
         if [ -z "$FindRunDone" ]; then
-            # obvious the python is allready path
+            # obvious python is allready path
             rm -rf $GIMLI_ROOT/.bash_hint_python
         fi
     else
@@ -58,4 +58,20 @@ searchPython(){
     fi
 }
 
+patchPython(){
+    PYPATH=`which python`
+    PYCONFIGFILE=${PYPATH%/python}/include/pyconfig.h
+    echo "backup $PYCONFIGFILE to $PYCONFIGFILE.backup"
+    [ ! -f $PYCONFIGFILE.backup ] && cp $PYCONFIGFILE $PYCONFIGFILE.backup
+    cp $PYCONFIGFILE.backup $PYCONFIGFILE
+    
+    LINE=`grep -n '#define COMPILER "\[gcc\]"' $PYCONFIGFILE | cut -d':' -f1`
+    LINE=$[$LINE + 1]
+    echo "patch hypot gcc bug at line: $LINE"
+    sed -i ''"$LINE"'s/\#define hypot _hypot/\/\/\#define hypot _hypot\n\#include <cmath>/' $PYCONFIGFILE
+    echo "Difference is:"
+    diff $PYCONFIGFILE $PYCONFIGFILE.backup
+}
+
 searchPython
+patchPython

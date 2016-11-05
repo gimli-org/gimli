@@ -112,12 +112,12 @@ elif [ $(uname -o) == "Msys" ]; then
         SYSTEM='win64'
         echo "Determining system ... Msys WIN64 system found"
         # just run this for the initial call .. after a mingw-shell restart these setting is automatic
-        export PATH=/mingw64/bin:$PATH
+        export PATH=$PATH:/mingw64/bin
     else
         SYSTEM='win32'
         echo "Determining system ... Msys WIN32 system found"
         # just run this for the initial call .. after a mingw-shell restart these setting is automatic
-        export PATH=/mingw32/bin:$PATH
+        export PATH=$PATH:/mingw32/bin
     fi
     # check for winpython
     "$GET" $SCRIPT_REPO/install_$SYSTEM'_winpython.sh' | bash
@@ -172,7 +172,7 @@ pushd $GIMLI_ROOT
             git checkout $BRANCH
         popd
     fi
-    
+
     chmod +x gimli/python/apps/*
 
     [ $UPDATE_ONLY -eq 0 ] && rm -rf build/
@@ -185,13 +185,13 @@ testPYGIMLI(){
     echo ""
     echo "============================================================================"
     echo "------------------------  TEST pyGIMLi installation ------------------------"
-    export PYTHONPATH=$GIMLI_ROOT/gimli/python:$PYTHONPATH
+    export PYTHONPATH=$GIMLI_ROOT/gimli/python
     python -c 'import pygimli as pg; print("pygimli version:", pg.__version__)'
     if [ -x "$(command -v pytest)" ]; then
         python -c 'import pygimli as pg; pg.test()'
     fi
     echo "--- ------------------------------------------------------------------------"
-    echo "export PYTHONPATH=$GIMLI_ROOT/gimli/python:\$PYTHONPATH" > $GIMLI_ROOT/.bash_hint_pygimli
+    echo "export PYTHONPATH=$GIMLI_ROOT/gimli/python" > $GIMLI_ROOT/.bash_hint_pygimli
     echo "export PATH=$GIMLI_ROOT/gimli/python/apps:\$PATH" >> $GIMLI_ROOT/.bash_hint_pygimli
 }
 

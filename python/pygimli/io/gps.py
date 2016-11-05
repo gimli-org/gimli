@@ -190,7 +190,8 @@ def readGeoRefTIF(file_name):
 
 
 def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
-                  usetls=False, epsg=0, uuid='', fmt='image/jpeg'):
+                  usetls=False, epsg=0, uuid='', fmt='image/jpeg',
+                  layer='rgb'):
     """Generate address for rendering web service image from BKG.
 
     Assumes UTM in given zone.
@@ -198,7 +199,8 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
     url = 'https://sg.geodatenzentrum.de/wms_' + service
     if usetls:
         url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
-    stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=0&STYLES=default&FORMAT=' + fmt
+    stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=' + layer
+    stdarg += '&STYLES=default&FORMAT=' + fmt
     if epsg == 0:
         epsg = 32600 + zone  # WGS 84 / UTM zone 32N
 #        epsg = 25800 + zone  # ETRS89 / UTM zone 32N
@@ -210,7 +212,9 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
     box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
     ysize = int((imsize - 1.) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
     sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
-    addr = url + '__' + uuid + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
+    if uuid:
+        url += '__' + uuid
+    addr = url + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
         '&' + 'BBOX=' + box + '&' + sizestr
 
     return addr, box
@@ -240,21 +244,19 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
     ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
     wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
     fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
+    lay = {'DOP': 'rgb', 'DTK': '0'}
     if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
         ax = ax.get_xlim()
         imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
         if imsize > 5000:  # limit overly sized images
             imsize = 2500  # default value
     ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
-                            service=wms[mode], usetls=usetls, uuid=uuid,
-                            fmt=fmt[mode], epsg=epsg)
+                            service=wms[mode.upper()], usetls=usetls,
+                            uuid=uuid, epsg=epsg,
+                            fmt=fmt[mode.upper()], layer=lay[mode.upper()])
     imname = mode + box + ext[mode]
     if not os.path.isfile(imname):  # not already existing
-        print('Retrieving file from geodatenzentrum.de using URL:')
-        print(ad)
-        # old (urllib) style (not working through proxy anymore)
-#        url = urllib.URLopener()
-#        url.retrieve(ad, imname)
+        print('Retrieving file from geodatenzentrum.de using URL: ' + ad)
         req = urllib2.Request(ad)
         response = urllib2.urlopen(req)
         with open(imname, 'wb') as output:

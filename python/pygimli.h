@@ -8,7 +8,7 @@
     // #if __GCC_ATOMIC_BOOL_LOCK_FREE == 2
         // #undef __GCC_ATOMIC_BOOL_LOCK_FREE
         // #define __GCC_ATOMIC_BOOL_LOCK_FREE 1
-    // #endif        
+    // #endif
 // #endif
 // #define BOOST_ATOMIC_FORCE_FALLBACK
 
@@ -76,14 +76,14 @@ namespace pyplusplus{ namespace aliases{
 //     typedef GIMLI::Vector< double >                 RVector;
 //     typedef GIMLI::VectorIterator< double >              RVectorIter;
 //     typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
-    
+
 }
 } //pyplusplus::aliases
 
 #else // if not PYTEST
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
- 
+
 #include "baseentity.h"
 #include "blockmatrix.h"
 #include "curvefitting.h"
@@ -134,7 +134,7 @@ namespace pyplusplus{ namespace aliases{
 // #include "matrixTemplates.h"
 
 namespace GIMLI{
-    
+
 #define DEFINE_PY_VEC_OPERATOR__(OP)                      \
     inline RVector operator OP (const RVector & a, const double & b){ \
         RVector ret(a);   ret OP##=b; return ret; }                           \
@@ -162,7 +162,7 @@ namespace GIMLI{
         RMatrix ret(b.rows()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RMatrix operator OP (const RMatrix & a, const RMatrix & b){ \
          RMatrix ret(a);   ret OP##=b; return ret; } \
-         
+
 DEFINE_PY_VEC_OPERATOR__(+)
 DEFINE_PY_VEC_OPERATOR__(-)
 DEFINE_PY_VEC_OPERATOR__(*)
@@ -209,23 +209,23 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class Vector< GIMLI::RVector3 >;
     template class Vector< GIMLI::SIndex >;
     template class Vector< GIMLI::Complex >;
-       
+
     template class VectorIterator< bool >;
     template class VectorIterator< double >;
     template class VectorIterator< GIMLI::RVector3 >;
     template class VectorIterator< GIMLI::SIndex >;
     template class VectorIterator< GIMLI::Index >;
     template class VectorIterator< GIMLI::Complex >;
-    
+
     template class Matrix< double >;
     template class Matrix< std::complex< double > >;
     template class Matrix3< double >;
-    
+
     template class BlockMatrix< double >;
-    
+
     template class Pos< double >;
     template class Quaternion< double >;
-    
+
     template class PolynomialElement< double >;
     template class PolynomialFunction< double >;
 
@@ -238,12 +238,12 @@ DEFINE_COMPARE_OPERATOR__(>)
     template PolynomialFunction < double > operator * (const double & val, const PolynomialFunction < double > & f);
     template PolynomialFunction < double > operator + (const PolynomialFunction < double > & f, const double & val);
     template PolynomialFunction < double > operator + (const double & val, const PolynomialFunction < double > & f);
-    
-    template std::vector < PolynomialFunction < double > > 
+
+    template std::vector < PolynomialFunction < double > >
         createPolynomialShapeFunctions(const Shape & ent, uint nCoeff, bool pascale, bool serendipity, const RVector &);
-    template std::vector < PolynomialFunction < double > > 
+    template std::vector < PolynomialFunction < double > >
         createPolynomialShapeFunctions(const MeshEntity & ent, uint nCoeff, bool pascale, bool serendipity, const RVector &);
-        
+
     template double besselI0< double >(const double & x);
     template double besselI1< double >(const double & x);
     template double besselK0< double >(const double & x);
@@ -261,10 +261,10 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     template std::vector< Index > unique(const std::vector < Index > & a);
     template std::vector< SIndex > unique(const std::vector < SIndex > & a);
-    
+
     template std::vector< Index > sort(const std::vector < Index > & a);
     template std::vector< SIndex > sort(const std::vector < SIndex > & a);
-    
+
 #define DEFINE_XVECTOR_STUFF__(VEC) \
 template bool haveInfNaN(const VEC & v); \
 template BVector isInf(const VEC & vec); \
@@ -277,7 +277,7 @@ DEFINE_XVECTOR_STUFF__(IVector)
 DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fail else
 #undef DEFINE_XVECTOR_STUFF__
 
-    
+
     template RVector fliplr(const RVector & a);
     template RVector round(const RVector & a, double tol);
     template RVector increasingRange(const double & first, const double & last, Index n);
@@ -287,7 +287,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
     template class SparseMatrix< double >;
     template class SparseMatrix< GIMLI::Complex >;
-    
+
     template RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B);
     template RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B);
     template RSparseMatrix operator * (const RSparseMatrix & A, const double & b);
@@ -318,13 +318,13 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
     template RMatrix real(const CMatrix & a);
     template RMatrix imag(const CMatrix & a);
-    
+
     template double det(const RMatrix & a);
-        
-    
+
+
     template double sum(const RVector & v);
     template Complex sum(const CVector & v);
-    
+
     template double min(const RVector & v);
     template double max(const RVector & v);
     //template Complex sum(const CVector & v);
@@ -337,7 +337,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template double norml1(const RVector & a);
     template double norml2(const RVector & a);
     template double normlInfinity(const RVector & a);
-    
+
     template double norm(const CVector & a);
     template double normlp(const CVector & a, int p);
     template double norml1(const CVector & a);
@@ -351,9 +351,9 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template double arithmeticMean(const RVector & v);
     template double geometricMean(const RVector & v);
     template double harmonicMean(const RVector & a);
-    
+
     template double dot(const RVector & v1, const RVector & v2);
-    
+
     template void rand(RVector & vec, double min = 0.0, double max = 1.0);
     template void randn(RVector & vec);
 
@@ -365,7 +365,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
     template void sort(const RVector & a, RVector & b, IndexArray & idx);
     template IndexArray sortIdx(const RVector & a);
-    
+
     template bool save(const RVector &v, const std::string & fname, IOFormat format = Ascii);
     template bool load(RVector &v, const std::string & fname, IOFormat format = Ascii,
                         bool verbose = true);
@@ -476,7 +476,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
 // needed for castxml caster .. need to check .. the name Complex seems not enrolled in CMatrix generate code
 // typedef std::complex< double >                       Complex;
- 
+
 //** define some aliases to avoid insane method names
 namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
@@ -488,7 +488,7 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Vector< GIMLI::SIndex >               IVector;
     typedef GIMLI::Vector< GIMLI::Index >                IndexArray;
     typedef GIMLI::Vector< Complex >                     CVector;
-      
+
     typedef GIMLI::VectorIterator< bool >                BVectorIter;
     typedef GIMLI::VectorIterator< double >              RVectorIter;
     typedef GIMLI::VectorIterator< RVector3 >            R3VectorIter;
@@ -496,15 +496,15 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::VectorIterator< GIMLI::Index >        IVectorIter;
     typedef GIMLI::VectorIterator< Complex >             CVectorIter;
 
-        
+
     typedef GIMLI::Matrix< double >                      RMatrix;
     typedef GIMLI::Matrix3< double >                     RMatrix3;
     typedef GIMLI::Matrix< std::complex< double > >      CMatrix;
 
     typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
-    
+
     typedef GIMLI::Quaternion< double >                  RQuaternion;
-    
+
     typedef GIMLI::PolynomialFunction< double >          RPolynomialFunction;
     typedef GIMLI::PolynomialElement< double >           RPolynomialElement;
 
@@ -537,27 +537,27 @@ namespace pyplusplus{ namespace aliases{
 //     typedef GIMLI::Variable< GIMLI::XAxis >                 VariableXAxis;
 //     typedef GIMLI::Variable< GIMLI::YAxis >                 VariableYAxis;
 //     typedef GIMLI::Variable< GIMLI::ZAxis >                 VariableZAxis;
-    
+
     typedef GIMLI::Expr< GIMLI::ExprIdentity >              ExprExprIdent;
 
     typedef std::vector< std::string >                  stdVectorString;
     typedef std::vector< int >                          stdVectorI;
-
-//     typedef std::vector< long int >                     stdVectorLI;
-//     typedef std::vector< unsigned int >                 stdVectorUI;
     typedef std::vector< GIMLI::SIndex >                stdVectorSIndex;
     typedef std::vector< GIMLI::Index >                 stdVectorIndex;
-    typedef std::vector< double >                       stdVectorR;
-    typedef std::vector< std::complex < double > >      stdVectorC;
-    
+
+    //typedef std::vector< long int >                     stdVectorLI;
+    //typedef std::vector< double >                       stdVectorR;
+    //typedef std::vector< std::complex < double > >      stdVectorC;
+    //typedef std::vector< unsigned int >                 stdVectorUI;
+
     typedef std::vector< std::pair< GIMLI::Index, GIMLI::Index > > stdVectorPairLongLong;
     typedef std::vector< std::pair< unsigned int, unsigned int> >      stdVectorPairUintUint;
-    
+
     typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
     typedef std::vector< GIMLI::Matrix< double > >      stdVectorRMatrix;
     typedef std::vector< GIMLI::RVector3 >              stdVectorRVector3;
     typedef std::vector< GIMLI::RMatrix3 >              stdVectorMatrix3;
-    
+
     typedef std::vector< GIMLI::PolynomialElement<double> > stdVectorPolynomialElementR;
     typedef std::vector< GIMLI::PolynomialFunction< double > > stdVectorPolynomialFunctionR;
 
@@ -583,10 +583,10 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map< unsigned long, double >           stdMapUL_D;
     typedef std::map< int, int >                        stdMapI_I;
     typedef std::map< std::string, std::string >        stdMapS_S;
-    
+
     typedef std::map<std::pair<unsigned long, unsigned long>, double > stdMapL_L_D;
     typedef std::map<std::pair<unsigned long, unsigned long>, std::complex< double > > stdMapL_L_C;
-    
+
     #ifdef _WIN64
         typedef std::map<std::pair<unsigned long long, unsigned long long>, double > stdMapLL_LL_D;
         typedef std::map<std::pair<unsigned long long, unsigned long long>, std::complex< double > > stdMapLL_LL_C;
@@ -594,7 +594,7 @@ namespace pyplusplus{ namespace aliases{
         typedef std::map<std::pair<unsigned int, unsigned int>, double > stdMapI_I_D;
         typedef std::map<std::pair<unsigned int, unsigned int>, std::complex< double > > stdMapI_I_C;
     #endif
-    
+
     typedef std::list< long unsigned int >              stdListUL;
 
     typedef std::set< long int >                        stdSetL;

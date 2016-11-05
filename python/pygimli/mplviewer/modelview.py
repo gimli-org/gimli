@@ -32,7 +32,7 @@ def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
 
 
 def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
-    """Show 1D (block or smooth) model along with lower and upper bounds."""
+    """TODO."""
     if thk is None:
         nlay = (len(x) + 1) / 2
         thk = np.array(x)[:nlay - 1]
@@ -324,46 +324,6 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     """DEPRECATED."""
     print("STYLE_WARNING!!!!!!! don't use this call. Use show1dmodel instead.")
     show1dmodel(x, thk, xlab, zlab, islog, z0)
-
-
-def drawModel1DErr(ax, x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
-    """Show 1D (block or smooth) model along with lower and upper bounds.
-
-    Parameters
-    ----------
-    ax : mpl axes object
-    x, xL, xU : iterable
-    thk : iterable
-        thickness vector (in case of Occam model)
-        if note given (block model) it is extracted from x and thkL/U as well
-    xcol : str
-        color for horizontal color bars
-    ycol : str
-        color for vertical error bars
-    """
-    thkL = None
-    if thk is None:
-        nlay = (len(x) + 1) / 2
-        thk = np.array(x)[:nlay - 1]
-        x = np.asarray(x)[nlay - 1:nlay * 2 - 1]
-        thkL = np.array(xL)[:nlay - 1]
-        thkU = np.array(xU)[:nlay - 1]
-        xL = np.asarray(xL)[nlay - 1:nlay * 2 - 1]
-        xU = np.asarray(xU)[nlay - 1:nlay * 2 - 1]
-
-#    thk0 = np.hstack((thk, 0.))
-#    thkL0 = np.hstack((thkL, 0.))
-#    thkU0 = np.hstack((thkU, 0.))
-    drawModel1D(ax, thk, x, **kwargs)
-    ax.set_xlim(min(xL) * 0.95, max(xU) * 1.05)
-    zm = np.hstack((np.cumsum(thk) - thk / 2, np.sum(thk) * 1.2))  # midpoint
-    ax.set_ylim(zm[-1] * 1.1, 0.)
-    ax.errorbar(x, zm, fmt='.', xerr=np.vstack((x - xL, xU - x)),
-                ecolor=xcol, **kwargs)
-    if thkL is not None:
-        zc = np.cumsum(thk)  # cumulative
-        ax.errorbar((x[:-1] + x[1:]) / 2, zc, fmt='.',
-                    yerr=np.vstack((thk - thkL, thkU - thk)), ecolor=ycol)
 
 
 def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0,

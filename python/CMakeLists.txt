@@ -4,8 +4,8 @@ ADD_CUSTOM_COMMAND(
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/_pygimli_.cache
     COMMAND
         #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${PYTHON_EXECUTABLE} will work on cmake3.1
-        #${PYTHON_EXECUTABLE}
-        python
+        ${PYTHON_EXECUTABLE}
+        #python
     ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py
 --extra-path=${PYGCCXML_PATH} --extra-includes=${Boost_INCLUDE_DIR}
@@ -73,6 +73,10 @@ endif(WIN32)
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
 include_directories(${PY_NUMPY}/core/include/)
+
+if(WIN32)
+    include_directories(${PYTHON_INCLUDE_DIR})
+endif(WIN32)
 
 
 ADD_CUSTOM_TARGET(pgtest)
