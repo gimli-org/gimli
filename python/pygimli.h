@@ -128,7 +128,6 @@ namespace pyplusplus{ namespace aliases{
 #include "ttdijkstramodelling.h"
 #include "vector.h"
 #include "vectortemplates.h"
-
 // #include "inversionRollalong.h"
 // #include "eameshwrapper.h"
 // #include "matrixTemplates.h"
@@ -496,7 +495,6 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::VectorIterator< GIMLI::Index >        IVectorIter;
     typedef GIMLI::VectorIterator< Complex >             CVectorIter;
 
-
     typedef GIMLI::Matrix< double >                      RMatrix;
     typedef GIMLI::Matrix3< double >                     RMatrix3;
     typedef GIMLI::Matrix< std::complex< double > >      CMatrix;
@@ -554,7 +552,10 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< std::pair< unsigned int, unsigned int> >      stdVectorPairUintUint;
 
     typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
+    typedef std::vector< GIMLI::Vector< bool > >        stdVectorBVector;
+    typedef std::vector< GIMLI::Vector< GIMLI::SIndex > >      stdVectorSIndexVector;
     typedef std::vector< GIMLI::Matrix< double > >      stdVectorRMatrix;
+    typedef std::vector< GIMLI::MatrixBase * >          stdpMatrixBase;
     typedef std::vector< GIMLI::RVector3 >              stdVectorRVector3;
     typedef std::vector< GIMLI::RMatrix3 >              stdVectorMatrix3;
 

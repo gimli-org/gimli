@@ -53,13 +53,17 @@ def showNow():
 
 __swatch__ = _pygimli_.Stopwatch()
 
-def tic():
+def tic(msg=None):
     """Start global stopwatch."""
+    if msg is not None:
+        print(msg)
     __swatch__.start()
 
 
-def toc():
+def toc(msg=None):
     """Print elapsed time since stopwatch was started."""
+    if msg is not None:
+        print(msg)
     print('Elapsed time is:', dur(), "s")
 
 
