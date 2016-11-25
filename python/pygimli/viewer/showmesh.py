@@ -163,6 +163,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
         * label : str [None]
             Add label to the colorbar
 
+        * xlabel : str [None]
+            Add label to the x axis
+
+        * ylabel : str [None]
+            Add label to the y axis
+
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
 
