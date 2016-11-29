@@ -41,18 +41,12 @@ existing Python 2 scripts to Python 3 by running `2to3
 What do I have to do to use pygimli in Spyder?
 ..............................................
 
-If you have successfully compiled pygimli, but can't use it in Spyder with the
-command:
+You probably need to tell spyder where your pygimli installation can be found
+by an appropriate setting of the `PYTHONPATH`
+in spyder Menubar:/tools/PYTHONPATH manager.
 
-.. code:: bash
-
-  python -c 'import pygimli as pg; print(pg.__version)'
-
-  python: can't open file 'import pygimli as pg; print(pg.__version__)':
-  [Errno 2] No such file or directory
-
-This is probably related to a path issue. Make sure you set the the correct
-ones:
+If this does not solve the problem, check your `PATH` and `LD_LIBRARY_PATH`
+settings.
 
 .. code:: bash
 
@@ -60,10 +54,32 @@ ones:
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
   export PATH=$PATH:$HOME/src/gimli/build/bin
 
+Note, these setting will ony affect applications that are startet from the
+current console.
 Make sure to add these settings to your *.bashrc* to make them permanent.
 
-Weird
------
+If you start spyder from Windows startmenu you probably need to set the
+correct `PATH` somewhere in your windows personal settings.
+
+You can test you installation within the msys2 console via:
+
+.. code:: bash
+
+  python -c 'import pygimli as pg; print(pg.__version)'
+
+If there is something wrong with the environment settings
+you get an error like this:
+
+.. code:: bash
+
+  python: can't open file 'import pygimli as pg; print(pg.__version__)':
+  [Errno 2] No such file or directory
+
+
+
+
+Weird foundings
+---------------
 
 My script called sip.py and nothing works
 .........................................
