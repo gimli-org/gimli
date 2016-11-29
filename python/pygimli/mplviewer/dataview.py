@@ -120,8 +120,9 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
 
     cmap = pg.mplviewer.cmapFromName(**kwargs)
     cmap.set_bad('grey')
-    cmap.set_under('darkgrey')
-    cmap.set_bad('lightgrey')
+    if kwargs.pop('markOutside', True):
+        cmap.set_under('darkgrey')
+        cmap.set_bad('lightgrey')
     pp.set_cmap(cmap)
 
     pp.set_norm(norm)

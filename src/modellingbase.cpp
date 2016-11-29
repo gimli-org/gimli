@@ -394,8 +394,8 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                 std::cerr << WHERE_AM_I << std::endl
                           << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
                           << *mesh_ << std::endl
-                          << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique marker. " << std::endl;
-                throwLengthError(1, WHERE_AM_I + " marker greater = then model.size() " + toStr(marker)
+                          << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique markers. " << std::endl;
+                throwLengthError(1, WHERE_AM_I + " marker >= than model.size() " + toStr(marker)
                        + " >= " + toStr(model.size()));
             }
             if (model[marker] < TOLERANCE){
