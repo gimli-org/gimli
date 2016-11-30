@@ -97,8 +97,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
              ax=None, savefig=None, **kwargs):
     """2D Mesh visualization.
 
-    Create an ax and plot a 2D mesh with given node or cell data.
-    Returns the ax and the color bar. The type of data determine the
+    Create an axis object and plot a 2D mesh with given node or cell data.
+    Returns the axis and the color bar. The type of data determine the
     appropriate draw method.
 
     Parameters
