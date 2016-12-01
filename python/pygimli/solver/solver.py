@@ -875,7 +875,7 @@ def assembleForceVector(mesh, f, userData=None):
             b_l = pg.ElementMatrix()
 
             for c in mesh.cells():
-                if fArray[c.id()] is not None:
+                if fArray[c.id()] != 0.0:
                     b_l.u(c)
                     rhs.add(b_l, fArray[c.id()])
 

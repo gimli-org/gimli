@@ -18,7 +18,7 @@ class TestInterpolate(unittest.TestCase):
         # test with pg.interpolate
         queryPos = [0.2, 0.2]
         uI = pg.interpolate(srcMesh=grid,
-                            inVec=u, destPos=[queryPos,queryPos] )
+                            inVec=u, destPos=[queryPos,queryPos])
 
         np.testing.assert_allclose(uI[0], 1.)
 

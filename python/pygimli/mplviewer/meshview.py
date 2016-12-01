@@ -198,6 +198,7 @@ def drawMesh(ax, mesh, **kwargs):
 def drawModel(ax, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cmap=None,
               xlabel=None, ylabel=None, verbose=False, grid=False,
+              tri=False,
               **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
@@ -212,9 +213,13 @@ def drawModel(ax, mesh, data=None,
         corresponding `mesh`.
     grid : boolean, optional
         Draw cell boundaries.
-    **kwargs:
-        * tri - use tripcolor (experimental)
+    tri : boolean, optional
+        use MPL tripcolor (experimental)
 
+    **kwargs:
+        * all remaining
+            Will be forwarded to the draw functions and matplotlib methods,
+            respectively.
     Examples
     --------
     >>> import numpy as np
@@ -233,9 +238,7 @@ def drawModel(ax, mesh, data=None,
     if mesh.nodeCount() == 0:
         raise "drawModel: The mesh is empty."
 
-    useTri = kwargs.pop('tri', False)
-
-    if useTri:
+    if tri:
         gci = drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
                          cmap=cmap, **kwargs)
     else:
@@ -453,11 +456,7 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
     cols = []
 
     if fillRegion and mesh.boundaryCount() > 0:
-        # without the area setting there seems to be a problem with Triangle
-        # check this: world = mt.createWorld([0,0], [500, 1100],
-        #                         worldMarker=1, layers=[500, 600])
-        #
-        tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=1e5)
+        tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
             pass
         else:
@@ -465,7 +464,7 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
                       nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
                       levels=pg.utils.unique(tmpMesh.cellMarkers()),
                       tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
-                      snap=False)
+                      snap=True)
 
     for n in mesh.nodes():
         col = (0.0, 0.0, 0.0, 0.5)
@@ -619,20 +618,21 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
         if shading == 'gouraud':
             z = pg.cellDataToPointData(mesh, data)
 
-        gci = ax.tripcolor(x, y, triangles, z, levels, shading=shading,
+        gci = ax.tripcolor(x, y, triangles, facecolors=z, shading=shading,
                            **kwargs)
 
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
 
         if shading is not None:
-            gci = ax.tripcolor(x, y, triangles, z, levels, shading=shading,
+            gci = ax.tripcolor(x, y, triangles, z,
+                               shading=shading,
                                **kwargs)
         else:
-            gci = ax.tricontourf(x, y, triangles, z, levels,
+            gci = ax.tricontourf(x, y, triangles, z,
                                  **kwargs)
             if not omitLines:
-                ax.tricontour(x, y, triangles, z, levels,
+                ax.tricontour(x, y, triangles, z,
                               colors=kwargs.pop('colors', ['0.5']),
                               **kwargs)
     else:
