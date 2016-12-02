@@ -31,8 +31,9 @@ class HEMmodelling(pg.ModellingBase):
     c0 = sqrt(1. / ep0 / mu0)
     fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], np.float)
     rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], np.float)
+    scaling = 1e6
 
-    def __init__(self, nlay, height, f=None, r=None):
+    def __init__(self, nlay, height, f=None, r=None, **kwargs):
         """Initialize class with geometry
 
         Parameters
@@ -45,14 +46,31 @@ class HEMmodelling(pg.ModellingBase):
             frequency vector
         r : array [BGR RESOLVE system 7.91-7.94]
             distance vector
+        scaling : float
+            scaling factor or string (ppm=1e6, percent=1e2)
         """
         # Attribute
         self.nlay = nlay
         self.height = height
-        self.f = f
-        self.r = r
+        self.f = np.asarray(f)
+        if r is None:
+            raise Exception("Specify separation value or vector!")
+        if 'scaling' in kwargs:
+            if kwargs['scaling'] == 'ppm':
+                self.scaling = 1e6
+            elif kwargs['scaling'] in ['percent', '%']:
+                self.scaling = 1e2
+            else:
+                self.scaling = kwargs['scaling']
         if self.f is None:
             self.f = self.fdefault
+        if isinstance(r, float) or isinstance(r, int):
+            self.r = np.ones_like(f, dtype=np.float) * r
+        else:
+            if len(r) == len(self.f):
+                self.r = r
+            else:
+                raise Exception('Length vector have to be matching!')
         if self.r is None:
             self.r = self.rdefault
 
@@ -262,12 +280,12 @@ class HEMmodelling(pg.ModellingBase):
                                   (1, 1, self.f.size)), 1, np.complex) / r0
         # normiertes Sekundärfeld
         # quasistationäre Näherung
-        Z = self.r ** 3 * aux0 * 1e6
+        Z = self.r ** 3 * aux0 * self.scaling
         # vollständige Lösung
         if np.any(index):
             Z[:, index] = (-self.r[index]**3 * aux1[:, index] +
                            self.r[index]**3 * aux2[:, index] -
-                           self.r[index]**4 * aux3[:, index]) * 1e6
+                           self.r[index]**4 * aux3[:, index]) * self.scaling
         return np.real(Z[0]), np.imag(Z[0])
 
     def vmd_total_Ef(self, h, z, rho, d, epr, mur, tm):
@@ -443,19 +461,57 @@ def hankelfc(order):
     return (np.reshape(fc, (-1, 1)), nc, nc0)  # (100,) -> (100, 1)
 
 
-class HEMRhomodelling(HEMmodelling):
+class HEMRhoModelling(HEMmodelling):
     """Airborne EM (HEM) Forward modelling class for Occam inversion."""
-    def __init__(self, dvec, height, verbose):
+    def __init__(self, dvec, **kwargs):
         """ not yet working! """
-        nlay = len(dvec)
-        self.height = height
-        self.wem = (2.0 * pi * self.f) ** 2 * self.ep0 * self.mu0
-        self.iwm = np.complex(0, 1) * 2.0 * pi * self.f * self.mu0
-        mesh = pg.createMesh1D(nlay)
-        pg.ModellingBase.__init__(self, mesh)
+        nlay = len(dvec) + 1
+        self.dvec = np.asarray(dvec)
+        self.zvec = np.hstack((0, np.cumsum(dvec)))
+        HEMmodelling.__init__(self, nlay, **kwargs)
+        self.mymesh = pg.createMesh1D(nlay)
+        self.setMesh(self.mymesh)  # only for inversion
+
+    def response(self, res):
+        ip, op = self.vmd_hem(self.height, rho=np.asarray(res), d=self.dvec)
+        return pg.cat(ip, op)
+
+
+class FDEMResSusModelling(HEMmodelling):
+    """ FDEM block modelling class using both conductivity & permittivity"""
+    def __init__(self, nlay, height=1, **kwargs):
+        """ init class (see HEMmodelling) """
+        HEMmodelling.__init__(self, nlay, height, **kwargs)
+        self.scaling = 1e2
+        self.mymesh = pg.createMesh1DBlock(nlay, nProperties=2)
+        self.setMesh(self.mymesh)  # only for inversion
+        # pg.ModellingBase.__init__(self, self.mymesh)
 
     def response(self, par):
-        ip, op = self.vmd_hem(self.height, par)
+        """Compute response vector by pasting in-phase and out-phase data."""
+        thk = np.asarray(par[:self.nlay-1], dtype=np.float)
+        res = np.asarray(par[self.nlay-1:2*self.nlay-1], dtype=np.float)
+        mur = np.asarray(par[2*self.nlay-1:3*self.nlay-1], dtype=np.float) + 1
+        ip, op = self.vmd_hem(self.height, rho=res, d=thk, mur=mur)
+        return pg.cat(ip, op)
+
+
+class HEMRhoSusModelling(HEMRhoModelling):
+    """Airborne EM (HEM) Forward modelling class for Occam inversion."""
+    def __init__(self, dvec, *args, **kwargs):
+        """ not yet working! """
+        self.nlay = len(dvec) + 1
+        self.dvec = np.asarray(dvec)
+        self.zvec = np.hstack((0, np.cumsum(dvec)))
+        HEMmodelling.__init__(self, self.nlay, *args, **kwargs)
+        self.mymesh = pg.createMesh1D(self.nlay, nProperties=2)
+        self.setMesh(self.mymesh)  # only for inversion
+
+    def response(self, model):
+        res = np.asarray(model[:self.nlay])
+        mur = np.asarray(model[self.nlay:]) + 1
+        ip, op = self.vmd_hem(self.height, rho=res, d=self.dvec, mur=mur)
+        return pg.cat(ip, op)
 
 
 class FDEMLCIFOP(pg.ModellingBase):
@@ -543,6 +599,6 @@ if __name__ == '__main__':
     height = np.float(30.0)
     resistivity = np.array([1000.0, 100.0, 1000.0], np.float)
     thickness = np.array([22.0, 29.0], np.float)
-    f = HEMmodelling(nlay, height)  # frequency, separation)
+    f = HEMmodelling(nlay, height, r=10)  # frequency, separation)
     IP, OP = f.vmd_hem(height, resistivity, thickness)
     print(IP, OP)
