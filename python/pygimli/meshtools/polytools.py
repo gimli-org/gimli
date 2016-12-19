@@ -175,7 +175,10 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
         z = z + layers
 
     z.append(end[1])
-#    rs = []
+
+    # ensure - decreasing order if layers are out of bounding box
+    z = pg.sort(z)[::-1]
+
     poly = pg.Mesh(2)
 
     for i, depth in enumerate(z):
