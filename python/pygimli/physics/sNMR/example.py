@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Example for MRS inversion"""
 
-from .mrs import MRS  # change to pygimli.physics.mrs
+from pygimli.physics.sNMR import MRS
 
 if __name__ == "__main__":
     datafile = 'example.mrsi'  # MRSmatlab inversion (data+kernel) file
@@ -13,4 +13,4 @@ if __name__ == "__main__":
     thk, wc, t2 = mrs.result()
     name = datafile.rstrip('.mrsi')
     mrs.saveResult(name + '.result')
-    mrs.showResultAndFit(save=name + '.pdf', show=True)
+    mrs.showResultAndFit(save=True)
