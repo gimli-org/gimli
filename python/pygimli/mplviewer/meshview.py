@@ -889,7 +889,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
 # def drawStreamLines2(...)
 
 
-def drawSensors(ax, sensors, diam=None, koords=None, verbose=False):
+def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
     """Draw sensor positions as black dots with a given diameter.
 
     Parameters
@@ -921,7 +921,9 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False):
             print(e, diam, e[koords[0]], e[koords[1]])
         eCircles.append(mpl.patches.Circle((e[koords[0]], e[koords[1]]), diam))
 
-    p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
+    p = mpl.collections.PatchCollection(eCircles,
+                                        **kwargs)
+    p.set_zorder(100)
     ax.add_collection(p)
 
     updateAxes_(ax)

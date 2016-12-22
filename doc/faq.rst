@@ -71,7 +71,7 @@ you get an error like this:
 
 .. code:: bash
 
-  python: can't open file 'import pygimli as pg; print(pg.__version__)':
+  python: can't open file 'import pygimli as pg; print(pg.version())':
   [Errno 2] No such file or directory
 
 
