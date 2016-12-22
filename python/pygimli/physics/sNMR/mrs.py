@@ -436,6 +436,9 @@ class MRS():
             ax[1, 2].set_title('error-weighted misfit')
 
         if save:
+            if not isinstance(save, str):
+                save = self.basename
+
             fig.savefig(save, bbox_inches='tight')
         return fig, ax
 

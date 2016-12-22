@@ -99,10 +99,19 @@ public:
         matrices_.push_back(matrix);
         return matrices_.size() - 1;
     }
+
+    /*!Shortcut for addMatrix and addMatrixEntry. */
+    Index addMatrix(MatrixBase * matrix, Index rowStart, Index colStart){
+        Index matrixID = addMatrix(matrix);
+        addMatrixEntry(matrixID, rowStart, colStart);
+        return matrixID;
+    }
+
     // no default arg here .. pygimli@win64 linker bug
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart){
         addMatrixEntry(matrixID, rowStart, colStart, ValueType(1.0));
     }
+
 
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart, ValueType scale){
         if (matrixID > matrices_.size()){
@@ -118,9 +127,6 @@ public:
         entries_.push_back(entry);
         recalcMatrixSize();
     }
-
-//    void addMatrixWithEntry(MatrixBase * matrix, Index rowStart, Index colStart)
-//    TODO
 
     virtual Vector < ValueType > mult(const Vector < ValueType > & b) const{
         if (b.size() != this->cols()){
