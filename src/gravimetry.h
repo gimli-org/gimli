@@ -49,18 +49,18 @@ public:
 protected:
 };
 
-    
-    
-/*! Only for a small TPOC for 2d gravimetry after WonBevis1987 
+
+
+/*! Only for a small TPOC for 2d gravimetry after WonBevis1987
  Do not use until u know what u do. */
 DLLEXPORT double lineIntegraldGdz( const RVector3 & p1, const RVector3 & p2 );
-    
+
 /*! Do not use until u know what u do. */
 DLLEXPORT RVector calcGBounds( const std::vector< RVector3 > & pos, const Mesh & mesh, const RVector & model );
- 
+
 /*! Do not use until u know what u do. */
 DLLEXPORT RVector calcGCells( const std::vector< RVector3 > & pos, const Mesh & mesh, const RVector & model, uint nInt = 0 );
-    
+
 } //namespace GIMLI
 
 #endif
