@@ -7,8 +7,21 @@ import os
 import time
 
 import numpy as np
+from math import sqrt
 
 import pygimli as pg
+
+
+def rrmswitherr(a, b, err, errtol=1):
+    """Compute root mean square of values with error above a threshold"""
+    fi = pg.find(err < errtol)
+    return pg.rrms(a[fi], b[fi])
+
+
+def rmswitherr(a, b, err, errtol=1):
+    """Compute (abs-)root mean square of values with error above a threshold"""
+    fi = pg.find(err < errtol)
+    return sqrt(pg.mean(pg.pow(a[fi] - b[fi], 2)))
 
 
 def gmat2numpy(mat):

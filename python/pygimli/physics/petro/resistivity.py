@@ -9,7 +9,7 @@ import pygimli as pg
 
 
 def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
-                      mesh=None, meshI=None, fill=None):
+                      mesh=None, meshI=None, fill=None, show=False):
     r"""Resistivity of rock for the petrophysical model from Archies law.
 
     Calculates resistivity of rock for the petrophysical model from
@@ -77,9 +77,10 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     S = pg.solver.parseArgToArray(sat, mesh.cellCount(), mesh)
     n = pg.solver.parseArgToArray(n, mesh.cellCount(), mesh)
 
-    #pg.show(mesh, S, label='S')
-    #pg.show(mesh, phi, label='p')
-    #pg.wait()
+    if show:
+        pg.show(mesh, S, label='S')
+        pg.show(mesh, phi, label='p')
+        pg.wait()
 
     r = pg.RMatrix(len(rB), len(rB[0]))
     for i, _ in enumerate(r):
@@ -108,12 +109,12 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     return rI
 
 
-def transFwdArchiePhi(rFluid=20, n=2):
-    r"""Transformation function for resistivity(rFluid).
+def transFwdArchiePhi(rFluid=20, m=2):
+    r"""Archies law transformation function for resistivity(porosity).
 
     .. math::
         \rho & = a\rho_{\text{fl}}\phi^{-m}\S_w^{-n} \\
-        \rho & = \rho_{\text{fl}}\phi^(-n) =
+        \rho & = \rho_{\text{fl}}\phi^(-m) =
         \left(\phi/\rho_{\text{fl}}^{-1/n}\right)^{-n}
 
     See also :py:mod:`pygimli.physics.petro.resistivityArchie`
@@ -141,31 +142,31 @@ def transFwdArchiePhi(rFluid=20, n=2):
     >>> print((r1-r2 < 1e-12)[0])
     True
     """
-    return pg.RTransPower(-n, rFluid**(1./n))
+    return pg.RTransPower(-m, rFluid**(1./m))
 
 
-def transInvArchiePhi(rFluid=20, n=2):  # phi(rho)
-    """Inverse Wyllie transformation function resistivity(rFluid).
+def transInvArchiePhi(rFluid=20, m=2):  # phi(rho)
+    """Inverse Archie transformation function porosity(resistivity).
 
-    # rFluid/rho = phi^n  ==> phi = (rFluid/rho)^(1/n) = (rho/rFluid)^(-1/n)
+    # rFluid/rho = phi^m  ==> phi = (rFluid/rho)^(1/m) = (rho/rFluid)^(-1/m)
     See
     ---
     :py:mod:`pygimli.physics.petro.transFwdArchiePhi`
     """
-    return pg.RTransPower(-1/n, rFluid)
+    return pg.RTransPower(-1/m, rFluid)
 
 
-def transFwdArchieS(rFluid=20, phi=0.4, n=2, m=2):  # rho(S)
-    """Inverse Wyllie transformation function resistivity(saturation)."""
-    # rho = rFluid * phi^(-n) S^(-m)
-    return pg.RTransPower(-m, (rFluid*phi**(-n))**(1/m))
+def transFwdArchieS(rFluid=20, phi=0.4, m=2, n=2):  # rho(S)
+    """Inverse Archie transformation function resistivity(saturation)."""
+    # rho = rFluid * phi^(-m) S^(-n)
+    return pg.RTransPower(-n, (rFluid*phi**(-m))**(1/n))
 
 
-def transInvArchieS(rFluid=20, phi=0.4, n=2, m=2):  # S(rho)
-    """Inverse Wyllie transformation function resistivity(saturation)."""
-    # rFluid/rho = phi^n S^m => S=(rFluid/rho/phi^n)^(1/m)
-    # =(rho/rFluid/phi^-n)^(-1/m)
-    return pg.RTransPower(-1/m, rFluid*phi**(-n))
+def transInvArchieS(rFluid=20, phi=0.4, m=2, n=2):  # S(rho)
+    """Inverse Archie transformation function saturation(resistivity)."""
+    # rFluid/rho = phi^m S^n => S=(rFluid/rho/phi^m)^(1/n)
+    # S = (rho/rFluid/phi^-m)^(-1/n)
+    return pg.RTransPower(-1/n, rFluid*phi**(-m))
 
 
 def test_Archie():

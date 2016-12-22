@@ -274,6 +274,7 @@ template < class ModelValType > class Inversion;
 typedef GIMLI::Inversion< double > RInversion;
 
 template < class ValueType > class ElementMatrix;
+typedef ElementMatrix < double > RElementMatrix;
 
 
 template < class Vec > class Trans;

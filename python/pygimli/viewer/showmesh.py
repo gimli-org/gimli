@@ -93,12 +93,12 @@ def show(mesh=None, data=None, **kwargs):
 
 
 def showMesh(mesh, data=None, hold=False, block=False,
-             colorBar=None, coverage=None,
+             colorBar=None, label=None, coverage=None,
              ax=None, savefig=None, **kwargs):
     """2D Mesh visualization.
 
-    Create an ax and plot a 2D mesh with given node or cell data.
-    Returns the ax and the color bar. The type of data determine the
+    Create an axis object and plot a 2D mesh with given node or cell data.
+    Returns the axis and the color bar. The type of data determine the
     appropriate draw method.
 
     Parameters
@@ -159,12 +159,15 @@ def showMesh(mesh, data=None, hold=False, block=False,
         an epstopdf if the .eps suffix is found in savefig
 
     **kwargs :
+        * xlabel : str [None]
+            Add label to the x axis
 
-        * label : str [None]
-            Add label to the colorbar
+        * ylabel : str [None]
+            Add label to the y axis
 
-        Will be forwarded to the draw functions and matplotlib methods,
-        respectively.
+        * all remaining
+            Will be forwarded to the draw functions and matplotlib methods,
+            respectively.
 
     Returns
     -------
@@ -230,8 +233,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     ax.set_aspect('equal')
 
-    label = kwargs.pop('label', None)
-
     cbar = None
 
     if label is not None and colorBar is None:
@@ -239,7 +240,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label', 'pad']
+        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'pad']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
 
         if colorBar is True or colorBar is 1:

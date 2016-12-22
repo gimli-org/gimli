@@ -521,10 +521,10 @@ public:
         return addVal(vals, pair.first, pair.second);
     }
 
-    /*! Add values from vals id index idx.
+    /*! Add values from vals at IndexArray idx.
      * Throws length exception if sizes of vals and idx mismatch. */
     inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
-                                        const std::vector < Index > & idx) {
+                                        const IndexArray & idx) {
         ASSERT_EQUAL(idx.size(), vals.size())
         for (Index i = 0; i < idx.size(); i ++) data_[idx[i]] += vals[i];
 
@@ -537,6 +537,18 @@ public:
         data_[i] += val;
         return *this;
     }
+
+    /*! Add Values from an ElementMatrix. For vectors only the first row will
+     be taken. */
+    void add(const ElementMatrix < ValueType > & A);
+
+    /*! Add Values from an ElementMatrix. For vectors only the first row will
+    be taken. Optional scale with scalar. */
+    void add(const ElementMatrix < ValueType > & A, const ValueType & a);
+
+    /*! Add Values from an ElementMatrix. For vectors only the first row will
+    be taken. Optional scale with values fron vector. */
+    void add(const ElementMatrix < ValueType > & A, const Vector < ValueType > & a);
 
     /*! Get value for index i.
      * Throws out of range exception if index check fails. */
@@ -891,6 +903,20 @@ protected:
     int nThreads_;
     Index singleCalcCount_;
 };
+
+/*! Implement specialized type traits in vector.cpp */
+template <> void Vector<double>::add(const ElementMatrix < double >& A);
+template <> void Vector<double>::add(const ElementMatrix < double >& A, const double & a);
+template <> void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a);
+
+template< typename ValueType >
+void Vector< ValueType >::add(const ElementMatrix < ValueType >& A){THROW_TO_IMPL}
+template< typename ValueType >
+void Vector< ValueType >::add(const ElementMatrix < ValueType >& A, const ValueType & a){THROW_TO_IMPL}
+template< typename ValueType >
+void Vector< ValueType >::add(const ElementMatrix < ValueType >& A, const Vector< ValueType > & a){THROW_TO_IMPL}
+
+
 
 template< class ValueType, class Iter > class AssignResult{
 public:

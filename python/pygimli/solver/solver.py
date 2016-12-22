@@ -840,9 +840,7 @@ def assembleForceVector(mesh, f, userData=None):
         for each node [0 .. mesh.nodeCount()]
         for each cell [0 .. mesh.cellCount()]
     """
-
     if isinstance(f, list) or hasattr(f, 'ndim'):
-
         if isinstance(f, list):
 
             rhs = np.zeros((len(f), mesh.nodeCount()))
@@ -877,16 +875,34 @@ def assembleForceVector(mesh, f, userData=None):
             b_l = pg.ElementMatrix()
 
             for c in mesh.cells():
-                b_l.u(c)
-                for i, idx in enumerate(b_l.idx()):
-                    rhs[idx] += b_l.row(0)[i] * fArray[c.id()]
+                if fArray[c.id()] != 0.0:
+                    b_l.u(c)
+                    rhs.add(b_l, fArray[c.id()])
+
+            #print("test reference solution:")
+            #rhsRef = pg.RVector(mesh.nodeCount(), 0)
+            #for c in mesh.cells():
+                #b_l.u(c)
+                #for i, idx in enumerate(b_l.idx()):
+                    #rhsRef[idx] += b_l.row(0)[i] * fArray[c.id()]
+            #np.testing.assert_allclose(rhs, rhsRef)
+            #print("Remove revtest in assembleForceVector after check")
 
         elif len(fArray) == mesh.nodeCount():
             b_l = pg.ElementMatrix()
             for c in mesh.cells():
                 b_l.u(c)
+                #rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
+                rhs.add(b_l, fArray)
+
+            print("test reference solution:")
+            rhsRef = pg.RVector(mesh.nodeCount(), 0)
+            for c in mesh.cells():
+                b_l.u(c)
                 for i, idx in enumerate(b_l.idx()):
                     rhs[idx] += b_l.row(0)[i] * fArray[idx]
+            np.testing.assert_allclose(rhs, rhsRef)
+            print("Remove revtest in assembleForceVector after check")
 
             # rhs = pg.RVector(fArray)
         else:
@@ -1071,10 +1087,9 @@ def createStiffnessMatrix(mesh, a=None):
     A = None
 
     if isinstance(a[0], float) or isinstance(a[0], np.float64):
-
         A = pg.RSparseMatrix()
-        #A.fillStiffnessMatrix(mesh, a)
-        #return A
+        A.fillStiffnessMatrix(mesh, a)
+        return A
     else:
         A = pg.CSparseMatrix()
 

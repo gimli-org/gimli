@@ -24,19 +24,6 @@ class TestRVectorMethods(unittest.TestCase):
         p = pg.RVector3((0.0, 1.0, 0.0))
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
-    def test_NumpyToRVector3(self):
-        '''
-            custom_rvalue.cpp
-        '''
-        x = np.array([0.0, 1.0, 0.0])
-        p = pg.RVector3(x)
-        self.assertEqual(p.dist(x), 0.0)
-        self.assertEqual(p.dist([1.0, 1.0]), 1.0)
-
-        x = np.array([0.0, 1.0])
-        p = pg.RVector3(x)
-        self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
-
     def test_ListToIndexArray(self):
         '''
             custom_rvalue.cpp
@@ -78,12 +65,35 @@ class TestRVectorMethods(unittest.TestCase):
         t = pg.R3Vector(pl)
         self.assertEqual(t.size(), len(pl))
 
+    def test_NumpyToIndexArray(self):
+        """
+            custom_rvalue.cpp
+        """
+        x = np.array(range(10))
+        a = pg.IndexArray(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(0, 10, dtype=np.int64)
+        a = pg.IndexArray(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(0, 10, dtype="int")
+        a = pg.IndexArray(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.array([0, 100], dtype="int")
+        a = pg.IndexArray(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
     def test_NumpyToRVector(self):
         '''
             custom_rvalue.cpp
         '''
         x = np.arange(0, 1., 0.2)
-
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
@@ -93,22 +103,18 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-    def test_NumpyToIndexArray(self):
+    def test_NumpyToRVector3(self):
         '''
             custom_rvalue.cpp
         '''
-        x = np.array(range(10))
+        x = np.array([0.0, 1.0, 0.0])
+        p = pg.RVector3(x)
+        self.assertEqual(p.dist(x), 0.0)
+        self.assertEqual(p.dist([1.0, 1.0]), 1.0)
 
-        a = pg.IndexArray(x)
-        print(a)
-        self.assertEqual(a.size(), len(x))
-        self.assertEqual(pg.sum(a), sum(x))
-
-        x = np.arange(0, 10, dtype=np.int64)
-        a = pg.IndexArray(x)
-        print(a)
-        self.assertEqual(a.size(), len(x))
-        self.assertEqual(pg.sum(a), sum(x))
+        x = np.array([0.0, 1.0])
+        p = pg.RVector3(x)
+        self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def test_RVectorToNumpy(self):
         '''
@@ -202,7 +208,7 @@ if __name__ == '__main__':
 #
 #    suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
 #    suite.addTest(TestRVectorMethods("test_NumpyToIndexArray"))
-#
+    #
 #    suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
 #    suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
 #    suite.addTest(TestRVectorMethods("test_ListToIndexArray"))

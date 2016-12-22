@@ -274,7 +274,6 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
         dNdx_.resize(nVerts, nRules);
         dNdy_.resize(nVerts, nRules);
         dNdz_.resize(nVerts, nRules);
-
     }
 
     double drdx = ent.shape().drstdxyz(0, 0);
@@ -312,9 +311,12 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
         for (Index j = i; j < nVerts; j ++){
             mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j] + dNdz_[i] * dNdz_[j]));
 
-            // mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i] + dtdx * dNdt_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j] + dtdx * dNdt_[j]) +
-            //                           (drdy * dNdr_[i] + dsdy * dNds_[i] + dtdy * dNdt_[i]) * (drdy * dNdr_[j] + dsdy * dNds_[j] + dtdy * dNdt_[j]) +
-            //                           (drdz * dNdr_[i] + dsdz * dNds_[i] + dtdz * dNdt_[i]) * (drdz * dNdr_[j] + dsdz * dNds_[j] + dtdz * dNdt_[j])));
+//             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i] + dtdx * dNdt_[i]) *
+//                                       (drdx * dNdr_[j] + dsdx * dNds_[j] + dtdx * dNdt_[j]) +
+//                                       (drdy * dNdr_[i] + dsdy * dNds_[i] + dtdy * dNdt_[i]) *
+//                                       (drdy * dNdr_[j] + dsdy * dNds_[j] + dtdy * dNdt_[j]) +
+//                                       (drdz * dNdr_[i] + dsdz * dNds_[i] + dtdz * dNdt_[i]) *
+//                                       (drdz * dNdr_[j] + dsdz * dNds_[j] + dtdz * dNdt_[j])));
 
             mat_[j][i] = mat_[i][j];
         }

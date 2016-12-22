@@ -87,7 +87,7 @@ protected:
 class DLLEXPORT TravelTimeDijkstraModelling : public ModellingBase {
 public:
     TravelTimeDijkstraModelling(bool verbose=false);
-    
+
     TravelTimeDijkstraModelling(Mesh & mesh,
                                 DataContainer & dataContainer,
                                 bool verbose=false);
@@ -97,7 +97,7 @@ public:
     virtual RVector createDefaultStartModel();
 
     RVector createGradientModel(double lBound, double uBound);
-    
+
     /*! Interface. Calculate response */
     virtual RVector response(const RVector & slowness);
 
@@ -121,22 +121,22 @@ protected:
 
     /*! Automatically looking for shot and receiver points if the mesh is changed. */
     virtual void updateMeshDependency_();
-    
+
     Dijkstra dijkstra_;
     double background_;
-    
+
     /*! Nearest nodes for the current mesh for all shot points.*/
     std::vector < Index > shotNodeId_;
-    
+
     /*! Map shot id to sequential shot node number of shotNodeId_ */
     std::map< Index, Index > shotsInv_;
-    
+
     /*! Nearest nodes for the current mesh for all receiver points.*/
     std::vector < Index > receNodeId_;
-    
+
     /*! Map receiver id to sequential receiver node number of receNodeId_ */
     std::map< Index, Index > receiInv_;
-    
+
 };
 
 /*! New Class derived from standard travel time modelling */
