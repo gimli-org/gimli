@@ -97,14 +97,21 @@ class PetroJointModelling(pg.ModellingBase):
 
     def initJacobian(self):
         """TODO."""
-        self.jac = pg.RBlockMatrix()
-        self.jacI = [self.jac.addMatrix(fi.jacobian()) for fi in self.fops]
+        self.jac  = pg.RBlockMatrix()
         nData = 0
-        for i, fi in enumerate(self.fops):
-            self.jac.addMatrixEntry(self.jacI[i], nData, 0)
+        for fi in self.fops:
+            self.jac.addMatrix(fi.jacobian(), nData, 0)
             nData += fi.data().size()  # update total vector length
-
         self.setJacobian(self.jac)
+
+        #self.jac = pg.RBlockMatrix()
+        #self.jacI = [self.jac.addMatrix(fi.jacobian()) for fi in self.fops]
+        #nData = 0
+        #for i, fi in enumerate(self.fops):
+            #self.jac.addMatrixEntry(self.jacI[i], nData, 0)
+            #nData += fi.data().size()  # update total vector length
+
+        #self.setJacobian(self.jac)
 
     def response(self, model):
         """Create concatenated response for fop stack with model."""

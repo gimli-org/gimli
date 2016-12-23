@@ -786,7 +786,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
 
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-        lwidths = np.ones(len(v)) * linewidth
+        lwidths = pg.RVector(len(v), linewidth)
         lwidths[pg.find(pg.RVector(v) < dropTol)] = 0.0
 
         lines = LineCollection(segments, linewidths=lwidths, **kwargs)
