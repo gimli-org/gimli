@@ -75,9 +75,16 @@ double MemWatch::inUse() {
     } else { return 0; }
 
 #else
-    #if USE_PROC_READPROC
+
+#if USE_PROC_READPROC
     struct proc_t usage;
     look_up_our_self(& usage);
+    // vsize .. number of pages of virtual memory ...
+     //__MS("vsize: " << usage.vsize/1024) // virtual memory
+//      __MS("size: " << usage.size/1024)//   total # of pages of memory
+//      __MS("resident: " << usage.resident/1024)//         number of resident set (non-swapped) pages (4k)
+//      __MS("share: " << usage.share/1024)
+//      __MS("rss: " << usage.rss/1024)
     double ret = mByte(usage.vsize);
     return ret;
     #else // no windows and no libproc

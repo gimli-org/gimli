@@ -7,7 +7,7 @@ import numpy as np
 
 import matplotlib as mpl
 from matplotlib.patches import Rectangle
-from matplotlib.collections import PatchCollection
+from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.colors import LogNorm
 
 import pygimli as pg
@@ -724,13 +724,18 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
 # def drawStreamLines(...)
 
 
-def drawStreamLine_(ax, mesh, c, data, dataMesh=None, **kwargs):
+def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
+                    linewidth=1.0, dropTol=0.0, **kwargs):
     """Draw a single streamline.
 
     Draw a single streamline into a given mesh for given data stating at
     the center of cell c.
     The Streamline will be enlarged until she reached a cell that
     already contains a streamline.
+
+    TODO
+        linewidth and color depends on absolute velocity
+        or background color saturation
 
     Parameters
     ----------
@@ -752,25 +757,47 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, **kwargs):
 
         Optional mesh for the data. If you want high resolution
         data to plot on coarse draw mesh.
+
+    linewidth : float [1.0]
+
+        Streamline linewidth
+
+    dropTol : float [0.0]
+
+        Don't draw stream lines with velocity lower than drop tolerance.
+
     """
-    x, y = streamline(mesh, data, startCoord=c.center(),
-                      dLengthSteps=5,
-                      dataMesh=dataMesh,
-                      maxSteps=10000,
-                      verbose=False,
-                      koords=[0, 1])
+    x, y, v = streamline(mesh, data, startCoord=c.center(),
+                         dLengthSteps=5,
+                         dataMesh=dataMesh,
+                         maxSteps=10000,
+                         verbose=False,
+                         koords=[0, 1])
 
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
 
     lines = None
-    # print(len(x))
-    if len(x) > 2:
-        lines = ax.plot(x, y, **kwargs)
-#        updateAxes_(ax, lines)
 
-#        print( x, y)
-#        ax.plot(x, y, '.-', color='black', **kwargs)
+    if len(x) > 2:
+
+
+        points = np.array([x, y]).T.reshape(-1, 1, 2)
+
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+        lwidths = np.ones(len(v)) * linewidth
+        lwidths[pg.find(pg.RVector(v) < dropTol)] = 0.0
+
+        lines = LineCollection(segments, linewidths=lwidths, **kwargs)
+        ax.add_collection(lines)
+
+        # probably the limits are wrong without plot call
+        #lines = ax.plot(x, y, **kwargs)
+
+        #updateAxes_(ax, lines)
+
+        #ax.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
         xmid = int(len(x) / 2)
         ymid = int(len(y) / 2)
@@ -779,9 +806,10 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, **kwargs):
         c = mesh.findCell([x[xmid], y[ymid]])
         dLength = c.center().dist(c.node(0).pos()) / 4.
 
-        ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
-                 head_starts_at_zero=True,
-                 **kwargs)
+        if v[xmid] > dropTol:
+            ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
+                    head_starts_at_zero=True,
+                    **kwargs)
 
     return lines
 
@@ -810,7 +838,8 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
         variate the start stream drawing, try values from 1 to 3 what every
         you like more.
 
-    **kwargs:
+    **kwargs: forward to drawStreamLine_
+
         * coarseMesh
 
             Instead of draw a stream for every cell in mesh, draw a streamline
@@ -828,7 +857,8 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     >>> ny = pg.y(mesh.positions())
     >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
-    >>> drawStreams(ax, mesh, data)
+    >>> drawStreams(ax, mesh, data, color='red')
+    >>> drawStreams(ax, mesh, data, dropTol=0.9)
     >>> ax.set_aspect('equal')
     """
     viewMesh = None
