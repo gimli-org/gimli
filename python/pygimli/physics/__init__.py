@@ -23,14 +23,15 @@ Module containing submodules for various geophysical methods.
 
 from math import pi, sqrt
 
+from .methodManager import (MethodManager,
+                            MeshMethodManager)
+
 from .em import FDEM, TDEM
 from .sNMR import MRS
 from .SIP import SIPSpectrum
 
-from .ert import ERTModelling
-
-from .methodManager import MethodManager
-from .methodManager import MeshMethodManager
+from .ert import (
+    ERTModelling, ERTManager)
 from .traveltime import Refraction
 
 # from . gravimetry import Gravimetry
@@ -45,7 +46,7 @@ class Constants(object):
 
     # electric constant, vacuum permittivity
     e0 = 8.85418781762e-12  # [(A^2 * s^4)/(kg m^3)]
-    
+
     # speed of light in vacuum
     c0 = 1 / sqrt(mu0 * e0)
 
@@ -57,7 +58,7 @@ class Constants(object):
     # unit (median) acceleration on earth
     g = 9.80665  # [m/s^2] ex. 9.798
     # also a g function of latitude (and altitude)?
-    
+
     # gyromagnetic ratio of protons in water
     gammaP = 2.67515255e8  # T/s
     # Larmor frequency of water

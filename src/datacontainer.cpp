@@ -681,7 +681,6 @@ void DataContainer::resize(uint size) {
             // else pure data, fill with 0.0
             it->second.resize(size, 0.0);
         }
-
     }
 }
 

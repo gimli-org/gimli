@@ -11,6 +11,8 @@ import numpy as np
 
 import pygimli as pg
 
+from pygimli.physics import MethodManager
+from pygimli.physics import MeshMethodManager
 
 class ERTModelling(pg.ModellingBase):
     """Minimal Forward Operator for 2.5D Electrical resistivity Tomography."""
@@ -19,7 +21,7 @@ class ERTModelling(pg.ModellingBase):
         """"Constructor."""
         super().__init__()
 
-        self.setVerbose(verbose)
+        self.setVerbose(verbose=verbose)
         self.electrodes = None
         self.subPotentials = None
         self.lastResponse = None
@@ -267,6 +269,102 @@ class ERTModelling(pg.ModellingBase):
                   " min = ", pg.min(sumsens),
                   " max = ", pg.max(sumsens))
 
+
+class ERTManager(MeshMethodManager):
+    """ERTManager"""
+    def __init__(self, **kwargs):
+        """Constructor."""
+        super(MeshMethodManager, self).__init__(**kwargs)
+        self.setDataToken('rhoa')
+
+    def showData(self, ax=None):
+        """Show mesh in given axes or in a new figure."""
+        raise Exception('use the BERT Manager')
+
+    @staticmethod
+    def createFOP(verbose=False):
+        """Create forward operator working on refined mesh."""
+        fop = ERTModelling(verbose=verbose)
+        return fop
+
+    def createInv(self, fop, verbose=True, dosave=False):
+        """Create inversion instance."""
+        self.tD = pg.RTransLog()
+        self.tM = pg.RTransLogLU()
+
+        inv = pg.RInversion(verbose, dosave)
+        inv.setTransData(self.tD)
+        inv.setTransModel(self.tM)
+        return inv
+
+    @staticmethod
+    def simulate(mesh, res, scheme, verbose=False, **kwargs):
+        fop = ERTModelling(verbose=verbose)
+        #fop = ERTManager.createFOP(verbose=verbose)
+
+        fop.setData(scheme)
+        fop.setMesh(mesh, ignoreRegionManager=True)
+
+        if not scheme.allNonZero('k'):
+            scheme.set('k', pg.RVector(scheme.size(), -1))
+
+        rhoa = fop.response(res)
+
+        err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
+        scheme.set('err', err)
+        rhoa *= 1. + pg.randn(scheme.size()) * err
+        scheme.set('rhoa', rhoa)
+
+
+        print(scheme)
+        #noiseLevel = kwargs.pop('noiseLevel', 0)
+        return scheme
+
+    def createApparentData(self, data):
+        """ what the hack is this?"""
+        return data('rhoa')
+
+def createERTData(elecs, schemeName='none', **kwargs):
+    """ Simple data creator to keep compatibility. More advanced version
+    comes with BERT.
+    """
+    if schemeName is not "dd":
+        import pybert as pb
+        return bp.createData(elecs, schemeName, **kwargs)
+
+    data = pg.DataContainer()
+    data.registerSensorIndex('a')
+    data.registerSensorIndex('b')
+    data.registerSensorIndex('m')
+    data.registerSensorIndex('n')
+    data.setSensorPositions(elecs)
+    nElecs = len(elecs)
+    a = []
+    b = []
+    m = []
+    n = []
+    eb = 0
+    for i in range(nElecs):
+        for j in range(eb + 2, nElecs):
+            ea = i
+            eb = ea + 1
+            em = j
+            en = em + 1
+            if en < nElecs:
+                a.append(ea)
+                b.append(eb)
+                m.append(em)
+                n.append(en)
+
+    data.resize(len(a))
+    data.add('a', a)
+    data.add('b', b)
+    data.add('m', m)
+    data.add('n', n)
+    data.set('valid', np.ones(len(a)))
+
+    data.save('tmp.dat')
+    return data
 
 if __name__ == "__main__":
     pass

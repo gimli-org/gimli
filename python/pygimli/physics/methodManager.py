@@ -3,6 +3,7 @@
 
 """TODO WRITEME"""
 
+import pygimli as pg
 
 class MethodManager(object):
     """General manager to maintenance a measurement method.
@@ -18,8 +19,9 @@ class MethodManager(object):
         self.figs = {}
         self.dataToken_ = 'nan'
         self.errIsAbsolute = False
+        self.model = None
 
-        self.mesh = None  # to be deleted if MethodManagerMesh is used
+        self.mesh = None  # to be deleted if MethodManagerMesh is used # TODO
         self.dataContainer = None  # dto.
 
         self.fop = self.createFOP_(verbose)
@@ -57,6 +59,10 @@ class MethodManager(object):
         self.inv.setVerbose(verbose)
         self.fop.setVerbose(verbose)
 
+    def setDataToken(self, token):
+        """Set the token name to identity the data in a DataContainer."""
+        self.dataToken_ = token
+
     def dataToken(self):
         """Token name for the data in a DataContainer."""
         if self.dataToken_ == 'nan':
@@ -76,14 +82,17 @@ class MethodManager(object):
         """Create inversion instance, data- and model transformations."""
         return self.createInv(fop, verbose, dosave)
 
-    # Data-related methods
+    def model(self):
+        """Return the actual model."""
+        return self.model
+
     def createData(self, sensors, scheme):
         """Create an empty data set."""
         pass
 
     def setData(self, data):
         """Set data."""
-        pass
+        self.dataContainer = data
 
     def checkData(self):
         """Check data validity."""
@@ -178,7 +187,7 @@ class MethodManager1d(MethodManager):
         if 'nLayers' in kwargs:
             self.nlay = kwargs['nLayers']
         self.nProperties = kwargs.pop('nProperties', 1)
-        self.Occam = kwargs.pop('Occam', False)
+        self.Occam = kwargs.pop('Occam', False)  # member nameing!
 
 
 class MethodManager1dProfile(MethodManager1d):  # does this make sense?
@@ -194,20 +203,70 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
         self.mesh = None
-        self.dataContainer = None
 
     # Mesh related methods
     def createMesh(self, ):
         """Create a mesh aka the parametrization."""
         pass
 
-    def setMesh(self, mesh):
-        """Create a mesh aka the parametrization."""
-        pass
+    def setMesh(self, mesh, refine=True):
+        """Set the internal mesh for this Manager.
+
+        Inject the mesh in the internal fop und inv.
+
+        Initialize RegionManager.
+        For more than two regions the first is assumed to be background.
+
+        Optional the forward mesh can be refined for higher numerical accuracy.
+
+        Parameters
+        ----------
+
+        DOCUMENTME!!!
+
+        """
+        if isinstance(mesh, str):
+            mesh = pg.load(mesh)
+
+        if self.verbose:
+            print(mesh)
+
+        self.mesh = pg.Mesh(mesh)
+        self.mesh.createNeighbourInfos()
+
+        self.fop.setMesh(self.mesh)
+        self.fop.regionManager().setConstraintType(1)
+        if self.fop.regionManager().regionCount() > 1:
+            self.fop.regionManager().region(1).setBackground(True)
+#            self.fop.regionManager().regions().begin().second.setBackground(1)
+
+        self.fop.createRefinedForwardMesh(refine)
+        self.paraDomain = self.fop.regionManager().paraDomain()
+        self.inv.setForwardOperator(self.fop)  # necessary? CR: check this
 
     def showMesh(self, ax=None):
         """Show mesh in given axes or in a new figure."""
+        raise Exception('IMPLEMENTME')
         pass
+
+    def setData(self, data):
+        """Set data container from outside."""
+        isinstance
+        if not isinstance(data, pg.DataContainer):
+            raise Exception('IMPLEMENTME')
+
+            if isinstance(data,str):
+                raise Exception('IMPLEMENTME')
+        else:
+            self.dataContainer = data
+
+        if not self.dataContainer.allNonZero(self.dataToken()):
+            raise BaseException("No or partial values for:", self.dataToken())
+
+        if not self.dataContainer.allNonZero('err'):
+            raise BaseException("No or partial values for err")
+
+        self.fop.setData(self.dataContainer)
 
     @staticmethod
     def createArgParser(dataSuffix='dat'):
@@ -223,3 +282,103 @@ class MeshMethodManager(MethodManager):
                             help="Weight for vertical smoothness "
                                  "(1=isotrope). [0.7]")
         return parser
+
+    def invert(self, data=None, vals=None, err=None, mesh=None, **kwargs):
+        """Run the full inversion.
+
+        The data and error needed to be set before.
+        The meshes will be created if necessary.
+
+        Parameters
+        ----------
+
+        DOCUMENTME!!!
+
+
+        **kwargs
+
+            * lam : float [20]
+                regularization parameter
+            * zWeight : float [0.7]
+                relative vertical weight
+            * maxIter : int [20]
+                maximum iteration number
+            * robustdata : bool [False]
+                robust data reweighting using an L1 scheme (IRLS reweighting)
+            * blockymodel : bool [False]
+                blocky model constraint using L1 reweighting roughness vector
+            * startModelIsReference : bool [False]
+                startmodel is the reference model for the inversion
+
+            forwarded to createMesh
+
+            * depth
+            * quality
+            * paraDX
+            * maxCellArea
+
+        """
+        if 'verbose' in kwargs:
+            self.setVerbose(kwargs.pop('verbose'))
+
+        if data is not None:
+            # setDataContainer would be better
+            self.setData(data)
+
+        if vals is not None:
+            self.dataContainer.set(self.dataToken(), vals)
+
+        if err is not None:
+            self.dataContainer.set('err', vals)
+
+        # check for data container here
+        dataVals = self.dataContainer(self.dataToken())
+        errVals = self.dataContainer('err')
+
+        if mesh is not None:
+            self.setMesh(mesh)
+
+        if self.mesh is None:
+            self.createMesh(depth=kwargs.pop('depth', None),
+                            quality=kwargs.pop('quality', 34.0),
+                            maxCellArea=kwargs.pop('maxCellArea', 0.0),
+                            paraDX=kwargs.pop('paraDX', 0.3))
+
+
+        self.inv.setData(dataVals)
+        self.inv.setError(errVals, not self.errIsAbsolute)
+
+        zWeight = kwargs.pop('zWeight', 0.7)
+        if 'zweight' in kwargs:
+            zWeight = kwargs.pop('zweight', 0.7)
+            print("zweight option will be removed soon. Please use zWeight.")
+
+        self.fop.regionManager().setZWeight(zWeight)
+
+        self.inv.setLambda(kwargs.pop('lam', 20))
+        self.inv.setMaxIter(kwargs.pop('maxIter', 20))
+        self.inv.setRobustData(kwargs.pop('robustData', False))
+        self.inv.setBlockyModel(kwargs.pop('blockyModel', False))
+        self.inv.setRecalcJacobian(kwargs.pop('recalcJacobian', True))
+
+        # TODO: ADD MORE KWARGS
+        pc = self.fop.regionManager().parameterCount()
+
+        startModel = kwargs.pop('startModel',
+                                pg.RVector(pc, pg.median(dataVals)))
+
+        self.inv.setModel(startModel)
+
+        if kwargs.pop('startModelIsReference', False):
+            self.inv.setReferenceModel(startModel)
+
+        # Run the inversion
+        if len(kwargs) > 0:
+            print("Keyword arguments unknown:")
+            print(kwargs)
+            print("Warning! There are unknown kwargs arguments.")
+
+        model = self.inv.run()
+        self.model = model(self.paraDomain.cellMarkers())
+
+        return self.model

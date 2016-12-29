@@ -224,11 +224,26 @@ public:
         setRelativeError(std::fabs(abserr) / abs(fixZero(data_, TOLERANCE)));
     }
 
+    inline void setError(const Vec & err, bool isRelative=true) {
+        if (isRelative){
+            this->setRelativeError(err);
+        } else {
+            this->setAbsoluteError(err);
+        }
+    }
+    inline void setError(double err, bool isRelative=true) {
+        if (isRelative){
+            this->setRelativeError(err);
+        } else {
+            this->setAbsoluteError(err);
+        }
+    }
+
     /*! Old vector error setter still fixed to relative error, should not be used due to ambiguity */
-    inline void setError(const Vec & err) { setRelativeError(err); }
+//     inline void setError(const Vec & err) { setRelativeError(err); }
 
     /*! Old scalar error setter still fixed to relative error, should not be used due to ambiguity */
-    inline void setError(double err) { setRelativeError(err); }
+//     inline void setError(double err) { setRelativeError(err); }
 
     /*! Return the used data error */
     inline const Vec & error() const { return error_; }

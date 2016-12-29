@@ -30,9 +30,9 @@ namespace GIMLI{
 /*! Inversion base template, provide inversion interface. */
 template < class ModelValType > class InversionBase {
 public:
-    
+
     typedef Vector < ModelValType > ModelVector;
-    
+
     /*! Default constructor*/
     InversionBase(){
     }
@@ -53,7 +53,7 @@ public:
 
     virtual void setData(const ModelVector & data)   = 0;
 
-    virtual void setError(const ModelVector & err)   = 0;
+    virtual void setError(const ModelVector & err, bool isRelative=true)   = 0;
 
     virtual void setTransData(Trans< ModelVector > & t)   = 0;
 

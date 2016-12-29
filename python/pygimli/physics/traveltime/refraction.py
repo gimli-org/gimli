@@ -40,7 +40,6 @@ class Refraction(MethodManager):
         self.errIsAbsolute = True
 
         # should be forwarded so it can be accessed from outside
-        self.dataContainer = None
         self.mesh = None
         self.poly = None
         self.error = None
@@ -49,6 +48,7 @@ class Refraction(MethodManager):
         # self.start = []
         self.pd = None
 
+        #CR!, check if this should be better a static member
         self.dataToken_ = 't'
 
         if isinstance(data, str):
@@ -118,7 +118,7 @@ class Refraction(MethodManager):
         """
         # hackish .. dislike!
         self.setData(data)
-        return 1/(self.getOffset(full=True) / data('t'))
+        return 1./(self.getOffset(full=True) / data('t'))
 
     def setData(self, data):
         """Set data """
