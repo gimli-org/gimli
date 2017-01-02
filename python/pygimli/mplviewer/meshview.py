@@ -437,7 +437,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
     updateAxes_(ax)
 
 
-def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
+def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False, **kwargs):
     """Draw 2D PLC into the given ax.
 
     Parameters
@@ -445,6 +445,9 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
     fillRegion: bool [True]
         Fill the regions with default colormap.
+
+    regionMarker: bool [True]
+        show region marker
 
     boundaryMarker: bool [False]
         show boundary marker
@@ -476,8 +479,8 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
         ms = kwargs.pop('markersize', 5)
-        ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
-                color=col)
+        # ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
+                # color=col)
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
         cols.append(col)
 
@@ -490,15 +493,16 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 #    p = mpl.collections.PatchCollection(eCircles, color=cols)
 #    ax.add_collection(p)
 
-    for reg in mesh.regionMarker():
-        ax.text(reg[0], reg[1],
-                str(reg.marker()) + ": " + str(reg.area()),
-                color='black',
-                verticalalignment='center',
-                horizontalalignment='left')  # 'white'
+    if regionMarker:
+        for reg in mesh.regionMarker():
+            ax.text(reg[0], reg[1],
+                    str(reg.marker()) + ": " + str(reg.area()),
+                    color='black',
+                    verticalalignment='center',
+                    horizontalalignment='left')  # 'white'
 
-    for hole in mesh.holeMarker():
-        ax.text(hole[0], hole[1], 'H', color='black')
+        for hole in mesh.holeMarker():
+            ax.text(hole[0], hole[1], 'H', color='black')
 
     updateAxes_(ax)
 
@@ -628,13 +632,12 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
 
         if shading is not None:
             gci = ax.tripcolor(x, y, triangles, z,
-                               shading=shading,
-                               **kwargs)
+                               shading=shading, **kwargs)
         else:
-            gci = ax.tricontourf(x, y, triangles, z,
+            gci = ax.tricontourf(x, y, triangles, z, levels=levels,
                                  **kwargs)
             if not omitLines:
-                ax.tricontour(x, y, triangles, z,
+                ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']),
                               **kwargs)
     else:

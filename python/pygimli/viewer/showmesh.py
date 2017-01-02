@@ -17,6 +17,7 @@ try:
     from pygimli.mplviewer import drawSensors
     from pygimli.mplviewer import createColorBar, updateColorBar
     from pygimli.mplviewer import drawStreams, addCoverageAlpha
+    from pygimli.mplviewer import CellBrowser
     from pygimli.mplviewer.colorbar import cmapFromName
 except ImportError as e:
     print(e)
@@ -255,13 +256,19 @@ def showMesh(mesh, data=None, hold=False, block=False,
             raise BaseException('toImplement')
             # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
 
+
     if not hold or block is not False:
+        if data is not None:
+            cb = CellBrowser(mesh, data, ax=ax)
+            cb.connect()
+            
         plt.show(block=block)
         try:
             plt.pause(0.01)
         except BaseException as _:
 
             pass
+
 
     if hold:
         pg.mplviewer.hold(val=lastHoldStatus)

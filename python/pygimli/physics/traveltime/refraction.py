@@ -260,9 +260,10 @@ class Refraction(MethodManager):
         -------
         err : array
         """
-        if not data.allNonZero('t'):
-            raise BaseException("We need travel time values (t) " +
-                                "in the data to estimate a data error.")
+        # print(data)
+        # if not data.allNonZero('t'):
+        #     raise BaseException("We need travel time values (t) " +
+        #                         "in the data to estimate a data error.")
 
         if relativeError >= 0.5:  # obviously in %
             print("relativeError set to a value > 0.5 .. assuming this "
