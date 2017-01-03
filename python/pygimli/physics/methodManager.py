@@ -295,27 +295,27 @@ class MeshMethodManager(MethodManager):
         DOCUMENTME!!!
 
 
-        **kwargs
+        Other parameters (**kwargs)
+        ---------------------------
+        * lam : float [20]
+            regularization parameter
+        * zWeight : float [0.7]
+            relative vertical weight
+        * maxIter : int [20]
+            maximum iteration number
+        * robustdata : bool [False]
+            robust data reweighting using an L1 scheme (IRLS reweighting)
+        * blockymodel : bool [False]
+            blocky model constraint using L1 reweighting roughness vector
+        * startModelIsReference : bool [False]
+            startmodel is the reference model for the inversion
 
-            * lam : float [20]
-                regularization parameter
-            * zWeight : float [0.7]
-                relative vertical weight
-            * maxIter : int [20]
-                maximum iteration number
-            * robustdata : bool [False]
-                robust data reweighting using an L1 scheme (IRLS reweighting)
-            * blockymodel : bool [False]
-                blocky model constraint using L1 reweighting roughness vector
-            * startModelIsReference : bool [False]
-                startmodel is the reference model for the inversion
+        forwarded to createMesh
 
-            forwarded to createMesh
-
-            * depth
-            * quality
-            * paraDX
-            * maxCellArea
+        * depth
+        * quality
+        * paraDX
+        * maxCellArea
 
         """
         if 'verbose' in kwargs:
