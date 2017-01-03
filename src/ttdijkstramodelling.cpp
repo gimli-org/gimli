@@ -252,14 +252,19 @@ RVector TravelTimeDijkstraModelling::createGradientModel(double lBound,
 
 void TravelTimeDijkstraModelling::updateMeshDependency_(){
     if (verbose_) std::cout << "... looking for shot and receiver positions." << std::endl;
+
     RVector shots(unique(sort((*dataContainer_)("s"))));
 
     shotNodeId_.resize(shots.size()) ;
     shotsInv_.clear();
 
+    if (shots[0] < 0){
+        throwError(1, "There are shots index lower then 0.");
+    }
     for (Index i = 0; i < shots.size(); i ++){
         shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
-        if ( mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
+        if (mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
+            __MS('no cells found')
         }
         shotsInv_[Index(shots[i])] = i;
     }

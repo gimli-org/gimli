@@ -7,7 +7,7 @@ import numpy as np
 
 import matplotlib as mpl
 from matplotlib.patches import Rectangle
-from matplotlib.collections import PatchCollection
+from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.colors import LogNorm
 
 import pygimli as pg
@@ -117,8 +117,10 @@ class CellBrowser(object):
             self.edgeColors = self.artist.get_edgecolors()
 
         if 'mouseevent' in event.__dict__.keys():
-            pos = pg.RVector3(event.mouseevent.xdata, event.mouseevent.ydata)
-            self.cellID = self.mesh.findCell(pos, True).id()
+            if event.mouseevent.xdata is not None and \
+                event.mouseevent.ydata is not None:
+                    pos = pg.RVector3(event.mouseevent.xdata, event.mouseevent.ydata)
+                    self.cellID = self.mesh.findCell(pos, True).id()
         else:  # variant before (seemed inaccurate)
             self.cellID = event.ind[0]
         self.update()
@@ -435,7 +437,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
     updateAxes_(ax)
 
 
-def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
+def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False, **kwargs):
     """Draw 2D PLC into the given ax.
 
     Parameters
@@ -443,6 +445,9 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
     fillRegion: bool [True]
         Fill the regions with default colormap.
+
+    regionMarker: bool [True]
+        show region marker
 
     boundaryMarker: bool [False]
         show boundary marker
@@ -474,8 +479,8 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
         ms = kwargs.pop('markersize', 5)
-        ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
-                color=col)
+        # ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
+                # color=col)
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
         cols.append(col)
 
@@ -488,15 +493,16 @@ def drawPLC(ax, mesh, fillRegion=True, boundaryMarker=False, **kwargs):
 #    p = mpl.collections.PatchCollection(eCircles, color=cols)
 #    ax.add_collection(p)
 
-    for reg in mesh.regionMarker():
-        ax.text(reg[0], reg[1],
-                str(reg.marker()) + ": " + str(reg.area()),
-                color='black',
-                verticalalignment='center',
-                horizontalalignment='left')  # 'white'
+    if regionMarker:
+        for reg in mesh.regionMarker():
+            ax.text(reg[0], reg[1],
+                    str(reg.marker()) + ": " + str(reg.area()),
+                    color='black',
+                    verticalalignment='center',
+                    horizontalalignment='left')  # 'white'
 
-    for hole in mesh.holeMarker():
-        ax.text(hole[0], hole[1], 'H', color='black')
+        for hole in mesh.holeMarker():
+            ax.text(hole[0], hole[1], 'H', color='black')
 
     updateAxes_(ax)
 
@@ -626,13 +632,12 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
 
         if shading is not None:
             gci = ax.tripcolor(x, y, triangles, z,
-                               shading=shading,
-                               **kwargs)
+                               shading=shading, **kwargs)
         else:
-            gci = ax.tricontourf(x, y, triangles, z,
+            gci = ax.tricontourf(x, y, triangles, z, levels=levels,
                                  **kwargs)
             if not omitLines:
-                ax.tricontour(x, y, triangles, z,
+                ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']),
                               **kwargs)
     else:
@@ -722,13 +727,18 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
 # def drawStreamLines(...)
 
 
-def drawStreamLine_(ax, mesh, c, data, dataMesh=None, **kwargs):
+def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
+                    linewidth=1.0, dropTol=0.0, **kwargs):
     """Draw a single streamline.
 
     Draw a single streamline into a given mesh for given data stating at
     the center of cell c.
     The Streamline will be enlarged until she reached a cell that
     already contains a streamline.
+
+    TODO
+        linewidth and color depends on absolute velocity
+        or background color saturation
 
     Parameters
     ----------
@@ -750,25 +760,47 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, **kwargs):
 
         Optional mesh for the data. If you want high resolution
         data to plot on coarse draw mesh.
+
+    linewidth : float [1.0]
+
+        Streamline linewidth
+
+    dropTol : float [0.0]
+
+        Don't draw stream lines with velocity lower than drop tolerance.
+
     """
-    x, y = streamline(mesh, data, startCoord=c.center(),
-                      dLengthSteps=5,
-                      dataMesh=dataMesh,
-                      maxSteps=10000,
-                      verbose=False,
-                      koords=[0, 1])
+    x, y, v = streamline(mesh, data, startCoord=c.center(),
+                         dLengthSteps=5,
+                         dataMesh=dataMesh,
+                         maxSteps=10000,
+                         verbose=False,
+                         koords=[0, 1])
 
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
 
     lines = None
-    # print(len(x))
-    if len(x) > 2:
-        lines = ax.plot(x, y, **kwargs)
-#        updateAxes_(ax, lines)
 
-#        print( x, y)
-#        ax.plot(x, y, '.-', color='black', **kwargs)
+    if len(x) > 2:
+
+
+        points = np.array([x, y]).T.reshape(-1, 1, 2)
+
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+        lwidths = pg.RVector(len(v), linewidth)
+        lwidths[pg.find(pg.RVector(v) < dropTol)] = 0.0
+
+        lines = LineCollection(segments, linewidths=lwidths, **kwargs)
+        ax.add_collection(lines)
+
+        # probably the limits are wrong without plot call
+        #lines = ax.plot(x, y, **kwargs)
+
+        #updateAxes_(ax, lines)
+
+        #ax.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
         xmid = int(len(x) / 2)
         ymid = int(len(y) / 2)
@@ -777,9 +809,10 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, **kwargs):
         c = mesh.findCell([x[xmid], y[ymid]])
         dLength = c.center().dist(c.node(0).pos()) / 4.
 
-        ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
-                 head_starts_at_zero=True,
-                 **kwargs)
+        if v[xmid] > dropTol:
+            ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
+                    head_starts_at_zero=True,
+                    **kwargs)
 
     return lines
 
@@ -808,7 +841,8 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
         variate the start stream drawing, try values from 1 to 3 what every
         you like more.
 
-    **kwargs:
+    **kwargs: forward to drawStreamLine_
+
         * coarseMesh
 
             Instead of draw a stream for every cell in mesh, draw a streamline
@@ -826,7 +860,8 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     >>> ny = pg.y(mesh.positions())
     >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
-    >>> drawStreams(ax, mesh, data)
+    >>> drawStreams(ax, mesh, data, color='red')
+    >>> drawStreams(ax, mesh, data, dropTol=0.9)
     >>> ax.set_aspect('equal')
     """
     viewMesh = None
@@ -889,7 +924,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
 # def drawStreamLines2(...)
 
 
-def drawSensors(ax, sensors, diam=None, koords=None, verbose=False):
+def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
     """Draw sensor positions as black dots with a given diameter.
 
     Parameters
@@ -921,7 +956,9 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False):
             print(e, diam, e[koords[0]], e[koords[1]])
         eCircles.append(mpl.patches.Circle((e[koords[0]], e[koords[1]]), diam))
 
-    p = mpl.collections.PatchCollection(eCircles, color=(0.0, 0.0, 0.0))
+    p = mpl.collections.PatchCollection(eCircles,
+                                        **kwargs)
+    p.set_zorder(100)
     ax.add_collection(p)
 
     updateAxes_(ax)

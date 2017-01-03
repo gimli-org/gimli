@@ -48,8 +48,8 @@ public:
     /*! Return the current memory usage relative to the last call of this method. Values are in MByte. */
     double current();
 
-    /*! Shows the current and the relative memory usage. */
-    void info(const std::string & str = "");
+    /*! Shows the current and the relative (to the last call) memory usage. */
+    void info(const std::string & str="");
 
 protected:
     double last_;
@@ -69,10 +69,11 @@ private:
 
 };
 
-/*! Utility so we can use it from python. */
+/*! Current amount of memory in use for the current process in MByte. */
 inline double memoryInUse(){
     return GIMLI::MemWatch::instance().inUse();
 }
+
 
 } // namespace GIMLI
 

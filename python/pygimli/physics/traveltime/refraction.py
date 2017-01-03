@@ -40,7 +40,6 @@ class Refraction(MethodManager):
         self.errIsAbsolute = True
 
         # should be forwarded so it can be accessed from outside
-        self.dataContainer = None
         self.mesh = None
         self.poly = None
         self.error = None
@@ -49,6 +48,7 @@ class Refraction(MethodManager):
         # self.start = []
         self.pd = None
 
+        #CR!, check if this should be better a static member
         self.dataToken_ = 't'
 
         if isinstance(data, str):
@@ -118,7 +118,7 @@ class Refraction(MethodManager):
         """
         # hackish .. dislike!
         self.setData(data)
-        return 1/(self.getOffset(full=True) / data('t'))
+        return 1./(self.getOffset(full=True) / data('t'))
 
     def setData(self, data):
         """Set data """
@@ -260,9 +260,10 @@ class Refraction(MethodManager):
         -------
         err : array
         """
-        if not data.allNonZero('t'):
-            raise BaseException("We need travel time values (t) " +
-                                "in the data to estimate a data error.")
+        # print(data)
+        # if not data.allNonZero('t'):
+        #     raise BaseException("We need travel time values (t) " +
+        #                         "in the data to estimate a data error.")
 
         if relativeError >= 0.5:  # obviously in %
             print("relativeError set to a value > 0.5 .. assuming this "

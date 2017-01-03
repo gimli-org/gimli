@@ -325,6 +325,8 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     else:
         cbarLevels = np.linspace(cMin, cMax, nLevs)
 
+    # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
+
     #print(cbarLevels)
     cbarLevelsString = []
     for i in cbarLevels:

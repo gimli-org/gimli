@@ -54,7 +54,7 @@ public:
                   bool sensorIndicesFromOne=true,
                   bool removeInvalid=true);
 
-    /*! Constructor, builds a data container, registers sensor 
+    /*! Constructor, builds a data container, registers sensor
      * indices and fills the data from a file.
         See \ref load. \param fileName String of the file name */
     DataContainer(const std::string & fileName,
@@ -79,11 +79,11 @@ public:
 
 //     /*! Return read-only reference to the RVector at the data map associated to the token. */
 //     inline const RVector & operator[] (const std::string & token) const { return get(token); }
-// 
+//
 //     /*! Return reference to the RVector at the data map associated to the token. */
 //     inline RVector & operator[] (const std::string & token) { return *ref(token); }
 
-    
+
     /*! Init default data fields 'valid' and call virtual init method. */
     void initDefaults();
 
@@ -165,8 +165,8 @@ public:
 
     /*! Translate a RVector into a valid IndexArray for the corresponding sensors. */
     IndexArray findSensorIndex(const RVector & d) const;
-    
-    
+
+
     /*! Mark all data invalid that use a sensor index greater than sensor count. */
     void markInvalidSensorIndices();
 
@@ -185,29 +185,29 @@ public:
 
     /*! Sort all sensors regarding their x-coordinate. */
     void sortSensorsX();
-    
+
     /*! Translate all sensor positions by trans. */
     void translate(const RVector3 & trans);
-    
+
     /*! Scale all sensor positions by scale. */
     void scale(const RVector3 & scale);
-    
+
     /*! Sort all data regarding their sensor indices and sensorIdxNames. */
     void sortSensorsIndex();
-    
+
     // END Sensor related section
-    
+
     /*! Return the additional points. */
     inline const std::vector < RVector3 > & additionalPoints() const { return topoPoints_; }
 
-    /*! Return true if token data exist and all elements != 0.0. 
+    /*! Return true if token data exist and all elements != 0.0.
      Return false if the data contains one zero value. */
     inline bool allNonZero(const std::string & token) const {
         if (exists(token)) return (min(abs(dataMap_.find(token)->second)) > TOLERANCE);
         return false;
     }
 
-    /*! Return true if token data exist and at least one value is != 0.0. 
+    /*! Return true if token data exist and at least one value is != 0.0.
      Return false if the data contains ONLY zero values. */
     inline bool haveData(const std::string & token) const {
         if (exists(token)) return !zero(dataMap_.find(token)->second);
@@ -215,17 +215,17 @@ public:
     }
 
     /*! Return true if the data with the token exist. */
-    inline bool exists(const std::string & token) const { 
+    inline bool exists(const std::string & token) const {
         return dataMap_.count(token) != 0; }
 
     /*! Return reference to the token translator map. */
     inline const std::map< std::string, std::string > & tokenTranslator() const { return tT_; }
 
     /*! Loads the data from a file. See save for details on the fileformat.
-     On default remove all invalid data that have been marked by checkDataValidity 
+     On default remove all invalid data that have been marked by checkDataValidity
      and checkDataValidityLocal.*/
-    virtual int load(const std::string & fileName, 
-                     bool sensorIndicesFromOne=true, 
+    virtual int load(const std::string & fileName,
+                     bool sensorIndicesFromOne=true,
                      bool removeInvalid=true);
 
     /*! Save the data to a file. Saves only valid data(except formatData == "all"). File format is\n\n
@@ -258,7 +258,8 @@ public:
     /*! Show some information that belongs to the DataContainer.*/
     void showInfos() const ;
 
-    /*! Resize the data map and all data fields to size.*/
+    /*! Resize the data map and all data fields to size.
+     Note, new data from resizeing will be set to invalid. */
     void resize(uint size);
 
     /*! Return string with space-separated list of all available data tokens. If withAnnotation is set the List is separated by the Words "SensorIndex:" and "Data:" */
@@ -283,7 +284,7 @@ public:
     /*! Return a copy of the index data field as IndexArray. Throws an exception if token index don't exist.
      * \param token String to identify the index data field */
     const IndexArray id(const std::string & token) const ;
-    
+
     /*! Read/Write access via a pointer to the token data field
      * \param token String to identify the data */
     RVector * ref(const std::string & token);
@@ -302,7 +303,7 @@ public:
 
     /*! Create new DataContainer that only contains the values that are covered by idx. Sensors are preserved.*/
     virtual DataContainer filter(const IndexArray & idx) const ;
-    
+
     /*! Create new DataContainer from bool vector marking subset. Sensors are preserved.*/
     inline DataContainer filter(const BVector & bvec) const {
         return filter(find(bvec));
@@ -346,15 +347,15 @@ public:
 
     /*! Remove all unused sensors from this DataContainer and recount data sensor index entries. */
     void removeUnusedSensors(bool verbose=false);
-    
+
     /*! Set input format string (e.g. for import routines) */
-    inline void setInputFormatString(const std::string & inputFormatString){ 
+    inline void setInputFormatString(const std::string & inputFormatString){
         inputFormatString_=inputFormatString; }
-       
+
     /*! Return the token list of a previously loaded file. */
     inline const std::string & inputFormatString() const {
         return inputFormatString_; }
-    
+
 protected:
     virtual void copy_(const DataContainer & data);
 
@@ -386,8 +387,8 @@ protected:
 
     /*! Determine if the sensor indices should start from 0 or 1 */
     bool sensorIndexOnFileFromOne_;
-    
-    
+
+
 }; // class DataContainer
 
 } // namespace GIMLI

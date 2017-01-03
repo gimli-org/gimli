@@ -30,7 +30,7 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         Create a streamline from startCoord and following a vector field in up
         and down direction.
     """
-    xd, yd = streamlineDir(mesh, field, startCoord, dLengthSteps,
+    xd, yd, vd = streamlineDir(mesh, field, startCoord, dLengthSteps,
                            dataMesh=dataMesh, maxSteps=maxSteps, down=True,
                            verbose=verbose, koords=koords)
 
@@ -39,11 +39,11 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     if c is not None:
         c.setValid(True)
 
-    xu, yu = streamlineDir(mesh, field, startCoord, dLengthSteps,
+    xu, yu, vu = streamlineDir(mesh, field, startCoord, dLengthSteps,
                            dataMesh=dataMesh, maxSteps=maxSteps, down=False,
                            verbose=verbose, koords=koords)
 
-    return xd + xu[1:], yd + yu[1:]
+    return xd + xu[1:], yd + yu[1:], vd + vu[1:]
 
 
 def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
@@ -53,6 +53,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     """
     xd = []
     yd = []
+    vd = []
     counter = 0
 
     pot = None
@@ -104,9 +105,11 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     c = mesh.findCell(startCoord)
     dLength = c.center().dist(c.node(0).pos()) / dLengthSteps
 
+    # stream line starting point
     if c is not None:
         xd.append(pos[koords[0]])
         yd.append(pos[koords[1]])
+        vd.append(-1)
 
     lastC = c
     lastU = -direction * 1e99
@@ -153,7 +156,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                 u = c.pot(pos, pot)
         # print "cell:", c.id(), u
         # always go u down
-        if d.length() == 0.0:
+        dAbs = d.length()
+        if dAbs == 0.0:
             print(d,
                   "check this in streamlineDir(",)
             break
@@ -166,7 +170,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                 break
 
         # * min(1.0, ((startCoord - pos).length()))
-        pos += direction * d / d.length() * dLength
+        pos += direction * d / dAbs * dLength
         c = mesh.findCell(pos, False)
 
         # Change cell here .. set old cell to be processed
@@ -174,6 +178,10 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
             xd.append(pos[koords[0]])
             yd.append(pos[koords[1]])
+            # set the stating value here
+            if vd[0] == -1:
+                vd[0] = dAbs
+            vd.append(dAbs)
 
             # If the new cell is different from the current we move into the
             # new cell and make the last to be invalid ..
@@ -197,9 +205,9 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         c.setValid(False)
 
     if down:
-        xd.reverse(), yd.reverse()
+        xd.reverse(), yd.reverse(), vd.reverse()
 
-    return xd, yd
+    return xd, yd, vd
 
 
 def boundaryPlaneIntersectionLines(boundaries, plane):
