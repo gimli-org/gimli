@@ -39,7 +39,7 @@ from pygimli.viewer import show
 from pygimli.mplviewer import drawStreams
 
 ###############################################################################
-# Maybe this is usefully. The analytical solution for one source location.
+# Maybe this is useful. The analytical solution for one source location.
 
 
 def uAnalytical(p, sourcePos, k):

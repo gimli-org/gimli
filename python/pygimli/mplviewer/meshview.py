@@ -43,7 +43,6 @@ class CellBrowser(object):
     >>> plc = drawModel(ax, mesh, mesh.cellMarkers())
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
-    ('Interactive cell browser activated on Fig.', ...)
     """
 
     def __init__(self, mesh, data=None, ax=None):
@@ -83,13 +82,11 @@ class CellBrowser(object):
         """Connect to matplotlib figure canvas."""
         self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
         self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
-        print(("Interactive cell browser activated on Fig.", self.fig.number))
 
     def disconnect(self):
         """Disconnect from matplotlib figure canvas."""
         self.fig.canvas.mpl_connect(self.pid)
         self.fig.canvas.mpl_connect(self.kid)
-        print(("Cell browser disconnected from Figure", self.fig.number))
 
     def hide(self):
         """Hide info window."""
