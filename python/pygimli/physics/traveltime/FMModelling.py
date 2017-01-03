@@ -96,10 +96,11 @@ def fastMarch(mesh, downwind, times, upT, downT):
 
 
 class TravelTimeFMM(pg.ModellingBase):
-    """
-    Class that implements the Fast Marching Method (FMM). It can be used
-    instead of Dijkstra modelling. Although it is currently quite slow!
-
+    """Modelling class using the Fast Marching Method (FMM).
+    
+    It can be used alternatively to Dijkstra modelling. 
+    However, currently it is quite slow.
+    A implementation in C++ might speed up.
     """
     def __init__(self, mesh, data, frequency=200, verbose=False):
         """
@@ -215,7 +216,7 @@ class TravelTimeFMM(pg.ModellingBase):
 
     def createJacobian(self, slowness):
         """
-        Computes the jacobian matrix from the model.
+        Jacobian matrix using a fat-ray approach (Jordi et al. 2016).
         """
         # first compute reciprocal travel times for geophone sources
         self.computeTravelTimes(slowness, calcOthers=True)

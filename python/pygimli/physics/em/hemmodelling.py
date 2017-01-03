@@ -464,7 +464,7 @@ def hankelfc(order):
 class HEMRhoModelling(HEMmodelling):
     """Airborne EM (HEM) Forward modelling class for Occam inversion."""
     def __init__(self, dvec, **kwargs):
-        """ not yet working! """
+        """ Init class by specifying frequencies and distances (s. HEMMod) """
         nlay = len(dvec) + 1
         self.dvec = np.asarray(dvec)
         self.zvec = np.hstack((0, np.cumsum(dvec)))

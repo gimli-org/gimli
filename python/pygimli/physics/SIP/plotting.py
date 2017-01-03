@@ -22,7 +22,7 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
     ax.grid(grid)
 
 
-def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi$ in mrad',
+def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ in mrad',
                       grid=True, marker='+', ylog=False, **kwargs):
     """show phase spectrum"""
     if 'label' not in kwargs:
@@ -35,7 +35,7 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi$ in mrad',
     ax.grid(grid)
 
 
-def plotSpectrum(ax, freq, vals, ylabel=r'$\phi$ in mrad',
+def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ in mrad',
                  grid=True, marker='+', ylog=True, **kwargs):
     """show phase spectrum"""
     if 'label' not in kwargs:
