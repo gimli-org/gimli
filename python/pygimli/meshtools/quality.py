@@ -128,6 +128,10 @@ def quality(mesh, measure="eta", show=False):
     >>> q = quality(mesh, measure="nsr")
     >>> ax, _ = pg.show(mesh, q, cmap="RdYlGn", grid=True, cMin=0.5, cMax=1.0,
     ...                 label="Normalized shape ratio")
+
+    See also
+    --------
+    eta, nsr, minimumAngle
     """
 
     # Implemented quality measures (Triangular meshses only.)
@@ -151,11 +155,13 @@ def quality(mesh, measure="eta", show=False):
         axes[1].set_title(s)
         axes[1].set_xlabel("Mesh quality")
         axes[1].set_ylabel("Frequency")
+        axes[1].set_xlim(0,1)
 
         # Figure resizing according to mesh dimesions
         x = mesh.xmax() - mesh.xmin()
         y = mesh.ymax() - mesh.ymin()
         width, height = fig.get_size_inches()
-        fig.set_figwidth(width * 1.1 * (x/y))
+        fig.set_figheight(height * 1.3 * (y/x))
+        fig.tight_layout()
     else:
         return qualities
