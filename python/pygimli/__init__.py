@@ -18,6 +18,8 @@ from .core import *
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):
+    """
+    """
     if locale.localeconv()['decimal_point'] == ',':
         if verbose:
             print("Found locale decimal_point ',' "

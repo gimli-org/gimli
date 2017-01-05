@@ -7,8 +7,8 @@ import pygimli as pg
 from pygimli.utils import getIndex, filterIndex
 
 
-class harmFunctor():
-
+class HarmFunctor(object):
+    """"""
     def __init__(self, A, coeff, xmin, xSpan):
         self.A_ = A
         self.coeff_ = coeff
@@ -19,18 +19,10 @@ class harmFunctor():
         nc = len(self.coeff_) / 2
         A = np.ones(nc * 2) * 0.5
         A[1] = 3. * x
-        A[2::2] = np.sin(2.0 *
-                         np.pi *
-                         np.arange(1, nc) *
-                         (x -
-                          self.xmin_) /
-                         self.xSpan_)
-        A[3::2] = np.cos(2.0 *
-                         np.pi *
-                         np.arange(1, nc) *
-                         (x -
-                          self.xmin_) /
-                         self.xSpan_)
+        A[2::2] = np.sin(2.0 * np.pi * np.arange(1, nc) * \
+                         (x - self.xmin_) / self.xSpan_)
+        A[3::2] = np.cos(2.0 * np.pi * np.arange(1, nc) * \
+                         (x - self.xmin_) / self.xSpan_)
         return sum(A * self.coeff_)
 
 
@@ -92,7 +84,7 @@ def harmfitNative(y, x=None, nc=None, xc=None, err=None):
     # coeff=(spdiags(w,0,length(w),length(w))*A)\(y.*w)
     coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :])
 
-    return sum((B * coeff).T), harmFunctor(A, coeff, xmi, xspan)
+    return sum((B * coeff).T), HarmFunctor(A, coeff, xmi, xspan)
 
 
 def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,

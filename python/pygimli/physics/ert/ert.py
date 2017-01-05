@@ -14,6 +14,7 @@ import pygimli as pg
 from pygimli.physics import MethodManager
 from pygimli.physics import MeshMethodManager
 
+
 class ERTModelling(pg.ModellingBase):
     """Minimal Forward Operator for 2.5D Electrical resistivity Tomography."""
 
@@ -47,6 +48,37 @@ class ERTModelling(pg.ModellingBase):
     def calcGeometricFactor(self, data):
         """Calculate geomtry factors for a given dataset."""
         raise BaseException("implement me" + str(data))
+        inv.setTransData(self.tD)
+        inv.setTransModel(self.tM)
+        return inv
+
+    @staticmethod
+    def simulate(mesh, res, scheme, verbose=False, **kwargs):
+        """"""
+        fop = ERTModelling(verbose=verbose)
+        #fop = ERTManager.createFOP(verbose=verbose)
+
+        fop.setData(scheme)
+        fop.setMesh(mesh, ignoreRegionManager=True)
+
+        if not scheme.allNonZero('k'):
+            scheme.set('k', pg.RVector(scheme.size(), -1))
+
+        rhoa = fop.response(res)
+
+        err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
+        scheme.set('err', err)
+        rhoa *= 1. + pg.randn(scheme.size()) * err
+        scheme.set('rhoa', rhoa)
+
+
+        print(scheme)
+        #noiseLevel = kwargs.pop('noiseLevel', 0)
+        return scheme
+
+    def createApparentData(self, data):
+        """ what the hack is this?"""
+        return data('rhoa')
 
     def uAnalytical(self, p, sourcePos, k):
         """
@@ -271,7 +303,9 @@ class ERTModelling(pg.ModellingBase):
 
 
 class ERTManager(MeshMethodManager):
-    """ERTManager"""
+    """Minimalistic ERT Manager to keep compatibility. More advanced version
+    comes with BERT.
+    """
     def __init__(self, **kwargs):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
@@ -293,36 +327,7 @@ class ERTManager(MeshMethodManager):
         self.tM = pg.RTransLogLU()
 
         inv = pg.RInversion(verbose, dosave)
-        inv.setTransData(self.tD)
-        inv.setTransModel(self.tM)
-        return inv
 
-    @staticmethod
-    def simulate(mesh, res, scheme, verbose=False, **kwargs):
-        fop = ERTModelling(verbose=verbose)
-        #fop = ERTManager.createFOP(verbose=verbose)
-
-        fop.setData(scheme)
-        fop.setMesh(mesh, ignoreRegionManager=True)
-
-        if not scheme.allNonZero('k'):
-            scheme.set('k', pg.RVector(scheme.size(), -1))
-
-        rhoa = fop.response(res)
-
-        err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
-        scheme.set('err', err)
-        rhoa *= 1. + pg.randn(scheme.size()) * err
-        scheme.set('rhoa', rhoa)
-
-
-        print(scheme)
-        #noiseLevel = kwargs.pop('noiseLevel', 0)
-        return scheme
-
-    def createApparentData(self, data):
-        """ what the hack is this?"""
-        return data('rhoa')
 
 def createERTData(elecs, schemeName='none', **kwargs):
     """ Simple data creator to keep compatibility. More advanced version

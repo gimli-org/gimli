@@ -169,7 +169,7 @@ def cellDataToCellGrad2(mesh, v):
         print(len(v), mesh.cellCount())
         raise BaseException("len(v) dismatch mesh.cellCount()")
 
-    vN = pg.cellDataToPointData(mesh, v)
+    vN = pg.meshtools.cellDataToNodeData(mesh, v)
     gC = np.zeros((mesh.cellCount(), 3))
 
     for c in mesh.cells():
@@ -407,7 +407,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
     for [boundary, val] in uB:
-        
+
         if not isinstance(boundary, pg.Boundary):
             raise BaseException("Please give boundary, value list")
 
@@ -595,7 +595,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
             raise BaseException("Velocity field has wrong dimension.")
 
         if len(vel) is not mesh.nodeCount():
-            vel = pg.solver.pointDataToBoundaryData(mesh, vel)
+            vel = pg.meshtools.nodeDataToBoundaryData(mesh, vel)
 
         vmax = 0
         if mesh.dimension() == 3:
@@ -705,7 +705,7 @@ def createFVPostProzessMesh(mesh, u, uDirichlet):
 
     Create a mesh suitable for node based post processing of cell
     centered Finite Volume solutions.
-    This is something like cellDataToPointData with extra Dirichlet points
+    This is something like cellDataToNodeData with extra Dirichlet points
     but without smoothing due to interpolation.
 
     IMPROVE DOC!!
@@ -1018,12 +1018,12 @@ def test_ConvectionAdvection():
     ax2 = fig.add_subplot(1, 3, 2)
     ax3 = fig.add_subplot(1, 3, 3)
 
-    show(grid, data=pg.cellDataToPointData(grid, pres),
+    show(grid, data=pg.meshtools.cellDataToNodeData(grid, pres),
          logScale=False, showLater=True, colorBar=True, ax=ax1, cbar='b2r')
-    show(grid, data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 0]),
+    show(grid, data=pg.logTransDropTol(pg.meshtools.cellDataToNodeData(grid, vel[:, 0]),
                                        1e-2),
          logScale=False, showLater=True, colorBar=True, ax=ax2)
-    show(grid, data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 1]),
+    show(grid, data=pg.logTransDropTol(pg.meshtools.cellDataToNodeData(grid, vel[:, 1]),
                                        1e-2),
          logScale=False, showLater=True, colorBar=True, ax=ax3)
 

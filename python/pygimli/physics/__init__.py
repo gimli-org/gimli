@@ -30,8 +30,7 @@ from .em import FDEM, TDEM
 from .sNMR import MRS
 from .SIP import SIPSpectrum
 
-from .ert import (
-    ERTModelling, ERTManager)
+from .ert import (ERTModelling, ERTManager)
 from .traveltime import Refraction
 
 # from . gravimetry import Gravimetry
