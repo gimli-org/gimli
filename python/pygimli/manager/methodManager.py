@@ -368,6 +368,7 @@ class MeshMethodManager(MethodManager):
                                 pg.RVector(pc, pg.median(dataVals)))
 
         self.inv.setModel(startModel)
+        #self.fop.setStartModel(startModel)
 
         if kwargs.pop('startModelIsReference', False):
             self.inv.setReferenceModel(startModel)

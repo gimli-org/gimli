@@ -11,8 +11,7 @@ import numpy as np
 
 import pygimli as pg
 
-from pygimli.physics import MethodManager
-from pygimli.physics import MeshMethodManager
+from pygimli.manager import MeshMethodManager
 
 
 class ERTModelling(pg.ModellingBase):
@@ -48,37 +47,7 @@ class ERTModelling(pg.ModellingBase):
     def calcGeometricFactor(self, data):
         """Calculate geomtry factors for a given dataset."""
         raise BaseException("implement me" + str(data))
-        inv.setTransData(self.tD)
-        inv.setTransModel(self.tM)
-        return inv
 
-    @staticmethod
-    def simulate(mesh, res, scheme, verbose=False, **kwargs):
-        """"""
-        fop = ERTModelling(verbose=verbose)
-        #fop = ERTManager.createFOP(verbose=verbose)
-
-        fop.setData(scheme)
-        fop.setMesh(mesh, ignoreRegionManager=True)
-
-        if not scheme.allNonZero('k'):
-            scheme.set('k', pg.RVector(scheme.size(), -1))
-
-        rhoa = fop.response(res)
-
-        err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
-        scheme.set('err', err)
-        rhoa *= 1. + pg.randn(scheme.size()) * err
-        scheme.set('rhoa', rhoa)
-
-
-        print(scheme)
-        #noiseLevel = kwargs.pop('noiseLevel', 0)
-        return scheme
-
-    def createApparentData(self, data):
-        """ what the hack is this?"""
-        return data('rhoa')
 
     def uAnalytical(self, p, sourcePos, k):
         """
@@ -180,7 +149,6 @@ class ERTModelling(pg.ModellingBase):
         self.resistivity = res = self.createMappedModel(model, -1)
 
         if self.verbose():
-            print("_"*100)
             print("Calculate response for model:", min(res), max(res))
 
         rMin = self.electrodes[0].dist(self.electrodes[1]) / 2.0
@@ -247,7 +215,6 @@ class ERTModelling(pg.ModellingBase):
 
         pg.tic()
         if self.verbose():
-            print("_"*100)
             print("Calculate sensitivity matrix for model: ",
                   min(model), max(model))
 
@@ -283,7 +250,7 @@ class ERTModelling(pg.ModellingBase):
                 Jt[dataIdx] = A.mult(u[kIdx][a] - u[kIdx][b],
                                      u[kIdx][m] - u[kIdx][n])
 
-            J += w*Jt
+            J += w * Jt
 
         m2 = model*model
         k = self.data('k')
@@ -293,10 +260,8 @@ class ERTModelling(pg.ModellingBase):
 
         if self.verbose():
             sumsens = np.zeros(J.rows())
-
             for i in range(J.rows()):
                 sumsens[i] = pg.sum(J[i])
-
             print("sens sum: median = ", pg.median(sumsens),
                   " min = ", pg.min(sumsens),
                   " max = ", pg.max(sumsens))
@@ -323,10 +288,41 @@ class ERTManager(MeshMethodManager):
 
     def createInv(self, fop, verbose=True, dosave=False):
         """Create inversion instance."""
-        self.tD = pg.RTransLog()
+        #self.tD = pg.RTransLog()
+        self.tD = pg.RTransLin()
         self.tM = pg.RTransLogLU()
 
         inv = pg.RInversion(verbose, dosave)
+        inv.setTransData(self.tD)
+        inv.setTransModel(self.tM)
+        inv.setForwardOperator(fop)
+        return inv
+
+    @staticmethod
+    def simulate(mesh, res, scheme, verbose=False, **kwargs):
+        """"""
+        fop = ERTModelling(verbose=verbose)
+        #fop = ERTManager.createFOP(verbose=verbose)
+
+        fop.setData(scheme)
+        fop.setMesh(mesh, ignoreRegionManager=True)
+
+        if not scheme.allNonZero('k'):
+            scheme.set('k', pg.RVector(scheme.size(), -1))
+
+        rhoa = fop.response(res)
+
+        err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
+        scheme.set('err', err)
+        rhoa *= 1. + pg.randn(scheme.size()) * err
+        scheme.set('rhoa', rhoa)
+
+        #noiseLevel = kwargs.pop('noiseLevel', 0)
+        return scheme
+
+    def createApparentData(self, data):
+        """ what the hack is this?"""
+        return data('rhoa')
 
 
 def createERTData(elecs, schemeName='none', **kwargs):
@@ -336,6 +332,8 @@ def createERTData(elecs, schemeName='none', **kwargs):
     if schemeName is not "dd":
         import pybert as pb
         return bp.createData(elecs, schemeName, **kwargs)
+
+    isClosed = kwargs.pop('closed', False)
 
     data = pg.DataContainer()
     data.registerSensorIndex('a')
@@ -355,7 +353,11 @@ def createERTData(elecs, schemeName='none', **kwargs):
             eb = ea + 1
             em = j
             en = em + 1
-            if en < nElecs:
+
+            if isClosed:
+                en = en%nElecs
+
+            if en < nElecs and en != ea:
                 a.append(ea)
                 b.append(eb)
                 m.append(em)

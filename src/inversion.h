@@ -471,7 +471,10 @@ public:
     /*! Set model vector .
      * If you call \ref run() the inversion starts with this model,
      * otherwise it will start with fop.startModel(). */
-    void setModel(const Vec & model){ model_ = model; }  //why is there no size check???
+    void setModel(const Vec & model){
+        if (recalcJacobian_) forward_->jacobian()->clear();
+        model_ = model;
+    }  //why is there no size check???
 
     /*! Return a const reference to the current model vector */
     inline const ModelVector & model() const { return model_; }
@@ -826,7 +829,7 @@ public:
 
     /*! Resets this inversion to the given startmodel. */
     void reset(){
-        this->setModel(forward_->startModel());  // should't this be ->createStartVector ?
+        this->setModel(forward_->startModel());
     }
 
 protected:

@@ -23,9 +23,6 @@ Module containing submodules for various geophysical methods.
 
 from math import pi, sqrt
 
-from .methodManager import (MethodManager,
-                            MeshMethodManager)
-
 from .em import FDEM, TDEM
 from .sNMR import MRS
 from .SIP import SIPSpectrum
