@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2006-2016 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2006-2017 by the GIMLi development team       *
+ *   Carsten Rï¿½cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
