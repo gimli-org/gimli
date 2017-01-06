@@ -170,6 +170,7 @@ protected:
         useLinesearch_      = true;
         optimizeLambda_     = false;
         recalcJacobian_     = true;
+        jacobiNeedRecalc_   = true;
         doBroydenUpdate_    = false;
         localRegularization_= false;
         abort_              = false;
@@ -433,15 +434,16 @@ public:
     }
 
     /*! Check size of Jacobian matrix against data and model number */
-    void checkJacobian() {
-        if (forward_->jacobian()->rows() == data_.size() &&
-             forward_->jacobian()->cols() == model_.size()) return;
+    void checkJacobian(bool force=false) {
+
+        if ((forward_->jacobian()->rows() == data_.size() &&
+            forward_->jacobian()->cols() == model_.size()) && !force) return;
 
         if (verbose_ && forward_->jacobian()->rows() + forward_->jacobian()->cols() > 0){
             std::cout << "check Jacobian: wrong dimensions: "
                         << "(" << forward_->jacobian()->rows()  << "x" << forward_->jacobian()->cols() << ") == "
                         << "(" << data_.size() << "x" << model_.size()  << ") "  << std::endl;
-            std::cout << "jacobian size invalid, forced recalc" << std::endl;
+            std::cout << "jacobian size invalid, forced recalc: " << force << std::endl;
         }
         Stopwatch swatch(true);
         if (verbose_) std::cout << "calculating jacobian matrix ...";
@@ -472,7 +474,7 @@ public:
      * If you call \ref run() the inversion starts with this model,
      * otherwise it will start with fop.startModel(). */
     void setModel(const Vec & model){
-        if (recalcJacobian_) forward_->jacobian()->clear();
+        if (recalcJacobian_ && model != model_) jacobiNeedRecalc_ = true;
         model_ = model;
     }  //why is there no size check???
 
@@ -881,6 +883,7 @@ protected:
     bool localRegularization_;
     bool haveReferenceModel_;
     bool recalcJacobian_;
+    bool jacobiNeedRecalc_;
     bool activateFillConstraintsWeight_; //jointinv hack!!!
 
     /*! Set this to zero if u want to use absolute errors == zero*/
@@ -969,7 +972,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     }
 
     //! validate and rebuild the jacobian if necessary
-    this->checkJacobian();
+    this->checkJacobian(jacobiNeedRecalc_);
 
     //** End preparation
 
@@ -1069,7 +1072,7 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
     Vec responseNew( data_.size());
     Vec roughness(constraintsH_.size(), 0.0);
 
-    if (recalcJacobian_ && iter_ > 1) {
+    if ((recalcJacobian_ && iter_ > 1) || jacobiNeedRecalc_ ) {
         Stopwatch swatch(true);
         if (verbose_) std::cout << "recalculating jacobian matrix ...";
         forward_->createJacobian(model_);
