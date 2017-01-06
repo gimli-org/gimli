@@ -349,12 +349,12 @@ def readGmsh(fname, verbose=False):
                 mesh.node(int(bound[2] - 1)), marker=int(bound[3]))
 
     # assign marker to corresponding nodes (sensors, reference nodes, etc.)
-    if points.any():
+    if points:
         for point in points:
             mesh.node(point[0] - 1).setMarker(-point[1])
 
     if verbose:
-        if points.any():
+        if points:
             points = np.asarray(points)
             node_types = np.unique(points[:, 1])
             print('  Marked nodes: %s ' % len(points) + str(tuple(node_types)))
