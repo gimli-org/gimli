@@ -133,6 +133,20 @@ add_custom_target(sphinxhtml-nogallery ALL
         sphinxapi
 )
 
+add_custom_target(clean-gallery ALL
+     WORKING_DIRECTORY
+        ${SPHINX_BUILD_DIR}/doc
+     COMMAND
+        rm -rvf _examples_auto
+        rm -rvf _tutorials_auto
+        rm -rvf pygimliapi/_generated
+        rm -rvf examples/modelling/*.geo*
+        rm -rvf examples/modelling/*.msh*
+        rm -vf _templates/gallery.html
+     COMMENT
+         "Removing examples/tutorials cache to force rebuild of gallery."
+)
+
 add_custom_target(sphinxlatex ALL
     WORKING_DIRECTORY
         ${SPHINX_BUILD_DIR}/doc
