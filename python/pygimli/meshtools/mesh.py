@@ -167,8 +167,8 @@ def readGmsh(fname, verbose=False):
     ----------
     fname : string
         Filename of the file to read (\\*.msh). The file must conform
-        to the `MSH ASCII file version 2 <http://geuz.org/gmsh/doc/
-        texinfo/gmsh.html#MSH-ASCII-file-format>`_ format.
+        to the `MSH ASCII file version 2
+        <http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format>`_ format.
     verbose : boolean, optional
         Be verbose during import.
 
@@ -295,7 +295,7 @@ def readGmsh(fname, verbose=False):
                     pg.MARKER_BOUND_HOMOGEN_DIRICHLET,
                     pg.MARKER_BOUND_DIRICHLET)
 
-    if bounds:
+    if bounds.any():
         for i in range(4):
             bounds[:, dim][bounds[:, dim] == i + 1] = bound_marker[i]
 
@@ -349,12 +349,12 @@ def readGmsh(fname, verbose=False):
                 mesh.node(int(bound[2] - 1)), marker=int(bound[3]))
 
     # assign marker to corresponding nodes (sensors, reference nodes, etc.)
-    if points:
+    if points.any():
         for point in points:
             mesh.node(point[0] - 1).setMarker(-point[1])
 
     if verbose:
-        if points:
+        if points.any():
             points = np.asarray(points)
             node_types = np.unique(points[:, 1])
             print('  Marked nodes: %s ' % len(points) + str(tuple(node_types)))

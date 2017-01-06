@@ -6,7 +6,7 @@ Flexible mesh generation using Gmsh
 ===================================
 
 In this example, we learn how to define arbitrary geometries, boundaries, and
-regions using an external mesh generator (`Gmsh <http://www.geuz.org/gmsh>`_).
+regions using an external mesh generator (`Gmsh <http://www.gmsh.info>`_).
 """
 
 ###############################################################################
@@ -31,7 +31,7 @@ regions using an external mesh generator (`Gmsh <http://www.geuz.org/gmsh>`_).
 # allows for parametric input, i.e. physical boundaries and regions (and any
 # other input) can be specified interactively using the graphical user
 # interface or Gmsh's own scripting language. A lot of profound tutorials can
-# be found on the Gmsh website (http://www.geuz.org/gmsh) or elsewhere.
+# be found on the Gmsh website (http://www.gmsh.info) or elsewhere.
 # Here, a crosshole ERT example with geological a priori information is
 # presented with a focus on the usage in GIMLi.
 #
