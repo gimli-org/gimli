@@ -101,7 +101,7 @@ def nsr(cell):
     return 2 * r / R
 
 # Main function
-def quality(mesh, measure="eta", show=False, ax=None):
+def quality(mesh, measure="eta", show=False):
     """Return the quality of a given triangular mesh.
 
     Parameters
@@ -128,6 +128,10 @@ def quality(mesh, measure="eta", show=False, ax=None):
     >>> q = quality(mesh, measure="nsr")
     >>> ax, _ = pg.show(mesh, q, cmap="RdYlGn", grid=True, cMin=0.5, cMax=1.0,
     ...                 label="Normalized shape ratio")
+
+    See also
+    --------
+    eta, nsr, minimumAngle
     """
 
     # Implemented quality measures (Triangular meshses only.)
@@ -140,12 +144,8 @@ def quality(mesh, measure="eta", show=False, ax=None):
     m = measures[measure]
     qualities = [m(cell) for cell in mesh.cells()]
 
-    if show or ax is not None:
-        if ax is None:
-            fig, axes = plt.subplots(1,2)
-        else:
-            axes = ax
-            fig = ax[0].figure
+    if show:
+        fig, axes = plt.subplots(1,2)
         axes[1].hist(qualities, color="grey")
         pg.show(mesh, qualities, ax=axes[0], cMin=0.5, cMax=1, hold=True,
                 logScale=False, label="Mesh quality", cmap="RdYlGn", grid=True)
@@ -155,12 +155,13 @@ def quality(mesh, measure="eta", show=False, ax=None):
         axes[1].set_title(s)
         axes[1].set_xlabel("Mesh quality")
         axes[1].set_ylabel("Frequency")
+        axes[1].set_xlim(0,1)
 
         # Figure resizing according to mesh dimesions
         x = mesh.xmax() - mesh.xmin()
         y = mesh.ymax() - mesh.ymin()
-#        width, height = fig.get_size_inches()
-#        fig.set_figwidth(width * 1.1 * (x/y))  # spooky
-        return fig, axes
+        width, height = fig.get_size_inches()
+        fig.set_figheight(height * 1.3 * (y/x))
+        fig.tight_layout()
     else:
         return qualities

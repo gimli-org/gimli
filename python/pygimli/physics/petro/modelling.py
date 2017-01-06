@@ -3,7 +3,7 @@
 """Special meta forward operator for modelling with petrophysical relations."""
 
 import pygimli as pg
-from pygimli.physics import MethodManager
+from pygimli.manager import MethodManager
 
 
 class PetroModelling(pg.ModellingBase):
@@ -104,15 +104,6 @@ class PetroJointModelling(pg.ModellingBase):
             nData += fi.data().size()  # update total vector length
         self.setJacobian(self.jac)
 
-        #self.jac = pg.RBlockMatrix()
-        #self.jacI = [self.jac.addMatrix(fi.jacobian()) for fi in self.fops]
-        #nData = 0
-        #for i, fi in enumerate(self.fops):
-            #self.jac.addMatrixEntry(self.jacI[i], nData, 0)
-            #nData += fi.data().size()  # update total vector length
-
-        #self.setJacobian(self.jac)
-
     def response(self, model):
         """Create concatenated response for fop stack with model."""
         resp = []
@@ -122,6 +113,7 @@ class PetroJointModelling(pg.ModellingBase):
 
     def createJacobian(self, model):
         """Creating individual Jacobian matrices."""
+        self.initJacobian()
         for f in self.fops:
             f.createJacobian(model)
 
@@ -186,9 +178,8 @@ class InvertJointPetro(MethodManager):
                                            data[i](mgr.dataToken()))
 
                     if mgr.errIsAbsolute:
-                        self.dataErrs = pg.cat(
-                            self.dataErrs,
-                            data[i]('err')/data[i](mgr.dataToken()))
+                        self.dataErrs = pg.cat(self.dataErrs,
+                                data[i]('err') / data[i](mgr.dataToken()))
                     else:
                         self.dataErrs = pg.cat(self.dataErrs, data[i]('err'))
 
@@ -203,8 +194,12 @@ class InvertJointPetro(MethodManager):
         """TODO."""
         self.fop.setMesh(mesh)
 
-    def invert(self, data=None, mesh=None, lam=20, limits=None):
+    def invert(self, data=None, mesh=None, lam=20, limits=None, **kwargs):
         """TODO."""
+
+        if 'verbose' in kwargs:
+            self.setVerbose(kwargs.pop('verbose'))
+
         self.setData(data)
         self.setMesh(mesh)
 
@@ -227,15 +222,16 @@ class InvertJointPetro(MethodManager):
                 self.trans[i].inv(
                     self.managers[i].createApparentData(self.data[i]))))
 
-        startModel /= len(self.managers)
-        self.fop.setStartModel(startModel)
         self.fop.regionManager().setZWeight(1.0)
+
+        startModel /= len(self.managers)
+        self.inv.setModel(startModel)
 
         self.inv.setData(self.dataVals)
         self.inv.setRelativeError(self.dataErrs)
         self.inv.setLambda(lam)
 
-        self.mod = self.inv.start()
+        self.mod = self.inv.run()
         self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
         return self.mod
 

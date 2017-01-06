@@ -43,6 +43,17 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
     Returns
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> rect = mt.createRectangle(start=[0, 0], end=[4, 1])
+    >>> ax, _ = pg.show(mt.createMesh(rect, quality=10))
+    >>> ax, _ = pg.show(mt.createMesh(rect, quality=33))
+    >>> ax, _ = pg.show(mt.createMesh(rect, quality=33, area=0.01))
+    >>> pg.wait()
     """
     #  poly == [pg.Mesh, ]
     if isinstance(poly, list):
@@ -68,11 +79,16 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm
             # no -a here ignores per region area
-            switches = 'pzaeA'
+            switches = 'pazeA'
 
             if area > 0:
                 switches += 'a' + str(area)
+                pass
+                #switches += 'a'
+            else:
+                switches += 'a'
 
+            #switches = switches.replace('.', ',')
             switches += 'q' + str(quality)
 
         if not verbose:
@@ -80,6 +96,7 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
 
         if verbose:
             print(switches)
+
         tri.setSwitches(switches)
         mesh = tri.generate()
 

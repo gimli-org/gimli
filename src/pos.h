@@ -197,6 +197,7 @@ public:
 
     inline double length() const { return std::sqrt(distSquared()); }
 
+    /*! Return the angle between (this, (origin), p).*/
     double angle(const Pos < ValueType > & p) const {
         double result = acos(this->dot(p) / (this->abs() * p.abs()));
         if (isnan(result) || isinf(result)){
@@ -205,6 +206,7 @@ public:
         return result;
     }
 
+    /*! Return the angle between (p1, this, p2).*/
     double angle(const RVector3 & p1, const RVector3 & p3) const {
         RVector3 a(p1 - (*this));
         RVector3 b(p3 - (*this));

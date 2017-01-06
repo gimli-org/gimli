@@ -370,134 +370,6 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     return atts
 
 
-def fillEmptyToCellArray(mesh, vals, slope=True):
-    """
-    Prolongate empty cell values to complete cell attributes.
-
-    It is possible that you have zero values that need to be filled with
-    appropriate attributes. This function tries to fill the empty values
-    successive prolongation of the non zeros.
-
-    Parameters
-    ----------
-    mesh : :gimliapi:`GIMLI::Mesh`
-        For each cell of mesh a value will be returned.
-
-    vals : array
-        Array of size cellCount().
-
-    Returns
-    -------
-    atts : array
-        Array of length mesh.cellCount()
-    """
-    atts = pg.RVector(mesh.cellCount(), 0.0)
-    oldAtts = mesh.cellAttributes()
-    mesh.setCellAttributes(vals)
-    mesh.createNeighbourInfos()
-    # std::vector< Cell * >
-    # empties = []
-
-    if slope:
-        # search all cells with empty neighbours
-        ids = pg.find(mesh.cellAttributes() != 0.0)
-
-        for c in mesh.cells(ids):
-            for i in range(c.neighbourCellCount()):
-                nc = c.neighbourCell(i)
-
-                if nc:
-                    if nc.attribute() == 0.0:
-                        # c.setAttribute(99999)
-
-                        b = pg.findCommonBoundary(c, nc)
-                        # search along a slope
-                        pos = b.center() - b.norm()*1000.
-                        sf = pg.RVector()
-                        startCell = c
-
-                        while startCell:
-
-                            startCell.shape().isInside(pos, sf, False)
-                            nextC = startCell.neighbourCell(sf)
-                            if nextC:
-                                if nextC.attribute() == 0.0:
-                                    nextC.setAttribute(c.attribute())
-                                else:
-                                    break
-
-                            startCell = nextC
-
-    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1)
-    atts = mesh.cellAttributes()
-    mesh.setCellAttributes(oldAtts)
-    return atts
-
-
-def pointDataToBoundaryData(mesh, vec):
-    """
-        Assuming [NodeCount, dim] data
-        DOCUMENT_ME
-    """
-
-    if len(vec) != mesh.nodeCount():
-        raise BaseException("Dimension mismatch, expecting nodeCount(): " +
-                            str(mesh.nodeCount()) +
-                            " got: " + str(len(vec)), str(len(vec[0])))
-    dim = len(vec[0])
-    ret = np.zeros((mesh.boundaryCount(), dim))
-    if dim == 1:
-        for b in mesh.boundaries():
-            ret[b.id()] = b.pot(b.center(), vec)  # / b.nodeCount()
-    elif dim == 2:
-        for b in mesh.boundaries():
-            # v = b.vec(b.center(), vec)
-            # interpolation is hell slow here .. check!!!!!!
-            v2 = (vec[b.node(0).id()] + vec[b.node(1).id()])*0.5
-            # print(v -v2)
-            ret[b.id()] = [v2[0], v2[1]]
-    else:
-        for b in mesh.boundaries():
-            ret[b.id()] = b.vec(b.center(), vec)  # / b.nodeCount()
-
-    return ret
-
-
-def cellDataToBoundaryData(mesh, vec):
-    """ TODO DOCUMENT_ME """
-    if len(vec) != mesh.cellCount():
-        raise BaseException("Dimension mismatch, expecting cellCount(): " +
-                            str(mesh.cellCount()) +
-                            "got: " + str(len(vec)), str(len(vec[0])))
-
-    CtB = mesh.cellToBoundaryInterpolation()
-
-    if isinstance(vec, pg.R3Vector()):
-        return np.array([CtB * pg.x(vec),
-                         CtB * pg.y(vec),
-                         CtB * pg.z(vec)]).T
-    else:
-        return CtB * vec
-
-
-def cellDataToPointData(mesh, vec):
-    """ TODO DOCUMENT_ME """
-    if len(vec) != mesh.cellCount():
-        raise BaseException("Dimension mismatch, expecting cellCount(): " +
-                            str(mesh.cellCount()) +
-                            "got: " + str(len(vec)), str(len(vec[0])))
-
-    if mesh.dim() == 1:
-        return pg.cellDataToPointData(mesh, vec[0])
-    elif mesh.dim() == 2:
-        return np.array([pg.cellDataToPointData(mesh, vec[:, 0]),
-                         pg.cellDataToPointData(mesh, vec[:, 1])])
-    elif mesh.dim() == 3:
-        return np.array([pg.cellDataToPointData(mesh, vec[0]),
-                         pg.cellDataToPointData(mesh, vec[1]),
-                         pg.cellDataToPointData(mesh, vec[2])])
-
-
 def grad(mesh, u, r=None):
     r"""
     Return the discrete interpolated gradient :math:`\mathbf{v}`
@@ -566,7 +438,6 @@ def grad(mesh, u, r=None):
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
     >>> u = lambda p: pg.x(p)**2 * pg.y(p)
     >>> _ = pg.show(mesh, u(mesh.nodeCenters()), ax=ax)
-    data ...
     >>> _ = pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
     ...             pg.x(mesh.cellCenters())**2], ax=ax)
     >>> _ = pg.show(mesh, pg.solver.grad(mesh, u), ax=ax, color='w',
@@ -649,7 +520,7 @@ def div(mesh, v):
         if len(v) == mesh.boundaryCount():
             d = mesh.divergence(v)
         elif len(v) == mesh.nodeCount():
-            d = mesh.divergence(pointDataToBoundaryData(mesh, v))
+            d = mesh.divergence(nodeDataToBoundaryData(mesh, v))
         elif len(v) == mesh.cellCount():
             CtB = mesh.cellToBoundaryInterpolation()
             d = mesh.divergence(

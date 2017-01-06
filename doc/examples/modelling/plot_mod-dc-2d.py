@@ -41,7 +41,6 @@ from pygimli.mplviewer import drawStreams
 ###############################################################################
 # Maybe this is useful. The analytical solution for one source location.
 
-
 def uAnalytical(p, sourcePos, k):
     r1A = (p - sourcePos).abs()
     # Mirror on surface at depth=0
@@ -59,7 +58,6 @@ def uAnalytical(p, sourcePos, k):
 # Define the derivative of the analytical solution regarding the outer normal
 # direction :math:`\vec{n}`. So we can define the value for the Neumann type
 # Boundary conditions for the boundaries in the subsurface.
-
 
 def mixedBC(boundary, userData):
     sourcePos = userData['sourcePos']

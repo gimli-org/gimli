@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 r"""
-Building a hybrid mesh in 2-D
------------------------------
+Building a hybrid mesh in 2D
+----------------------------
 
 In some cases, the modelling domain may require flexibility in one region and
 equidistant structure in another. In this short example, we demonstrate how to

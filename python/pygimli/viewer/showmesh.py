@@ -184,8 +184,21 @@ def showMesh(mesh, data=None, hold=False, block=False,
         lastHoldStatus = pg.mplviewer.utils.holdAxes__
         pg.mplviewer.hold(val=1)
 
+    import locale
+
+
+    # print('1*'*50)
+    # print(locale.localeconv())
+
     if ax is None:
         ax = plt.subplots()[1]
+
+    # plt.subplots() resets locale setting to system default .. this went
+    # horrible wrong for german 'decimal_point': ','
+    pg.checkAndFixLocaleDecimal_point(verbose=False)
+
+    #print('2*'*50)
+    #print(locale.localeconv())
 
     gci = None
     validData = False
@@ -259,16 +272,16 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if not hold or block is not False:
         if data is not None:
-            cb = CellBrowser(mesh, data, ax=ax)
-            cb.connect()
-            
+            if len(data) == mesh.cellCount():
+                cb = CellBrowser(mesh, data, ax=ax)
+                cb.connect()
+
         plt.show(block=block)
         try:
             plt.pause(0.01)
         except BaseException as _:
 
             pass
-
 
     if hold:
         pg.mplviewer.hold(val=lastHoldStatus)

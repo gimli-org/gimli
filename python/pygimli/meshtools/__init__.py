@@ -19,6 +19,12 @@ from .polytools import (createCircle, createLine, createParaMeshPLC,
 from .quality import (angleBetween, boundaryLengths, cellAngles, eta,
                       minimumAngle, nsr, quality)
 
+from .mapping import (nodeDataToCellData,
+                      cellDataToNodeData,
+                      nodeDataToBoundaryData,
+                      cellDataToBoundaryData,
+                      fillEmptyToCellArray)
+
 #  This is neither functional nor good practice  #  why?
 #  __all__ = [name for name in dir() if '_' not in name]
 

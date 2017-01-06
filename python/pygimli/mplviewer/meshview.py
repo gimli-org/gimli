@@ -64,6 +64,9 @@ class CellBrowser(object):
         self.kid = None
 
         if data is not None:
+            if len(data) == mesh.nodeCount():
+                self.data = pg.meshtools.nodeDataToCellData(mesh, data)
+
             if mesh.cellCount() != len(data):
                 print('data length mismatch mesh.cellCount(): ' +
                       str(len(data)) + "!=" + str(mesh.cellCount()) +
@@ -614,12 +617,12 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
         levels = autolevel(data, nLevs)
 
     if interpolate and len(data) == mesh.cellCount():
-        z = pg.cellDataToPointData(mesh, data)
+        z = pg.meshtools.cellDataToNodeData(mesh, data)
 
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
         if shading == 'gouraud':
-            z = pg.cellDataToPointData(mesh, data)
+            z = pg.meshtools.cellDataToNodeData(mesh, data)
 
         gci = ax.tripcolor(x, y, triangles, facecolors=z, shading=shading,
                            **kwargs)

@@ -88,7 +88,8 @@ mesh = pg.meshtools.createMesh([world, c1])
 
 for measure in "minimumAngle", "eta", "nsr":
     quality(mesh, measure, show=True)
-    plt.suptitle(measure, fontsize=15)
+    plt.title(measure, fontsize=12)
+    plt.tight_layout()
 
 plt.show()
 

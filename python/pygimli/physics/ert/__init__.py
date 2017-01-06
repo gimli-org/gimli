@@ -3,4 +3,4 @@
     Lightweight electrical resistivity tomography
 """
 
-from . ert import (ERTModelling, ERTManager, createERTData)
+from . ert import ERTManager, ERTModelling, createERTData

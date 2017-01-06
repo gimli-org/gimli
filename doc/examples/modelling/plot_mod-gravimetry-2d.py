@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 r"""
 
-Gravimetry in 2d
--------------------
+Gravimetry in 2D - Part I
+-------------------------
 
 Simple gravimetric field solution.
 

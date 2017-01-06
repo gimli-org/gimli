@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-Gravimetry in 2d
-----------------
+Gravimetry in 2D - Part II
+--------------------------
 
 Simple gravimetric field solution with Integration after :cite:`WonBev1987`.
 
@@ -53,7 +53,7 @@ def plot(x, a1, ga, gza, a2, g, gz):
     a2.legend(loc='best')
 
 
-fig = pg.plt.figure()
+fig = pg.plt.figure(figsize=(8,8))
 ax = [fig.add_subplot(2, 2, i) for i in range(1, 5)]
 
 # Horizontal cylinder
@@ -80,5 +80,3 @@ gza = gradGZHalfPlateHoriz(pnts, thickness, rho, pos=[0, -depth])
 g, gz = solveGravimetry(mesh, rho, pnts, complete=True)
 
 plot(x, ax[2], ga, gza, ax[3], g, gz)
-
-pg.wait()
