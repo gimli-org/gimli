@@ -203,6 +203,9 @@ class InvertJointPetro(MethodManager):
         self.setData(data)
         self.setMesh(mesh)
 
+        nModel = self.fop.regionManager().parameterCount()
+        startModel = None
+
         if limits is not None:
             if hasattr(self.tM, 'setLowerBound'):
                 if self.verbose:
@@ -213,19 +216,17 @@ class InvertJointPetro(MethodManager):
                     print('Upper limit set to', limits[1])
                 self.tM.setUpperBound(limits[1])
 
-        nModel = self.fop.regionManager().parameterCount()
+            startModel = pg.RVector(nModel, (limits[1]-limits[0])/2.0)
+        else:
+            for i in range(len(self.managers)):
+                startModel += pg.RVector(nModel, pg.median(
+                    self.trans[i].inv(
+                        self.managers[i].createApparentData(self.data[i]))))
+            startModel /= len(self.managers)
 
-        startModel = pg.RVector(nModel, 0.0)
-
-        for i in range(len(self.managers)):
-            startModel += pg.RVector(nModel, pg.median(
-                self.trans[i].inv(
-                    self.managers[i].createApparentData(self.data[i]))))
+        self.inv.setModel(startModel)
 
         self.fop.regionManager().setZWeight(1.0)
-
-        startModel /= len(self.managers)
-        self.inv.setModel(startModel)
 
         self.inv.setData(self.dataVals)
         self.inv.setRelativeError(self.dataErrs)

@@ -854,7 +854,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawStreams
-    >>> n = np.linspace(1, 2, 10)
+    >>> n = np.linspace(0, 1, 10)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> nx = pg.x(mesh.positions())
     >>> ny = pg.y(mesh.positions())
