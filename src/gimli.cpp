@@ -57,6 +57,7 @@ void setThreadCount(Index nThreads){
 #if OPENBLAS_FOUND
     openblas_set_num_threads(nThreads);
 #endif
+    __GIMLI_THREADCOUNT__ = nThreads;
 }
 
 Index threadCount(){

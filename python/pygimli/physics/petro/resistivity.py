@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-
+import pygimli.meshtools as mt
 
 def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
                       mesh=None, meshI=None, fill=None, show=False):
@@ -100,7 +100,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     if fill:
         for i, ri_ in enumerate(rI):
             # slope == True produce unstable behavior .. check!!!!!!
-            rI[i] = pg.solver.fillEmptyToCellArray(meshI, ri_, slope=False)
+            rI[i] = mt.fillEmptyToCellArray(meshI, ri_, slope=False)
 
     rI.round(1e-6)
 

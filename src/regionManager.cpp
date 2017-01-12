@@ -1210,7 +1210,7 @@ void RegionManager::setInterRegionConstraint(SIndex aIn, SIndex bIn, double c){
         if (interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(a, b))
              != interRegionInterfaceMap_.end()){
             interRegionConstraints_[std::pair< SIndex, SIndex >(a, b)] = c;
-            if (verbose_){
+            if (debug()){
                std::cout << "regions: " << a << "<->" << b << " " << c << std::endl;
            }
         }
