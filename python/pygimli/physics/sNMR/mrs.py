@@ -164,8 +164,8 @@ class MRS():
             self.ecube = idata.data.ecube
 
         defaultNoise = kwargs.get("defaultNoise", 100e-9)
-        self.ecube = np.ones_like(self.dcube) * defaultNoise
         if self.ecube[0][0] == 0:
+            self.ecube = np.ones_like(self.dcube) * defaultNoise
             if self.verbose:
                 print("no errors in file, assuming", defaultNoise*1e9, "nV")
             self.ecube = np.ones((len(self.q), len(self.t))) * defaultNoise

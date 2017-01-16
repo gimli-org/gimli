@@ -152,15 +152,14 @@ class MRSprofile():
         self.TMOD = None
         self.RMSvec = None
         self.Chi2vec = None
-        self.mrsall =
-        if hasattr(filename, '__iter__'):  # already a list
-            files = filename
-        elif '*' in filename:  # a filename with asterisks
+        if '*' in filename:  # a filename with asterisks
             files = glob(filename)
         elif os.path.isdir(filename):  # a directory with all files to take
             files = glob(filename+'/*.mrsi')
             if len(files) == 0:
                 files = glob(filename+'/*.mrsd')
+        elif hasattr(filename, '__iter__'):  # already a list
+            files = filename
         else:
             if filename is not None:
                 print('Do not know what to do with filename')
@@ -261,7 +260,7 @@ class MRSprofile():
                                     np.array(self.nData)) / sum(self.nData))
 
     def block1dInversionOld(self, nlay=2, startModel=None, verbose=True,
-                            **kwargs):
+                            uncertainty=False, **kwargs):
         """Invert all data together by one 1D model (variant 1 - all equal)."""
         self.mrsall = MRS()
         self.mrsall.z = self.mrs[0].z
@@ -280,7 +279,8 @@ class MRSprofile():
             self.mrsall.showResult()
         return self.mrsall.model
 
-    def block1dInversion(self, nlay=2, lam=100., show=False, verbose=True):
+    def block1dInversion(self, nlay=2, lam=100., show=False, verbose=True,
+                         uncertainty=False):
         """Invert all data together by a 1D model (more general solution)."""
         data, error = pg.RVector(), pg.RVector()
         for mrs in self.mrs:
@@ -301,8 +301,14 @@ class MRSprofile():
         INV.setDeltaPhiAbortPercent(0.5)
         INV.setAbsoluteError(error)
         model = INV.run()
+        m0 = self.mrs[0]
+        m0.model = np.asarray(model)
+        if uncertainty:
+            from pygimli.utils import iterateBounds
+            m0.modelL, m0.modelU = iterateBounds(
+                INV, dchi2=INV.chi2() / 2, change=1.2)
         if show:
-            self.show1dModel(model)
+            self.show1dModel()
         # %% fill up 2D model (for display only)
         self.WMOD, self.TMOD = [], []
         thk = model[0:nlay-1]
@@ -314,11 +320,9 @@ class MRSprofile():
 
         return model
 
-    def show1dModel(self, model):
+    def show1dModel(self):
         """Show 1D model (e.g. of joint block inversion)."""
-        m0 = self.mrs[0]
-        m0.model = model
-        m0.showResult()
+        self.mrs[0].showResult()
 
     def blockLCInversion(self, nlay=2, startModel=None, **kwargs):
         """Laterally constrained (piece-wise 1D) block inversion."""
