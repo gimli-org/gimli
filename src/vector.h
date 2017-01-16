@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2017 by the GIMLi development team       *
+ *   Copyright (C) 2007-2017 by the GIMLi development team                 *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -538,17 +538,19 @@ public:
         return *this;
     }
 
-    /*! Add Values from an ElementMatrix. For vectors only the first row will
-     be taken. */
-    void add(const ElementMatrix < ValueType > & A);
+    // /*! Add Values from an ElementMatrix. For vectors only the first row will
+     // be taken. */
+    void add(const ElementMatrix < double > & A);
+    //void add(const Matrix < ValueType > & A){THROW_TO_IMPL}
+    //void add(const ElementMatrix < ValueType > & A);
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
     be taken. Optional scale with scalar. */
-    void add(const ElementMatrix < ValueType > & A, const ValueType & a);
+    void add(const ElementMatrix < double > & A, const double & a);
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
     be taken. Optional scale with values fron vector. */
-    void add(const ElementMatrix < ValueType > & A, const Vector < ValueType > & a);
+    void add(const ElementMatrix < double > & A, const Vector < double > & a);
 
     /*! Get value for index i.
      * Throws out of range exception if index check fails. */
@@ -904,17 +906,17 @@ protected:
     Index singleCalcCount_;
 };
 
-/*! Implement specialized type traits in vector.cpp */
-template <> void Vector<double>::add(const ElementMatrix < double >& A);
-template <> void Vector<double>::add(const ElementMatrix < double >& A, const double & a);
-template <> void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a);
+// /*! Implement specialized type traits in vector.cpp */
+template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A);
+template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A, const double & a);
+template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a);
 
 template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < ValueType >& A){THROW_TO_IMPL}
+void Vector< ValueType >::add(const ElementMatrix < double >& A){THROW_TO_IMPL}
 template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < ValueType >& A, const ValueType & a){THROW_TO_IMPL}
+void Vector< ValueType >::add(const ElementMatrix < double >& A, const double & a){THROW_TO_IMPL}
 template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < ValueType >& A, const Vector< ValueType > & a){THROW_TO_IMPL}
+void Vector< ValueType >::add(const ElementMatrix < double >& A, const Vector< double> & a){THROW_TO_IMPL}
 
 
 
@@ -1257,7 +1259,6 @@ ValueType dot(const Vector< ValueType > & v1, const Vector< ValueType > & v2){
 
 //template double dot(const RVector & v1, const RVector & v2);
 //template double mult(const RVector & v1, const RVector & v2);
-
 
 /*! Find function. Return index vector of true values */
 inline IndexArray find(const BVector & v){

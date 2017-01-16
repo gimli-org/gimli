@@ -37,6 +37,7 @@ void Vector<double>::add(const ElementMatrix < double >& A, const double & a){
         data_[A.idx(i)] += A.row(0)[i] * a;
     }
 }
+
 template <>
 void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a){
     for (Index i = 0, imax = A.size(); i < imax; i++){
