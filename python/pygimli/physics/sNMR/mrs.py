@@ -87,6 +87,8 @@ class MRS():
                 self.basename = name.rstrip('.mrsi')
 #            elif name[-5:].lower() == '.mrsd':
 #                self.loadMRSD(name, **kwargs)
+            elif name.lower().endswith('npz'):
+                self.loadMRSpy(name, **kwargs)
             else:
                 self.loadDir(name)
 
@@ -100,7 +102,32 @@ class MRS():
             out += ", %d layers" % len(self.z)
         return out + ">"
 
-    def loadMRSI(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
+    def loadMRSpy(self, filename, **kwargs):
+        """Load data and kernel from numpy gzip packed file containing the
+        fields: q, t, D, (E), z, K
+        """
+        self.basename = filename.rstrip('.npz')
+        DATA = np.load(filename)
+        self.q = DATA['q']
+        self.t = DATA['t']
+        self.z = np.absolute(DATA['z'])
+        self.K = DATA['K']
+        self.dcube = DATA['D']
+        ndcubet = len(self.dcube[0])
+        if len(self.dcube) == len(self.q) and ndcubet == len(self.t):
+            if kwargs.pop('usereal', False):
+                self.data = np.real(self.dcube.flat)
+            else:
+                self.data = np.abs(self.dcube.flat)
+
+        if 'E' in DATA:
+            self.ecube = DATA['E']
+        else:
+            self.ecube = np.zeros_like(self.dcube)
+
+        self.checkData(**kwargs)
+
+    def loadMRSI(self, filename, **kwargs):
         """Load data, error and kernel from mrsi or mrsd file
 
         Parameters
@@ -136,6 +163,28 @@ class MRS():
             self.dcube = idata.data.dcube
             self.ecube = idata.data.ecube
 
+        defaultNoise = kwargs.get("defaultNoise", 100e-9)
+        self.ecube = np.ones_like(self.dcube) * defaultNoise
+        if self.ecube[0][0] == 0:
+            if self.verbose:
+                print("no errors in file, assuming", defaultNoise*1e9, "nV")
+            self.ecube = np.ones((len(self.q), len(self.t))) * defaultNoise
+            if idata is not None:
+                self.ecube /= np.sqrt(idata.data.gateL)
+        self.checkData(**kwargs)
+        # load model from matlab file (result of MRSQTInversion)
+        if filename[-5:].lower() == '.mrsi' and hasattr(idata, 'inv1Dqt'):
+            if hasattr(idata.inv1Dqt, 'blockMono'):
+                sol = idata.inv1Dqt.blockMono.solution[0]
+                self.model = np.hstack((sol.thk, sol.w, sol.T2))
+                self.nlay = len(sol.w)
+        if self.verbose:
+            print("loaded file: " + filename)
+
+    def checkData(self, **kwargs):
+        """Check data and retrieve data and error vector."""
+        mint = kwargs.pop('mint', 0)
+        maxt = kwargs.pop('maxt', 1000)
         good = (self.t <= maxt) & (self.t >= mint)
         self.t = self.t[good]
         self.dcube = self.dcube[:, good]
@@ -143,29 +192,21 @@ class MRS():
 
         ndcubet = len(self.dcube[0])
         if len(self.dcube) == len(self.q) and ndcubet == len(self.t):
-            if usereal:
+            if kwargs.pop('usereal', False):
                 self.data = np.real(self.dcube.flat)
             else:
                 self.data = np.abs(self.dcube.flat)
+        else:
+            print('Dimensions do not match!')
 
         necubet = len(self.dcube[0])
-        if self.verbose:
-            print("loaded file: " + filename)
-        if self.ecube[0][0] == 0:
-            if self.verbose:
-                defaultNoise = kwargs.pop("defaultNoise", 100e-9)
-                print("no errors in file, assuming", defaultNoise*1e9, "nV")
-            self.ecube = np.ones((len(self.q), len(self.t))) * defaultNoise
-            if idata is not None:
-                self.ecube /= np.sqrt(idata.data.gateL)
         if len(self.ecube) == len(self.q) and necubet == len(self.t):
             self.error = self.ecube.ravel()
 
-        if min(self.error) < 0.:
-            if self.verbose:
-                print(
-                    "Warning: negative errors present! Taking absolute value")
+        if min(self.error) <= 0.:
+            print("Warning: negative errors present! Taking absolute value")
             self.error = np.absolute(self.error)
+        defaultNoise = kwargs.pop("defaultNoise", 100e-9)
         if min(self.error) == 0.:
             if self.verbose:
                 print("Warning: zero error, assuming", defaultNoise)
@@ -179,12 +220,6 @@ class MRS():
             vmin = kwargs['vmin']
             self.error[self.data < vmin] = max(self.error)*3
             self.data[self.data < vmin] = vmin
-        # load model from matlab file (result of MRSQTInversion)
-        if filename[-5:].lower() == '.mrsi' and hasattr(idata, 'inv1Dqt'):
-            if hasattr(idata.inv1Dqt, 'blockMono'):
-                sol = idata.inv1Dqt.blockMono.solution[0]
-                self.model = np.hstack((sol.thk, sol.w, sol.T2))
-                self.nlay = len(sol.w)
         if self.verbose:
             print(self)
 
@@ -261,6 +296,7 @@ class MRS():
         if ax is None:
             fig, ax = plt.subplots(1, 1)
         if islog is None:
+            print(len(vec))
             islog = (min(vec) > 0.)
         negative = (min(vec) < 0)
         if islog:
@@ -347,7 +383,7 @@ class MRS():
         self.INV.setMarquardtScheme(kwargs.pop('lambdaFactor', 0.8))
         self.INV.stopAtChi1(False)  # now in MarquardtScheme
         self.INV.setDeltaPhiAbortPercent(0.5)
-        self.INV.setAbsoluteError(self.error)
+        self.INV.setAbsoluteError(np.abs(self.error))
         self.INV.setRobustData(kwargs.pop('robust', False))
         return self.INV
 
