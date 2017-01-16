@@ -19,6 +19,23 @@ from . mrs import MRS
 from . modelling import MRS1dBlockQTModelling
 
 
+class MultiFOP(pg.ModellingBase):  # classical joint FOP => frameworks
+    def __init__(self, mrsAll, nlay=3):
+        mesh = pg.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
+        pg.ModellingBase.__init__(self, mesh)
+        self.fAll = []
+        for mrs in mrsAll:
+            mrs.createFOP(nlay)
+            self.fAll.append(mrs.f)
+
+    def response(self, model):
+        """compute response by concatenating individual responses."""
+        resp = pg.RVector()
+        for f in self.fAll:
+            resp = pg.cat(resp, f.response(model))
+        return resp
+
+
 class JointMRSModelling(MRS1dBlockQTModelling):
     """MRS Laterally constrained modelling based on BlockMatrices."""
 
@@ -112,7 +129,20 @@ class MRSprofile():
     showModel - show LCI model
     """
 
-    def __init__(self, filename, x=None, dx=1, x0=0, **kwargs):
+    def __init__(self, filename=None, x=None, dx=1, x0=0, **kwargs):
+        """Initialize profile object by mrs objects and optional positions.
+
+        Parameters
+        ----------
+        filename : list of str | str
+            list of files OR filenames(with *) OR directory to load
+        x : iterable
+            position vector of individual soundings
+        x0 : float [0]
+            starting position
+        dx : position [1]
+            position increment
+        """
         self.mrs = []
         self.nData = 0
         self.figs = {}
@@ -122,13 +152,19 @@ class MRSprofile():
         self.TMOD = None
         self.RMSvec = None
         self.Chi2vec = None
-        self.mrsall = None
-        if '*' in filename:
+        self.mrsall =
+        if hasattr(filename, '__iter__'):  # already a list
+            files = filename
+        elif '*' in filename:  # a filename with asterisks
             files = glob(filename)
-        elif os.path.isdir(filename):
+        elif os.path.isdir(filename):  # a directory with all files to take
             files = glob(filename+'/*.mrsi')
             if len(files) == 0:
                 files = glob(filename+'/*.mrsd')
+        else:
+            if filename is not None:
+                print('Do not know what to do with filename')
+            return
         self.load(files, **kwargs)
         if x is not None:
             self.setX(x)
@@ -224,8 +260,8 @@ class MRSprofile():
         self.totalRMS = np.sqrt(sum(np.array(self.RMSvec)**2 *
                                     np.array(self.nData)) / sum(self.nData))
 
-    def block1dInversion(self, nlay=2, startModel=None, verbose=True,
-                         **kwargs):
+    def block1dInversionOld(self, nlay=2, startModel=None, verbose=True,
+                            **kwargs):
         """Invert all data together by one 1D model (variant 1 - all equal)."""
         self.mrsall = MRS()
         self.mrsall.z = self.mrs[0].z
@@ -234,7 +270,8 @@ class MRSprofile():
         self.mrsall.K = np.zeros((0, self.mrs[0].K.shape[1]))
         for mrs in self.mrs:
             self.mrsall.data = np.hstack((self.mrsall.data, mrs.data))
-            self.mrsall.error = np.hstack((self.mrsall.error, mrs.error))
+            self.mrsall.error = np.hstack((self.mrsall.error,
+                                           np.real(mrs.error)))
             self.mrsall.q = np.hstack((self.mrsall.q, mrs.q))
             self.mrsall.K = np.vstack((self.mrsall.K, mrs.K))
 
@@ -243,14 +280,15 @@ class MRSprofile():
             self.mrsall.showResult()
         return self.mrsall.model
 
-    def block1dInversionNew(self, nlay=2, lam=100., verbose=True):
+    def block1dInversion(self, nlay=2, lam=100., show=False, verbose=True):
         """Invert all data together by a 1D model (more general solution)."""
         data, error = pg.RVector(), pg.RVector()
         for mrs in self.mrs:
             data = pg.cat(data, mrs.data)
-            error = pg.cat(error, mrs.error)
+            error = pg.cat(error, np.real(mrs.error))
 
-        f = JointMRSModelling(self.mrs, nlay)
+#        f = JointMRSModelling(self.mrs, nlay)
+        f = MultiFOP(self.mrs, nlay)
         mrsobj = self.mrs[0]
         for i in range(3):
             f.region(i).setParameters(mrsobj.startval[i], mrsobj.lowerBound[i],
@@ -263,7 +301,24 @@ class MRSprofile():
         INV.setDeltaPhiAbortPercent(0.5)
         INV.setAbsoluteError(error)
         model = INV.run()
+        if show:
+            self.show1dModel(model)
+        # %% fill up 2D model (for display only)
+        self.WMOD, self.TMOD = [], []
+        thk = model[0:nlay-1]
+        wc = model[nlay-1:2*nlay-1]
+        t2 = model[2*nlay-1:3*nlay-1]
+        for i in range(len(self.mrs)):
+            self.WMOD.append(np.hstack((thk, wc)))
+            self.TMOD.append(np.hstack((thk, t2)))
+
         return model
+
+    def show1dModel(self, model):
+        """Show 1D model (e.g. of joint block inversion)."""
+        m0 = self.mrs[0]
+        m0.model = model
+        m0.showResult()
 
     def blockLCInversion(self, nlay=2, startModel=None, **kwargs):
         """Laterally constrained (piece-wise 1D) block inversion."""
