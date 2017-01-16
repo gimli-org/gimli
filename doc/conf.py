@@ -186,7 +186,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'GIMLi'
-copyright = '2016 - GIMLi Development Team'
+copyright = '2017 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

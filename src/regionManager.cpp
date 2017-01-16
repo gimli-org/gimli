@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2016 by the resistivity.net development team       *
+ *   Copyright (C) 2008-2017 by the GIMLi development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -1210,7 +1210,7 @@ void RegionManager::setInterRegionConstraint(SIndex aIn, SIndex bIn, double c){
         if (interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(a, b))
              != interRegionInterfaceMap_.end()){
             interRegionConstraints_[std::pair< SIndex, SIndex >(a, b)] = c;
-            if (verbose_){
+            if (debug()){
                std::cout << "regions: " << a << "<->" << b << " " << c << std::endl;
            }
         }

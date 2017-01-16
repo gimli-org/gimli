@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2016 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2017 by the GIMLi development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -135,8 +135,13 @@ public:
     /*! Set the position for the i-th sensor. Resize sensors if necessary.*/
     void setSensorPosition(uint i, const RVector3 & pos);
 
-    /*! Return a single sensor position. */
-    inline const RVector3 & sensorPosition(uint i) const { return sensorPoints_[i]; }
+//         /*! Return a single sensor position. */
+//     inline const RVector3 & sensorPosition(uint i) const {
+//         return sensorPoints_[i]; }
+
+    /*! Return a single sensor position. Syntactic sugar.*/
+    inline const RVector3 & sensorPosition(double i) const {
+        return sensorPoints_[(uint)i]; }
 
     /*! Create a valid sensor at a given position and returns the id of the sensor.
         Is there already a sensor at the given position NO new sensor will be created.

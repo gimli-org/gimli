@@ -26,7 +26,7 @@ Glossary
         Gmsh: a three-dimensional finite element mesh generator with built-in
         pre- and post-processing facilities
         :cite:`GeuzaineRemacle2009`
-        http://geuz.org/gmsh/.
+        http://gmsh.info/.
         See: :py:func:`pygimli.meshtools.mesh.readGmsh`
 
     BERT

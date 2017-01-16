@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2016 by the resistivity.net development team       *
+ *   Copyright (C) 2006-2017 by the GIMLi development team       *
  *   Carsten Rücker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -57,6 +57,7 @@ void setThreadCount(Index nThreads){
 #if OPENBLAS_FOUND
     openblas_set_num_threads(nThreads);
 #endif
+    __GIMLI_THREADCOUNT__ = nThreads;
 }
 
 Index threadCount(){

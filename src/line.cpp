@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2008-2016 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2008-2017 by the GIMLi development team       *
+ *   Carsten Rï¿½cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -81,7 +81,7 @@ RVector3 Line::intersect(const Line & line) const {
     THROW_TO_IMPL
     //check paralell and equal
 
-  //** in 3D: wenn sie sich berühren spannen sie eine Ebene auf.
+  //** in 3D: wenn sie sich berï¿½hren spannen sie eine Ebene auf.
 
 // x0 + s * x1 = x2 + t * x3;
 // x0 - x2 = t * x3 - s * x1;

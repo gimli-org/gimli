@@ -1,7 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2009-2011 by the resistivity.net development team       *
- *   Thomas Günther thomas@resistivity.net                                 *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Copyright (C) 2009-2011 by the GIMLi development team       *
+ *   Thomas Gï¿½nther thomas@resistivity.net                                 *
+ *   Carsten Rï¿½cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,7 +27,7 @@
 
 namespace GIMLI {
 
-RVector MT1dModelling::rhoaphi(const RVector & rho, const RVector & thk) { // after mtmod.c by R.-U. Börner
+RVector MT1dModelling::rhoaphi(const RVector & rho, const RVector & thk) { // after mtmod.c by R.-U. Bï¿½rner
     size_t nperiods = periods_.size();
     RVector rhoa(nperiods), phi(nperiods);
     
@@ -63,7 +63,7 @@ RVector MT1dModelling::response(const RVector & model) {
     return rhoaphi(rho, thk);
 }
 
-RVector MT1dModelling::rhoa(const RVector & rho, const RVector & thk) { // after mtmod.c by R.-U. Börner
+RVector MT1dModelling::rhoa(const RVector & rho, const RVector & thk) { // after mtmod.c by R.-U. Bï¿½rner
     size_t nperiods = periods_.size();
     return rhoaphi(rho, thk)(0,nperiods);
     //CR not needed?

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007-2014 by the resistivity.net development team       *
+ *   Copyright (C) 2007-2014 by the GIMLi development team       *
  *   Carsten Ruecker carsten@resistivity.net                               *
  *   Thomas Guenther thomas@resistivity.net                                *
  *                                                                         *

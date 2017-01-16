@@ -30,7 +30,7 @@ class Refraction(MethodManager):
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, verbose=True, debug=False, **kwargs):
+    def __init__(self, data=None, verbose=False, debug=False, **kwargs):
         """Init function with optional data load"""
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
@@ -420,7 +420,8 @@ class Refraction(MethodManager):
                                   absoluteError=kwargs.pop('noiseAbs', 1e-4),
                                   relativeError=noiseLevel))
 
-            print("Data error estimates (min:max) ",
+            if verbose:
+                print("Data error estimates (min:max) ",
                       min(ret('err')), ":", max(ret('err')))
 
             t += pg.randn(ret.size()) * ret('err')

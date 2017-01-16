@@ -167,8 +167,8 @@ def readGmsh(fname, verbose=False):
     ----------
     fname : string
         Filename of the file to read (\\*.msh). The file must conform
-        to the `MSH ASCII file version 2 <http://geuz.org/gmsh/doc/
-        texinfo/gmsh.html#MSH-ASCII-file-format>`_ format.
+        to the `MSH ASCII file version 2
+        <http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format>`_ format.
     verbose : boolean, optional
         Be verbose during import.
 
@@ -178,9 +178,9 @@ def readGmsh(fname, verbose=False):
 
     - Points with the physical number 99 are interpreted as sensors.
     - Physical Lines and Surfaces define boundaries in 2D and 3D, respectively.
-        - Physical Number 1: homogeneous Neumann condition
-        - Physical Number 2: mixed boundary condition
-        - Physical Number 3: homogeneous Dirichlet condition
+        - Physical Number 1: Homogeneous Neumann condition
+        - Physical Number 2: Mixed boundary condition
+        - Physical Number 3: Homogeneous Dirichlet condition
         - Physical Number 4: Dirichlet condition
     - Physical Surfaces and Volumes define regions in 2D and 3D, respectively.
         - Physical Number 1: No inversion region
@@ -295,7 +295,7 @@ def readGmsh(fname, verbose=False):
                     pg.MARKER_BOUND_HOMOGEN_DIRICHLET,
                     pg.MARKER_BOUND_DIRICHLET)
 
-    if len(bounds) == 0:
+    if bounds.any():
         for i in range(4):
             bounds[:, dim][bounds[:, dim] == i + 1] = bound_marker[i]
 
@@ -307,8 +307,8 @@ def readGmsh(fname, verbose=False):
             print('  Boundary types: %s ' % len(bound_types) + str(tuple(
                 bound_types)))
     else:
-        if verbose:
-            print("WARNING: No boundary conditions found.")
+        print("WARNING: No boundary conditions found.",
+              "Setting Neumann on the outer edges by default.")
 
     if verbose:
         regions = np.unique(cells[:, dim + 1])
@@ -333,6 +333,11 @@ def readGmsh(fname, verbose=False):
 
     mesh.createNeighbourInfos()
 
+    # Set Neumann on outer edges by default (can be overriden by Gmsh info later)
+    for b in mesh.boundaries():
+        if not b.leftCell() or not b.rightCell():
+            b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+
     for bound in bounds:
         if dim == 2:
             mesh.createEdge(
@@ -344,12 +349,12 @@ def readGmsh(fname, verbose=False):
                 mesh.node(int(bound[2] - 1)), marker=int(bound[3]))
 
     # assign marker to corresponding nodes (sensors, reference nodes, etc.)
-    if len(points) > 0:
+    if points:
         for point in points:
             mesh.node(point[0] - 1).setMarker(-point[1])
 
     if verbose:
-        if len(points) > 0:
+        if points:
             points = np.asarray(points)
             node_types = np.unique(points[:, 1])
             print('  Marked nodes: %s ' % len(points) + str(tuple(node_types)))

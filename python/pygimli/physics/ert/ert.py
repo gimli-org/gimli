@@ -45,8 +45,20 @@ class ERTModelling(pg.ModellingBase):
             pg.ModellingBase.setMesh(self, mesh)
 
     def calcGeometricFactor(self, data):
-        """Calculate geomtry factors for a given dataset."""
-        raise BaseException("implement me" + str(data))
+        """Calculate geometry factors for a given dataset."""
+        if pg.y(data.sensorPositions()) == pg.z(data.sensorPositions()):
+            k = np.zeros(data.size())
+            for i in range(data.size()):
+                a = data.sensorPosition(data('a')[i])
+                b = data.sensorPosition(data('b')[i])
+                m = data.sensorPosition(data('m')[i])
+                n = data.sensorPosition(data('n')[i])
+                k[i] = 1./(2.*np.pi) * \
+                       1./(a.dist(m) - a.dist(n) - b.dist(m) + b.dist(b))
+            return k
+        else:
+            raise BaseException("Please use BERT for non-standard "
+                                "data sets" + str(data))
 
 
     def uAnalytical(self, p, sourcePos, k):
@@ -139,14 +151,18 @@ class ERTModelling(pg.ModellingBase):
         return rhs
 
     def response(self, model):
-        """TODO WRITEME."""
+        """Solve forward task.
+
+        Create apparent resistivity values for a given resistivity distribution
+        for self.mesh.
+        """
         mesh = self.mesh()
 
         nDof = mesh.nodeCount()
         nEle = len(self.electrodes)
         nData = self.data.size()
 
-        self.resistivity = res = self.createMappedModel(model, -1)
+        self.resistivity = res = self.createMappedModel(model, -1.0)
 
         if self.verbose():
             print("Calculate response for model:", min(res), max(res))
@@ -164,7 +180,6 @@ class ERTModelling(pg.ModellingBase):
         # store all potential fields
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
-
         for i, ki in enumerate(k):
             uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
                           duB=self.mixedBC,
@@ -172,7 +187,6 @@ class ERTModelling(pg.ModellingBase):
                           verbose=False, stat=0, debug=False,
                           ret=self.subPotentials[i])
             u += w[i] * uE
-
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
         pM = np.zeros((nEle, nEle))
@@ -288,8 +302,7 @@ class ERTManager(MeshMethodManager):
 
     def createInv(self, fop, verbose=True, dosave=False):
         """Create inversion instance."""
-        #self.tD = pg.RTransLog()
-        self.tD = pg.RTransLin()
+        self.tD = pg.RTransLog()
         self.tM = pg.RTransLogLU()
 
         inv = pg.RInversion(verbose, dosave)
@@ -310,14 +323,29 @@ class ERTManager(MeshMethodManager):
         if not scheme.allNonZero('k'):
             scheme.set('k', pg.RVector(scheme.size(), -1))
 
-        rhoa = fop.response(res)
+        rhoa = None
+        isArrayData = None
 
-        err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
-        scheme.set('err', err)
-        rhoa *= 1. + pg.randn(scheme.size()) * err
-        scheme.set('rhoa', rhoa)
+        if hasattr(res[0], '__iter__'):
+            isArrayData = True
+            rhoa = np.zeros((len(res), scheme.size()))
+            for i, r in enumerate(res):
+                rhoa[i] = fop.response(r)
+        else:
+            rhoa = fop.response(res)
 
-        #noiseLevel = kwargs.pop('noiseLevel', 0)
+        noiseLevel = kwargs.pop('noiseLevel', 0.0)
+        if noiseLevel > 0:
+
+            err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
+            scheme.set('err', err)
+            rhoa *= 1. + pg.randn(scheme.size()) * err
+
+            if not isArrayData:
+                scheme.set('rhoa', rhoa)
+
+        if kwargs.pop('returnArray', False):
+            return rhoa
         return scheme
 
     def createApparentData(self, data):
@@ -332,6 +360,12 @@ def createERTData(elecs, schemeName='none', **kwargs):
     if schemeName is not "dd":
         import pybert as pb
         return bp.createData(elecs, schemeName, **kwargs)
+
+    if isinstance(elecs, pg.RVector):
+        sPos = []
+        for e in elecs:
+            sPos.append(pg.RVector3(e, 0., 0.))
+        elecs = sPos
 
     isClosed = kwargs.pop('closed', False)
 
