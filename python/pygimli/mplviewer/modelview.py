@@ -119,7 +119,7 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     if title is not None:
         ax.set_title(title)
 
-    pg.mplviewer.createColorbar(p, cMin=cmin, cMax=cmax, nLevs=5)
+    pg.mplviewer.createColorBar(p, cMin=cmin, cMax=cmax, nLevs=5)
 
 #    cb = plt.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
 #    xt = [10, 20, 50, 100, 200, 500]
