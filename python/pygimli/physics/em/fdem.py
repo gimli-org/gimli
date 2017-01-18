@@ -608,7 +608,7 @@ class FDEM():
         fig, ax = plt.subplots(1, 3, figsize=figsize)
 
         model = np.asarray(model)
-        nlay = (len(model) + 1) / 2
+        nlay = int((len(model) + 1) / 2)
 
         thk = model[:nlay - 1]
         res = model[nlay - 1: 2 * nlay - 1]

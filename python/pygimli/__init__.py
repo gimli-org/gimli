@@ -15,6 +15,7 @@ import os
 from . import core
 from ._version import get_versions
 from .core import *
+from .testing import test
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):
@@ -54,72 +55,6 @@ if '--debug' in sys.argv:
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
         print("Warning! unrecognized keyword arguments", kwargs)
-
-
-def test(target=None, show=False, onlydoctests=False, coverage=False,
-         htmlreport=False):
-    """Run docstring examples and additional tests.
-
-    Examples
-    --------
-    >>> import pygimli as pg
-    >>> from pygimli.utils import boxprint
-    >>> pg.test(boxprint)
-
-    Parameters
-    ----------
-    target : function, optional
-        Function or method to test. By default everything is tested.
-    show : boolean, optional
-        Show matplotlib windows during test run. They will be closed
-        automatically.
-    onlydoctests : boolean, optional
-        Run test files in ../tests as well.
-    coverage : boolean, optional
-        Create a coverage report. Requires the pytest-cov plugin.
-    htmlreport : str, optional
-        Filename for HTML report such as www.pygimli.org/build_tests.html.
-        Requires pytest-html plugin.
-    """
-    import matplotlib.pyplot as plt
-    from pygimli.io import opt_import
-
-    old_backend = plt.get_backend()
-    if not show:
-        plt.switch_backend("Agg")
-
-    if target:
-        import doctest
-        doctest.run_docstring_examples(target, globals())
-        return
-
-    try:
-        import pytest
-    except ImportError:
-        raise ImportError("pytest is required to run test suite. "
-                          "Try 'sudo pip install pytest'.")
-
-    pc = opt_import("pytest_cov", "create a code coverage report")
-    ph = opt_import("pytest_html", "create a html report")
-
-    cwd = os.path.realpath(__path__[0])
-    cfg = os.path.join(cwd, "../tests/setup.cfg")
-    cmd = ""
-    if os.path.exists(cfg):
-        cmd += "-c %s " % cfg
-    if pc and coverage:
-        cmd += "--cov pygimli --cov-report term " + \
-               "--cov-config %s " % cfg.replace("setup.cfg", ".coveragerc")
-    if ph and htmlreport:
-        cmd += "--html %s " % htmlreport
-    cmd += "%s " % cwd
-    if not onlydoctests and os.path.exists(cfg):
-        cmd += os.path.join(cwd, "../tests")
-
-    exitcode = pytest.main(cmd)
-    plt.switch_backend(old_backend)
-    plt.close('all')
-    sys.exit(exitcode)
 
 
 __version__ = get_versions()['version']
