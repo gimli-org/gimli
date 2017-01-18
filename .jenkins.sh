@@ -54,7 +54,7 @@ export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 python << END
 import pygimli as pg
 print(pg.__version__)
-pg.test(onlydoctests=False, show=False, htmlreport='build_tests.html', exitcode=True)
+pg.test(htmlreport='build_tests.html', abort=True)
 END
 
 # Build documentation
