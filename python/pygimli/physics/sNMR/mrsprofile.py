@@ -322,7 +322,7 @@ class MRSprofile():
 
     def show1dModel(self):
         """Show 1D model (e.g. of joint block inversion)."""
-        self.mrs[0].showResult()
+        self.figs['1dmodel'], ax = self.mrs[0].showResult()
 
     def blockLCInversion(self, nlay=2, startModel=None, **kwargs):
         """Laterally constrained (piece-wise 1D) block inversion."""
@@ -431,6 +431,12 @@ class MRSprofile():
             ax[0].set_xlim(xl)
 
         return fig, ax
+
+    def saveFigs(self, basename="out", extension="pdf"):
+        """Save all figures to (pdf) files."""
+        for key in self.figs:
+            self.figs[key].savefig(basename+"-"+key+"."+extension,
+                                   bbox_inches='tight')
 
 if __name__ == "__main__":
     name = sys.argv[-1]

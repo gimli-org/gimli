@@ -80,6 +80,7 @@ class MRS():
         self.startval = [10., 0.30, 0.20]  # d, theta, T2*
         self.logpar = False
         self.basename = 'new'
+        self.figs = {}
         if name is not None:  # load data and kernel
             # check for mrsi/d/k
             if name[-5:-1].lower() == '.mrs':  # mrsi or mrsd
@@ -339,13 +340,16 @@ class MRS():
         self.showCube(ax[1], self.error * 1e9, islog=True)
         if show:
             plt.show()
+        self.figs['data+error'] = fig
         return fig, ax
 
     def showKernel(self, ax=None):
         """Show the kernel as matrix (Q over z)."""
         if ax is None:
             fig, ax = plt.subplots()
-        ax.imshow(self.K.T, interpolation='nearest', aspect='auto')
+            self.figs['kernel'] = fig
+#        ax.imshow(self.K.T, interpolation='nearest', aspect='auto')
+        ax.matshow(self.K.T, aspect='auto')
         yt = ax.get_yticks()
         maxzi = self.K.shape[1]
         yt = yt[(yt >= 0) & (yt < maxzi)]
@@ -424,6 +428,8 @@ class MRS():
         """Show theta(z) and T2*(z) (+uncertainties if there)."""
         if ax is None:
             fig, ax = plt.subplots(1, 2, sharey=True, figsize=figsize)
+            self.figs['result'] = fig
+
         thk, wc, t2 = self.splitModel()
         showWC(ax[0], thk, wc)
         showT2(ax[1], thk, t2)
@@ -442,6 +448,7 @@ class MRS():
                          maxdep=0, clim=None):
         """Show ec(z), T2*(z), data and model response."""
         fig, ax = plt.subplots(2, 2 + plotmisfit, figsize=figsize)
+        self.figs['result+fit'] = fig
         thk, wc, t2 = self.splitModel()
         showWC(ax[0, 0], thk, wc, maxdep=maxdep)
         showT2(ax[0, 1], thk, t2, maxdep=maxdep)
@@ -663,6 +670,7 @@ class MRS():
         if maxfitness is None:
             maxfitness = min(self.fits) * fitratio
         fig, ax = plt.subplots(1, 2, sharey=True)
+        self.figs['population'] = fig
         maxz = 0
         for ind in self.pop:
             if ind.fitness < maxfitness:
@@ -708,6 +716,7 @@ class MRS():
         labels = ['average', 'median', 'best', 'worst']
 
         fig, ax = plt.subplots()
+        self.figs['statistics'] = fig
         ax.errorbar(gen, avg, stderr, color=colors[0], label=labels[0])
         ax.set_yscale('log')
         for d, col, lab in zip(data[1:], colors[1:], labels[1:]):
@@ -721,6 +730,14 @@ class MRS():
         ax.legend(loc='upper left')  # , prop=prop)
         ax.set_xlabel('Generation')
         ax.set_ylabel('Fitness')
+
+    def saveFigs(self, basename=None, extension="pdf"):
+        """Save all figures to (pdf) files."""
+        if basename is None:
+            basename = self.basename
+        for key in self.figs:
+            self.figs[key].savefig(basename+"-"+key+"."+extension,
+                                   bbox_inches='tight')
 
 if __name__ == "__main__":
     datafile = 'example.mrsi'
