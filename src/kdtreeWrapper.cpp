@@ -1,31 +1,29 @@
-/***************************************************************************
- *   Copyright (C) 2006-2011 by the GIMLi development team       *
- *   Carsten R�cker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "kdtreeWrapper.h"
 
 #include "node.h"
-   
+
 namespace GIMLI{
-    
+
 inline double tac( Node * n, size_t i ) { return n->pos()[ i ]; }
-    
+
 KDTreeWrapper::KDTreeWrapper(){
     tree_ = new NodeKDTree( std::ptr_fun( tac ) );
 }
@@ -34,8 +32,8 @@ KDTreeWrapper::~KDTreeWrapper(){
     if ( tree_ ) delete tree_;
 }
 
-void KDTreeWrapper::insert( Node * node ){ 
-    tree_->insert( node ); 
+void KDTreeWrapper::insert( Node * node ){
+    tree_->insert( node );
 }
 
 Node * KDTreeWrapper::nearest( const RVector3 & pos ){
@@ -47,8 +45,8 @@ uint KDTreeWrapper::size( ) const{
     return tree_->size();
 }
 
-NodeKDTree * KDTreeWrapper::tree() { 
-    return tree_; 
+NodeKDTree * KDTreeWrapper::tree() {
+    return tree_;
 }
 
 } // namespace GIMLI

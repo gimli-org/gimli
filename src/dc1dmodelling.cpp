@@ -1,23 +1,21 @@
-/***************************************************************************
- *   Copyright (C) 2009-2011 by the GIMLi development team       *
- *   Thomas G�nther thomas@resistivity.net                                 *
- *   Carsten R�cker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2009-2017 by the GIMLi development team                    *
+ *   Thomas Günther thomas@resistivity.net                                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "gimli.h"
 #include "datacontainer.h"
@@ -26,13 +24,13 @@
 
 namespace GIMLI {
 
-DC1dModelling::DC1dModelling(size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn, 
+DC1dModelling::DC1dModelling(size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn,
                               bool verbose)
 : ModellingBase(verbose), nlayers_(nlayers), am_(am), an_(an), bm_(bm), bn_(bn){
     init_();
     setMesh(createMesh1DBlock(nlayers));
-    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_);        
-    meanrhoa_ = 100.0; //*** hack   
+    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_);
+    meanrhoa_ = 100.0; //*** hack
 }
 
 DC1dModelling::DC1dModelling(size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose)
@@ -43,13 +41,13 @@ DC1dModelling::DC1dModelling(size_t nlayers, const RVector & ab2, const RVector 
     an_ = ab2 + mn2;
     bm_ = ab2 + mn2;
     bn_ = ab2 - mn2;
-    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_); 
-    meanrhoa_ = 100.0; //*** hack   
+    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_);
+    meanrhoa_ = 100.0; //*** hack
 }
 
-DC1dModelling::DC1dModelling(size_t nlayers, DataContainer & data, bool verbose) 
+DC1dModelling::DC1dModelling(size_t nlayers, DataContainer & data, bool verbose)
 : ModellingBase(verbose), nlayers_ (nlayers),
-am_(RVector(data.size(), 9e9)), an_(RVector(data.size(), 9e9)), 
+am_(RVector(data.size(), 9e9)), an_(RVector(data.size(), 9e9)),
 bm_(RVector(data.size(), 9e9)), bn_(RVector(data.size(), 9e9)){
     init_();
     setMesh(createMesh1DBlock(nlayers));
@@ -65,12 +63,12 @@ bm_(RVector(data.size(), 9e9)), bn_(RVector(data.size(), 9e9)){
         if (ib >= 0 && im >= 0) bm_[i] = spos[ib].distance(spos[im]);
         if (ib >= 0 && in >= 0) bn_[i] = spos[ib].distance(spos[in]);
     }
-    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_); 
-    meanrhoa_ = 100.0; //*** hack   
+    k_ = (2.0 * PI) / (1.0 / am_ - 1.0 / an_ - 1.0 / bm_ + 1.0 / bn_);
+    meanrhoa_ = 100.0; //*** hack
 
     if (data.allNonZero("rhoa")) meanrhoa_ = mean(data("rhoa"));
 }
-    
+
 RVector DC1dModelling::response(const RVector & model) {
     if (model.size() < (nlayers_ * 2 - 1)){
         throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 2 - 1) + " > " + toStr(model.size()));
@@ -78,7 +76,7 @@ RVector DC1dModelling::response(const RVector & model) {
     if (model.size() > (nlayers_ * 2 - 1)){
         throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 2 - 1) + " < " + toStr(model.size()));
     }
-    
+
     RVector rho(nlayers_);
     RVector thk(nlayers_ - 1);
     for (size_t i = 0 ; i < nlayers_ -1 ; i++) thk[i] = model[i];
@@ -407,19 +405,19 @@ RVector DC1dModellingC::response(const RVector & model) {
     if (model.size() > (nlayers_ * 3 - 1)){
         throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 3 - 1) + " < " + toStr(model.size()));
     }
-    
+
     RVector thk(model(0,               nlayers_ -1));
     RVector rhoM(model(nlayers_ - 1,    2 * nlayers_ -1));
     RVector rhoP(- model(2 * nlayers_ -1, 3 * nlayers_ -1));
-    
+
 //     for (size_t i = 0 ; i < nlayers_ -1 ; i++) thk[i] = model[i];
 //     for (size_t i = 0 ; i < nlayers_ ; i++) rhoM[i] = model[nlayers_ + i -1];
 //     for (size_t i = 0 ; i < nlayers_ ; i++) rhoP[i] = - model[2 * nlayers_ + i -1];
     CVector rhoC = toComplex(RVector(rhoM * cos(rhoP)), RVector(rhoM * sin(rhoP)));
-    
+
     CVector rhoaC = rhoaT< CVector >(rhoC, thk);
     RVector angPlus = abs(angle(rhoaC));
-    
+
     return cat(abs(rhoaC), angPlus);
 }
 

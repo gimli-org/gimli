@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #ifndef _GIMLI_NODE__H
 #define _GIMLI_NODE__H
@@ -41,7 +39,7 @@ class DLLEXPORT Node : public BaseEntity {
 public:
     /*! Construct node with non valid position and marker = 0 */
     Node();
-    
+
     /*! Construct node from koordinates $x,y,[z]$ with marker = 0 */
     Node(double x, double y, double z=0.0);
 
@@ -59,13 +57,13 @@ public:
 
     /*! Destruct the node and all containing informations */
     ~Node();
-    
+
     /*! Unchecked index operator to pos */
     inline double & operator [] (const Index i) { return this->at(i); }
 
     /*! Unchecked index operator to pos */
     inline const double & operator [] (const Index i) const { return this->at(i); }
-    
+
     inline uint rtti() const { return MESH_NODE_RTTI; }
 
     inline void setPos(const RVector3 & pos) { pos_ = pos; }
@@ -103,9 +101,9 @@ public:
     inline const double & z() const { return pos_[2]; }
 
     inline double & at(Index i) { return pos_[i]; }
-    
+
     inline const double & at(Index i) const { return pos_[i]; }
-    
+
     inline double dist(const Node & n) const { return pos_.dist(n.pos()); }
 
     /*!*/
@@ -114,7 +112,7 @@ public:
 protected:
 
     void copy_(const Node & node);
-    
+
     void changed_();
 
     void init_();

@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2008-2014 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2008-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #ifndef GIMLI_MESHGENERATORS__H
 #define GIMLI_MESHGENERATORS__H
@@ -35,7 +33,7 @@ DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, int marker=0);
 DLLEXPORT Mesh createGrid(const RVector & x, const RVector & y, const RVector & z, int marker=0);
 
 /*! Generate simple one dimensional mesh with nodes at position in RVector pos. */
-DLLEXPORT Mesh createMesh1D(const RVector & x); 
+DLLEXPORT Mesh createMesh1D(const RVector & x);
 
 /*! Generate simple 1D mesh with nCells cells of length 1, and nCells + 1 nodes.
  * In case of more than one property quasi-2d mesh with regions is generated.*/
@@ -47,7 +45,7 @@ DLLEXPORT Mesh createMesh1DBlock(Index nLayers, Index nProperties=1);
 /*! Generate simple two dimensional mesh with nodes at position in RVector x and y. */
 DLLEXPORT Mesh createMesh2D(const RVector & x, const RVector & y, int markerType=0);
 
-/*! Generate a simple 2D mesh by extruding a 1D polygone into 
+/*! Generate a simple 2D mesh by extruding a 1D polygone into
  * RVector y using quads.
  * We assume a 2D mesh here consisting on nodes and edge boundaries.
  * Nodes with marker are extruded as edges with marker or set to front- and backMarker.
@@ -57,7 +55,7 @@ DLLEXPORT Mesh createMesh2D(const Mesh & mesh, const RVector & y,
                             int frontMarker=0, int backMarker=0,
                             int leftMarker=0, int rightMarker=0,
                             bool adjustBack=false);
-                            
+
 /*! Generate simple two dimensional mesh with nRows x nCols cells with each length = 1.0 */
 DLLEXPORT Mesh createMesh2D(Index xDim, Index yDim, int markerType=0);
 

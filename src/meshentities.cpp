@@ -1,25 +1,23 @@
-/***************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "meshentities.h"
-  
+
 #include "node.h"
 #include "shape.h"
 
@@ -42,9 +40,9 @@ Boundary * findBoundary_(const std::set < Boundary *> & common){
     return NULL;
 }
 
-Boundary * findBoundary(const Node & n1) { 
-    if (n1.boundSet().size()) return *n1.boundSet().begin(); 
-    return NULL;; 
+Boundary * findBoundary(const Node & n1) {
+    if (n1.boundSet().size()) return *n1.boundSet().begin();
+    return NULL;;
 }
 
 Boundary * findBoundary(const Node & n1, const Node & n2) {
@@ -59,7 +57,7 @@ Boundary * findBoundary(const Node & n1, const Node & n2, const Node & n3) {
     return findBoundary_(common);
 }
 
-Boundary * findBoundary(const Node & n1, const Node & n2, const Node & n3, 
+Boundary * findBoundary(const Node & n1, const Node & n2, const Node & n3,
                         const Node & n4){
     std::set < Boundary * > common;
     intersectionSet(common, n1.boundSet(), n2.boundSet(),
@@ -72,11 +70,11 @@ Boundary * findBoundary(const std::vector < Node * > & n) {
     else if (n.size() == 2) return findBoundary(*n[0], *n[1]);
     else if (n.size() == 3) return findBoundary(*n[0], *n[1], *n[2]);
     else if (n.size() == 4) return findBoundary(*n[0], *n[1], *n[2], *n[3]);
-    
+
     std::vector < std::set< Boundary * > > bs(n.size());
 
     for (uint i = 0; i < n.size(); i ++) bs[i] = n[i]->boundSet();
-    
+
     std::set < Boundary * > common;
     intersectionSet(common, bs);
 
@@ -86,7 +84,7 @@ Boundary * findBoundary(const std::vector < Node * > & n) {
 Boundary * findCommonBoundary(const Cell & c1, const Cell & c2){
     for (Index i = 0; i < c1.boundaryCount(); i ++){
         Boundary * b = findBoundary(c1.boundaryNodes(i));
-        if ((b->leftCell() == &c1 && b->rightCell() == &c2) || 
+        if ((b->leftCell() == &c1 && b->rightCell() == &c2) ||
             (b->leftCell() == &c2 && b->rightCell() == &c1)){
             return b;
         }
@@ -215,8 +213,8 @@ RVector3 MeshEntity::center() const {
 double MeshEntity::size() const {
     return shape_->domainSize();
 }
-    
- 
+
+
 void MeshEntity::fillShape_(){
     if (shape_){
         if (shape_->nodeCount() > this->nodeCount()){
@@ -382,7 +380,7 @@ Boundary * Cell::boundaryTo(const RVector & sf){
         return NULL;
     }
     if (common.size() == 1) return (*common.begin());
-        
+
     // remove bounds from foreign cells
 //     std::cout << WHERE << "common.size() remove foreign: " << common.size()<< std::endl;
     for (std::set < Boundary * >::iterator it = common.begin(); it != common.end();){
@@ -416,7 +414,7 @@ Boundary * Cell::boundaryTo(const RVector & sf){
 
 //     std::cout << WHERE << "common.size() remove foreign: "
 //      << common.size()<< std::endl;
-    
+
     if (common.size() == 0) {
         std::cerr << " this.should not happen" << std::endl;
         std::cout << rtti() << " " << *this  << std::endl;
@@ -441,19 +439,19 @@ Cell * Cell::neighbourCell(const RVector & sf){
         exit(0);
         return NULL;
     }
-        
+
     //** hack for edge, triangle and tetrahedron. pls refactor
     if (((sf.size() == 2) && (shape_->dim() == 1)) ||
-        ((sf.size() == 3) && (shape_->dim() == 2)) 
+        ((sf.size() == 3) && (shape_->dim() == 2))
         //|| ((sf.size() == 4) && (shape_->dim() == 3))
     ){
         Index minId = find(sf == min(sf))[0];
-    
+
 //         Boundary * b = boundaryTo(sf);
 //        __MS(b)
 //        __MS(b->leftCell())
 //        __MS(b->rightCell())
-    
+
         return neighbourCells_[minId];
     }
 
@@ -516,7 +514,7 @@ void Boundary::deRegisterNodes_(){
         if (nodeVector_[i]) nodeVector_[i]->eraseBoundary(*this);
     }
 }
-   
+
 RVector3 Boundary::rst(uint i) const {
     if (this->nodeCount() == shape_->nodeCount()) return shape_->rst(i);
     std::cerr << "need local coordinate function implementation for meshEntity " << rtti() << std::endl;
@@ -591,7 +589,7 @@ void Edge::setNodes(Node & n1, Node & n2, bool changed){
     if (changed) deRegisterNodes_();
 
     std::vector < Node * > nodes;
-    nodes.push_back(&n1); 
+    nodes.push_back(&n1);
     nodes.push_back(&n2);
     setNodes_(nodes);
     registerNodes_();
@@ -969,7 +967,7 @@ std::vector < PolynomialFunction < double > > Quadrangle::createShapeFunctions()
 }
 
 std::vector < Node * > Quadrangle::boundaryNodes(Index i) const {
-    
+
     std::vector < Node * > nodes(2);
     for (Index j = 0; j < 2; j ++) nodes[j] = nodeVector_[(i+j)%4];
     return nodes;

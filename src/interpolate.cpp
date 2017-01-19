@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team       *
- *   Carsten R�cker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "interpolate.h"
 
@@ -32,24 +30,24 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
                  bool verbose){
 
     R3Vector pos(ipos);
-    
+
     if (mesh.dim() == 2){
-        if ((zVari(pos) || max(abs(z(pos))) > 0.) && 
+        if ((zVari(pos) || max(abs(z(pos))) > 0.) &&
             (!yVari(pos) && max(abs(y(pos))) < 1e-8)) {
-            if (verbose) 
+            if (verbose)
                 std::cout << "Warning! swap YZ coordinates for query "
                             "positions to meet mesh dimensions." << std::endl;
             swapYZ(pos);
         }
     }
-        
+
     if (iData.rows() != vData.rows()){
         iData.resize(vData.rows(), pos.size());
     }
 
     std::vector < Cell * > cells(pos.size());
     size_t count = 0;
-    
+
     Cell * c = 0;
     for (uint i = 0; i < pos.size(); i ++) {
 //         __MS(pos[i])
@@ -67,9 +65,9 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
 
     for (uint i = 0; i < vData.rows(); i ++) {
         if (verbose) std::cout << "\r" << i + 1 << " \t/ " << vData.rows();
-        
+
         RVector data;
-        
+
         if (vData[i].size() != 0){
 
             if (vData[i].size() == mesh.nodeCount()){
@@ -78,18 +76,18 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
                 data = cellDataToPointData(mesh, vData[i]);
             } else {
                 throwLengthError(EXIT_VECTOR_SIZE_INVALID,
-                                 WHERE_AM_I + 
-                                 " data.size not nodeCount and cellCount " + 
-                                 toStr(vData[i].size()) + " != " + 
-                                 toStr(mesh.nodeCount()) + " != " + 
+                                 WHERE_AM_I +
+                                 " data.size not nodeCount and cellCount " +
+                                 toStr(vData[i].size()) + " != " +
+                                 toStr(mesh.nodeCount()) + " != " +
                                  toStr(mesh.cellCount()));
             }
 
             for (uint j = 0; j < pos.size(); j ++) {
                 if (cells[j]){
                     iData[i][j] = cells[j]->pot(pos[j], data);
-                    
-//              this check is obsolete if the findCell (from above) is working properly                     
+
+//              this check is obsolete if the findCell (from above) is working properly
 //                     if (cells[j]->shape().isInside(pos[j])){
 //                         iData[i][j] = cells[j]->pot(pos[j], data);
 //                     } else {
@@ -99,7 +97,7 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
 //                    std::cout << j << " " << iData[i][j] << std::endl;
                     //** return cell data
 //                    iData[i][j] = vData[i][cells[j]->id()];
-                } else {        
+                } else {
                     iData[i][j] = 0.0;
                     //std::cout << "Cant find cell for " << pos[j]<< std::endl;
 //                     for (uint i = 0; i < mesh.cellCount(); i ++){
@@ -115,9 +113,9 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
     if (verbose) std::cout << std::endl;
 }
 
-void interpolate(const Mesh & mesh, const RVector & data, 
+void interpolate(const Mesh & mesh, const RVector & data,
                  const Mesh & pos, RVector & iData, bool verbose){
-                    
+
     RMatrix vData; vData.push_back(data);
     RMatrix viData;
     interpolate(mesh, vData, pos.positions(), viData, verbose);
@@ -126,7 +124,7 @@ void interpolate(const Mesh & mesh, const RVector & data,
 
 RVector interpolate(const Mesh & mesh, const RVector & data,
                     const R3Vector & pos, bool verbose){
-    
+
     RMatrix vData; vData.push_back(data);
     RMatrix viData;
     interpolate(mesh, vData, pos, viData, verbose);
@@ -153,7 +151,7 @@ void interpolate(const Mesh & mesh, const RVector & data,
 RVector interpolate(const Mesh & mesh, const RVector & data,
                     const RVector & x, const RVector & y,
                     const RVector & z, bool verbose){
-    
+
     if (x.size() != y.size() || x.size() != z.size()) {
         throwLengthError(EXIT_VECTOR_SIZE_INVALID, " x.size invalid y.size invalid z.size() "
                 + toStr(x.size()) + " != " + toStr(y.size()) + " != " + toStr(z.size()));
@@ -201,7 +199,7 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose){
                 it->second.size()<< std::endl;
         }
     }
-    
+
     if (cellData.rows() > 0){
         RMatrix qCellData;
         interpolate(mesh, cellData, qmesh.cellCenter(), qCellData, verbose) ;

@@ -1,3 +1,9 @@
+2017-01-19
+    Change License to Apache-v2.0
+
+2013-2017
+    See git commit messages
+
 2013-12-19
     pygimli:
         meshconvert.py
@@ -9,25 +15,25 @@
 2013-09-04
     pygimli:
         - automatic right-value type conversion for sequence< Tuple> to std::vector < RVector3 >
-        
+
 2012-08-24
     pygimli
         - automatic right-value type conversion for RVector(any sequence with elements that can be transformed into doubles)
             - obsoletes libgimli.asvector() but need heavy testing
         - automatic right-value type conversion for RVector3( list(3), typle(3) )
-    
+
         - add prototype for solver tutorial (not yet functional)
 
 2012-08-22
     pygimli
-        - add app: createParaMesh.py to replace the old dcfemlib createParaMesh 
+        - add app: createParaMesh.py to replace the old dcfemlib createParaMesh
             - currently support only grid/triangle hybrid meshes
 
 2012-08-17
     libgimli::mesh()
         - replaced pIndx by sf( shape function) in isInside method for more sophisticated neighbor search
         - fixed:  slopesearch
-        
+
 2012-08-13
     libgimli::mesh()
         - new createH2 method to support all mesh entity types (need tests)
@@ -68,12 +74,12 @@
         - renamed dimension() -> dim()
         - removed all stuff called 'Shapefunctions' and 'deriveShapeFunctions'  and so on
         - add N, dNdL
-        
+
     tests/basics:
         - add script showShapeFunctions3D.py (create vtk-files for all 3d shapefunctions
         - add script testShapePoly.py (play around with shape function generation)
 
-    
+
 
 2012-07-10
     libgimli
@@ -89,15 +95,15 @@
             -add new quadrature weights/abs for generic triangle (not yet tested for fem)
             -convert integration rules to singleton class
         add singleton template class
-                    
+
 2012-03-28
     libgimli
         add mesh.importSTL, stl-ascii seams to work, stl-binary need tests
 
 2012-03-26
     libgimli
-        fixed bug in Mesh::createNeighbourInfos(). 
-        Sometimes it could happen that a boundary got the wrong left or right cell. 
+        fixed bug in Mesh::createNeighbourInfos().
+        Sometimes it could happen that a boundary got the wrong left or right cell.
         Unsure if this played any role before. The correct right or left cell for each boundary is essential for gravimetric calculation using integration over boundaries.
     gravimetric:
         add very basic 2d gravimetric modelling based on cell or boundary integration.
@@ -114,12 +120,12 @@
 
 2012-01-27
     version bump -> 0.9.0
-    internal change of jacobian storage. 
+    internal change of jacobian storage.
     Jacobian is now stored in forward modelling class.
-    
+
 
 2012-01-17
-    meshconvert.py 
+    meshconvert.py
         - add input support for *.mod(dc2dinvres), *.vtk, *.vtu(untested)
         - add interpolation into external coordinates to apply a 2D->3D transformation.
             --interpolateCoords=(file) file is a 3-column-ascii-file (dxy x y) to interpolate a 2D-mesh into 3D coordinates

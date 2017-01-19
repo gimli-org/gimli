@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2012-2017 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2012-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #ifndef _GIMLI_POLYNOMIAL__H
 #define _GIMLI_POLYNOMIAL__H
@@ -37,13 +35,13 @@ template< class ValueType > class PolynomialElement {
 public:
     PolynomialElement( Index i, Index j, Index k, const ValueType & val )
     :   i_( i ), j_( j ), k_( k ), val_( val ){
-        
+
     }
-    
+
     inline ValueType operator () ( const Pos< ValueType > & xyz ) const {
         return val_ * powInt( xyz[ 0 ], i_ ) * powInt( xyz[ 1 ], j_ ) * powInt( xyz[ 2 ], k_ );
     }
-    
+
     Index i_, j_, k_;
     ValueType val_;
 };
@@ -61,25 +59,25 @@ template < class ValueType > bool operator == ( const PolynomialElement < ValueT
     return ( ( a.i_ == b.i_ ) && ( a.j_ == b.j_ ) && ( a.k_ == b.k_ ) && ( a.val_ == b.val_ ) );
 }
 
-        
-/*! Three dimensional polynomial function. For symbolic calculation and derivation. 
+
+/*! Three dimensional polynomial function. For symbolic calculation and derivation.
  I.e. f(x,y,z) = 1 + x + y + z + xy + xz + zz ...
 */
 template< class ValueType > class DLLEXPORT PolynomialFunction {
 public:
-    
+
     /*! Create empty polynomial */
     PolynomialFunction( uint size = 0 ){
         init_( Vector< ValueType >( size, 0.0), Vector< ValueType >( size, 0.0 ), Vector< ValueType >( size, 0.0 ) );
     }
-    
+
     /*! Create a polynomial \f$ f(x,y,z) \f$ from one dimensional polynomial coefficient array ax:
         \f$ f(x,y,z) = ax[0] + ax[1]x + ax[2]x^2 ... \f$
      */
     PolynomialFunction( const Vector < ValueType > & ax ){
         init_( ax, Vector< ValueType >( 0, 0.0 ), Vector< ValueType >( 0, 0.0 ) );
     }
-    
+
     /*! Create a polynomial function \f$ f(x,y,z) \f$ from one dimensional polynomial coefficient array ax and ay:
         \f$ f(x,y,z) = ax[0] + ax[1]x + ax[2]x^2 + ... + ay[0] + ay[1]y + ay[2]y^2 + ... \f$.
         If u need a composed polynomial use f(x,y,z)*g(x,y,z).
@@ -87,7 +85,7 @@ public:
     PolynomialFunction( const Vector < ValueType > & ax, const Vector < ValueType > & ay ){
         init_( ax, ay, Vector< ValueType >( 0, 0.0 ) );
     }
-    
+
     /*! Create a polynomial function \f$ f(x,y,z) \f$ from one dimensional polynomial coefficient array ax, ay, az:
         \f$ f(x,y,z) = ax[0] + ax[1]x + ax[2]x^2 + ... + ay[0] + ay[1]y + ay[2]y^2 + ... + az[0] + az[1]z + az[2]z^2 + ... \f$
         If u need a composed polynomial use f(x,y,z)*g(x,y,z)*h(x,y,z).
@@ -95,48 +93,48 @@ public:
     PolynomialFunction( const Vector < ValueType > & ax, const Vector < ValueType > & ay, const Vector < ValueType > & az ){
         init_( ax, ay, az );
     }
-    
+
     /*! Return f( x, y, z[k] ) polynomial matrix*/
     RMatrix & operator [] ( Index k ){ return mat_[ k ]; }
-    
+
     /*! Return f( x, y, z[k] ) polynomial matrix*/
     const RMatrix & operator [] ( Index k ) const { return mat_[ k ]; }
-    
+
     /*! Return reference to f( x, y, z[k] ) polynomial matrix. For python only*/
     RMatrix & matR( Index k ){ return mat_[ k ]; }
 
     /*! Evaluate f(x,y,z) */
     ValueType operator () ( const Pos< ValueType > & xyz ) const {
         ValueType ret = 0.0;
-        
-        for ( typename std::vector <PolynomialElement < ValueType > >::const_iterator it = elementList_.begin(); 
+
+        for ( typename std::vector <PolynomialElement < ValueType > >::const_iterator it = elementList_.begin();
                 it != elementList_.end(); it ++ ){
                 ret += (*it)( xyz );
         }
         return ret;
     }
-    
+
     /*! Evaluate f(x_i,y_i,z_i) for i = [0 .. xyz.size() ). */
     Vector < ValueType > operator () ( const std::vector < Pos < ValueType > > & xyz ) const {
         Vector < ValueType > ret( xyz.size(), 0.0 );
-        
+
         for ( Index i = 0 ; i < ret.size(); i ++ ) ret [ i ] = (*this)( xyz[ i ] );
-        
+
         return ret;
     }
-        
+
     /*! Return the size of this polynomial. */
     Index size() const { return mat_.size(); }
-    
-    /*! Create new polynomial function for \f$ \frac{\partial f(x,y,z)}{\partial \mathrm{dim}}\f$ 
-     @param dim = 0 \f$ \frac{\partial f(x,y,z)}{\partial x}\f$ 
-     @param dim = 1 \f$ \frac{\partial f(x,y,z)}{\partial y}\f$ 
-     @param dim = 2 \f$ \frac{\partial f(x,y,z)}{\partial z}\f$ 
+
+    /*! Create new polynomial function for \f$ \frac{\partial f(x,y,z)}{\partial \mathrm{dim}}\f$
+     @param dim = 0 \f$ \frac{\partial f(x,y,z)}{\partial x}\f$
+     @param dim = 1 \f$ \frac{\partial f(x,y,z)}{\partial y}\f$
+     @param dim = 2 \f$ \frac{\partial f(x,y,z)}{\partial z}\f$
      */
     PolynomialFunction < ValueType > derive( uint dim ) const {
 
         PolynomialFunction< ValueType > ret( RVector( this->size(), 0.0 ) );
-        
+
         if ( dim == 0 ){
             for ( Index k = 0; k < mat_.size(); k ++ ){ // z
                 for ( Index j = 0; j < mat_[ k ].rows(); j ++ ){ // y
@@ -160,16 +158,16 @@ public:
                         ret[ k ][ i ][ j ] = mat_[ k + 1 ][ i ][ j ] * ( k + 1.0 );
                     }
                 }
-            }        
-        } 
+            }
+        }
         ret.fillElementList();
         return ret;
     }
-    
-    
+
+
     void fillElementList(){
         elementList_.clear();
-            
+
         for ( Index k = 0; k < mat_.size(); k ++ ){ // z
             for ( Index j = 0; j < mat_[ k ].rows(); j ++ ){ // y
                 for ( Index i = 0; i < mat_[ k ][ j ].size(); i ++ ){ // x
@@ -182,32 +180,32 @@ public:
     }
 
     const std::vector <PolynomialElement < ValueType > > & elements() const { return elementList_; }
-    
-    void clear() { 
+
+    void clear() {
         elementList_.clear();
         for ( Index k = 0; k < mat_.size(); k ++ ){ mat_[ k ] *= 0.0; }
     }
-    
-    /*! 
+
+    /*!
      * Fill the parameter coefficients from array. If c.size() == this.size()^3.
-     * mat_[ k ][ i ][ j ] = c[ k*( size() * size() )+ j * size() + i ] 
-     * and return the \ref PolynomialFunction itself. 
+     * mat_[ k ][ i ][ j ] = c[ k*( size() * size() )+ j * size() + i ]
+     * and return the \ref PolynomialFunction itself.
      * If c.size() is size of elementList_, assume that only the values from elementList_ will be exchanged.
      * Please note, all values of c will be snapped to tolerance.
-     * 
-     */ 
-    PolynomialFunction <  ValueType > & fill( const Vector < ValueType > & c ){ 
-        if ( c.size() == powInt( mat_.size(), 3 ) ) {            
+     *
+     */
+    PolynomialFunction <  ValueType > & fill( const Vector < ValueType > & c ){
+        if ( c.size() == powInt( mat_.size(), 3 ) ) {
             for ( Index k = 0; k < mat_.size(); k ++ ){ // z
                 for ( Index j = 0; j < mat_[ k ].rows(); j ++ ){ // y
                     for ( Index i = 0; i < mat_[ k ][ j ].size(); i ++ ){ // x
                         if ( ::fabs( c[ k*( size() * size() )+ j * size() + i ] ) > TOLERANCE ){
-                        
+
 //                         std::cout.precision( 14 );
 //                         std::cout << i << " " << j << " " << k << " " << c[ k*( size() * size() )+ j * size() + i ] << std::endl;
-                    
+
                             //mat_[ k ][ i ][ j ] = round( c[ k*( size() * size() )+ j * size() + i ], 1e-12 );
-                    
+
                             mat_[ k ][ i ][ j ] = c[ k*( size() * size() )+ j * size() + i ];
                         } else {
                             mat_[ k ][ i ][ j ] = 0.0;
@@ -225,15 +223,15 @@ public:
             }
         } else {
             throwLengthError( 1, WHERE_AM_I + " c size out of range " +
-                                toStr( c.size() ) + " needed " + toStr( powInt( mat_.size(), 3 ) ) + 
+                                toStr( c.size() ) + " needed " + toStr( powInt( mat_.size(), 3 ) ) +
                                                     " or " + toStr( elementList_.size() ) );
         }
         this->fillElementList();
         return *this;
     }
-    
+
     /*! Return all coefficients. */
-    RVector coeff(  ) const { 
+    RVector coeff(  ) const {
         RVector c( powInt( mat_.size(), 3 ) );
 
         for ( Index k = 0; k < mat_.size(); k ++ ){ // z
@@ -245,7 +243,7 @@ public:
         }
         return c;
     }
-        
+
 protected:
 
     void init_( const Vector < ValueType > & ax, const Vector < ValueType > & ay, const Vector < ValueType > & az ){
@@ -255,15 +253,15 @@ protected:
             mat_.push_back( RMatrix( maxDim, maxDim ) );
             mat_[ k ] *= 0.0;
         }
-            
+
         for ( Index i = 0; i < ax.size(); i ++ ) mat_[ 0 ][ i ][ 0 ] = ax[ i ];
         for ( Index j = 0; j < ay.size(); j ++ ) mat_[ 0 ][ 0 ][ j ] = ay[ j ];
         for ( Index k = 0; k < az.size(); k ++ ) mat_[ k ][ 0 ][ 0 ] = az[ k ];
         fillElementList();
     }
-    
+
     std::vector < Matrix < ValueType > > mat_;
-    
+
     std::vector <PolynomialElement < ValueType > > elementList_;
 };
 
@@ -271,22 +269,22 @@ template < class ValueType > bool operator == ( const PolynomialFunction < Value
     if ( a.elements().size() == b.elements().size() ){
         typename std::vector <PolynomialElement < ValueType > >::const_iterator ita = a.elements().begin();
         typename std::vector <PolynomialElement < ValueType > >::const_iterator itb = b.elements().begin();
-        
+
         for ( ; ita != a.elements().end(); ita ++, itb ++ ){
             if ( *ita != *itb ) return false;
         }
     } else {
         return false;
     }
-     
+
     return true;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator - ( const PolynomialFunction < ValueType > & f ){
-    
+
     PolynomialFunction < ValueType > h(Vector<ValueType>(f.size(), 0.0));
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -298,11 +296,11 @@ operator - ( const PolynomialFunction < ValueType > & f ){
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator * ( const ValueType & val, const PolynomialFunction < ValueType > & f ){
-    
+
     PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -314,11 +312,11 @@ operator * ( const ValueType & val, const PolynomialFunction < ValueType > & f )
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator * ( const PolynomialFunction < ValueType > & f, const ValueType & val){
-    
+
     PolynomialFunction < ValueType > h( RVector( f.size() ), 0.0 );
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -330,10 +328,10 @@ operator * ( const PolynomialFunction < ValueType > & f, const ValueType & val){
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator + ( const ValueType & val, const PolynomialFunction < ValueType > & f ){
     PolynomialFunction < ValueType > h(RVector(f.size(), 0.0));
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -346,10 +344,10 @@ operator + ( const ValueType & val, const PolynomialFunction < ValueType > & f )
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator + ( const PolynomialFunction < ValueType > & f, const ValueType & val){
     PolynomialFunction < ValueType > h(RVector(f.size(), 0.0 ));
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -362,11 +360,11 @@ operator + ( const PolynomialFunction < ValueType > & f, const ValueType & val){
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator + ( const PolynomialFunction < ValueType > & f, const PolynomialFunction < ValueType > & g ){
-    
+
     PolynomialFunction < ValueType > h(RVector(max(f.size(),g.size()), 0.0 ));
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -385,11 +383,11 @@ operator + ( const PolynomialFunction < ValueType > & f, const PolynomialFunctio
     return h;
 }
 
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator - ( const PolynomialFunction < ValueType > & f, const PolynomialFunction < ValueType > & g ){
-    
+
     PolynomialFunction < ValueType > h(RVector(max(f.size(),g.size()), 0.0));
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -409,13 +407,13 @@ operator - ( const PolynomialFunction < ValueType > & f, const PolynomialFunctio
 }
 
 /*! Create new polynomial function for f(x,y,z) * g(x,y,z).  pls refactor with expressions */
-template < class ValueType > PolynomialFunction < ValueType > 
+template < class ValueType > PolynomialFunction < ValueType >
 operator * ( const PolynomialFunction < ValueType > & f, const PolynomialFunction < ValueType > & g ){
-    
-    
-    //TODO & TEST das muss besser werden weil es nicht immer f.size() + g.size() aufspannt. bsp. x*y statt x*x 
+
+
+    //TODO & TEST das muss besser werden weil es nicht immer f.size() + g.size() aufspannt. bsp. x*y statt x*x
     PolynomialFunction < ValueType > h(RVector(f.size() + g.size(), 0.0));
-    
+
     for ( Index k = 0; k < f.size(); k ++ ){ // z
         for ( Index j = 0; j < f[ k ].rows(); j ++ ){ // y
             for ( Index i = 0; i < f[ k ][ j ].size(); i ++ ){ // x
@@ -432,12 +430,12 @@ operator * ( const PolynomialFunction < ValueType > & f, const PolynomialFunctio
     h.fillElementList();
     return h;
 }
-    
+
 template < class ValueType > std::ostream & operator << ( std::ostream & str, const PolynomialFunction < ValueType > & p ){
     str << "f(x,y,z) = ";
-    
+
     if ( p.size() == 0 ) str << "0";
-    
+
     bool first = true;
     for ( Index k = 0; k < p.size() ; k ++ ){ // z
         for ( Index j = 0; j < p[ k ].rows(); j ++ ){ // y
@@ -445,18 +443,18 @@ template < class ValueType > std::ostream & operator << ( std::ostream & str, co
                 if ( i > 0 ) first = false;
 
                 std::string si = "";
-                
+
                 ValueType v = p[ k ][ i ][ j ];
                 if ( v == 0.0 ) continue;
                 if ( v > 0.0  ) si = "+";
-                
+
                 std::string xterm, yterm, zterm, val;
                 if ( i == 0 ) xterm = ""; else if ( i == 1 ) xterm = "x"; else xterm = "x^" + toStr( i );
                 if ( j == 0 ) yterm = ""; else if ( j == 1 ) yterm = "y"; else yterm = "y^" + toStr( j );
                 if ( k == 0 ) zterm = ""; else if ( k == 1 ) zterm = "z"; else zterm = "z^" + toStr( k );
-                    
+
                 val = toStr( v );
-                
+
                 if ( first ){
                     if ( v == -1.0 ) val = "-1";
                     else if ( v == 1.0 ) val = "1";
@@ -464,14 +462,14 @@ template < class ValueType > std::ostream & operator << ( std::ostream & str, co
                     if ( ::fabs( v + 1.0 ) < TOLERANCE ) val = "-";
                     else if ( ::fabs( v - 1.0 ) < TOLERANCE ) val = "";
                 }
-                    
+
                 str << si << val << xterm;
                 if ( yterm != "" ) str << yterm;
                 if ( zterm != "" ) str << zterm;
             }
         }
-    }      
-            
+    }
+
     return str;
 }
 

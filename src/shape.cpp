@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "shape.h"
 #include "node.h"
@@ -137,7 +135,7 @@ bool Shape::enforcePositiveDirection(){
         std::reverse(nodeVector_.begin(), nodeVector_.end());
         this->changed();
         return true;
-    } 
+    }
     return false;
 }
 
@@ -238,10 +236,10 @@ void Shape::createJacobian(RMatrix3 & J) const {
     if (ShapeFunctionCache::instance().RMatrixCache(rtti()).size() < 1){
         ShapeFunctionCache::instance().RMatrixCache(rtti()).push_back(RMatrix(3, nodeCount()));
     }
-    
+
     RMatrix & MdNdrst = ShapeFunctionCache::instance().cachedRMatrix(rtti(), 0);
     this->dNdrst(RVector3(0.0, 0.0, 0.0), MdNdrst);
-//     RMatrix MdNdrst(this->dNdrst(RVector3(0.0, 0.0, 0.0))); 
+//     RMatrix MdNdrst(this->dNdrst(RVector3(0.0, 0.0, 0.0)));
 
     switch (this->dim()){
         case 1:{
@@ -262,7 +260,7 @@ void Shape::createJacobian(RMatrix3 & J) const {
 
             J.setVal(J1 / norml2(J1), 1);
             J.setVal(crossN(J.row(0), J.row(1)), 2);
-// __M            
+// __M
 //             std::cout << J1 << std::endl;
 //             std::cout << J << std::endl;
          } break;
@@ -299,15 +297,15 @@ const RMatrix3 & Shape::invJacobian() const {
        if (ShapeFunctionCache::instance().RMatrix3Cache().size() < 1){
            ShapeFunctionCache::instance().RMatrix3Cache().push_back(RMatrix3());
        }
-           
-       this->createJacobian(ShapeFunctionCache::instance().cachedRMatrix3(0)); 
+
+       this->createJacobian(ShapeFunctionCache::instance().cachedRMatrix3(0));
        inv(ShapeFunctionCache::instance().cachedRMatrix3(0), invJacobian_);
        invJacobian_.setValid(true);
     }
 //     if (invJacobian_.rows() != 3) {
 //         invJacobian_.resize(3,3);
 // //RMatrix J(3,3);
-//         this->createJacobian(__tmp__J__); 
+//         this->createJacobian(__tmp__J__);
 //         inv(__tmp__J__, invJacobian_ );
 //     }
     return invJacobian_;
@@ -324,7 +322,7 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
     double dErr = 10.0;
 //     double lastdErr = 0.0;
     double damping = 1.0;
-    
+
     while (abs(dErr) > tol && iter < maxiter){
         if (err > 1000 && iter > 1){
             damping *= 0.9;
@@ -332,19 +330,19 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
             err = 1;
             iter = 0;
         }
-        
+
         iter ++;
         dxyz = xyz - this->xyz(rst);
         drst = invJacobian() * dxyz;
-        
+
         rst += drst * damping;
 //         lastdErr = dErr;
         dErr = err - drst.abs();
         err = drst.abs();
-        
+
 //        __MS(iter << " " << err << " " << damping << " " << dErr)
     }
-    
+
 //     if (err> 1){
 //         __MS(iter << " " << err << " " << damping << " " << dErr)
 //         for (Index i = 0; i < nodeCount(); i ++){
@@ -605,7 +603,7 @@ double HexahedronShape::volume() const {
 bool HexahedronShape::enforcePositiveDirection(){
     if (createJacobian().det() < 0){
 //         std::reverse(nodeVector_.begin(), nodeVector_.end());
-        
+
         //swap up and down side
         if (createJacobian().det() < 0){
             std::swap(nodeVector_[0], nodeVector_[4]);
@@ -615,7 +613,7 @@ bool HexahedronShape::enforcePositiveDirection(){
         }
         this->changed();
         return true;
-    } 
+    }
     return false;
 }
 

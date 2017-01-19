@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2006-2011 by the GIMLi development team       *
- *   Carsten R�cker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "spline.h"
 
@@ -87,7 +85,7 @@ std::vector < RVector3 > createSplineLocalDX( const std::vector < RVector3 > & i
 
 std::vector < CubicFunct > calcNaturalCubicClosed( const std::vector < double > & x ){
   int n = x.size()-1;
-  
+
     double * w = new double[ n + 1 ];
     double * v = new double[ n + 1 ];
     double * y = new double[ n + 1 ];
@@ -100,7 +98,7 @@ std::vector < CubicFunct > calcNaturalCubicClosed( const std::vector < double > 
    |    ..... | | .  |   |      .         |
    |     1 4 1| | .  |   |3(x[n] - x[n-2])|
    [1      1 4] [D[n]]   [3(x[0] - x[n-1])]
-   
+
    by decomposing the matrix into upper triangular and lower matrices
    and then back sustitution.  See Spath "Spline Algorithms for Curves
    and Surfaces" pp 19--21. The D[i] are the derivatives at the knots.
@@ -122,7 +120,7 @@ std::vector < CubicFunct > calcNaturalCubicClosed( const std::vector < double > 
  }
  H = H - ( G + 1.0 ) * ( v[ n ] + w[ n ] );
  y[ n ] = F - ( G + 1 ) * y[ n - 1 ];
- 
+
 
  D[ n ] = y[ n ] / H;
  D[ n - 1 ] = y[ n - 1 ] - ( v[ n ] + w[ n ] ) * D[ n ]; /* This equation is WRONG! in my copy of Spath */
@@ -132,7 +130,7 @@ std::vector < CubicFunct > calcNaturalCubicClosed( const std::vector < double > 
 
     std::vector < CubicFunct > C;
     for ( int i = 0; i < n; i++) {
-        C.push_back( CubicFunct( 2.0 * ( x[ i ] - x[ i + 1 ] ) + D[ i ] + D[ i + 1 ], 
+        C.push_back( CubicFunct( 2.0 * ( x[ i ] - x[ i + 1 ] ) + D[ i ] + D[ i + 1 ],
                                 3.0 * ( x[ i + 1 ] - x[ i ] ) - 2.0 * D[ i ] - D[ i + 1 ],
                                 D [ i ], x[ i ] ) );
     }
@@ -144,13 +142,13 @@ std::vector < CubicFunct > calcNaturalCubicClosed( const std::vector < double > 
     delete [ ] v;
     delete [ ] y;
     delete [ ] D;
- 
+
     return C;
 }
 
 std::vector < CubicFunct > calcNaturalCubic( const std::vector < double > & x ){
   int n = x.size()-1;
-  
+
   /* We solve the equation
      [2 1       ] [D[0]]   [3(x[1] - x[0])  ]
      |1 4 1     | |D[1]|   |3(x[2] - x[0])  |
@@ -158,18 +156,18 @@ std::vector < CubicFunct > calcNaturalCubic( const std::vector < double > & x ){
      |    ..... | | .  |   |      .         |
      |     1 4 1| | .  |   |3(x[n] - x[n-2])|
      [       1 2] [D[n]]   [3(x[n] - x[n-1])]
-     
+
      by using row operations to convert the matrix to upper triangular
      and then back sustitution.  The D[i] are the derivatives at the inots.
   */
-  
+
  double * gamma = new double[ n + 1 ];
   gamma[ 0 ] = 0.5;
   for ( int i = 1; i < n; i++) {
     gamma[ i ] = 1.0 / ( 4 - gamma[ i - 1 ] );
   }
   gamma[ n ] = 1.0 / ( 2 - gamma[ n - 1 ] );
-  
+
   double * delta = new double[ n + 1 ];
 
   delta[ 0 ] = 3.0 * ( x[ 1 ] - x[ 0 ] ) * gamma[ 0 ];
@@ -177,7 +175,7 @@ std::vector < CubicFunct > calcNaturalCubic( const std::vector < double > & x ){
     delta[ i ] = ( 3.0 * ( x[ i + 1 ] - x[ i - 1 ] ) - delta[ i - 1 ] ) * gamma[ i ];
   }
   delta[ n ] = ( 3.0 * ( x[ n ] - x[ n - 1 ] ) - delta[ n - 1 ] ) * gamma[ n ];
-  
+
   double * D = new double[ n + 1 ];
   D[ n ] = delta[ n ];
   for ( int i = n-1; i >= 0; i--) {
@@ -189,10 +187,10 @@ std::vector < CubicFunct > calcNaturalCubic( const std::vector < double > & x ){
     for ( int i = 0; i < n; i++ ){
         C.push_back( CubicFunct( 2.0 * ( x[ i ] - x[ i + 1 ] ) + D[ i ] + D[ i + 1 ],
                                 3.0 * (x[ i + 1 ] - x[ i ] ) - 2.0 * D[ i ] - D[ i + 1 ],
-                                D[ i ], 
+                                D[ i ],
                                 x[ i ] ) );
     }
-  
+
     delete [ ] gamma;
     delete [ ] delta;
     delete [ ] D;
