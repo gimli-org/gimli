@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2006-2011 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "numericbase.h"
 #include "vector.h"
@@ -29,11 +27,11 @@ RVector logDropTol(const RVector & data, double logdrop, bool normalize){
     RVector tmp2(data);
 //     __MS(data)
     tmp2.setVal(logdrop, find(data == 0.0));
-        
+
     for (uint i = 0; i < tmp.size(); i ++) {
         tmp[i] = max(1.0, std::fabs(tmp[i] / logdrop));
     }
-    
+
     tmp = log10(tmp);
     // normalize
     if (normalize){
@@ -47,9 +45,9 @@ RVector logDropTol(const RVector & data, double logdrop, bool normalize){
 
 
 RVector logTransDropTol(const RVector & data, double logdrop, bool normalize){
-    return logDropTol(data, logdrop, normalize); 
+    return logDropTol(data, logdrop, normalize);
 }
-    
+
 void GaussLaguerre(uint n, RVector & x, RVector & w){
 //  taken from matlab-code (Thomas Guenther)
 //  function [x, w] = gaulag(n)
@@ -158,7 +156,7 @@ void GaussLegendre(double x1, double x2, uint n, RVector & x, RVector & w){
 }
 
 RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon){
-    
+
     double th = lat * PI/180.0;
     double ph = lon * PI/180.0;
     double ct = std::cos(th);
@@ -171,32 +169,32 @@ RVector3 sphTangential2Initerial(const RVector3 &V, double lat, double lon){
              V[0]* st + V[1] * ct);
 }
 
-void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2, 
+void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2,
                             RVector3 &dg, RVector3 &dgz){
 
     double x1 = p1[0];
     double z1 = p1[1];
     double x2 = p2[0];
     double z2 = p2[1];
-   
+
     double x21 = x2 - x1;
     double z21 = z2 - z1;
     double z21s = z21 * z21;
     double x21s = x21 * x21;
-    
+
     double xz12 = x1 * z2 - x2 * z1;
-    
+
     if (abs(x1) < TOLERANCE && abs(z1) < TOLERANCE){
         dg *= 0.0;
         dgz *= 0.0;
         return;
-    } 
+    }
     if (abs(x2) < TOLERANCE && abs(z2) < TOLERANCE){
         dg *= 0.0;
         dgz *= 0.0;
         return;
-    } 
-    
+    }
+
     double theta1 = std::atan2(z1, x1);
     double theta2 = std::atan2(z2, x2);
 
@@ -204,20 +202,20 @@ void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2,
     double r2s = x2 * x2 + z2 * z2;
     double r1 = std::sqrt(r1s);
     double r2 = std::sqrt(r2s);
-    
+
     double r21s = x21s + z21s;
     double R2 = r21s;
-    
+
     double rln = std::log(r2 / r1);
-        
+
     double p = (xz12/r21s) * ((x1*x21 - z1*z21)/r1s - (x2*x21 - z2*z21)/r2s);
     double q = (xz12/r21s) * ((x1*z21 + z1*x21)/r1s - (x2*z21 + z2*x21)/r2s);
-    
+
     double Fz = 0.0;
     double Fx = 0.0;
     double Fzx = 0.0; // dFz/dx
     double Fzz = 0.0; // dFz/dz
-    
+
     if (sign(z1) != sign(z2)){
         if ((x1*z2 < x2*z1) && z2 >=0.0) theta1 = theta1 + PI2;
         if ((x1*z2 > x2*z1) && z1 >=0.0) theta2 = theta2 + PI2;
@@ -226,17 +224,17 @@ void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2,
         dg *= 0.0;
         dgz *= 0.0;
         return;
-    }            
+    }
     double th12 = (theta1 - theta2);
-    
-    if (abs(x21) < TOLERANCE){ 
+
+    if (abs(x21) < TOLERANCE){
 //         #print "case 3"
 //         #case 3
         Fz = x1 * rln;
         Fx = 0.0;
         Fzz = -p;
         Fzx = q - z21s/r21s * rln;
-        
+
 //__MS(Fz << " " << Fx << " " <<  R2 << " " <<  x1 << " " <<  z1 << " " <<  x2 << " " <<  z2)
     } else { //: #default
         double B = z21 / x21;
@@ -246,13 +244,13 @@ void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2,
         Fx = A * (-th12 * B + rln);
         double z21dx21 = z21 / x21;
         double z21x21 = z21 * x21;
-        
+
         double fz = (th12 + z21dx21 * rln)/r21s;
-                
+
         Fzz = -p + x21s * fz;
         Fzx = q - z21x21 * fz;
-    
-//__MS(Fz << " " << Fx << " " <<  R2 << " " <<  x1 << " " <<  z1 << " " <<  x2 << " " <<  z2)        
+
+//__MS(Fz << " " << Fx << " " <<  R2 << " " <<  x1 << " " <<  z1 << " " <<  x2 << " " <<  z2)
 //         #// check this
 //         #fx = (th12 * z21dx21 - rln)/r21s
     }
@@ -267,26 +265,26 @@ void lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2,
 
 double lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2){
     double dgz = 0.0;
-    
+
     double x1 = p1[0];
     double z1 = p1[1];
     double x2 = p2[0];
     double z2 = p2[1];
-   
+
     double x21 = x2 - x1;
     double z21 = z2 - z1;
     double z21s = z21 * z21;
     double x21s = x21 * x21;
-    
+
     double xz12 = x1 * z2 - x2 * z1;
-    
+
     if (abs(x1) < TOLERANCE && abs(z1) < TOLERANCE){
         return 0.0;
-    } 
+    }
     if (abs(x2) < TOLERANCE && abs(z2) < TOLERANCE){
         return 0.0;
-    } 
-    
+    }
+
     double theta1 = std::atan2(z1, x1);
     double theta2 = std::atan2(z2, x2);
 
@@ -294,20 +292,20 @@ double lineIntegralZ_WonBevis(const RVector3 &p1, const RVector3 &p2){
     double r2s = x2 * x2 + z2 * z2;
     double r1 = std::sqrt(r1s);
     double r2 = std::sqrt(r2s);
-    
+
     double r21s = x21s + z21s;
     double R2 = r21s;
     double rln = std::log(r2 / r1);
-    
+
     if (sign(z1) != sign(z2)){
         if ((x1*z2 < x2*z1) && z2 >=0.0) theta1 = theta1 + PI2;
         if ((x1*z2 > x2*z1) && z1 >=0.0) theta2 = theta2 + PI2;
     }
     if (abs(x1*z2 - x2*z1) < TOLERANCE){
         return 0.0;
-    }            
-    
-    if (abs(x21) < TOLERANCE){ 
+    }
+
+    if (abs(x21) < TOLERANCE){
         dgz = x1 * rln;
     } else { //: #default
         double B = z21 / x21;

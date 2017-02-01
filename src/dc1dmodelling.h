@@ -1,23 +1,21 @@
-/***************************************************************************
- *   Copyright (C) 2009-2014 by the GIMLi development team       *
- *   Thomas Günther thomas@resistivity.net                                 *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2009-2017 by the GIMLi development team                    *
+ *   Thomas Günther thomas@resistivity.net                                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #ifndef _GIMLI_DC1DMODELLING__H
 #define _GIMLI_DC1DMODELLING__H
@@ -30,17 +28,17 @@
 
 namespace GIMLI{
 
-//! DC (direct current) 1D modelling 
-/*! Classical DC 1D forward operator for given resistivities and thicknesses 
+//! DC (direct current) 1D modelling
+/*! Classical DC 1D forward operator for given resistivities and thicknesses
     DC1dModelling( nlayers, ab2, mn2, verbose )
     DC1dModelling( nlayers, am, an, bm, bn, verbose )
-    DC1dModelling( nlayers, dataContainer, verbose ) 
+    DC1dModelling( nlayers, dataContainer, verbose )
 */
 class DLLEXPORT DC1dModelling : public ModellingBase {
 public:
     /*! general constructor using AM, AN, BM, BN, distances (as stored internally) */
     DC1dModelling( size_t nlayers, const RVector & am, const RVector & an, const RVector & bm, const RVector & bn, bool verbose = false );
-    
+
     /*! constructor for classical Schlumberger sounding */
     DC1dModelling( size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose = false );
 
@@ -51,13 +49,13 @@ public:
 
     /*! Returns an RVector of the 1dc response for model = [thickness_ 0, ..., thickness_(n-1), rho_0 .. rho_n]. For n = nlayers. */
     RVector response( const RVector & model );
-    
+
     RVector rhoa( const RVector & rho, const RVector & thk );
-    
+
     RVector kern1d( const RVector & lam, const RVector & rho, const RVector & h );
-    
+
     RVector pot1d( const RVector & R, const RVector & rho, const RVector & thk );
-    
+
     inline RVector getK() { return k_; }
     inline RVector geometricFactor() { return k_; }
 
@@ -67,7 +65,7 @@ public:
         tmp -= pot1dT<Vec>( an_, rho, thk );
         tmp -= pot1dT<Vec>( bm_, rho, thk );
         tmp += pot1dT<Vec>( bn_, rho, thk );
-        return tmp * k_ + rho[ 0 ];    
+        return tmp * k_ + rho[ 0 ];
     }
     template < class Vec > Vec kern1dT( const RVector & lam, const Vec & rho, const RVector & h ){
         size_t nr = rho.size();
@@ -82,7 +80,7 @@ public:
         }
 
         Vec ehl( p * RVector( exp( -2.0 * lam * h[ 0 ] ) ) );
-        return ehl / ( 1.0 - ehl ) * rho[ 0 ] / 2.0 / PI ;    
+        return ehl / ( 1.0 - ehl ) * rho[ 0 ] / 2.0 / PI ;
     }
     template < class Vec > Vec pot1dT( const RVector & R, const Vec & rho, const RVector & thk ){
         Vec z0( R.size() );
@@ -100,8 +98,8 @@ public:
         for ( size_t i = 0; i < nlayers_ -1; i++ ) mod[ i ] = std::pow( 2.0, 1.0 + i );
         return mod;
     }
-    
-    
+
+
 protected:
 
     /*! init myw and myx */
@@ -124,7 +122,7 @@ protected:
 
 /*! DC (direct current) 1D modelling for complex resistivity */
 class DLLEXPORT DC1dModellingC : public DC1dModelling {
-public:    
+public:
 // do not use until cleanup
 //     /*! normal constructor DC1dModelling( dataContainer, nlayers, verbose ) */
 //     DC1dModellingC( size_t nlayers, DataContainer & data, bool verbose = false ) :
@@ -153,23 +151,23 @@ public:
             : DC1dModelling( thk.size(), am, an, bm, bn, verbose ), thk_( thk ) {
                 setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
-            
+
     DC1dRhoModelling( const RVector & thk, const RVector & ab2, const RVector & mn2, bool verbose = false )
-            : DC1dModelling( thk.size(), ab2, mn2, verbose ), thk_( thk ) { 
+            : DC1dModelling( thk.size(), ab2, mn2, verbose ), thk_( thk ) {
                 setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
-            
+
     DC1dRhoModelling( const RVector & thk, DataContainer & data, bool verbose = false )
-            : DC1dModelling( thk.size(), data, verbose ), thk_( thk ) { 
+            : DC1dModelling( thk.size(), data, verbose ), thk_( thk ) {
                 setMesh( createMesh1D( thk.size() + 1, 1 ) );
             }
 
     virtual ~DC1dRhoModelling() { }
 
     RVector response( const RVector & rho ) {  return rhoa( rho, thk_ ); }
-    
+
     RVector createDefaultStartModel( ) {  return RVector( thk_.size() + 1, meanrhoa_ ); }
-    
+
 protected:
     RVector thk_;
 };

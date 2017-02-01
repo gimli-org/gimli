@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #ifndef _GIMLI_INTERPOLATE__H
 #define _GIMLI_INTERPOLATE__H
@@ -42,55 +40,55 @@ DLLEXPORT void interpolate(const Mesh & srcMesh, const RVector & inVec,
                            const Mesh & destMesh, RVector & outVec,
                            bool verbose=false);
 
-/*! Utility function for interpolation. Read in data from fileName and add the 
+/*! Utility function for interpolation. Read in data from fileName and add the
  interpolated data into the destination mesh. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, const std::string & fileName,
                            Mesh & destMesh, bool verbose=false);
 
 /*! Utility function for interpolation.*/
 DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
-                              const RVector & x, const RVector & y, 
+                              const RVector & x, const RVector & y,
                               const RVector & z, bool verbose=false);
 
 /*! Utility function for interpolation.*/
 DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
-                              const RVector & x, const RVector & y, 
+                              const RVector & x, const RVector & y,
                               bool verbose=false);
 
 /*! Utility function for interpolation.*/
 DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
-                              const RVector & x, 
+                              const RVector & x,
                               bool verbose=false);
 
-/*! Utility function for interpolation. 
- * Interpolate all export data from srcMesh to the destination mesh. 
+/*! Utility function for interpolation.
+ * Interpolate all export data from srcMesh to the destination mesh.
  * Point and Cell based. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, Mesh & destMesh,
                            bool verbose=false);
 
-/*!Interpolate a given input data regarding the mesh srcMesh to a set of positions 
+/*!Interpolate a given input data regarding the mesh srcMesh to a set of positions
  * and write the interpolated data to outMat. outMat will resized if necessary.
  * Each data vector in inMat have to correspond to mesh.nodeCount().
- * If data length is mesh.cellCount() \ref cellDataToPointData will performed. 
- * The interpolation rule depend on the shape functions of mesh cells. 
+ * If data length is mesh.cellCount() \ref cellDataToPointData will performed.
+ * The interpolation rule depend on the shape functions of mesh cells.
  * Several utility or shortcut functions are defined. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, const RMatrix & inMat,
                            const R3Vector & destPos, RMatrix & outMat,
                            bool verbose=false);
 
-/*! Utility function for interpolation. 
- * Interpolate the z-coordinate from mesh to the z-coordinate of the 
+/*! Utility function for interpolation.
+ * Interpolate the z-coordinate from mesh to the z-coordinate of the
  * destination mesh.*/
-DLLEXPORT void interpolateSurface(const Mesh & srcMesh, Mesh & destMesh, 
+DLLEXPORT void interpolateSurface(const Mesh & srcMesh, Mesh & destMesh,
                                   bool verbose=false);
 
-/*! Utility function. Convert cell data to point data with the 
+/*! Utility function. Convert cell data to point data with the
  * corresponding the cell interpolation function */
 DLLEXPORT RVector cellDataToPointData(const Mesh & mesh,
                                       const RVector & cellData);
 
 DLLEXPORT void triangleMesh_(const Mesh & mesh, Mesh & tmpMesh);
-      
+
 } // namespace GIMLI
 
 

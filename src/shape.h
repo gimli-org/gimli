@@ -1,22 +1,20 @@
-/***************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #ifndef _GIMLI_Shape__H
 #define _GIMLI_Shape__H
@@ -26,7 +24,7 @@
 #include "curvefitting.h"
 
 #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
-    #if USE_BOOST_THREAD 
+    #if USE_BOOST_THREAD
         #include <boost/thread.hpp>
         extern boost::mutex writeCacheMutex__;
     #endif
@@ -43,7 +41,7 @@ createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
 
 template < class Ent > std::vector < PolynomialFunction < double > >
     createPolynomialShapeFunctions(const Ent & ent, uint nCoeff,
-                                   bool pascale, bool serendipity, 
+                                   bool pascale, bool serendipity,
                                    const RVector & startVector){
 // __MS(ent)
     std::vector < RVector3 > pnts;
@@ -98,10 +96,10 @@ public:
 
     inline std::vector< RMatrix3 > & RMatrix3Cache() { return rmatrix3Cache_; }
     inline std::vector< RMatrix > & RMatrixCache(uint rtti) { return rmatrixCache_[rtti]; }
-    
+
     inline RMatrix3 & cachedRMatrix3(uint i) { return rmatrix3Cache_[i]; }
     inline RMatrix & cachedRMatrix(uint rtti, uint i) { return rmatrixCache_[rtti][i]; }
-    
+
 private:
 
     /*! probably threading problems .. pls check*/
@@ -112,10 +110,10 @@ private:
             //boost::mutex::scoped_lock lock(writeCacheMutex__);
         //#else
             #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
-            boost::mutex::scoped_lock lock(writeCacheMutex__); 
+            boost::mutex::scoped_lock lock(writeCacheMutex__);
             #endif
         //#endif
-            
+
         #else
             __MS("#warning! No boost threading")
         #endif
@@ -145,8 +143,8 @@ private:
     /*! Assignment operator is private, so don't use it */
     void operator = (const ShapeFunctionCache &){};
 
-    
-    
+
+
 protected:
 
     /*! Cache for shape functions. */
@@ -154,10 +152,10 @@ protected:
 
     /*! Cache for shape functions derivatives. */
     mutable std::map < uint8, std::vector< std::vector < PolynomialFunction < double > > > > dShapeFunctions_;
-    
+
     mutable std::vector< RMatrix3 > rmatrix3Cache_;
     mutable std::map< uint, std::vector< RMatrix > > rmatrixCache_;
-    
+
 };
 
 static const double NodeCoordinates[1][3] = {
@@ -223,9 +221,9 @@ public:
         \f}
     */
     void createJacobian(RMatrix3 & J) const;
-    
+
     RMatrix3 createJacobian() const;
-    
+
     /*! Return the inverse of the Jacobian Matrix. And create and cache it on demand.
      * The matrix is no more valid if the shape was transformed.
      */
@@ -244,9 +242,9 @@ public:
      * \f$ L(r,s,t) \f$. Result is independent of L for linear shape function (TODO Remove on cleanup)
      * \f$ [[\frac{dN_i(r,s,t)}{\partial r}],[\frac{dN_i(r,s,t)}{\partial s}],[\frac{dN_i(r,s,t)}{\partial t}]^{\mathrm{T}}] \f$ for \f$ i = [0,\mathcal{N}\f$ */
     virtual void dNdrst(const RVector3 & rst, RMatrix & MdNdrst) const;
-        
+
     virtual RMatrix dNdrst(const RVector3 & L) const;
-    
+
     /*! Perform coordinate transformation from the locale coordinates \f$ (r,s,t)=(r,s,t)=([0..1,0..1,0..1]) \f$ of this shape to Cartesian coordinates \f$ (x,y,z) \f$ regarding to the \f$ \mathcal{N} \f$ shape functions \ref N
      * \f$ N_i \f$ with \f$ i=[0,\mathcal{N})\f$ \n
      * This is the opposite to \ref xyz2rst().
@@ -286,8 +284,8 @@ public:
      * On boundary means inside too. */
     virtual bool isInside(const RVector3 & xyz, bool verbose=false) const;
 
-    /*! Return true if the Cartesian coordinates xyz are inside the shape. 
-     * On boundary means inside too. 
+    /*! Return true if the Cartesian coordinates xyz are inside the shape.
+     * On boundary means inside too.
      * sf contains the complete shape function to identify next neighbor. */
     virtual bool isInside(const RVector3 & xyz, RVector & sf,
                           bool verbose=false) const;
@@ -304,11 +302,11 @@ public:
     /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */
     void changed();
 
-    /*! Reverse node sequence order to enforce positive Jacobian determinant. 
+    /*! Reverse node sequence order to enforce positive Jacobian determinant.
      * Please use with care! Return True if the order has been changed.*/
     virtual bool enforcePositiveDirection();
 //     double jacobianDeterminant() const { return det(this->createJacobian()); }
-    
+
 protected:
 
     inline void resizeNodeSize_(uint n) { nodeVector_.resize(n, NULL);  }
@@ -599,10 +597,10 @@ public:
 
     double volume() const;
 
-    /*! Special version of since simple order reverse isn't enough here. 
+    /*! Special version of since simple order reverse isn't enough here.
      * We try to simple swap up and down side. */
     virtual bool enforcePositiveDirection();
-        
+
 //     /*! See Shape::N. */
 //     virtual void N(const RVector3 & L, RVector & n) const;
 //

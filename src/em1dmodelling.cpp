@@ -1,23 +1,21 @@
-/***************************************************************************
- *   Copyright (C) 2009-2011 by the GIMLi development team       *
- *   Thomas G�nther thomas@resistivity.net                                 *
- *   Carsten R�cker carsten@resistivity.net                                *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/******************************************************************************
+ *   Copyright (C) 2009-2017 by the GIMLi development team                    *
+ *   Thomas Günther thomas@resistivity.net                                    *
+ *   Carsten Rücker carsten@resistivity.net                                   *
+ *                                                                            *
+ *   Licensed under the Apache License, Version 2.0 (the "License");          *
+ *   you may not use this file except in compliance with the License.         *
+ *   You may obtain a copy of the License at                                  *
+ *                                                                            *
+ *       http://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                            *
+ *   Unless required by applicable law or agreed to in writing, software      *
+ *   distributed under the License is distributed on an "AS IS" BASIS,        *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *   See the License for the specific language governing permissions and      *
+ *   limitations under the License.                                           *
+ *                                                                            *
+ ******************************************************************************/
 
 #include "gimli.h"
 #include "em1dmodelling.h"
@@ -30,7 +28,7 @@ namespace GIMLI {
 RVector MT1dModelling::rhoaphi(const RVector & rho, const RVector & thk) { // after mtmod.c by R.-U. B�rner
     size_t nperiods = periods_.size();
     RVector rhoa(nperiods), phi(nperiods);
-    
+
     RVector::ValType my0 = PI * 4e-7;
     Complex i_unit(0.0 , 1.0), adm, alpha, tanalpha;
     CVector z(nlay_);
@@ -88,10 +86,10 @@ RVector MT1dModelling::rhoa(const RVector & rho, const RVector & thk) { // after
 
 FDEM1dModelling::FDEM1dModelling(size_t nlay,
                                  const RVector & freqs,
-                                 const RVector & coilspacing, 
+                                 const RVector & coilspacing,
                                  double z, bool verbose)
     : ModellingBase(verbose), nlay_(nlay), freqs_(freqs),
-      coilspacing_(coilspacing), 
+      coilspacing_(coilspacing),
       zs_(-std::fabs(z)), ze_(-std::fabs(z)) {
     init();
 }
@@ -109,8 +107,8 @@ FDEM1dModelling::FDEM1dModelling(size_t nlay,
 
 void FDEM1dModelling::init(){
     setMesh(createMesh1DBlock(nlay_));
-    nfr_ = freqs_.size(); 
-    double zp = ze_ + zs_;    
+    nfr_ = freqs_.size();
+    double zp = ze_ + zs_;
     RVector rpq(coilspacing_ * coilspacing_ + zp * zp);
     freeAirSolution_ = (rpq - zp * zp * 3.0) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
 }
@@ -132,7 +130,7 @@ Complex btp(double u, double f, RVector rho, RVector d){
     return b;
 }
 
-RVector FDEM1dModelling::calc(const RVector & rho, const RVector & thk){ 
+RVector FDEM1dModelling::calc(const RVector & rho, const RVector & thk){
     double hankelJ0[100]={
         2.89878288E-07,3.64935144E-07,4.59426126E-07,5.78383226E-07,
         7.28141338E-07,9.16675639E-07,1.15402625E-06,1.45283298E-06,
@@ -159,7 +157,7 @@ RVector FDEM1dModelling::calc(const RVector & rho, const RVector & thk){
         9.89181741E-06,-6.24131160E-06,3.93800058E-06,-2.48471018E-06,
         1.56774609E-06,-9.89180896E-07,6.24130948E-07,-3.93800005E-07,
         2.48471005E-07,-1.56774605E-07,9.89180888E-08,-6.24130946E-08};
-    
+
     //** extract resistivity and thickness
     RVector inph(nfr_), outph(nfr_);//** inphase and quadrature components
     int nc = 100, nc0 = 60; // number of coefficients
@@ -172,37 +170,37 @@ RVector FDEM1dModelling::calc(const RVector & rho, const RVector & thk){
             Complex delta((bti - ui) / (bti + ui) * std::exp(ui * ze_) * std::exp(ui * zs_));
             aux += delta * ui * ui * hankelJ0[nc - ii - 1];
         }
-        
+
         aux /= PI * 4.0 * coilspacing_[i];
         // normalize by free air solution in per cent
         inph[i]  = real(aux) / freeAirSolution_[i] * 100.0;
         outph[i] = imag(aux) / freeAirSolution_[i] * 100.0;
     }
-    //** paste together both components and 
+    //** paste together both components and
     return cat(inph, outph);
 }
 
-RVector FDEM1dModelling::response(const RVector & model){ 
+RVector FDEM1dModelling::response(const RVector & model){
     RVector thk(model, 0, nlay_ - 1), rho(model, nlay_ - 1, 2 * nlay_ - 1);
     return calc(rho, thk);
 }
 
-RVector MRSModelling::response(const RVector & model) { 
+RVector MRSModelling::response(const RVector & model) {
     RVector outreal(*KR_ * model);
     RVector outimag(*KI_ * model);
-    return RVector(sqrt(outreal * outreal + outimag * outimag)); 
+    return RVector(sqrt(outreal * outreal + outimag * outimag));
 }
-    
+
 void MRSModelling::createJacobian(const RVector & model) {
     RVector ddr(*KR_ * model);
     RVector ddi(*KI_ * model);
     RVector dda(sqrt(ddr * ddr + ddi * ddi));
-    
+
     RMatrix * jacobian = dynamic_cast < RMatrix * >(jacobian_);
     jacobian->resize(dda.size(), model.size());
-    
+
     for (size_t i = 0 ; i < KR_->rows() ; i++) {
-        (*jacobian)[i] = ((*KR_)[i] * ddr[i] + (*KI_)[i] * ddi[i]) / dda[i];         
+        (*jacobian)[i] = ((*KR_)[i] * ddr[i] + (*KI_)[i] * ddi[i]) / dda[i];
     }
 }
 
@@ -222,16 +220,16 @@ RVector MRS1dBlockModelling::response(const RVector & model){
             if (iz2 > nvec_) iz2 = nvec_;
             for (size_t j = iz1 ; j < iz2 ; j++) wcvec[j] = wc[i];
             if (iz2 + 1 >= zvec_.size()) break; // end reached
-            wcvec[iz2] = ((zthk - zvec_[iz2]) * wc[i] 
-                           + (zvec_[iz2 + 1] - zthk) * wc[i + 1]) 
+            wcvec[iz2] = ((zthk - zvec_[iz2]) * wc[i]
+                           + (zvec_[iz2 + 1] - zthk) * wc[i + 1])
                          / (zvec_[iz2 + 1] - zvec_[iz2]);
             iz1 = iz2 + 1;
         }
-        
+
         if (verbose_) save(wcvec, "wctmp.vec");
         //! call original forward response and return;
         return MRSModelling::response(wcvec);
     }
-    
-    
+
+
 } // namespace GIMLI{
