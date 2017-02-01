@@ -208,8 +208,6 @@ class ReadAHL(object):
 
 if __name__ == '__main__':
     print('AHL-file reader')
-
-    fname = 'C:/Users/Marcus/Documents/Trust/Varberg/Data/L2_seis/line2-3.ahl'
-
-    ahl = ReadAHL(fname, maxsensorid=2999, delimiter='|')
-    ahl()
+    if len(sys.arv) > 1:
+        datafile = sys.argv[1]
+        ahl = ReadAHL(fname, maxsensorid=2999, delimiter='|')

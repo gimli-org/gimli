@@ -489,3 +489,25 @@ def unique_rows(array):
     # sort_idx = A_1D.argsort()
     # mask = np.append(True, np.diff(A_1D[sort_idx]) !=0 )
     # return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
+
+
+def uniqueRows(data, prec=2):
+    """Equivalent of Matlabs unique(data, 'rows') with tolerance check.
+
+    Additionally returns forward and reverse indices
+    Examples
+    --------
+    >>> from pygimli.utils import unique_rows
+    >>> import numpy as np
+    >>> A = np.array(([1,2,3],[3,2,1],[1,2,3]))
+    >>> unA, ia, ib = uniqueRows(A)
+    array([[1, 2, 3],
+           [3, 2, 1]])
+    """
+    fak = 100**prec
+    dfix = np.fix(data * fak) / fak + 0.0
+    dtype = np.dtype((np.void, dfix.dtype.itemsize * dfix.shape[1]))
+    b = np.ascontiguousarray(dfix).view(dtype)
+    _, ia = np.unique(b, return_index=True)
+    _, ib = np.unique(b, return_inverse=True)
+    return np.unique(b).view(dfix.dtype).reshape(-1, dfix.shape[1]), ia, ib
