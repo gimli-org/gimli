@@ -59,6 +59,8 @@ searchPython(){
 }
 
 patchPython(){
+    pacman -S --needed --noconfirm diffutils patch
+        
     PYPATH=`which python`
     PYCONFIGFILE=${PYPATH%/python}/include/pyconfig.h
     echo "backup $PYCONFIGFILE to $PYCONFIGFILE.backup"
