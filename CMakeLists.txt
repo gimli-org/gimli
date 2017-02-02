@@ -98,6 +98,7 @@ if(NOT EXTERNAL_DIR)
 endif()
 
 include(CheckIncludeFileCXX)
+find_package(Threads REQUIRED)
 
 if (PYVERSION)
     set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
