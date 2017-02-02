@@ -27,7 +27,7 @@ def nodeDataToCellData(mesh, data):
                             str(mesh.nodeCount()) +
                             "got: " + str(len(data)), str(len(data[0])))
 
-    return pg.interpolate(mesh, data, mesh.cellCenters())
+    return pg.interpolate(mesh, data, destPos=mesh.cellCenters())
 
 
 def cellDataToNodeData(mesh, data, style='mean'):
@@ -63,7 +63,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
     if style == 'mean':
 
         if mesh.dim() == 1:
-            return pg.cellDataToPointData(mesh, data[0])
+            return pg.cellDataToPointData(mesh, data)
         elif mesh.dim() == 2:
             return np.array([pg.cellDataToPointData(mesh, data[:, 0]),
                             pg.cellDataToPointData(mesh, data[:, 1])])
