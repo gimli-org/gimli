@@ -229,13 +229,20 @@ castXML
 
 castXML (https://github.com/CastXML/CastXML/) is needed to generate the code for the python bindings.
 Some systems provide castxml binary so the build system should detect it if installed.
-As fallback solution the build system creates its own castXML binary or can by enforced to do so with:
+As fallback solution the build system tries to install castxml binaries or try to compile there own if the binaries don't work.
+You can enforce the local binary installation with:
 
 .. code-block:: bash
 
     cmake ../../src/castXML/ -DCASTXML_LOCAL=1
-
     make
+
+or the local binary compilation with:
+.. code-block:: bash
+
+    cmake ../../src/castXML/ -DCASTXML_LOCALSRC=1
+    make
+
 
 If castXML build complains about missing clang or llvm command, please go into
 $(GIMLISRC)/../thirdParty/build-XXX-XXX/castXML and try configure and build cmake manually
