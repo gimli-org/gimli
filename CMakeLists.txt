@@ -299,19 +299,19 @@ else()
         find_program(CASTXML castxml)
 
         if (NOT CASTXML OR CASTXML_LOCAL OR CASTXML_LOCALSRC)
+            find_program(CLANG_EXECUTABLE
+                NAMES clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang
+            )
+            if(CLANG_EXECUTABLE)
+                message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
+            else()
+                message(FATAL_ERROR "Can't found program: clang")
+            endif()
+
             find_or_build_package(castxml castxmlbin LOCAL)
             set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
 
             if (NOT CASTXML_EXECUTABLE OR CASTXML_LOCALSRC)
-                find_program(CLANG_EXECUTABLE
-                    NAMES clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang
-                )
-                if(CLANG_EXECUTABLE)
-                    message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
-                else()
-                    message(FATAL_ERROR "Can't found program: clang")
-                endif()
-
                 find_or_build_package(castxml castxml LOCAL)
                 set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
             endif()

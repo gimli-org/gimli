@@ -14,8 +14,10 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
-
-CASTXMLBIN_URL=https://midas3.kitware.com/midas/download/item/318227
+CASTXMLBIN_URL=https://midas3.kitware.com/midas/download/item
+#https://midas3.kitware.com/midas/download/item/318762/castxml-maxosx.tar.gz
+#https://midas3.kitware.com/midas/download/item/318227/castxml-linux.tar.gz
+#https://midas3.kitware.com/midas/download/item/318228/castxml-windows.zip
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
@@ -429,21 +431,24 @@ buildCASTXMLBIN(){
     prepCASTXMLBIN
 
     if [ "$SYSTEM" == "WIN" ]; then
-        getWITH_WGET $CASTXMLBIN_URL $CASTXML_SRC castxml-windows.tar.gz
+        getWITH_WGET $CASTXMLBIN_URL/318228 $CASTXML_SRC castxml-windows.zip
+        cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
+        CASTXMLBIN=castxml.exe
     elif [ "$SYSTEM" == "MAC" ]; then
-        getWITH_WGET $CASTXMLBIN_URL $CASTXML_SRC castxml-mac.tar.gz
+        getWITH_WGET $CASTXMLBIN_URL/318762 $CASTXML_SRC castxml-macosx.tar.gz
+        cp -r $CASTXML_SRC/* $CASTXML_DIST
+        CASTXMLBIN=castxml
     else
-        getWITH_WGET $CASTXMLBIN_URL $CASTXML_SRC castxml-linux.tar.gz
+        getWITH_WGET $CASTXMLBIN_URL/318227 $CASTXML_SRC castxml-linux.tar.gz
+        cp -r $CASTXML_SRC/* $CASTXML_DIST
+        CASTXMLBIN=castxml
     fi
 
-    echo $CASTXML_SRC $CASTXML_DIST
-    cp -r $CASTXML_SRC/* $CASTXML_DIST
-
-    if "$CASTXML_DIST/bin/castxml" --version; then
+    if "$CASTXML_DIST/bin/$CASTXMLBIN" --version; then
         echo "Binary castxml seems to work"
     else
         echo "Binary castxml does not seems to work. Removing binary installation"
-        rm $CASTXML_DIST/bin/castxml
+        rm $CASTXML_DIST/bin/*  
         rm -rf $CASTXML_DIST/share/castxml
     fi
 
