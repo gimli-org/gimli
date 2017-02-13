@@ -51,8 +51,9 @@ def BZPoly(pnts, poly, mag, openPoly=False):
     mag : [M_x, M_y, M_z]
         Magnetization = [M_x, M_y, M_z]
     """
-    dgz = calcPolyGz(pnts, poly, 1.0, openPoly)[1]
+    dgz = calcPolyGz(pnts, poly, density=1.0, openPoly=openPoly)[1]
 
+    dgz[:,2] *= -1
     return poissonEoetvoes(adot(mag, -dgz))
 
 
@@ -76,8 +77,8 @@ def BaZSphere(pnts, R, pos, M):
         [Mx, My, Mz] -- magnetization
 
     """
-    return poissonEoetvoes(adot(M,
-                                gradGZSphere(pnts, R, rho=1.0, pos=pos)))
+    return poissonEoetvoes(
+            adot(M, gradGZSphere(pnts, R, rho=1.0, pos=pos)))
 
 
 def BaZCylinderHoriz(pnts, R, pos, M):
@@ -88,16 +89,18 @@ def BaZCylinderHoriz(pnts, R, pos, M):
     buried horizontal cylinder at position pos with radius R for a given
     magnetization M at measurement points pnts.
 
+    TODO .. only 2D atm
+
     Parameters
     ----------
-    pnts : [[x,y,z], ]
+    pnts : [[x,z], ]
         measurement points -- array[x,y,z]
     R : float
         radius
-    pos : [float, float, float]
-        [x,y,z] -- sphere center
-    M : [float, float, float]
-        [Mx, My, Mz] -- magnetization
+    pos : [float, float]
+        [x,z] -- sphere center
+    M : [float, float]
+        [Mx, Mz] -- magnetization
 
     """
     return poissonEoetvoes(
@@ -106,7 +109,9 @@ def BaZCylinderHoriz(pnts, R, pos, M):
 
 def poissonEoetvoes(dg):
     """TODO WRITEME."""
-    return mu0 / (4.0 * np.pi * G) * dg
+    # (4.0 * pi * 1e-7) / (4.0 * np.pi * G) * dg
+    #return mu0 / (4.0 * np.pi * G) * dg
+    return 1e-7 / G * dg
 
 
 def uSphere(r, rad, rho, pos=None):
@@ -354,8 +359,8 @@ def lineIntegralZ_WonBevis(p1, p2):
     dg = pg.RVector3(0.0, 0.0, 0.0)
     dgz = pg.RVector3(0.0, 0.0, 0.0)
     pg.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
-    return np.asarray((dg[0], dg[1], dg[2])), np.asarray(
-        (dgz[0], dgz[1], dgz[2]))
+    return np.asarray((dg[0], dg[1], dg[2])), \
+           np.asarray((dgz[0], dgz[1], dgz[2]))
 
 #     x1 = p1[0]
 #     z1 = p1[1]
@@ -438,7 +443,7 @@ def lineIntegralZ_WonBevis(p1, p2):
 #     return np.asarray((Fx, 0.0, Fz)), np.asarray((Fzx, 0.0, Fzz))
 
 
-def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
+def calcPolyGz(pnts, poly, density=1., openPoly=False, forceOpen=False):
     """Calculate 2D gravimetric response at given points for a polygon.
 
     Calculate 2D gravimetric response at given points for a polygon with
@@ -471,10 +476,10 @@ def calcPolyGz(pnts, poly, density=1, openPoly=False, forceOpen=False):
             gzi, gzzi = lineIntegralZ_WonBevis(a - p, b - p)
 
 #            print(gzi, gzzi)
-            gz[i, :] += -gzi * [1.0, 1.0, -1.0]
-            gzz[i, :] += -gzzi
+            gz[i, :] += gzi * [1.0, 1.0, 1.0]
+            gzz[i, :] += gzzi
 
-    return density * 2.0 * -G * gz, density * 2.0 * -G * gzz
+    return density * 2.0 * G * gz, density * 2.0 * G * gzz
 # def calcPolydgdz()
 
 

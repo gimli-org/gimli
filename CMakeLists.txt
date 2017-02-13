@@ -98,6 +98,7 @@ if(NOT EXTERNAL_DIR)
 endif()
 
 include(CheckIncludeFileCXX)
+find_package(Threads REQUIRED)
 
 if (PYVERSION)
     set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
@@ -295,23 +296,28 @@ if (CASTER STREQUAL "gccxml")
     set(CASTER_EXECUTABLE ${GCCXML_EXECUTABLE})
 else()
     if (NOT CASTER_EXECUTABLE)
-#        find_program(CLANG clang REQUIRED)
-         find_program(CLANG_EXECUTABLE
-            NAMES clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang
-         )
-        if(CLANG_EXECUTABLE)
-            message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
+        find_program(CASTXML castxml)
+
+        if (NOT CASTXML OR CASTXML_LOCAL OR CASTXML_LOCALSRC)
+            find_program(CLANG_EXECUTABLE
+                NAMES clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang
+            )
+            if(CLANG_EXECUTABLE)
+                message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
+            else()
+                message(FATAL_ERROR "Can't found program: clang")
+            endif()
+
+            find_or_build_package(castxml castxmlbin LOCAL)
+            set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
+
+            if (NOT CASTXML_EXECUTABLE OR CASTXML_LOCALSRC)
+                find_or_build_package(castxml castxml LOCAL)
+                set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
+            endif()
         else()
-            message(FATAL_ERROR "Can't found program: clang")
+            set(CASTER_EXECUTABLE ${CASTXML})
         endif()
-
-
-#        find_program(CLANGXX clang++ REQUIRED)
-#        find_package(CLANG REQUIRED)
-#        find_package(LLVM REQUIRED)
-
-        find_or_build_package(castxml castxml LOCAL)
-        set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
     endif()
 endif()
 
@@ -334,6 +340,7 @@ endif()
 message(STATUS "**********************************************************************")
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
+message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
 message(STATUS "CHOLMOD_LIBRARIES  :${CHOLMOD_LIBRARIES}")
 message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")

@@ -452,6 +452,9 @@ def grad(mesh, u, r=None):
     if callable(u) and not isinstance(u, pg.RVector):
         uv = u(mesh.nodeCenters())
 
+    if len(uv) is mesh.cellCount():
+        uv = pg.meshtools.cellDataToNodeData(mesh, uv)
+
     v = np.ndarray((len(r), 3))
 
     for i, _ in enumerate(v):
@@ -772,7 +775,7 @@ def assembleForceVector(mesh, f, userData=None):
             for c in mesh.cells():
                 b_l.u(c)
                 for i, idx in enumerate(b_l.idx()):
-                    rhs[idx] += b_l.row(0)[i] * fArray[idx]
+                    rhsRef[idx] += b_l.row(0)[i] * fArray[idx]
             np.testing.assert_allclose(rhs, rhsRef)
             print("Remove revtest in assembleForceVector after check")
 

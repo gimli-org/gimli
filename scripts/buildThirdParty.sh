@@ -14,6 +14,10 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
+CASTXMLBIN_URL=https://midas3.kitware.com/midas/download/item
+#https://midas3.kitware.com/midas/download/item/318762/castxml-maxosx.tar.gz
+#https://midas3.kitware.com/midas/download/item/318227/castxml-linux.tar.gz
+#https://midas3.kitware.com/midas/download/item/318228/castxml-windows.zip
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
@@ -162,7 +166,12 @@ getWITH_WGET(){
     _URL_=$1
     _SRC_=$2
     _PAC_=$3
-    echo "wget $_URL_/$_PAC_"
+    echo "wget -nc -nd $_URL_/$_PAC_"
+
+    if [ -n "$CLEAN" ]; then
+        rm -rf $_SRC_
+        #rm -rf $_PAC_
+    fi
 
     if [ ! -d $_SRC_ ]; then
         echo "Copying sources into $_SRC_"
@@ -178,7 +187,7 @@ getWITH_WGET(){
             fi
         popd
     else
-        echo "skipping .. sourcetree already exists."
+        echo "Skipping .. sourcetree already exists. Use with CLEAN=1 if you want to force installation."
     fi
 
 }
@@ -263,7 +272,7 @@ needGCC(){
     HAVEGCC=1
 }
 needPYTHON(){
-    
+
     if command -v python 2>/dev/null; then
         PYTHONEXE=python
     elif command -v python3 2>/dev/null; then
@@ -271,7 +280,7 @@ needPYTHON(){
     else
         echo "cannot find python interpreter"
     fi
-    
+
     HAVEPYTHON=1
     PYTHONVERSION=`"$PYTHONEXE" -c 'import sys; print(sys.version)'`
     PYTHONMAJOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.major)'`
@@ -410,12 +419,48 @@ buildBOOST(){
     echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR.dist
 }
 
-prepCASTXML(){
-    CASTXML_VER=castXML
+prepCASTXMLBIN(){
+    CASTXML_VER=castxml
     CASTXML_SRC=$SRC_DIR/$CASTXML_VER
     CASTXML_BUILD=$BUILD_DIR/$CASTXML_VER
     CASTXML_DIST=$DIST_DIR
 }
+
+buildCASTXMLBIN(){
+    checkTOOLSET
+    prepCASTXMLBIN
+
+    if [ "$SYSTEM" == "WIN" ]; then
+        getWITH_WGET $CASTXMLBIN_URL/318228 $CASTXML_SRC castxml-windows.zip
+        cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
+        CASTXMLBIN=castxml.exe
+    elif [ "$SYSTEM" == "MAC" ]; then
+        getWITH_WGET $CASTXMLBIN_URL/318762 $CASTXML_SRC castxml-macosx.tar.gz
+        cp -r $CASTXML_SRC/* $CASTXML_DIST
+        CASTXMLBIN=castxml
+    else
+        getWITH_WGET $CASTXMLBIN_URL/318227 $CASTXML_SRC castxml-linux.tar.gz
+        cp -r $CASTXML_SRC/* $CASTXML_DIST
+        CASTXMLBIN=castxml
+    fi
+
+    if "$CASTXML_DIST/bin/$CASTXMLBIN" --version; then
+        echo "Binary castxml seems to work"
+    else
+        echo "Binary castxml does not seems to work. Removing binary installation"
+        rm $CASTXML_DIST/bin/*  
+        rm -rf $CASTXML_DIST/share/castxml
+    fi
+
+}
+
+prepCASTXML(){
+    CASTXML_VER=castxmlSRC
+    CASTXML_SRC=$SRC_DIR/$CASTXML_VER
+    CASTXML_BUILD=$BUILD_DIR/$CASTXML_VER
+    CASTXML_DIST=$DIST_DIR
+}
+
 buildCASTXML(){
     checkTOOLSET
     prepCASTXML
@@ -646,7 +691,7 @@ slotAll(){
 }
 
 showHelp(){
-    echo "boost | lapack | triangle | suitesparse | castxml | pygccxml | all"
+    echo "boost | lapack | triangle | suitesparse | castxml | castxmlbin | pygccxml | all"
 }
 
 # script starts here
@@ -700,6 +745,8 @@ do
         buildSUITESPARSE UMFPACK;;
     castxml)
         buildCASTXML;;
+    castxmlbin)
+        buildCASTXMLBIN;;
     pygccxml)
         buildPYGCCXML;;
     cppunit)
