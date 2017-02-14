@@ -74,11 +74,14 @@ class VMDModelling(pg.ModellingBase):
         """
         THROW_TO_IMPL
 
-    def calculate(self, depths, rho):
-        """Calculate electromagnetic response for a given model.
+    @staticmethod
+    def fdResponse(f, rho, d, ze, zs, rmin, nr, tm):
+        """Calculate frequency domain response for a given model.
 
         Parameters
         ----------
+
+        f :
 
         depths : iterable [float]
             Array of layer depths in positive z coordinates.
@@ -102,7 +105,7 @@ class VMDModelling(pg.ModellingBase):
         quasistatic = False
         h = 0.01
         rho = np.array(rho)
-        thickness = np.array(pg.abs(pg.utils.diff(np.array([0.] +  depths))))
+        #thickness = np.array(pg.abs(pg.utils.diff(np.array([0.] +  depths))))
         self.r = np.array([1.])
 
         # relative electrical permeabilty for each layer
@@ -117,7 +120,7 @@ class VMDModelling(pg.ModellingBase):
         nc = len(fc0)
 
         # arrays anlegen
-        nf = len(self.f)
+        nf = len(f)
         lam = np.zeros((1, nc, nf))
         alpha0 = np.zeros((1, nc, nf), np.complex)
         delta0 = np.zeros((1, nc, nf), np.complex)
@@ -307,13 +310,3 @@ class VMDModelling(pg.ModellingBase):
             ap = ap[np.newaxis, :, :]  # (1, 100, nfreq)
             return b1, a, ap
 
-
-
-if __name__ == '__main__':
-
-    resistivities = [10.0, 1000.0, 10.0]
-    depths = [10., 100.0]
-    f = VMDModelling()
-
-    IP, OP = f.calculate(depths, resistivities)
-    print(IP, OP)

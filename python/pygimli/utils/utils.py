@@ -143,6 +143,55 @@ def logDropTol(p, droptol=1e-3):
     tmp *= pg.sign(p)
     return tmp
 
+def niceLogspace(vMin, vMax, nDec=10):
+    """Create nice logarithmic space from the next decade lower to vMin to
+    decade larger then vMax.
+
+    Parameters
+    ----------
+    vMin : float
+        lower limit need to be > 0
+    vMax : float
+        upper limit need to be >= vMin
+    nDec : int
+        Amount of logarithmic equidistant steps for one decade
+
+    Examples
+    --------
+    >>> from pygimli.utils import niceLogspace
+    >>> v1 = niceLogspace(vMin=0.1, vMax=0.1, nDec=1)
+    >>> print(v1)
+    [ 0.1  1. ]
+    >>> v1 = niceLogspace(vMin=0.09, vMax=0.11, nDec=1)
+    >>> print(v1)
+    [ 0.01  0.1   1.  ]
+    >>> v1 = niceLogspace(vMin=0.09, vMax=0.11, nDec=10)
+    >>> print(len(v1))
+    21
+    >>> print(v1)
+    [ 0.01        0.01258925  0.01584893  0.01995262  0.02511886  0.03162278
+      0.03981072  0.05011872  0.06309573  0.07943282  0.1         0.12589254
+      0.15848932  0.19952623  0.25118864  0.31622777  0.39810717  0.50118723
+      0.63095734  0.79432823  1.        ]
+    """
+    if vMin > vMax or vMin < 1e-12:
+        print("vMin:", vMin, "vMax", vMax)
+        raise Exception('vMin > vMax or vMin <= 0.')
+
+    vmin = 10**np.floor(np.log10(vMin))
+    vmax = 10**np.ceil(np.log10(vMax))
+
+    if vmax == vmin:
+        vmax *= 10
+
+    n = np.log10(vmax/vmin)*nDec + 1
+
+    q = 10**(1/nDec)
+    print(vmin, vmax, n)
+
+    return vmin * q**np.arange(n)
+
+
 
 def grange(start, end, dx=0, n=0, log=False):
     """Create array with possible increasing spacing.

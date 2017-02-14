@@ -36,7 +36,8 @@ def drawModel1D(ax, values, thickness=None, depths=None, plot='plot',
         [N-1] thickness for each layers. Either thickness or depths must be set.
 
     depths : [iterable] float
-        [N-1] Values for layer depths. Either thickness or depths must be set.
+        [N-1] Values for layer depths (positive z-coordinates).
+        Either thickness or depths must be set.
 
     plot : string
         mpl plot funktion
@@ -77,7 +78,7 @@ def drawModel1D(ax, values, thickness=None, depths=None, plot='plot',
     px = np.zeros(nLayers * 2)
     pz = np.zeros(nLayers * 2)
 
-    if thickness:
+    if thickness is not None:
         z1 = np.cumsum(thickness) + z0
     else:
         z1 = depths

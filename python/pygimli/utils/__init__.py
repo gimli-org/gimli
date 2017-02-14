@@ -22,6 +22,7 @@ from .utils import trimDocString
 from .utils import unicodeToAscii
 from .utils import logDropTol
 from .utils import grange
+from .utils import niceLogspace
 from .utils import diff
 from .utils import dist
 from .utils import cumDist
