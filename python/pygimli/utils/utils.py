@@ -213,7 +213,6 @@ def diff(v):
     Parameters
     ----------
     v : array(N) | pg.R3Vector(N)
-
         Array of double values or positions
 
     Returns

@@ -1,4 +1,4 @@
-function [hzp,hz,hr,ephi,rr,t]=vmd_t(iout,t,rho,d,r,dipm,z)
+function [hzp,hz,hr,ephi,rr,t]=vmd_tvec(iout,t,rho,d,r,dipm,z)
 % [HZP,HZ,HR,EPHI,RR,T]=VMD_T(IOUT,T,RHO,D,R,DIPM,z)
 %
 % Berechnung der transienten Felder im Intervall

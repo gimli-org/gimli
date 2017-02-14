@@ -41,4 +41,6 @@ from .postinversion import modCovar
 from .geostatistics import covarianceMatrix
 from .geostatistics import computeInverseRootMatrix
 
+from . hankel import hankelFC
+
 __all__ = [name for name in dir() if '_' not in name]

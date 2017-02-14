@@ -44,7 +44,9 @@ class Constants(object):
     e0 = 8.85418781762e-12  # [(A^2 * s^4)/(kg m^3)]
 
     # speed of light in vacuum
-    c0 = 1 / sqrt(mu0 * e0)
+    c0 = 1. / sqrt(mu0 * e0)
+    # speed of light in vacuum
+    c = c0
 
     # gravimetric constant
     G = 6.6742e-11  # [m^3/(kg s^2)]

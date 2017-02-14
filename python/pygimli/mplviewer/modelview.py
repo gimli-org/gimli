@@ -14,6 +14,99 @@ from pygimli.mplviewer.colorbar import setMappableData
 from pygimli.utils import rndig
 
 
+def drawModel1D(ax, values, thickness=None, depths=None, plot='plot',
+                xlabel=r'Resistivity $[\Omega\,$m$]$',
+                zlabel='Depth [m]',
+                z0=0,
+                **kwargs):
+    """Draw 1d block model into axis ax.
+
+    Draw 1d block model into axis ax defined by values and thickness vectors
+    using plotfunction.
+
+    Parameters
+    ----------
+    ax : mpl axes
+        Matplotlib Axes object to plot into.
+
+    values : [iterable] float
+        [N] Values for each layer plus lower background.
+
+    thickness : [iterable] float
+        [N-1] thickness for each layers. Either thickness or depths must be set.
+
+    depths : [iterable] float
+        [N-1] Values for layer depths. Either thickness or depths must be set.
+
+    plot : string
+        mpl plot funktion
+        'plot', 'semilogx', 'semilogy', 'loglog'
+
+    xlabel : str
+        Label for x axis.
+
+    ylabel : str
+        Label for y axis.
+
+    z0 : float
+        Starting depth [m]
+
+    **kwargs : dict()
+        Forwarded to the plot routine
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> pg.plt.style.use('ggplot')
+    >>> thk = [1, 4, 4]
+    >>> res = np.array([10, 5, 15, 50])
+    >>> fig, ax = plt.subplots()
+    >>> pg.mplviewer.drawModel1D(ax, values=res*5, depths=np.cumsum(thk),
+    ...                          plot='semilogx', color='blue')
+    >>> pg.mplviewer.drawModel1D(ax, values=res, thickness=thk, z0=1,
+    ...                          plot='semilogx', color='red')
+    >>> pg.wait()
+    """
+
+    if thickness is None and depths is None:
+        raise Exception("Either thickness or depths must be given.")
+
+    nLayers = len(values)
+    px = np.zeros(nLayers * 2)
+    pz = np.zeros(nLayers * 2)
+
+    if thickness:
+        z1 = np.cumsum(thickness) + z0
+    else:
+        z1 = depths
+
+    for i in range(nLayers):
+        px[2 * i] = values[i]
+        px[2 * i + 1] = values[i]
+
+        if i == nLayers - 1:
+            pz[2 * i + 1] = z1[i - 1] * 1.2
+        else:
+            pz[2 * i + 1] = z1[i]
+            pz[2 * i + 2] = z1[i]
+
+    if plot == 'loglog' or plot == 'semilogy':
+        pz[0] = thickness[0] * 0.8
+
+    try:
+        plot = getattr(ax, plot)
+        plot(px, pz+z0, **kwargs)
+    except BaseException as e:
+        print(e)
+
+    ax.set_ylabel(zlabel)
+    ax.set_xlabel(xlabel)
+    ax.set_ylim(pz[-1], pz[0])
+    ax.grid(True)
+
+
 def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     """What is this good for?."""
     plt.imshow(mat, interpolation='nearest')
@@ -280,49 +373,11 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def drawModel1D(ax, thickness, values, plotfunction='plot',
-                xlabel=r'Resistivity $[\Omega$ m$]$', **kwargs):
-    """Draw 1d block model into axis ax.
-
-    Draw 1d block model into axis ax defined by values and thickness vectors
-    using plotfunction.
-    """
-    nLayers = len(thickness) + 1
-    px = np.zeros(nLayers * 2)
-    pz = np.zeros(nLayers * 2)
-    z1 = np.cumsum(thickness)
-
-    for i in range(nLayers):
-        px[2 * i] = values[i]
-        px[2 * i + 1] = values[i]
-
-        if i == nLayers - 1:
-            pz[2 * i + 1] = z1[i - 1] * 1.2
-        else:
-            pz[2 * i + 1] = z1[i]
-            pz[2 * i + 2] = z1[i]
-
-    if plotfunction == 'loglog' or plotfunction == 'semilogy':
-        pz[0] = thickness[0] * 0.8
-
-    try:
-        plot = getattr(ax, plotfunction)
-        plot(px, pz, **kwargs)
-    except BaseException as e:
-        print(e)
-
-    ax.set_ylabel('Depth [m]')
-    ax.set_xlabel(xlabel)
-    ax.set_ylim(pz[-1], pz[0])
-    ax.grid()
-    return ax
-
-# def draw1dmodel(... )
 
 
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     """DEPRECATED."""
-    print("STYLE_WARNING!!!!!!! don't use this call. Use show1dmodel instead.")
+    print("STYLE_WARNING!!!!!!! don't use this call. Use show1dmodel or drawModel1D instead.")
     show1dmodel(x, thk, xlab, zlab, islog, z0)
 
 

@@ -47,6 +47,7 @@ ihz = bitand(ifeld,2);
 ihr = bitand(ifeld,4);
 ief = bitand(ifeld,8);
 
+
 if(iout(1) == 1), ihzp = 1; end
 if(iout(2) == 1), ihz = 1; end
 if(iout(3) == 1), ihr = 1; end
@@ -55,16 +56,22 @@ if(iout(4) == 1), ief = 1; end
 % Spez. Widerstaende, Anzahl Schichten
 rho = rho(:); nl = length(rho);
 
+
 % Abstaende
 if(rmin>rmax),
     warning('RMIN>RMAX.');
     return
 end
+
 if(abs(rmin-rmax)<1e-12),
     r = rmin;
     nr = 1;
 else
+warning('RMIN>RMAX.', rmin);
+printf('%g\n', rmin)
     rmin = 10^floor(log10(rmin));
+    rmin = 10^floor(log10(rmin));
+warning('RMIN>RMAX.');
     rmax = 10^ceil(log10(rmax));
     nr = log10(rmax/rmin)/0.1+1;
 end
@@ -119,7 +126,7 @@ for nn = 1:ncnt,
         itn = nc-nn+it;
         if(ihzp), hzp(it,:) = hzp(it,:)+imag(fhz(nn,:))*fcs(itn); end
         if(ihz), hz(it,:) = hz(it,:)-real(fhz(nn,:))*fcs(itn); end
-        if(ihr) hr(it,:) = hr(it,:)-real(fhr(nn,:))*fcs(itn); end
+        if(ihr), hr(it,:) = hr(it,:)-real(fhr(nn,:))*fcs(itn); end
         if(ief), ephi(it,:) = ephi(it,:)-real(fef(nn,:))*fcs(itn); end
     end
 end
