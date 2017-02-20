@@ -795,27 +795,28 @@ def writePLC(poly, fname, **kwargs):
 
     Choose from poly.dimension() and forward appropriate to
     gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
-    and
-    :py:mod:`pygimli.meshtools.writeTrianglePoly`
+    and :py:mod:`pygimli.meshtools.writeTrianglePoly`
 
     Parameters
     ----------
-
     poly : gimliapi:`GIMLI::Mesh`
         The polygon to be written.
     fname : string
-        Filename of the file to read (\\*.n, \\*.e)
+        Filename of the file to write (\\*.n, \\*.e).
 
     Examples
     --------
     >>> import pygimli as pg
+    >>> import tempfile, os
+    >>> fname = tempfile.mktemp() # Create temporary string for filename.
     >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, 0])
-    >>> pg.meshtools.writePLC(world2d, "world2d.poly")
-    >>> read2d = pg.meshtools.readPLC("world2d.poly")
+    >>> pg.meshtools.writePLC(world2d, fname)
+    >>> read2d = pg.meshtools.readPLC(fname)
     >>> print(read2d)
     Mesh: Nodes: 4 Cells: 0 Boundaries: 4
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
-    >>> pg.meshtools.writePLC(world3d, "world3d.poly")
+    >>> pg.meshtools.writePLC(world3d, fname)
+    >>> os.remove(fname)
     """
     if poly.dimension() == 2:
         writeTrianglePoly(poly, fname, **kwargs)
