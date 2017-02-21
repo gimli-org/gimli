@@ -72,7 +72,7 @@ class VESManager():
         appends gaussian distributed noise.
         Block only for now.
 
-        parameter:
+        Parameters
         ----------
 
         ab2: array_like
@@ -86,22 +86,18 @@ class VESManager():
         errPerc: float [3.]
             Percentage Value for the gaussian noise. Default are 3 %.
 
-        example:
-        --------
+        Example
+        -------
 
         >>> from pygimli.physics import VESManager as VES
         >>> import numpy as np
         >>> ab2 = np.logspace(-1, 2, 25)
         >>> mn2 = ab2/3
-        >>> synModel = [[4, 6, 10],
-        >>>             [100., 500., 20., 800.]]
+        >>> synModel = [[4, 6, 10], [100., 500., 20., 800.]]
         >>> # 3 layer with 100, 500 and 20 Ohmm
         >>> # and layer thickness of 4, 6, 10 m
         >>> # over a Halfspace of 800 Ohmm
-        >>> testData = VES.simulate(synModel,
-        >>>                         ab2,
-        >>>                         mn2,
-        >>>                         errPerc=3.)
+        >>> testData = VES.simulate(synModel, ab2, mn2, errPerc=3.)
         """
         thk = synmodel[0]
         res = synmodel[1]
