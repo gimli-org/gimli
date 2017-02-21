@@ -184,7 +184,6 @@ protected:
         lambda_             = 50.0;
         lambdaFactor_       = 1.0;
         dPhiAbortPercent_   = 2.0;
-        phiD_               = 0.0;
 
         CGLStol_            = -1.0; //** -1 means automatic scaled
     }
@@ -647,28 +646,34 @@ public:
         return ret;
     }
 
-    /*! Return total objective function (data OF plus lambda times model OF) */
+    /*! Return total objective function (data OF plus lambda times model OF)
+     DEPRECATED wrong nameing scheme*/
     double getPhi(const Vec & model, const Vec & response) const {
         return getPhiD(response) + getPhiM(model) * lambda_ * (1.0 - double(localRegularization_));
     }
 
-    /*! Shortcut for \ref getPhiD(response_) necessary ? */
+    /*! Shortcut for \ref getPhiD(response_) necessary ?
+     DEPRECATED wrong nameing scheme*/
     inline double getPhiD() const { return getPhiD(response_); }
 
-    /*! Shortcut for \ref getPhiM(model_) necessary ? */
+    /*! Shortcut for \ref getPhiM(model_) necessary ?
+     DEPRECATED wrong nameing scheme*/
     inline double getPhiM() const { return getPhiM(model_); }
 
-    /*! Shortcut for \ref getPhi(model_, response_) necessary ? */
+    /*! Shortcut for \ref getPhi(model_, response_) necessary ?
+     DEPRECATED wrong nameing scheme*/
     inline double getPhi() const { return getPhiD() + getPhiM() * lambda_ * (1.0 - double(localRegularization_)); }
 
-    /*! Return the chi-squared data misfit */
+    /*! Return the chi-squared data misfit
+     DEPRECATED wrong nameing scheme*/
     inline double getChi2() const { return getPhiD() / data_.size(); }
 
-    /*! Return the chi-squared data misfit for given forward response */
+    /*! Return the chi-squared data misfit for given forward response.
+     DEPRECATED wrong nameing scheme*/
     inline double getChi2(const Vec & response) const { return getPhiD(response) / data_.size(); }
 
     /*! Return last chi-squared data misfit */
-    inline double chi2() const { return phiD_ / data_.size(); }
+    inline double chi2() const { return getPhiD() / data_.size(); }
 
     /*! Return last absolute RMS misfit */
     inline double absrms() const { return rms(data_, response_); }
@@ -867,7 +872,6 @@ protected:
     double lambda_;
     double lambdaFactor_;
     double dPhiAbortPercent_;
-    double phiD_;
     double CGLStol_;
 
     bool isBlocky_;
@@ -986,7 +990,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     DOSAVE std::cout << "C size: " << forward_->constraints()->cols()
                      << " x " << forward_->constraints()->rows() << std::endl;
 
-    phiD_ = getPhiD();
+    double phiD= getPhiD();
 
     if (verbose_) {
         echoMinMax(data_,  "data");
@@ -1000,14 +1004,15 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
 
         std::cout << 0 << ": rms/rrms(data, response) = " << rms(data_, response_)
                   << "/" << rrms(data_, response_) * 100.0 << "%" << std::endl;
-        std::cout << 0 << ": chi^2(data, response, error, log) = " << phiD_ / data_.size() << std::endl;
-        std::cout << 0 << ": Phi = " << phiD_ << " + " << getPhiM() << " * "
+        std::cout << 0 << ": chi^2(data, response, error, log) = "
+        << phiD / data_.size() << std::endl;
+        std::cout << 0 << ": Phi = " << phiD << " + " << getPhiM() << " * "
                                     << lambda_ << " = " << getPhi() << std::endl;
     }
 
     //** Start iteration
     iter_ = 0;
-    double oldphi = phiD_;
+    double oldphi = phiD;
 
     //** store initial model
     modelHist_.push_back(model_);
@@ -1025,9 +1030,9 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
 
         modelHist_.push_back(model_);
 
-        phiD_ = getPhiD();
+        double phiD = getPhiD();
 
-        if (stopAtChi1_ && (phiD_ < data_.size())) {
+        if (stopAtChi1_ && (phiD < data_.size())) {
             if (verbose_) std::cout << "Reached data fit criteria (chi^2 <= 1). Stop." << std::endl;
             break;
         }

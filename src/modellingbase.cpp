@@ -126,6 +126,11 @@ RVector ModellingBase::startModel() {
 
 void ModellingBase::setStartModel(const RVector & startModel){
     startModel_=startModel;
+
+    //** for mesh less inversion
+    if (regionManager().parameterCount() != startModel_.size()){
+       regionManager().setParameterCount(startModel_.size());
+    }
 }
 
 void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){

@@ -187,7 +187,6 @@ def niceLogspace(vMin, vMax, nDec=10):
     n = np.log10(vmax/vmin)*nDec + 1
 
     q = 10**(1/nDec)
-    print(vmin, vmax, n)
 
     return vmin * q**np.arange(n)
 

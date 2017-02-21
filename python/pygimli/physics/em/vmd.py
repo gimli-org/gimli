@@ -22,7 +22,7 @@ class VMDModelling(pg.ModellingBase):
     VMD is at the origin ::math::`r_s = (0.0)` and ::math::`z_s=0`.
 
     """
-    def __init__(self, f=None, **kwargs):
+    def __init__(self, **kwargs):
         """Initialize forward operator.
 
         Initialize forward operator with optional halfspace geometry
@@ -30,38 +30,11 @@ class VMDModelling(pg.ModellingBase):
 
         Parameters
         ----------
-        layers : iterable [float]
-            Array of layer thinnumber of layers
-
-        f : iterable [float]
-            Frequency vector
 
         **kwargs : dict()
             Forward to ModellingBase
         """
         pg.ModellingBase.__init__(self, **kwargs)
-
-        self.nlay = 0     # Number of halfspace layers
-        self.wem = 0      # ??
-        self.iwm = 0      # ??
-
-        self.setFrequencies(f)
-
-    def setFrequencies(self, f):
-        """Set measurement frequencies.
-
-        Parameters
-        ----------
-        f : iterable [float]
-            Frequency vector, Default is [1000] i.e. 1kHz
-        """
-        if f is None:
-            self.f = np.asarray([1000])
-        else:
-            self.f = np.asarray(f)
-
-        self.wem = (2.0 * pi * self.f) ** 2 * constants.e0 * constants.mu0
-        self.iwm = 2.0 * pi * self.f * constants.mu0 * 1j
 
 
     def response(self, par):
@@ -74,239 +47,210 @@ class VMDModelling(pg.ModellingBase):
         """
         THROW_TO_IMPL
 
-    @staticmethod
-    def fdResponse(f, rho, d, ze, zs, rmin, nr, tm):
-        """Calculate frequency domain response for a given model.
+    def calcEPhiF(self, f, rho, d, rmin=1, nr=41, ze=0, zs=0, tm=1):
+        """VMD E-phi field (not used actively)."""
+        #ze    z-Koordinate des Empfaengers in Meter (default: ZE=0)
+        #zs    z-Koordinate des Senders in Meter (default: ZS=0)
 
-        Parameters
-        ----------
+        # Filterkoeffizienten
 
-        f :
+        q = 10**0.1
+        rr = rmin * q **(np.array(nr) - 1)
 
-        depths : iterable [float]
-            Array of layer depths in positive z coordinates.
+        he = ze
+        hs = zs
+        zm = hs - he
+        zp = hs + he
 
-        rho : iterable [float]
-            Array of electrical resistivities for the given layers.
-            Must be length of depths plus one for the lower background
+        rm = np.sqrt(rr**2 + zm**2)
+        rp = np.sqrt(rr**2 + zp**2)
 
-        Returns
-        -------
-        hz : np.array [complex]
-            Vertical component of the magnetic field ::math::`H_z(f)` in [A/m]
-        hr : np.array [complex]
-            Radial component of the magnetic field ::math::`H_r(f)` in [A/m]
-        ephi : np.array [complex]
-            Tangential component ::math::`E_{\phi}(f)` of the electric field in [V/m]
+        fcJ1, nc0 = pg.utils.hankelFC(4)
+        nc = len(fcJ1)
 
-        """
-        epr = 1.  # epsilonR
-        mur = 1.  # muR
-        quasistatic = False
-        h = 0.01
-        rho = np.array(rho)
-        #thickness = np.array(pg.abs(pg.utils.diff(np.array([0.] +  depths))))
-        self.r = np.array([1.])
+        ncnr = nc + nr - 1
 
-        # relative electrical permeabilty for each layer
-        if isinstance(epr, float):
-            epr = np.ones(len(rho)) * epr
-        # relative magnetic permeabilty for each layer
-        if isinstance(mur, float):
-            mur = np.ones(len(rho)) * mur
+        # Vakuumwerte, nicht normiert
+        if ze <= 0:
+            ePhi = rr / rp**3
 
-        fc0, nc0 = pg.utils.hankelFC(3)  # J0
-        fc1, nc0 = pg.utils.hankelFC(4)  # J1
-        nc = len(fc0)
+        # Create Wavenumbers
+        nu = np.arange(1, ncnr + 1)
 
-        # arrays anlegen
-        nf = len(f)
-        lam = np.zeros((1, nc, nf))
-        alpha0 = np.zeros((1, nc, nf), np.complex)
-        delta0 = np.zeros((1, nc, nf), np.complex)
-        delta1 = np.zeros((1, nc, nf), np.complex)
-        delta2 = np.zeros((1, nc, nf), np.complex)
-        delta3 = np.zeros((1, nc, nf), np.complex)
-        aux0 = np.zeros((1, nf), np.complex)
-        aux1 = np.zeros((1, nf), np.complex)
-        aux2 = np.zeros((1, nf), np.complex)
-        aux3 = np.zeros((1, nf), np.complex)
-        Z = np.zeros(nf, np.complex)
+        n = nc0 - nc + nu
+        q = np.log(10) * 0.1
+        k = np.exp(-(n-1) * q) / rmin
 
-        r0 = np.copy(self.r)
+        if ze <= 0:
+            ePhi = rr / rp **3.0
 
-        # determine optimum r0 (shift nodes) for f > 1e4 and h > 100
-        if quasistatic:
-            index = np.zeros(self.f.shape, np.bool)
-        else:
-            index = np.logical_and(self.f >= 1e4, h >= 100.0)
-
-        if np.any(index):
-            opt = np.floor(10.0 * np.log10(self.r[index] * 2.0 * pi *
-                           self.f[index] / constants.c) + nc0)
-            r0[index] = constants.c / (2.0 * pi * self.f[index]) * \
-                        10.0 ** ((opt + 0.5 - nc0) / 10.0)
-
-        # prepare wavenumbers
-        n = np.arange(nc0 - nc, nc0, 1, np.float)
-        q = 0.1 * np.log(10)
-        lam = np.reshape(np.exp(-n[np.newaxis, :, np.newaxis] * q) /
-                         r0[np.newaxis, np.newaxis, :], (-1, nc, r0.size))
-
-        # (1, 100, nfreq)
-        # wavenumbers in air, quasistatic approximation
-        alpha0 = lam * np.complex(1, 0)  # (1, 100, nfreq)
-
-        # wavenumbers in air, complete solution (f > 1e4 Hz)
-        if quasistatic:
-            index = np.zeros(self.f.shape, np.bool)
-        else:
-            index = self.f >= 1e4
-
-        if np.any(index):
-            alpha0[:, :, index] = np.sqrt(lam[:, :, index]**2 - \
-                np.tile(self.wem[index], (1, nc, 1)) +
-                np.tile(self.iwm[index], (1, nc, 1)) / 1e9)
-
-        # (1, 100 , nfreq)
-        # Admittanzen on the surface of the layered Halfspace
-        b1, aa, aap = self.downward(rho, thickness, 0.0, epr, mur, lam)
+        # Admittanzen for halfspace borders for each Wavenumbers k
+        bt = np.zeros(ncnr) * 1j
+        aa = np.zeros(ncnr) * 1j
+        for i in range(ncnr):
+            if ze <= 0:
+                bt[i] = self.btp(k[i], f, rho, d, type=1)
+            else:
+                raise Exception('NeedTests')
+                aa[i], aap[i], bt[i] = downward(k[i], f, rho, d, ze)
 
         # Kernel functions
-        e = np.exp(-2.0 * h * alpha0)  # (1, 100, nfreq)
-        delta0 = (b1 - alpha0 * mur[0]) / (b1 + alpha0 * mur[0]) * e
-        delta1 = (2. * mur[0]) / (b1 + alpha0 * mur[0]) * e  # (1, 100, nfreq)
+        if ze <= 0:
+            e = np.exp(k * ze) * np.exp(k * zs)
+            delta = e * (bt - k) / (bt + k)
+        else:
+            raise Exception('NeedTests')
+            e = np.exp(k * zs)
+            delta = 2. * k**2. / (bt + k)*e
 
-        delta2 = 1. / h * e  # (1, 100, nfreq)
-        delta3 = 1. / (2. * h) * e  # (1, 100, nfreq)
+        # convolution
+        aux3 = np.zeros(nr) * 1j
 
-        # Convolution
-        # quasistatic approximation
-        aux0 = np.sum(delta0 * lam ** 3 / alpha0 *
-                      np.tile(fc0[::-1].T[:, :, np.newaxis],
-                              (1, 1, self.f.size)), 1, np.complex) / r0
+        for n in range(nr):
+            for nn in range(nc):
+                nu = nn + n;
+                mn = nc - nn;
 
-        Z = self.r ** 3 * aux0 * self.scaling
+                nnn = nc0 - nc + nu;
+                k = np.exp( - (nnn) * q) / rmin
 
-        # full solution, partial integration
-        if np.any(index):
-            aux1 = np.sum(delta1 * lam ** 3 *
-                          np.tile(fc0[::-1].T[:, :, np.newaxis],
-                                  (1, 1, self.f.size)), 1, np.complex) / r0
+                del0 = delta[nu]
 
-            aux2 = np.sum(delta2 * lam *
-                          np.tile(fc0[::-1].T[:, :, np.newaxis],
-                                  (1, 1, self.f.size)), 1, np.complex) / r0
+                if ze <= 0:
+                    del1 = del0 * k
+                    aux3[n] = aux3[n] + del1 * fcJ1[mn-1]
+                else:
+                    raise Exception('NeedTests')
+                    del3=del0 * aa(nu);
+                    aux3[n] = aux3[n] + del3 * fcJ1[mn]
 
-            aux3 = np.sum(delta3 * lam ** 2 *
-                          np.tile(fc1[::-1].T[:, :, np.newaxis],
-                                  (1, 1, self.f.size)), 1, np.complex) / r0
+            if nr > 1:
+                aux3[n] = aux3[n] / rr[n]
+                raise Exception("more then one r .. check code here")
+            else:
+                aux3[n] = aux3[n] / rr
 
-            Z[:, index] = (-self.r[index]**3 * aux1[:, index] +
-                            self.r[index]**3 * aux2[:, index] -
-                            self.r[index]**4 * aux3[:, index]) * self.scaling
+        if ze <= 0:
+            # Air
+            ePhi = ePhi - aux3
+        else:
+            raise Exception("more then one r .. check code here")
+            # Halfspace
+            ePhi = aux3
 
-        return np.real(Z[0]), np.imag(Z[0])
+        # Normalization
+        ePhi *= -tm * 1j * (2*pi*f) * pg.physics.constants.mu0 / (4*pi)
+        return ePhi
+
+    def btp(self, k, f, rho, d, type=1):
+        """Admittance of a layered halfspace
+        for TE (TYP=1) and TM (TYP=2) mode.
+        k: wave number (1/m)
+        f: frequency (1/s)
+        rho: layer resitivities
+        d: layer thicknesses
+        """
+        nl = len(rho)
+        mu0 = 4e-7 * pi
+        c = 1j * pg.physics.constants.mu0 * 2 * pi * f
+        b = np.sqrt(k**2 + c/rho[nl-1])
+
+        if nl > 1:
+            beta = 1
+            for nn in range(nl-2, -1, -1):
+                alpha = np.sqrt(k**2 + c / rho[nn])
+                if type == 2:
+                    beta = rho[nn] / rho[nn + 1]
+
+                cth = np.exp(-2. * d[nn] * alpha)
+                cth = (1-cth) / (1+cth)
+                b = (b + alpha * beta * cth) / (beta + cth * b / alpha)
+
+        return b
 
 
-    def downward(self, rho, d, z, epr, mur, lam):
-        """Downward continuation of fields.
+class VMDTimeDomainModelling(VMDModelling):
+    """
+    """
+    def __init__(self, t, txarea, rxarea=None, **kwargs):
+        """
+        """
+        VMDModelling.__init__(self, **kwargs)
 
-        For internal use .. DOCUMENTME
+        self.t = t
+        self.txarea = txarea
 
-        Parameters
-        ----------
+        if rxarea is None:
+            self.rxarea = txarea
+        else:
+            self.rxarea = rxarea
 
-        Returns
-        -------
-
-        AUTHORS: RUB, AU, TG ?
+    def response(self, par):
+        """
+        par = [thicknesses, res]
 
         """
-        # Anzahl der Schichten
+        nLay = (len(par)-1)/2
+        thk = par[0:nLay]
+        res = par[nLay:]
+
+        return self.calcRhoa(thk, res)
+
+    def calcRhoa(self, thk, res):
+        """
+        """
+        a = sqrt(self.txarea / pi) # TX coil radius
+
+        ePhiTD, tD = self.calcEphiT(tMin=min(self.t), tMax=max(self.t),
+                                    rho=res, d=thk, rMin=a, rMax=a, z=0,
+                                    dipm=self.rxarea)
+
+        ePhi = np.exp(np.interp(np.log(self.t),
+                                np.log(tD), np.log(ePhiTD[:,0])))
+
+        tmp = a**(4./3) * self.rxarea**(2./3) * \
+            pg.physics.constants.mu0**(5./3)/ (20**(2./3) * pi**(1./3))
+        rhoa = tmp / (self.t**(5./3) * (ePhi * 2 * pi * a)**(2./3))
+
+        return rhoa
+
+
+    def calcEphiT(self, tMin, tMax, rho, d, rMin, rMax, z, dipm):
+        """
+        """
         nl = len(rho)
 
-        # arrays anlegen
-        alpha = np.zeros((nl, lam.shape[1], self.f.size), np.complex)
-        b = np.zeros((nl, lam.shape[1], self.f.size), np.complex)
-        aa = np.zeros((nl, lam.shape[1], self.f.size), np.complex)
-        aap = np.zeros((nl, lam.shape[1], self.f.size), np.complex)
+        r = pg.utils.niceLogspace(rMin, rMax, nDec=10)
+        r = [rMin]
 
-        rho = rho[:, np.newaxis, np.newaxis] * np.ones(
-            (rho.size, lam.shape[1], self.f.size), np.float)
+        t = pg.utils.niceLogspace(tMin, tMax, nDec=10)
 
-        d = d[:, np.newaxis, np.newaxis] * np.ones(
-            (d.size, lam.shape[1], self.f.size), np.float)
-        h = np.insert(np.cumsum(d[:, 0, 0]), 0, 0)
-        epr = epr[:, np.newaxis, np.newaxis] * np.ones(
-            (epr.size, lam.shape[1], self.f.size), np.float)
-        mur = mur[:, np.newaxis, np.newaxis] * np.ones(
-            (mur.size, lam.shape[1], self.f.size), np.float)
-        lam = np.tile(lam, (nl, 1, 1))
-        # Ausbreitungskonstante
-        alpha = np.sqrt(lam ** 2 - np.tile(self.wem, (nl, lam.shape[1], 1)) *
-                        epr * mur + np.tile(self.iwm, (nl, lam.shape[1], 1)) *
-                        mur / rho)
-        if nl == 1:  # homogenous halfspace
-            b1 = alpha.copy()  # (1, 100, nfreq)
-            a = np.exp(-alpha * z)
-            ap = a.copy()
-            return b1, a, ap
-        elif nl > 1:  # multi-layer case
-            # tanh num instabil tanh(x)=(exp(x)-exp(-x))/(exp(x)+exp(-x))
-            ealphad = np.exp(-2.0 * alpha[0:-1, :, :] * d)
-            talphad = (1.0 - ealphad) / (1.0 + ealphad)
-            b[-1, :, :] = np.copy(alpha[-1, :, :])
-            # rekursive Berechnung der Admittanzen an der Oberkante der Schicht
-            # von unten nach oben, für nl-1 Schichten
-            for n in range(nl-2, -1, -1):
-                b[n, :, :] = alpha[n, :, :] * (b[n+1, :, :] + alpha[n, :, :] *
-                                               talphad[n, :, :]) / (
-                    alpha[n, :, :] + b[n+1, :, :] * talphad[n, :, :])
-            # Impedance
-            c = 1.0 / b
-            # b1 == 1. row in b (nl, 100, nfreq)
-            b1 = np.copy(b[0, :, :][np.newaxis, :, :])  # (1, 100, nfreq)
-            # Variation from one layer boundary to the other
-            for n in range(0, nl-1):
-                aa[n, :, :] = (b[n, :, :] + alpha[n, :, :]) / (
-                    b[n+1, :, :] + alpha[n, :, :]) * \
-                    np.exp(-alpha[n, :, :] * d[n, :, :])
-                aap[n, :, :] = (1.0 + alpha[n, :, :] * c[n, :, :]) / (
-                    1.0 + alpha[n, :, :] * c[n+1, :, :]) * \
-                    np.exp(-alpha[n, :, :] * d[n, :, :])
-            # Determin layer Index where z is
+        fcS, nc0 = pg.utils.hankelFC(1)
 
-            for n in range(0, nl-1):
-                if np.logical_and(z >= h[n], z < h[n+1]):
-                    ind = n
-            try:
-                ind
-            except NameError:
-                ind = nl - 1
+        nr = len(r)
+        nc = len(fcS)
+        nt = len(t)
+        ncnt = nc + nt
 
-            print("check ind", ind, nl-1)
+        fef = np.zeros((ncnt,nr), np.complex)
+        ePhi = np.zeros((nt,nr))
 
+        omega = 10. ** (0.1 * (1 - (-nc + nc0 + np.arange(1, ncnt)))) / t[0]
 
-            if (ind + 1) < nl:
-                a = np.prod(aa[:ind, :, :], 0) * 0.5 * (
-                    1.0 + b[ind, :, :] / alpha[ind, :, :]) * \
-                    (np.exp(-alpha[ind, :, :] * (z - h[ind])) -
-                        (b[ind+1, :, :] - alpha[ind, :, :]) /
-                        (b[ind+1, :, :] + alpha[ind, :, :]) *
-                        np.exp(-alpha[ind, :, :] *
-                               (d[ind, :, :] + h[ind+1] - z)))
-                ap = np.prod(aap[:ind, :, :], 0) * 0.5 * \
-                    (1.0 + alpha[ind, :, :] * c[ind, :, :]) * \
-                    (np.exp(-alpha[ind, :, :] * (z - h[ind])) +
-                        (1.0 - alpha[ind, :, :] * c[ind+1, :, :]) /
-                        (1.0 + alpha[ind, :, :] * c[ind+1, :, :]) *
-                        np.exp(-alpha[ind, :, :] *
-                               (d[ind, :, :] + h[ind+1] - z)))
-            else:
-                a = np.prod(aa, 0) * np.exp(-alpha[ind, :, :] * (z - h[ind]))
-                ap = np.prod(aap, 0) * np.exp(-alpha[ind, :, :] * (z - h[ind]))
-            a = a[np.newaxis, :, :]  # (1, 100, nfreq)
-            ap = ap[np.newaxis, :, :]  # (1, 100, nfreq)
-            return b1, a, ap
+        for nn, o in enumerate(omega):
+            f = o / (2. * pi)
+            ePhiF = self.calcEPhiF(f, rho, d, ze=z, zs=0.,
+                                   rmin=r[0], nr=len(r), tm=1.0)
 
+            fef[nn,:] = ePhiF / sqrt(o)
+
+            ita = max(0, nn-nc)
+            ite = min(nt, nn+1)
+            for it in range(ita, ite):
+                itn = nc-nn+it-1
+                ePhi[it] = ePhi[it] - np.real(fef[nn]) * fcS[itn]
+
+        for it in range(nt):
+            ePhi[it] = ePhi[it] * dipm * sqrt(2/pi / t[it])
+
+        return ePhi, t

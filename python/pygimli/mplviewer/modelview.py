@@ -14,30 +14,36 @@ from pygimli.mplviewer.colorbar import setMappableData
 from pygimli.utils import rndig
 
 
-def drawModel1D(ax, values, thickness=None, depths=None, plot='plot',
-                xlabel=r'Resistivity $[\Omega\,$m$]$',
-                zlabel='Depth [m]',
+def drawModel1D(ax, model=None, values=None, thickness=None, depths=None,
+                plot='plot',
+                xlabel=r'Resistivity $[\Omega\,$m$]$', zlabel='Depth [m]',
                 z0=0,
                 **kwargs):
     """Draw 1d block model into axis ax.
 
     Draw 1d block model into axis ax defined by values and thickness vectors
     using plotfunction.
+    For log y cases, z0 should be set something greater then 0.0 so the default becomes to 1.
 
     Parameters
     ----------
     ax : mpl axes
         Matplotlib Axes object to plot into.
 
-    values : [iterable] float
+    values : iterable [float]
         [N] Values for each layer plus lower background.
 
-    thickness : [iterable] float
+    thickness : iterable [float]
         [N-1] thickness for each layers. Either thickness or depths must be set.
 
-    depths : [iterable] float
+    depths : iterable [float]
         [N-1] Values for layer depths (positive z-coordinates).
         Either thickness or depths must be set.
+
+    model : iterable [float]
+        Shortcut to use default model definition.
+        thks = model[0:nLay]
+        values = model[nLay:]
 
     plot : string
         mpl plot funktion
@@ -71,6 +77,11 @@ def drawModel1D(ax, values, thickness=None, depths=None, plot='plot',
     >>> pg.wait()
     """
 
+    if not model is None:
+        nLayers = (len(model)-1)/2
+        thickness = model[:nLayers]
+        values = model[nLayers:]
+
     if thickness is None and depths is None:
         raise Exception("Either thickness or depths must be given.")
 
@@ -94,7 +105,10 @@ def drawModel1D(ax, values, thickness=None, depths=None, plot='plot',
             pz[2 * i + 2] = z1[i]
 
     if plot == 'loglog' or plot == 'semilogy':
-        pz[0] = thickness[0] * 0.8
+        if z0 == 0:
+            pz[0] = 1.
+        else:
+            pz[0] = z0
 
     try:
         plot = getattr(ax, plot)
@@ -104,7 +118,7 @@ def drawModel1D(ax, values, thickness=None, depths=None, plot='plot',
 
     ax.set_ylabel(zlabel)
     ax.set_xlabel(xlabel)
-    ax.set_ylim(pz[-1], pz[0])
+    #ax.set_ylim(pz[-1], pz[0])
     ax.grid(True)
 
 
@@ -168,7 +182,7 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 
 def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
-                       islog=True, title=None, cmap='jet'):
+                       islog=True, title=None, zMin=0, zMax=0, cmap='jet'):
     """Show several 1d block models as (stitched) section."""
     if x is None:
         x = np.arange(len(models))
@@ -182,7 +196,8 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     dxmed2 = np.median(np.diff(x)) / 2.
     vals = np.zeros((len(models), nlay))
     patches = []
-    maxz = 0.
+    zMaxLimit = 0
+
     for i, imod in enumerate(models):
         if isinstance(imod, pg.RVector):
             vals[i, :] = imod(nlay - 1, 2 * nlay - 1)
@@ -191,12 +206,18 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
             vals[i, :] = imod[nlay - 1:2 * nlay - 1]
             thk = imod[:nlay - 1]
 
-        thk = np.hstack((thk, thk[-1]*3))
-        z = np.hstack((0., np.cumsum(thk)))
-        maxz = max(maxz, z[-1])
+        if zMax > 0:
+            z = np.hstack((0., np.cumsum(thk)))
+            z = np.hstack((z, zMax))
+        else:
+            thk = np.hstack((thk, thk[-1]*3))
+            z = np.hstack((0., np.cumsum(thk)))
+
+        zMaxLimit = max(zMaxLimit, z[-1])
+
 
         for j in range(nlay):
-            rect = Rectangle((x[i] - dxmed2, z[j]), dxmed2 * 2, thk[j])
+            rect = Rectangle((x[i] - dxmed2, z[j]), dxmed2 * 2, z[j+1]-z[j])
             patches.append(rect)
 
     p = PatchCollection(patches, cmap=cmap, linewidths=0)
@@ -208,7 +229,8 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     setMappableData(p, vals.ravel(), logScale=islog)
     ax.add_collection(p)
 
-    ax.set_ylim((maxz, 0.))
+    ax.set_ylim((zMaxLimit, zMin))
+    ax.set_yscale("log", nonposy='clip')
     ax.set_xlim((min(x) - dxmed2, max(x) + dxmed2))
     if title is not None:
         ax.set_title(title)
