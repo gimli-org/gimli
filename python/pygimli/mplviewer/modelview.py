@@ -14,7 +14,7 @@ from pygimli.mplviewer.colorbar import setMappableData
 from pygimli.utils import rndig
 
 
-def drawModel1D(ax, model=None, values=None, thickness=None, depths=None,
+def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
                 plot='plot',
                 xlabel=r'Resistivity $[\Omega\,$m$]$', zlabel='Depth [m]',
                 z0=0,
