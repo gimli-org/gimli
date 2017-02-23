@@ -25,9 +25,9 @@ import numpy as np
 import pygimli as pg
 
 
-def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True):
+def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
     """INTERNAL."""
-    nEdges = poly.nodeCount()-1 + isClosed
+    nEdges = poly.nodeCount() - 1 + isClosed
     bm = None
     if hasattr(boundaryMarker, '__len__'):
         if len(boundaryMarker) == nEdges:
@@ -39,10 +39,10 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True):
         bm = [boundaryMarker] * nEdges
 
     for i in range(poly.nodeCount() - 1):
-        poly.createEdge(poly.node(i), poly.node(i+1), bm[i])
+        poly.createEdge(poly.node(i), poly.node(i + 1), bm[i])
 
     if isClosed:
-        poly.createEdge(poly.node(poly.nodeCount()-1),
+        poly.createEdge(poly.node(poly.nodeCount() - 1),
                         poly.node(0), bm[-1])
 
 
@@ -113,9 +113,9 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     poly.createNode([ePos[0], sPos[1]])
 
     if kwargs.pop('isHole', False):
-        poly.addHoleMarker(sPos + (ePos-sPos)*0.2)
+        poly.addHoleMarker(sPos + (ePos - sPos) * 0.2)
     else:
-        poly.addRegionMarker(sPos + (ePos-sPos)*0.2,
+        poly.addRegionMarker(sPos + (ePos - sPos) * 0.2,
                              marker=kwargs.pop('marker', 1),
                              area=kwargs.pop('area', 0))
 
@@ -194,7 +194,8 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
 
-    polyCreateDefaultEdges_(poly, boundaryMarker=range(1, poly.nodeCount()+1))
+    polyCreateDefaultEdges_(
+        poly, boundaryMarker=range(1, poly.nodeCount() + 1))
 
     if worldMarker:
         for b in poly.boundaries():
@@ -380,6 +381,8 @@ def createPolygon(verts, isClosed=False, **kwargs):
             Marker for the resulting triangle cells after mesh generation
         * area : float [0]
             Maximum cell size for resulting triangles after mesh generation
+        * isHole : bool [False]
+            The Polygone will become a hole instead of a triangulation
 
     isClosed : bool [True]
         Add closing edge between last and first node.
@@ -406,14 +409,16 @@ def createPolygon(verts, isClosed=False, **kwargs):
 
     marker = kwargs.pop('marker', 0)
     area = kwargs.pop('area', 0)
+    isHole = kwargs.pop('isHole', False)
 
     polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
 
     if isClosed and marker is not 0 or area > 0:
-
-        poly.addRegionMarker(pg.center(poly.positions()),
-                             marker=marker,
-                             area=area)
+        if isHole:
+            poly.addHoleMarker(pg.center(poly.positions()))
+        else:
+            poly.addRegionMarker(pg.center(poly.positions()),
+                                 marker=marker, area=area)
 
     # set a regionmarker here .. somewhere
 
@@ -630,13 +635,13 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
     if not noSensors:
         for i, e in enumerate(sensors):
             if iz == 2:
-                e.rotateX(-math.pi/2)
+                e.rotateX(-math.pi / 2)
             if paraDX >= 0.5:
                 nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
-                        e1.rotateX(-math.pi/2)
+                        e1.rotateX(-math.pi / 2)
                     nSurface.append(poly.createNode((e + e1) * 0.5))
                 # print("Surface add ", e, el, nSurface[-2].pos(),
                 #        nSurface[-1].pos())
@@ -644,14 +649,14 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                 if i > 0:
                     e1 = sensors[i - 1]
                     if iz == 2:
-                        e1.rotateX(-math.pi/2)
+                        e1.rotateX(-math.pi / 2)
                     nSurface.append(
                         poly.createNode(e - (e - e1) * paraDX))
                 nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
-                        e1.rotateX(-math.pi/2)
+                        e1.rotateX(-math.pi / 2)
                     nSurface.append(
                         poly.createNode(e + (e1 - e) * paraDX))
                 # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
@@ -662,10 +667,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
         poly.createEdge(nSurface[i], nSurface[i - 1],
                         pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
-    #print(poly)
+    # print(poly)
     #pg.meshtools.writePLC(poly, "test.poly")
-    #pg.show(poly)
-    #pg.wait()
+    # pg.show(poly)
+    # pg.wait()
     return poly
 
 
@@ -841,7 +846,7 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
         nm = poly.nodeMarkers()
         bm = poly.boundaryMarkers()
 
-        fmt = '{:d}'+('\t'+pfmt)*2+'\t{:d}\n'
+        fmt = '{:d}' + ('\t' + pfmt) * 2 + '\t{:d}\n'
         for i, p in enumerate(poly.positions()):
             fid.write(fmt.format(i, p.x(), p.y(), nm[i]))
         fid.write('{:d}\t1\n'.format(poly.boundaryCount()))
@@ -851,12 +856,12 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
                 i, b.node(0).id(), b.node(1).id(), bm[i]))
         fid.write('{:d}\n'.format(len(poly.holeMarker())))
 
-        fmt = '{:d}'+('\t'+pfmt)*2+'\n'
+        fmt = '{:d}' + ('\t' + pfmt) * 2 + '\n'
         for i, h in enumerate(poly.holeMarker()):
             fid.write(fmt.format(i, h.x(), h.y()))
         fid.write('{:d}\n'.format(len(poly.regionMarker())))
 
-        fmt = '{:d}'+('\t'+pfmt)*3+'\t{:.15e}\n'
+        fmt = '{:d}' + ('\t' + pfmt) * 3 + '\t{:.15e}\n'
         for i, r in enumerate(poly.regionMarker()):
             fid.write(fmt.format(i, r.x(), r.y(), r.marker(), r.area()))
 
