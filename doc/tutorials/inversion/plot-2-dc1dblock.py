@@ -73,6 +73,10 @@ fig, ax = plt.subplots(ncols=2, figsize=(8, 6))  # two-column figure
 # plot model (inverted and synthetic)
 drawModel1D(ax[0], thk, res, color='r')  # r'\rho in \Omega m')
 drawModel1D(ax[0], synthk, synres, color='b')
+
+
+print(thk)
+
 ax[0].grid(True, which='both')
 # plot sounding curve data and model response
 ax[1].loglog(rhoa, ab2, 'rx-', label='measured')
