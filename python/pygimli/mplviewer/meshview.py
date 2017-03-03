@@ -477,10 +477,9 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False, 
         if n.marker() == pg.MARKER_NODE_SENSOR:
             col = (0.0, 0.0, 0.0, 1.0)
 
-#        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
         ms = kwargs.pop('markersize', 5)
-        # ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms,
-                # color=col)
+        ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
+#        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
         cols.append(col)
 

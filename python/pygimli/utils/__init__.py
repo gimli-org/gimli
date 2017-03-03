@@ -22,6 +22,7 @@ from .utils import trimDocString
 from .utils import unicodeToAscii
 from .utils import logDropTol
 from .utils import grange
+from .utils import niceLogspace
 from .utils import diff
 from .utils import dist
 from .utils import cumDist
@@ -40,5 +41,7 @@ from .postinversion import modCovar
 
 from .geostatistics import covarianceMatrix
 from .geostatistics import computeInverseRootMatrix
+
+from . hankel import hankelFC
 
 __all__ = [name for name in dir() if '_' not in name]

@@ -14,6 +14,115 @@ from pygimli.mplviewer.colorbar import setMappableData
 from pygimli.utils import rndig
 
 
+def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
+                plot='plot',
+                xlabel=r'Resistivity $[\Omega\,$m$]$', zlabel='Depth [m]',
+                z0=0,
+                **kwargs):
+    """Draw 1d block model into axis ax.
+
+    Draw 1d block model into axis ax defined by values and thickness vectors
+    using plotfunction.
+    For log y cases, z0 should be set something greater then 0.0 so the default becomes to 1.
+
+    Parameters
+    ----------
+    ax : mpl axes
+        Matplotlib Axes object to plot into.
+
+    values : iterable [float]
+        [N] Values for each layer plus lower background.
+
+    thickness : iterable [float]
+        [N-1] thickness for each layers. Either thickness or depths must be set.
+
+    depths : iterable [float]
+        [N-1] Values for layer depths (positive z-coordinates).
+        Either thickness or depths must be set.
+
+    model : iterable [float]
+        Shortcut to use default model definition.
+        thks = model[0:nLay]
+        values = model[nLay:]
+
+    plot : string
+        mpl plot funktion
+        'plot', 'semilogx', 'semilogy', 'loglog'
+
+    xlabel : str
+        Label for x axis.
+
+    ylabel : str
+        Label for y axis.
+
+    z0 : float
+        Starting depth [m]
+
+    **kwargs : dict()
+        Forwarded to the plot routine
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> # pg.plt.style.use('ggplot')
+    >>> thk = [1, 4, 4]
+    >>> res = np.array([10, 5, 15, 50])
+    >>> fig, ax = plt.subplots()
+    >>> pg.mplviewer.drawModel1D(ax, values=res*5, depths=np.cumsum(thk),
+    ...                          plot='semilogx', color='blue')
+    >>> pg.mplviewer.drawModel1D(ax, values=res, thickness=thk, z0=1,
+    ...                          plot='semilogx', color='red')
+    >>> pg.wait()
+    """
+
+    if not model is None:
+        nLayers = (len(model)-1)/2
+        thickness = model[:nLayers]
+        values = model[nLayers:]
+
+    if thickness is None and depths is None:
+        raise Exception("Either thickness or depths must be given.")
+
+    nLayers = len(values)
+    px = np.zeros(nLayers * 2)
+    pz = np.zeros(nLayers * 2)
+
+    if thickness is not None:
+        z1 = np.cumsum(thickness) + z0
+    else:
+        z1 = depths
+
+    for i in range(nLayers):
+        px[2 * i] = values[i]
+        px[2 * i + 1] = values[i]
+
+        if i == nLayers - 1:
+            pz[2 * i + 1] = z1[i - 1] * 1.2
+        else:
+            pz[2 * i + 1] = z1[i]
+            pz[2 * i + 2] = z1[i]
+
+    if plot == 'loglog' or plot == 'semilogy':
+        if z0 == 0:
+            pz[0] = 1.
+        else:
+            pz[0] = z0
+
+    try:
+        plot = getattr(ax, plot)
+        plot(px, pz+z0, **kwargs)
+    except BaseException as e:
+        print(e)
+
+    ax.set_ylabel(zlabel)
+    ax.set_xlabel(xlabel)
+    # let positive depths upward down
+    ax.set_ylim(pz[-1], pz[0])
+    ax.grid(True)
+
+
 def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     """What is this good for?."""
     plt.imshow(mat, interpolation='nearest')
@@ -74,7 +183,7 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 
 def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
-                       islog=True, title=None, cmap='jet'):
+                       islog=True, title=None, zMin=0, zMax=0, cmap='jet'):
     """Show several 1d block models as (stitched) section."""
     if x is None:
         x = np.arange(len(models))
@@ -88,7 +197,8 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     dxmed2 = np.median(np.diff(x)) / 2.
     vals = np.zeros((len(models), nlay))
     patches = []
-    maxz = 0.
+    zMaxLimit = 0
+
     for i, imod in enumerate(models):
         if isinstance(imod, pg.RVector):
             vals[i, :] = imod(nlay - 1, 2 * nlay - 1)
@@ -97,12 +207,18 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
             vals[i, :] = imod[nlay - 1:2 * nlay - 1]
             thk = imod[:nlay - 1]
 
-        thk = np.hstack((thk, thk[-1]*3))
-        z = np.hstack((0., np.cumsum(thk)))
-        maxz = max(maxz, z[-1])
+        if zMax > 0:
+            z = np.hstack((0., np.cumsum(thk)))
+            z = np.hstack((z, zMax))
+        else:
+            thk = np.hstack((thk, thk[-1]*3))
+            z = np.hstack((0., np.cumsum(thk)))
+
+        zMaxLimit = max(zMaxLimit, z[-1])
+
 
         for j in range(nlay):
-            rect = Rectangle((x[i] - dxmed2, z[j]), dxmed2 * 2, thk[j])
+            rect = Rectangle((x[i] - dxmed2, z[j]), dxmed2 * 2, z[j+1]-z[j])
             patches.append(rect)
 
     p = PatchCollection(patches, cmap=cmap, linewidths=0)
@@ -114,7 +230,8 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     setMappableData(p, vals.ravel(), logScale=islog)
     ax.add_collection(p)
 
-    ax.set_ylim((maxz, 0.))
+    ax.set_ylim((zMaxLimit, zMin))
+    ax.set_yscale("log", nonposy='clip')
     ax.set_xlim((min(x) - dxmed2, max(x) + dxmed2))
     if title is not None:
         ax.set_title(title)
@@ -280,49 +397,11 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def drawModel1D(ax, thickness, values, plotfunction='plot',
-                xlabel=r'Resistivity $[\Omega$ m$]$', **kwargs):
-    """Draw 1d block model into axis ax.
-
-    Draw 1d block model into axis ax defined by values and thickness vectors
-    using plotfunction.
-    """
-    nLayers = len(thickness) + 1
-    px = np.zeros(nLayers * 2)
-    pz = np.zeros(nLayers * 2)
-    z1 = np.cumsum(thickness)
-
-    for i in range(nLayers):
-        px[2 * i] = values[i]
-        px[2 * i + 1] = values[i]
-
-        if i == nLayers - 1:
-            pz[2 * i + 1] = z1[i - 1] * 1.2
-        else:
-            pz[2 * i + 1] = z1[i]
-            pz[2 * i + 2] = z1[i]
-
-    if plotfunction == 'loglog' or plotfunction == 'semilogy':
-        pz[0] = thickness[0] * 0.8
-
-    try:
-        plot = getattr(ax, plotfunction)
-        plot(px, pz, **kwargs)
-    except BaseException as e:
-        print(e)
-
-    ax.set_ylabel('Depth [m]')
-    ax.set_xlabel(xlabel)
-    ax.set_ylim(pz[-1], pz[0])
-    ax.grid()
-    return ax
-
-# def draw1dmodel(... )
 
 
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     """DEPRECATED."""
-    print("STYLE_WARNING!!!!!!! don't use this call. Use show1dmodel instead.")
+    print("STYLE_WARNING!!!!!!! don't use this call. Use show1dmodel or drawModel1D instead.")
     show1dmodel(x, thk, xlab, zlab, islog, z0)
 
 

@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="icons">
-    <file alias="application-exit">icons/application-exit-16.png</file>
-    <file alias="application-open">icons/document-open-16.png</file>
-</qresource>
-</RCC>

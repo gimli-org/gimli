@@ -53,7 +53,7 @@ class VESManager():
         self.createModelTrans()  # creates default as fallback
 
     def createFOP(self):
-
+        """Creates the forward operator instance."""
         if self.type == 'block':
             self.FOP = pg.DC1dModelling(self.Z, self.ab2, self.mn2)
             mesh1D = pg.createMesh1DBlock(self.Z)
@@ -72,7 +72,7 @@ class VESManager():
         appends gaussian distributed noise.
         Block only for now.
 
-        parameter:
+        Parameters
         ----------
 
         ab2: array_like
@@ -86,22 +86,18 @@ class VESManager():
         errPerc: float [3.]
             Percentage Value for the gaussian noise. Default are 3 %.
 
-        example:
-        --------
+        Example
+        -------
 
-        >>> import modelling as m
+        >>> from pygimli.physics import VESManager as VES
         >>> import numpy as np
         >>> ab2 = np.logspace(-1, 2, 25)
         >>> mn2 = ab2/3
-        >>> synModel = [[4, 6, 10],
-        >>>             [100., 500., 20., 800.]]
+        >>> synModel = [[4, 6, 10], [100., 500., 20., 800.]]
         >>> # 3 layer with 100, 500 and 20 Ohmm
         >>> # and layer thickness of 4, 6, 10 m
         >>> # over a Halfspace of 800 Ohmm
-        >>> testData = m.VES.simulate(synModel,
-        >>>                           ab2,
-        >>>                           mn2,
-        >>>                           errPerc=3.)
+        >>> testData = VES.simulate(synModel, ab2, mn2, errPerc=3.)
         """
         thk = synmodel[0]
         res = synmodel[1]
@@ -182,6 +178,7 @@ class VESManager():
                          thkBounds=[10., 0.1, 30.],
                          modelBounds=[10, 1.0, 10000.],
                          trans=['log', 'log']):
+        """Defines the transformation for the model."""
         self.thkBounds = thkBounds  # thk(start, min, max)
         self.rhoBounds = modelBounds  # rho (model) (start, min, max)
         self.trans = trans
@@ -213,11 +210,12 @@ boundaries for the model transformation')
                                              self.rhoBounds[2], self.trans[1])
 
     def applyDataTrans(self):
+        """Apply a logarithmic transformation to the data."""
         self.dataTrans = pg.RTransLog()
         self.INV.setTransData(self.dataTrans)
 
     def createStartModel(self, data):
-
+        """Creates a default start model for the inversion."""
         if self.type == 'smooth':
             self.startmodel = pg.RVector(len(self.Z) + 1, np.median(data))
         else:
@@ -250,13 +248,16 @@ boundaries for the model transformation')
         return self.resDistribution
 
     def splitBlockModel(self):
+        """Returns the thickness and ressitivities of the model."""
         z = int(self.Z) - 1
         return self.resDistribution[:z], self.resDistribution[z:]
 
     def getDepth(self):
+        """Rule-of-thumb for Wenner/Schlumberger."""
         return np.max(self.ab2) / 3.  # rule-of-thumb for Wenner/Schlumberger
 
     def showResults(self, ax=None, syn=None, color=None):
+        """Shows the Results of the inversion."""
         if ax is None:
             fig, ax = plt.subplots(ncols=1, figsize=(8, 6))
         if syn is not None:
@@ -278,6 +279,7 @@ boundaries for the model transformation')
         return ax
 
     def showFit(self, ax=None, color='g', marker='-', syn=True):
+        """Visualizes the data fit."""
         if syn is True:
             ax.loglog(self.dataToFit, self.ab2, 'bx-',
                       label='measured/synthetic')
@@ -290,6 +292,7 @@ boundaries for the model transformation')
         return ax
 
     def showResultsAndFit(self, syn=None):
+        """Calls showResults and showFit."""
         fig, ax = plt.subplots(ncols=2, figsize=(8, 6))
         self.showResults(ax=ax[0], syn=syn)
         self.showFit(ax=ax[1])
