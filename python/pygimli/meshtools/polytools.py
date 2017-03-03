@@ -17,15 +17,16 @@ geometry system. A lot of thinks are needed:
 
 """
 
+import math
 import os
 from os import system
-import math
+
 import numpy as np
 
 import pygimli as pg
 
 
-def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
+def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True):
     """INTERNAL."""
     nEdges = poly.nodeCount() - 1 + isClosed
     bm = None
@@ -33,8 +34,8 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
         if len(boundaryMarker) == nEdges:
             bm = boundaryMarker
         else:
-            raise Exception("marker length != nEdges",
-                            len(boundaryMarker), nEdges)
+            raise Exception("marker length != nEdges", len(boundaryMarker),
+                            nEdges)
     else:
         bm = [boundaryMarker] * nEdges
 
@@ -42,8 +43,7 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, **kwargs):
         poly.createEdge(poly.node(i), poly.node(i + 1), bm[i])
 
     if isClosed:
-        poly.createEdge(poly.node(poly.nodeCount() - 1),
-                        poly.node(0), bm[-1])
+        poly.createEdge(poly.node(poly.nodeCount() - 1), poly.node(0), bm[-1])
 
 
 def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
@@ -185,17 +185,16 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
         n = poly.createNode([start[0], depth])
         if i > 0:
             if len(z) == 2:
-                poly.addRegionMarker(n.pos() + [0.2, 0.2],
-                                     marker=marker, area=area)
+                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=marker,
+                                     area=area)
             else:
-                poly.addRegionMarker(n.pos() + [0.2, 0.2],
-                                     marker=i, area=area)
+                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=i, area=area)
 
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
 
-    polyCreateDefaultEdges_(
-        poly, boundaryMarker=range(1, poly.nodeCount() + 1))
+    polyCreateDefaultEdges_(poly,
+                            boundaryMarker=range(1, poly.nodeCount() + 1))
 
     if worldMarker:
         for b in poly.boundaries():
@@ -206,9 +205,9 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
 
     if layers is not None:
         for i in range(len(layers)):
-            poly.createEdge(poly.node(i + 1),
-                            poly.node(poly.nodeCount() - i - 2),
-                            poly.boundaryCount() + 1)
+            poly.createEdge(
+                poly.node(i + 1), poly.node(poly.nodeCount() - i - 2),
+                poly.boundaryCount() + 1)
 
     # pg.warnNonEmptyArgs(kwargs)
     return poly
@@ -292,8 +291,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     if kwargs.pop('isHole', False):
         poly.addHoleMarker([0.0, 0.0])
     else:
-        poly.addRegionMarker([0.0, 0.0],
-                             marker=kwargs.pop('marker', 1),
+        poly.addRegionMarker([0.0, 0.0], marker=kwargs.pop('marker', 1),
                              area=kwargs.pop('area', 0))
 
     if hasattr(radius, '__len__'):
@@ -358,13 +356,12 @@ def createLine(start, end, segments, **kwargs):
     return poly
 
 
-def createPolygon(verts, isClosed=False, **kwargs):
+def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     """Create a polygon.
 
     Create a polygon from list of vertices.
     If the polygon is closed region attributes can be assigned.
     The automatic region marker is set in the center of all verts.
-
 
     Parameters
     ----------
@@ -395,12 +392,11 @@ def createPolygon(verts, isClosed=False, **kwargs):
     Examples
     --------
     >>>  # no need to import matplotlib. pygimli's show does
-    >>> import pygimli as pg
-    >>> import pygimli.meshtools as plc
-    >>> p = plc.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
-    ...                       isClosed=1, marker=3, area=0.1)
-    >>> ax,_ = pg.show(p)
-    >>> # (<matplotlib.axes.AxesSubplot object at 0x...>, None)
+    >>> p1 = plc.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
+    ...                        isClosed=True, marker=3, area=0.1)
+    >>> p2 = plc.createPolygon([[0.3, 0.15], [0.85, 0.15], [0.85, 0.7]],
+    ...                        isClosed=True, marker=3, area=0.1, isHole=True)
+    >>> ax, _ = pg.show(plc.mergePLC([p1,p2]))
     """
     poly = pg.Mesh(2)
 
@@ -411,14 +407,14 @@ def createPolygon(verts, isClosed=False, **kwargs):
     area = kwargs.pop('area', 0)
     isHole = kwargs.pop('isHole', False)
 
-    polyCreateDefaultEdges_(poly, isClosed=isClosed, **kwargs)
+    polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False)
 
     if isClosed and marker is not 0 or area > 0:
         if isHole:
             poly.addHoleMarker(pg.center(poly.positions()))
         else:
-            poly.addRegionMarker(pg.center(poly.positions()),
-                                 marker=marker, area=area)
+            poly.addRegionMarker(
+                pg.center(poly.positions()), marker=marker, area=area)
 
     # set a regionmarker here .. somewhere
 
@@ -474,8 +470,7 @@ def mergePLC(pols):
             nodes.append(nn)
 
         for e in p.boundaries():
-            poly.createEdge(nodes[e.node(0).id()],
-                            nodes[e.node(1).id()],
+            poly.createEdge(nodes[e.node(0).id()], nodes[e.node(1).id()],
                             e.marker())
 
         if len(p.regionMarker()) > 0:
@@ -495,9 +490,8 @@ def createParaDomain2D(*args, **kwargs):
     return createParaMeshPLC(*args, **kwargs)
 
 
-def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
-                      paraBoundary=2, paraMaxCellSize=0.0, boundary=-1,
-                      boundaryMaxCellSize=0,
+def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
+                      paraMaxCellSize=0.0, boundary=-1, boundaryMaxCellSize=0,
                       **kwargs):
     """Create a PLC mesh for an inversion parameter mesh.
 
@@ -650,15 +644,13 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0,
                     e1 = sensors[i - 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
-                    nSurface.append(
-                        poly.createNode(e - (e - e1) * paraDX))
+                    nSurface.append(poly.createNode(e - (e - e1) * paraDX))
                 nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
-                    nSurface.append(
-                        poly.createNode(e + (e1 - e) * paraDX))
+                    nSurface.append(poly.createNode(e + (e1 - e) * paraDX))
                 # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
                 #        nSurface[-1].pos())
     nSurface.append(n4)
@@ -746,9 +738,9 @@ def readPLC(filename):
                 if haveBoundaryMarker:
                     marker = int(row[3])
 
-                poly.createEdge(poly.node(int(row[1]) - fromOne),
-                                poly.node(int(row[2]) - fromOne),
-                                marker)
+                poly.createEdge(
+                    poly.node(int(row[1]) - fromOne),
+                    poly.node(int(row[2]) - fromOne), marker)
     else:
         raise Exception("Read segments for 3D tetgen format not yet supported")
 
@@ -852,8 +844,8 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
         fid.write('{:d}\t1\n'.format(poly.boundaryCount()))
 
         for i, b in enumerate(poly.boundaries()):
-            fid.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(
-                i, b.node(0).id(), b.node(1).id(), bm[i]))
+            fid.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(i, b.node(0).id(),
+                                                        b.node(1).id(), bm[i]))
         fid.write('{:d}\n'.format(len(poly.holeMarker())))
 
         fmt = '{:d}' + ('\t' + pfmt) * 2 + '\n'
@@ -1065,6 +1057,7 @@ def polyTranslate(filename, x=0.0, y=0.0, z=0.0):
     #        " -x " + str(x) +
     #        " -y " + str(y) +
     #        " -z " + str(z) + " " + filename)
+
 
 if __name__ == "__main__":
     pass
