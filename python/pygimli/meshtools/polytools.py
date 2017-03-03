@@ -26,7 +26,7 @@ import numpy as np
 import pygimli as pg
 
 
-def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True):
+def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, isHole=False):
     """INTERNAL."""
     nEdges = poly.nodeCount() - 1 + isClosed
     bm = None
@@ -398,7 +398,7 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     ...                       isClosed=True, marker=3, area=0.1)
     >>> p2 = mt.createPolygon([[0.3, 0.15], [0.85, 0.15], [0.85, 0.7]],
     ...                       isClosed=True, marker=3, area=0.1, isHole=True)
-    >>> ax, _ = pg.show(plc.mergePLC([p1,p2]))
+    >>> ax, _ = pg.show(mt.mergePLC([p1,p2]))
     """
     poly = pg.Mesh(2)
 
