@@ -217,11 +217,10 @@ def drawModel(ax, mesh, data=None,
         Draw cell boundaries.
     tri : boolean, optional
         use MPL tripcolor (experimental)
+    **kwargs : Additonal keyword arguments
+        Will be forwarded to the draw functions and matplotlib methods,
+        respectively.
 
-    **kwargs:
-        * all remaining
-            Will be forwarded to the draw functions and matplotlib methods,
-            respectively.
     Examples
     --------
     >>> import numpy as np
