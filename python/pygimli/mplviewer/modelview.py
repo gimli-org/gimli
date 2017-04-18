@@ -63,10 +63,10 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
+    >>> import matplotlib.pyplot as plt
     >>> import numpy as np
     >>> import pygimli as pg
-    >>> # pg.plt.style.use('ggplot')
+    >>> # plt.style.use('ggplot')
     >>> thk = [1, 4, 4]
     >>> res = np.array([10, 5, 15, 50])
     >>> fig, ax = plt.subplots()
