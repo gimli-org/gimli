@@ -164,6 +164,7 @@ def readSIP256file(resfile, verbose=False):
                         nums = np.array(line.split(), dtype=float)
                         header[activeBlock].append(nums)
 
+    #CR DATA, Data, data ?? really??
     DATA, Data, data, AB, RU, ru = [], [], [], [], [], []
     for line in LINE:
         sline = line.split()

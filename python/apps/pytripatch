@@ -683,17 +683,15 @@ def main(argv):
                     koords = [0, 1]
                 else:
                     d = pg.DataContainer(options.electrodes)
+                    koords = [0, 1]
                     elPos = d.sensorPositions()
 
                 diam = None
                 if options.sensorDiameter > 0.0:
                     diam = options.sensorDiameter
 
-                pygimli.mplviewer.drawSensors(
-                    axes,
-                    elPos,
-                    diam=diam,
-                    koords=koords)
+                pygimli.mplviewer.drawSensors(axes, elPos,
+                                              diam=diam, koords=koords)
 
             except Exception as e:
                 print(e)

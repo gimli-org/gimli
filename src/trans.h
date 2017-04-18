@@ -45,6 +45,19 @@ public:
     /*! Default call operator. \ref trans() */
     virtual double operator()(double x) const { return trans(x); }
 
+    /*! Return forward transformation. Alias for \ref trans .*/
+    inline Vec fwd(const Vec & f) const { return this->trans(f); }
+
+    /*! Return forward transformation. Alias for \ref trans .*/
+    inline double fwd(double f) const { return this->trans(f); }
+
+    /*! Return inverse transformation. Shortcut for \ref invTrans .*/
+    inline Vec inv(const Vec & f) const { return this->invTrans(f); }
+
+    /*! For compatibility if inv is called with a single value. */
+    inline double inv(double f) const { return this->inv(Vec(1, f))[0]; }
+
+
     /*! For compatibility if trans is called with a single value. */
     virtual double trans(double x) const { return this->trans(Vec(1, x))[0]; }
 
@@ -56,12 +69,6 @@ public:
 
     /*! For compatibility if invTrans is called with a single value. */
     virtual double invTrans(double f) const { return this->invTrans(Vec(1, f))[0]; }
-
-    /*! Return inverse transformation. Shortcut for \ref invTrans .*/
-    virtual Vec inv(const Vec & f) const { return invTrans(f); }
-
-    /*! For compatibility if inv is called with a single value. */
-    virtual double inv(double f) const { return this->inv(Vec(1, f))[0]; }
 
     /*! Return derivative \f$ \frac{\partial f}{\partial x}(x) \f$ */
     virtual Vec deriv(const Vec & x) const { return Vec(x.size(), 1.0); }

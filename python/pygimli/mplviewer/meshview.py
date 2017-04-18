@@ -478,10 +478,12 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False, 
             col = (0.0, 0.0, 0.0, 1.0)
 
         ms = kwargs.pop('markersize', 5)
-        ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
+        #ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
+        cols.append(col)
+
+
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
-        cols.append(col)
 
     if boundaryMarker:
         for b in mesh.boundaries():
