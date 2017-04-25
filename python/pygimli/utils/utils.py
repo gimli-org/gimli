@@ -548,9 +548,8 @@ def uniqueRows(data, prec=2):
     >>> import numpy as np
     >>> A = np.array(([1,2,3],[3,2,1],[1,2,3]))
     >>> unA, ia, ib = uniqueRows(A)
-    >>> print(unA)
-    [[3. 2., 1.],
-     [1. 2. 3.]]
+    >>> np.all(A[ia]==unA)
+    True
     """
     fak = 100**prec
     dfix = np.fix(data * fak) / fak + 0.0
