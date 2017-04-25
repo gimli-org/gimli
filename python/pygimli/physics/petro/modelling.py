@@ -49,13 +49,13 @@ class PetroModelling(pg.ModellingBase):
 
     def response(self, model):
         """Use inverse transformation to get p(m) and compute response."""
-        tModel = self.trans.trans(model)
+        tModel = self.trans(model)
         ret = self.fop.response(tModel)
         return ret
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        self.fop.createJacobian(self.trans.trans(model))
+        self.fop.createJacobian(self.trans(model))
         self.jac.r = self.trans.deriv(model)  # set inner derivative
 
 
@@ -97,7 +97,7 @@ class PetroJointModelling(pg.ModellingBase):
 
     def initJacobian(self):
         """TODO."""
-        self.jac  = pg.RBlockMatrix()
+        self.jac  = pg.BlockMatrix()
         nData = 0
         for fi in self.fops:
             self.jac.addMatrix(fi.jacobian(), nData, 0)

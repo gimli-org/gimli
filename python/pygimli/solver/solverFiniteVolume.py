@@ -594,7 +594,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
             print("vel:", vel.shape)
             raise BaseException("Velocity field has wrong dimension.")
 
-        if len(vel) is not mesh.nodeCount():
+        if len(vel) is not mesh.boundaryCount():
+            if len(vel) == mesh.cellCount():
+                vel = pg.meshtools.cellDataToNodeData(mesh, vel).T
             vel = pg.meshtools.nodeDataToBoundaryData(mesh, vel)
 
         vmax = 0

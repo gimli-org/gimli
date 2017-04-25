@@ -5,9 +5,8 @@ import time
 from pygimli.core import _pygimli_ as pg
 import numpy as np
 
-
 class LMultRMatrix(pg.MatrixBase):
-    """ matrix consisting of actual RMatrix and lef-side vector"""
+    """Matrix consisting of actual RMatrix and lef-side vector."""
     def __init__(self, A, left, verbose=False):
         """ constructor saving matrix and vector """
         if A.rows() != len(left):

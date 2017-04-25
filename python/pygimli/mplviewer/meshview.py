@@ -217,11 +217,10 @@ def drawModel(ax, mesh, data=None,
         Draw cell boundaries.
     tri : boolean, optional
         use MPL tripcolor (experimental)
+    **kwargs : Additonal keyword arguments
+        Will be forwarded to the draw functions and matplotlib methods,
+        respectively.
 
-    **kwargs:
-        * all remaining
-            Will be forwarded to the draw functions and matplotlib methods,
-            respectively.
     Examples
     --------
     >>> import numpy as np
@@ -478,10 +477,12 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False, 
             col = (0.0, 0.0, 0.0, 1.0)
 
         ms = kwargs.pop('markersize', 5)
-        ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
+        #ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
+        cols.append(col)
+
+
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
-        cols.append(col)
 
     if boundaryMarker:
         for b in mesh.boundaries():
