@@ -18,7 +18,7 @@ class PetroModelling(pg.ModellingBase):
         """Save forward class and transformation, create Jacobian matrix."""
         super().__init__(verbose=verbose)
         self.fop = fop
-        self.trans = trans  # class defining m(p)
+        self.petro = trans  # class defining m(p)
         # self.setData(self.fop.data())
 
         if mesh is not None:
@@ -49,14 +49,14 @@ class PetroModelling(pg.ModellingBase):
 
     def response(self, model):
         """Use inverse transformation to get p(m) and compute response."""
-        tModel = self.trans(model)
+        tModel = self.petro(model)
         ret = self.fop.response(tModel)
         return ret
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        self.fop.createJacobian(self.trans(model))
-        self.jac.r = self.trans.deriv(model)  # set inner derivative
+        self.fop.createJacobian(self.petro(model))
+        self.jac.r = self.petro.deriv(model)  # set inner derivative
 
 
 class PetroJointModelling(pg.ModellingBase):
@@ -126,7 +126,7 @@ class InvertJointPetro(MethodManager):
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
 
         self.managers = managers
-        self.trans = trans
+        self.petro = trans
         self.fops = []
         self.dataVals = pg.RVector(0)
         self.dataErrs = pg.RVector(0)
@@ -141,7 +141,7 @@ class InvertJointPetro(MethodManager):
             fop.setVerbose(verbose=verbose)
             self.fops.append(fop)
 
-        self.fop.setFopsAndTrans(self.fops, self.trans)
+        self.fop.setFopsAndTrans(self.fops, self.petro)
 
     @staticmethod
     def createFOP(verbose=False):
@@ -220,7 +220,7 @@ class InvertJointPetro(MethodManager):
         else:
             for i in range(len(self.managers)):
                 startModel += pg.RVector(nModel, pg.median(
-                    self.trans[i].inv(
+                    self.petro[i].inv(
                         self.managers[i].createApparentData(self.data[i]))))
             startModel /= len(self.managers)
 

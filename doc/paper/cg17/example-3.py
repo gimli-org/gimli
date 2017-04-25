@@ -87,10 +87,10 @@ mMesh, pMesh, petro = createSynthModel()
 
 ### Create Petrophysical models
 ertTrans = ArchieTrans(rFluid=20, phi=0.3)
-res = ertTrans.trans(petro)
+res = ertTrans(petro)
 
 ttTrans = WyllieTrans(vm=4000, phi=0.3)
-vel = 1./ttTrans.trans(petro)
+vel = 1./ttTrans(petro)
 
 ### Simulate synthetic data with appropriate noise
 sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
@@ -104,7 +104,6 @@ print("-Simulate Traveltime" + "-" * 50)
 TT = pg.physics.Refraction()
 ttScheme = pg.physics.traveltime.createRAData(sensors)
 ttData = TT.simulate(mMesh, vel, ttScheme, noiseLevel=0.01, noiseAbs=4e-6)
-ttData.save('tmpTT.d')
 
 ## Classic inversions
 print("-ERT" + "-" * 50)
@@ -133,6 +132,9 @@ satJoint = invJointPetro.invert([ertData, ttData], mesh=pMesh, limits=[0., 1.], 
 invJointPetro.inv.echoStatus()
 
 ### Show results
+ERT.showData(ertData)
+TT.showVA(ttData)
+
 showModel(axs[0], petro, mMesh, showMesh=1,
           label=r'Saturation (${\tt petro}$)', savefig='petro')
 showModel(axs[1], res, mMesh, petro=0, cMin=250, cMax=2500, showMesh=1,

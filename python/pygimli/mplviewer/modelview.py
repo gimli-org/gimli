@@ -118,7 +118,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
 
     ax.set_ylabel(zlabel)
     ax.set_xlabel(xlabel)
-    # let positive depths upward down
+        # let positive depths upward down
     ax.set_ylim(pz[-1], pz[0])
     ax.grid(True)
 
