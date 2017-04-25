@@ -544,12 +544,13 @@ def uniqueRows(data, prec=2):
     Additionally returns forward and reverse indices
     Examples
     --------
-    >>> from pygimli.utils import unique_rows
+    >>> from pygimli.utils.utils import uniqueRows
     >>> import numpy as np
     >>> A = np.array(([1,2,3],[3,2,1],[1,2,3]))
     >>> unA, ia, ib = uniqueRows(A)
-    array([[1, 2, 3],
-           [3, 2, 1]])
+    >>> print(unA)
+    [[3. 2., 1.],
+     [1. 2. 3.]]
     """
     fak = 100**prec
     dfix = np.fix(data * fak) / fak + 0.0
