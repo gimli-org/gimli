@@ -429,6 +429,20 @@ public:
         return ret;
     }
 
+    virtual Vector < ValueType > col(const Index i) {
+        Vector < ValueType > null(this->cols(), 0.0);
+        null[i] = 1.0;
+
+        return this->mult(null);
+    }
+
+    virtual Vector < ValueType > row(const Index i) {
+        Vector < ValueType > null(this->rows(), 0.0);
+        null[i] = 1.0;
+
+        return this->transMult(null);
+    }
+
     void save(const std::string & filename) const {
         std::fstream file; openOutFile(filename, &file);
 
