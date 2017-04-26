@@ -29,7 +29,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: "..\python\pygimli\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\python\tests\*"; DestDir: "{app}\..\tests"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MinGWbin}\libopenblas.dll"; DestDir: "{app}\core"; Flags: ignoreversion
 Source: "{#MinGWbin}\libstdc++-6.dll"; DestDir: "{app}\core"; Flags: ignoreversion
 Source: "{#MinGWbin}\libwinpthread-1.dll"; DestDir: "{app}\core"; Flags: ignoreversion

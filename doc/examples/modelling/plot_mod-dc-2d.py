@@ -95,7 +95,6 @@ def pointSource(cell, f, userData):
 grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21),
                      y=np.linspace(-15.0, .0, 16))
 
-# grid = grid.createH2()
 grid = grid.createP2()
 
 sourcePosA = [-5.0, -4.0]
@@ -124,11 +123,11 @@ u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
 
 # err = (1.0 -u/uAna) * 100.0
 
-# print "error min max", min(err), max(err)
+# print("error min max", min(err), max(err))
 
-ax = show(grid, data=u, filled=True, colorBar=True,
-          orientation='horizontal', label='Solution u')[0]
-show(grid, ax=ax)
+ax = show(grid, data=u, filled=True, colorBar=True, cmap="RdBu_r",
+          orientation='horizontal', label='Solution u', hold=True)[0]
+show(grid, ax=ax, hold=True)
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
                            y=np.linspace(-15.0, .0, 20))
 # Instead of the grid we want to add streamlines to the plot to show the

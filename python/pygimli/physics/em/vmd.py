@@ -49,7 +49,7 @@ class VMDModelling(pg.ModellingBase):
         return self.response_mt(par)
 
     def calcEPhiF(self, f, rho, d, rmin=1, nr=41, ze=0, zs=0, tm=1):
-        """VMD E-phi field (not used actively)."""
+        """VMD E-phi field."""
         #ze    z-Koordinate des Empfaengers in Meter (default: ZE=0)
         #zs    z-Koordinate des Senders in Meter (default: ZS=0)
 
@@ -196,8 +196,9 @@ class VMDTimeDomainModelling(VMDModelling):
 
         return self.calcRhoa(thk, res)
 
-    def response(self, par, i=0):
-        return self.response_mt(par)
+    def response(self, par):
+        """par = [thicknesses(nLay), res(nlay + 1)]"""
+        return self.response_mt(par, 0)
 
     def calcRhoa(self, thk, res):
         """

@@ -654,6 +654,13 @@ _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
 
 ##################################
+# usefull aliases
+##################################
+
+BlockMatrix = _pygimli_.RBlockMatrix
+
+
+##################################
 # custom rvalues for special cases
 ##################################
 
@@ -739,6 +746,19 @@ def toIVector(v):
     for i, r in enumerate(v):
         ret[i] = int(r)
     return ret
+
+
+#__catOrig__ = _pygimli_.cat
+
+#def __cat__(v1, v2):
+    #print("mycat")
+    #if isinstance(v1, ndarray) and isinstance(v2, ndarray):
+        #return pg.cat(RVector(v1), v2)
+    #else:
+        #return __catOrig__(v1, v2)
+
+#_pygimli_.cat = __cat__
+
 
 
 # DEPRECATED for backward compatibility should be removed
@@ -899,6 +919,7 @@ ModellingBaseMT__.createJacobian_mt = __ModellingBase__createJacobian_mt__
 ModellingBaseMT__.responses = __ModellingBase__responses_mt__
 
 ModellingBase = ModellingBaseMT__
+
 
 ###########################
 # unsorted stuff

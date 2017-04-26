@@ -313,7 +313,8 @@ class ERTManager(MeshMethodManager):
 
     @staticmethod
     def simulate(mesh, res, scheme, verbose=False, **kwargs):
-        """"""
+        """
+        """
         fop = ERTModelling(verbose=verbose)
         #fop = ERTManager.createFOP(verbose=verbose)
 
@@ -404,7 +405,6 @@ def createERTData(elecs, schemeName='none', **kwargs):
     data.add('n', n)
     data.set('valid', np.ones(len(a)))
 
-    data.save('tmp.dat')
     return data
 
 if __name__ == "__main__":

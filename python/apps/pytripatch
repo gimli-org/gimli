@@ -32,6 +32,9 @@ from pygimli.utils.base import interperc
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
+from pygimli.physics.em.hemmodelling import registerDAEROcmap
+
+registerDAEROcmap()
 
 
 def sign(i):
@@ -250,7 +253,7 @@ def showMeshPatch(axis, mesh, data,
                                           orientation=orientation)
 
     if showCbar:
-        pg.mplviewer.createColorbar(patches, cMin=cMin, cMax=cMax,
+        pg.mplviewer.createColorBar(patches, cMin=cMin, cMax=cMax,
                                     nLevs=nLevs, label=label,
                                     orientation=orientation)
 
@@ -397,7 +400,7 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
     if cov:
         addCoverageImageOverlay(axis, mesh, cov)
 
-    pg.mplviewer.createColorbar(cs, cMin=cMin, cMax=cMax, nLevs=5)
+    pg.mplviewer.createColorBar(cs, cMin=cMin, cMax=cMax, nLevs=5)
     return cs
 
 
@@ -683,17 +686,15 @@ def main(argv):
                     koords = [0, 1]
                 else:
                     d = pg.DataContainer(options.electrodes)
+                    koords = [0, 1]
                     elPos = d.sensorPositions()
 
                 diam = None
                 if options.sensorDiameter > 0.0:
                     diam = options.sensorDiameter
 
-                pygimli.mplviewer.drawSensors(
-                    axes,
-                    elPos,
-                    diam=diam,
-                    koords=koords)
+                pygimli.mplviewer.drawSensors(axes, elPos,
+                                              diam=diam, koords=koords)
 
             except Exception as e:
                 print(e)

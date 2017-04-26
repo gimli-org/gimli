@@ -602,6 +602,11 @@ public:
        return *forward_->constraints() * Vec(tM_->trans(model) * modelWeight_) * constraintsWeight_;
     }
 
+    /*! Return (C * m) , i.e. the pure (unweighted) roughness */
+    RVector pureRoughness(const RVector & model) const {
+       return *forward_->constraints() * Vec(tM_->trans(model));
+    }
+
     /*! Shortcut for roughness for the current model vector */
     RVector roughness() const {
        return roughness(model_);

@@ -32,7 +32,6 @@ std::ostream & operator << (std::ostream & os, const bp::object& o){
 
 namespace r_values_impl{
 
-
 template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     //     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     // is obj is a sequence
