@@ -62,7 +62,7 @@ class PetroModelling(pg.ModellingBase):
 class PetroJointModelling(pg.ModellingBase):
     """Cumulative (joint) forward operator for petrophysical inversions."""
 
-    def __init__(self, f=None, p=None, mesh=None, verbose=True):
+    def __init__(self, fopList=None, petroList=None, mesh=None, verbose=True):
         """Constructor."""
         super().__init__(verbose=verbose)
 

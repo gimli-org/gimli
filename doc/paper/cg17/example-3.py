@@ -83,14 +83,14 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
 axs = [None]*8
 
 ### Create synthetic model
-mMesh, pMesh, petro = createSynthModel()
+mMesh, pMesh, saturation = createSynthModel()
 
 ### Create Petrophysical models
 ertTrans = ArchieTrans(rFluid=20, phi=0.3)
-res = ertTrans(petro)
+res = ertTrans(saturation)
 
 ttTrans = WyllieTrans(vm=4000, phi=0.3)
-vel = 1./ttTrans(petro)
+vel = 1./ttTrans(saturation)
 
 ### Simulate synthetic data with appropriate noise
 sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
@@ -135,7 +135,7 @@ invJointPetro.inv.echoStatus()
 ERT.showData(ertData)
 TT.showVA(ttData)
 
-showModel(axs[0], petro, mMesh, showMesh=1,
+showModel(axs[0], saturation, mMesh, showMesh=1,
           label=r'Saturation (${\tt petro}$)', savefig='petro')
 showModel(axs[1], res, mMesh, petro=0, cMin=250, cMax=2500, showMesh=1,
           label=r'Resistivity (${\tt res}$) in $\Omega$m', savefig='resistivity')
