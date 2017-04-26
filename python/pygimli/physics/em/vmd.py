@@ -5,9 +5,7 @@
 from math import sqrt, pi
 
 import numpy as np
-
 import pygimli as pg
-
 from pygimli.physics import constants
 
 
@@ -37,7 +35,7 @@ class VMDModelling(pg.ModellingBase):
         pg.ModellingBase.__init__(self, **kwargs)
 
 
-    def response(self, par):
+    def response_mt(self, par, i=0):
         """Compute response vector for a set of model parameter.
 
         Parameters
@@ -46,6 +44,9 @@ class VMDModelling(pg.ModellingBase):
             DOCUMENTME
         """
         THROW_TO_IMPL
+
+    def response(self, par, i=0):
+        return self.response_mt(par)
 
     def calcEPhiF(self, f, rho, d, rmin=1, nr=41, ze=0, zs=0, tm=1):
         """VMD E-phi field (not used actively)."""
@@ -185,16 +186,18 @@ class VMDTimeDomainModelling(VMDModelling):
         else:
             self.rxarea = rxarea
 
-    def response(self, par):
+    def response_mt(self, par, i=0):
         """
         par = [thicknesses, res]
-
         """
         nLay = (len(par)-1)/2
         thk = par[0:nLay]
         res = par[nLay:]
 
         return self.calcRhoa(thk, res)
+
+    def response(self, par, i=0):
+        return self.response_mt(par)
 
     def calcRhoa(self, thk, res):
         """

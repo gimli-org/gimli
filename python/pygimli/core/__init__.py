@@ -798,7 +798,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
         #if self.verbose():
         tic()
         print("Jacobian MT:(", pCount*nProcs, "--" , (pCount+1)*nProcs, ") /" ,
-              nModel, '... ', end='')
+              nModel, '... ')
 
         for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
             if i < nModel:
