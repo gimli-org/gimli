@@ -6,8 +6,13 @@
 import numpy as np
 import pygimli as pg
 
+from pygimli import ModellingBase
+from pygimli.manager import MethodManager
+
 from pygimli import meshtools as mt
-from pygimli.physics.petro import InvertPetro, InvertJointPetro
+
+from pygimli.physics.petro import PetroInversion, JointPetroInversion
+
 from pygimli.physics.petro import transFwdArchieS as ArchieTrans
 from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
 
@@ -78,7 +83,6 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
         pg.mplviewer.saveAxes(ax, savefig, adjust=False)
     return ax
 
-
 ### Script starts here
 axs = [None]*8
 
@@ -114,20 +118,19 @@ print("-TT" + "-" * 50)
 velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1)
 TT.inv.echoStatus()
 
-### Petrophysical inversion
 print("-ERT-Petro" + "-" * 50)
-invERTPetro = InvertPetro(ERT, ertTrans)
+invERTPetro = PetroInversion(ERT, ertTrans)
 satERT = invERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10)
 invERTPetro.inv.echoStatus()
 
 print("-TT-Petro" + "-" * 50)
-invTTPetro = InvertPetro(TT, ttTrans)
+invTTPetro = PetroInversion(TT, ttTrans)
 satTT = invTTPetro.invert(ttData, mesh=pMesh, limits=[0., 1.], lam=5)
 invTTPetro.inv.echoStatus()
 
 ### Petrophysical joint inversion
 print("-Joint-Petro" + "-" * 50)
-invJointPetro = InvertJointPetro([ERT, TT], [ertTrans, ttTrans])
+invJointPetro = JointPetroInversion([ERT, TT], [ertTrans, ttTrans])
 satJoint = invJointPetro.invert([ertData, ttData], mesh=pMesh, limits=[0., 1.], lam=5)
 invJointPetro.inv.echoStatus()
 

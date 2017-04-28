@@ -653,12 +653,6 @@ _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 # del _pygimli_.RVector.__array__
 
 
-##################################
-# usefull aliases
-##################################
-
-BlockMatrix = _pygimli_.RBlockMatrix
-
 
 ##################################
 # custom rvalues for special cases
@@ -685,6 +679,25 @@ def pow(v, p):
 def __RVectorPower(self, m):
     return pow(self, m)
 _pygimli_.RVector.__pow__ = __RVectorPower
+
+
+##################################
+# usefull aliases
+##################################
+
+BlockMatrix = _pygimli_.RBlockMatrix
+Vector = _pygimli_.RVector
+Matrix = _pygimli_.RMatrix
+Inversion = _pygimli_.RInversion
+
+Trans = _pygimli_.RTrans
+TransLinear = _pygimli_.RTransLinear
+TransLin = _pygimli_.RTransLin
+TransPower =_pygimli_.RTransPower
+TransLog = _pygimli_.RTransLog
+TransLogLU = _pygimli_.RTransLogLU
+TransCotLU = _pygimli_.RTransCotLU
+TransCumulative = _pygimli_.RTransCumulative
 
 
 ############################

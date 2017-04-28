@@ -18,7 +18,7 @@ class PetroModelling(pg.ModellingBase):
         """Save forward class and transformation, create Jacobian matrix."""
         super().__init__(verbose=verbose)
         self.fop = fop
-        self.petro = trans  # class defining m(p)
+        self.trans = trans  # class defining m(p)
         # self.setData(self.fop.data())
 
         if mesh is not None:
@@ -44,25 +44,25 @@ class PetroModelling(pg.ModellingBase):
 
         self.nModel = self.regionManager().parameterCount()
 
-        self.jac = pg.RMultRMatrix(self.fop.jacobian())
+        self.jac = pg.MultRightMatrix(self.fop.jacobian())
         self.setJacobian(self.jac)
 
     def response(self, model):
         """Use inverse transformation to get p(m) and compute response."""
-        tModel = self.petro(model)
+        tModel = self.trans(model)
         ret = self.fop.response(tModel)
         return ret
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        self.fop.createJacobian(self.petro(model))
-        self.jac.r = self.petro.deriv(model)  # set inner derivative
+        self.fop.createJacobian(self.trans(model))
+        self.jac.r = self.trans.deriv(model)  # set inner derivative
 
 
 class PetroJointModelling(pg.ModellingBase):
     """Cumulative (joint) forward operator for petrophysical inversions."""
 
-    def __init__(self, fopList=None, petroList=None, mesh=None, verbose=True):
+    def __init__(self, f=None, p=None, mesh=None, verbose=True):
         """Constructor."""
         super().__init__(verbose=verbose)
 
@@ -118,7 +118,7 @@ class PetroJointModelling(pg.ModellingBase):
             f.createJacobian(model)
 
 
-class InvertJointPetro(MethodManager):
+class JointPetroInversion(MethodManager):
     """TODO."""
 
     def __init__(self, managers, trans, verbose=False, debug=False, **kwargs):
@@ -126,7 +126,7 @@ class InvertJointPetro(MethodManager):
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
 
         self.managers = managers
-        self.petro = trans
+        self.trans = trans
         self.fops = []
         self.dataVals = pg.RVector(0)
         self.dataErrs = pg.RVector(0)
@@ -141,7 +141,7 @@ class InvertJointPetro(MethodManager):
             fop.setVerbose(verbose=verbose)
             self.fops.append(fop)
 
-        self.fop.setFopsAndTrans(self.fops, self.petro)
+        self.fop.setFopsAndTrans(self.fops, self.trans)
 
     @staticmethod
     def createFOP(verbose=False):
@@ -220,12 +220,11 @@ class InvertJointPetro(MethodManager):
         else:
             for i in range(len(self.managers)):
                 startModel += pg.RVector(nModel, pg.median(
-                    self.petro[i].inv(
+                    self.trans[i].inv(
                         self.managers[i].createApparentData(self.data[i]))))
             startModel /= len(self.managers)
 
         self.inv.setModel(startModel)
-
         self.fop.regionManager().setZWeight(1.0)
 
         self.inv.setData(self.dataVals)
@@ -233,7 +232,7 @@ class InvertJointPetro(MethodManager):
         self.inv.setLambda(lam)
 
         self.mod = self.inv.run()
-        self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
+        #self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
         return self.mod
 
     def showModel(self, **showkwargs):
@@ -243,16 +242,16 @@ class InvertJointPetro(MethodManager):
                     self.mod, **showkwargs)
 
 
-class InvertPetro(InvertJointPetro):
+class PetroInversion(JointPetroInversion):
     """TODO."""
 
     def __init__(self, manager, trans, **kwargs):
         """TODO."""
-        InvertJointPetro.__init__(self, [manager], [trans], **kwargs)
+        JointPetroInversion.__init__(self, [manager], [trans], **kwargs)
 
     def invert(self, data, **kwargs):
         """TODO."""
-        return InvertJointPetro.invert(self, [data], **kwargs)
+        return JointPetroInversion.invert(self, [data], **kwargs)
 
 
 if __name__ == "__main__":
