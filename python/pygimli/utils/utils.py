@@ -292,11 +292,21 @@ def diff(v):
 
     if isinstance(v, np.ndarray):
         if v.ndim == 2:
-            v = pg.R3Vector(v)
+            if v.shape[1] < 4:
+                #v = pg.R3Vector(v.T)
+                vt = v.copy()
+                v = pg.R3Vector(len(vt))
+                for i, vi in enumerate(vt):
+                    #print(i, vi)
+                    v.setVal(pg.RVector3(vi), i)
+            else:
+                v = pg.R3Vector(v)
+        else:
+            v = pg.RVector(v)
     elif isinstance(v, list):
         v = pg.R3Vector(v)
 
-    if isinstance(v, pg.R3Vector):
+    if isinstance(v, pg.R3Vector) or isinstance(v, pg.stdVectorRVector3):
         d = pg.R3Vector(len(v) - 1)
     else:
         d = pg.RVector(len(v) - 1)
@@ -344,6 +354,8 @@ def dist(p, c=None):
     for i, _ in enumerate(p):
         if isinstance(p[i], pg.RVector3):
             pI = p[i]
+        elif isinstance(p[i], float):
+            pI = pg.RVector3(p[i], 0)
         else:
             pI = pg.RVector3(p[i])
         d[i] = (pI-c).abs()

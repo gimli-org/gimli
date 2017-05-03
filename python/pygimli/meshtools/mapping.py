@@ -187,5 +187,70 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     mesh.setCellAttributes(oldAtts)
     return atts
 
-if __name__ == "__main__":
-    pass
+
+def tapeMeasureToCoordinates(tape, pos):
+    """Interpolate 2D tape measured topography to 2D Cartesian coordinates.
+
+    Tape and pos value are expected to be sorted along distance to the origin.
+
+    TODO optional smooth curve with harmfit
+
+    Parameters
+    ----------
+    tape : [[x,z]] | [RVector3] | R3Vector
+        List of tape measured topography points with measured distance (x)
+        from origin and height (z)
+
+    pos : iterable
+        Query positions along the tape measured profile
+
+    Returns
+    -------
+    res : ndarray(N, 2)
+        Same as pos but with interpolated height values.
+        The Distance between pos points and res (along curve) points remains.
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> elec = np.arange(11.)
+    >>> topo = np.array([[0., 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.]])
+    >>> _= pg.plt.plot(topo[:,0], topo[:,1])
+    >>> p = mt.tapeMeasureToCoordinates(topo, elec)
+    >>> pg.plt.gca().plot(p[:,0], p[:,1], 'o') #doctest: +ELLIPSIS
+    [...]
+    >>> pg.plt.gca().set_aspect(1)
+    >>> pg.wait()
+    """
+    if isinstance(tape, pg.R3Vector) or isinstance(tape, pg.stdVectorRVector3):
+        xTape = pg.x(tape)
+        zTape = pg.z(tape)
+    else:
+        xTape = tape[:,0]
+        zTape = tape[:,1]
+
+    t = pg.utils.cumDist(pos)
+    #print(t)
+    tTape = pg.utils.cumDist(tape)
+    xt = np.interp(t, tTape, xTape)
+    zt = np.interp(t, tTape, zTape)
+
+    pg.plt.plot(xTape, zTape)
+    pg.plt.plot(xt, zt, 'o')
+    pg.wait()
+    return np.vstack([xt, zt]).T
+
+if __name__ == '__main__':
+    # no need to import matplotlib. pygimli's show does
+    import pygimli as pg
+    import pygimli.meshtools as mt
+    elec = np.arange(11.)
+    topo = np.array([[0., 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.]])
+    pg.plt.plot(topo[:,0], topo[:,1])
+    p = mt.tapeMeasureToCoordinates(topo, elec)
+    pg.plt.plot(p[:,0], p[:,1], 'o')
+    pg.plt.gca().set_aspect(1)
+    pg.wait()
