@@ -56,7 +56,8 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
 
     if target:
         import doctest
-        doctest.run_docstring_examples(target, globals())
+        doctest.run_docstring_examples(target, globals(), verbose=True, 
+                                       optionflags=doctest.ELLIPSIS)
         return
 
     try:
