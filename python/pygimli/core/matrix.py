@@ -5,7 +5,8 @@ import time
 from pygimli.core import _pygimli_ as pg
 import numpy as np
 
-class LMultRMatrix(pg.MatrixBase):
+
+class MultLeftMatrix(pg.MatrixBase):
     """Matrix consisting of actual RMatrix and lef-side vector."""
     def __init__(self, A, left, verbose=False):
         """ constructor saving matrix and vector """
@@ -33,8 +34,9 @@ class LMultRMatrix(pg.MatrixBase):
         """ multiplication from right-hand-side (dot product) """
         return self.A.transMult(x * self.left)
 
+LMultRMatrix = MultLeftMatrix
 
-class RMultRMatrix(pg.MatrixBase):
+class MultRightMatrix(pg.MatrixBase):
     """ Matrix A to be multiplied by a right hand side vector r. """
     def __init__(self, A, r=None):
         super().__init__()
@@ -61,8 +63,9 @@ class RMultRMatrix(pg.MatrixBase):
         """ number of rows """
         return self.A.rows()
 
+RMultRMatrix = MultRightMatrix
 
-class LRMultRMatrix(pg.MatrixBase):
+class MultLeftRightMatrix(pg.MatrixBase):
     """ matrix consisting of actual RMatrix and lef-side vector"""
     def __init__(self, A, left, right, verbose=False):
         """ constructor saving matrix and vector """
@@ -93,6 +96,7 @@ class LRMultRMatrix(pg.MatrixBase):
         """ multiplication from right-hand-side (dot product) """
         return self.A.transMult(x * self.left) * self.right
 
+LRMultRMatrix = MultLeftRightMatrix
 
 class Cm05Matrix(pg.MatrixBase):
     """ matrix consisting of actual RMatrix and lef-side vector"""

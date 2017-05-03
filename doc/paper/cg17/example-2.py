@@ -103,16 +103,10 @@ def solveERT(mesh, concentration, verbose=0):
         else:
             rho0[c.id()] = 1000.
 
-    resis = pg.RMatrix(rArchie)
-
-    print(rArchie.rows(),  rArchie.cols())
+    resis = pg.Matrix(rArchie)
 
     for i, rbI in enumerate(rArchie):
-        print(i, ':', min(resis[i]), max(resis[i]), min(rbI), max(rbI))
         resis[i] = 1. / ((1./rbI) + 1./rho0)
-        print(i, ':', min(resis[i]), max(resis[i]))
-
-
 
     ert = pg.physics.ert.ERTManager(verbose=False)
     ertScheme.set('k', ert.fop.calcGeometricFactor(ertScheme))
@@ -158,7 +152,7 @@ class HydroGeophysicalModelling(pg.ModellingBase):
         self.timesERT = pg.IndexArray(np.floor(
             np.linspace(0, len(self.timesAdvection)-1, self.ertSteps)))
 
-        self._J = pg.RMatrix()
+        self._J = pg.Matrix()
         self.setJacobian(self._J)
         self.ws = WorkSpace()
 
@@ -355,6 +349,7 @@ if __name__ == '__main__':
 
     fop.regionManager().region(1).setFixValue(1e-8)  # top layer
     fop.regionManager().region(0).setFixValue(1e-4)  # bedrock
+    fop.regionManager().region(0).setSingle(1)  # bedrock
 
     # Reflect the fix value setting here!!!!
     fop.createRefinedForwardMesh(refine=False, pRefine=False)

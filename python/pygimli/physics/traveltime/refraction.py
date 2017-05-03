@@ -120,6 +120,14 @@ class Refraction(MethodManager):
         self.setData(data)
         return 1./(self.getOffset(data=data, full=True) / data('t'))
 
+    def dataVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return data('t')
+
+    def relErrorVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return  data('err') / data('t')
+
     def setData(self, data):
         """Set data """
         if issubclass(type(data), pg.DataContainer):

@@ -20,7 +20,7 @@ from .hydro import permeabilityEngelhardtPitter
 
 from .modelling import PetroModelling
 from .modelling import PetroJointModelling
-from .modelling import InvertPetro
-from .modelling import InvertJointPetro
+from .modelling import PetroInversion
+from .modelling import JointPetroInversion
 
 __all__ = [name for name in dir() if '_' not in name]

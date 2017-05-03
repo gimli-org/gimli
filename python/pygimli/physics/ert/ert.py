@@ -367,6 +367,14 @@ class ERTManager(MeshMethodManager):
         """ what the hack is this?"""
         return data('rhoa')
 
+    def dataVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return data('rhoa')
+
+    def relErrorVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return data('err')
+
 
 def createERTData(elecs, schemeName='none', **kwargs):
     """ Simple data creator to keep compatibility. More advanced version

@@ -124,21 +124,20 @@ def showModel(outPath):
     paraMesh = pg.load(outPath + '/paraMesh.bms')
     model = pg.load(outPath + "/model.vector")
 
-
     fopMesh = pg.load(outPath + "fopMesh.bms")
     fopModel = pg.load(outPath + "fopModel.vector")
 
     allModel = np.zeros(len(model)+2)
     allModel[2:] = model
 
-    allModel[0] = fopModel[fopMesh.findCellByMarker(pg.MARKER_FIXEDVALUE_REGION -0)[0].id()]
+    #allModel[0] = fopModel[fopMesh.findCellByMarker(pg.MARKER_FIXEDVALUE_REGION -0)[0].id()]
     allModel[1] = fopModel[fopMesh.findCellByMarker(pg.MARKER_FIXEDVALUE_REGION -1)[0].id()]
 
     ax = savefig(paraMesh, None, allModel[paraMesh.cellMarkers()],
                  'Hydraulic conductivity $K$ in m$/$s',
                  cMin=1e-5, cMax=1e-2,
                  nLevs=4, cMap='viridis')
-
+    pg.wait()
     pg.show(fopMesh, ax=ax, linewidth=0.2)
 
     paraMesh.createNeighbourInfos()
