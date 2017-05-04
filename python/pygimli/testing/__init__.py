@@ -22,18 +22,18 @@ from pygimli.io import opt_import
 
 
 def test(target=None, show=False, onlydoctests=False, coverage=False,
-         htmlreport=False, abort=False):
+         htmlreport=False, abort=False, verbose=True):
     """Run docstring examples and additional tests.
 
     Examples
     --------
     >>> import pygimli as pg
-    >>> from pygimli.utils import boxprint
-    >>> pg.test(boxprint)
+    >>> # You can test everything with pg.test() or test an individual function:
+    >>> pg.test("pg.utils.boxprint", verbose=False)
 
     Parameters
     ----------
-    target : function, optional
+    target : function or string, optional
         Function or method to test. By default everything is tested.
     show : boolean, optional
         Show matplotlib windows during test run. They will be closed
@@ -55,9 +55,20 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         plt.switch_backend("Agg")
 
     if target:
+        if isinstance(target, str):
+            # If target is a string, such as "pg.solver.solve"
+            # the code below will overwrite target with the corresponding
+            # imported function, so that doctest works.
+            target = target.replace("pg.", "pygimli.")
+            import importlib
+            mod_name, func_name = target.rsplit('.', 1)
+            mod = importlib.import_module(mod_name)
+            target = getattr(mod, func_name)
+
         import doctest
-        doctest.run_docstring_examples(target, globals(), verbose=True, 
-                                       optionflags=doctest.ELLIPSIS)
+        doctest.run_docstring_examples(target, globals(), verbose=verbose,
+                                       optionflags=doctest.ELLIPSIS,
+                                       name=target.__name__)
         return
 
     try:
