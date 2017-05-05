@@ -1012,6 +1012,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     Returns
     -------
     """
+    raise BaseException('obsolete use mesh methods directly')
     if depth is None:
         print("Please specify worlds depth.")
         return

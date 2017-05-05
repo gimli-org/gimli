@@ -23,7 +23,8 @@ from .mapping import (nodeDataToCellData,
                       cellDataToNodeData,
                       nodeDataToBoundaryData,
                       cellDataToBoundaryData,
-                      fillEmptyToCellArray)
+                      fillEmptyToCellArray,
+                      tapeMeasureToCoordinates,)
 
 #  This is neither functional nor good practice  #  why?
 #  __all__ = [name for name in dir() if '_' not in name]
