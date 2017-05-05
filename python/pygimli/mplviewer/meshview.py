@@ -605,8 +605,33 @@ def createTriangles(mesh, data=None):
 
 
 def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
-               cmap=None, interpolate=False, omitLines=False, **kwargs):
-    """Only for triangle/quadrangle meshes currently."""
+               cmap=None, interpolate=False, **kwargs):
+    """Draw mesh based scalar field using matplotlib triplot.
+
+    Draw scalar field into MPL axes using matplotlib triplot.
+
+    TODO
+        * Examples
+        * Doc: Interpolation variants
+
+    Parameters
+    ----------
+    data: iterable
+        Scalar field values. Can be of length mesh.cellCount()
+        or mesh.nodeCount().
+
+    **kwargs:
+        * shading: interpolation algorithm [flat]
+        * fillContour: [True]
+        * withContourLines: [True]
+    Returns
+    -------
+        gci : image object
+            The current image object useful for post color scaling
+    Examples
+    --------
+    >>>
+    """
     x, y, triangles, z, _ = createTriangles(mesh, data)
 
     gci = None
@@ -634,9 +659,18 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
             gci = ax.tripcolor(x, y, triangles, z,
                                shading=shading, **kwargs)
         else:
-            gci = ax.tricontourf(x, y, triangles, z, levels=levels,
+
+            fillContour = kwargs.pop('fillContour', True)
+            if fillContour:
+                gci = ax.tricontourf(x, y, triangles, z, levels=levels,
                                  **kwargs)
-            if not omitLines:
+
+            omitLines = kwargs.pop('omitLines', False)
+            if omitLines:
+                print("don't use omitLines any more -> change to withContourLines=False")
+
+            withContourLines = kwargs.pop('withContourLines', True)
+            if withContourLines:
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']),
                               **kwargs)
@@ -664,8 +698,7 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     return gci
 
 
-def drawField(ax, mesh, data=None, omitLines=False, cmap=None,
-              **kwargs):
+def drawField(ax, mesh, data=None, cmap=None, **kwargs):
     """TODO WRITEME.
 
         Only for triangle/quadrangle meshes currently
@@ -689,7 +722,6 @@ def drawField(ax, mesh, data=None, omitLines=False, cmap=None,
     cMax = kwargs.pop('cMax', None)
 
     return drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
-                      omitLines=omitLines,
                       cmap=cmap, **kwargs)
 
 

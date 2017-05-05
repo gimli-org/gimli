@@ -7,20 +7,20 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 
 
-def drawFirstPicks(axes, data, tt=None, plotva=False, marker='x-'):
-    """Naming convention. drawFOO(axes, ... )"""
-    return plotFirstPicks(ax=axes, data=data, tt=tt,
+def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
+    """Naming convention. drawFOO(ax, ... )"""
+    return plotFirstPicks(ax=ax, data=data, tt=tt,
                           plotva=plotva, marker=marker)
 
 
-def drawVA(axes, data, usePos=True):
-    """Naming convention. drawFOO(axes, ... )"""
-    return showVA(ax=axes, data=data, usepos=usePos)
+def drawVA(ax, data, usePos=True):
+    """Naming convention. drawFOO(ax, ... )"""
+    return showVA(ax=ax, data=data, usepos=usePos)
 
 
-def drawTravelTimeData(axes, data, t=None):
+def drawTravelTimeData(ax, data, t=None):
     """
-        Draw first arrival traveltime data into mpl axes a.
+        Draw first arrival traveltime data into mpl ax a.
         data of type \ref DataContainer must contain sensorIdx 's' and 'g'
         and thus being numbered internally [0..n)
     """
@@ -39,34 +39,34 @@ def drawTravelTimeData(axes, data, t=None):
     if t is not None:
         tShow = t
 
-    axes.set_xlim([min(x), max(x)])
-    axes.set_ylim([max(tShow), -0.002])
-    axes.figure.show()
+    ax.set_xlim([min(x), max(x)])
+    ax.set_ylim([max(tShow), -0.002])
+    ax.figure.show()
 
     for shot in shots:
         gIdx = pg.find(data('s') == shot)
         sensorIdx = [int(i__ - startOffsetIDX) for i__ in data('g')[gIdx]]
-        axes.plot(x[sensorIdx], tShow[gIdx], 'x-')
+        ax.plot(x[sensorIdx], tShow[gIdx], 'x-')
 
-    yPixel = axes.transData.inverted().transform_point((1, 1))[1] - \
-        axes.transData.inverted().transform_point((0, 0))[1]
-    xPixel = axes.transData.inverted().transform_point((1, 1))[0] - \
-        axes.transData.inverted().transform_point((0, 0))[0]
+    yPixel = ax.transData.inverted().transform_point((1, 1))[1] - \
+        ax.transData.inverted().transform_point((0, 0))[1]
+    xPixel = ax.transData.inverted().transform_point((1, 1))[0] - \
+        ax.transData.inverted().transform_point((0, 0))[0]
 
     # draw shot points
-    axes.plot(x[[int(i__ - startOffsetIDX) for i__ in shots]],
+    ax.plot(x[[int(i__ - startOffsetIDX) for i__ in shots]],
               np.zeros(len(shots)) + 8. * yPixel, 'gv', markersize=8)
 
     # draw geophone points
-    axes.plot(x[[int(i__ - startOffsetIDX) for i__ in geoph]],
+    ax.plot(x[[int(i__ - startOffsetIDX) for i__ in geoph]],
               np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
 
-    axes.grid()
-    axes.set_ylim([max(tShow), +16. * yPixel])
-    axes.set_xlim([min(x) - 5. * xPixel, max(x) + 5. * xPixel])
+    ax.grid()
+    ax.set_ylim([max(tShow), +16. * yPixel])
+    ax.set_xlim([min(x) - 5. * xPixel, max(x) + 5. * xPixel])
 
-    axes.set_xlabel('x-Coordinate [m]')
-    axes.set_ylabel('Traveltime [ms]')
+    ax.set_xlabel('x-Coordinate [m]')
+    ax.set_ylabel('Traveltime [ms]')
 # def drawTravelTimeData(...)
 
 

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.meshtools import createParaMeshPLC, createMesh
-from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorbar
+from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
@@ -118,7 +118,15 @@ class Refraction(MethodManager):
         """
         # hackish .. dislike!
         self.setData(data)
-        return 1./(self.getOffset(full=True) / data('t'))
+        return 1./(self.getOffset(data=data, full=True) / data('t'))
+
+    def dataVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return data('t')
+
+    def relErrorVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return  data('err') / data('t')
 
     def setData(self, data):
         """Set data """
@@ -174,24 +182,33 @@ class Refraction(MethodManager):
         if self.verbose:
             print(self.dataContainer)
 
-    def showData(self, ax=None, response=None, name='data'):
-        """Show data as travel time curves (optionally with response)"""
+    def showData(self, data=None, response=None, ax=None, name='data'):
+        """Show data as travel time curves (optionally with response)
+
+        Parameters
+        ----------
+
+        """
+        if data is None:
+            data = self.dataContainer
+
         if response is not None:
             name = 'datafit'
+
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
 
         self.axs[name] = ax
         if response is None:
-            plotFirstPicks(ax, self.dataContainer)
+            drawFirstPicks(ax, data)
         else:
-            plotFirstPicks(ax, self.dataContainer, marker='+')
+            drawFirstPicks(ax, data, marker='+')
             if response is True:
                 response = self.response
-            plotFirstPicks(ax, self.dataContainer, np.asarray(response),
-                           marker='-')
+            drawFirstPicks(ax, data, np.asarray(response), marker='-')
 
+        # CR: don't use plt.show(..) at all TODO
         plt.show(block=False)
         return ax
 
@@ -444,34 +461,43 @@ class Refraction(MethodManager):
         tt.setDataContainer(data)
         tt.showVA(ax=ax, t=t, **kwargs)
 
-    def getOffset(self, full=False):
+    def getOffset(self, data=None, full=False):
         """Return vector of offsets (in m) between shot and receiver."""
+
+        if data is None:
+            data = self.dataContainer
+
         if full:
-            pos = self.dataContainer.sensorPositions()
-            s, g = self.dataContainer('s'), self.dataContainer('g')
-            nd = self.dataContainer.size()
+            pos = data.sensorPositions()
+            s, g = data('s'), data('g')
+            nd = data.size()
             off = [pos[int(s[i])].distance(pos[int(g[i])]) for i in range(nd)]
             return np.absolute(off)
         else:
-            px = pg.x(self.dataContainer.sensorPositions())
-            gx = np.array([px[int(g)] for g in self.dataContainer("g")])
-            sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+            px = pg.x(data.sensorPositions())
+            gx = np.array([px[int(g)] for g in data("g")])
+            sx = np.array([px[int(s)] for s in data("s")])
             return np.absolute(gx - sx)
 
-    def getMidpoint(self):
+    def getMidpoint(self, data=None):
         """Return vector of offsets (in m) between shot and receiver."""
-        px = pg.x(self.dataContainer.sensorPositions())
-        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
-        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
+        if data is None:
+            data = self.dataContainer
+
+        px = pg.x(data.sensorPositions())
+        gx = np.array([px[int(g)] for g in data("g")])
+        sx = np.array([px[int(s)] for s in data("s")])
         return (gx + sx) / 2
 
-    def showVA(self, ax=None, t=None, name='va', pseudosection=False,
-               squeeze=True, full=True):
-        """show apparent velocity as image plot
+    def showVA(self, data=None, t=None, name='va', pseudosection=False,
+               squeeze=True, full=True, ax=None):
+        """Show apparent velocity as image plot.
 
         TODO showXXX commands need to return ax and cbar .. if there is one
 
         """
+        if data is None:
+            data = self.dataContainer
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -479,12 +505,12 @@ class Refraction(MethodManager):
 
         self.axs[name] = ax
         if t is None:
-            t = self.dataContainer('t')
+            t = data('t')
 
-        px = pg.x(self.dataContainer.sensorPositions())
-        gx = np.array([px[int(g)] for g in self.dataContainer("g")])
-        sx = np.array([px[int(s)] for s in self.dataContainer("s")])
-        offset = self.getOffset(full=full)
+        px = pg.x(data.sensorPositions())
+        gx = np.array([px[int(g)] for g in data("g")])
+        sx = np.array([px[int(s)] for s in data("s")])
+        offset = self.getOffset(data=data, full=full)
         va = offset / t
 
         if pseudosection:
@@ -494,8 +520,6 @@ class Refraction(MethodManager):
         else:
             plotVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
                           label='Apparent velocity [m/s]')
-#        va = showVA(ax, self.dataContainer)
-#        plt.show(block=False)
         return va
 
     def getDepth(self):
@@ -549,7 +573,7 @@ class Refraction(MethodManager):
                             coverage=self.standardizedCoverage(), **kwargs)
             labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
-            cbar = createColorbar(gci, **subkwargs)
+            cbar = createColorBar(gci, **subkwargs)
         browser = CellBrowser(self.mesh, val, ax)
         browser.connect()
 

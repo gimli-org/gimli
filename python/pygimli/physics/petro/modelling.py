@@ -44,7 +44,7 @@ class PetroModelling(pg.ModellingBase):
 
         self.nModel = self.regionManager().parameterCount()
 
-        self.jac = pg.RMultRMatrix(self.fop.jacobian())
+        self.jac = pg.MultRightMatrix(self.fop.jacobian())
         self.setJacobian(self.jac)
 
     def response(self, model):
@@ -118,7 +118,7 @@ class PetroJointModelling(pg.ModellingBase):
             f.createJacobian(model)
 
 
-class InvertJointPetro(MethodManager):
+class JointPetroInversion(MethodManager):
     """TODO."""
 
     def __init__(self, managers, trans, verbose=False, debug=False, **kwargs):
@@ -225,7 +225,6 @@ class InvertJointPetro(MethodManager):
             startModel /= len(self.managers)
 
         self.inv.setModel(startModel)
-
         self.fop.regionManager().setZWeight(1.0)
 
         self.inv.setData(self.dataVals)
@@ -233,7 +232,7 @@ class InvertJointPetro(MethodManager):
         self.inv.setLambda(lam)
 
         self.mod = self.inv.run()
-        self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
+        #self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
         return self.mod
 
     def showModel(self, **showkwargs):
@@ -243,16 +242,16 @@ class InvertJointPetro(MethodManager):
                     self.mod, **showkwargs)
 
 
-class InvertPetro(InvertJointPetro):
+class PetroInversion(JointPetroInversion):
     """TODO."""
 
     def __init__(self, manager, trans, **kwargs):
         """TODO."""
-        InvertJointPetro.__init__(self, [manager], [trans], **kwargs)
+        JointPetroInversion.__init__(self, [manager], [trans], **kwargs)
 
     def invert(self, data, **kwargs):
         """TODO."""
-        return InvertJointPetro.invert(self, [data], **kwargs)
+        return JointPetroInversion.invert(self, [data], **kwargs)
 
 
 if __name__ == "__main__":

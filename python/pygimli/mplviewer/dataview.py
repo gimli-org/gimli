@@ -70,7 +70,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     Parameters
     ----------
     vals : iterable
-        to show
+        Data values to show.
     xvec : dict {i:num}
         dict (must match vals.shape[0])
     ymap : iterable
@@ -98,7 +98,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
 
-    if 'ax' is None:
+    if ax is None:
         ax = plt.subplots()[1]
 
     recs = []
@@ -137,10 +137,13 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     if cbar is True:  # not for cbar=1, which is really confusing!
         cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
                                            nLevs=5, label=label)
-    elif cbar is not False:  # what the hell is this?
+    elif cbar is not False:
+        # what the hell is this? CR .. if Cbar is not False and cbar is not true
+        # .. cbar is an already existing cbar .. so we update its values
         pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
                                     nLevs=5, label=label)
 
+    updateAxes_(ax)
     return ax, cbar, ymap
 
 
@@ -203,7 +206,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     updateAxes_(ax)
     cbar = None
     if kwargs.pop('colorBar', True):
-        cbar = pg.mplviewer.createColorbar(col, cMin=cMin, cMax=cMax, nLevs=5,
+        cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax, nLevs=5,
                                            label=label)
     return ax, cbar
 
@@ -254,7 +257,7 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     ax.set_aspect(kwargs.pop('aspect', 1))
     cbar = None
     if kwargs.pop('colorBar', True):
-        cbar = pg.mplviewer.createColorbar(im, cMin=cMin, cMax=cMax, nLevs=5,
+        cbar = pg.mplviewer.createColorBar(im, cMin=cMin, cMax=cMax, nLevs=5,
                                            label=label)
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap) - 1))

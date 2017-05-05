@@ -290,9 +290,23 @@ class ERTManager(MeshMethodManager):
         super(MeshMethodManager, self).__init__(**kwargs)
         self.setDataToken('rhoa')
 
-    def showData(self, ax=None):
+    def showData(self, data=None, vals=None, ax=None):
         """Show mesh in given axes or in a new figure."""
-        raise Exception('use the BERT Manager')
+
+        if data is None:
+            data = self.data
+
+        mid, sep = midconfERT(data)
+        dx = np.median(np.diff(np.unique(mid)))*2
+        if vals is None:
+            vals = data('rhoa')
+
+        ax, cbar, ymap = pg.mplviewer.patchValMap(vals, mid, sep,
+                                                  dx=dx, ax=ax,
+                                    logScale=True,
+                                    label=r'Apparent resistivity in $\Omega$m')
+
+        return ax
 
     @staticmethod
     def createFOP(verbose=False):
@@ -353,6 +367,14 @@ class ERTManager(MeshMethodManager):
         """ what the hack is this?"""
         return data('rhoa')
 
+    def dataVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return data('rhoa')
+
+    def relErrorVals(self, data):
+        """Return pure data values from a given DataContainer. """
+        return data('err')
+
 
 def createERTData(elecs, schemeName='none', **kwargs):
     """ Simple data creator to keep compatibility. More advanced version
@@ -406,6 +428,77 @@ def createERTData(elecs, schemeName='none', **kwargs):
     data.set('valid', np.ones(len(a)))
 
     return data
+
+
+def midconfERT(data):
+    """Return the midpoint and configuration key for ERT data.
+
+    Return the midpoint and configuration key for ERT data.
+
+    Parameters
+    ----------
+    data : pybert.DataContainerERT
+        data container with sensorPositions and a/b/m/n fields
+
+    Returns
+    -------
+    mid : np.array of float
+        representative midpoint (middle of MN, AM depending on array)
+    conf : np.array of float
+        configuration/array key consisting of
+        1) array type (Wenner-alpha/beta, Schlumberger, PP, PD, DD, MG)
+        2) potential dipole length
+        3) separation factor
+    """
+#    xe = np.hstack((pg.x(data.sensorPositions()), np.nan))  # not used anymore
+    x0 = data.sensorPosition(0).x()
+    dx = [data.sensorPosition(i).distance(data.sensorPosition(i+1)) for i in
+          range(data.sensorCount()-1)]
+    xe = np.hstack((0., np.cumsum(np.round(dx, 1)), np.nan))
+    de = np.median(np.diff(xe[:-1])).round(1)
+    ne = np.round(xe/de)
+    a, b, m, n = data('a'), data('b'), data('m'), data('n')
+    # check if xe[a]/a is better suited (has similar size)
+    a = np.array([ne[int(i)] for i in data('a')])
+    b = np.array([ne[int(i)] for i in data('b')])
+    m = np.array([ne[int(i)] for i in data('m')])
+    n = np.array([ne[int(i)] for i in data('n')])
+    ab, am, an = np.abs(a-b), np.abs(a-m), np.abs(a-n)
+    bm, bn, mn = np.abs(b-m), np.abs(b-n), np.abs(m-n)
+    # 2-point (default) 00000
+    sep = np.abs(a-m)
+    mid = (a+m) / 2 * de + x0
+    # 3-point (PD, DP) (now only b==-1 or n==-<1, check also for a and m)
+    imn = np.isfinite(n)*np.isnan(b)
+    mid[imn] = (m[imn]+n[imn]) / 2 * de + x0
+    sep[imn] = np.minimum(am[imn], an[imn]) + 10000 + 100 * (mn[imn]-1) + \
+        (np.sign(a[imn]-m[imn])/2+0.5) * 10000
+    iab = np.isfinite(b)*np.isnan(n)
+    mid[iab] = (a[iab]+b[iab]) / 2 * de + x0  # better 20000 or -10000?
+    sep[iab] = np.minimum(am[iab], bm[iab]) + 10000 + 100 * (ab[iab]-1) + \
+        (np.sign(a[iab]-n[iab])/2+0.5) * 10000
+    #  + 10000*(a-m)
+    # 4-point alpha: 30000 (WE) or 4000 (SL)
+    iabmn = np.isfinite(a) & np.isfinite(b) & np.isfinite(m) & np.isfinite(n)
+    ialfa = np.copy(iabmn)
+    ialfa[iabmn] = (ab[iabmn] > mn[iabmn])
+    mid[ialfa] = (m[ialfa] + n[ialfa]) / 2 * de + x0
+    spac = np.minimum(bn[ialfa], bm[ialfa])
+    abmn3 = np.round((3*mn[ialfa]-ab[ialfa])*10000)/10000
+    sep[ialfa] = spac + (mn[ialfa]-1)*100*(abmn3 != 0) + \
+        30000 + (abmn3 < 0)*10000
+    # gradient
+
+    # %% 4-point beta
+    ibeta = np.copy(iabmn)
+    ibeta[iabmn] = (bm[iabmn] >= mn[iabmn]) & (~ialfa[iabmn])
+    mid[ibeta] = (a[ibeta] + b[ibeta] + m[ibeta] + n[ibeta]) / 4 * de + x0
+    sep[ibeta] = 50000 + (ab[ibeta]-1) * 100 + np.minimum(
+        np.minimum(am[ibeta], an[ibeta]), np.minimum(bm[ibeta], bn[ibeta]))
+
+    # %% 4-point gamma
+    return mid, sep
+
 
 if __name__ == "__main__":
     pass

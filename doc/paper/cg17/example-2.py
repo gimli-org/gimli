@@ -34,7 +34,6 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
 
     p = pg.solver.solve(mesh, a=k, uB=uDir)
     vel = -pg.solver.grad(mesh, p) * np.asarray([k, k, k]).T
-
     return mesh, mt.cellDataToNodeData(mesh, np.asarray([pg.x(vel), pg.y(vel)]).T), p, k, np.asarray([pg.x(vel), pg.y(vel)])
 
 
@@ -50,9 +49,11 @@ def solveAdvection(mesh, vel, times, diffusion, verbose=False):
 
     t = times[:int(len(times)/2)]
     t = np.linspace(t[0], t[-1], len(t))
+
     c1 = pg.solver.solveFiniteVolume(mesh, a=diffusion, f=S, vel=vel,
                                      times=t, uB=[1, 0],
                                      scheme='PS', verbose=0)
+
     c2 = pg.solver.solveFiniteVolume(mesh, a=diffusion, f=0., vel=vel,
                                      times=t, uB=[1, 0], u0=c1[-1],
                                      scheme='PS', verbose=0)
@@ -102,7 +103,7 @@ def solveERT(mesh, concentration, verbose=0):
         else:
             rho0[c.id()] = 1000.
 
-    resis = pg.RMatrix(rArchie)
+    resis = pg.Matrix(rArchie)
 
     for i, rbI in enumerate(rArchie):
         resis[i] = 1. / ((1./rbI) + 1./rho0)
@@ -124,7 +125,7 @@ def solveERT(mesh, concentration, verbose=0):
     return meshERT, ertScheme, resis, rhoa, dRhoa, dErr
 
 
-class HydroGeophsicalModelling(pg.ModellingBase):
+class HydroGeophysicalModelling(pg.ModellingBase):
     """Forward Operator for fully coupled hydrogeophysical inversion."""
 
     def __init__(self, verbose=False, **kwargs):
@@ -151,7 +152,7 @@ class HydroGeophsicalModelling(pg.ModellingBase):
         self.timesERT = pg.IndexArray(np.floor(
             np.linspace(0, len(self.timesAdvection)-1, self.ertSteps)))
 
-        self._J = pg.RMatrix()
+        self._J = pg.Matrix()
         self.setJacobian(self._J)
         self.ws = WorkSpace()
 
@@ -175,7 +176,7 @@ class HydroGeophsicalModelling(pg.ModellingBase):
 
         k = self.createMappedModel(par)
 
-        ws.mesh, ws.vel, ws.p, ws.k, ws.velC = solveDarcy(mesh, k=k, p0=0.25 * 3,
+        ws.mesh, ws.vel, ws.p, ws.k, ws.velC = solveDarcy(mesh, k=k, p0=0.75,
                                                           verbose=verbose)
 
         ws.sat = solveAdvection(ws.mesh, ws.vel.T, self.timesAdvection,
@@ -215,7 +216,7 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
     paraMesh.setCellMarkers(mapMarker[np.array(paraMesh.cellMarkers())])
     paraMesh.save(synthPath + 'synth.bms')
 
-    fop = HydroGeophsicalModelling(mesh=paraMesh, tMax=tMax,
+    fop = HydroGeophysicalModelling(mesh=paraMesh, tMax=tMax,
                                    satSteps=satSteps,
                                    ertSteps=ertSteps,
                                    verbose=1)
@@ -248,6 +249,7 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
     np.save(synthPath + 'synthRhoa', fop.ws.rhoa)
     np.save(synthPath + 'synthErr', fop.ws.derr)
 
+
 def createFopWithParaDomain(paraRefine=0, ncpu=6):
     """Create Forward operator and synthetic data."""
     tMax = 345600 * 3
@@ -266,7 +268,7 @@ def createFopWithParaDomain(paraRefine=0, ncpu=6):
                   area=synthArea,
                   synthPath=synthPath)
 
-    fop = HydroGeophsicalModelling(mesh=None, tMax=tMax,
+    fop = HydroGeophysicalModelling(mesh=None, tMax=tMax,
                                    satSteps=satSteps,
                                    ertSteps=ertSteps,
                                    verbose=1)
@@ -347,6 +349,7 @@ if __name__ == '__main__':
 
     fop.regionManager().region(1).setFixValue(1e-8)  # top layer
     fop.regionManager().region(0).setFixValue(1e-4)  # bedrock
+    fop.regionManager().region(0).setSingle(1)  # bedrock
 
     # Reflect the fix value setting here!!!!
     fop.createRefinedForwardMesh(refine=False, pRefine=False)
@@ -371,8 +374,6 @@ if __name__ == '__main__':
     inv.setMaxIter(50)
     inv.setLineSearch(True)
     inv.setLambda(1000)
-
-    # inv.setMarquardtScheme(0.8)
 
     outPath = "permModel_h-" + str(paraRefine)
     if not os.path.exists(outPath):
