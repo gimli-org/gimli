@@ -188,7 +188,7 @@ class TestRVectorMethods(unittest.TestCase):
         '''
             implemented through hand_made_wrapper.py
         '''
-        mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2])
+        mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2], z=[1, 2])
 
         v = np.asarray(mesh.nodeCenters())
 
@@ -198,6 +198,9 @@ class TestRVectorMethods(unittest.TestCase):
         a = np.array(mesh.cellCenter())
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), mesh.cellCount())
+
+        self.assertEqual(mesh.nodeCenters()[0], v[0])
+
 
 if __name__ == '__main__':
     pg.setDebug(0)
