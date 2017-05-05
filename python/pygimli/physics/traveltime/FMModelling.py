@@ -219,7 +219,7 @@ class TravelTimeFMM(pg.ModellingBase):
         n_data = data.size()
         t_fmm = pg.RVector(n_data)
         for i in range(n_data):
-            t_fmm[i] = self.dataMatrix[data("s")[i]][data("g")[i]]
+            t_fmm[i] = self.dataMatrix[int(data("s")[i])][int(data("g")[i])]
 
         return t_fmm
 
@@ -253,10 +253,15 @@ if __name__ == '__main__':
     mesh.createNeighbourInfos()
     print(mesh)
     slo = createGradientModel2D(data, mesh, vTop=500, vBot=2500)
-
-    fwd = TravelTimeFMM(mesh, data, frequency=500)
+    fwd = TravelTimeFMM(mesh, data, frequency=500)  #
     fwd.createRefinedForwardMesh(False)
     resp = fwd.response(slo)
+    data.set('t', resp)
+    print("ready with response, starting jacobian")
+    fwd.createJacobian(slo)
+    raise SystemExit
+    # %%
     pg.plt.imshow(fwd.dataMatrix, interpolation='nearest')
     fwd.createJacobian(slo)
-    pg.plt.imshow(fwd.dataMatrix, interpolation='nearest')
+    one = pg.RVector(data.size(), 1.0)
+    coverage = fwd.jacobian().transMult(one)

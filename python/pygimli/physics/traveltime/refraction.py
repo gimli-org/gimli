@@ -18,7 +18,7 @@ from pygimli.manager import MethodManager
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
 from pygimli.physics.traveltime.ratools import createGradientModel2D
-from pygimli.physics.traveltime.raplot import plotFirstPicks, plotLines
+from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 
 from . raplot import drawTravelTimeData
 
@@ -48,7 +48,7 @@ class Refraction(MethodManager):
         # self.start = []
         self.pd = None
 
-        #CR!, check if this should be better a static member
+        # CR!, check if this should be better a static member TG: no idea
         self.dataToken_ = 't'
 
         if isinstance(data, str):
@@ -126,7 +126,7 @@ class Refraction(MethodManager):
 
     def relErrorVals(self, data):
         """Return pure data values from a given DataContainer. """
-        return  data('err') / data('t')
+        return data('err') / data('t')
 
     def setData(self, data):
         """Set data """
@@ -284,7 +284,7 @@ class Refraction(MethodManager):
 
         if relativeError >= 0.5:  # obviously in %
             print("relativeError set to a value > 0.5 .. assuming this "
-                "is a percentile Error level dividing them by 100")
+                  "is a percentile Error level dividing them by 100")
             relativeError /= 100.
 
         error = absoluteError + data('t') * relativeError
@@ -433,9 +433,9 @@ class Refraction(MethodManager):
         if noiseLevel > 0:
             if not ret.allNonZero('err'):
                 ret.set('t', t)
-                ret.set('err', pg.physics.Refraction.estimateError(ret,
-                                  absoluteError=kwargs.pop('noiseAbs', 1e-4),
-                                  relativeError=noiseLevel))
+                ret.set('err', pg.physics.Refraction.estimateError(
+                        ret, absoluteError=kwargs.pop('noiseAbs', 1e-4),
+                        relativeError=noiseLevel))
 
             if verbose:
                 print("Data error estimates (min:max) ",
