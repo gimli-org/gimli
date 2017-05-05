@@ -97,8 +97,8 @@ def fastMarch(mesh, downwind, times, upT, downT):
 
 class TravelTimeFMM(pg.ModellingBase):
     """Modelling class using the Fast Marching Method (FMM).
-    
-    It can be used alternatively to Dijkstra modelling. 
+
+    It can be used alternatively to Dijkstra modelling.
     However, currently it is quite slow.
     A implementation in C++ might speed up.
     """
@@ -118,6 +118,7 @@ class TravelTimeFMM(pg.ModellingBase):
 
         pg.ModellingBase.__init__(self, mesh, data, verbose)
         super().__init__(verbose=verbose)
+        self.debug = False
         self.mesh_ = mesh  # better use self.mesh() after refine
         self.data_ = data
         self.setMesh(mesh)  # besser use createRefinedForwardMesh
@@ -171,6 +172,9 @@ class TravelTimeFMM(pg.ModellingBase):
 #            geophoneIndices = np.unique(self.data_("g"))
             print("{:d}-{:d}={:d}".format(
                 self.data_.sensorCount(), ns, len(sourceIndices)))
+        if self.debug:  # resize not working
+            self.solution().resize(self.mesh().nodeCount(), self.nSensors)
+            print(self.solution().rows(), self.solution().cols())
         for iSource in np.array(sourceIndices, dtype=int):
             print(iSource, end=' ')
             # initial condition (reset vectors)
@@ -198,6 +202,11 @@ class TravelTimeFMM(pg.ModellingBase):
                 mesh, times, self.data_.sensorPositions())
             self.timeMatrix[iSource] = pg.interpolate(
                 mesh, times, self.midPoints)
+            if self.debug:
+                print(self.solution().rows(), self.solution().cols())
+                print(len(times), self.mesh())
+                self.solution()[int(iSource)] = times
+                self.solution().setCol(int(iSource), times)
 
     def response(self, slowness):
         """
@@ -224,7 +233,7 @@ class TravelTimeFMM(pg.ModellingBase):
         n_data = data.size()
 #        slo = mesh.cellAttributes()  # in case of regions
         for i in range(n_data):
-            iS, iG = data("s")[i], data("g")[i]
+            iS, iG = int(data("s")[i]), int(data("g")[i])
             tsr = self.dataMatrix[iS][iG]
             dt = self.timeMatrix[iS] + self.timeMatrix[iG] - tsr
             weight = np.maximum(1 - 2 * self.frequency * dt, 0.0)
@@ -246,10 +255,8 @@ if __name__ == '__main__':
     slo = createGradientModel2D(data, mesh, vTop=500, vBot=2500)
 
     fwd = TravelTimeFMM(mesh, data, frequency=500)
+    fwd.createRefinedForwardMesh(False)
     resp = fwd.response(slo)
     pg.plt.imshow(fwd.dataMatrix, interpolation='nearest')
     fwd.createJacobian(slo)
     pg.plt.imshow(fwd.dataMatrix, interpolation='nearest')
-    # %%
-    if 0:
-        pg.show(mesh, fwd.timeMatrix[21])
