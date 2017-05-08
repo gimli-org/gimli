@@ -30,8 +30,8 @@ def parseDataStr(s):
         data.load(vals[0])
         if len(data) == 0:
             data.load(vals[0], pg.Binary)
-    
-    
+
+
     if len(vals) == 1:
         return vals[0], data
     if len(vals) == 2:
@@ -209,12 +209,29 @@ def main(argv):
 
         if 'r' in mesh.exportDataMap() and 'i' in mesh.exportDataMap():
             mesh.exportMidCellValue(outfileBody + suff + 'ri',
-                                    mesh.exportData('r'), mesh.exportData('i'))
+                                    mesh.data('r'), mesh.data('i'))
         elif 'r' in mesh.exportDataMap():
             mesh.exportMidCellValue(outfileBody + suff + 'r',
-                                    mesh.exportData('r'))
+                                    mesh.data('r'))
         else:
-            print("Sry!, no resistivity data with name r found")
+            if mesh.haveData('Resistivity'):
+                print(mesh.node(0).pos())
+                for i in range(4):
+                    print(mesh.cell(0).node(i).pos())
+                print(mesh.cell(0).center())
+
+                print(np.array(mesh.cellCenters()[0]))
+                print(np.array(mesh.cellCenters())[0])
+
+                print(mesh.data('Resistivity'))
+                print(len(mesh.data('Resistivity')))
+
+                np.savetxt(outfileBody + suff + 'zr',
+                           np.vstack((np.array(mesh.cellCenters())[:,0:2].T,
+                                      mesh.data('Resistivity'))).T)
+            else:
+                print("Sry!, no resistivity data with name r found")
+
 
     if options.outVTK:
         if options.verbose:

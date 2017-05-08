@@ -514,7 +514,6 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
 }
 
 void Mesh::loadBinaryV2(const std::string & fbody) {
-
     this->clear();
     std::string fileName(fbody.substr(0, fbody.rfind(MESHBINSUFFIX)) + MESHBINSUFFIX);
 
@@ -1024,7 +1023,7 @@ void Mesh::importVTK(const std::string & fbody) {
             THROW_TO_IMPL
     }
 //     __MS(dimension_)
-    this->showInfos();
+    //this->showInfos();
     file.close();
 }
 
