@@ -40,8 +40,10 @@ def computeR(J, C, alpha=0.5):
     """
     JTJ = J.T.dot(J)
     CM_inv = C.T.dot(C)
-    Jsharp = lin.solve(JTJ + alpha * CM_inv, J.T)
-    R = np.diag(Jsharp.dot(J))
+#    Jsharp = lin.solve(JTJ + alpha * CM_inv, J.T)
+#    R = np.diag(Jsharp.dot(J))
+    RM = lin.solve(JTJ + alpha * CM_inv, JTJ)
+    R = np.diag(RM)
     return R
 
 #
