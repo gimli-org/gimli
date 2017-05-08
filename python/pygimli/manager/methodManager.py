@@ -5,6 +5,7 @@
 
 import pygimli as pg
 
+
 class MethodManager(object):
     """General manager to maintenance a measurement method.
 
@@ -255,7 +256,7 @@ class MeshMethodManager(MethodManager):
         if not isinstance(data, pg.DataContainer):
             raise Exception('IMPLEMENTME')
 
-            if isinstance(data,str):
+            if isinstance(data, str):
                 raise Exception('IMPLEMENTME')
         else:
             self.dataContainer = data
@@ -344,7 +345,6 @@ class MeshMethodManager(MethodManager):
                             maxCellArea=kwargs.pop('maxCellArea', 0.0),
                             paraDX=kwargs.pop('paraDX', 0.3))
 
-
         self.inv.setData(dataVals)
         self.inv.setError(errVals, not self.errIsAbsolute)
 
@@ -368,7 +368,7 @@ class MeshMethodManager(MethodManager):
                                 pg.RVector(pc, pg.median(dataVals)))
 
         self.inv.setModel(startModel)
-        #self.fop.setStartModel(startModel)
+        # self.fop.setStartModel(startModel)
 
         if kwargs.pop('startModelIsReference', False):
             self.inv.setReferenceModel(startModel)

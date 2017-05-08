@@ -5,7 +5,6 @@ import os
 
 import math
 import random
-import urllib
 
 import numpy as np
 import matplotlib.image as mpimg

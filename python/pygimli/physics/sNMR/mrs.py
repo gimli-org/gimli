@@ -73,6 +73,8 @@ class MRS():
         self.t, self.q, self.z = None, None, None
         self.data, self.error = None, None
         self.K, self.f, self.INV = None, None, None
+        self.dcube, self.ecube = None, None
+        self.lLB, self.lUB = None, None
         self.nlay = 0
         self.model, self.modelL, self.modelU = None, None, None
         self.lowerBound = [1.0, 0.0, 0.02]  # d, theta, T2*
@@ -104,8 +106,9 @@ class MRS():
         return out + ">"
 
     def loadMRSpy(self, filename, **kwargs):
-        """Load data and kernel from numpy gzip packed file containing the
-        fields: q, t, D, (E), z, K
+        """Load data and kernel from numpy gzip packed file.
+
+        The npz file contains the fields: q, t, D, (E), z, K
         """
         self.basename = filename.rstrip('.npz')
         DATA = np.load(filename)
@@ -224,10 +227,11 @@ class MRS():
         if self.verbose:
             print(self)
 
-    def loadMRSD(self, filename, usereal=False, mint=0., maxt=2.0, **kwargs):
+    def loadMRSD(self, filename, usereal=False, mint=0., maxt=2.0):
         """Load mrsd (MRS data) file: not really used as in MRSD."""
         from scipy.io import loadmat  # loading Matlab mat files
 
+        print("Currently not using mint/maxt & usereal:", mint, maxt, usereal)
         pl = loadmat(filename, struct_as_record=False,
                      squeeze_me=True)['proclog']
         self.q = np.array([q.q for q in pl.Q])
@@ -295,7 +299,7 @@ class MRS():
         if max(vec) < 1e-3:  # Volts
             mul = 1e9
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
+            _, ax = plt.subplots(1, 1)
         if islog is None:
             print(len(vec))
             islog = (min(vec) > 0.)
@@ -369,7 +373,7 @@ class MRS():
 
         return fig, ax
 
-    def createFOP(self, nlay=3, verbose=True, **kwargs):
+    def createFOP(self, nlay=3):  # , verbose=True, **kwargs):
         """Create forward operator instance."""
         self.nlay = nlay
         self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
@@ -533,9 +537,9 @@ class MRS():
 
     def calcMCMbounds(self):
         """Compute model bounds using covariance matrix diagonals."""
-        self.mcm = self.calcMCM()[0]
-        self.modelL = self.model - self.mcm
-        self.modelU = self.model + self.mcm
+        mcm = self.calcMCM()[0]
+        self.modelL = self.model - mcm
+        self.modelU = self.model + mcm
 
     def genMod(self, individual):
         """Generate (GA) model from random vector (0-1) using model bounds."""
@@ -552,20 +556,20 @@ class MRS():
         Parameters
         ----------
         nlay : int [taken from classic fop if not given]
-            number of layers\n
+            number of layers
         pop_size : int [100]
-            population size\n
+            population size
         num_gen : int [100]
-            number of generations\n
+            number of generations
         runs : int [pop_size*num_gen]
-            number of independent runs (with random population)\n
+            number of independent runs (with random population)
         eatype : string ['GA']
-            algorithm, choose among:\n
-                'GA' - Genetic Algorithm [default]\n
-                'SA' - Simulated Annealing\n
-                'DEA' - Discrete Evolutionary Algorithm\n
-                'PSO' - Particle Swarm Optimization\n
-                'ACS' - Ant Colony Strategy\n
+            algorithm, choose among:
+                'GA' - Genetic Algorithm [default]
+                'SA' - Simulated Annealing
+                'DEA' - Discrete Evolutionary Algorithm
+                'PSO' - Particle Swarm Optimization
+                'ACS' - Ant Colony Strategy
                 'ES' - Evolutionary Strategy
         """
         import inspyred
@@ -741,10 +745,10 @@ class MRS():
 
 if __name__ == "__main__":
     datafile = 'example.mrsi'
-    nlay = 4
+    numlayers = 4
     mrs = MRS(datafile)
-    mrs.run(nlay, uncertainty=True)
-    thk, wc, t2 = mrs.result()
+    mrs.run(numlayers, uncertainty=True)
+    outThk, outWC, outT2 = mrs.result()
     mrs.saveResult(mrs.basename+'.result')
     mrs.showResultAndFit(save=mrs.basename+'.pdf')
     plt.show()

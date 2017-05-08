@@ -84,11 +84,10 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
             if area > 0:
                 switches += 'a' + str(area)
                 pass
-                #switches += 'a'
             else:
                 switches += 'a'
 
-            #switches = switches.replace('.', ',')
+            # switches = switches.replace('.', ',')
             switches += 'q' + str(quality)
 
         if not verbose:
@@ -168,7 +167,7 @@ def readGmsh(fname, verbose=False):
     fname : string
         Filename of the file to read (\\*.msh). The file must conform
         to the `MSH ASCII file version 2
-        <http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format>`_ format.
+        <http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format>`_ format
     verbose : boolean, optional
         Be verbose during import.
 
@@ -333,7 +332,7 @@ def readGmsh(fname, verbose=False):
 
     mesh.createNeighbourInfos()
 
-    # Set Neumann on outer edges by default (can be overriden by Gmsh info later)
+    # Set Neumann on outer edges by default (can be overriden by Gmsh info)
     for b in mesh.boundaries():
         if not b.leftCell() or not b.rightCell():
             b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)

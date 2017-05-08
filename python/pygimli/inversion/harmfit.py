@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-
-import math
 import numpy as np
 
 import pygimli as pg
-from pygimli.utils import getIndex, filterIndex
 
 
 class HarmFunctor(object):
@@ -19,9 +16,9 @@ class HarmFunctor(object):
         nc = len(self.coeff_) / 2
         A = np.ones(nc * 2) * 0.5
         A[1] = 3. * x
-        A[2::2] = np.sin(2.0 * np.pi * np.arange(1, nc) * \
+        A[2::2] = np.sin(2.0 * np.pi * np.arange(1, nc) *
                          (x - self.xmin_) / self.xSpan_)
-        A[3::2] = np.cos(2.0 * np.pi * np.arange(1, nc) * \
+        A[3::2] = np.cos(2.0 * np.pi * np.arange(1, nc) *
                          (x - self.xmin_) / self.xSpan_)
         return sum(A * self.coeff_)
 
@@ -58,7 +55,7 @@ def harmfitNative(y, x=None, nc=None, xc=None, err=None):
     xspan = max(x) - min(x)
     xmi = min(x)
 
-    #A=ones(length(x),nc*2+2)/2 %nc*(sin+cos)+offset+drift
+    # A=ones(length(x),nc*2+2)/2 %nc*(sin+cos)+offset+drift
     A = np.ones((len(x), nc * 2 + 2)) / 2.0  # %nc*(sin+cos)+offset+drift
     # B=ones(length(xc),nc*2+2)/2
     B = np.ones((len(xc), nc * 2 + 2)) / 2.0

@@ -6,19 +6,17 @@ from math import sqrt, pi
 
 import numpy as np
 import pygimli as pg
-from pygimli.physics import constants
 
 
 class VMDModelling(pg.ModellingBase):
-    """Modelling operator for a Vertical Magnetic Dipole (VMD).
+    r"""Modelling operator for a Vertical Magnetic Dipole (VMD).
 
     Modelling operator for a Vertical Magnetic Dipole (VMD) to calculate the
     electromagnetic response in cylindric coordinates
     ::math::`H_z, H_r, E_{\phi} \in I\!C`
     for a layered halfspace (1D) using Hankel transformation.
 
-    VMD is at the origin ::math::`r_s = (0.0)` and ::math::`z_s=0`.
-
+    The VMD is at the origin ::math::`r_s = (0.0)` and ::math::`z_s=0`.
     """
     def __init__(self, **kwargs):
         """Initialize forward operator.
@@ -34,7 +32,6 @@ class VMDModelling(pg.ModellingBase):
         """
         pg.ModellingBase.__init__(self, **kwargs)
 
-
     def response_mt(self, par, i=0):
         """Compute response vector for a set of model parameter.
 
@@ -43,27 +40,42 @@ class VMDModelling(pg.ModellingBase):
         par : iterabale
             DOCUMENTME
         """
-        THROW_TO_IMPL
+        raise BaseException("IMPLEMENTME")
 
-    def response(self, par, i=0):
+    def response(self, par):
         return self.response_mt(par)
 
     def calcEPhiF(self, f, rho, d, rmin=1, nr=41, ze=0, zs=0, tm=1):
-        """VMD E-phi field."""
-        #ze    z-Koordinate des Empfaengers in Meter (default: ZE=0)
-        #zs    z-Koordinate des Senders in Meter (default: ZS=0)
+        """Compute radial E field from vertical magnetic dipole (VMD) source.
+        Parameters
+        ----------
+        f : float
+            Frequency
+        rho : iterable
+            resistivity vector
+        d : iterable
+            thickness vector
+        rmin : float
+            minimum radious to compute
+        nr : int
+            number of radii
+        ze : float [0]
+            z coordinate of receiver in Meter
+        zs : float [ze]
+            z coordinate of source in Meter
+        zs    z-Koordinate des Senders in Meter
+        """
 
-        # Filterkoeffizienten
-
+        # filter coefficients
         q = 10**0.1
-        rr = rmin * q **(np.array(nr) - 1)
+        rr = rmin * q**(np.array(nr) - 1)
 
         he = ze
         hs = zs
-        zm = hs - he
+        # zm = hs - he  # not used
         zp = hs + he
 
-        rm = np.sqrt(rr**2 + zm**2)
+        # rm = np.sqrt(rr**2 + zm**2)  # not used
         rp = np.sqrt(rr**2 + zp**2)
 
         fcJ1, nc0 = pg.utils.hankelFC(4)
@@ -83,7 +95,7 @@ class VMDModelling(pg.ModellingBase):
         k = np.exp(-(n-1) * q) / rmin
 
         if ze <= 0:
-            ePhi = rr / rp **3.0
+            ePhi = rr / rp**3.0
 
         # Admittanzen for halfspace borders for each Wavenumbers k
         bt = np.zeros(ncnr) * 1j
@@ -93,7 +105,8 @@ class VMDModelling(pg.ModellingBase):
                 bt[i] = self.btp(k[i], f, rho, d, type=1)
             else:
                 raise Exception('NeedTests')
-                aa[i], aap[i], bt[i] = downward(k[i], f, rho, d, ze)
+                # not used (uncommented)
+                # aa[i], aap[i], bt[i] = downward(k[i], f, rho, d, ze)
 
         # Kernel functions
         if ze <= 0:
@@ -109,11 +122,11 @@ class VMDModelling(pg.ModellingBase):
 
         for n in range(nr):
             for nn in range(nc):
-                nu = nn + n;
-                mn = nc - nn;
+                nu = nn + n
+                mn = nc - nn
 
-                nnn = nc0 - nc + nu;
-                k = np.exp( - (nnn) * q) / rmin
+                nnn = nc0 - nc + nu
+                k = np.exp(-nnn * q) / rmin
 
                 del0 = delta[nu]
 
@@ -122,7 +135,7 @@ class VMDModelling(pg.ModellingBase):
                     aux3[n] = aux3[n] + del1 * fcJ1[mn-1]
                 else:
                     raise Exception('NeedTests')
-                    del3=del0 * aa(nu);
+                    del3 = del0 * aa(nu)
                     aux3[n] = aux3[n] + del3 * fcJ1[mn]
 
             if nr > 1:
@@ -152,7 +165,6 @@ class VMDModelling(pg.ModellingBase):
         d: layer thicknesses
         """
         nl = len(rho)
-        mu0 = 4e-7 * pi
         c = 1j * pg.physics.constants.mu0 * 2 * pi * f
         b = np.sqrt(k**2 + c/rho[nl-1])
 
@@ -201,29 +213,25 @@ class VMDTimeDomainModelling(VMDModelling):
         return self.response_mt(par, 0)
 
     def calcRhoa(self, thk, res):
-        """
-        """
-        a = sqrt(self.txarea / pi) # TX coil radius
+        """Compute apparent resistivity response"""
+        a = sqrt(self.txarea / pi)  # TX coil radius
 
         ePhiTD, tD = self.calcEphiT(tMin=min(self.t), tMax=max(self.t),
                                     rho=res, d=thk, rMin=a, rMax=a, z=0,
                                     dipm=self.rxarea)
 
         ePhi = np.exp(np.interp(np.log(self.t),
-                                np.log(tD), np.log(ePhiTD[:,0])))
+                                np.log(tD), np.log(ePhiTD[:, 0])))
 
         tmp = a**(4./3) * self.rxarea**(2./3) * \
-            pg.physics.constants.mu0**(5./3)/ (20**(2./3) * pi**(1./3))
+            pg.physics.constants.mu0**(5./3) / (20**(2./3) * pi**(1./3))
         rhoa = tmp / (self.t**(5./3) * (ePhi * 2 * pi * a)**(2./3))
 
         return rhoa
 
-
     def calcEphiT(self, tMin, tMax, rho, d, rMin, rMax, z, dipm):
-        """
-        """
-        nl = len(rho)
-
+        """Compute radial electric field."""
+        # nl = len(rho)
         r = pg.utils.niceLogspace(rMin, rMax, nDec=10)
         r = [rMin]
 
@@ -236,8 +244,8 @@ class VMDTimeDomainModelling(VMDModelling):
         nt = len(t)
         ncnt = nc + nt
 
-        fef = np.zeros((ncnt,nr), np.complex)
-        ePhi = np.zeros((nt,nr))
+        fef = np.zeros((ncnt, nr), np.complex)
+        ePhi = np.zeros((nt, nr))
 
         omega = 10. ** (0.1 * (1 - (-nc + nc0 + np.arange(1, ncnt)))) / t[0]
 
@@ -246,7 +254,7 @@ class VMDTimeDomainModelling(VMDModelling):
             ePhiF = self.calcEPhiF(f, rho, d, ze=z, zs=0.,
                                    rmin=r[0], nr=len(r), tm=1.0)
 
-            fef[nn,:] = ePhiF / sqrt(o)
+            fef[nn, :] = ePhiF / sqrt(o)
 
             ita = max(0, nn-nc)
             ite = min(nt, nn+1)
