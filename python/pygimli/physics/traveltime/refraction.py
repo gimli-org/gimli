@@ -38,6 +38,7 @@ class Refraction(MethodManager):
 
         self.doSave = kwargs.pop('doSave', False)
         self.errIsAbsolute = True
+        self.method = None
 
         # should be forwarded so it can be accessed from outside
         self.mesh = None
@@ -85,15 +86,18 @@ class Refraction(MethodManager):
         return self.velocity
 
     @staticmethod
-    def createFOP(verbose=False):
+    def createFOP(verbose=False, **kwargs):
         """Create default forward operator for Traveltime modelling.
         base api
 
         Dijkstra, later FMM.
         """
-#        if not hasattr(self, 'mesh'):  # self.mesh is None:
-#        self.createMesh()
-        fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
+        if kwargs.pop('method', None):
+            from FMModelling import TravelTimeFMM
+            fop = TravelTimeFMM(verbose=verbose)
+        else:
+            fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
+
         return fop
 
     def createInv(self, fop, verbose=True, doSave=False):
