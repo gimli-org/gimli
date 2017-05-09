@@ -3,10 +3,6 @@
 
 import numpy as np
 
-import matplotlib.pyplot as plt
-
-import pygimli as pg
-
 
 def readusffile(filename, data=None):
     """Read data from single USF (universal sounding file) file.

@@ -88,7 +88,6 @@ public:
         return *matrices_[idx];
     }
 
-
     std::vector< MatrixBase * > & matrices() { return matrices_; }
 
     Index addMatrix(MatrixBase * matrix){
@@ -108,7 +107,6 @@ public:
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart){
         addMatrixEntry(matrixID, rowStart, colStart, ValueType(1.0));
     }
-
 
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart, ValueType scale){
         if (matrixID > matrices_.size()){

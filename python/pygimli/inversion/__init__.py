@@ -4,4 +4,4 @@
 from .harmfit import HarmFunctor, harmfitNative, harmfit
 from .resolution import computeR
 
-__all__ = ['harmFunctor', 'harmfitNative', 'harmfit', 'computeR']
+__all__ = ['HarmFunctor', 'harmfitNative', 'harmfit', 'computeR']

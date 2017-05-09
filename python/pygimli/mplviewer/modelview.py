@@ -183,7 +183,7 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 
 def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
-                       islog=True, title=None, zMin=0, zMax=0, cmap='jet'):
+                       islog=True, title=None, zMin=0, zMax=0, zLog=True, cmap='jet'):
     """Show several 1d block models as (stitched) section."""
     if x is None:
         x = np.arange(len(models))
@@ -216,9 +216,9 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
 
         zMaxLimit = max(zMaxLimit, z[-1])
 
-
         for j in range(nlay):
-            rect = Rectangle((x[i] - dxmed2, z[j]), dxmed2 * 2, z[j+1]-z[j])
+            rect = Rectangle((x[i] - dxmed2, z[j]),
+                             dxmed2 * 2, z[j+1]-z[j])
             patches.append(rect)
 
     p = PatchCollection(patches, cmap=cmap, linewidths=0)
@@ -231,8 +231,12 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     ax.add_collection(p)
 
     ax.set_ylim((zMaxLimit, zMin))
-    ax.set_yscale("log", nonposy='clip')
+
+    if zLog:
+        ax.set_yscale("log", nonposy='clip')
+
     ax.set_xlim((min(x) - dxmed2, max(x) + dxmed2))
+
     if title is not None:
         ax.set_title(title)
 
@@ -395,8 +399,6 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         labels = ax.get_yticks().tolist()
         labels[position] = unit
         ax.set_yticklabels(labels)
-
-
 
 
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):

@@ -72,7 +72,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
                             pg.cellDataToPointData(mesh, data[1]),
                             pg.cellDataToPointData(mesh, data[2])])
     else:
-        raise BaseException("Style '" +style + "'not yet implemented."
+        raise BaseException("Style '"  + style + "'not yet implemented."
                             "Currently styles available are: 'mean, '")
 
 
@@ -120,7 +120,6 @@ def cellDataToBoundaryData(mesh, data):
                          CtB * pg.z(data)]).T
     else:
         return CtB * data
-
 
 
 # simplistics extrapolation
@@ -229,11 +228,11 @@ def tapeMeasureToCoordinates(tape, pos):
         xTape = pg.x(tape)
         zTape = pg.z(tape)
     else:
-        xTape = tape[:,0]
-        zTape = tape[:,1]
+        xTape = tape[:, 0]
+        zTape = tape[:, 1]
 
     t = pg.utils.cumDist(pos)
-    #print(t)
+    # print(t)
     tTape = pg.utils.cumDist(tape)
     xt = np.interp(t, tTape, xTape)
     zt = np.interp(t, tTape, zTape)
@@ -245,12 +244,12 @@ def tapeMeasureToCoordinates(tape, pos):
 
 if __name__ == '__main__':
     # no need to import matplotlib. pygimli's show does
-    import pygimli as pg
+    # import pygimli as pg
     import pygimli.meshtools as mt
     elec = np.arange(11.)
     topo = np.array([[0., 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.]])
-    pg.plt.plot(topo[:,0], topo[:,1])
+    pg.plt.plot(topo[:, 0], topo[:, 1])
     p = mt.tapeMeasureToCoordinates(topo, elec)
-    pg.plt.plot(p[:,0], p[:,1], 'o')
+    pg.plt.plot(p[:, 0], p[:, 1], 'o')
     pg.plt.gca().set_aspect(1)
     pg.wait()

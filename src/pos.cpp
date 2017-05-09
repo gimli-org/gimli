@@ -124,7 +124,6 @@ RVector absR3(const R3Vector & vPos){
     return r;
 }
 
-
 void swapXY(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][1]); }
 void swapXZ(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][0], rv[i][2]); }
 void swapYZ(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) swap(rv[i][1], rv[i][2]); }
@@ -132,7 +131,9 @@ void swapYZ(R3Vector & rv){ for (uint i = 0, imax = rv.size(); i < imax; i ++) s
 RVector toArray(const R3Vector & vec){
     RVector ret(vec.size() * 3);
     for (Index i = 0; i < vec.size(); i ++) {
-        std::copy(&vec[i][0], &vec[i][2], &ret[i*3]);
+        ret[i*3] = vec[i][0];
+        ret[i*3 + 1] = vec[i][1];
+        ret[i*3 + 2] = vec[i][2];
     }
     return ret;
 }

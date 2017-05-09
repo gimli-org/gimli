@@ -97,12 +97,12 @@ def fastMarch(mesh, downwind, times, upT, downT):
 
 class TravelTimeFMM(pg.ModellingBase):
     """Modelling class using the Fast Marching Method (FMM).
-    
-    It can be used alternatively to Dijkstra modelling. 
+
+    It can be used alternatively to Dijkstra modelling.
     However, currently it is quite slow.
     A implementation in C++ might speed up.
     """
-    def __init__(self, mesh, data, frequency=200, verbose=False):
+    def __init__(self, mesh=None, data=None, frequency=200, verbose=False):
         """
         Init function.
 
@@ -116,28 +116,39 @@ class TravelTimeFMM(pg.ModellingBase):
             More printouts or not...
         """
 
-        pg.ModellingBase.__init__(self, mesh, data, verbose)
+        pg.ModellingBase.__init__(self, verbose)
         super().__init__(verbose=verbose)
-        self.mesh_ = mesh  # better use self.mesh() after refine
-        self.data_ = data
-        self.setMesh(mesh)  # besser use createRefinedForwardMesh
+        self.debug = False
+        if mesh is not None:
+            self.setMesh(mesh)  # besser use createRefinedForwardMesh
+        if data is None:
+            self.setData(pg.DataContainer())
+        else:
+            self.setData(data)
         self.frequency = frequency
-        self.nSensors = data.sensorCount()
+
+    def setMesh(self):
+        """Set mesh"""
+        super().setMesh(mesh)
+        self.timeMatrix = np.zeros((self.data().sensorCount(),
+                                    self.mesh().cellCount()))
+
+    def setData(self, data):
+        """Set data and prepare stuff"""
+        super().setData(data)
         self.nModel = mesh.cellCount()
         self.midPoints = mesh.cellCenters()
         self.nNodes = self.mesh().nodeCount()
         self.cellSizes = self.mesh_.cellSizes()
-        self.dataMatrix = np.zeros((self.nSensors, self.nSensors))
-        self.timeMatrix = np.zeros((self.nSensors, self.nModel))
-        self.jacobian().resize(data.size(), self.nModel)
-#        self.J = pg.RMatrix(data.size(), self.nModel)
-#        self.J = pg.DSparseMapMatrix(data.size(), self.nModel)
+        nSensors = self.data.sensorCount()
+        nModels = self.mesh().cellCount()
+        self.dataMatrix = np.zeros((nSensors, nSensors))
+        self.timeMatrix = np.zeros((nSensors, nModels))
 
     def computeTravelTimes(self, slowness, calcOthers=False):
         """Compute the travel times and fill data and time matrix
         for later use of response and Jacobian, respectively.
-        For response only active sources are needed, for Jacobian we need all.
-        """
+        For response only active sources are needed, for Jacobian all."""
         # mesh = self.mesh()  # better but for now input mesh
         mesh = self.mesh_
         param_markers = np.unique(mesh.cellMarkers())
@@ -171,6 +182,9 @@ class TravelTimeFMM(pg.ModellingBase):
 #            geophoneIndices = np.unique(self.data_("g"))
             print("{:d}-{:d}={:d}".format(
                 self.data_.sensorCount(), ns, len(sourceIndices)))
+        if self.debug:  # resize not working
+            self.solution().resize(self.mesh().nodeCount(), self.nSensors)
+            print(self.solution().rows(), self.solution().cols())
         for iSource in np.array(sourceIndices, dtype=int):
             print(iSource, end=' ')
             # initial condition (reset vectors)
@@ -198,6 +212,11 @@ class TravelTimeFMM(pg.ModellingBase):
                 mesh, times, self.data_.sensorPositions())
             self.timeMatrix[iSource] = pg.interpolate(
                 mesh, times, self.midPoints)
+            if self.debug:
+                print(self.solution().rows(), self.solution().cols())
+                print(len(times), self.mesh())
+                self.solution()[int(iSource)] = times
+                self.solution().setCol(int(iSource), times)
 
     def response(self, slowness):
         """
@@ -210,7 +229,7 @@ class TravelTimeFMM(pg.ModellingBase):
         n_data = data.size()
         t_fmm = pg.RVector(n_data)
         for i in range(n_data):
-            t_fmm[i] = self.dataMatrix[data("s")[i]][data("g")[i]]
+            t_fmm[i] = self.dataMatrix[int(data("s")[i])][int(data("g")[i])]
 
         return t_fmm
 
@@ -218,13 +237,14 @@ class TravelTimeFMM(pg.ModellingBase):
         """
         Jacobian matrix using a fat-ray approach (Jordi et al. 2016).
         """
+        self.jacobian().resize(self.data.size(), self.mesh().cellCount())
         # first compute reciprocal travel times for geophone sources
         self.computeTravelTimes(slowness, calcOthers=True)
         data = self.data_
         n_data = data.size()
 #        slo = mesh.cellAttributes()  # in case of regions
         for i in range(n_data):
-            iS, iG = data("s")[i], data("g")[i]
+            iS, iG = int(data("s")[i]), int(data("g")[i])
             tsr = self.dataMatrix[iS][iG]
             dt = self.timeMatrix[iS] + self.timeMatrix[iG] - tsr
             weight = np.maximum(1 - 2 * self.frequency * dt, 0.0)
@@ -244,12 +264,15 @@ if __name__ == '__main__':
     mesh.createNeighbourInfos()
     print(mesh)
     slo = createGradientModel2D(data, mesh, vTop=500, vBot=2500)
-
-    fwd = TravelTimeFMM(mesh, data, frequency=500)
+    fwd = TravelTimeFMM(mesh, data, frequency=500)  #
+    fwd.createRefinedForwardMesh(False)
     resp = fwd.response(slo)
+    data.set('t', resp)
+    print("ready with response, starting jacobian")
+    fwd.createJacobian(slo)
+    raise SystemExit
+    # %%
     pg.plt.imshow(fwd.dataMatrix, interpolation='nearest')
     fwd.createJacobian(slo)
-    pg.plt.imshow(fwd.dataMatrix, interpolation='nearest')
-    # %%
-    if 0:
-        pg.show(mesh, fwd.timeMatrix[21])
+    one = pg.RVector(data.size(), 1.0)
+    coverage = fwd.jacobian().transMult(one)
