@@ -191,7 +191,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
 def tapeMeasureToCoordinates(tape, pos):
     """Interpolate 2D tape measured topography to 2D Cartesian coordinates.
 
-    Tape and pos value are expected to be sorted along distance to the origin.
+    Tape and pos value are expected to be sorted along distance to the orign.
 
     TODO optional smooth curve with harmfit
 

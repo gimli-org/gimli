@@ -20,5 +20,5 @@ publication.
    :widths: 40, 5, 10, 25
 
    "Stationary heat transfer", "3.1", "Fig. 3", :download:`example-1.py`
-   "Fully coupled hydrogeophysical inversion", "3.2", "Fig. 4-8", :download:`example-2.py` :download:`example-2-visualization.py`
+   "Fully coupled hydrogeophysical inversion", "3.2", "Fig. 4-8", :download:`example-2.py` :download:`example-2_visualization.py` :download:`example-2_modelling.py
    "Petrophysical joint inversion", "3.3", "Fig. 9-13", :download:`example-3.py`
