@@ -186,7 +186,8 @@ class TravelTimeFMM(pg.ModellingBase):
             self.solution().resize(self.mesh().nodeCount(), self.nSensors)
             print(self.solution().rows(), self.solution().cols())
         for iSource in np.array(sourceIndices, dtype=int):
-            print(iSource, end=' ')
+            if self.debug:
+                print(iSource)
             # initial condition (reset vectors)
             times *= 0.0
             upTags *= 0
