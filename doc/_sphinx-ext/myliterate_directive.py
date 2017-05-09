@@ -24,12 +24,12 @@ Configuration options
 no options so far
 """
 
-import sys, os, glob, shutil, imp, warnings, io, re, textwrap
+import sys, os, glob, shutil, imp, warnings, re, textwrap  # , io
 import traceback
    
 #import exceptions
 
-from docutils import io, nodes, statemachine, utils
+from docutils import io, nodes, statemachine, utils  # overloads global io imported above!
 from docutils.parsers.rst import directives
 from docutils.parsers.rst.directives.misc import Include as BaseInclude
 import sphinx
