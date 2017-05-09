@@ -1136,18 +1136,6 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     return col
 
 
-def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
-    """Replace the last-but-one tick label by unit symbol."""
-    if xlabel:
-        labels = ax.get_xticks().tolist()
-        labels[position] = unit
-        ax.set_xticklabels(labels)
-    else:
-        labels = ax.get_yticks().tolist()
-        labels[position] = unit
-        ax.set_yticklabels(labels)
-
-
 def plotLines(ax, line_filename, linewidth=1.0, step=1):
     """Read lines from file and plot over model."""
     xz = np.loadtxt(line_filename)

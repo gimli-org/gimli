@@ -23,7 +23,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
 
     Draw 1d block model into axis ax defined by values and thickness vectors
     using plotfunction.
-    For log y cases, z0 should be set something greater then 0.0 so the default becomes to 1.
+    For log y cases, z0 should be set > 0 so that the default becomes 1.
 
     Parameters
     ----------
@@ -34,7 +34,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
         [N] Values for each layer plus lower background.
 
     thickness : iterable [float]
-        [N-1] thickness for each layers. Either thickness or depths must be set.
+        [N-1] thickness for each layer. Either thickness or depths must be set.
 
     depths : iterable [float]
         [N-1] Values for layer depths (positive z-coordinates).
@@ -76,8 +76,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     ...                          plot='semilogx', color='red')
     >>> pg.wait()
     """
-
-    if not model is None:
+    if model is not None:
         nLayers = (len(model)-1)/2
         thickness = model[:nLayers]
         values = model[nLayers:]
@@ -118,7 +117,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
 
     ax.set_ylabel(zlabel)
     ax.set_xlabel(xlabel)
-        # let positive depths upward down
+    # assume positive depths pointing upward
     ax.set_ylim(pz[-1], pz[0])
     ax.grid(True)
 
@@ -183,7 +182,8 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 
 def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
-                       islog=True, title=None, zMin=0, zMax=0, zLog=True, cmap='jet'):
+                       islog=True, title=None, zMin=0, zMax=0, zLog=True,
+                       cmap='jet'):
     """Show several 1d block models as (stitched) section."""
     if x is None:
         x = np.arange(len(models))
@@ -389,21 +389,10 @@ def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
     return
 
 
-def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
-    """Replace the last-but-one tick label by unit symbol."""
-    if xlabel:
-        labels = ax.get_xticks().tolist()
-        labels[position] = unit
-        ax.set_xticklabels(labels)
-    else:
-        labels = ax.get_yticks().tolist()
-        labels[position] = unit
-        ax.set_yticklabels(labels)
-
-
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     """DEPRECATED."""
-    print("STYLE_WARNING!!!!!!! don't use this call. Use show1dmodel or drawModel1D instead.")
+    print("STYLE_WARNING!!!!!!! don't use this call. "
+          "Use show1dmodel or drawModel1D instead.")
     show1dmodel(x, thk, xlab, zlab, islog, z0)
 
 

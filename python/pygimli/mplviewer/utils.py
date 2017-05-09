@@ -11,6 +11,18 @@ import pygimli as pg
 holdAxes__ = 0
 
 
+def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
+    """Replace the last-but-one tick label by unit symbol."""
+    if xlabel:
+        labels = ax.get_xticks().tolist()
+        labels[position] = unit
+        ax.set_xticklabels(labels)
+    else:
+        labels = ax.get_yticks().tolist()
+        labels[position] = unit
+        ax.set_yticklabels(labels)
+
+
 def updateAxes(ax, a=None):
     """For internal use."""
     if not holdAxes__:

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """Matplotlib drawing functions used by `pygimli.viewer`."""
 
-# are the following is suitable for a drawing package?
+# are the following suitable for a drawing package?
 from .utils import (hold,
                     wait,
                     updateAxes,
-                    saveFigure,
-                    saveAxes,
-                    adjustWorldAxes,
+                    insertUnitAtNextLastTick,
+                    # saveFigure,
+                    # saveAxes,
+                    # adjustWorldAxes,
                     createAnimation,
                     saveAnimation,
                     setOutputStyle,
@@ -43,7 +44,6 @@ from .meshview import (CellBrowser,
                        drawSensors,
                        drawStreamLines,
                        drawStreams,
-                       insertUnitAtNextLastTick,
                        plotLines)
 
 from .overlayimage import (cacheFileName,
@@ -62,6 +62,7 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
                        plotMatrix,
                        plotVecMatrix)
 
+# which of these do we actually need?
 from .modelview import (drawModel1D,
                         showmymatrix,  # needed ?
                         draw1dmodel,   # needed or redundant ?
@@ -72,16 +73,13 @@ from .modelview import (drawModel1D,
                         showStitchedModels,
                         showStitchedModelsOld,
                         showStitchedModels_Redundant,
-                        showfdemsounding,
-                        insertUnitAtNextLastTick)
+                        showfdemsounding)
 
 
 __all__ = [
     "BoreHole", "BoreHoles", "create_legend", "addCoverageAlpha", "autolevel",
     "cmapFromName",
-    "createColorBar",
-    "findColorBar",
-    "updateColorBar",
+    "createColorBar", "createColorBarOnly", "findColorBar", "updateColorBar",
     "findAndMaskBestClim", "setCbarLevels",
     "setMappableData", "drawSensorAsMarker", "generateMatrix", "patchMatrix",
     "patchValMap", "plotDataContainerAsMatrix", "plotMatrix", "plotVecMatrix",
