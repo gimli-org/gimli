@@ -615,7 +615,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
                   "dt =", dt,
                   "dx =", dx,
                   "dt <", dx/vmax,
-                  " | N > ", int((times[-1]-times[0])/(dx/vmax))+1, ")" )
+                  " | N > ", int((times[-1]-times[0])/(dx/vmax))+1, ")")
     # END check for Courant-Friedrichs-Lewy
 
     if not hasattr(workspace, 'S'):
@@ -696,10 +696,10 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         if verbose:
             print("Solve timesteps with Crank-Nicolson.")
 
-        return pg.solver.crankNicolson(times, theta, workspace.S, I,
-                                       f=workspace.rhs,
-            u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
-            verbose=verbose)
+        return pg.solver.crankNicolson(
+                times, theta, workspace.S, I, f=workspace.rhs,
+                u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
+                verbose=verbose)
 
 
 def createFVPostProzessMesh(mesh, u, uDirichlet):
@@ -867,26 +867,26 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
         pressureGrad = cellDataToCellGrad(mesh, pressure, CtB)
         # __d('vx', pressureGrad[:,0])
 
-        velocity[:, 0] = solveFiniteVolume(mesh,
-                                           a=viscosity,
-                       f=-pressureGrad[:, 0] / density + forceX,
-                       uB=velBoundaryX,
-                       uL=velocity[:, 0],
-                       relax=velocityRelaxation,
-                       ws=wsux)
+        velocity[:, 0] = solveFiniteVolume(
+                mesh, a=viscosity,
+                f=-pressureGrad[:, 0] / density + forceX,
+                uB=velBoundaryX,
+                uL=velocity[:, 0],
+                relax=velocityRelaxation,
+                ws=wsux)
 
 #        for s in wsux.S:
 #            print(s)
 #        __d('rhs', wsux.rhs, 1)
 #        __d('ux', velocity[:,0])
 
-        velocity[:, 1] = solveFiniteVolume(mesh,
-                                           a=viscosity,
-            f=-pressureGrad[:, 1] / density + forceY,
-            uB=velBoundaryY,
-            uL=velocity[:, 1],
-            relax=velocityRelaxation,
-            ws=wsuy)
+        velocity[:, 1] = solveFiniteVolume(
+                mesh, a=viscosity,
+                f=-pressureGrad[:, 1] / density + forceY,
+                uB=velBoundaryY,
+                uL=velocity[:, 1],
+                relax=velocityRelaxation,
+                ws=wsuy)
 
         ap = np.array(wsux.ap * mesh.cellSizes())
         apF = CtB * ap
@@ -1022,11 +1022,11 @@ def test_ConvectionAdvection():
 
     show(grid, data=pg.meshtools.cellDataToNodeData(grid, pres),
          logScale=False, showLater=True, colorBar=True, ax=ax1, cbar='b2r')
-    show(grid, data=pg.logTransDropTol(pg.meshtools.cellDataToNodeData(grid, vel[:, 0]),
-                                       1e-2),
+    show(grid, data=pg.logTransDropTol(
+            pg.meshtools.cellDataToNodeData(grid, vel[:, 0]), 1e-2),
          logScale=False, showLater=True, colorBar=True, ax=ax2)
-    show(grid, data=pg.logTransDropTol(pg.meshtools.cellDataToNodeData(grid, vel[:, 1]),
-                                       1e-2),
+    show(grid, data=pg.logTransDropTol(
+            pg.meshtools.cellDataToNodeData(grid, vel[:, 1]), 1e-2),
          logScale=False, showLater=True, colorBar=True, ax=ax3)
 
     show(grid, data=vel, ax=ax1)

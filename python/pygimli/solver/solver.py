@@ -56,17 +56,16 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
     except BaseException as _:
         pass
 
-    #print('#'*100)
-    #print(nDofs, arg)
-
+#    print('#'*100)
+#    print(nDofs, arg)
     if hasattr(arg, '__len__'):
         if isinstance(arg, np.ndarray):
             if len(arg) == nDofs[0]:
                 return arg
             else:
                 raise Exception('Given array does not have requested (' +
-                                    str(ndof) + ') size (' +
-                                    str(len(arg)) + ')')
+                                str(ndof) + ') size (' +
+                                str(len(arg)) + ')')
 
         for n in nDofs:
             if len(arg) == n:
@@ -196,7 +195,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     boundaries = []
     bounds = []
 
-    #print('+'*30, pair)
+#    print('+'*30, pair)
     if isinstance(pair[0], int):
         bounds = mesh.findBoundaryByMarker(pair[0])
     if isinstance(pair[0], list):
@@ -265,7 +264,7 @@ def parseArgToBoundaries(args, mesh):
     >>> print(len(b))
     2
     >>> # same as above with marker 3 get value 3
-    >>> b = pg.solver.parseArgToBoundaries([[1, 1.0], [2, 2.0], [3, 3.0]], mesh)
+    >>> b = pg.solver.parseArgToBoundaries([[1, 1.], [2, 2.], [3, 3.]], mesh)
     >>> print(len(b))
     3
     >>> # edges with marker 1 and 2 get value 1
@@ -286,25 +285,25 @@ def parseArgToBoundaries(args, mesh):
     boundaries = []
     if isinstance(args, list):
         if len(args) == 2:
-            #if isinstance(args[0], list):
-                #print('~'*10, '[[,],]')
-                #boundaries += parseArgPairToBoundaryArray(args, mesh)
-            #else:
+            # if isinstance(args[0], list):
+                # print('~'*10, '[[,],]')
+                # boundaries += parseArgPairToBoundaryArray(args, mesh)
+            # else:
             try:
                     # [[,], [,]]
                 if len(args[0]) == 2 and len(args[1]) == 2:
-                    #print('~'*10, '[[,],[,]]')
+                    # print('~'*10, '[[,],[,]]')
                     boundaries += parseArgPairToBoundaryArray(args[0], mesh)
                     boundaries += parseArgPairToBoundaryArray(args[1], mesh)
                 else:
-                    #print('~'*10, '??[[,]]')
+                    # print('~'*10, '??[[,]]')
                     boundaries += parseArgPairToBoundaryArray(args, mesh)
             except BaseException as _:
-                    # [,]
-                #print('~'*10, '[,]')
+                # [,]
+                # print('~'*10, '[,]')
                 boundaries += parseArgPairToBoundaryArray(args, mesh)
         else:
-            #print('~'*10, '[[,], [,], ...]')
+            # print('~'*10, '[[,], [,], ...]')
             # [[,], [,], ...]
             for arg in args:
                 boundaries += parseArgPairToBoundaryArray(arg, mesh)
@@ -523,7 +522,7 @@ def div(mesh, v):
         if len(v) == mesh.boundaryCount():
             d = mesh.divergence(v)
         elif len(v) == mesh.nodeCount():
-            d = mesh.divergence(nodeDataToBoundaryData(mesh, v))
+            d = mesh.divergence(pg.meshtools.nodeDataToBoundaryData(mesh, v))
         elif len(v) == mesh.cellCount():
             CtB = mesh.cellToBoundaryInterpolation()
             d = mesh.divergence(
@@ -583,7 +582,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
                 # return gauss(grid, F)
 
             # don't calc for inner boundaries
-            if not b.leftCell() is None and not b.rightCell() is None:
+            if b.leftCell() is not None and b.rightCell() is not None:
                 continue
 
         tmpdiv = 0
@@ -754,20 +753,20 @@ def assembleForceVector(mesh, f, userData=None):
                     b_l.u(c)
                     rhs.add(b_l, fArray[c.id()])
 
-            #print("test reference solution:")
-            #rhsRef = pg.RVector(mesh.nodeCount(), 0)
-            #for c in mesh.cells():
-                #b_l.u(c)
-                #for i, idx in enumerate(b_l.idx()):
-                    #rhsRef[idx] += b_l.row(0)[i] * fArray[c.id()]
-            #np.testing.assert_allclose(rhs, rhsRef)
-            #print("Remove revtest in assembleForceVector after check")
+#            print("test reference solution:")
+#            rhsRef = pg.RVector(mesh.nodeCount(), 0)
+#            for c in mesh.cells():
+#                b_l.u(c)
+#                for i, idx in enumerate(b_l.idx()):
+#                    rhsRef[idx] += b_l.row(0)[i] * fArray[c.id()]
+#            np.testing.assert_allclose(rhs, rhsRef)
+#            print("Remove revtest in assembleForceVector after check")
 
         elif len(fArray) == mesh.nodeCount():
             b_l = pg.ElementMatrix()
             for c in mesh.cells():
                 b_l.u(c)
-                #rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
+                # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
                 rhs.add(b_l, fArray)
 
             print("test reference solution:")
@@ -977,8 +976,8 @@ def createStiffnessMatrix(mesh, a=None):
         A_l.ux2uy2uz2(c)
         A.add(A_l, scale=a[c.id()])
 
-        #if c.id() == 0:
-            #print(c.id(), A_l)
+#        if c.id() == 0:
+#            print(c.id(), A_l)
     return A
 
 
@@ -1389,23 +1388,23 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
         if verbose:
             pg.tic()
 
-        #pg.tic()
-        #bRef = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
-            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-        #pg.toc()
-
-        #pg.tic()
-        #b = u[n - 1] + ((dt * (theta - 1.)) * S) * u[n - 1] + \
-            #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-        #pg.toc()
-
-        #pg.tic()
+#        pg.tic()
+#        bRef = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
+#            dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+#        pg.toc()
+#
+#        pg.tic()
+#        b = u[n - 1] + ((dt * (theta - 1.)) * S) * u[n - 1] + \
+#            dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+#        pg.toc()
+#
+#        pg.tic()
         b = u[n - 1] + S.mult(dt * (theta - 1.) * u[n - 1]) + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-        #pg.toc()
-
-        #print(np.linalg.norm(b-b1))
-        #np.testing.assert_allclose(bRef, b)
+#        pg.toc()
+#
+#        print(np.linalg.norm(b-b1))
+#        np.testing.assert_allclose(bRef, b)
 
         if verbose:
             timeAssemble.append(pg.dur())
@@ -1428,12 +1427,12 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
                   'assemble:', np.mean(timeAssemble),
                   'solve:', np.mean(timeSolve))
 
-    #import matplotlib.pyplot as plt
-    #plt.figure()
-    #plt.plot(timeAssemble)
-    #plt.figure()
-    #plt.plot(timeSolve)
-    #plt.show()
+#    import matplotlib.pyplot as plt
+#    plt.figure()
+#    plt.plot(timeAssemble)
+#    plt.figure()
+#    plt.plot(timeSolve)
+#    plt.show()
 
     return u
 
@@ -1506,14 +1505,14 @@ class RungeKutta(object):
 
         elif self.order == 3:
             k1 = self.solver.explicitRHS(self.u, self.time)
-            k1 = self.u + dt * k1
+            k1 = self.u + self.dt * k1
 
             k2 = self.solver.explicitRHS(k1, self.time)
-            k2 = (3*self.u + k1 + dt*k2)/4
+            k2 = (3*self.u + k1 + self.dt*k2)/4
 
             k3 = self.solver.explicitRHS(k2, self.time)
 
-            self.u = (self.u + 2*k2 + 2*dt*k3)/3
+            self.u = (self.u + 2*k2 + 2*self.dt*k3)/3
 
         elif self.order == 4:
             # classical 4 step Runga-Kutta rk4
