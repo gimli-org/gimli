@@ -89,6 +89,8 @@ class FDEM2dFOP(pg.ModellingBase):
         """Parameters: FDEM data class and number of layers."""
         super(FDEM2dFOP, self).__init__(verbose)
         self.nlay = nlay
+        self.header = {}
+        self.pos, self.z, self.topo = None, None, None
         self.FOP = data.FOP(nlay)
         self.nx = len(data.x)
         self.nf = len(data.freq())
@@ -129,7 +131,7 @@ class HEM1dWithElevation(pg.ModellingBase):
     """Airborne FDEM modelling including variable bird height."""
 
     def __init__(self, frequencies, coilspacing, nlay=2, verbose=False):
-        """ Set up class by frequencies and geometries """
+        """Set up class by frequencies and geometries."""
         pg.ModellingBase.__init__(self, verbose)
         self.nlay_ = nlay  # real layers (actually one more!)
         self.FOP_ = pg.FDEM1dModelling(nlay + 1, frequencies, coilspacing, 0.0)
@@ -191,6 +193,7 @@ class FDEM():
 
         self.height = 1.0
         self.fop = None  # better apply MethodManger base interface
+        self.transData, self.transRes, self.transThk = None, None, None
 
         if filename:
             # check if filename extension is TXT or CSV
@@ -227,10 +230,12 @@ class FDEM():
         else:
             return part1
 
-    def importEmsysAsciiData(self, filename, verbose=False):
+    def importEmsysAsciiData(self, filename):
         """Import data from emsys text export file.
 
-        yields: positions, data, frequencies, error and geometry
+        columns: no, pos(1-3), separation(4), frequency(6), error(8),
+        inphase (9-11), outphase (12-14),
+        reads: positions, data, frequencies, error and geometry
         """
         cols = (1, 4, 6, 8, 9, 12, 15, 16)
         xx, sep, f, pf, ip, op, hmod, q = np.loadtxt(filename, skiprows=1,
@@ -249,7 +254,6 @@ class FDEM():
         self.ERR = np.ones((len(x), len(f))) * np.nan
 
         for i in range(len(f)):
-            # print(i, nx[i], nf[i])
             self.IP[nx[i], nf[i]] = ip[i]
             self.OP[nx[i], nf[i]] = op[i]
             self.ERR[nx[i], nf[i]] = err[i]
@@ -324,6 +328,7 @@ class FDEM():
         delim = None
         fid = open(filename)
         aline = ''
+        i = 0  # just in case there is no header
         for i, aline in enumerate(fid):
             if aline.split()[0][0].isdigit():  # number found
                 break
@@ -362,7 +367,7 @@ class FDEM():
         """Return active (i.e., non-deactivated) frequencies."""
         return self.frequencies[self.activeFreq]
 
-    def FOP(self, nlay=2):
+    def FOP(self, nlay=2):  # createFOP deciding upon block or smooth
         """Forward modelling operator using a block discretization.
 
         Parameters
@@ -409,18 +414,18 @@ class FDEM():
 
     def error(self, xpos=0):
         """Return error as vector."""
-        ip, op, err = self.selectData(xpos)
+        _, _, err = self.selectData(xpos)
         return err
 
     def datavec(self, xpos=0):
         """Extract data vector (stack in and out phase) for given pos/no."""
 
-        ip, op, err = self.selectData(xpos)
+        ip, op, _ = self.selectData(xpos)
         return np.hstack((ip, op))
 
     def errorvec(self, xpos=0, minvalue=0.0):
         """Extract error vector for a give position or sounding number."""
-        ip, op, err = self.selectData(xpos)
+        _, _, err = self.selectData(xpos)
         return np.tile(np.maximum(err * 0.7071, minvalue), 2)
 #        return pg.asvector(np.tile(np.maximum(err * 0.7071, minvalue), 2))
 
@@ -455,7 +460,6 @@ class FDEM():
         verbose : bool
             Be verbose
         """
-
         self.transThk = pg.RTransLog()
         self.transRes = pg.RTransLogLU(lBound, uBound)
         self.transData = pg.RTrans()
@@ -506,7 +510,7 @@ class FDEM():
         fr = self.freq()
 
         if ax is None:
-            fig, ax = plt.subplots(nrows=1, ncols=nv)
+            _, ax = plt.subplots(nrows=1, ncols=nv)
             ipax = ax[-2]
         else:
             ipax = ax[0]
@@ -618,23 +622,22 @@ class FDEM():
         self.plotData(xpos, response, ax=ax[1:3], clf=False)
         return fig, ax
 
-    def plotAllData(self, allF=True, orientation='horizontal', aspect=1000,
+    def plotAllData(self, orientation='horizontal', aspect=1000,
                     outname=None, show=False, figsize=(11, 6), everyx=1):
         """Plot data along a profile as image plots for IP and OP."""
-
         if self.x is None:
             raise Exception("No measurement position array x given")
 
         freq = self.freq()
-        np = 2
+        nr = 2
 
         if self.ERR is not None:
-            np = 3
+            nr = 3
 
         if everyx is None:
             everyx = len(self.x) / 50
 
-        fig, ax = plt.subplots(ncols=1, nrows=np, figsize=figsize)
+        _, ax = plt.subplots(ncols=1, nrows=nr, figsize=figsize)
         xfplot(ax[0], self.IP[:, self.activeFreq], self.x, freq,
                orientation=orientation, aspect=aspect, everyx=everyx)
         ax[0].set_title('inphase percent')
@@ -686,15 +689,15 @@ class FDEM():
         self.f2d = self.FOP2d(nlay)
 
         # transformations
-        self.tD = pg.RTrans()
-        self.tThk = pg.RTransLogLU(thkL, thkU)
-        self.tRes = pg.RTransLogLU(resL, resU)
+        self.transData = pg.RTrans()
+        self.transThk = pg.RTransLogLU(thkL, thkU)
+        self.transRes = pg.RTransLogLU(resL, resU)
 
         for i in range(nlay - 1):
-            self.f2d.region(i).setTransModel(self.tThk)
+            self.f2d.region(i).setTransModel(self.transThk)
 
         for i in range(nlay - 1, nlay * 2 - 1):
-            self.f2d.region(i).setTransModel(self.tRes)
+            self.f2d.region(i).setTransModel(self.transRes)
 
         # set constraints
         self.f2d.region(0).setConstraintType(cType)
@@ -717,7 +720,7 @@ class FDEM():
 
         # generate starting model by repetition
         model = pg.asvector(np.repeat(modVec, len(self.x)))
-        INV = pg.RInversion(datvec, self.f2d, self.tD)
+        INV = pg.RInversion(datvec, self.f2d, self.transData)
         INV.setAbsoluteError(error)
         INV.setLambda(lam)
         INV.setModel(model)
