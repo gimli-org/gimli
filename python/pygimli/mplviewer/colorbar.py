@@ -327,7 +327,6 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
-    #print(cbarLevels)
     cbarLevelsString = []
     for i in cbarLevels:
         if abs(i) == 0.0:

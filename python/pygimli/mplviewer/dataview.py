@@ -138,7 +138,6 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
                                            nLevs=5, label=label)
     elif cbar is not False:
-        # what the hell is this? CR .. if Cbar is not False and cbar is not true
         # .. cbar is an already existing cbar .. so we update its values
         pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
                                     nLevs=5, label=label)

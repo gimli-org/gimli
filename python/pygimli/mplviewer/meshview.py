@@ -119,8 +119,9 @@ class CellBrowser(object):
         if 'mouseevent' in event.__dict__.keys():
             if event.mouseevent.xdata is not None and \
                 event.mouseevent.ydata is not None:
-                    pos = pg.RVector3(event.mouseevent.xdata, event.mouseevent.ydata)
-                    self.cellID = self.mesh.findCell(pos, True).id()
+                pos = pg.RVector3(event.mouseevent.xdata,
+                                  event.mouseevent.ydata)
+                self.cellID = self.mesh.findCell(pos, True).id()
         else:  # variant before (seemed inaccurate)
             self.cellID = event.ind[0]
         self.update()
@@ -436,7 +437,8 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
     updateAxes_(ax)
 
 
-def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False, **kwargs):
+def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
+            **kwargs):
     """Draw 2D PLC into the given ax.
 
     Parameters
@@ -476,10 +478,9 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False, 
         if n.marker() == pg.MARKER_NODE_SENSOR:
             col = (0.0, 0.0, 0.0, 1.0)
 
-        ms = kwargs.pop('markersize', 5)
-        #ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
+#        ms = kwargs.pop('markersize', 5)
+#        ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
         cols.append(col)
-
 
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
 #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
@@ -663,11 +664,12 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
             fillContour = kwargs.pop('fillContour', True)
             if fillContour:
                 gci = ax.tricontourf(x, y, triangles, z, levels=levels,
-                                 **kwargs)
+                                     **kwargs)
 
             omitLines = kwargs.pop('omitLines', False)
             if omitLines:
-                print("don't use omitLines any more -> change to withContourLines=False")
+                print("don't use omitLines any more -> "
+                      "change to withContourLines=False")
 
             withContourLines = kwargs.pop('withContourLines', True)
             if withContourLines:
@@ -815,8 +817,6 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
     lines = None
 
     if len(x) > 2:
-
-
         points = np.array([x, y]).T.reshape(-1, 1, 2)
 
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
@@ -828,11 +828,9 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
         ax.add_collection(lines)
 
         # probably the limits are wrong without plot call
-        #lines = ax.plot(x, y, **kwargs)
-
-        #updateAxes_(ax, lines)
-
-        #ax.plot(x, y, '.-', color='black', **kwargs)
+        # lines = ax.plot(x, y, **kwargs)
+        # updateAxes_(ax, lines)
+        # ax.plot(x, y, '.-', color='black', **kwargs)
     if len(x) > 3:
         xmid = int(len(x) / 2)
         ymid = int(len(y) / 2)
@@ -843,8 +841,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
 
         if v[xmid] > dropTol:
             ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
-                    head_starts_at_zero=True,
-                    **kwargs)
+                     head_starts_at_zero=True,
+                     **kwargs)
 
     return lines
 

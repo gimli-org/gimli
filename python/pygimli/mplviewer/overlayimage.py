@@ -167,7 +167,7 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         if verbose:
             print(("Read image from disk", filename))
         image = mpimg.imread(filename)
-        image = image[:,:,0:3]
+        image = image[:, :, 0:3]
     else:
         if verbose:
             print(("Get map from url maps", url))
