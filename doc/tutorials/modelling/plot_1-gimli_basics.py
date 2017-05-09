@@ -90,7 +90,7 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
 
 ###############################################################################
 #
-# We can found that this new ``grid`` contains
+# We can find that this new ``grid`` contains
 #
 
 print(grid.cellCount())
