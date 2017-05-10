@@ -184,9 +184,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
         lastHoldStatus = pg.mplviewer.utils.holdAxes__
         pg.mplviewer.hold(val=1)
 
-    import locale
-
-
     # print('1*'*50)
     # print(locale.localeconv())
 
@@ -197,8 +194,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
     # horrible wrong for german 'decimal_point': ','
     pg.checkAndFixLocaleDecimal_point(verbose=False)
 
-    #print('2*'*50)
-    #print(locale.localeconv())
+    # print('2*'*50)
+    # print(locale.localeconv())
 
     gci = None
     validData = False
@@ -268,7 +265,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
         else:
             raise BaseException('toImplement')
             # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
-
 
     if not hold or block is not False:
         if data is not None:
