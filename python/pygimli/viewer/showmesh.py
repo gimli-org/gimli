@@ -206,8 +206,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
         drawSensors(ax, data, **kwargs)
     else:
         # print(data, type(data))
-        if hasattr(data[0], '__len__') \
-            and not isinstance(data, np.ma.core.MaskedArray):
+        if (hasattr(data[0], '__len__') and
+                not isinstance(data, np.ma.core.MaskedArray)):
 
             if len(data) == 2:  # [u,v]
                 data = np.array(data).T
