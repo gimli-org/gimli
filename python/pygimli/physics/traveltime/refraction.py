@@ -46,6 +46,7 @@ class Refraction(MethodManager):
         self.error = None
         self.velocity = None
         self.response = None
+        self.__dict__.update(**kwargs)
         # self.start = []
         self.pd = None
 
@@ -90,9 +91,9 @@ class Refraction(MethodManager):
         """Create default forward operator for Traveltime modelling.
         base api
 
-        Dijkstra, later FMM.
+        method='FMM' forces Fast Marching Method, otherwise Dijkstra is used.
         """
-        if kwargs.pop('method', None):
+        if 'fm' in kwargs.pop('method', None).lower():
             from FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
