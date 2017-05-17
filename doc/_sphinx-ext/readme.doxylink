@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from sphinxcontrib-doxylink
 """
 sphinxcontrib
 ~~~~~~~~~~~~~
@@ -41,4 +42,4 @@ This extension can be installed from the Python Package Index::
 	    .. _`Sphinx`: http://sphinx.pocoo.org/latest
 	    .. _`sphinx-contrib`: http://bitbucket.org/birkenfeld/sphinx-contrib
 	    .. _`documentation`: http://packages.python.org/sphinxcontrib-doxylink
-	    
+
