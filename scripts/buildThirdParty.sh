@@ -25,8 +25,7 @@ PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
 #PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-PYPLUSPLUS_REV=2c6c05b7a7d2  # current functional
-#PYPLUSPLUS_REV=cfd47042f7a3 # last functional
+PYPLUSPLUS_REV=5caf5ad8ce28 # tag 1.8 current functional
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -448,7 +447,7 @@ buildCASTXMLBIN(){
         echo "Binary castxml seems to work"
     else
         echo "Binary castxml does not seems to work. Removing binary installation"
-        rm $CASTXML_DIST/bin/*  
+        rm $CASTXML_DIST/bin/*
         rm -rf $CASTXML_DIST/share/castxml
     fi
 
