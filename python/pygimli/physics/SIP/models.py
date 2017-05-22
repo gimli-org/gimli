@@ -136,10 +136,10 @@ class DebyePhi(pg.ModellingBase):
     """Debye decomposition (smooth Debye relaxations) phase only"""
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
         """constructor with frequecy and tau vector"""
+        pg.ModellingBase.__init__(self, verbose)
         self.f_ = fvec
         self.nf_ = len(fvec)
         self.t_ = tvec
-        pg.ModellingBase.__init__(self, verbose)
         self.mesh = pg.createMesh1D(len(tvec))  # standard 1d discretization
         self.setMesh(self.mesh)
 

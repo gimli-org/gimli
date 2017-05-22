@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# from sphinxcontrib-doxylink
 import os
 import xml.etree.ElementTree as ET
 
@@ -428,7 +428,7 @@ def create_role(app, tag_filename, rootdir):
                     full_url = join(rootdir, url['file'])
                 #But otherwise we need to add the relative path of the current document to the root source directory to the link
                 else:
-                    
+
                     current_sourceTMP = str(inliner.document.current_source)
                     relative_path_to_docsrc = os.path.relpath(app.env.srcdir,
                                                os.path.dirname(current_sourceTMP))

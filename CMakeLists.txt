@@ -100,14 +100,21 @@ endif()
 include(CheckIncludeFileCXX)
 find_package(Threads REQUIRED)
 
-if (PYVERSION)
-    set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
-endif()
-find_package(PythonInterp) # find version belongs to the active python command
 
-if(WIN32)
-    find_package(PythonLibs)
-endif(WIN32)
+if (PYVERSION)
+    find_package(PythonInterp ${PYVERSION} REQUIRED)
+else()
+    find_package(PythonInterp)
+endif()
+
+# if (PYVERSION)
+#     set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
+# endif()
+# find_package(PythonInterp) # find version belongs to the active python command
+#
+# if(WIN32)
+#     find_package(PythonLibs)
+# endif(WIN32)
 
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
@@ -272,7 +279,34 @@ find_python_module(numpy)
 if (Boost_PYTHON_LIBRARY)
     set (Boost_PYTHON_LIBRARIES ${Boost_PYTHON_LIBRARY})
 else()
-    find_package(Boost 1.46.0 COMPONENTS python)
+    #find_package(Boost 1.46.0 COMPONENTS python)
+
+    # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
+
+    #debian /usr/lib/x86_64-linux-gnu/libboost_python-py34.so
+    set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+    find_package(Boost 1.46 COMPONENTS "python-py${bp_version}")
+    if (${Boost_PYTHON-PY${bp_version}_FOUND})
+        set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${bp_version}_FOUND})
+        set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON-PY${bp_version}_LIBRARY_RELEASE})
+    endif()
+
+    if (NOT Boost_PYTHON_FOUND)
+        # arch style ??
+        find_package(Boost 1.46 COMPONENTS "python${bp_version}")
+        if (${Boost_PYTHON${bp_version}_FOUND})
+            set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND})
+            set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE})
+        endif()
+    endif()
+
+    if (NOT Boost_PYTHON_FOUND)
+        # gentoo: /usr/lib/libboost_python-3.4.so
+        # should find the right one
+        find_package(Boost 1.46 COMPONENTS python)
+    endif()
+
+
 endif()
 
 if (NOT CASTER)
