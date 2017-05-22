@@ -222,6 +222,10 @@ def drawModel(ax, mesh, data=None,
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
 
+    Returns
+    -------
+    gci : matplotlib graphics object
+
     Examples
     --------
     >>> import numpy as np
@@ -300,7 +304,23 @@ def drawModel(ax, mesh, data=None,
 
 def drawSelectedMeshBoundaries(ax, boundaries,
                                color=None, linewidth=1.0):
-    """Draw mesh boundaries into a given ax."""
+    """Draw mesh boundaries into a given axes.
+
+    Parameters
+    ----------
+    ax : matplotlib axes
+        axes to plot into
+    boundaries : :gimliapi:`GIMLI::Mesh` boundary vector
+        collection of boundaries to plot
+    color : matplotlib color |str [None]
+        matching color or string, else colors are according to markers
+    linewidth : float [1.0]
+        line width
+
+    Returns
+    -------
+    lco : matplotlib line collection object
+    """
     drawAA = True
     lines = []
 
@@ -332,7 +352,25 @@ def drawSelectedMeshBoundaries(ax, boundaries,
 
 def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
                                      color=(0.5, 0.5, 0.5, 1.0)):
-    """TODO Documentme."""
+    """Draw mesh boundaries as shadows into a given axes.
+
+    Parameters
+    ----------
+    ax : matplotlib axes
+        axes to plot into
+    boundaries : :gimliapi:`GIMLI::Mesh` boundary vector
+        collection of boundaries to plot
+    first / second : str ['x' / 'y']
+        attribute names to retrieve from nodes
+    color : matplotlib color |str [None]
+        matching color or string, else colors are according to markers
+    linewidth : float [1.0]
+        line width
+
+    Returns
+    -------
+    lco : matplotlib line collection object
+    """
     polys = []
 
     for cell in boundaries:
@@ -439,7 +477,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 
 def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
             **kwargs):
-    """Draw 2D PLC into the given ax.
+    """Draw 2D PLC into given axes.
 
     Parameters
     ----------
@@ -556,7 +594,28 @@ def createMeshPatches(ax, mesh, verbose=True, **kwargs):
 
 
 def createTriangles(mesh, data=None):
-    """TODO Documentme."""
+    """Generate triangle objects for later drawing.
+
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        pyGimli mesh to plot
+    data : iterable [None]
+        cell-based values to plot
+
+    Returns
+    -------
+    x : numpy array
+        x position of nodes
+    y : numpy array
+        x position of nodes
+    triangles : numpy array Cx3
+        cell indices for each triangle
+    z : numpy array
+        data for given indices
+    dataIdx : list of int
+        list of indices into array to plot
+    """
     x = pg.x(mesh.positions())
 #    x.round(1e-1)
     y = pg.y(mesh.positions())
@@ -701,9 +760,26 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
 
 
 def drawField(ax, mesh, data=None, cmap=None, **kwargs):
-    """TODO WRITEME.
+    """Draw a mesh-related (node or cell based) field onto a given MPL axis.
 
         Only for triangle/quadrangle meshes currently
+
+    Parameters
+    ----------
+    ax : MPL axes
+    mesh : :gimliapi:`GIMLI::Mesh`
+    data: iterable
+        Scalar field values. Can be of length mesh.cellCount()
+        or mesh.nodeCount().
+
+    **kwargs:
+        * shading: interpolation algorithm [flat]
+        * fillContour: [True]
+        * withContourLines: [True]
+    Returns
+    -------
+        gci : image object
+            The current image object useful for post color scaling
 
     Examples
     --------
@@ -959,6 +1035,12 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
 
     Parameters
     ----------
+    sensors : vector or list of RVector3
+        list of positions to plot
+    diam : float [None]
+        diameter of circles (None leads to point distance by 8)
+    koords: (int, int) [0, 1]
+        koordinates to take (usually x and y)
 
     Examples
     --------
@@ -1065,7 +1147,13 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
 
 
 def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
-    """TODO Documentme."""
+    """Draw mesh boundaries with markers != 0 (used as constraints).
+
+    Parameters
+    ----------
+    ax : MPL axes
+    mesh :
+    """
     start, end = createParameterContraintsLines(mesh, cMat, cWeight)
 
     lines = []
