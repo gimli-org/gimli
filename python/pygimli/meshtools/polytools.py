@@ -517,8 +517,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
     Parameters
     ----------
-    sensors : list of RVector3 objects | DataContainer with sensorPositions() |
-[xmin, xmax]
+    sensors : [RVector3] | DataContainer with sensorPositions() | [xmin, xmax]
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
     paraDX : float [1]
@@ -545,7 +544,6 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         piecewise linear complex (PLC) containing nodes and edges
 
     Examples
-    --------
     --------
     >>>  # no need to import matplotlib. pygimli's show does
     >>> import pygimli as pg
@@ -669,7 +667,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
 
 def readPLC(filename):
-    """Generic PLC reader.
+    r"""Generic PLC reader.
 
     Read 2D triangle POLY or 3D Tetgen PLC files.
 
