@@ -19,16 +19,15 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
         \rho = a\rho_{\text{fl}}\phi^{-m} S^{-n}
 
     * :math:`\rho` - the electrical resistivity of the fluid saturated rock in
-    :math:`\Omega\text{m}`
+      :math:`\Omega\text{m}`
     * :math:`\rho_{\text{fl}}` - rFluid: electrical resistivity of the fluid in
-     :math:`\Omega\text{m}`
+      :math:`\Omega\text{m}`
     * :math:`\phi` - porosity 0.0 --1.0
     * :math:`S` - fluid saturation 0.0 --1.0 [sat]
     * :math:`a` - Tortuosity factor. (common 1)
     * :math:`m` - Cementation exponent of the rock (usually in the
-     range 1.3 -- 2.5 for sandstones)
+      range 1.3 -- 2.5 for sandstones)
     * :math:`n` - is the saturation exponent (usually close to 2)
-
 
     If mesh is not None the resulting values are calculated for each cell of
     the mesh.

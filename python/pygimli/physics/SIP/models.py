@@ -39,7 +39,6 @@ def ColeColeRho(f, R, m, tau, c, a=1):
     >>> for i in range(len(m)):
     ...     Z = ColeColeRho(f, R=1, m=m[i], tau=0.01, c=0.5)
     ...     ax1.loglog(f, np.abs(Z), color='b')
-    ...     print(np.angle(Z))
     ...     ax2.loglog(f, -np.angle(Z)*1000, color='g')
     >>> ax1.set_ylim(1e-3, 1)
     >>> ax1.set_ylabel('Amplitude $|Z(f)|$', color='b')
@@ -95,7 +94,8 @@ def ColeDavidson(f, R, m, tau, a=1):
 class ColeColePhi(pg.ModellingBase):
     r"""Cole-Cole model with EM term after Pelton et al. (1978) :cite:`PeltonWarHal1978`
 
-    Modelling operator for the Frequency Domain Cole-Cole impedance model
+    Modelling operator for the Frequency Domain
+    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model using
     :py:mod:`pygimli.physics.SIP.ColeColeRho`
 
     * :math:`\textbf{m} =\{ m, \tau, c\}`
@@ -106,7 +106,7 @@ class ColeColePhi(pg.ModellingBase):
 
         Modeling Response for all given frequencies as negative the phase angles
         with :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
-        and :math:`Z(f, \rho_0, m, \tau, c) =` ColeCole impedance.
+        and :math:`Z(f, \rho_0, m, \tau, c) =` Cole-Cole impedance.
 
     """
     def __init__(self, f, verbose=False):
@@ -123,8 +123,10 @@ class ColeColePhi(pg.ModellingBase):
 class DoubleColeColePhi(pg.ModellingBase):
     r"""Double Cole-Cole model with EM term after Pelton et al. (1978) :cite:`PeltonWarHal1978`
 
-    Modelling operator for the Frequency Domain Cole-Cole impedance model
-    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>`
+    Modelling operator for the Frequency Domain
+    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model
+    using :py:mod:`pygimli.physics.SIP.ColeColeRho`
+
 
     * :math:`\textbf{m} =\{ m_1, \tau_1, c_1, m_2, \tau_2, c_2\}`
 
