@@ -34,7 +34,7 @@ def ColeColeRho(f, R, m, tau, c, a=1):
     >>> from pygimli.physics.SIP import ColeColeRho
     >>> f = np.logspace(-2, 5, 100)
     >>> m = np.linspace(0.1, 0.9, 5)
-    >>> fig, ax1 = plt.subplots()
+    >>> fig, ax1 = pg.plt.subplots()
     >>> ax2 = ax1.twinx()
     >>> for i in range(len(m)):
     ...     Z = ColeColeRho(f, R=1, m=m[i], tau=0.01, c=0.5)
@@ -124,7 +124,7 @@ class DoubleColeColePhi(pg.ModellingBase):
     r"""Double Cole-Cole model with EM term after Pelton et al. (1978) :cite:`PeltonWarHal1978`
 
     Modelling operator for the Frequency Domain Cole-Cole impedance model
-    :py:mod:`pygimli.physics.SIP.ColeColeRho`
+    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>`
 
     * :math:`\textbf{m} =\{ m_1, \tau_1, c_1, m_2, \tau_2, c_2\}`
 
