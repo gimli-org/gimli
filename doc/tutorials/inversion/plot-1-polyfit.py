@@ -46,7 +46,9 @@ All existing modelling classes can be used, but it is also easy to create new
 modelling classes.
 
 We exemplify this by the preceding example.
+
 First, the library must be imported.
+
 To avoid name clashes with other libraries we suggest to import `pygimli` and
 alias it to an easy name (as usually done for numpy or matplotlib), e.g. by
 """

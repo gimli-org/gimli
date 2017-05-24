@@ -5,7 +5,7 @@ r"""
 Geoelectric in 2.5D
 -------------------
 
-Geoelectrical modeling example in 2.5D."""
+Geoelectrical modeling example in 2.5D. CR"""
 
 
 ###############################################################################
@@ -22,11 +22,11 @@ Geoelectrical modeling example in 2.5D."""
 #
 # .. math::
 #     \nabla\cdot( \sigma \nabla u ) - \sigma k^2 u
-# &=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
-#     \frac{\partial }{\partial x} \left(\cdot( \sigma \frac{\partial
-# u}{\partial x}\right) + \frac{\partial }{\partial y} \left(\cdot(\sigma
-# \frac{\partial u}{\partial y}\right) - \sigma k^2 u & =
-# -I\delta(x-x_{\text{s}})\delta(y-y_{\text{s}}) \in R^2 \\
+#     &=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
+#     \frac{\partial }{\partial x} \left(\cdot( \sigma
+#     \frac{\partial u}{\partial x}\right) + \frac{\partial }{\partial y} \left(\cdot(\sigma
+#     \frac{\partial u}{\partial y}\right) - \sigma k^2 u & =
+#     -I\delta(x-x_{\text{s}})\delta(y-y_{\text{s}}) \in R^2 \\
 #     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
 #
 

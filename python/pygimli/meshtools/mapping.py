@@ -222,7 +222,7 @@ def tapeMeasureToCoordinates(tape, pos):
     >>> pg.plt.gca().plot(p[:,0], p[:,1], 'o') #doctest: +ELLIPSIS
     [...]
     >>> pg.plt.gca().set_aspect(1)
-    >>> pg.wait()
+    >>> pg.plt.show()
     """
     if isinstance(tape, pg.R3Vector) or isinstance(tape, pg.stdVectorRVector3):
         xTape = pg.x(tape)

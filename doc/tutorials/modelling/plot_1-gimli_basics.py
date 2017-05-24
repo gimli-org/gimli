@@ -3,7 +3,7 @@
 r"""
 
 GIMLi Basics
-------------
+============
 
 This is the first tutorial where we demonstrate the general use of
 :term:`GIMLi` in Python, i.e., :term:`pyGIMLi`.
@@ -15,8 +15,7 @@ This tutorial shows some basic aspects of handling a mesh.
 
 First, the library needs to be imported.
 To avoid name clashes with other libraries we suggest to ``import pygimli`` and
-alias it to the simple abbreviation ``pg``:
-
+alias it to the simple abbreviation ``pg``: CR
 """
 import pygimli as pg
 

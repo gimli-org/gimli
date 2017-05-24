@@ -2,7 +2,7 @@
 # Macro definitions used by GIMLI's cmake build
 ################################################################################
 macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
-    
+
     set(PYTHON_TARGET_NAME "_${PYTHON_MODULE_NAME}_")
 
     file(GLOB ${PYTHON_MODULE_NAME}_SOURCE_FILES ${SOURCE_DIR}/*.cpp)
@@ -39,16 +39,16 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     #endif()
 
 #     if (OUTDIR)
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES 
+        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                             LIBRARY_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES 
+        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                             LIBRARY_OUTPUT_DIRECTORY_RELEASE ${OUTDIR})
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES 
+        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                             LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${OUTDIR})
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES 
+        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                             LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTDIR})
 #     endif(OUTDIR)
-    
+
     if (CMAKE_COMPILER_IS_GNUCXX)
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value")
         if (WIN32 AND ADDRESSMODEL EQUAL "64")
@@ -64,19 +64,19 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     set(PYTHON_IN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
     set(PYTHON_OUT_PATH "${CMAKE_BINARY_DIR}/package")
 
-    file(GLOB_RECURSE PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" 
-                    "${PYTHON_MODULE_NAME}/*.py" 
-                    "${PYTHON_MODULE_NAME}/*.png" 
+    file(GLOB_RECURSE PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+                    "${PYTHON_MODULE_NAME}/*.py"
+                    "${PYTHON_MODULE_NAME}/*.png"
                     "${PYTHON_MODULE_NAME}/*.xrc"
                     "${PYTHON_MODULE_NAME}/*.fbp")
 
     add_custom_target(copy_python ALL)
-    
+
     foreach(file ${PYTHON_FILES})
-        
+
         #message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
         add_custom_command(
-            COMMAND 
+            COMMAND
                 cmake -E copy_if_different
                 ${PYTHON_IN_PATH}/${file}
                 ${PYTHON_OUT_PATH}/${file}
@@ -89,14 +89,14 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
         )
     endforeach(file)
 
-   
+
 #----install-----------------------
 #     foreach(file ${PYTHON_FILES})
 #         get_filename_component( path_name "${file}" PATH )
 #         #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pygimli/${file} DESTINATION ${path_name})
 #         install( FILES "${file}" DESTINATION ${path_name} )
 #     endforeach(file)
-# 
+#
 #     install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION "${PYTHON_MODULE_NAME}/")
 endmacro()
 
@@ -108,14 +108,14 @@ function(find_python_module module)
         endif()
         # A module's location is usually a directory, but for binary modules
         # it's a .so file.
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
             "import re, ${module}; print(re.compile('\\__init__.py.*').sub('',${module}.__file__))"
-            RESULT_VARIABLE _${module}_status 
+            RESULT_VARIABLE _${module}_status
             OUTPUT_VARIABLE _${module}_location
             ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
         if(NOT _${module}_status)
-            set(PY_${module_upper} ${_${module}_location} CACHE STRING 
+            set(PY_${module_upper} ${_${module}_location} CACHE STRING
                 "Location of Python module ${module}")
             message(STATUS "Find python module ${module}")
             message(STATUS "Result: ${_${module}_status}")
@@ -127,7 +127,7 @@ function(find_python_module module)
             message(STATUS "Maybe you can provide the location by stetting PY_${module_upper}")
         endif(NOT _${module}_status)
 
-        find_package_handle_standard_args(${module} 
+        find_package_handle_standard_args(${module}
                                       FOUND_VAR ${module}_FOUND
                                       REQUIRED_VARS PY_${module_upper}
                                       )
@@ -138,18 +138,18 @@ function(find_python_module module)
     if (${module}_FOUND)
         set( ${module}_FOUND ${${module}_FOUND} CACHE INTERNAL ${module}_FOUND)
     endif()
-   
+
 endfunction(find_python_module)
 
 macro(findBuildTools)
     #unzip try cmake -E tar
-    #find_package(Tar REQUIRED)  ${CMAKE_COMMAND} -E tar "cfvz" 
+    #find_package(Tar REQUIRED)  ${CMAKE_COMMAND} -E tar "cfvz"
     find_program(PATCH_TOOL NAMES patch  REQUIRED)
     find_program(SED_TOOL NAMES sed REQUIRED)
     find_package(Wget REQUIRED)
     find_package(Subversion REQUIRED)
-    find_package(Git REQUIRED) 
-    find_package(Hg REQUIRED) 
+    find_package(Git REQUIRED)
+    find_package(Hg REQUIRED)
 endmacro(findBuildTools)
 
 macro(find_or_build_package package get_package)
@@ -172,10 +172,10 @@ endmacro()
 macro(find_or_build_package_check package get_package checkVar forceLocal)
 
     find_package(${package})
-    
+
     string(TOUPPER ${package} upper_package)
     string(TOLOWER ${package} lower_package)
-    
+
     set (FORCE_LOCAL_REBUILD 0)
 
     message(STATUS "${package} is local ${forceLocal}")
@@ -187,15 +187,15 @@ macro(find_or_build_package_check package get_package checkVar forceLocal)
             message(STATUS "Rebuild forced for: ${package}")
         endif()
     endif()
-    
+
     if (NOT ${checkVar} OR ${FORCE_LOCAL_REBUILD})
-        
+
         findBuildTools()
 
         message(STATUS "${package} NOT found .. building version from foreign sources into ${THIRDPARTY_DIR}" )
 
         file(MAKE_DIRECTORY ${THIRDPARTY_DIR})
-        
+
         if (J)
             set(ENV{PARALLEL_BUILD} ${J})
         endif()
@@ -205,9 +205,9 @@ macro(find_or_build_package_check package get_package checkVar forceLocal)
         endif()
 
         execute_process(
-            COMMAND 
+            COMMAND
 				bash ${PROJECT_SOURCE_DIR}/scripts/buildThirdParty.sh ${get_package}
-            WORKING_DIRECTORY 
+            WORKING_DIRECTORY
 				${THIRDPARTY_DIR}
         )
 
@@ -217,7 +217,7 @@ macro(find_or_build_package_check package get_package checkVar forceLocal)
     else()
         message(STATUS "${package} found" )
     endif()
-    
+
 endmacro()
 
 

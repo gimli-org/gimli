@@ -4,8 +4,9 @@
     Spectral induced polarization (SIP) measurements and fittings
 """
 
-from .models import ColeColePhi
+from .models import ColeColeRho, ColeColePhi, DoubleColeColePhi
 
 from .sipspectrum import SIPSpectrum
 
-#__all__ = [SIPSpectrum, ColeCole, readSIP256file, fstring]
+#__all__ = [name for name in dir() if '_' not in name]
+#__all__ = [SIPSpectrum, ColeColeRho, ColeColePhi, DoubleColeColePhi]

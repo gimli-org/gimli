@@ -238,6 +238,7 @@ You can enforce the local binary installation with:
     make
 
 or the local binary compilation with:
+
 .. code-block:: bash
 
     cmake ../../src/castXML/ -DCASTXML_LOCALSRC=1
