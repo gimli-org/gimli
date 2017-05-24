@@ -43,8 +43,8 @@ def ColeColeRho(f, R, m, tau, c, a=1):
     >>> _= ax1.set_ylabel('Amplitude $|Z(f)|$', color='b')
     >>> _= ax2.set_ylabel(r'- Phase $\varphi$ [mrad]', color='g')
     >>> _= ax1.set_xlabel('Frequency $f$ [Hz]')
-    >>> ax2.set_ylim(1, 1e3)
-    >>> ax1.set_ylim(1e-3, 1)
+    >>> _= ax2.set_ylim(1, 1e3)
+    >>> _= ax1.set_ylim(1e-3, 1)
     >>> pg.plt.show()
     """
     return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * R
