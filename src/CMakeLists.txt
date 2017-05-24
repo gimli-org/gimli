@@ -1,9 +1,11 @@
-set( libgimli_TARGET_NAME gimli )
+set(libgimli_TARGET_NAME gimli)
 
 link_directories(${libgimli_BINARY_DIR})
 
-file (GLOB SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.cpp)
-file (GLOB HEADER_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
+file (GLOB SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.cpp" "bert/*.cpp")
+file (GLOB HEADER_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.h" "bert/*.h")
+
+
 
 if (NOT MSVC)
 	list(REMOVE_ITEM SOURCE_FILES wingetopt.cpp)
@@ -70,10 +72,10 @@ elseif (UNIX AND NOT APPLE)
 		include_directories(${READPROC_INCLUDE_DIR})
 		target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
 	endif (READPROC_FOUND)
-	install(TARGETS ${libgimli_TARGET_NAME} LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR})	
+	install(TARGETS ${libgimli_TARGET_NAME} LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR})
 endif(WIN32)
 
-#install(FILES gimli.h ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h 
+#install(FILES gimli.h ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
 #        DESTINATION ${INCLUDE_INSTALL_DIR})
 
 
