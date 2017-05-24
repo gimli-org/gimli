@@ -38,13 +38,13 @@ def ColeColeRho(f, R, m, tau, c, a=1):
     >>> ax2 = ax1.twinx()
     >>> for i in range(len(m)):
     ...     Z = ColeColeRho(f, R=1, m=m[i], tau=0.01, c=0.5)
-    ...     ax1.loglog(f, np.abs(Z), color='b')
-    ...     ax2.loglog(f, -np.angle(Z)*1000, color='g')
-    >>> ax1.set_ylim(1e-3, 1)
-    >>> ax1.set_ylabel('Amplitude $|Z(f)|$', color='b')
+    ...     _= ax1.loglog(f, np.abs(Z), color='b')
+    ...     _= ax2.loglog(f, -np.angle(Z)*1000, color='g')
+    >>> _= ax1.set_ylabel('Amplitude $|Z(f)|$', color='b')
+    >>> _= ax2.set_ylabel(r'- Phase $\varphi$ [mrad]', color='g')
+    >>> _= ax1.set_xlabel('Frequency $f$ [Hz]')
     >>> ax2.set_ylim(1, 1e3)
-    >>> ax2.set_ylabel(r'- Phase $\varphi$ [mrad]', color='g')
-    >>> ax1.set_xlabel('Frequency $f$ [Hz]')
+    >>> ax1.set_ylim(1e-3, 1)
     >>> pg.plt.show()
     """
     return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * R
