@@ -8,22 +8,24 @@ import pygimli as pg
 
 
 def ColeColeRho(f, R, m, tau, c, a=1):
-    r"""Frequency domain Cole-Cole impedance model after Pelton et al. (1978) :cite:`PeltonWarHal1978`
+    r"""Frequency domain Cole-Cole impedance model after Pelton et al. (1978)
+    :cite:`PeltonWarHal1978`
 
     .. math::
 
-        Z(\omega) & = \rho_0\left[1 - m \left(1 - \frac{1}{1+(\text{i}\omega\tau)^c}\right)\right] \\
-        \quad \text{with}\quad m & = \frac{1}{1+\frac{\rho_0}{\rho_1}} \quad \text{and}\quad \omega =2\pi f
+        Z(\omega) & = \rho_0\left[1 - m \left(1 -
+        \frac{1}{1+(\text{i}\omega\tau)^c}\right)\right] \\
+        \quad \text{with}\quad m & = \frac{1}{1+\frac{\rho_0}{\rho_1}} \quad
+        \text{and}\quad \omega =2\pi f
 
     * :math:`Z(\omega)` - Complex impedance per 1A current injection
     * :math:`f` - Frequency
     * :math:`\rho_0` -- Background resistivity states the unblocked pore path
     * :math:`\rho_1` -- Resistance of the solution in the blocked pore passages
-    * :math:`m` -- Chargeability proposed by Seigel (1959) :cite:`Seigel1959` as
+    * :math:`m` -- Chargeability after Seigel (1959) :cite:`Seigel1959` as
       being the ratio of voltage immediately after, to the voltage immediately
       before cessation of an infinitely long charging current.
-    * :math:`\tau` -- 'Time constant' [s] determines the length of time required
-      for the decay in the time domain
+    * :math:`\tau` -- 'Time constant' [s] for 1/e decay
     * :math:`c` - Frequency dependence, typical [0.1 .. 0.6]
 
     Examples
@@ -92,7 +94,8 @@ def ColeDavidson(f, R, m, tau, a=1):
 
 
 class ColeColePhi(pg.ModellingBase):
-    r"""Cole-Cole model with EM term after Pelton et al. (1978) :cite:`PeltonWarHal1978`
+    r"""Cole-Cole model with EM term after Pelton et al. (1978)
+    :cite:`PeltonWarHal1978`
 
     Modelling operator for the Frequency Domain
     :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model using
@@ -104,8 +107,8 @@ class ColeColePhi(pg.ModellingBase):
 
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
-        Modeling Response for all given frequencies as negative the phase angles
-        with :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
+        Modeling eesponse for all given frequencies as negative phase angles
+        :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
         and :math:`Z(f, \rho_0, m, \tau, c) =` Cole-Cole impedance.
 
     """
@@ -121,7 +124,8 @@ class ColeColePhi(pg.ModellingBase):
 
 
 class DoubleColeColePhi(pg.ModellingBase):
-    r"""Double Cole-Cole model with EM term after Pelton et al. (1978) :cite:`PeltonWarHal1978`
+    r"""Double Cole-Cole model with EM term after Pelton et al. (1978)
+    :cite:`PeltonWarHal1978`
 
     Modelling operator for the Frequency Domain
     :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model
@@ -134,8 +138,9 @@ class DoubleColeColePhi(pg.ModellingBase):
 
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
-        Modeling Response for all given frequencies as negative the phase angles
-        with :math:`\varphi(f) = \varphi_1(Z_1(f))+\varphi_2(Z_2(f)) = -tan^{-1}\frac{\text{Im}\,(Z_1(f)Z_2(f))}{\text{Re}\,(Z_1(f)Z_2(f))}`
+        Modeling Response for all given frequencies as negative phase angles
+        :math:`\varphi(f) = \varphi_1(Z_1(f))+\varphi_2(Z_2(f)) =
+        -tan^{-1}\frac{\text{Im}\,(Z_1(f)Z_2(f))}{\text{Re}\,(Z_1(f)Z_2(f))}`
         and :math:`Z_1(f, 1, m_1, \tau_1, c_1)` and
         :math:`Z_2(f, 1, m_2, \tau_2, c_2)` ColeCole impedances.
 

@@ -472,9 +472,9 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
     resid = (phi - emphi) * 1000.
 
     if doplot:
-        s = "IP: m= " + str(rndig(erg[0])) + " t=" + str(rndig(erg[1]))  +  \
+        s = "IP: m= " + str(rndig(erg[0])) + " t=" + str(rndig(erg[1])) + \
             " c =" + str(rndig(erg[2]))
-        s = s + "  EM: m= " + str(rndig(erg[3])) + " t=" + str(rndig(erg[4])) +\
+        s += "  EM: m= " + str(rndig(erg[3])) + " t=" + str(rndig(erg[4])) + \
             " c =" + str(rndig(erg[5]))
         fig = P.figure(1)
         fig.clf()

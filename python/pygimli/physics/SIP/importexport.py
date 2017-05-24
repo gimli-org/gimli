@@ -127,8 +127,8 @@ def readSIP256file(resfile, verbose=False):
     dataAct = False
 
 
-    with codecs.open(resfile, 'r', errors = 'replace') as f:
-    #with open(resfile, 'r', errors='replace') as f:
+#    with open(resfile, 'r', errors='replace') as f:
+    with codecs.open(resfile, 'r', errors='replace') as f:
         for line in f:
             if dataAct:
                 LINE.append(line)
@@ -164,7 +164,8 @@ def readSIP256file(resfile, verbose=False):
                         nums = np.array(line.split(), dtype=float)
                         header[activeBlock].append(nums)
 
-    #CR DATA, Data, data ?? really??
+    # CR DATA, Data, data ?? really??
+    # TG: yes, no better idea to handle blocks of blocks of data
     DATA, Data, data, AB, RU, ru = [], [], [], [], [], []
     for line in LINE:
         sline = line.split()
