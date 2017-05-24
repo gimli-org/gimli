@@ -105,7 +105,7 @@ class ColeColePhi(pg.ModellingBase):
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
         Modeling Response for all given frequencies as negative the phase angles
-        with :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
+        with :math:`\varphi(f) = -\text{tan}^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
         and :math:`Z(f, \rho_0, m, \tau, c) =` Cole-Cole impedance.
 
     """
@@ -135,7 +135,7 @@ class DoubleColeColePhi(pg.ModellingBase):
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
         Modeling Response for all given frequencies as negative the phase angles
-        with :math:`\varphi(f) = \varphi_1(Z_1(f))+\varphi_2(Z_2(f)) = -tan^{-1}\frac{\text{Im}\,(Z_1(f)Z_2(f))}{\text{Re}\,(Z_1(f)Z_2(f))}`
+        with :math:`\varphi(f) = \varphi_1(Z_1(f))+\varphi_2(Z_2(f)) = -\text{tan}^{-1}\frac{\text{Im}\,(Z_1(f)Z_2(f))}{\text{Re}\,(Z_1(f)Z_2(f))}`
         and :math:`Z_1(f, 1, m_1, \tau_1, c_1)` and
         :math:`Z_2(f, 1, m_2, \tau_2, c_2)` ColeCole impedances.
 
