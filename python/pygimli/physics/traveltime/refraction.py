@@ -93,7 +93,8 @@ class Refraction(MethodManager):
 
         method='FMM' forces Fast Marching Method, otherwise Dijkstra is used.
         """
-        if 'fm' in kwargs.pop('method', None).lower():
+        method = kwargs.pop('method', None)
+        if isinstance(method, str) and 'fm' in method:
             from FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
