@@ -6,9 +6,6 @@
 import numpy as np
 import pygimli as pg
 
-from pygimli import ModellingBase
-from pygimli.manager import MethodManager
-
 from pygimli import meshtools as mt
 
 from pygimli.physics.petro import PetroInversion, JointPetroInversion
@@ -16,18 +13,19 @@ from pygimli.physics.petro import PetroInversion, JointPetroInversion
 from pygimli.physics.petro import transFwdArchieS as ArchieTrans
 from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
 
+
 def createSynthModel():
     """Return the modeling mesh, the porosity distribution and the
        parametric mesh for inversion.
     """
-    ### Create the synthetic model
+    # Create the synthetic model
     world = mt.createCircle(boundaryMarker=-1, segments=64)
     tri = mt.createPolygon([[-0.8, -0], [-0.5, -0.7], [0.7, 0.5]],
-                            isClosed=True, area=0.0015)
+                           isClosed=True, area=0.0015)
     c1 = mt.createCircle(radius=0.2, pos=[-0.2, 0.5], segments=32,
-                          area=0.0025, marker=3)
+                         area=0.0025, marker=3)
     c2 = mt.createCircle(radius=0.2, pos=[0.32, -0.3], segments=32,
-                          area=0.0025, marker=3)
+                         area=0.0025, marker=3)
 
     poly = mt.mergePLC([world, tri, c1, c2])
 
@@ -44,7 +42,7 @@ def createSynthModel():
     petro = pg.solver.parseArgToArray([[1, 0.9], [2, 0.6], [3, 0.3]],
                                       mesh.cellCount(), mesh)
 
-    ### Create the parametric mesh that only reflect the domain geometry
+    # Create the parametric mesh that only reflect the domain geometry
     world = mt.createCircle(boundaryMarker=-1, segments=32, area=0.0051)
     paraMesh = pg.meshtools.createMesh(world, q=34.0, smooth=[1, 10])
     paraMesh.scale(1.0/5.0)
@@ -83,20 +81,20 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
         pg.mplviewer.saveAxes(ax, savefig, adjust=False)
     return ax
 
-### Script starts here
+# Script starts here
 axs = [None]*8
 
-### Create synthetic model
+# Create synthetic model
 mMesh, pMesh, saturation = createSynthModel()
 
-### Create Petrophysical models
+# Create Petrophysical models
 ertTrans = ArchieTrans(rFluid=20, phi=0.3)
 res = ertTrans(saturation)
 
 ttTrans = WyllieTrans(vm=4000, phi=0.3)
 vel = 1./ttTrans(saturation)
 
-### Simulate synthetic data with appropriate noise
+# Simulate synthetic data with appropriate noise
 sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 
 print("-Simulate ERT" + "-" * 50)
@@ -109,7 +107,7 @@ TT = pg.physics.Refraction()
 ttScheme = pg.physics.traveltime.createRAData(sensors)
 ttData = TT.simulate(mMesh, vel, ttScheme, noiseLevel=0.01, noiseAbs=4e-6)
 
-## Classic inversions
+# Classic inversions
 print("-ERT" + "-" * 50)
 resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20)
 ERT.inv.echoStatus()
@@ -128,20 +126,22 @@ invTTPetro = PetroInversion(TT, ttTrans)
 satTT = invTTPetro.invert(ttData, mesh=pMesh, limits=[0., 1.], lam=5)
 invTTPetro.inv.echoStatus()
 
-### Petrophysical joint inversion
+# Petrophysical joint inversion
 print("-Joint-Petro" + "-" * 50)
 invJointPetro = JointPetroInversion([ERT, TT], [ertTrans, ttTrans])
-satJoint = invJointPetro.invert([ertData, ttData], mesh=pMesh, limits=[0., 1.], lam=5)
+satJoint = invJointPetro.invert([ertData, ttData], mesh=pMesh,
+                                limits=[0., 1.], lam=5)
 invJointPetro.inv.echoStatus()
 
-### Show results
+# Show results
 ERT.showData(ertData)
 TT.showVA(ttData)
 
 showModel(axs[0], saturation, mMesh, showMesh=1,
           label=r'Saturation (${\tt petro}$)', savefig='petro')
 showModel(axs[1], res, mMesh, petro=0, cMin=250, cMax=2500, showMesh=1,
-          label=r'Resistivity (${\tt res}$) in $\Omega$m', savefig='resistivity')
+          label=r'Resistivity (${\tt res}$) in $\Omega$m',
+          savefig='resistivity')
 showModel(axs[5], vel, mMesh, petro=0, cMin=1000, cMax=2500, showMesh=1,
           label=r'Velocity (${\tt vel}$) in m$/$s', savefig='velocity')
 showModel(axs[2], resInv, pMesh, 0, cMin=250, cMax=2500,
@@ -155,5 +155,5 @@ showModel(axs[7], satTT, pMesh,
 showModel(axs[4], satJoint, pMesh,
           label=r'Saturation (${\tt satJoint}$)', savefig='invJointPetro')
 
-# just hold the figure windows open if run outside from spyder, ipython or similar
+# just hold figure windows open if run outside from spyder, ipython or similar
 pg.wait()

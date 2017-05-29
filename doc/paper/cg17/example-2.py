@@ -10,7 +10,6 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-import pygimli.physics
 from pygimli.physics.petro import resistivityArchie
 
 
@@ -26,7 +25,7 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
 
     uDir = [[2, p0],  # left aquiver
             [3, p0],  # left bedrock
-            #[4, 0],  # bottom (paper)
+#            [4, 0],  # bottom (paper)
             [5, 0],  # right bedrock
             [6, 0],  # right aquiver
             [7, 0],  # right top

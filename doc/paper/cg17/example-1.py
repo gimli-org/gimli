@@ -18,7 +18,7 @@ geom = mt.mergePLC([world, block])
 pg.show(geom, boundaryMarker=True, savefig='geometry.pdf')
 
 # Create a mesh from the geometry definition
-mesh = mt.createMesh(geom, quality=33, area=0.2, smooth=[1,10])
+mesh = mt.createMesh(geom, quality=33, area=0.2, smooth=[1, 10])
 pg.show(mesh, savefig='mesh.pdf')
 
 # $\diverg(a\grad T)=0$ with $T(bottom)=1$, $T(top)=0$
@@ -29,5 +29,5 @@ T = pg.solver.solveFiniteElements(mesh,
 ax, _ = pg.show(mesh, data=T, label='Temperature $T$', cmap="hot_r")
 pg.show(geom, ax=ax, fillRegion=True, savefig='T_field.pdf')
 
-# just hold the figure windows open if run outside from spyder, ipython or similar
+# just hold figure windows open if run outside from spyder, ipython or similar
 pg.wait()

@@ -11,18 +11,18 @@ or with the final inversion result:
 python example-2-visualisation.py spermModel_h-3/
 """
 
-import os
 import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.mplviewer import saveAxes, saveAnimation
+from pygimli.mplviewer import saveAxes
 
 from matplotlib.offsetbox import AnchoredText
 
-days = [0,2,4,6,8,10]
+days = [0, 2, 4, 6, 8, 10]
+
 
 def add_inner_title(ax, title, loc=2, color="k", **kwargs):
     at = AnchoredText(title, loc=loc,
@@ -30,6 +30,7 @@ def add_inner_title(ax, title, loc=2, color="k", **kwargs):
                       frameon=False, **kwargs)
     ax.add_artist(at)
     return at
+
 
 def savefig(mesh, geom, data=None, label='', out=None, **kwargs):
     """Little shortcut to plot mesh with asociated geometry."""
@@ -51,6 +52,7 @@ def savefig(mesh, geom, data=None, label='', out=None, **kwargs):
         pg.mplviewer.adjustWorldAxes(ax)
     return ax
 
+
 def showSynthData(synthPath):
     geom = pg.load(synthPath + 'synthGeom.bms')
     mesh = pg.load(synthPath + 'synth.bms')
@@ -59,18 +61,18 @@ def showSynthData(synthPath):
     sat = np.load(synthPath + 'synthSat.npy')
 
     scheme = pg.DataContainer(synthPath + 'synth.shm', 'a b m n')
-    rhoaR = np.load(synthPath + 'synthRhoaRatio.npy')
-    rhoa = np.load(synthPath + 'synthRhoa.npy')
+#    rhoaR = np.load(synthPath + 'synthRhoaRatio.npy')
+#    rhoa = np.load(synthPath + 'synthRhoa.npy')
 
     row = 3
     col = 2
 
-    ####### START model perm + input
-    ax = savefig(mesh, geom, k, 'Hydraulic conductivity $K$ in m$/$s',
-                 out='hydrConductModel',
-                 cMin=1e-5, cMax=1e-2, nLevs=4, cmap='viridis')
+    # START model perm + input
+    savefig(mesh, geom, k, 'Hydraulic conductivity $K$ in m$/$s',
+            out='hydrConductModel',
+            cMin=1e-5, cMax=1e-2, nLevs=4, cmap='viridis')
 
-    ####### START velocity
+    # START velocity
     axVel, _ = pg.show(mesh, np.sqrt(vel[0]**2 + vel[1]**2),
                        logScale=0, colorBar=1, pad=0.55,
                        label='Velocity $|v|$ in m$/$s', hold=1)
@@ -81,14 +83,14 @@ def showSynthData(synthPath):
     pg.show(geom, ax=axVel, fillRegion=False)
     saveAxes(axVel, 'hydrVelocity', adjust=True)
 
-    ##### START Saturation
+    # START Saturation
     axs = plt.subplots(row, col, sharex=True, sharey=True,
                        figsize=(10.*0.65, 7.25*0.65))[1].flatten()
 
     satScale = 0.001
     for i, a in enumerate(axs):
         savefig(mesh, geom,
-                sat[i * len(sat)/(len(axs))+1] * satScale,#/mesh.cellSizes(),
+                sat[i*len(sat)/(len(axs))+1] * satScale,  # /mesh.cellSizes(),
                 label=None,
                 out=None,
                 cMin=0, cMax=2.5,
@@ -101,9 +103,9 @@ def showSynthData(synthPath):
 
         if i < (row-1)*col:
             a.set_xlabel('')
-        if i%col:
+        if i % col:
             a.set_ylabel('')
-        a.set_ylim([-16,0])
+        a.set_ylim([-16, 0])
 
     pg.mplviewer.saveFigure(axs[0].figure, "hydrSaturation")
     pg.mplviewer.createColorBarOnly(cMin=0, cMax=2.5, logScale=False,
@@ -113,14 +115,15 @@ def showSynthData(synthPath):
                                     orientation='horizontal',
                                     savefig='hydrSaturationCbar')
 
-    ###### END Saturation
+    # END Saturation
     pg.wait()
+
 
 def showModel(outPath):
 
-    geom = pg.load('synth/' + 'synthGeom.bms')
+    # geom = pg.load('synth/' + 'synthGeom.bms')
 
-    pd = pg.load(outPath + '/paraDomain.bms')
+    # pd = pg.load(outPath + '/paraDomain.bms')
     paraMesh = pg.load(outPath + '/paraMesh.bms')
     model = pg.load(outPath + "/model.vector")
 
@@ -130,8 +133,10 @@ def showModel(outPath):
     allModel = np.zeros(len(model)+2)
     allModel[2:] = model
 
-    #allModel[0] = fopModel[fopMesh.findCellByMarker(pg.MARKER_FIXEDVALUE_REGION -0)[0].id()]
-    allModel[1] = fopModel[fopMesh.findCellByMarker(pg.MARKER_FIXEDVALUE_REGION -1)[0].id()]
+#    allModel[0] = fopModel[fopMesh.findCellByMarker(
+#        pg.MARKER_FIXEDVALUE_REGION - 0)[0].id()]
+    allModel[1] = fopModel[fopMesh.findCellByMarker(
+        pg.MARKER_FIXEDVALUE_REGION - 1)[0].id()]
 
     ax = savefig(paraMesh, None, allModel[paraMesh.cellMarkers()],
                  'Hydraulic conductivity $K$ in m$/$s',
@@ -146,8 +151,8 @@ def showModel(outPath):
         if b.leftCell() and b.rightCell():
             if b.leftCell().marker() > 1 or b.rightCell().marker() > 1:
                 bs.append(b)
-    pg.mplviewer.drawSelectedMeshBoundaries(ax,
-            bs, color=(0.0, 0.0, 0.0, 1.0), linewidth=1.0)
+    pg.mplviewer.drawSelectedMeshBoundaries(
+            ax, bs, color=(0.0, 0.0, 0.0, 1.0), linewidth=1.0)
 
     pg.mplviewer.saveFigure(ax.figure, 'hydrInversionModel')
 
@@ -160,12 +165,11 @@ if __name__ == '__main__':
         print("Give result path!")
         sys.exit()
 
-
     outPath = sys.argv[1]
     print(outPath)
 
     if 'synth' in outPath:
         showSynthData(outPath)
-        #pg.wait()
+        # pg.wait()
     else:
         showModel(outPath)
