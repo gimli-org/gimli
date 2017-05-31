@@ -30,7 +30,7 @@ class Refraction(MethodManager):
         e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, verbose=False, debug=False, **kwargs):
+    def __init__(self, data=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
@@ -86,15 +86,21 @@ class Refraction(MethodManager):
         # (self.paraDomain.cellMarkers())
         return self.velocity
 
+    def useFMM(self, fmm=True):
+        """Define whether to use Fast Marching Method (FMM).
+
+        Note that this method is more accurate but currently a lot slower!
+        """
+        self.fop = Refraction.createFOP(usefmm=fmm)
+
     @staticmethod
-    def createFOP(verbose=False, **kwargs):
+    def createFOP(verbose=False, usefmm=False):
         """Create default forward operator for Traveltime modelling.
         base api
 
-        method='FMM' forces Fast Marching Method, otherwise Dijkstra is used.
+        usefmm forces Fast Marching Method, otherwise Dijkstra is used.
         """
-        method = kwargs.pop('method', None)
-        if isinstance(method, str) and 'fm' in method:
+        if usefmm:
             from FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
@@ -214,12 +220,10 @@ class Refraction(MethodManager):
                 response = self.response
             drawFirstPicks(ax, data, np.asarray(response), marker='-')
 
-        # CR: don't use plt.show(..) at all TODO
-        plt.show(block=False)
         return ax
 
     def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5, apply=True, **kwargs):
+                   paraBoundary=5, apply=True, refine=False, **kwargs):
         """Create (inversion) mesh using createParaDomain2D
 
         Parameters
@@ -240,11 +244,12 @@ class Refraction(MethodManager):
                                       paraBoundary=paraBoundary,
                                       boundary=boundary)
         mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
+#        mesh.createNeighbourInfos()
         if apply:
-            self.setMesh(mesh)
+            self.setMesh(mesh, refine=refine)
         return mesh
 
-    def setMesh(self, mesh, refine=True):
+    def setMesh(self, mesh, refine=False):
         """
         base api
         """
@@ -565,7 +570,34 @@ class Refraction(MethodManager):
 
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
                    logScale=False, name='result', **kwargs):
-        """show resulting velocity vector"""
+        """Show resulting velocity vector.
+
+        Parameters
+        ----------
+        val : result array [self.velocity]
+            field to show, usually the velocity vector
+        ax : matplotlib.axes
+            axes to plot into, if not give a new one-axis figure is created
+        cMin/cMax : float
+            minimum and maximum values for ranging colorbar
+        logScale : bool [False]
+            use logarithmic scale
+        useCoverage : bool [True]
+            use standardized (0 or 1) ray coverage as alpha-shading
+        label : str
+            label to write on colorbar
+        orientaton : str
+            color bar orientation
+        nLevs : int [7]
+            number of level values for color bar
+        **kwargs : keyword arguments passed to the show function
+
+        Returns
+        -------
+        ax : maxplotlib axes
+
+        cb : matplotlib color bar object
+        """
         mesh = self.paraDomain()
         if val is None:
             val = self.velocity

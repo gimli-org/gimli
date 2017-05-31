@@ -160,7 +160,11 @@ class TravelTimeFMM(pg.ModellingBase):
         """Compute the travel times and fill data and time matrix
         for later use of response and Jacobian, respectively.
         For response only active sources are needed, for Jacobian all."""
+        # mesh = pg.Mesh(self.mesh())
         mesh = self.mesh()
+#        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
+#        mesh.createNeighbourInfos()
+#        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
         nNodes = mesh.nodeCount()
         midPoints = self.mesh().cellCenters()
         param_markers = np.unique(mesh.cellMarkers())
@@ -180,7 +184,7 @@ class TravelTimeFMM(pg.ModellingBase):
         else:
             raise ValueError("Wrong no of parameters. Mesh size: {}, no "
                              "of regions: {}, and number of slowness values:"
-                             "{}".format(self.mesh().cellCount(), param_count,
+                             "{}".format(mesh.cellCount(), param_count,
                                          len(slowness)))
 
         times = pg.RVector(nNodes, 0.)
@@ -238,10 +242,6 @@ class TravelTimeFMM(pg.ModellingBase):
         Response function. Returns the result of the forward calculation.
         Uses the shot- and sensor positions specified in the data container.
         """
-        mesh = pg.Mesh(self.mesh())
-        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
-        mesh.createNeighbourInfos()
-        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
         self.computeTravelTimes(slowness)
         # assembling the data from the data matrix
         data = self.data()
@@ -258,17 +258,17 @@ class TravelTimeFMM(pg.ModellingBase):
         # first compute reciprocal travel times for geophone sources
         self.computeTravelTimes(slowness, calcOthers=True)
         n_data = data.size()
-#        slo = mesh.cellAttributes()  # in case of regions
         cellSizes = self.mesh().cellSizes()
         for i in range(n_data):
             iS, iG = int(data("s")[i]), int(data("g")[i])
-            tsr = self.dataMatrix[iS][iG]
-            dt = self.timeMatrix[iS] + self.timeMatrix[iG] - tsr
-            weight = np.maximum(1 - 2 * self.frequency * dt, 0.0)
+            tsr = self.dataMatrix[iS][iG]  # shot-receiver travel time
+            dt = self.timeMatrix[iS] + self.timeMatrix[iG] - tsr  # difference
+            weight = np.maximum(1 - 2 * self.frequency * dt, 0.0)  # 1 on ray
             if self.debug:
                 print(pg.sum(pg.sign(weight)))
             wa = weight * cellSizes
             self.jacobian()[i] = wa / np.sum(wa) * tsr / slowness
+            # TODO: check "invalid value in true divide" warning
 
     def createDefaultStartModel(self):
         return pg.RVector(self.fop.regionManager().parameterCount(), 0.001)
