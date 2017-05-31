@@ -14,7 +14,8 @@ from pygimli.physics.traveltime.ratools import createGradientModel2D
 
 
 def findSlowness(edge):
-    """Retrieve fasted slowness of cells neighboring an edge."""
+    """Retrieve fastest cell neighboring an edge."""
+    assert hasattr(edge, 'leftCell') and hasattr(edge, 'rightCell')
     if edge.leftCell() is None:
         slowness = edge.rightCell().attribute()
     elif edge.rightCell() is None:
@@ -122,9 +123,7 @@ class TravelTimeFMM(pg.ModellingBase):
         pg.ModellingBase.__init__(self, verbose)
         super(TravelTimeFMM, self).__init__(verbose=verbose)
         self.debug = debug
-        if mesh is not None:
-            self.setMesh(mesh)  # besser use createRefinedForwardMesh
-            self.mesh().createNeighbourInfos()  # generates leftCell/rightCell
+        self.frequency = frequency
         if data is None:
             self.setData(pg.DataContainer())
         elif isinstance(data, str):
@@ -132,16 +131,14 @@ class TravelTimeFMM(pg.ModellingBase):
             self.setData(self.data_)
         else:
             self.setData(data)
-        self.frequency = frequency
+        if mesh is not None:
+            mesh.createNeighbourInfos()  # generates leftCell/rightCell
+            self.setMesh(mesh)  # besser use createRefinedForwardMesh
 
     def setMesh(self, mesh):
         """Set mesh"""
         super(TravelTimeFMM, self).setMesh(mesh)
-        self.nNodes = self.mesh().nodeCount()
-        self.nModel = self.mesh().cellCount()
-        self.midPoints = self.mesh().cellCenters()
-        self.cellSizes = self.mesh().cellSizes()
-#        self.prepareMatrices()
+        self.prepareMatrices()
 
     def setData(self, data):
         """Set data and prepare stuff"""
@@ -153,8 +150,9 @@ class TravelTimeFMM(pg.ModellingBase):
         if (isinstance(self.mesh(), pg.Mesh) and
                 isinstance(self.data(), pg.DataContainer)):
             nSensors = self.data().sensorCount()
+            nModel = self.mesh().cellCount()
             self.dataMatrix = np.zeros((nSensors, nSensors))
-            self.timeMatrix = np.zeros((nSensors, self.nModel))
+            self.timeMatrix = np.zeros((nSensors, nModel))
             if self.debug:
                 print("shapes:", self.dataMatrix.shape, self.timeMatrix.shape)
 
@@ -162,8 +160,9 @@ class TravelTimeFMM(pg.ModellingBase):
         """Compute the travel times and fill data and time matrix
         for later use of response and Jacobian, respectively.
         For response only active sources are needed, for Jacobian all."""
-        # mesh = self.mesh()  # better but for now input mesh
         mesh = self.mesh()
+        nNodes = mesh.nodeCount()
+        midPoints = self.mesh().cellCenters()
         param_markers = np.unique(mesh.cellMarkers())
         param_count = len(param_markers)
         data = self.data()
@@ -184,9 +183,9 @@ class TravelTimeFMM(pg.ModellingBase):
                              "{}".format(self.mesh().cellCount(), param_count,
                                          len(slowness)))
 
-        times = pg.RVector(self.nNodes, 0.)
-        upTags = np.zeros(self.nNodes)
-        downTags = np.zeros(mesh.nodeCount())
+        times = pg.RVector(nNodes, 0.)
+        upTags = np.zeros(nNodes)
+        downTags = np.zeros(nNodes)
         sourceIndices = np.unique(data("s"))
         if calcOthers:
             ns = len(sourceIndices)
@@ -197,9 +196,9 @@ class TravelTimeFMM(pg.ModellingBase):
             if self.debug:
                 print("{:d}-{:d}={:d}".format(
                     data.sensorCount(), ns, len(sourceIndices)))
-        if self.debug:  # resize not working
-            self.solution().resize(self.mesh().nodeCount(), self.nSensors)
-            print(self.solution().rows(), self.solution().cols())
+#        if self.debug:  # resize not working
+#            self.solution().resize(self.mesh().nodeCount(), self.nSensors)
+#            print(self.solution().rows(), self.solution().cols())
         for iSource in np.array(sourceIndices, dtype=int):
             if self.debug:
                 print(iSource)
@@ -227,7 +226,7 @@ class TravelTimeFMM(pg.ModellingBase):
             self.dataMatrix[iSource] = pg.interpolate(
                 mesh, times, destPos=data.sensorPositions())
             self.timeMatrix[iSource] = pg.interpolate(
-                mesh, times, destPos=self.midPoints)
+                mesh, times, destPos=midPoints)
             if self.debug:
                 print(self.solution().rows(), self.solution().cols())
                 print(len(times), self.mesh())
@@ -239,6 +238,10 @@ class TravelTimeFMM(pg.ModellingBase):
         Response function. Returns the result of the forward calculation.
         Uses the shot- and sensor positions specified in the data container.
         """
+        mesh = pg.Mesh(self.mesh())
+        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
+        mesh.createNeighbourInfos()
+        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
         self.computeTravelTimes(slowness)
         # assembling the data from the data matrix
         data = self.data()
@@ -249,15 +252,14 @@ class TravelTimeFMM(pg.ModellingBase):
         return t_fmm
 
     def createJacobian(self, slowness):
-        """
-        Jacobian matrix using a fat-ray approach (Jordi et al. 2016).
-        """
+        """Jacobian matrix using a fat-ray approach (Jordi et al. 2016)."""
         data = self.data()
         self.jacobian().resize(data.size(), self.mesh().cellCount())
         # first compute reciprocal travel times for geophone sources
         self.computeTravelTimes(slowness, calcOthers=True)
         n_data = data.size()
 #        slo = mesh.cellAttributes()  # in case of regions
+        cellSizes = self.mesh().cellSizes()
         for i in range(n_data):
             iS, iG = int(data("s")[i]), int(data("g")[i])
             tsr = self.dataMatrix[iS][iG]
@@ -265,13 +267,14 @@ class TravelTimeFMM(pg.ModellingBase):
             weight = np.maximum(1 - 2 * self.frequency * dt, 0.0)
             if self.debug:
                 print(pg.sum(pg.sign(weight)))
-            wa = weight * self.cellSizes
+            wa = weight * cellSizes
             self.jacobian()[i] = wa / np.sum(wa) * tsr / slowness
 
+    def createDefaultStartModel(self):
+        return pg.RVector(self.fop.regionManager().parameterCount(), 0.001)
+
 if __name__ == '__main__':
-    """
-    Set up FMM modelling operator and run a synthetic model
-    """
+    """Set up FMM modelling operator and run a synthetic model."""
     data = pg.DataContainer('example_topo.sgt', 's g')
     print(data)
     mesh = pg.meshtools.createParaMesh(data, boundary=0, paraBoundary=5,

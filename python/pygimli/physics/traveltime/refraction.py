@@ -333,14 +333,19 @@ class Refraction(MethodManager):
         if self.mesh is None:
             self.createMesh(**kwargs)
 
-        useGradient = kwargs.pop('useGradient', True)
-        if useGradient:
-            self.fop.setStartModel(createGradientModel2D(
-                self.dataContainer, self.fop.regionManager().paraDomain(),
-                kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.)))
-        else:
-            self.fop.setStartModel(self.fop.createDefaultStartModel())
-
+        startModel = kwargs.pop('startModel', None)
+        self.pd = self.fop.regionManager().paraDomain()
+        if startModel is None:
+            useGradient = kwargs.pop('useGradient', True)
+            if useGradient:
+                startModel = createGradientModel2D(
+                    self.dataContainer, self.pd,
+                    kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.))
+            else:
+                startModel = self.fop.createDefaultStartModel()
+        if type(startModel) is float:
+            startModel = pg.RVector(self.pd.cellCount(), startModel)
+        self.fop.setStartModel(startModel)
         zWeight = kwargs.pop('zWeight', 0.2)
         if 'zweight' in kwargs:
             zWeight = kwargs.pop('zweight', 0.2)
