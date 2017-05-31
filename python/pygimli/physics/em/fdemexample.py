@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Some additional infos here?
-"""
+"""Example for FDEM inversion using a real data example."""
 import os
 
 import numpy as np
@@ -26,5 +24,5 @@ INV.echoStatus()
 print("thk = ", model[:nlay - 1])
 print("res = ", model[nlay - 1:])
 fig, ax = fdem.showModelAndData(model, xpos, INV.response())
-#INV = fdem.inv2D(nlay)
-#INV.run()
+# INV = fdem.inv2D(nlay)
+# INV.run()

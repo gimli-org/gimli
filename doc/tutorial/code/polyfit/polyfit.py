@@ -1,97 +1,71 @@
 # -*- coding: utf-8 -*-
-    # -*- coding: iso-8859-1 -*-
 
-import sys
-import pygimli as g
-import pylab as P
+import numpy as np
+import matplotlib.pyplot as plt
+import pygimli as pg
 
-class FunctionModelling( g.ModellingBase ):
-    """
-        new modelling operator returning f(x) derived from modelling base class
-    """
-    def __init__( self, nc, xvec, verbose = False  ):
-        """
-            constructor, nc: number of coefficients, xvec: abscissa, */
-        """
-        g.ModellingBase.__init__( self, verbose )
+
+class FunctionModelling(pg.ModellingBase):
+    """New modelling operator returning f(x) derived from modelling base."""
+
+    def __init__(self, nc, xvec, verbose=False):
+        """Constructor, nc: number of coefficients, xvec: abscissa."""
+        pg.ModellingBase.__init__(self, verbose)
         self.x_ = xvec
         self.nc_ = nc
-        self.regionManager().setParameterCount( nc )
+        self.regionManager().setParameterCount(nc)
 
-    def response( self, par ):
+    def response(self, par):
         """
            the main thing - the forward operator: return f(x)
         """
-        y = g.RVector( self.x_.size(), par[ 0 ] )
-        for i in range( 1, self.nc_ ):
-            y += g.pow( self.x_, i ) * par[ i ];
-        return y;
+        y = pg.RVector(len(self.x_), par[0])
+        for i in range(1, self.nc_):
+            y += pg.pow(self.x_, i) * par[i]
 
-    def startModel( self ):
-        """
-            define the startmodel
-        """
-        return g.RVector( self.nc_, 0.5 )
+        return y
 
+    def startModel(self):
+        """Define the starting model."""
+        return pg.RVector(self.nc_, 0.5)
 
-def main( argv ):
-    from optparse import OptionParser
-
-    parser = OptionParser( "Curvefit - fits data in datafile with different curves\n usage: %prog [options] Datafile" )
-    parser.add_option("-v", "--verbose", dest = "verbose", action = "store_true"
-                            , help = "be verbose", default = False )
-    parser.add_option("-n", "--np", dest = "np", type = "int", default = 1
-                            , help = "Number of polynomials" )
-
-    (options, args) = parser.parse_args()
-
-    if len( args ) == 0:
-        parser.print_help()
-        print("Please add a datafile.")
-        sys.exit( 2 )
-    else:
-        datafile = args[ 0 ];
-
-    xy = g.RMatrix()
-    g.loadMatrixCol( xy, datafile );
-
-    if options.verbose:
-        print("data:", xy)
+if __name__ == "__main__":
+    nc = 1  # polynomial degree
+    x = np.arange(10.0)
+    y = 1.1 + 0.6 * x
+    y += np.random.randn(len(y)) * 0.2
 
     # two coefficients and x-vector (first data column)
-    f = FunctionModelling( options.np + 1, xy[ 0 ] )
+    f = FunctionModelling(nc + 1, x)
 
     # initialize inversion with data and forward operator and set options
-    inv = g.RInversion( xy[ 1 ], f, True, True );
+    inv = pg.RInversion(y, f, True, True)
 
     # constant absolute error of 0.01 (not necessary, only for chi^2)
-    inv.setAbsoluteError( 0.01 );
+    inv.setAbsoluteError(0.01)
 
     # the problem is well-posed and does not need regularization
-    inv.setLambda( 0 );
+    inv.setLambda(0)
 
     # actual inversion run yielding coefficient model
-    coeff = inv.run();
+    coeff = inv.run()
 
     # get actual response and write to file.
-    g.save( inv.response(), "resp.out" );
+    pg.save(inv.response(), "resnp.out")
 
     # print result to screen and save coefficient vector to file
-    s = "y = " + str( round( coeff[ 0 ] * 1000 ) /1000 )
+    s = "y = " + str(round(coeff[0] * 1000) / 1000)
 
-    for i in range( 1, options.np+1 ):
-        s = s + " + " + str( round( coeff[ i ] *1000 ) / 1000 ) + " x^" + str( i )
+    for i in range(1, nc+1):
+        s = s + " + " + str(round(coeff[i] * 1000) / 1000) + " x^" + str(i)
 
     print(s)
 
-    g.save( coeff, "out.vec" );
+    pg.save(coeff, "out.vec")
 
-    P.plot( xy[0], xy[1], 'rx', xy[0], inv.response(), 'b-' )
-    P.title(s)
-    P.xlabel("x");
-    P.ylabel("y");
-    P.legend(("measured", "fitted"),loc="upper left");
-    P.show()
-
-if __name__ == "__main__":
-    main( sys.argv[ 1: ] )
+    plt.plot(x, y, 'rx', x, inv.response(), 'b-')
+    plt.title(s)
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend(("measured", "fitted"), loc="upper left")
+    plt.show()

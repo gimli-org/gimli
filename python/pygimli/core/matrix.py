@@ -8,8 +8,9 @@ import numpy as np
 
 class MultLeftMatrix(pg.MatrixBase):
     """Matrix consisting of actual RMatrix and lef-side vector."""
+
     def __init__(self, A, left, verbose=False):
-        """ constructor saving matrix and vector """
+        """Constructor saving matrix and vector."""
         if A.rows() != len(left):
             raise Exception("Matrix columns do not fit vector length!")
 
@@ -19,25 +20,27 @@ class MultLeftMatrix(pg.MatrixBase):
 #        pg.MatrixBase.__init__(self)  # the Python 2 variant
 
     def rows(self):
-        """ return number of rows (using underlying matrix) """
+        """Return number of rows (using underlying matrix)."""
         return self.A.rows()
 
     def cols(self):
-        """ return number of columns (using underlying matrix) """
+        """Return number of columns (using underlying matrix)."""
         return self.A.cols()
 
     def mult(self, x):
-        """ multiplication from right-hand-side (dot product) """
+        """Multiplication from right-hand-side (dot product)."""
         return self.A.mult(x) * self.left
 
     def transMult(self, x):
         """ multiplication from right-hand-side (dot product) """
         return self.A.transMult(x * self.left)
 
-LMultRMatrix = MultLeftMatrix
+LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
+
 
 class MultRightMatrix(pg.MatrixBase):
     """ Matrix A to be multiplied by a right hand side vector r. """
+
     def __init__(self, A, r=None):
         super().__init__()
         self.A = A
@@ -63,10 +66,12 @@ class MultRightMatrix(pg.MatrixBase):
         """ number of rows """
         return self.A.rows()
 
-RMultRMatrix = MultRightMatrix
+RMultRMatrix = MultRightMatrix  # alias for backward compatibility
+
 
 class MultLeftRightMatrix(pg.MatrixBase):
-    """ matrix consisting of actual RMatrix and lef-side vector"""
+    """Matrix consisting of actual RMatrix and lef-side vector."""
+
     def __init__(self, A, left, right, verbose=False):
         """ constructor saving matrix and vector """
         if A.cols() != len(right):
@@ -96,14 +101,16 @@ class MultLeftRightMatrix(pg.MatrixBase):
         """ multiplication from right-hand-side (dot product) """
         return self.A.transMult(x * self.left) * self.right
 
-LRMultRMatrix = MultLeftRightMatrix
+LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
+
 
 class Cm05Matrix(pg.MatrixBase):
-    """ matrix consisting of actual RMatrix and lef-side vector"""
-    def __init__(self, A, verbose=False):
-        from scipy.linalg import eigh, get_blas_funcs
+    """Matrix consisting of actual RMatrix and lef-side vector."""
 
-        """ constructor saving matrix and vector """
+    def __init__(self, A, verbose=False):
+        """Constructor saving matrix and vector."""
+        from scipy.linalg import eigh  # , get_blas_funcs
+
         if A.shape[0] != A.shape[1]:  # rows/cols for pg matrix
             raise Exception("Matrix must by square (and symmetric)!")
 
