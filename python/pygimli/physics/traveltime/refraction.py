@@ -566,17 +566,20 @@ class Refraction(MethodManager):
             val = self.velocity
         if cMin is None or cMax is None:
             cMin, cMax = interperc(val, 3)
+        coverage = 1
+        if kwargs.pop('useCoverage', True):
+            coverage = self.standardizedCoverage()
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
             ax, cbar = pg.show(mesh, val, logScale=logScale, ax=ax,
                                colorBar=True, cMin=cMin, cMax=cMax,
-                               coverage=self.standardizedCoverage(), **kwargs)
+                               coverage=coverage, **kwargs)
             self.figs[name] = plt.gcf()
         else:
             gci = drawModel(ax, mesh, val, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax,
-                            coverage=self.standardizedCoverage(), **kwargs)
+                            coverage=coverage, **kwargs)
             labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
             cbar = createColorBar(gci, **subkwargs)
