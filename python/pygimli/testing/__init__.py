@@ -30,6 +30,9 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     >>> import pygimli as pg
     >>> # You can test everything with pg.test() or test an individual function:
     >>> pg.test("pg.utils.boxprint", verbose=False)
+    >>> # The target argument can also be the function directly
+    >>> from pygimli.utils import boxprint
+    >>> pg.test(boxprint, verbose=False)
 
     Parameters
     ----------
