@@ -41,8 +41,8 @@ def fastMarch(mesh, downwind, times, upT, downT):
             edge = pg.findBoundary(upNodes[0], node)
             tt = times[upNodes[0].id()] + \
                 findSlowness(edge) * edge.shape().domainSize()
-
-            heapq.heappush(upCandidate, (tt, node))
+            # use node id additionally in case of equal travel times
+            heapq.heappush(upCandidate, (tt, node.id(), node))
         else:
             cells = node.cellSet()
             for c in cells:
@@ -72,12 +72,11 @@ def fastMarch(mesh, downwind, times, upT, downT):
                         ttimeQ = (ta + t * (tb - ta)) + \
                             slowness * line(t).distance(node.pos())
                         ttimeB = (tb + slowness * b.pos().distance(node.pos()))
-
-                        heapq.heappush(upCandidate,
-                                       (min(ttimeA, ttimeQ, ttimeB), node))
+                        tmin = min(ttimeA, ttimeQ, ttimeB)
+                        heapq.heappush(upCandidate, (tmin, node.id(), node))
 
     candidate = heapq.heappop(upCandidate)
-    newUpNode = candidate[1]  # original
+    newUpNode = candidate[2]  # original
     times[newUpNode.id()] = candidate[0]
     upT[newUpNode.id()] = 1
     downwind.remove(newUpNode)
@@ -102,7 +101,9 @@ class TravelTimeFMM(pg.ModellingBase):
     """
     dataMatrix = np.zeros((0, 0))
     timeMatrix = np.zeros((0, 0))
-    def __init__(self, mesh=None, data=None, frequency=200, verbose=False):
+
+    def __init__(self, mesh=None, data=None, frequency=200,
+                 verbose=False, debug=False):
         """
         Init function.
 
@@ -112,15 +113,18 @@ class TravelTimeFMM(pg.ModellingBase):
             2D mesh to be used in the forward calculations.
         data : pygimli.DataContainer
             The datacontainer with sensor positions etc.
+        frequency : float [200]
+            middle frequency for computing thickness of fat ray
         verbose : boolean
             More printouts or not...
         """
 
         pg.ModellingBase.__init__(self, verbose)
         super(TravelTimeFMM, self).__init__(verbose=verbose)
-        self.debug = False
+        self.debug = debug
         if mesh is not None:
             self.setMesh(mesh)  # besser use createRefinedForwardMesh
+            self.mesh().createNeighbourInfos()  # generates leftCell/rightCell
         if data is None:
             self.setData(pg.DataContainer())
         elif isinstance(data, str):
@@ -146,13 +150,13 @@ class TravelTimeFMM(pg.ModellingBase):
 
     def prepareMatrices(self):
         """Prepare some matrices being filled by response and Jacobian."""
-        print("prepare")  # , type(self.mesh()), type(self.data()))
         if (isinstance(self.mesh(), pg.Mesh) and
                 isinstance(self.data(), pg.DataContainer)):
             nSensors = self.data().sensorCount()
             self.dataMatrix = np.zeros((nSensors, nSensors))
             self.timeMatrix = np.zeros((nSensors, self.nModel))
-            print(self.dataMatrix.shape, self.timeMatrix.shape)
+            if self.debug:
+                print("shapes:", self.dataMatrix.shape, self.timeMatrix.shape)
 
     def computeTravelTimes(self, slowness, calcOthers=False):
         """Compute the travel times and fill data and time matrix
@@ -190,8 +194,9 @@ class TravelTimeFMM(pg.ModellingBase):
                                           sourceIndices)
             sourceIndices = geophoneIndices
 #            geophoneIndices = np.unique(data("g"))
-            print("{:d}-{:d}={:d}".format(
-                data.sensorCount(), ns, len(sourceIndices)))
+            if self.debug:
+                print("{:d}-{:d}={:d}".format(
+                    data.sensorCount(), ns, len(sourceIndices)))
         if self.debug:  # resize not working
             self.solution().resize(self.mesh().nodeCount(), self.nSensors)
             print(self.solution().rows(), self.solution().cols())
@@ -258,7 +263,8 @@ class TravelTimeFMM(pg.ModellingBase):
             tsr = self.dataMatrix[iS][iG]
             dt = self.timeMatrix[iS] + self.timeMatrix[iG] - tsr
             weight = np.maximum(1 - 2 * self.frequency * dt, 0.0)
-#            print(pg.sum(pg.sign(weight)))
+            if self.debug:
+                print(pg.sum(pg.sign(weight)))
             wa = weight * self.cellSizes
             self.jacobian()[i] = wa / np.sum(wa) * tsr / slowness
 

@@ -53,6 +53,7 @@ class TravelTimeFMM(pg.ModellingBase):
         """
         # mesh = self.mesh()  # better but for now input mesh
         mesh = self.mesh_
+        data = self.data_
         param_markers = np.unique(mesh.cellMarkers())
         param_count = len(param_markers)
         if len(slowness) == mesh.cellCount():
