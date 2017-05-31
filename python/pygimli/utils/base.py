@@ -63,7 +63,7 @@ def inthist(a, vals, bins=None, islog=False):
     """Return point of integral (cumulative) histogram, e.g.
     inthist(a, [25, 50, 75]) provides quartiles and median of an array"""
     if bins is None:
-        bins = np.min((np.round(len(a) / 20), 10))
+        bins = int(np.min((np.round(len(a) / 20), 10)))
 
     if islog:
         hists, edges = np.histogram(np.log(a), bins=bins)
