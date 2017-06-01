@@ -80,7 +80,7 @@ class TravelTimeFMM(pg.ModellingBase):
             times *= 0.0
             upTags *= 0
             downwind = set()
-            source = data.sensorPosition(iSource)
+            source = self.data_.sensorPosition(iSource)
             cell = self.mesh_.findCell(source)
             # fill in nodes around source using local smoothness
             for i, n in enumerate(cell.nodes()):

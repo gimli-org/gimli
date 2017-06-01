@@ -100,7 +100,7 @@ class Refraction(MethodManager):
         usefmm forces Fast Marching Method, otherwise Dijkstra is used.
         """
         if usefmm:
-            from FMModelling import TravelTimeFMM
+            from .FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
             fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
@@ -225,9 +225,31 @@ class Refraction(MethodManager):
 
         Parameters
         ----------
-        apply : bool
-            set Mesh property of the underlying forward operator
+        depth : float, optional
+            Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
+            sensor range.
+        paraDX : float
+            Relativ distance for refinement nodes between two electrodes (1=none),
+            e.g., 0.5 means 1 additional node between two neighboring electrodes
+            e.g., 0.33 means 2 additional equidistant nodes between two electrodes
+        boundary : float, optional
+            Boundary width to be appended for domain prolongation in absolute
+            para domain width.
+            Values lover 0 force the boundary to be 4 times para domain width.
+        paraBoundary : float, optional
+            Margin for parameter domain in absolute sensor distances. 2 (default).
+        quality : float, optional
+            Mesh quality (smallest angle allowed)
+        apply : bool, optional
+            set mesh property of the underlying forward operator
+        refine : bool, optional
+            Refine mesh.
+        **kwargs: Additional keyword arguments passed to
+            pygimli.meshtools.createParaMeshPLC
 
+        See also
+        --------
+        pygimli.meshtools.createParaMeshPLC
         """
 
         if self.dataContainer is None:
@@ -238,7 +260,7 @@ class Refraction(MethodManager):
         self.poly = createParaMeshPLC(self.dataContainer.sensorPositions(),
                                       paraDepth=depth, paraDX=paraDX,
                                       paraBoundary=paraBoundary,
-                                      boundary=boundary)
+                                      boundary=boundary, **kwargs)
         mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
 #        mesh.createNeighbourInfos()
         if apply:

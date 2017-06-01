@@ -68,7 +68,8 @@ class Tomography(Refraction):
                 data = readTOMfile(data, **kwargs)
             else:
                 data = pg.DataContainer(data, 's g')
-        data.set('t', data('t') + tcorr)
+        if tcorr != 0:
+            data.set('t', data('t') + tcorr)
         super(Tomography, self).__init__(data, name=name, **kwargs)
 
     def createMesh(self, quality=34.6, maxarea=0.1, addpoints=None):
