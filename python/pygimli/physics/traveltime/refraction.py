@@ -101,7 +101,7 @@ class Refraction(MethodManager):
         usefmm forces Fast Marching Method, otherwise Dijkstra is used.
         """
         if usefmm:
-            from FMModelling import TravelTimeFMM
+            from .FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
             fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
