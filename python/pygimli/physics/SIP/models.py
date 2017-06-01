@@ -9,6 +9,7 @@ import pygimli as pg
 
 def ColeColeRho(f, R, m, tau, c, a=1):
     r"""Frequency domain Cole-Cole impedance model after Pelton et al. (1978)
+
     :cite:`PeltonWarHal1978`
 
     .. math::
@@ -78,23 +79,18 @@ def ColeColeSigma(f, R, m, tau, c, a=1):
 
 
 def ColeCole(f, R, m, tau, c, a=1):
-    """For backward compatibility.
-
-    DEPRECATED?
-    """
+    """For backward compatibility."""
     return ColeColeRho(f, R, m, tau, c, a)
 
 
 def ColeDavidson(f, R, m, tau, a=1):
-    """For backward compatibility.
-
-    DEPRECATED?
-    """
-    return ColeCole(f, R, m, tau, c=1, a=1)
+    """For backward compatibility."""
+    return ColeCole(f, R, m, tau, c=1, a=a)
 
 
 class ColeColePhi(pg.ModellingBase):
     r"""Cole-Cole model with EM term after Pelton et al. (1978)
+
     :cite:`PeltonWarHal1978`
 
     Modelling operator for the Frequency Domain
@@ -112,7 +108,9 @@ class ColeColePhi(pg.ModellingBase):
         and :math:`Z(f, \rho_0, m, \tau, c) =` Cole-Cole impedance.
 
     """
+
     def __init__(self, f, verbose=False):
+        """Setup class by specifying the frequency."""
         pg.ModellingBase.__init__(self, verbose)
         self.f_ = f
         self.setMesh(pg.createMesh1D(1, 3))
@@ -145,7 +143,9 @@ class DoubleColeColePhi(pg.ModellingBase):
         :math:`Z_2(f, 1, m_2, \tau_2, c_2)` ColeCole impedances.
 
     """
+
     def __init__(self, f, verbose=False):  # initialize class
+        """Setup class by specifying the frequency."""
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
         self.setMesh(pg.createMesh1D(1, 6))       # 4 single parameters
@@ -160,6 +160,7 @@ class DoubleColeColePhi(pg.ModellingBase):
 
 class ColeColeAbs(pg.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
+
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
@@ -173,6 +174,7 @@ class ColeColeAbs(pg.ModellingBase):
 
 class ColeColeComplex(pg.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
+
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
@@ -186,6 +188,7 @@ class ColeColeComplex(pg.ModellingBase):
 
 class ColeColeComplexSigma(pg.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
+
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
@@ -199,6 +202,7 @@ class ColeColeComplexSigma(pg.ModellingBase):
 
 class PeltonPhiEM(pg.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
+
     def __init__(self, f, verbose=False):  # initialize class
         pg.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
@@ -213,6 +217,7 @@ class PeltonPhiEM(pg.ModellingBase):
 
 class DebyePhi(pg.ModellingBase):
     """Debye decomposition (smooth Debye relaxations) phase only"""
+
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
         """constructor with frequecy and tau vector"""
         pg.ModellingBase.__init__(self, verbose)
@@ -233,6 +238,7 @@ class DebyePhi(pg.ModellingBase):
 
 class DebyeComplex(pg.ModellingBase):
     """Debye decomposition (smooth Debye relaxations) of complex data"""
+
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
         """constructor with frequecy and tau vector"""
         self.f = fvec

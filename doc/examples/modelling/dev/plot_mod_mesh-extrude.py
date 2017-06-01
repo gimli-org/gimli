@@ -4,25 +4,26 @@
     Mesh extrusion from 1D over 2D to a 3D hex mesh
 """
 
-import pygimli as pg
-from pygimli.viewer import *
-from pygimli.meshtools import *
-
 import math
+import numpy as np
+import pygimli as pg
 from pygimli.meshtools import polytools as plc
+# from pygimli.viewer import *
+# import pygimli.meshtools as mt
+
 
 c1 = plc.createCircle(pos=(-5.0, 0.0), radius=0.1, segments=5,
                       start=math.pi, end=2*math.pi, isClosed=False)
-c2 = plc.createCircle(pos=( 5.0, 0.0), radius=0.1, segments=5,
+c2 = plc.createCircle(pos=(5.0, 0.0), radius=0.1, segments=5,
                       start=math.pi, end=2*math.pi, isClosed=False)
 
 left = plc.createLine(start=(-20, 0.0), end=(-5.1, 0.0), segments=10)
 left.node(8).setMarker(1)
 mid = plc.createLine(start=(-4.9, 0.0), end=(4.9, 0.0), segments=20)
-right= plc.createLine(start=(5.1, 0.0), end=(20, 0.0), segments=10)
+right = plc.createLine(start=(5.1, 0.0), end=(20, 0.0), segments=10)
 left.node(2).setMarker(1)
 
-border = mergePLC([left, c1, mid, c2, right])
+border = plc.mergePLC([left, c1, mid, c2, right])
 
 depth = 20
 nz = 15
@@ -33,14 +34,14 @@ surface = pg.createMesh2D(border, y, 0, 0, False)
 #for n in surface.nodes():
     #yNodes = pg.increasingRange(yDefault[1], depth+n.y(), nz)
     #for y in yNodes[0:]:
-        #newNodes.append([n.x(), n.y() -y])    
+        #newNodes.append([n.x(), n.y() -y])
 
 #surface = pg.createGrid(x=yDefault, y=pg.sort(pg.x(surface.positions())))
 
 #for i, n in enumerate(surface.nodes()):
     #n.setPos(newNodes[i])
-    
-#surface.smooth(1, 1, 1, 10)    
+
+#surface.smooth(1, 1, 1, 10)
 
 ax, _ = pg.show(surface)
 #showBoundaryNorm(surface, axes=ax)

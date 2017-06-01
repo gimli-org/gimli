@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Spectral induced polarisation (SIP) tools
-"""
+"""Different spectral induced polarisation (SIP) tools."""
 
 from math import pi
 import numpy as np
@@ -147,7 +145,7 @@ def fitCCCC(f, amp, phi, error=0.01, lam=10., taupar=(1e-2, 1e-5, 100),
 def KramersKronig(f, re, im, usezero=False):
     """Return real/imaginary parts retrieved by Kramers-Kronig relations.
 
-        formulas including singularity removal according to Boukamp (1993)
+    formulas including singularity removal according to Boukamp (1993)
     """
     from scipy.integrate import simps
 
@@ -159,8 +157,7 @@ def KramersKronig(f, re, im, usezero=False):
     dredx = np.hstack((drdx[0], (drdx[:-1] + drdx[1:]) / 2, drdx[-1]))
     didx = np.diff(im) / np.diff(x)
     dimdx = np.hstack((didx[0], (didx[:-1] + didx[1:]) / 2, didx[-1]))
-    for num in range(len(x)):
-        w = x[num]
+    for num, w in enumerate(x):
         x2w2 = x**2 - w**2
         x2w2[num] = 1e-12
         fun1 = (re - re[num]) / x2w2
@@ -173,9 +170,9 @@ def KramersKronig(f, re, im, usezero=False):
         re3[num] = simps(fun3, x) * 2. / pi + re[-1]
 
     if usezero:
-        return re2, im2
-    else:
-        return re3, im2
+        re3 = re2
+
+    return re3, im2
 
 
 if __name__ == "__main__":

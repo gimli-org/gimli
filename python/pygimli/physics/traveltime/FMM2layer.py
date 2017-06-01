@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Fast Marching test
-"""
+"""Fast Marching test using a two-layer model."""
 import time
 from math import asin, tan
 

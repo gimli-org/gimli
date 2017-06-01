@@ -271,28 +271,29 @@ class TravelTimeFMM(pg.ModellingBase):
             # TODO: check "invalid value in true divide" warning
 
     def createDefaultStartModel(self):
+        """Create a meaningful starting model in case none is given."""
         return pg.RVector(self.fop.regionManager().parameterCount(), 0.001)
 
 if __name__ == '__main__':
-    """Set up FMM modelling operator and run a synthetic model."""
-    data = pg.DataContainer('example_topo.sgt', 's g')
-    print(data)
-    mesh = pg.meshtools.createParaMesh(data, boundary=0, paraBoundary=5,
-                                       paraDepth=20,
-                                       quality=34.5, paraMaxCellSize=5)
-    mesh.createNeighbourInfos()
-    print(mesh)
-    slo = createGradientModel2D(data, mesh, vTop=1000, vBot=2000)
-    fwd = TravelTimeFMM(mesh, data, frequency=500)  #
+    # Set up FMM modelling operator and run a synthetic model
+    mydata = pg.DataContainer('example_topo.sgt', 's g')
+    print(mydata)
+    mymesh = pg.meshtools.createParaMesh(mydata, boundary=0, paraBoundary=5,
+                                         paraDepth=20,
+                                         quality=34.5, paraMaxCellSize=5)
+    mymesh.createNeighbourInfos()
+    print(mymesh)
+    slo = createGradientModel2D(mydata, mymesh, vTop=1000, vBot=2000)
+    fwd = TravelTimeFMM(mymesh, mydata, frequency=500)  #
     fwd.createRefinedForwardMesh(False)
     resp = fwd.response(slo)
-    data.set('t', resp)
+    mydata.set('t', resp)
     print("ready with response, starting jacobian")
     fwd.createJacobian(slo)
     raise SystemExit
     # %%
     pg.plt.imshow(fwd.dataMatrix, interpolation='nearest')
     # %%
-    one = pg.RVector(data.size(), 1.0)
+    one = pg.RVector(mydata.size(), 1.0)
     coverage = fwd.jacobian().transMult(one)
     pg.show(fwd.mesh(), coverage/fwd.mesh().cellSizes())

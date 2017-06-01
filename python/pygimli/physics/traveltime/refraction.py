@@ -26,8 +26,8 @@ from . raplot import drawTravelTimeData
 class Refraction(MethodManager):
     """Class for managing refraction seismics data
 
-        TODO Document main members and use default MethodeManager interface
-        e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
+    TODO Document main members and use default MethodeManager interface
+    e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
     def __init__(self, data=None, verbose=True, debug=False, **kwargs):
@@ -69,7 +69,7 @@ class Refraction(MethodManager):
 #        return self.__repr__()
 #
     def __repr__(self):  # to be moved to Mesh/Data Method manager
-        """string representation of the class for the print function"""
+        """String representation of the class for the print function"""
         out = type(self).__name__ + " object"
         if hasattr(self, 'dataContainer'):
             out += "\n" + self.dataContainer.__str__()
@@ -78,11 +78,11 @@ class Refraction(MethodManager):
         return out
 
     def paraDomain(self):
-        """base api """
+        """Return parameter domain mesh."""
         return self.fop.regionManager().paraDomain()
 
     def model(self):
-        """base api """
+        """Return velocity vector."""
         # (self.paraDomain.cellMarkers())
         return self.velocity
 
@@ -96,7 +96,6 @@ class Refraction(MethodManager):
     @staticmethod
     def createFOP(verbose=False, usefmm=False):
         """Create default forward operator for Traveltime modelling.
-        base api
 
         usefmm forces Fast Marching Method, otherwise Dijkstra is used.
         """
@@ -109,11 +108,7 @@ class Refraction(MethodManager):
         return fop
 
     def createInv(self, fop, verbose=True, doSave=False):
-        """Create default inversion instance for Traveltime inversion.
-
-        base api
-        (typically done by run)
-        """
+        """Create default inversion instance for Traveltime inversion."""
         self.tD = pg.RTrans()
         self.tM = pg.RTransLogLU()
 
@@ -125,34 +120,28 @@ class Refraction(MethodManager):
         return inv
 
     def createApparentData(self, data):
-        """
-        Create apparent slowness for given data.
-        """
+        """Create apparent slowness for given data."""
         # hackish .. dislike!
         self.setData(data)
         return 1./(self.getOffset(data=data, full=True) / data('t'))
 
     def dataVals(self, data):
-        """Return pure data values from a given DataContainer. """
+        """Return pure data values from a given DataContainer."""
         return data('t')
 
     def relErrorVals(self, data):
-        """Return pure data values from a given DataContainer. """
+        """Return pure data values from a given DataContainer."""
         return data('err') / data('t')
 
     def setData(self, data):
-        """Set data """
+        """Set data container (holding s and g indices and t floats)."""
         if issubclass(type(data), pg.DataContainer):
             self.setDataContainer(data)
         else:
             raise BaseException("Implement set data from type:", type(data))
 
     def setDataContainer(self, data):
-        """set data container from outside
-
-        base api
-
-        """
+        """Set data container from outside."""
         self.dataContainer = data
         self.checkData()
         self.fop.setData(self.dataContainer)
@@ -163,15 +152,18 @@ class Refraction(MethodManager):
             self.error = Refraction.estimateError(data)
 
     def loadData(self, filename):
-        """load data from file"""
+        """Load data from file."""
         # check for file formats and import if necessary
         data = pg.DataContainer(filename, 's g')
         self.basename = filename[:filename.rfind('.')]
         self.setDataContainer(data)
 
     def checkData(self):
-        """check data w.r.t. shot/geophone identity and zero/negative
-        traveltimes, plus check y/z sensor positions """
+        """Check data
+
+        w.r.t. shot/geophone identity and zero/negative
+        traveltimes, plus check y/z sensor positions
+        """
         oldsize = self.dataContainer.size()
         self.dataContainer.markInvalid(pg.abs(self.dataContainer('s') -
                                               self.dataContainer('g')) < 1)
@@ -199,7 +191,12 @@ class Refraction(MethodManager):
 
         Parameters
         ----------
-
+        data : pyGIMLi data Container [self.dataContainer]
+            data to show with points
+        response : array
+            response vector to draw with lines
+        ax : maxplotlib axes
+            axis to plot into, if not given, a new figure is created
         """
         if data is None:
             data = self.dataContainer
@@ -228,7 +225,6 @@ class Refraction(MethodManager):
 
         Parameters
         ----------
-
         apply : bool
             set Mesh property of the underlying forward operator
 
@@ -348,7 +344,7 @@ class Refraction(MethodManager):
                     kwargs.pop('vtop', 500.), kwargs.pop('vbottom', 5000.))
             else:
                 startModel = self.fop.createDefaultStartModel()
-        if type(startModel) is float:
+        if isinstance(startModel, (float, int)):
             startModel = pg.RVector(self.pd.cellCount(), startModel)
         self.fop.setStartModel(startModel)
         zWeight = kwargs.pop('zWeight', 0.2)
