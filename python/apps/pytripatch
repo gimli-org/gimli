@@ -146,7 +146,6 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
     if (constraintMat):
         showConstrainMat(axis, mesh, constraintMat, cWeight)
     elif (modelname):
-
         if modelname.lower() == 'marker':
             data = np.asarray(mesh.cellMarker())
         elif modelname.lower() == 'attribute':
@@ -155,7 +154,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
             data = mesh.exportData(modelname)
         elif modelname.rfind('.bmat') != -1:
             A = pg.RMatrix(modelname)
-            data = A[number]
+            data = pg.RVector(A[number])  # return copy (A dies!)
         else:
             data = pg.RVector(modelname)
 
