@@ -226,20 +226,20 @@ class Refraction(MethodManager):
         Parameters
         ----------
         depth : float, optional
-            Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
-            sensor range.
+            maximum depth, 0 (default) means maximum offset / 3.
         paraDX : float
-            Relativ distance for refinement nodes between two electrodes (1=none),
-            e.g., 0.5 means 1 additional node between two neighboring electrodes
-            e.g., 0.33 means 2 additional equidistant nodes between two electrodes
+            relative distance for refinement nodes between two sensors
+            e.g., 0 or 1 means no refinement
+            e.g., 0.5 means 1 additional node between two neighboring sensors
+            e.g., 0.33 means 2 additional equidistant nodes between two sensors
         boundary : float, optional
-            Boundary width to be appended for domain prolongation in absolute
+            boundary width to be appended for domain prolongation in absolute
             para domain width.
-            Values lover 0 force the boundary to be 4 times para domain width.
+            values < 0 force the boundary to be 4 times para domain width.
         paraBoundary : float, optional
-            Margin for parameter domain in absolute sensor distances. 2 (default).
+            margin for parameter domain in sensor distances (default 2)
         quality : float, optional
-            Mesh quality (smallest angle allowed)
+            mesh quality (smallest angle allowed)
         apply : bool, optional
             set mesh property of the underlying forward operator
         refine : bool, optional
