@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2011-2017 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -34,8 +34,9 @@ public:
     /*! Simple Constructor, builds an empty data container.*/
     DataContainerERT();
 
-    /*! Constructor, builds a data container and fills the data from a file. See \ref load.
-      \param fileName String of the file name */
+    /*! Constructor, builds a data container and fills the data from a file.
+     * See \ref load.
+     * \param fileName String of the file name */
     DataContainerERT(const std::string & fileName, bool removeInvalid=true);
 
     /*! Copy Constructor */
