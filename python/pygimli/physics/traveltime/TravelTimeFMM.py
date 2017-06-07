@@ -24,8 +24,8 @@ class TravelTimeFMM(pg.ModellingBase):
         """
         Init function.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         mesh : pygimli.Mesh
             2D mesh to be used in the forward calculations.
         data : pygimli.DataContainer
@@ -131,14 +131,14 @@ class TravelTimeFMM(pg.ModellingBase):
 
         Assumes 2D lines!
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         l1, l2 : pygimli Line
             Line objects from pygimli. Useful because they nicely wrap
             a line and has some utility functions.
 
-        Returns:
-        --------
+        Returns
+        -------
         v : numpy array (length 2)
             The parameters (s and t) for l1 and l2, respectively. None if
             no intersection (i.e. parallell lines).
@@ -181,15 +181,15 @@ class TravelTimeFMM(pg.ModellingBase):
 
         Assumes 2D lines!
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         p1, p2, p3, p4 : pygimli RVector3
             Position objects from pygimli. The lines are defined as:
                 l1 : P1 to P2
                 l2 : P3 to P4
 
-        Returns:
-        --------
+        Returns
+        -------
         v : numpy array (length 2)
             The parameters (s and t) for l1 and l2, respectively. Will
             return "large" values if the lines are parallell.
@@ -299,8 +299,8 @@ class TravelTimeFMM(pg.ModellingBase):
         interface. Will decide which cell is the one that is travelled
         through by choosing the one with highest velocity.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         boundary : pygimli Boundary
             The boundary we are coming from.
         current_cell_id : int
@@ -309,8 +309,9 @@ class TravelTimeFMM(pg.ModellingBase):
             The origin of the ray.
         ray_dir : pygimli RVector3
             Direction of the ray.
-        Returns:
-        --------
+
+        Returns
+        -------
         node_id : int
             The global node index. (Using the mesh numbering)
         cell_id : int

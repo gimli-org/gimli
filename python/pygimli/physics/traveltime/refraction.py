@@ -326,6 +326,9 @@ class Refraction(MethodManager):
 
         Parameters
         ----------
+        useGradient : bool
+            Create gradient for starting model from vtop to vbottom.
+
         vtop, vbottom : float
             starting (gradient) model velocities on top/at bottom of the mesh
 
