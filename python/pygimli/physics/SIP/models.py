@@ -103,17 +103,10 @@ class ColeColePhi(pg.ModellingBase):
 
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
-<<<<<<< HEAD
         Modeling eesponse for all given frequencies as negative phase angles
         :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
-=======
-        Modeling Response for all given frequencies as negative the phase angles
-        with :math:`\varphi(f) = -\text{tan}^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
->>>>>>> bert
         and :math:`Z(f, \rho_0, m, \tau, c) =` Cole-Cole impedance.
-
     """
-
     def __init__(self, f, verbose=False):
         """Setup class by specifying the frequency."""
         pg.ModellingBase.__init__(self, verbose)
