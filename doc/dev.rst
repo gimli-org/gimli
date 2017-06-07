@@ -56,6 +56,30 @@ for automatic warnings in case you are about to push to the master branch.
 Note that if you are on the `dev` branch, a `git push` should suffice, but the
 command above is more explicit about the branch which should be pushed.
 
+8. Show available tags and branches:
+
+    .. code-block:: bash
+
+       git tag
+       git branch
+
+9. If you plan bigger changes or developments create an own branch for it:
+
+    .. code-block:: bash
+
+        git branch my_new_test_branch
+        git checkout my_new_test_branch
+
+Work on your code in branch `my_new_test_branch` and test it.
+If you are happy with your results merge them back
+into the dev branch and delete the branch.
+
+    .. code-block:: bash
+
+        git checkout dev
+        git merge my_new_test_branch
+        git branch -d my_new_test_branch
+
 Version numbering
 -----------------
 
