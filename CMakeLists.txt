@@ -277,7 +277,7 @@ find_package(PythonLibs)
 find_python_module(numpy)
 
 if (Boost_PYTHON_LIBRARY)
-    set (Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY})
+    #set (Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY})
 else()
     #find_package(Boost 1.46.0 COMPONENTS python)
 
