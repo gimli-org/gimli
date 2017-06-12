@@ -49,10 +49,21 @@ DLLEXPORT RVector exactDCSolution(const Mesh & mesh, int aID, int bID, double k,
 DLLEXPORT RVector exactDCSolution(const Mesh & mesh, int aID, double k=0.0,
                                   double surfaceZ=0.0);
 
+
 /*! Helper function to calculate configuration factors for a
  * given \ref DataContainerERT */
-DLLEXPORT RVector geometricFactor(const DataContainerERT & data,
+DLLEXPORT RVector geometricFactor(const DataContainerERT & data, int dim=3,
                                   bool forceFlatEarth=false);
+// /*! Helper function to calculate configuration factors for a
+//  * given \ref DataContainerERT */
+// DLLEXPORT RVector geometricFactor(const DataContainerERT & data,
+//                                   bool forceFlatEarth){
+//     return geometricFactor(data, 3, forceFlatEarth);
+// }
+//
+// DLLEXPORT RVector geometricFactor(const DataContainerERT & data){
+//     return geometricFactor(data, 3, false);
+// }
 
 DLLEXPORT void initKWaveList(double rMin, double rMax,
                              int nGauLegendre, int nGauLaguerre,
