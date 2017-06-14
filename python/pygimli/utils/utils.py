@@ -364,14 +364,13 @@ def dist(p, c=None):
 
 
 def cumDist(p):
-    """The progressive i.e, cumulative length for the path p.
+    """The progressive, i.e., cumulative length for a path p.
 
     d = [0.0, d[0]+ | p[1]-p[0] |, d[1] + | p[2]-p[1] | + ...]
 
     Parameters
     ----------
     p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector
-
         Position array
 
     Returns

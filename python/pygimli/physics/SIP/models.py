@@ -7,9 +7,10 @@ import numpy as np
 import pygimli as pg
 
 
-def ColeColeRho(f, R, m, tau, c, a=1):
+def ColeColeRho(f, rho, m, tau, c, a=1):
     r"""Frequency domain Cole-Cole impedance model after Pelton et al. (1978)
 
+    Frequency domain Cole-Cole impedance model after Pelton et al. (1978)
     :cite:`PeltonWarHal1978`
 
     .. math::
@@ -26,8 +27,8 @@ def ColeColeRho(f, R, m, tau, c, a=1):
     * :math:`m` -- Chargeability after Seigel (1959) :cite:`Seigel1959` as
       being the ratio of voltage immediately after, to the voltage immediately
       before cessation of an infinitely long charging current.
-    * :math:`\tau` -- 'Time constant' [s] for 1/e decay
-    * :math:`c` - Frequency dependence, typical [0.1 .. 0.6]
+    * :math:`\tau` -- 'Time constant' relaxation time [s] for 1/e decay
+    * :math:`c` - Frequency dependence, Cole-Cole-Model exponent typical [0.1 .. 0.6]
 
     Examples
     --------
@@ -37,20 +38,66 @@ def ColeColeRho(f, R, m, tau, c, a=1):
     >>> from pygimli.physics.SIP import ColeColeRho
     >>> f = np.logspace(-2, 5, 100)
     >>> m = np.linspace(0.1, 0.9, 5)
-    >>> fig, ax1 = pg.plt.subplots()
-    >>> ax2 = ax1.twinx()
+    >>> tau = 0.01
+    >>> fImMin = 1/(tau*2*np.pi)
+    >>> fig, axs = pg.plt.subplots(1,2)
+    >>> ax1 = axs[0]
+    >>> ax2 = axs[0].twinx()
+    >>> ax3 = axs[1]
+    >>> ax4 = axs[1].twinx()
     >>> for i in range(len(m)):
-    ...     Z = ColeColeRho(f, R=1, m=m[i], tau=0.01, c=0.5)
-    ...     _= ax1.loglog(f, np.abs(Z), color='b')
-    ...     _= ax2.loglog(f, -np.angle(Z)*1000, color='g')
-    >>> _= ax1.set_ylabel('Amplitude $|Z(f)|$', color='b')
-    >>> _= ax2.set_ylabel(r'- Phase $\varphi$ [mrad]', color='g')
+    ...     Z = ColeColeRho(f, rho=1, m=m[i], tau=tau, c=0.5)
+    ...     _= ax1.loglog(f, np.abs(Z), color='black')
+    ...     _= ax2.loglog(f, -np.angle(Z)*1000, color='b')
+    ...     _= ax3.loglog(f, Z.real, color='g')
+    ...     _= ax4.semilogx(f, Z.imag, color='r')
+    ...     _= ax4.plot([fImMin, fImMin], [-0.2, 0.], color='r')
+    >>> _= ax4.text(fImMin, -0.1, r'$f($min(im $Z(f)$))=$\frac{1}{2*\pi\tau}$],
+                     [-0.2, 0.], color='r')
+    >>> _= ax4.text(0.1, -0.17, r'$f($min[im $Z(f)$])=$\frac{1}{2\pi\tau}$', color='r')
+    >>> _= ax1.set_ylabel('Amplitude $|Z(f)|$', color='black')
     >>> _= ax1.set_xlabel('Frequency $f$ [Hz]')
+    >>> _= ax1.set_ylim(1e-2, 1)
+    >>> _= ax2.set_ylabel(r'- Phase $\varphi$ [mrad]', color='b')
     >>> _= ax2.set_ylim(1, 1e3)
-    >>> _= ax1.set_ylim(1e-3, 1)
+    >>> _= ax3.set_ylabel('re $Z(f)$', color='g')
+    >>> _= ax4.set_ylabel('im $Z(f)$', color='r')
+    >>> _= ax3.set_xlabel('Frequency $f$ [Hz]')
+    >>> _= ax3.set_ylim(1e-2, 1)
+    >>> _= ax4.set_ylim(-0.2, 0)
     >>> pg.plt.show()
     """
-    return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * R
+    return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * rho
+
+
+def ColeColeSigma(f, sigma, m, tau, c, a=1):
+    """Complex-valued conductivity Cole-Cole model"""
+    return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * sigma
+
+
+def tauRhoToTauSigma(tRho, m, c):
+    """Convert :math:`\tau_{\rho}` to :math:`\tau_{\sigma}` for Cole-Cole-Model.
+
+
+    .. math::
+
+        \tau_{\sigma} = \tau_{\rho}/(1-m)^{\frac{1}{c}}
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> from pygimli.physics.SIP import *
+    >>> tr = 1.
+    >>> Z = ColeColeRho(1e5, rho=10, m=0.5, tau=tr, c=0.5)
+    >>> ts = tauRhoToTauSigma(tr, m=0.5, c=0.5)
+    >>> S = ColeColeSigma(1e5, sigma=1/10, m=0.5, tau=ts, c=0.5)
+    >>> abs(1/S - Z) < 1e-12
+    True
+    >>> np.angle(1/S / Z) < 1e-12
+    True
+    """
+    return tRho * (1-m) **(1/c)
 
 
 def relaxationTerm(f, tau, c=1., a=1.):
@@ -73,9 +120,6 @@ def ColeColeEpsilon(f, e0, eInf, tau, alpha):
     return (e0 - eInf) * relaxationTerm(f, tau, c=1./alpha) + eInf
 
 
-def ColeColeSigma(f, R, m, tau, c, a=1):
-    """Complex-valued conductivity Cole-Cole model"""
-    return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * R
 
 
 def ColeCole(f, R, m, tau, c, a=1):
@@ -91,11 +135,10 @@ def ColeDavidson(f, R, m, tau, a=1):
 class ColeColePhi(pg.ModellingBase):
     r"""Cole-Cole model with EM term after Pelton et al. (1978)
 
-    :cite:`PeltonWarHal1978`
-
     Modelling operator for the Frequency Domain
     :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model using
-    :py:mod:`pygimli.physics.SIP.ColeColeRho`
+    :py:mod:`pygimli.physics.SIP.ColeColeRho` after Pelton et al. (1978)
+    :cite:`PeltonWarHal1978`
 
     * :math:`\textbf{m} =\{ m, \tau, c\}`
 
@@ -103,17 +146,10 @@ class ColeColePhi(pg.ModellingBase):
 
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
-<<<<<<< HEAD
-        Modeling eesponse for all given frequencies as negative phase angles
+        Modelling eesponse for all given frequencies as negative phase angles
         :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
-=======
-        Modeling Response for all given frequencies as negative the phase angles
-        with :math:`\varphi(f) = -\text{tan}^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
->>>>>>> bert
-        and :math:`Z(f, \rho_0, m, \tau, c) =` Cole-Cole impedance.
-
+        and :math:`Z(f, \rho_0=1, m, \tau, c) =` Cole-Cole impedance.
     """
-
     def __init__(self, f, verbose=False):
         """Setup class by specifying the frequency."""
         pg.ModellingBase.__init__(self, verbose)
@@ -128,12 +164,11 @@ class ColeColePhi(pg.ModellingBase):
 
 class DoubleColeColePhi(pg.ModellingBase):
     r"""Double Cole-Cole model with EM term after Pelton et al. (1978)
-    :cite:`PeltonWarHal1978`
 
     Modelling operator for the Frequency Domain
     :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model
-    using :py:mod:`pygimli.physics.SIP.ColeColeRho`
-
+    using :py:mod:`pygimli.physics.SIP.ColeColeRho` after Pelton et al. (1978)
+    :cite:`PeltonWarHal1978`
 
     * :math:`\textbf{m} =\{ m_1, \tau_1, c_1, m_2, \tau_2, c_2\}`
 
@@ -141,11 +176,11 @@ class DoubleColeColePhi(pg.ModellingBase):
 
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
-        Modeling Response for all given frequencies as negative phase angles
+        Modelling Response for all given frequencies as negative phase angles
         :math:`\varphi(f) = \varphi_1(Z_1(f))+\varphi_2(Z_2(f)) =
-        -tan^{-1}\frac{\text{Im}\,(Z_1(f)Z_2(f))}{\text{Re}\,(Z_1(f)Z_2(f))}`
-        and :math:`Z_1(f, 1, m_1, \tau_1, c_1)` and
-        :math:`Z_2(f, 1, m_2, \tau_2, c_2)` ColeCole impedances.
+        -tan^{-1}\frac{\text{Im}\,(Z_1Z_2)}{\text{Re}\,(Z_1Z_2)}`
+        and :math:`Z_1(f, \rho_0=1, m_1, \tau_1, c_1)` and
+        :math:`Z_2(f, \rho_0=1, m_2, \tau_2, c_2)` ColeCole impedances.
 
     """
 

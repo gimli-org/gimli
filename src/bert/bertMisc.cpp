@@ -120,8 +120,22 @@ void initKWaveList(double rMin, double rMax, int nGauLegendre, int nGauLaguerre,
 
 }
 
-RVector geometricFactor(const DataContainerERT & data, bool forceFlatEarth){
+RVector geometricFactor(const DataContainerERT & data, int dim, bool forceFlatEarth){
     RVector k(data.size());
+
+    if (dim == 2){
+        DataContainerERT tmp(data);
+        for (Index i = 0; i < data.sensorCount(); i ++){
+            RVector3 p(tmp.sensorPosition(i));
+            // if y  differ from 0 .. we assume its x|y -> 2D .. so switch y->z
+            if (p[1] != 0.0){
+                p[2] = p[1];
+                p[1] = 0.;
+            }
+            tmp.setSensorPosition(i, p);
+        }
+        return geometricFactor(tmp, 3, forceFlatEarth);
+    }
 
     if (forceFlatEarth){
         DataContainerERT tmp(data);
