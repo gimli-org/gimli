@@ -28,8 +28,6 @@ SetupIconFile=..\doc\_static\favicon.ico
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=none
-VersionInfoVersion={#AppVer}
-VersionInfoProductVersion={#AppVer}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
