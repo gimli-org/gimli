@@ -15,6 +15,7 @@ PARALLEL_BUILD=2
 PYTHON_MAJOR=3
 UPDATE_ONLY=0
 BRANCH=''
+CLEAN=0
 
 # Utility functions
 expand_tilde()
@@ -92,6 +93,9 @@ for i in "$@"; do
         *L*|*localScripts*)
             LOCALSCRIPTS=1
         ;;
+        *C*|*clean*)
+            CLEAN=1
+        ;;
         *h*|*help*)
             help
         ;;
@@ -145,6 +149,7 @@ echo "Build for Python="$PYTHON_MAJOR
 echo "Parallelize with j="$PARALLEL_BUILD
 echo "Update only" $UPDATE_ONLY
 echo "Branch:" $BRANCH
+echo "CLEAN build:" $CLEAN
 
 echo "=========================================="
 echo "Installing system prerequisites for" $SYSTEM

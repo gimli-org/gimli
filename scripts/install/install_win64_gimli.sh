@@ -6,6 +6,7 @@ ROOT=$PWD
 
 CMAKE_GENERATOR='Unix Makefiles'
 
+echo "CLEAN", $CLEAN
 buildGIMLI(){
         
     mkdir -p build

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.59.0
+BOOST_VERSION_DEFAULT=1.64.0
 BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 
 LAPACK_VERSION=3.4.2
@@ -25,8 +25,8 @@ PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
 #PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-PYPLUSPLUS_REV=5caf5ad8ce28 # tag 1.8 current functional
-
+#PYPLUSPLUS_REV=5caf5ad8ce28 
+PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 current functional
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
 checkTOOLSET(){
@@ -234,6 +234,7 @@ getWITH_HG(){
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_
+          "$HG" checkout $_BRANCH_
           #"$HG" revert -r $_BRANCH_ --all
         popd
     fi
@@ -529,7 +530,7 @@ buildPYGCCXML(){
     getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
     getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
 
-    mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC
+    mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC 1
     pushd $PYGCCXML_BUILD
         "$PYTHONEXE" setup.py build
         echo "copy build->dist"
@@ -542,7 +543,7 @@ buildPYGCCXML(){
         #python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
 
-    mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC
+    mkBuildDIR $PYPLUSPLUS_BUILD $PYPLUSPLUS_SRC 1
     pushd $PYPLUSPLUS_BUILD
         "$PYTHONEXE" setup.py build
         echo "copy build->dist"
