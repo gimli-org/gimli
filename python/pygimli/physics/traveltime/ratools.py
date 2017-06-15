@@ -85,4 +85,4 @@ def createGradientModel2D(data, mesh, vTop, vBot):
     d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen
                   for i in range(pos.shape[0])])
 
-    return np.interp(d, [min(d), max(d)], [1.0 / vTop, 1.0 / vBot])
+    return 1. / np.interp(d, [min(d), max(d)], [vTop, vBot])

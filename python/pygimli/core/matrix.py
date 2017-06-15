@@ -136,7 +136,9 @@ class Cm05Matrix(pg.MatrixBase):
 
     def mult(self, x):
         """ multiplication from right-hand-side (dot product) """
-        return self.EV.dot((np.dot(np.transpose(x), self.EV)*self.mul).T)
+        part1 = (np.dot(np.transpose(x), self.EV).T*self.mul).reshape(-1, 1)
+        return self.EV.dot(part1).reshape(-1,)
+
 #        return self.EV.dot((x.T.dot(self.EV)*self.mul).T)
 
     def transMult(self, x):
