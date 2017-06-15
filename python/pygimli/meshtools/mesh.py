@@ -559,6 +559,198 @@ def readGambitNeutral(filename, verbose=False):
     return mesh
 
 
+def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
+                    pos='coordinates', cells='topology', marker='values',
+                    marker_default=0, dimension=3, verbose=True,
+                    useFenicsIndices=False):
+    """
+    Converts instance of a hdf5 mesh to a pygimli mesh. For full documentation
+    plsease see "readHDF5Mesh".
+    """
+    # open mesh containing group inside hdf file
+    inmesh = h5Mesh.get(group)
+
+    # get node positions
+    mesh_pos = inmesh[pos][:]
+
+    # get cells
+    if useFenicsIndices:
+        # case 1/2: using fenics specific indices
+        # TODO why extra indices? cause this is really slow
+        # figure out the nature and purpose of the extra fenics indices
+        mesh_indices = inmesh[indices]
+        try:
+            mesh_cells = inmesh[cells][mesh_indices]
+        except IndexError as IE:
+            print('Fenics Indices arren\'t just in arbitrary order in range\
+(0, cellCount) as expected. Need Fix.')
+            raise IE
+    else:
+        # case 2/2: indices implicit: [0, ... cellCount)
+        mesh_cells = inmesh[cells][:]
+
+    # get marker
+    try:
+        # case 1/3: marker found in hdf file
+        mesh_marker = inmesh[marker][:]
+    except KeyError:
+        if isinstance(marker_default, int):
+            # case 2/3: marker not found, given as int
+            mesh_marker = np.ones(len(mesh_cells), dtype=int) * marker_default
+        else:
+            # case 3/3: marker not found, given as array_like
+            mesh_marker = marker_default
+
+    # start building pygimli mesh
+    mesh = pg.Mesh(dimension)
+    for node in mesh_pos:
+        mesh.createNode(node)
+    for i, cell in enumerate(mesh_cells):
+        mesh.createCell(pg.IndexArray(cell), marker=int(mesh_marker[i]))
+    mesh.createNeighbourInfos()
+    if verbose:
+        print('converted mesh:', mesh)
+    return mesh
+
+
+def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
+                 pos='coordinates', cells='topology', marker='values',
+                 marker_default=0, dimension=3, verbose=True,
+                 useFenicsIndices=False):
+    '''
+    Function for loading a mesh from HDF5 file format returns an instance
+    of GIMLI::Mesh class
+    Default values for keywords are suited for fenics syntax .h5 meshes.
+
+    Parameters:
+    -----------
+
+    filename: string
+        Name of the mesh that has to be transformed into pygimli format.
+
+    group: string ['domains']
+        hdf group that contains the mesh informations (see other keyword
+        arguments). Default is 'domains' for fenics compatibility.
+
+    indices: string ['cell_indices']
+        Key for the part of the hdf file containing the indices of the cells.
+
+    pos: string ['coordinates']
+        Key for the part of the hdf file containing the nodepositions.
+
+    cells: string ['topology']
+        Key for the part of the hdf file containing the array which defies the
+        cells. Usually of shape (cellCount, 3) for 2D meshs or (cellCount, 4)
+        for 3D tetrahedra meshes. For each cell the indices of the
+        corresponding node indices is given.
+
+    marker: string ['values']
+        If marker is part of the hdf data container, the corresponding array
+        is used as identifier for the cell markers. If not found, the cell
+        markers will be set to marker_default.
+
+    marker_default: int or array [0]
+        Default marker if no markers are found in the hdf file. If array, size
+        has to match the cellCount of the mesh.
+
+    dimension: int [3]
+        Dimension of the in/outpu mesh, no own check for dimensions yet.
+        Fixed on 3 for now.
+
+    Output:
+    -------
+
+    GIMLI::Mesh class
+
+    Requirements:
+    -----------------
+
+    modules:
+        h5py
+
+    TODO:
+    -----
+
+    Fenics hdf5 meshs doesn't have boundary markers.
+    '''
+    h5py = pg.io.opt_import('h5py',
+                            requiredTo='import mesh in .h5 data format')
+    h5 = h5py.File(filename, 'r')
+    if verbose:
+        print('loaded hdf5 mesh:', h5)
+
+    mesh = convertHDF5Mesh(h5, group=group, indices=indices,
+                           pos=pos, cells=cells, marker=marker,
+                           marker_default=marker_default, dimension=dimension,
+                           verbose=verbose, useFenicsIndices=useFenicsIndices)
+
+    h5.close()
+    return mesh
+
+
+def readFenicsHDF5Mesh(filename, group='mesh', verbose=True):
+    """
+    Reads fenics mesh from file format .h5 and returns a GIMLI::Mesh class.
+    """
+    mesh = readHDF5Mesh(filename, group=group, indices='cell_indices',
+                        pos='coordinates', cells='topology', marker='values',
+                        marker_default=0, dimension=3, verbose=verbose,
+                        useFenicsIndices=False)
+    return mesh
+
+
+def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
+                   pos='coordinates', cells='topology', marker='values'):
+    '''
+    3D tetrahedron meshes only! Boundary markers are ignored.
+
+    Keywords are explained in "readH5"
+    '''
+    h5py = pg.io.opt_import('h5py',
+                            requiredTo='export mesh in .h5 data format')
+    if not isinstance(mesh, pg.Mesh):
+        mesh = pg.Mesh(mesh)
+
+    # prepare output for writing in hdf data container
+    pg_pos = mesh.positions()
+    mesh_pos = np.array((np.array(pg.x(pg_pos)),
+                         np.array(pg.y(pg_pos)),
+                         np.array(pg.z(pg_pos)))).T
+
+    mesh_cells = np.zeros((mesh.cellCount(), 4))  # hard coded for tetrahedrons
+    for i, cell in enumerate(mesh.cells()):
+        mesh_cells[i] = cell.ids()
+
+    mesh_indices = np.arange(0, mesh.cellCount() + 1, 1, dtype=np.int64)
+    mesh_markers = np.array(mesh.cellMarkers())
+
+    with h5py.File(exportname, 'w') as out:
+        # writing indices
+        idx_name = '{}/{}'.format(group, indices)
+        out.create_dataset(idx_name, data=mesh_indices, dtype=np.int64)
+        # writing node positions
+        pos_name = '{}/{}'.format(group, pos)
+        out.create_dataset(pos_name, data=mesh_pos, dtype=float)
+        # writing cells via indices
+        cells_name = '{}/{}'.format(group, cells)
+        out.create_dataset(cells_name, data=mesh_cells, dtype=np.int64)
+        # writing marker
+        marker_name = '{}/{}'.format(group, marker)
+        out.create_dataset(marker_name, data=mesh_markers, dtype=np.uint64)
+    return True
+
+
+def exportFenicsHDF5Mesh(mesh, exportname, group='mesh'):
+    """
+    Exports Gimli mesh in HDF5 format suitable for Fenics. Group defines the
+    name of the group inside the hdf container which contains the mesh
+    informations.
+    """
+    return exportHDF5Mesh(mesh, exportname, group=group,
+                          indices='cell_indices',
+                          pos='coordinates', cells='topology', marker='values')
+
+
 def transform2DMeshTo3D(mesh, x, y, z=None):
     """2D mesh into 3D coordinates.
 
