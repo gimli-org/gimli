@@ -5,7 +5,7 @@ import os.path
 from importlib import import_module
 
 import pygimli as pg
-from pygimli.meshtools import readGmsh, readPLC
+from pygimli.meshtools import readGmsh, readPLC, readFenicsHDF5Mesh
 
 
 def opt_import(module, requiredTo="use the full functionality"):
@@ -91,7 +91,8 @@ def load(fname, verbose=False):
         ".poly": readPLC,
         ".bms": pg.Mesh,
         ".msh": readGmsh,
-        ".vtk": pg.Mesh
+        ".vtk": pg.Mesh,
+        ".h5": readFenicsHDF5Mesh  # fenics specs as default
     }
 
     if not os.path.exists(fname):
