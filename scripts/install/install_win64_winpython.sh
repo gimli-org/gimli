@@ -6,8 +6,8 @@ else
     PYTHON_MAJOR_REQ=$1
 fi
 
-WINPYTHON_DOWNLOAD=winPython_3.5/3.5.1.2/WinPython-64bit-3.5.1.2
-WINPYTHON_VERSION=python-3.5.1.amd64
+WINPYTHON_DOWNLOAD=winPython_3.6/3.6.1.0/WinPython-64bit-3.6.1.0
+WINPYTHON_VERSION=python-3.6.1.amd64
 #WINPYTHON_DOWNLOAD=winPython_3.4/3.4.4.1/WinPython-64bit-3.4.4.1Qt5
 #WINPYTHON_VERSION=python-3.4.4.amd64
 
