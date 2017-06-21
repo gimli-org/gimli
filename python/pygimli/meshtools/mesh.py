@@ -737,6 +737,8 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
         # writing marker
         marker_name = '{}/{}'.format(group, marker)
         out.create_dataset(marker_name, data=mesh_markers, dtype=np.uint64)
+        out[group][cells].attrs['celltype'] = np.array(('tetrahedron'))
+        out[group][cells].attrs['partition'] = np.array([0], dtype=np.uint64)
     return True
 
 
