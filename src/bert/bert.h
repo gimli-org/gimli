@@ -20,7 +20,7 @@
 #define _BERT_BERT__H
 
 #define BERT_PACKAGE_NAME "bert"
-#define BERT_PACKAGE_VERSION "2.1.1"
+#define BERT_PACKAGE_VERSION "2.2.0"
 #define BERT_PACKAGE_BUGREPORT "carsten@gimli.org"
 
 #ifdef bert_EXPORTS
