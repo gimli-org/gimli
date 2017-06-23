@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.mplviewer import drawMesh, drawField, drawStreamLines
-from pygimli.physics.traveltime.fastMarchingTest import fastMarch
+from pygimli.physics.traveltime.fastMarching import fastMarch
 
 r"""
 Solve the Hamilton-Jacobi (HJ) equation, known as the Eikonal equation
