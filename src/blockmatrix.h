@@ -64,11 +64,11 @@ public:
         return transMult(b);
     }
 
-    virtual Vector < ValueType > col(Index r) const{
-        Vector < ValueType > b(cols(), 0.0);
-        b[r]=1.0;
-        return mult(b);
-    }
+//     virtual Vector < ValueType > col(Index r) const{
+//         Vector < ValueType > b(cols(), 0.0);
+//         b[r]=1.0;
+//         return mult(b);
+//     }
 
     virtual void clear(){
         matrices_.clear();

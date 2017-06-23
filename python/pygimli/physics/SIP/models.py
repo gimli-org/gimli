@@ -52,8 +52,7 @@ def ColeColeRho(f, rho, m, tau, c, a=1):
     ...     _= ax3.loglog(f, Z.real, color='g')
     ...     _= ax4.semilogx(f, Z.imag, color='r')
     ...     _= ax4.plot([fImMin, fImMin], [-0.2, 0.], color='r')
-    >>> _= ax4.text(fImMin, -0.1, r'$f($min(im $Z(f)$))=$\frac{1}{2*\pi\tau}$],
-                     [-0.2, 0.], color='r')
+    >>> _= ax4.text(fImMin, -0.1, r'$f($min(im $Z(f)$))=$\frac{1}{2*\pi\tau}$, color='r')
     >>> _= ax4.text(0.1, -0.17, r'$f($min[im $Z(f)$])=$\frac{1}{2\pi\tau}$', color='r')
     >>> _= ax1.set_ylabel('Amplitude $|Z(f)|$', color='black')
     >>> _= ax1.set_xlabel('Frequency $f$ [Hz]')

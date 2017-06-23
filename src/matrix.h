@@ -201,7 +201,6 @@ public:
         return CVector(rows());
     }
 
-
     /*! Return this.T * a */
     virtual RVector transMult(const RVector & a) const {
         THROW_TO_IMPL
@@ -221,6 +220,12 @@ public:
     virtual void setCol(Index col, const CVector & v) const {
         THROW_TO_IMPL
     }*/
+
+//     virtual Vector < ValueType > col(Index r) const{
+//         Vector < ValueType > b(cols(), 0.0);
+//         b[r] = 1.0;
+//         return mult(b);
+//     }
 
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
