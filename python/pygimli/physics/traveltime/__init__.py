@@ -5,10 +5,12 @@ from .raplot import drawTravelTimeData, drawVA, drawFirstPicks
 from .ratools import createRAData
 from .refraction import Refraction
 from .tomography import Tomography
+from .FMModelling import fastMarch
 
 __all__ = ['drawTravelTimeData',
            'drawVA',
            'drawFirstPicks',
            'createRAData',
            'Tomography',
-           'Refraction']
+           'Refraction',
+           'fastMarch']
