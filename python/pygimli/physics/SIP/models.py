@@ -75,8 +75,7 @@ def ColeColeSigma(f, sigma, m, tau, c, a=1):
 
 
 def tauRhoToTauSigma(tRho, m, c):
-    """Convert :math:`\tau_{\rho}` to :math:`\tau_{\sigma}` for Cole-Cole-Model.
-
+    r"""Convert :math:`\tau_{\rho}` to :math:`\tau_{\sigma}` for Cole-Cole-Model.
 
     .. math::
 
