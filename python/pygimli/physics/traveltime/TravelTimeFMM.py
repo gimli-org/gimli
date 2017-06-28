@@ -9,7 +9,7 @@ Created on Tue Jul 07 09:44:36 2015
 
 import pygimli as pg
 import numpy as np
-from pygimli.physics.traveltime.fastMarchingTest import fastMarch
+from pygimli.physics.traveltime import fastMarch
 import matplotlib.pyplot as plt
 from pygimli.mplviewer import drawMesh  # , drawField, drawStreamLines
 

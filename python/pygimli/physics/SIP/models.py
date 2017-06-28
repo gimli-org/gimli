@@ -8,9 +8,9 @@ import pygimli as pg
 
 
 def ColeColeRho(f, rho, m, tau, c, a=1):
-    r"""Frequency domain Cole-Cole impedance model after Pelton et al. (1978)
+    r"""Frequency-domain Cole-Cole impedance model after Pelton et al. (1978)
 
-    Frequency domain Cole-Cole impedance model after Pelton et al. (1978)
+    Frequency-domain Cole-Cole impedance model after Pelton et al. (1978)
     :cite:`PeltonWarHal1978`
 
     .. math::
@@ -28,7 +28,7 @@ def ColeColeRho(f, rho, m, tau, c, a=1):
       being the ratio of voltage immediately after, to the voltage immediately
       before cessation of an infinitely long charging current.
     * :math:`\tau` -- 'Time constant' relaxation time [s] for 1/e decay
-    * :math:`c` - Frequency dependence, Cole-Cole-Model exponent typical [0.1 .. 0.6]
+    * :math:`c` - Cole-Cole exponent typically [0.1 .. 0.6]
 
     Examples
     --------
@@ -40,7 +40,7 @@ def ColeColeRho(f, rho, m, tau, c, a=1):
     >>> m = np.linspace(0.1, 0.9, 5)
     >>> tau = 0.01
     >>> fImMin = 1/(tau*2*np.pi)
-    >>> fig, axs = pg.plt.subplots(1,2)
+    >>> fig, axs = pg.plt.subplots(1, 2)
     >>> ax1 = axs[0]
     >>> ax2 = axs[0].twinx()
     >>> ax3 = axs[1]
@@ -52,8 +52,8 @@ def ColeColeRho(f, rho, m, tau, c, a=1):
     ...     _= ax3.loglog(f, Z.real, color='g')
     ...     _= ax4.semilogx(f, Z.imag, color='r')
     ...     _= ax4.plot([fImMin, fImMin], [-0.2, 0.], color='r')
-    >>> _= ax4.text(fImMin, -0.1, r'$f($min(im $Z(f)$))=$\frac{1}{2*\pi\tau}$, color='r')
-    >>> _= ax4.text(0.1, -0.17, r'$f($min[im $Z(f)$])=$\frac{1}{2\pi\tau}$', color='r')
+    >>> _= ax4.text(fImMin, -0.1, r"$f($min($Z''$))=$\frac{1}{2*\pi\tau}$", color='r')
+    >>> _= ax4.text(0.1, -0.17, r"$f($min[$Z''$])=$\frac{1}{2\pi\tau}$", color='r')
     >>> _= ax1.set_ylabel('Amplitude $|Z(f)|$', color='black')
     >>> _= ax1.set_xlabel('Frequency $f$ [Hz]')
     >>> _= ax1.set_ylim(1e-2, 1)
@@ -75,8 +75,7 @@ def ColeColeSigma(f, sigma, m, tau, c, a=1):
 
 
 def tauRhoToTauSigma(tRho, m, c):
-    """Convert :math:`\tau_{\rho}` to :math:`\tau_{\sigma}` for Cole-Cole-Model.
-
+    r"""Convert :math:`\tau_{\rho}` to :math:`\tau_{\sigma}` for Cole-Cole-Model.
 
     .. math::
 
@@ -96,7 +95,7 @@ def tauRhoToTauSigma(tRho, m, c):
     >>> np.angle(1/S / Z) < 1e-12
     True
     """
-    return tRho * (1-m) **(1/c)
+    return tRho * (1-m) ** (1/c)
 
 
 def relaxationTerm(f, tau, c=1., a=1.):
@@ -117,8 +116,6 @@ def WarbugRelaxation(f, tau, m):
 def ColeColeEpsilon(f, e0, eInf, tau, alpha):
     """Original complex-valued permittivity formulation (Cole&Cole, 1941)."""
     return (e0 - eInf) * relaxationTerm(f, tau, c=1./alpha) + eInf
-
-
 
 
 def ColeCole(f, R, m, tau, c, a=1):

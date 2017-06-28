@@ -2,6 +2,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MinGWbin "c:\msys64\mingw64\bin"
+#define AppVer "1.0.0RC1"
+#define PyVer "35"
+#define Bits "64"
+#define BuildDir "..\..\..\build"
+#define DateStr GetDateTimeString('yymmdd', '', '');
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
@@ -9,7 +14,7 @@
 AppId={{DC87B40B-FBCB-4FC6-BE79-9945D9D6BCF9}
 AppName=pyGIMLi
 AppVersion=1.0
-;AppVerName=pyGIMLi 1.0
+AppVerName=pyGIMLi {#AppVer} Win64 (build {#DateStr})
 AppPublisher=pyGIMLi.org
 AppPublisherURL=http://www.pygimli.org
 AppSupportURL=http://www.pygimli.org
@@ -18,7 +23,7 @@ DefaultDirName=c:\Software\pygimli
 DefaultGroupName=pyGIMLi
 LicenseFile=..\COPYING.rst
 OutputDir=.
-OutputBaseFilename=setup-pygimli
+OutputBaseFilename=setup-pygimli{#AppVer}win{#Bits}py{#PyVer}
 SetupIconFile=..\doc\_static\favicon.ico
 Compression=lzma
 SolidCompression=yes
