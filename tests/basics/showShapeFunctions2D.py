@@ -29,11 +29,11 @@ def drawShapes(ax, mesh, u):
     imax = pg.find(u == max(u))[0]
 
     for i in range(c.nodeCount()):
-        print c.rst(i)
-    print imax
-    print c.createShapeFunctions()[imax]
-    print "dx", c.createShapeFunctions()[imax].derive(0)
-    print "dy", c.createShapeFunctions()[imax].derive(1)
+        print(c.rst(i))
+    print(imax)
+    print(c.createShapeFunctions()[imax])
+    print("dx", c.createShapeFunctions()[imax].derive(0))
+    print("dy", c.createShapeFunctions()[imax].derive(1))
 
     # draw nodes
     for i in range(c.nodeCount()):
@@ -68,7 +68,7 @@ def drawShapes(ax, mesh, u):
         ptns.append(p)
         grads.append(gr)
 
-    print swatch.duration(True)
+    print(swatch.duration(True))
 
     for i, p in enumerate(ptns):
         ax.quiver(p[0], p[1], grads[i][0], grads[i][1], zorder=10)

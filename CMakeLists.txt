@@ -30,6 +30,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     endif()
 
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
+    add_definitions(-std=c++11)
 
     #-Wl,--no-undefined
     #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")

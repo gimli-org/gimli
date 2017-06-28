@@ -153,8 +153,8 @@ class Refraction(MethodManager):
 
     def loadData(self, filename):
         """Load data from file."""
-        # check for file formats and import if necessary
-        data = pg.DataContainer(filename, 's g')
+        #TODO check for file formats and import if necessary
+        data = pg.DataContainer(filename, sensorTokens='s g')
         self.basename = filename[:filename.rfind('.')]
         self.setDataContainer(data)
 
@@ -320,9 +320,10 @@ class Refraction(MethodManager):
         return error
 
     def invert(self, data=None, t=None, err=None, mesh=None, **kwargs):
-        """Run actual inversion (first creating inversion object if not there)
+        """Run actual inversion.
 
-        result/response is stored in the class attribute velocity/response
+        Values for result/response are stored in the class members
+        velocity/response
 
         Parameters
         ----------
@@ -361,6 +362,7 @@ class Refraction(MethodManager):
 
         startModel = kwargs.pop('startModel', None)
         self.pd = self.fop.regionManager().paraDomain()
+
         if startModel is None:
             useGradient = kwargs.pop('useGradient', True)
             if useGradient:
@@ -371,7 +373,9 @@ class Refraction(MethodManager):
                 startModel = self.fop.createDefaultStartModel()
         if isinstance(startModel, (float, int)):
             startModel = pg.RVector(self.pd.cellCount(), startModel)
+
         self.fop.setStartModel(startModel)
+
         zWeight = kwargs.pop('zWeight', 0.2)
         if 'zweight' in kwargs:
             zWeight = kwargs.pop('zweight', 0.2)
@@ -381,6 +385,7 @@ class Refraction(MethodManager):
 
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
+
         if 'max_iter' in kwargs:  # just for backward compatibility
             self.inv.setMaxIter(kwargs.pop('max_iter'))
         if 'maxIter' in kwargs:  # the better way

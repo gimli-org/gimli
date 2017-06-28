@@ -119,7 +119,6 @@ std::ostream & operator << (std::ostream & str, const Matrix3 < ValueType > & ve
 }
 
 
-
 template < class ValueType > \
 Pos< ValueType > operator * (const Matrix3 < ValueType > & A, const Pos < ValueType > & b) {
     return Pos< ValueType > (A[0] * b[0] + A[1] * b[1] + A[2] * b[2],
@@ -221,11 +220,46 @@ public:
         THROW_TO_IMPL
     }*/
 
-//     virtual Vector < ValueType > col(Index r) const{
-//         Vector < ValueType > b(cols(), 0.0);
+    /*! Brute force column separation fallback .. should be overwriten if you
+     * need performance for your onw matrix type. */
+    //template< class ValueType > virtual const RVector col(Index r) const{
+//         __M
+//         ASSERT_RANGE(r, 0, cols())
+//         RVector b(cols(), 0.0);
 //         b[r] = 1.0;
-//         return mult(b);
+//         return this->mult(b);
 //     }
+
+//     /*! Brute force row separation fallback .. should be overwriten if you
+//      * need performance for your onw matrix type. */
+//     template< class ValueType > const Vector < ValueType > row(Index r) const{
+//         __M
+//         ASSERT_RANGE(r, 0, rows())
+//         Vector < ValueType > b(rows(), 0.0);
+//         b[r] = 1.0;
+//         return this->transMult(b);
+//     }
+    // these template function above will not work until MatrixBase is a non template function
+    /*! Brute force column separation fallback .. should be overwriten if you
+     * need performance for your onw matrix type. */
+//     virtual const RVector col(Index r) const{
+//         __M
+//         ASSERT_RANGE(r, 0, cols())
+//         RVector b(cols(), 0.0);
+//         b[r] = 1.0;
+//         return this->mult(b);
+//     }
+//
+//     /*! Brute force row separation fallback .. should be overwriten if you
+//      * need performance for your onw matrix type. */
+//     virtual const RVector row(Index r) const {
+//         __M
+//         ASSERT_RANGE(r, 0, rows())
+//         RVector b(rows(), 0.0);
+//         b[r] = 1.0;
+//         return this->transMult(b);
+//     }
+
 
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
@@ -413,11 +447,14 @@ public:
         return mat_[i];
     }
 
-    /*! Readonly row of matrix, with boundary check.*/
-    const Vector< ValueType > & row(Index i) const { return getVal(i); }
+    /*! Readonly row entry of matrix, with boundary check.*/
+    virtual const Vector< ValueType > row(Index i) const {
+        //__M
+        return getVal(i); }
 
-    /*! Readonly col of matrix, with boundary check. Probably slow.*/
-    Vector< ValueType > col(Index i) const {
+    /*! Readonly column entry of matrix, with boundary check. Probably slow.*/
+    virtual const Vector< ValueType > col(Index i) const {
+        //__M
         if (i < 0 || i > this->cols()-1) {
             throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
                                 toStr(i) + " " + toStr(this->cols())) ;
@@ -516,9 +553,7 @@ public:
     Vector< ValueType > transMult(const Vector < ValueType > & b) const {
         Index cols = this->cols();
         Index rows = this->rows();
-
         Vector < ValueType > ret(cols, 0.0);
-
         //ValueType tmpval = 0;
 
         if (b.size() == rows){

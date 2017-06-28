@@ -54,8 +54,11 @@
 #include <iterator>
 
 #ifdef USE_BOOST_BIND
-#include <boost/bind.hpp>
+    #include <boost/bind.hpp>
+#else
+    #include <functional>
 #endif
+
 
 namespace GIMLI{
 
@@ -950,6 +953,7 @@ template< class ValueType, class Iter > void assignResult(Vector< ValueType > & 
 
 #ifdef EXPRVEC_USE_BOOST_THREAD
 //DEPRECATED
+#error DONT  USE THIS
     if (v.nThreads() == 1) {
       AssignResult< ValueType, Iter >(v, result, 0, v.size())();
     } else {

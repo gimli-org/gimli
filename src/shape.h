@@ -27,6 +27,10 @@
     #if USE_BOOST_THREAD
         #include <boost/thread.hpp>
         extern boost::mutex writeCacheMutex__;
+        //#error AVOID BOOST
+    #else
+        #include <mutex>
+        extern std::mutex writeCacheMutex__;
     #endif
 #endif
 

@@ -34,6 +34,9 @@
     #include <boost/thread.hpp>
     /*! Lock proc reading to be thread safe */
     static boost::mutex __readproc__mutex__;
+#else
+    #include <mutex>
+    static std::mutex __readproc__mutex__;
 #endif
 
 namespace GIMLI {
@@ -61,7 +64,10 @@ double MemWatch::current(){
 double MemWatch::inUse() {
  #if USE_BOOST_THREAD
         boost::mutex::scoped_lock lock(__readproc__mutex__);
+ #else
+        std::lock_guard< std::mutex > lock(__readproc__mutex__);
  #endif
+
 
  #ifdef WIN32_LEAN_AND_MEAN
 
@@ -98,6 +104,8 @@ void MemWatch::info(const std::string & str){
         std::cout << "\t" << str << " Memory "
 #if USE_BOOST_THREAD
                     << "(mt)"
+#else
+                    << "(st)"
 #endif // HAVE_BOOST_THREAD_HPP
                     << " in use: abs: " << inUse() << " rel: "
                     << current() << " MByte. t = "

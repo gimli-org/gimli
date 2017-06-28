@@ -52,23 +52,25 @@ public:
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_BLOCKMATRIX_RTTI; }
 
-    virtual Vector < ValueType > operator [] (Index r) const { return row(r); }
+    virtual const Vector < ValueType > operator [] (Index r) const { return this->row(r); }
 
     virtual Index rows() const { recalcMatrixSize(); return rows_; }
 
     virtual Index cols() const { recalcMatrixSize(); return cols_; }
 
-    virtual Vector < ValueType > row(Index r) const {
+    virtual const Vector < ValueType > row(Index r) const {
+        ASSERT_RANGE(r, 0, rows())
         Vector < ValueType > b(rows(), 0.0);
         b[r]=1.0;
         return transMult(b);
     }
 
-//     virtual Vector < ValueType > col(Index r) const{
-//         Vector < ValueType > b(cols(), 0.0);
-//         b[r]=1.0;
-//         return mult(b);
-//     }
+    virtual const Vector < ValueType > col(Index r) const{
+        ASSERT_RANGE(r, 0, cols())
+        Vector < ValueType > b(cols(), 0.0);
+        b[r]=1.0;
+        return mult(b);
+    }
 
     virtual void clear(){
         matrices_.clear();

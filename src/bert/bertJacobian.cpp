@@ -27,14 +27,15 @@
 
 #include <shape.h>
 
-#ifdef USE_BOOST_THREAD
-#include <boost/thread.hpp>
-#endif
-
 namespace GIMLI{
 
 #if USE_BOOST_THREAD
-boost::mutex eraseMutex__;
+    #include <boost/thread.hpp>
+    boost::mutex eraseMutex__;
+#else
+    #include <thread>
+    #include <mutex>
+    std::mutex eraseMutex__;
 #endif
 
 template < class ValueType > class CreateSensitivityColMT : public GIMLI::BaseCalcMT{
@@ -391,6 +392,8 @@ MEMINFO
             std::cout << "S(" << numberOfCPU() << "/" << nThreads; //**check!!!
             #if USE_BOOST_THREAD
             std::cout << "-mt";
+            #else
+            std::cout << "-st";
             #endif
             std::cout << "): " << swatch.duration() << ":";
 //swatch.stop(verbose);

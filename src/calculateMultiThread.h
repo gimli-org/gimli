@@ -22,7 +22,9 @@
 #include "gimli.h"
 
 #ifdef USE_BOOST_THREAD
-#include <boost/thread.hpp>
+    #include <boost/thread.hpp>
+#else
+    #include <thread>
 #endif
 
 namespace GIMLI{
@@ -78,7 +80,18 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
         }
         threads.join_all();
 #else
-        for (uint i = 0; i < nThreads; i++) calcObjs[i]();
+
+        std::vector<std::thread> threads;
+
+        for (uint i = 0; i < nThreads; i++) {
+            if (debug()) std::cout << "start thread: " << i << std::endl;
+            threads.emplace_back(calcObjs[i]);
+        }
+
+        for (auto & th : threads) if (th.joinable()) th.join();
+
+//         std::vector boost::thread_group threads;
+//         for (uint i = 0; i < nThreads; i++) calcObjs[i]();
 #endif
     }
 }

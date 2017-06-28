@@ -42,7 +42,7 @@ DataContainer::DataContainer(const std::string & fileName,
                              bool removeInvalid){
     initDefaults();
     std::vector < std::string > tokenList = getSubstrings(sensorTokens);
-    for(Index i=0 ; i < tokenList.size() ; i++) registerSensorIndex(tokenList[i]);
+    for (Index i=0 ; i < tokenList.size() ; i++) registerSensorIndex(tokenList[i]);
     this->load(fileName, sensorIndicesFromOne, removeInvalid);
     //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
@@ -335,7 +335,8 @@ int DataContainer::load(const std::string & fileName,
             dataMap_[it->first] = it->second;
         }
     }
-    inputFormatString_.clear();
+
+   inputFormatString_.clear();
     for (uint i = 0; i < format.size(); i ++) {
         if (haveTranslationForAlias(format[i])){
             inputFormatString_ += translateAlias(format[i]) + " ";
@@ -364,50 +365,54 @@ int DataContainer::load(const std::string & fileName,
 
     if (row.size() == 1) {
         //** we found topography
-        nSensors = toInt(row[0]);
-        RVector xt(nSensors), yt(nSensors), zt(nSensors);
+        Index nTopoPoints = toInt(row[0]);
 
-        std::string topoFormatDefault("x y z");
+        if (nTopoPoints > 0){
 
-        file.get(c);
-        if (c == '#') {
-            format = getRowSubstrings(file);
-            if (format[0] != "x" && format[0] != "X"){
-                //** if no electrodes format is given (no x after comment symbol) take defaults;
-                format = getSubstrings(topoFormatDefault);
-            }
-        } else {
-            file.unget();
-        }
+            RVector xt(nTopoPoints), yt(nTopoPoints), zt(nTopoPoints);
 
-        //** read topography points;
-        for (int i = 0; i < nSensors; i ++){
-            row = getNonEmptyRow(file);
+            std::string topoFormatDefault("x y z");
 
-            if (row.empty()) {
-                throwError(EXIT_DATACONTAINER_NTOPO, WHERE_AM_I
-                           + "To few topo data. " + str(nSensors)
-                           + " Topopoints expected and " + str(i) + " found.");
+            file.get(c);
+            if (c == '#') {
+                format = getRowSubstrings(file);
+                if (format[0] != "x" && format[0] != "X"){
+                    //** if no electrodes format is given (no x after comment symbol) take defaults;
+                    format = getSubstrings(topoFormatDefault);
+                }
+            } else {
+                file.unget();
             }
 
-            for (uint j = 0; j < row.size(); j ++){
-                if (j == format.size()) break; // no or to few format defined, ignore
-    //__MS(j << " "<< format[j]<< " " << row[j] )
-                if (     format[j] == "x" || format[j] == "X") xt[i] = toDouble(row[j]);
-                else if (format[j] == "y" || format[j] == "Y") yt[i] = toDouble(row[j]);
-                else if (format[j] == "z" || format[j] == "Z") zt[i] = toDouble(row[j]);
-                else {
-                    std::stringstream str;
-                    str << " Warning! format description unknown: topo electrode format["
-                        << j << "] = " << format[j] << " column ignored." << std::endl;
-                    throwError(EXIT_DATACONTAINER_ELECS_TOKEN, str.str());
+            //** read topography points;
+            for (Index i = 0; i < nTopoPoints; i ++){
+                row = getNonEmptyRow(file);
+
+                if (row.empty()) {
+                    throwError(EXIT_DATACONTAINER_NTOPO, WHERE_AM_I
+                            + "To few topo data. " + str(nTopoPoints)
+                            + " Topopoints expected and " + str(i) + " found.");
+                }
+
+                for (uint j = 0; j < row.size(); j ++){
+                    if (j == format.size()) break; // no or to few format defined, ignore
+        //__MS(j << " "<< format[j]<< " " << row[j] )
+                    if (     format[j] == "x" || format[j] == "X") xt[i] = toDouble(row[j]);
+                    else if (format[j] == "y" || format[j] == "Y") yt[i] = toDouble(row[j]);
+                    else if (format[j] == "z" || format[j] == "Z") zt[i] = toDouble(row[j]);
+                    else {
+                        std::stringstream str;
+                        str << " Warning! format description unknown: topo electrode format["
+                            << j << "] = " << format[j] << " column ignored." << std::endl;
+                        throwError(EXIT_DATACONTAINER_ELECS_TOKEN, str.str());
+                    }
                 }
             }
-        }
 
-        for (int i = 0 ; i < nSensors; i ++) {
-            topoPoints_.push_back(RVector3(xt[i], yt[i], zt[i]).round(1e-12));
-        }
+            for (Index i = 0 ; i < nTopoPoints; i ++) {
+                topoPoints_.push_back(RVector3(xt[i], yt[i], zt[i]).round(1e-12));
+            }
+        } // if nTopo > 0
     } // if topo
 
     file.close();

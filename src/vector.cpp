@@ -43,8 +43,6 @@ void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a){
     }
 }
 
-
-
 } // namespace GIMLI{
 
 

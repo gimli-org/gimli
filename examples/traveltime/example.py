@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Example of reading, displaying and inverting refraction data using"""
+import pygimli as pg
 from pygimli.physics import Refraction
 
 ra = Refraction('koenigsee.sgt')
@@ -17,3 +18,4 @@ ra.invert(zWeight=0.2)  #
 # options: vtop/vbottom..gradient starting model velocity, zweight=0.2, lam=30
 # ra.showResult()  # velocity image, cMin/cMax - color range, logScale=bool
 ra.showResultAndFit()
+pg.wait()

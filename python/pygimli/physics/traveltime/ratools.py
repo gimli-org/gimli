@@ -30,7 +30,12 @@ def createRAData(sensors):
     data.registerSensorIndex('s')
     data.registerSensorIndex('g')
 
-    data.setSensorPositions(sensors)
+    if (isinstance(sensors, np.ndarray)):
+        for i, x in enumerate(sensors):
+            data.createSensor([x, 0, 0])
+    else:
+        data.setSensorPositions(sensors)
+
     S, G = [], []
     for s in range(data.sensorCount()):
         for g in range(data.sensorCount()):

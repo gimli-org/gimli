@@ -92,8 +92,8 @@ public:
         Placeholder x__;
         RVector v2(5); v2.fill(x__);
         CPPUNIT_ASSERT(v1 == v2);
-        CPPUNIT_ASSERT(fliplr(v1)[ 0 ] == 4.0);
-        CPPUNIT_ASSERT(fliplr(v1)[ 4 ] == 0.0);
+        CPPUNIT_ASSERT(fliplr(v1)[0] == 4.0);
+        CPPUNIT_ASSERT(fliplr(v1)[4] == 0.0);
         CPPUNIT_ASSERT(fliplr(fliplr(v1)) == v1);
     }
 
@@ -219,7 +219,7 @@ public:
 
         Vec v(*v1_);
         v.fill(x__ + 1.0);
-        CPPUNIT_ASSERT(sum(v) == (v[ 0 ] + v[ v1_->size() -1 ]) *
+        CPPUNIT_ASSERT(sum(v) == (v[0] + v[v1_->size() -1]) *
                                                 (::floor(v1_->size() / 2.0) +
                                                     (v1_->size() / 2.0 - ::floor(v1_->size() / 2.0))));
         CPPUNIT_ASSERT(GIMLI::sum(v - v) == 0.0);
@@ -227,7 +227,7 @@ public:
         CPPUNIT_ASSERT(min(v) == 1.0);
         CPPUNIT_ASSERT(max(v) == v1_->size());
         RVector vs(10);
-        vs[ 1 ] = 1; vs[ 2 ] = 1; vs[ 3 ] = 2; vs[ 4 ] = 2; vs[ 7 ] = 1;
+        vs[1] = 1; vs[2] = 1; vs[3] = 2; vs[4] = 2; vs[7] = 1;
         CPPUNIT_ASSERT(unique(vs).size() == 6); // 0 1 2 0 1 0
         CPPUNIT_ASSERT(unique(sort(vs)).size() == 3); // 0 1 2
 
@@ -250,7 +250,7 @@ public:
 
     void testStdVectorTemplates(){
         std::vector < int > iVec(10, 0);
-        iVec[ 1 ] = 1; iVec[ 2 ] = 1; iVec[ 3 ] = 2; iVec[ 4 ] = 2; iVec[ 7 ] = 1;
+        iVec[1] = 1; iVec[2] = 1; iVec[3] = 2; iVec[4] = 2; iVec[7] = 1;
         CPPUNIT_ASSERT(unique(iVec).size() == 6); // 0 1 2 0 1 0
         CPPUNIT_ASSERT(unique(sort(iVec)).size() == 3); // 0 1 2
 
@@ -326,28 +326,28 @@ public:
         A.resize(3, 2); CPPUNIT_ASSERT(A.cols() == 2);
         A.resize(8, 9); CPPUNIT_ASSERT(A.cols() == 9);
 
-        A[ 0 ][ 0 ] = 1.0;
-        A[ 1 ] = A[ 0 ];
+        A[0][0] = 1.0;
+        A[1] = A[0];
 
-        CPPUNIT_ASSERT(A[ 0 ] == A[ 1 ]);
-        CPPUNIT_ASSERT(A.row(2) != A[ 1 ]);
-        CPPUNIT_ASSERT(A[ 0 ][ 0 ]  == 1.0);
-        CPPUNIT_ASSERT(A[ 1 ][ 0 ]  == 1.0);
+        CPPUNIT_ASSERT(A[0] == A[1]);
+        CPPUNIT_ASSERT(A.row(2) != A[1]);
+        CPPUNIT_ASSERT(A[0][0] == 1.0);
+        CPPUNIT_ASSERT(A[1][0] == 1.0);
 
         CPPUNIT_ASSERT(fliplr(fliplr(A)) == A);
 
-        A.push_back(A[ 0 ]); CPPUNIT_ASSERT(A.rows() == 9);
-        CPPUNIT_ASSERT(A[ A.rows()-1 ] == A.back());
+        A.push_back(A[0]); CPPUNIT_ASSERT(A.rows() == 9);
+        CPPUNIT_ASSERT(A[A.rows()-1] == A.back());
 
         Mat B(A);
         CPPUNIT_ASSERT(B.rows() == 9);
         CPPUNIT_ASSERT(B.cols() == 9);
-        CPPUNIT_ASSERT(B[ 0 ][ 0 ]  == 1.0);
+        CPPUNIT_ASSERT(B[0][0] == 1.0);
 
-        B[ 1 ][ 1 ] = 1.0;
+        B[1][1] = 1.0;
         A = B;
         CPPUNIT_ASSERT(A == B);
-        CPPUNIT_ASSERT(A[ 1 ][ 1 ]  == 1.0);
+        CPPUNIT_ASSERT(A[1][1] == 1.0);
 
         A.clear();
         CPPUNIT_ASSERT(A.rows() == 0);
@@ -356,7 +356,7 @@ public:
         A.resize(3, 4);
         A *= 0.0;
         A += 1.0;
-        CPPUNIT_ASSERT(sum(A[ 0 ]) == A.cols());
+        CPPUNIT_ASSERT(sum(A[0]) == A.cols());
 
         Vec a(A.rows()); a.fill(x__ * 2.5);
         Vec b(A.cols()); b.fill((x__ + 1.0) * 4.2);
@@ -372,6 +372,13 @@ public:
         A.round(0.1);
         CPPUNIT_ASSERT(::fabs(A[0][0] -1.1) < TOLERANCE);
 
+        A *= 0.;
+        A += 2.;
+
+        // test col, row access
+        A[1].fill(2);
+        CPPUNIT_ASSERT(sum(A.row(1)) == A.cols()*2);
+        CPPUNIT_ASSERT(sum(A.col(1)) == A.rows()*2);
     }
 
     void testFind(){
@@ -388,13 +395,13 @@ public:
         CPPUNIT_ASSERT(find(x > y)[0] == 5);
         CPPUNIT_ASSERT(x(find(x > y))[0] == 10.0);
 
-        x[ 2 ] = 5.0;
-        x[ 3 ] = 5.0;
+        x[2] = 5.0;
+        x[3] = 5.0;
 	// x = [1, 2, 5, 5, 5, 6, 7, 8, 9, 10]
         CPPUNIT_ASSERT((x == 5).size() == 10);
         CPPUNIT_ASSERT(find(x == 5).size() == 3);
         CPPUNIT_ASSERT(find(~(x == 5)).size() == 7);
-        CPPUNIT_ASSERT(find(x == 5)[ 0 ] == 2);
+        CPPUNIT_ASSERT(find(x == 5)[0] == 2);
         CPPUNIT_ASSERT(find(x <= 5).size() == 5);
         CPPUNIT_ASSERT(find(x > 5).size() == 5);
         CPPUNIT_ASSERT(find(x < 5).size() == 2);
