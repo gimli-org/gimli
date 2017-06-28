@@ -118,8 +118,7 @@ void DataContainer::copy_(const DataContainer & data){
 
     inputFormatString_ = data.inputFormatString();
     inputFormatStringSensors_ = data.formatStringSensors();
-    dataSensorIdx_  = sensorIdx();
-
+    dataSensorIdx_  = data.sensorIdx();
     dataMap_ = data.dataMap();
 
     dataDescription_ = data.dataDescription();
