@@ -125,7 +125,7 @@ void DataContainer::copy_(const DataContainer & data){
 
     tT_ = data.tokenTranslator();
 
-    sensorIndexOnFileFromOne_ = sensorIndexOnFileFromOne();
+    sensorIndexOnFileFromOne_ = data.sensorIndexOnFileFromOne();
 }
 
 void DataContainer::add(const DataContainer & data, double snap){
