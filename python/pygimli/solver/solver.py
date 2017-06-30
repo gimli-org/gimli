@@ -1065,7 +1065,7 @@ def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                **kwargs)
 
 
-def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, c=1.0, times=None, userData=None,
+def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                         verbose=False, stats=None, **kwargs):
     """
     WRITEME short
@@ -1238,7 +1238,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, c=1.0, times=None, userData=N
         solver.setMatrix(S, 0)
 
         if singleForce:
-            u = solver.solve(rhs/c)
+            u = solver.solve(rhs)
         else:
             for i, r in enumerate(rhs):
                 solver.solve(r, u[i])
