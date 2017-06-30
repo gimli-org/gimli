@@ -22,7 +22,7 @@ scientific Python distribution with more than 100 Python packages included
 <http://conda.pydata.org/miniconda.html>`_ (~35 Mb) and only install the
 packages you like to use.
 
-Install Miniconda:
+Install Miniconda (only once):
 
 .. code:: bash
 
@@ -30,18 +30,25 @@ Install Miniconda:
     chmod +x miniconda.sh
     ./miniconda.sh -b -p $HOME/miniconda
     export PATH=$HOME/miniconda/bin:$PATH # Note: Add this to your .bashrc for permanent use
+    
+ Add the gimli and conda-forge channel (only once):
+ 
+ .. code:: bash
+    
+    conda config --add channels gimli --add channels conda-forge
 
-Install pygimli (and its dependencies) via:
+Install pygimli (and its dependencies) and test if everything works correctly via:
 
 .. code:: bash
 
-    conda install -c gimli pygimli
+    conda install -f pygimli
+    python -c "import pygimli; pygimli.test()"
 
-Update your pygimli installation:
+Update your pygimli installation if want to have the newest functionality:
 
 .. code:: bash
 
-    conda update -c gimli -f pygimli
+    conda update -f pygimli
 
 Install with the curl installer
 ...............................
