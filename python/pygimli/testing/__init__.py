@@ -85,7 +85,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     excluded = [
         "gui",
         "physics/traveltime/example.py",
-        # "physics/em/fdemexample.py"
+        "physics/em/fdemexample.py"
     ]
 
     if onlydoctests:
