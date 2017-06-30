@@ -10,6 +10,7 @@ Readme for Github repository only. (Get's selected before *.rst file)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 [![Issue Stats](http://issuestats.com/github/gimli-org/gimli/badge/issue?style=flat)](http://issuestats.com/github/gimli-org/gimli)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/d0d835a5d75e4334a1c58389cafccaa0/badge.svg)](https://www.quantifiedcode.com/app/project/d0d835a5d75e4334a1c58389cafccaa0)
+[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/license.svg)](https://anaconda.org/gimli/pygimli)
 
 
 pyGIMLi is an open-source multi-method library for solving inverse
@@ -37,10 +38,17 @@ curl -Ls install.pygimli.org | bash
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/downloads.svg)](https://anaconda.org/gimli/pygimli)
 
 ```bash
-# Installation
-conda install -c gimli pygimli
-# Update
-conda update -c gimli -f pygimli
+# Add gimli and conda-forge channels (only once)
+conda config --add channels gimli --add channels conda-forge
+
+# Install pygimli
+conda install -f pygimli
+
+# Test pygimli
+python -c "import pygimli; pygimli.test()"
+
+# Update pygimli
+conda update -f pygimli
 ```
 
 ##### Usage
