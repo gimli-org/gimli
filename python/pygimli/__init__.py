@@ -8,6 +8,9 @@ Import convention:
     import pygimli as pg
 """
 
+# py 2.7 compatiblity
+from __future__ import print, division
+
 import locale
 import sys
 import os
