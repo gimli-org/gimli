@@ -9,7 +9,7 @@ Import convention:
 """
 
 # py 2.7 compatiblity
-from __future__ import print, division
+from __future__ import print_function, division
 
 import locale
 import sys
