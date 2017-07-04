@@ -28,7 +28,7 @@
 	#pragma warning( disable: 4396)
 #endif
 
-#define KDTREE_DEFINE_OSTREAM_OPERATORS
+//#define KDTREE_DEFINE_OSTREAM_OPERATORS
 #include <kdtree++/kdtree.hpp>
 
 typedef KDTree::KDTree< 3, GIMLI::Node *, std::pointer_to_binary_function< GIMLI::Node *, size_t, double > > NodeKDTree;

@@ -1,6 +1,8 @@
 #ifndef PYTHON_PYGIMLI__H
 #define PYTHON_PYGIMLI__H
 
+
+
 //See best practices section in Py++ documentation
 
 //# gcc 4.8 with linux complains about a couple of atomic problems
@@ -24,6 +26,13 @@
 // #define PACKAGE_VERSION "0.9.0"
 // #define PACKAGE_BUGREPORT "carsten@resistivity.net"
 // #endif // PACKAGE_NAME
+
+#ifdef __clang__
+// probably clang bug in combination with gcc > 7
+#define __STRICT_ANSI__
+//#define __float128 long double
+//typedef struct { long double x, y; } __float128;
+#endif
 
 //#define PYTEST
 #ifdef PYTEST
