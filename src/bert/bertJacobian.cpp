@@ -391,9 +391,9 @@ MEMINFO
         if (verbose){
             std::cout << "S(" << numberOfCPU() << "/" << nThreads; //**check!!!
             #if USE_BOOST_THREAD
-            std::cout << "-mt";
+            std::cout << "-boost::mt";
             #else
-            std::cout << "-st";
+            std::cout << "-std::mt";
             #endif
             std::cout << "): " << swatch.duration() << ":";
 //swatch.stop(verbose);

@@ -11,8 +11,8 @@ Import convention:
 # py 2.7 compatiblity
 from __future__ import print_function, division
 
-import locale
 import sys
+import locale
 import os
 
 from . import core

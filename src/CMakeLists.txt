@@ -5,8 +5,6 @@ link_directories(${libgimli_BINARY_DIR})
 file (GLOB SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.cpp" "bert/*.cpp")
 file (GLOB HEADER_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.h" "bert/*.h")
 
-
-
 if (NOT MSVC)
 	list(REMOVE_ITEM SOURCE_FILES wingetopt.cpp)
 endif(NOT MSVC)
@@ -40,22 +38,26 @@ if (UMFPACK_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${UMFPACK_LIBRARIES})
 endif (UMFPACK_FOUND)
 
-if (Boost_THREAD_FOUND)
-    target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
-endif (Boost_THREAD_FOUND)
+if (USE_BOOST_THREAD)
+    if (Boost_THREAD_FOUND)
+        target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
+    endif (Boost_THREAD_FOUND)
 
-if (Boost_SYSTEM_FOUND)
-    target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
-endif (Boost_SYSTEM_FOUND)
+    if (Boost_SYSTEM_FOUND)
+        target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
+    endif (Boost_SYSTEM_FOUND)
+endif(USE_BOOST_THREAD)
 
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)
 
-	file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
-	file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+    if (USE_BOOST_THREAD)
+        file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
-	install(PROGRAMS ${Boost_THREAD_LIBRARIES} DESTINATION bin)
-	install(PROGRAMS ${Boost_SYSTEM_LIBRARIES} DESTINATION bin)
+        install(PROGRAMS ${Boost_THREAD_LIBRARIES} DESTINATION bin)
+        install(PROGRAMS ${Boost_SYSTEM_LIBRARIES} DESTINATION bin)
+    endif(USE_BOOST_THREAD)
 
 	if(${BLAS_LIBRARIES})
 		file(COPY ${BLAS_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
@@ -75,7 +77,10 @@ elseif (UNIX AND NOT APPLE)
 	install(TARGETS ${libgimli_TARGET_NAME} LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR})
 endif(WIN32)
 
-#install(FILES gimli.h ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
-#        DESTINATION ${INCLUDE_INSTALL_DIR})
+install(FILES ${HEADER_FILES} ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
+        DESTINATION ${INCLUDE_INSTALL_DIR})
 
+# install(DIRECTORY include/${PROJECT_NAME}/
+#         DESTINATION include
+#         PATTERN ".cpp" EXCLUDE)
 

@@ -20,6 +20,7 @@ world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
 
 # Create a mesh from the geometry definition
 mesh = mt.createMesh(world, quality=33, area=0.1, smooth=[1, 10])
+
 pg.show(mesh, mesh.cellMarker(), label='marker')
 
 scheme = pg.physics.traveltime.createRAData(np.linspace(-15., 15., 31))

@@ -65,7 +65,8 @@ double MemWatch::inUse() {
  #if USE_BOOST_THREAD
         boost::mutex::scoped_lock lock(__readproc__mutex__);
  #else
-        std::lock_guard< std::mutex > lock(__readproc__mutex__);
+        std::unique_lock < std::mutex > lock(__readproc__mutex__);
+        //std::lock_guard< std::mutex > lock(__readproc__mutex__);
  #endif
 
 

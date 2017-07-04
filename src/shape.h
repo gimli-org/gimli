@@ -26,11 +26,11 @@
 #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
     #if USE_BOOST_THREAD
         #include <boost/thread.hpp>
-        extern boost::mutex writeCacheMutex__;
+        extern boost::mutex ShapeFunctionWriteCacheMutex__;
         //#error AVOID BOOST
     #else
         #include <mutex>
-        extern std::mutex writeCacheMutex__;
+        extern std::mutex ShapeFunctionWriteCacheMutex__;
     #endif
 #endif
 
@@ -111,15 +111,15 @@ private:
         #if USE_BOOST_THREAD
         //#ifdef WIN32_LEAN_AND_MEAN
         //        __MS("pls check missing mutex")
-            //boost::mutex::scoped_lock lock(writeCacheMutex__);
+            //boost::mutex::scoped_lock lock(ShapeFunctionWriteCacheMutex__);
         //#else
             #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
-            boost::mutex::scoped_lock lock(writeCacheMutex__);
+            boost::mutex::scoped_lock lock(ShapeFunctionWriteCacheMutex__);
             #endif
         //#endif
 
         #else
-            __MS("#warning! No boost threading")
+            std::unique_lock < std::mutex > lock(ShapeFunctionWriteCacheMutex__);
         #endif
 
         std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();

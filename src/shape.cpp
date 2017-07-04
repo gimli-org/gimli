@@ -26,8 +26,11 @@
 #include "inversion.h"
 
 #if USE_BOOST_THREAD
-    boost::mutex writeCacheMutex__;
-#endif // USE_BOOST_THREAD
+        boost::mutex ShapeFunctionWriteCacheMutex__;
+#else
+        std::mutex ShapeFunctionWriteCacheMutex__;
+#endif
+
 
 namespace GIMLI{
 

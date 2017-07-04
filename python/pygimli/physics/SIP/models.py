@@ -87,12 +87,12 @@ def tauRhoToTauSigma(tRho, m, c):
     >>> import pygimli as pg
     >>> from pygimli.physics.SIP import *
     >>> tr = 1.
-    >>> Z = ColeColeRho(1e5, rho=10, m=0.5, tau=tr, c=0.5)
+    >>> Z = ColeColeRho(1e5, rho=10.0, m=0.5, tau=tr, c=0.5)
     >>> ts = tauRhoToTauSigma(tr, m=0.5, c=0.5)
-    >>> S = ColeColeSigma(1e5, sigma=1/10, m=0.5, tau=ts, c=0.5)
-    >>> abs(1/S - Z) < 1e-12
+    >>> S = ColeColeSigma(1e5, sigma=0.1, m=0.5, tau=ts, c=0.5)
+    >>> abs(1.0/S - Z) < 1e-12
     True
-    >>> np.angle(1/S / Z) < 1e-12
+    >>> np.angle(1.0/S / Z) < 1e-12
     True
     """
     return tRho * (1-m) ** (1/c)
