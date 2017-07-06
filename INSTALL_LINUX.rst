@@ -1,8 +1,8 @@
 Installation on Linux
 ---------------------
 
-Install with conda
-..................
+Pre-build binary install with conda
+...................................
 
 .. image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
     :target: https://conda.anaconda.org/gimli
@@ -30,11 +30,11 @@ Install Miniconda (only once):
     chmod +x miniconda.sh
     ./miniconda.sh -b -p $HOME/miniconda
     export PATH=$HOME/miniconda/bin:$PATH # Note: Add this to your .bashrc for permanent use
-    
+
  Add the gimli and conda-forge channel (only once):
- 
+
  .. code:: bash
-    
+
     conda config --add channels gimli --add channels conda-forge
 
 Install pygimli (and its dependencies) and test if everything works correctly via:
@@ -50,8 +50,12 @@ Update your pygimli installation if want to have the newest functionality:
 
     conda update -f pygimli
 
-Install with the curl installer
-...............................
+The only drawback using conda is that you are bound to the rhythm we update the binary packages.
+Conda also can be seen as a sandbox Linux inside your system and it might be difficult to combine system python packages and conda GIMLi.
+If you like to keep your GIMLi version more recent (including all possible drawbacks of versions that are actively developed) you should compile GIMli using your systems toolchain.
+
+Compile your own with the curl installer
+........................................
 
 If you are not using Anaconda, you can build pyGIMLi from source in the current
 directory via:

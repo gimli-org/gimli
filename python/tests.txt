@@ -5,3 +5,4 @@ pass:
 
         gcc-7.1.0 python-2.7.12 numpy-1.10.4 clang-4.0.1
         gcc-7.1.0 python-3.4.5 numpy-1.10.4 clang-4.0.1
+        gcc-7.1.0 python-3.6.1 numpy-1.10.4 clang-4.0.1
