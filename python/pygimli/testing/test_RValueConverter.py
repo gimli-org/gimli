@@ -126,6 +126,7 @@ class TestRVectorMethods(unittest.TestCase):
         a = np.asarray(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
+        self.assertEqual(a[0], 1.1)
 
         a = np.asarray(v, "int")
         self.assertEqual(a[0], 1)

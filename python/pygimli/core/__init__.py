@@ -605,22 +605,23 @@ _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 
 # ######### c to python converter ######
 # default converter from RVector3 to numpy array
-def __RVector3ArrayCall__(self, idx=None):
-    if idx:
-        print(self)
-        print(idx)
-        raise Exception("we need to fix this")
+def __RVector3ArrayCall__(self, dtype=None):
+    #if idx:
+        #print(self)
+        #print(idx)
+        #raise Exception("we need to fix this")
     import numpy as np
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
 
 # default converter from RVector to numpy array
 
 
-def __RVectorArrayCall__(self, idx=None):
-    if idx:
-        print(self)
-        print(idx)
-        raise Exception("we need to fix this")
+def __RVectorArrayCall__(self, dtype=None):
+
+    #if idx and not isinstance(idx, numpy.dtype):
+        #print("self:", self)
+        #print("idx:", idx, type(idx) )
+        #raise Exception("we need to fix this")
     # probably fixed!!!
     # import numpy as np
     # we need to copy the array until we can handle increasing the reference
@@ -640,11 +641,11 @@ _pygimli_.R3Vector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 
 # hackish until stdVectorRVector3 will be removed
-def __stdVectorRVector3ArrayCall(self, idx=None):
-    if idx is not None:
-        print(self)
-        print(idx)
-        raise Exception("we need to fix this")
+def __stdVectorRVector3ArrayCall(self, dtype=None):
+    #if idx is not None:
+        #print(self)
+        #print(idx)
+        #raise Exception("we need to fix this")
     return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
 
 _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
