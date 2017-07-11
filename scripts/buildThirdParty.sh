@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.64.0
+BOOST_VERSION_DEFAULT=1.61.0
+#since 63 libboost_numpy
+#since 64 python build broken
+ 
 BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 
 LAPACK_VERSION=3.4.2
@@ -306,7 +309,6 @@ needPYTHON(){
             echo "found, ok: $PYTHONLIB "
         fi
     fi
-
 }
 
 cmakeBuild(){
@@ -322,7 +324,6 @@ cmakeBuild(){
         cmake $_SRC_ -G "$CMAKE_GENERATOR" \
              -DCMAKE_MAKE_PROGRAM=$CMAKE_MAKE \
             -DCMAKE_INSTALL_PREFIX=$_DIST_ $_EXTRA_
-
 
         #make -j$PARALLEL_BUILD install
         cmake --build . --config release --target install -- -j$PARALLEL_BUILD
@@ -402,19 +403,23 @@ buildBOOST(){
 
         "$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
         -j $PARALLEL_BUILD \
-        -d 0 \
+        -d 3 \
+        -a \
         --prefix=$BOOST_DIST \
         --platform=msys \
         --layout=tagged \
         --debug-configuration \
+         --with-system \
+         --with-python \
         $WITHPYTHON \
-        --with-system \
-        --with-thread \
-        --with-date_time \
-        --with-chrono \
-        --with-regex \
-        --with-filesystem \
-        --with-atomic
+        --with-thread
+        
+
+        # --with-date_time \
+        # --with-chrono \
+        # --with-regex \
+        # --with-filesystem \
+        # --with-atomic
     popd
     echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR.dist
 }

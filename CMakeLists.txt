@@ -122,12 +122,14 @@ endif()
 
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
-
+                
     if (EXISTS ${BOOST_DIST_NAME_FILE})
         message(STATUS "reading ${BOOST_DIST_NAME_FILE}")
         FILE(READ "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
         STRING(REGEX REPLACE "\n" "" BOOST_DIST_NAME "${BOOST_DIST_NAME}")
         get_filename_component(BOOST_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
+    else()
+        message(STATUS "there is no ${BOOST_DIST_NAME_FILE}")
     endif()
 
     if (EXISTS ${BOOST_ROOT})
@@ -145,17 +147,23 @@ endfunction(find_boost_from_distname_file)
 
 set (USE_BOOST_THREAD FALSE)
 
-if (USE_BOOST_THREAD)
+if (USE_BOOST_THREAD OR WIN32)
+        message(STATUS "Trying to guess boost installation:")
     if (NOT Boost_INCLUDE_DIR)
+        message(STATUS "no BOOST_INCLUDE_DIR")
         if (BOOST_ROOT)
+            message(STATUS "Found boost root: ${BOOST_ROOT}")
             get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
+
             set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
+            message(STATUS "set BOOST_INCLUDE_DIR: ${BOOST_INCLUDE_DIR}")
         else()
             if (NOT WIN32)
                 find_package(Boost 1.46.0 COMPONENTS system thread)
             endif()
             # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
             if (NOT Boost_INCLUDE_DIR)
+
                 find_boost_from_distname_file()
 
             endif()
@@ -178,8 +186,10 @@ if (USE_BOOST_THREAD)
         link_directories(${BOOST_LIBRARYDIR})
 
     else(MSVC)
-        find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
-        link_directories(${BOOST_LIBRARYDIR})
+        if (NOT USE_BOOST_THREAD)
+            find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
+            link_directories(${BOOST_LIBRARYDIR})
+        endif()
     endif(MSVC)
 
     if (Boost_INCLUDE_DIR)
@@ -202,7 +212,9 @@ if (USE_BOOST_THREAD)
     endif (Boost_INCLUDE_DIR)
 
     mark_as_advanced(Boost_INCLUDE_DIR BOOST_ROOT)
-else()
+endif()
+
+if (NOT USE_BOOST_THREAD)
     set(Boost_THREAD_FOUND OFF)
     set(BOOST_BIND_FOUND OFF)
     set(USE_IPC OFF)

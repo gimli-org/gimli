@@ -2,8 +2,11 @@
 
 pacman -Sy
 pacman -Su
+pacman -Sy
+pacman -Su
+
 echo "#########################################################################"
-echo "*** Maybe you need to restart msys after update of system components! ***"
+echo "### Maybe you need to restart msys after update of system components! ###"
 echo "#########################################################################"
 
 pacman -S --needed --noconfirm \
