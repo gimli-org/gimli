@@ -9,7 +9,9 @@ import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics.ert import ERTManager
+import pygimli.physics.ert as ert
 import pygimli.physics.petro as petro
+
 
 # Create geometry definition for the modelling domain
 world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
@@ -37,13 +39,12 @@ p = pg.solver.solveFiniteElements(mesh, a=K, uB=pBound)
 # Solve velocity as gradient of hydraulic potential
 vel = -pg.solver.grad(mesh, p) * np.asarray([K, K, K]).T
 
-if 0:
-    ax, _ = pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m$/$s',
-                    cMin=1e-5, cMax=1e-2, nLevs=4, cmap='viridis')
-    ax, _ = pg.show(mesh, data=pg.abs(vel), logScale=0,
-                    label='Velocity $v$ in m$/$s')
-    ax, _ = pg.show(mesh, data=vel, ax=ax, color='black', linewidth=0.5,
-                    dropTol=1e-6)
+ax, _ = pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m$/$s',
+                cMin=1e-5, cMax=1e-2, nLevs=4, cmap='viridis')
+ax, _ = pg.show(mesh, data=pg.abs(vel), logScale=0,
+                label='Velocity $v$ in m$/$s')
+ax, _ = pg.show(mesh, data=vel, ax=ax, color='black', linewidth=0.5,
+                dropTol=1e-6)
 
 print('Solve Advection-diffusion equation ...')
 S = pg.RVector(mesh.cellCount(), 0.0)
@@ -55,7 +56,7 @@ t = pg.utils.grange(0, 6 * 24 * 3600, n=800)
 # Create dispersitivity, depending on the absolute velocity
 dispersion = pg.abs(vel) * 1e-2
 # Solve for injection time, but we need velocities on cell nodes
-vel = mt.cellDataToNodeData(mesh, np.asarray([pg.x(vel), pg.y(vel)]).T).T
+vel = mt.cellDataToNodeData(mesh, vel)
 c1 = pg.solver.solveFiniteVolume(mesh, a=dispersion, f=S, vel=vel,
                                  times=t, uB=[1, 0],
                                  scheme='PS', verbose=0)
@@ -66,14 +67,12 @@ c2 = pg.solver.solveFiniteVolume(mesh, a=dispersion, f=0, vel=vel,
 # Stack results together
 c = np.vstack((c1, c2))
 
-if 0:
-    ax, _ = pg.show(mesh, data=c[400]*0.001, cMin=0, cMax=2.5,
-                    label='Concentration $c$ in g$/$l')
-
+ax, _ = pg.show(mesh, data=c[400]*0.001, cMin=0, cMax=2.5,
+                label='Concentration $c$ in g$/$l')
 print('Solve ERT modelling ...')
 
 # Create survey measurement scheme
-ertScheme = pg.physics.ert.createERTData(pg.utils.grange(-20, 20, dx=1.0),
+ertScheme = ert.createERTData(pg.utils.grange(-20, 20, dx=1.0),
                                          schemeName='dd')
 # Create suitable mesh for ert forward calculation
 meshERT = mt.createParaMesh(ertScheme, quality=33, paraMaxCellSize=0.2,
@@ -97,19 +96,14 @@ resis = pg.RMatrix(resBulk)
 for i, rbI in enumerate(resBulk):
     resis[i] = 1. / ((1./rbI) + 1./rho0)
 # Initialize ert method manager
-ert = ERTManager(verbose=False)
+ERT = ERTManager(verbose=False)
 # Run  simulation for  the apparent resistivities
-rhoa = ert.simulate(meshERT, resis, ertScheme, verbose=0, returnArray=True)
-
+rhoa = ERT.simulate(meshERT, resis, ertScheme, verbose=0, returnArray=True)
 
 # Solve the electrical forward problem using the ERT method manager
 axs = pg.plt.subplots(3, 2, sharex=True, sharey=True)[1].flatten()
-ert.showData(ertScheme, vals=rhoa[0], ax=axs[0])
-if 0:
-    ert.showData(ertScheme, vals=rhoa[0], ax=axs[1])
-    for i in range(6):
-        print(rhoa[i])
-        ert.showData(ertScheme, vals=rhoa[i], ax=axs[i])
+for i in range(6):
+    ERT.showData(ertScheme, vals=rhoa[i]/rhoa[0], ax=axs[i])
 
 # just hold figure windows open if run outside from spyder, ipython or similar
 pg.wait()

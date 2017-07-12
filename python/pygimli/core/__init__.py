@@ -687,6 +687,8 @@ _pygimli_.RVector.__pow__ = __RVectorPower
 ##################################
 
 BlockMatrix = _pygimli_.RBlockMatrix
+SparseMapMatrix = _pygimli_.RSparseMapMatrix
+SparseMatrix = _pygimli_.RSparseMatrix
 Vector = _pygimli_.RVector
 Matrix = _pygimli_.RMatrix
 Inversion = _pygimli_.RInversion

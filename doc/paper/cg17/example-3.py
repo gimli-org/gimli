@@ -201,8 +201,7 @@ class JointPetroInversion(MeshInversion):
         kwargs['startModel'] = (limits[1]-limits[0])/2.
         return MeshInversion.invert(self, data, **kwargs)
 
-### Script starts here
-axs = [None]*8
+############## Script starts here ##############
 
 ### Create synthetic model
 mMesh, pMesh, saturation = createSynthModel()
@@ -257,6 +256,7 @@ invJointPetro.inv.echoStatus()
 ERT.showData(ertData)
 TT.showVA(ttData)
 
+axs = [None]*8
 showModel(axs[0], saturation, mMesh, showMesh=1,
           label=r'Saturation (${\tt petro}$)', savefig='petro')
 showModel(axs[1], res, mMesh, petro=0, cMin=250, cMax=2500, showMesh=1,
@@ -276,3 +276,4 @@ showModel(axs[4], satJoint, pMesh,
 
 # just hold the figure windows open if run outside from spyder, ipython or similar
 pg.wait()
+

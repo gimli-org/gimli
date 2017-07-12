@@ -66,7 +66,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
             return pg.cellDataToPointData(mesh, data)
         elif mesh.dim() == 2:
             return np.array([pg.cellDataToPointData(mesh, data[:, 0]),
-                            pg.cellDataToPointData(mesh, data[:, 1])])
+                             pg.cellDataToPointData(mesh, data[:, 1])]).T
         elif mesh.dim() == 3:
             return np.array([pg.cellDataToPointData(mesh, data[0]),
                             pg.cellDataToPointData(mesh, data[1]),
