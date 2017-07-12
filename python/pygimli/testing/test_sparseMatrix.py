@@ -19,9 +19,6 @@ class TestSparseMatrix(unittest.TestCase):
         # Construct SparseMap Matrix from python arrays
         A = pg.SparseMapMatrix(i, j, v)
 
-        print(A.begin())
-
-
         # Construct SparseMap -> CRS (compressed row storage)
         S = pg.SparseMatrix(A)
 
