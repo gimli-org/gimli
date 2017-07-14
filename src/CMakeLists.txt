@@ -51,13 +51,13 @@ endif(USE_BOOST_THREAD)
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)
 
-    if (USE_BOOST_THREAD)
+    #if (USE_BOOST_THREAD)
         file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
         file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
         install(PROGRAMS ${Boost_THREAD_LIBRARIES} DESTINATION bin)
         install(PROGRAMS ${Boost_SYSTEM_LIBRARIES} DESTINATION bin)
-    endif(USE_BOOST_THREAD)
+    #endif(USE_BOOST_THREAD)
 
 	if(${BLAS_LIBRARIES})
 		file(COPY ${BLAS_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
