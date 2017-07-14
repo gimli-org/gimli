@@ -180,6 +180,18 @@ public:
         this->copy_(S);
     }
 
+    /*! Contruct Map Matrix from 3 arrays of the same length.
+     *Number of colums are max(j)+1 and Number of rows are max(i)+1.*/
+    SparseMapMatrix(const IndexArray & i, const IndexArray & j, const RVector & v)
+        : MatrixBase(){
+        ASSERT_EQUAL(i.size(), j.size())
+        ASSERT_EQUAL(i.size(), v.size())
+        stype_ = 0;
+        cols_ = max(j)+1;
+        rows_ = max(i)+1;
+        for (Index n = 0; n < i.size(); n ++ ) (*this)[i[n]][j[n]] = v[n];
+    }
+
     SparseMapMatrix< ValueType, IndexType > & operator = (const SparseMapMatrix< ValueType, IndexType > & S){
         if (this != &S){
             clear();

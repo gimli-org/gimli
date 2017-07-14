@@ -313,7 +313,8 @@ else()
     endif()
 
     if (NOT Boost_PYTHON_FOUND)
-        # arch style ??
+        # arch style /usr/lib/libboost_python3.so.1.64.0
+        set(bp_version "${PYTHON_VERSION_MAJOR}")
         find_package(Boost 1.46 COMPONENTS "python${bp_version}")
         if (${Boost_PYTHON${bp_version}_FOUND})
             set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND})

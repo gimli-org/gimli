@@ -8,7 +8,7 @@ python example-2-visualisation.py synth/
 
 or with the final inversion result:
 
-python example-2-visualisation.py spermModel_h-3/
+python example-2-visualisation.py permModel_h-3/
 """
 
 import sys

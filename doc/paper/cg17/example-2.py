@@ -33,7 +33,7 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
 
     p = pg.solver.solve(mesh, a=k, uB=uDir)
     vel = -pg.solver.grad(mesh, p) * np.asarray([k, k, k]).T
-    return mesh, mt.cellDataToNodeData(mesh, np.asarray([pg.x(vel), pg.y(vel)]).T), p, k, np.asarray([pg.x(vel), pg.y(vel)])
+    return mesh, mt.cellDataToNodeData(mesh, vel), p, k, np.asarray([pg.x(vel), pg.y(vel)])
 
 
 def solveAdvection(mesh, vel, times, diffusion, verbose=False):
