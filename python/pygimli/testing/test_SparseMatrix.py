@@ -31,6 +31,27 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sum(A2 * np.ones(A2.cols())), A2.rows())
 
 
+        MAP1 = pg.SparseMapMatrix(r=3, c=15)
+        CSR = pg.SparseMatrix(MAP1)
+        MAP2 = pg.SparseMapMatrix(CSR)
+
+        v3 = pg.RVector(3)
+        v15 = pg.RVector(15)
+
+        np.testing.assert_equal((MAP1*v15).size(), 3)
+        np.testing.assert_equal((MAP1.transMult(v3)).size(), 15)
+
+        np.testing.assert_equal((CSR*v15).size(), 3)
+        np.testing.assert_equal((CSR.transMult(v3)).size(), 15)
+
+        np.testing.assert_equal(MAP1.cols(), MAP2.cols())
+        np.testing.assert_equal(CSR.cols(), MAP1.cols())
+        np.testing.assert_equal(CSR.rows(), MAP1.rows())
+        np.testing.assert_equal(MAP1.rows(), MAP2.rows())
+
+
+
+
 if __name__ == '__main__':
     unittest.main()
 

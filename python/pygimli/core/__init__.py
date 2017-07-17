@@ -833,7 +833,8 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
         procs = []
         #if self.verbose():
         tic()
-        print("Jacobian MT:(", pCount*nProcs, "--" , (pCount+1)*nProcs, ") /" ,
+        if self.verbose():
+            print("Jacobian MT:(", pCount*nProcs, "--" , (pCount+1)*nProcs, ") /" ,
               nModel, '... ')
 
         for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
@@ -852,7 +853,8 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
         for i, p in enumerate(procs):
             p.join()
 
-        print(dur(), 's')
+        if self.verbose():
+            print(dur(), 's')
     self.setThreadCount(oldBertThread)
 
     for i in range(nModel):

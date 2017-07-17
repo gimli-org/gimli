@@ -654,7 +654,7 @@ public:
 
   /*! Default constructor. Builds invalid sparse matrix */
     SparseMatrix()
-        : MatrixBase(), valid_(false), stype_(0){ }
+        : MatrixBase(), valid_(false), stype_(0), rows_(0), cols_(0){ }
 
     /*! Copy constructor. */
     SparseMatrix(const SparseMatrix < ValueType > & S)
@@ -662,6 +662,8 @@ public:
           colPtr_(S.vecColPtr()),
           rowIdx_(S.vecRowIdx()),
           vals_(S.vecVals()), valid_(true), stype_(0){
+          cols_ = S.cols();
+          rows_ = S.rows();
     }
 
     /*! Copy constructor. */
@@ -682,6 +684,8 @@ public:
 
         vals_.resize(nVals);
         stype_ = stype;
+        cols_ = colPtr_.size() - 1;
+        rows_ = max(rowIdx_) + 1;
         THROW_TO_IMPL
 //         std::copy(colPtr[0], colPtr[dim], colPtr_[0]);
 //         std::copy(rowIdx[0], rowIdx[nVals - 1], rowIdx_[0]);
@@ -699,6 +703,9 @@ public:
             vals_   = S.vecVals();
             stype_  = S.stype();
             valid_  = true;
+            cols_ = S.cols();
+            rows_ = S.rows();
+
         } return *this;
     }
 
@@ -853,6 +860,8 @@ public:
         rowIdx_.clear();
         vals_.clear();
         valid_ = false;
+        cols_ = 0;
+        rows_ = 0;
     }
 
     void setVal(int i, int j, ValueType val){
@@ -901,7 +910,8 @@ public:
         this->clear();
         Index col = 0, row = 0;
         ValueType val;
-
+        cols_ = S.cols();
+        rows_ = S.rows();
 
         std::vector < std::map < Index, ValueType > > idxMap(S.cols());
 
@@ -1006,6 +1016,8 @@ public:
             colPtr_[row] = k;
         }
         valid_ = true;
+        cols_ = colPtr_.size() - 1;
+        rows_ = max(rowIdx_) + 1;
         //** freeing idxMap ist expensive
     }
 
@@ -1061,10 +1073,10 @@ public:
 
     inline Index size() const { return colPtr_.size() - 1; }
     inline Index nVals() const { return vals_.size(); }
-    inline Index cols() const { return size(); }
-    inline Index rows() const { return size(); }
-    inline Index nCols() const { return size(); }
-    inline Index nRows() const { return size(); }
+    inline Index cols() const { return cols_; }
+    inline Index rows() const { return rows_; }
+    inline Index nCols() const { return cols(); }
+    inline Index nRows() const { return rows(); }
 
     void save(const std::string & fileName) const {
         if (!valid_) SPARSE_NOT_VALID;
@@ -1093,6 +1105,8 @@ protected:
     std::vector < int > rowIdx_;
     Vector < ValueType > vals_;
 
+    Index cols_;
+    Index rows_;
     bool valid_;
     int stype_;
 };
