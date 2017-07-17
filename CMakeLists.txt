@@ -31,7 +31,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     endif()
 
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
-    add_definitions(-std=c++0x)
+    if (NOT WIN32)
+        add_definitions(-std=c++0x)
+    endif()
     #add_definitions(-std=c++11)
     #add_definitions(-std=gnu++0x)
 
@@ -145,9 +147,13 @@ function(find_boost_from_distname_file)
     endif()
 endfunction(find_boost_from_distname_file)
 
-set (USE_BOOST_THREAD FALSE)
+if (NOT WIN32)
+    set (USE_BOOST_THREAD FALSE)
+else()
+    set (USE_BOOST_THREAD TRUE)
+endif()
 
-if (USE_BOOST_THREAD OR WIN32)
+if (USE_BOOST_THREAD)
         message(STATUS "Trying to guess boost installation:")
     if (NOT Boost_INCLUDE_DIR)
         message(STATUS "no BOOST_INCLUDE_DIR")
@@ -163,9 +169,7 @@ if (USE_BOOST_THREAD OR WIN32)
             endif()
             # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
             if (NOT Boost_INCLUDE_DIR)
-
                 find_boost_from_distname_file()
-
             endif()
             find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
             find_boost_from_distname_file()
@@ -173,24 +177,14 @@ if (USE_BOOST_THREAD OR WIN32)
             #exit()
         endif(BOOST_ROOT)
         message(STATUS "BOOST_ROOT, ${BOOST_ROOT}")
-    endif()
+    endif(NOT Boost_INCLUDE_DIR)
 
     message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
 
-    if (MSVC)
-        find_package(Boost 1.46.0 COMPONENTS system thread)
-
-        if (NOT Boost_THREAD_FOUND)
-            set(Boost_THREAD_FOUND ON)
-        endif (NOT Boost_THREAD_FOUND)
+    if (USE_BOOST_THREAD)
+        find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
         link_directories(${BOOST_LIBRARYDIR})
-
-    else(MSVC)
-        if (NOT USE_BOOST_THREAD)
-            find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
-            link_directories(${BOOST_LIBRARYDIR})
-        endif()
-    endif(MSVC)
+    endif()
 
     if (Boost_INCLUDE_DIR)
         message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
@@ -218,6 +212,9 @@ if (NOT USE_BOOST_THREAD)
     set(Boost_THREAD_FOUND OFF)
     set(BOOST_BIND_FOUND OFF)
     set(USE_IPC OFF)
+else()
+    set(Boost_THREAD_FOUND ON)
+    set(BOOST_BIND_FOUND ON)
 endif()
 
 # Find packages that CHOLMOD depends on
@@ -330,8 +327,6 @@ else()
         # should find the right one
         find_package(Boost 1.46 COMPONENTS python)
     endif()
-
-
 endif()
 
 if (NOT CASTER)
@@ -400,7 +395,7 @@ message(STATUS "****************************************************************
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
 message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
-message(STATUS "USE_BOOST_THREADS  :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
+message(STATUS "USE_BOOST_THREAD   :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
 message(STATUS "CHOLMOD_LIBRARIES  :${CHOLMOD_LIBRARIES}")
 message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")

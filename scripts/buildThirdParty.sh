@@ -403,14 +403,13 @@ buildBOOST(){
 
         "$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
         -j $PARALLEL_BUILD \
-        -d 3 \
+        -d 0 \
         -a \
         --prefix=$BOOST_DIST \
         --platform=msys \
         --layout=tagged \
         --debug-configuration \
-         --with-system \
-         --with-python \
+        --with-system \
         $WITHPYTHON \
         --with-thread
         

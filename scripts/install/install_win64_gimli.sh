@@ -6,9 +6,11 @@ ROOT=$PWD
 
 CMAKE_GENERATOR='Unix Makefiles'
 
-echo "CLEAN", $CLEAN
+echo "CLEAN: ", $CLEAN
+
 buildGIMLI(){
-        
+       
+    echo "Building at:" $PWD
     mkdir -p build
     pushd build
         cmake -G "$CMAKE_GENERATOR" ../gimli -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
