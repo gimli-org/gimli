@@ -895,7 +895,8 @@ def exportTetgenPoly(poly, filename, float_format='.12e'):
         Default is the exponential float form with a precision of 12 digits.
 
     '''
-    filename = filename.rstrip('.poly') + '.poly'
+    if filename[-5:] != '.poly':
+        filename = filename + '.poly'
     polytxt = ''
     sep = '\t'  # standard tab seperated file
     assert poly.dim() == 3, 'Exit, only for 3D meshes.'
