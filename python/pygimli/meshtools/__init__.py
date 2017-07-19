@@ -17,7 +17,7 @@ from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createLine, createParaMeshPLC,
                         createPolygon, createRectangle, createWorld, mergePLC,
-                        readPLC, writePLC)
+                        readPLC, exportPLC, writePLC)
 from .quality import (angleBetween, boundaryLengths, cellAngles, eta,
                       minimumAngle, nsr, quality)
 
@@ -57,6 +57,7 @@ __all__ = ['appendTriangleBoundary',
            'mergePLC',
            'readPLC',
            'writePLC',
+           'exportPLC',
            'createParaDomain2D',  # keep for backward compatibility
            'quality'
            ]

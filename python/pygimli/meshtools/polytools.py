@@ -782,7 +782,7 @@ def readPLC(filename):
     return poly
 
 
-def writePLC(poly, fname, **kwargs):
+def exportPLC(poly, fname, **kwargs):
     r"""General writer to save piece-wise linear complex (PLC) as poly file.
 
     Choose from poly.dimension() and forward appropriate to
@@ -811,12 +811,17 @@ def writePLC(poly, fname, **kwargs):
     >>> os.remove(fname)
     """
     if poly.dimension() == 2:
-        writeTrianglePoly(poly, fname, **kwargs)
+        exportTrianglePoly(poly, fname, **kwargs)
     else:
-        poly.exportAsTetgenPolyFile(fname)
+        exportTetgenPoly(poly, fname, **kwargs)
 
 
-def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
+def writePLC(*args, **kwargs):
+    ''' Backward compatibility. Please use exportPLC. '''
+    return exportPLC(*args, **kwargs)
+
+
+def exportTrianglePoly(poly, fname, float_format='.15e'):
     r"""Write :term:`Triangle` poly.
 
     Write :term:`Triangle` :cite:`Shewchuk96b` ASCII file.
@@ -828,12 +833,16 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
         mesh PLC holding nodes, edges, holes & regions
     fname : string
         Filename of the file to read (\\*.n, \\*.e)
-    pfmt : string
+    float_format : string
         format string for floats according to str.format()
 
     verbose : boolean [False]
         Be verbose during import.
     """
+    if float_format[0] != '{':
+        pfmt = '{:' + float_format + '}'
+    else:
+        pfmt = float_format
     with open(fname, 'w') as fid:
         fid.write('{:d}\t2\t0\t1\n'.format(poly.nodeCount()))
         nm = poly.nodeMarkers()
@@ -859,6 +868,115 @@ def writeTrianglePoly(poly, fname, pfmt='{:.15e}'):
             fid.write(fmt.format(i, r.x(), r.y(), r.marker(), r.area()))
 
     return
+
+
+def writeTrianglePoly(*args, **kwargs):
+    ''' Backward compatibility. Please use exportTrianglePoly. '''
+    return exportTrianglePoly(*args, **kwargs)
+
+
+def exportTetgenPoly(poly, filename, float_format='.12e'):
+    '''
+    Writes a given piecewise linear complex (mesh/poly ) into a Ascii file in
+    tetgen's .poly format.
+
+    Parameters
+    ----------
+
+    filename: string
+        Name in which the result will be written. The recommended file
+        ending is '.poly'.
+
+    poly: pg.Mesh
+        Piecewise linear complex as pygimli mesh to be exported.
+
+    float_format: format string ('.12e')
+        Format that will be used to write float values in the Ascii file.
+        Default is the exponential float form with a precision of 12 digits.
+
+    '''
+    filename = filename.rstrip('.poly') + '.poly'
+    polytxt = ''
+    sep = '\t'  # standard tab seperated file
+    assert poly.dim() == 3, 'Exit, only for 3D meshes.'
+    boundary_marker = 1
+    attribute_count = 0
+
+    # Part 1/4: node list
+    # intro line
+    # <nodecount> <dimension (3)> <# of attributes> <boundary markers (0 or 1)>
+    polytxt += '{0}{5}{1}{5}{2}{5}{3}{4}'.format(poly.nodeCount(), 3,
+                                                 attribute_count,
+                                                 boundary_marker,
+                                                 os.linesep, sep)
+    # loop over positions, attributes and marker(node)
+    # <point idx> <x> <y> <z> [attributes] [boundary marker]
+    point_str = '{:d}'  # index of the point
+    for i in range(3):
+        # coords as float with given precision
+        point_str += sep + '{:%s}' % (float_format)
+    point_str += sep + '{:d}' + os.linesep  # node marker
+    for j, node in enumerate(poly.nodes()):
+        fill = [node.id()]
+        fill.extend([pos for pos in node.pos()])
+        fill.append(node.marker())
+        polytxt += point_str.format(*fill)
+
+    # Part 2/4: boundary list
+    # intro line
+    # <# of facets> <boundary markers (0 or 1)>
+    polytxt += '{0:d}{2}1{1}'.format(poly.boundaryCount(), os.linesep, sep)
+    # loop over facets, each facet can contain an arbitrary number of holes
+    # and polygons, in our case, there is always one polygon per facet.
+    for k, bound in enumerate(poly.boundaries()):
+        # one line per facet
+        # <# of polygons> [# of holes] [boundary marker]
+        npolys = 1
+        polytxt += '1{2}0{2}{0:d}{1}'.format(bound.marker(), os.linesep, sep)
+        # inner loop over polygons
+        # <# of corners> <corner 1> <corner 2> ... <corner #>
+        for l in range(npolys):
+            poly_str = '{:d}'.format(bound.nodeCount())
+            for ind in bound.ids():
+                poly_str += sep + '{:d}'.format(ind)
+            polytxt += '{0}{1}'.format(poly_str, os.linesep)
+        # inner loop over holes
+        # not necessary yet ?! why is there an extra hole section?
+        # because this is for 2D holes in facets only
+
+    # part 3/4: hole list
+    # intro line
+    # <# of holes>
+    holes = poly.holeMarker()
+    polytxt += '{:d}{}'.format(len(holes), os.linesep)
+    # loop over hole markers
+    # <hole #> <x> <y> <z>
+    hole_str = '{:d}'
+    for m in range(3):
+        hole_str += sep + '{:%s}' % float_format
+    hole_str += os.linesep
+    for n, hole in enumerate(holes):
+        polytxt += hole_str.format(n, *hole)
+
+    # part 4/4: region attributes and volume constraints (optional)
+    # intro line
+    # <# of regions>
+    regions = poly.regionMarker()
+    polytxt += '{:d}{}'.format(len(regions), os.linesep)
+    # loop over region markers
+    # <region #> <x> <y> <z> <region number> <region attribute>
+    region_str = '{:d}'
+    for o in range(3):
+        region_str += sep + '{:%s}' % (float_format)
+    region_str += sep + '{:d}%s{:%s}' % (sep, float_format) + os.linesep
+    for p, region in enumerate(regions):
+        polytxt += region_str.format(p, region.x(), region.y(), region.z(),
+                                     region.marker(),
+                                     region.area())
+
+    # writing file
+    with open(filename, 'w') as out:
+        out.write(polytxt)
 
 
 def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
