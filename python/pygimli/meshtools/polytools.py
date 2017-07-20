@@ -666,17 +666,19 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     return poly
 
 
-def readPLC(filename):
+def readPLC(filename, comment='#'):
     r"""Generic PLC reader.
 
     Read 2D triangle POLY or 3D Tetgen PLC files.
-
-    TODO 3D Tetgen PLC
 
     Parameters
     ----------
     filename: str
         Filename *.poly
+
+    comment: str ('#')
+        String containing all characters that define a comment line. Identified
+        lines will be ignored during import.
 
     Returns
     -------
@@ -685,7 +687,14 @@ def readPLC(filename):
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
-    fi.close()
+
+    # Filter comment lines
+    comment_lines = []
+    for i, line in enumerate(content):
+        if line[0] in comment:
+            comment_lines.append(i)
+    for j in comment_lines[::-1]:
+        del(content[j])
 
     # Read header
     headerLine = content[0].split()
@@ -742,7 +751,24 @@ def readPLC(filename):
                     poly.node(int(row[1]) - fromOne),
                     poly.node(int(row[2]) - fromOne), marker)
     else:
-        raise Exception("Read segments for 3D tetgen format not yet supported")
+        segment_offset = 0
+        for i in range(nSegments):
+            row = content[2 + nVerts + i + segment_offset].split()
+            numBounds = int(row[0])
+            numHoles = row[1]
+            assert numHoles == '0', 'Can\'t handle Boundaries with holes yet'
+            marker = 0
+            if haveBoundaryMarker:
+                marker = int(row[2])
+
+            for k in range(numBounds):
+                bound_row = content[2 + nVerts + i + segment_offset + 1]\
+                    .split()
+                ivec = [int(bound_row[1]), int(bound_row[2]),
+                        int(bound_row[3]), int(bound_row[4])]
+                poly.createBoundary(ivec, marker=marker)
+                segment_offset += 1
+        nSegments += segment_offset
 
     # Hole section
     row = content[2 + nVerts + nSegments].split()
@@ -753,9 +779,10 @@ def readPLC(filename):
     nHoles = int(row[0])
     for i in range(nHoles):
         row = content[3 + nVerts + nSegments + i].split()
-        print(content[3 + nVerts + nSegments + i].split())
         if len(row) == 3:
             poly.addHoleMarker([float(row[1]), float(row[2])])
+        elif len(row) == 4 and dimension == 3:
+            poly.addHoleMarker([float(row[1]), float(row[2]), float(row[3])])
         else:
             raise Exception("Poly file seams corrupt: hole section line (3):" +
                             row + " : " + str(i) + " " + str(len(row)))
@@ -775,6 +802,11 @@ def readPLC(filename):
                 poly.addRegionMarker([float(row[1]), float(row[2])],
                                      marker=int(float(row[3])),
                                      area=float(row[4]))
+            elif len(row) == 6 and dimension == 3:
+                poly.addRegionMarker([float(row[1]), float(row[2]),
+                                      float(row[3])],
+                                     marker=int(float(row[4])),
+                                     area=float(row[5]))
             else:
                 raise Exception("Poly file seams corrupt: region section " +
                                 "line (5): " + str(i) + " " + str(len(row)))
