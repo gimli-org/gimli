@@ -1079,7 +1079,7 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
 def createParameterContraintsLines(mesh, cMat, cWeight=None):
     """TODO Documentme."""
     C = pg.RMatrix()
-    if isinstance(cMat, pg.DSparseMapMatrix):
+    if isinstance(cMat, pg.SparseMapMatrix):
         cMat.save('tmpC.matrix')
         pg.loadMatrixCol(C, 'tmpC.matrix')
     else:
@@ -1105,7 +1105,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
     start = []
     end = []
 #    swatch = pg.Stopwatch(True)  # not used
-    for i in range(0, nConstraints / 2):
+    for i in range(0, int(nConstraints / 2)):
         # print i
         # if i == 1000: break;
         idL = int(C[1][i * 2])
@@ -1147,7 +1147,7 @@ def createParameterContraintsLines(mesh, cMat, cWeight=None):
 
 
 def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
-    """Draw mesh boundaries with markers != 0 (used as constraints).
+    """Draw inter parameter constraints between cells.
 
     Parameters
     ----------

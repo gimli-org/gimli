@@ -118,7 +118,7 @@ public:
     inline const RVector & constraintsWeight() const { return constraintsWeight_; }
 
     /*! Fill global constraints weight vector started at constraintStart. */
-    void fillConstraintsWeight(RVector & vec, Index constraintStart );
+    void fillConstraintsWeight(RVector & vec, Index constraintStart);
 
     /*! Set Region-Wide horizontal(z) weighting parameter for anisotropic smoothing \n
         1 - isotrope, 0 -- no vertical smoothing
@@ -132,6 +132,7 @@ public:
 
     /*! Possible DEPRECATED ?? */
     inline void setZPower(double zp){
+        __MS("DEPRECATED")
         zPower_ = zp; zWeight_ = 0.01;
         fillConstraintsWeightWithFlatWeight();
     }
@@ -142,7 +143,7 @@ public:
     void setFixValue(double val);
     inline double fixValue() const { return fixValue_;}
 
-    /*! Helper method that convert cweight parameter into individual
+    /*! Helper method that convert cWeight parameter into individual
      * constraintsWeights depending on the associated boundary norm.
      * At the moment only zWeight is considered. */
     void fillConstraintsWeightWithFlatWeight();
@@ -194,6 +195,9 @@ public:
 
     /*! set start and upper/lower bounds for region */
     void setParameters(double start, double lb, double ub, std::string transString = "");
+
+    /*! Create Constraints weight values from constrains type and weighting.*/
+    void createConstraintsWeight_();
 
     void setModelTransStr_(const std::string & val);
 

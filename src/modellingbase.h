@@ -185,6 +185,7 @@ public:
 
     bool verbose() { return verbose_; }
 
+    /*! Syntactic sugar for this->regionManager().region(marker). */
     Region * region(int marker);
 
     RVector createStartVector();
