@@ -25,8 +25,8 @@ def main(argv):
     parser.add_argument("-o", dest="outFileName", type=str,
                         help="Filename for the resulting mesh.",
                         default='none')
-    parser.add_argument("--omitConsistencyCheck", dest="omitConsistencyCheck", type=str,
-                        help="Filename for the resulting mesh.",
+    parser.add_argument("--omitConsistencyCheck", dest="omitConsistencyCheck",
+                        help="Filename for the resulting mesh.", type=str,
                         default='none')
 
     parser.add_argument('mesh1')
@@ -73,18 +73,19 @@ def main(argv):
                  m1.cellCount(), m1.cellCount() + m2.cellCount())
         mesh.addExportData(key, d)
 
-    #mesh.translate((xmin, ymin, zmin))
-
+    # mesh.translate((xmin, ymin, zmin))
     if args.verbose:
         print("Save:")
         print(outfileBody, mesh)
 
     if outfileBody.find('.vtk'):
         mesh.exportVTK(outfileBody)
-        if args.verbose: print("write out: ", outfileBody + ".vtk")
+        if args.verbose:
+            print("write out: ", outfileBody + ".vtk")
     else:
         mesh.saveBinaryV2(outfileBody)
-        if args.verbose: print("write out: ", outfileBody + ".bms")
+        if args.verbose:
+            print("write out: ", outfileBody + ".bms")
 
 
 if __name__ == "__main__":

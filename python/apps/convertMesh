@@ -9,7 +9,7 @@ import sys
 import os
 import numpy as np
 import pygimli as pg
-from pygimli.meshtools import readGmsh
+# from pygimli.meshtools import readGmsh
 
 
 def strToRVector3(s):
@@ -30,7 +30,6 @@ def parseDataStr(s):
         data.load(vals[0])
         if len(data) == 0:
             data.load(vals[0], pg.Binary)
-
 
     if len(vals) == 1:
         return vals[0], data
@@ -109,15 +108,25 @@ def main(argv):
                       default=False)
     parser.add_option("-m", "--outMidCellAscii", dest="outMidCell",
                       action="store_true",
-                      help="Export simple xy[z]r[i] data. xy[z] are 2d[3d] cell center coordinates. r are resistivity and i optional ip-data values. Import data with the names r and i.", default=False)
+                      help="Export simple xy[z]r[i] data. xy[z] are 2d[3d] "
+                           "cell center coordinates. r are resistivity and i "
+                           "optional ip-data values. Import data with the "
+                           "names r and i.", default=False)
     parser.add_option("-d", "--data", dest="data", action='append',
-                      help="data file with optional name or modificator. This option can appended multiple. e.g.: -d data.vector (adds the data from file data.vector)\n" +
-                      "-d data.vector:Data (adds the data from file data.vector and name it Data \n" +
-                      "-d data.vector:Data:Log10 (adds the data from file data.vector, name it Data and stores log10(data)\n" +
-                      "-d data.vector:Data:Log10:1e-4 (adds the data from file data.vector, name it Data and stores log10(data) with droptolerancs 1e-4 for neg. data values()")
+                      help="data file with optional name or modificator. This "
+                           "option can appended multiple. e.g.: -d data.vector"
+                           " (adds the data from file data.vector)\n" +
+                           "-d data.vector:Data (adds the data from file "
+                           "data.vector and name it Data \n" +
+                           "-d data.vector:Data:Log10 (adds the data from file"
+                           "data.vector, name it Data and stores log10(data)\n"
+                           "-d data.vector:Data:Log10:1e-4 (adds the data from"
+                           "file data.vector, name it Data and stores "
+                           "log10(data) with droptolerance 1e-4 for neg. data")
 
     parser.add_option("-o", "--output", dest="outFileName", metavar="File",
-                      help="Filename for the resulting export. Suffix may define fileformat (.bms|.vtk)")
+                      help="Filename for the resulting export. Suffix may "
+                           "define fileformat (.bms|.vtk)")
 
     parser.add_option("-r", "--rotate", dest="rotate",
                       help="rotate the mesh, "'"x,y,z"'" ")
@@ -126,11 +135,13 @@ def main(argv):
     parser.add_option("-t", "--translate", dest="translate",
                       help="translate the mesh. "'"x,y,z"'" ")
 
-    parser.add_option("", "--interpolateCoords", dest="interpolateCoords", metavar="File",
+    parser.add_option("", "--interpolateCoords", dest="interpolateCoords",
+                      metavar="File",
                       help=" Interpolate a 2D mesh into 3D Coordinates." +
                       "File is a 3-column-ascii-file (dx x y)")
-    parser.add_option("", "--interpolateMesh", dest="interpolateMesh", metavar="File",
-                      help=" Interpolate the data of mesh into the mesh given by File." +
+    parser.add_option("", "--interpolateMesh", dest="interpolateMesh",
+                      metavar="File",
+                      help=" Interpolate mesh data into mesh given by File." +
                       "File is a bms|mod|vtk")
 
     (options, args) = parser.parse_args()
@@ -216,11 +227,10 @@ def main(argv):
         else:
             if mesh.haveData('Resistivity'):
                 np.savetxt(outfileBody + suff + 'zr',
-                           np.vstack((np.array(mesh.cellCenters())[:,0:3].T,
+                           np.vstack((np.array(mesh.cellCenters())[:, 0:3].T,
                                       mesh.data('Resistivity'))).T)
             else:
                 print("Sry!, no resistivity data with name r found")
-
 
     if options.outVTK:
         if options.verbose:
