@@ -28,7 +28,7 @@ This is necessary since gimli needs to know valid python installation and
 version. Ideally the following one-liner will suffice to compile pyGIMLi in the
 current directory.
 
-**Note: The script will automatic take care of requirements and updates of MSYS2. 
+**Note: The script will automatically take care of requirements and updates of MSYS2. 
 And also needs to modify/patch some of the llvm system files.**
 
 .. code:: bash
