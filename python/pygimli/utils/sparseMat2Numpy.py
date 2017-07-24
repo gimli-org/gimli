@@ -9,7 +9,7 @@ import numpy as np
 
 
 def convertCRSIndex2Map(rowIdx, colPtr):
-    ''' Converts CRS indices to uncompressed indices (row, col). '''
+    """Converts CRS indices to uncompressed indices (row, col)."""
     ii = []
     jj = []
     for i in range(len(colPtr) - 1):
@@ -20,7 +20,8 @@ def convertCRSIndex2Map(rowIdx, colPtr):
 
 
 def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
-    '''
+    """Extract indices and value from sparse matrix (SparseMap or CRS)
+
     Get python Arrays from SparseMatrix or SparseMapMatrix in either CRS
     convention (row index, column Start_End, values) or row index, column
     index, values.
@@ -49,7 +50,7 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
         Optional. Reurns additional array with the indices for reconstructing
         the matrix in the defined format.
 
-    '''
+    """
     io_warn = 'Only working for pygimli.SparseMapMatrix or CSR shaped ' +\
               'pygimli.Sparse matrices. Import type is {}'
     assert isinstance(matrix, pg.SparseMapMatrix) or\
