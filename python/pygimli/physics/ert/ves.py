@@ -9,10 +9,8 @@ import pygimli as pg
 from pygimli.mplviewer import drawModel1D
 
 
-class VESManager():
-    """
-    Vertical electrical sounding (VES) manager class.
-    """
+class VESManager():  # Should be derived from 1DManager
+    """Vertical electrical sounding (VES) manager class."""
     def __init__(self,
                  ab2,
                  z,
@@ -20,8 +18,8 @@ class VESManager():
                  Type='smooth',
                  verbose=False):
         """
-        parameters:
-        -----------
+        Parameters
+        ----------
 
         ab2: array_like
             Vector of distances between the point of the sounding and the
@@ -67,7 +65,8 @@ class VESManager():
 
     @staticmethod
     def simulate(synmodel, ab2=None, mn2=None, errPerc=3.):
-        """
+        """Forward calculation with optional noise
+
         Simulates a synthetic data set of a vertical electric sounding and
         appends gaussian distributed noise.
         Block only for now.
@@ -109,26 +108,27 @@ class VESManager():
         return syndata
 
     def createINV(self, data, relErrorP=3., startmodel=None, **kwargs):
-        """
-        parameters:
-        -----------
+        """Create inversion instance
 
-        data: array_like
+        Parameters
+        ----------
+
+        data : array_like
             Data array you would like to fit with this inverse modelling
             approach.
 
-        relErrorP: float [3.]
+        relErrorP : float [3.]
             Percentage value of the relative error you assume. Default 3. means
             a 3 % error is assumed. Affects the chi2 criteria during the
             inversion process and therefore the inversion result (Inversion
             tries to fit the given data within the given errors).
 
-        startmodel: array_like [None]
+        startmodel : array_like [None]
             Optional possibility to define the starting model for the inversion
             routine. The default will be the mean of the given data.
 
-        additional keyword arguments:
-        -----------------------------
+        **kwargs : keyword arguments
+        ----------------------------
 
         Keyword arguments are redirected to the block inversion instance only!
 
@@ -175,10 +175,10 @@ class VESManager():
             self.FOP.region(1).setStartValue(self.startmodel[1])
 
     def createModelTrans(self,
-                         thkBounds=[10., 0.1, 30.],
-                         modelBounds=[10, 1.0, 10000.],
-                         trans=['log', 'log']):
-        """Defines the transformation for the model."""
+                         thkBounds=(10., 0.1, 30.),
+                         modelBounds=(10, 1.0, 10000.),
+                         trans=('log', 'log')):
+        """Define model transformations for inversion."""
         self.thkBounds = thkBounds  # thk(start, min, max)
         self.rhoBounds = modelBounds  # rho (model) (start, min, max)
         self.trans = trans
@@ -187,15 +187,13 @@ class VESManager():
 
     def applyModelTrans(self):
         """
-        Append the previously given bounaries for the model transformation
-        to the forward operator.
+        Pass previously given boundaries for the model transformation to FOP
         """
         if self.FOP is None:
-            raise Exception('initialize forward operator before appending proper \
-boundaries for the model transformation')
+            raise Exception('initialize forward operator before appending \
+                             proper boundaries for the model transformation')
 
         if self.type == 'smooth':
-
             self.FOP.region(0).setParameters(self.rhoBounds[0],
                                              self.rhoBounds[1],
                                              self.rhoBounds[2], self.trans[1])
@@ -222,7 +220,8 @@ boundaries for the model transformation')
             self.startmodel = [self.getDepth() / self.Z / 2, np.median(data)]
 
     def invert(self, data, startmodel=None, relErrorP=3., lam=None, **kwargs):
-        """
+        """Run inversion
+
         Creates forward operator, initializes inversion scheme and run
         inversion based on the input parameters. kwargs are redirected to
         the createINV method.
