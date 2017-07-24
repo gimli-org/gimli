@@ -504,11 +504,21 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         if tmpMesh.cellCount() == 0:
             pass
         else:
-            drawModel(ax=ax, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
-                      nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
-                      levels=pg.utils.unique(tmpMesh.cellMarkers()),
-                      tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
-                      snap=True)
+            kwargs.setdefault('data', tmpMesh.cellMarkers())
+            kwargs.setdefault('nLevs',
+                              len(pg.unique(pg.sort(tmpMesh.cellMarkers()))))
+            kwargs.setdefault('levels', pg.utils.unique(tmpMesh.cellMarkers()))
+            kwargs.setdefault('tri', True)
+            kwargs.setdefault('alpha', 0.5)
+            kwargs.setdefault('linewidth', 0.0)
+            kwargs.setdefault('edgecolors', 'k')
+            kwargs.setdefault('snap', True)
+            drawModel(ax=ax, mesh=tmpMesh, **kwargs)
+#            drawModel(ax=ax, mesh=tmpMesh, data=tmpMesh.cellMarkers(),
+#                      nLevs=len(pg.unique(pg.sort(tmpMesh.cellMarkers()))),
+#                      levels=pg.utils.unique(tmpMesh.cellMarkers()),
+#                      tri=True, alpha=0.5, linewidth=0.0, edgecolors='k',
+#                      snap=True)
 
     for n in mesh.nodes():
         col = (0.0, 0.0, 0.0, 0.5)
