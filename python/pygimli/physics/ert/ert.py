@@ -18,7 +18,7 @@ class ERTModelling(pg.ModellingBase):
     """Minimal Forward Operator for 2.5D Electrical resistivity Tomography."""
 
     def __init__(self, mesh=None, data=None, verbose=False):
-        """"Constructor."""
+        """"Constructor, optional with data container and mesh."""
         super().__init__()
 
         self.setVerbose(verbose=verbose)
@@ -41,8 +41,8 @@ class ERTModelling(pg.ModellingBase):
 
     def setMesh(self, mesh, ignoreRegionManager=True):
         """Set Mesh."""
-        if mesh is not None:
-            pg.ModellingBase.setMesh(self, mesh)
+        if mesh is not None:  # ignore default different from ModBase (False)
+            pg.ModellingBase.setMesh(self, mesh, ignoreRegionManager)
 
     def calcGeometricFactor(self, data):
         """Calculate geometry factors for a given dataset."""
@@ -298,14 +298,15 @@ class ERTManager(MeshMethodManager):
         if data is None:
             data = self.data
 
-        mid, sep = midconfERT(data)
-        dx = np.median(np.diff(np.unique(mid)))*2
         if vals is None:
             vals = data('rhoa')
 
-        ax, cbar, ymap = pg.mplviewer.patchValMap(
-                vals, mid, sep, dx=dx, ax=ax, logScale=True,
-                label=r'Apparent resistivity in $\Omega$m')
+        # why is plotERT data not used instead?
+        mid, sep = midconfERT(data)
+        dx = np.median(np.diff(np.unique(mid)))*2
+        ax, _, ymap = pg.mplviewer.patchValMap(
+            vals, mid, sep, dx=dx, ax=ax, logScale=True,
+            label=r'Apparent resistivity in $\Omega$m')
 
         return ax
 
