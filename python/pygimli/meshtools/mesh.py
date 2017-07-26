@@ -2,6 +2,7 @@
 """Generally mesh generation and maintenance."""
 
 import numpy as np
+import os
 
 import pygimli as pg
 
@@ -384,25 +385,144 @@ def readTriangle(fname, verbose=False):
     # return pg.Mesh(2)
 
 
-def readTetgen(fname, verbose=False):
-    r"""Read :term:`Tetgen` :cite:`Si2004` mesh.
+def readTetgen(fname, comment='#', verbose=True,
+               default_cell_marker=0, load_faces=True,
+               quadratic=False):
+    """
+    Reads and converts a mesh from the basic tetgen output.
 
     Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
     of GIMLI::Mesh class.
     See: http://tetgen.org/
 
-    Parameters
-    ----------
-    fname : string
-        Filename of the file to read (\\*.n, \\*.e \\*.f)
+    Paramters
+    ---------
 
-    verbose : boolean, optional
-        Be verbose during import.
+    fname: str
+        Base name of the tetgen output, without ending. All additional files
+        (.ele and .face respectively) has to be the same basename.
 
+    comment: str ('#')
+        String consisting of all symbols that indicates a comment in the input
+        files. Standard for tetgen files is the '#'.
+
+    verbose: boolean (True)
+        Enables console output during the import process.
+
+    default_cell_marker: int (0)
+        Tetgen files can contain cell markers, but doesn't have to. If no
+        marker are found, the given interger is used.
+
+    load_faces:
+        Optional decision weather the faces of the tetgen output are loaded or
+        not. Note that without the -f in during the tetgen call, the faces in
+        the .face file will only contain the faces of the original input
+        poly file and not all faces. If only part of the faces are imported a
+        createNeighbourInfos call of the mesh will fail.
+
+    quadratic: boolean (False)
+        Returns a P2 refined mesh when True (to be removed, as soon as direct
+        import of quadratic meshs is possible).
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
     """
-    raise Exception("implement me!" + fname + str(verbose))
-    # os.system('meshconvert -d3 -D ..' + fname)
-    # return pg.Mesh(3)
+    mesh = pg.Mesh(3)
+
+    # Part 1/3: Nodes, essential
+    with open(fname + '.node', 'r') as node_in:
+        node_lines = pg.utils.filterLinesByCommentStr(node_in.readlines(),
+                                                      comment)
+    node_1 = node_lines[0].split()
+    node_count = int(node_1[0])
+    assert int(node_1[1]) == 3, 'Wrong dim: {}, should be 3.'.format(node_1[1])
+    number_node_attr = int(node_1[2])
+    node_markers = int(node_1[3])
+    node_attributes = []
+    for i in range(number_node_attr):
+        node_attributes.append([])
+
+    for n in range(node_count):
+        node_n = node_lines[n + 1].split()
+        if node_markers:
+            node_marker_n = int(node_n[-1])
+        else:
+            node_marker_n = n
+        mesh.createNode([float(node_n[1]),
+                         float(node_n[2]),
+                         float(node_n[3])],
+                        marker=node_marker_n)
+        for m in range(number_node_attr):
+            node_attributes[m].append(float(node_n[4 + m]))
+
+    for k in range(number_node_attr):
+        if verbose:
+            print('Add node data to mesh.')
+        mesh.addData('node_data_{}'.format(k + 1), node_attributes[k])
+
+    # Part 2/3: Tetrahedrons, optional
+    if os.path.exists(fname + '.ele'):
+        if verbose:
+            print('Found .ele file. Adding cells and cell marker.')
+        with open(fname + '.ele', 'r') as cell_in:
+            cell_lines = pg.utils.filterLinesByCommentStr(cell_in.readlines(),
+                                                          comment)
+        cell_1 = cell_lines[0].split()
+        cell_count = int(cell_1[0])
+
+        nodes_per_cell = int(cell_1[1])  # 4 or 10
+        if nodes_per_cell == 10:
+            quadratic = True
+            raise Exception('Cannot import quadratic meshes directly yet.')
+
+        cell_markers = int(cell_1[2])
+        for c in range(cell_count):
+            cell_n = cell_lines[c + 1].split()
+            if cell_markers:
+                cell_marker_n = int(cell_n[-1])
+            else:
+                cell_marker_n = default_cell_marker
+            mesh.createCell([int(ind) for ind in cell_n[1:5]],
+                            marker=cell_marker_n)
+            # in order to import quadratic meshes directly, i ned the sorting
+            # of the node indices
+#           mesh.createCell([int(ind) for ind in cell_n[1:nodes_per_cell + 1]],
+#                           marker=cell_marker_n)
+
+    # Part 3/3: Boundaries and Marker, optional
+    if os.path.exists(fname + '.face') and load_faces:
+        if verbose:
+            print('Found .face file. Adding boundaries and boundary marker.')
+        with open(fname + '.face', 'r') as face_in:
+            face_lines = pg.utils.filterLinesByCommentStr(face_in.readlines(),
+                                                          comment)
+
+        face_1 = face_lines[0].split()
+        face_count = int(face_1[0])
+        face_markers = int(face_1[1])
+
+        for f in range(face_count):
+            face_n = face_lines[f + 1].split()
+            if face_markers:
+                face_marker_n = int(face_n[-1])
+            else:
+                face_marker_n = 0
+            mesh.createBoundary(
+                [int(ind) for ind in face_n[1:4]],
+                marker=face_marker_n)
+            # quadratic
+#            mesh.createBoundary(
+#                [int(ind) for ind in face_n[1:len(face_n) - face_markers]],
+#                marker=face_marker_n)
+
+    if quadratic:
+        mesh = mesh.createP2()
+
+    if verbose:
+        print(mesh)
+
+    return mesh
 
 
 def readHydrus2dMesh(fname='MESHTRIA.TXT'):
