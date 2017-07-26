@@ -35,6 +35,7 @@ from .utils import findNearest
 from .utils import unique_everseen
 from .utils import unique
 from .utils import unique_rows
+from .utils import filterLinesByCommentStr
 
 from .postinversion import iterateBounds
 from .postinversion import modCovar
