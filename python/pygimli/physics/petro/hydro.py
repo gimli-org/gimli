@@ -6,7 +6,7 @@ import pygimli as pg
 
 
 def permeabilityEngelhardtPitter(poro, q=3.5, s=5e-3,
-                                mesh=None, meshI=None):
+                                 mesh=None, meshI=None):
     r"""Empirical model for porosity to hydraulic permeability.
 
     Postulated for sand and sandstones. :cite:`EngelhardtPit1955`
@@ -41,7 +41,7 @@ def permeabilityEngelhardtPitter(poro, q=3.5, s=5e-3,
 
     if meshI is not None:
         k = pg.interpolate(mesh, k, meshI.cellCenters())
-        k = pg.solver.fillEmptyToCellArray(meshI, k)
+        k = pg.meshtools.fillEmptyToCellArray(meshI, k)
     return k
 
 

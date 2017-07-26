@@ -3,9 +3,10 @@
 """
 Full waveform seismics and utilities
 """
-import pygimli as pg
+import time
 import numpy as np
 
+import pygimli as pg
 import pygimli.solver
 
 
@@ -220,10 +221,6 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
         v = pg.RMatrix(len(times), mesh.cellCount())
         sourceID = mesh.findCell(sourcePos).id()
 
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import time
-
     dt = times[1] - times[0]
 
     theta = 0.51
@@ -248,7 +245,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
         # solve for u
         tic = time.time()
         # + * dt*dt * F
-        rhs = dt * M * v[n-1] + (M - dt*dt * theta * (1. - theta) * A) * u[n-1] 
+        rhs = dt * M * v[n-1] + (M - dt*dt * theta * (1. - theta) * A) * u[n-1]
         timeIter1[n - 1] = time.time() - tic
 
         tic = time.time()
@@ -279,13 +276,13 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
                   min(u[n]),
                   max(u[n]))
 
-    #plt.figure()
-    #plt.plot(timeIter1, label='Ass:1')
-    #plt.plot(timeIter2, label='Sol:1')
-    #plt.plot(timeIter3, label='Ass:2')
-    #plt.plot(timeIter4, label='Sol:2')
-    #plt.legend()
-    #plt.figure()
+#    plt.figure()
+#    plt.plot(timeIter1, label='Ass:1')
+#    plt.plot(timeIter2, label='Sol:1')
+#    plt.plot(timeIter3, label='Ass:2')
+#    plt.plot(timeIter4, label='Sol:2')
+#    plt.legend()
+#    plt.figure()
     return u
 
 if __name__ == "__main__":

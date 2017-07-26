@@ -53,13 +53,15 @@ class ERTModelling(pg.ModellingBase):
                 b = data.sensorPosition(data('b')[i])
                 m = data.sensorPosition(data('m')[i])
                 n = data.sensorPosition(data('n')[i])
-                k[i] = 1./(2.*np.pi) * \
-                       1./(a.dist(m) - a.dist(n) - b.dist(m) + b.dist(b))
+                k[i] = 1./(2.*np.pi) * (1./a.dist(m) - 1./a.dist(n) -
+                                        1./b.dist(m) + 1./b.dist(n))
+                # what the hell is this! wrong formula and typos
+#                k[i] = 1./(2.*np.pi) * \
+#                       1./(a.dist(m) - a.dist(n) - b.dist(m) + b.dist(b))
             return k
         else:
             raise BaseException("Please use BERT for non-standard "
                                 "data sets" + str(data))
-
 
     def uAnalytical(self, p, sourcePos, k):
         """
@@ -287,12 +289,12 @@ class ERTManager(MeshMethodManager):
     """
     def __init__(self, **kwargs):
         """Constructor."""
-        super(MeshMethodManager, self).__init__(**kwargs)
+        super(ERTManager, self).__init__(**kwargs)
+        # super(MeshMethodManager, self).__init__(**kwargs)  # not making sense
         self.setDataToken('rhoa')
 
     def showData(self, data=None, vals=None, ax=None):
         """Show mesh in given axes or in a new figure."""
-
         if data is None:
             data = self.data
 
@@ -301,10 +303,9 @@ class ERTManager(MeshMethodManager):
         if vals is None:
             vals = data('rhoa')
 
-        ax, cbar, ymap = pg.mplviewer.patchValMap(vals, mid, sep,
-                                                  dx=dx, ax=ax,
-                                    logScale=True,
-                                    label=r'Apparent resistivity in $\Omega$m')
+        ax, cbar, ymap = pg.mplviewer.patchValMap(
+                vals, mid, sep, dx=dx, ax=ax, logScale=True,
+                label=r'Apparent resistivity in $\Omega$m')
 
         return ax
 
@@ -327,10 +328,9 @@ class ERTManager(MeshMethodManager):
 
     @staticmethod
     def simulate(mesh, res, scheme, verbose=False, **kwargs):
-        """
-        """
+        """Forward calculation vor given mesh, data and resistivity."""
         fop = ERTModelling(verbose=verbose)
-        #fop = ERTManager.createFOP(verbose=verbose)
+        # fop = ERTManager.createFOP(verbose=verbose)
 
         fop.setData(scheme)
         fop.setMesh(mesh, ignoreRegionManager=True)
@@ -351,8 +351,8 @@ class ERTManager(MeshMethodManager):
 
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
         if noiseLevel > 0:
-
-            err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs', 1e-4) / rhoa
+            err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs',
+                                                              1e-4) / rhoa
             scheme.set('err', err)
             rhoa *= 1. + pg.randn(scheme.size()) * err
 
@@ -381,8 +381,8 @@ def createERTData(elecs, schemeName='none', **kwargs):
     comes with BERT.
     """
     if schemeName is not "dd":
-        import pybert as pb
-        return bp.createData(elecs, schemeName, **kwargs)
+        import pybert as pb  # that's bad!!! TODO: remove pybert deps
+        return pb.createData(elecs, schemeName, **kwargs)
 
     if isinstance(elecs, pg.RVector):
         sPos = []
@@ -412,7 +412,7 @@ def createERTData(elecs, schemeName='none', **kwargs):
             en = em + 1
 
             if isClosed:
-                en = en%nElecs
+                en = en % nElecs
 
             if en < nElecs and en != ea:
                 a.append(ea)

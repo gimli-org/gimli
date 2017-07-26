@@ -204,9 +204,10 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
         self.mesh = None
+        self.data = None
 
     # Mesh related methods
-    def createMesh(self, ):
+    def createMesh(self, **kwargs):
         """Create a mesh aka the parametrization."""
         pass
 
@@ -252,7 +253,6 @@ class MeshMethodManager(MethodManager):
 
     def setData(self, data):
         """Set data container from outside."""
-        isinstance
         if not isinstance(data, pg.DataContainer):
             raise Exception('IMPLEMENTME')
 

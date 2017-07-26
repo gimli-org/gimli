@@ -9,7 +9,6 @@ import numpy as N
 
 import pygimli as pg
 from pygimli.utils import rndig
-import string
 
 
 def astausgleich(ab2org, mn2org, rhoaorg):
@@ -268,7 +267,7 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
     if res is not None:
         xl = P.xlim()[1]
         for i in range(len(res)):
-            P.text(xl, i, ' %g $\Omega$m' % rndig(res[i], 2))
+            P.text(xl, i, r' %g $\Omega$m' % rndig(res[i], 2))
 
     lgm = N.zeros((len(z), 1))
     tch = N.zeros((len(z), 1))
@@ -408,12 +407,12 @@ def read1resfile(filename, readsecond=False, dellast=True):
     dphi = []
     while True:
         line = f.readline()
-        if string.rfind(line, 'Freq') > -1:
+        if line.rfind('Freq') > -1:
             break
 
     if readsecond:
         while True:
-            if string.rfind(f.readline(), 'Freq') > -1:
+            if f.readline().rfind('Freq') > -1:
                 break
 
     while True:
@@ -422,11 +421,11 @@ def read1resfile(filename, readsecond=False, dellast=True):
         if len(b) < 5:
             break
 
-        fr.append(string.atof(b[0]))
-        rhoa.append(string.atof(b[1]))
-        phi.append(-string.atof(b[2]) * P.pi / 180.)
-        drhoa.append(string.atof(b[3]))
-        dphi.append(string.atof(b[4]) * P.pi / 180.)
+        fr.append(float(b[0]))
+        rhoa.append(float(b[1]))
+        phi.append(-float(b[2]) * P.pi / 180.)
+        drhoa.append(float(b[3]))
+        dphi.append(float(b[4]) * P.pi / 180.)
 
     f.close()
     if dellast:
@@ -468,7 +467,7 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
     chi2 = inv.chi2()
     mod0 = pg.RVector(erg)
     mod0[0] = 0.0  # set IP term to zero to obtain pure EM term
-    emphi = f(mod0)
+    emphi = f.response(mod0)
     resid = (phi - emphi) * 1000.
 
     if doplot:
@@ -488,7 +487,7 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
             fmt='x-',
             label='measured')
         ax.set_xscale('log')
-        P.semilogx(fr, f(mod0) * 1000., label='EM term (CC)')
+        P.semilogx(fr, emphi * 1000., label='EM term (CC)')
         P.errorbar(fr, resid, yerr=dphi * 1000., label='IP term')
         ax.set_yscale('log')
         P.xlim((min(fr), max(fr)))
