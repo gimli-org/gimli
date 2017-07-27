@@ -112,7 +112,7 @@ Coding rules
 
 * Classes starts with Upper Case Letter.
 
-* Members and Methods allways starts with Lower Case Letter.
+* Members and Methods always starts with Lower Case Letter.
 
 * All class member (self.member) need to be initialized in the Constructor.
 
@@ -154,6 +154,47 @@ We use: (You can find exceptions in .landscape.yml)
 * pyflakes
 
 .. _sec:testing:
+
+API Documentation and doctests
+------------------------------
+
+Use the following documentation syntax
+
+.. code-block:: python
+
+  def foo(arg1, arg2):
+
+  """Short description, i.e., one line to explain what foo does.
+
+    Explain a little bit more verbose was foo does. Use references :cite:`Archie1942`
+
+    Use links to pygimli api :py:mod:`pygimli.meshtools.appendTriangleBoundary`.
+
+    Use math.
+
+    .. math :
+        a + \simga * \rho
+
+    Explain all parameters.
+
+    Parameters
+    ----------
+
+    arg1: type(arg1) use links to :gimliapi:`GIMLI::Mesh`
+        Describe arg1.
+
+    arg1: type(arg1)
+        Describe arg1.
+
+    Write examples that might be complete minimal script that will be executed and tested automatically.
+
+    Examples
+    --------
+    >>> import foo
+    >>>
+    >>>
+  """
+
 
 Testing
 -------
