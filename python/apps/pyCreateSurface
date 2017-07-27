@@ -22,7 +22,8 @@ def createCoarsePoly(coarseData):
 
     xMin, xMax = min(x), max(x)
     yMin, yMax = min(y), max(y)
-    zMin, zMax = min(z), max(z)
+    zMin = min(z)
+#    zMin, zMax = min(z), max(z)
 
     print(xMin, xMax, yMin, yMax)
     border = max((xMax - xMin) * boundary, (yMax - yMin) * boundary) / 100.
@@ -65,11 +66,9 @@ def createFinePoly(coarseMesh, ePos):
 
     x = pg.x(ePos)
     y = pg.y(ePos)
-    z = pg.z(ePos)
 
     xMin, xMax = min(x), max(x)
     yMin, yMax = min(y), max(y)
-    zMin, zMax = min(z), max(z)
 
     maxSpan = max(xMax - xMin, yMax - yMin)
     borderPara = maxSpan * paraBoundary / 100.0
@@ -162,7 +161,7 @@ def main(argv):
 
     system(translate)
 
-    #fineMesh.exportAsTetgenPolyFile( "meshFine.poly" );
+    # fineMesh.exportAsTetgenPolyFile( "meshFine.poly" );
 
 if __name__ == "__main__":
     main(sys.argv[1:])

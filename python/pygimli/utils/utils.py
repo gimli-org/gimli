@@ -571,3 +571,18 @@ def uniqueRows(data, prec=2):
     _, ia = np.unique(b, return_index=True)
     _, ib = np.unique(b, return_inverse=True)
     return np.unique(b).view(dfix.dtype).reshape(-1, dfix.shape[1]), ia, ib
+
+
+def filterLinesByCommentStr(lines, comment_str='#'):
+    """
+    Filter all lines from a file.readlines output which begins with one of the
+    symbols in the comment_str.
+    """
+    comment_line_idx = []
+    for i, line in enumerate(lines):
+        if line[0] in comment_str:
+            comment_line_idx.append(i)
+    for j in comment_line_idx[::-1]:
+        del(lines[j])
+    return lines
+

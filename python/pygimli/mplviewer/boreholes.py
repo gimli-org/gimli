@@ -22,12 +22,12 @@ def create_legend(ax, cmap, ids, classes):
 
 
 class BoreHole(object):
-    """
-    Class to load and store data from a borehole. Each row in the data file
-    must contain a start depth [m], end depth and a classification. The values
-    should be separated by whitespace. The first line should contain the
-    inline position (x and z), text ID and an offset for the text
-    (for plotting).
+    r"""Class for handling (structural) borehole data for inclusion in plots.
+
+    Each row in the data file must contain a start depth [m], end depth and a
+    classification. The values should be separated by whitespace.
+    The first line should contain the inline position (x and z), text ID and an
+    offset for the text (for plotting).
 
     The format is very simple, and a sample file could look like this:
 
@@ -35,7 +35,6 @@ class BoreHole(object):
         0.0 1.6 clti \n
         1.6 10.0 shale
     """
-
     def __init__(self, fname):
         self._fname = fname
         self._load()
@@ -53,10 +52,7 @@ class BoreHole(object):
         return out
 
     def _load(self):
-        """
-        Loads the data.
-        """
-
+        """Loads the data file."""
         self.data = np.genfromtxt(self._fname, dtype=None)
         if self.data.size > 1:
             header = self.data[0][2].split('_')
@@ -72,10 +68,7 @@ class BoreHole(object):
 
     def plot(self, ax, plot_thickness=1.0, cmin=None, cmax=None, cm=None,
              do_legend=True, **legend_kwargs):
-        """
-        Plots the data on the specified axis.
-        """
-
+        """Plots the data on the specified axis."""
         start_depths = np.asarray([d[0] for d in self.data[1:]])
         end_depths = np.asarray([d[1] for d in self.data[1:]])
         thickness = end_depths - start_depths
@@ -96,29 +89,25 @@ class BoreHole(object):
             self.add_legend(ax, cm, **legend_kwargs)
 
     def add_legend(self, ax, cmap, **legend_kwargs):
-        """
-        Adds a legend to the plot.
-        """
+        """Add a legend to the plot."""
 
         leg = create_legend(ax, cmap, self.class_id, self.unique_classes)
         ax.legend(handles=leg, **legend_kwargs)
 
 
 class BoreHoles(object):
-    """
-    Class to load and handle several boreholes belonging to one profile. It
-    makes the color coding of the classifications consistent across boreholes.
+    """Class to load and handle several boreholes belonging to one profile.
+
+    It makes the color coding consistent across boreholes.
     """
 
     def __init__(self, fnames):
-        """
-        Takes a list of bore hole filenames and loads them.
-        """
+        """Load a list of bore hole from filenames."""
         self._fnames = fnames
         if len(fnames) > 0:
             self.boreholes = [BoreHole(f) for f in fnames]
         else:
-            raise (Warning('No filenames specified!'))
+            raise Warning('No filenames specified!')
 
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self._fnames)
@@ -131,9 +120,9 @@ class BoreHoles(object):
         return out
 
     def _build_common_colormap(self):
-        """
-        Creates a common colormap for all boreholes such that a certain
-        classification has the same color on all boreholes.
+        """Create a common colormap for all boreholes.
+
+        Such that a certain classification has the same color on all boreholes.
         """
 
         self.common_unique, rev_idx = np.unique(
@@ -155,10 +144,7 @@ class BoreHoles(object):
         self.cmax = max(self.class_id)
 
     def plot(self, ax, plot_thickness=1.0, do_legend=True, **legend_kwargs):
-        """
-        Plots the boreholes on the specified axis.
-        """
-
+        """Plot the boreholes on the specified axis."""
         self._build_common_colormap()
 
         for b in self.boreholes:
@@ -169,10 +155,7 @@ class BoreHoles(object):
             self.add_legend(ax, self.cm, **legend_kwargs)
 
     def add_legend(self, ax, cmap, **legend_kwargs):
-        """
-        Adds a legend to the plot.
-        """
-
+        """Add a legend to the plot."""
         leg = create_legend(ax, cmap, np.arange(cmap.N), self.common_unique)
 
         extra = dict(bbox_to_anchor=(0.9, 0.05, 0.1, 0.1), ncol=cmap.N / 2,

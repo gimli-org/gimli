@@ -589,12 +589,28 @@ _pygimli_.RMatrix.__iter__ = __MatIterCall__
 _pygimli_.CMatrix.__iter__ = __MatIterCall__
 
 
-class Vector3Iter(VectorIter):
-    """"""
+class Vector3Iter():
+    """
+    Simple iterator for RVector3, cause it lacks the core function
+    .beginPyIter()
+    """
     def __init__(self, vec):
         self.vec = vec
         self.length = 3
         self.pos = -1
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        return self.__next__()
+
+    def __next__(self):
+        self.pos += 1
+        if self.pos == self.length:
+            raise StopIteration()
+        else:
+            return self.vec[self.pos]
 
 
 def __Vector3IterCall__(self):

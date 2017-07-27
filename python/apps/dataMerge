@@ -35,8 +35,8 @@ def loadProjectFile(
         merged.
         A list of row entries for each data file to merge. The data will not be
         sorted, i.e., the sensor positions will be in the same order than the
-        list entries are. However, sensors on the same positions (with tolerance
-        SNAP) will be merged.
+        list entries are. However, sensors on the same positions (with
+        tolerance snapping) will be merged.
         You can also give just one data file if you want just a spatial
         transformation of the data.
 

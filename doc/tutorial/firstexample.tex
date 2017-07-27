@@ -4,11 +4,11 @@
 Let us start with the very simple inverse problem of fitting a polynomial curve of degree $P$
 \[ f(x) = p_0 +p_1 x + \ldots + p_P x^P= \sum\limits_{i=0}^{P} p_i x^i \]
 to some existing data $y$. The unknown model is the coefficient vector $\m=[p_0,\ldots,p_P]$.
-The vectorized function for a vector $\bf x=[x_1,\ldots,x_N]^T$ can be written as matrix-vector product
+The vectorized function for a vector $\x=[x_1,\ldots,x_N]^T$ can be written as matrix-vector product
 \begin{equation}\label{eq:yAx}
   \f(\x) = \A \x \quad\mbox{with}\quad \A=\left[ \begin{array}{cccc}
   1 & x_1 & \ldots & x_1^P \\ \vdots & \vdots & \ddots & \vdots \\ 1 & x_N & \ldots & x_N^P
-  \end{array} \right] = [ {\bf 1}\quad \x \quad \x^2 \ldots \x^P ] \quad.
+  \end{array} \right] = [ \textbf{1}\quad \x \quad \x^2 \ldots \x^P ] \quad.
 \end{equation}
 
 We set up the modelling operator, i.e. to return $\f(\x)$ for given $p_i$, as a class derived from the modelling base class. The latter holds the main mimic of generating jacobian, gradients by brute force. The only function to overwrite is \cw{response()}.
@@ -36,7 +36,7 @@ protected:
 };
 \end{lstlisting}
 
-In the constructor the $\bf x$ vector and the number of coefficients are saved as protected variables\footnote{Usually all variables are denoted with an underscore and declared as protected. Instead of accessing the values directly, we use set and get functions that control the validity of the arguments.}.
+In the constructor the $\x$ vector and the number of coefficients are saved as protected variables\footnote{Usually all variables are denoted with an underscore and declared as protected. Instead of accessing the values directly, we use set and get functions that control the validity of the arguments.}.
 The function \cw{setParameterCount} setups the parameterisation as a 0d mesh of \cw{nc} unknowns.
 The main type used is \cw{RVector}, a vector of real (\cw{double}) values.
 

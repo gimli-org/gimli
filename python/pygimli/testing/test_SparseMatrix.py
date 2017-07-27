@@ -49,10 +49,26 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(CSR.rows(), MAP1.rows())
         np.testing.assert_equal(MAP1.rows(), MAP2.rows())
 
+        # testing SparseMatrix to Numpy
+        csr = pg.SparseMapMatrix(r=4, c=5)
+        check_rows = [0, 0, 1, 2, 3]
+        check_cols = [0, 1, 2, 3, 4]
+        check_csr_rows = [0, 1, 2, 3, 4]
+        check_col_s_e = [0, 2, 3, 4, 5, 5]
+        check_vals = np.array([1.0, 3, np.pi, 1e-12, -1.12345e13])
+        for i in range(len(check_rows)):
+            csr.addVal(check_rows[i], check_cols[i], check_vals[i])
 
+        r, c, v = pg.utils.sparseMatrix2Array(csr)
+        np.testing.assert_allclose(r, check_csr_rows)
+        np.testing.assert_allclose(c, check_col_s_e)
+        np.testing.assert_allclose(v, check_vals)
 
+        r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.SparseMatrix(csr),
+                                                 getInCRS=False)
+        np.testing.assert_allclose(r2, check_rows)
+        np.testing.assert_allclose(c2, check_cols)
+        np.testing.assert_allclose(v2, check_vals)
 
 if __name__ == '__main__':
     unittest.main()
-
-

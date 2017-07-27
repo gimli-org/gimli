@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+"""Import functions for several Em data formats (to be extended)."""
 import numpy as np
 
 
@@ -59,11 +59,12 @@ def readusffile(filename, data=None):
 
 
 def readusffiles(filenames):
-    """Read all soundings data from a list of usf files
+    """Read all soundings data from a list of usf files.
 
     Example
     -------
-        DATA = readusffiles(filenames)"""
+    DATA = readusffiles(filenames)
+    """
     DATA = []
     for onefile in filenames:
         DATA = readusffile(onefile, DATA)
@@ -77,6 +78,8 @@ def importMaxminData(filename, verbose=False):
     fid = open(filename)
     coilspacing = 0.
     freq = []
+    aline = ""
+    i = 0
     for i, aline in enumerate(fid):
         if aline.split()[0][0].isdigit():  # number found
             break
@@ -96,6 +99,7 @@ def importMaxminData(filename, verbose=False):
     nf = len(freq)
     if verbose:
         print("delim=", delim, "nf=", nf)
+
     A = np.loadtxt(filename, skiprows=i, delimiter=delim).T
     x, IP, OP = A[0], A[2:nf * 2 + 2:2].T, A[3:nf * 2 + 2:2].T
 

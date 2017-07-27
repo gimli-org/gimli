@@ -5,16 +5,16 @@ Created on Thu Dec 04 14:09:36 2014
 
 @author: Marcus
 """
+import sys
 import numpy as np
 
 
 class ReadAHL(object):
-    """
-    Class to read the seismic refraction format provided by Uppsala University.
+    """Class reading seismic refraction format provided by Uppsala University.
 
     Supply a filename and a delimiter character. The delimiter is used to
     find the header string which in turn is used to label and extract the
-    columns. Also
+    columns.
     """
 
     def __init__(self, filename, maxsensorid, delimiter='|'):
@@ -31,8 +31,8 @@ class ReadAHL(object):
         self.use_xz_only = True
 
     def __call__(self):
-        self._read()
-        self._convert()
+        self.load()
+        self.convert()
 
     def __str__(self):
         s = 'header line: ' + self.header
@@ -49,7 +49,7 @@ class ReadAHL(object):
         return self.__class__.__name__ + "(" + in_arg + ")"
 
     def _extractlabels(self):
-        """ Extract the labels from the header line. """
+        """Extract the labels from the header line."""
 
         labels = self.header.split(self.delimiter)
         n = 0
@@ -70,16 +70,15 @@ class ReadAHL(object):
         with open(self.filename, 'r') as f:
             # loop until we find the delimiter as the first character of line
             firstchar = ''
-            while(firstchar is not self.delimiter):
+            while firstchar is not self.delimiter:
                 self.header = f.readline().strip()
                 firstchar = self.header[0]
                 self.skiprows += 1  # update number of leading rows in the file
 
         self._extractlabels()  # split the header line into individual labels
 
-    def _read(self):
-        """Main method for actually processing/reading the data in file"""
-
+    def load(self):
+        """Main method for actually processing/reading the data in file."""
         # this will determine number of leading rows and extract labels etc...
         self._extractheader()
 
@@ -106,10 +105,8 @@ class ReadAHL(object):
         # convert it all to numpy array for easier manipulation later
         self.alldata = np.asarray(self.alldata)
 
-    def _convert(self):
-        """
-        Extract the sensors and build a list that can be used
-        for BERT/GIMLi indexing.
+    def convert(self):
+        """Extract sensors and build a list for BERT/GIMLi indexing.
 
         Also determine relevant column numbers for the data.
         """
@@ -167,7 +164,7 @@ class ReadAHL(object):
 
         # change the order of the positions to be in x,y,z order
         # also change to [m] instead of [dm]
-        self._write2disk(data=final_pos, desc='pos')
+        self.save(data=final_pos, desc='pos')
 
         sgt_cols = [self.labels['SHOT_PEG'], self.labels['REC_PEG'],
                     self.labels['X1:DELAY']]
@@ -176,13 +173,11 @@ class ReadAHL(object):
         sgt = sgt.astype(float)
         sgt[:, -1] /= 1000.0  # milliseconds to seconds
 
-#        self._write2disk(data=np.column_stack((sgt, valid)), desc='sgt')
-        self._write2disk(data=sgt, desc='sgt')
+#        self.save(data=np.column_stack((sgt, valid)), desc='sgt')
+        self.save(data=sgt, desc='sgt')
 
-    def _write2disk(self, data, desc):
-        """
-        Write the converted data to disk.
-        """
+    def save(self, data, desc):
+        """Write the converted data to disk."""
         fname_in = self.filename
         fname_out = fname_in[:fname_in.rfind('.')] + '.sgt'
 
@@ -210,4 +205,4 @@ if __name__ == '__main__':
     print('AHL-file reader')
     if len(sys.arv) > 1:
         datafile = sys.argv[1]
-        ahl = ReadAHL(fname, maxsensorid=2999, delimiter='|')
+        ahl = ReadAHL(datafile, maxsensorid=2999, delimiter='|')

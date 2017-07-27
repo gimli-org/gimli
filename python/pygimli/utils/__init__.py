@@ -35,6 +35,7 @@ from .utils import findNearest
 from .utils import unique_everseen
 from .utils import unique
 from .utils import unique_rows
+from .utils import filterLinesByCommentStr
 
 from .postinversion import iterateBounds
 from .postinversion import modCovar
@@ -43,5 +44,8 @@ from .geostatistics import covarianceMatrix
 from .geostatistics import computeInverseRootMatrix
 
 from . hankel import hankelFC
+
+from .sparseMat2Numpy import sparseMatrix2Array
+from .sparseMat2Numpy import convertCRSIndex2Map
 
 __all__ = [name for name in dir() if '_' not in name]

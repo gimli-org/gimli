@@ -33,7 +33,7 @@ Install Miniconda (only once):
 
  Add the gimli and conda-forge channel (only once):
 
- .. code:: bash
+.. code:: bash
 
     conda config --add channels gimli --add channels conda-forge
 
