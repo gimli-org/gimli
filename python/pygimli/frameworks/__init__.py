@@ -2,7 +2,7 @@
 """Inversion related methods."""
 
 from .inversion import MeshInversion
-from .modelling import Modelling,
+from .modelling import Modelling
 
 from .harmfit import HarmFunctor, harmfitNative, harmfit
 from .resolution import computeR

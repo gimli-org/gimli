@@ -159,7 +159,7 @@ Behaviour by name for global functions:
 .. code-block:: python
 
     convertFOO(fooObj):
-        """Convert Foo obj into gimli Obj""
+        """Convert Foo obj into gimli Obj"""
         return gimliObj
 
 API Documentation and doctests

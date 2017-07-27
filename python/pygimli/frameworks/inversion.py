@@ -46,8 +46,7 @@ class MeshInversion():
         self.inv.setData(self.dataVals)
         self.inv.setRelativeError(self.dataErrs)
         self.inv.setLambda(lam)
-        print('#'*100)
-        print(self.fop.jac, self.fop.jac.rows(), self.fop.jac.rows())
+
         self.mod = self.inv.run()
         self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
         return self.mod
