@@ -118,26 +118,50 @@ Coding rules
 
 * (ugly²) Do not use multi initialize in one line, e.g., a, b, c = 0, 0, 0
 
-Function behaviour by name:
-...........................
+Behaviour by name for global functions:
+.......................................
 
 .. code-block:: python
 
-  createFOO(...)
-
-Allways needs to return an instance of FOO.
-
-.. code-block:: python
-
-  showFOO(Bar, ...)
-
-Allways opens a window or optionaly use a given Axes to show us Bar as Foo.
+    createFOO(...)
+        """Always needs to return an instance of FOO.""
 
 .. code-block:: python
 
-  drawFOO(ax, Bar...)
+    showFOO(Bar, ...)
+        """Always open a window or optionally use a given Axes to show us Bar as Foo."""
+        return ax, cbar
 
-Allways need an Axes ax and draws Bar as Foo in this Axes
+.. code-block:: python
+
+    drawFOO(ax, Bar...)
+        """Always need an Axes ax and draws Bar as Foo""
+        return graphics_object
+
+.. code-block:: python
+
+    readFOO(fileName, *args):
+        """Read object from disc."""
+        return obj
+
+.. code-block:: python
+
+    importFOO(fileName, obj, *args):
+        """Import object from disc into an existing object."""
+        return obj
+
+.. code-block:: python
+
+    exportFOO(obj, fileName):
+        """Export object to disc in foreighn (FOOs) format."""
+        return true
+
+.. code-block:: python
+
+    convertFOO(fooObj):
+        """Convert Foo obj into gimli Obj""
+        return gimliObj
+
 
 Use pylint or prospector to improve code quality.
 
