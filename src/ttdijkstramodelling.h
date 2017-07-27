@@ -48,6 +48,9 @@ public:
 
     inline double distance(int node) { return distances_[node]; }
 
+    RVector distances() const;
+
+
     class edge_ : std::pair< int, int > {
     public:
         edge_() : start(0), end(0) {}

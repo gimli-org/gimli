@@ -162,23 +162,6 @@ Behaviour by name for global functions:
         """Convert Foo obj into gimli Obj""
         return gimliObj
 
-
-Use pylint or prospector to improve code quality.
-
-.. _sec:coding_guidelines:
-
-Coding Guidelines
------------------
-
-We use: (You can find exceptions in .landscape.yml)
-
-* pep8
-* pep257
-* pylint
-* pyflakes
-
-.. _sec:testing:
-
 API Documentation and doctests
 ------------------------------
 
@@ -219,6 +202,21 @@ Use the following documentation syntax
     >>>
   """
 
+Coding Guidelines
+-----------------
+
+Use pylint or prospector to improve code quality.
+
+.. _sec:coding_guidelines:
+
+We use: (You can find exceptions in .landscape.yml)
+
+* pep8
+* pep257
+* pylint
+* pyflakes
+
+.. _sec:testing:
 
 Testing
 -------

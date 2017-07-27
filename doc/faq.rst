@@ -75,8 +75,8 @@ you get an error like this:
   [Errno 2] No such file or directory
 
 
-Weird foundings
----------------
+Weird findings
+--------------
 
 My script called sip.py and nothing works
 .........................................

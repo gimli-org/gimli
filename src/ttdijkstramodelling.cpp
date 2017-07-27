@@ -41,6 +41,14 @@ Dijkstra::Dijkstra(const Graph & graph) : graph_(graph) {
     pathMatrix_.resize(graph.size());
 }
 
+RVector Dijkstra::distances() const {
+    RVector ret(0);
+    for (auto const & it: distances_){
+        ret.push_back(it.second);
+    }
+    return ret;
+}
+
 void Dijkstra::setGraph(const Graph & graph) {
     graph_ = graph;
     pathMatrix_.clear();
@@ -116,10 +124,9 @@ TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(bool verbose)
 TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(Mesh & mesh,
                                                          DataContainer & dataContainer,
                                                          bool verbose)
-: ModellingBase(dataContainer, verbose), background_(1e16) {
+    : ModellingBase(dataContainer, verbose), background_(1e16) {
 
     this->setMesh(mesh);
-
     this->initJacobian();
 }
 
@@ -170,6 +177,10 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
             newTime = dist * slownessPerCell[mesh_->cell(i).id()];
             meshGraph[na->id()][nb->id()] = newTime;
             meshGraph[nb->id()][na->id()] = newTime;
+        }
+
+        if (mesh_->cell(i).rtti() > MESH_TETRAHEDRON10_RTTI){
+            THROW_TO_IMPL
         }
     }
 
@@ -256,6 +267,9 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     }
     RVector shots(unique(sort((*dataContainer_)("s"))));
 
+    if (shots.size() == 0){
+        throwError(1, "There are no shot positions in the dataContainer.");
+    }
     shotNodeId_.resize(shots.size()) ;
     shotsInv_.clear();
 

@@ -66,6 +66,8 @@ deps = ['sphinxcontrib-programoutput',
         'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 
+print(pip.get_installed_distributions())
+
 req = []
 for dep in deps:
     if dep not in modules:

@@ -6,7 +6,6 @@ Traveltime in 2D
 ----------------
 """
 
-
 import numpy as np
 
 import pygimli as pg

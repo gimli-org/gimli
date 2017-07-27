@@ -62,6 +62,10 @@ def cellDataToNodeData(mesh, data, style='mean'):
 
     if style == 'mean':
 
+        if isinstance(data, pg.RVector):
+            print(pg.cellDataToPointData(mesh, data))
+            return pg.cellDataToPointData(mesh, data)
+
         if mesh.dim() == 1:
             return pg.cellDataToPointData(mesh, data)
         elif mesh.dim() == 2:
