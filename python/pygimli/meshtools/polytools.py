@@ -660,7 +660,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
                         pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     # print(poly)
-    #pg.meshtools.writePLC(poly, "test.poly")
+    # pg.meshtools.writePLC(poly, "test.poly")
     # pg.show(poly)
     # pg.wait()
     return poly
@@ -669,21 +669,21 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 def readPLC(filename, comment='#'):
     r"""Generic PLC reader.
 
-    Read 2D triangle POLY or 3D Tetgen PLC files.
+    Read 2D :term:`Triangle` or 3D :term:`Tetgen` PLC files.
 
     Parameters
     ----------
-    filename: str
+    filename: string
         Filename *.poly
 
-    comment: str ('#')
+    comment: string ('#')
         String containing all characters that define a comment line. Identified
         lines will be ignored during import.
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly :
+        gimliapi:`GIMLI::Mesh`
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -818,7 +818,7 @@ def exportPLC(poly, fname, **kwargs):
     r"""General writer to save piece-wise linear complex (PLC) as poly file.
 
     Choose from poly.dimension() and forward appropriate to
-    gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
+    :gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
     and :py:mod:`pygimli.meshtools.writeTrianglePoly`
 
     Parameters
@@ -849,7 +849,10 @@ def exportPLC(poly, fname, **kwargs):
 
 
 def writePLC(*args, **kwargs):
-    ''' Backward compatibility. Please use exportPLC. '''
+    """
+    Backward compatibility.
+    Please use :py:mod:`pygimli.meshtools.exportPLC`.
+    """
     return exportPLC(*args, **kwargs)
 
 
@@ -903,14 +906,16 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
 
 
 def writeTrianglePoly(*args, **kwargs):
-    ''' Backward compatibility. Please use exportTrianglePoly. '''
+    """ Backward compatibility.
+    Please use :py:mod:`pygimli.meshtools.exportTrianglePoly`.
+    """
     return exportTrianglePoly(*args, **kwargs)
 
 
 def exportTetgenPoly(poly, filename, float_format='.12e'):
-    '''
+    """
     Writes a given piecewise linear complex (mesh/poly ) into a Ascii file in
-    tetgen's .poly format.
+    :term:`Tetgen` .poly format.
 
     Parameters
     ----------
@@ -919,14 +924,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e'):
         Name in which the result will be written. The recommended file
         ending is '.poly'.
 
-    poly: pg.Mesh
-        Piecewise linear complex as pygimli mesh to be exported.
+    poly: gimliapi:`GIMLI::Mesh`
+        Piecewise linear complex as :gimliapi:`GIMLI::Mesh` to be exported.
 
     float_format: format string ('.12e')
         Format that will be used to write float values in the Ascii file.
         Default is the exponential float form with a precision of 12 digits.
 
-    '''
+    """
     if filename[-5:] != '.poly':
         filename = filename + '.poly'
     polytxt = ''

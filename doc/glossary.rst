@@ -9,6 +9,10 @@ Glossary
         of FEniCS
         http://fenicsproject.org/about/components.html#about-components-dolfin
 
+    FEniCS
+        FEniCS is a open-source computing platform solving partial differential equations.
+        http://fenicsproject.org
+
     GCC
         The GNU Compiler Collection (GCC). Default compiler for most linux
         systems. The Windows port is :term:`MinGW` See: http://gcc.gnu.org/

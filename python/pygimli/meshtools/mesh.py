@@ -389,10 +389,10 @@ def readTetgen(fname, comment='#', verbose=True,
                default_cell_marker=0, load_faces=True,
                quadratic=False):
     """
-    Reads and converts a mesh from the basic tetgen output.
+    Reads and converts a mesh from the basic :term:`Tetgen` output.
 
     Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
-    of GIMLI::Mesh class.
+    of :gimliapi:`GIMLI::Mesh` class.
     See: http://tetgen.org/
 
     Paramters
@@ -410,15 +410,15 @@ def readTetgen(fname, comment='#', verbose=True,
         Enables console output during the import process.
 
     default_cell_marker: int (0)
-        Tetgen files can contain cell markers, but doesn't have to. If no
-        marker are found, the given interger is used.
+        :term:`Tetgen` files can contain cell markers, but doesn't have to.
+        If no marker are found, the given interger is used.
 
     load_faces:
-        Optional decision weather the faces of the tetgen output are loaded or
-        not. Note that without the -f in during the tetgen call, the faces in
-        the .face file will only contain the faces of the original input
-        poly file and not all faces. If only part of the faces are imported a
-        createNeighbourInfos call of the mesh will fail.
+        Optional decision weather the faces of the :term:`Tetgen` output are
+        loaded or not. Note that without the -f in during the tetgen call,
+        the faces in the .face file will only contain the faces of the original
+        input poly file and not all faces. If only part of the faces are
+        imported a createNeighbourInfos call of the mesh will fail.
 
     quadratic: boolean (False)
         Returns a P2 refined mesh when True (to be removed, as soon as direct
@@ -684,8 +684,8 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
                     marker_default=0, dimension=3, verbose=True,
                     useFenicsIndices=False):
     """
-    Converts instance of a hdf5 mesh to a pygimli mesh. For full documentation
-    plsease see "readHDF5Mesh".
+    Converts instance of a hdf5 mesh to a :gimliapi:`GIMLI::Mesh`.
+    For full documentation please see :py:mod:`pygimli:meshtools:readHDF5Mesh`.
     """
     # open mesh containing group inside hdf file
     inmesh = h5Mesh.get(group)
@@ -738,19 +738,22 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
                  marker_default=0, dimension=3, verbose=True,
                  useFenicsIndices=False):
     '''
-    Function for loading a mesh from HDF5 file format returns an instance
-    of GIMLI::Mesh class
-    Default values for keywords are suited for fenics syntax .h5 meshes.
+    Function for loading a mesh from HDF5 file format.
+
+    Returns an instance of :gimliapi:`GIMLI::Mesh` class.
+    Default values for keywords are suited for :term:`FEniCS` syntax
+    .h5 meshes.
 
     Parameters:
     -----------
 
     filename: string
-        Name of the mesh that has to be transformed into pygimli format.
+        Name of the mesh that has to be transformed into :term:`pyGIMLi`
+        format.
 
     group: string ['domains']
         hdf group that contains the mesh informations (see other keyword
-        arguments). Default is 'domains' for fenics compatibility.
+        arguments). Default is 'domains' for :term:`FEniCS` compatibility.
 
     indices: string ['cell_indices']
         Key for the part of the hdf file containing the indices of the cells.
@@ -780,10 +783,11 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
     Output:
     -------
 
-    GIMLI::Mesh class
+    Mesh:
+        :gimliapi:`GIMLI::Mesh`
 
     Requirements:
-    -----------------
+    -------------
 
     modules:
         h5py
@@ -810,7 +814,8 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
 
 def readFenicsHDF5Mesh(filename, group='mesh', verbose=True):
     """
-    Reads fenics mesh from file format .h5 and returns a GIMLI::Mesh class.
+    Reads :term:`FEniCS` mesh from file format .h5 and returns a
+    :gimliapi:`GIMLI::Mesh`.
     """
     mesh = readHDF5Mesh(filename, group=group, indices='cell_indices',
                         pos='coordinates', cells='topology', marker='values',
@@ -822,9 +827,11 @@ def readFenicsHDF5Mesh(filename, group='mesh', verbose=True):
 def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
                    pos='coordinates', cells='topology', marker='values'):
     '''
+    Writes given in a hdf5 format file.
+
     3D tetrahedron meshes only! Boundary markers are ignored.
 
-    Keywords are explained in "readH5"
+    Keywords are explained in :py:mod:`pygimli.meshtools.readHDFS`
     '''
     h5py = pg.io.opt_import('h5py',
                             requiredTo='export mesh in .h5 data format')
@@ -864,9 +871,26 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
 
 def exportFenicsHDF5Mesh(mesh, exportname, group='mesh'):
     """
-    Exports Gimli mesh in HDF5 format suitable for Fenics. Group defines the
-    name of the group inside the hdf container which contains the mesh
-    informations.
+    Exports Gimli mesh in HDF5 format suitable for Fenics.
+
+    Equivalent to calling the function
+    :py:mod:`pygimli.meshtools.exportHDF5Mesh(mesh, exportname, group=group,
+    indices='cell_indices', pos='coordinates', cells='topology',
+    marker='values')`.
+
+    Parameters:
+    -----------
+
+    mesh: :gimliapi:GIMLI::Mesh`
+        Mesh to be saved.
+
+    exportname: string
+        Name under which the mesh is saved.
+
+    group: string ('mesh')
+        Identification string under which the mesh is saved. Important for
+        :term:`FEniCS` to know.
+
     """
     return exportHDF5Mesh(mesh, exportname, group=group,
                           indices='cell_indices',
