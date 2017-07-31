@@ -329,15 +329,16 @@ class Refraction(MethodManager):
         ----------
         useGradient : bool
             Create gradient for starting model from vtop to vbottom.
-
         vtop, vbottom : float
             starting (gradient) model velocities on top/at bottom of the mesh
-
         lam : float
             regularization parameter describing the strength of smoothness
-
         zWeight : float
             relative weight for purely vertical boundaries
+        maxIter : int
+            Maximum number of iterations
+        startModel : array
+            Slowness starting model for the inversion
         """
         if 'verbose' in kwargs:
             self.setVerbose(kwargs.pop('verbose'))

@@ -31,10 +31,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     endif()
 
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
-    if (NOT WIN32)
-        add_definitions(-std=c++0x)
-    endif()
-    #add_definitions(-std=c++11)
+#     if (NOT WIN32)
+#         add_definitions(-std=c++0x)
+    add_definitions(-std=c++11)
+    #endif()
     #add_definitions(-std=gnu++0x)
 
     #-Wl,--no-undefined
@@ -124,7 +124,7 @@ endif()
 
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
-                
+
     if (EXISTS ${BOOST_DIST_NAME_FILE})
         message(STATUS "reading ${BOOST_DIST_NAME_FILE}")
         FILE(READ "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist" BOOST_DIST_NAME)

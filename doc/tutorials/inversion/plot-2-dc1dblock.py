@@ -6,7 +6,8 @@ DC1dBlock
 ---------
 
 This tutorial shows how an built-in forward operator is used for inversion.
-A DC 1D (VES) modelling is used to generate data, noisify and invert them."""
+A DC 1D (VES) modelling is used to generate data, noisify and invert them.
+"""
 
 ###############################################################################
 # We import numpy, matplotlib and the 1D plotting function

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Spectral induced polarisation (SIP) module
-"""
+"""Spectral induced polarisation (SIP) spectrum class and modules."""
 
 from math import log10, exp, pi
 import numpy as np
@@ -16,7 +14,8 @@ from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 
 
 class SIPSpectrum():
-    """SIP spectrum data analysis"""
+    """SIP spectrum data analysis."""
+
     def __init__(self, filename=None, unify=False, onlydown=True,
                  f=None, amp=None, phi=None, k=1, sort=True,
                  basename='new'):
@@ -53,6 +52,14 @@ class SIPSpectrum():
             self.unifyData(onlydown)
         if sort:
             self.sortData()
+        self.phiOrg = None
+        self.phiCC = None  # better make a struct of m, amp, phi (tau)
+        self.ampCC = None
+        self.mCC = None
+        self.phiDD = None
+        self.ampDD = None
+        self.mDD = None
+        self.tau = None
 
     def __repr__(self):
         """String representation of the class."""
@@ -100,7 +107,7 @@ class SIPSpectrum():
         """Cut (delete) frequencies above a certain value fcut."""
         self.amp = self.amp[self.f <= fcut]
         self.phi = self.phi[self.f <= fcut]
-        if hasattr(self, 'phiOrg'):
+        if np.any(self.phiOrg):
             self.phiOrg = self.phiOrg[self.f <= fcut]
         # finally cut f
         self.f = self.f[self.f <= fcut]
@@ -189,8 +196,8 @@ class SIPSpectrum():
 
     def getPhiKK(self, use0=False):
         """Compute phase from Kramers-Kronig quantities."""
-        re, im = self.realimag()
-        reKK, imKK = self.getKK(use0)
+        _, imKK = self.getKK(use0)
+        re, _ = self.realimag()
         return np.arctan2(imKK, re)
 
     def showDataKK(self, use0=False):
@@ -237,11 +244,11 @@ class SIPSpectrum():
 
     def epsilonR(self):
         """Calculate relative permittivity from imaginary conductivity"""
-        ECr, ECi = self.realimag(cond=True)
-        we0 = self.f * 2 * pi * self.epsilon0  # Omega epsilon_0
-        return ECi/we0
+        _, sigmaI = self.realimag(cond=True)
 
-    def determineEpsilon(self, mode=0, ECr=None, ECi=None):
+        return sigmaI / (self.f * 2 * pi * self.epsilon0)
+
+    def determineEpsilon(self, mode=0, sigmaR=None, sigmaI=None):
         """Retrieve frequency-independent epsilon for f->Inf.
 
         Parameters
@@ -251,14 +258,16 @@ class SIPSpectrum():
                 =0 - extrapolate using two highest frequencies (default)
                 <0 - take last -n frequencies
                 >0 - take n-th frequency
+        sigmaR/sigmaI : float
+            real and imaginary conductivity (if not given take data)
         Returns
         -------
         er : float
             relative permittivity (epsilon) value (dimensionless)
         """
-        if ECr is None or ECi is None:
-            ECr, ECi = self.realimag(cond=True)
-        epsr = ECi / self.omega() / self.epsilon0
+        if sigmaR is None or sigmaI is None:
+            sigmaR, sigmaI = self.realimag(cond=True)
+        epsr = sigmaI / self.omega() / self.epsilon0
         nmax = np.argmax(self.f)
         if mode == 0:
             f1 = self.f * 1
@@ -287,16 +296,16 @@ class SIPSpectrum():
         er : float
             determined permittivity (see determineEpsilon)
         """
-        ECr, ECi = self.realimag(cond=True)
+        sigR, sigI = self.realimag(cond=True)
         if er is None:  #
-            er = self.determineEpsilon(mode=mode, ECr=ECr, ECi=ECi)
+            er = self.determineEpsilon(mode=mode, sigmaR=sigR, sigmaI=sigI)
             print("detected epsilon of ", er)
 
-        ECi -= er * self.omega() * self.epsilon0
+        sigI -= er * self.omega() * self.epsilon0
         self.phiOrg = self.phi
-        self.phi = np.arctan(ECi/ECr)
+        self.phi = np.arctan(sigI/sigR)
         self.ampOrg = self.amp
-        self.amp = 1. / np.sqrt(ECr**2 + ECi**2)
+        self.amp = 1. / np.sqrt(sigR**2 + sigR**2)
         return er
 
     def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
@@ -499,7 +508,7 @@ class SIPSpectrum():
     def showAll(self, save=False):
         """Plot spectrum, Cole-Cole fit and Debye distribution"""
         # generate title strings
-        if hasattr(self, 'mCC'):
+        if np.any(self.mCC):
             mCC = self.mCC
             if mCC[0] > 1:
                 tstr = r'CC: $\rho$={:.1f} m={:.3f} $\tau$={:.1e}s c={:.2f}'
@@ -511,31 +520,32 @@ class SIPSpectrum():
                 elif len(mCC) > 3:  # second (EM) tau
                     tstr += r' $\tau_2$={:.1e}s'
             tCC = tstr.format(*mCC)
-        fig, ax = plt.subplots(nrows=2+hasattr(self, 'mDD'), figsize=(12, 12))
+        fig, ax = plt.subplots(nrows=2+(self.mDD is not None),
+                               figsize=(12, 12))
         self.fig['all'] = fig
         fig.subplots_adjust(hspace=0.25)
         # amplitude
         showAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
-        if hasattr(self, 'ampDD'):
+        if np.any(self.ampDD):
             ax[0].plot(self.f, self.ampDD, 'm-', label='DD response')
-        if hasattr(self, 'ampCC'):
+        if np.any(self.ampCC):
             ax[0].semilogx(self.f, self.ampCC, 'r-', label='CC model')
         ax[0].legend(loc='best')
         # phase
-        if hasattr(self, 'phiOrg'):
+        if np.any(self.phiOrg):
             ax[1].semilogx(self.f, self.phiOrg * 1e3, 'c+-', label='org. data')
         ax[1].semilogx(self.f, self.phi * 1e3, 'b+-', label='data')
-        if hasattr(self, 'phiCC'):
+        if np.any(self.phiCC):
             ax[1].semilogx(self.f, self.phiCC * 1e3, 'r-', label='CC model')
-        if hasattr(self, 'phiDD'):
+        if np.any(self.phiDD):
             ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
         ax[1].grid(True)
         ax[1].legend(loc='best')
         ax[1].set_xlabel('f [Hz]')
         ax[1].set_ylabel('-phi [mrad]')
-        if hasattr(self, 'mCC'):
+        if np.any(self.mCC):
             ax[1].set_title(tCC, loc='left')
-        if hasattr(self, 'mDD'):  # relaxation time
+        if np.any(self.mDD):
             mtot = self.totalChargeability()
             lmtau = self.logMeanTau()
             tDD = r'DD: m={:.3f} $\tau$={:.1e}s'.format(mtot, lmtau)

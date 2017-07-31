@@ -209,7 +209,7 @@ The latter is defined in the base class.
 The inversion as mathematical operation is done in the $y$ domain, whereas the physics is described in the $x$ domain.
 
 Besides the presented transformations, you can define your own transformations by deriving from the base class and overwriting the first three functions.
-If the inverse transformation is not known analytically, there is a class {\bf TransNewton}, in which the inverse function is obtained by Newton iteration.
+If the inverse transformation is not known analytically, there is a class \textbf{TransNewton}, in which the inverse function is obtained by Newton iteration.
 
 However, there are a lot of already existing transformation classes that can be used or combined:
 
@@ -236,8 +236,8 @@ Similar can be obtained by a cotangens function.
 
 \subsection*{Combination}
 Different transformations can be combined by either\\
-{\bf TransNest}($y^1$,$y^2$): $y(x)=y^1(y^2(x))$\\
-{\bf TransAdd}($y^1$,$y^2$): $y(x)=y^1(x)+y^2(x)$\\
+\textbf{TransNest}($y^1$,$y^2$): $y(x)=y^1(y^2(x))$\\
+\textbf{TransAdd}($y^1$,$y^2$): $y(x)=y^1(x)+y^2(x)$\\
 Since for the latter the inverse cannot be combined by the two inverses, it is derived from \lstinline|transNewton|, a base class whose inverse is achieved by a Newton iteration.
 So any not-so-easily-invertible function can be derived from \lstinline|transNewton| and does not require to define \lstinline|invTrans|.
 
@@ -248,9 +248,9 @@ More often it is used to combine different data or model types, see sections \re
 \subsection*{Special transformations}
 Some geophysically relevant transformations have been already defined:
 \begin{description}
-\item[TransLogMult]($y_0$) is a {\bf TransNest} of {\bf TransLog} and {\bf TransMult}: $y(x)=y_0\log(x_0)$, e.g. for using the logarithm of the apparent resistivity ($\rho^a=G R$)
-\item[TransCRIM]($\phi$,$\epsilon_m$,$\epsilon_w$): the complex refractive index model (CRIM) - derived from {\bf TransLinear}
-\item[TransArchie]($\rho_w$) - Archie's equation, derived from {\bf TransPower}
+\item[TransLogMult]($y_0$) is a \textbf{TransNest} of \textbf{TransLog} and \textbf{TransMult}: $y(x)=y_0\log(x_0)$, e.g. for using the logarithm of the apparent resistivity ($\rho^a=G R$)
+\item[TransCRIM]($\phi$,$\epsilon_m$,$\epsilon_w$): the complex refractive index model (CRIM) - derived from \textbf{TransLinear}
+\item[TransArchie]($\rho_w$) - Archie's equation, derived from \textbf{TransPower}
 \end{description}
 
 Note that there are predefined types based on real (double) vectors beginning with an R, e.g. \lstinline|RTransLogLU| is actually \lstinline|TransLogLU< RVector >|.

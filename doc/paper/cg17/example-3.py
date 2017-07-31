@@ -14,8 +14,8 @@ import pygimli as pg
 
 from pygimli import meshtools as mt
 
-from pygimli.inversion import MeshInversion
-from pygimli.inversion import Modelling
+from pygimli.frameworks import MeshInversion
+from pygimli.frameworks import Modelling
 
 from pygimli.physics.petro import transFwdArchieS as ArchieTrans
 from pygimli.physics.petro import transFwdWyllieS as WyllieTrans

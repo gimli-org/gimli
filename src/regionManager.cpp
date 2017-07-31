@@ -141,7 +141,7 @@ void Region::resize(const Mesh & mesh){
         }
     }
 //    std::cout <<WHERE_AM_I << " " << marker_ << " " << bounds_.size() << std::endl;
-    if (zWeight_ < 1.0 || zPower_ > 0.0){
+    if (zWeight_ != 1.0){
         fillConstraintsWeightWithFlatWeight();
     } else {
 //         std::cout << "Region::resize(const Mesh & mesh)" <<  parameterCount_ << " " << constraintType_ << " " << this->constraintCount() << std::endl;
@@ -152,7 +152,7 @@ void Region::resize(const Mesh & mesh){
 void Region::resize(const std::vector < Cell * > & cells){
     cells_ = cells;
     bounds_.clear();
-    if (zWeight_ < 1.0 || zPower_ > 0.0){
+    if (zWeight_ != 1.0){
         fillConstraintsWeightWithFlatWeight();
     } else {
         constraintsWeight_.resize(constraintCount(), 1.0);
@@ -345,12 +345,11 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
 
 void Region::setConstraintType(Index type) {
     constraintType_ = type;
-    constraintsWeight_.resize(this->constraintCount(), 1);
 }
-
 
 void Region::setConstraintsWeight(double val){
     setBackground(false);
+    zWeight_ = 1.0;
     //std::cout << "Region::setConstraintsWeight(double val) " << val << " " <<  this->constraintCount() << std::endl;
     constraintsWeight_.resize(this->constraintCount());
     constraintsWeight_.fill(val);
@@ -361,13 +360,22 @@ void Region::setConstraintsWeight(const RVector & sw){
     setBackground(false);
     if (sw.size() == this->constraintCount()){
         constraintsWeight_ = sw;
+        zWeight_ = 1.0;
     } else {
         throwLengthError(1, WHERE_AM_I + " " + toStr(sw.size()) + " != " + toStr(constraintCount()));
     }
 }
 
+void Region::createConstraintsWeight_(){
+    if (constraintsWeight_.size() != this->constraintCount()){
+        constraintsWeight_.resize(this->constraintCount(), 1);
+    }
+    if (zWeight_ != 1.0) this->fillConstraintsWeightWithFlatWeight();
+}
+
 void Region::fillConstraintsWeight(RVector & vec, Index constraintStart){
     if (isBackground_) return;
+    this->createConstraintsWeight_();
 
     for (Index i = 0, imax = constraintCount(); i < imax; i ++) {
         //std::cout << i << " " << constraintsWeight_[i] << std::endl;
@@ -385,6 +393,7 @@ void Region::fillConstraintsWeightWithFlatWeight(){
 //        double horizDir = std::sqrt(1.0 - zDir * zDir); //! horizontal component
 
         if (zPower_ != 0.0){ //! zPower controls and zweight is minimum zweight
+            __MS("DEPRECATED")
             constraintsWeight_[i] = max(zWeight_, std::pow(1.0 - zDir, zPower_));
         } else { //! zweight controls and is power factor, includes
             //** for a temporary back conversion hack: this was the old zWeight function:

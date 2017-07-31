@@ -401,6 +401,7 @@ def main(argv):
     global __verbose__
 
     # !!!!use argparse!!!
+    mplpage = "http://matplotlib.org/examples/color/colormaps_reference.html"
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mesh|mod",
@@ -428,8 +429,8 @@ def main(argv):
     parser.add_option("-n", "--number", dest="number",
                       help="number from bmat", type="int", default="0")
     parser.add_option("-m", "--cmap", dest="cmapname",
-                      help="Use custom color map name. "
-                      "http://matplotlib.org/examples/color/colormaps_reference.html", metavar="File")
+                      help="Use custom color map name. " +
+                      mplpage, metavar="File")
     parser.add_option("-d", "--data", dest="datafile",
                       help="data file", metavar="File")
     parser.add_option("-o", "--output", dest="outFileName",
@@ -505,9 +506,9 @@ def main(argv):
     parser.add_option("", "--publish", dest="publish", default=None,
                       type="string",
                       help="set output style for publishing " +
-        "dim:paperSize:margin:wScale:hScale:Fontsize:scale:wOffset:hOffset" +
-        " e.g., w:a4:5:0.5:0.2:9:2:0.05:0.1 " +
-        "(size:width of a4-5cm*0.5 plus 9pt Font scale everything by 2)")
+                      "dim:paperSize:margin:wScale:hScale:Fontsize:scale:" +
+                      "wOffset:hOffset, e.g., w:a4:5:0.5:0.2:9:2:0.05:0.1 " +
+                      "(size:a4 width -5cm*0.5 + 9pt font scale all by 2)")
 
     (options, args) = parser.parse_args()
 

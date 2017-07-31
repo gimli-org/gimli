@@ -186,9 +186,7 @@ class VESManager():  # Should be derived from 1DManager
             self.applyModelTrans()
 
     def applyModelTrans(self):
-        """
-        Pass previously given boundaries for the model transformation to FOP
-        """
+        """Pass previously given bounds for the model transformation to FOP."""
         if self.FOP is None:
             raise Exception('initialize forward operator before appending \
                              proper boundaries for the model transformation')

@@ -112,39 +112,102 @@ Coding rules
 
 * Classes starts with Upper Case Letter.
 
-* Members and Methods allways starts with Lower Case Letter.
+* Members and Methods always starts with Lower Case Letter.
 
 * All class member (self.member) need to be initialized in the Constructor.
 
 * (ugly²) Do not use multi initialize in one line, e.g., a, b, c = 0, 0, 0
 
-Function behaviour by name:
-...........................
+Behaviour by name for global functions:
+.......................................
 
 .. code-block:: python
 
-  createFOO(...)
-
-Allways needs to return an instance of FOO.
-
-.. code-block:: python
-
-  showFOO(Bar, ...)
-
-Allways opens a window or optionaly use a given Axes to show us Bar as Foo.
+    createFOO(...)
+        """Always needs to return an instance of FOO.""
 
 .. code-block:: python
 
-  drawFOO(ax, Bar...)
+    showFOO(Bar, ...)
+        """Always open a window or optionally use a given Axes to show us Bar as Foo."""
+        return ax, cbar
 
-Allways need an Axes ax and draws Bar as Foo in this Axes
+.. code-block:: python
+
+    drawFOO(ax, Bar...)
+        """Always need an Axes ax and draws Bar as Foo""
+        return graphics_object
+
+.. code-block:: python
+
+    readFOO(fileName, *args):
+        """Read object from disc."""
+        return obj
+
+.. code-block:: python
+
+    importFOO(fileName, obj, *args):
+        """Import object from disc into an existing object."""
+        return obj
+
+.. code-block:: python
+
+    exportFOO(obj, fileName):
+        """Export object to disc in foreighn (FOOs) format."""
+        return true
+
+.. code-block:: python
+
+    convertFOO(fooObj):
+        """Convert Foo obj into gimli Obj"""
+        return gimliObj
+
+API Documentation and doctests
+------------------------------
+
+Use the following documentation syntax
+
+.. code-block:: python
+
+  def foo(arg1, arg2):
+
+  """Short description, i.e., one line to explain what foo does.
+
+    Explain a little bit more verbose was foo does. Use references :cite:`Archie1942`
+
+    Use links to pygimli api :py:mod:`pygimli.meshtools.appendTriangleBoundary`.
+
+    Use math.
+
+    .. math :
+        a + \simga * \rho
+
+    Explain all parameters.
+
+    Parameters
+    ----------
+
+    arg1: type(arg1) use links to :gimliapi:`GIMLI::Mesh`
+        Describe arg1.
+
+    arg1: type(arg1)
+        Describe arg1.
+
+    Write examples that might be complete minimal script that will be executed and tested automatically.
+
+    Examples
+    --------
+    >>> import foo
+    >>>
+    >>>
+  """
+
+Coding Guidelines
+-----------------
 
 Use pylint or prospector to improve code quality.
 
 .. _sec:coding_guidelines:
-
-Coding Guidelines
------------------
 
 We use: (You can find exceptions in .landscape.yml)
 

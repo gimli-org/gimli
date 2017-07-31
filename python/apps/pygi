@@ -10,7 +10,6 @@ License - noch nicht entschieden -
 """
 
 import sys
-import os
 
 
 class WorkSpace:

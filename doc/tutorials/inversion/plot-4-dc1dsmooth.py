@@ -8,7 +8,8 @@ DC1dSmooth
 This tutorial shows how an built-in forward operator is used for an Occam type
 (smoothness-constrained) inversion with fixed regularization (most natural).
 A direct current (DC) one-dimensional (1D) VES (vertical electric sounding)
-modelling operator is used to generate data, add noise and inversion. TG"""
+modelling operator is used to generate data, add noise and inversion.
+"""
 
 ###############################################################################
 # We import numpy numerics, mpl plotting, pygimli and the 1D plotting function
