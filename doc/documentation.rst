@@ -13,11 +13,11 @@ Documentation
 
           - :ref:`sec:design`
 
-            Software design
+            Software design and abstraction levels
 
         * - :ref:`sec:install`
 
-            How to install GIMLi on different platforms
+            How to install pyGIMLi on different platforms
 
           - :ref:`FAQs <sec:faq>`
 
@@ -35,13 +35,13 @@ Documentation
 
             Reference for Python modules
 
-          - :gimliapi:`GIMLi API <GIMLI>`
+          - :gimliapi:`Core API <GIMLI>`
 
-            Reference for C++ modules
+            Reference for C++ core
 
         * - :ref:`sec:tools`
 
-            Handy tools shipped with GIMLi
+            Handy tools shipped with pyGIMLi
 
           - `PDF Manual <GIMLi_Documentation.pdf>`_
 
@@ -49,7 +49,7 @@ Documentation
 
         * - :ref:`sec:publications`
 
-            Papers and talks about (or using) GIMLi
+            Papers and talks about (or using) pyGIMLi
 
           - :ref:`sec:license`
 

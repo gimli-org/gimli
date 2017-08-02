@@ -1,13 +1,13 @@
 Installation on Windows
 -----------------------
 
-First, you need a Linux-like command shell along with a gcc compiler. 
+First, you need a Linux-like command shell along with a gcc compiler.
 Although there might be different solutions (Cygwin, Git Bash, MinGW/MSYS),
-we only support the MSYS2 (Minimal System 2) hosted at http://msys2.github.io/.
+we only support the MSYS2 (Minimal System 2) hosted at http://www.msys2.org.
 As computers and modern Windows (>=7) are 64bit we only test this.
 Avoid installing into strange Windows folders, e.g. c:\msys64 is fine.
 
-You will also need a native python installation if you want to use pygimli. 
+You will also need a native python installation if you want to use pygimli.
 We recommend `WinPython <http://winpython.github.io/#releases>`_.
 
 After installing MSYS, start the console once so it builds your personal home
@@ -28,12 +28,12 @@ This is necessary since gimli needs to know valid python installation and
 version. Ideally the following one-liner will suffice to compile pyGIMLi in the
 current directory.
 
-**Note: The script will automatically take care of requirements and updates of MSYS2. 
+**Note: The script will automatically take care of requirements and updates of MSYS2.
 And also needs to modify/patch some of the llvm system files.**
 
 .. code:: bash
 
-    curl -Ls install.pygimli.org | bash 
+    curl -Ls install.pygimli.org | bash
 
 This script accepts a few more options. For help see
 
@@ -41,13 +41,13 @@ This script accepts a few more options. For help see
 
     curl -Ls install.pygimli.org | bash -s help
 
-If everything runs fine, including some tests, the script will tell you some 
+If everything runs fine, including some tests, the script will tell you some
 additional PATH and PYTHONPATH settings for your .bashrc to use pygimli inside
 the console or any IDE like Spyder (coming along with WinPython).
 
-If something goes wrong, please take a look on the error message. 
+If something goes wrong, please take a look on the error message.
 
-You can alse try the following instructions for manual installation. 
+You can alse try the following instructions for manual installation.
 
 Manual installation
 ...................
@@ -85,7 +85,7 @@ using the MSYS makefile generator:
     cmake ../trunk -G 'MSYS Makefiles' -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
 
 If cmake complains about missing python stuff, make sure the Python interpreter
-is in your execution path. If openblas is not installed you should of course omit 
+is in your execution path. If openblas is not installed you should of course omit
 the last directive, then built-int lapack/blas are used or they are build from source.
 
 To build the library, just run
