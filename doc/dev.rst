@@ -225,7 +225,7 @@ Run specific API examples from shell:
 
 .. code-block:: bash
 
-  python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle)"
+  python -c "import pygimli as pg; pg.test(pg.meshtools.createCircle, show=True)"
 
 Run a specific test from shell.
 

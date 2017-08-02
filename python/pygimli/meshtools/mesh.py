@@ -118,7 +118,7 @@ def refineQuad2Tri(mesh, style=1):
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
-        mesh containing quadrangle cells
+        Mesh containing quadrangle cells.
 
     style: int [1]
         * 1 bisect each quadrangle into 2 triangles
@@ -127,7 +127,18 @@ def refineQuad2Tri(mesh, style=1):
     Returns
     -------
     ret : :gimliapi:`GIMLI::Mesh`
-        mesh containing triangle cells
+        Mesh containing triangle cells.
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> quads = pg.createGrid(range(10), range(10))
+    >>> ax, _ = pg.show(quads)
+    >>> ax, _ = pg.show(mt.refineQuad2Tri(quads, style=1))
+    >>> ax, _ = pg.show(mt.refineQuad2Tri(quads, style=2))
+    >>> pg.wait()
 
     """
     out = pg.Mesh(2)
