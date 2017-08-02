@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Time Domain Electromagnetics (TDEM) functions and class
-"""
+"""Time Domain Electromagnetics (TDEM) functions and class"""
 import sys
 from math import pi
 import numpy as np
