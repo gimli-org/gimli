@@ -16,11 +16,10 @@ Pre-build binary install with conda
 
 On Linux platforms, the most comfortable way to install pygimli is via the conda
 package manager contained in the `Anaconda distribution
-<https://docs.continuum.io/anaconda/install#linux-install>`_. Anaconda is
-scientific Python distribution with more than 100 Python packages included
-(~400 Mb). You can also use the `lightweight alternative Miniconda
-<http://conda.pydata.org/miniconda.html>`_ (~35 Mb) and only install the
-packages you like to use.
+<https://www.continuum.io/downloads#linux>`_. Anaconda is scientific Python
+distribution with more than 100 Python packages included (~400 Mb). You can also
+use the `lightweight alternative Miniconda <https://conda.io/miniconda.html>`_
+(~35 Mb) and only install the packages you like to use.
 
 Install Miniconda (only once):
 
@@ -112,7 +111,7 @@ Checkout the current sources for libgimli:
 
     git clone https://github.com/gimli-org/gimli.git
 
-We use `cmake <http://www.cmake.org>`_ for compilation. We recommend using a
+We use `cmake <https://cmake.org>`_ for compilation. We recommend using a
 build directory parallel to the gimli (trunk) path:
 
 .. code-block:: bash

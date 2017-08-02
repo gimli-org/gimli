@@ -12,7 +12,7 @@ A. Submit a bug report
 
 If you expericence issues with pyGIMLi or miss a certain feature, please `open a
 new issue on GitHub <https://github.com/gimli-org/gimli/issues>`_. To do so,
-you need to `create a GitHub account <http://github.com/join>`_.
+you need to `create a GitHub account <https://github.com/join>`_.
 
 B. Send us your example
 -----------------------
@@ -29,7 +29,7 @@ C. Contribute to the code
 .. note::
 
     To avoid redundant work, please `contact us
-    <http://www.pygimli.org/contact.html>`_ before you start working on a
+    <https://www.pygimli.org/contact.html>`_ before you start working on a
     non-trivial feature.
 
 The preferred way to contribute to the pygimli code base is via a pull request
@@ -40,7 +40,7 @@ The preferred way to contribute to the pygimli code base is via a pull request
 ++++++++++++++++++++++
 
 If you are a first-time contributor, you need `a GitHub account
-<http://github.com/join>`_ and your own copy ("fork") of the code. To do so, go
+<https://github.com/join>`_ and your own copy ("fork") of the code. To do so, go
 to https://github.com/gimli-org/gimli and click the "Fork button" in the upper
 right corner. This will create an identical copy of the complete code base under
 your username on the GitHub server. Clone this repository to your local disk:

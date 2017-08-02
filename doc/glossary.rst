@@ -5,13 +5,12 @@ Glossary
 
 .. glossary::
     Dolfin
-        DOLFIN is a C++/Python library that functions as the main user interface 
-        of FEniCS
-        http://fenicsproject.org/about/components.html#about-components-dolfin
+        DOLFIN is a C++/Python library that functions as the main user interface
+        of FEniCS. http://fenics.readthedocs.io/projects/dolfin/en/latest/
 
     FEniCS
         FEniCS is a open-source computing platform solving partial differential equations.
-        http://fenicsproject.org
+        https://fenicsproject.org
 
     GCC
         The GNU Compiler Collection (GCC). Default compiler for most linux
@@ -59,8 +58,9 @@ Glossary
         applications to the MS-Windows platform. See: http://www.mingw.org/
 
     NumPy
-        The :mod:`numpy` :term:`Python` package provides array arithmetic
-        facilities. See: http://docs.scipy.org/doc/numpy
+        NumPy is the fundamental package for scientific computing in Python. It
+        is a Python library that provides a multidimensional array object and
+        various functionalities related to it. https://docs.scipy.org/doc/numpy/
 
     Paraview
         Is an open-source, multi-platform data analysis and visualization
@@ -68,17 +68,19 @@ Glossary
 
     Python
         The programming language that :term:`pyGIMLi` (and your scripts) are
-        written in. See: http://www.python.org/
+        written in. See: https://www.python.org/
 
     Pylab
-        At the moment, the current combination of :term:`Python`,
-        :term:`NumPy`, :term:`SciPy`, :term:`Matplotlib`, and IPython provide a
-        compelling environment for numerical analysis and computation. See:
-        http://wiki.scipy.org/PyLab
+        Meta-package importing several core packages such as :term:`NumPy`,
+        :term:`SciPy`, :term:`Matplotlib`, etc. into a single namespace. This is
+        usually not recommended due to possible name conflicts but provides a
+        quick way to get MATLAB-like functionality.
 
     SciPy
-        Scientific Tools for Python is open-source software for mathematics,
-        science, and engineering. See: http://wiki.scipy.org/SciPy
+        Scientific Computing Tools for Python - Open-source library with many
+        numerical routines but the term is often used as a synonym for the
+        scientific python community, serveral conferences, and the *SciPy
+        Stack*, i.e. a set of core packages. https://scipy.org/about.html
 
     Sphinx
         The tools used to generate the :term:`GIMLi` documentation. See:
