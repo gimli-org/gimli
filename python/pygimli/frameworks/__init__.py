@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Inversion related methods."""
 
-from .frameworks import Modelling, MeshInversion
+from .inversion import MeshInversion
+from .modelling import Modelling
 
 from .harmfit import HarmFunctor, harmfitNative, harmfit
 from .resolution import computeR

@@ -662,8 +662,8 @@ public:
           colPtr_(S.vecColPtr()),
           rowIdx_(S.vecRowIdx()),
           vals_(S.vecVals()), valid_(true), stype_(0){
-          cols_ = S.cols();
           rows_ = S.rows();
+          cols_ = S.cols();
     }
 
     /*! Copy constructor. */
@@ -684,8 +684,8 @@ public:
 
         vals_.resize(nVals);
         stype_ = stype;
-        cols_ = colPtr_.size() - 1;
         rows_ = max(rowIdx_) + 1;
+        cols_ = colPtr_.size() - 1;
         THROW_TO_IMPL
 //         std::copy(colPtr[0], colPtr[dim], colPtr_[0]);
 //         std::copy(rowIdx[0], rowIdx[nVals - 1], rowIdx_[0]);
@@ -1105,10 +1105,10 @@ protected:
     std::vector < int > rowIdx_;
     Vector < ValueType > vals_;
 
-    Index cols_;
-    Index rows_;
     bool valid_;
     int stype_;
+    Index rows_;
+    Index cols_;
 };
 
 template < class ValueType >

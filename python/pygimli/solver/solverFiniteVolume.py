@@ -523,8 +523,8 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     f   : iterable(cell)
         TODO What is f
-    fn   : iterable(cell)
 
+    fn   : iterable(cell)
         TODO What is fn
 
     vel : ndarray (N,dim) | RMatrix(N,dim)
@@ -534,6 +534,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     u0 : value | array | callable(cell, userData)
         Starting field
+
+    times : iterable
+        TODO What is times
 
     ws : Workspace
         This can be an empty class that will used as an Workspace to store and
@@ -586,36 +589,38 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         if isinstance(vel, float):
             print("Warning! .. velocity is float and no vector field")
 
-        if len(vel) != mesh.cellCount() and \
-            len(vel) != mesh.nodeCount() and \
-            len(vel) != mesh.boundaryCount():
-
-            print("mesh:", mesh)
-            print("vel:", vel.shape)
-            raise BaseException("Velocity field has wrong dimension.")
-
+        # we need velocities for boundaries
         if len(vel) is not mesh.boundaryCount():
             if len(vel) == mesh.cellCount():
-                vel = pg.meshtools.cellDataToNodeData(mesh, vel).T
-            vel = pg.meshtools.nodeDataToBoundaryData(mesh, vel)
+                vel = pg.meshtools.cellDataToNodeData(mesh, vel)
+
+            if len(vel) == mesh.nodeCount():
+                vel = pg.meshtools.nodeDataToBoundaryData(mesh, vel)
+            else:
+                print("mesh:", mesh)
+                print("vel:", vel.shape)
+
+                raise Exception("Cannot determine data format for velocities")
 
         vmax = 0
         if mesh.dimension() == 3:
             vmax = np.max(np.sqrt(vel[:, 0]**2 + vel[:, 1]**2 + vel[:, 2]**2))
         else:
             vmax = np.max(np.sqrt(vel[:, 0]**2 + vel[:, 1]**2))
-        dt = times[1]-times[0]
-        dx = min(mesh.boundarySizes())
-        c = vmax * dt / dx
-        if c > 1:
-            print("Courant-Friedrichs-Lewy Number:", c,
-                  "but sould be lower 1 to ensure movement inside a cell "
-                  "per timestep. ("
-                  "vmax =", vmax,
-                  "dt =", dt,
-                  "dx =", dx,
-                  "dt <", dx/vmax,
-                  " | N > ", int((times[-1]-times[0])/(dx/vmax))+1, ")")
+
+        if  times is not None:
+            dt = times[1]-times[0]
+            dx = min(mesh.boundarySizes())
+            c = vmax * dt / dx
+            if c > 1:
+                print("Courant-Friedrichs-Lewy Number:", c,
+                    "but sould be lower 1 to ensure movement inside a cell "
+                    "per timestep. ("
+                    "vmax =", vmax,
+                    "dt =", dt,
+                    "dx =", dx,
+                    "dt <", dx/vmax,
+                    " | N > ", int((times[-1]-times[0])/(dx/vmax))+1, ")")
     # END check for Courant-Friedrichs-Lewy
 
     if not hasattr(workspace, 'S'):

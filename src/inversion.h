@@ -183,6 +183,7 @@ protected:
         maxCGLSIter_        = 200;
         lambda_             = 50.0;
         lambdaFactor_       = 1.0;
+        lambdaMin_          = 1.0;
         dPhiAbortPercent_   = 2.0;
 
         CGLStol_            = -1.0; //** -1 means automatic scaled
@@ -339,6 +340,12 @@ public:
     inline double getLambda() const { return lambda_; }
     inline void setLambdaFactor(double lambdaFactor) { lambdaFactor_ = lambdaFactor; }
     inline double lambdaFactor() const { return lambdaFactor_; }
+
+    /*! Set the minimum lambda value that can be reached if lambda factor is set.
+     *Default is 1. */
+    inline void setLambdaMinimum(double l) { lambdaMin_ = l; }
+    /*! Return the minimum lambda value that can be reached if lambda factor is set. */
+    inline double lambdaMinimum() const { return lambdaMin_; }
 
     /*! Set whether regularization is global or local (e.g. Marquardt method) */
     void setLocalRegularization(bool localReg){ localRegularization_ = localReg; }
@@ -498,8 +505,8 @@ public:
     }
 
     /*! Set the constraint weight (boundary control) vector */
-    void setCWeight(const Vec & cweight){
-        constraintsWeight_ = cweight;
+    void setCWeight(const Vec & cWeight){
+        constraintsWeight_ = cWeight;
         activateFillConstraintsWeight_ = false; //jointinv hack!!!
         if (verbose_) std::cout << "min/max(cWeight) = " << min(constraintsWeight_) << "/" << max(constraintsWeight_) << std::endl;
     }
@@ -876,6 +883,7 @@ protected:
 
     double lambda_;
     double lambdaFactor_;
+    double lambdaMin_;
     double dPhiAbortPercent_;
     double CGLStol_;
 
@@ -1053,7 +1061,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
 
         if (isRobust_) robustWeighting();
         if (isBlocky_) constrainBlocky();
-        if (lambdaFactor_ > 0.0) lambda_ *= lambdaFactor_;
+        if (lambdaFactor_ > 0.0) max(lambdaMin_, lambda_ *= lambdaFactor_);
 
     } //** while iteration;
     isRunning_ = false;

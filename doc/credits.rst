@@ -1,5 +1,0 @@
-.. _sec:credits:
-
-Credits
-=======
-

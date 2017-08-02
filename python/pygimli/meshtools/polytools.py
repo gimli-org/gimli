@@ -80,8 +80,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     Examples
     --------
@@ -155,8 +155,8 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     Examples
     --------
@@ -249,8 +249,8 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     Examples
     --------
@@ -332,8 +332,8 @@ def createLine(start, end, segments, **kwargs):
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     Examples
     --------
@@ -386,8 +386,8 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     Examples
     --------
@@ -434,13 +434,13 @@ def mergePLC(pols):
 
     Parameters
     ----------
-    pols: [gimliapi:`GIMLI::Mesh`]
+    pols: [:gimliapi:`GIMLI::Mesh`]
         List of polygons that need to be merged
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     Examples
     --------
@@ -660,7 +660,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
                         pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     # print(poly)
-    #pg.meshtools.writePLC(poly, "test.poly")
+    # pg.meshtools.writePLC(poly, "test.poly")
     # pg.show(poly)
     # pg.wait()
     return poly
@@ -669,21 +669,21 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 def readPLC(filename, comment='#'):
     r"""Generic PLC reader.
 
-    Read 2D triangle POLY or 3D Tetgen PLC files.
+    Read 2D :term:`Triangle` or 3D :term:`Tetgen` PLC files.
 
     Parameters
     ----------
-    filename: str
+    filename: string
         Filename *.poly
 
-    comment: str ('#')
+    comment: string ('#')
         String containing all characters that define a comment line. Identified
         lines will be ignored during import.
 
     Returns
     -------
-    poly : gimliapi:`GIMLI::Mesh`
-        The resulting polygon is a gimliapi:`GIMLI::Mesh`.
+    poly :
+        :gimliapi:`GIMLI::Mesh`
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -818,12 +818,12 @@ def exportPLC(poly, fname, **kwargs):
     r"""General writer to save piece-wise linear complex (PLC) as poly file.
 
     Choose from poly.dimension() and forward appropriate to
-    gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
+    :gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
     and :py:mod:`pygimli.meshtools.writeTrianglePoly`
 
     Parameters
     ----------
-    poly : gimliapi:`GIMLI::Mesh`
+    poly : :gimliapi:`GIMLI::Mesh`
         The polygon to be written.
     fname : string
         Filename of the file to write (\\*.n, \\*.e).
@@ -849,7 +849,10 @@ def exportPLC(poly, fname, **kwargs):
 
 
 def writePLC(*args, **kwargs):
-    ''' Backward compatibility. Please use exportPLC. '''
+    """
+    Backward compatibility.
+    Please use :py:mod:`pygimli.meshtools.exportPLC`.
+    """
     return exportPLC(*args, **kwargs)
 
 
@@ -861,7 +864,7 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
 
     Parameters
     ----------
-    poly : gimliapi:`GIMLI::Mesh`
+    poly : :gimliapi:`GIMLI::Mesh`
         mesh PLC holding nodes, edges, holes & regions
     fname : string
         Filename of the file to read (\\*.n, \\*.e)
@@ -903,14 +906,16 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
 
 
 def writeTrianglePoly(*args, **kwargs):
-    ''' Backward compatibility. Please use exportTrianglePoly. '''
+    """ Backward compatibility.
+    Please use :py:mod:`pygimli.meshtools.exportTrianglePoly`.
+    """
     return exportTrianglePoly(*args, **kwargs)
 
 
 def exportTetgenPoly(poly, filename, float_format='.12e'):
-    '''
+    """
     Writes a given piecewise linear complex (mesh/poly ) into a Ascii file in
-    tetgen's .poly format.
+    :term:`Tetgen` .poly format.
 
     Parameters
     ----------
@@ -919,14 +924,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e'):
         Name in which the result will be written. The recommended file
         ending is '.poly'.
 
-    poly: pg.Mesh
-        Piecewise linear complex as pygimli mesh to be exported.
+    poly: :gimliapi:`GIMLI::Mesh`
+        Piecewise linear complex as :gimliapi:`GIMLI::Mesh` to be exported.
 
     float_format: format string ('.12e')
         Format that will be used to write float values in the Ascii file.
         Default is the exponential float form with a precision of 12 digits.
 
-    '''
+    """
     if filename[-5:] != '.poly':
         filename = filename + '.poly'
     polytxt = ''
@@ -1034,7 +1039,7 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
 
     Returns
     -------
-    mesh : gimliapi:`GIMLI::Mesh`
+    mesh : :gimliapi:`GIMLI::Mesh`
     """
     filebody = filename.replace('.poly', '')
     syscal = 'tetgen -pazAC'
@@ -1073,9 +1078,9 @@ def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
     Out of core wrapper for dcfemlib::polytools::polyAddVIP.
 
     If you wan add these points to a plc directly use
-    gimliapi:`GIMLI::Mesh::createNode`,
-    gimliapi:`GIMLI::Mesh::addRegionMarker` or
-    gimliapi:`GIMLI::Mesh::addHoleMarker`.
+    :gimliapi:`GIMLI::Mesh::createNode`,
+    :gimliapi:`GIMLI::Mesh::addRegionMarker` or
+    :gimliapi:`GIMLI::Mesh::addHoleMarker`.
 
     Parameters
     ----------

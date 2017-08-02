@@ -14,15 +14,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Helper functions
-def boundaryLengths(cell):
+def _boundaryLengths(cell):
     """Return boundary lengths of a given cell."""
     return np.array([cell.boundary(i).size() for i in range(cell.boundaryCount())])
 
-def unitVector(vector):
+def _unitVector(vector):
     """Return the unit vector of the vector."""
     return vector / np.linalg.norm(vector)
 
-def angleBetween(v1, v2):
+def _angleBetween(v1, v2):
     """Return the angle between vectors v1 and v2.
 
     Examples
@@ -32,12 +32,12 @@ def angleBetween(v1, v2):
     >>> angleBetween((1, 0, 0), (-1, 0, 0))
     180.0
     """
-    v1_u = unitVector(v1)
-    v2_u = unitVector(v2)
+    v1_u = _unitVector(v1)
+    v2_u = _unitVector(v2)
     angle = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
     return np.degrees(angle)
 
-def cellAngles(cell):
+def _cellAngles(cell):
     """Return angles of a triangular cell.
 
     Examples
@@ -46,7 +46,7 @@ def cellAngles(cell):
     >>> for pos in (0.,0.), (0.,1.), (1.,0.):
     ...     n = mesh.createNode(pos[0], pos[1], 0.0)
     >>> cell = mesh.createCell((0, 1, 2))
-    >>> print(cellAngles(cell)[0])
+    >>> print(_cellAngles(cell)[0])
     90.0
     """
     if cell.nodeCount() > 3:
@@ -60,15 +60,15 @@ def cellAngles(cell):
     ac = c - a
     bc = c - b
 
-    alpha = angleBetween(ab, ac)
-    beta = angleBetween(-ab, bc)
-    gamma = angleBetween(-ac, -bc)
+    alpha = _angleBetween(ab, ac)
+    beta = _angleBetween(-ab, bc)
+    gamma = _angleBetween(-ac, -bc)
     assert np.allclose(gamma, 180.0 - alpha - beta)
 
     return alpha, beta, gamma
 
 # Quality measures
-def eta(cell):
+def _eta(cell):
     r"""Return default triangle quality (eta) of a given cell.
 
     The quality measure relates the area of the triangle (a)
@@ -78,13 +78,13 @@ def eta(cell):
 
         \eta = \frac{4\sqrt{3}a}{l_1^2 + l_2^2 + l_3^2}
     """
-    return 4 * np.sqrt(3) * cell.size() / np.sum(boundaryLengths(cell)**2)
+    return 4 * np.sqrt(3) * cell.size() / np.sum(_boundaryLengths(cell)**2)
 
-def minimumAngle(cell):
+def _minimumAngle(cell):
     """Return the normalized minimum angle of a given cell."""
-    return np.min(cellAngles(cell))/60.
+    return np.min(_cellAngles(cell))/60.
 
-def nsr(cell):
+def _nsr(cell):
     r"""Return the normalized shape ratio (NSR) for a given cell.
 
     Also referred to as the radius ratio, as it is described by
@@ -94,7 +94,7 @@ def nsr(cell):
 
         \rho = \frac{2r}{R}
     """
-    a, b, c = boundaryLengths(cell)
+    a, b, c = _boundaryLengths(cell)
     r = 2 * cell.size() / (a + b + c) # inradius
     R = 0.25 * a * b * c / cell.size() # circumradius
 
@@ -136,9 +136,9 @@ def quality(mesh, measure="eta", show=False):
 
     # Implemented quality measures (Triangular meshses only.)
     measures = {
-        "eta": eta,
-        "nsr": nsr,
-        "minimumAngle": minimumAngle
+        "eta": _eta,
+        "nsr": _nsr,
+        "minimumAngle": _minimumAngle
     }
 
     m = measures[measure]

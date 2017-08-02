@@ -6,7 +6,7 @@ import unittest
 
 import pygimli as pg
 
-class TestMatrix(pg.MatrixBase):
+class Matrix(pg.MatrixBase):
 
     def __init__(self):
         pg.MatrixBase.__init__(self)
@@ -29,12 +29,12 @@ class TestMatrix(pg.MatrixBase):
         print("TestMatrix::save", name)
 
 
-class TestModelling(pg.ModellingBase):
+class Modelling(pg.ModellingBase):
 
     def __init__(self):
         pg.ModellingBase.__init__(self, True)
         self.regionManager().setParameterCount(1)
-        self.mat = TestMatrix()
+        self.mat = Matrix()
 
     def response(self, model):
         print("TestModelling::response")
@@ -50,7 +50,7 @@ class TestModelling(pg.ModellingBase):
 
 
 class TestOwnMatrix(unittest.TestCase):
-    
+
     def test_runFOP(self):
         #F = TestModelling()
 
@@ -64,6 +64,6 @@ class TestOwnMatrix(unittest.TestCase):
         pass
 
 if __name__ == '__main__':
-    
+
     unittest.main()
-    
+

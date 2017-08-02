@@ -451,7 +451,7 @@ def grad(mesh, u, r=None):
     if callable(u) and not isinstance(u, pg.RVector):
         uv = u(mesh.nodeCenters())
 
-    if len(uv) is mesh.cellCount():
+    if len(uv) == mesh.cellCount():
         uv = pg.meshtools.cellDataToNodeData(mesh, uv)
 
     v = np.ndarray((len(r), 3))
