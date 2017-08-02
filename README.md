@@ -9,12 +9,11 @@ Readme for Github repository only. (Get's selected before *.rst file)
 [![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 [![Issue Stats](http://issuestats.com/github/gimli-org/gimli/badge/issue?style=flat)](http://issuestats.com/github/gimli-org/gimli)
-[![Code Issues](https://www.quantifiedcode.com/api/v1/project/d0d835a5d75e4334a1c58389cafccaa0/badge.svg)](https://www.quantifiedcode.com/app/project/d0d835a5d75e4334a1c58389cafccaa0)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/license.svg)](https://anaconda.org/gimli/pygimli)
 
 pyGIMLi is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
 
-What pyGIMLi is suited for?:
+What pyGIMLi is suited for?
 
 -   analyze, visualize and invert geophysical data in a reproducible manner
 -   forward modelling of (geo)physical problems on complex 2D and 3D geometries
@@ -22,7 +21,7 @@ What pyGIMLi is suited for?:
 -   combination of different methods in constrained, joint and fully-coupled inversions
 -   teaching applied geophysics (e.g. in combination with [Jupyter notebooks])
 
-What pyGIMLi is **NOT** suited for?:
+What pyGIMLi is **NOT** suited for?
 
 -   for people that expect a ready-made GUI for interpreting their data
 
