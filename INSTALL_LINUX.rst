@@ -24,29 +24,29 @@ packages you like to use.
 
 Install Miniconda (only once):
 
-.. code:: bash
+.. code-block:: bash
 
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     chmod +x miniconda.sh
     ./miniconda.sh -b -p $HOME/miniconda
     export PATH=$HOME/miniconda/bin:$PATH # Note: Add this to your .bashrc for permanent use
 
- Add the gimli and conda-forge channel (only once):
+Add the gimli and conda-forge channel (only once):
 
-.. code:: bash
+.. code-block:: bash
 
     conda config --add channels gimli --add channels conda-forge
 
 Install pygimli (and its dependencies) and test if everything works correctly via:
 
-.. code:: bash
+.. code-block:: bash
 
     conda install -f pygimli
     python -c "import pygimli; pygimli.test()"
 
 Update your pygimli installation if want to have the newest functionality:
 
-.. code:: bash
+.. code-block:: bash
 
     conda update -f pygimli
 
@@ -60,13 +60,13 @@ Compile your own with the curl installer
 If you are not using Anaconda, you can build pyGIMLi from source in the current
 directory via:
 
-.. code:: bash
+.. code-block:: bash
 
-    curl -Ls install.pygimli.org | bash
+   curl -Ls install.pygimli.org | bash
 
 This script accepts a few more options. For help see:
 
-.. code:: bash
+.. code-block:: bash
 
     curl -Ls install.pygimli.org | bash -s help
 
