@@ -62,6 +62,7 @@ Documentation
           -
 
 
+
     ##################
     Indices and tables
     ##################
@@ -81,7 +82,9 @@ Documentation
 
             All functions, classes and terms
 
-          -
+          - :ref:`sec:references`
+
+            Publications cited in the documentation
 
 
 .. only:: latex

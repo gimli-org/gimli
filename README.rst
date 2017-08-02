@@ -75,22 +75,11 @@ equations (PDE)
 
 Please see :ref:`modelling tutorial<tut:modelling>` for examples and more details.
 
-.. References are not displayed correctly in tex, so we leave this out for the moment
-.. only:: html
-
-    References
-    ----------
-
-    .. bibliography:: biblio.bib
-        :style: mystyle
-        :all:
-
 .. only:: latex
 
     License
     -------
-    GIMLi is distributed under the terms of the **GNU GENERAL PUBLIC LICENSE**
-    of the Free Software Foundation, Inc. (http://fsf.org/)
+    pyGIMLi is distributed under the terms of the **Apache 2.0** license.
 
-    Details can be found on the `GIMLi website
-    <http://www.pygimli.org/COPYING.html>`_.
+    Details can be found on the `pyGIMLi website
+    <https://www.pygimli.org/license.html>`_.
