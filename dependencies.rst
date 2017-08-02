@@ -1,11 +1,19 @@
 Prerequisites
 -------------
 
-To build GIMLi from source, the following tools are required:
+To build pyGIMLi from source, the following tools are required:
 
-* subversion, git(castxml), mercurial(pygccxml), wget, tar
+* subversion, git, mercurial, wget, tar
 * cmake >= 2.8.10
 * gcc >= 4.4
+* >=Python-3.5 | >=Python-2.7
+* numpy-dev
+* >=matplotlib-1.3.0
+* >=clang++-3.6.0 (3.7.0, 3.8.0)
+* libclang-3.7-dev
+* >=llvm-3.6.0 (3.7.0, 3.8.0)
+* libz-dev
+* python-setuptools
 
     tested on:
 
@@ -16,17 +24,6 @@ To build GIMLi from source, the following tools are required:
     * CentOS
     * MinGW32: gcc-4.6.2/4, gcc-4.7.2, gcc-5.2.0
     * MinGW64: gcc-4.5.4 gcc-5.2.0
-
-For pygimli you additionally need:
-
-* >=Python-3.5 | >=Python-2.7
-* numpy-dev
-* >=matplotlib-1.1.0, 1.5.0
-* >=clang++-3.6.0 (3.7.0, 3.8.0)
-* libclang-3.7-dev
-* >=llvm-3.6.0 (3.7.0, 3.8.0)
-* libz-dev
-* python-setuptools
 
 Optional Prerequisites
 ......................
