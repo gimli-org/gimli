@@ -86,10 +86,17 @@ def nodeDataToBoundaryData(mesh, data):
         DOCUMENT_ME
     """
 
+    if isinstance(data, pg.R3Vector):
+        data = np.array(data)
+
+
     if len(data) != mesh.nodeCount():
         raise BaseException("Dimension mismatch, expecting nodeCount(): " +
                             str(mesh.nodeCount()) +
                             " got: " + str(len(data)), str(len(data[0])))
+
+
+
     dim = len(data[0])
     ret = np.zeros((mesh.boundaryCount(), dim))
     if dim == 1:
@@ -104,7 +111,7 @@ def nodeDataToBoundaryData(mesh, data):
             ret[b.id()] = [v2[0], v2[1]]
     else:
         for b in mesh.boundaries():
-            ret[b.id()] = b.data(b.center(), data)  # / b.nodeCount()
+            ret[b.id()] = b.vec(b.center(), data)  # / b.nodeCount()
 
     return ret
 
