@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""pyGIMLi - Python package for GIMLi including bindings to C++ library.
+"""pyGIMLi - An open-source library for modelling and inversion in geophysics
 
 Import convention:
 
