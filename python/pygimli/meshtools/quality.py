@@ -27,9 +27,9 @@ def _angleBetween(v1, v2):
 
     Examples
     --------
-    >>> angleBetween((1, 0, 0), (1, 0, 0))
+    >>> _angleBetween((1, 0, 0), (1, 0, 0))
     0.0
-    >>> angleBetween((1, 0, 0), (-1, 0, 0))
+    >>> _angleBetween((1, 0, 0), (-1, 0, 0))
     180.0
     """
     v1_u = _unitVector(v1)
