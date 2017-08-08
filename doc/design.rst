@@ -3,65 +3,55 @@
 Design
 ======
 
-In applied geophysics, various physical processes and fields are used to gain
-information about subsurface parameters. Fields and processes can be well
-studied and understood by simulation assuming a parameter distribution. This
-so-called forward task can be done by using analytical solution and numerical
-integration, or solving partial differential equations with finite difference
-or finite element techniques. In the recent years, very different studies have
-been presented that open up new methods to be used.
+In applied geophysics, a lot of research efforts are directed towards the
+integration of different physical models and combined inversion approaches to
+estimate multi-physical subsurface parameters. Such approaches often require
+coupling of different software packages and file-based data exchange. The idea
+of pyGIMLi is to present a very flexible framework for geophysical modelling and
+inversion, which allows standard and customized modelling and inversion
+workflows to be realized in a reproducible manner.
+levels.
 
-However, in almost all approaches the task is finally to derive subsurface
-parameters, i.e. the inverse problem has to be solved. Very often this is
-ill-posed, i.e. a variety of solutions is fitting the data within error bounds.
-Hence regularization methods have to be applied. There exist numerous inversion
-and regularization schemes, which do not have to be reinvented. Furthermore,
-resolution analysis is desirable in order to appraise the quality of the
-results. The idea of :ref:`sec:GIMLi` is to present a very flexible framework
-for geophysical inversion and modelling such that it can be used in an abstract
-way for any forward operator. All problems such as optimization of
-regularization parameters, line search are solved generally. The GIMLi library
-is structured into four layers (Fig. :ref:`fig:gimliblock`) that are based on
-each other:
-
-.. _fig:gimliblock:
-.. figure:: tutorial/pics/gimliblock.png
-    :align: center
-
-    Scheme of the GIMLi library
-
-.. describe:: The basic layer
-
-    holds fundamental algebraic methods and mesh containers for model parameterisation
-
-.. describe:: The modelling & region layer
-
-    administrates the modelling classes that are based on a base class and the connection to constraints and transform functions
-
-.. describe:: The inversion layer
-
-     is a template class for minimisation with different methods, inverse solvers, line search, :math:`\lambda` optimisation and resolution analysis
-
-.. describe:: Inversion frameworks
-
-    sophisticated techniques are formulated abstractly, e.g. time-lapse strategies, laterally constrained or roll-along inversion, different kinds of joint inversion
-
-External programs are, e.g., mesh generators and solvers for linear systems.
-For generating quality constrained irregular 2d and 3d meshes, we usually use
-:term:`Triangle` :cite:`Shewchuk96b` and :term:`TetGen` :cite:`Si2004`.
-However, there is a tutorial on how to incorporate :term:`Gmsh` meshes
-:cite:`GeuzaineRemacle2009`. Regular meshes can be directly created. For
-solving linear systems we use the open-source collection :term:`SuiteSparse`
-:cite:`ChenDavHag+2009`, which contains multi-frontal direct \& iterative
+The software is written in Python on top of a C++ core library, which allows a
+combination of flexible scripting and numerical efficiency. pyGIMLi uses
+selected external dependencies for quality constrained mesh generation in 2D
+(:term:`Triangle`) and 3D (:term:`Tetgen`) and visualization in 2D
+(:term:`Matplotlib`) and 3D (:term:`Paraview`) for example. For solving linear
+systems we use the open-source collection :term:`SuiteSparse`
+:cite:`ChenDavHag+2009`, which contains multi-frontal direct and iterative
 solvers as well as reordering algorithms.
 
-External forward operators can be easily linked against GIMLi. As soon they
-meet the requirements, the inversion can be setup and run with 2 lines. With
-some additional effort, applications can easily be created either using C++ or,
-more easily, using Python scripts. So far, various forward calculations are
-already included in GIMLi:
+.. _fig:gimliblock:
+.. figure:: _static/pg_design.png
+    :align: center
+    :class: wrap-fig
 
-* different 1d electromagnetic methods: VES, FDEM, TDEM, MT, TDR
-* first-arrival traveltime (refraction)
-* gravimetry
-* various fitting functions for
+pyGIMLi is organized in three different abstraction levels:
+
+.. describe:: Application level
+
+    In the application level, ready-to-use method managers and frameworks are
+    provided. Method managers (:py:mod:`pygimli.manager`) hold all relevant
+    functionality related to a geophysical method. A method manager can be
+    initialized with a data set and used to analyze and visualize this data set,
+    create a corresponding mesh, and carry out an inversion. Various method
+    managers are available in :py:mod:`pygimli.physics`. Frameworks
+    (:py:mod:`pygimli.frameworks`) are generalized abstractions of standard and
+    advanced inversions tasks such as time-lapse or joint inversion for
+    example. Since frameworks communicate through a unified interface, they are
+    method independent.
+
+.. describe:: Modelling level
+
+    In the modelling level, users can set up customized forward operators that
+    map discretized parameter distributions to a data vector. Once defined, it
+    is straightforward to set up a corresponding inversion workflow or combine
+    the forward operator with existing ones.
+
+.. describe:: Equation level
+
+    The underlying equation level allows to directly access the finite element
+    (:py:func:`pygimli.solver.solveFiniteElements`) and finite volume
+    (:py:func:`pygimli.solver.solveFiniteVolume`) solvers to solve various
+    partial differential equations on unstructured meshes, i.e. to approach
+    various physical problems with possibly complex 2D and 3D geometries.
