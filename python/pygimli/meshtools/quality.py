@@ -9,18 +9,23 @@ Field, D. A. (2000), Qualitative measures for initial meshes. Int. J. Numer.
 Meth. Engng., 47: 887–906.
 """
 
-import pygimli as pg
 import matplotlib.pyplot as plt
 import numpy as np
+
+import pygimli as pg
+
 
 # Helper functions
 def _boundaryLengths(cell):
     """Return boundary lengths of a given cell."""
-    return np.array([cell.boundary(i).size() for i in range(cell.boundaryCount())])
+    return np.array(
+        [cell.boundary(i).size() for i in range(cell.boundaryCount())])
+
 
 def _unitVector(vector):
     """Return the unit vector of the vector."""
     return vector / np.linalg.norm(vector)
+
 
 def _angleBetween(v1, v2):
     """Return the angle between vectors v1 and v2.
@@ -36,6 +41,7 @@ def _angleBetween(v1, v2):
     v2_u = _unitVector(v2)
     angle = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
     return np.degrees(angle)
+
 
 def _cellAngles(cell):
     """Return angles of a triangular cell.
@@ -67,8 +73,9 @@ def _cellAngles(cell):
 
     return alpha, beta, gamma
 
+
 # Quality measures
-def _eta(cell):
+def eta(cell):
     r"""Return default triangle quality (eta) of a given cell.
 
     The quality measure relates the area of the triangle (a)
@@ -80,11 +87,13 @@ def _eta(cell):
     """
     return 4 * np.sqrt(3) * cell.size() / np.sum(_boundaryLengths(cell)**2)
 
-def _minimumAngle(cell):
-    """Return the normalized minimum angle of a given cell."""
-    return np.min(_cellAngles(cell))/60.
 
-def _nsr(cell):
+def minimumAngle(cell):
+    """Return the normalized minimum angle of a given cell."""
+    return np.min(_cellAngles(cell)) / 60.
+
+
+def nsr(cell):
     r"""Return the normalized shape ratio (NSR) for a given cell.
 
     Also referred to as the radius ratio, as it is described by
@@ -95,13 +104,14 @@ def _nsr(cell):
         \rho = \frac{2r}{R}
     """
     a, b, c = _boundaryLengths(cell)
-    r = 2 * cell.size() / (a + b + c) # inradius
-    R = 0.25 * a * b * c / cell.size() # circumradius
+    r = 2 * cell.size() / (a + b + c)  # inradius
+    R = 0.25 * a * b * c / cell.size()  # circumradius
 
     return 2 * r / R
 
+
 # Main function
-def quality(mesh, measure="eta", show=False):
+def quality(mesh, measure="eta"):
     """Return the quality of a given triangular mesh.
 
     Parameters
@@ -110,8 +120,6 @@ def quality(mesh, measure="eta", show=False):
         Mesh for which the quality is calculated.
     measure : quality measure, str
         Can be either "eta", "nsr", or "minimumAngle".
-    show : boolean
-        Show mesh quality and corresponding histogram.
 
     Examples
     --------
@@ -135,33 +143,29 @@ def quality(mesh, measure="eta", show=False):
     """
 
     # Implemented quality measures (Triangular meshses only.)
-    measures = {
-        "eta": _eta,
-        "nsr": _nsr,
-        "minimumAngle": _minimumAngle
-    }
+    measures = {"eta": eta, "nsr": nsr, "minimumAngle": minimumAngle}
 
     m = measures[measure]
     qualities = [m(cell) for cell in mesh.cells()]
+    return qualities
 
     if show:
-        fig, axes = plt.subplots(1,2)
+        fig, axes = plt.subplots(1, 2)
         axes[1].hist(qualities, color="grey")
         pg.show(mesh, qualities, ax=axes[0], cMin=0.5, cMax=1, hold=True,
                 logScale=False, label="Mesh quality", cmap="RdYlGn", grid=True)
-        s = "Min: %.2f, Mean: %.2f, Max: %.2f" % (np.min(qualities),
-                                                  np.mean(qualities),
-                                                  np.max(qualities))
+        s = "Min: %.2f, Mean: %.2f, Max: %.2f" % (
+            np.min(qualities), np.mean(qualities), np.max(qualities))
         axes[1].set_title(s)
         axes[1].set_xlabel("Mesh quality")
         axes[1].set_ylabel("Frequency")
-        axes[1].set_xlim(0,1)
+        axes[1].set_xlim(0, 1)
 
         # Figure resizing according to mesh dimesions
         x = mesh.xmax() - mesh.xmin()
         y = mesh.ymax() - mesh.ymin()
         width, height = fig.get_size_inches()
-        fig.set_figheight(height * 1.3 * (y/x))
+        fig.set_figheight(height * 1.3 * (y / x))
         fig.tight_layout()
     else:
         return qualities
