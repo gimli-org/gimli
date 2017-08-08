@@ -8,7 +8,7 @@ pyGIMLi API Reference
   .. note::
 
     In the following, all Python modules, functions and classes are documented.
-    For a reference of the C++ part of the code, please visit:
+    For a reference of the C++ core library of the code, please visit:
     http://pygimli.org/gimliapi/.
 
 .. rubric:: Module overview
@@ -19,8 +19,9 @@ pyGIMLi API Reference
    :toctree: _generated
    :template: module.rst
 
-  inversion
+  frameworks
   io
+  manager
   meshtools
   misc
   mplviewer
