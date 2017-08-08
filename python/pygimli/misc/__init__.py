@@ -4,3 +4,4 @@
 """
 
 from .unsorted import *
+from .unsorted import streamline

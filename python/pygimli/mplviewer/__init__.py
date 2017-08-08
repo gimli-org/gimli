@@ -29,7 +29,6 @@ from .colorbar import (createColorBar,
 
 from .meshview import (CellBrowser,
                        createMeshPatches,
-                       createParameterContraintsLines,
                        createTriangles,
                        draw1DColumn,
                        drawField,
