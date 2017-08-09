@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# from sphinxcontrib-doxylink
+
+# taken from sphinxcontrib_doxylink
 import os
 import xml.etree.ElementTree as ET
 

@@ -62,7 +62,7 @@ needs_sphinx = '1.2'
 deps = ['sphinxcontrib-programoutput',
         #'sphinx_gallery',
         'sphinxcontrib-bibtex',
-        #'sphinxcontrib-doxylink',
+        #'sphinxcontrib-doxylink', there is a local copy
         'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 

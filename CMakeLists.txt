@@ -462,7 +462,7 @@ add_custom_target(removedoc
 add_custom_target(checkall
     DEPENDS
       doc
-      linkcheck
+      #linkcheck
 )
 #add_dependencies(doc removedoc)
 
