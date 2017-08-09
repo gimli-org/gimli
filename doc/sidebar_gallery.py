@@ -8,10 +8,10 @@ Created on: 2013-10-13
 """
 
 import os
-from os.path import join, dirname, basename
+import random
 import re
 from glob import glob
-import random
+from os.path import basename, dirname, join
 
 
 def make_gallery(src_path, out_path):
@@ -27,8 +27,10 @@ def make_gallery(src_path, out_path):
     img_dir = join(build_dir, "_images")
 
     # Get examples/tutorials
-    examples = glob(join(example_dir, "*/*plot*.py"))
-    tutorials = glob(join(tutorial_dir, "*/*plot*.py"))
+    examples = [fn for fn in glob(join(example_dir, "*/*plot*.py"))
+                if not "dev" in fn]
+    tutorials = [fn for fn in glob(join(tutorial_dir, "*/*plot*.py"))
+                 if not "dev" in fn]
 
     # Get captions
     def readRSTSecTitles(fname, verbose=False):
@@ -48,6 +50,7 @@ def make_gallery(src_path, out_path):
                     if "---" in line or "===" in line:
                         titles.append(title)  # add the line after
                     title = line
+
         return titles[0].rstrip()
 
     ex_titles = [readRSTSecTitles(ex) for ex in examples]

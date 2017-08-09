@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Minimal example of using pygimli to simulate the steady heat equation.
+Minimal example of using pygimli to simulate the steady heat equation.
 """
 
 import pygimli as pg

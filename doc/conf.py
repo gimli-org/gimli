@@ -21,16 +21,19 @@ from os import path
 from os.path import join
 
 import matplotlib
+# Does not work properly with sphinx gallery. Leaving this out for the moment.
+# from mplstyle import plot_rcparams
+# matplotlib.rcParams.update(plot_rcparams)
+matplotlib.use("Agg")
+
 import pip
 import pkg_resources
 import sphinx
 
 import pygimli as pg
-from mplstyle import plot_rcparams
 from pygimli.utils import boxprint
 from sidebar_gallery import make_gallery
 
-matplotlib.use("Agg")
 
 # for doc rendering on headless machines (jenkins server)
 
@@ -159,7 +162,6 @@ numpydoc_use_plots = True
 plot_formats = [('png', 96), ('pdf', 96)]
 plot_include_source = True
 
-matplotlib.rcParams.update(plot_rcparams)
 
 # The suffix of source filenames.
 source_suffix = '.rst'
