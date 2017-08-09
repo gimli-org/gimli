@@ -1,7 +1,7 @@
 .. _sec:design:
 
-Design
-======
+Software design
+===============
 
 In applied geophysics, a lot of research efforts are directed towards the
 integration of different physical models and combined inversion approaches to
