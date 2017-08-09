@@ -14,7 +14,6 @@ Gimli documentation build configuration file.
 # serve to show the default.
 """
 
-import math
 import os
 import re
 import sys
@@ -22,14 +21,16 @@ from os import path
 from os.path import join
 
 import matplotlib
-matplotlib.use("Agg")
 import pip
 import pkg_resources
 import sphinx
 
 import pygimli as pg
+from mplstyle import plot_rcparams
 from pygimli.utils import boxprint
 from sidebar_gallery import make_gallery
+
+matplotlib.use("Agg")
 
 # for doc rendering on headless machines (jenkins server)
 
@@ -91,7 +92,7 @@ extensions = ['sphinx.ext.autodoc',
               'matplotlib.sphinxext.plot_directive',
               'myexec_directive',
               'myliterate_directive',
-              'doxylink',
+              #   'doxylink',
               'sphinx_gallery.gen_gallery', ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
@@ -157,24 +158,6 @@ numpydoc_use_plots = True
 # MPL plot directive settings
 plot_formats = [('png', 96), ('pdf', 96)]
 plot_include_source = True
-phi = (math.sqrt(5) + 1) / 2
-
-plot_rcparams = {
-    'font.size': 7,
-    'axes.titlesize': 7,
-    'axes.labelsize': 7,
-    'xtick.labelsize': 7,
-    'ytick.labelsize': 7,
-    'legend.fontsize': 7,
-    'text.usetex': False,
-    'figure.subplot.bottom': 0.2,
-    'figure.subplot.left': 0.2,
-    'figure.subplot.right': 0.9,
-    'figure.subplot.top': 0.85,
-    'figure.subplot.wspace': 0.4,
-    'figure.figsize': (3 * phi, 3),
-    'figure.dpi': 96
-}
 
 matplotlib.rcParams.update(plot_rcparams)
 
@@ -344,7 +327,6 @@ latex_show_pagerefs = True
 # If false, no module index is generated.
 # latex_domain_indices = True
 
-
 extradir = path.abspath(join(SPHINXDOC_PATH, '_static'))  # .replace('\\', '/')
 
 latex_elements = {
@@ -471,7 +453,6 @@ texinfo_show_urls = 'footnote'
 # -- Options for pybtex output ------------------------------------------------
 # load our plugins for manual bibstyle
 
-
 # temporary disable due to python3 pybtex quirks
 for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
                                              "/_templates/pybtex_plugins/"):
@@ -485,6 +466,5 @@ doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi')}
 # Create small gallery of all tutorials and examples in the sidebar.
 # from pygimli.misc.sidebar_gallery import make_gallery
 sys.path.insert(0, os.path.abspath('.'))
-
 
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)

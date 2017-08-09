@@ -30,6 +30,8 @@ Quality of unstructured meshes
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
+
 import pygimli as pg
 from pygimli.meshtools import polytools as plc
 from pygimli.meshtools import quality
@@ -45,11 +47,33 @@ c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.3)
 # When calling the :func:`pg.meshtools.createMesh` function, a quality parameter
 # can be forwarded to Triangle, which prescribes the minimum angle allowed in
 # the final mesh. We can asses its effectiveness by creating different meshes
-# and plotting the resulting quality.
+# and plotting the resulting quality. For this purpose, we define a showQuality
+# function, which also plots a histogram of the mesh qualities.
+
+
+def showQuality(mesh, qualities):
+    fig, axes = plt.subplots(1, 2)
+    axes[1].hist(qualities, color="grey")
+    pg.show(mesh, qualities, ax=axes[0], cMin=0.5, cMax=1, hold=True,
+            logScale=False, label="Mesh quality", cmap="RdYlGn", grid=True)
+    s = "Min: %.2f, Mean: %.2f, Max: %.2f" % (
+        np.min(qualities), np.mean(qualities), np.max(qualities))
+    axes[1].set_title(s)
+    axes[1].set_xlabel("Mesh quality")
+    axes[1].set_ylabel("Frequency")
+    axes[1].set_xlim(0, 1)
+
+    # Figure resizing according to mesh dimesions
+    x = mesh.xmax() - mesh.xmin()
+    y = mesh.ymax() - mesh.ymin()
+    width, height = fig.get_size_inches()
+    fig.set_figheight(height * 1.3 * (y / x))
+    fig.tight_layout()
+
 
 for q in 10, 20, 30:
     m = pg.meshtools.createMesh([world, c1], quality=q)
-    quality(m, show=True)
+    showQuality(m, quality(m))
 
 ################################################################################
 # Note that there is a decreasing number of problematic triangles (marked in
@@ -81,15 +105,14 @@ for q in 10, 20, 30:
 # 1, whereas a flat triangle would have a quality of 0. The above mentioned
 # quality measures are plotted below for the same mesh.
 
-world = plc.createWorld(start=[-5, 0], end=[5, -5],
-                        marker=1, worldMarker=False, area=2.)
+world = plc.createWorld(start=[-5, 0], end=[5, -5], marker=1,
+                        worldMarker=False, area=2.)
 c1 = plc.createCircle(pos=[0.0, -2.0], radius=1.0, area=.3)
 mesh = pg.meshtools.createMesh([world, c1])
 
 for measure in "minimumAngle", "eta", "nsr":
-    quality(mesh, measure, show=True)
-    plt.title(measure, fontsize=12)
-    plt.tight_layout()
+    showQuality(mesh, quality(mesh, measure))
+    plt.title(measure)
 
 plt.show()
 
