@@ -63,6 +63,31 @@ print(pg.__version__)
 Check www.pygimli.org for additional information, detailed installation
 instructions and many examples.
 
+#### Citing pyGIMLi
+
+If you use pyGIMLi for your work, please cite as:
+
+> Rücker, C., Günther, T., Wagner, F.M., pyGIMLi: An open-source library for modelling and inversion in geophysics, Computers and Geosciences (2017), doi: 10.1016/j.cageo.2017.07.011 ([Download PDF]).
+
+BibTeX code:
+
+```sourceCode
+@article{Ruecker2017,
+  title = "pyGIMLi: An open-source library for modelling and inversion in geophysics",
+  journal = "Computers and Geosciences",
+  volume = "",
+  number = "",
+  pages = "",
+  year = "2017",
+  note = "",
+  issn = "0098-3004",
+  doi = "10.1016/j.cageo.2017.07.011",
+  author = "Carsten R\"ucker and Thomas G\"unther and Florian M. Wagner"
+}
+```
+
+[download pdf]: https://www.pygimli.org/paper/Ruecker2017_CG_pyGIMLi.pdf
+
 ##### License
 
 pyGIMLi is distributed under the terms of the **Apache 2.0** license. Details on
