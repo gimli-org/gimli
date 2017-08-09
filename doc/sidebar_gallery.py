@@ -18,7 +18,7 @@ def make_gallery(src_path, out_path):
     """TODO DOCUMENTME."""
     publish = os.getenv("PUBLISH")
     if publish:
-        build_dir = "http://www.pygimli.org"
+        build_dir = "https://www.pygimli.org"
     else:
         build_dir = ""
 

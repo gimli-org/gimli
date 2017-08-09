@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This program is part of pygimli
-See http://www.pygimli.org for further information.
+See https://www.pygimli.org for further information.
 """
 
 import sys

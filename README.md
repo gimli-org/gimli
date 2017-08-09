@@ -2,11 +2,11 @@
 Readme for Github repository only. (Get's selected before *.rst file)
 -->
 
-<a href="http://www.pygimli.org">
-  <img src="http://www.pygimli.org/_static/gimli_logo.svg" width="50%">
+<a href="https://www.pygimli.org">
+  <img src="https://www.pygimli.org/_static/gimli_logo.svg" width="50%">
 </a>
 
-[![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
+[![Build Status](https://www.pygimli.org/build_status.svg)](https://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 [![Issue Stats](http://issuestats.com/github/gimli-org/gimli/badge/issue?style=flat)](http://issuestats.com/github/gimli-org/gimli)
 [![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
