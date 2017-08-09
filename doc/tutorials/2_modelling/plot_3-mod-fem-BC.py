@@ -97,11 +97,11 @@ u = solve(grid, f=0., duB=neumannBC, uB=dirichletBC)
 
 ax = show(grid, data=u, filled=True, colorBar=True,
           orientation='vertical', label='Solution $u$',
-          levels=np.linspace(min(u), max(u), 14), hold=1)[0]
+          levels=np.linspace(min(u), max(u), 14), hold=True)[0]
 
-###############################################################################
 # Instead of the grid we now want to add streamlines to show the gradients of
 # the solution (i.e., the flow direction).
+
 drawStreams(ax, grid, u)
 
 ax.text(0.0, 1.01, '$u=1$',

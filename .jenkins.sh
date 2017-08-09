@@ -26,7 +26,7 @@ python -c "import matplotlib; print(matplotlib.__version__)"
 
 # just do this if something is wrong with the thirdparty sources
 #rm -rf thirdParty/src
-#rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
+rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
 rm -f build/build_tests.html # remove old test report
 rm -f build/CMakeCache.txt # clean old cache
 

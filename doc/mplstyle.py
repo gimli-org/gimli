@@ -1,7 +1,7 @@
 import math
 
 phi = (math.sqrt(5) + 1) / 2
-fontscale = 1.3
+fontscale = 1.0
 dark_gray = ".15"
 light_gray = ".8"
 
@@ -33,7 +33,7 @@ plot_rcparams = {
     "figure.subplot.right": 0.9,
     "figure.subplot.top": 0.85,
     "figure.subplot.wspace": 0.4,
-    "figure.figsize": (3 * phi, 3),
+    "figure.figsize": (5 * phi, 5),
     "figure.dpi": 96,
 
     "figure.facecolor": "white",

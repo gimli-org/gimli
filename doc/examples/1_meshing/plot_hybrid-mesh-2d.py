@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
 r"""
 Building a hybrid mesh in 2D
 ----------------------------
@@ -14,10 +13,11 @@ spaced quadrilaterals and a region with unstructured triangles."""
 # We start by importing numpy, matplotlib and pygimli with its required components.
 
 import numpy as np
+
 import pygimli as pg
-from pygimli.viewer import showMesh
+from pygimli.meshtools import appendTriangleBoundary, merge2Meshes
 from pygimli.mplviewer import drawMesh
-from pygimli.meshtools import merge2Meshes, appendTriangleBoundary
+from pygimli.viewer import showMesh
 
 ###############################################################################
 # We continue by building a regular grid and assign the marker 2 to all cells.
@@ -81,17 +81,15 @@ mesh3 = merge2Meshes(mesh1, mesh2)
 # triangle boundary for example with the function
 # :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
 
-mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31,
-                              smooth=True, marker=3, isSubSurface=True)
+mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31, smooth=True,
+                              marker=3, isSubSurface=True)
 
-ax, cbar = showMesh(mesh, mesh.cellMarkers(),
-                    cmap="summer",
+ax, cbar = showMesh(mesh, mesh.cellMarkers(), cmap="summer",
                     label="Region marker")
 
 drawMesh(ax, mesh)
 
-ax, _ = showMesh(mesh, mesh.cellMarkers(),
-                 logScale=False,
+ax, _ = showMesh(mesh, mesh.cellMarkers(), logScale=False,
                  label="Region marker")
 
 drawMesh(ax, mesh)
