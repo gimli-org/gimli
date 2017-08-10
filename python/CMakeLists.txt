@@ -56,7 +56,6 @@ endif(WIN32)
 
 add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_CURRENT_SOURCE_DIR}/pygimli/core")
 
-
 add_dependencies(pggen gimli)
 add_dependencies(copy_python pggen)
 add_dependencies(fixpygimlisrc pggen)

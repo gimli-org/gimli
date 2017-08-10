@@ -548,7 +548,8 @@ def div(mesh, v):
 
 
 def divergence(mesh, F=None, normMap=None, order=1):
-    """
+    """Divergence for callable function F((x,y,z)).
+
     MOVE THIS to a better place
 
     Divergence for callable function F((x,y,z)). Return sum div over boundary.
@@ -625,7 +626,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
 
 
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
-    """TODO"""
+    """Create tri-diagonal Toeplitz matrix."""
     A = pg.RSparseMapMatrix(dom, dom)
 
     if end == -1:
@@ -642,7 +643,7 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
 
 
 def identity(dom, start=0, end=-1, scale=1):
-    """TODO"""
+    """Create identity matrix."""
     A = pg.RSparseMapMatrix(dom, dom)
 
     if end == -1:
@@ -657,7 +658,7 @@ def identity(dom, start=0, end=-1, scale=1):
 
 
 def showSparseMatrix(A):
-    """helper function"""
+    """Show the content of a sparse matrix."""
     S = A
     # S = pg.RSparseMatrix(A)
     rows = S.vecRowIdx()
@@ -670,8 +671,7 @@ def showSparseMatrix(A):
 
 
 def linsolve(A, b, verbose=False):
-    r"""
-    Direct solution after :math:`\textbf{x}` using cholmod:
+    r"""Direct solution after :math:`\textbf{x}` using core LinSolver.
 
     .. math::
         \textbf{A}\textbf{x} = \textbf{b}
@@ -712,9 +712,9 @@ def linsolve(A, b, verbose=False):
 
 
 def assembleForceVector(mesh, f, userData=None):
-    """
-    Create right hand side vector based on the given mesh and force values.
+    """Create right hand side vector based on the given mesh and force values.
 
+    Create right hand side vector based on the given mesh and force values.
 
     Parameters
     ----------
@@ -798,9 +798,9 @@ def assembleForceVector(mesh, f, userData=None):
 
 
 def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
-    r"""
-    Apply Neumann condition to the system matrix S.
+    r"""Apply Neumann condition to the system matrix S.
 
+    Apply Neumann condition to the system matrix S.
     .. math::
         \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
         = \textbf{n}\grad u(\arr{r}, t) = g \quad\text{with}\quad\arr{r}
@@ -850,7 +850,7 @@ def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
             S += Se
 
 
-def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
+def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into gimli"""
 
     if rhs is not None:
@@ -956,12 +956,11 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None,
                 raise("callabe node pairs need to be implement.")
             uDirchlet.append(val)
 
-    assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet)
+    _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet)
 
 
 def createStiffnessMatrix(mesh, a=None):
-    """
-    Assemble the stiffness matrix.
+    """Create the Stiffness matrix.
 
     Calculates the scaled stiffness matrix for the given mesh scaled
     with the per cell values a.
@@ -1011,8 +1010,7 @@ def createStiffnessMatrix(mesh, a=None):
 
 
 def createMassMatrix(mesh, b=None):
-    """
-    Assemble mass element matrix.
+    r"""Create the mass element matrix.
 
     TODO remove b .. not necessary .. b should be scaled in final equation
     not here.
@@ -1060,29 +1058,16 @@ def createMassMatrix(mesh, b=None):
     # return B
 
 
-def solvePoisson(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
-                 verbose=False, stats=None, **kwargs):
-    """
-    WRITEME short
-
-    WRITEME long
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    """
-    return solveFiniteElements(mesh, a, b, f, times, userData, verbose, stats,
-                               **kwargs)
-
-
 def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
           verbose=False, stats=None, **kwargs):
-    """
-    WRITEME short
+    r"""Solve partial differential equation.
 
-    WRITEME long
+    This function is a syntactic sugar proxy for solving partial differential equation.
+    Using the best guess method for the given parameter. Currently only
+    Finite Element calculation using :py:mod:`pygimli.solver.solveFiniteElements`
+
+    TODO
+    :py:mod:`pygimli.solver.solveFiniteVolume`
 
     Parameters
     ----------
@@ -1096,12 +1081,27 @@ def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
 def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                         verbose=False, stats=None, **kwargs):
-    """
-    WRITEME short
+    r"""Solve partial differential equation with Finite Elements.
 
-    WRITEME long
+    This function is a syntactic sugar proxy for using the Finite Element
+    functionality of the library core to solve elliptic and parabolic partial
+    differential of the following type:
 
-    TODO unsteady ub and dub
+    .. math::
+
+        \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u) + b u + f(\mathbf{r},t) \\
+        u(\mathbf{r}, t) & = u_B  \quad\mathbf{r}\in\Gamma_{\text{Dirichlet}}\\
+        \frac{\partial u(\mathbf{r}, t)}{\partial \mathbf{n}} & = u_{\partial \text{B}} \quad\mathbf{r}\in\Gamma_{\text{Neumann}}\\
+        u(\mathbf{r}, t=0) & = u_0 \quad\text{with} \quad\mathbf{r}\in\Omega\quad\text{for}\quad t\neq 0
+
+    The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
+    through the given mesh with appropriate boundary marker.
+
+    The solution :math:`u(\mathbf{r}, t)` for is given for each node in mesh.
+
+
+    TODO:
+        unsteady ub and dub
 
     Parameters
     ----------
@@ -1133,16 +1133,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         Solve as time dependent problem for the given times.
 
     theta : float [1]
-        - `theta` = 0, explicit Euler, maybe stable for
-        - `theta` = 0.5, Crank-Nicolsen, maybe instable
-        - `theta` = 1, implicit Euler
+        - :math:`theta = 0` means explicit Euler, maybe stable for
+         :math:`\Delta t \quad\text{near}\quad h`
+        - :math:`theta = 0.5`, Crank-Nicolsen, maybe instable
+        - :math:`theta = 1`, implicit Euler
 
-        .. math:: \\Delta t \\quad\\text{near}\\quad h
-
-        Time dependent equation is stable for:
-        .. math:: 0.5 <= \\theta <= 1.0
-
-        If unsure choose 0.5 + epsilon, which is probably be stable.
+        If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
 
     progress : bool
         Give some calculation progress.
