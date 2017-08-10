@@ -1,51 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-    Utility functions for miscellaneous stuff.
+Useful utility functions.
 """
 
-from .base import gmat2numpy
-from .base import numpy2gmat
-from .base import rndig
-from .base import num2str
-from .base import inthist
-from .base import interperc
-from .base import interpExtrap
-from .base import saveResult
-from .base import getSavePath
-from .base import createResultFolder
-from .base import createDateTimeString
-from .base import createfolders
-
-from .utils import ProgressBar
-from .utils import boxprint
-from .utils import trimDocString
-from .utils import unicodeToAscii
-from .utils import logDropTol
-from .utils import grange
-from .utils import niceLogspace
-from .utils import diff
-from .utils import dist
-from .utils import cumDist
-from .utils import chi2
-from .utils import randN
-from .utils import rand
-from .utils import getIndex
-from .utils import filterIndex
-from .utils import findNearest
-from .utils import unique_everseen
-from .utils import unique
-from .utils import unique_rows
-from .utils import filterLinesByCommentStr
-
-from .postinversion import iterateBounds
-from .postinversion import modCovar
-
-from .geostatistics import covarianceMatrix
-from .geostatistics import computeInverseRootMatrix
-
-from . hankel import hankelFC
-
-from .sparseMat2Numpy import sparseMatrix2Array
-from .sparseMat2Numpy import convertCRSIndex2Map
+from .base import (createDateTimeString, createfolders, createResultFolder,
+                   getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
+                   num2str, numpy2gmat, rndig, saveResult)
+from .geostatistics import computeInverseRootMatrix, covarianceMatrix
+from .hankel import hankelFC
+from .postinversion import iterateBounds, modCovar
+from .sparseMat2Numpy import convertCRSIndex2Map, sparseMatrix2Array
+from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
+                    filterIndex, filterLinesByCommentStr, findNearest,
+                    getIndex, grange, logDropTol, niceLogspace, rand, randN,
+                    trimDocString, unicodeToAscii, unique, unique_everseen,
+                    unique_rows)
 
 __all__ = [name for name in dir() if '_' not in name]

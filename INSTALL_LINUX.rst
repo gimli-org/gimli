@@ -4,11 +4,13 @@ Installation on Linux
 Pre-build binary install with conda
 ...................................
 
-.. image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
-    :target: https://conda.anaconda.org/gimli
+.. only:: html
 
-.. image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
-    :target: https://anaconda.org/gimli/pygimli
+  .. image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
+      :target: https://conda.anaconda.org/gimli
+
+  .. image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
+      :target: https://anaconda.org/gimli/pygimli
 
 .. raw:: html
 

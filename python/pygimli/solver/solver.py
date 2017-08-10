@@ -313,6 +313,17 @@ def parseArgToBoundaries(args, mesh):
             if not b.leftCell() or not b.rightCell():
                 # if args(b) is not None:
                 boundaries.append([b, args])
+
+    elif isinstance(args, float) or isinstance(args, int):
+        for b in mesh.boundaries():
+            if not b.leftCell() or not b.rightCell():
+                # if args(b) is not None:
+                boundaries.append([b, args])
+
+
+    else:
+        raise Exception('cannot interprete boundary token', args)
+
     return boundaries
 
 
@@ -465,9 +476,10 @@ def grad(mesh, u, r=None):
 
 
 def div(mesh, v):
-    r"""
-        Return the discrete interpolated divergence field :math:`\mathbf{u}`
-        at each cell for a given vector field :math:`\mathbf{v}`.
+    r"""Return the discrete interpolated divergence field.
+
+        Return the discrete interpolated divergence field. :math:`\mathbf{u}`
+        for each cell for a given vector field :math:`\mathbf{v}`.
         First order integration via boundary center.
 
     .. math::
@@ -856,7 +868,8 @@ def assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet):
         rhs.setVal(uDirchlet, uDirIndex)
 
 
-def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None):
+def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None,
+                        nodePairs=None):
     r"""
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
 
@@ -881,6 +894,12 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None):
         See tutorial section for an example,
         e.g., Modelling with Boundary Conditions
 
+    nodePairs : list()
+        List of pairs [ nodeID, uD ].
+        The value uD will assigned to the nodes given there ids.
+        This node value settings will overwrite any prior settings due to
+        boundaryPair.
+
     rhs : :gimliapi:`GIMLI::RVector`
         Right hand side vector of the system equation will bet set to
         :math:`u_{\text{D}}`
@@ -890,6 +909,7 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None):
 
     userData : class
         Will be forwarded to value generator.
+
     """
 
     if not hasattr(boundaryPairs, '__getitem__'):
@@ -915,17 +935,27 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None):
                     uDirNodes.append(n)
                     uDirVal[n.id()] = uD
 
-    if len(uDirNodes) == 0:
+
+
+    if len(uDirNodes) == 0 and nodePairs is None:
         return
 
     uniqueNodes = unique(uDirNodes)
 
-    uDirchlet = pg.RVector(len(uniqueNodes))
+    uDirchlet = []
     uDirIndex = []
 
     for i, n in enumerate(uniqueNodes):
         uDirIndex.append(n.id())
-        uDirchlet[i] = uDirVal[n.id()]
+        uDirchlet.append(uDirVal[n.id()])
+
+    if nodePairs is not None:
+        print(nodePairs)
+        for i, [n, val] in enumerate(nodePairs):
+            uDirIndex.append(n)
+            if hasattr(val, '__call__'):
+                raise("callabe node pairs need to be implement.")
+            uDirchlet.append(val)
 
     assembleUDirichlet_(S, rhs, uDirIndex, uDirchlet)
 
@@ -1088,17 +1118,20 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     u0 : value | array | callable(pos, userData)
         Node values
 
-    ub : value | array | callable(pos, userData)
+    uB : value | array | callable(pos, userData)
         Dirichlet values for u at the boundary
 
-    dub : value | array | callable(pos, userData)
+    uN : list([node, value])
+        Dirichlet values for u at given nodes
+
+    duB : value | array | callable(pos, userData)
         Neumann values for du/dn at the boundary
 
     f : value | array(cells) | array(nodes) | callable(args, kwargs)
         force values
 
     times : array [None]
-        solve as time dependent problem for the given times
+        Solve as time dependent problem for the given times.
 
     theta : float [1]
         - `theta` = 0, explicit Euler, maybe stable for
@@ -1203,6 +1236,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                 parseArgToBoundaries(kwargs['uB'], mesh),
                                 rhs, time=0.0, userData=userData)
 
+        if 'uN' in kwargs:
+            assembleDirichletBC(S, [],
+                                nodePairs=kwargs['uN'],
+                                rhs=rhs, time=0.0, userData=userData)
+
         if debug:
             print("6c: ", swatch2.duration(True))
 
@@ -1271,6 +1309,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                     parseArgToBoundaries(kwargs['uB'], mesh),
                                     rhs=F)
 
+            if 'uN' in kwargs:
+                assembleDirichletBC(A, [],
+                                    nodePairs=kwargs['uN'],
+                                    rhs=F)
+
+
             return crankNicolson(times, theta, A, M, F, u0=u0, verbose=verbose)
 
         rhs = np.zeros((len(times), dof))
@@ -1331,6 +1375,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                                     parseArgToBoundaries(kwargs['uB'], mesh),
                                     rhs=b,
                                     time=times[n], userData=userData)
+
+            if 'uN' in kwargs:
+                assembleDirichletBC(S, [],
+                                    nodePairs=kwargs['uN'],
+                                    rhs=b, time=times[n], userData=userData)
 
             # u = S/b
             t_prep = swatch.duration(True)

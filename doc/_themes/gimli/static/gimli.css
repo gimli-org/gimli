@@ -656,3 +656,9 @@ div.highlight-python pre a {
 div.highlight-python pre a:hover {
     color: #0088cc;
 }
+
+/*Wrap text around figure (used in software design section)*/
+img.wrap-fig {
+    float: left;
+    margin-left: 10px;
+}

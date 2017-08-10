@@ -3,15 +3,16 @@
 Publications
 ============
 
-.. attention:: The main GIMLi publication is still work in progress.
+.. note:: The main pyGIMLi publication can be found here: :ref:`sec:citation`.
 
-.. rubric:: Extended abstracts and publications about GIMLi and BERT
+
+.. rubric:: Extended abstracts and publications about pyGIMLi and BERT
 
 .. bibliography:: libgimli.bib
     :style: mystyle
     :all:
 
-.. rubric:: Other publications that have used GIMLi
+.. rubric:: Other publications that have used pyGIMLi
 
 .. bibliography:: gimliuses.bib
     :style: mystyle

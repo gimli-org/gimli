@@ -1,19 +1,13 @@
 pyGIMLi paper in Computers & Geosciences (2017)
 ===============================================
 
-Citation
---------
+pyGIMLi was originally presented in Computers & Geociences (2017).
 
-If you use pyGIMLi for your work, please consider a citation of the following paper:
+  Rücker, C., Günther, T., Wagner, F.M., pyGIMLi: An open-source library  for
+  modelling and inversion in geophysics, Computers and Geosciences (2017), doi:
+  10.1016/j.cageo.2017.07.011.
 
-Rücker, C., Günther, T., Wagner, F.M. (2017): pyGIMLi - An open-source code
-for modeling and inversion in geophysics. *Computers & Geosciences.*
-
-Examples
---------
-
-Here we provide scripts to fully reproduce all examples given in the
-publication.
+Here we provide scripts to fully reproduce all examples given in the paper.
 
 .. csv-table::
    :header: "Example", "Section", "Produces", "Source Code"

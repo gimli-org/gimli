@@ -13,7 +13,7 @@ Documentation
 
           - :ref:`sec:design`
 
-            Software design and abstraction levels
+            Software architecture and abstraction levels
 
         * - :ref:`sec:install`
 
@@ -25,7 +25,7 @@ Documentation
 
         * - `Tutorials <_tutorials_auto/index>`_
 
-            How to use GIMLi
+            How to use pyGIMLi
 
           - `Examples <_examples_auto/index>`_
 
@@ -51,16 +51,17 @@ Documentation
 
             Papers and talks about (or using) pyGIMLi
 
-          - :ref:`sec:license`
+          - :ref:`sec:citation`
 
-            Terms of use and redistribution
+            How to cite pyGIMLi
 
         * - :ref:`sec:contributing`
 
             Information on how to get involved
 
-          -
+          - :ref:`sec:license`
 
+            Terms of use and redistribution
 
 
     ##################

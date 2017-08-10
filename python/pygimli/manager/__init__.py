@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"""MethodManager and Frameworks"""
+"""Method manager templates."""
 
-from .methodManager import (MethodManager,
-                            MeshMethodManager)
+from .methodManager import MeshMethodManager, MethodManager
