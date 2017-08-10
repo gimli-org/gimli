@@ -2,11 +2,11 @@
 Readme for Github repository only. (Get's selected before *.rst file)
 -->
 
-<a href="http://www.pygimli.org">
-  <img src="http://www.pygimli.org/_static/gimli_logo.svg" width="50%">
+<a href="https://www.pygimli.org">
+  <img src="https://www.pygimli.org/_static/gimli_logo.svg" width="50%">
 </a>
 
-[![Build Status](http://www.pygimli.org/build_status.svg)](http://www.pygimli.org/build.html)
+[![Build Status](https://www.pygimli.org/build_status.svg)](https://www.pygimli.org/build.html)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 [![Issue Stats](http://issuestats.com/github/gimli-org/gimli/badge/issue?style=flat)](http://issuestats.com/github/gimli-org/gimli)
 [![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
@@ -62,6 +62,31 @@ print(pg.__version__)
 
 Check www.pygimli.org for additional information, detailed installation
 instructions and many examples.
+
+#### Citing pyGIMLi
+
+If you use pyGIMLi for your work, please cite as:
+
+> Rücker, C., Günther, T., Wagner, F.M., pyGIMLi: An open-source library for modelling and inversion in geophysics, Computers and Geosciences (2017), doi: 10.1016/j.cageo.2017.07.011 ([Download PDF]).
+
+BibTeX code:
+
+```sourceCode
+@article{Ruecker2017,
+  title = "pyGIMLi: An open-source library for modelling and inversion in geophysics",
+  journal = "Computers and Geosciences",
+  volume = "",
+  number = "",
+  pages = "",
+  year = "2017",
+  note = "",
+  issn = "0098-3004",
+  doi = "10.1016/j.cageo.2017.07.011",
+  author = "Carsten R\"ucker and Thomas G\"unther and Florian M. Wagner"
+}
+```
+
+[download pdf]: https://www.pygimli.org/paper/Ruecker2017_CG_pyGIMLi.pdf
 
 ##### License
 

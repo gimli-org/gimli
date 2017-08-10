@@ -145,7 +145,7 @@ autoclass_content = "class"
 
 # Get mathjax
 # Formulas disappear after scrolling
-# mathjax_path = "http://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+# mathjax_path = "https://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 # Slow, but works
 mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js" +\
                "?config=TeX-AMS-MML_HTMLorMML"

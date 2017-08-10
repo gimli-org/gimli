@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
     This program is part of pygimli
-    Visit http://www.pygimli.org for further information or the latest version.
+    Visit https://www.pygimli.org for further information or the latest version.
 """
 
 import sys  # , traceback
