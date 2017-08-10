@@ -129,7 +129,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     return poly
 
 
-def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
+def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     """Create simple rectangular world.
 
     Create simple rectangular world with appropriate boundary conditions.
@@ -145,9 +145,11 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     end : [x, y]
         Lower/Right Corner
     marker : int
-        Marker for the resulting triangle cells after mesh generation
-    area : float
-        Maximum cell size for resulting triangles after mesh generation
+        Marker for the resulting triangle cells after mesh generation.
+    area : float | list
+        Maximum cell size for resulting triangles after mesh generation.
+        If area is a float set it global, if area is a list set it per layer.
+
     layers : [float]
         Add some layers to the world.
     worldMarker : [bool]
@@ -172,7 +174,7 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
     z = [start[1]]
 
     if layers is not None:
-        z = z + layers
+        z = z + list(layers)
 
     z.append(end[1])
 
@@ -181,14 +183,20 @@ def createWorld(start, end, marker=1, area=0, layers=None, worldMarker=True):
 
     poly = pg.Mesh(2)
 
+    if type(area) == float or type(area) == int:
+        area = np.ones(len(z)) * float(area)
+
+
     for i, depth in enumerate(z):
         n = poly.createNode([start[0], depth])
+
         if i > 0:
             if len(z) == 2:
                 poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=marker,
-                                     area=area)
+                                     area=area[0])
             else:
-                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=i, area=area)
+                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=i,
+                                     area=area[i-1])
 
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])

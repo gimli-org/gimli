@@ -22,7 +22,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     """Draw 1d block model into axis ax.
 
     Draw 1d block model into axis ax defined by values and thickness vectors
-    using plotfunction.
+    using plot function.
     For log y cases, z0 should be set > 0 so that the default becomes 1.
 
     Parameters

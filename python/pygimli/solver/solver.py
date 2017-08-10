@@ -414,7 +414,6 @@ def grad(mesh, u, r=None):
     See also
     --------
     GIMLI::Mesh::cellDataToBoundaryGradient
-    GIMLI::Mesh::cellDataToBoundaryGradient
     GIMLI::Mesh::boundaryDataToCellGradient
 
     Parameters
@@ -448,7 +447,7 @@ def grad(mesh, u, r=None):
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
     >>> u = lambda p: pg.x(p)**2 * pg.y(p)
     >>> _ = pg.show(mesh, u(mesh.nodeCenters()), ax=ax)
-    >>> _ = pg.show(mesh, [2*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
+    >>> _ = pg.show(mesh, [2.*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
     ...             pg.x(mesh.cellCenters())**2], ax=ax)
     >>> _ = pg.show(mesh, pg.solver.grad(mesh, u), ax=ax, color='w',
     ...             linewidth=0.4)
