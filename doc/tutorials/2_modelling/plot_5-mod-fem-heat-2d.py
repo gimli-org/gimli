@@ -12,7 +12,7 @@ import pygimli as pg
 import pygimli.meshtools as mt
 
 ###############################################################################
-# Create geometry definition for the modelling domain
+# Create geometry definition for the modelling domain.
 world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
                        worldMarker=False)
 # Create a heterogeneous block
@@ -23,7 +23,7 @@ geom = mt.mergePLC([world, block])
 pg.show(geom, boundaryMarker=True)
 
 ###############################################################################
-# Create a mesh from the geometry definition
+# Create a mesh from based on the geometry definition.
 mesh = mt.createMesh(geom, quality=33, area=0.2, smooth=[1, 10])
 pg.show(mesh)
 
