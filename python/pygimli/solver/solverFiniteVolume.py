@@ -504,11 +504,29 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
                       times=None,
                       uL=None, relax=1.0,
                       ws=None, scheme='CDS', **kwargs):
-    """Calculate for u.
+    r"""Solve partial differential equation with Finite Volumes.
 
-    NOTE works only for steady boundary conditions!!!
+    This function is a syntactic sugar proxy for using the Finite Volume
+    functionality of the library core to solve elliptic and parabolic partial
+    differential of the following type:
 
-    TODO !!Refactor with solver class and Runga-Kutte solver!!
+    .. math::
+
+        \frac{\partial u}{\partial t} + \mathbf{v}\cdot\nabla u & = \nabla\cdot(a \nabla u) + b u + f(\mathbf{r},t)\\
+        u(\mathbf{r}, t) & = u_B  \quad\mathbf{r}\in\Gamma_{\text{Dirichlet}}\\
+        \frac{\partial u(\mathbf{r}, t)}{\partial \mathbf{n}} & = u_{\partial \text{B}}  \quad\mathbf{r}\in\Gamma_{\text{Neumann}}\\
+        u(\mathbf{r}, t=0) & = u_0 \quad\text{with} \quad\mathbf{r}\in\Omega
+
+    The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
+    through the given mesh with appropriate boundary marker.
+
+    The solution :math:`u(\mathbf{r}, t)` is given for each cell in the mesh.
+
+
+    TODO:
+
+     * Refactor with solver class and Runga-Kutte solver
+     * non steady boundary conditions
 
     Parameters
     ----------
@@ -516,10 +534,10 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         Mesh represents spatial discretization of the calculation domain
 
     a   : value | array | callable(cell, userData)
-        cell values
+        Stiffness weighting per cell values.
 
     b   : value | array | callable(cell, userData)
-        TODO What is b
+        Scale for mass values b
 
     f   : iterable(cell)
         Load vector
@@ -528,9 +546,12 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         TODO What is fn
 
     vel : ndarray (N,dim) | RMatrix(N,dim)
-        velocity field [[v_j,]_i,] with i=[1..3] for the mesh dimension
-        and j = [0 .. N-1] with N either Amount of Cells, Nodes or Boundaries.
-        Velocity per boundary is preferred.
+        Velocity field :math:`\mathbf{v}(\mathbf{r}, t=\text{const}) = \{[v_i]_j,\}`
+        with :math:`i=[1\ldots 3]` for the mesh dimension
+        and :math:`j = [0\ldots N-1]` with N either the amount of cells,
+        nodes, or boundaries.
+        Velocities per boundary are preferred and will be interpolated
+        on demand.
 
     u0 : value | array | callable(cell, userData)
         Starting field
@@ -797,7 +818,7 @@ def __d(name, v, showAll=False):
         print(v)
 
 
-def _solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
+def __solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
                 pre0=None, vel0=None,
                 tol=1e-4, maxIter=1000,
                 verbose=1, **kwargs):
@@ -1008,7 +1029,7 @@ def _test_ConvectionAdvection():
 
     preBoundary = [[7, 0.0]]
 
-    vel, pres, pCNorm, divVNorm = _solveStokes(grid, a,
+    vel, pres, pCNorm, divVNorm = __solveStokes(grid, a,
                                               velBoundary, preBoundary,
                                               maxIter=maxIter,
                                               verbose=1)

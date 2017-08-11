@@ -7,6 +7,9 @@ If you use pyGIMLi for your work, please cite as:
   modelling and inversion in geophysics, Computers and Geosciences (2017), doi:
   10.1016/j.cageo.2017.07.011 (`Download PDF <https://www.pygimli.org/paper/Ruecker2017_CG_pyGIMLi.pdf>`_).
 
+Scripts to reproduce the figures in the paper can be found at
+https://cg17.pygimli.org.
+
 BibTeX code:
 
 .. code-block:: bibtex

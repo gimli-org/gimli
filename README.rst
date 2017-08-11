@@ -12,7 +12,7 @@ meshes in 2D and 3D, finite-element and finite-volume solvers, various
 geophysical forward operators, as well as Gauss-Newton based frameworks for
 constrained, joint and fully-coupled inversions with flexible regularization.
 
-What pyGIMLi is suited for?
+What is pyGIMLi suited for?
 
 * analyze, visualize and invert geophysical data in a reproducible manner
 * forward modelling of (geo)physical problems on complex 2D and 3D geometries
@@ -20,7 +20,7 @@ What pyGIMLi is suited for?
 * combination of different methods in constrained, joint and fully-coupled inversions
 * teaching applied geophysics (e.g. in combination with `Jupyter notebooks <http://jupyter-notebook.readthedocs.io/en/latest/notebook.html#notebook-documents>`_)
 
-What pyGIMLi is **NOT** suited for?
+What is pyGIMLi **NOT** suited for?
 
 * for people that expect a ready-made GUI for interpreting their data
 

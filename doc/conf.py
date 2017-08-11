@@ -66,7 +66,7 @@ needs_sphinx = '1.2'
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
-        #'sphinxcontrib-doxylink', there is a local copy
+        # 'sphinxcontrib-doxylink',
         'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 
@@ -78,7 +78,7 @@ if req:
     msg = "Sorry, there are missing dependencies to build the docs.\n" + \
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
           "Or install all dependencies with: pip install -r requirements.txt" + \
-          "You can install them all in userspace by adding --user command"
+          "You can install them all in userspace by adding the --user flag."
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings.
@@ -94,13 +94,12 @@ extensions = ['sphinx.ext.autodoc',
               'matplotlib.sphinxext.plot_directive',
               'myexec_directive',
               'myliterate_directive',
-              #   'doxylink',
-              #'sphinx_gallery.gen_gallery',
+              'doxylink'
               ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
 
-# Sphinx-gallery settinga
+# Sphinx-gallery settings
 try:
     import sphinx_gallery
     extensions += ["sphinx_gallery.gen_gallery"]
@@ -173,7 +172,7 @@ source_encoding = 'utf-8-sig'
 master_doc = 'documentation'
 
 # General information about the project.
-project = 'GIMLi'
+project = 'pyGIMLi'
 copyright = '2017 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -239,10 +238,10 @@ html_theme = 'gimli'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "GIMLi - Geophysical Inversion and Modelling Library"
+html_title = "pyGIMLi - Geophysical Inversion and Modelling Library"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = "GIMLi"
+html_short_title = "pyGIMLi"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.

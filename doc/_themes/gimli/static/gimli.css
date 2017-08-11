@@ -662,3 +662,8 @@ img.wrap-fig {
     float: left;
     margin-left: 10px;
 }
+
+.alert-success a {
+  color: #468847;
+  font-weight: bold;
+}

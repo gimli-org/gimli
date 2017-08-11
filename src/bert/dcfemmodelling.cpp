@@ -71,8 +71,7 @@ void setComplexResistivities(Mesh & mesh,
 void setComplexResistivities(Mesh & mesh,
                              const RVector & am,
                              const RVector & ph){
-    setComplexResistivities(mesh, toComplex( RVector(am * cos(ph)),
-                                            -RVector(am * sin(abs(ph)))));
+    setComplexResistivities(mesh, polarToComplex(am, ph, true));
 }
 
 void setComplexResistivities(Mesh & mesh, const CVector & z){
@@ -106,9 +105,8 @@ CVector getComplexData(const DataContainer & data){
         throwError(1, WHERE_AM_I  + " We need rhoa and ip to get complex data.");
     }
     RVector am(data("rhoa"));
-    RVector ph(data("ip") / 1000);
-    return toComplex( RVector(am * cos(ph)),
-                     -RVector(am * sin(abs(ph))));
+    RVector ph(data("ip"));
+    return polarToComplex(am, ph, true);
 }
 
 template < class Vec > bool checkIfMapFileExistAndLoadToVector(const std::string & filename, Vec & v){

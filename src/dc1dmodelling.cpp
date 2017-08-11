@@ -24,8 +24,10 @@
 
 namespace GIMLI {
 
-DC1dModelling::DC1dModelling(size_t nlayers, const RVector & am, const RVector & bm, const RVector & an, const RVector & bn,
-                              bool verbose)
+DC1dModelling::DC1dModelling(size_t nlayers,
+                             const RVector & am, const RVector & bm,
+                             const RVector & an, const RVector & bn,
+                             bool verbose)
 : ModellingBase(verbose), nlayers_(nlayers), am_(am), an_(an), bm_(bm), bn_(bn){
     init_();
     setMesh(createMesh1DBlock(nlayers));
@@ -33,7 +35,9 @@ DC1dModelling::DC1dModelling(size_t nlayers, const RVector & am, const RVector &
     meanrhoa_ = 100.0; //*** hack
 }
 
-DC1dModelling::DC1dModelling(size_t nlayers, const RVector & ab2, const RVector & mn2, bool verbose)
+DC1dModelling::DC1dModelling(size_t nlayers,
+                             const RVector & ab2, const RVector & mn2,
+                             bool verbose)
 : ModellingBase(verbose), nlayers_(nlayers){
     init_();
     setMesh(createMesh1DBlock(nlayers));
@@ -67,6 +71,12 @@ bm_(RVector(data.size(), 9e9)), bn_(RVector(data.size(), 9e9)){
     meanrhoa_ = 100.0; //*** hack
 
     if (data.allNonZero("rhoa")) meanrhoa_ = mean(data("rhoa"));
+}
+
+RVector DC1dModelling::createDefaultStartModel() {
+    RVector mod(nlayers_ * 2 - 1, meanrhoa_);
+    for (size_t i = 0; i < nlayers_ -1; i++) mod[i] = std::pow(2.0, 1.0 + i);
+    return mod;
 }
 
 RVector DC1dModelling::response(const RVector & model) {
