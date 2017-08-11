@@ -61,6 +61,9 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     vy = None
     isVectorData = False
 
+    if isinstance(field, pg.R3Vector):
+        field = field.array()
+
     if hasattr(field[0], '__len__'):
         if min(field[:, 0]) == max(field[:, 0]) and \
            min(field[:, 1]) == max(field[:, 1]):

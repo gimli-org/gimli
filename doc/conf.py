@@ -45,6 +45,7 @@ from sidebar_gallery import make_gallery
 try:
     # from _build.doc.conf_environment import *
     from conf_environment import *
+    boxprint("Building documentation out-of-source. Good.")
 except ImportError:
     TRUNK_PATH = '..'
     SPHINXDOC_PATH = '.'
@@ -64,13 +65,10 @@ needs_sphinx = '1.2'
 
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
-        #'sphinx_gallery',
         'sphinxcontrib-bibtex',
-        # 'sphinxcontrib-doxylink',
+        #'sphinxcontrib-doxylink', there is a local copy
         'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
-
-print(pip.get_installed_distributions())
 
 req = []
 for dep in deps:
@@ -79,7 +77,8 @@ for dep in deps:
 if req:
     msg = "Sorry, there are missing dependencies to build the docs.\n" + \
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
-          "Or install all dependencies with: pip install -r requirements.txt"
+          "Or install all dependencies with: pip install -r requirements.txt" + \
+          "You can install them all in userspace by adding --user command"
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings.
@@ -96,7 +95,8 @@ extensions = ['sphinx.ext.autodoc',
               'myexec_directive',
               'myliterate_directive',
               #   'doxylink',
-              'sphinx_gallery.gen_gallery', ]
+              #'sphinx_gallery.gen_gallery',
+              ]
 
 extensions += [dep.replace('-', '.') for dep in deps]
 

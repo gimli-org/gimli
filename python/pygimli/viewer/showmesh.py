@@ -125,8 +125,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
         . iterable of type [float, float] -- vector field
             forward to :py:mod:`pygimli.mplviewer.drawStreams`
 
+        . pg.R3Vector -- vector field
+            forward to :py:mod:`pygimli.mplviewer.drawStreams`
+
         . pg.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.mplviewer.drawSensors`
+
 
     hold : bool [false]
         Set interactive plot mode for matplotlib.
@@ -204,18 +208,24 @@ def showMesh(mesh, data=None, hold=False, block=False,
         drawMesh(ax, mesh, **kwargs)
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
+    elif isinstance(data, pg.R3Vector):
+        drawStreams(ax, mesh, data, **kwargs)
     else:
         # print(data, type(data))
         if (hasattr(data[0], '__len__') and
                 not isinstance(data, np.ma.core.MaskedArray)):
 
-            if len(data) == 2:  # [u,v]
+            if len(data) == 2:  # [u,v] x N
                 data = np.array(data).T
 
-            if sum(data[:, 0]) != sum(data[:, 1]):
+            if data.shape[1] == 2:
                 drawStreams(ax, mesh, data, **kwargs)
+            elif data.shape[1] == 3: # probably N x [u,v,w]
+                #if sum(data[:, 0]) != sum(data[:, 1]):
+                    #drawStreams(ax, mesh, data, **kwargs)
+                drawStreams(ax, mesh, data[:,0:2], **kwargs)
             else:
-                print("No valid stream data:", data)
+                print("No valid stream data:", data.shape, data.ndim)
                 drawMesh(ax, mesh, **kwargs)
         elif min(data) == max(data):  # or pg.haveInfNaN(data):
             print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))

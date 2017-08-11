@@ -29,7 +29,6 @@ from .colorbar import (createColorBar,
 
 from .meshview import (CellBrowser,
                        createMeshPatches,
-                       createParameterContraintsLines,
                        createTriangles,
                        draw1DColumn,
                        drawField,
@@ -75,7 +74,6 @@ from .modelview import (drawModel1D,
                         showStitchedModels_Redundant,
                         showfdemsounding)
 
-
 __all__ = [
     "BoreHole", "BoreHoles", "create_legend", "addCoverageAlpha", "autolevel",
     "cmapFromName",
@@ -83,7 +81,7 @@ __all__ = [
     "findAndMaskBestClim", "setCbarLevels", "saveFigure", "saveAxes",
     "setMappableData", "drawSensorAsMarker", "generateMatrix", "patchMatrix",
     "patchValMap", "plotDataContainerAsMatrix", "plotMatrix", "plotVecMatrix",
-    "CellBrowser", "createMeshPatches", "createParameterContraintsLines",
+    "CellBrowser", "createMeshPatches",
     "createTriangles", "draw1DColumn", "drawField", "drawMesh",
     "drawMeshBoundaries", "drawModel", "drawMPLTri", "hold", "wait",
     "setOutputStyle", "setPlotStuff", "createAnimation", "saveAnimation",

@@ -39,7 +39,7 @@ configure_file(
      "${SPHINX_BUILD_DIR}/doc/conf_environment.py"
      @ONLY)
 
-# this will ONLY cover files in the CMAKE_CURRENT_SOURCE_DIR .. maybee a cmake bug check with cmake 3
+# this will ONLY cover files in the CMAKE_CURRENT_SOURCE_DIR .. maybe a cmake bug check with cmake 3
 # we collect the RSTFILES in main path
 # file(GLOB_RECURSE RSTFILES RELATIVE ${CMAKE_SOURCE_DIR} "*.rst")
 

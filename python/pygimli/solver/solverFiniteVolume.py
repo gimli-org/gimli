@@ -11,10 +11,6 @@ from pygimli.meshtools import createMesh
 from pygimli.solver import identity  # , parseArgToArray, parseArgToBoundaries
 
 
-def boundaryToCellDistances(mesh):
-    """TODO Documentme."""
-    d = [boundaryToCellDistancesBound(b) for b in mesh.boundaries()]
-    return np.array(d)
 
 
 def cellDataToBoundaryData(mesh, v):
@@ -24,9 +20,8 @@ def cellDataToBoundaryData(mesh, v):
                         mesh.cellCount())
     return np.array([cellToFace(b, v) for b in mesh.boundaries()])
 
-
 def boundaryNormals(mesh):
-    """TODO Documentme."""
+    """Collect all boundary outer normal vectors."""
     # implement with    return mesh.boundaryNorms()
     gB = np.zeros((mesh.boundaryCount(), 3))
 
@@ -35,8 +30,12 @@ def boundaryNormals(mesh):
 
     return gB
 
+def _boundaryToCellDistances(mesh):
+    """TODO Documentme."""
+    d = [_boundaryToCellDistancesBound(b) for b in mesh.boundaries()]
+    return np.array(d)
 
-def boundaryToCellDistancesBound(b):
+def _boundaryToCellDistancesBound(b):
     """TODO Documentme."""
     leftCell = b.leftCell()
     rightCell = b.rightCell()
@@ -91,6 +90,7 @@ def cellToFace(boundary, vec, harmonic=False):
 
     Interpolate cell to face values by weighted arithmetic/harmonic mean.
     """
+    DEPRECATED
     leftCell = boundary.leftCell()
     rightCell = boundary.rightCell()
     df1 = 0.
@@ -508,7 +508,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     NOTE works only for steady boundary conditions!!!
 
-    !!Refactor with solver class and Runga-Kutte solver!!
+    TODO !!Refactor with solver class and Runga-Kutte solver!!
 
     Parameters
     ----------
@@ -522,7 +522,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         TODO What is b
 
     f   : iterable(cell)
-        TODO What is f
+        Load vector
 
     fn   : iterable(cell)
         TODO What is fn
@@ -536,7 +536,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         Starting field
 
     times : iterable
-        TODO What is times
+        Time steps to calculate for.
 
     ws : Workspace
         This can be an empty class that will used as an Workspace to store and
@@ -797,7 +797,7 @@ def __d(name, v, showAll=False):
         print(v)
 
 
-def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
+def _solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
                 pre0=None, vel0=None,
                 tol=1e-4, maxIter=1000,
                 verbose=1, **kwargs):
@@ -914,7 +914,7 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
 
         if pressureCoeff is None:
             pressureCoeff = 1. / apF * mesh.boundarySizes() * \
-                boundaryToCellDistances(mesh)
+                _boundaryToCellDistances(mesh)
 
         div = -mesh.divergence(np.vstack([velXF, velYF]).T)
 
@@ -980,7 +980,7 @@ def solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
     return velocity, pressure, preCNorm, divVNorm
 
 
-def test_ConvectionAdvection():
+def _test_ConvectionAdvection():
     """Test agains a refernce solution."""
     N = 21  # 21 reference
     maxIter = 11  # 11 reference
@@ -1008,7 +1008,7 @@ def test_ConvectionAdvection():
 
     preBoundary = [[7, 0.0]]
 
-    vel, pres, pCNorm, divVNorm = solveStokes(grid, a,
+    vel, pres, pCNorm, divVNorm = _solveStokes(grid, a,
                                               velBoundary, preBoundary,
                                               maxIter=maxIter,
                                               verbose=1)
@@ -1046,4 +1046,4 @@ def test_ConvectionAdvection():
 
 if __name__ == '__main__':
 
-    test_ConvectionAdvection()
+    _test_ConvectionAdvection()

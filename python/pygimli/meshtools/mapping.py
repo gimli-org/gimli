@@ -85,17 +85,17 @@ def nodeDataToBoundaryData(mesh, data):
         Assuming [NodeCount, dim] data
         DOCUMENT_ME
     """
-
-    if isinstance(data, pg.R3Vector):
-        data = np.array(data)
-
-
     if len(data) != mesh.nodeCount():
         raise BaseException("Dimension mismatch, expecting nodeCount(): " +
                             str(mesh.nodeCount()) +
                             " got: " + str(len(data)), str(len(data[0])))
 
 
+    if isinstance(data, pg.R3Vector):
+        ret = np.zeros((mesh.boundaryCount(), 3))
+        for b in mesh.boundaries():
+            ret[b.id()] = sum(data[b.ids()]) / b.nodeCount()
+        return ret
 
     dim = len(data[0])
     ret = np.zeros((mesh.boundaryCount(), dim))
@@ -104,6 +104,12 @@ def nodeDataToBoundaryData(mesh, data):
             ret[b.id()] = b.pot(b.center(), data)  # / b.nodeCount()
     elif dim == 2:
         for b in mesh.boundaries():
+            if b.nodeCount() > 2:
+                print(b)
+                raise BaseException("implement me")
+
+            ret[b.id()] = sum(data[b.ids()]) / b.nodeCount()
+            continue
             # v = b.data(b.center(), data)
             # interpolation is hell slow here .. check!!!!!!
             v2 = (data[b.node(0).id()] + data[b.node(1).id()])*0.5
@@ -111,6 +117,9 @@ def nodeDataToBoundaryData(mesh, data):
             ret[b.id()] = [v2[0], v2[1]]
     else:
         for b in mesh.boundaries():
+            ret[b.id()] = sum(data[b.ids()]) / b.nodeCount()
+            continue
+            raise BaseException("don't use this until further checking")
             ret[b.id()] = b.vec(b.center(), data)  # / b.nodeCount()
 
     return ret

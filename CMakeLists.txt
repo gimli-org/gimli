@@ -436,15 +436,16 @@ add_definitions(-DHAVE_CONFIG_CMAKE_H)
 
 find_package(Doxygen)
 
-find_package(Sphinx 1.2.0)
+find_package(Sphinx 1.5)
+
 if (SPHINX_FOUND)
     add_subdirectory(doc EXCLUDE_FROM_ALL)
     file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
     file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.png")
-    file(GLOB_RECURSE PYFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
     list(APPEND DOCFILES ${PNGFILES})
     file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
     list(APPEND DOCFILES ${BIBFILES})
+    file(GLOB_RECURSE PYFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
     list(APPEND DOCFILES ${PYFILES})
 
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
@@ -462,7 +463,7 @@ add_custom_target(removedoc
 add_custom_target(checkall
     DEPENDS
       doc
-      linkcheck
+      #linkcheck
 )
 #add_dependencies(doc removedoc)
 

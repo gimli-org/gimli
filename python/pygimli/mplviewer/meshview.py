@@ -949,7 +949,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     mesh : :gimliapi:`GIMLI::Mesh`
         2d Mesh to draw the streamline
 
-    data : iterable float | [float, float]
+    data : iterable float | [float, float] | pg.R3Vector
         If data is an array (per cell or node) gradients are calculated
         otherwise the data will be interpreted as vector field.
 
@@ -963,6 +963,10 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
 
             Instead of draw a stream for every cell in mesh, draw a streamline
             segment for each cell in coarseMesh.
+
+        * quiver: bool
+
+            Draw arrows instead of streamlines.
 
     Examples
     --------
@@ -978,10 +982,44 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     >>> fig, ax = plt.subplots()
     >>> drawStreams(ax, mesh, data, color='red')
     >>> drawStreams(ax, mesh, data, dropTol=0.9)
+    >>> drawStreams(ax, mesh, pg.solver.grad(mesh, data),
+    ...             color='green', quiver=True)
     >>> ax.set_aspect('equal')
+    >>> pg.wait()
     """
     viewMesh = None
     dataMesh = None
+
+    quiver = kwargs.pop('quiver', False)
+
+    if quiver:
+
+        x = None
+        y = None
+        u = None
+        v = None
+
+        if len(data) == mesh.nodeCount():
+            x = pg.x(mesh.positions())
+            y = pg.y(mesh.positions())
+        elif len(data) == mesh.cellCount():
+            x = pg.x(mesh.cellCenters())
+            y = pg.y(mesh.cellCenters())
+        elif len(data) == mesh.boundaryCount():
+            x = pg.x(mesh.boundaryCenters())
+            y = pg.y(mesh.boundaryCenters())
+
+        if isinstance(data, pg.R3Vector):
+            u = pg.x(data)
+            v = pg.y(data)
+        else:
+            u = data[:,0]
+            v = data[:,1]
+
+        ax.quiver(x, y, u, v, **kwargs)
+
+        updateAxes_(ax)
+        return
 
     if 'coarseMesh' in kwargs:
         viewMesh = kwargs['coarseMesh']
@@ -1086,7 +1124,7 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
     updateAxes_(ax)
 
 
-def createParameterContraintsLines(mesh, cMat, cWeight=None):
+def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     """TODO Documentme."""
     C = pg.RMatrix()
     if isinstance(cMat, pg.SparseMapMatrix):
@@ -1164,7 +1202,7 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
     ax : MPL axes
     mesh :
     """
-    start, end = createParameterContraintsLines(mesh, cMat, cWeight)
+    start, end = _createParameterContraintsLines(mesh, cMat, cWeight)
 
     lines = []
     colors = []
