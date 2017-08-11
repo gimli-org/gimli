@@ -1651,12 +1651,12 @@ inline CVector toComplex(double re, const RVector & im){
 /*! Convert absolute and phase (default in mrad) values to complex values.
 * To get the vice versa use abs(cvector) and phase(cvector). */
 inline CVector polarToComplex(const RVector & mag, const RVector & phi,
-                              bool mRad=true){
+                              bool mRad=false){
     ASSERT_EQUAL(mag.size(), phi.size())
-    if (!mRad){
-        return toComplex(RVector(mag * cos(phi)), RVector(-mag * sin(phi)));
+    if (mRad){
+        return polarToComplex(mag, phi / 1000.0, false);
     } else {
-        return polarToComplex(mag, RVector(phi) / 1000.0, false);
+        return toComplex(RVector(mag * cos(phi)), RVector(-mag * sin(phi)));
     }
 }
 
