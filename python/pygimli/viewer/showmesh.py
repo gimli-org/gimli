@@ -176,9 +176,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     Returns
     -------
-    ax : matplotlib.ax
+    ax : matplotlib.axes
 
-    colobar : matplotlib.colobar
+    colobar : matplotlib.colorbar
     """
     ax = ax
     if block:
@@ -220,10 +220,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
             if data.shape[1] == 2:
                 drawStreams(ax, mesh, data, **kwargs)
-            elif data.shape[1] == 3: # probably N x [u,v,w]
-                #if sum(data[:, 0]) != sum(data[:, 1]):
-                    #drawStreams(ax, mesh, data, **kwargs)
-                drawStreams(ax, mesh, data[:,0:2], **kwargs)
+            elif data.shape[1] == 3:  # probably N x [u,v,w]
+                # if sum(data[:, 0]) != sum(data[:, 1]):
+                    # drawStreams(ax, mesh, data, **kwargs)
+                drawStreams(ax, mesh, data[:, 0:2], **kwargs)
             else:
                 print("No valid stream data:", data.shape, data.ndim)
                 drawMesh(ax, mesh, **kwargs)
