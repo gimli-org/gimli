@@ -16,7 +16,7 @@ from pygimli.utils import rndig
 
 def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
                 plot='plot',
-                xlabel=r'Resistivity $[\Omega\,$m$]$', zlabel='Depth [m]',
+                xlabel=r'Resistivity $[\Omega$m$]$', zlabel='Depth [m]',
                 z0=0,
                 **kwargs):
     """Draw 1d block model into axis ax.

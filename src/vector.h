@@ -1625,14 +1625,10 @@ Vector< ValueType > increasingRange(const ValueType & first, const ValueType & l
 
 template < class ValueType >
 Vector < std::complex < ValueType > > toComplex(const Vector < ValueType > & re,
-                                                 const Vector < ValueType > & im){
+                                                const Vector < ValueType > & im){
     Vector < std::complex < ValueType > > cv(re.size());
     for (Index i = 0; i < cv.size(); i ++) cv[i] = std::complex < ValueType >(re[i], im[i]);
     return cv;
-}
-
-inline CVector toComplex(double re, const RVector & im){
-     return toComplex(RVector(im.size(), re), im);
 }
 
 // template < class ValueType >
@@ -1640,9 +1636,28 @@ inline CVector toComplex(double re, const RVector & im){
 //     return toComplex(Vector < ValueType > (im.size(), re), im);
 // }
 
-template < class ValueType >
-Vector < std::complex < ValueType > > toComplex(const Vector < ValueType > & re, ValueType im = 0){
-    return toComplex(re, Vector < ValueType > (re.size(), im));
+// template < class ValueType >
+// Vector < std::complex < ValueType > > toComplex(const Vector < ValueType > & re, ValueType im=0){
+//     return toComplex(re, Vector < ValueType > (re.size(), im));
+// }
+
+inline CVector toComplex(const RVector & re, double im=0.){
+     return toComplex(re, RVector(re.size(), im));
+}
+inline CVector toComplex(double re, const RVector & im){
+     return toComplex(RVector(im.size(), re), im);
+}
+
+/*! Convert absolute and phase (default in mrad) values to complex values.
+* To get the vice versa use abs(cvector) and phase(cvector). */
+inline CVector polarToComplex(const RVector & mag, const RVector & phi,
+                              bool mRad=true){
+    ASSERT_EQUAL(mag.size(), phi.size())
+    if (!mRad){
+        return toComplex(RVector(mag * cos(phi)), RVector(-mag * sin(phi)));
+    } else {
+        return polarToComplex(mag, RVector(phi) / 1000.0, false);
+    }
 }
 
 template < class ValueType >
