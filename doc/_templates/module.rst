@@ -1,7 +1,6 @@
 :orphan:
 {{ fullname }}
 {{ underline }}
-{{ '-' * fullname|length }}
 
 .. automodule:: {{ fullname }}
 

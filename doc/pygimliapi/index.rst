@@ -16,8 +16,8 @@ pyGIMLi API Reference
 .. currentmodule:: pygimli
 
 .. autosummary::
-   :toctree: _generated
-   :template: module.rst
+  :toctree: _generated
+  :template: module.rst
 
   frameworks
   io
