@@ -368,8 +368,15 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                     print("Warning! parseMapToCellArray: cannot find marker " +
                           str(pair[0]) + " within mesh.")
                 else:
-                    # print(atts, idx, pair[1], float(pair[1]))
-                    atts[idx] = float(pair[1])
+                    #print('---------------------')
+                    #print(atts, idx, pair[1], type(pair[1]), float(pair[1]))
+                    if isinstance(pair[1], np.complex):
+                        #print('+++++++++++++++++')
+                        if not isinstance(atts, pg.CVector):
+                            atts = pg.toComplex(atts)
+                        atts[idx] = pair[1]
+                    else:
+                        atts[idx] = float(pair[1])
             else:
                 raise Exception("Please provide a list of [int, value] pairs" +
                                 str(pair))
@@ -1096,11 +1103,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
     through the given mesh with appropriate boundary marker.
 
-    The solution :math:`u(\mathbf{r}, t)` for is given for each node in mesh.
+    The solution :math:`u(\mathbf{r}, t)` is given for each node in mesh.
 
 
     TODO:
-        unsteady ub and dub
+
+        * unsteady ub and dub
 
     Parameters
     ----------
