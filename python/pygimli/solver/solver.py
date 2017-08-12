@@ -368,10 +368,10 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                     print("Warning! parseMapToCellArray: cannot find marker " +
                           str(pair[0]) + " within mesh.")
                 else:
-                    print('---------------------')
-                    print(atts, idx, pair[1], type(pair[1]), float(pair[1]))
+                    #print('---------------------')
+                    #print(atts, idx, pair[1], type(pair[1]), float(pair[1]))
                     if isinstance(pair[1], np.complex):
-                        print('+++++++++++++++++')
+                        #print('+++++++++++++++++')
                         if not isinstance(atts, pg.CVector):
                             atts = pg.toComplex(atts)
                         atts[idx] = pair[1]
