@@ -52,7 +52,7 @@ scheme.setSensorPositions(pos)
 # it is correct, we plot it # along with the sensor positions
 
 ra = Refraction()
-vpmap = np.array([0, 250, 500, 1300])
+vpmap = np.array([0, 250, 500, 1300], dtype=np.float)
 vp = vpmap[mesh.cellMarkers()]
 
 ax, _ = pg.show(mesh, vp)
