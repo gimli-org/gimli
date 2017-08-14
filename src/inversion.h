@@ -979,8 +979,8 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     size_t cc = forward_->regionManager().constraintCount();
 
     if (constraintsH_.size() != cc) {
-        std::cout << WHERE_AM_I << " Fixing constraintsH.size()" << std::endl;
-        std::cout << constraintsH_.size() << " " << cc << std::endl;
+        DOSAVE std::cout << WHERE_AM_I << " Fixing constraintsH.size()" << std::endl;
+        DOSAVE std::cout << constraintsH_.size() << " " << cc << std::endl;
         constraintsH_.resize(cc);
     }
 
