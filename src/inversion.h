@@ -978,7 +978,11 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     //! compute roughness constraint and correct it for inter-region constraints
     size_t cc = forward_->regionManager().constraintCount();
 
-    if (constraintsH_.size() != cc) constraintsH_.resize(cc);
+    if (constraintsH_.size() != cc) {
+        DOSAVE std::cout << WHERE_AM_I << " Fixing constraintsH.size()" << std::endl;
+        DOSAVE std::cout << constraintsH_.size() << " " << cc << std::endl;
+        constraintsH_.resize(cc);
+    }
 
     if (haveReferenceModel_) {
         constraintsH_ = (*forward_->constraints() * Vec(tM_->trans(modelRef_) * modelWeight_)) * constraintsWeight_; //!!!template

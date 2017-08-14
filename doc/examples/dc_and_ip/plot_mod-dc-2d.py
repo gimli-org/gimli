@@ -13,7 +13,7 @@ Geoelectrical modeling example in 2.5D. CR"""
 #
 # .. math::
 #
-#     \nabla\cdot( \sigma \nabla u ) = -I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
+#     \nabla\cdot(\sigma\nabla u)=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
 #
 # The source term is 3 dimensional but the distribution of the electrical
 # conductivity :math:`\sigma(x,y)` should by 2 dimensional so we need a
@@ -38,10 +38,9 @@ from pygimli.solver import solve
 from pygimli.viewer import show
 from pygimli.mplviewer import drawStreams
 
-###############################################################################
-# Maybe this is useful. The analytical solution for one source location.
 
 def uAnalytical(p, sourcePos, k):
+    """Analytical solution for one source location."""
     r1A = (p - sourcePos).abs()
     # Mirror on surface at depth=0
     r2A = (p - pg.RVector3(1.0, -1.0, 1.0) * sourcePos).abs()
@@ -53,13 +52,14 @@ def uAnalytical(p, sourcePos, k):
     else:
         return 0.
 
-###############################################################################
-#
-# Define the derivative of the analytical solution regarding the outer normal
-# direction :math:`\vec{n}`. So we can define the value for the Neumann type
-# Boundary conditions for the boundaries in the subsurface.
 
 def mixedBC(boundary, userData):
+    """Mixed boundary conditions.
+
+    Define the derivative of the analytical solution regarding the outer normal
+    direction :math:`\vec{n}`. So we can define the value for the Neumann type
+    Boundary conditions for the boundaries in the subsurface.
+    """
     sourcePos = userData['sourcePos']
     k = userData['k']
     r1 = boundary.center() - sourcePos
@@ -81,19 +81,24 @@ def mixedBC(boundary, userData):
 
 ###############################################################################
 #
-# Define function for the current source term
-# :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
-# Right hand side entries will be shape functions(pos)
 #
 
 def pointSource(cell, f, userData):
+    """Define function for the current source term.
+
+    :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
+    Right hand side entries will be shape functions(pos)
+    """
     sourcePos = userData['sourcePos']
 
     if cell.shape().isInside(sourcePos):
         f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
 
-grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21),
-                     y=np.linspace(-15.0, .0, 16))
+dx = 0.5
+grid = pg.createGrid(x=np.arange(-10.0, 10.0+dx, dx),
+                     y=np.arange(-15.0, .0+dx, dx))
+# grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21),
+#                      y=np.linspace(-15.0, .0, 16))
 
 grid = grid.createP2()
 
@@ -128,7 +133,7 @@ u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
 ax = show(grid, data=u, filled=True, colorBar=True, cmap="RdBu_r",
           orientation='horizontal', label='Solution u', hold=True)[0]
 show(grid, ax=ax, hold=True)
-gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
+gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),  # ???
                            y=np.linspace(-15.0, .0, 20))
 # Instead of the grid we want to add streamlines to the plot to show the
 # gradients of the solution.

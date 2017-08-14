@@ -1,4 +1,6 @@
-﻿# coding: utf-8
+﻿#!/usr/bin/env python
+# coding: utf-8
+"""Classes for modelling helicopter electromagnetics (HEM) using VMD solvers"""
 import numpy as np
 import pygimli as pg
 from math import sqrt, pi
@@ -24,8 +26,9 @@ def registerDAEROcmap():
 
 
 class HEMmodelling(pg.ModellingBase):
-    """HEM Airborne modelling class."""
-    # Konstanten
+    """HEM Airborne modelling class based on the BGR RESOLVE system."""
+
+    # Constants, should rather use pygiml/physics/constants
     ep0 = 8.8542e-12
     mu0 = 4e-7 * np.pi
     c0 = sqrt(1. / ep0 / mu0)
@@ -93,8 +96,7 @@ class HEMmodelling(pg.ModellingBase):
     def calc_forward(self, x, h, rho, d, epr, mur, quasistatic=False):
         """Calculate forward response."""
         field = np.zeros((self.f.size, x.size), np.complex)
-        # Vorwärtsrechnung
-        # für Hintergrundmodell
+        # Forward calculation for background model
         if d.size:
             for m in range(x.size):
                 field[:, m] = self.vmd_hem(np.array([h[m]], np.float),
@@ -148,9 +150,9 @@ class HEMmodelling(pg.ModellingBase):
             # rekursive Berechnung der Admittanzen an der Oberkante der Schicht
             # von unten nach oben, für nl-1 Schichten
             for n in range(nl-2, -1, -1):
-                b[n, :, :] = alpha[n, :, :] * (b[n+1, :, :] + alpha[n, :, :] *
-                                               talphad[n, :, :]) / (
-                    alpha[n, :, :] + b[n+1, :, :] * talphad[n, :, :])
+                b[n, :, :] = alpha[n, :, :] * \
+                    (b[n+1, :, :] + alpha[n, :, :] * talphad[n, :, :]) / \
+                    (alpha[n, :, :] + b[n+1, :, :] * talphad[n, :, :])
             # Impedance
             c = 1.0 / b
             # b1 == 1. row in b (nl, 100, nfreq)
@@ -172,13 +174,13 @@ class HEMmodelling(pg.ModellingBase):
             except NameError:
                 ind = nl - 1
             if (ind + 1) < nl:
-                a = np.prod(aa[:ind, :, :], 0) * 0.5 * (
-                    1.0 + b[ind, :, :] / alpha[ind, :, :]) * \
+                a = np.prod(aa[:ind, :, :], 0) * 0.5 * \
+                    (1.0 + b[ind, :, :] / alpha[ind, :, :]) * \
                     (np.exp(-alpha[ind, :, :] * (z - h[ind])) -
-                        (b[ind+1, :, :] - alpha[ind, :, :]) /
-                        (b[ind+1, :, :] + alpha[ind, :, :]) *
-                        np.exp(-alpha[ind, :, :] *
-                               (d[ind, :, :] + h[ind+1] - z)))
+                     (b[ind+1, :, :] - alpha[ind, :, :]) /
+                     (b[ind+1, :, :] + alpha[ind, :, :]) *
+                     np.exp(-alpha[ind, :, :] *
+                            (d[ind, :, :] + h[ind+1] - z)))
                 ap = np.prod(aap[:ind, :, :], 0) * 0.5 * \
                     (1.0 + alpha[ind, :, :] * c[ind, :, :]) * \
                     (np.exp(-alpha[ind, :, :] * (z - h[ind])) +
@@ -233,8 +235,8 @@ class HEMmodelling(pg.ModellingBase):
         else:
             index = np.logical_and(self.f >= 1e4, h >= 100.0)
         if np.any(index):
-            opt = np.floor(10.0 * np.log10(self.r[index] * 2.0 * np.pi *
-                           self.f[index] / self.c0) + nc0)
+            opt = np.floor(10.0 * np.log10(
+                self.r[index] * 2.0 * np.pi * self.f[index] / self.c0) + nc0)
             r0[index] = self.c0 / (2.0 * np.pi * self.f[index]) * 10.0 ** (
                 (opt + 0.5 - nc0) / 10.0)
         # Bereitstellung der Wellenzahlen
@@ -255,7 +257,7 @@ class HEMmodelling(pg.ModellingBase):
                 lam[:, :, index]**2 - np.tile(self.wem[index], (1, nc, 1)) +
                 np.tile(self.iwm[index], (1, nc, 1)) / 1e9)  # (1, 100 , nfreq)
         # Admittanzen an der Oberfläche eines geschichteten Halbraums
-        b1, aa, aap = self.downward(rho, d, 0.0, epr, mur, lam)
+        b1, _, aap = self.downward(rho, d, 0.0, epr, mur, lam)
         # Kernel functions
         e = np.exp(-2.0 * h * alpha0)  # (1, 100, nfreq)
         delta0 = (b1 - alpha0 * mur[0]) / (b1 + alpha0 * mur[0]) * e
@@ -310,7 +312,7 @@ class HEMmodelling(pg.ModellingBase):
         alpha0 = np.sqrt(lam ** 2 - np.tile(self.wem, (1, nc, 1)) +
                          np.tile(self.iwm, (1, nc, 1)) / 1e9)
         # Admittanzen an der Oberfläche eines geschichteten Halbraums
-        b1, aa, aap = self.downward(rho, d, z, epr, mur, lam)
+        b1, aa, _ = self.downward(rho, d, z, epr, mur, lam)
         # Kernfunktionen
         e = np.exp(-h * alpha0)  # (1, 100, nfreq)
         delta = 2.0 / (alpha0 + b1) * e  # (1, 100, nfreq)
@@ -354,7 +356,7 @@ def hankelfc(order):
         nc0 = np.int(40)
     elif order == 2:  # cos
         fc = np.array([
-            1.63740363e-7,  1.83719709e-7,  2.06136904e-7, 2.31289411e-7,
+            1.63740363e-7, 1.83719709e-7, 2.06136904e-7, 2.31289411e-7,
             2.59510987e-7, 2.91176117e-7, 3.26704977e-7, 3.66569013e-7,
             4.11297197e-7, 4.61483045e-7, 5.17792493e-7, 5.80972733e-7,
             6.51862128e-7, 7.31401337e-7, 8.20645798e-7, 9.20779729e-7,
@@ -463,24 +465,27 @@ def hankelfc(order):
 
 class HEMRhoModelling(HEMmodelling):
     """Airborne EM (HEM) Forward modelling class for Occam inversion."""
-    def __init__(self, dvec, **kwargs):
-        """ Init class by specifying frequencies and distances (s. HEMMod) """
+
+    def __init__(self, dvec, height=1., **kwargs):
+        """Init class by specifying frequencies and distances (s. HEMMod)."""
         nlay = len(dvec) + 1
         self.dvec = np.asarray(dvec)
         self.zvec = np.hstack((0, np.cumsum(dvec)))
-        HEMmodelling.__init__(self, nlay, **kwargs)
+        HEMmodelling.__init__(self, nlay, height, **kwargs)
         self.mymesh = pg.createMesh1D(nlay)
         self.setMesh(self.mymesh)  # only for inversion
 
     def response(self, res):
+        """Forward response as combined in-phase and out-of-phase."""
         ip, op = self.vmd_hem(self.height, rho=np.asarray(res), d=self.dvec)
         return pg.cat(ip, op)
 
 
 class FDEMResSusModelling(HEMmodelling):
-    """ FDEM block modelling class using both conductivity & permittivity"""
+    """FDEM block modelling class using both conductivity & permittivity."""
+
     def __init__(self, nlay, height=1, **kwargs):
-        """ init class (see HEMmodelling) """
+        """Init class (see HEMmodelling)."""
         HEMmodelling.__init__(self, nlay, height, **kwargs)
         self.scaling = 1e2
         self.mymesh = pg.createMesh1DBlock(nlay, nProperties=2)
@@ -488,7 +493,7 @@ class FDEMResSusModelling(HEMmodelling):
         # pg.ModellingBase.__init__(self, self.mymesh)
 
     def response(self, par):
-        """Compute response vector by pasting in-phase and out-phase data."""
+        """Response vector as combined in-phase and out-phase data."""
         thk = np.asarray(par[:self.nlay-1], dtype=np.float)
         res = np.asarray(par[self.nlay-1:2*self.nlay-1], dtype=np.float)
         mur = np.asarray(par[2*self.nlay-1:3*self.nlay-1], dtype=np.float) + 1
@@ -496,8 +501,9 @@ class FDEMResSusModelling(HEMmodelling):
         return pg.cat(ip, op)
 
 
-class HEMRhoSusModelling(HEMRhoModelling):
+class HEMRhoSusModelling(HEMmodelling):
     """Airborne EM (HEM) Forward modelling class for Occam inversion."""
+
     def __init__(self, dvec, *args, **kwargs):
         """ not yet working! """
         self.nlay = len(dvec) + 1
@@ -508,6 +514,7 @@ class HEMRhoSusModelling(HEMRhoModelling):
         self.setMesh(self.mymesh)  # only for inversion
 
     def response(self, model):
+        """Response vector as combined in-phase and out-phase data."""
         res = np.asarray(model[:self.nlay])
         mur = np.asarray(model[self.nlay:]) + 1
         ip, op = self.vmd_hem(self.height, rho=res, d=self.dvec, mur=mur)
@@ -515,9 +522,10 @@ class HEMRhoSusModelling(HEMRhoModelling):
 
 
 class FDEMLCIFOP(pg.ModellingBase):
-    """FDEM 2d-LCI modelling class based on BlockMatrices."""
+    """FDEM 2d-LCI modelling class based on Block matrices."""
+
     def __init__(self, data, nlay=2, verbose=False, f=None, r=None):
-        """ Parameters: FDEM data class and number of layers """
+        """Parameters: FDEM data class and number of layers."""
         super(FDEMLCIFOP, self).__init__(verbose)
         self.nlay = nlay
         self.FOP = data.FOP(nlay)
@@ -555,6 +563,7 @@ class FDEMLCIFOP(pg.ModellingBase):
 
 class FDEM2dFOP(pg.ModellingBase):
     """FDEM 2d-LCI modelling class based on BlockMatrices."""
+
     def __init__(self, data, nlay=2, verbose=False):
         """Parameters: FDEM data class and number of layers."""
         super(FDEM2dFOP, self).__init__(verbose)
@@ -579,7 +588,7 @@ class FDEM2dFOP(pg.ModellingBase):
         self.setJacobian(self.J)
 
     def response(self, model):
-        """ cut-together forward responses of all soundings """
+        """Response as pasted forward responses from all soundings."""
         modA = np.reshape(model, (self.nx, self.nlay*2-1))
         resp = pg.RVector(0)
         for i, modi in enumerate(modA):
@@ -595,10 +604,10 @@ class FDEM2dFOP(pg.ModellingBase):
 
 
 if __name__ == '__main__':
-    nlay = 3
+    numlay = 3
     height = np.float(30.0)
     resistivity = np.array([1000.0, 100.0, 1000.0], np.float)
     thickness = np.array([22.0, 29.0], np.float)
-    f = HEMmodelling(nlay, height, r=10)  # frequency, separation)
+    f = HEMmodelling(numlay, height, r=10)  # frequency, separation)
     IP, OP = f.vmd_hem(height, resistivity, thickness)
     print(IP, OP)

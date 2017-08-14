@@ -1,14 +1,32 @@
 Installation on Windows
------------------------
+=======================
+
+You need a Python installation with the modules numpy and matplotlib.
+There are minimalistic installers and pre-packaged distributions.
+We recommend `WinPython <http://winpython.github.io/#releases>`_ or
+`Anaconda <http://www.continuum.io/>`_ 64bit versions (3.5 or 3.6).
+
+Pre-built installers
+--------------------
+
+To avoid the complicating build of the C++ core (see below), we provide
+packages built against WinPython, but working as well with Anaconda.
+Make sure you use an appropriate Python version (3.5.x or 3.6.6, 64bit)
+installed. There are two ways, exe installers and wheels. The latter can
+be easily installed by the package manager (e.g. WinPython Control Panel):
+
+`Python 3.5<http://www.pygimli.org/distribution/pygimli-1.0rc4-py35-none-win64.whl>`_
+`Python 3.6<http://www.pygimli.org/distribution/pygimli-1.0rc4-py36-none-win64.whl>`_
+
+
+Building pyGIMLI from source
+----------------------------
 
 First, you need a Linux-like command shell along with a gcc compiler.
 Although there might be different solutions (Cygwin, Git Bash, MinGW/MSYS),
 we only support the MSYS2 (Minimal System 2) hosted at http://www.msys2.org.
 As computers and modern Windows (>=7) are 64bit we only test this.
 Avoid installing into strange Windows folders, e.g. c:\msys64 is fine.
-
-You will also need a native python installation if you want to use pygimli.
-We recommend `WinPython <http://winpython.github.io/#releases>`_.
 
 After installing MSYS, start the console once so it builds your personal home
 directory where you find a .bashrc file, e.g. in

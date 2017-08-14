@@ -28,3 +28,5 @@ class Constants(object):
     # Larmor frequency of water
     fLarmor = gammaP / 2 / pi  # in Hz
     fLarmorMhZ = fLarmor * 1e-6
+    # nepers to dB multiplication factor
+    nepers2dB = 8.686

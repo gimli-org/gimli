@@ -19,11 +19,11 @@ To build pyGIMLi from source, the following tools are required:
 
     * gentoo x86_64: gcc-4.4.5, gcc-4.5.3, gcc-4.5.4, gcc-4.9.2 gcc-5.3.0
     * Debian 3.2.46-1 x86_64: gcc-4.7.2
-    * Ubuntu
+    * Ubuntu 16.04 LTS with gcc-5.4.0
     * Arch Linux gcc-5.2.0
     * CentOS
     * MinGW32: gcc-4.6.2/4, gcc-4.7.2, gcc-5.2.0
-    * MinGW64: gcc-4.5.4 gcc-5.2.0
+    * MinGW64: gcc-4.5.4, gcc-5.2.0, gcc-6.3.0, gcc-7.1.0
 
 Optional Prerequisites
 ......................

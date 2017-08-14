@@ -438,8 +438,8 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         C[np.where(C < 0.)] = 0.0
         C[np.where(C > 1.)] = 1.0
 
-    else:
-        print('taking the values directly')
+#    else:
+#        print('taking the values directly')
 
     # add alpha value to the color values
     cols[:, 3] = C

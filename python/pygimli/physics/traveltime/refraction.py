@@ -593,7 +593,7 @@ class Refraction(MethodManager):
 
     def showModel(self, ax=None, vals=None, **kwargs):
         """WRITEME"""
-        self.showResult(ax=ax, val=vals, **kwargs)
+        return self.showResult(ax=ax, val=vals, **kwargs)
 
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
                    logScale=False, name='result', **kwargs):

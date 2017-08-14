@@ -28,11 +28,9 @@ What is pyGIMLi **NOT** suited for?
 
 [jupyter notebooks]: http://jupyter-notebook.readthedocs.io/en/latest/notebook.html#notebook-documents
 
-##### Install via curl
+##### Binaries (Windows)
 
-```bash
-curl -Ls install.pygimli.org | bash
-```
+See binaries on https://www.pygimli.org/installation.html#win
 
 ##### For Anaconda users (currently Linux only)
 
@@ -51,6 +49,12 @@ python -c "import pygimli; pygimli.test()"
 
 # Update pygimli
 conda update -f pygimli
+```
+
+##### Install via curl
+
+```bash
+curl -Ls install.pygimli.org | bash
 ```
 
 ##### Import convention
