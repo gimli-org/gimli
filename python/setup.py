@@ -23,13 +23,13 @@ except:
     long_description = "Geophysical Inversion and Modelling Library"
 
 setup(name="pygimli",
-      version="1.0rc",
+      version="1.0rc4",
       description="Geophysical Inversion and Modelling Library",
       long_description=long_description,
       author="Carsten Rücker, Thomas Günther, Florian Wagner",
       author_email="mail@pygimli.org",
-      license="GPL",
+      license="Apache",
       url="https://www.pygimli.org",
       packages=find_packages(),
-      package_data={'': ['*.so']},
+      package_data={'': ['*.so', '*.dll', '*.pyd']},
       scripts=apps)
