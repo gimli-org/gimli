@@ -15,8 +15,9 @@ Make sure you use an appropriate Python version (3.5.x or 3.6.x, 64bit)
 installed. There are two ways, exe installers and wheels. The latter can
 be easily installed by a package manager like the WinPython Control Panel.
 
-`Python 3.5<http://www.pygimli.org/distribution/pygimli-1.0rc4-py35-none-win64.whl>`_
-`Python 3.6<http://www.pygimli.org/distribution/pygimli-1.0rc4-py36-none-win64.whl>`_
+`pyGIMLi 1.0RC4 for Python 3.5 <http://www.pygimli.org/distribution/pygimli-1.0rc4-py35-none-win64.whl>`_
+
+`pyGIMLi 1.0RC4 for Python 3.6 <http://www.pygimli.org/distribution/pygimli-1.0rc4-py36-none-win64.whl>`_
 
 In the package manager just select the whl file and install (or upgrade).
 If there is no package manager install the wheel by pip:
@@ -26,7 +27,7 @@ If there is no package manager install the wheel by pip:
     pip install pygimli-1.0rc4-py36-none-win64.whl # or if pip is not in the path use
     python -m pip install pygimli-1.0rc4-py36-none-win64.whl # ensure python is found
 
-See also `Issue #76<https://github.com/gimli-org/gimli/issues/76>`_ for screenshots.
+See also `Issue #76 <https://github.com/gimli-org/gimli/issues/76>`_ for screenshots.
 Uninstall can be made also with the Control Panel or by pip uninstall.
 
 Building pyGIMLI from source
