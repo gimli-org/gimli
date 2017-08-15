@@ -28,13 +28,13 @@ def _unitVector(vector):
 
 
 def _angleBetween(v1, v2):
-    """Return the angle between vectors v1 and v2.
+    """Return the angle (in degrees) between vectors v1 and v2.
 
     Examples
     --------
-    >>> _angleBetween((1, 0, 0), (1, 0, 0))
+    >>> print(_angleBetween((1, 0, 0), (1, 0, 0)))
     0.0
-    >>> _angleBetween((1, 0, 0), (-1, 0, 0))
+    >>> print(_angleBetween((1, 0, 0), (-1, 0, 0)))
     180.0
     """
     v1_u = _unitVector(v1)

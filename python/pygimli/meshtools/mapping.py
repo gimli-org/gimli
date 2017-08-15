@@ -76,7 +76,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
                             pg.cellDataToPointData(mesh, data[1]),
                             pg.cellDataToPointData(mesh, data[2])])
     else:
-        raise BaseException("Style '"  + style + "'not yet implemented."
+        raise BaseException("Style '" + style + "'not yet implemented."
                             "Currently styles available are: 'mean, '")
 
 
@@ -89,7 +89,6 @@ def nodeDataToBoundaryData(mesh, data):
         raise BaseException("Dimension mismatch, expecting nodeCount(): " +
                             str(mesh.nodeCount()) +
                             " got: " + str(len(data)), str(len(data[0])))
-
 
     if isinstance(data, pg.R3Vector):
         ret = np.zeros((mesh.boundaryCount(), 3))

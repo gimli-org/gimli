@@ -2,8 +2,8 @@
 Refraction Manager
 ------------------
 
-The layered example is taken from the Bachelor thesis of Constanze Reinken
-(University of Bonn).
+This example shows how to use the Refraction manager to generate the response
+of a three-layered sloping model and to do a classical inversion.
 """
 
 import numpy as np
@@ -13,7 +13,8 @@ import pygimli.meshtools as mt
 from pygimli.physics.traveltime import Refraction
 
 ###############################################################################
-# We start by creating a three-layered slope.
+# We start by creating a three-layered slope (The model is taken from the BSc
+# thesis of Constanze Reinken (University of Bonn).
 
 layer1 = mt.createPolygon([[0.0, 137], [117.5, 164], [117.5, 162], [0.0, 135]],
                           isClosed=True, marker=1, area=1)
@@ -56,11 +57,8 @@ vp = np.array(mesh.cellMarkers())
 vp[vp == 1] = 250
 vp[vp == 2] = 500
 vp[vp == 3] = 1300
-# not really nice, this should work as well
-# vpmap = np.array([0, 250, 500, 1300], dtype=np.float)
-# vp = vpmap[mesh.cellMarkers()]
 
-ax, _ = pg.show(mesh, vp)
+ax, _ = pg.show(mesh, vp, colorBar=True, logScale=False, label='v in m/s')
 ax.plot(pos[:, 0], pos[:, 1], 'w+')
 
 ###############################################################################
@@ -69,21 +67,27 @@ ax.plot(pos[:, 0], pos[:, 1], 'w+')
 
 data = ra.simulate(mesh, 1.0 / vp, scheme, noiseLevel=0.001, noiseAbs=0.001,
                    verbose=True)
-ra.showData(data)
+# ra.showData(data)  # can be used to show the data.
 
 ###############################################################################
-# And finally to invert the synthetic data on an independent mesh without prior
-# information on the layered structure.
+# And invert the synthetic data on an independent mesh without # information on
+# the layered structure we create a new instance of the class using the data.
+# Instead of the data, a file name can be given. This is probably where most
+# users with data start. See refraction class for supported formats.
 
 ra = Refraction(data)
-ra.createMesh(depth=30., paraMaxCellSize=5.0)
-vest = ra.invert()
+ra.showData()
+ra.createMesh(depth=30., paraMaxCellSize=5.0)  # can be omitted
+vest = ra.invert()  # estimated velocity distribution
 
 ###############################################################################
 # The method showResult is used to plot the result. Note that only covered
 # cells are shown by default. For comparison we plot the geometry on top.
 ax, cb = ra.showResult(cMin=min(vp), cMax=max(vp), logScale=False)
-pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)
-# Note that we could also plot the mesh by hand using
+pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
+# Note that internally the following is called
 # ax, _ = pg.show(ra.mesh, vest, label="Velocity [m/s]",
 #                 cMin=min(vp), cMax=max(vp), logScale=False)
+# ra.showResultAndFit()
+# shows the model along with its response plotted onto the data.
+pg.wait()

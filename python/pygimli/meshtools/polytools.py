@@ -26,7 +26,8 @@ import numpy as np
 import pygimli as pg
 
 
-def polyCreateDefaultEdges_(poly, boundaryMarker=1, isClosed=True, isHole=False):
+def polyCreateDefaultEdges_(poly, boundaryMarker=1,
+                            isClosed=True, isHole=False):
     """INTERNAL."""
     nEdges = poly.nodeCount() - 1 + isClosed
     bm = None
@@ -185,7 +186,6 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
 
     if type(area) == float or type(area) == int:
         area = np.ones(len(z)) * float(area)
-
 
     for i, depth in enumerate(z):
         n = poly.createNode([start[0], depth])
