@@ -15,10 +15,10 @@ Make sure you use an appropriate Python version (3.5.x or 3.6.x, 64bit)
 installed. There are two ways, exe installers and wheels. The latter can
 be easily installed by a package manager like the WinPython Control Panel.
 
-..  image:: https://img.shields.io/badge/pyGIMLi_win64-Python_3.5_Download-green.svg
-   :target: http://www.pygimli.org/distribution/pygimli-1.0rc4-py35-none-win64.whl
-..  image:: https://img.shields.io/badge/pyGIMLi_win64-Python_3.6_Download-green.svg
-   :target: http://www.pygimli.org/distribution/pygimli-1.0rc4-py36-none-win64.whl
+..  image:: https://img.shields.io/badge/pyGIMLi_win64-Download_Python_3.5_Wheel-green.svg
+   :target: http://www.pygimli.org/distribution/pygimli-1.0rc4-cp35-cp35m-win_amd64.whl
+..  image:: https://img.shields.io/badge/pyGIMLi_win64-Download_Python_3.6_Wheel-green.svg
+   :target: http://www.pygimli.org/distribution/pygimli-1.0rc4-cp36-cp36m-win_amd64.whl
 
 In the package manager just select the whl file and install (or upgrade).
 If there is no package manager install the wheel by pip:
@@ -30,6 +30,11 @@ If there is no package manager install the wheel by pip:
 
 See also `Issue #76 <https://github.com/gimli-org/gimli/issues/76>`_ for screenshots.
 Uninstall can be made also with the Control Panel or by pip uninstall.
+
+Alternatively you can try the MSI installer where you can choose your version
+
+..  image:: https://img.shields.io/badge/pyGIMLi_win64-MSI_for_Python_3.6-green.svg
+   :target: http://www.pygimli.org/distribution/pygimli-1.0.0.win-amd64.msi
 
 Building pyGIMLI from source
 ----------------------------
