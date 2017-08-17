@@ -4,37 +4,45 @@ Installation on Windows
 You need a Python installation with the modules numpy and matplotlib.
 There are minimalistic installers and pre-packaged distributions.
 We recommend `WinPython <http://winpython.github.io/#releases>`_ or
-`Anaconda <http://www.continuum.io/>`_ 64bit versions (3.5 or 3.6).
+`Anaconda <http://www.continuum.io/>`_ 64bit versions.
 
-Pre-built installers
---------------------
+Binary installers
+-----------------
 
-To avoid the complicating build of the C++ core (see below), we provide
-packages built against WinPython, but working as well with Anaconda.
-Make sure you use an appropriate Python version (3.5.x or 3.6.x, 64bit)
-installed. There are two ways, exe installers and wheels. The latter can
-be easily installed by a package manager like the WinPython Control Panel.
+To avoid the building the C++ core, we provide binary packages built against 
+WinPython, but working as well with Anaconda.
+Make sure you have an appropriate Python version (3.5.x or 3.6.x, 64bit) installed. 
+There are two ways, exe installers and wheels. The latter can be easily installed by a
+package manager like the WinPython Control Panel (located in the WinPython main directory).
 
 ..  image:: https://img.shields.io/badge/pyGIMLi_win64-Download_Python_3.5_Wheel-green.svg
    :target: http://www.pygimli.org/distribution/pygimli-1.0rc4-cp35-cp35m-win_amd64.whl
 ..  image:: https://img.shields.io/badge/pyGIMLi_win64-Download_Python_3.6_Wheel-green.svg
    :target: http://www.pygimli.org/distribution/pygimli-1.0rc4-cp36-cp36m-win_amd64.whl
 
-In the package manager just select the whl file and install (or upgrade).
-If there is no package manager install the wheel by pip:
+In the package manager just select the whl file and press Install to install or upgrade.
+If there is no package manager you can install the wheel by calling pip on the command line
+(e.g. on the Windows command prompt, in the WinPython control shell or under MSYS2/cygwin):
 
 .. code-block:: bash
 
-    pip install pygimli-1.0rc4-py36-none-win64.whl # or if pip is not in the path use
-    python -m pip install pygimli-1.0rc4-py36-none-win64.whl # ensure python is found
+    pip install pygimli-1.0rc4-cp36-cp36m-win_amd64.whl # or if pip is not in the path use
+    python -m pip install pygimli-1.0rc4-cp36-cp36m-win_amd64.whl # ensure python is found
 
 See also `Issue #76 <https://github.com/gimli-org/gimli/issues/76>`_ for screenshots.
 Uninstall can be made also with the Control Panel or by pip uninstall.
 
-Alternatively you can try the MSI installer where you can choose your version
+Alternatively you can use the MSI installer where you can choose your Python installation
 
+..  image:: https://img.shields.io/badge/pyGIMLi_win64-MSI_for_Python_3.5-green.svg
+   :target: http://www.pygimli.org/distribution/pygimli-1.0.0.win-amd64.msi
 ..  image:: https://img.shields.io/badge/pyGIMLi_win64-MSI_for_Python_3.6-green.svg
    :target: http://www.pygimli.org/distribution/pygimli-1.0.0.win-amd64.msi
+
+As a result you should be able to import pygimli in any script from any location.
+Since the C++ core changes only rarely, you can also check out the code via git, copy the
+pyd/dll files from the core directory of the binary distribution (lib/site-packages/pygimli)
+to the core directory of the git clone, and set PYTHONPATH to the latter.
 
 Building pyGIMLI from source
 ----------------------------
