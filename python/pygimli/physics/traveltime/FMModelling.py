@@ -108,8 +108,8 @@ class TravelTimeFMM(pg.ModellingBase):
         """
         Init function.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         mesh : pygimli.Mesh
             2D mesh to be used in the forward calculations.
         data : pygimli.DataContainer

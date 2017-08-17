@@ -165,7 +165,8 @@ Behaviour by name for global functions:
 API Documentation and doctests
 ------------------------------
 
-Use the following documentation syntax
+Use the following documentation syntax or see at:
+https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#sections
 
 .. code-block:: python
 
@@ -195,11 +196,30 @@ Use the following documentation syntax
 
     Write examples that might be complete minimal script that will be executed and tested automatically.
 
+    Attributes
+    ----------
+        For members
+
     Examples
     --------
     >>> import foo
     >>>
     >>>
+
+    Yields
+    ------
+        int : result
+
+    See Also
+    --------
+        average : Weighted average
+
+    Raises
+    ------
+        LinAlgException
+            If the matrix is not numerically invertible.
+
+
   """
 
 Coding Guidelines

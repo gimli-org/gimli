@@ -395,8 +395,8 @@ public:
     /*! Check if transfunctions are valid, set default if no transfunctions are given or override given functions by regionManager.transfunctions if available*/
     void checkTransFunctions(){
         if (forward_->regionManager().haveLocalTrans()) {
-            if (verbose_) std::cout << "use cumulative model trans " << std::endl;
-            tM_ = forward_->regionManager().transModel();
+            if (verbose_) std::cout << "use model trans from RegionManager" << std::endl;
+            setTransModel(*forward_->regionManager().transModel());
         }
     }
 
@@ -1039,6 +1039,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
 
     while (iter_ < maxiter_ && !abort_){
         if (ipc_.getBool("abort")) break;
+        if (verbose_) std::cout << "Iter: " << iter_ << std::endl;
 
         if (!oneStep()) break;
         //** no idea why this should be saved
@@ -1076,8 +1077,6 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
 template < class Vec > bool Inversion< Vec>::oneStep() {
     iter_++;
     ipc_.setInt("Iter", iter_);
-
-    if (verbose_) std::cout << "Iter: " << iter_ << std::endl;
 
     deltaModelIter_.resize(model_.size());
     deltaModelIter_ *= 0.0;

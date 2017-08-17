@@ -80,11 +80,12 @@ RVector DC1dModelling::createDefaultStartModel() {
 }
 
 RVector DC1dModelling::response(const RVector & model) {
+
     if (model.size() < (nlayers_ * 2 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 2 - 1) + " > " + toStr(model.size()));
+        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 - 1 = " + toStr(nlayers_ * 2 - 1) + " > " + toStr(model.size()));
     }
     if (model.size() > (nlayers_ * 2 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 2 - 1) + " < " + toStr(model.size()));
+        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 - 1 = " + toStr(nlayers_ * 2 - 1) + " < " + toStr(model.size()));
     }
 
     RVector rho(nlayers_);
@@ -408,12 +409,26 @@ void DC1dModelling::init_() {
     myw_.fill(myw);
 }
 
+DC1dModellingC::DC1dModellingC(size_t nlayers,
+               const RVector & am, const RVector & an,
+               const RVector & bm, const RVector & bn, bool verbose)
+: DC1dModelling(nlayers, am, an, bm, bn, verbose){
+    setMesh(createMesh1DBlock(nlayers, 2));
+}
+
+DC1dModellingC::DC1dModellingC(size_t nlayers,
+                               const RVector & ab2,
+                               const RVector & mn2, bool verbose)
+: DC1dModelling(nlayers, ab2, mn2, verbose){
+    setMesh(createMesh1DBlock(nlayers, 2));
+}
+
 RVector DC1dModellingC::response(const RVector & model) {
     if (model.size() < (nlayers_ * 3 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 3 - 1) + " > " + toStr(model.size()));
+        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 3 - 1 = " + toStr(nlayers_ * 3 - 1) + " > " + toStr(model.size()));
     }
     if (model.size() > (nlayers_ * 3 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 + 1 = " + toStr(nlayers_ * 3 - 1) + " < " + toStr(model.size()));
+        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 3 - 1 = " + toStr(nlayers_ * 3 - 1) + " < " + toStr(model.size()));
     }
 
     RVector thk(model(0,               nlayers_ -1));

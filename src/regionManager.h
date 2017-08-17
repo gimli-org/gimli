@@ -155,7 +155,9 @@ public:
 
     void fillBoundarySize(RVector & vec, Index boundStart);
 
-    void fillStartVector(RVector & vec);
+    void fillStartModel(RVector & vec);
+
+//     void fillStartVector(RVector & vec);
 
     void fillModelControl(RVector & vec);
 
@@ -170,10 +172,10 @@ public:
     /*! Set the value of start into the start model vector for this region. */
     void setStartModel(double start);
 
-    /*! DEPRECATED use setStartModel */
-    void setStartVector(const RVector & start);
-    /*! DEPRECATED use setStartModel */
-    void setStartValue(double start);
+//     /*! DEPRECATED use setStartModel */
+//     void setStartVector(const RVector & start);
+//     /*! DEPRECATED use setStartModel */
+    void setStartValue(double start){ DEPRECATED setStartModel(start);}
 
     void setModelControl(double val);
     void setModelControl(const RVector & vec);
@@ -182,6 +184,7 @@ public:
     inline const RVector & modelControl() const { return modelControl_; }
     inline RVector * modelControl() { return & modelControl_; }
 
+    void setModelTransformation(const Trans< RVector > & tM);
     void setTransModel(Trans< RVector > & tM);
 
     /*! Return a cumulative transform function based on transform functions for each region.
@@ -194,7 +197,7 @@ public:
     void setUpperBound(double ub);
 
     /*! set start and upper/lower bounds for region */
-    void setParameters(double start, double lb, double ub, std::string transString = "");
+    void setParameters(double start, double lb, double ub, std::string transString="");
 
     /*! Create Constraints weight values from constrains type and weighting.*/
     void createConstraintsWeight_();
@@ -205,7 +208,7 @@ public:
     void setStartModelStr_(    const std::string & val){ setStartModel(toDouble(val)); }
     void setZPowerStr_(        const std::string & val){ setZPower(toDouble(val)); }
     void setZWeightStr_(       const std::string & val){ setZWeight(toDouble(val)); }
-    void setFixValueStr_(         const std::string & val){ setFixValue(toDouble(val)); }
+    void setFixValueStr_(      const std::string & val){ setFixValue(toDouble(val)); }
     void setConstraintTypeStr_(const std::string & val){ setConstraintType(toInt(val)); }
     void setLowerBoundStr_(    const std::string & val){ setLowerBound(toDouble(val)); }
     void setUpperBoundStr_(    const std::string & val){ setUpperBound(toDouble(val)); }
@@ -231,7 +234,7 @@ protected:
 
     Index constraintType_;
 
-    RVector startVector_;
+    RVector startModel_;
     RVector modelControl_;
     RVector constraintsWeight_;
 
@@ -306,9 +309,17 @@ public:
 
     Index interRegionConstraintsCount() const;
 
-    void fillStartVector(RVector & vec);
+    /*! Create starting model by iterating over all regions.*/
+    RVector createStartModel();
 
-    RVector createStartVector();
+    /*! Fill vec with starting model values by iterating over all regions.*/
+    void fillStartModel(RVector & vec);
+
+    /*! DEPRECATED use setStartModel */
+//     void fillStartVector(RVector & vec);
+
+    /*! DEPRECATED use setStartModel */
+//     RVector createStartVector();
 
     /*! Create and fill global model-weight vector */
     RVector createModelControl();

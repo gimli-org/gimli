@@ -235,7 +235,7 @@ public:
 /*! Logarithm of the parameter with the natural bound 0 or a self-defined. */
 template< class Vec > class TransLog : public Trans < Vec > {
 public:
-    TransLog(double lowerbound = 0.0) : lowerbound_(lowerbound) { }
+    TransLog(double lowerbound=0.0) : lowerbound_(lowerbound) { }
     virtual ~TransLog() { }
 
     virtual Vec trans(const Vec & a) const {

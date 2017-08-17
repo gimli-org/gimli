@@ -120,7 +120,7 @@ void initKWaveList(double rMin, double rMax, int nGauLegendre, int nGauLaguerre,
 
 }
 
-RVector geometricFactor(const DataContainerERT & data, int dim, bool forceFlatEarth){
+RVector geometricFactors(const DataContainerERT & data, int dim, bool forceFlatEarth){
     RVector k(data.size());
 
     if (dim == 2){
