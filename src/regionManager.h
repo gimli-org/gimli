@@ -316,10 +316,12 @@ public:
     void fillStartModel(RVector & vec);
 
     /*! DEPRECATED use setStartModel */
-//     void fillStartVector(RVector & vec);
+     void fillStartVector(RVector & vec){DEPRECATED;
+         fillStartModel(vec);}
 
     /*! DEPRECATED use setStartModel */
-//     RVector createStartVector();
+     RVector createStartVector(){DEPRECATED;
+         return createStartModel();}
 
     /*! Create and fill global model-weight vector */
     RVector createModelControl();
