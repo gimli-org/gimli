@@ -69,8 +69,6 @@ class Inversion(object):
         if verbose:
             print("inv.start()")
 
-        print("forward_->regionManager().haveLocalTrans()", self.inv.forwardOperator().regionManager().haveLocalTrans())
-
         self.inv.start()
         self.inv.setMaxIter(maxIter)
 
@@ -184,7 +182,6 @@ class Block1DInversion(MarquardtInversion):
                     transform=ax[1].transAxes)
 
         pg.plt.pause(0.1)
-
 
 
 class MeshInversion(Inversion):

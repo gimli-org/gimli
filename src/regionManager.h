@@ -175,7 +175,7 @@ public:
 //     /*! DEPRECATED use setStartModel */
 //     void setStartVector(const RVector & start);
 //     /*! DEPRECATED use setStartModel */
-//     void setStartValue(double start);
+    void setStartValue(double start){ DEPRECATED setStartModel(start);}
 
     void setModelControl(double val);
     void setModelControl(const RVector & vec);

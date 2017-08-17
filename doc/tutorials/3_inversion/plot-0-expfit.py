@@ -127,7 +127,7 @@ plt.plot(x, data, 'rx', x, inv.response(), 'b-')
 # transformation which can of course be region-specific.
 
 f.region(0).setLowerBound(0.1)
-f.region(0).setStartValue(3)
+f.region(0).setStartModel(3)
 f.region(1).setParameters(0.3, 0.01, 1.0)
 
 ###############################################################################
@@ -135,7 +135,7 @@ f.region(1).setParameters(0.3, 0.01, 1.0)
 # We set the model by hand using the new starting model
 
 inv.setVerbose(True)
-inv.setModel(f.createStartVector())
+inv.setModel(f.createStartModel())
 print(inv.run())
 inv.echoStatus()
 

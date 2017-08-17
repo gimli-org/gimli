@@ -13,7 +13,7 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
-from pygimli.manager import MethodManager
+from pygimli.manager import MethodManager0
 
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
@@ -23,7 +23,7 @@ from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 from . raplot import drawTravelTimeData
 
 
-class Refraction(MethodManager):
+class Refraction(MethodManager0):
     """Class for managing refraction seismics data
 
     TODO Document main members and use default MethodeManager interface
@@ -32,7 +32,7 @@ class Refraction(MethodManager):
 
     def __init__(self, data=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
-        MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
+        super(Refraction, self).__init__(verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
         self.axs = {}
 
@@ -738,7 +738,7 @@ def test_Refraction():
 
 def main():
     """Main"""
-    parser = MethodManager.createArgParser(dataSuffix='sgt')
+    parser = MethodManager0.createArgParser(dataSuffix='sgt')
     options = parser.parse_args()
 
     ra = Refraction(verbose=not options.quiet, debug=pg.debug())

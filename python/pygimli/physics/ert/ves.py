@@ -10,6 +10,9 @@ from pygimli.mplviewer import drawModel1D
 
 from pygimli.frameworks import Modelling
 
+from pygimli.manager import MethodManager1d
+
+
 class VESModelling(Modelling):
     """Vertical Electrical Sounding (VES) forward operator."""
     def __init__(self, ab2, mn2, **kwargs):
@@ -96,7 +99,6 @@ class VESCModelling(VESModelling):
         self.setStartModel(sm)
         return sm
 
-
     def response_mt(self, par, i=0):
         nLay = (len(par)+1) // 3
         fop = pg.DC1dModellingC(nLay, self.am, self.bm, self.an, self.bn)
@@ -109,7 +111,6 @@ class VESCModelling(VESModelling):
                                  model=pg.cat(model[0:nLay-1], model[nLay*2-1::]),
                                  plot='plot',
                                  xlabel='Phase [mrad]')
-
 
     def drawData(self, ax, data, err=None, label=None):
         """
@@ -136,6 +137,26 @@ class VESCModelling(VESModelling):
         ax.set_xlabel('Apparent phase [mRad]')
         ax.set_ylabel('AB/2 in [m]')
         ax.grid(True)
+
+
+class VESManager2(MethodManager1d):
+    """Vertical electrical sounding (VES) manager class."""
+    def __init__(self, **kwargs):
+        super().__init__(kwargs)
+        self.complex = kwargs.pop('complex', False)
+
+        self.createFOP()
+
+    def setComplex(self, c):
+        self.complex_ = c
+        s
+    def createFOP(self):
+        if self.complex:
+            return VESCModelling()
+        else:
+            return VESModelling()
+
+
 
 class VESManager():  # Should be derived from 1DManager
     """Vertical electrical sounding (VES) manager class."""
