@@ -238,6 +238,7 @@ class MeshMethodManager(MethodManager):
 
         self.fop.setMesh(self.mesh)
         self.fop.regionManager().setConstraintType(1)
+
         if self.fop.regionManager().regionCount() > 1:
             self.fop.regionManager().region(1).setBackground(True)
 #            self.fop.regionManager().regions().begin().second.setBackground(1)

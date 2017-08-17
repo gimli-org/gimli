@@ -39,7 +39,7 @@ class ERTModelling(pg.ModellingBase):
 
         self.data = data
 
-    def setMesh(self, mesh, ignoreRegionManager=True):
+    def setMesh(self, mesh, ignoreRegionManager=False):
         """Set Mesh."""
         if mesh is not None:  # ignore default different from ModBase (False)
             pg.ModellingBase.setMesh(self, mesh, ignoreRegionManager)

@@ -111,7 +111,7 @@ RVector ModellingBase::startModel() {
     //*! Create startmodel from default builder (abstract may be overloaded)
     //*! Create startmodel from regionManger
     if (startModel_.size() == 0 && regionManager_){
-        setStartModel(regionManager_->createStartVector());
+        setStartModel(regionManager_->createStartModel());
     }
 
     if (startModel_.size() == 0){
@@ -546,7 +546,12 @@ Region * ModellingBase::region(int marker){
 }
 
 RVector ModellingBase::createStartVector() {
-    return regionManager().createStartVector();
+    DEPRECATED
+    return this->createStartModel();
+}
+
+RVector ModellingBase::createStartModel() {
+    return regionManager().createStartModel();
 }
 
 LinearModelling::LinearModelling(MatrixBase & A, bool verbose)
