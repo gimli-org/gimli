@@ -127,22 +127,15 @@ protected:
 /*! DC (direct current) 1D modelling for complex resistivity */
 class DLLEXPORT DC1dModellingC : public DC1dModelling {
 public:
-// do not use until cleanup
-//     /*! normal constructor DC1dModelling(dataContainer, nlayers, verbose) */
-//  DC1dModellingC(size_t nlayers, DataContainer & data, bool verbose = false)
-//         DC1dModelling(nlayers, data, verbose){ }
+    /*! General constructor using AM, AN, BM, BN, distances
+     * (as stored internally). */
+    DC1dModellingC(size_t nlayers,
+                   const RVector & am, const RVector & an,
+                   const RVector & bm, const RVector & bn, bool verbose=false);
 
-    /*! constructor for classical Schlumberger sounding */
+    /*! Constructor for classical Schlumberger sounding */
     DC1dModellingC(size_t nlayers, const RVector & ab2, const RVector & mn2,
-                   bool verbose=false) :
-        DC1dModelling(nlayers, ab2, mn2, verbose){
-            setMesh(createMesh1DBlock(nlayers, 2));
-        }
-// do not use until cleanup
-//     /*! general constructor using AM, AN, BM, BN distances */
-//     DC1dModellingC(size_t nlayers, const RVector & am, const RVector & an,
-//      const RVector & bm, const RVector & bn, bool verbose = false) :
-//         DC1dModelling(nlayers, am, an, bm, bn, verbose){}
+                   bool verbose=false);
 
     virtual ~DC1dModellingC() { }
 

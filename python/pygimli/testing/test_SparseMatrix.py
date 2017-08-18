@@ -12,12 +12,12 @@ class TestSparseMatrix(unittest.TestCase):
     def test_Convert(self):
         """
         """
-        i = range(10)
-        j = range(10)
-        v = np.ones(10)
+        colIds = range(10)
+        rowIds = range(10)
+        vals = np.ones(10)
 
         # Construct SparseMap Matrix from python arrays
-        A = pg.SparseMapMatrix(i, j, v)
+        A = pg.SparseMapMatrix(colIds, rowIds, vals)
 
         # Construct SparseMap -> CRS (compressed row storage)
         S = pg.SparseMatrix(A)
@@ -29,7 +29,6 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(A2.getVal(1,1), 1.0)
         np.testing.assert_equal(sum(S * np.ones(S.cols())), S.rows())
         np.testing.assert_equal(sum(A2 * np.ones(A2.cols())), A2.rows())
-
 
         MAP1 = pg.SparseMapMatrix(r=3, c=15)
         CSR = pg.SparseMatrix(MAP1)
@@ -59,16 +58,24 @@ class TestSparseMatrix(unittest.TestCase):
         for i in range(len(check_rows)):
             csr.addVal(check_rows[i], check_cols[i], check_vals[i])
 
-        r, c, v = pg.utils.sparseMatrix2Array(csr)
-        np.testing.assert_allclose(r, check_csr_rows)
-        np.testing.assert_allclose(c, check_col_s_e)
-        np.testing.assert_allclose(v, check_vals)
+        r1, c1, v1 = pg.utils.sparseMatrix2Array(csr)
+        np.testing.assert_allclose(r1, check_csr_rows)
+        np.testing.assert_allclose(c1, check_col_s_e)
+        np.testing.assert_allclose(v1, check_vals)
 
         r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.SparseMatrix(csr),
                                                  getInCRS=False)
         np.testing.assert_allclose(r2, check_rows)
         np.testing.assert_allclose(c2, check_cols)
         np.testing.assert_allclose(v2, check_vals)
+
+
+        A1 = pg.SparseMapMatrix(colIds, rowIds, vals)
+        A2 = pg.SparseMapMatrix(colIds, rowIds, vals)
+        A1 += A2
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

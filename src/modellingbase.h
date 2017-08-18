@@ -70,9 +70,7 @@ public:
     /*! Return the associated data container. */
     DataContainer & data() const;
 
-    /*! Interface to define custom start model generators in you forward
-     * operators.
-     * !*/
+    /*! Interface to define custom start model generators. */
     virtual RVector createDefaultStartModel() { return RVector(0); }
 
     /*! Return the start model.
@@ -188,6 +186,10 @@ public:
     /*! Syntactic sugar for this->regionManager().region(marker). */
     Region * region(int marker);
 
+
+    RVector createStartModel();
+
+    /*!DEPRECATED use createStartModel*/
     RVector createStartVector();
 
     void initRegionManager();

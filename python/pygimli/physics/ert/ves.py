@@ -8,6 +8,155 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.mplviewer import drawModel1D
 
+from pygimli.frameworks import Modelling
+
+from pygimli.manager import MethodManager1d
+
+
+class VESModelling(Modelling):
+    """Vertical Electrical Sounding (VES) forward operator."""
+    def __init__(self, ab2, mn2, **kwargs):
+        super().__init__(**kwargs)
+
+        if len(ab2) != len(mn2):
+            print("ab2", ab2)
+            print("mn2", mn2)
+            raise Exception("length of ab2 is unequal length of nm2")
+
+        self.am = ab2 - mn2
+        self.an = ab2 + mn2
+        self.bm = ab2 + mn2
+        self.bn = ab2 - mn2
+        self.ab2 = (self.am + self.bm) / 2
+        self.k = (2.0 * np.pi) / (1.0/self.am - 1.0/self.an -
+                                  1.0/self.bm + 1.0/self.bn)
+
+    def createStartModel(self, rhoa, nLay):
+        model = np.ones(nLay * 2 - 1) * np.median(rhoa)
+
+        for i in range(nLay):
+            model[i] = pow(2.0, 1.0 + i)
+
+        self.setStartModel(model)
+        return model
+
+    def response(self, par):
+        return self.response_mt(par, 0)
+
+    def response_mt(self, par, i=0):
+        nLay = (len(par)+1) // 2
+        fop = pg.DC1dModelling(nLay, self.am, self.bm, self.an, self.bn)
+
+        return fop.response(par)
+
+    def drawModel(self, ax, model):
+        pg.mplviewer.drawModel1D(ax=ax,
+                                 model=model,
+                                 plot='loglog',
+                                 xlabel='Resistivity [$\Omega$m]')
+
+    def drawData(self, ax, data, err=None, label=None):
+        """
+        """
+        ra = data
+        raE = err
+
+        col = 'green'
+        if label == 'Response':
+            col = 'blue'
+
+        ax.loglog(ra, self.ab2, 'x-', color=col)
+
+        if err is not None:
+            ax.errorbar(ra, self.ab2,
+                        xerr=raE*ra, elinewidth=2, barsabove=True,
+                        linewidth=0, color='red')
+
+        ax.set_ylim(max(self.ab2), min(self.ab2))
+        ax.set_xlabel('Apparent resistivity [$\Omega$m]')
+        ax.set_ylabel('AB/2 in [m]')
+        ax.grid(True)
+
+class VESCModelling(VESModelling):
+    def __init__(self, ab2, mn2, **kwargs):
+        super().__init__(ab2, mn2, **kwargs)
+
+    def createStartModel(self, rhoa, nLay):
+        mesh = pg.createMesh1DBlock(nLay, 2)  # thk, rhoa, phase
+        self.setMesh(mesh)
+
+        startModel = super().createStartModel(rhoa[0:len(rhoa)//2], nLay)
+
+        self.region(0).setStartModel(startModel[0:nLay-1])
+        self.region(0).setModelTransStr_('log')
+        self.region(1).setStartModel(startModel[nLay-1::])
+        self.region(1).setModelTransStr_('log')
+        self.region(2).setStartModel(np.ones(nLay)*np.median(rhoa[len(rhoa)//2::]))
+        self.region(2).setModelTransStr_('lin')
+
+        sm = self.regionManager().createStartModel()
+
+        self.setStartModel(sm)
+        return sm
+
+    def response_mt(self, par, i=0):
+        nLay = (len(par)+1) // 3
+        fop = pg.DC1dModellingC(nLay, self.am, self.bm, self.an, self.bn)
+        return fop.response(par)
+
+    def drawModel(self, ax, model):
+        nLay = (len(model)+1) // 3
+        super().drawModel(ax, model[0:nLay*2-1])
+        pg.mplviewer.drawModel1D(ax=ax,
+                                 model=pg.cat(model[0:nLay-1], model[nLay*2-1::]),
+                                 plot='plot',
+                                 xlabel='Phase [mrad]')
+
+    def drawData(self, ax, data, err=None, label=None):
+        """
+        """
+        pa = data[len(data)//2::] * 1000. #mRad
+        paE = err
+
+        if err is not None:
+            super().drawData(ax, data[0:len(data)//2], err[0:len(data)//2],
+                             label=label)
+            paE = err[len(data)//2::]
+        else:
+            super().drawData(ax, data[0:len(data)//2], label=label)
+
+        ax.loglog(pa, self.ab2, 'gx-')
+
+        if err is not None:
+            ax.errorbar(pa, self.ab2,
+                        xerr=paE*pa, elinewidth=2, barsabove=True,
+                        linewidth=0, color='red')
+
+        #ax.loglog(self.inv.response(), yVals, 'bo-')
+        ax.set_ylim(max(self.ab2), min(self.ab2))
+        ax.set_xlabel('Apparent phase [mRad]')
+        ax.set_ylabel('AB/2 in [m]')
+        ax.grid(True)
+
+
+class VESManager2(MethodManager1d):
+    """Vertical electrical sounding (VES) manager class."""
+    def __init__(self, **kwargs):
+        super().__init__(kwargs)
+        self.complex = kwargs.pop('complex', False)
+
+        self.createFOP()
+
+    def setComplex(self, c):
+        self.complex_ = c
+        s
+    def createFOP(self):
+        if self.complex:
+            return VESCModelling()
+        else:
+            return VESModelling()
+
+
 
 class VESManager():  # Should be derived from 1DManager
     """Vertical electrical sounding (VES) manager class."""

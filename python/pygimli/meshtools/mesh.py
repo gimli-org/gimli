@@ -406,8 +406,8 @@ def readTetgen(fname, comment='#', verbose=True,
     of :gimliapi:`GIMLI::Mesh` class.
     See: http://tetgen.org/
 
-    Paramters
-    ---------
+    Parameters
+    ----------
 
     fname: str
         Base name of the tetgen output, without ending. All additional files
@@ -755,8 +755,13 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
     Default values for keywords are suited for :term:`FEniCS` syntax
     .h5 meshes.
 
-    Parameters:
-    -----------
+    Requirements: h5py module
+
+    TODO:
+        * Fenics hdf5 meshs doesn't have boundary markers.
+
+    Parameters
+    ----------
 
     filename: string
         Name of the mesh that has to be transformed into :term:`pyGIMLi`
@@ -791,22 +796,12 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
         Dimension of the in/outpu mesh, no own check for dimensions yet.
         Fixed on 3 for now.
 
-    Output:
-    -------
-
-    Mesh:
+    Yields
+    ------
+    
+    mesh:
         :gimliapi:`GIMLI::Mesh`
 
-    Requirements:
-    -------------
-
-    modules:
-        h5py
-
-    TODO:
-    -----
-
-    Fenics hdf5 meshs doesn't have boundary markers.
     '''
     h5py = pg.io.opt_import('h5py',
                             requiredTo='import mesh in .h5 data format')
@@ -889,8 +884,8 @@ def exportFenicsHDF5Mesh(mesh, exportname, group='mesh'):
     indices='cell_indices', pos='coordinates', cells='topology',
     marker='values')`.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
 
     mesh: :gimliapi:GIMLI::Mesh`
         Mesh to be saved.

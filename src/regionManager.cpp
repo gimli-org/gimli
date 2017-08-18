@@ -190,7 +190,7 @@ void Region::countParameter(Index start){
 
     endParameter_ = start + parameterCount_;
     modelControl_.resize(parameterCount_, mcDefault_);
-    startVector_.resize(parameterCount_, startDefault_);
+    startModel_.resize(parameterCount_, startDefault_);
     //std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
 }
 
@@ -199,7 +199,7 @@ void Region::countParameter(Index start){
 void Region::setStartModel(const RVector & start){
     setBackground(false);
     if (start.size() == parameterCount_){
-       startVector_ = start;
+       startModel_ = start;
     } else {
         throwLengthError(1, WHERE_AM_I + " " + toStr(start.size()) + " != " + toStr(parameterCount_));
     }
@@ -210,25 +210,16 @@ void Region::setStartModel(double start){
     this->setStartModel(RVector(parameterCount_, start));
 }
 
-void Region::setStartVector(const RVector & start){
-    return setStartModel(start);
-}
-
-void Region::setStartValue(double val){
-    return setStartModel(val);
-}
-
-void Region::fillStartVector(RVector & vec){
+void Region::fillStartModel(RVector & vec){
     if (isBackground_) return;
-    if (startVector_.size() != parameterCount_){
+    if (startModel_.size() != parameterCount_){
         std::cerr << "WARNING! starting value for region " << marker_ << " not set. "<< std::endl;
     } else {
-//    std::copy(&startVector_[0], &startVector_[startVector_.size()], &vec[fillCrameter_]);
         if (isSingle_){
-            vec[startParameter_] = startVector_[0];
+            vec[startParameter_] = startModel_[0];
         } else {
             for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
-                vec[cells_[i]->marker()] = startVector_[i];
+                vec[cells_[i]->marker()] = startModel_[i];
             }
         }
     }
@@ -422,6 +413,10 @@ void Region::fillBoundarySize(RVector & vec, Index boundStart){
     }
 }
 
+void Region::setModelTransformation(const Trans< RVector > & tM){
+THROW_TO_IMPL
+
+}
 
 void Region::setTransModel(Trans< RVector > & tM){
     if (tM_ && ownsTrans_) delete tM_;
@@ -697,17 +692,17 @@ void RegionManager::findInterRegionInterfaces_(){
 //     }
 }
 
-void RegionManager::fillStartVector(RVector & vec){
+void RegionManager::fillStartModel(RVector & vec){
     if (vec.size() != parameterCount()) vec.resize(parameterCount());
     for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
           it != end; it ++){
-        it->second->fillStartVector(vec);
+        it->second->fillStartModel(vec);
     }
 }
 
-RVector RegionManager::createStartVector(){
+RVector RegionManager::createStartModel(){
     RVector vec(parameterCount());
-    fillStartVector(vec);
+    fillStartModel(vec);
     return vec;
 }
 

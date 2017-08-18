@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-    Lightweight electrical resistivity tomography
-    and vertical electric sounding
+"""Direct current electromagnetics
+
+    This package contains tools, modelling operators, and managers for:
+
+    * lightweight Electrical Resistivity Tomography (TEM)
+    * Vertical Electric Sounding (VES)
 """
 
-from . ert import ERTManager, ERTModelling, createERTData
-from . ves import VESManager
+from .ert import ERTManager, ERTModelling, createERTData
+from .ves import VESModelling, VESCModelling, VESManager
