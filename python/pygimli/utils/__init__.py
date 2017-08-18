@@ -14,6 +14,6 @@ from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace, rand, randN,
                     trimDocString, unicodeToAscii, unique, unique_everseen,
-                    unique_rows)
+                    unique_rows, uniqueAndSum)
 
 __all__ = [name for name in dir() if '_' not in name]
