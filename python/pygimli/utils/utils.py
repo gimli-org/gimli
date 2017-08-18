@@ -606,7 +606,7 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
     Example
     -------
     >>> import numpy as np
-    >>> from comet_misc.vec import uniqueAndSum
+    >>> from pygimli.utils import uniqueAndSum
     >>> idx1 = np.array([0, 0, 1, 1, 2, 2])
     >>> idx2 = np.array([0, 0, 1, 2, 3, 3])
     >>> # indices at positions 0 and 1 and at positions 5 and 6 are not unique
