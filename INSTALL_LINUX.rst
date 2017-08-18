@@ -43,6 +43,7 @@ Install pygimli (and its dependencies) and test if everything works correctly vi
 .. code-block:: bash
 
     conda install -f pygimli
+    conda install boost  # depndency missing currently
     python -c "import pygimli; pygimli.test()"
 
 Update your pygimli installation if want to have the newest functionality:
