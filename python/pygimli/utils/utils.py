@@ -573,6 +573,102 @@ def uniqueRows(data, prec=2):
     return np.unique(b).view(dfix.dtype).reshape(-1, dfix.shape[1]), ia, ib
 
 
+def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
+    """Summs double values found by indices in a various number of arrays.
+
+    Returns the sorted unique elements of a column_stacked array of indices.
+    Another column_stacked array is returned with values at the unique
+    indices, while values at double indices are properly summed.
+
+    Parameters
+    ----------
+    ar : array_like
+        Input array. This will be flattened if it is not already 1-D.
+    to_sum : array_like
+        Input array to be summed over axis 0. Other exsisting axes will be
+        broadcasted remain untouched.
+    return_index : bool, optional
+        If True, also return the indices of `ar` (along the specified axis,
+        if provided, or in the flattened array) that result in the unique
+        array.
+
+    Returns
+    -------
+    unique : ndarray
+        The sorted unique values.
+    summed_array : ndarray
+        The summed array, whereas all values for a specific index is the sum
+        over all corresponding nonunique values.
+    unique_indices : ndarray, optional
+        The indices of the first occurrences of the unique values in the
+        original array. Only provided if `return_index` is True.
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> from comet_misc.vec import uniqueAndSum
+    >>> idx1 = np.array([0, 0, 1, 1, 2, 2])
+    >>> idx2 = np.array([0, 0, 1, 2, 3, 3])
+    >>> # indices at positions 0 and 1 and at positions 5 and 6 are not unique
+    >>> to_sort = np.column_stack((idx1, idx2))
+    >>> # its possible to stack more than two array
+    >>> # you need for example 3 array to find unique node positions in a mesh
+    >>> values = np.arange(0.1, 0.7, 0.1)
+    >>> print(values)
+    [ 0.1  0.2  0.3  0.4  0.5  0.6]
+    >>> # some values to be summed together (for example attributes of nodes)
+    >>> unique_idx, summed_vals = uniqueAndSum(to_sort, values)
+    >>> print(unique_idx)
+    [[0 0]
+     [1 1]
+     [1 2]
+     [2 3]]
+    >>> print(summed_vals)
+    [ 0.3  0.3  0.4  1.1]
+    >>> # [0.1 + 0.2, 03., 0.4, 0.5 + 0.6]
+    """
+    flag_mult = len(indices) != indices.size
+    if verbose:
+        print('Get {} indices for sorting'.format(np.shape(indices)))
+    if flag_mult:
+        ar = indices.ravel().view(
+            np.dtype((np.void,
+                      indices.dtype.itemsize * indices.shape[1]))).flatten()
+    else:
+        ar = np.asanyarray(indices).flatten()
+
+    to_sum = np.asanyarray(to_sum)
+
+    if ar.size == 0:
+        ret = (ar,)
+        ret += (to_sum)
+        if return_index:
+            ret += (np.empty(0, np.bool),)
+        return ret
+    if verbose:
+        print('Performing argsort...')
+    perm = ar.argsort(kind='mergesort')
+    aux = ar[perm]
+    flag = np.concatenate(([True], aux[1:] != aux[:-1]))
+    if flag_mult:
+        ret = (indices[perm[flag]],)
+
+    else:
+        ret = (aux[flag],)  # unique indices
+    if verbose:
+        print('Identified {} unique indices'.format(np.shape(ret)))
+    if verbose:
+        print('Performing reduceat...')
+    summed = np.add.reduceat(to_sum[perm], np.nonzero(flag)[0])
+
+    ret += (summed,)  # summed values
+
+    if return_index:
+            ret += (perm[flag],)  # optional: indices
+
+    return ret
+
+
 def filterLinesByCommentStr(lines, comment_str='#'):
     """
     Filter all lines from a file.readlines output which begins with one of the
