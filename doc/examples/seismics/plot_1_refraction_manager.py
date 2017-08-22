@@ -14,7 +14,6 @@ from pygimli.physics import Refraction
 ###############################################################################
 # We start by creating a three-layered slope (The model is taken from the BSc
 # thesis of Constanze Reinken (University of Bonn).
-
 layer1 = mt.createPolygon([[0.0, 137], [117.5, 164], [117.5, 162], [0.0, 135]],
                           isClosed=True, marker=1, area=1)
 layer2 = mt.createPolygon([[0.0, 126], [0.0, 135], [117.5, 162], [117.5, 153]],
@@ -91,8 +90,7 @@ pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
 #
 # .. code-block:: python
 #
-#    ax, _ = pg.show(ra.mesh, vest, label="Velocity [m/s]",
-#                    cMin=min(vp), cMax=max(vp), logScale=False)
+#    ax, _ = pg.show(ra.mesh, vest, label="Velocity [m/s]", **kwargs)
 #
 
 ###############################################################################
@@ -101,7 +99,9 @@ pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
 ra.showResultAndFit()
 
 ###############################################################################
-# A default inversion with checking of the data consists of few lines
+# Takeaway message:
+# A default data inversion with checking of the data consists of only few lines
+# (Everthing else can be looked at by introspecting the Refraction manager)
 #
 # .. code-block:: python
 #
