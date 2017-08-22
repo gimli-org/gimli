@@ -3,14 +3,13 @@ Refraction Manager
 ------------------
 
 This example shows how to use the Refraction manager to generate the response
-of a three-layered sloping model and to do a classical inversion.
-"""
+of a three-layered sloping model and to invert the synthetic noisified data."""
 
 import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics.traveltime import Refraction
+from pygimli.physics import Refraction
 
 ###############################################################################
 # We start by creating a three-layered slope (The model is taken from the BSc
@@ -83,11 +82,32 @@ vest = ra.invert()  # estimated velocity distribution
 ###############################################################################
 # The method showResult is used to plot the result. Note that only covered
 # cells are shown by default. For comparison we plot the geometry on top.
+
 ax, cb = ra.showResult(cMin=min(vp), cMax=max(vp), logScale=False)
 pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
+
+###############################################################################
 # Note that internally the following is called
-# ax, _ = pg.show(ra.mesh, vest, label="Velocity [m/s]",
-#                 cMin=min(vp), cMax=max(vp), logScale=False)
-# ra.showResultAndFit()
-# shows the model along with its response plotted onto the data.
+#
+# .. code-block:: python
+#
+#    ax, _ = pg.show(ra.mesh, vest, label="Velocity [m/s]",
+#                    cMin=min(vp), cMax=max(vp), logScale=False)
+#
+
+###############################################################################
+# Another useful tool is to show the model along with its respone on the data_
+
+ra.showResultAndFit()
+
+###############################################################################
+# A default inversion with checking of the data consists of few lines
+#
+# .. code-block:: python
+#
+#    from pygimli.physics import Refraction
+#    ra = Refraction(filename)
+#    ra.invert()
+#    ra.showResultAndFit()
+
 pg.wait()
