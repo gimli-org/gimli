@@ -66,7 +66,7 @@ def showWC(ax, thk, wc, wmin=0., wmax=0.45, maxdep=0., dw=0.05, **kwargs):
 def showT2(ax, thk, t2, maxdep=0., **kwargs):
     """Show T2 function nicely."""
     drawModel1D(ax, thk, t2*1e3, xlabel=r'$T_2^*$ [ms]',
-                plotfunction='semilogx')
+                plot='semilogx')
     tmin = min(20, min(t2) * 0.9e3)
     tmax = max(500, max(t2) * 1.1e3)
     ax.set_xlim(tmin, tmax)

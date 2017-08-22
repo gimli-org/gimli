@@ -24,7 +24,7 @@ from . raplot import drawTravelTimeData
 
 
 class Refraction(MethodManager0):
-    """Class for managing refraction seismics data
+    """Manager for refraction seismics (traveltime tomography)
 
     TODO Document main members and use default MethodeManager interface
     e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
@@ -32,7 +32,8 @@ class Refraction(MethodManager0):
 
     def __init__(self, data=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
-        super(Refraction, self).__init__(verbose=verbose, debug=debug, **kwargs)
+        super(Refraction, self).__init__(verbose=verbose, debug=debug,
+                                         **kwargs)
         self.figs = {}
         self.axs = {}
 
