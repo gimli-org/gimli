@@ -14,8 +14,8 @@ from pygimli.utils.base import gmat2numpy
 from pygimli.mplviewer import drawModel1D
 
 # local functions in package
-from . modelling import MRS1dBlockQTModelling
-from . plotting import showErrorBars, showWC, showT2
+from pygimli.physics.sNMR.modelling import MRS1dBlockQTModelling
+from pygimli.physics.sNMR.plotting import showErrorBars, showWC, showT2
 
 
 class MRS():
@@ -72,7 +72,7 @@ class MRS():
         self.verbose = verbose
         self.t, self.q, self.z = None, None, None
         self.data, self.error = None, None
-        self.K, self.f, self.INV = None, None, None
+        self.K, self.fop, self.INV = None, None, None
         self.dcube, self.ecube = None, None
         self.lLB, self.lUB = None, None
         self.nlay = 0
@@ -91,7 +91,7 @@ class MRS():
 #            elif name[-5:].lower() == '.mrsd':
 #                self.loadMRSD(name, **kwargs)
             elif name.lower().endswith('npz'):
-                self.loadMRSpy(name, **kwargs)
+                self.loadDataNPZ(name, **kwargs)
             else:
                 self.loadDir(name)
 
@@ -105,7 +105,7 @@ class MRS():
             out += ", %d layers" % len(self.z)
         return out + ">"
 
-    def loadMRSpy(self, filename, **kwargs):
+    def loadDataNPZ(self, filename, **kwargs):
         """Load data and kernel from numpy gzip packed file.
 
         The npz file contains the fields: q, t, D, (E), z, K
@@ -130,6 +130,17 @@ class MRS():
             self.ecube = np.zeros_like(self.dcube)
 
         self.checkData(**kwargs)
+
+    def loadKernelNPZ(self, filename, **kwargs):
+        """Load data and kernel from numpy gzip packed file.
+
+        The npz file contains the fields: q, t, D, (E), z, K
+        """
+        self.basename = filename.rstrip('.npz')
+        DATA = np.load(filename)
+        self.q = DATA['pulseMoments']
+        self.z = np.absolute(DATA['zVector'])
+        self.K = DATA['kernel']
 
     def loadMRSI(self, filename, **kwargs):
         """Load data, error and kernel from mrsi or mrsd file
@@ -373,20 +384,24 @@ class MRS():
 
         return fig, ax
 
-    def createFOP(self, nlay=3):  # , verbose=True, **kwargs):
+    @staticmethod
+    def createFOP(nlay, K, z, t):  # , verbose=True, **kwargs):
         """Create forward operator instance."""
-        self.nlay = nlay
-        self.f = MRS1dBlockQTModelling(nlay, self.K, self.z, self.t)
+        fop = MRS1dBlockQTModelling(nlay, K, z, t)
+        return fop
+
+    def setBoundaries(self):
+        """Set parameter boundaries for inversion."""
         for i in range(3):
-            self.f.region(i).setParameters(self.startval[i],
-                                           self.lowerBound[i],
-                                           self.upperBound[i], "log")
+            self.fop.region(i).setParameters(self.startval[i],
+                                             self.lowerBound[i],
+                                             self.upperBound[i], "log")
 
     def createInv(self, nlay=3, lam=100., verbose=True, **kwargs):
         """Create inversion instance (and fop if necessary with nlay)."""
-        if self.f is None or self.nlay != nlay:
-            self.createFOP(nlay)
-        self.INV = pg.RInversion(self.data, self.f, verbose)
+        self.fop = MRS.createFOP(nlay, self.K, self.z, self.t)
+        self.setBoundaries()
+        self.INV = pg.RInversion(self.data, self.fop, verbose)
         self.INV.setLambda(lam)
         self.INV.setMarquardtScheme(kwargs.pop('lambdaFactor', 0.8))
         self.INV.stopAtChi1(False)  # now in MarquardtScheme
@@ -395,8 +410,15 @@ class MRS():
         self.INV.setRobustData(kwargs.pop('robust', False))
         return self.INV
 
-    def run(self, nlay=3, lam=100., startvec=None,
-            verbose=True, uncertainty=False, **kwargs):
+    @staticmethod
+    def simulate(model, K, z, t):
+        """Do synthetic modelling."""
+        nlay = int(len(model) / 3) + 1
+        fop = MRS.createFOP(nlay, K, z, t)
+        return fop.response(model)
+
+    def invert(self, nlay=3, lam=100., startvec=None,
+               verbose=True, uncertainty=False, **kwargs):
         """Easiest variant doing all (create fop and inv) in one call."""
         if self.INV is None or self.nlay != nlay:
             self.INV = self.createInv(nlay, lam, verbose, **kwargs)
@@ -406,6 +428,11 @@ class MRS():
         if verbose:
             print("Doing inversion...")
         self.model = np.array(self.INV.run())
+        return self.model
+
+    def run(self, verbose=True, uncertainty=False, **kwargs):
+        """Easiest variant doing all (create fop and inv) in one call."""
+        self.invert(verbose=verbose, **kwargs)
         if uncertainty:
             if verbose:
                 print("Computing uncertainty...")
@@ -418,7 +445,7 @@ class MRS():
         """Split model vector into d, theta and T2*."""
         if model is None:
             model = self.model
-        nl = self.nlay
+        nl = int(len(self.model)/3) + 1  # self.nlay
         thk = model[:nl - 1]
         wc = model[nl - 1:2 * nl - 1]
         t2 = model[2 * nl - 1:3 * nl - 1]
@@ -524,7 +551,7 @@ class MRS():
 
     def calcMCM(self):
         """Compute linear model covariance matrix."""
-        J = gmat2numpy(self.f.jacobian())  # (linear) jacobian matrix
+        J = gmat2numpy(self.fop.jacobian())  # (linear) jacobian matrix
         D = np.diag(1 / self.error)
         DJ = D.dot(J)
         JTJ = DJ.T.dot(DJ)
@@ -587,13 +614,13 @@ class MRS():
         @inspyred.ec.evaluators.evaluator
         def datafit(individual, args):
             """ error-weighted data misfit as basis for evaluating fitness """
-            misfit = (self.data - self.f.response(self.genMod(individual))) / \
-                self.error
+            misfit = (self.data -
+                      self.fop.response(self.genMod(individual))) / self.error
             return np.mean(misfit**2)
 
         # prepare forward operator
-        if self.f is None or (nlay is not None and nlay is not self.nlay):
-            self.createFOP(nlay)
+        if self.fop is None or (nlay is not None and nlay is not self.nlay):
+            self.fop = MRS.createFOP(nlay)
 
         lowerBound = pg.cat(pg.cat(pg.RVector(self.nlay - 1,
                                               self.lowerBound[0]),
