@@ -8,44 +8,116 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.mplviewer import drawModel1D
 
-from pygimli.frameworks import Modelling
+from pygimli.frameworks import Modelling, Block1DModelling
 
 from pygimli.manager import MethodManager1d
 
 
-class VESModelling(Modelling):
-    """Vertical Electrical Sounding (VES) forward operator."""
-    def __init__(self, ab2, mn2, **kwargs):
-        super().__init__(**kwargs)
+class VESModelling(Block1DModelling):
+    """Vertical Electrical Sounding (VES) forward operator.
 
-        if len(ab2) != len(mn2):
-            print("ab2", ab2)
-            print("mn2", mn2)
-            raise Exception("length of ab2 is unequal length of nm2")
+    Attributes
+    ----------
+    am :
+        Part of data basis. Distances between A and M electrodes.
+        A is first power, M is first potential electrode.
+    bm :
+        Part of data basis. Distances between B and M electrodes.
+        B is second power, M is first potential electrode.
+    an :
+        Part of data basis. Distances between A and N electrodes.
+        A is first power, M is second potential electrode.
+    bn :
+        Part of data basis. Distances between B and N electrodes.
+        B is second power, M is second potential electrode.
+    ab2 :
+        Half distance between A and B.
+        Only used for output and auto generated.
+    """
+    def __init__(self, ab2=None, mn2=None, **kwargs):
 
-        self.am = ab2 - mn2
-        self.an = ab2 + mn2
-        self.bm = ab2 + mn2
-        self.bn = ab2 - mn2
-        self.ab2 = (self.am + self.bm) / 2
-        self.k = (2.0 * np.pi) / (1.0/self.am - 1.0/self.an -
-                                  1.0/self.bm + 1.0/self.bn)
+        self.am = None
+        self.bm = None
+        self.an = None
+        self.bn = None
+        self.ab2 = None
 
-    def createStartModel(self, rhoa, nLay):
-        model = np.ones(nLay * 2 - 1) * np.median(rhoa)
+        super(VESModelling, self).__init__(**kwargs)
 
-        for i in range(nLay):
-            model[i] = pow(2.0, 1.0 + i)
+        self.setDataBasis(ab2=ab2, mn2=mn2)
 
-        self.setStartModel(model)
-        return model
+    def createStartModel(self, rhoa, nLayer):
+        self.setLayers(nLayer)
+
+        startThicks = np.zeros(nLayer-1)
+        for i in range(nLayer-1):
+            startThicks[i] = pow(2.0, 1.0 + i)
+
+        # layer thickness properties
+        self.setRegionProperties(0, startModel=startThicks, trans='log')
+
+        # resistivity properties
+        self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
+
+        sm = self.regionManager().createStartModel()
+        self.setStartModel(sm)
+        return sm
+
+    def setDataBasis(self, **kwargs):
+        """Set data basis, i.e., arrays for all am, an, bm, bn distances.
+
+        Parameters
+        ----------
+        """
+        ab2 = kwargs.pop('ab2', None)
+        mn2 = kwargs.pop('mn2', None)
+
+        am = kwargs.pop('am', None)
+        bm = kwargs.pop('bm', None)
+        an = kwargs.pop('an', None)
+        bn = kwargs.pop('bn', None)
+
+        if ab2 is not None and mn2 is not None:
+
+            if type(mn2) is float:
+                mn2 = np.ones(len(ab2))*mn2
+
+            if len(ab2) != len(mn2):
+                print("ab2", ab2)
+                print("mn2", mn2)
+                raise Exception("length of ab2 is unequal length of nm2")
+
+            self.am = ab2 - mn2
+            self.an = ab2 + mn2
+            self.bm = ab2 + mn2
+            self.bn = ab2 - mn2
+
+        elif am is not None \
+            and bm is not None \
+            and an is not None \
+            and bn is not None:
+            self.am = am
+            self.bm = bm
+            self.an = an
+            self.bn = bn
+
+        if self.am is not None and self.bm is not None:
+            self.ab2 = (self.am + self.bm) / 2
+
+            self.k = (2.0 * np.pi) / (1.0/self.am - 1.0/self.an -
+                                    1.0/self.bm + 1.0/self.bn)
 
     def response(self, par):
         return self.response_mt(par, 0)
 
     def response_mt(self, par, i=0):
-        nLay = (len(par)+1) // 2
-        fop = pg.DC1dModelling(nLay, self.am, self.bm, self.an, self.bn)
+
+        if self.am is not None and self.bm is not None:
+            nLayer = (len(par)+1) // 2
+            fop = pg.DC1dModelling(nLayer, self.am, self.bm, self.an, self.bn)
+        else:
+            raise Exception("I have no data basis .. "
+                            "don't know what to calculate.")
 
         return fop.response(par)
 
@@ -55,13 +127,13 @@ class VESModelling(Modelling):
                                  plot='loglog',
                                  xlabel='Resistivity [$\Omega$m]')
 
-    def drawData(self, ax, data, err=None, label=None):
+    def drawData(self, ax, data, err=None, label=None, **kwargs):
         """
         """
         ra = data
         raE = err
 
-        col = 'green'
+        col = kwargs.pop('color', 'green')
         if label == 'Response':
             col = 'blue'
 
@@ -69,7 +141,7 @@ class VESModelling(Modelling):
 
         if err is not None:
             ax.errorbar(ra, self.ab2,
-                        xerr=raE*ra, elinewidth=2, barsabove=True,
+                        xerr=ra * raE, elinewidth=2, barsabove=True,
                         linewidth=0, color='red')
 
         ax.set_ylim(max(self.ab2), min(self.ab2))
@@ -77,36 +149,44 @@ class VESModelling(Modelling):
         ax.set_ylabel('AB/2 in [m]')
         ax.grid(True)
 
+
 class VESCModelling(VESModelling):
-    def __init__(self, ab2, mn2, **kwargs):
-        super().__init__(ab2, mn2, **kwargs)
+    def __init__(self, **kwargs):
+        super(VESCModelling, self).__init__(nBlocks=2, **kwargs)
 
-    def createStartModel(self, rhoa, nLay):
-        mesh = pg.createMesh1DBlock(nLay, 2)  # thk, rhoa, phase
-        self.setMesh(mesh)
+    def createStartModel(self, rhoa, nLayer):
+        self.setLayers(nLayer)
 
-        startModel = super().createStartModel(rhoa[0:len(rhoa)//2], nLay)
+        startThicks = np.zeros(nLayer-1)
+        for i in range(nLayer-1):
+            startThicks[i] = pow(2.0, 1.0 + i)
 
-        self.region(0).setStartModel(startModel[0:nLay-1])
-        self.region(0).setModelTransStr_('log')
-        self.region(1).setStartModel(startModel[nLay-1::])
-        self.region(1).setModelTransStr_('log')
-        self.region(2).setStartModel(np.ones(nLay)*np.median(rhoa[len(rhoa)//2::]))
-        self.region(2).setModelTransStr_('lin')
+        # layer thickness properties
+        self.setRegionProperties(0, startModel=startThicks, trans='log')
+
+        # resistivity properties
+        self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
+
+        self.setRegionProperties(2, startModel=np.ones(nLayer)*np.median(rhoa[len(rhoa)//2::]),
+                                 trans='lin')
 
         sm = self.regionManager().createStartModel()
-
         self.setStartModel(sm)
         return sm
 
     def response_mt(self, par, i=0):
-        nLay = (len(par)+1) // 3
-        fop = pg.DC1dModellingC(nLay, self.am, self.bm, self.an, self.bn)
+        if self.am is not None and self.bm is not None:
+            nLayer = (len(par) + 1) // 3
+            fop = pg.DC1dModellingC(nLayer, self.am, self.bm, self.an, self.bn)
+        else:
+            raise Exception("I have no data basis .. "
+                            "don't know what to calculate.")
+
         return fop.response(par)
 
     def drawModel(self, ax, model):
         nLay = (len(model)+1) // 3
-        super().drawModel(ax, model[0:nLay*2-1])
+        super(VESCModelling, self).drawModel(ax, model[0:nLay*2-1])
         pg.mplviewer.drawModel1D(ax=ax,
                                  model=pg.cat(model[0:nLay-1], model[nLay*2-1::]),
                                  plot='plot',
@@ -119,11 +199,14 @@ class VESCModelling(VESModelling):
         paE = err
 
         if err is not None:
-            super().drawData(ax, data[0:len(data)//2], err[0:len(data)//2],
+            if type(err) is float:
+                err = np.ones(len(data))*err
+
+            super(VESCModelling, self).drawData(ax, data[0:len(data)//2], err[0:len(data)//2],
                              label=label)
             paE = err[len(data)//2::]
         else:
-            super().drawData(ax, data[0:len(data)//2], label=label)
+            super(VESCModelling, self).drawData(ax, data[0:len(data)//2], label=label)
 
         ax.loglog(pa, self.ab2, 'gx-')
 
@@ -139,26 +222,223 @@ class VESCModelling(VESModelling):
         ax.grid(True)
 
 
-class VESManager2(MethodManager1d):
-    """Vertical electrical sounding (VES) manager class."""
+class VESManager(MethodManager1d):
+    """Vertical electrical sounding (VES) manager class.
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> from pygimli.physics import VESManager
+    >>> ab2 = np.logspace(np.log10(1.5), np.log10(100), 32)
+    >>> mn2 = 1.0
+    >>> # 3 layer with 100, 500 and 20 Ohmm
+    >>> # and layer thickness of 4, 6, 10 m
+    >>> # over a Halfspace of 800 Ohmm
+    >>> synthModel = pg.cat([4., 6., 10.], [100., 5., 20., 800.])
+    >>> VES = VESManager()
+    >>> ra, err = VES.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
+    >>> ax = VES.showData(ra, err)
+    >>> _= VES.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
+    >>> ax = VES.showModel(synthModel)
+    >>> ax = VES.showResult(ax=ax)
+    >>> pg.wait()
+    """
     def __init__(self, **kwargs):
-        super().__init__(kwargs)
-        self.complex = kwargs.pop('complex', False)
+        """Constructor
 
-        self.createFOP()
+        Parameters
+        ----------
 
-    def setComplex(self, c):
-        self.complex_ = c
-        s
-    def createFOP(self):
+        complex : bool
+            Accept complex resistivities.
+
+        Attributes
+        ----------
+        complex : bool
+            Accept complex resistivities.
+        """
+        self.__complex = kwargs.pop('complex', False)
+
+        super(VESManager, self).__init__(**kwargs)
+
+    @property
+    def complex(self):
+        return self.__complex
+
+    @complex.setter
+    def complex(self, c):
+        self.__complex = c
+        self.initForwardOperator()
+
+    def createForwardOperator(self, **kwargs):
+        """Create Forward Operator.
+
+        Create Forward Operator based on complex attribute.
+        """
         if self.complex:
-            return VESCModelling()
+            return VESCModelling(**kwargs)
         else:
-            return VESModelling()
+            return VESModelling(**kwargs)
+
+    def simulate(self, model, ab2=None, mn2=None, **kwargs):
+        """Simulate measurement data.
+        """
+        if ab2 is not None and mn2 is not None:
+            self.fop.setDataBasis(ab2=ab2, mn2=mn2)
+
+        return super(VESManager, self).simulate(model, **kwargs)
+
+    def invert(self, data=None, err=None, ab2=None, mn2=None, **kwargs):
+        """Invert measured data.
+        """
+        if 'nLayer' in kwargs:
+            self.fop.setLayers(kwargs['nLayer'])
+
+        if ab2 is not None and mn2 is not None:
+            self.fop.setDataBasis(ab2=ab2, mn2=mn2)
+
+        #ensure data and error sizes here
+
+        return super(VESManager, self).invert(dataVals=data, errVals=err,
+                                              **kwargs)
+
+    def loadData(self, fileName, **kwargs):
+        mat = np.loadtxt(fileName)
+        if len(mat[0]) == 4:
+            self.fop.setDataBasis(ab2=mat[:,0], mn2=mat[:,1])
+            return mat.T
+        if len(mat[0]) == 6:
+            self.complex = True
+            self.fop.setDataBasis(ab2=mat[:,0], mn2=mat[:,1])
+            return mat[:,0], mat[:,1], np.array(pg.cat(mat[:,2], mat[:,4])), np.array(pg.cat(mat[:,3], mat[:,5]))
+
+    def exportData(self, fileName, data=None, error=None):
+        """Export data into simple ascii matrix.
+
+        Usefull?
+        """
+        mn2 = np.abs((self.fop.am - self.fop.an) / 2.)
+        ab2 = (self.fop.am + self.fop.bm) / 2.
+        mat = None
+        if data is None:
+            data = self.inv.dataVals
+
+        if error is None:
+            error = self.inv.errorVals
+
+        if self.complex:
+            nData = len(data)//2
+            mat = np.array([ab2, mn2,
+                            data[:nData], error[:nData],
+                            data[nData:], error[nData:]
+                            ]).T
+            np.savetxt(fileName, mat, header='ab/2\tmn/2\trhoa\terr\tphia\terrphi')
+        else:
+            mat = np.array([ab2, mn2, data, error]).T
+            np.savetxt(fileName, mat, header='ab/2\tmn/2\trhoa\terr')
 
 
 
-class VESManager():  # Should be derived from 1DManager
+
+def test_VESManager(showProgress=False):
+    """
+        run from console with: python -c 'import pygimli.physics.ert.ves as pg; pg.test_VESManager(1)'
+    """
+    thicks = [2., 10.]
+    res = [100., 5., 30]
+    phi = [0., 20., 0.]
+
+    # model fails
+    thicks = [2., 6., 10.]
+    res = [100., 500., 20., 800.]
+    phi = [0., 20., 50., 0]
+
+    synthModel = pg.cat(thicks, res)
+    ab2 = np.logspace(np.log10(1.5), np.log10(100.), 25)
+
+    mgr = VESManager(verbose=True, debug=False)
+    mgr.fop.setRegionProperties(0, limits=[0.5, 200], trans='log')
+    ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
+    mgr.exportData('synth.ves', ra, err)
+
+    mgr.invert(ra, err, nLayer=4, lam=100,
+               showProgress=showProgress)
+
+    pg.wait()
+    ### Test -- reinit with new parameter count
+    mgr.invert(ra, err, nLayer=3,
+               showProgress=showProgress)
+
+    #np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
+
+    ### Test -- reinit with new data basis
+    ab2 = np.logspace(np.log10(1.5), np.log10(50.), 10)
+    ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
+
+    mgr2 = VESManager(verbose=False, debug=False)
+    mgr2.invert(ra, err, nLayer=3, ab2=ab2, mn2=1.0,
+                showProgress=showProgress)
+
+    #np.testing.assert_array_less(mgr2.inv.inv.chi2(), 1)
+
+    pg.wait()
+    ### Test -- reinit with complex resistivies
+    mgr.complex = True
+    synthModel =  pg.cat(synthModel, phi)
+
+    ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
+    mgr.exportData('synthc.ves', ra, err)
+    mgr.invert(ra, err,
+               showProgress=showProgress)
+
+    np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
+
+    if showProgress:
+        print("test done");
+        pg.wait()
+
+
+def VESManagerApp():
+    """Call VESManager as console app"""
+
+    parser = VESManager.createArgParser(dataSuffix='ves')
+    options = parser.parse_args()
+
+    verbose = not options.quiet
+    if verbose:
+        print("VES Manager console application.")
+        print(options._get_kwargs())
+
+    mgr = VESManager(verbose=verbose, debug=pg.debug())
+
+    ab2, mn2, ra, err = mgr.loadData(options.dataFileName)
+
+    mgr.showData(ra, err)
+    mgr.invert(ra, err, ab2, mn2,
+               maxIter=options.maxIter,
+               lam=options.lam,
+               )
+    mgr.showResultAndFit()
+    pg.wait()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class __VESManager():  # Should be derived from 1DManager
     """Vertical electrical sounding (VES) manager class."""
     def __init__(self,
                  ab2,
@@ -234,18 +514,6 @@ class VESManager():  # Should be derived from 1DManager
         errPerc: float [3.]
             Percentage Value for the gaussian noise. Default are 3 %.
 
-        Example
-        -------
-
-        >>> from pygimli.physics import VESManager as VES
-        >>> import numpy as np
-        >>> ab2 = np.logspace(-1, 2, 25)
-        >>> mn2 = ab2/3
-        >>> synModel = [[4, 6, 10], [100., 500., 20., 800.]]
-        >>> # 3 layer with 100, 500 and 20 Ohmm
-        >>> # and layer thickness of 4, 6, 10 m
-        >>> # over a Halfspace of 800 Ohmm
-        >>> testData = VES.simulate(synModel, ab2, mn2, errPerc=3.)
         """
         thk = synmodel[0]
         res = synmodel[1]
@@ -444,6 +712,7 @@ class VESManager():  # Should be derived from 1DManager
         self.showFit(ax=ax[1])
 
 if __name__ == '__main__':
-    pass
+    VESManagerApp()
+
 
 # The End

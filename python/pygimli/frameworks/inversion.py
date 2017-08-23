@@ -8,22 +8,72 @@ import numpy as np
 import pygimli as pg
 
 class Inversion(object):
+    """Basic inversion framework.
+    Attributes
+    ----------
+    verbose : bool
+        Give verbose output
+    debug : bool
+        Give debug output
+    """
     def __init__(self, **kwargs):
-        self.fop = None
+        self.__verbose = kwargs.pop('verbose', False)
+        self.__debug = kwargs.pop('debug', False)
+
         self.dataVals = None
-        self.dataErrs = None
+        self.errorVals = None
+
         self.transData = pg.RTransLin()
-        self.transModel = pg.RTransLog()
+
+        self.inv = pg.Inversion(self.__verbose, self.__debug)
+
+        self.maxIter = kwargs.pop('maxIter', 20)
+
         fop = kwargs.pop('fop', None)
-
-        self.inv = pg.Inversion(**kwargs)
-        self.inv.setDeltaPhiAbortPercent(0.5)
-
         if fop is not None:
             self.setForwardOperator(fop)
 
-    def setMaxIter(self, it):
-        self.inv.setMaxIter(it)
+        self.inv.setDeltaPhiAbortPercent(0.5)
+
+    @property
+    def verbose(self):
+        return self.__verbose
+    @verbose.setter
+    def verbose(self, v):
+        self.__verbose = v
+        if self.inv is not None:
+            self.inv.setVerbose(self.__verbose)
+
+    @property
+    def debug(self):
+        return self.__debug
+    @debug.setter
+    def debug(self, v):
+        self.__debug = v
+        if self.inv is not None:
+            self.inv.setDosave(self.__debug)
+
+    @property
+    def maxIter(self):
+        return self.inv.maxIter()
+    @maxIter.setter
+    def maxIter(self, v):
+        if self.inv is not None:
+            self.inv.setMaxIter(v)
+
+    @property
+    def response(self):
+        if len(self.inv.response()) > 0:
+            return self.inv.response()
+        else:
+            raise Exception("There was no inversion run so there is no response yet")
+    @property
+    def model(self):
+        if len(self.inv.model()) > 0:
+            return self.inv.model()
+        else:
+            raise Exception("There was no inversion run so there is last model")
+
 
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
@@ -34,51 +84,57 @@ class Inversion(object):
 
     def setData(self, data):
         if isinstance(data, pg.DataContainer):
+            raise Exception("should not been here .. its Managers job")
             self.fop.setData(data)
         else:
             self.dataVals = data
 
     def setError(self, err):
-        self.dataErrs = err
+        self.errorVals = err
 
-    def invert(self, data=None, lam=20, **kwargs):
-        pass
-
-    def run(self, data, error, lam=20, **kwargs):
-
-        verbose = kwargs.pop('verbose', False)
-
-        self.inv.setVerbose(verbose)
+    def run(self, dataVals, errorVals, **kwargs):
+        """Run inversion.
+        """
+        self.verbose = kwargs.pop('verbose', self.verbose)
+        self.maxIter = kwargs.pop('maxIter', self.maxIter)
 
         showProgress = kwargs.pop('showProgress', False)
 
-        self.setData(data)
-        self.setError(error)
+        lam = kwargs.pop('lam', 20)
 
+        self.setData(dataVals)
+        self.setError(errorVals)
+
+        if self.dataVals is None:
+            raise Exception("Inversion framework need data values to run")
+
+        if self.errorVals is None:
+            raise Exception("Inversion framework need data error values to run")
+
+        self.inv.setTransModel(self.fop.transModel)
         self.inv.setTransData(self.transData)
-        self.inv.setTransModel(self.transModel)
 
         self.inv.setData(self.dataVals)
-        self.inv.setRelativeError(self.dataErrs)
+        self.inv.setRelativeError(self.errorVals)
         self.inv.setLambda(lam)
 
-        #inv.setOptimizeLambda(1)
+        maxIter = self.maxIter
+        self.maxIter = 1
 
-        maxIter = self.inv.maxIter()
-        self.inv.setMaxIter(1)
-        if verbose:
+        if self.verbose:
             print("inv.start()")
 
         self.inv.start()
-        self.inv.setMaxIter(maxIter)
+        self.maxIter = maxIter
 
         if showProgress:
             self.showProgress()
 
         lastChi2 = self.inv.chi2()
         chi2History = [lastChi2]
-        for i in range(1, self.inv.maxIter()):
-            if verbose:
+
+        for i in range(1, self.maxIter):
+            if self.verbose:
                 print("inv.iter", i, "...", end='')
 
             self.inv.oneStep()
@@ -98,16 +154,16 @@ class Inversion(object):
 
             chi2History.append(chi2)
 
-            if verbose:
+            if self.verbose:
                 print("chi² = ", round(chi2,2), "lam:", self.inv.getLambda())
 
             if chi2 < 1:
-                if verbose:
+                if self.verbose:
                     print("Abbort criteria reached: chi² < 1")
                 break
 
             if chi2 < lastChi2 and lastChi2/chi2 < (1.0 + self.inv.deltaPhiAbortPercent()/100):
-                if verbose:
+                if self.verbose:
                     print("Abbort criteria reached: dChi²=",
                           round((1-lastChi2/chi2) * 100, 2),
                          "(", self.inv.deltaPhiAbortPercent(), '%)')
@@ -115,33 +171,43 @@ class Inversion(object):
 
             lastChi2 = chi2
 
+        if len(kwargs.keys()) > 0:
+            print("Warning! unhandled keyword arguments", kwargs)
+
         return self.inv.model()
 
     def showProgress(self):
         """Called if showProgress=True is set for the inversion run."""
         raise Exception("Implement me in derived classes", self)
 
+
 class MarquardtInversion(Inversion):
+    """Marquardt scheme (local damping with decreasing regularization strength
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.setLambdaDecrease(0.9)
+        self.inv.setLocalRegularization(True)
+        self.inv.stopAtChi1(False)
+        self.inv.setLambdaFactor(0.9)
 
-    def setLambdaDecrease(self, a):
-        """Set lambda decrease factor for Marquardt Inversion Scheme"""
-        self.inv.setMarquardtScheme(a)
+    def run(self, data, error, **kwargs):
+
+        self.fop.regionManager().setConstraintType(0)
+
+        return super(MarquardtInversion, self).run(data, error, **kwargs)
 
 
 class Block1DInversion(MarquardtInversion):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         self.axs = None
+        super().__init__(**kwargs)
 
-    def run(self, data, error=None, nLayer=4, **kwargs):
+    def run(self, dataVals, errVals, nLayer=4, **kwargs):
 
         if len(self.fop.startModel()) == 0:
-            self.fop.createStartModel(data, nLayer)
+            self.fop.createStartModel(dataVals, nLayer)
 
-        return super().run(data, error, **kwargs)
+        return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
 
     def showProgress(self):
 
@@ -162,14 +228,14 @@ class Block1DInversion(MarquardtInversion):
                                      xlabel='Model parameter')
 
         if hasattr(self.fop, 'drawData'):
-            self.fop.drawData(ax[1], self.dataVals, self.dataErrs, label='Data')
+            self.fop.drawData(ax[1], self.dataVals, self.errorVals, label='Data')
             self.fop.drawData(ax[1], self.inv.response(), label='Response')
         else:
             nData = len(self.dataVals)
             yVals = range(nData)
             ax[1].loglog(self.dataVals, yVals, 'rx-')
             ax[1].errorbar(self.dataVals, yVals,
-                           xerr=self.dataErrs*self.dataVals,
+                           xerr=self.errorVals*self.dataVals,
                            linewidth=1, color='red', linestyle='-')
             ax[1].loglog(self.inv.response(), yVals, 'bo-')
             ax[1].set_ylim(max(yVals), min(yVals))
@@ -181,7 +247,21 @@ class Block1DInversion(MarquardtInversion):
                     (self.inv.iter(), self.inv.relrms(), self.inv.chi2()),
                     transform=ax[1].transAxes)
 
-        pg.plt.pause(0.1)
+        pg.plt.pause(0.05)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class MeshInversion(Inversion):
@@ -206,7 +286,7 @@ class MeshInversion(Inversion):
         zWeight = kwargs.pop('zWeight', 1.0)
         self.fop.regionManager().setZWeight(zWeight)
         self.inv.setData(self.dataVals)
-        self.inv.setRelativeError(self.dataErrs)
+        self.inv.setRelativeError(self.errorVals)
         self.inv.setLambda(lam)
 
         self.mod = self.inv.run()

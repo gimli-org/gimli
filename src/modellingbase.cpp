@@ -188,6 +188,8 @@ void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
 }
 
 void ModellingBase::setMesh_(const Mesh & mesh, bool update){
+    this->clearConstraints();
+
     if (!mesh_) mesh_ = new Mesh();
 
     if (update) deleteMeshDependency_();
@@ -324,9 +326,13 @@ void ModellingBase::createJacobian(const RVector & model){
 
     if (!jacobian_){
         this->initJacobian();
+    } else {
+        jacobian_->clear();
     }
     RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
-    if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
+    if (J->rows() != resp.size()){
+        J->resize(resp.size(), model.size());
+    }
 
     if (nThreadsJacobian_ > 1){
         return createJacobian_mt(model, resp);
