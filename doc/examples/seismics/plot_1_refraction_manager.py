@@ -1,21 +1,21 @@
+#!/usr/bin/env python
+# encoding: utf-8
 """
 Refraction Manager
 ------------------
 
 This example shows how to use the Refraction manager to generate the response
-of a three-layered sloping model and to do a classical inversion.
-"""
+of a three-layered sloping model and to invert the synthetic noisified data."""
 
 import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics.traveltime import Refraction
+from pygimli.physics import Refraction
 
 ###############################################################################
 # We start by creating a three-layered slope (The model is taken from the BSc
 # thesis of Constanze Reinken (University of Bonn).
-
 layer1 = mt.createPolygon([[0.0, 137], [117.5, 164], [117.5, 162], [0.0, 135]],
                           isClosed=True, marker=1, area=1)
 layer2 = mt.createPolygon([[0.0, 126], [0.0, 135], [117.5, 162], [117.5, 153]],
@@ -83,11 +83,33 @@ vest = ra.invert()  # estimated velocity distribution
 ###############################################################################
 # The method showResult is used to plot the result. Note that only covered
 # cells are shown by default. For comparison we plot the geometry on top.
+
 ax, cb = ra.showResult(cMin=min(vp), cMax=max(vp), logScale=False)
 pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
+
+###############################################################################
 # Note that internally the following is called
-# ax, _ = pg.show(ra.mesh, vest, label="Velocity [m/s]",
-#                 cMin=min(vp), cMax=max(vp), logScale=False)
-# ra.showResultAndFit()
-# shows the model along with its response plotted onto the data.
+#
+# .. code-block:: python
+#
+#    ax, _ = pg.show(ra.mesh, vest, label="Velocity [m/s]", **kwargs)
+#
+
+###############################################################################
+# Another useful tool is to show the model along with its respone on the data_
+
+ra.showResultAndFit()
+
+###############################################################################
+# Takeaway message:
+# A default data inversion with checking of the data consists of only few lines
+# (Everthing else can be looked at by introspecting the Refraction manager)
+#
+# .. code-block:: python
+#
+#    from pygimli.physics import Refraction
+#    ra = Refraction(filename)
+#    ra.invert()
+#    ra.showResultAndFit()
+
 pg.wait()

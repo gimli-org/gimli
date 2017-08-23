@@ -1,6 +1,6 @@
 .. _rst-basics:
 
-Section reStructuredText Cockbock
+Section reStructuredText Cookbook
 =================================
 
 .. this is a comment
@@ -32,9 +32,9 @@ Can we uses cites [RueckerGueSpi2006]_, [GuentherRueSpi2006]_, [RueckerGuen2011]
 Check for autocite :cite:`RueckerGuen2011`, :cite:`GuentherRueSpi2006`, :cite:`RueckerGueSpi2006`
 
 
-    * Terms, e.g., :term:`GIMLi` are defined in glossery.rst
+    * Terms, e.g., :term:`pyGIMLi` are defined in glossery.rst
 
-    * References, e.g., :term:`Matplotlib` are defined in glossery.rst
+    * References, e.g., :cite:`Archie1942` are defined in references.bib
 
     * Modules, e.g., :mod:`Matplotlib` are defined in glossery.rst
 
