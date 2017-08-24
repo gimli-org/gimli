@@ -83,8 +83,7 @@ class Modelling(pg.ModellingBase):
 
     # Mandatory api
     def setData(self, data):
-        raise Exception("Needed? Implement me in derived classes")
-
+        #raise Exception("Needed? Implement me in derived classes")
         self.fop.setData(data)
 
     def estimateError(self, data, **kwargs):
