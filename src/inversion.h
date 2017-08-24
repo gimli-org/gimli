@@ -311,13 +311,19 @@ public:
     inline void setTransModel(Trans< Vec > & tM) { tM_ = & tM; }
     inline Trans< Vec > & transModel() { return * tM_; }
 
-    /*! Return number of constraints and data */
+    /*! Return number of constraints */
     inline uint constraintsCount() const { return constraintsWeight_.size(); }
-    inline uint dataCount()        const { return data_.size(); }
 
-    /*! Set and get verbose behaviour */
+    /*! Return number of data */
+    inline uint dataCount() const { return data_.size(); }
+
+    /*! Set verbose output */
     inline void setVerbose(bool verbose){ verbose_ = verbose; }
     inline bool verbose() const { return verbose_; }
+
+    /*! Set debug output */
+    inline void setDoSave(bool d ){ dosave_ = d; }
+    inline bool doSave() const { return dosave_; }
 
     /*! Set and get verbose behaviour */
     inline void saveModelHistory(bool doSaveModelHistory){ saveModelHistory_ = doSaveModelHistory; }
@@ -389,7 +395,7 @@ public:
         setLocalRegularization(true);  //! no contribution of regularization to objective function
         setLambdaFactor(lambdaFactor); //! lambda is decreased towards zero
         stopAtChi1(false);             //! let the solution fully converge (important for statistics)
-        forward_->regionManager().setConstraintType(0);
+        if (forward_) forward_->regionManager().setConstraintType(0);
     }
 
     /*! Check if transfunctions are valid, set default if no transfunctions are given or override given functions by regionManager.transfunctions if available*/
@@ -402,8 +408,6 @@ public:
 
     /*! Create constraints, check and compare size of constraint matrix with model/boundary control */
     void checkConstraints() {
-//         __MS(forward_->constraints()->rtti())
-
         if (forward_->constraints()->cols() == 0 ||
             forward_->constraints()->rows() == 0){
             if (verbose_) std::cout << "Building constraints matrix" << std::endl;
@@ -445,7 +449,7 @@ public:
 
         if (verbose_ && forward_->jacobian()->rows() + forward_->jacobian()->cols() > 0){
             std::cout << "check Jacobian: wrong dimensions: "
-                        << "(" << forward_->jacobian()->rows()  << "x" << forward_->jacobian()->cols() << ") == "
+                        << "(" << forward_->jacobian()->rows()  << "x" << forward_->jacobian()->cols() << ") should be "
                         << "(" << data_.size() << "x" << model_.size()  << ") "  << std::endl;
             std::cout << "jacobian size invalid, forced recalc: " << force << std::endl;
         }
@@ -980,7 +984,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
 
     if (constraintsH_.size() != cc) {
         DOSAVE std::cout << WHERE_AM_I << " Fixing constraintsH.size()" << std::endl;
-        DOSAVE std::cout << constraintsH_.size() << " " << cc << std::endl;
+        DOSAVE std::cout << constraintsH_.size() << " -> " << cc << std::endl;
         constraintsH_.resize(cc);
     }
 
@@ -1007,7 +1011,7 @@ const Vector < ModelValType > & Inversion< ModelValType >::run(){ ALLOW_PYTHON_T
     DOSAVE std::cout << "C size: " << forward_->constraints()->cols()
                      << " x " << forward_->constraints()->rows() << std::endl;
 
-    double phiD= getPhiD();
+    double phiD = getPhiD();
 
     if (verbose_) {
         echoMinMax(data_,  "data");

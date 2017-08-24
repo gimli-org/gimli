@@ -4,7 +4,7 @@
 
 from .inversion import Inversion, MarquardtInversion, Block1DInversion, MeshInversion
 
-from .modelling import Modelling
+from .modelling import Modelling, Block1DModelling
 
 from .resolution import computeR
 

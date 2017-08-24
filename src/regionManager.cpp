@@ -439,6 +439,7 @@ void Region::setModelTransStr_(const std::string & val){
         throwLengthError(1, WHERE_AM_I + " : " + val + ". Available are: lin, log, cot/tan.");
     }
     parent_->setLocalTransFlag(true);
+
     ownsTrans_ = true;
 }
 
@@ -477,6 +478,7 @@ RegionManager::RegionManager(bool verbose) : verbose_(verbose), mesh_(NULL){
     paraDomain_ = new Mesh();
     parameterCount_ = 0;
     haveLocalTrans_ = false;
+    localTransHaveChanges_ = true;
     interRegionConstraintsZWeight_ = 1.0;
 }
 
@@ -1223,13 +1225,19 @@ void RegionManager::saveMap(const std::string & fname){
     THROW_TO_IMPL
 }
 
+void RegionManager::setLocalTransFlag(bool flag) {
+    haveLocalTrans_ = flag;
+    localTransHaveChanges_ = true;
+}
+
 TransCumulative < RVector > * RegionManager::transModel(){
     if (regionMap_.empty()){
         return NULL;
     }
 
+    if (localTransHaveChanges_) localTrans_.clear();
+
     if (localTrans_.size() != allRegionMarker_(true).size()){
-        localTrans_.clear();
 
         for (std::map< SIndex, Region* >::const_iterator
              it = regionMap_.begin(); it != regionMap_.end(); it ++){

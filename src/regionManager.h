@@ -359,7 +359,7 @@ public:
 
     TransCumulative < RVector > * transModel();
 
-    void setLocalTransFlag(bool flag) { haveLocalTrans_ = flag; }
+    void setLocalTransFlag(bool flag);
 
     bool haveLocalTrans() const { return haveLocalTrans_; }
 
@@ -406,6 +406,7 @@ protected:
 
     TransCumulative < RVector > localTrans_;
     bool haveLocalTrans_;
+    bool localTransHaveChanges_;
 };
 
 

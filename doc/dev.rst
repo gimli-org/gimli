@@ -153,7 +153,7 @@ Behaviour by name for global functions:
 .. code-block:: python
 
     exportFOO(obj, fileName):
-        """Export object to disc in foreighn (FOOs) format."""
+        """Export object to disc in foreign (FOOs) format."""
         return true
 
 .. code-block:: python
