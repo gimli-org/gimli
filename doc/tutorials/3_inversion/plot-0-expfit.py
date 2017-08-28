@@ -82,7 +82,7 @@ f = ExpModelling(x)
 inv = pg.RInversion(data, f)
 
 ###############################################################################
-# We create a real-valued logarithmid transformation and appy it to the model.
+# We create a real-valued logarithmic transformation and apply it to the model.
 # Similar could be done for the data which are by default treated linearly.
 # We then set the error level that is used for data weighting. It can be a
 # float number or a vector of data length. One can also set a relative error.
@@ -115,7 +115,6 @@ print(coeff)
 ###############################################################################
 # We finally create a plotting figure and plot both data and model response.
 
-
 plt.figure()
 plt.plot(x, data, 'rx', x, inv.response(), 'b-')
 
@@ -142,3 +141,4 @@ inv.echoStatus()
 ###############################################################################
 # The result is pretty much the same as before but for stronger equivalence or
 # smoothness-constrained regularization prior information might help a lot.
+pg.wait()
