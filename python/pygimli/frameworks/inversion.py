@@ -74,6 +74,13 @@ class Inversion(object):
         else:
             raise Exception("There was no inversion run so there is last model")
 
+    # backward compatibility
+    @property
+    def dataErrs(self):
+        return self.errorVals
+    @dataErrs.setter
+    def dataErrs(self, v):
+        self.errorVals = v
 
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
