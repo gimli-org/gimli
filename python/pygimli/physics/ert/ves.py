@@ -59,6 +59,7 @@ class VESModelling(Block1DModelling):
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
 
+        # find a better way on forced update this seems  to be in user space here
         sm = self.regionManager().createStartModel()
         self.setStartModel(sm)
         return sm
@@ -127,11 +128,11 @@ class VESModelling(Block1DModelling):
                                  plot='loglog',
                                  xlabel='Resistivity [$\Omega$m]')
 
-    def drawData(self, ax, data, err=None, label=None, **kwargs):
+    def drawData(self, ax, data, error=None, label=None, **kwargs):
         """
         """
         ra = data
-        raE = err
+        raE = error
 
         col = kwargs.pop('color', 'green')
         if label == 'Response':
@@ -139,7 +140,7 @@ class VESModelling(Block1DModelling):
 
         ax.loglog(ra, self.ab2, 'x-', color=col)
 
-        if err is not None:
+        if raE is not None:
             ax.errorbar(ra, self.ab2,
                         xerr=ra * raE, elinewidth=2, barsabove=True,
                         linewidth=0, color='red')
@@ -192,27 +193,29 @@ class VESCModelling(VESModelling):
                                  plot='plot',
                                  xlabel='Phase [mrad]')
 
-    def drawData(self, ax, data, err=None, label=None):
+    def drawData(self, ax, data, error=None, label=None):
         """
         """
-        pa = data[len(data)//2::] * 1000. #mRad
-        paE = err
+        ra = data[0:len(data)//2]
+        phi = data[len(data)//2::] * 1000. #mRad
 
-        if err is not None:
-            if type(err) is float:
-                err = np.ones(len(data))*err
+        phiE = None
+        raE = None
+        if error is not None:
+            if type(error) is float:
+                raE = np.ones(len(data)//2) * error
+                phiE = np.ones(len(data)//2) * error
+            else:
+                raE = error[0:len(data)//2]
+                phiE = error[len(data)//2::]
 
-            super(VESCModelling, self).drawData(ax, data[0:len(data)//2], err[0:len(data)//2],
-                             label=label)
-            paE = err[len(data)//2::]
-        else:
-            super(VESCModelling, self).drawData(ax, data[0:len(data)//2], label=label)
+        super(VESCModelling, self).drawData(ax, ra, error=raE, label=label)
 
-        ax.loglog(pa, self.ab2, 'gx-')
+        ax.loglog(phi, self.ab2, 'gx-')
 
-        if err is not None:
-            ax.errorbar(pa, self.ab2,
-                        xerr=paE*pa, elinewidth=2, barsabove=True,
+        if phiE is not None:
+            ax.errorbar(phi, self.ab2,
+                        xerr=phi * phiE, elinewidth=2, barsabove=True,
                         linewidth=0, color='red')
 
         #ax.loglog(self.inv.response(), yVals, 'bo-')
@@ -263,6 +266,10 @@ class VESManager(MethodManager1d):
 
         super(VESManager, self).__init__(**kwargs)
 
+        self.transData = None
+        self.transRho = pg.TransLog()
+        self.transPhi = pg.TransLin()
+
     @property
     def complex(self):
         return self.__complex
@@ -299,12 +306,23 @@ class VESManager(MethodManager1d):
         if ab2 is not None and mn2 is not None:
             self.fop.setDataBasis(ab2=ab2, mn2=mn2)
 
+        if self.complex:
+            self.transData = pg.TransCumulative()
+            self.transData.add(self.transRho, len(data)//2)
+            self.transData.add(self.transPhi, len(data)//2)
+        else:
+            self.transData = pg.TransLog()
+
+        self.inv.transData = self.transData
+
         #ensure data and error sizes here
 
         return super(VESManager, self).invert(dataVals=data, errVals=err,
                                               **kwargs)
 
     def loadData(self, fileName, **kwargs):
+        """ Load simple data matrix
+        """
         mat = np.loadtxt(fileName)
         if len(mat[0]) == 4:
             self.fop.setDataBasis(ab2=mat[:,0], mn2=mat[:,1])
@@ -340,8 +358,6 @@ class VESManager(MethodManager1d):
             np.savetxt(fileName, mat, header='ab/2\tmn/2\trhoa\terr')
 
 
-
-
 def test_VESManager(showProgress=False):
     """
         run from console with: python -c 'import pygimli.physics.ert.ves as pg; pg.test_VESManager(1)'
@@ -359,14 +375,14 @@ def test_VESManager(showProgress=False):
     ab2 = np.logspace(np.log10(1.5), np.log10(100.), 25)
 
     mgr = VESManager(verbose=True, debug=False)
-    mgr.fop.setRegionProperties(0, limits=[0.5, 200], trans='log')
+    #mgr.fop.setRegionProperties(0, limits=[0.5, 200], trans='log')
+    #mgr.fop.setRegionProperties(1, limits=[3, 2000], trans='log')
     ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
     mgr.exportData('synth.ves', ra, err)
 
     mgr.invert(ra, err, nLayer=4, lam=100,
                showProgress=showProgress)
 
-    pg.wait()
     ### Test -- reinit with new parameter count
     mgr.invert(ra, err, nLayer=3,
                showProgress=showProgress)
@@ -383,7 +399,6 @@ def test_VESManager(showProgress=False):
 
     #np.testing.assert_array_less(mgr2.inv.inv.chi2(), 1)
 
-    pg.wait()
     ### Test -- reinit with complex resistivies
     mgr.complex = True
     synthModel =  pg.cat(synthModel, phi)

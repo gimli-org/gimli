@@ -7,8 +7,9 @@ from math import sqrt, pi
 import numpy as np
 import pygimli as pg
 
+from pygimli.frameworks import Block1DModelling
 
-class VMDModelling(pg.ModellingBase):
+class VMDModelling(Block1DModelling):
     r"""Modelling operator for a Vertical Magnetic Dipole (VMD).
 
     Modelling operator for a Vertical Magnetic Dipole (VMD) to calculate the
@@ -30,7 +31,32 @@ class VMDModelling(pg.ModellingBase):
         **kwargs : dict()
             Forward to ModellingBase
         """
-        pg.ModellingBase.__init__(self, **kwargs)
+        super(VMDModelling, self).__init__(**kwargs)
+
+
+    def createStartModel(self, rhoa, nLayer):
+        r"""Create suitable starting model.
+
+            Create suitable starting model based on median apparent resistivity
+            values and skin depth approximation.
+        """
+
+        self.setLayers(nLayer)
+
+        skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
+        thk = np.arange(nLayer)/sum(np.arange(nLayer)) * skinDepth / 2.
+        startThicks = thk[1:]
+
+        # layer thickness properties
+        self.setRegionProperties(0, startModel=startThicks, trans='log')
+
+        # resistivity properties
+        self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
+
+        # find a better way on forced update this seems  to be in user space here
+        sm = self.regionManager().createStartModel()
+        self.setStartModel(sm)
+        return sm
 
     def response_mt(self, par, i=0):
         """Compute response vector for a set of model parameter.
@@ -188,7 +214,7 @@ class VMDTimeDomainModelling(VMDModelling):
     def __init__(self, t, txarea, rxarea=None, **kwargs):
         """
         """
-        VMDModelling.__init__(self, **kwargs)
+        super(VMDTimeDomainModelling, self).__init__(**kwargs)
 
         self.t = t
         self.txarea = txarea
@@ -197,19 +223,6 @@ class VMDTimeDomainModelling(VMDModelling):
             self.rxarea = txarea
         else:
             self.rxarea = rxarea
-
-    def createStartModel(self, rhoa, nLayer):
-        r"""Create suitable starting model.
-
-            Create suitable starting model based on median apparent resistivity
-            values and skin depth approximation.
-        """
-        res = np.ones(nLayer) * pg.median(rhoa)
-        skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
-        thk = np.arange(nLayer)/sum(np.arange(nLayer)) * skinDepth / 2.
-        thk = thk[1:]
-        self.setStartModel(pg.cat(thk, res))
-        return self.startModel()
 
     def response_mt(self, par, i=0):
         """

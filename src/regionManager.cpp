@@ -201,7 +201,8 @@ void Region::setStartModel(const RVector & start){
     if (start.size() == parameterCount_){
        startModel_ = start;
     } else {
-        throwLengthError(1, WHERE_AM_I + " " + toStr(start.size()) + " != " + toStr(parameterCount_));
+        throwLengthError(1, WHERE_AM_I + " sizes missmatch for region " +
+        toStr(this->marker_) + " " +toStr(start.size()) + " != " + toStr(parameterCount_));
     }
 }
 

@@ -45,21 +45,26 @@ class MethodManager(object):
     """
     def __init__(self, **kwargs):
         """Constructor."""
-        self.__verbose = kwargs.pop('verbose', False)
-        self.__debug = kwargs.pop('debug', False)
+        self._verbose = kwargs.pop('verbose', False)
+        self._debug = kwargs.pop('debug', False)
+        self._model = None
+        self._dataToken = 'nan'
 
         self.fop = None
         self.inv = None
 
-        self.initForwardOperator(verbose=self.__verbose, **kwargs)
+        self.initForwardOperator(verbose=self._verbose, **kwargs)
 
-        self.initInversionFramework(verbose=self.__verbose,
-                                    debug=self.__debug)
+        self.initInversionFramework(verbose=self._verbose,
+                                    debug=self._debug)
+
+
+
+
 
 
         # maybe obsolete
         self.figs = {}
-        self.dataToken_ = 'nan'
         self.errIsAbsolute = False
         self.model = None
 
@@ -81,25 +86,42 @@ class MethodManager(object):
         return out
         # return "Method Manager: " + str(self.__class__)
 
-
     @property
     def verbose(self):
-        return self.__verbose
+        return self._verbose
 
     @verbose.setter
     def verbose(self, v):
-        self.__verbose = v
-        self.inv.verbose = self.__verbose
-        self.fop.verbose = self.__verbose
+        self._verbose = v
+        self.inv.verbose = self._verbose
+        self.fop.verbose = self._verbose
 
     @property
     def debug(self):
-        return self.__debug
+        return self._debug
 
     @debug.setter
     def debug(self, v):
-        self.__debug = v
-        self.inv.debug = self.__debug
+        self._debug = v
+        self.inv.debug = self._debug
+
+    @property
+    def model(self):
+        return self._model
+
+    @model.setter
+    def model(self, m):
+        self._model = m
+
+    def dataVals(self, data):
+        """Return pure data values from a given DataContainer."""
+        if self._dataToken == 'nan':
+            raise Exception('_dataToken should be set in class', self)
+        return data(self._dataToken)
+
+    def relErrVals(self, data):
+        """Return pure data values from a given DataContainer."""
+        return pg.abs(data('err')) / pg.abs(self.dataVals(data))
 
     def setVerbose(self, verbose):
         """Make the class verbose (put output to the console)"""
@@ -123,7 +145,7 @@ class MethodManager(object):
         if self.inv is not None:
             self.inv.setForwardOperator(self.fop)
 
-    def createForwardOperator(self, verbose=False, **kwargs):
+    def createForwardOperator(self, **kwargs):
         """Mandatory interface for derived classes.
 
         Here you need to specify which kind of forward operator FOP
@@ -174,20 +196,22 @@ class MethodManager(object):
         Inversion
             Instance of any kind of :py:mod:`pygimli.framework.Inversion`.
         """
-        return Inversion(**kwargs)
+        return pg.frameworks.Inversion(**kwargs)
 
     def loadData(self, filename, **kwargs):
         """Mandatory interface for derived classes."""
         raise Exception("This is a abstract function. "
                         "Override in derived class")
 
-    def estimateError(self, data, errLevel=0.01):
+    def estimateError(self, data, errLevel=0.01, absError=None):
         """Estimate data error.
 
         Create an error of estimated measurement error.
         On default it returns an array of constant relative errors.
         More sophisticated error estimation should be done
         in specialized derived classes.
+
+        TODO check, rel or abs in return.
 
         Parameters
         ----------
@@ -197,11 +221,18 @@ class MethodManager(object):
         errLevel : float (0.01)
             Error level in percent/100.
 
+        absoluteError : float (None)
+            TODO
+
+
         Returns
         -------
         err : array
             Returning array of size len(data)
         """
+        if absError is not None:
+            return absError + data * errLevel
+
         return np.ones(len(data)) * errLevel
 
     def simulate(self, model, **kwargs):
@@ -241,7 +272,8 @@ class MethodManager(object):
         if type(errVals) == float:
             errVals = self.estimateError(dataVals, errLevel=errVals)
 
-        return self.inv.run(dataVals, errVals, **kwargs)
+        self.model = self.inv.run(dataVals, errVals, **kwargs)
+        return self.model
 
 
     def showModel(self, model, ax=None, **kwargs):
@@ -262,18 +294,18 @@ class MethodManager(object):
             Model data to be draw.
         """
         if ax is None:
-            fig, ax =  pg.plt.subplots(ncols=1)
+            fig, ax = pg.plt.subplots(ncols=1)
 
         self.fop.drawModel(ax, model, **kwargs)
         return ax
 
-    def showData(self, data, error=None, ax=None, **kwargs):
+    def showData(self, data, ax=None, **kwargs):
         """Shows the data.
 
         Draw data values into a given axes or show the data values from
         the last run.
         Forwards on default to the self.fop.drawData function
-        of the modelling operator.
+        of the modeling operator.
         If there is no given function given, you have to override this method.
 
         Parameters
@@ -281,28 +313,28 @@ class MethodManager(object):
         ax : mpl axes
             Axes object to draw into. Create a new if its not given.
 
-        data : iterable
+        data : iterable | pg.DataContainer
             Data values to be draw.
 
-        error : iterable
-            Data error values to be draw.
         """
         if ax is None:
             fig, ax =  pg.plt.subplots(ncols=1)
 
-        self.fop.drawData(ax, data, error, **kwargs)
+        self.fop.drawData(ax, data, **kwargs)
         return ax
 
     def showResult(self, ax=None, **kwargs):
         """Show the last inversion result."""
-        ax = self.showModel(ax=ax, model=self.inv.inv.model(), **kwargs)
+        ax = self.showModel(ax=ax, model=self.model, **kwargs)
         return ax
 
     def showFit(self, ax=None):
         """Show the last inversion date and response."""
-        ax = self.showData(ax=ax, data=self.inv.dataVals,
+        ax = self.showData(ax=ax,
+                           data=self.inv.dataVals,
                            error=self.inv.dataVals)
-        ax = self.showData(ax=ax, data=self.inv.inv.response(),
+        ax = self.showData(ax=ax,
+                           data=self.inv.inv.response(),
                            label='Response')
         return ax
 
@@ -312,7 +344,6 @@ class MethodManager(object):
         self.showResult(ax=axs[0])
         self.showFit(ax=axs[1])
         return axs
-
 
     @staticmethod
     def createArgParser(dataSuffix='dat'):
@@ -377,10 +408,92 @@ class MethodManager1d(MethodManager):
         return pg.frameworks.Block1DInversion(**kwargs)
 
 
+class MeshMethodManager(MethodManager):
+    def __init__(self, **kwargs):
+        """Constructor."""
+        super(MeshMethodManager, self).__init__(**kwargs)
 
+        self.mesh = None
 
+    def createMesh(self, **kwargs):
+        """
+        """
+        print(**kwargs)
+        raise Exception("Implement me!")
+        pass
 
+    def simulate(self, mesh, model, **kwargs):
+        """Run a simulation aka the forward task.
+        """
+        print(mesh, model)
+        pass
 
+    def invert(self, dataVals=None, errVals=None, mesh=None, **kwargs):
+        """Run the full inversion.
+
+        The data and error needed to be set before.
+        The meshes will be created if necessary.
+
+        DOCUMENT ME!!!
+
+        Parameters
+        ----------
+
+        """
+        if mesh is not None:
+            self.setMesh(mesh)
+
+        if self.mesh is None:
+            self.createMesh(depth=kwargs.pop('depth', None),
+                            quality=kwargs.pop('quality', 34.0),
+                            maxCellArea=kwargs.pop('maxCellArea', 0.0),
+                            paraDX=kwargs.pop('paraDX', 0.3))
+
+        zWeight = kwargs.pop('zWeight', 0.7)
+
+        self.fop.regionManager().setZWeight(zWeight)
+        self.fop.createStartModel(dataVals)
+
+        model = super(MeshMethodManager, self).invert(dataVals=dataVals,
+                                                      errVals=errVals,
+                                                      **kwargs)
+        self.model = model(self.fop.paraDomain.cellMarkers())
+        return self.model
+
+    def setMesh(self, mesh, refine=True):
+        """Set the internal mesh for this Manager.
+
+        Inject the mesh in the internal fop und inv.
+
+        Initialize RegionManager.
+        For more than two regions the first is assumed to be background.
+
+        Optional the forward mesh can be refined for higher numerical accuracy.
+
+        Parameters
+        ----------
+
+        DOCUMENTME!!!
+
+        """
+        if isinstance(mesh, str):
+            mesh = pg.load(mesh)
+
+        if self.verbose:
+            print(mesh)
+
+        self.mesh = pg.Mesh(mesh)
+        self.mesh.createNeighbourInfos()
+
+        self.fop.setMesh(self.mesh)
+        self.fop.regionManager().setConstraintType(1)
+
+        if self.fop.regionManager().regionCount() > 1:
+            self.fop.regionManager().region(1).setBackground(True)
+#            self.fop.regionManager().regions().begin().second.setBackground(1)
+
+        self.fop.createRefinedForwardMesh(refine)
+        self.inv.setForwardOperator(self.fop)  # necessary? CR: check this
 
 
 
@@ -574,13 +687,11 @@ class MethodManager0(object):
         return parser
 
 
-
-
-class MeshMethodManager(MethodManager0):
+class MeshMethodManager0(MethodManager0):
     """Method Manager base class for managers using a (non-1D) mesh."""
     def __init__(self, **kwargs):
         """Constructor."""
-        super(MeshMethodManager, self).__init__(**kwargs)
+        super(MeshMethodManager0, self).__init__(**kwargs)
         self.mesh = None
         self.data = None
 

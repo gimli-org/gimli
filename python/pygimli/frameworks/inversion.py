@@ -9,6 +9,7 @@ import pygimli as pg
 
 class Inversion(object):
     """Basic inversion framework.
+
     Attributes
     ----------
     verbose : bool
@@ -17,15 +18,18 @@ class Inversion(object):
         Give debug output
     """
     def __init__(self, **kwargs):
-        self.__verbose = kwargs.pop('verbose', False)
-        self.__debug = kwargs.pop('debug', False)
+        self._verbose = kwargs.pop('verbose', False)
+        self._debug = kwargs.pop('debug', False)
 
         self.dataVals = None
         self.errorVals = None
 
+        # might be overwritten
         self.transData = pg.RTransLin()
 
-        self.inv = pg.Inversion(self.__verbose, self.__debug)
+        self.inv = pg.Inversion(self._verbose, self._debug)
+
+        self.axs = None # for showProgress only
 
         self.maxIter = kwargs.pop('maxIter', 20)
 
@@ -33,25 +37,25 @@ class Inversion(object):
         if fop is not None:
             self.setForwardOperator(fop)
 
-        self.inv.setDeltaPhiAbortPercent(0.5)
+        #self.inv.setDeltaPhiAbortPercent(0.5)
 
     @property
     def verbose(self):
-        return self.__verbose
+        return self._verbose
     @verbose.setter
     def verbose(self, v):
-        self.__verbose = v
+        self._verbose = v
         if self.inv is not None:
-            self.inv.setVerbose(self.__verbose)
+            self.inv.setVerbose(self._verbose)
 
     @property
     def debug(self):
-        return self.__debug
+        return self._debug
     @debug.setter
     def debug(self, v):
-        self.__debug = v
+        self._debug = v
         if self.inv is not None:
-            self.inv.setDosave(self.__debug)
+            self.inv.setDosave(self._debug)
 
     @property
     def maxIter(self):
@@ -82,6 +86,9 @@ class Inversion(object):
     def dataErrs(self, v):
         self.errorVals = v
 
+    def echoStatus(self):
+        self.inv.echoStatus()
+
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
 
@@ -101,6 +108,13 @@ class Inversion(object):
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
+
+        The inversion will always start from the starting model given to the
+        forward operator.
+        If you want to run the inversion from a specified prior model,
+        e.g., from a other run, set this model as starting model to the FOP
+        (fop.setStartModel).
+        Any self.inv.setModel() settings will be overwritten.
         """
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.maxIter = kwargs.pop('maxIter', self.maxIter)
@@ -131,11 +145,13 @@ class Inversion(object):
         if self.verbose:
             print("inv.start()")
 
+        ### To ensure reproducability of the run call inv.start() will
+        ### reset self.inv.model() to fop.startModel().
         self.inv.start()
         self.maxIter = maxIter
 
         if showProgress:
-            self.showProgress()
+            self.showProgress(showProgress)
 
         lastChi2 = self.inv.chi2()
         chi2History = [lastChi2]
@@ -149,7 +165,8 @@ class Inversion(object):
             chi2 = self.inv.chi2()
 
             if showProgress:
-                self.showProgress()
+                self.showProgress(showProgress)
+
 
             self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
 
@@ -162,16 +179,17 @@ class Inversion(object):
             chi2History.append(chi2)
 
             if self.verbose:
-                print("chi² = ", round(chi2,2), "lam:", self.inv.getLambda())
+                print("chi² =", round(chi2,2),
+                      '(dchi² =', round((1.-lastChi2/chi2) * 100, 2), "%), lam:", self.inv.getLambda())
 
             if chi2 < 1:
                 if self.verbose:
                     print("Abbort criteria reached: chi² < 1")
                 break
 
-            if chi2 < lastChi2 and lastChi2/chi2 < (1.0 + self.inv.deltaPhiAbortPercent()/100):
+            if abs((1-lastChi2/chi2) * 100) < self.inv.deltaPhiAbortPercent():
                 if self.verbose:
-                    print("Abbort criteria reached: dChi²=",
+                    print(lastChi2/chi2, "Abbort criteria reached: dChi²=",
                           round((1-lastChi2/chi2) * 100, 2),
                          "(", self.inv.deltaPhiAbortPercent(), '%)')
                 break
@@ -183,9 +201,36 @@ class Inversion(object):
 
         return self.inv.model()
 
-    def showProgress(self):
+    def showProgress(self, style='all'):
         """Called if showProgress=True is set for the inversion run."""
-        raise Exception("Implement me in derived classes", self)
+
+        if self.axs is None:
+            axs = None
+            if style == 'all' or style == True:
+                fig, axs = pg.plt.subplots(1, 2)
+            elif style == 'Model':
+                fig, axs = pg.plt.subplots(1, 1)
+            self.axs = axs
+
+        ax = self.axs
+
+        if style == 'Model':
+            ax.clear()
+            self.fop.drawModel(ax, self.inv.model())
+        else:
+            ax[0].clear()
+            self.fop.drawModel(ax[0], self.inv.model())
+
+            ax[1].clear()
+            self.fop.drawData(ax[1], self.dataVals, self.errorVals, label='Data')
+            self.fop.drawData(ax[1], self.inv.response(), label='Response')
+
+            ax[1].text(0.01, 0.96,
+                    "iter: %d, rrms: %.2g, $\chi^2$: %.2g" %
+                        (self.inv.iter(), self.inv.relrms(), self.inv.chi2()),
+                        transform=ax[1].transAxes)
+
+        pg.plt.pause(0.05)
 
 
 class MarquardtInversion(Inversion):
@@ -206,55 +251,91 @@ class MarquardtInversion(Inversion):
 
 class Block1DInversion(MarquardtInversion):
     def __init__(self, **kwargs):
-        self.axs = None
         super().__init__(**kwargs)
 
     def run(self, dataVals, errVals, nLayer=4, **kwargs):
 
-        if len(self.fop.startModel()) == 0:
-            self.fop.createStartModel(dataVals, nLayer)
+        #if len(self.fop.startModel()) == 0:
+        # somehow update model space if nlayers has been changed
+        self.fop.createStartModel(dataVals, nLayer)
 
         return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
 
-    def showProgress(self):
 
-        if self.axs is None:
-            fig, axs = pg.plt.subplots(1, 2)
-            self.axs = axs
+class PetroInversion(Inversion):
+    def __init__(self, mgr=None, fop=None, petro=None, **kwargs):
+        super(PetroInversion, self).__init__(**kwargs)
 
-        ax = self.axs
+        self.mgr = None
 
-        ax[0].clear()
-        ax[1].clear()
-        if hasattr(self.fop, 'drawModel'):
-            self.fop.drawModel(ax[0], self.inv.model())
+        self.petro = pg.Trans()
+
+        if petro is not None:
+            self.petro = petro
+
+        fop = None
+        if mgr is not None:
+            self.mgr = mgr
+            fop = pg.frameworks.PetroModelling(self.mgr.createForwardOperator(**kwargs),
+                                               self.petro)
+        elif fop is not None:
+            fop = pg.frameworks.PetroModelling(fop, self.petro)
+
+        self.setForwardOperator(fop)
+
+    #def setData(self, data):
+        #self.fop.setData(data)
+        #self.dataVals = self.mgr.dataVals(data)
+        #self.dataErrs = self.mgr.relErrorVals(data)
+
+    def invert(self, data, **kwargs):
+        """
+        """
+
+        dataVals = None
+        errVals = None
+
+        # this is Managers job
+        if isinstance(data, pg.DataContainer):
+            self.fop.setDataContainer(data)
+            dataVals = self.mgr.dataVals(data)
+            errVals = self.mgr.relErrVals(data)
         else:
-            pg.mplviewer.drawModel1D(ax=ax[0],
-                                     model=self.inv.model(),
-                                     plot='loglog',
-                                     xlabel='Model parameter')
+            raise Exception("Implement me")
 
-        if hasattr(self.fop, 'drawData'):
-            self.fop.drawData(ax[1], self.dataVals, self.errorVals, label='Data')
-            self.fop.drawData(ax[1], self.inv.response(), label='Response')
-        else:
-            nData = len(self.dataVals)
-            yVals = range(nData)
-            ax[1].loglog(self.dataVals, yVals, 'rx-')
-            ax[1].errorbar(self.dataVals, yVals,
-                           xerr=self.errorVals*self.dataVals,
-                           linewidth=1, color='red', linestyle='-')
-            ax[1].loglog(self.inv.response(), yVals, 'bo-')
-            ax[1].set_ylim(max(yVals), min(yVals))
-            ax[1].set_xlabel('Data')
-            ax[1].set_ylabel('Data Number')
+        mesh = kwargs.pop('mesh', None)
+        if mesh is not None:
+            self.fop.setMesh(mesh)
 
-        ax[1].text(0.01, 0.96,
-                   "iter: %d, rrms: %.2g, $\chi^2$: %.2g" %
-                    (self.inv.iter(), self.inv.relrms(), self.inv.chi2()),
-                    transform=ax[1].transAxes)
 
-        pg.plt.pause(0.05)
+        limits = kwargs.pop('limits', [0., 1.])
+        self.fop._transModel.setLowerBound(limits[0])
+        self.fop._transModel.setLowerBound(limits[1])
+
+        #self.tM.setLowerBound(limits[0])
+        #self.tM.setUpperBound(limits[1])
+        #self.inv.setTransModel(self.tM)
+
+        nModel = self.fop.regionManager().parameterCount()
+        startModel = pg.Vector(nModel, (limits[1]-limits[0]) / 2.)
+        self.fop.setStartModel(startModel)
+
+        return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -274,11 +355,13 @@ class Block1DInversion(MarquardtInversion):
 class MeshInversion(Inversion):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        INUSEQUESTION
 
     def setMesh(self, mesh):
         self.fop.setMesh(mesh)
 
     def invert(self, data=None, mesh=None, lam=20, **kwargs):
+        INUSEQUESTION
         if data is not None:
             self.setData(data)
 

@@ -7,6 +7,7 @@ from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 import pygimli as pg
 from pygimli.meshtools import createParaMeshPLC, createMesh
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
@@ -23,7 +24,7 @@ from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 from . raplot import drawTravelTimeData
 
 
-class Refraction(MethodManager0):
+class Refraction0(MethodManager0):
     """Manager for refraction seismics (traveltime tomography)
 
     TODO Document main members and use default MethodeManager interface
@@ -32,7 +33,7 @@ class Refraction(MethodManager0):
 
     def __init__(self, data=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
-        super(Refraction, self).__init__(verbose=verbose, debug=debug,
+        super(Refraction0, self).__init__(verbose=verbose, debug=debug,
                                          **kwargs)
         self.figs = {}
         self.axs = {}
@@ -451,7 +452,7 @@ class Refraction(MethodManager0):
 
         """
 
-        fop = Refraction.createFOP(verbose=verbose)
+        fop = Refraction0.createFOP(verbose=verbose)
 
         fop.setData(scheme)
         fop.setMesh(mesh, ignoreRegionManager=True)
@@ -477,7 +478,7 @@ class Refraction(MethodManager0):
         if noiseLevel > 0:
             if not ret.allNonZero('err'):
                 ret.set('t', t)
-                ret.set('err', pg.physics.Refraction.estimateError(
+                ret.set('err', Refraction0.estimateError(
                         ret, absoluteError=kwargs.pop('noiseAbs', 1e-4),
                         relativeError=noiseLevel))
 

@@ -8,7 +8,8 @@ import pygimli as pg
 
 from pygimli import meshtools as mt
 
-from pygimli.physics.petro import PetroInversion, JointPetroInversion
+#from pygimli.physics.petro import PetroInversion, JointPetroInversion
+from pygimli.frameworks import PetroInversion#, JointPetroInversion
 
 from pygimli.physics.petro import transFwdArchieS as ArchieTrans
 from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
@@ -97,29 +98,36 @@ vel = 1./ttTrans(saturation)
 # Simulate synthetic data with appropriate noise
 sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 
-print("-Simulate ERT" + "-" * 50)
-ERT = pg.physics.ERTManager(verbose=False)
-ertScheme = pg.physics.ert.createERTData(sensors, schemeName='dd', closed=1)
-ertData = ERT.simulate(mMesh, res, ertScheme, noiseLevel=0.01)
+#print("-Simulate ERT" + "-" * 50)
+#ERT = pg.physics.ert.ERTManager(verbose=False)
+#ertScheme = pg.physics.ert.createERTData(sensors, schemeName='dd', closed=1)
+#ertData = ERT.simulate(mMesh, res, ertScheme, noiseLevel=0.01)
+#ERT.showData(ertData);pg.wait()
 
-print("-Simulate Traveltime" + "-" * 50)
-TT = pg.physics.Refraction()
+
+#print("-Simulate Traveltime" + "-" * 50)
+TT = pg.physics.traveltime.TravelTimeManager(verbose=True)
+#TT = pg.physics.traveltime.refraction.Refraction0()
 ttScheme = pg.physics.traveltime.createRAData(sensors)
 ttData = TT.simulate(mMesh, vel, ttScheme, noiseLevel=0.01, noiseAbs=4e-6)
+#TT.showData(ttData); pg.wait()
 
 # Classic inversions
-print("-ERT" + "-" * 50)
-resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20)
-ERT.inv.echoStatus()
+#print("-ERT" + "-" * 50)
+#resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20, verbose=1)
+#ERT.inv.echoStatus()
 
-print("-TT" + "-" * 50)
-velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1)
-TT.inv.echoStatus()
 
-print("-ERT-Petro" + "-" * 50)
-invERTPetro = PetroInversion(ERT, ertTrans)
-satERT = invERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10)
-invERTPetro.inv.echoStatus()
+#print("-TT" + "-" * 50)
+#TT.verbose = True
+#velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1.0)
+#TT.inv.echoStatus()
+#TT.showResult()
+#pg.wait()
+#print("-ERT-Petro" + "-" * 50)
+#invERTPetro = PetroInversion(ERT, ertTrans)
+#satERT = invERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10)
+#invERTPetro.inv.echoStatus()
 
 print("-TT-Petro" + "-" * 50)
 invTTPetro = PetroInversion(TT, ttTrans)

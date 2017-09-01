@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.mplviewer.dataview import plotVecMatrix
-from . refraction import Refraction
+from . refraction import Refraction0
 
 
 def readTOMfile(filename, ndig=2, roundto=0):
@@ -39,7 +39,7 @@ def readTOMfile(filename, ndig=2, roundto=0):
     return data
 
 
-class Tomography(Refraction):
+class Tomography(Refraction0):
 
     """Traveltime tomography for tomographic (e.g. crosshole) measurements"""
 

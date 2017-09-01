@@ -484,7 +484,10 @@ public:
     void setModel(const Vec & model){
         if (recalcJacobian_ && model != model_) jacobiNeedRecalc_ = true;
         model_ = model;
-    }  //why is there no size check???
+        // ISSUE?:
+        // why is there no size check???
+        // CR:  no need .. size will be checked and resized on run call
+    }
 
     /*! Return a const reference to the current model vector */
     inline const ModelVector & model() const { return model_; }
@@ -922,7 +925,6 @@ const Vector < ModelValType > & Inversion< ModelValType >::invert(const Vector <
     this->setData(data);
     return run();
 }
-
 
 /*! Start inversion from starting model. */
 template < class ModelValType >

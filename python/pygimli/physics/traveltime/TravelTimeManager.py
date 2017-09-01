@@ -100,7 +100,7 @@ class TravelTimeManager(MeshMethodManager):
 
     def __init__(self, **kwargs):
         """Init function with optional data load"""
-        self.__useFMM = False
+        self._useFMM = False
 
         super(TravelTimeManager, self).__init__(**kwargs)
 
@@ -171,7 +171,7 @@ class TravelTimeManager(MeshMethodManager):
         """
         useFMM = kwargs.pop('useFMM', False)
 
-        if self.__useFMM or useFMM:
+        if self._useFMM or useFMM:
             from .FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(**kwargs)
         else:

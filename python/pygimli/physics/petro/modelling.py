@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Special meta forward operator for modelling with petrophysical relations."""
+"""Special meta forward operator for modeling with petrophysical relations."""
 
 import pygimli as pg
 from pygimli.manager import MethodManager
@@ -8,9 +8,9 @@ from pygimli.manager import MethodManager
 
 class PetroModelling(pg.ModellingBase):
     """
-    Combine petrophysical relation m(p) with modelling class f(p).
+    Combine petrophysical relation m(p) with modeling class f(p).
 
-    Combine petrophysical relation m(p) with modelling class f(p) to invert
+    Combine petrophysical relation m(p) with modeling class f(p) to invert
     for m (or any inversion transformation) instead of p.
     """
 

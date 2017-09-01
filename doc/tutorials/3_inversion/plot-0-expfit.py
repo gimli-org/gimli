@@ -86,7 +86,7 @@ inv = pg.RInversion(data, f)
 # Similar could be done for the data which are by default treated linearly.
 # We then set the error level that is used for data weighting. It can be a
 # float number or a vector of data length. One can also set a relative error.
-# Finally, we define the inversion style as Marquard scheme (pure local damping
+# Finally, we define the inversion style as Marquardt scheme (pure local damping
 # with decreasing the regularization parameter subsequently) and start with a
 # relatively large regularization strength to avoid overshoot.
 # Finally run yields the coefficient vector and we plot some statistics.
