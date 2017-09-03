@@ -121,7 +121,7 @@ class MethodManager(object):
 
     def relErrVals(self, data):
         """Return pure data values from a given DataContainer."""
-        return pg.abs(data('err')) / pg.abs(self.dataVals(data))
+        return data('err')
 
     def setVerbose(self, verbose):
         """Make the class verbose (put output to the console)"""
@@ -494,6 +494,35 @@ class MeshMethodManager(MethodManager):
 
         self.fop.createRefinedForwardMesh(refine)
         self.inv.setForwardOperator(self.fop)  # necessary? CR: check this
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

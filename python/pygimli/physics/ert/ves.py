@@ -453,6 +453,22 @@ def VESManagerApp():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class __VESManager():  # Should be derived from 1DManager
     """Vertical electrical sounding (VES) manager class."""
     def __init__(self,

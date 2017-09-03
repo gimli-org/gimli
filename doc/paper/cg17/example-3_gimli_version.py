@@ -109,21 +109,23 @@ sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 TT = pg.physics.traveltime.TravelTimeManager(verbose=True)
 #TT = pg.physics.traveltime.refraction.Refraction0()
 ttScheme = pg.physics.traveltime.createRAData(sensors)
-ttData = TT.simulate(mMesh, vel, ttScheme, noiseLevel=0.01, noiseAbs=4e-6)
+#ttData = TT.simulate(mMesh, vel, ttScheme, noiseLevel=0.01, noiseAbs=4e-6)
 #TT.showData(ttData); pg.wait()
+ttData = TT.loadData('tt.dat')
 
+#ttData.save("tt.dat", 's g t err'); #exit()
 # Classic inversions
 #print("-ERT" + "-" * 50)
 #resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20, verbose=1)
 #ERT.inv.echoStatus()
 
 
-#print("-TT" + "-" * 50)
+print("-TT" + "-" * 50)
 #TT.verbose = True
-#velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1.0)
-#TT.inv.echoStatus()
-#TT.showResult()
-#pg.wait()
+velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1.0)
+TT.inv.echoStatus()
+TT.showResult()
+pg.wait()
 #print("-ERT-Petro" + "-" * 50)
 #invERTPetro = PetroInversion(ERT, ertTrans)
 #satERT = invERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10)

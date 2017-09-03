@@ -263,6 +263,7 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     if (verbose_) std::cout << "... looking for shot and receiver positions." << std::endl;
 
     if (!dataContainer_){
+        __M
         throwError(1, "We have no dataContainer defined");
     }
     RVector shots(unique(sort((*dataContainer_)("s"))));

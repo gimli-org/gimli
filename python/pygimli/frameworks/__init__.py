@@ -3,7 +3,7 @@
 
 
 from .inversion import (Inversion, MarquardtInversion, Block1DInversion,
-                        PetroInversion)
+                        MeshInversion, PetroInversion)
 
 from .modelling import (Modelling, Block1DModelling, MeshModelling,
                         PetroModelling)

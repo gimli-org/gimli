@@ -77,7 +77,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     >>> pg.wait()
     """
     if model is not None:
-        nLayers = (len(model)-1)/2
+        nLayers = (len(model)-1)//2
         thickness = model[:nLayers]
         values = model[nLayers:]
 

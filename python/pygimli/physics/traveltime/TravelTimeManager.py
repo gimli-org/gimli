@@ -162,6 +162,10 @@ class TravelTimeManager(MeshMethodManager):
         self.__useFMM = u
         self.initForwardOperator()
 
+    def relErrVals(self, data):
+        """Return pure data values from a given DataContainer."""
+        return pg.abs(data('err')) / pg.abs(self.dataVals(data))
+
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
 
@@ -289,6 +293,11 @@ class TravelTimeManager(MeshMethodManager):
         self.model = 1./slowness
         return self.model
 
+    def loadData(self, filename, **kwargs):
+        """"""
+        dat = pg.DataContainer(filename, 's g')
+        self.fop.setDataContainer(dat)
+        return dat
 
 if __name__ == '__main__':
     pg.wait()

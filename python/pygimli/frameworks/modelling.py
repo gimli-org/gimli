@@ -52,6 +52,7 @@ class Modelling(pg.ModellingBase):
             self.clearRegionProperties()
 
         if self.fop is not None:
+            print("Modelling:setMesh", self.fop)
             self.fop.setMesh(mesh, ignoreRegionManager)
 
             if (not ignoreRegionManager):
@@ -221,6 +222,9 @@ class PetroModelling(Modelling):
         super(PetroModelling, self).__init__(**kwargs)
         self.fop = fop      # class defining f(p)
         self.trans = trans  # class defining m(p)
+        print("Petro_init:", self.fop)
+        print(self.fop.regionManagerRef())
+        #self.setRegionManager(self.fop.regionManagerRef())
 
         if mesh is not None:
             self.setMesh(mesh)
@@ -230,6 +234,9 @@ class PetroModelling(Modelling):
 
         #TODO global TransModel will break RegionConcept
         self._transModel = pg.RTransLogLU()
+
+    def drawModel(self, ax, model):
+        self.fop.drawModel(ax, model)
 
     def response(self, model):
         """Use inverse transformation to get p(m) and compute response."""
