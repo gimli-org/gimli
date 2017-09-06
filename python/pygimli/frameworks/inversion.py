@@ -34,6 +34,7 @@ class Inversion(object):
         self.transData = pg.RTransLin()
 
         self._inv = None
+        self._fop = None
 
         if inv is not None:
             self._inv = inv
@@ -48,14 +49,18 @@ class Inversion(object):
         if fop is not None:
             self.setForwardOperator(fop)
 
-        #self.inv.setDeltaPhiAbortPercent(0.5)
-
     @property
     def inv(self):
         if self.isFrameWork:
             return self._inv.inv
         else:
             return self._inv
+    @property
+    def fop(self):
+        return self._fop
+    @fop.setter
+    def fop(self, f):
+        self.setForwardOperator(f)
 
     @property
     def verbose(self):
@@ -73,7 +78,7 @@ class Inversion(object):
     def debug(self, v):
         self._debug = v
         if self.inv is not None:
-            self.inv.setDosave(self._debug)
+            self.inv.setDoSave(self._debug)
 
     @property
     def maxIter(self):
@@ -105,6 +110,13 @@ class Inversion(object):
         self._errorVals = v
 
     @property
+    def dataVals(self):
+        return self._dataVals
+    @property
+    def errorVals(self):
+        return self._errorVals
+
+    @property
     def parameterCount(self):
         return self.fop.regionManager().parameterCount()
 
@@ -115,7 +127,7 @@ class Inversion(object):
         self.inv.setDeltaPhiAbortPercent(it)
 
     def setForwardOperator(self, fop):
-        self.fop = fop
+        self._fop = fop
         self._inv.setForwardOperator(fop)
 
     def setData(self, data):
@@ -143,6 +155,7 @@ class Inversion(object):
             raise Exception("Need a valid forward operator for inversion run.")
 
         self.verbose = kwargs.pop('verbose', self.verbose)
+        self.debug   = kwargs.pop('debug', self.debug)
         self.maxIter = kwargs.pop('maxIter', self.maxIter)
 
 
@@ -255,13 +268,16 @@ class Inversion(object):
         ax = self.axs
 
         if style == 'Model':
-            ax.clear()
+            for other_ax in ax.figure.axes:
+                other_ax.clear()
+
             self.fop.drawModel(ax, self.inv.model())
         else:
-            ax[0].clear()
+            for other_ax in ax[0].figure.axes:
+                other_ax.clear()
+
             self.fop.drawModel(ax[0], self.inv.model())
 
-            ax[1].clear()
             self.fop.drawData(ax[1], self._dataVals, self._errorVals, label='Data')
             self.fop.drawData(ax[1], self.inv.response(), label='Response')
 
@@ -280,7 +296,7 @@ class MarquardtInversion(Inversion):
         super(MarquardtInversion, self).__init__(fop, **kwargs)
         self.inv.setLocalRegularization(True)
         self.inv.stopAtChi1(False)
-        self.inv.setLambdaFactor(0.9)
+        self.inv.setLambdaFactor(0.8)
 
     def run(self, data, error, **kwargs):
 
@@ -293,11 +309,11 @@ class Block1DInversion(MarquardtInversion):
     def __init__(self, fop=None, **kwargs):
         super(Block1DInversion, self).__init__(fop, **kwargs)
 
-    def run(self, dataVals, errVals, nLayer=4, **kwargs):
+    def run(self, dataVals, errVals, nLayers=4, **kwargs):
 
         #if len(self.fop.startModel()) == 0:
         # somehow update model space if nlayers has been changed
-        self.fop.createStartModel(dataVals, nLayer)
+        self.fop.createStartModel(dataVals, nLayers)
 
         return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
 
@@ -349,7 +365,6 @@ class PetroInversion(Inversion):
 
         super(PetroInversion, self).__init__(f, **kwargs)
 
-
     def run(self, dataVals, errVals, **kwargs):
         """
         """
@@ -379,15 +394,47 @@ class PetroInversion(Inversion):
         return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
 
 
+class LCInversion(Inversion):
+    """2D Laterally constrained inversion LCI framework.
+    """
+    def __init__(self, fop=None, **kwargs):
 
+        if fop is not None:
+            f = pg.frameworks.LCModelling(fop, **kwargs)
 
+        super(LCInversion, self).__init__(f, **kwargs)
 
+        #self.setDeltaChiStop(0.1)
 
+    def run(self, dataVals, errVals, nLayers=4, **kwargs):
+        #self.fop.createStartModel(dataVals, nLayers)
 
+        dataVec = pg.RVector()
+        for d in dataVals:
+            dataVec = pg.cat(dataVec, d)
 
+        errVec = pg.RVector()
+        for e in errVals:
+            errVec = pg.cat(errVec, e)
 
+        self.fop.setRegionProperties(1, trans='log', limits=[1., 1000.])
+        self.fop.setRegionProperties(2, trans='log')
 
+        if kwargs.pop('disableLCI', False):
+            self.inv.setMarquardtScheme(0.8)
+            self.fop.setRegionProperties(1, cType=0)
+            self.fop.setRegionProperties(2, cType=0)
+        else:
+            self.inv.setReferenceModel(self.fop.startModel())
+            self.inv.setLambdaFactor(0.8)
+            #self.inv.stopAtChi1(False)
+            self.fop.setRegionProperties(1, cType=1)
+            self.fop.setRegionProperties(1, zWeights=0.0)
 
+            self.fop.setRegionProperties(2, cType=1)
+            self.fop.setRegionProperties(2, zWeights=0.0)
+
+        return super(LCInversion, self).run(dataVec, errVec, **kwargs)
 
 
 

@@ -12,6 +12,14 @@ from pygimli.frameworks import Modelling, Block1DModelling
 
 from pygimli.manager import MethodManager1d
 
+def hasTwin(ax):
+    for other_ax in ax.figure.axes:
+        if other_ax is ax:
+            continue
+        if other_ax.bbox.bounds == ax.bbox.bounds:
+            return other_ax
+    return None
+
 
 class VESModelling(Block1DModelling):
     """Vertical Electrical Sounding (VES) forward operator.
@@ -46,11 +54,11 @@ class VESModelling(Block1DModelling):
 
         self.setDataBasis(ab2=ab2, mn2=mn2)
 
-    def createStartModel(self, rhoa, nLayer):
-        self.setLayers(nLayer)
+    def createStartModel(self, rhoa, nLayers):
+        self.setLayers(nLayers)
 
-        startThicks = np.zeros(nLayer-1)
-        for i in range(nLayer-1):
+        startThicks = np.zeros(nLayers-1)
+        for i in range(nLayers-1):
             startThicks[i] = pow(2.0, 1.0 + i)
 
         # layer thickness properties
@@ -64,24 +72,18 @@ class VESModelling(Block1DModelling):
         self.setStartModel(sm)
         return sm
 
-    def setDataBasis(self, **kwargs):
+    def setDataBasis(self, ab2=None, mn2=None,
+                     am=None, bm=None, an=None, bn=None,
+                     **kwargs):
         """Set data basis, i.e., arrays for all am, an, bm, bn distances.
 
         Parameters
         ----------
         """
-        ab2 = kwargs.pop('ab2', None)
-        mn2 = kwargs.pop('mn2', None)
-
-        am = kwargs.pop('am', None)
-        bm = kwargs.pop('bm', None)
-        an = kwargs.pop('an', None)
-        bn = kwargs.pop('bn', None)
-
         if ab2 is not None and mn2 is not None:
 
-            if type(mn2) is float:
-                mn2 = np.ones(len(ab2))*mn2
+            if type(mn2) is float or type(mn2) is int:
+                mn2 = np.ones(len(ab2)) * float(mn2)
 
             if len(ab2) != len(mn2):
                 print("ab2", ab2)
@@ -114,19 +116,19 @@ class VESModelling(Block1DModelling):
     def response_mt(self, par, i=0):
 
         if self.am is not None and self.bm is not None:
-            nLayer = (len(par)+1) // 2
-            fop = pg.DC1dModelling(nLayer, self.am, self.bm, self.an, self.bn)
+            nLayers = (len(par)+1) // 2
+            fop = pg.DC1dModelling(nLayers, self.am, self.bm, self.an, self.bn)
         else:
             raise Exception("I have no data basis .. "
                             "don't know what to calculate.")
 
         return fop.response(par)
 
-    def drawModel(self, ax, model):
+    def drawModel(self, ax, model, **kwargs):
         pg.mplviewer.drawModel1D(ax=ax,
                                  model=model,
                                  plot='loglog',
-                                 xlabel='Resistivity [$\Omega$m]')
+                                 xlabel='Resistivity [$\Omega$m]', **kwargs)
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
         """
@@ -138,7 +140,7 @@ class VESModelling(Block1DModelling):
         if label == 'Response':
             col = 'blue'
 
-        ax.loglog(ra, self.ab2, 'x-', color=col)
+        ax.loglog(ra, self.ab2, 'x-', color=col, **kwargs)
 
         if raE is not None:
             ax.errorbar(ra, self.ab2,
@@ -154,12 +156,13 @@ class VESModelling(Block1DModelling):
 class VESCModelling(VESModelling):
     def __init__(self, **kwargs):
         super(VESCModelling, self).__init__(nBlocks=2, **kwargs)
+        self.phiAxe = None
 
-    def createStartModel(self, rhoa, nLayer):
-        self.setLayers(nLayer)
+    def createStartModel(self, rhoa, nLayers):
+        self.setLayers(nLayers)
 
-        startThicks = np.zeros(nLayer-1)
-        for i in range(nLayer-1):
+        startThicks = np.zeros(nLayers-1)
+        for i in range(nLayers-1):
             startThicks[i] = pow(2.0, 1.0 + i)
 
         # layer thickness properties
@@ -168,7 +171,7 @@ class VESCModelling(VESModelling):
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
 
-        self.setRegionProperties(2, startModel=np.ones(nLayer)*np.median(rhoa[len(rhoa)//2::]),
+        self.setRegionProperties(2, startModel=np.ones(nLayers)*np.median(rhoa[len(rhoa)//2::]),
                                  trans='lin')
 
         sm = self.regionManager().createStartModel()
@@ -176,26 +179,41 @@ class VESCModelling(VESModelling):
         return sm
 
     def response_mt(self, par, i=0):
+        """ Multithread response for parametrization.
+
+            Returns [|rhoa|, +phi(rad)] for [thicks, res, phi(rad)]
+        """
+
         if self.am is not None and self.bm is not None:
-            nLayer = (len(par) + 1) // 3
-            fop = pg.DC1dModellingC(nLayer, self.am, self.bm, self.an, self.bn)
+            nLayers = (len(par) + 1) // 3
+            fop = pg.DC1dModellingC(nLayers, self.am, self.bm, self.an, self.bn)
         else:
             raise Exception("I have no data basis .. "
                             "don't know what to calculate.")
 
         return fop.response(par)
 
-    def drawModel(self, ax, model):
+    def drawModel(self, ax, model, **kwargs):
         nLay = (len(model)+1) // 3
         super(VESCModelling, self).drawModel(ax, model[0:nLay*2-1])
-        pg.mplviewer.drawModel1D(ax=ax,
-                                 model=pg.cat(model[0:nLay-1], model[nLay*2-1::]),
-                                 plot='plot',
-                                 xlabel='Phase [mrad]')
 
-    def drawData(self, ax, data, error=None, label=None):
+        tax = hasTwin(ax)
+        if tax is None:
+            tax = ax.twiny()
+
+        pg.mplviewer.drawModel1D(ax=tax,
+                                 model=pg.cat(model[0:nLay-1],
+                                              1000. * model[nLay*2-1::]),
+                                 plot='plot', color='green',
+                                 xlabel='Phase [mrad]', **kwargs)
+
+    def drawData(self, ax, data, error=None, label=None, ab2=None, mn2=None,
+                 **kwargs):
         """
         """
+        if ab2 is not None and mn2 is not None:
+            self.setDataBasis(ab2=ab2, mn2=mn2)
+
         ra = data[0:len(data)//2]
         phi = data[len(data)//2::] * 1000. #mRad
 
@@ -209,20 +227,26 @@ class VESCModelling(VESModelling):
                 raE = error[0:len(data)//2]
                 phiE = error[len(data)//2::]
 
-        super(VESCModelling, self).drawData(ax, ra, error=raE, label=label)
+        super(VESCModelling, self).drawData(ax, ra, error=raE,
+                                            color='black',
+                                            label=label, **kwargs)
 
-        ax.loglog(phi, self.ab2, 'gx-')
+        tax = hasTwin(ax)
+        if tax is None:
+            tax = ax.twiny()
+
+        tax.semilogy(phi, self.ab2, 'x-', color='green', **kwargs)
 
         if phiE is not None:
-            ax.errorbar(phi, self.ab2,
-                        xerr=phi * phiE, elinewidth=2, barsabove=True,
-                        linewidth=0, color='red')
+            tax.errorbar(phi, self.ab2,
+                         xerr=phi * phiE, elinewidth=2, barsabove=True,
+                         linewidth=0, color='red')
 
-        #ax.loglog(self.inv.response(), yVals, 'bo-')
-        ax.set_ylim(max(self.ab2), min(self.ab2))
-        ax.set_xlabel('Apparent phase [mRad]')
-        ax.set_ylabel('AB/2 in [m]')
-        ax.grid(True)
+
+        tax.set_ylim(max(self.ab2), min(self.ab2))
+        tax.set_xlabel('Apparent phase [mRad]', color='green')
+        tax.set_ylabel('AB/2 in [m]')
+        tax.grid(True)
 
 
 class VESManager(MethodManager1d):
@@ -243,7 +267,7 @@ class VESManager(MethodManager1d):
     >>> VES = VESManager()
     >>> ra, err = VES.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
     >>> ax = VES.showData(ra, err)
-    >>> _= VES.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
+    >>> _= VES.invert(ra, err, nLayers=4, showProgress=0, verbose=0)
     >>> ax = VES.showModel(synthModel)
     >>> ax = VES.showResult(ax=ax)
     >>> pg.wait()
@@ -293,16 +317,13 @@ class VESManager(MethodManager1d):
         """Simulate measurement data.
         """
         if ab2 is not None and mn2 is not None:
-            self.fop.setDataBasis(ab2=ab2, mn2=mn2)
+            self._fw.fop.setDataBasis(ab2=ab2, mn2=mn2)
 
         return super(VESManager, self).simulate(model, **kwargs)
 
     def invert(self, data=None, err=None, ab2=None, mn2=None, **kwargs):
         """Invert measured data.
         """
-        if 'nLayer' in kwargs:
-            self.fop.setLayers(kwargs['nLayer'])
-
         if ab2 is not None and mn2 is not None:
             self.fop.setDataBasis(ab2=ab2, mn2=mn2)
 
@@ -314,6 +335,8 @@ class VESManager(MethodManager1d):
             self.transData = pg.TransLog()
 
         self.inv.transData = self.transData
+
+        self.fop.setRegionProperties(0, limits=[1., 1000.])
 
         #ensure data and error sizes here
 
@@ -380,11 +403,11 @@ def test_VESManager(showProgress=False):
     ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
     mgr.exportData('synth.ves', ra, err)
 
-    mgr.invert(ra, err, nLayer=4, lam=100,
+    mgr.invert(ra, err, nLayers=4, lam=100,
                showProgress=showProgress)
 
     ### Test -- reinit with new parameter count
-    mgr.invert(ra, err, nLayer=3,
+    mgr.invert(ra, err, nLayers=3,
                showProgress=showProgress)
 
     #np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
@@ -394,7 +417,7 @@ def test_VESManager(showProgress=False):
     ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
 
     mgr2 = VESManager(verbose=False, debug=False)
-    mgr2.invert(ra, err, nLayer=3, ab2=ab2, mn2=1.0,
+    mgr2.invert(ra, err, nLayers=3, ab2=ab2, mn2=1.0,
                 showProgress=showProgress)
 
     #np.testing.assert_array_less(mgr2.inv.inv.chi2(), 1)

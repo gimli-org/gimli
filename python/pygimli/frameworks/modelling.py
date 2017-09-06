@@ -5,6 +5,9 @@ These are basic modelling proxies.
 """
 import numpy as np
 
+from copy import copy
+
+
 import pygimli as pg
 
 class Modelling(pg.ModellingBase):
@@ -48,9 +51,6 @@ class Modelling(pg.ModellingBase):
 
     def setMesh(self, mesh, ignoreRegionManager=False):
 
-        if (not ignoreRegionManager):
-            self.clearRegionProperties()
-
         if self.fop is not None:
             print("Modelling:setMesh", self.fop)
             self.fop.setMesh(mesh, ignoreRegionManager)
@@ -63,7 +63,9 @@ class Modelling(pg.ModellingBase):
     def clearRegionProperties(self):
         self._regionProperties = {}
 
-    def setRegionProperties(self, region, startModel=None, limits=None, trans=None):
+    def setRegionProperties(self, region,
+                            startModel=None, limits=None, trans=None,
+                            cType=None, zWeights=None):
         """
         """
         if region not in self._regionProperties:
@@ -74,17 +76,25 @@ class Modelling(pg.ModellingBase):
 
         if startModel is not None:
             self._regionProperties[region]['startModel'] = startModel
+
         if limits is not None:
             self._regionProperties[region]['limits'] = limits
+
         if trans is not None:
             self._regionProperties[region]['trans'] = trans
+
+        if cType is not None:
+            self._regionProperties[region]['cType'] = cType
+
+        if zWeights is not None:
+            self._regionProperties[region]['zWeights'] = zWeights
+
 
     def _applyRegionProperties(self):
         """
         """
         RM = super(Modelling, self).regionManager()
         for rID, vals in self._regionProperties.items():
-
             RM.region(rID).setStartModel(vals['startModel'])
 
             RM.region(rID).setModelTransStr_(vals['trans'])
@@ -93,6 +103,12 @@ class Modelling(pg.ModellingBase):
                 RM.region(rID).setLowerBound(vals['limits'][0])
             if vals['limits'][1] > 0:
                 RM.region(rID).setUpperBound(vals['limits'][1])
+
+            if 'cType' in vals:
+                RM.region(rID).setConstraintType(vals['cType'])
+
+            if 'zWeights' in vals:
+                RM.region(rID).setZWeight(vals['zWeights'])
 
     def createStartModel(self, dataValues, **kwargs):
         """ Create Starting model.
@@ -222,12 +238,15 @@ class PetroModelling(Modelling):
         super(PetroModelling, self).__init__(**kwargs)
         self.fop = fop      # class defining f(p)
         self.trans = trans  # class defining m(p)
-        print("Petro_init:", self.fop)
+
+        print("Petro_init:", self, self.fop)
+
         print(self.fop.regionManagerRef())
-        #self.setRegionManager(self.fop.regionManagerRef())
 
         if mesh is not None:
             self.setMesh(mesh)
+
+        self.setRegionManager(self.fop.regionManagerRef())
 
         self._jac = pg.MultRightMatrix(self.fop.jacobian())
         self.setJacobian(self._jac)
@@ -266,3 +285,139 @@ class PetroModelling(Modelling):
         #self.setRegionManager(self.fop.regionManagerRef())
 
 
+class LCModelling(Modelling):
+    """2D Laterally constrained LC modelling.
+
+    2D Laterally constrained LC modelling  based on BlockMatrices.
+    """
+    def __init__(self, fop, **kwargs):
+        """Parameters: FDEM data class and number of layers."""
+
+        super(LCModelling, self).__init__(**kwargs)
+
+        self._fopTemplate = fop
+        self._fops1D = []
+        self._mesh = None
+        self._nSoundings = 0
+        self._parPerSounding = 0
+        self._jac = None
+
+        self.soundingPos = None
+
+    def setDataBasis(self, **kwargs):
+        """Set homogeneous data basis.
+
+        Set a common data basis to all forward operators.
+        If you want individual you need to set them manually.
+        """
+        for f in self._fops1D:
+            f.setDataBasis(**kwargs)
+
+    def createStartModel(self, rhoa, nLayers):
+        sm = pg.RVector()
+        for i, f in enumerate(self._fops1D):
+            sm = pg.cat(sm, f.createStartModel(rhoa[i], nLayers))
+        self.setStartModel(sm)
+        return sm
+
+    def response(self, par):
+        """Cut together forward responses of all soundings."""
+        mods = np.asarray(par).reshape(self._nSoundings, self._parPerSounding)
+
+        resp = pg.RVector(0)
+        for i in range(self._nSoundings):
+            r = self._fops1D[i].response(mods[i])
+            #print("i:", i, mods[i], r)
+            resp = pg.cat(resp, r)
+
+        return resp
+
+    def createJacobian(self, par):
+        """Create Jacobian matrix by creating individual Jacobians."""
+        mods = np.asarray(par).reshape(self._nSoundings, self._parPerSounding)
+
+        for i in range(self._nSoundings):
+            self._fops1D[i].createJacobian(mods[i])
+
+    def createParametrization(self, nSoundings, nLayers=4, nPar=1):
+        """Create LCI mesh and suitable constraints informations.
+
+        Parameters
+        ----------
+        nLayer : int
+            Numbers of depth layers
+
+        nSoundings : int
+            Numbers of 1D measurements to laterally constrain
+
+        nPar : int
+            Numbers of independent parameter types,
+            e.g., nPar = 1 for VES (invert for resisitivies),
+            nPar = 2 for VESC (invert for resisitivies and phases)
+        """
+        nCols = (nPar+1) * nLayers - 1 ## fail for VES-C
+        self._parPerSounding = nCols
+        self._nSoundings = nSoundings
+
+        self._mesh = pg.createMesh2D(range(nCols + 1),
+                                     range(nSoundings + 1))
+        self._mesh.rotate(pg.RVector3(0, 0, -np.pi/2))
+
+        cm = np.ones(nCols * nSoundings) * 1
+
+        for i in range(nSoundings):
+            for j in range(nPar):
+                cm[i * self._parPerSounding + (j+1) * nLayers-1 :
+                   i * self._parPerSounding + (j+2) * nLayers-1] += (j+1)
+
+        self._mesh.setCellMarkers(cm)
+
+        #ax,_=pg.show(self._mesh, self._mesh.cellMarkers(), label='marker')
+        #pg.show(self._mesh, ax=ax)
+        #pg.wait()
+
+        self.setMesh(self._mesh)
+
+    def initJacobian(self, dataVals, nLayers):
+        """
+        Parameters
+        ----------
+        dataVals : ndarray | RMatrix | list
+            Data values of size (nSounding x Data per sounding).
+            All data per sounding need to be equal in length.
+            If they don't fit into a matrix use list of sounding data.
+        """
+
+        nSoundings = len(dataVals)
+
+        #TODO get nPar Infos from fop._fopTemplate
+        self.createParametrization(nSoundings, nLayers=nLayers, nPar=1)
+
+        if self._jac is not None:
+            self._jac.clear()
+        else:
+            self._jac = pg.BlockMatrix()
+
+        self.fops1D = []
+        nData = 0
+        for i in range(nSoundings):
+            f = type(self._fopTemplate)(self.verbose)
+            f.setMultiThreadJacobian(self._parPerSounding)
+
+            self._fops1D.append(f)
+
+            nID = self._jac.addMatrix(f.jacobian())
+            self._jac.addMatrixEntry(nID, nData, self._parPerSounding * i)
+            nData += len(dataVals[i])
+
+        self._jac.recalcMatrixSize()
+        #print("Jacobian size:", self.J.rows(), self.J.cols(), nData)
+        self.setJacobian(self._jac)
+
+    def drawModel(self, ax, model, **kwargs):
+        mods = np.asarray(model).reshape(self._nSoundings,
+                                         self._parPerSounding)
+        nPar = 1
+        pg.mplviewer.showStitchedModels(mods, ax=ax, useMesh=True,
+                                        x = self.soundingPos,
+                                        **kwargs)

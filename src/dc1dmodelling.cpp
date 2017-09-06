@@ -438,10 +438,11 @@ RVector DC1dModellingC::response(const RVector & model) {
 //     for (size_t i = 0 ; i < nlayers_ -1 ; i++) thk[i] = model[i];
 //     for (size_t i = 0 ; i < nlayers_ ; i++) rhoM[i] = model[nlayers_ + i -1];
 //     for (size_t i = 0 ; i < nlayers_ ; i++) rhoP[i] = - model[2 * nlayers_ + i -1];
-    CVector rhoC = toComplex(RVector(rhoM * cos(rhoP)), RVector(rhoM * sin(rhoP)));
+    CVector rhoC = toComplex(RVector(rhoM * cos(rhoP)), -RVector(rhoM * sin(rhoP)));
 
     CVector rhoaC = rhoaT< CVector >(rhoC, thk);
-    RVector angPlus = abs(angle(rhoaC));
+    RVector angPlus = angle(rhoaC);
+    //RVector angPlus = abs(angle(rhoaC));
 
     return cat(abs(rhoaC), angPlus);
 }

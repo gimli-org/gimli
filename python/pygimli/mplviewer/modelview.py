@@ -105,7 +105,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
 
     if plot == 'loglog' or plot == 'semilogy':
         if z0 == 0:
-            pz[0] = 1.
+            pz[0] = z1[0] / 2.
         else:
             pz[0] = z0
 
@@ -121,91 +121,49 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     ax.set_ylim(pz[-1], pz[0])
     ax.grid(True)
 
-
-def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
-    """What is this good for?."""
-    plt.imshow(mat, interpolation='nearest')
-    plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
-    plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])
-    plt.ylim((len(y) - 0.5, -0.5))
-
-    if xlab is not None:
-        plt.xlabel(xlab)
-    if ylab is not None:
-        plt.ylabel(ylab)
-    plt.axis('auto')
-    if cbar is not None:
-        plt.colorbar(orientation=cbar)
-    return
-
-
-def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
-    """TODO."""
-    if thk is None:
-        nlay = (len(x) + 1) / 2
-        thk = np.array(x)[:nlay - 1]
-        x = np.asarray(x)[nlay - 1:nlay * 2 - 1]
-        thkL = np.array(xL)[:nlay - 1]
-        thkU = np.array(xU)[:nlay - 1]
-        xL = np.asarray(xL)[nlay - 1:nlay * 2 - 1]
-        xU = np.asarray(xU)[nlay - 1:nlay * 2 - 1]
-
-#    thk0 = np.hstack((thk, 0.))
-#    thkL0 = np.hstack((thkL, 0.))
-#    thkU0 = np.hstack((thkU, 0.))
-    zm = np.hstack((np.cumsum(thk) - thk / 2, np.sum(thk) * 1.2))  # midpoint
-    zc = np.cumsum(thk)  # cumulative
-    draw1dmodel(x, thk, **kwargs)
-    plt.xlim(min(xL) * 0.95, max(xU) * 1.05)
-    plt.ylim(zm[-1] * 1.1, 0.)
-    plt.errorbar(
-        x, zm, fmt='.', xerr=np.vstack(
-            (x - xL, xU - x)), ecolor=xcol, **kwargs)
-    plt.errorbar((x[:-1] + x[1:]) / 2, zc, fmt='.',
-                 yerr=np.vstack((thk - thkL, thkU - thk)), ecolor=ycol)
-
-
-def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
-    """Draw 1d model with lower and upper bounds."""
-    raise BaseException("IMPLEMENTME")
-    # draw1dmodel(x, thk, color='red', **kwargs)
-    # for i in range(len(x)):
-    #     x1 = np.array(x)
-    #     x1[i] = xL[i]
-    #     draw1dmodel(x1, thk, color='blue')
-    #     x1[i] = xU[i]
-    #     draw1dmodel(x1, thk, color='blue')
-    #
-    # li = draw1dmodel(x, thk, color='red', **kwargs)
-    # plt.xlim((min(xL) * 0.9, max(xU) * 1.1))
-    # return li
-
-
-def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
+def showStitchedModels(models, x=None, cMin=None, cMax=None,
                        islog=True, title=None, zMin=0, zMax=0, zLog=True,
-                       cmap='jet'):
-    """Show several 1d block models as (stitched) section."""
-    if x is None:
-        x = np.arange(len(models))
+                       ax=None,
+                       cmap='jet', useMesh=False):
+    """Show several 1d block models as (stitched) section.
 
-    nlay = int(np.floor((len(models[0]) + 1) / 2.))
+    Parameters
+    ----------
+    useMesh: bool (False)
+        use pygimli mesh instead of patch graph. Experimental.
+
+    """
+
+    nLayers = int(np.floor((len(models[0]) + 1) / 2.))
 
     fig = None
     if ax is None:
         fig, ax = plt.subplots()
 
+    noXVals = False
+    if x is None:
+        noXVals = True
+        x = np.arange(len(models)) * 1.0
+
     dxmed2 = np.median(np.diff(x)) / 2.
-    vals = np.zeros((len(models), nlay))
+
+    vals = np.zeros((len(models), nLayers))
+
+    mesh = None
+    if useMesh:
+        mesh = pg.Mesh(2)
     patches = []
+
     zMaxLimit = 0
+    z = None
 
     for i, imod in enumerate(models):
         if isinstance(imod, pg.RVector):
-            vals[i, :] = imod(nlay - 1, 2 * nlay - 1)
-            thk = np.asarray(imod(0, nlay - 1))
+            vals[i, :] = imod(nLayers - 1, 2 * nLayers - 1)
+            thk = np.asarray(imod(0, nLayers - 1))
         else:
-            vals[i, :] = imod[nlay - 1:2 * nlay - 1]
-            thk = imod[:nlay - 1]
+            vals[i, :] = imod[nLayers - 1:2 * nLayers - 1]
+            thk = imod[:nLayers - 1]
 
         if zMax > 0:
             z = np.hstack((0., np.cumsum(thk)))
@@ -216,43 +174,75 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
 
         zMaxLimit = max(zMaxLimit, z[-1])
 
-        for j in range(nlay):
-            rect = Rectangle((x[i] - dxmed2, z[j]),
-                             dxmed2 * 2, z[j+1]-z[j])
-            patches.append(rect)
+        if mesh is not None:
+            for j in range(nLayers):
+                #n1 = mesh.createNode([x[i],   z[j]])
+                #n2 = mesh.createNode([x[i+1], z[j]])
+                #n3 = mesh.createNode([x[i+1], z[j+1]])
+                #n4 = mesh.createNode([x[i],   z[j+1]])
 
-    p = PatchCollection(patches, cmap=cmap, linewidths=0)
+                n1 = mesh.createNode([x[i] - dxmed2, -z[j]])
+                n2 = mesh.createNode([x[i] + dxmed2, -z[j]])
+                n3 = mesh.createNode([x[i] + dxmed2, -z[j+1]])
+                n4 = mesh.createNode([x[i] - dxmed2, -z[j+1]])
 
-    if cmin is not None:
-        p.set_clim(cmin, cmax)
+                mesh.createQuadrangle(n1, n2, n3, n4)
+        else:
+            for j in range(nLayers):
+                rect = Rectangle((x[i] - dxmed2, z[j]),
+                                dxmed2 * 2, z[j+1]-z[j])
+                patches.append(rect)
 
-#    p.set_array( np.log10( vals.ravel() ) )
-    setMappableData(p, vals.ravel(), logScale=islog)
-    ax.add_collection(p)
 
-    ax.set_ylim((zMaxLimit, zMin))
+    if mesh is not None:
+        pg.show(mesh, vals.ravel(), ax=ax, cMin=cMin, cMax=cMax,
+                label='Parameters')
+    else:
 
-    if zLog:
-        ax.set_yscale("log", nonposy='clip')
+        p = PatchCollection(patches, cmap=cmap, linewidths=0)
 
-    ax.set_xlim((min(x) - dxmed2, max(x) + dxmed2))
+        if cMin is not None and cMax is not None:
+            p.set_clim(cMin, cMax)
 
-    if title is not None:
-        ax.set_title(title)
+        print(vals)
+        setMappableData(p, vals.ravel(), logScale=islog)
+        ax.add_collection(p)
 
-    pg.mplviewer.createColorBar(p, cMin=cmin, cMax=cmax, nLevs=5)
+        ax.set_ylim((zMaxLimit, zMin))
 
-#    cb = plt.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
-#    xt = [10, 20, 50, 100, 200, 500]
-#    cb.set_ticks( xt, [str(xti) for xti in xt] )
+        if zLog:
+            ax.set_yscale("log", nonposy='clip')
 
-    plt.draw()
-    return fig, ax
+        ax.set_xlim((min(x) - dxmed2, max(x) + dxmed2))
+
+        if title is not None:
+            ax.set_title(title)
+
+        if cMin is not None and cMax is not None:
+            pg.mplviewer.createColorBar(p, cMin=cMin, cMax=cMax, nLevs=5)
+
+    #    cb = plt.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
+    #    xt = [10, 20, 50, 100, 200, 500]
+    #    cb.set_ticks( xt, [str(xti) for xti in xt] )
+
+    if noXVals:
+        #ax.figure.set_size((20,20))
+        #ax.set_aspect(0.2)
+        ax.set_aspect(abs(max(x))/max(abs(z))/3, adjustable='box')
+        #plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        #plt.tight_layout()
+        #ax.figure.set_size_inches(200,20)
+        #ax.axis('scaled')
+        #plt.axis('tight')
+
+    #CR ??plt.draw()
+    return ax
 
 
 def showStitchedModels_Redundant(mods, ax=None,
                                  cmin=None, cmax=None, **kwargs):
     """Show several 1d block models as (stitched) section."""
+    raise Exception('who use this?')
     x = kwargs.pop('x', np.arange(len(mods)))
     topo = kwargs.pop('topo', x*0)
 
@@ -329,10 +319,10 @@ def showStitchedModels_Redundant(mods, ax=None,
     else:  # already given, better give back color bar
         return cbar
 
-
 def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
                           islog=True, title=None):
     """Show several 1d block models as (stitched) section."""
+    raise Exception('who use this?')
     if x is None:
         x = np.arange(len(models))
 
@@ -389,6 +379,64 @@ def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
     return
 
 
+def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
+    """What is this good for?."""
+    plt.imshow(mat, interpolation='nearest')
+    plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
+    plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])
+    plt.ylim((len(y) - 0.5, -0.5))
+
+    if xlab is not None:
+        plt.xlabel(xlab)
+    if ylab is not None:
+        plt.ylabel(ylab)
+    plt.axis('auto')
+    if cbar is not None:
+        plt.colorbar(orientation=cbar)
+    return
+
+def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
+    """TODO."""
+    if thk is None:
+        nlay = (len(x) + 1) / 2
+        thk = np.array(x)[:nlay - 1]
+        x = np.asarray(x)[nlay - 1:nlay * 2 - 1]
+        thkL = np.array(xL)[:nlay - 1]
+        thkU = np.array(xU)[:nlay - 1]
+        xL = np.asarray(xL)[nlay - 1:nlay * 2 - 1]
+        xU = np.asarray(xU)[nlay - 1:nlay * 2 - 1]
+
+#    thk0 = np.hstack((thk, 0.))
+#    thkL0 = np.hstack((thkL, 0.))
+#    thkU0 = np.hstack((thkU, 0.))
+    zm = np.hstack((np.cumsum(thk) - thk / 2, np.sum(thk) * 1.2))  # midpoint
+    zc = np.cumsum(thk)  # cumulative
+    draw1dmodel(x, thk, **kwargs)
+    plt.xlim(min(xL) * 0.95, max(xU) * 1.05)
+    plt.ylim(zm[-1] * 1.1, 0.)
+    plt.errorbar(
+        x, zm, fmt='.', xerr=np.vstack(
+            (x - xL, xU - x)), ecolor=xcol, **kwargs)
+    plt.errorbar((x[:-1] + x[1:]) / 2, zc, fmt='.',
+                 yerr=np.vstack((thk - thkL, thkU - thk)), ecolor=ycol)
+
+
+def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
+    """Draw 1d model with lower and upper bounds."""
+    raise BaseException("IMPLEMENTME")
+    # draw1dmodel(x, thk, color='red', **kwargs)
+    # for i in range(len(x)):
+    #     x1 = np.array(x)
+    #     x1[i] = xL[i]
+    #     draw1dmodel(x1, thk, color='blue')
+    #     x1[i] = xU[i]
+    #     draw1dmodel(x1, thk, color='blue')
+    #
+    # li = draw1dmodel(x, thk, color='red', **kwargs)
+    # plt.xlim((min(xL) * 0.9, max(xU) * 1.1))
+    # return li
+
+
 def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
     """DEPRECATED."""
     print("STYLE_WARNING!!!!!!! don't use this call. "
@@ -399,6 +447,8 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
 def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0,
                 **kwargs):
     """Show 1d block model defined by value and thickness vectors."""
+    print("STYLE_WARNING!!!!!!! don't use this call. "
+          "WHO use this anymore??.")
     if xlab is None:
         xlab = "$\\rho$ in $\\Omega$m"
 
@@ -440,7 +490,8 @@ def draw1dmodel__Redundant(x, thk=None, xlab=None, zlab="z in m", islog=True,
     """Draw 1d block model defined by value and thickness vectors."""
 #    if xlab is None:
 #        xlab = "$\\rho$ in $\\Omega$m"
-
+    print("STYLE_WARNING!!!!!!! don't use this call. "
+          "WHO use this anymore??.")
     if thk is None:  # gimli blockmodel (thk+x together) given
         nl = int(np.floor((len(x) - 1) / 2.)) + 1
         thk = np.asarray(x)[:nl - 1]

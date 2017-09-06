@@ -47,16 +47,14 @@ class MethodManager(object):
         """Constructor."""
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
-        self._model = None
         self._dataToken = 'nan'
 
-        self.fop = None
-        self.inv = None
-
-        self.initForwardOperator(verbose=self._verbose, **kwargs)
+        self._fw = None
 
         self.initInversionFramework(verbose=self._verbose,
                                     debug=self._debug)
+
+        self.initForwardOperator(verbose=self._verbose, **kwargs)
 
 
 
@@ -66,7 +64,6 @@ class MethodManager(object):
         # maybe obsolete
         self.figs = {}
         self.errIsAbsolute = False
-        self.model = None
 
         self.mesh = None  # to be deleted if MethodManagerMesh is used # TODO
         self.dataContainer = None  # dto.
@@ -93,8 +90,7 @@ class MethodManager(object):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
-        self.inv.verbose = self._verbose
-        self.fop.verbose = self._verbose
+        self._fw.verbose = self._verbose
 
     @property
     def debug(self):
@@ -103,15 +99,20 @@ class MethodManager(object):
     @debug.setter
     def debug(self, v):
         self._debug = v
-        self.inv.debug = self._debug
+        self._fw.debug = self._debug
 
     @property
     def model(self):
-        return self._model
+        return self._fw.model
 
-    @model.setter
-    def model(self, m):
-        self._model = m
+    @property
+    def fop(self):
+        return self._fw.fop
+
+    @property
+    def inv(self):
+        return self._fw
+
 
     def dataVals(self, data):
         """Return pure data values from a given DataContainer."""
@@ -123,12 +124,6 @@ class MethodManager(object):
         """Return pure data values from a given DataContainer."""
         return data('err')
 
-    def setVerbose(self, verbose):
-        """Make the class verbose (put output to the console)"""
-        self.verbose = verbose
-        self.inv.setVerbose(verbose)
-        self.fop.setVerbose(verbose)
-
     def initForwardOperator(self, **kwargs):
         """Initialize or re-initialize the forward operator.
 
@@ -137,13 +132,13 @@ class MethodManager(object):
         Can be recalled if you need to changed the mangers own forward operator
         object. If you want a own instance of a valid FOP call createForwardOperator.
         """
-        self.fop = self.createForwardOperator(**kwargs)
+        fop = self.createForwardOperator(**kwargs)
 
-        if self.fop is None:
+        if fop is None:
             raise Exception("It seems that createForwardOperator method "
                             "does not return a valid forward operator.")
-        if self.inv is not None:
-            self.inv.setForwardOperator(self.fop)
+        if self._fw is not None:
+            self._fw.setForwardOperator(fop)
 
     def createForwardOperator(self, **kwargs):
         """Mandatory interface for derived classes.
@@ -171,14 +166,11 @@ class MethodManager(object):
         Called once in the constructor to force the manager to create the
         necessary Framework instance.
         """
-        self.inv = self.createInversionFramework(**kwargs)
+        self._fw = self.createInversionFramework(**kwargs)
 
-        if self.inv is None:
+        if self._fw is None:
             raise BaseException("createInversionFramework does not return "
                                 "valid inversion framework.")
-
-        if self.fop is not None:
-            self.inv.setForwardOperator(self.fop)
 
     def createInversionFramework(self, **kwargs):
         """Create default Inversion framework.
@@ -224,7 +216,6 @@ class MethodManager(object):
         absoluteError : float (None)
             TODO
 
-
         Returns
         -------
         err : array
@@ -247,7 +238,6 @@ class MethodManager(object):
             return ra, err
 
         return ra
-
 
     def invert(self, dataVals=None, errVals=None, **kwargs):
         """Invert the data.
@@ -272,9 +262,8 @@ class MethodManager(object):
         if type(errVals) == float:
             errVals = self.estimateError(dataVals, errLevel=errVals)
 
-        self.model = self.inv.run(dataVals, errVals, **kwargs)
+        self._fw.run(dataVals, errVals, **kwargs)
         return self.model
-
 
     def showModel(self, model, ax=None, **kwargs):
         """Shows a model.
@@ -296,7 +285,7 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
-        self.fop.drawModel(ax, model, **kwargs)
+        self._fw.fop.drawModel(ax, model, **kwargs)
         return ax
 
     def showData(self, data, ax=None, **kwargs):
@@ -320,7 +309,7 @@ class MethodManager(object):
         if ax is None:
             fig, ax =  pg.plt.subplots(ncols=1)
 
-        self.fop.drawData(ax, data, **kwargs)
+        self._fw.fop.drawData(ax, data, **kwargs)
         return ax
 
     def showResult(self, ax=None, **kwargs):
@@ -328,21 +317,23 @@ class MethodManager(object):
         ax = self.showModel(ax=ax, model=self.model, **kwargs)
         return ax
 
-    def showFit(self, ax=None):
+    def showFit(self, ax=None, **kwargs):
         """Show the last inversion date and response."""
         ax = self.showData(ax=ax,
                            data=self.inv.dataVals,
-                           error=self.inv.dataVals)
+                           error=self.inv.errorVals, **kwargs)
         ax = self.showData(ax=ax,
-                           data=self.inv.inv.response(),
-                           label='Response')
+                           data=self.inv.response,
+                           label='Response', **kwargs)
         return ax
 
-    def showResultAndFit(self):
+    def showResultAndFit(self, axs=None, **kwargs):
         """Calls showResults and showFit."""
-        fig, axs = pg.plt.subplots(ncols=2)
-        self.showResult(ax=axs[0])
-        self.showFit(ax=axs[1])
+        if axs is None:
+            fig, axs = pg.plt.subplots(ncols=2)
+
+        self.showResult(ax=axs[0], **kwargs)
+        self.showFit(ax=axs[1], **kwargs)
         return axs
 
     @staticmethod
@@ -408,6 +399,7 @@ class MethodManager1d(MethodManager):
         return pg.frameworks.Block1DInversion(**kwargs)
 
 
+
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
         """Constructor."""
@@ -451,13 +443,12 @@ class MeshMethodManager(MethodManager):
 
         zWeight = kwargs.pop('zWeight', 0.7)
 
-        self.fop.regionManager().setZWeight(zWeight)
-        self.fop.createStartModel(dataVals)
+        self._fw.fop.regionManager().setZWeight(zWeight)
+        self._fw.fop.createStartModel(dataVals)
 
-        model = super(MeshMethodManager, self).invert(dataVals=dataVals,
+        self.model = super(MeshMethodManager, self).invert(dataVals=dataVals,
                                                       errVals=errVals,
                                                       **kwargs)
-        self.model = model(self.fop.paraDomain.cellMarkers())
         return self.model
 
     def setMesh(self, mesh, refine=True):
