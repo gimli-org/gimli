@@ -13,7 +13,7 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
-from pygimli.manager import MethodManager0
+from pygimli.manager import MethodManager
 
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
@@ -23,7 +23,7 @@ from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 from . raplot import drawTravelTimeData
 
 
-class Refraction(MethodManager0):
+class Refraction(MethodManager):
     """Manager for refraction seismics (traveltime tomography)
 
     TODO Document main members and use default MethodeManager interface
