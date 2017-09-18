@@ -17,6 +17,23 @@ from .utils import updateAxes as updateAxes_
 from .colorbar import cmapFromName, autolevel
 
 
+def _fixNamingConventions(kwargs):
+    if 'cmap' in kwargs:
+        print("STYLE warning! .. please use cMap instead of cmap")
+        kwargs['cMap'] = kwargs.pop('cmap')
+
+
+def _setCMap(pp, cMap):
+    """Set colormap to mpl object pp
+        Ensure kwargs have argument with correct naming conventions.
+    """
+    if cMap is not None:
+        if isinstance(cMap, str):
+            pp.set_cmap(cmapFromName(cMap))
+        else:
+            pp.set_cmap(cMap)
+
+
 class CellBrowser(object):
     """Interactive cell browser on current or specified ax for a given mesh.
 
@@ -199,7 +216,7 @@ def drawMesh(ax, mesh, **kwargs):
 
 
 def drawModel(ax, mesh, data=None,
-              cMin=None, cMax=None, logScale=True, cmap=None,
+              cMin=None, cMax=None, logScale=True, cMap=None,
               xlabel=None, ylabel=None, verbose=False, grid=False,
               tri=False,
               **kwargs):
@@ -246,20 +263,11 @@ def drawModel(ax, mesh, data=None,
 
     if tri:
         gci = drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
-                         cmap=cmap, **kwargs)
+                         cMap=cMap, **kwargs)
     else:
         gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
                                              **kwargs)
-
-        cMap = kwargs.pop('cMap', None)
-        if cMap is not None:
-            cmap = cMap
-
-        if cmap is not None:
-            if isinstance(cmap, str):
-                gci.set_cmap(cmapFromName(cmap))
-            else:
-                gci.set_cmap(cmap)
+        _setCMap(gci, cMap)
 
         ax.set_aspect('equal')
 
@@ -289,6 +297,7 @@ def drawModel(ax, mesh, data=None,
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
+
     if xlabel is not None:
         ax.set_xlabel(xlabel)
     if ylabel is not None:
@@ -302,8 +311,7 @@ def drawModel(ax, mesh, data=None,
     return gci
 
 
-def drawSelectedMeshBoundaries(ax, boundaries,
-                               color=None, linewidth=1.0):
+def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0):
     """Draw mesh boundaries into a given axes.
 
     Parameters
@@ -675,7 +683,7 @@ def createTriangles(mesh, data=None):
 
 
 def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
-               cmap=None, interpolate=False, **kwargs):
+               cMap=None, interpolate=False, **kwargs):
     """Draw mesh based scalar field using matplotlib triplot.
 
     Draw scalar field into MPL axes using matplotlib triplot.
@@ -753,11 +761,7 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     if gci and cMin and cMax:
         gci.set_clim(cMin, cMax)
 
-    if cmap is not None:
-        if cmap == 'b2r':
-            gci.set_cmap(cmapFromName('b2r'))
-        else:
-            gci.set_cmap(cmap)
+    _setCMap(gci, cMap, kwargs)
 
     ax.set_aspect('equal')
 
@@ -769,7 +773,7 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     return gci
 
 
-def drawField(ax, mesh, data=None, cmap=None, **kwargs):
+def drawField(ax, mesh, data=None, cMap=None, **kwargs):
     """Draw a mesh-related (node or cell based) field onto a given MPL axis.
 
         Only for triangle/quadrangle meshes currently
@@ -810,7 +814,7 @@ def drawField(ax, mesh, data=None, cmap=None, **kwargs):
     cMax = kwargs.pop('cMax', None)
 
     return drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
-                      cmap=cmap, **kwargs)
+                      cMap=cMap, **kwargs)
 
 
 def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
@@ -1136,10 +1140,12 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     paraMarker = mesh.cellMarkers()
     cellList = dict()
 
-    for cID in range(len(paraMarker)):
-        if cID not in cellList:
-            cellList[cID] = []
-        cellList[cID].append(mesh.cell(cID))
+    for c in mesh.cells():
+        pID = c.marker()
+
+        if pID not in cellList:
+            cellList[pID] = []
+        cellList[pID].append(c)
 
     paraCenter = dict()
     for cID, vals in list(cellList.items()):
@@ -1153,41 +1159,31 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     start = []
     end = []
 #    swatch = pg.Stopwatch(True)  # not used
-    for i in range(0, int(nConstraints / 2)):
+    for i in range(0, nConstraints // 2):
         # print i
         # if i == 1000: break;
-        idL = int(C[1][i * 2])
-        idR = int(C[1][i * 2 + 1])
-        # leftCells = []
-        # rightCells = []
-#        for c, index in enumerate(paraMarker):
-#            if idL == index:
-#                leftCells.append(mesh.cell(c))
-#            if idR == index:
-#                rightCells.append(mesh.cell(c))
+        if C[0][i * 2] == C[0][i * 2 + 1]: # cType != 0 C[0]  is Edge Number
+            idL = int(C[1][i * 2])
+            idR = int(C[1][i * 2 + 1])
+            p1 = paraCenter[idL]
+            p2 = paraCenter[idR]
 
-#        p1 = pg.RVector3(0.0,0.0);
-#        for c in leftCells:
-#            p1 += c.center()
-#        p1 /= float(len(leftCells))
+            if cWeight is not None:
+                pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeight[i]))
+                pb = pg.RVector3(p2 + (p1 - p2) / 2.0 * (1.0 - cWeight[i]))
+            else:
+                pa = p1
+                pb = p2
 
-#        p2 = pg.RVector3(0.0,0.0);
-#        for c in rightCells:
-#            p2 += c.center()
-#        print cWeight[i]
-#        p2 /= float(len(rightCells))
-        p1 = paraCenter[idL]
-        p2 = paraCenter[idR]
-
-        if cWeight is not None:
-            pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeight[i]))
-            pb = pg.RVector3(p2 + (p1 - p2) / 2.0 * (1.0 - cWeight[i]))
+            start.append(pa)
+            end.append(pb)
         else:
-            pa = p1
-            pb = p2
-
-        start.append(pa)
-        end.append(pb)
+            idL = int(C[1][i * 2])
+            idR = int(C[1][i * 2 + 1])
+            start.append(paraCenter[idL])
+            start.append(paraCenter[idR])
+            end.append(None)
+            end.append(None)
 
 #    updateAxes_(ax)  # not existing
 
@@ -1208,25 +1204,36 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
     colors = []
     linewidths = []
     for i, _ in enumerate(start):
-        lines.append(list(zip([start[i].x(), end[i].x()],
-                              [start[i].y(), end[i].y()])))
+        if end[i] is None:
+            # TODO .. little zeros would be much better here to annotate cType=0
+            lines.append(list(zip([start[i].x(), start[i].x()+0.1],
+                                  [start[i].y(), start[i].y()])))
+            linewidth = 1.0
+            col = (1.0, 0.0, 1.0, 1.0)
+            colors.append(col)
+            linewidths.append(linewidth)
 
-        linewidth = 0.5
-        col = (0.0, 0.0, 1.0, 1.0)
-        colors.append(col)
-        linewidths.append(linewidth)
+        else:
+            lines.append(list(zip([start[i].x(), end[i].x()],
+                                [start[i].y(), end[i].y()])))
 
-    linCol = mpl.collections.LineCollection(lines, antialiaseds=True)
+            linewidth = 0.5
+            col = (0.0, 0.0, 1.0, 1.0)
+            colors.append(col)
+            linewidths.append(linewidth)
 
-    linCol.set_color(colors)
-    linCol.set_linewidth(linewidths)
-    ax.add_collection(linCol)
+    if len(lines) > 0:
+        linCol = mpl.collections.LineCollection(lines, antialiaseds=True)
+
+        linCol.set_color(colors)
+        linCol.set_linewidth(linewidths)
+        ax.add_collection(linCol)
 
     updateAxes_(ax)
 
 
 def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
-                 cmap=None, name=None, textoffset=0.0):
+                 cMap=None, name=None, textoffset=0.0):
     """Draw a 1D column (e.g., from a 1D inversion) on a given ax.
 
     Examples
@@ -1237,11 +1244,13 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     >>> thk = [1, 2, 3, 4]
     >>> val = thk
     >>> fig, ax = plt.subplots()
-    >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")
+    >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cMin=1, cMax=4, name="VES")
     <matplotlib.collections.PatchCollection object at ...>
     >>> ax.set_ylim(-np.sum(thk), 0)
     (-10, 0)
     """
+    # this is no mesh related based viewer function will be removed or merged with showStitchedModels
+    print("DEPRECATION WARNING! .. this (draw1DColumn) will be removed shortly! .. use showStitchedModels instead")
     z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
     recs = []
     for i in range(len(val)):
@@ -1253,22 +1262,17 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
 
-    if cmap is not None:
-        if isinstance(cmap, str):
-            pp.set_cmap(cmapFromName(cmap))
-        else:
-            pp.set_cmap(cmap)
+    _setCMap(pp, cMap, kwargs)
 
-    pp.set_norm(LogNorm(cmin, cmax))
+    pp.set_norm(LogNorm(cMin, cMax))
     pp.set_array(np.array(val))
-    pp.set_clim(cmin, cmax)
+    pp.set_clim(cMin, cMax)
     if name:
         ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
 
     updateAxes_(ax)
 
     return col
-
 
 def plotLines(ax, line_filename, linewidth=1.0, step=1):
     """Read lines from file and plot over model."""

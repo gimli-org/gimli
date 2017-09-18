@@ -49,6 +49,7 @@ class VESModelling(Block1DModelling):
         self.an = None
         self.bn = None
         self.ab2 = None
+        self.mn2 = None
 
         super(VESModelling, self).__init__(**kwargs)
 
@@ -57,9 +58,14 @@ class VESModelling(Block1DModelling):
     def createStartModel(self, rhoa, nLayers):
         self.setLayers(nLayers)
 
-        startThicks = np.zeros(nLayers-1)
-        for i in range(nLayers-1):
-            startThicks[i] = pow(2.0, 1.0 + i)
+        #print(self.mn2)
+        #print(self.ab2)
+        startThicks = np.logspace(np.log10(min(self.mn2)/2),
+                                  np.log10(max(self.ab2)/5), nLayers-1)
+        startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
+
+        #print(startThicks)
+        #exit()
 
         # layer thickness properties
         self.setRegionProperties(0, startModel=startThicks, trans='log')
@@ -106,6 +112,7 @@ class VESModelling(Block1DModelling):
 
         if self.am is not None and self.bm is not None:
             self.ab2 = (self.am + self.bm) / 2
+            self.mn2 = abs((self.am - self.an)) / 2
 
             self.k = (2.0 * np.pi) / (1.0/self.am - 1.0/self.an -
                                     1.0/self.bm + 1.0/self.bn)
@@ -161,9 +168,13 @@ class VESCModelling(VESModelling):
     def createStartModel(self, rhoa, nLayers):
         self.setLayers(nLayers)
 
-        startThicks = np.zeros(nLayers-1)
-        for i in range(nLayers-1):
-            startThicks[i] = pow(2.0, 1.0 + i)
+        startThicks = np.logspace(np.log10(min(self.mn2)/2),
+                                  np.log10(max(self.ab2)/5), nLayers-1)
+        startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
+
+        #startThicks = np.zeros(nLayers-1)
+        #for i in range(nLayers-1):
+            #startThicks[i] = pow(2.0, 1.0 + i)
 
         # layer thickness properties
         self.setRegionProperties(0, startModel=startThicks, trans='log')

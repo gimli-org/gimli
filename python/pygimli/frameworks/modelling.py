@@ -99,16 +99,18 @@ class Modelling(pg.ModellingBase):
 
             RM.region(rID).setModelTransStr_(vals['trans'])
 
-            if vals['limits'][0] > 0:
-                RM.region(rID).setLowerBound(vals['limits'][0])
-            if vals['limits'][1] > 0:
-                RM.region(rID).setUpperBound(vals['limits'][1])
-
             if 'cType' in vals:
                 RM.region(rID).setConstraintType(vals['cType'])
 
             if 'zWeights' in vals:
                 RM.region(rID).setZWeight(vals['zWeights'])
+
+            if vals['limits'][0] > 0:
+                RM.region(rID).setLowerBound(vals['limits'][0])
+
+            if vals['limits'][1] > 0:
+                RM.region(rID).setUpperBound(vals['limits'][1])
+
 
     def createStartModel(self, dataValues, **kwargs):
         """ Create Starting model.
@@ -295,6 +297,8 @@ class LCModelling(Modelling):
 
         super(LCModelling, self).__init__(**kwargs)
 
+        self._singleRegion = True
+
         self._fopTemplate = fop
         self._fops1D = []
         self._mesh = None
@@ -317,6 +321,7 @@ class LCModelling(Modelling):
         sm = pg.RVector()
         for i, f in enumerate(self._fops1D):
             sm = pg.cat(sm, f.createStartModel(rhoa[i], nLayers))
+
         self.setStartModel(sm)
         return sm
 
@@ -365,18 +370,29 @@ class LCModelling(Modelling):
 
         cm = np.ones(nCols * nSoundings) * 1
 
-        for i in range(nSoundings):
-            for j in range(nPar):
-                cm[i * self._parPerSounding + (j+1) * nLayers-1 :
-                   i * self._parPerSounding + (j+2) * nLayers-1] += (j+1)
+        if not self._singleRegion:
+            for i in range(nSoundings):
+                for j in range(nPar):
+                    cm[i * self._parPerSounding + (j+1) * nLayers-1 :
+                    i * self._parPerSounding + (j+2) * nLayers-1] += (j+1)
 
         self._mesh.setCellMarkers(cm)
+        self.setMesh(self._mesh)
 
         #ax,_=pg.show(self._mesh, self._mesh.cellMarkers(), label='marker')
         #pg.show(self._mesh, ax=ax)
+
+        #ax,_=pg.show(self.regionManager().paraDomain(),
+                     #self.regionManager().paraDomain().cellMarkers(), label='pdmarker')
+        #pg.show(self.regionManager().paraDomain(), ax=ax)
+
+        #self.createConstraints()
+
+        #pg.mplviewer.drawParameterConstraints(ax, self.regionManager().paraDomain(),
+                                              #self.constraints(), cWeight=None)
+
         #pg.wait()
 
-        self.setMesh(self._mesh)
 
     def initJacobian(self, dataVals, nLayers):
         """
@@ -419,5 +435,5 @@ class LCModelling(Modelling):
                                          self._parPerSounding)
         nPar = 1
         pg.mplviewer.showStitchedModels(mods, ax=ax, useMesh=True,
-                                        x = self.soundingPos,
+                                        x=self.soundingPos,
                                         **kwargs)

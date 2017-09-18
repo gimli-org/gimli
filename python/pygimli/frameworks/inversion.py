@@ -417,13 +417,13 @@ class LCInversion(Inversion):
         for e in errVals:
             errVec = pg.cat(errVec, e)
 
-        self.fop.setRegionProperties(1, trans='log', limits=[1., 1000.])
-        self.fop.setRegionProperties(2, trans='log')
+        self.fop.setRegionProperties(1, trans='log', limits=[0.4, 5000.])
+        #self.fop.setRegionProperties(2, trans='log')
 
         if kwargs.pop('disableLCI', False):
             self.inv.setMarquardtScheme(0.8)
             self.fop.setRegionProperties(1, cType=0)
-            self.fop.setRegionProperties(2, cType=0)
+            #self.fop.setRegionProperties(2, cType=0)
         else:
             self.inv.setReferenceModel(self.fop.startModel())
             self.inv.setLambdaFactor(0.8)
@@ -431,8 +431,8 @@ class LCInversion(Inversion):
             self.fop.setRegionProperties(1, cType=1)
             self.fop.setRegionProperties(1, zWeights=0.0)
 
-            self.fop.setRegionProperties(2, cType=1)
-            self.fop.setRegionProperties(2, zWeights=0.0)
+            #self.fop.setRegionProperties(2, cType=1)
+            #self.fop.setRegionProperties(2, zWeights=0.0)
 
         return super(LCInversion, self).run(dataVec, errVec, **kwargs)
 

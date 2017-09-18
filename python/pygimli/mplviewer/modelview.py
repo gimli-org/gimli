@@ -121,10 +121,11 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     ax.set_ylim(pz[-1], pz[0])
     ax.grid(True)
 
-def showStitchedModels(models, x=None, cMin=None, cMax=None,
-                       islog=True, title=None, zMin=0, zMax=0, zLog=True,
-                       ax=None,
-                       cmap='jet', useMesh=False):
+def showStitchedModels(models, x=None,
+                       logScale=True, title=None, ax=None,
+                       zMin=0, zMax=0, zLog=True,
+                       cMin=None, cMax=None, cMap='jet',
+                       useMesh=False, **kwargs):
     """Show several 1d block models as (stitched) section.
 
     Parameters
@@ -195,17 +196,24 @@ def showStitchedModels(models, x=None, cMin=None, cMax=None,
 
 
     if mesh is not None:
-        pg.show(mesh, vals.ravel(), ax=ax, cMin=cMin, cMax=cMax,
+        pg.show(mesh, vals.ravel(), ax=ax, cMin=cMin, cMax=cMax, cMap=cMap,
                 label='Parameters')
     else:
 
-        p = PatchCollection(patches, cmap=cmap, linewidths=0)
+        if 'cmap' in kwargs:
+            print("DeprecationWarning: please use 'cMap' instead of 'cmap'")
+            cMap = kwargs.pop('cmap', cMap)
+
+        p = PatchCollection(patches, cmap=cMap, linewidths=0)
 
         if cMin is not None and cMax is not None:
             p.set_clim(cMin, cMax)
 
-        print(vals)
-        setMappableData(p, vals.ravel(), logScale=islog)
+        if 'islog' in kwargs:
+            print("DeprecationWarning: pleas use 'logScale' instead of 'islog'")
+            logScale = kwargs.pop('islog', logScale)
+
+        setMappableData(p, vals.ravel(), logScale=logScale)
         ax.add_collection(p)
 
         ax.set_ylim((zMaxLimit, zMin))
@@ -235,7 +243,6 @@ def showStitchedModels(models, x=None, cMin=None, cMax=None,
         #ax.axis('scaled')
         #plt.axis('tight')
 
-    #CR ??plt.draw()
     return ax
 
 
