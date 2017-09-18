@@ -103,7 +103,7 @@ ertScheme = pg.physics.ert.createERTData(sensors, schemeName='dd', closed=1)
 ertData = ERT.simulate(mMesh, res, ertScheme, noiseLevel=0.01)
 
 print("-Simulate Traveltime" + "-" * 50)
-TT = pg.physics.Refraction()
+TT = pg.physics.Refraction(verbose=False)
 ttScheme = pg.physics.traveltime.createRAData(sensors)
 ttData = TT.simulate(mMesh, vel, ttScheme, noiseLevel=0.01, noiseAbs=4e-6)
 
