@@ -1130,7 +1130,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax - xmin)
 
-    print(xmin, xmax, dx)
+    # print(xmin, xmax, dx)
     x = pg.utils.grange(xmin, xmax, dx=dx)
 
     y = -pg.increasingRange(dz, paraDepth, nLayers)
