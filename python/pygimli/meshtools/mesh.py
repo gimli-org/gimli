@@ -798,7 +798,7 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
 
     Yields
     ------
-    
+
     mesh:
         :gimliapi:`GIMLI::Mesh`
 
@@ -1121,12 +1121,16 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if paraDZ == 0:
         paraDZ = 1.
 
-    dx = eSpacing * paraDX
-    dz = eSpacing * paraDZ
+    dx = paraDX
+    dz = paraDZ
+    if eSpacing > 0:
+        dx = eSpacing * paraDX
+        # dz = eSpacing * paraDZ  # not really making sense
 
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax - xmin)
 
+    print(xmin, xmax, dx)
     x = pg.utils.grange(xmin, xmax, dx=dx)
 
     y = -pg.increasingRange(dz, paraDepth, nLayers)

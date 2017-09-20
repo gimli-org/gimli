@@ -105,10 +105,16 @@ LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
 
 class Cm05Matrix(pg.MatrixBase):
-    """Matrix consisting of actual RMatrix and lef-side vector."""
+    """Matrix implicitly representing the inverse square-root."""
 
     def __init__(self, A, verbose=False):
-        """Constructor saving matrix and vector."""
+        """Constructor saving matrix and vector.
+
+        Parameters
+        ----------
+        A : ndarray
+            numpy type (full) matrix
+        """
         from scipy.linalg import eigh  # , get_blas_funcs
 
         if A.shape[0] != A.shape[1]:  # rows/cols for pg matrix
@@ -127,20 +133,19 @@ class Cm05Matrix(pg.MatrixBase):
 #        pg.MatrixBase.__init__(self)  # the Python 2 variant
 
     def rows(self):
-        """ return number of rows (using underlying matrix) """
+        """Return number of rows (using underlying matrix)."""
         return self.size
 
     def cols(self):
-        """ return number of columns (using underlying matrix) """
+        """Return number of columns (using underlying matrix)."""
         return self.size
 
     def mult(self, x):
-        """ multiplication from right-hand-side (dot product) """
+        """Multiplication from right-hand side (dot product)."""
         part1 = (np.dot(np.transpose(x), self.EV).T*self.mul).reshape(-1, 1)
         return self.EV.dot(part1).reshape(-1,)
-
 #        return self.EV.dot((x.T.dot(self.EV)*self.mul).T)
 
     def transMult(self, x):
-        """ multiplication from right-hand-side (dot product) """
-        return self.mult(x)
+        """Multiplication from right-hand side (dot product)."""
+        return self.mult(x)  # matrix is symmetric by definition
