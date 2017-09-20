@@ -21,7 +21,7 @@ class WorkSpace(object):
 def solveDarcy(mesh, k=None, p0=1, verbose=False):
     """Darcy flow."""
     if verbose:
-        print("Solve darcy")
+        print("Solve Darcy equation ...")
 
     uDir = [[2, p0],  # left aquiver
             [3, p0],  # left bedrock
@@ -35,11 +35,10 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
     vel = -pg.solver.grad(mesh, p) * np.asarray([k, k, k]).T
     return mesh, mt.cellDataToNodeData(mesh, vel), p, k, np.asarray([pg.x(vel), pg.y(vel)])
 
-
 def solveAdvection(mesh, vel, times, diffusion, verbose=False):
     """Solve Diffusion/Advection equation"""
     if verbose:
-        print("Solve concentration", len(times))
+        print("Solve for concentration movement on", len(times), "time steps ...")
 
     S = pg.RVector(mesh.cellCount(), 0.0)
     injectPos = [-19.1, -4.6]
@@ -60,11 +59,10 @@ def solveAdvection(mesh, vel, times, diffusion, verbose=False):
 
     return c[::]
 
-
 def solveERT(mesh, concentration, verbose=0):
     """Simulate resistivity distribution for given nonsteady concentration."""
     if verbose:
-        print("Solve ert")
+        print("Solve for ERT ...")
 
     ertScheme = pg.physics.ert.createERTData(pg.utils.grange(-20, 20, dx=1.0),
                                              schemeName='dd')
@@ -123,7 +121,6 @@ def solveERT(mesh, concentration, verbose=0):
 
     return meshERT, ertScheme, resis, rhoa, dRhoa, dErr
 
-
 class HydroGeophysicalModelling(pg.ModellingBase):
     """Forward Operator for fully coupled hydrogeophysical inversion."""
 
@@ -165,7 +162,7 @@ class HydroGeophysicalModelling(pg.ModellingBase):
     def response_mt(self, par, i=0):
         """Return response (multi threaded)."""
 
-        verbose = 0
+        verbose = 1
         if i == 0:
             ws = self.ws
         else:
@@ -178,7 +175,7 @@ class HydroGeophysicalModelling(pg.ModellingBase):
         ws.mesh, ws.vel, ws.p, ws.k, ws.velC = solveDarcy(mesh, k=k, p0=0.75,
                                                           verbose=verbose)
 
-        ws.sat = solveAdvection(ws.mesh, ws.vel.T, self.timesAdvection,
+        ws.sat = solveAdvection(ws.mesh, ws.vel, self.timesAdvection,
                                 diffusion=pg.abs(ws.velC.T) * 1e-2,
                                 verbose=verbose)
 
