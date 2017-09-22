@@ -126,10 +126,10 @@ def readSIP256file(resfile, verbose=False):
     LINE = []
     dataAct = False
 
-
-#    with open(resfile, 'r', errors='replace') as f:
-    with codecs.open(resfile, 'r', errors='replace') as f:
+    with open(resfile, 'r', errors='replace') as f:
+    #with codecs.open(resfile, 'r', errors='replace') as f:
         for line in f:
+
             if dataAct:
                 LINE.append(line)
             elif len(line):
@@ -163,6 +163,8 @@ def readSIP256file(resfile, verbose=False):
                     if activeBlock:
                         nums = np.array(line.split(), dtype=float)
                         header[activeBlock].append(nums)
+                    elif "SIP256" in line:
+                        header['Device'] = line
 
     # CR DATA, Data, data ?? really??
     # TG: yes, no better idea to handle blocks of blocks of data
@@ -203,7 +205,8 @@ def readSIP256file(resfile, verbose=False):
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
-            data.append(np.array(sline[:5], dtype=float))
+
+            data.append(np.array(sline[:8], dtype=float))
 
     Data.append(np.array(data))
     DATA.append(Data)

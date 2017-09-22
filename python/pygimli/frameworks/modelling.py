@@ -290,7 +290,7 @@ class PetroModelling(Modelling):
 class LCModelling(Modelling):
     """2D Laterally constrained LC modelling.
 
-    2D Laterally constrained LC modelling  based on BlockMatrices.
+    2D Laterally constrained LC modelling based on BlockMatrices.
     """
     def __init__(self, fop, **kwargs):
         """Parameters: FDEM data class and number of layers."""

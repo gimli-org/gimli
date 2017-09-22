@@ -123,9 +123,13 @@ public:
      */
     void add(const DataContainer & data, double snap=1e-3);
 
+
     // START Sensor related section
+    /*! Set the positions for 1D sensors distribution. */
+    void setSensorPositions(const RVector & sensors);
+
     /*! Set the positions for all sensors. */
-    inline void setSensorPositions(const std::vector< RVector3 > & sensors) { sensorPoints_ = sensors; }
+    void setSensorPositions(const std::vector< RVector3 > & sensors);
 
     /*! Return the complete sensor positions as read-only. */
     inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
