@@ -162,7 +162,7 @@ void DataContainer::add(const DataContainer & data, double snap){
 void DataContainer::setSensorPositions(const RVector & sensors){
     std::vector< RVector3 > s;
     for (Index i = 0; i < sensors.size(); i ++ ) {
-        s.push_back(RVector3(sensors[i], 0.0, 0.0);
+        s.push_back(RVector3(sensors[i], 0.0, 0.0));
     }
     return this->setSensorPositions(s);
 }

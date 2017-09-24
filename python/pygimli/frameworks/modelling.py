@@ -37,6 +37,11 @@ class Modelling(pg.ModellingBase):
             return self.regionManager().transModel()
         return self._transModel
 
+    @transModel.setter
+    def transModel(self, tm):
+        self._transModel = tm
+
+
     def regionManager(self):
         """
         """

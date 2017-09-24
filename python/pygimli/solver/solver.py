@@ -534,6 +534,7 @@ def div(mesh, v):
     >>> print(sum(divCells))
     54.0
     """
+    mesh.createNeighbourInfos()
     d = None
     if hasattr(v, '__len__'):
         if len(v) == mesh.boundaryCount():
