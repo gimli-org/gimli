@@ -382,8 +382,8 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
             Marker for the resulting boundary edges
         * leftDirection : bool [True]
             Rotational direction
-        * marker : int [1]
-            Marker for the resulting triangle cells after mesh generation
+        * marker : int [None]
+            Marker for the resulting triangle cells after mesh generation.
         * area : float [0]
             Maximum cell size for resulting triangles after mesh generation
         * isHole : bool [False]
@@ -413,13 +413,13 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     for v in verts:
         poly.createNode(v)
 
-    marker = kwargs.pop('marker', 0)
+    marker = kwargs.pop('marker', None)
     area = kwargs.pop('area', 0)
     isHole = kwargs.pop('isHole', False)
 
     polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False)
 
-    if isClosed and marker is not 0 or area > 0:
+    if isClosed and marker is not None or area > 0:
         if isHole:
             poly.addHoleMarker(pg.center(poly.positions()))
         else:

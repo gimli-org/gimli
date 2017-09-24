@@ -666,7 +666,6 @@ public:
     /*!Return read only reference for all defined hole regions. */
     const HoleMarkerList & holeMarker() const { return holeMarker_; }
 
-
 protected:
     void copy_(const Mesh & mesh);
 
