@@ -1019,6 +1019,52 @@ void Mesh::importVTK(const std::string & fbody) {
                 else if (row[0] == "POLYGONS") readVTKPolygons_(file, row);
             }
         }
+    } else if (row.back() == "STRUCTURED_GRID"){
+        Index nx = 0;
+        Index ny = 0;
+        Index nz = 0;
+
+        while (!file.eof()){
+            row = getRowSubstrings(file);
+
+            if (row.size()){
+                if (row[0] == "DIMENSIONS"){
+                    if (row.size() == 4){
+                        nx = toInt(row[1]);
+                        ny = toInt(row[2]);
+                        nz = toInt(row[3]);
+                    } else {
+                        __MS(row)
+                        THROW_TO_IMPL
+                    }
+                } else if (row[0] == "POINTS"){
+                    //POINTS 1331 double
+                    Index nVerts = toInt(row[1]);
+                    RVector vx(nVerts);
+                    RVector vy(nVerts);
+                    RVector vz(nVerts);
+                    for (Index i = 0; i < nVerts; i ++) {
+                        file >> vx[i] >> vy[i] >> vz[i];
+                    }
+
+                    RVector gvx(nx+1), gvy(ny+1), gvz(nz+1);
+                    for (Index i = 0; i < nx+1; i ++){
+                        gvx[i] = min(vx) + i * (max(vx) - min(vx))/nx;
+                    }
+                    for (Index i = 0; i < ny+1; i ++){
+                        gvy[i] = min(vy) + i * (max(vy) - min(vy))/ny;
+                    }
+                    for (Index i = 0; i < nz+1; i ++){
+                        gvz[i] = min(vz) + i * (max(vz) - min(vz))/nz;
+                    }
+
+                    this->create3DGrid(gvx, gvy, gvz);
+
+                } else if (row[0] == "SCALARS") {
+                    readVTKScalars_(file, row);
+                }
+            }
+        }
     } else {
             THROW_TO_IMPL
     }
