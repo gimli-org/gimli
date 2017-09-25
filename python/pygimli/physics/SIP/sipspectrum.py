@@ -418,9 +418,9 @@ class SIPSpectrum():
                                                       self.phi, **kwargs)
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
-                      mint=None, maxt=None, nt=None, new=False,
+                      mint=None, maxt=None, nt=None, new=True,
                       showFit=False, cType=1):
-        """fit a (smooth) continuous Debye model (Debye decomposition)
+        """Fit a (smooth) continuous Debye model (Debye decomposition).
 
         Parameters
         ----------
@@ -435,7 +435,7 @@ class SIPSpectrum():
         nt : int
             number of tau values (default number of frequencies * 2)
         new : bool
-            new implmentation (experimental)
+            new implementation (experimental)
         showFit : bool
             show fit
         cType : int
@@ -489,7 +489,7 @@ class SIPSpectrum():
                 ax[2].set_ylim(0., max(self.mDD))
                 ax[2].grid(True)
                 ax[2].set_xlabel(r'$\tau$ [s]')
-                ax[2].set_xlabel('$m$ [-]')
+                ax[2].set_ylabel('$m$ [-]')
         else:
             self.phiDD = IDD.response()
             if showFit:

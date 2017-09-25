@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""""WRITEME"""
+"""Tools for traveltime/refraction tomography."""
 
 import numpy as np
 import pygimli as pg
 
 
 def createRAData(sensors):
-    """
-    Create a refraction data container.
+    """Create a refraction data container.
 
     Default data container for shot and geophon at every sensor position.
     Predefined sensor indices's 's' as shot position and 'g' as
@@ -25,13 +24,12 @@ def createRAData(sensors):
         Data container with predefined sensor indieces 's' and 'g' for
 
     """
-
     data = pg.DataContainer()
     data.registerSensorIndex('s')
     data.registerSensorIndex('g')
 
-    if (isinstance(sensors, np.ndarray)):
-        for i, x in enumerate(sensors):
+    if isinstance(sensors, np.ndarray):
+        for x in sensors:
             data.createSensor([x, 0.0, 0.0])
     else:
         data.setSensorPositions(sensors)
@@ -52,8 +50,7 @@ def createRAData(sensors):
 
 
 def createGradientModel2D(data, mesh, vTop, vBot):
-    """
-    Create 2D velocity gradient model.
+    """Create 2D velocity gradient model.
 
     Creates a smooth, linear, starting model that takes the slope
     of the topography into account. This is done by fitting a straight line
@@ -78,7 +75,6 @@ def createGradientModel2D(data, mesh, vTop, vBot):
         A numpy array with slowness values that can be used to start
         the inversion.
     """
-
     p = np.polyfit(pg.x(data.sensorPositions()), pg.y(data.sensorPositions()),
                    deg=1)  # slope-intercept form
     n = np.asarray([-p[0], 1.0])  # normal vector
