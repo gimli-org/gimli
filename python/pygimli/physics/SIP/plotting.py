@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Spectral induced polarisation (SIP) plotting tools
-"""
+"""Spectral induced polarisation (SIP) plotting tools"""
 
 import matplotlib.pyplot as plt
 
 
 def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
                           grid=True, marker='+', ylog=True, **kwargs):
-    """show amplitude spectrum"""
+    """Show amplitude spectrum (resistivity as a function of f)."""
     lab = kwargs.pop('label', 'obs')
     ax.semilogx(freq, amp, marker=marker, label=lab, **kwargs)
     if ylog is None:
@@ -24,7 +22,7 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
 
 def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ in mrad',
                       grid=True, marker='+', ylog=False, **kwargs):
-    """show phase spectrum"""
+    """Show phase spectrum (-phi as a function of f)."""
     if 'label' not in kwargs:
         kwargs['label'] = 'obs'
     ax.semilogx(freq, phi, marker=marker, **kwargs)
@@ -37,7 +35,7 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ in mrad',
 
 def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ in mrad',
                  grid=True, marker='+', ylog=True, **kwargs):
-    """show phase spectrum"""
+    """Plot some spectrum (redundant)."""
     if 'label' not in kwargs:
         kwargs['label'] = 'obs'
     ax.loglog(freq, vals, marker=marker, **kwargs)
@@ -49,7 +47,7 @@ def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ in mrad',
 
 
 def showSpectrum(freq, amp, phi, nrows=2, ylog=None, ax=None):
-    """show amplitude and phase spectra in two subplots"""
+    """Show amplitude and phase spectra in two subplots."""
     if ax is None:
         fig, ax = plt.subplots(nrows=nrows, sharex=(nrows == 2))
     else:

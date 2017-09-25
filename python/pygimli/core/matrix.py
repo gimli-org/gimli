@@ -28,18 +28,18 @@ class MultLeftMatrix(pg.MatrixBase):
         return self.A.cols()
 
     def mult(self, x):
-        """Multiplication from right-hand-side (dot product)."""
+        """Multiplication from right-hand-side (dot product A*x)."""
         return self.A.mult(x) * self.left
 
     def transMult(self, x):
-        """ multiplication from right-hand-side (dot product) """
+        """Multiplication from right-hand-side (dot product A.T * x)"""
         return self.A.transMult(x * self.left)
 
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
 
 class MultRightMatrix(pg.MatrixBase):
-    """ Matrix A to be multiplied by a right hand side vector r. """
+    """Some Matrix, multiplied with a right hand side vector r."""
 
     def __init__(self, A, r=None):
         super().__init__()
@@ -51,29 +51,29 @@ class MultRightMatrix(pg.MatrixBase):
             self.r = r
 
     def mult(self, x):
-        """ return M*x = A*(r*x) """
+        """Return M*x = A*(r*x)"""
         return self.A.mult(x * self.r)
 
     def transMult(self, x):
-        """ return (A.T*x)*r """
+        """Return M.T*x=(A.T*x)*r"""
         return self.A.transMult(x) * self.r
 
     def cols(self):
-        """ number of columns """
+        """Number of columns."""
         return self.A.cols()
 
     def rows(self):
-        """ number of rows """
+        """Number of rows."""
         return self.A.rows()
 
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
 
 class MultLeftRightMatrix(pg.MatrixBase):
-    """Matrix consisting of actual RMatrix and lef-side vector."""
+    """Matrix consisting of actual RMatrix and left-hand-side vector."""
 
     def __init__(self, A, left, right, verbose=False):
-        """ constructor saving matrix and vector """
+        """Constructor saving matrix and vector."""
         if A.cols() != len(right):
             raise Exception("Matrix columns do not fit right vector length!")
         if A.rows() != len(left):
@@ -86,19 +86,19 @@ class MultLeftRightMatrix(pg.MatrixBase):
 #        pg.MatrixBase.__init__(self)  # the Python 2 variant
 
     def rows(self):
-        """ return number of rows (using underlying matrix) """
+        """Number of rows (using the underlying matrix)."""
         return self.A.rows()
 
     def cols(self):
-        """ return number of columns (using underlying matrix) """
+        """Number of columns (using the underlying matrix)."""
         return self.A.cols()
 
     def mult(self, x):
-        """ multiplication from right-hand-side (dot product) """
+        """Multiplication from right-hand-side (dot product A*x)."""
         return self.A.mult(x * self.right) * self.left
 
     def transMult(self, x):
-        """ multiplication from right-hand-side (dot product) """
+        """Multiplication from right-hand-side (dot product A.T*x)."""
         return self.A.transMult(x * self.left) * self.right
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility

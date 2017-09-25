@@ -191,7 +191,6 @@ def niceLogspace(vMin, vMax, nDec=10):
     return vmin * q**np.arange(n)
 
 
-
 def grange(start, end, dx=0, n=0, log=False):
     """Create array with possible increasing spacing.
 
@@ -293,11 +292,10 @@ def diff(v):
     if isinstance(v, np.ndarray):
         if v.ndim == 2:
             if v.shape[1] < 4:
-                #v = pg.R3Vector(v.T)
+                # v = pg.R3Vector(v.T)
                 vt = v.copy()
                 v = pg.R3Vector(len(vt))
                 for i, vi in enumerate(vt):
-                    #print(i, vi)
                     v.setVal(pg.RVector3(vi), i)
             else:
                 v = pg.R3Vector(v)
@@ -681,4 +679,3 @@ def filterLinesByCommentStr(lines, comment_str='#'):
     for j in comment_line_idx[::-1]:
         del(lines[j])
     return lines
-

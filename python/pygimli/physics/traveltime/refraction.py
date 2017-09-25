@@ -13,7 +13,7 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
-from pygimli.manager import MethodManager
+from pygimli.manager import MethodManager  # , MethodManager0
 
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
@@ -82,7 +82,7 @@ class Refraction(MethodManager):
         """Return parameter domain mesh."""
         return self.fop.regionManager().paraDomain()
 
-    def model(self):
+    def getModel(self):  # model collided with base method Manager attribute
         """Return velocity vector."""
         # (self.paraDomain.cellMarkers())
         return self.velocity
@@ -154,7 +154,7 @@ class Refraction(MethodManager):
 
     def loadData(self, filename):
         """Load data from file."""
-        #TODO check for file formats and import if necessary
+        # TODO check for file formats and import if necessary
         data = pg.DataContainer(filename, sensorTokens='s g')
         self.basename = filename[:filename.rfind('.')]
         self.setDataContainer(data)
@@ -252,7 +252,6 @@ class Refraction(MethodManager):
         --------
         pygimli.meshtools.createParaMeshPLC
         """
-
         if self.dataContainer is None:
             raise BaseException('Cannot create mesh without dataContainer.')
 
@@ -269,9 +268,7 @@ class Refraction(MethodManager):
         return mesh
 
     def setMesh(self, mesh, refine=False):
-        """
-        base api
-        """
+        """Set mesh. To be removed from class once derived from MeshManager."""
         self.mesh = mesh
         self.mesh.createNeighbourInfos()
         self.fop.setMesh(self.mesh)
@@ -414,8 +411,7 @@ class Refraction(MethodManager):
 
     @staticmethod
     def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
-        """
-        Simulate an Traveltime measurement.
+        """Simulate a traveltime measurement.
 
         Perform the forward task for a given mesh,
         a slowness distribution (per cell) and return data
@@ -450,7 +446,6 @@ class Refraction(MethodManager):
             A DataContainer is return if noisify set to True.
 
         """
-
         fop = Refraction.createFOP(verbose=verbose)
 
         fop.setData(scheme)
@@ -478,8 +473,8 @@ class Refraction(MethodManager):
             if not ret.allNonZero('err'):
                 ret.set('t', t)
                 ret.set('err', pg.physics.Refraction.estimateError(
-                        ret, absoluteError=kwargs.pop('noiseAbs', 1e-4),
-                        relativeError=noiseLevel))
+                    ret, absoluteError=kwargs.pop('noiseAbs', 1e-4),
+                    relativeError=noiseLevel))
 
             if verbose:
                 print("Data error estimates (min:max) ",
@@ -495,19 +490,18 @@ class Refraction(MethodManager):
 
     @staticmethod
     def drawTravelTimeData(ax, data, t=None):
-        """WRITEME"""
+        """Plot travel time data as lines and points."""
         drawTravelTimeData(ax, data, t)
 
     @staticmethod
     def drawApparentVelocities(ax, data, t=None, **kwargs):
-        """WRITEME"""
+        """Plot data in for of apparent velocity image."""
         tt = Refraction()
         tt.setDataContainer(data)
         tt.showVA(ax=ax, t=t, **kwargs)
 
     def getOffset(self, data=None, full=False):
         """Return vector of offsets (in m) between shot and receiver."""
-
         if data is None:
             data = self.dataContainer
 
@@ -739,7 +733,7 @@ def test_Refraction():
 
 def main():
     """Main"""
-    parser = MethodManager0.createArgParser(dataSuffix='sgt')
+    parser = MethodManager.createArgParser(dataSuffix='sgt')
     options = parser.parse_args()
 
     ra = Refraction(verbose=not options.quiet, debug=pg.debug())
