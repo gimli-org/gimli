@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-2.5D non optimized totalfield FOP for ERT.
+"""2.5D non-optimized totalfield forward operator for ERT.
 
-Please use the BERT package for more advanced FOP
+Please use the BERT package for more advanced forward operator
 https://gitlab.com/resistivity-net/bert
 """
 
@@ -18,7 +17,7 @@ class ERTModelling(pg.ModellingBase):
     """Minimal Forward Operator for 2.5D Electrical resistivity Tomography."""
 
     def __init__(self, mesh=None, data=None, verbose=False):
-        """"Constructor, optional with data container and mesh."""
+        """Constructor, optionally with data container and mesh."""
         super().__init__()
 
         self.setVerbose(verbose=verbose)
@@ -43,6 +42,7 @@ class ERTModelling(pg.ModellingBase):
         """Set Mesh."""
         if mesh is not None:  # ignore default different from ModBase (False)
             pg.ModellingBase.setMesh(self, mesh, ignoreRegionManager)
+            # Landscape complains that ModellingBaseMT does not have setMesh
 
     def calcGeometricFactor(self, data):
         """Calculate geometry factors for a given dataset."""
@@ -64,10 +64,9 @@ class ERTModelling(pg.ModellingBase):
                                 "data sets" + str(data))
 
     def uAnalytical(self, p, sourcePos, k):
-        """
-        Calculate analytical potential for homogeneous halfspace.
+        """Calculate analytical potential for homogeneous halfspace
 
-            For sigma = 1 [S m]
+            using a standard sigma = 1 [S/m] that can be scaled.
         """
         r1A = (p - sourcePos).abs()
         # Mirror on surface at depth=0
@@ -80,7 +79,7 @@ class ERTModelling(pg.ModellingBase):
             return 0.
 
     def getIntegrationWeights(self, rMin, rMax):
-        """TODO WRITEME."""
+        """Retrieve Gauss-Legende/Laguerre integration weights."""
         nGauLegendre = max(int((6.0 * np.log10(rMax / rMin))), 4)
         nGauLaguerre = 4
 
@@ -99,7 +98,7 @@ class ERTModelling(pg.ModellingBase):
         return pg.cat(kLeg, kLag), pg.cat(wLeg, wLag)
 
     def mixedBC(self, boundary, userData):
-        """TODO WRITEME."""
+        """Apply mixed boundary conditions."""
         if boundary.marker() != pg.MARKER_BOUND_MIXED:
             return 0
 
@@ -132,11 +131,10 @@ class ERTModelling(pg.ModellingBase):
             return 0.
 
     def pointSource(self, cell, f, userData):
-        r"""
-        Define function for the current source term.
+        r"""Define function for the current source term.
 
         :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
-            Right hand side entries will be shape functions(pos)
+            Right-hand-side entries will be shape functions(pos)
         """
         i = userData['i']
         sourcePos = userData['sourcePos'][i]
@@ -145,7 +143,7 @@ class ERTModelling(pg.ModellingBase):
             f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
 
     def createRHS(self, mesh, elecs):
-        """TODO WRITEME."""
+        """Create right-hand side."""
         rhs = np.zeros((len(elecs), mesh.nodeCount()))
         for i, e in enumerate(elecs):
             c = mesh.findCell(e)
@@ -216,7 +214,7 @@ class ERTModelling(pg.ModellingBase):
         return self.lastResponse
 
     def createJacobian(self, model):
-        """TODO WRITEME."""
+        """Create Jacobian matrix."""
         if self.subPotentials is None:
             self.response(model)
 
@@ -284,9 +282,8 @@ class ERTModelling(pg.ModellingBase):
 
 
 class ERTManager(MeshMethodManager):
-    """Minimalistic ERT Manager to keep compatibility. More advanced version
-    comes with BERT.
-    """
+    """Minimalistic ERT Manager for compatibility (advanced version in BERT)"""
+
     def __init__(self, **kwargs):
         """Constructor."""
         super(ERTManager, self).__init__(**kwargs)
@@ -304,7 +301,7 @@ class ERTManager(MeshMethodManager):
         # why is plotERT data not used instead?
         mid, sep = midconfERT(data)
         dx = np.median(np.diff(np.unique(mid)))*2
-        ax, _, ymap = pg.mplviewer.patchValMap(
+        ax, _, _ = pg.mplviewer.patchValMap(
             vals, mid, sep, dx=dx, ax=ax, logScale=True,
             label=r'Apparent resistivity in $\Omega$m')
 
@@ -365,22 +362,20 @@ class ERTManager(MeshMethodManager):
         return scheme
 
     def createApparentData(self, data):
-        """ what the hack is this?"""
+        """Create apparent data (what the hack is this?)"""
         return data('rhoa')
 
     def dataVals(self, data):
-        """Return pure data values from a given DataContainer. """
+        """Return pure data values from a given DataContainer."""
         return data('rhoa')
 
     def relErrorVals(self, data):
-        """Return pure data values from a given DataContainer. """
+        """Return pure data values from a given DataContainer."""
         return data('err')
 
 
 def createERTData(elecs, schemeName='none', **kwargs):
-    """ Simple data creator to keep compatibility. More advanced version
-    comes with BERT.
-    """
+    """ Simple data creator for compatibility (advanced version in BERT)."""
     if schemeName is not "dd":
         import pybert as pb  # that's bad!!! TODO: remove pybert deps
         return pb.createData(elecs, schemeName, **kwargs)
@@ -429,7 +424,6 @@ def createERTData(elecs, schemeName='none', **kwargs):
     data.set('valid', np.ones(len(a)))
 
     return data
-
 
 def midconfERT(data):
     """Return the midpoint and configuration key for ERT data.

@@ -146,6 +146,7 @@ class ColeColePhi(pg.ModellingBase):
         :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
         and :math:`Z(f, \rho_0=1, m, \tau, c) =` Cole-Cole impedance.
     """
+
     def __init__(self, f, verbose=False):
         """Setup class by specifying the frequency."""
         pg.ModellingBase.__init__(self, verbose)
