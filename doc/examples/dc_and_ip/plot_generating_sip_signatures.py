@@ -14,22 +14,78 @@ spectral induced polarization (SIP) signatures."""
 from pygimli.physics.SIP import ColeColeRho
 import numpy as np
 import pygimli as pg
+import matplotlib as mpl
 
 f = np.logspace(-2, 5, 100)
-m = np.linspace(0.1, 0.9, 5)
-tau = 0.01
 
-Z = ColeColeRho(f, rho=1, m=m[0], tau=tau, c=0.5)
+Z = ColeColeRho(f, rho=10, m=0.1, tau=0.04, c=0.5)
+
+fig, axes = pg.plt.subplots(
+    2, 2,
+    figsize=(15 / 2.54, 10 / 2.54),
+    sharex=True,
+)
+ax = axes[0, 0]
+ax.semilogx(f, np.abs(Z), '.-')
+ax.set_ylabel(r'$|Z| [\Omega m]$')
+ax = axes[0, 1]
+ax.semilogx(f, -np.angle(Z) * 1e3, '.-')
+ax.set_ylabel(r'$-\phi$ [mrad]')
+ax = axes[1, 0]
+Y = 1 / Z
+ax.loglog(f, np.real(Y), '.-')
+ax.set_xlabel('frequency [Hz]')
+ax.set_ylabel(r"$\sigma' [S/m]$")
+ax = axes[1, 1]
+ax.loglog(f, np.imag(Y), '.-')
+ax.set_xlabel('frequency [Hz]')
+ax.set_ylabel(r"$\sigma'' [S/m]$")
+
+for ax in axes.flat:
+    ax.xaxis.set_major_locator(
+        mpl.ticker.LogLocator(numticks=5)
+    )
+fig.tight_layout()
+pg.plt.show()
+
+###############################################################################
+# Generate a double Cole-Cole signature
+
+from pygimli.physics.SIP import ColeColeRho
+import numpy as np
+import pygimli as pg
+
+f = np.logspace(-2, 5, 100)
+
+# term1
+Z1 = ColeColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
+# term2
+Z2 = ColeColeRho(f, rho=1, m=0.25, tau=0.0001, c=0.8)
+# create sum
+rho0 = 100
+Z = rho0 * (Z1 + Z2)
 
 fig, axes = pg.plt.subplots(2, 2, figsize=(15 / 2.54, 10 / 2.54))
 ax = axes[0, 0]
 ax.semilogx(f, np.abs(Z), '.-')
+ax.set_ylabel(r'$|Z| [\Omega m]$')
 ax = axes[0, 1]
 ax.semilogx(f, -np.angle(Z) * 1e3, '.-')
+ax.set_ylabel(r'$-\phi$ [mrad]')
 ax = axes[1, 0]
 Y = 1 / Z
-ax.semilogx(f, np.real(Y), '.-')
+ax.loglog(f, np.real(Y), '.-')
+ax.set_xlabel('frequency [Hz]')
+ax.set_ylabel(r"$\sigma' [S/m]$")
 ax = axes[1, 1]
-ax.semilogx(f, np.imag(Y), '.-')
+ax.loglog(f, np.imag(Y), '.-')
+ax.set_xlabel('frequency [Hz]')
+ax.set_ylabel(r"$\sigma'' [S/m]$")
+
+for ax in axes.flat:
+    ax.xaxis.set_major_locator(
+        mpl.ticker.LogLocator(numticks=5)
+    )
 fig.tight_layout()
+
 pg.plt.show()
