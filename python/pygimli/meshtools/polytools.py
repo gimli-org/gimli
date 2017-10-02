@@ -345,20 +345,36 @@ def createLine(start, end, segments, **kwargs):
 
     Examples
     --------
+    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>>
+    >>> w = mt.createWorld(start=[0, 0], end=[3, 3])
+    >>> l1 = mt.createLine(start=[1, 1], end=[1, 2], segments=1,
+    ...                    leftDirection=False)
+    >>> l2 = mt.createLine(start=[1, 1], end=[2, 1], segments=20,
+    ...                    leftDirection=True)
+    >>>
+    >>> ax, _ = pg.show(mt.createMesh([w, l1, l2,]))
+    >>> ax, _ = pg.show([w, l1, l2,], ax=ax)
+    >>> pg.wait()
     """
     poly = pg.Mesh(2)
     startPos = pg.RVector3(start)
     endPos = pg.RVector3(end)
     a = endPos - startPos
 
-    dt = 1 / segments
+    dt = 1. / segments
+    left = kwargs.pop('leftDirection', True)
+
     for i in range(0, segments + 1):
-        if kwargs.pop('leftDirection', True):
+        if left:
             p = startPos + a * (dt * i)
         else:
             p = endPos - a * (dt * i)
 
         poly.createNode(p)
+
 
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
