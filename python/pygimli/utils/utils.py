@@ -195,9 +195,11 @@ def grange(start, end, dx=0, n=0, log=False):
     """Create array with possible increasing spacing.
 
     Create either array from start step-wise filled with dx until end reached
-    [start, end] (like np.array with defined end) n or array filled from
-    start to end with n steps. [start, end] (like np.linespace) n or an
-    array with with logarithmic spacing if n is given, dx will be ignored.
+    [start, end] (like np.array with defined end).
+    Fill the array from start to end with n steps.
+    [start, end] (like np.linespace)
+    Fill the array from start to end with n steps but logarithmic increasing,
+    dx will be ignored.
 
     Parameters
     ----------
@@ -246,8 +248,7 @@ def grange(start, end, dx=0, n=0, log=False):
         if not log:
             return grange(start, end, dx=(e - s) / (n - 1))
         else:
-            raise Exception('not yet implemented.')
-
+            return pg.increasingRange2(start, end, n)
     else:
         raise Exception('Either dx or n have to be given.')
 
