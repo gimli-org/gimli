@@ -79,25 +79,24 @@ tab.
 If the installation fails you can try the following instructions for manual
 installation.
 
+Detailed Installation on Debian Stretch
+.......................................
+
 
 Detailed Installation on Ubuntu/Debian systems
 ..............................................
 
-First install some of the necessary stuff. You will need subversion, git and hg
-to retrieve the source files and some things for the tool-chain:
+Install the required packages for the compilation of gimli and pygimli:
 
 .. code-block:: bash
 
-    sudo apt-get install subversion git cmake mercurial
-    sudo apt-get install libboost-all-dev libblas-dev liblapack-dev
-
-If you want to use the pyGIMLi (Python scripts, bindings and apps):
-
-.. code-block:: bash
-
-    sudo apt-get install python-numpy python-matplotlib
-    sudo apt-get install libedit-dev clang-3.6-dev llvm-3.6-dev python3-dev
-
+    sudo apt-get install wget subversion git cmake mercurial \
+        libboost-all-dev libblas-dev liblapack-dev \
+        python python-setuptools \
+        python-numpy python-matplotlib \
+        libedit-dev clang llvm-dev python3-dev \
+        python3  python3-numpy python3-matplotlib \
+        python3-setuptools
 
 Create a directory for your installation, e.g., $HOME/src
 
@@ -134,14 +133,20 @@ Change to the build path
 
     cd build
 
-and configure the build:
+and configure the build for Python 2.7 with:
 
 .. code-block:: bash
 
     cmake ../gimli
 
-If the output complains some missing dependencies, install these and repeat the
-the last step. To build the library just run `make`.
+If you want to compile for Python 3.5, alternatively use:
+
+.. code-block:: bash
+
+    cmake ../gimli -DPYVERSION=3.3
+
+If the output complains about missing dependencies, install these and repeat
+the the last step. To build the library just run `make`.
 
 .. code-block:: bash
 
@@ -153,17 +158,20 @@ To speed up the build process using more CPUs, use the `-j` flag, e.g.:
 
     make -j 8
 
-The libraries will be installed in build/lib and some test applications are
-installed in build/bin. If you want to build the python bindings, call:
+The libraries will be installed in **build/lib** and some test applications are
+installed in build/bin. If you want to build the Python bindings, call:
 
 .. code-block:: bash
 
     make pygimli
 
-You might add J=8 (`make pygimli J=8`) for using 8 jobs in parallel to
-speed up the build. The library _pygimli_.so library will be copied into the
-source path ../gimli/python/pygimli in the subdirectory core. To use the gimli
-installation there have to be set some environment variables:
+You might add J=8 (`make pygimli J=8`) for using 8 jobs in parallel to speed up
+the build (adapt this to the number of real cores of the computer). The library
+_pygimli_.so library will be copied into the source path
+**../gimli/python/pygimli** in the subdirectory core.
+
+To use the gimli installation you need to set some environment variables (this
+example assumes that the **src** directory resides in your home directory):
 
 .. code-block:: bash
 
@@ -177,8 +185,9 @@ If you want to use the C++ command line applications, call
 
     make apps
 
-Compiled binaries will be written to `build/bin`. You can test the pygimli
-build with:
+Compiled binaries will be written to `build/bin`.
+
+You can test the pygimli build with:
 
 .. code-block:: bash
 
