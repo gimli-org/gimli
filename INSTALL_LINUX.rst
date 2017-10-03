@@ -82,11 +82,8 @@ installation.
 Detailed Installation on Debian Stretch
 .......................................
 
-
-Detailed Installation on Ubuntu/Debian systems
-..............................................
-
-Install the required packages for the compilation of gimli and pygimli:
+In order to build pygimli (and gimli) for Python 2.7 and Python 3.5, install
+the required packages:
 
 .. code-block:: bash
 
@@ -143,7 +140,7 @@ If you want to compile for Python 3.5, alternatively use:
 
 .. code-block:: bash
 
-    cmake ../gimli -DPYVERSION=3.3
+    cmake ../gimli -DPYVERSION=3.5
 
 If the output complains about missing dependencies, install these and repeat
 the the last step. To build the library just run `make`.
@@ -187,7 +184,7 @@ If you want to use the C++ command line applications, call
 
 Compiled binaries will be written to `build/bin`.
 
-You can test the pygimli build with:
+You can do a quick test of the pygimli build and installation with:
 
 .. code-block:: bash
 
@@ -199,8 +196,19 @@ You can test your gimli build with:
 
     make check
 
-Note that the test will be very silent if you don't have cppunit installed.
+Note that the test will be very silent if you don't have *cppunit* installed.
 
+If you install pytest with
+
+.. code-block:: bash
+
+    sudo apt-get install python-pytest python3-pytest
+
+then you can run the internal test suite with
+
+.. code-block:: bash
+
+    python -c "import pygimli; pygimli.test()"
 
 Example Installation on Ubuntu
 ..............................
