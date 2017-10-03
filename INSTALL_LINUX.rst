@@ -214,7 +214,7 @@ Using Docker to build in Debian stretch
 .......................................
 
 If you want to use a Docker container to build (and possibly use) pyGIMLi, you
-can use the Dockerfile found [here](Dockerfile). Please refer to the file for
+can use the Dockerfile found `here<Dockerfile>`. Please refer to the file for
 further instructions.
 
 Example Installation on Ubuntu
