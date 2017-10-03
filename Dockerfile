@@ -9,6 +9,9 @@
 # note that this command will mount the present directory to /HOST in the
 # container, e.g., to copy the final build to the host computer
 
+# the start the build process with
+# bash build_pygimli_py3.5.sh
+
 FROM debian:stretch
 
 RUN apt-get update
@@ -44,4 +47,4 @@ cd build \n \
 cmake ../gimli -DPYVERSION=3.5 \n \
 make -j 2 gimli \n \
 make -j 2 apps \n \
-time make -j 2 pygimli \n ' > /home/gimli/build_pygimli_py3.5.sh 
+make -j 2 pygimli \n ' > /home/gimli/build_pygimli_py3.5.sh
