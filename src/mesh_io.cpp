@@ -1066,7 +1066,8 @@ void Mesh::importVTK(const std::string & fbody) {
             }
         }
     } else {
-            THROW_TO_IMPL
+        __MS(row)
+        THROW_TO_IMPL
     }
 //     __MS(dimension_)
     //this->showInfos();
