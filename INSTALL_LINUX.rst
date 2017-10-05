@@ -210,12 +210,12 @@ then you can run the internal test suite with
 
     python -c "import pygimli; pygimli.test()"
 
-Using Docker to build in Debian stretch
-.......................................
+Using Docker to build in Debian stretch (for advanced users only!)
+..................................................................
 
 If you want to use a Docker container to build (and possibly use) pyGIMLi, you
-can use the Dockerfile found `here<Dockerfile>`. Please refer to the file for
-further instructions.
+can use the Dockerfile found in the **scripts/** subdirectory named
+*Dockerfile_DebianStretch*. Please refer to the file for further instructions.
 
 Example Installation on Ubuntu
 ..............................

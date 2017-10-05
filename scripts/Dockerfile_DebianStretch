@@ -1,6 +1,8 @@
 # Dockerfile used to create a build environment for PyGimli based on the
 # official Debian stretch base image
 
+# before proceeding, copy to an empty directory and rename to "Dockerfile"
+
 # build with:
 # docker build -t "gimli/gimli_0.1" .
 
