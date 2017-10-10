@@ -1,5 +1,5 @@
 Installation on Windows
-=======================
+-----------------------
 
 You need a Python installation with the modules numpy and matplotlib.
 There are minimalistic installers and pre-packaged distributions.
@@ -7,11 +7,11 @@ We recommend `WinPython <http://winpython.github.io/#releases>`_ or
 `Anaconda <http://www.continuum.io/>`_ 64bit versions.
 
 Binary installers
------------------
+.................
 
-To avoid the building the C++ core, we provide binary packages built against 
+To avoid the building the C++ core, we provide binary packages built against
 WinPython, but working as well with Anaconda.
-Make sure you have an appropriate Python version (3.5.x or 3.6.x, 64bit) installed. 
+Make sure you have an appropriate Python version (3.5.x or 3.6.x, 64bit) installed.
 There are two ways, exe installers and wheels. The latter can be easily installed by a
 package manager like the WinPython Control Panel (located in the WinPython main directory).
 
@@ -45,7 +45,7 @@ pyd/dll files from the core directory of the binary distribution (lib/site-packa
 to the core directory of the git clone, and set PYTHONPATH to the latter.
 
 Building pyGIMLI from source
-----------------------------
+............................
 
 First, you need a Linux-like command shell along with a gcc compiler.
 Although there might be different solutions (Cygwin, Git Bash, MinGW/MSYS),
