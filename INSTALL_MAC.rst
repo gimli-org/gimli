@@ -1,3 +1,5 @@
+.. _sec:install_mac:
+
 Installation on MAC OS
 ----------------------
 
@@ -7,7 +9,6 @@ directory.
 .. code:: bash
 
     curl -Ls install.pygimli.org | bash
-
 
 .. note::
 

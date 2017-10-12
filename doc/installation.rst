@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 .. _sec:install:
 
 Installation
@@ -5,20 +7,30 @@ Installation
 
 .. raw:: html
 
-    </div>
-
     Choose your operating system:<br><br>
-    <ul class="nav nav-tabs">
-    <li><a href="#installation-on-windows" data-toggle="tab"><i class="icon-windows"></i> Windows</a></li>
-    <li><a href="#installation-on-mac" data-toggle="tab"><i class="icon-apple"></i> Mac OS</a></li>
-    <li><a href="#installation-on-linux" data-toggle="tab"><i class="icon-linux"></i> Linux</a></li>
-    <li><a href="#prerequisites" data-toggle="tab"><i class="icon-info"></i> Dependencies</a></li>
+    <ul class="nav nav-pills">
+        <li role="presentation" class="active">
+            <a href="#install_win" role="tab" data-toggle="tab">
+                <i class="icon-windows"></i> Windows</a>
+        </li>
+        <li role="presentation">
+            <a href="#install_lin" role="tab" data-toggle="tab">
+                <i class="icon-linux"></i> Linux</a>
+        </li>
+        <li role="presentation">
+            <a href="#install_mac" role="tab" data-toggle="tab">
+                <i class="icon-apple"></i> Mac OS</a>
+        </li>
+        <li role="presentation">
+            <a href="#install_pre" role="tab" data-toggle="tab">
+                <i class="icon-info"></i> Prerequisites</a>
+        </li>
     </ul>
+    <div class="tab-content">
 
 .. raw:: html
 
-    <div class="tab-content">
-    <div class="tab-pane active" id="installation-on-windows">
+    <div role="tabpanel" class="tab-pane active" id="install_win">
 
 .. include:: ../INSTALL_WIN.rst
 
@@ -26,19 +38,10 @@ Installation
 
     </div>
     </div>
-
-    <div class="tab-content">
-    <div class="tab-pane" id="installation-on-mac-os">
-
-.. include:: ../INSTALL_MAC.rst
-
-.. raw:: html
-
     </div>
-    </div>
-
-    <div class="tab-content">
-    <div class="tab-pane" id="installation-on-linux">
+    <div role="tabpanel" class="tab-pane" id="install_lin">
+    <div>
+    <div>
 
 .. include:: ../INSTALL_LINUX.rst
 
@@ -46,12 +49,25 @@ Installation
 
     </div>
     </div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="install_mac">
+    <div>
+    <div>
 
-    <div class="tab-content">
-    <div class="tab-pane" id="prerequisites">
+.. include:: ../INSTALL_MAC.rst
+
+.. raw:: html
+
+    </div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="install_pre">
+    <div>
 
 .. include:: ../dependencies.rst
 
 .. raw:: html
 
     </div>
+    </div>
+
+

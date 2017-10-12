@@ -1,3 +1,5 @@
+.. _sec:install_win:
+
 Installation on Windows
 -----------------------
 

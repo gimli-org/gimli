@@ -207,10 +207,16 @@ public:
 
     void create1DGrid(const RVector & x);
 
-    void create2DGrid(const RVector & x, const RVector & y, int markerType=0);
+    /*! Default boundary marker are -x[1], +x[2], +z[3], -z[4].
+     If worldBoundaryMarker is set it becomes +z[-1], else[-2]. */
+    void create2DGrid(const RVector & x, const RVector & y, int markerType=0,
+                      bool worldBoundaryMarker=false);
 
+    /*! Default boundary marker are -x[1], +x[2], +z[3], -z[4], -y[5], +z[6].
+     If worldBoundaryMarker is set it becomes +z[-1], else[-2]. You can \ref exportBoundaryVTU
+     and take a look with Paraview. */
     void create3DGrid(const RVector & x, const RVector & y, const RVector & z,
-                      int markerType=0);
+                      int markerType=0, bool worldBoundaryMarker=false);
 
     /*! Create one dimensional grid.
      * Boundary on the domain border will get
@@ -219,13 +225,15 @@ public:
 
     /*! Create two dimensional grid. Boundary on the domain border will get the
      * marker: 1,2,3,4 for: left, right, top, bottom*/
-    void createGrid(const RVector & x, const RVector & y, int markerType=0) {
-        create2DGrid(x, y, markerType);
+    void createGrid(const RVector & x, const RVector & y,
+                    int markerType=0, bool worldBoundaryMarker=false) {
+        create2DGrid(x, y, markerType, worldBoundaryMarker);
     }
     /*! Create three dimensional grid. Boundary on the domain border will get the
      * marker: 1,2,3,4,5,6 for: left, right, top, bottom, front, back*/
-    void createGrid(const RVector & x, const RVector & y, const RVector & z, int markerType=0){
-        create3DGrid(x, y, z, markerType);
+    void createGrid(const RVector & x, const RVector & y, const RVector & z,
+                    int markerType=0, bool worldBoundaryMarker=false){
+        create3DGrid(x, y, z, markerType, worldBoundaryMarker);
     }
 
     /*! Fill this 3D mesh with 3D boundary elements from the 2D mesh cells. Increase mesh dimension. Mesh should contain 2D cells. */
@@ -321,6 +329,12 @@ public:
     R3Vector & boundarySizedNormals() const;
 
 
+    /*! Set the marker to all boundaries in index array. */
+    void setBoundaryMarker(const IndexArray & ids, int marker);
+
+    /*! Set all cell marker the values in attribute. */
+    void setBoundaryMarkers(const IVector & marker);
+
     /*! Return a vector of all boundary marker */
     IVector boundaryMarkers() const;
 
@@ -346,8 +360,6 @@ public:
         for to equal open end set to = MAX_INT */
     std::vector < Boundary * > findBoundaryByMarker(int from, int to) const;
 
-    /*! Set the marker to all boundaries in index array. */
-    void setBoundaryMarker(const IndexArray & ids, int marker);
 
     /*! Return ptr to the cell that match position pos, counter holds amount of touch tests.
         Searching is done first by nearest-neighbour-kd-tree search,

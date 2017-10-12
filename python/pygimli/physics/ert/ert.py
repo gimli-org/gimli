@@ -18,7 +18,7 @@ class ERTModelling(pg.ModellingBase):
 
     def __init__(self, mesh=None, data=None, verbose=False):
         """Constructor, optionally with data container and mesh."""
-        super().__init__()
+        super(ERTModelling, self).__init__(verbose=verbose)
 
         self.setVerbose(verbose=verbose)
         self.electrodes = None

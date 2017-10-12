@@ -1,3 +1,5 @@
+.. _sec:install_pre:
+
 Prerequisites
 -------------
 
