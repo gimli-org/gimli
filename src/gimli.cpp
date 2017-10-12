@@ -50,8 +50,8 @@ bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
 void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
 bool debug(){ return __GIMLI_DEBUG__;}
 
-
 void setThreadCount(Index nThreads){
+    log(Debug, "Set amount of threads to " + str(nThreads));
 #if OPENBLAS_FOUND
     openblas_set_num_threads(nThreads);
 #endif
@@ -286,6 +286,44 @@ std::map < int, int > loadIntMap(const std::string & filename){
 
     file.close();
     return aMap;
+}
+
+std::string logStr_(LogType type){
+    switch (type){
+        case Info: return "info"; break;
+        case Warning: return "warn";  break;
+        case Error: return "error";  break;
+        case Debug: return "debug";  break;
+        case Critical: return "critical";  break;
+        default: return str(type) + "-unknown";
+    }
+}
+
+#ifdef PYTHON_FOUND
+#include <Python.h>
+#endif
+
+void log(LogType type, const std::string & msg){
+    #ifdef PYTHON_FOUND
+
+    static PyObject *logging = NULL;
+    static PyObject *logger = NULL;
+    static PyObject *string = NULL;
+
+    logging = PyImport_ImportModuleNoBlock("logging");
+
+    if (logging == NULL){
+        // running native? no python runtime?);
+            std::cout << logStr_(type) << ":" << msg << std::endl;
+    } else {
+        logger = PyObject_CallMethod(logging, "getLogger", "s", "Core");
+        string = Py_BuildValue("s", msg.c_str());
+        PyObject_CallMethod(logger, logStr_(type).c_str(), "O", string);
+        Py_DECREF(string);
+    }
+    #else
+        std::cout << logStr_(type) << ": " << msg << std::endl;
+    #endif
 }
 
 } // namespace GIMLI
