@@ -38,6 +38,13 @@ if (UMFPACK_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${UMFPACK_LIBRARIES})
 endif (UMFPACK_FOUND)
 
+if (PYTHON_FOUND)
+    include_directories(${PYTHON_INCLUDE_DIR})
+    target_link_libraries(${libgimli_TARGET_NAME} ${PYTHON_LIBRARY})
+endif (PYTHON_FOUND)
+
+
+
 if (USE_BOOST_THREAD)
     if (Boost_THREAD_FOUND)
         target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
