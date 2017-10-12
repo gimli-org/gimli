@@ -61,7 +61,7 @@ sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/apps')))
 # -- General configuration ----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.5' # and lower 1.6
+needs_sphinx = '1.4' # and lower 1.6
 
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
