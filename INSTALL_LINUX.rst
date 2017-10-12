@@ -1,3 +1,5 @@
+.. _sec:install_lin:
+
 Installation on Linux
 ---------------------
 
@@ -335,7 +337,7 @@ Build the library with gcc build.in sanity check
 
 
 Useful make commands
-.....................
+....................
 
 More verbose build output to view the complete command line:
 
