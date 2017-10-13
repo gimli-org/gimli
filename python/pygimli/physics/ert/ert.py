@@ -207,9 +207,6 @@ class ERTModelling(MeshModelling):
                 n = data.sensorPosition(data('n')[i])
                 k[i] = 1./(2.*np.pi) * (1./a.dist(m) - 1./a.dist(n) -
                                         1./b.dist(m) + 1./b.dist(n))
-                # what the hell is this! wrong formula and typos
-#                k[i] = 1./(2.*np.pi) * \
-#                       1./(a.dist(m) - a.dist(n) - b.dist(m) + b.dist(b))
             return k
         else:
             raise BaseException("Please use BERT for non-standard "
