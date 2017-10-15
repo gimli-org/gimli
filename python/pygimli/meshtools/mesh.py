@@ -804,7 +804,7 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
 
     '''
     h5py = pg.io.opt_import('h5py',
-                            requiredTo='import mesh in .h5 data format')
+                            requiredFor='import mesh in .h5 data format')
     h5 = h5py.File(filename, 'r')
     if verbose:
         print('loaded hdf5 mesh:', h5)
@@ -840,7 +840,7 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
     Keywords are explained in :py:mod:`pygimli.meshtools.readHDFS`
     '''
     h5py = pg.io.opt_import('h5py',
-                            requiredTo='export mesh in .h5 data format')
+                            requiredFor='export mesh in .h5 data format')
     if not isinstance(mesh, pg.Mesh):
         mesh = pg.Mesh(mesh)
 

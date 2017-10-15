@@ -261,6 +261,112 @@ def tapeMeasureToCoordinates(tape, pos):
     pg.wait()
     return np.vstack([xt, zt]).T
 
+
+def interpolate(*args, **kwargs):
+    r"""Interpolation convinience function.
+
+    Convinience function to interpolate different kind of data.
+    Currently supported interpolation schemes are:
+
+    * Mesh based values to arbitrary points, based on finite element
+        interpolation (pg.core)
+
+        Parameters:
+
+            args : :gimliapi:`GIMLI::Mesh`, ...
+                Arguments forwarded to :gimliapi:`GIMLI::interpolate`
+            kwargs :
+                Arguments forwarded to :gimliapi:`GIMLI::interpolate`
+
+        Returns:
+
+            Interpolated values
+
+    * 1D point set :math:`u(x)` for ascending :math:`x`.
+        Find interpolation function :math:`I = u(x)` and
+        returns :math:`u_{\text{i}} = I(x_{\text{i}})`
+        (interpolation methods are [**linear** via matplotlib,
+        cubic **spline** via scipy, fit with **harmonic** functions' via pygimli])
+
+        Parameters:
+
+            args: xi, x, u
+                * :math:`x_{\text{i}}` - target sample points
+                * :math:`x` - function sample points
+                * :math:`u` - function values
+            kwargs:
+                * method : string
+                    Specify interpolation method 'linear, 'spline', 'harmonic'
+
+        Returns:
+
+            ui: array of length xi
+                :math:`u_{\text{i}} = I(x_{\text{i}})`, with :math:`I = u(x)`
+
+    To use the core functions :gimliapi:`GIMLI::interpolate` start with a
+    mesh instance as first argument or use the appropriate keyword arguments.
+
+    TODO
+
+    * 2D parametric to points (method=['linear, 'spline', 'harmonic'])
+    * 2D/3D point cloud to points/grids (Delauney, 'linear, 'spline', 'harmonic')
+    * Mesh to points based on nearest neighbour values (pg.core)
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> fig, ax = pg.plt.subplots(1, 1, figsize=(10, 5))
+    >>> u = np.array([1.0, 12.0, 3.0, -4.0, 5.0, 6.0, -1.0])
+    >>> xu = np.array(range(len(u)))
+    >>> xi = np.linspace(xu[0], xu[-1], 1000)
+    >>> _= ax.plot(xu, u, 'o')
+    >>> _= ax.plot(xi, pg.interpolate(xi, xu, u, method='linear'),
+    ...         color='blue', label='linear')
+    >>> _= ax.plot(xi, pg.interpolate(xi, xu, u, method='spline'),
+    ...            color='red', label='spline')
+    >>> _= ax.plot(xi, pg.interpolate(xi, xu, u, method='harmonic'),
+    ...         color='green', label='harmonic')
+    >>> _= ax.legend()
+    """
+    core = False
+
+    if len(args) > 0:
+        if isinstance(args[0], pg.Mesh):
+            core = True
+    if 'srcMesh' in kwargs:
+        core = True
+
+    if core:
+        return pg.core._pygimli_.interpolate(*args, **kwargs)
+
+    x = 0
+    u = 0
+    xi = 0
+
+    if len(args) == 3:
+        xi = args[0]
+        x = args[1]
+        u = args[2]
+
+    method = kwargs.pop('method', 'linear')
+
+    if 'linear' in method:
+        return np.interp(xi, x, u)
+
+    if 'harmonic' in method:
+        coeff = kwargs.pop('nc', int(np.ceil(np.sqrt(len(x)))))
+        from pygimli.frameworks import harmfitNative
+        return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
+
+    if 'spline' in method:
+        pg.io.opt_import("scipy", requiredFor="use interpolate splines.")
+        from scipy import interpolate
+        tck = interpolate.splrep(x, u, s=0)
+        return interpolate.splev(xi, tck, der=0)
+
+
 if __name__ == '__main__':
     # no need to import matplotlib. pygimli's show does
     # import pygimli as pg

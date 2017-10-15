@@ -36,16 +36,16 @@ except ImportError as e:
     traceback.print_exc(file=sys.stdout)
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
-###########################
-###  Global shortcuts #####
-###########################
+#######################################
+###  Global convinience functions #####
+#######################################
 
-_pygimli_.load = None
+#_pygimli_.load = None
 
 from pygimli.io import load
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
-
+from pygimli.meshtools import interpolate
 
 def showNow():
     pass
@@ -959,7 +959,8 @@ ModellingBase = ModellingBaseMT__
 # unsorted stuff
 ###########################
 
-_pygimli_.interpolate = _pygimli_.interpolate_GILsave__
+# DEPRECATED
+# _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
 from .matrix import *
 
