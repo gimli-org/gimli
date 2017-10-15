@@ -1,3 +1,5 @@
+.. _sec:coding_guidelines:
+
 GitHub notes for core developers
 ================================
 
@@ -104,6 +106,7 @@ To produce a new version, type:
     git tag -a -m "First official release" "v1.0" # tags last commit as v1.0
     git push --tags # pushes tags to GitHub
 
+.. _sec:coding_guidelines:
 
 Coding rules
 ------------
@@ -222,12 +225,13 @@ https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#sections
 
   """
 
+.. _sec:coding_guidelines:
+
 Coding Guidelines
 -----------------
 
 Use pylint or prospector to improve code quality.
 
-.. _sec:coding_guidelines:
 
 We use: (You can find exceptions in .landscape.yml)
 

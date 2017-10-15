@@ -27,7 +27,7 @@ namespace GIMLI{
 
 void interpolate(const Mesh & mesh, const RMatrix & vData,
                  const R3Vector & ipos, RMatrix & iData,
-                 bool verbose){
+                 bool verbose){ ALLOW_PYTHON_THREADS
 
     R3Vector pos(ipos);
 
