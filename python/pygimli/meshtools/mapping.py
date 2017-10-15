@@ -269,39 +269,33 @@ def interpolate(*args, **kwargs):
     Currently supported interpolation schemes are:
 
     * Mesh based values to arbitrary points, based on finite element
-        interpolation (pg.core)
+      interpolation (pg.core)
 
-        Parameters:
-
-            args : :gimliapi:`GIMLI::Mesh`, ...
-                Arguments forwarded to :gimliapi:`GIMLI::interpolate`
-            kwargs :
-                Arguments forwarded to :gimliapi:`GIMLI::interpolate`
-
-        Returns:
-
-            Interpolated values
+      Parameters:
+        args: :gimliapi:`GIMLI::Mesh`, ...
+            Arguments forwarded to :gimliapi:`GIMLI::interpolate`
+        kwargs:
+            Arguments forwarded to :gimliapi:`GIMLI::interpolate`
+      Returns:
+        Interpolated values
 
     * 1D point set :math:`u(x)` for ascending :math:`x`.
-        Find interpolation function :math:`I = u(x)` and
-        returns :math:`u_{\text{i}} = I(x_{\text{i}})`
-        (interpolation methods are [**linear** via matplotlib,
-        cubic **spline** via scipy, fit with **harmonic** functions' via pygimli])
+      Find interpolation function :math:`I = u(x)` and
+      returns :math:`u_{\text{i}} = I(x_{\text{i}})`
+      (interpolation methods are [**linear** via matplotlib,
+      cubic **spline** via scipy, fit with **harmonic** functions' via pygimli])
 
-        Parameters:
-
-            args: xi, x, u
-                * :math:`x_{\text{i}}` - target sample points
-                * :math:`x` - function sample points
-                * :math:`u` - function values
-            kwargs:
-                * method : string
-                    Specify interpolation method 'linear, 'spline', 'harmonic'
-
-        Returns:
-
-            ui: array of length xi
-                :math:`u_{\text{i}} = I(x_{\text{i}})`, with :math:`I = u(x)`
+      Parameters:
+        args: xi, x, u
+            * :math:`x_{\text{i}}` - target sample points
+            * :math:`x` - function sample points
+            * :math:`u` - function values
+        kwargs:
+            * method : string
+                Specify interpolation method 'linear, 'spline', 'harmonic'
+      Returns:
+        ui: array of length xi
+            :math:`u_{\text{i}} = I(x_{\text{i}})`, with :math:`I = u(x)`
 
     To use the core functions :gimliapi:`GIMLI::interpolate` start with a
     mesh instance as first argument or use the appropriate keyword arguments.
@@ -361,10 +355,12 @@ def interpolate(*args, **kwargs):
         return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
 
     if 'spline' in method:
-        pg.io.opt_import("scipy", requiredFor="use interpolate splines.")
-        from scipy import interpolate
-        tck = interpolate.splrep(x, u, s=0)
-        return interpolate.splev(xi, tck, der=0)
+        if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
+            from scipy import interpolate
+            tck = interpolate.splrep(x, u, s=0)
+            return interpolate.splev(xi, tck, der=0)
+        else:
+            return xi*0.
 
 
 if __name__ == '__main__':
