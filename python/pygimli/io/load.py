@@ -8,7 +8,7 @@ import pygimli as pg
 from pygimli.meshtools import readGmsh, readPLC, readFenicsHDF5Mesh
 
 
-def opt_import(module, requiredTo="use the full functionality"):
+def opt_import(module, requiredFor="use the full functionality"):
     """Import and return module only if it exists.
 
     If `module` cannot be imported, a warning is printed followed by the
@@ -29,13 +29,13 @@ def opt_import(module, requiredTo="use the full functionality"):
     >>> pg = opt_import("pygimli")
     >>> pg.__name__
     'pygimli'
-    >>> opt_import("doesNotExist", requiredTo="do something special")
+    >>> opt_import("doesNotExist", requiredFor="do something special")
     No module named 'doesNotExist'.
     You need to install this optional dependency to do something special.
     """
     # set default message for common imports
-    if not requiredTo and "matplotlib" in module:
-        requiredTo = "visualize 2D content"
+    if not requiredFor and "matplotlib" in module:
+        requiredFor = "visualize 2D content"
 
     if module.count(".") > 2:
         raise ImportError("Can only import modules and sub-packages.")
@@ -45,7 +45,7 @@ def opt_import(module, requiredTo="use the full functionality"):
     except ImportError:
         msg = ("No module named \'%s\'.\nYou need to install this optional "
                "dependency to %s.")
-        print(msg % (module, requiredTo))
+        print(msg % (module, requiredFor))
         mod = None
 
     return mod

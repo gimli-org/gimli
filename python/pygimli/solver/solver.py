@@ -663,20 +663,45 @@ def identity(dom, start=0, end=-1, scale=1):
     return A
 
 
-def showSparseMatrix(A):
-    """Show the content of a sparse matrix."""
-    S = A
-    # S = pg.RSparseMatrix(A)
-    rows = S.vecRowIdx()
-    cols = S.vecColPtr()
-    vals = S.vecVals()
+def showSparseMatrix(A, full=False):
+    """Show the content of a sparse matrix.
 
-    for i in range(S.rows()):
-        for j in range(cols[i], cols[i + 1]):
-            print(i, rows[j], vals[j])
+    Parameters
+    ----------
+    A : :gimliapi:`GIMLI::SparseMatrix` | :gimliapi:`GIMLI::SparseMapMatrix`
+        Matrix to be shown.
+    full : bool [False]
+        Show as dense matrix.
+    """
+    S = A
+    if isinstance(A, pg.RSparseMapMatrix):
+        return showSparseMatrix(pg.SparseMatrix(A), full)
+    else:
+        rows = S.vecRowIdx()
+        cols = S.vecColPtr()
+        vals = S.vecVals()
+
+        if full:
+            Sd = pg.RMatrix(S.rows(), S.cols())
+
+        for i in range(S.rows()):
+            for j in range(cols[i], cols[i + 1]):
+                if full:
+                    Sd[i].setVal(vals[j], rows[j])
+                else:
+                    print(i, rows[j], vals[j])
+
+        if full:
+            print(np.array(Sd))
 
 
 def linsolve(A, b, verbose=False):
+    """
+    DEPRECATED wrong name style
+    """
+    return linSolve(A, b, verbose)
+
+def linSolve(A, b, verbose=False):
     r"""Direct solution after :math:`\textbf{x}` using core LinSolver.
 
     .. math::
