@@ -24,7 +24,7 @@ from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 from . raplot import drawTravelTimeData
 
 
-class Refraction0(MethodManager0):
+class Refraction(MethodManager):
     """Manager for refraction seismics (traveltime tomography)
 
     TODO Document main members and use default MethodeManager interface
