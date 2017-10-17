@@ -191,14 +191,15 @@ def niceLogspace(vMin, vMax, nDec=10):
     return vmin * q**np.arange(n)
 
 
-
 def grange(start, end, dx=0, n=0, log=False):
     """Create array with possible increasing spacing.
 
     Create either array from start step-wise filled with dx until end reached
-    [start, end] (like np.array with defined end) n or array filled from
-    start to end with n steps. [start, end] (like np.linespace) n or an
-    array with with logarithmic spacing if n is given, dx will be ignored.
+    [start, end] (like np.array with defined end).
+    Fill the array from start to end with n steps.
+    [start, end] (like np.linespace)
+    Fill the array from start to end with n steps but logarithmic increasing,
+    dx will be ignored.
 
     Parameters
     ----------
@@ -247,8 +248,7 @@ def grange(start, end, dx=0, n=0, log=False):
         if not log:
             return grange(start, end, dx=(e - s) / (n - 1))
         else:
-            raise Exception('not yet implemented.')
-
+            return pg.increasingRange2(start, end, n)
     else:
         raise Exception('Either dx or n have to be given.')
 
@@ -293,11 +293,10 @@ def diff(v):
     if isinstance(v, np.ndarray):
         if v.ndim == 2:
             if v.shape[1] < 4:
-                #v = pg.R3Vector(v.T)
+                # v = pg.R3Vector(v.T)
                 vt = v.copy()
                 v = pg.R3Vector(len(vt))
                 for i, vi in enumerate(vt):
-                    #print(i, vi)
                     v.setVal(pg.RVector3(vi), i)
             else:
                 v = pg.R3Vector(v)
@@ -681,4 +680,8 @@ def filterLinesByCommentStr(lines, comment_str='#'):
     for j in comment_line_idx[::-1]:
         del(lines[j])
     return lines
+
+
+
+
 

@@ -1571,9 +1571,10 @@ std::ostream & operator << (std::ostream & str, const Vector < T > & vec){
 Return a RVector with increasing values of size(n+1) filled with : [0, i*a + (i-1)*x, .. ,last]
 */
 template < class ValueType >
-Vector< ValueType > increasingRange2(const ValueType & a, const ValueType & last, Index n){
+Vector< ValueType > increasingRange2(const ValueType & a,
+                                     const ValueType & last, Index n){
     if (abs(a) < 1e-12){
-        throwError(1, "Can't create increasing range for DX value of: " + toStr(a) );
+        throwError(1, "Can't create increasing range for start value of: " + toStr(a) );
     }
 
     if (sign(a) != sign(last)){
@@ -1598,7 +1599,8 @@ Vector< ValueType > increasingRange2(const ValueType & a, const ValueType & last
 Return a RVector with increasing values of size(n+1) filled with : 0, first, ... ,last
 */
 template < class ValueType >
-Vector< ValueType > increasingRange(const ValueType & first, const ValueType & last, Index n){
+Vector< ValueType > increasingRange(const ValueType & first,
+                                    const ValueType & last, Index n){
     if (sign(first) != sign(last)){
         throwError(1, "cant increase range from [0 " + toStr(first) + " to " + toStr(last) + "]");
     }

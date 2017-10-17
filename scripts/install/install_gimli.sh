@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 
-#SCRIPT_REPO='-Ls -x http://wwwproxy:8080 https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
-SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
-GET="curl"
-
-LOCALSCRIPTS=0
-# set this via 'L' option
-#SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
-#GET="cat"
+if [[ $0 == *.sh ]]; then
+    SCRIPT_REPO=$(dirname $0)
+    GET="cat"
+else
+    SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
+    GET="curl"
+fi
 
 # Default values
 GIMLI_ROOT=$(pwd)/gimli
+GIMLI_SOURCE_DIR=$GIMLI_ROOT/gimli
+GIMLI_BUILD_DIR=$GIMLI_ROOT/build
+PYGIMLI_SOURCE_DIR=$GIMLI_SOURCE_DIR/python
+
 PARALLEL_BUILD=2
 PYTHON_MAJOR=3
 UPDATE_ONLY=0
@@ -68,8 +71,6 @@ help(){
     echo "      This may work or may not work .. please use at own risk"
     echo "b|branch=branch"
     echo "      Checkout with a given git branch name. Default=''"
-    echo "L|localScripts"
-    echo "      Use local scripts int $GIMLI_ROOT/gimli/scripts instead of remote versions downloaded by curl"
     exit
 }
 
@@ -90,9 +91,6 @@ for i in "$@"; do
         *b*|*branch*)
             BRANCH=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         ;;
-        *L*|*localScripts*)
-            LOCALSCRIPTS=1
-        ;;
         *C*|*clean*)
             CLEAN=1
         ;;
@@ -102,24 +100,21 @@ for i in "$@"; do
     esac
 done
 
-if [ $LOCALSCRIPTS -eq 1 ]; then
-    SCRIPT_REPO=$(pwd)/gimli/gimli/scripts/install
-    GET="cat"
-fi
-
-echo "=========================================="
+# echo "=========================================="
 if [ $(uname) == "Darwin" ]; then
     SYSTEM='mac'
     echo "Determining system ... DARWIN system found"
+    # need to be tested
+    CMAKE_GENERATOR='Unix Makefiles'
 elif [ $(uname -o) == "Msys" ]; then
     if [ $(uname -m) == "x86_64" ]; then
-        SYSTEM='win64'
         echo "Determining system ... Msys WIN64 system found"
+        SYSTEM='win64'
         # just run this for the initial call .. after a mingw-shell restart these setting is automatic
         export PATH=$PATH:/mingw64/bin
     else
-        SYSTEM='win32'
         echo "Determining system ... Msys WIN32 system found"
+        SYSTEM='win32'
         # just run this for the initial call .. after a mingw-shell restart these setting is automatic
         export PATH=$PATH:/mingw32/bin
     fi
@@ -127,9 +122,13 @@ elif [ $(uname -o) == "Msys" ]; then
     "$GET" $SCRIPT_REPO/install_$SYSTEM'_winpython.sh' | bash
     [ -f $GIMLI_ROOT/.bash_hint_python ] && source $GIMLI_ROOT/.bash_hint_python
 
+    # for mingw build
+    CMAKE_GENERATOR='Unix Makefiles'
+
 elif [ $(uname -o) == "GNU/Linux" ]; then
-    SYSTEM='linux'
     echo "Determining system ... LINUX system found"
+    SYSTEM='linux'
+    CMAKE_GENERATOR='Unix Makefiles'
 fi
 echo "------------------------------------------"
 
@@ -140,77 +139,97 @@ else
     # python way creates wrong leading /c/ for mysys
     export GIMLI_ROOT=$(readlink -f $GIMLI_ROOT)
 fi
-export PYTHON_MAJOR=$PYTHON_MAJOR
-export PARALLEL_BUILD=$PARALLEL_BUILD
+
 export UPDATE_ONLY=$UPDATE_ONLY
 
-echo "Installing at "$GIMLI_ROOT
+echo "Installing at: "$GIMLI_ROOT
 echo "Build for Python="$PYTHON_MAJOR
 echo "Parallelize with j="$PARALLEL_BUILD
-echo "Update only" $UPDATE_ONLY
-echo "Branch:" $BRANCH
-echo "CLEAN build:" $CLEAN
+echo "Update only: " $UPDATE_ONLY
+echo "Branch: " $BRANCH
+echo "CLEAN build: " $CLEAN
 
-echo "=========================================="
-echo "Installing system prerequisites for" $SYSTEM
-echo "------------------------------------------"
-"$GET" $SCRIPT_REPO/install_$SYSTEM'_prereqs.sh' | bash
+getGIMLI(){
+    mkdir -p $GIMLI_ROOT
+    pushd $GIMLI_ROOT
 
-echo "=========================================="
-echo "Installing gimli for" $SYSTEM
-echo "------------------------------------------"
+        if [ -d $GIMLI_SOURCE_DIR ]; then
+            pushd $GIMLI_SOURCE_DIR
+                git pull
+            popd
+        else
+            git clone https://github.com/gimli-org/gimli.git
+        fi
 
-mkdir -p $GIMLI_ROOT
-pushd $GIMLI_ROOT
+        if [ -n "$BRANCH" ]; then
+            pushd $GIMLI_SOURCE_DIR
+                echo "Switching to branch: " $BRANCH
+                git checkout $BRANCH
+            popd
+        fi
 
-    if [ -d "gimli" ]; then
-        pushd gimli
-            git pull
+        chmod +x $PYGIMLI_SOURCE_DIR/apps/*
+
+    popd
+}
+
+buildGIMLI(){
+    pushd $GIMLI_ROOT
+
+        [ $UPDATE_ONLY -eq 0 ] && rm -rf $GIMLI_BUILD_DIR
+
+        mkdir -p $GIMLI_BUILD_DIR
+
+        pushd $GIMLI_BUILD_DIR
+
+            cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE_DIR -DPYVERSION=$PYTHON_MAJOR
+
+            make -j$PARALLEL_BUILD && make pygimli J=$PARALLEL_BUILD
         popd
-    else
-        git clone https://github.com/gimli-org/gimli.git
-    fi
+    popd
+}
 
-    if [ -n "$BRANCH" ]; then
-        pushd gimli
-            echo "Switching to branch: " $BRANCH
-            git checkout $BRANCH
-        popd
-    fi
-
-    chmod +x gimli/python/apps/*
-
-    [ $UPDATE_ONLY -eq 0 ] && rm -rf build/
-    mkdir -p build
-
-    "$GET" $SCRIPT_REPO/install_$SYSTEM'_gimli.sh' | bash
-popd
-
-testPYGIMLI(){
+testGIMLI(){
     echo ""
-    echo "============================================================================"
-    echo "------------------------  TEST pyGIMLi installation ------------------------"
-    export PYTHONPATH=$GIMLI_ROOT/gimli/python
+    export PYTHONPATH=$PYGIMLI_SOURCE_DIR
     python -c 'import pygimli as pg; print("pygimli version:", pg.__version__)'
     if [ -x "$(command -v pytest)" ]; then
         python -c 'import pygimli as pg; pg.test()'
     fi
     echo "--- ------------------------------------------------------------------------"
-    echo "export PYTHONPATH=$GIMLI_ROOT/gimli/python" > $GIMLI_ROOT/.bash_hint_pygimli
-    echo "export PATH=$GIMLI_ROOT/gimli/python/apps:\$PATH" >> $GIMLI_ROOT/.bash_hint_pygimli
+    echo "export PYTHONPATH=$PYGIMLI_SOURCE_DIR" > $GIMLI_ROOT/.bash_hint_pygimli
+    echo "export PATH=$PYGIMLI_SOURCE_DIR/apps:\$PATH" >> $GIMLI_ROOT/.bash_hint_pygimli
 }
 
-testPYGIMLI
+echo "========================================================================="
+echo "Installing system prerequisites for" $SYSTEM
+echo "-------------------------------------------------------------------------"
+"$GET" $SCRIPT_REPO/install_$SYSTEM'_prereqs.sh' | bash
 
-echo ""
-echo "========================================================================"
+echo "========================================================================="
+echo "Get GIMLi sources"
+echo "-------------------------------------------------------------------------"
+getGIMLI
+
+echo "========================================================================="
+echo "Installing GIMLi for" $SYSTEM
+echo "-------------------------------------------------------------------------"
+buildGIMLI
+
+echo "========================================================================="
+echo "TEST pyGIMLi installation                 "
+echo "-------------------------------------------------------------------------"
+testGIMLI
+
+echo "========================================================================="
+echo "Finialize                                 "
 echo "Set the following setting to use pygimli, either locally"
 echo "per session or permanently in your $HOME/.bashrc"
-echo "------------------------------------------------------------------------"
+echo "-------------------------------------------------------------------------"
 echo ""
 [ -f $GIMLI_ROOT/.bash_hint_python ] && cat $GIMLI_ROOT/.bash_hint_python
 [ -f $GIMLI_ROOT/.bash_hint_pygimli ] && cat $GIMLI_ROOT/.bash_hint_pygimli
 echo ""
-echo "------------------------------------------------------------------------"
+echo "-------------------------------------------------------------------------"
 
 #https://raw.githubusercontent.com/gimli-org/gimli/master/scripts/install/install**

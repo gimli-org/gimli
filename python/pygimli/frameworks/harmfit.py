@@ -88,34 +88,35 @@ def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
             window=None, verbose=False, dosave=False,
             lineSearch=True, robust=False, maxiter=20):
     """HARMFIT - GIMLi based curve-fit by harmonic functions
-        Parameters
-        ----------
-        y : 1d-array - values to be fitted
 
-        x : 1d-array(len(y)) - data abscissa data. default: [0 .. len(y))
+    Parameters
+    ----------
+    y : 1d-array - values to be fitted
 
-        error : 1d-array(len(y)) error of y. default (absolute error = 0.01)
+    x : 1d-array(len(y)) - data abscissa data. default: [0 .. len(y))
 
-        nc : int - Number of harmonic coefficients
+    error : 1d-array(len(y)) error of y. default (absolute error = 0.01)
 
-        resample : 1d-array - resample y to x using fitting coeffients
+    nc : int - Number of harmonic coefficients
 
-        window : int - just fit data inside window bounds
+    resample : 1d-array - resample y to x using fitting coeffients
 
-        Returns
-        -------
-        response : 1d-array(len(resample) or len(x)) - smoothed values
+    window : int - just fit data inside window bounds
 
-        coefficients : 1d-array - fitting coefficients
+    Returns
+    -------
+    response : 1d-array(len(resample) or len(x)) - smoothed values
+
+    coefficients : 1d-array - fitting coefficients
     """
     if x is None:
         x = np.arange(len(y))
-#    else:
-#        if not isinstance(x, pg.RVector):
-#            x = pg.asvector(x)
-#
-#    if not isinstance(y, pg.RVector):
-#        y = pg.asvector(y)
+    #    else:
+    #        if not isinstance(x, pg.RVector):
+    #            x = pg.asvector(x)
+    #
+    #    if not isinstance(y, pg.RVector):
+    #        y = pg.asvector(y)
 
     xToFit = None
     yToFit = None
@@ -133,8 +134,6 @@ def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
         xToFit = x
         yToFit = y
 
-#    print xToFit
-#    print yToFit
     fop = pg.HarmonicModelling(nc, xToFit, verbose)
     inv = pg.RInversion(yToFit, fop, verbose, dosave)
     if error is not None:

@@ -104,7 +104,6 @@ sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 #ertData = ERT.simulate(mMesh, res, ertScheme, noiseLevel=0.01)
 #ERT.showData(ertData);pg.wait()
 
-
 #print("-Simulate Traveltime" + "-" * 50)
 TT = pg.physics.traveltime.TravelTimeManager(verbose=True)
 #TT = pg.physics.traveltime.refraction.Refraction0()

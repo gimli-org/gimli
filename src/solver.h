@@ -108,9 +108,11 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 }
 
 template < class Vec >
-int solveCGLSCDWWtrans(const MatrixBase & S, const MatrixBase & C, const Vec & dWeight,
-		  const Vec & b, Vec & x, const Vec & wc, const Vec & mc, const Vec & tm, const Vec & td,
-		  double lambda, const Vec & deltaX, int maxIter = 200, bool verbose = false){ //ALLOW_PYTHON_THREADS
+int solveCGLSCDWWtrans(const MatrixBase & S, const MatrixBase & C,
+                       const Vec & dWeight,  const Vec & b, Vec & x,
+                       const Vec & wc, const Vec & mc, const Vec & tm,
+                       const Vec & td, double lambda, const Vec & deltaX,
+                       int maxIter=200, bool verbose=false){ //ALLOW_PYTHON_THREADS
 
   uint nData = b.size();
   uint nModel = x.size();
@@ -174,8 +176,9 @@ int solveCGLSCDWWtrans(const MatrixBase & S, const MatrixBase & C, const Vec & d
 
 template < class Mat, class CMatrix, class Vec >
 int solveCGLSCDWW(const Mat & S, const CMatrix & C, const Vec & dWeight,
-		  const Vec & b, Vec & x, const Vec & wc, const Vec & mc,
-		  double lambda, const Vec & deltaX, int maxIter = 200, bool verbose = false){ ALLOW_PYTHON_THREADS
+                  const Vec & b, Vec & x, const Vec & wc, const Vec & mc,
+                  double lambda, const Vec & deltaX, int maxIter=200,
+                  bool verbose=false){ //ALLOW_PYTHON_THREADS
 
   uint nData = b.size();
   uint nModel = x.size();
@@ -236,8 +239,9 @@ int solveCGLSCDWW(const Mat & S, const CMatrix & C, const Vec & dWeight,
 
 template < class Mat, class CMatrix, class Vec >
 int solveCGLSCDWtrans(const Mat & S, const CMatrix & C, const Vec & dWeight,
-		  const Vec & b, Vec & x, const Vec & wc, const Vec & tm, const Vec & td,
-    		double lambda, const Vec & deltaX, int maxIter = 200, bool verbose = false){ ALLOW_PYTHON_THREADS
+                      const Vec & b, Vec & x, const Vec & wc, const Vec & tm,
+                      const Vec & td , double lambda, const Vec & deltaX,
+                      int maxIter=200, bool verbose=false){ //ALLOW_PYTHON_THREADS
 
 
     uint nData = b.size();

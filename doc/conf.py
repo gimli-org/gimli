@@ -61,7 +61,7 @@ sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/apps')))
 # -- General configuration ----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.2'
+needs_sphinx = '1.4' # and lower 1.6
 
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
@@ -79,6 +79,7 @@ if req:
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
           "Or install all dependencies with: pip install -r requirements.txt" + \
           "You can install them all in userspace by adding the --user flag."
+    print(pip.get_installed_distributions())
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings.

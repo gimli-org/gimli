@@ -30,7 +30,7 @@ Python 2 or Python 3?
 .....................
 
 Short answer: Python 3. Long answer: Currently, pygimli is functionable with all
-major Python versions (2.7, 3.4, 3.5). When compiling from source, it is
+major Python versions (2.7, 3.4, 3.5, 3.6). When compiling from source, it is
 important that *boost_python* is build against the same Python version you want
 to use. However, many (scientific) Python projects recommend to use Python 3 for
 `various reasons <http://python-3-for-scientists.readthedocs.io/>`_ and we will

@@ -507,7 +507,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 #    eCircles = []
     cols = []
 
-    if fillRegion and mesh.boundaryCount() > 0:
+    if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
             pass
