@@ -19,7 +19,6 @@ from pygimli.mplviewer import drawMesh, drawModel
 # Create coarse and fine mesh with data
 # -------------------------------------
 
-
 def create_mesh_and_data(n):
     nc = np.linspace(-2.0, 0.0, n)
     mesh = pg.createMesh2D(nc, nc)
