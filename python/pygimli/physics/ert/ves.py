@@ -134,7 +134,7 @@ class VESModelling(Block1DModelling):
     def drawModel(self, ax, model, **kwargs):
         pg.mplviewer.drawModel1D(ax=ax,
                                  model=model,
-                                 plot='loglog',
+                                 plot=kwargs.pop('plot', 'loglog'),
                                  xlabel='Resistivity [$\Omega$m]', **kwargs)
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
@@ -147,14 +147,19 @@ class VESModelling(Block1DModelling):
         if label == 'Response':
             col = 'blue'
 
-        ax.loglog(ra, self.ab2, 'x-', color=col, **kwargs)
+        ab2 = kwargs.pop('ab2', self.ab2)
+        mn2 = kwargs.pop('mn2', self.mn2)
+        plot = kwargs.pop('plot', 'loglog')
+
+        plot = getattr(ax, plot)
+        plot(ra, ab2, 'x-', color=col, **kwargs)
 
         if raE is not None:
-            ax.errorbar(ra, self.ab2,
+            ax.errorbar(ra, ab2,
                         xerr=ra * raE, elinewidth=2, barsabove=True,
                         linewidth=0, color='red')
 
-        ax.set_ylim(max(self.ab2), min(self.ab2))
+        ax.set_ylim(max(ab2), min(ab2))
         ax.set_xlabel('Apparent resistivity [$\Omega$m]')
         ax.set_ylabel('AB/2 in [m]')
         ax.grid(True)
@@ -205,17 +210,36 @@ class VESCModelling(VESModelling):
         return fop.response(par)
 
     def drawModel(self, ax, model, **kwargs):
-        nLay = (len(model)+1) // 3
-        super(VESCModelling, self).drawModel(ax, model[0:nLay*2-1])
+        nLay = (len(model) + 1) // 3
 
-        tax = hasTwin(ax)
-        if tax is None:
-            tax = ax.twiny()
+        a1 = None
+        a2 = None
+
+        if hasattr(ax, '__iter__'):
+            if len(ax) == 2:
+                a1 = ax[0]
+                a2 = ax[1]
+        else:
+            a1 = ax
+            a2 = hasTwin(ax)
+            if tax is None:
+                tax = ax.twiny()
+
+
+        super(VESCModelling, self).drawModel(ax, model[0:nLay*2-1], **kwargs)
+
+
+
+
+        plot = kwargs.pop('plot', 'loglog')
+        if plot is 'loglog':
+            plot = 'semilogy'
 
         pg.mplviewer.drawModel1D(ax=tax,
                                  model=pg.cat(model[0:nLay-1],
                                               1000. * model[nLay*2-1::]),
-                                 plot='plot', color='green',
+                                 plot=plot,
+                                 color='green',
                                  xlabel='Phase [mrad]', **kwargs)
 
     def drawData(self, ax, data, error=None, label=None, ab2=None, mn2=None,

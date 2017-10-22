@@ -106,7 +106,9 @@ Cell * findCommonCell(const std::vector < Node * > & n, bool warn) {
     } else {
         if (common.size() > 1){
             if (warn){
-                std::cerr << WHERE_AM_I << " pls. check, this should not happen. there is more then one cell defined." <<
+                for (uint i = 0; i < n.size(); i ++) std::cout << n[i]->id()<< " " ;
+                std::cout <<std::endl;
+                std::cerr << WHERE_AM_I << " pls. check, this should not happen. there is more then one cell defined for the given nodes." <<
                 common.size() << std::endl;
             }
             return *common.begin();

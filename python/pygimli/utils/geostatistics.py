@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Some matrix specialization."""
+"""Geostatistical utility functions concerning covariances."""
 
 import time
 from math import pi, sin, cos
@@ -17,8 +17,6 @@ def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
     ----------
 
     """
-    import scipy.linalg
-
     if I is None:
         I = [1, 1, 1]
     elif isinstance(I, (float, int)):
@@ -34,6 +32,7 @@ def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
     hz = z - z[:, np.newaxis]
     alpha = -dip * pi / 180  # rotation of operator
     beta = -strike * pi / 180
+    # compute lags, normalized by correlation lengths
     Hx = (hx*cos(alpha)-hy*sin(alpha))*cos(beta) / I[0]
     Hy = (hx*sin(alpha)+hy*cos(alpha))*cos(beta) / I[1]
     Hz = hz * sin(beta) / I[2]

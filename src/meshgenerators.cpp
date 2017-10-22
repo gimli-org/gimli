@@ -30,16 +30,18 @@ Mesh createGrid(const RVector & x, int marker){
     return mesh;
 }
 
-Mesh createGrid(const RVector & x, const RVector & y, int marker){
+Mesh createGrid(const RVector & x, const RVector & y, int marker,
+                bool worldBoundaryMarker){
     Mesh mesh(2);
-    mesh.createGrid(x, y);
+    mesh.createGrid(x, y, 0, worldBoundaryMarker);
     mesh.setCellMarkers(RVector(mesh.cellCount(), marker));
     return mesh;
 }
 
-Mesh createGrid(const RVector & x, const RVector & y, const RVector & z, int marker){
+Mesh createGrid(const RVector & x, const RVector & y, const RVector & z, int marker,
+                bool worldBoundaryMarker){
     Mesh mesh(3);
-    mesh.createGrid(x, y, z);
+    mesh.createGrid(x, y, z, 0, worldBoundaryMarker);
     mesh.setCellMarkers(RVector(mesh.cellCount(), marker));
     return mesh;
 }

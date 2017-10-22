@@ -345,20 +345,36 @@ def createLine(start, end, segments, **kwargs):
 
     Examples
     --------
+    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>>
+    >>> w = mt.createWorld(start=[0, 0], end=[3, 3])
+    >>> l1 = mt.createLine(start=[1, 1], end=[1, 2], segments=1,
+    ...                    leftDirection=False)
+    >>> l2 = mt.createLine(start=[1, 1], end=[2, 1], segments=20,
+    ...                    leftDirection=True)
+    >>>
+    >>> ax, _ = pg.show(mt.createMesh([w, l1, l2,]))
+    >>> ax, _ = pg.show([w, l1, l2,], ax=ax)
+    >>> pg.wait()
     """
     poly = pg.Mesh(2)
     startPos = pg.RVector3(start)
     endPos = pg.RVector3(end)
     a = endPos - startPos
 
-    dt = 1 / segments
+    dt = 1. / segments
+    left = kwargs.pop('leftDirection', True)
+
     for i in range(0, segments + 1):
-        if kwargs.pop('leftDirection', True):
+        if left:
             p = startPos + a * (dt * i)
         else:
             p = endPos - a * (dt * i)
 
         poly.createNode(p)
+
 
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
@@ -382,8 +398,8 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
             Marker for the resulting boundary edges
         * leftDirection : bool [True]
             Rotational direction
-        * marker : int [1]
-            Marker for the resulting triangle cells after mesh generation
+        * marker : int [None]
+            Marker for the resulting triangle cells after mesh generation.
         * area : float [0]
             Maximum cell size for resulting triangles after mesh generation
         * isHole : bool [False]
@@ -413,13 +429,13 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     for v in verts:
         poly.createNode(v)
 
-    marker = kwargs.pop('marker', 0)
+    marker = kwargs.pop('marker', None)
     area = kwargs.pop('area', 0)
     isHole = kwargs.pop('isHole', False)
 
     polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False)
 
-    if isClosed and marker is not 0 or area > 0:
+    if isClosed and marker is not None or area > 0:
         if isHole:
             poly.addHoleMarker(pg.center(poly.positions()))
         else:

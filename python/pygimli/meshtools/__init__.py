@@ -26,7 +26,9 @@ from .mapping import (nodeDataToCellData,
                       nodeDataToBoundaryData,
                       cellDataToBoundaryData,
                       fillEmptyToCellArray,
-                      tapeMeasureToCoordinates,)
+                      tapeMeasureToCoordinates,
+                      interpolate,
+                      )
 
 #  This is neither functional nor good practice  #  why?
 #  __all__ = [name for name in dir() if '_' not in name]

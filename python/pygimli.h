@@ -466,26 +466,27 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
         q.rotMatrix(mat);
     }
 
-    inline void interpolate_GILsave__(const Mesh & mesh, const RMatrix & data,
-                                      const R3Vector & pos, RMatrix & iData,
-                                      bool verbose=false){
-        __MS("interpolate_GILsave__ 1")
-        ALLOW_PYTHON_THREADS
-        return interpolate(mesh, data, pos, iData, verbose);
-    }
-    inline RVector interpolate_GILsave__(const Mesh & mesh, const RVector & data,
-                                          const RVector & x, const RVector & y, bool verbose = false){
-        ALLOW_PYTHON_THREADS
-        std::cout << "interpolate_GILsave__ 2" << std::endl;
-        return interpolate(mesh, data, x, y, verbose);
-    }
-
-    inline void interpolate_GILsave__(const Mesh & mesh, const RVector & data,
-                                       const Mesh & pos, RVector & iData, bool verbose = false){
-        ALLOW_PYTHON_THREADS
-        std::cout << "interpolate_GILsave__ 3" << std::endl;
-        return interpolate(mesh, data, pos, iData, verbose);
-    }
+// DEPRECATED
+//     inline void interpolate_GILsave__(const Mesh & mesh, const RMatrix & data,
+//                                       const R3Vector & pos, RMatrix & iData,
+//                                       bool verbose=false){
+//         __MS("interpolate_GILsave__ 1")
+//         ALLOW_PYTHON_THREADS
+//         return interpolate(mesh, data, pos, iData, verbose);
+//     }
+//     inline RVector interpolate_GILsave__(const Mesh & mesh, const RVector & data,
+//                                           const RVector & x, const RVector & y, bool verbose = false){
+//         ALLOW_PYTHON_THREADS
+//         std::cout << "interpolate_GILsave__ 2" << std::endl;
+//         return interpolate(mesh, data, x, y, verbose);
+//     }
+//
+//     inline void interpolate_GILsave__(const Mesh & mesh, const RVector & data,
+//                                        const Mesh & pos, RVector & iData, bool verbose = false){
+//         ALLOW_PYTHON_THREADS
+//         std::cout << "interpolate_GILsave__ 3" << std::endl;
+//         return interpolate(mesh, data, pos, iData, verbose);
+//     }
 
 } // namespace GIMLI
 

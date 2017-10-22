@@ -2,5 +2,5 @@
 """Method manager templates."""
 
 from .methodManager import (MethodManager0, MeshMethodManager0,
-                           MethodManager, MethodManager1d,
-                           MeshMethodManager)
+                            MethodManager, MethodManager1d,
+                            MeshMethodManager)

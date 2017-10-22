@@ -153,6 +153,9 @@ typedef int64_t int64;
 #define ASSERT_EMPTY(v) if (v.size()==0) \
     throwLengthError(1, WHERE_AM_I + " array size is zero.");
 
+enum LogType {Info, Warning, Error, Debug, Critical};
+DLLEXPORT void log(LogType type, const std::string & msg);
+
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
 static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;
@@ -204,7 +207,7 @@ static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
 static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 3;
 
 /*! Flag load/save Ascii or binary */
-enum IOFormat{ Ascii, Binary };
+enum IOFormat{Ascii, Binary};
 
 //** start forward declaration
 class Boundary;
@@ -274,7 +277,6 @@ typedef GIMLI::Inversion< double > RInversion;
 template < class ValueType > class ElementMatrix;
 typedef ElementMatrix < double > RElementMatrix;
 
-
 template < class Vec > class Trans;
 
 /*! */
@@ -306,12 +308,17 @@ private:
 #endif
 };
 
-#define ALLOW_PYTHON_THREADS PythonGILSave __pygil_t__;
-#define RESTORE_PYTHON_THREADS __pygil_t__.restore();
-#define SAVE_PYTHON_THREADS __pygil_t__.save();
-#ifndef Py_BEGIN_ALLOW_THREADS
-    #define Py_BEGIN_ALLOW_THREADS
-    #define Py_END_ALLOW_THREADS
+    #define ALLOW_PYTHON_THREADS PythonGILSave __pygil_t__;
+    #define RESTORE_PYTHON_THREADS __pygil_t__.restore();
+    #define SAVE_PYTHON_THREADS __pygil_t__.save();
+
+#ifndef PYTHON_FOUND
+    #ifndef Py_BEGIN_ALLOW_THREADS
+        #define Py_BEGIN_ALLOW_THREADS
+        #define Py_END_ALLOW_THREADS
+    #endif
+#else
+//     #include <Python.h>
 #endif
 
 //! General template for conversion to ing, should supersede all sprintf etc.
