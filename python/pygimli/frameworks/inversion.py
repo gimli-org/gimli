@@ -158,15 +158,14 @@ class Inversion(object):
         self.debug   = kwargs.pop('debug', self.debug)
         self.maxIter = kwargs.pop('maxIter', self.maxIter)
 
-
         startModel = kwargs.pop('startModel', None)
+
         if type(startModel) is float or type(startModel) is int:
             nModel = self.parameterCount
             startModel = pg.Vector(nModel, startModel)
             self.fop.setStartModel(startModel)
         elif hasattr(startModel, '__iter__'):
             self.fop.setStartModel(startModel)
-
 
         showProgress = kwargs.pop('showProgress', False)
 
@@ -186,7 +185,6 @@ class Inversion(object):
 
         if self._errorVals is None:
             raise Exception("Inversion framework need data error values to run")
-
 
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
@@ -309,11 +307,29 @@ class Block1DInversion(MarquardtInversion):
     def __init__(self, fop=None, **kwargs):
         super(Block1DInversion, self).__init__(fop, **kwargs)
 
-    def run(self, dataVals, errVals, nLayers=4, **kwargs):
+    def run(self, dataVals, errVals, nLayers=4, fixLayers=False, **kwargs):
+        """
+        Parameters
+        ----------
 
+        """
         #if len(self.fop.startModel()) == 0:
         # somehow update model space if nlayers has been changed
         self.fop.createStartModel(dataVals, nLayers)
+
+        if fixLayers:
+            self.fop.setRegionProperties(0, modelControl=1e12)
+            if hasattr(fixLayers, '__iter__'):
+                if len(fixLayers) != nLayers-1:
+                    print("fixLayers:", fixLayers)
+                    raise Exception("fixlayers need to have a length of nLayers-1=" + str(nLayers-1))
+                self.fop.setRegionProperties(0, startModel=fixLayers)
+
+            # TODO DRY to self.fop.createStartModel
+            self.fop.setStartModel(self.fop.regionManager().createStartModel())
+        else:
+            self.fop.setRegionProperties(0, modelControl=1.0)
+
 
         return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
 

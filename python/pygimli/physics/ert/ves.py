@@ -112,7 +112,7 @@ class VESModelling(Block1DModelling):
 
         if self.am is not None and self.bm is not None:
             self.ab2 = (self.am + self.bm) / 2
-            self.mn2 = abs((self.am - self.an)) / 2
+            self.mn2 = pg.abs((self.am - self.an)) / 2
 
             self.k = (2.0 * np.pi) / (1.0/self.am - 1.0/self.an -
                                     1.0/self.bm + 1.0/self.bn)
@@ -170,6 +170,16 @@ class VESCModelling(VESModelling):
         super(VESCModelling, self).__init__(nBlocks=2, **kwargs)
         self.phiAxe = None
 
+    def phaseModel(self, model):
+        """Return the current phase model values."""
+        nLay = (len(model) + 1) // 3
+        return pg.cat(model[0:nLay-1], 1000. * model[nLay*2-1::])
+
+    def resModel(self, model):
+        """Return the resistivity model values."""
+        nLay = (len(model) + 1) // 3
+        return model[0:nLay*2-1]
+
     def createStartModel(self, rhoa, nLayers):
         self.setLayers(nLayers)
 
@@ -177,18 +187,15 @@ class VESCModelling(VESModelling):
                                   np.log10(max(self.ab2)/5), nLayers-1)
         startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
 
-        #startThicks = np.zeros(nLayers-1)
-        #for i in range(nLayers-1):
-            #startThicks[i] = pow(2.0, 1.0 + i)
-
         # layer thickness properties
         self.setRegionProperties(0, startModel=startThicks, trans='log')
 
         # resistivity properties
-        self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
+        self.setRegionProperties(1, startModel=np.median(rhoa),
+                                 trans='log')
 
-        self.setRegionProperties(2, startModel=np.ones(nLayers)*np.median(rhoa[len(rhoa)//2::]),
-                                 trans='lin')
+        self.setRegionProperties(2, startModel=np.median(rhoa[len(rhoa)//2::]),
+                                 trans='log')
 
         sm = self.regionManager().createStartModel()
         self.setStartModel(sm)
@@ -210,8 +217,7 @@ class VESCModelling(VESModelling):
         return fop.response(par)
 
     def drawModel(self, ax, model, **kwargs):
-        nLay = (len(model) + 1) // 3
-
+        """Draw 1D VESC Modell."""
         a1 = None
         a2 = None
 
@@ -222,38 +228,47 @@ class VESCModelling(VESModelling):
         else:
             a1 = ax
             a2 = hasTwin(ax)
-            if tax is None:
-                tax = ax.twiny()
+            if a2 is None:
+                a2 = ax.twiny()
 
+        super(VESCModelling, self).drawModel(a1, self.resModel(model), **kwargs)
 
-        super(VESCModelling, self).drawModel(ax, model[0:nLay*2-1], **kwargs)
-
-
-
-
-        plot = kwargs.pop('plot', 'loglog')
+        plot = kwargs.pop('plot', 'semilogy')
         if plot is 'loglog':
             plot = 'semilogy'
+        elif plot is 'semilogx':
+            plot = 'plot'
 
-        pg.mplviewer.drawModel1D(ax=tax,
-                                 model=pg.cat(model[0:nLay-1],
-                                              1000. * model[nLay*2-1::]),
+        pg.mplviewer.drawModel1D(ax=a2,
+                                 model=self.phaseModel(model),
                                  plot=plot,
                                  color='green',
                                  xlabel='Phase [mrad]', **kwargs)
 
     def drawData(self, ax, data, error=None, label=None, ab2=None, mn2=None,
                  **kwargs):
-        """
-        """
+        """Draw 1D VESC Data."""
+        a1 = None
+        a2 = None
+
+        if hasattr(ax, '__iter__'):
+            if len(ax) == 2:
+                a1 = ax[0]
+                a2 = ax[1]
+        else:
+            a1 = ax
+            a2 = hasTwin(ax)
+            if a2 is None:
+                a2 = ax.twiny()
+
         if ab2 is not None and mn2 is not None:
             self.setDataBasis(ab2=ab2, mn2=mn2)
 
         ra = data[0:len(data)//2]
         phi = data[len(data)//2::] * 1000. #mRad
 
-        phiE = None
-        raE = None
+        phiE = None # abs err
+        raE = None # rel err
         if error is not None:
             if type(error) is float:
                 raE = np.ones(len(data)//2) * error
@@ -262,26 +277,22 @@ class VESCModelling(VESModelling):
                 raE = error[0:len(data)//2]
                 phiE = error[len(data)//2::]
 
-        super(VESCModelling, self).drawData(ax, ra, error=raE,
+        super(VESCModelling, self).drawData(a1, ra, error=raE,
                                             color='black',
                                             label=label, **kwargs)
 
-        tax = hasTwin(ax)
-        if tax is None:
-            tax = ax.twiny()
-
-        tax.semilogy(phi, self.ab2, 'x-', color='green', **kwargs)
+        a2.semilogy(phi, self.ab2, 'x-', color='green', **kwargs)
 
         if phiE is not None:
-            tax.errorbar(phi, self.ab2,
-                         xerr=phi * phiE, elinewidth=2, barsabove=True,
-                         linewidth=0, color='red')
+            a2.errorbar(phi, self.ab2,
+                        xerr=phiE, elinewidth=2, barsabove=True,
+                        linewidth=0, color='red')
 
 
-        tax.set_ylim(max(self.ab2), min(self.ab2))
-        tax.set_xlabel('Apparent phase [mRad]', color='green')
-        tax.set_ylabel('AB/2 in [m]')
-        tax.grid(True)
+        a2.set_ylim(max(self.ab2), min(self.ab2))
+        a2.set_xlabel('Apparent phase [mRad]', color='green')
+        a2.set_ylabel('AB/2 in [m]')
+        a2.grid(True)
 
 
 class VESManager(MethodManager1d):
@@ -328,6 +339,7 @@ class VESManager(MethodManager1d):
         self.transData = None
         self.transRho = pg.TransLog()
         self.transPhi = pg.TransLin()
+        #self.transPhi = pg.TransLog()
 
     @property
     def complex(self):
@@ -358,24 +370,43 @@ class VESManager(MethodManager1d):
 
     def invert(self, data=None, err=None, ab2=None, mn2=None, **kwargs):
         """Invert measured data.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
         """
         if ab2 is not None and mn2 is not None:
             self.fop.setDataBasis(ab2=ab2, mn2=mn2)
 
+        if isinstance(data, pg.DataContainer):
+            raise StandardException('Implement me')
+
+        nData = len(data)//2
         if self.complex:
             self.transData = pg.TransCumulative()
-            self.transData.add(self.transRho, len(data)//2)
-            self.transData.add(self.transPhi, len(data)//2)
+            self.transData.add(self.transRho, nData)
+            self.transData.add(self.transPhi, nData)
         else:
             self.transData = pg.TransLog()
 
         self.inv.transData = self.transData
 
+
         self.fop.setRegionProperties(0, limits=[1., 1000.])
+        self.fop.setRegionProperties(1, limits=[5., 10000.])
+        self.fop.setRegionProperties(2, limits=[0.1/1000, 6./1000.])
+
+        errVals = err
+        if len(err) == 2 and self.complex:
+            errVals = pg.cat(np.ones(nData)*err[0],
+                             np.abs(err[1] / data[nData::]))
+            #assume [relative resistivity Err, absolute phase Err]
 
         #ensure data and error sizes here
 
-        return super(VESManager, self).invert(dataVals=data, errVals=err,
+        return super(VESManager, self).invert(dataVals=data, errVals=errVals,
                                               **kwargs)
 
     def loadData(self, fileName, **kwargs):
