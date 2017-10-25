@@ -5,8 +5,10 @@
 #include <boost/mpl/next.hpp>
 #include "tuples.hpp"
 
-// #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 #include <numpy/arrayobject.h>
+#include <numpy/arrayscalars.h>
 
 #include <Python.h>
 
@@ -36,31 +38,37 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     //     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     // is obj is a sequence
     if(!PySequence_Check(obj)){
-        __DC(obj << "!Object")
+        __DC(obj << "\t !Object")
         return NULL;
     }
 
     // has the obj a len method
     if(!PyObject_HasAttrString(obj, "__len__")){
-        __DC(obj << "!len")
+        __DC(obj << "\t !len")
         return NULL;
     }
 
     bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
-    //         std::cout << "here am i 1 " << len(py_sequence) << std::endl;
 
     if (len(py_sequence) > 0) {
-        __DC(obj << "\t len: " << len(py_sequence) << " type:" << GIMLI::type(ValueType(0)))
+        __DC(obj << "\t len: " << len(py_sequence) << " type: " << GIMLI::type(ValueType(0)))
         bp::object element = py_sequence[0];
-//         __DC(obj << "seq[0]: " << py_sequence[0] << " valtype:" << GIMLI::type(ValueType(0)))
+        __DC(obj << "\t seq[0]: " << element << " "  << " type: " << GIMLI::type(ValueType(0)))
 
         bp::extract< ValueType > type_checker(element);
         if (type_checker.check()){
             __DC(obj << "\t ->construct: " << len(py_sequence))
             return obj;
         } else {
-            __DC(obj << "\t cannot convert")
-            __DC(element);
+            __DC(obj << "\t cannot convert: " << type_checker.check())
+
+            PyTypeObject* type = obj->ob_type;
+            const char* p = type->tp_name;
+            __DC("type is " << p)
+            if (strcmp(p, "numpy.ndarray")==0){
+                return obj;
+            }
+
 //             boost::numpy::initialize();
 //             std::cout << bp::extract<ValueType>(element)() << std::endl;
 //             std::cout << bp::extract<ValueType>(bp::str(element))() << std::endl;
@@ -152,6 +160,9 @@ struct PySequence2RVector{
         GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
         data->convertible = memory_chunk;
 
+        //PyTypeObject* type = obj->ob_type;
+
+       __DC("type is " << obj->ob_type->tp_name)
        __DC("isvector<>: " << PyObject_HasAttrString(obj, "singleCalcCount"))
        __DC("isndarray<>: " << PyObject_HasAttrString(obj, "flatten"))
        __DC("len :   " << len(py_sequence))
@@ -160,17 +171,34 @@ struct PySequence2RVector{
        __DC("OneS:   " << PyArray_ISONESEGMENT(obj))
 
         if (PyObject_HasAttrString(obj, "flatten")){ // probably numpy ndarray
+
             if (PyArray_TYPE(obj) == 12 && PyArray_ISONESEGMENT(obj)){
                 // convert from numpy array
-                __DC(obj << " ** from array")
+                __DC(obj << " ** from array of type " << PyArray_TYPE(obj))
 //                 GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(PyArray_DIM(obj,0));
 //                 data->convertible = memory_chunk;
                 void * arrData = PyArray_DATA(obj);
 
                 std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(double));
                 return;
+            } else if (PyArray_TYPE(obj) == 7 && PyArray_ISONESEGMENT(obj)){ //numpy.int64
+                __DC(obj << " ** from array of type " << PyArray_TYPE(obj))
+
+                bp::object element;
+
+                for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                    element = py_sequence[i];
+                    (*vec)[i] = PyArrayScalar_VAL(element.ptr(), Int64);
+
+//                     __DC(i << " a " << element);
+//                     __DC(i << " a " << element.ptr()->ob_type->tp_name)
+//                     __DC(i << " d " <<  PyArrayScalar_VAL(element.ptr(), Int64));
+
+                }
+                return;
+            } else {
+                __DC("fixme: type=" << PyArray_TYPE(obj))
             }
-            __DC("fixme: type=" << PyArray_TYPE(obj))
         }
 
         // convert from list

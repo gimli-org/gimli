@@ -206,12 +206,81 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     return atts
 
 
+def interpolateAlongCurve(curve, t):
+    """Interpolate along curve.
+
+    Return curve coordinates for a piecewise linear curve :math:`C(t) = {x_i,y_i,z_i}`
+    at positions :math:`t`.
+    Curve and :math:`t` values are expected to be sorted along distance from the
+    origin of the curve.
+
+    TODO optional smooth curve with harmfit and/or spline
+
+    Parameters
+    ----------
+    curve : [[x,y=0,z]] | [:gimliapi:`GIMLI::RVector3`] | :gimliapi:`GIMLI::R3Vector`
+        Discrete curve for 2D :math:`x,z` curve=[[x,z]], 3D :math:`x,y,z`
+
+    t : 1D iterable
+        Query positions along the curve in absolute distance
+
+    Returns
+    -------
+
+    p : np.array
+        Curve positions at query points :math:`t`.
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> fig, axs = pg.plt.subplots(2,2)
+    >>> topo = np.array([[0., 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.]])
+    >>> t = np.arange(11.0)
+    >>> p = mt.interpolateAlongCurve(topo, t)
+    >>> _= axs[0][0].plot(topo[:,0], topo[:,1], '-o')
+    >>> _= axs[0][0].scatter(p[:,0], p[:,2], color='red') #doctest: +ELLIPSIS
+    >>> _= axs[0][0].set_aspect(1)
+    >>> pg.plt.show()
+    """
+    xC = np.zeros(len(curve))
+    yC = np.zeros(len(curve))
+    zC = np.zeros(len(curve))
+
+    if isinstance(curve, pg.R3Vector) or isinstance(curve, pg.stdVectorRVector3):
+        xC = pg.x(curve)
+        yC = pg.y(curve)
+        zC = pg.z(curve)
+    else:
+        if curve.shape[1] == 2:
+            xC = curve[:, 0]
+            zC = curve[:, 1]
+        else:
+            xC = curve[:, 0]
+            yC = curve[:, 1]
+            zC = curve[:, 2]
+
+    tCurve = pg.utils.cumDist(curve)
+    xt = interpolate(t, tCurve, xC)
+    yt = interpolate(t, tCurve, yC)
+    zt = interpolate(t, tCurve, zC)
+
+    return np.vstack([xt, zt, zt]).T
+
+
 def tapeMeasureToCoordinates(tape, pos):
     """Interpolate 2D tape measured topography to 2D Cartesian coordinates.
 
-    Tape and pos value are expected to be sorted along distance to the orign.
+    Tape and pos value are expected to be sorted along distance to the origin.
+
+    DEPRECATED will be removed use
+    :py:mod:`pygimli.meshtools.interpolateAlongCurve` instead
 
     TODO optional smooth curve with harmfit
+    TODO parametric
+    TODO parametric + Topo: 3d
 
     Parameters
     ----------
@@ -220,7 +289,7 @@ def tapeMeasureToCoordinates(tape, pos):
         from origin and height (z)
 
     pos : iterable
-        Query positions along the tape measured profile
+        Array of query positions along the tape measured profile t[0 ..
 
     Returns
     -------
@@ -228,38 +297,9 @@ def tapeMeasureToCoordinates(tape, pos):
         Same as pos but with interpolated height values.
         The Distance between pos points and res (along curve) points remains.
 
-    Examples
-    --------
-    >>> # no need to import matplotlib. pygimli's show does
-    >>> import numpy as np
-    >>> import pygimli as pg
-    >>> import pygimli.meshtools as mt
-    >>> elec = np.arange(11.)
-    >>> topo = np.array([[0., 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.]])
-    >>> _= pg.plt.plot(topo[:,0], topo[:,1])
-    >>> p = mt.tapeMeasureToCoordinates(topo, elec)
-    >>> pg.plt.gca().plot(p[:,0], p[:,1], 'o') #doctest: +ELLIPSIS
-    [...]
-    >>> pg.plt.gca().set_aspect(1)
-    >>> pg.plt.show()
     """
-    if isinstance(tape, pg.R3Vector) or isinstance(tape, pg.stdVectorRVector3):
-        xTape = pg.x(tape)
-        zTape = pg.z(tape)
-    else:
-        xTape = tape[:, 0]
-        zTape = tape[:, 1]
-
-    t = pg.utils.cumDist(pos)
-    # print(t)
-    tTape = pg.utils.cumDist(tape)
-    xt = np.interp(t, tTape, xTape)
-    zt = np.interp(t, tTape, zTape)
-
-    pg.plt.plot(xTape, zTape)
-    pg.plt.plot(xt, zt, 'o')
-    pg.wait()
-    return np.vstack([xt, zt]).T
+    pg.deprecated("tapeMeasureToCoordinates", "interpolateAlongCurve")
+    return interpolateAlongCurve(tape, pos)
 
 
 def interpolate(*args, **kwargs):
@@ -269,7 +309,7 @@ def interpolate(*args, **kwargs):
     Currently supported interpolation schemes are:
 
     * Mesh based values to arbitrary points, based on finite element
-      interpolation (pg.core)
+      interpolation (c++ core)
 
       Parameters:
         args: :gimliapi:`GIMLI::Mesh`, ...
@@ -278,6 +318,16 @@ def interpolate(*args, **kwargs):
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
       Returns:
         Interpolated values
+
+    * Interpolate along curve.
+      Forwarded to :py:mod:`pygimli.meshtools.interpolateAlongCurve`
+
+      Parameters:
+        args: curve, t
+
+        kwargs:
+            Arguments forwarded to
+            :py:mod:`pygimli.meshtools.interpolateAlongCurve`
 
     * 1D point set :math:`u(x)` for ascending :math:`x`.
       Find interpolation function :math:`I = u(x)` and
@@ -296,6 +346,7 @@ def interpolate(*args, **kwargs):
       Returns:
         ui: array of length xi
             :math:`u_{\text{i}} = I(x_{\text{i}})`, with :math:`I = u(x)`
+
 
     To use the core functions :gimliapi:`GIMLI::interpolate` start with a
     mesh instance as first argument or use the appropriate keyword arguments.
@@ -324,43 +375,48 @@ def interpolate(*args, **kwargs):
     ...         color='green', label='harmonic')
     >>> _= ax.legend()
     """
-    core = False
+    pgcore = False
 
     if len(args) > 0:
         if isinstance(args[0], pg.Mesh):
-            core = True
+            pgcore = True
     if 'srcMesh' in kwargs:
-        core = True
+        pgcore = True
 
-    if core:
+    if pgcore:
         return pg.core._pygimli_.interpolate(*args, **kwargs)
 
     x = 0
     u = 0
     xi = 0
 
-    if len(args) == 3:
+    if len(args) == 3: #args: xi, x, u
         xi = args[0]
         x = args[1]
         u = args[2]
 
-    method = kwargs.pop('method', 'linear')
+        method = kwargs.pop('method', 'linear')
 
-    if 'linear' in method:
-        return np.interp(xi, x, u)
+        if 'linear' in method:
+            return np.interp(xi, x, u)
 
-    if 'harmonic' in method:
-        coeff = kwargs.pop('nc', int(np.ceil(np.sqrt(len(x)))))
-        from pygimli.frameworks import harmfitNative
-        return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
+        if 'harmonic' in method:
+            coeff = kwargs.pop('nc', int(np.ceil(np.sqrt(len(x)))))
+            from pygimli.frameworks import harmfitNative
+            return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
 
-    if 'spline' in method:
-        if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
-            from scipy import interpolate
-            tck = interpolate.splrep(x, u, s=0)
-            return interpolate.splev(xi, tck, der=0)
-        else:
-            return xi*0.
+        if 'spline' in method:
+            if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
+                from scipy import interpolate
+                tck = interpolate.splrep(x, u, s=0)
+                return interpolate.splev(xi, tck, der=0)
+            else:
+                return xi*0.
+
+    if len(args) == 2: # args curve, t
+        curve = args[0]
+        t = args[1]
+        return interpolateAlongCurve(curve, args, **kwargs)
 
 
 if __name__ == '__main__':

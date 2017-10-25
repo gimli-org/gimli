@@ -28,6 +28,7 @@ from .mapping import (nodeDataToCellData,
                       fillEmptyToCellArray,
                       tapeMeasureToCoordinates,
                       interpolate,
+                      interpolateAlongCurve
                       )
 
 #  This is neither functional nor good practice  #  why?
