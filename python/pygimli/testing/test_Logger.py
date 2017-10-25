@@ -19,8 +19,6 @@ log.critical("Start test.")
 # test core log
 pg.setThreadCount(2)
 
-# call core log
-for i in range(110000000):
-    pg.log(pg.Debug, "core log " + str(i))
+pg.log(pg.Debug, "core log ")
 
 log.exception("Exception")

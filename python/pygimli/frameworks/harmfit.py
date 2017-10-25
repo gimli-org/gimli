@@ -111,12 +111,6 @@ def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
     """
     if x is None:
         x = np.arange(len(y))
-    #    else:
-    #        if not isinstance(x, pg.RVector):
-    #            x = pg.asvector(x)
-    #
-    #    if not isinstance(y, pg.RVector):
-    #        y = pg.asvector(y)
 
     xToFit = None
     yToFit = None
@@ -136,6 +130,7 @@ def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
 
     fop = pg.HarmonicModelling(nc, xToFit, verbose)
     inv = pg.RInversion(yToFit, fop, verbose, dosave)
+
     if error is not None:
         inv.setAbsoluteError(error)
     else:
@@ -151,11 +146,8 @@ def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
     # inv.setConstraintType(0)
 
     coeff = inv.run()
-    print(inv.chi2())
 
     if resample is not None:
-        if not isinstance(resample, pg.RVector):
-            resample = pg.asvector(resample)
 
         ret = fop.response(coeff, resample)
 
