@@ -108,6 +108,9 @@ public:
     /*! Return true if pos touches the line. */
     bool touch(const RVector3 & pos, double tol = TOLERANCE) const ;
 
+    /*! Return the length if the line.*/
+    double length() const { return p0_.dist(p1_); }
+
 protected:
 
     /*! internal: copy content of line into this line */

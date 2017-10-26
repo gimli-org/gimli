@@ -55,6 +55,10 @@ class TestRVectorMethods(unittest.TestCase):
         x = pg.RVector(l)
         self.assertEqual(x.size(), len(l))
 
+        l = [1, 2, 3]
+        x = pg.RVector(l)
+        self.assertEqual(x.size(), len(l))
+
     def test_ListToR3Vector(self):
         '''
             custom_rvalue.cpp
@@ -90,9 +94,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
 
     def test_NumpyToRVector(self):
-        '''
-            custom_rvalue.cpp
-        '''
+        """ implemented in custom_rvalue.cpp"""
         x = np.arange(0, 1., 0.2)
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
@@ -102,6 +104,17 @@ class TestRVectorMethods(unittest.TestCase):
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(10, dtype=np.int)
+        a = pg.RVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(10, dtype=np.long)
+        a = pg.RVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        self.assertEqual(pg.sum(x), sum(x))
 
     def test_NumpyToRVector3(self):
         '''
