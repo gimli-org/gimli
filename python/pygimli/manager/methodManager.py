@@ -191,6 +191,7 @@ class MeshMethodManager(MethodManager):
     # Mesh related methods
     def createMesh(self, **kwargs):
         """Create a mesh aka the parametrization."""
+        raise implementme
         pass
 
     def setMesh(self, mesh, refine=True):

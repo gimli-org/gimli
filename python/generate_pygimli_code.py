@@ -298,7 +298,7 @@ def generate(defined_symbols, extraIncludes):
         'register_pysequence_to_indexvector_conversion',
         'register_pysequence_to_r3vector_conversion',
         'register_pysequence_to_StdVectorRVector3_conversion',
-        # 'register_rvector_to_ndarray_conversion',
+        'register_numpy_to_rmatrix_conversion',
     ]
 
     for converter in rvalue_converters:

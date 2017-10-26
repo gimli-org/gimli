@@ -218,7 +218,7 @@ def interpolateAlongCurve(curve, t):
 
     Parameters
     ----------
-    curve : [[x,y=0,z]] | [:gimliapi:`GIMLI::RVector3`] | :gimliapi:`GIMLI::R3Vector`
+    curve : [[x,z]] | [[x,y,z]] | [:gimliapi:`GIMLI::RVector3`] | :gimliapi:`GIMLI::R3Vector`
         Discrete curve for 2D :math:`x,z` curve=[[x,z]], 3D :math:`x,y,z`
 
     t : 1D iterable
@@ -229,6 +229,7 @@ def interpolateAlongCurve(curve, t):
 
     p : np.array
         Curve positions at query points :math:`t`.
+        Dimension of p match the size of curve the coordinates.
 
     Examples
     --------
@@ -241,7 +242,7 @@ def interpolateAlongCurve(curve, t):
     >>> t = np.arange(11.0)
     >>> p = mt.interpolateAlongCurve(topo, t)
     >>> _= axs[0][0].plot(topo[:,0], topo[:,1], '-o')
-    >>> _= axs[0][0].scatter(p[:,0], p[:,2], color='red') #doctest: +ELLIPSIS
+    >>> _= axs[0][0].scatter(p[:,0], p[:,1], color='red') #doctest: +ELLIPSIS
     >>> _= axs[0][0].set_aspect(1)
     >>> pg.plt.show()
     """
@@ -249,25 +250,27 @@ def interpolateAlongCurve(curve, t):
     yC = np.zeros(len(curve))
     zC = np.zeros(len(curve))
 
+    tCurve = pg.utils.cumDist(curve)
+
     if isinstance(curve, pg.R3Vector) or isinstance(curve, pg.stdVectorRVector3):
         xC = pg.x(curve)
         yC = pg.y(curve)
         zC = pg.z(curve)
     else:
         if curve.shape[1] == 2:
-            xC = curve[:, 0]
-            zC = curve[:, 1]
+            xt = interpolate(t, tCurve, curve[:, 0])
+            zt = interpolate(t, tCurve, curve[:, 1])
+            return np.vstack([xt, zt]).T
         else:
             xC = curve[:, 0]
             yC = curve[:, 1]
             zC = curve[:, 2]
 
-    tCurve = pg.utils.cumDist(curve)
     xt = interpolate(t, tCurve, xC)
     yt = interpolate(t, tCurve, yC)
     zt = interpolate(t, tCurve, zC)
 
-    return np.vstack([xt, zt, zt]).T
+    return np.vstack([xt, yt, zt]).T
 
 
 def tapeMeasureToCoordinates(tape, pos):
@@ -316,6 +319,17 @@ def interpolate(*args, **kwargs):
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
         kwargs:
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
+      Returns:
+        Interpolated values
+
+    * Mesh based to map data from one mesh to another (syntactic sugar)
+
+      Parameters:
+        args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
+            `outData = interpolate(outMesh, inMesh, vals)`
+
+            Datavalues vals can be scalar or vector for all nodes or cells in inMesh.
+
       Returns:
         Interpolated values
 
@@ -379,39 +393,74 @@ def interpolate(*args, **kwargs):
 
     if len(args) > 0:
         if isinstance(args[0], pg.Mesh):
-            pgcore = True
+            if len(args) == 3 and isinstance(args[1], pg.Mesh):
+                pgcore = False # (outMesh, inMesh, vals)
+            else:
+                pgcore = True
+
     if 'srcMesh' in kwargs:
         pgcore = True
 
     if pgcore:
         return pg.core._pygimli_.interpolate(*args, **kwargs)
 
-    x = 0
-    u = 0
-    xi = 0
+    if len(args) == 3:
 
-    if len(args) == 3: #args: xi, x, u
-        xi = args[0]
-        x = args[1]
-        u = args[2]
+        if isinstance(args[0], pg.Mesh):
+            outMesh = args[0]
+            inMesh = args[1]
+            data = args[2]
 
-        method = kwargs.pop('method', 'linear')
+            if isinstance(data, pg.R3Vector) or isinstance(data, pg.stdVectorRVector3):
+                x = pg.interpolate(outMesh, inMesh, pg.x(data))
+                y = pg.interpolate(outMesh, inMesh, pg.y(data))
+                z = pg.interpolate(outMesh, inMesh, pg.z(data))
+                return np.vstack([xt, yt, zt]).T
 
-        if 'linear' in method:
-            return np.interp(xi, x, u)
+            if isinstance(data, np.ndarray):
+                if data.ndim == 2 and data.shape[1] == 3:
+                    x = pg.interpolate(outMesh, inMesh, data[:,0])
+                    y = pg.interpolate(outMesh, inMesh, data[:,1])
+                    z = pg.interpolate(outMesh, inMesh, data[:,2])
+                    return np.vstack([xt, yt, zt]).T
 
-        if 'harmonic' in method:
-            coeff = kwargs.pop('nc', int(np.ceil(np.sqrt(len(x)))))
-            from pygimli.frameworks import harmfitNative
-            return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
-
-        if 'spline' in method:
-            if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
-                from scipy import interpolate
-                tck = interpolate.splrep(x, u, s=0)
-                return interpolate.splev(xi, tck, der=0)
+            if len(data) == inMesh.cellCount():
+                return pg.interpolate(srcMesh=inMesh, inVec=data,
+                                      destPos=outMesh.cellCenters())
+            elif len(data) == inMesh.nodeCount():
+                return pg.interpolate(srcMesh=inMesh, inVec=data,
+                                      destPos=outMesh.positions())
             else:
-                return xi*0.
+                print(inMesh)
+                raise Exception("Don't know how to interpolate data of size",
+                                str(len(data)))
+
+            print("data: ", data)
+            raise Exception("Cannot interpret data: ", str(len(data)))
+
+        else: #args: xi, x, u
+
+            xi = args[0]
+            x = args[1]
+            u = args[2]
+
+            method = kwargs.pop('method', 'linear')
+
+            if 'linear' in method:
+                return np.interp(xi, x, u)
+
+            if 'harmonic' in method:
+                coeff = kwargs.pop('nc', int(np.ceil(np.sqrt(len(x)))))
+                from pygimli.frameworks import harmfitNative
+                return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
+
+            if 'spline' in method:
+                if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
+                    from scipy import interpolate
+                    tck = interpolate.splrep(x, u, s=0)
+                    return interpolate.splev(xi, tck, der=0)
+                else:
+                    return xi*0.
 
     if len(args) == 2: # args curve, t
         curve = args[0]
