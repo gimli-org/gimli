@@ -5,7 +5,7 @@
 #include <boost/mpl/next.hpp>
 #include "tuples.hpp"
 
-//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
@@ -15,6 +15,7 @@
 #include "gimli.h"
 #include "pos.h"
 #include "vector.h"
+#include "matrix.h"
 
 // cp ../gimli/python/custom_rvalue.cpp python/generated/custom_rvalue.cpp && make pg
 
@@ -43,9 +44,14 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     }
 
     // has the obj a len method
-    if(!PyObject_HasAttrString(obj, "__len__")){
+    if (!PyObject_HasAttrString(obj, "__len__")){
         __DC(obj << "\t !len")
         return NULL;
+    }
+
+    if (strcmp(obj->ob_type->tp_name, "numpy.ndarray") == 0){
+        __DC(obj << "\t numpy.ndarray  ... okay")
+        return obj;
     }
 
     bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
@@ -150,7 +156,7 @@ struct PySequence2RVector{
 
     /*! Convert List[] or ndarray into RVector */
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-       __DC(obj << " construct ..")
+       __DC(obj << " constructing RVector:")
 
         typedef bp::converter::rvalue_from_python_storage< GIMLI::Vector< double > > storage_t;
         storage_t* the_storage = reinterpret_cast<storage_t*>(data);
@@ -160,44 +166,31 @@ struct PySequence2RVector{
         GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
         data->convertible = memory_chunk;
 
-        //PyTypeObject* type = obj->ob_type;
+        if (strcmp(obj->ob_type->tp_name, "numpy.ndarray") == 0){
+            PyArrayObject *arr = (PyArrayObject *)obj;
+            __DC("type is " << obj->ob_type->tp_name << " " << PyArray_TYPE(arr))
 
-       __DC("type is " << obj->ob_type->tp_name)
-       __DC("isvector<>: " << PyObject_HasAttrString(obj, "singleCalcCount"))
-       __DC("isndarray<>: " << PyObject_HasAttrString(obj, "flatten"))
-       __DC("len :   " << len(py_sequence))
-       __DC("PyList: " << PyList_Check(obj))
-       __DC("PyTup:  " << PyTuple_Check(obj))
-       __DC("OneS:   " << PyArray_ISONESEGMENT(obj))
-
-        if (PyObject_HasAttrString(obj, "flatten")){ // probably numpy ndarray
-
-            if (PyArray_TYPE(obj) == 12 && PyArray_ISONESEGMENT(obj)){
-                // convert from numpy array
-                __DC(obj << " ** from array of type " << PyArray_TYPE(obj))
-//                 GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(PyArray_DIM(obj,0));
-//                 data->convertible = memory_chunk;
-                void * arrData = PyArray_DATA(obj);
-
+            if (PyArray_TYPE(arr) == 12 && PyArray_ISONESEGMENT(arr)){
+                void * arrData = PyArray_DATA(arr);
                 std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(double));
                 return;
-            } else if (PyArray_TYPE(obj) == 7 && PyArray_ISONESEGMENT(obj)){ //numpy.int64
-                __DC(obj << " ** from array of type " << PyArray_TYPE(obj))
+            } else if (PyArray_TYPE(arr) == 7 && PyArray_ISONESEGMENT(arr)){ //numpy.int64
+                    __DC(arr << " ** from array of type " << PyArray_TYPE(arr))
 
-                bp::object element;
+                    bp::object element;
 
-                for (GIMLI::Index i = 0; i < vec->size(); i ++){
-                    element = py_sequence[i];
-                    (*vec)[i] = PyArrayScalar_VAL(element.ptr(), Int64);
+                    for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                        element = py_sequence[i];
+                        (*vec)[i] = PyArrayScalar_VAL(element.ptr(), Int64);
 
-//                     __DC(i << " a " << element);
-//                     __DC(i << " a " << element.ptr()->ob_type->tp_name)
-//                     __DC(i << " d " <<  PyArrayScalar_VAL(element.ptr(), Int64));
+    //                     __DC(i << " a " << element);
+    //                     __DC(i << " a " << element.ptr()->ob_type->tp_name)
+    //                     __DC(i << " d " <<  PyArrayScalar_VAL(element.ptr(), Int64));
 
-                }
-                return;
+                    }
+                    return;
             } else {
-                __DC("fixme: type=" << PyArray_TYPE(obj))
+                    __DC("fixme: type=" << PyArray_TYPE(arr))
             }
         }
 
@@ -205,7 +198,7 @@ struct PySequence2RVector{
         __DC(obj << " ** from sequence ")
 
         for (GIMLI::Index i = 0; i < vec->size(); i ++){
-            (*vec)[i]= bp::extract< double >(py_sequence[i]);
+            (*vec)[i] = bp::extract< double >(py_sequence[i]);
         }
     }
 private:
@@ -221,7 +214,7 @@ struct PySequence2IndexArray{
 
     /*! Convert obj into IndexArray */
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        __DC(obj << "\t construct ..")
+        __DC(obj << "\t constructing IndexArray")
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
         typedef bp::converter::rvalue_from_python_storage< GIMLI::IndexArray > storage_t;
@@ -249,7 +242,7 @@ struct PySequence2StdVectorRVector3{
 
     /*! Convert obj into RVector */
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-
+        __DC(obj << "\t constructing RVector3")
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
         typedef bp::converter::rvalue_from_python_storage< std::vector < GIMLI::Pos< double > > > storage_t;
@@ -277,7 +270,7 @@ struct PySequence2R3Vector{
 
     /*! Convert obj into RVector */
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-
+        __DC(obj << "\t constructing R3Vector")
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
         typedef bp::converter::rvalue_from_python_storage< GIMLI::R3Vector > storage_t;
@@ -294,6 +287,72 @@ struct PySequence2R3Vector{
     }
 private:
 };
+
+struct Numpy2RMatrix{
+
+    /*! Check if the object is convertible */
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> RMatrix")
+        return checkConvertibleSequenz< GIMLI::Matrix< double > >(obj);
+    }
+
+    /*! Convert obj into RVector */
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        __DC(obj << "\t constructing RMatrix")
+
+        bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
+
+        typedef bp::converter::rvalue_from_python_storage< GIMLI::Matrix < double > > storage_t;
+
+        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+        void* memory_chunk = the_storage->storage.bytes;
+
+        PyArrayObject *arr = (PyArrayObject *)obj;
+
+        if (PyArray_TYPE(arr) == 12) {
+            __DC("type=" << PyArray_TYPE(arr) << " " << PyArray_ISONESEGMENT(arr))
+            int nDim = PyArray_NDIM(arr);
+            if (nDim != 2){
+                __DC("nDim=" << nDim)
+                GIMLI::throwToImplement("Only numpy.ndarray with ndim == 2 can be converted to GIMLI::RMatrix");
+            }
+            int rows = PyArray_DIM(arr, 0);
+            int cols = PyArray_DIM(arr, 1);
+            GIMLI::Matrix < double > *mat = new (memory_chunk) GIMLI::Matrix < double >(rows, cols);
+            data->convertible = memory_chunk;
+
+            if (PyArray_ISONESEGMENT(arr)){
+                double * arrData = (double*)PyArray_DATA(arr);
+                for (GIMLI::Index i = 0; i < mat->rows(); i ++ ){
+                    std::memcpy(&(*mat)[i][0],
+                                arrData + (i * mat->cols()),
+                                mat->cols() * sizeof(double));
+                }
+            } else {
+                GIMLI::throwToImplement("numpy.ndarray is not one segment .. not yet implemented.");
+            }
+
+            return;
+        } else {
+            __DC("implementme: type=" << PyArray_TYPE(arr))
+        }
+
+        GIMLI::throwToImplement("Unknown rvalue type conversion from numpy.ndarray of type " + GIMLI::str(PyArray_TYPE(arr)) +
+         + " to GIMLI::RMatrix");
+
+//         for (GIMLI::Index i = 0; i < vec->size(); i ++){
+//             //(*mat)[i] = bp::extract< GIMLI::Pos < double > >(py_sequence[i]);
+//         }
+    }
+private:
+};
+
+
+
+
+
+
+
 } //r_values_impl
 
 void register_pysequence_to_indexvector_conversion(){
@@ -325,4 +384,9 @@ void register_pytuple_to_rvector3_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PyTuple2RVector3::convertible,
                                         & r_values_impl::PyTuple2RVector3::construct,
                                         bp::type_id< GIMLI::Pos< double > >());
+}
+void register_numpy_to_rmatrix_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2RMatrix::convertible,
+                                        & r_values_impl::Numpy2RMatrix::construct,
+                                        bp::type_id< GIMLI::Matrix< double > >());
 }
