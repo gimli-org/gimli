@@ -116,6 +116,21 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
         self.assertEqual(pg.sum(x), sum(x))
 
+    def test_NumpyToRMatrix(self):
+        """ implemented in custom_rvalue.cpp"""
+        M = np.ndarray((4,4))
+        A = pg.RMatrix(M)
+        self.assertEqual(A.rows(), M.shape[0])
+        self.assertEqual(A.cols(), M.shape[1])
+
+        M = np.arange(16.).reshape((4,4))
+        A = pg.RMatrix(M)
+        self.assertEqual(sum(A[0]), sum(M[0]))
+        self.assertEqual(sum(A[1]), sum(M[1]))
+        self.assertEqual(sum(A[2]), sum(M[2]))
+        self.assertEqual(sum(A[3]), sum(M[3]))
+
+
     def test_NumpyToRVector3(self):
         '''
             custom_rvalue.cpp
@@ -220,20 +235,6 @@ class TestRVectorMethods(unittest.TestCase):
 
 
 if __name__ == '__main__':
+
     pg.setDebug(0)
     unittest.main()
-    # do we need Implicit converter .. currently deactivated in vector.h
-
-#    suite = unittest.TestSuite()
-#
-#    suite.addTest(TestRVectorMethods("test_ListToR3Vector"))
-#    suite.addTest(TestRVectorMethods("test_NumpyToIndexArray"))
-    #
-#    suite.addTest(TestRVectorMethods("test_BVectorToNumpy"))
-#    suite.addTest(TestRVectorMethods("test_IndexArrayToNumpy"))
-#    suite.addTest(TestRVectorMethods("test_ListToIndexArray"))
-#    suite.addTest(TestRVectorMethods("test_ListToRVector"))
-#    suite.addTest(TestRVectorMethods("test_NumpyToRVector"))
-#
-
-#    unittest.TextTestRunner().run(suite)
