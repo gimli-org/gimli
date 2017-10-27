@@ -43,15 +43,15 @@ boost::python::tuple RVector_getData(GIMLI::RVector & vec){
 }
 
 PyObject * RVector_getArray(GIMLI::RVector & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
 
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
     // check if array is contiguous here
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *)(&vec[0]), length * sizeof(double));
-                
-    // ** possible fixed due to memcpy here                
+
+    // ** possible fixed due to memcpy here
     //PyArray_XINCREF(ret);
     //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
     //Py_DECREF(ret);
@@ -83,12 +83,12 @@ PyObject * BVector_getArray(GIMLI::BVector & vec){
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
     // check if array is contiguous here
     char * cout = (char *)PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret));
- 
+
     for (ssize_t i=0; i<length; i++)  {
         cout[i] = vec[i];
     }
-  
-    // ** possible fixed due to memcpy here                
+
+    // ** possible fixed due to memcpy here
     // PyArray_XINCREF(ret);
     //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
     //Py_DECREF(ret);
@@ -113,11 +113,11 @@ PyObject * IndexArray_getArray(GIMLI::IndexArray & vec){
 
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_LONG);
     // check if array is contiguous here
-__M    
+__M
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *)(&vec[0]), length * sizeof(NPY_LONG));
-                
-    // ** possible fixed due to memcpy here                
+
+    // ** possible fixed due to memcpy here
     //PyArray_XINCREF(ret);
     //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
     //Py_DECREF(ret);
@@ -137,7 +137,7 @@ WRAPPER_DEFINITION_R3Vector =\
 PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = (ssize_t)vec.size();
-    
+
 #ifdef MS_WIN64
     //long long int dim2 [] = {length, 3};
     npy_intp dim2 [] = {length, 3};
@@ -152,8 +152,8 @@ PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *) &GIMLI::toArray(vec)[0],
                 (length * 3) * sizeof(double));
-    
-    // ** possible fixed due to memcpy here                
+
+    // ** possible fixed due to memcpy here
     //PyArray_XINCREF(ret);
     //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
     //Py_DECREF(ret);
@@ -219,23 +219,23 @@ def apply(mb):
     rt = mb.class_('Vector<double>')
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
-    
+
     rt = mb.class_('Vector<bool>')
     rt.add_declaration_code(WRAPPER_DEFINITION_BVector)
     apply_reg(rt, WRAPPER_REGISTRATION_BVector)
-    
+
     #rt = mb.class_('IndexArray')
     #rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
     #apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
-    
+
     #rt = mb.class_('Vector<GIMLI::Index>')
     #rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
     #apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
-    
+
     rt = mb.class_('Vector< GIMLI::Pos< double > >')
     rt.add_declaration_code(WRAPPER_DEFINITION_R3Vector)
     apply_reg(rt, WRAPPER_REGISTRATION_R3Vector)
-    
+
     try:
         rt = mb.class_('Pos<double>')
         rt.add_declaration_code(WRAPPER_DEFINITION_RVector3)

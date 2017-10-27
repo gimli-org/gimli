@@ -27,7 +27,7 @@ namespace GIMLI{
 
 void interpolate(const Mesh & mesh, const RMatrix & vData,
                  const R3Vector & ipos, RMatrix & iData,
-                 bool verbose){ ALLOW_PYTHON_THREADS
+                 bool verbose, double fillValue){ ALLOW_PYTHON_THREADS
 
     R3Vector pos(ipos);
 
@@ -98,7 +98,7 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
                     //** return cell data
 //                    iData[i][j] = vData[i][cells[j]->id()];
                 } else {
-                    iData[i][j] = 0.0;
+                    iData[i][j] = fillValue;
                     //std::cout << "Cant find cell for " << pos[j]<< std::endl;
 //                     for (uint i = 0; i < mesh.cellCount(); i ++){
 //                     	if (mesh.cell(i).shape().isInside(pos[j], true)){
@@ -114,43 +114,43 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
 }
 
 void interpolate(const Mesh & mesh, const RVector & data,
-                 const Mesh & pos, RVector & iData, bool verbose){
+                 const Mesh & pos, RVector & iData, bool verbose, double fillValue){
 
     RMatrix vData; vData.push_back(data);
     RMatrix viData;
-    interpolate(mesh, vData, pos.positions(), viData, verbose);
+    interpolate(mesh, vData, pos.positions(), viData, verbose, fillValue);
     iData = viData[0];
 }
 
 RVector interpolate(const Mesh & mesh, const RVector & data,
-                    const R3Vector & pos, bool verbose){
+                    const R3Vector & pos, bool verbose, double fillValue){
 
     RMatrix vData; vData.push_back(data);
     RMatrix viData;
-    interpolate(mesh, vData, pos, viData, verbose);
+    interpolate(mesh, vData, pos, viData, verbose, fillValue);
     return viData[0];
 }
 
 void interpolate(const Mesh & mesh, const std::string & dataName, Mesh & pos,
-                 bool verbose){
+                 bool verbose, double fillValue){
     RMatrix vData; vData.push_back(mesh.exportData(dataName));
     RMatrix viData;
-    interpolate(mesh, vData, pos.positions(), viData, verbose);
+    interpolate(mesh, vData, pos.positions(), viData, verbose, fillValue);
     pos.addExportData(dataName, viData[0]);
 }
 
 void interpolate(const Mesh & mesh, const RVector & data,
                  const R3Vector & pos,
-                 RVector & iData, bool verbose){
+                 RVector & iData, bool verbose, double fillValue){
     RMatrix vData; vData.push_back(data);
     RMatrix viData;
-    interpolate(mesh, vData, pos, viData, verbose);
+    interpolate(mesh, vData, pos, viData, verbose, fillValue);
     iData = viData[0];
 }
 
 RVector interpolate(const Mesh & mesh, const RVector & data,
                     const RVector & x, const RVector & y,
-                    const RVector & z, bool verbose){
+                    const RVector & z, bool verbose, double fillValue){
 
     if (x.size() != y.size() || x.size() != z.size()) {
         throwLengthError(EXIT_VECTOR_SIZE_INVALID, " x.size invalid y.size invalid z.size() "
@@ -161,23 +161,23 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
     for (uint i = 0; i < x.size(); i ++) pos[i] = RVector3(x[i], y[i], z[i]);
 
     RVector iData;
-    interpolate(mesh, data, pos, iData, verbose);
+    interpolate(mesh, data, pos, iData, verbose, fillValue);
     return iData;
 }
 
 RVector interpolate(const Mesh & mesh, const RVector & data,
                     const RVector & x, const RVector & y,
-                    bool verbose){
-    return interpolate(mesh, data, x, y, RVector(x.size(), 0.0));
+                    bool verbose, double fillValue){
+    return interpolate(mesh, data, x, y, RVector(x.size(), 0.0, fillValue));
 }
 
 RVector interpolate(const Mesh & mesh, const RVector & data,
-                    const RVector & x, bool verbose){
+                    const RVector & x, bool verbose, double fillValue){
     return interpolate(mesh, data, x,
-                       RVector(x.size(), 0.0), RVector(x.size(), 0.0));
+                       RVector(x.size(), 0.0), RVector(x.size(), 0.0), fillValue);
 }
 
-void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose){
+void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose, double fillValue){
     RMatrix cellData;
     RMatrix nodeData;
     std::vector< std::string > cellDataNames;
@@ -202,7 +202,7 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose){
 
     if (cellData.rows() > 0){
         RMatrix qCellData;
-        interpolate(mesh, cellData, qmesh.cellCenter(), qCellData, verbose) ;
+        interpolate(mesh, cellData, qmesh.cellCenter(), qCellData, verbose, fillValue);
         for (uint i= 0; i < cellData.rows(); i ++){
             qmesh.addExportData(cellDataNames[i], qCellData[i]);
         }
@@ -216,11 +216,11 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose){
     }
 }
 
-void interpolateSurface(const Mesh & mesh, Mesh & qmesh, bool verbose){
+void interpolateSurface(const Mesh & mesh, Mesh & qmesh, bool verbose, double fillValue){
     RVector z(mesh.nodeCount());
     for (uint i = 0; i < z.size(); i ++) z[i] = mesh.node(i).pos()[2];
     RVector qz(qmesh.nodeCount());
-    interpolate(mesh, z, qmesh, qz, verbose);
+    interpolate(mesh, z, qmesh, qz, verbose, fillValue);
     for (uint i = 0; i < qz.size(); i ++) qmesh.node(i).pos()[2] = qz[i];
 }
 

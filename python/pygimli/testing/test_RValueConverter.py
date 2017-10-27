@@ -13,9 +13,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(a), 0.0)
 
     def test_ListToRVector3(self):
-        '''
-            custom_rvalue.cpp
-        '''
+        """custom_rvalue.cpp"""
         x = [0.0, 1.0, 0.0]
         p = pg.RVector3(x)
         self.assertEqual(p.dist(x), 0.0)
@@ -25,9 +23,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def test_ListToIndexArray(self):
-        '''
-            custom_rvalue.cpp
-        '''
+        """custom_rvalue.cpp"""
         idx = [0, 1, 1, 0]
 
         I = pg.IndexArray(idx)
@@ -43,9 +39,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(I), sum(idx))
 
     def test_ListToRVector(self):
-        '''
-            custom_rvalue.cpp
-        '''
+        """custom_rvalue.cpp"""
         l = [1.0, 2.0, 3.0, 4.0]
         a = pg.RVector(l)
         self.assertEqual(a.size(), len(l))
@@ -60,9 +54,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(x.size(), len(l))
 
     def test_ListToR3Vector(self):
-        '''
-            custom_rvalue.cpp
-        '''
+        """custom_rvalue.cpp"""
         x = [0.0, 1.0, 0.0]
         p = pg.RVector3(x)
         pl = [p, p, p]
@@ -70,9 +62,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(t.size(), len(pl))
 
     def test_NumpyToIndexArray(self):
-        """
-            custom_rvalue.cpp
-        """
+        """Implemented in custom_rvalue.cpp."""
         x = np.array(range(10))
         a = pg.IndexArray(x)
         self.assertEqual(a.size(), len(x))
@@ -94,7 +84,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
 
     def test_NumpyToRVector(self):
-        """ implemented in custom_rvalue.cpp"""
+        """Implemented in custom_rvalue.cpp."""
         x = np.arange(0, 1., 0.2)
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
@@ -117,7 +107,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(x), sum(x))
 
     def test_NumpyToRMatrix(self):
-        """ implemented in custom_rvalue.cpp"""
+        """Implemented in custom_rvalue.cpp."""
         M = np.ndarray((4,4))
         A = pg.RMatrix(M)
         self.assertEqual(A.rows(), M.shape[0])
@@ -132,9 +122,7 @@ class TestRVectorMethods(unittest.TestCase):
 
 
     def test_NumpyToRVector3(self):
-        '''
-            custom_rvalue.cpp
-        '''
+        """Implemented in custom_rvalue.cpp."""
         x = np.array([0.0, 1.0, 0.0])
         p = pg.RVector3(x)
         self.assertEqual(p.dist(x), 0.0)
@@ -145,9 +133,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def test_RVectorToNumpy(self):
-        '''
-            implemented through hand_made_wrapper.py
-        '''
+        """implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
         v = pg.RVector(10, 1.1)
 
@@ -164,9 +150,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(len(a), 10)
 
     def test_BVectorToNumpy(self):
-        '''
-            implemented through hand_made_wrapper.py
-        '''
+        """implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
         # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
         v = pg.RVector(10, 1.1)
@@ -186,9 +170,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(a), 10)
 
     def test_IndexArrayToNumpy(self):
-        '''
-            implemented through hand_made_wrapper.py
-        '''
+        """implemented through hand_made_wrapper.py"""
         # check if array is really taken
         # not yet taken: .. see __init__.py:__BVectorArrayCall__
         v = pg.IndexArray(10, 2)
@@ -207,9 +189,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(a), 20)
 
     def test_RVector3ToNumpy(self):
-        '''
-            implemented through hand_made_wrapper.py
-        '''
+        """implemented through hand_made_wrapper.py"""
         v = pg.RVector3()
 
         a = np.array(v)
@@ -217,9 +197,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(len(a), 3)
 
     def test_R3VectorToNumpy(self):
-        '''
-            implemented through hand_made_wrapper.py
-        '''
+        """implemented through hand_made_wrapper.py"""
         mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2], z=[1, 2])
 
         v = np.asarray(mesh.nodeCenters())
@@ -233,8 +211,22 @@ class TestRVectorMethods(unittest.TestCase):
 
         self.assertEqual(mesh.nodeCenters()[0], v[0])
 
+    def test_RMatrixToNumpy(self):
+        """implemented through hand_made_wrapper.py"""
+        M = np.arange(16.).reshape((4,4))
+        A = pg.RMatrix(M)
+        M2 = np.array(A)
+        np.testing.assert_equal(M, M2)
+        A = np.array(pg.RMatrix(4,4))
 
 if __name__ == '__main__':
 
     pg.setDebug(0)
     unittest.main()
+    #pg.setDebug(1)
+    #M = np.arange(16.).reshape((4,4))
+    #A = pg.RMatrix(M)
+    #M2 = np.array(A)
+    #print(M2)
+
+    #exit()
