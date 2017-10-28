@@ -70,13 +70,16 @@ class Modelling(pg.ModellingBase):
 
     def setRegionProperties(self, region,
                             startModel=None, limits=None, trans=None,
-                            cType=None, zWeights=None):
+                            cType=None, zWeights=None, modelControl=None):
         """
         """
         if region not in self._regionProperties:
             self._regionProperties[region] = {'startModel': 0,
-                                               'limits': [0, 0],
-                                               'trans': 'Log',
+                                              'modelControl': 1.0,
+                                              'zWeights': 1.0,
+                                              'cType': 1,
+                                              'limits': [0, 0],
+                                              'trans': 'Log',
                                               }
 
         if startModel is not None:
@@ -94,11 +97,15 @@ class Modelling(pg.ModellingBase):
         if zWeights is not None:
             self._regionProperties[region]['zWeights'] = zWeights
 
+        if modelControl is not None:
+            self._regionProperties[region]['modelControl'] = modelControl
+
 
     def _applyRegionProperties(self):
         """
         """
         RM = super(Modelling, self).regionManager()
+
         for rID, vals in self._regionProperties.items():
             RM.region(rID).setStartModel(vals['startModel'])
 
@@ -110,12 +117,14 @@ class Modelling(pg.ModellingBase):
             if 'zWeights' in vals:
                 RM.region(rID).setZWeight(vals['zWeights'])
 
+            if 'modelControl' in vals:
+                RM.region(rID).setModelControl(vals['modelControl'])
+
             if vals['limits'][0] > 0:
                 RM.region(rID).setLowerBound(vals['limits'][0])
 
             if vals['limits'][1] > 0:
                 RM.region(rID).setUpperBound(vals['limits'][1])
-
 
     def createStartModel(self, dataValues, **kwargs):
         """ Create Starting model.
@@ -124,7 +133,6 @@ class Modelling(pg.ModellingBase):
         """
         raise Exception("Implement me in derived classes")
 
-    # Mandatory api
     def setData(self, data):
         #raise Exception("Needed? Implement me in derived classes")
         if self.fop is not None:
@@ -322,10 +330,10 @@ class LCModelling(Modelling):
         for f in self._fops1D:
             f.setDataBasis(**kwargs)
 
-    def createStartModel(self, rhoa, nLayers):
+    def createStartModel(self, models, nLayers):
         sm = pg.RVector()
         for i, f in enumerate(self._fops1D):
-            sm = pg.cat(sm, f.createStartModel(rhoa[i], nLayers))
+            sm = pg.cat(sm, f.createStartModel(models[i], nLayers))
 
         self.setStartModel(sm)
         return sm
@@ -397,7 +405,6 @@ class LCModelling(Modelling):
                                               #self.constraints(), cWeight=None)
 
         #pg.wait()
-
 
     def initJacobian(self, dataVals, nLayers):
         """

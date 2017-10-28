@@ -398,8 +398,6 @@ class MethodManager1d(MethodManager):
         """
         return pg.frameworks.Block1DInversion(**kwargs)
 
-
-
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
         """Constructor."""
@@ -444,11 +442,13 @@ class MeshMethodManager(MethodManager):
         zWeight = kwargs.pop('zWeight', 0.7)
 
         self._fw.fop.regionManager().setZWeight(zWeight)
-        self._fw.fop.createStartModel(dataVals)
+
+        if startModel in kwargs:
+            self._fw.fop.createStartModel(dataVals)
 
         self.model = super(MeshMethodManager, self).invert(dataVals=dataVals,
-                                                      errVals=errVals,
-                                                      **kwargs)
+                                                           errVals=errVals,
+                                                           **kwargs)
         return self.model
 
     def setMesh(self, mesh, refine=True):
