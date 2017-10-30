@@ -206,15 +206,13 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     return atts
 
 
-def interpolateAlongCurve(curve, t):
+def interpolateAlongCurve(curve, t, **kwargs):
     """Interpolate along curve.
 
     Return curve coordinates for a piecewise linear curve :math:`C(t) = {x_i,y_i,z_i}`
     at positions :math:`t`.
     Curve and :math:`t` values are expected to be sorted along distance from the
     origin of the curve.
-
-    TODO optional smooth curve with harmfit and/or spline
 
     Parameters
     ----------
@@ -223,6 +221,10 @@ def interpolateAlongCurve(curve, t):
 
     t : 1D iterable
         Query positions along the curve in absolute distance
+
+    kwargs :
+        If kwargs are given an additional curve smoothing is applied using
+        :py:mod:`pygimli.meshtools.interpolate`. The kwargs will be delegated.
 
     Returns
     -------
@@ -233,24 +235,34 @@ def interpolateAlongCurve(curve, t):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
-    >>> import numpy as np
-    >>> import pygimli as pg
-    >>> import pygimli.meshtools as mt
-    >>> fig, axs = pg.plt.subplots(2,2)
-    >>> topo = np.array([[0., 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.]])
-    >>> t = np.arange(11.0)
-    >>> p = mt.interpolateAlongCurve(topo, t)
-    >>> _= axs[0][0].plot(topo[:,0], topo[:,1], '-o')
-    >>> _= axs[0][0].scatter(p[:,0], p[:,1], color='red') #doctest: +ELLIPSIS
-    >>> _= axs[0][0].set_aspect(1)
-    >>> pg.plt.show()
+    >>># no need to import matplotlib. pygimli's show does
+    >>>import numpy as np
+    >>>import pygimli as pg
+    >>>import pygimli.meshtools as mt
+    >>>fig, axs = pg.plt.subplots(2,2)
+    >>>topo = np.array([[-2., 0.], [-1., 0.], [0.5, 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.], [12., 1.]])
+    >>>t = np.arange(15.0)
+    >>>p = mt.interpolateAlongCurve(topo, t)
+    >>>_= axs[0][0].plot(topo[:,0], topo[:,1], '-x', mew=2)
+    >>>_= axs[0][0].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
+    >>>
+    >>>p = mt.interpolateAlongCurve(topo, t, method='spline')
+    >>>_= axs[0][0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
+    >>>
+    >>>p = mt.interpolateAlongCurve(topo, t, method='harmonic', nc=3)
+    >>>_= axs[0][0].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
+    >>>
+    >>>_= axs[0][0].set_aspect(1)
+    >>>
+    >>>pg.plt.show()
+    >>>pg.wait()
     """
     xC = np.zeros(len(curve))
     yC = np.zeros(len(curve))
     zC = np.zeros(len(curve))
 
     tCurve = pg.utils.cumDist(curve)
+    dim = 3
 
     if isinstance(curve, pg.R3Vector) or isinstance(curve, pg.stdVectorRVector3):
         xC = pg.x(curve)
@@ -258,17 +270,30 @@ def interpolateAlongCurve(curve, t):
         zC = pg.z(curve)
     else:
         if curve.shape[1] == 2:
-            xt = interpolate(t, tCurve, curve[:, 0])
-            zt = interpolate(t, tCurve, curve[:, 1])
-            return np.vstack([xt, zt]).T
+            xC = curve[:, 0]
+            zC = curve[:, 1]
+            dim = 2
         else:
             xC = curve[:, 0]
             yC = curve[:, 1]
             zC = curve[:, 2]
 
+    if len(kwargs.keys()) > 0:
+        dTi = min(pg.utils.dist(pg.utils.diff(curve))) / 10.
+        ti = np.arange(min(tCurve), max(tCurve)+dTi, dTi)
+        xC = pg.interpolate(ti, tCurve, xC, **kwargs)
+        zC = pg.interpolate(ti, tCurve, zC, **kwargs)
+        if dim == 3:
+            yC = pg.interpolate(ti, tCurve, yC, **kwargs)
+        tCurve = ti
+
     xt = interpolate(t, tCurve, xC)
-    yt = interpolate(t, tCurve, yC)
     zt = interpolate(t, tCurve, zC)
+
+    if dim == 2:
+        return np.vstack([xt, zt]).T
+
+    yt = interpolate(t, tCurve, yC)
 
     return np.vstack([xt, yt, zt]).T
 
@@ -348,6 +373,9 @@ def interpolate(*args, **kwargs):
       returns :math:`u_{\text{i}} = I(x_{\text{i}})`
       (interpolation methods are [**linear** via matplotlib,
       cubic **spline** via scipy, fit with **harmonic** functions' via pygimli])
+      Note, for 'linear' and 'spline' the interpolate contains all original
+      coordinates while 'harmonic' returns an approximate best fit.
+      The amount of harmonic coefficients can be specfied with the 'nc' keyword.
 
       Parameters:
         args: xi, x, u
@@ -357,6 +385,9 @@ def interpolate(*args, **kwargs):
         kwargs:
             * method : string
                 Specify interpolation method 'linear, 'spline', 'harmonic'
+            * nc : int
+                Number of harmonic coefficients for the 'harmonic' method.
+
       Returns:
         ui: array of length xi
             :math:`u_{\text{i}} = I(x_{\text{i}})`, with :math:`I = u(x)`
