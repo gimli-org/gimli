@@ -395,7 +395,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
     S = None
     if sparse:
-        S = pg.RSparseMapMatrix(dof, dof, 0) + identity(dof, scale=b)
+        S = pg.RSparseMapMatrix(dof, dof, stype=0) + identity(dof, scale=b)
     else:
         S = np.zeros((dof, dof))
 
