@@ -63,7 +63,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(t.size(), len(pl))
 
     def test_NumpyToIndexArray(self):
-        """ implemented in custom_rvalue.cpp"""
+        """Implemented in custom_rvalue.cpp."""
         x = np.array(range(10))
         a = pg.IndexArray(x)
         self.assertEqual(a.size(), len(x))
@@ -85,7 +85,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
 
     def test_NumpyToRVector(self):
-        """ implemented in custom_rvalue.cpp"""
+        """Implemented in custom_rvalue.cpp."""
         x = np.arange(0, 1., 0.2)
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
@@ -108,7 +108,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(x), sum(x))
 
     def test_NumpyToRMatrix(self):
-        """ implemented in custom_rvalue.cpp"""
+        """Implemented in custom_rvalue.cpp."""
         M = np.ndarray((5, 4))
         A = pg.RMatrix(M)
         self.assertEqual(A.rows(), M.shape[0])
@@ -121,20 +121,8 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(A[2]), sum(M[2]))
         self.assertEqual(sum(A[3]), sum(M[3]))
 
-    def test_RMatrixToNumpy(self):
-        """ implemented in custom_rvalue.cpp """
-        M = np.arange(20.).reshape((5, 4))
-        A = pg.RMatrix(M)
-        N = np.array(A)
-        self.assertEqual(A.rows(), N.shape[0])
-        self.assertEqual(A.cols(), N.shape[1])
-        self.assertEqual(sum(A[0]), sum(N[0]))
-        self.assertEqual(sum(A[1]), sum(N[1]))
-        self.assertEqual(sum(A[2]), sum(N[2]))
-        self.assertEqual(sum(A[3]), sum(N[3]))
-
     def test_NumpyToRVector3(self):
-        """ implemented in custom_rvalue.cpp"""
+        """Implemented in custom_rvalue.cpp."""
         x = np.array([0.0, 1.0, 0.0])
         p = pg.RVector3(x)
         self.assertEqual(p.dist(x), 0.0)
@@ -145,7 +133,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def test_RVectorToNumpy(self):
-        """ implemented through hand_made_wrapper.py """
+        """Implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
         v = pg.RVector(10, 1.1)
 
@@ -162,9 +150,9 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(len(a), 10)
 
     def test_BVectorToNumpy(self):
-        """ implemented through hand_made_wrapper.py """
-        # check if really from array is taken !
-        # not yet .. see __init__.py:__BVectorArrayCall__
+        """Implemented through hand_made_wrapper.py"""
+        # check ob wirklich from array genommen wird!
+        # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
         v = pg.RVector(10, 1.1)
         b = (v == 1.1)
 
@@ -182,7 +170,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(a), 10)
 
     def test_IndexArrayToNumpy(self):
-        """ implemented through hand_made_wrapper.py """
+        """Implemented through hand_made_wrapper.py"""
         # check if array is really taken
         # not yet taken: .. see __init__.py:__BVectorArrayCall__
         v = pg.IndexArray(10, 2)
@@ -201,7 +189,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(a), 20)
 
     def test_RVector3ToNumpy(self):
-        """ implemented through hand_made_wrapper.py """
+        """Implemented through hand_made_wrapper.py"""
         v = pg.RVector3()
 
         a = np.array(v)
@@ -209,7 +197,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(len(a), 3)
 
     def test_R3VectorToNumpy(self):
-        """ implemented through hand_made_wrapper.py """
+        """Implemented through hand_made_wrapper.py"""
         mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2], z=[1, 2])
 
         v = np.asarray(mesh.nodeCenters())
@@ -223,8 +211,32 @@ class TestRVectorMethods(unittest.TestCase):
 
         self.assertEqual(mesh.nodeCenters()[0], v[0])
 
+    def test_RMatrixToNumpy(self):
+        """Implemented through automatic iterator """
+        M = np.arange(20.).reshape((5, 4))
+        A = pg.RMatrix(M)
+        N = np.array(A)
+        self.assertEqual(A.rows(), N.shape[0])
+        self.assertEqual(A.cols(), N.shape[1])
+        self.assertEqual(sum(A[0]), sum(N[0]))
+        self.assertEqual(sum(A[1]), sum(N[1]))
+        self.assertEqual(sum(A[2]), sum(N[2]))
+        self.assertEqual(sum(A[3]), sum(N[3]))
+
+        M = np.arange(16.).reshape((4,4))
+        A = pg.RMatrix(M)
+        M2 = np.array(A)
+        np.testing.assert_equal(M, M2)
+        A = np.array(pg.RMatrix(4,4))
 
 if __name__ == '__main__':
 
     pg.setDebug(0)
     unittest.main()
+    #pg.setDebug(1)
+    #M = np.arange(16.).reshape((4,4))
+    #A = pg.RMatrix(M)
+    #M2 = np.array(A)
+    #print(M2)
+
+    #exit()
