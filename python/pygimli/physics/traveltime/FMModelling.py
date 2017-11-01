@@ -40,6 +40,11 @@ def fastMarch(mesh, downwind, times, upT, downT):
 
         if len(upNodes) == 1:  # the Dijkstra case
             edge = pg.findBoundary(upNodes[0], node)
+
+            if edge is None:
+                continue
+                raise StandardError("no edge found")
+
             tt = times[upNodes[0].id()] + \
                 findSlowness(edge) * edge.shape().domainSize()
             # use node id additionally in case of equal travel times
@@ -48,7 +53,7 @@ def fastMarch(mesh, downwind, times, upT, downT):
             cells = node.cellSet()
             for c in cells:
                 for i in range(c.nodeCount()):
-                    edge = pg.findBoundary(c.node(i), c.node((i + 1) % 3))
+                    edge = pg.findBoundary(c.node(i), c.node((i + 1) % c.nodeCount()))
 
                     a = edge.node(0)
                     b = edge.node(1)
@@ -61,6 +66,9 @@ def fastMarch(mesh, downwind, times, upT, downT):
 
                         ea = pg.findBoundary(a, node)
                         eb = pg.findBoundary(b, node)
+
+                        #if ea is None or eb is None:
+                            #print(a, b, node)
 
                         if t == 0:
                             slowness = findSlowness(ea)
