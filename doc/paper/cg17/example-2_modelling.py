@@ -73,7 +73,7 @@ print('Solve ERT modelling ...')
 
 # Create survey measurement scheme
 ertScheme = ert.createERTData(pg.utils.grange(-20, 20, dx=1.0),
-                                         schemeName='dd')
+                              schemeName='dd')
 # Create suitable mesh for ert forward calculation
 meshERT = mt.createParaMesh(ertScheme, quality=33, paraMaxCellSize=0.2,
                             boundaryMaxCellSize=50, smooth=[1, 2])

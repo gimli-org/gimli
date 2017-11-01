@@ -439,8 +439,10 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
         if isHole:
             poly.addHoleMarker(pg.center(poly.positions()))
         else:
-            poly.addRegionMarker(
-                pg.center(poly.positions()), marker=marker, area=area)
+            if marker == None: ## for the case marker is None but area is given
+                marker = 0
+            poly.addRegionMarker(pg.center(poly.positions()),
+                                 marker=marker, area=area)
 
     # set a regionmarker here .. somewhere
 

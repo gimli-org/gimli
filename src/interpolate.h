@@ -28,43 +28,43 @@ namespace GIMLI{
 /*! Utility function for interpolation. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, const RVector & inVec,
                            const R3Vector & destPos, RVector & outVec,
-                           bool verbose=false);
+                           bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation. */
 DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
                               const R3Vector & destPos,
-                              bool verbose=false);
+                              bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, const RVector & inVec,
                            const Mesh & destMesh, RVector & outVec,
-                           bool verbose=false);
+                           bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation. Read in data from fileName and add the
  interpolated data into the destination mesh. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, const std::string & fileName,
-                           Mesh & destMesh, bool verbose=false);
+                           Mesh & destMesh, bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation.*/
 DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
                               const RVector & x, const RVector & y,
-                              const RVector & z, bool verbose=false);
+                              const RVector & z, bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation.*/
 DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
                               const RVector & x, const RVector & y,
-                              bool verbose=false);
+                              bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation.*/
 DLLEXPORT RVector interpolate(const Mesh & srcMesh, const RVector & inVec,
                               const RVector & x,
-                              bool verbose=false);
+                              bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation.
  * Interpolate all export data from srcMesh to the destination mesh.
  * Point and Cell based. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, Mesh & destMesh,
-                           bool verbose=false);
+                           bool verbose=false, double fillValue=0.0);
 
 /*!Interpolate a given input data regarding the mesh srcMesh to a set of positions
  * and write the interpolated data to outMat. outMat will resized if necessary.
@@ -74,13 +74,13 @@ DLLEXPORT void interpolate(const Mesh & srcMesh, Mesh & destMesh,
  * Several utility or shortcut functions are defined. */
 DLLEXPORT void interpolate(const Mesh & srcMesh, const RMatrix & inMat,
                            const R3Vector & destPos, RMatrix & outMat,
-                           bool verbose=false);
+                           bool verbose=false, double fillValue=0.0);
 
 /*! Utility function for interpolation.
  * Interpolate the z-coordinate from mesh to the z-coordinate of the
  * destination mesh.*/
 DLLEXPORT void interpolateSurface(const Mesh & srcMesh, Mesh & destMesh,
-                                  bool verbose=false);
+                                  bool verbose=false, double fillValue=0);
 
 /*! Utility function. Convert cell data to point data with the
  * corresponding the cell interpolation function */

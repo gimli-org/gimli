@@ -4,7 +4,6 @@
 """Example for fully coupled hydrogeophysical Inversion."""
 
 import os
-import sys
 
 import numpy as np
 
@@ -25,7 +24,7 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
 
     uDir = [[2, p0],  # left aquiver
             [3, p0],  # left bedrock
-#            [4, 0],  # bottom (paper)
+            # [4, 0],  # bottom (paper)
             [5, 0],  # right bedrock
             [6, 0],  # right aquiver
             [7, 0],  # right top
@@ -33,12 +32,15 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
 
     p = pg.solver.solve(mesh, a=k, uB=uDir)
     vel = -pg.solver.grad(mesh, p) * np.asarray([k, k, k]).T
-    return mesh, mt.cellDataToNodeData(mesh, vel), p, k, np.asarray([pg.x(vel), pg.y(vel)])
+    mvel = mt.cellDataToNodeData(mesh, vel)
+    return mesh, mvel, p, k, np.asarray([pg.x(vel), pg.y(vel)])
+
 
 def solveAdvection(mesh, vel, times, diffusion, verbose=False):
     """Solve Diffusion/Advection equation"""
     if verbose:
-        print("Solve for concentration movement on", len(times), "time steps ...")
+        print("Solve for concentration movement on", len(times),
+              "time steps ...")
 
     S = pg.RVector(mesh.cellCount(), 0.0)
     injectPos = [-19.1, -4.6]
@@ -59,6 +61,7 @@ def solveAdvection(mesh, vel, times, diffusion, verbose=False):
 
     return c[::]
 
+
 def solveERT(mesh, concentration, verbose=0):
     """Simulate resistivity distribution for given nonsteady concentration."""
     if verbose:
@@ -71,7 +74,7 @@ def solveERT(mesh, concentration, verbose=0):
                                 boundaryMaxCellSize=50, smooth=[1, 2])
 
     scale = 0.001
-    concentration *= scale #mg/m²
+    concentration *= scale  # mg/m²
 
     # apply saturation model to simulate unsaturated topsoil
     sat = np.zeros(mesh.cellCount())
@@ -120,6 +123,7 @@ def solveERT(mesh, concentration, verbose=0):
     dErr = err[1:]
 
     return meshERT, ertScheme, resis, rhoa, dRhoa, dErr
+
 
 class HydroGeophysicalModelling(pg.ModellingBase):
     """Forward Operator for fully coupled hydrogeophysical inversion."""
@@ -180,7 +184,7 @@ class HydroGeophysicalModelling(pg.ModellingBase):
                                 verbose=verbose)
 
         ws.meshERT, ws.scheme, ws.resis, ws.rhoa, ws.rhoaR, ws.derr = \
-                solveERT(ws.mesh, ws.sat[self.timesERT],verbose=verbose)
+            solveERT(ws.mesh, ws.sat[self.timesERT], verbose=verbose)
 
         return ws.rhoaR.flatten()
 
@@ -193,16 +197,15 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
         os.mkdir(synthPath)
 
     world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
-                            worldMarker=False)
+                           worldMarker=False)
     for i, b in enumerate(world.boundaries()):
         b.setMarker(i + 1)
 
     block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0], marker=4,
-                                boundaryMarker=11,
-                                area=area)
+                               boundaryMarker=11, area=area)
     geom = mt.mergePLC([world, block])
     geom.save(synthPath + 'synthGeom')
-    #pg.show(geom, boundaryMarker=1)
+    # pg.show(geom, boundaryMarker=1)
 
     paraMesh = pg.meshtools.createMesh(geom, quality=32, area=area,
                                        smooth=[1, 10])
@@ -213,9 +216,9 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
     paraMesh.save(synthPath + 'synth.bms')
 
     fop = HydroGeophysicalModelling(mesh=paraMesh, tMax=tMax,
-                                   satSteps=satSteps,
-                                   ertSteps=ertSteps,
-                                   verbose=1)
+                                    satSteps=satSteps,
+                                    ertSteps=ertSteps,
+                                    verbose=1)
 
     # openblas have some problems with to high thread count ..
     # we need to dig into
@@ -235,7 +238,7 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
     rhoaR *= (1.0 + rand * fop.ws.derr.flatten())
     fop.ws.rhoaR = rhoaR.reshape(fop.ws.derr.shape)
 
-    #fop.ws.mesh.save(synthPath + 'synth.bms')
+    # fop.ws.mesh.save(synthPath + 'synth.bms')
     np.save(synthPath + 'synthK', fop.ws.k)
     np.save(synthPath + 'synthVel', fop.ws.vel)
     np.save(synthPath + 'synthSat', fop.ws.sat)
@@ -252,7 +255,7 @@ def createFopWithParaDomain(paraRefine=0, ncpu=6):
     satSteps = 800 * 2
     ertSteps = 10
 
-    synthPath='synth/'
+    synthPath = 'synth/'
 
     synthArea = 0.1
     paraArea = 0.1
@@ -265,9 +268,9 @@ def createFopWithParaDomain(paraRefine=0, ncpu=6):
                   synthPath=synthPath)
 
     fop = HydroGeophysicalModelling(mesh=None, tMax=tMax,
-                                   satSteps=satSteps,
-                                   ertSteps=ertSteps,
-                                   verbose=1)
+                                    satSteps=satSteps,
+                                    ertSteps=ertSteps,
+                                    verbose=1)
 
     rhoaR = np.load(synthPath + 'synthRhoaRatio.npy')
     err = np.load(synthPath + 'synthErr.npy')
@@ -276,22 +279,22 @@ def createFopWithParaDomain(paraRefine=0, ncpu=6):
     fop.setMultiThreadJacobian(ncpu)
 
     paraMesh = pg.createGrid(x=[-20, -10, 0, 10, 20], y=[-16, -8, -2, 0])
-    #top Boundary Marker
+    # top Boundary Marker
     for i, b in enumerate(paraMesh.findBoundaryByMarker(4)):
         b.setMarker(8)
-    #right Boundary Marker
+    # right Boundary Marker
     for i, b in enumerate(paraMesh.findBoundaryByMarker(2)):
         b.setMarker(7 - i)
-    #bottom Boundary Marker
+    # bottom Boundary Marker
     for i, b in enumerate(paraMesh.findBoundaryByMarker(3)):
         b.setMarker(4)
-    #left boundary Marker
+    # left boundary Marker
     for i, b in enumerate(paraMesh.findBoundaryByMarker(1)):
         b.setMarker(3-i)
 
-    #ax, _ = pg.show(paraMesh)
-    #pg.mplviewer.drawMeshBoundaries(ax=ax, mesh=paraMesh)
-    #pg.wait()
+#    ax, _ = pg.show(paraMesh)
+#    pg.mplviewer.drawMeshBoundaries(ax=ax, mesh=paraMesh)
+#    pg.wait()
 
     paraMesh.cell(0).setMarker(0)  # bottom
     paraMesh.cell(1).setMarker(0)  # bottom

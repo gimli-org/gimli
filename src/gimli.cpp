@@ -300,6 +300,7 @@ std::string logStr_(LogType type){
 }
 
 #ifdef PYTHON_FOUND
+#define HAVE_ROUND 1
 #include <Python.h>
 #endif
 

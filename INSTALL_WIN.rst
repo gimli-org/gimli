@@ -17,9 +17,9 @@ There are two ways, exe installers and wheels. The latter can be easily installe
 package manager like the WinPython Control Panel (located in the WinPython main directory).
 
 ..  image:: https://img.shields.io/badge/pyGIMLi_win64-Python_3.5_Wheel-green.svg
-   :target: http://www.pygimli.org/distribution/pygimli-1.0.1-cp35-cp35m-win_amd64.whl
+   :target: http://www.pygimli.org/distribution/pygimli-1.0.3-cp35-cp35m-win_amd64.whl
 ..  image:: https://img.shields.io/badge/pyGIMLi_win64-Python_3.6_Wheel-green.svg
-   :target: http://www.pygimli.org/distribution/pygimli-1.0.1-cp36-cp36m-win_amd64.whl
+   :target: http://www.pygimli.org/distribution/pygimli-1.0.3-cp36-cp36m-win_amd64.whl
 
 In the package manager just select the whl file and press Install to install or upgrade.
 If there is no package manager you can install the wheel by calling pip on the command line
@@ -36,9 +36,9 @@ Uninstall can be made also with the Control Panel or by pip uninstall.
 Alternatively you can use the MSI installer where you can choose your Python installation
 
 ..  image:: https://img.shields.io/badge/pyGIMLi_win64-MSI_for_Python_3.5-green.svg
-   :target: http://www.pygimli.org/distribution/pygimli-1.0.1.win-amd64-py35.msi
+   :target: http://www.pygimli.org/distribution/pygimli-1.0.3.win-amd64-py35.msi
 ..  image:: https://img.shields.io/badge/pyGIMLi_win64-MSI_for_Python_3.6-green.svg
-   :target: http://www.pygimli.org/distribution/pygimli-1.0.1.win-amd64.msi
+   :target: http://www.pygimli.org/distribution/pygimli-1.0.3.win-amd64-py36.msi
 
 As a result you should be able to import pygimli in any script from any location.
 Since the C++ core changes only rarely, you can also check out the code via git, copy the

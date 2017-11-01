@@ -19,7 +19,6 @@ log.critical("Start test.")
 # test core log
 pg.setThreadCount(2)
 
-# call core log
-pg.log(pg.Debug, "core log")
+pg.log(pg.Debug, "core log ")
 
 log.exception("Exception")
