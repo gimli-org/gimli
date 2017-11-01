@@ -159,12 +159,9 @@ class TravelTimeFMM(pg.ModellingBase):
     def computeTravelTimes(self, slowness, calcOthers=False):
         """Compute the travel times and fill data and time matrix
         for later use of response and Jacobian, respectively.
-        For response only active sources are needed, for Jacobian all."""
-        # mesh = pg.Mesh(self.mesh())
+        For response only active sources are needed, for Jacobian all.
+        """
         mesh = self.mesh()
-#        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
-#        mesh.createNeighbourInfos()
-#        print(mesh.boundary(111).rightCell(), mesh.boundary(111).rightCell())
         nNodes = mesh.nodeCount()
         midPoints = self.mesh().cellCenters()
         param_markers = np.unique(mesh.cellMarkers())
@@ -231,6 +228,7 @@ class TravelTimeFMM(pg.ModellingBase):
                 mesh, times, destPos=data.sensorPositions())
             self.timeMatrix[iSource] = pg.interpolate(
                 mesh, times, destPos=midPoints)
+
             if self.debug:
                 print(self.solution().rows(), self.solution().cols())
                 print(len(times), self.mesh())
@@ -273,6 +271,7 @@ class TravelTimeFMM(pg.ModellingBase):
     def createDefaultStartModel(self):
         """Create a meaningful starting model in case none is given."""
         return pg.RVector(self.fop.regionManager().parameterCount(), 0.001)
+
 
 if __name__ == '__main__':
     # Set up FMM modelling operator and run a synthetic model

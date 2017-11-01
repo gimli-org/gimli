@@ -106,7 +106,7 @@ mesh.mapCellAttributes(slomap)  # map values to attributes using map
 
 ###############################################################################
 # We initialize the source position and the travel time vector
-# initialize sets and tags and define the initual condition.
+# initialize sets and tags and define the initial condition.
 source = pg.RVector3(0., 0.)  # does not have to be a node!
 times = pg.RVector(mesh.nodeCount(), 0.)
 upwind, downwind = set(), set()
