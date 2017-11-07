@@ -214,7 +214,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
     elif isinstance(data, pg.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
-        # print(data, type(data))
+        #print('-----------------------------')
+        #print(data, type(data))
+        #print('-----------------------------')
         if (hasattr(data[0], '__len__') and
                 not isinstance(data, np.ma.core.MaskedArray)):
 
