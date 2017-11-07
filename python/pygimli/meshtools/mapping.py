@@ -433,6 +433,31 @@ def interpolate(*args, **kwargs):
         pgcore = True
 
     if pgcore:
+        if len(args) == 3:
+
+            if isinstance(args[2], pg.R3Vector) or \
+               isinstance(args[2], pg.stdVectorRVector3):
+                return pg.core._pygimli_.interpolate(args[0], args[1],
+                                                     destPos=args[2],
+                                                     **kwargs)
+        if len(args) == 4:
+
+            if isinstance(args[1], pg.RMatrix) and \
+               isinstance(args[3], pg.RMatrix):
+
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inMat=args[1],
+                                                     destPos=args[2],
+                                                     outMat=args[3],
+                                                     **kwargs)
+            if isinstance(args[1], pg.RVector) and \
+               isinstance(args[3], pg.RVector):
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inVec=args[1],
+                                                     destPos=args[2],
+                                                     outVec=args[3],
+                                                     **kwargs)
+
         return pg.core._pygimli_.interpolate(*args, **kwargs)
 
     if len(args) == 3:

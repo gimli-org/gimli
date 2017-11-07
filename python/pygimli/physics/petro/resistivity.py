@@ -61,11 +61,15 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
         rB = pg.RMatrix(1, mesh.cellCount())
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
 
-    elif rFluid.ndim == 1:
+    elif isinstance(rFluid, pg.RVector):
         rB = pg.RMatrix(1, len(rFluid))
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
 
-    elif rFluid.ndim == 2:
+    elif hasattr(rFluid, 'ndim') and rFluid.ndim == 1:
+        rB = pg.RMatrix(1, len(rFluid))
+        rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
+
+    elif hasattr(rFluid, 'ndim') and rFluid.ndim == 2:
         rB = pg.RMatrix(len(rFluid), len(rFluid[0]))
         for i, rFi in enumerate(rFluid):
             rB[i] = rFi
@@ -104,7 +108,8 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     rI.round(1e-6)
 
     if len(rI) == 1:
-        return rI[0]
+        # copy here because of missing refcounter TODO
+        return rI[0].array()
     return rI
 
 

@@ -214,7 +214,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
     elif isinstance(data, pg.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
-        # print(data, type(data))
+        #print('-----------------------------')
+        #print(data, type(data))
+        #print('-----------------------------')
         if (hasattr(data[0], '__len__') and
                 not isinstance(data, np.ma.core.MaskedArray)):
 
@@ -223,6 +225,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
             if data.shape[1] == 2:
                 drawStreams(ax, mesh, data, **kwargs)
+
             elif data.shape[1] == 3:  # probably N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                     # drawStreams(ax, mesh, data, **kwargs)
@@ -294,7 +297,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if showMesh:
         pg.show(mesh, ax=ax)
-
 
     if hold:
         pg.mplviewer.hold(val=lastHoldStatus)

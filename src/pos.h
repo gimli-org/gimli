@@ -27,6 +27,8 @@ namespace GIMLI{
 template < class ValueType > std::ostream & operator << (std::ostream & str, const Pos< ValueType > & pos);
 
 DLLEXPORT RVector3 center(const R3Vector & vPos);
+DLLEXPORT R3Vector normalise(const R3Vector & vPos);
+
 DLLEXPORT double jacobianDetXY(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3);
 DLLEXPORT double angle(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3);
 
