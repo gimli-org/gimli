@@ -20,7 +20,7 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
 
-def autolevel(z, nLevs, logscale=None):
+def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     """Create N levels for the data array z based on matplotlib ticker.
 
     Examples
@@ -39,8 +39,11 @@ def autolevel(z, nLevs, logscale=None):
     else:
         locator = ticker.MaxNLocator(nLevs + 1)
 
-    zmin = min(z)
-    zmax = max(z)
+    if zmin is None:
+        zmin = min(z)
+
+    if zmax is None:
+        zmax = max(z)
 
     return locator.tick_values(zmin, zmax)
 
@@ -185,13 +188,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
     return cbar
 
 
-def createColorBar(patches,
-                   cMin=None,
-                   cMax=None,
-                   nLevs=5,
-                   label=None,
-                   orientation='horizontal',
-                   **kwargs):
+def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
+                   orientation='horizontal', **kwargs):
     """Create a Colorbar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
@@ -216,9 +214,6 @@ def createColorBar(patches,
     elif hasattr(patches, 'get_axes'):
         divider = make_axes_locatable(patches.get_axes())
 
-    # print('#'*100)
-    # print(divider, patches.axes)
-
     if divider:
         if orientation == 'horizontal':
             size = kwargs.pop('size', 0.2)
@@ -229,21 +224,16 @@ def createColorBar(patches,
             pad = kwargs.pop('pad', 0.1)
             cax = divider.append_axes("right", size=size, pad=pad)
 
+    patches.set_clim(vmin=cMin, vmax=cMax)
     cbar = cbarTarget.colorbar(patches, cax=cax, orientation=orientation)
 
-    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
+    #updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
 
     return cbar
 
 
-def createColorBarOnly(cMin=1,
-                       cMax=100,
-                       logScale=False,
-                       cMap=None,
-                       nLevs=5,
-                       label=None,
-                       orientation='horizontal',
-                       savefig=None,
+def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
+                       label=None, orientation='horizontal', savefig=None,
                        **kwargs):
     """Create figure with a colorbar.
 
@@ -285,8 +275,8 @@ def createColorBarOnly(cMin=1,
 
     cmap = cmapFromName(cMap)
 
-    cbar = mpl.colorbar.ColorbarBase(
-        ax, norm=norm, cmap=cmap, orientation=orientation, **kwargs)
+    cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
+                                     orientation=orientation, **kwargs)
 
     setCbarLevels(cbar, cMin=None, cMax=None, nLevs=nLevs)
 
@@ -317,14 +307,13 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
         norm = cbar.mappable.norm
     elif hasattr(cbar, 'norm'):
         norm = cbar.norm
-        cMin = norm.vmin
-        cMax = norm.vmax
 
     if isinstance(norm, mpl.colors.LogNorm):
         cbarLevels = np.logspace(np.log10(cMin), np.log10(cMax), nLevs)
     else:
         cbarLevels = np.linspace(cMin, cMax, nLevs)
 
+    #print(cbarLevels)
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
     cbarLevelsString = []
@@ -347,18 +336,11 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
             cbarLevelsString.append("%.0f" % i)
 
     if hasattr(cbar, 'mappable'):
-        cbar.mappable.set_clim(cMin, cMax)
+        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
+        cbar.set_clim(cMin, cMax)
 
-    # print ticks, cbarLevels, cbarLevelsString
-    # if cbar.orientation == 'vertical':
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
-
-    # print cbar._ticker()
-
-    #    else:
-    #        cbar.ax.set_xticks( ticks )
-    #        cbar.ax.set_xticklabels( cbarLevelsString )
 
     cbar.draw_all()
 

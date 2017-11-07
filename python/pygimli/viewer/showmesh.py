@@ -225,6 +225,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
             if data.shape[1] == 2:
                 drawStreams(ax, mesh, data, **kwargs)
+
             elif data.shape[1] == 3:  # probably N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                     # drawStreams(ax, mesh, data, **kwargs)
@@ -296,7 +297,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if showMesh:
         pg.show(mesh, ax=ax)
-
 
     if hold:
         pg.mplviewer.hold(val=lastHoldStatus)

@@ -198,11 +198,10 @@ def drawMesh(ax, mesh, **kwargs):
     updateAxes_(ax)
 
 
-def drawModel(ax, mesh, data=None,
-              cMin=None, cMax=None, logScale=True, cmap=None,
+def drawModel(ax, mesh, data=None, logScale=True,
+              cMin=None, cMax=None, cmap=None,
               xlabel=None, ylabel=None, verbose=False, grid=False,
-              tri=False,
-              **kwargs):
+              tri=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
     Parameters
@@ -245,8 +244,7 @@ def drawModel(ax, mesh, data=None,
         raise "drawModel: The mesh is empty."
 
     if tri:
-        gci = drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
-                         cmap=cmap, **kwargs)
+        gci = drawMPLTri(ax, mesh, data, cmap=cmap, **kwargs)
     else:
         gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
                                              **kwargs)
@@ -286,7 +284,8 @@ def drawModel(ax, mesh, data=None,
         if min(data) <= 0:
             logScale = False
 
-        pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
+        pg.mplviewer.setMappableData(gci, viewdata,
+                                     cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
     if xlabel is not None:
@@ -707,9 +706,9 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     gci = None
 
     levels = kwargs.pop('levels', [])
-    nLevs = kwargs.pop('nLevs', 8)
+    nLevs = kwargs.pop('nLevs', 5)
     if len(levels) == 0:
-        levels = autolevel(data, nLevs)
+        levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax)
 
     if interpolate and len(data) == mesh.cellCount():
         z = pg.meshtools.cellDataToNodeData(mesh, data)
@@ -777,7 +776,9 @@ def drawField(ax, mesh, data=None, cmap=None, **kwargs):
     Parameters
     ----------
     ax : MPL axes
+
     mesh : :gimliapi:`GIMLI::Mesh`
+
     data: iterable
         Scalar field values. Can be of length mesh.cellCount()
         or mesh.nodeCount().
@@ -806,11 +807,7 @@ def drawField(ax, mesh, data=None, cmap=None, **kwargs):
     >>> drawField(ax, mesh, data)
     <matplotlib.tri.tricontour.TriContourSet ...>
     """
-    cMin = kwargs.pop('cMin', None)
-    cMax = kwargs.pop('cMax', None)
-
-    return drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
-                      cmap=cmap, **kwargs)
+    return drawMPLTri(ax, mesh, data, cmap=cmap, **kwargs)
 
 
 def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
