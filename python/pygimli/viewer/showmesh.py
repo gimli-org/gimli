@@ -95,7 +95,7 @@ def show(mesh=None, data=None, **kwargs):
 
 def showMesh(mesh, data=None, hold=False, block=False,
              colorBar=None, label=None, coverage=None,
-             ax=None, savefig=None, **kwargs):
+             ax=None, savefig=None, showMesh=False, **kwargs):
     """2D Mesh visualization.
 
     Create an axis object and plot a 2D mesh with given node or cell data.
@@ -162,6 +162,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
         Filename for a direct save to disc.
         The matplotlib pdf-output is a little bit big so we try
         an epstopdf if the .eps suffix is found in savefig
+
+    showMesh : bool [False]
+        Shows the the mesh itself aditional.
 
     **kwargs :
         * xlabel : str [None]
@@ -288,6 +291,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
         except BaseException as _:
 
             pass
+
+    if showMesh:
+        pg.show(mesh, ax=ax)
+
 
     if hold:
         pg.mplviewer.hold(val=lastHoldStatus)
