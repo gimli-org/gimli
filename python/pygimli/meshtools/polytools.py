@@ -383,9 +383,10 @@ def createLine(start, end, segments, **kwargs):
 def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     """Create a polygon.
 
-    Create a polygon from list of vertices.
-    If the polygon is closed region attributes can be assigned.
-    The automatic region marker is set in the center of all verts.
+    Create a polygon from list of vertices. All vertices needs to be unique and duplicate vertices will be ignored.
+    If you want the polygon be a closed region you can set the 'isCloses' flag.
+    Closed region can be attributed by assigning a region marker.
+    The automatic region marker is set in the center of all vertices.
 
     Parameters
     ----------
@@ -427,7 +428,7 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     poly = pg.Mesh(2)
 
     for v in verts:
-        poly.createNode(v)
+        poly.createNodeWithCheck(v, warn=True)
 
     marker = kwargs.pop('marker', None)
     area = kwargs.pop('area', 0)

@@ -166,12 +166,16 @@ Node * Mesh::createNode(const RVector3 & pos, int marker){
     return createNode_(pos, marker, -1);
 }
 
-Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol){
+Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn){
     fillKDTree_();
 
     Node * refNode = tree_->nearest(pos);
     if (refNode){
-        if (pos.distance(refNode->pos()) < tol) return refNode;
+        if (pos.distance(refNode->pos()) < tol) {
+            if (warn || debug()) log(LogType::Warning,
+                "Duplicated node found for: " + str(pos));
+            return refNode;
+        }
     }
 
 //     for (Index i = 0, imax = nodeVector_.size(); i < imax; i++){
