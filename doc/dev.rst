@@ -44,7 +44,7 @@ for automatic warnings in case you are about to push to the master branch.
        git commit -a -m "Added important new feature."
 
 6. Pull the latest developments from GitHub using automatic rebase:
-For more info see: http://kernowsoul.com/blog/2012/06/20/4-ways-to-avoid-merge-commits-in-git/
+  For more info see: http://kernowsoul.com/blog/2012/06/20/4-ways-to-avoid-merge-commits-in-git/
 
     .. code-block:: bash
 
