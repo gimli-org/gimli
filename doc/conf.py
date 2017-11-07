@@ -65,7 +65,7 @@ needs_sphinx = '1.4' # and lower 1.6
 
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
-        #'sphinxcontrib-bibtex',
+        'sphinxcontrib-bibtex',
         # 'sphinxcontrib-doxylink',
         'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
