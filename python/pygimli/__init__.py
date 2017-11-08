@@ -9,11 +9,22 @@ Import convention:
 """
 
 # py 2.7 compatiblity
-from __future__ import print_function, division
+from __future__ import division, print_function
 
-import sys
+################################################################################
+# Please leave this block here until the following issue is fixed:
+# https://github.com/ContinuumIO/anaconda-issues/issues/1068
+if "conda" in __path__[0]:
+    try:
+        import PyQt5
+        import matplotlib
+        matplotlib.use("qt5agg", warn=False)
+    except ImportError:
+        pass
+################################################################################
+
 import locale
-import os
+import sys
 
 from . import core
 from ._version import get_versions
