@@ -230,12 +230,14 @@ public:
         return RVector3(0.0, 0.0, 0.0);
     }
 
-    /*! Normalise this Pos and return itself. */
-    Pos< ValueType > & normalise(){
+    /*! Normalize this Pos and return itself. */
+    Pos< ValueType > & normalize(){
         double t = this->abs();
         if (t > TOLERANCE) *this /= t;
         return *this;
     }
+    /*!DEPRECATED Normalise for backward comptibility.*/
+    Pos< ValueType > & normalise(){ return normalize(); }
 
     Pos< ValueType > cross(const Pos< ValueType > & p) const;
 
