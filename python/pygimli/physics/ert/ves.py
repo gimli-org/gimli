@@ -393,7 +393,6 @@ class VESManager(MethodManager1d):
 
         self.inv.transData = self.transData
 
-
         self.fop.setRegionProperties(0, limits=[1., 1000.])
         self.fop.setRegionProperties(1, limits=[5., 10000.])
         self.fop.setRegionProperties(2, limits=[0.1/1000, 6./1000.])

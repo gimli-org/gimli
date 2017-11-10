@@ -761,7 +761,7 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     if gci and cMin and cMax:
         gci.set_clim(cMin, cMax)
 
-    _setCMap(gci, cMap, kwargs)
+    _setCMap(gci, cMap)
 
     ax.set_aspect('equal')
 
@@ -1262,7 +1262,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
 
-    _setCMap(pp, cMap, kwargs)
+    _setCMap(pp, cMap)
 
     pp.set_norm(LogNorm(cMin, cMax))
     pp.set_array(np.array(val))

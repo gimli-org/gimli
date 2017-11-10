@@ -299,6 +299,7 @@ class MarquardtInversion(Inversion):
     def run(self, data, error, **kwargs):
 
         self.fop.regionManager().setConstraintType(0)
+        self.fop.setRegionProperties('*', cType=0)
 
         return super(MarquardtInversion, self).run(data, error, **kwargs)
 
@@ -307,7 +308,7 @@ class Block1DInversion(MarquardtInversion):
     def __init__(self, fop=None, **kwargs):
         super(Block1DInversion, self).__init__(fop, **kwargs)
 
-    def run(self, dataVals, errVals, nLayers=4, fixLayers=False, **kwargs):
+    def run(self, dataVals, errVals, nLayers=4, fixLayers=None, **kwargs):
         """
         Parameters
         ----------
@@ -315,10 +316,13 @@ class Block1DInversion(MarquardtInversion):
         """
         #if len(self.fop.startModel()) == 0:
         # somehow update model space if nlayers has been changed
+        # and update regions for the first time
         self.fop.createStartModel(dataVals, nLayers)
 
-        if fixLayers:
-            self.fop.setRegionProperties(0, modelControl=1e12)
+        if fixLayers is False:
+            self.fop.setRegionProperties(0, modelControl=1.0)
+        elif fixLayers is not None:
+            self.fop.setRegionProperties(0, modelControl=1e6)
             if hasattr(fixLayers, '__iter__'):
                 if len(fixLayers) != nLayers-1:
                     print("fixLayers:", fixLayers)
@@ -327,9 +331,6 @@ class Block1DInversion(MarquardtInversion):
 
             # TODO DRY to self.fop.createStartModel
             self.fop.setStartModel(self.fop.regionManager().createStartModel())
-        else:
-            self.fop.setRegionProperties(0, modelControl=1.0)
-
 
         return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
 

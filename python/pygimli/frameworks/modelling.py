@@ -41,7 +41,6 @@ class Modelling(pg.ModellingBase):
     def transModel(self, tm):
         self._transModel = tm
 
-
     def regionManager(self):
         """
         """
@@ -68,13 +67,19 @@ class Modelling(pg.ModellingBase):
     def clearRegionProperties(self):
         self._regionProperties = {}
 
-    def setRegionProperties(self, region,
+    def setRegionProperties(self, regionNr,
                             startModel=None, limits=None, trans=None,
                             cType=None, zWeights=None, modelControl=None):
         """
         """
-        if region not in self._regionProperties:
-            self._regionProperties[region] = {'startModel': 0,
+        if regionNr is '*':
+            for regionNr in self._regionProperties.keys():
+                self.setRegionProperties(regionNr, startModel, limits, trans,
+                                         cType, zWeights, modelControl)
+            return
+
+        if regionNr not in self._regionProperties:
+            self._regionProperties[regionNr] = {'startModel': 0,
                                               'modelControl': 1.0,
                                               'zWeights': 1.0,
                                               'cType': 1,
@@ -83,22 +88,22 @@ class Modelling(pg.ModellingBase):
                                               }
 
         if startModel is not None:
-            self._regionProperties[region]['startModel'] = startModel
+            self._regionProperties[regionNr]['startModel'] = startModel
 
         if limits is not None:
-            self._regionProperties[region]['limits'] = limits
+            self._regionProperties[regionNr]['limits'] = limits
 
         if trans is not None:
-            self._regionProperties[region]['trans'] = trans
+            self._regionProperties[regionNr]['trans'] = trans
 
         if cType is not None:
-            self._regionProperties[region]['cType'] = cType
+            self._regionProperties[regionNr]['cType'] = cType
 
         if zWeights is not None:
-            self._regionProperties[region]['zWeights'] = zWeights
+            self._regionProperties[regionNr]['zWeights'] = zWeights
 
         if modelControl is not None:
-            self._regionProperties[region]['modelControl'] = modelControl
+            self._regionProperties[regionNr]['modelControl'] = modelControl
 
 
     def _applyRegionProperties(self):
@@ -125,6 +130,7 @@ class Modelling(pg.ModellingBase):
 
             if vals['limits'][1] > 0:
                 RM.region(rID).setUpperBound(vals['limits'][1])
+
 
     def createStartModel(self, dataValues, **kwargs):
         """ Create Starting model.
