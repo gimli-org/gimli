@@ -285,7 +285,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
     if not hold or block is not False:
         if data is not None:
             if len(data) == mesh.cellCount():
-                print("Cell data found .. initialize cell browser")
+                #print("Cell data found .. initialize cell browser")
                 cb = CellBrowser(mesh, data, ax=ax)
                 cb.connect()
 

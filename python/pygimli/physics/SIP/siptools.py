@@ -395,49 +395,6 @@ class DoubleColeColeModelling(pg.ModellingBase):
 
         return y
 
-
-def read1resfile(filename, readsecond=False, dellast=True):
-    """read Radic instrument res file containing a single spectrum."""
-    f = open(filename, 'r')
-    line = f.readline()
-    fr = []
-    rhoa = []
-    phi = []
-    drhoa = []
-    dphi = []
-    while True:
-        line = f.readline()
-        if line.rfind('Freq') > -1:
-            break
-
-    if readsecond:
-        while True:
-            if f.readline().rfind('Freq') > -1:
-                break
-
-    while True:
-        line = f.readline()
-        b = line.split('\t')
-        if len(b) < 5:
-            break
-
-        fr.append(float(b[0]))
-        rhoa.append(float(b[1]))
-        phi.append(-float(b[2]) * P.pi / 180.)
-        drhoa.append(float(b[3]))
-        dphi.append(float(b[4]) * P.pi / 180.)
-
-    f.close()
-    if dellast:
-        fr.pop(0)
-        rhoa.pop(0)
-        phi.pop(0)
-        drhoa.pop(0)
-        dphi.pop(0)
-
-    return fr, rhoa, pg.asvector(phi), drhoa, pg.asvector(dphi)
-
-
 def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
                     dellast=True, ePhi=0.5, ePerc=1., lam=2000.):
     """

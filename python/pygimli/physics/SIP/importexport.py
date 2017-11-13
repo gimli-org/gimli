@@ -95,6 +95,82 @@ def readFuchs3File(resfile):
                         nums = np.array(line.split(), dtype=float)
                         header[activeBlock].append(nums)
 
+def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
+    """Read SIP-Fuchs Software rev.: 070903
+
+    Read Radic instrument res file containing a single spectrum.
+
+    Please note the apparent resistivity value might be scaled with the
+    real geometric factor. Default is 1.0.
+
+    Parameters
+    ----------
+    filename : string
+
+    readSecond: bool [False]
+        Read the first data block[default] or read the second that
+        consists in the file.
+
+    delLast : bool [True]
+        ??
+
+    Returns
+    -------
+    fr : array [float]
+        Measured frequencies
+
+    rhoa : array [float]
+        Measured apparent resistivties
+
+    phi : array [float]
+        Measured phases
+
+    drhoa : array [float]
+        Measured apparent resistivties error
+
+    phi : array [float]
+        Measured phase error
+    """
+    f = open(filename, 'r')
+    line = f.readline()
+    fr = []
+    rhoa = []
+    phi = []
+    drhoa = []
+    dphi = []
+    while True:
+        line = f.readline()
+        if line.rfind('Freq') > -1:
+            break
+
+    if readSecond:
+        while True:
+            if f.readline().rfind('Freq') > -1:
+                break
+
+    while True:
+        line = f.readline()
+        b = line.split('\t')
+        if len(b) < 5:
+            break
+
+        fr.append(float(b[0]))
+        rhoa.append(float(b[1]))
+        phi.append(-float(b[2]) * np.pi / 180.)
+        drhoa.append(float(b[3]))
+        dphi.append(float(b[4]) * np.pi / 180.)
+
+    f.close()
+
+    if delLast:
+        fr.pop(0)
+        rhoa.pop(0)
+        phi.pop(0)
+        drhoa.pop(0)
+        dphi.pop(0)
+
+    return np.array(fr), np.array(rhoa), np.array(phi), np.array(drhoa), np.array(dphi)
+
 
 def readSIP256file(resfile, verbose=False):
     """Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.

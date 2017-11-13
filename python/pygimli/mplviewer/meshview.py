@@ -172,20 +172,23 @@ class CellBrowser(object):
 
     def update(self):
         """Update the information window."""
-        center = self.mesh.cell(self.cellID).center()
-        x, y = center.x(), center.y()
-        marker = self.mesh.cells()[self.cellID].marker()
-        data = self.data[self.cellID]
-        header = "Cell %d:\n" % self.cellID
-        header += "-" * (len(header) - 1)
-        info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
-            x, y, data, marker)
-        text = header + textwrap.dedent(info)
-        self.text.set_text(text)
-        self.text.xy = x, y
-        self.text.set_visible(True)
-        self.highlight()
-        self.fig.canvas.draw()
+        try:
+            center = self.mesh.cell(self.cellID).center()
+            x, y = center.x(), center.y()
+            marker = self.mesh.cells()[self.cellID].marker()
+            data = self.data[self.cellID]
+            header = "Cell %d:\n" % self.cellID
+            header += "-" * (len(header) - 1)
+            info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
+                x, y, data, marker)
+            text = header + textwrap.dedent(info)
+            self.text.set_text(text)
+            self.text.xy = x, y
+            self.text.set_visible(True)
+            self.highlight()
+            self.fig.canvas.draw()
+        except BaseException as e:
+            print(e)
 
 
 def drawMesh(ax, mesh, **kwargs):
