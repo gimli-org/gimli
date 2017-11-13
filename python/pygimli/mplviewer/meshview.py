@@ -16,6 +16,23 @@ from .utils import updateAxes as updateAxes_
 
 from .colorbar import cmapFromName, autolevel
 
+class CellBrowserCacheSingleton(object):
+    __instance = None
+    cbCache_ = []
+    def __new__(cls):
+        if CellBrowserCacheSingleton.__instance is None:
+            CellBrowserCacheSingleton.__instance = object.__new__(cls)
+        return CellBrowserCacheSingleton.__instance
+
+    def add(self, c):
+        self.cbCache_.append(c)
+
+    def remove(self, c):
+        self.cbCache_.remove(c)
+
+# We only want one instance of this global cache so its a singleton class
+__CBCache__ = CellBrowserCacheSingleton()
+
 
 class CellBrowser(object):
     """Interactive cell browser on current or specified ax for a given mesh.
@@ -28,6 +45,8 @@ class CellBrowser(object):
     ----------
     mesh : 2D pygimli.Mesh instance
         The plotted mesh to browse through.
+    data : iterable
+        Cell data.
     ax : mpl axis instance, optional
         Axis instance where the mesh is plotted (default is current axis).
 
@@ -47,6 +66,13 @@ class CellBrowser(object):
 
     def __init__(self, mesh, data=None, ax=None):
         """Construct CellBrowser on a specific `mesh`."""
+
+        # we put this CellBrowser into a global cache to keep them alive
+        # if he has been called from pg.show()
+        # TODO remove them from the cache if the figure has been closed or the
+        # the mpl_connection is finished.
+        __CBCache__.add(self)
+
         if ax:
             self.ax = ax
         else:
@@ -99,7 +125,8 @@ class CellBrowser(object):
 
     def highlight(self):
         """Highlight selected cell."""
-        if self.edgeColors:
+
+        if self.edgeColors is not None:
             ec = self.edgeColors.copy()
             ec[self.cellID] = np.ones(ec.shape[1])
             self.artist.set_edgecolors(ec)
@@ -145,20 +172,23 @@ class CellBrowser(object):
 
     def update(self):
         """Update the information window."""
-        center = self.mesh.cell(self.cellID).center()
-        x, y = center.x(), center.y()
-        marker = self.mesh.cells()[self.cellID].marker()
-        data = self.data[self.cellID]
-        header = "Cell %d:\n" % self.cellID
-        header += "-" * (len(header) - 1)
-        info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
-            x, y, data, marker)
-        text = header + textwrap.dedent(info)
-        self.text.set_text(text)
-        self.text.xy = x, y
-        self.text.set_visible(True)
-        self.highlight()
-        self.fig.canvas.draw()
+        try:
+            center = self.mesh.cell(self.cellID).center()
+            x, y = center.x(), center.y()
+            marker = self.mesh.cells()[self.cellID].marker()
+            data = self.data[self.cellID]
+            header = "Cell %d:\n" % self.cellID
+            header += "-" * (len(header) - 1)
+            info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
+                x, y, data, marker)
+            text = header + textwrap.dedent(info)
+            self.text.set_text(text)
+            self.text.xy = x, y
+            self.text.set_visible(True)
+            self.highlight()
+            self.fig.canvas.draw()
+        except BaseException as e:
+            print(e)
 
 
 def drawMesh(ax, mesh, **kwargs):
@@ -923,7 +953,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
         dLength = c.center().dist(c.node(0).pos()) / 4.
 
         if v[xmid] > dropTol:
-            ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
+            ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 3.,
                      head_starts_at_zero=True,
                      **kwargs)
 

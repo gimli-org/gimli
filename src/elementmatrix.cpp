@@ -67,6 +67,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const Mes
                                                         const R3Vector & x,
                                                         Index dim,
                                                         bool verbose){
+    __MS("inuse?")
     uint nVerts = ent.nodeCount();
     uint nRules = w.size();
 
