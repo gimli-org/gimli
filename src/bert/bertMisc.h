@@ -56,7 +56,7 @@ DLLEXPORT RVector geometricFactors(const DataContainerERT & data, int dim=3,
                                    bool forceFlatEarth=false);
 
 /*! DEPRECATED due to wrong typo. */
-DLLEXPORT inline RVector geometricFactor(const DataContainerERT & data, int dim=3,
+inline RVector geometricFactor(const DataContainerERT & data, int dim=3,
                                   bool forceFlatEarth=false){
     return geometricFactors(data, dim, forceFlatEarth);
 }
