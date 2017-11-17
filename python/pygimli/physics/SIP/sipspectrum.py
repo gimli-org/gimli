@@ -78,28 +78,25 @@ class SIPSpectrum():
 
         Import Data and try to assume the file format.
         """
-        fnLow = filename.lower()
+        fi = open(filename)
+        firstLine = fi.readline()
+        fi.close()
 
-        if fnLow.endswith('.txt') or fnLow.endswith('.csv'):
+        fnLow = filename.lower()
+        if 'SIP Fuchs III' in firstLine:
+            print("Reading SIP Fuchs III file")
+            self.f, self.amp, self.phi, header = readFuchs3File(filename)
+            self.phi *= -1./180.
+            # print(header) # not used?
+        elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
+            print("Reading SIP Fuchs file")
+            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
+            self.phi *= -1./180.
+        elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
             self.amp *= self.k
-        elif fnLow.endswith('.res'):
-            self.basename = filename[:-4]
-            fi = open(filename)
-            firstLine = fi.readline()
-            fi.close()
 
-            if 'SIP-Fuchs Software rev.: 070903' in firstLine:
-                print("Reading SIP Fuchs file")
-                self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
-                self.phi *= -1./180.
-            else:
-
-                print("Reading SIP Fuchs III file")
-                self.f, self.amp, self.phi, header = readFuchs3File(filename)
-                self.phi *= -1./180.
-                # print(header) # not used?
         return self.f, self.amp, self.phi
 
 
