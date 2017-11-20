@@ -70,14 +70,10 @@ def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
         print("Warning! unrecognized keyword arguments", kwargs)
 
-
 __version__ = get_versions()['version']
-
+del get_versions
 
 def version():
     """Shortcut to show and return current version."""
     print(__version__)
     return __version__
-
-# __all__ = ['__version__']
-# __all__.extend(core.__all__)
