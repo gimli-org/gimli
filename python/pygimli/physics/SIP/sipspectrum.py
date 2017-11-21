@@ -518,8 +518,8 @@ class SIPSpectrum():
                 ax[2].set_xlim(max(self.tau), min(self.tau))
                 ax[2].set_ylim(0., max(self.mDD))
                 ax[2].grid(True)
-                ax[2].set_xlabel(r'$\tau$ [s]')
-                ax[2].set_ylabel('$m$ [-]')
+                ax[2].set_xlabel(r'$\tau$ (s)')
+                ax[2].set_ylabel('$m$ (-)')
         else:
             self.phiDD = IDD.response()
             if showFit:
@@ -571,8 +571,8 @@ class SIPSpectrum():
             ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
         ax[1].grid(True)
         ax[1].legend(loc='best')
-        ax[1].set_xlabel('f [Hz]')
-        ax[1].set_ylabel('-phi [mrad]')
+        ax[1].set_xlabel('f (Hz)')
+        ax[1].set_ylabel('-phi (mrad)')
         if np.any(self.mCC):
             ax[1].set_title(tCC, loc='left')
         if np.any(self.mDD):
@@ -582,8 +582,8 @@ class SIPSpectrum():
             ax[2].semilogx(self.tau, self.mDD * 1e3)
             ax[2].set_xlim(ax[2].get_xlim()[::-1])
             ax[2].grid(True)
-            ax[2].set_xlabel(r'$\tau$ [ms]')
-            ax[2].set_ylabel('m [mV/V]')
+            ax[2].set_xlabel(r'$\tau$ (ms)')
+            ax[2].set_ylabel('m (mV/V)')
             ax[2].set_title(tDD, loc='left')
         if save:
             if isinstance(save, str):

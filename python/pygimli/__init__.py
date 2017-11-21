@@ -75,5 +75,5 @@ del get_versions
 
 def version():
     """Shortcut to show and return current version."""
-    print(__version__)
+    print(__version__, "core:", pg.versionStr())
     return __version__

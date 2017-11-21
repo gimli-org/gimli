@@ -63,10 +63,25 @@ elseif(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-set(LIBGIMLI_VERSION_MAJOR 0)
-set(LIBGIMLI_VERSION_MINOR 9)
-set(LIBGIMLI_VERSION_PATCH 7)
-set(LIBGIMLI_VERSION ${LIBGIMLI_VERSION_MAJOR}.${LIBGIMLI_VERSION_MINOR}.${LIBGIMLI_VERSION_PATCH})
+find_package(Git)
+if (GIT_FOUND)
+    message(STATUS, ${GIT_FOUND})
+    execute_process(
+        COMMAND
+            ${GIT_EXECUTABLE} describe --tags
+        WORKING_DIRECTORY
+            ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE
+            GIMLI_GITVERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_STRIP_TRAILING_WHITESPACE
+        )
+    message(STATUS, "setting version from git description: ${GIMLI_GITVERSION}")
+    set(LIBGIMLI_VERSION ${GIMLI_GITVERSION})
+else()
+    set(LIBGIMLI_VERSION "untaged")
+endif()
+
 
 set(PACKAGE_NAME \"${PROJECT_NAME}\")
 set(PACKAGE_VERSION \"${LIBGIMLI_VERSION}\")
