@@ -45,8 +45,8 @@
 #endif
 
 #ifndef PACKAGE_NAME
-        #define PACKAGE_NAME "gimli"
-        #define PACKAGE_VERSION "0.9.0-win"
+        #define PACKAGE_NAME "libgimli"
+        #define PACKAGE_VERSION "untagt-win"
         #define PACKAGE_BUGREPORT "carsten@resistivity.net"
         #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
 #endif // PACKAGE_NAME
@@ -308,9 +308,9 @@ private:
 #endif
 };
 
-    #define ALLOW_PYTHON_THREADS PythonGILSave __pygil_t__;
-    #define RESTORE_PYTHON_THREADS __pygil_t__.restore();
-    #define SAVE_PYTHON_THREADS __pygil_t__.save();
+#define ALLOW_PYTHON_THREADS PythonGILSave __pygil_t__;
+#define RESTORE_PYTHON_THREADS __pygil_t__.restore();
+#define SAVE_PYTHON_THREADS __pygil_t__.save();
 
 #ifndef PYTHON_FOUND
     #ifndef Py_BEGIN_ALLOW_THREADS
@@ -332,7 +332,7 @@ template< typename T > inline std::string str(const T & value){
 template< typename T > inline std::string toStr(const T & value){ return str(value);}
 
 inline std::string versionStr(){
-    std::string vers(str(PACKAGE_NAME) + "-" + str(PACKAGE_VERSION));
+    std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
     return vers;
 }
 
