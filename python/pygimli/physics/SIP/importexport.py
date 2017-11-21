@@ -41,7 +41,7 @@ def readTXTSpectrum(filename):
     return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
-def readFuchs3File(resfile):
+def readFuchs3File(resfile, verbose=False):
     """Read Fuchs III (SIP spectrum) data file."""
     activeBlock = ''
     header = {}
@@ -69,7 +69,8 @@ def readFuchs3File(resfile):
                         break
                     else:
                         dataAct = True
-                        print(line)
+                        if verbose:
+                            print(line)
                 if line[0] == '[':
                     token = line[1:line.rfind(']')].replace(' ', '_')
                     if token[:3] == 'End':
@@ -94,6 +95,7 @@ def readFuchs3File(resfile):
                     if activeBlock:
                         nums = np.array(line.split(), dtype=float)
                         header[activeBlock].append(nums)
+
 
 def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
     """Read SIP-Fuchs Software rev.: 070903

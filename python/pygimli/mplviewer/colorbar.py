@@ -226,6 +226,8 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
 
     patches.set_clim(vmin=cMin, vmax=cMax)
     cbar = cbarTarget.colorbar(patches, cax=cax, orientation=orientation)
+    if label is not None:
+        cbar.set_label(label)
 
     #updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
 

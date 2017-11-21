@@ -303,7 +303,7 @@ class ERTManager(MeshMethodManager):
         dx = np.median(np.diff(np.unique(mid)))*2
         ax, _, _ = pg.mplviewer.patchValMap(
             vals, mid, sep, dx=dx, ax=ax, logScale=True,
-            label=r'Apparent resistivity in $\Omega$m')
+            label=r'Apparent resistivity ($\Omega$m)')
 
         return ax
 
