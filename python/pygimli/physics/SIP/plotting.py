@@ -5,7 +5,7 @@
 import matplotlib.pyplot as plt
 
 
-def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
+def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
                           grid=True, marker='+', ylog=True, **kwargs):
     """Show amplitude spectrum (resistivity as a function of f)."""
     lab = kwargs.pop('label', 'obs')
@@ -20,7 +20,7 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
     ax.grid(grid)
 
 
-def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi$ (-mrad)',
+def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
                       grid=True, marker='+', ylog=False, **kwargs):
     """Show phase spectrum (-phi as a function of f)."""
     if 'label' not in kwargs:
@@ -33,7 +33,7 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$\phi$ (-mrad)',
     ax.grid(grid)
 
 
-def plotSpectrum(ax, freq, vals, ylabel=r'$\phi$ (-mrad)',
+def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ (mrad)',
                  grid=True, marker='+', ylog=True, **kwargs):
     """Plot some spectrum (redundant)."""
     if 'label' not in kwargs:
