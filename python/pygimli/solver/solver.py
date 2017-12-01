@@ -699,6 +699,7 @@ def linsolve(A, b, verbose=False):
     """
     DEPRECATED wrong name style
     """
+    pg.deprecated('linsolve', 'linSolve')
     return linSolve(A, b, verbose)
 
 def linSolve(A, b, verbose=False):

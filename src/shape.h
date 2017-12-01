@@ -309,7 +309,8 @@ public:
     /*! Reverse node sequence order to enforce positive Jacobian determinant.
      * Please use with care! Return True if the order has been changed.*/
     virtual bool enforcePositiveDirection();
-//     double jacobianDeterminant() const { return det(this->createJacobian()); }
+
+    //     double jacobianDeterminant() const { return det(this->createJacobian()); }
 
 protected:
 
