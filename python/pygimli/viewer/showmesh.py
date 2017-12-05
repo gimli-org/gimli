@@ -225,6 +225,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
             if data.shape[1] == 2:
                 drawStreams(ax, mesh, data, **kwargs)
+
             elif data.shape[1] == 3:  # probably N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                     # drawStreams(ax, mesh, data, **kwargs)
@@ -284,6 +285,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
     if not hold or block is not False:
         if data is not None:
             if len(data) == mesh.cellCount():
+                #print("Cell data found .. initialize cell browser")
                 cb = CellBrowser(mesh, data, ax=ax)
                 cb.connect()
 
@@ -296,7 +298,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     if showMesh:
         pg.show(mesh, ax=ax)
-
 
     if hold:
         pg.mplviewer.hold(val=lastHoldStatus)

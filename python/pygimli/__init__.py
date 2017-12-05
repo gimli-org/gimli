@@ -9,11 +9,22 @@ Import convention:
 """
 
 # py 2.7 compatiblity
-from __future__ import print_function, division
+from __future__ import division, print_function
 
-import sys
+################################################################################
+# Please leave this block here until the following issue is fixed:
+# https://github.com/ContinuumIO/anaconda-issues/issues/1068
+if "conda" in __path__[0]:
+    try:
+        import PyQt5
+        import matplotlib
+        matplotlib.use("qt5agg", warn=False)
+    except ImportError:
+        pass
+################################################################################
+
 import locale
-import os
+import sys
 
 from . import core
 from ._version import get_versions
@@ -59,14 +70,10 @@ def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
         print("Warning! unrecognized keyword arguments", kwargs)
 
-
 __version__ = get_versions()['version']
-
+del get_versions
 
 def version():
     """Shortcut to show and return current version."""
-    print(__version__)
+    print(__version__, "core:", pg.versionStr())
     return __version__
-
-# __all__ = ['__version__']
-# __all__.extend(core.__all__)

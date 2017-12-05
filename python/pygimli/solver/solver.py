@@ -699,6 +699,7 @@ def linsolve(A, b, verbose=False):
     """
     DEPRECATED wrong name style
     """
+    pg.deprecated('linsolve', 'linSolve')
     return linSolve(A, b, verbose)
 
 def linSolve(A, b, verbose=False):
@@ -895,7 +896,8 @@ def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
         S.setVal(i, i, 1.0)
 
     if rhs is not None:
-        rhs.setVal(uDirchlet, uDirIndex)
+        rhs[uDirIndex] = uDirchlet
+        #rhs.setVal(uDirchlet, uDirIndex)
 
 
 def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None,

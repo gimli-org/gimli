@@ -51,14 +51,14 @@ def ricker(t, f, t0=0.0):
     return y
 
 
-def drawWiggle(axes, x, t, xoffset=0.0,
+def drawWiggle(ax, x, t, xoffset=0.0,
                posColor='red', negColor='blue', alpha=0.5, **kwargs):
     """
-    Draw signal in wiggle style into a given axes.
+    Draw signal in wiggle style into a given ax.
 
     Parameters
     ----------
-    axes : matplotlib axes
+    ax : matplotlib ax
         To plot into
 
     x : array [float]
@@ -99,44 +99,56 @@ def drawWiggle(axes, x, t, xoffset=0.0,
     >>> ax.invert_yaxis()
     >>> plt.show()
     """
-    wiggle, = axes.plot(x + xoffset, t, color='black', **kwargs)
+    wiggle, = ax.plot(x + xoffset, t, color='black', **kwargs)
 
     if len(t) > 1:
         tracefill = np.array(x)
         tracefill[0] = 0.0
         tracefill[-1] = 0.0
         tracefill[np.nonzero(x > x[0])] = 0
-        fill, = axes.fill(tracefill + xoffset, t, color=negColor,
-                          alpha=alpha, linewidth=0)
+        fill, = ax.fill(tracefill + xoffset, t, color=negColor,
+                        alpha=alpha, linewidth=0)
 
         tracefill = np.array(x)
         tracefill[0] = 0.0
         tracefill[-1] = 0.0
         tracefill[np.nonzero(x < x[0])] = 0
-        fill, = axes.fill(tracefill + xoffset, t, color=posColor,
-                          alpha=alpha, linewidth=0)
+        fill, = ax.fill(tracefill + xoffset, t, color=posColor,
+                        alpha=alpha, linewidth=0)
 
 
-def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
+def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
     r"""Extract and show time series from wave field
 
     Parameters
     ----------
+
+    ids: list
+        List of node ids for the given mesh.
+    pos : list
+        List of positions for the given mesh. We will look for the nearest node.
+
     """
-    axes.set_xlim(-20., 20.)
-    axes.set_ylim(0., dt*len(u)*1000)
-    axes.set_aspect(1)
-    axes.set_ylabel('Time in ms')
+    ax.set_xlim(mesh.xmin(), mesh.xmax())
+    ax.set_ylim(0., dt*len(u)*1000)
+    ax.set_aspect(1)
+    ax.set_ylabel('Time in ms')
 
     if i is None:
         i = len(u)-1
 
     t = np.linspace(0, i*dt*1000, i+1)
 
+    if ids is None and pos is not None:
+        ids = []
+        for p in pos:
+           ids.append(mesh.findNearestNode(p))
+
+    xDist = mesh.node(0).pos().distance(mesh.node(1).pos())
     for iw, n in enumerate(ids):
         pos = mesh.node(n).pos()
         print(pos)
-        axes.plot(pos[0], 0.05, '^', color='black')
+        ax.plot(pos[0], 0.05, '^', color='black')
 
         trace = pg.cat(pg.RVector(0), u[:(i+1), n])
 #        print(i+1, n)
@@ -144,11 +156,12 @@ def drawSeismogramm(axes, mesh, u, ids, dt, i=None):
 
 #        if max(pg.abs(trace)) > 1e-8:
 
-        trace *= np.exp(0.5*t)
-        trace /= (max(pg.abs(trace))*1.5)
+        trace /= (max(pg.abs(trace)))
+        trace *= np.exp(1/1000 * t)
+        trace *= 100
 
-        drawWiggle(axes, trace, t=t, xoffset=pos[0])
-    axes.invert_yaxis()
+        drawWiggle(ax, trace, t=t, xoffset=pos[0])
+    ax.invert_yaxis()
 
 
 def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
@@ -224,6 +237,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     dt = times[1] - times[0]
 
     theta = 0.51
+    #theta = 1.
     S1 = M + dt * dt * theta * theta * A
     S2 = M
 

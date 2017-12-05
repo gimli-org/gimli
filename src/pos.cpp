@@ -60,6 +60,12 @@ RVector3 center(const R3Vector & vPos){
   return pos /= vPos.size();
 }
 
+R3Vector normalise(const R3Vector & vPos){
+    R3Vector ret(vPos);
+    for (uint i = 0; i < vPos.size(); i ++) ret[i] = ret[i]/ret[i].abs();
+    return ret;
+}
+
 double jacobianDetXY(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3){
   double x1 = p1.x(), x2 = p2.x(), x3 = p3.x();
   double y1 = p1.y(), y2 = p2.y(), y3 = p3.y();

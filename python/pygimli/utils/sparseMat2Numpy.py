@@ -8,6 +8,57 @@ import pygimli as pg
 import numpy as np
 
 
+def sparseMatrix2csr(A):
+    """Convert SparseMatrix to scipy.csr_matrix.
+
+    Parameters
+    ----------
+    A: pg.SparseMapMatrix | pg.SparseMatrix
+        Matrix to convert from.
+
+    Returns
+    -------
+    mat: scipy.csr_matrix
+        Matrix to convert into.
+    """
+    #optImport(scipy.sparse, requiredFor="toCRS_matrix")
+    from scipy.sparse import csr_matrix
+    if isinstance(A, pg.SparseMapMatrix):
+        C = pg.SparseMatrix(A)
+        return csr_matrix((C.vecVals(), C.vecRowIdx(), C.vecColPtr()))
+    elif isinstance(A, pg.SparseMatrix):
+        return csr_matrix((A.vecVals(), A.vecRowIdx(), A.vecColPtr()))
+
+    return csr_matrix(A)
+
+def sparseMatrix2coo(A):
+    """Convert SparseMatrix to scipy.coo_matrix.
+
+    Parameters
+    ----------
+    A: pg.SparseMapMatrix | pg.SparseMatrix
+        Matrix to convert from.
+
+    Returns
+    -------
+    mat: scipy.coo_matrix
+        Matrix to convert into.
+    """
+    from scipy.sparse import coo_matrix
+    vals = pg.RVector()
+    rows = pg.IndexArray([0])
+    cols = pg.IndexArray([0])
+    if isinstance(A, pg.SparseMatrix):
+        C = pg.RSparseMapMatrix(A)
+        C.fillArrays(vals=vals, rows=rows, cols=cols)
+        return coo_matrix(vals, (rows, cols))
+    elif isinstance(A, pg.SparseMapMatrix):
+        A.fillArrays(vals, rows, cols)
+        return coo_matrix(vals, (rows, cols))
+
+    return coo_matrix(A)
+
+
 def convertCRSIndex2Map(rowIdx, colPtr):
     """Converts CRS indices to uncompressed indices (row, col)."""
     ii = []

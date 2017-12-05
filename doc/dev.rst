@@ -104,7 +104,7 @@ To produce a new version, type:
 
 .. code-block:: bash
 
-    git tag -a -m "First official release" "v1.0" # tags last commit as v1.0
+    git tag -a -m "First official release" "v1.0.x" # tags last commit as v1.0.x
     git push --tags # pushes tags to GitHub
 
 .. _sec:coding_guidelines:

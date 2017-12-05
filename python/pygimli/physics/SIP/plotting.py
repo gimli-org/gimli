@@ -5,7 +5,7 @@
 import matplotlib.pyplot as plt
 
 
-def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
+def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
                           grid=True, marker='+', ylog=True, **kwargs):
     """Show amplitude spectrum (resistivity as a function of f)."""
     lab = kwargs.pop('label', 'obs')
@@ -15,12 +15,12 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ in $\Omega$m',
     if ylog:
         ax.set_yscale('log')
     ax.set_ylim(min(amp) * .99, max(amp * 1.01))
-    ax.set_xlabel('f in Hz')
+    ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
 
 
-def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ in mrad',
+def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
                       grid=True, marker='+', ylog=False, **kwargs):
     """Show phase spectrum (-phi as a function of f)."""
     if 'label' not in kwargs:
@@ -28,12 +28,12 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ in mrad',
     ax.semilogx(freq, phi, marker=marker, **kwargs)
     if ylog:
         ax.set_yscale('log')
-    ax.set_xlabel('f in Hz')
+    ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
 
 
-def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ in mrad',
+def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ (mrad)',
                  grid=True, marker='+', ylog=True, **kwargs):
     """Plot some spectrum (redundant)."""
     if 'label' not in kwargs:
@@ -41,7 +41,7 @@ def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ in mrad',
     ax.loglog(freq, vals, marker=marker, **kwargs)
     if ylog:
         ax.set_yscale('log')
-    ax.set_xlabel('f in Hz')
+    ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
 

@@ -74,6 +74,19 @@ class TestSparseMatrix(unittest.TestCase):
         A2 = pg.SparseMapMatrix(colIds, rowIds, vals)
         A1 += A2
 
+        sciA1 = pg.utils.sparseMatrix2csr(pg.SparseMatrix(csr))
+        sciA2 = pg.utils.sparseMatrix2csr(csr)
+        np.testing.assert_equal(len(sciA1.data), csr.size())
+        np.testing.assert_equal(sciA1.data, sciA2.data)
+        np.testing.assert_equal(sciA1.indices, sciA2.indices)
+        np.testing.assert_equal(sciA1.indptr, sciA2.indptr)
+
+        sciA1 = pg.utils.sparseMatrix2coo(pg.SparseMatrix(csr))
+        sciA2 = pg.utils.sparseMatrix2coo(csr)
+        np.testing.assert_equal(len(sciA1.data), csr.size())
+        np.testing.assert_equal(sciA1.data, sciA2.data)
+        np.testing.assert_equal(sciA1.row, sciA2.row)
+        np.testing.assert_equal(sciA1.col, sciA2.col)
 
 
 

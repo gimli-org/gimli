@@ -90,20 +90,24 @@ public:
 
     ElementMatrix < ValueType > & u(const MeshEntity & ent,
                                     const RVector & w,
-                                    const R3Vector & integrationPnts,
+                                    const R3Vector & x,
                                     bool verbose=false);
-    ElementMatrix < ValueType > & u2(const MeshEntity & ent, const RVector & w,
-                                     const R3Vector & integrationPnts,
+    ElementMatrix < ValueType > & u2(const MeshEntity & ent,
+                                     const RVector & w,
+                                     const R3Vector & x,
                                      bool verbose=false);
-    ElementMatrix < ValueType > & ux2(const MeshEntity & ent, const RVector & w,
-                               const R3Vector & integrationPnts,
-                              bool verbose=false);
-    ElementMatrix < ValueType > & ux2uy2(const MeshEntity & ent, const RVector & w,
-                                  const R3Vector & integrationPnts,
-                                 bool verbose=false);
-    ElementMatrix < ValueType > & ux2uy2uz2(const MeshEntity & ent, const RVector & w,
-                                    const R3Vector & integrationPnts,
-                                    bool verbose=false);
+    ElementMatrix < ValueType > & ux2(const MeshEntity & ent,
+                                      const RVector & w,
+                                      const R3Vector & x,
+                                      bool verbose=false);
+    ElementMatrix < ValueType > & ux2uy2(const MeshEntity & ent,
+                                         const RVector & w,
+                                         const R3Vector & x,
+                                         bool verbose=false);
+    ElementMatrix < ValueType > & ux2uy2uz2(const MeshEntity & ent,
+                                            const RVector & w,
+                                            const R3Vector & x,
+                                            bool verbose=false);
 
     ElementMatrix < double > & dudi(const MeshEntity & ent,
                                   const RVector & w,
@@ -157,11 +161,11 @@ public:
         return ret;
     }
 
-        /*! Return (S * (a-b)) * (m-n) */
+    /*! Return (S * (a-b)) * (m-n) TODO Check if its the same like mult(a-b, m-n)*/
     template < class Val > Val mult_(const Vector < Val > & a,
-                   const Vector < Val> & b,
-                   const Vector < Val> & m,
-                   const Vector < Val> & n){
+                                     const Vector < Val > & b,
+                                     const Vector < Val > & m,
+                                     const Vector < Val > & n){
         Val ret = 0;
         for (Index i = 0; i < size(); i ++) {
             Val t = 0;
@@ -210,18 +214,25 @@ public:
 
     void add(Index row, const ElementMatrix < double > & Ai);
 
+    //TODO .. check if its the same like mult(a-b, m-n))
     RVector mult(const RVector & a, const RVector & b,
                  const RVector & m, const RVector & n) const;
 
+    /*! Return (S_i * a) * b for all i*/
     RVector mult(const RVector & a, const RVector & b) const;
 
     Index rows() const { return rows_; }
+
+    Index cols() const { return cols_; }
+
+
 protected:
     std::vector< RMatrix > mat_;
     std::vector< IndexArray > idx_;
     std::vector< Index > row_;
 
     Index rows_;
+    Index cols_;
 };
 
 template < class ValueType > std::ostream & operator << (std::ostream & str, const ElementMatrix< ValueType > & e){
