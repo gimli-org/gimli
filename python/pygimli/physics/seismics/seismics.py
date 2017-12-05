@@ -144,6 +144,7 @@ def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
         for p in pos:
            ids.append(mesh.findNearestNode(p))
 
+    xDist = mesh.node(0).pos().distance(mesh.node(1).pos())
     for iw, n in enumerate(ids):
         pos = mesh.node(n).pos()
         print(pos)
@@ -155,8 +156,9 @@ def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
 
 #        if max(pg.abs(trace)) > 1e-8:
 
-        trace *= np.exp(0.5*0.1 * t)
         trace /= (max(pg.abs(trace)))
+        trace *= np.exp(1/1000 * t)
+        trace *= 100
 
         drawWiggle(ax, trace, t=t, xoffset=pos[0])
     ax.invert_yaxis()
@@ -235,6 +237,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     dt = times[1] - times[0]
 
     theta = 0.51
+    #theta = 1.
     S1 = M + dt * dt * theta * theta * A
     S2 = M
 
