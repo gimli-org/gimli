@@ -132,7 +132,8 @@ def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
     ax.set_xlim(mesh.xmin(), mesh.xmax())
     ax.set_ylim(0., dt*len(u)*1000)
     ax.set_aspect(1)
-    ax.set_ylabel('Time in ms')
+    ax.set_ylabel('Time (ms)')
+    ax.set_xlabel('Distance (m)')
 
     if i is None:
         i = len(u)-1
@@ -147,18 +148,17 @@ def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
     xDist = mesh.node(0).pos().distance(mesh.node(1).pos())
     for iw, n in enumerate(ids):
         pos = mesh.node(n).pos()
-        print(pos)
         ax.plot(pos[0], 0.05, '^', color='black')
-
+        print(pos)
         trace = pg.cat(pg.RVector(0), u[:(i+1), n])
 #        print(i+1, n)
 #        print(trace, (max(pg.abs(trace))))
 
 #        if max(pg.abs(trace)) > 1e-8:
 
-        trace /= (max(pg.abs(trace)))
         trace *= np.exp(1/1000 * t)
-        trace *= 100
+        trace /= (max(pg.abs(trace)))
+        trace *= 10
 
         drawWiggle(ax, trace, t=t, xoffset=pos[0])
     ax.invert_yaxis()
