@@ -47,7 +47,7 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
         Entries of the matrix.
 
     indices: list, list
-        Optional. Reurns additional array with the indices for reconstructing
+        Optional. Returns additional array with the indices for reconstructing
         the matrix in the defined format.
 
     """
