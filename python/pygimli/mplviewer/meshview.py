@@ -922,7 +922,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
                          dataMesh=dataMesh,
                          maxSteps=10000,
                          verbose=False,
-                         koords=[0, 1])
+                         coords=[0, 1])
 
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
@@ -1105,7 +1105,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
 # def drawStreamLines2(...)
 
 
-def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
+def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     """Draw sensor positions as black dots with a given diameter.
 
     Parameters
@@ -1114,8 +1114,8 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
         list of positions to plot
     diam : float [None]
         diameter of circles (None leads to point distance by 8)
-    koords: (int, int) [0, 1]
-        koordinates to take (usually x and y)
+    coords: (int, int) [0, 1]
+        Coordinates to take (usually x and y)
 
     Examples
     --------
@@ -1124,13 +1124,13 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
     >>> from pygimli.mplviewer import drawSensors
     >>> sensors = np.random.rand(5, 2)
     >>> fig, ax = plt.subplots()
-    >>> drawSensors(ax, sensors, diam=0.02, koords=[0, 1])
+    >>> drawSensors(ax, sensors, diam=0.02, coords=[0, 1])
     >>> ax.set_aspect('equal')
     """
-    if koords is None:
-        koords = [0, 2]
+    if coords is None:
+        coords = [0, 2]
         if pg.yVari(sensors):
-            koords = [0, 1]
+            coords = [0, 1]
 
     eCircles = []
 
@@ -1140,8 +1140,8 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
 
     for e in sensors:
         if verbose:
-            print(e, diam, e[koords[0]], e[koords[1]])
-        eCircles.append(mpl.patches.Circle((e[koords[0]], e[koords[1]]), diam))
+            print(e, diam, e[coords[0]], e[coords[1]])
+        eCircles.append(mpl.patches.Circle((e[coords[0]], e[coords[1]]), diam))
 
     p = mpl.collections.PatchCollection(eCircles,
                                         **kwargs)

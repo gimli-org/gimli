@@ -36,11 +36,11 @@ DLLEXPORT bool xVari(const R3Vector & electrodeList);
 DLLEXPORT bool yVari(const R3Vector & electrodeList);
 DLLEXPORT bool zVari(const R3Vector & electrodeList);
 
-/*! Return array of all x-koordinates. [:,0]*/
+/*! Return array of all x-coordinates. [:,0]*/
 DLLEXPORT RVector x(const R3Vector & rv);
-/*! Return array of all y-koordinates. [:,1]*/
+/*! Return array of all y-coordinates. [:,1]*/
 DLLEXPORT RVector y(const R3Vector & rv);
-/*! Return array of all z-koordinates. [:,2]*/
+/*! Return array of all z-coordinates. [:,2]*/
 DLLEXPORT RVector z(const R3Vector & rv);
 
 DLLEXPORT RVector absR3(const R3Vector & vPos);
