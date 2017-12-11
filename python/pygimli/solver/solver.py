@@ -542,8 +542,9 @@ def div(mesh, v):
             d = mesh.divergence(pg.meshtools.nodeDataToBoundaryData(mesh, v))
         elif len(v) == mesh.cellCount():
             CtB = mesh.cellToBoundaryInterpolation()
-            d = mesh.divergence(
-                np.array([CtB*pg.x(v), CtB*pg.y(v), CtB*pg.z(v)]).T)
+            d = mesh.divergence(np.array([CtB*pg.x(v),
+                                          CtB*pg.y(v),
+                                          CtB*pg.z(v)]).T)
         else:
             print(len(v), mesh)
             raise BaseException("implement me")
@@ -744,9 +745,17 @@ def linSolve(A, b, verbose=False):
 
 
 def assembleForceVector(mesh, f, userData=None):
-    """Create right hand side vector based on the given mesh and force values.
+    """
+    DEPRECATED use assembleLoadVector instead
+    """
+    return assembleLoadVector(mesh, f, userData)
 
-    Create right hand side vector based on the given mesh and force values.
+def assembleLoadVector(mesh, f, userData=None):
+    """Create right hand side vector based on the given mesh and load
+    or force values.
+
+    Create right hand side vector based on the given mesh and load or force
+    values.
 
     Parameters
     ----------

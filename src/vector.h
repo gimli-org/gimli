@@ -539,18 +539,16 @@ public:
         return *this;
     }
 
-    // /*! Add Values from an ElementMatrix. For vectors only the first row will
-     // be taken. */
+    /*! Add Values from an ElementMatrix. For vectors only the first row will
+    be taken. */
     void add(const ElementMatrix < double > & A);
-    //void add(const Matrix < ValueType > & A){THROW_TO_IMPL}
-    //void add(const ElementMatrix < ValueType > & A);
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
     be taken. Optional scale with scalar. */
     void add(const ElementMatrix < double > & A, const double & a);
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
-    be taken. Optional scale with values fron vector. */
+    be taken. Optional scale with values from vector. */
     void add(const ElementMatrix < double > & A, const Vector < double > & a);
 
     /*! Get value for index i.

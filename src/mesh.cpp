@@ -2210,12 +2210,12 @@ RVector Mesh::divergence(const R3Vector & V) const{
 
     ASSERT_EQUAL(V.size(), this->boundaryCount());
 
-    const R3Vector & flow = this->boundarySizedNormals();
+    const R3Vector & normB = this->boundarySizedNormals();
 
     for (Index i = 0; i < this->boundaryCount(); i ++){
         Boundary * b = this->boundaryVector_[i];
-//         __MS(flow[b->id()] << " " << V[b->id()])
-        double vec = flow[b->id()].dot(V[b->id()]);
+//         __MS(normB[b->id()] << " " << V[b->id()])
+        double vec = normB[b->id()].dot(V[b->id()]);
 
         if (b->leftCell()){
             ret[b->leftCell()->id()] += vec;
