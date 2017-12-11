@@ -29,7 +29,7 @@ namespace GIMLI{
 template < > ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent,
                             const RVector & w,
-                            const R3Vector & integrationPnts,
+                            const R3Vector & x,
                             bool verbose){
 
     uint nVerts = ent.nodeCount();
@@ -43,7 +43,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
 
         RVector tmp;
         for (uint i = 0; i < nRules; i ++){
-            tmp = ent.N(integrationPnts[i]);
+            tmp = ent.N(x[i]);
             N.setCol(i, tmp);
         }
         for (uint i = 0; i < nVerts; i ++){
@@ -67,14 +67,13 @@ template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const Mes
                                                         const R3Vector & x,
                                                         Index dim,
                                                         bool verbose){
-    __MS("inuse?")
+
     uint nVerts = ent.nodeCount();
     uint nRules = w.size();
 
     if (size() != nVerts) resize(nVerts);
     for (Index i = 0; i < nVerts; i ++) idx_[i] = ent.node(i).id();
     *this *= 0.0;
-
 
     if (dNdr_.rows() != nVerts){
         dNdr_.resize(nVerts, nRules);
@@ -105,7 +104,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const Mes
             case 3: dNdx_[i].assign(drdi * dNdr_[i] + dsdi * dNds_[i] + dtdi * dNdt_[i]); break;
         }
 
-        mat_[0][i] = sum(w * dNdx_[i]);
+        mat_[i][i] = sum(w * dNdx_[i]);
     }
 
 
@@ -115,9 +114,9 @@ template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const Mes
 
 template < >
 ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
-                               const RVector & w,
-                               const R3Vector & integrationPnts,
-                               bool verbose){
+                                                        const RVector & w,
+                                                        const R3Vector & x,
+                                                        bool verbose){
 
     uint nVerts = ent.nodeCount();
     std::map< uint, RMatrix>::const_iterator it = u2Cache_.find(ent.rtti());
@@ -130,7 +129,7 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
 
         RVector tmp;
         for (uint i = 0; i < nRules; i ++){
-            tmp = ent.N(integrationPnts[i]);
+            tmp = ent.N(x[i]);
             N.setCol(i, tmp);
         }
         for (uint i = 0; i < nVerts; i ++){
@@ -159,9 +158,9 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
 
 template < >
 ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
-                                const RVector & w,
-                                const R3Vector & integrationPnts,
-                                bool verbose){
+                                                         const RVector & w,
+                                                         const R3Vector & x,
+                                                         bool verbose){
 
     uint nVerts = ent.nodeCount();
     uint nRules = w.size();
@@ -169,7 +168,7 @@ ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
     if (dNdr_.rows() != nVerts){
         dNdr_.resize(nVerts, nRules);
         for (uint i = 0; i < nRules; i ++){
-            dNdr_.setCol(i, ent.dNdL(integrationPnts[i], 0));
+            dNdr_.setCol(i, ent.dNdL(x[i], 0));
         }
     }
 
@@ -191,7 +190,7 @@ ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
 template < > ElementMatrix < double > &
 ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
                                  const RVector & w,
-                                 const R3Vector & integrationPnts,
+                                 const R3Vector & x,
                                  bool verbose){
 
 //     __MS(w)
@@ -204,8 +203,8 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
         dNds_.resize(nVerts, nRules);
 
         for (uint i = 0; i < nRules; i ++){
-            dNdr_.setCol(i, ent.dNdL(integrationPnts[i], 0));
-            dNds_.setCol(i, ent.dNdL(integrationPnts[i], 1));
+            dNdr_.setCol(i, ent.dNdL(x[i], 0));
+            dNds_.setCol(i, ent.dNdL(x[i], 1));
 
 //             __MS(i << " " << dNdr_[i])
         }
@@ -253,7 +252,7 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
 template < > ElementMatrix < double > &
 ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
                                     const RVector & w,
-                                    const R3Vector & integrationPnts,
+                                    const R3Vector & x,
                                     bool verbose){
 
     Index nVerts = ent.nodeCount();
@@ -265,9 +264,9 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
         dNdt_.resize(nVerts, nRules);
 
         for (Index i = 0; i < nRules; i ++){
-            dNdr_.setCol(i, ent.dNdL(integrationPnts[i], 0));
-            dNds_.setCol(i, ent.dNdL(integrationPnts[i], 1));
-            dNdt_.setCol(i, ent.dNdL(integrationPnts[i], 2));
+            dNdr_.setCol(i, ent.dNdL(x[i], 0));
+            dNds_.setCol(i, ent.dNdL(x[i], 1));
+            dNdt_.setCol(i, ent.dNdL(x[i], 2));
         }
 
         dNdx_.resize(nVerts, nRules);
@@ -821,6 +820,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(cons
 
 void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
     rows_ = max(row + 1, rows_);
+    cols_ = max(max(Ai.idx()) + 1, cols_);
 
     mat_.push_back(Ai.mat());
     idx_.push_back(Ai.idx());

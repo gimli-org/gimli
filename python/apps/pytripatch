@@ -664,7 +664,6 @@ def main(argv):
                     koords = [0, 1]
                 else:
                     d = pg.DataContainer(options.electrodes)
-                    koords = [0, 1]
                     elPos = d.sensorPositions()
 
                 diam = None

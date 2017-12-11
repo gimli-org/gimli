@@ -68,7 +68,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     >>> import pygimli as pg
     >>> # plt.style.use('ggplot')
     >>> thk = [1, 4, 4]
-    >>> res = np.array([10, 5, 15, 50])
+    >>> res = np.array([10., 5, 15, 50])
     >>> fig, ax = plt.subplots()
     >>> pg.mplviewer.drawModel1D(ax, values=res*5, depths=np.cumsum(thk),
     ...                          plot='semilogx', color='blue')
