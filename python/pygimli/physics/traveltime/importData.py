@@ -1,12 +1,100 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Dec 04 14:09:36 2014
-
-@author: Marcus
-"""
-import sys
+import struct
 import numpy as np
+import pygimli as pg
+
+
+def importGTT(filename, return_header=False):
+    """Import refraction data from Tomo+ GTT data file into DataContainer."""
+    header = {}
+    with open(filename, 'rb') as fid:
+        block = fid.read(100)
+        nshots = struct.unpack(">I", block[:4])[0]
+        ngeoph = struct.unpack(">I", block[4:8])[0]
+        header['ntrace'] = struct.unpack(">Q", block[8:16])[0]
+        header['nchan'] = struct.unpack(">I", block[16:20])[0]
+        header['tminmax'] = struct.unpack(">2f", block[20:28])
+        header['offsetminmax'] = struct.unpack(">2f", block[28:36])
+        header['angle'] = struct.unpack(">f", block[36:40])[0]
+        header['origin'] = struct.unpack(">2f", block[40:48])
+        header['unit'] = struct.unpack(">I", block[48:52])[0]
+        header['shotSpacing'] = struct.unpack(">f", block[52:56])[0]
+        header['receiverSpacing'] = struct.unpack(">f", block[56:60])[0]
+        SPOS = np.zeros((nshots, 3))
+        RPOS = np.zeros((ngeoph*5, 3))
+        SHOT, REC, TT, VA = [], [], [], []
+        # tmat = np.ones((nshots, ngeoph)) * np.nan
+        for i in range(nshots):
+            block = fid.read(24)  # shot information
+            shotid = struct.unpack(">I", block[:4])[0]
+            nci = struct.unpack(">I", block[4:8])[0]  # channels for the shot
+            spos = np.array(struct.unpack(">4f", block[8:24]))
+            SPOS[i, :] = spos[:3]
+            # print(nci, spos)
+            X, Y = [], []
+            for j in range(nci):
+                block = fid.read(24)  # receiver information
+                recid = struct.unpack(">I", block[:4])[0]
+                rpos = np.array(struct.unpack(">4f", block[4:20]))
+                RPOS[recid, :] = rpos[:3]
+                tt = struct.unpack(">f", block[20:24])[0]
+                # print(shotid, recid, tt)
+                SHOT.append(shotid)
+                REC.append(recid)
+                TT.append(tt)
+                X.append(rpos[0])
+                Y.append(rpos[0])
+                offset = np.sqrt(np.sum((rpos-spos)**2))
+                VA.append(offset/tt)
+                # tmat[shotid, recid] = tt
+
+        SHOT = np.array(SHOT, dtype=int) - 1
+        REC = np.array(REC, dtype=int) - 1 + len(SPOS)
+        pos = np.vstack((SPOS, RPOS[1:max(REC)+1]))
+        x, ifwd, irev = np.unique(pos[:, 0],
+                                  return_index=True, return_inverse=True)
+        data = pg.DataContainer()
+        data.registerSensorIndex('s')
+        data.registerSensorIndex('g')
+        for i in ifwd:
+            data.createSensor([pos[i, 0], pos[i, 2], 0])
+
+        data.resize(len(TT))
+        data.set('t', np.array(TT))
+        data.set('s', irev[SHOT].astype(float))
+        data.set('g', irev[REC].astype(float))
+        data.markValid(data('t') > 0.)
+        if return_header:
+            return data, header
+        else:
+            print(header)
+            return data
+
+
+def readTOMfile(filename, ndig=2, roundto=0):
+    """Read Reflex tomography (*.TOM) file"""
+    t, xT, zT, xR, zR = np.loadtxt(filename, usecols=(0, 2, 3, 4, 5), unpack=1)
+    if roundto > 0:
+        pT = (np.round(xT/roundto) - np.round(zT/roundto) * 1j) * roundto
+        pR = (np.round(xR/roundto) - np.round(zR/roundto) * 1j) * roundto
+    else:
+        pT = xT.round(ndig) - zT.round(ndig) * 1j
+        pR = xR.round(ndig) - zR.round(ndig) * 1j
+    pU = np.unique(np.hstack((pT, pR)))
+    iT = np.array([np.nonzero(pU == pi)[0][0] for pi in pT], dtype=float)
+    iR = np.array([np.nonzero(pU == pi)[0][0] for pi in pR], dtype=float)
+    data = pg.DataContainer()
+    for pp in pU:
+        data.createSensor(pg.RVector3(pp.real, pp.imag))
+
+    for tok in ['s', 'g']:
+        data.registerSensorIndex(tok)
+
+    data.resize(len(t))
+    data.set('t', t)
+    data.set('s', iT)
+    data.set('g', iR)
+    data.markValid(pg.abs(data('s') - data('g')) > 0)
+    return data
 
 
 class ReadAHL(object):
@@ -202,7 +290,4 @@ class ReadAHL(object):
                 data to be written: {}'.format(desc))
 
 if __name__ == '__main__':
-    print('AHL-file reader')
-    if len(sys.arv) > 1:
-        datafile = sys.argv[1]
-        ahl = ReadAHL(datafile, maxsensorid=2999, delimiter='|')
+    pass
