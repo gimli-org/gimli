@@ -28,7 +28,7 @@ class ProgressBar(object):
     >>> from pygimli.utils import ProgressBar
     >>> pbar = ProgressBar(its=20, width=40, sign='+')
     >>> pbar.update(5)
-    \r[+++++++++++      30%                  ]  6 of 20 complete
+    \r[+++++++++++       30%                 ]  6 of 20 complete
     """
 
     def __init__(self, its, width=80, sign=":"):
@@ -39,10 +39,10 @@ class ProgressBar(object):
         self.pbar = '[]'
         self._amount(0)
 
-    def update(self, iteration):
+    def update(self, iteration, msg=''):
         """Update ProgressBar by iteration number starting at 0."""
         self._setbar(iteration + 1)
-        print("\r" + self.pbar)
+        print("\r" + self.pbar + msg, end='')
         sys.stdout.flush()
 
     def _setbar(self, elapsed_it):
@@ -58,7 +58,7 @@ class ProgressBar(object):
         self.pbar = '[' + self.sign * num_signs + \
             ' ' * (full_width - num_signs) + ']'
         pct_place = (len(self.pbar) // 2) - len(str(pct_done))
-        pct_string = '%d%%' % pct_done
+        pct_string = ' %d%% ' % pct_done
         self.pbar = self.pbar[0:pct_place] + \
             (pct_string + self.pbar[pct_place + len(pct_string):])
 

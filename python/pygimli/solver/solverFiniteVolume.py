@@ -11,8 +11,6 @@ from pygimli.meshtools import createMesh
 from pygimli.solver import identity  # , parseArgToArray, parseArgToBoundaries
 
 
-
-
 def cellDataToBoundaryData(mesh, v):
     """TODO Documentme."""
     if len(v) != mesh.cellCount():
@@ -629,20 +627,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         else:
             vmax = np.max(np.sqrt(vel[:, 0]**2 + vel[:, 1]**2))
 
-        if  times is not None:
-            dt = times[1]-times[0]
-            dx = min(mesh.boundarySizes())
-            c = vmax * dt / dx
-            if c > 1:
-                print("Courant-Friedrichs-Lewy Number:", c,
-                    "but sould be lower 1 to ensure movement inside a cell "
-                    "per timestep. ("
-                    "vmax =", vmax,
-                    "dt =", dt,
-                    "dx =", dx,
-                    "dt <", dx/vmax,
-                    " | N > ", int((times[-1]-times[0])/(dx/vmax))+1, ")")
-    # END check for Courant-Friedrichs-Lewy
+        pg.solver.checkCFL(times, mesh, vmax)
 
     if not hasattr(workspace, 'S'):
 
@@ -719,13 +704,18 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         else:
             I = np.diag(np.ones(len(workspace.rhs)))
 
+
+        progress = None
         if verbose:
+            from pygimli.utils import ProgressBar
+            progress = ProgressBar(its=len(times))
+
             print("Solve timesteps with Crank-Nicolson.")
 
         return pg.solver.crankNicolson(times, theta, workspace.S,
                                        I, f=workspace.rhs,
                     u0=pg.solver.parseArgToArray(u0, mesh.cellCount(), mesh),
-                    verbose=verbose)
+                    progress=progress)
 
 
 def createFVPostProzessMesh(mesh, u, uDirichlet):

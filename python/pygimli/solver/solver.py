@@ -850,11 +850,11 @@ def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
         Later assignment overwrites prior.
 
         :math:`g` need to be a scalar value (float or int) or
-        a value generator function that will be executed at runtime.
+        a value generator function that will be executed at run time.
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
 
         See tutorial section for an example,
-        e.g., Modelling with Boundary Conditions
+        e.g., Modeling with Boundary Conditions
 
     time : float
         Will be forwarded to value generator.
@@ -1246,8 +1246,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     if debug:
         print("5: ", swatch2.duration(True))
-    if times is None:
 
+    if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
 
         if debug:
@@ -1318,7 +1318,10 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         return u
 
-    else:
+    else: # times given
+
+        pg.solver.checkCFL(times, mesh, max(a))
+
         if debug:
             print("start TL", swatch.duration())
 
@@ -1328,23 +1331,32 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if 'u0' in kwargs:
             u0 = parseArgToArray(kwargs['u0'], dof, mesh, userData)
 
-        theta = kwargs.pop('theta', 1)
+        progress = None
+        if 'progress' in kwargs:
+            from pygimli.utils import ProgressBar
+            progress = ProgressBar(its=len(times), width=40, sign='+')
 
-        if 'duB' not in kwargs:
+        theta = kwargs.pop('theta', 1.0)
+        dynamic = kwargs.pop('dynamic', False)
+        if not dynamic:
             A = createStiffnessMatrix(mesh, a)
 
             if 'uB' in kwargs:
                 assembleDirichletBC(A,
                                     parseArgToBoundaries(kwargs['uB'], mesh),
                                     rhs=F)
-
             if 'uN' in kwargs:
                 assembleDirichletBC(A, [],
                                     nodePairs=kwargs['uN'],
                                     rhs=F)
+            if 'duB' in kwargs:
+                assembleNeumannBC(A,
+                                  parseArgToBoundaries(kwargs['duB'],
+                                                       mesh),
+                                  time=None,
+                                  userData=userData)
 
-
-            return crankNicolson(times, theta, A, M, F, u0=u0, verbose=verbose)
+            return crankNicolson(times, theta, A, M, F, u0=u0, progress=progress)
 
         rhs = np.zeros((len(times), dof))
         # rhs kann zeitabhängig sein ..wird hier nicht berücksichtigt
@@ -1377,7 +1389,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 assembleNeumannBC(A,
                                   parseArgToBoundaries(kwargs['duB'],
                                                        mesh),
-                                  time=times[n], userData=userData)
+                                  time=times[n],
+                                  userData=userData)
 
             swatch.reset()
             # (A + a*B)u is fastest,
@@ -1420,22 +1433,39 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             U[n, :] = np.asarray(u)
 
-            if 'progress' in kwargs:
-                if kwargs['progress']:
-                    print(("\t" + str(n) + "/" + str(len(times) - 1) +
-                           ": " + str(t_prep) + "/" + str(swatch.duration())))
+            if progress:
+                progress.update(n,
+                            ' t_prep: ' + str(round(t_prep, 5)) + 's' + \
+                            ' t_step: ' + str(round(swatch.duration(),5)) + 's')
 
         if debug:
             print("Measure(" + str(len(times)) + "): ",
                   measure, measure / len(times))
         return U
 
-
-def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
+def checkCFL(times, mesh, vMax):
     """
-        S = const over time
-        f = const over time
+    Parameters
+    ----------
+    """
+    if times is not None:
+        dt = times[1] - times[0]
+        dx = min(mesh.boundarySizes())
+        c = vMax * dt / dx
+        if c > 1:
+            print("Courant-Friedrichs-Lewy Number:", c,
+                  "but sould be lower 1 to ensure movement inside a cell "
+                  "per timestep. ("
+                  "vmax =", vMax,
+                  "dt =", dt,
+                  "dx =", dx,
+                  "dt <", dx/vMax,
+                  " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
 
+def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
+    """
+        S = constant over time
+        f = constant over time
     """
 
     if len(times) < 2:
@@ -1447,71 +1477,73 @@ def crankNicolson(times, theta, S, I, f, u0=None, verbose=0):
         u0 = np.zeros(len(f))
 
     u = np.zeros((len(times), len(f)))
-    u[0, :] = u0
-    dt = (times[1] - times[0])
+    u[0,:] = u0
+    dt = times[1] - times[0]
 
     rhs = np.zeros((len(times), len(f)))
 
     rhs[:] = f
 
-    A = (I + dt * theta * S)
+    A = I + S * dt * theta
 
-    solver = pg.LinSolver(A, verbose=verbose)
+    solver = pg.LinSolver(A, verbose=False)
 
     timeAssemble = []
     timeSolve = []
     # print('0', min(u[0]), max(u[0]), min(f), max(f))
+
+    timeMeasure = False
+    if progress:
+        timeMeasure = True
+
     for n in range(1, len(times)):
 
-        if verbose:
+        if timeMeasure:
             pg.tic()
 
 #        pg.tic()
-#        bRef = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
-#            dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+        #bRef = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
+           #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 #        pg.toc()
 #
 #        pg.tic()
-#        b = u[n - 1] + ((dt * (theta - 1.)) * S) * u[n - 1] + \
-#            dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+        #b = I * u[n - 1] + ((dt * (theta - 1.)) * S) * u[n - 1] + \
+           #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 #        pg.toc()
 #
 #        pg.tic()
-        b = u[n - 1] + S.mult(dt * (theta - 1.) * u[n - 1]) + \
+        b = I * u[n - 1] + S.mult(dt * (theta - 1.) * u[n - 1]) + \
             dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 #        pg.toc()
 #
 #        print(np.linalg.norm(b-b1))
-#        np.testing.assert_allclose(bRef, b)
+        #np.testing.assert_allclose(bRef, b)
 
-        if verbose:
+        if timeMeasure:
             timeAssemble.append(pg.dur())
 
-        if verbose:
+        if timeMeasure:
             pg.tic()
 
         u[n, :] = solver.solve(b)
 
-        if verbose:
+        if timeMeasure:
             timeSolve.append(pg.dur())
 
         # A = (I + dt * theta * S)
         # u[n, : ] = linsolve(A, b)
 
-        if verbose and (n % verbose == 0):
-            # print(min(u[n]), max(u[n]))
-            print("timesteps:", n, "/", len(times),
-                  'runtime:', sw.duration(), "s",
-                  'assemble:', np.mean(timeAssemble),
-                  'solve:', np.mean(timeSolve))
+        if progress:
+            progress.update(n,
+                            ' t_prep: ' + str(round(timeAssemble[-1], 5)) + 's' + \
+                            ' t_step: ' + str(round(timeSolve[-1], 5)) + 's')
 
-#    import matplotlib.pyplot as plt
-#    plt.figure()
-#    plt.plot(timeAssemble)
-#    plt.figure()
-#    plt.plot(timeSolve)
-#    plt.show()
-
+        #if verbose and (n % verbose == 0):
+            ## print(min(u[n]), max(u[n]))
+            #print("timesteps:", n, "/", len(times),
+                  #'runtime:', sw.duration(), "s",
+                  #'assemble:', np.mean(timeAssemble),
+                  #'solve:', np.mean(timeSolve))
     return u
 
 

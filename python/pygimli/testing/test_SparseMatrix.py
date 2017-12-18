@@ -88,7 +88,18 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sciA1.row, sciA2.row)
         np.testing.assert_equal(sciA1.col, sciA2.col)
 
+    def test_Operators(self):
+        colIds = range(10)
+        rowIds = range(10)
+        vals = np.ones(10)
+        A = pg.SparseMapMatrix(colIds, rowIds, vals)
+        S = pg.SparseMatrix(A)
+
+        S2 = S + S * 0.1 * 0.3
+        print(S2)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    test = TestSparseMatrix()
+    test.test_Operators()
+    #unittest.main()

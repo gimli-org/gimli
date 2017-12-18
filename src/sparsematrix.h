@@ -627,8 +627,8 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMap
 
 /*! Scales a matrix A from left and right vectors such that A -> diag(l) * A * diag(r) */
 template< class Vec >
-void scaleMatrix (SparseMapMatrix< double, Index > & S,
-                  const Vec & l, const Vec & r) {
+void scaleMatrix(SparseMapMatrix< double, Index > & S,
+                 const Vec & l, const Vec & r) {
 
     if (S.cols() != r.size())
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
@@ -648,7 +648,7 @@ void scaleMatrix (SparseMapMatrix< double, Index > & S,
 
 /*! Performs a rank 1 update of a matrix such that A -> A + u * v^T */
 template< class Vec >
-void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
+void rank1Update(SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
 
     if (S.cols() != v.size())
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
@@ -741,8 +741,6 @@ public:
 //     void copy(const SparseMapMatrix< ValueType, Index > & S){
 //         this->copy_(S);
 //     }
-
-
 
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
         void FUNCT(int i, int j, ValueType val){ \
