@@ -10,33 +10,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.mplviewer.dataview import plotVecMatrix
 from . refraction import Refraction
-
-
-def readTOMfile(filename, ndig=2, roundto=0):
-    """read Reflex tomography (*.TOM) file"""
-    t, xT, zT, xR, zR = np.loadtxt(filename, usecols=(0, 2, 3, 4, 5), unpack=1)
-    if roundto > 0:
-        pT = (np.round(xT/roundto) - np.round(zT/roundto) * 1j) * roundto
-        pR = (np.round(xR/roundto) - np.round(zR/roundto) * 1j) * roundto
-    else:
-        pT = xT.round(ndig) - zT.round(ndig) * 1j
-        pR = xR.round(ndig) - zR.round(ndig) * 1j
-    pU = np.unique(np.hstack((pT, pR)))
-    iT = np.array([np.nonzero(pU == pi)[0][0] for pi in pT], dtype=float)
-    iR = np.array([np.nonzero(pU == pi)[0][0] for pi in pR], dtype=float)
-    data = pg.DataContainer()
-    for pp in pU:
-        data.createSensor(pg.RVector3(pp.real, pp.imag))
-
-    for tok in ['s', 'g']:
-        data.registerSensorIndex(tok)
-
-    data.resize(len(t))
-    data.set('t', t)
-    data.set('s', iT)
-    data.set('g', iR)
-    data.markValid(pg.abs(data('s') - data('g')) > 0)
-    return data
+from . importData import readTOMfile
 
 
 class Tomography(Refraction):
