@@ -610,6 +610,18 @@ DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
 #undef DEFINE_COMPARE_OPERATOR_VEC__
 
 #define DEFINE_COMPARE_OPERATOR__(OP, FUNCT) \
+    inline BVector operator OP (const int & v) const { \
+        BVector ret(this->size(), 0); \
+        FUNCT<ValueType> f; \
+        for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], ValueType(v)); } \
+        return ret;\
+    } \
+    inline BVector operator OP (const uint & v) const { \
+        BVector ret(this->size(), 0); \
+        FUNCT<ValueType> f; \
+        for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], ValueType(v)); } \
+        return ret;\
+    } \
     inline BVector operator OP (const ValueType & v) const { \
         BVector ret(this->size(), 0); \
         FUNCT<ValueType> f; \

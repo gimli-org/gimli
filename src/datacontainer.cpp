@@ -730,7 +730,7 @@ void DataContainer::removeSensorIdx(const IndexArray & idx){
     for (std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if (isSensorIndex(it->first)){
             for (IndexArray::iterator id = idx.begin(); id != idx.end(); id ++){
-                this->markValid(find(it->second == *id), false);
+                this->markValid(find(it->second == double(*id)), false);
             }
         }
     }

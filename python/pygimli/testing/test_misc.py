@@ -47,8 +47,18 @@ class TestMisc(unittest.TestCase):
         #data.markInvalid(np.array([0, 100], dtype="int")) # fails
         #data.markInvalid(np.array([0, 100], dtype=np.int64)) # fails
 
+    def test_Operators(self):
+        t = pg.RVector(10, 1.0)
+        self.assertEqual(len(t == 1.0), len(t > 0))
+        self.assertEqual(len(t == 1.0), len(t == 1))
+
+
 if __name__ == '__main__':
-    pg.setDebug(1)
-    unittest.main()
+
+    pg.setDebug(0)
+    t = TestMisc()
+    t.test_Operators()
+
+    #unittest.main()
 
 

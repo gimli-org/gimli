@@ -767,6 +767,17 @@ def __EQ_stdVectorSIndex__(self, val):
 _pygimli_.stdVectorSIndex.__cmp__ = __CMP_stdVectorSIndex__
 _pygimli_.stdVectorSIndex.__eq__ = __EQ_stdVectorSIndex__
 
+# default BVector operator == (RVector, int) will be casted to
+# BVector operator == (RVector, RVector(int)) and fails
+# this needs a monkey patch for BVector operator == (RVector, int)
+_pygimli_.__EQ_RVector__ = _pygimli_.RVector.__eq__
+
+def __EQ_RVector__(self, val):
+    if type(val) == int:
+        val = float(val)
+    return _pygimli_.__EQ_RVector__(self, val)
+
+_pygimli_.RVector.__eq__ = __EQ_RVector__
 
 ############################
 # usefull stuff
