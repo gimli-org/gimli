@@ -14,7 +14,6 @@ geometry system. A lot of thinks are needed:
     * Cubic spline interpolation for polygons (partly done)
     * GUI .. interactive creation
     *
-
 """
 
 import math

@@ -183,9 +183,15 @@ std::set < SIndex > DataContainerERT::currentPattern(bool reciprocity){
     return pattern;
 }
 
+void DataContainerERT::addFourPointData(long a, long b, long m, long n){
+    return this->createFourPointData(this->size(), a, b, m, n);
+}
+
 void DataContainerERT::createFourPointData(Index i, long a, long b, long m, long n){
     if (this->size() <= i) {
-        resize(max(i,1) * 2);
+        resize(max(i+1,1));
+        // memory reservation is vectors job so this should be ok
+        //resize(max(i,1) * 2);
     }
     fillCounter_ = max(fillCounter_, i+1);
 

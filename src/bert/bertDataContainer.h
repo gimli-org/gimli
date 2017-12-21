@@ -57,6 +57,11 @@ public:
      */
     virtual void initTokenTranslator();
 
+    /*! Add a new data point and the end of the dataContainer (size+=1) */
+    void addFourPointData(long a, long b, long m, long n);
+
+    /*! Create data point at a given position in the dataContainer.
+     The container will be resized if i is larger then this.size(). */
     void createFourPointData(Index i, long eaID, long ebID, long emID, long enID);
 
     virtual void checkDataValidityLocal();

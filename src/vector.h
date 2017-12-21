@@ -678,7 +678,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     /*! Reserve memory. Old data are preserved*/
     void reserve(Index n){
 
-        Index newCapacity = max(1,n);
+        Index newCapacity = max(1, n);
         if (capacity_ != 0){
             int exp;
             frexp(n, &exp);

@@ -50,9 +50,9 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.cellCount(), 10.0)
 
         mesh = pg.createMesh2D(np.linspace(0, 1, 6),np.linspace(0, 1, 3))
-        self.assertEqual(mesh.cellCount(), 10.0) 
-        
-        
+        self.assertEqual(mesh.cellCount(), 10.0)
+
+
     def test_createMesh3D(self):
 
         mesh = pg.createMesh3D(xDim=5, yDim=3, zDim=2)
@@ -67,6 +67,22 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh2.cellCount(), 4)
         self.assertEqual(mesh2.cellCenters()[-1][0] < 0.5, True)
 
+    def test_MeshCreatePolyList(self):
+        pos = [[0, 0], [1, 0], [1, -1], [0, -1]]
+        poly = pg.meshtools.createPolygon(pos, isClosed=0)
+        mesh = pg.meshtools.createMesh(poly, quality=20, area=0.001)
+        self.assertEqual(mesh.nodeCount(), 4)
+        self.assertEqual(mesh.cellCount(), 0)
+        poly = pg.meshtools.createPolygon(pos, isClosed=1)
+        mesh = pg.meshtools.createMesh(poly, quality=0, area=0.)
+        self.assertEqual(mesh.nodeCount(), 4)
+        self.assertEqual(mesh.cellCount(), 2)
+        self.assertEqual(mesh.boundaryCount(), 5)
+
 
 if __name__ == '__main__':
+
+    #t = TestMeshGenerator()
+    #t.test_MeshCreatePolyList()
+
     unittest.main()

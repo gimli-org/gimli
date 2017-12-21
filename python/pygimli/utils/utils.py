@@ -252,7 +252,6 @@ def grange(start, end, dx=0, n=0, log=False):
     else:
         raise Exception('Either dx or n have to be given.')
 
-
 def diff(v):
     """Calculate approximate derivative.
 
