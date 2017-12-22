@@ -1,0 +1,8 @@
+{
+    "dataSource": "issues",
+    "ignoreLabels": [],
+    "ignoreIssuesWith": ["question", "discussion"],
+    "onlyMilestones": false,
+    "groupBy": "label",
+    "changelogFilename": "CHANGELOG.rst"
+}
