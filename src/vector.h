@@ -30,6 +30,7 @@
 //   note =         "Reprinted in C++ Gems, ed. Stanley Lippman"
 // }
 
+
 #ifndef GIMLI_VECTOR__H
 #define GIMLI_VECTOR__H
 
