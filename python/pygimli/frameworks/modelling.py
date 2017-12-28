@@ -307,18 +307,19 @@ class PetroModelling(Modelling):
 
 
 class LCModelling(Modelling):
-    """2D Laterally constrained LC modelling.
+    """2D Laterally constrained (LC) modelling.
 
-    2D Laterally constrained LC modelling based on BlockMatrices.
+    2D Laterally constrained (LC) modelling based on BlockMatrices.
     """
     def __init__(self, fop, **kwargs):
-        """Parameters: FDEM data class and number of layers."""
+        """Parameters: fop class ."""
 
-        super(LCModelling, self).__init__(**kwargs)
+        super(LCModelling, self).__init__()
 
-        self._singleRegion = True
+        self._singleRegion = False
 
         self._fopTemplate = fop
+        self._fopKwargs = kwargs
         self._fops1D = []
         self._mesh = None
         self._nSoundings = 0
@@ -393,24 +394,23 @@ class LCModelling(Modelling):
             for i in range(nSoundings):
                 for j in range(nPar):
                     cm[i * self._parPerSounding + (j+1) * nLayers-1 :
-                    i * self._parPerSounding + (j+2) * nLayers-1] += (j+1)
+                       i * self._parPerSounding + (j+2) * nLayers-1] += (j+1)
 
         self._mesh.setCellMarkers(cm)
         self.setMesh(self._mesh)
 
-        #ax,_=pg.show(self._mesh, self._mesh.cellMarkers(), label='marker')
-        #pg.show(self._mesh, ax=ax)
+        pID = self.regionManager().paraDomain().cellMarkers()
+        cID = [c.id() for c in self._mesh.cells()]
+        #print(np.array(pID))
+        #print(np.array(cID))
+        #print(self.regionManager().parameterCount())
+        perm = [0]*self.regionManager().parameterCount()
+        for i in range(len(perm)):
+            perm[pID[i]] = cID[i]
 
-        #ax,_=pg.show(self.regionManager().paraDomain(),
-                     #self.regionManager().paraDomain().cellMarkers(), label='pdmarker')
-        #pg.show(self.regionManager().paraDomain(), ax=ax)
-
-        #self.createConstraints()
-
-        #pg.mplviewer.drawParameterConstraints(ax, self.regionManager().paraDomain(),
-                                              #self.constraints(), cWeight=None)
-
-        #pg.wait()
+        #print(perm)
+        self.regionManager().permuteParameterMarker(perm)
+        #print(self.regionManager().paraDomain().cellMarkers())
 
     def initJacobian(self, dataVals, nLayers):
         """
@@ -425,7 +425,7 @@ class LCModelling(Modelling):
         nSoundings = len(dataVals)
 
         #TODO get nPar Infos from fop._fopTemplate
-        self.createParametrization(nSoundings, nLayers=nLayers, nPar=1)
+        self.createParametrization(nSoundings, nLayers=nLayers, nPar=2)
 
         if self._jac is not None:
             self._jac.clear()
@@ -434,8 +434,22 @@ class LCModelling(Modelling):
 
         self.fops1D = []
         nData = 0
+
         for i in range(nSoundings):
-            f = type(self._fopTemplate)(self.verbose)
+            kwargs = {}
+            for key, val in self._fopKwargs.items():
+                if hasattr(val, '__iter__'):
+                    if len(val) == nSoundings:
+                        kwargs[key] = val[i]
+                else:
+                    kwargs[key] = val
+
+            f = None
+            if issubclass(self._fopTemplate, pg.frameworks.Modelling):
+                f = self._fopTemplate(**kwargs)
+            else:
+                f = type(self._fopTemplate)(self.verbose, **kwargs)
+
             f.setMultiThreadJacobian(self._parPerSounding)
 
             self._fops1D.append(f)

@@ -294,6 +294,7 @@ def generate(defined_symbols, extraIncludes):
     rvalue_converters = [
         'register_pytuple_to_rvector3_conversion',
         'register_pysequence_to_rvector_conversion',
+        'register_pysequence_to_ivector_conversion',
         # 'register_pysequence_to_bvector_conversion',
         'register_pysequence_to_indexvector_conversion',
         'register_pysequence_to_r3vector_conversion',

@@ -211,24 +211,24 @@ class VMDModelling(Block1DModelling):
 class VMDTimeDomainModelling(VMDModelling):
     """
     """
-    def __init__(self, t, txarea, rxarea=None, **kwargs):
+    def __init__(self, times, txArea, rxArea=None, **kwargs):
         """
         """
         super(VMDTimeDomainModelling, self).__init__(**kwargs)
 
-        self.t = t
-        self.txarea = txarea
+        self.t = times
+        self.txArea = txArea
 
-        if rxarea is None:
-            self.rxarea = txarea
+        if rxArea is None:
+            self.rxArea = txArea
         else:
-            self.rxarea = rxarea
+            self.rxArea = rxArea
 
     def response_mt(self, par, i=0):
         """
             par = [thicknesses, res]
         """
-        nLay = (len(par)-1)/2
+        nLay = (len(par)-1)//2
         thk = par[0:nLay]
         res = par[nLay:]
 
@@ -240,16 +240,16 @@ class VMDTimeDomainModelling(VMDModelling):
 
     def calcRhoa(self, thk, res):
         """Compute apparent resistivity response"""
-        a = sqrt(self.txarea / pi)  # TX coil radius
+        a = sqrt(self.txArea / pi)  # TX coil radius
 
         ePhiTD, tD = self.calcEphiT(tMin=min(self.t), tMax=max(self.t),
                                     rho=res, d=thk, rMin=a, rMax=a, z=0,
-                                    dipm=self.rxarea)
+                                    dipm=self.rxArea)
 
         ePhi = np.exp(np.interp(np.log(self.t),
                                 np.log(tD), np.log(ePhiTD[:, 0])))
 
-        tmp = a**(4./3) * self.rxarea**(2./3) * \
+        tmp = a**(4./3) * self.rxArea**(2./3) * \
             pg.physics.constants.mu0**(5./3) / (20**(2./3) * pi**(1./3))
         rhoa = tmp / (self.t**(5./3) * (ePhi * 2 * pi * a)**(2./3))
 

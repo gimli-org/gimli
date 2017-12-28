@@ -1130,12 +1130,15 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
 
 def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     """TODO Documentme."""
-    C = pg.RMatrix()
-    if isinstance(cMat, pg.SparseMapMatrix):
-        cMat.save('tmpC.matrix')
-        pg.loadMatrixCol(C, 'tmpC.matrix')
+    C = None
+    if not isinstance(cMat, pg.SparseMapMatrix):
+        throwToImplement
+        #cMat.save('tmpC.matrix')
+        #pg.loadMatrixCol(C, 'tmpC.matrix')
     else:
         C = cMat
+
+    print(C)
 
     paraMarker = mesh.cellMarkers()
     cellList = dict()
@@ -1155,18 +1158,27 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
         p /= float(len(vals))
         paraCenter[cID] = p
 
-    nConstraints = C[0].size()
-    start = []
-    end = []
-#    swatch = pg.Stopwatch(True)  # not used
-    for i in range(0, nConstraints // 2):
-        # print i
-        # if i == 1000: break;
-        if C[0][i * 2] == C[0][i * 2 + 1]: # cType != 0 C[0]  is Edge Number
-            idL = int(C[1][i * 2])
-            idR = int(C[1][i * 2 + 1])
-            p1 = paraCenter[idL]
-            p2 = paraCenter[idR]
+    print(C)
+    r1, c1, v1 = pg.utils.sparseMatrix2Array(C, getInCRS=False)
+    print(r1, c1, v1)
+    constraints = {}
+    for r, i in enumerate(r1):
+        if r not in constraints:
+            constraints[r] = (None, None)
+        if v1[i] == 1:
+            constraints[r][0] = c1[i]
+        elif v1[i] == -1:
+            constraints[r][1] = c1[i]
+
+    print(constraints)
+    nConstraints = len(constraints.keys())
+    start = [None] * nConstraints
+    end = [None] * nConstraints
+
+    for i, c, ids in enumerate(constraints.items()):
+        if ids[0] is not None and ids[1] is not None:
+            p1 = paraCenter[ids[0]] # left
+            p2 = paraCenter[ids[1]]
 
             if cWeight is not None:
                 pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeight[i]))
@@ -1175,15 +1187,10 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
                 pa = p1
                 pb = p2
 
-            start.append(pa)
-            end.append(pb)
+            start[i] = pa
+            end[i] = pb
         else:
-            idL = int(C[1][i * 2])
-            idR = int(C[1][i * 2 + 1])
-            start.append(paraCenter[idL])
-            start.append(paraCenter[idR])
-            end.append(None)
-            end.append(None)
+            start[i] = ids[0]
 
 #    updateAxes_(ax)  # not existing
 

@@ -167,6 +167,9 @@ public:
 
     void countParameter(Index start);
 
+    void permuteParameterMarker(const IVector & p);
+
+
     /*! Set the values of start for the start model of this region. */
     void setStartModel(const RVector & start);
     /*! Set the value of start into the start model vector for this region. */
@@ -227,6 +230,7 @@ protected:
 
     bool isBackground_;
     bool isSingle_;
+    bool isPermuted_;
 
     Index parameterCount_;
     Index startParameter_;
@@ -284,6 +288,9 @@ public:
     std::map < SIndex, Region * >  * regions() { return &regionMap_; }
 #endif
     Index regionCount() const { return regionMap_.size(); }
+
+    /*!Return all region Indieces.*/
+    IVector regionIdxs() const;
 
     /*! Returns a ptr to the region with the given marker. If no region exist an exception is thrown. */
     Region * region(SIndex marker);
@@ -354,7 +361,12 @@ public:
 
 //     RVector createFlatWeight(double zPower, double zWeight) const;
 
+    /*!Permute all parameter marker after successful filled the
+     * Regionmanager. */
+    void permuteParameterMarker(const IVector & p);
+
     void createParaDomain_();
+
     void recountParaMarker_();
 
     TransCumulative < RVector > * transModel();
@@ -378,7 +390,6 @@ protected:
      * Internal method to create a single parameter region. The method is called from \ref setMesh()
      */
     Region * createSingleRegion_(SIndex marker, const std::vector < Cell * > & cells);
-
 
     std::vector < SIndex > allRegionMarker_(bool exludeBoundary=false){
         std::vector < SIndex > tmp;

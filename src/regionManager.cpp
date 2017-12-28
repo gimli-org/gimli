@@ -63,6 +63,7 @@ Region & Region::operator = (const Region & region){
 }
 
 void Region::init_() {
+    isPermuted_     = false;
     constraintType_ = 1;
     startParameter_ = 0;
     endParameter_   = 0;
@@ -177,11 +178,15 @@ void Region::countParameter(Index start){
         bounds_.clear();
         parameterCount_ = 0;
     } else if (isSingle_) {
-        for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start);
+        for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
+            cells_[i]->setMarker(start);
+        }
         bounds_.clear();
         parameterCount_ = 1;
     } else {
-        for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setMarker(start + i);
+        for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
+            cells_[i]->setMarker(start + i);
+        }
         parameterCount_ = cells_.size();
     }
 
@@ -194,6 +199,17 @@ void Region::countParameter(Index start){
     //std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
 }
 
+void Region::permuteParameterMarker(const IVector & p){
+    for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
+        SIndex m = cells_[i]->marker();
+        if (m >= -1) {
+            ASSERT_RANGE(m, 0, p.size())
+//             __MS(cells_[i]->id() << ": " << m << " - "<< p[m] )
+            cells_[i]->setMarker(p[m]);
+        }
+    }
+    isPermuted_ = true;
+}
 
 //################ Start values
 void Region::setStartModel(const RVector & start){
@@ -227,7 +243,6 @@ void Region::fillStartModel(RVector & vec){
 }
 
 //################ Model behaviour
-
 void Region::setModelControl(double val){
     if (val < TOLERANCE) val = 1.0;
     mcDefault_ = val;
@@ -251,7 +266,9 @@ void Region::setModelControl(PosFunctor * mcF){
     if (isSingle_){
         THROW_TO_IMPL
     }
-    for (size_t i = 0; i < parameterCount_; i ++) modelControl_[i] = (*mcF)(cells_[i]->center());
+    for (size_t i = 0; i < parameterCount_; i ++) {
+        modelControl_[i] = (*mcF)(cells_[i]->center());
+    }
 }
 
 void Region::fillModelControl(RVector & vec){
@@ -281,9 +298,22 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
 
     double cMixRatio = 1.0; // for mixing 1st or 2nd order with 0th order (constraintTypes 10 and 20)
     if (constraintType_ == 10 || constraintType_ == 20) cMixRatio = 1.0; //**retrieve from properties!!!
+
     if (constraintType_ == 0 || constraintType_ == 20){ //purely 0th or mixed 2nd+0th
-        for (size_t i = 0; i < parameterCount_; i++) {
-            C[startConstraintsID + i][startParameter_ + i] = cMixRatio;
+        if (isPermuted_){
+            std::set < SIndex > para;
+            for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
+                para.insert(cells_[i]->marker());
+            }
+            Index i = 0;
+            for (std::set< SIndex >::iterator it = para.begin(); it!= para.end(); it++, i ++){
+                C[startConstraintsID + i][(*it)] = cMixRatio;
+            }
+        } else {
+            for (Index i = 0; i < parameterCount_; i++) {
+                // this fails after parameter permution
+                C[startConstraintsID + i][startParameter_ + i] = cMixRatio;
+            }
         }
         if (constraintType_ == 0) return;
     }
@@ -296,20 +326,32 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
             rightParaId = -1;
             if ((*it)->leftCell() ) leftParaId  = (*it)->leftCell()->marker();
             if ((*it)->rightCell()) rightParaId = (*it)->rightCell()->marker();
-            if (leftParaId >= (int)startParameter_ && leftParaId < (int)endParameter_ &&
-                 rightParaId >= (int)startParameter_ && rightParaId < (int)endParameter_ &&
-                    leftParaId != rightParaId){
-                C[leftParaId][rightParaId] = -1;
-                C[rightParaId][leftParaId] = -1;
-                C[leftParaId][leftParaId] += 1;
-                C[rightParaId][rightParaId] += 1;
+
+            if (isPermuted_){
+            // better check if cell is part of this region or not ..  mesh.data(regionMarker)
+                if (leftParaId != rightParaId){
+                    C[leftParaId][rightParaId] = -1;
+                    C[rightParaId][leftParaId] = -1;
+                    C[leftParaId][leftParaId] += 1;
+                    C[rightParaId][rightParaId] += 1;
+                }
+            } else {
+                // unsure if necessary ..bounds_ should be valid
+                if (leftParaId  >= (int)startParameter_ && leftParaId  < (int)endParameter_ &&
+                    rightParaId >= (int)startParameter_ && rightParaId < (int)endParameter_ &&
+                        leftParaId != rightParaId){
+                    C[leftParaId][rightParaId] = -1;
+                    C[rightParaId][leftParaId] = -1;
+                    C[leftParaId][leftParaId] += 1;
+                    C[rightParaId][rightParaId] += 1;
+                }
             }
         }
         return;
     }
     //** 1st order constraints (opt. combined with 0th order)
     Index cID = startConstraintsID;
-         for (std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
+    for (std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
         it != itmax; it ++){
 
         leftParaId = -1;
@@ -317,17 +359,31 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
         if ((*it)->leftCell() ) leftParaId  = (*it)->leftCell()->marker();
         if ((*it)->rightCell()) rightParaId = (*it)->rightCell()->marker();
 
-        //if ( leftParaId > -1 && rightParaId > -1 && leftParaId != rightParaId) {
-        if (leftParaId >= (int)startParameter_ && leftParaId < (int)endParameter_ &&
-             rightParaId >= (int)startParameter_ && rightParaId < (int)endParameter_ &&
-                leftParaId != rightParaId){
-            C[cID][leftParaId] = 1;
-            C[cID][rightParaId] = -1;
+        if (isPermuted_){
+            // unsure if necessary ..bounds_ should be valid
+            // better check if cell is part of this region or not ..  mesh.data(regionMarker)
+            if (leftParaId != rightParaId){
+                C[cID][leftParaId] = 1;
+                C[cID][rightParaId] = -1;
+            }
+        } else{
+            //if (leftParaId > -1 && rightParaId > -1 && leftParaId != rightParaId) {
+            if (leftParaId  >= (int)startParameter_ && leftParaId  < (int)endParameter_ &&
+                rightParaId >= (int)startParameter_ && rightParaId < (int)endParameter_ &&
+                    leftParaId != rightParaId){
+                C[cID][leftParaId] = 1;
+                C[cID][rightParaId] = -1;
+            }
         }
         cID ++;
     }
     if (constraintType_ == 10) { //** combination with 0th order
-        for (size_t i = 0; i < parameterCount_; i++) {
+        for (Index i = 0; i < parameterCount_; i++) {
+            // this fails after parameter permution ..
+            //CR: dont know what C==10 is supposed to be to fix it
+            if (isPermuted_){
+                __MS("Ctype 10 are untested for permuted region.")
+            }
             C[cID][startParameter_ + i] = cMixRatio;
             cID++;
         }
@@ -376,7 +432,11 @@ void Region::fillConstraintsWeight(RVector & vec, Index constraintStart){
 }
 
 void Region::fillConstraintsWeightWithFlatWeight(){
-    if (isBackground_ || isSingle_ || (constraintType() == 0) || (constraintType() == 2)) return;
+    if (isBackground_ ||
+        isSingle_ ||
+        (constraintType() == 0) ||
+        (constraintType() == 2)) return;
+
     constraintsWeight_.resize(constraintCount(), 1.0);
 
     for (Index i = 0, imax = bounds_.size(); i < imax; i ++) {
@@ -624,6 +684,15 @@ Region * RegionManager::addRegion(SIndex marker, const Mesh & mesh){
     return region;
 }
 
+IVector RegionManager::regionIdxs() const{
+    IVector ret;
+    for (std::map< SIndex, Region* >::const_iterator
+         it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
+        ret.push_back(it->first);
+    }
+    return ret;
+}
+
 void RegionManager::createParaDomain_(){
     if (verbose_) std::cout << "creating para domain ... ";
     Stopwatch swatch(true);
@@ -645,6 +714,14 @@ void RegionManager::createParaDomain_(){
 
     paraDomain_->createMeshByCellIdx(*mesh_, cellIdx);
     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
+}
+
+void RegionManager::permuteParameterMarker(const IVector & p){
+    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(),
+         end = regionMap_.end(); it != end; it ++){
+        it->second->permuteParameterMarker(p);
+    }
+    this->createParaDomain_();
 }
 
 void RegionManager::recountParaMarker_(){
@@ -843,7 +920,6 @@ void RegionManager::fillBoundarySize(RVector & vec){
         it->second->fillBoundarySize(vec, boundCount);
         boundCount += it->second->constraintCount();
     }
-
 }
 
 Index RegionManager::parameterCount() const {

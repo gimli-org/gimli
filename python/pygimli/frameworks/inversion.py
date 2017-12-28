@@ -434,7 +434,9 @@ class LCInversion(Inversion):
         for e in errVals:
             errVec = pg.cat(errVec, e)
 
-        self.fop.setRegionProperties(1, trans='log', limits=[0.4, 5000.])
+        #self.fop.initJacobian(nSounding=len(dataVals), nLayers=nLayers, nPar=1)
+
+        #self.fop.setRegionProperties(1, trans='log', limits=[0.4, 5000.])
         #self.fop.setRegionProperties(2, trans='log')
 
         if kwargs.pop('disableLCI', False):
@@ -442,14 +444,44 @@ class LCInversion(Inversion):
             self.fop.setRegionProperties(1, cType=0)
             #self.fop.setRegionProperties(2, cType=0)
         else:
+            #self.inv.stopAtChi1(False)
             self.inv.setReferenceModel(self.fop.startModel())
             self.inv.setLambdaFactor(0.8)
-            #self.inv.stopAtChi1(False)
-            self.fop.setRegionProperties(1, cType=1)
-            self.fop.setRegionProperties(1, zWeights=0.0)
 
-            #self.fop.setRegionProperties(2, cType=1)
-            #self.fop.setRegionProperties(2, zWeights=0.0)
+            for r in self.fop.regionManager().regionIdxs():
+                self.fop.setRegionProperties(r, cType=1)
+                self.fop.setRegionProperties(r, zWeights=0.5)
+
+            self.fop.setRegionProperties(2, cType=0)
+
+            #self.fop.setRegionProperties(2, zWeights=0.1)
+
+
+        ax,_=pg.show(self.fop._mesh, self.fop._mesh.cellMarkers(),
+                     label='marker', showMesh=1)
+
+        cID = [c.id() for c in self.fop._mesh.cells()]
+        ax,_=pg.show(self.fop._mesh, cID,
+                     label='cell id', showMesh=1)
+
+        ax,_=pg.show(self.fop.regionManager().paraDomain(),
+                     self.fop.regionManager().paraDomain().cellMarkers(),
+                     label='pdmarker', showMesh=1)
+
+        self.fop.createConstraints()
+        self.fop.constraints().save("C.mat")
+        cW = self.fop.regionManager().createConstraintsWeight()
+
+        pg.mplviewer.drawParameterConstraints(ax,
+                                              self.fop.regionManager().paraDomain(),
+                                              self.fop.constraints(), cWeight=cW)
+
+        pg.wait()
+
+
+
+
+
 
         return super(LCInversion, self).run(dataVec, errVec, **kwargs)
 

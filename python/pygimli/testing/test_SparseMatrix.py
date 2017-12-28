@@ -26,7 +26,7 @@ class TestSparseMatrix(unittest.TestCase):
         A2 = pg.SparseMapMatrix(S)
 
         # all should by identity matrix
-        np.testing.assert_equal(A2.getVal(1,1), 1.0)
+        np.testing.assert_equal(A2.getVal(1, 1), 1.0)
         np.testing.assert_equal(sum(S * np.ones(S.cols())), S.rows())
         np.testing.assert_equal(sum(A2 * np.ones(A2.cols())), A2.rows())
 
