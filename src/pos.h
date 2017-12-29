@@ -27,6 +27,8 @@ namespace GIMLI{
 template < class ValueType > std::ostream & operator << (std::ostream & str, const Pos< ValueType > & pos);
 
 DLLEXPORT RVector3 center(const R3Vector & vPos);
+DLLEXPORT R3Vector normalise(const R3Vector & vPos);
+
 DLLEXPORT double jacobianDetXY(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3);
 DLLEXPORT double angle(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3);
 
@@ -34,11 +36,11 @@ DLLEXPORT bool xVari(const R3Vector & electrodeList);
 DLLEXPORT bool yVari(const R3Vector & electrodeList);
 DLLEXPORT bool zVari(const R3Vector & electrodeList);
 
-/*! Return array of all x-koordinates. [:,0]*/
+/*! Return array of all x-coordinates. [:,0]*/
 DLLEXPORT RVector x(const R3Vector & rv);
-/*! Return array of all y-koordinates. [:,1]*/
+/*! Return array of all y-coordinates. [:,1]*/
 DLLEXPORT RVector y(const R3Vector & rv);
-/*! Return array of all z-koordinates. [:,2]*/
+/*! Return array of all z-coordinates. [:,2]*/
 DLLEXPORT RVector z(const R3Vector & rv);
 
 DLLEXPORT RVector absR3(const R3Vector & vPos);
@@ -228,12 +230,14 @@ public:
         return RVector3(0.0, 0.0, 0.0);
     }
 
-    /*! Normalise this Pos and return itself. */
-    Pos< ValueType > & normalise(){
+    /*! Normalize this Pos and return itself. */
+    Pos< ValueType > & normalize(){
         double t = this->abs();
         if (t > TOLERANCE) *this /= t;
         return *this;
     }
+    /*!DEPRECATED Normalise for backward comptibility.*/
+    Pos< ValueType > & normalise(){ return normalize(); }
 
     Pos< ValueType > cross(const Pos< ValueType > & p) const;
 

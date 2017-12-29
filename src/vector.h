@@ -539,18 +539,16 @@ public:
         return *this;
     }
 
-    // /*! Add Values from an ElementMatrix. For vectors only the first row will
-     // be taken. */
+    /*! Add Values from an ElementMatrix. For vectors only the first row will
+    be taken. */
     void add(const ElementMatrix < double > & A);
-    //void add(const Matrix < ValueType > & A){THROW_TO_IMPL}
-    //void add(const ElementMatrix < ValueType > & A);
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
     be taken. Optional scale with scalar. */
     void add(const ElementMatrix < double > & A, const double & a);
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
-    be taken. Optional scale with values fron vector. */
+    be taken. Optional scale with values from vector. */
     void add(const ElementMatrix < double > & A, const Vector < double > & a);
 
     /*! Get value for index i.
@@ -612,6 +610,18 @@ DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
 #undef DEFINE_COMPARE_OPERATOR_VEC__
 
 #define DEFINE_COMPARE_OPERATOR__(OP, FUNCT) \
+    inline BVector operator OP (const int & v) const { \
+        BVector ret(this->size(), 0); \
+        FUNCT<ValueType> f; \
+        for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], ValueType(v)); } \
+        return ret;\
+    } \
+    inline BVector operator OP (const uint & v) const { \
+        BVector ret(this->size(), 0); \
+        FUNCT<ValueType> f; \
+        for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], ValueType(v)); } \
+        return ret;\
+    } \
     inline BVector operator OP (const ValueType & v) const { \
         BVector ret(this->size(), 0); \
         FUNCT<ValueType> f; \
@@ -668,7 +678,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     /*! Reserve memory. Old data are preserved*/
     void reserve(Index n){
 
-        Index newCapacity = max(1,n);
+        Index newCapacity = max(1, n);
         if (capacity_ != 0){
             int exp;
             frexp(n, &exp);

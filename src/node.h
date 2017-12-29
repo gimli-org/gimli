@@ -32,7 +32,7 @@ namespace GIMLI{
 /*!
  * Node is a basic entity of a mesh at a 3D position x/y/z (a vertex),
  * which owns a marker, an id, and information about connected boundarys and cells.
- * For a 2D node ignore $z$ or let $z$-koord = 0.0.
+ * For a 2D node ignore $z$ or let $z$-coord = 0.0.
  */
 class DLLEXPORT Node : public BaseEntity {
 
@@ -40,7 +40,7 @@ public:
     /*! Construct node with non valid position and marker = 0 */
     Node();
 
-    /*! Construct node from koordinates $x,y,[z]$ with marker = 0 */
+    /*! Construct node from coordinates $x,y,[z]$ with marker = 0 */
     Node(double x, double y, double z=0.0);
 
     /*! Construct node from RVector3 */

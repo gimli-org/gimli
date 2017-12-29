@@ -47,8 +47,41 @@ class TestMisc(unittest.TestCase):
         #data.markInvalid(np.array([0, 100], dtype="int")) # fails
         #data.markInvalid(np.array([0, 100], dtype=np.int64)) # fails
 
+    def test_Operators(self):
+        t = pg.RVector(10, 1.0)
+        self.assertEqual(len(t == 1.0), len(t > 0))
+        self.assertEqual(len(t == 1.0), len(t == 1))
+
+    def test_Int64Problem(self):
+        data = pg.DataContainerERT()
+        pos = np.arange(4, dtype=np.int)
+        data.createFourPointData(0, pos[0], pos[1], pos[2], pos[3])
+        pos = np.arange(4, dtype=np.int32)
+        data.createFourPointData(1, pos[0], pos[1], pos[2], pos[3])
+        pos = np.arange(4, dtype=np.int64)
+        data.createFourPointData(2, pos[0], pos[1], pos[2], pos[3])
+        pos = np.arange(4, dtype=np.float)
+        data.createFourPointData(3, pos[0], pos[1], pos[2], pos[3])
+        pos = np.arange(4, dtype=np.float32)
+        data.createFourPointData(4, pos[0], pos[1], pos[2], pos[3])
+        pos = np.arange(4, dtype=np.float64)
+        data.createFourPointData(5, pos[0], pos[1], pos[2], pos[3])
+        pos = np.arange(4)
+        data.createFourPointData(6, pos[0], pos[1], pos[2], pos[3])
+        pos = range(4)
+        data.addFourPointData(pos[0], pos[1], pos[2], pos[3])
+        #print(data('a'), data('b'), data('m'), data('n'))
+        self.assertEqual(sum(data('a')), 8*0)
+        self.assertEqual(sum(data('b')), 8*1)
+        self.assertEqual(sum(data('m')), 8*2)
+        self.assertEqual(sum(data('n')), 8*3)
+
 if __name__ == '__main__':
-    pg.setDebug(1)
+
+    pg.setDebug(0)
+    #t = TestMisc()
+    #t.test_Int64Problem()
+
     unittest.main()
 
 

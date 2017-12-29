@@ -159,19 +159,6 @@ void DataContainer::add(const DataContainer & data, double snap){
     }
 }
 
-void DataContainer::setSensorPositions(const RVector & sensors){
-    std::vector< RVector3 > s;
-    for (Index i = 0; i < sensors.size(); i ++ ) {
-        s.push_back(RVector3(sensors[i], 0.0, 0.0));
-    }
-    return this->setSensorPositions(s);
-}
-
-void DataContainer::setSensorPositions(const std::vector< RVector3 > & sensors) {
-    sensorPoints_ = sensors;
-}
-
-
 long DataContainer::createSensor(const RVector3 & pos, double tolerance){
 
     long ret = -1;
@@ -195,6 +182,18 @@ void DataContainer::registerSensorIndex(const std::string & token) {
 
 bool DataContainer::isSensorIndex(const std::string & token) const {
     return dataSensorIdx_.find(token) != dataSensorIdx_.end();
+}
+
+void DataContainer::setSensorPositions(const RVector & sensors){
+    std::vector< RVector3 > s;
+    for (Index i = 0; i < sensors.size(); i ++ ) {
+        s.push_back(RVector3(sensors[i], 0.0, 0.0));
+    }
+    return this->setSensorPositions(s);
+}
+
+void DataContainer::setSensorPositions(const std::vector< RVector3 > & sensors) {
+    sensorPoints_ = sensors;
 }
 
 int DataContainer::load(const std::string & fileName,
@@ -743,7 +742,7 @@ void DataContainer::removeSensorIdx(const IndexArray & idx){
     for (std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         if (isSensorIndex(it->first)){
             for (IndexArray::iterator id = idx.begin(); id != idx.end(); id ++){
-                this->markValid(find(it->second == *id), false);
+                this->markValid(find(it->second == double(*id)), false);
             }
         }
     }
@@ -880,4 +879,3 @@ void DataContainer::scale(const RVector3 & scale){
 // END Sensor related section
 
 } // namespace GIMLI{
-

@@ -235,27 +235,27 @@ def interpolateAlongCurve(curve, t, **kwargs):
 
     Examples
     --------
-    >>># no need to import matplotlib. pygimli's show does
-    >>>import numpy as np
-    >>>import pygimli as pg
-    >>>import pygimli.meshtools as mt
-    >>>fig, axs = pg.plt.subplots(2,2)
-    >>>topo = np.array([[-2., 0.], [-1., 0.], [0.5, 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.], [12., 1.]])
-    >>>t = np.arange(15.0)
-    >>>p = mt.interpolateAlongCurve(topo, t)
-    >>>_= axs[0][0].plot(topo[:,0], topo[:,1], '-x', mew=2)
-    >>>_= axs[0][0].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> fig, axs = pg.plt.subplots(2,2)
+    >>> topo = np.array([[-2., 0.], [-1., 0.], [0.5, 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.], [12., 1.]])
+    >>> t = np.arange(15.0)
+    >>> p = mt.interpolateAlongCurve(topo, t)
+    >>> _= axs[0][0].plot(topo[:,0], topo[:,1], '-x', mew=2)
+    >>> _= axs[0][0].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
     >>>
-    >>>p = mt.interpolateAlongCurve(topo, t, method='spline')
-    >>>_= axs[0][0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
+    >>> p = mt.interpolateAlongCurve(topo, t, method='spline')
+    >>> _= axs[0][0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
     >>>
-    >>>p = mt.interpolateAlongCurve(topo, t, method='harmonic', nc=3)
-    >>>_= axs[0][0].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
+    >>> p = mt.interpolateAlongCurve(topo, t, method='harmonic', nc=3)
+    >>> _= axs[0][0].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
     >>>
-    >>>_= axs[0][0].set_aspect(1)
+    >>> _= axs[0][0].set_aspect(1)
     >>>
-    >>>pg.plt.show()
-    >>>pg.wait()
+    >>> pg.plt.show()
+    >>> pg.wait()
     """
     xC = np.zeros(len(curve))
     yC = np.zeros(len(curve))
@@ -421,18 +421,42 @@ def interpolate(*args, **kwargs):
     >>> _= ax.legend()
     """
     pgcore = False
+    if 'srcMesh' in kwargs:
+        pgcore = True
 
-    if len(args) > 0:
+    elif len(args) > 0:
         if isinstance(args[0], pg.Mesh):
             if len(args) == 3 and isinstance(args[1], pg.Mesh):
                 pgcore = False # (outMesh, inMesh, vals)
             else:
                 pgcore = True
 
-    if 'srcMesh' in kwargs:
-        pgcore = True
-
     if pgcore:
+        if len(args) == 3:
+
+            if isinstance(args[2], pg.R3Vector) or \
+               isinstance(args[2], pg.stdVectorRVector3):
+                return pg.core._pygimli_.interpolate(args[0], args[1],
+                                                     destPos=args[2],
+                                                     **kwargs)
+        if len(args) == 4:
+
+            if isinstance(args[1], pg.RMatrix) and \
+               isinstance(args[3], pg.RMatrix):
+
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inMat=args[1],
+                                                     destPos=args[2],
+                                                     outMat=args[3],
+                                                     **kwargs)
+            if isinstance(args[1], pg.RVector) and \
+               isinstance(args[3], pg.RVector):
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inVec=args[1],
+                                                     destPos=args[2],
+                                                     outVec=args[3],
+                                                     **kwargs)
+
         return pg.core._pygimli_.interpolate(*args, **kwargs)
 
     if len(args) == 3:

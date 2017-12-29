@@ -16,6 +16,23 @@ from .utils import updateAxes as updateAxes_
 
 from .colorbar import cmapFromName, autolevel
 
+class CellBrowserCacheSingleton(object):
+    __instance = None
+    cbCache_ = []
+    def __new__(cls):
+        if CellBrowserCacheSingleton.__instance is None:
+            CellBrowserCacheSingleton.__instance = object.__new__(cls)
+        return CellBrowserCacheSingleton.__instance
+
+    def add(self, c):
+        self.cbCache_.append(c)
+
+    def remove(self, c):
+        self.cbCache_.remove(c)
+
+# We only want one instance of this global cache so its a singleton class
+__CBCache__ = CellBrowserCacheSingleton()
+
 
 def _fixNamingConventions(kwargs):
     if 'cmap' in kwargs:
@@ -45,6 +62,8 @@ class CellBrowser(object):
     ----------
     mesh : 2D pygimli.Mesh instance
         The plotted mesh to browse through.
+    data : iterable
+        Cell data.
     ax : mpl axis instance, optional
         Axis instance where the mesh is plotted (default is current axis).
 
@@ -64,6 +83,13 @@ class CellBrowser(object):
 
     def __init__(self, mesh, data=None, ax=None):
         """Construct CellBrowser on a specific `mesh`."""
+
+        # we put this CellBrowser into a global cache to keep them alive
+        # if he has been called from pg.show()
+        # TODO remove them from the cache if the figure has been closed or the
+        # the mpl_connection is finished.
+        __CBCache__.add(self)
+
         if ax:
             self.ax = ax
         else:
@@ -116,7 +142,8 @@ class CellBrowser(object):
 
     def highlight(self):
         """Highlight selected cell."""
-        if self.edgeColors:
+
+        if self.edgeColors is not None:
             ec = self.edgeColors.copy()
             ec[self.cellID] = np.ones(ec.shape[1])
             self.artist.set_edgecolors(ec)
@@ -162,20 +189,23 @@ class CellBrowser(object):
 
     def update(self):
         """Update the information window."""
-        center = self.mesh.cell(self.cellID).center()
-        x, y = center.x(), center.y()
-        marker = self.mesh.cells()[self.cellID].marker()
-        data = self.data[self.cellID]
-        header = "Cell %d:\n" % self.cellID
-        header += "-" * (len(header) - 1)
-        info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
-            x, y, data, marker)
-        text = header + textwrap.dedent(info)
-        self.text.set_text(text)
-        self.text.xy = x, y
-        self.text.set_visible(True)
-        self.highlight()
-        self.fig.canvas.draw()
+        try:
+            center = self.mesh.cell(self.cellID).center()
+            x, y = center.x(), center.y()
+            marker = self.mesh.cells()[self.cellID].marker()
+            data = self.data[self.cellID]
+            header = "Cell %d:\n" % self.cellID
+            header += "-" * (len(header) - 1)
+            info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
+                x, y, data, marker)
+            text = header + textwrap.dedent(info)
+            self.text.set_text(text)
+            self.text.xy = x, y
+            self.text.set_visible(True)
+            self.highlight()
+            self.fig.canvas.draw()
+        except BaseException as e:
+            print(e)
 
 
 def drawMesh(ax, mesh, **kwargs):
@@ -218,8 +248,7 @@ def drawMesh(ax, mesh, **kwargs):
 def drawModel(ax, mesh, data=None,
               cMin=None, cMax=None, logScale=True, cMap=None,
               xlabel=None, ylabel=None, verbose=False, grid=False,
-              tri=False,
-              **kwargs):
+              tri=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
     Parameters
@@ -294,7 +323,8 @@ def drawModel(ax, mesh, data=None,
         if min(data) <= 0:
             logScale = False
 
-        pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
+        pg.mplviewer.setMappableData(gci, viewdata,
+                                     cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
 
@@ -715,9 +745,9 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     gci = None
 
     levels = kwargs.pop('levels', [])
-    nLevs = kwargs.pop('nLevs', 8)
+    nLevs = kwargs.pop('nLevs', 5)
     if len(levels) == 0:
-        levels = autolevel(data, nLevs)
+        levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax)
 
     if interpolate and len(data) == mesh.cellCount():
         z = pg.meshtools.cellDataToNodeData(mesh, data)
@@ -749,7 +779,11 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
                       "change to withContourLines=False")
 
             withContourLines = kwargs.pop('withContourLines', True)
+            #print('#'*100)
+            #print(kwargs)
+            #print('#'*100)
             if withContourLines:
+                kwargs.pop('cmap')
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']),
                               **kwargs)
@@ -781,7 +815,9 @@ def drawField(ax, mesh, data=None, cMap=None, **kwargs):
     Parameters
     ----------
     ax : MPL axes
+
     mesh : :gimliapi:`GIMLI::Mesh`
+
     data: iterable
         Scalar field values. Can be of length mesh.cellCount()
         or mesh.nodeCount().
@@ -815,7 +851,6 @@ def drawField(ax, mesh, data=None, cMap=None, **kwargs):
 
     return drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
                       cMap=cMap, **kwargs)
-
 
 def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     """Draw streamlines for the gradients of field values u on a mesh.
@@ -899,7 +934,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
                          dataMesh=dataMesh,
                          maxSteps=10000,
                          verbose=False,
-                         koords=[0, 1])
+                         coords=[0, 1])
 
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
@@ -930,7 +965,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None,
         dLength = c.center().dist(c.node(0).pos()) / 4.
 
         if v[xmid] > dropTol:
-            ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 15.,
+            ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 3.,
                      head_starts_at_zero=True,
                      **kwargs)
 
@@ -1082,7 +1117,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
 # def drawStreamLines2(...)
 
 
-def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
+def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     """Draw sensor positions as black dots with a given diameter.
 
     Parameters
@@ -1091,8 +1126,8 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
         list of positions to plot
     diam : float [None]
         diameter of circles (None leads to point distance by 8)
-    koords: (int, int) [0, 1]
-        koordinates to take (usually x and y)
+    coords: (int, int) [0, 1]
+        Coordinates to take (usually x and y)
 
     Examples
     --------
@@ -1101,13 +1136,13 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
     >>> from pygimli.mplviewer import drawSensors
     >>> sensors = np.random.rand(5, 2)
     >>> fig, ax = plt.subplots()
-    >>> drawSensors(ax, sensors, diam=0.02, koords=[0, 1])
+    >>> drawSensors(ax, sensors, diam=0.02, coords=[0, 1])
     >>> ax.set_aspect('equal')
     """
-    if koords is None:
-        koords = [0, 2]
+    if coords is None:
+        coords = [0, 2]
         if pg.yVari(sensors):
-            koords = [0, 1]
+            coords = [0, 1]
 
     eCircles = []
 
@@ -1117,8 +1152,8 @@ def drawSensors(ax, sensors, diam=None, koords=None, verbose=False, **kwargs):
 
     for e in sensors:
         if verbose:
-            print(e, diam, e[koords[0]], e[koords[1]])
-        eCircles.append(mpl.patches.Circle((e[koords[0]], e[koords[1]]), diam))
+            print(e, diam, e[coords[0]], e[coords[1]])
+        eCircles.append(mpl.patches.Circle((e[coords[0]], e[coords[1]]), diam))
 
     p = mpl.collections.PatchCollection(eCircles,
                                         **kwargs)

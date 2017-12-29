@@ -10,6 +10,7 @@ import pygimli as pg
 from pygimli.frameworks import Block1DModelling
 
 class VMDModelling(Block1DModelling):
+
     r"""Modelling operator for a Vertical Magnetic Dipole (VMD).
 
     Modelling operator for a Vertical Magnetic Dipole (VMD) to calculate the
@@ -223,6 +224,7 @@ class VMDTimeDomainModelling(VMDModelling):
             self.rxArea = txArea
         else:
             self.rxArea = rxArea
+
 
     def response_mt(self, par, i=0):
         """

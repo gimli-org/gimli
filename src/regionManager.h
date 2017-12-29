@@ -169,7 +169,6 @@ public:
 
     void permuteParameterMarker(const IVector & p);
 
-
     /*! Set the values of start for the start model of this region. */
     void setStartModel(const RVector & start);
     /*! Set the value of start into the start model vector for this region. */
@@ -399,7 +398,6 @@ protected:
         }
         return tmp;
     }
-
 
     bool verbose_;
 

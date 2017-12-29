@@ -135,9 +135,16 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     updateAxes_(ax)
     cbar = kwargs.pop('colorBar', True)
 
+    ori = kwargs.pop('orientation', 'horizontal')
+    if cbar in ['horizontal', 'vertical']:
+        ori = cbar
+        cbar = True
+
     if cbar is True:  # not for cbar=1, which is really confusing!
         cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
-                                           nLevs=5, label=label)
+                                           nLevs=5, label=label,
+                                           orientation=ori)
+
     elif cbar is not False:
         # .. cbar is an already existing cbar .. so we update its values
         pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
@@ -167,6 +174,8 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         logarithmic colour scale [min(A)>0]
     label : string
         colorbar label
+    dx : float
+        width of the matrix elements (by default 1)
     """
     mat = np.ma.masked_where(mat == 0.0, mat, False)
     if cMin is None:
@@ -206,8 +215,9 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     updateAxes_(ax)
     cbar = None
     if kwargs.pop('colorBar', True):
+        ori = kwargs.pop('orientation', 'horizontal')
         cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax, nLevs=5,
-                                           label=label)
+                                           label=label, orientation=ori)
     return ax, cbar
 
 

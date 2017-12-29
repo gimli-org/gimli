@@ -657,14 +657,13 @@ def main(argv):
         if options.electrodes:
             try:
                 elPos = None
-                koords = None
+                coords = None
                 if options.electrodes == 'mesh':
                     mesh = pg.Mesh(meshname)
                     elPos = mesh.positions(mesh.findNodesIdxByMarker(-99))
-                    koords = [0, 1]
+                    coords = [0, 1]
                 else:
                     d = pg.DataContainer(options.electrodes)
-                    koords = [0, 1]
                     elPos = d.sensorPositions()
 
                 diam = None
@@ -672,7 +671,7 @@ def main(argv):
                     diam = options.sensorDiameter
 
                 pygimli.mplviewer.drawSensors(axes, elPos,
-                                              diam=diam, koords=koords)
+                                              diam=diam, coords=coords)
 
             except Exception as e:
                 print(e)

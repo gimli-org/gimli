@@ -174,7 +174,8 @@ public:
 
     Node * createNode(const RVector3 & pos, int marker=0);
 
-    Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6);
+    Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6,
+                               bool warn=false);
 
     Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0);
     /*! Create a boundary from the given node indieces */

@@ -92,6 +92,9 @@ public:
 
     std::vector< MatrixBase * > & matrices() { return matrices_; }
 
+    /*!Add an existing matrix to this block matrix and return a unique index.
+     * The Matrix will not be used until the matrix index has been assigned to a
+     row and column number by adding a matrix entry.*/
     Index addMatrix(MatrixBase * matrix){
 //         __MS(matrix << " " << matrix->rtti())
         matrices_.push_back(matrix);
@@ -105,12 +108,15 @@ public:
         return matrixID;
     }
 
-    // no default arg here .. pygimli@win64 linker bug
+    /*!Shortcut for \ref addMatrixEntry(matrixID, rowStart, colStart, 1.0). */
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart){
+        // no default arg here .. pygimli@win64 linker bug
         addMatrixEntry(matrixID, rowStart, colStart, ValueType(1.0));
     }
 
-    void addMatrixEntry(Index matrixID, Index rowStart, Index colStart, ValueType scale){
+    /*!Set a entry to this block matrix with the matrix index matrixID.*/
+    void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
+                        ValueType scale){
         if (matrixID > matrices_.size()){
             throwLengthError(1, WHERE_AM_I + " matrix entry to large: " +
             str(matrixID) + " " + str(matrices_.size()));

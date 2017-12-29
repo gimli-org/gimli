@@ -166,12 +166,16 @@ Node * Mesh::createNode(const RVector3 & pos, int marker){
     return createNode_(pos, marker, -1);
 }
 
-Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol){
+Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn){
     fillKDTree_();
 
     Node * refNode = tree_->nearest(pos);
     if (refNode){
-        if (pos.distance(refNode->pos()) < tol) return refNode;
+        if (pos.distance(refNode->pos()) < tol) {
+            if (warn || debug()) log(LogType::Warning,
+                "Duplicated node found for: " + str(pos));
+            return refNode;
+        }
     }
 
 //     for (Index i = 0, imax = nodeVector_.size(); i < imax; i++){
@@ -2206,12 +2210,12 @@ RVector Mesh::divergence(const R3Vector & V) const{
 
     ASSERT_EQUAL(V.size(), this->boundaryCount());
 
-    const R3Vector & flow = this->boundarySizedNormals();
+    const R3Vector & normB = this->boundarySizedNormals();
 
     for (Index i = 0; i < this->boundaryCount(); i ++){
         Boundary * b = this->boundaryVector_[i];
-//         __MS(flow[b->id()] << " " << V[b->id()])
-        double vec = flow[b->id()].dot(V[b->id()]);
+//         __MS(normB[b->id()] << " " << V[b->id()])
+        double vec = normB[b->id()].dot(V[b->id()]);
 
         if (b->leftCell()){
             ret[b->leftCell()->id()] += vec;

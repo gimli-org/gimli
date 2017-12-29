@@ -14,7 +14,6 @@ geometry system. A lot of thinks are needed:
     * Cubic spline interpolation for polygons (partly done)
     * GUI .. interactive creation
     *
-
 """
 
 import math
@@ -375,17 +374,17 @@ def createLine(start, end, segments, **kwargs):
 
         poly.createNode(p)
 
-
     polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
     return poly
 
 
 def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
-    """Create a polygon.
+    """Create a polygon from a list of vertices.
 
-    Create a polygon from list of vertices.
-    If the polygon is closed region attributes can be assigned.
-    The automatic region marker is set in the center of all verts.
+    All vertices needs to be unique and duplicate vertices will be ignored.
+    If you want the polygon be a closed region you can set the 'isCloses' flag.
+    Closed region can be attributed by assigning a region marker.
+    The automatic region marker is set in the center of all vertices.
 
     Parameters
     ----------
@@ -427,7 +426,7 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     poly = pg.Mesh(2)
 
     for v in verts:
-        poly.createNode(v)
+        poly.createNodeWithCheck(v, warn=True)
 
     marker = kwargs.pop('marker', None)
     area = kwargs.pop('area', 0)
@@ -439,7 +438,7 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
         if isHole:
             poly.addHoleMarker(pg.center(poly.positions()))
         else:
-            if marker == None: ## for the case marker is None but area is given
+            if marker is None:  # in case marker is None but area is given
                 marker = 0
             poly.addRegionMarker(pg.center(poly.positions()),
                                  marker=marker, area=area)
@@ -882,7 +881,7 @@ def writePLC(*args, **kwargs):
     return exportPLC(*args, **kwargs)
 
 
-def exportTrianglePoly(poly, fname, float_format='.15e'):
+def exportTrianglePoly(poly, fname, float_format='.15e', **kwargs):
     r"""Write :term:`Triangle` poly.
 
     Write :term:`Triangle` :cite:`Shewchuk96b` ASCII file.
@@ -938,7 +937,7 @@ def writeTrianglePoly(*args, **kwargs):
     return exportTrianglePoly(*args, **kwargs)
 
 
-def exportTetgenPoly(poly, filename, float_format='.12e'):
+def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     """
     Writes a given piecewise linear complex (mesh/poly ) into a Ascii file in
     :term:`Tetgen` .poly format.
@@ -989,10 +988,23 @@ def exportTetgenPoly(poly, filename, float_format='.12e'):
     # Part 2/4: boundary list
     # intro line
     # <# of facets> <boundary markers (0 or 1)>
-    polytxt += '{0:d}{2}1{1}'.format(poly.boundaryCount(), os.linesep, sep)
+    nBoundaries = poly.boundaryCount()
+    # look for extra boundaries present in either the PLC or in kwargs
+    extraBoundaries = []
+    if 'extraBoundaries' in kwargs:
+        extraBoundaries += kwargs.pop('extraBoundaries', [])
+
+    if hasattr(poly, 'extraBoundaries'):
+        extraBoundaries += poly.extraBoundaries
+
+    if len(extraBoundaries) > 0:
+        print("Detected ", len(extraBoundaries), " extra boundaries!")
+
+    nBoundaries += len(extraBoundaries)
+    polytxt += '{0:d}{2}1{1}'.format(nBoundaries, os.linesep, sep)
     # loop over facets, each facet can contain an arbitrary number of holes
     # and polygons, in our case, there is always one polygon per facet.
-    for k, bound in enumerate(poly.boundaries()):
+    for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
         npolys = 1
@@ -1003,10 +1015,23 @@ def exportTetgenPoly(poly, filename, float_format='.12e'):
             poly_str = '{:d}'.format(bound.nodeCount())
             for ind in bound.ids():
                 poly_str += sep + '{:d}'.format(ind)
+
             polytxt += '{0}{1}'.format(poly_str, os.linesep)
         # inner loop over holes
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
+
+    # part 2b: extra boundaries that cannot be part of mesh class
+    for nodes in extraBoundaries:
+        # <# of polygons> [# of holes] [boundary marker]
+        npolys = 1
+        polytxt += '1{2}0{2}{0:d}{1}'.format(111, os.linesep, sep)
+        # <# of corners> <corner 1> <corner 2> ... <corner #>
+        poly_str = '{:d}'.format(len(nodes))
+        for ind in nodes:
+            poly_str += sep + '{:d}'.format(ind)
+
+        polytxt += '{0}{1}'.format(poly_str, os.linesep)
 
     # part 3/4: hole list
     # intro line
@@ -1018,6 +1043,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e'):
     hole_str = '{:d}'
     for m in range(3):
         hole_str += sep + '{:%s}' % float_format
+
     hole_str += os.linesep
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
@@ -1032,6 +1058,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e'):
     region_str = '{:d}'
     for o in range(3):
         region_str += sep + '{:%s}' % (float_format)
+
     region_str += sep + '{:d}%s{:%s}' % (sep, float_format) + os.linesep
     for p, region in enumerate(regions):
         polytxt += region_str.format(p, region.x(), region.y(), region.z(),

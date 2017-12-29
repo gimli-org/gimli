@@ -123,7 +123,6 @@ public:
      */
     void add(const DataContainer & data, double snap=1e-3);
 
-
     // START Sensor related section
     /*! Set the positions for 1D sensors distribution. */
     void setSensorPositions(const RVector & sensors);

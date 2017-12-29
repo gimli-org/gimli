@@ -262,15 +262,23 @@ public:
     inline const_iterator begin() const { return C_.begin(); }
     inline const_iterator end()   const { return C_.end(); }
 
-    void addToCol(Index id, const ElementMatrix < double > & A){
+    void addToCol(Index id, const ElementMatrix < double > & A, bool isDiag=false){
         for (Index i = 0, imax = A.size(); i < imax; i++){
-            (*this)[A.idx(i)][id] += (ValueType)A.getVal(0, i);
+            if (isDiag){
+                (*this)[A.idx(i)][id] += (ValueType)A.getVal(i, i);
+            } else {
+                (*this)[A.idx(i)][id] += (ValueType)A.getVal(0, i);
+            }
         }
     }
 
-    void addToRow(Index id, const ElementMatrix < double > & A){
+    void addToRow(Index id, const ElementMatrix < double > & A, bool isDiag=false){
         for (Index i = 0, imax = A.size(); i < imax; i++){
-            (*this)[id][A.idx(i)] += (ValueType)A.getVal(0, i);
+            if (isDiag){
+                (*this)[id][A.idx(i)] += (ValueType)A.getVal(i, i);
+            } else {
+                (*this)[id][A.idx(i)] += (ValueType)A.getVal(0, i);
+            }
         }
     }
 
@@ -517,15 +525,29 @@ public:
     void importCol(const std::string & filename, double dropTol=1e-3){
         importCol(filename, dropTol, 0);
     }
+
+    /*! Fill existing arrays with values, row and column indieces of this
+     * SparseMapMatrix*/
+    void fillArrays(Vector < ValueType > & vals, IndexArray & rows, IndexArray & cols){
+        vals.resize(C_.size());
+        rows.resize(C_.size());
+        cols.resize(C_.size());
+        Index i = 0;
+
+        for (const_iterator it = this->begin(); it != this->end(); it ++, i ++){
+            rows[i] = idx1(it);
+            cols[i] = idx2(it);
+            vals[i] = val(it);
+        }
+    }
+
 protected:
 
   IndexType rows_, cols_;
   ContainerType C_;
   // 0 .. nonsymmetric, -1 symmetric lower part, 1 symmetric upper part
   int stype_;
-
-
-};// class SparseMapMatrix
+}; // class SparseMapMatrix
 
 template < class ValueType, class IndexType >
 void save(const SparseMapMatrix< ValueType, IndexType > & S,
@@ -603,8 +625,8 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, const RSparseMap
 
 /*! Scales a matrix A from left and right vectors such that A -> diag(l) * A * diag(r) */
 template< class Vec >
-void scaleMatrix (SparseMapMatrix< double, Index > & S,
-                  const Vec & l, const Vec & r) {
+void scaleMatrix(SparseMapMatrix< double, Index > & S,
+                 const Vec & l, const Vec & r) {
 
     if (S.cols() != r.size())
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
@@ -624,8 +646,7 @@ void scaleMatrix (SparseMapMatrix< double, Index > & S,
 
 /*! Performs a rank 1 update of a matrix such that A -> A + u * v^T */
 template< class Vec >
-void rank1Update (SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
-
+void rank1Update(SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
     if (S.cols() != v.size())
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
                                 + " != " + toStr(v.size()));
@@ -717,8 +738,6 @@ public:
 //     void copy(const SparseMapMatrix< ValueType, Index > & S){
 //         this->copy_(S);
 //     }
-
-
 
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
         void FUNCT(int i, int j, ValueType val){ \

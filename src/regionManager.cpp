@@ -202,8 +202,8 @@ void Region::countParameter(Index start){
 void Region::permuteParameterMarker(const IVector & p){
     for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
         SIndex m = cells_[i]->marker();
-        if (m >= -1) {
-            ASSERT_RANGE(m, 0, p.size())
+        if (m >= 0) {
+            ASSERT_RANGE((Index)m, 0, p.size())
 //             __MS(cells_[i]->id() << ": " << m << " - "<< p[m] )
             cells_[i]->setMarker(p[m]);
         }

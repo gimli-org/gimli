@@ -114,17 +114,17 @@ int Mesh::saveBinary(const std::string & fbody) const {
     if (!fwrite(&nVerts, sizeof(int), 1, file)){
     }
 
-    double * koord = new double[dimension * nVerts];
+    double * coord = new double[dimension * nVerts];
     for (int i = 0; i < nVerts; i ++){
         for (int j = 0; j < dimension; j ++){
-            koord[i * dimension + j] = node(i).pos()[j];
+            coord[i * dimension + j] = node(i).pos()[j];
         }
     }
 
-    if (!fwrite(koord, sizeof(double), dimension * nVerts, file)){
+    if (!fwrite(coord, sizeof(double), dimension * nVerts, file)){
 
     }
-    delete [] koord;
+    delete [] coord;
 
     int * marker = new int[nVerts];
     for (int i = 0; i < nVerts; i ++) marker[i] = node(i).marker();
@@ -282,8 +282,8 @@ void Mesh::loadBinary(const std::string & fbody){
     //** read vertex dummy-infos
     int dummy[127]; ret = fread(dummy, sizeof(int), 127, file);
     int nVerts; ret = fread(&nVerts, sizeof(int), 1, file);
-    double * koords = new double[dimension_ * nVerts];
-    ret = fread(koords, sizeof(double), dimension_ * nVerts, file);
+    double * coords = new double[dimension_ * nVerts];
+    ret = fread(coords, sizeof(double), dimension_ * nVerts, file);
 
     int * nodeMarker = new int[nVerts]; ret = fread(nodeMarker, sizeof(int), nVerts, file);
     //** read cell dummy-infos
@@ -311,7 +311,7 @@ void Mesh::loadBinary(const std::string & fbody){
     for (int i = 0; i < nVerts; i ++){
         createNode(RVector3(0.0, 0.0, 0.0));
         for (uint j = 0; j < dimension_; j ++){
-            node(i).pos()[j] = koords[i * dimension_ + j];
+            node(i).pos()[j] = coords[i * dimension_ + j];
         }
         node(i).setMarker(nodeMarker[i]);
     }
@@ -353,7 +353,7 @@ void Mesh::loadBinary(const std::string & fbody){
         if (right[i] != -1) boundary(i).setRightCell(&cell(right[i]));
     }
 
-    delete [] koords;
+    delete [] coords;
     delete [] nodeMarker;
 
     delete [] cellIdx;

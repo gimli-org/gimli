@@ -7,8 +7,7 @@ from importlib import import_module
 import pygimli as pg
 from pygimli.meshtools import readGmsh, readPLC, readFenicsHDF5Mesh
 
-
-def opt_import(module, requiredFor="use the full functionality"):
+def optImport(module, requiredFor="use the full functionality"):
     """Import and return module only if it exists.
 
     If `module` cannot be imported, a warning is printed followed by the
@@ -26,10 +25,10 @@ def opt_import(module, requiredFor="use the full functionality"):
     Examples
     --------
     >>> from pygimli.io import opt_import
-    >>> pg = opt_import("pygimli")
+    >>> pg = optImport("pygimli")
     >>> pg.__name__
     'pygimli'
-    >>> opt_import("doesNotExist", requiredFor="do something special")
+    >>> optImport("doesNotExist", requiredFor="do something special")
     No module named 'doesNotExist'.
     You need to install this optional dependency to do something special.
     """
@@ -50,6 +49,7 @@ def opt_import(module, requiredFor="use the full functionality"):
 
     return mod
 
+opt_import = optImport
 
 def load(fname, verbose=False):
     """General import function to load data and meshes from file.

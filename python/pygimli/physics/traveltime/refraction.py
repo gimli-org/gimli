@@ -22,6 +22,7 @@ from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 
 from . raplot import drawTravelTimeData
+from . importData import importGTT
 
 
 class Refraction(MethodManager):
@@ -33,7 +34,7 @@ class Refraction(MethodManager):
 
     def __init__(self, data=None, verbose=True, debug=False, **kwargs):
         """Init function with optional data load"""
-        super(Refraction0, self).__init__(verbose=verbose, debug=debug,
+        super(Refraction, self).__init__(verbose=verbose, debug=debug,
                                          **kwargs)
         self.figs = {}
         self.axs = {}
@@ -155,8 +156,11 @@ class Refraction(MethodManager):
 
     def loadData(self, filename):
         """Load data from file."""
-        # TODO check for file formats and import if necessary
-        data = pg.DataContainer(filename, sensorTokens='s g')
+        if filename.lower()[-4:] == '.gtt':
+            data = importGTT(filename)
+        else:
+            data = pg.DataContainer(filename, sensorTokens='s g')
+
         self.basename = filename[:filename.rfind('.')]
         self.setDataContainer(data)
 

@@ -68,7 +68,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     >>> import pygimli as pg
     >>> # plt.style.use('ggplot')
     >>> thk = [1, 4, 4]
-    >>> res = np.array([10, 5, 15, 50])
+    >>> res = np.array([10., 5, 15, 50])
     >>> fig, ax = plt.subplots()
     >>> pg.mplviewer.drawModel1D(ax, values=res*5, depths=np.cumsum(thk),
     ...                          plot='semilogx', color='blue')
@@ -120,6 +120,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     # assume positive depths pointing upward
     ax.set_ylim(pz[-1], pz[0])
     ax.grid(True)
+
 
 def showStitchedModels(models, x=None,
                        logScale=True, title=None, ax=None,
@@ -245,147 +246,6 @@ def showStitchedModels(models, x=None,
 
     return ax
 
-
-def showStitchedModels_Redundant(mods, ax=None,
-                                 cmin=None, cmax=None, **kwargs):
-    """Show several 1d block models as (stitched) section."""
-    raise Exception('who use this?')
-    x = kwargs.pop('x', np.arange(len(mods)))
-    topo = kwargs.pop('topo', x*0)
-
-    nlay = int(np.floor((len(mods[0]) - 1) / 2.)) + 1
-    if cmin is None or cmax is None:
-        cmin = 1e9
-        cmax = 1e-9
-        for model in mods:
-            res = np.asarray(model)[nlay - 1:nlay * 2 - 1]
-            cmin = min(cmin, min(res))
-            cmax = max(cmax, max(res))
-
-    if kwargs.pop('sameSize', True):  # all having the same width
-        dx = np.ones_like(x)*np.median(np.diff(x))
-    else:
-        dx = np.diff(x) * 1.05
-        dx = np.hstack((dx, dx[-1]))
-
-    x1 = x - dx / 2
-    if ax is None:
-        fig, ax = plt.subplots()
-    else:
-        ax = ax
-        fig = ax.figure
-
-#    ax.plot(x, x * 0., 'k.')
-    zm = kwargs.pop('zm', None)
-    maxz = 0.
-    if zm is not None:
-        maxz = zm
-    recs = []
-    RES = []
-    for i, mod in enumerate(mods):
-        mod1 = np.asarray(mod)
-        res = mod1[nlay - 1:]
-        RES.extend(res)
-
-        thk = mod1[:nlay - 1]
-        thk = np.hstack((thk, thk[-1]))
-        z = np.hstack((0., np.cumsum(thk)))
-        if zm is not None:
-            thk[-1] = zm - z[-2]
-            z[-1] = zm
-        else:
-            maxz = max(maxz, z[-1])
-
-        for j, _ in enumerate(thk):
-            recs.append(Rectangle((x1[i], topo[i]-z[j]), dx[i], -thk[j]))
-
-    pp = PatchCollection(recs, edgecolors=kwargs.pop('edgecolors', 'none'))
-    pp.set_edgecolor(kwargs.pop('edgecolors', 'none'))
-    pp.set_linewidths(0.0)
-    ax.add_collection(pp)
-    if 'cmap' in kwargs:
-        pp.set_cmap(kwargs['cmap'])
-
-    print(cmin, cmax)
-    norm = LogNorm(cmin, cmax)
-    pp.set_norm(norm)
-    pp.set_array(np.array(RES))
-#    pp.set_clim(cmin, cmax)
-    ax.set_ylim((-maxz, max(topo)))
-    ax.set_xlim((x1[0], x1[-1] + dx[-1]))
-
-    cbar = None
-    if kwargs.pop('colorBar', True):
-        cbar = plt.colorbar(pp, ax=ax, norm=norm, orientation='horizontal',
-                            aspect=60)  # , ticks=[1, 3, 10, 30, 100, 300])
-        if 'ticks' in kwargs:
-            cbar.set_ticks(kwargs['ticks'])
-#        cbar.autoscale_None()
-    if ax is None:  # newly created fig+ax
-        return fig, ax
-    else:  # already given, better give back color bar
-        return cbar
-
-def showStitchedModelsOld(models, x=None, cmin=None, cmax=None,
-                          islog=True, title=None):
-    """Show several 1d block models as (stitched) section."""
-    raise Exception('who use this?')
-    if x is None:
-        x = np.arange(len(models))
-
-    nlay = int(np.floor((len(models[0]) - 1) / 2.)) + 1
-    if cmin is None or cmax is None:
-        cmin = 1e9
-        cmax = 1e-9
-        for model in models:
-            res = np.asarray(model)[nlay - 1:nlay * 2 - 1]
-            cmin = min(cmin, min(res))
-            cmax = max(cmax, max(res))
-
-        print("cmin=", cmin, " cmax=", cmax)
-
-    dx = np.diff(x)
-    dx = np.hstack((dx, dx[-1]))
-    x1 = x - dx / 2
-    ax = plt.gcf().add_subplot(111)
-    ax.cla()
-    mapsize = 64
-    # cmap = jetmap(mapsize)
-    plt.plot(x, np.zeros(len(x)), 'k.')
-    maxz = 0.
-    for mod in models:
-        mod1 = np.asarray(mod)
-        res = mod1[nlay - 1:]
-        if islog:
-            res = np.log(res)
-            cmi = np.log(cmin)
-            cma = np.log(cmax)
-        else:
-            cmi = cmin
-            cma = cmax
-
-        thk = mod1[:nlay - 1]
-        thk = np.hstack((thk, thk[-1]))
-        z = np.hstack((0., np.cumsum(thk)))
-        maxz = max(maxz, z[-1])
-        nres = (res - cmi) / (cma - cmi)
-        cind = np.around(nres * mapsize)
-        cind[cind >= mapsize] = mapsize - 1
-        cind[cind < 0] = 0
-        # for j in range(len(thk)):
-        #   fc = cmap[cind[j], :]
-        #   rect = Rectangle((x1[i], z[j]), dx[i], thk[j], fc=fc)
-        #   plt.gca().add_patch(rect)
-
-    ax.set_ylim((maxz, 0.))
-    ax.set_xlim((x1[0], x1[-1] + dx[-1]))
-    if title is not None:
-        plt.title(title)
-
-    plt.draw()
-    return
-
-
 def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     """What is this good for?."""
     plt.imshow(mat, interpolation='nearest')
@@ -456,6 +316,7 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0,
     """Show 1d block model defined by value and thickness vectors."""
     print("STYLE_WARNING!!!!!!! don't use this call. "
           "WHO use this anymore??.")
+
     if xlab is None:
         xlab = "$\\rho$ in $\\Omega$m"
 
@@ -490,64 +351,6 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0,
     plt.ylabel(zlab)
     plt.show()
     return
-
-
-def draw1dmodel__Redundant(x, thk=None, xlab=None, zlab="z in m", islog=True,
-                           fs=14, z0=0, **kwargs):
-    """Draw 1d block model defined by value and thickness vectors."""
-#    if xlab is None:
-#        xlab = "$\\rho$ in $\\Omega$m"
-    print("STYLE_WARNING!!!!!!! don't use this call. "
-          "WHO use this anymore??.")
-    if thk is None:  # gimli blockmodel (thk+x together) given
-        nl = int(np.floor((len(x) - 1) / 2.)) + 1
-        thk = np.asarray(x)[:nl - 1]
-        x = np.asarray(x)[nl - 1:nl * 2 - 1]
-
-    z1 = np.concatenate(([0], np.cumsum(thk))) + z0
-    z = np.concatenate((z1, [z1[-1] * 1.2]))
-    nl = len(x)  # x.size()
-    px = np.zeros((nl * 2, 1))
-    pz = np.zeros((nl * 2, 1))
-    for i in range(nl):
-        px[2 * i] = x[i]
-        px[2 * i + 1] = x[i]
-        pz[2 * i + 1] = z[i + 1]
-        if i < nl - 1:
-            pz[2 * i + 2] = z[i + 1]
-
-#    plt.cla()
-    li = []
-    if islog:
-        li = plt.semilogx(px, pz, **kwargs)
-    else:
-        li = plt.plot(px, pz, **kwargs)
-
-    plt.gca().xaxis.set_label_position('top')
-
-    locs = plt.xticks()[0]
-    if len(locs) < 2:
-        locs = np.hstack((min(x), locs, max(x)))
-    elif len(locs) < 5:
-        locs[0] = max(locs[0], min(x))
-        locs[-1] = min(locs[-1], max(x))
-
-    a = []
-    for l in locs:
-        a.append('%g' % rndig(l))
-
-    plt.xticks(locs, a, fontsize=fs)
-    plt.yticks(fontsize=fs)
-
-    plt.xlim((np.min(x) * 0.9, np.max(x) * 1.1))
-    plt.ylim((max(z1) * 1.15, 0.))
-    if xlab is not None:
-        plt.xlabel(xlab, fontsize=fs)
-    if zlab is not None:
-        plt.ylabel(zlab, fontsize=fs)
-    plt.grid(which='both')
-    # plt.show()
-    return li
 
 
 def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):

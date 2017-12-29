@@ -3,6 +3,8 @@
 
 import os
 
+import time
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
@@ -39,7 +41,9 @@ def hold(val=1):
 
 def wait():
     """TODO WRITEME."""
-    plt.pause(0.1)
+    time.sleep(0.1)
+    # plt.pause seems to be broken in mpl:2.1
+    # plt.pause(0.1)
     plt.show()
 
 

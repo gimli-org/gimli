@@ -25,14 +25,14 @@ def rot2DGridToWorld(mesh, start, end):
 
 
 def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
-               maxSteps=1000, verbose=False, koords=(0, 1)):
+               maxSteps=1000, verbose=False, coords=(0, 1)):
     """
         Create a streamline from startCoord and following a vector field in up
         and down direction.
     """
     xd, yd, vd = streamlineDir(mesh, field, startCoord, dLengthSteps,
                            dataMesh=dataMesh, maxSteps=maxSteps, down=True,
-                           verbose=verbose, koords=koords)
+                           verbose=verbose, coords=coords)
 
     c = mesh.findCell(startCoord)
 
@@ -41,13 +41,13 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
     xu, yu, vu = streamlineDir(mesh, field, startCoord, dLengthSteps,
                            dataMesh=dataMesh, maxSteps=maxSteps, down=False,
-                           verbose=verbose, koords=koords)
+                           verbose=verbose, coords=coords)
 
     return xd + xu[1:], yd + yu[1:], vd + vu[1:]
 
 
 def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
-                  maxSteps=1000, down=True, verbose=False, koords=(0, 1)):
+                  maxSteps=1000, down=True, verbose=False, coords=(0, 1)):
     """
         down = -1, up = 1, both = 0
     """
@@ -110,8 +110,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
     # stream line starting point
     if c is not None:
-        xd.append(pos[koords[0]])
-        yd.append(pos[koords[1]])
+        xd.append(pos[coords[0]])
+        yd.append(pos[coords[1]])
         vd.append(-1)
 
     lastC = c
@@ -179,8 +179,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         # Change cell here .. set old cell to be processed
         if c is not None:
 
-            xd.append(pos[koords[0]])
-            yd.append(pos[koords[1]])
+            xd.append(pos[coords[0]])
+            yd.append(pos[coords[1]])
             # set the stating value here
             if vd[0] == -1:
                 vd[0] = dAbs

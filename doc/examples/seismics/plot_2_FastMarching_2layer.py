@@ -43,12 +43,12 @@ from pygimli.physics.traveltime import fastMarch
 
 ###############################################################################
 # First we provide the analytical solution for a given offset vector x.
-def analyticalSolution2Layer(x):
+def analyticalSolution2Layer(x, zlay, v1, v2):
     """Analytical solution: minimum of direct and critically refracted wave."""
-    tdirect = np.abs(x) / v[0]  # direct wave
-    alfa = asin(v[0] / v[1])  # critically refracted wave angle
+    tdirect = np.abs(x) / v1  # direct wave
+    alfa = asin(v1 / v2)  # critically refracted wave angle
     xreflec = tan(alfa) * zlay * 2.  # first critically refracted
-    trefrac = (x - xreflec) / v[1] + xreflec * v[1] / v[0]**2
+    trefrac = (x - xreflec) / v2 + xreflec * v2 / v1**2
     return np.minimum(tdirect, trefrac)
 
 ###############################################################################
@@ -106,7 +106,7 @@ mesh.mapCellAttributes(slomap)  # map values to attributes using map
 
 ###############################################################################
 # We initialize the source position and the travel time vector
-# initialize sets and tags and define the initual condition.
+# initialize sets and tags and define the initial condition.
 source = pg.RVector3(0., 0.)  # does not have to be a node!
 times = pg.RVector(mesh.nodeCount(), 0.)
 upwind, downwind = set(), set()
@@ -143,7 +143,7 @@ drawStreamLines(ax, mesh, -times, nx=50, ny=50)
 # We compare the result with the analytical solution along the x axis
 x = np.arange(0., 140., 0.5)
 tFMM = pg.interpolate(mesh, times, x, x * 0., x * 0.)
-tAna = analyticalSolution2Layer(x)
+tAna = analyticalSolution2Layer(x, zlay, v[0], v[1])
 print("min(dt)={} ms  max(dt)={} ms".format(min(tFMM - tAna) * 1000,
                                             max(tFMM - tAna) * 1000))
 
@@ -182,7 +182,7 @@ ax.grid(True)
 ax.legend()
 ax2 = ax.twinx()
 dtFMM = (tFMM - tAna) * 1000
-tAnaD = analyticalSolution2Layer(px[1:])
+tAnaD = analyticalSolution2Layer(px[1:], zlay, v[0], v[1])
 dtDijkstra = (tDijkstra - tAnaD) * 1000
 ax2.set_ylabel('dt [ms]')
 if 1:  # relative differences in percent

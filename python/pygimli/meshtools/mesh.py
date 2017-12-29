@@ -1109,6 +1109,9 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.RVector):
         sensors = [pg.RVector3(s, 0) for s in sensors]
 
+    if isinstance(sensors, pg.DataContainer):
+        sensors = sensors.sensorPositions()
+
     sensorX = pg.x(sensors)
 
     eSpacing = abs(sensorX[1] - sensorX[0])

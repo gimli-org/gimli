@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 """Spectral induced polarisation (SIP) spectrum class and modules."""
 
+import sys
 from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
+
 import pygimli as pg
-from .importexport import readTXTSpectrum, readFuchs3File
+from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
 from .plotting import showAmplitudeSpectrum, showSpectrum, showPhaseSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC
@@ -28,30 +30,28 @@ class SIPSpectrum():
         """
         self.basename = basename
         self.fig = {}
-        self.f = None
+        self.k = k
+        self.f = None ## mandarory frequencies.
+        self.amp = None ## mandarory amplitides
+        self.phi = None ## mandarory phases
+
         self.epsilon0 = 8.854e-12
+
         if filename is not None:
-            flow = filename.lower()
-            if flow.endswith('.txt') or flow.endswith('.csv'):
-                self.basename = filename[:-4]
-                self.f, self.amp, self.phi = readTXTSpectrum(filename)
-                self.amp *= k
-            elif flow.endswith('.res'):
-                self.basename = filename[:-4]
-                print("Reading SIP Fuchs III file")
-                self.f, self.amp, self.phi, header = readFuchs3File(filename)
-                self.phi *= -1/180
-                print(header)
-        if f is not None:
-            self.f = np.asarray(f)
-        if amp is not None:
-            self.amp = np.asarray(amp)
-        if phi is not None:
-            self.phi = np.asarray(phi)
+            self.loadData(filename)
+        else:
+            if f is not None:
+                self.f = np.asarray(f)
+            if amp is not None:
+                self.amp = np.asarray(amp)
+            if phi is not None:
+                self.phi = np.asarray(phi)
+
         if unify:
             self.unifyData(onlydown)
         if sort:
             self.sortData()
+
         self.phiOrg = None
         self.phiCC = None  # better make a struct of m, amp, phi (tau)
         self.ampCC = None
@@ -74,8 +74,37 @@ class SIPSpectrum():
                 out += str(min(self.f)) + "/" + str(max(self.f))
         return out
 
+    def loadData(self, filename, **kwargs):
+        """Import spectral data.
+
+        Import Data and try to assume the file format.
+        """
+        fi = open(filename)
+        firstLine = fi.readline()
+        fi.close()
+
+        fnLow = filename.lower()
+        if 'SIP Fuchs III' in firstLine:
+            print("Reading SIP Fuchs III file")
+            self.f, self.amp, self.phi, header = readFuchs3File(filename)
+            self.phi *= -1./180.
+            # print(header) # not used?
+        elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
+            print("Reading SIP Fuchs file")
+            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
+            self.phi *= -1./180.
+        elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
+            self.basename = filename[:-4]
+            self.f, self.amp, self.phi = readTXTSpectrum(filename)
+            self.amp *= self.k
+
+        return self.f, self.amp, self.phi
+
+
     def unifyData(self, onlydown=False):
         """Unify data (only one value per frequency) by mean or selection."""
+        if self.f is None:
+            return
         fu = np.unique(self.f)
         if len(fu) < len(self.f) or onlydown:
             if onlydown:
@@ -98,6 +127,9 @@ class SIPSpectrum():
 
     def sortData(self):
         """Sort data along increasing frequency (e.g. useful for KK)."""
+        if self.f is None:
+            return
+
         ind = np.argsort(self.f)
         self.amp = self.amp[ind]
         self.phi = self.phi[ind]
@@ -488,8 +520,9 @@ class SIPSpectrum():
                 ax[2].set_xlim(max(self.tau), min(self.tau))
                 ax[2].set_ylim(0., max(self.mDD))
                 ax[2].grid(True)
-                ax[2].set_xlabel(r'$\tau$ [s]')
-                ax[2].set_ylabel('$m$ [-]')
+                ax[2].set_xlabel(r'$\tau$ (s)')
+                ax[2].set_ylabel('$m$ (-)')
+
         else:
             self.phiDD = IDD.response()
             if showFit:
@@ -541,8 +574,8 @@ class SIPSpectrum():
             ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
         ax[1].grid(True)
         ax[1].legend(loc='best')
-        ax[1].set_xlabel('f [Hz]')
-        ax[1].set_ylabel('-phi [mrad]')
+        ax[1].set_xlabel('f (Hz)')
+        ax[1].set_ylabel('-phi (mrad)')
         if np.any(self.mCC):
             ax[1].set_title(tCC, loc='left')
         if np.any(self.mDD):
@@ -552,8 +585,8 @@ class SIPSpectrum():
             ax[2].semilogx(self.tau, self.mDD * 1e3)
             ax[2].set_xlim(ax[2].get_xlim()[::-1])
             ax[2].grid(True)
-            ax[2].set_xlabel(r'$\tau$ [ms]')
-            ax[2].set_ylabel('m [mV/V]')
+            ax[2].set_xlabel(r'$\tau$ (ms)')
+            ax[2].set_ylabel('m (mV/V)')
             ax[2].set_title(tDD, loc='left')
         if save:
             if isinstance(save, str):
@@ -573,18 +606,27 @@ class SIPSpectrum():
         for key in self.fig:
             self.fig[key].savefig(name+'-'+key+'.'+ext, bbox_inches='tight')
 
-if __name__ == "__main__":
-    myfile = 'sipexample.txt'
+
+def test_SIPSPectrum():
+    run_SIPSPectrum('sipexample.txt')
+
+def run_SIPSPectrum(myfile):
     sip = SIPSpectrum(myfile)
-#    sip.showData(znorm=True)
+    #    sip.showData(znorm=True)
     if True:  # Pelton
         sip.fitCCEM()
     else:
         sip.removeEpsilonEffect()
         sip.fitColeCole(useCond=False)
-#    sip.showDataKK()
+
     # %%
     sip.fitDebyeModel()  # , showFit=True)
     # %% create titles and plot data, fit and model
     sip.showAll(save=True)
-    plt.show()
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("No filename given, falling back to test case")
+        test_SIPSPectrum()
+    else:
+        run_SIPSPectrum(sys.argv[1])

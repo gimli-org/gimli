@@ -41,7 +41,7 @@ def readTXTSpectrum(filename):
     return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
-def readFuchs3File(resfile):
+def readFuchs3File(resfile, verbose=False):
     """Read Fuchs III (SIP spectrum) data file."""
     activeBlock = ''
     header = {}
@@ -69,7 +69,9 @@ def readFuchs3File(resfile):
                         break
                     else:
                         dataAct = True
-                        print(line)
+                        if verbose:
+                            print(line)
+
                 if line[0] == '[':
                     token = line[1:line.rfind(']')].replace(' ', '_')
                     if token[:3] == 'End':
@@ -95,6 +97,82 @@ def readFuchs3File(resfile):
                         nums = np.array(line.split(), dtype=float)
                         header[activeBlock].append(nums)
 
+
+def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
+    """Read SIP-Fuchs Software rev.: 070903
+
+    Read Radic instrument res file containing a single spectrum.
+
+    Please note the apparent resistivity value might be scaled with the
+    real geometric factor. Default is 1.0.
+
+    Parameters
+    ----------
+    filename : string
+
+    readSecond: bool [False]
+        Read the first data block[default] or read the second that
+        consists in the file.
+
+    delLast : bool [True]
+        ??
+
+    Returns
+    -------
+    fr : array [float]
+        Measured frequencies
+
+    rhoa : array [float]
+        Measured apparent resistivties
+
+    phi : array [float]
+        Measured phases
+
+    drhoa : array [float]
+        Measured apparent resistivties error
+
+    phi : array [float]
+        Measured phase error
+    """
+    f = open(filename, 'r')
+    line = f.readline()
+    fr = []
+    rhoa = []
+    phi = []
+    drhoa = []
+    dphi = []
+    while True:
+        line = f.readline()
+        if line.rfind('Freq') > -1:
+            break
+
+    if readSecond:
+        while True:
+            if f.readline().rfind('Freq') > -1:
+                break
+
+    while True:
+        line = f.readline()
+        b = line.split('\t')
+        if len(b) < 5:
+            break
+
+        fr.append(float(b[0]))
+        rhoa.append(float(b[1]))
+        phi.append(-float(b[2]) * np.pi / 180.)
+        drhoa.append(float(b[3]))
+        dphi.append(float(b[4]) * np.pi / 180.)
+
+    f.close()
+
+    if delLast:
+        fr.pop(0)
+        rhoa.pop(0)
+        phi.pop(0)
+        drhoa.pop(0)
+        dphi.pop(0)
+
+    return np.array(fr), np.array(rhoa), np.array(phi), np.array(drhoa), np.array(dphi)
 
 def readSIP256file(resfile, verbose=False):
     """Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.
@@ -126,10 +204,9 @@ def readSIP256file(resfile, verbose=False):
     LINE = []
     dataAct = False
 
-    with open(resfile, 'r', errors='replace') as f:
-    #with codecs.open(resfile, 'r', errors='replace') as f:
+#    with open(resfile, 'r', errors='replace') as f:
+    with codecs.open(resfile, 'r', errors='replace') as f:
         for line in f:
-
             if dataAct:
                 LINE.append(line)
             elif len(line):
@@ -163,8 +240,6 @@ def readSIP256file(resfile, verbose=False):
                     if activeBlock:
                         nums = np.array(line.split(), dtype=float)
                         header[activeBlock].append(nums)
-                    elif "SIP256" in line:
-                        header['Device'] = line
 
     # CR DATA, Data, data ?? really??
     # TG: yes, no better idea to handle blocks of blocks of data
@@ -205,8 +280,7 @@ def readSIP256file(resfile, verbose=False):
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
-
-            data.append(np.array(sline[:8], dtype=float))
+            data.append(np.array(sline[:5], dtype=float))
 
     Data.append(np.array(data))
     DATA.append(Data)

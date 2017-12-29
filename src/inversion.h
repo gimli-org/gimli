@@ -450,7 +450,7 @@ public:
         if (verbose_ && forward_->jacobian()->rows() + forward_->jacobian()->cols() > 0){
             std::cout << "check Jacobian: wrong dimensions: "
                         << "(" << forward_->jacobian()->rows()  << "x" << forward_->jacobian()->cols() << ") should be "
-                        << "(" << data_.size() << "x" << model_.size()  << ") "  << std::endl;
+                        << "(" << data_.size() << "x" << model_.size()  << ") " << " force: " << force << std::endl;
             std::cout << "jacobian size invalid, forced recalc: " << force << std::endl;
         }
         Stopwatch swatch(true);
@@ -484,9 +484,6 @@ public:
     void setModel(const Vec & model){
         if (recalcJacobian_ && model != model_) jacobiNeedRecalc_ = true;
         model_ = model;
-        // ISSUE?:
-        // why is there no size check???
-        // CR:  no need .. size will be checked and resized on run call
     }
 
     /*! Return a const reference to the current model vector */
