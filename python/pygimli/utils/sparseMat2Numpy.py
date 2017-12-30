@@ -107,11 +107,9 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
     assert isinstance(matrix, pg.SparseMapMatrix) or\
         isinstance(matrix, pg.SparseMatrix), io_warn.format(type(matrix))
 
-    print("a")
     if not isinstance(matrix, pg.SparseMatrix):
-        print("b")
         matrix = pg.SparseMatrix(matrix)
-    print("c")
+
     vals = np.array(matrix.vecVals())
     if indices is True:
         rows = list(matrix.vecRowIdx())

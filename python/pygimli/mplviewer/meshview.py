@@ -1173,8 +1173,6 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     else:
         C = cMat
 
-    print(C)
-
     paraMarker = mesh.cellMarkers()
     cellList = dict()
 
@@ -1193,24 +1191,26 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
         p /= float(len(vals))
         paraCenter[cID] = p
 
-    print(C)
-    r1, c1, v1 = pg.utils.sparseMatrix2Array(C, getInCRS=False)
-    print(r1, c1, v1)
+    #r1, c1, v1 = pg.utils.sparseMatrix2Array(C, getInCRS=False)
+    v1 = pg.RVector()
+    r1 = pg.IndexArray([0])
+    c1 = pg.IndexArray([0])
+    C.fillArrays(v1, r1, c1)
+
     constraints = {}
-    for r, i in enumerate(r1):
+    for i, r in enumerate(r1):
         if r not in constraints:
-            constraints[r] = (None, None)
+            constraints[r] = [None, None]
         if v1[i] == 1:
             constraints[r][0] = c1[i]
         elif v1[i] == -1:
             constraints[r][1] = c1[i]
 
-    print(constraints)
     nConstraints = len(constraints.keys())
     start = [None] * nConstraints
     end = [None] * nConstraints
 
-    for i, c, ids in enumerate(constraints.items()):
+    for i, [c, ids] in enumerate(constraints.items()):
         if ids[0] is not None and ids[1] is not None:
             p1 = paraCenter[ids[0]] # left
             p2 = paraCenter[ids[1]]
@@ -1225,12 +1225,9 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
             start[i] = pa
             end[i] = pb
         else:
-            start[i] = ids[0]
-
-#    updateAxes_(ax)  # not existing
+            start[i] = paraCenter[ids[0]]
 
     return start, end
-
 
 def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
     """Draw inter parameter constraints between cells.
@@ -1248,9 +1245,9 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
     for i, _ in enumerate(start):
         if end[i] is None:
             # TODO .. little zeros would be much better here to annotate cType=0
-            lines.append(list(zip([start[i].x(), start[i].x()+0.1],
+            lines.append(list(zip([start[i].x(), start[i].x()+0.05],
                                   [start[i].y(), start[i].y()])))
-            linewidth = 1.0
+            linewidth = 3.0
             col = (1.0, 0.0, 1.0, 1.0)
             colors.append(col)
             linewidths.append(linewidth)
