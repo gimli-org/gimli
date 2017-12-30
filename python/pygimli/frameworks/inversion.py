@@ -451,9 +451,9 @@ class LCInversion(Inversion):
             for r in self.fop.regionManager().regionIdxs():
                 self.fop.setRegionProperties(r, cType=1)
                 self.fop.setRegionProperties(r, zWeights=0.5)
+                self.fop.setRegionProperties(r, startModel=r)
 
             self.fop.setRegionProperties(2, cType=0)
-
             #self.fop.setRegionProperties(2, zWeights=0.1)
 
 
@@ -465,8 +465,8 @@ class LCInversion(Inversion):
                      label='cell id', showMesh=1)
 
         ax,_=pg.show(self.fop.regionManager().paraDomain(),
-                     self.fop.regionManager().paraDomain().cellMarkers(),
-                     label='pdmarker', showMesh=1)
+                     self.fop.regionManager().paraDomain().createStartModel(),
+                     label='startModel', showMesh=1)
 
         self.fop.createConstraints()
         self.fop.constraints().save("C.mat")
