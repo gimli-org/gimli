@@ -924,52 +924,8 @@ public:
         }
     }
 
-    void copy_(const SparseMapMatrix< ValueType, Index > & S){
-
-        this->clear();
-        Index col = 0, row = 0;
-        ValueType val;
-        cols_ = S.cols();
-        rows_ = S.rows();
-
-        std::vector < std::map < Index, ValueType > > idxMap(S.cols());
-
-        for (typename SparseMapMatrix< ValueType, Index>::const_iterator
-            it = S.begin(); it != S.end(); it ++){
-
-            col = S.idx1(it);
-            row = S.idx2(it);
-            val = S.val(it);
-            idxMap[col].insert(std::pair< Index, ValueType >(row, val));
-        }
-
-        colPtr_.reserve(S.cols() + 1);
-        colPtr_.resize(S.cols() + 1);
-
-        rowIdx_.reserve(S.nVals());
-        rowIdx_.resize(S.nVals());
-
-        vals_.resize(S.nVals());
-        stype_  = S.stype();
-
-        colPtr_[0] = 0;
-
-        Index colCounter = 0, rowCounter = 0;
-        for (typename std::vector < std::map < Index, ValueType > >::iterator
-            it = idxMap.begin(); it != idxMap.end(); it++){
-
-            for (typename std::map < Index, ValueType >::iterator
-                itR = (*it).begin(); itR != (*it).end(); itR++){
-
-                rowIdx_[rowCounter] = itR->first;
-                vals_[rowCounter] = (ValueType)itR->second;
-                rowCounter ++;
-            }
-            colCounter ++;
-            colPtr_[colCounter] = rowCounter;
-        }
-        valid_ = true;
-    }
+    void copy_(const SparseMapMatrix< double, Index > & S);
+    void copy_(const SparseMapMatrix< Complex, Index > & S);
 
     void buildSparsityPattern(const Mesh & mesh){
         Stopwatch swatch(true);
@@ -1129,6 +1085,15 @@ protected:
     Index rows_;
     Index cols_;
 };
+
+// /*! Implement specialized type traits in sparsematrix.cpp */
+template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< double, Index > & S);
+
+template< typename ValueType >
+void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< double, Index > & S){THROW_TO_IMPL}
+template< typename ValueType >
+void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< Complex, Index > & S){THROW_TO_IMPL}
+
 
 template < class ValueType >
 SparseMatrix< ValueType > operator + (const SparseMatrix< ValueType > & A,
