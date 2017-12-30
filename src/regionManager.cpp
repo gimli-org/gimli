@@ -86,6 +86,7 @@ void Region::copy_(const Region & region){
     marker_ = region.marker();
     isBackground_ = region.isBackground();
     isSingle_ = region.isSingle();
+    isPermuted_  = region.isPermuted();
 }
 
 void Region::setBackground(bool background){
@@ -196,10 +197,12 @@ void Region::countParameter(Index start){
     endParameter_ = start + parameterCount_;
     modelControl_.resize(parameterCount_, mcDefault_);
     startModel_.resize(parameterCount_, startDefault_);
+    paraIDs_ = IndexArray(parameterCount_);
+    for (Index i = 0; i < paraIDs_.size(); i ++) paraIDs_[i] = start + i;
     //std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
 }
 
-void Region::permuteParameterMarker(const IVector & p){
+void Region::permuteParameterMarker(const IndexArray & p){
     for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
         SIndex m = cells_[i]->marker();
         if (m >= 0) {
@@ -209,6 +212,7 @@ void Region::permuteParameterMarker(const IVector & p){
         }
     }
     isPermuted_ = true;
+    for (Index i = 0; i < paraIDs_.size(); i ++) paraIDs_[i] = p[paraIDs_[i]];
 }
 
 //################ Start values
@@ -539,6 +543,7 @@ RegionManager::RegionManager(bool verbose) : verbose_(verbose), mesh_(NULL){
     paraDomain_ = new Mesh();
     parameterCount_ = 0;
     haveLocalTrans_ = false;
+    isPermuted_ = false;
     localTransHaveChanges_ = true;
     interRegionConstraintsZWeight_ = 1.0;
 }
@@ -583,6 +588,7 @@ void RegionManager::clear(){
     interRegionInterfaceMap_.clear();
     interRegionConstraints_.clear();
     interfaceConstraint_.clear();
+    isPermuted_ = false;
 
     if (paraDomain_) { paraDomain_->clear(); }
     if (mesh_) { delete mesh_; mesh_ = NULL; }
@@ -717,6 +723,7 @@ void RegionManager::createParaDomain_(){
 }
 
 void RegionManager::permuteParameterMarker(const IVector & p){
+    isPermuted_ = true;
     for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(),
          end = regionMap_.end(); it != end; it ++){
         it->second->permuteParameterMarker(p);
@@ -1320,14 +1327,18 @@ TransCumulative < RVector > * RegionManager::transModel(){
              it = regionMap_.begin(); it != regionMap_.end(); it ++){
 
             if (!it->second->isBackground()){
-
-                localTrans_.add(*it->second->transModel(),
-                                it->second->startParameter(),
-                                it->second->endParameter());
+                if (isPermuted_){
+                    localTrans_.add(*it->second->transModel(),
+                                    it->second->paraIds());
+                } else {
+                    localTrans_.add(*it->second->transModel(),
+                                    it->second->startParameter(),
+                                    it->second->endParameter());
+                }
             }
         }
     }
-    return &localTrans_;
+    return & localTrans_;
 }
 
 

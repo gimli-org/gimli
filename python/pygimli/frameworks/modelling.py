@@ -425,7 +425,7 @@ class LCModelling(Modelling):
         nSoundings = len(dataVals)
 
         #TODO get nPar Infos from fop._fopTemplate
-        self.createParametrization(nSoundings, nLayers=nLayers, nPar=2)
+        self.createParametrization(nSoundings, nLayers=nLayers, nPar=1)
 
         if self._jac is not None:
             self._jac.clear()

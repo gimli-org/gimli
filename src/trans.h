@@ -568,52 +568,76 @@ public:
 
     virtual Vec trans(const Vec & a) const {
         Vec tmp(a.size());
-        for (Index i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[i]->trans(a(bounds_[i].first,
-                                            bounds_[i].second)),
-                       bounds_[i]);
+        if (indices_.size() > 0){
+            for (Index i = 0; i < transVec_.size(); i ++){
+                tmp.setVal(transVec_[i]->trans(a(indices_[i])),
+                           indices_[i]);
+            }
+        } else {
+            for (Index i = 0; i < transVec_.size(); i ++){
+                tmp.setVal(transVec_[i]->trans(a(slice_[i].first,
+                                                slice_[i].second)),
+                           slice_[i]);
+            }
         }
         return tmp;
     }
 
     virtual Vec invTrans(const Vec & a) const {
         Vec tmp(a.size());
-        for (Index i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[i]->invTrans(a(bounds_[i].first,
-                                               bounds_[i].second)),
-                       bounds_[i]);
+        if (indices_.size() > 0){
+            for (Index i = 0; i < transVec_.size(); i ++){
+                tmp.setVal(transVec_[i]->invTrans(a(indices_[i])),
+                           indices_[i]);
+            }
+        } else {
+            for (Index i = 0; i < transVec_.size(); i ++){
+                tmp.setVal(transVec_[i]->invTrans(a(slice_[i].first, slice_[i].second)),
+                           slice_[i]);
+            }
         }
         return tmp;
     }
 
     virtual Vec deriv(const Vec & a) const {
         Vec tmp(a.size());
-        for (Index i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[i]->deriv(a(bounds_[i].first,
-                                           bounds_[i].second)),
-                       bounds_[i]);
+        if (indices_.size() > 0){
+            for (Index i = 0; i < transVec_.size(); i ++){
+                tmp.setVal(transVec_[i]->deriv(a(indices_[i])),
+                           indices_[i]);
+            }
+        } else {
+            for (Index i = 0; i < transVec_.size(); i ++){
+                tmp.setVal(transVec_[i]->deriv(a(slice_[i].first, slice_[i].second)),
+                           slice_[i]);
+            }
         }
         return tmp;
     }
 
     Index size() const { return transVec_.size(); }
 
-    void clear() { transVec_.clear(); bounds_.clear(); }
+    void clear() { transVec_.clear(); slice_.clear(); }
 
     void add(Trans< Vec > & trans, Index size) {
         Index start = 0;
-        if (!bounds_.empty()) start = bounds_.back().second;
+        if (!slice_.empty()) start = slice_.back().second;
         this->add(trans, start, start + size);
     }
 
     void add(Trans< Vec > & trans, Index start, Index end) {
         transVec_.push_back(&trans);
-        bounds_.push_back(std::pair< Index, Index >(start, end));
+        slice_.push_back(std::pair< Index, Index >(start, end));
+    }
+    void add(Trans< Vec > & trans, const IVector & indices) {
+        transVec_.push_back(&trans);
+        indices_.push_back(indices);
     }
 
 protected:
     std::vector < Trans< Vec > * > transVec_;
-    std::vector < std::pair< Index, Index> > bounds_;
+    std::vector < std::pair< Index, Index> > slice_;
+    std::vector < IVector > indices_;
 };
 
 typedef Trans < RVector > RTrans;

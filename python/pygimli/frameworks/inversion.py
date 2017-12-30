@@ -434,10 +434,9 @@ class LCInversion(Inversion):
         for e in errVals:
             errVec = pg.cat(errVec, e)
 
+        self.fop.initJacobian(dataVals=dataVals, nLayers=nLayers)
         #self.fop.initJacobian(nSounding=len(dataVals), nLayers=nLayers, nPar=1)
 
-        #self.fop.setRegionProperties(1, trans='log', limits=[0.4, 5000.])
-        #self.fop.setRegionProperties(2, trans='log')
 
         if kwargs.pop('disableLCI', False):
             self.inv.setMarquardtScheme(0.8)
@@ -450,28 +449,46 @@ class LCInversion(Inversion):
 
             for r in self.fop.regionManager().regionIdxs():
                 self.fop.setRegionProperties(r, cType=1)
-                self.fop.setRegionProperties(r, zWeights=0.5)
-                self.fop.setRegionProperties(r, startModel=r)
+                self.fop.setRegionProperties(r, zWeights=0)
 
-            self.fop.setRegionProperties(2, cType=0)
+            #self.fop.setRegionProperties(1, cType=0)
             #self.fop.setRegionProperties(2, zWeights=0.1)
 
+        self.fop.setRegionProperties(1, trans='lin')
+        self.fop.setRegionProperties(2, trans='log', limits=[10, 100.])
 
         ax,_=pg.show(self.fop._mesh, self.fop._mesh.cellMarkers(),
                      label='marker', showMesh=1)
 
-        cID = [c.id() for c in self.fop._mesh.cells()]
-        ax,_=pg.show(self.fop._mesh, cID,
-                     label='cell id', showMesh=1)
+        #ax,_=pg.show(self.fop.regionManager().paraDomain(),
+                     #self.fop.regionManager().createModelControl(),
+                     #label='modelControl', showMesh=1)
 
-        ax,_=pg.show(self.fop.regionManager().paraDomain(),
-                     self.fop.regionManager().paraDomain().createStartModel(),
-                     label='startModel', showMesh=1)
+        thicks = [1.]*(nLayers-1)
+        vals = [10.]*(nLayers)
+        m1 = np.hstack([thicks, vals])
+        print(m1)
+        testModel = np.tile(m1, len(dataVals))
+
+        print(self.fop.startModel())
+        print(len(testModel))
+        print(testModel)
+
+        ax,_ = pg.show(self.fop.regionManager().paraDomain(),
+                       self.fop.startModel(),
+                       label='startModel', showMesh=1)
+
+        ax,_ = pg.show(self.fop.regionManager().paraDomain(),
+                       testModel,
+                       label='TestModel', showMesh=1)
+
+        ax,_ = pg.show(self.fop.regionManager().paraDomain(),
+                       self.fop.transModel(testModel),
+                       label='modelTrans', showMesh=1)
 
         self.fop.createConstraints()
         self.fop.constraints().save("C.mat")
         cW = self.fop.regionManager().createConstraintsWeight()
-
         pg.mplviewer.drawParameterConstraints(ax,
                                               self.fop.regionManager().paraDomain(),
                                               self.fop.constraints(), cWeight=cW)

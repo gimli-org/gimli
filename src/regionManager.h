@@ -167,10 +167,18 @@ public:
 
     void countParameter(Index start);
 
-    void permuteParameterMarker(const IVector & p);
+    /*!Are the parameter indecies are ascending or permuted.*/
+    bool isPermuted() const { return isPermuted_; }
+
+    /*!Permute parameter indecies.*/
+    void permuteParameterMarker(const IndexArray & p);
+
+    /*! Return all parameter indices of this region.*/
+    const IndexArray & paraIds() const { return paraIDs_; }
 
     /*! Set the values of start for the start model of this region. */
     void setStartModel(const RVector & start);
+
     /*! Set the value of start into the start model vector for this region. */
     void setStartModel(double start);
 
@@ -230,6 +238,8 @@ protected:
     bool isBackground_;
     bool isSingle_;
     bool isPermuted_;
+
+    IndexArray paraIDs_;
 
     Index parameterCount_;
     Index startParameter_;
@@ -400,6 +410,7 @@ protected:
     }
 
     bool verbose_;
+    bool isPermuted_;
 
     Index parameterCount_;
 
