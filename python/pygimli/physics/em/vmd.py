@@ -225,7 +225,6 @@ class VMDTimeDomainModelling(VMDModelling):
         else:
             self.rxArea = rxArea
 
-
     def response_mt(self, par, i=0):
         """
             par = [thicknesses, res]
@@ -233,7 +232,6 @@ class VMDTimeDomainModelling(VMDModelling):
         nLay = (len(par)-1)//2
         thk = par[0:nLay]
         res = par[nLay:]
-
         return self.calcRhoa(thk, res)
 
     def response(self, par):

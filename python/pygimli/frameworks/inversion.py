@@ -32,6 +32,8 @@ class Inversion(object):
 
         # might be overwritten
         self.transData = pg.RTransLin()
+        self._preStep = None
+        self._postStep = None
 
         self._inv = None
         self._fop = None
@@ -130,6 +132,12 @@ class Inversion(object):
         self._fop = fop
         self._inv.setForwardOperator(fop)
 
+    def setPostStep(self, p):
+        self._postStep = p
+
+    def setPreStep(self, p):
+        self._preStep = p
+
     def setData(self, data):
         QUESTION_ISNEEDED
         if isinstance(data, pg.DataContainer):
@@ -137,6 +145,15 @@ class Inversion(object):
             self.fop.setData(data)
         else:
             self._dataVals = data
+
+    def setStartModel(self, model):
+        if model is not None:
+            if type(model) is float or type(model) is int:
+                nModel = self.parameterCount
+                sm = pg.Vector(nModel, model)
+                self.fop.setStartModel(sm)
+            elif hasattr(model, '__iter__'):
+                self.fop.setStartModel(model)
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
@@ -158,15 +175,9 @@ class Inversion(object):
         self.debug   = kwargs.pop('debug', self.debug)
         self.maxIter = kwargs.pop('maxIter', self.maxIter)
 
-        startModel = kwargs.pop('startModel', None)
+        self.setStartModel(kwargs.pop('startModel', None))
 
-        if type(startModel) is float or type(startModel) is int:
-            nModel = self.parameterCount
-            startModel = pg.Vector(nModel, startModel)
-            self.fop.setStartModel(startModel)
-        elif hasattr(startModel, '__iter__'):
-            self.fop.setStartModel(startModel)
-
+        progress = kwargs.pop('progress', None)
         showProgress = kwargs.pop('showProgress', False)
 
         lam = kwargs.pop('lam', 20)
@@ -208,6 +219,10 @@ class Inversion(object):
         chi2History = [lastChi2]
 
         for i in range(1, self.maxIter):
+
+            if self._preStep and callable(self._preStep):
+                self._preStep(i, self.inv)
+
             if self.verbose:
                 print("inv.iter", i, "...", end='')
 
@@ -218,7 +233,6 @@ class Inversion(object):
             if showProgress:
                 self.showProgress(showProgress)
 
-
             self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
 
             if self.inv.robustData():
@@ -228,6 +242,9 @@ class Inversion(object):
                 self.inv.constrainBlocky()
 
             chi2History.append(chi2)
+
+            if self._postStep and callable(self._postStep):
+                self._postStep(i, self.inv)
 
             if self.verbose:
                 print("chi² =", round(chi2,2),
@@ -246,6 +263,7 @@ class Inversion(object):
                 break
 
             lastChi2 = chi2
+
 
         if len(kwargs.keys()) > 0:
             print("Warning! unhandled keyword arguments", kwargs)
@@ -420,12 +438,14 @@ class LCInversion(Inversion):
             f = pg.frameworks.LCModelling(fop, **kwargs)
 
         super(LCInversion, self).__init__(f, **kwargs)
-
+        self.transData = pg.RTransLog()
         #self.setDeltaChiStop(0.1)
+        self._startModel = None
 
-    def run(self, dataVals, errVals, nLayers=4, **kwargs):
-        #self.fop.createStartModel(dataVals, nLayers)
+    def setStartModel(self, model):
+        self._startModel = model
 
+    def prepare(self, dataVals, errVals, nLayers=4, **kwargs):
         dataVec = pg.RVector()
         for d in dataVals:
             dataVec = pg.cat(dataVec, d)
@@ -434,73 +454,45 @@ class LCInversion(Inversion):
         for e in errVals:
             errVec = pg.cat(errVec, e)
 
-        self.fop.initJacobian(dataVals=dataVals, nLayers=nLayers)
-        #self.fop.initJacobian(nSounding=len(dataVals), nLayers=nLayers, nPar=1)
+        self.fop.initJacobian(dataVals=dataVals, nLayers=nLayers,
+                              nPar=kwargs.pop('nPar', None))
 
+        ### self.fop.initJacobian resets prior set startmodels
+        if self._startModel is not None:
+            self.fop.setStartModel(self._startModel)
+
+        rC = self.fop.regionManager().regionCount()
 
         if kwargs.pop('disableLCI', False):
-            self.inv.setMarquardtScheme(0.8)
-            self.fop.setRegionProperties(1, cType=0)
-            #self.fop.setRegionProperties(2, cType=0)
+            self.inv.setMarquardtScheme(0.7)
+            #self.inv.setLocalRegularization(True)
+            for r in self.fop.regionManager().regionIdxs():
+                self.fop.setRegionProperties(r, cType=0)
         else:
             #self.inv.stopAtChi1(False)
+            cType = kwargs.pop('cType', None)
+            if cType is None:
+                cType = [1] * rC
+
+            zWeight = kwargs.pop('zWeight', None)
+            if zWeight is None:
+                zWeight = [0.0] * rC
+
+            self.fop.setRegionProperties('*',
+                                         cType=cType,
+                                         zWeight=zWeight,
+                                         **kwargs)
             self.inv.setReferenceModel(self.fop.startModel())
-            self.inv.setLambdaFactor(0.8)
 
-            for r in self.fop.regionManager().regionIdxs():
-                self.fop.setRegionProperties(r, cType=1)
-                self.fop.setRegionProperties(r, zWeights=0)
+        return dataVec, errVec
 
-            #self.fop.setRegionProperties(1, cType=0)
-            #self.fop.setRegionProperties(2, zWeights=0.1)
-
-        self.fop.setRegionProperties(1, trans='lin')
-        self.fop.setRegionProperties(2, trans='log', limits=[10, 100.])
-
-        ax,_=pg.show(self.fop._mesh, self.fop._mesh.cellMarkers(),
-                     label='marker', showMesh=1)
-
-        #ax,_=pg.show(self.fop.regionManager().paraDomain(),
-                     #self.fop.regionManager().createModelControl(),
-                     #label='modelControl', showMesh=1)
-
-        thicks = [1.]*(nLayers-1)
-        vals = [10.]*(nLayers)
-        m1 = np.hstack([thicks, vals])
-        print(m1)
-        testModel = np.tile(m1, len(dataVals))
-
-        print(self.fop.startModel())
-        print(len(testModel))
-        print(testModel)
-
-        ax,_ = pg.show(self.fop.regionManager().paraDomain(),
-                       self.fop.startModel(),
-                       label='startModel', showMesh=1)
-
-        ax,_ = pg.show(self.fop.regionManager().paraDomain(),
-                       testModel,
-                       label='TestModel', showMesh=1)
-
-        ax,_ = pg.show(self.fop.regionManager().paraDomain(),
-                       self.fop.transModel(testModel),
-                       label='modelTrans', showMesh=1)
-
-        self.fop.createConstraints()
-        self.fop.constraints().save("C.mat")
-        cW = self.fop.regionManager().createConstraintsWeight()
-        pg.mplviewer.drawParameterConstraints(ax,
-                                              self.fop.regionManager().paraDomain(),
-                                              self.fop.constraints(), cWeight=cW)
-
-        pg.wait()
-
-
-
-
-
-
-        return super(LCInversion, self).run(dataVec, errVec, **kwargs)
+    def run(self, dataVals, errVals, nLayers=4, **kwargs):
+        lam = kwargs.pop('lam', 20)
+        dataVec, errVec = self.prepare(dataVals, errVals, nLayers, **kwargs)
+        print('#'*50)
+        print(kwargs)
+        print('#'*50)
+        return super(LCInversion, self).run(dataVec, errVec, lam=lam, **kwargs)
 
 
 

@@ -10,27 +10,6 @@ import numpy as np
 import pygimli as pg
 from pygimli.io import opt_import
 
-coo_matrix = opt_import("scipy.sparse.coo_matrix",
-                        "convert sparse matrices to numpy/scipy format.")
-
-
-def sparse2scipy(matrix):
-    """Convert pygimli RSparseMatrix to scipy format.
-
-    Parameters
-    ----------
-    matrix : pg.RSpareMatrix
-        Matrix to convert.
-
-    Returns
-    -------
-    coo_matrix
-        `matrix` in scipy.sparse.coo_matrix format.
-
-    """
-    pass
-
-
 class ProgressBar(object):
     """Animated text-based progressbar.
 

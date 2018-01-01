@@ -46,6 +46,15 @@ def wait():
     # plt.pause(0.1)
     plt.show()
 
+def show():
+    """TODO WRITEME."""
+    hold(False)
+    plt.ioff()
+    plt.show()
+    time.sleep(0.1)
+    # plt.pause seems to be broken in mpl:2.1
+    # plt.pause(0.1)
+
 
 def adjustWorldAxes(ax):
     """Set some common default properties for an axe."""

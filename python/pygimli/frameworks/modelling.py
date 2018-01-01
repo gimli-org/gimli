@@ -7,8 +7,8 @@ import numpy as np
 
 from copy import copy
 
-
 import pygimli as pg
+
 
 class Modelling(pg.ModellingBase):
     """Abstract Forward Operator.
@@ -54,7 +54,7 @@ class Modelling(pg.ModellingBase):
         self.fop = fop
 
     def setMesh(self, mesh, ignoreRegionManager=False):
-
+        self.clearRegionProperties()
         if self.fop is not None:
             print("Modelling:setMesh", self.fop)
             self.fop.setMesh(mesh, ignoreRegionManager)
@@ -69,41 +69,52 @@ class Modelling(pg.ModellingBase):
 
     def setRegionProperties(self, regionNr,
                             startModel=None, limits=None, trans=None,
-                            cType=None, zWeights=None, modelControl=None):
+                            cType=None, zWeight=None, modelControl=None):
         """
         """
+        #print("#", regionNr, startModel, limits, trans,
+              #cType, zWeight, modelControl)
+
         if regionNr is '*':
-            for regionNr in self._regionProperties.keys():
+            for regionNr in self.regionManager().regionIdxs():
                 self.setRegionProperties(regionNr, startModel, limits, trans,
-                                         cType, zWeights, modelControl)
+                                         cType, zWeight, modelControl)
             return
 
         if regionNr not in self._regionProperties:
-            self._regionProperties[regionNr] = {'startModel': 0,
-                                              'modelControl': 1.0,
-                                              'zWeights': 1.0,
-                                              'cType': 1,
-                                              'limits': [0, 0],
-                                              'trans': 'Log',
+            self._regionProperties[regionNr] = {'startModel': None,
+                                                'modelControl': 1.0,
+                                                'zWeight': 1.0,
+                                                'cType': 1,
+                                                'limits': [0, 0],
+                                                'trans': 'Log',
                                               }
 
-        if startModel is not None:
-            self._regionProperties[regionNr]['startModel'] = startModel
+        rC = self.regionManager().regionCount()
 
-        if limits is not None:
-            self._regionProperties[regionNr]['limits'] = limits
+        def _setProperty(name, val):
+            if val is not None:
+                v = None
+                if hasattr(val, '__iter__'):
+                    if rC == len(val):
+                        v = val[regionNr - 1]
+                    elif rC == len(val) + 1:
+                        v = val[regionNr]
+                    else:
+                        print(regionNr, name, val)
+                        raise Exception("Value range for region property invalid.")
+                else:
+                    v = val
+                if v is not None:
+                    #print("Set ", regionNr, name, v)
+                    self._regionProperties[regionNr][name] = v
 
-        if trans is not None:
-            self._regionProperties[regionNr]['trans'] = trans
-
-        if cType is not None:
-            self._regionProperties[regionNr]['cType'] = cType
-
-        if zWeights is not None:
-            self._regionProperties[regionNr]['zWeights'] = zWeights
-
-        if modelControl is not None:
-            self._regionProperties[regionNr]['modelControl'] = modelControl
+        _setProperty('startModel', startModel)
+        _setProperty('limits', limits)
+        _setProperty('trans', trans)
+        _setProperty('cType', cType)
+        _setProperty('zWeight', zWeight)
+        _setProperty('modelControl', modelControl)
 
 
     def _applyRegionProperties(self):
@@ -112,15 +123,17 @@ class Modelling(pg.ModellingBase):
         RM = super(Modelling, self).regionManager()
 
         for rID, vals in self._regionProperties.items():
-            RM.region(rID).setStartModel(vals['startModel'])
+            if 'startModel' in vals:
+                if vals['startModel'] is not None:
+                    RM.region(rID).setConstraintType(vals['cType'])
 
             RM.region(rID).setModelTransStr_(vals['trans'])
 
             if 'cType' in vals:
                 RM.region(rID).setConstraintType(vals['cType'])
 
-            if 'zWeights' in vals:
-                RM.region(rID).setZWeight(vals['zWeights'])
+            if 'zWeight' in vals:
+                RM.region(rID).setZWeight(vals['zWeight'])
 
             if 'modelControl' in vals:
                 RM.region(rID).setModelControl(vals['modelControl'])
@@ -412,7 +425,7 @@ class LCModelling(Modelling):
         self.regionManager().permuteParameterMarker(perm)
         #print(self.regionManager().paraDomain().cellMarkers())
 
-    def initJacobian(self, dataVals, nLayers):
+    def initJacobian(self, dataVals, nLayers, nPar=None):
         """
         Parameters
         ----------
@@ -424,8 +437,11 @@ class LCModelling(Modelling):
 
         nSoundings = len(dataVals)
 
-        #TODO get nPar Infos from fop._fopTemplate
-        self.createParametrization(nSoundings, nLayers=nLayers, nPar=1)
+        if nPar is None:
+            #TODO get nPar Infos from fop._fopTemplate
+            nPar = 1
+
+        self.createParametrization(nSoundings, nLayers=nLayers, nPar=nPar)
 
         if self._jac is not None:
             self._jac.clear()

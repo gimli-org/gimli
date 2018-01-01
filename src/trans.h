@@ -617,7 +617,11 @@ public:
 
     Index size() const { return transVec_.size(); }
 
-    void clear() { transVec_.clear(); slice_.clear(); }
+    void clear() {
+        transVec_.clear();
+        slice_.clear();
+        indices_.clear();
+    }
 
     void add(Trans< Vec > & trans, Index size) {
         Index start = 0;

@@ -12,6 +12,7 @@ import pygimli as pg
 
 from pygimli.mplviewer.colorbar import setMappableData
 from pygimli.utils import rndig
+from .utils import updateAxes as updateAxes_
 
 
 def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
@@ -199,6 +200,7 @@ def showStitchedModels(models, x=None,
     if mesh is not None:
         pg.show(mesh, vals.ravel(), ax=ax, cMin=cMin, cMax=cMax, cMap=cMap,
                 label='Parameters')
+
     else:
 
         if 'cmap' in kwargs:
@@ -211,7 +213,7 @@ def showStitchedModels(models, x=None,
             p.set_clim(cMin, cMax)
 
         if 'islog' in kwargs:
-            print("DeprecationWarning: pleas use 'logScale' instead of 'islog'")
+            print("DeprecationWarning: please use 'logScale' instead of 'islog'")
             logScale = kwargs.pop('islog', logScale)
 
         setMappableData(p, vals.ravel(), logScale=logScale)
@@ -224,9 +226,6 @@ def showStitchedModels(models, x=None,
 
         ax.set_xlim((min(x) - dxmed2, max(x) + dxmed2))
 
-        if title is not None:
-            ax.set_title(title)
-
         if cMin is not None and cMax is not None:
             pg.mplviewer.createColorBar(p, cMin=cMin, cMax=cMax, nLevs=5)
 
@@ -234,15 +233,22 @@ def showStitchedModels(models, x=None,
     #    xt = [10, 20, 50, 100, 200, 500]
     #    cb.set_ticks( xt, [str(xti) for xti in xt] )
 
+    if title is not None:
+        ax.set_title(title)
+
     if noXVals:
         #ax.figure.set_size((20,20))
         #ax.set_aspect(0.2)
-        ax.set_aspect(abs(max(x))/max(abs(z))/3, adjustable='box')
+        #ax.set_aspect(abs(max(x))/max(abs(z))/3, adjustable='box')
+        ax.set_aspect(0.0010)
+
         #plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         #plt.tight_layout()
         #ax.figure.set_size_inches(200,20)
         #ax.axis('scaled')
         #plt.axis('tight')
+
+    updateAxes_(ax)
 
     return ax
 

@@ -199,7 +199,7 @@ void Region::countParameter(Index start){
     startModel_.resize(parameterCount_, startDefault_);
     paraIDs_ = IndexArray(parameterCount_);
     for (Index i = 0; i < paraIDs_.size(); i ++) paraIDs_[i] = start + i;
-    //std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
+//     std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
 }
 
 void Region::permuteParameterMarker(const IndexArray & p){
@@ -1328,6 +1328,7 @@ TransCumulative < RVector > * RegionManager::transModel(){
 
             if (!it->second->isBackground()){
                 if (isPermuted_){
+//                     __MS(localTrans_.size() << " " << it->second->paraIds())
                     localTrans_.add(*it->second->transModel(),
                                     it->second->paraIds());
                 } else {
