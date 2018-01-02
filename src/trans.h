@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2018 by the GIMLi development team                    *
  *   Thomas Günther thomas@resistivity.net                                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
@@ -652,6 +652,8 @@ typedef TransLog < RVector > RTransLog;
 typedef TransLogLU < RVector > RTransLogLU;
 typedef TransCotLU < RVector > RTransCotLU;
 typedef TransCumulative< RVector > RTransCumulative;
+
+
 } // namespace GIMLI
 
 
