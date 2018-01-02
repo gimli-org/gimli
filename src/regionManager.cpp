@@ -63,6 +63,7 @@ Region & Region::operator = (const Region & region){
 }
 
 void Region::init_() {
+
     isPermuted_     = false;
     constraintType_ = 1;
     startParameter_ = 0;
