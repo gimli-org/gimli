@@ -177,19 +177,19 @@ public:
     Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6,
                                bool warn=false);
 
-    Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0);
+    Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0, bool check=true);
     /*! Create a boundary from the given node indieces */
-    Boundary * createBoundary(const IndexArray & nodes, int marker=0);
-    Boundary * createBoundary(const Boundary & bound);
-    Boundary * createBoundary(const Cell & cell);
-    Boundary * createNodeBoundary(Node & n1, int marker = 0);
-    Boundary * createEdge(Node & n1, Node & n2, int marker = 0);
-    Boundary * createEdge3(Node & n1, Node & n2, Node & n3, int marker = 0);
-    Boundary * createTriangleFace(Node & n1, Node & n2, Node & n3, int marker = 0);
-    Boundary * createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker = 0);
+    Boundary * createBoundary(const IndexArray & nodes, int marker=0, bool check=true);
+    Boundary * createBoundary(const Boundary & bound, bool check=true);
+    Boundary * createBoundary(const Cell & cell, bool check=true);
+    Boundary * createNodeBoundary(Node & n1, int marker=0, bool check=true);
+    Boundary * createEdge(Node & n1, Node & n2, int marker=0, bool check=true);
+    Boundary * createEdge3(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
+    Boundary * createTriangleFace(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
+    Boundary * createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0, bool check=true);
 
     /*! Create empty cell without a node or a shape. */
-    Cell * createCell(int marker = 0);
+    Cell * createCell(int marker=0);
     Cell * createCell(std::vector < Node * > & nodes, int marker=0);
     /*! Create a cell from the given node indieces */
     Cell * createCell(const IndexArray & nodes, int marker=0);
@@ -198,10 +198,16 @@ public:
     Cell * createQuadrangle(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0);
     Cell * createTetrahedron(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0);
 
-    /*! Create a cell as a copy of a cell from an alternative mesh. Each Node of cell will be created with check. */
-    Cell * copyCell(const Cell & cell);
-    /*! Create a boundary as a copy of a boundary from an alternative mesh. Each Node of cell will be created with check. */
-    Boundary * copyBoundary(const Boundary & bound);
+    /*! Create a cell as a copy of a cell from an alternative mesh.
+     * Each node of the new cell will be created with duplication check and
+     * reused if there is already a node withing the tolerance distance tol.
+     * tol=-1 disables this duplication check. */
+    Cell * copyCell(const Cell & cell, double tol=1e-6);
+    /*! Create a boundary as a copy of a boundary from an alternative mesh.
+     * Each node of the new cell will be created with duplication check and
+     * reused if there is already a node withing the tolerance distance tol.
+     * tol=-1 disables this duplication check. */
+    Boundary * copyBoundary(const Boundary & bound, double tol=1e-6, bool check=true);
 
     /*! Delete all given cells from the given mesh. Warning will be really deleted.*/
     void deleteCells(const std::vector < Cell * > & cells);
@@ -284,8 +290,6 @@ public:
 
     /*! Return vector of boundaries from index list */
     std::vector< Boundary * > boundaries(const IndexArray & ids) const;
-
-
 
     inline Index nodeCount() const { return nodeVector_.size(); }
     Node & node(Index i) const;
@@ -697,7 +701,9 @@ protected:
     }
 
     template < class B > Boundary * createBoundaryChecked_(
-        std::vector < Node * > & nodes, int marker){
+        std::vector < Node * > & nodes, int marker, bool check=true){
+
+        if (!check) return createBoundary_< B >(nodes, marker, boundaryCount());
 
         Boundary * b = findBoundary(nodes);
         if (!b) {

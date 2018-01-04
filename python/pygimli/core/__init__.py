@@ -98,15 +98,12 @@ def RVector_str(self, valsOnly=False):
         " [" + str(self[0]) + ",...," + str(self[self.size() - 1]) + "]"
     )
 
-
 def RVector3_str(self):
     return("RVector3: (" + str(self.x()) + ", " +
            str(self.y()) + ", " + str(self.z()) + ")")
 
-
 def R3Vector_str(self):
     return "R3Vector: n=" + str(self.size())
-
 
 def RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
@@ -117,7 +114,6 @@ def RMatrix_str(self):
             s += self[v].__str__(True) + '\n'
     return s
 
-
 def CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
@@ -127,16 +123,13 @@ def CMatrix_str(self):
             s += self[v].__str__(True) + '\n'
     return s
 
-
 def Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
-
 
 def Mesh_str(self):
     return ("Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " +
             str(self.cellCount()) + " Boundaries: " +
             str(self.boundaryCount()))
-
 
 def Data_str(self):
     return (
@@ -144,9 +137,7 @@ def Data_str(self):
         str(self.sensorCount()) + " data: " + str(self.size())
     )
 
-
 def ElementMatrix_str(self):
-
     s = ''
     for i in range(self.size()):
         s += str(self.idx(i)) + "\t: "
@@ -156,6 +147,15 @@ def ElementMatrix_str(self):
         s += '\n'
     return s
 
+def MeshEntity_str(self):
+    """Give mesh entity infos."""
+    s = str(type(self))
+    s += '\tID: ' + str(self.id()) + \
+         ', Marker: ' + str(self.marker()) + \
+         ', Size: ' + str(self.size()) + '\n'
+    for n in self.nodes():
+        s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
+    return s
 
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
@@ -171,8 +171,11 @@ _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
 _pygimli_.ElementMatrix.__str__ = ElementMatrix_str
+_pygimli_.MeshEntity.__str__ = MeshEntity_str
 # _pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
 # _pygimli_.stdVectorIndex.__str__ = RVector_str
+
+
 
 ############################
 # compatibility stuff

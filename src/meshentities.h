@@ -160,8 +160,6 @@ public:
 
     const RMatrix & uxCache() const { return uxCache_; }
 
-
-
 protected:
     void fillShape_();
 

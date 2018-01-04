@@ -137,11 +137,11 @@ def main(argv):
 
     parser.add_option("", "--interpolateCoords", dest="interpolateCoords",
                       metavar="File",
-                      help=" Interpolate a 2D mesh into 3D Coordinates." +
-                      "File is a 3-column-ascii-file (dx x y)")
+                      help="Interpolate a 2D mesh into 3D Coordinates." +
+                      "File is a 3 or 4-column-ascii-file (dx x y [z])")
     parser.add_option("", "--interpolateMesh", dest="interpolateMesh",
                       metavar="File",
-                      help=" Interpolate mesh data into mesh given by File." +
+                      help="Interpolate all data of this mesh into a mesh given by File. " +
                       "File is a bms|mod|vtk")
 
     (options, args) = parser.parse_args()
