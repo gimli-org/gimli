@@ -498,14 +498,14 @@ def interpolate(*args, **kwargs):
                 x = pg.interpolate(outMesh, inMesh, pg.x(data))
                 y = pg.interpolate(outMesh, inMesh, pg.y(data))
                 z = pg.interpolate(outMesh, inMesh, pg.z(data))
-                return np.vstack([xt, yt, zt]).T
+                return np.vstack([x, y, z]).T
 
             if isinstance(data, np.ndarray):
                 if data.ndim == 2 and data.shape[1] == 3:
                     x = pg.interpolate(outMesh, inMesh, data[:,0])
                     y = pg.interpolate(outMesh, inMesh, data[:,1])
                     z = pg.interpolate(outMesh, inMesh, data[:,2])
-                    return np.vstack([xt, yt, zt]).T
+                    return np.vstack([x, y, z]).T
 
             if len(data) == inMesh.cellCount():
                 return pg.interpolate(srcMesh=inMesh, inVec=data,
