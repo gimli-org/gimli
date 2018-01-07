@@ -98,12 +98,15 @@ def RVector_str(self, valsOnly=False):
         " [" + str(self[0]) + ",...," + str(self[self.size() - 1]) + "]"
     )
 
+
 def RVector3_str(self):
     return("RVector3: (" + str(self.x()) + ", " +
            str(self.y()) + ", " + str(self.z()) + ")")
 
+
 def R3Vector_str(self):
     return "R3Vector: n=" + str(self.size())
+
 
 def RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
@@ -114,6 +117,7 @@ def RMatrix_str(self):
             s += self[v].__str__(True) + '\n'
     return s
 
+
 def CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
@@ -123,13 +127,16 @@ def CMatrix_str(self):
             s += self[v].__str__(True) + '\n'
     return s
 
+
 def Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
+
 
 def Mesh_str(self):
     return ("Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " +
             str(self.cellCount()) + " Boundaries: " +
             str(self.boundaryCount()))
+
 
 def Data_str(self):
     return (
@@ -137,7 +144,9 @@ def Data_str(self):
         str(self.sensorCount()) + " data: " + str(self.size())
     )
 
+
 def ElementMatrix_str(self):
+
     s = ''
     for i in range(self.size()):
         s += str(self.idx(i)) + "\t: "
@@ -157,6 +166,7 @@ def MeshEntity_str(self):
         s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
 
+
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
@@ -175,8 +185,6 @@ _pygimli_.MeshEntity.__str__ = MeshEntity_str
 # _pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
 # _pygimli_.stdVectorIndex.__str__ = RVector_str
 
-
-
 ############################
 # compatibility stuff
 ############################
@@ -188,8 +196,12 @@ def nonzero_test(self):
                         "Use binary operators '&' or '|' instead. " +
                         "If you looking for the nonzero test, use len(v) > 0")
 
+def np_round__(self, r):
+    return np.round(self.array(), r)
+
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.RVector.__bool__ = nonzero_test
+_pygimli_.RVector.__round__ = np_round__
 _pygimli_.R3Vector.__nonzero__ = nonzero_test
 _pygimli_.R3Vector.__bool__ = nonzero_test
 _pygimli_.BVector.__nonzero__ = nonzero_test
@@ -981,11 +993,6 @@ from .matrix import *
 ############################
 # some backward compatibility
 ############################
-
-
-def deprecated(msg, hint):
-    print("Warning! " + msg + ", is deprecated, use:" + hint + " instead.")
-
 
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')

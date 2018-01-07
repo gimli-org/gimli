@@ -13,12 +13,12 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from pygimli.mplviewer import saveFigure, updateAxes
 
+
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
          'blue': ((0.0, 1.0, 1.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0))}
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
-
 
 def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     """Create N levels for the data array z based on matplotlib ticker.
@@ -27,7 +27,7 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     --------
     >>> import numpy as np
     >>> from pygimli.mplviewer import autolevel
-    >>> x = np.linspace(1,10,100)
+    >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
     array([  0. ,   2.5,   5. ,   7.5,  10. ])
     >>> autolevel(x, 3, logscale=True)
@@ -40,11 +40,12 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
         locator = ticker.MaxNLocator(nLevs + 1)
 
     if zmin is None:
-        zmin = min(z)
+        zmin = min(round(z, 4))
 
     if zmax is None:
-        zmax = max(z)
+        zmax = max(round(z, 4))
 
+    print("autolevel", zmin, zmax)
     return locator.tick_values(zmin, zmax)
 
 

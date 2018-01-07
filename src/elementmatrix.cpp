@@ -97,6 +97,15 @@ template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const Mes
 
     double A = ent.shape().domainSize();
 
+    __MS(ent.dim())
+    __MS(drdi << " " << dsdi)
+    __MS(dNdr_[0])
+    __MS(dNdr_[1])
+    __MS(dNds_[0])
+    __MS(dNds_[1])
+
+
+
     for (Index i = 0; i < nVerts; i ++){
         switch (ent.dim()){
             case 1: dNdx_[i].assign(drdi * dNdr_[i]); break;

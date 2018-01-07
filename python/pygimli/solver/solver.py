@@ -838,7 +838,7 @@ def assembleLoadVector(mesh, f, userData=None):
     return rhs
 
 
-def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
+def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     r"""Apply Neumann condition to the system matrix S.
 
     Apply Neumann condition to the system matrix S.
@@ -865,6 +865,8 @@ def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
         See tutorial section for an example,
         e.g., Modeling with Boundary Conditions
 
+    rhs :
+        TODO
     time : float
         Will be forwarded to value generator.
 
@@ -873,6 +875,7 @@ def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
     """
 
     Se = pg.ElementMatrix()
+    Su = pg.ElementMatrix()
 
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
@@ -886,10 +889,25 @@ def assembleNeumannBC(S, boundaryPairs, time=0.0, userData=None):
         g = generateBoundaryValue(boundary, val, time, userData)
 
         if g is not 0.0 and g is not None:
+            #print(boundary)
+
             Se.u2(boundary)
             Se *= g
             S += Se
+            continue
+            #print(Se)
 
+            #Su.u(boundary)
+            #print(Su)
+
+            #Se.ux(boundary,
+                  #pg.IntegrationRules.instance().edgWeights(2),
+                  #pg.IntegrationRules.instance().edgAbscissa(2))
+            #print(Se)
+            ##Su *= g
+            #exit()
+            #if rhs is not None:
+                #rhs[Se.idx()] += Su[0]
 
 def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into gimli"""
@@ -1256,28 +1274,25 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     if debug:
         print("5: ", swatch2.duration(True))
 
+    dirichletBC = kwargs.pop('uB', None)
+    dirichletNodes = kwargs.pop('uN', None)
+    neumannBC = kwargs.pop('duB', None)
+
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
 
-        if debug:
-            print("6a: ", swatch2.duration(True))
+        if dirichletBC is not None:
+            assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
+                                rhs=rhs, time=None, userData=userData)
 
-        if 'duB' in kwargs:
-            assembleNeumannBC(S,
-                              parseArgToBoundaries(kwargs['duB'], mesh),
-                              time=0.0, userData=userData)
-
-        if debug:
-            print("6b: ", swatch2.duration(True))
-        if 'uB' in kwargs:
-            assembleDirichletBC(S,
-                                parseArgToBoundaries(kwargs['uB'], mesh),
-                                rhs, time=0.0, userData=userData)
-
-        if 'uN' in kwargs:
+        if dirichletNodes is not None:
             assembleDirichletBC(S, [],
-                                nodePairs=kwargs['uN'],
-                                rhs=rhs, time=0.0, userData=userData)
+                                nodePairs=dirichletNodes,
+                                rhs=rhs, time=None, userData=userData)
+
+        if neumannBC is not None:
+            assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
+                              rhs=rhs, time=None, userData=userData)
 
         if debug:
             print("6c: ", swatch2.duration(True))
@@ -1325,6 +1340,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
                 stats.solverTime = solverTime
             print(("Solving time: ", solverTime))
 
+
+        if len(kwargs.keys()) > 0:
+            print("Warning! Unused arguments", **kwargs)
         return u
 
     else: # times given
@@ -1347,23 +1365,22 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
         theta = kwargs.pop('theta', 1.0)
         dynamic = kwargs.pop('dynamic', False)
+
         if not dynamic:
             A = createStiffnessMatrix(mesh, a)
 
-            if 'uB' in kwargs:
-                assembleDirichletBC(A,
-                                    parseArgToBoundaries(kwargs['uB'], mesh),
-                                    rhs=F)
-            if 'uN' in kwargs:
+            if dirichletBC is not None:
+                assembleDirichletBC(A, parseArgToBoundaries(dirichletBC, mesh),
+                                    rhs=F, time=0.0, userData=userData)
+
+            if dirichletNodes is not None:
                 assembleDirichletBC(A, [],
-                                    nodePairs=kwargs['uN'],
-                                    rhs=F)
-            if 'duB' in kwargs:
-                assembleNeumannBC(A,
-                                  parseArgToBoundaries(kwargs['duB'],
-                                                       mesh),
-                                  time=None,
-                                  userData=userData)
+                                    nodePairs=dirichletNodes,
+                                    rhs=F, time=0.0, userData=userData)
+
+            if neumannBC is not None:
+                assembleNeumannBC(A, parseArgToBoundaries(neumannBC, mesh),
+                                  rhs=F, time=0.0, userData=userData)
 
             return crankNicolson(times, theta, A, M, F, u0=u0, progress=progress)
 
@@ -1391,16 +1408,6 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
             # previous timestep
             # print "i: ", i, dt, U[i - 1]
 
-            if 'duB' in kwargs:
-                # aufschreiben und checken ob neumann auf A oder auf S mit
-                # skaliertem val*dt angewendet wird
-                A = createStiffnessMatrix(mesh, a)
-                assembleNeumannBC(A,
-                                  parseArgToBoundaries(kwargs['duB'],
-                                                       mesh),
-                                  time=times[n],
-                                  userData=userData)
-
             swatch.reset()
             # (A + a*B)u is fastest,
             # followed by A*u + (B*u)*a and finally A*u + a*B*u and
@@ -1421,16 +1428,18 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             S = M + A * dt * theta
 
-            if 'uB' in kwargs:
-                assembleDirichletBC(S,
-                                    parseArgToBoundaries(kwargs['uB'], mesh),
-                                    rhs=b,
-                                    time=times[n], userData=userData)
-
-            if 'uN' in kwargs:
-                assembleDirichletBC(S, [],
-                                    nodePairs=kwargs['uN'],
+            if dirichletBC is not None:
+                assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
                                     rhs=b, time=times[n], userData=userData)
+
+            if dirichletNodes is not None:
+                assembleDirichletBC(S, [],
+                                    nodePairs=dirichletNodes,
+                                    rhs=b, time=times[n], userData=userData)
+
+            if neumannBC is not None:
+                assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
+                                  rhs=b, time=times[n], userData=userData)
 
             # u = S/b
             t_prep = swatch.duration(True)

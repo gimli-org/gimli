@@ -105,6 +105,7 @@ class CellBrowser(object):
                       fontsize=mpl.rcParams['font.size'] - 2,
                       weight='bold', xytext=(50, 20), arrowprops=arrowprops,
                       textcoords='offset points', bbox=bbox, va='center')
+
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def connect(self):
@@ -740,6 +741,7 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     if len(levels) == 0:
         levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax)
 
+    print("drawMPLTri:", nLevs, levels)
     if interpolate and len(data) == mesh.cellCount():
         z = pg.meshtools.cellDataToNodeData(mesh, data)
 

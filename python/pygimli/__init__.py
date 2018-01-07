@@ -14,6 +14,7 @@ from __future__ import division, print_function
 import locale
 import sys
 
+
 def checkAndFixLocaleDecimal_point(verbose=False):
     """
     """
@@ -59,19 +60,55 @@ from ._version import get_versions
 from .core import *
 from .testing import test
 
-if '--debug' in sys.argv:
-    print("set debug mode")
-    core._pygimli_.setDebug(True)
+import logging
 
+logger = logging.getLogger('pyGIMLi')
+
+def setDebug(d):
+    if d:
+        core._pygimli_.setDebug(True)
+        logger.setLevel(logging.DEBUG)
+        logging.getLogger('Core').setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%m/%d/%Y %H:%M:%S',
+                    #filename='pygimli.log'
+                    )
+        logger.debug("Set debug mode: on")
+    else:
+        core._pygimli_.setDebug(False)
+        logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%m/%d/%Y %H:%M:%S',
+                    #filename='pygimli.log'
+                    )
+        logger.debug("Set debug mode: off")
+        logging.getLogger('Core').setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
+
+if '--debug' in sys.argv:
+    setDebug(True)
+else:
+    setDebug(False)
+
+
+def deprecated(msg, hint):
+    logger.warn(msg + ", is deprecated, use:" + hint + " instead.")
+
+def renameKWarg(old, new, kwargs):
+    if old in kwargs:
+        logger.warn("Keyword argument name changed from '" + old + \
+                 "' to '" + new + "'")
+        kwargs[new] = kwargs.pop(old)
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
-        print("Warning! unrecognized keyword arguments", kwargs)
+        logger.warn("unrecognized keyword arguments", kwargs)
 
 __version__ = get_versions()['version']
 del get_versions
 
 def version():
     """Shortcut to show and return current version."""
-    print(__version__, "core:", pg.versionStr())
+    logger.info('Version: ' + __version__ + " core:" + pg.versionStr())
     return __version__
