@@ -40,12 +40,12 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
         locator = ticker.MaxNLocator(nLevs + 1)
 
     if zmin is None:
-        zmin = min(round(z, 4))
+        zmin = round(min(z), 4)
 
     if zmax is None:
-        zmax = max(round(z, 4))
+        zmax = round(max(z), 4)
 
-    print("autolevel", zmin, zmax)
+    ##print("autolevel", zmin, zmax)
     return locator.tick_values(zmin, zmax)
 
 

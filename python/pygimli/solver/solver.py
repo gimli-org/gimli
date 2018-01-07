@@ -10,7 +10,7 @@ import pygimli as pg
 from pygimli.utils import unique
 
 
-def parseArgToArray(arg, ndof, mesh=None, userData=None):
+def parseArgToArray(arg, nDof, mesh=None, userData=None):
     """
     Parse array related arguments to create a valid value array.
 
@@ -21,17 +21,17 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
 
         If arg is a callable with it must fulfill:
 
-        :: arg(MeshEntity, userData=None)
+        :: arg(cell|node|boundary, userData=None)
 
         Where MeshEntity is one of
         :gimliapi:`GIMLI::Cell` ,
         :gimliapi:`GIMLI::Node` or
         :gimliapi:`GIMLI::Boundary`
-        depeding on ndof, where ndof is mesh.cellCount(),
+        depeding on nDof, where nDof is mesh.cellCount(),
         mesh.nodeCount() or mesh.boundaryCount(),
         respectively.
 
-    ndof : int | [int]
+    nDof : int | [int]
         Desired array size.
 
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -46,25 +46,23 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
     ret : :gimliapi:`GIMLI::RVector`
         Array of desired length filled with the appropriate values.
     """
-    nDofs = ndof
+    nDofs = nDof
 
-    if not hasattr(ndof, '__len__'):
-        nDofs = [ndof]
+    if not hasattr(nDof, '__len__'):
+        nDofs = [nDof]
 
     try:
         return pg.RVector(nDofs[0], float(arg))
     except BaseException as _:
         pass
 
-#    print('#'*100)
-#    print(nDofs, arg)
     if hasattr(arg, '__len__'):
         if isinstance(arg, np.ndarray):
             if len(arg) == nDofs[0]:
                 return arg
             else:
                 raise Exception('Given array does not have requested (' +
-                                str(ndof) + ') size (' +
+                                str(nDof) + ') size (' +
                                 str(len(arg)) + ')')
 
         for n in nDofs:
@@ -76,7 +74,7 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
             return parseMapToCellArray(arg, mesh)
         except:
             raise Exception("Array 'arg' has the wrong size: " +
-                            str(len(arg)) + " != " + str(ndof))
+                            str(len(arg)) + " != " + str(nDof))
     elif hasattr(arg, '__call__'):
         ret = pg.RVector(nDofs[0], 0.0)
 
@@ -87,21 +85,21 @@ def parseArgToArray(arg, ndof, mesh=None, userData=None):
         if nDofs[0] == mesh.nodeCount():
             for n in mesh.nodes():
                 if userData:
-                    ret[n.id()] = arg(n.pos(), userData)
+                    ret[n.id()] = arg(node=n, userData=userData)
                 else:
-                    ret[n.id()] = arg(n.pos())
+                    ret[n.id()] = arg(node=n)
         elif nDofs[0] == mesh.cellCount():
             for c in mesh.cells():
                 if userData:
-                    ret[c.id()] = arg(c, userData)
+                    ret[c.id()] = arg(cell=c, userData=userData)
                 else:
-                    ret[c.id()] = arg(c)
+                    ret[c.id()] = arg(cell=c)
         elif nDofs[0] == mesh.boundaryCount():
             for b in mesh.boundaries():
                 if userData:
-                    ret[b.id()] = arg(b, userData)
+                    ret[b.id()] = arg(boundary=b, userData=userData)
                 else:
-                    ret[b.id()] = arg(b)
+                    ret[b.id()] = arg(boundary=b)
         else:
             raise Exception("Cannot parse callable argument " + str(ndof) +
                             " nodes: " + str(mesh.nodeCount()) +
@@ -126,15 +124,26 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
         - iterable of minimum length = boundary.id()
         - callable generator function
 
-        If arg is a callable with it must fulfill:
+        If arg is a callable it must fulfill:
 
-        :: arg(:gimliapi:`GIMLI::Boundary`, time=0.0, userData=None)
+        :: arg(boundary=:gimliapi:`GIMLI::Boundary`, time=0.0, userData=None)
 
-        and should return an appropriate value.
+        The callable function arg have to return appropriate values
+        for all nodes of the boundary or one scalar value for all nodes.
 
     Returns
     -------
     val : float or list of ..
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>>
+    >>> # def uBoundary(boundary):
+    >>> #    u = []
+    >>> #    for n in boundary.nodes():
+    >>> #        u.append(n[0] + n[1])
+    >>> #    return u
     """
     if hasattr(boundary, '__len__'):
         vals = np.zeros(len(boundary))
@@ -145,13 +154,19 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
 
     if hasattr(arg, '__call__'):
         kwargs = dict()
-        args = [boundary]
+        kwargs['boundary'] = boundary
 
-        if time != 0.0:
-            args.append(time)
+        if time != 0.0 and time is not None:
+            kwargs['time'] = time
         if userData:
             kwargs['userData'] = userData
-        val = arg(*args, **kwargs)
+        try:
+            val = arg(**kwargs)
+        except Exception as e:
+            print(arg, "(", kwargs, ")")
+            pg.logger.critical(e)
+            raise Exception("Wrong argments for callback function.")
+
     elif hasattr(arg, '__len__'):
         val = generateBoundaryValue(boundary, arg[boundary.id()], userData)
     else:
@@ -198,7 +213,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
 #    print('+'*30, pair)
     if isinstance(pair[0], int):
         bounds = mesh.findBoundaryByMarker(pair[0])
-    if isinstance(pair[0], list):
+    elif isinstance(pair[0], list):
         # [[,,..], ]
         for b in pair[0]:
             for bi in mesh.boundaries(pg.find(mesh.boundaryMarkers() == b)):
@@ -216,7 +231,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     for b in bounds:
         val = None
         if hasattr(pair[1], '__call__'):
-            # don't execute the callable here in init,
+            # don't execute the callable here
             # we want to call them at runtime
             val = pair[1]
         else:
@@ -233,7 +248,6 @@ def parseArgToBoundaries(args, mesh):
 
     Parameters
     ----------
-
     args : callable | pair | [pair, ...]
         If args is just a callable than every boundary will be evaluated
         at runtime with this function as args(boundary).
@@ -244,10 +258,8 @@ def parseArgToBoundaries(args, mesh):
 
     Returns
     -------
-
     boundaries : list()
         [ :gimliapi:`GIMLI::Boundary`, value|callable ]
-
 
     Examples
     --------
@@ -259,7 +271,7 @@ def parseArgToBoundaries(args, mesh):
     >>> b = pg.solver.parseArgToBoundaries([1, 1.0], mesh)
     >>> print(len(b))
     1
-    >>> # same as above with marker 2 get value 1
+    >>> # same as above with marker 2 get value 2
     >>> b = pg.solver.parseArgToBoundaries([[1, 1.0], [2, 2.0]], mesh)
     >>> print(len(b))
     2
@@ -280,6 +292,14 @@ def parseArgToBoundaries(args, mesh):
     >>> b = pg.solver.parseArgToBoundaries([mesh.node(0), 0.0], mesh)
     >>> print(len(b))
     1
+    >>> def bCall(boundary):
+    ...     u = []
+    ...     for i, n in enumerate(boundary.nodes()):
+    ...         u.append(i)
+    ...     return u
+    >>> b = pg.solver.parseArgToBoundaries([1, bCall], mesh)
+    >>> print(len(b),b[0][1](b[0][0]))
+    1 [0, 1]
     >>> pg.wait()
     """
     boundaries = []
@@ -319,7 +339,6 @@ def parseArgToBoundaries(args, mesh):
             if not b.leftCell() or not b.rightCell():
                 # if args(b) is not None:
                 boundaries.append([b, args])
-
 
     else:
         raise Exception('cannot interprete boundary token', args)
@@ -892,22 +911,22 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
             #print(boundary)
 
             Se.u2(boundary)
+            #print(Se)
             Se *= g
             S += Se
             continue
-            #print(Se)
 
-            #Su.u(boundary)
-            #print(Su)
+            Su.u(boundary)
+            print(Su)
 
-            #Se.ux(boundary,
-                  #pg.IntegrationRules.instance().edgWeights(2),
-                  #pg.IntegrationRules.instance().edgAbscissa(2))
-            #print(Se)
-            ##Su *= g
-            #exit()
-            #if rhs is not None:
-                #rhs[Se.idx()] += Su[0]
+            Se.ux(boundary,
+                  pg.IntegrationRules.instance().edgWeights(2),
+                  pg.IntegrationRules.instance().edgAbscissa(2))
+            print(Se)
+            #Su *= g
+            exit()
+            if rhs is not None:
+                rhs[Se.idx()] += Su[0]
 
 def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into gimli"""
@@ -927,7 +946,7 @@ def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
         #rhs.setVal(uDirchlet, uDirIndex)
 
 
-def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None,
+def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
                         nodePairs=None):
     r"""
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
@@ -974,6 +993,8 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None,
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
+    if rhs is None:
+        raise BaseException("assembleDirichletBC needs RHS vector")
 
     uDirNodes = []
     uDirVal = dict()
@@ -989,12 +1010,12 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None,
                 uDirNodes.append(n)
                 uDirVal[n.id()] = uD
             else:
-
-                for n in boundary.nodes():
+                for i, n in enumerate(boundary.nodes()):
                     uDirNodes.append(n)
-                    uDirVal[n.id()] = uD
-
-
+                    if hasattr(uD, '__iter__'):
+                        uDirVal[n.id()] = uD[i]
+                    else:
+                        uDirVal[n.id()] = uD
 
     if len(uDirNodes) == 0 and nodePairs is None:
         return
@@ -1009,7 +1030,7 @@ def assembleDirichletBC(S, boundaryPairs, rhs, time=0.0, userData=None,
         uDirchlet.append(uDirVal[n.id()])
 
     if nodePairs is not None:
-        print(nodePairs)
+        #print("nodePairs", nodePairs)
         for i, [n, val] in enumerate(nodePairs):
             uDirIndex.append(n)
             if hasattr(val, '__call__'):
@@ -1255,8 +1276,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     swatch2 = pg.Stopwatch(True)
 
     # check for material parameter
-    a = parseArgToArray(a, ndof=mesh.cellCount(), mesh=mesh, userData=userData)
-    b = parseArgToArray(b, ndof=mesh.cellCount(), mesh=mesh, userData=userData)
+    a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
+    b = parseArgToArray(b, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
 
     if debug:
         print("2: ", swatch2.duration(True))

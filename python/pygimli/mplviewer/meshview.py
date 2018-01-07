@@ -741,7 +741,7 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
     if len(levels) == 0:
         levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax)
 
-    print("drawMPLTri:", nLevs, levels)
+    #print("drawMPLTri:", nLevs, levels)
     if interpolate and len(data) == mesh.cellCount():
         z = pg.meshtools.cellDataToNodeData(mesh, data)
 
