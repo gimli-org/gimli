@@ -43,9 +43,10 @@ class ProgressBar(object):
         self._amount(0)
 
     def update(self, iteration, msg=""):
-        """Update ProgressBar by iteration number starting at 0."""
+        """Update ProgressBar by iteration number starting at 0 with optional
+        message."""
         self._setbar(iteration + 1)
-        print("\r" + self.pbar + msg, end="")
+        print("\r" + self.pbar + " (" + msg + ")", end="")
         sys.stdout.flush()
 
     def _setbar(self, elapsed_it):
@@ -635,8 +636,7 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
         print('Get {} indices for sorting'.format(np.shape(indices)))
     if flag_mult:
         ar = indices.ravel().view(
-            np.dtype((np.void, indices.dtype.itemsize * indices.shape[1]
-                      ))).flatten()
+            np.dtype((np.void, indices.dtype.itemsize * indices.shape[1]))).flatten()
     else:
         ar = np.asanyarray(indices).flatten()
 
@@ -682,5 +682,5 @@ def filterLinesByCommentStr(lines, comment_str='#'):
         if line[0] in comment_str:
             comment_line_idx.append(i)
     for j in comment_line_idx[::-1]:
-        del (lines[j])
+        del lines[j]
     return lines
