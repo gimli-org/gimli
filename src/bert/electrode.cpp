@@ -1,6 +1,6 @@
 /******************************************************************************
- *   Copyright (C) 2005-2017 by the resistivity.net development team          *
- *   Carsten Rücker carsten@resistivity.net                                   *
+ *   Copyright (C) 2005-2018 by the resistivity.net development team          *
+ *   Carsten Rï¿½cker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
  *   you may not use this file except in compliance with the License.         *
@@ -302,7 +302,7 @@ ElectrodeShapeDomain::ElectrodeShapeDomain(const std::vector < MeshEntity * > & 
 
     pos_ /= nodes.size();
 
-    //**! Pos muss nicht zwangläufig == dem center des PLC entsprechen da tetgen ja unsymmetrisch mehr Knoten reingebaut haben kann. und durch mittelung nicht zwangsläufig das center der einhüllenden bestimmt wird.
+    //**! Pos muss nicht zwanglï¿½ufig == dem center des PLC entsprechen da tetgen ja unsymmetrisch mehr Knoten reingebaut haben kann. und durch mittelung nicht zwangslï¿½ufig das center der einhï¿½llenden bestimmt wird.
     valid_ = true;
 //     std::cout << "ElectrodeShapeDomain::ElectrodeShapeDomain(const std::vector < MeshEnity * > & entities): "
 //     << pos_ << std::endl;
@@ -331,7 +331,7 @@ double ElectrodeShapeDomain::geomMeanCellAttributes() const {
             Cell * le = dynamic_cast < Boundary * > (entities_[i])->leftCell();
             Cell * ri = dynamic_cast < Boundary * > (entities_[i])->rightCell();
             if (le && ri) {
-                //** cem ist im moment nur für äussere boundary faces definiert
+                //** cem ist im moment nur fï¿½r ï¿½ussere boundary faces definiert
                 CERR_TO_IMPL
                 return 0.0;
             }

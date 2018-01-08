@@ -22,15 +22,13 @@ def main(argv):
                         help="Be verbose")
     parser.add_argument("--debug", dest="debug", action="store_true",
                         help="debug mode")
+    parser.add_argument('meshes', type=str, nargs='+',
+                        help='Files to be merge. If there are more then 2 files, '
+                        ' e.g., called with wildcard (*.vtk), the file matches '
+                        'the outFileName will be excluded.')
     parser.add_argument("-o", dest="outFileName", type=str,
                         help="Filename for the resulting mesh.",
-                        default='none')
-    parser.add_argument("--omitConsistencyCheck", dest="omitConsistencyCheck",
-                        help="Filename for the resulting mesh.", type=str,
-                        default='none')
-
-    parser.add_argument('mesh1')
-    parser.add_argument('mesh2')
+                        default='merged')
 
     args = parser.parse_args()
     if args.debug:
@@ -39,41 +37,17 @@ def main(argv):
     if args.verbose:
         print(args)
 
-    meshname1 = args.mesh1
-    meshname2 = args.mesh2
+    if len(args.meshes) < 2:
+        print("Need at least 2 meshes to merge")
+        sys.exit()
 
     (outfileBody, fileExtension) = os.path.splitext(args.outFileName)
 
-    # 2d should default here, since most users will merge 2d meshes. for 3d we
-    # need an option here->Ca
-    m1 = pg.Mesh(2)
-    m1.load(meshname1, 0)
-    m2 = pg.Mesh(2)
-    m2.load(meshname2, 0)
+    if len(args.meshes) > 2:
+        args.meshes = list(filter(lambda m: outfileBody not in m, args.meshes))
 
-    if args.verbose:
-        print("Load:")
-        print(meshname1, m1)
-        print(meshname2, m2)
+    mesh = pg.meshtools.mergeMeshes(args.meshes, args.verbose)
 
-    mesh = pg.Mesh(m1)
-
-    for c in m2.cells():
-        mesh.copyCell(c)
-
-    for key in list(mesh.exportDataMap().keys()):
-        d = mesh.exportDataMap()[key]
-        if args.verbose:
-            print(d)
-
-        d.resize(mesh.cellCount())
-        d.setVal(m1.exportDataMap()[key],
-                 0, m1.cellCount())
-        d.setVal(m2.exportDataMap()[key],
-                 m1.cellCount(), m1.cellCount() + m2.cellCount())
-        mesh.addExportData(key, d)
-
-    # mesh.translate((xmin, ymin, zmin))
     if args.verbose:
         print("Save:")
         print(outfileBody, mesh)

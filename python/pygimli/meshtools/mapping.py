@@ -42,7 +42,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
         2D or 3D GIMLi mesh
 
     data : iterable [float]
-        Data of len mesh.nodeCount().
+        Data of len mesh.cellCount().
         TODO complex, R3Vector, ndarray
 
     style : str ['mean']
@@ -54,6 +54,12 @@ def cellDataToNodeData(mesh, data, style='mean'):
 
     Examples
     --------
+    >>> import pygimli as pg
+    >>> grid = pg.createGrid(x=(1,2,3),y=(1,2,3))
+    >>> celldata = np.array([1, 2, 3, 4])
+    >>> nodedata = pg.meshtools.cellDataToNodeData(grid, celldata)
+    >>> print(nodedata.array())
+    [ 1.   1.5  2.   2.   2.5  3.   3.   3.5  4. ]
     """
     if len(data) != mesh.cellCount():
         raise BaseException("Dimension mismatch, expecting cellCount(): " +
@@ -62,8 +68,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
 
     if style == 'mean':
 
-        if isinstance(data, pg.RVector):
-            print(pg.cellDataToPointData(mesh, data))
+        if np.ndim(data) == 1:
             return pg.cellDataToPointData(mesh, data)
 
         if mesh.dim() == 1:
@@ -261,8 +266,30 @@ def interpolateAlongCurve(curve, t, **kwargs):
     yC = np.zeros(len(curve))
     zC = np.zeros(len(curve))
 
-    tCurve = pg.utils.cumDist(curve)
+    tCurve = kwargs.pop('tCurve', None)
+    if tCurve is None:
+        tCurve = pg.utils.cumDist(curve)
     dim = 3
+
+    ## extrapolate starting overlaps
+    if min(t) < min(tCurve):
+        d = pg.RVector3(curve[1]) - pg.RVector3(curve[0])
+        #d[2] = 0.0
+        d.normalise()
+        curve = np.insert(curve, [0],
+                          [curve[0] - np.array(d*(min(tCurve)-min(t)))[0:curve.shape[1]]],
+                          axis=0)
+        tCurve = np.insert(tCurve, 0, min(t), axis=0)
+
+    ## extrapolate ending overlaps
+    if max(t) > max(tCurve):
+        d = pg.RVector3(curve[-2]) - pg.RVector3(curve[-1])
+        #d[2] = 0.0
+        d.normalise()
+        curve = np.append(curve,
+                          [curve[-1] - np.array(d*(max(t)-max(tCurve)))[0:curve.shape[1]]],
+                          axis=0)
+        tCurve = np.append(tCurve, max(t))
 
     if isinstance(curve, pg.R3Vector) or isinstance(curve, pg.stdVectorRVector3):
         xC = pg.x(curve)
@@ -283,6 +310,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
         ti = np.arange(min(tCurve), max(tCurve)+dTi, dTi)
         xC = pg.interpolate(ti, tCurve, xC, **kwargs)
         zC = pg.interpolate(ti, tCurve, zC, **kwargs)
+
         if dim == 3:
             yC = pg.interpolate(ti, tCurve, yC, **kwargs)
         tCurve = ti
@@ -470,14 +498,14 @@ def interpolate(*args, **kwargs):
                 x = pg.interpolate(outMesh, inMesh, pg.x(data))
                 y = pg.interpolate(outMesh, inMesh, pg.y(data))
                 z = pg.interpolate(outMesh, inMesh, pg.z(data))
-                return np.vstack([xt, yt, zt]).T
+                return np.vstack([x, y, z]).T
 
             if isinstance(data, np.ndarray):
                 if data.ndim == 2 and data.shape[1] == 3:
                     x = pg.interpolate(outMesh, inMesh, data[:,0])
                     y = pg.interpolate(outMesh, inMesh, data[:,1])
                     z = pg.interpolate(outMesh, inMesh, data[:,2])
-                    return np.vstack([xt, yt, zt]).T
+                    return np.vstack([x, y, z]).T
 
             if len(data) == inMesh.cellCount():
                 return pg.interpolate(srcMesh=inMesh, inVec=data,

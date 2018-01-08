@@ -156,6 +156,16 @@ def ElementMatrix_str(self):
         s += '\n'
     return s
 
+def MeshEntity_str(self):
+    """Give mesh entity infos."""
+    s = str(type(self))
+    s += '\tID: ' + str(self.id()) + \
+         ', Marker: ' + str(self.marker()) + \
+         ', Size: ' + str(self.size()) + '\n'
+    for n in self.nodes():
+        s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
+    return s
+
 
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
@@ -171,6 +181,7 @@ _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
 _pygimli_.ElementMatrix.__str__ = ElementMatrix_str
+_pygimli_.MeshEntity.__str__ = MeshEntity_str
 # _pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
 # _pygimli_.stdVectorIndex.__str__ = RVector_str
 
@@ -185,8 +196,12 @@ def nonzero_test(self):
                         "Use binary operators '&' or '|' instead. " +
                         "If you looking for the nonzero test, use len(v) > 0")
 
+def np_round__(self, r):
+    return np.round(self.array(), r)
+
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.RVector.__bool__ = nonzero_test
+_pygimli_.RVector.__round__ = np_round__
 _pygimli_.R3Vector.__nonzero__ = nonzero_test
 _pygimli_.R3Vector.__bool__ = nonzero_test
 _pygimli_.BVector.__nonzero__ = nonzero_test
@@ -978,11 +993,6 @@ from .matrix import *
 ############################
 # some backward compatibility
 ############################
-
-
-def deprecated(msg, hint):
-    print("Warning! " + msg + ", is deprecated, use:" + hint + " instead.")
-
 
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')

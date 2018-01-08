@@ -44,7 +44,7 @@ u = solve(grid, f=1., uB=[grid.node(2), 0.])
 ax, _ = pg.show(grid, u, label='Solution $u$',)
 show(grid, ax=ax)
 
-def uDirichlet(b):
+def uDirichlet(boundary):
     """
         Return a solution value for coordinate p.
     """
@@ -53,7 +53,7 @@ def uDirichlet(b):
 dirichletBC = [[1, 1.0],                                    # left
                [grid.findBoundaryByMarker(2), 2.0],         # right
                [grid.findBoundaryByMarker(3),
-                lambda p: 3.0 + p.center()[0]],  # top
+               lambda boundary: 3.0 + boundary.center()[0]],  # top
                [grid.findBoundaryByMarker(4), uDirichlet]]  # bottom
 
 ###############################################################################

@@ -61,11 +61,11 @@ sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/apps')))
 # -- General configuration ----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.4' # and lower 1.6
+needs_sphinx = '1.3' # and lower 1.6
 
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
-        'sphinxcontrib-bibtex',
+        #'sphinxcontrib-bibtex',
         # 'sphinxcontrib-doxylink',
         'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
@@ -174,7 +174,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'pyGIMLi'
-copyright = '2017 - GIMLi Development Team'
+copyright = '2018 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

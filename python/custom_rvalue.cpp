@@ -347,13 +347,74 @@ struct Numpy2RMatrix{
 private:
 };
 
+//template <typename T, NPY_TYPES NumPyScalarType>
+struct NumpyInt2Long{
+
+    /*! Check if the object is convertible */
+    static void * convertible(PyObject * obj){
+        __DC(obj << "\tNumpyInt -> long")
+        if (!obj){
+            __DC(obj << "\t !Object")
+            return NULL;
+        }
+        if (PySequence_Check(obj)){
+            __DC(obj << "\t check is Sequenz : ")
+            return NULL;
+        }
+
+        if (PyObject_HasAttrString(obj, "dtype")){
+            return obj;
+        } else {
+            __DC(obj << "\t Object no dtype")
+            return NULL;
+        }
 
 
+        return NULL;
+    }
 
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        __DC(obj << "\tNumpyInt -> long OK: ")
+        //bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
+        typedef bp::converter::rvalue_from_python_storage< long > storage_t;
 
+        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+        void* memory_chunk = the_storage->storage.bytes;
+
+        long * val = new (memory_chunk) long[1];
+        data->convertible = memory_chunk;
+
+        // expensive test here but the following segfault
+        // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_CheckScalar(arr))
+        // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_IsScalar(arr, Int64))
+        if (strcmp(obj->ob_type->tp_name, "numpy.int64") == 0){
+            *val = PyArrayScalar_VAL(obj, Int64);
+        } else if (strcmp(obj->ob_type->tp_name, "numpy.int32") == 0){
+            *val = PyArrayScalar_VAL(obj, Int32);
+        } else if (strcmp(obj->ob_type->tp_name, "numpy.float32") == 0){
+            *val = PyArrayScalar_VAL(obj, Float32);
+        } else if (strcmp(obj->ob_type->tp_name, "numpy.float64") == 0){
+            *val = PyArrayScalar_VAL(obj, Float64);
+        } else {
+            __DC(obj << "\tNumpyInt -> undefined dtype")
+            __DC(obj << "\tNumpyInt -> long OK: " << obj->ob_type->tp_name)
+            __DC(obj << "\tNumpyInt -> long OK: " << Py_TYPE(obj))
+
+        }
+
+        //GIMLI::throwToImplement("implementme");
+    }
+private:
+};
 
 } //r_values_impl
+
+void register_numpyint_to_long_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::NumpyInt2Long::convertible,
+                                        & r_values_impl::NumpyInt2Long::construct,
+                                        bp::type_id< long >());
+}
 
 void register_pysequence_to_indexvector_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PySequence2IndexArray::convertible,

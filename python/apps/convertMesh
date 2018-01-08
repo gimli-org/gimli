@@ -21,7 +21,6 @@ def strToRVector3(s):
     if len(vals) == 3:
         return pg.RVector3(float(vals[0]), float(vals[1]), float(vals[2]))
 
-
 def parseDataStr(s):
     vals = s.split(':')
     data = pg.RVector(0)
@@ -51,6 +50,24 @@ def parseDataStr(s):
             return vals[1], modificator(data)
 
 
+#def extrapolateProfileBoundaries(topo, dx, line):
+     #if tIn[-1]-tIn[0] < tOut[-1]-tOut[0]:
+                    #print("Needs extrapolation: tIn", tIn[0], "<->", tIn[-1],
+                          #" tOut: ", tOut[0], "<->", tOut[-1])
+                #print("Extrapolating")
+                #if tIn[0] > tOut[0]:
+                    #d = pg.RVector3(elecs[1]) - pg.RVector3(elecs[0])
+                    #d[2] = 0.0
+                    #d.normalise()
+                    #print(" new start: ", [elecs[0] + d*(tOut[0]-tIn[0])])
+                    #elecs = np.insert(elecs, [0], [elecs[0] + d*(tOut[0]-tIn[0])], axis=0)
+                #if tIn[-1] < tOut[-1]:
+                    #d = pg.RVector3(elecs[-1]) - pg.RVector3(elecs[-2])
+                    #d[2] = 0.0
+                    #d.normalise()
+                    #print(" new end: ", [elecs[-1] + d*(tOut[-1]-tIn[-1])])
+                    #elecs = np.append(elecs, [elecs[-1] + d*(tOut[-1]-tIn[-1])], axis=0)
+
 def applyInterpolation(filename, mesh, verbose=False):
     """
         needs to be moved into libgimli
@@ -70,18 +87,17 @@ def applyInterpolation(filename, mesh, verbose=False):
         if verbose:
             print(("loaded DataContainer: ", filename))
     except:
-        A = np.loadtxt(filename).T
+        A = np.loadtxt(filename)
         if verbose:
             print(("loaded txtfile: ", filename))
 
     tn = [n.pos()[0] for n in mesh.nodes()]
     zn = [n.pos()[1] for n in mesh.nodes()]
 
-    xn = np.interp(tn, A[0], A[1])
-    yn = np.interp(tn, A[0], A[2])
+    p = pg.meshtools.interpolateAlongCurve(A[:,1:3], tn, tCurve=A[:,0])
 
     for i, n in enumerate(mesh.nodes()):
-        n.setPos(pg.RVector3(xn[i], yn[i], zn[i]))
+        n.setPos(pg.RVector3(p[i][0], p[i][1], zn[i]))
 
 # def applyInterpolation(...)
 
@@ -137,11 +153,11 @@ def main(argv):
 
     parser.add_option("", "--interpolateCoords", dest="interpolateCoords",
                       metavar="File",
-                      help=" Interpolate a 2D mesh into 3D Coordinates." +
-                      "File is a 3-column-ascii-file (dx x y)")
+                      help="Interpolate a 2D mesh into 3D Coordinates." +
+                      "File is a 3 or 4-column-ascii-file (dx x y [z])")
     parser.add_option("", "--interpolateMesh", dest="interpolateMesh",
                       metavar="File",
-                      help=" Interpolate mesh data into mesh given by File." +
+                      help="Interpolate all data of this mesh into a mesh given by File. " +
                       "File is a bms|mod|vtk")
 
     (options, args) = parser.parse_args()

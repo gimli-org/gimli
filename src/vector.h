@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2007-2017 by the GIMLi development team                    *
+ *   Copyright (C) 2007-2018 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -29,6 +29,7 @@
 //   year =         "1995",
 //   note =         "Reprinted in C++ Gems, ed. Stanley Lippman"
 // }
+
 
 #ifndef GIMLI_VECTOR__H
 #define GIMLI_VECTOR__H
@@ -678,7 +679,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     /*! Reserve memory. Old data are preserved*/
     void reserve(Index n){
 
-        Index newCapacity = max(1,n);
+        Index newCapacity = max(1, n);
         if (capacity_ != 0){
             int exp;
             frexp(n, &exp);

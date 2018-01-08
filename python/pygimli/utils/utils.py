@@ -3,10 +3,10 @@
 """Collection of several utility functions."""
 
 import sys
-from math import sqrt, floor
+from math import floor, sqrt
 import numpy as np
-import pygimli as pg
 
+import pygimli as pg
 
 class ProgressBar(object):
     """Animated text-based progressbar.
@@ -143,6 +143,7 @@ def logDropTol(p, droptol=1e-3):
     tmp *= pg.sign(p)
     return tmp
 
+
 def niceLogspace(vMin, vMax, nDec=10):
     """Create nice logarithmic space from the next decade lower to vMin to
     decade larger then vMax.
@@ -184,9 +185,9 @@ def niceLogspace(vMin, vMax, nDec=10):
     if vmax == vmin:
         vmax *= 10
 
-    n = np.log10(vmax/vmin)*nDec + 1
+    n = np.log10(vmax / vmin) * nDec + 1
 
-    q = 10.**(1./nDec)
+    q = 10.**(1. / nDec)
 
     return vmin * q**np.arange(n)
 
@@ -251,7 +252,6 @@ def grange(start, end, dx=0, n=0, log=False):
             return pg.increasingRange2(start, end, n)
     else:
         raise Exception('Either dx or n have to be given.')
-
 
 def diff(v):
     """Calculate approximate derivative.
@@ -357,7 +357,7 @@ def dist(p, c=None):
             pI = pg.RVector3(p[i], 0)
         else:
             pI = pg.RVector3(p[i])
-        d[i] = (pI-c).abs()
+        d[i] = (pI - c).abs()
 
     return d
 
@@ -407,7 +407,7 @@ def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
     r = pg.RVector(n)
     pg.randn(r)
-    r *= (maxVal-minVal)
+    r *= (maxVal - minVal)
     r += minVal
     return r
 
@@ -455,8 +455,8 @@ def findNearest(x, y, xp, yp, radius=-1):
     minDist = 1e9
     startPointDist = pg.RVector(len(x))
     for i, _ in enumerate(x):
-        startPointDist[i] = sqrt(
-            (x[i] - xp) * (x[i] - xp) + (y[i] - yp) * (y[i] - yp))
+        startPointDist[i] = sqrt((x[i] - xp) * (x[i] - xp) + (y[i] - yp) * (y[
+            i] - yp))
 
         if startPointDist[i] < minDist and startPointDist[i] > radius:
             minDist = startPointDist[i]
@@ -537,8 +537,8 @@ def unique_rows(array):
     array([[1, 2, 3],
            [3, 2, 1]])
     """
-    b = array.ravel().view(np.dtype((np.void,
-                                     array.dtype.itemsize*array.shape[1])))
+    b = array.ravel().view(
+        np.dtype((np.void, array.dtype.itemsize * array.shape[1])))
     _, unique_idx = np.unique(b, return_index=True)
 
     return array[np.sort(unique_idx)]
@@ -631,18 +631,18 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
         print('Get {} indices for sorting'.format(np.shape(indices)))
     if flag_mult:
         ar = indices.ravel().view(
-            np.dtype((np.void,
-                      indices.dtype.itemsize * indices.shape[1]))).flatten()
+            np.dtype((np.void, indices.dtype.itemsize * indices.shape[1]
+                      ))).flatten()
     else:
         ar = np.asanyarray(indices).flatten()
 
     to_sum = np.asanyarray(to_sum)
 
     if ar.size == 0:
-        ret = (ar,)
+        ret = (ar, )
         ret += (to_sum)
         if return_index:
-            ret += (np.empty(0, np.bool),)
+            ret += (np.empty(0, np.bool), )
         return ret
     if verbose:
         print('Performing argsort...')
@@ -650,20 +650,20 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
     aux = ar[perm]
     flag = np.concatenate(([True], aux[1:] != aux[:-1]))
     if flag_mult:
-        ret = (indices[perm[flag]],)
+        ret = (indices[perm[flag]], )
 
     else:
-        ret = (aux[flag],)  # unique indices
+        ret = (aux[flag], )  # unique indices
     if verbose:
         print('Identified {} unique indices'.format(np.shape(ret)))
     if verbose:
         print('Performing reduceat...')
     summed = np.add.reduceat(to_sum[perm], np.nonzero(flag)[0])
 
-    ret += (summed,)  # summed values
+    ret += (summed, )  # summed values
 
     if return_index:
-            ret += (perm[flag],)  # optional: indices
+        ret += (perm[flag], )  # optional: indices
 
     return ret
 
@@ -678,10 +678,5 @@ def filterLinesByCommentStr(lines, comment_str='#'):
         if line[0] in comment_str:
             comment_line_idx.append(i)
     for j in comment_line_idx[::-1]:
-        del(lines[j])
+        del (lines[j])
     return lines
-
-
-
-
-

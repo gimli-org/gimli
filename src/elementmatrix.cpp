@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2018 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -96,6 +96,15 @@ template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const Mes
     double dtdi = ent.shape().drstdxyz(2, dim);
 
     double A = ent.shape().domainSize();
+
+    __MS(ent.dim())
+    __MS(drdi << " " << dsdi)
+    __MS(dNdr_[0])
+    __MS(dNdr_[1])
+    __MS(dNds_[0])
+    __MS(dNds_[1])
+
+
 
     for (Index i = 0; i < nVerts; i ++){
         switch (ent.dim()){

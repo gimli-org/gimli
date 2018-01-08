@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2018 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -159,8 +159,6 @@ public:
     void setUxCache(const RMatrix & mat) const { uxCache_ = mat; }
 
     const RMatrix & uxCache() const { return uxCache_; }
-
-
 
 protected:
     void fillShape_();

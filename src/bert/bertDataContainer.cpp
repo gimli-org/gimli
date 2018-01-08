@@ -1,6 +1,6 @@
 /******************************************************************************
- *   Copyright (C) 2011-2017 by the resistivity.net development team          *
- *   Carsten Rücker carsten@resistivity.net                                   *
+ *   Copyright (C) 2011-2018 by the resistivity.net development team          *
+ *   Carsten Rï¿½cker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
  *   you may not use this file except in compliance with the License.         *
@@ -73,8 +73,8 @@ void DataContainerERT::initTokenTranslator(){
     l["eca"] = "ECa EC_a";
     l["r"] = "r rho r(Ohm) imp z u/i"; //** rho is confusing!
 // done in base l["err"] = "err std error err/%";
-    l["ip"] = "ip ip/mrad ip/° phase phase/mrad phase/° phi phi/mrad phi/°";
-    l["iperr"] = "iperr iperr/mrad iperr/° phierr phierr/mrad phierr/°";
+    l["ip"] = "ip ip/mrad ip/ï¿½ phase phase/mrad phase/ï¿½ phi phi/mrad phi/ï¿½";
+    l["iperr"] = "iperr iperr/mrad iperr/ï¿½ phierr phierr/mrad phierr/ï¿½";
     l["u"] = "u u/V u(V) u/mV u(mV) v v/V v(V) v/mV v(mV)";
     l["i"] = "i i/A i(A) i/mA i(mA)";
     l["k"] = "k";
@@ -183,9 +183,15 @@ std::set < SIndex > DataContainerERT::currentPattern(bool reciprocity){
     return pattern;
 }
 
+void DataContainerERT::addFourPointData(long a, long b, long m, long n){
+    return this->createFourPointData(this->size(), a, b, m, n);
+}
+
 void DataContainerERT::createFourPointData(Index i, long a, long b, long m, long n){
     if (this->size() <= i) {
-        resize(max(i,1) * 2);
+        resize(max(i+1,1));
+        // memory reservation is vectors job so this should be ok
+        //resize(max(i,1) * 2);
     }
     fillCounter_ = max(fillCounter_, i+1);
 

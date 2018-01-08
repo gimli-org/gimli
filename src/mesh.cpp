@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2017 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2018 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -167,84 +167,87 @@ Node * Mesh::createNode(const RVector3 & pos, int marker){
 }
 
 Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn){
-    fillKDTree_();
+    bool useTree = false;
+    if (tol > -1.0){
+        fillKDTree_();
+        useTree = true;
 
-    Node * refNode = tree_->nearest(pos);
-    if (refNode){
-        if (pos.distance(refNode->pos()) < tol) {
-            if (warn || debug()) log(LogType::Warning,
-                "Duplicated node found for: " + str(pos));
-            return refNode;
+        Node * refNode = tree_->nearest(pos);
+        if (refNode){
+            if (pos.distance(refNode->pos()) < tol) {
+                if (warn || debug()) log(LogType::Warning,
+                    "Duplicated node found for: " + str(pos));
+                return refNode;
+            }
         }
+
+    //     for (Index i = 0, imax = nodeVector_.size(); i < imax; i++){
+    //         if (pos.distance(nodeVector_[i]->pos()) < 1e-6) return nodeVector_[i];
+    //     }
     }
 
-//     for (Index i = 0, imax = nodeVector_.size(); i < imax; i++){
-//         if (pos.distance(nodeVector_[i]->pos()) < 1e-6) return nodeVector_[i];
-//     }
-
     Node * newNode = createNode(pos);
-    tree_->insert(newNode);
+    if (useTree) tree_->insert(newNode);
     return newNode;
 }
 
-Boundary * Mesh::createBoundary(const IndexArray & idx, int marker){
+Boundary * Mesh::createBoundary(const IndexArray & idx, int marker, bool check){
     std::vector < Node * > nodes(idx.size());
     for (Index i = 0; i < idx.size(); i ++ ) nodes[i] = &this->node(idx[i]);
-    return createBoundary(nodes, marker);
+    return createBoundary(nodes, marker, check);
 }
 
-
-Boundary * Mesh::createBoundary(std::vector < Node * > & nodes, int marker){
+Boundary * Mesh::createBoundary(std::vector < Node * > & nodes, int marker, bool check){
     switch (nodes.size()){
-      case 1: return createBoundaryChecked_< NodeBoundary >(nodes, marker); break;
-      case 2: return createBoundaryChecked_< Edge >(nodes, marker); break;
+      case 1: return createBoundaryChecked_< NodeBoundary >(nodes, marker, check); break;
+      case 2: return createBoundaryChecked_< Edge >(nodes, marker, check); break;
       case 3: {
         if (dimension_ == 2)
-            return createBoundaryChecked_< Edge3 >(nodes, marker);
-        return createBoundaryChecked_< TriangleFace >(nodes, marker); } break;
-      case 4: return createBoundaryChecked_< QuadrangleFace >(nodes, marker); break;
-      case 6: return createBoundaryChecked_< Triangle6Face >(nodes, marker); break;
-      case 8: return createBoundaryChecked_< Quadrangle8Face >(nodes, marker); break;
+            return createBoundaryChecked_< Edge3 >(nodes, marker, check);
+        return createBoundaryChecked_< TriangleFace >(nodes, marker, check); } break;
+      case 4: return createBoundaryChecked_< QuadrangleFace >(nodes, marker, check); break;
+      case 6: return createBoundaryChecked_< Triangle6Face >(nodes, marker, check); break;
+      case 8: return createBoundaryChecked_< Quadrangle8Face >(nodes, marker, check); break;
     }
     std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine boundary for nodes: " << nodes.size() << std::endl;
     return NULL;
 }
 
-Boundary * Mesh::createBoundary(const Boundary & bound){
+Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
     std::vector < Node * > nodes(bound.nodeCount());
     for (Index i = 0; i < bound.nodeCount(); i ++) nodes[i] = &node(bound.node(i).id());
-    return createBoundary(nodes, bound.marker());
+    return createBoundary(nodes, bound.marker(), check);
 }
 
-Boundary * Mesh::createBoundary(const Cell & cell){
+Boundary * Mesh::createBoundary(const Cell & cell, bool check){
     std::vector < Node * > nodes(cell.nodeCount());
     for (Index i = 0; i < cell.nodeCount(); i ++) nodes[i] = &node(cell.node(i).id());
-    return createBoundary(nodes, cell.marker());
+    return createBoundary(nodes, cell.marker(), check);
 }
 
-Boundary * Mesh::createNodeBoundary(Node & n1, int marker){
+Boundary * Mesh::createNodeBoundary(Node & n1, int marker, bool check){
     std::vector < Node * > nodes(1); nodes[0] = & n1;
-    return createBoundaryChecked_< NodeBoundary >(nodes, marker);
+    return createBoundaryChecked_< NodeBoundary >(nodes, marker, check);
 }
 
-Boundary * Mesh::createEdge(Node & n1, Node & n2, int marker){
+Boundary * Mesh::createEdge(Node & n1, Node & n2, int marker, bool check){
     std::vector < Node * > nodes(2);  nodes[0] = & n1; nodes[1] = & n2;
-    return createBoundaryChecked_< Edge >(nodes, marker);
+    return createBoundaryChecked_< Edge >(nodes, marker, check);
 }
 
-Boundary * Mesh::createEdge3(Node & n1, Node & n2, Node & n3, int marker){
+Boundary * Mesh::createEdge3(Node & n1, Node & n2, Node & n3, int marker, bool check){
     std::vector < Node * > nodes(3); nodes[0] = & n1; nodes[1] = & n2; nodes[2] = & n3;
-    return createBoundaryChecked_< Edge3 >(nodes, marker);
+    return createBoundaryChecked_< Edge3 >(nodes, marker, check);
 }
 
-Boundary * Mesh::createTriangleFace(Node & n1, Node & n2, Node & n3, int marker){
+Boundary * Mesh::createTriangleFace(Node & n1, Node & n2, Node & n3, int marker, bool check){
     std::vector < Node * > nodes(3);  nodes[0] = & n1; nodes[1] = & n2; nodes[2] = & n3;
-    return createBoundaryChecked_< TriangleFace >(nodes, marker);
+    return createBoundaryChecked_< TriangleFace >(nodes, marker, check);
 }
 
-Boundary * Mesh::createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker){
+Boundary * Mesh::createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker, bool check){
     std::vector < Node * > nodes(4);  nodes[0] = & n1; nodes[1] = & n2; nodes[2] = & n3, nodes[3] = & n4;
-    return createBoundaryChecked_< QuadrangleFace >(nodes, marker);
+    return createBoundaryChecked_< QuadrangleFace >(nodes, marker, check);
 }
 
 Cell * Mesh::createCell(int marker){
@@ -320,10 +323,10 @@ Cell * Mesh::createTetrahedron(Node & n1, Node & n2, Node & n3, Node & n4, int m
     return createCell_< Tetrahedron >(nodes, marker, cellCount());
 }
 
-Cell * Mesh::copyCell(const Cell & cell){
+Cell * Mesh::copyCell(const Cell & cell, double tol){
     std::vector < Node * > nodes(cell.nodeCount());
     for (Index i = 0; i < nodes.size(); i ++) {
-        nodes[i] = createNodeWithCheck(cell.node(i).pos());
+        nodes[i] = createNodeWithCheck(cell.node(i).pos(), tol);
         nodes[i]->setMarker(cell.node(i).marker());
     }
     Cell * c = createCell(nodes);
@@ -333,15 +336,14 @@ Cell * Mesh::copyCell(const Cell & cell){
     return c;
 }
 
-Boundary * Mesh::copyBoundary(const Boundary & bound){
+Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     std::vector < Node * > nodes(bound.nodeCount());
     for (Index i = 0; i < nodes.size(); i ++) {
-        nodes[i] = createNodeWithCheck(bound.node(i).pos());
+        nodes[i] = createNodeWithCheck(bound.node(i).pos(), tol);
         nodes[i]->setMarker(bound.node(i).marker());
     }
-    Boundary * b = createBoundary(nodes);
 
-    b->setMarker(bound.marker());
+    Boundary * b = createBoundary(nodes, bound.marker(), check);
     return b;
 }
 

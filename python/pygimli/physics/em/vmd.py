@@ -215,7 +215,7 @@ class VMDTimeDomainModelling(VMDModelling):
         """
             par = [thicknesses, res]
         """
-        nLay = (len(par)-1)/2
+        nLay = (len(par)-1)//2
         thk = par[0:nLay]
         res = par[nLay:]
 

@@ -961,14 +961,65 @@ def rot2DGridToWorld(mesh, start, end):
 
 
 def merge2Meshes(m1, m2):
-    """Merge two meshes into one new mesh and return combined mesh."""
+    """Merge two meshes into one new mesh and return the combined mesh.
+
+    Merge two meshes into a new mesh and return the combined mesh.
+    Note, there is a duplication check for all nodes which should reuse existing
+    node but NO cells or boundaries.
+
+    Parameters
+    ----------
+    m1: :gimliapi:`GIMLI::Mesh`
+        First mesh.
+    m2: :gimliapi:`GIMLI::Mesh`
+        Second mesh.
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Resulting mesh.
+    """
+    #for c in m1.cells():
+        #if c.size() < 1e-4:
+            #print(c)
+            #exit()
+
     mesh = pg.Mesh(m1)
+    mesh.translate(-m1.node(0).pos())
+    m3 = pg.Mesh(m2)
+    m3.translate(-m1.node(0).pos())
 
-    for c in m2.cells():
-        mesh.copyCell(c)
+    #for n in m3.nodes():
+        #i = mesh.findNearestNode(n.pos())
+        #if mesh.node(i).pos().dist(n.pos()) < 0.5:
+            #print("DUP", 1)
+            #exit()
 
-    for b in m2.boundaries():
-        mesh.copyBoundary(b)
+    for c in m3.cells():
+        t = mesh.copyCell(c)
+        #if t.size() < 1e-4:
+            #print(c, t)
+            #exit()
+
+    for b in m3.boundaries():
+        t = mesh.copyBoundary(b, tol=1e-6, check=False)
+        #if t.size() < 1e-4:
+            #print(b)
+            #exit()
+
+
+
+        #if b.id() > 1362:
+            #exit()
+    #print(mesh.boundary(2905),
+          #mesh.boundary(2905).node(0).id(), mesh.boundary(2905).node(0).pos(),
+          #mesh.boundary(2905).node(1).id(), mesh.boundary(2905).node(1).pos()
+          #)
+    #print(mesh.boundary(2906),
+          #mesh.boundary(2906).node(0).id(), mesh.boundary(2906).node(0).pos(),
+          #mesh.boundary(2906).node(1).id(), mesh.boundary(2906).node(1).pos()
+          #)
+
 
     for key in list(mesh.exportDataMap().keys()):
         d = mesh.exportDataMap()[key]
@@ -978,33 +1029,59 @@ def merge2Meshes(m1, m2):
                  m1.cellCount() + m2.cellCount())
         mesh.addExportData(key, d)
 
+    mesh.translate(m1.node(0).pos())
     return mesh
 
 
-def mergeMeshes(meshlist):
+def mergeMeshes(meshList, verbose=False):
     """Merge several meshes into one new mesh and return the new mesh.
 
     Merge several meshes into one new mesh and return the new mesh.
 
     Parameters
     ----------
-    meshlist : list
-        List of at least two meshes to be merged.
+    meshList : [:gimliapi:`GIMLI::Mesh`, ...] | [str, ...]
+        List of at least two meshes or (filenames to meshes) to be merged.
+
+    verbose : bool
+        Give some output
 
     See Also
     --------
     merge2Meshes
     """
-    if not isinstance(meshlist, list):
-        raise Exception("argument meshlist is no list")
+    if not isinstance(meshList, list):
+        raise Exception("Argument meshList is no list")
 
-    if len(meshlist) < 2:
-        raise Exception("to few meshes in meshlist")
+    if len(meshList) < 2:
+        raise Exception("To few meshes in meshList, at least 2 meshes are needed.")
 
-    mesh = meshlist[0]
+    if isinstance(meshList[0], str):
+        mL = []
+        if verbose:
+            print("Reading meshes ... ")
 
-    for m in range(1, len(meshlist)):
-        mesh = merge2Meshes(mesh, meshlist[m])
+        for mFileName in meshList:
+            m = pg.Mesh(2)
+            m.load(mFileName)
+            if verbose:
+                print("loaded", mFileName, m)
+            mL.append(m)
+
+        meshList = mL
+        #meshList = [pg.Mesh(2); m.load(m) ]
+
+    if verbose:
+        print("Merging meshes ... ")
+
+    mesh = meshList[0]
+    if verbose:
+        print(mesh)
+
+    for m in range(1, len(meshList)):
+        mesh = merge2Meshes(mesh, meshList[m])
+        if verbose:
+            print(mesh)
 
     return mesh
 

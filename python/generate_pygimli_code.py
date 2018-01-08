@@ -292,6 +292,7 @@ def generate(defined_symbols, extraIncludes):
     logger.info("Apply custom rvalues.")
     # START manual r-value converters
     rvalue_converters = [
+        'register_numpyint_to_long_conversion',
         'register_pytuple_to_rvector3_conversion',
         'register_pysequence_to_rvector_conversion',
         # 'register_pysequence_to_bvector_conversion',
