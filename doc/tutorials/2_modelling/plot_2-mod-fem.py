@@ -54,7 +54,7 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
 # default material values and global homogeneous Dirichlet boundary conditions.
 
 u = pg.solver.solve(grid, f=1.,
-                    uB=[grid.findBoundaryByMarker(1, 5), 0.0],
+                    bc={'Dirichlet': [grid.findBoundaryByMarker(1, 5), 0.0]},
                     verbose=True)
 
 ###############################################################################
@@ -76,7 +76,7 @@ pg.mplviewer.drawMesh(ax, grid)
 gridh2 = grid.createH2()
 
 uh = pg.solver.solve(gridh2, f=1.,
-                     uB=[gridh2.findBoundaryByMarker(1, 5), 0.0],
+                     bc={'Dirichlet': [gridh2.findBoundaryByMarker(1, 5), 0.0]},
                      verbose=True)
 
 ax, cbar = pg.show(gridh2, data=uh, label='H2 Solution $u$')
@@ -90,11 +90,10 @@ pg.mplviewer.drawMesh(ax, gridh2)
 gridp2 = grid.createP2()
 
 up = pg.solver.solve(gridp2, f=1.,
-                     uB=[gridp2.findBoundaryByMarker(1, 5), 0.0],
+                     bc={'Dirichlet': [gridp2.findBoundaryByMarker(1, 5), 0.0]},
                      verbose=True)
 ###############################################################################
 # Fortunately there exist an analytical solution for this example.
-
 
 def uAna(r):
     x = r[0]
@@ -133,6 +132,5 @@ plt.plot(x, uP2, label='quadratic (P2)')
 plt.xlim([-0.4, 0.4])
 plt.ylim([0.25, 0.3])
 plt.legend()
-
 
 plt.show()

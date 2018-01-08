@@ -105,19 +105,19 @@ grid = grid.createP2()
 sourcePosA = [-5.0, -4.0]
 sourcePosB = [+5.0, -4.0]
 
-neumannBC = [[1, mixedBC],  # left boundary
-             [2, mixedBC],  # right boundary
-             [4, mixedBC]]  # bottom boundary
+robBC = [[1, mixedBC],  # left boundary
+         [2, mixedBC],  # right boundary
+         [4, mixedBC]]  # bottom boundary
 
 k = 1e-3
 sigma = 1
 u = solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
-          duB=neumannBC,
+          bc={'Robin': [[1,2,4], mixedBC]},
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
 u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
-           duB=neumannBC,
+           bc={'Robin': robBC},
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
 
