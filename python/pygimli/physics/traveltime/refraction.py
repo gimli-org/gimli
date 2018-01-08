@@ -562,7 +562,7 @@ class Refraction(MethodManager):
         else:
             plotVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
                           label='Apparent velocity [m/s]')
-        return va
+        return ax  # va
 
     def getDepth(self):
         """return a (a-priori guessed) depth of investigation"""
