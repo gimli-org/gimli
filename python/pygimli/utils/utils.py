@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 """Collection of several utility functions."""
 
+from __future__ import print_function
 import sys
 from math import floor, sqrt
+
 import numpy as np
 
 import pygimli as pg
+
 
 class ProgressBar(object):
     """Animated text-based progressbar.
@@ -36,29 +39,32 @@ class ProgressBar(object):
         self.its = int(its)
         self.width = width
         self.sign = sign[0]  # take first character only if sign is longer
-        self.pbar = '[]'
+        self.pbar = "[]"
         self._amount(0)
 
-    def update(self, iteration, msg=''):
-        """Update ProgressBar by iteration number starting at 0."""
+    def update(self, iteration, msg=""):
+        """Update ProgressBar by iteration number starting at 0 with optional
+        message."""
         self._setbar(iteration + 1)
-        print("\r" + self.pbar + msg, end='')
+        if len(msg) >= 1:
+            self.pbar += " (" + msg + ")"
+        print("\r" + self.pbar, end="")
         sys.stdout.flush()
 
     def _setbar(self, elapsed_it):
         """Reset pbar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)
-        self.pbar += '  %d of %s complete' % (elapsed_it, self.its)
+        self.pbar += "  %d of %s complete" % (elapsed_it, self.its)
 
     def _amount(self, new_amount):
         """Calculate amount by which to update the pbar."""
         pct_done = int(round((new_amount / 100.0) * 100.0))
         full_width = self.width - 2
         num_signs = int(round((pct_done / 100.0) * full_width))
-        self.pbar = '[' + self.sign * num_signs + \
-            ' ' * (full_width - num_signs) + ']'
+        self.pbar = "[" + self.sign * num_signs + \
+            " " * (full_width - num_signs) + "]"
         pct_place = (len(self.pbar) // 2) - len(str(pct_done))
-        pct_string = ' %d%% ' % pct_done
+        pct_string = " %d%% " % pct_done
         self.pbar = self.pbar[0:pct_place] + \
             (pct_string + self.pbar[pct_place + len(pct_string):])
 
@@ -252,6 +258,7 @@ def grange(start, end, dx=0, n=0, log=False):
             return pg.increasingRange2(start, end, n)
     else:
         raise Exception('Either dx or n have to be given.')
+
 
 def diff(v):
     """Calculate approximate derivative.
@@ -552,6 +559,7 @@ def uniqueRows(data, prec=2):
     """Equivalent of Matlabs unique(data, 'rows') with tolerance check.
 
     Additionally returns forward and reverse indices
+    
     Examples
     --------
     >>> from pygimli.utils.utils import uniqueRows
@@ -631,8 +639,7 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
         print('Get {} indices for sorting'.format(np.shape(indices)))
     if flag_mult:
         ar = indices.ravel().view(
-            np.dtype((np.void, indices.dtype.itemsize * indices.shape[1]
-                      ))).flatten()
+            np.dtype((np.void, indices.dtype.itemsize * indices.shape[1]))).flatten()
     else:
         ar = np.asanyarray(indices).flatten()
 
@@ -678,5 +685,5 @@ def filterLinesByCommentStr(lines, comment_str='#'):
         if line[0] in comment_str:
             comment_line_idx.append(i)
     for j in comment_line_idx[::-1]:
-        del (lines[j])
+        del lines[j]
     return lines

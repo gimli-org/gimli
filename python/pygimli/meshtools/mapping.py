@@ -460,18 +460,17 @@ def interpolate(*args, **kwargs):
                 pgcore = True
 
     if pgcore:
-        if len(args) == 3:
+        if len(args) == 3: # args: outData = (inMesh, inData, outPos)
 
             if isinstance(args[2], pg.R3Vector) or \
                isinstance(args[2], pg.stdVectorRVector3):
                 return pg.core._pygimli_.interpolate(args[0], args[1],
                                                      destPos=args[2],
                                                      **kwargs)
-        if len(args) == 4:
+        if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 
             if isinstance(args[1], pg.RMatrix) and \
                isinstance(args[3], pg.RMatrix):
-
                 return pg.core._pygimli_.interpolate(args[0],
                                                      inMat=args[1],
                                                      destPos=args[2],
@@ -489,7 +488,7 @@ def interpolate(*args, **kwargs):
 
     if len(args) == 3:
 
-        if isinstance(args[0], pg.Mesh):
+        if isinstance(args[0], pg.Mesh): # args: (inMesh, outMesh, data)
             outMesh = args[0]
             inMesh = args[1]
             data = args[2]

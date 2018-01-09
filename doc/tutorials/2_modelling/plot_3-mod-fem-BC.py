@@ -1,6 +1,6 @@
 #!/ussr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+r"""
 
 Modelling with Boundary Conditions
 ----------------------------------
@@ -20,13 +20,14 @@ from pygimli.viewer import show
 from pygimli.mplviewer import drawStreams
 
 ###############################################################################
-# We create a 50x50 node grid to solve on.
+# We create 21 x 21 node grid to solve on.
 
 grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
                      y=np.linspace(-1.0, 1.0, 21))
 
 ###############################################################################
-# We start considering inhomogeneous Dirchlet boundary conditions (BC).
+# We start considering inhomogeneous Dirichlet boundary conditions (BC).
+#
 # There are different ways of specifying BCs. They can be maps from markers to
 # values, explicit functions or implicit (lambda) functions.
 #
@@ -45,22 +46,20 @@ ax, _ = pg.show(grid, u, label='Solution $u$',)
 show(grid, ax=ax)
 
 def uDirichlet(boundary):
-    """
-        Return a solution value for coordinate p.
-    """
+    """Return a solution value for coordinate p."""
     return 4.0
 
-dirichletBC = [[1, 1.0],                                    # left
-               [grid.findBoundaryByMarker(2), 2.0],         # right
+dirichletBC = [[1, 1.0],                                     # left
+               [grid.findBoundaryByMarker(2), 2.0],          # right
                [grid.findBoundaryByMarker(3),
-               lambda boundary: 3.0 + boundary.center()[0]],  # top
-               [grid.findBoundaryByMarker(4), uDirichlet]]  # bottom
+               lambda boundary: 3.0 + boundary.center()[0]], # top
+               [grid.findBoundaryByMarker(4), uDirichlet]]   # bottom
 
 ###############################################################################
 # The BC are passed using the uBoundary keyword. Note that showMesh returns the
 # created figure ax ax while drawMesh plots on it and it can also be used as
 # a class with plotting or decoration methods.
-u = solve(grid, f=1., uB=dirichletBC)
+u = solve(grid, f=1., bc={'Dirichlet': dirichletBC})
 
 ax = show(grid, data=u, colorBar=True,
           orientation='vertical', label='Solution $u$',

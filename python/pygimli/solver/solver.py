@@ -856,78 +856,6 @@ def assembleLoadVector(mesh, f, userData=None):
 
     return rhs
 
-
-def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
-    r"""Apply Neumann condition to the system matrix S.
-
-    Apply Neumann condition to the system matrix S.
-    .. math::
-        \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
-        = \textbf{n}\grad u(\arr{r}, t) = g \quad\text{with}\quad\arr{r}
-        \quad\text{on}\quad \partial\Omega
-
-    Parameters
-    ----------
-
-    S : :gimliapi:`GIMLI::RSparseMatrix`
-        System matrix of the system equation.
-
-    boundaryPair : list()
-        List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
-        The value g will assigned to the nodes of the boundaries.
-        Later assignment overwrites prior.
-
-        :math:`g` need to be a scalar value (float or int) or
-        a value generator function that will be executed at run time.
-        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
-
-        See tutorial section for an example,
-        e.g., Modeling with Boundary Conditions
-
-    rhs :
-        TODO
-    time : float
-        Will be forwarded to value generator.
-
-    userData : class
-        Will be forwarded to value generator.
-    """
-
-    Se = pg.ElementMatrix()
-    Su = pg.ElementMatrix()
-
-    if not hasattr(boundaryPairs, '__getitem__'):
-        raise BaseException("Boundary pairs need to be a list of "
-                            "[boundary, value]")
-
-    for pair in boundaryPairs:
-        boundary = pair[0]
-
-        val = pair[1]
-
-        g = generateBoundaryValue(boundary, val, time, userData)
-
-        if g is not 0.0 and g is not None:
-            #print(boundary)
-
-            Se.u2(boundary)
-            #print(Se)
-            Se *= g
-            S += Se
-            continue
-
-            Su.u(boundary)
-            print(Su)
-
-            Se.ux(boundary,
-                  pg.IntegrationRules.instance().edgWeights(2),
-                  pg.IntegrationRules.instance().edgAbscissa(2))
-            print(Se)
-            #Su *= g
-            exit()
-            if rhs is not None:
-                rhs[Se.idx()] += Su[0]
-
 def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into gimli"""
 
@@ -948,7 +876,8 @@ def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
 
 def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
                         nodePairs=None):
-    r"""
+    r"""Apply Dirichlet boundary condition.
+
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
 
     .. math::
@@ -1031,6 +960,10 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
 
     if nodePairs is not None:
         #print("nodePairs", nodePairs)
+
+        if len(nodePairs) == 2 and type(nodePairs[0]) == int:
+            nodePairs = [nodePairs]
+
         for i, [n, val] in enumerate(nodePairs):
             uDirIndex.append(n)
             if hasattr(val, '__call__'):
@@ -1040,8 +973,142 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
     _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet)
 
 
+def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
+    r"""Apply Neumann condition to the system matrix S.
+
+    Apply Neumann condition to the system matrix S.
+    .. math::
+        \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
+        = \textbf{n}\grad u(\arr{r}, t) = g \quad\text{with}\quad\arr{r}
+        \quad\text{on}\quad \partial\Omega
+
+    Parameters
+    ----------
+
+    S : :gimliapi:`GIMLI::SparseMatrix`
+        System matrix of the system equation.
+
+    boundaryPair : list()
+        List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
+        The value g will assigned to the nodes of the boundaries.
+        Later assignment overwrites prior.
+
+        :math:`g` need to be a scalar value (float or int) or
+        a value generator function that will be executed at run time.
+        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
+
+        See tutorial section for an example,
+        e.g., Modeling with Boundary Conditions
+
+    rhs :
+        TODO
+    time : float
+        Will be forwarded to value generator.
+
+    userData : class
+        Will be forwarded to value generator.
+    """
+
+    Se = pg.ElementMatrix()
+    if rhs is None:
+        raise BaseException("Neumann Boundary condition needs rhs vector.")
+
+    if not hasattr(boundaryPairs, '__getitem__'):
+        raise BaseException("Boundary pairs need to be a list of "
+                            "[boundary, value]")
+
+    for pair in boundaryPairs:
+        boundary = pair[0]
+        val = pair[1]
+        g = generateBoundaryValue(boundary, val, time, userData)
+
+        if g is not 0.0 and g is not None:
+            Se.u(boundary)
+            rhs.add(Se, g)
+
+def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
+    r"""Apply Robin boundary condition.
+
+    Apply Robin boundary condition to the system matrix S and rhs vector.
+
+    .. math::
+        u(\arr{r}, t) + \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
+        = \textbf{n}\grad u(\arr{r}, t) = h \quad\text{with}\quad\arr{r}
+        \quad\text{on}\quad \partial\Omega
+
+    Parameters
+    ----------
+
+    S : :gimliapi:`GIMLI::SparseMatrix`
+        System matrix of the system equation.
+
+    boundaryPair : list()
+        List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
+        The value g will assigned to the nodes of the boundaries.
+        Later assignment overwrites prior.
+
+        :math:`h` need to be a scalar value (float or int) or
+        a value generator function that will be executed at run time.
+        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
+
+        See tutorial section for an example,
+        e.g., Modeling with Boundary Conditions
+
+    time : float
+        Will be forwarded to value generator.
+
+    userData : class
+        Will be forwarded to value generator.
+    """
+    Se = pg.ElementMatrix()
+
+    if not hasattr(boundaryPairs, '__getitem__'):
+        raise BaseException("Boundary pairs need to be a list of "
+                            "[boundary, value]")
+
+    for pair in boundaryPairs:
+        boundary = pair[0]
+        val = pair[1]
+        h = generateBoundaryValue(boundary, val, time, userData)
+
+        if h is not 0.0 and h is not None:
+            Se.u2(boundary)
+            Se *= h
+            S += Se
+
+def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
+    r"""Shortcut to apply all boundary conditions.
+
+    This is a helper function for the solver call.
+    Shortcut to apply all boundary conditions will only forward to
+    appropriate assemble functions.
+    """
+
+    ## we can't iterate because we want the following fixed order
+    bct = dict(bc)
+    if 'Dirichlet' in bct:
+        assembleDirichletBC(S, parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
+                            rhs=rhs, time=time, userData=userData)
+
+    if 'Node' in bct:
+        assembleDirichletBC(S, [], nodePairs=bct.pop('Node'),
+                            rhs=rhs, time=time, userData=userData)
+
+    if 'Robin' in bct:
+        assembleRobinBC(S, parseArgToBoundaries(bct.pop('Robin'), mesh),
+                        time=time, userData=userData)
+
+    if 'Neumann' in bct:
+        assembleNeumannBC(S, parseArgToBoundaries(bct.pop('Neumann'), mesh),
+                          rhs=rhs, time=None, userData=userData)
+
+    if len(bct.keys()) > 0:
+        pg.logger.warn("Unknown boundary condition[s]" + \
+                       str(bct.keys()) + " will be ignored")
+
+
 def createStiffnessMatrix(mesh, a=None):
-    """Create the Stiffness matrix.
+    r"""Create the Stiffness matrix.
 
     Calculates the scaled stiffness matrix for the given mesh scaled
     with the per cell values a.
@@ -1139,7 +1206,7 @@ def createMassMatrix(mesh, b=None):
     # return B
 
 
-def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
+def solve(mesh, a=1.0, b=0.0, f=0.0, bc=None, times=None, userData=None,
           verbose=False, stats=None, **kwargs):
     r"""Solve partial differential equation.
 
@@ -1156,11 +1223,12 @@ def solve(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     Returns
     -------
     """
-    return solveFiniteElements(mesh, a, b, f, times, userData, verbose, stats,
+    return solveFiniteElements(mesh, a, b, f, bc, times, userData, verbose, stats,
                                **kwargs)
 
 
-def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
+def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
+                        times=None, userData=None,
                         verbose=False, stats=None, **kwargs):
     r"""Solve partial differential equation with Finite Elements.
 
@@ -1184,6 +1252,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     TODO:
 
         * unsteady ub and dub
+        * 'Infinity' Boundary condition
 
     Parameters
     ----------
@@ -1196,17 +1265,29 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     b   : value | array | callable(cell, userData)
         Cell values
 
+    bc : dict()
+        Dictionary of boundary conditions.
+        Current supported boundary conditions are by dictionary keys:
+        'Dirichlet', 'Neumann', 'Robin'.
+        The dictionary can contain multiple "key: Arg"
+        Arg will be parsed by :py:mod:`pygimli.solver.solver.parseArgPairToBoundaryArray`
+
+        If the dictionary key is 'Node' then fixed values for single node
+        indices can by be given. e.g., bc={'Node': [nodeID, value]}.
+        Note this is only a shortcut for
+        bc={'Dirichlet': [mesh.node(nodeID), value]}.
+
     u0 : value | array | callable(pos, userData)
         Node values
 
     uB : value | array | callable(pos, userData)
-        Dirichlet values for u at the boundary
+        DEPRECATED use bc={'Dirichlet' | uB}
 
     uN : list([node, value])
-        Dirichlet values for u at given nodes
+        DEPRECATED use bc={'Node' | uN}
 
     duB : value | array | callable(pos, userData)
-        Neumann values for du/dn at the boundary
+        DEPRECATED use bc={'Neumann' | duB}
 
     f : value | array(cells) | array(nodes) | callable(args, kwargs)
         force values
@@ -1257,12 +1338,17 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
     other solver TODO
     """
-
-    if 'uDirichlet' in kwargs or 'uBoundary' in kwargs:
-        raise BaseException("use uB instead")
-
-    if 'uBoundary' in kwargs:
-        raise BaseException("use duB instead")
+    if bc is None:
+        bc={}
+    if 'uB' in kwargs:
+        pg.deprecated('bc arg uB', "bc={'Dirichlet': uB}")
+        bc['Dirichlet'] = kwargs.pop('uB')
+    if 'duB' in kwargs:
+        pg.deprecated('bc arg uB', "bc={'Robin': duB}")
+        bc['Neumann'] = kwargs.pop('duB')
+    if 'uN' in kwargs:
+        pg.deprecated('bc arg uB', "bc={'Node': duB}")
+        bc['Node'] = kwargs.pop('uN')
 
     debug = kwargs.pop('debug', False)
 
@@ -1295,25 +1381,10 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
     if debug:
         print("5: ", swatch2.duration(True))
 
-    dirichletBC = kwargs.pop('uB', None)
-    dirichletNodes = kwargs.pop('uN', None)
-    neumannBC = kwargs.pop('duB', None)
-
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
 
-        if dirichletBC is not None:
-            assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
-                                rhs=rhs, time=None, userData=userData)
-
-        if dirichletNodes is not None:
-            assembleDirichletBC(S, [],
-                                nodePairs=dirichletNodes,
-                                rhs=rhs, time=None, userData=userData)
-
-        if neumannBC is not None:
-            assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
-                              rhs=rhs, time=None, userData=userData)
+        assembleBC_(bc, mesh, S, rhs, time=None, userData=userData)
 
         if debug:
             print("6c: ", swatch2.duration(True))
@@ -1390,18 +1461,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
         if not dynamic:
             A = createStiffnessMatrix(mesh, a)
 
-            if dirichletBC is not None:
-                assembleDirichletBC(A, parseArgToBoundaries(dirichletBC, mesh),
-                                    rhs=F, time=0.0, userData=userData)
-
-            if dirichletNodes is not None:
-                assembleDirichletBC(A, [],
-                                    nodePairs=dirichletNodes,
-                                    rhs=F, time=0.0, userData=userData)
-
-            if neumannBC is not None:
-                assembleNeumannBC(A, parseArgToBoundaries(neumannBC, mesh),
-                                  rhs=F, time=0.0, userData=userData)
+            assembleBC_(bc, mesh, A, F, time=0.0, userData=userData)
 
             return crankNicolson(times, theta, A, M, F, u0=u0, progress=progress)
 
@@ -1449,18 +1509,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, times=None, userData=None,
 
             S = M + A * dt * theta
 
-            if dirichletBC is not None:
-                assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
-                                    rhs=b, time=times[n], userData=userData)
-
-            if dirichletNodes is not None:
-                assembleDirichletBC(S, [],
-                                    nodePairs=dirichletNodes,
-                                    rhs=b, time=times[n], userData=userData)
-
-            if neumannBC is not None:
-                assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
-                                  rhs=b, time=times[n], userData=userData)
+            assembleBC_(bc, mesh, S, b, time=times[n], userData=userData)
 
             # u = S/b
             t_prep = swatch.duration(True)

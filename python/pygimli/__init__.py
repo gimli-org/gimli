@@ -95,7 +95,7 @@ else:
 def deprecated(msg, hint):
     logger.warn(msg + ", is deprecated, use:" + hint + " instead.")
 
-def renameKWarg(old, new, kwargs):
+def renameKwarg(old, new, kwargs):
     if old in kwargs:
         logger.warn("Keyword argument name changed from '" + old + \
                  "' to '" + new + "'")

@@ -182,7 +182,7 @@ class ERTModelling(pg.ModellingBase):
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
         for i, ki in enumerate(k):
             uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
-                          duB=self.mixedBC,
+                          bc={'Robin': self.mixedBC},
                           userData={'sourcePos': self.electrodes, 'k': ki},
                           verbose=False, stat=0, debug=False,
                           ret=self.subPotentials[i])

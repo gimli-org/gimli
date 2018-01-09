@@ -103,7 +103,7 @@ plt.plot(times, u[:, probeID], label='Implicit Euler')
 
 u = solver.solve(grid, times=times, theta=0.5,
                  u0=lambda node: np.sin(np.pi * node[0]),
-                 uB=dirichletBC)
+                 bc={'Dirichlet':dirichletBC})
 
 plt.plot(times, u[:, probeID], label='Crank-Nicolson')
 
