@@ -4,8 +4,9 @@ Created on Thu Jul 20 17:20:46 2017
 
 @author: skibbe
 """
-import pygimli as pg
 import numpy as np
+
+import pygimli as pg
 
 
 def sparseMatrix2csr(A):
@@ -30,6 +31,7 @@ def sparseMatrix2csr(A):
         return csr_matrix((A.vecVals(), A.vecRowIdx(), A.vecColPtr()))
 
     return csr_matrix(A)
+
 
 def sparseMatrix2coo(A):
     """Convert SparseMatrix to scipy.coo_matrix.
@@ -121,6 +123,7 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
             return rr, cc, vals
     else:
         return vals
+
 
 if __name__ == '__main__':
     pass

@@ -46,7 +46,9 @@ class ProgressBar(object):
         """Update ProgressBar by iteration number starting at 0 with optional
         message."""
         self._setbar(iteration + 1)
-        print("\r" + self.pbar + " (" + msg + ")", end="")
+        if len(msg) >= 1:
+            self.pbar += " (" + msg + ")"
+        print("\r" + self.pbar, end="")
         sys.stdout.flush()
 
     def _setbar(self, elapsed_it):
@@ -557,6 +559,7 @@ def uniqueRows(data, prec=2):
     """Equivalent of Matlabs unique(data, 'rows') with tolerance check.
 
     Additionally returns forward and reverse indices
+    
     Examples
     --------
     >>> from pygimli.utils.utils import uniqueRows
