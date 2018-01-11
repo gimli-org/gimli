@@ -83,7 +83,12 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
             switches = 'pazeA'
 
             if area > 0:
-                switches += 'a' + str(area)
+                #switches += 'a' + str(area)
+                # The str function turns everything smaller
+                # than 0.0001 into the scientific notation 1e-5
+                # which can not be read by triangle. The following
+                # avoids this even for very small numbers
+                switches += 'a' + '{:.20f}'.format(area)
                 pass
             else:
                 switches += 'a'
