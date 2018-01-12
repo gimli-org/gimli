@@ -881,8 +881,8 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
 
     .. math::
-        u(\arr{r}, t) = u_{\text{D}} \quad\text{with}\quad \arr{r}
-        \quad\text{on}\quad \partial\Omega
+        u(\textbf{r}, t) = g
+        \quad\text{for}\quad\textbf{r}\on\Gamma_{\text{Dirichlet}}
 
     Parameters
     ----------
@@ -977,9 +977,10 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     r"""Apply Neumann condition to the system matrix S.
 
     Apply Neumann condition to the system matrix S.
+
     .. math::
-        \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
-        = \textbf{n}\grad u(\arr{r}, t) = g \quad\text{with}\quad\arr{r}
+        \frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
+        = \textbf{n}\grad u(\textbf{r}, t) = g \quad\text{with}\quad\textbf{r}
         \quad\text{on}\quad \partial\Omega
 
     Parameters
@@ -1009,7 +1010,6 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         Will be forwarded to value generator.
     """
 
-    Se = pg.ElementMatrix()
     if rhs is None:
         raise BaseException("Neumann Boundary condition needs rhs vector.")
 
@@ -1017,10 +1017,15 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
 
+    Se = pg.ElementMatrix()
+
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
         g = generateBoundaryValue(boundary, val, time, userData)
+
+        #print("Neumann")
+        #print(boundary)
 
         if g is not 0.0 and g is not None:
             Se.u(boundary)
@@ -1029,12 +1034,19 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
 def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     r"""Apply Robin boundary condition.
 
-    Apply Robin boundary condition to the system matrix S and rhs vector.
+    Apply Robin boundary condition to the system matrix S and rhs vector
+    (if needed for b != 1 and g != 0).
 
     .. math::
-        u(\arr{r}, t) + \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
-        = \textbf{n}\grad u(\arr{r}, t) = h \quad\text{with}\quad\arr{r}
-        \quad\text{on}\quad \partial\Omega
+        a u(\textbf{r}, t) + b \frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
+        = g \quad\text{with}\quad\textbf{r}
+        \quad\text{on}\quad\partial\Omega_{\text{Robin}} \\
+        \quad\text{currently only with}\quad b = 1 \quad\text{and}\quad g = 0
+
+    TODO
+        * b!=1 and g!=0 variable
+        * check for b = 0 and move to dirichlet
+
 
     Parameters
     ----------
@@ -1060,21 +1072,32 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     userData : class
         Will be forwarded to value generator.
     """
-    Se = pg.ElementMatrix()
 
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
 
+    Sp = pg.ElementMatrix()
+    Sq = pg.ElementMatrix()
+
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
-        h = generateBoundaryValue(boundary, val, time, userData)
+        p = generateBoundaryValue(boundary, val, time, userData)
+        #p = 20.
+        q = 0.0
 
-        if h is not 0.0 and h is not None:
-            Se.u2(boundary)
-            Se *= h
-            S += Se
+        #print("Robin")
+        #print(boundary)
+        if p is not 0.0 and p is not None:
+            Sp.u2(boundary)
+            S.add(Sp, p)
+            #Sp *= p
+            #S += Sp
+
+            if q != None:
+                Sq.u(boundary)
+                rhs.add(Sq, -p*q)
 
 def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
     r"""Shortcut to apply all boundary conditions.
@@ -1086,21 +1109,18 @@ def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
 
     ## we can't iterate because we want the following fixed order
     bct = dict(bc)
+    if 'Neumann' in bct:
+        assembleNeumannBC(S, parseArgToBoundaries(bct.pop('Neumann'), mesh),
+                          rhs=rhs, time=time, userData=userData)
+    if 'Robin' in bct:
+        assembleRobinBC(S, parseArgToBoundaries(bct.pop('Robin'), mesh),
+                        rhs=rhs, time=time, userData=userData)
     if 'Dirichlet' in bct:
         assembleDirichletBC(S, parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
                             rhs=rhs, time=time, userData=userData)
-
     if 'Node' in bct:
         assembleDirichletBC(S, [], nodePairs=bct.pop('Node'),
                             rhs=rhs, time=time, userData=userData)
-
-    if 'Robin' in bct:
-        assembleRobinBC(S, parseArgToBoundaries(bct.pop('Robin'), mesh),
-                        time=time, userData=userData)
-
-    if 'Neumann' in bct:
-        assembleNeumannBC(S, parseArgToBoundaries(bct.pop('Neumann'), mesh),
-                          rhs=rhs, time=None, userData=userData)
 
     if len(bct.keys()) > 0:
         pg.logger.warn("Unknown boundary condition[s]" + \
@@ -1206,53 +1226,48 @@ def createMassMatrix(mesh, b=None):
     # return B
 
 
-def solve(mesh, a=1.0, b=0.0, f=0.0, bc=None, times=None, userData=None,
-          verbose=False, stats=None, **kwargs):
+def solve(mesh, **kwargs):
     r"""Solve partial differential equation.
 
-    This function is a syntactic sugar proxy for solving partial differential equation.
-    Using the best guess method for the given parameter. Currently only
-    Finite Element calculation using :py:mod:`pygimli.solver.solveFiniteElements`
+    This is a syntactic sugar convenience function for solving partial
+    differential equation on a given mesh.
+    Using the best guess method for the given parameter.
+    Currently only Finite Element calculation using
+    :py:mod:`pygimli.solver.solveFiniteElements`
 
     TODO
     :py:mod:`pygimli.solver.solveFiniteVolume`
 
-    Parameters
-    ----------
-
-    Returns
-    -------
     """
-    return solveFiniteElements(mesh, a, b, f, bc, times, userData, verbose, stats,
-                               **kwargs)
+    return solveFiniteElements(mesh, **kwargs)
 
 
 def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
                         times=None, userData=None,
-                        verbose=False, stats=None, **kwargs):
+                        verbose=False, **kwargs):
     r"""Solve partial differential equation with Finite Elements.
 
-    This function is a syntactic sugar proxy for using the Finite Element
-    functionality of the library core to solve elliptic and parabolic partial
-    differential of the following type:
+    This is a syntactic sugar convenience function for using the Finite Element
+    functionality of the library core to solve partial differential equation (PDE)
+    that match the following form:
 
     .. math::
 
-        \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u) + b u + f(\mathbf{r},t) \\
-        u(\mathbf{r}, t) & = u_B  \quad\mathbf{r}\in\Gamma_{\text{Dirichlet}}\\
-        \frac{\partial u(\mathbf{r}, t)}{\partial \mathbf{n}} & = u_{\partial \text{B}} \quad\mathbf{r}\in\Gamma_{\text{Neumann}}\\
-        u(\mathbf{r}, t=0) & = u_0 \quad\text{with} \quad\mathbf{r}\in\Omega\quad\text{for}\quad t\neq 0
+        \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u) + b u + f(\mathbf{r},t)~~|~~\Omega_{\text{Mesh}}\\
+        u & = h~~|~~\Gamma_{\text{Dirichlet}}\\
+        \frac{\partial u}{\partial \mathbf{n}} & = g~~|~~\Gamma_{\text{Neumann}}\\
+        \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & = \gamma~~|~~\Gamma_{\text{Robin}}
 
+
+    for the scalar solution :math:`u(\mathbf{r}, t)` at each node of a given mesh.
     The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
-    through the given mesh with appropriate boundary marker.
-
-    The solution :math:`u(\mathbf{r}, t)` is given for each node in mesh.
-
+    through the mesh with appropriate boundary marker.
 
     TODO:
 
         * unsteady ub and dub
-        * 'Infinity' Boundary condition
+        * 'Infinity' Boundary condition (u vanishes at infinity)
+        * 'Cauchy' Boundary condition (guaranties u and du on boundary)
 
     Parameters
     ----------
@@ -1265,10 +1280,14 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     b   : value | array | callable(cell, userData)
         Cell values
 
+    f : value | array(cells) | array(nodes) | callable(args, kwargs)
+        force values
+
     bc : dict()
         Dictionary of boundary conditions.
         Current supported boundary conditions are by dictionary keys:
         'Dirichlet', 'Neumann', 'Robin'.
+
         The dictionary can contain multiple "key: Arg"
         Arg will be parsed by :py:mod:`pygimli.solver.solver.parseArgPairToBoundaryArray`
 
@@ -1277,37 +1296,41 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         Note this is only a shortcut for
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
 
-    u0 : value | array | callable(pos, userData)
-        Node values
-
-    uB : value | array | callable(pos, userData)
-        DEPRECATED use bc={'Dirichlet' | uB}
-
-    uN : list([node, value])
-        DEPRECATED use bc={'Node' | uN}
-
-    duB : value | array | callable(pos, userData)
-        DEPRECATED use bc={'Neumann' | duB}
-
-    f : value | array(cells) | array(nodes) | callable(args, kwargs)
-        force values
-
     times : array [None]
         Solve as time dependent problem for the given times.
 
-    theta : float [1]
-        - :math:`theta = 0` means explicit Euler, maybe stable for
-         :math:`\Delta t \quad\text{near}\quad h`
-        - :math:`theta = 0.5`, Crank-Nicolsen, maybe instable
-        - :math:`theta = 1`, implicit Euler
+    **kwargs:
 
-        If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
+        u0 : value | array | callable(pos, userData)
+            Node values
 
-    progress : bool
-        Give some calculation progress.
+        uB : value | array | callable(pos, userData)
+            DEPRECATED use bc={'Dirichlet' | uB}
 
-    ret :
-        Workspace for results so no new memory will be allocated.
+        uN : list([node, value])
+            DEPRECATED use bc={'Node' | uN}
+
+        duB : value | array | callable(pos, userData)
+            DEPRECATED use bc={'Neumann' | duB}
+
+        theta : float [1]
+            - :math:`theta = 0` means explicit Euler, maybe stable for
+            :math:`\Delta t \quad\text{near}\quad h`
+            - :math:`theta = 0.5`, Crank-Nicolsen, maybe instable
+            - :math:`theta = 1`, implicit Euler
+
+            If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
+
+        stats : bool
+            Give some statistics.
+
+        progress : bool
+            Give some calculation progress.
+
+        ws : dict
+            The WorkSpace is a dictionary that will get
+            some temporary data during the calculation.
+            Any keyvalue 'u' in the dictionary will be used for the resulting array.
 
     Returns
     -------
@@ -1327,7 +1350,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
-    ...                                   uB=[[4, 1.0], [2, 0.0]])
+    ...                                   bc={'Dirichlet':[[4, 1.0], [2, 0.0]]})
     >>> fig, ax = plt.subplots()
     >>> pc = drawField(ax, mesh, u)
     >>> drawMesh(ax, mesh)
@@ -1336,7 +1359,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     See Also
     --------
 
-    other solver TODO
+        :py:mod:`pygimli.solver.solve`
     """
     if bc is None:
         bc={}
@@ -1350,7 +1373,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         pg.deprecated('bc arg uB', "bc={'Node': duB}")
         bc['Node'] = kwargs.pop('uN')
 
+    workspace = kwargs.pop('ws', dict)
     debug = kwargs.pop('debug', False)
+    stats = kwargs.pop('stats', False)
 
     mesh.createNeighbourInfos()
     if verbose:
@@ -1390,8 +1415,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             print("6c: ", swatch2.duration(True))
 
         # create result array
-
-        u = kwargs.pop('ret', None)
+        u = None
+        if u in workspace:
+            u = workspace['u']
 
         singleForce = True
         if hasattr(rhs, 'ndim'):
@@ -1416,6 +1442,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             print(("Asssemblation time: ", assembleTime))
 
         # showSparseMatrix(S)
+
+        workspace['S'] = S
+        workspace['rhs'] = rhs
 
         solver = pg.LinSolver(False)
         solver.setMatrix(S, 0)

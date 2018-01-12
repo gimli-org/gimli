@@ -306,6 +306,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
             zC = curve[:, 2]
 
     if len(kwargs.keys()) > 0:
+        #interpolate more curve points to get a smooth line
         dTi = min(pg.utils.dist(pg.utils.diff(curve))) / 10.
         ti = np.arange(min(tCurve), max(tCurve)+dTi, dTi)
         xC = pg.interpolate(ti, tCurve, xC, **kwargs)

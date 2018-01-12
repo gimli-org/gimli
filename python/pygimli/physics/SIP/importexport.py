@@ -47,7 +47,8 @@ def readFuchs3File(resfile, verbose=False):
     header = {}
     LINE = []
     dataAct = False
-    with open(resfile, 'r') as f:
+    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
+    #with open(resfile, 'r') as f:
         for line in f:
             if dataAct:
                 LINE.append(line)

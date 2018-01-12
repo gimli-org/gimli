@@ -3,6 +3,8 @@
 """Spectral induced polarisation (SIP) spectrum class and modules."""
 
 import sys
+import codecs
+
 from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
@@ -78,9 +80,9 @@ class SIPSpectrum():
 
         Import Data and try to assume the file format.
         """
-        fi = open(filename)
-        firstLine = fi.readline()
-        fi.close()
+        with codecs.open(filename, 'r', encoding='iso-8859-15', errors='replace') as f:
+            firstLine = f.readline()
+        f.close()
 
         fnLow = filename.lower()
         if 'SIP Fuchs III' in firstLine:
