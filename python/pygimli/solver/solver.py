@@ -7,6 +7,7 @@ from copy import deepcopy
 import numpy as np
 
 import pygimli as pg
+
 from pygimli.utils import unique
 
 
@@ -879,10 +880,12 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
     r"""Apply Dirichlet boundary condition.
 
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
+    The right hand side values for h can be given for each boundary
+    element individually by setting proper boundary pair arguments.
 
     .. math::
-        u(\textbf{r}, t) = g
-        \quad\text{for}\quad\textbf{r}\on\Gamma_{\text{Dirichlet}}
+        u(\textbf{r}, t) = h
+        \quad\text{for}\quad\textbf{r}\quad\text{on}\quad\delta\Omega=\Gamma_{\text{Dirichlet}}
 
     Parameters
     ----------
@@ -890,16 +893,15 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
         System matrix of the system equation.
 
     boundaryPair : list()
-        List of pairs [ :gimliapi:`GIMLI::Boundary`, uD ].
-        The value uD will assigned to the nodes of the boundaries.
+        List of pairs [ :gimliapi:`GIMLI::Boundary`, h ].
+        The value :math:`h` will assigned to the nodes of the boundaries.
         Later assignment overwrites prior.
 
-        :math:`u_{\text{D}}` need to be a scalar value (float or int) or
+        :math:`h` need to be a scalar value (float or int) or
         a value generator function that will be executed at runtime.
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
+        and :ref:`tut:modelling_bc` for example syntax,
 
-        See tutorial section for an example,
-        e.g., Modelling with Boundary Conditions
 
     nodePairs : list()
         List of pairs [ nodeID, uD ].
@@ -977,11 +979,13 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     r"""Apply Neumann condition to the system matrix S.
 
     Apply Neumann condition to the system matrix S.
+    The right hand side values for g can be given for each boundary
+    element individually by setting proper boundary pair arguments.
 
     .. math::
         \frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
-        = \textbf{n}\grad u(\textbf{r}, t) = g \quad\text{with}\quad\textbf{r}
-        \quad\text{on}\quad \partial\Omega
+        = \textbf{n}\nabla u(\textbf{r}, t) = g
+        \quad\text{for}\quad\textbf{r}\quad\text{on}\quad\delta\Omega=\Gamma_{\text{Neumann}}
 
     Parameters
     ----------
@@ -991,15 +995,14 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
 
     boundaryPair : list()
         List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
-        The value g will assigned to the nodes of the boundaries.
+        The value :math:`g` will assigned to the nodes of the boundaries.
         Later assignment overwrites prior.
 
         :math:`g` need to be a scalar value (float or int) or
         a value generator function that will be executed at run time.
-        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
 
-        See tutorial section for an example,
-        e.g., Modeling with Boundary Conditions
+        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
+        and :ref:`tut:modelling_bc` for example syntax,
 
     rhs :
         TODO
@@ -1038,15 +1041,14 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     (if needed for b != 1 and g != 0).
 
     .. math::
-        a u(\textbf{r}, t) + b \frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
-        = g \quad\text{with}\quad\textbf{r}
-        \quad\text{on}\quad\partial\Omega_{\text{Robin}} \\
-        \quad\text{currently only with}\quad b = 1 \quad\text{and}\quad g = 0
+        \alpha u(\textbf{r}, t) + \beta\frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
+        = \gamma
+        \quad\text{for}\quad\textbf{r}\quad\text{on}\quad\delta\Omega=\Gamma_{\text{Robin}}\\
+        \quad\text{currently only with}\quad \beta = 1 \quad\text{and}\quad \gamma = 0
 
     TODO
         * b!=1 and g!=0 variable
         * check for b = 0 and move to dirichlet
-
 
     Parameters
     ----------
@@ -1055,16 +1057,14 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         System matrix of the system equation.
 
     boundaryPair : list()
-        List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
-        The value g will assigned to the nodes of the boundaries.
+        List of pairs [ :gimliapi:`GIMLI::Boundary`, :math:`\alpha` ].
+        The value :math:`\alpha` will assigned to the nodes of the boundaries.
         Later assignment overwrites prior.
 
-        :math:`h` need to be a scalar value (float or int) or
+        :math:`\alpha` needs to be a scalar value (float or int) or
         a value generator function that will be executed at run time.
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
-
-        See tutorial section for an example,
-        e.g., Modeling with Boundary Conditions
+        and :ref:`tut:modelling_bc` for example syntax,
 
     time : float
         Will be forwarded to value generator.
@@ -1083,7 +1083,9 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
+        ### p = alpha / alpha
         p = generateBoundaryValue(boundary, val, time, userData)
+        #### p = gamma / alpha
         #p = 20.
         q = 0.0
 
@@ -1334,10 +1336,13 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
     Returns
     -------
-
     u : array
         Returns the solution u either 1,n array for stationary problems or
         for m,n array for m time steps
+
+    See also
+    --------
+        :ref:`tut:modelling` and :py:mod:`pygimli.solver.solve`
 
     Examples
     --------
@@ -1356,10 +1361,6 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     >>> drawMesh(ax, mesh)
     >>> plt.show()
 
-    See Also
-    --------
-
-        :py:mod:`pygimli.solver.solve`
     """
     if bc is None:
         bc={}
@@ -1373,7 +1374,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         pg.deprecated('bc arg uB', "bc={'Node': duB}")
         bc['Node'] = kwargs.pop('uN')
 
-    workspace = kwargs.pop('ws', dict)
+    workSpace = kwargs.pop('ws', dict())
     debug = kwargs.pop('debug', False)
     stats = kwargs.pop('stats', False)
 
@@ -1416,8 +1417,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
         # create result array
         u = None
-        if u in workspace:
-            u = workspace['u']
+        if u in workSpace:
+            u = workSpace['u']
 
         singleForce = True
         if hasattr(rhs, 'ndim'):
@@ -1443,8 +1444,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
         # showSparseMatrix(S)
 
-        workspace['S'] = S
-        workspace['rhs'] = rhs
+        workSpace['S'] = S
+        workSpace['rhs'] = rhs
 
         solver = pg.LinSolver(False)
         solver.setMatrix(S, 0)
