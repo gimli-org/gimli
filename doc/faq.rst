@@ -83,3 +83,9 @@ My script called sip.py and nothing works
 
 Rename your file to something different. One of the prerequisite library (pyQT)
 import the file sip.py as module for they own and just stuck.
+
+Segfault on import
+..................
+
+Try `python -s -c "import pygimli"`. The `-s` option ensures that only system
+packages are used. This avoids conflicts with local (pip) packages.
