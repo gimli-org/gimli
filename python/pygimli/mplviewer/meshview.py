@@ -749,9 +749,12 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
         shading = kwargs.pop('shading', 'flat')
         if shading == 'gouraud':
             z = pg.meshtools.cellDataToNodeData(mesh, data)
-
-        gci = ax.tripcolor(x, y, triangles, facecolors=z, shading=shading,
-                           **kwargs)
+            gci = ax.tripcolor(x, y, triangles, z, shading=shading,
+                               levels=levels,
+                               **kwargs)
+        else:
+            gci = ax.tripcolor(x, y, triangles, facecolors=z, shading=shading,
+                               **kwargs)
 
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)

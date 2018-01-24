@@ -153,6 +153,7 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
         return vals
     val = 0.
 
+    #print(arg, callable(arg))
     if hasattr(arg, '__call__'):
         kwargs = dict()
         kwargs['boundary'] = boundary
@@ -166,10 +167,16 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
         except Exception as e:
             print(arg, "(", kwargs, ")")
             pg.logger.critical(e)
-            raise Exception("Wrong argments for callback function.")
+            raise Exception("Wrong arguments for callback function.")
 
     elif hasattr(arg, '__len__'):
-        val = generateBoundaryValue(boundary, arg[boundary.id()], userData)
+        if callable(arg[0]):
+            kwargs = arg[1]
+            if time != 0.0 and time is not None:
+                kwargs['time'] = time
+            val = arg[0](boundary=boundary, **kwargs)
+        else:
+            val = generateBoundaryValue(boundary, arg[boundary.id()], userData)
     else:
         try:
             val = float(arg)
@@ -193,14 +200,16 @@ def parseArgPairToBoundaryArray(pair, mesh):
         - [boundary, arg]
         - [[boundary,...], arg]
         - [node, arg]
+        - [marker, callable, *kwargs]
+        - [[marker, ...], callable, *kwargs]
 
         arg will be parsed by
         :py:mod:`pygimli.solver.solver.generateBoundaryValue`
         and distributed to each boundary.
-        Callable functions will be executed at runtime.
+        Callable functions will be executed at run time.
 
     mesh : :gimliapi:`GIMLI::Mesh`
-        Used to find boundaries by marker
+        Used to find boundaries by marker.
 
     Returns
     -------
@@ -211,7 +220,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     boundaries = []
     bounds = []
 
-#    print('+'*30, pair)
+    #print('*'*30, pair)
     if isinstance(pair[0], int):
         bounds = mesh.findBoundaryByMarker(pair[0])
     elif isinstance(pair[0], list):
@@ -231,14 +240,21 @@ def parseArgPairToBoundaryArray(pair, mesh):
 
     for b in bounds:
         val = None
-        if hasattr(pair[1], '__call__'):
+        #print('-'*50)
+        #print(b, pair[1], callable(pair[1]))
+        #print('+'*50)
+        if callable(pair[1]):
             # don't execute the callable here
             # we want to call them at runtime
-            val = pair[1]
+            if len(pair) > 2:
+                val = pair[1:]
+            else:
+                val = pair[1]
         else:
             val = generateBoundaryValue(b, pair[1])
         boundaries.append([b, val])
 
+    #print('#'*30)
     return boundaries
 
 
@@ -301,10 +317,24 @@ def parseArgToBoundaries(args, mesh):
     >>> b = pg.solver.parseArgToBoundaries([1, bCall], mesh)
     >>> print(len(b),b[0][1](b[0][0]))
     1 [0, 1]
+    >>> def bCall(boundary, a1, a2):
+    ...     return a1 + a2
+    >>> b = pg.solver.parseArgToBoundaries([1, bCall, {'a1':2, 'a2':3}], mesh)
+    >>> print(len(b), b[0][1][0](b[0][0], **b[0][1][1]))
+    1 5
+    >>> b = pg.solver.parseArgToBoundaries([[1, bCall, {'a1':1, 'a2':2}],
+    ...                                     [2, bCall, {'a1':3, 'a2':4}]], mesh)
+    >>> print(len(b), b[0][1][0](b[0][0], **b[0][1][1]))
+    2 3
+    >>> b = pg.solver.parseArgToBoundaries([[1,2], bCall, {'a1':4, 'a2':5}], mesh)
+    >>> print(len(b), b[1][1][0](b[1][0], **b[1][1][1]))
+    2 9
     >>> pg.wait()
     """
     boundaries = []
     if isinstance(args, list):
+        #print('!'*100)
+        #print(args)
         if len(args) == 2:
             # if isinstance(args[0], list):
                 # print('~'*10, '[[,],]')
@@ -313,21 +343,28 @@ def parseArgToBoundaries(args, mesh):
             try:
                     # [[,], [,]]
                 if len(args[0]) == 2 and len(args[1]) == 2:
-                    # print('~'*10, '[[,],[,]]')
+                    #print('~'*10, '[[,],[,]]')
+                    boundaries += parseArgPairToBoundaryArray(args[0], mesh)
+                    boundaries += parseArgPairToBoundaryArray(args[1], mesh)
+                elif len(args[0]) == 3 and callable(args[0][1]):
+                    #print('~'*10, '[[marker,callable,*kwrags],[,]]')
                     boundaries += parseArgPairToBoundaryArray(args[0], mesh)
                     boundaries += parseArgPairToBoundaryArray(args[1], mesh)
                 else:
-                    # print('~'*10, '??[[,]]')
+                    #print('~'*10, '??[[,]]')
                     boundaries += parseArgPairToBoundaryArray(args, mesh)
             except BaseException as _:
                 # [,]
                 # print('~'*10, '[,]')
                 boundaries += parseArgPairToBoundaryArray(args, mesh)
+        elif len(args) == 3 and callable(args[1]):
+            # print('~'*10, '[[,], callable, kwargs)
+            boundaries += parseArgPairToBoundaryArray(args, mesh)
         else:
             # print('~'*10, '[[,], [,], ...]')
             # [[,], [,], ...]
-            for arg in args:
-                boundaries += parseArgPairToBoundaryArray(arg, mesh)
+            for a in args:
+                boundaries += parseArgPairToBoundaryArray(a, mesh)
 
     elif hasattr(args, '__call__'):
         for b in mesh.boundaries():
@@ -1087,7 +1124,7 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         p = generateBoundaryValue(boundary, val, time, userData)
         #### p = gamma / alpha
         #p = 20.
-        q = 0.0
+        q = -41.0
 
         #print("Robin")
         #print(boundary)
@@ -1269,7 +1306,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
         * unsteady ub and dub
         * 'Infinity' Boundary condition (u vanishes at infinity)
-        * 'Cauchy' Boundary condition (guaranties u and du on boundary)
+        * 'Cauchy' Boundary condition
+        (guaranties u and du on same boundary, will never work here because the problem
+        becomes ill posed and would need some inverse strategy to solve.)
 
     Parameters
     ----------

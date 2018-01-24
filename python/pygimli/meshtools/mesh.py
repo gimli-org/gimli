@@ -63,7 +63,8 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
                 pg.meshtools.mergePLC(poly), quality, area, smooth, switches,
                 verbose)
     # poly == [pos, pos, ]
-    if isinstance(poly, list) or isinstance(poly, type(zip)):
+    if isinstance(poly, list) or isinstance(poly, type(zip)) or \
+        type(poly) == pg.stdVectorRVector3:
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
@@ -150,15 +151,17 @@ def refineQuad2Tri(mesh, style=1):
     for c in mesh.cells():
 
         if style == 1:
-            out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()])
-            out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()])
+            out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()],
+                           c.marker())
+            out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()],
+                           c.marker())
 
         elif style == 2:
             newNode = out.createNodeWithCheck(c.center())
 
             for i in range(4):
                 out.createCell([c.node(i).id(), c.node((i + 1) % 4).id(),
-                                newNode.id()])
+                                newNode.id()], c.marker())
 
         for i in range(c.boundaryCount()):
             b = c.boundary(i)
@@ -736,9 +739,12 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
     mesh = pg.Mesh(dimension)
     for node in mesh_pos:
         mesh.createNode(node)
+
     for i, cell in enumerate(mesh_cells):
         mesh.createCell(pg.IndexArray(cell), marker=int(mesh_marker[i]))
+
     mesh.createNeighbourInfos()
+
     if verbose:
         print('converted mesh:', mesh)
     return mesh
@@ -748,7 +754,7 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
                  pos='coordinates', cells='topology', marker='values',
                  marker_default=0, dimension=3, verbose=True,
                  useFenicsIndices=False):
-    '''
+    """
     Function for loading a mesh from HDF5 file format.
 
     Returns an instance of :gimliapi:`GIMLI::Mesh` class.
@@ -796,13 +802,13 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
         Dimension of the in/outpu mesh, no own check for dimensions yet.
         Fixed on 3 for now.
 
-    Yields
-    ------
+    Returns
+    -------
 
     mesh:
         :gimliapi:`GIMLI::Mesh`
 
-    '''
+    """
     h5py = pg.io.opt_import('h5py',
                             requiredFor='import mesh in .h5 data format')
     h5 = h5py.File(filename, 'r')
@@ -832,13 +838,13 @@ def readFenicsHDF5Mesh(filename, group='mesh', verbose=True):
 
 def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
                    pos='coordinates', cells='topology', marker='values'):
-    '''
-    Writes given in a hdf5 format file.
+    """
+    Writes given mesh in a hdf5 format file.
 
     3D tetrahedron meshes only! Boundary markers are ignored.
 
     Keywords are explained in :py:mod:`pygimli.meshtools.readHDFS`
-    '''
+    """
     h5py = pg.io.opt_import('h5py',
                             requiredFor='export mesh in .h5 data format')
     if not isinstance(mesh, pg.Mesh):

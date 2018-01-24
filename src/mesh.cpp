@@ -595,7 +595,7 @@ void Mesh::setBoundaryMarkers(const IVector & marker){
     }
 }
 
-void Mesh::setBoundaryMarker(const IndexArray & ids, int marker){
+void Mesh::setBoundaryMarkers(const IndexArray & ids, int marker){
     for (IndexArray::iterator it = ids.begin(); it != ids.end(); it++){
         if (*it < boundaryCount()){
             boundaryVector_[*it]->setMarker(marker);

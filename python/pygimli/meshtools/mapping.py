@@ -27,7 +27,7 @@ def nodeDataToCellData(mesh, data):
                             str(mesh.nodeCount()) +
                             "got: " + str(len(data)), str(len(data[0])))
 
-    return pg.interpolate(mesh, data, destPos=mesh.cellCenters())
+    return pg.interpolate(mesh, data, mesh.cellCenters())
 
 
 def cellDataToNodeData(mesh, data, style='mean'):
@@ -382,7 +382,7 @@ def interpolate(*args, **kwargs):
         args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
             `outData = interpolate(outMesh, inMesh, vals)`
 
-            Datavalues vals can be scalar or vector for all nodes or cells in inMesh.
+            Data values vals can be scalar or vector for all nodes or cells in inMesh.
 
       Returns:
         Interpolated values
@@ -465,7 +465,23 @@ def interpolate(*args, **kwargs):
 
             if isinstance(args[2], pg.R3Vector) or \
                isinstance(args[2], pg.stdVectorRVector3):
-                return pg.core._pygimli_.interpolate(args[0], args[1],
+
+                # outData = (inMesh, vR3, vR3)
+                if isinstance(args[1], pg.R3Vector) or \
+                   isinstance(args[1], pg.stdVectorRVector3) or \
+                    (isinstance(args[1], np.ndarray) and args[1].ndim == 2):
+
+                    outMat = pg.Matrix()
+                    pg.core._pygimli_.interpolate(args[0],
+                                                     inMat=np.array(args[1]).T,
+                                                     destPos=args[2],
+                                                     outMat=outMat,
+                                                     **kwargs)
+                    return np.array(outMat).T
+
+                # outData = (inMesh, vR, vR3)
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     args[1],
                                                      destPos=args[2],
                                                      **kwargs)
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
@@ -489,7 +505,7 @@ def interpolate(*args, **kwargs):
 
     if len(args) == 3:
 
-        if isinstance(args[0], pg.Mesh): # args: (inMesh, outMesh, data)
+        if isinstance(args[0], pg.Mesh): # args: (outMesh, inMesh, data)
             outMesh = args[0]
             inMesh = args[1]
             data = args[2]
@@ -515,6 +531,7 @@ def interpolate(*args, **kwargs):
                                       destPos=outMesh.positions())
             else:
                 print(inMesh)
+                print(outMesh)
                 raise Exception("Don't know how to interpolate data of size",
                                 str(len(data)))
 
