@@ -825,8 +825,7 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
 
 
 def readFenicsHDF5Mesh(filename, group='mesh', verbose=True):
-    """
-    Reads :term:`FEniCS` mesh from file format .h5 and returns a
+    """ Reads :term:`FEniCS` mesh from file format .h5 and returns a
     :gimliapi:`GIMLI::Mesh`.
     """
     mesh = readHDF5Mesh(filename, group=group, indices='cell_indices',
@@ -838,8 +837,7 @@ def readFenicsHDF5Mesh(filename, group='mesh', verbose=True):
 
 def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
                    pos='coordinates', cells='topology', marker='values'):
-    """
-    Writes given mesh in a hdf5 format file.
+    """Writes given :gimliapi:`GIMLI::Mesh` in a hdf5 format file.
 
     3D tetrahedron meshes only! Boundary markers are ignored.
 
@@ -864,30 +862,30 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
     mesh_markers = np.array(mesh.cellMarkers())
 
     with h5py.File(exportname, 'w') as out:
-        # writing indices
-        idx_name = '{}/{}'.format(group, indices)
-        out.create_dataset(idx_name, data=mesh_indices, dtype=np.int64)
-        # writing node positions
-        pos_name = '{}/{}'.format(group, pos)
-        out.create_dataset(pos_name, data=mesh_pos, dtype=float)
-        # writing cells via indices
-        cells_name = '{}/{}'.format(group, cells)
-        out.create_dataset(cells_name, data=mesh_cells, dtype=np.int64)
-        # writing marker
-        marker_name = '{}/{}'.format(group, marker)
-        out.create_dataset(marker_name, data=mesh_markers, dtype=np.uint64)
-        out[group][cells].attrs['celltype'] = np.array(('tetrahedron'))
-        out[group][cells].attrs['partition'] = np.array([0], dtype=np.uint64)
+        for grp in np.atleast_1d(group):  # can use more than one group
+            # writing indices
+            idx_name = '{}/{}'.format(grp, indices)
+            out.create_dataset(idx_name, data=mesh_indices, dtype=int)
+            # writing node positions
+            pos_name = '{}/{}'.format(grp, pos)
+            out.create_dataset(pos_name, data=mesh_pos, dtype=float)
+            # writing cells via indices
+            cells_name = '{}/{}'.format(grp, cells)
+            out.create_dataset(cells_name, data=mesh_cells, dtype=int)
+            # writing marker
+            marker_name = '{}/{}'.format(grp, marker)
+            out.create_dataset(marker_name, data=mesh_markers, dtype=int)
+            out[grp][cells].attrs['celltype'] = np.string_('tetrahedron')
+            out[grp][cells].attrs.create('partition', [0])
     return True
 
 
-def exportFenicsHDF5Mesh(mesh, exportname, group='mesh'):
-    """
-    Exports Gimli mesh in HDF5 format suitable for Fenics.
+def exportFenicsHDF5Mesh(mesh, exportname, **kwargs):
+    """Exports Gimli mesh in HDF5 format suitable for Fenics.
 
     Equivalent to calling the function
-    :py:mod:`pygimli.meshtools.exportHDF5Mesh(mesh, exportname, group=group,
-    indices='cell_indices', pos='coordinates', cells='topology',
+    :py:mod:`pygimli.meshtools.exportHDF5Mesh(mesh, exportname, group=['mesh',
+    'domains'], indices='cell_indices', pos='coordinates', cells='topology',
     marker='values')`.
 
     Parameters
@@ -899,14 +897,10 @@ def exportFenicsHDF5Mesh(mesh, exportname, group='mesh'):
     exportname: string
         Name under which the mesh is saved.
 
-    group: string ('mesh')
-        Identification string under which the mesh is saved. Important for
-        :term:`FEniCS` to know.
-
     """
-    return exportHDF5Mesh(mesh, exportname, group=group,
-                          indices='cell_indices',
-                          pos='coordinates', cells='topology', marker='values')
+    return exportHDF5Mesh(mesh, exportname, group=['mesh', 'domains'],
+                          indices='cell_indices', pos='coordinates',
+                          cells='topology', marker='values')
 
 
 def transform2DMeshTo3D(mesh, x, y, z=None):
