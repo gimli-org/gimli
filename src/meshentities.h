@@ -120,15 +120,25 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    /*! Return a \ref RVector for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions \f$ N_n(L_1,L_2,L_3)\f$ for the local coordinate \f$ (L_1,L_2,L_3)\f$ */
+    /*! Return a \ref RVector(n) for
+     *\f$ N(L) = {N_i} i = [0, \mathrm{nodeCount()}] \f$ shape functions
+     *\f$ N_n(L_1,L_2,L_3)\f$ in local coordinates \f$ L(L1, L2, L3) = L(r, s, t)\f$ */
     virtual RVector N(const RVector3 & rst) const;
 
+    /*! Inplace variant of \ref N */
     virtual void N(const RVector3 & rst, RVector & n) const;
 
     /*! Return a \ref RVector of the derivation for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions \f$ N_n(L_1,L_2,L_3)\f$ for the local coordinate \f$ (L_1,L_2,L_3)\f$
      *   regarding to the local coordinates \f$ L_i \f$ \n
      * \f$ \frac{\partial N_n(L_1,L_2,L_3)}{\partial L_i} \f$ with may be \f$ i = 0,1,2 \f$*/
     virtual RVector dNdL(const RVector3 & rst, uint i) const;
+
+    /*! Return the complete (n,3) matrix for all \f$ n=[0,\mathrm{nodeCount()}] \f$
+     * shape functions of
+     * all nodes of the current MeshEntity
+     * \f$ \frac{\partial N_n(L_1,L_2,L_3)}{\partial L_i} \f$
+     * with \f$ i = 0,1,2 \f$ */
+    virtual RMatrix dNdL(const RVector3 & rst) const;
 
     /*! Interpolate a scalar field at position p for the scalar field u regarding to the shape functions of the entity.
      * \param p Cartesian coordinates (x,y,z) need to be inside, or on the boundary, of the entity.
