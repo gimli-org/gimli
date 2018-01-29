@@ -54,7 +54,6 @@ if "conda" in __path__[0]:
     except ImportError:
         pass
 ################################################################################
-
 from . import core
 from ._version import get_versions
 from .core import *
