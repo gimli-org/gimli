@@ -1,6 +1,5 @@
-test=None
 # -*- coding: utf-8 -*-
-"""Generally mesh generation and maintenance."""
+"""General mesh generation and maintenance."""
 
 import os
 

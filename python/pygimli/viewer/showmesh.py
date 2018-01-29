@@ -3,13 +3,12 @@
 """Generic mesh visualization tools."""
 
 import os
-import traceback
 import sys
-
-import numpy as np
+import traceback
 
 # plt should not be used outside of mplviewer
 import matplotlib.pyplot as plt
+import numpy as np
 
 try:
     import pygimli as pg
@@ -45,8 +44,11 @@ def show(mesh=None, data=None, **kwargs):
 
     Returns
     -------
-
     Return the results from the showMesh* functions.
+
+    See Also
+    --------
+    showMesh
     """
     if "axes" in kwargs:
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
@@ -187,19 +189,11 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     colobar : matplotlib.colorbar
     """
-    ax = ax
-    if block:
-        hold = 1
-
-    if hold:
-        lastHoldStatus = pg.mplviewer.utils.holdAxes__
-        pg.mplviewer.hold(val=1)
+    if ax is None:
+        ax = plt.subplots()[1]
 
     # print('1*'*50)
     # print(locale.localeconv())
-
-    if ax is None:
-        ax = plt.subplots()[1]
 
     # plt.subplots() resets locale setting to system default .. this went
     # horrible wrong for german 'decimal_point': ','
@@ -207,6 +201,14 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
     # print('2*'*50)
     # print(locale.localeconv())
+
+    if block:
+        hold = True
+
+    if hold:
+        lastHoldStatus = pg.mplviewer.utils.holdAxes__
+        pg.mplviewer.hold(val=1)
+
 
     gci = None
     validData = False
