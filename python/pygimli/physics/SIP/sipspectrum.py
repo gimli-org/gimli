@@ -88,12 +88,13 @@ class SIPSpectrum():
         if 'SIP Fuchs III' in firstLine:
             print("Reading SIP Fuchs III file")
             self.f, self.amp, self.phi, header = readFuchs3File(filename)
-            self.phi *= -1./180.
+            print(self.phi)
+            self.phi *= -np.pi./180.
             # print(header) # not used?
         elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
             print("Reading SIP Fuchs file")
             self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
-            self.phi *= -1./180.
+            self.phi *= -np.pi./180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]
             self.f, self.amp, self.phi = readTXTSpectrum(filename)

@@ -49,7 +49,9 @@ def readFuchs3File(resfile, verbose=False):
     dataAct = False
     with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
     #with open(resfile, 'r') as f:
+
         for line in f:
+            line = line.replace('\r\n', '\n') # correct for carriage return
             if dataAct:
                 LINE.append(line)
                 if len(line) < 2:
@@ -90,7 +92,8 @@ def readFuchs3File(resfile, verbose=False):
                             header[token] = num
                         except BaseException as e:
                             # maybe beginning or end of a block
-                            print(e)
+                            #print(e)
+                            pass
 
                 else:
                     if activeBlock:
