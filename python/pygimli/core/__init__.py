@@ -27,7 +27,6 @@ if not os.path.isfile(new) and os.path.isfile(old):
     print("INFO: Moving %s to %s" % (old, new))
     os.rename(old, new)
 ###############################################################################
-
 try:
     from . import _pygimli_
     from . _pygimli_ import *
@@ -41,7 +40,6 @@ except ImportError as e:
 #######################################
 
 #_pygimli_.load = None
-
 from pygimli.io import load
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve

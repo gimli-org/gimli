@@ -5,7 +5,8 @@ import os.path
 from importlib import import_module
 
 import pygimli as pg
-from pygimli.meshtools import readGmsh, readPLC, readFenicsHDF5Mesh
+from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC
+
 
 def optImport(module, requiredFor="use the full functionality"):
     """Import and return module only if it exists.
@@ -24,7 +25,7 @@ def optImport(module, requiredFor="use the full functionality"):
 
     Examples
     --------
-    >>> from pygimli.io import opt_import
+    >>> from pygimli.io import optImport
     >>> pg = optImport("pygimli")
     >>> pg.__name__
     'pygimli'
@@ -49,7 +50,9 @@ def optImport(module, requiredFor="use the full functionality"):
 
     return mod
 
+
 opt_import = optImport
+
 
 def load(fname, verbose=False):
     """General import function to load data and meshes from file.
