@@ -721,6 +721,7 @@ SparseMatrix = _pygimli_.RSparseMatrix
 Vector = _pygimli_.RVector
 Matrix = _pygimli_.RMatrix
 Inversion = _pygimli_.RInversion
+Pos = _pygimli_.RVector3
 
 Trans = _pygimli_.RTrans
 TransLinear = _pygimli_.RTransLinear
