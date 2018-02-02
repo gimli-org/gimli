@@ -43,7 +43,7 @@ def createGrid(**kwargs):
     >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2],
     ...                                y=[-1, -0.5, -0.25, 0], marker=2)
     >>> print(mesh)
-    Mesh: Nodes: 9 Cells: 4 Boundaries: 12
+    Mesh: Nodes: 16 Cells: 9 Boundaries: 24
     >>> _ = pg.show(mesh)
     >>> pg.wait()
     """

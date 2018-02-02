@@ -546,7 +546,7 @@ _pygimli_.IVector.ndim = 1
 _pygimli_.IndexArray.ndim = 1
 _pygimli_.RMatrix.ndim = 2
 _pygimli_.R3Vector.ndim = 2
-_pygimli_.stdVectorRVector3 = 2
+_pygimli_.stdVectorRVector3.ndim = 2
 
 ############################
 # Iterator support for RVector allow to apply python build-ins
@@ -684,7 +684,6 @@ def __stdVectorRVector3ArrayCall(self, dtype=None):
     #if idx is not None:
         #print(self)
         #print(idx)
-        #raise Exception("we need to fix this")
     return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
 
 _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
