@@ -538,6 +538,16 @@ _pygimli_.RMatrix.__len__ = RMatrix_len
 _pygimli_.CMatrix.__len__ = RMatrix_len
 
 
+_pygimli_.RVector.ndim = 1
+_pygimli_.BVector.ndim = 1
+_pygimli_.CVector.ndim = 1
+_pygimli_.RVector3.ndim = 1
+_pygimli_.IVector.ndim = 1
+_pygimli_.IndexArray.ndim = 1
+_pygimli_.RMatrix.ndim = 2
+_pygimli_.R3Vector.ndim = 2
+_pygimli_.stdVectorRVector3 = 2
+
 ############################
 # Iterator support for RVector allow to apply python build-ins
 ############################

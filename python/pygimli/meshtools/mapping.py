@@ -358,7 +358,6 @@ def tapeMeasureToCoordinates(tape, pos):
     pg.deprecated("tapeMeasureToCoordinates", "interpolateAlongCurve")
     return interpolateAlongCurve(tape, pos)
 
-
 def interpolate(*args, **kwargs):
     r"""Interpolation convinience function.
 
@@ -463,20 +462,15 @@ def interpolate(*args, **kwargs):
     if pgcore:
         if len(args) == 3: # args: outData = (inMesh, inData, outPos)
 
-            if isinstance(args[2], pg.R3Vector) or \
-               isinstance(args[2], pg.stdVectorRVector3):
-
-                # outData = (inMesh, vR3, vR3)
-                if isinstance(args[1], pg.R3Vector) or \
-                   isinstance(args[1], pg.stdVectorRVector3) or \
-                    (isinstance(args[1], np.ndarray) and args[1].ndim == 2):
+            if args[1].ndim == 2: # outData = (inMesh, vR3 )
+                if args[1].ndim == 2: # outData = (inMesh, vR3, vR3)
 
                     outMat = pg.Matrix()
                     pg.core._pygimli_.interpolate(args[0],
-                                                     inMat=np.array(args[1]).T,
-                                                     destPos=args[2],
-                                                     outMat=outMat,
-                                                     **kwargs)
+                                                  inMat=np.array(args[1]).T,
+                                                  destPos=args[2],
+                                                  outMat=outMat,
+                                                  **kwargs)
                     return np.array(outMat).T
 
                 # outData = (inMesh, vR, vR3)
@@ -485,6 +479,13 @@ def interpolate(*args, **kwargs):
                                                      destPos=args[2],
                                                      **kwargs)
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
+
+            if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inVec=args[1],
+                                                     x=args[2],
+                                                     y=args[3],
+                                                     **kwargs)
 
             if isinstance(args[1], pg.RMatrix) and \
                isinstance(args[3], pg.RMatrix):
@@ -499,6 +500,16 @@ def interpolate(*args, **kwargs):
                                                      inVec=args[1],
                                                      destPos=args[2],
                                                      outVec=args[3],
+                                                     **kwargs)
+
+        if len(args) == 5:
+            if args[1].ndim == 1 and args[2].ndim == 1 and \
+               args[3].ndim == 1 and args[4].ndim == 1:
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inVec=args[1],
+                                                     x=args[2],
+                                                     y=args[3],
+                                                     z=args[4],
                                                      **kwargs)
 
         return pg.core._pygimli_.interpolate(*args, **kwargs)

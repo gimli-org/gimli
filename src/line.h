@@ -48,7 +48,7 @@ public:
     Line & operator = (const Line & line);
 
     /*! Functor to the line function. ret = p0_ + (p1_ - p0_) * t; */
-    inline const RVector3 operator()(double t) const { return lineAt(t); }
+    inline const RVector3 operator()(double t) const { return this->at(t); }
 
     /*! Equal_to operator */
     inline bool operator == (const Line & line) const { return this->compare(line); }
@@ -72,18 +72,22 @@ public:
     /*! Return const reference to ref. point p1 */
     const RVector3 & p1() const { return p1_; }
 
+    /*! Return intersection pos of this line segment and the ray given by
+     start and direction dir. */
+    RVector3 intersect(const RVector3 & start, const RVector3 & dir) const;
+
     /*! Returns the intersection point between line and this line.
-        Returns an invalid RVector3 of both do not touch, are equal or paralell. */
+        Returns an invalid RVector3 of both do not touch, are equal or parallel.
+        Return is invalid if they don't intersect.
+    */
     RVector3 intersect(const Line & line) const;
 
-    /*! Returns line parameter t that represents the nearest position to the line for the given point p. Feed it to lineAt and you get the nearest point. */
+    /*! Returns line parameter t that represents the nearest position to the
+     *line for the given point p. Feed it to at() and you get the nearest point. */
     double nearest(const RVector3 & p) const;
 
     /*! Apply the line as function. ret = p0_ + (p1_ - p0_) * t*/
     inline RVector3 at(double t) const { return p0_ + (p1_ - p0_) * t; }
-
-    /*! DEPRECATED use at instead. */
-    inline RVector3 lineAt(double t) const { return at(t); }
 
     /*!  Return the distance between this line and pos,
     http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html;

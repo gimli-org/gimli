@@ -43,9 +43,13 @@ def hold(val=1):
 
 def wait():
     """TODO WRITEME."""
-    time.sleep(0.05)
+
     # plt.pause seems to be broken in mpl:2.1
-    # plt.pause(0.1)
+    try:
+        plt.pause(0.1)
+    except:
+        time.sleep(0.1)
+        pass
     plt.show()
 
 
