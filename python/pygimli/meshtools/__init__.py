@@ -8,7 +8,8 @@ Mesh generation and modification.
     (unstructured), both objects are treated the same internally.
 """
 
-from .grid import appendTetrahedronBoundary, appendTriangleBoundary
+from .grid import (createGrid, appendTetrahedronBoundary, appendTriangleBoundary)
+
 from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
                    merge2Meshes, refineQuad2Tri,
                    mergeMeshes, readGmsh, readHydrus2dMesh,

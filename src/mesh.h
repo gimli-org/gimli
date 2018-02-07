@@ -334,8 +334,12 @@ public:
     R3Vector & boundarySizedNormals() const;
 
 
+    /*! DEPRECATED */
+    void setBoundaryMarker(const IndexArray & ids, int marker){
+        return setBoundaryMarkers(ids, marker);
+    }
     /*! Set the marker to all boundaries in index array. */
-    void setBoundaryMarker(const IndexArray & ids, int marker);
+    void setBoundaryMarkers(const IndexArray & ids, int marker);
 
     /*! Set all cell marker the values in attribute. */
     void setBoundaryMarkers(const IVector & marker);

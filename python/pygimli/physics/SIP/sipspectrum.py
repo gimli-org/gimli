@@ -3,6 +3,8 @@
 """Spectral induced polarisation (SIP) spectrum class and modules."""
 
 import sys
+import codecs
+
 from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
@@ -78,20 +80,21 @@ class SIPSpectrum():
 
         Import Data and try to assume the file format.
         """
-        fi = open(filename)
-        firstLine = fi.readline()
-        fi.close()
+        with codecs.open(filename, 'r', encoding='iso-8859-15', errors='replace') as f:
+            firstLine = f.readline()
+        f.close()
 
         fnLow = filename.lower()
         if 'SIP Fuchs III' in firstLine:
             print("Reading SIP Fuchs III file")
             self.f, self.amp, self.phi, header = readFuchs3File(filename)
-            self.phi *= -1./180.
+            print(self.phi)
+            self.phi *= -np.pi/180.
             # print(header) # not used?
         elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
             print("Reading SIP Fuchs file")
             self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
-            self.phi *= -1./180.
+            self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]
             self.f, self.amp, self.phi = readTXTSpectrum(filename)

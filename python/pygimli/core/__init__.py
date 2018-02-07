@@ -27,7 +27,6 @@ if not os.path.isfile(new) and os.path.isfile(old):
     print("INFO: Moving %s to %s" % (old, new))
     os.rename(old, new)
 ###############################################################################
-
 try:
     from . import _pygimli_
     from . _pygimli_ import *
@@ -41,7 +40,6 @@ except ImportError as e:
 #######################################
 
 #_pygimli_.load = None
-
 from pygimli.io import load
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
@@ -540,6 +538,16 @@ _pygimli_.RMatrix.__len__ = RMatrix_len
 _pygimli_.CMatrix.__len__ = RMatrix_len
 
 
+_pygimli_.RVector.ndim = 1
+_pygimli_.BVector.ndim = 1
+_pygimli_.CVector.ndim = 1
+_pygimli_.RVector3.ndim = 1
+_pygimli_.IVector.ndim = 1
+_pygimli_.IndexArray.ndim = 1
+_pygimli_.RMatrix.ndim = 2
+_pygimli_.R3Vector.ndim = 2
+_pygimli_.stdVectorRVector3.ndim = 2
+
 ############################
 # Iterator support for RVector allow to apply python build-ins
 ############################
@@ -676,7 +684,6 @@ def __stdVectorRVector3ArrayCall(self, dtype=None):
     #if idx is not None:
         #print(self)
         #print(idx)
-        #raise Exception("we need to fix this")
     return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
 
 _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
@@ -723,6 +730,7 @@ SparseMatrix = _pygimli_.RSparseMatrix
 Vector = _pygimli_.RVector
 Matrix = _pygimli_.RMatrix
 Inversion = _pygimli_.RInversion
+Pos = _pygimli_.RVector3
 
 Trans = _pygimli_.RTrans
 TransLinear = _pygimli_.RTransLinear

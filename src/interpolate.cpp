@@ -152,6 +152,9 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
                     const RVector & x, const RVector & y,
                     const RVector & z, bool verbose, double fillValue){
 
+    if (z.size() == 0) return interpolate(mesh, data, x, y, verbose, fillValue);
+    if (z.size() == 0 && y.size() == 0) return interpolate(mesh, data, x, verbose, fillValue);
+
     if (x.size() != y.size() || x.size() != z.size()) {
         throwLengthError(EXIT_VECTOR_SIZE_INVALID, " x.size invalid y.size invalid z.size() "
                 + toStr(x.size()) + " != " + toStr(y.size()) + " != " + toStr(z.size()));
@@ -168,7 +171,8 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
 RVector interpolate(const Mesh & mesh, const RVector & data,
                     const RVector & x, const RVector & y,
                     bool verbose, double fillValue){
-    return interpolate(mesh, data, x, y, RVector(x.size(), 0.0, fillValue));
+    if (y.size() == 0) return interpolate(mesh, data, x, verbose, fillValue);
+    return interpolate(mesh, data, x, y, RVector(x.size(), 0.0), verbose, fillValue);
 }
 
 RVector interpolate(const Mesh & mesh, const RVector & data,

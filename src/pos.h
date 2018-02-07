@@ -236,7 +236,7 @@ public:
         if (t > TOLERANCE) *this /= t;
         return *this;
     }
-    /*!DEPRECATED Normalise for backward comptibility.*/
+    /*!DEPRECATED Normalise for backward compatibility.*/
     Pos< ValueType > & normalise(){ return normalize(); }
 
     Pos< ValueType > cross(const Pos< ValueType > & p) const;

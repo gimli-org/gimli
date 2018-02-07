@@ -12,9 +12,8 @@ Writing tests for pygimli
 Please check: https://pytest.org/latest/example/index.html
 """
 
-import os
 import sys
-from os.path import isdir, join, realpath
+from os.path import join, realpath
 
 import matplotlib.pyplot as plt
 
@@ -28,7 +27,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     Examples
     --------
     >>> import pygimli as pg
-    >>> # You can test everything with pg.test() or test an individual function:
+    >>> # You can test everything with pg.test() or test a single function:
     >>> pg.test("pg.utils.boxprint", verbose=False)
     >>> # The target argument can also be the function directly
     >>> from pygimli.utils import boxprint
@@ -83,15 +82,14 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     cwd = join(realpath(__path__[0]), '..')
 
     excluded = [
-        "gui",
-        "physics/traveltime/example.py",
-        "physics/em/fdemexample.py"
+        "gui", "physics/traveltime/example.py", "physics/em/fdemexample.py"
     ]
 
     if onlydoctests:
         excluded.append("testing")
 
-    cmd = (["-v", "-rsxX", "--color", "yes", "--doctest-modules", "--durations", 5, cwd])
+    cmd = (["-v", "-rsxX", "--color", "yes", "--doctest-modules",
+            "--durations", 5, cwd])
     for directory in excluded:
         cmd.extend(["--ignore", join(cwd, directory)])
 

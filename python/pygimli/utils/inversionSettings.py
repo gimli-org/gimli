@@ -14,8 +14,8 @@ class InversionSettings(dict):
     def __init__(self, *args, **kwargs):
         """Constructor.
 
-        Initialize the settings object by either using a file or sepcifying the
-        settings directly. Works exatly like a dict(), only with extended
+        Initialize the settings object by either using a file or specifying the
+        settings directly. Works exactly like a dict(), only with extended
         capabilities like saving and loading to disk.
         """
         try:

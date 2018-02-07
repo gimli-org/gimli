@@ -445,10 +445,11 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
 
     # set a regionmarker here .. somewhere
 
+    pg.warnNonEmptyArgs(kwargs)
     return poly
 
 
-def mergePLC(pols):
+def mergePLC(pols, tol=1e-3):
     """Merge multiply polygons.
 
     Merge multiply polygons into a single polygon.
@@ -461,6 +462,9 @@ def mergePLC(pols):
     ----------
     pols: [:gimliapi:`GIMLI::Mesh`]
         List of polygons that need to be merged
+
+    tol : double
+        Tolerance to check for duplicated nodes. [1e-3]
 
     Returns
     -------
@@ -491,7 +495,7 @@ def mergePLC(pols):
     for p in pols:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos())
+            nn = poly.createNodeWithCheck(n.pos(), tol)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
             nodes.append(nn)
